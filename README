@@ -1,6 +1,47 @@
 The project is currently in its planning phase. Coding is planned to start
 October 2011.
 
+PREREQUISITES FOR COMPILATION
+
+1. Unpack to a directory <dune_src> the following Dune modules: dune-common, dune-grid and fune-foamgrid.
+
+2. In file <dune_src>/dune/grid/utility/structuredgridfactory.hh change the declaration 
+
+static void insertVertices(GridFactory<GridType>& factory,
+                           const FieldVector<ctype,dim>& lowerLeft,
+                           const FieldVector<ctype,dim>& upperRight,
+                           const array<unsigned int,dim>& vertices)
+
+to 
+
+static void insertVertices(GridFactory<GridType>& factory,
+                           const FieldVector<ctype,dimworld>& lowerLeft,
+                           const FieldVector<ctype,dimworld>& upperRight,
+                           const array<unsigned int,dim>& vertices)
+
+3. In file <dune_src>/dune/foamgrid/foamgrid/foamgridentity.hh add the lines
+
+    FoamGridEntity& operator=(const FoamGridEntity& original)
+    {
+      if (this != &original)
+      {
+        geo_.reset();
+        target_ = original.target_;
+      }
+      return *this;
+    }
+
+into the declaration of the template class
+
+template<int codim, int dim, class GridImp> class FoamGridEntity.
+
+4. Compile and install the corrected Dune modules.
+
+(Note: if you have already installed Dune, it is sufficient to make the corrections in the installed header files.)
+
+5. Install the Boost::test unit test framework.
+
+
 COMPILATION AND INSTALLATION
 
 1. Create a subdirectory, e.g. "build", in the main "bempp" directory. cd to the directory you created.
