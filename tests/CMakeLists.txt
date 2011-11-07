@@ -8,7 +8,7 @@ file(GLOB_RECURSE test_sources *.cpp)
 add_executable(run_tests
   ${test_sources}
   )
-target_link_libraries(run_tests bempp ${Boost_LIBRARIES})
+target_link_libraries(run_tests bempp ${Boost_LIBRARIES} dunecommon dunegrid)
 
 add_custom_target(test
   ${CMAKE_CURRENT_BINARY_DIR}/run_tests

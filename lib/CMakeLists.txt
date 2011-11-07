@@ -1,5 +1,8 @@
-add_library(bempp SHARED 
-  element.cpp)
+# Find all source and header files
+file(GLOB_RECURSE lib_sources *.cpp)
+file(GLOB_RECURSE lib_headers *.hpp)
+
+add_library(bempp SHARED ${lib_sources})
 
 # Add a target to generate API documentation with Doxygen
 find_package(Doxygen)
@@ -20,5 +23,5 @@ install(TARGETS bempp
   ARCHIVE DESTINATION lib)
 
 # Install header files
-install(FILES element.hpp utils.hpp 
+install(FILES ${lib_headers}
   DESTINATION include/bempp)

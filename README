@@ -59,7 +59,7 @@ Choose a project name, unselect "Use default location" and specify the path to t
 
 Click "Advanced settings". 
 
-Click "C/C++ Build". Unselect "Use default build command". In the field "Build command" enter "make -C make -C ${ProjDirPath}/<build_dir> VERBOSE=1", where <build_dir> is the name of the directory in which you ran CMake previously. In the "Build directory" enter "${ProjDirPath}/<build_dir>" (if this is not done, Eclipse will fail to find executables for running/debugging). Click "OK".
+Click "C/C++ Build". Unselect "Use default build command". In the field "Build command" enter "make -C ${ProjDirPath}/<build_dir> VERBOSE=1", where <build_dir> is the name of the directory in which you ran CMake previously. In the "Build directory" enter "${ProjDirPath}/<build_dir>" (if this is not done, Eclipse will fail to find executables for running/debugging). Click "OK".
 
 Click "Finish".
 

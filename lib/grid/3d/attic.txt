@@ -1,0 +1,27 @@
+From GridView
+
+// FIXME
+  /** \brief True if the given entity is contained in this grid view.
+   *
+   * \note If e is not an element of the grid, then
+   *       the result of contains() is undefined.
+   */
+  template<int codim>
+  bool containsEntity(const Entity<codim>& e) const
+  { throw Bempp::Exception("GridView::containsEntity(): Invalid codimension"); }
+
+  template<> bool containsEntity<0>(const Entity<0>& e) const;
+  template<> bool containsEntity<1>(const Entity<1>& e) const;
+  template<> bool containsEntity<2>(const Entity<2>& e) const;
+
+template<>
+inline bool GridView::containsEntity<0>(const Entity<0>& e) const
+{ return containsFace(e); }
+
+template<>
+inline bool GridView::containsEntity<1>(const Entity<1>& e) const
+{ return containsEdge(e); }
+
+template<>
+inline bool GridView::containsEntity<2>(const Entity<2>& e) const
+{ return containsVertex(e); }
