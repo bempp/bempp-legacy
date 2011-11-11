@@ -4,3 +4,4 @@ bempp.*
 .cproject
 .project
 *.DS_Store
+/nbproject/private/

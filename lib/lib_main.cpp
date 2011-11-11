@@ -1,10 +1,10 @@
 /** \name Explicit instantiations of library classes @{ */
 
-#include "grid/3d/entity.hpp"
-#include "grid/3d/entity_iterator.hpp"
-#include "grid/3d/geometry.hpp"
-#include "grid/3d/grid.hpp"
-#include "grid/3d/grid_view.hpp"
+#include "grid/entity.hpp"
+#include "grid/entity_iterator.hpp"
+#include "grid/geometry.hpp"
+#include "grid/grid.hpp"
+#include "grid/grid_view.hpp"
 
 namespace Bempp {
 
