@@ -26,7 +26,6 @@
 #include "entity_pointer.hpp"
 
 namespace Bempp {
-namespace ThreeD {
 
 template<typename DuneEntity>
 inline EntityIterator<1>* ConcreteEntity<0, DuneEntity>::subEdgeIterator() const {
@@ -90,6 +89,5 @@ inline EntityIterator<0>* ConcreteEntity<0, DuneEntity>::sonIterator(
 }
 
 } // namespace Bempp
-} // namespace ThreeD
 
 #endif

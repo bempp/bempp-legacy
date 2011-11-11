@@ -24,7 +24,6 @@
 #include "id_set_decl.hpp"
 
 namespace Bempp {
-namespace ThreeD {
 
 // Forward declarations
 template<int codim> class Entity;
@@ -232,6 +231,5 @@ private:
 };
 
 } // namespace Bempp
-} // namespace ThreeD
 
 #endif

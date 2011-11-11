@@ -28,7 +28,6 @@ class GeometryType;
 }
 
 namespace Bempp {
-namespace ThreeD {
 
 // Forward declarations
 template<int codim> class Entity;
@@ -146,6 +145,5 @@ public:
 };
 
 } // namespace Bempp
-} // namespace ThreeD
 
 #endif

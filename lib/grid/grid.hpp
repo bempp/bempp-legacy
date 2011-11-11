@@ -30,7 +30,6 @@
 #include <dune/foamgrid/foamgrid.hh>
 
 namespace Bempp {
-namespace ThreeD {
 
 template<typename DuneGrid>
 inline GridView* ConcreteGrid<DuneGrid>::levelView(int level) const {
@@ -68,6 +67,5 @@ typedef Dune::FoamGrid<dimWorld> DefaultDuneGrid;
 typedef ConcreteGrid<DefaultDuneGrid> DefaultGrid;
 
 } // namespace Bempp
-} // namespace ThreeD
 
 #endif // GRID_HPP

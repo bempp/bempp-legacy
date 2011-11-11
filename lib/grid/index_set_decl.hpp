@@ -22,7 +22,6 @@
 #define bempp_lib_grid_3d_index_set_decl_hpp
 
 namespace Bempp {
-namespace ThreeD {
 
 // Forward declarations
 template<int codim> class Entity;
@@ -101,6 +100,5 @@ public:
 };
 
 } // namespace Bempp
-} // namespace ThreeD
 
 #endif

@@ -24,7 +24,6 @@
 #include <dune/common/fvector.hh>
 
 namespace Bempp {
-namespace ThreeD {
 
 /** Abstract wrapper of a geometry
 
@@ -79,6 +78,5 @@ public:
 };
 
 } // namespace Bempp
-} // namespace ThreeD
 
 #endif

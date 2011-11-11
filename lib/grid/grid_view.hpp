@@ -31,7 +31,6 @@ class GeometryType;
 }
 
 namespace Bempp {
-namespace ThreeD {
 template<typename DuneGridView>
 inline bool ConcreteGridView<DuneGridView>::containsFace(
 		const Entity<0>& e) const {
@@ -90,6 +89,5 @@ inline EntityIterator<2>* ConcreteGridView<DuneGridView>::vertexIterator() const
 }
 
 } // namespace Bempp
-} // namespace ThreeD
 
 #endif

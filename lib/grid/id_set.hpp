@@ -25,7 +25,6 @@
 #include "entity.hpp"
 
 namespace Bempp {
-namespace ThreeD {
 
 template<typename DuneGrid, typename DuneIdSet>
 inline IdSet::IdType ConcreteIdSet<DuneGrid, DuneIdSet>::faceId(
@@ -63,6 +62,5 @@ inline IdSet::IdType ConcreteIdSet<DuneGrid, DuneIdSet>::vertexId(
 }
 
 } // namespace Bempp
-} // namespace ThreeD
 
 #endif // ID_SET_HPP
