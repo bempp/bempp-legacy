@@ -3,3 +3,4 @@
 bempp.*
 .cproject
 .project
+*.DS_Store
