@@ -23,15 +23,12 @@
 
 #include "index_set_decl.hpp"
 
-namespace Dune
-{
+namespace Dune {
 class GeometryType;
 }
 
-namespace Bempp
-{
-namespace ThreeD
-{
+namespace Bempp {
+namespace ThreeD {
 
 // Forward declarations
 template<int codim> class Entity;
@@ -39,64 +36,64 @@ template<int codim> class EntityIterator;
 class IndexSet;
 
 /** Abstract wrapper of a grid view */
-class GridView
-{
+class GridView {
 public:
-  /** Destructor */
-  virtual ~GridView() {}
+	/** Destructor */
+	virtual ~GridView() {
+	}
 
-  // TODO: return base grid
-  // virtual & grid() const = 0;
+	// TODO: return base grid
+	// virtual & grid() const = 0;
 
-  /** \brief The index set */
-  virtual const IndexSet& indexSet() const = 0;
+	/** \brief The index set */
+	virtual const IndexSet& indexSet() const = 0;
 
-  /** \brief Number of entities in a given codimension */
-  virtual int size(int codim) const = 0;
+	/** \brief Number of entities in a given codimension */
+	virtual int size(int codim) const = 0;
 
-  /** \brief Number of entities with a given geometry type */
-  virtual int size(const Dune::GeometryType &type) const = 0;
+	/** \brief Number of entities with a given geometry type */
+	virtual int size(const Dune::GeometryType &type) const = 0;
 
-  /** \brief True if the given vertex is contained in this grid view.
-   *
-   * \note If e is not an element of the grid, then
-   *       the result of containsVertex() is undefined.
-   */
-  virtual bool containsVertex(const Entity<2>& e) const = 0;
+	/** \brief True if the given vertex is contained in this grid view.
+	 *
+	 * \note If e is not an element of the grid, then
+	 *       the result of containsVertex() is undefined.
+	 */
+	virtual bool containsVertex(const Entity<2>& e) const = 0;
 
-  /** \brief True if the given edge is contained in this grid view.
-   *
-   * \note If e is not an element of the grid, then
-   *       the result of containsEdge() is undefined.
-   */
-  virtual bool containsEdge(const Entity<1>& e) const = 0;
+	/** \brief True if the given edge is contained in this grid view.
+	 *
+	 * \note If e is not an element of the grid, then
+	 *       the result of containsEdge() is undefined.
+	 */
+	virtual bool containsEdge(const Entity<1>& e) const = 0;
 
-  /** \brief True if the given face is contained in this grid view.
-   *
-   * \note If e is not an element of the grid, then
-   *       the result of containsFace() is undefined.
-   */
-  virtual bool containsFace(const Entity<0>& e) const = 0;
+	/** \brief True if the given face is contained in this grid view.
+	 *
+	 * \note If e is not an element of the grid, then
+	 *       the result of containsFace() is undefined.
+	 */
+	virtual bool containsFace(const Entity<0>& e) const = 0;
 
-  /** \brief Iterator over faces contained in this view.
-   *
-   *  The caller is responsible for freeing the returned pointer.
-   */
-  virtual EntityIterator<0>* faceIterator() const = 0;
+	/** \brief Iterator over faces contained in this view.
+	 *
+	 *  The caller is responsible for freeing the returned pointer.
+	 */
+	virtual EntityIterator<0>* faceIterator() const = 0;
 
-  /** \brief Iterator over edges contained in this view.
-   *
-   *  The caller is responsible for freeing the returned pointer.
-   */
-  virtual EntityIterator<1>* edgeIterator() const = 0;
+	/** \brief Iterator over edges contained in this view.
+	 *
+	 *  The caller is responsible for freeing the returned pointer.
+	 */
+	virtual EntityIterator<1>* edgeIterator() const = 0;
 
-  /** \brief Iterator over vertices contained in this view.
-   *
-   *  The caller is responsible for freeing the returned pointer.
-   */
-  virtual EntityIterator<2>* vertexIterator() const = 0;
+	/** \brief Iterator over vertices contained in this view.
+	 *
+	 *  The caller is responsible for freeing the returned pointer.
+	 */
+	virtual EntityIterator<2>* vertexIterator() const = 0;
 
-  // TODO: Intersection iterators.
+	// TODO: Intersection iterators.
 //  virtual Iterator
 //  ibegin(const Entity<0>& entity) const = 0;
 //  virtual Iterator
@@ -104,47 +101,49 @@ public:
 };
 
 /** Wrapper of a Dune grid view of type DuneGridView. */
-template <typename DuneGridView>
-class ConcreteGridView : public GridView
-{
+template<typename DuneGridView>
+class ConcreteGridView: public GridView {
 protected:
-  DuneGridView m_dune_gv;
-  ConcreteIndexSet<DuneGridView> m_index_set;
+	DuneGridView m_dune_gv;
+	ConcreteIndexSet<DuneGridView> m_index_set;
 
 public:
-  /** Constructor */
-  explicit ConcreteGridView(const DuneGridView& dune_gv) :
-    m_dune_gv(dune_gv), m_index_set(&dune_gv.indexSet())
-  {}
+	/** Constructor */
+	explicit ConcreteGridView(const DuneGridView& dune_gv) :
+			m_dune_gv(dune_gv), m_index_set(&dune_gv.indexSet()) {
+	}
 
-  /** Access to the underlying Dune grid view object. Use at your own risk! */
-  const DuneGridView& duneGridView() const
-  { return m_dune_gv; }
-  /** Read-only access to the underlying Dune grid view object. */
-  DuneGridView& duneGridView()
-  { return m_dune_gv; }
+	/** Access to the underlying Dune grid view object. Use at your own risk! */
+	const DuneGridView& duneGridView() const {
+		return m_dune_gv;
+	}
+	/** Read-only access to the underlying Dune grid view object. */
+	DuneGridView& duneGridView() {
+		return m_dune_gv;
+	}
 
-  // virtual & grid() const
-  //   { return Concrete<const DuneGridView::Grid>(&m_dune_gv.grid()); }
+	// virtual & grid() const
+	//   { return Concrete<const DuneGridView::Grid>(&m_dune_gv.grid()); }
 
-  virtual const IndexSet& indexSet() const
-  { return m_index_set; }
+	virtual const IndexSet& indexSet() const {
+		return m_index_set;
+	}
 
-  virtual int size(int codim) const
-  { return m_dune_gv.size(codim); }
+	virtual int size(int codim) const {
+		return m_dune_gv.size(codim);
+	}
 
-  virtual int size(const Dune::GeometryType &type) const
-  { return m_dune_gv.size(type); }
+	virtual int size(const Dune::GeometryType &type) const {
+		return m_dune_gv.size(type);
+	}
 
-  virtual bool containsFace(const Entity<0>& e) const;
-  virtual bool containsEdge(const Entity<1>& e) const;
-  virtual bool containsVertex(const Entity<2>& e) const;
-  virtual EntityIterator<0>* faceIterator() const;
-  virtual EntityIterator<1>* edgeIterator() const;
-  virtual EntityIterator<2>* vertexIterator() const;
+	virtual bool containsFace(const Entity<0>& e) const;
+	virtual bool containsEdge(const Entity<1>& e) const;
+	virtual bool containsVertex(const Entity<2>& e) const;
+	virtual EntityIterator<0>* faceIterator() const;
+	virtual EntityIterator<1>* edgeIterator() const;
+	virtual EntityIterator<2>* vertexIterator() const;
 };
-
-
 
 } // namespace Bempp
 } // namespace ThreeD

@@ -25,25 +25,21 @@
 #include "entity_iterator.hpp"
 #include "entity_pointer.hpp"
 
-namespace Bempp
-{
-namespace ThreeD
-{
+namespace Bempp {
+namespace ThreeD {
 
 template<typename DuneEntity>
-inline EntityIterator<1>* ConcreteEntity<0, DuneEntity>::subEdgeIterator() const
-{
-  const int codim = 1;
-  typedef ConcreteSubentityIterator<DuneEntity, codim> ConcIterator;
-  return new ConcIterator(m_dune_entity);
+inline EntityIterator<1>* ConcreteEntity<0, DuneEntity>::subEdgeIterator() const {
+	const int codim = 1;
+	typedef ConcreteSubentityIterator<DuneEntity, codim> ConcIterator;
+	return new ConcIterator(m_dune_entity);
 }
 
 template<typename DuneEntity>
-inline EntityIterator<2>* ConcreteEntity<0, DuneEntity>::subVertexIterator() const
-{
-  const int codim = 2;
-  typedef ConcreteSubentityIterator<DuneEntity, codim> ConcIterator;
-  return new ConcIterator(m_dune_entity);
+inline EntityIterator<2>* ConcreteEntity<0, DuneEntity>::subVertexIterator() const {
+	const int codim = 2;
+	typedef ConcreteSubentityIterator<DuneEntity, codim> ConcIterator;
+	return new ConcIterator(m_dune_entity);
 }
 
 //  virtual SurfaceGridIntersectionIterator ileafbegin() const
@@ -79,19 +75,18 @@ inline EntityIterator<2>* ConcreteEntity<0, DuneEntity>::subVertexIterator() con
 //  }
 
 template<typename DuneEntity>
-inline EntityPointer<0>* ConcreteEntity<0, DuneEntity>::father() const
-{
-  typedef ConcreteEntityPointer<typename DuneEntity::EntityPointer> ConcPointer;
-  return new ConcPointer(m_dune_entity->father());
+inline EntityPointer<0>* ConcreteEntity<0, DuneEntity>::father() const {
+	typedef ConcreteEntityPointer<typename DuneEntity::EntityPointer> ConcPointer;
+	return new ConcPointer(m_dune_entity->father());
 }
 
 template<typename DuneEntity>
-inline EntityIterator<0>* ConcreteEntity<0, DuneEntity>::sonIterator(int maxlevel) const
-{
-  typedef typename DuneEntity::HierarchicIterator DuneIterator;
-  typedef ConcreteRangeEntityIterator<DuneIterator> ConcIterator;
-  return new ConcIterator(m_dune_entity->hbegin(maxlevel),
-                          m_dune_entity->hend(maxlevel));
+inline EntityIterator<0>* ConcreteEntity<0, DuneEntity>::sonIterator(
+		int maxlevel) const {
+	typedef typename DuneEntity::HierarchicIterator DuneIterator;
+	typedef ConcreteRangeEntityIterator<DuneIterator> ConcIterator;
+	return new ConcIterator(m_dune_entity->hbegin(maxlevel),
+			m_dune_entity->hend(maxlevel));
 }
 
 } // namespace Bempp

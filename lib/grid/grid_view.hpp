@@ -26,75 +26,68 @@
 #include "entity_iterator.hpp"
 #include "index_set.hpp"
 
-namespace Dune
-{
+namespace Dune {
 class GeometryType;
 }
 
-namespace Bempp
-{
-namespace ThreeD
-{
-template <typename DuneGridView>
-inline bool ConcreteGridView<DuneGridView>::containsFace(const Entity<0>& e) const
-{
-  const int codim = 0;
-  typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
-  typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
-  const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
-  return m_dune_gv.contains(ce.duneEntity());
+namespace Bempp {
+namespace ThreeD {
+template<typename DuneGridView>
+inline bool ConcreteGridView<DuneGridView>::containsFace(
+		const Entity<0>& e) const {
+	const int codim = 0;
+	typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
+	typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
+	const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
+	return m_dune_gv.contains(ce.duneEntity());
 }
 
-template <typename DuneGridView>
-inline bool ConcreteGridView<DuneGridView>::containsEdge(const Entity<1>& e) const
-{
-  const int codim = 1;
-  typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
-  typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
-  const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
-  return m_dune_gv.contains(ce.duneEntity());
+template<typename DuneGridView>
+inline bool ConcreteGridView<DuneGridView>::containsEdge(
+		const Entity<1>& e) const {
+	const int codim = 1;
+	typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
+	typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
+	const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
+	return m_dune_gv.contains(ce.duneEntity());
 }
 
-template <typename DuneGridView>
-inline bool ConcreteGridView<DuneGridView>::containsVertex(const Entity<2>& e) const
-{
-  const int codim = 2;
-  typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
-  typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
-  const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
-  return m_dune_gv.contains(ce.duneEntity());
+template<typename DuneGridView>
+inline bool ConcreteGridView<DuneGridView>::containsVertex(
+		const Entity<2>& e) const {
+	const int codim = 2;
+	typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
+	typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
+	const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
+	return m_dune_gv.contains(ce.duneEntity());
 }
 
-template <typename DuneGridView>
-inline EntityIterator<0>* ConcreteGridView<DuneGridView>::faceIterator() const
-{
-  const int codim = 0;
-  typedef typename DuneGridView::template Codim<codim>::Iterator DuneIterator;
-  typedef ConcreteRangeEntityIterator<DuneIterator> ConcIterator;
-  return new ConcIterator(m_dune_gv.template begin<codim>(),
-                          m_dune_gv.template end<codim>());
+template<typename DuneGridView>
+inline EntityIterator<0>* ConcreteGridView<DuneGridView>::faceIterator() const {
+	const int codim = 0;
+	typedef typename DuneGridView::template Codim<codim>::Iterator DuneIterator;
+	typedef ConcreteRangeEntityIterator<DuneIterator> ConcIterator;
+	return new ConcIterator(m_dune_gv.template begin<codim>(),
+			m_dune_gv.template end<codim>());
 }
 
-template <typename DuneGridView>
-inline EntityIterator<1>* ConcreteGridView<DuneGridView>::edgeIterator() const
-{
-  const int codim = 1;
-  typedef typename DuneGridView::template Codim<codim>::Iterator DuneIterator;
-  typedef ConcreteRangeEntityIterator<DuneIterator> ConcIterator;
-  return new ConcIterator(m_dune_gv.template begin<codim>(),
-                          m_dune_gv.template end<codim>());
+template<typename DuneGridView>
+inline EntityIterator<1>* ConcreteGridView<DuneGridView>::edgeIterator() const {
+	const int codim = 1;
+	typedef typename DuneGridView::template Codim<codim>::Iterator DuneIterator;
+	typedef ConcreteRangeEntityIterator<DuneIterator> ConcIterator;
+	return new ConcIterator(m_dune_gv.template begin<codim>(),
+			m_dune_gv.template end<codim>());
 }
 
-template <typename DuneGridView>
-inline EntityIterator<2>* ConcreteGridView<DuneGridView>::vertexIterator() const
-{
-  const int codim = 2;
-  typedef typename DuneGridView::template Codim<codim>::Iterator DuneIterator;
-  typedef ConcreteRangeEntityIterator<DuneIterator> ConcIterator;
-  return new ConcIterator(m_dune_gv.template begin<codim>(),
-                          m_dune_gv.template end<codim>());
+template<typename DuneGridView>
+inline EntityIterator<2>* ConcreteGridView<DuneGridView>::vertexIterator() const {
+	const int codim = 2;
+	typedef typename DuneGridView::template Codim<codim>::Iterator DuneIterator;
+	typedef ConcreteRangeEntityIterator<DuneIterator> ConcIterator;
+	return new ConcIterator(m_dune_gv.template begin<codim>(),
+			m_dune_gv.template end<codim>());
 }
-
 
 } // namespace Bempp
 } // namespace ThreeD

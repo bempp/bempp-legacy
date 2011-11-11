@@ -24,42 +24,38 @@
 #include "index_set_decl.hpp"
 #include "entity.hpp"
 
-namespace Bempp
-{
-namespace ThreeD
-{
+namespace Bempp {
 
 template<typename DuneGridView>
-inline IndexSet::IndexType ConcreteIndexSet<DuneGridView>::faceIndex(const Entity<0>& entity) const
-{
-  const int codim = 0;
-  typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
-  typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
-  const ConcEntity& ce = dynamic_cast<const ConcEntity&>(entity);
-  return m_dune_index_set->index(ce.duneEntity());
+inline IndexSet::IndexType ConcreteIndexSet<DuneGridView>::faceIndex(
+		const Entity<0>& entity) const {
+	const int codim = 0;
+	typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
+	typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
+	const ConcEntity& ce = dynamic_cast<const ConcEntity&>(entity);
+	return m_dune_index_set->index(ce.duneEntity());
 }
 
 template<typename DuneGridView>
-inline IndexSet::IndexType ConcreteIndexSet<DuneGridView>::edgeIndex(const Entity<1>& entity) const
-{
-  const int codim = 1;
-  typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
-  typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
-  const ConcEntity& ce = dynamic_cast<const ConcEntity&>(entity);
-  return m_dune_index_set->index(ce.duneEntity());
+inline IndexSet::IndexType ConcreteIndexSet<DuneGridView>::edgeIndex(
+		const Entity<1>& entity) const {
+	const int codim = 1;
+	typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
+	typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
+	const ConcEntity& ce = dynamic_cast<const ConcEntity&>(entity);
+	return m_dune_index_set->index(ce.duneEntity());
 }
 
 template<typename DuneGridView>
-inline IndexSet::IndexType ConcreteIndexSet<DuneGridView>::vertexIndex(const Entity<2>& entity) const
-{
-  const int codim = 2;
-  typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
-  typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
-  const ConcEntity& ce = dynamic_cast<const ConcEntity&>(entity);
-  return m_dune_index_set->index(ce.duneEntity());
+inline IndexSet::IndexType ConcreteIndexSet<DuneGridView>::vertexIndex(
+		const Entity<2>& entity) const {
+	const int codim = 2;
+	typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
+	typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
+	const ConcEntity& ce = dynamic_cast<const ConcEntity&>(entity);
+	return m_dune_index_set->index(ce.duneEntity());
 }
 
 } // namespace Bempp
-} // namespace ThreeD
 
 #endif

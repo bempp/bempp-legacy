@@ -29,39 +29,37 @@
 #include <stack> // fix a bug in foamgrid -- this header is not included where it should be
 #include <dune/foamgrid/foamgrid.hh>
 
-namespace Bempp
-{
-namespace ThreeD
-{
+namespace Bempp {
+namespace ThreeD {
 
 template<typename DuneGrid>
-inline GridView* ConcreteGrid<DuneGrid>::levelView(int level) const
-{ return new ConcreteGridView<typename DuneGrid::LevelGridView>
-      (m_dune_grid->levelView(level)); }
-
-template<typename DuneGrid>
-inline GridView* ConcreteGrid<DuneGrid>::leafView() const
-{ return new ConcreteGridView<typename DuneGrid::LeafGridView>
-      (m_dune_grid->leafView()); }
-
-template<typename DuneGrid>
-inline bool ConcreteGrid<DuneGrid>::mark(int refCount, const Entity<0>& e)
-{
-  /// FIXME: should we catch std::bad_cast or leave it to the user?
-  typedef typename DuneGrid::template Codim<0>::Entity DuneEntity;
-  typedef ConcreteEntity<0,DuneEntity> ConcEntity;
-  const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
-  return m_dune_grid->mark(refCount, ce.duneEntity());
+inline GridView* ConcreteGrid<DuneGrid>::levelView(int level) const {
+	return new ConcreteGridView<typename DuneGrid::LevelGridView>(
+			m_dune_grid->levelView(level));
 }
 
 template<typename DuneGrid>
-inline int ConcreteGrid<DuneGrid>::getMark(const Entity<0>& e) const
-{
-  /// FIXME: should we catch std::bad_cast or leave it to the user?
-  typedef typename DuneGrid::template Codim<0>::Entity DuneEntity;
-  typedef ConcreteEntity<0,DuneEntity> ConcEntity;
-  const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
-  return m_dune_grid->getMark(ce.duneEntity());
+inline GridView* ConcreteGrid<DuneGrid>::leafView() const {
+	return new ConcreteGridView<typename DuneGrid::LeafGridView>(
+			m_dune_grid->leafView());
+}
+
+template<typename DuneGrid>
+inline bool ConcreteGrid<DuneGrid>::mark(int refCount, const Entity<0>& e) {
+	/// FIXME: should we catch std::bad_cast or leave it to the user?
+	typedef typename DuneGrid::template Codim<0>::Entity DuneEntity;
+	typedef ConcreteEntity<0, DuneEntity> ConcEntity;
+	const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
+	return m_dune_grid->mark(refCount, ce.duneEntity());
+}
+
+template<typename DuneGrid>
+inline int ConcreteGrid<DuneGrid>::getMark(const Entity<0>& e) const {
+	/// FIXME: should we catch std::bad_cast or leave it to the user?
+	typedef typename DuneGrid::template Codim<0>::Entity DuneEntity;
+	typedef ConcreteEntity<0, DuneEntity> ConcEntity;
+	const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
+	return m_dune_grid->getMark(ce.duneEntity());
 }
 
 // Default grid typedefs
