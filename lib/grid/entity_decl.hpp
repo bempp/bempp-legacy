@@ -27,7 +27,6 @@
 #include <dune/grid/common/geometry.hh>
 
 namespace Bempp {
-namespace ThreeD {
 
 // Forward declarations
 class Geometry;
@@ -420,6 +419,5 @@ public:
 };
 
 } // namespace Bempp
-} // namespace ThreeD
 
 #endif

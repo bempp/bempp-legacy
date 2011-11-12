@@ -5,3 +5,9 @@ bempp.*
 .project
 *.DS_Store
 /nbproject/private/
+/contrib/dune-common/dune/common/.deps/
+/contrib/dune-common/lib/.deps/
+/contrib/dune-common/dune/common/test/.deps/
+/contrib/dune-common/dune/common/parallel/test/.deps/
+/contrib/dune-common/dune/common/.libs/
+/contrib/dune-common/lib/.libs/
