@@ -56,7 +56,7 @@ public:
  */
 template<typename DuneEntityPointer>
 class ConcreteEntityPointer: public EntityPointer<DuneEntityPointer::codimension> {
-protected:
+private:
 	typedef typename DuneEntityPointer::Entity DuneEntity;
 	DuneEntityPointer m_dune_entity_ptr;
 	ConcreteEntity<ConcreteEntityPointer::codimension, DuneEntity> m_entity;

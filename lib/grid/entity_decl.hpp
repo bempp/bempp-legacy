@@ -251,7 +251,7 @@ class ConcreteEntity: public Entity<codim> {
 	dune_static_assert((int)DuneEntity::codimension == (int)Entity<codim>::codimension,
 			"ConcreteEntity: codimension mismatch");
 
-protected:
+private:
 	const DuneEntity* m_dune_entity;
 	/** \internal Entity geometry. Updated on demand (on calling
 	 * geometry()), hence declared as mutable. */
@@ -302,7 +302,7 @@ class ConcreteEntity<0, DuneEntity> : public Entity<0> {
 	dune_static_assert((int)DuneEntity::codimension == (int)codimension,
 			"ConcreteEntity: codimension mismatch");
 
-protected:
+private:
 	const DuneEntity* m_dune_entity;
 	/** \internal Entity geometry. Updated on demand (on calling
 	 * geometry()), hence declared as mutable. */

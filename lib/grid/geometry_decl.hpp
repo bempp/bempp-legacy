@@ -48,7 +48,7 @@ public:
 
 template<typename DuneGeometry>
 class ConcreteGeometry: public Geometry {
-protected:
+private:
 	const DuneGeometry* m_dune_geometry;
 
 	void setDuneGeometry(const DuneGeometry* dune_geometry) {

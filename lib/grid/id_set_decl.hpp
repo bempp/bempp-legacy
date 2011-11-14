@@ -57,7 +57,7 @@ public:
  */
 template<typename DuneGrid, typename DuneIdSet>
 class ConcreteIdSet: public IdSet {
-protected:
+private:
 	const DuneIdSet* m_dune_id_set;
 
 public:

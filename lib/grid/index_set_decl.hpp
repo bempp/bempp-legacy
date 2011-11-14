@@ -80,7 +80,7 @@ class ConcreteIndexSet: public IndexSet {
 public:
 	typedef typename DuneGridView::IndexSet DuneIndexSet;
 
-protected:
+private:
 	const DuneIndexSet* m_dune_index_set;
 
 public:

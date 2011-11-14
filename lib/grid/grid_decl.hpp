@@ -143,7 +143,7 @@ public:
  */
 template<typename DuneGrid>
 class ConcreteGrid: public Grid {
-protected:
+private:
 	DuneGrid* m_dune_grid;
 	bool m_owns_dune_grid;
 	ConcreteIdSet<DuneGrid, typename DuneGrid::Traits::GlobalIdSet> m_global_id_set;

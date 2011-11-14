@@ -102,7 +102,7 @@ public:
 /** Wrapper of a Dune grid view of type DuneGridView. */
 template<typename DuneGridView>
 class ConcreteGridView: public GridView {
-protected:
+private:
 	DuneGridView m_dune_gv;
 	ConcreteIndexSet<DuneGridView> m_index_set;
 

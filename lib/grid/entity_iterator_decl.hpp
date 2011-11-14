@@ -75,7 +75,7 @@ public:
 template<typename DuneEntityIt>
 class ConcreteRangeEntityIterator: public EntityIterator<
 		DuneEntityIt::codimension> {
-protected:
+private:
 	DuneEntityIt m_begin, m_end, m_cur;
 	ConcreteEntity<ConcreteRangeEntityIterator::codimension,
 			typename DuneEntityIt::Entity> m_entity;
@@ -120,7 +120,7 @@ public:
 	typedef typename DuneEntity::template Codim<codim>::EntityPointer DuneSubentityPointer;
 	typedef typename DuneSubentityPointer::Entity DuneSubentity;
 
-protected:
+private:
 	const DuneEntity* m_dune_entity;
 	DuneSubentityPointer m_dune_subentity_ptr;
 	ConcreteEntity<ConcreteSubentityIterator::codimension, DuneSubentity> m_subentity;
