@@ -1,11 +1,19 @@
 cmake_minimum_required(VERSION 2.6)
 project(bempp)
 
-# Options (can be modified by user)
-option(WITH_TESTS "Compile unit tests (can be run with 'make test')" ON)
+# Module Path
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
+# Macros needed
+include(DuneUtils)
+include(BemppOptions)
+include(BemppFindDependencies)
+
+# Build external software
+add_subdirectory(contrib)
 
 # Main library
-add_subdirectory(lib) 
+add_subdirectory(lib)
 
 # Examples
 add_subdirectory(examples) 
