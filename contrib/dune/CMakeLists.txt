@@ -11,7 +11,7 @@ ExternalProject_Add(
 	DOWNLOAD_DIR ${CMAKE_SOURCE_DIR}/dune
 	URL http://www.dune-project.org/download/2.1/dune-grid-2.1.0.tar.gz
 	CONFIGURE_COMMAND ""
-	PATCH_COMMAND patch ${SOURCE_DIR}/dune/grid/utility/structuredgridfactory.hh < ${CMAKE_SOURCE_DIR}/patch/dune-grid.patch
+	PATCH_COMMAND patch ${CMAKE_SOURCE_DIR}/dune/dune-grid/dune/grid/utility/structuredgridfactory.hh < ${CMAKE_SOURCE_DIR}/patch/dune-grid.patch
 	BUILD_COMMAND ""
 	UPDATE_COMMAND ""
 	INSTALL_COMMAND ""
