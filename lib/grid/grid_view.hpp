@@ -18,74 +18,54 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_lib_grid_3d_grid_view_hpp
-#define bempp_lib_grid_3d_grid_view_hpp
+#ifndef bempp_lib_grid_grid_view_hpp
+#define bempp_lib_grid_grid_view_hpp
 
 #include "grid_view_decl.hpp"
 #include "entity.hpp"
 #include "entity_iterator.hpp"
 #include "index_set.hpp"
 
-namespace Dune {
-class GeometryType;
+namespace Bempp
+{
+
+template <typename DuneGridView>
+template <int codim>
+inline typename boost::disable_if_c<codim <= DuneGridView::dimension, bool>::type
+ConcreteGridView<DuneGridView>::containsEntityCodimN(const Entity<codim>& e) const
+{
+    throw std::logic_error("GridView::containsEntity(): invalid entity codimension");
 }
 
-namespace Bempp {
-template<typename DuneGridView>
-inline bool ConcreteGridView<DuneGridView>::containsFace(
-		const Entity<0>& e) const {
-	const int codim = 0;
-	typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
-	typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
-	const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
-	return m_dune_gv.contains(ce.duneEntity());
-}
-
-template<typename DuneGridView>
-inline bool ConcreteGridView<DuneGridView>::containsEdge(
-		const Entity<1>& e) const {
-	const int codim = 1;
-	typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
-	typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
-	const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
-	return m_dune_gv.contains(ce.duneEntity());
+template <typename DuneGridView>
+template <int codim>
+inline typename boost::enable_if_c<codim <= DuneGridView::dimension, bool>::type
+ConcreteGridView<DuneGridView>::containsEntityCodimN(const Entity<codim>& e) const
+{
+    typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
+    typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
+    const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
+    return m_dune_gv.contains(ce.duneEntity());
 }
 
 template<typename DuneGridView>
-inline bool ConcreteGridView<DuneGridView>::containsVertex(
-		const Entity<2>& e) const {
-	const int codim = 2;
-	typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
-	typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
-	const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
-	return m_dune_gv.contains(ce.duneEntity());
+template <int codim>
+inline typename boost::disable_if_c<codim <= DuneGridView::dimension, std::auto_ptr<EntityIterator<codim> > >::type
+ConcreteGridView<DuneGridView>::entityCodimNIterator() const
+{
+    throw std::logic_error("GridView::entityIterator(): invalid entity codimension");
 }
 
 template<typename DuneGridView>
-inline EntityIterator<0>* ConcreteGridView<DuneGridView>::faceIterator() const {
-	const int codim = 0;
-	typedef typename DuneGridView::template Codim<codim>::Iterator DuneIterator;
-	typedef ConcreteRangeEntityIterator<DuneIterator> ConcIterator;
-	return new ConcIterator(m_dune_gv.template begin<codim>(),
-			m_dune_gv.template end<codim>());
-}
-
-template<typename DuneGridView>
-inline EntityIterator<1>* ConcreteGridView<DuneGridView>::edgeIterator() const {
-	const int codim = 1;
-	typedef typename DuneGridView::template Codim<codim>::Iterator DuneIterator;
-	typedef ConcreteRangeEntityIterator<DuneIterator> ConcIterator;
-	return new ConcIterator(m_dune_gv.template begin<codim>(),
-			m_dune_gv.template end<codim>());
-}
-
-template<typename DuneGridView>
-inline EntityIterator<2>* ConcreteGridView<DuneGridView>::vertexIterator() const {
-	const int codim = 2;
-	typedef typename DuneGridView::template Codim<codim>::Iterator DuneIterator;
-	typedef ConcreteRangeEntityIterator<DuneIterator> ConcIterator;
-	return new ConcIterator(m_dune_gv.template begin<codim>(),
-			m_dune_gv.template end<codim>());
+template <int codim>
+inline typename boost::enable_if_c<codim <= DuneGridView::dimension, std::auto_ptr<EntityIterator<codim> > >::type
+ConcreteGridView<DuneGridView>::entityCodimNIterator() const
+{
+    typedef typename DuneGridView::template Codim<codim>::Iterator DuneIterator;
+    typedef ConcreteRangeEntityIterator<DuneIterator> ConcIterator;
+    return std::auto_ptr<EntityIterator<codim> >(
+               new ConcIterator(m_dune_gv.template begin<codim>(),
+                                m_dune_gv.template end<codim>()));
 }
 
 } // namespace Bempp

@@ -18,120 +18,123 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_lib_grid_3d_grid_decl_hpp
-#define bempp_lib_grid_3d_grid_decl_hpp
+#ifndef bempp_lib_grid_grid_decl_hpp
+#define bempp_lib_grid_grid_decl_hpp
 
 #include "id_set_decl.hpp"
 
-namespace Bempp {
+#include <memory>
+
+namespace Bempp
+{
 
 // Forward declarations
 template<int codim> class Entity;
 class GridView;
 
-/** \brief Abstract wrapper of a surface grid.
+/** \brief Abstract wrapper of a grid.
 
- Functions related to parallelisation are not wrapped yet.
+    Functions related to parallelisation are not wrapped yet.
  */
-class Grid {
+class Grid
+{
 public:
-	/// Destructor
-	virtual ~Grid() {
-	}
+    /** Destructor */
+    virtual ~Grid() {
+    }
 
-	/** @name Views @{ */
+    /** @name Views @{ */
 
-	/** \brief View for a grid level for All_Partition.
+    /** \brief View for a grid level for All_Partition. */
+    virtual std::auto_ptr<GridView> levelView(int level) const = 0;
 
-	 The caller is responsible for freeing the returned pointer. */
-	virtual GridView* levelView(int level) const = 0;
+    /** \brief View for the leaf grid for All_Partition. */
+    virtual std::auto_ptr<GridView> leafView() const = 0;
 
-	/** \brief View for the leaf grid for All_Partition.
+    /** @} @name Id sets @{ */
 
-	 The caller is responsible for freeing the returned pointer. */
-	virtual GridView* leafView() const = 0;
+    /// Reference to the grid's global id set
+    virtual const IdSet& globalIdSet() const = 0;
 
-	/** @} @name Id sets @{ */
+    /** @} @name Adaptivity and grid refinement @{ */
 
-	/// Reference to the grid's global id set
-	virtual const IdSet& globalIdSet() const = 0;
+    /** \brief Refine the grid refCount times using the default
+     refinement rule.
 
-	/** @} @name Adaptivity and grid refinement @{ */
+     This behaves like marking all elements for refinement and then
+     calling preAdapt, adapt and postAdapt. The state after
+     globalRefine is comparable to the state after postAdapt.
+     */
+    virtual void globalRefine(int refCount) = 0;
 
-	/** \brief Refine the grid refCount times using the default
-	 refinement rule.
+    /** \brief Marks an entity to be refined/coarsened in a subsequent adapt.
 
-	 This behaves like marking all elements for refinement and then
-	 calling preAdapt, adapt and postAdapt. The state after
-	 globalRefine is comparable to the state after postAdapt.
-	 */
-	virtual void globalRefine(int refCount) = 0;
+     \param[in] refCount Number of subdivisions that should be
+     applied. Negative value means coarsening.
 
-	/** \brief Marks an entity to be refined/coarsened in a subsequent adapt.
+     \param[in] e        Entity that should be marked
 
-	 \param[in] refCount Number of subdivisions that should be
-	 applied. Negative value means coarsening.
+     \return true if Entity was marked, false otherwise.
+     */
+    virtual bool mark(int refCount, const Entity<0>& e) = 0;
 
-	 \param[in] e        Entity that should be marked
+    /** \brief returns adaptation mark for given entity
 
-	 \return true if Entity was marked, false otherwise.
-	 */
-	virtual bool mark(int refCount, const Entity<0>& e) = 0;
+     \param[in] e   Entity for which adaptation mark should be determined
 
-	/** \brief returns adaptation mark for given entity
+     \return int adaptation mark currently set for given Entity e
+     */
+    virtual int getMark(const Entity<0>& e) const = 0;
 
-	 \param[in] e   Entity for which adaptation mark should be determined
+    /** \brief To be called after entities have been marked and before
+     adapt() is called.
 
-	 \return int adaptation mark currently set for given Entity e
-	 */
-	virtual int getMark(const Entity<0>& e) const = 0;
+     This sets the mightVanish flags of the elements for the next adapt call.
 
-	/** \brief To be called after entities have been marked and before
-	 adapt() is called.
+     \return true if an entity may be coarsened during a subsequent
+     adapt(), false otherwise.
+     */
+    virtual bool preAdapt() = 0;
 
-	 This sets the mightVanish flags of the elements for the next adapt call.
+    /** \brief Refine all positive marked leaf entities, coarsen all
+     negative marked entities if possible
 
-	 \return true if an entity may be coarsened during a subsequent
-	 adapt(), false otherwise.
-	 */
-	virtual bool preAdapt() = 0;
+     \return true if a least one entity was refined
 
-	/** \brief Refine all positive marked leaf entities, coarsen all
-	 negative marked entities if possible
+     The complete adaptation process works as follows:
 
-	 \return true if a least one entity was refined
+     - mark entities with the mark() method
+     - call preAdapt()
+     - if preAdapt() returned true: possibly save current solution
+     - call adapt()
+     - if adapt() returned true: possibly interpolate the (saved) solution
+     - call postAdapt()
+     */
+    virtual bool adapt() = 0;
 
-	 The complete adaptation process works as follows:
+    /** \brief To be called after grid has been adapted and
+     information left over by the adaptation has been processed.
 
-	 - mark entities with the mark() method
-	 - call preAdapt()
-	 - if preAdapt() returned true: possibly save current solution
-	 - call adapt()
-	 - if adapt() returned true: possibly interpolate the (saved) solution
-	 - call postAdapt()
-	 */
-	virtual bool adapt() = 0;
+     This removes the isNew flags of the elements from the last
+     adapt call.
+     */
+    virtual void postAdapt() = 0;
 
-	/** \brief To be called after grid has been adapted and
-	 information left over by the adaptation has been processed.
+    /** @} @name Others @{ */
 
-	 This removes the isNew flags of the elements from the last
-	 adapt call.
-	 */
-	virtual void postAdapt() = 0;
+    /** Dimension of the space containing the grid */
+    virtual int dimWorld() const = 0;
 
-	/** @} @name Others @{ */
+    /** \brief Maximum level defined in this grid.
 
-	/** \brief Maximum level defined in this grid.
+     Levels are numbered 0 ... maxLevel with 0 the coarsest level.
+     */
+    virtual int maxLevel() const = 0;
 
-	 Levels are numbered 0 ... maxLevel with 0 the coarsest level.
-	 */
-	virtual int maxLevel() const = 0;
+    /** Number of boundary segments within the macro grid */
+    virtual size_t numBoundarySegments() const = 0;
 
-	/** Number of boundary segments within the macro grid */
-	virtual size_t numBoundarySegments() const = 0;
-
-	/** @} */
+    /** @} */
 };
 
 /**
@@ -142,92 +145,96 @@ public:
  deleted in destructor.
  */
 template<typename DuneGrid>
-class ConcreteGrid: public Grid {
+class ConcreteGrid: public Grid
+{
 private:
-	DuneGrid* m_dune_grid;
-	bool m_owns_dune_grid;
-	ConcreteIdSet<DuneGrid, typename DuneGrid::Traits::GlobalIdSet> m_global_id_set;
+    DuneGrid* m_dune_grid;
+    bool m_owns_dune_grid;
+    ConcreteIdSet<DuneGrid, typename DuneGrid::Traits::GlobalIdSet> m_global_id_set;
 
 public:
-	/** Underlying Dune grid's type*/
-	typedef DuneGrid DuneGridType;
+    /** Underlying Dune grid's type*/
+    typedef DuneGrid DuneGridType;
 
-	/** Wrap a new Dune grid object (deleted in the destructor) */
-	ConcreteGrid() :
-			m_dune_grid(new DuneGrid), m_owns_dune_grid(true), m_global_id_set(
-					&m_dune_grid->globalIdSet()) {
-	}
+    /** Wrap a new Dune grid object (deleted in the destructor) */
+    ConcreteGrid() :
+        m_dune_grid(new DuneGrid), m_owns_dune_grid(true), m_global_id_set(
+            &m_dune_grid->globalIdSet()) {
+    }
 
-	/** Wrap an existing Dune grid object
-	 @param[in] own delete dune_grid in the destructor?
+    /** Wrap an existing Dune grid object
+     @param[in] own delete dune_grid in the destructor?
 
-	 \todo Perhaps this constructor should be removed; the user would then be
-	 forced to work completely in the framework of Bempp (all Dune grids managed
-	 by Bempp would be created by Bempp itself). Note that all other Dune objects
-	 created by this grid are automatically encapsulated by Bempp.
-	 */
+     \todo Perhaps this constructor should be removed; the user would then be
+     forced to work completely in the framework of Bempp (all Dune grids managed
+     by Bempp would be created by Bempp itself). Note that all other Dune objects
+     created by this grid are automatically encapsulated by Bempp.
+     */
 
-	explicit ConcreteGrid(DuneGrid* dune_grid, bool own = false) :
-			m_dune_grid(dune_grid), m_owns_dune_grid(own), m_global_id_set(
-					dune_grid ? &dune_grid->globalIdSet() : 0) // safety net
-	{
-	}
+    explicit ConcreteGrid(DuneGrid* dune_grid, bool own = false) :
+        m_dune_grid(dune_grid), m_owns_dune_grid(own), m_global_id_set(
+            dune_grid ? &dune_grid->globalIdSet() : 0) { // safety net
+    }
 
-	/// Destructor. Deletes the internal Dune Grid object.
-	~ConcreteGrid() {
-		if (m_owns_dune_grid)
-			delete m_dune_grid;
-	}
+    /// Destructor. Deletes the internal Dune Grid object.
+    ~ConcreteGrid() {
+        if (m_owns_dune_grid)
+            delete m_dune_grid;
+    }
 
-	/// Access the underlying Dune grid object. Use at your own risk!
-	const DuneGrid& duneGrid() const {
-		return *m_dune_grid;
-	}
-	DuneGrid& duneGrid() {
-		return *m_dune_grid;
-	}
+    /// Access the underlying Dune grid object. Use at your own risk!
+    const DuneGrid& duneGrid() const {
+        return *m_dune_grid;
+    }
+    DuneGrid& duneGrid() {
+        return *m_dune_grid;
+    }
 
-	virtual GridView* levelView(int level) const;
+    virtual std::auto_ptr<GridView> levelView(int level) const;
 
-	virtual GridView* leafView() const;
+    virtual std::auto_ptr<GridView> leafView() const;
 
-	virtual const IdSet& globalIdSet() const {
-		return m_global_id_set;
-	}
+    virtual const IdSet& globalIdSet() const {
+        return m_global_id_set;
+    }
 
-	virtual void globalRefine(int refCount) {
-		m_dune_grid->globalRefine(refCount);
-	}
+    virtual void globalRefine(int refCount) {
+        m_dune_grid->globalRefine(refCount);
+    }
 
-	virtual bool mark(int refCount, const Entity<0>& e);
+    virtual bool mark(int refCount, const Entity<0>& e);
 
-	virtual int getMark(const Entity<0>& e) const;
+    virtual int getMark(const Entity<0>& e) const;
 
-	virtual bool preAdapt() {
-		return m_dune_grid->preAdapt();
-	}
+    virtual bool preAdapt() {
+        return m_dune_grid->preAdapt();
+    }
 
-	virtual bool adapt() {
-		return m_dune_grid->adapt();
-	}
+    virtual bool adapt() {
+        return m_dune_grid->adapt();
+    }
 
-	virtual void postAdapt() {
-		m_dune_grid->postAdapt();
-	}
+    virtual void postAdapt() {
+        m_dune_grid->postAdapt();
+    }
 
-	virtual int maxLevel() const {
-		return m_dune_grid->maxLevel();
-	}
+    virtual int dimWorld() const {
+        return DuneGrid::dimensionworld;
+    }
 
-	virtual size_t numBoundarySegments() const {
-		return m_dune_grid->numBoundarySegments();
-	}
+    virtual int maxLevel() const {
+        return m_dune_grid->maxLevel();
+    }
+
+    virtual size_t numBoundarySegments() const {
+        return m_dune_grid->numBoundarySegments();
+    }
 
 private:
-	// Disable copy constructor and assignment operator
-	// (unclear what to do with the pointer to the grid)
-	ConcreteGrid(const ConcreteGrid&);
-	ConcreteGrid& operator =(const ConcreteGrid&);
+    // Disable copy constructor and assignment operator
+    // (unclear what to do with the pointer to the grid)
+    ConcreteGrid(const ConcreteGrid&);
+    ConcreteGrid& operator =(const ConcreteGrid&);
 };
 
 } // namespace Bempp

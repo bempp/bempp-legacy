@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 project(bempp)
+enable_language(Fortran) # for BLAS
 
 # Module Path
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)

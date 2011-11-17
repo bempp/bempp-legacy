@@ -18,42 +18,32 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_lib_grid_3d_index_set_hpp
-#define bempp_lib_grid_3d_index_set_hpp
+#ifndef bempp_lib_grid_index_set_hpp
+#define bempp_lib_grid_index_set_hpp
 
 #include "index_set_decl.hpp"
 #include "entity.hpp"
 
-namespace Bempp {
+namespace Bempp
+{
 
 template<typename DuneGridView>
-inline IndexSet::IndexType ConcreteIndexSet<DuneGridView>::faceIndex(
-		const Entity<0>& entity) const {
-	const int codim = 0;
-	typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
-	typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
-	const ConcEntity& ce = dynamic_cast<const ConcEntity&>(entity);
-	return m_dune_index_set->index(ce.duneEntity());
+template<int codim>
+inline typename boost::disable_if_c<(codim <= DuneGridView::dimension), IndexSet::IndexType>::type
+ConcreteIndexSet<DuneGridView>::entityCodimNIndex(const Entity<codim>& e) const
+{
+    throw std::logic_error("IndexSet::entityIndex(): invalid entity codimension");
 }
 
 template<typename DuneGridView>
-inline IndexSet::IndexType ConcreteIndexSet<DuneGridView>::edgeIndex(
-		const Entity<1>& entity) const {
-	const int codim = 1;
-	typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
-	typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
-	const ConcEntity& ce = dynamic_cast<const ConcEntity&>(entity);
-	return m_dune_index_set->index(ce.duneEntity());
-}
-
-template<typename DuneGridView>
-inline IndexSet::IndexType ConcreteIndexSet<DuneGridView>::vertexIndex(
-		const Entity<2>& entity) const {
-	const int codim = 2;
-	typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
-	typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
-	const ConcEntity& ce = dynamic_cast<const ConcEntity&>(entity);
-	return m_dune_index_set->index(ce.duneEntity());
+template<int codim>
+inline typename boost::enable_if_c<(codim <= DuneGridView::dimension), IndexSet::IndexType>::type
+ConcreteIndexSet<DuneGridView>::entityCodimNIndex(const Entity<codim>& e) const
+{
+    typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
+    typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
+    const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
+    return m_dune_index_set->index(ce.duneEntity());
 }
 
 } // namespace Bempp

@@ -18,85 +18,94 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_lib_grid_3d_index_set_decl_hpp
-#define bempp_lib_grid_3d_index_set_decl_hpp
+#ifndef bempp_lib_grid_index_set_decl_hpp
+#define bempp_lib_grid_index_set_decl_hpp
 
-namespace Bempp {
+namespace Bempp
+{
 
 // Forward declarations
 template<int codim> class Entity;
 
 /** Abstract wrapper of an index set */
-class IndexSet {
+class IndexSet
+{
 public:
-	/** Detructor */
-	virtual ~IndexSet() {
-	}
+    /** Detructor */
+    virtual ~IndexSet() {
+    }
 
-	/** Index type
+    /** Index type
 
-	 \internal Sadly, it is necessary to specify this type uniformly for all grid classes. 
-	 */
-	typedef unsigned int IndexType;
+     \internal Sadly, it is necessary to specify this type uniformly for all grid classes.
+     */
+    typedef unsigned int IndexType;
 
-	/** \brief Map face entity to index.
+    /** \brief Map entity of codimension 0 to index.
 
-	 The result of calling this method with an entity that is not
-	 in the index set is undefined.
+     The result of calling this method with an entity that is not
+     in the index set is undefined.
 
-	 \return An index in the range 0 ... (max number of entities in set - 1).
-	 */
-	virtual IndexType faceIndex(const Entity<0>& entity) const = 0;
-
-	/** \brief Map edge entity to index.
-
-	 The result of calling this method with an entity that is not
-	 in the index set is undefined.
-
-	 \return An index in the range 0 ... (max number of entities in set - 1).
-	 */
-	virtual IndexType edgeIndex(const Entity<1>& entity) const = 0;
-
-	/** \brief Map vertex entity to index.
-
-	 The result of calling this method with an entity that is not
-	 in the index set is undefined.
-
-	 \return An index in the range 0 ... (max number of entities in set - 1).
-	 */
-	virtual IndexType vertexIndex(const Entity<2>& entity) const = 0;
+     \return An index in the range 0 ... (max number of entities in set - 1).
+     */
+    virtual IndexType entityIndex(const Entity<0>& e) const = 0;
+    /** \brief Map entity of codimension 1 to index. */
+    virtual IndexType entityIndex(const Entity<1>& e) const = 0;
+    /** \brief Map entity of codimension 2 to index. */
+    virtual IndexType entityIndex(const Entity<2>& e) const = 0;
+    /** \brief Map entity of codimension 3 to index. */
+    virtual IndexType entityIndex(const Entity<3>& e) const = 0;
 };
 
 /** \brief Wrapper of the index set specific to a Dune grid view class DuneGridView
 
- \internal The grid view class is used as a template parameter, rather than an
- index set class, because the latter doesn't provide information about the
+ \internal The grid view class, rather than an index set class, is used as a
+ template parameter because the latter doesn't provide information about the
  entity type.
 
- For consistency with IdSet it would be possible to take as parameters DuneGrid and DuneIndexSet instead.
+ For consistency with IdSet it would be possible to take as parameters
+ DuneGrid and DuneIndexSet instead.
  */
 template<typename DuneGridView>
-class ConcreteIndexSet: public IndexSet {
+class ConcreteIndexSet: public IndexSet
+{
 public:
-	typedef typename DuneGridView::IndexSet DuneIndexSet;
+    typedef typename DuneGridView::IndexSet DuneIndexSet;
 
 private:
-	const DuneIndexSet* m_dune_index_set;
+    const DuneIndexSet* m_dune_index_set;
 
 public:
-	/**  Constructor */
-	explicit ConcreteIndexSet(const DuneIndexSet* dune_index_set) :
-			m_dune_index_set(dune_index_set) {
-	}
+    /**  Constructor */
+    explicit ConcreteIndexSet(const DuneIndexSet* dune_index_set) :
+        m_dune_index_set(dune_index_set) {
+    }
 
-	/** Read-only access to the underlying Dune index set */
-	const DuneIndexSet& duneIndexSet() const {
-		return *m_dune_index_set;
-	}
+    /** Read-only access to the underlying Dune index set */
+    const DuneIndexSet& duneIndexSet() const {
+        return *m_dune_index_set;
+    }
 
-	virtual IndexType faceIndex(const Entity<0>& entity) const;
-	virtual IndexType edgeIndex(const Entity<1>& entity) const;
-	virtual IndexType vertexIndex(const Entity<2>& entity) const;
+    virtual IndexType entityIndex(const Entity<0>& e) const {
+        return entityCodimNIndex(e);
+    }
+    virtual IndexType entityIndex(const Entity<1>& e) const {
+        return entityCodimNIndex(e);
+    }
+    virtual IndexType entityIndex(const Entity<2>& e) const {
+        return entityCodimNIndex(e);
+    }
+    virtual IndexType entityIndex(const Entity<3>& e) const {
+        return entityCodimNIndex(e);
+    }
+
+private:
+    template <int codim>
+    typename boost::disable_if_c<codim <= DuneGridView::dimension, IndexType>::type
+    entityCodimNIndex(const Entity<codim>& e) const;
+    template <int codim>
+    typename boost::enable_if_c<codim <= DuneGridView::dimension, IndexType>::type
+    entityCodimNIndex(const Entity<codim>& e) const;
 };
 
 } // namespace Bempp

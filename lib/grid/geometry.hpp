@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_lib_grid_3d_geometry_hpp
-#define bempp_lib_grid_3d_geometry_hpp
+#ifndef bempp_lib_grid_geometry_hpp
+#define bempp_lib_grid_geometry_hpp
 
 #include "geometry_decl.hpp"
 

@@ -18,47 +18,34 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_lib_grid_3d_id_set_hpp
-#define bempp_lib_grid_3d_id_set_hpp
+#ifndef bempp_lib_grid_id_set_hpp
+#define bempp_lib_grid_id_set_hpp
 
 #include "id_set_decl.hpp"
 #include "entity.hpp"
 
-namespace Bempp {
+#include <stdexcept>
+
+namespace Bempp
+{
 
 template<typename DuneGrid, typename DuneIdSet>
-inline IdSet::IdType ConcreteIdSet<DuneGrid, DuneIdSet>::faceId(
-		const Entity<0>& entity) const {
-	// errors here -> ConcreteIdSet needs to be passed both DuneGrid and IdSet (bc. DuneGrid has two id sets -- Global and Local -- but those don't provide info abouyt entity type)
-	// for a start maybe it's better to comment out these things.
-	const int codim = 0;
-	typedef typename DuneGrid::template Codim<codim>::Entity DuneEntity;
-	typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
-	const ConcEntity& ce = dynamic_cast<const ConcEntity&>(entity);
-	return m_dune_id_set->id(ce.duneEntity());
-	return 0;
+template<int codim>
+inline typename boost::disable_if_c<(codim <= DuneGrid::dimension), IdSet::IdType>::type
+ConcreteIdSet<DuneGrid, DuneIdSet>::entityCodimNId(const Entity<codim>& e) const
+{
+    throw std::logic_error("IdSet::entityId(): invalid entity codimension");
 }
 
 template<typename DuneGrid, typename DuneIdSet>
-inline IdSet::IdType ConcreteIdSet<DuneGrid, DuneIdSet>::edgeId(
-		const Entity<1>& entity) const {
-	const int codim = 1;
-	typedef typename DuneGrid::template Codim<codim>::Entity DuneEntity;
-	typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
-	const ConcEntity& ce = dynamic_cast<const ConcEntity&>(entity);
-	return m_dune_id_set->id(ce.duneEntity());
-	return 0;
-}
-
-template<typename DuneGrid, typename DuneIdSet>
-inline IdSet::IdType ConcreteIdSet<DuneGrid, DuneIdSet>::vertexId(
-		const Entity<2>& entity) const {
-	const int codim = 2;
-	typedef typename DuneGrid::template Codim<codim>::Entity DuneEntity;
-	typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
-	const ConcEntity& ce = dynamic_cast<const ConcEntity&>(entity);
-	return m_dune_id_set->id(ce.duneEntity());
-	return 0;
+template<int codim>
+inline typename boost::enable_if_c<(codim <= DuneGrid::dimension), IdSet::IdType>::type
+ConcreteIdSet<DuneGrid, DuneIdSet>::entityCodimNId(const Entity<codim>& e) const
+{
+    typedef typename DuneGrid::template Codim<codim>::Entity DuneEntity;
+    typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
+    const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
+    return m_dune_id_set->id(ce.duneEntity());
 }
 
 } // namespace Bempp

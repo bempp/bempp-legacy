@@ -18,10 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_lib_grid_3d_entity_pointer_decl_hpp
-#define bempp_lib_grid_3d_entity_pointer_decl_hpp
+#ifndef bempp_lib_grid_entity_pointer_decl_hpp
+#define bempp_lib_grid_entity_pointer_decl_hpp
 
-namespace Bempp {
+namespace Bempp
+{
 
 // Forward declarations
 template<int codim> class Entity;
@@ -35,19 +36,20 @@ template<int codim> class Entity;
  a reference.
  */
 template<int codim>
-class EntityPointer {
+class EntityPointer
+{
 public:
-	/** Destructor */
-	virtual ~EntityPointer() {
-	}
+    /** Destructor */
+    virtual ~EntityPointer() {
+    }
 
-	/** Entity codimension */
-	enum {
-		codimension = codim
-	};
+    /** Entity codimension */
+    enum {
+        codimension = codim
+    };
 
-	/** Read-only access to the underlying entity */
-	virtual const Entity<codim>& entity() const = 0;
+    /** Read-only access to the underlying entity */
+    virtual const Entity<codim>& entity() const = 0;
 };
 
 /**
@@ -55,26 +57,27 @@ public:
  type DuneEntity.
  */
 template<typename DuneEntityPointer>
-class ConcreteEntityPointer: public EntityPointer<DuneEntityPointer::codimension> {
+class ConcreteEntityPointer: public EntityPointer<DuneEntityPointer::codimension>
+{
 private:
-	typedef typename DuneEntityPointer::Entity DuneEntity;
-	DuneEntityPointer m_dune_entity_ptr;
-	ConcreteEntity<ConcreteEntityPointer::codimension, DuneEntity> m_entity;
+    typedef typename DuneEntityPointer::Entity DuneEntity;
+    DuneEntityPointer m_dune_entity_ptr;
+    ConcreteEntity<ConcreteEntityPointer::codimension, DuneEntity> m_entity;
 
-	void updateEntity() {
-		m_entity.setDuneEntity(&*m_dune_entity_ptr);
-	}
+    void updateEntity() {
+        m_entity.setDuneEntity(&*m_dune_entity_ptr);
+    }
 
 public:
-	/** Constructor */
-	explicit ConcreteEntityPointer(const DuneEntityPointer& dune_entity_pointer) :
-			m_dune_entity_ptr(dune_entity_pointer) {
-		updateEntity();
-	}
+    /** Constructor */
+    explicit ConcreteEntityPointer(const DuneEntityPointer& dune_entity_pointer) :
+        m_dune_entity_ptr(dune_entity_pointer) {
+        updateEntity();
+    }
 
-	virtual const Entity<DuneEntityPointer::codimension>& entity() const {
-		return m_entity;
-	}
+    virtual const Entity<DuneEntityPointer::codimension>& entity() const {
+        return m_entity;
+    }
 };
 
 } // namespace Bempp

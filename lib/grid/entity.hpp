@@ -18,27 +18,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_lib_grid_3d_entity_hpp
-#define bempp_lib_grid_3d_entity_hpp
+#ifndef bempp_lib_grid_entity_hpp
+#define bempp_lib_grid_entity_hpp
 
 #include "entity_decl.hpp"
 #include "entity_iterator.hpp"
 #include "entity_pointer.hpp"
 
-namespace Bempp {
+namespace Bempp
+{
 
 template<typename DuneEntity>
-inline EntityIterator<1>* ConcreteEntity<0, DuneEntity>::subEdgeIterator() const {
-	const int codim = 1;
-	typedef ConcreteSubentityIterator<DuneEntity, codim> ConcIterator;
-	return new ConcIterator(m_dune_entity);
+template<int codimSub>
+inline typename boost::disable_if_c<(codimSub <= DuneEntity::dimension), std::auto_ptr<EntityIterator<codimSub> > >::type
+ConcreteEntity<0, DuneEntity>::subEntityCodimNIterator() const
+{
+    throw std::logic_error("Entity::subEntityIterator(): invalid subentity codimension");
 }
 
 template<typename DuneEntity>
-inline EntityIterator<2>* ConcreteEntity<0, DuneEntity>::subVertexIterator() const {
-	const int codim = 2;
-	typedef ConcreteSubentityIterator<DuneEntity, codim> ConcIterator;
-	return new ConcIterator(m_dune_entity);
+template<int codimSub>
+inline typename boost::enable_if_c<(codimSub <= DuneEntity::dimension), std::auto_ptr<EntityIterator<codimSub> > >::type
+ConcreteEntity<0, DuneEntity>::subEntityCodimNIterator() const
+{
+    typedef ConcreteSubentityIterator<DuneEntity, codimSub> ConcIterator;
+    return std::auto_ptr<EntityIterator<codimSub> >(new ConcIterator(m_dune_entity));
 }
 
 //  virtual SurfaceGridIntersectionIterator ileafbegin() const
@@ -74,18 +78,21 @@ inline EntityIterator<2>* ConcreteEntity<0, DuneEntity>::subVertexIterator() con
 //  }
 
 template<typename DuneEntity>
-inline EntityPointer<0>* ConcreteEntity<0, DuneEntity>::father() const {
-	typedef ConcreteEntityPointer<typename DuneEntity::EntityPointer> ConcPointer;
-	return new ConcPointer(m_dune_entity->father());
+std::auto_ptr<EntityPointer<0> > ConcreteEntity<0, DuneEntity>::father() const
+{
+    typedef ConcreteEntityPointer<typename DuneEntity::EntityPointer> ConcPointer;
+    return std::auto_ptr<EntityPointer<0> >(new ConcPointer(m_dune_entity->father()));
 }
 
 template<typename DuneEntity>
-inline EntityIterator<0>* ConcreteEntity<0, DuneEntity>::sonIterator(
-		int maxlevel) const {
-	typedef typename DuneEntity::HierarchicIterator DuneIterator;
-	typedef ConcreteRangeEntityIterator<DuneIterator> ConcIterator;
-	return new ConcIterator(m_dune_entity->hbegin(maxlevel),
-			m_dune_entity->hend(maxlevel));
+std::auto_ptr<EntityIterator<0> > ConcreteEntity<0, DuneEntity>::sonIterator(
+    int maxlevel) const
+{
+    typedef typename DuneEntity::HierarchicIterator DuneIterator;
+    typedef ConcreteRangeEntityIterator<DuneIterator> ConcIterator;
+    return std::auto_ptr<EntityIterator<0> >(
+               new ConcIterator(m_dune_entity->hbegin(maxlevel),
+                                m_dune_entity->hend(maxlevel)));
 }
 
 } // namespace Bempp

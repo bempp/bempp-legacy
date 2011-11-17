@@ -1,8 +1,10 @@
 # Find all source and header files
-file(GLOB_RECURSE lib_sources *.cpp)
-file(GLOB_RECURSE lib_headers *.hpp)
+file(GLOB_RECURSE LIB_SOURCES *.cpp)
+file(GLOB_RECURSE LIB_HEADERS *.hpp)
 
-add_library(bempp SHARED ${lib_sources})
+# Headers are ignored by make, but their list is used by IDEs
+# like Qt Creator and Visual Studio to generate project file list.
+add_library(bempp SHARED ${LIB_SOURCES} ${LIB_HEADERS})
 
 # Add a target to generate API documentation with Doxygen
 find_package(Doxygen)
@@ -23,5 +25,5 @@ install(TARGETS bempp
   ARCHIVE DESTINATION lib)
 
 # Install header files
-install(FILES ${lib_headers}
+install(FILES ${LIB_HEADERS}
   DESTINATION include/bempp)

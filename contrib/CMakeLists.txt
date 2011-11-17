@@ -1,2 +1,4 @@
-add_subdirectory(dune)
+if (WITH_DUNE)
+  add_subdirectory(dune)
+endif ()
 
