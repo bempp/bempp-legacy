@@ -1,4 +1,18 @@
-if (WITH_DUNE)
-  add_subdirectory(dune)
-endif ()
+cmake_minimum_required (VERSION 2.8)
+project (contrib)
+
+# Set Cache Variables
+set (WITH_DUNE ON CACHE BOOL "Include Dune?")
+
+IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  SET(CMAKE_INSTALL_PREFIX
+    "${CMAKE_SOURCE_DIR}" CACHE PATH "Install prefix" FORCE
+    )
+ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+
+
+
+# Add directories 
+
+add_subdirectory(dune)
 

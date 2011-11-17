@@ -1,0 +1,88 @@
+# -*- Makefile -*-
+# $Id: sourcescheck 5183 2008-04-27 17:37:08Z christi $
+
+headercheck_PATTERN = *.hh
+
+# set 
+# headercheck_IGNORE = foo.hh
+# to ignore foo.hh
+
+hctest.o: hctest.cc
+	$(CXX) -I$(top_builddir) -I$(top_srcdir) -DHEADERCHECK \
+	  $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) \
+	  $(DUNEMPICPPFLAGS) $(ALL_PKG_CPPFLAGS) -c -o $@ $<
+
+headercheck:
+	@if test "x$V" = "x"; then \
+      SILENTSTR='V=$(AM_DEFAULT_VERBOSITY)' ; \
+    fi; \
+    if test "x$SILENT" = "x1"; then \
+      SILENTSTR='V=0' ; \
+    fi; \
+    if test "x$SILENT" = "x0"; then \
+      SILENTSTR='V=1' ; \
+    fi; \
+    if test x"$$HEADER" = "x"; then \
+	  $(MAKE) $$SILENTSTR $(AM_MAKEFLAGS) headercheck-recursive; \
+	else \
+	  $(MAKE) $$SILENTSTR $(AM_MAKEFLAGS) headercheck-am; \
+	fi
+
+headercheck-am:
+	@if test x"$$HEADER" != "x"; then \
+	  list="$$HEADER"; \
+	else \
+	  pushd "$(srcdir)" > /dev/null; \
+	  list=`echo $(headercheck_PATTERN)`; \
+	  popd > /dev/null; \
+	fi; \
+    test -z "$$NO_CONFIG_H" && NO_CONFIG_H=0; \
+	test "$$list" != "$(headercheck_PATTERN)" || exit 0; \
+	for f in $$list; do \
+	echo "$(headercheck_IGNORE)" | tr ' ' '\n' | grep -q "$$f"; \
+	  if echo "$(headercheck_IGNORE)" | tr ' ' '\n' | grep -q "$$f"; then continue; fi; \
+	  HEADER="$(subdir)/$$f"; \
+	  echo "checking $$HEADER"; \
+	  CCFILE=hctest.cc; \
+	  OFILE=hctest.o; \
+	  LOGFILE=hctest.log; \
+	  rm -f $$CCFILE; \
+	  test $$NO_CONFIG_H -ne 0 && echo "    without config.h" \
+	    || echo "#include <config.h>" > $$CCFILE; \
+	  echo "#include <$${HEADER}>" >> $$CCFILE; \
+	  echo "#include <$${HEADER}>" >> $$CCFILE; \
+	  echo "int main () { return 0; }" >> $$CCFILE; \
+	  make 	$$OFILE > $$LOGFILE 2>&1; \
+	  SUCCESS=$$?; \
+	  if ! (test $$SUCCESS -eq 0 && test -e $$OFILE); then \
+	    echo "Error in $$HEADER"; \
+            test $V -ne 1 && echo "run with V=1 to show details" || cat $$LOGFILE; \
+	  fi; \
+	  rm -f $$OFILE; \
+	  rm -f $$CCFILE; \
+	  rm -f $$LOGFILE; \
+	  test $$SUCCESS -eq 0 || exit $$SUCCESS; \
+	done
+
+headercheck-recursive:
+	@set fnord $$MAKEFLAGS; amf=$$2; \
+	dot_seen=no; \
+	target=`echo $@ | sed s/-recursive//`; \
+	list='$(DIST_SUBDIRS)'; for subdir in $$list; do \
+	  echo "Making $$target in $(subdir)/$$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    dot_seen=yes; \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	done; \
+	if test "$$dot_seen" = "no"; then \
+	  $(MAKE) $(AM_MAKEFLAGS) "$$target-am" || exit 1; \
+	fi; test -z "$$fail"
+
+.PHONY: headercheck headercheck-recursive headercheck-am
+
+# vim:set filetype=automake:
