@@ -1,5 +1,5 @@
-#ifndef bempp_lib_grid_grid_factory_hpp
-#define bempp_lib_grid_grid_factory_hpp
+#ifndef bempp_grid_factory_hpp
+#define bempp_grid_factory_hpp
 
 #include "structured_grid_factory.hpp"
 #include "common.hpp"
