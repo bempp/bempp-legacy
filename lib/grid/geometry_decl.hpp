@@ -22,6 +22,7 @@
 #define bempp_lib_grid_geometry_decl_hpp
 
 #include "geometry_type_decl.hpp"
+#include "common.hpp"
 
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
@@ -34,21 +35,6 @@ namespace Bempp
 class Geometry
 {
 public:
-    //! Numeric type of coordinates
-    typedef double ctype;
-
-//  //! Type of local coordinates
-//  typedef Dune::FieldVector<ctype, dimWorld - 1> LocalCoordinate;
-
-//  //! Type of global coordinates
-//  typedef Dune::FieldVector<ctype, dimWorld> GlobalCoordinate;
-
-//  //! Type of Jacobian (also of Jacobian inverse transposed)
-//  typedef Dune::FieldMatrix<ctype, dimWorld, dimWorld - 1> Jacobian;
-
-//  //! Type of Jacobian transposed
-//  typedef Dune::FieldMatrix<ctype, dimWorld - 1, dimWorld> JacobianTransposed;
-
     /** Destructor */
     virtual ~Geometry() {}
 
@@ -194,14 +180,6 @@ private:
     template<int codim, typename DuneEntity> friend class ConcreteEntity;
 
 public:
-
-//  // Due to C++'s name lookup rules we need to repeat these typedefs.
-//  typedef typename Geometry<dimWorld>::ctype ctype;
-//  typedef typename Geometry<dimWorld>::LocalCoordinate LocalCoordinate;
-//  typedef typename Geometry<dimWorld>::GlobalCoordinate GlobalCoordinate;
-//  typedef typename Geometry<dimWorld>::Jacobian Jacobian;
-//  typedef typename Geometry<dimWorld>::JacobianTransposed JacobianTransposed;
-
     /** Constructor from a pointer to DuneGeometry */
     explicit ConcreteGeometry(const DuneGeometry* dune_geometry) :
         m_dune_geometry(dune_geometry) {}

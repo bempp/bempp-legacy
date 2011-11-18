@@ -38,40 +38,30 @@ static void insertVertices(GridFactory<GridType>& factory,
 #include "grid/entity_iterator.hpp"
 #include "grid/geometry.hpp"
 #include "grid/grid.hpp"
+#include "grid/grid_factory.hpp"
 #include "grid/grid_view.hpp"
 
 using namespace Bempp;
 
 int main()
 {
-    // Grid type and dimensions
-    typedef DefaultGrid::DuneGridType DuneGrid;
-    typedef Dune::StructuredGridFactory<DuneGrid> StructGridFactory;
-    typedef DuneGrid::ctype ctype;
+    // Create a structured grid
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+
     const int dimGrid = 2;
-    const int dimWorld = 3;
+    arma::Col<ctype> lowerLeft(dimGrid);
+    arma::Col<ctype> upperRight(dimGrid);
+    arma::Col<unsigned int> nElements(dimGrid);
+    lowerLeft.fill(0);
+    upperRight.fill(1);
+    nElements(0) = 2;
+    nElements(1) = 3;
 
-    // Construct a Dune structured grid.
-    // Currently this procedure is not encapsulated in Bempp.
-    // Such encapsulation would be much easier if
-    // StructuredGridFactory::createSimplexGrid() returned a standard pointer rather
-    // than a shared pointer, because Bempp::ThreeD::Grid doesn't have a place to
-    // store the shared pointer.
-
-    const Dune::FieldVector<ctype, dimWorld> lowerLeft(0);
-    const Dune::FieldVector<ctype, dimWorld> upperRight(1);
-    Dune::array<unsigned int, dimGrid> nElements;
-    nElements[0] = 2;
-    nElements[1] = 3;
-
-    Dune::shared_ptr<DuneGrid> duneGrid =
-        StructGridFactory::createSimplexGrid(lowerLeft, upperRight, nElements);
-
-    // Wrap the grid in a Bempp object
-    DefaultGrid grid(duneGrid.get());
+    std::auto_ptr<Grid> grid(GridFactory::createStructuredGrid(params, lowerLeft, upperRight, nElements));
 
     // Create a leaf view
-    std::auto_ptr<GridView> leafGridView(grid.leafView());
+    std::auto_ptr<GridView> leafGridView(grid->leafView());
 
     {
         std::cout << "Iterating over faces..." << std::endl;
