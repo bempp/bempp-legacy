@@ -1,6 +1,8 @@
 include_directories ("${PROJECT_SOURCE_DIR}/lib")
 add_executable(traversal traversal.cpp)
 add_executable(traversal_benchmark traversal_benchmark.cpp)
+add_executable(gmsh_import gmsh_import.cpp)
 target_link_libraries(traversal bempp dunecommon dunegrid)
 target_link_libraries(traversal_benchmark bempp dunecommon dunegrid)
-
+target_link_libraries(gmsh_import bempp dunecommon dunegrid)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/head.gmsh DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
