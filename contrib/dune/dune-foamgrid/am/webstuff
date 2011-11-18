@@ -1,0 +1,50 @@
+# -*- makefile -*-
+# $Id: webstuff 5811 2010-01-12 19:01:31Z christi $
+
+## rules to create HTML-pages from wml-files with additional magic to
+## possibly use the layout of the Dune-homepage
+
+# if DUNEWEBDIR is set to the dune-web directory the layout and
+# install-stuff from that place will be used
+
+# CURDIR should be defined in the same way as in dune-web
+
+####
+# how to run wml
+if DUNEWEB
+WMLCMD = cd $(DUNEWEBDIR) && @WML@ --nocd -DROOT=$(BASEDIR)
+else
+WMLCMD = cd $(DUNE_COMMON_ROOT)/doc && @WML@ --nocd
+endif
+
+####
+# how to build html files
+if WML
+.wml.html:
+	$(WMLCMD) -I $(abs_srcdir) $(abs_builddir)/$< -o $(abs_builddir)/$@
+endif
+
+####
+# howto install into the webpage
+if DUNEWEB
+web-install-default: doc
+	if test -d $(DUNEWEBDIR) && test -r $(DUNEWEBDIR)/Make.global ; then \
+	  for DIR in $(SUBDIRS) ; do \
+	    $(MAKE) -C $$DIR web-install || exit 1; \
+	  done ; \
+	  $(MAKE) -f $(DUNEWEBDIR)/Make.global \
+            EXTRAINSTALL="$(EXTRAINSTALL)" CURDIR="$(CURDIR)" install ; \
+	fi
+else
+web-install-default:
+endif
+
+####
+# how to clean up
+web-build: $(PAGES)
+web-clean:
+	-test -z $(PAGES) || rm -f $(PAGES)
+
+doc-clean-local: web-clean
+web-install-local: web-install-default
+doc-local: web-build

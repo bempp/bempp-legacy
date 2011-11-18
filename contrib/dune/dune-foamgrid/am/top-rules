@@ -1,0 +1,39 @@
+# -*-makefile-*-
+
+ACLOCAL_AMFLAGS=@ACLOCAL_AMFLAGS@
+DUNECONTROL=@DUNE_COMMON_ROOT@/bin/dunecontrol
+
+sourcescheck_NOSOURCES = aclocal.m4 dependencies.m4
+
+all-am: dependencies.m4
+
+@DUNE_MOD_NAME@.m4: dune.module
+	cd $(srcdir) && $(DUNECONTROL) --only=@DUNE_MOD_NAME@ m4create
+
+moduledir = $(libdir)/dunecontrol/@DUNE_MOD_NAME@
+module_DATA = dune.module
+
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = @DUNE_MOD_NAME@.pc
+
+maintainer-clean-local: top-clean
+
+# we use LT_OUTPUT, thus we might have a config.lt file -- remove it!
+distclean-libtool:
+	-rm -f libtool config.lt
+
+top-clean:
+	rm -f dependencies.m4
+
+# link dune.css
+if DUNEWEB
+doc-local: css-local
+doc-clean: css-clean
+
+css-local: dune.css
+css-clean:
+	rm -f dune.css
+
+dune.css:
+	$(LN_S) $(DUNEWEBDIR)/dune.css
+endif

@@ -1,0 +1,19 @@
+# -*- Makefile -*-
+# $Id: global-rules 5784 2009-12-14 19:51:06Z christi $
+
+#
+# this file should be included into any Makefile.am so that we can
+# easily introduce new global rules. DO NOT OVERUSE!
+#
+
+# add "sourcescheck"-target testing if all source files are mentioned
+include $(top_srcdir)/am/sourcescheck
+
+# check consistency of the headers (see FS#394)
+include $(top_srcdir)/am/headercheck
+
+# add "check-log"-target to create automated build logs
+include $(top_srcdir)/am/checklog
+
+# add "doc"-target to create and clean documentation
+include $(top_srcdir)/am/documentation

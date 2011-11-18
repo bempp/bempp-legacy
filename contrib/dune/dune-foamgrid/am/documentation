@@ -1,0 +1,78 @@
+# -*- Makefile -*-
+# $Id: global-rules 5267 2008-09-10 10:45:42Z christi $
+
+maintainer-clean-local: doc-clean-am
+
+###
+# build doc / web-install recursively
+doc-clean-am: clean-am doc-clean-documentation doc-clean-local
+doc-am: doc-all-documentation doc-local
+web-install-am: web-install-local
+
+doc-local:
+doc-clean-local:
+web-install-local:
+
+web-install: web-install-recursive
+doc: doc-recursive
+doc-clean: doc-clean-recursive
+
+web-install-recursive \
+doc-clean-recursive \
+doc-recursive:
+	@set fnord $$MAKEFLAGS; amf=$$2; \
+	dot_seen=no; \
+	target=`echo $@ | sed s/-recursive//`; \
+	list='$(DIST_SUBDIRS)'; for subdir in $$list; do \
+	  echo "Making $$target in $(subdir)/$$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    dot_seen=yes; \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	done; \
+	if test "$$dot_seen" = "no"; then \
+	  $(MAKE) $(AM_MAKEFLAGS) "$$target-am" || exit 1; \
+	fi; test -z "$$fail"
+
+install-data-local: install-documentation
+uninstall-local: uninstall-documentation
+
+####
+# "implementations"
+
+doc-all-documentation: $(DOCFILES)
+
+doc-clean-documentation:
+	-test -z "$(DOCFILES)" || rm -f $(DOCFILES)
+
+install-documentation: $(DOCFILES) install-documentation-local
+	@$(NORMAL_INSTALL)
+	test -z "$(docdir)" || $(mkdir_p) "$(DESTDIR)$(docdir)"
+	@list='$(DOCFILES) $(DOCFILES_EXTRA)'; test -n "$(docdir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(docdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(docdir)" || exit $$?; \
+	done
+
+uninstall-documentation: uninstall-documentation-local
+	@$(NORMAL_UNINSTALL)
+	@list='$(DOCFILES) $(DOCFILES_EXTRA)'; test -n "$(docdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(docdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(docdir)" && rm -f $$files
+
+.PHONY: uninstall-documentation uninstall-documentation-local \
+	install-documentation install-documentation-local \
+    doc-clean-am doc-am web-install-am \
+    doc-local doc-clean-local web-install-local \
+	web-install doc doc-clean \
+	web-install-recursive doc-clean-recursive doc-recursive

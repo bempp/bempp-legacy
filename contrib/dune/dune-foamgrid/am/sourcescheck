@@ -1,0 +1,53 @@
+# -*- Makefile -*-
+# $Id: sourcescheck 6115 2010-09-01 19:17:42Z christi $
+
+sourcescheck_IGNORE = aclocal.m4 dependencies.m4
+
+sourcescheck_LIST = $(SOURCES) $(DIST_SOURCES) $(HEADERS) $(DIST_HEADERS) \
+	$(sourcescheck_NOSOURCES) $(dist_noinst_DATA) $(EXTRA_DIST)
+
+sourcescheck: sourcescheck-recursive
+
+#	@(for f in $(sourcescheck_LIST) fnord; do echo $$f; done) | \
+#	 grep '\.[hc][hc]$$' | sort | uniq > header_CHECK.install
+sourcescheck-am:
+	@echo $(sourcescheck_LIST) | tr ' ' '\n' | \
+	 grep '\.[hcm][hc4]$$' | sort | uniq > header_CHECK.install
+	@(ls $(srcdir); echo $(sourcescheck_DUMMY)) | \
+	 grep '\.[hcm][hc4]$$' | sort | uniq > header_CHECK.present
+	@RESULT=0; \
+	if diff header_CHECK.* | grep ^[\<\>] -q; then \
+		echo "==== WARNING ===="; \
+	    echo "Directory: $(srcdir)"; \
+		echo "Files present but not installed:"; \
+		diff -u header_CHECK.install header_CHECK.present | \
+		grep -v ^+++ | grep ^+; \
+		echo "Files listed for install but not present:"; \
+		diff -u header_CHECK.install header_CHECK.present | \
+		grep -v ^--- | grep ^-; \
+		echo "==== END ===="; \
+		RESULT=1; \
+	fi; \
+	rm -f header_CHECK.install header_CHECK.present; \
+	exit $$RESULT
+
+sourcescheck-recursive:
+	@set fnord $$MAKEFLAGS; amf=$$2; \
+	dot_seen=no; \
+	target=`echo $@ | sed s/-recursive//`; \
+	list='$(DIST_SUBDIRS)'; for subdir in $$list; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    dot_seen=yes; \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	done; \
+	if test "$$dot_seen" = "no"; then \
+	  $(MAKE) $(AM_MAKEFLAGS) "$$target-am" || exit 1; \
+	fi; test -z "$$fail"
+
+.PHONY: sourcescheck sourcescheck-recursive sourcescheck-am

@@ -1,0 +1,10 @@
+################################
+# Dune module information file #
+################################
+
+#Name of the module
+Module: dune-foamgrid
+Version: 2.1
+Maintainer: sander@mi.fu-berlin.de
+#depending on 
+Depends: dune-common dune-grid
