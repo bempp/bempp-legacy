@@ -24,6 +24,7 @@
 
 #include <dune/grid/io/file/gmshreader.hh>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 namespace Bempp {
@@ -63,9 +64,9 @@ std::auto_ptr<Grid> GridFactory::createStructuredGrid(
     return std::auto_ptr<Grid>(new DefaultGrid(apDuneGrid.release(), true)); // true -> owns Dune grid
 }
 
-std::auto_ptr<Grid> importGmshGrid(const GridParameters& params,
-                                   const std::string& fileName,
-                                   bool verbose=true, bool insertBoundarySegments=true)
+std::auto_ptr<Grid> GridFactory::importGmshGrid(
+        const GridParameters& params, const std::string& fileName,
+        bool verbose, bool insertBoundarySegments)
 {
     // Check arguments
     if (params.topology != GridParameters::TRIANGULAR)
@@ -75,11 +76,11 @@ std::auto_ptr<Grid> importGmshGrid(const GridParameters& params,
     return std::auto_ptr<Grid>(new DefaultGrid(duneGrid, true)); // true -> owns Dune grid
 }
 
-std::auto_ptr<Grid> importGmshGrid(const GridParameters& params,
-                                   const std::string& fileName,
-                                   std::vector<int>& boundaryId2PhysicalEntity,
-                                   std::vector<int>& elementIndex2PhysicalEntity,
-                                   bool verbose=true, bool insertBoundarySegments=true)
+std::auto_ptr<Grid> GridFactory::importGmshGrid(
+        const GridParameters& params, const std::string& fileName,
+        std::vector<int>& boundaryId2PhysicalEntity,
+        std::vector<int>& elementIndex2PhysicalEntity,
+        bool verbose, bool insertBoundarySegments)
 {
     // Check arguments
     if (params.topology != GridParameters::TRIANGULAR)
