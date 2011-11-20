@@ -146,7 +146,17 @@ class FoamGridEntity :
     
     const FoamGridEntityImp<dim-codim,GridImp::dimensionworld>* target_;
 
-        
+
+	FoamGridEntity& operator=(const FoamGridEntity& original)
+	    {
+		if (this != &original)
+		{
+			geo_.reset();
+			target_ = original.target_;
+		}
+		return *this;
+	    }
+
     private:
     
         //! \todo Please doc me !
