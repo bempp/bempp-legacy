@@ -45,20 +45,15 @@ using namespace Bempp;
 
 int main()
 {
+    const char MESH_FNAME[] = "head.gmsh";
+
     // Create a structured grid
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
 
-    const int dimGrid = 2;
-    arma::Col<ctype> lowerLeft(dimGrid);
-    arma::Col<ctype> upperRight(dimGrid);
-    arma::Col<unsigned int> nElements(dimGrid);
-    lowerLeft.fill(0);
-    upperRight.fill(1);
-    nElements(0) = 2;
-    nElements(1) = 3;
-
-    std::auto_ptr<Grid> grid(GridFactory::createStructuredGrid(params, lowerLeft, upperRight, nElements));
+    std::auto_ptr<Grid> grid(GridFactory::importGmshGrid(params, std::string(MESH_FNAME),
+                                                         true, // verbose
+                                                         false)); // insertBoundarySegments
 
     // Create a leaf view
     std::auto_ptr<GridView> leafGridView(grid->leafView());
@@ -117,9 +112,5 @@ int main()
             vertexIt->next();
         }
     }
-
-    {
-        std::cout << "Now the program will throw an exception!" << std::endl; 
-        std::auto_ptr<EntityIterator<3> > invalidIt(leafGridView->entityIterator<3>());
-    }
 }
+

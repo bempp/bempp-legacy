@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_lib_grid_index_set_hpp
-#define bempp_lib_grid_index_set_hpp
+#ifndef bempp_index_set_hpp
+#define bempp_index_set_hpp
 
 #include "index_set_decl.hpp"
 #include "entity.hpp"

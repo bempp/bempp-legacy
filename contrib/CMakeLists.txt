@@ -13,5 +13,7 @@ ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 # Add directories 
 
-add_subdirectory(dune)
+if (WITH_DUNE)
+   add_subdirectory(dune)
+endif (WITH_DUNE)
 

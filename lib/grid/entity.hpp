@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_lib_grid_entity_hpp
-#define bempp_lib_grid_entity_hpp
+#ifndef bempp_entity_hpp
+#define bempp_entity_hpp
 
 #include "entity_decl.hpp"
 #include "entity_iterator.hpp"

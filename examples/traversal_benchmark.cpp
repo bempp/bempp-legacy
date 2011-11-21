@@ -18,71 +18,57 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <armadillo>
 #include <iostream>
 #include <memory> // auto_ptr
 #include <sys/time.h>
-
-/* NOTE: Dune 2.1 has a bug. The declaration of
-StructuredGridFactory::insertVertices() needs to be changed to
-
-static void insertVertices(GridFactory<GridType>& factory,
-                           const FieldVector<ctype,dimworld>& lowerLeft,
-                           const FieldVector<ctype,dimworld>& upperRight,
-                           const array<unsigned int,dim>& vertices)
-
-(note the change of dim to dimworld in two places).
-*/
-#include <dune/grid/utility/structuredgridfactory.hh>
 
 #include "grid/entity.hpp"
 #include "grid/entity_iterator.hpp"
 #include "grid/geometry.hpp"
 #include "grid/grid.hpp"
+#include "grid/grid_factory.hpp"
 #include "grid/grid_view.hpp"
 
 using namespace Bempp;
 
+/** Create a structured triangular grid of 2 * N_ELEMENTS * (N_ELEMENTS + 1)
+elements and iterate over entities. If CALC_CENTER is set, for each entity
+calculate additionally its center. */
+
 int main()
 {
-    // Grid type and dimensions
-    typedef DefaultGrid::DuneGridType DuneGrid;
-    typedef Dune::StructuredGridFactory<DuneGrid> StructGridFactory;
-    typedef DuneGrid::ctype ctype;
+    // Benchmark parameters
+    const int N_ELEMENTS = 100;
+    const int N_TRIALS = 20;
+    const bool CALC_CENTER = true;
+
+    // Create a structured grid
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+
     const int dimGrid = 2;
-    const int dimWorld = 3;
+    arma::Col<ctype> lowerLeft(dimGrid);
+    arma::Col<ctype> upperRight(dimGrid);
+    arma::Col<unsigned int> nElements(dimGrid);
+    lowerLeft.fill(0);
+    upperRight.fill(1);
+    nElements(0) = N_ELEMENTS;
+    nElements(1) = N_ELEMENTS + 1;
 
-    // Construct a Dune structured grid.
-    // Currently this procedure is not encapsulated in Bempp.
-    // Such encapsulation would be much easier if
-    // StructuredGridFactory::createSimplexGrid() returned a standard pointer rather
-    // than a shared pointer, because Bempp::ThreeD::Grid doesn't have a place to
-    // store the shared pointer.
+    std::auto_ptr<Grid> grid(GridFactory::createStructuredGrid(params, lowerLeft, upperRight, nElements));
 
-    const Dune::FieldVector<ctype, dimWorld> lowerLeft(0);
-    const Dune::FieldVector<ctype, dimWorld> upperRight(1);
-    Dune::array<unsigned int, dimGrid> nElements;
-    const int N_ELEMENTS = 1000;
-    const int N_TRIALS = 2;
-
-    nElements[0] = N_ELEMENTS;
-    nElements[1] = N_ELEMENTS + 1;
-
-    Dune::shared_ptr<DuneGrid> duneGrid =
-        StructGridFactory::createSimplexGrid(lowerLeft, upperRight, nElements);
-
-    std::cout << 2 * nElements[0] * nElements[1]
-              << " elements created" << std::endl;
+    std::cout << nElements[0] * nElements[1] << " elements created\n";
+    if (CALC_CENTER)
+        std::cout << "Benchmark variant: full loops\n";
+    else
+        std::cout << "Benchmark variant: empty loops\n";
 
     //////////////////// BEMPP OBJECTS ///////////////////
 
     std::cout << "Using Bempp objects..." << std::endl;
 
-    // Wrap the grid in a Bempp object
-    DefaultGrid grid(duneGrid.get());
-
     // Create a leaf view
-    std::auto_ptr<GridView> leafGridView(grid.leafView());
+    std::auto_ptr<GridView> leafGridView(grid->leafView());
 
     {
         std::cout << "Iterating over faces..." << std::endl;
@@ -92,16 +78,17 @@ int main()
         gettimeofday(&start, 0);
 
         for (int i = 0; i < N_TRIALS; ++i) {
-            std::auto_ptr<EntityIterator<0> > leafFaceIt(leafGridView->entityIterator<0>());
+            std::auto_ptr<EntityIterator<0> > leafFaceIt = leafGridView->entityIterator<0>();
             while (!leafFaceIt->finished()) {
                 ++j;
-
-                const Entity<0>& e = leafFaceIt->entity();
-                Dune::GeometryType gt = e.type();
-                const Geometry& geo = e.geometry();
-                arma::Col<double> elementCenter;
-                geo.center(elementCenter);
-
+                if (CALC_CENTER)
+                {
+                    const Entity<0>& e = leafFaceIt->entity();
+                    Dune::GeometryType gt = e.type();
+                    const Geometry& geo = e.geometry();
+                    arma::Col<double> elementCenter;
+                    geo.center(elementCenter);
+                }
                 leafFaceIt->next();
             }
         }
@@ -121,16 +108,17 @@ int main()
         gettimeofday(&start, 0);
 
         for (int i = 0; i < N_TRIALS; ++i) {
-            std::auto_ptr<EntityIterator<2> > leafVertexIt(leafGridView->entityIterator<2>());
+            std::auto_ptr<EntityIterator<2> > leafVertexIt = leafGridView->entityIterator<2>();
             while (!leafVertexIt->finished()) {
                 ++j;
-
-                const Entity<2>& e = leafVertexIt->entity();
-                Dune::GeometryType gt = e.type();
-                const Geometry& geo = e.geometry();
-                arma::Col<double> elementCenter;
-                geo.center(elementCenter);
-
+                if (CALC_CENTER)
+                {
+                    const Entity<2>& e = leafVertexIt->entity();
+                    GeometryType gt = e.type();
+                    const Geometry& geo = e.geometry();
+                    arma::Col<double> elementCenter;
+                    geo.center(elementCenter);
+                }
                 leafVertexIt->next();
             }
         }
@@ -145,6 +133,9 @@ int main()
     //////////////////// DUNE OBJECTS ///////////////////
 
     std::cout << "Using Dune objects..." << std::endl;
+
+    const DefaultDuneGrid* duneGrid = &dynamic_cast<DefaultGrid*>(&*grid)->duneGrid();
+    const int dimWorld = 3;
 
     DefaultDuneGrid::LeafGridView duneLeafGridView = duneGrid->leafView();
 
@@ -161,11 +152,13 @@ int main()
             Codim::Iterator leafEnd = duneLeafGridView.end<0>();
             for (; leafFaceIt != leafEnd; ++leafFaceIt) {
                 ++j;
-
-                const Codim::Entity& e = *leafFaceIt;
-                Dune::GeometryType gt = e.type();
-                const Codim::Entity::Geometry& geo = e.geometry();
-                Dune::FieldVector<ctype, dimWorld> elementCenter = geo.center();
+                if (CALC_CENTER)
+                {
+                    const Codim::Entity& e = *leafFaceIt;
+                    Dune::GeometryType gt = e.type();
+                    const Codim::Entity::Geometry& geo = e.geometry();
+                    Dune::FieldVector<ctype, dimWorld> elementCenter = geo.center();
+                }
             }
         }
         gettimeofday(&end, 0);
@@ -190,11 +183,13 @@ int main()
             Codim::Iterator leafEnd = duneLeafGridView.end<2>();
             for (; leafVertexIt != leafEnd; ++leafVertexIt) {
                 ++j;
-
-                const Codim::Entity& e = *leafVertexIt;
-                Dune::GeometryType gt = e.type();
-                const Codim::Entity::Geometry& geo = e.geometry();
-                Dune::FieldVector<ctype, dimWorld> elementCenter = geo.center();
+                if (CALC_CENTER)
+                {
+                    const Codim::Entity& e = *leafVertexIt;
+                    Dune::GeometryType gt = e.type();
+                    const Codim::Entity::Geometry& geo = e.geometry();
+                    Dune::FieldVector<ctype, dimWorld> elementCenter = geo.center();
+                }
             }
         }
         gettimeofday(&end, 0);
