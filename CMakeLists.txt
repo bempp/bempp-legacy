@@ -6,12 +6,8 @@ enable_language(Fortran) # for BLAS
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 # Macros needed
-include(DuneUtils)
 include(BemppOptions)
 include(BemppFindDependencies)
-
-# Build external software
-add_subdirectory(contrib)
 
 # Main library
 add_subdirectory(lib)

@@ -2,7 +2,6 @@ cmake_minimum_required (VERSION 2.8)
 project (contrib)
 
 # Set Cache Variables
-set (WITH_DUNE ON CACHE BOOL "Include Dune?")
 
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   SET(CMAKE_INSTALL_PREFIX
