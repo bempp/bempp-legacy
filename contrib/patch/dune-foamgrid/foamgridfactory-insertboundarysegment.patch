@@ -1,0 +1,11 @@
+--- foamgridfactory.hh.old	2011-11-22 13:23:59.000000000 +0000
++++ foamgridfactory.hh	2011-11-22 13:24:27.000000000 +0000
+@@ -108,7 +108,7 @@
+             Currently, the BoundarySegment object does not actually have any effect.
+         */
+         virtual void insertBoundarySegment(const std::vector<unsigned int>& vertices,
+-                                           const shared_ptr<BoundarySegment<2> > boundarySegment)
++                                           const shared_ptr<BoundarySegment<2, 3> > boundarySegment)
+         {
+             insertBoundarySegment(vertices);
+         }

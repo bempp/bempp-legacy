@@ -108,7 +108,7 @@ namespace Dune {
             Currently, the BoundarySegment object does not actually have any effect.
         */
         virtual void insertBoundarySegment(const std::vector<unsigned int>& vertices,
-                                           const shared_ptr<BoundarySegment<2> > boundarySegment)
+                                           const shared_ptr<BoundarySegment<2, 3> > boundarySegment)
         {
             insertBoundarySegment(vertices);
         }
