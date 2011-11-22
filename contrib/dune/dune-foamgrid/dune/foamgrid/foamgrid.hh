@@ -452,8 +452,8 @@ class FoamGrid :
 #endif
     // Stores the lists of vertices, edges, elements for each level
     std::vector<tuple<std::list<FoamGridEntityImp<0,dimworld> >,
-                      std::list<FoamGridEntityImp<1,dimworld>>,
-                      std::list<FoamGridEntityImp<2,dimworld>> > > entityImps_;
+                      std::list<FoamGridEntityImp<1,dimworld> >,
+                      std::list<FoamGridEntityImp<2,dimworld> > > > entityImps_;
 
         //! Our set of level indices
         std::vector<FoamGridLevelIndexSet<const FoamGrid>*> levelIndexSets_;

@@ -1,0 +1,13 @@
+--- foamgrid.hh.old	2011-11-22 13:15:30.000000000 +0000
++++ foamgrid.hh	2011-11-22 13:19:05.000000000 +0000
+@@ -452,8 +452,8 @@
+ #endif
+     // Stores the lists of vertices, edges, elements for each level
+     std::vector<tuple<std::list<FoamGridEntityImp<0,dimworld> >,
+-                      std::list<FoamGridEntityImp<1,dimworld>>,
+-                      std::list<FoamGridEntityImp<2,dimworld>> > > entityImps_;
++                      std::list<FoamGridEntityImp<1,dimworld> >,
++                      std::list<FoamGridEntityImp<2,dimworld> > > > entityImps_;
+ 
+         //! Our set of level indices
+         std::vector<FoamGridLevelIndexSet<const FoamGrid>*> levelIndexSets_;
