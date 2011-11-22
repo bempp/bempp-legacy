@@ -408,13 +408,11 @@ class FoamGrid :
         {}
 #endif
         
-#if 0        
         /** dummy collective communication */
-        const CollectiveCommunication& comm () const
+        const typename Traits::CollectiveCommunication& comm () const
         {
             return ccobj_;
         }
-#endif   
         /*@}*/
         
         
@@ -446,10 +444,10 @@ class FoamGrid :
         // IdSets don't need updating
 
         }
-#if 0         
-        //! \todo Please doc me !
-        CollectiveCommunication ccobj_;
-#endif
+
+        //! Collective communication interface
+        typename Traits::CollectiveCommunication ccobj_;
+
     // Stores the lists of vertices, edges, elements for each level
     std::vector<tuple<std::list<FoamGridEntityImp<0,dimworld> >,
                       std::list<FoamGridEntityImp<1,dimworld> >,
