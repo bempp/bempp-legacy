@@ -5,15 +5,6 @@ file(GLOB_RECURSE DUNE_FOAMGRID_HEADERS ${CMAKE_SOURCE_DIR}/contrib/dune/dune-fo
 file(GLOB_RECURSE DUNE_GRID_HEADERS ${CMAKE_SOURCE_DIR}/contrib/dune/dune-grid/dune/grid/*.hh)
 file(GLOB_RECURSE DUNE_COMMON_HEADERS ${CMAKE_SOURCE_DIR}/contrib/dune/dune-common/dune/common/*.hh)
 
-
-# Additional Dune link directories
-find_library(LIB_DUNE_COMMON common ${CMAKE_SOURCE_DIR}/contrib/dune/dune-common/dune/common/.libs)
-find_library(LIB_DUNE_GRID grid ${CMAKE_SOURCE_DIR}/contrib/dune/dune-grid/dune/grid/.libs)
-
-include_directories(${CMAKE_SOURCE_DIR}/contrib/dune/dune-common)
-include_directories(${CMAKE_SOURCE_DIR}/contrib/dune/dune-grid)
-include_directories(${CMAKE_SOURCE_DIR}/contrib/dune/dune-foamgrid)
-
 # Headers are ignored by make, but their list is used by IDEs
 # like Qt Creator and Visual Studio to generate project file list.
 add_library(bempp SHARED 
