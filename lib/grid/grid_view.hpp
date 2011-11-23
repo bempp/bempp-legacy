@@ -25,6 +25,7 @@
 #include "entity.hpp"
 #include "entity_iterator.hpp"
 #include "index_set.hpp"
+#include "vtk_writer.hpp"
 
 namespace Bempp
 {
@@ -67,6 +68,13 @@ ConcreteGridView<DuneGridView>::entityCodimNIterator() const
                new ConcIterator(m_dune_gv.template begin<codim>(),
                                 m_dune_gv.template end<codim>()));
 }
+
+template<typename DuneGridView>
+std::auto_ptr<VtkWriter> ConcreteGridView<DuneGridView>::vtkWriter(Dune::VTK::DataMode dm) const
+{
+    return std::auto_ptr<VtkWriter>(new ConcreteVtkWriter<DuneGridView>(m_dune_gv, dm));
+}
+
 
 } // namespace Bempp
 

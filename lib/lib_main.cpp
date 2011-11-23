@@ -72,6 +72,12 @@ template class ConcreteSubentityIterator<DefaultDuneGrid::Codim<0>::Entity, 2> ;
 template class ConcreteGeometry<DefaultDuneGrid::Codim<0>::Entity::Geometry> ;
 template class ConcreteGeometry<DefaultDuneGrid::Codim<1>::Entity::Geometry> ;
 template class ConcreteGeometry<DefaultDuneGrid::Codim<2>::Entity::Geometry> ;
+
+// VtkWriters
+
+template class ConcreteVtkWriter<DefaultDuneGrid::LeafGridView>;
+template class ConcreteVtkWriter<DefaultDuneGrid::LevelGridView>;
+
 }
 
 /** @} */

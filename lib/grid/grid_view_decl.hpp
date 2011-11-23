@@ -25,6 +25,7 @@
 #include "geometry_type_decl.hpp"
 
 #include <boost/utility/enable_if.hpp>
+#include <dune/grid/io/file/vtk/vtkwriter.hh>
 #include <memory>
 
 namespace Bempp
@@ -34,6 +35,7 @@ namespace Bempp
 template<int codim> class Entity;
 template<int codim> class EntityIterator;
 class IndexSet;
+class VtkWriter;
 
 /** Abstract wrapper of a grid view */
 class GridView
@@ -72,6 +74,11 @@ public:
     std::auto_ptr<EntityIterator<codim> > entityIterator() const {
         throw std::logic_error("GridView::entityIterator(): invalid entity codimension");
     }
+
+    /** \brief Create a VtkWriter for this grid view.
+
+      \param dm Data mode (conforming or nonconforming; see the documentation of Dune::VTK::DataMode for details). */
+    virtual std::auto_ptr<VtkWriter> vtkWriter(Dune::VTK::DataMode dm=Dune::VTK::conforming) const = 0;
 
 private:
     /** \brief Iterator over entities of codimension codim contained in this view. */
@@ -164,6 +171,8 @@ public:
     virtual bool containsEntity(const Entity<3>& e) const {
         return containsEntityCodimN(e);
     }
+
+    virtual std::auto_ptr<VtkWriter> vtkWriter(Dune::VTK::DataMode dm=Dune::VTK::conforming) const;
 
 private:
     virtual std::auto_ptr<EntityIterator<0> > entityCodim0Iterator() const {
