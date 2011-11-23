@@ -134,12 +134,12 @@ public:
         m_dune_gv(dune_gv), m_index_set(&dune_gv.indexSet()) {
     }
 
-    /** Access to the underlying Dune grid view object. Use at your own risk! */
+    /** Read-only access to the underlying Dune grid view object. */
     const DuneGridView& duneGridView() const {
         return m_dune_gv;
     }
 
-    /** Read-only access to the underlying Dune grid view object. */
+    /** Access to the underlying Dune grid view object. Use at your own risk! */
     DuneGridView& duneGridView() {
         return m_dune_gv;
     }
