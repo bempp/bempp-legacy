@@ -22,18 +22,6 @@
 #include <iostream>
 #include <memory> // auto_ptr
 
-/* NOTE: the version included with Dune 2.1 has a bug. The declaration of
-StructuredGridFactory::insertVertices() needs to be changed to
-
-static void insertVertices(GridFactory<GridType>& factory,
-                           const FieldVector<ctype,dimworld>& lowerLeft,
-                           const FieldVector<ctype,dimworld>& upperRight,
-                           const array<unsigned int,dim>& vertices)
-
-(note the change of dim to dimworld in two places).
-*/
-#include <dune/grid/utility/structuredgridfactory.hh>
-
 #include "grid/entity.hpp"
 #include "grid/entity_iterator.hpp"
 #include "grid/geometry.hpp"
