@@ -18,12 +18,50 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_common_hpp
-#define bempp_common_hpp
+#ifndef bempp_armadillo_helpers_hpp
+#define bempp_armadillo_helpers_hpp
 
-namespace Bempp {
-    /** Numeric type of coordinates */
-    typedef double ctype;
-} // namespace Bempp
+#include <armadillo>
+#include <dune/common/fvector.hh>
+
+template <typename T, int size>
+bool operator==(const arma::Col<T>& x, const Dune::FieldVector<T, size>& y)
+{
+    if (x.n_rows != size)
+        return false;
+    for (int i = 0; i < size; ++i)
+        if (x(i) != y[i])
+            return false;
+    return true;
+}
+
+template <typename T, int size>
+bool operator==(const Dune::FieldVector<T, size>& x, const arma::Col<T>& y)
+{
+    return operator==(y, x);
+}
+
+// For BOOST_CHECK_EQUAL to work, we need to copy these comparison operators
+// to the boost::test_tools:tt_detail namespace...
+
+namespace boost {
+namespace test_tools {
+namespace tt_detail {
+
+template <typename T, int size>
+bool operator==(const ::arma::Col<T>& x, const ::Dune::FieldVector<T, size>& y)
+{
+    return ::operator==(x, y);
+}
+
+template <typename T, int size>
+bool operator==(const ::Dune::FieldVector<T, size>& x, const ::arma::Col<T>& y)
+{
+    return ::operator==(x, y);
+}
+
+} // namespace tt_detail
+} // namespace test_tools
+} // namespace boost
 
 #endif

@@ -18,12 +18,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_common_hpp
-#define bempp_common_hpp
+#ifndef bempp_test_id_set_hpp
+#define bempp_test_id_set_hpp
 
-namespace Bempp {
-    /** Numeric type of coordinates */
-    typedef double ctype;
-} // namespace Bempp
+#include "test_grid_view.hpp"
+#include "grid/id_set.hpp"
 
-#endif
+// We need the view because it's the only means of getting access to individual entities
+struct TriangularGlobalIdSetManager : public TriangularLeafGridViewManager {
+    TriangularGlobalIdSetManager() : TriangularLeafGridViewManager(),
+        bemppIdSet(bemppGrid->globalIdSet()),
+        duneIdSet(duneGrid->globalIdSet()) {
+    }
+
+    typedef Bempp::DefaultDuneGrid::GlobalIdSet DuneIdSet;
+    const Bempp::IdSet& bemppIdSet;
+    const DuneIdSet& duneIdSet;
+};
+
+#endif // TEST_ID_SET_HPP
