@@ -31,4 +31,8 @@ list_0_to_2;
 typedef boost::mpl::list<boost::mpl::int_<0>, boost::mpl::int_<1>, boost::mpl::int_<2>, boost::mpl::int_<3> >
 list_0_to_3;
 
+typedef boost::mpl::list<boost::mpl::int_<1>, boost::mpl::int_<2> > list_1_to_2;
+
+typedef boost::mpl::list<boost::mpl::int_<0>, boost::mpl::int_<1> > list_0_to_1;
+
 #endif

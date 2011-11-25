@@ -24,8 +24,6 @@
 #include <boost/test/unit_test.hpp>
 #include "../num_template.hpp"
 
-typedef boost::mpl::list<boost::mpl::int_<1>, boost::mpl::int_<2> > list_1_to_2;
-
 using namespace Bempp;
 
 BOOST_FIXTURE_TEST_SUITE(Entity_Triangular, TriangularEntityManager)
@@ -51,7 +49,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(level_is_0_for_second_entity_on_level_0_of_cod
 
 // type()
 
-BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(type_agrees_with_Dune_for_second_entity_of_codim,
+BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(type_agrees_with_Dune_for_second_entity_on_level_0_of_codim,
                                   T, list_0_to_2) {
     const int codim = T::value;
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();

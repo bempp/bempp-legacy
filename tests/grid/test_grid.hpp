@@ -27,6 +27,8 @@
 /** Fixture class for Bempp::Grid tests */
 class SimpleTriangularGridManager {
 public:
+    enum { N_ELEMENTS_X = 3, N_ELEMENTS_Y = 4 };
+
     /** Create two identical simple 2D structured Bempp grids composed of 2 * 3 * 4 triangles.
         Store an auto_ptr to the first one as bemppGrid; from the second one,
         extract the pointer to the underlying Dune grid and store it as duneGrid. */
@@ -53,8 +55,8 @@ private:
         arma::Col<unsigned int> nElements(dimGrid);
         lowerLeft.fill(0);
         upperRight.fill(1);
-        nElements(0) = 3;
-        nElements(1) = 4;
+        nElements(0) = N_ELEMENTS_X;
+        nElements(1) = N_ELEMENTS_Y;
 
         return Bempp::GridFactory::createStructuredGrid(params, lowerLeft, upperRight, nElements);
     }
