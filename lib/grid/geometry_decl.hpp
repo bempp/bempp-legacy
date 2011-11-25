@@ -267,8 +267,8 @@ public:
         for (int j = 0; j < n; ++j) {
             for (int i = 0; i < cdim; ++i)
                 g[i] = global(i,j);
-            l = m_dune_geometry->local(l);
-            for (int i = 0; i < cdim; ++i)
+            l = m_dune_geometry->local(g);
+            for (int i = 0; i < mdim; ++i)
                 local(i,j) = l[i];
         }
     }
@@ -356,7 +356,7 @@ public:
             /** \fixme However, this bit of data copying could be avoided. */
             for (int i = 0; i < mdim; ++i)
                 l[i] = local(i,k);
-            j_inv_t = m_dune_geometry->jacobianTransposed(l);
+            j_inv_t = m_dune_geometry->jacobianInverseTransposed(l);
             for (int j = 0; j < mdim; ++j)
                 for (int i = 0; i < cdim; ++i)
                     jacobian_inv_t(i,j,k) = j_inv_t[i][j];
