@@ -18,12 +18,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_common_hpp
-#define bempp_common_hpp
+#include "test_grid.hpp"
 
-namespace Bempp {
-    /** Numeric type of coordinates */
-    typedef double ctype;
-} // namespace Bempp
+#include <boost/test/unit_test.hpp>
+#include <boost/test/floating_point_comparison.hpp>
 
-#endif
+BOOST_FIXTURE_TEST_SUITE(Grid, SimpleTriangularGridManager)
+
+BOOST_AUTO_TEST_CASE(dimWorld_agrees_with_Dune) {
+    BOOST_CHECK_EQUAL(bemppGrid->dimWorld(), (int)duneGrid->dimensionworld);
+}
+
+BOOST_AUTO_TEST_CASE(maxLevel_agrees_with_Dune) {
+    BOOST_CHECK_EQUAL(bemppGrid->maxLevel(), duneGrid->maxLevel());
+}
+
+// The test below fails because the numBoundarySegments method is not
+// implemented in FoamGrid yet.
+BOOST_AUTO_TEST_CASE(numBoundarySegments_agrees_with_Dune) {
+    BOOST_CHECK_EQUAL(bemppGrid->numBoundarySegments(), duneGrid->numBoundarySegments());
+}
+
+BOOST_AUTO_TEST_SUITE_END()

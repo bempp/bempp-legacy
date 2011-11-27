@@ -38,15 +38,15 @@ public:
     /** Destructor */
     virtual ~Geometry() {}
 
-    /** \brief Return the name of the reference element. The type can
+    /** \brief Type of the reference element. The type can
       be used to access the Dune::GenericReferenceElement.
      */
     virtual GeometryType type() const = 0;
 
-    /** \brief Return true if the geometry mapping is affine and false otherwise */
+    /** \brief True if the geometry mapping is affine and false otherwise */
     virtual bool affine() const = 0;
 
-    /** \brief Return the number of corners of the reference element.
+    /** \brief Number of corners of the reference element.
      *
       Since a geometry is a convex polytope the number of corners is a
       well-defined concept. The method is redundant because this
@@ -55,35 +55,35 @@ public:
      */
     virtual int n_corners() const = 0;
 
-    /** \brief Obtain a corner of the geometry
+    /** \brief Positions of the geometry corners.
      *
-     *  This method is for convenient access to the corners of the geometry. The
-     *  same result could be achieved by by calling
-     *  \code
-     *  global( genericReferenceElement.position( i, mydimension )
-     *  \endcode
-     *
-     *  \param[in]  i  number of the corner (with respect to the generic reference
-     *                 element)
-     *  \returns position of the i-th corner
+     *  \param[out] c Matrix whose \f$i\f$th column contains the coordinates of
+     *  the \f$i\f$th corner. The numbering of corners follows the conventions
+     *  of the generic reference element.
      */
     virtual void corners(arma::Mat<ctype>& c) const = 0;
 
-    /** \brief Evaluate the map \f$ g\f$.
-      \param[in] local Position in the reference element \f$D\f$
-      \return Position in \f$W\f$
+    /** \brief Convert local (logical) to global (physical) coordinates.
+
+      \param[in] local Matrix whose \f$i\f$th column contains the local coordinates of a point \f$x_i \in D\f$.
+      \param[out] global Matrix whose \f$i\f$th column contains the global coordinates of \f$x_i\f$, i.e. \f$g(x_i)\f$.
     */
     virtual void local2global(const arma::Mat<ctype>& local,
                               arma::Mat<ctype>& global) const = 0;
 
-    /** \brief Evaluate the inverse map \f$ g^{-1}\f$
-      \param[in] global Position in \f$W\f$
-      \return Position in \f$D\f$ that maps to global
+    /** \brief Convert global (physical) to local (logical) coordinates.
+
+      \param[in] global Matrix whose \f$i\f$th column contains the global coordinates of a point \f$x_i \in W\f$.
+      \param[out] local Matrix whose \f$i\f$th column contains the local coordinates of \f$x_i\f$, i.e. \f$g^{-1}(x_i)\f$.
+
+      \fixme This is going to be tricky to implement for dimGrid < dimWorld.
+      Maybe the docstring should say that we convert some sort of *projection*
+      of global to local.
     */
     virtual void global2local(const arma::Mat<ctype>& global,
                               arma::Mat<ctype>& local) const = 0;
 
-    /** \brief Return the factor appearing in the integral transformation formula
+    /** \brief The factor appearing in the integral transformation formula.
 
       Let \f$ g : D \to W\f$ denote the transformation described by the Geometry.
       Then the jacobian of the transformation is defined as the
@@ -99,50 +99,61 @@ public:
       The integration element \f$\mu(x)\f$ for any \f$x\in D\f$ is then defined as
       \f[ \mu(x) = \sqrt{|\det J_g^T(x)J_g(x)|}.\f]
 
-      \param[in] local Position \f$x\in D\f$
-      \return    integration element \f$\mu(x)\f$
+      \param[in]   local       Matrix whose \f$i\f$th column contains the local coordinates of a point \f$x_i \in D\f$.
+      \param[out]  int_element  Row vector whose \f$i\f$th entry contains the integration element \f$\mu(x_i)\f$.
 
       \note Each implementation computes the integration element with optimal
-      efficieny. For example in an equidistant structured mesh it may be as
+      efficiency. For example in an equidistant structured mesh it may be as
       simple as \f$h^\textrm{mydim}\f$.
     */
     virtual void integrationElement(const arma::Mat<ctype>& local,
                                     arma::Row<ctype>& int_element) const = 0;
 
-    /** \brief return volume of geometry */
+    /** \brief Volume of geometry. */
     virtual ctype volume() const = 0;
 
-    /** \brief return center of geometry
+    /** \brief Center of geometry.
      *
-     *  Note that this method is still subject to a change of name and semantics.
-     *  At the moment, the center is not required to be the centroid of the
-     *  geometry, or even the centroid of its corners. This makes the current
-     *  default implementation acceptable, which maps the centroid of the
-     *  reference element to the geometry.
-     *  We may change the name (and semantic) of the method to centroid() if we
-     *  find reasonably efficient ways to implement it properly.
+     *  Note that this method is still subject to a change of name and
+     *  semantics. At the moment, the center is not required to be the centroid
+     *  of the geometry, or even the centroid of its corners. This makes
+     *  acceptable the current default implementation, which maps the centroid
+     *  of the reference element to the geometry.
+     *
+     *  We may change the name (and semantic) of the method to centroid() if
+     *  Dune's developers find reasonably efficient ways to implement it
+     *  properly.
+     *
+     * \param[out]  c  Coordinates of the center of geometry.
      */
     virtual void center(arma::Col<ctype>& c) const = 0;
 
-    /** \brief Return the transpose of the Jacobian
+    /** \brief Transpose of the Jacobian matrix.
      *
-     *  The Jacobian is defined in the documentation of
-     *  \ref Dune::Geometry::integrationElement "integrationElement".
+     *  The Jacobian matrix is defined in the documentation of
+     *  integrationElement().
      *
-     *  \param[in]  local  position \f$x\in D\f$
+     *  \param[in]  local
+     *    Matrix whose \f$i\f$th column contains the local coordinates of a point \f$x_i \in D\f$.
+     *  \param[out]  jacobian_t
+     *    3D array whose \f$i\f$th slice (i.e. jacobian_t(:,:,i)) contains the
+     *    transposed Jacobian matrix at \f$x_i\f$, i.e. \f$J_g^T(x_i)\f$.
      *
      *  \return \f$J_g^T(x)\f$
      */
     virtual void jacobianTransposed(const arma::Mat<ctype>& local,
                                     arma::Cube<ctype>& jacobian_t) const = 0;
 
-    /** \brief Return inverse of transposed of Jacobian
+    /** \brief Inverse of the transposed Jacobian matrix.
      *
-     *  The Jacobian is defined in the documentation of
-     *  \ref Dune::Geometry::integrationElement "integrationElement".
+     *  The Jacobian matrix is defined in the documentation of
+     *  integrationElement().
      *
-     *  \param[in]  local  position \f$x\in D\f$
-     *  \return \f$J_g^{-T}(x)\f$
+     *  \param[in]  local
+     *    Matrix whose \f$i\f$th column contains the local coordinates of a point \f$x_i \in D\f$.
+     *  \param[out]  jacobian_inv_t
+     *    3D array whose \f$i\f$th slice (i.e. jacobian_inv_t(:,:,i)) contains the
+     *    inverse of the transposed Jacobian matrix at \f$x_i\f$, i.e. \f$J_g^{-T}(x_i)\f$.
      *
      *  The use of this function is to compute the gradient of some function
      *  \f$f : W \to \textbf{R}\f$ at some position \f$y=g(x)\f$, where
@@ -256,8 +267,8 @@ public:
         for (int j = 0; j < n; ++j) {
             for (int i = 0; i < cdim; ++i)
                 g[i] = global(i,j);
-            l = m_dune_geometry->local(l);
-            for (int i = 0; i < cdim; ++i)
+            l = m_dune_geometry->local(g);
+            for (int i = 0; i < mdim; ++i)
                 local(i,j) = l[i];
         }
     }
@@ -345,7 +356,7 @@ public:
             /** \fixme However, this bit of data copying could be avoided. */
             for (int i = 0; i < mdim; ++i)
                 l[i] = local(i,k);
-            j_inv_t = m_dune_geometry->jacobianTransposed(l);
+            j_inv_t = m_dune_geometry->jacobianInverseTransposed(l);
             for (int j = 0; j < mdim; ++j)
                 for (int i = 0; i < cdim; ++i)
                     jacobian_inv_t(i,j,k) = j_inv_t[i][j];

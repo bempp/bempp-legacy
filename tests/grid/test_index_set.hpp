@@ -18,12 +18,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_common_hpp
-#define bempp_common_hpp
+#ifndef bempp_test_index_set_hpp
+#define bempp_test_index_set_hpp
 
-namespace Bempp {
-    /** Numeric type of coordinates */
-    typedef double ctype;
-} // namespace Bempp
+#include "test_grid_view.hpp"
+
+struct TriangularLevel0IndexSetManager : public TriangularLevel0GridViewManager {
+    TriangularLevel0IndexSetManager() : TriangularLevel0GridViewManager(),
+        bemppIndexSet(bemppGridView->indexSet()),
+        duneIndexSet(duneGridView.indexSet()) {
+    }
+
+    typedef Bempp::DefaultDuneGrid::LevelGridView::IndexSet DuneIndexSet;
+    const Bempp::IndexSet& bemppIndexSet;
+    const DuneIndexSet& duneIndexSet;
+};
+
+struct TriangularLeafIndexSetManager : public TriangularLeafGridViewManager {
+    TriangularLeafIndexSetManager() : TriangularLeafGridViewManager(),
+        bemppIndexSet(bemppGridView->indexSet()),
+        duneIndexSet(duneGridView.indexSet()) {
+    }
+
+    typedef Bempp::DefaultDuneGrid::LeafGridView::IndexSet DuneIndexSet;
+    const Bempp::IndexSet& bemppIndexSet;
+    const DuneIndexSet& duneIndexSet;
+};
 
 #endif

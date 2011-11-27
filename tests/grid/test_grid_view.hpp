@@ -18,12 +18,32 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_common_hpp
-#define bempp_common_hpp
+#ifndef bempp_test_grid_view_hpp
+#define bempp_test_grid_view_hpp
 
-namespace Bempp {
-    /** Numeric type of coordinates */
-    typedef double ctype;
-} // namespace Bempp
+#include "test_grid.hpp"
+#include "grid/grid_view.hpp"
+
+struct TriangularLevel0GridViewManager : public SimpleTriangularGridManager {
+    TriangularLevel0GridViewManager() : SimpleTriangularGridManager(),
+        bemppGridView(bemppGrid->levelView(0)),
+        duneGridView(duneGrid->levelView(0)) {
+    }
+
+    typedef Bempp::DefaultDuneGrid::LevelGridView DuneGridView;
+    std::auto_ptr<Bempp::GridView> bemppGridView;
+    DuneGridView duneGridView;
+};
+
+struct TriangularLeafGridViewManager : public SimpleTriangularGridManager {
+    TriangularLeafGridViewManager() : SimpleTriangularGridManager(),
+        bemppGridView(bemppGrid->leafView()),
+        duneGridView(duneGrid->leafView()) {
+    }
+
+    typedef Bempp::DefaultDuneGrid::LeafGridView DuneGridView;
+    std::auto_ptr<Bempp::GridView> bemppGridView;
+    DuneGridView duneGridView;
+};
 
 #endif

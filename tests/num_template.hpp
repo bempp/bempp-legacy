@@ -18,12 +18,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_common_hpp
-#define bempp_common_hpp
+#ifndef bempp_num_template_hpp
+#define bempp_num_template_hpp
 
-namespace Bempp {
-    /** Numeric type of coordinates */
-    typedef double ctype;
-} // namespace Bempp
+#include "boost_test_case_num_template.hpp"
+#include <boost/mpl/list.hpp>
+#include <boost/mpl/int.hpp>
+
+typedef boost::mpl::list<boost::mpl::int_<0>, boost::mpl::int_<1>, boost::mpl::int_<2> >
+list_0_to_2;
+
+typedef boost::mpl::list<boost::mpl::int_<0>, boost::mpl::int_<1>, boost::mpl::int_<2>, boost::mpl::int_<3> >
+list_0_to_3;
+
+typedef boost::mpl::list<boost::mpl::int_<1>, boost::mpl::int_<2> > list_1_to_2;
+
+typedef boost::mpl::list<boost::mpl::int_<0>, boost::mpl::int_<1> > list_0_to_1;
 
 #endif

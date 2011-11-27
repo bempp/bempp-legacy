@@ -18,12 +18,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_common_hpp
-#define bempp_common_hpp
+#include "test_id_set.hpp"
 
-namespace Bempp {
-    /** Numeric type of coordinates */
-    typedef double ctype;
-} // namespace Bempp
+#include <boost/test/unit_test.hpp>
+#include "../num_template.hpp"
 
-#endif
+using namespace Bempp;
+
+BOOST_FIXTURE_TEST_SUITE(GlobalIdSet_Triangular, TriangularGlobalIdSetManager)
+
+BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityId_agrees_with_Dune_for_second_entity_of_codim,
+                                  T, list_0_to_2) {
+    const int codim = T::value;
+
+    std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
+    it->next();
+
+    typename DuneGridView::Codim<codim>::Iterator duneIt = duneGridView.begin<codim>();
+    ++duneIt;
+
+    BOOST_CHECK_EQUAL(bemppIdSet.entityId(it->entity()),
+                      duneIdSet.id(*duneIt));
+}
+
+BOOST_AUTO_TEST_SUITE_END()
