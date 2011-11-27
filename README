@@ -1,111 +1,18 @@
-The project is currently in its planning phase. Coding is planned to start
-October 2011.
-
-PREREQUISITES FOR COMPILATION
-
-1. Unpack to a directory <dune_src> the following Dune modules: dune-common, dune-grid and fune-foamgrid.
-
-2. In file <dune_src>/dune/grid/utility/structuredgridfactory.hh change the declaration 
-
-static void insertVertices(GridFactory<GridType>& factory,
-                           const FieldVector<ctype,dim>& lowerLeft,
-                           const FieldVector<ctype,dim>& upperRight,
-                           const array<unsigned int,dim>& vertices)
-
-to 
-
-static void insertVertices(GridFactory<GridType>& factory,
-                           const FieldVector<ctype,dimworld>& lowerLeft,
-                           const FieldVector<ctype,dimworld>& upperRight,
-                           const array<unsigned int,dim>& vertices)
-
-3. In file <dune_src>/dune/foamgrid/foamgrid/foamgridentity.hh add the lines
-
-    FoamGridEntity& operator=(const FoamGridEntity& original)
-    {
-      if (this != &original)
-      {
-        geo_.reset();
-        target_ = original.target_;
-      }
-      return *this;
-    }
-
-into the declaration of the template class
-
-template<int codim, int dim, class GridImp> class FoamGridEntity.
-
-4. Compile and install the corrected Dune modules.
-
-(Note: if you have already installed Dune, it is sufficient to make the corrections in the installed header files.)
-
-5. Install the Boost::test unit test framework.
+BEMPP is a novel open source HPC boundary element library. Coding has started October 2011.
 
 
-COMPILATION AND INSTALLATION
+The available objects are in an early stage and not yet usable in any application. If you want to compile the code please be aware that we do not yet guarantee that every commit will compile.
 
-1. Create a subdirectory, e.g. "build", in the main "bempp" directory. cd to the directory you created.
+PREREQUESITES FOR COMPILATION
 
-cd bempp
-mkdir build
-cd build
+You need to have the Armadillo C++ Linear Algebra environment installed in a path that can be found by the compiler. Also Boost needs to be installed. 
 
-2. Inside the new directory, run CMake. You can control the build configuration (Debug/Release/...) with the -DCMAKE_BUILD_TYPE option. By default, CMake will generate standard Makefiles (at least in Linux). You can produce e.g. an Eclipse project (convenient for source browsing and debugging) with the "-G 'Eclipse CDT4 - Unix Makefiles'" options.
+COMPILATION
 
-cmake ..
+1.) Go into the contrib directory and call 'cmake .'. Cmake will now attempt to download Dune and apply a few patches. 
+2.) Go into the main Bempp directory and create a build directory via 'mkdir build'.
+3.) Change into this directory via 'cd build' and call 'cmake ..'
+4.) In the configuration variables give the full filenames of your blas libraries separated by spaces.
+5.) Generate the makefiles and call 'make' to compile everything.
+6.) To get the documentation call 'make doc'. Note that for this Doxygen must be installed.
 
-or e.g.
-
-cmake -DCMAKE_BUILD_TYPE=Debug -G 'Eclipse CDT4 - Unix Makefiles' ..
-
-Note: you can have multiple build configurations simultaneously in different build directories.
-
-By default, unit tests are built (this requires the Boost Test Library to be installed). This can be switched off with -DWITH_TESTS=OFF.
-
-3. Compile the sources with 
-
-make
-
-4. (Optional) Build the documentation with 
-
-make doc
-
-(requires Doxygen to be installed).
-
-5. (Optional) Run all unit tests with
-
-make test
-
-Note that currently there is one test that (deliberately) fails.
-
-6. (Optional) Install the library and header files with
-
-make install
-
-(must be run as root).
-
-7. (Optional) Uninstall the library and header files with
-
-make uninstall
-
-
-
-CONFIGURATION OF ECLIPSE
-
-1. Follow the first two steps of the procedure above.
-
-2. Open eclipse. Click "File | New | C++ Project".
-
-Choose a project name, unselect "Use default location" and specify the path to the cloned "bempp" directory. Select "Makefile project | Empty project | -- Other Toolchain --". Click "Next >".
-
-Click "Advanced settings". 
-
-Click "C/C++ Build". Unselect "Use default build command". In the field "Build command" enter "make -C ${ProjDirPath}/<build_dir> VERBOSE=1", where <build_dir> is the name of the directory in which you ran CMake previously. In the "Build directory" enter "${ProjDirPath}/<build_dir>" (if this is not done, Eclipse will fail to find executables for running/debugging). Click "OK".
-
-Click "Finish".
-
-If desired, multiple configurations (e.g. for release and debug) can be created by clicking "Project | Build Configurations | Manage...".
-
-3. Right-click the project name in the "Project explorer" tab on the left-hand side of the Eclipse window and select "Team | Share project...". Select "Git", click "Next". Select "Use or create repository in parent folder of project" and the "bempp" item in the list. Click "Finish".
-
-You can check that Git integration works by right-clicking the README file in the Project explorer and choosing "Team | Show in history". A list of previous modifications of the README should be shown.
