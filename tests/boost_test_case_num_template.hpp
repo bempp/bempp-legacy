@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 //  This file contains fragments of the source code of the Boost::Test library
-// (specifically, test_case_template.hpp and boost/test/unit_test.suite.hpp).
+// (specifically, test_case_template.hpp and boost/test/unit_test_suite.hpp).
 
 //  This is the original licence statement accompanying these files:
 
@@ -29,9 +29,10 @@
 
 /** \file
 
-    Implements support for test cases templates instantiated with sequence of
-    test types defining an integer constant value, such as boost::mpl::int_.
-    This value is used to provide a human-readable test name.
+    Adds support for test case templates instantiated with a
+    sequence of test types, such as boost::mpl::int_<...>, whose member
+    "value" defines an integer constant. This value is then used
+    instead of the type id to provide a human-readable test name.
 
     \example
     #include "boost_test_case_num_template.hpp"
@@ -45,7 +46,7 @@
         BOOST_CHECK_EQUAL(T::value, 3); // will fail
     }
 
-    A typical message output by Boost::Test will be
+    A typical message output by Boost::Test if such a test fails will be
     filename.cpp(266): error in "my_test<0>": check T::value == 3 failed [0 != 3]
 */
 // ***************************************************************************
@@ -55,6 +56,7 @@
 
 // Boost.Test
 #include <boost/test/unit_test_suite.hpp>
+#include <boost/test/test_case_template.hpp>
 
 // Boost
 #include <boost/mpl/for_each.hpp>
@@ -87,20 +89,10 @@ namespace unit_test {
 
 namespace ut_detail {
 
-// ************************************************************************** //
-// **************          test_case_template_invoker          ************** //
-// ************************************************************************** //
-
-template<typename TestCaseTemplate,typename TestType>
-class test_case_template_invoker {
-public:
-    void    operator()()    { TestCaseTemplate::run( (boost::type<TestType>*)0 ); }
-};
-
 //____________________________________________________________________________//
 
 // ************************************************************************** //
-// **************           generate_test_case_4_type          ************** //
+// ************           generate_test_case_4_num_type          ************ //
 // ************************************************************************** //
 
 template<typename Generator,typename TestCaseTemplate>
@@ -135,7 +127,7 @@ private:
 };
 
 // ************************************************************************** //
-// **************              test_case_template              ************** //
+// ************              test_case_num_template              ************ //
 // ************************************************************************** //
 
 template<typename TestCaseTemplate,typename TestTypesList>
@@ -180,10 +172,10 @@ public:
 //____________________________________________________________________________//
 
 // ************************************************************************** //
-// **************        BOOST_AUTO_TEST_CASE_TEMPLATE         ************** //
+// ************        BOOST_AUTO_TEST_CASE_NUM_TEMPLATE         ************ //
 // ************************************************************************** //
 
-#define BOOST_AUTO_TEST_CASE_NUM_TEMPLATE( test_name, type_name, TL )       \
+#define BOOST_AUTO_TEST_CASE_NUM_TEMPLATE( test_name, type_name, TL )   \
 template<typename type_name>                                            \
 struct test_name : public BOOST_AUTO_TEST_CASE_FIXTURE                  \
 { void test_method(); };                                                \
@@ -197,8 +189,8 @@ struct BOOST_AUTO_TC_INVOKER( test_name ) {                             \
     }                                                                   \
 };                                                                      \
                                                                         \
-BOOST_AUTO_TC_REGISTRAR( test_name )(                                   \
-    boost::unit_test::ut_detail::num_template_test_case_gen<                \
+BOOST_AUTO_TU_REGISTRAR( test_name )(                                   \
+    boost::unit_test::ut_detail::num_template_test_case_gen<            \
         BOOST_AUTO_TC_INVOKER( test_name ),TL >(                        \
           BOOST_STRINGIZE( test_name ) ) );                             \
                                                                         \
