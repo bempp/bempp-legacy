@@ -165,10 +165,6 @@ public:
         updateSubentity();
     }
 
-    virtual bool finished() const {
-        return m_cur_n == m_dune_entity->template count<codimSub>();
-    }
-
     virtual const Entity<ConcreteSubentityIterator::codimension>& entity() const {
         return m_subentity;
     }
