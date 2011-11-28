@@ -33,9 +33,9 @@ template<int codim> class Entity;
 
 /** \brief Abstract base class for iterators over entities.
 
-    \param codim Codimension of the entities iterated over
+    \param codim Codimension of the entities iterated over.
 
-    Typical usage (ConcreteEntityIterator is some subclass of EntityIterator):
+    Typical usage (here \p ConcreteEntityIterator is some subclass of <tt>EntityIterator<codim></tt>):
 
     \code
     ConcreteEntityIterator* it = ...();
@@ -48,10 +48,6 @@ template<int codim> class Entity;
     delete it;
     \endcode
 
-    \todo Various optimisations are possible in order to eliminate some virtual
-    function calls. For example, next() might precompute an m_at_end flag and
-    update an internal "const Entity*" pointer.
-
     \internal Reminder: The template parameter codim is necessary because the
     entity() method must know the codimension of the entity to which it returns
     a reference.
@@ -62,7 +58,7 @@ class EntityIterator: public EntityPointer<codim>
 protected: /* Can't be changed to private, derived classes use it */
     bool m_finished;
 public:
-    /** \brief Increment iterator */
+    /** \brief Increment iterator. */
     virtual void next() = 0;
 
     /** \brief True if iterator points past the end of the iteration range */
@@ -73,11 +69,11 @@ public:
     // virtual void reset() = 0; // Would such a method be useful?
 
     // This redeclaration appears so that the docstring can be changed wrt. to the base class.
-    /** \brief Read-only access to the entity referenced by the iterator */
+    /** \brief Read-only access to the entity referenced by the iterator. */
     virtual const Entity<codim>& entity() const = 0;
 };
 
-/** \brief Iterator over entities referenced by a range of Dune iterators. */
+/** \brief Iterator over entities referenced by a range of Dune iterators of type \p DuneEntityIt. */
 template<typename DuneEntityIt>
 class ConcreteRangeEntityIterator: public EntityIterator<
     DuneEntityIt::codimension>
@@ -97,7 +93,7 @@ private:
     }
 
 public:
-    /** Constructor. The iterator will go over the range [begin, end). */
+    /** \brief Constructor. The iterator will go over the range [\p begin, \p end). */
     ConcreteRangeEntityIterator(const DuneEntityIt& begin,
                                 const DuneEntityIt& end) :
         m_begin(begin), m_end(end), m_cur(begin) {
@@ -116,9 +112,10 @@ public:
     }
 };
 
-/** \brief Iterator over the subentities of codimension codim of a given entity */
-template<typename DuneEntity, int codim>
-class ConcreteSubentityIterator: public EntityIterator<codim>
+/** \brief Iterator over the subentities of codimension \p codimSub
+    of a given Dune entity of type \p DuneEntity. */
+template<typename DuneEntity, int codimSub>
+class ConcreteSubentityIterator: public EntityIterator<codimSub>
 {
     dune_static_assert(DuneEntity::codimension == 0,
                        "ConcreteSubentityIterator: only codim-0 entities "
@@ -127,7 +124,9 @@ class ConcreteSubentityIterator: public EntityIterator<codim>
                        "ConcreteSubentityIterator: subentity codimension "
                        "must exceed entity codimension");
 public:
-    typedef typename DuneEntity::template Codim<codim>::EntityPointer DuneSubentityPointer;
+    /** \brief Type of the Dune entity pointer corresponding to \p DuneEntity. */
+    typedef typename DuneEntity::template Codim<codimSub>::EntityPointer DuneSubentityPointer;
+    /** \brief Type of the appropriate subentity of \p DuneEntity. */
     typedef typename DuneSubentityPointer::Entity DuneSubentity;
 
 private:
@@ -138,37 +137,24 @@ private:
 
     void updateFinished() {
         this->m_finished =
-            (m_cur_n == m_dune_entity->template count<codim>());
+            (m_cur_n == m_dune_entity->template count<codimSub>());
     }
 
-    /** \bug In order to make this compile it is necessary to define an assignment operator for
-    	the nonspecialised (i.e. arbitrary codimension) Dune::FoamGridEntity class, like this:
-
-    	(in template<int codim, int dim, class GridImp> class FoamGridEntity)
-    	FoamGridEntity& operator=(const FoamGridEntity& original)
-    	{
-    	if (this != &original)
-    	{
-    	geo_.reset();
-    	target_ = original.target_;
-    	}
-    	return *this;
-    	}
-    */
     void updateSubentity() {
         if (!this->finished()) {
-            m_dune_subentity_ptr = m_dune_entity->template subEntity<codim>(
+            m_dune_subentity_ptr = m_dune_entity->template subEntity<codimSub>(
                 m_cur_n);
             m_subentity.setDuneEntity(&*m_dune_subentity_ptr);
         }
     }
 
 public:
-    /** Constructor
+    /** \brief Constructor.
+
     	\param dune_entity Entity whose subentities will be iterated over */
     explicit ConcreteSubentityIterator(const DuneEntity* dune_entity) :
         m_dune_entity(dune_entity), m_dune_subentity_ptr(
-            m_dune_entity->template subEntity<codim>(0)), m_subentity(
+            m_dune_entity->template subEntity<codimSub>(0)), m_subentity(
                 &*m_dune_subentity_ptr), m_cur_n(0) {
         updateFinished();
     }
@@ -180,7 +166,7 @@ public:
     }
 
     virtual bool finished() const {
-        return m_cur_n == m_dune_entity->template count<codim>();
+        return m_cur_n == m_dune_entity->template count<codimSub>();
     }
 
     virtual const Entity<ConcreteSubentityIterator::codimension>& entity() const {

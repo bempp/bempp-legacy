@@ -27,21 +27,21 @@ namespace Bempp
 // Forward declarations
 template<int codim> class Entity;
 
-/** Abstract wrapper of an index set */
+/** \brief Abstract wrapper of an index set. */
 class IndexSet
 {
 public:
-    /** Detructor */
+    /** \brief Destructor. */
     virtual ~IndexSet() {
     }
 
-    /** Index type
+    /** \brief Index type.
 
      \internal Sadly, it is necessary to specify this type uniformly for all grid classes.
      */
     typedef unsigned int IndexType;
 
-    /** \brief Map entity of codimension 0 to index.
+    /** \brief Index of the entity \e of codimension 0.
 
      The result of calling this method with an entity that is not
      in the index set is undefined.
@@ -49,39 +49,51 @@ public:
      \return An index in the range 0 ... (max number of entities in set - 1).
      */
     virtual IndexType entityIndex(const Entity<0>& e) const = 0;
-    /** \brief Map entity of codimension 1 to index. */
+    /** \brief Index of the entity \e of codimension 1.
+
+     \overload
+     */
     virtual IndexType entityIndex(const Entity<1>& e) const = 0;
-    /** \brief Map entity of codimension 2 to index. */
+    /** \brief Index of the entity \e of codimension 2.
+
+     \overload
+     */
     virtual IndexType entityIndex(const Entity<2>& e) const = 0;
-    /** \brief Map entity of codimension 3 to index. */
+    /** \brief Index of the entity \e of codimension 3.
+
+     \overload
+     */
     virtual IndexType entityIndex(const Entity<3>& e) const = 0;
 };
 
-/** \brief Wrapper of the index set specific to a Dune grid view class DuneGridView
+/** \brief Wrapper of the index set specific to a Dune grid view class \p DuneGridView
 
  \internal The grid view class, rather than an index set class, is used as a
  template parameter because the latter doesn't provide information about the
  entity type.
 
- For consistency with IdSet it would be possible to take as parameters
- DuneGrid and DuneIndexSet instead.
+ For consistency with \p IdSet it would be possible to take as parameters
+ \p DuneGrid and \p DuneIndexSet instead.
  */
 template<typename DuneGridView>
 class ConcreteIndexSet: public IndexSet
 {
 public:
+    /** \brief Type of the wrapped Dune index set. */
     typedef typename DuneGridView::IndexSet DuneIndexSet;
 
 private:
     const DuneIndexSet* m_dune_index_set;
 
 public:
-    /**  Constructor */
+    /** \brief Constructor.
+
+    This object does not assume ownership of \p *dune_index_set.*/
     explicit ConcreteIndexSet(const DuneIndexSet* dune_index_set) :
         m_dune_index_set(dune_index_set) {
     }
 
-    /** Read-only access to the underlying Dune index set */
+    /** \brief Read-only access to the underlying Dune index set. */
     const DuneIndexSet& duneIndexSet() const {
         return *m_dune_index_set;
     }

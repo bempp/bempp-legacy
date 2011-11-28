@@ -29,28 +29,84 @@
 
 namespace Bempp {
 
+// Forward declarations
 class Grid;
 
+/** \brief %Grid parameters.
+
+  This structure is used to specify parameters of grid constructed by GridFactory.
+  */
 struct GridParameters
 {
+    /** \brief %Grid topology */
     enum Topology {
-        LINEAR, /**< one-dimensional grid */
-        TRIANGULAR, QUADRILATERAL, HYBRID
+        LINEAR, /**< \brief one-dimensional grid */
+        TRIANGULAR, /**< \brief grid composed of triangular elements */
+        QUADRILATERAL, /**< \brief grid composed of quadrilateral elements */
+        HYBRID /**< \brief grid composed (potentially) both of triangular and quadrilateral elements */
     } topology;
 };
 
+/** \brief %Grid factory.
+
+  This class provides static member functions to construct grids on the fly and to import grids from
+  existing files.
+  */
 class GridFactory
 {
 public:
+    /** \brief Construct a regular structured grid.
+
+      \param params     Parameters of the grid to be constructed.
+      \param lowerLeft  Coordinates of the lower left corner of the grid.
+      \param upperRight Coordinates of the upper right corner of the grid.
+      \param nElements  Number of grid subdivisions in each direction.
+
+      This function constructs a regular structured grid. Its dimension, \p
+      dimGrid, and the dimension of the surrounding space, \p dimWorld, are determined from the parameter \p params.
+      The constructed grid covers the \p dimGrid-dimensional cube
+
+      [lowerLeft(0) upperRight(0)] x [lowerLeft(1) upperRight(1)] x ... x [lowerLeft(dimGrid-1), upperRight(dimGrid-1)].
+
+      The last \p dimWorld - \p dimGrid dimensions of all grid points are set to zero.
+
+      Each side of the cube parallel to the <em>n</em>th coordinate axis is subdivided into nElements(n) segments.
+
+      \note Currently only grids with trangular topology are supported.
+    */
     static std::auto_ptr<Grid> createStructuredGrid(const GridParameters& params,
                                                     const arma::Col<ctype>& lowerLeft,
                                                     const arma::Col<ctype>& upperRight,
                                                     const arma::Col<unsigned int>& nElements);
 
+    /** \brief Import grid from a file in Gmsh format.
+
+      \param params Parameters of the grid to be constructed.
+      \param fileName Name of the Gmsh file.
+      \param verbose  Output diagnostic information.
+      \param insertBoundarySegments
+
+      \bug Ask Dune developers about the significance of insertBoundarySegments.
+      \see <a href>http://geuz.org/gmsh/</a> for information about the Gmsh file format.
+      \see Dune::GmshReader documentation for information about the supported Gmsh features.
+    */
     static std::auto_ptr<Grid> importGmshGrid(const GridParameters& params,
                                               const std::string& fileName,
                                               bool verbose=true, bool insertBoundarySegments=true);
 
+    /** \brief Import grid from a file in Gmsh format.
+
+      \param params Parameters of the grid to be constructed.
+      \param fileName Name of the Gmsh file.
+      \param boundaryId2PhysicalEntity
+      \param elementIndex2PhysicalEntity
+      \param verbose  Output diagnostic information.
+      \param insertBoundarySegments
+
+      \bug Ask Dune developers about the significance of the undocumented parameters.
+      \see <a href>http://geuz.org/gmsh/</a> for information about the Gmsh file format.
+      \see Dune::GmshReader documentation for information about the supported Gmsh features.
+    */
     static std::auto_ptr<Grid> importGmshGrid(const GridParameters& params,
                                               const std::string& fileName,
                                               std::vector<int>& boundaryId2PhysicalEntity,

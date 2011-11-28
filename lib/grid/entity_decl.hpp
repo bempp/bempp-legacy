@@ -36,24 +36,21 @@ class Geometry;
 template<int codim> class EntityPointer;
 template<int codim> class EntityIterator;
 
-/** \brief Abstract wrapper of an entity.
-
- \param codim entity's codimension
- */
+/** \brief Abstract wrapper of an entity of codimension \p codim. */
 template<int codim>
 class Entity
 {
 public:
-    /** Destructor */
+    /** \brief Destructor */
     virtual ~Entity() {
     }
 
-    /** Entity codimension */
+    /** \brief %Entity codimension. */
     enum {
         codimension = codim
     };
 
-    /** Entity level */
+    /** \brief %Entity level. */
     virtual int level() const = 0;
 
     /** \brief Reference to the geometry of this entity.
@@ -66,29 +63,31 @@ public:
      */
     virtual const Geometry& geometry() const = 0;
 
-    /** \brief Return the name of the reference element. The type can
-     be used to access the Dune::GenericReferenceElement.
+    /** \brief Type of the reference element.
+
+     The type can be used to access the Dune::GenericReferenceElement.
      */
     virtual GeometryType type() const = 0;
 };
 
-/** Abstract wrapper of an entity of codimension 0. */
+/** \brief Abstract wrapper of an entity of codimension 0. */
 template<>
 class Entity<0>
 {
 public:
-    /** Destructor */
+    /** \brief Destructor. */
     virtual ~Entity() {
     }
 
-    /** Entity codimension */
+    /** \brief %Entity codimension. */
     enum {
         codimension = 0
     };
 
-    /** @name Methods shared by entities of all codimensions @{ */
+    /** @name Methods shared by entities of all codimensions
+    @{ */
 
-    /** Entity level */
+    /** \brief %Entity level */
     virtual int level() const = 0;
 
     /** \brief Reference to the geometry of this entity.
@@ -101,27 +100,34 @@ public:
      */
     virtual const Geometry& geometry() const = 0;
 
-    /** \brief Return the name of the reference element. The type can
-     be used to access the Dune::GenericReferenceElement.
+    /** \brief Type of the reference element.
+
+    The type can be used to access the Dune::GenericReferenceElement.
      */
     virtual GeometryType type() const = 0;
 
-    /** @} @name Extended interface of entities of codimension 0 @{ */
+    /** @}
+    @name Extended interface of entities of codimension 0
+    @{ */
 
-    /** \brief Number of vertices. This method is in principle
+    /** \brief Number of vertices.
+
+    This method is in principle
      redundant because this information can be obtained via the
      reference element of the geometry. It is there for efficiency
      reasons and to make the interface self-contained.
      */
     virtual int vertexCount() const = 0;
 
-    /** \brief Number of edges. This method is in principle
+    /** \brief Number of edges.
+
+    This method is in principle
      redundant because this information can be obtained via the
      reference element of the geometry. It is there for efficiency
      reasons and to make the interface self-contained. */
     virtual int edgeCount() const = 0;
 
-    /** \brief Iterator over subentities of codimension codimSub.
+    /** \brief Iterator over subentities of codimension \p codimSub.
 
     \note codimSub must be greater than 0 and less than the dimension of the grid. */
     // Default implementation, specialisations for potentially allowed codimensions follow
@@ -132,7 +138,7 @@ public:
     }
 
     // To be implemented later.
-    //  /** \brief Access to intersections with neighboring leaf elements.
+    //  /* \brief Access to intersections with neighboring leaf elements.
     //     A neighbor is an entity of codimension 0
     //     which has an intersection of codimension 1 in common with this entity.
     //     Access to those neighbors is provided using the IntersectionIterator.
@@ -144,7 +150,7 @@ public:
     //  */
     //  virtual SurfaceGridIntersectionIterator ileafbegin() const = 0;
 
-    //  /** \brief Reference to an IntersectionIterator one past the last intersection
+    //  /* \brief Reference to an IntersectionIterator one past the last intersection
 
     //     \note If the partitionType of the Entity is GhostEntity,
     //     this method might give you only one neighbor, which is the
@@ -152,7 +158,7 @@ public:
     //  */
     //  virtual SurfaceGridIntersectionIterator ileafend() const = 0;
 
-    //  /** \brief Intra-level access to intersections with neighboring elements.
+    //  /* \brief Intra-level access to intersections with neighboring elements.
     //     A neighbor is an entity of codimension 0
     //     which has an intersection of codimension 1 in common with this entity.
     //     Access to those neighbors is provided using the IntersectionIterator.
@@ -164,7 +170,7 @@ public:
     //  */
     //  virtual SurfaceGridIntersectionIterator ilevelbegin() const = 0;
 
-    //  /** \brief Reference to an IntersectionIterator one past the last intersection
+    //  /* \brief Reference to an IntersectionIterator one past the last intersection
 
     //     \note If the partitionType of the Entity is GhostEntity,
     //     this method might give you only one neighbor, which is the
@@ -173,8 +179,10 @@ public:
     //  virtual SurfaceGridIntersectionIterator ilevelend() const = 0;
 
     /** \brief Inter-level access to father entity on the next-coarser grid.
+
      The given entity resulted directly from a subdivision of its father
-     entity. For the macro elements dereferencing the EntityPointer is undefined.
+     entity. For macro (level-0) elements the result of calling the entity() method
+     of the returned EntityPointer is undefined.
 
      \note If the partitionType of the Entity is GhostEntity,
      it is not guaranteed that this method is working
@@ -183,21 +191,22 @@ public:
      */
     virtual std::auto_ptr<EntityPointer<0> > father() const = 0;
 
-    /** \brief Return true if entity has a father entity which can be accessed
+    /** \brief True if entity has a father entity which can be accessed
      using the father() method.
      */
     virtual bool hasFather() const = 0;
 
-    /** Returns true if the entity is contained in the leaf grid */
+    /** \brief True if the entity is contained in the leaf grid. */
     virtual bool isLeaf() const = 0;
 
-    /** \brief Returns true if element is of regular type in red/green type refinement.
+    /** \brief True if the element is of regular type in red/green type refinement.
+
      In bisection or hanging node refinement this is always true.
      */
     virtual bool isRegular() const = 0;
 
     // To be implemented later.
-    //  /** \brief Provides information how this element has been subdivided from
+    //  /* \brief Provides information how this element has been subdivided from
     //     its father element.
     //     The returned LocalGeometry is a model of Dune::Geometry<dimension,dimension,...>
     //     mapping from the reference element of the given element to the reference
@@ -220,10 +229,8 @@ public:
     /** \brief Inter-level access to elements that resulted from (recursive)
      subdivision of this element.
 
-     \param[in] maxlevel Iterator does not stop at elements with level greater than maxlevel.
-     \return Iterator to the first son (level is not greater than maxlevel)
-
-     The caller is responsible for deleting the returned iterator.
+     \param[in] maxlevel Iterator does not stop at elements with level greater than \p maxlevel.
+     \return Iterator to the first son (level is not greater than \p maxlevel)
 
      \note If the partitionType of the Entity is GhostEntity,
      it is not guaranteed that this method is working
@@ -232,18 +239,21 @@ public:
      */
     virtual std::auto_ptr<EntityIterator<0> > sonIterator(int maxlevel) const = 0;
 
-    /** \brief Returns true if the entity has been created during the last call to adapt()
+    /** \brief True if the entity has been created during the last call to adapt().
      */
     virtual bool isNew() const = 0;
 
-    /** \brief Returns true if the entity might disappear during the next call to adapt().
+    /** \brief True if the entity might disappear during the next call to adapt().
+     *
      * If the method returns false, the entity is guaranteed to still be present after
      * adaptation.
      */
     virtual bool mightVanish() const = 0;
 
 private:
-    /** @} @name Internal methods @{ */
+    /** @}
+    @name Internal methods
+    @{ */
 
     /** \brief Iterator over subentities of codimension 1. */
     virtual std::auto_ptr<EntityIterator<1> > subEntityCodim1Iterator() const = 0;
@@ -272,10 +282,10 @@ inline std::auto_ptr<EntityIterator<3> > Entity<0>::subEntityIterator<3>() const
 }
 
 
-/** \brief Wrapper of a Dune entity of type DuneEntity and codimension codim
+/** \brief Wrapper of a Dune entity of type \p DuneEntity and codimension \p codim.
 
  \note The codimension must be given explicitly (even though it could be
- derived from the traits of DuneEntity) because this class needs to be
+ derived from the traits of \p DuneEntity) because this class needs to be
  specialised for entities of codimension 0.
  */
 template<int codim, typename DuneEntity>
@@ -299,16 +309,19 @@ private:
     }
 
 public:
-    /** Default constructor */
+    /** \brief Default constructor */
     ConcreteEntity() :
         m_dune_entity(0) {
     }
 
-    /** Constructor from a pointer to DuneEntity */
+    /** \brief Constructor from a pointer to DuneEntity.
+
+    \note This object does not acquire ownership of \p *dune_entity. */
     ConcreteEntity(const DuneEntity* dune_entity) :
         m_dune_entity(dune_entity) {
     }
 
+    /** \brief Read-only access to the underlying Dune entity object. */
     const DuneEntity& duneEntity() const {
         return *m_dune_entity;
     }
@@ -327,7 +340,7 @@ public:
     }
 };
 
-/** \brief Wrapper of a Dune entity of type DuneEntity and codimension 0
+/** \brief Wrapper of a Dune entity of type \p DuneEntity and codimension 0
  */
 
 template<typename DuneEntity>
@@ -351,17 +364,19 @@ private:
     }
 
 public:
-    /** Default constructor */
+    /** \brief Default constructor */
     ConcreteEntity() :
         m_dune_entity(0) {
     }
 
-    /** Constructor from a pointer to DuneEntity */
+    /** \brief Constructor from a pointer to DuneEntity.
+
+    \note This object does not acquire ownership of \p *dune_entity. */
     explicit ConcreteEntity(const DuneEntity* dune_entity) :
         m_dune_entity(dune_entity) {
     }
 
-    /** Read-only access to the underlying DuneEntity object */
+    /** \brief Read-only access to the underlying Dune entity object */
     const DuneEntity& duneEntity() const {
         return *m_dune_entity;
     }

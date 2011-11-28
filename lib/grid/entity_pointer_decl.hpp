@@ -29,7 +29,7 @@ template<int codim> class Entity;
 
 /**
  \brief Abstract base class for an object providing read-only access to an
- entity of codimension codim.
+ entity of codimension \p codim.
 
  \internal Reminder: The template parameter codim is necessary because the
  entity() method must know the codimension of the entity to which it returns
@@ -39,22 +39,21 @@ template<int codim>
 class EntityPointer
 {
 public:
-    /** Destructor */
+    /** \brief Destructor */
     virtual ~EntityPointer() {
     }
 
-    /** Entity codimension */
+    /** \brief Entity codimension */
     enum {
         codimension = codim
     };
 
-    /** Read-only access to the underlying entity */
+    /** \brief Read-only access to the underlying entity */
     virtual const Entity<codim>& entity() const = 0;
 };
 
 /**
- \brief A class providing read-only access to a wrapper of a Dune entity of
- type DuneEntity.
+ \brief Wrapper of a Dune entity pointer of type \p DuneEntityPointer.
  */
 template<typename DuneEntityPointer>
 class ConcreteEntityPointer: public EntityPointer<DuneEntityPointer::codimension>
@@ -69,7 +68,7 @@ private:
     }
 
 public:
-    /** Constructor */
+    /** \brief Constructor */
     explicit ConcreteEntityPointer(const DuneEntityPointer& dune_entity_pointer) :
         m_dune_entity_ptr(dune_entity_pointer) {
         updateEntity();

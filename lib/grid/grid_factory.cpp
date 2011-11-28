@@ -33,7 +33,7 @@ std::auto_ptr<Grid> GridFactory::createStructuredGrid(
         const GridParameters& params, const arma::Col<ctype>& lowerLeft,
         const arma::Col<ctype>& upperRight, const arma::Col<unsigned int>& nElements)
 {
-    /** \todo Support quadrilateral and linear grids */
+    // TODO: Support quadrilateral and linear grids
 
     // Check arguments
     if (params.topology != GridParameters::TRIANGULAR)
@@ -49,7 +49,7 @@ std::auto_ptr<Grid> GridFactory::createStructuredGrid(
         throw std::invalid_argument("GridFactory::createStructuredGrid(): all entries in nElements must be positive");
 
     // Convert Armadillo vectors to Dune vectors
-    /** \todo Write nice conversion functions */
+    // TODO: Write nice conversion functions
     Dune::FieldVector<ctype,dimGrid> duneLowerLeft;
     duneLowerLeft[0] = lowerLeft(0); duneLowerLeft[1] = lowerLeft(1);
     Dune::FieldVector<ctype,dimGrid> duneUpperRight;
@@ -58,7 +58,7 @@ std::auto_ptr<Grid> GridFactory::createStructuredGrid(
     duneNElements[0] = nElements(0); duneNElements[1] = nElements(1);
 
     std::auto_ptr<DefaultDuneGrid> apDuneGrid;
-    /** \todo Support quadrilateral grids using createCubeGrid() */
+    // TODO: Support quadrilateral grids using createCubeGrid()
     apDuneGrid = Dune::BemppStructuredGridFactory<DefaultDuneGrid>::
             createSimplexGrid(duneLowerLeft, duneUpperRight, duneNElements);
     return std::auto_ptr<Grid>(new DefaultGrid(apDuneGrid.release(), true)); // true -> owns Dune grid

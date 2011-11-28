@@ -31,23 +31,24 @@
 namespace Bempp
 {
 
-/** Abstract wrapper of a geometry */
+/** \brief Abstract wrapper of a geometry. */
 class Geometry
 {
 public:
-    /** Destructor */
+    /** \brief Destructor. */
     virtual ~Geometry() {}
 
-    /** \brief Type of the reference element. The type can
-      be used to access the Dune::GenericReferenceElement.
+    /** \brief Type of the reference element.
+
+     The type can be used to access the <tt>Dune::GenericReferenceElement</tt>.
      */
     virtual GeometryType type() const = 0;
 
-    /** \brief True if the geometry mapping is affine and false otherwise */
+    /** \brief True if the geometry mapping is affine and false otherwise. */
     virtual bool affine() const = 0;
 
     /** \brief Number of corners of the reference element.
-     *
+
       Since a geometry is a convex polytope the number of corners is a
       well-defined concept. The method is redundant because this
       information is also available via the reference element. It is
@@ -170,7 +171,7 @@ public:
                                            arma::Cube<ctype>& jacobian_inv_t) const = 0;
 };
 
-/** Wrapper of a Dune geometry of type DuneGeometry */
+/** \brief Wrapper of a Dune geometry of type \p DuneGeometry */
 
 template<typename DuneGeometry>
 class ConcreteGeometry : public Geometry
@@ -178,7 +179,7 @@ class ConcreteGeometry : public Geometry
 private:
     const DuneGeometry* m_dune_geometry;
 
-    /** \brief Default constructor
+    /** \brief Default constructor.
 
     \internal Should be used only by friend classes that call setDuneGeometry() later on. */
     ConcreteGeometry() : m_dune_geometry(0) {
@@ -191,10 +192,14 @@ private:
     template<int codim, typename DuneEntity> friend class ConcreteEntity;
 
 public:
-    /** Constructor from a pointer to DuneGeometry */
+    /** \brief Constructor from a pointer to DuneGeometry.
+
+      This object does not assume ownership of \p *dune_geometry.
+    */
     explicit ConcreteGeometry(const DuneGeometry* dune_geometry) :
         m_dune_geometry(dune_geometry) {}
 
+    /** \brief Read-only access to the underlying Dune geometry object. */
     const DuneGeometry& duneGeometry() const {
         return *m_dune_geometry;
     }

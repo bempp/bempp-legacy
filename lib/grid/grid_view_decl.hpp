@@ -37,7 +37,7 @@ template<int codim> class EntityIterator;
 class IndexSet;
 class VtkWriter;
 
-/** Abstract wrapper of a grid view */
+/** \brief Abstract wrapper of a grid view */
 class GridView
 {
 public:
@@ -51,23 +51,35 @@ public:
     /** \brief The index set */
     virtual const IndexSet& indexSet() const = 0;
 
-    /** \brief Number of entities in a given codimension */
+    /** \brief Number of entities with codimension \p codim. */
     virtual int size(int codim) const = 0;
 
-    /** \brief Number of entities with a given geometry type */
+    /** \brief Number of entities with geometry type \p type. */
     virtual int size(const GeometryType &type) const = 0;
 
-    /** \brief True if the given entity is contained in this grid view.
+    /** \brief True if the entity \p e of codimension 0 is contained in this grid view.
        *
-       * \note If e is not an element of the grid, then
-       *       the result of containsVertex() is undefined.
+       * \note If \p e is not an element of the grid, then
+       *       the result of containsEntity() is undefined.
        */
     virtual bool containsEntity(const Entity<0>& e) const = 0;
+    /** \brief True if the entity \p e of codimension 1 is contained in this grid view.
+
+      \overload
+    */
     virtual bool containsEntity(const Entity<1>& e) const = 0;
+    /** \brief True if the entity \p e of codimension 2 is contained in this grid view.
+
+      \overload
+    */
     virtual bool containsEntity(const Entity<2>& e) const = 0;
+    /** \brief True if the entity \p e of codimension 3 is contained in this grid view.
+
+      \overload
+    */
     virtual bool containsEntity(const Entity<3>& e) const = 0;
 
-    /** \brief Iterator over entities of codimension codim contained in this view. */
+    /** \brief Iterator over entities of codimension \p codim contained in this view. */
     // Default implementation; specialisations for potentially allowed codimensions follow
     // after class declaration.
     template<int codim>
@@ -81,7 +93,7 @@ public:
     virtual std::auto_ptr<VtkWriter> vtkWriter(Dune::VTK::DataMode dm=Dune::VTK::conforming) const = 0;
 
 private:
-    /** \brief Iterator over entities of codimension codim contained in this view. */
+    /** \brief Iterator over entities of codimension 0 contained in this view. */
     virtual std::auto_ptr<EntityIterator<0> > entityCodim0Iterator() const = 0;
     /** \brief Iterator over entities of codimension 1 contained in this view. */
     virtual std::auto_ptr<EntityIterator<1> > entityCodim1Iterator() const = 0;
@@ -120,7 +132,7 @@ inline std::auto_ptr<EntityIterator<3> > GridView::entityIterator<3>() const
 }
 
 
-/** Wrapper of a Dune grid view of type DuneGridView. */
+/** \brief Wrapper of a Dune grid view of type \p DuneGridView. */
 template<typename DuneGridView>
 class ConcreteGridView: public GridView
 {
@@ -129,17 +141,17 @@ private:
     ConcreteIndexSet<DuneGridView> m_index_set;
 
 public:
-    /** Constructor */
+    /** \brief Constructor */
     explicit ConcreteGridView(const DuneGridView& dune_gv) :
         m_dune_gv(dune_gv), m_index_set(&dune_gv.indexSet()) {
     }
 
-    /** Read-only access to the underlying Dune grid view object. */
+    /** \brief Read-only access to the underlying Dune grid view object. */
     const DuneGridView& duneGridView() const {
         return m_dune_gv;
     }
 
-    /** Access to the underlying Dune grid view object. Use at your own risk! */
+    /** \brief Access to the underlying Dune grid view object. Use at your own risk! */
     DuneGridView& duneGridView() {
         return m_dune_gv;
     }

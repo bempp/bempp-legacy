@@ -28,38 +28,40 @@
 namespace Bempp
 {
 
-/** \brief Writer for the output of data in the vtk format.
+/** \brief Abstract exporter of data in the vtk format.
   *
-  * Writes data (living on cells or vertices of a grid)
+  * Exports data (living on cells or vertices of a grid)
   * to a file suitable for easy visualization with
   * <a href="http://public.kitware.com/VTK/">The Visualization Toolkit (VTK)</a>.
+  *
+  * Instances of concrete subclasses of this class can be created by GridView::vtkWriter().
   */
 class VtkWriter
 {
 public:
-    /** Destructor */
+    /** \brief Destructor */
     virtual ~VtkWriter() {}
 
-    /** \brief Add a grid function (represented by container) that lives on the cells of
+    /** \brief Add a grid function (represented by a container) that lives on the cells of
      *  the grid to the visualization output.
      *
-     *  \param data A matrix whose (m,n)th entry contains the value of the mth component of the grid function in the nth cell.
-     *  \param name A name to identify the grid function.
+     *  \param data Matrix whose (\e m, \e n)th entry contains the value of the <em>m</em>th component of the grid function in the <em>n</em>th cell.
+     *  \param name Name to identify the grid function.
      */
     virtual void addCellData(const arma::Mat<double>& data, const std::string &name) = 0;
 
-    /** \brief Add a grid function (represented by container) that lives on the vertices of the
+    /** \brief Add a grid function (represented by a container) that lives on the vertices of the
      *  grid to the visualization output.
      *
-     *  \param data A matrix whose (m,n)th entry contains the value of the mth component of the grid function in the nth vertex.
-     *  \param name A name to identify the grid function.
+     *  \param data Matrix whose (\e m, \e n)th entry contains the value of the <em>m</em>th component of the grid function in the <em>n</em>th vertex.
+     *  \param name Name to identify the grid function.
      */
     virtual void addVertexData(const arma::Mat<double>& data, const std::string &name) = 0;
 
-    /** Clear the list of registered functions. */
+    /** \brief Clear the list of registered functions. */
     virtual void clear() = 0;
 
-    /** \brief write output (interface might change later)
+    /** \brief Write output (interface might change later).
      *
      *  This method can be used in parallel as well as in serial programs.
      *  For serial runs (commSize=1) it chooses other names without the
@@ -75,7 +77,7 @@ public:
     virtual std::string write (const std::string &name,
                                Dune::VTK::OutputType type = Dune::VTK::ascii) = 0;
 
-    /** \brief write output (interface might change later)
+    /** \brief Write output (interface might change later).
      *
      * "pwrite" means "path write" (i.e. write somewhere else than the current
      * directory).  The "p" does not mean this method has a monopoly on
@@ -100,13 +102,14 @@ public:
      *       absolute, because that would require the value of the current
      *       directory.
      *
-     * \throw NotImplemented Extendpath is absolute but path is relative.
-     * \throw IOError        Failed to open a file.
+     * \throw Dune::NotImplemented Extendpath is absolute but path is relative.
+     * \throw Dune::IOError        Failed to open a file.
      */
     virtual std::string pwrite(const std::string& name, const std::string& path, const std::string& extendpath,
                                Dune::VTK::OutputType type = Dune::VTK::ascii) = 0;
 };
 
+/** \brief Wrapper of a Dune VTK writer for a grid view of type \p DuneGridView. */
 template <typename DuneGridView>
 class ConcreteVtkWriter : public VtkWriter
 {
@@ -115,9 +118,9 @@ class ConcreteVtkWriter : public VtkWriter
 
     friend std::auto_ptr<VtkWriter> ConcreteGridView<DuneGridView>::vtkWriter(Dune::VTK::DataMode dm) const;
 
-    /** \brief Construct a VtkWriter working on a specific DuneGridView.
+    /** \brief Construct a VtkWriter working on a specific \p DuneGridView.
      *
-     *  \param gv The grid view the grid functions live on. (E.g. a LevelGridView.)
+     *  \param gv The grid view the grid functions live on. (E.g. a \p LevelGridView.)
      *  \param dm The data mode.
      *
      *  \internal This constructor can only be called by the factory method ConcreteGridView::vtkWriter().

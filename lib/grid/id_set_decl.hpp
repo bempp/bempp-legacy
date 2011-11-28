@@ -29,34 +29,34 @@ namespace Bempp
 // Forward declarations
 template<int codim> class Entity;
 
-/** Abstract wrapper of an id set */
+/** \brief Abstract wrapper of an id set. */
 class IdSet
 {
 public:
-    /** Detructor */
+    /** \brief Destructor. */
     virtual ~IdSet() {
     }
 
-    /** Id type
+    /** \brief Id type.
 
      \internal Sadly, it is necessary to specify this type uniformly for all grid classes.
      */
     typedef unsigned int IdType;
 
-    /** \brief Map entity of codimension 0 to id. */
+    /** \brief Id of the entity \p e of codimension 0. */
     virtual IdType entityId(const Entity<0>& e) const = 0;
-    /** \brief Map entity of codimension 1 to id. */
+    /** \brief Id of the entity \p e of codimension 1. */
     virtual IdType entityId(const Entity<1>& e) const = 0;
-    /** \brief Map entity of codimension 2 to id. */
+    /** \brief Id of the entity \p e of codimension 2. */
     virtual IdType entityId(const Entity<2>& e) const = 0;
-    /** \brief Map entity of codimension 3 to id. */
+    /** \brief Id of the entity \p e of codimension 3. */
     virtual IdType entityId(const Entity<3>& e) const = 0;
 };
 
-/** \brief Wrapper of the Dune id set of type DuneIdSet providing access to the
- entities of a Dune grid of type DuneGrid.
+/** \brief Wrapper of a Dune id set of type \p DuneIdSet providing access to the
+ entities of a Dune grid of type \p DuneGrid.
 
- \internal Both these typenames are needed because Dune::IdSet does not export
+ \internal Both these typenames are needed because <tt>Dune::IdSet</tt> does not export
  entity type.
  */
 template<typename DuneGrid, typename DuneIdSet>
@@ -66,12 +66,15 @@ private:
     const DuneIdSet* m_dune_id_set;
 
 public:
-    /**  Constructor */
+    /** \brief Constructor.
+
+      This object does not assume ownership of \p *dune_id_set.
+    */
     explicit ConcreteIdSet(const DuneIdSet* dune_id_set) :
         m_dune_id_set(dune_id_set) {
     }
 
-    /** Read-only access to the underlying Dune id set */
+    /** \brief Read-only access to the underlying Dune id set. */
     const DuneIdSet& duneIdSet() const {
         return *m_dune_id_set;
     }
