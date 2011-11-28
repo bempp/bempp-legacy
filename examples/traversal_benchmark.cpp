@@ -81,8 +81,7 @@ int main()
             std::auto_ptr<EntityIterator<0> > leafFaceIt = leafGridView->entityIterator<0>();
             while (!leafFaceIt->finished()) {
                 ++j;
-                if (CALC_CENTER)
-                {
+                if (CALC_CENTER) {
                     const Entity<0>& e = leafFaceIt->entity();
                     Dune::GeometryType gt = e.type();
                     const Geometry& geo = e.geometry();
@@ -111,8 +110,7 @@ int main()
             std::auto_ptr<EntityIterator<2> > leafVertexIt = leafGridView->entityIterator<2>();
             while (!leafVertexIt->finished()) {
                 ++j;
-                if (CALC_CENTER)
-                {
+                if (CALC_CENTER) {
                     const Entity<2>& e = leafVertexIt->entity();
                     GeometryType gt = e.type();
                     const Geometry& geo = e.geometry();
@@ -152,8 +150,7 @@ int main()
             Codim::Iterator leafEnd = duneLeafGridView.end<0>();
             for (; leafFaceIt != leafEnd; ++leafFaceIt) {
                 ++j;
-                if (CALC_CENTER)
-                {
+                if (CALC_CENTER) {
                     const Codim::Entity& e = *leafFaceIt;
                     Dune::GeometryType gt = e.type();
                     const Codim::Entity::Geometry& geo = e.geometry();
@@ -183,8 +180,7 @@ int main()
             Codim::Iterator leafEnd = duneLeafGridView.end<2>();
             for (; leafVertexIt != leafEnd; ++leafVertexIt) {
                 ++j;
-                if (CALC_CENTER)
-                {
+                if (CALC_CENTER) {
                     const Codim::Entity& e = *leafVertexIt;
                     Dune::GeometryType gt = e.type();
                     const Codim::Entity::Geometry& geo = e.geometry();

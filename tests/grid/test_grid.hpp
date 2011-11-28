@@ -25,7 +25,8 @@
 #include "grid/grid.hpp"
 
 /** Fixture class for Bempp::Grid tests */
-class SimpleTriangularGridManager {
+class SimpleTriangularGridManager
+{
 public:
     enum { N_ELEMENTS_X = 3, N_ELEMENTS_Y = 4 };
 

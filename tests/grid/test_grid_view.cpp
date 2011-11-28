@@ -33,47 +33,55 @@ BOOST_FIXTURE_TEST_SUITE(GridView_Triangular_Level0, TriangularLevel0GridViewMan
 
 // size()
 
-BOOST_AUTO_TEST_CASE(size_is_zero_for_codim_3) {
+BOOST_AUTO_TEST_CASE(size_is_zero_for_codim_3)
+{
     BOOST_CHECK_EQUAL(bemppGridView->size(3), 0);
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(size_agrees_with_Dune_for_codim,
-                                  T, list_0_to_3) {
+                                  T, list_0_to_3)
+{
     const int codim = T::value;
     BOOST_CHECK_EQUAL(bemppGridView->size(codim), duneGridView.size(codim));
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(size_agrees_with_Dune_for_simplex_of_dim,
-                                  T, list_0_to_3) {
+                                  T, list_0_to_3)
+{
     const int dim = T::value;
     const GeometryType type(GeometryType::simplex, dim);
     BOOST_CHECK_EQUAL(bemppGridView->size(type), duneGridView.size(type));
 }
 
-BOOST_AUTO_TEST_CASE(size_agrees_with_Dune_for_cube_of_dim_2) {
+BOOST_AUTO_TEST_CASE(size_agrees_with_Dune_for_cube_of_dim_2)
+{
     const GeometryType type(GeometryType::cube, 2);
     BOOST_CHECK_EQUAL(bemppGridView->size(type), duneGridView.size(type));
 }
 
-BOOST_AUTO_TEST_CASE(size_is_zero_for_cube_of_dim_2) {
+BOOST_AUTO_TEST_CASE(size_is_zero_for_cube_of_dim_2)
+{
     const GeometryType type(GeometryType::cube, 2);
     BOOST_CHECK_EQUAL(bemppGridView->size(type), 0);
 }
 
 // entityIterator()
 
-BOOST_AUTO_TEST_CASE(entityIterator_throws_for_codim_3) {
+BOOST_AUTO_TEST_CASE(entityIterator_throws_for_codim_3)
+{
     BOOST_CHECK_THROW(bemppGridView->entityIterator<3>(), std::logic_error);
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_does_not_throw_for_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     BOOST_CHECK_NO_THROW(bemppGridView->entityIterator<codim>());
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_number_of_iterations_agrees_with_Dune_for_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
 
     std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
@@ -96,14 +104,16 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_number_of_iterations_agrees_wit
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_finished_does_not_return_true_immediately_for_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
     BOOST_CHECK(!it->finished());
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_second_entity_agrees_with_Dune_for_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
 
     arma::Col<double> elementCenter;
@@ -131,7 +141,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_second_entity_agrees_with_Dune_
 // containsEntity()
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(containsEntity_returns_true_for_second_entity_of_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
 
     std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
@@ -152,49 +163,57 @@ BOOST_FIXTURE_TEST_SUITE(GridView_Triangular_Leaf, TriangularLeafGridViewManager
 
 // size()
 
-BOOST_AUTO_TEST_CASE(size_is_zero_for_codim_3) {
+BOOST_AUTO_TEST_CASE(size_is_zero_for_codim_3)
+{
     BOOST_CHECK_EQUAL(bemppGridView->size(3), 0);
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(size_agrees_with_Dune_for_codim,
-                                  T, list_0_to_3) {
+                                  T, list_0_to_3)
+{
     const int codim = T::value;
     BOOST_CHECK_EQUAL(bemppGridView->size(codim), duneGridView.size(codim));
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(size_agrees_with_Dune_for_simplex_of_dim,
-                                  T, list_0_to_3) {
+                                  T, list_0_to_3)
+{
     const int dim = T::value;
     const GeometryType type(GeometryType::simplex, dim);
     BOOST_CHECK_EQUAL(bemppGridView->size(type), duneGridView.size(type));
 }
 
-BOOST_AUTO_TEST_CASE(size_agrees_with_Dune_for_cube_of_dim_2) {
+BOOST_AUTO_TEST_CASE(size_agrees_with_Dune_for_cube_of_dim_2)
+{
     const GeometryType type(GeometryType::cube, 2);
     BOOST_CHECK_EQUAL(bemppGridView->size(type), duneGridView.size(type));
 }
 
 // This test fails -- there is a bug in FoamGridLeafIndexSet::size(GeometryType)
 // (it just checks dimensions, the geometry type (simplex/cube/...) is not checked)
-BOOST_AUTO_TEST_CASE(size_is_zero_for_cube_of_dim_2) {
+BOOST_AUTO_TEST_CASE(size_is_zero_for_cube_of_dim_2)
+{
     const GeometryType type(GeometryType::cube, 2);
     BOOST_CHECK_EQUAL(bemppGridView->size(type), 0);
 }
 
 // entityIterator()
 
-BOOST_AUTO_TEST_CASE(entityIterator_throws_for_codim_3) {
+BOOST_AUTO_TEST_CASE(entityIterator_throws_for_codim_3)
+{
     BOOST_CHECK_THROW(bemppGridView->entityIterator<3>(), std::logic_error);
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_does_not_throw_for_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     BOOST_CHECK_NO_THROW(bemppGridView->entityIterator<codim>());
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_number_of_iterations_agrees_with_Dune_for_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
 
     std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
@@ -217,7 +236,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_number_of_iterations_agrees_wit
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_finished_does_not_return_true_immediately_for_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     // Testing behaviour at failure
     //    if (codim == 1)
@@ -227,7 +247,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_finished_does_not_return_true_i
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_second_entity_agrees_with_Dune_for_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
 
     arma::Col<double> elementCenter;
@@ -255,7 +276,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_second_entity_agrees_with_Dune_
 // containsEntity()
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(containsEntity_returns_true_for_second_entity_of_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
 
     std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();

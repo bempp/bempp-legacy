@@ -88,9 +88,12 @@ bool operator==(const Dune::FieldMatrix<T, rows, cols>& x, const arma::Mat<T>& y
 // For BOOST_CHECK_EQUAL to work, we need to copy these comparison operators
 // to the boost::test_tools:tt_detail namespace...
 
-namespace boost {
-namespace test_tools {
-namespace tt_detail {
+namespace boost
+{
+namespace test_tools
+{
+namespace tt_detail
+{
 
 template <typename T, int size>
 bool operator==(const ::arma::Col<T>& x, const ::Dune::FieldVector<T, size>& y)

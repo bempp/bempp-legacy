@@ -31,7 +31,8 @@ BOOST_FIXTURE_TEST_SUITE(Geometry_Triangular, TriangularEntityManager)
 // type()
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(type_agrees_with_Dune_for_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
     typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
@@ -45,7 +46,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(type_agrees_with_Dune_for_codim,
 // affine()
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(affine_agrees_with_Dune_for_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
     typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
@@ -57,7 +59,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(affine_agrees_with_Dune_for_codim,
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(affine_is_true_for_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
     typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
@@ -70,7 +73,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(affine_is_true_for_codim,
 // n_corners()
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(n_corners_agrees_with_Dune_for_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
     typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
@@ -86,7 +90,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(n_corners_agrees_with_Dune_for_codim,
 //_for_single_point
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(corners_first_corner_agrees_with_Dune_for_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
     typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
@@ -105,7 +110,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(corners_first_corner_agrees_with_Dune_for_codi
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(corners_last_corner_agrees_with_Dune_for_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
     typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
@@ -127,7 +133,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(corners_last_corner_agrees_with_Dune_for_codim
 // local2global()
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(local2global_agrees_with_Dune_for_one_point_and_uninitialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int dimGlobal = DuneGrid::dimensionworld;
     const int dimLocal = DuneGrid::dimension - codim;
@@ -155,7 +162,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(local2global_agrees_with_Dune_for_one_point_an
 // Helper function for the two following tests
 template <int codim>
 static void local2global_agrees_with_Dune_for_nth_of_several_points_and_uninitialised_output_and_codim(
-        BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
+    BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
 {
     const int dimGlobal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimensionworld;
     const int dimLocal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimension - codim;
@@ -163,11 +170,11 @@ static void local2global_agrees_with_Dune_for_nth_of_several_points_and_uninitia
 
     std::auto_ptr<EntityPointer<codim> > ep = f.getPointerToSecondEntityOnLevel0<codim>();
     typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::EntityPointer duneEp =
-            f.getDunePointerToSecondEntityOnLevel0<codim>();
+        f.getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
     const typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::Entity::Geometry&
-            duneGeo = duneEp->geometry();
+    duneGeo = duneEp->geometry();
 
     arma::Mat<ctype> local(dimLocal, nPoints);
     Dune::FieldVector<ctype, dimLocal> duneLocal;
@@ -189,14 +196,16 @@ static void local2global_agrees_with_Dune_for_nth_of_several_points_and_uninitia
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(local2global_agrees_with_Dune_for_first_of_several_points_and_uninitialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int nTestedPoint = 0;
     local2global_agrees_with_Dune_for_nth_of_several_points_and_uninitialised_output_and_codim<codim>(*this, nTestedPoint);
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(local2global_agrees_with_Dune_for_last_of_several_points_and_uninitialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int nTestedPoint = 4;
     local2global_agrees_with_Dune_for_nth_of_several_points_and_uninitialised_output_and_codim<codim>(*this, nTestedPoint);
@@ -205,7 +214,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(local2global_agrees_with_Dune_for_last_of_seve
 // Helper function for the two following tests
 template <int codim>
 static void local2global_agrees_with_Dune_for_nth_of_several_points_and_initialised_output_and_codim(
-        BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
+    BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
 {
     const int dimGlobal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimensionworld;
     const int dimLocal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimension - codim;
@@ -213,11 +222,11 @@ static void local2global_agrees_with_Dune_for_nth_of_several_points_and_initiali
 
     std::auto_ptr<EntityPointer<codim> > ep = f.getPointerToSecondEntityOnLevel0<codim>();
     typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::EntityPointer duneEp =
-            f.getDunePointerToSecondEntityOnLevel0<codim>();
+        f.getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
     const typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::Entity::Geometry&
-            duneGeo = duneEp->geometry();
+    duneGeo = duneEp->geometry();
 
     arma::Mat<ctype> local(dimLocal, nPoints);
     Dune::FieldVector<ctype, dimLocal> duneLocal;
@@ -240,14 +249,16 @@ static void local2global_agrees_with_Dune_for_nth_of_several_points_and_initiali
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(local2global_agrees_with_Dune_for_first_of_several_points_and_initialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int nTestedPoint = 0;
     local2global_agrees_with_Dune_for_nth_of_several_points_and_initialised_output_and_codim<codim>(*this, nTestedPoint);
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(local2global_agrees_with_Dune_for_last_of_several_points_and_initialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int nTestedPoint = 4;
     local2global_agrees_with_Dune_for_nth_of_several_points_and_initialised_output_and_codim<codim>(*this, nTestedPoint);
@@ -263,7 +274,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(local2global_agrees_with_Dune_for_last_of_seve
 // Armadillo matrices.
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(global2local_agrees_with_Dune_for_one_point_and_uninitialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int dimGlobal = DuneGrid::dimensionworld;
     const int dimLocal = DuneGrid::dimension - codim;
@@ -289,7 +301,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(global2local_agrees_with_Dune_for_one_point_an
 // Helper function for the two following tests
 template <int codim>
 static void global2local_agrees_with_Dune_for_nth_of_several_points_and_uninitialised_output_and_codim(
-        BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
+    BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
 {
     const int dimGlobal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimensionworld;
     const int dimLocal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimension - codim;
@@ -297,11 +309,11 @@ static void global2local_agrees_with_Dune_for_nth_of_several_points_and_uninitia
 
     std::auto_ptr<EntityPointer<codim> > ep = f.getPointerToSecondEntityOnLevel0<codim>();
     typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::EntityPointer duneEp =
-            f.getDunePointerToSecondEntityOnLevel0<codim>();
+        f.getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
     const typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::Entity::Geometry&
-            duneGeo = duneEp->geometry();
+    duneGeo = duneEp->geometry();
 
     arma::Mat<ctype> global(dimGlobal, nPoints);
     Dune::FieldVector<ctype, dimGlobal> duneGlobal;
@@ -321,14 +333,16 @@ static void global2local_agrees_with_Dune_for_nth_of_several_points_and_uninitia
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(global2local_agrees_with_Dune_for_first_of_several_points_and_uninitialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int nTestedPoint = 0;
     global2local_agrees_with_Dune_for_nth_of_several_points_and_uninitialised_output_and_codim<codim>(*this, nTestedPoint);
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(global2local_agrees_with_Dune_for_last_of_several_points_and_uninitialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int nTestedPoint = 4;
     global2local_agrees_with_Dune_for_nth_of_several_points_and_uninitialised_output_and_codim<codim>(*this, nTestedPoint);
@@ -337,7 +351,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(global2local_agrees_with_Dune_for_last_of_seve
 // Helper function for the two following tests
 template <int codim>
 static void global2local_agrees_with_Dune_for_nth_of_several_points_and_initialised_output_and_codim(
-        BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
+    BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
 {
     const int dimGlobal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimensionworld;
     const int dimLocal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimension - codim;
@@ -345,11 +359,11 @@ static void global2local_agrees_with_Dune_for_nth_of_several_points_and_initiali
 
     std::auto_ptr<EntityPointer<codim> > ep = f.getPointerToSecondEntityOnLevel0<codim>();
     typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::EntityPointer duneEp =
-            f.getDunePointerToSecondEntityOnLevel0<codim>();
+        f.getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
     const typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::Entity::Geometry&
-            duneGeo = duneEp->geometry();
+    duneGeo = duneEp->geometry();
 
     arma::Mat<ctype> global(dimGlobal, nPoints);
     Dune::FieldVector<ctype, dimGlobal> duneGlobal;
@@ -370,14 +384,16 @@ static void global2local_agrees_with_Dune_for_nth_of_several_points_and_initiali
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(global2local_agrees_with_Dune_for_first_of_several_points_and_initialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int nTestedPoint = 0;
     global2local_agrees_with_Dune_for_nth_of_several_points_and_initialised_output_and_codim<codim>(*this, nTestedPoint);
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(global2local_agrees_with_Dune_for_last_of_several_points_and_initialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int nTestedPoint = 4;
     global2local_agrees_with_Dune_for_nth_of_several_points_and_initialised_output_and_codim<codim>(*this, nTestedPoint);
@@ -387,7 +403,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(global2local_agrees_with_Dune_for_last_of_seve
 // integrationElement()
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(integrationElement_agrees_with_Dune_for_one_point_and_uninitialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int dimGlobal = DuneGrid::dimensionworld;
     const int dimLocal = DuneGrid::dimension - codim;
@@ -413,7 +430,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(integrationElement_agrees_with_Dune_for_one_po
 // Helper function for the two following tests
 template <int codim>
 static void integrationElement_agrees_with_Dune_for_nth_of_several_points_and_uninitialised_output_and_codim(
-        BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
+    BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
 {
     const int dimGlobal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimensionworld;
     const int dimLocal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimension - codim;
@@ -421,11 +438,11 @@ static void integrationElement_agrees_with_Dune_for_nth_of_several_points_and_un
 
     std::auto_ptr<EntityPointer<codim> > ep = f.getPointerToSecondEntityOnLevel0<codim>();
     typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::EntityPointer duneEp =
-            f.getDunePointerToSecondEntityOnLevel0<codim>();
+        f.getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
     const typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::Entity::Geometry&
-            duneGeo = duneEp->geometry();
+    duneGeo = duneEp->geometry();
 
     arma::Mat<ctype> local(dimLocal, nPoints);
     Dune::FieldVector<ctype, dimLocal> duneLocal;
@@ -444,14 +461,16 @@ static void integrationElement_agrees_with_Dune_for_nth_of_several_points_and_un
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(integrationElement_agrees_with_Dune_for_first_of_several_points_and_uninitialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int nTestedPoint = 0;
     integrationElement_agrees_with_Dune_for_nth_of_several_points_and_uninitialised_output_and_codim<codim>(*this, nTestedPoint);
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(integrationElement_agrees_with_Dune_for_last_of_several_points_and_uninitialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int nTestedPoint = 4;
     integrationElement_agrees_with_Dune_for_nth_of_several_points_and_uninitialised_output_and_codim<codim>(*this, nTestedPoint);
@@ -460,7 +479,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(integrationElement_agrees_with_Dune_for_last_o
 // Helper function for the two following tests
 template <int codim>
 static void integrationElement_agrees_with_Dune_for_nth_of_several_points_and_initialised_output_and_codim(
-        BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
+    BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
 {
     const int dimGlobal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimensionworld;
     const int dimLocal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimension - codim;
@@ -468,11 +487,11 @@ static void integrationElement_agrees_with_Dune_for_nth_of_several_points_and_in
 
     std::auto_ptr<EntityPointer<codim> > ep = f.getPointerToSecondEntityOnLevel0<codim>();
     typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::EntityPointer duneEp =
-            f.getDunePointerToSecondEntityOnLevel0<codim>();
+        f.getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
     const typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::Entity::Geometry&
-            duneGeo = duneEp->geometry();
+    duneGeo = duneEp->geometry();
 
     arma::Mat<ctype> local(dimLocal, nPoints);
     Dune::FieldVector<ctype, dimLocal> duneLocal;
@@ -493,14 +512,16 @@ static void integrationElement_agrees_with_Dune_for_nth_of_several_points_and_in
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(integrationElement_agrees_with_Dune_for_first_of_several_points_and_initialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int nTestedPoint = 0;
     integrationElement_agrees_with_Dune_for_nth_of_several_points_and_initialised_output_and_codim<codim>(*this, nTestedPoint);
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(integrationElement_agrees_with_Dune_for_last_of_several_points_and_initialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int nTestedPoint = 4;
     integrationElement_agrees_with_Dune_for_nth_of_several_points_and_initialised_output_and_codim<codim>(*this, nTestedPoint);
@@ -516,7 +537,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(integrationElement_agrees_with_Dune_for_last_o
 // volume()
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(volume_agrees_with_Dune_for_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
     typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
@@ -531,7 +553,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(volume_agrees_with_Dune_for_codim,
 // center()
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(center_agrees_with_Dune_for_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int dimGlobal = DuneGrid::dimensionworld;
 
@@ -552,7 +575,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(center_agrees_with_Dune_for_codim,
 // jacobianTransposed()
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianTransposed_agrees_with_Dune_for_one_point_and_uninitialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int dimGlobal = DuneGrid::dimensionworld;
     const int dimLocal = DuneGrid::dimension - codim;
@@ -584,7 +608,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianTransposed_agrees_with_Dune_for_one_po
 // Helper function for the two following tests
 template <int codim>
 static void jacobianTransposed_agrees_with_Dune_for_nth_of_several_points_and_uninitialised_output_and_codim(
-        BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
+    BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
 {
     const int dimGlobal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimensionworld;
     const int dimLocal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimension - codim;
@@ -592,11 +616,11 @@ static void jacobianTransposed_agrees_with_Dune_for_nth_of_several_points_and_un
 
     std::auto_ptr<EntityPointer<codim> > ep = f.getPointerToSecondEntityOnLevel0<codim>();
     typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::EntityPointer duneEp =
-            f.getDunePointerToSecondEntityOnLevel0<codim>();
+        f.getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
     const typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::Entity::Geometry&
-            duneGeo = duneEp->geometry();
+    duneGeo = duneEp->geometry();
 
     arma::Mat<ctype> local(dimLocal, nPoints);
     Dune::FieldVector<ctype, dimLocal> duneLocal;
@@ -610,7 +634,7 @@ static void jacobianTransposed_agrees_with_Dune_for_nth_of_several_points_and_un
     arma::Cube<ctype> jacobianT;
     geo.jacobianTransposed(local, jacobianT);
     typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::Entity::Geometry::JacobianTransposed
-            duneJacobianT = duneGeo.jacobianTransposed(duneLocal);
+    duneJacobianT = duneGeo.jacobianTransposed(duneLocal);
 
     if (dimLocal > 0)
         BOOST_CHECK_EQUAL(jacobianT.slice(nTestedPoint), duneJacobianT);
@@ -619,14 +643,16 @@ static void jacobianTransposed_agrees_with_Dune_for_nth_of_several_points_and_un
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianTransposed_agrees_with_Dune_for_first_of_several_points_and_uninitialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int nTestedPoint = 0;
     jacobianTransposed_agrees_with_Dune_for_nth_of_several_points_and_uninitialised_output_and_codim<codim>(*this, nTestedPoint);
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianTransposed_agrees_with_Dune_for_last_of_several_points_and_uninitialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int nTestedPoint = 4;
     jacobianTransposed_agrees_with_Dune_for_nth_of_several_points_and_uninitialised_output_and_codim<codim>(*this, nTestedPoint);
@@ -635,7 +661,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianTransposed_agrees_with_Dune_for_last_o
 // Helper function for the two following tests
 template <int codim>
 static void jacobianTransposed_agrees_with_Dune_for_nth_of_several_points_and_initialised_output_and_codim(
-        BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
+    BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
 {
     const int dimGlobal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimensionworld;
     const int dimLocal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimension - codim;
@@ -643,11 +669,11 @@ static void jacobianTransposed_agrees_with_Dune_for_nth_of_several_points_and_in
 
     std::auto_ptr<EntityPointer<codim> > ep = f.getPointerToSecondEntityOnLevel0<codim>();
     typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::EntityPointer duneEp =
-            f.getDunePointerToSecondEntityOnLevel0<codim>();
+        f.getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
     const typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::Entity::Geometry&
-            duneGeo = duneEp->geometry();
+    duneGeo = duneEp->geometry();
 
     arma::Mat<ctype> local(dimLocal, nPoints);
     Dune::FieldVector<ctype, dimLocal> duneLocal;
@@ -663,7 +689,7 @@ static void jacobianTransposed_agrees_with_Dune_for_nth_of_several_points_and_in
     arma::Cube<ctype> jacobianT(10,10,10);
     geo.jacobianTransposed(local, jacobianT);
     typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::Entity::Geometry::JacobianTransposed
-            duneJacobianT = duneGeo.jacobianTransposed(duneLocal);
+    duneJacobianT = duneGeo.jacobianTransposed(duneLocal);
 
     if (dimLocal > 0)
         BOOST_CHECK_EQUAL(jacobianT.slice(nTestedPoint), duneJacobianT);
@@ -672,14 +698,16 @@ static void jacobianTransposed_agrees_with_Dune_for_nth_of_several_points_and_in
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianTransposed_agrees_with_Dune_for_first_of_several_points_and_initialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int nTestedPoint = 0;
     jacobianTransposed_agrees_with_Dune_for_nth_of_several_points_and_initialised_output_and_codim<codim>(*this, nTestedPoint);
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianTransposed_agrees_with_Dune_for_last_of_several_points_and_initialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int nTestedPoint = 4;
     jacobianTransposed_agrees_with_Dune_for_nth_of_several_points_and_initialised_output_and_codim<codim>(*this, nTestedPoint);
@@ -689,7 +717,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianTransposed_agrees_with_Dune_for_last_o
 // jacobianInverseTransposed()
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianInverseTransposed_agrees_with_Dune_for_one_point_and_uninitialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int dimGlobal = DuneGrid::dimensionworld;
     const int dimLocal = DuneGrid::dimension - codim;
@@ -720,7 +749,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianInverseTransposed_agrees_with_Dune_for
 // Helper function for the two following tests
 template <int codim>
 static void jacobianInverseTransposed_agrees_with_Dune_for_nth_of_several_points_and_uninitialised_output_and_codim(
-        BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
+    BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
 {
     const int dimGlobal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimensionworld;
     const int dimLocal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimension - codim;
@@ -728,11 +757,11 @@ static void jacobianInverseTransposed_agrees_with_Dune_for_nth_of_several_points
 
     std::auto_ptr<EntityPointer<codim> > ep = f.getPointerToSecondEntityOnLevel0<codim>();
     typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::EntityPointer duneEp =
-            f.getDunePointerToSecondEntityOnLevel0<codim>();
+        f.getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
     const typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::Entity::Geometry&
-            duneGeo = duneEp->geometry();
+    duneGeo = duneEp->geometry();
 
     arma::Mat<ctype> local(dimLocal, nPoints);
     Dune::FieldVector<ctype, dimLocal> duneLocal;
@@ -746,7 +775,7 @@ static void jacobianInverseTransposed_agrees_with_Dune_for_nth_of_several_points
     arma::Cube<ctype> jacobianInvT;
     geo.jacobianInverseTransposed(local, jacobianInvT);
     typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::Entity::Geometry::Jacobian
-            duneJacobianInvT = duneGeo.jacobianInverseTransposed(duneLocal);
+    duneJacobianInvT = duneGeo.jacobianInverseTransposed(duneLocal);
 
     if (dimLocal > 0)
         BOOST_CHECK_EQUAL(jacobianInvT.slice(nTestedPoint), duneJacobianInvT);
@@ -755,14 +784,16 @@ static void jacobianInverseTransposed_agrees_with_Dune_for_nth_of_several_points
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianInverseTransposed_agrees_with_Dune_for_first_of_several_points_and_uninitialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int nTestedPoint = 0;
     jacobianInverseTransposed_agrees_with_Dune_for_nth_of_several_points_and_uninitialised_output_and_codim<codim>(*this, nTestedPoint);
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianInverseTransposed_agrees_with_Dune_for_last_of_several_points_and_uninitialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int nTestedPoint = 4;
     jacobianInverseTransposed_agrees_with_Dune_for_nth_of_several_points_and_uninitialised_output_and_codim<codim>(*this, nTestedPoint);
@@ -771,7 +802,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianInverseTransposed_agrees_with_Dune_for
 // Helper function for the two following tests
 template <int codim>
 static void jacobianInverseTransposed_agrees_with_Dune_for_nth_of_several_points_and_initialised_output_and_codim(
-        BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
+    BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
 {
     const int dimGlobal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimensionworld;
     const int dimLocal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimension - codim;
@@ -779,11 +810,11 @@ static void jacobianInverseTransposed_agrees_with_Dune_for_nth_of_several_points
 
     std::auto_ptr<EntityPointer<codim> > ep = f.getPointerToSecondEntityOnLevel0<codim>();
     typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::EntityPointer duneEp =
-            f.getDunePointerToSecondEntityOnLevel0<codim>();
+        f.getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
     const typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::Entity::Geometry&
-            duneGeo = duneEp->geometry();
+    duneGeo = duneEp->geometry();
 
     arma::Mat<ctype> local(dimLocal, nPoints);
     Dune::FieldVector<ctype, dimLocal> duneLocal;
@@ -799,7 +830,7 @@ static void jacobianInverseTransposed_agrees_with_Dune_for_nth_of_several_points
     arma::Cube<ctype> jacobianInvT(10,10,10);
     geo.jacobianInverseTransposed(local, jacobianInvT);
     typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::Entity::Geometry::Jacobian
-            duneJacobianInvT = duneGeo.jacobianInverseTransposed(duneLocal);
+    duneJacobianInvT = duneGeo.jacobianInverseTransposed(duneLocal);
 
     if (dimLocal > 0)
         BOOST_CHECK_EQUAL(jacobianInvT.slice(nTestedPoint), duneJacobianInvT);
@@ -808,14 +839,16 @@ static void jacobianInverseTransposed_agrees_with_Dune_for_nth_of_several_points
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianInverseTransposed_agrees_with_Dune_for_first_of_several_points_and_initialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int nTestedPoint = 0;
     jacobianInverseTransposed_agrees_with_Dune_for_nth_of_several_points_and_initialised_output_and_codim<codim>(*this, nTestedPoint);
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianInverseTransposed_agrees_with_Dune_for_last_of_several_points_and_initialised_output_and_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     const int nTestedPoint = 4;
     jacobianInverseTransposed_agrees_with_Dune_for_nth_of_several_points_and_initialised_output_and_codim<codim>(*this, nTestedPoint);

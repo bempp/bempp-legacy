@@ -28,7 +28,8 @@ using namespace Bempp;
 BOOST_FIXTURE_TEST_SUITE(IndexSet_Triangular_Level0, TriangularLevel0IndexSetManager)
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIndex_agrees_with_Dune_for_second_entity_of_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
 
     std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
@@ -48,7 +49,8 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_FIXTURE_TEST_SUITE(IndexSet_Triangular_Leaf, TriangularLeafIndexSetManager)
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIndex_agrees_with_Dune_for_second_entity_of_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
 
     std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();

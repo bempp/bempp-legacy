@@ -107,7 +107,7 @@ int main()
     }
 
     {
-        std::cout << "Now the program will throw an exception!" << std::endl; 
+        std::cout << "Now the program will throw an exception!" << std::endl;
         std::auto_ptr<EntityIterator<3> > invalidIt(leafGridView->entityIterator<3>());
     }
 }

@@ -30,8 +30,7 @@ struct TriangularEntityManager : public SimpleTriangularGridManager {
     }
 
     template <int codim>
-    typename std::auto_ptr<Bempp::EntityPointer<codim> > getPointerToSecondEntityOnLevel0()
-    {
+    typename std::auto_ptr<Bempp::EntityPointer<codim> > getPointerToSecondEntityOnLevel0() {
         std::auto_ptr<Bempp::GridView> bemppGridView = bemppGrid->levelView(0);
         std::auto_ptr<Bempp::EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
         it->next();
@@ -39,8 +38,7 @@ struct TriangularEntityManager : public SimpleTriangularGridManager {
     }
 
     template <int codim>
-    typename DuneGrid::Codim<codim>::EntityPointer getDunePointerToSecondEntityOnLevel0()
-    {
+    typename DuneGrid::Codim<codim>::EntityPointer getDunePointerToSecondEntityOnLevel0() {
         DuneGrid::LevelGridView duneGridView = duneGrid->levelView(0);
         typename DuneGrid::LevelGridView::Codim<codim>::Iterator duneIt = duneGridView.begin<codim>();
         ++duneIt;

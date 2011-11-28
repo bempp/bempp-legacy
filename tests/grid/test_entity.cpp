@@ -31,7 +31,8 @@ BOOST_FIXTURE_TEST_SUITE(Entity_Triangular, TriangularEntityManager)
 // level()
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(level_agrees_with_Dune_for_second_entity_on_level_0_of_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
     typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
@@ -40,7 +41,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(level_agrees_with_Dune_for_second_entity_on_le
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(level_is_0_for_second_entity_on_level_0_of_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
 
@@ -50,7 +52,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(level_is_0_for_second_entity_on_level_0_of_cod
 // type()
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(type_agrees_with_Dune_for_second_entity_on_level_0_of_codim,
-                                  T, list_0_to_2) {
+                                  T, list_0_to_2)
+{
     const int codim = T::value;
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
     typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
@@ -60,32 +63,37 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(type_agrees_with_Dune_for_second_entity_on_lev
 
 // subEntityIterator()
 
-BOOST_AUTO_TEST_CASE(subEntityIterator_throws_for_codimSub_0) {
+BOOST_AUTO_TEST_CASE(subEntityIterator_throws_for_codimSub_0)
+{
     const int codimSub = 0;
     std::auto_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
     BOOST_CHECK_THROW(ep->entity().subEntityIterator<codimSub>(), std::logic_error);
 }
 
-BOOST_AUTO_TEST_CASE(subEntityIterator_does_not_throw_for_codimSub_1) {
+BOOST_AUTO_TEST_CASE(subEntityIterator_does_not_throw_for_codimSub_1)
+{
     const int codimSub = 1;
     std::auto_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
     BOOST_CHECK_NO_THROW(ep->entity().subEntityIterator<codimSub>());
 }
 
-BOOST_AUTO_TEST_CASE(subEntityIterator_does_not_throw_for_codimSub_2) {
+BOOST_AUTO_TEST_CASE(subEntityIterator_does_not_throw_for_codimSub_2)
+{
     const int codimSub = 2;
     std::auto_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
     BOOST_CHECK_NO_THROW(ep->entity().subEntityIterator<codimSub>());
 }
 
-BOOST_AUTO_TEST_CASE(subEntityIterator_throws_for_codimSub_3) {
+BOOST_AUTO_TEST_CASE(subEntityIterator_throws_for_codimSub_3)
+{
     const int codimSub = 3;
     std::auto_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
     BOOST_CHECK_THROW(ep->entity().subEntityIterator<codimSub>(), std::logic_error);
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIterator_number_of_iterations_agrees_with_Dune_for_codimSub,
-                                  T, list_1_to_2) {
+                                  T, list_1_to_2)
+{
     const int codimSub = T::value;
 
     std::auto_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
@@ -103,7 +111,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIterator_number_of_iterations_agrees_
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIterator_number_of_iterations_is_3_for_codimSub,
-                                  T, list_1_to_2) {
+                                  T, list_1_to_2)
+{
     const int codimSub = T::value;
 
     std::auto_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
@@ -118,7 +127,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIterator_number_of_iterations_is_3_fo
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIterator_second_entity_agrees_with_Dune_for_codimSub,
-                                  T, list_1_to_2) {
+                                  T, list_1_to_2)
+{
     const int codimSub = T::value;
 
     arma::Col<double> elementCenter;

@@ -47,8 +47,8 @@ int main()
     params.topology = GridParameters::TRIANGULAR;
 
     std::auto_ptr<Grid> grid(GridFactory::importGmshGrid(params, std::string(MESH_FNAME),
-                                                         true, // verbose
-                                                         false)); // insertBoundarySegments
+                             true, // verbose
+                             false)); // insertBoundarySegments
 
     // Create a leaf view
     std::auto_ptr<GridView> leafGridView(grid->leafView());

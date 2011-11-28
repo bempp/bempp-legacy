@@ -27,11 +27,12 @@
 #include <string>
 #include <vector>
 
-namespace Bempp {
+namespace Bempp
+{
 
 std::auto_ptr<Grid> GridFactory::createStructuredGrid(
-        const GridParameters& params, const arma::Col<ctype>& lowerLeft,
-        const arma::Col<ctype>& upperRight, const arma::Col<unsigned int>& nElements)
+    const GridParameters& params, const arma::Col<ctype>& lowerLeft,
+    const arma::Col<ctype>& upperRight, const arma::Col<unsigned int>& nElements)
 {
     // TODO: Support quadrilateral and linear grids
 
@@ -51,22 +52,25 @@ std::auto_ptr<Grid> GridFactory::createStructuredGrid(
     // Convert Armadillo vectors to Dune vectors
     // TODO: Write nice conversion functions
     Dune::FieldVector<ctype,dimGrid> duneLowerLeft;
-    duneLowerLeft[0] = lowerLeft(0); duneLowerLeft[1] = lowerLeft(1);
+    duneLowerLeft[0] = lowerLeft(0);
+    duneLowerLeft[1] = lowerLeft(1);
     Dune::FieldVector<ctype,dimGrid> duneUpperRight;
-    duneUpperRight[0] = upperRight(0); duneUpperRight[1] = upperRight(1);
+    duneUpperRight[0] = upperRight(0);
+    duneUpperRight[1] = upperRight(1);
     Dune::array<unsigned int,dimGrid> duneNElements;
-    duneNElements[0] = nElements(0); duneNElements[1] = nElements(1);
+    duneNElements[0] = nElements(0);
+    duneNElements[1] = nElements(1);
 
     std::auto_ptr<DefaultDuneGrid> apDuneGrid;
     // TODO: Support quadrilateral grids using createCubeGrid()
     apDuneGrid = Dune::BemppStructuredGridFactory<DefaultDuneGrid>::
-            createSimplexGrid(duneLowerLeft, duneUpperRight, duneNElements);
+                 createSimplexGrid(duneLowerLeft, duneUpperRight, duneNElements);
     return std::auto_ptr<Grid>(new DefaultGrid(apDuneGrid.release(), true)); // true -> owns Dune grid
 }
 
 std::auto_ptr<Grid> GridFactory::importGmshGrid(
-        const GridParameters& params, const std::string& fileName,
-        bool verbose, bool insertBoundarySegments)
+    const GridParameters& params, const std::string& fileName,
+    bool verbose, bool insertBoundarySegments)
 {
     // Check arguments
     if (params.topology != GridParameters::TRIANGULAR)
@@ -77,17 +81,17 @@ std::auto_ptr<Grid> GridFactory::importGmshGrid(
 }
 
 std::auto_ptr<Grid> GridFactory::importGmshGrid(
-        const GridParameters& params, const std::string& fileName,
-        std::vector<int>& boundaryId2PhysicalEntity,
-        std::vector<int>& elementIndex2PhysicalEntity,
-        bool verbose, bool insertBoundarySegments)
+    const GridParameters& params, const std::string& fileName,
+    std::vector<int>& boundaryId2PhysicalEntity,
+    std::vector<int>& elementIndex2PhysicalEntity,
+    bool verbose, bool insertBoundarySegments)
 {
     // Check arguments
     if (params.topology != GridParameters::TRIANGULAR)
         throw std::invalid_argument("GridFactory::importGmshGrid(): unsupported grid topology");
 
     DefaultDuneGrid* duneGrid = Dune::GmshReader<DefaultDuneGrid>::read(
-                fileName, boundaryId2PhysicalEntity, elementIndex2PhysicalEntity, verbose, insertBoundarySegments);
+                                    fileName, boundaryId2PhysicalEntity, elementIndex2PhysicalEntity, verbose, insertBoundarySegments);
     return std::auto_ptr<Grid>(new DefaultGrid(duneGrid, true)); // true -> owns Dune grid
 }
 

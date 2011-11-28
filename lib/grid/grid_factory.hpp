@@ -27,7 +27,8 @@
 #include <armadillo>
 #include <memory>
 
-namespace Bempp {
+namespace Bempp
+{
 
 // Forward declarations
 class Grid;
@@ -36,8 +37,7 @@ class Grid;
 
   This structure is used to specify parameters of grid constructed by GridFactory.
   */
-struct GridParameters
-{
+struct GridParameters {
     /** \brief %Grid topology */
     enum Topology {
         LINEAR, /**< \brief one-dimensional grid */
@@ -75,9 +75,9 @@ public:
       \note Currently only grids with trangular topology are supported.
     */
     static std::auto_ptr<Grid> createStructuredGrid(const GridParameters& params,
-                                                    const arma::Col<ctype>& lowerLeft,
-                                                    const arma::Col<ctype>& upperRight,
-                                                    const arma::Col<unsigned int>& nElements);
+            const arma::Col<ctype>& lowerLeft,
+            const arma::Col<ctype>& upperRight,
+            const arma::Col<unsigned int>& nElements);
 
     /** \brief Import grid from a file in Gmsh format.
 
@@ -91,8 +91,8 @@ public:
       \see Dune::GmshReader documentation for information about the supported Gmsh features.
     */
     static std::auto_ptr<Grid> importGmshGrid(const GridParameters& params,
-                                              const std::string& fileName,
-                                              bool verbose=true, bool insertBoundarySegments=true);
+            const std::string& fileName,
+            bool verbose=true, bool insertBoundarySegments=true);
 
     /** \brief Import grid from a file in Gmsh format.
 
@@ -108,10 +108,10 @@ public:
       \see Dune::GmshReader documentation for information about the supported Gmsh features.
     */
     static std::auto_ptr<Grid> importGmshGrid(const GridParameters& params,
-                                              const std::string& fileName,
-                                              std::vector<int>& boundaryId2PhysicalEntity,
-                                              std::vector<int>& elementIndex2PhysicalEntity,
-                                              bool verbose=true, bool insertBoundarySegments=true);
+            const std::string& fileName,
+            std::vector<int>& boundaryId2PhysicalEntity,
+            std::vector<int>& elementIndex2PhysicalEntity,
+            bool verbose=true, bool insertBoundarySegments=true);
 };
 
 } // namespace Bempp

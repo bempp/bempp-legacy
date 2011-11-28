@@ -31,28 +31,31 @@ const double EPSILON = 1e-14;
 
 BOOST_FIXTURE_TEST_SUITE(GridFactory_Triangular, TriangularEntityManager)
 
-BOOST_AUTO_TEST_CASE(number_of_faces_is_correct) {
+BOOST_AUTO_TEST_CASE(number_of_faces_is_correct)
+{
     BOOST_CHECK_EQUAL(bemppGrid->levelView(0)->size(0), 2 * N_ELEMENTS_X * N_ELEMENTS_Y);
 }
 
-BOOST_AUTO_TEST_CASE(number_of_vertices_is_correct) {
+BOOST_AUTO_TEST_CASE(number_of_vertices_is_correct)
+{
     BOOST_CHECK_EQUAL(bemppGrid->levelView(0)->size(2), (N_ELEMENTS_X + 1) * (N_ELEMENTS_Y + 1));
 }
 
-BOOST_AUTO_TEST_CASE(second_face_is_a_triangle) {
+BOOST_AUTO_TEST_CASE(second_face_is_a_triangle)
+{
     const int codim = 0;
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
     BOOST_CHECK(ep->entity().type().isTriangle());
 }
 
-BOOST_AUTO_TEST_CASE(elements_are_in_the_z_plane) {
+BOOST_AUTO_TEST_CASE(elements_are_in_the_z_plane)
+{
     std::auto_ptr<Bempp::GridView> bemppGridView = bemppGrid->levelView(0);
     std::auto_ptr<Bempp::EntityIterator<2> > it = bemppGridView->entityIterator<2>();
 
     ctype max_abs_z = 0.;
     arma::Col<ctype> center;
-    while(!it->finished())
-    {
+    while(!it->finished()) {
         it->entity().geometry().center(center);
         max_abs_z = std::max(max_abs_z, fabs(center(2)));
         it->next();
@@ -61,7 +64,8 @@ BOOST_AUTO_TEST_CASE(elements_are_in_the_z_plane) {
     BOOST_CHECK_SMALL(max_abs_z, EPSILON);
 }
 
-BOOST_AUTO_TEST_CASE(elements_are_cover_the_unit_square) {
+BOOST_AUTO_TEST_CASE(elements_are_cover_the_unit_square)
+{
     std::auto_ptr<Bempp::GridView> bemppGridView = bemppGrid->levelView(0);
     std::auto_ptr<Bempp::EntityIterator<2> > it = bemppGridView->entityIterator<2>();
 
@@ -71,8 +75,7 @@ BOOST_AUTO_TEST_CASE(elements_are_cover_the_unit_square) {
     ctype max_y = -1e100;
 
     arma::Col<ctype> center;
-    while(!it->finished())
-    {
+    while(!it->finished()) {
         it->entity().geometry().center(center);
         max_x = std::max(max_x, center(0));
         max_y = std::max(max_y, center(1));
@@ -87,7 +90,8 @@ BOOST_AUTO_TEST_CASE(elements_are_cover_the_unit_square) {
     BOOST_CHECK_CLOSE(max_y, 1., EPSILON);
 }
 
-BOOST_AUTO_TEST_CASE(jacobian_is_constant_everywhere_on_the_second_face) {
+BOOST_AUTO_TEST_CASE(jacobian_is_constant_everywhere_on_the_second_face)
+{
     const int codim = 0;
     const int dimGlobal = DuneGrid::dimensionworld;
     const int dimLocal = DuneGrid::dimension - codim;
