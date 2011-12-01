@@ -42,6 +42,7 @@ BOOST_AUTO_TEST_CASE(maxLevel_agrees_with_Dune)
 
 // The test below fails because the numBoundarySegments method is not
 // implemented in FoamGrid yet.
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(boundarySegmentCount_agrees_with_Dune, 1)
 BOOST_AUTO_TEST_CASE(boundarySegmentCount_agrees_with_Dune)
 {
     BOOST_CHECK_EQUAL(bemppGrid->boundarySegmentCount(), duneGrid->numBoundarySegments());

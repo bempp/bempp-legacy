@@ -191,6 +191,7 @@ BOOST_AUTO_TEST_CASE(entityCount_agrees_with_Dune_for_cube_of_dim_2)
 
 // This test fails -- there is a bug in FoamGridLeafIndexSet::size(GeometryType)
 // (it just checks dimensions, the geometry type (simplex/cube/...) is not checked)
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(entityCount_is_zero_for_cube_of_dim_2, 1)
 BOOST_AUTO_TEST_CASE(entityCount_is_zero_for_cube_of_dim_2)
 {
     const GeometryType type(GeometryType::cube, 2);
