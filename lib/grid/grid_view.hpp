@@ -21,60 +21,108 @@
 #ifndef bempp_grid_view_hpp
 #define bempp_grid_view_hpp
 
-#include "grid_view_decl.hpp"
-#include "entity.hpp"
-#include "entity_iterator.hpp"
-#include "index_set.hpp"
-#include "vtk_writer.hpp"
+#include "geometry_type.hpp"
+
+#include <boost/utility/enable_if.hpp>
+#include <dune/grid/io/file/vtk/vtkwriter.hh>
+#include <memory>
+#include <stdexcept>
 
 namespace Bempp
 {
 
-template <typename DuneGridView>
-template <int codim>
-inline typename boost::disable_if_c<codim <= DuneGridView::dimension, bool>::type
-ConcreteGridView<DuneGridView>::containsEntityCodimN(const Entity<codim>& e) const
-{
-    throw std::logic_error("GridView::containsEntity(): invalid entity codimension");
-}
+// Forward declarations
+template<int codim> class Entity;
+template<int codim> class EntityIterator;
+class IndexSet;
+class VtkWriter;
 
-template <typename DuneGridView>
-template <int codim>
-inline typename boost::enable_if_c<codim <= DuneGridView::dimension, bool>::type
-ConcreteGridView<DuneGridView>::containsEntityCodimN(const Entity<codim>& e) const
+/** \brief Abstract wrapper of a grid view */
+class GridView
 {
-    typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
-    typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
-    const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
-    return m_dune_gv.contains(ce.duneEntity());
-}
+public:
+    /** Destructor */
+    virtual ~GridView() {
+    }
 
-template<typename DuneGridView>
-template <int codim>
-inline typename boost::disable_if_c<codim <= DuneGridView::dimension, std::auto_ptr<EntityIterator<codim> > >::type
-ConcreteGridView<DuneGridView>::entityCodimNIterator() const
+    /** \brief The index set */
+    virtual const IndexSet& indexSet() const = 0;
+
+    /** \brief Number of entities with codimension \p codim. */
+    virtual int entityCount(int codim) const = 0;
+
+    /** \brief Number of entities with geometry type \p type. */
+    virtual int entityCount(const GeometryType &type) const = 0;
+
+    /** \brief True if the entity \p e of codimension 0 is contained in this grid view.
+       *
+       * \note If \p e is not an element of the grid, then
+       *       the result of containsEntity() is undefined.
+       */
+    virtual bool containsEntity(const Entity<0>& e) const = 0;
+    /** \brief True if the entity \p e of codimension 1 is contained in this grid view.
+
+      \overload
+    */
+    virtual bool containsEntity(const Entity<1>& e) const = 0;
+    /** \brief True if the entity \p e of codimension 2 is contained in this grid view.
+
+      \overload
+    */
+    virtual bool containsEntity(const Entity<2>& e) const = 0;
+    /** \brief True if the entity \p e of codimension 3 is contained in this grid view.
+
+      \overload
+    */
+    virtual bool containsEntity(const Entity<3>& e) const = 0;
+
+    /** \brief Iterator over entities of codimension \p codim contained in this view. */
+    // Default implementation; specialisations for potentially allowed codimensions follow
+    // after class declaration.
+    template<int codim>
+    std::auto_ptr<EntityIterator<codim> > entityIterator() const {
+        throw std::logic_error("GridView::entityIterator(): invalid entity codimension");
+    }
+
+    /** \brief Create a VtkWriter for this grid view.
+
+      \param dm Data mode (conforming or nonconforming; see the documentation of Dune::VTK::DataMode for details). */
+    virtual std::auto_ptr<VtkWriter> vtkWriter(Dune::VTK::DataMode dm=Dune::VTK::conforming) const = 0;
+
+    // Deferred for later implementation:
+    // * Iteration over neighbours: Dune methods ibegin() and iend().
+
+private:
+    /** \brief Iterator over entities of codimension 0 contained in this view. */
+    virtual std::auto_ptr<EntityIterator<0> > entityCodim0Iterator() const = 0;
+    /** \brief Iterator over entities of codimension 1 contained in this view. */
+    virtual std::auto_ptr<EntityIterator<1> > entityCodim1Iterator() const = 0;
+    /** \brief Iterator over entities of codimension 2 contained in this view. */
+    virtual std::auto_ptr<EntityIterator<2> > entityCodim2Iterator() const = 0;
+    /** \brief Iterator over entities of codimension 3 contained in this view. */
+    virtual std::auto_ptr<EntityIterator<3> > entityCodim3Iterator() const = 0;
+};
+
+template<>
+inline std::auto_ptr<EntityIterator<0> > GridView::entityIterator<0>() const
 {
-    throw std::logic_error("GridView::entityIterator(): invalid entity codimension");
+    return entityCodim0Iterator();
 }
-
-template<typename DuneGridView>
-template <int codim>
-inline typename boost::enable_if_c<codim <= DuneGridView::dimension, std::auto_ptr<EntityIterator<codim> > >::type
-ConcreteGridView<DuneGridView>::entityCodimNIterator() const
+template<>
+inline std::auto_ptr<EntityIterator<1> > GridView::entityIterator<1>() const
 {
-    typedef typename DuneGridView::template Codim<codim>::Iterator DuneIterator;
-    typedef ConcreteRangeEntityIterator<DuneIterator> ConcIterator;
-    return std::auto_ptr<EntityIterator<codim> >(
-               new ConcIterator(m_dune_gv.template begin<codim>(),
-                                m_dune_gv.template end<codim>()));
+    return entityCodim1Iterator();
 }
-
-template<typename DuneGridView>
-std::auto_ptr<VtkWriter> ConcreteGridView<DuneGridView>::vtkWriter(Dune::VTK::DataMode dm) const
+template<>
+inline std::auto_ptr<EntityIterator<2> > GridView::entityIterator<2>() const
 {
-    return std::auto_ptr<VtkWriter>(new ConcreteVtkWriter<DuneGridView>(m_dune_gv, dm));
+    return entityCodim2Iterator();
 }
-
+template<>
+inline std::auto_ptr<EntityIterator<3> > GridView::entityIterator<3>() const
+{
+    return entityCodim3Iterator() ;
+}
 
 } // namespace Bempp
 

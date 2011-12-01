@@ -22,12 +22,14 @@
 #include <memory> // auto_ptr
 #include <sys/time.h>
 
+#include "grid/dune.hpp"
 #include "grid/entity.hpp"
 #include "grid/entity_iterator.hpp"
 #include "grid/geometry.hpp"
 #include "grid/grid.hpp"
 #include "grid/grid_factory.hpp"
 #include "grid/grid_view.hpp"
+#include "grid/structured_grid_factory.hpp"
 
 using namespace Bempp;
 
@@ -141,8 +143,8 @@ int main()
     duneNElements[1] = N_ELEMENTS + 1;
 
     std::auto_ptr<DefaultDuneGrid> duneGrid =
-            Dune::BemppStructuredGridFactory<DefaultDuneGrid>::
-            createSimplexGrid(duneLowerLeft, duneUpperRight, duneNElements);
+        Dune::BemppStructuredGridFactory<DefaultDuneGrid>::
+        createSimplexGrid(duneLowerLeft, duneUpperRight, duneNElements);
     std::cout << nElements[0] * nElements[1] << " elements created\n";
 
     const int dimWorld = 3;

@@ -19,6 +19,8 @@
 // THE SOFTWARE.
 
 #include "test_id_set.hpp"
+#include "grid/entity_iterator.hpp"
+#include "grid/id_set.hpp"
 
 #include <boost/test/unit_test.hpp>
 #include "../num_template.hpp"

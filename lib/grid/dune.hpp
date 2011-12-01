@@ -1,3 +1,4 @@
+
 // Copyright (C) 2011 by the BEM++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -18,39 +19,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_test_grid_hpp
-#define bempp_test_grid_hpp
+#ifndef bempp_dune_hpp
+#define bempp_dune_hpp
 
-#include "grid/dune.hpp"
-#include "grid/grid.hpp"
+#include <stack> // fix a bug in foamgrid -- this header is not included where it should be
+#include <dune/foamgrid/foamgrid.hh>
 
-/** Fixture class for Bempp::Grid tests */
-class SimpleTriangularGridManager
+namespace Bempp
 {
-public:
-    enum { N_ELEMENTS_X = 3, N_ELEMENTS_Y = 4 };
-    typedef Bempp::DefaultDuneGrid DuneGrid;
-
-    /** Create two identical simple 2D structured Bempp grids composed of 2 * 3 * 4 triangles.
-        Store an auto_ptr to the first one as bemppGrid; from the second one,
-        extract the pointer to the underlying Dune grid and store it as duneGrid. */
-    SimpleTriangularGridManager() {
-        // Create a Bempp grid
-        bemppGrid = createGrid();
-
-        // Create an identical Dune grid
-        duneGrid = createDuneGrid();
-    }
-
-    // No destructor is needed since auto_ptrs release memory automatically
-
-private:
-    std::auto_ptr<Bempp::Grid> createGrid();
-    std::auto_ptr<DuneGrid> createDuneGrid();
-
-public:
-    std::auto_ptr<Bempp::Grid> bemppGrid;
-    std::auto_ptr<DuneGrid> duneGrid;
-};
+typedef Dune::FoamGrid<3> DefaultDuneGrid; // 3 -> dimWorld
+} // namespace Bempp
 
 #endif

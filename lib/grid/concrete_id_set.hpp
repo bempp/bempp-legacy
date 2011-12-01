@@ -18,40 +18,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_id_set_decl_hpp
-#define bempp_id_set_decl_hpp
+#ifndef bempp_concrete_id_set_hpp
+#define bempp_concrete_id_set_hpp
 
-#include <boost/utility/enable_if.hpp>
+#include "id_set.hpp"
+#include "concrete_entity.hpp"
+
+#include <stdexcept>
 
 namespace Bempp
 {
-
-// Forward declarations
-template<int codim> class Entity;
-
-/** \brief Abstract wrapper of an id set. */
-class IdSet
-{
-public:
-    /** \brief Destructor. */
-    virtual ~IdSet() {
-    }
-
-    /** \brief Id type.
-
-     \internal Sadly, it is necessary to specify this type uniformly for all grid classes.
-     */
-    typedef unsigned int IdType;
-
-    /** \brief Id of the entity \p e of codimension 0. */
-    virtual IdType entityId(const Entity<0>& e) const = 0;
-    /** \brief Id of the entity \p e of codimension 1. */
-    virtual IdType entityId(const Entity<1>& e) const = 0;
-    /** \brief Id of the entity \p e of codimension 2. */
-    virtual IdType entityId(const Entity<2>& e) const = 0;
-    /** \brief Id of the entity \p e of codimension 3. */
-    virtual IdType entityId(const Entity<3>& e) const = 0;
-};
 
 /** \brief Wrapper of a Dune id set of type \p DuneIdSet providing access to the
  entities of a Dune grid of type \p DuneGrid.
@@ -105,10 +81,18 @@ private:
     // because that throws a static assert in Dune code.
     template <int codim>
     typename boost::disable_if_c<codim <= DuneGrid::dimension, IdType>::type
-    entityCodimNId(const Entity<codim>& e) const;
+    entityCodimNId(const Entity<codim>& e) const {
+        throw std::logic_error("IdSet::entityId(): invalid entity codimension");
+    }
+
     template <int codim>
     typename boost::enable_if_c<codim <= DuneGrid::dimension, IdType>::type
-    entityCodimNId(const Entity<codim>& e) const;
+    entityCodimNId(const Entity<codim>& e) const {
+        typedef typename DuneGrid::template Codim<codim>::Entity DuneEntity;
+        typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
+        const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
+        return m_dune_id_set->id(ce.duneEntity());
+    }
 };
 
 } // namespace Bempp

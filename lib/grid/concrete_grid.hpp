@@ -18,10 +18,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_grid_decl_hpp
-#define bempp_grid_decl_hpp
+#ifndef bempp_concrete_grid_hpp
+#define bempp_concrete_grid_hpp
 
-#include "id_set_decl.hpp"
+#include "grid.hpp"
+#include "concrete_entity.hpp"
+#include "concrete_grid_view.hpp"
+#include "concrete_id_set.hpp"
 
 #include <memory>
 
@@ -31,116 +34,6 @@ namespace Bempp
 // Forward declarations
 template<int codim> class Entity;
 class GridView;
-
-/** \brief Abstract wrapper of a grid.
-
-    Functions related to parallelisation are not wrapped yet.
- */
-class Grid
-{
-public:
-    /** \brief Destructor */
-    virtual ~Grid() {
-    }
-
-    /** @name Grid parameters
-    @{ */
-
-    /** \brief Dimension of the grid. */
-    virtual int dim() const = 0;
-
-    /** \brief Dimension of the space containing the grid. */
-    virtual int dimWorld() const = 0;
-
-    /** \brief Maximum level defined in this grid.
-
-     Levels are numbered 0 ... maxLevel() with 0 the coarsest level.
-     */
-    virtual int maxLevel() const = 0;
-
-    /** \brief Number of boundary segments within the macro (level-0) grid. */
-    virtual size_t boundarySegmentCount() const = 0;
-
-    /** @}
-    @name Views
-    @{ */
-
-    /** \brief View of the entities on grid level \p level. */
-    virtual std::auto_ptr<GridView> levelView(int level) const = 0;
-
-    /** \brief View of the leaf entities. */
-    virtual std::auto_ptr<GridView> leafView() const = 0;
-
-    /** @}
-    @name Id sets
-    @{ */
-
-    /** \brief Reference to the grid's global id set. */
-    virtual const IdSet& globalIdSet() const = 0;
-
-    /** @}
-    @name Adaptivity and grid refinement
-    @{ */
-
-    /** \brief Refine the grid \p refCount times using the default
-     refinement rule.
-
-     This behaves like marking all elements for refinement and then
-     calling preAdapt(), adapt() and postAdapt(). The state after
-     refineGlobally() is comparable to the state after postAdapt().
-     */
-    virtual void refineGlobally(int refCount) = 0;
-
-    /** \brief Mark an entity to be refined/coarsened in a subsequent adapt().
-
-     \param[in] refCount Number of subdivisions that should be
-     applied. Negative value means coarsening.
-
-     \param[in] e        Entity that should be marked
-
-     \return True if \p e was marked, false otherwise.
-     */
-    virtual bool mark(int refCount, const Entity<0>& e) = 0;
-
-    /** \brief Adaptation mark for entity \p e. */
-    virtual int getMark(const Entity<0>& e) const = 0;
-
-    /** \brief To be called after marking entities, but before calling
-     adapt().
-
-     This sets the \p mightVanish flags of the elements for the next adapt() call.
-
-     \return True if an entity may be coarsened during a subsequent
-     adapt(), false otherwise.
-     */
-    virtual bool preAdapt() = 0;
-
-    /** \brief Refine all positive marked leaf entities, coarsen all
-     negative marked entities if possible.
-
-     \return True if a least one entity was refined, false otherwise.
-
-     The complete adaptation process works as follows:
-
-     - mark entities with the mark() method
-     - call preAdapt()
-     - if preAdapt() returned true: possibly save current solution
-     - call adapt()
-     - if adapt() returned true: possibly interpolate the (saved) solution
-     - call postAdapt()
-     */
-    virtual bool adapt() = 0;
-
-    /** \brief To be called when the grid has been adapted and
-     information left over by the adaptation has been processed.
-
-     This removes the \e isNew flags of the elements from the last
-     adapt() call.
-     */
-    virtual void postAdapt() = 0;
-
-    /** @} */
-};
 
 /**
  \brief Wrapper of a Dune surface grid of type \p DuneGrid.
@@ -215,9 +108,15 @@ public:
     /** @}
     @name Views
     @{ */
-    virtual std::auto_ptr<GridView> levelView(int level) const;
+    virtual std::auto_ptr<GridView> levelView(int level) const {
+        return std::auto_ptr<GridView>(new ConcreteGridView<typename DuneGrid::LevelGridView>(
+                                           m_dune_grid->levelView(level)));
+    }
 
-    virtual std::auto_ptr<GridView> leafView() const;
+    virtual std::auto_ptr<GridView> leafView() const {
+        return std::auto_ptr<GridView>(new ConcreteGridView<typename DuneGrid::LeafGridView>(
+                                           m_dune_grid->leafView()));
+    }
 
     /** @}
     @name Id sets
@@ -235,9 +134,21 @@ public:
         m_dune_grid->globalRefine(refCount);
     }
 
-    virtual bool mark(int refCount, const Entity<0>& e);
+    virtual bool mark(int refCount, const Entity<0>& e) {
+        /// FIXME: should we catch std::bad_cast or leave it to the user?
+        typedef typename DuneGrid::template Codim<0>::Entity DuneEntity;
+        typedef ConcreteEntity<0, DuneEntity> ConcEntity;
+        const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
+        return m_dune_grid->mark(refCount, ce.duneEntity());
+    }
 
-    virtual int getMark(const Entity<0>& e) const;
+    virtual int getMark(const Entity<0>& e) const {
+        /// FIXME: should we catch std::bad_cast or leave it to the user?
+        typedef typename DuneGrid::template Codim<0>::Entity DuneEntity;
+        typedef ConcreteEntity<0, DuneEntity> ConcEntity;
+        const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
+        return m_dune_grid->getMark(ce.duneEntity());
+    }
 
     virtual bool preAdapt() {
         return m_dune_grid->preAdapt();

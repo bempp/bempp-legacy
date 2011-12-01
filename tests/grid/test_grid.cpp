@@ -19,9 +19,47 @@
 // THE SOFTWARE.
 
 #include "test_grid.hpp"
+#include "grid/grid_factory.hpp"
+#include "grid/structured_grid_factory.hpp"
 
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
+
+// Fixture member definitions
+
+std::auto_ptr<Bempp::Grid> SimpleTriangularGridManager::createGrid()
+{
+    Bempp::GridParameters params;
+    params.topology = Bempp::GridParameters::TRIANGULAR;
+
+    const int dimGrid = 2;
+    arma::Col<Bempp::ctype> lowerLeft(dimGrid);
+    arma::Col<Bempp::ctype> upperRight(dimGrid);
+    arma::Col<unsigned int> nElements(dimGrid);
+    lowerLeft.fill(0);
+    upperRight.fill(1);
+    nElements(0) = N_ELEMENTS_X;
+    nElements(1) = N_ELEMENTS_Y;
+
+    return Bempp::GridFactory::createStructuredGrid(params, lowerLeft, upperRight, nElements);
+}
+
+std::auto_ptr<SimpleTriangularGridManager::DuneGrid> SimpleTriangularGridManager::createDuneGrid()
+{
+    const int dimGrid = 2;
+    Dune::FieldVector<Bempp::ctype,dimGrid> duneLowerLeft;
+    duneLowerLeft[0] = duneLowerLeft[1] = 0;
+    Dune::FieldVector<Bempp::ctype,dimGrid> duneUpperRight;
+    duneUpperRight[0] = duneUpperRight[1] = 1;
+    Dune::array<unsigned int,dimGrid> duneNElements;
+    duneNElements[0] = N_ELEMENTS_X;
+    duneNElements[1] = N_ELEMENTS_Y;
+
+    return Dune::BemppStructuredGridFactory<SimpleTriangularGridManager::DuneGrid>::
+           createSimplexGrid(duneLowerLeft, duneUpperRight, duneNElements);
+}
+
+// Tests
 
 BOOST_FIXTURE_TEST_SUITE(Grid, SimpleTriangularGridManager)
 

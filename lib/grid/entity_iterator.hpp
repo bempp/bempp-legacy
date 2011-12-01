@@ -21,6 +21,56 @@
 #ifndef bempp_entity_iterator_hpp
 #define bempp_entity_iterator_hpp
 
-#include "entity_iterator_decl.hpp"
+#include "entity_pointer.hpp"
+
+namespace Bempp
+{
+
+// Forward declarations
+template<int codim> class Entity;
+
+/** \brief Abstract base class for iterators over entities.
+
+    \param codim Codimension of the entities iterated over.
+
+    Typical usage (here \p ConcreteEntityIterator is some subclass of <tt>EntityIterator<codim></tt>):
+
+    \code
+    ConcreteEntityIterator* it = ...();
+    while (!it->finished())
+    {
+    const ConcreteEntity& e = it.entity();
+    do_stuff(e);
+    it->next();
+    }
+    delete it;
+    \endcode
+
+    \internal Reminder: The template parameter codim is necessary because the
+    entity() method must know the codimension of the entity to which it returns
+    a reference.
+*/
+template<int codim>
+class EntityIterator: public EntityPointer<codim>
+{
+protected: /* Can't be changed to private, derived classes use it */
+    bool m_finished;
+public:
+    /** \brief Increment iterator. */
+    virtual void next() = 0;
+
+    /** \brief True if iterator points past the end of the iteration range */
+    bool finished() const {
+        return m_finished;
+    }
+
+    // virtual void reset() = 0; // Would such a method be useful?
+
+    // This redeclaration appears so that the docstring can be changed wrt. to the base class.
+    /** \brief Read-only access to the entity referenced by the iterator. */
+    virtual const Entity<codim>& entity() const = 0;
+};
+
+} // namespace Bempp
 
 #endif

@@ -21,32 +21,37 @@
 #ifndef bempp_id_set_hpp
 #define bempp_id_set_hpp
 
-#include "id_set_decl.hpp"
-#include "entity.hpp"
-
-#include <stdexcept>
+#include <boost/utility/enable_if.hpp>
 
 namespace Bempp
 {
 
-template<typename DuneGrid, typename DuneIdSet>
-template<int codim>
-inline typename boost::disable_if_c<(codim <= DuneGrid::dimension), IdSet::IdType>::type
-ConcreteIdSet<DuneGrid, DuneIdSet>::entityCodimNId(const Entity<codim>& e) const
-{
-    throw std::logic_error("IdSet::entityId(): invalid entity codimension");
-}
+// Forward declarations
+template<int codim> class Entity;
 
-template<typename DuneGrid, typename DuneIdSet>
-template<int codim>
-inline typename boost::enable_if_c<(codim <= DuneGrid::dimension), IdSet::IdType>::type
-ConcreteIdSet<DuneGrid, DuneIdSet>::entityCodimNId(const Entity<codim>& e) const
+/** \brief Abstract wrapper of an id set. */
+class IdSet
 {
-    typedef typename DuneGrid::template Codim<codim>::Entity DuneEntity;
-    typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
-    const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
-    return m_dune_id_set->id(ce.duneEntity());
-}
+public:
+    /** \brief Destructor. */
+    virtual ~IdSet() {
+    }
+
+    /** \brief Id type.
+
+     \internal Sadly, it is necessary to specify this type uniformly for all grid classes.
+     */
+    typedef unsigned int IdType;
+
+    /** \brief Id of the entity \p e of codimension 0. */
+    virtual IdType entityId(const Entity<0>& e) const = 0;
+    /** \brief Id of the entity \p e of codimension 1. */
+    virtual IdType entityId(const Entity<1>& e) const = 0;
+    /** \brief Id of the entity \p e of codimension 2. */
+    virtual IdType entityId(const Entity<2>& e) const = 0;
+    /** \brief Id of the entity \p e of codimension 3. */
+    virtual IdType entityId(const Entity<3>& e) const = 0;
+};
 
 } // namespace Bempp
 

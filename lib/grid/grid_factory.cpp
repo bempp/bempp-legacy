@@ -19,7 +19,8 @@
 // THE SOFTWARE.
 
 #include "grid_factory.hpp"
-#include "grid.hpp"
+#include "concrete_grid.hpp"
+#include "dune.hpp"
 #include "structured_grid_factory.hpp"
 
 #include <dune/grid/io/file/gmshreader.hh>
@@ -29,6 +30,9 @@
 
 namespace Bempp
 {
+
+// Default grid typedef
+typedef ConcreteGrid<DefaultDuneGrid> DefaultGrid;
 
 std::auto_ptr<Grid> GridFactory::createStructuredGrid(
     const GridParameters& params, const arma::Col<ctype>& lowerLeft,

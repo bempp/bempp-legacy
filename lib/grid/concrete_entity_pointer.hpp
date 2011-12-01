@@ -18,39 +18,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_entity_pointer_decl_hpp
-#define bempp_entity_pointer_decl_hpp
+#ifndef bempp_concrete_entity_pointer_hpp
+#define bempp_concrete_entity_pointer_hpp
+
+#include "entity_pointer.hpp"
+#include "concrete_entity_decl.hpp"
 
 namespace Bempp
 {
-
-// Forward declarations
-template<int codim> class Entity;
-
-/**
- \brief Abstract base class for an object providing read-only access to an
- entity of codimension \p codim.
-
- \internal Reminder: The template parameter codim is necessary because the
- entity() method must know the codimension of the entity to which it returns
- a reference.
- */
-template<int codim>
-class EntityPointer
-{
-public:
-    /** \brief Destructor */
-    virtual ~EntityPointer() {
-    }
-
-    /** \brief Entity codimension */
-    enum {
-        codimension = codim
-    };
-
-    /** \brief Read-only access to the underlying entity */
-    virtual const Entity<codim>& entity() const = 0;
-};
 
 /**
  \brief Wrapper of a Dune entity pointer of type \p DuneEntityPointer.

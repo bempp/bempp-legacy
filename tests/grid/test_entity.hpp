@@ -24,6 +24,8 @@
 #include "test_grid.hpp"
 #include "grid/entity.hpp"
 #include "grid/entity_pointer.hpp"
+#include "grid/entity_iterator.hpp"
+#include "grid/grid_view.hpp"
 
 struct TriangularEntityManager : public SimpleTriangularGridManager {
     TriangularEntityManager() : SimpleTriangularGridManager() {

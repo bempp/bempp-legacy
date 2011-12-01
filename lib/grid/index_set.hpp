@@ -21,30 +21,50 @@
 #ifndef bempp_index_set_hpp
 #define bempp_index_set_hpp
 
-#include "index_set_decl.hpp"
-#include "entity.hpp"
-
 namespace Bempp
 {
 
-template<typename DuneGridView>
-template<int codim>
-inline typename boost::disable_if_c<(codim <= DuneGridView::dimension), IndexSet::IndexType>::type
-ConcreteIndexSet<DuneGridView>::entityCodimNIndex(const Entity<codim>& e) const
-{
-    throw std::logic_error("IndexSet::entityIndex(): invalid entity codimension");
-}
+// Forward declarations
+template<int codim> class Entity;
 
-template<typename DuneGridView>
-template<int codim>
-inline typename boost::enable_if_c<(codim <= DuneGridView::dimension), IndexSet::IndexType>::type
-ConcreteIndexSet<DuneGridView>::entityCodimNIndex(const Entity<codim>& e) const
+/** \brief Abstract wrapper of an index set. */
+class IndexSet
 {
-    typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
-    typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
-    const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
-    return m_dune_index_set->index(ce.duneEntity());
-}
+public:
+    /** \brief Destructor. */
+    virtual ~IndexSet() {
+    }
+
+    /** \brief Index type.
+
+     \internal Sadly, it is necessary to specify this type uniformly for all grid classes.
+     */
+    typedef unsigned int IndexType;
+
+    /** \brief Index of the entity \e of codimension 0.
+
+     The result of calling this method with an entity that is not
+     in the index set is undefined.
+
+     \return An index in the range 0 ... (max number of entities in set - 1).
+     */
+    virtual IndexType entityIndex(const Entity<0>& e) const = 0;
+    /** \brief Index of the entity \e of codimension 1.
+
+     \overload
+     */
+    virtual IndexType entityIndex(const Entity<1>& e) const = 0;
+    /** \brief Index of the entity \e of codimension 2.
+
+     \overload
+     */
+    virtual IndexType entityIndex(const Entity<2>& e) const = 0;
+    /** \brief Index of the entity \e of codimension 3.
+
+     \overload
+     */
+    virtual IndexType entityIndex(const Entity<3>& e) const = 0;
+};
 
 } // namespace Bempp
 

@@ -28,6 +28,8 @@
 #include "grid/grid.hpp"
 #include "grid/grid_factory.hpp"
 #include "grid/grid_view.hpp"
+#include "grid/index_set.hpp"
+#include "grid/vtk_writer.hpp"
 
 using namespace Bempp;
 using std::cout;

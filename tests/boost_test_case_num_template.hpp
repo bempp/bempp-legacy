@@ -83,11 +83,14 @@
 
 //____________________________________________________________________________//
 
-namespace boost {
+namespace boost
+{
 
-namespace unit_test {
+namespace unit_test
+{
 
-namespace ut_detail {
+namespace ut_detail
+{
 
 //____________________________________________________________________________//
 
@@ -98,13 +101,12 @@ namespace ut_detail {
 template<typename Generator,typename TestCaseTemplate>
 struct generate_test_case_4_num_type {
     explicit    generate_test_case_4_num_type( const_string tc_name, Generator& G )
-    : m_test_case_name( tc_name )
-    , m_holder( G )
+        : m_test_case_name( tc_name )
+        , m_holder( G )
     {}
 
     template<typename TestType>
-    void        operator()( mpl::identity<TestType> )
-    {
+    void        operator()( mpl::identity<TestType> ) {
         std::string full_name;
         assign_op( full_name, m_test_case_name, 0 );
 
@@ -116,7 +118,7 @@ struct generate_test_case_4_num_type {
         sstream << '>';
         full_name = sstream.str();
 
-        m_holder.m_test_cases.push_back( 
+        m_holder.m_test_cases.push_back(
             new test_case( full_name, test_case_template_invoker<TestCaseTemplate,TestType>() ) );
     }
 
@@ -131,22 +133,21 @@ private:
 // ************************************************************************** //
 
 template<typename TestCaseTemplate,typename TestTypesList>
-class num_template_test_case_gen : public test_unit_generator {
+class num_template_test_case_gen : public test_unit_generator
+{
 public:
     // Constructor
-    num_template_test_case_gen( const_string tc_name )
-    {
+    num_template_test_case_gen( const_string tc_name ) {
         typedef generate_test_case_4_num_type<num_template_test_case_gen<TestCaseTemplate,TestTypesList>,
-                                          TestCaseTemplate
-        > single_test_gen;
+                TestCaseTemplate
+                > single_test_gen;
         mpl::for_each<TestTypesList,mpl::make_identity<mpl::_> >( single_test_gen( tc_name, *this ) );
     }
 
-    test_unit* next() const
-    {
+    test_unit* next() const {
         if( m_test_cases.empty() )
             return 0;
-    
+
         test_unit* res = m_test_cases.front();
         m_test_cases.pop_front();
 

@@ -19,10 +19,10 @@
 // THE SOFTWARE.
 
 #include "test_grid_view.hpp"
+#include "grid/armadillo_helpers.hpp"
+#include "grid/entity.hpp"
 #include "grid/entity_iterator.hpp"
 #include "grid/geometry.hpp"
-// equality testing between Armadillo vectors/matrices and Dune vectors/matrices
-#include "grid/armadillo_helpers.hpp"
 
 #include <boost/test/unit_test.hpp>
 #include "../num_template.hpp"
