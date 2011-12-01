@@ -54,7 +54,7 @@ int main()
     std::auto_ptr<GridView> leafGridView(grid->leafView());
     const IndexSet& indexSet = leafGridView->indexSet();
 
-    const int nVertices = leafGridView->size(2);
+    const int nVertices = leafGridView->entityCount(2);
     arma::Mat<double> data(1,nVertices);
     arma::Col<double> elementCenter;
 

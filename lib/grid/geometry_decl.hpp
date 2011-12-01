@@ -54,7 +54,7 @@ public:
       information is also available via the reference element. It is
       here for efficiency and ease of use.
      */
-    virtual int n_corners() const = 0;
+    virtual int cornerCount() const = 0;
 
     /** \brief Positions of the geometry corners.
      *
@@ -212,7 +212,7 @@ public:
         return m_dune_geometry->affine();
     }
 
-    virtual int n_corners() const {
+    virtual int cornerCount() const {
         return m_dune_geometry->corners();
     }
 

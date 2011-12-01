@@ -56,7 +56,7 @@ public:
     virtual int maxLevel() const = 0;
 
     /** \brief Number of boundary segments within the macro (level-0) grid. */
-    virtual size_t numBoundarySegments() const = 0;
+    virtual size_t boundarySegmentCount() const = 0;
 
     /** @}
     @name Views
@@ -201,7 +201,7 @@ public:
         return m_dune_grid->maxLevel();
     }
 
-    virtual size_t numBoundarySegments() const {
+    virtual size_t boundarySegmentCount() const {
         return m_dune_grid->numBoundarySegments();
     }
 

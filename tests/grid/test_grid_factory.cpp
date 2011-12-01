@@ -33,12 +33,12 @@ BOOST_FIXTURE_TEST_SUITE(GridFactory_Triangular, TriangularEntityManager)
 
 BOOST_AUTO_TEST_CASE(number_of_faces_is_correct)
 {
-    BOOST_CHECK_EQUAL(bemppGrid->levelView(0)->size(0), 2 * N_ELEMENTS_X * N_ELEMENTS_Y);
+    BOOST_CHECK_EQUAL(bemppGrid->levelView(0)->entityCount(0), 2 * N_ELEMENTS_X * N_ELEMENTS_Y);
 }
 
 BOOST_AUTO_TEST_CASE(number_of_vertices_is_correct)
 {
-    BOOST_CHECK_EQUAL(bemppGrid->levelView(0)->size(2), (N_ELEMENTS_X + 1) * (N_ELEMENTS_Y + 1));
+    BOOST_CHECK_EQUAL(bemppGrid->levelView(0)->entityCount(2), (N_ELEMENTS_X + 1) * (N_ELEMENTS_Y + 1));
 }
 
 BOOST_AUTO_TEST_CASE(second_face_is_a_triangle)

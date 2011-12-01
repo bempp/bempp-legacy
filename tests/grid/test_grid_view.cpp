@@ -31,38 +31,38 @@ using namespace Bempp;
 
 BOOST_FIXTURE_TEST_SUITE(GridView_Triangular_Level0, TriangularLevel0GridViewManager)
 
-// size()
+// entityCount()
 
-BOOST_AUTO_TEST_CASE(size_is_zero_for_codim_3)
+BOOST_AUTO_TEST_CASE(entityCount_is_zero_for_codim_3)
 {
-    BOOST_CHECK_EQUAL(bemppGridView->size(3), 0);
+    BOOST_CHECK_EQUAL(bemppGridView->entityCount(3), 0);
 }
 
-BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(size_agrees_with_Dune_for_codim,
+BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityCount_agrees_with_Dune_for_codim,
                                   T, list_0_to_3)
 {
     const int codim = T::value;
-    BOOST_CHECK_EQUAL(bemppGridView->size(codim), duneGridView.size(codim));
+    BOOST_CHECK_EQUAL(bemppGridView->entityCount(codim), duneGridView.size(codim));
 }
 
-BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(size_agrees_with_Dune_for_simplex_of_dim,
+BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityCount_agrees_with_Dune_for_simplex_of_dim,
                                   T, list_0_to_3)
 {
     const int dim = T::value;
     const GeometryType type(GeometryType::simplex, dim);
-    BOOST_CHECK_EQUAL(bemppGridView->size(type), duneGridView.size(type));
+    BOOST_CHECK_EQUAL(bemppGridView->entityCount(type), duneGridView.size(type));
 }
 
-BOOST_AUTO_TEST_CASE(size_agrees_with_Dune_for_cube_of_dim_2)
+BOOST_AUTO_TEST_CASE(entityCount_agrees_with_Dune_for_cube_of_dim_2)
 {
     const GeometryType type(GeometryType::cube, 2);
-    BOOST_CHECK_EQUAL(bemppGridView->size(type), duneGridView.size(type));
+    BOOST_CHECK_EQUAL(bemppGridView->entityCount(type), duneGridView.size(type));
 }
 
-BOOST_AUTO_TEST_CASE(size_is_zero_for_cube_of_dim_2)
+BOOST_AUTO_TEST_CASE(entityCount_is_zero_for_cube_of_dim_2)
 {
     const GeometryType type(GeometryType::cube, 2);
-    BOOST_CHECK_EQUAL(bemppGridView->size(type), 0);
+    BOOST_CHECK_EQUAL(bemppGridView->entityCount(type), 0);
 }
 
 // entityIterator()
@@ -161,40 +161,40 @@ BOOST_FIXTURE_TEST_SUITE(GridView_Triangular_Leaf, TriangularLeafGridViewManager
 // Contents of this test suite are identical with those of the previous one -- the only difference is the fixture.
 // I can't see any elegant way of avoid this duplication, though.
 
-// size()
+// entityCount()
 
-BOOST_AUTO_TEST_CASE(size_is_zero_for_codim_3)
+BOOST_AUTO_TEST_CASE(entityCount_is_zero_for_codim_3)
 {
-    BOOST_CHECK_EQUAL(bemppGridView->size(3), 0);
+    BOOST_CHECK_EQUAL(bemppGridView->entityCount(3), 0);
 }
 
-BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(size_agrees_with_Dune_for_codim,
+BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityCount_agrees_with_Dune_for_codim,
                                   T, list_0_to_3)
 {
     const int codim = T::value;
-    BOOST_CHECK_EQUAL(bemppGridView->size(codim), duneGridView.size(codim));
+    BOOST_CHECK_EQUAL(bemppGridView->entityCount(codim), duneGridView.size(codim));
 }
 
-BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(size_agrees_with_Dune_for_simplex_of_dim,
+BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityCount_agrees_with_Dune_for_simplex_of_dim,
                                   T, list_0_to_3)
 {
     const int dim = T::value;
     const GeometryType type(GeometryType::simplex, dim);
-    BOOST_CHECK_EQUAL(bemppGridView->size(type), duneGridView.size(type));
+    BOOST_CHECK_EQUAL(bemppGridView->entityCount(type), duneGridView.size(type));
 }
 
-BOOST_AUTO_TEST_CASE(size_agrees_with_Dune_for_cube_of_dim_2)
+BOOST_AUTO_TEST_CASE(entityCount_agrees_with_Dune_for_cube_of_dim_2)
 {
     const GeometryType type(GeometryType::cube, 2);
-    BOOST_CHECK_EQUAL(bemppGridView->size(type), duneGridView.size(type));
+    BOOST_CHECK_EQUAL(bemppGridView->entityCount(type), duneGridView.size(type));
 }
 
 // This test fails -- there is a bug in FoamGridLeafIndexSet::size(GeometryType)
 // (it just checks dimensions, the geometry type (simplex/cube/...) is not checked)
-BOOST_AUTO_TEST_CASE(size_is_zero_for_cube_of_dim_2)
+BOOST_AUTO_TEST_CASE(entityCount_is_zero_for_cube_of_dim_2)
 {
     const GeometryType type(GeometryType::cube, 2);
-    BOOST_CHECK_EQUAL(bemppGridView->size(type), 0);
+    BOOST_CHECK_EQUAL(bemppGridView->entityCount(type), 0);
 }
 
 // entityIterator()

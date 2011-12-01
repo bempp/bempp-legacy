@@ -70,9 +70,9 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(affine_is_true_for_codim,
     BOOST_CHECK(geo.affine());
 }
 
-// n_corners()
+// cornerCount()
 
-BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(n_corners_agrees_with_Dune_for_codim,
+BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(cornerCount_agrees_with_Dune_for_codim,
                                   T, list_0_to_2)
 {
     const int codim = T::value;
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(n_corners_agrees_with_Dune_for_codim,
     const Geometry& geo = ep->entity().geometry();
     const typename DuneGrid::Codim<codim>::Entity::Geometry& duneGeo = duneEp->geometry();
 
-    BOOST_CHECK_EQUAL(geo.n_corners(), duneGeo.corners());
+    BOOST_CHECK_EQUAL(geo.cornerCount(), duneGeo.corners());
 }
 
 // corners()
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(corners_last_corner_agrees_with_Dune_for_codim
     const Geometry& geo = ep->entity().geometry();
     const typename DuneGrid::Codim<codim>::Entity::Geometry& duneGeo = duneEp->geometry();
 
-    const int nTestedCorner = geo.n_corners() - 1;
+    const int nTestedCorner = geo.cornerCount() - 1;
 
     arma::Mat<ctype> corners;
     geo.corners(corners);

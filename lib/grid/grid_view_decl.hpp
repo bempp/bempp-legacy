@@ -52,10 +52,10 @@ public:
     virtual const IndexSet& indexSet() const = 0;
 
     /** \brief Number of entities with codimension \p codim. */
-    virtual int size(int codim) const = 0;
+    virtual int entityCount(int codim) const = 0;
 
     /** \brief Number of entities with geometry type \p type. */
-    virtual int size(const GeometryType &type) const = 0;
+    virtual int entityCount(const GeometryType &type) const = 0;
 
     /** \brief True if the entity \p e of codimension 0 is contained in this grid view.
        *
@@ -163,11 +163,11 @@ public:
         return m_index_set;
     }
 
-    virtual int size(int codim) const {
+    virtual int entityCount(int codim) const {
         return m_dune_gv.size(codim);
     }
 
-    virtual int size(const GeometryType &type) const {
+    virtual int entityCount(const GeometryType &type) const {
         return m_dune_gv.size(type);
     }
 
