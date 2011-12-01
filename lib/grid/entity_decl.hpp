@@ -110,22 +110,18 @@ public:
     @name Extended interface of entities of codimension 0
     @{ */
 
-    /** \brief Number of vertices.
+    /** \brief Number of subentities of codimension \p codimSub.
 
-    This method is in principle
+     This method is in principle
      redundant because this information can be obtained via the
      reference element of the geometry. It is there for efficiency
      reasons and to make the interface self-contained.
      */
-    virtual int vertexCount() const = 0;
-
-    /** \brief Number of edges.
-
-    This method is in principle
-     redundant because this information can be obtained via the
-     reference element of the geometry. It is there for efficiency
-     reasons and to make the interface self-contained. */
-    virtual int edgeCount() const = 0;
+    // Default implementation, specialisations for potentially allowed
+    // codimensions (1 to 3) follow after class declaration.
+    template<int codimSub> int subEntityCount() const {
+        return 0;
+    }
 
     /** \brief Iterator over subentities of codimension \p codimSub.
 
@@ -262,6 +258,13 @@ private:
     /** \brief Iterator over subentities of codimension 3. */
     virtual std::auto_ptr<EntityIterator<3> > subEntityCodim3Iterator() const = 0;
 
+    /** \brief Number of subentities of codimension 1. */
+    virtual int subEntityCodim1Count() const = 0;
+    /** \brief Number of subentities of codimension 1. */
+    virtual int subEntityCodim2Count() const = 0;
+    /** \brief Number of subentities of codimension 1. */
+    virtual int subEntityCodim3Count() const = 0;
+
     /** @} */
 };
 
@@ -281,6 +284,21 @@ inline std::auto_ptr<EntityIterator<3> > Entity<0>::subEntityIterator<3>() const
     return subEntityCodim3Iterator();
 }
 
+template<>
+inline int Entity<0>::subEntityCount<1>() const
+{
+    return subEntityCodim1Count();
+}
+template<>
+inline int Entity<0>::subEntityCount<2>() const
+{
+    return subEntityCodim2Count();
+}
+template<>
+inline int Entity<0>::subEntityCount<3>() const
+{
+    return subEntityCodim3Count();
+}
 
 /** \brief Wrapper of a Dune entity of type \p DuneEntity and codimension \p codim.
 
@@ -394,14 +412,6 @@ public:
         return m_dune_entity->type();
     }
 
-    virtual int edgeCount() const {
-        return m_dune_entity->template count<1>();
-    }
-
-    virtual int vertexCount() const {
-        return m_dune_entity->template count<2>();
-    }
-
 // TODO: write properly these definitions
 //  virtual SurfaceGridIntersectionIterator ileafbegin() const
 //  {
@@ -474,6 +484,9 @@ private:
         return subEntityCodimNIterator<3>();
     }
 
+    // these methods are implemented in entity.hpp (outside the declaration of
+    // ConcreteEntity) because they need to know the full declaration of
+    // concrete iterator (which may not be available at this stage)
     template <int codimSub>
     typename boost::disable_if_c<codimSub <= DuneEntity::dimension, std::auto_ptr<EntityIterator<codimSub> > >::type
     subEntityCodimNIterator() const;
@@ -481,6 +494,30 @@ private:
     template <int codimSub>
     typename boost::enable_if_c<codimSub <= DuneEntity::dimension, std::auto_ptr<EntityIterator<codimSub> > >::type
     subEntityCodimNIterator() const;
+
+    virtual int subEntityCodim1Count() const {
+        return subEntityCodimNCount<1>();
+    }
+    virtual int subEntityCodim2Count() const {
+        return subEntityCodimNCount<2>();
+    }
+    virtual int subEntityCodim3Count() const {
+        return subEntityCodimNCount<3>();
+    }
+
+    template <int codimSub>
+    typename boost::disable_if_c<codimSub <= DuneEntity::dimension, int>::type
+    subEntityCodimNCount() const
+    {
+        return 0;
+    }
+
+    template <int codimSub>
+    typename boost::enable_if_c<codimSub <= DuneEntity::dimension, int>::type
+    subEntityCodimNCount() const
+    {
+        return m_dune_entity->template count<codimSub>();
+    }
 };
 
 } // namespace Bempp

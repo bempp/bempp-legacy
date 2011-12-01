@@ -61,6 +61,32 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(type_agrees_with_Dune_for_second_entity_on_lev
     BOOST_CHECK_EQUAL(ep->entity().type(), duneEp->type());
 }
 
+// subEntityCount()
+
+BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityCount_agrees_with_Dune_for_codimSub,
+                                  T, list_1_to_2)
+{
+    const int codimSub = T::value;
+
+    std::auto_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
+    int count = ep->entity().subEntityCount<codimSub>();
+
+    typename DuneGrid::Codim<0>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<0>();
+    int duneCount = duneEp->template count<codimSub>();
+
+    BOOST_CHECK_EQUAL(count, duneCount);
+}
+
+BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityCount_is_zero_for_codimSub,
+                                  T, list_0_and_3)
+{
+    const int codimSub = T::value;
+    std::auto_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
+    int count = ep->entity().subEntityCount<codimSub>();
+
+    BOOST_CHECK_EQUAL(count, 0);
+}
+
 // subEntityIterator()
 
 BOOST_AUTO_TEST_CASE(subEntityIterator_throws_for_codimSub_0)
