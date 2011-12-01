@@ -42,6 +42,15 @@ int main()
     const int N_TRIALS = 20;
     const bool CALC_CENTER = true;
 
+    if (CALC_CENTER)
+        std::cout << "Benchmark variant: full loops\n";
+    else
+        std::cout << "Benchmark variant: empty loops\n";
+
+    //////////////////// BEMPP OBJECTS ///////////////////
+
+    std::cout << "\nUsing Bempp objects..." << std::endl;
+
     // Create a structured grid
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
@@ -56,16 +65,7 @@ int main()
     nElements(1) = N_ELEMENTS + 1;
 
     std::auto_ptr<Grid> grid(GridFactory::createStructuredGrid(params, lowerLeft, upperRight, nElements));
-
     std::cout << nElements[0] * nElements[1] << " elements created\n";
-    if (CALC_CENTER)
-        std::cout << "Benchmark variant: full loops\n";
-    else
-        std::cout << "Benchmark variant: empty loops\n";
-
-    //////////////////// BEMPP OBJECTS ///////////////////
-
-    std::cout << "Using Bempp objects..." << std::endl;
 
     // Create a leaf view
     std::auto_ptr<GridView> leafGridView(grid->leafView());
@@ -130,9 +130,21 @@ int main()
 
     //////////////////// DUNE OBJECTS ///////////////////
 
-    std::cout << "Using Dune objects..." << std::endl;
+    std::cout << "\nUsing Dune objects..." << std::endl;
 
-    const DefaultDuneGrid* duneGrid = &dynamic_cast<DefaultGrid*>(&*grid)->duneGrid();
+    Dune::FieldVector<ctype,dimGrid> duneLowerLeft;
+    duneLowerLeft[0] = duneLowerLeft[1] = 0;
+    Dune::FieldVector<ctype,dimGrid> duneUpperRight;
+    duneUpperRight[0] = duneUpperRight[1] = 1;
+    Dune::array<unsigned int,dimGrid> duneNElements;
+    duneNElements[0] = N_ELEMENTS;
+    duneNElements[1] = N_ELEMENTS + 1;
+
+    std::auto_ptr<DefaultDuneGrid> duneGrid =
+            Dune::BemppStructuredGridFactory<DefaultDuneGrid>::
+            createSimplexGrid(duneLowerLeft, duneUpperRight, duneNElements);
+    std::cout << nElements[0] * nElements[1] << " elements created\n";
+
     const int dimWorld = 3;
 
     DefaultDuneGrid::LeafGridView duneLeafGridView = duneGrid->leafView();

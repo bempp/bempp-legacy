@@ -29,6 +29,7 @@ class SimpleTriangularGridManager
 {
 public:
     enum { N_ELEMENTS_X = 3, N_ELEMENTS_Y = 4 };
+    typedef Bempp::DefaultDuneGrid DuneGrid;
 
     /** Create two identical simple 2D structured Bempp grids composed of 2 * 3 * 4 triangles.
         Store an auto_ptr to the first one as bemppGrid; from the second one,
@@ -38,9 +39,7 @@ public:
         bemppGrid = createGrid();
 
         // Create an identical Dune grid
-        dummyBemppGrid = createGrid();
-        Bempp::DefaultGrid* castedBemppGrid = dynamic_cast<Bempp::DefaultGrid*>(&*dummyBemppGrid);
-        duneGrid = &castedBemppGrid->duneGrid();
+        duneGrid = createDuneGrid();
     }
 
     // No destructor is needed since auto_ptrs release memory automatically
@@ -62,12 +61,23 @@ private:
         return Bempp::GridFactory::createStructuredGrid(params, lowerLeft, upperRight, nElements);
     }
 
+    std::auto_ptr<DuneGrid> createDuneGrid() {
+        const int dimGrid = 2;
+        Dune::FieldVector<Bempp::ctype,dimGrid> duneLowerLeft;
+        duneLowerLeft[0] = duneLowerLeft[1] = 0;
+        Dune::FieldVector<Bempp::ctype,dimGrid> duneUpperRight;
+        duneUpperRight[0] = duneUpperRight[1] = 1;
+        Dune::array<unsigned int,dimGrid> duneNElements;
+        duneNElements[0] = N_ELEMENTS_X;
+        duneNElements[1] = N_ELEMENTS_Y;
+
+        return Dune::BemppStructuredGridFactory<DuneGrid>::
+                     createSimplexGrid(duneLowerLeft, duneUpperRight, duneNElements);
+    }
+
 public:
-    typedef Bempp::DefaultDuneGrid DuneGrid;
     std::auto_ptr<Bempp::Grid> bemppGrid;
-    DuneGrid* duneGrid;
-private:
-    std::auto_ptr<Bempp::Grid> dummyBemppGrid; // this grid is used only to manage the life of the duneGrid pointer
+    std::auto_ptr<DuneGrid> duneGrid;
 };
 
 #endif
