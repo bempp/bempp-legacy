@@ -30,6 +30,11 @@ BOOST_AUTO_TEST_CASE(dimWorld_agrees_with_Dune)
     BOOST_CHECK_EQUAL(bemppGrid->dimWorld(), (int)duneGrid->dimensionworld);
 }
 
+BOOST_AUTO_TEST_CASE(dim_agrees_with_Dune)
+{
+    BOOST_CHECK_EQUAL(bemppGrid->dim(), (int)duneGrid->dimension);
+}
+
 BOOST_AUTO_TEST_CASE(maxLevel_agrees_with_Dune)
 {
     BOOST_CHECK_EQUAL(bemppGrid->maxLevel(), duneGrid->maxLevel());

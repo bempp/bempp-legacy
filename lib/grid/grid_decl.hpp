@@ -46,6 +46,9 @@ public:
     /** @name Grid parameters
     @{ */
 
+    /** \brief Dimension of the grid. */
+    virtual int dim() const = 0;
+
     /** \brief Dimension of the space containing the grid. */
     virtual int dimWorld() const = 0;
 
@@ -195,6 +198,10 @@ public:
 
     virtual int dimWorld() const {
         return DuneGrid::dimensionworld;
+    }
+
+    virtual int dim() const {
+        return DuneGrid::dimension;
     }
 
     virtual int maxLevel() const {
