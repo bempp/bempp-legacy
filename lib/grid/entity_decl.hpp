@@ -133,47 +133,6 @@ public:
         throw std::logic_error("Entity::subEntityIterator(): invalid entity codimension");
     }
 
-    // To be implemented later.
-    //  /* \brief Access to intersections with neighboring leaf elements.
-    //     A neighbor is an entity of codimension 0
-    //     which has an intersection of codimension 1 in common with this entity.
-    //     Access to those neighbors is provided using the IntersectionIterator.
-    //     This method returns an iterator refering to the first neighbor.
-
-    //     \note If the partitionType of the Entity is GhostEntity,
-    //     this method might give you only one neighbor, which is the
-    //     interior Entity the GhostEntity is connected to.
-    //  */
-    //  virtual SurfaceGridIntersectionIterator ileafbegin() const = 0;
-
-    //  /* \brief Reference to an IntersectionIterator one past the last intersection
-
-    //     \note If the partitionType of the Entity is GhostEntity,
-    //     this method might give you only one neighbor, which is the
-    //     interior Entity the GhostEntity is connected to.
-    //  */
-    //  virtual SurfaceGridIntersectionIterator ileafend() const = 0;
-
-    //  /* \brief Intra-level access to intersections with neighboring elements.
-    //     A neighbor is an entity of codimension 0
-    //     which has an intersection of codimension 1 in common with this entity.
-    //     Access to those neighbors is provided using the IntersectionIterator.
-    //     This method returns an iterator refering to the first neighbor.
-
-    //     \note If the partitionType of the Entity is GhostEntity,
-    //     this method might give you only one neighbor, which is the
-    //     interior Entity the GhostEntity is connected to.
-    //  */
-    //  virtual SurfaceGridIntersectionIterator ilevelbegin() const = 0;
-
-    //  /* \brief Reference to an IntersectionIterator one past the last intersection
-
-    //     \note If the partitionType of the Entity is GhostEntity,
-    //     this method might give you only one neighbor, which is the
-    //     interior Entity the GhostEntity is connected to.
-    //  */
-    //  virtual SurfaceGridIntersectionIterator ilevelend() const = 0;
-
     /** \brief Inter-level access to father entity on the next-coarser grid.
 
      The given entity resulted directly from a subdivision of its father
@@ -201,27 +160,6 @@ public:
      */
     virtual bool isRegular() const = 0;
 
-    // To be implemented later.
-    //  /* \brief Provides information how this element has been subdivided from
-    //     its father element.
-    //     The returned LocalGeometry is a model of Dune::Geometry<dimension,dimension,...>
-    //     mapping from the reference element of the given element to the reference
-    //     element of the father element.
-    //     This is sufficient to interpolate all degrees of freedom in the
-    //     conforming case. Nonconforming may require access to neighbors of father and
-    //     computations with local coordinates.
-    //     On the fly case is somewhat inefficient since degrees of freedom
-    //     may be visited several times.
-    //     If we store interpolation matrices, this is tolerable. We assume that on-the-fly
-    //     implementation of interpolation is only done for simple discretizations.
-
-    //     \note If the partitionType of the Entity is GhostEntity,
-    //     it is not guaranteed that this method is working
-    //     or implemented in general.
-    //     For some grids it might be available, though.
-    //  */
-    //  virtual const SurfaceGridLocalGeometry& geometryInFather() const = 0;
-
     /** \brief Inter-level access to elements that resulted from (recursive)
      subdivision of this element.
 
@@ -245,6 +183,11 @@ public:
      * adaptation.
      */
     virtual bool mightVanish() const = 0;
+
+    // Deferred for possible later implementation:
+    // * Iteration over neighbours: Dune methods ileafbegin(), ileafend(), ilevelbegin(), ilevelend()
+    // * Information about the way this element has been subdivided from
+    //   its father element: Dune method geometryInFather().
 
 private:
     /** @}
@@ -412,39 +355,6 @@ public:
         return m_dune_entity->type();
     }
 
-// TODO: write properly these definitions
-//  virtual SurfaceGridIntersectionIterator ileafbegin() const
-//  {
-//    typedef typename GridType::LeafIntersectionIterator DuneIterator;
-//    typedef ConcreteSurfaceGridIntersectionIterator<DuneIterator> ConcreteIterator;
-//    DuneIterator dit = m_dune_entity->ileafbegin();
-//    return SurfaceGridIntersectionIterator(new ConcreteIterator(dit));
-//  }
-
-//  virtual SurfaceGridIntersectionIterator ileafend() const
-//  {
-//    typedef typename GridType::LeafIntersectionIterator DuneIterator;
-//    typedef ConcreteSurfaceGridIntersectionIterator<DuneIterator> ConcreteIterator;
-//    DuneIterator dit = m_dune_entity->ileafend();
-//    return SurfaceGridIntersectionIterator(new ConcreteIterator(dit));
-//  }
-
-//  virtual SurfaceGridIntersectionIterator ilevelbegin() const
-//  {
-//    typedef typename GridType::LevelIntersectionIterator DuneIterator;
-//    typedef ConcreteSurfaceGridIntersectionIterator<DuneIterator> ConcreteIterator;
-//    DuneIterator dit = m_dune_entity->ilevelbegin();
-//    return SurfaceGridIntersectionIterator(new ConcreteIterator(dit));
-//  }
-
-//  virtual SurfaceGridIntersectionIterator ilevelend() const
-//  {
-//    typedef typename GridType::LevelIntersectionIterator DuneIterator;
-//    typedef ConcreteSurfaceGridIntersectionIterator<DuneIterator> ConcreteIterator;
-//    DuneIterator dit = m_dune_entity->ilevelend();
-//    return SurfaceGridIntersectionIterator(new ConcreteIterator(dit));
-//  }
-
     virtual std::auto_ptr<EntityPointer<0> > father() const;
 
     virtual bool hasFather() const {
@@ -458,10 +368,6 @@ public:
     virtual bool isRegular() const {
         return m_dune_entity->isRegular();
     }
-
-// To be implemented.
-//  virtual const SurfaceGridLocalGeometry& geometryInFather() const
-//  { return SurfaceGridLocalGeometry(m_dune_entity->geometryInFather()); }
 
     virtual std::auto_ptr<EntityIterator<0> > sonIterator(int maxlevel) const;
 

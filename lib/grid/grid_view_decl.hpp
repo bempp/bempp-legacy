@@ -45,9 +45,6 @@ public:
     virtual ~GridView() {
     }
 
-    // TODO: return base grid
-    // virtual & grid() const = 0;
-
     /** \brief The index set */
     virtual const IndexSet& indexSet() const = 0;
 
@@ -92,6 +89,9 @@ public:
       \param dm Data mode (conforming or nonconforming; see the documentation of Dune::VTK::DataMode for details). */
     virtual std::auto_ptr<VtkWriter> vtkWriter(Dune::VTK::DataMode dm=Dune::VTK::conforming) const = 0;
 
+    // Deferred for later implementation:
+    // * Iteration over neighbours: Dune methods ibegin() and iend().
+
 private:
     /** \brief Iterator over entities of codimension 0 contained in this view. */
     virtual std::auto_ptr<EntityIterator<0> > entityCodim0Iterator() const = 0;
@@ -101,13 +101,6 @@ private:
     virtual std::auto_ptr<EntityIterator<2> > entityCodim2Iterator() const = 0;
     /** \brief Iterator over entities of codimension 3 contained in this view. */
     virtual std::auto_ptr<EntityIterator<3> > entityCodim3Iterator() const = 0;
-
-public:
-    // TODO: Intersection iterators.
-    //  virtual Iterator
-    //  ibegin(const Entity<0>& entity) const = 0;
-    //  virtual Iterator
-    //  iend(const Entity<0>& entity) const = 0;
 };
 
 template<>
@@ -155,9 +148,6 @@ public:
     DuneGridView& duneGridView() {
         return m_dune_gv;
     }
-
-    // virtual & grid() const
-    //   { return Concrete<const DuneGridView::Grid>(&m_dune_gv.grid()); }
 
     virtual const IndexSet& indexSet() const {
         return m_index_set;
