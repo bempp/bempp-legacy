@@ -87,9 +87,9 @@ public:
 
      This behaves like marking all elements for refinement and then
      calling preAdapt(), adapt() and postAdapt(). The state after
-     globalRefine() is comparable to the state after postAdapt().
+     refineGlobally() is comparable to the state after postAdapt().
      */
-    virtual void globalRefine(int refCount) = 0;
+    virtual void refineGlobally(int refCount) = 0;
 
     /** \brief Mark an entity to be refined/coarsened in a subsequent adapt().
 
@@ -231,7 +231,7 @@ public:
     @name Adaptivity and grid refinement
     @{ */
 
-    virtual void globalRefine(int refCount) {
+    virtual void refineGlobally(int refCount) {
         m_dune_grid->globalRefine(refCount);
     }
 
