@@ -22,6 +22,7 @@
 #define bempp_grid_hpp
 
 #include <memory>
+#include <iostream>
 
 namespace Bempp
 {
@@ -39,7 +40,10 @@ class Grid
 {
 public:
     /** \brief Destructor */
-    virtual ~Grid() {
+    virtual ~Grid() { 
+#ifndef NDEBUG
+        std::cout << "Grid destructor" << std::endl;
+#endif
     }
 
     /** @name Grid parameters
