@@ -25,6 +25,7 @@
 #include "grid/geometry.hpp"
 
 #include <boost/test/unit_test.hpp>
+#include <boost/version.hpp>
 #include "../num_template.hpp"
 
 using namespace Bempp;
@@ -195,8 +196,11 @@ BOOST_AUTO_TEST_CASE(entityCount_agrees_with_Dune_for_cube_of_dim_2)
 BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(entityCount_is_zero_for_cube_of_dim_2, 1)
 #else
 // See http://lists.boost.org/boost-users/2007/09/31144.php
-#warning "Your version of Boost.Test does not register expected "\
-    "test failures correctly. Update to Boost 1.35 or newer."
+#   ifdef _MSC_VER
+#       pragma message("WARNING: Your version of Boost.Test does not register expected test failures correctly. Update to Boost 1.35 or newer.")
+#   else // perhaps GCC
+#       warning Your version of Boost.Test does not register expected test failures correctly. Update to Boost 1.35 or newer.
+#   endif
 #endif
 BOOST_AUTO_TEST_CASE(entityCount_is_zero_for_cube_of_dim_2)
 {

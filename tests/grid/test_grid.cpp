@@ -24,6 +24,7 @@
 
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
+#include <boost/version.hpp>
 
 // Fixture member definitions
 
@@ -80,12 +81,16 @@ BOOST_AUTO_TEST_CASE(maxLevel_agrees_with_Dune)
 
 // The test below fails because the numBoundarySegments method is not
 // implemented in FoamGrid yet.
+
 #if BOOST_VERSION >= 103500
 BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(boundarySegmentCount_agrees_with_Dune, 1)
 #else
 // See http://lists.boost.org/boost-users/2007/09/31144.php
-#warning "Your version of Boost.Test does not register expected "\
-    "test failures correctly. Update to Boost 1.35 or newer."
+#   ifdef _MSC_VER
+#       pragma message("WARNING: Your version of Boost.Test does not register expected test failures correctly. Update to Boost 1.35 or newer.")
+#   else // perhaps GCC
+#       warning Your version of Boost.Test does not register expected test failures correctly. Update to Boost 1.35 or newer.
+#   endif
 #endif
 BOOST_AUTO_TEST_CASE(boundarySegmentCount_agrees_with_Dune)
 {
