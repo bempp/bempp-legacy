@@ -63,6 +63,7 @@
 #include <boost/mpl/identity.hpp>
 #include <boost/type.hpp>
 #include <boost/type_traits/is_const.hpp>
+#include <boost/version.hpp>
 
 // STL
 #include <sstream>
@@ -176,6 +177,35 @@ public:
 // ************        BOOST_AUTO_TEST_CASE_NUM_TEMPLATE         ************ //
 // ************************************************************************** //
 
+// In Boost 1.35 BOOST_AUTO_TC_REGISTRAR changed into BOOST_AUTO_TU_REGISTRAR,
+// so we need a conditional compilation here.
+
+#if BOOST_VERSION < 103500
+
+#define BOOST_AUTO_TEST_CASE_NUM_TEMPLATE( test_name, type_name, TL )   \
+template<typename type_name>                                            \
+struct test_name : public BOOST_AUTO_TEST_CASE_FIXTURE                  \
+{ void test_method(); };                                                \
+                                                                        \
+struct BOOST_AUTO_TC_INVOKER( test_name ) {                             \
+    template<typename TestType>                                         \
+    static void run( boost::type<TestType>* = 0 )                       \
+    {                                                                   \
+        test_name<TestType> t;                                          \
+        t.test_method();                                                \
+    }                                                                   \
+};                                                                      \
+                                                                        \
+BOOST_AUTO_TC_REGISTRAR( test_name )(                                   \
+    boost::unit_test::ut_detail::num_template_test_case_gen<            \
+        BOOST_AUTO_TC_INVOKER( test_name ),TL >(                        \
+          BOOST_STRINGIZE( test_name ) ) );                             \
+                                                                        \
+template<typename type_name>                                            \
+void test_name<type_name>::test_method()                                \
+
+#else // BOOST_VERSION >= 103500
+
 #define BOOST_AUTO_TEST_CASE_NUM_TEMPLATE( test_name, type_name, TL )   \
 template<typename type_name>                                            \
 struct test_name : public BOOST_AUTO_TEST_CASE_FIXTURE                  \
@@ -197,6 +227,8 @@ BOOST_AUTO_TU_REGISTRAR( test_name )(                                   \
                                                                         \
 template<typename type_name>                                            \
 void test_name<type_name>::test_method()                                \
+
+#endif
 /**/
 
 #endif // BOOST_TEST_TEST_CASE_NUM_TEMPLATE_HPP
