@@ -69,6 +69,13 @@ public:
     // This redeclaration appears so that the docstring can be changed wrt. to the base class.
     /** \brief Read-only access to the entity referenced by the iterator. */
     virtual const Entity<codim>& entity() const = 0;
+
+    /** \brief A stable pointer to the entity currently referenced by the iterator.
+
+    The returned pointer is guaranteed to keep referring to the same entity
+    even if the iterator is incremented or destroyed, as long as the grid is
+    not adapted and the grid object itself stays alive. */
+    virtual std::auto_ptr<EntityPointer<codim> > frozen() const = 0;
 };
 
 } // namespace Bempp

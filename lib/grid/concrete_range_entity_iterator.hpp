@@ -27,8 +27,14 @@
 namespace Bempp
 {
 
-/** \brief Iterator over entities referenced by a range of Dune iterators of type \p DuneEntityIt. */
-template<typename DuneEntityIt>
+/** \brief Iterator over entities referenced by a range of Dune iterators of
+type \p DuneEntityIt.
+
+\p DuneEntityPointer is the base class of \p DuneEntityIt (it would be easily
+read from the DuneEntityIt::Base typedef, but, alas, this typedef is
+private...).
+*/
+template<typename DuneEntityIt, typename DuneEntityPointer>
 class ConcreteRangeEntityIterator: public EntityIterator<
     DuneEntityIt::codimension>
 {
@@ -63,6 +69,12 @@ public:
 
     virtual const Entity<ConcreteRangeEntityIterator::codimension>& entity() const {
         return m_entity;
+    }
+
+    virtual std::auto_ptr<EntityPointer<ConcreteRangeEntityIterator::codimension> > frozen() const {
+        const int codim = ConcreteRangeEntityIterator::codimension;
+        return std::auto_ptr<EntityPointer<codim> >(
+                    new ConcreteEntityPointer<DuneEntityPointer>(*m_cur));
     }
 };
 

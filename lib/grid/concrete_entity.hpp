@@ -58,7 +58,8 @@ std::auto_ptr<EntityIterator<0> > ConcreteEntity<0, DuneEntity>::sonIterator(
     int maxlevel) const
 {
     typedef typename DuneEntity::HierarchicIterator DuneIterator;
-    typedef ConcreteRangeEntityIterator<DuneIterator> ConcIterator;
+    typedef typename DuneEntity::EntityPointer DuneEntityPointer;
+    typedef ConcreteRangeEntityIterator<DuneIterator, DuneEntityPointer> ConcIterator;
     return std::auto_ptr<EntityIterator<0> >(
                new ConcIterator(m_dune_entity->hbegin(maxlevel),
                                 m_dune_entity->hend(maxlevel)));

@@ -51,7 +51,7 @@ private:
     mutable ConcreteGeometry<typename DuneEntity::Geometry> m_geometry;
 
     template<typename > friend class ConcreteEntityPointer;
-    template<typename > friend class ConcreteRangeEntityIterator;
+    template<typename, typename> friend class ConcreteRangeEntityIterator;
     template<typename, int> friend class ConcreteSubentityIterator;
 
     void setDuneEntity(const DuneEntity* dune_entity) {
@@ -106,7 +106,7 @@ private:
     mutable ConcreteGeometry<typename DuneEntity::Geometry> m_geometry;
 
     template<typename > friend class ConcreteEntityPointer;
-    template<typename > friend class ConcreteRangeEntityIterator;
+    template<typename, typename> friend class ConcreteRangeEntityIterator;
     template<typename, int> friend class ConcreteSubentityIterator;
 
     void setDuneEntity(const DuneEntity* dune_entity) {

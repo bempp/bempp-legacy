@@ -123,7 +123,8 @@ private:
     typename boost::enable_if_c<codim <= DuneGridView::dimension, std::auto_ptr<EntityIterator<codim> > >::type
     entityCodimNIterator() const {
         typedef typename DuneGridView::template Codim<codim>::Iterator DuneIterator;
-        typedef ConcreteRangeEntityIterator<DuneIterator> ConcIterator;
+        typedef typename DuneGridView::template Codim<codim>::EntityPointer DuneEntityPointer;
+        typedef ConcreteRangeEntityIterator<DuneIterator, DuneEntityPointer> ConcIterator;
         return std::auto_ptr<EntityIterator<codim> >(
                    new ConcIterator(m_dune_gv.template begin<codim>(),
                                     m_dune_gv.template end<codim>()));

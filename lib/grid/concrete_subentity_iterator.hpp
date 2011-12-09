@@ -85,6 +85,12 @@ public:
     virtual const Entity<ConcreteSubentityIterator::codimension>& entity() const {
         return m_subentity;
     }
+
+    virtual std::auto_ptr<EntityPointer<ConcreteSubentityIterator::codimension> > frozen() const {
+        const int codim = ConcreteSubentityIterator::codimension;
+        return std::auto_ptr<EntityPointer<codim> >(
+                    new ConcreteEntityPointer<DuneSubentityPointer>(m_subentity.duneEntity()));
+    }
 };
 
 } // namespace Bempp
