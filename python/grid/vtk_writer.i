@@ -2,34 +2,29 @@
 #include "grid/vtk_writer.hpp"
 %}
 
-namespace Dune 
-{
-namespace VTK 
-{
-
-/** \bug Improve error reporting */
-%typemap(in) OutputType 
+// Handle the enum Dune::VTK::OutputType like a string
+%typemap(in) Dune::VTK::OutputType 
 {
     if (!PyString_Check($input))
     {
-        PyErr_SetString(PyExc_TypeError, "Expected a string");        
+        PyErr_SetString(PyExc_TypeError, "in method '$symname', argument $argnum: expected a string"); 
         SWIG_fail;
     }
     const std::string s(PyString_AsString($input));
     if (s == "ascii")
-        $1 = ascii;
+        $1 = Dune::VTK::ascii;
     else if (s == "base64")
-        $1 = base64;
+        $1 = Dune::VTK::base64;
     else if (s == "appendedraw")
-        $1 = appendedraw;
+        $1 = Dune::VTK::appendedraw;
     else if (s == "appendedbase64")
-        $1 = appendedbase64;
+        $1 = Dune::VTK::appendedbase64;
     else
+    {
+        PyErr_SetString(PyExc_ValueError, "in method '$symname', argument $argnum: expected one of 'ascii', 'base64', 'appendedraw', or 'appendedbase64'");        
         SWIG_fail;
+    }
 }
-
-} // namespace VTK
-} // namespace Dune
     
 namespace Bempp 
 {
@@ -81,6 +76,9 @@ namespace Bempp
         def parentGridView(self): return self._parentGridView
         parentGridView = property(parentGridView, None, None, "Parent grid view")
     %}
+
+    %feature("compactdefaultargs") write;
+    %feature("compactdefaultargs") pwrite;
 }
 
 } // namespace Bempp
