@@ -41,6 +41,7 @@ AUTO_PTR_TYPEMAPS(Bempp::VtkWriter)
 
 // Grid
 %include "grid/geometry.i"  
+%include "grid/geometry_type.i"  
 %include "grid/entity.i"  
 %include "grid/entity_pointer.i"  
 %include "grid/entity_iterator.i"  

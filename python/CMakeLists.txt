@@ -17,7 +17,8 @@ set(CMAKE_SWIG_FLAGS "-modern")
 
 set_source_files_properties(bempp.i PROPERTIES CPLUSPLUS ON)
 set(SWIG_MODULE_bempp_EXTRA_DEPS bempp.i armadillo2numpy.i auto_ptr.i numpy.i 
-    grid/entity.i grid/entity_iterator.i grid/entity_pointer.i grid/geometry.i
+    grid/entity.i grid/entity_iterator.i grid/entity_pointer.i 
+    grid/geometry.i grid/geometry_type.i
     grid/grid.i grid/grid_factory.i grid/grid_parameters_converter.hpp grid/grid_view.i
     grid/id_set.i grid/index_set.i grid/vtk_writer.i
 )
