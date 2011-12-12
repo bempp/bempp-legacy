@@ -27,7 +27,8 @@ ExternalProject_Add(
 	DOWNLOAD_DIR ${CMAKE_SOURCE_DIR}/dune
 	URL http://www.dune-project.org/download/2.1/dune-common-2.1.0.tar.gz
 	CONFIGURE_COMMAND ""
-	BUILD_COMMAND DUNE_CONTROL_PATH=${CMAKE_SOURCE_DIR}/dune ${CMAKE_SOURCE_DIR}/dune/dune-common/bin/dunecontrol all
+#	BUILD_COMMAND DUNE_CONTROL_PATH=${CMAKE_SOURCE_DIR}/dune CONFIGURE_FLAGS='--enable-shared --disable-static' ${CMAKE_SOURCE_DIR}/dune/dune-common/bin/dunecontrol all
+	BUILD_COMMAND DUNE_CONTROL_PATH=${CMAKE_SOURCE_DIR}/dune ${CMAKE_SOURCE_DIR}/dune/dune-common/bin/dunecontrol --opts=${CMAKE_SOURCE_DIR}/dune/dunecontrol.conf all 
 	UPDATE_COMMAND ""
 	INSTALL_COMMAND ""
 )	
