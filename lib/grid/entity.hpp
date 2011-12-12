@@ -26,6 +26,7 @@
 #include <boost/utility/enable_if.hpp>
 #include <dune/common/static_assert.hh>
 #include <dune/grid/common/geometry.hh>
+#include <memory>
 #include <stdexcept>
 
 namespace Bempp

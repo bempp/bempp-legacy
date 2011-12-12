@@ -22,6 +22,7 @@
 #ifndef bempp_dune_hpp
 #define bempp_dune_hpp
 
+#include <memory>
 #include <stack> // fix a bug in foamgrid -- this header is not included where it should be
 #include <dune/foamgrid/foamgrid.hh>
 

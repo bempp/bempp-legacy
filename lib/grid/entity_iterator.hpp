@@ -22,6 +22,7 @@
 #define bempp_entity_iterator_hpp
 
 #include "entity_pointer.hpp"
+#include <memory>
 
 namespace Bempp
 {
