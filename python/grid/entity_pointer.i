@@ -86,7 +86,8 @@ template<int codim> class EntityIterator;
     }
     
     %pythonappend father %{
-        val._parentGrid = self._parentGrid
+        if val is not None:
+            val._parentGrid = self._parentGrid
     %}
     
     std::auto_ptr<EntityPointer<0> > father() const {

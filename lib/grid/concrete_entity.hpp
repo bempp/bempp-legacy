@@ -50,7 +50,10 @@ template<typename DuneEntity>
 std::auto_ptr<EntityPointer<0> > ConcreteEntity<0, DuneEntity>::father() const
 {
     typedef ConcreteEntityPointer<typename DuneEntity::EntityPointer> ConcPointer;
-    return std::auto_ptr<EntityPointer<0> >(new ConcPointer(m_dune_entity->father()));
+    if (m_dune_entity->hasFather())
+      return std::auto_ptr<EntityPointer<0> >(new ConcPointer(m_dune_entity->father()));
+    else
+      return std::auto_ptr<EntityPointer<0> >(0);
 }
 
 template<typename DuneEntity>

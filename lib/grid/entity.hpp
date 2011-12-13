@@ -137,8 +137,7 @@ public:
     /** \brief Inter-level access to father entity on the next-coarser grid.
 
      The given entity resulted directly from a subdivision of its father
-     entity. For macro (level-0) elements the result of calling the entity() method
-     of the returned EntityPointer is undefined.
+     entity. For macro (level-0) elements a null auto_ptr is returned.
 
      \note If the partitionType of the Entity is GhostEntity,
      it is not guaranteed that this method is working
