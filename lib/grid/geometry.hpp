@@ -139,8 +139,6 @@ public:
      *  \param[out]  jacobian_t
      *    3D array whose \f$i\f$th slice (i.e. jacobian_t(:,:,i)) contains the
      *    transposed Jacobian matrix at \f$x_i\f$, i.e. \f$J_g^T(x_i)\f$.
-     *
-     *  \return \f$J_g^T(x)\f$
      */
     virtual void jacobianTransposed(const arma::Mat<ctype>& local,
                                     arma::Cube<ctype>& jacobian_t) const = 0;

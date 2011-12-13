@@ -2,6 +2,8 @@
 #include "grid/entity_pointer.hpp"
 %}
 
+%include "entity_pointer_docstrings.i"
+
 namespace Bempp 
 {
 
@@ -127,8 +129,9 @@ template<int codim> class EntityIterator;
 
 namespace Bempp 
 {
-%template(EntityPointerCodim0) EntityPointer<0>;
-%template(EntityPointerCodim1) EntityPointer<1>;
-%template(EntityPointerCodim2) EntityPointer<2>;
-%template(EntityPointerCodim3) EntityPointer<3>;
+// Note that in Python we rename the C++ EntityPointer to Entity!
+%template(EntityCodim0) EntityPointer<0>;
+%template(EntityCodim1) EntityPointer<1>;
+%template(EntityCodim2) EntityPointer<2>;
+%template(EntityCodim3) EntityPointer<3>;
 } // namespace Bempp

@@ -2,6 +2,8 @@
 #include "grid/geometry_type.hpp"
 %}
 
+%include "geometry_type_docstrings.i"
+
 // Handle the enum Dune::GeometryType::BasicType like a string
 %typemap(typecheck) Dune::GeometryType::BasicType
 {
@@ -54,6 +56,7 @@ namespace Dune {
     %ignore basicType;
     %ignore BasicType;
     %ignore Binary;
+    %ignore id;
 }
 
 %ignore operator<<;

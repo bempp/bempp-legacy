@@ -2,6 +2,8 @@
 #include "grid/geometry.hpp"
 %}
 
+%include "geometry_docstrings.i"
+
 /*
     This is fairly elegant but doesn't work yet because there are 
     both input and output arguments names "local" and "global",
@@ -83,17 +85,17 @@ public:
     %clear arma::Mat<ctype>& c;
 
     %apply const arma::Mat<ctype>& IN_MAT { const arma::Mat<ctype>& local };
-    %apply arma::Mat<ctype>& ARGOUT_MAT { arma::Mat<ctype>& global };
+    %apply arma::Mat<ctype>& ARGOUT_MAT { arma::Mat<ctype>& global_ };
     virtual void local2global(const arma::Mat<ctype>& local,
-                            arma::Mat<ctype>& global) const = 0;
+                            arma::Mat<ctype>& global_) const = 0;
     %clear const arma::Mat<ctype>& local;
-    %clear arma::Mat<ctype>& global;
+    %clear arma::Mat<ctype>& global_;
 
-    %apply const arma::Mat<ctype>& IN_MAT { const arma::Mat<ctype>& global };
+    %apply const arma::Mat<ctype>& IN_MAT { const arma::Mat<ctype>& global_ };
     %apply arma::Mat<ctype>& ARGOUT_MAT { arma::Mat<ctype>& local };
-    virtual void global2local(const arma::Mat<ctype>& global,
+    virtual void global2local(const arma::Mat<ctype>& global_,
                             arma::Mat<ctype>& local) const = 0;
-    %clear const arma::Mat<ctype>& global;
+    %clear const arma::Mat<ctype>& global_;
     %clear arma::Mat<ctype>& local;
 
     %apply const arma::Mat<ctype>& IN_MAT { const arma::Mat<ctype>& local };

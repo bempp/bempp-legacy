@@ -2,6 +2,8 @@
 #include "grid/vtk_writer.hpp"
 %}
 
+%include "vtk_writer_docstrings.i"
+
 // Handle the enum Dune::VTK::OutputType like a string
 %typemap(in) Dune::VTK::OutputType 
 {
@@ -21,7 +23,7 @@
         $1 = Dune::VTK::appendedbase64;
     else
     {
-        PyErr_SetString(PyExc_ValueError, "in method '$symname', argument $argnum: expected one of 'ascii', 'base64', 'appendedraw', or 'appendedbase64'");        
+        PyErr_SetString(PyExc_ValueError, "in method '$symname', argument $argnum: expected one of 'ascii', 'base64', 'appendedraw' or 'appendedbase64'");        
         SWIG_fail;
     }
 }

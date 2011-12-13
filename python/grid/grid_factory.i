@@ -4,6 +4,8 @@
 #include "./grid/grid_parameters_converter.hpp"
 %}
 
+%include "grid_factory_docstrings.i"
+
 namespace Bempp 
 {
   
@@ -21,7 +23,6 @@ namespace Bempp
     %apply const arma::Col<unsigned int>& IN_COL {
         const arma::Col<unsigned int>& nElements
     };
-    %feature("autodoc", "1") createStructuredGrid;
     static std::auto_ptr<Bempp::Grid> createStructuredGrid(
             const std::string& topology,
             const arma::Col<Bempp::ctype>& lowerLeft, 
@@ -36,7 +37,7 @@ namespace Bempp
     %clear const arma::Col<unsigned int>& nElements;
     %ignore createStructuredGrid;
     
-    %feature("autodoc", "1") importGmshGrid;
+    %feature("compactdefaultargs") importGmshGrid;
     static std::auto_ptr<Bempp::Grid> importGmshGrid(
             const std::string& topology, const std::string& fileName, 
             bool verbose=true, bool insertBoundarySegments=true) {

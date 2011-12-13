@@ -4,6 +4,9 @@
 #define SWIG_FILE_WITH_INIT
 %}
 
+// Import docstring macros
+%include "docstrings.i"
+
 // Define commonly used typemaps
 %include "armadillo.i"
 %include "auto_ptr.i"

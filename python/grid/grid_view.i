@@ -4,6 +4,29 @@
 #include "grid/vtk_writer.hpp"
 %}
 
+%include "grid_view_docstrings.i"
+
+// Handle the enum Dune::VTK::OutputType like a string
+%typemap(in) Dune::VTK::DataMode 
+{
+    if (!PyString_Check($input))
+    {
+        PyErr_SetString(PyExc_TypeError, "in method '$symname', argument $argnum: expected a string"); 
+        SWIG_fail;
+    }
+    const std::string s(PyString_AsString($input));
+    if (s == "conforming")
+        $1 = Dune::VTK::conforming;
+    else if (s == "nonconforming")
+        $1 = Dune::VTK::nonconforming;
+    else
+    {
+        PyErr_SetString(PyExc_ValueError, "in method '$symname', argument $argnum: expected one of 'conforming' or 'nonconforming'");        
+        SWIG_fail;
+    }
+}
+
+
 namespace Bempp 
 {
 
@@ -65,6 +88,8 @@ namespace Bempp
     %pythonappend vtkWriter %{
         val._parentGridView = self
     %}
+
+    %feature("compactdefaultargs") vtkWriter;
 }
 
 } // namespace Bempp

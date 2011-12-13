@@ -1,12 +1,39 @@
+// IMPLEMENTATION NOTE:
+//
+// The object model used to represent entities in Python is different
+// than in C++. 
+// 
+// In C++, we have three template classes -- Entity, EntityPointer and
+// EntityIterator -- with EntityIterator derived from
+// EntityPointer. Entities are physically stored within entity
+// pointers and iterators; the entity() method of EntityPointer and
+// Iterator provides a constant reference to the internal entity
+// object. Although the reference is constant, the entity is "mutable"
+// in the sense that when an iterator is incremented, its internal
+// entity is updated (so that any reference stored by the user will
+// from then on refer to a different element).
+// 
+// In Python, such behaviour would surprise the user and would be
+// considered as a bug; for example, the following code
+//
+// # it -> an entity iterator
+// all_entities = [e for e in it.entities()]
+//
+// would return a list of references to the same object, the last
+// entity over which the iteration goes. For this reason, the Python
+// class Entity manages in fact an instance of the C++ EntityPointer
+// class rather than the C++ Entity class. There is no Python class
+// named EntityPointer. The Python EntityIterator class exports only
+// two methods: __iter__() and next().
+
 %{
 #include "grid/entity_iterator.hpp"
 %}
 
+%include "entity_iterator_docstrings.i"
+
 namespace Bempp
 {
-
-%ignore EntityIterator::entity;
-%ignore EntityIterator::frozen;
 
 %extend EntityIterator 
 {
@@ -42,11 +69,13 @@ namespace Bempp
     %ignore next;
 }
 
-} // namespace Bempp
+template<int codim>
+class EntityIterator
+{
+public:
+  virtual ~EntityIterator() = 0;
+};
 
-%include "grid/entity_iterator.hpp"
-
-namespace Bempp {
 %template(EntityIteratorCodim0) EntityIterator<0>;
 %template(EntityIteratorCodim1) EntityIterator<1>;
 %template(EntityIteratorCodim2) EntityIterator<2>;

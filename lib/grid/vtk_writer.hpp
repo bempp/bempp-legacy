@@ -53,7 +53,7 @@ public:
     /** \brief Add a grid function (represented by a container) that lives on the vertices of the
      *  grid to the visualization output.
      *
-     *  \param data Matrix whose (\e m, \e n)th entry contains the value of the <em>m</em>th component of the grid function in the <em>n</em>th vertex.
+     *  \param data Matrix whose (\e m, \e n)th entry contains the value of the <em>m</em>th component of the grid function at the <em>n</em>th vertex.
      *  \param name Name to identify the grid function.
      */
     virtual void addVertexData(const arma::Mat<double>& data, const std::string &name) = 0;

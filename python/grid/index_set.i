@@ -2,6 +2,8 @@
 #include "grid/index_set.hpp"
 %}
 
+%include "index_set_docstrings.i"
+
 namespace Bempp
 {
 

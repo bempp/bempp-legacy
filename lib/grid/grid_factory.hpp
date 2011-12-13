@@ -71,7 +71,8 @@ public:
 
       Each side of the cube parallel to the <em>n</em>th coordinate axis is subdivided into nElements(n) segments.
 
-      \note Currently only grids with trangular topology are supported.
+      \note Currently only grids with triangular topology are
+      supported.
     */
     static std::auto_ptr<Grid> createStructuredGrid(const GridParameters& params,
             const arma::Col<ctype>& lowerLeft,

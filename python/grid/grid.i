@@ -4,6 +4,8 @@
 #include "grid/entity_iterator.hpp"
 %}
 
+%include "grid_docstrings.i"
+
 namespace Bempp 
 {
     

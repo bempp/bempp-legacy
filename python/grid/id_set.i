@@ -2,6 +2,8 @@
 #include "grid/id_set.hpp"
 %}
 
+%include "id_set_docstrings.i"
+
 namespace Bempp 
 {
 
