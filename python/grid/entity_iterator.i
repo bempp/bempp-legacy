@@ -38,8 +38,13 @@ namespace Bempp
 %extend EntityIterator 
 {
     %pythoncode %{
-        def __iter__(self):
-            return self
+        def __iter__(self): return self
+        def parentGrid(self): return self._parentGrid
+        parentGrid = property(parentGrid, None, None, "Parent grid")
+    %}
+
+    %pythonappend next %{
+        val._parentGrid = self._parentGrid
     %}
 
     std::auto_ptr<EntityPointer<codim> > next()
