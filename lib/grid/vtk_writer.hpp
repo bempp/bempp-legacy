@@ -85,12 +85,12 @@ public:
      * VTK::OutputType) method can do that just fine.
      *
      * \param name       Base name of the output files.  This should not
-     *                   contain any directory part and not filename
-     *                   extensions.  It will be used both for each processes
-     *                   piece as well as the parallel collection file.
+     *                   contain any directory part or filename extensions.
+     *                   It will be used both for the piece file of each process
+     *                   and the parallel collection file.
      * \param path       Directory where to put the parallel collection
      *                   (.pvtu/.pvtp) file.  If it is relative, it is taken
-     *                   realtive to the current directory.
+     *                   relative to the current directory.
      * \param extendpath Directory where to put the piece file (.vtu/.vtp) of
      *                   this process.  If it is relative, it is taken
      *                   relative to the directory denoted by path.

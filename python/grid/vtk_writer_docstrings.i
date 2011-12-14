@@ -69,12 +69,12 @@ parallel writing, the regular write() method can do that just fine.
 *Arguments:*
     name (string)        
         Base name of the output files. This should not contain any
-        directory part and not filename extensions. It will be used
-        both for each processes piece as well as the parallel
+        directory part or filename extensions. It will be used
+        both for the piece file of each process and the parallel
         collection file.
     path (string)        
         Directory where to put the parallel collection (.pvtu/.pvtp)
-        file. If it is relative, it is taken realtive to the current
+        file. If it is relative, it is taken relative to the current
         directory.
     extendpath (string)                
         Directory where to put the piece file (.vtu/.vtp) of this

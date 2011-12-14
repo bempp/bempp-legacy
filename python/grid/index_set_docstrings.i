@@ -21,6 +21,6 @@ namespace Bempp
 {
 
 DECLARE_CLASS_DOCSTRING (IndexSet);
-DECLARE_METHOD_DOCSTRING(IndexSet, entityIndex, 1);
+DECLARE_METHOD_DOCSTRING(IndexSet, entityIndex, 0);
 
 } // namespace Bempp
