@@ -30,3 +30,8 @@ set(SWIG_MODULE_bempp_EXTRA_DEPS bempp.i armadillo2numpy.i auto_ptr.i numpy.i
 )
 swig_add_module(bempp python bempp.i)
 swig_link_libraries(bempp ${PYTHON_LIBRARIES} bempp)
+
+# Tests
+if (WITH_TESTS)
+  add_subdirectory(tests)
+endif (WITH_TESTS)

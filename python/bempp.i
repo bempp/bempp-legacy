@@ -2,6 +2,8 @@
 %module bempp
 %{
 #define SWIG_FILE_WITH_INIT
+
+#include <dune/common/exceptions.hh>
 %}
 
 // Import docstring macros
@@ -17,6 +19,9 @@
 %exception {
     try {
         $action 
+    }
+    catch (const Dune::Exception& e) {
+        SWIG_exception(SWIG_RuntimeError, e.what().c_str());
     }
     catch (const std::exception& e) {
         SWIG_exception(SWIG_RuntimeError, e.what());
