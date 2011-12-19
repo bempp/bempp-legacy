@@ -73,6 +73,13 @@ public:
         return entityCodimNIndex(e);
     }
 
+    virtual IndexType subEntityIndex(const Entity<0>& e, int i, unsigned int codimSub) const {
+        typedef typename DuneGridView::template Codim<0>::Entity DuneEntity;
+        typedef ConcreteEntity<0, DuneEntity> ConcEntity;
+        const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
+        return m_dune_index_set->subIndex(ce.duneEntity(), i, codimSub);
+    }
+
 private:
     template <int codim>
     typename boost::disable_if_c<codim <= DuneGridView::dimension, IndexType>::type

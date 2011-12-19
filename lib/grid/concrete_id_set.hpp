@@ -68,6 +68,13 @@ public:
         return entityCodimNId(e);
     }
 
+    virtual IdType subEntityId(const Entity<0>& e, int i, unsigned int codimSub) const {
+        typedef typename DuneGrid::template Codim<0>::Entity DuneEntity;
+        typedef ConcreteEntity<0, DuneEntity> ConcEntity;
+        const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
+        return m_dune_id_set->subId(ce.duneEntity(), i, codimSub);
+    }
+
 private:
     // Below there are essentially two overloads of
     // template <int codim>

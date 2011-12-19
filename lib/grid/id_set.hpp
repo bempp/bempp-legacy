@@ -51,6 +51,10 @@ public:
     virtual IdType entityId(const Entity<2>& e) const = 0;
     /** \brief Id of the entity \p e of codimension 3. */
     virtual IdType entityId(const Entity<3>& e) const = 0;
+
+    /** \brief Id of \p i'th subentity of codimension \p codimSub of entity \p e of codimension 0.
+     */
+    virtual IdType subEntityId(const Entity<0>& e, int i, unsigned int codimSub) const = 0;
 };
 
 } // namespace Bempp

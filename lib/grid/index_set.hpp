@@ -64,6 +64,10 @@ public:
      \overload
      */
     virtual IndexType entityIndex(const Entity<3>& e) const = 0;
+
+    /** \brief Index of \p i'th subentity of codimension \p codimSub of entity \p e of codimension 0.
+     */
+    virtual IndexType subEntityIndex(const Entity<0>& e, int i, unsigned int codimSub) const = 0;
 };
 
 } // namespace Bempp

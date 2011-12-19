@@ -20,6 +20,7 @@
 
 #include "test_id_set.hpp"
 #include "grid/entity_iterator.hpp"
+#include "grid/entity.hpp"
 #include "grid/id_set.hpp"
 
 #include <boost/test/unit_test.hpp>
@@ -42,6 +43,62 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityId_agrees_with_Dune_for_second_entity_of
 
     BOOST_CHECK_EQUAL(bemppIdSet.entityId(it->entity()),
                       duneIdSet.id(*duneIt));
+}
+
+BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityId_agrees_with_Dune_for_first_entity_of_codim_0_and_its_second_subentity_of_codim,
+                                  T, list_0_to_2)
+{
+    const int codimSub = T::value;
+
+    std::auto_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
+    it->next();
+
+    typename DuneGridView::Codim<0>::Iterator duneIt = duneGridView.begin<0>();
+    ++duneIt;
+
+    bemppIdSet.subEntityId(it->entity(), 0, codimSub);
+
+    BOOST_CHECK_EQUAL(bemppIdSet.subEntityId(it->entity(), 0, codimSub),
+                      duneIdSet.subId(*duneIt, 0, codimSub));
+}
+
+BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityId_and_entityId_agree_for_the_same_entity_of_codim,
+                                  T, list_1_to_2)
+{
+    const int codimSub = T::value;
+
+    std::auto_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
+    it->next();
+
+    std::auto_ptr<EntityIterator<codimSub> > subIt = it->entity().subEntityIterator<codimSub>();
+    subIt->next();
+
+    int idDirect = bemppIdSet.entityId(subIt->entity());
+    int idIndirect = bemppIdSet.subEntityId(it->entity(), 1, codimSub);
+
+    BOOST_CHECK_EQUAL(idDirect, idIndirect);
+}
+
+BOOST_AUTO_TEST_CASE(subEntityId_returns_the_same_as_entityId_for_entity_of_codim_0)
+{
+    std::auto_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
+    it->next();
+
+    int idDirect = bemppIdSet.entityId(it->entity());
+    int idIndirect = bemppIdSet.subEntityId(it->entity(), 0 /* i */, 0 /* codimSub */);
+
+    BOOST_CHECK_EQUAL(idDirect, idIndirect);
+}
+
+BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityId_throws_for_invalid_codimension_and_codimSub,
+                                  T, list_0_to_2)
+{
+    const int codimSub = T::value;
+
+    std::auto_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
+    it->next();
+
+    BOOST_CHECK_THROW(bemppIdSet.subEntityId(it->entity(), 0, 3 /* codimSub */), Dune::GridError);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

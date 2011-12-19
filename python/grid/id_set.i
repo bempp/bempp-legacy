@@ -24,7 +24,12 @@ namespace Bempp
         return $self->entityId(ep.entity());
     }    
 
+    IdSet::IdType subEntityId(const EntityPointer<0>& ep, int i, unsigned int codimSub) const {
+        return $self->subEntityId(ep.entity(), i, codimSub);
+    }    
+
     %ignore entityId;
+    %ignore subEntityId;
 
     // Reference to the parent grid, stored to prevent it from
     // being garbage-collected while this view is alive

@@ -24,7 +24,12 @@ namespace Bempp
         return $self->entityIndex(ep.entity());
     }    
 
+    IndexSet::IndexType subEntityIndex(const EntityPointer<0>& ep, int i, unsigned int codimSub) const {
+        return $self->subEntityIndex(ep.entity(), i, codimSub);
+    }    
+
     %ignore entityIndex;
+    %ignore subEntityIndex;
 
     // Reference to the parent grid view, stored to prevent it from
     // being garbage-collected while this index set is alive
