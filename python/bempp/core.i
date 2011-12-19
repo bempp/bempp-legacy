@@ -1,5 +1,5 @@
 // Construct a Swig module
-%module bempp
+%module core
 %{
 #define SWIG_FILE_WITH_INIT
 
