@@ -90,15 +90,14 @@ BOOST_AUTO_TEST_CASE(subEntityId_returns_the_same_as_entityId_for_entity_of_codi
     BOOST_CHECK_EQUAL(idDirect, idIndirect);
 }
 
-BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityId_throws_for_invalid_codimension_and_codimSub,
-                                  T, list_0_to_2)
+#ifndef NDEBUG
+BOOST_AUTO_TEST_CASE(subEntityId_throws_for_invalid_codimension)
 {
-    const int codimSub = T::value;
-
     std::auto_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
     it->next();
 
-    BOOST_CHECK_THROW(bemppIdSet.subEntityId(it->entity(), 0, 3 /* codimSub */), Dune::GridError);
+    BOOST_CHECK_THROW(bemppIdSet.subEntityId(it->entity(), 0, 3 /* codimSub */), std::invalid_argument);
 }
+#endif
 
 BOOST_AUTO_TEST_SUITE_END()

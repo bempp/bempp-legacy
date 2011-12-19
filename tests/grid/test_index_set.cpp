@@ -23,6 +23,7 @@
 #include "grid/entity_iterator.hpp"
 #include "grid/index_set.hpp"
 
+#include <stdexcept>
 #include <boost/test/unit_test.hpp>
 #include "../num_template.hpp"
 
@@ -98,7 +99,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIndex_throws_for_invalid_codimension_
     std::auto_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
     it->next();
 
-    BOOST_CHECK_THROW(bemppIndexSet.subEntityIndex(it->entity(), 0, 3 /* codimSub */), Dune::GridError);
+    BOOST_CHECK_THROW(bemppIndexSet.subEntityIndex(it->entity(), 0, 3 /* codimSub */), std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -167,15 +168,14 @@ BOOST_AUTO_TEST_CASE(subEntityIndex_returns_the_same_as_entityIndex_for_entity_o
     BOOST_CHECK_EQUAL(indexDirect, indexIndirect);
 }
 
-BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIndex_throws_for_invalid_codimension_and_codimSub,
-                                  T, list_0_to_2)
+#ifndef NDEBUG
+BOOST_AUTO_TEST_CASE(subEntityIndex_throws_for_invalid_codimension)
 {
-    const int codimSub = T::value;
-
     std::auto_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
     it->next();
 
-    BOOST_CHECK_THROW(bemppIndexSet.subEntityIndex(it->entity(), 0, 3 /* codimSub */), Dune::GridError);
+    BOOST_CHECK_THROW(bemppIndexSet.subEntityIndex(it->entity(), 0, 3 /* codimSub */), std::invalid_argument);
 }
+#endif
 
 BOOST_AUTO_TEST_SUITE_END()
