@@ -33,21 +33,23 @@ swig_link_libraries(core ${PYTHON_LIBRARIES} bempp)
 
 ### Move __init__.py to the build directory ###################################
 
-set(PYTHON_SOURCES "__init__.py")
-foreach (py_file ${PYTHON_SOURCES})
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${py_file}
-    COMMAND ${CMAKE_COMMAND} copy -E ${CMAKE_CURRENT_SOURCE_DIR}/${py_file} ${CMAKE_CURRENT_BINARY_DIR}/${py_file}
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${py_file}
-    # TODO: remove the project's root directory from the printed path.
-    COMMENT "Copying file ${CMAKE_CURRENT_SOURCE_DIR}/${py_file}"
-    VERBATIM
-)
-endforeach ()
+if (NOT (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR}))
+    set(PYTHON_SOURCES "__init__.py")
+    foreach (py_file ${PYTHON_SOURCES})
+    add_custom_command(
+	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${py_file}
+	COMMAND ${CMAKE_COMMAND} copy -E ${CMAKE_CURRENT_SOURCE_DIR}/${py_file} ${CMAKE_CURRENT_BINARY_DIR}/${py_file}
+	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${py_file}
+	# TODO: remove the project's root directory from the printed path.
+	COMMENT "Copying file ${CMAKE_CURRENT_SOURCE_DIR}/${py_file}"
+	VERBATIM
+    )
+    endforeach ()
 
-foreach(py_file ${PYTHON_SOURCES})
-    set(PYTHON_DEPS "${PYTHON_DEPS};${CMAKE_CURRENT_BINARY_DIR}/${py_file}")
-endforeach()
-add_custom_target(copy_python_bempp ALL DEPENDS ${PYTHON_DEPS})
+    foreach(py_file ${PYTHON_SOURCES})
+	set(PYTHON_DEPS "${PYTHON_DEPS};${CMAKE_CURRENT_BINARY_DIR}/${py_file}")
+    endforeach()
+    add_custom_target(copy_python_bempp ALL DEPENDS ${PYTHON_DEPS})
+endif ()
 
 ###############################################################################
