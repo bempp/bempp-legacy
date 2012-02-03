@@ -88,12 +88,12 @@ public:
                   Pointer to a Fortran-ordered 2D array of dimensions
                   (worldDimension(), pointCount) storing the components of
                   external unit vectors normal to the surface at the given test
-                  points. May be NULL if needsTestNormal() returns true.
+                  points. May be NULL if needsTestNormal() returns false.
       \param[in]  trialNormals
                   Pointer to a Fortran-ordered 2D array of dimensions
                   (worldDimension(), pointCount) storing the components of
                   external unit vectors normal to the surface at the given test
-                  points. May be NULL if needsTrialNormal() returns true.
+                  points. May be NULL if needsTrialNormal() returns false.
       \param[out] result
                   Pointer to a preallocated Fortran-ordered 3D array of
                   dimensions (codomainDimension(), domainDimension(),
