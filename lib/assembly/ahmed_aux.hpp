@@ -29,6 +29,7 @@
 // Ahmed's include files
 #include <bemblcluster.h>
 #include <matrix.h>
+#include <matgen_sqntl.h>
 #undef SIGN
 #undef SQR
 #undef MIN
@@ -38,7 +39,7 @@ namespace Bempp {
 
 struct AhmedDofWrapper : public Point3D
 {
-    ctype getcenter(int dim)
+    ctype getcenter(int dim) const
     {
         switch (dim)
         {
@@ -68,11 +69,11 @@ public:
     }
 
     virtual ~AhmedMatrix() {
-        freembls(m_blockCluster, m_blocks);
+        freembls(m_blockCluster.get(), m_blocks);
     }
 
     void amux(ValueType d, ValueType* x, ValueType* y) const {
-        multaHvec_(d, m_blockCluster, m_blocks, x, y);
+        multaHvec(d, m_blockCluster.get(), m_blocks, x, y);
     }
 
     void precond_apply(double* x) const {

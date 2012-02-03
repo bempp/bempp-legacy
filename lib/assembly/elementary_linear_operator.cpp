@@ -1,10 +1,7 @@
 #include "elementary_linear_operator.hpp" // does nothing, but makes IDE parsers happy
 
-
-/*
-#include "ahmed_aux.hpp"
-*/
 #include "assembly_options.hpp"
+#include "discrete_aca_scalar_valued_linear_operator.hpp"
 #include "discrete_dense_scalar_valued_linear_operator.hpp"
 #include "discrete_vector_valued_linear_operator.hpp"
 #include "quadrature_selector.hpp"
@@ -21,6 +18,10 @@
 #include <armadillo>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <stdexcept>
+
+#ifdef WITH_AHMED
+#include "ahmed_aux.hpp"
+#endif
 
 // The spaces should be given the grid in constructor!
 
@@ -202,17 +203,18 @@ ElementaryLinearOperator<ValueType>::assembleWeakFormInAcaMode(
         const QuadratureSelector<ValueType>& quadSelector,
         const AssemblyOptions& options) const
 {
-    // COMMENTED OUT BECAUSE OF PROBLEMS WITH INCLUDING AHMED,
-    // WHICH DOES NOT USE NAMESPACES AND DEFINES CERTAIN SYMBOLS
-    // LIKE SQR() THAT ARE ALSO DEFINED ELSEWHERE
+#ifdef WITH_AHMED
+    typedef DiscreteScalarValuedLinearOperator<ValueType> DiscreteLinOp;
+    typedef DiscreteAcaScalarValuedLinearOperator<ValueType,
+            AhmedDofWrapper, AhmedDofWrapper> DiscreteAcaLinOp;
 
-    /*
-    std::auto_ptr<GridView> view = grid.leafView();
+    // Get the grid's leaf view so that we can iterate over elements
+    std::auto_ptr<GridView> view = trialSpace.grid().leafView();
 
     // Create EntityPointers to all elements.
     // For now we assume they fit in memory...
     const int elementCount = view->entityCount(0);
-    boost::ptr_vector<const EntityPointer<0> > elementsOwner;
+    boost::ptr_vector<EntityPointer<0> > elementsOwner;
     elementsOwner.reserve(elementCount);
 
     std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
@@ -247,42 +249,51 @@ ElementaryLinearOperator<ValueType>::assembleWeakFormInAcaMode(
     for (unsigned int i = 0; i < trialDofCount; ++i)
         p2oTrialDofs[i] = i;
 
-    arma::Col<AhmedDofWrapper> trialDofCenters, testDofCenters;
-    trialSpace.getGlobalDofPositions(trialDofCenters);
-    testSpace.getGlobalDofPositions(testDofCenters);
+    std::vector<Point3D> trialDofCenters, testDofCenters;
+    trialSpace.globalDofPositions(trialDofCenters);
+    testSpace.globalDofPositions(testDofCenters);
 
-    bemcluster<AhmedDofWrapper> testClusterTree(
-                testDofCenters.memptr(), o2pTestDofs.memptr(),
+    // Use static_cast to convert from a pointer to Point3D to a pointer to its
+    // descendant AhmedDofWrapper, which does not contain any new data members,
+    // but just one additional method (the two structs should therefore be
+    // binary compatible)
+    const AhmedDofWrapper* ahmedTrialDofCenters =
+            static_cast<AhmedDofWrapper*>(&trialDofCenters[0]);
+    const AhmedDofWrapper* ahmedTestDofCenters =
+            static_cast<AhmedDofWrapper*>(&trialDofCenters[0]);
+
+    bemcluster<const AhmedDofWrapper> testClusterTree(
+                ahmedTestDofCenters, o2pTestDofs.memptr(),
                 0, testDofCount);
     testClusterTree.createClusterTree(
                 options.acaMinimumBlockSize,
                 o2pTestDofs.memptr(), p2oTestDofs.memptr());
-    bemcluster<AhmedDofWrapper> trialClusterTree(
-                trialDofCenters.memptr(), o2pTrialDofs.memptr(),
+    bemcluster<const AhmedDofWrapper> trialClusterTree(
+                ahmedTrialDofCenters, o2pTrialDofs.memptr(),
                 0, trialDofCount);
     trialClusterTree.createClusterTree(
                 options.acaMinimumBlockSize,
                 o2pTrialDofs.memptr(), p2oTrialDofs.memptr());
 
 #ifndef NDEBUG
-    std::cout << "Point cluster count: " << testClusterTree->getncl()
-              << "\nDOF cluster count: " << trialClusterTree->getncl()
+    std::cout << "Test cluster count: " << testClusterTree.getncl()
+              << "\nTrial cluster count: " << trialClusterTree.getncl()
               << std::endl;
 #endif
 
     typedef bemblcluster<AhmedDofWrapper, AhmedDofWrapper> DoubleCluster;
-    auto_ptr<DoubleCluster> doubleClusterTree(
+    std::auto_ptr<DoubleCluster> doubleClusterTree(
                 new DoubleCluster(0, 0, testDofCount, trialDofCount));
     unsigned int blockCount = 0;
-    doubleClusterTree->subdivide(testClusterTree, trialClusterTree,
+    doubleClusterTree->subdivide(&testClusterTree, &trialClusterTree,
                                  options.acaEta * options.acaEta,
                                  blockCount);
 
     std::cout << "Double cluster count: " << blockCount;
 
-    auto_ptr<DiscreteLinearOperator<ValueType> > result;
+    std::auto_ptr<DiscreteLinOp> result;
 
-    if (options.useOpenCl && supportsOpenCl())
+    if (options.useOpenCl)
     {
         // TODO:
         // Initialise OpenCL (obtain context etc.)
@@ -304,19 +315,23 @@ ElementaryLinearOperator<ValueType>::assembleWeakFormInAcaMode(
     {
         // OpenMP implementation also possible
 
-        WeakFormAssemblyAcaHelper<ValueType>
-                helper(*this, grid, testSpace, trialSpace,
-                       p2oTestDofs, p2oTrialDofs, quadSelector);
+        WeakFormAcaAssemblyHelper<ValueType>
+                helper(*this, *view, testSpace, trialSpace,
+                       p2oTestDofs, p2oTrialDofs, quadSelector, options);
 
         mblock<ValueType>* blocks;
-        matgen_sqntl(helper, doubleClusterTree.get(), options.acaRecompress,
-                     options.acaEps, options.acaMaximumRank, &blocks);
-        result = auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >(
-                    new DiscreteAcaScalarValuedLinearOperator<ValueType>(
-                        testDofCount, trialDofCount, doubleClusterTree, &blocks));
+        matgen_sqntl(helper, doubleClusterTree.get(), doubleClusterTree.get(),
+                     options.acaRecompress, options.acaEps,
+                     options.acaMaximumRank, &blocks);
+        result = std::auto_ptr<DiscreteLinOp>(
+                    new DiscreteAcaLinOp(testDofCount, trialDofCount,
+                                         doubleClusterTree, &blocks));
     }
     return result;
-    */
+#else // WITH_AHMED
+    throw std::runtime_error("To enable assembly in ACA mode, recompile BEM++ "
+                             "with the symbol WITH_AHMED defined.");
+#endif
 }
 
 #ifdef COMPILE_FOR_FLOAT

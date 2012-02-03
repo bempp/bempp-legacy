@@ -22,7 +22,7 @@
 #define bempp_discrete_aca_scalar_valued_linear_operator_hpp
 
 #include "discrete_scalar_valued_linear_operator.hpp"
-#include "ahmed_matrix.hpp"
+#include "ahmed_aux.hpp"
 
 namespace Bempp {
 
@@ -33,7 +33,7 @@ class DiscreteAcaScalarValuedLinearOperator :
 public:
     DiscreteAcaScalarValuedLinearOperator(
             unsigned int rowCount, unsigned int columnCount,
-            auto_ptr<bemblcluster<GeometryTypeRows, GeometryTypeCols> > blockCluster,
+            std::auto_ptr<bemblcluster<GeometryTypeRows, GeometryTypeCols> > blockCluster,
             mblock<ValueType>** blocks) :
         m_matrix(rowCount, columnCount, blockCluster, blocks)
     {}
@@ -43,11 +43,14 @@ public:
                            arma::Col<ValueType>& result)
     {
         // TODO: ensure that the arguments have correct dimensions.
-        m_matrix.amux(multiplier, argument.memptr(), result.memptr());
+        // const_cast because Ahmed internally calls BLAS
+        // functions, which don't respect const-correctness
+        m_matrix.amux(multiplier, const_cast<ValueType*>(argument.memptr()),
+                      result.memptr());
     }
 
 private:
-    AhmedMatrix m_matrix<ValueType, GeometryTypeRows, GeometryTypeCols>;
+    AhmedMatrix<ValueType, GeometryTypeRows, GeometryTypeCols> m_matrix;
 };
 
 } // namespace Bempp
