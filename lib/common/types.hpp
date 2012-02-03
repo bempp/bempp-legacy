@@ -22,9 +22,32 @@
 #define bempp_types_hpp
 
 #include "../grid/geometry_type.hpp"
+#include "../grid/common.hpp" // to be merged with this file
 
 namespace Bempp
 {
+
+// typedef int ElementVariant;
+
+struct ElementVariant
+{
+    unsigned char order[2];
+    unsigned char vertexCount;
+    unsigned char reserved;
+
+    bool operator==(const ElementVariant& other) const {
+        return (order[0] == other.order[0] &&
+                order[1] == other.order[1] &&
+                vertexCount == other.vertexCount &&
+                reserved == other.reserved);
+    }
+    bool operator<(const ElementVariant& other) const {
+        return (order[0] < other.order[0] ? true :
+                (order[1] < other.order[1] ? true :
+                (vertexCount < other.vertexCount ? true :
+                (reserved < other.reserved))));
+    }
+};
 
 struct EntityIndex
 {
@@ -45,6 +68,20 @@ struct EntityIndex
         else
             return type < other.type;
     }
+};
+
+typedef int GlobalDofIndex;
+typedef int LocalDofIndex;
+
+struct LocalDof
+{
+    EntityIndex entityIndex;
+    LocalDofIndex dofIndex;
+};
+
+struct Point3D
+{
+    ctype x, y, z;
 };
 
 } // namespace Bempp
