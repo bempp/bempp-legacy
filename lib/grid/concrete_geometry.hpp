@@ -27,6 +27,7 @@
 
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
+#include <dune/common/static_assert.hh>
 #include <armadillo>
 
 namespace Bempp
@@ -37,6 +38,11 @@ namespace Bempp
 template<typename DuneGeometry>
 class ConcreteGeometry : public Geometry
 {
+    dune_static_assert((int)DuneGeometry::coorddimension ==
+                       (int)DuneGeometry::dimensionworld,
+                       "ConcreteGeometry: world dimension does not agree with "
+                       "number of coordinates");
+
 private:
     const DuneGeometry* m_dune_geometry;
 
@@ -63,6 +69,16 @@ public:
     /** \brief Read-only access to the underlying Dune geometry object. */
     const DuneGeometry& duneGeometry() const {
         return *m_dune_geometry;
+    }
+
+    /** \brief Dimension of the geometry. */
+    virtual int dim() const {
+        return DuneGeometry::mydimension;
+    }
+
+    /** \brief Dimension of the space containing the geometry. */
+    virtual int dimWorld() const {
+        return DuneGeometry::coorddimension;
     }
 
     virtual GeometryType type() const {

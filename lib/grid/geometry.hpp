@@ -38,6 +38,12 @@ public:
     /** \brief Destructor. */
     virtual ~Geometry() {}
 
+    /** \brief Dimension of the geometry. */
+    virtual int dim() const = 0;
+
+    /** \brief Dimension of the space containing the geometry. */
+    virtual int dimWorld() const = 0;
+
     /** \brief Type of the reference element.
 
      The type can be used to access the <tt>Dune::GenericReferenceElement</tt>.
