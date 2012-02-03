@@ -27,6 +27,7 @@
 #include "concrete_range_entity_iterator.hpp"
 #include "concrete_vtk_writer.hpp"
 #include "geometry_type.hpp"
+#include "reverse_index_set.hpp"
 
 namespace Bempp
 {
@@ -38,11 +39,12 @@ class ConcreteGridView: public GridView
 private:
     DuneGridView m_dune_gv;
     ConcreteIndexSet<DuneGridView> m_index_set;
+    mutable ReverseIndexSet m_reverse_index_set;
 
 public:
     /** \brief Constructor */
     explicit ConcreteGridView(const DuneGridView& dune_gv) :
-        m_dune_gv(dune_gv), m_index_set(&dune_gv.indexSet()) {
+        m_dune_gv(dune_gv), m_index_set(&dune_gv.indexSet()), m_reverse_index_set(*this) {
     }
 
     /** \brief Read-only access to the underlying Dune grid view object. */
@@ -78,6 +80,11 @@ public:
     }
     virtual bool containsEntity(const Entity<3>& e) const {
         return containsEntityCodimN(e);
+    }
+
+    virtual const ReverseIndexSet& reverseIndexSet() const {
+        m_reverse_index_set.update();
+        return m_reverse_index_set;
     }
 
     virtual std::auto_ptr<VtkWriter> vtkWriter(Dune::VTK::DataMode dm=Dune::VTK::conforming) const {

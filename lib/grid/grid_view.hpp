@@ -33,8 +33,10 @@ namespace Bempp
 
 // Forward declarations
 template<int codim> class Entity;
+template<int codim> class EntityCache;
 template<int codim> class EntityIterator;
 class IndexSet;
+class ReverseIndexSet;
 class VtkWriter;
 
 /** \brief Abstract wrapper of a grid view */
@@ -83,6 +85,18 @@ public:
     std::auto_ptr<EntityIterator<codim> > entityIterator() const {
         throw std::logic_error("GridView::entityIterator(): invalid entity codimension");
     }
+
+    /** \brief The reverse index set.
+
+      Note that this object is *not* updated when the grid is adapted. In that
+      case you need to create a new grid view and obtain a new reference to the
+      reverse index set.
+
+      \internal Actual creation of the reverse index set is delayed to the
+      first call to this method, since the reverse index set needs to store the
+      entity pointers to all entities, and hence takes up a lot of memory.
+    */
+    virtual const ReverseIndexSet& reverseIndexSet() const = 0;
 
     /** \brief Create a VtkWriter for this grid view.
 
