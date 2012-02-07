@@ -36,11 +36,11 @@ template <typename ValueType>
 class ElementaryIntegralOperator : public ElementaryLinearOperator<ValueType>
 {
 public:
-    virtual int domainDimension() const {
+    virtual int trialComponentCount() const {
         return kernel().domainDimension();
     }
 
-    virtual int codomainDimension() const {
+    virtual int testComponentCount() const {
         return kernel().codomainDimension();
     }
 

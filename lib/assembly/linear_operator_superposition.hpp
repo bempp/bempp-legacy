@@ -48,6 +48,9 @@ public:
             const boost::tuple<ValueType, ValueType>& multipliers);
     // possibly add variants for longer parameter lists
 
+    virtual int trialComponentCount() const;
+    virtual int testComponentCount() const;
+
     virtual std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
     assembleOperator(
             const arma::Mat<ctype>& testPoints,

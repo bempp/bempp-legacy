@@ -49,6 +49,24 @@ LinearOperatorSuperposition<ValueType>::LinearOperatorSuperposition(
 }
 
 template <typename ValueType>
+int LinearOperatorSuperposition<ValueType>::trialComponentCount() const
+{
+    if (m_terms.empty())
+        return 1;
+    else
+        return m_terms[0].trialComponentCount();
+}
+
+template <typename ValueType>
+int LinearOperatorSuperposition<ValueType>::testComponentCount() const
+{
+    if (m_terms.empty())
+        return 1;
+    else
+        return m_terms[0].testComponentCount();
+}
+
+template <typename ValueType>
 std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
 LinearOperatorSuperposition<ValueType>::assembleOperator(
         const arma::Mat<ctype>& testPoints,
@@ -102,11 +120,11 @@ void LinearOperatorSuperposition<ValueType>::init(
                                     "incompatible argument lengths");
     if (!terms.empty())
     {
-        int codomainDimension_ = terms[0].codomainDimension();
-        int domainDimension_ = terms[0].domainDimension();
+        int testComponentCount_ = terms[0].testComponentCount();
+        int trialComponentCount_ = terms[0].trialComponentCount();
         for (int i = 0; i < terms.size(); ++i)
-            if (codomainDimension_ != terms[0].codomainDimension() ||
-                    domainDimension_ != terms[0].domainDimension())
+            if (testComponentCount_ != terms[0].testComponentCount() ||
+                    trialComponentCount_ != terms[0].trialComponentCount())
                 throw std::invalid_argument("LinearOperatorSuperposition::init(): "
                                             "incompatible operator dimensions");
         const int origTermCount = terms.size();

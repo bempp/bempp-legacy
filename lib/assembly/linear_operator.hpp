@@ -37,20 +37,25 @@ template <typename ValueType> class DiscreteScalarValuedLinearOperator;
 template <typename ValueType> class DiscreteVectorValuedLinearOperator;
 template <typename ValueType> class Space;
 
-/** \brief Linear operator.
+/** \brief "Formal" linear operator.
 
   This class template is used as a base class for all implementations of
   various types of linear operators, in particular integral operators.
 
-  A LinearOperator represents a linear mapping \f$L : X \to Y\f$, where \f$X :
+  A FormalLinearOperator represents a linear mapping \f$L : X \to Y\f$, where \f$X :
   S \to K^p\f$ and \f$Y : T \to K^q\f$ are function spaces, with \f$S\f$
   standing for an \f$n\f$-dimensional surface and \f$T\f$ either equal to
   \f$S\f$ or to a \f$(n+1)\f$-dimensional domain in which \f$S\f$ is embedded.
   \f$K\f$ denotes either the set of real or complex numbers.
 
+  The operator is called "formal" because its domain \f$X\f$ is not specified
+  yet. The functions assembleWeakForm() and assembleOperator() construct "true"
+  linear operators acting on functions from the space passed as the trialSpace
+  parameter.
+
   \tparam ValueType      Type used to represent elements of \f$K\f$. This can be
                          one of: float, double, std::complex<float> and
-                         std::complex<double>.
+                         std::complex<double>.                                                
 */
 template <typename ValueType>
 class LinearOperator
@@ -62,12 +67,12 @@ public:
     /** \brief Number of components of the functions from the trial space \f$X\f$.
 
       This is equal to \f$p\f$ in the notation above. */
-    virtual int domainDimension() const = 0;
+    virtual int trialComponentCount() const = 0;
 
-    /** \brief Number of components of the functions from trial space \f$Y\f$.
+    /** \brief Number of components of the functions from the test space \f$Y\f$.
 
       This is equal to \f$q\f$ in the notation above. */
-    virtual int codomainDimension() const = 0;
+    virtual int testComponentCount() const = 0;
 
     /** \brief Assemble the operator's weak form.
 
