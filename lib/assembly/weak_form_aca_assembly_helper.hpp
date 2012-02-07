@@ -62,7 +62,7 @@ private:
         to the global DOF indices stored in the entries [start, start + length)
         of array p2o. */
     void findLocalDofs(int start,
-                       int length,
+                       int globalDofCount,
                        const arma::Col<unsigned int>& p2o,
                        const Space<ValueType>& space,
                        std::vector<const EntityPointer<0>*>& elements,

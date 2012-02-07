@@ -67,6 +67,8 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
              ++nTrialElem)
         {
             activeTrialElement = trialElements[nTrialElem];
+            // The body of this loop will very probably only run once (single
+            // local DOF per trial element)
             for (int nTrialDof = 0;
                  nTrialDof < trialLocalDofs[nTrialElem].size();
                  ++nTrialDof)
@@ -143,7 +145,7 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
 template <typename ValueType>
 void WeakFormAcaAssemblyHelper<ValueType>::findLocalDofs(
         int start,
-        int length,
+        int globalDofCount,
         const arma::Col<unsigned int>& p2o,
         const Space<ValueType>& space,
         std::vector<const EntityPointer<0>*>& elements,
@@ -156,18 +158,22 @@ void WeakFormAcaAssemblyHelper<ValueType>::findLocalDofs(
     using std::set;
     using std::vector;
 
-    vector<GlobalDofIndex> dofs(length);
-    for (int i = 0; i < length; ++i)
+    // Convert permuted indices into the original global DOF indices
+    vector<GlobalDofIndex> dofs(globalDofCount);
+    for (int i = 0; i < globalDofCount; ++i)
         dofs[i] = p2o(start + i);
 
+    // Retrieve lists of local DOFs corresponding to the global DOFs
     vector<vector<LocalDof> > localDofs;
     space.global2localDofs(dofs, localDofs);
 
     typedef set<pair<LocalDofIndex, int> > LocalDofSet;
     typedef map<EntityIndex, LocalDofSet> LocalDofMap;
+    // Temporary map: entityIndex -> set(localDofIndex, arrayIndex)
+    // with arrayIndex standing for the index of the row or column in the matrix
+    // that needs to be returned to Ahmed.
     LocalDofMap requiredLocalDofs;
-    // arrayIndex: row or column in the matrix "result" to be filled
-    for (int arrayIndex = 0; arrayIndex < localDofs.size(); ++arrayIndex)
+    for (int arrayIndex = 0; arrayIndex < globalDofCount; ++arrayIndex)
     {
         const vector<LocalDof>& currentLocalDofs = localDofs[arrayIndex];
         for (int j = 0; j < currentLocalDofs.size(); ++j)
@@ -175,6 +181,7 @@ void WeakFormAcaAssemblyHelper<ValueType>::findLocalDofs(
                     .insert(make_pair(currentLocalDofs[j].dofIndex, arrayIndex));
     }
 
+    // Use the temporary map requiredLocalDofs to build the three output vectors
     const int elementCount = requiredLocalDofs.size();
     // vector<EntityIndex> elementIndices;
     // elementIndices.reserve(elementCount);
