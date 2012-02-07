@@ -156,6 +156,10 @@ ElementaryLinearOperator<ValueType>::assembleWeakFormInDenseMode(
     std::vector<GlobalDofIndex> trialGlobalDofs;
     std::vector<GlobalDofIndex> testGlobalDofs;
 
+    // TODO:
+    // if (options.useOpenCl)
+    //   // initialise OpenCL (create context etc.)
+
     // Loop over trial elements
     std::vector<const EntityPointer<0>*> trialElements(1);
     const EntityPointer<0>*& trialElement = trialElements[0];
@@ -210,22 +214,6 @@ ElementaryLinearOperator<ValueType>::assembleWeakFormInAcaMode(
 
     // Get the grid's leaf view so that we can iterate over elements
     std::auto_ptr<GridView> view = trialSpace.grid().leafView();
-
-    // Create EntityPointers to all elements.
-    // For now we assume they fit in memory...
-    const int elementCount = view->entityCount(0);
-    boost::ptr_vector<EntityPointer<0> > elementsOwner;
-    elementsOwner.reserve(elementCount);
-
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-    while (!it->finished())
-    {
-        elementsOwner.push_back(it->frozen());
-        it->next();
-    }
-    std::vector<const EntityPointer<0>*> elements(elementCount);
-    for (int i = 0; i < elementCount; ++i)
-        elements[i] = &elementsOwner[i];
 
     // const int elementCount = view.entityCount(0);
     const int trialDofCount = trialSpace.globalDofCount();
