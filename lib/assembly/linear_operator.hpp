@@ -42,12 +42,11 @@ template <typename ValueType> class Space;
   This class template is used as a base class for all implementations of
   various types of linear operators, in particular integral operators.
 
-  A LinearOperator represents a linear mapping \f$L : X \to Y\f$, where \f$X\f$
-  is the space of functions \f$F : S \to K^p\f$ and \f$Y\f$ is another space of
-  functions \f$G : T \to K^q\f$, with \f$S\f$ standing for an
-  \f$n\f$-dimensional surface and \f$T\f$ either equal to \f$S\f$ or to a
-  \f$(n+1)\f$-dimensional domain in which \f$S\f$ is embedded. \f$K\f$ denotes
-  either the set of real or complex numbers.
+  A LinearOperator represents a linear mapping \f$L : X \to Y\f$, where \f$X :
+  S \to K^p\f$ and \f$Y : T \to K^q\f$ are function spaces, with \f$S\f$
+  standing for an \f$n\f$-dimensional surface and \f$T\f$ either equal to
+  \f$S\f$ or to a \f$(n+1)\f$-dimensional domain in which \f$S\f$ is embedded.
+  \f$K\f$ denotes either the set of real or complex numbers.
 
   \tparam ValueType      Type used to represent elements of \f$K\f$. This can be
                          one of: float, double, std::complex<float> and
