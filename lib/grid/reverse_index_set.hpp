@@ -1,5 +1,5 @@
-#ifndef REVERSE_INDEX_SET_HPP
-#define REVERSE_INDEX_SET_HPP
+#ifndef bempp_reverse_index_set_hpp
+#define bempp_reverse_index_set_hpp
 
 #include <boost/ptr_container/ptr_map.hpp>
 #include "../common/types.hpp"

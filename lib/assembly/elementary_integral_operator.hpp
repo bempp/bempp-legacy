@@ -22,15 +22,26 @@
 #define bempp_elementary_integral_operator_hpp
 
 #include "elementary_linear_operator.hpp"
-#include "kernel.hpp"
+#include "../fiber/kernel.hpp"
 
 #include "../common/types.hpp"
 
 #include <memory>
+#include <vector>
 
-namespace Bempp {
+namespace Fiber
+{
 
-template <typename ValueType> class FunctionFamily;
+template <typename ValueType> class Expression;
+template <typename ValueType, typename GeometryImp> class IntegrationManager;
+template <typename ValueType, typename GeometryImp> class IntegrationManagerFactory;
+
+} // namespace Fiber
+
+namespace Bempp
+{
+
+class Geometry;
 
 template <typename ValueType>
 class ElementaryIntegralOperator : public ElementaryLinearOperator<ValueType>
@@ -47,38 +58,22 @@ public:
     virtual bool isRegular() const = 0;
 
 private:
-    virtual const Kernel<ValueType>& kernel() const = 0;
-    virtual std::auto_ptr<FunctionFamily<ValueType> > testFunctionFamily(
-            const Space<ValueType>& testSpace,
-            ElementVariant elementVariant) const = 0;
-    virtual std::auto_ptr<FunctionFamily<ValueType> > trialFunctionFamily(
-            const Space<ValueType>& trialSpace,
-            ElementVariant elementVariant) const = 0;
+    virtual std::auto_ptr<Fiber::IntegrationManager<ValueType, Geometry> > makeIntegrationManager(
+            const Fiber::IntegrationManagerFactory<ValueType, Geometry>& factory) const;
+
+    virtual const Fiber::Kernel<ValueType>& kernel() const = 0;
+    virtual const Fiber::Expression<ValueType>& testExpression() const = 0;
+    virtual const Fiber::Expression<ValueType>& trialExpression() const = 0;
 
     virtual void evaluateLocalWeakForms(
-            const std::vector<const EntityPointer<0>*>& testElements,
-            const std::vector<const EntityPointer<0>*>& trialElements,
-            const Space<ValueType>& testSpace,
-            const Space<ValueType>& trialSpace,
-            const QuadratureSelector<ValueType>& quadSelector,
-            const AssemblyOptions& options,
-            Array2D<arma::Mat<ValueType> >& result) const;
-    void evaluateLocalWeakFormsWithOpenCl(
-            const std::vector<const EntityPointer<0>*>& testElements,
-            const std::vector<const EntityPointer<0>*>& trialElements,
-            const Space<ValueType>& testSpace,
-            const Space<ValueType>& trialSpace,
-            const QuadratureSelector<ValueType>& quadSelector,
-            const AssemblyOptions& options,
-            Array2D<arma::Mat<ValueType> >& result) const;
-    void evaluateLocalWeakFormsWithoutOpenCl(
-            const std::vector<const EntityPointer<0>*>& testElements,
-            const std::vector<const EntityPointer<0>*>& trialElements,
-            const Space<ValueType>& testSpace,
-            const Space<ValueType>& trialSpace,
-            const QuadratureSelector<ValueType>& quadSelector,
-            const AssemblyOptions& options,
-            Array2D<arma::Mat<ValueType> >& result) const;
+            CallVariant evalVariant,
+            const std::vector<const EntityPointer<0>*>& elementsA,
+            const EntityPointer<0>& elementB,
+            LocalDofIndex localDofIndexB,
+            const Space<ValueType>& spaceA,
+            const Space<ValueType>& spaceB,
+            Fiber::IntegrationManager<ValueType, Geometry>& intMgr,
+            std::vector<arma::Mat<ValueType> >& result) const;
 };
 
 } // namespace Bempp

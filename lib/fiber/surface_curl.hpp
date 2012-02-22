@@ -18,38 +18,49 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_single_layer_potential_3d_hpp
-#define bempp_single_layer_potential_3d_hpp
+#ifndef fiber__surface_curl_hpp
+#define fiber__surface_curl_hpp
 
-#include "elementary_weakly_singular_integral_operator.hpp"
-#include "../fiber/single_layer_potential_3d_kernel.hpp"
-#include "../fiber/scalar_function_value.hpp"
+#include "expression.hpp"
 
-namespace Bempp
-{
+#include <armadillo>
+#include <vector>
+
+namespace Fiber {
 
 template <typename ValueType>
-class SingleLayerPotential3D :
-        public ElementaryWeaklySingularIntegralOperator<ValueType>
+class SurfaceCurl : public Expression<ValueType>
 {
+public:
+    SurfaceCurl(int gridDimension) :
+        m_gridDimension(gridDimension)
+    {}
+
+    virtual int domainDimension() const {
+        return 1;
+    }
+
+    virtual int codomainDimension() const {
+        return m_gridDimension;
+    }
+
+    virtual void addDependencies(int& basisDeps, int& geomDeps) const {
+        addShapeFunctionSurfaceCurlDependencies(basisDeps, geomDeps);
+    }
+
+    virtual void evaluate(const BasisData<ValueType>& basisData,
+                          const GeometricalData<ValueType>& geomData,
+                          arma::Cube<ValueType>& result) const {
+        // Probably the compatibility of dimensions of geomData's elements with
+        // m_gridDimension should be checked.
+        ScalarSpaceMapping::evaluateShapeFunctionSurfaceCurlsInternal(
+                    basisData, geomData, result);
+    }
+
 private:
-    virtual const Fiber::Kernel<ValueType>& kernel() const {
-        return m_kernel;
-    }
-
-    virtual const Fiber::Expression<ValueType>& testExpression() const {
-        return m_expression;
-    }
-
-    virtual const Fiber::Expression<ValueType>& trialExpression() const {
-        return m_expression;
-    }
-
-private:
-    Fiber::SingleLayerPotential3DKernel<ValueType> m_kernel;
-    Fiber::ScalarFunctionValue<ValueType> m_expression;
+    const int m_gridDimension;
 };
 
-} // namespace Bempp
+// namespace Fiber
 
 #endif

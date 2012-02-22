@@ -22,6 +22,7 @@
 #define bempp_grid_view_hpp
 
 #include "geometry_type.hpp"
+#include "entity_iterator.hpp"
 
 #include <boost/utility/enable_if.hpp>
 #include <dune/grid/io/file/vtk/vtkwriter.hh>
@@ -34,7 +35,6 @@ namespace Bempp
 // Forward declarations
 template<int codim> class Entity;
 template<int codim> class EntityCache;
-template<int codim> class EntityIterator;
 class IndexSet;
 class ReverseIndexSet;
 class VtkWriter;

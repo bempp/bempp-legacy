@@ -25,6 +25,8 @@
 #include "geometry_type.hpp"
 #include "common.hpp"
 
+#include "../fiber/geometrical_data.hpp"
+
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/static_assert.hh>
@@ -244,6 +246,28 @@ public:
                     jacobian_inv_t(i,j,k) = j_inv_t[i][j];
         }
     }
+
+    virtual void getData(int what, const arma::Mat<ctype>& local,
+                         Fiber::GeometricalData<ctype>& data) const {
+        // In this first implementation we call the above virtual functions as required.
+        // In future some optimisations (elimination of redundant calculations)
+        // might be possible.
+
+        typedef ConcreteGeometry<DuneGeometry> This; // to avoid virtual function calls
+
+        if (what & Fiber::GLOBALS)
+            This::local2global(local, data.globals);
+        if (what & Fiber::INTEGRATION_ELEMENTS)
+            This::integrationElement(local, data.integrationElements);
+        if (what & Fiber::JACOBIANS_TRANSPOSED)
+            This::jacobianTransposed(local, data.jacobiansTransposed);
+        if (what & Fiber::JACOBIAN_INVERSES_TRANSPOSED)
+            This::jacobianInverseTransposed(local, data.jacobianInversesTransposed);
+        if (what & Fiber::NORMALS)
+            throw std::runtime_error("Geometry::getData(): calculation of"
+                                     "normals not implemented yet");
+    }
+
 };
 
 } // namespace Bempp

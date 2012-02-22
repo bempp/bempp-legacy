@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2012 by the Fiber Authors
+// Copyright (C) 2011-2012 by the BEM++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,104 +21,34 @@
 #ifndef fiber_kernel_hpp
 #define fiber_kernel_hpp
 
-// #include "barton_nackman.hpp"
+#include "array_4d.hpp"
+
+#include <armadillo>
 
 namespace Fiber
 {
 
-/** \brief Kernel interface.
+template <typename ValueType> class BasisData;
+template <typename ValueType> class GeometricalData;
 
-  This class template is used as a base class for all kernel implementations.
-  It uses the Barton-Nackman trick to ensure conformity to the interface.
-
-  A kernel implementation represents a particular integral operator's kernel,
-  i.e. a tensor-valued function \f$K(x, y)\f$, where \f$x\f$ and \f$y\f$ are
-  called test and trial points, respectively.
-
-  \tparam ValueType      Type used to represent components of the kernel tensor
-                         (e.g. double or std::complex<float>).
-  \tparam CoordinateType Type used to represent components of the test and trial
-                         point coordinates (e.g. float or double).
-  \tparam KernelImp      Type of an implementation of the kernel interface. */
-template <typename ValueType, typename CoordinateType,
-          typename KernelImp>
+template <typename ValueType>
 class Kernel
 {
 public:
-    /** \brief Number of components of kernel's arguments \f$x\f$ and \f$y\f$. */
-    int worldDimension() const {
-        return asImp().worldDimension();
-    }
+    virtual int worldDimension() const = 0;
+    virtual int domainDimension() const = 0;
+    virtual int codomainDimension() const = 0;
 
-    /** \brief Number of rows of the tensor \f$K\f$. */
-    int codomainDimension() const {
-        return asImp().codomainDimension();
-    }
+    virtual void addGeometricalDependencies(int& testGeomDeps,
+                                            int& trialGeomDeps) const = 0;
 
-    /** \brief Number of columns of the tensor \f$K\f$. */
-    int domainDimension() const {
-        return asImp().domainDimension();
-    }
+    virtual void evaluateAtPointPairs(const GeometricalData<ValueType>& trialGeomData,
+                                      const GeometricalData<ValueType>& testGeomData,
+                                      arma::Cube<ValueType>& result) const = 0;
 
-    /** \brief True if the kernel depends on the vector normal to the surface at
-        test point. */
-    bool needsTestNormal() const {
-        return asImp().needsTestNormal();
-    }
-
-    /** \brief True if the kernel depends on the vector normal to the surface at
-        trial point. */
-    bool needsTrialNormal() const {
-        return asImp().needsTrialNormal();
-    }
-
-    /** \brief Evaluate kernel at prescribed pairs of test and trial points.
-
-      \param[in]  pointCount
-                  Number of points
-      \param[in]  testPoints
-                  Pointer to a Fortran-ordered 2D array of dimensions
-                  (worldDimension(), pointCount) storing the test point
-                  coordinates.
-      \param[in]  trialPoints
-                  Pointer to a Fortran-ordered 2D array of dimensions
-                  (worldDimension(), pointCount) storing the trial point
-                  coordinates.
-      \param[in]  testNormals
-                  Pointer to a Fortran-ordered 2D array of dimensions
-                  (worldDimension(), pointCount) storing the components of
-                  external unit vectors normal to the surface at the given test
-                  points. May be NULL if needsTestNormal() returns false.
-      \param[in]  trialNormals
-                  Pointer to a Fortran-ordered 2D array of dimensions
-                  (worldDimension(), pointCount) storing the components of
-                  external unit vectors normal to the surface at the given test
-                  points. May be NULL if needsTrialNormal() returns false.
-      \param[out] result
-                  Pointer to a preallocated Fortran-ordered 3D array of
-                  dimensions (codomainDimension(), domainDimension(),
-                  pointCount), in which will be stored the components of the
-                  kernel function evaluated at the given point pairs. */
-    void evaluate(int pointCount,
-                  const CoordinateType* testPoints,
-                  const CoordinateType* trialPoints,
-                  const CoordinateType* testNormals,
-                  const CoordinateType* trialNormals,
-                  ValueType* result) const {
-        asImp().evaluate(pointCount, testPoints, trialPoints,
-                         testNormals, trialNormals, result);
-    }
-
-private:
-    /**  Barton-Nackman trick */
-    KernelImp& asImp() {
-        return static_cast<KernelImp&>(*this);
-    }
-
-    /**  Barton-Nackman trick */
-    const KernelImp& asImp() const {
-        return static_cast<const KernelImp&>(*this);
-    }
+    virtual void evaluateOnGrid(const GeometricalData<ValueType>& trialGeomData,
+                                const GeometricalData<ValueType>& testGeomData,
+                                Array4D<ValueType>& result) const = 0;
 };
 
 } // namespace Fiber

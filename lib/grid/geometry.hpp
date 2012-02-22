@@ -28,6 +28,13 @@
 #include <dune/common/fmatrix.hh>
 #include <armadillo>
 
+namespace Fiber
+{
+
+template <typename ValueType> struct GeometricalData;
+
+} // namespace Fiber
+
 namespace Bempp
 {
 
@@ -173,6 +180,9 @@ public:
      */
     virtual void jacobianInverseTransposed(const arma::Mat<ctype>& local,
                                            arma::Cube<ctype>& jacobian_inv_t) const = 0;
+
+    virtual void getData(int what, const arma::Mat<ctype>& local,
+                         Fiber::GeometricalData<ctype>& data) const = 0;
 };
 
 } // namespace Bempp

@@ -25,11 +25,4 @@
 #include "../fiber/array_3d.hpp"
 #include "../fiber/array_4d.hpp"
 
-namespace Bempp
-{
-using typename Fiber::Array2D;
-using typename Fiber::Array3D;
-using typename Fiber::Array4D;
-}
-
 #endif

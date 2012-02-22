@@ -211,6 +211,13 @@ private:
     /** @} */
 };
 
+} // namespace Bempp
+
+#include "entity_iterator.hpp"
+
+namespace Bempp
+{
+
 template<>
 inline std::auto_ptr<EntityIterator<1> > Entity<0>::subEntityIterator<1>() const
 {

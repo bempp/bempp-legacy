@@ -18,35 +18,41 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_quadrature_selector_factory_hpp
-#define bempp_quadrature_selector_factory_hpp
+#ifndef fiber_scalar_function_value_hpp
+#define fiber_scalar_function_value_hpp
 
-#include <memory>
+#include "expression.hpp"
+#include "scalar_space_mapping.hpp"
 
-namespace Bempp
-{
+#include <armadillo>
 
-class AssemblyOptions;
-template <typename ValueType> class QuadratureSelector;
+namespace Fiber {
 
 template <typename ValueType>
-class QuadratureSelectorFactory
+class ScalarFunctionValue : public Expression<ValueType>
 {
 public:
-    static std::auto_ptr<QuadratureSelector<ValueType> > make(
-            const AssemblyOptions& options);
+    virtual int domainDimension() const {
+        return 1;
+    }
+
+    virtual int codomainDimension() const {
+        return 1;
+    }
+
+    virtual void addDependencies(int& basisDeps, int& geomDeps) const {
+        ScalarSpaceMapping<ValueType>::
+                addShapeFunctionDependencies(basisDeps, geomDeps);
+    }
+
+    virtual void evaluate(const BasisData<ValueType>& basisData,
+                          const GeometricalData<ValueType>& geomData,
+                          arma::Cube<ValueType>& result) const {
+        ScalarSpaceMapping<ValueType>::
+                evaluateShapeFunctions(basisData, geomData, result);
+    }
 };
 
-/*
-To choose quadrature rule, we need:
-- polynomial orders of elements in all directions
-- positions of elements -- in practice, their vertices
-- whether elements are curved or not, and if yes, polynomial order of that curvature
-- kernel properties (regular/singular) and extra quadrature order necessary
-  because of the kernel's variation (note: this is dependent on the elements'
-  size, since the kernel's variation follows a scale of its own!)
-*/
-
-} //namespace Bempp
+} // namespace Fiber
 
 #endif

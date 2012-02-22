@@ -18,35 +18,32 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_quadrature_selector_hpp
-#define bempp_quadrature_selector_hpp
-
-#include "../common/multidimensional_arrays.hpp"
-#include "../grid/common.hpp"
-#include "../fiber/quadrature_selector.hpp"
+#ifndef fiber_expression_hpp
+#define fiber_expression_hpp
 
 #include <armadillo>
 
-namespace Bempp
-{
+namespace Fiber {
 
-class GeometryAdapter;
+template <typename ValueType> class BasisData;
+template <typename ValueType> class GeometricalData;
 
 template <typename ValueType>
-class QuadratureSelector
+class Expression
 {
-public:    
-    virtual void selectDoubleQuadratureRules(
-            const std::vector<const GeometryAdapter*>& testGeometries,
-            const std::vector<const GeometryAdapter*>& trialGeometries,
-            Array2D<Fiber::QuadratureRule>& quadRules) const = 0;
-    virtual void doubleQuadratureRulePointsAndWeights(
-            Fiber::QuadratureRule quadRule,
-            arma::Mat<ctype>& testQuadPoints,
-            arma::Mat<ctype>& trialQuadPoints,
-            std::vector<ValueType>& quadWeights) const = 0;
+public:
+    virtual ~Expression() {}
+
+    virtual int domainDimension() const = 0;
+    virtual int codomainDimension() const = 0;
+
+    virtual void addDependencies(int& basisDeps, int& geomDeps) const = 0;
+
+    virtual void evaluate(const BasisData<ValueType>& basisData,
+                          const GeometricalData<ValueType>& geomData,
+                          arma::Cube<ValueType>& result) const = 0;
 };
 
-} // namespace Bempp
+} // namespace Fiber
 
 #endif

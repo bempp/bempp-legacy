@@ -22,11 +22,25 @@
 #define bempp_space_hpp
 
 #include "../common/types.hpp"
+#include "../common/not_implemented_error.hpp"
+#include <armadillo>
+#include <vector>
+
+namespace Fiber
+{
+
+template <typename ValueType> class Basis;
+template <typename ValueType> class BasisData;
+template <typename ValueType> class GeometricalData;
+
+}
 
 namespace Bempp
 {
 
+class Grid;
 template <int codim> class Entity;
+template <int codim> class EntityPointer;
 
 template <typename ValueType>
 class Space
@@ -39,75 +53,27 @@ public:
     Space(Grid& grid) : m_grid(grid)
     {}
 
+    virtual ~Space()
+    {}
+
     /** @name Attributes
     @{ */
 
+    /** \brief Dimension of the surface on which the functions are defined. */
     virtual int domainDimension() const = 0;
-    /** Number of components (e.g. H1 space -> 1, H(curl) space on a 2D surface -> 2) */
-    virtual int codomainDimension() const = 0;
-    virtual int basisFunctionCount(ElementVariant elementVariant) const = 0;
+    /** \brief Dimension of the codomain of the functions.
 
+    In other words, number of components of the values of the functions.
+    (E.g. H1 space -> 1, H(curl) space on a 2D surface -> 2). */
+    virtual int codomainDimension() const = 0;
+
+    /** \brief Reference to the grid on which the functions are defined. */
     const Grid& grid() const { return m_grid; }
 
-    /** @}
-        @name Function evaluation
-        @{ */
-    virtual void evaluateBasisFunctions(
-            // interpreted differently for different spaces.
-            // e.g. it could be a bitfield
-            // {4 /* quad */, 3 /* polynomial order in x dir. */,
-            //  2 /* polynomial order in y dir. */}
-            ElementVariant elementVariant,
-            // rows: local coordinates, cols: points
-            const arma::Mat<ctype>& local,
-            /*
-            // which functions to evaluate?
-            std::vector<int> functionIds,
-            */
-            // rows: components, cols: points, slices: basis function
-            arma::Cube<ValueType>& result) const = 0;
-    virtual void evaluateBasisFunctionDerivative(
-            // interpreted differently for different spaces.
-            // e.g. it could be a bitfield
-            // {4 /* quad */, 3 /* polynomial order in x dir. */,
-            //  2 /* polynomial order in y dir. */}
-            ElementVariant elementVariant,
-            // rows: points, cols: individual (x, y) coordinates
-            const arma::Mat<ctype>& local,
-            /*
-            // which functions to evaluate?
-            std::vector<int> functionIds,
-            */
-            // local coordinate along which the derivative is taken
-            int direction,
-            // rows: components, cols: points, slices: basis function derivatives
-            arma::Cube<ValueType>& result) const = 0;
+    virtual void getBases(const std::vector<const EntityPointer<0>*>& elements,
+                          std::vector<const Fiber::Basis<ValueType>*> bases) const = 0;
 
-    virtual bool shapeFunctionsDependOnJacobianMatrix() const = 0;
-
-    // result[codomainDimension,basisFunctionCount(),pointCount]
-    virtual void evaluateShapeFunctions(
-            const EntityPointer<0>* element,
-            const arma::Mat<ctype>& local,
-            arma::Cube<ValueType>& result) const = 0;
-    virtual void evaluateShapeFunctionsInternal(
-            const arma::Cube<ValueType>& basisFunctionValues,
-            const arma::Cube<ValueType>& jacobianInverseTransposed,
-            arma::Cube<ValueType>& result) const = 0;
-    // variants for only selected local DOFs also possible.
-
-    virtual void evaluateShapeFunctionSurfaceCurls(
-            const EntityPointer<0>* element,
-            const arma::Mat<ctype>& local,
-            arma::Cube<ValueType>& result) const = 0;
-    virtual void evaluateShapeFunctionSurfaceCurlsInternal(
-            const arma::Cube<ValueType>& basisFunctionValues,
-            const arma::Cube<ValueType>& jacobianInverseTransposed,
-            arma::Cube<ValueType>& result) const = 0;
-
-    virtual std::string openClCodeToEvaluateBasisFunctions() const = 0;
-    virtual std::string openClCodeToEvaluateShapeFunctions() const = 0;
-    virtual std::string openClCodeToEvaluateShapeFunctionSurfaceCurls() const = 0;
+    virtual const Fiber::Basis<ValueType>& basis(const EntityPointer<0>& element) const = 0;
 
     /** @}
         @name Element order management
@@ -121,7 +87,7 @@ public:
         @name DOF management
         @{ */
 
-    void assignDofs();
+    virtual void assignDofs() = 0;
     virtual bool dofsAssigned() const = 0; // returns a flag that is set to true via assignDofs()
 
     virtual int globalDofCount() const = 0;
@@ -139,10 +105,10 @@ public:
     virtual void globalDofPositions(std::vector<Point3D>& positions) const = 0;
     /** @} */
 
-private:
-    virtual void assignVertexDofs() = 0;
-    virtual void assignEdgeDofs() = 0;
-    virtual void assignBubbleDofs() = 0;
+protected:
+    template <typename DuneBasis>
+    void evaluateBasisFunctionsWithDune(
+            const arma::Mat<ctype>& local, arma::Cube<ValueType>& result) const;
 
 protected:
     Grid& m_grid;

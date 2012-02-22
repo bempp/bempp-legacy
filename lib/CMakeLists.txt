@@ -7,6 +7,7 @@ file(GLOB_RECURSE DUNE_COMMON_HEADERS ${CMAKE_SOURCE_DIR}/contrib/dune/dune-comm
 
 add_definitions(-DCOMPILE_FOR_DOUBLE)
 add_definitions(-DCHECK_ARRAY_BOUNDS)
+# add_definitions(-DWITH_AHMED)
 
 # Headers are ignored by make, but their list is used by IDEs
 # like Qt Creator and Visual Studio to generate project file list.

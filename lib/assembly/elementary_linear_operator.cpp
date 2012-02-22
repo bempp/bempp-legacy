@@ -1,15 +1,12 @@
-#include "elementary_linear_operator.hpp" // does nothing, but makes IDE parsers happy
+#include "elementary_linear_operator.hpp"
 
 #include "assembly_options.hpp"
-#include "discrete_aca_scalar_valued_linear_operator.hpp"
 #include "discrete_dense_scalar_valued_linear_operator.hpp"
 #include "discrete_vector_valued_linear_operator.hpp"
-#include "quadrature_selector.hpp"
-#include "quadrature_selector_factory.hpp"
-#include "weak_form_aca_assembly_helper.hpp"
 
 #include "../common/multidimensional_arrays.hpp"
 #include "../common/not_implemented_error.hpp"
+#include "../fiber/integration_manager.hpp"
 #include "../grid/grid.hpp"
 #include "../grid/grid_view.hpp"
 #include "../grid/entity_iterator.hpp"
@@ -20,7 +17,9 @@
 #include <stdexcept>
 
 #ifdef WITH_AHMED
-#include "ahmed_aux.hpp"
+//#include "ahmed_aux.hpp"
+//#include "discrete_aca_scalar_valued_linear_operator.hpp"
+//#include "weak_form_aca_assembly_helper.hpp"
 #endif
 
 // The spaces should be given the grid in constructor!
@@ -33,6 +32,7 @@ std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
 ElementaryLinearOperator<ValueType>::assembleOperator(
         const arma::Mat<ctype>& testPoints,
         const Space<ValueType>& trialSpace,
+        const Fiber::IntegrationManagerFactory<ValueType, Geometry>& factory,
         const AssemblyOptions& options) const
 {
     if (!trialSpace.dofsAssigned())
@@ -40,17 +40,17 @@ ElementaryLinearOperator<ValueType>::assembleOperator(
                                  "degrees of freedom must be assigned "
                                  "before calling assembleOperator()");
 
-    std::auto_ptr<QuadratureSelector<ValueType> > quadSelector =
-            QuadratureSelectorFactory<ValueType>::make(options);
+    std::auto_ptr<Fiber::IntegrationManager<ValueType, Geometry> > intMgr =
+            makeIntegrationManager(factory);
 
     switch (options.mode)
     {
     case ASSEMBLY_MODE_DENSE:
         return assembleOperatorInDenseMode(
-                    testPoints, trialSpace, *quadSelector, options);
+                    testPoints, trialSpace, *intMgr, options);
     case ASSEMBLY_MODE_ACA:
         return assembleOperatorInAcaMode(
-                    testPoints, trialSpace, *quadSelector, options);
+                    testPoints, trialSpace, *intMgr, options);
     case ASSEMBLY_MODE_FMM:
         throw std::runtime_error("ElementaryLinearOperator::assembleOperator(): "
                                  "assembly mode FMM is not implemented yet");
@@ -65,6 +65,7 @@ std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
 ElementaryLinearOperator<ValueType>::assembleWeakForm(
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,
+        const Fiber::IntegrationManagerFactory<ValueType, Geometry>& factory,
         const AssemblyOptions& options) const
 {
     if (!testSpace.dofsAssigned() || !trialSpace.dofsAssigned())
@@ -72,17 +73,17 @@ ElementaryLinearOperator<ValueType>::assembleWeakForm(
                                  "degrees of freedom must be assigned "
                                  "before calling assembleOperator()");
 
-    std::auto_ptr<QuadratureSelector<ValueType> > quadSelector =
-            QuadratureSelectorFactory<ValueType>::make(options);
+    std::auto_ptr<Fiber::IntegrationManager<ValueType, Geometry> > intMgr =
+            makeIntegrationManager(factory);
 
     switch (options.mode)
     {
     case ASSEMBLY_MODE_DENSE:
         return assembleWeakFormInDenseMode(
-                    testSpace, trialSpace, *quadSelector, options);
+                    testSpace, trialSpace, *intMgr, options);
     case ASSEMBLY_MODE_ACA:
         return assembleWeakFormInAcaMode(
-                    testSpace, trialSpace, *quadSelector, options);
+                    testSpace, trialSpace, *intMgr, options);
     case ASSEMBLY_MODE_FMM:
         throw std::runtime_error("ElementaryLinearOperator::assembleWeakForm(): "
                                  "assembly mode FMM is not implemented yet");
@@ -97,7 +98,7 @@ std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
 ElementaryLinearOperator<ValueType>::assembleOperatorInDenseMode(
         const arma::Mat<ctype>& testPoints,
         const Space<ValueType>& trialSpace,
-        const QuadratureSelector<ValueType>& quadSelector,
+        Fiber::IntegrationManager<ValueType, Geometry>& intMgr,
         const AssemblyOptions& options) const
 {
     throw NotImplementedError("ElementaryLinearOperator::"
@@ -110,7 +111,7 @@ std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
 ElementaryLinearOperator<ValueType>::assembleOperatorInAcaMode(
         const arma::Mat<ctype>& testPoints,
         const Space<ValueType>& trialSpace,
-        const QuadratureSelector<ValueType>& quadSelector,
+        Fiber::IntegrationManager<ValueType, Geometry>& intMgr,
         const AssemblyOptions& options) const
 {
     throw NotImplementedError("ElementaryLinearOperator::"
@@ -124,7 +125,7 @@ std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
 ElementaryLinearOperator<ValueType>::assembleWeakFormInDenseMode(
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,
-        const QuadratureSelector<ValueType>& quadSelector,
+        Fiber::IntegrationManager<ValueType, Geometry>& intMgr,
         const AssemblyOptions& options) const
 {
     // Get the grid's leaf view so that we can iterate over elements
@@ -149,28 +150,22 @@ ElementaryLinearOperator<ValueType>::assembleWeakFormInDenseMode(
     // Create the operator's matrix
     arma::Mat<ValueType> result(testSpace.globalDofCount(),
                                 trialSpace.globalDofCount());
-    Array2D<arma::Mat<ValueType> > localResult;
+    std::vector<arma::Mat<ValueType> > localResult;
 
     // Storage of global DOF indices corresponding to local DOFs on single
     // test and trial elements
     std::vector<GlobalDofIndex> trialGlobalDofs;
     std::vector<GlobalDofIndex> testGlobalDofs;
 
-    // TODO:
-    // if (options.useOpenCl)
-    //   // initialise OpenCL (create context etc.)
-
     // Loop over trial elements
-    std::vector<const EntityPointer<0>*> trialElements(1);
-    const EntityPointer<0>*& trialElement = trialElements[0];
     for (int trialIndex = 0; trialIndex < elementCount; ++trialIndex)
     {
-        trialElement = elements[trialIndex];
+        const EntityPointer<0>* trialElement = elements[trialIndex];
 
         // Evaluate integrals over pairs of the current trial element and
         // all the test elements
-        evaluateLocalWeakForms(elements, trialElements, testSpace, trialSpace,
-                               quadSelector, options, localResult);
+        evaluateLocalWeakForms(TEST_TRIAL, elements, *trialElement, ALL_DOFS,
+                               testSpace, trialSpace, intMgr, localResult);
 
         // Retrieve global DOF indices corresponding to the local DOFs of the
         // current trial element
@@ -189,7 +184,7 @@ ElementaryLinearOperator<ValueType>::assembleWeakFormInDenseMode(
             for (int trialDof = 0; trialDof < trialGlobalDofs.size(); ++trialDof)
                 for (int testDof = 0; testDof < testGlobalDofs.size(); ++testDof)
                 result(testGlobalDofs[testDof], trialGlobalDofs[trialDof]) +=
-                        localResult(testIndex, trialIndex)(testDof, trialDof);
+                        localResult[testIndex](testDof, trialDof);
         }
     }
 
@@ -204,7 +199,7 @@ std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
 ElementaryLinearOperator<ValueType>::assembleWeakFormInAcaMode(
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,
-        const QuadratureSelector<ValueType>& quadSelector,
+        Fiber::IntegrationManager<ValueType, Geometry>& intMgr,
         const AssemblyOptions& options) const
 {
 #ifdef WITH_AHMED
@@ -305,7 +300,7 @@ ElementaryLinearOperator<ValueType>::assembleWeakFormInAcaMode(
 
         WeakFormAcaAssemblyHelper<ValueType>
                 helper(*this, *view, testSpace, trialSpace,
-                       p2oTestDofs, p2oTrialDofs, quadSelector, options);
+                       p2oTestDofs, p2oTrialDofs, intMgr, options);
 
         mblock<ValueType>* blocks;
         matgen_sqntl(helper, doubleClusterTree.get(), doubleClusterTree.get(),
@@ -316,7 +311,7 @@ ElementaryLinearOperator<ValueType>::assembleWeakFormInAcaMode(
                                          doubleClusterTree, &blocks));
     }
     return result;
-#else // WITH_AHMED
+#else // without Ahmed
     throw std::runtime_error("To enable assembly in ACA mode, recompile BEM++ "
                              "with the symbol WITH_AHMED defined.");
 #endif

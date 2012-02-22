@@ -3,6 +3,7 @@
 #include "elementary_linear_operator.hpp"
 
 #include "../common/multidimensional_arrays.hpp"
+#include "../fiber/types.hpp"
 #include "../grid/grid_view.hpp"
 #include "../grid/reverse_index_set.hpp"
 #include "../space/space.hpp"
@@ -22,12 +23,12 @@ WeakFormAcaAssemblyHelper<ValueType>::WeakFormAcaAssemblyHelper(
         const Space<ValueType>& trialSpace,
         const arma::Col<unsigned int>& p2oTestDofs,
         const arma::Col<unsigned int>& p2oTrialDofs,
-        const QuadratureSelector<ValueType>& quadSelector,
+        Fiber::IntegrationManager<ValueType, Geometry>& intMgr,
         const AssemblyOptions& options) :
     m_operator(op), m_view(view),
     m_testSpace(testSpace), m_trialSpace(trialSpace),
     m_p2oTestDofs(p2oTestDofs), m_p2oTrialDofs(p2oTrialDofs),
-    m_quadSelector(quadSelector), m_options(options)
+    m_intMgr(intMgr), m_options(options)
 {}
 
 template <typename ValueType>
@@ -59,14 +60,14 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
                                     true /*strict*/);
         result.zeros();
 
-        std::vector<const EntityPointer<0>*> activeTrialElements(1);
-        const EntityPointer<0>*& activeTrialElement = activeTrialElements[0];
-        std::vector<arma::Col<ValueType> > localResult;
+//        std::vector<const EntityPointer<0>*> activeTrialElements(1);
+//        const EntityPointer<0>*& activeTrialElement = activeTrialElements[0];
+        std::vector<arma::Mat<ValueType> > localResult;
         for (int nTrialElem = 0;
              nTrialElem < trialElements.size();
              ++nTrialElem)
         {
-            activeTrialElement = trialElements[nTrialElem];
+            const EntityPointer<0>& activeTrialElement = *trialElements[nTrialElem];
             // The body of this loop will very probably only run once (single
             // local DOF per trial element)
             for (int nTrialDof = 0;
@@ -76,10 +77,10 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
                 LocalDofIndex activeTrialLocalDof =
                         trialLocalDofs[nTrialElem][nTrialDof];
                 m_operator.evaluateLocalWeakForms(
-                            testElements,
-                            activeTrialElement, activeTrialLocalDof,
-                            m_testSpace, m_trialSpace, m_quadSelector,
-                            m_options, localResult);
+                            Fiber::TEST_TRIAL,
+                            testElements, activeTrialElement, activeTrialLocalDof,
+                            m_testSpace, m_trialSpace, m_intMgr,
+                            localResult);
                 for (int nTestElem = 0;
                      nTestElem < testElements.size();
                      ++nTestElem)
@@ -99,7 +100,7 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
         // one local DOF from just one or a few testElements. Evaluate the
         // local weak form for one local test DOF at a time.
 
-        // TODO: code simlar to the above, with trial and test elements swapped.
+        // TODO: code similar to the above, with trial and test elements swapped.
     }
     else // a "fat" block
     {
@@ -111,11 +112,12 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
                                          true /*strict*/);
         result.zeros();
 
-        Array2D<arma::Mat<ValueType> > localResult;
-        m_operator.evaluateLocalWeakForms(
-                    testElements, trialElements,
-                    m_testSpace, m_trialSpace, m_quadSelector, m_options,
-                    localResult);
+        Fiber::Array2D<arma::Mat<ValueType> > localResult;
+        assert(false); // TODO: implement this variant of evaluateLocalWeakForms
+//        m_operator.evaluateLocalWeakForms(
+//                    testElements, trialElements,
+//                    m_testSpace, m_trialSpace, m_quadSelector, m_options,
+//                    localResult);
         for (int nTrialElem = 0;
              nTrialElem < trialElements.size();
              ++nTrialElem)

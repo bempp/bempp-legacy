@@ -27,4 +27,11 @@ namespace Bempp
 typedef double ctype;
 } // namespace Bempp
 
+//// TODO: Remove this type
+//namespace Fiber
+//{
+///** Numeric type of coordinates */
+//typedef double ctype;
+//} // namespace Fiber
+
 #endif

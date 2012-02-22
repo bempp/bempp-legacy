@@ -21,40 +21,31 @@
 #ifndef bempp_types_hpp
 #define bempp_types_hpp
 
-#include "../grid/geometry_type.hpp"
+#include "../fiber/types.hpp"
 #include "../grid/common.hpp" // to be merged with this file
+#include "../grid/geometry_type.hpp"
+#include "../grid/index_set.hpp"
 
 namespace Bempp
 {
 
-// typedef int ElementVariant;
+using Fiber::CallVariant;
+using Fiber::TEST_TRIAL;
+using Fiber::TRIAL_TEST;
 
-struct ElementVariant
-{
-    unsigned char order[2];
-    unsigned char vertexCount;
-    unsigned char reserved;
+using Fiber::ALL_DOFS;
 
-    bool operator==(const ElementVariant& other) const {
-        return (order[0] == other.order[0] &&
-                order[1] == other.order[1] &&
-                vertexCount == other.vertexCount &&
-                reserved == other.reserved);
-    }
-    bool operator<(const ElementVariant& other) const {
-        return (order[0] < other.order[0] ? true :
-                (order[1] < other.order[1] ? true :
-                (vertexCount < other.vertexCount ? true :
-                (reserved < other.reserved))));
-    }
-};
+typedef int ElementVariant;
 
 struct EntityIndex
 {
     GeometryType type;
-    int index;
+    IndexSet::IndexType index;
 
-    EntityIndex(const GeometryType& type_, int index_) :
+    EntityIndex() {
+    }
+
+    EntityIndex(const GeometryType& type_, IndexSet::IndexType index_) :
         type(type_), index(index_) {
     }
 
@@ -71,10 +62,15 @@ struct EntityIndex
 };
 
 typedef int GlobalDofIndex;
-typedef int LocalDofIndex;
+typedef Fiber::LocalDofIndex LocalDofIndex;
 
 struct LocalDof
 {
+    LocalDof() {}
+    LocalDof(EntityIndex ei, LocalDofIndex ldi) :
+        entityIndex(ei), dofIndex(ldi) {
+    }
+
     EntityIndex entityIndex;
     LocalDofIndex dofIndex;
 };

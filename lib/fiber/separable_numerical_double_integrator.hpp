@@ -18,24 +18,34 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_double_integrator_hpp
-#define fiber_double_integrator_hpp
+#ifndef fiber_separable_numerical_double_integrator_hpp
+#define fiber_separable_numerical_double_integrator_hpp
 
-#include "types.hpp"
-
-#include <armadillo>
-#include <vector>
+#include "double_integrator.hpp"
+#include "opencl_options.hpp"
 
 namespace Fiber
 {
 
-template <typename ValueType> class Basis;
+template <typename ValueType> class Expression;
+template <typename ValueType> class Kernel;
 
 /** \brief Integration over pairs of elements. */
 template <typename ValueType, typename GeometryImp>
-class DoubleIntegrator
+class SeparableNumericalDoubleIntegrator :
+        public DoubleIntegrator<ValueType, GeometryImp>
 {
 public:
+    SeparableNumericalDoubleIntegrator(            
+            const arma::Mat<ValueType>& localTestQuadPoints,
+            const arma::Mat<ValueType>& localTrialQuadPoints,
+            const std::vector<ValueType> testQuadWeights,
+            const std::vector<ValueType> trialQuadWeights,
+            const Expression<ValueType>& testExpression,
+            const Kernel<ValueType>& kernel,
+            const Expression<ValueType>& trialExpression,
+            const OpenClOptions& openClOptions);
+
     virtual void integrate(
             CallVariant callVariant,
             const std::vector<const GeometryImp*> geometriesA,
@@ -43,9 +53,22 @@ public:
             const Basis<ValueType>& basisA,
             const Basis<ValueType>& basisB,
             LocalDofIndex localDofIndexB,
-            arma::Cube<ValueType>& result) const = 0;
+            arma::Cube<ValueType>& result) const;
+
+private:
+    arma::Mat<ValueType> m_localTestQuadPoints;
+    arma::Mat<ValueType> m_localTrialQuadPoints;
+    std::vector<ValueType> m_testQuadWeights;
+    std::vector<ValueType> m_trialQuadWeights;
+
+    const Expression<ValueType>& m_testExpression;
+    const Kernel<ValueType>& m_kernel;
+    const Expression<ValueType>& m_trialExpression;
+    OpenClOptions m_openClOptions;
 };
 
 } // namespace Fiber
+
+#include "separable_numerical_double_integrator_imp.hpp"
 
 #endif

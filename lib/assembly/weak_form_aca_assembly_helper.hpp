@@ -25,15 +25,23 @@
 
 #include <armadillo>
 
+namespace Fiber
+{
+
+template <typename ValueType, typename GeometryImp> class IntegrationManager;
+
+} // namespace Fiber
+
 namespace Bempp
 {
 
 class GridView;
+class Geometry;
 class AssemblyOptions;
 template <int codim> class EntityPointer;
 template <typename ValueType> class ElementaryLinearOperator;
 template <typename ValueType> class Space;
-template <typename ValueType> class QuadratureSelector;
+template <typename ValueType> class IntegrationManager;
 
 /** \brief Class whose methods are called by Ahmed during assembly in the ACA mode. */
 template <typename ValueType>
@@ -46,7 +54,7 @@ public:
                               const Space<ValueType>& trialSpace,
                               const arma::Col<unsigned int>& p2oTestDofs,
                               const arma::Col<unsigned int>& p2oTrialDofs,
-                              const QuadratureSelector<ValueType>& quadSelector,
+                              Fiber::IntegrationManager<ValueType, Geometry>& intMgr,
                               const AssemblyOptions& options);
 
     /** Store the entries of the block defined
@@ -76,7 +84,7 @@ private:
     const Space<ValueType>& m_trialSpace;
     const arma::Col<unsigned int>& m_p2oTestDofs;
     const arma::Col<unsigned int>& m_p2oTrialDofs;
-    const QuadratureSelector<ValueType>& m_quadSelector;
+    Fiber::IntegrationManager<ValueType, Geometry>& m_intMgr;
     const AssemblyOptions& m_options;
 };
 

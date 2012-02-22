@@ -24,19 +24,28 @@
 #include "linear_operator.hpp"
 #include "../common/multidimensional_arrays.hpp"
 #include "../common/types.hpp"
+#include "../fiber/types.hpp"
 
 #include <vector>
 #include <armadillo>
+
+namespace Fiber
+{
+
+template <typename ValueType, typename GeometryImp> class IntegrationManager;
+template <typename ValueType, typename GeometryImp> class IntegrationManagerFactory;
+
+} // namespace Fiber
 
 namespace Bempp
 {
 
 template <int codim> class EntityPointer;
+class Geometry;
 
 template <typename ValueType> class DiscreteScalarValuedLinearOperator;
 template <typename ValueType> class DiscreteScalarValuedLinearOperator;
 template <typename ValueType> class Space;
-template <typename ValueType> class QuadratureSelector;
 template <typename ValueType> class WeakFormAcaAssemblyHelper;
 
 template <typename ValueType>
@@ -49,36 +58,31 @@ public:
     assembleWeakForm(
             const Space<ValueType>& testSpace,
             const Space<ValueType>& trialSpace,
+            const Fiber::IntegrationManagerFactory<ValueType, Geometry>& factory,
             const AssemblyOptions& options) const;
 
     virtual std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
     assembleOperator(
             const arma::Mat<ctype>& testPoints,
             const Space<ValueType>& trialSpace,
+            const Fiber::IntegrationManagerFactory<ValueType, Geometry>& factory,
             const AssemblyOptions& options) const;
 
 private:
+    virtual std::auto_ptr<Fiber::IntegrationManager<ValueType, Geometry> > makeIntegrationManager(
+            const Fiber::IntegrationManagerFactory<ValueType, Geometry>& factory) const = 0;
+
     /** \name Local assembly (virtual methods to be implemented
         in derived classes) @{ */
     virtual void evaluateLocalWeakForms(
-            const std::vector<const EntityPointer<0>*>& testElements,
-            const std::vector<const EntityPointer<0>*>& trialElements,
-            const Space<ValueType>& testSpace,
-            const Space<ValueType>& trialSpace,
-            const QuadratureSelector<ValueType>& quadSelector,
-            const AssemblyOptions& options,
-            Array2D<arma::Mat<ValueType> >& result) const = 0;
-    virtual void evaluateLocalWeakForms(
-            const std::vector<const EntityPointer<0>*>& testElements,
-            const EntityPointer<0>* trialElement,
-            LocalDofIndex trialLocalDofIndex,
-            const Space<ValueType>& testSpace,
-            const Space<ValueType>& trialSpace,
-            const QuadratureSelector<ValueType>& quadSelector,
-            const AssemblyOptions& options,
-            std::vector<arma::Col<ValueType> >& result) const = 0;
-
-    // TODO: declare other variants (Operator/only one local dof)
+            CallVariant evalVariant,
+            const std::vector<const EntityPointer<0>*>& elementsA,
+            const EntityPointer<0>& elementB,
+            LocalDofIndex localDofIndexB,
+            const Space<ValueType>& spaceA,
+            const Space<ValueType>& spaceB,
+            Fiber::IntegrationManager<ValueType, Geometry>& integrationMgr,
+            std::vector<arma::Mat<ValueType> >& result) const = 0;
 
     /** @}
         \name Operator assembly
@@ -87,13 +91,13 @@ private:
     assembleOperatorInDenseMode(
             const arma::Mat<ctype>& testPoints,
             const Space<ValueType>& trialSpace,
-            const QuadratureSelector<ValueType>& quadSelector,
+            Fiber::IntegrationManager<ValueType, Geometry>& integrationMgr,
             const AssemblyOptions& options) const;
     std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
     assembleOperatorInAcaMode(
             const arma::Mat<ctype>& testPoints,
             const Space<ValueType>& trialSpace,
-            const QuadratureSelector<ValueType>& quadSelector,
+            Fiber::IntegrationManager<ValueType, Geometry>& integrationMgr,
             const AssemblyOptions& options) const;
     std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
 
@@ -103,13 +107,13 @@ private:
     assembleWeakFormInDenseMode(
             const Space<ValueType>& testSpace,
             const Space<ValueType>& trialSpace,
-            const QuadratureSelector<ValueType>& quadSelector,
+            Fiber::IntegrationManager<ValueType, Geometry>& integrationMgr,
             const AssemblyOptions &options) const;
     std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
     assembleWeakFormInAcaMode(
             const Space<ValueType>& testSpace,
             const Space<ValueType>& trialSpace,
-            const QuadratureSelector<ValueType>& quadSelector,
+            Fiber::IntegrationManager<ValueType, Geometry>& integrationMgr,
             const AssemblyOptions& options) const;
     /** @} */
 };

@@ -18,38 +18,35 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_single_layer_potential_3d_hpp
-#define bempp_single_layer_potential_3d_hpp
+#ifndef fiber_single_layer_potential_3d_kernel_hpp
+#define fiber_single_layer_potential_3d_kernel_hpp
 
-#include "elementary_weakly_singular_integral_operator.hpp"
-#include "../fiber/single_layer_potential_3d_kernel.hpp"
-#include "../fiber/scalar_function_value.hpp"
+#include "kernel.hpp"
+#include <armadillo>
 
-namespace Bempp
+namespace Fiber
 {
 
 template <typename ValueType>
-class SingleLayerPotential3D :
-        public ElementaryWeaklySingularIntegralOperator<ValueType>
+class SingleLayerPotential3DKernel : public Kernel<ValueType>
 {
-private:
-    virtual const Fiber::Kernel<ValueType>& kernel() const {
-        return m_kernel;
-    }
+public:
+    virtual int worldDimension() const { return 3; }
+    virtual int domainDimension() const { return 1; }
+    virtual int codomainDimension() const { return 1; }
 
-    virtual const Fiber::Expression<ValueType>& testExpression() const {
-        return m_expression;
-    }
+    virtual void addGeometricalDependencies(int& testGeomDeps,
+                                            int& trialGeomDeps) const;
 
-    virtual const Fiber::Expression<ValueType>& trialExpression() const {
-        return m_expression;
-    }
+    virtual void evaluateAtPointPairs(const GeometricalData<ValueType>& trialGeomData,
+                                      const GeometricalData<ValueType>& testGeomData,
+                                      arma::Cube<ValueType>& result) const;
 
-private:
-    Fiber::SingleLayerPotential3DKernel<ValueType> m_kernel;
-    Fiber::ScalarFunctionValue<ValueType> m_expression;
+    virtual void evaluateOnGrid(const GeometricalData<ValueType>& trialGeomData,
+                                const GeometricalData<ValueType>& testGeomData,
+                                Array4D<ValueType>& result) const;
 };
 
-} // namespace Bempp
+} // namespace Fiber
 
 #endif
