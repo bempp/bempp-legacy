@@ -17,10 +17,23 @@ ExternalProject_Add(
 	INSTALL_COMMAND ""
 )
 
+include(ExternalProject)
+ExternalProject_Add(
+	dune-localfunctions
+	PREFIX ${CMAKE_SOURCE_DIR}/dune
+	SOURCE_DIR ${CMAKE_SOURCE_DIR}/dune/dune-localfunctions
+	BINARY_DIR ${CMAKE_SOURCE_DIR}/dune/dune-localfunctions
+	DOWNLOAD_DIR ${CMAKE_SOURCE_DIR}/dune
+	URL http://www.dune-project.org/download/2.0/dune-localfunctions-2.0.tar.gz
+	CONFIGURE_COMMAND ""
+	BUILD_COMMAND ""
+	UPDATE_COMMAND ""
+	INSTALL_COMMAND ""
+)
 
 ExternalProject_Add(
 	dune-common
-	DEPENDS dune-grid 
+	DEPENDS dune-grid dune-localfunctions
 	PREFIX ${CMAKE_SOURCE_DIR}/dune
 	SOURCE_DIR ${CMAKE_SOURCE_DIR}/dune/dune-common
 	BINARY_DIR ${CMAKE_SOURCE_DIR}/dune/dune-common
