@@ -6,7 +6,6 @@ file(GLOB_RECURSE DUNE_GRID_HEADERS ${CMAKE_SOURCE_DIR}/contrib/dune/dune-grid/d
 file(GLOB_RECURSE DUNE_COMMON_HEADERS ${CMAKE_SOURCE_DIR}/contrib/dune/dune-common/dune/common/*.hh)
 
 add_definitions(-DCOMPILE_FOR_DOUBLE)
-add_definitions(-DCHECK_ARRAY_BOUNDS)
 # add_definitions(-DWITH_AHMED)
 
 # Headers are ignored by make, but their list is used by IDEs

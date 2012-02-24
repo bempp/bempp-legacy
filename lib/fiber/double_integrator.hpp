@@ -39,6 +39,8 @@ class DoubleIntegrator
 public:
     typedef std::pair<const GeometryImp*, const GeometryImp*> GeometryImpPair;
 
+    virtual ~DoubleIntegrator() {}
+
     virtual void integrate(
             CallVariant callVariant,
             const std::vector<const GeometryImp*>& geometriesA,

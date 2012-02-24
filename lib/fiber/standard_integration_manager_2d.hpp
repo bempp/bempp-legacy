@@ -31,7 +31,10 @@
 #include "quadrature/quadrature.hpp"
 
 #include <boost/ptr_container/ptr_map.hpp>
+#include <boost/tuple/tuple_comparison.hpp>
+#include <map>
 #include <cstring>
+#include <iostream>
 
 namespace Fiber
 {
@@ -48,9 +51,26 @@ private:
         int trialOrder;
 
         bool operator<(const DoubleIntegratorIndex& other) const {
-            return topology < other.topology ?
-                        true : testOrder < other.testOrder ?
-                            true : trialOrder < other.trialOrder;
+            using boost::tuples::make_tuple;
+            return make_tuple(topology, testOrder, trialOrder) <
+                    make_tuple(other.topology, other.testOrder, other.trialOrder);
+        }
+
+        bool operator==(const DoubleIntegratorIndex& other) const {
+            return topology == other.topology &&
+                    testOrder == other.testOrder &&
+                    trialOrder == other.trialOrder;
+        }
+
+        bool operator!=(const DoubleIntegratorIndex& other) const {
+            return !operator==(other);
+        }
+
+        friend std::ostream&
+        operator<< (std::ostream& dest, const DoubleIntegratorIndex& obj)
+        {
+            dest << obj.topology << " " << obj.testOrder << " " << obj.trialOrder;
+            return dest;
         }
     };
 
@@ -87,7 +107,7 @@ public:
         integratorIndex.testOrder = testBasis.order();
         integratorIndex.trialOrder = trialBasis.order();
 
-        if (integratorIndex.topology.type = ElementPairTopology::Disjoint)
+        if (integratorIndex.topology.type == ElementPairTopology::Disjoint)
         {
             integratorIndex.testOrder +=
                     regularOrderIncrement(testGeometry, testBasis);
@@ -145,7 +165,7 @@ private:
             return *it->second;
 
         // Integrator doesn't exist yet and must be created.
-        DoubleIntegrator<ValueType, GeometryImp>* integrator = 0;
+        std::auto_ptr<DoubleIntegrator<ValueType, GeometryImp> > integrator;
         if (topology.type == ElementPairTopology::Disjoint)
         {
             // Create a tensor rule
@@ -159,9 +179,11 @@ private:
                                         index.trialOrder,
                                         trialPoints, trialWeights);
             typedef SeparableNumericalDoubleIntegrator<ValueType, GeometryImp> Integrator;
-            integrator = new Integrator(
-                        testPoints, trialPoints, testWeights, trialWeights,
-                        m_testExpression, m_kernel, m_trialExpression, m_openClOptions);
+            integrator = std::auto_ptr<DoubleIntegrator<ValueType, GeometryImp> >(
+                        new Integrator(
+                            testPoints, trialPoints, testWeights, trialWeights,
+                            m_testExpression, m_kernel, m_trialExpression,
+                            m_openClOptions));
         }
         else
         {
@@ -192,14 +214,13 @@ private:
                                         index.trialOrder,
                                         trialPoints, trialWeights);
             typedef SeparableNumericalDoubleIntegrator<ValueType, GeometryImp> Integrator;
-            integrator = new Integrator(
-                        testPoints, trialPoints, testWeights, trialWeights,
-                        m_testExpression, m_kernel, m_trialExpression, m_openClOptions);
-
+            integrator = std::auto_ptr<DoubleIntegrator<ValueType, GeometryImp> >(
+                        new Integrator(
+                            testPoints, trialPoints, testWeights, trialWeights,
+                            m_testExpression, m_kernel, m_trialExpression,
+                            m_openClOptions));
         }
-        DoubleIntegratorIndex tmpIndex = index; // first argument of insert must be an l-value
-        m_doubleIntegrators.insert(tmpIndex, integrator);
-        return *integrator;
+        return *m_doubleIntegrators.insert(index, integrator).first->second;
     }
 
     void fillPointsAndWeightsRegular(int vertexCount, int order,

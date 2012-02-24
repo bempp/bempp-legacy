@@ -20,7 +20,7 @@ public:
     virtual std::auto_ptr<IntegrationManager<ValueType, GeometryImp> > make(
             const Expression<ValueType>& testExpression,
             const Kernel<ValueType>& kernel,
-            const Expression<ValueType>& trialExpression)
+            const Expression<ValueType>& trialExpression) const
     {
         return std::auto_ptr<IntegrationManager<ValueType, GeometryImp> >(
                     new StandardIntegrationManager2D<ValueType, GeometryImp>(

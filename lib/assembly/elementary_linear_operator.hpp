@@ -29,19 +29,10 @@
 #include <vector>
 #include <armadillo>
 
-namespace Fiber
-{
-
-template <typename ValueType, typename GeometryImp> class IntegrationManager;
-template <typename ValueType, typename GeometryImp> class IntegrationManagerFactory;
-
-} // namespace Fiber
-
 namespace Bempp
 {
 
 template <int codim> class EntityPointer;
-class GeometryAdapter;
 
 template <typename ValueType> class DiscreteScalarValuedLinearOperator;
 template <typename ValueType> class DiscreteScalarValuedLinearOperator;
@@ -54,10 +45,9 @@ class ElementaryLinearOperator : public LinearOperator<ValueType>
     friend class WeakFormAcaAssemblyHelper<ValueType>;
 
 public:
-    typedef Fiber::IntegrationManagerFactory<ValueType, GeometryAdapter>
+    typedef typename LinearOperator<ValueType>::IntegrationManagerFactory
     IntegrationManagerFactory;
-    typedef Fiber::IntegrationManager<ValueType, GeometryAdapter>
-    IntegrationManager;
+    typedef typename LinearOperator<ValueType>::IntegrationManager IntegrationManager;
 
     virtual std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
     assembleWeakForm(

@@ -12,6 +12,8 @@ template <typename ValueType>
 class Basis
 {
 public:
+    virtual ~Basis() {}
+
     virtual int size() const = 0;
     /** \brief Maximum polynomial order of basis elements. */
     virtual int order() const = 0;

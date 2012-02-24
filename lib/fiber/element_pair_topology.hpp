@@ -22,6 +22,8 @@
 #define fiber_element_pair_topology_hpp
 
 #include <cassert>
+#include <iostream>
+#include <boost/tuple/tuple_comparison.hpp>
 
 namespace Fiber
 {
@@ -45,13 +47,40 @@ struct ElementPairTopology
     signed char trialSharedVertex1;
 
     bool operator<(const ElementPairTopology& other) const {
-        return type < other.type ?
-                    true : testVertexCount < other.testVertexCount ?
-                        true : trialVertexCount < other.trialVertexCount ?
-                            true : testSharedVertex0 < other.testSharedVertex0 ?
-                                true : testSharedVertex1 < other.testSharedVertex1 ?
-                                    true : trialSharedVertex0 < other.trialSharedVertex0 ?
-                                        true : trialSharedVertex1 < other.trialSharedVertex1;
+        using boost::tuples::make_tuple;
+        return make_tuple(type, testVertexCount, trialVertexCount,
+                          testSharedVertex0, testSharedVertex1,
+                          trialSharedVertex0, trialSharedVertex1) <
+                make_tuple(other.type, other.testVertexCount, other.trialVertexCount,
+                           other.testSharedVertex0, other.testSharedVertex1,
+                           other.trialSharedVertex0, other.trialSharedVertex1);
+    }
+
+    bool operator==(const ElementPairTopology& other) const {
+        return type == other.type &&
+                testVertexCount == other.testVertexCount &&
+                trialVertexCount == other.trialVertexCount &&
+                testSharedVertex0 == other.testSharedVertex0 &&
+                testSharedVertex1 == other.testSharedVertex1 &&
+                trialSharedVertex0 == other.trialSharedVertex0 &&
+                trialSharedVertex1 == other.trialSharedVertex1;
+    }
+
+    bool operator!=(const ElementPairTopology& other) const {
+        return !operator==(other);
+    }
+
+    friend std::ostream&
+    operator<< (std::ostream& dest, const ElementPairTopology& obj)
+    {
+        dest << obj.type << " "
+             << (int)obj.testVertexCount << " "
+             << (int)obj.trialVertexCount << " "
+             << (int)obj.testSharedVertex0 << " "
+             << (int)obj.testSharedVertex1 << " "
+             << (int)obj.trialSharedVertex0 << " "
+             << (int)obj.trialSharedVertex1;
+        return dest;
     }
 };
 
@@ -96,6 +125,7 @@ ElementPairTopology determineElementPairTopology(
                 testSharedVertices[hits] = testV;
                 trialSharedVertices[hits] = trialV;
                 ++hits;
+                break;
             }
 
     if (hits == 0)

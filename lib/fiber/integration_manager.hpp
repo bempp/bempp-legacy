@@ -59,6 +59,8 @@ template <typename ValueType, typename GeometryImp>
 class IntegrationManager
 {
 public:
+    virtual ~IntegrationManager() {}
+
 //    /** \brief Number of dimensions over which integration takes place. */
 //    int elementDimension() const {
 //        asImp().elementDimension();
@@ -77,7 +79,7 @@ public:
                                         "getTestKernelTrialIntegrators(): "
                                         "incompatible argument lengths");
         integrators.resize(elementCount);
-        if (callVariant = TEST_TRIAL)
+        if (callVariant == TEST_TRIAL)
             for (int i = 0; i < elementCount; ++i)
                 integrators[i] = &testKernelTrialIntegrator(
                             *geometriesA[i], geometryB, *basesA[i], basisB);

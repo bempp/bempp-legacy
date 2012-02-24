@@ -29,10 +29,19 @@ namespace arma {
 template <typename eT> class Mat;
 }
 
+namespace Fiber
+{
+
+template <typename ValueType, typename GeometryImp> class IntegrationManager;
+template <typename ValueType, typename GeometryImp> class IntegrationManagerFactory;
+
+} // namespace Fiber
+
 namespace Bempp {
 
 class AssemblyOptions;
 class Grid;
+class GeometryAdapter;
 template <typename ValueType> class DiscreteScalarValuedLinearOperator;
 template <typename ValueType> class DiscreteVectorValuedLinearOperator;
 template <typename ValueType> class Space;
@@ -42,7 +51,7 @@ template <typename ValueType> class Space;
   This class template is used as a base class for all implementations of
   various types of linear operators, in particular integral operators.
 
-  A FormalLinearOperator represents a linear mapping \f$L : X \to Y\f$, where \f$X :
+  A LinearOperator represents a linear mapping \f$L : X \to Y\f$, where \f$X :
   S \to K^p\f$ and \f$Y : T \to K^q\f$ are function spaces, with \f$S\f$
   standing for an \f$n\f$-dimensional surface and \f$T\f$ either equal to
   \f$S\f$ or to a \f$(n+1)\f$-dimensional domain in which \f$S\f$ is embedded.
@@ -61,6 +70,11 @@ template <typename ValueType>
 class LinearOperator
 {
 public:
+    typedef Fiber::IntegrationManagerFactory<ValueType, GeometryAdapter>
+    IntegrationManagerFactory;
+    typedef Fiber::IntegrationManager<ValueType, GeometryAdapter>
+    IntegrationManager;
+
     virtual ~LinearOperator() {}
 
     // Ideas for better names for all methods here are very welcome!!!
@@ -93,6 +107,7 @@ public:
     assembleWeakForm(
             const Space<ValueType>& testSpace,
             const Space<ValueType>& trialSpace,
+            const IntegrationManagerFactory& factory,
             const AssemblyOptions& options) const = 0;
 
     /** \brief Assemble a discrete representation of the operator.
@@ -113,6 +128,7 @@ public:
     assembleOperator(
             const arma::Mat<ctype>& testPoints,
             const Space<ValueType>& trialSpace,
+            const IntegrationManagerFactory& factory,
             const AssemblyOptions& options) const = 0;
 };
 

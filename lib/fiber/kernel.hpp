@@ -35,6 +35,8 @@ template <typename ValueType>
 class Kernel
 {
 public:
+    virtual ~Kernel() {}
+
     virtual int worldDimension() const = 0;
     virtual int domainDimension() const = 0;
     virtual int codomainDimension() const = 0;

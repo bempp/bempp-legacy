@@ -90,7 +90,7 @@ inline void Array4D<T>::set_size(int extent0, int extent1, int extent2, int exte
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_extents(extent0, extent1, extent2, extent3);
 #endif
-    if (extent0 * extent1 * extent2 ==
+    if (extent0 * extent1 * extent2 * extent3 ==
             m_extents[0] * m_extents[1] * m_extents[2] * m_extents[3]) {
         m_extents[0] = extent0;
         m_extents[1] = extent1;
@@ -98,8 +98,10 @@ inline void Array4D<T>::set_size(int extent0, int extent1, int extent2, int exte
         m_extents[3] = extent3;
     }
     else {
-        if (m_owns)
+        if (m_owns && m_storage) {
             delete[] m_storage;
+            m_storage = 0;
+        }
         m_extents[0] = extent0;
         m_extents[1] = extent1;
         m_extents[2] = extent2;
@@ -124,13 +126,13 @@ inline typename Array4D<T>::const_iterator Array4D<T>::begin() const
 template <typename T>
 inline typename Array4D<T>::iterator Array4D<T>::end()
 {
-    return m_storage + m_extents[0] * m_extents[1] * m_extents[2];
+    return m_storage + m_extents[0] * m_extents[1] * m_extents[2] * m_extents[3];
 }
 
 template <typename T>
 inline typename Array4D<T>::const_iterator Array4D<T>::end() const
 {
-    return m_storage + m_extents[0] * m_extents[1] * m_extents[2];
+    return m_storage + m_extents[0] * m_extents[1] * m_extents[2] * m_extents[3];
 }
 
 #ifdef FIBER_CHECK_ARRAY_BOUNDS

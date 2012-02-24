@@ -36,6 +36,10 @@ template <typename ValueType>
 class LinearOperatorSuperposition : public LinearOperator<ValueType>
 {
 public:
+    typedef typename LinearOperator<ValueType>::IntegrationManagerFactory
+    IntegrationManagerFactory;
+    typedef typename LinearOperator<ValueType>::IntegrationManager IntegrationManager;
+
     /* acquires ownership of the operators passed via terms */
     LinearOperatorSuperposition(
             boost::ptr_vector<LinearOperator<ValueType> >& terms,
@@ -55,12 +59,14 @@ public:
     assembleOperator(
             const arma::Mat<ctype>& testPoints,
             const Space<ValueType>& trialSpace,
+            const IntegrationManagerFactory& factory,
             const AssemblyOptions& options) const;
 
     virtual std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
     assembleWeakForm(
             const Space<ValueType>& testSpace,
             const Space<ValueType>& trialSpace,
+            const IntegrationManagerFactory& factory,
             const AssemblyOptions& options) const;
 
 private:

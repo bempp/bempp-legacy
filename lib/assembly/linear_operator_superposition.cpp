@@ -71,6 +71,7 @@ std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
 LinearOperatorSuperposition<ValueType>::assembleOperator(
         const arma::Mat<ctype>& testPoints,
         const Space<ValueType>& trialSpace,
+        const IntegrationManagerFactory& factory,
         const AssemblyOptions& options) const
 {
     typedef DiscreteVectorValuedLinearOperator<ValueType> DiscreteLinOp;
@@ -81,7 +82,7 @@ LinearOperatorSuperposition<ValueType>::assembleOperator(
     for (int i = 0; i < m_terms.size(); ++i)
     {
         std::auto_ptr<DiscreteLinOp> discreteOp =
-                m_terms[i].assembleOperator(testPoints, trialSpace, options);
+                m_terms[i].assembleOperator(testPoints, trialSpace, factory, options);
         discreteOps.push_back(discreteOp);
     }
     return std::auto_ptr<DiscreteLinOp>(
@@ -93,6 +94,7 @@ std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
 LinearOperatorSuperposition<ValueType>::assembleWeakForm(
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,
+        const IntegrationManagerFactory& factory,
         const AssemblyOptions& options) const
 {
     typedef DiscreteScalarValuedLinearOperator<ValueType> DiscreteLinOp;
@@ -103,7 +105,7 @@ LinearOperatorSuperposition<ValueType>::assembleWeakForm(
     for (int i = 0; i < m_terms.size(); ++i)
     {
         std::auto_ptr<DiscreteLinOp> discreteOp =
-                m_terms[i].assembleWeakForm(testSpace, trialSpace, options);
+                m_terms[i].assembleWeakForm(testSpace, trialSpace, factory, options);
         discreteOps.push_back(discreteOp);
     }
     return std::auto_ptr<DiscreteLinOp>(

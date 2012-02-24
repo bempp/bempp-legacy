@@ -32,7 +32,6 @@ enum AssemblyMode
 struct AssemblyOptions
 {
     AssemblyMode mode;
-    bool useOpenCl;
     double acaEps;
     double acaEta;
     int acaMinimumBlockSize;

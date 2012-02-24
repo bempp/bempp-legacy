@@ -61,7 +61,7 @@ int PiecewiseLinearContinuousScalarSpace<ValueType>::codomainDimension() const
 template <typename ValueType>
 void PiecewiseLinearContinuousScalarSpace<ValueType>::getBases(
         const std::vector<const EntityPointer<0>*>& elements,
-        std::vector<const Fiber::Basis<ValueType>*> bases) const
+        std::vector<const Fiber::Basis<ValueType>*>& bases) const
 {
     const int elementCount = elements.size();
     bases.resize(elementCount);
@@ -70,10 +70,13 @@ void PiecewiseLinearContinuousScalarSpace<ValueType>::getBases(
         {
         case 3:
             bases[i] = &m_triangleBasis;
+            break;
         case 4:
             bases[i] = &m_quadrilateralBasis;
+            break;
         case 2:
             bases[i] = &m_lineBasis;
+            break;
         }
 }
 

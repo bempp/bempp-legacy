@@ -24,7 +24,7 @@ public:
         m_vertexIndices.resize(vertexCount);
         // To optimise
         for (int i = 0; i < vertexCount; ++i)
-            m_vertexIndices[i] = indexSet.subEntityIndex(element, codimVertex, i);
+            m_vertexIndices[i] = indexSet.subEntityIndex(element, i, codimVertex);
     }
 
     int dimension() const {

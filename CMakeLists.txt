@@ -9,6 +9,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(BemppOptions)
 include(BemppFindDependencies)
 
+add_definitions(-DFIBER_CHECK_ARRAY_BOUNDS)
+# set(CMAKE_CXX_FLAGS "-Wall -Wnon-virtual-dtor -Wno-sign-compare")
+
 # Main library
 add_subdirectory(lib)
 

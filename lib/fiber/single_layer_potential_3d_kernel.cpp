@@ -46,7 +46,7 @@ void SingleLayerPotential3DKernel<ValueType>::evaluateAtPointPairs(
             ValueType diff = testPoints(j, i) - trialPoints(j, i);
             sum += diff * diff;
         }
-        result(1, 1, i) = 1. / (4. * M_PI * sqrt(sum));
+        result(0, 0, i) = 1. / (4. * M_PI * sqrt(sum));
     }
 }
 
@@ -69,7 +69,7 @@ void SingleLayerPotential3DKernel<ValueType>::evaluateOnGrid(
     const int testPointCount = testPoints.n_cols;
     const int trialPointCount = trialPoints.n_cols;
     const int coordCount = testPoints.n_rows;
-    result.set_size(1, 1, testPointCount, trialPointCount);
+    result.set_size(1, 1, testPointCount,  trialPointCount);
     for (int trialIndex = 0; trialIndex < trialPointCount; ++trialIndex)
         for (int testIndex = 0; testIndex < testPointCount; ++testIndex)
         {
@@ -80,7 +80,7 @@ void SingleLayerPotential3DKernel<ValueType>::evaluateOnGrid(
                         trialPoints(coordIndex, trialIndex);
                 sum += diff * diff;
             }
-            result(1, 1, testIndex, trialIndex) = 1. / (4. * M_PI * sqrt(sum));
+            result(0, 0, testIndex, trialIndex) = 1. / (4. * M_PI * sqrt(sum));
         }
 }
 

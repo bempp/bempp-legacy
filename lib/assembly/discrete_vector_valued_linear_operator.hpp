@@ -29,6 +29,8 @@ template <typename ValueType>
 class DiscreteVectorValuedLinearOperator
 {
 public:
+    virtual ~DiscreteVectorValuedLinearOperator() {}
+
     /**
       Sets result to
       result := result + multiplier * L * argument,

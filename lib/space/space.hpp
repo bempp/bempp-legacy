@@ -71,7 +71,7 @@ public:
     const Grid& grid() const { return m_grid; }
 
     virtual void getBases(const std::vector<const EntityPointer<0>*>& elements,
-                          std::vector<const Fiber::Basis<ValueType>*> bases) const = 0;
+                          std::vector<const Fiber::Basis<ValueType>*>& bases) const = 0;
 
     virtual const Fiber::Basis<ValueType>& basis(const EntityPointer<0>& element) const = 0;
 
