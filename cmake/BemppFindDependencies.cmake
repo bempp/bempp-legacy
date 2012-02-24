@@ -13,4 +13,5 @@ include_directories(${CMAKE_SOURCE_DIR}/contrib/dune/dune-common)
 include_directories(${CMAKE_SOURCE_DIR}/contrib/dune/dune-grid)
 include_directories(${CMAKE_SOURCE_DIR}/contrib/dune/dune-localfunctions)
 include_directories(${CMAKE_SOURCE_DIR}/contrib/dune/dune-foamgrid)
+include_directories(${CMAKE_SOURCE_DIR}/contrib/ahmed/Include)
 
