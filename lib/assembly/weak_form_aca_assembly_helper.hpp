@@ -36,25 +36,27 @@ namespace Bempp
 {
 
 class GridView;
-class Geometry;
+class GeometryAdapter;
 class AssemblyOptions;
 template <int codim> class EntityPointer;
 template <typename ValueType> class ElementaryLinearOperator;
 template <typename ValueType> class Space;
-template <typename ValueType> class IntegrationManager;
 
 /** \brief Class whose methods are called by Ahmed during assembly in the ACA mode. */
 template <typename ValueType>
 class WeakFormAcaAssemblyHelper
 {
 public:
+    typedef typename ElementaryLinearOperator<ValueType>::IntegrationManager
+    IntegrationManager;
+
     WeakFormAcaAssemblyHelper(const ElementaryLinearOperator<ValueType>& op,
                               const GridView& view,
                               const Space<ValueType>& testSpace,
                               const Space<ValueType>& trialSpace,
                               const arma::Col<unsigned int>& p2oTestDofs,
                               const arma::Col<unsigned int>& p2oTrialDofs,
-                              Fiber::IntegrationManager<ValueType, Geometry>& intMgr,
+                              IntegrationManager& intMgr,
                               const AssemblyOptions& options);
 
     /** Store the entries of the block defined
@@ -84,7 +86,7 @@ private:
     const Space<ValueType>& m_trialSpace;
     const arma::Col<unsigned int>& m_p2oTestDofs;
     const arma::Col<unsigned int>& m_p2oTrialDofs;
-    Fiber::IntegrationManager<ValueType, Geometry>& m_intMgr;
+    IntegrationManager& m_intMgr;
     const AssemblyOptions& m_options;
 };
 

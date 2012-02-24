@@ -32,7 +32,7 @@ std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
 ElementaryLinearOperator<ValueType>::assembleOperator(
         const arma::Mat<ctype>& testPoints,
         const Space<ValueType>& trialSpace,
-        const Fiber::IntegrationManagerFactory<ValueType, Geometry>& factory,
+        const IntegrationManagerFactory& factory,
         const AssemblyOptions& options) const
 {
     if (!trialSpace.dofsAssigned())
@@ -40,7 +40,7 @@ ElementaryLinearOperator<ValueType>::assembleOperator(
                                  "degrees of freedom must be assigned "
                                  "before calling assembleOperator()");
 
-    std::auto_ptr<Fiber::IntegrationManager<ValueType, Geometry> > intMgr =
+    std::auto_ptr<IntegrationManager > intMgr =
             makeIntegrationManager(factory);
 
     switch (options.mode)
@@ -65,7 +65,7 @@ std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
 ElementaryLinearOperator<ValueType>::assembleWeakForm(
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,
-        const Fiber::IntegrationManagerFactory<ValueType, Geometry>& factory,
+        const IntegrationManagerFactory& factory,
         const AssemblyOptions& options) const
 {
     if (!testSpace.dofsAssigned() || !trialSpace.dofsAssigned())
@@ -73,7 +73,7 @@ ElementaryLinearOperator<ValueType>::assembleWeakForm(
                                  "degrees of freedom must be assigned "
                                  "before calling assembleOperator()");
 
-    std::auto_ptr<Fiber::IntegrationManager<ValueType, Geometry> > intMgr =
+    std::auto_ptr<IntegrationManager > intMgr =
             makeIntegrationManager(factory);
 
     switch (options.mode)
@@ -98,7 +98,7 @@ std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
 ElementaryLinearOperator<ValueType>::assembleOperatorInDenseMode(
         const arma::Mat<ctype>& testPoints,
         const Space<ValueType>& trialSpace,
-        Fiber::IntegrationManager<ValueType, Geometry>& intMgr,
+        typename ElementaryLinearOperator<ValueType>::IntegrationManager& intMgr,
         const AssemblyOptions& options) const
 {
     throw NotImplementedError("ElementaryLinearOperator::"
@@ -111,7 +111,7 @@ std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
 ElementaryLinearOperator<ValueType>::assembleOperatorInAcaMode(
         const arma::Mat<ctype>& testPoints,
         const Space<ValueType>& trialSpace,
-        Fiber::IntegrationManager<ValueType, Geometry>& intMgr,
+        typename ElementaryLinearOperator<ValueType>::IntegrationManager& intMgr,
         const AssemblyOptions& options) const
 {
     throw NotImplementedError("ElementaryLinearOperator::"
@@ -125,7 +125,7 @@ std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
 ElementaryLinearOperator<ValueType>::assembleWeakFormInDenseMode(
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,
-        Fiber::IntegrationManager<ValueType, Geometry>& intMgr,
+        typename ElementaryLinearOperator<ValueType>::IntegrationManager& intMgr,
         const AssemblyOptions& options) const
 {
     // Get the grid's leaf view so that we can iterate over elements
@@ -199,7 +199,7 @@ std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
 ElementaryLinearOperator<ValueType>::assembleWeakFormInAcaMode(
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,
-        Fiber::IntegrationManager<ValueType, Geometry>& intMgr,
+        typename ElementaryLinearOperator<ValueType>::IntegrationManager& intMgr,
         const AssemblyOptions& options) const
 {
 #ifdef WITH_AHMED

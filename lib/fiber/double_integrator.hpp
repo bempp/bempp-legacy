@@ -24,6 +24,7 @@
 #include "types.hpp"
 
 #include <armadillo>
+#include <utility>
 #include <vector>
 
 namespace Fiber
@@ -36,13 +37,21 @@ template <typename ValueType, typename GeometryImp>
 class DoubleIntegrator
 {
 public:
+    typedef std::pair<const GeometryImp*, const GeometryImp*> GeometryImpPair;
+
     virtual void integrate(
             CallVariant callVariant,
-            const std::vector<const GeometryImp*> geometriesA,
+            const std::vector<const GeometryImp*>& geometriesA,
             const GeometryImp& geometryB,
             const Basis<ValueType>& basisA,
             const Basis<ValueType>& basisB,
             LocalDofIndex localDofIndexB,
+            arma::Cube<ValueType>& result) const = 0;
+
+    virtual void integrate(
+            const std::vector<GeometryImpPair>& geometryPairs,
+            const Basis<ValueType>& testBasis,
+            const Basis<ValueType>& trialBasis,
             arma::Cube<ValueType>& result) const = 0;
 };
 

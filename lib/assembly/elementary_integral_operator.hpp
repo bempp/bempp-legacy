@@ -47,6 +47,11 @@ template <typename ValueType>
 class ElementaryIntegralOperator : public ElementaryLinearOperator<ValueType>
 {
 public:
+    typedef typename ElementaryLinearOperator<ValueType>::IntegrationManager
+    IntegrationManager;
+    typedef typename ElementaryLinearOperator<ValueType>::IntegrationManagerFactory
+    IntegrationManagerFactory;
+
     virtual int trialComponentCount() const {
         return kernel().domainDimension();
     }
@@ -58,8 +63,8 @@ public:
     virtual bool isRegular() const = 0;
 
 private:
-    virtual std::auto_ptr<Fiber::IntegrationManager<ValueType, Geometry> > makeIntegrationManager(
-            const Fiber::IntegrationManagerFactory<ValueType, Geometry>& factory) const;
+    virtual std::auto_ptr<IntegrationManager> makeIntegrationManager(
+            const IntegrationManagerFactory& factory) const;
 
     virtual const Fiber::Kernel<ValueType>& kernel() const = 0;
     virtual const Fiber::Expression<ValueType>& testExpression() const = 0;
@@ -72,8 +77,16 @@ private:
             LocalDofIndex localDofIndexB,
             const Space<ValueType>& spaceA,
             const Space<ValueType>& spaceB,
-            Fiber::IntegrationManager<ValueType, Geometry>& intMgr,
+            IntegrationManager& intMgr,
             std::vector<arma::Mat<ValueType> >& result) const;
+
+    virtual void evaluateLocalWeakForms(
+            const std::vector<const EntityPointer<0>*>& testElements,
+            const std::vector<const EntityPointer<0>*>& trialElements,
+            const Space<ValueType>& testSpace,
+            const Space<ValueType>& trialSpace,
+            IntegrationManager& intMgr,
+            Fiber::Array2D<arma::Mat<ValueType> >& result) const;
 };
 
 } // namespace Bempp

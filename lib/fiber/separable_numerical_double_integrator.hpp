@@ -36,6 +36,9 @@ class SeparableNumericalDoubleIntegrator :
         public DoubleIntegrator<ValueType, GeometryImp>
 {
 public:
+    typedef typename DoubleIntegrator<ValueType, GeometryImp>::GeometryImpPair
+    GeometryImpPair;
+
     SeparableNumericalDoubleIntegrator(            
             const arma::Mat<ValueType>& localTestQuadPoints,
             const arma::Mat<ValueType>& localTrialQuadPoints,
@@ -48,11 +51,17 @@ public:
 
     virtual void integrate(
             CallVariant callVariant,
-            const std::vector<const GeometryImp*> geometriesA,
+            const std::vector<const GeometryImp*>& geometriesA,
             const GeometryImp& geometryB,
             const Basis<ValueType>& basisA,
             const Basis<ValueType>& basisB,
             LocalDofIndex localDofIndexB,
+            arma::Cube<ValueType>& result) const;
+
+    virtual void integrate(
+            const std::vector<GeometryImpPair>& geometryPairs,
+            const Basis<ValueType>& testBasis,
+            const Basis<ValueType>& trialBasis,
             arma::Cube<ValueType>& result) const;
 
 private:

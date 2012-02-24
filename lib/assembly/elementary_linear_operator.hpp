@@ -41,7 +41,7 @@ namespace Bempp
 {
 
 template <int codim> class EntityPointer;
-class Geometry;
+class GeometryAdapter;
 
 template <typename ValueType> class DiscreteScalarValuedLinearOperator;
 template <typename ValueType> class DiscreteScalarValuedLinearOperator;
@@ -54,35 +54,72 @@ class ElementaryLinearOperator : public LinearOperator<ValueType>
     friend class WeakFormAcaAssemblyHelper<ValueType>;
 
 public:
+    typedef Fiber::IntegrationManagerFactory<ValueType, GeometryAdapter>
+    IntegrationManagerFactory;
+    typedef Fiber::IntegrationManager<ValueType, GeometryAdapter>
+    IntegrationManager;
+
     virtual std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
     assembleWeakForm(
             const Space<ValueType>& testSpace,
             const Space<ValueType>& trialSpace,
-            const Fiber::IntegrationManagerFactory<ValueType, Geometry>& factory,
+            const IntegrationManagerFactory& factory,
             const AssemblyOptions& options) const;
 
     virtual std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
     assembleOperator(
             const arma::Mat<ctype>& testPoints,
             const Space<ValueType>& trialSpace,
-            const Fiber::IntegrationManagerFactory<ValueType, Geometry>& factory,
+            const IntegrationManagerFactory& factory,
             const AssemblyOptions& options) const;
 
 private:
-    virtual std::auto_ptr<Fiber::IntegrationManager<ValueType, Geometry> > makeIntegrationManager(
-            const Fiber::IntegrationManagerFactory<ValueType, Geometry>& factory) const = 0;
+    virtual std::auto_ptr<IntegrationManager >
+    makeIntegrationManager(
+            const IntegrationManagerFactory& factory) const = 0;
 
     /** \name Local assembly (virtual methods to be implemented
         in derived classes) @{ */
+    /** \brief Assemble local weak forms.
+
+    In this overload, a "column" of local weak forms is assembled. More
+    specifically, on exit \p result is a vector of local weak forms corresponding
+    to the following pairs of elements:
+
+    - if \p callVariant is \p TEST_TRIAL, all pairs (\p elementA, \p elementB)
+    for \p elementA in \p elementsA;
+
+    - if \p callVariant is \p TRIAL_TEST, all pairs (\p elementB, \p elementA)
+    for \p elementA in \p elementsA.
+
+    Unless \p localDofIndexB is set to \p ALL_DOFS, only entries corresponding
+    to the (\p localDofIndexB)th local DOF on \p elementB are calculated. */
     virtual void evaluateLocalWeakForms(
-            CallVariant evalVariant,
+            CallVariant callVariant,
             const std::vector<const EntityPointer<0>*>& elementsA,
             const EntityPointer<0>& elementB,
             LocalDofIndex localDofIndexB,
             const Space<ValueType>& spaceA,
             const Space<ValueType>& spaceB,
-            Fiber::IntegrationManager<ValueType, Geometry>& integrationMgr,
+            IntegrationManager& integrationMgr,
             std::vector<arma::Mat<ValueType> >& result) const = 0;
+
+    /** \brief Assemble local weak forms.
+
+    This overload constructs and assigns to the output parameter \p result the
+    2D array of local weak forms corresponding to all pairs (testElement,
+    trialElement) with testElement in testElements and trialElements in
+    trialElements.
+
+    This function should be used primarily for small blocks of elements lying
+    close to each other. */
+    virtual void evaluateLocalWeakForms(
+            const std::vector<const EntityPointer<0>*>& testElements,
+            const std::vector<const EntityPointer<0>*>& trialElements,
+            const Space<ValueType>& testSpace,
+            const Space<ValueType>& trialSpace,
+            IntegrationManager& integrationMgr,
+            Fiber::Array2D<arma::Mat<ValueType> >& result) const = 0;
 
     /** @}
         \name Operator assembly
@@ -91,13 +128,13 @@ private:
     assembleOperatorInDenseMode(
             const arma::Mat<ctype>& testPoints,
             const Space<ValueType>& trialSpace,
-            Fiber::IntegrationManager<ValueType, Geometry>& integrationMgr,
+            IntegrationManager& integrationMgr,
             const AssemblyOptions& options) const;
     std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
     assembleOperatorInAcaMode(
             const arma::Mat<ctype>& testPoints,
             const Space<ValueType>& trialSpace,
-            Fiber::IntegrationManager<ValueType, Geometry>& integrationMgr,
+            IntegrationManager& integrationMgr,
             const AssemblyOptions& options) const;
     std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
 
@@ -107,13 +144,13 @@ private:
     assembleWeakFormInDenseMode(
             const Space<ValueType>& testSpace,
             const Space<ValueType>& trialSpace,
-            Fiber::IntegrationManager<ValueType, Geometry>& integrationMgr,
+            IntegrationManager& integrationMgr,
             const AssemblyOptions &options) const;
     std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
     assembleWeakFormInAcaMode(
             const Space<ValueType>& testSpace,
             const Space<ValueType>& trialSpace,
-            Fiber::IntegrationManager<ValueType, Geometry>& integrationMgr,
+            IntegrationManager& integrationMgr,
             const AssemblyOptions& options) const;
     /** @} */
 };

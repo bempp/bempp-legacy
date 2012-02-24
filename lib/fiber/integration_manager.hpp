@@ -21,6 +21,7 @@
 #ifndef fiber_integration_manager_hpp
 #define fiber_integration_manager_hpp
 
+#include "array_2d.hpp"
 #include "types.hpp"
 #include <vector>
 #include <stdexcept>
@@ -65,12 +66,11 @@ public:
 
     void getTestKernelTrialIntegrators(
             CallVariant callVariant,
-            const std::vector<const GeometryImp*> geometriesA,
+            const std::vector<const GeometryImp*>& geometriesA,
             const GeometryImp& geometryB,
-            const std::vector<const Basis<ValueType>*> basesA,
+            const std::vector<const Basis<ValueType>*>& basesA,
             const Basis<ValueType>& basisB,
-            std::vector<const DoubleIntegrator<ValueType, GeometryImp>*> integrators)
-    {
+            std::vector<const DoubleIntegrator<ValueType, GeometryImp>*>& integrators) {
         const int elementCount = geometriesA.size();
         if (basesA.size() != elementCount)
             throw std::invalid_argument("IntegrationManager::"
@@ -85,6 +85,29 @@ public:
             for (int i = 0; i < elementCount; ++i)
                 integrators[i] = &testKernelTrialIntegrator(
                             geometryB, *geometriesA[i], basisB, *basesA[i]);
+    }
+
+    void getTestKernelTrialIntegrators(
+            const std::vector<const GeometryImp*>& testGeometries,
+            const std::vector<const GeometryImp*>& trialGeometries,
+            const std::vector<const Basis<ValueType>*>& testBases,
+            const std::vector<const Basis<ValueType>*>& trialBases,
+            Array2D<const DoubleIntegrator<ValueType, GeometryImp>*>& integrators) {
+        const int testElementCount = testGeometries.size();
+        const int trialElementCount = trialGeometries.size();
+        if (testBases.size() != testElementCount ||
+                trialBases.size() != trialElementCount)
+            throw std::invalid_argument("IntegrationManager::"
+                                        "getTestKernelTrialIntegrators(): "
+                                        "incompatible argument lengths");
+        integrators.set_size(testElementCount, trialElementCount);
+        for (int trialIndex = 0; trialIndex < trialElementCount; ++trialIndex)
+            for (int testIndex = 0; testIndex < testElementCount; ++testIndex)
+                integrators(testIndex, trialIndex) = &testKernelTrialIntegrator(
+                            *testGeometries[testIndex],
+                            *trialGeometries[trialIndex],
+                            *testBases[testIndex],
+                            *trialBases[trialIndex]);
     }
 
     // non-const because it might create a new integrator internally

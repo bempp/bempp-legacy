@@ -23,7 +23,7 @@ WeakFormAcaAssemblyHelper<ValueType>::WeakFormAcaAssemblyHelper(
         const Space<ValueType>& trialSpace,
         const arma::Col<unsigned int>& p2oTestDofs,
         const arma::Col<unsigned int>& p2oTrialDofs,
-        Fiber::IntegrationManager<ValueType, Geometry>& intMgr,
+        IntegrationManager& intMgr,
         const AssemblyOptions& options) :
     m_operator(op), m_view(view),
     m_testSpace(testSpace), m_trialSpace(trialSpace),
@@ -60,8 +60,6 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
                                     true /*strict*/);
         result.zeros();
 
-//        std::vector<const EntityPointer<0>*> activeTrialElements(1);
-//        const EntityPointer<0>*& activeTrialElement = activeTrialElements[0];
         std::vector<arma::Mat<ValueType> > localResult;
         for (int nTrialElem = 0;
              nTrialElem < trialElements.size();
@@ -79,18 +77,15 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
                 m_operator.evaluateLocalWeakForms(
                             Fiber::TEST_TRIAL,
                             testElements, activeTrialElement, activeTrialLocalDof,
-                            m_testSpace, m_trialSpace, m_intMgr,
-                            localResult);
+                            m_testSpace, m_trialSpace, m_intMgr, localResult);
                 for (int nTestElem = 0;
                      nTestElem < testElements.size();
                      ++nTestElem)
-                {
                     for (int nTestDof = 0;
                          nTestDof < testLocalDofs[nTestElem].size();
                          ++nTestDof)
                         result(blockRows[nTestElem][nTestDof]) +=
                                 localResult[nTestElem](testLocalDofs[nTestElem][nTestDof]);
-                }
             }
         }
     }
@@ -100,7 +95,38 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
         // one local DOF from just one or a few testElements. Evaluate the
         // local weak form for one local test DOF at a time.
 
-        // TODO: code similar to the above, with trial and test elements swapped.
+        arma::Row<ValueType> result(data, n1, false /*copy_aux_mem*/,
+                                    true /*strict*/);
+        result.zeros();
+
+        std::vector<arma::Mat<ValueType> > localResult;
+        for (int nTestElem = 0;
+             nTestElem < testElements.size();
+             ++nTestElem)
+        {
+            const EntityPointer<0>& activeTestElement = *testElements[nTestElem];
+            // The body of this loop will very probably only run once (single
+            // local DOF per test element)
+            for (int nTestDof = 0;
+                 nTestDof < testLocalDofs[nTestElem].size();
+                 ++nTestDof)
+            {
+                LocalDofIndex activeTestLocalDof =
+                        testLocalDofs[nTestElem][nTestDof];
+                m_operator.evaluateLocalWeakForms(
+                            Fiber::TRIAL_TEST,
+                            trialElements, activeTestElement, activeTestLocalDof,
+                            m_trialSpace, m_testSpace, m_intMgr, localResult);
+                for (int nTrialElem = 0;
+                     nTrialElem < trialElements.size();
+                     ++nTrialElem)
+                    for (int nTrialDof = 0;
+                         nTrialDof < trialLocalDofs[nTrialElem].size();
+                         ++nTrialDof)
+                        result(blockCols[nTrialElem][nTrialDof]) +=
+                                localResult[nTrialElem](trialLocalDofs[nTrialElem][nTrialDof]);
+            }
+        }
     }
     else // a "fat" block
     {
@@ -109,38 +135,30 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
         // Evaluate the full local weak form for each pair of test and trial
         // elements and then select the entries that we need.
         arma::Mat<ValueType> result(data, n1, n2, false /*copy_aux_mem*/,
-                                         true /*strict*/);
+                                    true /*strict*/);
         result.zeros();
 
         Fiber::Array2D<arma::Mat<ValueType> > localResult;
-        assert(false); // TODO: implement this variant of evaluateLocalWeakForms
-//        m_operator.evaluateLocalWeakForms(
-//                    testElements, trialElements,
-//                    m_testSpace, m_trialSpace, m_quadSelector, m_options,
-//                    localResult);
+        m_operator.evaluateLocalWeakForms(
+                    testElements, trialElements,
+                    m_testSpace, m_trialSpace, m_intMgr, localResult);
         for (int nTrialElem = 0;
              nTrialElem < trialElements.size();
              ++nTrialElem)
-        {
             for (int nTrialDof = 0;
                  nTrialDof < trialLocalDofs[nTrialElem].size();
                  ++nTrialDof)
-            {
                 for (int nTestElem = 0;
                      nTestElem < testElements.size();
                      ++nTestElem)
-                {
                     for (int nTestDof = 0;
                          nTestDof < testLocalDofs[nTestElem].size();
                          ++nTestDof)
                         result(blockRows[nTestElem][nTestDof],
                                blockCols[nTrialElem][nTrialDof]) +=
                                 localResult(nTestElem, nTrialElem)
-                                    (testLocalDofs[nTestElem][nTestDof],
-                                     trialLocalDofs[nTrialElem][nTrialDof]);
-                }
-            }
-        }
+                                (testLocalDofs[nTestElem][nTestDof],
+                                 trialLocalDofs[nTrialElem][nTrialDof]);
     }
 }
 
