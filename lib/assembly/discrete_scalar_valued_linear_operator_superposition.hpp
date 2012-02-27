@@ -22,6 +22,7 @@
 #define bempp_discrete_scalar_valued_linear_operator_superposition_hpp
 
 #include "discrete_scalar_valued_linear_operator.hpp"
+#include "../common/not_implemented_error.hpp"
 
 #include <boost/ptr_container/ptr_vector.hpp>
 
@@ -54,6 +55,13 @@ public:
     {
         for (int i = 0; i < m_terms.size(); ++i)
             m_terms[i].multiplyAddVector(m_multipliers[i], argument, result);
+    }
+
+    virtual void dump() const
+    {
+        throw NotImplementedError(
+                    "DiscreteScalarValuedLinearOperatorSuperposition::dump(): "
+                    "not implemented yet");
     }
 
 private:

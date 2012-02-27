@@ -23,6 +23,8 @@
 
 #include "discrete_scalar_valued_linear_operator.hpp"
 
+#include <iostream>
+
 namespace Bempp {
 
 template <typename ValueType>
@@ -41,6 +43,11 @@ public:
                            arma::Col<ValueType>& result)
     {
         result += multiplier * m_mat * argument;
+    }
+
+    virtual void dump() const
+    {
+        std::cout << m_mat << std::endl;
     }
 
 private:

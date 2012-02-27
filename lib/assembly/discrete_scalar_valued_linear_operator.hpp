@@ -39,6 +39,9 @@ public:
     virtual void multiplyAddVector(ValueType multiplier,
                            const arma::Col<ValueType>& argument,
                            arma::Col<ValueType>& result) = 0;
+
+    /** \brief Write a textual representation of the operator to standard output. */
+    virtual void dump() const = 0;
 };
 
 } // namespace Bempp

@@ -23,6 +23,7 @@
 
 #include "discrete_scalar_valued_linear_operator.hpp"
 #include "ahmed_aux.hpp"
+#include "../common/not_implemented_error.hpp"
 
 namespace Bempp {
 
@@ -47,6 +48,13 @@ public:
         // functions, which don't respect const-correctness
         m_matrix.amux(multiplier, const_cast<ValueType*>(argument.memptr()),
                       result.memptr());
+    }
+
+    virtual void dump() const
+    {
+        throw NotImplementedError(
+                    "DiscreteAcaScalarValuedLinearOperator::dump(): "
+                    "not implemented yet");
     }
 
 private:
