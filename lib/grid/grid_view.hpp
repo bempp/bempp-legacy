@@ -38,7 +38,7 @@ namespace Bempp
 template<int codim> class Entity;
 template<int codim> class EntityCache;
 class IndexSet;
-template<int codim> class Mapper;
+class Mapper;
 class ReverseIndexSet;
 class VtkWriter;
 
@@ -54,7 +54,7 @@ public:
     virtual const IndexSet& indexSet() const = 0;
 
     /** \brief The element mapper. */
-    virtual const Mapper<0>& elementMapper() const = 0;
+    virtual const Mapper& elementMapper() const = 0;
 
     /** \brief Number of entities with codimension \p codim. */
     virtual int entityCount(int codim) const = 0;

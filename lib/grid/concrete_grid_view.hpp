@@ -64,7 +64,7 @@ public:
         return m_index_set;
     }
 
-    virtual const Mapper<0>& elementMapper() const {
+    virtual const Mapper& elementMapper() const {
         return m_element_mapper;
     }
 

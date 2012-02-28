@@ -63,7 +63,7 @@ void ElementaryIntegralOperator<ValueType>::evaluateLocalWeakForms(
     // Get element indices (note: we assume that spaceA and space B refer to
     // the same grid; this has been checked in assembleWeakForm())
     std::auto_ptr<GridView> leafView(spaceA.grid().leafView());
-    const Mapper<0>& elementMapper = leafView->elementMapper();
+    const Mapper& elementMapper = leafView->elementMapper();
     std::vector<int> elementIndicesA(elementACount);
     for (int i = 0; i < elementACount; ++i)
         elementIndicesA[i] = elementMapper.entityIndex(elementsA[i]->entity());
@@ -148,7 +148,7 @@ void ElementaryIntegralOperator<ValueType>::evaluateLocalWeakForms(
     // Get element indices (note: we assume that spaceA and space B refer to
     // the same grid; this has been checked in assembleWeakForm())
     std::auto_ptr<GridView> leafView(testSpace.grid().leafView());
-    const Mapper<0>& elementMapper = leafView->elementMapper();
+    const Mapper& elementMapper = leafView->elementMapper();
     std::vector<int> testElementIndices(testElementCount);
     for (int i = 0; i < testElementCount; ++i)
         testElementIndices[i] = elementMapper.entityIndex(testElements[i]->entity());

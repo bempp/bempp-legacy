@@ -1,5 +1,5 @@
-#ifndef CONCRETE_GEOMETRY_FACTORY_HPP
-#define CONCRETE_GEOMETRY_FACTORY_HPP
+#ifndef bempp_concrete_geometry_factory_hpp
+#define bempp_concrete_geometry_factory_hpp
 
 #include "geometry_factory.hpp"
 #include "concrete_geometry.hpp"
@@ -23,4 +23,4 @@ class ConcreteGeometryFactory : public GeometryFactory
 
 } // namespace Bempp
 
-#endif // CONCRETE_GEOMETRY_FACTORY_HPP
+#endif
