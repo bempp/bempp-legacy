@@ -30,12 +30,17 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/static_assert.hh>
+#include <dune/grid/common/grid.hh>
+
 #include <armadillo>
+#include <memory>
 
 namespace Bempp
 {
 
 /** \brief Wrapper of a Dune geometry of type \p DuneGeometry */
+
+template <typename DuneGeometry> class ConcreteGeometryFactory;
 
 template<typename DuneGeometry>
 class ConcreteGeometry : public Geometry
@@ -47,18 +52,23 @@ class ConcreteGeometry : public Geometry
 
 private:
     const DuneGeometry* m_dune_geometry;
+    bool m_owns_dune_geometry;
 
     /** \brief Default constructor.
 
-    \internal Should be used only by friend classes that call setDuneGeometry() later on. */
-    ConcreteGeometry() : m_dune_geometry(0) {
+    Should be followed by a call to setDuneGeometry(). */
+    ConcreteGeometry() : m_dune_geometry(0), m_owns_dune_geometry(false) {
     }
 
-    void setDuneGeometry(const DuneGeometry* dune_geometry) {
+    void setDuneGeometry(const DuneGeometry* dune_geometry, bool owns) {
+        if (m_owns_dune_geometry)
+            delete m_dune_geometry;
         m_dune_geometry = dune_geometry;
+        m_owns_dune_geometry = owns;
     }
 
     template<int codim, typename DuneEntity> friend class ConcreteEntity;
+    friend class ConcreteGeometryFactory<DuneGeometry>;
 
 public:
     /** \brief Constructor from a pointer to DuneGeometry.
@@ -81,6 +91,33 @@ public:
     /** \brief Dimension of the space containing the geometry. */
     virtual int dimWorld() const {
         return DuneGeometry::coorddimension;
+    }
+
+    virtual void setup(const arma::Mat<ctype>& corners,
+                       const arma::Col<char>& auxData) {
+        const int dimWorld = DuneGeometry::coorddimension;
+        const int cornerCount = corners.n_cols;
+        assert(corners.n_rows == dimWorld);
+        assert(2 <= cornerCount && cornerCount <= 4);
+
+        typedef Dune::MakeableInterfaceObject<DuneGeometry> DuneMakeableGeometry;
+        typedef typename DuneMakeableGeometry::ImplementationType DuneGeometryImp;
+
+        DuneGeometryImp newDuneGeometry;
+
+        std::vector<Dune::FieldVector<ctype, dimWorld> > duneCorners(cornerCount);
+        for (int i = 0; i < corners.n_cols; ++i)
+            for (int j = 0; j < dimWorld; ++j)
+                duneCorners[i][j] = corners(j, i);
+        GeometryType type;
+        if (cornerCount == 2)
+            type.makeLine();
+        else if (cornerCount == 3)
+            type.makeTriangle();
+        else if (cornerCount == 4)
+            type.makeQuadrilateral();
+        newDuneGeometry.setup(type, duneCorners);
+        setDuneGeometry(new DuneMakeableGeometry(newDuneGeometry), true /* owns */);
     }
 
     virtual GeometryType type() const {

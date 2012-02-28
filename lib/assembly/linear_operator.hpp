@@ -32,8 +32,9 @@ template <typename eT> class Mat;
 namespace Fiber
 {
 
-template <typename ValueType, typename GeometryImp> class IntegrationManager;
-template <typename ValueType, typename GeometryImp> class IntegrationManagerFactory;
+template <typename ValueType> class IntegrationManager;
+template <typename ValueType, typename GeometryFactory>
+class IntegrationManagerFactory;
 
 } // namespace Fiber
 
@@ -41,7 +42,7 @@ namespace Bempp {
 
 class AssemblyOptions;
 class Grid;
-class GeometryAdapter;
+class GeometryFactory;
 template <typename ValueType> class DiscreteScalarValuedLinearOperator;
 template <typename ValueType> class DiscreteVectorValuedLinearOperator;
 template <typename ValueType> class Space;
@@ -70,10 +71,9 @@ template <typename ValueType>
 class LinearOperator
 {
 public:
-    typedef Fiber::IntegrationManagerFactory<ValueType, GeometryAdapter>
+    typedef Fiber::IntegrationManagerFactory<ValueType, GeometryFactory>
     IntegrationManagerFactory;
-    typedef Fiber::IntegrationManager<ValueType, GeometryAdapter>
-    IntegrationManager;
+    typedef Fiber::IntegrationManager<ValueType> IntegrationManager;
 
     virtual ~LinearOperator() {}
 

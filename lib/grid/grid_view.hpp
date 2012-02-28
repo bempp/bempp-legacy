@@ -21,9 +21,11 @@
 #ifndef bempp_grid_view_hpp
 #define bempp_grid_view_hpp
 
+#include "common.hpp"
 #include "geometry_type.hpp"
 #include "entity_iterator.hpp"
 
+#include <armadillo>
 #include <boost/utility/enable_if.hpp>
 #include <dune/grid/io/file/vtk/vtkwriter.hh>
 #include <memory>
@@ -36,6 +38,7 @@ namespace Bempp
 template<int codim> class Entity;
 template<int codim> class EntityCache;
 class IndexSet;
+template<int codim> class Mapper;
 class ReverseIndexSet;
 class VtkWriter;
 
@@ -49,6 +52,9 @@ public:
 
     /** \brief The index set */
     virtual const IndexSet& indexSet() const = 0;
+
+    /** \brief The element mapper. */
+    virtual const Mapper<0>& elementMapper() const = 0;
 
     /** \brief Number of entities with codimension \p codim. */
     virtual int entityCount(int codim) const = 0;
@@ -85,6 +91,27 @@ public:
     std::auto_ptr<EntityIterator<codim> > entityIterator() const {
         throw std::logic_error("GridView::entityIterator(): invalid entity codimension");
     }
+
+    /** \brief Get raw data describing the geometry of all codim-0 entities
+      contained in this grid view.
+
+      This method is mainly intended for use in the OpenCL implementation.
+
+      \param[out] vertices
+        On output, a 2D array whose (i,j)th element is the ith
+        coordinate of the vertex of index j.
+
+      \param[out] elementCorners
+        On output, a 2D array whose (i,j)th element is the index of the ith
+        corner of jth codim-0 entity, or -1 if this entity has less than
+        i-1 corners.
+
+      \note For isoparametric elements we will likely need to add a third
+        parameter to contain "arbitrary" auxiliary data.
+      */
+    virtual void getRawElementData(arma::Mat<ctype>& vertices,
+                                   arma::Mat<int>& elementCorners,
+                                   arma::Mat<char>& auxData) const = 0;
 
     /** \brief The reverse index set.
 

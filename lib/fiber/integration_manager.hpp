@@ -30,7 +30,7 @@ namespace Fiber
 {
 
 template <typename ValueType> class Basis;
-template <typename ValueType, typename GeometryImp> class DoubleIntegrator;
+template <typename ValueType> class DoubleIntegrator;
 
 // Some stream of consciousness...
 
@@ -55,7 +55,7 @@ template <typename ValueType, typename GeometryImp> class DoubleIntegrator;
   functions on an element, element volume and (for double integrals)
   element-element distance.
  */
-template <typename ValueType, typename GeometryImp>
+template <typename ValueType>
 class IntegrationManager
 {
 public:
@@ -68,12 +68,12 @@ public:
 
     void getTestKernelTrialIntegrators(
             CallVariant callVariant,
-            const std::vector<const GeometryImp*>& geometriesA,
-            const GeometryImp& geometryB,
+            const std::vector<int>& elementIndicesA,
+            int elementIndexB,
             const std::vector<const Basis<ValueType>*>& basesA,
             const Basis<ValueType>& basisB,
-            std::vector<const DoubleIntegrator<ValueType, GeometryImp>*>& integrators) {
-        const int elementCount = geometriesA.size();
+            std::vector<const DoubleIntegrator<ValueType>*>& integrators) {
+        const int elementCount = elementIndicesA.size();
         if (basesA.size() != elementCount)
             throw std::invalid_argument("IntegrationManager::"
                                         "getTestKernelTrialIntegrators(): "
@@ -82,21 +82,21 @@ public:
         if (callVariant == TEST_TRIAL)
             for (int i = 0; i < elementCount; ++i)
                 integrators[i] = &testKernelTrialIntegrator(
-                            *geometriesA[i], geometryB, *basesA[i], basisB);
+                            elementIndicesA[i], elementIndexB, *basesA[i], basisB);
         else
             for (int i = 0; i < elementCount; ++i)
                 integrators[i] = &testKernelTrialIntegrator(
-                            geometryB, *geometriesA[i], basisB, *basesA[i]);
+                            elementIndexB, elementIndicesA[i], basisB, *basesA[i]);
     }
 
     void getTestKernelTrialIntegrators(
-            const std::vector<const GeometryImp*>& testGeometries,
-            const std::vector<const GeometryImp*>& trialGeometries,
+            const std::vector<int>& testElementIndices,
+            const std::vector<int>& trialElementIndices,
             const std::vector<const Basis<ValueType>*>& testBases,
             const std::vector<const Basis<ValueType>*>& trialBases,
-            Array2D<const DoubleIntegrator<ValueType, GeometryImp>*>& integrators) {
-        const int testElementCount = testGeometries.size();
-        const int trialElementCount = trialGeometries.size();
+            Array2D<const DoubleIntegrator<ValueType>*>& integrators) {
+        const int testElementCount = testElementIndices.size();
+        const int trialElementCount = trialElementIndices.size();
         if (testBases.size() != testElementCount ||
                 trialBases.size() != trialElementCount)
             throw std::invalid_argument("IntegrationManager::"
@@ -106,16 +106,16 @@ public:
         for (int trialIndex = 0; trialIndex < trialElementCount; ++trialIndex)
             for (int testIndex = 0; testIndex < testElementCount; ++testIndex)
                 integrators(testIndex, trialIndex) = &testKernelTrialIntegrator(
-                            *testGeometries[testIndex],
-                            *trialGeometries[trialIndex],
+                            testElementIndices[testIndex],
+                            trialElementIndices[trialIndex],
                             *testBases[testIndex],
                             *trialBases[trialIndex]);
     }
 
     // non-const because it might create a new integrator internally
-    virtual const DoubleIntegrator<ValueType, GeometryImp>& testKernelTrialIntegrator(
-            const GeometryImp& testGeometry,
-            const GeometryImp& trialGeometry,
+    virtual const DoubleIntegrator<ValueType>& testKernelTrialIntegrator(
+            int testGeometry,
+            int trialGeometry,
             const Basis<ValueType>& testBasis,
             const Basis<ValueType>& trialBasis) = 0;
 };

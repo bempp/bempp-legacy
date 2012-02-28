@@ -33,25 +33,25 @@ namespace Fiber
 template <typename ValueType> class Basis;
 
 /** \brief Integration over pairs of elements. */
-template <typename ValueType, typename GeometryImp>
+template <typename ValueType>
 class DoubleIntegrator
 {
 public:
-    typedef std::pair<const GeometryImp*, const GeometryImp*> GeometryImpPair;
+    typedef std::pair<int, int> ElementIndexPair;
 
     virtual ~DoubleIntegrator() {}
 
     virtual void integrate(
             CallVariant callVariant,
-            const std::vector<const GeometryImp*>& geometriesA,
-            const GeometryImp& geometryB,
+            const std::vector<int>& elementIndicesA,
+            int elementIndexB,
             const Basis<ValueType>& basisA,
             const Basis<ValueType>& basisB,
             LocalDofIndex localDofIndexB,
             arma::Cube<ValueType>& result) const = 0;
 
     virtual void integrate(
-            const std::vector<GeometryImpPair>& geometryPairs,
+            const std::vector<ElementIndexPair>& elementIndexPairs,
             const Basis<ValueType>& testBasis,
             const Basis<ValueType>& trialBasis,
             arma::Cube<ValueType>& result) const = 0;

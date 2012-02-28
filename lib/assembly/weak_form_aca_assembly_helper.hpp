@@ -28,7 +28,7 @@
 namespace Fiber
 {
 
-template <typename ValueType, typename GeometryImp> class IntegrationManager;
+template <typename ValueType> class IntegrationManager;
 
 } // namespace Fiber
 

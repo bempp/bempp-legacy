@@ -81,7 +81,7 @@ public:
     }
 
     virtual const Geometry& geometry() const {
-        m_geometry.setDuneGeometry(&m_dune_entity->geometry());
+        m_geometry.setDuneGeometry(&m_dune_entity->geometry(), false /* doesn't own */);
         return m_geometry;
     }
 
@@ -136,7 +136,7 @@ public:
     }
 
     virtual const Geometry& geometry() const {
-        m_geometry.setDuneGeometry(&m_dune_entity->geometry());
+        m_geometry.setDuneGeometry(&m_dune_entity->geometry(), false /* doesn't own */);
         return m_geometry;
     }
 

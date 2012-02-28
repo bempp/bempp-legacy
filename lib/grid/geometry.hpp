@@ -51,6 +51,13 @@ public:
     /** \brief Dimension of the space containing the geometry. */
     virtual int dimWorld() const = 0;
 
+    /** \brief Set up geometry of an element with prescribed corners and auxiliary data.
+
+      \note Auxiliary data are only used in classes implementing curvilinear elements.
+    */
+    virtual void setup(const arma::Mat<ctype>& corners,
+                       const arma::Col<char>& auxData) = 0;
+
     /** \brief Type of the reference element.
 
      The type can be used to access the <tt>Dune::GenericReferenceElement</tt>.

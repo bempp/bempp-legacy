@@ -4,8 +4,6 @@
 #include "array_3d.hpp"
 #include "array_4d.hpp"
 
-#include <cassert>
-
 #include "basis.hpp"
 #include "basis_data.hpp"
 #include "expression.hpp"
@@ -14,16 +12,23 @@
 #include "opencl_options.hpp"
 #include "types.hpp"
 
+#include <cassert>
+#include <memory>
+
 namespace Fiber
 {
 
-template <typename ValueType, typename GeometryImp>
-SeparableNumericalDoubleIntegrator<ValueType, GeometryImp>::
+template <typename ValueType, typename GeometryFactory>
+SeparableNumericalDoubleIntegrator<ValueType, GeometryFactory>::
 SeparableNumericalDoubleIntegrator(
         const arma::Mat<ValueType>& localTestQuadPoints,
         const arma::Mat<ValueType>& localTrialQuadPoints,
         const std::vector<ValueType> testQuadWeights,
         const std::vector<ValueType> trialQuadWeights,
+        const GeometryFactory& geometryFactory,
+        const arma::Mat<ValueType>& vertices,
+        const arma::Mat<int>& elementCornerIndices,
+        const arma::Mat<char>& auxElementData,
         const Expression<ValueType>& testExpression,
         const Kernel<ValueType>& kernel,
         const Expression<ValueType>& trialExpression,
@@ -32,17 +37,37 @@ SeparableNumericalDoubleIntegrator(
     m_localTrialQuadPoints(localTrialQuadPoints),
     m_testQuadWeights(testQuadWeights),
     m_trialQuadWeights(trialQuadWeights),
+    m_geometryFactory(geometryFactory),
+    m_vertices(vertices),
+    m_elementCornerIndices(elementCornerIndices),
+    m_auxElementData(auxElementData),
     m_testExpression(testExpression),
     m_kernel(kernel),
     m_trialExpression(trialExpression),
     m_openClOptions(openClOptions)
 {}
 
-template <typename ValueType, typename GeometryImp>
-void SeparableNumericalDoubleIntegrator<ValueType, GeometryImp>::integrate(
+template <typename ValueType, typename GeometryFactory>
+void SeparableNumericalDoubleIntegrator<ValueType, GeometryFactory>::setupGeometry(
+        int elementIndex, typename GeometryFactory::Geometry& geometry) const
+{
+    const int dimGrid = m_vertices.n_rows;
+    int cornerCount = 0;
+    for (; cornerCount < m_elementCornerIndices.n_rows; ++cornerCount)
+        if (m_elementCornerIndices(cornerCount, elementIndex) < 0)
+            break;
+    arma::Mat<ValueType> corners(dimGrid, cornerCount);
+    for (int cornerIndex = 0; cornerIndex < cornerCount; ++cornerIndex)
+        corners.col(cornerIndex) = m_vertices.col(
+                    m_elementCornerIndices(cornerIndex, elementIndex));
+    geometry.setup(corners, m_auxElementData.unsafe_col(elementIndex));
+}
+
+template <typename ValueType, typename GeometryFactory>
+void SeparableNumericalDoubleIntegrator<ValueType, GeometryFactory>::integrate(
         CallVariant callVariant,
-        const std::vector<const GeometryImp*>& geometriesA,
-        const GeometryImp& geometryB,
+        const std::vector<int>& elementIndicesA,
+        int elementIndexB,
         const Basis<ValueType>& basisA,
         const Basis<ValueType>& basisB,
         LocalDofIndex localDofIndexB,
@@ -50,9 +75,9 @@ void SeparableNumericalDoubleIntegrator<ValueType, GeometryImp>::integrate(
 {
     const int testPointCount = m_localTestQuadPoints.n_cols;
     const int trialPointCount = m_localTrialQuadPoints.n_cols;
-    const int geometryACount = geometriesA.size();
+    const int elementACount = elementIndicesA.size();
 
-    if (testPointCount == 0 || trialPointCount == 0 || geometryACount == 0)
+    if (testPointCount == 0 || trialPointCount == 0 || elementACount == 0)
         return;
     // TODO: in the (pathological) case that pointCount == 0 but
     // geometryCount != 0, set elements of result to 0.
@@ -88,39 +113,46 @@ void SeparableNumericalDoubleIntegrator<ValueType, GeometryImp>::integrate(
     m_trialExpression.addDependencies(trialBasisDeps, trialGeomDeps);
     m_kernel.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 
+    typedef typename GeometryFactory::Geometry Geometry;
+    std::auto_ptr<Geometry> geometryA(m_geometryFactory.make());
+    std::auto_ptr<Geometry> geometryB(m_geometryFactory.make());
+
     arma::Cube<ValueType> testValues, trialValues;
     Array4D<ValueType> kernelValues(kernelRowCount, kernelColCount,
                                     testPointCount, trialPointCount);
 
-    result.set_size(testDofCount, trialDofCount, geometryACount);
+    result.set_size(testDofCount, trialDofCount, elementACount);
 
+    setupGeometry(elementIndexB, *geometryB);
+    arma::Mat<ValueType> corn;
+    geometryB->corners(corn);
     if (callVariant == TEST_TRIAL)
     {
         basisA.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS, testBasisData);
         basisB.evaluate(trialBasisDeps, m_localTrialQuadPoints, localDofIndexB, trialBasisData);
-        geometryB.getData(trialGeomDeps, m_localTrialQuadPoints, trialGeomData);
+        geometryB->getData(trialGeomDeps, m_localTrialQuadPoints, trialGeomData);
         m_trialExpression.evaluate(trialBasisData, trialGeomData, trialValues);
     }
     else
     {
         basisA.evaluate(trialBasisDeps, m_localTrialQuadPoints, ALL_DOFS, trialBasisData);
         basisB.evaluate(testBasisDeps, m_localTestQuadPoints, localDofIndexB, testBasisData);
-        geometryB.getData(testGeomDeps, m_localTestQuadPoints, testGeomData);
+        geometryB->getData(testGeomDeps, m_localTestQuadPoints, testGeomData);
         m_testExpression.evaluate(testBasisData, testGeomData, testValues);
     }
 
     // Iterate over the elements
-    for (int indexA = 0; indexA < geometryACount; ++indexA)
+    for (int indexA = 0; indexA < elementACount; ++indexA)
     {
-        const GeometryImp& geometryA = *geometriesA[indexA];
+        setupGeometry(elementIndicesA[indexA], *geometryA);
         if (callVariant == TEST_TRIAL)
         {
-            geometryA.getData(testGeomDeps, m_localTestQuadPoints, testGeomData);
+            geometryA->getData(testGeomDeps, m_localTestQuadPoints, testGeomData);
             m_testExpression.evaluate(testBasisData, testGeomData, testValues);
         }
         else
         {
-            geometryA.getData(trialGeomDeps, m_localTrialQuadPoints, trialGeomData);
+            geometryA->getData(trialGeomDeps, m_localTrialQuadPoints, trialGeomData);
             m_trialExpression.evaluate(trialBasisData, trialGeomData, trialValues);
         }
 
@@ -149,16 +181,16 @@ void SeparableNumericalDoubleIntegrator<ValueType, GeometryImp>::integrate(
     }
 }
 
-template <typename ValueType, typename GeometryImp>
-void SeparableNumericalDoubleIntegrator<ValueType, GeometryImp>::integrate(
-            const std::vector<GeometryImpPair>& geometryPairs,
+template <typename ValueType, typename GeometryFactory>
+void SeparableNumericalDoubleIntegrator<ValueType, GeometryFactory>::integrate(
+            const std::vector<ElementIndexPair>& elementIndexPairs,
             const Basis<ValueType>& testBasis,
             const Basis<ValueType>& trialBasis,
             arma::Cube<ValueType>& result) const
 {
     const int testPointCount = m_localTestQuadPoints.n_cols;
     const int trialPointCount = m_localTrialQuadPoints.n_cols;
-    const int geometryPairCount = geometryPairs.size();
+    const int geometryPairCount = elementIndexPairs.size();
 
     if (testPointCount == 0 || trialPointCount == 0 || geometryPairCount == 0)
         return;
@@ -194,6 +226,10 @@ void SeparableNumericalDoubleIntegrator<ValueType, GeometryImp>::integrate(
     m_trialExpression.addDependencies(trialBasisDeps, trialGeomDeps);
     m_kernel.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 
+    typedef typename GeometryFactory::Geometry Geometry;
+    std::auto_ptr<Geometry> testGeometry(m_geometryFactory.make());
+    std::auto_ptr<Geometry> trialGeometry(m_geometryFactory.make());
+
     arma::Cube<ValueType> testValues, trialValues;
     Array4D<ValueType> kernelValues(kernelRowCount, kernelColCount,
                                     testPointCount, trialPointCount);
@@ -202,17 +238,15 @@ void SeparableNumericalDoubleIntegrator<ValueType, GeometryImp>::integrate(
 
     testBasis.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS, testBasisData);
     trialBasis.evaluate(trialBasisDeps, m_localTrialQuadPoints, ALL_DOFS, trialBasisData);
-//        geometryB.getData(trialGeomDeps, m_localTrialQuadPoints, trialGeomData);
-    //    m_trialExpression.evaluate(trialBasisData, trialGeomData, trialValues);
 
     // Iterate over the elements
     for (int pairIndex = 0; pairIndex < geometryPairCount; ++pairIndex)
     {
-        const GeometryImp& testGeometry = *geometryPairs[pairIndex].first;
-        const GeometryImp& trialGeometry = *geometryPairs[pairIndex].second;
-        testGeometry.getData(testGeomDeps, m_localTestQuadPoints, testGeomData);
+        setupGeometry(elementIndexPairs[pairIndex].first, *testGeometry);
+        setupGeometry(elementIndexPairs[pairIndex].first, *trialGeometry);
+        testGeometry->getData(testGeomDeps, m_localTestQuadPoints, testGeomData);
+        trialGeometry->getData(trialGeomDeps, m_localTrialQuadPoints, trialGeomData);
         m_testExpression.evaluate(testBasisData, testGeomData, testValues);
-        trialGeometry.getData(trialGeomDeps, m_localTrialQuadPoints, trialGeomData);
         m_trialExpression.evaluate(trialBasisData, trialGeomData, trialValues);
 
         m_kernel.evaluateOnGrid(testGeomData, trialGeomData, kernelValues);

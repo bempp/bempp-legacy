@@ -84,33 +84,20 @@ struct ElementPairTopology
     }
 };
 
-template <typename GeometryImp>
-ElementPairTopology determineElementPairTopology(
-        const GeometryImp& testGeometry, const GeometryImp& trialGeometry)
+ElementPairTopology determineElementPairTopologyIn3D(
+        const arma::Col<int>& testElementCornerIndices,
+        const arma::Col<int>& trialElementCornerIndices)
 {
     ElementPairTopology topology;
 
-    const int elementDim = testGeometry.dimension();
-    assert(trialGeometry.dimension() == elementDim);
-
-    // Retrieve indices of the vertices of test and trial elements
-    const int MIN_VERTEX_COUNT = 2;
-    const int MAX_VERTEX_COUNT = 4;
-    topology.testVertexCount = testGeometry.vertexCount();
-    topology.trialVertexCount = trialGeometry.vertexCount();
-    if (topology.testVertexCount < MIN_VERTEX_COUNT ||
-            MAX_VERTEX_COUNT < topology.testVertexCount ||
-            topology.trialVertexCount < MIN_VERTEX_COUNT ||
-            MAX_VERTEX_COUNT < topology.trialVertexCount)
-        throw std::invalid_argument(
-                "determineElementPairTopology: "
-                "only linear, triangular and quadrilateral elements "
-                "are supported");
-
-//    GeometryImp::IndexType testVertexIndices[MAX_VERTEX_COUNT];
-//    GeometryImp::IndexType trialVertexIndices[MAX_VERTEX_COUNT];
-//    testGeometry.getVertexIndices(testVertexIndices);
-//    trialGeometry.getVertexIndices(trialVertexIndices);
+    // Determine number of element corners
+    const int MIN_VERTEX_COUNT = 3, MAX_VERTEX_COUNT = 4;
+    topology.testVertexCount = testElementCornerIndices.n_rows;
+    assert(MIN_VERTEX_COUNT <= topology.testVertexCount &&
+           topology.testVertexCount <= MAX_VERTEX_COUNT);
+    topology.trialVertexCount = trialElementCornerIndices.n_rows;
+    assert(MIN_VERTEX_COUNT <= topology.trialVertexCount &&
+           topology.trialVertexCount <= MAX_VERTEX_COUNT);
 
     // How many vertices coincide?
     int testSharedVertices[MAX_VERTEX_COUNT];
@@ -119,8 +106,8 @@ ElementPairTopology determineElementPairTopology(
 
     for (int trialV = 0; trialV < topology.trialVertexCount; ++trialV)
         for (int testV = 0; testV < topology.testVertexCount; ++testV)
-            if (testGeometry.vertexIndex(testV) ==
-                    trialGeometry.vertexIndex(trialV))
+            if (testElementCornerIndices(testV) ==
+                    trialElementCornerIndices(trialV))
             {
                 testSharedVertices[hits] = testV;
                 trialSharedVertices[hits] = trialV;
@@ -138,7 +125,7 @@ ElementPairTopology determineElementPairTopology(
         topology.testSharedVertex0 = testSharedVertices[0];
         topology.trialSharedVertex0 = trialSharedVertices[0];
     }
-    else if (hits == 2 && elementDim == 2)
+    else if (hits == 2) // && elementDim == 2)
     {
         topology.type = ElementPairTopology::SharedEdge;
         topology.testSharedVertex0 = testSharedVertices[0];

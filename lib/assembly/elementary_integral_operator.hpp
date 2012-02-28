@@ -33,8 +33,6 @@ namespace Fiber
 {
 
 template <typename ValueType> class Expression;
-template <typename ValueType, typename GeometryImp> class IntegrationManager;
-template <typename ValueType, typename GeometryImp> class IntegrationManagerFactory;
 
 } // namespace Fiber
 
@@ -63,8 +61,12 @@ public:
     virtual bool isRegular() const = 0;
 
 private:
-    virtual std::auto_ptr<IntegrationManager> makeIntegrationManager(
-            const IntegrationManagerFactory& factory) const;
+    virtual std::auto_ptr<IntegrationManager > makeIntegrationManager(
+            const IntegrationManagerFactory& factory,
+            const GeometryFactory& geometryFactory,
+            const arma::Mat<ValueType>& vertices,
+            const arma::Mat<int>& elementCorners,
+            const arma::Mat<char>& auxData) const;
 
     virtual const Fiber::Kernel<ValueType>& kernel() const = 0;
     virtual const Fiber::Expression<ValueType>& testExpression() const = 0;

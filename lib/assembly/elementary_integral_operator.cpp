@@ -7,9 +7,11 @@
 #include "../fiber/double_integrator.hpp"
 #include "../fiber/integration_manager.hpp"
 #include "../fiber/integration_manager_factory.hpp"
+#include "../grid/mapper.hpp"
 #include "../grid/entity_pointer.hpp"
 #include "../grid/entity.hpp"
-#include "../grid/geometry_adapter.hpp"
+#include "../grid/geometry.hpp"
+#include "../grid/geometry_factory.hpp"
 #include "../grid/grid_view.hpp"
 #include "../grid/grid.hpp"
 #include "../space/space.hpp"
@@ -26,9 +28,14 @@ namespace Bempp
 template <typename ValueType>
 std::auto_ptr<typename ElementaryIntegralOperator<ValueType>::IntegrationManager>
 ElementaryIntegralOperator<ValueType>::makeIntegrationManager(
-        const ElementaryIntegralOperator<ValueType>::IntegrationManagerFactory& factory) const
+        const ElementaryIntegralOperator<ValueType>::IntegrationManagerFactory& factory,
+        const GeometryFactory& geometryFactory,
+        const arma::Mat<ValueType>& vertices,
+        const arma::Mat<int>& elementCorners,
+        const arma::Mat<char>& auxData) const
 {
-    return factory.make(testExpression(), kernel(), trialExpression());
+    return factory.make(geometryFactory, vertices, elementCorners, auxData,
+                        testExpression(), kernel(), trialExpression());
 }
 
 template <typename ValueType>
@@ -42,7 +49,7 @@ void ElementaryIntegralOperator<ValueType>::evaluateLocalWeakForms(
         ElementaryIntegralOperator<ValueType>::IntegrationManager& intMgr,
         std::vector<arma::Mat<ValueType> >& result) const
 {
-    typedef Fiber::DoubleIntegrator<ValueType, GeometryAdapter> Integrator;
+    typedef Fiber::DoubleIntegrator<ValueType> Integrator;
     typedef Fiber::Basis<ValueType> Basis;
 
     const int elementACount = elementsA.size();
@@ -53,33 +60,20 @@ void ElementaryIntegralOperator<ValueType>::evaluateLocalWeakForms(
     spaceA.getBases(elementsA, basesA);
     const Basis& basisB = spaceB.basis(elementB);
 
-    // Get index set (note: we assume that spaceA and space B refer to the same
-    // grid; this has been checked in assembleWeakForm())
+    // Get element indices (note: we assume that spaceA and space B refer to
+    // the same grid; this has been checked in assembleWeakForm())
     std::auto_ptr<GridView> leafView(spaceA.grid().leafView());
-    const IndexSet& indexSet = leafView->indexSet();
-
-    // Construct geometry adapters (store info about geometry and vertex indices)
-    boost::ptr_vector<GeometryAdapter> geometriesAOwner;
-    geometriesAOwner.reserve(elementACount);
+    const Mapper<0>& elementMapper = leafView->elementMapper();
+    std::vector<int> elementIndicesA(elementACount);
     for (int i = 0; i < elementACount; ++i)
-        geometriesAOwner.push_back(
-                    new GeometryAdapter(elementsA[i]->entity(), indexSet));
-    std::vector<const GeometryAdapter*> geometriesA(elementACount);
-    for (int i = 0; i < elementACount; ++i)
-        geometriesA[i] = &geometriesAOwner[i];
-
-    std::auto_ptr<GeometryAdapter> geometryB(
-                new GeometryAdapter(elementB.entity(), indexSet));
-
-//    std::vector<const GeometryAdapter*> geometriesA(elementACount);
-//    for (int i = 0; i < elementACount; ++i)
-//        geometriesA[i] = &elementsA[i]->entity().geometry();
-//    const Geometry& geometryB = elementB.entity().geometry();
+        elementIndicesA[i] = elementMapper.entityIndex(elementsA[i]->entity());
+    int elementIndexB = elementMapper.entityIndex(elementB.entity());
 
     // Select the integrator appropriate for each pair of elements
     std::vector<const Integrator*> integrators(elementACount);
     intMgr.getTestKernelTrialIntegrators(
-                callVariant, geometriesA, *geometryB, basesA, basisB, integrators);
+                callVariant, elementIndicesA, elementIndexB,
+                basesA, basisB, integrators);
 
     // Integration will proceed in batches of test elements having the same
     // "quadrature variant", i.e. integrator and element variant (the
@@ -95,8 +89,8 @@ void ElementaryIntegralOperator<ValueType>::evaluateLocalWeakForms(
     // Set of unique quadrature variants
     QuadVariantSet uniqueQuadVariants(quadVariants.begin(), quadVariants.end());
 
-    std::vector<const GeometryAdapter*> activeGeometriesA;
-    activeGeometriesA.reserve(elementACount);
+    std::vector<int> activeElementIndicesA;
+    activeElementIndicesA.reserve(elementACount);
 
     // Now loop over unique quadrature variants
     for (typename QuadVariantSet::const_iterator it = uniqueQuadVariants.begin();
@@ -108,15 +102,15 @@ void ElementaryIntegralOperator<ValueType>::evaluateLocalWeakForms(
 
         // Find all the test elements for which quadrature should proceed
         // according to the current quadrature variant
-        activeGeometriesA.clear();
+        activeElementIndicesA.clear();
         for (int indexA = 0; indexA < elementACount; ++indexA)
-            if (quadVariants[indexA] == activeQuadVariant)
-                activeGeometriesA.push_back(geometriesA[indexA]);
+            if (quadVariants[indexA] == activeQuadVariant)                
+                activeElementIndicesA.push_back(elementIndicesA[indexA]);
 
         // Integrate!
         arma::Cube<ValueType> localResult;
         activeIntegrator.integrate(callVariant,
-                                   activeGeometriesA, *geometryB,
+                                   activeElementIndicesA, elementIndexB,
                                    activeBasisA, basisB, localDofIndexB,
                                    localResult);
 
@@ -138,7 +132,7 @@ void ElementaryIntegralOperator<ValueType>::evaluateLocalWeakForms(
         IntegrationManager& intMgr,
         Fiber::Array2D<arma::Mat<ValueType> >& result) const
 {
-    typedef Fiber::DoubleIntegrator<ValueType, GeometryAdapter> Integrator;
+    typedef Fiber::DoubleIntegrator<ValueType> Integrator;
     typedef Fiber::Basis<ValueType> Basis;
 
     const int testElementCount = testElements.size();
@@ -151,35 +145,21 @@ void ElementaryIntegralOperator<ValueType>::evaluateLocalWeakForms(
     std::vector<const Basis*> trialBases;
     trialSpace.getBases(trialElements, trialBases);
 
-    // Get index set (note: we assume that spaceA and space B refer to the same
-    // grid; this has been checked in assembleWeakForm())
+    // Get element indices (note: we assume that spaceA and space B refer to
+    // the same grid; this has been checked in assembleWeakForm())
     std::auto_ptr<GridView> leafView(testSpace.grid().leafView());
-    const IndexSet& indexSet = leafView->indexSet();
-
-    // Construct geometry adapters (store info about geometry and vertex indices)
-    boost::ptr_vector<GeometryAdapter> testGeometryOwner;
-    testGeometryOwner.reserve(testElementCount);
+    const Mapper<0>& elementMapper = leafView->elementMapper();
+    std::vector<int> testElementIndices(testElementCount);
     for (int i = 0; i < testElementCount; ++i)
-        testGeometryOwner.push_back(
-                    new GeometryAdapter(testElements[i]->entity(), indexSet));
-    std::vector<const GeometryAdapter*> testGeometries(testElementCount);
-    for (int i = 0; i < testElementCount; ++i)
-        testGeometries[i] = &testGeometryOwner[i];
-
-    // Construct geometry adapters (store info about geometry and vertex indices)
-    boost::ptr_vector<GeometryAdapter> trialGeometryOwner;
-    trialGeometryOwner.reserve(trialElementCount);
+        testElementIndices[i] = elementMapper.entityIndex(testElements[i]->entity());
+    std::vector<int> trialElementIndices(trialElementCount);
     for (int i = 0; i < trialElementCount; ++i)
-        trialGeometryOwner.push_back(
-                    new GeometryAdapter(trialElements[i]->entity(), indexSet));
-    std::vector<const GeometryAdapter*> trialGeometries(trialElementCount);
-    for (int i = 0; i < trialElementCount; ++i)
-        trialGeometries[i] = &trialGeometryOwner[i];
+        trialElementIndices[i] = elementMapper.entityIndex(trialElements[i]->entity());
 
     // Select the integrator appropriate for each pair of elements
     Fiber::Array2D<const Integrator*> integrators;
     intMgr.getTestKernelTrialIntegrators(
-                testGeometries, trialGeometries,
+                testElementIndices, trialElementIndices,
                 testBases, trialBases, integrators);
 
     // Integration will proceed in batches of test elements having the same
@@ -200,10 +180,9 @@ void ElementaryIntegralOperator<ValueType>::evaluateLocalWeakForms(
     // Set of unique quadrature variants
     QuadVariantSet uniqueQuadVariants(quadVariants.begin(), quadVariants.end());
 
-    typedef std::pair<const GeometryAdapter*, const GeometryAdapter*>
-            GeometryAdapterPair;
-    std::vector<GeometryAdapterPair> activeGeometryPairs;
-    activeGeometryPairs.reserve(testElementCount * trialElementCount);
+    typedef typename Integrator::ElementIndexPair ElementIndexPair;
+    std::vector<ElementIndexPair> activeElementPairs;
+    activeElementPairs.reserve(testElementCount * trialElementCount);
 
     // Now loop over unique quadrature variants
     for (typename QuadVariantSet::const_iterator it = uniqueQuadVariants.begin();
@@ -216,17 +195,17 @@ void ElementaryIntegralOperator<ValueType>::evaluateLocalWeakForms(
 
         // Find all the element pairs for which quadrature should proceed
         // according to the current quadrature variant
-        activeGeometryPairs.clear();
+        activeElementPairs.clear();
         for (int trialIndex = 0; trialIndex < trialElementCount; ++trialIndex)
             for (int testIndex = 0; testIndex < testElementCount; ++testIndex)
                 if (quadVariants(testIndex, trialIndex) == activeQuadVariant)
-                    activeGeometryPairs.push_back(
-                                GeometryAdapterPair(testGeometries[testIndex],
-                                                    trialGeometries[trialIndex]));
+                    activeElementPairs.push_back(
+                                ElementIndexPair(testElementIndices[testIndex],
+                                                 trialElementIndices[trialIndex]));
 
         // Integrate!
         arma::Cube<ValueType> localResult;
-        activeIntegrator.integrate(activeGeometryPairs, activeTestBasis,
+        activeIntegrator.integrate(activeElementPairs, activeTestBasis,
                                    activeTrialBasis, localResult);
 
         // Distribute the just calculated integrals into the result array

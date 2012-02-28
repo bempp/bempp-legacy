@@ -7,9 +7,10 @@
 #include "../common/multidimensional_arrays.hpp"
 #include "../common/not_implemented_error.hpp"
 #include "../fiber/integration_manager.hpp"
+#include "../grid/entity_iterator.hpp"
+#include "../grid/geometry_factory.hpp"
 #include "../grid/grid.hpp"
 #include "../grid/grid_view.hpp"
-#include "../grid/entity_iterator.hpp"
 #include "../space/space.hpp"
 
 #include <armadillo>
@@ -40,8 +41,17 @@ ElementaryLinearOperator<ValueType>::assembleOperator(
                                  "degrees of freedom must be assigned "
                                  "before calling assembleOperator()");
 
-    std::auto_ptr<IntegrationManager > intMgr =
-            makeIntegrationManager(factory);
+    arma::Mat<ValueType> vertices;
+    arma::Mat<int> elementCorners;
+    arma::Mat<char> auxData;
+    trialSpace.grid().leafView()->getRawElementData(vertices, elementCorners,
+                                                    auxData);
+    std::auto_ptr<GeometryFactory> geometryFactory =
+            trialSpace.grid().elementGeometryFactory();
+
+    std::auto_ptr<IntegrationManager> intMgr =
+            makeIntegrationManager(factory, *geometryFactory,
+                                   vertices, elementCorners, auxData);
 
     switch (options.mode)
     {
@@ -69,12 +79,25 @@ ElementaryLinearOperator<ValueType>::assembleWeakForm(
         const AssemblyOptions& options) const
 {
     if (!testSpace.dofsAssigned() || !trialSpace.dofsAssigned())
-        throw std::runtime_error("ElementaryLinearOperator::assembleOperator(): "
+        throw std::runtime_error("ElementaryLinearOperator::assembleWeakForm(): "
                                  "degrees of freedom must be assigned "
                                  "before calling assembleOperator()");
+    if (&testSpace.grid() != &trialSpace.grid())
+        throw std::runtime_error("ElementaryLinearOperator::assembleWeakForm(): "
+                                 "testSpace and trialSpace must be defined over "
+                                 "the same grid");
+
+    arma::Mat<ctype> vertices;
+    arma::Mat<int> elementCorners;
+    arma::Mat<char> auxData;
+    testSpace.grid().leafView()->getRawElementData(vertices, elementCorners,
+                                                   auxData);
+    std::auto_ptr<GeometryFactory> geometryFactory =
+            testSpace.grid().elementGeometryFactory();
 
     std::auto_ptr<IntegrationManager > intMgr =
-            makeIntegrationManager(factory);
+            makeIntegrationManager(factory, *geometryFactory,
+                                   vertices, elementCorners, auxData);
 
     switch (options.mode)
     {

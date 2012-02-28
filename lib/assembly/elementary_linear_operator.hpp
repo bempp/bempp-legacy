@@ -64,9 +64,12 @@ public:
             const AssemblyOptions& options) const;
 
 private:
-    virtual std::auto_ptr<IntegrationManager >
-    makeIntegrationManager(
-            const IntegrationManagerFactory& factory) const = 0;
+    virtual std::auto_ptr<IntegrationManager > makeIntegrationManager(
+            const IntegrationManagerFactory& factory,
+            const GeometryFactory& geometryFactory,
+            const arma::Mat<ValueType>& vertices,
+            const arma::Mat<int>& elementCorners,
+            const arma::Mat<char>& auxData) const = 0;
 
     /** \name Local assembly (virtual methods to be implemented
         in derived classes) @{ */

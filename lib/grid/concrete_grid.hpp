@@ -23,6 +23,7 @@
 
 #include "grid.hpp"
 #include "concrete_entity.hpp"
+#include "concrete_geometry_factory.hpp"
 #include "concrete_grid_view.hpp"
 #include "concrete_id_set.hpp"
 
@@ -108,6 +109,7 @@ public:
     /** @}
     @name Views
     @{ */
+
     virtual std::auto_ptr<GridView> levelView(int level) const {
         return std::auto_ptr<GridView>(new ConcreteGridView<typename DuneGrid::LevelGridView>(
                                            m_dune_grid->levelView(level)));
@@ -116,6 +118,15 @@ public:
     virtual std::auto_ptr<GridView> leafView() const {
         return std::auto_ptr<GridView>(new ConcreteGridView<typename DuneGrid::LeafGridView>(
                                            m_dune_grid->leafView()));
+    }
+
+    /** @}
+    @name Geometry factory
+    @{ */
+
+    virtual std::auto_ptr<GeometryFactory> elementGeometryFactory() const {
+        return std::auto_ptr<GeometryFactory>(
+                    new ConcreteGeometryFactory<typename DuneGrid::template Codim<0>::Geometry>());
     }
 
     /** @}

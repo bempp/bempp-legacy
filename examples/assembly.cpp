@@ -31,6 +31,7 @@
 
 #include "grid/entity.hpp"
 #include "grid/entity_iterator.hpp"
+#include "grid/geometry_factory.hpp"
 #include "grid/geometry.hpp"
 #include "grid/grid.hpp"
 #include "grid/grid_factory.hpp"
@@ -67,11 +68,12 @@ int main()
 
     Fiber::OpenClOptions openClOptions;
     openClOptions.useOpenCl = false;
-    Fiber::StandardIntegrationManagerFactory2D<double, GeometryAdapter> factory(openClOptions);
+    Fiber::StandardIntegrationManagerFactory2D<double, GeometryFactory> factory(openClOptions);
 
     SingleLayerPotential3D<double> op;
     std::auto_ptr<DiscreteScalarValuedLinearOperator<double> > result =
             op.assembleWeakForm(space, space, factory, assemblyOptions);
+    result->dump();
 }
 
 

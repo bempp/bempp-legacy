@@ -28,6 +28,7 @@ namespace Bempp
 
 // Forward declarations
 template<int codim> class Entity;
+class GeometryFactory;
 class GridView;
 class IdSet;
 
@@ -69,6 +70,8 @@ public:
 
     /** \brief View of the leaf entities. */
     virtual std::auto_ptr<GridView> leafView() const = 0;
+
+    virtual std::auto_ptr<GeometryFactory> elementGeometryFactory() const = 0;
 
     /** @}
     @name Id sets

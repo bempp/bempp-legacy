@@ -31,19 +31,23 @@ template <typename ValueType> class Expression;
 template <typename ValueType> class Kernel;
 
 /** \brief Integration over pairs of elements. */
-template <typename ValueType, typename GeometryImp>
+template <typename ValueType, typename GeometryFactory>
 class SeparableNumericalDoubleIntegrator :
-        public DoubleIntegrator<ValueType, GeometryImp>
+        public DoubleIntegrator<ValueType>
 {
 public:
-    typedef typename DoubleIntegrator<ValueType, GeometryImp>::GeometryImpPair
-    GeometryImpPair;
+    typedef typename DoubleIntegrator<ValueType>::ElementIndexPair
+    ElementIndexPair;
 
-    SeparableNumericalDoubleIntegrator(            
+    SeparableNumericalDoubleIntegrator(
             const arma::Mat<ValueType>& localTestQuadPoints,
             const arma::Mat<ValueType>& localTrialQuadPoints,
             const std::vector<ValueType> testQuadWeights,
             const std::vector<ValueType> trialQuadWeights,
+            const GeometryFactory& geometryFactory,
+            const arma::Mat<ValueType>& vertices,
+            const arma::Mat<int>& elementCornerIndices,
+            const arma::Mat<char>& auxElementData,
             const Expression<ValueType>& testExpression,
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
@@ -51,18 +55,22 @@ public:
 
     virtual void integrate(
             CallVariant callVariant,
-            const std::vector<const GeometryImp*>& geometriesA,
-            const GeometryImp& geometryB,
+            const std::vector<int>& elementIndicesA,
+            int elementIndexB,
             const Basis<ValueType>& basisA,
             const Basis<ValueType>& basisB,
             LocalDofIndex localDofIndexB,
             arma::Cube<ValueType>& result) const;
 
     virtual void integrate(
-            const std::vector<GeometryImpPair>& geometryPairs,
+            const std::vector<ElementIndexPair>& elementIndexPairs,
             const Basis<ValueType>& testBasis,
             const Basis<ValueType>& trialBasis,
             arma::Cube<ValueType>& result) const;
+
+private:
+    void setupGeometry(int elementIndex,
+                       typename GeometryFactory::Geometry& geometry) const;
 
 private:
     arma::Mat<ValueType> m_localTestQuadPoints;
@@ -70,11 +78,30 @@ private:
     std::vector<ValueType> m_testQuadWeights;
     std::vector<ValueType> m_trialQuadWeights;
 
+    const GeometryFactory& m_geometryFactory;
+    const arma::Mat<ValueType>& m_vertices;
+    const arma::Mat<int>& m_elementCornerIndices;
+    const arma::Mat<char>& m_auxElementData;
+
     const Expression<ValueType>& m_testExpression;
     const Kernel<ValueType>& m_kernel;
     const Expression<ValueType>& m_trialExpression;
-    OpenClOptions m_openClOptions;
+    OpenClOptions m_openClOptions;    
 };
+
+struct Element2D
+{
+    int vertexIndices[4];
+    // potentially additional geometrical information
+};
+
+template <typename ValueType>
+struct Vertex3D
+{
+    ValueType x, y, z;
+};
+
+
 
 } // namespace Fiber
 

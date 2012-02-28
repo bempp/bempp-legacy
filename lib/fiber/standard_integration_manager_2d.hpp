@@ -39,9 +39,8 @@
 namespace Fiber
 {
 
-template <typename ValueType, typename GeometryImp>
-class StandardIntegrationManager2D :
-        public IntegrationManager<ValueType, GeometryImp>
+template <typename ValueType, typename GeometryFactory>
+class StandardIntegrationManager2D : public IntegrationManager<ValueType>
 {    
 private:
     struct DoubleIntegratorIndex
@@ -75,34 +74,52 @@ private:
     };
 
     typedef boost::ptr_map<DoubleIntegratorIndex,
-    DoubleIntegrator<ValueType, GeometryImp> > IntegratorMap;
+    DoubleIntegrator<ValueType> > IntegratorMap;
 
 public:
     StandardIntegrationManager2D(
+            const GeometryFactory& geometryFactory,
+            const arma::Mat<ValueType>& vertices,
+            const arma::Mat<int>& elementCornerIndices,
+            const arma::Mat<char>& auxData,
             const Expression<ValueType>& testExpression,
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
             const OpenClOptions& openClOptions) :
+        m_geometryFactory(geometryFactory),
+        m_vertices(vertices),
+        m_elementCornerIndices(elementCornerIndices),
+        m_auxData(auxData),
         m_testExpression(testExpression),
         m_kernel(kernel),
         m_trialExpression(trialExpression),
         m_openClOptions(openClOptions)
-    {}
+    {
+        if (vertices.n_rows != 3)
+            throw std::invalid_argument(
+                    "StandardIntegrationManager2D::StandardIntegrationManager2D(): "
+                    "vertex coordinates must be three-dimensional");
+    }
 
-    virtual const DoubleIntegrator<ValueType, GeometryImp>& testKernelTrialIntegrator(
-            const GeometryImp& testGeometry,
-            const GeometryImp& trialGeometry,
+    virtual const DoubleIntegrator<ValueType>& testKernelTrialIntegrator(
+            int testElementIndex,
+            int trialElementIndex,
             const Basis<ValueType>& testBasis,
             const Basis<ValueType>& trialBasis) {
-    if (testGeometry.dimension() != 2 || trialGeometry.dimension() != 2)
-            throw std::invalid_argument("StandardIntegrationManager2D::"
-                                        "testKernelTrialIntegrator: "
-                                        "test and trial elements must be"
-                                        "two-dimensional");
+        DoubleIntegratorIndex integratorIndex;
 
-        DoubleIntegratorIndex integratorIndex;                
-        integratorIndex.topology =
-                determineElementPairTopology(testGeometry, trialGeometry);
+        // Get corner indices of the specified elements
+        arma::Col<int> testElementCornerIndices(
+                    m_elementCornerIndices.col(testElementIndex));
+        if (testElementCornerIndices(3) < 0) // triangle
+            testElementCornerIndices.shed_row(3);
+        arma::Col<int> trialElementCornerIndices(
+                    m_elementCornerIndices.col(trialElementIndex));
+        if (trialElementCornerIndices(3) < 0) // triangle
+            trialElementCornerIndices.shed_row(3);
+
+        integratorIndex.topology = determineElementPairTopologyIn3D(
+                    testElementCornerIndices, trialElementCornerIndices);
 
         integratorIndex.testOrder = testBasis.order();
         integratorIndex.trialOrder = trialBasis.order();
@@ -110,24 +127,24 @@ public:
         if (integratorIndex.topology.type == ElementPairTopology::Disjoint)
         {
             integratorIndex.testOrder +=
-                    regularOrderIncrement(testGeometry, testBasis);
+                    regularOrderIncrement(testElementIndex, testBasis);
             integratorIndex.trialOrder +=
-                    regularOrderIncrement(trialGeometry, trialBasis);
+                    regularOrderIncrement(trialElementIndex, trialBasis);
         }
         else // singular integral
         {
             integratorIndex.testOrder +=
-                    singularOrderIncrement(testGeometry, testBasis);
+                    singularOrderIncrement(testElementIndex, testBasis);
             integratorIndex.trialOrder +=
-                    singularOrderIncrement(trialGeometry, trialBasis);
+                    singularOrderIncrement(trialElementIndex, trialBasis);
         }
 
         return getIntegrator(integratorIndex);
     }
 
 private:
-    int regularOrderIncrement(const GeometryImp& geometry,
-                               const Basis<ValueType>& basis) const
+    int regularOrderIncrement(int elementIndex,
+                              const Basis<ValueType>& basis) const
     {
         // Note: this function will make use of options supplied to the integrator
         // in its constructor
@@ -141,8 +158,8 @@ private:
         return 1;
     }
 
-    int singularOrderIncrement(const GeometryImp& geometry,
-                                const Basis<ValueType>& basis) const
+    int singularOrderIncrement(int elementIndex,
+                               const Basis<ValueType>& basis) const
     {
         // Note: this function will make use of options supplied to the integrator
         // in its constructor
@@ -156,7 +173,7 @@ private:
         return 1;
     }
 
-    const DoubleIntegrator<ValueType, GeometryImp>& getIntegrator(const DoubleIntegratorIndex& index)
+    const DoubleIntegrator<ValueType>& getIntegrator(const DoubleIntegratorIndex& index)
     {
         const ElementPairTopology& topology = index.topology;
 
@@ -165,7 +182,7 @@ private:
             return *it->second;
 
         // Integrator doesn't exist yet and must be created.
-        std::auto_ptr<DoubleIntegrator<ValueType, GeometryImp> > integrator;
+        std::auto_ptr<DoubleIntegrator<ValueType> > integrator;
         if (topology.type == ElementPairTopology::Disjoint)
         {
             // Create a tensor rule
@@ -178,10 +195,12 @@ private:
             fillPointsAndWeightsRegular(topology.trialVertexCount,
                                         index.trialOrder,
                                         trialPoints, trialWeights);
-            typedef SeparableNumericalDoubleIntegrator<ValueType, GeometryImp> Integrator;
-            integrator = std::auto_ptr<DoubleIntegrator<ValueType, GeometryImp> >(
+            typedef SeparableNumericalDoubleIntegrator<ValueType, GeometryFactory> Integrator;
+            integrator = std::auto_ptr<DoubleIntegrator<ValueType> >(
                         new Integrator(
                             testPoints, trialPoints, testWeights, trialWeights,
+                            m_geometryFactory,
+                            m_vertices, m_elementCornerIndices, m_auxData,
                             m_testExpression, m_kernel, m_trialExpression,
                             m_openClOptions));
         }
@@ -213,10 +232,12 @@ private:
             fillPointsAndWeightsRegular(topology.trialVertexCount,
                                         index.trialOrder,
                                         trialPoints, trialWeights);
-            typedef SeparableNumericalDoubleIntegrator<ValueType, GeometryImp> Integrator;
-            integrator = std::auto_ptr<DoubleIntegrator<ValueType, GeometryImp> >(
+            typedef SeparableNumericalDoubleIntegrator<ValueType, GeometryFactory> Integrator;
+            integrator = std::auto_ptr<DoubleIntegrator<ValueType> >(
                         new Integrator(
                             testPoints, trialPoints, testWeights, trialWeights,
+                            m_geometryFactory,
+                            m_vertices, m_elementCornerIndices, m_auxData,
                             m_testExpression, m_kernel, m_trialExpression,
                             m_openClOptions));
         }
@@ -414,6 +435,10 @@ private:
 //    {} // default implementation , to be removed once everything's implemented
 
 private:
+    const GeometryFactory& m_geometryFactory;
+    const arma::Mat<ValueType>& m_vertices;
+    const arma::Mat<int>& m_elementCornerIndices;
+    const arma::Mat<char>& m_auxData;
     const Expression<ValueType>& m_testExpression;
     const Kernel<ValueType>& m_kernel;
     const Expression<ValueType>& m_trialExpression;
