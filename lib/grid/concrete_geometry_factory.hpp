@@ -7,6 +7,11 @@
 namespace Bempp
 {
 
+/** \brief Factory able to construct an "empty" geometry wrapping a Dune
+  geometry of type DuneGeometry.
+
+  \note For internal use (in integrators from the Fiber module). */
+
 template <typename DuneGeometry>
 class ConcreteGeometryFactory : public GeometryFactory
 {
@@ -16,6 +21,6 @@ class ConcreteGeometryFactory : public GeometryFactory
     }
 };
 
-}
+} // namespace Bempp
 
 #endif // CONCRETE_GEOMETRY_FACTORY_HPP

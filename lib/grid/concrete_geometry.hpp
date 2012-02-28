@@ -25,6 +25,7 @@
 #include "geometry_type.hpp"
 #include "common.hpp"
 
+#include "../common/not_implemented_error.hpp"
 #include "../fiber/geometrical_data.hpp"
 
 #include <dune/common/fvector.hh>
@@ -83,12 +84,10 @@ public:
         return *m_dune_geometry;
     }
 
-    /** \brief Dimension of the geometry. */
     virtual int dim() const {
         return DuneGeometry::mydimension;
     }
 
-    /** \brief Dimension of the space containing the geometry. */
     virtual int dimWorld() const {
         return DuneGeometry::coorddimension;
     }
@@ -98,25 +97,40 @@ public:
         const int dimWorld = DuneGeometry::coorddimension;
         const int cornerCount = corners.n_cols;
         assert(corners.n_rows == dimWorld);
-        assert(2 <= cornerCount && cornerCount <= 4);
 
-        typedef Dune::MakeableInterfaceObject<DuneGeometry> DuneMakeableGeometry;
-        typedef typename DuneMakeableGeometry::ImplementationType DuneGeometryImp;
-
-        DuneGeometryImp newDuneGeometry;
+        GeometryType type;
+        if (DuneGeometry::mydimension == 0) {
+            assert(cornerCount == 1);
+            type.makeVertex();
+        }
+        else if (DuneGeometry::mydimension == 1) {
+            assert(cornerCount == 2);
+            type.makeLine();
+        }
+        else if (DuneGeometry::mydimension == 2) {
+            assert (cornerCount == 3 || cornerCount == 4);
+            if (cornerCount == 3)
+                type.makeTriangle();
+            else
+                type.makeQuadrilateral();
+        }
+        else
+            throw NotImplementedError("ConcreteGeometry::setup(): "
+                                      "not implemented yet for 3D entities");
 
         std::vector<Dune::FieldVector<ctype, dimWorld> > duneCorners(cornerCount);
         for (int i = 0; i < corners.n_cols; ++i)
             for (int j = 0; j < dimWorld; ++j)
                 duneCorners[i][j] = corners(j, i);
-        GeometryType type;
-        if (cornerCount == 2)
-            type.makeLine();
-        else if (cornerCount == 3)
-            type.makeTriangle();
-        else if (cornerCount == 4)
-            type.makeQuadrilateral();
+
+        typedef Dune::MakeableInterfaceObject<DuneGeometry> DuneMakeableGeometry;
+        typedef typename DuneMakeableGeometry::ImplementationType DuneGeometryImp;
+
+        DuneGeometryImp newDuneGeometry;
         newDuneGeometry.setup(type, duneCorners);
+        // I wish I could avoid this heap allocation...
+        // unfortunately I can't find a way to obtain access from
+        // Dune's Geometry<... GeometryImp> to the underlying GeometryImp object
         setDuneGeometry(new DuneMakeableGeometry(newDuneGeometry), true /* owns */);
     }
 

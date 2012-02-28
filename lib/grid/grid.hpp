@@ -71,6 +71,12 @@ public:
     /** \brief View of the leaf entities. */
     virtual std::auto_ptr<GridView> leafView() const = 0;
 
+    /** \brief Factory able to construct empty geometries of codimension 0
+     compatible with this grid.
+
+     \note For internal use.
+
+     \todo Provide implementations for other codimensions. */
     virtual std::auto_ptr<GeometryFactory> elementGeometryFactory() const = 0;
 
     /** @}

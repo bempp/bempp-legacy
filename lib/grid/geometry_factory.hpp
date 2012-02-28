@@ -8,6 +8,7 @@ namespace Bempp
 
 class Geometry;
 
+/** \brief Abstract geometry factory. */
 class GeometryFactory
 {
 public:

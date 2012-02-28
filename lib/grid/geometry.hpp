@@ -51,10 +51,15 @@ public:
     /** \brief Dimension of the space containing the geometry. */
     virtual int dimWorld() const = 0;
 
-    /** \brief Set up geometry of an element with prescribed corners and auxiliary data.
+    /** \brief Set up geometry of an entity.
 
-      \note Auxiliary data are only used in classes implementing curvilinear elements.
-    */
+      \param[in] corners  Coordinates of the entity's vertices,
+                          stored columnwise.
+
+      \param[in] auxData  Auxiliary data necessary for the description of the
+                          entity. Interpretation of these data in subclasses of
+                          Geometry may vary. They can be used for example to
+                          define a *curvilinear* element. */
     virtual void setup(const arma::Mat<ctype>& corners,
                        const arma::Col<char>& auxData) = 0;
 
