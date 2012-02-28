@@ -27,7 +27,6 @@
 
 #include "assembly/discrete_scalar_valued_linear_operator.hpp"
 #include "fiber/standard_integration_manager_factory_2d.hpp"
-#include "grid/geometry_adapter.hpp"
 
 #include "grid/entity.hpp"
 #include "grid/entity_iterator.hpp"
