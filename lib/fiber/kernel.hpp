@@ -44,12 +44,12 @@ public:
     virtual void addGeometricalDependencies(int& testGeomDeps,
                                             int& trialGeomDeps) const = 0;
 
-    virtual void evaluateAtPointPairs(const GeometricalData<ValueType>& trialGeomData,
-                                      const GeometricalData<ValueType>& testGeomData,
+    virtual void evaluateAtPointPairs(const GeometricalData<ValueType>& testGeomData,
+                                      const GeometricalData<ValueType>& trialGeomData,
                                       arma::Cube<ValueType>& result) const = 0;
 
-    virtual void evaluateOnGrid(const GeometricalData<ValueType>& trialGeomData,
-                                const GeometricalData<ValueType>& testGeomData,
+    virtual void evaluateOnGrid(const GeometricalData<ValueType>& testGeomData,
+                                const GeometricalData<ValueType>& trialGeomData,
                                 Array4D<ValueType>& result) const = 0;
 };
 

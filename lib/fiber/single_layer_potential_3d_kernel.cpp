@@ -18,8 +18,8 @@ void SingleLayerPotential3DKernel<ValueType>::addGeometricalDependencies(
 
 template <typename ValueType>
 void SingleLayerPotential3DKernel<ValueType>::evaluateAtPointPairs(
-        const GeometricalData<ValueType>& trialGeomData,
         const GeometricalData<ValueType>& testGeomData,
+        const GeometricalData<ValueType>& trialGeomData,
         arma::Cube<ValueType>& result) const
 {
     const arma::Mat<ValueType>& testPoints = testGeomData.globals;
@@ -52,8 +52,8 @@ void SingleLayerPotential3DKernel<ValueType>::evaluateAtPointPairs(
 
 template <typename ValueType>
 void SingleLayerPotential3DKernel<ValueType>::evaluateOnGrid(
-        const GeometricalData<ValueType>& trialGeomData,
         const GeometricalData<ValueType>& testGeomData,
+        const GeometricalData<ValueType>& trialGeomData,
         Array4D<ValueType>& result) const
 {
     const arma::Mat<ValueType>& testPoints = testGeomData.globals;
