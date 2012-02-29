@@ -124,8 +124,6 @@ void SeparableNumericalDoubleIntegrator<ValueType, GeometryFactory>::integrate(
     result.set_size(testDofCount, trialDofCount, elementACount);
 
     setupGeometry(elementIndexB, *geometryB);
-    arma::Mat<ValueType> corn;
-    geometryB->corners(corn);
     if (callVariant == TEST_TRIAL)
     {
         basisA.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS, testBasisData);
