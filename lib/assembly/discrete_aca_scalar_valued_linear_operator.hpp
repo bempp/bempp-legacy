@@ -57,6 +57,13 @@ public:
                     "not implemented yet");
     }
 
+    virtual arma::Mat<ValueType> asMatrix() const
+    {
+        throw NotImplementedError(
+                    "DiscreteAcaScalarValuedLinearOperator::asMatrix(): "
+                    "not implemented yet");
+    }
+
 private:
     AhmedMatrix<ValueType, GeometryTypeRows, GeometryTypeCols> m_matrix;
 };

@@ -13,6 +13,7 @@
 #include "types.hpp"
 
 #include <cassert>
+#include <iostream>
 #include <memory>
 
 namespace Fiber

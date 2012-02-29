@@ -64,6 +64,17 @@ public:
                     "not implemented yet");
     }
 
+    virtual arma::Mat<ValueType> asMatrix() const
+    {
+        arma::Mat<ValueType> result;
+        if (!m_terms.empty()) {
+            result = m_multipliers[0] * m_terms[0].asMatrix();
+            for (int i = 1; i < m_terms.size(); ++i)
+                result += m_multipliers[i] * m_terms[i].asMatrix();
+        }
+        return result;
+    }
+
 private:
     boost::ptr_vector<TermType> m_terms;
     std::vector<ValueType> m_multipliers;

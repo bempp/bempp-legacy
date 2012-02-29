@@ -50,6 +50,11 @@ public:
         std::cout << m_mat << std::endl;
     }
 
+    virtual arma::Mat<ValueType> asMatrix() const
+    {
+        return m_mat;
+    }
+
 private:
     arma::Mat<ValueType> m_mat;
 };

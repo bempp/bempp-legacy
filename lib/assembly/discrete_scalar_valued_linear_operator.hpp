@@ -42,6 +42,11 @@ public:
 
     /** \brief Write a textual representation of the operator to standard output. */
     virtual void dump() const = 0;
+
+    /** \brief Matrix representation of the operator.
+
+    This method need not be supported by all subclasses. */
+    virtual arma::Mat<ValueType> asMatrix() const = 0;
 };
 
 } // namespace Bempp
