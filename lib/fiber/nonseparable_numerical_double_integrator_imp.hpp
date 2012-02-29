@@ -1,4 +1,4 @@
-#include "separable_numerical_double_integrator.hpp" // To keep IDEs happy
+#include "nonseparable_numerical_double_integrator.hpp" // To keep IDEs happy
 
 #include "array_2d.hpp"
 #include "array_3d.hpp"
@@ -19,12 +19,11 @@ namespace Fiber
 {
 
 template <typename ValueType, typename GeometryFactory>
-SeparableNumericalDoubleIntegrator<ValueType, GeometryFactory>::
-SeparableNumericalDoubleIntegrator(
+NonseparableNumericalDoubleIntegrator<ValueType, GeometryFactory>::
+NonseparableNumericalDoubleIntegrator(
         const arma::Mat<ValueType>& localTestQuadPoints,
         const arma::Mat<ValueType>& localTrialQuadPoints,
-        const std::vector<ValueType> testQuadWeights,
-        const std::vector<ValueType> trialQuadWeights,
+        const std::vector<ValueType> quadWeights,
         const GeometryFactory& geometryFactory,
         const arma::Mat<ValueType>& vertices,
         const arma::Mat<int>& elementCornerIndices,
@@ -35,8 +34,7 @@ SeparableNumericalDoubleIntegrator(
         const OpenClOptions& openClOptions) :
     m_localTestQuadPoints(localTestQuadPoints),
     m_localTrialQuadPoints(localTrialQuadPoints),
-    m_testQuadWeights(testQuadWeights),
-    m_trialQuadWeights(trialQuadWeights),
+    m_quadWeights(quadWeights),
     m_geometryFactory(geometryFactory),
     m_vertices(vertices),
     m_elementCornerIndices(elementCornerIndices),
@@ -46,18 +44,17 @@ SeparableNumericalDoubleIntegrator(
     m_trialExpression(trialExpression),
     m_openClOptions(openClOptions)
 {
-    if (localTestQuadPoints.n_cols != testQuadWeights.size())
-        throw std::invalid_argument("SeparableNumericalDoubleIntegrator::"
-                                    "SeparableNumericalDoubleIntegrator(): "
-                                    "numbers of test points and weight do not match");
-    if (localTrialQuadPoints.n_cols != trialQuadWeights.size())
-        throw std::invalid_argument("SeparableNumericalDoubleIntegrator::"
-                                    "SeparableNumericalDoubleIntegrator(): "
-                                    "numbers of trial points and weight do not match");
+    const int pointCount = quadWeights.size();
+    if (localTestQuadPoints.n_cols != pointCount ||
+            localTrialQuadPoints.n_cols != pointCount)
+        throw std::invalid_argument("NonseparableNumericalDoubleIntegrator::"
+                                    "NonseparableNumericalDoubleIntegrator(): "
+                                    "numbers of points and weights do not match");
 }
 
+
 template <typename ValueType, typename GeometryFactory>
-inline void SeparableNumericalDoubleIntegrator<ValueType, GeometryFactory>::
+inline void NonseparableNumericalDoubleIntegrator<ValueType, GeometryFactory>::
 setupGeometryConveniently(
         int elementIndex, typename GeometryFactory::Geometry& geometry) const
 {
@@ -67,7 +64,7 @@ setupGeometryConveniently(
 }
 
 template <typename ValueType, typename GeometryFactory>
-void SeparableNumericalDoubleIntegrator<ValueType, GeometryFactory>::integrate(
+void NonseparableNumericalDoubleIntegrator<ValueType, GeometryFactory>::integrate(
         CallVariant callVariant,
         const std::vector<int>& elementIndicesA,
         int elementIndexB,
@@ -76,11 +73,10 @@ void SeparableNumericalDoubleIntegrator<ValueType, GeometryFactory>::integrate(
         LocalDofIndex localDofIndexB,
         arma::Cube<ValueType>& result) const
 {
-    const int testPointCount = m_localTestQuadPoints.n_cols;
-    const int trialPointCount = m_localTrialQuadPoints.n_cols;
+    const int pointCount = m_quadWeights.size();
     const int elementACount = elementIndicesA.size();
 
-    if (testPointCount == 0 || trialPointCount == 0 || elementACount == 0)
+    if (pointCount == 0 || elementACount == 0)
         return;
     // TODO: in the (pathological) case that pointCount == 0 but
     // geometryCount != 0, set elements of result to 0.
@@ -121,8 +117,7 @@ void SeparableNumericalDoubleIntegrator<ValueType, GeometryFactory>::integrate(
     std::auto_ptr<Geometry> geometryB(m_geometryFactory.make());
 
     arma::Cube<ValueType> testValues, trialValues;
-    Array4D<ValueType> kernelValues(kernelRowCount, kernelColCount,
-                                    testPointCount, trialPointCount);
+    arma::Cube<ValueType> kernelValues;
 
     result.set_size(testDofCount, trialDofCount, elementACount);
 
@@ -157,7 +152,7 @@ void SeparableNumericalDoubleIntegrator<ValueType, GeometryFactory>::integrate(
             m_trialExpression.evaluate(trialBasisData, trialGeomData, trialValues);
         }
 
-        m_kernel.evaluateOnGrid(testGeomData, trialGeomData, kernelValues);
+        m_kernel.evaluateAtPointPairs(testGeomData, trialGeomData, kernelValues);
 
         // For now, we assume that the kernel is (general) tensorial,
         // later we might handle specially the case of it being a scalar
@@ -166,34 +161,31 @@ void SeparableNumericalDoubleIntegrator<ValueType, GeometryFactory>::integrate(
             for (int testDof = 0; testDof < testDofCount; ++testDof)
             {
                 ValueType sum = 0.;
-                for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
-                    for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
-                        for (int trialDim = 0; trialDim < trialComponentCount; ++trialDim)
-                            for (int testDim = 0; testDim < testComponentCount; ++testDim)
-                                sum +=  m_testQuadWeights[testPoint] *
-                                        testGeomData.integrationElements(testPoint) *
-                                        testValues(testDim, testDof, testPoint) *
-                                        kernelValues(testDim, trialDim, testPoint, trialPoint) *
-                                        trialValues(trialDim, trialDof, trialPoint) *
-                                        trialGeomData.integrationElements(trialPoint) *
-                                        m_trialQuadWeights[trialPoint];
+                for (int point = 0; point < pointCount; ++point)
+                    for (int trialDim = 0; trialDim < trialComponentCount; ++trialDim)
+                        for (int testDim = 0; testDim < testComponentCount; ++testDim)
+                            sum +=  m_quadWeights[point] *
+                                    testGeomData.integrationElements(point) *
+                                    testValues(testDim, testDof, point) *
+                                    kernelValues(testDim, trialDim, point) *
+                                    trialValues(trialDim, trialDof, point) *
+                                    trialGeomData.integrationElements(point);
                 result(testDof, trialDof, indexA) = sum;
             }
     }
 }
 
 template <typename ValueType, typename GeometryFactory>
-void SeparableNumericalDoubleIntegrator<ValueType, GeometryFactory>::integrate(
+void NonseparableNumericalDoubleIntegrator<ValueType, GeometryFactory>::integrate(
             const std::vector<ElementIndexPair>& elementIndexPairs,
             const Basis<ValueType>& testBasis,
             const Basis<ValueType>& trialBasis,
             arma::Cube<ValueType>& result) const
 {
-    const int testPointCount = m_localTestQuadPoints.n_cols;
-    const int trialPointCount = m_localTrialQuadPoints.n_cols;
+    const int pointCount = m_quadWeights.size();
     const int geometryPairCount = elementIndexPairs.size();
 
-    if (testPointCount == 0 || trialPointCount == 0 || geometryPairCount == 0)
+    if (pointCount == 0 || geometryPairCount == 0)
         return;
     // TODO: in the (pathological) case that pointCount == 0 but
     // geometryPairCount != 0, set elements of result to 0.
@@ -232,8 +224,7 @@ void SeparableNumericalDoubleIntegrator<ValueType, GeometryFactory>::integrate(
     std::auto_ptr<Geometry> trialGeometry(m_geometryFactory.make());
 
     arma::Cube<ValueType> testValues, trialValues;
-    Array4D<ValueType> kernelValues(kernelRowCount, kernelColCount,
-                                    testPointCount, trialPointCount);
+    arma::Cube<ValueType> kernelValues;
 
     result.set_size(testDofCount, trialDofCount, geometryPairCount);
 
@@ -250,7 +241,7 @@ void SeparableNumericalDoubleIntegrator<ValueType, GeometryFactory>::integrate(
         m_testExpression.evaluate(testBasisData, testGeomData, testValues);
         m_trialExpression.evaluate(trialBasisData, trialGeomData, trialValues);
 
-        m_kernel.evaluateOnGrid(testGeomData, trialGeomData, kernelValues);
+        m_kernel.evaluateAtPointPairs(testGeomData, trialGeomData, kernelValues);
 
         // For now, we assume that the kernel is (general) tensorial,
         // later we might handle specially the case of it being a scalar
@@ -259,21 +250,18 @@ void SeparableNumericalDoubleIntegrator<ValueType, GeometryFactory>::integrate(
             for (int testDof = 0; testDof < testDofCount; ++testDof)
             {
                 ValueType sum = 0.;
-                for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
-                    for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
-                        for (int trialDim = 0; trialDim < trialComponentCount; ++trialDim)
-                            for (int testDim = 0; testDim < testComponentCount; ++testDim)
-                                sum +=  m_testQuadWeights[testPoint] *
-                                        testGeomData.integrationElements(testPoint) *
-                                        testValues(testDim, testDof, testPoint) *
-                                        kernelValues(testDim, trialDim, testPoint, trialPoint) *
-                                        trialValues(trialDim, trialDof, trialPoint) *
-                                        trialGeomData.integrationElements(trialPoint) *
-                                        m_trialQuadWeights[trialPoint];
+                for (int point = 0; point < pointCount; ++point)
+                    for (int trialDim = 0; trialDim < trialComponentCount; ++trialDim)
+                        for (int testDim = 0; testDim < testComponentCount; ++testDim)
+                            sum +=  m_quadWeights[point] *
+                                    testGeomData.integrationElements(point) *
+                                    testValues(testDim, testDof, point) *
+                                    kernelValues(testDim, trialDim, point) *
+                                    trialValues(trialDim, trialDof, point) *
+                                    trialGeomData.integrationElements(point);
                 result(testDof, trialDof, pairIndex) = sum;
             }
     }
 }
-
 
 } // namespace Fiber
