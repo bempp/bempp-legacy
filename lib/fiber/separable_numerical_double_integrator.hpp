@@ -89,20 +89,6 @@ private:
     OpenClOptions m_openClOptions;    
 };
 
-struct Element2D
-{
-    int vertexIndices[4];
-    // potentially additional geometrical information
-};
-
-template <typename ValueType>
-struct Vertex3D
-{
-    ValueType x, y, z;
-};
-
-
-
 } // namespace Fiber
 
 #include "separable_numerical_double_integrator_imp.hpp"
