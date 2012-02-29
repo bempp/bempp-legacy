@@ -32,6 +32,9 @@ namespace Bempp
     %pythonappend globalIdSet %{
         val._parentGrid = self
     %}
+
+    // this function is only for internal use
+    %ignore elementGeometryFactory;
 }
 
 } // namespace Bempp
