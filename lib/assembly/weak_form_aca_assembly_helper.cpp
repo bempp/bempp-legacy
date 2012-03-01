@@ -163,6 +163,13 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
 }
 
 template <typename ValueType>
+ValueType WeakFormAcaAssemblyHelper<ValueType>::scale(
+        unsigned b1, unsigned n1, unsigned b2, unsigned n2) const
+{
+    return 1.;
+}
+
+template <typename ValueType>
 void WeakFormAcaAssemblyHelper<ValueType>::findLocalDofs(
         int start,
         int globalDofCount,
