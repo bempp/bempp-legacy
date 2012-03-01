@@ -62,7 +62,7 @@ public:
             const std::vector<GlobalDofIndex>& globalDofs,
             std::vector<std::vector<LocalDof> >& localDofs) const;
 
-    virtual void globalDofPositions(std::vector<Point3D>& positions) const;
+    virtual void globalDofPositions(std::vector<Point3D<ValueType> >& positions) const;
 
 private:
     std::auto_ptr<GridView> m_view;

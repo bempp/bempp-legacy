@@ -18,9 +18,9 @@
 #include <stdexcept>
 
 #ifdef WITH_AHMED
-//#include "ahmed_aux.hpp"
-//#include "discrete_aca_scalar_valued_linear_operator.hpp"
-//#include "weak_form_aca_assembly_helper.hpp"
+#include "ahmed_aux.hpp"
+#include "discrete_aca_scalar_valued_linear_operator.hpp"
+#include "weak_form_aca_assembly_helper.hpp"
 #endif
 
 // The spaces should be given the grid in constructor!
@@ -226,9 +226,10 @@ ElementaryLinearOperator<ValueType>::assembleWeakFormInAcaMode(
         const AssemblyOptions& options) const
 {
 #ifdef WITH_AHMED
+    typedef AhmedDofWrapper<ValueType> AhmedDofType;
     typedef DiscreteScalarValuedLinearOperator<ValueType> DiscreteLinOp;
     typedef DiscreteAcaScalarValuedLinearOperator<ValueType,
-            AhmedDofWrapper, AhmedDofWrapper> DiscreteAcaLinOp;
+            AhmedDofType, AhmedDofType > DiscreteAcaLinOp;
 
     // Get the grid's leaf view so that we can iterate over elements
     std::auto_ptr<GridView> view = trialSpace.grid().leafView();
@@ -255,7 +256,7 @@ ElementaryLinearOperator<ValueType>::assembleWeakFormInAcaMode(
     for (unsigned int i = 0; i < trialDofCount; ++i)
         p2oTrialDofs[i] = i;
 
-    std::vector<Point3D> trialDofCenters, testDofCenters;
+    std::vector<Point3D<ValueType> > trialDofCenters, testDofCenters;
     trialSpace.globalDofPositions(trialDofCenters);
     testSpace.globalDofPositions(testDofCenters);
 
@@ -263,18 +264,18 @@ ElementaryLinearOperator<ValueType>::assembleWeakFormInAcaMode(
     // descendant AhmedDofWrapper, which does not contain any new data members,
     // but just one additional method (the two structs should therefore be
     // binary compatible)
-    const AhmedDofWrapper* ahmedTrialDofCenters =
-            static_cast<AhmedDofWrapper*>(&trialDofCenters[0]);
-    const AhmedDofWrapper* ahmedTestDofCenters =
-            static_cast<AhmedDofWrapper*>(&trialDofCenters[0]);
+    const AhmedDofType* ahmedTrialDofCenters =
+            static_cast<AhmedDofType*>(&trialDofCenters[0]);
+    const AhmedDofType* ahmedTestDofCenters =
+            static_cast<AhmedDofType*>(&trialDofCenters[0]);
 
-    bemcluster<const AhmedDofWrapper> testClusterTree(
+    bemcluster<const AhmedDofType> testClusterTree(
                 ahmedTestDofCenters, o2pTestDofs.memptr(),
                 0, testDofCount);
     testClusterTree.createClusterTree(
                 options.acaMinimumBlockSize,
                 o2pTestDofs.memptr(), p2oTestDofs.memptr());
-    bemcluster<const AhmedDofWrapper> trialClusterTree(
+    bemcluster<const AhmedDofType> trialClusterTree(
                 ahmedTrialDofCenters, o2pTrialDofs.memptr(),
                 0, trialDofCount);
     trialClusterTree.createClusterTree(
@@ -287,7 +288,7 @@ ElementaryLinearOperator<ValueType>::assembleWeakFormInAcaMode(
               << std::endl;
 #endif
 
-    typedef bemblcluster<AhmedDofWrapper, AhmedDofWrapper> DoubleCluster;
+    typedef bemblcluster<AhmedDofType, AhmedDofType> DoubleCluster;
     std::auto_ptr<DoubleCluster> doubleClusterTree(
                 new DoubleCluster(0, 0, testDofCount, trialDofCount));
     unsigned int blockCount = 0;
@@ -299,40 +300,19 @@ ElementaryLinearOperator<ValueType>::assembleWeakFormInAcaMode(
 
     std::auto_ptr<DiscreteLinOp> result;
 
-    if (options.useOpenCl)
-    {
-        // TODO:
-        // Initialise OpenCL (obtain context etc.)
-        // Compile kernel obtained through
-        //
-        //   openClKernelToEvaluateFullIntegrand()
-        //
-        // Perhaps spawn threads for each block (they will call Ahmed's approx
-        //   function)
-        // Wait for threads to request data
+    // OpenMP implementation also possible
 
-        // When enough data requested, transmit input data to GPU
-        // Execute kernel
-        // Postprocess GPU output data and make them available to threads that
-        //   requested them
-        // When all threads have finished work, continue
-    }
-    else
-    {
-        // OpenMP implementation also possible
+    WeakFormAcaAssemblyHelper<ValueType>
+            helper(*this, *view, testSpace, trialSpace,
+                   p2oTestDofs, p2oTrialDofs, intMgr, options);
 
-        WeakFormAcaAssemblyHelper<ValueType>
-                helper(*this, *view, testSpace, trialSpace,
-                       p2oTestDofs, p2oTrialDofs, intMgr, options);
-
-        mblock<ValueType>* blocks;
-        matgen_sqntl(helper, doubleClusterTree.get(), doubleClusterTree.get(),
-                     options.acaRecompress, options.acaEps,
-                     options.acaMaximumRank, &blocks);
-        result = std::auto_ptr<DiscreteLinOp>(
-                    new DiscreteAcaLinOp(testDofCount, trialDofCount,
-                                         doubleClusterTree, &blocks));
-    }
+    mblock<ValueType>* blocks;
+    matgen_sqntl(helper, doubleClusterTree.get(), doubleClusterTree.get(),
+                 options.acaRecompress, options.acaEps,
+                 options.acaMaximumRank, &blocks);
+    result = std::auto_ptr<DiscreteLinOp>(
+                new DiscreteAcaLinOp(testDofCount, trialDofCount,
+                                     doubleClusterTree, &blocks));
     return result;
 #else // without Ahmed
     throw std::runtime_error("To enable assembly in ACA mode, recompile BEM++ "

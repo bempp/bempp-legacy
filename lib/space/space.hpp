@@ -102,7 +102,8 @@ public:
     // For the moment, Point will always be 3D, independently from the
     // actual dimension of the space. Once Ahmed's bemcluster is made dimension-
     // independent, we may come up with a more elegant solution.
-    virtual void globalDofPositions(std::vector<Point3D>& positions) const = 0;
+    virtual void globalDofPositions(
+            std::vector<Point3D<ValueType> >& positions) const = 0;
     /** @} */
 
 protected:

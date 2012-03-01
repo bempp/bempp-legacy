@@ -75,9 +75,10 @@ struct LocalDof
     LocalDofIndex dofIndex;
 };
 
+template <typename ValueType>
 struct Point3D
 {
-    ctype x, y, z;
+    ValueType x, y, z;
 };
 
 } // namespace Bempp

@@ -195,6 +195,14 @@ void PiecewiseConstantScalarSpace<ValueType>::global2localDofs(
         localDofs[i] = m_global2localDofs[globalDofs[i]];
 }
 
+template <typename ValueType>
+void PiecewiseConstantScalarSpace<ValueType>::globalDofPositions(
+        std::vector<Point3D<ValueType> >& positions) const
+{
+    throw NotImplementedError("PiecewiseConstantScalarSpace::"
+                              "globalDofPositions(): "
+                              "not implemented yet");
+}
 
 #ifdef COMPILE_FOR_FLOAT
 template class PiecewiseConstantScalarSpace<float>;

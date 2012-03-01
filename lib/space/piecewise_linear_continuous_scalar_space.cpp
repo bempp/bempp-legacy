@@ -29,6 +29,10 @@
 #include <dune/localfunctions/lagrange/q1/q1localbasis.hh>
 
 #include <stdexcept>
+#include <iostream>
+
+#include "../grid/geometry.hpp"
+
 
 namespace Bempp
 {
@@ -135,6 +139,20 @@ void PiecewiseLinearContinuousScalarSpace<ValueType>::assignDofs()
     // Thus, the will be as many global DOFs as there are vertices.
     int globalDofCount_ = m_view->entityCount(this->m_grid.dim());
 
+    // DEBUG
+    std::cout << "Vertices:\n" << std::endl;
+    std::auto_ptr<EntityIterator<2> > vit = m_view->entityIterator<2>();
+    while (!vit->finished())
+    {
+        arma::Col<ValueType> vertex;
+        vit->entity().geometry().center(vertex);
+        std::cout << indexSet.entityIndex(vit->entity()) << ": "
+                  << vertex(0) << " "
+                  << vertex(1) << " "
+                  << vertex(2) << std::endl;
+        vit->next();
+    }
+
     // (Re)initialise DOF maps
     m_local2globalDofs.clear();
     m_global2localDofs.clear();
@@ -209,11 +227,46 @@ void PiecewiseLinearContinuousScalarSpace<ValueType>::global2localDofs(
 
 template <typename ValueType>
 void PiecewiseLinearContinuousScalarSpace<ValueType>::globalDofPositions(
-        std::vector<Point3D>& positions) const
+        std::vector<Point3D<ValueType> >& positions) const
 {
-    throw NotImplementedError("PiecewiseLinearContinuousScalarSpace::"
-                              "globalDofPositions(): "
-                              "not implemented");
+    const int gridDim = domainDimension();
+    const int globalDofCount_ = globalDofCount();
+    positions.resize(globalDofCount_);
+
+    const IndexSet& indexSet = m_view->indexSet();
+
+    if (gridDim == 1)
+    {
+        std::auto_ptr<EntityIterator<1> > it = m_view->entityIterator<1>();
+        while (!it->finished())
+        {
+            const Entity<1>& e = it->entity();
+            int index = indexSet.entityIndex(e);
+            arma::Col<ValueType> vertex;
+            e.geometry().center(vertex);
+
+            positions[index].x = vertex(0);
+            positions[index].y = vertex(1);
+            positions[index].z = 0.;
+            it->next();
+        }
+    }
+    else // gridDim == 2
+    {
+        std::auto_ptr<EntityIterator<2> > it = m_view->entityIterator<2>();
+        while (!it->finished())
+        {
+            const Entity<2>& e = it->entity();
+            int index = indexSet.entityIndex(e);
+            arma::Col<ValueType> vertex;
+            e.geometry().center(vertex);
+
+            positions[index].x = vertex(0);
+            positions[index].y = vertex(1);
+            positions[index].z = vertex(2);
+            it->next();
+        }
+    }
 }
 
 

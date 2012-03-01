@@ -37,15 +37,16 @@
 
 namespace Bempp {
 
-struct AhmedDofWrapper : public Point3D
+template <typename ValueType>
+struct AhmedDofWrapper : public Point3D<ValueType>
 {
-    ctype getcenter(int dim) const
+    ValueType getcenter(int dim) const
     {
         switch (dim)
         {
-        case 0: return x;
-        case 1: return y;
-        case 2: return z;
+        case 0: return this->x;
+        case 1: return this->y;
+        case 2: return this->z;
         default:
             throw std::invalid_argument("AhmedDofWrapper::getcenter(): "
                                         "invalid dimension index");
