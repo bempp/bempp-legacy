@@ -12,10 +12,6 @@
    */
 #undef DUNE_ALBERTA_VERSION
 
-/* If this is set, the member 'size' of FieldVector is a method rather than an
-   enum */
-#undef DUNE_COMMON_FIELDVECTOR_SIZE_IS_METHOD
-
 /* Define to the version of dune-common */
 #undef DUNE_COMMON_VERSION
 
@@ -108,9 +104,6 @@
 /* Define if you have a BLAS library. */
 #undef HAVE_BLAS
 
-/* Define to 1 if you have <boost/make_shared.hpp>. */
-#undef HAVE_BOOST_MAKE_SHARED_HPP
-
 /* Define to 1 if you have the <boost/shared_ptr.hpp> header file. */
 #undef HAVE_BOOST_SHARED_PTR_HPP
 
@@ -141,9 +134,6 @@
 
 /* Define to 1 if you have the `m' library (-lm). */
 #undef HAVE_LIBM
-
-/* Define to 1 if SHARED_PTR_NAMESPACE::make_shared is usable. */
-#undef HAVE_MAKE_SHARED
 
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
@@ -249,18 +239,12 @@
 /* Define to the one symbol short name of this package. */
 #undef PACKAGE_TARNAME
 
-/* Define to the home page for this package. */
-#undef PACKAGE_URL
-
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
 /* Define to necessary symbol if this constant uses a non-standard name on
    your system. */
 #undef PTHREAD_CREATE_JOINABLE
-
-/* The header in which SHARED_PTR can be found */
-#undef SHARED_PTR_HEADER
 
 /* The namespace in which SHARED_PTR can be found */
 #undef SHARED_PTR_NAMESPACE

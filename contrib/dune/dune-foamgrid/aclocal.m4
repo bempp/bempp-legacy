@@ -13,8 +13,8 @@
 
 m4_ifndef([AC_AUTOCONF_VERSION],
   [m4_copy([m4_PACKAGE_VERSION], [AC_AUTOCONF_VERSION])])dnl
-m4_if(m4_defn([AC_AUTOCONF_VERSION]), [2.67],,
-[m4_warning([this file was generated for autoconf 2.67.
+m4_if(m4_defn([AC_AUTOCONF_VERSION]), [2.63],,
+[m4_warning([this file was generated for autoconf 2.63.
 You have another version of autoconf.  It may work, but is not guaranteed to.
 If you have problems, you may need to regenerate the build system entirely.
 To do so, use the procedure documented by the package, typically `autoreconf'.])])
@@ -2460,7 +2460,7 @@ linux*oldld* | linux*aout* | linux*coff*)
   ;;
 
 # This must be Linux ELF.
-linux* | k*bsd*-gnu | kopensolaris*-gnu)
+linux* | k*bsd*-gnu)
   version_type=linux
   need_lib_prefix=no
   need_version=no
@@ -2485,10 +2485,13 @@ linux* | k*bsd*-gnu | kopensolaris*-gnu)
   # before this can be enabled.
   hardcode_into_libs=yes
 
+  # Add ABI-specific directories to the system library path.
+  sys_lib_dlsearch_path_spec="/lib64 /usr/lib64 /lib /usr/lib"
+
   # Append ld.so.conf contents to the search path
   if test -f /etc/ld.so.conf; then
     lt_ld_extra=`awk '/^include / { system(sprintf("cd /etc; cat %s 2>/dev/null", \[$]2)); skip = 1; } { if (!skip) print \[$]0; skip = 0; }' < /etc/ld.so.conf | $SED -e 's/#.*//;/^[	 ]*hwcap[	 ]/d;s/[:,	]/ /g;s/=[^=]*$//;s/=[^= ]* / /g;/^$/d' | tr '\n' ' '`
-    sys_lib_dlsearch_path_spec="/lib /usr/lib $lt_ld_extra"
+    sys_lib_dlsearch_path_spec="$sys_lib_dlsearch_path_spec $lt_ld_extra"
   fi
 
   # We used to test for /lib/ld.so.1 and disable shared libraries on
@@ -2498,18 +2501,6 @@ linux* | k*bsd*-gnu | kopensolaris*-gnu)
   # people can always --disable-shared, the test was removed, and we
   # assume the GNU/Linux dynamic linker is in use.
   dynamic_linker='GNU/Linux ld.so'
-  ;;
-
-netbsdelf*-gnu)
-  version_type=linux
-  need_lib_prefix=no
-  need_version=no
-  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major ${libname}${shared_ext}'
-  soname_spec='${libname}${release}${shared_ext}$major'
-  shlibpath_var=LD_LIBRARY_PATH
-  shlibpath_overrides_runpath=no
-  hardcode_into_libs=yes
-  dynamic_linker='NetBSD ld.elf_so'
   ;;
 
 netbsd*)
@@ -3099,11 +3090,11 @@ irix5* | irix6* | nonstopux*)
   ;;
 
 # This must be Linux ELF.
-linux* | k*bsd*-gnu | kopensolaris*-gnu)
+linux* | k*bsd*-gnu)
   lt_cv_deplibs_check_method=pass_all
   ;;
 
-netbsd* | netbsdelf*-gnu)
+netbsd*)
   if echo __ELF__ | $CC -E - | $GREP __ELF__ > /dev/null; then
     lt_cv_deplibs_check_method='match_pattern /lib[[^/]]+(\.so\.[[0-9]]+\.[[0-9]]+|_pic\.a)$'
   else
@@ -3720,7 +3711,7 @@ m4_if([$1], [CXX], [
 	    ;;
 	esac
 	;;
-      linux* | k*bsd*-gnu | kopensolaris*-gnu)
+      linux* | k*bsd*-gnu)
 	case $cc_basename in
 	  KCC*)
 	    # KAI C++ Compiler
@@ -3784,7 +3775,7 @@ m4_if([$1], [CXX], [
 	    ;;
 	esac
 	;;
-      netbsd* | netbsdelf*-gnu)
+      netbsd*)
 	;;
       *qnx* | *nto*)
         # QNX uses GNU C++, but need to define -shared option too, otherwise
@@ -4004,7 +3995,7 @@ m4_if([$1], [CXX], [
       _LT_TAGVAR(lt_prog_compiler_static, $1)='-non_shared'
       ;;
 
-    linux* | k*bsd*-gnu | kopensolaris*-gnu)
+    linux* | k*bsd*-gnu)
       case $cc_basename in
       # old Intel for x86_64 which still supported -KPIC.
       ecc*)
@@ -4209,9 +4200,6 @@ m4_if([$1], [CXX], [
   cygwin* | mingw* | cegcc*)
     _LT_TAGVAR(export_symbols_cmds, $1)='$NM $libobjs $convenience | $global_symbol_pipe | $SED -e '\''/^[[BCDGRS]][[ ]]/s/.*[[ ]]\([[^ ]]*\)/\1 DATA/;/^.*[[ ]]__nm__/s/^.*[[ ]]__nm__\([[^ ]]*\)[[ ]][[^ ]]*/\1 DATA/;/^I[[ ]]/d;/^[[AITW]][[ ]]/s/.* //'\'' | sort | uniq > $export_symbols'
   ;;
-  linux* | k*bsd*-gnu)
-    _LT_TAGVAR(link_all_deplibs, $1)=no
-  ;;
   *)
     _LT_TAGVAR(export_symbols_cmds, $1)='$NM $libobjs $convenience | $global_symbol_pipe | $SED '\''s/.* //'\'' | sort | uniq > $export_symbols'
   ;;
@@ -4276,9 +4264,6 @@ dnl Note also adjust exclude_expsyms for C++ above.
   openbsd*)
     with_gnu_ld=no
     ;;
-  linux* | k*bsd*-gnu)
-    _LT_TAGVAR(link_all_deplibs, $1)=no
-    ;;
   esac
 
   _LT_TAGVAR(ld_shlibs, $1)=yes
@@ -4300,7 +4285,6 @@ dnl Note also adjust exclude_expsyms for C++ above.
     fi
     supports_anon_versioning=no
     case `$LD -v 2>&1` in
-      *GNU\ gold*) supports_anon_versioning=yes ;;
       *\ [[01]].* | *\ 2.[[0-9]].* | *\ 2.10.*) ;; # catch versions < 2.11
       *\ 2.11.93.0.2\ *) supports_anon_versioning=yes ;; # RH7.3 ...
       *\ 2.11.92.0.12\ *) supports_anon_versioning=yes ;; # Mandrake 8.2 ...
@@ -4392,7 +4376,7 @@ _LT_EOF
       _LT_TAGVAR(archive_expsym_cmds, $1)='sed "s,^,_," $export_symbols >$output_objdir/$soname.expsym~$CC -shared $pic_flag $libobjs $deplibs $compiler_flags ${wl}-h,$soname ${wl}--retain-symbols-file,$output_objdir/$soname.expsym ${wl}--image-base,`expr ${RANDOM-$$} % 4096 / 2 \* 262144 + 1342177280` -o $lib'
       ;;
 
-    gnu* | linux* | tpf* | k*bsd*-gnu | kopensolaris*-gnu)
+    gnu* | linux* | tpf* | k*bsd*-gnu)
       tmp_diet=no
       if test "$host_os" = linux-dietlibc; then
 	case $cc_basename in
@@ -4462,7 +4446,7 @@ _LT_EOF
       fi
       ;;
 
-    netbsd* | netbsdelf*-gnu)
+    netbsd*)
       if echo __ELF__ | $CC -E - | $GREP __ELF__ >/dev/null; then
 	_LT_TAGVAR(archive_cmds, $1)='$LD -Bshareable $libobjs $deplibs $linker_flags -o $lib'
 	wlarc=
@@ -4637,7 +4621,6 @@ _LT_EOF
 	if test "$aix_use_runtimelinking" = yes; then
 	  shared_flag="$shared_flag "'${wl}-G'
 	fi
-	_LT_TAGVAR(link_all_deplibs, $1)=no
       else
 	# not using gcc
 	if test "$host_cpu" = ia64; then
@@ -4876,7 +4859,7 @@ _LT_EOF
       _LT_TAGVAR(link_all_deplibs, $1)=yes
       ;;
 
-    netbsd* | netbsdelf*-gnu)
+    netbsd*)
       if echo __ELF__ | $CC -E - | $GREP __ELF__ >/dev/null; then
 	_LT_TAGVAR(archive_cmds, $1)='$LD -Bshareable -o $lib $libobjs $deplibs $linker_flags'  # a.out
       else
@@ -5872,7 +5855,7 @@ if test "$_lt_caught_CXX_error" != yes; then
         _LT_TAGVAR(inherit_rpath, $1)=yes
         ;;
 
-      linux* | k*bsd*-gnu | kopensolaris*-gnu)
+      linux* | k*bsd*-gnu)
         case $cc_basename in
           KCC*)
 	    # Kuck and Associates, Inc. (KAI) C++ Compiler
@@ -7986,7 +7969,6 @@ m4_ifndef([AC_LIBTOOL_CONFIG],		[AC_DEFUN([AC_LIBTOOL_CONFIG])])
 m4_ifndef([_LT_AC_FILE_LTDLL_C],	[AC_DEFUN([_LT_AC_FILE_LTDLL_C])])
 
 # pkg.m4 - Macros to locate and utilise pkg-config.            -*- Autoconf -*-
-# serial 1 (pkg-config-0.24)
 # 
 # Copyright © 2004 Scott James Remnant <scott@netsplit.com>.
 #
@@ -8014,10 +7996,7 @@ m4_ifndef([_LT_AC_FILE_LTDLL_C],	[AC_DEFUN([_LT_AC_FILE_LTDLL_C])])
 AC_DEFUN([PKG_PROG_PKG_CONFIG],
 [m4_pattern_forbid([^_?PKG_[A-Z_]+$])
 m4_pattern_allow([^PKG_CONFIG(_PATH)?$])
-AC_ARG_VAR([PKG_CONFIG], [path to pkg-config utility])
-AC_ARG_VAR([PKG_CONFIG_PATH], [directories to add to pkg-config's search path])
-AC_ARG_VAR([PKG_CONFIG_LIBDIR], [path overriding pkg-config's built-in search path])
-
+AC_ARG_VAR([PKG_CONFIG], [path to pkg-config utility])dnl
 if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
 	AC_PATH_TOOL([PKG_CONFIG], [pkg-config])
 fi
@@ -8030,6 +8009,7 @@ if test -n "$PKG_CONFIG"; then
 		AC_MSG_RESULT([no])
 		PKG_CONFIG=""
 	fi
+		
 fi[]dnl
 ])# PKG_PROG_PKG_CONFIG
 
@@ -8038,19 +8018,20 @@ fi[]dnl
 # Check to see whether a particular set of modules exists.  Similar
 # to PKG_CHECK_MODULES(), but does not set variables or print errors.
 #
-# Please remember that m4 expands AC_REQUIRE([PKG_PROG_PKG_CONFIG])
-# only at the first occurence in configure.ac, so if the first place
-# it's called might be skipped (such as if it is within an "if", you
-# have to call PKG_CHECK_EXISTS manually
+#
+# Similar to PKG_CHECK_MODULES, make sure that the first instance of
+# this or PKG_CHECK_MODULES is called, or make sure to call
+# PKG_CHECK_EXISTS manually
 # --------------------------------------------------------------
 AC_DEFUN([PKG_CHECK_EXISTS],
 [AC_REQUIRE([PKG_PROG_PKG_CONFIG])dnl
 if test -n "$PKG_CONFIG" && \
     AC_RUN_LOG([$PKG_CONFIG --exists --print-errors "$1"]); then
-  m4_default([$2], [:])
+  m4_ifval([$2], [$2], [:])
 m4_ifvaln([$3], [else
   $3])dnl
 fi])
+
 
 # _PKG_CONFIG([VARIABLE], [COMMAND], [MODULES])
 # ---------------------------------------------
@@ -8104,7 +8085,6 @@ and $1[]_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details.])
 
 if test $pkg_failed = yes; then
-   	AC_MSG_RESULT([no])
         _PKG_SHORT_ERRORS_SUPPORTED
         if test $_pkg_short_errors_supported = yes; then
 	        $1[]_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "$2" 2>&1`
@@ -8114,7 +8094,7 @@ if test $pkg_failed = yes; then
 	# Put the nasty error message in config.log where it belongs
 	echo "$$1[]_PKG_ERRORS" >&AS_MESSAGE_LOG_FD
 
-	m4_default([$4], [AC_MSG_ERROR(
+	ifelse([$4], , [AC_MSG_ERROR(dnl
 [Package requirements ($2) were not met:
 
 $$1_PKG_ERRORS
@@ -8122,24 +8102,25 @@ $$1_PKG_ERRORS
 Consider adjusting the PKG_CONFIG_PATH environment variable if you
 installed software in a non-standard prefix.
 
-_PKG_TEXT])[]dnl
-        ])
+_PKG_TEXT
+])],
+		[AC_MSG_RESULT([no])
+                $4])
 elif test $pkg_failed = untried; then
-     	AC_MSG_RESULT([no])
-	m4_default([$4], [AC_MSG_FAILURE(
+	ifelse([$4], , [AC_MSG_FAILURE(dnl
 [The pkg-config script could not be found or is too old.  Make sure it
 is in your PATH or set the PKG_CONFIG environment variable to the full
 path to pkg-config.
 
 _PKG_TEXT
 
-To get pkg-config, see <http://pkg-config.freedesktop.org/>.])[]dnl
-        ])
+To get pkg-config, see <http://pkg-config.freedesktop.org/>.])],
+		[$4])
 else
 	$1[]_CFLAGS=$pkg_cv_[]$1[]_CFLAGS
 	$1[]_LIBS=$pkg_cv_[]$1[]_LIBS
         AC_MSG_RESULT([yes])
-	$3
+	ifelse([$3], , :, [$3])
 fi[]dnl
 ])# PKG_CHECK_MODULES
 
@@ -9129,6 +9110,1305 @@ AC_SUBST([am__tar])
 AC_SUBST([am__untar])
 ]) # _AM_PROG_TAR
 
+# $Id: alberta.m4 5156 2008-04-14 09:28:06Z christi $
+# searches for alberta-headers and libs
+
+# Substitutes the following make variables:
+#   ALBERTA_DIM
+#     value of --with-alberta-dim, or taken from --world-dim, or 2 per default
+#
+#   ALBERTAROOT = /usr/local/alberta
+#     Root dir of the alberta installation.  Set from --with-alberta=...
+#
+#   ALBERTA_BASE_LIBS = $(ALBERTA_LIBPATHFLAGS) -lalberta_util $ALBERTA_EXTRA
+#     LIBS that are always required independent of dimension
+#
+#   ALBERTA_LIBPATHFLAGS = -L$(ALBERTAROOT)/lib
+#     Library path required for alberta
+#
+#   ALBERTA%DIM%D_LIBS = -L$(DUNE_GRID_LIBDIR) -ldunealbertagrid_%DIM%d -ldunegrid \
+#              $(ALBERTA_LIBPATHFLAGS) -lalberta_%DIM%d \
+#              $(ALBERTA_BASE_LIBS)
+#     *OR*       = $(top_builddir)/lib/libdunealbertagrid_%DIM%d.la \
+#              $(top_builddir)/lib/libdunegrid.la \
+#              $(ALBERTA_LIBPATHFLAGS) -lalberta_%DIM%d \
+#              $(ALBERTA_BASE_LIBS)
+#     All LIBS required for dimension %DIM% (1, 2, or 3).  The first value is
+#     substituted by default and is apropriate for modules depending on
+#     dune-grid.  dune-grid itself will overwrite that with the second value
+#     however in configure.ac.
+#
+#   ALBERTA_LIBS = $(ALBERTA($ALBERTA_DIM)D_LIBS)
+#     All LIBS required for the configured dimension.  The value of this
+#     variable will be empty for dimensions other than 1, 2, or 3.
+#
+#   ALBERTA_INCLUDE_CPPFLAGS = -I$(ALBERTAROOT)/include/alberta
+#     Include path required for Alberta.
+#
+#   ALBERTA%DIM%D_CPPFLAGS = $(ALBERTA_INCLUDE_CPPFLAGS) \
+#              -DALBERTA_DIM=%DIM% -DENABLE_ALBERTA
+#     All CPPFLAGS required for dimension %DIM% (1, 2, or 3).
+#
+#   ALBERTA_CPPFLAGS = $(ALBERTA$(ALBERTA_DIM)D_CPPFLAGS)
+#     All CPPFLAGS required for the configured dimension.  The value of this
+#     variable will be empty for dimensions other than 1, 2, or 3, thus
+#     ENABLE_ALBERTA will not be defined inside the program, disabling alberta
+#     support.
+#
+#   ALBERTA%DIM%D_LDFLAGS =
+#     All LDFLAGS required for dimension %DIM% (1, 2, or 3).  These are
+#     currently empty and exist just for consistency.
+#
+#   ALBERTA_LDFLAGS = $(ALBERTA$(ALBERTA_DIM)_LDFLAGS)
+#     All LDFLAGS required for the configured dimension.  These are currently
+#     empty and exist just for consistency.
+#
+#   If you want to use the the configured dimension, you have to use
+#   $(ALBERTA_LIBS), $(ALBERTA_CPPFLAGS) and $(ALBERTA_LDFLAGS).  If the
+#   configured dimension is anything other than 1, 2, or 3, these variable
+#   will substitute empty values, thus disabling support for alberta in the
+#   program.
+#
+#   If want to use a specific dimension, say 2, you have to use
+#   $(ALBERTA2D_LIBS), $(ALBERTA2D_CPPFLAGS) and $(ALBERTA2D_LDFLAGS).
+#
+# Defines the folling CPP macro
+#   ALBERTA_DIM
+#     The Alberta dimension this binary will be linked with.
+#   DUNE_ALBERTA_VERSION
+#     Alberta version found by configure, either 0x200 for 2.0 or 0x300 for 3.0
+#   HAVE_ALBERTA
+#     This is only true if alberta-library was found by configure 
+#     _and_ if the application uses the ALBERTA_CPPFLAGS
+#
+# Defines the following automake conditional
+#    ALBERTA
+#
+# configure shell variables:
+#    HAVE_ALBERTA
+#      1 if a working Alberta was found.
+AC_DEFUN([DUNE_PATH_ALBERTA],[
+  AC_REQUIRE([AC_PROG_CC])
+  AC_REQUIRE([AC_PROG_F77])
+  AC_REQUIRE([AC_PATH_XTRA])
+  AC_REQUIRE([DUNE_PATH_OPENGL])
+
+  ALBERTA_DIM='$(WORLDDIM)'
+
+  AC_ARG_WITH(alberta,
+    AC_HELP_STRING([--with-alberta=PATH],[directory where ALBERTA (ALBERTA
+    version 2.0 or higher) is installed.  You can pass additional required
+    libraries in the ALBERTA_EXTRA environment variable (in a form suitable
+    for $LIBS)]))
+
+  AC_ARG_ENABLE([alberta-libcheck],
+    AS_HELP_STRING([--disable-alberta-libcheck],
+      [Do not try to link against libalberta_Nd.]))
+
+  # do not use alberta debug lib 
+  with_alberta_debug=0
+
+  # store old values
+  ac_save_LDFLAGS="$LDFLAGS"
+  ac_save_CPPFLAGS="$CPPFLAGS"
+  ac_save_LIBS="$LIBS"
+  # LIBS=""
+
+  ## do nothing if no --with-alberta was supplied
+  AS_IF([test x$with_alberta != xno],[
+
+    # is --with-alberta=PATH used?
+    AS_IF([test "x$with_alberta" != "x"],[
+      AS_IF([test -d $with_alberta],[
+        AC_MSG_NOTICE([searching for ALBERTA in $with_alberta...])
+        ALBERTAROOT=`cd $with_alberta && pwd`
+      ],[
+        AC_MSG_WARN([ALBERTA directory '$with_alberta' does not exist])
+      ])
+    ],[
+      # educated guess for alberta root
+      for d in /usr /usr/local /usr/local/alberta /opt/alberta; do
+        AC_MSG_NOTICE([searching for ALBERTA in $d...])
+        AS_IF([test -d $d/include/alberta],[
+          ALBERTAROOT="$d"
+          break
+        ])
+      done
+    ])
+
+    ALBERTA_VERSION="2.0"
+
+    # set variables so that tests can use them
+    ALBERTA_INCLUDE_CPPFLAGS="-I$ALBERTAROOT/include/alberta"
+
+    # define varaible flags depending on problem and world dim, to change afterwards easily
+    ALBERTA_CPPFLAGS='$(ALBERTA$(ALBERTA_DIM)D_CPPFLAGS)'
+    ALBERTA_LDFLAGS='$(ALBERTA$(ALBERTA_DIM)D_LDFLAGS)'
+    ALBERTA_LIBS='$(ALBERTA$(ALBERTA_DIM)D_LIBS)'
+
+    # initialize dimension dependent CPPFLAGS, LDFLAGS and LIBS to default values
+    for N in 1 2 3 4 5 6 7 8 9 ; do
+      eval ALBERTA${N}D_CPPFLAGS=
+      eval ALBERTA${N}D_LDFLAGS=
+      eval ALBERTA${N}D_LIBS=
+    done
+
+    # check for header
+    CPPFLAGS="$ac_save_CPPFLAGS $ALBERTA_INCLUDE_CPPFLAGS -DDIM_OF_WORLD=3 -DEL_INDEX=0"
+    AC_CHECK_HEADER([alberta.h], [HAVE_ALBERTA="1"],
+      AC_MSG_WARN([alberta.h not found in $ALBERTA_INCLUDE_CPPFLAGS]))
+
+    if test "x$HAVE_ALBERTA" = "x1" ; then
+      AC_CHECK_MEMBER([struct el_info.wall_bound],[ALBERTA_VERSION="3.0"],[AC_MSG_WARN([version 3 not found, now looking for version 2])],[#include <alberta.h>])
+    fi
+
+    CPPFLAGS="$ac_save_CPPFLAGS $ALBERTA_INCLUDE_CPPFLAGS"
+
+    # TODO: check if static flag exists 
+    # link_static_flag defines the flag for the linker to link only static
+    # didnt work, with $link_static_flag, so quick hack here
+
+    # check for libalberta_util...
+    ALBERTA_LIBPATHFLAGS='-L$(ALBERTAROOT)/lib'
+    DUNEALBERTA_LIBPATHFLAGS='-L$(top_builddir)/lib'
+    LDFLAGS="$LDFLAGS -L$ALBERTAROOT/lib"
+    AS_IF([test "x$HAVE_ALBERTA" = "x1"],[
+      AC_CHECK_LIB(alberta_util,[alberta_calloc],
+        [LIBS="-lalberta_util $LIBS"],
+        [HAVE_ALBERTA="0"
+         AC_MSG_WARN(-lalberta_util not found!)])
+    ])
+
+    # check for ALBERTA grid library...
+    AS_IF([test "x$HAVE_ALBERTA" = "x1"],[
+
+      AS_IF([test x$enable_alberta_libcheck = xno],[
+        AC_MSG_WARN([Disabled checking whether libalberta_Nd can be linked.])
+      ],[
+        ALBERTA_WORLD_DIMS=
+        for N in 1 2 3 4 5 6 7 8 9; do
+          AC_CHECK_LIB(alberta_${N}d,[mesh_traverse],[
+            ALBERTA_WORLD_DIMS="$ALBERTA_WORLD_DIMS $N"
+          ])
+        done
+      ])
+
+      AS_IF([test "x$ALBERTA_WORLD_DIMS" != "x"],[
+        AC_MSG_NOTICE([Found libalberta_Nd for N = $ALBERTA_WORLD_DIMS])
+
+        ALBERTA_BASE_LIBS="\$(ALBERTA_LIBPATHFLAGS) -lalberta_util $ALBERTA_EXTRA"
+
+        # define library variables for all found libraries
+        for N in $ALBERTA_WORLD_DIMS ; do
+          eval ALBERTA${N}D_CPPFLAGS="'\$(ALBERTA_INCLUDE_CPPFLAGS) -DALBERTA_DIM=${N} -DENABLE_ALBERTA'"
+          eval ALBERTA${N}D_LDFLAGS=
+          eval ALBERTA${N}D_LIBS="'-L\$(DUNE_GRID_LIBDIR) -ldunealbertagrid_${N}d -ldunegrid \$(ALBERTA_LIBPATHFLAGS) -lalberta_${N}d \$(ALBERTA_BASE_LIBS)'"
+        done
+      ],[
+        HAVE_ALBERTA=0
+        AC_MSG_WARN([No ALBERTA grid library (libalberta_Nd) found.])
+      ])
+
+    ])
+
+  ])  # end of alberta check (--without wasn't set)
+
+  # survived all tests?
+  AS_IF([test "x$HAVE_ALBERTA" = "x1"],[
+
+    AC_DEFINE(HAVE_ALBERTA, ENABLE_ALBERTA,
+      [This is only true if alberta-library was found by configure 
+       _and_ if the application uses the ALBERTA_CPPFLAGS])
+
+    if test "$ALBERTA_VERSION" = "2.0" ; then
+      AC_DEFINE([DUNE_ALBERTA_VERSION], [0x200], [Alberta version found by configure, either 0x200 for 2.0 or 0x300 for 3.0])
+    elif test "$ALBERTA_VERSION" = "3.0" ; then
+      AC_DEFINE([DUNE_ALBERTA_VERSION], [0x300], [Alberta version found by configure, either 0x200 for 2.0 or 0x300 for 3.0])
+    else
+      AC_MSG_ERROR([Internal Inconsistency: Invalid Alberta version reported: $ALBERTA_VERSION.])
+    fi
+
+    # add to global list
+    DUNE_ADD_ALL_PKG([Alberta], [\${ALBERTA_CPPFLAGS}],
+                     [\${ALBERTA_LDFLAGS}], [\${ALBERTA_LIBS}])
+
+    DUNE_DEFINE_GRIDTYPE([ALBERTAGRID],[WORLDDIM == ALBERTA_DIM],[Dune::AlbertaGrid< dimgrid >],[dune/grid/albertagrid.hh],[dune/grid/albertagrid/dgfparser.hh])
+
+    # set variable for summary
+    with_alberta="version $ALBERTA_VERSION"
+    with_alberta_long="$ALBERTAROOT ; world dims $ALBERTA_WORLD_DIMS"
+
+  ],[
+
+    # clear all variables
+    ALBERTA_DIM= 
+    ALBERTAROOT= 
+    ALBERTA_BASE_LIBS=
+    DUNEALBERTA_LIBPATHFLAGS=
+    ALBERTA_LIBPATHFLAGS=
+    ALBERTA_INCLUDE_CPPFLAGS=
+    ALBERTA_DIM_CPPFLAGS=
+    ALBERTA_CPPFLAGS=
+    ALBERTA_LDFLAGS=
+    ALBERTA_LIBS=
+
+    ALBERTA_WORLD_DIMS=
+
+    for N in 1 2 3 4 5 6 7 8 9 ; do
+      eval ALBERTA${N}D_CPPFLAGS=
+      eval ALBERTA${N}D_LDFLAGS=
+      eval ALBERTA${N}D_LIBS=
+    done
+
+    # set variable for summary
+    with_alberta="no"
+    with_alberta_long=""
+
+  ])
+    
+  AC_SUBST([ALBERTA_DIM]) 
+  AC_SUBST([ALBERTAROOT]) 
+  AC_SUBST([ALBERTA_BASE_LIBS])
+  AC_SUBST([DUNEALBERTA_LIBPATHFLAGS])
+  AC_SUBST([ALBERTA_LIBPATHFLAGS])
+  AC_SUBST([ALBERTA_INCLUDE_CPPFLAGS])
+  AC_SUBST([ALBERTA_DIM_CPPFLAGS])
+  AC_SUBST([ALBERTA_CPPFLAGS])
+  AC_SUBST([ALBERTA_LDFLAGS])
+  AC_SUBST([ALBERTA_LIBS])
+
+  AC_SUBST([ALBERTA1D_CPPFLAGS])
+  AC_SUBST([ALBERTA2D_CPPFLAGS])
+  AC_SUBST([ALBERTA3D_CPPFLAGS])
+  AC_SUBST([ALBERTA4D_CPPFLAGS])
+  AC_SUBST([ALBERTA5D_CPPFLAGS])
+  AC_SUBST([ALBERTA6D_CPPFLAGS])
+  AC_SUBST([ALBERTA7D_CPPFLAGS])
+  AC_SUBST([ALBERTA8D_CPPFLAGS])
+  AC_SUBST([ALBERTA9D_CPPFLAGS])
+
+  AC_SUBST([ALBERTA1D_LDFLAGS])
+  AC_SUBST([ALBERTA2D_LDFLAGS])
+  AC_SUBST([ALBERTA3D_LDFLAGS])
+  AC_SUBST([ALBERTA4D_LDFLAGS])
+  AC_SUBST([ALBERTA5D_LDFLAGS])
+  AC_SUBST([ALBERTA6D_LDFLAGS])
+  AC_SUBST([ALBERTA7D_LDFLAGS])
+  AC_SUBST([ALBERTA8D_LDFLAGS])
+  AC_SUBST([ALBERTA9D_LDFLAGS])
+
+  AC_SUBST([ALBERTA1D_LIBS])
+  AC_SUBST([ALBERTA2D_LIBS])
+  AC_SUBST([ALBERTA3D_LIBS])
+  AC_SUBST([ALBERTA4D_LIBS])
+  AC_SUBST([ALBERTA5D_LIBS])
+  AC_SUBST([ALBERTA6D_LIBS])
+  AC_SUBST([ALBERTA7D_LIBS])
+  AC_SUBST([ALBERTA8D_LIBS])
+  AC_SUBST([ALBERTA9D_LIBS])
+
+  # also tell automake
+  AM_CONDITIONAL(ALBERTA, test x$HAVE_ALBERTA = x1)
+
+  AM_CONDITIONAL(ALBERTA_1D,[test ! -z "$(echo $ALBERTA_WORLD_DIMS | grep 1)"])
+  AM_CONDITIONAL(ALBERTA_2D,[test ! -z "$(echo $ALBERTA_WORLD_DIMS | grep 2)"])
+  AM_CONDITIONAL(ALBERTA_3D,[test ! -z "$(echo $ALBERTA_WORLD_DIMS | grep 3)"])
+  AM_CONDITIONAL(ALBERTA_4D,[test ! -z "$(echo $ALBERTA_WORLD_DIMS | grep 4)"])
+  AM_CONDITIONAL(ALBERTA_5D,[test ! -z "$(echo $ALBERTA_WORLD_DIMS | grep 5)"])
+  AM_CONDITIONAL(ALBERTA_6D,[test ! -z "$(echo $ALBERTA_WORLD_DIMS | grep 6)"])
+  AM_CONDITIONAL(ALBERTA_7D,[test ! -z "$(echo $ALBERTA_WORLD_DIMS | grep 7)"])
+  AM_CONDITIONAL(ALBERTA_8D,[test ! -z "$(echo $ALBERTA_WORLD_DIMS | grep 8)"])
+  AM_CONDITIONAL(ALBERTA_9D,[test ! -z "$(echo $ALBERTA_WORLD_DIMS | grep 9)"])
+
+  # reset old values
+  LIBS="$ac_save_LIBS"
+  CPPFLAGS="$ac_save_CPPFLAGS"
+  LDFLAGS="$ac_save_LDFLAGS"
+
+  DUNE_ADD_SUMMARY_ENTRY([ALBERTA],[$with_alberta],[$with_alberta_long])
+])
+
+# AlgLib provides arbitrary precision linear algebra and quadratures (and more).
+# see http://www.alglib.net/
+# Unfortunatly the available downloads are rather buggy, therefore we have
+# to provide a fixed version of the files used here - obtainable 
+# by contacting dedner|nolte@mathematik.uni-freiburg.de
+
+# DUNE_PATH_ALGLIB()
+#
+# shell variables:
+#   with_alglib
+#     no or path
+#   HAVE_ALGLIB
+#     no or "yes (...)"
+#   ALGLIB_CPPFLAGS
+#   ALGLIB_LIBS
+#
+# substitutions:
+#   ALGLIB_CPPFLAGS
+#   ALGLIB_LIBS
+#
+# preprocessor defines:
+#   HAVE_ALGLIB
+#     undef or ENABLE_ALGLIB
+#
+# conditionals:
+#   ALGLIB
+AC_DEFUN([DUNE_PATH_ALGLIB],[
+  AC_REQUIRE([AC_PROG_CXX])
+  AC_REQUIRE([DUNE_PATH_GMP])
+
+  HAVE_ALGLIB="no"
+
+  AC_ARG_WITH(alglib,
+    AS_HELP_STRING([--with-alglib=PATH],[directory to AlgLib for DUNE]))
+
+  ac_save_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
+  AS_IF([test "x$with_alglib" != "x"],
+        [PKG_CONFIG_PATH="$with_alglib:$with_alglib/lib/pkgconfig:$PKG_CONFIG_PATH"])
+  AC_MSG_CHECKING([for alglib4dune (>=1.0) via pkgconfig])
+  AS_IF([pkg-config --atleast-version=1.0 alglib4dune],[
+    HAVE_ALGLIB="version `pkg-config --modversion alglib4dune`"
+    ALGLIB_CPPFLAGS="`pkg-config --cflags alglib4dune` -DENABLE_ALGLIB=1"
+    ALGLIB_LIBS="`pkg-config --libs alglib4dune`"
+    AC_MSG_RESULT([yes])
+  ],[
+    AC_MSG_RESULT([no])
+  ])
+  PKG_CONFIG_PATH="$ac_save_PKG_CONFIG_PATH"
+
+  AS_IF([test "$HAVE_ALGLIB" != "no"],[
+    AC_LANG_PUSH([C++])
+    ac_save_CPPFLAGS="$CPPFLAGS"
+    CPPFLAGS="$CPPFLAGS $ALGLIB_CPPFLAGS"
+    AC_CHECK_HEADER([alglib/amp.h],[],[HAVE_ALGLIB="no"])
+    CPPFLAGS="$ac_save_CPPFLAGS"
+    AC_LANG_POP
+  ])
+
+  AS_IF([test "$HAVE_ALGLIB" != "no"],[
+    AC_DEFINE([HAVE_ALGLIB],[ENABLE_ALGLIB],[Was AlgLib for DUNE found and ALGLIB_CPPFLAGS used?])
+    DUNE_ADD_ALL_PKG([AlgLib], [$ALGLIB_CPPFLAGS], [], [$ALGLIB_LIBS])
+  ],[
+    ALGLIB_CPPFLAGS=
+    ALGLIB_LIBS=
+  ])
+
+  AC_SUBST([ALGLIB_CPPFLAGS])
+  AC_SUBST([ALGLIB_LIBS])
+
+  AM_CONDITIONAL(ALGLIB,[test "$HAVE_ALGLIB" != "no"])
+  DUNE_ADD_SUMMARY_ENTRY([AlgLib for DUNE],[$HAVE_ALGLIB])
+])
+
+dnl -*- mode: autoconf; tab-width: 4; indent-tabs-mode: nil; -*-
+# searches for alugrid-headers and libs
+
+# DUNE_PATH_ALUGRID()
+#
+# shell variables:
+#   with_alugrid
+#     no or yes
+#   ALUGRIDROOT
+#   ALUGRID_VERSIONNO
+#   ALUGRID_LIB_PATH
+#   ALUGRID_INCLUDE_PATH
+#   ALUGRID_CPPFLAGS
+#   ALUGRID_LDFLAGS
+#   ALUGRID_LIBS
+#   HAVE_ALUGRID
+#     undef or 1 or 0
+#
+# substitutions:
+#   ALUGRID_CPPFLAGS
+#   ALUGRID_LDFLAGS
+#   ALUGRID_LIBS
+#
+# defines:
+#   HAVE_ALUGRID
+#     ENABLE_ALUGRID or undefined
+#   ALUGRID_PARALLEL_H
+#   ALUGRID_SERIAL_H
+#
+# conditionals:
+#   ALUGRID
+AC_DEFUN([DUNE_PATH_ALUGRID],[
+  AC_REQUIRE([AC_PROG_CXX])
+  AC_REQUIRE([DUNE_MPI])
+
+  AC_ARG_WITH(alugrid,
+    AC_HELP_STRING([--with-alugrid=PATH],[directory where ALUGrid is installed]))
+
+  AC_ARG_WITH([alugrid-libdir],dnl
+    AS_HELP_STRING([--with-alugrid-libdir=PATH],dnl
+      [Directory where ALUGrid library is installed (deprecated). Note that this will override library path detection, so use this parameter only if default library detection fails and you know exactly where your ALUGrid library is located.]))dnl
+
+
+# do not use alugrid debug lib 
+
+# store old values
+ac_save_LDFLAGS="$LDFLAGS"
+ac_save_CPPFLAGS="$CPPFLAGS"
+ac_save_LIBS="$LIBS"
+
+# initilize to sane value
+HAVE_ALUGRID=0
+
+if test x$with_alugrid != x && test x$with_alugrid != xno ; then
+
+  if test x$with_alugrid = xyes ; then
+    # use some default value...
+    ALUGRIDROOT="/usr/local/alugrid"
+  else
+    ALUGRIDROOT="$with_alugrid"
+  fi
+
+  # expand tilde / other stuff
+  ALUGRIDROOT=`cd "$ALUGRIDROOT" && pwd`
+
+  if ! test -d "$ALUGRIDROOT"; then
+    AC_MSG_ERROR([ALUGrid directory $ALUGRIDROOT does not exist or is inaccessible])
+  fi
+
+  REM_PKG_CONFIG_PATH=$PKG_CONFIG_PATH
+  PKG_CONFIG_PATH="$ALUGRIDROOT:$ALUGRIDROOT/lib/pkgconfig:$PKG_CONFIG_PATH"
+
+  ## check version number 
+  NEEDEDALUGRID_VERSION=1.23
+
+  AC_MSG_CHECKING([ALUGrid version >= $NEEDEDALUGRID_VERSION])
+  if $PKG_CONFIG --atleast-version=$NEEDEDALUGRID_VERSION alugrid ; then 
+    ALUGRID_VERSION=`$PKG_CONFIG --modversion alugrid`
+    AC_MSG_RESULT([yes (ALUGrid-$ALUGRID_VERSION)])
+    ALUGRID_INCLUDE_PATH=`$PKG_CONFIG --variable=includedir alugrid`
+    ALUGRID_LIB_PATH=`$PKG_CONFIG --variable=libdir alugrid`
+    if test x"$with_alugrid_libdir" != x"" && test x"$with_alugrid_libdir" != x"no" ; then 
+      AC_MSG_WARN([--with-alugrid-libdir option is obsolete!])
+    fi 
+  else   
+    # lib dir and include path 
+    ALUGRID_INCLUDE_PATH="$ALUGRIDROOT/include"
+
+    ALUGRID_LIB_PATH="$ALUGRIDROOT/lib"
+    if test x"$with_alugrid_libdir" != x"" && test x"$with_alugrid_libdir" != x"no"
+    then
+      if ! test -d "$with_alugrid_libdir"
+      then
+        AC_MSG_ERROR([library directory $with_alugrid_libdir for ALUGrid does not exist or is inaccessible.])dnl
+      else
+        ALUGRID_LIB_PATH="$with_alugrid_libdir"
+      fi
+    fi
+
+    # old check version 
+    ALUGRID_VERSIONCHECK=$ALUGRIDROOT/bin/alugridversion
+    if test -f $ALUGRID_VERSIONCHECK; then 
+      ALUGRID_VERSION=`$ALUGRID_VERSIONCHECK -c $NEEDEDALUGRID_VERSION`
+      if test "x$ALUGRID_VERSION" != "x-1"; then 
+        ALUGRID_VERSION=`$ALUGRID_VERSIONCHECK -v`
+        AC_MSG_RESULT([yes (ALUGrid-$ALUGRID_VERSION)])
+      else 
+        AC_MSG_RESULT([no])
+        AC_MSG_ERROR([ALUGrid version is too old!])
+      fi
+    else 
+      AC_MSG_RESULT([no])
+      AC_MSG_ERROR([$PKG_CONFIG couldn't find alugrid.pc or wrong version! ALUGrid version is too old or ALUGrid is not installed in $ALUGRIDROOT! You need at least ALUGrid-$NEEDEDALUGRID_VERSION!])
+    fi
+  fi
+
+  # restore PKG_CONFIG_PATH 
+  PKG_CONFIG_PATH=$REM_PKG_CONFIG_PATH
+
+  AC_LANG_PUSH([C++])
+
+  # set variables so that tests can use them
+  ALU3D_INC_FLAG="-I$ALUGRID_INCLUDE_PATH -I$ALUGRID_INCLUDE_PATH/serial -I$ALUGRID_INCLUDE_PATH/duneinterface -DENABLE_ALUGRID"
+  CPPFLAGS="$ac_save_CPPFLAGS $ALU3D_INC_FLAG"
+  # check for header
+  AC_CHECK_HEADERS([alugrid_serial.h], 
+     [ALUGRID_CPPFLAGS="$ALU3D_INC_FLAG"
+      ALUGRID_LDFLAGS=""
+      ALUGRID_LIBS="-L$ALUGRID_LIB_PATH -lalugrid"
+    HAVE_ALUGRID="1"],
+    AC_MSG_WARN([alugrid_serial.h not found in $ALUGRID_INCLUDE_PATH]))
+   
+  # Yes, we do check whether either alugrid_serial.h or alugrid_parallel.h
+  # works.  Dune decides which one to use depending on how the
+  # alugrid_defineparallel.h header defines ALU3DGRID_BUILD_FOR_PARALLEL.
+  # This could be improved.
+  ALU3D_INC_FLAG_PARA="-I$ALUGRID_INCLUDE_PATH/parallel"
+  CPPFLAGS="$ac_save_CPPFLAGS $DUNEMPICPPFLAGS $ALU3D_INC_FLAG_PARA $ALU3D_INC_FLAG"
+
+  HAVE_ALUGRID_PARALLEL="0"
+  # if the serial header was found then also check for the parallel header
+  if test x"$HAVE_ALUGRID" != "x0" ; then
+    AC_TRY_COMPILE([#include <alugrid_defineparallel.h> 
+                    #if ALU3DGRID_BUILD_FOR_PARALLEL == 0 
+                    #error
+                    #endif
+                   ],
+                   [],
+                   [HAVE_ALUGRID_PARALLEL="1"],
+                   [HAVE_ALUGRID_PARALLEL="0"
+                   AC_MSG_WARN("ALUGRID was not build for parallel support!")
+                  ])
+
+    # only check for parallel header when ALUGrid was build for parallel support
+    if test x"$HAVE_ALUGRID_PARALLEL" != "x0" ; then 
+      # check for parallel header 
+      AC_CHECK_HEADERS([alugrid_parallel.h], 
+         [ALUGRID_CPPFLAGS="\${DUNEMPICPPFLAGS} $ALU3D_INC_FLAG $ALU3D_INC_FLAG_PARA"
+          ALUGRID_LDFLAGS="\${DUNEMPILDFLAGS}"
+          ALUGRID_LIBS="-L$ALUGRID_LIB_PATH -lalugrid \${DUNEMPILIBS}"
+          # for use with the later library test
+          LDFLAGS="$LDFLAGS $DUNEMPILDFLAGS"
+          LIBS="$DUNEMPILIBS $LIBS"
+        HAVE_ALUGRID="1"],
+        AC_MSG_WARN([alugrid_parallel.h not found in $ALUGRID_INCLUDE_PATH]))
+    fi 
+  fi
+
+  # We check only whether linking with the library works, not for an actual
+  # function from that library.  So we won't need any special stuff in the
+  # CPPFLAGS
+  CPPFLAGS="$ac_save_CPPFLAGS"
+  # This is a kludge to pass the right libpath before the library on the
+  # linker command line.  In the result, the -L flag has to go into the LIBS
+  # variable.
+  LDFLAGS="$LDFLAGS -L$ALUGRID_LIB_PATH"
+
+  # if header is found...
+  if test x$HAVE_ALUGRID = x1 ; then
+    AC_CHECK_LIB(alugrid,[malloc],
+      [: #dumy argument to avoid default action
+      ],
+	  [HAVE_ALUGRID="0"
+	  AC_MSG_WARN(libalugrid not found!)])
+  fi
+
+  AC_LANG_POP([C++])
+
+fi
+
+# survived all tests?
+if test x$HAVE_ALUGRID = x1 ; then
+  AC_SUBST(ALUGRID_LIBS, $ALUGRID_LIBS)
+  AC_SUBST(ALUGRID_LDFLAGS, $ALUGRID_LDFLAGS)
+  AC_SUBST(ALUGRID_CPPFLAGS, $ALUGRID_CPPFLAGS)
+  AC_DEFINE(HAVE_ALUGRID, ENABLE_ALUGRID,
+    [This is only true if alugrid-library was found by configure 
+     _and_ if the application uses the ALUGRID_CPPFLAGS])
+
+  # add to global list
+  DUNE_ADD_ALL_PKG([ALUGrid], [$ALUGRID_CPPFLAGS],
+                   [$ALUGRID_LDFLAGS], [$ALUGRID_LIBS])
+
+  DUNE_DEFINE_GRIDTYPE([ALUGRID_CONFORM],[],[Dune::ALUConformGrid< dimgrid, dimworld >],[dune/grid/alugrid.hh],[dune/grid/io/file/dgfparser/dgfalu.hh])
+  DUNE_DEFINE_GRIDTYPE([ALUGRID_CUBE],[],[Dune::ALUCubeGrid< dimgrid, dimworld >],[dune/grid/alugrid.hh],[dune/grid/io/file/dgfparser/dgfalu.hh])
+  DUNE_DEFINE_GRIDTYPE([ALUGRID_SIMPLEX],[],[Dune::ALUSimplexGrid< dimgrid, dimworld >],[dune/grid/alugrid.hh],[dune/grid/io/file/dgfparser/dgfalu.hh])
+
+  # set variable for summary
+  if test x"$HAVE_ALUGRID_PARALLEL" != "x0" ; then 
+    with_alugrid_parallel="(parallel)"
+  else 
+    with_alugrid_parallel="(serial)"
+  fi 
+  with_alugrid="version $ALUGRID_VERSION $with_alugrid_parallel"
+  with_alugrid_long="$ALUGRIDROOT"
+else
+  AC_SUBST(ALUGRID_LIBS, "")
+  AC_SUBST(ALUGRID_LDFLAGS, "")
+  AC_SUBST(ALUGRID_CPPFLAGS, "")
+
+  # set variable for summary
+  with_alugrid="no"
+  with_alugrid_long=""
+fi
+  
+# also tell automake
+AM_CONDITIONAL(ALUGRID, test x$HAVE_ALUGRID = x1)
+
+# reset old values
+LIBS="$ac_save_LIBS"
+CPPFLAGS="$ac_save_CPPFLAGS"
+LDFLAGS="$ac_save_LDFLAGS"
+
+DUNE_ADD_SUMMARY_ENTRY([ALUGrid],[$with_alugrid],[$with_alugrid_long])
+
+])
+
+# $Id: dune_amira.m4 5156 2008-04-14 09:28:06Z christi $
+# searches for amiramesh-headers and libs
+
+# DUNE_PATH_AMIRAMESH()
+# 
+# shell variables:
+#   with_amiramesh
+#     no or yes
+#   AMIRAMESHROOT
+#   AMIRAMESH_LIB_PATH
+#   AMIRAMESH_INCLUDE_PATH
+#   AMIRAMESH_CPPFLAGS
+#   AMIRAMESH_LDFLAGS
+#   AMIRAMESH_LIBS
+#   HAVE_AMIRAMESH
+#     1 or 0 or undef
+#
+# substitutions:
+#   AMIRAMESH_CPPFLAGS
+#   AMIRAMESH_LDFLAGS
+#   AMIRAMESH_LIBS
+#
+# defines:
+#   HAVE_AMIRAMESH
+#
+# conditionals:
+#   AMIRAMESH
+AC_DEFUN([DUNE_PATH_AMIRAMESH],[
+  AC_REQUIRE([AC_PROG_CXX])
+
+  AC_ARG_WITH(amiramesh,
+    AC_HELP_STRING([--with-amiramesh=PATH],[directory with AmiraMesh inside]))
+
+# store values
+ac_save_LDFLAGS="$LDFLAGS"
+ac_save_CPPFLAGS="$CPPFLAGS"
+ac_save_LIBS="$LIBS"
+
+# initialize
+HAVE_AMIRAMESH=0
+
+if test x$with_amiramesh != xno ; then
+
+# is --with-amiramesh=bla used?
+if test "x$with_amiramesh" != x ; then
+	if ! test -d $with_amiramesh; then
+        AC_MSG_WARN([Amiramesh directory $with_amiramesh does not exist])
+	else
+        # expand tilde / other stuff
+		AMIRAMESHROOT=`cd $with_amiramesh && pwd`
+	fi
+fi
+if test "x$AMIRAMESHROOT" = x; then
+    # use some default value...
+    AMIRAMESHROOT="/usr/local/amiramesh"
+fi
+
+AMIRAMESH_LIB_PATH="$AMIRAMESHROOT/lib"
+AMIRAMESH_INCLUDE_PATH="$AMIRAMESHROOT/include"
+
+CPPFLAGS="$CPPFLAGS -I$AMIRAMESH_INCLUDE_PATH"
+
+AC_LANG_PUSH([C++])
+
+# check for header
+AC_CHECK_HEADER([amiramesh/AmiraMesh.h], 
+   [AMIRAMESH_CPPFLAGS="-I$AMIRAMESH_INCLUDE_PATH -DHX_HAS_STDIOSTREAM"
+	HAVE_AMIRAMESH="1"],
+  AC_MSG_WARN([AmiraMesh.h not found in $AMIRAMESH_INCLUDE_PATH/amiramesh]),
+  [#define HX_HAS_STDIOSTREAM])
+
+CPPFLAGS="$ac_save_CPPFLAGS $AMIRAMESH_CPPFLAGS"
+
+# if header is found...
+if test x$HAVE_AMIRAMESH = x1 ; then
+   LIBS="-L$AMIRAMESH_LIB_PATH -lamiramesh $LIBS"
+
+   AC_LINK_IFELSE(AC_LANG_PROGRAM([#include "amiramesh/AmiraMesh.h"], [AmiraMesh* am = AmiraMesh::read("test");]),
+	[AMIRAMESH_LIBS="-L$AMIRAMESH_LIB_PATH -lamiramesh"
+         AMIRAMESH_LDFLAGS=""],
+	[HAVE_AMIRAMESH="0"
+	AC_MSG_WARN(libamiramesh not found!)])
+fi
+
+AC_LANG_POP([C++])
+
+fi
+
+with_amiramesh="no"
+# survived all tests?
+if test x$HAVE_AMIRAMESH = x1 ; then
+  AC_SUBST(AMIRAMESH_LIBS, $AMIRAMESH_LIBS)
+  AC_SUBST(AMIRAMESH_LDFLAGS, $AMIRAMESH_LDFLAGS)
+  AC_SUBST(AMIRAMESH_CPPFLAGS, $AMIRAMESH_CPPFLAGS)
+  AC_DEFINE(HAVE_AMIRAMESH, 1, [Define to 1 if amiramesh-library is found])
+
+  # add to global list
+  DUNE_ADD_ALL_PKG([AmiraMesh], [\$(AMIRAMESH_CPPFLAGS)],
+                   [\$(AMIRAMESH_LDFLAGS)], [\$(AMIRAMESH_LIBS)]) 
+
+  # set variable for summary
+  with_amiramesh="yes"
+else
+  AC_SUBST(AMIRAMESH_LIBS, "")
+  AC_SUBST(AMIRAMESH_LDFLAGS, "")
+  AC_SUBST(AMIRAMESH_CPPFLAGS, "")
+fi
+  
+# also tell automake
+AM_CONDITIONAL(AMIRAMESH, test x$HAVE_AMIRAMESH = x1)
+
+# reset old values
+LIBS="$ac_save_LIBS"
+CPPFLAGS="$ac_save_CPPFLAGS"
+LDFLAGS="$ac_save_LDFLAGS"
+
+DUNE_ADD_SUMMARY_ENTRY([AmiraMesh],[$with_amiramesh])
+
+])
+
+AC_DEFUN([DUNE_GRID_CHECKS],[
+  AC_REQUIRE([DUNE_GRID_DIMENSION])
+  AC_REQUIRE([DUNE_PATH_GRAPE])
+  AC_REQUIRE([DUNE_PATH_ALBERTA])
+  AC_REQUIRE([DUNE_PATH_UG])
+  AC_REQUIRE([DUNE_PATH_AMIRAMESH])
+  AC_REQUIRE([DUNE_PATH_PSURFACE])
+  AC_REQUIRE([DUNE_PATH_ALUGRID])
+  AC_REQUIRE([DUNE_PATH_ALGLIB])
+
+  DUNE_DEFINE_GRIDTYPE([ONEDGRID],[(GRIDDIM == 1) && (WORLDDIM == 1)],[Dune::OneDGrid],[dune/grid/onedgrid.hh],[dune/grid/io/file/dgfparser/dgfoned.hh])
+  DUNE_DEFINE_GRIDTYPE([SGRID],[],[Dune::SGrid< dimgrid, dimworld >],[dune/grid/sgrid.hh],[dune/grid/io/file/dgfparser/dgfs.hh])
+  DUNE_DEFINE_GRIDTYPE([YASPGRID],[GRIDDIM == WORLDDIM],[Dune::YaspGrid< dimgrid >],[dune/grid/yaspgrid.hh],[dune/grid/io/file/dgfparser/dgfyasp.hh])
+])
+
+AC_DEFUN([DUNE_GRID_CHECK_MODULE],[
+  DUNE_CHECK_MODULES([dune-grid], [grid/onedgrid.hh],[dnl
+  std::vector<Dune::OneDGrid::ctype> coords;
+  Dune::OneDGrid grid(coords);
+  return grid.lbegin<0>(0) == grid.lend<0>(0);])
+])
+
+# define GRIDDIM_CPPFLAGS and add to DUNE_PKG_CPPFLAGS
+# This defines GRIDDIM, WORLDDIM, and GRIDTYPE and assigns invalid values 
+AC_DEFUN([DUNE_GRID_DIMENSION],[
+  griddim_cppflags="-DGRIDDIM=$``(``GRIDDIM``)`` -DWORLDDIM=$``(``WORLDDIM``)`` -D$``(``GRIDTYPE``)``"
+  AC_SUBST(GRIDDIM, 0)
+  AC_SUBST(WORLDDIM, "$``(``GRIDDIM``)``")
+
+  AC_SUBST(GRIDTYPE, [NOGRID])
+  AC_SUBST(GRIDDIM_CPPFLAGS, $griddim_cppflags)
+  DUNE_ADD_ALL_PKG([GRIDDIM], [$griddim_cppflags])
+  # AC_MSG_RESULT([yes (GRIDDIM=$GRIDDIM, WORLDDIM=GRIDDIM and GRIDTYPE=$GRIDTYPE)])
+])
+
+AC_DEFUN([DUNE_DEFINE_GRIDTYPE_INCLUDE],[dnl
+m4_if($#,0,[],[dnl
+  #include <$1>
+m4_if($#,1,[],[DUNE_DEFINE_GRIDTYPE_INCLUDE(m4_shift($@))])dnl
+])dnl
+])
+
+
+# DUNE_DEFINE_GRIDTYPE([GRIDTYPE],[ASSERTION],[DUNETYPE],[HEADER],...)
+#
+# Add a new GRIDTYPE target DUNE's preprocessor magic.
+# 
+# Parameters: GRIDTYPE   name of the new target
+#             ASSERTION  condition to be checked by the preprocessor
+#             DUNETYPE   C++ type of the grid
+#             HEADER     name of the header file which includes the grid
+#
+# Example: DUNE_DEFINE_GRIDTYPE([YASPGRID],[GRIDDIM == WORLDDIM],[Dune::YaspGrid< dimgrid >],[dune/grid/yaspgrid.hh],[dune/grid/io/file/dgfparser/dgfyasp.hh])
+AC_DEFUN([DUNE_DEFINE_GRIDTYPE],[AH_BOTTOM(dnl
+[/* add GRIDTYPE typedef for grid implementation $3:
+    defining $1 during compilation typedefs this grid implementation as GridType
+    in namespace Dune::GridSelector;
+    also integer constants dimgrid and dimworld are set in this namespace.
+    The required headers for this grid implementation are also included.
+  */
+ #if defined $1 && ! defined USED_$1_GRIDTYPE
+  #if HAVE_GRIDTYPE
+   #error "Ambiguous definition of GRIDTYPE."
+  #endif 
+
+  #ifndef WORLDDIM
+    #define WORLDDIM GRIDDIM
+  #endif
+  #if not (WORLDDIM >= GRIDDIM)
+    #error "WORLDDIM < GRIDDIM does not make sense."
+  #endif
+]dnl
+m4_if([$2],[],[],[
+  #if ! ($2)
+    #error "Preprocessor assertion $2 failed."
+  #endif
+])
+DUNE_DEFINE_GRIDTYPE_INCLUDE(m4_shift(m4_shift(m4_shift($@))))dnl
+[
+  namespace Dune
+  {
+    namespace GridSelector
+    {
+      const int dimgrid = GRIDDIM;
+      const int dimworld = WORLDDIM;
+      typedef $3 GridType;
+    }
+  }
+  #define HAVE_GRIDTYPE 1
+  #define USED_$1_GRIDTYPE 1
+#endif // #if defined $1]dnl
+)])
+
+# $Id: grape.m4 5710 2009-11-13 17:09:45Z robertk $
+# searches for albert-headers and libs
+
+# grape.h und libgr.a/libgr.so are located in the same discretory 
+
+# DUNE_PATH_GRAPE()
+#
+# configure shell/makefile variables:
+#   GRAPE_CPPFLAGS
+#   GRAPE_LDFLAGS
+#   GRAPE_LIBS
+#
+# preprocessor defines:
+#   HAVE_GRAPE ("ENABLE_GRAPE" or undefined)
+#
+# automake conditionals:
+#   GRAPE
+AC_DEFUN([DUNE_PATH_GRAPE],[
+  AC_REQUIRE([AC_PROG_CC])
+  AC_REQUIRE([AC_PATH_XTRA])
+  AC_REQUIRE([DUNE_PATH_OPENGL])
+  AC_REQUIRE([AC_PROG_LD_GNU])
+
+  AC_ARG_WITH(grape,
+    AC_HELP_STRING([--with-grape=PATH],[directory with Grape inside]))
+
+# store old values
+ac_save_LDFLAGS="$LDFLAGS"
+ac_save_CPPFLAGS="$CPPFLAGS"
+ac_save_LIBS="$LIBS"
+
+# don't even start testing if X wasn't found
+if test "x$no_x" != xyes && test x$with_grape != xno ; then
+
+  LIBS="$X_PRE_LIBS $X_LIBS $X_EXTRA_LIBS"
+
+  # is --with-grape=bla used?
+  if test x$with_grape != x ; then
+    if test -d $with_grape; then
+      # expand tilde / other stuff
+      GRAPEROOT=`cd $with_grape && pwd`
+    else
+      AC_MSG_ERROR([directory $with_grape does not exist])
+    fi      
+  else
+    # set some kind of default grape-path...
+    GRAPEROOT="/usr/local/grape/"
+  fi
+
+  CPPFLAGS="$CPPFLAGS -I$GRAPEROOT"
+  LDFLAGS="$LDFLAGS -L$GRAPEROOT"
+
+  # check for header
+  # we have to use CC for checking the header!!
+  AC_LANG_PUSH([C])
+  AC_CHECK_HEADER([grape.h],
+    [GRAPE_CPPFLAGS="-I$GRAPEROOT"
+     HAVE_GRAPE="1"])
+  AC_LANG_POP
+
+  # check for lib if header was found
+  if test x$HAVE_GRAPE = x1 ; then
+    # if GL was found, add it implicitly...
+    #   This is not the best choice, but testing without GL first and
+    #   then trying again fails due to caching...
+    CPPFLAGS="$GRAPE_CPPFLAGS $GL_CFLAGS -DENABLE_GRAPE"
+    LIBS="$LIBS $GL_LIBS -lXext"
+    LDFLAGS="$LDFLAGS $GL_LDFLAGS"
+
+    # if we use the gnu linker add the grape path 
+    if test x$lt_cv_prog_gnu_ld = xyes ; then 
+      GRAPE_LINKER_FLAGS="-Wl,--rpath -Wl,$GRAPEROOT"
+    fi  
+
+    AC_CHECK_LIB(gr, grape, 
+      [GRAPE_LDFLAGS="$GL_LDFLAGS $GRAPE_LINKER_FLAGS"
+       GRAPE_CPPFLAGS="$CPPFLAGS"
+       GRAPE_LIBS="-L$GRAPEROOT -lgr $GL_LIBS -lXext"], 
+      [HAVE_GRAPE="0"])
+  fi
+
+  # did it work?
+  if test x$HAVE_GRAPE = x1 ; then
+    AC_SUBST(GRAPE_LIBS, $GRAPE_LIBS)
+    AC_SUBST(GRAPE_LDFLAGS, $GRAPE_LDFLAGS)
+    AC_SUBST(GRAPE_CPPFLAGS, $GRAPE_CPPFLAGS)
+    AC_DEFINE(HAVE_GRAPE, ENABLE_GRAPE,
+          [This is only true if grape-library was found by configure 
+           _and_ if the application uses the GRAPE_CPPFLAGS])
+
+    # add to global list
+    DUNE_ADD_ALL_PKG([GRAPE], [$GRAPE_CPPFLAGS], [$GRAPE_LDFLAGS], [$GRAPE_LIBS])
+  fi
+elif test "x$X_LIBS" = x ; then 
+  AC_MSG_WARN([X libraries were not found and therefore not Grape check possible! See ./configure --help for X library options.])
+fi
+
+
+# report to summary
+if test x$HAVE_GRAPE = x1 ; then
+  with_grape="yes"
+else
+  with_grape="no"
+fi
+
+# also tell automake	
+AM_CONDITIONAL(GRAPE, test x$HAVE_GRAPE = x1)
+
+# reset old values
+LIBS="$ac_save_LIBS"
+CPPFLAGS="$ac_save_CPPFLAGS"
+LDFLAGS="$ac_save_LDFLAGS"
+  
+DUNE_ADD_SUMMARY_ENTRY([Grape],[$with_grape])
+
+])
+
+# searches for psurface-headers and lib
+
+# DUNE_PATH_PSURFACE()
+#
+# DUNE_PATH_AMIRAMESH must be called previously if psurface was built with
+# AmiraMesh support
+#
+# shell variables:
+#   with_psurface
+#     yes or no
+#   PSURFACEROOT
+#   PSURFACE_LIB_PATH
+#   PSURFACE_INCLUDE_PATH
+#   PSURFACE_CPPFLAGS
+#   PSURFACE_LDFLAGS
+#   PSURFACE_LIBS
+#   HAVE_PSURFACE
+#     0 or 1
+#
+# substitutions:
+#   PSURFACE_LIBS
+#   PSURFACE_LDFLAGS
+#   PSURFACE_CPPFLAGS
+#
+# defines:
+#   HAVE_PSURFACE
+#
+# conditionals:
+#   PSURFACE
+AC_DEFUN([DUNE_PATH_PSURFACE],[
+  AC_REQUIRE([AC_PROG_CXX])
+  AC_REQUIRE([DUNE_PATH_AMIRAMESH])
+
+  AC_ARG_WITH(psurface,
+    AC_HELP_STRING([--with-psurface=PATH],[directory with the psurface library inside]))
+
+# store values
+ac_save_LDFLAGS="$LDFLAGS"
+ac_save_CPPFLAGS="$CPPFLAGS"
+ac_save_LIBS="$LIBS"
+
+# initialize to sane value
+HAVE_PSURFACE=0
+
+if test x$with_psurface != xno ; then
+
+# is --with-psurface=bla used?
+if test "x$with_psurface" != x ; then
+    if test -d $with_psurface; then
+      # expand tilde / other stuff
+      PSURFACEROOT=`cd $with_psurface && pwd`
+    else
+      AC_MSG_ERROR([directory $with_psurface does not exist])
+    fi      
+fi
+if test "x$PSURFACEROOT" = x; then  
+    # use some default value...
+    PSURFACEROOT="/usr/local/psurface"
+fi
+
+PSURFACE_LIB_PATH="$PSURFACEROOT/lib"
+PSURFACE_INCLUDE_PATH="$PSURFACEROOT/include"
+
+CPPFLAGS="$CPPFLAGS -I$PSURFACE_INCLUDE_PATH"
+
+AC_LANG_PUSH([C++])
+
+# check for header
+AC_CHECK_HEADER([psurface/PSurface.h], 
+   [PSURFACE_CPPFLAGS="-I$PSURFACE_INCLUDE_PATH"
+	HAVE_PSURFACE="1"],
+   [if test "x$with_psurface" != x ; then
+    AC_MSG_WARN([psurface/PSurface.h not found in $PSURFACE_INCLUDE_PATH])
+    fi
+   ])
+
+CPPFLAGS="$CPPFLAGS $PSURFACE_CPPFLAGS"
+
+# if header is found...
+if test x$HAVE_PSURFACE = x1 ; then
+   AC_MSG_CHECKING([psurface library -lpsurface])
+
+   # Why are the $AMIRAMESH_LDFLAGS $AMIRAMESH_LIBS here?
+   # OS: This is a hack.  psurface can be compiled with and without AmiraMesh
+   # support.  If it is compiled with AmiraMesh support, then it needs these flags
+   # for the test to link (and since these flags must be set properly the AmiraMesh
+   # test must have been called successfully before).  If psurface is compiled
+   # without AmiraMesh support than the additional flags here do not matter.
+   LIBS="-L$PSURFACE_LIB_PATH -lpsurface $AMIRAMESH_LIBS $LIBS"
+   LDFLAGS="$LDFLAGS $AMIRAMESH_LDFLAGS"
+
+   AC_LINK_IFELSE(AC_LANG_PROGRAM([#include "psurface/PSurface.h"], [[PSurface<2,double> foo;]]),
+	[PSURFACE_LIBS="-L$PSURFACE_LIB_PATH -lpsurface"
+         PSURFACE_LDFLAGS=""
+         AC_MSG_RESULT(yes)],
+	[HAVE_PSURFACE="0"
+        AC_MSG_RESULT(no)
+	AC_MSG_WARN([psurface header found, but libpsurface missing!])])
+fi
+
+AC_LANG_POP([C++])
+
+fi
+
+with_psurface="no"
+# survived all tests?
+if test x$HAVE_PSURFACE = x1 ; then
+  AC_SUBST(PSURFACE_LIBS, $PSURFACE_LIBS)
+  AC_SUBST(PSURFACE_LDFLAGS, $PSURFACE_LDFLAGS)
+  AC_SUBST(PSURFACE_CPPFLAGS, $PSURFACE_CPPFLAGS)
+  AC_DEFINE(HAVE_PSURFACE, 1, [Define to 1 if psurface-library is found])
+
+  # add to global list
+  DUNE_ADD_ALL_PKG([psurface], [$PSURFACE_CPPFLAGS],
+                   [$PSURFACE_LDFLAGS], [$PSURFACE_LIBS])
+
+  # set variable for summary
+  with_psurface="yes"
+else
+  AC_SUBST(PSURFACE_LIBS, "")
+  AC_SUBST(PSURFACE_LDFLAGS, "")
+  AC_SUBST(PSURFACE_CPPFLAGS, "")
+fi
+  
+# also tell automake
+AM_CONDITIONAL(PSURFACE, test x$HAVE_PSURFACE = x1)
+
+# reset old values
+LIBS="$ac_save_LIBS"
+CPPFLAGS="$ac_save_CPPFLAGS"
+LDFLAGS="$ac_save_LDFLAGS"
+
+DUNE_ADD_SUMMARY_ENTRY([psurface],[$with_psurface])
+
+])
+
+# $Id: ug.m4 5156 2008-04-14 09:28:06Z christi $
+# searches for UG headers and libs
+
+# DUNE_PATH_UG()
+#
+# configure shell variables:
+#   UGROOT
+#   UG_CPPFLAGS, UG_LDFLAGS, UG_LIBS
+#       flags and libs with indirect references for the makefiles, for
+#       instance the literal string '${DUNEMPICPPFLAGS}
+#   direct_UG_CPPFLAGS, direct_UG_LDFLAGS, direct_UG_LIBS
+#       flags and libs with direct values for use in configure, for instance
+#       the value of DUNEMPICPPFLAGS
+#   HAVE_UG
+#       1 or 0 or undefined
+#   with_ug
+#       "no" or "yes" with stuff appended
+#   enable_ug_lgmdomain
+#       yes or no
+#
+# configure substitutions/makefile variables:
+#   UG_CPPFLAGS
+#   UG_LDFLAGS
+#   UG_LIBS
+#
+# preprocessor defines:
+#   HAVE_UG
+#     undefined or ENABLE_UG
+#   UG_LGMDOMAIN
+#     undefined or 1
+#
+# automake conditionals:
+#   UG
+#   UG_LGMDOMAIN
+AC_DEFUN([DUNE_PATH_UG],[
+  AC_REQUIRE([AC_PROG_CC])
+  AC_REQUIRE([AC_PATH_XTRA])
+  AC_REQUIRE([DUNE_MPI])
+
+  AC_ARG_WITH(ug,
+    AC_HELP_STRING([--with-ug=PATH],[directory where UG is installed]))
+
+  # store old values
+  ac_save_LDFLAGS="$LDFLAGS"
+  ac_save_CPPFLAGS="$CPPFLAGS"
+  ac_save_LIBS="$LIBS"
+  
+  # initialize
+  HAVE_UG=0
+
+  ## do nothing if --without-ug is used
+  if test x$with_ug != xno ; then
+      
+      # is --with-ug=bla used?
+      if test "x$with_ug" != x ; then
+          if ! test -d $with_ug; then
+              AC_MSG_WARN([UG directory $with_ug does not exist!])
+          else
+              # expand tilde / other stuff
+              UGROOT=`cd $with_ug && pwd`
+          fi
+      fi
+
+      # If an explicit path has been provided it needs to be appended
+      # temporarily to PKG_CONFIG_PATH
+      REM_PKG_CONFIG_PATH=$PKG_CONFIG_PATH
+      # The first additional path is for uninstalled UG, the second one for the installed UG
+      PKG_CONFIG_PATH="$UGROOT:$UGROOT/lib/pkgconfig:$PKG_CONFIG_PATH"
+
+      UG_LDFLAGS=""
+
+      AC_ARG_ENABLE(ug-lgmdomain,
+        AC_HELP_STRING([--enable-ug-lgmdomain],[use UG LGM domain (default is standard domain)]))
+      if test x"$enable_ug_lgmdomain" = xyes ; then
+        UG_LIBS="`$PKG_CONFIG --libs-only-L libug` -lugL2 -lugL3 -ldevS"
+        direct_UG_LIBS="`$PKG_CONFIG --libs-only-L libug` -lugL2 -lugL3 -ldevS"
+      else
+        UG_LIBS="`$PKG_CONFIG --libs-only-L libug` -lugS2 -lugS3 -ldevS"
+        direct_UG_LIBS="`$PKG_CONFIG --libs-only-L libug` -lugS2 -lugS3 -ldevS"
+      fi
+      
+      AC_MSG_CHECKING([for UG])
+
+      # Check whether UG is installed at all
+      if $PKG_CONFIG --exists libug; then
+	    HAVE_UG="1"
+        AC_MSG_RESULT(yes)
+	  else
+		HAVE_UG="0"
+        AC_MSG_RESULT(no)
+		AC_MSG_WARN([UG not found])
+      fi
+
+      if test x$HAVE_UG = x1; then
+          
+          AC_MSG_CHECKING([whether UG version is recent enough])
+
+          # Does it have a suitable version?
+          if $PKG_CONFIG --atleast-version=3.9.1-patch3 libug; then
+              AC_MSG_RESULT(yes)
+          else
+              HAVE_UG="0"
+              AC_MSG_RESULT(no)
+              AC_MSG_WARN([UG version is too old (you need at least 3.9.1-patch3)])
+          fi
+      fi
+
+      # pre-set variable for summary
+      with_ug="no"
+   
+      if test x$HAVE_UG = x1; then
+
+        # Okay.  We have found a UG installation.  But has it been built with --enable-dune?
+        if test x$HAVE_UG = x1 ; then
+              
+          AC_MSG_CHECKING([whether UG has been built with --enable-dune])
+
+          if test x`$PKG_CONFIG --variable=fordune libug` == xyes; then
+              AC_MSG_RESULT(yes)
+          else
+              AC_MSG_RESULT(no)
+              AC_MSG_WARN([UG has not been built with --enable-dune!])
+              HAVE_UG="0"
+              with_ug="no"
+          fi
+            
+        fi
+        
+      fi
+
+      if test x$HAVE_UG = x1; then
+
+        # Set the compiler flags
+		UG_CPPFLAGS="`$PKG_CONFIG --cflags-only-I libug` -DENABLE_UG"
+        direct_UG_CPPFLAGS="`$PKG_CONFIG --cflags-only-I libug` -DENABLE_UG"
+
+          if test x`$PKG_CONFIG --variable=parallel libug` == xyes; then
+			
+          # Add additional flags needed for parallel UG  
+		  UG_LDFLAGS="\${DUNEMPILDFLAGS} $UG_LDFLAGS"
+          direct_UG_LDFLAGS="$DUNEMPILDFLAGS $direct_UG_LDFLAGS"
+          UG_CPPFLAGS="\${DUNEMPICPPFLAGS} $UG_CPPFLAGS -DModelP"
+          direct_UG_CPPFLAGS="$DUNEMPICPPFLAGS $direct_UG_CPPFLAGS -DModelP"
+          UG_LIBS="$UG_LIBS \${DUNEMPILIBS}"
+          direct_UG_LIBS="$direct_UG_LIBS $DUNEMPILIBS"
+          with_ug="yes (parallel)"
+		   
+		else
+			
+          with_ug="yes (sequential)"
+				   
+	    fi
+
+      fi
+
+      # restore PKG_CONFIG_PATH 
+      PKG_CONFIG_PATH=$REM_PKG_CONFIG_PATH
+  
+  # end of "no --without-ug"
+  fi
+
+  # did it work?
+  if test x$HAVE_UG = x0 ; then
+      # reset flags, so they do not appear in makefiles
+      UG_CPPFLAGS=""
+      direct_UG_CPPFLAGS=""
+      UG_LDFLAGS=""
+      direct_UG_LDFLAGS=""
+      UG_LIBS=""
+      direct_UG_LIBS=""
+  fi
+
+  AC_SUBST([UG_LDFLAGS])
+  AC_SUBST([UG_LIBS])
+  AC_SUBST([UG_CPPFLAGS])
+
+  # add to global list
+  DUNE_ADD_ALL_PKG([UG], [\${UG_CPPFLAGS}], [\${UG_LDFLAGS}], [\${UG_LIBS}])
+
+  if test x$HAVE_UG = x1 ; then
+
+      # add support for GRIDTYPE=UGGRID to config.h
+      DUNE_DEFINE_GRIDTYPE([UGGRID],[GRIDDIM == WORLDDIM],[Dune::UGGrid< dimgrid >],[dune/grid/uggrid.hh],[dune/grid/io/file/dgfparser/dgfug.hh])
+
+      AC_DEFINE(HAVE_UG, ENABLE_UG, 
+        [This is only true if UG was found by configure 
+         _and_ if the application uses the UG_CPPFLAGS])
+      if test x"$enable_ug_lgmdomain" = xyes ; then
+        AC_DEFINE(UG_LGMDOMAIN, 1, [use UG LGM domain])
+      fi
+  fi 
+      
+  # tell automake   
+  AM_CONDITIONAL(UG, test x$HAVE_UG = x1)
+  AM_CONDITIONAL(UG_LGMDOMAIN, test x$HAVE_UG = x1 && test x$UG_LGMDOMAIN = x1)
+  
+  # restore variables
+  LDFLAGS="$ac_save_LDFLAGS"
+  CPPFLAGS="$ac_save_CPPFLAGS"
+  LIBS="$ac_save_LIBS"
+
+  DUNE_ADD_SUMMARY_ENTRY([UG],[$with_ug])
+  
+])
+
 dnl @synopsis ACX_BLAS([ACTION-IF-FOUND[, ACTION-IF-NOT-FOUND]])
 dnl
 dnl This macro looks for a library that implements the BLAS
@@ -9874,7 +11154,7 @@ AC_DEFUN([NULLPTR_CHECK],[
   AC_REQUIRE([GXX0X])
   AC_LANG_PUSH([C++])
   AC_MSG_CHECKING([whether nullptr is supported])
-  AC_TRY_COMPILE([],[
+  AC_TRY_COMPILE([],[typedef nullptr_t peng;
     char* ch = nullptr;
     ], [
     HAVE_NULLPTR=yes
@@ -9904,7 +11184,7 @@ AC_DEFUN([STATIC_ASSERT_CHECK],[
 ])
 
 dnl -*- autoconf -*-
-# $Id: dune.m4 6482 2011-08-11 13:54:32Z sander $
+# $Id$
 # checks for dune-headers and everything they need
 
 # TODO
@@ -10300,17 +11580,13 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
       AS_IF([test "x$HAVE_[]_DUNE_MODULE" = "x1"],[
 
         # save current LDFLAGS
-	ac_save_CXX="$CXX"
-	# Use $CXX $DUNE_LDFLAGS as link command, as the latter might 
-	# contain the -static option to force static linkage
-	ac_cxx_ld=`echo $ac_save_CXX | sed -e "s@$CXX@$CXX $DUNE_LDFLAGS@"`
-
+        ac_save_CXX="$CXX"
         HAVE_[]_DUNE_MODULE=0
 
         # define LTCXXLINK like it will be defined in the Makefile
-        CXX="./libtool --tag=CXX --mode=link $ac_cxx_ld "
-        
-	# use module LDFLAGS
+        CXX="./libtool --tag=CXX --mode=link $ac_save_CXX"
+
+        # use module LDFLAGS
         LDFLAGS="$ac_save_LDFLAGS $DUNE_LDFLAGS $DUNE_PKG_LDFLAGS $_dune_cm_LDFLAGS"
         LIBS="$_dune_cm_LIBS $DUNE_LIBS $LIBS"
 
@@ -10397,7 +11673,45 @@ AC_DEFUN([DUNE_CHECK_MODULES],[
   AC_LANG_POP([C++])
 ])
 
-# $Id: dune_all.m4 6340 2011-02-10 22:09:13Z christi $
+AC_DEFUN([DUNE_SYMLINK],[
+  AC_PROG_LN_S
+  AC_MSG_WARN([Module is using the deprecated 'dune' symlink.])
+  # create symlink for consistent paths even when $(top_srcdir) is not
+  # called dune/ (if filesystem/OS supports symlinks)
+  AS_IF([test "x$LN_S" = "xln -s"],[
+    # Symlinks possible!
+
+    # Note: we are currently in the build directory which may be != the
+    # source directory
+ 
+    # does a file already exist?
+    AS_IF([test -e "dune"],[
+      # exists: is a symlink?
+      AS_IF([test -L "dune"],[
+        AS_IF([! test -r dune/$ac_unique_file],[
+          AC_MSG_ERROR([Symlink 'dune' exists but appears to be wrong! Please remove it manually])
+        ])
+      ],[
+        # if we are in the source directory we can make sure that there is no directory
+        AC_MSG_ERROR([Module is using the DUNE[]_SYMLINK directive but contains a directory 'dune'!])
+      ])
+    ],[
+      echo Creating dune-symlink...
+      # set symlink in build directory to sources
+      ln -s $srcdir dune
+
+      # sanity check
+      AS_IF([! test -r "dune/$ac_unique_file"],[
+        AC_MSG_ERROR([Sanity check for symlink failed! Please send a bugreport to dune@dune-project.org])
+      ])
+    ])
+  ],[
+    # no symlinks possible... check name of directory
+    AC_MSG_ERROR([No symlinks supported! You have to install dune. No inplace usage possible!])
+  ])
+])
+
+# $Id$
 
 # this meta-check calls everything needed for Dune to work and all
 # possible components. Applications should use this so that
@@ -10607,7 +11921,6 @@ AC_DEFUN([DUNE_COMMON_CHECKS],
   AC_REQUIRE([STATIC_ASSERT_CHECK])
   AC_REQUIRE([NULLPTR_CHECK])
   AC_REQUIRE([SHARED_PTR])
-  AC_REQUIRE([MAKE_SHARED])
   AC_REQUIRE([DUNE_LINKCXX])
   AC_REQUIRE([DUNE_CHECKDEPRECATED])
   AC_REQUIRE([DUNE_SET_MINIMAL_DEBUG_LEVEL])
@@ -10615,11 +11928,6 @@ AC_DEFUN([DUNE_COMMON_CHECKS],
   AC_REQUIRE([DUNE_MPI])
   AC_REQUIRE([DUNE_EXPRTMPL])
   AC_REQUIRE([DUNE_TR1_HEADERS])
-
-  dnl Create the flag --enable-fieldvector-size-is-method
-  dnl This is to orchestrate the transition from the constant member FieldVector::size
-  dnl to the method FieldVector::size()
-  AC_REQUIRE([DUNE_FIELDVECTOR_SIZE_IS_METHOD])
 
   dnl check for programs
   AC_REQUIRE([AC_PROG_CC])
@@ -10669,7 +11977,7 @@ AC_DEFUN([DUNE_COMMON_CHECK_MODULE],
 	Dune::derr.active();])
 ])
 
-# $Id: dune_compiler.m4 5832 2010-01-18 13:52:14Z joe $
+# $Id$
 # check for supported compilers
 
 AC_DEFUN([DUNE_CHECK_COMPILER],[
@@ -10725,7 +12033,7 @@ AS_IF([test -z "$COMPILER_NAME"],[
 	COMPILER_NAME="unknown compiler"])
 ])
 
-# $Id: dune_deprecated.m4 6054 2010-06-28 15:19:18Z sander $
+# $Id$
 
 # Check for the right way to create the deprecation warning
 
@@ -10803,6 +12111,8 @@ AC_DEFUN([DUNE_DOCUMENTATION],[
       AC_MSG_ERROR([dvipdf is missing. This program is required for official tarballs!])])
     AS_IF([test "x$DVIPS" = "xtrue"],[
       AC_MSG_ERROR([dvips is missing. This program is required for official tarballs!])])
+    AS_IF([test "x$WML" = "xtrue"],[
+      AC_MSG_ERROR([wml is missing. This program is required for official tarballs!])])
     AS_IF([test "x$DOT" = "xtrue"],[
       AC_MSG_ERROR([dot is missing. This program is required for official tarballs!])])
     AS_IF([test "x$PERL" = "xtrue"],[
@@ -10870,65 +12180,14 @@ AC_DEFUN([DUNE_WEB],
 AC_DEFUN([DUNE_EXPRTMPL],[
   # enable experimental features
   AC_ARG_ENABLE(expressiontemplates,
-   AS_HELP_STRING([--enable-expressiontemplates],[enable experimental expression templates in dune]))
+   AS_HELP_STRING([--enable-expressiontemplates],[enable experimental expressiontemplates in dune]))
   AS_IF([test "x$enable_expressiontemplates" = "xyes"],[
     AC_DEFINE([DUNE_EXPRESSIONTEMPLATES], [1], 
       [Define to 1 if the experimental expression templates should be used])])
   AM_CONDITIONAL([EXPRESSIONTEMPLATES],
     [test "x$enable_expressiontemplates" = "xyes"])
 ])
-
-dnl This macro introduces a configure flag --enable-fieldvector-size-is method
-dnl that is used to orchestrate the transition from FieldVector::size as an enum
-dnl and FieldVector::size() as a method (see FS 819 for details).
-dnl If this flag is not set (the default), then FieldVector::size is an enum,
-dnl but a compiler warning appears.  If it is set then the warning disappears,
-dnl but FieldVector::size() becomes a method.
-dnl
-dnl This flag and the corresponding preprocessor directives should be removed
-dnl not earlier than after dune-2.2 has been released.
-
-AC_DEFUN([DUNE_FIELDVECTOR_SIZE_IS_METHOD],[
-  AC_ARG_ENABLE(fieldvector-size-is-method,
-    AS_HELP_STRING([--enable-fieldvector-size-is-method],[If this is set, the member 'size' of FieldVector is a method rather than an enum]))
-
-  AS_IF([test "x$enable_fieldvector_size_is_method" = "xyes"],
-    AC_DEFINE(DUNE_COMMON_FIELDVECTOR_SIZE_IS_METHOD, 1, [If this is set, the member 'size' of FieldVector is a method rather than an enum]))
-])
-
-# a trick to make life for the  user easier.
-#
-# some libs need the fortran test, while other use the f77 test. This
-# requires the user to provide two variables, usually with the same
-# parameter. In most cases the F77 compiler will be the same as teh FC
-# compiler.
-#
-# We test for FC and F77. If the user has specified both, we do
-# nothing, if the user has specified only one of them, we assume that
-# the compiler supports both and copy the value. Usually this should
-# be the sane default.
-#
-AC_DEFUN([DUNE_SYNC_FC_F77],[
-  # variant 1
-  # FC is set, while F77 is not set
-  AS_IF([test -n "$FC" && test -z "$F77"], [
-    AC_MSG_NOTICE([Fortran compiler FC (fortran 90) specified, 
-      while F77 (fortran 77) wasn't set.
-      Trying to use FC as F77.])
-    F77="$FC"
-  ])
-  # variant 2
-  # F77 is set, while FC is not set
-  AS_IF([test -z "$FC" && test -n "$F77"], [
-    AC_MSG_NOTICE([Fortran compiler F77 (fortran 77) specified, 
-      while FC (fortran 90) wasn't set.
-      Trying to use F77 as FC.])
-    FC="$F77"
-  ])
-])
-
-
-# $Id: dune_linkcxx.m4 6496 2011-09-14 06:33:35Z mnolte $
+# $Id$
 # tries to link c++ objects
 
 AC_DEFUN([DUNE_LINKCXX],[
@@ -10936,12 +12195,12 @@ AC_DEFUN([DUNE_LINKCXX],[
 AC_LANG_PUSH([C++])
 
 AC_MSG_CHECKING([whether compiling C++ code works])
-AC_COMPILE_IFELSE([
+AC_COMPILE_IFELSE(
   AC_LANG_SOURCE(
     [ #include <iostream>
       int main (int argc, char** argv) { 
       std::cout << std::endl;
-      }])],
+      }]),
   [ AC_MSG_RESULT([yes]);
     AC_MSG_CHECKING([whether linking C++ objects works]);
 	# link from object file
@@ -10965,7 +12224,7 @@ AC_LANG_POP([C++])
 ])
 
 dnl -*- autoconf -*-
-# $Id: dune_mpi.m4 6497 2011-09-14 06:34:04Z mnolte $
+# $Id$
 
 # wrapper for the autoconf-archive check. Note: compiling MPI-stuff sucks!
 
@@ -11115,11 +12374,11 @@ AC_DEFUN([DUNE_MPI],[
     # try to create MPI program
     AC_LANG_PUSH([C++])
     AC_COMPILE_IFELSE(
-      [AC_LANG_SOURCE(
+      AC_LANG_SOURCE(
         [ #include <mpi.h>
           int main (int argc, char** argv) { 
           MPI_Init(&argc, &argv); 
-          MPI_Finalize(); }])],
+          MPI_Finalize(); }]),
         [ AC_MSG_RESULT([yes]) ],
         [ AC_MSG_RESULT([no])
           AC_MSG_ERROR([could not compile MPI testprogram!
@@ -11132,11 +12391,11 @@ AC_DEFUN([DUNE_MPI],[
     ],[
       AC_MSG_CHECKING([whether running with $dune_MPI_VERSION works])
       AC_RUN_IFELSE(
-        [AC_LANG_SOURCE(
+        AC_LANG_SOURCE(
           [ #include <mpi.h>
             int main (int argc, char** argv) { 
             MPI_Init(&argc, &argv); 
-            MPI_Finalize(); }])],
+            MPI_Finalize(); }]),
           [ AC_MSG_RESULT([yes]) ],
           [ AC_MSG_RESULT([no])
             AC_MSG_ERROR([could not run MPI testprogram!
@@ -11340,7 +12599,7 @@ AC_DEFUN([DUNE_CHECK_PATH_GMP],[
 ])
 
 
-# $Id: inkscape.m4 1666 2005-03-17 12:33:11Z joe $
+# $Id$
 
 # Check for inkscape and define automake conditional
 
@@ -11356,41 +12615,6 @@ dnl libtool 1.5 and libtool 2.x
 AC_DEFUN([LT_COMPAT],[
   # LT_COMPAT
   m4_ifdef([LT_OUTPUT],[],[AC_DEFUN([LT_OUTPUT])])
-])
-
-AC_DEFUN([MAKE_SHARED],[
-  AC_REQUIRE([SHARED_PTR])
-  AS_IF([test "$SHARED_PTR_NAMESPACE" = "boost"],[
-    AC_CHECK_HEADER([boost/make_shared.hpp],
-                  [AC_DEFINE([HAVE_BOOST_MAKE_SHARED_HPP], [1],
-                        [Define to 1 if you have <boost/make_shared.hpp>.])])])
-  AC_MSG_CHECKING([whether SHARED_PTR_NAMESPACE ($SHARED_PTR_NAMESPACE) provides make_shared])
-  AC_LANG_PUSH([C++])
-    AC_COMPILE_IFELSE(
-      [AC_LANG_PROGRAM([[
-#if defined(HAVE_MEMORY)
-# include <memory>
-#endif
-#if defined(HAVE_TR1_MEMORY)
-# include <tr1/memory>
-#endif
-#if defined(HAVE_BOOST_SHARED_PTR_HPP) && defined(HAVE_BOOST_MAKE_SHARED_HPP)
-# include <boost/shared_ptr.hpp>
-# include <boost/make_shared.hpp>
-#endif
-#include <string>
-            ]],[[
-$SHARED_PTR_NAMESPACE::make_shared<int>(3);
-            ]])],
-            [ AC_MSG_RESULT(yes)
-              have_make_shared=yes
-            ],[AC_MSG_RESULT(no)
-              have_make_shared=no
-            ])
-  AS_IF([test "$have_make_shared" = "yes"],[
-    AC_DEFINE([HAVE_MAKE_SHARED], [1],
-                        [Define to 1 if SHARED_PTR_NAMESPACE::make_shared is usable.])])
-  AC_LANG_POP
 ])
 
 AC_DEFUN([MPI_CONFIG_HELPER],[
@@ -11724,7 +12948,7 @@ AC_DEFUN([MPI_CONFIG],[
   get_mpiparameters;
 ])
 
-# $Id: opengl.m4 6344 2011-02-14 12:22:39Z robertk $
+# $Id$
 # searches for OpenGL-stuff
 
 # DUNE_PATH_OPENGL()
@@ -11771,9 +12995,7 @@ dnl  GCC 4.2: namespace: tr1::  #include <tr1/memory>
 dnl  GCC 4.2: namespace: boost::  #include <boost/shared_ptr.hpp>
 dnl
 dnl We define one of HAVE_HAVE_TR1_SHARED_PTR or HAVE_BOOST_SHARED_PTR
-dnl depending on location, SHARED_PTR_HEADER to be the header with enclosing
-dnl brackety braces in which shared_ptr is defined and SHARED_PTR_NAMESPACE to 
-dnl be the namespace in
+dnl depending on location, and SHARED_PTR_NAMESPACE to be the namespace in
 dnl which shared_ptr is defined.
 dnl 
 
@@ -11790,6 +13012,15 @@ dnl  AC_REQUIRE([PANDORA_CHECK_CXX_STANDARD])
       do
         AC_COMPILE_IFELSE(
           [AC_LANG_PROGRAM([[
+#if defined(HAVE_MEMORY)
+# include <memory>
+#endif
+#if defined(HAVE_TR1_MEMORY)
+# include <tr1/memory>
+#endif
+#if defined(HAVE_BOOST_SHARED_PTR_HPP)
+# include <boost/shared_ptr.hpp>
+#endif
 #include <string>
 
 using $namespace::shared_ptr;
@@ -11799,55 +13030,21 @@ shared_ptr<string> test_ptr(new string("test string"));
             ]])],
             [
               ac_cv_shared_ptr_namespace="${namespace}"
-              ac_cv_shared_ptr_header=missing
               break
-            ],[
-	      ac_cv_shared_ptr_namespace=missing
-              ac_cv_shared_ptr_header=missing
-            ])
-        for header in memory tr1/memory boost/shared_ptr.hpp; do
-          AC_COMPILE_IFELSE(
-            [AC_LANG_PROGRAM([[
-# include <$header>
-#include <string>
-
-using $namespace::shared_ptr;
-using namespace std;
-              ]],[[
-shared_ptr<string> test_ptr(new string("test string"));
-              ]])],
-              [
-                ac_cv_shared_ptr_namespace="${namespace}"
-                ac_cv_shared_ptr_header="<${header}>"
-                break
-              ],[
-                ac_cv_shared_ptr_namespace=missing
-                ac_cv_shared_ptr_header=missing
-              ])
-         done
-         if test "$ac_cv_shared_ptr_namespace" != "missing"; then break; fi
+            ],[ac_cv_shared_ptr_namespace=missing])
        done
   ])
   AS_IF([ test "x$ac_cv_shared_ptr_namespace" = xmissing ],
     [], [
-      SHARED_PTR_NAMESPACE=${ac_cv_shared_ptr_namespace}
       AC_DEFINE_UNQUOTED([SHARED_PTR_NAMESPACE],
                          ${ac_cv_shared_ptr_namespace},
                          [The namespace in which SHARED_PTR can be found])
     ]
   )
-  AS_IF([ test "x$ac_cv_shared_ptr_header" = xmissing ],
-    [], [
-      SHARED_PTR_HEADER=${ac_cv_shared_ptr_header}
-      AC_DEFINE_UNQUOTED([SHARED_PTR_HEADER],
-                         ${ac_cv_shared_ptr_header},
-                         [The header in which SHARED_PTR can be found])
-    ]
-  )
   AC_LANG_POP()
 ])
 
-# $Id: xdr.m4 1236 2004-12-08 18:54:46Z thimo $
+# $Id$
 # searches for XDR Headers which are implicitly included by rpc.h
 # some systems don't like it when xdr.h is directly included
 
@@ -11856,1318 +13053,5 @@ AC_DEFUN([DUNE_PATH_XDR],[
   AC_CHECK_HEADERS(rpc/rpc.h)
 ])
 
-# Additional checks needed to build the module
-AC_DEFUN([DUNE_FOAMGRID_CHECKS])
-
-# Additional checks needed to find the module
-AC_DEFUN([DUNE_FOAMGRID_CHECK_MODULE]),[
-  DUNE_CHECK_MODULES([dune-foamgrid], [dune-foamgrid/foamgrid.hh])
-])
-
-# $Id: alberta.m4 5156 2008-04-14 09:28:06Z christi $
-# searches for alberta-headers and libs
-
-# Substitutes the following make variables:
-#   ALBERTA_DIM
-#     value of --with-alberta-dim, or taken from --world-dim, or 2 per default
-#
-#   ALBERTAROOT = /usr/local/alberta
-#     Root dir of the alberta installation.  Set from --with-alberta=...
-#
-#   ALBERTA_BASE_LIBS = $(ALBERTA_LIBPATHFLAGS) -lalberta_util $ALBERTA_EXTRA
-#     LIBS that are always required independent of dimension
-#
-#   ALBERTA_LIBPATHFLAGS = -L$(ALBERTAROOT)/lib
-#     Library path required for alberta
-#
-#   ALBERTA%DIM%D_LIBS = -L$(DUNE_GRID_LIBDIR) -ldunealbertagrid_%DIM%d -ldunegrid \
-#              $(ALBERTA_LIBPATHFLAGS) -lalberta_%DIM%d \
-#              $(ALBERTA_BASE_LIBS)
-#     *OR*       = $(top_builddir)/lib/libdunealbertagrid_%DIM%d.la \
-#              $(top_builddir)/lib/libdunegrid.la \
-#              $(ALBERTA_LIBPATHFLAGS) -lalberta_%DIM%d \
-#              $(ALBERTA_BASE_LIBS)
-#     All LIBS required for dimension %DIM% (1, 2, or 3).  The first value is
-#     substituted by default and is apropriate for modules depending on
-#     dune-grid.  dune-grid itself will overwrite that with the second value
-#     however in configure.ac.
-#
-#   ALBERTA_LIBS = $(ALBERTA($ALBERTA_DIM)D_LIBS)
-#     All LIBS required for the configured dimension.  The value of this
-#     variable will be empty for dimensions other than 1, 2, or 3.
-#
-#   ALBERTA_INCLUDE_CPPFLAGS = -I$(ALBERTAROOT)/include/alberta
-#     Include path required for Alberta.
-#
-#   ALBERTA%DIM%D_CPPFLAGS = $(ALBERTA_INCLUDE_CPPFLAGS) \
-#              -DALBERTA_DIM=%DIM% -DENABLE_ALBERTA
-#     All CPPFLAGS required for dimension %DIM% (1, 2, or 3).
-#
-#   ALBERTA_CPPFLAGS = $(ALBERTA$(ALBERTA_DIM)D_CPPFLAGS)
-#     All CPPFLAGS required for the configured dimension.  The value of this
-#     variable will be empty for dimensions other than 1, 2, or 3, thus
-#     ENABLE_ALBERTA will not be defined inside the program, disabling alberta
-#     support.
-#
-#   ALBERTA%DIM%D_LDFLAGS =
-#     All LDFLAGS required for dimension %DIM% (1, 2, or 3).  These are
-#     currently empty and exist just for consistency.
-#
-#   ALBERTA_LDFLAGS = $(ALBERTA$(ALBERTA_DIM)_LDFLAGS)
-#     All LDFLAGS required for the configured dimension.  These are currently
-#     empty and exist just for consistency.
-#
-#   If you want to use the the configured dimension, you have to use
-#   $(ALBERTA_LIBS), $(ALBERTA_CPPFLAGS) and $(ALBERTA_LDFLAGS).  If the
-#   configured dimension is anything other than 1, 2, or 3, these variable
-#   will substitute empty values, thus disabling support for alberta in the
-#   program.
-#
-#   If want to use a specific dimension, say 2, you have to use
-#   $(ALBERTA2D_LIBS), $(ALBERTA2D_CPPFLAGS) and $(ALBERTA2D_LDFLAGS).
-#
-# Defines the folling CPP macro
-#   ALBERTA_DIM
-#     The Alberta dimension this binary will be linked with.
-#   DUNE_ALBERTA_VERSION
-#     Alberta version found by configure, either 0x200 for 2.0 or 0x300 for 3.0
-#   HAVE_ALBERTA
-#     This is only true if alberta-library was found by configure 
-#     _and_ if the application uses the ALBERTA_CPPFLAGS
-#
-# Defines the following automake conditional
-#    ALBERTA
-#
-# configure shell variables:
-#    HAVE_ALBERTA
-#      1 if a working Alberta was found.
-AC_DEFUN([DUNE_PATH_ALBERTA],[
-  AC_REQUIRE([AC_PROG_CC])
-  AC_REQUIRE([AC_PROG_F77])
-  AC_REQUIRE([AC_PATH_XTRA])
-  AC_REQUIRE([DUNE_PATH_OPENGL])
-
-  ALBERTA_DIM='$(WORLDDIM)'
-
-  AC_ARG_WITH(alberta,
-    AC_HELP_STRING([--with-alberta=PATH],[directory where ALBERTA (ALBERTA
-    version 2.0 or higher) is installed.  You can pass additional required
-    libraries in the ALBERTA_EXTRA environment variable (in a form suitable
-    for $LIBS)]))
-
-  AC_ARG_ENABLE([alberta-libcheck],
-    AS_HELP_STRING([--disable-alberta-libcheck],
-      [Do not try to link against libalberta_Nd.]))
-
-  # do not use alberta debug lib 
-  with_alberta_debug=0
-
-  # store old values
-  ac_save_LDFLAGS="$LDFLAGS"
-  ac_save_CPPFLAGS="$CPPFLAGS"
-  ac_save_LIBS="$LIBS"
-  # LIBS=""
-
-  ## do nothing if no --with-alberta was supplied
-  AS_IF([test x$with_alberta != xno],[
-
-    # is --with-alberta=PATH used?
-    AS_IF([test "x$with_alberta" != "x"],[
-      AS_IF([test -d $with_alberta],[
-        AC_MSG_NOTICE([searching for ALBERTA in $with_alberta...])
-        ALBERTAROOT=`cd $with_alberta && pwd`
-      ],[
-        AC_MSG_WARN([ALBERTA directory '$with_alberta' does not exist])
-      ])
-    ],[
-      # educated guess for alberta root
-      for d in /usr /usr/local /usr/local/alberta /opt/alberta; do
-        AC_MSG_NOTICE([searching for ALBERTA in $d...])
-        AS_IF([test -d $d/include/alberta],[
-          ALBERTAROOT="$d"
-          break
-        ])
-      done
-    ])
-
-    ALBERTA_VERSION="2.0"
-
-    # set variables so that tests can use them
-    ALBERTA_INCLUDE_CPPFLAGS="-I$ALBERTAROOT/include/alberta"
-
-    # define varaible flags depending on problem and world dim, to change afterwards easily
-    ALBERTA_CPPFLAGS='$(ALBERTA$(ALBERTA_DIM)D_CPPFLAGS)'
-    ALBERTA_LDFLAGS='$(ALBERTA$(ALBERTA_DIM)D_LDFLAGS)'
-    ALBERTA_LIBS='$(ALBERTA$(ALBERTA_DIM)D_LIBS)'
-
-    # initialize dimension dependent CPPFLAGS, LDFLAGS and LIBS to default values
-    for N in 1 2 3 4 5 6 7 8 9 ; do
-      eval ALBERTA${N}D_CPPFLAGS=
-      eval ALBERTA${N}D_LDFLAGS=
-      eval ALBERTA${N}D_LIBS=
-    done
-
-    # check for header
-    CPPFLAGS="$ac_save_CPPFLAGS $ALBERTA_INCLUDE_CPPFLAGS -DDIM_OF_WORLD=3 -DEL_INDEX=0"
-    AC_CHECK_HEADER([alberta.h], [HAVE_ALBERTA="1"],
-      AC_MSG_WARN([alberta.h not found in $ALBERTA_INCLUDE_CPPFLAGS]))
-
-    if test "x$HAVE_ALBERTA" = "x1" ; then
-      AC_CHECK_MEMBER([struct el_info.wall_bound],[ALBERTA_VERSION="3.0"],[AC_MSG_WARN([version 3 not found, now looking for version 2])],[#include <alberta.h>])
-    fi
-
-    CPPFLAGS="$ac_save_CPPFLAGS $ALBERTA_INCLUDE_CPPFLAGS"
-
-    # TODO: check if static flag exists 
-    # link_static_flag defines the flag for the linker to link only static
-    # didnt work, with $link_static_flag, so quick hack here
-
-    # check for libalberta_util...
-    ALBERTA_LIBPATHFLAGS='-L$(ALBERTAROOT)/lib'
-    DUNEALBERTA_LIBPATHFLAGS='-L$(top_builddir)/lib'
-    LDFLAGS="$LDFLAGS -L$ALBERTAROOT/lib"
-    AS_IF([test "x$HAVE_ALBERTA" = "x1"],[
-      AC_CHECK_LIB(alberta_util,[alberta_calloc],
-        [LIBS="-lalberta_util $LIBS"],
-        [HAVE_ALBERTA="0"
-         AC_MSG_WARN(-lalberta_util not found!)])
-    ])
-
-    # check for ALBERTA grid library...
-    AS_IF([test "x$HAVE_ALBERTA" = "x1"],[
-
-      AS_IF([test x$enable_alberta_libcheck = xno],[
-        AC_MSG_WARN([Disabled checking whether libalberta_Nd can be linked.])
-      ],[
-        ALBERTA_WORLD_DIMS=
-        for N in 1 2 3 4 5 6 7 8 9; do
-          AC_CHECK_LIB(alberta_${N}d,[mesh_traverse],[
-            ALBERTA_WORLD_DIMS="$ALBERTA_WORLD_DIMS $N"
-          ])
-        done
-      ])
-
-      AS_IF([test "x$ALBERTA_WORLD_DIMS" != "x"],[
-        AC_MSG_NOTICE([Found libalberta_Nd for N = $ALBERTA_WORLD_DIMS])
-
-        ALBERTA_BASE_LIBS="\$(ALBERTA_LIBPATHFLAGS) -lalberta_util $ALBERTA_EXTRA"
-
-        # define library variables for all found libraries
-        for N in $ALBERTA_WORLD_DIMS ; do
-          eval ALBERTA${N}D_CPPFLAGS="'\$(ALBERTA_INCLUDE_CPPFLAGS) -DALBERTA_DIM=${N} -DENABLE_ALBERTA'"
-          eval ALBERTA${N}D_LDFLAGS=
-          eval ALBERTA${N}D_LIBS="'-L\$(DUNE_GRID_LIBDIR) -ldunealbertagrid_${N}d -ldunegrid \$(ALBERTA_LIBPATHFLAGS) -lalberta_${N}d \$(ALBERTA_BASE_LIBS)'"
-        done
-      ],[
-        HAVE_ALBERTA=0
-        AC_MSG_WARN([No ALBERTA grid library (libalberta_Nd) found.])
-      ])
-
-    ])
-
-  ])  # end of alberta check (--without wasn't set)
-
-  # survived all tests?
-  AS_IF([test "x$HAVE_ALBERTA" = "x1"],[
-
-    AC_DEFINE(HAVE_ALBERTA, ENABLE_ALBERTA,
-      [This is only true if alberta-library was found by configure 
-       _and_ if the application uses the ALBERTA_CPPFLAGS])
-
-    if test "$ALBERTA_VERSION" = "2.0" ; then
-      AC_DEFINE([DUNE_ALBERTA_VERSION], [0x200], [Alberta version found by configure, either 0x200 for 2.0 or 0x300 for 3.0])
-    elif test "$ALBERTA_VERSION" = "3.0" ; then
-      AC_DEFINE([DUNE_ALBERTA_VERSION], [0x300], [Alberta version found by configure, either 0x200 for 2.0 or 0x300 for 3.0])
-    else
-      AC_MSG_ERROR([Internal Inconsistency: Invalid Alberta version reported: $ALBERTA_VERSION.])
-    fi
-
-    # add to global list
-    DUNE_ADD_ALL_PKG([Alberta], [\${ALBERTA_CPPFLAGS}],
-                     [\${ALBERTA_LDFLAGS}], [\${ALBERTA_LIBS}])
-
-    DUNE_DEFINE_GRIDTYPE([ALBERTAGRID],[WORLDDIM == ALBERTA_DIM],[Dune::AlbertaGrid< dimgrid >],[dune/grid/albertagrid.hh],[dune/grid/albertagrid/dgfparser.hh])
-
-    # set variable for summary
-    with_alberta="version $ALBERTA_VERSION"
-    with_alberta_long="$ALBERTAROOT ; world dims $ALBERTA_WORLD_DIMS"
-
-  ],[
-
-    # clear all variables
-    ALBERTA_DIM= 
-    ALBERTAROOT= 
-    ALBERTA_BASE_LIBS=
-    DUNEALBERTA_LIBPATHFLAGS=
-    ALBERTA_LIBPATHFLAGS=
-    ALBERTA_INCLUDE_CPPFLAGS=
-    ALBERTA_DIM_CPPFLAGS=
-    ALBERTA_CPPFLAGS=
-    ALBERTA_LDFLAGS=
-    ALBERTA_LIBS=
-
-    ALBERTA_WORLD_DIMS=
-
-    for N in 1 2 3 4 5 6 7 8 9 ; do
-      eval ALBERTA${N}D_CPPFLAGS=
-      eval ALBERTA${N}D_LDFLAGS=
-      eval ALBERTA${N}D_LIBS=
-    done
-
-    # set variable for summary
-    with_alberta="no"
-    with_alberta_long=""
-
-  ])
-    
-  AC_SUBST([ALBERTA_DIM]) 
-  AC_SUBST([ALBERTAROOT]) 
-  AC_SUBST([ALBERTA_BASE_LIBS])
-  AC_SUBST([DUNEALBERTA_LIBPATHFLAGS])
-  AC_SUBST([ALBERTA_LIBPATHFLAGS])
-  AC_SUBST([ALBERTA_INCLUDE_CPPFLAGS])
-  AC_SUBST([ALBERTA_DIM_CPPFLAGS])
-  AC_SUBST([ALBERTA_CPPFLAGS])
-  AC_SUBST([ALBERTA_LDFLAGS])
-  AC_SUBST([ALBERTA_LIBS])
-
-  AC_SUBST([ALBERTA1D_CPPFLAGS])
-  AC_SUBST([ALBERTA2D_CPPFLAGS])
-  AC_SUBST([ALBERTA3D_CPPFLAGS])
-  AC_SUBST([ALBERTA4D_CPPFLAGS])
-  AC_SUBST([ALBERTA5D_CPPFLAGS])
-  AC_SUBST([ALBERTA6D_CPPFLAGS])
-  AC_SUBST([ALBERTA7D_CPPFLAGS])
-  AC_SUBST([ALBERTA8D_CPPFLAGS])
-  AC_SUBST([ALBERTA9D_CPPFLAGS])
-
-  AC_SUBST([ALBERTA1D_LDFLAGS])
-  AC_SUBST([ALBERTA2D_LDFLAGS])
-  AC_SUBST([ALBERTA3D_LDFLAGS])
-  AC_SUBST([ALBERTA4D_LDFLAGS])
-  AC_SUBST([ALBERTA5D_LDFLAGS])
-  AC_SUBST([ALBERTA6D_LDFLAGS])
-  AC_SUBST([ALBERTA7D_LDFLAGS])
-  AC_SUBST([ALBERTA8D_LDFLAGS])
-  AC_SUBST([ALBERTA9D_LDFLAGS])
-
-  AC_SUBST([ALBERTA1D_LIBS])
-  AC_SUBST([ALBERTA2D_LIBS])
-  AC_SUBST([ALBERTA3D_LIBS])
-  AC_SUBST([ALBERTA4D_LIBS])
-  AC_SUBST([ALBERTA5D_LIBS])
-  AC_SUBST([ALBERTA6D_LIBS])
-  AC_SUBST([ALBERTA7D_LIBS])
-  AC_SUBST([ALBERTA8D_LIBS])
-  AC_SUBST([ALBERTA9D_LIBS])
-
-  # also tell automake
-  AM_CONDITIONAL(ALBERTA, test x$HAVE_ALBERTA = x1)
-
-  AM_CONDITIONAL(ALBERTA_1D,[test ! -z "$(echo $ALBERTA_WORLD_DIMS | grep 1)"])
-  AM_CONDITIONAL(ALBERTA_2D,[test ! -z "$(echo $ALBERTA_WORLD_DIMS | grep 2)"])
-  AM_CONDITIONAL(ALBERTA_3D,[test ! -z "$(echo $ALBERTA_WORLD_DIMS | grep 3)"])
-  AM_CONDITIONAL(ALBERTA_4D,[test ! -z "$(echo $ALBERTA_WORLD_DIMS | grep 4)"])
-  AM_CONDITIONAL(ALBERTA_5D,[test ! -z "$(echo $ALBERTA_WORLD_DIMS | grep 5)"])
-  AM_CONDITIONAL(ALBERTA_6D,[test ! -z "$(echo $ALBERTA_WORLD_DIMS | grep 6)"])
-  AM_CONDITIONAL(ALBERTA_7D,[test ! -z "$(echo $ALBERTA_WORLD_DIMS | grep 7)"])
-  AM_CONDITIONAL(ALBERTA_8D,[test ! -z "$(echo $ALBERTA_WORLD_DIMS | grep 8)"])
-  AM_CONDITIONAL(ALBERTA_9D,[test ! -z "$(echo $ALBERTA_WORLD_DIMS | grep 9)"])
-
-  # reset old values
-  LIBS="$ac_save_LIBS"
-  CPPFLAGS="$ac_save_CPPFLAGS"
-  LDFLAGS="$ac_save_LDFLAGS"
-
-  DUNE_ADD_SUMMARY_ENTRY([ALBERTA],[$with_alberta],[$with_alberta_long])
-])
-
-# AlgLib provides arbitrary precision linear algebra and quadratures (and more).
-# see http://www.alglib.net/
-# Unfortunatly the available downloads are rather buggy, therefore we have
-# to provide a fixed version of the files used here - obtainable 
-# by contacting dedner|nolte@mathematik.uni-freiburg.de
-
-# DUNE_PATH_ALGLIB()
-#
-# shell variables:
-#   with_alglib
-#     no or path
-#   HAVE_ALGLIB
-#     no or "yes (...)"
-#   ALGLIB_CPPFLAGS
-#   ALGLIB_LIBS
-#
-# substitutions:
-#   ALGLIB_CPPFLAGS
-#   ALGLIB_LIBS
-#
-# preprocessor defines:
-#   HAVE_ALGLIB
-#     undef or ENABLE_ALGLIB
-#
-# conditionals:
-#   ALGLIB
-AC_DEFUN([DUNE_PATH_ALGLIB],[
-  AC_REQUIRE([AC_PROG_CXX])
-  AC_REQUIRE([DUNE_PATH_GMP])
-
-  HAVE_ALGLIB="no"
-
-  AC_ARG_WITH(alglib,
-    AS_HELP_STRING([--with-alglib=PATH],[directory to AlgLib for DUNE]))
-
-  ac_save_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
-  AS_IF([test "x$with_alglib" != "x"],
-        [PKG_CONFIG_PATH="$with_alglib:$with_alglib/lib/pkgconfig:$PKG_CONFIG_PATH"])
-  AC_MSG_CHECKING([for alglib4dune (>=1.0) via pkgconfig])
-  AS_IF([PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config --atleast-version=1.0 alglib4dune],[
-    HAVE_ALGLIB="version `PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config --modversion alglib4dune`"
-    ALGLIB_CPPFLAGS="`PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config --cflags alglib4dune` -DENABLE_ALGLIB=1"
-    ALGLIB_LIBS="`PKG_CONFIG_PATH=$PKG_CONFIG_PATH pkg-config --libs alglib4dune`"
-    AC_MSG_RESULT([yes])
-  ],[
-    AC_MSG_RESULT([no])
-  ])
-  PKG_CONFIG_PATH="$ac_save_PKG_CONFIG_PATH"
-
-  AS_IF([test "$HAVE_ALGLIB" != "no"],[
-    AC_LANG_PUSH([C++])
-    ac_save_CPPFLAGS="$CPPFLAGS"
-    CPPFLAGS="$CPPFLAGS $ALGLIB_CPPFLAGS"
-    AC_CHECK_HEADER([alglib/amp.h],[],[HAVE_ALGLIB="no"])
-    CPPFLAGS="$ac_save_CPPFLAGS"
-    AC_LANG_POP
-  ])
-
-  AS_IF([test "$HAVE_ALGLIB" != "no"],[
-    AC_DEFINE([HAVE_ALGLIB],[ENABLE_ALGLIB],[Was AlgLib for DUNE found and ALGLIB_CPPFLAGS used?])
-    DUNE_ADD_ALL_PKG([AlgLib], [$ALGLIB_CPPFLAGS], [], [$ALGLIB_LIBS])
-  ],[
-    ALGLIB_CPPFLAGS=
-    ALGLIB_LIBS=
-  ])
-
-  AC_SUBST([ALGLIB_CPPFLAGS])
-  AC_SUBST([ALGLIB_LIBS])
-
-  AM_CONDITIONAL(ALGLIB,[test "$HAVE_ALGLIB" != "no"])
-  DUNE_ADD_SUMMARY_ENTRY([AlgLib for DUNE],[$HAVE_ALGLIB])
-])
-
-dnl -*- mode: autoconf; tab-width: 4; indent-tabs-mode: nil; -*-
-# searches for alugrid-headers and libs
-
-# DUNE_PATH_ALUGRID()
-#
-# shell variables:
-#   with_alugrid
-#     no or yes
-#   ALUGRIDROOT
-#   ALUGRID_VERSIONNO
-#   ALUGRID_LIB_PATH
-#   ALUGRID_INCLUDE_PATH
-#   ALUGRID_CPPFLAGS
-#   ALUGRID_LDFLAGS
-#   ALUGRID_LIBS
-#   HAVE_ALUGRID
-#     undef or 1 or 0
-#
-# substitutions:
-#   ALUGRID_CPPFLAGS
-#   ALUGRID_LDFLAGS
-#   ALUGRID_LIBS
-#
-# defines:
-#   HAVE_ALUGRID
-#     ENABLE_ALUGRID or undefined
-#   ALUGRID_PARALLEL_H
-#   ALUGRID_SERIAL_H
-#
-# conditionals:
-#   ALUGRID
-AC_DEFUN([DUNE_PATH_ALUGRID],[
-  AC_REQUIRE([AC_PROG_CXX])
-  AC_REQUIRE([DUNE_MPI])
-
-  AC_ARG_WITH(alugrid,
-    AC_HELP_STRING([--with-alugrid=PATH],[directory where ALUGrid is installed]))
-
-  AC_ARG_WITH([alugrid-libdir],dnl
-    AS_HELP_STRING([--with-alugrid-libdir=PATH],dnl
-      [Directory where ALUGrid library is installed (deprecated). Note that this will override library path detection, so use this parameter only if default library detection fails and you know exactly where your ALUGrid library is located.]))dnl
-
-
-# do not use alugrid debug lib 
-
-# store old values
-ac_save_LDFLAGS="$LDFLAGS"
-ac_save_CPPFLAGS="$CPPFLAGS"
-ac_save_LIBS="$LIBS"
-
-# initilize to sane value
-HAVE_ALUGRID=0
-
-if test x$with_alugrid != xno ; then
-
-  # is --with-alugrid=PATH used?
-  AS_IF([test "x$with_alugrid" != "x"],[
-    AS_IF([test -d $with_alugrid],[
-      AC_MSG_NOTICE([searching for ALUGrid in $with_alugrid...])
-      ALUGRIDROOT=`cd $with_alugrid && pwd`
-    ],[
-      AC_MSG_WARN([ALUGrid directory '$with_alugrid' does not exist or is inaccessible])
-    ])
-  ],[
-    # educated guess for alugrid root
-    for d in /usr /usr/local /usr/local/alugrid /opt/alugrid; do
-      AC_MSG_NOTICE([searching for ALUGrid in $d...])
-      AS_IF([test -f $d/lib/pkgconfig/alugrid.pc -o -x $d/bin/alugridversion],[
-        ALUGRIDROOT="$d"
-        break
-      ])
-    done
-  ])
-
-  REM_PKG_CONFIG_PATH=$PKG_CONFIG_PATH
-  PKG_CONFIG_PATH="$ALUGRIDROOT:$ALUGRIDROOT/lib/pkgconfig:$PKG_CONFIG_PATH"
-
-  ## check version number 
-  NEEDEDALUGRID_VERSION=1.23
-
-  AC_MSG_CHECKING([ALUGrid version >= $NEEDEDALUGRID_VERSION])
-  if $PKG_CONFIG --atleast-version=$NEEDEDALUGRID_VERSION alugrid ; then 
-    ALUGRID_VERSION=`$PKG_CONFIG --modversion alugrid`
-    AC_MSG_RESULT([yes (ALUGrid-$ALUGRID_VERSION)])
-    ALUGRID_INCLUDE_PATH=`$PKG_CONFIG --variable=includedir alugrid`
-    ALUGRID_LIB_PATH=`$PKG_CONFIG --variable=libdir alugrid`
-    if test x"$with_alugrid_libdir" != x"" && test x"$with_alugrid_libdir" != x"no" ; then 
-      AC_MSG_WARN([--with-alugrid-libdir option is obsolete!])
-    fi 
-  else   
-    # lib dir and include path 
-    ALUGRID_INCLUDE_PATH="$ALUGRIDROOT/include"
-
-    ALUGRID_LIB_PATH="$ALUGRIDROOT/lib"
-    if test x"$with_alugrid_libdir" != x"" && test x"$with_alugrid_libdir" != x"no"
-    then
-      if ! test -d "$with_alugrid_libdir"
-      then
-        AC_MSG_ERROR([library directory $with_alugrid_libdir for ALUGrid does not exist or is inaccessible.])dnl
-      else
-        ALUGRID_LIB_PATH="$with_alugrid_libdir"
-      fi
-    fi
-
-    # old check version 
-    ALUGRID_VERSIONCHECK=$ALUGRIDROOT/bin/alugridversion
-    if test -f $ALUGRID_VERSIONCHECK; then 
-      ALUGRID_VERSION=`$ALUGRID_VERSIONCHECK -c $NEEDEDALUGRID_VERSION`
-      if test "x$ALUGRID_VERSION" != "x-1"; then 
-        ALUGRID_VERSION=`$ALUGRID_VERSIONCHECK -v`
-        AC_MSG_RESULT([yes (ALUGrid-$ALUGRID_VERSION)])
-      else 
-        AC_MSG_RESULT([no])
-        AC_MSG_ERROR([ALUGrid version is too old!])
-      fi
-    else 
-      AC_MSG_RESULT([no])
-      AS_IF([test "x$ALUGRIDROOT" != "x"],[
-        AC_MSG_ERROR([$PKG_CONFIG couldn't find alugrid.pc or wrong version! ALUGrid version is too old or ALUGrid is not installed in $ALUGRIDROOT! You need at least ALUGrid-$NEEDEDALUGRID_VERSION!])
-      ])
-    fi
-  fi
-
-  # restore PKG_CONFIG_PATH 
-  PKG_CONFIG_PATH=$REM_PKG_CONFIG_PATH
-
-  AC_LANG_PUSH([C++])
-
-  # set variables so that tests can use them
-  ALU3D_INC_FLAG="-I$ALUGRID_INCLUDE_PATH -I$ALUGRID_INCLUDE_PATH/serial -I$ALUGRID_INCLUDE_PATH/duneinterface -DENABLE_ALUGRID"
-  CPPFLAGS="$ac_save_CPPFLAGS $ALU3D_INC_FLAG"
-  # check for header
-  AC_CHECK_HEADERS([alugrid_serial.h], 
-     [ALUGRID_CPPFLAGS="$ALU3D_INC_FLAG"
-      ALUGRID_LDFLAGS=""
-      ALUGRID_LIBS="-L$ALUGRID_LIB_PATH -lalugrid"
-    HAVE_ALUGRID="1"],
-    AC_MSG_WARN([alugrid_serial.h not found in $ALUGRID_INCLUDE_PATH]))
-   
-  # Yes, we do check whether either alugrid_serial.h or alugrid_parallel.h
-  # works.  Dune decides which one to use depending on how the
-  # alugrid_defineparallel.h header defines ALU3DGRID_BUILD_FOR_PARALLEL.
-  # This could be improved.
-  ALU3D_INC_FLAG_PARA="-I$ALUGRID_INCLUDE_PATH/parallel"
-  CPPFLAGS="$ac_save_CPPFLAGS $DUNEMPICPPFLAGS $ALU3D_INC_FLAG_PARA $ALU3D_INC_FLAG"
-
-  HAVE_ALUGRID_PARALLEL="0"
-  # if the serial header was found then also check for the parallel header
-  if test x"$HAVE_ALUGRID" != "x0" ; then
-    AC_TRY_COMPILE([#include <alugrid_defineparallel.h> 
-                    #if ALU3DGRID_BUILD_FOR_PARALLEL == 0 
-                    #error
-                    #endif
-                   ],
-                   [],
-                   [HAVE_ALUGRID_PARALLEL="1"],
-                   [HAVE_ALUGRID_PARALLEL="0"
-                   AC_MSG_WARN("ALUGRID was not build for parallel support!")
-                  ])
-
-    # only check for parallel header when ALUGrid was build for parallel support
-    if test x"$HAVE_ALUGRID_PARALLEL" != "x0" ; then 
-      # check for parallel header 
-      AC_CHECK_HEADERS([alugrid_parallel.h], 
-         [ALUGRID_CPPFLAGS="\${DUNEMPICPPFLAGS} $ALU3D_INC_FLAG $ALU3D_INC_FLAG_PARA"
-          ALUGRID_LDFLAGS="\${DUNEMPILDFLAGS}"
-          ALUGRID_LIBS="-L$ALUGRID_LIB_PATH -lalugrid \${DUNEMPILIBS}"
-          # for use with the later library test
-          LDFLAGS="$LDFLAGS $DUNEMPILDFLAGS"
-          LIBS="$DUNEMPILIBS $LIBS"
-        HAVE_ALUGRID="1"],
-        AC_MSG_WARN([alugrid_parallel.h not found in $ALUGRID_INCLUDE_PATH]))
-    fi 
-  fi
-
-  # We check only whether linking with the library works, not for an actual
-  # function from that library.  So we won't need any special stuff in the
-  # CPPFLAGS
-  CPPFLAGS="$ac_save_CPPFLAGS"
-  # This is a kludge to pass the right libpath before the library on the
-  # linker command line.  In the result, the -L flag has to go into the LIBS
-  # variable.
-  LDFLAGS="$LDFLAGS -L$ALUGRID_LIB_PATH"
-
-  # if header is found...
-  if test x$HAVE_ALUGRID = x1 ; then
-    AC_CHECK_LIB(alugrid,[malloc],
-      [: #dumy argument to avoid default action
-      ],
-	  [HAVE_ALUGRID="0"
-	  AC_MSG_WARN(libalugrid not found!)])
-  fi
-
-  AC_LANG_POP([C++])
-
-fi
-
-# survived all tests?
-if test x$HAVE_ALUGRID = x1 ; then
-  AC_SUBST(ALUGRID_LIBS, $ALUGRID_LIBS)
-  AC_SUBST(ALUGRID_LDFLAGS, $ALUGRID_LDFLAGS)
-  AC_SUBST(ALUGRID_CPPFLAGS, $ALUGRID_CPPFLAGS)
-  AC_DEFINE(HAVE_ALUGRID, ENABLE_ALUGRID,
-    [This is only true if alugrid-library was found by configure 
-     _and_ if the application uses the ALUGRID_CPPFLAGS])
-
-  # add to global list
-  DUNE_ADD_ALL_PKG([ALUGrid], [$ALUGRID_CPPFLAGS],
-                   [$ALUGRID_LDFLAGS], [$ALUGRID_LIBS])
-
-  DUNE_DEFINE_GRIDTYPE([ALUGRID_CONFORM],[],[Dune::ALUConformGrid< dimgrid, dimworld >],[dune/grid/alugrid.hh],[dune/grid/io/file/dgfparser/dgfalu.hh])
-  DUNE_DEFINE_GRIDTYPE([ALUGRID_CUBE],[],[Dune::ALUCubeGrid< dimgrid, dimworld >],[dune/grid/alugrid.hh],[dune/grid/io/file/dgfparser/dgfalu.hh])
-  DUNE_DEFINE_GRIDTYPE([ALUGRID_SIMPLEX],[],[Dune::ALUSimplexGrid< dimgrid, dimworld >],[dune/grid/alugrid.hh],[dune/grid/io/file/dgfparser/dgfalu.hh])
-
-  # set variable for summary
-  if test x"$HAVE_ALUGRID_PARALLEL" != "x0" ; then 
-    with_alugrid_parallel="(parallel)"
-  else 
-    with_alugrid_parallel="(serial)"
-  fi 
-  with_alugrid="version $ALUGRID_VERSION $with_alugrid_parallel"
-  with_alugrid_long="$ALUGRIDROOT"
-else
-  AC_SUBST(ALUGRID_LIBS, "")
-  AC_SUBST(ALUGRID_LDFLAGS, "")
-  AC_SUBST(ALUGRID_CPPFLAGS, "")
-
-  # set variable for summary
-  with_alugrid="no"
-  with_alugrid_long=""
-fi
-  
-# also tell automake
-AM_CONDITIONAL(ALUGRID, test x$HAVE_ALUGRID = x1)
-
-# reset old values
-LIBS="$ac_save_LIBS"
-CPPFLAGS="$ac_save_CPPFLAGS"
-LDFLAGS="$ac_save_LDFLAGS"
-
-DUNE_ADD_SUMMARY_ENTRY([ALUGrid],[$with_alugrid],[$with_alugrid_long])
-
-])
-
-# $Id: dune_amira.m4 5156 2008-04-14 09:28:06Z christi $
-# searches for amiramesh-headers and libs
-
-# DUNE_PATH_AMIRAMESH()
-# 
-# shell variables:
-#   with_amiramesh
-#     no or yes
-#   AMIRAMESHROOT
-#   AMIRAMESH_LIB_PATH
-#   AMIRAMESH_INCLUDE_PATH
-#   AMIRAMESH_CPPFLAGS
-#   AMIRAMESH_LDFLAGS
-#   AMIRAMESH_LIBS
-#   HAVE_AMIRAMESH
-#     1 or 0 or undef
-#
-# substitutions:
-#   AMIRAMESH_CPPFLAGS
-#   AMIRAMESH_LDFLAGS
-#   AMIRAMESH_LIBS
-#
-# defines:
-#   HAVE_AMIRAMESH
-#
-# conditionals:
-#   AMIRAMESH
-AC_DEFUN([DUNE_PATH_AMIRAMESH],[
-  AC_REQUIRE([AC_PROG_CXX])
-
-  AC_ARG_WITH(amiramesh,
-    AC_HELP_STRING([--with-amiramesh=PATH],[directory with AmiraMesh inside]))
-
-# store values
-ac_save_LDFLAGS="$LDFLAGS"
-ac_save_CPPFLAGS="$CPPFLAGS"
-ac_save_LIBS="$LIBS"
-
-# initialize
-HAVE_AMIRAMESH=0
-
-if test x$with_amiramesh != xno ; then
-
-# is --with-amiramesh=bla used?
-if test "x$with_amiramesh" != x ; then
-	if ! test -d $with_amiramesh; then
-        AC_MSG_WARN([Amiramesh directory $with_amiramesh does not exist])
-	else
-        # expand tilde / other stuff
-		AMIRAMESHROOT=`cd $with_amiramesh && pwd`
-	fi
-fi
-if test "x$AMIRAMESHROOT" = x; then
-    # use some default value...
-    AMIRAMESHROOT="/usr/local/amiramesh"
-fi
-
-AMIRAMESH_LIB_PATH="$AMIRAMESHROOT/lib"
-AMIRAMESH_INCLUDE_PATH="$AMIRAMESHROOT/include"
-
-CPPFLAGS="$CPPFLAGS -I$AMIRAMESH_INCLUDE_PATH"
-
-AC_LANG_PUSH([C++])
-
-# check for header
-AC_CHECK_HEADER([amiramesh/AmiraMesh.h], 
-   [AMIRAMESH_CPPFLAGS="-I$AMIRAMESH_INCLUDE_PATH -DHX_HAS_STDIOSTREAM"
-	HAVE_AMIRAMESH="1"],
-  AC_MSG_WARN([AmiraMesh.h not found in $AMIRAMESH_INCLUDE_PATH/amiramesh]),
-  [#define HX_HAS_STDIOSTREAM])
-
-CPPFLAGS="$ac_save_CPPFLAGS $AMIRAMESH_CPPFLAGS"
-
-# if header is found...
-if test x$HAVE_AMIRAMESH = x1 ; then
-   LIBS="-L$AMIRAMESH_LIB_PATH -lamiramesh $LIBS"
-
-   AC_LINK_IFELSE(AC_LANG_PROGRAM([#include "amiramesh/AmiraMesh.h"], [AmiraMesh* am = AmiraMesh::read("test");]),
-	[AMIRAMESH_LIBS="-L$AMIRAMESH_LIB_PATH -lamiramesh"
-         AMIRAMESH_LDFLAGS=""],
-	[HAVE_AMIRAMESH="0"
-	AC_MSG_WARN(libamiramesh not found!)])
-fi
-
-AC_LANG_POP([C++])
-
-fi
-
-with_amiramesh="no"
-# survived all tests?
-if test x$HAVE_AMIRAMESH = x1 ; then
-  AC_SUBST(AMIRAMESH_LIBS, $AMIRAMESH_LIBS)
-  AC_SUBST(AMIRAMESH_LDFLAGS, $AMIRAMESH_LDFLAGS)
-  AC_SUBST(AMIRAMESH_CPPFLAGS, $AMIRAMESH_CPPFLAGS)
-  AC_DEFINE(HAVE_AMIRAMESH, 1, [Define to 1 if amiramesh-library is found])
-
-  # add to global list
-  DUNE_ADD_ALL_PKG([AmiraMesh], [\$(AMIRAMESH_CPPFLAGS)],
-                   [\$(AMIRAMESH_LDFLAGS)], [\$(AMIRAMESH_LIBS)]) 
-
-  # set variable for summary
-  with_amiramesh="yes"
-else
-  AC_SUBST(AMIRAMESH_LIBS, "")
-  AC_SUBST(AMIRAMESH_LDFLAGS, "")
-  AC_SUBST(AMIRAMESH_CPPFLAGS, "")
-fi
-  
-# also tell automake
-AM_CONDITIONAL(AMIRAMESH, test x$HAVE_AMIRAMESH = x1)
-
-# reset old values
-LIBS="$ac_save_LIBS"
-CPPFLAGS="$ac_save_CPPFLAGS"
-LDFLAGS="$ac_save_LDFLAGS"
-
-DUNE_ADD_SUMMARY_ENTRY([AmiraMesh],[$with_amiramesh])
-
-])
-
-AC_DEFUN([DUNE_GRID_CHECKS],[
-  AC_REQUIRE([DUNE_GRID_DIMENSION])
-  AC_REQUIRE([DUNE_PATH_GRAPE])
-  AC_REQUIRE([DUNE_PATH_ALBERTA])
-  AC_REQUIRE([DUNE_PATH_UG])
-  AC_REQUIRE([DUNE_PATH_AMIRAMESH])
-  AC_REQUIRE([DUNE_PATH_PSURFACE])
-  AC_REQUIRE([DUNE_PATH_ALUGRID])
-  AC_REQUIRE([DUNE_PATH_ALGLIB])
-
-  DUNE_DEFINE_GRIDTYPE([ONEDGRID],[(GRIDDIM == 1) && (WORLDDIM == 1)],[Dune::OneDGrid],[dune/grid/onedgrid.hh],[dune/grid/io/file/dgfparser/dgfoned.hh])
-  DUNE_DEFINE_GRIDTYPE([SGRID],[],[Dune::SGrid< dimgrid, dimworld >],[dune/grid/sgrid.hh],[dune/grid/io/file/dgfparser/dgfs.hh])
-  DUNE_DEFINE_GRIDTYPE([YASPGRID],[GRIDDIM == WORLDDIM],[Dune::YaspGrid< dimgrid >],[dune/grid/yaspgrid.hh],[dune/grid/io/file/dgfparser/dgfyasp.hh])
-])
-
-AC_DEFUN([DUNE_GRID_CHECK_MODULE],[
-  DUNE_CHECK_MODULES([dune-grid], [grid/onedgrid.hh],[dnl
-  std::vector<Dune::OneDGrid::ctype> coords;
-  Dune::OneDGrid grid(coords);
-  return grid.lbegin<0>(0) == grid.lend<0>(0);])
-])
-
-# define GRIDDIM_CPPFLAGS and add to DUNE_PKG_CPPFLAGS
-# This defines GRIDDIM, WORLDDIM, and GRIDTYPE and assigns invalid values 
-AC_DEFUN([DUNE_GRID_DIMENSION],[
-  griddim_cppflags="-DGRIDDIM=$``(``GRIDDIM``)`` -DWORLDDIM=$``(``WORLDDIM``)`` -D$``(``GRIDTYPE``)``"
-  AC_SUBST(GRIDDIM, 0)
-  AC_SUBST(WORLDDIM, "$``(``GRIDDIM``)``")
-
-  AC_SUBST(GRIDTYPE, [NOGRID])
-  AC_SUBST(GRIDDIM_CPPFLAGS, $griddim_cppflags)
-  DUNE_ADD_ALL_PKG([GRIDDIM], [$griddim_cppflags])
-  # AC_MSG_RESULT([yes (GRIDDIM=$GRIDDIM, WORLDDIM=GRIDDIM and GRIDTYPE=$GRIDTYPE)])
-])
-
-AC_DEFUN([DUNE_DEFINE_GRIDTYPE_INCLUDE],[dnl
-m4_if($#,0,[],[dnl
-  #include <$1>
-m4_if($#,1,[],[DUNE_DEFINE_GRIDTYPE_INCLUDE(m4_shift($@))])dnl
-])dnl
-])
-
-
-# DUNE_DEFINE_GRIDTYPE([GRIDTYPE],[ASSERTION],[DUNETYPE],[HEADER],...)
-#
-# Add a new GRIDTYPE target DUNE's preprocessor magic.
-# 
-# Parameters: GRIDTYPE   name of the new target
-#             ASSERTION  condition to be checked by the preprocessor
-#             DUNETYPE   C++ type of the grid
-#             HEADER     name of the header file which includes the grid
-#
-# Example: DUNE_DEFINE_GRIDTYPE([YASPGRID],[GRIDDIM == WORLDDIM],[Dune::YaspGrid< dimgrid >],[dune/grid/yaspgrid.hh],[dune/grid/io/file/dgfparser/dgfyasp.hh])
-AC_DEFUN([DUNE_DEFINE_GRIDTYPE],[AH_BOTTOM(dnl
-[/* add GRIDTYPE typedef for grid implementation $3:
-    defining $1 during compilation typedefs this grid implementation as GridType
-    in namespace Dune::GridSelector;
-    also integer constants dimgrid and dimworld are set in this namespace.
-    The required headers for this grid implementation are also included.
-  */
- #if defined $1 && ! defined USED_$1_GRIDTYPE
-  #if HAVE_GRIDTYPE
-   #error "Ambiguous definition of GRIDTYPE."
-  #endif 
-
-  #ifndef WORLDDIM
-    #define WORLDDIM GRIDDIM
-  #endif
-  #if not (WORLDDIM >= GRIDDIM)
-    #error "WORLDDIM < GRIDDIM does not make sense."
-  #endif
-]dnl
-m4_if([$2],[],[],[
-  #if ! ($2)
-    #error "Preprocessor assertion $2 failed."
-  #endif
-])
-DUNE_DEFINE_GRIDTYPE_INCLUDE(m4_shift(m4_shift(m4_shift($@))))dnl
-[
-  namespace Dune
-  {
-    namespace GridSelector
-    {
-      const int dimgrid = GRIDDIM;
-      const int dimworld = WORLDDIM;
-      typedef $3 GridType;
-    }
-  }
-  #define HAVE_GRIDTYPE 1
-  #define USED_$1_GRIDTYPE 1
-#endif // #if defined $1]dnl
-)])
-
-# $Id: grape.m4 5710 2009-11-13 17:09:45Z robertk $
-# searches for albert-headers and libs
-
-# grape.h und libgr.a/libgr.so are located in the same discretory 
-
-# DUNE_PATH_GRAPE()
-#
-# configure shell/makefile variables:
-#   GRAPE_CPPFLAGS
-#   GRAPE_LDFLAGS
-#   GRAPE_LIBS
-#
-# preprocessor defines:
-#   HAVE_GRAPE ("ENABLE_GRAPE" or undefined)
-#
-# automake conditionals:
-#   GRAPE
-AC_DEFUN([DUNE_PATH_GRAPE],[
-  AC_REQUIRE([AC_PROG_CC])
-  AC_REQUIRE([AC_PATH_XTRA])
-  AC_REQUIRE([DUNE_PATH_OPENGL])
-  AC_REQUIRE([AC_PROG_LD_GNU])
-
-  AC_ARG_WITH(grape,
-    AC_HELP_STRING([--with-grape=PATH],[directory with Grape inside]))
-
-# store old values
-ac_save_LDFLAGS="$LDFLAGS"
-ac_save_CPPFLAGS="$CPPFLAGS"
-ac_save_LIBS="$LIBS"
-
-# don't even start testing if X wasn't found
-if test "x$no_x" != xyes && test x$with_grape != xno ; then
-
-  LIBS="$X_PRE_LIBS $X_LIBS $X_EXTRA_LIBS"
-
-  # is --with-grape=bla used?
-  if test x$with_grape != x ; then
-    if test -d $with_grape; then
-      # expand tilde / other stuff
-      GRAPEROOT=`cd $with_grape && pwd`
-    else
-      AC_MSG_ERROR([directory $with_grape does not exist])
-    fi      
-  else
-    # set some kind of default grape-path...
-    GRAPEROOT="/usr/local/grape/"
-  fi
-
-  CPPFLAGS="$CPPFLAGS -I$GRAPEROOT"
-  LDFLAGS="$LDFLAGS -L$GRAPEROOT"
-
-  # check for header
-  # we have to use CC for checking the header!!
-  AC_LANG_PUSH([C])
-  AC_CHECK_HEADER([grape.h],
-    [GRAPE_CPPFLAGS="-I$GRAPEROOT"
-     HAVE_GRAPE="1"])
-  AC_LANG_POP
-
-  # check for lib if header was found
-  if test x$HAVE_GRAPE = x1 ; then
-    # if GL was found, add it implicitly...
-    #   This is not the best choice, but testing without GL first and
-    #   then trying again fails due to caching...
-    CPPFLAGS="$GRAPE_CPPFLAGS $GL_CFLAGS -DENABLE_GRAPE"
-    LIBS="$LIBS $GL_LIBS -lXext"
-    LDFLAGS="$LDFLAGS $GL_LDFLAGS"
-
-    # if we use the gnu linker add the grape path 
-    if test x$lt_cv_prog_gnu_ld = xyes ; then 
-      GRAPE_LINKER_FLAGS="-Wl,--rpath -Wl,$GRAPEROOT"
-    fi  
-
-    AC_CHECK_LIB(gr, grape, 
-      [GRAPE_LDFLAGS="$GL_LDFLAGS $GRAPE_LINKER_FLAGS"
-       GRAPE_CPPFLAGS="$CPPFLAGS"
-       GRAPE_LIBS="-L$GRAPEROOT -lgr $GL_LIBS -lXext"], 
-      [HAVE_GRAPE="0"])
-  fi
-
-  # did it work?
-  if test x$HAVE_GRAPE = x1 ; then
-    AC_SUBST(GRAPE_LIBS, $GRAPE_LIBS)
-    AC_SUBST(GRAPE_LDFLAGS, $GRAPE_LDFLAGS)
-    AC_SUBST(GRAPE_CPPFLAGS, $GRAPE_CPPFLAGS)
-    AC_DEFINE(HAVE_GRAPE, ENABLE_GRAPE,
-          [This is only true if grape-library was found by configure 
-           _and_ if the application uses the GRAPE_CPPFLAGS])
-
-    # add to global list
-    DUNE_ADD_ALL_PKG([GRAPE], [$GRAPE_CPPFLAGS], [$GRAPE_LDFLAGS], [$GRAPE_LIBS])
-  fi
-elif test "x$X_LIBS" = x ; then 
-  AC_MSG_WARN([X libraries were not found and therefore not Grape check possible! See ./configure --help for X library options.])
-fi
-
-
-# report to summary
-if test x$HAVE_GRAPE = x1 ; then
-  with_grape="yes"
-else
-  with_grape="no"
-fi
-
-# also tell automake	
-AM_CONDITIONAL(GRAPE, test x$HAVE_GRAPE = x1)
-
-# reset old values
-LIBS="$ac_save_LIBS"
-CPPFLAGS="$ac_save_CPPFLAGS"
-LDFLAGS="$ac_save_LDFLAGS"
-  
-DUNE_ADD_SUMMARY_ENTRY([Grape],[$with_grape])
-
-])
-
-# searches for psurface-headers and lib
-
-# DUNE_PATH_PSURFACE()
-#
-# DUNE_PATH_AMIRAMESH must be called previously if psurface was built with
-# AmiraMesh support
-#
-# shell variables:
-#   with_psurface
-#     yes or no
-#   PSURFACEROOT
-#   PSURFACE_LIB_PATH
-#   PSURFACE_INCLUDE_PATH
-#   PSURFACE_CPPFLAGS
-#   PSURFACE_LDFLAGS
-#   PSURFACE_LIBS
-#   HAVE_PSURFACE
-#     0 or 1
-#
-# substitutions:
-#   PSURFACE_LIBS
-#   PSURFACE_LDFLAGS
-#   PSURFACE_CPPFLAGS
-#
-# defines:
-#   HAVE_PSURFACE
-#
-# conditionals:
-#   PSURFACE
-AC_DEFUN([DUNE_PATH_PSURFACE],[
-  AC_REQUIRE([AC_PROG_CXX])
-  AC_REQUIRE([DUNE_PATH_AMIRAMESH])
-
-  AC_ARG_WITH(psurface,
-    AC_HELP_STRING([--with-psurface=PATH],[directory with the psurface library inside]))
-
-# store values
-ac_save_LDFLAGS="$LDFLAGS"
-ac_save_CPPFLAGS="$CPPFLAGS"
-ac_save_LIBS="$LIBS"
-
-# initialize to sane value
-HAVE_PSURFACE=0
-
-if test x$with_psurface != xno ; then
-
-# is --with-psurface=bla used?
-if test "x$with_psurface" != x ; then
-    if test -d $with_psurface; then
-      # expand tilde / other stuff
-      PSURFACEROOT=`cd $with_psurface && pwd`
-    else
-      AC_MSG_ERROR([directory $with_psurface does not exist])
-    fi      
-fi
-if test "x$PSURFACEROOT" = x; then  
-    # use some default value...
-    PSURFACEROOT="/usr/local/psurface"
-fi
-
-PSURFACE_LIB_PATH="$PSURFACEROOT/lib"
-PSURFACE_INCLUDE_PATH="$PSURFACEROOT/include"
-
-CPPFLAGS="$CPPFLAGS -I$PSURFACE_INCLUDE_PATH"
-
-AC_LANG_PUSH([C++])
-
-# check for header
-AC_CHECK_HEADER([psurface/PSurface.h], 
-   [PSURFACE_CPPFLAGS="-I$PSURFACE_INCLUDE_PATH"
-	HAVE_PSURFACE="1"],
-   [if test "x$with_psurface" != x ; then
-    AC_MSG_WARN([psurface/PSurface.h not found in $PSURFACE_INCLUDE_PATH])
-    fi
-   ])
-
-CPPFLAGS="$CPPFLAGS $PSURFACE_CPPFLAGS"
-
-# if header is found...
-if test x$HAVE_PSURFACE = x1 ; then
-   AC_MSG_CHECKING([psurface library -lpsurface])
-
-   # Why are the $AMIRAMESH_LDFLAGS $AMIRAMESH_LIBS here?
-   # OS: This is a hack.  psurface can be compiled with and without AmiraMesh
-   # support.  If it is compiled with AmiraMesh support, then it needs these flags
-   # for the test to link (and since these flags must be set properly the AmiraMesh
-   # test must have been called successfully before).  If psurface is compiled
-   # without AmiraMesh support than the additional flags here do not matter.
-   LIBS="-L$PSURFACE_LIB_PATH -lpsurface $AMIRAMESH_LIBS $LIBS"
-   LDFLAGS="$LDFLAGS $AMIRAMESH_LDFLAGS"
-
-   AC_LINK_IFELSE(AC_LANG_PROGRAM([#include "psurface/PSurface.h"], [[PSurface<2,double> foo;]]),
-	[PSURFACE_LIBS="-L$PSURFACE_LIB_PATH -lpsurface"
-         PSURFACE_LDFLAGS=""
-         AC_MSG_RESULT(yes)],
-	[HAVE_PSURFACE="0"
-        AC_MSG_RESULT(no)
-	AC_MSG_WARN([psurface header found, but libpsurface missing!])])
-fi
-
-AC_LANG_POP([C++])
-
-fi
-
-with_psurface="no"
-# survived all tests?
-if test x$HAVE_PSURFACE = x1 ; then
-  AC_SUBST(PSURFACE_LIBS, $PSURFACE_LIBS)
-  AC_SUBST(PSURFACE_LDFLAGS, $PSURFACE_LDFLAGS)
-  AC_SUBST(PSURFACE_CPPFLAGS, $PSURFACE_CPPFLAGS)
-  AC_DEFINE(HAVE_PSURFACE, 1, [Define to 1 if psurface-library is found])
-
-  # add to global list
-  DUNE_ADD_ALL_PKG([psurface], [$PSURFACE_CPPFLAGS],
-                   [$PSURFACE_LDFLAGS], [$PSURFACE_LIBS])
-
-  # set variable for summary
-  with_psurface="yes"
-else
-  AC_SUBST(PSURFACE_LIBS, "")
-  AC_SUBST(PSURFACE_LDFLAGS, "")
-  AC_SUBST(PSURFACE_CPPFLAGS, "")
-fi
-  
-# also tell automake
-AM_CONDITIONAL(PSURFACE, test x$HAVE_PSURFACE = x1)
-
-# reset old values
-LIBS="$ac_save_LIBS"
-CPPFLAGS="$ac_save_CPPFLAGS"
-LDFLAGS="$ac_save_LDFLAGS"
-
-DUNE_ADD_SUMMARY_ENTRY([psurface],[$with_psurface])
-
-])
-
-# $Id: ug.m4 5156 2008-04-14 09:28:06Z christi $
-# searches for UG headers and libs
-
-# DUNE_PATH_UG()
-#
-# configure shell variables:
-#   UGROOT
-#   UG_CPPFLAGS, UG_LDFLAGS, UG_LIBS
-#       flags and libs with indirect references for the makefiles, for
-#       instance the literal string '${DUNEMPICPPFLAGS}
-#   direct_UG_CPPFLAGS, direct_UG_LDFLAGS, direct_UG_LIBS
-#       flags and libs with direct values for use in configure, for instance
-#       the value of DUNEMPICPPFLAGS
-#   HAVE_UG
-#       1 or 0 or undefined
-#   with_ug
-#       "no" or "yes" with stuff appended
-#   enable_ug_lgmdomain
-#       yes or no
-#
-# configure substitutions/makefile variables:
-#   UG_CPPFLAGS
-#   UG_LDFLAGS
-#   UG_LIBS
-#
-# preprocessor defines:
-#   HAVE_UG
-#     undefined or ENABLE_UG
-#   UG_LGMDOMAIN
-#     undefined or 1
-#
-# automake conditionals:
-#   UG
-#   UG_LGMDOMAIN
-AC_DEFUN([DUNE_PATH_UG],[
-  AC_REQUIRE([AC_PROG_CC])
-  AC_REQUIRE([AC_PATH_XTRA])
-  AC_REQUIRE([DUNE_MPI])
-
-  AC_ARG_WITH(ug,
-    AC_HELP_STRING([--with-ug=PATH],[directory where UG is installed]))
-
-  # store old values
-  ac_save_LDFLAGS="$LDFLAGS"
-  ac_save_CPPFLAGS="$CPPFLAGS"
-  ac_save_LIBS="$LIBS"
-  
-  # initialize
-  HAVE_UG=0
-
-  ## do nothing if --without-ug is used
-  if test x$with_ug != xno ; then
-      
-      # is --with-ug=bla used?
-      if test "x$with_ug" != x ; then
-          if ! test -d $with_ug; then
-              AC_MSG_WARN([UG directory $with_ug does not exist!])
-          else
-              # expand tilde / other stuff
-              UGROOT=`cd $with_ug && pwd`
-          fi
-      fi
-
-      # If an explicit path has been provided it needs to be appended
-      # temporarily to PKG_CONFIG_PATH
-      REM_PKG_CONFIG_PATH=$PKG_CONFIG_PATH
-      # The first additional path is for uninstalled UG, the second one for the installed UG
-      PKG_CONFIG_PATH="$UGROOT:$UGROOT/lib/pkgconfig:$PKG_CONFIG_PATH"
-
-      UG_LDFLAGS=""
-
-      AC_ARG_ENABLE(ug-lgmdomain,
-        AC_HELP_STRING([--enable-ug-lgmdomain],[use UG LGM domain (default is standard domain)]))
-      if test x"$enable_ug_lgmdomain" = xyes ; then
-        UG_LIBS="`PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG --libs-only-L libug` -lugL2 -lugL3 -ldevS"
-        direct_UG_LIBS="`PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG --libs-only-L libug` -lugL2 -lugL3 -ldevS"
-      else
-        UG_LIBS="`PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG --libs-only-L libug` -lugS2 -lugS3 -ldevS"
-        direct_UG_LIBS="`PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG --libs-only-L libug` -lugS2 -lugS3 -ldevS"
-      fi
-      
-      AC_MSG_CHECKING([for UG])
-
-      # Check whether UG is installed at all
-      if PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG --exists libug; then
-	    HAVE_UG="1"
-        AC_MSG_RESULT(yes)
-	  else
-		HAVE_UG="0"
-        AC_MSG_RESULT(no)
-		AC_MSG_WARN([UG not found])
-      fi
-
-      if test x$HAVE_UG = x1; then
-          
-          AC_MSG_CHECKING([whether UG version is recent enough])
-
-          # Does it have a suitable version?
-          if PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG --atleast-version=3.9.1-patch3 libug; then
-              AC_MSG_RESULT(yes)
-          else
-              HAVE_UG="0"
-              AC_MSG_RESULT(no)
-              AC_MSG_WARN([UG version is too old (you need at least 3.9.1-patch3)])
-          fi
-      fi
-
-      # pre-set variable for summary
-      with_ug="no"
-   
-      if test x$HAVE_UG = x1; then
-
-        # Okay.  We have found a UG installation.  But has it been built with --enable-dune?
-        if test x$HAVE_UG = x1 ; then
-              
-          AC_MSG_CHECKING([whether UG has been built with --enable-dune])
-
-          if test x`PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG --variable=fordune libug` == xyes; then
-              AC_MSG_RESULT(yes)
-          else
-              AC_MSG_RESULT(no)
-              AC_MSG_WARN([UG has not been built with --enable-dune!])
-              HAVE_UG="0"
-              with_ug="no"
-          fi
-            
-        fi
-        
-      fi
-
-      if test x$HAVE_UG = x1; then
-
-        # Set the compiler flags
-		UG_CPPFLAGS="`PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG --cflags-only-I libug` -DENABLE_UG"
-        direct_UG_CPPFLAGS="`PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG --cflags-only-I libug` -DENABLE_UG"
-
-          if test x`PKG_CONFIG_PATH=$PKG_CONFIG_PATH $PKG_CONFIG --variable=parallel libug` == xyes; then
-			
-          # Add additional flags needed for parallel UG  
-		  UG_LDFLAGS="\${DUNEMPILDFLAGS} $UG_LDFLAGS"
-          direct_UG_LDFLAGS="$DUNEMPILDFLAGS $direct_UG_LDFLAGS"
-          UG_CPPFLAGS="\${DUNEMPICPPFLAGS} $UG_CPPFLAGS -DModelP"
-          direct_UG_CPPFLAGS="$DUNEMPICPPFLAGS $direct_UG_CPPFLAGS -DModelP"
-          UG_LIBS="$UG_LIBS \${DUNEMPILIBS}"
-          direct_UG_LIBS="$direct_UG_LIBS $DUNEMPILIBS"
-          with_ug="yes (parallel)"
-		   
-		else
-			
-          with_ug="yes (sequential)"
-				   
-	    fi
-
-      fi
-
-      # restore PKG_CONFIG_PATH 
-      PKG_CONFIG_PATH=$REM_PKG_CONFIG_PATH
-  
-  # end of "no --without-ug"
-  fi
-
-  # did it work?
-  if test x$HAVE_UG = x0 ; then
-      # reset flags, so they do not appear in makefiles
-      UG_CPPFLAGS=""
-      direct_UG_CPPFLAGS=""
-      UG_LDFLAGS=""
-      direct_UG_LDFLAGS=""
-      UG_LIBS=""
-      direct_UG_LIBS=""
-  fi
-
-  AC_SUBST([UG_LDFLAGS])
-  AC_SUBST([UG_LIBS])
-  AC_SUBST([UG_CPPFLAGS])
-
-  # add to global list
-  DUNE_ADD_ALL_PKG([UG], [\${UG_CPPFLAGS}], [\${UG_LDFLAGS}], [\${UG_LIBS}])
-
-  if test x$HAVE_UG = x1 ; then
-
-      # add support for GRIDTYPE=UGGRID to config.h
-      DUNE_DEFINE_GRIDTYPE([UGGRID],[GRIDDIM == WORLDDIM],[Dune::UGGrid< dimgrid >],[dune/grid/uggrid.hh],[dune/grid/io/file/dgfparser/dgfug.hh])
-
-      AC_DEFINE(HAVE_UG, ENABLE_UG, 
-        [This is only true if UG was found by configure 
-         _and_ if the application uses the UG_CPPFLAGS])
-      if test x"$enable_ug_lgmdomain" = xyes ; then
-        AC_DEFINE(UG_LGMDOMAIN, 1, [use UG LGM domain])
-      fi
-  fi 
-      
-  # tell automake   
-  AM_CONDITIONAL(UG, test x$HAVE_UG = x1)
-  AM_CONDITIONAL(UG_LGMDOMAIN, test x$HAVE_UG = x1 && test x$UG_LGMDOMAIN = x1)
-  
-  # restore variables
-  LDFLAGS="$ac_save_LDFLAGS"
-  CPPFLAGS="$ac_save_CPPFLAGS"
-  LIBS="$ac_save_LIBS"
-
-  DUNE_ADD_SUMMARY_ENTRY([UG],[$with_ug])
-  
-])
-
+m4_include([m4/dune-foamgrid.m4])
 m4_include([dependencies.m4])
