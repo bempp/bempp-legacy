@@ -6,7 +6,6 @@ file(GLOB_RECURSE DUNE_GRID_HEADERS ${CMAKE_SOURCE_DIR}/contrib/dune/dune-grid/d
 file(GLOB_RECURSE DUNE_COMMON_HEADERS ${CMAKE_SOURCE_DIR}/contrib/dune/dune-common/dune/common/*.hh)
 
 add_definitions(-DCOMPILE_FOR_DOUBLE)
-# add_definitions(-DWITH_AHMED)
 
 # Headers are ignored by make, but their list is used by IDEs
 # like Qt Creator and Visual Studio to generate project file list.
@@ -19,11 +18,16 @@ add_library(bempp SHARED
 	)
 
 target_link_libraries (bempp
-	${BLAS_LIB}
+    ${BLAS_LIBRARIES}
 	${LIB_DUNE_COMMON}
 	${LIB_DUNE_GRID}
 	)
 
+if (WITH_AHMED)
+    target_link_libraries (bempp ${AHMED_LIBRARY} ${METIS_LIBRARY})
+    add_definitions(-DWITH_AHMED)
+    include_directories(${AHMED_INCLUDE_DIR})
+endif ()
 
 # Add a target to generate API documentation with Doxygen
 find_package(Doxygen)
