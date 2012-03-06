@@ -5,7 +5,7 @@
 #include "../common/multidimensional_arrays.hpp"
 #include "../fiber/types.hpp"
 #include "../grid/grid_view.hpp"
-#include "../grid/reverse_index_set.hpp"
+#include "../grid/reverse_element_mapper.hpp"
 #include "../space/space.hpp"
 
 #include <map>
@@ -35,6 +35,11 @@ template <typename ValueType>
 void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
         unsigned b1, unsigned n1, unsigned b2, unsigned n2, ValueType* data) const
 {
+#ifndef NDEBUG
+    std::cout << "\nRequested block: (" << b1 << ", " << n1 << "; "
+              << b2 << ", " << n2 << ")" << std::endl;
+#endif
+
     // Necessary elements
     std::vector<const EntityPointer<0>*> testElements;
     std::vector<const EntityPointer<0>*> trialElements;
@@ -46,9 +51,9 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
     std::vector<std::vector<int> > blockCols;
 
     // Fill the above arrays
-    findLocalDofs(n1, b1, m_p2oTestDofs, m_testSpace,
+    findLocalDofs(b1, n1, m_p2oTestDofs, m_testSpace,
                   testElements, testLocalDofs, blockRows);
-    findLocalDofs(n2, b2, m_p2oTrialDofs, m_trialSpace,
+    findLocalDofs(b2, n2, m_p2oTrialDofs, m_trialSpace,
                   trialElements, trialLocalDofs, blockCols);
 
     if (n2 == 1)
@@ -56,9 +61,9 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
         // Only one column of the block needed. This means that we need only
         // one local DOF from just one or a few trialElements. Evaluate the
         // local weak form for one local trial DOF at a time.
-        arma::Col<ValueType> result(data, n2, false /*copy_aux_mem*/,
+        arma::Col<ValueType> result(data, n1, false /*copy_aux_mem*/,
                                     true /*strict*/);
-        result.zeros();
+        result.fill(0.);
 
         std::vector<arma::Mat<ValueType> > localResult;
         for (int nTrialElem = 0;
@@ -95,9 +100,9 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
         // one local DOF from just one or a few testElements. Evaluate the
         // local weak form for one local test DOF at a time.
 
-        arma::Row<ValueType> result(data, n1, false /*copy_aux_mem*/,
+        arma::Row<ValueType> result(data, n2, false /*copy_aux_mem*/,
                                     true /*strict*/);
-        result.zeros();
+        result.fill(0.);
 
         std::vector<arma::Mat<ValueType> > localResult;
         for (int nTestElem = 0;
@@ -136,7 +141,7 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
         // elements and then select the entries that we need.
         arma::Mat<ValueType> result(data, n1, n2, false /*copy_aux_mem*/,
                                     true /*strict*/);
-        result.zeros();
+        result.fill(0.);
 
         Fiber::Array2D<arma::Mat<ValueType> > localResult;
         m_operator.evaluateLocalWeakForms(
@@ -194,6 +199,7 @@ void WeakFormAcaAssemblyHelper<ValueType>::findLocalDofs(
     vector<vector<LocalDof> > localDofs;
     space.global2localDofs(dofs, localDofs);
 
+    // set of pairs (local dof index, array index)
     typedef set<pair<LocalDofIndex, int> > LocalDofSet;
     typedef map<EntityIndex, LocalDofSet> LocalDofMap;
     // Temporary map: entityIndex -> set(localDofIndex, arrayIndex)
@@ -212,18 +218,21 @@ void WeakFormAcaAssemblyHelper<ValueType>::findLocalDofs(
     const int elementCount = requiredLocalDofs.size();
     // vector<EntityIndex> elementIndices;
     // elementIndices.reserve(elementCount);
-    elements.reserve(elementCount);
-    localDofIndices.reserve(elementCount);
-    arrayIndices.reserve(elementCount);
 
-    const ReverseIndexSet& reverseIndexSet = m_view.reverseIndexSet();
+    elements.resize(elementCount);
+    localDofIndices.clear();
+    localDofIndices.resize(elementCount);
+    arrayIndices.clear();
+    arrayIndices.resize(elementCount);
+
+    const ReverseElementMapper& mapper = m_view.reverseElementMapper();
 
     int e = 0;
     for (LocalDofMap::const_iterator mapIt = requiredLocalDofs.begin();
          mapIt != requiredLocalDofs.end(); ++mapIt, ++e)
     {
         // elementIndices[e] = mapIt->first;
-        elements[e] = &reverseIndexSet.entityPointerCodim0(mapIt->first);
+        elements[e] = &mapper.entityPointer(mapIt->first);
         for (LocalDofSet::const_iterator setIt = mapIt->second.begin();
              setIt != mapIt->second.end(); ++setIt)
         {

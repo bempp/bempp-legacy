@@ -36,31 +36,7 @@ using Fiber::TRIAL_TEST;
 using Fiber::ALL_DOFS;
 
 typedef int ElementVariant;
-
-struct EntityIndex
-{
-    GeometryType type;
-    IndexSet::IndexType index;
-
-    EntityIndex() {
-    }
-
-    EntityIndex(const GeometryType& type_, IndexSet::IndexType index_) :
-        type(type_), index(index_) {
-    }
-
-    bool operator==(const EntityIndex& other) const {
-        return (type == other.type && index == other.index);
-    }
-
-    bool operator<(const EntityIndex& other) const {
-        if (type == other.type)
-            return index < other.index;
-        else
-            return type < other.type;
-    }
-};
-
+typedef int EntityIndex;
 typedef int GlobalDofIndex;
 typedef Fiber::LocalDofIndex LocalDofIndex;
 

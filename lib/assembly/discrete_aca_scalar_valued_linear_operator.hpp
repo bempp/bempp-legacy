@@ -25,6 +25,8 @@
 #include "ahmed_aux.hpp"
 #include "../common/not_implemented_error.hpp"
 
+#include <iostream>
+
 namespace Bempp {
 
 template <typename ValueType, typename GeometryTypeRows, typename GeometryTypeCols>
@@ -43,25 +45,39 @@ public:
                            const arma::Col<ValueType>& argument,
                            arma::Col<ValueType>& result)
     {
-        // TODO: ensure that the arguments have correct dimensions.
         // const_cast because Ahmed internally calls BLAS
         // functions, which don't respect const-correctness
+        if (m_matrix.n != argument.n_rows)
+            throw std::invalid_argument("DiscreteAcaScalarValuedLinearOperator::"
+                                        "multiplyAddVector: "
+                                        "incorrect vector length");
+        result.set_size(argument.n_rows);
         m_matrix.amux(multiplier, const_cast<ValueType*>(argument.memptr()),
                       result.memptr());
     }
 
     virtual void dump() const
     {
-        throw NotImplementedError(
-                    "DiscreteAcaScalarValuedLinearOperator::dump(): "
-                    "not implemented yet");
+        std::cout << asMatrix() << std::endl;
     }
 
     virtual arma::Mat<ValueType> asMatrix() const
     {
-        throw NotImplementedError(
-                    "DiscreteAcaScalarValuedLinearOperator::asMatrix(): "
-                    "not implemented yet");
+        const int rowCount = m_matrix.m;
+        const int colCount = m_matrix.n;
+
+        arma::Mat<ValueType> result(rowCount, colCount);
+        result.fill(0.);
+        arma::Col<ValueType> unit(colCount);
+        unit.fill(0.);
+        for (int col = 0; col < colCount; ++col)
+        {
+            if (col > 0)
+                unit(col - 1) = 0.;
+            unit(col) = 1.;
+            m_matrix.amux(1., unit.memptr(), result.colptr(col));
+        }
+        return result;
     }
 
 private:

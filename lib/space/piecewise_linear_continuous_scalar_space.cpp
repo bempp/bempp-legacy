@@ -24,6 +24,7 @@
 #include "../grid/entity_iterator.hpp"
 #include "../grid/grid.hpp"
 #include "../grid/grid_view.hpp"
+#include "../grid/mapper.hpp"
 
 #include <dune/localfunctions/lagrange/p1/p1localbasis.hh>
 #include <dune/localfunctions/lagrange/q1/q1localbasis.hh>
@@ -132,29 +133,34 @@ void PiecewiseLinearContinuousScalarSpace<ValueType>::assignDofs()
 {
     const int gridDim = domainDimension();
 
-    // m_view = this->m_grid.leafView();
+    const Mapper& elementMapper = m_view->elementMapper();
     const IndexSet& indexSet = m_view->indexSet();
 
     // Global DOF numbers will be identical with vertex indices.
     // Thus, the will be as many global DOFs as there are vertices.
     int globalDofCount_ = m_view->entityCount(this->m_grid.dim());
+    int elementCount = m_view->entityCount(0);
 
     // DEBUG
-    std::cout << "Vertices:\n" << std::endl;
-    std::auto_ptr<EntityIterator<2> > vit = m_view->entityIterator<2>();
-    while (!vit->finished())
     {
-        arma::Col<ValueType> vertex;
-        vit->entity().geometry().center(vertex);
-        std::cout << indexSet.entityIndex(vit->entity()) << ": "
-                  << vertex(0) << " "
-                  << vertex(1) << " "
-                  << vertex(2) << std::endl;
-        vit->next();
+        std::cout << "Vertices:\n" << std::endl;
+        std::auto_ptr<EntityIterator<2> > vit = m_view->entityIterator<2>();
+        const IndexSet& indexSet = m_view->indexSet();
+        while (!vit->finished())
+        {
+            arma::Col<ValueType> vertex;
+            vit->entity().geometry().center(vertex);
+            std::cout << indexSet.entityIndex(vit->entity()) << ": "
+                      << vertex(0) << " "
+                      << vertex(1) << " "
+                      << vertex(2) << std::endl;
+            vit->next();
+        }
     }
 
     // (Re)initialise DOF maps
     m_local2globalDofs.clear();
+    m_local2globalDofs.resize(elementCount);
     m_global2localDofs.clear();
     m_global2localDofs.resize(globalDofCount_);
     // TODO: consider calling reserve(x) for each element of m_global2localDofs
@@ -167,7 +173,7 @@ void PiecewiseLinearContinuousScalarSpace<ValueType>::assignDofs()
     while (!it->finished())
     {
         const Entity<0>& element = it->entity();
-        EntityIndex elementIndex(element.type(), indexSet.entityIndex(element));
+        EntityIndex elementIndex = elementMapper.entityIndex(element);
 
         if (gridDim == 1)
             vertexCount = element.template subEntityCount<1>();
@@ -180,7 +186,7 @@ void PiecewiseLinearContinuousScalarSpace<ValueType>::assignDofs()
         globalDofs.resize(vertexCount);
         for (int i = 0; i < vertexCount; ++i)
         {
-            int globalDofIndex = indexSet.subEntityIndex(element, i, gridDim);
+            GlobalDofIndex globalDofIndex = indexSet.subEntityIndex(element, i, gridDim);
             globalDofs[i] = globalDofIndex;
             m_global2localDofs[globalDofIndex].push_back(LocalDof(elementIndex, i));
         }
@@ -205,14 +211,9 @@ template <typename ValueType>
 void PiecewiseLinearContinuousScalarSpace<ValueType>::globalDofs(
         const Entity<0>& element, std::vector<GlobalDofIndex>& dofs) const
 {
-    const IndexSet& indexSet = m_view->indexSet();
-    EntityIndex index(element.type(),
-                      indexSet.entityIndex(element));
-    GlobalDofMap::const_iterator it = m_local2globalDofs.find(index);
-    if (it != m_local2globalDofs.end())
-        dofs = it->second;
-    else
-        dofs.clear();
+    const Mapper& mapper = m_view->elementMapper();
+    EntityIndex index = mapper.entityIndex(element);
+    dofs = m_local2globalDofs[index];
 }
 
 template <typename ValueType>
