@@ -1,0 +1,40 @@
+# these are ignored by git
+# For a project mostly in C, the following would be a good set of
+# exclude patterns (uncomment them if you want to use them):
+# *.[oa]
+# *~
+
+.deps
+.*.swp
+*.la
+*.o
+Makefile
+Makefile.in
+
+# /
+/config.*
+/configure
+/aclocal.m4
+/dependencies.m4
+/autom4te.cache
+/depcomp
+/install-sh
+/missing
+/libtool
+/stamp-h1
+/ltmain.sh
+/am
+/dune-foamgrid.pc
+
+# /doc/doxygen/
+/doc/doxygen/html
+/doc/doxygen/doxygen-tag
+/doc/doxygen/doxyerr.log
+/doc/doxygen/doxygen.log
+/doc/doxygen/Doxyfile
+/doc/doxygen/Doxyfile.in
+
+## /src
+/src/dune_foamgrid
+
+# /dune/foamgrid/test

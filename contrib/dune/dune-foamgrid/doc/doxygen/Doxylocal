@@ -1,0 +1,6 @@
+INPUT                  += @top_srcdir@/dune/foamgrid
+EXCLUDE                += 
+EXAMPLE_PATH           +=
+EXAMPLE_PATTERNS       +=
+IMAGE_PATH             +=
+PREDEFINED             += DOXYGEN 

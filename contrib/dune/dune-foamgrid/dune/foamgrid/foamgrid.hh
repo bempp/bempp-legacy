@@ -1,3 +1,5 @@
+// -*- tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+// vi: set ts=8 sw=4 et sts=4:
 #ifndef DUNE_FOAMGRID_HH
 #define DUNE_FOAMGRID_HH
 

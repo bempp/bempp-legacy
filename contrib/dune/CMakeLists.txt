@@ -1,5 +1,5 @@
 add_custom_target(dune
-	DEPENDS dune-grid dune-common
+	DEPENDS dune-grid dune-common dune-localfunctions
 )
 
 include(ExternalProject)
