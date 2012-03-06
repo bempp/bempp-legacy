@@ -4,6 +4,7 @@ file(GLOB_RECURSE LIB_HEADERS *.hpp)
 file(GLOB_RECURSE DUNE_FOAMGRID_HEADERS ${CMAKE_SOURCE_DIR}/contrib/dune/dune-foamgrid/dune/foamgrid/*.hh)
 file(GLOB_RECURSE DUNE_GRID_HEADERS ${CMAKE_SOURCE_DIR}/contrib/dune/dune-grid/dune/grid/*.hh)
 file(GLOB_RECURSE DUNE_COMMON_HEADERS ${CMAKE_SOURCE_DIR}/contrib/dune/dune-common/dune/common/*.hh)
+find_file(ARMA_HEADER armadillo ${ARMADILLO_INCLUDE_DIRS})
 
 add_definitions(-DCOMPILE_FOR_DOUBLE)
 # add_definitions(-DWITH_AHMED)
@@ -16,10 +17,11 @@ add_library(bempp SHARED
 	${DUNE_FOAMGRID_HEADERS}
 	${DUNE_GRID_HEADERS}
 	${DUNE_COMMON_HEADERS}
+	${ARMA_HEADER}
 	)
 
 target_link_libraries (bempp
-	${BLAS_LIB}
+	${BLAS_LIBRARIES}
 	${LIB_DUNE_COMMON}
 	${LIB_DUNE_GRID}
 	)
