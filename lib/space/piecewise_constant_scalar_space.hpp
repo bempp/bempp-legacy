@@ -65,8 +65,7 @@ public:
 private:
     std::auto_ptr<GridView> m_view;
     Fiber::PiecewiseConstantScalarBasis<ValueType> m_basis;
-    typedef std::map<EntityIndex, std::vector<GlobalDofIndex> > GlobalDofMap;
-    GlobalDofMap m_local2globalDofs;
+    std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
 };
 

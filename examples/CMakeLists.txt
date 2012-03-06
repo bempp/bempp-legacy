@@ -14,4 +14,23 @@ target_link_libraries(assembly bempp)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/head.gmsh DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/simple_mesh_2_elements.msh DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/simple_mesh_9_elements.msh DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/two_disjoint_triangles.msh DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
+if (NOT (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR}))
+    file(GLOB_RECURSE EXAMPLE_MESHES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.msh)
+    foreach (f ${EXAMPLE_MESHES})
+        add_custom_command(
+            OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${f}
+            COMMAND ${CMAKE_COMMAND} copy -E ${CMAKE_CURRENT_SOURCE_DIR}/${f} ${CMAKE_CURRENT_BINARY_DIR}/${f}
+            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${f}
+            # TODO: remove the project's root directory from the printed path.
+            COMMENT "Copying file ${CMAKE_CURRENT_SOURCE_DIR}/${f}"
+            VERBATIM
+        )
+    endforeach ()
+
+    foreach (f ${EXAMPLE_MESHES})
+        set(EXAMPLE_MESH_DEPS "${EXAMPLE_MESH_DEPS};${CMAKE_CURRENT_BINARY_DIR}/${f}")
+    endforeach ()
+    add_custom_target(copy_example_meshes ALL DEPENDS ${EXAMPLE_MESH_DEPS})
+endif ()

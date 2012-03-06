@@ -49,7 +49,7 @@ public:
     virtual int entityIndex(const Entity<3>& e) const {
         throw std::logic_error("ConcreteElementMapper::entityIndex(): "
                                "entities of codimension 2 do not belong to the "
-                               "managed set.");
+                                "managed set.");
     }
 
     virtual int subEntityIndex(const Entity<0>& e, int i,

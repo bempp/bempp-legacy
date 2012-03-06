@@ -42,7 +42,7 @@ struct AhmedDofWrapper : public Point3D<ValueType>
 {
     ValueType getcenter(int dim) const
     {
-        switch (dim)
+        switch  (dim)
         {
         case 0: return this->x;
         case 1: return this->y;
@@ -73,11 +73,12 @@ public:
         freembls(m_blockCluster.get(), m_blocks);
     }
 
-    void amux(ValueType d, ValueType* x, ValueType* y) const {
+    virtual void amux(ValueType d, ValueType* x, ValueType* y) const {
+        AhmedBemblcluster* ptr = m_blockCluster.get();
         multaHvec(d, m_blockCluster.get(), m_blocks, x, y);
     }
 
-    void precond_apply(double* x) const {
+    virtual void precond_apply(double* x) const {
         // TODO
     }
 

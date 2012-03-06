@@ -182,7 +182,11 @@ private:
 
         typename IntegratorMap::iterator it = m_doubleIntegrators.find(index);
         if (it != m_doubleIntegrators.end())
+        {
+//            std::cout << "getIntegrator(: " << index << "): integrator found" << std::endl;
             return *it->second;
+        }
+//        std::cout << "getIntegrator(: " << index << "): integrator not found" << std::endl;
 
         // Integrator doesn't exist yet and must be created.
         std::auto_ptr<DoubleIntegrator<ValueType> > integrator;

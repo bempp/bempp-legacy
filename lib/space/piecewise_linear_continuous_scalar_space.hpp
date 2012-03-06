@@ -69,8 +69,7 @@ private:
     Fiber::PiecewiseLinearContinuousScalarBasis<2, ValueType> m_lineBasis;
     Fiber::PiecewiseLinearContinuousScalarBasis<3, ValueType> m_triangleBasis;
     Fiber::PiecewiseLinearContinuousScalarBasis<4, ValueType> m_quadrilateralBasis;
-    typedef std::map<EntityIndex, std::vector<GlobalDofIndex> > GlobalDofMap;
-    GlobalDofMap m_local2globalDofs;
+    std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
 };
 

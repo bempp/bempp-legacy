@@ -39,7 +39,7 @@ template<int codim> class Entity;
 template<int codim> class EntityCache;
 class IndexSet;
 class Mapper;
-class ReverseIndexSet;
+class ReverseElementMapper;
 class VtkWriter;
 
 /** \brief Abstract wrapper of a grid view */
@@ -113,17 +113,17 @@ public:
                                    arma::Mat<int>& elementCorners,
                                    arma::Mat<char>& auxData) const = 0;
 
-    /** \brief The reverse index set.
+    /** \brief Mapping from codim-0 entity index to entity pointer.
 
       Note that this object is *not* updated when the grid is adapted. In that
       case you need to create a new grid view and obtain a new reference to the
-      reverse index set.
+      reverse element mapper.
 
-      \internal Actual creation of the reverse index set is delayed to the
-      first call to this method, since the reverse index set needs to store the
-      entity pointers to all entities, and hence takes up a lot of memory.
+      \internal Actual creation of the reverse element mapper is delayed to the
+      first call to this method, since the object needs to store the
+      entity pointers to all entities, and hence may take up a lot of memory.
     */
-    virtual const ReverseIndexSet& reverseIndexSet() const = 0;
+    virtual const ReverseElementMapper& reverseElementMapper() const = 0;
 
     /** \brief Create a VtkWriter for this grid view.
 

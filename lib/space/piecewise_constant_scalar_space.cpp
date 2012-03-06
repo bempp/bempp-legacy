@@ -24,6 +24,7 @@
 #include "../grid/entity_iterator.hpp"
 #include "../grid/grid.hpp"
 #include "../grid/grid_view.hpp"
+#include "../grid/mapper.hpp"
 
 namespace Bempp
 {
@@ -130,7 +131,7 @@ template <typename ValueType>
 void PiecewiseConstantScalarSpace<ValueType>::assignDofs()
 {
     m_view = this->m_grid.leafView();
-    const IndexSet& indexSet = m_view->indexSet();
+    const Mapper& mapper = m_view->elementMapper();
     std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
 
     // List of local DOFs corresponding to a single global DOF.
@@ -149,8 +150,7 @@ void PiecewiseConstantScalarSpace<ValueType>::assignDofs()
 
     while (!it->finished())
     {
-        EntityIndex index(it->entity().type(),
-                          indexSet.entityIndex(it->entity()));
+        EntityIndex index = mapper.entityIndex(it->entity());
         globalDofs[0] = globalDofCount_++;
         localDofs[0] = LocalDof(index, 0 /* local DOF #0 */);
         m_local2globalDofs[index] = globalDofs;
@@ -175,14 +175,9 @@ template <typename ValueType>
 void PiecewiseConstantScalarSpace<ValueType>::globalDofs(
         const Entity<0>& element, std::vector<GlobalDofIndex>& dofs) const
 {
-    const IndexSet& indexSet = m_view->indexSet();
-    EntityIndex index(element.type(),
-                      indexSet.entityIndex(element));
-    GlobalDofMap::const_iterator it = m_local2globalDofs.find(index);
-    if (it != m_local2globalDofs.end())
-        dofs = it->second;
-    else
-        dofs.clear();
+    const Mapper& mapper = m_view->elementMapper();
+    EntityIndex index = mapper.entityIndex(element);
+    dofs = m_local2globalDofs[index];
 }
 
 template <typename ValueType>

@@ -28,7 +28,7 @@
 #include "concrete_range_entity_iterator.hpp"
 #include "concrete_vtk_writer.hpp"
 #include "geometry_type.hpp"
-#include "reverse_index_set.hpp"
+#include "reverse_element_mapper.hpp"
 
 namespace Bempp
 {
@@ -40,14 +40,16 @@ class ConcreteGridView: public GridView
 private:
     DuneGridView m_dune_gv;
     ConcreteIndexSet<DuneGridView> m_index_set;
-    mutable ReverseIndexSet m_reverse_index_set;
     ConcreteElementMapper<DuneGridView> m_element_mapper;
+    mutable ReverseElementMapper m_reverse_element_mapper;
+    mutable bool m_reverse_element_mapper_is_up_to_date;
 
 public:
     /** \brief Constructor */
     explicit ConcreteGridView(const DuneGridView& dune_gv) :
         m_dune_gv(dune_gv), m_index_set(&dune_gv.indexSet()),
-        m_reverse_index_set(*this), m_element_mapper(dune_gv) {
+        m_element_mapper(dune_gv), m_reverse_element_mapper(*this),
+        m_reverse_element_mapper_is_up_to_date(false) {
     }
 
     /** \brief Read-only access to the underlying Dune grid view object. */
@@ -110,9 +112,13 @@ public:
                                    arma::Mat<int>& elementCorners,
                                    arma::Mat<char>& auxData) const;
 
-    virtual const ReverseIndexSet& reverseIndexSet() const {
-        m_reverse_index_set.update();
-        return m_reverse_index_set;
+    virtual const ReverseElementMapper& reverseElementMapper() const {
+        if (!m_reverse_element_mapper_is_up_to_date)
+        {
+            m_reverse_element_mapper.update();
+            m_reverse_element_mapper_is_up_to_date = true;
+        }
+        return m_reverse_element_mapper;
     }
 
     virtual std::auto_ptr<VtkWriter> vtkWriter(Dune::VTK::DataMode dm=Dune::VTK::conforming) const {

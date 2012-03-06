@@ -286,6 +286,8 @@ ElementaryLinearOperator<ValueType>::assembleWeakFormInAcaMode(
     std::cout << "Test cluster count: " << testClusterTree.getncl()
               << "\nTrial cluster count: " << trialClusterTree.getncl()
               << std::endl;
+    std::cout << "o2pTest:\n" << o2pTestDofs << std::endl;
+    std::cout << "p2oTest:\n" << p2oTestDofs << std::endl;
 #endif
 
     typedef bemblcluster<AhmedDofType, AhmedDofType> DoubleCluster;
@@ -296,7 +298,9 @@ ElementaryLinearOperator<ValueType>::assembleWeakFormInAcaMode(
                                  options.acaEta * options.acaEta,
                                  blockCount);
 
-    std::cout << "Double cluster count: " << blockCount;
+#ifndef NDEBUG
+    std::cout << "Double cluster count: " << blockCount << std::endl;
+#endif
 
     std::auto_ptr<DiscreteLinOp> result;
 
@@ -306,13 +310,14 @@ ElementaryLinearOperator<ValueType>::assembleWeakFormInAcaMode(
             helper(*this, *view, testSpace, trialSpace,
                    p2oTestDofs, p2oTrialDofs, intMgr, options);
 
-    mblock<ValueType>* blocks;
+    mblock<ValueType>** blocks = 0;
+    allocmbls(doubleClusterTree.get(), blocks);
     matgen_sqntl(helper, doubleClusterTree.get(), doubleClusterTree.get(),
                  options.acaRecompress, options.acaEps,
-                 options.acaMaximumRank, &blocks);
+                 options.acaMaximumRank, blocks);
     result = std::auto_ptr<DiscreteLinOp>(
                 new DiscreteAcaLinOp(testDofCount, trialDofCount,
-                                     doubleClusterTree, &blocks));
+                                     doubleClusterTree, blocks));
     return result;
 #else // without Ahmed
     throw std::runtime_error("To enable assembly in ACA mode, recompile BEM++ "
