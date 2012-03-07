@@ -141,22 +141,22 @@ void PiecewiseLinearContinuousScalarSpace<ValueType>::assignDofs()
     int globalDofCount_ = m_view->entityCount(this->m_grid.dim());
     int elementCount = m_view->entityCount(0);
 
-    // DEBUG
-    {
-        std::cout << "Vertices:\n" << std::endl;
-        std::auto_ptr<EntityIterator<2> > vit = m_view->entityIterator<2>();
-        const IndexSet& indexSet = m_view->indexSet();
-        while (!vit->finished())
-        {
-            arma::Col<ValueType> vertex;
-            vit->entity().geometry().center(vertex);
-            std::cout << indexSet.entityIndex(vit->entity()) << ": "
-                      << vertex(0) << " "
-                      << vertex(1) << " "
-                      << vertex(2) << std::endl;
-            vit->next();
-        }
-    }
+//    // DEBUG
+//    {
+//        std::cout << "Vertices:\n" << std::endl;
+//        std::auto_ptr<EntityIterator<2> > vit = m_view->entityIterator<2>();
+//        const IndexSet& indexSet = m_view->indexSet();
+//        while (!vit->finished())
+//        {
+//            arma::Col<ValueType> vertex;
+//            vit->entity().geometry().center(vertex);
+//            std::cout << indexSet.entityIndex(vit->entity()) << ": "
+//                      << vertex(0) << " "
+//                      << vertex(1) << " "
+//                      << vertex(2) << std::endl;
+//            vit->next();
+//        }
+//    }
 
     // (Re)initialise DOF maps
     m_local2globalDofs.clear();
