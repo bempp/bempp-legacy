@@ -236,7 +236,7 @@ void NonseparableNumericalDoubleIntegrator<ValueType, GeometryFactory>::integrat
     for (int pairIndex = 0; pairIndex < geometryPairCount; ++pairIndex)
     {
         setupGeometryConveniently(elementIndexPairs[pairIndex].first, *testGeometry);
-        setupGeometryConveniently(elementIndexPairs[pairIndex].first, *trialGeometry);
+        setupGeometryConveniently(elementIndexPairs[pairIndex].second, *trialGeometry);
         testGeometry->getData(testGeomDeps, m_localTestQuadPoints, testGeomData);
         trialGeometry->getData(trialGeomDeps, m_localTrialQuadPoints, trialGeomData);
         m_testExpression.evaluate(testBasisData, testGeomData, testValues);
