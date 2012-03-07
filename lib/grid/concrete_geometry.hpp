@@ -79,6 +79,11 @@ public:
     explicit ConcreteGeometry(const DuneGeometry* dune_geometry) :
         m_dune_geometry(dune_geometry) {}
 
+    ~ConcreteGeometry() {
+        if (m_owns_dune_geometry)
+            delete m_dune_geometry;
+    }
+
     /** \brief Read-only access to the underlying Dune geometry object. */
     const DuneGeometry& duneGeometry() const {
         return *m_dune_geometry;
