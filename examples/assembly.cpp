@@ -36,6 +36,7 @@
 #include "grid/grid_factory.hpp"
 #include "grid/grid_view.hpp"
 #include "grid/index_set.hpp"
+#include "grid/mapper.hpp"
 #include "grid/vtk_writer.hpp"
 
 #include "space/piecewise_linear_continuous_scalar_space.hpp"
@@ -112,22 +113,27 @@ int main()
                              true, // verbose
                              false)); // insertBoundarySegments
 
+    std::cout << "Elements:\n";
     std::auto_ptr<GridView> view = grid->leafView();
+    const Mapper& elementMapper = view->elementMapper();
     std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
     while (!it->finished())
     {
         const Entity<0>& entity = it->entity();
         arma::Mat<double> corners;
         entity.geometry().corners(corners);
-        std::cout << corners << std::endl;
+        std::cout << "Element #" << elementMapper.entityIndex(entity) << ":\n";
+        std::cout << corners << '\n';
         it->next();
     }
+    std::cout.flush();
 
     PiecewiseLinearContinuousScalarSpace<double> space(*grid);
     space.assignDofs();
 
     AssemblyOptions assemblyOptions;
     assemblyOptions.mode = ASSEMBLY_MODE_DENSE;
+//    assemblyOptions.mode = ASSEMBLY_MODE_ACA;
 //    assemblyOptions.acaEps = 1e-4;
 //    assemblyOptions.acaMaximumRank = 10000;
 //    assemblyOptions.acaMinimumBlockSize = 2;
@@ -141,10 +147,9 @@ int main()
     SingleLayerPotential3D<double> op;
     std::auto_ptr<DiscreteScalarValuedLinearOperator<double> > result =
             op.assembleWeakForm(space, space, factory, assemblyOptions);
-    std::cout << "Generated matrix:\n";
-    result->dump();
 
     arma::Mat<double> resultMatrix = result->asMatrix();
+    std::cout << "\nGenerated matrix:\n" << resultMatrix << std::endl;
     if (variant == TWO_DISJOINT_TRIANGLES)
     {
         // disjoint elements
