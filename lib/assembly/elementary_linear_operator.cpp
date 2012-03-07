@@ -173,6 +173,7 @@ ElementaryLinearOperator<ValueType>::assembleWeakFormInDenseMode(
     // Create the operator's matrix
     arma::Mat<ValueType> result(testSpace.globalDofCount(),
                                 trialSpace.globalDofCount());
+    result.fill(0.);
     std::vector<arma::Mat<ValueType> > localResult;
 
     // Storage of global DOF indices corresponding to local DOFs on single
