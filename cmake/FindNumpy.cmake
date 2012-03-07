@@ -49,6 +49,6 @@ find_path(PYTHON_NUMPY_INCLUDE_DIR arrayobject.h
 
 if(PYTHON_NUMPY_INCLUDE_DIR)
     set(PYTHON_NUMPY_FOUND 1 CACHE INTERNAL "Python numpy development package is available")
-    message(${PYTHON_NUMPY_INCLUDE_DIR})
+#    message(${PYTHON_NUMPY_INCLUDE_DIR})
 endif(PYTHON_NUMPY_INCLUDE_DIR)
 
