@@ -54,8 +54,8 @@ public:
                               const GridView& view,
                               const Space<ValueType>& testSpace,
                               const Space<ValueType>& trialSpace,
-                              const arma::Col<unsigned int>& p2oTestDofs,
-                              const arma::Col<unsigned int>& p2oTrialDofs,
+                              const std::vector<unsigned int>& p2oTestDofs,
+                              const std::vector<unsigned int>& p2oTrialDofs,
                               IntegrationManager& intMgr,
                               const AssemblyOptions& options);
 
@@ -73,7 +73,7 @@ private:
         of array p2o. */
     void findLocalDofs(int start,
                        int globalDofCount,
-                       const arma::Col<unsigned int>& p2o,
+                       const std::vector<unsigned int>& p2o,
                        const Space<ValueType>& space,
                        std::vector<const EntityPointer<0>*>& elements,
                        std::vector<std::vector<LocalDofIndex> >& localDofIndices,
@@ -84,8 +84,8 @@ private:
     const GridView& m_view;
     const Space<ValueType>& m_testSpace;
     const Space<ValueType>& m_trialSpace;
-    const arma::Col<unsigned int>& m_p2oTestDofs;
-    const arma::Col<unsigned int>& m_p2oTrialDofs;
+    const std::vector<unsigned int>& m_p2oTestDofs;
+    const std::vector<unsigned int>& m_p2oTrialDofs;
     IntegrationManager& m_intMgr;
     const AssemblyOptions& m_options;
 };

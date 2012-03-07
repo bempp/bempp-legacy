@@ -239,14 +239,14 @@ ElementaryLinearOperator<ValueType>::assembleWeakFormInAcaMode(
     const int testDofCount = testSpace.globalDofCount();
 
 #ifndef NDEBUG
-    std::cout << "Generating cluster trees ... " << std::flush;
+    std::cout << "Generating cluster trees... " << std::endl;
 #endif
     // o2p: map of original indices to permuted indices
     // p2o: map of permuted indices to original indices
-    arma::Col<unsigned int> o2pTestDofs(testDofCount);
-    arma::Col<unsigned int> p2oTestDofs(testDofCount);
-    arma::Col<unsigned int> o2pTrialDofs(trialDofCount);
-    arma::Col<unsigned int> p2oTrialDofs(trialDofCount);
+    std::vector<unsigned int> o2pTestDofs(testDofCount);
+    std::vector<unsigned int> p2oTestDofs(testDofCount);
+    std::vector<unsigned int> o2pTrialDofs(trialDofCount);
+    std::vector<unsigned int> p2oTrialDofs(trialDofCount);
     for (unsigned int i = 0; i < testDofCount; ++i)
         o2pTestDofs[i] = i;
     for (unsigned int i = 0; i < testDofCount; ++i)
@@ -270,24 +270,24 @@ ElementaryLinearOperator<ValueType>::assembleWeakFormInAcaMode(
             static_cast<AhmedDofType*>(&trialDofCenters[0]);
 
     bemcluster<const AhmedDofType> testClusterTree(
-                ahmedTestDofCenters, o2pTestDofs.memptr(),
+                ahmedTestDofCenters, &o2pTestDofs[0],
                 0, testDofCount);
     testClusterTree.createClusterTree(
                 options.acaMinimumBlockSize,
-                o2pTestDofs.memptr(), p2oTestDofs.memptr());
+                &o2pTestDofs[0], &p2oTestDofs[0]);
     bemcluster<const AhmedDofType> trialClusterTree(
-                ahmedTrialDofCenters, o2pTrialDofs.memptr(),
+                ahmedTrialDofCenters, &o2pTrialDofs[0],
                 0, trialDofCount);
     trialClusterTree.createClusterTree(
                 options.acaMinimumBlockSize,
-                o2pTrialDofs.memptr(), p2oTrialDofs.memptr());
+                &o2pTrialDofs[0], &p2oTrialDofs[0]);
 
 #ifndef NDEBUG
     std::cout << "Test cluster count: " << testClusterTree.getncl()
               << "\nTrial cluster count: " << trialClusterTree.getncl()
               << std::endl;
-    std::cout << "o2pTest:\n" << o2pTestDofs << std::endl;
-    std::cout << "p2oTest:\n" << p2oTestDofs << std::endl;
+//    std::cout << "o2pTest:\n" << o2pTestDofs << std::endl;
+//    std::cout << "p2oTest:\n" << p2oTestDofs << std::endl;
 #endif
 
     typedef bemblcluster<AhmedDofType, AhmedDofType> DoubleCluster;
@@ -317,7 +317,8 @@ ElementaryLinearOperator<ValueType>::assembleWeakFormInAcaMode(
                  options.acaMaximumRank, blocks);
     result = std::auto_ptr<DiscreteLinOp>(
                 new DiscreteAcaLinOp(testDofCount, trialDofCount,
-                                     doubleClusterTree, blocks));
+                                     doubleClusterTree, blocks,
+                                     o2pTestDofs, p2oTrialDofs));
     return result;
 #else // without Ahmed
     throw std::runtime_error("To enable assembly in ACA mode, recompile BEM++ "

@@ -3,6 +3,7 @@
 #include "assembly_options.hpp"
 #include "../common/multidimensional_arrays.hpp"
 #include "../common/not_implemented_error.hpp"
+#include "../common/stl_io.hpp"
 #include "../common/types.hpp"
 #include "../fiber/double_integrator.hpp"
 #include "../fiber/integration_manager.hpp"
@@ -214,7 +215,7 @@ void ElementaryIntegralOperator<ValueType>::evaluateLocalWeakForms(
         for (int trialIndex = 0; trialIndex < trialElementCount; ++trialIndex)
             for (int testIndex = 0; testIndex < testElementCount; ++testIndex)
                 if (quadVariants(testIndex, trialIndex) == activeQuadVariant)
-                    result(testIndex, trialIndex) = localResult.slice(i++);
+                    result(testIndex, trialIndex) = localResult.slice(i++);        
     }
 }
 

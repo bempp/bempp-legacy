@@ -21,8 +21,8 @@ WeakFormAcaAssemblyHelper<ValueType>::WeakFormAcaAssemblyHelper(
         const GridView& view,
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,
-        const arma::Col<unsigned int>& p2oTestDofs,
-        const arma::Col<unsigned int>& p2oTrialDofs,
+        const std::vector<unsigned int>& p2oTestDofs,
+        const std::vector<unsigned int>& p2oTrialDofs,
         IntegrationManager& intMgr,
         const AssemblyOptions& options) :
     m_operator(op), m_view(view),
@@ -35,10 +35,8 @@ template <typename ValueType>
 void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
         unsigned b1, unsigned n1, unsigned b2, unsigned n2, ValueType* data) const
 {
-#ifndef NDEBUG
-    std::cout << "\nRequested block: (" << b1 << ", " << n1 << "; "
-              << b2 << ", " << n2 << ")" << std::endl;
-#endif
+//    std::cout << "\nRequested block: (" << b1 << ", " << n1 << "; "
+//              << b2 << ", " << n2 << ")" << std::endl;
 
     // Necessary elements
     std::vector<const EntityPointer<0>*> testElements;
@@ -178,7 +176,7 @@ template <typename ValueType>
 void WeakFormAcaAssemblyHelper<ValueType>::findLocalDofs(
         int start,
         int globalDofCount,
-        const arma::Col<unsigned int>& p2o,
+        const std::vector<unsigned int>& p2o,
         const Space<ValueType>& space,
         std::vector<const EntityPointer<0>*>& elements,
         std::vector<std::vector<LocalDofIndex> >& localDofIndices,
@@ -193,7 +191,7 @@ void WeakFormAcaAssemblyHelper<ValueType>::findLocalDofs(
     // Convert permuted indices into the original global DOF indices
     vector<GlobalDofIndex> dofs(globalDofCount);
     for (int i = 0; i < globalDofCount; ++i)
-        dofs[i] = p2o(start + i);
+        dofs[i] = p2o[start + i];
 
     // Retrieve lists of local DOFs corresponding to the global DOFs
     vector<vector<LocalDof> > localDofs;

@@ -158,7 +158,7 @@ private:
         // 2. Take into account the fact that elements might be isoparametric.
 
         // Make quadrature exact for a constant kernel and affine elements
-        return 8;
+        return 4;
     }
 
     int singularOrderIncrement(int elementIndex,
@@ -173,7 +173,7 @@ private:
         // 2. Take into account the fact that elements might be isoparametric.
 
         // Make quadrature exact for a constant kernel and affine elements
-        return 8;
+        return 4;
     }
 
     const DoubleIntegrator<ValueType>& getIntegrator(const DoubleIntegratorIndex& index)
