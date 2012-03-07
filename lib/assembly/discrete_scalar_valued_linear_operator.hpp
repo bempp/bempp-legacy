@@ -31,11 +31,13 @@ class DiscreteScalarValuedLinearOperator
 public:
     virtual ~DiscreteScalarValuedLinearOperator() {}
 
-    /**
-      Sets result to
+    /** \brief Matrix-vector multiplication.
+
+      Sets \p result to
+
       result := result + multiplier * L * argument,
-      where L is the linear operator represented by this object.
-    */
+
+      where L is the linear operator represented by this object. */
     virtual void multiplyAddVector(ValueType multiplier,
                            const arma::Col<ValueType>& argument,
                            arma::Col<ValueType>& result) = 0;
