@@ -21,34 +21,40 @@
 #ifndef bempp_elementary_integral_operator_hpp
 #define bempp_elementary_integral_operator_hpp
 
-#include "elementary_linear_operator.hpp"
-#include "../fiber/kernel.hpp"
-
+#include "linear_operator.hpp"
+#include "../common/multidimensional_arrays.hpp"
 #include "../common/types.hpp"
+#include "../fiber/kernel.hpp"
+#include "../fiber/types.hpp"
 
-#include <memory>
 #include <vector>
+#include <armadillo>
 
 namespace Fiber
 {
 
 template <typename ValueType> class Expression;
+template <typename ValueType> class LocalAssemblerForIntegralOperators;
 
 } // namespace Fiber
 
 namespace Bempp
 {
 
-class Geometry;
+template <int codim> class EntityPointer;
+
+template <typename ValueType> class WeakFormAcaAssemblyHelper;
 
 template <typename ValueType>
-class ElementaryIntegralOperator : public ElementaryLinearOperator<ValueType>
+class ElementaryIntegralOperator : public LinearOperator<ValueType>
 {
+    friend class WeakFormAcaAssemblyHelper<ValueType>;
+
 public:
-    typedef typename ElementaryLinearOperator<ValueType>::IntegrationManager
-    IntegrationManager;
-    typedef typename ElementaryLinearOperator<ValueType>::IntegrationManagerFactory
-    IntegrationManagerFactory;
+    typedef typename LinearOperator<ValueType>::LocalAssemblerFactory
+    LocalAssemblerFactory;
+    typedef typename Fiber::LocalAssemblerForIntegralOperators<ValueType>
+    LocalAssembler;
 
     virtual int trialComponentCount() const {
         return kernel().domainDimension();
@@ -60,35 +66,57 @@ public:
 
     virtual bool isRegular() const = 0;
 
-private:
-    virtual std::auto_ptr<IntegrationManager > makeIntegrationManager(
-            const IntegrationManagerFactory& factory,
-            const GeometryFactory& geometryFactory,
-            const arma::Mat<ValueType>& vertices,
-            const arma::Mat<int>& elementCorners,
-            const arma::Mat<char>& auxData) const;
+    virtual std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+    assembleWeakForm(
+            const Space<ValueType>& testSpace,
+            const Space<ValueType>& trialSpace,
+            const LocalAssemblerFactory& factory,
+            const AssemblyOptions& options) const;
 
+    virtual std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
+    assembleOperator(
+            const arma::Mat<ctype>& testPoints,
+            const Space<ValueType>& trialSpace,
+            const LocalAssemblerFactory& factory,
+            const AssemblyOptions& options) const;
+
+private:
     virtual const Fiber::Kernel<ValueType>& kernel() const = 0;
     virtual const Fiber::Expression<ValueType>& testExpression() const = 0;
     virtual const Fiber::Expression<ValueType>& trialExpression() const = 0;
 
-    virtual void evaluateLocalWeakForms(
-            CallVariant evalVariant,
-            const std::vector<const EntityPointer<0>*>& elementsA,
-            const EntityPointer<0>& elementB,
-            LocalDofIndex localDofIndexB,
-            const Space<ValueType>& spaceA,
-            const Space<ValueType>& spaceB,
-            IntegrationManager& intMgr,
-            std::vector<arma::Mat<ValueType> >& result) const;
+    /** @}
+        \name Operator assembly
+        @{ */
+    std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
+    assembleOperatorInDenseMode(
+            const arma::Mat<ctype>& testPoints,
+            const Space<ValueType>& trialSpace,
+            LocalAssembler& integrationMgr,
+            const AssemblyOptions& options) const;
+    std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
+    assembleOperatorInAcaMode(
+            const arma::Mat<ctype>& testPoints,
+            const Space<ValueType>& trialSpace,
+            LocalAssembler& integrationMgr,
+            const AssemblyOptions& options) const;
+    std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
 
-    virtual void evaluateLocalWeakForms(
-            const std::vector<const EntityPointer<0>*>& testElements,
-            const std::vector<const EntityPointer<0>*>& trialElements,
+    /** @}
+        \name Weak form assembly
+        @{ */
+    assembleWeakFormInDenseMode(
             const Space<ValueType>& testSpace,
             const Space<ValueType>& trialSpace,
-            IntegrationManager& intMgr,
-            Fiber::Array2D<arma::Mat<ValueType> >& result) const;
+            LocalAssembler& integrationMgr,
+            const AssemblyOptions &options) const;
+    std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+    assembleWeakFormInAcaMode(
+            const Space<ValueType>& testSpace,
+            const Space<ValueType>& trialSpace,
+            LocalAssembler& integrationMgr,
+            const AssemblyOptions& options) const;
+    /** @} */
 };
 
 } // namespace Bempp

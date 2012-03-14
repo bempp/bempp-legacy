@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2012 by the BEM++ Authors
+// Copyright (C) 2011-2012 by the Fiber Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,28 +18,33 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_assembly_options_hpp
-#define bempp_assembly_options_hpp
+#ifndef fiber_test_trial_integrator_hpp
+#define fiber_test_trial_integrator_hpp
 
-namespace Bempp
+#include "types.hpp"
+
+#include <armadillo>
+#include <vector>
+
+namespace Fiber
 {
 
-enum AssemblyMode
+template <typename ValueType> class Basis;
+
+/** \brief Integration of products of test and trial functions over elements. */
+template <typename ValueType>
+class TestTrialIntegrator
 {
-    ASSEMBLY_MODE_DENSE, ASSEMBLY_MODE_ACA,
-    ASSEMBLY_MODE_FMM, ASSEMBLY_MODE_SPARSE
+public:
+    virtual ~TestTrialIntegrator() {}
+
+    virtual void integrate(
+            const std::vector<int>& elementIndices,
+            const Basis<ValueType>& testBasis,
+            const Basis<ValueType>& trialBasis,
+            arma::Cube<ValueType>& result) const = 0;
 };
 
-struct AssemblyOptions
-{
-    AssemblyMode mode;
-    double acaEps;
-    double acaEta;
-    int acaMinimumBlockSize;
-    int acaMaximumRank;
-    bool acaRecompress;
-};
-
-} // namespace Bempp
+} // namespace Fiber
 
 #endif

@@ -14,6 +14,13 @@ set(AHMED_INCLUDE_DIR "" CACHE PATH "Full path to the AHMED include directory")
 set(AHMED_LIBRARY "" CACHE FILEPATH "Full path to the AHMED library")
 set(METIS_LIBRARY "" CACHE FILEPATH "Full path to the METIS library")
 
+# Trilinos (optional, used only if WITH_TRILINOS is set)
+set(TRILINOS_ROOT_DIR "" CACHE PATH "Full path to the Trilinos root directory")
+if (WITH_TRILINOS)
+    find_library(EPETRA_LIBRARY epetra ${TRILINOS_ROOT_DIR}/lib)
+    set(TRILINOS_INCLUDE_DIR ${TRILINOS_ROOT_DIR}/include)
+endif ()
+
 # Dune
 find_library(LIB_DUNE_COMMON common ${CMAKE_SOURCE_DIR}/contrib/dune/dune-common/dune/common/.libs)
 find_library(LIB_DUNE_GRID grid ${CMAKE_SOURCE_DIR}/contrib/dune/dune-grid/dune/grid/.libs)

@@ -23,10 +23,11 @@
 #include <memory> // auto_ptr
 
 #include "assembly/assembly_options.hpp"
+#include "assembly/identity_operator.hpp"
 #include "assembly/single_layer_potential_3d.hpp"
 
 #include "assembly/discrete_scalar_valued_linear_operator.hpp"
-#include "fiber/standard_integration_manager_factory_2d.hpp"
+#include "fiber/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 
 #include "grid/entity.hpp"
 #include "grid/entity_iterator.hpp"
@@ -47,7 +48,7 @@ using namespace Bempp;
 using std::cout;
 using std::endl;
 
-enum Variant
+enum MeshVariant
 {
     TWO_DISJOINT_TRIANGLES,
     TWO_TRIANGLES_SHARING_VERTEX_0,
@@ -60,6 +61,12 @@ enum Variant
     CUBE_384
 };
 
+enum OperatorVariant
+{
+    SINGLE_LAYER_POTENTIAL,
+    IDENTITY
+};
+
 inline bool approxEqual(double x, double y)
 {
     return fabs(x - y) / fabs((x + y) / 2.) < 1e-3;
@@ -70,7 +77,9 @@ inline bool approxEqual(double x, double y)
   */
 int main()
 {
-    const Variant variant = TWO_TRIANGLES_SHARING_VERTEX_0;
+    const MeshVariant meshVariant = TWO_TRIANGLES_SHARING_VERTEX_0;
+    const OperatorVariant opVariant = SINGLE_LAYER_POTENTIAL;
+
     const char TWO_DISJOINT_TRIANGLES_FNAME[] = "two_disjoint_triangles.msh";
     const char TWO_TRIANGLES_SHARING_VERTEX_0_FNAME[] = "two_triangles_sharing_vertex_0.msh";
     const char TWO_TRIANGLES_SHARING_VERTICES_2_AND_0_FNAME[] = "two_triangles_sharing_vertices_2_and_0.msh";
@@ -82,7 +91,7 @@ int main()
     const char CUBE_384_FNAME[] = "cube-384.msh";
 
     const char* MESH_FNAME = 0;
-    switch (variant) {
+    switch (meshVariant) {
     case TWO_DISJOINT_TRIANGLES:
         MESH_FNAME = TWO_DISJOINT_TRIANGLES_FNAME; break;
     case TWO_TRIANGLES_SHARING_VERTEX_0:
@@ -133,59 +142,97 @@ int main()
 
     AssemblyOptions assemblyOptions;
     assemblyOptions.mode = ASSEMBLY_MODE_DENSE;
-//    assemblyOptions.mode = ASSEMBLY_MODE_ACA;
-//    assemblyOptions.acaEps = 1e-4;
-//    assemblyOptions.acaMaximumRank = 10000;
-//    assemblyOptions.acaMinimumBlockSize = 2;
-//    assemblyOptions.acaEta = 0.8;
-//    assemblyOptions.acaRecompress = true;
+    // assemblyOptions.mode = ASSEMBLY_MODE_ACA;
+    // assemblyOptions.mode = ASSEMBLY_MODE_SPARSE;
+    assemblyOptions.acaEps = 1e-4;
+    assemblyOptions.acaMaximumRank = 10000;
+    assemblyOptions.acaMinimumBlockSize = 2;
+    assemblyOptions.acaEta = 0.8;
+    assemblyOptions.acaRecompress = true;
 
     Fiber::OpenClOptions openClOptions;
     openClOptions.useOpenCl = false;
-    Fiber::StandardIntegrationManagerFactory2D<double, GeometryFactory> factory(openClOptions);
+    Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, GeometryFactory>
+            factory(openClOptions);
 
-    SingleLayerPotential3D<double> op;
+    typedef std::auto_ptr<LinearOperator<double> > LinearOperatorPtr;
+    LinearOperatorPtr op;
+    switch (opVariant)
+    {
+    case SINGLE_LAYER_POTENTIAL:
+        op = LinearOperatorPtr(new SingleLayerPotential3D<double>); break;
+    case IDENTITY:
+        op = LinearOperatorPtr(new IdentityOperator<double>); break;
+    default:
+        throw std::runtime_error("Invalid operator");
+    }
+
     std::auto_ptr<DiscreteScalarValuedLinearOperator<double> > result =
-            op.assembleWeakForm(space, space, factory, assemblyOptions);
+            op->assembleWeakForm(space, space, factory, assemblyOptions);
 
     arma::Mat<double> resultMatrix = result->asMatrix();
     std::cout << "\nGenerated matrix:\n" << resultMatrix << std::endl;
-    if (variant == TWO_DISJOINT_TRIANGLES)
+
+    if (opVariant == SINGLE_LAYER_POTENTIAL)
     {
-        // disjoint elements
-        assert(approxEqual(resultMatrix(0, 3), 0.0101397));
-        assert(approxEqual(resultMatrix(0, 4), 0.00852427));
-        assert(approxEqual(resultMatrix(1, 3), 0.0127044));
-        // TODO: calculate with reasonable accuracy the result for coincident triangles
-        // and make a test
+        if (meshVariant == TWO_DISJOINT_TRIANGLES)
+        {
+            // disjoint elements
+            assert(approxEqual(resultMatrix(0, 3), 0.0101397));
+            assert(approxEqual(resultMatrix(0, 4), 0.00852427));
+            assert(approxEqual(resultMatrix(1, 3), 0.0127044));
+            // TODO: calculate with reasonable accuracy the result for coincident triangles
+            // and make a test
+        }
+        else if (meshVariant == TWO_TRIANGLES_SHARING_VERTEX_0)
+        {
+            // elements sharing vertex
+            assert(approxEqual(resultMatrix(1, 3), 0.0109119));
+            assert(approxEqual(resultMatrix(2, 4), 0.0123149));
+        }
+        else if (meshVariant == TWO_TRIANGLES_SHARING_VERTICES_2_AND_0)
+        {
+            // elements sharing vertex
+            assert(approxEqual(resultMatrix(0, 3), 0.0109119));
+            assert(approxEqual(resultMatrix(1, 4), 0.0123149));
+        }
+        else if (meshVariant == TWO_TRIANGLES_SHARING_VERTICES_1_AND_0)
+        {
+            // elements sharing vertex
+            assert(approxEqual(resultMatrix(0, 3), 0.0109119));
+            assert(approxEqual(resultMatrix(2, 4), 0.0123149));
+        }
+        else if (meshVariant == TWO_TRIANGLES_SHARING_EDGES_0_AND_0)
+        {
+            // elements sharing edge
+            assert(approxEqual(resultMatrix(2, 3), 0.00861375));
+        }
+        else if (meshVariant == TWO_TRIANGLES_SHARING_EDGES_1_AND_0)
+        {
+            // elements sharing edge
+            assert(approxEqual(resultMatrix(0, 3), 0.00861375));
+        }
     }
-    else if (variant == TWO_TRIANGLES_SHARING_VERTEX_0)
+    else if (opVariant == IDENTITY)
     {
-        // elements sharing vertex
-        assert(approxEqual(resultMatrix(1, 3), 0.0109119));
-        assert(approxEqual(resultMatrix(2, 4), 0.0123149));
-    }
-    else if (variant == TWO_TRIANGLES_SHARING_VERTICES_2_AND_0)
-    {
-        // elements sharing vertex
-        assert(approxEqual(resultMatrix(0, 3), 0.0109119));
-        assert(approxEqual(resultMatrix(1, 4), 0.0123149));
-    }
-    else if (variant == TWO_TRIANGLES_SHARING_VERTICES_1_AND_0)
-    {
-        // elements sharing vertex
-        assert(approxEqual(resultMatrix(0, 3), 0.0109119));
-        assert(approxEqual(resultMatrix(2, 4), 0.0123149));
-    }
-    else if (variant == TWO_TRIANGLES_SHARING_EDGES_0_AND_0)
-    {
-        // elements sharing edge
-        assert(approxEqual(resultMatrix(2, 3), 0.00861375));
-    }
-    else if (variant == TWO_TRIANGLES_SHARING_EDGES_1_AND_0)
-    {
-        // elements sharing edge
-        assert(approxEqual(resultMatrix(0, 3), 0.00861375));
+        if (meshVariant == TWO_DISJOINT_TRIANGLES)
+        {
+            // disjoint elements
+            assert(approxEqual(resultMatrix(0, 0), 0.25));
+            assert(approxEqual(resultMatrix(0, 1), 0.125));
+            assert(approxEqual(resultMatrix(0, 2), 0.125));
+            assert(approxEqual(resultMatrix(4, 4), 0.5));
+            assert(approxEqual(resultMatrix(4, 5), 0.25));
+        }
+        else if (meshVariant == TWO_TRIANGLES_SHARING_VERTEX_0)
+        {
+            // elements sharing vertex
+            assert(approxEqual(resultMatrix(0, 0), 0.75));
+            assert(approxEqual(resultMatrix(0, 1), 0.125));
+            assert(approxEqual(resultMatrix(0, 2), 0.125));
+            assert(approxEqual(resultMatrix(0, 3), 0.25));
+            assert(approxEqual(resultMatrix(0, 4), 0.25));
+        }
     }
 }
 

@@ -1,222 +1,368 @@
 #include "elementary_integral_operator.hpp"
 
 #include "assembly_options.hpp"
+#include "discrete_dense_scalar_valued_linear_operator.hpp"
+#include "discrete_vector_valued_linear_operator.hpp"
+
 #include "../common/multidimensional_arrays.hpp"
 #include "../common/not_implemented_error.hpp"
-#include "../common/stl_io.hpp"
-#include "../common/types.hpp"
-#include "../fiber/double_integrator.hpp"
-#include "../fiber/integration_manager.hpp"
-#include "../fiber/integration_manager_factory.hpp"
-#include "../grid/mapper.hpp"
-#include "../grid/entity_pointer.hpp"
-#include "../grid/entity.hpp"
-#include "../grid/geometry.hpp"
+#include "../fiber/local_assembler_factory.hpp"
+#include "../fiber/local_assembler_for_integral_operators.hpp"
+#include "../fiber/raw_grid_geometry.hpp"
+#include "../grid/entity_iterator.hpp"
 #include "../grid/geometry_factory.hpp"
-#include "../grid/grid_view.hpp"
 #include "../grid/grid.hpp"
+#include "../grid/grid_view.hpp"
+#include "../grid/mapper.hpp"
 #include "../space/space.hpp"
 
 #include <armadillo>
-// #include <boost/unordered_set.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
-#include <boost/tuple/tuple_comparison.hpp>
-#include <set>
+#include <stdexcept>
+
+#ifdef WITH_AHMED
+#include "ahmed_aux.hpp"
+#include "discrete_aca_scalar_valued_linear_operator.hpp"
+#include "weak_form_aca_assembly_helper.hpp"
+#endif
+
+// The spaces should be given the grid in constructor!
 
 namespace Bempp
 {
 
 template <typename ValueType>
-std::auto_ptr<typename ElementaryIntegralOperator<ValueType>::IntegrationManager>
-ElementaryIntegralOperator<ValueType>::makeIntegrationManager(
-        const ElementaryIntegralOperator<ValueType>::IntegrationManagerFactory& factory,
-        const GeometryFactory& geometryFactory,
-        const arma::Mat<ValueType>& vertices,
-        const arma::Mat<int>& elementCorners,
-        const arma::Mat<char>& auxData) const
+std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
+ElementaryIntegralOperator<ValueType>::assembleOperator(
+        const arma::Mat<ctype>& testPoints,
+        const Space<ValueType>& trialSpace,
+        const LocalAssemblerFactory& factory,
+        const AssemblyOptions& options) const
 {
-    return factory.make(geometryFactory, vertices, elementCorners, auxData,
-                        testExpression(), kernel(), trialExpression());
-}
+    if (!trialSpace.dofsAssigned())
+        throw std::runtime_error("ElementaryIntegralOperator::assembleOperator(): "
+                                 "degrees of freedom must be assigned "
+                                 "before calling assembleOperator()");
 
-template <typename ValueType>
-void ElementaryIntegralOperator<ValueType>::evaluateLocalWeakForms(
-        CallVariant callVariant,
-        const std::vector<const EntityPointer<0>*>& elementsA,
-        const EntityPointer<0>& elementB,
-        LocalDofIndex localDofIndexB,
-        const Space<ValueType>& spaceA,
-        const Space<ValueType>& spaceB,
-        ElementaryIntegralOperator<ValueType>::IntegrationManager& intMgr,
-        std::vector<arma::Mat<ValueType> >& result) const
-{
-    typedef Fiber::DoubleIntegrator<ValueType> Integrator;
-    typedef Fiber::Basis<ValueType> Basis;
+    // Prepare local assembler
 
-    const int elementACount = elementsA.size();
-    result.resize(elementACount);
+    std::auto_ptr<GridView> view = trialSpace.grid().leafView();
+    const int elementCount = view->entityCount(0);
 
-    // Get bases
-    std::vector<const Basis*> basesA;
-    spaceA.getBases(elementsA, basesA);
-    const Basis& basisB = spaceB.basis(elementB);
+    // Gather geometric data
+    Fiber::RawGridGeometry<ValueType> rawGeometry;
+    view->getRawElementData(
+                rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
+                rawGeometry.auxData());
 
-    // Get element indices (note: we assume that spaceA and space B refer to
-    // the same grid; this has been checked in assembleWeakForm())
-    std::auto_ptr<GridView> leafView(spaceA.grid().leafView());
-    const Mapper& elementMapper = leafView->elementMapper();
-    std::vector<int> elementIndicesA(elementACount);
-    for (int i = 0; i < elementACount; ++i)
-        elementIndicesA[i] = elementMapper.entityIndex(elementsA[i]->entity());
-    int elementIndexB = elementMapper.entityIndex(elementB.entity());
+    // Make geometry factory
+    std::auto_ptr<GeometryFactory> geometryFactory =
+            trialSpace.grid().elementGeometryFactory();
 
-    // Select the integrator appropriate for each pair of elements
-    std::vector<const Integrator*> integrators(elementACount);
-    intMgr.getTestKernelTrialIntegrators(
-                callVariant, elementIndicesA, elementIndexB,
-                basesA, basisB, integrators);
+    // Get pointers to test and trial bases of each element
+    std::vector<const Fiber::Basis<ValueType>*> trialBases;
+    trialBases.reserve(elementCount);
 
-    // Integration will proceed in batches of test elements having the same
-    // "quadrature variant", i.e. integrator and element variant (the
-    // latter is important because it guarantees that all the elements have
-    // the same basis functions)
-
-    // First, find all the unique quadrature variants present
-    typedef std::pair<const Integrator*, const Basis*> QuadVariant;
-    std::vector<QuadVariant> quadVariants(elementACount);
-    for (int indexA = 0; indexA < elementACount; ++indexA)
-        quadVariants[indexA] = QuadVariant(integrators[indexA], basesA[indexA]);
-    typedef std::set<QuadVariant> QuadVariantSet;
-    // Set of unique quadrature variants
-    QuadVariantSet uniqueQuadVariants(quadVariants.begin(), quadVariants.end());
-
-    std::vector<int> activeElementIndicesA;
-    activeElementIndicesA.reserve(elementACount);
-
-    // Now loop over unique quadrature variants
-    for (typename QuadVariantSet::const_iterator it = uniqueQuadVariants.begin();
-         it != uniqueQuadVariants.end(); ++it)
+    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    while (!it->finished())
     {
-        const QuadVariant activeQuadVariant = *it;
-        const Integrator& activeIntegrator = *it->first;
-        const Basis& activeBasisA = *it->second;
+        // const Entity<0>& element = it->entity();
+        // TODO: make basis() accept const Entity<0>& instead of EntityPointer<0>
+        trialBases.push_back(&trialSpace.basis(*it));
+        it->next();
+    }
 
-        // Find all the test elements for which quadrature should proceed
-        // according to the current quadrature variant
-        activeElementIndicesA.clear();
-        for (int indexA = 0; indexA < elementACount; ++indexA)
-            if (quadVariants[indexA] == activeQuadVariant)                
-                activeElementIndicesA.push_back(elementIndicesA[indexA]);
+    // Now create the assembler
+    std::auto_ptr<LocalAssembler> assembler =
+            factory.make(*geometryFactory, rawGeometry,
+                         trialBases,
+                         kernel(), trialExpression());
 
-        // Integrate!
-        arma::Cube<ValueType> localResult;
-        activeIntegrator.integrate(callVariant,
-                                   activeElementIndicesA, elementIndexB,
-                                   activeBasisA, basisB, localDofIndexB,
-                                   localResult);
-
-        // Distribute the just calculated integrals into the result array
-        // that will be returned to caller
-        int i = 0;
-        for (int indexA = 0; indexA < elementACount; ++indexA)
-            if (quadVariants[indexA] == activeQuadVariant)
-                result[indexA] = localResult.slice(i++);
+    switch (options.mode)
+    {
+    case ASSEMBLY_MODE_DENSE:
+        return assembleOperatorInDenseMode(
+                    testPoints, trialSpace, *assembler, options);
+    case ASSEMBLY_MODE_ACA:
+        return assembleOperatorInAcaMode(
+                    testPoints, trialSpace, *assembler, options);
+    case ASSEMBLY_MODE_FMM:
+        throw std::runtime_error("ElementaryIntegralOperator::assembleOperator(): "
+                                 "assembly mode FMM is not implemented yet");
+    default:
+        throw std::runtime_error("ElementaryIntegralOperator::assembleOperator(): "
+                                 "invalid assembly mode");
     }
 }
 
 template <typename ValueType>
-void ElementaryIntegralOperator<ValueType>::evaluateLocalWeakForms(
-        const std::vector<const EntityPointer<0>*>& testElements,
-        const std::vector<const EntityPointer<0>*>& trialElements,
+std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+ElementaryIntegralOperator<ValueType>::assembleWeakForm(
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,
-        IntegrationManager& intMgr,
-        Fiber::Array2D<arma::Mat<ValueType> >& result) const
+        const typename ElementaryIntegralOperator<ValueType>::LocalAssemblerFactory& factory,
+        const AssemblyOptions& options) const
 {
-    typedef Fiber::DoubleIntegrator<ValueType> Integrator;
-    typedef Fiber::Basis<ValueType> Basis;
+    if (!testSpace.dofsAssigned() || !trialSpace.dofsAssigned())
+        throw std::runtime_error("ElementaryIntegralOperator::assembleWeakForm(): "
+                                 "degrees of freedom must be assigned "
+                                 "before calling assembleOperator()");
+    if (&testSpace.grid() != &trialSpace.grid())
+        throw std::runtime_error("ElementaryIntegralOperator::assembleWeakForm(): "
+                                 "testSpace and trialSpace must be defined over "
+                                 "the same grid");
 
-    const int testElementCount = testElements.size();
-    const int trialElementCount = trialElements.size();
-    result.set_size(testElementCount, trialElementCount);
+    // Prepare local assembler
 
-    // Get bases
-    std::vector<const Basis*> testBases;
-    testSpace.getBases(testElements, testBases);
-    std::vector<const Basis*> trialBases;
-    trialSpace.getBases(trialElements, trialBases);
+    std::auto_ptr<GridView> view = trialSpace.grid().leafView();
+    const int elementCount = view->entityCount(0);
 
-    // Get element indices (note: we assume that spaceA and space B refer to
-    // the same grid; this has been checked in assembleWeakForm())
-    std::auto_ptr<GridView> leafView(testSpace.grid().leafView());
-    const Mapper& elementMapper = leafView->elementMapper();
-    std::vector<int> testElementIndices(testElementCount);
-    for (int i = 0; i < testElementCount; ++i)
-        testElementIndices[i] = elementMapper.entityIndex(testElements[i]->entity());
-    std::vector<int> trialElementIndices(trialElementCount);
-    for (int i = 0; i < trialElementCount; ++i)
-        trialElementIndices[i] = elementMapper.entityIndex(trialElements[i]->entity());
+    // Gather geometric data
+    Fiber::RawGridGeometry<ValueType> rawGeometry;
+    view->getRawElementData(
+                rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
+                rawGeometry.auxData());
 
-    // Select the integrator appropriate for each pair of elements
-    Fiber::Array2D<const Integrator*> integrators;
-    intMgr.getTestKernelTrialIntegrators(
-                testElementIndices, trialElementIndices,
-                testBases, trialBases, integrators);
+    // Make geometry factory
+    std::auto_ptr<GeometryFactory> geometryFactory =
+            trialSpace.grid().elementGeometryFactory();
 
-    // Integration will proceed in batches of test elements having the same
-    // "quadrature variant", i.e. integrator and element variant (the
-    // latter is important because it guarantees that all the elements have
-    // the same basis functions)
+    // Get pointers to test and trial bases of each element
+    std::vector<const Fiber::Basis<ValueType>*> testBases;
+    std::vector<const Fiber::Basis<ValueType>*> trialBases;
+    testBases.reserve(elementCount);
+    trialBases.reserve(elementCount);
 
-    // First, find all the unique quadrature variants present
-    typedef boost::tuples::tuple<const Integrator*, const Basis*, const Basis*>
-            QuadVariant;
-    Fiber::Array2D<QuadVariant> quadVariants(testElementCount, trialElementCount);
-    for (int trialIndex = 0; trialIndex < trialElementCount; ++trialIndex)
-        for (int testIndex = 0; testIndex < testElementCount; ++testIndex)
-            quadVariants(testIndex, trialIndex) =
-                    QuadVariant(integrators(testIndex, trialIndex),
-                                testBases[testIndex], trialBases[trialIndex]);
-    typedef std::set<QuadVariant> QuadVariantSet;
-    // Set of unique quadrature variants
-    QuadVariantSet uniqueQuadVariants(quadVariants.begin(), quadVariants.end());
-
-    typedef typename Integrator::ElementIndexPair ElementIndexPair;
-    std::vector<ElementIndexPair> activeElementPairs;
-    activeElementPairs.reserve(testElementCount * trialElementCount);
-
-    // Now loop over unique quadrature variants
-    for (typename QuadVariantSet::const_iterator it = uniqueQuadVariants.begin();
-         it != uniqueQuadVariants.end(); ++it)
+    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    while (!it->finished())
     {
-        const QuadVariant activeQuadVariant = *it;
-        const Integrator& activeIntegrator = *it->template get<0>();
-        const Basis& activeTestBasis  = *it->template get<1>();
-        const Basis& activeTrialBasis = *it->template get<2>();
-
-        // Find all the element pairs for which quadrature should proceed
-        // according to the current quadrature variant
-        activeElementPairs.clear();
-        for (int trialIndex = 0; trialIndex < trialElementCount; ++trialIndex)
-            for (int testIndex = 0; testIndex < testElementCount; ++testIndex)
-                if (quadVariants(testIndex, trialIndex) == activeQuadVariant)
-                    activeElementPairs.push_back(
-                                ElementIndexPair(testElementIndices[testIndex],
-                                                 trialElementIndices[trialIndex]));
-
-        // Integrate!
-        arma::Cube<ValueType> localResult;
-        activeIntegrator.integrate(activeElementPairs, activeTestBasis,
-                                   activeTrialBasis, localResult);
-
-        // Distribute the just calculated integrals into the result array
-        // that will be returned to caller
-        int i = 0;
-        for (int trialIndex = 0; trialIndex < trialElementCount; ++trialIndex)
-            for (int testIndex = 0; testIndex < testElementCount; ++testIndex)
-                if (quadVariants(testIndex, trialIndex) == activeQuadVariant)
-                    result(testIndex, trialIndex) = localResult.slice(i++);        
+        // const Entity<0>& element = it->entity();
+        // TODO: make basis() accept const Entity<0>& instead of EntityPointer<0>
+        testBases.push_back(&testSpace.basis(*it));
+        trialBases.push_back(&trialSpace.basis(*it));
+        it->next();
     }
+
+    // Now create the assembler
+    std::auto_ptr<LocalAssembler> assembler =
+            factory.make(*geometryFactory, rawGeometry,
+                         testBases, trialBases,
+                         testExpression(), kernel(), trialExpression());
+
+    switch (options.mode)
+    {
+    case ASSEMBLY_MODE_DENSE:
+        return assembleWeakFormInDenseMode(
+                    testSpace, trialSpace, *assembler, options);
+    case ASSEMBLY_MODE_ACA:
+        return assembleWeakFormInAcaMode(
+                    testSpace, trialSpace, *assembler, options);
+    case ASSEMBLY_MODE_FMM:
+        throw std::runtime_error("ElementaryIntegralOperator::assembleWeakForm(): "
+                                 "assembly mode FMM is not implemented yet");
+    default:
+        throw std::runtime_error("ElementaryIntegralOperator::assembleWeakForm(): "
+                                 "invalid assembly mode");
+    }
+}
+
+template <typename ValueType>
+std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
+ElementaryIntegralOperator<ValueType>::assembleOperatorInDenseMode(
+        const arma::Mat<ctype>& testPoints,
+        const Space<ValueType>& trialSpace,
+        typename ElementaryIntegralOperator<ValueType>::LocalAssembler& assembler,
+        const AssemblyOptions& options) const
+{
+    throw NotImplementedError("ElementaryIntegralOperator::"
+                              "assembleOperatorInDenseMode(): "
+                              "not implemented yet");
+}
+
+template <typename ValueType>
+std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
+ElementaryIntegralOperator<ValueType>::assembleOperatorInAcaMode(
+        const arma::Mat<ctype>& testPoints,
+        const Space<ValueType>& trialSpace,
+        typename ElementaryIntegralOperator<ValueType>::LocalAssembler& assembler,
+        const AssemblyOptions& options) const
+{
+    throw NotImplementedError("ElementaryIntegralOperator::"
+                              "assembleOperatorInAcaMode(): "
+                              "not implemented yet");
+}
+
+
+template <typename ValueType>
+std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+ElementaryIntegralOperator<ValueType>::assembleWeakFormInDenseMode(
+        const Space<ValueType>& testSpace,
+        const Space<ValueType>& trialSpace,
+        typename ElementaryIntegralOperator<ValueType>::LocalAssembler& assembler,
+        const AssemblyOptions& options) const
+{
+    // Get the grid's leaf view so that we can iterate over elements
+    std::auto_ptr<GridView> view = trialSpace.grid().leafView();
+    const int elementCount = view->entityCount(0);
+
+    // Global DOF indices corresponding to local DOFs on elements
+    std::vector<std::vector<GlobalDofIndex> > trialGlobalDofs(elementCount);
+    std::vector<std::vector<GlobalDofIndex> > testGlobalDofs(elementCount);
+
+    // Gather global DOF lists
+    const Mapper& mapper = view->elementMapper();
+    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    while (!it->finished())
+    {
+        const Entity<0>& element = it->entity();
+        const int elementIndex = mapper.entityIndex(element);
+        testSpace.globalDofs(element, testGlobalDofs[elementIndex]);
+        trialSpace.globalDofs(element, trialGlobalDofs[elementIndex]);
+        it->next();
+    }
+
+    // Make a vector of all element indices
+    std::vector<int> testIndices(elementCount);
+    for (int i = 0; i < elementCount; ++i)
+        testIndices[i] = i;
+
+    // Create the operator's matrix
+    arma::Mat<ValueType> result(testSpace.globalDofCount(),
+                                trialSpace.globalDofCount());
+    result.fill(0.);
+    std::vector<arma::Mat<ValueType> > localResult;
+
+    // Loop over trial elements
+    for (int trialIndex = 0; trialIndex < elementCount; ++trialIndex)
+    {
+        // Evaluate integrals over pairs of the current trial element and
+        // all the test elements
+        assembler.evaluateLocalWeakForms(TEST_TRIAL, testIndices, trialIndex,
+                                         ALL_DOFS, localResult);
+
+        // Loop over test indices
+        for (int testIndex = 0; testIndex < elementCount; ++testIndex)
+            // Add the integrals to appropriate entries in the operator's matrix
+            for (int trialDof = 0; trialDof < trialGlobalDofs[trialIndex].size(); ++trialDof)
+                for (int testDof = 0; testDof < testGlobalDofs[testIndex].size(); ++testDof)
+                result(testGlobalDofs[testIndex][testDof],
+                       trialGlobalDofs[trialIndex][trialDof]) +=
+                        localResult[testIndex](testDof, trialDof);
+    }
+
+    // Create and return a discrete operator represented by the matrix that
+    // has just been calculated
+    return std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >(
+                new DiscreteDenseScalarValuedLinearOperator<ValueType>(result));
+}
+
+template <typename ValueType>
+std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+ElementaryIntegralOperator<ValueType>::assembleWeakFormInAcaMode(
+        const Space<ValueType>& testSpace,
+        const Space<ValueType>& trialSpace,
+        typename ElementaryIntegralOperator<ValueType>::LocalAssembler& assembler,
+        const AssemblyOptions& options) const
+{
+#ifdef WITH_AHMED
+    typedef AhmedDofWrapper<ValueType> AhmedDofType;
+    typedef DiscreteScalarValuedLinearOperator<ValueType> DiscreteLinOp;
+    typedef DiscreteAcaScalarValuedLinearOperator<ValueType,
+            AhmedDofType, AhmedDofType > DiscreteAcaLinOp;
+
+    // Get the grid's leaf view so that we can iterate over elements
+    std::auto_ptr<GridView> view = trialSpace.grid().leafView();
+
+    // const int elementCount = view.entityCount(0);
+    const int trialDofCount = trialSpace.globalDofCount();
+    const int testDofCount = testSpace.globalDofCount();
+
+#ifndef NDEBUG
+    std::cout << "Generating cluster trees... " << std::endl;
+#endif
+    // o2p: map of original indices to permuted indices
+    // p2o: map of permuted indices to original indices
+    std::vector<unsigned int> o2pTestDofs(testDofCount);
+    std::vector<unsigned int> p2oTestDofs(testDofCount);
+    std::vector<unsigned int> o2pTrialDofs(trialDofCount);
+    std::vector<unsigned int> p2oTrialDofs(trialDofCount);
+    for (unsigned int i = 0; i < testDofCount; ++i)
+        o2pTestDofs[i] = i;
+    for (unsigned int i = 0; i < testDofCount; ++i)
+        p2oTestDofs[i] = i;
+    for (unsigned int i = 0; i < trialDofCount; ++i)
+        o2pTrialDofs[i] = i;
+    for (unsigned int i = 0; i < trialDofCount; ++i)
+        p2oTrialDofs[i] = i;
+
+    std::vector<Point3D<ValueType> > trialDofCenters, testDofCenters;
+    trialSpace.globalDofPositions(trialDofCenters);
+    testSpace.globalDofPositions(testDofCenters);
+
+    // Use static_cast to convert from a pointer to Point3D to a pointer to its
+    // descendant AhmedDofWrapper, which does not contain any new data members,
+    // but just one additional method (the two structs should therefore be
+    // binary compatible)
+    const AhmedDofType* ahmedTrialDofCenters =
+            static_cast<AhmedDofType*>(&trialDofCenters[0]);
+    const AhmedDofType* ahmedTestDofCenters =
+            static_cast<AhmedDofType*>(&trialDofCenters[0]);
+
+    bemcluster<const AhmedDofType> testClusterTree(
+                ahmedTestDofCenters, &o2pTestDofs[0],
+                0, testDofCount);
+    testClusterTree.createClusterTree(
+                options.acaMinimumBlockSize,
+                &o2pTestDofs[0], &p2oTestDofs[0]);
+    bemcluster<const AhmedDofType> trialClusterTree(
+                ahmedTrialDofCenters, &o2pTrialDofs[0],
+                0, trialDofCount);
+    trialClusterTree.createClusterTree(
+                options.acaMinimumBlockSize,
+                &o2pTrialDofs[0], &p2oTrialDofs[0]);
+
+#ifndef NDEBUG
+    std::cout << "Test cluster count: " << testClusterTree.getncl()
+              << "\nTrial cluster count: " << trialClusterTree.getncl()
+              << std::endl;
+//    std::cout << "o2pTest:\n" << o2pTestDofs << std::endl;
+//    std::cout << "p2oTest:\n" << p2oTestDofs << std::endl;
+#endif
+
+    typedef bemblcluster<AhmedDofType, AhmedDofType> DoubleCluster;
+    std::auto_ptr<DoubleCluster> doubleClusterTree(
+                new DoubleCluster(0, 0, testDofCount, trialDofCount));
+    unsigned int blockCount = 0;
+    doubleClusterTree->subdivide(&testClusterTree, &trialClusterTree,
+                                 options.acaEta * options.acaEta,
+                                 blockCount);
+
+#ifndef NDEBUG
+    std::cout << "Double cluster count: " << blockCount << std::endl;
+#endif
+
+    std::auto_ptr<DiscreteLinOp> result;
+
+    // OpenMP implementation also possible
+
+    WeakFormAcaAssemblyHelper<ValueType>
+            helper(*this, *view, testSpace, trialSpace,
+                   p2oTestDofs, p2oTrialDofs, assembler, options);
+
+    mblock<ValueType>** blocks = 0;
+    allocmbls(doubleClusterTree.get(), blocks);
+    matgen_sqntl(helper, doubleClusterTree.get(), doubleClusterTree.get(),
+                 options.acaRecompress, options.acaEps,
+                 options.acaMaximumRank, blocks);
+    result = std::auto_ptr<DiscreteLinOp>(
+                new DiscreteAcaLinOp(testDofCount, trialDofCount,
+                                     doubleClusterTree, blocks,
+                                     o2pTestDofs, p2oTrialDofs));
+    return result;
+#else // without Ahmed
+    throw std::runtime_error("To enable assembly in ACA mode, recompile BEM++ "
+                             "with the symbol WITH_AHMED defined.");
+#endif
 }
 
 #ifdef COMPILE_FOR_FLOAT

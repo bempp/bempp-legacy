@@ -18,43 +18,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_double_integrator_hpp
-#define fiber_double_integrator_hpp
+#ifndef fiber_local_assembler_for_identity_operator_hpp
+#define fiber_local_assembler_for_identity_operator_hpp
 
+#include "array_2d.hpp"
 #include "types.hpp"
-
-#include <armadillo>
-#include <utility>
 #include <vector>
+#include <stdexcept>
 
 namespace Fiber
 {
 
-template <typename ValueType> class Basis;
-
-/** \brief Integration over pairs of elements. */
 template <typename ValueType>
-class DoubleIntegrator
+class LocalAssemblerForIdentityOperator
 {
 public:
-    typedef std::pair<int, int> ElementIndexPair;
+    virtual ~LocalAssemblerForIdentityOperator() {}
 
-    virtual ~DoubleIntegrator() {}
+    virtual void evaluateLocalWeakForms(
+            const std::vector<int>& elementIndices,
+            std::vector<arma::Mat<ValueType> >& result) /*const*/ = 0;
 
-    virtual void integrate(
-            CallVariant callVariant,
-            const std::vector<int>& elementIndicesA,
-            int elementIndexB,
-            const Basis<ValueType>& basisA,
-            const Basis<ValueType>& basisB,
-            LocalDofIndex localDofIndexB,
-            arma::Cube<ValueType>& result) const = 0;
-
-    virtual void integrate(
-            const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<ValueType>& testBasis,
-            const Basis<ValueType>& trialBasis,
-            arma::Cube<ValueType>& result) const = 0;
+    // TODO: evaluateLocalOperator or something similar
 };
 
 } // namespace Fiber

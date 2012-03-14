@@ -31,6 +31,12 @@ if (WITH_AHMED)
     include_directories(${AHMED_INCLUDE_DIR})
 endif ()
 
+if (WITH_TRILINOS)
+    target_link_libraries (bempp ${EPETRA_LIBRARY})
+    add_definitions(-DWITH_TRILINOS)
+    include_directories(${TRILINOS_INCLUDE_DIR})
+endif ()
+
 # Add a target to generate API documentation with Doxygen
 find_package(Doxygen)
 if (DOXYGEN_FOUND)

@@ -71,7 +71,7 @@ std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
 LinearOperatorSuperposition<ValueType>::assembleOperator(
         const arma::Mat<ctype>& testPoints,
         const Space<ValueType>& trialSpace,
-        const IntegrationManagerFactory& factory,
+        const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
     typedef DiscreteVectorValuedLinearOperator<ValueType> DiscreteLinOp;
@@ -94,7 +94,7 @@ std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
 LinearOperatorSuperposition<ValueType>::assembleWeakForm(
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,
-        const IntegrationManagerFactory& factory,
+        const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
     typedef DiscreteScalarValuedLinearOperator<ValueType> DiscreteLinOp;

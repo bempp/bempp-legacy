@@ -18,78 +18,53 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_nonseparable_numerical_double_integrator_hpp
-#define fiber_nonseparable_numerical_double_integrator_hpp
+#ifndef fiber_numerical_test_trial_integrator_hpp
+#define fiber_numerical_test_trial_integrator_hpp
 
-#include "numerical_double_integrator.hpp"
 #include "opencl_options.hpp"
+#include "test_trial_integrator.hpp"
 
 namespace Fiber
 {
 
 template <typename ValueType> class Expression;
 template <typename ValueType> class Kernel;
+template <typename ValueType> class RawGridGeometry;
 
-/** \brief Integration over pairs of elements on non-tensor-product point grids. */
+/** \brief Integration over pairs of elements on tensor-product point grids. */
 template <typename ValueType, typename GeometryFactory>
-class NonseparableNumericalDoubleIntegrator :
-        public NumericalDoubleIntegrator<ValueType, GeometryFactory>
+class NumericalTestTrialIntegrator : public TestTrialIntegrator<ValueType>
 {
 public:
-    typedef typename NumericalDoubleIntegrator<ValueType, GeometryFactory>::ElementIndexPair
-    ElementIndexPair;
-
-    NonseparableNumericalDoubleIntegrator(
-            const arma::Mat<ValueType>& localTestQuadPoints,
-            const arma::Mat<ValueType>& localTrialQuadPoints,
+    NumericalTestTrialIntegrator(
+            const arma::Mat<ValueType>& localQuadPoints,
             const std::vector<ValueType> quadWeights,
             const GeometryFactory& geometryFactory,
-            const arma::Mat<ValueType>& vertices,
-            const arma::Mat<int>& elementCornerIndices,
-            const arma::Mat<char>& auxElementData,
+            const RawGridGeometry<ValueType>& rawGeometry,
             const Expression<ValueType>& testExpression,
-            const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
             const OpenClOptions& openClOptions);
 
     virtual void integrate(
-            CallVariant callVariant,
-            const std::vector<int>& elementIndicesA,
-            int elementIndexB,
-            const Basis<ValueType>& basisA,
-            const Basis<ValueType>& basisB,
-            LocalDofIndex localDofIndexB,
-            arma::Cube<ValueType>& result) const;
-
-    virtual void integrate(
-            const std::vector<ElementIndexPair>& elementIndexPairs,
+            const std::vector<int>& elementIndices,
             const Basis<ValueType>& testBasis,
             const Basis<ValueType>& trialBasis,
             arma::Cube<ValueType>& result) const;
 
 private:
-    void setupGeometryConveniently(
-            int elementIndex,
-            typename GeometryFactory::Geometry& geometry) const;
-
-private:
-    arma::Mat<ValueType> m_localTestQuadPoints;
-    arma::Mat<ValueType> m_localTrialQuadPoints;
+    arma::Mat<ValueType> m_localQuadPoints;
     std::vector<ValueType> m_quadWeights;
 
     const GeometryFactory& m_geometryFactory;
-    const arma::Mat<ValueType>& m_vertices;
-    const arma::Mat<int>& m_elementCornerIndices;
-    const arma::Mat<char>& m_auxElementData;
-
+    const RawGridGeometry<ValueType>& m_rawGeometry;
     const Expression<ValueType>& m_testExpression;
-    const Kernel<ValueType>& m_kernel;
     const Expression<ValueType>& m_trialExpression;
+
     OpenClOptions m_openClOptions;    
 };
 
 } // namespace Fiber
 
-#include "nonseparable_numerical_double_integrator_imp.hpp"
+#include "numerical_test_trial_integrator_imp.hpp"
 
 #endif

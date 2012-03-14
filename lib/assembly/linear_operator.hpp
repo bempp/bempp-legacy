@@ -32,9 +32,8 @@ template <typename eT> class Mat;
 namespace Fiber
 {
 
-template <typename ValueType> class IntegrationManager;
 template <typename ValueType, typename GeometryFactory>
-class IntegrationManagerFactory;
+class LocalAssemblerFactory;
 
 } // namespace Fiber
 
@@ -71,9 +70,8 @@ template <typename ValueType>
 class LinearOperator
 {
 public:
-    typedef Fiber::IntegrationManagerFactory<ValueType, GeometryFactory>
-    IntegrationManagerFactory;
-    typedef Fiber::IntegrationManager<ValueType> IntegrationManager;
+    typedef Fiber::LocalAssemblerFactory<ValueType, GeometryFactory>
+    LocalAssemblerFactory;
 
     virtual ~LinearOperator() {}
 
@@ -107,7 +105,7 @@ public:
     assembleWeakForm(
             const Space<ValueType>& testSpace,
             const Space<ValueType>& trialSpace,
-            const IntegrationManagerFactory& factory,
+            const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const = 0;
 
     /** \brief Assemble a discrete representation of the operator.
@@ -128,7 +126,7 @@ public:
     assembleOperator(
             const arma::Mat<ctype>& testPoints,
             const Space<ValueType>& trialSpace,
-            const IntegrationManagerFactory& factory,
+            const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const = 0;
 };
 

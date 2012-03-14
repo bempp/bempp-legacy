@@ -18,36 +18,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_numerical_double_integrator_hpp
-#define fiber_numerical_double_integrator_hpp
+// File to be removed once unit tests are in place
 
-#include "double_integrator.hpp"
+#include "standard_local_assembler_factory_for_operators_on_surfaces.hpp"
+#include "../grid/geometry.hpp"
+#include "../grid/geometry_factory.hpp"
 
 namespace Fiber
 {
 
-template <typename ValueType> class Expression;
-template <typename ValueType> class Kernel;
-
-/** \brief Integration over pairs of elements. */
-template <typename ValueType, typename GeometryFactory>
-class NumericalDoubleIntegrator :
-        public DoubleIntegrator<ValueType>
-{
-public:
-    typedef typename DoubleIntegrator<ValueType>::ElementIndexPair
-    ElementIndexPair;
-
-protected:
-    static void setupGeometry(int elementIndex,
-                              const arma::Mat<ValueType>& vertices,
-                              const arma::Mat<int>& elementCornerIndices,
-                              const arma::Mat<char>& auxElementData,
-                              typename GeometryFactory::Geometry& geometry);
-};
+#ifdef COMPILE_FOR_FLOAT
+template class StandardLocalAssemblerFactoryForOperatorsOnSurfaces<float, Bempp::GeometryFactory>;
+#endif
+#ifdef COMPILE_FOR_DOUBLE
+template class StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, Bempp::GeometryFactory>;
+#endif
+#ifdef COMPILE_FOR_COMPLEX_FLOAT
+#include <complex>
+template class StandardLocalAssemblerFactoryForOperatorsOnSurfaces<std::complex<float>, Bempp::GeometryFactory>;
+#endif
+#ifdef COMPILE_FOR_COMPLEX_DOUBLE
+#include <complex>
+template class StandardLocalAssemblerFactoryForOperatorsOnSurfaces<std::complex<double>, Bempp::GeometryFactory>;
+#endif
 
 } // namespace Fiber
-
-#include "numerical_double_integrator_imp.hpp"
-
-#endif

@@ -22,15 +22,9 @@
 #define bempp_weak_form_aca_assembly_helper_hpp
 
 #include "../common/types.hpp"
+#include "elementary_integral_operator.hpp"
 
 #include <armadillo>
-
-namespace Fiber
-{
-
-template <typename ValueType> class IntegrationManager;
-
-} // namespace Fiber
 
 namespace Bempp
 {
@@ -39,7 +33,7 @@ class GridView;
 class GeometryAdapter;
 class AssemblyOptions;
 template <int codim> class EntityPointer;
-template <typename ValueType> class ElementaryLinearOperator;
+template <typename ValueType> class ElementaryIntegralOperator;
 template <typename ValueType> class Space;
 
 /** \brief Class whose methods are called by Ahmed during assembly in the ACA mode. */
@@ -47,16 +41,15 @@ template <typename ValueType>
 class WeakFormAcaAssemblyHelper
 {
 public:
-    typedef typename ElementaryLinearOperator<ValueType>::IntegrationManager
-    IntegrationManager;
+    typedef typename ElementaryIntegralOperator<ValueType>::LocalAssembler LocalAssembler;
 
-    WeakFormAcaAssemblyHelper(const ElementaryLinearOperator<ValueType>& op,
+    WeakFormAcaAssemblyHelper(const ElementaryIntegralOperator<ValueType>& op,
                               const GridView& view,
                               const Space<ValueType>& testSpace,
                               const Space<ValueType>& trialSpace,
                               const std::vector<unsigned int>& p2oTestDofs,
                               const std::vector<unsigned int>& p2oTrialDofs,
-                              IntegrationManager& intMgr,
+                              LocalAssembler& assembler,
                               const AssemblyOptions& options);
 
     /** Store the entries of the block defined
@@ -75,18 +68,18 @@ private:
                        int globalDofCount,
                        const std::vector<unsigned int>& p2o,
                        const Space<ValueType>& space,
-                       std::vector<const EntityPointer<0>*>& elements,
+                       std::vector<int>& elementIndices,
                        std::vector<std::vector<LocalDofIndex> >& localDofIndices,
                        std::vector<std::vector<int> >& arrayIndices) const;
 
 private:
-    const ElementaryLinearOperator<ValueType>& m_operator;
+    const ElementaryIntegralOperator<ValueType>& m_operator;
     const GridView& m_view;
     const Space<ValueType>& m_testSpace;
     const Space<ValueType>& m_trialSpace;
     const std::vector<unsigned int>& m_p2oTestDofs;
     const std::vector<unsigned int>& m_p2oTrialDofs;
-    IntegrationManager& m_intMgr;
+    LocalAssembler& m_assembler;
     const AssemblyOptions& m_options;
 };
 

@@ -21,6 +21,7 @@
 #ifndef fiber_element_pair_topology_hpp
 #define fiber_element_pair_topology_hpp
 
+#include <armadillo>
 #include <cassert>
 #include <iostream>
 #include <boost/tuple/tuple_comparison.hpp>
@@ -84,7 +85,7 @@ struct ElementPairTopology
     }
 };
 
-ElementPairTopology determineElementPairTopologyIn3D(
+inline ElementPairTopology determineElementPairTopologyIn3D(
         const arma::Col<int>& testElementCornerIndices,
         const arma::Col<int>& trialElementCornerIndices)
 {
