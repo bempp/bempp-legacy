@@ -78,6 +78,20 @@ StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
 }
 
 template <typename ValueType, typename GeometryFactory>
+StandardLocalAssemblerForIntegralOperatorsOnSurfaces<ValueType, GeometryFactory>::
+~StandardLocalAssemblerForIntegralOperatorsOnSurfaces()
+{
+    // Note: obviously the destructor is assumed to be called only after
+    // all threads have ceased using the assembler!
+
+    for (typename IntegratorMap::const_iterator it = m_TestKernelTrialIntegrators.begin();
+         it != m_TestKernelTrialIntegrators.end(); ++it)
+        delete it->second;
+    m_TestKernelTrialIntegrators.clear();
+}
+
+
+template <typename ValueType, typename GeometryFactory>
 void
 StandardLocalAssemblerForIntegralOperatorsOnSurfaces<ValueType, GeometryFactory>::
 evaluateLocalWeakForms(
@@ -346,18 +360,19 @@ const TestKernelTrialIntegrator<ValueType>&
 StandardLocalAssemblerForIntegralOperatorsOnSurfaces<ValueType, GeometryFactory>::
 getIntegrator(const DoubleQuadratureDescriptor& desc)
 {
-    const ElementPairTopology& topology = desc.topology;
-
-    typename IntegratorMap::iterator it = m_TestKernelTrialIntegrators.find(desc);
+    typename IntegratorMap::const_iterator it = m_TestKernelTrialIntegrators.find(desc);
+    // Note: as far as I understand TBB's docs, .end() keeps pointing to the
+    // same element even if another thread inserts a new element into the map
     if (it != m_TestKernelTrialIntegrators.end())
     {
-//            std::cout << "getIntegrator(: " << index << "): integrator found" << std::endl;
+        // std::cout << "getIntegrator(: " << desc << "): integrator found" << std::endl;
         return *it->second;
     }
-//        std::cout << "getIntegrator(: " << index << "): integrator not found" << std::endl;
+    // std::cout << "getIntegrator(: " << desc << "): integrator not found" << std::endl;
 
     // Integrator doesn't exist yet and must be created.
-    std::auto_ptr<TestKernelTrialIntegrator<ValueType> > integrator;
+    TestKernelTrialIntegrator<ValueType>* integrator = 0;
+    const ElementPairTopology& topology = desc.topology;
     if (topology.type == ElementPairTopology::Disjoint)
     {
         // Create a tensor rule
@@ -371,12 +386,11 @@ getIntegrator(const DoubleQuadratureDescriptor& desc)
                                              desc.trialOrder,
                                              trialPoints, trialWeights);
         typedef SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory> Integrator;
-        integrator = std::auto_ptr<TestKernelTrialIntegrator<ValueType> >(
-                    new Integrator(
+        integrator = new Integrator(
                         testPoints, trialPoints, testWeights, trialWeights,
                         m_geometryFactory, m_rawGeometry,
                         m_testExpression, m_kernel, m_trialExpression,
-                        m_openClOptions));
+                        m_openClOptions);
     }
     else
     {
@@ -386,14 +400,30 @@ getIntegrator(const DoubleQuadratureDescriptor& desc)
         fillDoubleSingularQuadraturePointsAndWeights(
                     desc, testPoints, trialPoints, weights);
         typedef NonseparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory> Integrator;
-        integrator = std::auto_ptr<TestKernelTrialIntegrator<ValueType> >(
-                    new Integrator(
+        integrator = new Integrator(
                         testPoints, trialPoints, weights,
                         m_geometryFactory, m_rawGeometry,
                         m_testExpression, m_kernel, m_trialExpression,
-                        m_openClOptions));
+                        m_openClOptions);
     }
-    return *m_TestKernelTrialIntegrators.insert(desc, integrator).first->second;
+
+    // Attempt to insert the newly created integrator into the map
+    std::pair<typename IntegratorMap::iterator, bool> result =
+            m_TestKernelTrialIntegrators.insert(std::make_pair(desc, integrator));
+    if (result.second)
+        // Insertion succeeded. The newly created integrator will be deleted in
+        // our own destructor
+        ;
+    else
+        // Insertion failed -- another thread was faster. Delete the newly
+        // created integrator.
+        delete integrator;
+
+//    std::cout << "getIntegrator(: " << desc << "): insertion succeeded? "
+//              << result.second << std::endl;
+
+    // Return pointer to the integrator that ended up in the map.
+    return *result.first->second;
 }
 
 } // namespace Fiber

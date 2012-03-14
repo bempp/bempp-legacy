@@ -31,8 +31,9 @@
 #include "separable_numerical_test_kernel_trial_integrator.hpp"
 
 #include <boost/static_assert.hpp>
-#include <boost/ptr_container/ptr_map.hpp>
+// #include <boost/ptr_container/ptr_map.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
+#include <tbb/concurrent_unordered_map.h>
 #include <cstring>
 #include <map>
 #include <set>
@@ -55,6 +56,7 @@ public:
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
             const OpenClOptions& openClOptions);
+    virtual ~StandardLocalAssemblerForIntegralOperatorsOnSurfaces();
 
 public:
     virtual void evaluateLocalWeakForms(
@@ -80,8 +82,11 @@ private:
             const DoubleQuadratureDescriptor& index);
 
 private:
-    typedef boost::ptr_map<DoubleQuadratureDescriptor,
-    TestKernelTrialIntegrator<ValueType> > IntegratorMap;
+    typedef tbb::concurrent_unordered_map<DoubleQuadratureDescriptor,
+    TestKernelTrialIntegrator<ValueType>*> IntegratorMap;
+
+//    typedef boost::ptr_map<DoubleQuadratureDescriptor,
+//    TestKernelTrialIntegrator<ValueType> > IntegratorMap;
 
     typedef typename TestKernelTrialIntegrator<ValueType>::ElementIndexPair ElementIndexPair;
     typedef std::map<ElementIndexPair, arma::Mat<ValueType> > Cache;

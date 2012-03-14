@@ -39,6 +39,11 @@ struct SingleQuadratureDescriptor
     }
 };
 
+inline size_t tbb_hasher(const SingleQuadratureDescriptor& d)
+{
+    return (d.vertexCount - 3) + 2 * d.order;
+}
+
 struct DoubleQuadratureDescriptor
 {
     ElementPairTopology topology;
@@ -68,6 +73,19 @@ struct DoubleQuadratureDescriptor
         return dest;
     }
 };
+
+inline size_t tbb_hasher(const DoubleQuadratureDescriptor& d)
+{
+    const ElementPairTopology& t = d.topology;
+    return (t.testVertexCount - 3) + 2 *
+            ((t.trialVertexCount - 3) + 2 *
+             (t.testSharedVertex0 + 4 *
+              (t.trialSharedVertex0 + 4 *
+               (t.testSharedVertex1 + 4 *
+                (t.trialSharedVertex1 + 4 *
+                 (d.testOrder + 256 *
+                  d.trialOrder))))));
+}
 
 template <typename ValueType>
 void fillSingleQuadraturePointsAndWeights(int elementCornerCount,
