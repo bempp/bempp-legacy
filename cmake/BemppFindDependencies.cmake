@@ -9,6 +9,12 @@ set(BLAS_LIBRARIES "" CACHE STRING "Space-separated list of full paths to BLAS l
 find_package( Armadillo REQUIRED REQUIRED)
 include_directories(${ARMADILLO_INCLUDE_DIRS})
 
+# Threading building blocks
+set(TBB_INCLUDE_DIR "" CACHE PATH "Full path to Intel TBB include directory")
+set(TBB_LIBRARY_DIR "" CACHE PATH "Full path to the directory with Intel TBB libraries")
+find_library(TBB_LIBRARY_DEBUG tbb_debug ${TBB_LIBRARY_DIR})
+find_library(TBB_LIBRARY_RELEASE tbb ${TBB_LIBRARY_DIR})
+
 # Ahmed (optional, used only if WITH_AHMED is set)
 set(AHMED_INCLUDE_DIR "" CACHE PATH "Full path to the AHMED include directory")
 set(AHMED_LIBRARY "" CACHE FILEPATH "Full path to the AHMED library")

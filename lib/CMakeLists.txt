@@ -25,6 +25,15 @@ target_link_libraries (bempp
 	${LIB_DUNE_GRID}
 	)
 
+# TBB
+target_link_libraries (bempp debug ${TBB_LIBRARY_DEBUG} optimized ${TBB_LIBRARY_RELEASE})
+set_property(
+   TARGET bempp
+   PROPERTY COMPILE_DEFINITIONS_DEBUG TBB_USE_DEBUG=1
+   )
+
+include_directories(${TBB_INCLUDE_DIR})
+
 if (WITH_AHMED)
     target_link_libraries (bempp ${AHMED_LIBRARY} ${METIS_LIBRARY})
     add_definitions(-DWITH_AHMED)
