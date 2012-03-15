@@ -9,7 +9,7 @@
 #include "expression.hpp"
 #include "geometrical_data.hpp"
 #include "kernel.hpp"
-#include "opencl_options.hpp"
+#include "opencl_handler.hpp"
 #include "raw_grid_geometry.hpp"
 #include "types.hpp"
 
@@ -31,7 +31,7 @@ NonseparableNumericalTestKernelTrialIntegrator(
         const Expression<ValueType>& testExpression,
         const Kernel<ValueType>& kernel,
         const Expression<ValueType>& trialExpression,
-        const OpenClOptions& openClOptions) :
+        const OpenClHandler& openClHandler) :
     m_localTestQuadPoints(localTestQuadPoints),
     m_localTrialQuadPoints(localTrialQuadPoints),
     m_quadWeights(quadWeights),
@@ -40,7 +40,7 @@ NonseparableNumericalTestKernelTrialIntegrator(
     m_testExpression(testExpression),
     m_kernel(kernel),
     m_trialExpression(trialExpression),
-    m_openClOptions(openClOptions)
+    m_openClHandler(openClHandler)
 {
     const int pointCount = quadWeights.size();
     if (localTestQuadPoints.n_cols != pointCount ||

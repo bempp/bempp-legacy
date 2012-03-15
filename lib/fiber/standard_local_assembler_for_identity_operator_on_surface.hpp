@@ -22,7 +22,6 @@
 #define fiber_standard_local_assembler_for_identity_operator_on_surface_hpp
 
 #include "local_assembler_for_identity_operator.hpp"
-#include "opencl_options.hpp"
 #include "numerical_quadrature.hpp"
 #include "numerical_test_trial_integrator.hpp"
 
@@ -39,6 +38,8 @@
 namespace Fiber
 {
 
+class OpenClHandler;
+
 template <typename ValueType, typename GeometryFactory>
 class StandardLocalAssemblerForIdentityOperatorOnSurface :
         public LocalAssemblerForIdentityOperator<ValueType>
@@ -51,7 +52,7 @@ public:
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Expression<ValueType>& testExpression,
             const Expression<ValueType>& trialExpression,
-            const OpenClOptions& openClOptions);
+            const OpenClHandler& openClHandler);
 
     virtual void evaluateLocalWeakForms(
             const std::vector<int>& elementIndices,
@@ -73,7 +74,7 @@ private:
     const std::vector<const Basis<ValueType>*>& m_trialBases;
     const Expression<ValueType>& m_testExpression;
     const Expression<ValueType>& m_trialExpression;
-    OpenClOptions m_openClOptions;
+    const OpenClHandler& m_openClHandler;
 
     IntegratorMap m_testTrialIntegrators;
 };

@@ -23,11 +23,11 @@
 
 #include "test_kernel_trial_integrator.hpp"
 #include "raw_grid_geometry.hpp"
-#include "opencl_options.hpp"
 
 namespace Fiber
 {
 
+class OpenClHandler;
 template <typename ValueType> class Expression;
 template <typename ValueType> class Kernel;
 
@@ -50,7 +50,7 @@ public:
             const Expression<ValueType>& testExpression,
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
-            const OpenClOptions& openClOptions);
+            const OpenClHandler& openClHandler);
 
     virtual void integrate(
             CallVariant callVariant,
@@ -79,7 +79,7 @@ private:
     const Expression<ValueType>& m_testExpression;
     const Kernel<ValueType>& m_kernel;
     const Expression<ValueType>& m_trialExpression;
-    OpenClOptions m_openClOptions;    
+    const OpenClHandler& m_openClHandler;
 };
 
 } // namespace Fiber

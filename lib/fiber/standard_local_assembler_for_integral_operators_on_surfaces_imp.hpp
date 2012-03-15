@@ -34,7 +34,8 @@ StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
         const Expression<ValueType>& testExpression,
         const Kernel<ValueType>& kernel,
         const Expression<ValueType>& trialExpression,
-        const OpenClOptions& openClOptions) :
+        const OpenClHandler& openClHandler,
+        bool cacheSingularIntegrals) :
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
     m_testBases(testBases),
@@ -42,7 +43,7 @@ StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
     m_testExpression(testExpression),
     m_kernel(kernel),
     m_trialExpression(trialExpression),
-    m_openClOptions(openClOptions)
+    m_openClHandler(openClHandler)
 {
     if (rawGeometry.vertices().n_rows != 3)
         throw std::invalid_argument(
@@ -503,10 +504,10 @@ getIntegrator(const DoubleQuadratureDescriptor& desc)
     // same element even if another thread inserts a new element into the map
     if (it != m_TestKernelTrialIntegrators.end())
     {
-        // std::cout << "getIntegrator(: " << desc << "): integrator found" << std::endl;
+        //std::cout << "getIntegrator(: " << desc << "): integrator found" << std::endl;
         return *it->second;
     }
-    // std::cout << "getIntegrator(: " << desc << "): integrator not found" << std::endl;
+    //std::cout << "getIntegrator(: " << desc << "): integrator not found" << std::endl;
 
     // Integrator doesn't exist yet and must be created.
     TestKernelTrialIntegrator<ValueType>* integrator = 0;
@@ -528,7 +529,7 @@ getIntegrator(const DoubleQuadratureDescriptor& desc)
                         testPoints, trialPoints, testWeights, trialWeights,
                         m_geometryFactory, m_rawGeometry,
                         m_testExpression, m_kernel, m_trialExpression,
-                        m_openClOptions);
+                        m_openClHandler);
     }
     else
     {
@@ -542,7 +543,7 @@ getIntegrator(const DoubleQuadratureDescriptor& desc)
                         testPoints, trialPoints, weights,
                         m_geometryFactory, m_rawGeometry,
                         m_testExpression, m_kernel, m_trialExpression,
-                        m_openClOptions);
+                        m_openClHandler);
     }
 
     // Attempt to insert the newly created integrator into the map

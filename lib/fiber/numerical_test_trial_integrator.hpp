@@ -21,12 +21,12 @@
 #ifndef fiber_numerical_test_trial_integrator_hpp
 #define fiber_numerical_test_trial_integrator_hpp
 
-#include "opencl_options.hpp"
 #include "test_trial_integrator.hpp"
 
 namespace Fiber
 {
 
+class OpenClHandler;
 template <typename ValueType> class Expression;
 template <typename ValueType> class Kernel;
 template <typename ValueType> class RawGridGeometry;
@@ -43,7 +43,7 @@ public:
             const RawGridGeometry<ValueType>& rawGeometry,
             const Expression<ValueType>& testExpression,
             const Expression<ValueType>& trialExpression,
-            const OpenClOptions& openClOptions);
+            const OpenClHandler& openClHandler);
 
     virtual void integrate(
             const std::vector<int>& elementIndices,
@@ -60,7 +60,7 @@ private:
     const Expression<ValueType>& m_testExpression;
     const Expression<ValueType>& m_trialExpression;
 
-    OpenClOptions m_openClOptions;    
+    const OpenClHandler& m_openClHandler;
 };
 
 } // namespace Fiber

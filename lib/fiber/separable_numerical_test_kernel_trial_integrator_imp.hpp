@@ -9,7 +9,7 @@
 #include "expression.hpp"
 #include "geometrical_data.hpp"
 #include "kernel.hpp"
-#include "opencl_options.hpp"
+#include "opencl_handler.hpp"
 #include "types.hpp"
 
 #include <cassert>
@@ -30,7 +30,7 @@ SeparableNumericalTestKernelTrialIntegrator(
         const Expression<ValueType>& testExpression,
         const Kernel<ValueType>& kernel,
         const Expression<ValueType>& trialExpression,
-        const OpenClOptions& openClOptions) :
+        const OpenClHandler& openClHandler) :
     m_localTestQuadPoints(localTestQuadPoints),
     m_localTrialQuadPoints(localTrialQuadPoints),
     m_testQuadWeights(testQuadWeights),
@@ -40,7 +40,7 @@ SeparableNumericalTestKernelTrialIntegrator(
     m_testExpression(testExpression),
     m_kernel(kernel),
     m_trialExpression(trialExpression),
-    m_openClOptions(openClOptions)
+    m_openClHandler(openClHandler)
 {
     if (localTestQuadPoints.n_cols != testQuadWeights.size())
         throw std::invalid_argument("SeparableNumericalTestKernelTrialIntegrator::"

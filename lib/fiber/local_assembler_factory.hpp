@@ -7,6 +7,8 @@
 namespace Fiber
 {
 
+class OpenClHandler;
+
 template <typename ValueType> class Basis;
 template <typename ValueType> class Expression;
 template <typename ValueType> class Kernel;
@@ -29,7 +31,9 @@ public:
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Expression<ValueType>& testExpression,
             const Kernel<ValueType>& kernel,
-            const Expression<ValueType>& trialExpression) const = 0;
+            const Expression<ValueType>& trialExpression,
+            const OpenClHandler& openClHandler,
+            bool cacheSingularIntegrals) const = 0;
 
     /** \brief Allocate a Galerkin-mode local assembler for the identity operator. */
     virtual std::auto_ptr<LocalAssemblerForIdentityOperator<ValueType> > make(
@@ -38,7 +42,8 @@ public:
             const std::vector<const Basis<ValueType>*>& testBases,
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Expression<ValueType>& testExpression,
-            const Expression<ValueType>& trialExpression) const = 0;
+            const Expression<ValueType>& trialExpression,
+            const OpenClHandler& openClHandler) const = 0;
 
     /** \brief Allocate a collocation-mode local assembler for an integral operator.
 
@@ -48,7 +53,9 @@ public:
             const RawGridGeometry<ValueType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Kernel<ValueType>& kernel,
-            const Expression<ValueType>& trialExpression) const = 0;
+            const Expression<ValueType>& trialExpression,
+            const OpenClHandler& openClHandler,
+            bool cacheSingularIntegrals) const = 0;
 
     /** \brief Allocate a collocation-mode local assembler for integral operators.
 
@@ -57,7 +64,8 @@ public:
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<ValueType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& trialBases,
-            const Expression<ValueType>& trialExpression) const = 0;
+            const Expression<ValueType>& trialExpression,
+            const OpenClHandler& openClHandler) const = 0;
 };
 
 } // namespace Fiber

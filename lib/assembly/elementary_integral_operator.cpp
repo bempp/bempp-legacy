@@ -8,6 +8,7 @@
 #include "../common/not_implemented_error.hpp"
 #include "../fiber/local_assembler_factory.hpp"
 #include "../fiber/local_assembler_for_integral_operators.hpp"
+#include "../fiber/opencl_handler.hpp"
 #include "../fiber/raw_grid_geometry.hpp"
 #include "../grid/entity_iterator.hpp"
 #include "../grid/geometry_factory.hpp"
@@ -20,8 +21,9 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <stdexcept>
 
-#include <tbb/spin_mutex.h>
 #include <tbb/parallel_for.h>
+#include <tbb/spin_mutex.h>
+#include <tbb/task_scheduler_init.h>
 
 #ifdef WITH_AHMED
 #include "ahmed_aux.hpp"
@@ -99,7 +101,6 @@ private:
 } // namespace
 
 
-
 template <typename ValueType>
 std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
 ElementaryIntegralOperator<ValueType>::assembleOperator(
@@ -142,20 +143,27 @@ ElementaryIntegralOperator<ValueType>::assembleOperator(
     }
 
     // Now create the assembler
+    Fiber::OpenClHandler openClHandler(options.openClOptions());
+    bool cacheSingularIntegrals =
+            (options.singularIntegralCaching() == AssemblyOptions::YES ||
+             (options.singularIntegralCaching() == AssemblyOptions::AUTO &&
+              options.parallelism() == AssemblyOptions::OPEN_CL));
+
     std::auto_ptr<LocalAssembler> assembler =
             factory.make(*geometryFactory, rawGeometry,
                          trialBases,
-                         kernel(), trialExpression());
+                         kernel(), trialExpression(),
+                         openClHandler, cacheSingularIntegrals);
 
-    switch (options.mode)
+    switch (options.operatorRepresentation())
     {
-    case ASSEMBLY_MODE_DENSE:
+    case AssemblyOptions::DENSE:
         return assembleOperatorInDenseMode(
                     testPoints, trialSpace, *assembler, options);
-    case ASSEMBLY_MODE_ACA:
+    case AssemblyOptions::ACA:
         return assembleOperatorInAcaMode(
                     testPoints, trialSpace, *assembler, options);
-    case ASSEMBLY_MODE_FMM:
+    case AssemblyOptions::FMM:
         throw std::runtime_error("ElementaryIntegralOperator::assembleOperator(): "
                                  "assembly mode FMM is not implemented yet");
     default:
@@ -213,20 +221,27 @@ ElementaryIntegralOperator<ValueType>::assembleWeakForm(
     }
 
     // Now create the assembler
+    Fiber::OpenClHandler openClHandler(options.openClOptions());
+    bool cacheSingularIntegrals =
+            (options.singularIntegralCaching() == AssemblyOptions::YES ||
+             (options.singularIntegralCaching() == AssemblyOptions::AUTO &&
+              options.parallelism() == AssemblyOptions::OPEN_CL));
+
     std::auto_ptr<LocalAssembler> assembler =
             factory.make(*geometryFactory, rawGeometry,
                          testBases, trialBases,
-                         testExpression(), kernel(), trialExpression());
+                         testExpression(), kernel(), trialExpression(),
+                         openClHandler, cacheSingularIntegrals);
 
-    switch (options.mode)
+    switch (options.operatorRepresentation())
     {
-    case ASSEMBLY_MODE_DENSE:
+    case AssemblyOptions::DENSE:
         return assembleWeakFormInDenseMode(
                     testSpace, trialSpace, *assembler, options);
-    case ASSEMBLY_MODE_ACA:
+    case AssemblyOptions::ACA:
         return assembleWeakFormInAcaMode(
                     testSpace, trialSpace, *assembler, options);
-    case ASSEMBLY_MODE_FMM:
+    case AssemblyOptions::FMM:
         throw std::runtime_error("ElementaryIntegralOperator::assembleWeakForm(): "
                                  "assembly mode FMM is not implemented yet");
     default:
@@ -301,6 +316,16 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInDenseMode(
 
     typedef DenseWeakFormAssemblerLoopBody<ValueType> Body;
     typename Body::MutexType mutex;
+
+    int maxThreadCount = 1;
+    if (options.parallelism() == AssemblyOptions::TBB_AND_OPEN_MP)
+    {
+        if (options.maxThreadCount() == AssemblyOptions::AUTO)
+            maxThreadCount = tbb::task_scheduler_init::automatic;
+        else
+            maxThreadCount = options.maxThreadCount();
+    }
+    tbb::task_scheduler_init scheduler(maxThreadCount);
     tbb::parallel_for(tbb::blocked_range<size_t>(0, elementCount),
                       Body(testIndices, testGlobalDofs, trialGlobalDofs,
                            assembler, result, mutex));
@@ -345,6 +370,8 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInAcaMode(
     typedef DiscreteAcaScalarValuedLinearOperator<ValueType,
             AhmedDofType, AhmedDofType > DiscreteAcaLinOp;
 
+    const AcaOptions& acaOptions = options.acaOptions();
+
     // Get the grid's leaf view so that we can iterate over elements
     std::auto_ptr<GridView> view = trialSpace.grid().leafView();
 
@@ -387,13 +414,13 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInAcaMode(
                 ahmedTestDofCenters, &o2pTestDofs[0],
                 0, testDofCount);
     testClusterTree.createClusterTree(
-                options.acaMinimumBlockSize,
+                acaOptions.minimumBlockSize,
                 &o2pTestDofs[0], &p2oTestDofs[0]);
     bemcluster<const AhmedDofType> trialClusterTree(
                 ahmedTrialDofCenters, &o2pTrialDofs[0],
                 0, trialDofCount);
     trialClusterTree.createClusterTree(
-                options.acaMinimumBlockSize,
+                acaOptions.minimumBlockSize,
                 &o2pTrialDofs[0], &p2oTrialDofs[0]);
 
 #ifndef NDEBUG
@@ -409,7 +436,7 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInAcaMode(
                 new DoubleCluster(0, 0, testDofCount, trialDofCount));
     unsigned int blockCount = 0;
     doubleClusterTree->subdivide(&testClusterTree, &trialClusterTree,
-                                 options.acaEta * options.acaEta,
+                                 acaOptions.eta * acaOptions.eta,
                                  blockCount);
 
 #ifndef NDEBUG
@@ -427,8 +454,8 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInAcaMode(
     mblock<ValueType>** blocks = 0;
     allocmbls(doubleClusterTree.get(), blocks);
     matgen_sqntl(helper, doubleClusterTree.get(), doubleClusterTree.get(),
-                 options.acaRecompress, options.acaEps,
-                 options.acaMaximumRank, blocks);
+                 acaOptions.recompress, acaOptions.eps,
+                 acaOptions.maximumRank, blocks);
     result = std::auto_ptr<DiscreteLinOp>(
                 new DiscreteAcaLinOp(testDofCount, trialDofCount,
                                      doubleClusterTree, blocks,

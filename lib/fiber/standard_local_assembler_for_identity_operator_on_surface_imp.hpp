@@ -35,14 +35,14 @@ StandardLocalAssemblerForIdentityOperatorOnSurface(
         const std::vector<const Basis<ValueType>*>& trialBases,
         const Expression<ValueType>& testExpression,
         const Expression<ValueType>& trialExpression,
-        const OpenClOptions& openClOptions) :
+        const OpenClHandler& openClHandler) :
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
     m_testBases(testBases),
     m_trialBases(trialBases),
     m_testExpression(testExpression),
     m_trialExpression(trialExpression),
-    m_openClOptions(openClOptions)
+    m_openClHandler(openClHandler)
 {
     if (rawGeometry.vertices().n_rows != 3)
         throw std::invalid_argument(
@@ -186,7 +186,7 @@ getIntegrator(const SingleQuadratureDescriptor& desc)
             new Integrator(points, weights,
                            m_geometryFactory, m_rawGeometry,
                            m_testExpression, m_trialExpression,
-                           m_openClOptions));
+                           m_openClHandler));
 
     return *m_testTrialIntegrators.insert(desc, integrator).first->second;
 }

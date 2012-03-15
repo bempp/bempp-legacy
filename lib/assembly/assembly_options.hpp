@@ -21,23 +21,103 @@
 #ifndef bempp_assembly_options_hpp
 #define bempp_assembly_options_hpp
 
+#include "../fiber/opencl_options.hpp"
+
 namespace Bempp
 {
 
-enum AssemblyMode
+struct AcaOptions
 {
-    ASSEMBLY_MODE_DENSE, ASSEMBLY_MODE_ACA,
-    ASSEMBLY_MODE_FMM, ASSEMBLY_MODE_SPARSE
+    double eps;
+    double eta;
+    int minimumBlockSize;
+    int maximumRank;
+    bool recompress;
 };
 
-struct AssemblyOptions
+using Fiber::OpenClOptions;
+
+class AssemblyOptions
 {
-    AssemblyMode mode;
-    double acaEps;
-    double acaEta;
-    int acaMinimumBlockSize;
-    int acaMaximumRank;
-    bool acaRecompress;
+public:
+    AssemblyOptions();
+
+    /** @name Operator representation
+      @{ */
+
+    enum Mode {
+        AUTO = -1,
+        NO = 0,
+        YES = 1
+    };
+
+    enum Representation {
+        DENSE, ACA, FMM, SPARSE
+    };
+
+    void switchToDense();
+    void switchToAca(const AcaOptions& acaOptions);
+    void switchToFmm();
+    void switchToSparse();
+
+    Representation operatorRepresentation() const {
+        return m_representation;
+    }
+
+    const AcaOptions& acaOptions() const {
+        return m_acaOptions;
+    }
+
+    /** @}
+      @name Parallelism
+      @{ */
+
+    enum Parallelism {
+        TBB_AND_OPEN_MP, OPEN_CL
+    };
+
+    void switchToOpenCl(const OpenClOptions& openClOptions);
+    void switchToTbbAndOpenMp(int maxThreadCount = AUTO);
+
+    Parallelism parallelism() const {
+        return m_parallelism;
+    }
+
+    const OpenClOptions& openClOptions() const {
+        return m_openClOptions;
+    }
+
+    int maxThreadCount() const {
+        return m_maxThreadCount;
+    }
+
+    /** @}
+      @name Others
+      @{ */
+
+    /** \brief Are singular integrals cached?
+
+      Possible settings:
+        * YES: precalculate singular integrals
+        * NO: do not precalculate singular integrals
+        * AUTO: implementation-defined
+          (currently singular integrals are cached in ACA mode only)
+      */
+    void setSingularIntegralCaching(Mode mode);
+
+    Mode singularIntegralCaching() const {
+        return m_singularIntegralCaching;
+    }
+
+    /** @} */
+
+private:
+    Representation m_representation;
+    AcaOptions m_acaOptions;
+    Parallelism m_parallelism;
+    OpenClOptions m_openClOptions;
+    int m_maxThreadCount;
+    Mode m_singularIntegralCaching;
 };
 
 } // namespace Bempp

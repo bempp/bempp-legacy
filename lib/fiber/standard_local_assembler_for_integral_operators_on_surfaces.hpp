@@ -25,13 +25,11 @@
 
 #include "array_2d.hpp"
 #include "element_pair_topology.hpp"
-#include "opencl_options.hpp"
 #include "nonseparable_numerical_test_kernel_trial_integrator.hpp"
 #include "numerical_quadrature.hpp"
 #include "separable_numerical_test_kernel_trial_integrator.hpp"
 
 #include <boost/static_assert.hpp>
-// #include <boost/ptr_container/ptr_map.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 #include <tbb/concurrent_unordered_map.h>
 #include <cstring>
@@ -41,6 +39,8 @@
 
 namespace Fiber
 {
+
+class OpenClHandler;
 
 template <typename ValueType, typename GeometryFactory>
 class StandardLocalAssemblerForIntegralOperatorsOnSurfaces :
@@ -55,7 +55,8 @@ public:
             const Expression<ValueType>& testExpression,
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
-            const OpenClOptions& openClOptions);
+            const OpenClHandler& openClHandler,
+            bool cacheSingularIntegrals);
     virtual ~StandardLocalAssemblerForIntegralOperatorsOnSurfaces();
 
 public:
@@ -94,12 +95,6 @@ private:
     typedef tbb::concurrent_unordered_map<DoubleQuadratureDescriptor,
     TestKernelTrialIntegrator<ValueType>*> IntegratorMap;
 
-//    typedef boost::ptr_map<DoubleQuadratureDescriptor,
-//    TestKernelTrialIntegrator<ValueType> > IntegratorMap;
-
-    typedef typename TestKernelTrialIntegrator<ValueType>::ElementIndexPair ElementIndexPair;
-    typedef std::map<ElementIndexPair, arma::Mat<ValueType> > Cache;
-
 private:
     const GeometryFactory& m_geometryFactory;
     const RawGridGeometry<ValueType>& m_rawGeometry;
@@ -108,7 +103,7 @@ private:
     const Expression<ValueType>& m_testExpression;
     const Kernel<ValueType>& m_kernel;
     const Expression<ValueType>& m_trialExpression;
-    OpenClOptions m_openClOptions;
+    const OpenClHandler& m_openClHandler;
 
     IntegratorMap m_TestKernelTrialIntegrators;
     Cache m_cache;

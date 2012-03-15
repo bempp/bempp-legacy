@@ -42,10 +42,6 @@ private:
         LocalAssemblerForIdentityOperator_;
 
 public:
-    StandardLocalAssemblerFactoryForOperatorsOnSurfaces(const OpenClOptions& openClOptions) :
-        m_openClOptions(openClOptions)
-    {}
-
     virtual std::auto_ptr<LocalAssemblerForIntegralOperators<ValueType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<ValueType>& rawGeometry,
@@ -53,13 +49,15 @@ public:
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Expression<ValueType>& testExpression,
             const Kernel<ValueType>& kernel,
-            const Expression<ValueType>& trialExpression) const {
+            const Expression<ValueType>& trialExpression,
+            const OpenClHandler& openClHandler,
+            bool cacheSingularIntegrals) const {
         return std::auto_ptr<LocalAssemblerForIntegralOperators<ValueType> >(
                     new LocalAssemblerForIntegralOperators_(
                         geometryFactory, rawGeometry,
                         testBases, trialBases,
                         testExpression, kernel, trialExpression,
-                        m_openClOptions));
+                        openClHandler, cacheSingularIntegrals));
     }
 
     virtual std::auto_ptr<LocalAssemblerForIdentityOperator<ValueType> > make(
@@ -68,13 +66,14 @@ public:
             const std::vector<const Basis<ValueType>*>& testBases,
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Expression<ValueType>& testExpression,
-            const Expression<ValueType>& trialExpression) const {
+            const Expression<ValueType>& trialExpression,
+            const OpenClHandler& openClHandler) const {
         return std::auto_ptr<LocalAssemblerForIdentityOperator<ValueType> >(
                     new LocalAssemblerForIdentityOperator_(
                         geometryFactory, rawGeometry,
                         testBases, trialBases,
                         testExpression, trialExpression,
-                        m_openClOptions));
+                        openClHandler));
     }
 
     virtual std::auto_ptr<LocalAssemblerForIntegralOperators<ValueType> > make(
@@ -82,7 +81,9 @@ public:
             const RawGridGeometry<ValueType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Kernel<ValueType>& kernel,
-            const Expression<ValueType>& trialExpression) const {
+            const Expression<ValueType>& trialExpression,
+            const OpenClHandler& openClHandler,
+            bool cacheSingularIntegrals) const {
         throw std::runtime_error("StandardLocalAssemblerFactoryForOperatorsOnSurfaces::"
                                  "make(): collocation mode not implemented yet.");
     }
@@ -91,13 +92,11 @@ public:
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<ValueType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& trialBases,
-            const Expression<ValueType>& trialExpression) const {
+            const Expression<ValueType>& trialExpression,
+            const OpenClHandler& openClHandler) const {
     throw std::runtime_error("StandardLocalAssemblerFactoryForOperatorsOnSurfaces::"
                              "make(): collocation mode not implemented yet.");
     }
-
-private:
-    OpenClOptions m_openClOptions;
 };
 
 } // namespace Fiber

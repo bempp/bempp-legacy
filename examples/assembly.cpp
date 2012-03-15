@@ -141,19 +141,23 @@ int main()
     space.assignDofs();
 
     AssemblyOptions assemblyOptions;
-    assemblyOptions.mode = ASSEMBLY_MODE_DENSE;
-    // assemblyOptions.mode = ASSEMBLY_MODE_ACA;
-    // assemblyOptions.mode = ASSEMBLY_MODE_SPARSE;
-    assemblyOptions.acaEps = 1e-4;
-    assemblyOptions.acaMaximumRank = 10000;
-    assemblyOptions.acaMinimumBlockSize = 2;
-    assemblyOptions.acaEta = 0.8;
-    assemblyOptions.acaRecompress = true;
+//    assemblyOptions.switchToDense();
 
-    Fiber::OpenClOptions openClOptions;
-    openClOptions.useOpenCl = false;
+    AcaOptions acaOptions;
+    acaOptions.eps = 1e-4;
+    acaOptions.maximumRank = 10000;
+    acaOptions.minimumBlockSize = 2;
+    acaOptions.eta = 0.8;
+    acaOptions.recompress = true;
+    assemblyOptions.switchToAca(acaOptions);
+
+//    assemblyOptions.switchToSparse();
+
+    assemblyOptions.switchToTbbAndOpenMp();
+    assemblyOptions.setSingularIntegralCaching(AssemblyOptions::NO);
+
     Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, GeometryFactory>
-            factory(openClOptions);
+            factory;
 
     typedef std::auto_ptr<LinearOperator<double> > LinearOperatorPtr;
     LinearOperatorPtr op;

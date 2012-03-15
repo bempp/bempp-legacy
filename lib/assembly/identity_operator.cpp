@@ -11,6 +11,7 @@
 #include "../fiber/basis.hpp"
 #include "../fiber/local_assembler_factory.hpp"
 #include "../fiber/local_assembler_for_identity_operator.hpp"
+#include "../fiber/opencl_handler.hpp"
 #include "../fiber/raw_grid_geometry.hpp"
 #include "../grid/entity_iterator.hpp"
 #include "../grid/grid.hpp"
@@ -131,17 +132,20 @@ IdentityOperator<ValueType>::assembleWeakForm(
         it->next();
     }
 
+    Fiber::OpenClHandler openClHandler(options.openClOptions());
+
     // Now create the assembler
     std::auto_ptr<LocalAssembler> assembler =
             factory.make(*geometryFactory, rawGeometry,
-                         testBases, trialBases, m_expression, m_expression);
+                         testBases, trialBases, m_expression, m_expression,
+                         openClHandler);
 
-    switch (options.mode)
+    switch (options.operatorRepresentation())
     {
-    case ASSEMBLY_MODE_DENSE:
+    case AssemblyOptions::DENSE:
         return assembleWeakFormInDenseMode(
                     testSpace, trialSpace, *assembler, options);
-    case ASSEMBLY_MODE_SPARSE:
+    case AssemblyOptions::SPARSE:
         return assembleWeakFormInSparseMode(
                     testSpace, trialSpace, *assembler, options);
     default:

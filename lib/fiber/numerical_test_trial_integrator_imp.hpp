@@ -24,7 +24,7 @@
 #include "basis_data.hpp"
 #include "expression.hpp"
 #include "geometrical_data.hpp"
-#include "opencl_options.hpp"
+#include "opencl_handler.hpp"
 #include "raw_grid_geometry.hpp"
 #include "types.hpp"
 
@@ -43,14 +43,14 @@ NumericalTestTrialIntegrator(
         const RawGridGeometry<ValueType>& rawGeometry,
         const Expression<ValueType>& testExpression,
         const Expression<ValueType>& trialExpression,
-        const OpenClOptions& openClOptions) :
+        const OpenClHandler& openClHandler) :
     m_localQuadPoints(localQuadPoints),
     m_quadWeights(quadWeights),
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
     m_testExpression(testExpression),
     m_trialExpression(trialExpression),
-    m_openClOptions(openClOptions)
+    m_openClHandler(openClHandler)
 {
     if (localQuadPoints.n_cols != quadWeights.size())
         throw std::invalid_argument("NumericalTestTrialIntegrator::"
