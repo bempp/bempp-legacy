@@ -6,6 +6,7 @@
 
 #include "../common/multidimensional_arrays.hpp"
 #include "../common/not_implemented_error.hpp"
+#include "../common/auto_timer.hpp"
 #include "../fiber/local_assembler_factory.hpp"
 #include "../fiber/local_assembler_for_integral_operators.hpp"
 #include "../fiber/opencl_handler.hpp"
@@ -180,6 +181,8 @@ ElementaryIntegralOperator<ValueType>::assembleWeakForm(
         const typename ElementaryIntegralOperator<ValueType>::LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
+    AutoTimer timer("\nAssembly took ");
+
     if (!testSpace.dofsAssigned() || !trialSpace.dofsAssigned())
         throw std::runtime_error("ElementaryIntegralOperator::assembleWeakForm(): "
                                  "degrees of freedom must be assigned "
