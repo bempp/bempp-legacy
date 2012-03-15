@@ -75,6 +75,9 @@ StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
                 "StandardLocalAssemblerForIntegralOperatorsOnSurfaces(): "
                 "size of trialBases must match the number of columns of "
                 "elementCornerIndices");
+
+    if (cacheSingularIntegrals)
+        cacheSingularLocalWeakForms();
 }
 
 template <typename ValueType, typename GeometryFactory>
@@ -89,7 +92,6 @@ StandardLocalAssemblerForIntegralOperatorsOnSurfaces<ValueType, GeometryFactory>
         delete it->second;
     m_TestKernelTrialIntegrators.clear();
 }
-
 
 template <typename ValueType, typename GeometryFactory>
 void
@@ -286,6 +288,142 @@ evaluateLocalWeakForms(
 }
 
 template <typename ValueType, typename GeometryFactory>
+void
+StandardLocalAssemblerForIntegralOperatorsOnSurfaces<ValueType, GeometryFactory>::
+cacheSingularLocalWeakForms()
+{
+    ElementIndexPairSet elementIndexPairs;
+    findPairsOfAdjacentElements(elementIndexPairs);
+    cacheLocalWeakForms(elementIndexPairs);
+}
+
+typedef std::pair<int, int> ElementIndexPair;
+typedef std::set<ElementIndexPair> ElementIndexPairSet;
+
+/** \brief Fill \p pairs with the list of pairs of indices of elements
+        sharing at least one vertex. */
+template <typename ValueType, typename GeometryFactory>
+void
+StandardLocalAssemblerForIntegralOperatorsOnSurfaces<ValueType, GeometryFactory>::
+findPairsOfAdjacentElements(ElementIndexPairSet& pairs) const
+{
+    const arma::Mat<ValueType>& vertices = m_rawGeometry.vertices();
+    const arma::Mat<int>& elementCornerIndices =
+            m_rawGeometry.elementCornerIndices();
+
+    const int vertexCount = vertices.n_cols;
+    const int elementCount = elementCornerIndices.n_cols;
+    const int maxCornerCount = elementCornerIndices.n_rows;
+
+    typedef std::vector<int> ElementIndexVector;
+    // ith entry: set of elements sharing vertex number i
+    std::vector<ElementIndexVector> elementsAdjacentToVertex(vertexCount);
+
+    for (int e = 0; e < elementCount; ++e)
+        for (int v = 0; v < maxCornerCount; ++v)
+        {
+            const int index = elementCornerIndices(v, e);
+            if (index >= 0)
+                elementsAdjacentToVertex[index].push_back(e);
+        }
+
+    pairs.clear();
+    // Loop over vertex indices
+    for (int v = 0; v < vertexCount; ++v)
+    {
+        const ElementIndexVector& adjacentElements = elementsAdjacentToVertex[v];
+        // Add to pairs each pair of elements adjacent to vertex v
+        const int adjacentElementCount = adjacentElements.size();
+        for (int e1 = 0; e1 < adjacentElementCount; ++e1)
+            for (int e2 = e1; e2 < adjacentElementCount; ++e2)
+                pairs.insert(ElementIndexPair(adjacentElements[e1],
+                                              adjacentElements[e2]));
+    }
+}
+
+template <typename ValueType, typename GeometryFactory>
+void
+StandardLocalAssemblerForIntegralOperatorsOnSurfaces<ValueType, GeometryFactory>::
+cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
+{
+    typedef Fiber::TestKernelTrialIntegrator<ValueType> Integrator;
+    typedef Fiber::Basis<ValueType> Basis;
+
+    const int elementPairCount = elementIndexPairs.size();
+
+    // Find cached matrices; select integrators to calculate non-cached ones
+    typedef boost::tuples::tuple<const Integrator*, const Basis*, const Basis*>
+            QuadVariant;
+    std::vector<QuadVariant> quadVariants(elementPairCount);
+
+    typedef typename ElementIndexPairSet::const_iterator
+            ElementIndexPairIterator;
+    typedef typename std::vector<QuadVariant>::iterator QuadVariantIterator;
+    {
+        ElementIndexPairIterator pairIt = elementIndexPairs.begin();
+        QuadVariantIterator qvIt = quadVariants.begin();
+        for (; pairIt != elementIndexPairs.end(); ++pairIt, ++qvIt)
+        {
+            const int testElementIndex = pairIt->first;
+            const int trialElementIndex = pairIt->second;
+            const Integrator* integrator =
+                    &selectIntegrator(testElementIndex, trialElementIndex);
+            *qvIt = QuadVariant(integrator,
+                                m_testBases[testElementIndex],
+                                m_trialBases[trialElementIndex]);
+        }
+    }
+
+    // Integration will proceed in batches of element pairs having the same
+    // "quadrature variant", i.e. integrator, test basis and trial basis
+
+    // Find all the unique quadrature variants present
+    typedef std::set<QuadVariant> QuadVariantSet;
+    // Set of unique quadrature variants
+    QuadVariantSet uniqueQuadVariants(quadVariants.begin(), quadVariants.end());
+
+    std::vector<ElementIndexPair> activeElementPairs;
+    activeElementPairs.reserve(elementPairCount);
+
+    // Now loop over unique quadrature variants
+    for (typename QuadVariantSet::const_iterator it = uniqueQuadVariants.begin();
+         it != uniqueQuadVariants.end(); ++it)
+    {
+        const QuadVariant activeQuadVariant = *it;
+        const Integrator& activeIntegrator = *it->template get<0>();
+        const Basis& activeTestBasis  = *it->template get<1>();
+        const Basis& activeTrialBasis = *it->template get<2>();
+
+        // Find all the element pairs for which quadrature should proceed
+        // according to the current quadrature variant
+        activeElementPairs.clear();
+        {
+            ElementIndexPairIterator pairIt = elementIndexPairs.begin();
+            QuadVariantIterator qvIt = quadVariants.begin();
+            for (; pairIt != elementIndexPairs.end(); ++pairIt, ++qvIt)
+                if (*qvIt == activeQuadVariant)
+                    activeElementPairs.push_back(*pairIt);
+        }
+
+        // Integrate!
+        arma::Cube<ValueType> localResult;
+        activeIntegrator.integrate(activeElementPairs, activeTestBasis,
+                                   activeTrialBasis, localResult);
+
+        // Distribute the just calculated integrals into the result array
+        // that will be returned to caller
+        {
+            ElementIndexPairIterator pairIt = elementIndexPairs.begin();
+            QuadVariantIterator qvIt = quadVariants.begin();
+            int i = 0;
+            for (; pairIt != elementIndexPairs.end(); ++pairIt, ++qvIt)
+                if (*qvIt == activeQuadVariant)
+                    m_cache[*pairIt] = localResult.slice(i++);
+        }
+    }
+}
+
+template <typename ValueType, typename GeometryFactory>
 const TestKernelTrialIntegrator<ValueType>&
 StandardLocalAssemblerForIntegralOperatorsOnSurfaces<ValueType, GeometryFactory>::
 selectIntegrator(int testElementIndex, int trialElementIndex) {
@@ -419,8 +557,10 @@ getIntegrator(const DoubleQuadratureDescriptor& desc)
         // created integrator.
         delete integrator;
 
-//    std::cout << "getIntegrator(: " << desc << "): insertion succeeded? "
-//              << result.second << std::endl;
+//    if (result.second)
+//        std::cout << "getIntegrator(: " << desc << "): insertion succeeded" << std::endl;
+//    else
+//        std::cout << "getIntegrator(: " << desc << "): insertion failed" << std::endl;
 
     // Return pointer to the integrator that ended up in the map.
     return *result.first->second;

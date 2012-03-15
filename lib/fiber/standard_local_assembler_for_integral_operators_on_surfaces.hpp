@@ -72,6 +72,15 @@ public:
             Fiber::Array2D<arma::Mat<ValueType> >& result);
 
 private:
+    typedef typename TestKernelTrialIntegrator<ValueType>::ElementIndexPair
+    ElementIndexPair;
+    typedef std::set<ElementIndexPair> ElementIndexPairSet;
+    typedef std::map<ElementIndexPair, arma::Mat<ValueType> > Cache;
+
+    void cacheSingularLocalWeakForms();
+    void findPairsOfAdjacentElements(ElementIndexPairSet& pairs) const;
+    void cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs);
+
     const TestKernelTrialIntegrator<ValueType>& selectIntegrator(
             int testElementIndex, int trialElementIndex);
 
