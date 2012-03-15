@@ -20,16 +20,85 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <stdexcept>
 
+#include <tbb/spin_mutex.h>
+#include <tbb/parallel_for.h>
+
 #ifdef WITH_AHMED
 #include "ahmed_aux.hpp"
 #include "discrete_aca_scalar_valued_linear_operator.hpp"
 #include "weak_form_aca_assembly_helper.hpp"
 #endif
 
-// The spaces should be given the grid in constructor!
-
 namespace Bempp
 {
+
+// Bodies of parallel loops
+
+namespace
+{
+
+template <typename ValueType>
+class DenseWeakFormAssemblerLoopBody
+{
+public:
+    typedef tbb::spin_mutex MutexType;
+
+    DenseWeakFormAssemblerLoopBody(const std::vector<int>& testIndices,
+             const std::vector<std::vector<GlobalDofIndex> >& testGlobalDofs,
+             const std::vector<std::vector<GlobalDofIndex> >& trialGlobalDofs,
+             typename ElementaryIntegralOperator<ValueType>::LocalAssembler& assembler,
+             arma::Mat<ValueType>& result, MutexType& mutex) :
+        m_testIndices(testIndices),
+        m_testGlobalDofs(testGlobalDofs), m_trialGlobalDofs(trialGlobalDofs),
+        m_assembler(assembler), m_result(result), m_mutex(mutex)
+    {}
+
+    void operator() (const tbb::blocked_range<size_t>& r) const {
+        const int elementCount = m_testIndices.size();
+        std::vector<arma::Mat<ValueType> > localResult;
+        for (size_t trialIndex = r.begin(); trialIndex != r.end(); ++trialIndex)
+        {
+            // Evaluate integrals over pairs of the current trial element and
+            // all the test elements
+            m_assembler.evaluateLocalWeakForms(TEST_TRIAL, m_testIndices, trialIndex,
+                                               ALL_DOFS, localResult);
+
+            const int trialDofCount = m_trialGlobalDofs[trialIndex].size();
+            // Global assembly
+            {
+                MutexType::scoped_lock lock(m_mutex);
+                // Loop over test indices
+                for (int testIndex = 0; testIndex < elementCount; ++testIndex)
+                {
+                    const int testDofCount = m_testGlobalDofs[testIndex].size();
+                    // Add the integrals to appropriate entries in the operator's matrix
+                    for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
+                        for (int testDof = 0; testDof < testDofCount; ++testDof)
+                            m_result(m_testGlobalDofs[testIndex][testDof],
+                                     m_trialGlobalDofs[trialIndex][trialDof]) +=
+                                    localResult[testIndex](testDof, trialDof);
+                }
+            }
+        }
+    }
+
+private:
+    const std::vector<int>& m_testIndices;
+    const std::vector<std::vector<GlobalDofIndex> >& m_trialGlobalDofs;
+    const std::vector<std::vector<GlobalDofIndex> >& m_testGlobalDofs;
+    // mutable OK because Assembler is thread-safe. (Alternative to "mutable" here:
+    // make assembler's internal integrator map mutable)
+    mutable typename ElementaryIntegralOperator<ValueType>::LocalAssembler& m_assembler;
+    // mutable OK because write access to this matrix is protected by a mutex
+    mutable arma::Mat<ValueType>& m_result;
+
+    // mutex must be mutable because we need to lock and unlock it
+    mutable MutexType& m_mutex;
+};
+
+} // namespace
+
+
 
 template <typename ValueType>
 std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
@@ -192,7 +261,6 @@ ElementaryIntegralOperator<ValueType>::assembleOperatorInAcaMode(
                               "not implemented yet");
 }
 
-
 template <typename ValueType>
 std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
 ElementaryIntegralOperator<ValueType>::assembleWeakFormInDenseMode(
@@ -230,25 +298,32 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInDenseMode(
     arma::Mat<ValueType> result(testSpace.globalDofCount(),
                                 trialSpace.globalDofCount());
     result.fill(0.);
-    std::vector<arma::Mat<ValueType> > localResult;
 
-    // Loop over trial elements
-    for (int trialIndex = 0; trialIndex < elementCount; ++trialIndex)
-    {
-        // Evaluate integrals over pairs of the current trial element and
-        // all the test elements
-        assembler.evaluateLocalWeakForms(TEST_TRIAL, testIndices, trialIndex,
-                                         ALL_DOFS, localResult);
+    typedef DenseWeakFormAssemblerLoopBody<ValueType> Body;
+    typename Body::MutexType mutex;
+    tbb::parallel_for(tbb::blocked_range<size_t>(0, elementCount),
+                      Body(testIndices, testGlobalDofs, trialGlobalDofs,
+                           assembler, result, mutex));
 
-        // Loop over test indices
-        for (int testIndex = 0; testIndex < elementCount; ++testIndex)
-            // Add the integrals to appropriate entries in the operator's matrix
-            for (int trialDof = 0; trialDof < trialGlobalDofs[trialIndex].size(); ++trialDof)
-                for (int testDof = 0; testDof < testGlobalDofs[testIndex].size(); ++testDof)
-                result(testGlobalDofs[testIndex][testDof],
-                       trialGlobalDofs[trialIndex][trialDof]) +=
-                        localResult[testIndex](testDof, trialDof);
-    }
+//// Old serial code (TODO: decide whether to keep it behind e.g. #ifndef PARALLEL)
+//    std::vector<arma::Mat<ValueType> > localResult;
+//    // Loop over trial elements
+//    for (int trialIndex = 0; trialIndex < elementCount; ++trialIndex)
+//    {
+//        // Evaluate integrals over pairs of the current trial element and
+//        // all the test elements
+//        assembler.evaluateLocalWeakForms(TEST_TRIAL, testIndices, trialIndex,
+//                                         ALL_DOFS, localResult);
+
+//        // Loop over test indices
+//        for (int testIndex = 0; testIndex < elementCount; ++testIndex)
+//            // Add the integrals to appropriate entries in the operator's matrix
+//            for (int trialDof = 0; trialDof < trialGlobalDofs[trialIndex].size(); ++trialDof)
+//                for (int testDof = 0; testDof < testGlobalDofs[testIndex].size(); ++testDof)
+//                result(testGlobalDofs[testIndex][testDof],
+//                       trialGlobalDofs[trialIndex][trialDof]) +=
+//                        localResult[testIndex](testDof, trialDof);
+//    }
 
     // Create and return a discrete operator represented by the matrix that
     // has just been calculated
