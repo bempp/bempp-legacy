@@ -48,8 +48,6 @@ template <typename ValueType> class WeakFormAcaAssemblyHelper;
 template <typename ValueType>
 class ElementaryIntegralOperator : public LinearOperator<ValueType>
 {
-    friend class WeakFormAcaAssemblyHelper<ValueType>;
-
 public:
     typedef typename LinearOperator<ValueType>::LocalAssemblerFactory
     LocalAssemblerFactory;
