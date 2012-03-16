@@ -21,7 +21,9 @@
 #include <armadillo>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <stdexcept>
+#include <iostream>
 
+#include <tbb/atomic.h>
 #include <tbb/parallel_for.h>
 #include <tbb/spin_mutex.h>
 #include <tbb/task_scheduler_init.h>
@@ -97,6 +99,49 @@ private:
 
     // mutex must be mutable because we need to lock and unlock it
     mutable MutexType& m_mutex;
+};
+
+template <typename ValueType>
+class AcaWeakFormAssemblerLoopBody
+{
+public:
+    typedef AhmedDofWrapper<ValueType> AhmedDofType;
+    typedef bemblcluster<AhmedDofType, AhmedDofType> DoubleCluster;
+
+    AcaWeakFormAssemblerLoopBody(
+            WeakFormAcaAssemblyHelper<ValueType>& helper,
+            size_t leafClusterCount,
+            blcluster** leafClusters,
+            mblock<ValueType>** blocks,
+            const AcaOptions& options,
+            tbb::atomic<size_t>& done) :
+        m_helper(helper), m_leafClusterCount(leafClusterCount),
+        m_leafClusters(leafClusters), m_blocks(blocks),
+        m_options(options), m_done(done)
+    {
+    }
+
+    void operator() (const tbb::blocked_range<size_t>& r) const {
+        const char* TEXT = "Approximating ... ";
+        for (size_t i = r.begin(); i != r.end(); ++i)
+        {
+            DoubleCluster* cluster = dynamic_cast<DoubleCluster*>(m_leafClusters[i]);
+            apprx_unsym(m_helper, m_blocks[cluster->getidx()],
+                        cluster, m_options.eps, m_options.maximumRank);
+            // TODO: recompress
+            const int HASH_COUNT = 20;
+            progressbar(std::cout, TEXT, ++m_done,
+                        m_leafClusterCount, HASH_COUNT, true);
+        }
+    }
+
+private:
+    mutable WeakFormAcaAssemblyHelper<ValueType>& m_helper;
+    size_t m_leafClusterCount;
+    blcluster** m_leafClusters;
+    mblock<ValueType>** m_blocks;
+    const AcaOptions& m_options;
+    mutable tbb::atomic<size_t>& m_done;
 };
 
 } // namespace
@@ -455,10 +500,43 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInAcaMode(
                    p2oTestDofs, p2oTrialDofs, assembler, options);
 
     mblock<ValueType>** blocks = 0;
+    // TODO: embed in a shared_ptr or something similar (with custom destructor)
     allocmbls(doubleClusterTree.get(), blocks);
-    matgen_sqntl(helper, doubleClusterTree.get(), doubleClusterTree.get(),
-                 acaOptions.recompress, acaOptions.eps,
-                 acaOptions.maximumRank, blocks);
+
+//    matgen_sqntl(helper, doubleClusterTree.get(), doubleClusterTree.get(),
+//                 acaOptions.recompress, acaOptions.eps,
+//                 acaOptions.maximumRank, blocks);
+
+//    matgen_omp(helper, blockCount, doubleClusterTree.get(),
+//                   acaOptions.eps, acaOptions.maximumRank, blocks);
+
+    blcluster** leafClusters = 0;
+    // TODO: make thread-safe. In a constructor of some class, we should call
+    // gen_BlSequence in a try block, catch any exceptions, delete[] leafClusters,
+    // and rethrow the exception
+    gen_BlSequence(doubleClusterTree.get(), leafClusters);
+    const size_t leafClusterCount = doubleClusterTree->nleaves();
+
+    typedef AcaWeakFormAssemblerLoopBody<ValueType> Body;
+
+    int maxThreadCount = 1;
+    if (options.parallelism() == AssemblyOptions::TBB_AND_OPEN_MP)
+    {
+        if (options.maxThreadCount() == AssemblyOptions::AUTO)
+            maxThreadCount = tbb::task_scheduler_init::automatic;
+        else
+            maxThreadCount = options.maxThreadCount();
+    }
+    tbb::task_scheduler_init scheduler(maxThreadCount);
+    tbb::atomic<size_t> done;
+    done = 0;
+    tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
+                      Body(helper, leafClusterCount, leafClusters, blocks,
+                           acaOptions, done));
+
+    // TODO: embed in a destructor
+    delete[] leafClusters;
+
     result = std::auto_ptr<DiscreteLinOp>(
                 new DiscreteAcaLinOp(testDofCount, trialDofCount,
                                      doubleClusterTree, blocks,

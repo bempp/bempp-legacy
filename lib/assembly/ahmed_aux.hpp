@@ -27,9 +27,12 @@
 #include <stdexcept>
 
 // Ahmed's include files
+#include <apprx.h>
 #include <bemblcluster.h>
+#include <bllist.h>
+// #include <matgen_sqntl.h>
+// #include <matgen_omp.h>
 #include <matrix.h>
-#include <matgen_sqntl.h>
 #undef SIGN
 #undef SQR
 #undef MIN
