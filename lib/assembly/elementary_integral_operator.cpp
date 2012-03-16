@@ -112,7 +112,7 @@ public:
             WeakFormAcaAssemblyHelper<ValueType>& helper,
             size_t leafClusterCount,
             blcluster** leafClusters,
-            mblock<ValueType>** blocks,
+            boost::shared_array<mblock<ValueType>*> blocks,
             const AcaOptions& options,
             tbb::atomic<size_t>& done) :
         m_helper(helper), m_leafClusterCount(leafClusterCount),
@@ -139,7 +139,7 @@ private:
     mutable WeakFormAcaAssemblyHelper<ValueType>& m_helper;
     size_t m_leafClusterCount;
     blcluster** m_leafClusters;
-    mblock<ValueType>** m_blocks;
+    boost::shared_array<mblock<ValueType>*> m_blocks;
     const AcaOptions& m_options;
     mutable tbb::atomic<size_t>& m_done;
 };
@@ -499,9 +499,8 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInAcaMode(
             helper(*this, *view, testSpace, trialSpace,
                    p2oTestDofs, p2oTrialDofs, assembler, options);
 
-    mblock<ValueType>** blocks = 0;
-    // TODO: embed in a shared_ptr or something similar (with custom destructor)
-    allocmbls(doubleClusterTree.get(), blocks);
+    boost::shared_array<mblock<ValueType>*> blocks =
+            allocateAhmedMblockArray<ValueType>(doubleClusterTree.get());
 
 //    matgen_sqntl(helper, doubleClusterTree.get(), doubleClusterTree.get(),
 //                 acaOptions.recompress, acaOptions.eps,
@@ -511,7 +510,7 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInAcaMode(
 //                   acaOptions.eps, acaOptions.maximumRank, blocks);
 
     blcluster** leafClusters = 0;
-    // TODO: make thread-safe. In a constructor of some class, we should call
+    // TODO: make exception-safe. In a constructor of some class, we should call
     // gen_BlSequence in a try block, catch any exceptions, delete[] leafClusters,
     // and rethrow the exception
     gen_BlSequence(doubleClusterTree.get(), leafClusters);

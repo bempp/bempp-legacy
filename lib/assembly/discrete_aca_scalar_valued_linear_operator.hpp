@@ -37,7 +37,7 @@ public:
     DiscreteAcaScalarValuedLinearOperator(
             unsigned int rowCount, unsigned int columnCount,
             std::auto_ptr<bemblcluster<GeometryTypeRows, GeometryTypeCols> > blockCluster,
-            mblock<ValueType>** blocks,
+            boost::shared_array<mblock<ValueType>*> blocks,
             const std::vector<unsigned int>& permutedRowIndices,
             const std::vector<unsigned int>& originalColumnIndices) :
         m_matrix(rowCount, columnCount, blockCluster, blocks),

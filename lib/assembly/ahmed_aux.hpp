@@ -23,6 +23,8 @@
 
 #include "../common/types.hpp"
 
+#include <boost/shared_array.hpp>
+#include <iostream>
 #include <memory>
 #include <stdexcept>
 
@@ -57,6 +59,33 @@ struct AhmedDofWrapper : public Point3D<ValueType>
     }
 };
 
+class AhmedMblockArrayDeleter
+{
+public:
+    AhmedMblockArrayDeleter(size_t arraySize) :
+        m_arraySize(arraySize) {
+    }
+
+    template <typename ValueType>
+    void operator() (mblock<ValueType>** blocks) const {
+        freembls(m_arraySize, blocks);
+    }
+
+private:
+    size_t m_arraySize;
+};
+
+template <typename ValueType>
+boost::shared_array<mblock<ValueType>*> allocateAhmedMblockArray(
+        const blcluster* cluster)
+{
+    mblock<ValueType>** blocks = 0;
+    const size_t blockCount = cluster->nleaves();
+    allocmbls(blockCount, blocks);
+    return boost::shared_array<mblock<ValueType>*>(
+                blocks, AhmedMblockArrayDeleter(blockCount));
+}
+
 template <typename ValueType, typename GeometryTypeRows, typename GeometryTypeCols>
 class AhmedMatrix : public Matrix<ValueType>
 {
@@ -66,19 +95,15 @@ public:
 
     AhmedMatrix(unsigned int rowCount, unsigned int columnCount,
                 std::auto_ptr<AhmedBemblcluster> blockCluster,
-                mblock<ValueType>** blocks) :
+                boost::shared_array<mblock<ValueType>*> blocks) :
         Matrix<double>(rowCount, columnCount),
         m_blockCluster(blockCluster), m_blocks(blocks)
     {
     }
 
-    virtual ~AhmedMatrix() {
-        freembls(m_blockCluster.get(), m_blocks);
-    }
-
     virtual void amux(ValueType d, ValueType* x, ValueType* y) const {
         AhmedBemblcluster* ptr = m_blockCluster.get();
-        multaHvec(d, m_blockCluster.get(), m_blocks, x, y);
+        multaHvec(d, m_blockCluster.get(), m_blocks.get(), x, y);
     }
 
     virtual void precond_apply(double* x) const {
@@ -87,7 +112,7 @@ public:
 
 private:
     std::auto_ptr<AhmedBemblcluster> m_blockCluster;
-    mblock<ValueType>** m_blocks;
+    boost::shared_array<mblock<ValueType>*> m_blocks;
 };
 
 } // namespace Bempp
