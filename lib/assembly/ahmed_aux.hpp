@@ -23,6 +23,7 @@
 
 #include "../common/types.hpp"
 
+#include <boost/scoped_array.hpp>
 #include <boost/shared_array.hpp>
 #include <iostream>
 #include <memory>
@@ -85,6 +86,42 @@ boost::shared_array<mblock<ValueType>*> allocateAhmedMblockArray(
     return boost::shared_array<mblock<ValueType>*>(
                 blocks, AhmedMblockArrayDeleter(blockCount));
 }
+
+class AhmedLeafClusterArray
+{
+public:
+    // The parameter should actually be const, but Ahmed's gen_BlSequence lacks
+    // const-correctness
+    explicit AhmedLeafClusterArray(blcluster* clusterTree) :
+        m_size(0) {
+        blcluster** leafClusters = 0;
+        try {
+            gen_BlSequence(clusterTree, leafClusters);
+        }
+        catch (...) {
+            delete[] leafClusters;
+            throw; // rethrow the exception
+        }
+        m_leafClusters.reset(leafClusters);
+        m_size = clusterTree->nleaves();
+    }
+
+    size_t size() const {
+        return m_size;
+    }
+
+    blcluster* operator[] (size_t n) {
+        return m_leafClusters[n];
+    }
+
+    const blcluster* operator[] (size_t n) const {
+        return m_leafClusters[n];
+    }
+
+private:
+    boost::scoped_array<blcluster*> m_leafClusters;
+    size_t m_size;
+};
 
 template <typename ValueType, typename GeometryTypeRows, typename GeometryTypeCols>
 class AhmedMatrix : public Matrix<ValueType>

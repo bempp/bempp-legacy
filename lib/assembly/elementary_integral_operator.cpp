@@ -110,12 +110,11 @@ public:
 
     AcaWeakFormAssemblerLoopBody(
             WeakFormAcaAssemblyHelper<ValueType>& helper,
-            size_t leafClusterCount,
-            blcluster** leafClusters,
+            AhmedLeafClusterArray& leafClusters,
             boost::shared_array<mblock<ValueType>*> blocks,
             const AcaOptions& options,
             tbb::atomic<size_t>& done) :
-        m_helper(helper), m_leafClusterCount(leafClusterCount),
+        m_helper(helper),
         m_leafClusters(leafClusters), m_blocks(blocks),
         m_options(options), m_done(done)
     {
@@ -130,15 +129,15 @@ public:
                         cluster, m_options.eps, m_options.maximumRank);
             // TODO: recompress
             const int HASH_COUNT = 20;
-            progressbar(std::cout, TEXT, ++m_done,
-                        m_leafClusterCount, HASH_COUNT, true);
+            progressbar(std::cout, TEXT, (++m_done) - 1,
+                        m_leafClusters.size(), HASH_COUNT, true);
         }
     }
 
 private:
     mutable WeakFormAcaAssemblyHelper<ValueType>& m_helper;
     size_t m_leafClusterCount;
-    blcluster** m_leafClusters;
+    AhmedLeafClusterArray& m_leafClusters;
     boost::shared_array<mblock<ValueType>*> m_blocks;
     const AcaOptions& m_options;
     mutable tbb::atomic<size_t>& m_done;
@@ -493,8 +492,6 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInAcaMode(
 
     std::auto_ptr<DiscreteLinOp> result;
 
-    // OpenMP implementation also possible
-
     WeakFormAcaAssemblyHelper<ValueType>
             helper(*this, *view, testSpace, trialSpace,
                    p2oTestDofs, p2oTrialDofs, assembler, options);
@@ -509,12 +506,8 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInAcaMode(
 //    matgen_omp(helper, blockCount, doubleClusterTree.get(),
 //                   acaOptions.eps, acaOptions.maximumRank, blocks);
 
-    blcluster** leafClusters = 0;
-    // TODO: make exception-safe. In a constructor of some class, we should call
-    // gen_BlSequence in a try block, catch any exceptions, delete[] leafClusters,
-    // and rethrow the exception
-    gen_BlSequence(doubleClusterTree.get(), leafClusters);
-    const size_t leafClusterCount = doubleClusterTree->nleaves();
+    AhmedLeafClusterArray leafClusters(doubleClusterTree.get());
+    const size_t leafClusterCount = leafClusters.size();
 
     typedef AcaWeakFormAssemblerLoopBody<ValueType> Body;
 
@@ -530,11 +523,7 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInAcaMode(
     tbb::atomic<size_t> done;
     done = 0;
     tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
-                      Body(helper, leafClusterCount, leafClusters, blocks,
-                           acaOptions, done));
-
-    // TODO: embed in a destructor
-    delete[] leafClusters;
+                      Body(helper, leafClusters, blocks, acaOptions, done));
 
     result = std::auto_ptr<DiscreteLinOp>(
                 new DiscreteAcaLinOp(testDofCount, trialDofCount,
