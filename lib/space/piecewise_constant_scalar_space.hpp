@@ -21,7 +21,7 @@
 #ifndef bempp_piecewise_constant_scalar_space_hpp
 #define bempp_piecewise_constant_scalar_space_hpp
 
-#include "space.hpp"
+#include "scalar_space.hpp"
 #include "../common/types.hpp"
 #include "../fiber/piecewise_constant_scalar_basis.hpp"
 
@@ -34,7 +34,7 @@ namespace Bempp
 class GridView;
 
 template <typename ValueType>
-class PiecewiseConstantScalarSpace : public Space<ValueType>
+class PiecewiseConstantScalarSpace : public ScalarSpace<ValueType>
 {
 public:
     PiecewiseConstantScalarSpace(Grid& grid);

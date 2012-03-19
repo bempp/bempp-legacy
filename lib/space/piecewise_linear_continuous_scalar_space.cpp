@@ -41,7 +41,7 @@ namespace Bempp
 template <typename ValueType>
 PiecewiseLinearContinuousScalarSpace<ValueType>::
 PiecewiseLinearContinuousScalarSpace(Grid& grid) :
-     Space<ValueType>(grid)
+     ScalarSpace<ValueType>(grid)
 {
     const int gridDim = grid.dim();
     if (gridDim != 1 && gridDim != 2)

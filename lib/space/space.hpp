@@ -31,6 +31,7 @@ namespace Fiber
 
 template <typename ValueType> class Basis;
 template <typename ValueType> class BasisData;
+template <typename ValueType> class Expression;
 template <typename ValueType> class GeometricalData;
 
 }
@@ -74,6 +75,9 @@ public:
                           std::vector<const Fiber::Basis<ValueType>*>& bases) const = 0;
 
     virtual const Fiber::Basis<ValueType>& basis(const EntityPointer<0>& element) const = 0;
+
+    /** \brief Expression returning values of the shape functions of this space. */
+    virtual const Fiber::Expression<ValueType>& shapeFunctionValueExpression() const = 0;
 
     /** @}
         @name Element order management

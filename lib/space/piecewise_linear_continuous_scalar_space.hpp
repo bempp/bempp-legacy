@@ -21,7 +21,7 @@
 #ifndef bempp_piecewise_linear_continuous_scalar_space_hpp
 #define bempp_piecewise_linear_continuous_scalar_space_hpp
 
-#include "space.hpp"
+#include "scalar_space.hpp"
 #include "../common/types.hpp"
 #include "../fiber/piecewise_linear_continuous_scalar_basis.hpp"
 
@@ -36,7 +36,7 @@ class GridView;
 // Element variants: 2 (line element), 3 (triangular element), 4 (quadrilateral element)
 
 template <typename ValueType>
-class PiecewiseLinearContinuousScalarSpace : public Space<ValueType>
+class PiecewiseLinearContinuousScalarSpace : public ScalarSpace<ValueType>
 {
 public:
     PiecewiseLinearContinuousScalarSpace(Grid& grid);

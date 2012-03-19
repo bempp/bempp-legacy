@@ -31,7 +31,7 @@ namespace Bempp
 
 template <typename ValueType>
 PiecewiseConstantScalarSpace<ValueType>::PiecewiseConstantScalarSpace(Grid& grid) :
-     Space<ValueType>(grid)
+     ScalarSpace<ValueType>(grid)
 {
 }
 
