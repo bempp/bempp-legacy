@@ -217,7 +217,7 @@ StandardLocalAssemblerForSourceTermsOnSurfaces<ValueType, GeometryFactory>::
 orderIncrement(int elementIndex) const
 {
     // TODO: add to constructor an option for increased-order quadrature
-    return m_testBases[elementIndex]->order() + 7;
+    return m_testBases[elementIndex]->order() + 1;
 }
 
 } // namespace Fiber
