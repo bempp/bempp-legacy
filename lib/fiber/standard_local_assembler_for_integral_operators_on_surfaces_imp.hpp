@@ -298,9 +298,6 @@ cacheSingularLocalWeakForms()
     cacheLocalWeakForms(elementIndexPairs);
 }
 
-typedef std::pair<int, int> ElementIndexPair;
-typedef std::set<ElementIndexPair> ElementIndexPairSet;
-
 /** \brief Fill \p pairs with the list of pairs of indices of elements
         sharing at least one vertex. */
 template <typename ValueType, typename GeometryFactory>
