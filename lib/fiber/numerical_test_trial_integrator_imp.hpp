@@ -74,10 +74,14 @@ void NumericalTestTrialIntegrator<ValueType, GeometryFactory>::integrate(
     // elementCount != 0, set elements of result to 0.
 
     // Evaluate constants
-    const int testComponentCount = m_testExpression.codomainDimension();
-    const int trialComponentCount = m_trialExpression.codomainDimension();
+    const int componentCount = m_testExpression.codomainDimension();
     const int testDofCount = testBasis.size();
     const int trialDofCount = trialBasis.size();
+
+    if (m_trialExpression.codomainDimension() != componentCount)
+        throw std::runtime_error("NumericalTestTrialIntegrator::integrate(): "
+                                 "test and trial functions "
+                                 "must have the same number of components");
 
     BasisData<ValueType> testBasisData, trialBasisData;
     GeometricalData<ValueType> geomData;
@@ -111,12 +115,11 @@ void NumericalTestTrialIntegrator<ValueType, GeometryFactory>::integrate(
             {
                 ValueType sum = 0.;
                 for (int point = 0; point < pointCount; ++point)
-                    for (int trialDim = 0; trialDim < trialComponentCount; ++trialDim)
-                        for (int testDim = 0; testDim < testComponentCount; ++testDim)
-                            sum +=  m_quadWeights[point] *
-                                    geomData.integrationElements(point) *
-                                    testValues(testDim, testDof, point) *
-                                    trialValues(trialDim, trialDof, point);
+                    for (int dim = 0; dim < componentCount; ++dim)
+                        sum +=  m_quadWeights[point] *
+                                geomData.integrationElements(point) *
+                                testValues(dim, testDof, point) *
+                                trialValues(dim, trialDof, point);
                 result(testDof, trialDof, e) = sum;
             }
     }
