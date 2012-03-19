@@ -24,6 +24,7 @@
 #include "local_assembler_factory.hpp"
 #include "standard_local_assembler_for_identity_operator_on_surface.hpp"
 #include "standard_local_assembler_for_integral_operators_on_surfaces.hpp"
+#include "standard_local_assembler_for_source_terms_on_surfaces.hpp"
 #include "opencl_options.hpp"
 
 #include <stdexcept>
@@ -40,6 +41,8 @@ private:
         LocalAssemblerForIntegralOperators_;
     typedef StandardLocalAssemblerForIdentityOperatorOnSurface<ValueType, GeometryFactory>
         LocalAssemblerForIdentityOperator_;
+    typedef StandardLocalAssemblerForSourceTermsOnSurfaces<ValueType, GeometryFactory>
+        LocalAssemblerForSourceTerms_;
 
 public:
     virtual std::auto_ptr<LocalAssemblerForIntegralOperators<ValueType> > make(
@@ -60,6 +63,18 @@ public:
                         openClHandler, cacheSingularIntegrals));
     }
 
+    virtual std::auto_ptr<LocalAssemblerForIntegralOperators<ValueType> > make(
+            const GeometryFactory& geometryFactory,
+            const RawGridGeometry<ValueType>& rawGeometry,
+            const std::vector<const Basis<ValueType>*>& trialBases,
+            const Kernel<ValueType>& kernel,
+            const Expression<ValueType>& trialExpression,
+            const OpenClHandler& openClHandler,
+            bool cacheSingularIntegrals) const {
+        throw std::runtime_error("StandardLocalAssemblerFactoryForOperatorsOnSurfaces::"
+                                 "make(): collocation mode not implemented yet.");
+    }
+
     virtual std::auto_ptr<LocalAssemblerForIdentityOperator<ValueType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<ValueType>& rawGeometry,
@@ -76,18 +91,6 @@ public:
                         openClHandler));
     }
 
-    virtual std::auto_ptr<LocalAssemblerForIntegralOperators<ValueType> > make(
-            const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
-            const std::vector<const Basis<ValueType>*>& trialBases,
-            const Kernel<ValueType>& kernel,
-            const Expression<ValueType>& trialExpression,
-            const OpenClHandler& openClHandler,
-            bool cacheSingularIntegrals) const {
-        throw std::runtime_error("StandardLocalAssemblerFactoryForOperatorsOnSurfaces::"
-                                 "make(): collocation mode not implemented yet.");
-    }
-
     virtual std::auto_ptr<LocalAssemblerForIdentityOperator<ValueType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<ValueType>& rawGeometry,
@@ -96,6 +99,21 @@ public:
             const OpenClHandler& openClHandler) const {
     throw std::runtime_error("StandardLocalAssemblerFactoryForOperatorsOnSurfaces::"
                              "make(): collocation mode not implemented yet.");
+    }
+
+    virtual std::auto_ptr<LocalAssemblerForSourceTerms<ValueType> > make(
+            const GeometryFactory& geometryFactory,
+            const RawGridGeometry<ValueType>& rawGeometry,
+            const std::vector<const Basis<ValueType>*>& testBases,
+            const Expression<ValueType>& testExpression,
+            const Function<ValueType>& function,
+            const OpenClHandler& openClHandler) const {
+        return std::auto_ptr<LocalAssemblerForSourceTerms<ValueType> >(
+                    new LocalAssemblerForSourceTerms_(
+                        geometryFactory, rawGeometry,
+                        testBases,
+                        testExpression, function,
+                        openClHandler));
     }
 };
 
