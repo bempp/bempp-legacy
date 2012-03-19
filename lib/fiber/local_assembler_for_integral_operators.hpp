@@ -44,11 +44,11 @@ template <typename ValueType> class TestKernelTrialIntegrator;
 
 /** \brief Local assembler for integral operators.
 
-  An integration manager provides methods that choose appropriate quadrature
-  rules (weights and points) for integrals occurring in boundary-element
-  matrices of integral operators. Factors influencing the choice of quadrature
-  rule include the regularity properties of a kernel, maximum polynomial order
-  of basis functions on an element, element volume and (for double integrals)
+  This assembler provides methods that evaluate local (element-by-element) weak
+  forms of integrals occurring in boundary-element matrices of integral
+  operators. It automatically selects appropriate quadrature rules, depending
+  on the regularity properties of a kernel, maximum polynomial order of basis
+  functions on an element, element volume and (for double integrals)
   element-element distance.
  */
 template <typename ValueType>
