@@ -32,30 +32,25 @@ namespace Fiber
 template <typename ValueType> class Basis;
 template <typename ValueType> class TestKernelTrialIntegrator;
 
-// Some stream of consciousness...
-
+// Things to keep in mind:
+//
 // Additional quadrature order specific to the Helmholtz equation (dependence
 // on k*h) will need to be handled via a kernel-specific code (there will be a
 // particular quadrature selector for Helmholtz kernels, probably derived from
 // the standard Sauter-Schwab quadrature selector).
-
+//
 // The quadrature manager needs to know the polynomial order of an element
 // and the increment in the integration order resulting from mesh curvature.
 
-// Out-of-date docs
-///** \brief Integration manager interface.
+/** \brief Local assembler for integral operators.
 
-//  This class template is used as a base class for all integration manager
-//  implementations. It uses the Barton-Nackman trick to ensure conformity to the
-//  interface.
-
-//  An integration manager provides methods that choose appropriate quadrature
-//  rules (weights and points) for integrals occurring in boundary-element
-//  matrices. Factors influencing the choice of quadrature rule include the
-//  regularity properties of a kernel, maximum polynomial order of basis
-//  functions on an element, element volume and (for double integrals)
-//  element-element distance.
-// */
+  An integration manager provides methods that choose appropriate quadrature
+  rules (weights and points) for integrals occurring in boundary-element
+  matrices of integral operators. Factors influencing the choice of quadrature
+  rule include the regularity properties of a kernel, maximum polynomial order
+  of basis functions on an element, element volume and (for double integrals)
+  element-element distance.
+ */
 template <typename ValueType>
 class LocalAssemblerForIntegralOperators
 {
@@ -86,7 +81,7 @@ public:
             const std::vector<int>& elementIndicesA,
             int elementIndexB,
             LocalDofIndex localDofIndexB,
-            std::vector<arma::Mat<ValueType> >& result) /*const*/ = 0;
+            std::vector<arma::Mat<ValueType> >& result) = 0;
 
     /** \brief Assemble local weak forms.
 
@@ -100,7 +95,7 @@ public:
     virtual void evaluateLocalWeakForms(
             const std::vector<int>& testElementIndices,
             const std::vector<int>& trialElementIndices,
-            Fiber::Array2D<arma::Mat<ValueType> >& result) /*const*/ = 0;
+            Fiber::Array2D<arma::Mat<ValueType> >& result) = 0;
 
     // TODO: evaluateLocalOperator or something similar
 };
