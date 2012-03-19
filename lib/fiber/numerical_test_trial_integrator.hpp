@@ -28,7 +28,6 @@ namespace Fiber
 
 class OpenClHandler;
 template <typename ValueType> class Expression;
-template <typename ValueType> class Kernel;
 template <typename ValueType> class RawGridGeometry;
 
 /** \brief Integration over pairs of elements on tensor-product point grids. */
