@@ -22,6 +22,7 @@ struct GeometricalData
     arma::Row<CoordinateType> integrationElements;
     arma::Cube<CoordinateType> jacobiansTransposed;
     arma::Cube<CoordinateType> jacobianInversesTransposed;
+    arma::Mat<CoordinateType> normals;
 };
 
 } // namespace Fiber

@@ -27,7 +27,6 @@
 
 #include "../common/not_implemented_error.hpp"
 #include "../fiber/geometrical_data.hpp"
-
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
 #include <dune/common/static_assert.hh>
@@ -303,6 +302,13 @@ public:
         }
     }
 
+    virtual void normal(const arma::Mat<ctype>& local,
+                        arma::Mat<ctype>& normal) const {
+        arma::Cube<ctype> jacobian_t;
+        jacobianTransposed(local, jacobian_t);
+        calculateNormals(jacobian_t, normal);
+    }
+
     virtual void getData(int what, const arma::Mat<ctype>& local,
                          Fiber::GeometricalData<ctype>& data) const {
         // In this first implementation we call the above virtual functions as required.
@@ -315,15 +321,59 @@ public:
             This::local2global(local, data.globals);
         if (what & Fiber::INTEGRATION_ELEMENTS)
             This::integrationElement(local, data.integrationElements);
-        if (what & Fiber::JACOBIANS_TRANSPOSED)
+        if (what & Fiber::JACOBIANS_TRANSPOSED || what & Fiber::NORMALS)
             This::jacobianTransposed(local, data.jacobiansTransposed);
         if (what & Fiber::JACOBIAN_INVERSES_TRANSPOSED)
             This::jacobianInverseTransposed(local, data.jacobianInversesTransposed);
         if (what & Fiber::NORMALS)
-            throw std::runtime_error("Geometry::getData(): calculation of"
-                                     "normals not implemented yet");
+            calculateNormals(data.jacobiansTransposed, data.normals);
     }
 
+private:
+    void calculateNormals(const arma::Cube<ctype>& jt,
+                          arma::Mat<ctype>& normals) const {
+        const int mdim = DuneGeometry::mydimension;
+        const int cdim = DuneGeometry::coorddimension;
+
+        if (mdim != cdim - 1)
+            throw std::logic_error("ConcreteGeometry::calculateNormals(): "
+                                   "normal vectors are defined only for "
+                                   "entities of dimension (worldDimension - 1)");
+
+        const int pointCount = jt.n_slices;
+        normals.set_size(cdim, pointCount);
+
+        // First calculate normal vectors of arbitrary length
+
+        // Compile-time if
+        if (cdim == 3)
+            for (int i = 0; i < pointCount; ++i) {
+                normals(0,i) = jt(0,1,i) * jt(1,2,i) - jt(0,2,i) * jt(1,1,i);
+                normals(1,i) = jt(0,2,i) * jt(1,0,i) - jt(0,0,i) * jt(1,2,i);
+                normals(2,i) = jt(0,0,i) * jt(1,1,i) - jt(0,1,i) * jt(1,0,i);
+            }
+        else if (cdim == 2)
+            for (int i = 0; i < pointCount; ++i) {
+                normals(0,i) = jt(0,1,i);
+                normals(1,i) = jt(0,0,i);
+            }
+        else if (cdim == 1) // probably unnecessary
+            for (int i = 0; i < pointCount; ++i)
+                normals(0,i) = 1.;
+        else
+            throw std::runtime_error("ConcreteGeometry::calculateNormals(): "
+                                     "Normal vector is not defined for "
+                                     "zero-dimensional space");
+
+        // Now set vector length to 1.
+
+        for (int i = 0; i < pointCount; ++i) {
+            ctype sum = 0.;
+            for (int dim = 0; dim < cdim; ++dim)
+                sum += normals(dim, i) * normals(dim, i);
+            normals.col(i) /= sqrt(sum);
+        }
+    }
 };
 
 } // namespace Bempp

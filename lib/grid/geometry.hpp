@@ -193,6 +193,19 @@ public:
     virtual void jacobianInverseTransposed(const arma::Mat<ctype>& local,
                                            arma::Cube<ctype>& jacobian_inv_t) const = 0;
 
+    /** \brief Unit vector normal to the entity.
+     *
+     *  An exception is thrown if dim() != dimWorld() - 1.
+     *
+     *  \param[in]  local
+     *    Matrix whose \f$i\f$th column contains the local coordinates of a point \f$x_i \in D\f$.
+     *  \param[out]  jacobian_t
+     *    Matrix whose \f$i\f$th column containts components of a unit vector
+     *    normal to the entity at \f$x_i\f$.
+     */
+    virtual void normal(const arma::Mat<ctype>& local,
+                        arma::Mat<ctype>& normal) const = 0;
+
     virtual void getData(int what, const arma::Mat<ctype>& local,
                          Fiber::GeometricalData<ctype>& data) const = 0;
 };
