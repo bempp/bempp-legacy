@@ -25,6 +25,7 @@
 #include "assembly/assembly_options.hpp"
 #include "assembly/identity_operator.hpp"
 #include "assembly/single_layer_potential_3d.hpp"
+#include "assembly/double_layer_potential_3d.hpp"
 
 #include "assembly/discrete_scalar_valued_linear_operator.hpp"
 #include "fiber/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
@@ -58,12 +59,14 @@ enum MeshVariant
     TWO_TRIANGLES_SHARING_EDGES_1_AND_0,
     SIMPLE_MESH_9,
     CUBE_12,
+    CUBE_12_REORIENTED, // all elements oriented so that normals point outwards
     CUBE_384
 };
 
 enum OperatorVariant
 {
     SINGLE_LAYER_POTENTIAL,
+    DOUBLE_LAYER_POTENTIAL,
     IDENTITY
 };
 
@@ -77,8 +80,8 @@ inline bool approxEqual(double x, double y)
   */
 int main()
 {
-    const MeshVariant meshVariant = TWO_TRIANGLES_SHARING_VERTEX_0;
-    const OperatorVariant opVariant = SINGLE_LAYER_POTENTIAL;
+    const MeshVariant meshVariant = CUBE_12_REORIENTED;
+    const OperatorVariant opVariant = DOUBLE_LAYER_POTENTIAL;
 
     const char TWO_DISJOINT_TRIANGLES_FNAME[] = "two_disjoint_triangles.msh";
     const char TWO_TRIANGLES_SHARING_VERTEX_0_FNAME[] = "two_triangles_sharing_vertex_0.msh";
@@ -88,6 +91,7 @@ int main()
     const char TWO_TRIANGLES_SHARING_EDGES_1_AND_0_FNAME[] = "two_triangles_sharing_edges_1_and_0.msh";
     const char SIMPLE_MESH_9_FNAME[] = "simple_mesh_9_elements.msh";
     const char CUBE_12_FNAME[] = "cube-12.msh";
+    const char CUBE_12_REORIENTED_FNAME[] = "cube-12-reoriented.msh";
     const char CUBE_384_FNAME[] = "cube-384.msh";
 
     const char* MESH_FNAME = 0;
@@ -108,6 +112,8 @@ int main()
         MESH_FNAME = SIMPLE_MESH_9_FNAME; break;
     case CUBE_12:
         MESH_FNAME = CUBE_12_FNAME; break;
+    case CUBE_12_REORIENTED:
+        MESH_FNAME = CUBE_12_REORIENTED_FNAME; break;
     case CUBE_384:
         MESH_FNAME = CUBE_384_FNAME; break;
     default:
@@ -165,6 +171,8 @@ int main()
     {
     case SINGLE_LAYER_POTENTIAL:
         op = LinearOperatorPtr(new SingleLayerPotential3D<double>); break;
+    case DOUBLE_LAYER_POTENTIAL:
+        op = LinearOperatorPtr(new DoubleLayerPotential3D<double>); break;
     case IDENTITY:
         op = LinearOperatorPtr(new IdentityOperator<double>); break;
     default:
