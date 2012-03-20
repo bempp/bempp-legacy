@@ -17,6 +17,22 @@ void SingleLayerPotential3DKernel<ValueType>::addGeometricalDependencies(
 }
 
 template <typename ValueType>
+inline ValueType SingleLayerPotential3DKernel<ValueType>::evaluateAtPointPair(
+        const arma::Col<ValueType>& testPoint,
+        const arma::Col<ValueType>& trialPoint) const
+{
+    const int coordCount = testPoint.n_rows;
+
+    ValueType sum = 0;
+    for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex)
+    {
+        ValueType diff = testPoint(coordIndex) - trialPoint(coordIndex);
+        sum += diff * diff;
+    }
+    return 1. / (4. * M_PI * sqrt(sum));
+}
+
+template <typename ValueType>
 void SingleLayerPotential3DKernel<ValueType>::evaluateAtPointPairs(
         const GeometricalData<ValueType>& testGeomData,
         const GeometricalData<ValueType>& trialGeomData,
@@ -36,18 +52,10 @@ void SingleLayerPotential3DKernel<ValueType>::evaluateAtPointPairs(
 #endif
 
     const int pointCount = testPoints.n_cols;
-    const int coordCount = testPoints.n_rows;
     result.set_size(1, 1, pointCount);
     for (int i = 0; i < pointCount; ++i)
-    {
-        ValueType sum = 0;
-        for (int j = 0; j < coordCount; ++j)
-        {
-            ValueType diff = testPoints(j, i) - trialPoints(j, i);
-            sum += diff * diff;
-        }
-        result(0, 0, i) = 1. / (4. * M_PI * sqrt(sum));
-    }
+        result(0, 0, i) = evaluateAtPointPair(testPoints.unsafe_col(i),
+                                              trialPoints.unsafe_col(i));
 }
 
 template <typename ValueType>
@@ -72,16 +80,9 @@ void SingleLayerPotential3DKernel<ValueType>::evaluateOnGrid(
     result.set_size(1, 1, testPointCount,  trialPointCount);
     for (int trialIndex = 0; trialIndex < trialPointCount; ++trialIndex)
         for (int testIndex = 0; testIndex < testPointCount; ++testIndex)
-        {
-            ValueType sum = 0;
-            for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex)
-            {
-                ValueType diff = testPoints(coordIndex, testIndex) -
-                        trialPoints(coordIndex, trialIndex);
-                sum += diff * diff;
-            }
-            result(0, 0, testIndex, trialIndex) = 1. / (4. * M_PI * sqrt(sum));
-        }
+            result(0, 0, testIndex, trialIndex) =
+                    evaluateAtPointPair(testPoints.unsafe_col(testIndex),
+                                        trialPoints.unsafe_col(trialIndex));
 }
 
 #ifdef COMPILE_FOR_FLOAT

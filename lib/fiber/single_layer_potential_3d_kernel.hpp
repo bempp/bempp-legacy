@@ -45,6 +45,10 @@ public:
     virtual void evaluateOnGrid(const GeometricalData<ValueType>& testGeomData,
                                 const GeometricalData<ValueType>& trialGeomData,
                                 Array4D<ValueType>& result) const;
+
+private:
+    ValueType evaluateAtPointPair(const arma::Col<ValueType>& testPoint,
+                                  const arma::Col<ValueType>& trialPoint) const;
 };
 
 } // namespace Fiber
