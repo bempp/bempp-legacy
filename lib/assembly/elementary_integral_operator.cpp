@@ -101,6 +101,7 @@ private:
     mutable MutexType& m_mutex;
 };
 
+#ifdef WITH_AHMED
 template <typename ValueType>
 class AcaWeakFormAssemblerLoopBody
 {
@@ -142,6 +143,7 @@ private:
     const AcaOptions& m_options;
     mutable tbb::atomic<size_t>& m_done;
 };
+#endif
 
 } // namespace
 
