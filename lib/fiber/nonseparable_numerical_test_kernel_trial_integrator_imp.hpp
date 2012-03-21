@@ -82,11 +82,14 @@ void NonseparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>:
     // Assert that the kernel tensor dimensions are compatible
     // with the number of components of the functions
 
-    // TODO: This will need to be modified once we allow scalar-valued kernels
-    // (treated as if they were multiplied by the unit tensor) with
-    // vector-valued functions
-    assert(testComponentCount == kernelRowCount);
-    assert(kernelColCount == trialComponentCount);
+    const bool scalarKernel = (kernelRowCount == 1 && kernelColCount == 1);
+    if (scalarKernel)
+        assert(testComponentCount == trialComponentCount);
+    else
+    {
+        assert(testComponentCount == kernelRowCount);
+        assert(kernelColCount == trialComponentCount);
+    }
 
     BasisData<ValueType> testBasisData, trialBasisData;
     GeometricalData<ValueType> testGeomData, trialGeomData;
@@ -141,24 +144,37 @@ void NonseparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>:
 
         m_kernel.evaluateAtPointPairs(testGeomData, trialGeomData, kernelValues);
 
-        // For now, we assume that the kernel is (general) tensorial,
-        // later we might handle specially the case of it being a scalar
-        // times the identity tensor.
-        for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
-            for (int testDof = 0; testDof < testDofCount; ++testDof)
-            {
-                ValueType sum = 0.;
-                for (int point = 0; point < pointCount; ++point)
-                    for (int trialDim = 0; trialDim < trialComponentCount; ++trialDim)
-                        for (int testDim = 0; testDim < testComponentCount; ++testDim)
+        if (scalarKernel)
+            for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
+                for (int testDof = 0; testDof < testDofCount; ++testDof)
+                {
+                    ValueType sum = 0.;
+                    for (int point = 0; point < pointCount; ++point)
+                        for (int dim = 0; dim < testComponentCount; ++dim)
                             sum +=  m_quadWeights[point] *
                                     testGeomData.integrationElements(point) *
-                                    testValues(testDim, testDof, point) *
-                                    kernelValues(testDim, trialDim, point) *
-                                    trialValues(trialDim, trialDof, point) *
+                                    testValues(dim, testDof, point) *
+                                    kernelValues(0, 0, point) *
+                                    trialValues(dim, trialDof, point) *
                                     trialGeomData.integrationElements(point);
-                result(testDof, trialDof, indexA) = sum;
-            }
+                    result(testDof, trialDof, indexA) = sum;
+                }
+        else
+            for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
+                for (int testDof = 0; testDof < testDofCount; ++testDof)
+                {
+                    ValueType sum = 0.;
+                    for (int point = 0; point < pointCount; ++point)
+                        for (int trialDim = 0; trialDim < trialComponentCount; ++trialDim)
+                            for (int testDim = 0; testDim < testComponentCount; ++testDim)
+                                sum +=  m_quadWeights[point] *
+                                        testGeomData.integrationElements(point) *
+                                        testValues(testDim, testDof, point) *
+                                        kernelValues(testDim, trialDim, point) *
+                                        trialValues(trialDim, trialDof, point) *
+                                        trialGeomData.integrationElements(point);
+                    result(testDof, trialDof, indexA) = sum;
+                }
     }
 }
 
@@ -189,11 +205,14 @@ void NonseparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>:
     // Assert that the kernel tensor dimensions are compatible
     // with the number of components of the functions
 
-    // TODO: This will need to be modified once we allow scalar-valued kernels
-    // (treated as if they were multiplied by the unit tensor) with
-    // vector-valued functions
-    assert(testComponentCount == kernelRowCount);
-    assert(kernelColCount == trialComponentCount);
+    const bool scalarKernel = (kernelRowCount == 1 && kernelColCount == 1);
+    if (scalarKernel)
+        assert(testComponentCount == trialComponentCount);
+    else
+    {
+        assert(testComponentCount == kernelRowCount);
+        assert(kernelColCount == trialComponentCount);
+    }
 
     BasisData<ValueType> testBasisData, trialBasisData;
     GeometricalData<ValueType> testGeomData, trialGeomData;
@@ -230,24 +249,38 @@ void NonseparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>:
 
         m_kernel.evaluateAtPointPairs(testGeomData, trialGeomData, kernelValues);
 
-        // For now, we assume that the kernel is (general) tensorial,
-        // later we might handle specially the case of it being a scalar
-        // times the identity tensor.
-        for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
-            for (int testDof = 0; testDof < testDofCount; ++testDof)
-            {
-                ValueType sum = 0.;
-                for (int point = 0; point < pointCount; ++point)
-                    for (int trialDim = 0; trialDim < trialComponentCount; ++trialDim)
-                        for (int testDim = 0; testDim < testComponentCount; ++testDim)
+        if (scalarKernel)
+            for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
+                for (int testDof = 0; testDof < testDofCount; ++testDof)
+                {
+                    ValueType sum = 0.;
+                    for (int point = 0; point < pointCount; ++point)
+                        for (int dim = 0; dim < testComponentCount; ++dim)
                             sum +=  m_quadWeights[point] *
                                     testGeomData.integrationElements(point) *
-                                    testValues(testDim, testDof, point) *
-                                    kernelValues(testDim, trialDim, point) *
-                                    trialValues(trialDim, trialDof, point) *
+                                    testValues(dim, testDof, point) *
+                                    kernelValues(0, 0, point) *
+                                    trialValues(dim, trialDof, point) *
                                     trialGeomData.integrationElements(point);
-                result(testDof, trialDof, pairIndex) = sum;
-            }
+                    result(testDof, trialDof, pairIndex) = sum;
+                }
+        else
+            for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
+                for (int testDof = 0; testDof < testDofCount; ++testDof)
+                {
+                    ValueType sum = 0.;
+                    for (int point = 0; point < pointCount; ++point)
+                        for (int trialDim = 0; trialDim < trialComponentCount; ++trialDim)
+                            for (int testDim = 0; testDim < testComponentCount; ++testDim)
+                                sum +=  m_quadWeights[point] *
+                                        testGeomData.integrationElements(point) *
+                                        testValues(testDim, testDof, point) *
+                                        kernelValues(testDim, trialDim, point) *
+                                        trialValues(trialDim, trialDof, point) *
+                                        trialGeomData.integrationElements(point);
+                    result(testDof, trialDof, pairIndex) = sum;
+                }
+
     }
 }
 
