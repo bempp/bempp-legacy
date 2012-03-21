@@ -121,8 +121,6 @@ evaluateLocalWeakForms(
         basesA[i] = m_basesA[elementIndicesA[i]];
     const Basis& basisB = *m_basesB[elementIndexB];
 
-    // TODO: possibly precalculate diagonal elements
-
     // Find cached matrices; select integrators to calculate non-cached ones
     typedef std::pair<const Integrator*, const Basis*> QuadVariant;
     const QuadVariant CACHED(0, 0);
