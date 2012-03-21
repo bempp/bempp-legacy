@@ -26,7 +26,13 @@ target_link_libraries (bempp
 	)
 
 # TBB
-target_link_libraries (bempp debug ${TBB_LIBRARY_DEBUG} optimized ${TBB_LIBRARY_RELEASE})
+
+if (TBB_LIBRARY_DEBUG_FOUND)
+	target_link_libraries (bempp debug ${TBB_LIBRARY_DEBUG} optimized ${TBB_LIBRARY_RELEASE})
+else ()
+	target_link_libraries (bempp ${TBB_LIBRARY_RELEASE})
+endif ()
+
 set_property(
    TARGET bempp
    PROPERTY COMPILE_DEFINITIONS_DEBUG TBB_USE_DEBUG=1
