@@ -23,6 +23,7 @@ target_link_libraries (bempp
 	${BLAS_LIBRARIES}
 	${LIB_DUNE_COMMON}
 	${LIB_DUNE_GRID}
+	${ARMADILLO_LIBRARIES}
 	)
 
 # TBB
