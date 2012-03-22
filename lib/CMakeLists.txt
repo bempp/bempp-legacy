@@ -39,8 +39,6 @@ set_property(
    PROPERTY COMPILE_DEFINITIONS_DEBUG TBB_USE_DEBUG=1
    )
 
-include_directories(${TBB_INCLUDE_DIR})
-
 if (WITH_AHMED)
     target_link_libraries (bempp ${AHMED_LIBRARY} ${METIS_LIBRARY})
     add_definitions(-DWITH_AHMED)

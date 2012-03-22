@@ -26,6 +26,7 @@ if (WITH_TESTS)
   add_subdirectory(tests)
 endif (WITH_TESTS)
 
+
 # Uninstall target
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
