@@ -111,11 +111,6 @@ public:
     /** @} */
 
 protected:
-    template <typename DuneBasis>
-    void evaluateBasisFunctionsWithDune(
-            const arma::Mat<ctype>& local, arma::Cube<ValueType>& result) const;
-
-protected:
     Grid& m_grid;
 };
 
