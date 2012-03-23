@@ -29,9 +29,6 @@
 namespace Fiber
 {
 
-template <typename ValueType> class Basis;
-template <typename ValueType> class TestKernelTrialIntegrator;
-
 // Things to keep in mind:
 //
 // Additional quadrature order specific to the Helmholtz equation (dependence
