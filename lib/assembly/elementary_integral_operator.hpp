@@ -90,13 +90,13 @@ private:
     assembleOperatorInDenseMode(
             const arma::Mat<ctype>& testPoints,
             const Space<ValueType>& trialSpace,
-            LocalAssembler& integrationMgr,
+            LocalAssembler& assembler,
             const AssemblyOptions& options) const;
     std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
     assembleOperatorInAcaMode(
             const arma::Mat<ctype>& testPoints,
             const Space<ValueType>& trialSpace,
-            LocalAssembler& integrationMgr,
+            LocalAssembler& assembler,
             const AssemblyOptions& options) const;
     std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
 
@@ -106,13 +106,13 @@ private:
     assembleWeakFormInDenseMode(
             const Space<ValueType>& testSpace,
             const Space<ValueType>& trialSpace,
-            LocalAssembler& integrationMgr,
+            LocalAssembler& assembler,
             const AssemblyOptions &options) const;
     std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
     assembleWeakFormInAcaMode(
             const Space<ValueType>& testSpace,
             const Space<ValueType>& trialSpace,
-            LocalAssembler& integrationMgr,
+            LocalAssembler& assembler,
             const AssemblyOptions& options) const;
     /** @} */
 };
