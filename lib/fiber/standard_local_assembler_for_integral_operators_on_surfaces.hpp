@@ -40,7 +40,7 @@
 namespace Fiber
 {
 
-class OpenClHandler;
+template <typename ValueType, typename IndexType> class OpenClHandler;
 
 template <typename ValueType, typename GeometryFactory>
 class StandardLocalAssemblerForIntegralOperatorsOnSurfaces :
@@ -55,7 +55,7 @@ public:
             const Expression<ValueType>& testExpression,
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
-            const OpenClHandler& openClHandler,
+            const OpenClHandler<ValueType,int>& openClHandler,
             bool cacheSingularIntegrals);
     virtual ~StandardLocalAssemblerForIntegralOperatorsOnSurfaces();
 
@@ -103,7 +103,7 @@ private:
     const Expression<ValueType>& m_testExpression;
     const Kernel<ValueType>& m_kernel;
     const Expression<ValueType>& m_trialExpression;
-    const OpenClHandler& m_openClHandler;
+    const OpenClHandler<ValueType,int>& m_openClHandler;
 
     IntegratorMap m_TestKernelTrialIntegrators;
     Cache m_cache;

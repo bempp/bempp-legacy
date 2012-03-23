@@ -44,7 +44,7 @@ NumericalTestFunctionIntegrator(
         const RawGridGeometry<ValueType>& rawGeometry,
         const Expression<ValueType>& testExpression,
         const Function<ValueType>& function,
-        const OpenClHandler& openClHandler) :
+        const OpenClHandler<ValueType,int>& openClHandler) :
     m_localQuadPoints(localQuadPoints),
     m_quadWeights(quadWeights),
     m_geometryFactory(geometryFactory),

@@ -34,7 +34,7 @@ StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
         const Expression<ValueType>& testExpression,
         const Kernel<ValueType>& kernel,
         const Expression<ValueType>& trialExpression,
-        const OpenClHandler& openClHandler,
+        const OpenClHandler<ValueType,int>& openClHandler,
         bool cacheSingularIntegrals) :
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),

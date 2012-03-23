@@ -83,7 +83,9 @@ SourceTerm<ValueType>::assembleWeakForm(
             testSpace.shapeFunctionValueExpression();
 
     // Now create the assembler
-    Fiber::OpenClHandler openClHandler(options.openClOptions());
+    Fiber::OpenClHandler<ValueType,int> openClHandler(options.openClOptions());
+    openClHandler.pushGeometry (rawGeometry.vertices(),
+				rawGeometry.elementCornerIndices());
 
     std::auto_ptr<LocalAssembler> assembler =
             factory.make(*geometryFactory, rawGeometry,

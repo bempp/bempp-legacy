@@ -53,7 +53,7 @@ public:
             const Expression<ValueType>& testExpression,
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
-            const OpenClHandler& openClHandler,
+            const OpenClHandler<ValueType,int>& openClHandler,
             bool cacheSingularIntegrals) const {
         return std::auto_ptr<LocalAssemblerForIntegralOperators<ValueType> >(
                     new LocalAssemblerForIntegralOperators_(
@@ -69,7 +69,7 @@ public:
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
-            const OpenClHandler& openClHandler,
+            const OpenClHandler<ValueType,int>& openClHandler,
             bool cacheSingularIntegrals) const {
         throw std::runtime_error("StandardLocalAssemblerFactoryForOperatorsOnSurfaces::"
                                  "make(): collocation mode not implemented yet.");
@@ -82,7 +82,7 @@ public:
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Expression<ValueType>& testExpression,
             const Expression<ValueType>& trialExpression,
-            const OpenClHandler& openClHandler) const {
+            const OpenClHandler<ValueType,int>& openClHandler) const {
         return std::auto_ptr<LocalAssemblerForIdentityOperator<ValueType> >(
                     new LocalAssemblerForIdentityOperator_(
                         geometryFactory, rawGeometry,
@@ -96,7 +96,7 @@ public:
             const RawGridGeometry<ValueType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Expression<ValueType>& trialExpression,
-            const OpenClHandler& openClHandler) const {
+            const OpenClHandler<ValueType,int>& openClHandler) const {
     throw std::runtime_error("StandardLocalAssemblerFactoryForOperatorsOnSurfaces::"
                              "make(): collocation mode not implemented yet.");
     }
@@ -107,7 +107,7 @@ public:
             const std::vector<const Basis<ValueType>*>& testBases,
             const Expression<ValueType>& testExpression,
             const Function<ValueType>& function,
-            const OpenClHandler& openClHandler) const {
+            const OpenClHandler<ValueType,int>& openClHandler) const {
         return std::auto_ptr<LocalAssemblerForSourceTerms<ValueType> >(
                     new LocalAssemblerForSourceTerms_(
                         geometryFactory, rawGeometry,

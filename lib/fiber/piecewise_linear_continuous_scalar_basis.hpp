@@ -5,6 +5,7 @@
 
 #include "basis_data.hpp"
 #include "dune_basis_helper.hpp"
+#include "CL/piecewise_linear_continuous_scalar_basis.cl.str"
 
 #include <dune/localfunctions/lagrange/p1/p1localbasis.hh>
 #include <dune/localfunctions/lagrange/q1/q1localbasis.hh>
@@ -84,6 +85,23 @@ public:
                                      "not implemented yet");
         }
     }
+
+    virtual std::string clCodeString (const std::string modifier) const
+    {
+        std::string funcName ("clBasisf");
+	std::string str (piecewise_linear_continuous_scalar_basis_cl,
+			 piecewise_linear_continuous_scalar_basis_cl_len);
+	if (modifier.size() > 0) {
+	    size_t len = funcName.size();
+  	    int n = str.find (funcName);
+	    while (n != std::string::npos) {
+	        str.insert (n+len, modifier);
+		n = str.find (funcName, n+len);
+	    }
+	}
+	return str;
+    }
+
 };
 
 } // namespace Fiber

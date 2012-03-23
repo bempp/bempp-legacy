@@ -43,7 +43,7 @@ NumericalTestTrialIntegrator(
         const RawGridGeometry<ValueType>& rawGeometry,
         const Expression<ValueType>& testExpression,
         const Expression<ValueType>& trialExpression,
-        const OpenClHandler& openClHandler) :
+        const OpenClHandler<ValueType,int>& openClHandler) :
     m_localQuadPoints(localQuadPoints),
     m_quadWeights(quadWeights),
     m_geometryFactory(geometryFactory),

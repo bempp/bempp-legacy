@@ -35,7 +35,7 @@ StandardLocalAssemblerForIdentityOperatorOnSurface(
         const std::vector<const Basis<ValueType>*>& trialBases,
         const Expression<ValueType>& testExpression,
         const Expression<ValueType>& trialExpression,
-        const OpenClHandler& openClHandler) :
+        const OpenClHandler<ValueType,int>& openClHandler) :
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
     m_testBases(testBases),
