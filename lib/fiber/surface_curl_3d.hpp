@@ -18,10 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber__surface_curl_hpp
-#define fiber__surface_curl_hpp
+#ifndef fiber_surface_curl_3d_hpp
+#define fiber_surface_curl_3d_hpp
 
 #include "expression.hpp"
+#include "scalar_space_mapping.hpp"
 
 #include <armadillo>
 #include <vector>
@@ -29,38 +30,30 @@
 namespace Fiber {
 
 template <typename ValueType>
-class SurfaceCurl : public Expression<ValueType>
+class SurfaceCurl3D : public Expression<ValueType>
 {
 public:
-    SurfaceCurl(int gridDimension) :
-        m_gridDimension(gridDimension)
-    {}
-
     virtual int domainDimension() const {
         return 1;
     }
 
     virtual int codomainDimension() const {
-        return m_gridDimension;
+        return 3;
     }
 
     virtual void addDependencies(int& basisDeps, int& geomDeps) const {
-        addShapeFunctionSurfaceCurlDependencies(basisDeps, geomDeps);
+        ScalarSpaceMapping<ValueType>::
+                addSurfaceCurlDependencies(basisDeps, geomDeps);
     }
 
     virtual void evaluate(const BasisData<ValueType>& basisData,
                           const GeometricalData<ValueType>& geomData,
                           arma::Cube<ValueType>& result) const {
-        // Probably the compatibility of dimensions of geomData's elements with
-        // m_gridDimension should be checked.
-        ScalarSpaceMapping::evaluateShapeFunctionSurfaceCurlsInternal(
-                    basisData, geomData, result);
+        ScalarSpaceMapping<ValueType>::
+                evaluateSurfaceCurls3D(basisData, geomData, result);
     }
-
-private:
-    const int m_gridDimension;
 };
 
-// namespace Fiber
+} // namespace Fiber
 
 #endif

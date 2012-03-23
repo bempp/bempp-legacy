@@ -80,9 +80,8 @@ public:
             points, localDofIndex, data.values);
         if (what & DERIVATIVES)
         {
-            throw std::runtime_error("PiecewiseLinearContinuousScalarBasis::"
-                                     "evaluation of derivatives "
-                                     "not implemented yet");
+            evaluateBasisFunctionDerivativesWithDune<ValueType, ValueType, DuneBasis>(
+            points, localDofIndex, data.derivatives);
         }
     }
 
