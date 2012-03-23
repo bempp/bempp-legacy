@@ -51,7 +51,7 @@ public:
     // variant it is necessary to check whether the element is triangular
     // or quadrilateral. Also, requests for element refinement should probably
     // be made via Space rather than via Grid.
-    Space(Grid& grid) : m_grid(grid)
+    explicit Space(Grid& grid) : m_grid(grid)
     {}
 
     virtual ~Space()

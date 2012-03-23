@@ -37,7 +37,7 @@ template <typename ValueType>
 class PiecewiseConstantScalarSpace : public ScalarSpace<ValueType>
 {
 public:
-    PiecewiseConstantScalarSpace(Grid& grid);
+    explicit PiecewiseConstantScalarSpace(Grid& grid);
 
     virtual int domainDimension() const;
     virtual int codomainDimension() const;
