@@ -32,16 +32,10 @@
 #include "assembly/discrete_scalar_valued_linear_operator.hpp"
 #include "fiber/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 
-#include "grid/entity.hpp"
-#include "grid/entity_iterator.hpp"
-#include "grid/geometry_factory.hpp"
 #include "grid/geometry.hpp"
-#include "grid/grid.hpp"
-#include "grid/grid_factory.hpp"
-#include "grid/grid_view.hpp"
-#include "grid/index_set.hpp"
-#include "grid/mapper.hpp"
-#include "grid/vtk_writer.hpp"
+#include "grid/geometry_factory.hpp"
+
+#include "meshes.hpp"
 
 #include "space/piecewise_linear_continuous_scalar_space.hpp"
 
@@ -51,20 +45,6 @@
 using namespace Bempp;
 using std::cout;
 using std::endl;
-
-enum MeshVariant
-{
-    TWO_DISJOINT_TRIANGLES,
-    TWO_TRIANGLES_SHARING_VERTEX_0,
-    TWO_TRIANGLES_SHARING_VERTICES_2_AND_0,
-    TWO_TRIANGLES_SHARING_VERTICES_1_AND_0,
-    TWO_TRIANGLES_SHARING_EDGES_0_AND_0,
-    TWO_TRIANGLES_SHARING_EDGES_1_AND_0,
-    SIMPLE_MESH_9,
-    CUBE_12,
-    CUBE_12_REORIENTED, // all elements oriented so that normals point outwards
-    CUBE_384
-};
 
 enum OperatorVariant
 {
@@ -94,65 +74,8 @@ int main()
 		const MeshVariant meshVariant = CUBE_384;
 		const OperatorVariant opVariant = DOUBLE_LAYER_POTENTIAL;
 
-		const char TWO_DISJOINT_TRIANGLES_FNAME[] = "two_disjoint_triangles.msh";
-		const char TWO_TRIANGLES_SHARING_VERTEX_0_FNAME[] = "two_triangles_sharing_vertex_0.msh";
-		const char TWO_TRIANGLES_SHARING_VERTICES_2_AND_0_FNAME[] = "two_triangles_sharing_vertices_2_and_0.msh";
-		const char TWO_TRIANGLES_SHARING_VERTICES_1_AND_0_FNAME[] = "two_triangles_sharing_vertices_1_and_0.msh";
-		const char TWO_TRIANGLES_SHARING_EDGES_0_AND_0_FNAME[] = "two_triangles_sharing_edges_0_and_0.msh";
-		const char TWO_TRIANGLES_SHARING_EDGES_1_AND_0_FNAME[] = "two_triangles_sharing_edges_1_and_0.msh";
-		const char SIMPLE_MESH_9_FNAME[] = "simple_mesh_9_elements.msh";
-		const char CUBE_12_FNAME[] = "cube-12.msh";
-		const char CUBE_12_REORIENTED_FNAME[] = "cube-12-reoriented.msh";
-		const char CUBE_384_FNAME[] = "cube-384.msh";
-
-		const char* MESH_FNAME = 0;
-		switch (meshVariant) {
-		case TWO_DISJOINT_TRIANGLES:
-			MESH_FNAME = TWO_DISJOINT_TRIANGLES_FNAME; break;
-		case TWO_TRIANGLES_SHARING_VERTEX_0:
-			MESH_FNAME = TWO_TRIANGLES_SHARING_VERTEX_0_FNAME; break;
-		case TWO_TRIANGLES_SHARING_VERTICES_2_AND_0:
-			MESH_FNAME = TWO_TRIANGLES_SHARING_VERTICES_2_AND_0_FNAME; break;
-		case TWO_TRIANGLES_SHARING_VERTICES_1_AND_0:
-			MESH_FNAME = TWO_TRIANGLES_SHARING_VERTICES_1_AND_0_FNAME; break;
-		case TWO_TRIANGLES_SHARING_EDGES_0_AND_0:
-			MESH_FNAME = TWO_TRIANGLES_SHARING_EDGES_0_AND_0_FNAME; break;
-		case TWO_TRIANGLES_SHARING_EDGES_1_AND_0:
-			MESH_FNAME = TWO_TRIANGLES_SHARING_EDGES_1_AND_0_FNAME; break;
-		case SIMPLE_MESH_9:
-			MESH_FNAME = SIMPLE_MESH_9_FNAME; break;
-		case CUBE_12:
-			MESH_FNAME = CUBE_12_FNAME; break;
-		case CUBE_12_REORIENTED:
-			MESH_FNAME = CUBE_12_REORIENTED_FNAME; break;
-		case CUBE_384:
-			MESH_FNAME = CUBE_384_FNAME; break;
-		default:
-			throw std::runtime_error("Invalid mesh name");
-		}
-
-		// Import the grid
-		GridParameters params;
-		params.topology = GridParameters::TRIANGULAR;
-
-		std::auto_ptr<Grid> grid(GridFactory::importGmshGrid(params, std::string(MESH_FNAME),
-								 true, // verbose
-								 false)); // insertBoundarySegments
-
-		std::cout << "Elements:\n";
-		std::auto_ptr<GridView> view = grid->leafView();
-		const Mapper& elementMapper = view->elementMapper();
-		std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-		while (!it->finished())
-		{
-			const Entity<0>& entity = it->entity();
-			arma::Mat<double> corners;
-			entity.geometry().corners(corners);
-			std::cout << "Element #" << elementMapper.entityIndex(entity) << ":\n";
-			std::cout << corners << '\n';
-			it->next();
-		}
-		std::cout.flush();
+		std::auto_ptr<Grid> grid = loadmesh(meshVariant);
+		meshdetails(grid.get());
 
 		PiecewiseLinearContinuousScalarSpace<double> space(*grid);
 		space.assignDofs();
