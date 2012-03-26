@@ -93,7 +93,7 @@ int main()
 
         // assemblyOptions.switchToSparse();
 
-        assemblyOptions.switchToTbbAndOpenMp();
+        assemblyOptions.switchToTbb();
         assemblyOptions.setSingularIntegralCaching(AssemblyOptions::YES);
 
         // Fiber::OpenClOptions openClOptions;

@@ -166,7 +166,7 @@ int main()
 
 //    assemblyOptions.switchToSparse();
 
-    assemblyOptions.switchToTbbAndOpenMp();
+    assemblyOptions.switchToTbb();
     assemblyOptions.setSingularIntegralCaching(AssemblyOptions::NO);
 
     Fiber::AccuracyOptions accuracyOptions; // default

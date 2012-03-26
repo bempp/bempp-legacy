@@ -356,7 +356,7 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInDenseMode(
     typename Body::MutexType mutex;
 
     int maxThreadCount = 1;
-    if (options.parallelism() == AssemblyOptions::TBB_AND_OPEN_MP)
+    if (options.parallelism() == AssemblyOptions::TBB)
     {
         if (options.maxThreadCount() == AssemblyOptions::AUTO)
             maxThreadCount = tbb::task_scheduler_init::automatic;
