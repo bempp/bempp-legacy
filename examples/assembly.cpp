@@ -62,7 +62,10 @@ enum MeshVariant
     SIMPLE_MESH_9,
     CUBE_12,
     CUBE_12_REORIENTED, // all elements oriented so that normals point outwards
-    CUBE_384
+    CUBE_384,
+    CUBE_6144,
+    CUBE_24576,
+    CUBE_56736
 };
 
 enum OperatorVariant
@@ -102,6 +105,9 @@ int main()
     const char CUBE_12_FNAME[] = "cube-12.msh";
     const char CUBE_12_REORIENTED_FNAME[] = "cube-12-reoriented.msh";
     const char CUBE_384_FNAME[] = "cube-384.msh";
+    const char CUBE_6144_FNAME[] = "cube-6144.msh";
+    const char CUBE_24576_FNAME[] = "cube-24576.msh";
+    const char CUBE_56736_FNAME[] = "cube-56736.msh";
 
     const char* MESH_FNAME = 0;
     switch (meshVariant) {
@@ -125,6 +131,12 @@ int main()
         MESH_FNAME = CUBE_12_REORIENTED_FNAME; break;
     case CUBE_384:
         MESH_FNAME = CUBE_384_FNAME; break;
+    case CUBE_6144:
+        MESH_FNAME = CUBE_6144_FNAME; break;
+    case CUBE_24576:
+        MESH_FNAME = CUBE_24576_FNAME; break;
+    case CUBE_56736:
+        MESH_FNAME = CUBE_56736_FNAME; break;
     default:
         throw std::runtime_error("Invalid mesh name");
     }
