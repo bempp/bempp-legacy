@@ -41,8 +41,6 @@ template <typename ValueType> class LocalAssemblerForOperators;
 namespace Bempp
 {
 
-template <int codim> class EntityPointer;
-
 template <typename ValueType> class WeakFormAcaAssemblyHelper;
 
 template <typename ValueType>

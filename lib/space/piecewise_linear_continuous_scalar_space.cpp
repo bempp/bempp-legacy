@@ -88,9 +88,9 @@ void PiecewiseLinearContinuousScalarSpace<ValueType>::getBases(
 template <typename ValueType>
 const Fiber::Basis<ValueType>&
 PiecewiseLinearContinuousScalarSpace<ValueType>::basis(
-        const EntityPointer<0>& element) const
+        const Entity<0>& element) const
 {
-    switch (elementVariant(element.entity()))
+    switch (elementVariant(element))
     {
     case 3:
         return m_triangleBasis;

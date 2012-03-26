@@ -157,9 +157,8 @@ ElementaryIntegralOperator<ValueType>::assembleOperator(
     std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
     while (!it->finished())
     {
-        // const Entity<0>& element = it->entity();
-        // TODO: make basis() accept const Entity<0>& instead of EntityPointer<0>
-        trialBases.push_back(&trialSpace.basis(*it));
+        const Entity<0>& element = it->entity();
+        trialBases.push_back(&trialSpace.basis(element));
         it->next();
     }
 
@@ -238,10 +237,9 @@ ElementaryIntegralOperator<ValueType>::assembleWeakForm(
     std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
     while (!it->finished())
     {
-        // const Entity<0>& element = it->entity();
-        // TODO: make basis() accept const Entity<0>& instead of EntityPointer<0>
-        testBases.push_back(&testSpace.basis(*it));
-        trialBases.push_back(&trialSpace.basis(*it));
+        const Entity<0>& element = it->entity();
+        testBases.push_back(&testSpace.basis(element));
+        trialBases.push_back(&trialSpace.basis(element));
         it->next();
     }
 

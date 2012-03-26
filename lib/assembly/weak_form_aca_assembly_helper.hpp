@@ -38,7 +38,6 @@ namespace Bempp
 {
 
 class AssemblyOptions;
-template <int codim> class EntityPointer;
 template <typename ValueType> class DiscreteScalarValuedLinearOperator;
 template <typename ValueType> class Space;
 
