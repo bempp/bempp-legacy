@@ -23,16 +23,22 @@ target_link_libraries (bempp
 	${BLAS_LIBRARIES}
 	${LIB_DUNE_COMMON}
 	${LIB_DUNE_GRID}
+	${OPENCL_LIBRARIES}
+	${ARMADILLO_LIBRARIES}
 	)
 
 # TBB
-target_link_libraries (bempp debug ${TBB_LIBRARY_DEBUG} optimized ${TBB_LIBRARY_RELEASE})
+
+if (TBB_LIBRARY_DEBUG_FOUND)
+	target_link_libraries (bempp debug ${TBB_LIBRARY_DEBUG} optimized ${TBB_LIBRARY_RELEASE})
+else ()
+	target_link_libraries (bempp ${TBB_LIBRARY_RELEASE})
+endif ()
+
 set_property(
    TARGET bempp
    PROPERTY COMPILE_DEFINITIONS_DEBUG TBB_USE_DEBUG=1
    )
-
-include_directories(${TBB_INCLUDE_DIR})
 
 if (WITH_AHMED)
     target_link_libraries (bempp ${AHMED_LIBRARY} ${METIS_LIBRARY})

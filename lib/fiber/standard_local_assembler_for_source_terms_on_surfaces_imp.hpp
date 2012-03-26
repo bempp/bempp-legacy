@@ -37,7 +37,7 @@ StandardLocalAssemblerForSourceTermsOnSurfaces(
         const std::vector<const Basis<ValueType>*>& testBases,
         const Expression<ValueType>& testExpression,
         const Function<ValueType>& function,
-        const OpenClHandler& openClHandler) :
+        const OpenClHandler<ValueType,int>& openClHandler) :
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
     m_testBases(testBases),

@@ -14,6 +14,7 @@ set(TBB_INCLUDE_DIR "" CACHE PATH "Full path to Intel TBB include directory")
 set(TBB_LIBRARY_DIR "" CACHE PATH "Full path to the directory with Intel TBB libraries")
 find_library(TBB_LIBRARY_DEBUG tbb_debug ${TBB_LIBRARY_DIR})
 find_library(TBB_LIBRARY_RELEASE tbb ${TBB_LIBRARY_DIR})
+include_directories(${TBB_INCLUDE_DIR})
 
 # Ahmed (optional, used only if WITH_AHMED is set)
 set(AHMED_INCLUDE_DIR "" CACHE PATH "Full path to the AHMED include directory")
@@ -34,3 +35,11 @@ include_directories(${CMAKE_SOURCE_DIR}/contrib/dune/dune-common)
 include_directories(${CMAKE_SOURCE_DIR}/contrib/dune/dune-grid)
 include_directories(${CMAKE_SOURCE_DIR}/contrib/dune/dune-localfunctions)
 include_directories(${CMAKE_SOURCE_DIR}/contrib/dune/dune-foamgrid)
+
+# OpenCL installation location
+if (WITH_OPENCL)
+    find_package(OPENCL)
+    include_directories(${OPENCL_INCLUDE_DIR})
+
+    add_definitions(-DWITH_OPENCL)
+endif()

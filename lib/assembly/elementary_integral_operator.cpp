@@ -112,7 +112,7 @@ ElementaryIntegralOperator<ValueType>::makeAssembler(
         const Fiber::RawGridGeometry<ValueType>& rawGeometry,
         const std::vector<const Fiber::Basis<ValueType>*>& testBases,
         const std::vector<const Fiber::Basis<ValueType>*>& trialBases,
-        const Fiber::OpenClHandler& openClHandler,
+        const Fiber::OpenClHandler<ValueType, int>& openClHandler,
         bool cacheSingularIntegrals) const
 {
     return assemblerFactory.make(geometryFactory, rawGeometry,
@@ -164,7 +164,9 @@ ElementaryIntegralOperator<ValueType>::assembleOperator(
     }
 
     // Now create the assembler
-    Fiber::OpenClHandler openClHandler(options.openClOptions());
+    Fiber::OpenClHandler<ValueType,int> openClHandler(options.openClOptions());
+    openClHandler.pushGeometry (rawGeometry.vertices(),
+				rawGeometry.elementCornerIndices());
     bool cacheSingularIntegrals =
             (options.singularIntegralCaching() == AssemblyOptions::YES ||
              (options.singularIntegralCaching() == AssemblyOptions::AUTO &&
@@ -244,7 +246,9 @@ ElementaryIntegralOperator<ValueType>::assembleWeakForm(
     }
 
     // Now create the assembler
-    Fiber::OpenClHandler openClHandler(options.openClOptions());
+    Fiber::OpenClHandler<ValueType,int> openClHandler(options.openClOptions());
+    openClHandler.pushGeometry (rawGeometry.vertices(),
+				rawGeometry.elementCornerIndices());
     bool cacheSingularIntegrals =
             (options.singularIntegralCaching() == AssemblyOptions::YES ||
              (options.singularIntegralCaching() == AssemblyOptions::AUTO &&

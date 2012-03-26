@@ -26,7 +26,7 @@
 namespace Fiber
 {
 
-class OpenClHandler;
+template <typename ValueType, typename IndexType> class OpenClHandler;
 template <typename ValueType> class Expression;
 template <typename ValueType> class Function;
 template <typename ValueType> class RawGridGeometry;
@@ -43,7 +43,7 @@ public:
             const RawGridGeometry<ValueType>& rawGeometry,
             const Expression<ValueType>& testExpression,
             const Function<ValueType>& trialExpression,
-            const OpenClHandler& openClHandler);
+            const OpenClHandler<ValueType,int>& openClHandler);
 
     virtual void integrate(
             const std::vector<int>& elementIndices,
@@ -59,7 +59,7 @@ private:
     const Expression<ValueType>& m_testExpression;
     const Function<ValueType>& m_function;
 
-    const OpenClHandler& m_openClHandler;
+    const OpenClHandler<ValueType,int>& m_openClHandler;
 };
 
 } // namespace Fiber

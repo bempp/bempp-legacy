@@ -6,8 +6,7 @@
 
 namespace Fiber
 {
-
-class OpenClHandler;
+template <typename ValueType, typename IndexType> class OpenClHandler;
 
 template <typename ValueType> class Basis;
 template <typename ValueType> class Expression;
@@ -37,7 +36,7 @@ public:
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
             ValueType multiplier,
-            const OpenClHandler& openClHandler,
+            const OpenClHandler<ValueType,int>& openClHandler,
             bool cacheSingularIntegrals) const = 0;
 
     /** \brief Allocate a collocation-mode local assembler for an integral operator.
@@ -50,7 +49,7 @@ public:
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
             ValueType multiplier,
-            const OpenClHandler& openClHandler,
+            const OpenClHandler<ValueType,int>& openClHandler,
             bool cacheSingularIntegrals) const = 0;
 
     /** @}
@@ -66,7 +65,7 @@ public:
             const Expression<ValueType>& testExpression,
             const Expression<ValueType>& trialExpression,
             ValueType multiplier,
-            const OpenClHandler& openClHandler) const = 0;
+            const OpenClHandler<ValueType,int>& openClHandler) const = 0;
 
     /** \brief Allocate a collocation-mode local assembler for an identity operator.
 
@@ -77,7 +76,7 @@ public:
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Expression<ValueType>& trialExpression,
             ValueType multiplier,
-            const OpenClHandler& openClHandler) const = 0;
+            const OpenClHandler<ValueType,int>& openClHandler) const = 0;
 
     /** @}
         @name Local assemblers for source terms
@@ -90,7 +89,7 @@ public:
             const std::vector<const Basis<ValueType>*>& testBases,
             const Expression<ValueType>& testExpression,
             const Function<ValueType>& function,
-            const OpenClHandler& openClHandler) const = 0;
+            const OpenClHandler<ValueType,int>& openClHandler) const = 0;
 
     /** @} */
 };

@@ -245,7 +245,7 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
     }
 
     // REFACT This will disappear in the constructor of LocalAssemblerFactory
-    Fiber::OpenClHandler openClHandler(options.openClOptions());
+    Fiber::OpenClHandler<ValueType, int> openClHandler(options.openClOptions());
 
     // REFACT This is unfortunately going to stay
     bool cacheSingularIntegrals =

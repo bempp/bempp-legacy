@@ -21,6 +21,14 @@ public:
                           const arma::Mat<ValueType>& points,
                           LocalDofIndex localDofIndex,
                           BasisData<ValueType>& data) const = 0;
+
+    /**
+     * \brief Returns an OpenCL code snippet for basis function evaluation
+     * \note The code snippet must provide device function devBasisEval
+     */
+    virtual std::string clCodeString (const std::string modifier) const {
+        throw std::runtime_error("Basis: clCodeString not implemented yet");
+    }
 };
 
 } // namespace Fiber

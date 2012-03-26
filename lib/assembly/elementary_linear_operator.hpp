@@ -8,10 +8,10 @@
 namespace Fiber
 {
 
-class OpenClHandler;
 template <typename ValueType> class LocalAssemblerForOperators;
 template <typename ValueType> class RawGridGeometry;
 template <typename ValueType> class Basis;
+template <typename CoordinateType, typename IndexType> class OpenClHandler;
 
 } // namespace Fiber
 
@@ -38,7 +38,7 @@ public:
             const Fiber::RawGridGeometry<ValueType>& rawGeometry,
             const std::vector<const Fiber::Basis<ValueType>*>& testBases,
             const std::vector<const Fiber::Basis<ValueType>*>& trialBases,
-            const Fiber::OpenClHandler& openClHandler,
+            const Fiber::OpenClHandler<ValueType, int>& openClHandler,
             bool cacheSingularIntegrals) const = 0;
 
     /** \brief Assemble the operator's weak form using a specified local assembler.

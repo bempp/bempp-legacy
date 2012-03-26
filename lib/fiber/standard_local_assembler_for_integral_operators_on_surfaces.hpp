@@ -40,8 +40,8 @@
 namespace Fiber
 {
 
-class OpenClHandler;
 class AccuracyOptions;
+template <typename ValueType, typename IndexType> class OpenClHandler;
 
 template <typename ValueType, typename GeometryFactory>
 class StandardLocalAssemblerForIntegralOperatorsOnSurfaces :
@@ -57,7 +57,7 @@ public:
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
             ValueType multiplier,
-            const OpenClHandler& openClHandler,
+            const OpenClHandler<ValueType,int>& openClHandler,
             bool cacheSingularIntegrals,
             const AccuracyOptions& accuracyOptions);
     virtual ~StandardLocalAssemblerForIntegralOperatorsOnSurfaces();
@@ -114,8 +114,8 @@ private:
     const Expression<ValueType>& m_testExpression;
     const Kernel<ValueType>& m_kernel;
     const Expression<ValueType>& m_trialExpression;
-    const OpenClHandler& m_openClHandler;
     ValueType m_multiplier;
+    const OpenClHandler<ValueType,int>& m_openClHandler;
     const AccuracyOptions& m_accuracyOptions;
 
     IntegratorMap m_TestKernelTrialIntegrators;

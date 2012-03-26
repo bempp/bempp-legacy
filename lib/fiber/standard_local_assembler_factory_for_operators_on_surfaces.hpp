@@ -61,7 +61,7 @@ public:
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
             ValueType multiplier,
-            const OpenClHandler& openClHandler,
+            const OpenClHandler<ValueType,int>& openClHandler,
             bool cacheSingularIntegrals) const {
         return std::auto_ptr<LocalAssemblerForOperators<ValueType> >(
                     new LocalAssemblerForIntegralOperators_(
@@ -79,7 +79,7 @@ public:
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
             ValueType multiplier,
-            const OpenClHandler& openClHandler,
+            const OpenClHandler<ValueType,int>& openClHandler,
             bool cacheSingularIntegrals) const {
         throw std::runtime_error("StandardLocalAssemblerFactoryForOperatorsOnSurfaces::"
                                  "make(): collocation mode not implemented yet.");
@@ -93,7 +93,7 @@ public:
             const Expression<ValueType>& testExpression,
             const Expression<ValueType>& trialExpression,
             ValueType multiplier,
-            const OpenClHandler& openClHandler) const {
+            const OpenClHandler<ValueType,int>& openClHandler) const {
         return std::auto_ptr<LocalAssemblerForOperators<ValueType> >(
                     new LocalAssemblerForIdentityOperator_(
                         geometryFactory, rawGeometry,
@@ -108,7 +108,7 @@ public:
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Expression<ValueType>& trialExpression,
             ValueType multiplier,
-            const OpenClHandler& openClHandler) const {
+            const OpenClHandler<ValueType,int>& openClHandler) const {
     throw std::runtime_error("StandardLocalAssemblerFactoryForOperatorsOnSurfaces::"
                              "make(): collocation mode not implemented yet.");
     }
@@ -119,7 +119,7 @@ public:
             const std::vector<const Basis<ValueType>*>& testBases,
             const Expression<ValueType>& testExpression,
             const Function<ValueType>& function,
-            const OpenClHandler& openClHandler) const {
+            const OpenClHandler<ValueType,int>& openClHandler) const {
         return std::auto_ptr<LocalAssemblerForSourceTerms<ValueType> >(
                     new LocalAssemblerForSourceTerms_(
                         geometryFactory, rawGeometry,

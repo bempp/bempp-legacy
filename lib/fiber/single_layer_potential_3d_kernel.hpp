@@ -46,6 +46,16 @@ public:
                                 const GeometricalData<ValueType>& trialGeomData,
                                 Array4D<ValueType>& result) const;
 
+
+    /**
+     * \brief Returns an OpenCL code snippet for kernel evaluation as a string.
+     * \note The code snippet provides device functions devKernevalGrid and devKernevalPair
+     *   (see CL/single_layer_potential_3D_kernel.cl)
+     * \note This method is independent of data, unlike the CPU versions, because the
+     *   data for multiple elements are pushed to the device separately.
+     */
+    virtual std::string evaluateClCode () const;
+
 private:
     ValueType evaluateAtPointPair(const arma::Col<ValueType>& testPoint,
                                   const arma::Col<ValueType>& trialPoint) const;

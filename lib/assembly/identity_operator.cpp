@@ -139,7 +139,9 @@ IdentityOperator<ValueType>::assembleWeakForm(
         it->next();
     }
 
-    Fiber::OpenClHandler openClHandler(options.openClOptions());
+    Fiber::OpenClHandler<ValueType,int> openClHandler(options.openClOptions());
+    openClHandler.pushGeometry (rawGeometry.vertices(),
+				rawGeometry.elementCornerIndices());
 
     // Now create the assembler
     std::auto_ptr<LocalAssembler> assembler =
@@ -323,7 +325,7 @@ IdentityOperator<ValueType>::makeAssembler(
         const Fiber::RawGridGeometry<ValueType>& rawGeometry,
         const std::vector<const Fiber::Basis<ValueType>*>& testBases,
         const std::vector<const Fiber::Basis<ValueType>*>& trialBases,
-        const Fiber::OpenClHandler& openClHandler,
+        const Fiber::OpenClHandler<ValueType, int>& openClHandler,
         bool /* cacheSingularIntegrals */) const
 {
     return assemblerFactory.make(geometryFactory, rawGeometry,

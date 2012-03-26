@@ -31,7 +31,7 @@
 namespace Fiber
 {
 
-class OpenClHandler;
+template <typename ValueType, typename IndexType> class OpenClHandler;
 
 template <typename ValueType, typename GeometryFactory>
 class StandardLocalAssemblerForSourceTermsOnSurfaces :
@@ -44,7 +44,7 @@ public:
             const std::vector<const Basis<ValueType>*>& testBases,
             const Expression<ValueType>& testExpression,
             const Function<ValueType>& kernel,
-            const OpenClHandler& openClHandler);
+            const OpenClHandler<ValueType,int>& openClHandler);
     virtual ~StandardLocalAssemblerForSourceTermsOnSurfaces();
 
 public:
@@ -71,7 +71,7 @@ private:
     const std::vector<const Basis<ValueType>*>& m_testBases;
     const Expression<ValueType>& m_testExpression;
     const Function<ValueType>& m_function;
-    const OpenClHandler& m_openClHandler;
+    const OpenClHandler<ValueType,int>& m_openClHandler;
 
     IntegratorMap m_testFunctionIntegrators;
 };

@@ -8,7 +8,8 @@ namespace Bempp
 AssemblyOptions::AssemblyOptions() :
     // TODO: perhaps set m_acaOptions to some defaults
     m_representation(DENSE),
-    m_parallelism(TBB_AND_OPEN_MP), m_maxThreadCount(AUTO)
+    m_parallelism(TBB_AND_OPEN_MP), m_maxThreadCount(AUTO),
+    m_singularIntegralCaching(AUTO)
 {}
 
 void AssemblyOptions::switchToDense()
@@ -35,6 +36,7 @@ void AssemblyOptions::switchToSparse()
 void AssemblyOptions::switchToOpenCl(const OpenClOptions& openClOptions)
 {
     m_openClOptions = openClOptions;
+    m_parallelism = OPEN_CL;
 }
 
 void AssemblyOptions::switchToTbbAndOpenMp(int maxThreadCount)
@@ -42,6 +44,7 @@ void AssemblyOptions::switchToTbbAndOpenMp(int maxThreadCount)
     if (maxThreadCount <= 0 && maxThreadCount != AUTO)
         throw std::runtime_error("AssemblyOptions::switchToTbbAndOpenMp(): "
                                  "maxThreadCount must be positive or equal to AUTO");
+    m_parallelism = TBB_AND_OPEN_MP;
     m_maxThreadCount = maxThreadCount;
 }
 

@@ -31,7 +31,7 @@ NonseparableNumericalTestKernelTrialIntegrator(
         const Expression<ValueType>& testExpression,
         const Kernel<ValueType>& kernel,
         const Expression<ValueType>& trialExpression,
-        const OpenClHandler& openClHandler) :
+        const OpenClHandler<ValueType,int>& openClHandler) :
     m_localTestQuadPoints(localTestQuadPoints),
     m_localTrialQuadPoints(localTrialQuadPoints),
     m_quadWeights(quadWeights),

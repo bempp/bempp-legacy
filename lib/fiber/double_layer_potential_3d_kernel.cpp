@@ -98,6 +98,16 @@ void DoubleLayerPotential3DKernel<ValueType>::evaluateOnGrid(
                         trialNormals.unsafe_col(trialIndex));
 }
 
+template<typename ValueType>
+std::string DoubleLayerPotential3DKernel<ValueType>::evaluateClCode () const
+{
+    // TODO!!!
+    //return std::string (double_layer_potential_3D_kernel_cl,
+    //		double_layer_potential_3D_kernel_cl_len);
+    return std::string();
+
+}
+
 #ifdef COMPILE_FOR_FLOAT
 template class DoubleLayerPotential3DKernel<float>;
 #endif

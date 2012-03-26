@@ -51,6 +51,16 @@ public:
     virtual void evaluateOnGrid(const GeometricalData<ValueType>& testGeomData,
                                 const GeometricalData<ValueType>& trialGeomData,
                                 Array4D<ValueType>& result) const = 0;
+
+    /**
+     * \brief Returns an OpenCL code snippet for kernel evaluation as a string.
+     * \note The code snippet must provide device functions devKernevalGrid and
+     *    devKernevalPair (for an implementation example, see
+     *    CL/single_layer_potential_3D_kernel.cl)
+     * \note The required data must have been pushed to device memory before
+     *    invokation.
+     */
+    virtual std::string evaluateClCode () const = 0;
 };
 
 } // namespace Fiber

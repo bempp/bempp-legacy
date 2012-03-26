@@ -38,7 +38,7 @@
 namespace Fiber
 {
 
-class OpenClHandler;
+template <typename ValueType, typename IndexType> class OpenClHandler;
 
 template <typename ValueType, typename GeometryFactory>
 class StandardLocalAssemblerForIdentityOperatorOnSurface :
@@ -53,7 +53,7 @@ public:
             const Expression<ValueType>& testExpression,
             const Expression<ValueType>& trialExpression,
             ValueType multiplier,
-            const OpenClHandler& openClHandler);
+            const OpenClHandler<ValueType,int>& openClHandler);
 
     virtual void evaluateLocalWeakForms(
             CallVariant callVariant,
@@ -88,7 +88,7 @@ private:
     const Expression<ValueType>& m_testExpression;
     const Expression<ValueType>& m_trialExpression;
     ValueType m_multiplier;
-    const OpenClHandler& m_openClHandler;
+    const OpenClHandler<ValueType,int>& m_openClHandler;
 
     IntegratorMap m_testTrialIntegrators;
 };

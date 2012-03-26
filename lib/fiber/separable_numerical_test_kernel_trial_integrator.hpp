@@ -23,11 +23,12 @@
 
 #include "test_kernel_trial_integrator.hpp"
 #include "raw_grid_geometry.hpp"
+#include "opencl_handler.hpp"
 
 namespace Fiber
 {
 
-class OpenClHandler;
+template <typename ValueType, typename IndexType> class OpenClHandler;
 template <typename ValueType> class Expression;
 template <typename ValueType> class Kernel;
 
@@ -50,7 +51,7 @@ public:
             const Expression<ValueType>& testExpression,
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
-            const OpenClHandler& openClHandler);
+            const OpenClHandler<ValueType,int>& openClHandler);
 
     virtual void integrate(
             CallVariant callVariant,
@@ -68,6 +69,30 @@ public:
             arma::Cube<ValueType>& result) const;
 
 private:
+    virtual void integrateCpu(
+            CallVariant callVariant,
+            const std::vector<int>& elementIndicesA,
+            int elementIndexB,
+            const Basis<ValueType>& basisA,
+            const Basis<ValueType>& basisB,
+            LocalDofIndex localDofIndexB,
+            arma::Cube<ValueType>& result) const;
+
+    virtual void integrateCl(
+	    CallVariant callVariant,
+	    const std::vector<int>& elementIndicesA,
+	    int elementIndexB,
+	    const Basis<ValueType>& basisA,
+	    const Basis<ValueType>& basisB,
+	    LocalDofIndex localDofIndexB,
+	    arma::Cube<ValueType>& result) const;
+
+    /**
+     * \brief Returns an OpenCL code snippet containing the clIntegrate
+     *   kernel function for integrating a single row or column
+     */
+    const std::string clStrIntegrateRowOrCol () const;
+
     arma::Mat<ValueType> m_localTestQuadPoints;
     arma::Mat<ValueType> m_localTrialQuadPoints;
     std::vector<ValueType> m_testQuadWeights;
@@ -79,7 +104,11 @@ private:
     const Expression<ValueType>& m_testExpression;
     const Kernel<ValueType>& m_kernel;
     const Expression<ValueType>& m_trialExpression;
-    const OpenClHandler& m_openClHandler;
+    const OpenClHandler<ValueType,int>& m_openClHandler;
+#ifdef WITH_OPENCL
+    cl::Buffer *clTestQuadPoints;
+    cl::Buffer *clTrialQuadPoints;
+#endif
 };
 
 } // namespace Fiber

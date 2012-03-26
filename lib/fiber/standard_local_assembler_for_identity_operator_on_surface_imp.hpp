@@ -36,7 +36,7 @@ StandardLocalAssemblerForIdentityOperatorOnSurface(
         const Expression<ValueType>& testExpression,
         const Expression<ValueType>& trialExpression,
         ValueType multiplier,
-        const OpenClHandler& openClHandler) :
+        const OpenClHandler<ValueType,int>& openClHandler) :
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
     m_testBases(testBases),

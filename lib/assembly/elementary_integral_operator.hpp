@@ -71,7 +71,7 @@ public:
             const Fiber::RawGridGeometry<ValueType>& rawGeometry,
             const std::vector<const Fiber::Basis<ValueType>*>& testBases,
             const std::vector<const Fiber::Basis<ValueType>*>& trialBases,
-            const Fiber::OpenClHandler& openClHandler,
+            const Fiber::OpenClHandler<ValueType, int>& openClHandler,
             bool cacheSingularIntegrals) const;
 
     virtual std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >

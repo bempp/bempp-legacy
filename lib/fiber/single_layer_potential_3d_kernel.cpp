@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include "geometrical_data.hpp"
+#include "CL/single_layer_potential_3D_kernel.cl.str"
 
 namespace Fiber
 {
@@ -84,6 +85,14 @@ void SingleLayerPotential3DKernel<ValueType>::evaluateOnGrid(
                     evaluateAtPointPair(testPoints.unsafe_col(testIndex),
                                         trialPoints.unsafe_col(trialIndex));
 }
+
+template<typename ValueType>
+std::string SingleLayerPotential3DKernel<ValueType>::evaluateClCode () const
+{
+    return std::string (single_layer_potential_3D_kernel_cl,
+			single_layer_potential_3D_kernel_cl_len);
+}
+
 
 #ifdef COMPILE_FOR_FLOAT
 template class SingleLayerPotential3DKernel<float>;
