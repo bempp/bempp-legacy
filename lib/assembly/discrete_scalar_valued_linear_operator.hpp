@@ -49,6 +49,23 @@ public:
 
     This method need not be supported by all subclasses. */
     virtual arma::Mat<ValueType> asMatrix() const = 0;
+
+    /** \brief Calculate a block of this operator's matrix representation and
+      add it to \p block.
+
+      \param[in] rows  Vector of row indices.
+      \param[in] cols  Vector of col indices.
+      \param[in,out] block
+        On entry, matrix of size (rows.size(), cols.size()).
+        On exit, each element (i, j) of this matrix will be augmented by the
+        element (rows[i], cols[j]) of the matrix representation of this operator.
+
+      Row and column indices may be unsorted.
+
+      This method need not be supported by all subclasses. */
+    virtual void addBlock(const std::vector<int>& rows,
+                          const std::vector<int>& cols,
+                          arma::Mat<ValueType>& block) const = 0;
 };
 
 } // namespace Bempp

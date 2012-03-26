@@ -10,7 +10,7 @@
 #include "../common/types.hpp"
 #include "../fiber/basis.hpp"
 #include "../fiber/local_assembler_factory.hpp"
-#include "../fiber/local_assembler_for_identity_operator.hpp"
+#include "../fiber/local_assembler_for_operators.hpp"
 #include "../fiber/opencl_handler.hpp"
 #include "../fiber/raw_grid_geometry.hpp"
 #include "../grid/entity_iterator.hpp"
@@ -71,6 +71,13 @@ inline int epetraSumIntoGlobalValues<double>(Epetra_FECrsMatrix& matrix,
 
 } // anonymous namespace
 #endif
+
+template <typename ValueType>
+bool IdentityOperator<ValueType>::supportsRepresentation(
+        AssemblyOptions::Representation repr) const
+{
+    return (repr == AssemblyOptions::DENSE || repr == AssemblyOptions::SPARSE);
+}
 
 template <typename ValueType>
 std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
@@ -137,17 +144,29 @@ IdentityOperator<ValueType>::assembleWeakForm(
     // Now create the assembler
     std::auto_ptr<LocalAssembler> assembler =
             factory.make(*geometryFactory, rawGeometry,
-                         testBases, trialBases, m_expression, m_expression,
+                         testBases, trialBases,
+                         m_expression, m_expression, this->multiplier(),
                          openClHandler);
 
+    return assembleWeakFormInternal(testSpace, trialSpace, *assembler, options);
+}
+
+template <typename ValueType>
+std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+IdentityOperator<ValueType>::assembleWeakFormInternal(
+        const Space<ValueType>& testSpace,
+        const Space<ValueType>& trialSpace,
+        LocalAssembler& assembler,
+        const AssemblyOptions& options) const
+{
     switch (options.operatorRepresentation())
     {
     case AssemblyOptions::DENSE:
         return assembleWeakFormInDenseMode(
-                    testSpace, trialSpace, *assembler, options);
+                    testSpace, trialSpace, assembler, options);
     case AssemblyOptions::SPARSE:
         return assembleWeakFormInSparseMode(
-                    testSpace, trialSpace, *assembler, options);
+                    testSpace, trialSpace, assembler, options);
     default:
         throw std::runtime_error("IdentityOperator::assembleWeakForm(): "
                                  "invalid assembly mode");
@@ -294,6 +313,23 @@ IdentityOperator<ValueType>::assembleWeakFormInSparseMode(
     throw std::runtime_error("To enable assembly in sparse mode, recompile BEM++ "
                              "with the symbol WITH_TRILINOS defined.");
 #endif
+}
+
+template <typename ValueType>
+std::auto_ptr<typename IdentityOperator<ValueType>::LocalAssembler>
+IdentityOperator<ValueType>::makeAssembler(
+        const LocalAssemblerFactory& assemblerFactory,
+        const GeometryFactory& geometryFactory,
+        const Fiber::RawGridGeometry<ValueType>& rawGeometry,
+        const std::vector<const Fiber::Basis<ValueType>*>& testBases,
+        const std::vector<const Fiber::Basis<ValueType>*>& trialBases,
+        const Fiber::OpenClHandler& openClHandler,
+        bool /* cacheSingularIntegrals */) const
+{
+    return assemblerFactory.make(geometryFactory, rawGeometry,
+                                 testBases, trialBases,
+                                 m_expression, m_expression, this->multiplier(),
+                                 openClHandler);
 }
 
 #ifdef COMPILE_FOR_FLOAT

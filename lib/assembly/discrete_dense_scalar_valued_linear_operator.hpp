@@ -55,6 +55,19 @@ public:
         return m_mat;
     }
 
+    virtual void addBlock(const std::vector<int>& rows,
+                          const std::vector<int>& cols,
+                          arma::Mat<ValueType>& block) const
+    {
+        if (block.n_rows != rows.size() || block.n_cols != cols.size())
+            throw std::invalid_argument(
+                    "DiscreteDenseScalarValuedLinearOperator::addBlock(): "
+                    "incorrect block size");
+        for (int col = 0; col < cols.size(); ++col)
+            for (int row = 0; row < rows.size(); ++row)
+                block(row, col) += m_mat(rows[row], cols[col]);
+    }
+
 private:
     arma::Mat<ValueType> m_mat;
 };

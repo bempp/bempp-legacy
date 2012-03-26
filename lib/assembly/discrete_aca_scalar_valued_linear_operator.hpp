@@ -129,6 +129,14 @@ public:
             result(i) = permutedResult(m_permutedRowIndices[i]);
     }
 
+    virtual void addBlock(const std::vector<int>& rows,
+                          const std::vector<int>& cols,
+                          arma::Mat<ValueType>& block) const
+    {
+        throw std::runtime_error("DiscreteAcaScalarValuedLinearOperator::"
+                                 "addBlock(): not implemented yet");
+    }
+
 private:
     AhmedMatrix<ValueType, GeometryTypeRows, GeometryTypeCols> m_matrix;
     std::vector<unsigned int> m_permutedRowIndices;

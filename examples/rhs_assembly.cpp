@@ -169,8 +169,9 @@ int main()
     assemblyOptions.switchToTbbAndOpenMp();
     assemblyOptions.setSingularIntegralCaching(AssemblyOptions::NO);
 
+    Fiber::AccuracyOptions accuracyOptions; // default
     Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, GeometryFactory>
-            factory;
+            factory(accuracyOptions);
 
     MyFunctor functor;
     Fiber::OrdinaryFunction<MyFunctor> function(functor);

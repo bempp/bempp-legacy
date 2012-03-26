@@ -18,46 +18,38 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_local_assembler_for_integral_operators_hpp
-#define fiber_local_assembler_for_integral_operators_hpp
+#ifndef fiber_local_assembler_for_operators_hpp
+#define fiber_local_assembler_for_operators_hpp
 
 #include "array_2d.hpp"
 #include "types.hpp"
 #include <vector>
-#include <stdexcept>
 
 namespace Fiber
 {
 
-// Things to keep in mind:
-//
-// Additional quadrature order specific to the Helmholtz equation (dependence
-// on k*h) will need to be handled via a kernel-specific code (there will be a
-// particular quadrature selector for Helmholtz kernels, probably derived from
-// the standard Sauter-Schwab quadrature selector).
-//
-// The quadrature manager needs to know the polynomial order of an element
-// and the increment in the integration order resulting from mesh curvature.
+/** \brief Abstract interface of a local assembler for operators.
 
-/** \brief Local assembler for integral operators.
+  A local assembler constructs local (element-by-element) matrix
+  representations of linear operators used in boundary-element methods.
 
-  This assembler provides methods that evaluate local (element-by-element) weak
-  forms of integrals occurring in boundary-element matrices of integral
-  operators. It automatically selects appropriate quadrature rules, depending
-  on the regularity properties of a kernel, maximum polynomial order of basis
-  functions on an element, element volume and (for double integrals)
-  element-element distance.
+  Typically, a separate local assembler must be constructed for each elementary
+  integral operator and for the identity operator.
+
+  Concrete subclasses of this interface class automatically select integrators
+  well-adapted for evaluation of specific integrals occurring in matrix
+  representations of different classes of operators.
  */
 template <typename ValueType>
-class LocalAssemblerForIntegralOperators
+class LocalAssemblerForOperators
 {
 public:
-    virtual ~LocalAssemblerForIntegralOperators() {}
+    virtual ~LocalAssemblerForOperators() {}
 
 //    /** \brief Number of dimensions over which integration takes place. */
 //    int elementDimension() const {
 //        asImp().elementDimension();
-//    }    
+//    }
 
     /** \brief Assemble local weak forms.
 
@@ -93,6 +85,17 @@ public:
             const std::vector<int>& testElementIndices,
             const std::vector<int>& trialElementIndices,
             Fiber::Array2D<arma::Mat<ValueType> >& result) = 0;
+
+    /** \brief Assemble local weak forms.
+
+      \param[in]  elementIndices Vector of element indices.
+      \param[out] result         Vector of weak forms of the operator on
+                                 element pairs
+                                 (\p element(\p i), \p element(\p i))
+                                 for \p i in \p elementIndices. */
+    virtual void evaluateLocalWeakForms(
+            const std::vector<int>& elementIndices,
+            std::vector<arma::Mat<ValueType> >& result) = 0;
 
     // TODO: evaluateLocalOperator or something similar
 };

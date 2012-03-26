@@ -85,7 +85,7 @@ inline bool approxZero(double x)
 }
 
 /**
-    A script for rudimentary testing of the single-layer-potential operator.
+    A script for rudimentary testing of various operators.
   */
 int main()
 {
@@ -171,10 +171,11 @@ int main()
     assemblyOptions.switchToTbbAndOpenMp();
     assemblyOptions.setSingularIntegralCaching(AssemblyOptions::NO);
 
+    Fiber::AccuracyOptions accuracyOptions; // default
     Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, GeometryFactory>
-            factory;
+            factory(accuracyOptions);
 
-    typedef std::auto_ptr<LinearOperator<double> > LinearOperatorPtr;
+    typedef std::auto_ptr<ElementaryLinearOperator<double> > LinearOperatorPtr;
     LinearOperatorPtr op;
     switch (opVariant)
     {

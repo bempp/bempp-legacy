@@ -37,16 +37,9 @@ public:
 
     /* acquires ownership of these operators */
     DiscreteScalarValuedLinearOperatorSuperposition(
-            boost::ptr_vector<TermType>& terms,
-            const std::vector<ValueType>& multipliers) :
-        m_multipliers(multipliers)
+            boost::ptr_vector<TermType>& terms)
     {
         m_terms.transfer(m_terms.end(), terms);
-        if (m_terms.size() != m_multipliers.size())
-            throw std::invalid_argument(
-                    "DiscreteScalarValuedLinearOperatorSuperposition::"
-                    "DiscreteScalarValuedLinearOperatorSuperposition(): "
-                    "incompatible argument lengths");
     }
 
     virtual void multiplyAddVector(ValueType multiplier,
@@ -54,7 +47,7 @@ public:
                            arma::Col<ValueType>& result)
     {
         for (int i = 0; i < m_terms.size(); ++i)
-            m_terms[i].multiplyAddVector(m_multipliers[i], argument, result);
+            m_terms[i].multiplyAddVector(multiplier, argument, result);
     }
 
     virtual void dump() const
@@ -68,16 +61,26 @@ public:
     {
         arma::Mat<ValueType> result;
         if (!m_terms.empty()) {
-            result = m_multipliers[0] * m_terms[0].asMatrix();
+            result = m_terms[0].asMatrix();
             for (int i = 1; i < m_terms.size(); ++i)
-                result += m_multipliers[i] * m_terms[i].asMatrix();
+                result += m_terms[i].asMatrix();
         }
         return result;
     }
 
+    virtual void addBlock(const std::vector<int>& rows,
+                          const std::vector<int>& cols,
+                          arma::Mat<ValueType>& block) const
+    {
+        // TODO: implement this
+        throw std::runtime_error("DiscreteScalarValuedLinearOperatorSuperposition::"
+                                 "addBlock(): Not implemented yet");
+        for (int i = 0; i < m_terms.size(); ++i)
+                m_terms[i].addBlock(rows, cols, block);
+    }
+
 private:
     boost::ptr_vector<TermType> m_terms;
-    std::vector<ValueType> m_multipliers;
 };
 
 } // namespace Bempp
