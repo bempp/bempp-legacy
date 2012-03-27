@@ -19,28 +19,27 @@
 // THE SOFTWARE.
 
 #include <armadillo>
+#include <cmath>
 #include <iostream>
-#include <memory> // auto_ptr
+#include <memory>
+
+#include "meshes.hpp"
 
 #include "assembly/assembly_options.hpp"
+#include "assembly/discrete_scalar_valued_linear_operator.hpp"
+
 #include "assembly/identity_operator.hpp"
 #include "assembly/single_layer_potential_3d.hpp"
 #include "assembly/double_layer_potential_3d.hpp"
 #include "assembly/adjoint_double_layer_potential_3d.hpp"
 #include "assembly/hypersingular_operator_3d.hpp"
 
-#include "assembly/discrete_scalar_valued_linear_operator.hpp"
 #include "fiber/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 
 #include "grid/geometry.hpp"
 #include "grid/geometry_factory.hpp"
 
-#include "meshes.hpp"
-
 #include "space/piecewise_linear_continuous_scalar_space.hpp"
-
-
-#include <cmath>
 
 using namespace Bempp;
 using std::cout;
@@ -74,8 +73,8 @@ int main()
         const MeshVariant meshVariant = CUBE_12_REORIENTED;
         const OperatorVariant opVariant = DOUBLE_LAYER_POTENTIAL;
 
-        std::auto_ptr<Grid> grid = loadmesh(meshVariant);
-        meshdetails(grid.get());
+        std::auto_ptr<Grid> grid = loadMesh(meshVariant);
+        dumpElementList(grid.get());
 
         PiecewiseLinearContinuousScalarSpace<double> space(*grid);
         space.assignDofs();

@@ -18,15 +18,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#ifndef bempp_meshes_hpp
+#define bempp_meshes_hpp
 
-#ifndef MESHES_HPP_
-#define MESHES_HPP_
+#include <memory>
 
-#include <memory> // auto_ptr
-
-#include "grid/grid.hpp"
-
-using namespace Bempp;
+namespace Bempp
+{
+    class Grid;
+} // namespace Bempp
 
 enum MeshVariant
 {
@@ -42,9 +42,8 @@ enum MeshVariant
     CUBE_384
 };
 
-std::auto_ptr<Grid> loadmesh(MeshVariant mv);
+std::auto_ptr<Bempp::Grid> loadMesh(MeshVariant mv);
 
-void meshdetails(Grid* grid);
+void dumpElementList(const Bempp::Grid* grid);
 
-
-#endif /* MESHS_HPP_ */
+#endif
