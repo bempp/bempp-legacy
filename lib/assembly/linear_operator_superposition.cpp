@@ -290,8 +290,8 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
     for (int i = 0; i < denseTermLocalAssemblers.size(); ++i)
         stlDenseTermLocalAssemblers[i] = &denseTermLocalAssemblers[i];
 
-    std::vector<const DiscreteLinOp*> stlSparseDiscreteTerms;
-    stlSparseDiscreteTerms.reserve(sparseDiscreteTerms.size());
+    std::vector<const DiscreteLinOp*> stlSparseDiscreteTerms(
+                sparseDiscreteTerms.size());
     for (int i = 0; i < sparseDiscreteTerms.size(); ++i)
         stlSparseDiscreteTerms[i] = &sparseDiscreteTerms[i];
 
