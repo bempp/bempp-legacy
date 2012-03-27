@@ -55,10 +55,9 @@ public:
             boost::ptr_vector<ElementaryLinearOperator<ValueType> >& terms);
 
     // Acquires ownership of the operators passed via terms.
-    // They must be allocated on the heap.
     LinearOperatorSuperposition(
-            const boost::tuple<ElementaryLinearOperator<ValueType>*,
-            ElementaryLinearOperator<ValueType>*>& terms);
+            std::auto_ptr<ElementaryLinearOperator<ValueType> > term1,
+            std::auto_ptr<ElementaryLinearOperator<ValueType> > term2);
     // possibly add variants for longer parameter lists
 
     virtual int trialComponentCount() const;

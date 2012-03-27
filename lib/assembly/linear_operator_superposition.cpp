@@ -49,12 +49,12 @@ LinearOperatorSuperposition<ValueType>::LinearOperatorSuperposition(
 
 template <typename ValueType>
 LinearOperatorSuperposition<ValueType>::LinearOperatorSuperposition(
-        const boost::tuple<ElementaryLinearOperator<ValueType>*,
-        ElementaryLinearOperator<ValueType>*>& terms)
+        std::auto_ptr<ElementaryLinearOperator<ValueType> > term1,
+        std::auto_ptr<ElementaryLinearOperator<ValueType> > term2)
 {
     boost::ptr_vector<ElementaryLinearOperator<ValueType> > vTerms;
-    vTerms.push_back(terms.template get<0>());
-    vTerms.push_back(terms.template get<1>());
+    vTerms.push_back(term1);
+    vTerms.push_back(term2);
     init(vTerms);
 }
 
