@@ -9,7 +9,9 @@ AssemblyOptions::AssemblyOptions() :
     // TODO: perhaps set m_acaOptions to some defaults
     m_representation(DENSE),
     m_parallelism(TBB_AND_OPEN_MP), m_maxThreadCount(AUTO)
-{}
+{
+    m_openClOptions.useOpenCl = false;
+}
 
 void AssemblyOptions::switchToDense()
 {
@@ -34,11 +36,15 @@ void AssemblyOptions::switchToSparse()
 
 void AssemblyOptions::switchToOpenCl(const OpenClOptions& openClOptions)
 {
+    m_parallelism = OPEN_CL;
     m_openClOptions = openClOptions;
+    m_openClOptions.useOpenCl = true;
 }
 
 void AssemblyOptions::switchToTbbAndOpenMp(int maxThreadCount)
 {
+    m_parallelism = TBB_AND_OPEN_MP;
+    m_openClOptions.useOpenCl = false;
     if (maxThreadCount <= 0 && maxThreadCount != AUTO)
         throw std::runtime_error("AssemblyOptions::switchToTbbAndOpenMp(): "
                                  "maxThreadCount must be positive or equal to AUTO");

@@ -5,6 +5,7 @@
 #include <cmath>
 
 #include "geometrical_data.hpp"
+#include "CL/double_layer_potential_3D_kernel.cl.str"
 
 namespace Fiber
 {
@@ -101,11 +102,8 @@ void DoubleLayerPotential3DKernel<ValueType>::evaluateOnGrid(
 template<typename ValueType>
 std::string DoubleLayerPotential3DKernel<ValueType>::evaluateClCode () const
 {
-    // TODO!!!
-    //return std::string (double_layer_potential_3D_kernel_cl,
-    //		double_layer_potential_3D_kernel_cl_len);
-    return std::string();
-
+    return std::string (double_layer_potential_3D_kernel_cl,
+			double_layer_potential_3D_kernel_cl_len);
 }
 
 #ifdef COMPILE_FOR_FLOAT

@@ -68,7 +68,7 @@ __kernel void clMapPointsToElement (
 	mappedPoints[ofsPoint++] = res;
     }
 
-    // determinant of Jacobian. Note: for now, assumes 3 vertices and 3 coordinates
+    // normals and determinant of Jacobian. Note: for now, assumes 3 vertices and 3 coordinates
     ValueType ux = g_meshVtx[vtxIdx[1]*prm.dim+0] - g_meshVtx[vtxIdx[0]*prm.dim+0];
     ValueType uy = g_meshVtx[vtxIdx[1]*prm.dim+1] - g_meshVtx[vtxIdx[0]*prm.dim+1];
     ValueType uz = g_meshVtx[vtxIdx[1]*prm.dim+2] - g_meshVtx[vtxIdx[0]*prm.dim+2];
@@ -118,12 +118,12 @@ __kernel void clMapPointsToElements (
     fun[1] = px;
     fun[2] = py;
 
-    int ofs = (el*nPoints + pt)*prm.dim;
+    int ofsPoint = (el*nPoints + pt)*prm.dim;
     for (i = 0; i < prm.dim; i++) {
         ValueType res = 0.0;
         for (j = 0; j < prm.dim; j++)
 	    res += fun[j] * g_meshVtx[vtxIdx[j]*prm.dim+i];
-	mappedPoints[ofs++] = res;
+	mappedPoints[ofsPoint++] = res;
     }
 
     // determinant of Jacobian. Note: for now, assumes 3 vertices and 3 coordinates
@@ -141,12 +141,135 @@ __kernel void clMapPointsToElements (
 }
 
 
+// Map a list of reference points to a single global element
+// result (from slowest to fastest changing index): nPoints*meshDim
+__kernel void clMapPointsAndNormalsToElement (
+	MeshParam prm,
+	__global const ValueType *g_meshVtx,
+	__global const int *g_meshIdx,
+	__global const ValueType *g_localPoints,
+	int nPoints,
+	int pointDim,
+	int elIdx,
+	__global ValueType *mappedPoints,
+	__global ValueType *mappedNormals,
+	__global ValueType *integrationElements
+)
+{
+    int i, j;
+    int pt = get_global_id(0);
+    if (pt >= nPoints) return;
+
+    int vtxIdx[4];
+    for (i = 0; i < prm.nidx; i++)
+        vtxIdx[i] = g_meshIdx[elIdx*prm.nidx+i]; // vertices associated with the element
+
+    ValueType fun[3];
+    ValueType px = g_localPoints[pt*pointDim];
+    ValueType py = g_localPoints[pt*pointDim+1];
+    fun[0] = 1.0-px-py;
+    fun[1] = px;
+    fun[2] = py;
+
+    // map points
+    int ofsPoint = pt*prm.dim;
+    int ofsNormal = ofsPoint;
+    for (i = 0; i < prm.dim; i++) {
+        ValueType res = 0.0;
+        for (j = 0; j < prm.dim; j++) {
+	    res += fun[j] * g_meshVtx[vtxIdx[j]*prm.dim+i];
+	}
+	mappedPoints[ofsPoint++] = res;
+    }
+
+    // normals and determinant of Jacobian. Note: for now, assumes 3 vertices and 3 coordinates
+    ValueType ux = g_meshVtx[vtxIdx[1]*prm.dim+0] - g_meshVtx[vtxIdx[0]*prm.dim+0];
+    ValueType uy = g_meshVtx[vtxIdx[1]*prm.dim+1] - g_meshVtx[vtxIdx[0]*prm.dim+1];
+    ValueType uz = g_meshVtx[vtxIdx[1]*prm.dim+2] - g_meshVtx[vtxIdx[0]*prm.dim+2];
+    ValueType vx = g_meshVtx[vtxIdx[2]*prm.dim+0] - g_meshVtx[vtxIdx[0]*prm.dim+0];
+    ValueType vy = g_meshVtx[vtxIdx[2]*prm.dim+1] - g_meshVtx[vtxIdx[0]*prm.dim+1];
+    ValueType vz = g_meshVtx[vtxIdx[2]*prm.dim+2] - g_meshVtx[vtxIdx[0]*prm.dim+2];
+    ValueType nx = uy*vz - uz*vy;
+    ValueType ny = uz*vx - ux*vz;
+    ValueType nz = ux*vy - uy*vx;
+    ValueType size = sqrt (nx*nx + ny*ny + nz*nz);
+    mappedNormals[ofsNormal++] = nx/size;
+    mappedNormals[ofsNormal++] = ny/size;
+    mappedNormals[ofsNormal++] = nz/size;
+    integrationElements[pt] = size;
+}
+
+
+// Map a list of reference points to one or more global elements
+// result (from slowest to fastest changing index): nEls*nPoints*meshDim
+__kernel void clMapPointsAndNormalsToElements (
+	MeshParam prm,
+	__global const ValueType *g_meshVtx,
+	__global const int *g_meshIdx,
+	__global const ValueType *g_localPoints,
+	int nPoints,
+	int pointDim,
+	__global const int *g_elIdx,
+	int nEls,
+	__global ValueType *mappedPoints,
+	__global ValueType *mappedNormals,
+	__global ValueType *integrationElements
+)
+{
+    int i, j;
+    int el = get_global_id(0);
+    if (el >= nEls) return;
+
+    int pt = get_global_id(1);
+    if (pt >= nPoints) return;
+
+    int elIdx = g_elIdx[el];  // the element to operate on
+
+    int vtxIdx[4];
+    for (i = 0; i < prm.nidx; i++)
+        vtxIdx[i] = g_meshIdx[elIdx*prm.nidx+i]; // vertices associated with the element
+
+    ValueType fun[3];
+    ValueType px = g_localPoints[pt*pointDim];
+    ValueType py = g_localPoints[pt*pointDim+1];
+    fun[0] = 1.0-px-py;
+    fun[1] = px;
+    fun[2] = py;
+
+    int ofsPoint = (el*nPoints + pt)*prm.dim;
+    int ofsNormal = ofsPoint;
+    for (i = 0; i < prm.dim; i++) {
+        ValueType res = 0.0;
+        for (j = 0; j < prm.dim; j++)
+	    res += fun[j] * g_meshVtx[vtxIdx[j]*prm.dim+i];
+	mappedPoints[ofsPoint++] = res;
+    }
+
+    // determinant of Jacobian. Note: for now, assumes 3 vertices and 3 coordinates
+    ValueType ux = g_meshVtx[vtxIdx[1]*prm.dim+0] - g_meshVtx[vtxIdx[0]*prm.dim+0];
+    ValueType uy = g_meshVtx[vtxIdx[1]*prm.dim+1] - g_meshVtx[vtxIdx[0]*prm.dim+1];
+    ValueType uz = g_meshVtx[vtxIdx[1]*prm.dim+2] - g_meshVtx[vtxIdx[0]*prm.dim+2];
+    ValueType vx = g_meshVtx[vtxIdx[2]*prm.dim+0] - g_meshVtx[vtxIdx[0]*prm.dim+0];
+    ValueType vy = g_meshVtx[vtxIdx[2]*prm.dim+1] - g_meshVtx[vtxIdx[0]*prm.dim+1];
+    ValueType vz = g_meshVtx[vtxIdx[2]*prm.dim+2] - g_meshVtx[vtxIdx[0]*prm.dim+2];
+    ValueType nx = uy*vz - uz*vy;
+    ValueType ny = uz*vx - ux*vz;
+    ValueType nz = ux*vy - uy*vx;
+    ValueType size = sqrt (nx*nx + ny*ny + nz*nz);
+    mappedNormals[ofsNormal++] = nx/size;
+    mappedNormals[ofsNormal++] = ny/size;
+    mappedNormals[ofsNormal++] = nz/size;
+    integrationElements[el*nPoints+pt] = size;
+}
+
+
 __kernel void clIntegrate (
 	MeshParam prm,
 	__global const ValueType *g_meshVtx,
 	__global const int *g_meshIdx,
 	__global const ValueType *g_globalTrialPoints,
 	__global const ValueType *g_globalTestPoints,
+	__global const ValueType *g_globalTrialNormals,
 	__global const ValueType *g_trialIntegrationElements,
 	__global const ValueType *g_testIntegrationElements,
 	__global const ValueType *g_trialValues,
@@ -178,6 +301,7 @@ __kernel void clIntegrate (
     ValueType geomB[9]; // 9: dim * vertices per element
     ValueType globalTrialPoint[3];
     ValueType globalTestPoint[3];
+    ValueType globalTrialNormal[3];
     ValueType *trialGeom;
     ValueType *testGeom;
     ValueType kval;
@@ -215,12 +339,14 @@ __kernel void clIntegrate (
 	{
 	    ValueType sum = 0;
 	    for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
-	        for (i = 0; i < prm.dim; i++)
+	        for (i = 0; i < prm.dim; i++) {
 		    globalTrialPoint[i] = g_globalTrialPoints[trialPointIdx+trialPoint*prm.dim+i];
+		    globalTrialNormal[i] = g_globalTrialNormals[trialPointIdx+trialPoint*prm.dim+i];
+		}
 	        for (int testPoint = 0; testPoint < testPointCount; ++testPoint) {
 		    for (i = 0; i < prm.dim; i++)
 		        globalTestPoint[i] = g_globalTestPoints[testPointIdx+testPoint*prm.dim+i];
-		    kval = devKerneval (globalTestPoint,globalTrialPoint,prm.dim);
+		    kval = devKerneval (globalTestPoint,globalTrialPoint,globalTrialNormal,prm.dim);
 		    // currently no dependency on trialDim,testDim
 		    for (int trialDim = 0; trialDim < trialComponentCount; ++trialDim)
 		        for (int testDim = 0; testDim < testComponentCount; ++testDim) {

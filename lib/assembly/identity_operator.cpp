@@ -133,8 +133,9 @@ IdentityOperator<ValueType>::assembleWeakForm(
     }
 
     Fiber::OpenClHandler<ValueType,int> openClHandler(options.openClOptions());
-    openClHandler.pushGeometry (rawGeometry.vertices(),
-				rawGeometry.elementCornerIndices());
+    if (openClHandler.UseOpenCl())
+        openClHandler.pushGeometry (rawGeometry.vertices(),
+				    rawGeometry.elementCornerIndices());
 
     // Now create the assembler
     std::auto_ptr<LocalAssembler> assembler =

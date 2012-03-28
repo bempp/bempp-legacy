@@ -33,7 +33,7 @@ public:
      */
     ~OpenClHandler();
 
-    bool UseOpenCl () const { return true; }
+    bool UseOpenCl () const { return useOpenCl; }
 
     /**
      * \brief Returns a string that defines the 'ValueType' type used by most device
@@ -137,6 +137,7 @@ public:
 private:
     const std::string typedefStr () const;
 
+    bool useOpenCl;
     unsigned int deviceUsed;
     std::vector<cl::Device> devices;
     cl::CommandQueue queue;

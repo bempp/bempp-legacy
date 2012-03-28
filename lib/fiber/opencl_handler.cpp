@@ -19,6 +19,7 @@ template<typename ValueType, typename IndexType>
 OpenClHandler<ValueType,IndexType>::OpenClHandler(const OpenClOptions& options)
 {
     cl_int err;
+    useOpenCl = options.useOpenCl;
 
     std::vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
@@ -107,6 +108,7 @@ void OpenClHandler<ValueType,IndexType>::loadProgramFromString(
 	      << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]) 
 	      << std::endl;
 #endif
+    std::cout << "x11" << std::endl;
 }
 
 template<typename ValueType, typename IndexType>

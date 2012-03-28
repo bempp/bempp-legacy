@@ -6,7 +6,13 @@ namespace Fiber
 
 struct OpenClOptions
 {
-    // currently empty
+    OpenClOptions ()
+    {
+        useOpenCl = true;
+    }
+
+    bool useOpenCl;
+    // add more as required
 };
 
 }
