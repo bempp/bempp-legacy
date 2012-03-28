@@ -31,7 +31,7 @@ template <typename ValueType>
 class ScalarSpace : public Space<ValueType>
 {
 public:
-    ScalarSpace(Grid& grid) : Space<ValueType>(grid) {
+    explicit ScalarSpace(Grid& grid) : Space<ValueType>(grid) {
     }
 
     virtual const Fiber::Expression<ValueType>& shapeFunctionValueExpression() const {

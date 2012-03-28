@@ -1,8 +1,9 @@
 #include "weak_form_aca_assembly_helper.hpp"
 
+#include "discrete_scalar_valued_linear_operator.hpp"
 #include "../common/multidimensional_arrays.hpp"
 #include "../fiber/types.hpp"
-#include "../fiber/local_assembler_for_integral_operators.hpp"
+#include "../fiber/local_assembler_for_operators.hpp"
 #include "../grid/grid_view.hpp"
 #include "../grid/reverse_element_mapper.hpp"
 #include "../space/space.hpp"
@@ -16,19 +17,19 @@ namespace Bempp
 
 template <typename ValueType>
 WeakFormAcaAssemblyHelper<ValueType>::WeakFormAcaAssemblyHelper(
-        const ElementaryIntegralOperator<ValueType>& op,
-        const GridView& view,
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,
         const std::vector<unsigned int>& p2oTestDofs,
         const std::vector<unsigned int>& p2oTrialDofs,
-        WeakFormAcaAssemblyHelper<ValueType>::LocalAssembler& assembler,
+        const std::vector<LocalAssembler*>& assemblers,
+        const std::vector<const DiscreteLinOp*>& sparseTermsToAdd,
         const AssemblyOptions& options) :
-    m_operator(op), m_view(view),
     m_testSpace(testSpace), m_trialSpace(trialSpace),
     m_p2oTestDofs(p2oTestDofs), m_p2oTrialDofs(p2oTrialDofs),
-    m_assembler(assembler), m_options(options)
-{}
+    m_assemblers(assemblers), m_sparseTermsToAdd(sparseTermsToAdd),
+    m_options(options)
+{
+}
 
 template <typename ValueType>
 void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
@@ -37,6 +38,9 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
 //    std::cout << "\nRequested block: (" << b1 << ", " << n1 << "; "
 //              << b2 << ", " << n2 << ")" << std::endl;
 
+    // Requested global dof indices
+    std::vector<GlobalDofIndex> testGlobalDofs;
+    std::vector<GlobalDofIndex> trialGlobalDofs;
     // Necessary elements
     std::vector<int> testElementIndices;
     std::vector<int> trialElementIndices;
@@ -49,18 +53,20 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
 
     // Fill the above arrays
     findLocalDofs(b1, n1, m_p2oTestDofs, m_testSpace,
-                  testElementIndices, testLocalDofs, blockRows);
+                  testGlobalDofs, testElementIndices, testLocalDofs, blockRows);
     findLocalDofs(b2, n2, m_p2oTrialDofs, m_trialSpace,
-                  trialElementIndices, trialLocalDofs, blockCols);
+                  trialGlobalDofs, trialElementIndices, trialLocalDofs, blockCols);
 
+    arma::Mat<ValueType> result(data, n1, n2, false /*copy_aux_mem*/,
+                                true /*strict*/);
+    result.fill(0.);
+
+    // First, evaluate the contributions of the dense terms
     if (n2 == 1)
     {
         // Only one column of the block needed. This means that we need only
         // one local DOF from just one or a few trialElements. Evaluate the
         // local weak form for one local trial DOF at a time.
-        arma::Col<ValueType> result(data, n1, false /*copy_aux_mem*/,
-                                    true /*strict*/);
-        result.fill(0.);
 
         std::vector<arma::Mat<ValueType> > localResult;
         for (int nTrialElem = 0;
@@ -77,18 +83,21 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
             {
                 LocalDofIndex activeTrialLocalDof =
                         trialLocalDofs[nTrialElem][nTrialDof];
-                m_assembler.evaluateLocalWeakForms(
-                            Fiber::TEST_TRIAL, testElementIndices,
-                            activeTrialElementIndex, activeTrialLocalDof,
-                            localResult);
-                for (int nTestElem = 0;
-                     nTestElem < testElementIndices.size();
-                     ++nTestElem)
-                    for (int nTestDof = 0;
-                         nTestDof < testLocalDofs[nTestElem].size();
-                         ++nTestDof)
-                        result(blockRows[nTestElem][nTestDof]) +=
-                                localResult[nTestElem](testLocalDofs[nTestElem][nTestDof]);
+                for (int nTerm = 0; nTerm < m_assemblers.size(); ++nTerm)
+                {
+                    m_assemblers[nTerm]->evaluateLocalWeakForms(
+                                Fiber::TEST_TRIAL, testElementIndices,
+                                activeTrialElementIndex, activeTrialLocalDof,
+                                localResult);
+                    for (int nTestElem = 0;
+                         nTestElem < testElementIndices.size();
+                         ++nTestElem)
+                        for (int nTestDof = 0;
+                             nTestDof < testLocalDofs[nTestElem].size();
+                             ++nTestDof)
+                            result(blockRows[nTestElem][nTestDof], 0) +=
+                                    localResult[nTestElem](testLocalDofs[nTestElem][nTestDof]);
+                }
             }
         }
     }
@@ -97,10 +106,6 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
         // Only one row of the block needed. This means that we need only
         // one local DOF from just one or a few testElements. Evaluate the
         // local weak form for one local test DOF at a time.
-
-        arma::Row<ValueType> result(data, n2, false /*copy_aux_mem*/,
-                                    true /*strict*/);
-        result.fill(0.);
 
         std::vector<arma::Mat<ValueType> > localResult;
         for (int nTestElem = 0;
@@ -116,18 +121,21 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
             {
                 LocalDofIndex activeTestLocalDof =
                         testLocalDofs[nTestElem][nTestDof];
-                m_assembler.evaluateLocalWeakForms(
-                            Fiber::TRIAL_TEST, trialElementIndices,
-                            activeTestElementIndex, activeTestLocalDof,
-                            localResult);
-                for (int nTrialElem = 0;
-                     nTrialElem < trialElementIndices.size();
-                     ++nTrialElem)
-                    for (int nTrialDof = 0;
-                         nTrialDof < trialLocalDofs[nTrialElem].size();
-                         ++nTrialDof)
-                        result(blockCols[nTrialElem][nTrialDof]) +=
-                                localResult[nTrialElem](trialLocalDofs[nTrialElem][nTrialDof]);
+                for (int nTerm = 0; nTerm < m_assemblers.size(); ++nTerm)
+                {
+                    m_assemblers[nTerm]->evaluateLocalWeakForms(
+                                Fiber::TRIAL_TEST, trialElementIndices,
+                                activeTestElementIndex, activeTestLocalDof,
+                                localResult);
+                    for (int nTrialElem = 0;
+                         nTrialElem < trialElementIndices.size();
+                         ++nTrialElem)
+                        for (int nTrialDof = 0;
+                             nTrialDof < trialLocalDofs[nTrialElem].size();
+                             ++nTrialDof)
+                            result(0, blockCols[nTrialElem][nTrialDof]) +=
+                                    localResult[nTrialElem](trialLocalDofs[nTrialElem][nTrialDof]);
+                }
             }
         }
     }
@@ -137,31 +145,36 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
         // likely to need all or almost all local DOFs from most elements.
         // Evaluate the full local weak form for each pair of test and trial
         // elements and then select the entries that we need.
-        arma::Mat<ValueType> result(data, n1, n2, false /*copy_aux_mem*/,
-                                    true /*strict*/);
-        result.fill(0.);
 
         Fiber::Array2D<arma::Mat<ValueType> > localResult;
-        m_assembler.evaluateLocalWeakForms(
-                    testElementIndices, trialElementIndices, localResult);
-        for (int nTrialElem = 0;
-             nTrialElem < trialElementIndices.size();
-             ++nTrialElem)
-            for (int nTrialDof = 0;
-                 nTrialDof < trialLocalDofs[nTrialElem].size();
-                 ++nTrialDof)
-                for (int nTestElem = 0;
-                     nTestElem < testElementIndices.size();
-                     ++nTestElem)
-                    for (int nTestDof = 0;
-                         nTestDof < testLocalDofs[nTestElem].size();
-                         ++nTestDof)
-                        result(blockRows[nTestElem][nTestDof],
-                               blockCols[nTrialElem][nTrialDof]) +=
-                                localResult(nTestElem, nTrialElem)
-                                (testLocalDofs[nTestElem][nTestDof],
-                                 trialLocalDofs[nTrialElem][nTrialDof]);
+        for (int nTerm = 0; nTerm < m_assemblers.size(); ++nTerm)
+        {
+            m_assemblers[nTerm]->evaluateLocalWeakForms(
+                        testElementIndices, trialElementIndices, localResult);
+            for (int nTrialElem = 0;
+                 nTrialElem < trialElementIndices.size();
+                 ++nTrialElem)
+                for (int nTrialDof = 0;
+                     nTrialDof < trialLocalDofs[nTrialElem].size();
+                     ++nTrialDof)
+                    for (int nTestElem = 0;
+                         nTestElem < testElementIndices.size();
+                         ++nTestElem)
+                        for (int nTestDof = 0;
+                             nTestDof < testLocalDofs[nTestElem].size();
+                             ++nTestDof)
+                            result(blockRows[nTestElem][nTestDof],
+                                   blockCols[nTrialElem][nTrialDof]) +=
+                                    localResult(nTestElem, nTrialElem)
+                                    (testLocalDofs[nTestElem][nTestDof],
+                                     trialLocalDofs[nTrialElem][nTrialDof]);
+        }
     }
+
+    // Now, add the contributions of the sparse terms
+    for (int nTerm = 0; nTerm < m_sparseTermsToAdd.size(); ++nTerm)
+        m_sparseTermsToAdd[nTerm]->addBlock(
+                    testGlobalDofs, trialGlobalDofs, result);
 }
 
 template <typename ValueType>
@@ -177,6 +190,7 @@ void WeakFormAcaAssemblyHelper<ValueType>::findLocalDofs(
         int globalDofCount,
         const std::vector<unsigned int>& p2o,
         const Space<ValueType>& space,
+        std::vector<GlobalDofIndex>& globalDofIndices,
         std::vector<int>& elementIndices,
         std::vector<std::vector<LocalDofIndex> >& localDofIndices,
         std::vector<std::vector<int> >& arrayIndices) const
@@ -188,13 +202,13 @@ void WeakFormAcaAssemblyHelper<ValueType>::findLocalDofs(
     using std::vector;
 
     // Convert permuted indices into the original global DOF indices
-    vector<GlobalDofIndex> dofs(globalDofCount);
+    globalDofIndices.resize(globalDofCount);
     for (int i = 0; i < globalDofCount; ++i)
-        dofs[i] = p2o[start + i];
+        globalDofIndices[i] = p2o[start + i];
 
     // Retrieve lists of local DOFs corresponding to the global DOFs
     vector<vector<LocalDof> > localDofs;
-    space.global2localDofs(dofs, localDofs);
+    space.global2localDofs(globalDofIndices, localDofs);
 
     // set of pairs (local dof index, array index)
     typedef set<pair<LocalDofIndex, int> > LocalDofSet;

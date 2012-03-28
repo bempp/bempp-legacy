@@ -35,6 +35,7 @@ StandardLocalAssemblerForIdentityOperatorOnSurface(
         const std::vector<const Basis<ValueType>*>& trialBases,
         const Expression<ValueType>& testExpression,
         const Expression<ValueType>& trialExpression,
+        ValueType multiplier,
         const OpenClHandler<ValueType,int>& openClHandler) :
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
@@ -42,6 +43,7 @@ StandardLocalAssemblerForIdentityOperatorOnSurface(
     m_trialBases(trialBases),
     m_testExpression(testExpression),
     m_trialExpression(trialExpression),
+    m_multiplier(multiplier),
     m_openClHandler(openClHandler)
 {
     if (rawGeometry.vertices().n_rows != 3)
@@ -81,9 +83,40 @@ template <typename ValueType, typename GeometryFactory>
 void
 StandardLocalAssemblerForIdentityOperatorOnSurface<ValueType, GeometryFactory>::
 evaluateLocalWeakForms(
+        CallVariant callVariant,
+        const std::vector<int>& elementIndicesA,
+        int elementIndexB,
+        LocalDofIndex localDofIndexB,
+        std::vector<arma::Mat<ValueType> >& result)
+{
+    // Probably will never be called
+    throw std::runtime_error("StandardLocalAssemblerForIdentityOperatorOnSurface::"
+                             "evaluateLocalWeakForms(): "
+                             "this overload not implemented yet");
+}
+
+template <typename ValueType, typename GeometryFactory>
+void
+StandardLocalAssemblerForIdentityOperatorOnSurface<ValueType, GeometryFactory>::
+evaluateLocalWeakForms(
+        const std::vector<int>& testElementIndices,
+        const std::vector<int>& trialElementIndices,
+        Fiber::Array2D<arma::Mat<ValueType> >& result)
+{
+    // Probably will never be called
+    throw std::runtime_error("StandardLocalAssemblerForIdentityOperatorOnSurface::"
+                             "evaluateLocalWeakForms(): "
+                             "this overload not implemented yet");
+}
+
+template <typename ValueType, typename GeometryFactory>
+void
+StandardLocalAssemblerForIdentityOperatorOnSurface<ValueType, GeometryFactory>::
+evaluateLocalWeakForms(
         const std::vector<int>& elementIndices,
         std::vector<arma::Mat<ValueType> >& result)
 {
+    // The only overload likely to be needed for identity operators
     typedef TestTrialIntegrator<ValueType> Integrator;
     typedef Basis<ValueType> Basis;
 
@@ -139,7 +172,7 @@ evaluateLocalWeakForms(
         int i = 0;
         for (int e = 0; e < elementCount; ++e)
             if (quadVariants[e] == activeQuadVariant)
-                result[e] = localResult.slice(i++);
+                result[e] = m_multiplier * localResult.slice(i++);
     }
 }
 

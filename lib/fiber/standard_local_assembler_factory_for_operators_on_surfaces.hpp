@@ -21,11 +21,12 @@
 #ifndef fiber_standard_local_assembler_factory_for_operators_on_surfaces_hpp
 #define fiber_standard_local_assembler_factory_for_operators_on_surfaces_hpp
 
+#include "accuracy_options.hpp"
 #include "local_assembler_factory.hpp"
+#include "opencl_options.hpp"
 #include "standard_local_assembler_for_identity_operator_on_surface.hpp"
 #include "standard_local_assembler_for_integral_operators_on_surfaces.hpp"
 #include "standard_local_assembler_for_source_terms_on_surfaces.hpp"
-#include "opencl_options.hpp"
 
 #include <stdexcept>
 
@@ -36,6 +37,12 @@ template <typename ValueType, typename GeometryFactory>
 class StandardLocalAssemblerFactoryForOperatorsOnSurfaces :
         public LocalAssemblerFactory<ValueType, GeometryFactory>
 {
+public:
+    StandardLocalAssemblerFactoryForOperatorsOnSurfaces(
+            const AccuracyOptions& accuracyOptions) :
+        m_accuracyOptions(accuracyOptions) {
+    }
+
 private:
     typedef StandardLocalAssemblerForIntegralOperatorsOnSurfaces<ValueType, GeometryFactory>
         LocalAssemblerForIntegralOperators_;
@@ -45,7 +52,7 @@ private:
         LocalAssemblerForSourceTerms_;
 
 public:
-    virtual std::auto_ptr<LocalAssemblerForIntegralOperators<ValueType> > make(
+    virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<ValueType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& testBases,
@@ -53,49 +60,54 @@ public:
             const Expression<ValueType>& testExpression,
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
+            ValueType multiplier,
             const OpenClHandler<ValueType,int>& openClHandler,
             bool cacheSingularIntegrals) const {
-        return std::auto_ptr<LocalAssemblerForIntegralOperators<ValueType> >(
+        return std::auto_ptr<LocalAssemblerForOperators<ValueType> >(
                     new LocalAssemblerForIntegralOperators_(
                         geometryFactory, rawGeometry,
                         testBases, trialBases,
-                        testExpression, kernel, trialExpression,
-                        openClHandler, cacheSingularIntegrals));
+                        testExpression, kernel, trialExpression, multiplier,
+                        openClHandler, cacheSingularIntegrals,
+                        m_accuracyOptions));
     }
 
-    virtual std::auto_ptr<LocalAssemblerForIntegralOperators<ValueType> > make(
+    virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<ValueType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
+            ValueType multiplier,
             const OpenClHandler<ValueType,int>& openClHandler,
             bool cacheSingularIntegrals) const {
         throw std::runtime_error("StandardLocalAssemblerFactoryForOperatorsOnSurfaces::"
                                  "make(): collocation mode not implemented yet.");
     }
 
-    virtual std::auto_ptr<LocalAssemblerForIdentityOperator<ValueType> > make(
+    virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<ValueType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& testBases,
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Expression<ValueType>& testExpression,
             const Expression<ValueType>& trialExpression,
+            ValueType multiplier,
             const OpenClHandler<ValueType,int>& openClHandler) const {
-        return std::auto_ptr<LocalAssemblerForIdentityOperator<ValueType> >(
+        return std::auto_ptr<LocalAssemblerForOperators<ValueType> >(
                     new LocalAssemblerForIdentityOperator_(
                         geometryFactory, rawGeometry,
                         testBases, trialBases,
-                        testExpression, trialExpression,
+                        testExpression, trialExpression, multiplier,
                         openClHandler));
     }
 
-    virtual std::auto_ptr<LocalAssemblerForIdentityOperator<ValueType> > make(
+    virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<ValueType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Expression<ValueType>& trialExpression,
+            ValueType multiplier,
             const OpenClHandler<ValueType,int>& openClHandler) const {
     throw std::runtime_error("StandardLocalAssemblerFactoryForOperatorsOnSurfaces::"
                              "make(): collocation mode not implemented yet.");
@@ -115,6 +127,9 @@ public:
                         testExpression, function,
                         openClHandler));
     }
+
+private:
+    AccuracyOptions m_accuracyOptions;
 };
 
 } // namespace Fiber

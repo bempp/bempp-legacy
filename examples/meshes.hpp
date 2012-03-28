@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2012 by the Fiber Authors
+// Copyright (C) 2011 by the BEM++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,30 +18,32 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_local_assembler_for_identity_operator_hpp
-#define fiber_local_assembler_for_identity_operator_hpp
+#ifndef bempp_meshes_hpp
+#define bempp_meshes_hpp
 
-#include "array_2d.hpp"
-#include "types.hpp"
-#include <vector>
-#include <stdexcept>
+#include <memory>
 
-namespace Fiber
+namespace Bempp
 {
+    class Grid;
+} // namespace Bempp
 
-template <typename ValueType>
-class LocalAssemblerForIdentityOperator
+enum MeshVariant
 {
-public:
-    virtual ~LocalAssemblerForIdentityOperator() {}
-
-    virtual void evaluateLocalWeakForms(
-            const std::vector<int>& elementIndices,
-            std::vector<arma::Mat<ValueType> >& result) /*const*/ = 0;
-
-    // TODO: evaluateLocalOperator or something similar
+    TWO_DISJOINT_TRIANGLES,
+    TWO_TRIANGLES_SHARING_VERTEX_0,
+    TWO_TRIANGLES_SHARING_VERTICES_2_AND_0,
+    TWO_TRIANGLES_SHARING_VERTICES_1_AND_0,
+    TWO_TRIANGLES_SHARING_EDGES_0_AND_0,
+    TWO_TRIANGLES_SHARING_EDGES_1_AND_0,
+    SIMPLE_MESH_9,
+    CUBE_12,
+    CUBE_12_REORIENTED, // all elements oriented so that normals point outwards
+    CUBE_384
 };
 
-} // namespace Fiber
+std::auto_ptr<Bempp::Grid> loadMesh(MeshVariant mv);
+
+void dumpElementList(const Bempp::Grid* grid);
 
 #endif

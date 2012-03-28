@@ -18,81 +18,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <armadillo>
+#include "meshes.hpp"
+
 #include <iostream>
-#include <memory> // auto_ptr
 
-#include "assembly/assembly_options.hpp"
-#include "fiber/ordinary_function.hpp"
-#include "assembly/source_term.hpp"
-#include "assembly/discrete_scalar_valued_source_term.hpp"
-
-#include "fiber/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
-
-#include "grid/entity.hpp"
-#include "grid/entity_iterator.hpp"
-#include "grid/geometry_factory.hpp"
-#include "grid/geometry.hpp"
 #include "grid/grid.hpp"
 #include "grid/grid_factory.hpp"
+#include "grid/mapper.hpp"
+#include "grid/entity_iterator.hpp"
+#include "grid/entity.hpp"
 #include "grid/grid_view.hpp"
 #include "grid/index_set.hpp"
-#include "grid/mapper.hpp"
-
-#include "space/piecewise_linear_continuous_scalar_space.hpp"
-
-#include <cmath>
+#include "grid/vtk_writer.hpp"
+#include "grid/geometry.hpp"
 
 using namespace Bempp;
-using std::cout;
-using std::endl;
 
-enum MeshVariant
+std::auto_ptr<Grid>
+loadMesh(MeshVariant mv)
 {
-    TWO_DISJOINT_TRIANGLES,
-    TWO_TRIANGLES_SHARING_VERTEX_0,
-    TWO_TRIANGLES_SHARING_VERTICES_2_AND_0,
-    TWO_TRIANGLES_SHARING_VERTICES_1_AND_0,
-    TWO_TRIANGLES_SHARING_EDGES_0_AND_0,
-    TWO_TRIANGLES_SHARING_EDGES_1_AND_0,
-    SIMPLE_MESH_9,
-    CUBE_12,
-    CUBE_384
-};
-
-inline bool approxEqual(double x, double y)
-{
-    return fabs(x - y) / fabs((x + y) / 2.) < 1e-3;
-}
-
-class MyFunctor
-{
-public:
-    // Type of the function's values (e.g. float or std::complex<double>)
-    typedef double ValueType;
-
-    // Number of components of the function's argument
-    static const int argumentDimension = 3;
-
-    // Number of components of the function's result
-    static const int resultDimension = 1;
-
-    // Evaluate the function at the point "point" and store result in
-    // the array "result"
-    inline void evaluate(const arma::Col<ValueType>& point,
-                  arma::Col<ValueType>& result) const {
-        result(0) = sin(0.5 * point(0) * cos(0.25 * point(2))) * cos(point(1));
-    }
-};
-
-
-/**
-    A script for rudimentary testing of the single-layer-potential operator.
-  */
-int main()
-{
-    const MeshVariant meshVariant = CUBE_12;
-
     const char TWO_DISJOINT_TRIANGLES_FNAME[] = "two_disjoint_triangles.msh";
     const char TWO_TRIANGLES_SHARING_VERTEX_0_FNAME[] = "two_triangles_sharing_vertex_0.msh";
     const char TWO_TRIANGLES_SHARING_VERTICES_2_AND_0_FNAME[] = "two_triangles_sharing_vertices_2_and_0.msh";
@@ -101,10 +45,11 @@ int main()
     const char TWO_TRIANGLES_SHARING_EDGES_1_AND_0_FNAME[] = "two_triangles_sharing_edges_1_and_0.msh";
     const char SIMPLE_MESH_9_FNAME[] = "simple_mesh_9_elements.msh";
     const char CUBE_12_FNAME[] = "cube-12.msh";
+    const char CUBE_12_REORIENTED_FNAME[] = "cube-12-reoriented.msh";
     const char CUBE_384_FNAME[] = "cube-384.msh";
 
     const char* MESH_FNAME = 0;
-    switch (meshVariant) {
+    switch (mv) {
     case TWO_DISJOINT_TRIANGLES:
         MESH_FNAME = TWO_DISJOINT_TRIANGLES_FNAME; break;
     case TWO_TRIANGLES_SHARING_VERTEX_0:
@@ -121,6 +66,8 @@ int main()
         MESH_FNAME = SIMPLE_MESH_9_FNAME; break;
     case CUBE_12:
         MESH_FNAME = CUBE_12_FNAME; break;
+    case CUBE_12_REORIENTED:
+        MESH_FNAME = CUBE_12_REORIENTED_FNAME; break;
     case CUBE_384:
         MESH_FNAME = CUBE_384_FNAME; break;
     default:
@@ -131,10 +78,13 @@ int main()
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
 
-    std::auto_ptr<Grid> grid(GridFactory::importGmshGrid(params, std::string(MESH_FNAME),
-                             true, // verbose
-                             false)); // insertBoundarySegments
+    return GridFactory::importGmshGrid(params, std::string(MESH_FNAME),
+                                       true, // verbose
+                                       false); // insertBoundarySegments
+}
 
+void dumpElementList(const Grid* grid)
+{
     std::cout << "Elements:\n";
     std::auto_ptr<GridView> view = grid->leafView();
     const Mapper& elementMapper = view->elementMapper();
@@ -149,40 +99,4 @@ int main()
         it->next();
     }
     std::cout.flush();
-
-    PiecewiseLinearContinuousScalarSpace<double> space(*grid);
-    space.assignDofs();
-
-    AssemblyOptions assemblyOptions;
-//    assemblyOptions.switchToDense();
-
-    AcaOptions acaOptions;
-    acaOptions.eps = 1e-4;
-    acaOptions.maximumRank = 10000;
-    acaOptions.minimumBlockSize = 2;
-    acaOptions.eta = 0.8;
-    acaOptions.recompress = true;
-    assemblyOptions.switchToAca(acaOptions);
-
-//    assemblyOptions.switchToSparse();
-
-    assemblyOptions.switchToTbb();
-    assemblyOptions.setSingularIntegralCaching(AssemblyOptions::NO);
-
-    Fiber::AccuracyOptions accuracyOptions; // default
-    Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, GeometryFactory>
-            factory(accuracyOptions);
-
-    MyFunctor functor;
-    Fiber::OrdinaryFunction<MyFunctor> function(functor);
-
-    SourceTerm<double> sourceTerm;
-    std::auto_ptr<DiscreteScalarValuedSourceTerm<double> > result =
-            sourceTerm.assembleWeakForm(function, space, factory, assemblyOptions);
-
-    arma::Col<double> resultVector = result->asVector();
-    std::cout << "\nGenerated vector:\n" << resultVector << std::endl;
 }
-
-
-

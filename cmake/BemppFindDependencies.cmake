@@ -37,9 +37,9 @@ include_directories(${CMAKE_SOURCE_DIR}/contrib/dune/dune-localfunctions)
 include_directories(${CMAKE_SOURCE_DIR}/contrib/dune/dune-foamgrid)
 
 # OpenCL installation location
-FIND_PACKAGE (OPENCL)
-include_directories(${OPENCL_INCLUDE_DIR})
-
 if (WITH_OPENCL)
-  add_definitions(-DWITH_OPENCL)
+    find_package(OPENCL)
+    include_directories(${OPENCL_INCLUDE_DIR})
+
+    add_definitions(-DWITH_OPENCL)
 endif()

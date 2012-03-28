@@ -22,6 +22,7 @@
 #define bempp_linear_operator_hpp
 
 #include "../grid/common.hpp"
+#include "assembly_options.hpp"
 
 #include <memory>
 
@@ -32,14 +33,12 @@ template <typename eT> class Mat;
 namespace Fiber
 {
 
-template <typename ValueType, typename GeometryFactory>
-class LocalAssemblerFactory;
+template <typename ValueType, typename GeometryFactory> class LocalAssemblerFactory;
 
 } // namespace Fiber
 
 namespace Bempp {
 
-class AssemblyOptions;
 class Grid;
 class GeometryFactory;
 template <typename ValueType> class DiscreteScalarValuedLinearOperator;
@@ -86,6 +85,10 @@ public:
       This is equal to \f$q\f$ in the notation above. */
     virtual int testComponentCount() const = 0;
 
+    /** \brief True if this operator supports the representation \p repr. */
+    virtual bool supportsRepresentation(
+            AssemblyOptions::Representation repr) const = 0;
+
     /** \brief Assemble the operator's weak form.
 
       Construct a discrete linear operator representing the matrix \f$W_{jk}\f$
@@ -100,7 +103,11 @@ public:
       function from \f$X\f$.
 
       Note: trialSpace.grid() and testSpace.grid() must return a reference to
-      the same object. */
+      the same object.
+
+      This is the overload intended to be called by the user, who needs to
+      provide a local-assembler factory \p factory to be used to construct an
+      appropriate local assembler. */
     virtual std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
     assembleWeakForm(
             const Space<ValueType>& testSpace,

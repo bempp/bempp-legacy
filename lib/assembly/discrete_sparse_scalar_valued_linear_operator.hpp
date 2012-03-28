@@ -93,6 +93,50 @@ public:
 #endif
     }
 
+    virtual void addBlock(const std::vector<int>& rows,
+                     const std::vector<int>& cols,
+                     arma::Mat<ValueType>& block) const
+    {
+#ifdef WITH_TRILINOS
+        if (block.n_rows != rows.size() || block.n_cols != cols.size())
+            throw std::invalid_argument(
+                    "DiscreteSparseScalarValuedLinearOperator::addBlock(): "
+                    "incorrect block size");
+
+        int entryCount = 0;
+        double* values = 0;
+        int* indices = 0;
+
+        for (int row = 0; row < rows.size(); ++row)
+        {
+            // Provision for future MPI support.
+            if (m_mat->IndicesAreLocal())
+            {
+                int errorCode = m_mat->ExtractMyRowView(
+                            rows[row], entryCount, values, indices);
+                if (errorCode != 0)
+                    throw std::runtime_error(
+                            "DiscreteSparseScalarValuedLinearOperator::addBlock(): "
+                            "Epetra_CrsMatrix::ExtractMyRowView()) failed");
+            }
+            else
+            {
+                int errorCode = m_mat->ExtractGlobalRowView(
+                            rows[row], entryCount, values, indices);
+                if (errorCode != 0)
+                    throw std::runtime_error(
+                            "DiscreteSparseScalarValuedLinearOperator::addBlock(): "
+                            "Epetra_CrsMatrix::ExtractGlobalRowView()) failed");
+            }
+
+            for (int col = 0; col < cols.size(); ++col)
+                for (int entry = 0; entry < entryCount; ++entry)
+                    if (indices[entry] == cols[col])
+                        block(row, col) += values[entry];
+        }
+#endif
+    }
+
 private:
 #ifdef WITH_TRILINOS
     std::auto_ptr<Epetra_FECrsMatrix> m_mat;

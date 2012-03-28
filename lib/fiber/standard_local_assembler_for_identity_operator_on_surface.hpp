@@ -21,7 +21,7 @@
 #ifndef fiber_standard_local_assembler_for_identity_operator_on_surface_hpp
 #define fiber_standard_local_assembler_for_identity_operator_on_surface_hpp
 
-#include "local_assembler_for_identity_operator.hpp"
+#include "local_assembler_for_operators.hpp"
 #include "numerical_quadrature.hpp"
 #include "numerical_test_trial_integrator.hpp"
 
@@ -42,7 +42,7 @@ template <typename ValueType, typename IndexType> class OpenClHandler;
 
 template <typename ValueType, typename GeometryFactory>
 class StandardLocalAssemblerForIdentityOperatorOnSurface :
-        public LocalAssemblerForIdentityOperator<ValueType>
+        public LocalAssemblerForOperators<ValueType>
 {    
 public:
     StandardLocalAssemblerForIdentityOperatorOnSurface(
@@ -52,7 +52,20 @@ public:
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Expression<ValueType>& testExpression,
             const Expression<ValueType>& trialExpression,
+            ValueType multiplier,
             const OpenClHandler<ValueType,int>& openClHandler);
+
+    virtual void evaluateLocalWeakForms(
+            CallVariant callVariant,
+            const std::vector<int>& elementIndicesA,
+            int elementIndexB,
+            LocalDofIndex localDofIndexB,
+            std::vector<arma::Mat<ValueType> >& result);
+
+    virtual void evaluateLocalWeakForms(
+            const std::vector<int>& testElementIndices,
+            const std::vector<int>& trialElementIndices,
+            Fiber::Array2D<arma::Mat<ValueType> >& result);
 
     virtual void evaluateLocalWeakForms(
             const std::vector<int>& elementIndices,
@@ -74,6 +87,7 @@ private:
     const std::vector<const Basis<ValueType>*>& m_trialBases;
     const Expression<ValueType>& m_testExpression;
     const Expression<ValueType>& m_trialExpression;
+    ValueType m_multiplier;
     const OpenClHandler<ValueType,int>& m_openClHandler;
 
     IntegratorMap m_testTrialIntegrators;

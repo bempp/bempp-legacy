@@ -51,7 +51,7 @@ public:
     // variant it is necessary to check whether the element is triangular
     // or quadrilateral. Also, requests for element refinement should probably
     // be made via Space rather than via Grid.
-    Space(Grid& grid) : m_grid(grid)
+    explicit Space(Grid& grid) : m_grid(grid)
     {}
 
     virtual ~Space()
@@ -71,10 +71,17 @@ public:
     /** \brief Reference to the grid on which the functions are defined. */
     const Grid& grid() const { return m_grid; }
 
+    /** \brief Get pointers to Basis objects corresponding to specified elements.
+
+        \param[in]   elements  List of pointers to elements whose bases should
+                               be retrieved.
+        \param[out]  bases     On exit, a vector whose ith item is a pointer to
+                               the Basis object corresponding to the ith item of
+                               \p elements. */
     virtual void getBases(const std::vector<const EntityPointer<0>*>& elements,
                           std::vector<const Fiber::Basis<ValueType>*>& bases) const = 0;
 
-    virtual const Fiber::Basis<ValueType>& basis(const EntityPointer<0>& element) const = 0;
+    virtual const Fiber::Basis<ValueType>& basis(const Entity<0>& element) const = 0;
 
     /** \brief Expression returning values of the shape functions of this space. */
     virtual const Fiber::Expression<ValueType>& shapeFunctionValueExpression() const = 0;
@@ -109,11 +116,6 @@ public:
     virtual void globalDofPositions(
             std::vector<Point3D<ValueType> >& positions) const = 0;
     /** @} */
-
-protected:
-    template <typename DuneBasis>
-    void evaluateBasisFunctionsWithDune(
-            const arma::Mat<ctype>& local, arma::Cube<ValueType>& result) const;
 
 protected:
     Grid& m_grid;

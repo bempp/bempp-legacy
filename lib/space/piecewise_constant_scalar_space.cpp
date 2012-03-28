@@ -60,7 +60,7 @@ void PiecewiseConstantScalarSpace<ValueType>::getBases(
 
 template <typename ValueType>
 const Fiber::Basis<ValueType>& PiecewiseConstantScalarSpace<ValueType>::basis(
-        const EntityPointer<0>& element) const
+        const Entity<0>& element) const
 {
     return m_basis;
 }

@@ -26,8 +26,17 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/tuple/tuple.hpp>
 
+namespace Fiber
+{
+
+template <typename ValueType> class LocalAssemblerForOperators;
+
+} // namespace Fiber
+
 namespace Bempp
 {
+
+template <typename ValueType> class ElementaryLinearOperator;
 
 // only scalar multipliers allowed, tensor ones would
 // require knowledge of vector components distribution
@@ -38,17 +47,17 @@ class LinearOperatorSuperposition : public LinearOperator<ValueType>
 public:
     typedef typename LinearOperator<ValueType>::LocalAssemblerFactory
     LocalAssemblerFactory;
+    typedef typename Fiber::LocalAssemblerForOperators<ValueType>
+    LocalAssembler;
 
     /* acquires ownership of the operators passed via terms */
     LinearOperatorSuperposition(
-            boost::ptr_vector<LinearOperator<ValueType> >& terms,
-            const std::vector<ValueType>& multipliers);
+            boost::ptr_vector<ElementaryLinearOperator<ValueType> >& terms);
 
-    // acquires ownership of the operators passed via terms
+    // Acquires ownership of the operators passed via terms.
     LinearOperatorSuperposition(
-            const boost::tuple<LinearOperator<ValueType>*,
-            LinearOperator<ValueType>*>& terms,
-            const boost::tuple<ValueType, ValueType>& multipliers);
+            std::auto_ptr<ElementaryLinearOperator<ValueType> > term1,
+            std::auto_ptr<ElementaryLinearOperator<ValueType> > term2);
     // possibly add variants for longer parameter lists
 
     virtual int trialComponentCount() const;
@@ -68,13 +77,34 @@ public:
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
 
-private:
-    void init(boost::ptr_vector<LinearOperator<ValueType> >& terms,
-              const std::vector<ValueType>& multipliers);
+    virtual bool supportsRepresentation(AssemblyOptions::Representation repr) const;
 
 private:
-    boost::ptr_vector<LinearOperator<ValueType> > m_terms;
-    std::vector<ValueType> m_multipliers;
+    void init(boost::ptr_vector<ElementaryLinearOperator<ValueType> >& terms);
+
+    std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+    assembleWeakFormInDenseMode(
+            const Space<ValueType>& testSpace,
+            const Space<ValueType>& trialSpace,
+            const LocalAssemblerFactory& factory,
+            const AssemblyOptions& options) const;
+
+    std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+    assembleWeakFormInAcaMode(
+            const Space<ValueType>& testSpace,
+            const Space<ValueType>& trialSpace,
+            const LocalAssemblerFactory& factory,
+            const AssemblyOptions& options) const;
+
+    std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+    assembleWeakFormInArbitraryMode(
+            const Space<ValueType>& testSpace,
+            const Space<ValueType>& trialSpace,
+            const LocalAssemblerFactory& factory,
+            const AssemblyOptions& options) const;
+
+private:
+    boost::ptr_vector<ElementaryLinearOperator<ValueType> > m_terms;
 };
 
 } //namespace Bempp

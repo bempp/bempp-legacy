@@ -73,11 +73,11 @@ public:
       @{ */
 
     enum Parallelism {
-        TBB_AND_OPEN_MP, OPEN_CL
+        TBB, OPEN_CL
     };
 
     void switchToOpenCl(const OpenClOptions& openClOptions);
-    void switchToTbbAndOpenMp(int maxThreadCount = AUTO);
+    void switchToTbb(int maxThreadCount = AUTO);
 
     Parallelism parallelism() const {
         return m_parallelism;

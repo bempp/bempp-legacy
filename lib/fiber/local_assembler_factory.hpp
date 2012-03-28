@@ -14,8 +14,7 @@ template <typename ValueType> class Function;
 template <typename ValueType> class Kernel;
 template <typename ValueType> class RawGridGeometry;
 
-template <typename ValueType> class LocalAssemblerForIntegralOperators;
-template <typename ValueType> class LocalAssemblerForIdentityOperator;
+template <typename ValueType> class LocalAssemblerForOperators;
 template <typename ValueType> class LocalAssemblerForSourceTerms;
 
 template <typename ValueType, typename GeometryFactory>
@@ -28,7 +27,7 @@ public:
         @{ */
 
     /** \brief Allocate a Galerkin-mode local assembler for an integral operator. */
-    virtual std::auto_ptr<LocalAssemblerForIntegralOperators<ValueType> > make(
+    virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<ValueType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& testBases,
@@ -36,18 +35,20 @@ public:
             const Expression<ValueType>& testExpression,
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
+            ValueType multiplier,
             const OpenClHandler<ValueType,int>& openClHandler,
             bool cacheSingularIntegrals) const = 0;
 
     /** \brief Allocate a collocation-mode local assembler for an integral operator.
 
         Used also for evaluation of the identity operator at arbitrary points. */
-    virtual std::auto_ptr<LocalAssemblerForIntegralOperators<ValueType> > make(
+    virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<ValueType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
+            ValueType multiplier,
             const OpenClHandler<ValueType,int>& openClHandler,
             bool cacheSingularIntegrals) const = 0;
 
@@ -56,23 +57,25 @@ public:
         @{ */
 
     /** \brief Allocate a Galerkin-mode local assembler for the identity operator. */
-    virtual std::auto_ptr<LocalAssemblerForIdentityOperator<ValueType> > make(
+    virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<ValueType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& testBases,
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Expression<ValueType>& testExpression,
             const Expression<ValueType>& trialExpression,
+            ValueType multiplier,
             const OpenClHandler<ValueType,int>& openClHandler) const = 0;
 
     /** \brief Allocate a collocation-mode local assembler for an identity operator.
 
         Used also for evaluation of the identity operator at arbitrary points. */
-    virtual std::auto_ptr<LocalAssemblerForIdentityOperator<ValueType> > make(
+    virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<ValueType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Expression<ValueType>& trialExpression,
+            ValueType multiplier,
             const OpenClHandler<ValueType,int>& openClHandler) const = 0;
 
     /** @}

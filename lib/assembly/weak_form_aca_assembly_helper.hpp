@@ -21,19 +21,24 @@
 #ifndef bempp_weak_form_aca_assembly_helper_hpp
 #define bempp_weak_form_aca_assembly_helper_hpp
 
+// TODO: check if this include is needed
 #include "../common/types.hpp"
-#include "elementary_integral_operator.hpp"
 
 #include <armadillo>
+#include <vector>
+
+namespace Fiber
+{
+
+template <typename ValueType> class LocalAssemblerForOperators;
+
+} // namespace Fiber
 
 namespace Bempp
 {
 
-class GridView;
-class GeometryAdapter;
 class AssemblyOptions;
-template <int codim> class EntityPointer;
-template <typename ValueType> class ElementaryIntegralOperator;
+template <typename ValueType> class DiscreteScalarValuedLinearOperator;
 template <typename ValueType> class Space;
 
 /** \brief Class whose methods are called by Ahmed during assembly in the ACA mode. */
@@ -41,15 +46,15 @@ template <typename ValueType>
 class WeakFormAcaAssemblyHelper
 {
 public:
-    typedef typename ElementaryIntegralOperator<ValueType>::LocalAssembler LocalAssembler;
+    typedef DiscreteScalarValuedLinearOperator<ValueType> DiscreteLinOp;
+    typedef Fiber::LocalAssemblerForOperators<ValueType> LocalAssembler;
 
-    WeakFormAcaAssemblyHelper(const ElementaryIntegralOperator<ValueType>& op,
-                              const GridView& view,
-                              const Space<ValueType>& testSpace,
+    WeakFormAcaAssemblyHelper(const Space<ValueType>& testSpace,
                               const Space<ValueType>& trialSpace,
                               const std::vector<unsigned int>& p2oTestDofs,
                               const std::vector<unsigned int>& p2oTrialDofs,
-                              LocalAssembler& assembler,
+                              const std::vector<LocalAssembler*>& assemblers,
+                              const std::vector<const DiscreteLinOp*>& sparseTermsToAdd,
                               const AssemblyOptions& options);
 
     /** Store the entries of the block defined
@@ -68,18 +73,18 @@ private:
                        int globalDofCount,
                        const std::vector<unsigned int>& p2o,
                        const Space<ValueType>& space,
+                       std::vector<GlobalDofIndex>& globalDofIndices,
                        std::vector<int>& elementIndices,
                        std::vector<std::vector<LocalDofIndex> >& localDofIndices,
                        std::vector<std::vector<int> >& arrayIndices) const;
 
 private:
-    const ElementaryIntegralOperator<ValueType>& m_operator;
-    const GridView& m_view;
     const Space<ValueType>& m_testSpace;
     const Space<ValueType>& m_trialSpace;
     const std::vector<unsigned int>& m_p2oTestDofs;
     const std::vector<unsigned int>& m_p2oTrialDofs;
-    LocalAssembler& m_assembler;
+    const std::vector<LocalAssembler*>& m_assemblers;
+    const std::vector<const DiscreteLinOp*>& m_sparseTermsToAdd;
     const AssemblyOptions& m_options;
 };
 

@@ -32,29 +32,19 @@ class DiscreteVectorValuedLinearOperatorSuperposition :
 public:
     /* acquires ownership of these operators */
     DiscreteVectorValuedLinearOperatorSuperposition(
-            boost::ptr_vector<DiscreteVectorValuedLinearOperator<ValueType> >& terms,
-            const std::vector<ValueType>& multipliers) :
-        m_multipliers(multipliers)
-    {
+            boost::ptr_vector<DiscreteVectorValuedLinearOperator<ValueType> >& terms) {
         m_terms.transfer(m_terms.end(), terms);
-        if (m_terms.size() != m_multipliers.size())
-            throw std::invalid_argument(
-                    "DiscreteVectorValuedLinearOperatorSuperposition::"
-                    "DiscreteVectorValuedLinearOperatorSuperposition(): "
-                    "incompatible argument lengths");
     }
 
     virtual void multiplyAddVector(ValueType multiplier,
                                    const arma::Col<ValueType>& argument,
-                                   arma::Mat<ValueType>& result)
-    {
+                                   arma::Mat<ValueType>& result) {
         for (int i = 0; i < m_terms.size(); ++i)
-            m_terms[i].multiplyAddVector(m_multipliers[i], argument, result);
+            m_terms[i].multiplyAddVector(multiplier, argument, result);
     }
 
 private:
     boost::ptr_vector<DiscreteVectorValuedLinearOperator<ValueType> > m_terms;
-    std::vector<ValueType> m_multipliers;
 };
 
 } // namespace Bempp

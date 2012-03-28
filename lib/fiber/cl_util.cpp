@@ -1,3 +1,5 @@
+#ifdef WITH_OPENCL
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -113,3 +115,4 @@ const char* oclErrorString(cl_int error)
 
 }
 
+#endif

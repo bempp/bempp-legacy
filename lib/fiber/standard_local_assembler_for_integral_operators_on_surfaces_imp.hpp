@@ -21,6 +21,8 @@
 // Keep IDEs happy
 #include "standard_local_assembler_for_integral_operators_on_surfaces.hpp"
 
+#include "accuracy_options.hpp"
+
 namespace Fiber
 {
 
@@ -34,8 +36,10 @@ StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
         const Expression<ValueType>& testExpression,
         const Kernel<ValueType>& kernel,
         const Expression<ValueType>& trialExpression,
+        ValueType multiplier,
         const OpenClHandler<ValueType,int>& openClHandler,
-        bool cacheSingularIntegrals) :
+        bool cacheSingularIntegrals,
+        const AccuracyOptions& accuracyOptions) :
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
     m_testBases(testBases),
@@ -43,7 +47,9 @@ StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
     m_testExpression(testExpression),
     m_kernel(kernel),
     m_trialExpression(trialExpression),
-    m_openClHandler(openClHandler)
+    m_multiplier(multiplier),
+    m_openClHandler(openClHandler),
+    m_accuracyOptions(accuracyOptions)
 {
     if (rawGeometry.vertices().n_rows != 3)
         throw std::invalid_argument(
@@ -133,11 +139,11 @@ evaluateLocalWeakForms(
         {
             quadVariants[i] = CACHED;
             if (localDofIndexB == ALL_DOFS)
-                result[i] = it->second;
+                result[i] = m_multiplier * it->second;
             else
             {
                 result[i].set_size(it->second.n_rows, 1);
-                result[i] = it->second.col(localDofIndexB);
+                result[i] = m_multiplier * it->second.col(localDofIndexB);
             }
         }
         else
@@ -190,7 +196,7 @@ evaluateLocalWeakForms(
         int i = 0;
         for (int indexA = 0; indexA < elementACount; ++indexA)
             if (quadVariants[indexA] == activeQuadVariant)
-                result[indexA] = localResult.slice(i++);
+                result[indexA] = m_multiplier * localResult.slice(i++);
     }
 }
 
@@ -226,7 +232,7 @@ evaluateLocalWeakForms(
             if (it != m_cache.end()) // Matrix found in cache
             {
                 quadVariants(testIndex, trialIndex) = CACHED;
-                result(testIndex, trialIndex) = it->second;
+                result(testIndex, trialIndex) = m_multiplier * it->second;
             }
             else
             {
@@ -282,8 +288,21 @@ evaluateLocalWeakForms(
         for (int trialIndex = 0; trialIndex < trialElementCount; ++trialIndex)
             for (int testIndex = 0; testIndex < testElementCount; ++testIndex)
                 if (quadVariants(testIndex, trialIndex) == activeQuadVariant)
-                    result(testIndex, trialIndex) = localResult.slice(i++);
+                    result(testIndex, trialIndex) = m_multiplier * localResult.slice(i++);
     }
+}
+
+template <typename ValueType, typename GeometryFactory>
+void
+StandardLocalAssemblerForIntegralOperatorsOnSurfaces<ValueType, GeometryFactory>::
+evaluateLocalWeakForms(
+        const std::vector<int>& elementIndices,
+        std::vector<arma::Mat<ValueType> >& result)
+{
+    // This overload is mostly useful only for the identity operator
+    throw std::runtime_error("StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
+                             "evaluateLocalWeakForms(): "
+                             "this overload not implemented yet");
 }
 
 template <typename ValueType, typename GeometryFactory>
@@ -434,22 +453,15 @@ selectIntegrator(int testElementIndex, int trialElementIndex) {
     desc.topology = determineElementPairTopologyIn3D(
                 testElementCornerIndices, trialElementCornerIndices);
 
-    desc.testOrder = m_testBases[testElementIndex]->order();
-    desc.trialOrder = m_trialBases[trialElementIndex]->order();
-
     if (desc.topology.type == ElementPairTopology::Disjoint)
     {
-        desc.testOrder +=
-                regularOrderIncrement(testElementIndex);
-        desc.trialOrder +=
-                regularOrderIncrement(trialElementIndex);
+        desc.testOrder = regularOrder(testElementIndex, TEST);
+        desc.trialOrder = regularOrder(testElementIndex, TRIAL);
     }
     else // singular integral
     {
-        desc.testOrder +=
-                singularOrderIncrement(testElementIndex);
-        desc.trialOrder +=
-                singularOrderIncrement(trialElementIndex);
+        desc.testOrder = singularOrder(testElementIndex, TEST);
+        desc.trialOrder = singularOrder(testElementIndex, TRIAL);
     }
 
     return getIntegrator(desc);
@@ -458,35 +470,51 @@ selectIntegrator(int testElementIndex, int trialElementIndex) {
 template <typename ValueType, typename GeometryFactory>
 int
 StandardLocalAssemblerForIntegralOperatorsOnSurfaces<ValueType, GeometryFactory>::
-regularOrderIncrement(int elementIndex) const
+regularOrder(int elementIndex, ElementType elementType) const
 {
-    // Note: this function will make use of options supplied to the integrator
-    // in its constructor
-
     // TODO:
     // 1. Check the size of elements and the distance between them
     //    and estimate the variability of the kernel
     // 2. Take into account the fact that elements might be isoparametric.
 
-    // Make quadrature exact for a constant kernel and affine elements
-    return 4;
+    const QuadratureOptions& options = m_accuracyOptions.regular;
+
+    if (options.mode == QuadratureOptions::EXACT_ORDER)
+        return options.order;
+    else
+    {
+        // Order required for exact quadrature on affine elements with a constant kernel
+        int elementOrder = (elementType == TEST ?
+                                m_testBases[elementIndex]->order() :
+                                m_trialBases[elementIndex]->order());
+        int minimumOrder = ((elementOrder + 1) + 1) / 2;
+        return minimumOrder + options.orderIncrement;
+    }
 }
 
 template <typename ValueType, typename GeometryFactory>
 int
 StandardLocalAssemblerForIntegralOperatorsOnSurfaces<ValueType, GeometryFactory>::
-singularOrderIncrement(int elementIndex) const
+singularOrder(int elementIndex, ElementType elementType) const
 {
-    // Note: this function will make use of options supplied to the integrator
-    // in its constructor
-
     // TODO:
     // 1. Check the size of elements and estimate the variability of the
     //    (Sauter-Schwab-transformed) kernel
     // 2. Take into account the fact that elements might be isoparametric.
 
-    // Make quadrature exact for a constant kernel and affine elements
-    return 4;
+    const QuadratureOptions& options = m_accuracyOptions.singular;
+
+    if (options.mode == QuadratureOptions::EXACT_ORDER)
+        return options.order;
+    else
+    {
+        // Order required for exact quadrature on affine elements with a constant kernel
+        int elementOrder = (elementType == TEST ?
+                                m_testBases[elementIndex]->order() :
+                                m_trialBases[elementIndex]->order());
+        int minimumOrder = ((elementOrder + 1) + 1) / 2;
+        return minimumOrder + 3 + options.orderIncrement;
+    }
 }
 
 template <typename ValueType, typename GeometryFactory>

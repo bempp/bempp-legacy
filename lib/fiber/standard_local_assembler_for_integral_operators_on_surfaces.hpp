@@ -21,7 +21,7 @@
 #ifndef fiber_standard_local_assembler_for_integral_operators_on_surfaces_hpp
 #define fiber_standard_local_assembler_for_integral_operators_on_surfaces_hpp
 
-#include "local_assembler_for_integral_operators.hpp"
+#include "local_assembler_for_operators.hpp"
 
 #include "array_2d.hpp"
 #include "element_pair_topology.hpp"
@@ -40,11 +40,12 @@
 namespace Fiber
 {
 
+class AccuracyOptions;
 template <typename ValueType, typename IndexType> class OpenClHandler;
 
 template <typename ValueType, typename GeometryFactory>
 class StandardLocalAssemblerForIntegralOperatorsOnSurfaces :
-        public LocalAssemblerForIntegralOperators<ValueType>
+        public LocalAssemblerForOperators<ValueType>
 {    
 public:
     StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
@@ -55,8 +56,10 @@ public:
             const Expression<ValueType>& testExpression,
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
+            ValueType multiplier,
             const OpenClHandler<ValueType,int>& openClHandler,
-            bool cacheSingularIntegrals);
+            bool cacheSingularIntegrals,
+            const AccuracyOptions& accuracyOptions);
     virtual ~StandardLocalAssemblerForIntegralOperatorsOnSurfaces();
 
 public:
@@ -72,6 +75,10 @@ public:
             const std::vector<int>& trialElementIndices,
             Fiber::Array2D<arma::Mat<ValueType> >& result);
 
+    virtual void evaluateLocalWeakForms(
+            const std::vector<int>& elementIndices,
+            std::vector<arma::Mat<ValueType> >& result);
+
 private:
     typedef typename TestKernelTrialIntegrator<ValueType>::ElementIndexPair
     ElementIndexPair;
@@ -85,8 +92,12 @@ private:
     const TestKernelTrialIntegrator<ValueType>& selectIntegrator(
             int testElementIndex, int trialElementIndex);
 
-    int regularOrderIncrement(int elementIndex) const;
-    int singularOrderIncrement(int elementIndex) const;
+    enum ElementType {
+        TEST, TRIAL
+    };
+
+    int regularOrder(int elementIndex, ElementType elementType) const;
+    int singularOrder(int elementIndex, ElementType elementType) const;
 
     const TestKernelTrialIntegrator<ValueType>& getIntegrator(
             const DoubleQuadratureDescriptor& index);
@@ -103,7 +114,9 @@ private:
     const Expression<ValueType>& m_testExpression;
     const Kernel<ValueType>& m_kernel;
     const Expression<ValueType>& m_trialExpression;
+    ValueType m_multiplier;
     const OpenClHandler<ValueType,int>& m_openClHandler;
+    const AccuracyOptions& m_accuracyOptions;
 
     IntegratorMap m_TestKernelTrialIntegrators;
     Cache m_cache;
