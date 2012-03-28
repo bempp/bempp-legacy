@@ -26,8 +26,6 @@
 #include "assembly/identity_operator.hpp"
 #include "assembly/single_layer_potential_3d.hpp"
 #include "assembly/double_layer_potential_3d.hpp"
-#include "assembly/adjoint_double_layer_potential_3d.hpp"
-#include "assembly/hypersingular_operator_3d.hpp"
 
 #include "assembly/discrete_scalar_valued_linear_operator.hpp"
 #include "fiber/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
@@ -69,8 +67,6 @@ enum OperatorVariant
 {
     SINGLE_LAYER_POTENTIAL,
     DOUBLE_LAYER_POTENTIAL,
-    ADJOINT_DOUBLE_LAYER_POTENTIAL,
-    HYPERSINGULAR_OPERATOR,
     IDENTITY
 };
 
@@ -79,17 +75,12 @@ inline bool approxEqual(double x, double y)
     return fabs(x - y) / fabs((x + y) / 2.) < 1e-3;
 }
 
-inline bool approxZero(double x)
-{
-    return fabs(x) < 1e-6;
-}
-
 /**
     A script for rudimentary testing of the single-layer-potential operator.
   */
 int main()
 {
-    const MeshVariant meshVariant = CUBE_12_REORIENTED;
+    const MeshVariant meshVariant = CUBE_384; //CUBE_12_REORIENTED;
     const OperatorVariant opVariant = DOUBLE_LAYER_POTENTIAL;
 
     const char TWO_DISJOINT_TRIANGLES_FNAME[] = "two_disjoint_triangles.msh";
@@ -129,6 +120,7 @@ int main()
         throw std::runtime_error("Invalid mesh name");
     }
 
+
     // Import the grid
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
@@ -156,19 +148,21 @@ int main()
     space.assignDofs();
 
     AssemblyOptions assemblyOptions;
-//    assemblyOptions.switchToDense();
+    assemblyOptions.switchToDense();
 
-    AcaOptions acaOptions;
-    acaOptions.eps = 1e-4;
-    acaOptions.maximumRank = 10000;
-    acaOptions.minimumBlockSize = 2;
-    acaOptions.eta = 0.8;
-    acaOptions.recompress = true;
-    assemblyOptions.switchToAca(acaOptions);
+//    AcaOptions acaOptions;
+//    acaOptions.eps = 1e-4;
+//    acaOptions.maximumRank = 10000;
+//    acaOptions.minimumBlockSize = 2;
+//    acaOptions.eta = 0.8;
+//    acaOptions.recompress = true;
+//    assemblyOptions.switchToAca(acaOptions);
 
 //    assemblyOptions.switchToSparse();
 
-    assemblyOptions.switchToTbbAndOpenMp();
+    assemblyOptions.switchToTbbAndOpenMp(1);
+    //assemblyOptions.switchToOpenCl(OpenClOptions());
+
     assemblyOptions.setSingularIntegralCaching(AssemblyOptions::NO);
 
     Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, GeometryFactory>
@@ -182,10 +176,6 @@ int main()
         op = LinearOperatorPtr(new SingleLayerPotential3D<double>); break;
     case DOUBLE_LAYER_POTENTIAL:
         op = LinearOperatorPtr(new DoubleLayerPotential3D<double>); break;
-    case ADJOINT_DOUBLE_LAYER_POTENTIAL:
-        op = LinearOperatorPtr(new AdjointDoubleLayerPotential3D<double>); break;
-    case HYPERSINGULAR_OPERATOR:
-        op = LinearOperatorPtr(new HypersingularOperator3D<double>); break;
     case IDENTITY:
         op = LinearOperatorPtr(new IdentityOperator<double>); break;
     default:
@@ -236,18 +226,6 @@ int main()
         {
             // elements sharing edge
             assert(approxEqual(resultMatrix(0, 3), 0.00861375));
-        }
-    }
-    else if (opVariant == HYPERSINGULAR_OPERATOR)
-    {
-        if (meshVariant == TWO_DISJOINT_TRIANGLES)
-        {
-            // disjoint elements
-            assert(approxEqual(resultMatrix(0, 3), 0.0912808 * 7. / 18.));
-            assert(approxEqual(resultMatrix(0, 4), 0.0912808 / 9.));
-            assert(approxEqual(resultMatrix(0, 5), 0.0912808 / -2.));
-            assert(approxEqual(resultMatrix(1, 4), 0.0912808 / -9.));
-            assert(approxZero(resultMatrix(1, 5)));
         }
     }
     else if (opVariant == IDENTITY)
