@@ -47,7 +47,7 @@ public:
                                    ElementVariant variant);
 
     virtual void getBases(const std::vector<const EntityPointer<0>*>& elements,
-                          std::vector<const Fiber::Basis<ValueType>*> bases) const;
+                          std::vector<const Fiber::Basis<ValueType>*>& bases) const;
 
     virtual const Fiber::Basis<ValueType>& basis(const EntityPointer<0>& element) const;
 

@@ -50,7 +50,7 @@ int PiecewiseConstantScalarSpace<ValueType>::codomainDimension() const
 template <typename ValueType>
 void PiecewiseConstantScalarSpace<ValueType>::getBases(
         const std::vector<const EntityPointer<0>*>& elements,
-        std::vector<const Fiber::Basis<ValueType>*> bases) const
+        std::vector<const Fiber::Basis<ValueType>*>& bases) const
 {
     const int elementCount = elements.size();
     bases.resize(elementCount);
