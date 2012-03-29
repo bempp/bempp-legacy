@@ -44,12 +44,11 @@ void AssemblyOptions::switchToOpenCl(const OpenClOptions& openClOptions)
 
 void AssemblyOptions::switchToTbb(int maxThreadCount)
 {
-    m_parallelism = TBB_AND_OPEN_MP;
+    m_parallelism = TBB;
     m_openClOptions.useOpenCl = false;
     if (maxThreadCount <= 0 && maxThreadCount != AUTO)
         throw std::runtime_error("AssemblyOptions::switchToTbb(): "
                                  "maxThreadCount must be positive or equal to AUTO");
-    m_parallelism = TBB;
     m_maxThreadCount = maxThreadCount;
 }
 

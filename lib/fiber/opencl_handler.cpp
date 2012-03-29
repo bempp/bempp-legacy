@@ -5,7 +5,7 @@
 #include "cl_util.hpp"
 #include "CL/commontypes.h.str"
 
-#define CL_DIAGNOSTICS
+//#define CL_DIAGNOSTICS
 
 #ifdef CL_DIAGNOSTICS
 #define CALLECHO() { std::cout << "***** CL: called " << __FUNCTION__ << std::endl; }
