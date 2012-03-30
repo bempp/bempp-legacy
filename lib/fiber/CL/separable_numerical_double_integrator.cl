@@ -363,3 +363,183 @@ __kernel void clIntegrate (
 	    g_result[testDof + trialDof*testDofCount + id*testDofCount*trialDofCount] = sum;
 	}
 }
+
+
+__kernel void clIntegratePairs (
+	MeshParam prm,
+	__global const ValueType *g_meshVtx,
+	__global const int *g_meshIdx,
+	__global const ValueType *g_globalTrialPoints,
+	__global const ValueType *g_globalTestPoints,
+	__global const ValueType *g_globalTrialNormals,
+	__global const ValueType *g_trialIntegrationElements,
+	__global const ValueType *g_testIntegrationElements,
+	__global const ValueType *g_trialValues,
+	__global const ValueType *g_testValues,
+	__global const ValueType *g_trialWeights,
+	__global const ValueType *g_testWeights,
+	int trialPointCount,
+	int testPointCount,
+	int trialComponentCount,
+	int testComponentCount,
+	int trialDofCount,
+	int testDofCount,
+	int elementCount,
+	__global const int *g_elementIndicesA,
+	__global const int *g_elementIndicesB,
+	__global ValueType *g_result
+)
+{
+    int id = get_global_id(0);
+    if (id >= elementCount)
+        return;
+
+    int i;
+    int indexA = g_elementIndicesA[id];
+    int indexB = g_elementIndicesB[id];
+    int testPointIdx, trialPointIdx;
+
+    ValueType geomA[9]; // 9: dim * vertices per element
+    ValueType geomB[9]; // 9: dim * vertices per element
+    ValueType globalTrialPoint[3];
+    ValueType globalTestPoint[3];
+    ValueType globalTrialNormal[3];
+    ValueType *trialGeom;
+    ValueType *testGeom;
+    ValueType kval;
+
+    devGetGeometry (g_meshVtx, prm.nvtx, g_meshIdx, prm.dim, prm.nidx, indexA, geomA);
+    devGetGeometry (g_meshVtx, prm.nvtx, g_meshIdx, prm.dim, prm.nidx, indexB, geomB);
+
+    __global const ValueType *trialIntegrationElements;
+    __global const ValueType *testIntegrationElements;
+    __global const ValueType *trialValues;
+    __global const ValueType *testValues;
+
+    testPointIdx = id*testPointCount*prm.dim;
+    trialPointIdx = id*trialPointCount*prm.dim;
+    testGeom = geomA;
+    trialGeom = geomB;
+    trialIntegrationElements = g_trialIntegrationElements + id*trialPointCount;
+    testIntegrationElements = g_testIntegrationElements + id*testPointCount;
+    trialValues = g_trialValues + id*trialComponentCount*trialDofCount*trialPointCount;
+    testValues = g_testValues + id*testComponentCount*testDofCount*testPointCount;
+
+    for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
+        for (int testDof = 0; testDof < testDofCount; ++testDof)
+	{
+	    ValueType sum = 0;
+	    for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
+	        for (i = 0; i < prm.dim; i++) {
+		    globalTrialPoint[i] = g_globalTrialPoints[trialPointIdx+trialPoint*prm.dim+i];
+		    globalTrialNormal[i] = g_globalTrialNormals[trialPointIdx+trialPoint*prm.dim+i];
+		}
+	        for (int testPoint = 0; testPoint < testPointCount; ++testPoint) {
+		    for (i = 0; i < prm.dim; i++)
+		        globalTestPoint[i] = g_globalTestPoints[testPointIdx+testPoint*prm.dim+i];
+		    kval = devKerneval (globalTestPoint,globalTrialPoint,globalTrialNormal,prm.dim);
+		    // currently no dependency on trialDim,testDim
+		    for (int trialDim = 0; trialDim < trialComponentCount; ++trialDim)
+		        for (int testDim = 0; testDim < testComponentCount; ++testDim) {
+			    sum += g_testWeights[testPoint] *
+			        testIntegrationElements[testPoint] *
+			        testValues[testDim + testDof*testComponentCount + testPoint*testComponentCount*testDofCount] *
+			        kval *
+			        trialValues[trialDim + trialDof*trialComponentCount + trialPoint*trialComponentCount*trialDofCount] *
+			        trialIntegrationElements[trialPoint] *
+			        g_trialWeights[trialPoint];
+			}
+		}
+	    }
+	    g_result[testDof + trialDof*testDofCount + id*testDofCount*trialDofCount] = sum;
+	}
+}
+
+
+__kernel void clIntegratePairsScalar (
+	MeshParam prm,
+	__global const ValueType *g_meshVtx,
+	__global const int *g_meshIdx,
+	__global const ValueType *g_globalTrialPoints,
+	__global const ValueType *g_globalTestPoints,
+	__global const ValueType *g_globalTrialNormals,
+	__global const ValueType *g_trialIntegrationElements,
+	__global const ValueType *g_testIntegrationElements,
+	__global const ValueType *g_trialValues,
+	__global const ValueType *g_testValues,
+	__global const ValueType *g_trialWeights,
+	__global const ValueType *g_testWeights,
+	int trialPointCount,
+	int testPointCount,
+	int trialComponentCount,
+	int testComponentCount,
+	int trialDofCount,
+	int testDofCount,
+	int elementCount,
+	__global const int *g_elementIndicesA,
+	__global const int *g_elementIndicesB,
+	__global ValueType *g_result
+)
+{
+    int id = get_global_id(0);
+    if (id >= elementCount)
+        return;
+
+    int i;
+    int indexA = g_elementIndicesA[id];
+    int indexB = g_elementIndicesB[id];
+    int testPointIdx, trialPointIdx;
+
+    ValueType geomA[9]; // 9: dim * vertices per element
+    ValueType geomB[9]; // 9: dim * vertices per element
+    ValueType globalTrialPoint[3];
+    ValueType globalTestPoint[3];
+    ValueType globalTrialNormal[3];
+    ValueType *trialGeom;
+    ValueType *testGeom;
+    ValueType kval;
+
+    devGetGeometry (g_meshVtx, prm.nvtx, g_meshIdx, prm.dim, prm.nidx, indexA, geomA);
+    devGetGeometry (g_meshVtx, prm.nvtx, g_meshIdx, prm.dim, prm.nidx, indexB, geomB);
+
+    __global const ValueType *trialIntegrationElements;
+    __global const ValueType *testIntegrationElements;
+    __global const ValueType *trialValues;
+    __global const ValueType *testValues;
+
+    testPointIdx = id*testPointCount*prm.dim;
+    trialPointIdx = id*trialPointCount*prm.dim;
+    testGeom = geomA;
+    trialGeom = geomB;
+    trialIntegrationElements = g_trialIntegrationElements + id*trialPointCount;
+    testIntegrationElements = g_testIntegrationElements + id*testPointCount;
+    trialValues = g_trialValues + id*trialComponentCount*trialDofCount*trialPointCount;
+    testValues = g_testValues + id*testComponentCount*testDofCount*testPointCount;
+
+    for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
+        for (int testDof = 0; testDof < testDofCount; ++testDof)
+	{
+	    ValueType sum = 0;
+	    for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
+	        for (i = 0; i < prm.dim; i++) {
+		    globalTrialPoint[i] = g_globalTrialPoints[trialPointIdx+trialPoint*prm.dim+i];
+		    globalTrialNormal[i] = g_globalTrialNormals[trialPointIdx+trialPoint*prm.dim+i];
+		}
+	        for (int testPoint = 0; testPoint < testPointCount; ++testPoint) {
+		    for (i = 0; i < prm.dim; i++)
+		        globalTestPoint[i] = g_globalTestPoints[testPointIdx+testPoint*prm.dim+i];
+		    kval = devKerneval (globalTestPoint,globalTrialPoint,globalTrialNormal,prm.dim);
+		    // currently no dependency on trialDim,testDim
+		    for (int dim = 0; dim < testComponentCount; ++dim)
+		        sum += g_testWeights[testPoint] *
+			    testIntegrationElements[testPoint] *
+			    testValues[dim + testDof*testComponentCount + testPoint*testComponentCount*testDofCount] *
+			    kval *
+			    trialValues[dim + trialDof*trialComponentCount + trialPoint*trialComponentCount*trialDofCount] *
+			    trialIntegrationElements[trialPoint] *
+			    g_trialWeights[trialPoint];
+		}
+	    }
+	    g_result[testDof + trialDof*testDofCount + id*testDofCount*trialDofCount] = sum;
+	}
+}

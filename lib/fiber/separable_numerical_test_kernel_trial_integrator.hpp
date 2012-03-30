@@ -53,6 +53,8 @@ public:
             const Expression<ValueType>& trialExpression,
             const OpenClHandler<ValueType,int>& openClHandler);
 
+    virtual ~SeparableNumericalTestKernelTrialIntegrator ();
+
     virtual void integrate(
             CallVariant callVariant,
             const std::vector<int>& elementIndicesA,
@@ -120,6 +122,8 @@ private:
 #ifdef WITH_OPENCL
     cl::Buffer *clTestQuadPoints;
     cl::Buffer *clTrialQuadPoints;
+    cl::Buffer *clTestQuadWeights;
+    cl::Buffer *clTrialQuadWeights;
 #endif
 };
 

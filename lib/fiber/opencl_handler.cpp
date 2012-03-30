@@ -262,6 +262,20 @@ cl::Buffer *OpenClHandler<ValueType,IndexType>::pushIndexVector (
 }
 
 template <typename ValueType, typename IndexType>
+cl::Buffer *OpenClHandler<ValueType,IndexType>::pushIndexBuffer (
+    const IndexType *buf, int size) const
+{
+    CALLECHO();
+
+    cl_int err;
+    size_t bufsize = size * sizeof(IndexType);
+    cl::Buffer *clbuf = new cl::Buffer (context, CL_MEM_READ_ONLY, bufsize, NULL, &err);
+    queue.enqueueWriteBuffer (*clbuf, CL_TRUE, 0, bufsize, buf, NULL, &event);
+    return clbuf;
+}
+
+
+template <typename ValueType, typename IndexType>
 cl::Buffer *OpenClHandler<ValueType,IndexType>::pushValueRow (
     const arma::Row<ValueType>& row) const
 {
