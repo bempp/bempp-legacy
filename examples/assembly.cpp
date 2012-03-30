@@ -65,12 +65,12 @@ inline bool approxZero(double x)
 }
 
 /**
-    A script for rudimentary testing of various operators.
-  */
+A script for rudimentary testing of various operators.
+*/
 int main()
 {
     try {
-        const MeshVariant meshVariant = CUBE_12_REORIENTED;
+        const MeshVariant meshVariant = CUBE_384;
         const OperatorVariant opVariant = DOUBLE_LAYER_POTENTIAL;
 
         std::auto_ptr<Grid> grid = loadMesh(meshVariant);
@@ -95,8 +95,8 @@ int main()
         assemblyOptions.switchToTbb();
         assemblyOptions.setSingularIntegralCaching(AssemblyOptions::YES);
 
-        // Fiber::OpenClOptions openClOptions;
-        // assemblyOptions.switchToOpenCl(openClOptions);
+        Fiber::OpenClOptions openClOptions;
+    //    assemblyOptions.switchToOpenCl(openClOptions);
 
         Fiber::AccuracyOptions accuracyOptions; // default
         Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, GeometryFactory>
@@ -205,6 +205,3 @@ int main()
         std::cerr<<e.what()<<std::endl;
     }
 }
-
-
-

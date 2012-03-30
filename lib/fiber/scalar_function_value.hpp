@@ -23,6 +23,7 @@
 
 #include "expression.hpp"
 #include "scalar_space_mapping.hpp"
+#include "CL/scalar_function_value.cl.str"
 
 #include <armadillo>
 
@@ -50,6 +51,22 @@ public:
                           arma::Cube<ValueType>& result) const {
         ScalarSpaceMapping<ValueType>::
                 evaluateShapeFunctions(basisData, geomData, result);
+    }
+
+    virtual const std::string clStringEvaluate (const std::string modifier)
+        const {
+        std::string funcName ("devExpressionEvaluate");
+        std::string str (scalar_function_value_cl,
+			 scalar_function_value_cl_len);
+	if (modifier.size() > 0) {
+	    int n = str.find (funcName);
+	    if (n != std::string::npos) {
+	        size_t len = funcName.size();
+	        funcName.append (modifier);
+	        str.replace (n, len, funcName);
+	    }
+	}
+	return str;
     }
 };
 

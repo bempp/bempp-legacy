@@ -14,6 +14,7 @@
  */
 ValueType devKerneval (const ValueType *testPoint,
 		       const ValueType *trialPoint,
+	               const ValueType *trialNormal,
 		       int coordCount)
 {
     int k;
