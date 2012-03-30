@@ -33,7 +33,7 @@ public:
      */
     ~OpenClHandler();
 
-    bool UseOpenCl () const { return true; }
+    bool UseOpenCl () const { return useOpenCl; }
 
     /**
      * \brief Returns a string that defines the 'ValueType' type used by most device
@@ -90,6 +90,11 @@ public:
     cl::Buffer *pushIndexVector (const std::vector<IndexType> &vec) const;
 
     /**
+     * \brief Push a vector of index pairs into an OpenCL buffer and return a pointer to the buffer
+     */
+    cl::Buffer *pushIndexBuffer (const IndexType *buf, int size) const;
+
+    /**
      * \brief Push a value vector into an OpenCL buffer and return a pointer to the buffer
      */
     cl::Buffer *pushValueVector (const std::vector<CoordinateType> &vec) const;
@@ -137,6 +142,7 @@ public:
 private:
     const std::string typedefStr () const;
 
+    bool useOpenCl;
     unsigned int deviceUsed;
     std::vector<cl::Device> devices;
     cl::CommandQueue queue;

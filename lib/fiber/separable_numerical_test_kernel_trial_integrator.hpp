@@ -53,6 +53,8 @@ public:
             const Expression<ValueType>& trialExpression,
             const OpenClHandler<ValueType,int>& openClHandler);
 
+    virtual ~SeparableNumericalTestKernelTrialIntegrator ();
+
     virtual void integrate(
             CallVariant callVariant,
             const std::vector<int>& elementIndicesA,
@@ -87,6 +89,18 @@ private:
 	    LocalDofIndex localDofIndexB,
 	    arma::Cube<ValueType>& result) const;
 
+    virtual void integrateCpu(
+            const std::vector<ElementIndexPair>& elementIndexPairs,
+            const Basis<ValueType>& testBasis,
+            const Basis<ValueType>& trialBasis,
+            arma::Cube<ValueType>& result) const;
+
+    virtual void integrateCl(
+            const std::vector<ElementIndexPair>& elementIndexPairs,
+            const Basis<ValueType>& testBasis,
+            const Basis<ValueType>& trialBasis,
+            arma::Cube<ValueType>& result) const;
+
     /**
      * \brief Returns an OpenCL code snippet containing the clIntegrate
      *   kernel function for integrating a single row or column
@@ -108,6 +122,8 @@ private:
 #ifdef WITH_OPENCL
     cl::Buffer *clTestQuadPoints;
     cl::Buffer *clTrialQuadPoints;
+    cl::Buffer *clTestQuadWeights;
+    cl::Buffer *clTrialQuadWeights;
 #endif
 };
 

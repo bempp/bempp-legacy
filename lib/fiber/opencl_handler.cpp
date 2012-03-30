@@ -5,7 +5,7 @@
 #include "cl_util.hpp"
 #include "CL/commontypes.h.str"
 
-#define CL_DIAGNOSTICS
+//#define CL_DIAGNOSTICS
 
 #ifdef CL_DIAGNOSTICS
 #define CALLECHO() { std::cout << "***** CL: called " << __FUNCTION__ << std::endl; }
@@ -19,6 +19,7 @@ template<typename ValueType, typename IndexType>
 OpenClHandler<ValueType,IndexType>::OpenClHandler(const OpenClOptions& options)
 {
     cl_int err;
+    useOpenCl = options.useOpenCl;
 
     std::vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
@@ -107,6 +108,7 @@ void OpenClHandler<ValueType,IndexType>::loadProgramFromString(
 	      << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]) 
 	      << std::endl;
 #endif
+    std::cout << "x11" << std::endl;
 }
 
 template<typename ValueType, typename IndexType>
@@ -258,6 +260,20 @@ cl::Buffer *OpenClHandler<ValueType,IndexType>::pushIndexVector (
     queue.enqueueWriteBuffer (*clbuf, CL_TRUE, 0, bufsize, vecptr, NULL, &event);
     return clbuf;
 }
+
+template <typename ValueType, typename IndexType>
+cl::Buffer *OpenClHandler<ValueType,IndexType>::pushIndexBuffer (
+    const IndexType *buf, int size) const
+{
+    CALLECHO();
+
+    cl_int err;
+    size_t bufsize = size * sizeof(IndexType);
+    cl::Buffer *clbuf = new cl::Buffer (context, CL_MEM_READ_ONLY, bufsize, NULL, &err);
+    queue.enqueueWriteBuffer (*clbuf, CL_TRUE, 0, bufsize, buf, NULL, &event);
+    return clbuf;
+}
+
 
 template <typename ValueType, typename IndexType>
 cl::Buffer *OpenClHandler<ValueType,IndexType>::pushValueRow (

@@ -164,8 +164,9 @@ ElementaryIntegralOperator<ValueType>::assembleOperator(
 
     // Now create the assembler
     Fiber::OpenClHandler<ValueType,int> openClHandler(options.openClOptions());
-    openClHandler.pushGeometry (rawGeometry.vertices(),
-				rawGeometry.elementCornerIndices());
+    if (openClHandler.UseOpenCl())
+        openClHandler.pushGeometry (rawGeometry.vertices(),
+				    rawGeometry.elementCornerIndices());
     bool cacheSingularIntegrals =
             (options.singularIntegralCaching() == AssemblyOptions::YES ||
              (options.singularIntegralCaching() == AssemblyOptions::AUTO &&
@@ -245,8 +246,9 @@ ElementaryIntegralOperator<ValueType>::assembleWeakForm(
 
     // Now create the assembler
     Fiber::OpenClHandler<ValueType,int> openClHandler(options.openClOptions());
-    openClHandler.pushGeometry (rawGeometry.vertices(),
-				rawGeometry.elementCornerIndices());
+    if (openClHandler.UseOpenCl())
+        openClHandler.pushGeometry (rawGeometry.vertices(),
+				    rawGeometry.elementCornerIndices());
     bool cacheSingularIntegrals =
             (options.singularIntegralCaching() == AssemblyOptions::YES ||
              (options.singularIntegralCaching() == AssemblyOptions::AUTO &&
