@@ -70,7 +70,7 @@ A script for rudimentary testing of various operators.
 int main()
 {
     try {
-        const MeshVariant meshVariant = CUBE_6144; // CUBE_12_REORIENTED;
+        const MeshVariant meshVariant = CUBE_24576; // CUBE_12_REORIENTED;
         const OperatorVariant opVariant = DOUBLE_LAYER_POTENTIAL;
 
         std::auto_ptr<Grid> grid = loadMesh(meshVariant);
@@ -96,7 +96,7 @@ int main()
         assemblyOptions.setSingularIntegralCaching(AssemblyOptions::YES);
 
         Fiber::OpenClOptions openClOptions;
-        //assemblyOptions.switchToOpenCl(openClOptions);
+        assemblyOptions.switchToOpenCl(openClOptions);
 
         Fiber::AccuracyOptions accuracyOptions; // default
         Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, GeometryFactory>

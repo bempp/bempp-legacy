@@ -48,6 +48,7 @@ loadMesh(MeshVariant mv)
     const char CUBE_12_REORIENTED_FNAME[] = "cube-12-reoriented.msh";
     const char CUBE_384_FNAME[] = "cube-384.msh";
     const char CUBE_6144_FNAME[] = "cube-6144.msh";
+    const char CUBE_24576_FNAME[] = "cube-24576.msh";
 
     const char* MESH_FNAME = 0;
     switch (mv) {
@@ -73,6 +74,8 @@ loadMesh(MeshVariant mv)
         MESH_FNAME = CUBE_384_FNAME; break;
     case CUBE_6144:
         MESH_FNAME = CUBE_6144_FNAME; break;
+    case CUBE_24576:
+        MESH_FNAME = CUBE_24576_FNAME; break;
     default:
         throw std::runtime_error("Invalid mesh name");
     }
