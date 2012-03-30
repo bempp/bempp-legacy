@@ -97,7 +97,9 @@ html_theme = 'default'
 # further.  For a list of options available for each theme, see the
 # documentation.
 
-html_theme_options={'sidebarbgcolor':'white', 'sidebartextcolor':'darkorange', 'sidebarlinkcolor':'dimgray', 'relbarbgcolor':'darkorange', 'relbartextcolor':'white', 'relbarlinkcolor':'white', 'bgcolor':'white', 'textcolor':'black', 'linkcolor':'black', 'visitedlinkcolor':'gray', 'headtextcolor':'darkorange','headlinkcolor':'black','bodyfont':'helvetica,sans-serif', 'headfont':'helvetica,sans-serif', 'footerbgcolor':'white', 'footertextcolor':'gray', 'headbgcolor':'white', 'visitedlinkcolor':'black', 'sidebarbtncolor':'darkorange'}
+timosfavouritecolour = '#CA7900' # selected from http://sphinx.pocoo.org/contents.html
+
+html_theme_options={'sidebarbgcolor':'white', 'sidebartextcolor':timosfavouritecolour, 'sidebarlinkcolor':'dimgray', 'relbarbgcolor':timosfavouritecolour, 'relbartextcolor':'white', 'relbarlinkcolor':'white', 'bgcolor':'white', 'textcolor':'black', 'linkcolor':'black', 'visitedlinkcolor':'gray', 'headtextcolor':timosfavouritecolour,'headlinkcolor':'black','bodyfont':'helvetica,sans-serif', 'headfont':'helvetica,sans-serif', 'footerbgcolor':'white', 'footertextcolor':'gray', 'headbgcolor':'white', 'visitedlinkcolor':'black', 'sidebarbtncolor':timosfavouritecolour}
 
 
 #html_theme_options = {'bodyfont':'sans-serif', 
