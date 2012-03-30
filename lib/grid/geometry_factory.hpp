@@ -1,12 +1,12 @@
 #ifndef bempp_geometry_factory_hpp
 #define bempp_geometry_factory_hpp
 
+#include "geometry.hpp"
+
 #include <memory>
 
 namespace Bempp
 {
-
-class Geometry;
 
 /** \brief Abstract geometry factory. */
 class GeometryFactory
