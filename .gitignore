@@ -11,3 +11,4 @@ bempp.*
 /contrib/dune-common/dune/common/parallel/test/.deps/
 /contrib/dune-common/dune/common/.libs/
 /contrib/dune-common/lib/.libs/
+/doc/build*
