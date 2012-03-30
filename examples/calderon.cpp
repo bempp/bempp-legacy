@@ -41,16 +41,18 @@
 #include "fiber/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 
 using namespace Bempp;
+using namespace arma;
 
 /**
  * Represents the (Laplace) Calderon Projection on a given mesh.
  */
 class Calderon {
-    std::auto_ptr<DiscreteScalarValuedLinearOperator<double> > A, B, C, D;
+    std::auto_ptr<DiscreteScalarValuedLinearOperator<double> > A, B, C, D, I1, I2;
 public:
 	Calderon(Grid* grid){
 		PiecewiseLinearContinuousScalarSpace<double> space1(*grid);
-		PiecewiseLinearContinuousScalarSpace<double> space2(*grid);
+//		PiecewiseLinearContinuousScalarSpace<double> space2(*grid);
+		PiecewiseConstantScalarSpace<double> space2(*grid);
 		space1.assignDofs();
 		space2.assignDofs();
 
@@ -58,6 +60,8 @@ public:
 		assemblyOptions.switchToDense();
 
 		Fiber::AccuracyOptions accuracyOptions; // default
+		accuracyOptions.regular.orderIncrement = 2;
+		accuracyOptions.singular.orderIncrement = 2;
 		Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, GeometryFactory>
 				factory(accuracyOptions);
 
@@ -77,30 +81,57 @@ public:
         typedef LinearOperatorSuperposition<double> LOSd;
 
         A = LOSd(halfid1, dblneg).assembleWeakForm(space1, space1, factory, assemblyOptions);
-        B = slp.assembleWeakForm(space2, space1, factory, assemblyOptions);
-        C = hyp.assembleWeakForm(space1, space2, factory, assemblyOptions);
+        B = slp.assembleWeakForm(space1, space2, factory, assemblyOptions);
+        C = hyp.assembleWeakForm(space2, space1, factory, assemblyOptions);
         D = LOSd(halfid2, adj).assembleWeakForm(space2, space2, factory, assemblyOptions);
+
+        I1 = IdentityOperator<double>().assembleWeakForm(space1,space1,factory, assemblyOptions);
+        I2 = IdentityOperator<double>().assembleWeakForm(space2,space2,factory, assemblyOptions);
 	}
 
 
-    arma::Mat<double> getMatrix(){
-    	return arma::join_cols(arma::join_rows(A->asMatrix(), B->asMatrix()),
-    						   arma::join_rows(C->asMatrix(), D->asMatrix()));
+    Mat<double> getMatrix(){
+    	Mat<double> M = join_cols(join_rows(A->asMatrix(), B->asMatrix()),
+    						   join_rows(C->asMatrix(), D->asMatrix()));
+    	Mat<double> I = zeros<mat>(M.n_rows, M.n_cols);
+    	Mat<double> I1M = I1->asMatrix();
+    	Mat<double> I2M = I2->asMatrix();
+
+    	I.submat(0,0,I1M.n_rows-1, I1M.n_cols-1) = I1M;
+    	I.submat(I1M.n_rows, I1M.n_cols, I.n_rows-1, I.n_cols-1) = I2M;
+//    	std::cout<<M;
+//    	std::cout<<I;
+    	return solve(I, M);
     }
+
+
 
 
 };
 
 int main(){
-    const MeshVariant meshVariant = CUBE_384;
+    const MeshVariant meshVariant = CUBE_12_REORIENTED;
     std::auto_ptr<Grid> grid = loadMesh(meshVariant);
     Calderon c(grid.get());
-    arma::Mat<double> m = c.getMatrix();
-    arma::Mat<double> m2 = m*m;
+    Mat<double> m = c.getMatrix();
+    Mat<double> m2 = m*m;
 
-    std::cout<<"M"<<std::endl<<c.getMatrix().submat(0,0,20,20);
+    m.save("matrix.csv", csv_ascii);
 
-    std::cout<<"M*M"<<std::endl<<m2.submat(0,0,20,20);
+    std::cout<<"M"<<std::endl<<m;
+    std::cout<<"M*M"<<std::endl<<m2;
+
+    mat U, V;
+    vec S;
+    std::cout<<svd(U,S,V,m - m2)<<std::endl;
+    std::cout<<"Singular values of difference"<<std::endl<<S.t();
+    std::cout<<svd(U,S,V,m)<<std::endl;
+    std::cout<<"Singular values of M"<<std::endl<<S.t();
+
+
+    //    std::cout<<"M"<<std::endl<<c.getMatrix().submat(0,0,20,20);
+//
+//    std::cout<<"M*M"<<std::endl<<m2.submat(0,0,20,20);
 
     //    std::cout<<"M*M*M"<<std::endl<<(m*m*m).submat(0,0,20,20);
 

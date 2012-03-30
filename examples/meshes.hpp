@@ -39,7 +39,9 @@ enum MeshVariant
     SIMPLE_MESH_9,
     CUBE_12,
     CUBE_12_REORIENTED, // all elements oriented so that normals point outwards
-    CUBE_384
+    CUBE_384,
+    SPHERE_614,
+    SPHERE_2590
 };
 
 std::auto_ptr<Bempp::Grid> loadMesh(MeshVariant mv);
