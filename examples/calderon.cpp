@@ -51,8 +51,8 @@ class Calderon {
 public:
 	Calderon(Grid* grid){
 		PiecewiseLinearContinuousScalarSpace<double> space1(*grid);
-//		PiecewiseLinearContinuousScalarSpace<double> space2(*grid);
-		PiecewiseConstantScalarSpace<double> space2(*grid);
+		PiecewiseLinearContinuousScalarSpace<double> space2(*grid);
+//		PiecewiseConstantScalarSpace<double> space2(*grid);
 		space1.assignDofs();
 		space2.assignDofs();
 
