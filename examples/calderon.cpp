@@ -22,8 +22,6 @@
 #include <iostream>
 #include <memory>
 
-#include <boost/tuple/tuple.hpp>
-
 #include "meshes.hpp"
 #include "space/piecewise_linear_continuous_scalar_space.hpp"
 #include "space/piecewise_constant_scalar_space.hpp"
@@ -66,23 +64,22 @@ public:
         typedef std::auto_ptr<ElementaryLinearOperator<double> > ELOP;
 
         SingleLayerPotential3D<double> slp;
-        DoubleLayerPotential3D<double>* dblneg = new DoubleLayerPotential3D<double>();
+        ELOP dblneg(new DoubleLayerPotential3D<double>());
         dblneg->scale(-1.0);
-        AdjointDoubleLayerPotential3D<double>* adj = new AdjointDoubleLayerPotential3D<double>();
+        ELOP adj(new AdjointDoubleLayerPotential3D<double>());
         HypersingularOperator3D<double> hyp;
 
-        IdentityOperator<double>* halfid1 = new IdentityOperator<double>();
+        ELOP halfid1(new IdentityOperator<double>());
         halfid1->scale(0.5);
-        IdentityOperator<double>* halfid2 = new IdentityOperator<double>();
+        ELOP halfid2(new IdentityOperator<double>());
         halfid2->scale(0.5);
 
         typedef LinearOperatorSuperposition<double> LOSd;
-        typedef boost::tuple<ElementaryLinearOperator<double>*, ElementaryLinearOperator<double>*> tELO;
 
-        A = LOSd(tELO(halfid1, dblneg)).assembleWeakForm(space1, space1, factory, assemblyOptions);
+        A = LOSd(halfid1, dblneg).assembleWeakForm(space1, space1, factory, assemblyOptions);
         B = slp.assembleWeakForm(space2, space1, factory, assemblyOptions);
         C = hyp.assembleWeakForm(space1, space2, factory, assemblyOptions);
-        D = LOSd(tELO(halfid2, adj)).assembleWeakForm(space2, space2, factory, assemblyOptions);
+        D = LOSd(halfid2, adj).assembleWeakForm(space2, space2, factory, assemblyOptions);
 	}
 
 
@@ -96,7 +93,7 @@ public:
 
 int main(){
     const MeshVariant meshVariant = CUBE_384;
-    std::auto_ptr<Grid> grid = loadmesh(meshVariant);
+    std::auto_ptr<Grid> grid = loadMesh(meshVariant);
     Calderon c(grid.get());
     arma::Mat<double> m = c.getMatrix();
     arma::Mat<double> m2 = m*m;
