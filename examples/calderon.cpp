@@ -51,8 +51,8 @@ class Calderon {
 public:
 	Calderon(Grid* grid){
 		PiecewiseLinearContinuousScalarSpace<double> space1(*grid);
-		PiecewiseLinearContinuousScalarSpace<double> space2(*grid);
-//		PiecewiseConstantScalarSpace<double> space2(*grid);
+//		PiecewiseLinearContinuousScalarSpace<double> space2(*grid);
+		PiecewiseConstantScalarSpace<double> space2(*grid);
 		space1.assignDofs();
 		space2.assignDofs();
 
@@ -78,15 +78,21 @@ public:
         ELOP halfid2(new IdentityOperator<double>());
         halfid2->scale(0.5);
 
+
         typedef LinearOperatorSuperposition<double> LOSd;
 
-        A = LOSd(halfid1, dblneg).assembleWeakForm(space1, space1, factory, assemblyOptions);
-        B = slp.assembleWeakForm(space1, space2, factory, assemblyOptions);
-        C = hyp.assembleWeakForm(space2, space1, factory, assemblyOptions);
-        D = LOSd(halfid2, adj).assembleWeakForm(space2, space2, factory, assemblyOptions);
+//        A = LOSd(halfid1, dblneg).assembleWeakForm(space1, space1, factory, assemblyOptions);
+//        B = slp.assembleWeakForm(space1, space2, factory, assemblyOptions);
+//        C = hyp.assembleWeakForm(space2, space1, factory, assemblyOptions);
+//        D = LOSd(halfid2, adj).assembleWeakForm(space2, space2, factory, assemblyOptions);
 
-        I1 = IdentityOperator<double>().assembleWeakForm(space1,space1,factory, assemblyOptions);
-        I2 = IdentityOperator<double>().assembleWeakForm(space2,space2,factory, assemblyOptions);
+        A = LOSd(halfid1, dblneg).assembleWeakForm(space2, space1, factory, assemblyOptions);
+		 B = slp.assembleWeakForm(space2, space2, factory, assemblyOptions);
+		 C = hyp.assembleWeakForm(space1, space1, factory, assemblyOptions);
+		 D = LOSd(halfid2, adj).assembleWeakForm(space1, space2, factory, assemblyOptions);
+
+        I1 = IdentityOperator<double>().assembleWeakForm(space2,space1,factory, assemblyOptions);
+        I2 = IdentityOperator<double>().assembleWeakForm(space1,space2,factory, assemblyOptions);
 	}
 
 
@@ -99,11 +105,22 @@ public:
 
     	I.submat(0,0,I1M.n_rows-1, I1M.n_cols-1) = I1M;
     	I.submat(I1M.n_rows, I1M.n_cols, I.n_rows-1, I.n_cols-1) = I2M;
-//    	std::cout<<M;
-//    	std::cout<<I;
+    	std::cout<<M;
+    	std::cout<<I;
     	return solve(I, M);
+    	return M;
     }
 
+    Mat<double> getMatrix2(){
+    	Mat<double> M1 = join_rows(A->asMatrix(), B->asMatrix());
+    	Mat<double> M2 = join_rows(C->asMatrix(), D->asMatrix());
+    	Mat<double> I1M = I1->asMatrix();
+    	Mat<double> I2M = I2->asMatrix();
+
+    	mat I1M1 = solve(I1M, M1);
+    	mat I2M2 = solve(I2M, M2);
+    	return join_cols(I1M1, I2M2);
+    }
 
 
 
@@ -113,7 +130,7 @@ int main(){
     const MeshVariant meshVariant = CUBE_12_REORIENTED;
     std::auto_ptr<Grid> grid = loadMesh(meshVariant);
     Calderon c(grid.get());
-    Mat<double> m = c.getMatrix();
+    Mat<double> m = c.getMatrix2();
     Mat<double> m2 = m*m;
 
     m.save("matrix.csv", csv_ascii);

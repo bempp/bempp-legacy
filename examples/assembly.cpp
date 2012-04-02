@@ -70,7 +70,7 @@ A script for rudimentary testing of various operators.
 int main()
 {
     try {
-        const MeshVariant meshVariant = CUBE_384;
+        const MeshVariant meshVariant = CUBE_6144;
         const OperatorVariant opVariant = DOUBLE_LAYER_POTENTIAL;
 
         std::auto_ptr<Grid> grid = loadMesh(meshVariant);
@@ -96,7 +96,7 @@ int main()
         assemblyOptions.setSingularIntegralCaching(AssemblyOptions::YES);
 
         Fiber::OpenClOptions openClOptions;
-    //    assemblyOptions.switchToOpenCl(openClOptions);
+        assemblyOptions.switchToOpenCl(openClOptions);
 
         Fiber::AccuracyOptions accuracyOptions; // default
         Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, GeometryFactory>
@@ -124,7 +124,7 @@ int main()
                 op->assembleWeakForm(space, space, factory, assemblyOptions);
 
         arma::Mat<double> resultMatrix = result->asMatrix();
-        std::cout << "\nGenerated matrix:\n" << resultMatrix << std::endl;
+  //      std::cout << "\nGenerated matrix:\n" << resultMatrix << std::endl;
 
         if (opVariant == SINGLE_LAYER_POTENTIAL)
         {
