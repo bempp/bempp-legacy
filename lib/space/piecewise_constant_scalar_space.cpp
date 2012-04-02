@@ -50,7 +50,7 @@ int PiecewiseConstantScalarSpace<ValueType>::codomainDimension() const
 template <typename ValueType>
 void PiecewiseConstantScalarSpace<ValueType>::getBases(
         const std::vector<const EntityPointer<0>*>& elements,
-        std::vector<const Fiber::Basis<ValueType>*> bases) const
+        std::vector<const Fiber::Basis<ValueType>*>& bases) const
 {
     const int elementCount = elements.size();
     bases.resize(elementCount);
@@ -143,11 +143,13 @@ void PiecewiseConstantScalarSpace<ValueType>::assignDofs()
     // global DOFs, so the above vectors consist of one element only.
 
     // (Re)initialise member variables
-    int globalDofCount_ = 0;
+    const int elementCount = m_view->entityCount(0);
     m_local2globalDofs.clear();
+    m_local2globalDofs.resize(elementCount);
     m_global2localDofs.clear();
-    m_global2localDofs.reserve(m_view->entityCount(0));
+    m_global2localDofs.reserve(elementCount);
 
+    int globalDofCount_ = 0;
     while (!it->finished())
     {
         EntityIndex index = mapper.entityIndex(it->entity());
@@ -157,6 +159,7 @@ void PiecewiseConstantScalarSpace<ValueType>::assignDofs()
         m_global2localDofs.push_back(localDofs);
         it->next();
     }
+    assert(globalDofCount_ == elementCount);
 }
 
 template <typename ValueType>
