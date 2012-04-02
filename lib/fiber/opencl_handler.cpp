@@ -20,6 +20,7 @@ OpenClHandler<ValueType,IndexType>::OpenClHandler(const OpenClOptions& options)
 {
     cl_int err;
     useOpenCl = options.useOpenCl;
+    nProgBuf = 0;
 
     std::vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
@@ -48,27 +49,44 @@ OpenClHandler<ValueType,IndexType>::OpenClHandler(const OpenClOptions& options)
 template<typename ValueType, typename IndexType>
 OpenClHandler<ValueType,IndexType>::~OpenClHandler()
 {
+    if (nProgBuf) delete []progBuf;
 }
 
 template<>
-const std::string OpenClHandler<float,int>::typedefStr () const
+const std::pair<const char*,int> OpenClHandler<float,int>::typedefStr () const
 {
-    return std::string("#pragma OPENCL EXTENSION cl_khr_fp64 : enable\ntypedef float ValueType;\n");
+    static const char *str =
+        "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\ntypedef float ValueType;\n";
+    static int len = strlen(str);
+    return std::make_pair(str,len);
 }
 
 template<>
-const std::string OpenClHandler<double,int>::typedefStr () const
+const std::pair<const char*,int> OpenClHandler<double,int>::typedefStr () const
 {
-    return std::string("#pragma OPENCL EXTENSION cl_khr_fp64 : enable\ntypedef double ValueType;\n");
+    static const char *str =
+        "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\ntypedef double ValueType;\n";
+    static int len = strlen(str);
+    return std::make_pair(str,len);
 }
 
 template<typename ValueType, typename IndexType>
-const std::string OpenClHandler<ValueType,IndexType>::initStr () const
+const std::pair<const char*,int> OpenClHandler<ValueType,IndexType>::initStr () const
 {
     CALLECHO();
 
-    std::string str(typedefStr());
-    return str.append (commontypes_h, commontypes_h_len);
+    static std::pair<char*,int> str;
+    static bool need_setup = true;
+
+    if (need_setup) {
+        std::pair<const char*,int> tdef = typedefStr();
+	str.first = new char[tdef.second + commontypes_h_len + 1];
+	strcpy (str.first, tdef.first);
+	strcpy (str.first+tdef.second, commontypes_h);
+	str.second = tdef.second + commontypes_h_len;
+	need_setup = false;
+    }
+    return str;
 }
 
 template<typename ValueType, typename IndexType>
@@ -113,17 +131,32 @@ void OpenClHandler<ValueType,IndexType>::loadProgramFromString(
 
 template<typename ValueType, typename IndexType>
 void OpenClHandler<ValueType,IndexType>::loadProgramFromStringArray (
-    std::vector<std::string> strSources) const
+    cl::Program::Sources strSources) const
 {
     CALLECHO();
 
-    try {
-        cl::Program::Sources source;
-	for (int i = 0; i < strSources.size(); i++) {
- 	    source.push_back (std::make_pair (strSources[i].c_str(),
-					      strSources[i].size()));
+    int i, nStr = strSources.size();
+
+    // Check whether program is already loaded
+    if (nStr == nProgBuf) {
+          for (i = 0; i < nProgBuf; i++)
+	      if (progBuf[i] != strSources[i].first)
+		  break;
+	  if (i == nProgBuf) {
+	      return; // already loaded
+	  }
+    } else {
+        if (nProgBuf < nStr) {
+	    if (nProgBuf) delete []progBuf;
+	    progBuf = new const char*[nStr];
 	}
-	program = cl::Program(context, source);
+    }
+    for (i = 0; i < nStr; i++)
+        progBuf[i] = strSources[i].first;
+    nProgBuf = nStr;
+
+    try {
+	program = cl::Program(context, strSources);
     }
     catch (cl::Error er) {
         printf("ERROR: %s(%s)\n", er.what(), oclErrorString(er.err()));

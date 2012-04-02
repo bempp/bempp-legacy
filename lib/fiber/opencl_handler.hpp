@@ -39,7 +39,7 @@ public:
      * \brief Returns a string that defines the 'ValueType' type used by most device
      *   functions, plus some commonly used definitions
      */
-    const std::string initStr () const;
+    const std::pair<const char*,int> initStr () const;
 
     /**
      * \brief Load an OpenCL program from a string.
@@ -52,7 +52,7 @@ public:
      * \brief Load an OpenCL program as a concatenation of multiple strings
      * \param sources Vector of source strings
      */
-    void loadProgramFromStringArray (std::vector<std::string> sources) const;
+    void loadProgramFromStringArray (cl::Program::Sources sources) const;
 
     cl::Kernel &setKernel (const char *kernelName) const;
 
@@ -140,7 +140,7 @@ public:
     const MeshGeom &meshGeom() const { return meshgeom; }
 
 private:
-    const std::string typedefStr () const;
+    const std::pair<const char*,int> typedefStr () const;
 
     bool useOpenCl;
     unsigned int deviceUsed;
@@ -152,6 +152,9 @@ private:
     mutable cl::Event event;
 
     mutable MeshGeom meshgeom;
+
+    mutable const char **progBuf;
+    mutable int nProgBuf;
 };
 
 #else

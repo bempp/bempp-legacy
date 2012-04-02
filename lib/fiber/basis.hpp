@@ -26,7 +26,7 @@ public:
      * \brief Returns an OpenCL code snippet for basis function evaluation
      * \note The code snippet must provide device function devBasisEval
      */
-    virtual std::string clCodeString (const std::string modifier) const {
+    virtual std::pair<const char*,int> clCodeString (bool isTestBasis) const {
         throw std::runtime_error("Basis: clCodeString not implemented yet");
     }
 };

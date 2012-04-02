@@ -85,20 +85,33 @@ public:
         }
     }
 
-    virtual std::string clCodeString (const std::string modifier) const
+    virtual std::pair<const char*,int> clCodeString (bool isTestBasis) const
     {
-        std::string funcName ("clBasisf");
-	std::string str (piecewise_linear_continuous_scalar_basis_cl,
-			 piecewise_linear_continuous_scalar_basis_cl_len);
-	if (modifier.size() > 0) {
+        static struct StrBuf {
+	    std::pair<char*,int> str;
+	    bool need_setup;
+	} test = {std::pair<char*,int>(NULL,0), true},
+          trial = {std::pair<char*,int>(NULL,0), true};
+	
+	StrBuf &buf = (isTestBasis ? test : trial);
+	const char *modifier = (isTestBasis ? "A" : "B");
+
+	if (buf.need_setup) {
+	    std::string funcName ("clBasisf");
+	    std::string code (piecewise_linear_continuous_scalar_basis_cl,
+			     piecewise_linear_continuous_scalar_basis_cl_len);
 	    size_t len = funcName.size();
-  	    int n = str.find (funcName);
+	    int n = code.find (funcName);
 	    while (n != std::string::npos) {
-	        str.insert (n+len, modifier);
-		n = str.find (funcName, n+len);
+	        code.insert (n+len, modifier);
+		n = code.find (funcName, n+len);
 	    }
+	    buf.str.second = code.size();
+	    buf.str.first = new char[buf.str.second+1];
+	    strcpy (buf.str.first, code.c_str());
+	    buf.need_setup = false;
 	}
-	return str;
+	return buf.str;
     }
 
 };
