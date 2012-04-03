@@ -82,7 +82,8 @@ const std::pair<const char*,int> OpenClHandler<ValueType,IndexType>::initStr () 
         std::pair<const char*,int> tdef = typedefStr();
 	str.first = new char[tdef.second + commontypes_h_len + 1];
 	strcpy (str.first, tdef.first);
-	strcpy (str.first+tdef.second, commontypes_h);
+	strncpy (str.first+tdef.second, commontypes_h, commontypes_h_len);
+	str.first[tdef.second + commontypes_h_len] = '\0';
 	str.second = tdef.second + commontypes_h_len;
 	need_setup = false;
     }

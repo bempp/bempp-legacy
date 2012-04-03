@@ -5,6 +5,7 @@
 #include <cmath>
 
 #include "geometrical_data.hpp"
+#include "CL/adjoint_double_layer_potential_3D_kernel.cl.str"
 
 namespace Fiber
 {
@@ -101,11 +102,8 @@ void AdjointDoubleLayerPotential3DKernel<ValueType>::evaluateOnGrid(
 template<typename ValueType>
 std::pair<const char*,int> AdjointDoubleLayerPotential3DKernel<ValueType>::evaluateClCode () const
 {
-    // TODO!!!
-    //return std::string (adjoint_double_layer_potential_3D_kernel_cl,
-    //		adjoint_double_layer_potential_3D_kernel_cl_len);
-    throw std::runtime_error ("AdjointDoubleLayerPotential3DKernel::evaluateClCode not implemented\n");
-    return std::pair<const char*,int>();
+    return std::make_pair(adjoint_double_layer_potential_3D_kernel_cl,
+			  adjoint_double_layer_potential_3D_kernel_cl_len);
 }
 
 #ifdef COMPILE_FOR_FLOAT
