@@ -47,7 +47,7 @@ using namespace arma;
  * Represents the (Laplace) Calderon Projection on a given mesh.
  */
 class Calderon {
-    std::auto_ptr<DiscreteScalarValuedLinearOperator<double> > A, B, C, D, I1, I2;
+    std::auto_ptr<DiscreteScalarValuedLinearOperator<double> > slp, adj, hyp, dbl, id12, id21;
 public:
 	Calderon(Grid* grid){
 		PiecewiseLinearContinuousScalarSpace<double> space1(*grid);
@@ -60,83 +60,49 @@ public:
 		assemblyOptions.switchToDense();
 
 		Fiber::AccuracyOptions accuracyOptions; // default
-		accuracyOptions.regular.orderIncrement = 2;
-		accuracyOptions.singular.orderIncrement = 2;
+		accuracyOptions.regular.orderIncrement = 0;
+		accuracyOptions.singular.orderIncrement = 0;
 		Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, GeometryFactory>
 				factory(accuracyOptions);
 
-        typedef std::auto_ptr<ElementaryLinearOperator<double> > ELOP;
+        dbl = DoubleLayerPotential3D<double>().assembleWeakForm(space1, space2, factory, assemblyOptions);
+		slp = SingleLayerPotential3D<double>().assembleWeakForm(space2, space2, factory, assemblyOptions);
+		hyp = HypersingularOperator3D<double>().assembleWeakForm(space1, space1, factory, assemblyOptions);
+		adj = AdjointDoubleLayerPotential3D<double>().assembleWeakForm(space2, space1, factory, assemblyOptions);
 
-        SingleLayerPotential3D<double> slp;
-        ELOP dblneg(new DoubleLayerPotential3D<double>());
-        dblneg->scale(-1.0);
-        ELOP adj(new AdjointDoubleLayerPotential3D<double>());
-        HypersingularOperator3D<double> hyp;
-
-        ELOP halfid1(new IdentityOperator<double>());
-        halfid1->scale(0.5);
-        ELOP halfid2(new IdentityOperator<double>());
-        halfid2->scale(0.5);
-
-
-        typedef LinearOperatorSuperposition<double> LOSd;
-
-//        A = LOSd(halfid1, dblneg).assembleWeakForm(space1, space1, factory, assemblyOptions);
-//        B = slp.assembleWeakForm(space1, space2, factory, assemblyOptions);
-//        C = hyp.assembleWeakForm(space2, space1, factory, assemblyOptions);
-//        D = LOSd(halfid2, adj).assembleWeakForm(space2, space2, factory, assemblyOptions);
-
-        A = LOSd(halfid1, dblneg).assembleWeakForm(space2, space1, factory, assemblyOptions);
-		 B = slp.assembleWeakForm(space2, space2, factory, assemblyOptions);
-		 C = hyp.assembleWeakForm(space1, space1, factory, assemblyOptions);
-		 D = LOSd(halfid2, adj).assembleWeakForm(space1, space2, factory, assemblyOptions);
-
-        I1 = IdentityOperator<double>().assembleWeakForm(space2,space1,factory, assemblyOptions);
-        I2 = IdentityOperator<double>().assembleWeakForm(space1,space2,factory, assemblyOptions);
+		id21 = IdentityOperator<double>().assembleWeakForm(space2,space1,factory, assemblyOptions);
+        id12 = IdentityOperator<double>().assembleWeakForm(space1,space2,factory, assemblyOptions);
 	}
 
 
     Mat<double> getMatrix(){
-    	Mat<double> M = join_cols(join_rows(A->asMatrix(), B->asMatrix()),
-    						   join_rows(C->asMatrix(), D->asMatrix()));
-    	Mat<double> I = zeros<mat>(M.n_rows, M.n_cols);
-    	Mat<double> I1M = I1->asMatrix();
-    	Mat<double> I2M = I2->asMatrix();
-
-    	I.submat(0,0,I1M.n_rows-1, I1M.n_cols-1) = I1M;
-    	I.submat(I1M.n_rows, I1M.n_cols, I.n_rows-1, I.n_cols-1) = I2M;
-    	std::cout<<M;
-    	std::cout<<I;
-    	return solve(I, M);
-    	return M;
+//    	cout<<id12->asMatrix()<<id21->asMatrix();
+    	mat ID12inv = pinv(id12->asMatrix());
+    	mat ID21inv = pinv(id21->asMatrix());
+    	mat DBL = ID21inv * dbl->asMatrix().t();
+    	mat SLP = ID21inv * slp->asMatrix();
+    	mat HYP = ID12inv * hyp->asMatrix();
+    	mat ADJ = ID12inv * adj->asMatrix().t();
+    	mat I1 = eye(SLP.n_rows, SLP.n_rows);
+    	mat I2 = eye(HYP.n_rows, HYP.n_rows);
+		mat M = join_cols(join_rows(I1 * 0.5 - DBL, SLP),
+						  join_rows(HYP, I2* 0.5 + ADJ));
+		return M;
     }
-
-    Mat<double> getMatrix2(){
-    	Mat<double> M1 = join_rows(A->asMatrix(), B->asMatrix());
-    	Mat<double> M2 = join_rows(C->asMatrix(), D->asMatrix());
-    	Mat<double> I1M = I1->asMatrix();
-    	Mat<double> I2M = I2->asMatrix();
-
-    	mat I1M1 = solve(I1M, M1);
-    	mat I2M2 = solve(I2M, M2);
-    	return join_cols(I1M1, I2M2);
-    }
-
-
 
 };
 
 int main(){
-    const MeshVariant meshVariant = CUBE_12_REORIENTED;
+    const MeshVariant meshVariant = SPHERE_614;
     std::auto_ptr<Grid> grid = loadMesh(meshVariant);
     Calderon c(grid.get());
-    Mat<double> m = c.getMatrix2();
+    Mat<double> m = c.getMatrix();
     Mat<double> m2 = m*m;
 
     m.save("matrix.csv", csv_ascii);
 
-    std::cout<<"M"<<std::endl<<m;
-    std::cout<<"M*M"<<std::endl<<m2;
+//    std::cout<<"M"<<std::endl<<m;
+//    std::cout<<"M*M"<<std::endl<<m2;
 
     mat U, V;
     vec S;
