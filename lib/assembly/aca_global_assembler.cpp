@@ -1,7 +1,7 @@
 #include "aca_global_assembler.hpp"
 
 #include "assembly_options.hpp"
-#include "discrete_dense_scalar_valued_linear_operator.hpp"
+#include "index_permutation.hpp"
 
 #include "../common/auto_timer.hpp"
 #include "../fiber/local_assembler_for_operators.hpp"
@@ -89,8 +89,7 @@ AcaGlobalAssembler<ValueType>::assembleWeakForm(
 {
 #ifdef WITH_AHMED
     typedef AhmedDofWrapper<ValueType> AhmedDofType;
-    typedef DiscreteAcaScalarValuedLinearOperator<ValueType,
-            AhmedDofType, AhmedDofType > DiscreteAcaLinOp;
+    typedef DiscreteAcaScalarValuedLinearOperator<ValueType> DiscreteAcaLinOp;
 
     const AcaOptions& acaOptions = options.acaOptions();
 
@@ -217,8 +216,10 @@ AcaGlobalAssembler<ValueType>::assembleWeakForm(
 
     result = std::auto_ptr<DiscreteLinOp>(
                 new DiscreteAcaLinOp(testDofCount, trialDofCount,
+                                     acaOptions.maximumRank,
                                      doubleClusterTree, blocks,
-                                     o2pTestDofs, p2oTrialDofs));
+                                     IndexPermutation(o2pTestDofs),
+                                     IndexPermutation(o2pTrialDofs)));
     return result;
 #else // without Ahmed
     throw std::runtime_error("To enable assembly in ACA mode, recompile BEM++ "
