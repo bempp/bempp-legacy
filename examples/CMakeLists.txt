@@ -12,8 +12,8 @@ if (WITH_TRILINOS)
         ${BLAS_LIBRARIES} # must be put before the Trilinos libraries,
                           # otherwise BLAS behaves incorrectly
         ${STRATIMIKOS_LIBRARY}
-        ${STRATIMIKOS_AZTECOO_LIBRARY} ${STRATIMIKOS_BELOS_LIBRARY}
-        ${HDF5_LIBRARY} ${SZ_LIBRARY})
+        ${STRATIMIKOS_BELOS_LIBRARY}
+        ${HDF5_LIBRARY})
 endif ()
 
 add_executable(traversal traversal.cpp)
