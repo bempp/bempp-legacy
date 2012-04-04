@@ -60,7 +60,7 @@ public:
      * \note The required data must have been pushed to device memory before
      *    invokation.
      */
-    virtual std::string evaluateClCode () const = 0;
+    virtual std::pair<const char*,int> evaluateClCode () const = 0;
 };
 
 } // namespace Fiber

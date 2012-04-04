@@ -22,125 +22,88 @@
 #define bempp_discrete_aca_scalar_valued_linear_operator_hpp
 
 #include "discrete_scalar_valued_linear_operator.hpp"
-#include "ahmed_aux.hpp"
+#include "ahmed_aux_fwd.hpp"
+#include "index_permutation.hpp"
 #include "../common/not_implemented_error.hpp"
 
 #include <iostream>
+#include <boost/shared_array.hpp>
+
+#ifdef WITH_TRILINOS
+#include <Teuchos_RCP.hpp>
+#include <Thyra_SpmdVectorSpaceBase_decl.hpp>
+#endif
 
 namespace Bempp {
 
-template <typename ValueType, typename GeometryTypeRows, typename GeometryTypeCols>
+template <typename ValueType> class AcaApproximateLuInverse;
+
+template <typename ValueType>
 class DiscreteAcaScalarValuedLinearOperator :
         public DiscreteScalarValuedLinearOperator<ValueType>
 {
+    friend class AcaApproximateLuInverse<ValueType>;
+
 public:
+    typedef bemblcluster<AhmedDofWrapper<ValueType>, AhmedDofWrapper<ValueType> >
+    AhmedBemblcluster;
+
     DiscreteAcaScalarValuedLinearOperator(
             unsigned int rowCount, unsigned int columnCount,
-            std::auto_ptr<bemblcluster<GeometryTypeRows, GeometryTypeCols> > blockCluster,
+            int maximumRank,
+            std::auto_ptr<AhmedBemblcluster> blockCluster,
             boost::shared_array<mblock<ValueType>*> blocks,
-            const std::vector<unsigned int>& permutedRowIndices,
-            const std::vector<unsigned int>& originalColumnIndices) :
-        m_matrix(rowCount, columnCount, blockCluster, blocks),
-        m_permutedRowIndices(permutedRowIndices),
-        m_originalColumnIndices(originalColumnIndices)
-    {}
+            const IndexPermutation& domainPermutation,
+            const IndexPermutation& rangePermutation);
 
-    /** \brief Matrix-vector multiplication.
+    virtual void dump() const;
 
-      Sets \p result to
+    virtual arma::Mat<ValueType> asMatrix() const;
 
-      result := result + multiplier * L * argument,
-
-      where L is the linear operator represented by this object.
-
-      \internal The vectors \p argument and \p result are in "standard" ordering.
-      This method performs automatically the necessary conversions to and from
-      the permuted ordering used by Ahmed. */
-    virtual void multiplyAddVector(ValueType multiplier,
-                                   const arma::Col<ValueType>& argument,
-                                   arma::Col<ValueType>& result)
-    {
-        arma::Col<ValueType> permutedArgument;
-        permuteArgument(argument, permutedArgument);
-
-        // const_cast because Ahmed internally calls BLAS
-        // functions, which don't respect const-correctness
-        if (m_matrix.n != argument.n_rows)
-            throw std::invalid_argument("DiscreteAcaScalarValuedLinearOperator::"
-                                        "multiplyAddVector: "
-                                        "incorrect vector length");
-        arma::Col<ValueType> permutedResult;
-        permutedResult.set_size(argument.n_rows);
-        m_matrix.amux(multiplier,
-                      const_cast<ValueType*>(permutedArgument.memptr()),
-                      permutedResult.memptr());
-        unpermuteResult(permutedResult, result);
-    }
-
-    virtual void dump() const
-    {
-        std::cout << asMatrix() << std::endl;
-    }
-
-    virtual arma::Mat<ValueType> asMatrix() const
-    {
-        const int rowCount = m_matrix.m;
-        const int colCount = m_matrix.n;
-
-        arma::Mat<ValueType> permutedOutput(rowCount, colCount);
-        permutedOutput.fill(0.);
-        arma::Col<ValueType> unit(colCount);
-        unit.fill(0.);
-
-        for (int col = 0; col < colCount; ++col)
-        {
-            if (col > 0)
-                unit(col - 1) = 0.;
-            unit(col) = 1.;
-            m_matrix.amux(1., unit.memptr(), permutedOutput.colptr(col));
-        }
-
-        arma::Mat<ValueType> output(rowCount, colCount);
-        for (int col = 0; col < colCount; ++col)
-            for (int row = 0; row < rowCount; ++row)
-                output(row, m_originalColumnIndices[col]) =
-                        permutedOutput(m_permutedRowIndices[row], col);
-
-        return output;
-    }
-
-    /** \brief Convert an argument of the operator from original to permuted ordering. */
-    void permuteArgument(const arma::Col<ValueType>& argument,
-                         arma::Col<ValueType>& permutedArgument) const
-    {
-        const int dim = argument.n_elem;
-        permutedArgument.set_size(dim);
-        for (int i = 0; i < dim; ++i)
-            permutedArgument(i) = argument(m_originalColumnIndices[i]);
-    }
-
-    /** \brief Convert a result of the operator's action from permuted to original ordering. */
-    void unpermuteResult(const arma::Col<ValueType>& permutedResult,
-                         arma::Col<ValueType>& result) const
-    {
-        const int dim = permutedResult.n_elem;
-        result.set_size(dim);
-        for (int i = 0; i < dim; ++i)
-            result(i) = permutedResult(m_permutedRowIndices[i]);
-    }
+    virtual unsigned int rowCount() const;
+    virtual unsigned int columnCount() const;
 
     virtual void addBlock(const std::vector<int>& rows,
                           const std::vector<int>& cols,
-                          arma::Mat<ValueType>& block) const
-    {
-        throw std::runtime_error("DiscreteAcaScalarValuedLinearOperator::"
-                                 "addBlock(): not implemented yet");
-    }
+                          arma::Mat<ValueType>& block) const;
+
+#ifdef WITH_TRILINOS
+public:
+    virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
+    virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > range() const;
+
+protected:
+    virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
+    virtual void applyImpl(
+            const Thyra::EOpTransp M_trans,
+            const Thyra::MultiVectorBase<ValueType>& X_in,
+            const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType> >& Y_inout,
+            const ValueType alpha,
+            const ValueType beta) const;
+#endif
 
 private:
-    AhmedMatrix<ValueType, GeometryTypeRows, GeometryTypeCols> m_matrix;
-    std::vector<unsigned int> m_permutedRowIndices;
-    std::vector<unsigned int> m_originalColumnIndices;
+    virtual void applyBuiltInImpl(const TranspositionMode trans,
+                                  const arma::Col<ValueType>& x_in,
+                                  arma::Col<ValueType>& y_inout,
+                                  const ValueType alpha,
+                                  const ValueType beta) const;
+
+private:
+#ifdef WITH_TRILINOS
+    Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_domainSpace;
+    Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_rangeSpace;
+#else
+    unsigned int m_rowCount;
+    unsigned int m_columnCount;
+#endif
+    int m_maximumRank;
+
+    std::auto_ptr<AhmedBemblcluster> m_blockCluster;
+    boost::shared_array<mblock<ValueType>*> m_blocks;
+
+    IndexPermutation m_domainPermutation;
+    IndexPermutation m_rangePermutation;
 };
 
 } // namespace Bempp

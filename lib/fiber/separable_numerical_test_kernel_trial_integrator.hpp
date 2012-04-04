@@ -105,7 +105,7 @@ private:
      * \brief Returns an OpenCL code snippet containing the clIntegrate
      *   kernel function for integrating a single row or column
      */
-    const std::string clStrIntegrateRowOrCol () const;
+    const std::pair<const char*,int> clStrIntegrateRowOrCol () const;
 
     arma::Mat<ValueType> m_localTestQuadPoints;
     arma::Mat<ValueType> m_localTrialQuadPoints;

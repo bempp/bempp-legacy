@@ -87,10 +87,10 @@ void SingleLayerPotential3DKernel<ValueType>::evaluateOnGrid(
 }
 
 template<typename ValueType>
-std::string SingleLayerPotential3DKernel<ValueType>::evaluateClCode () const
+std::pair<const char*,int> SingleLayerPotential3DKernel<ValueType>::evaluateClCode () const
 {
-    return std::string (single_layer_potential_3D_kernel_cl,
-			single_layer_potential_3D_kernel_cl_len);
+    return std::make_pair (single_layer_potential_3D_kernel_cl,
+			   single_layer_potential_3D_kernel_cl_len);
 }
 
 

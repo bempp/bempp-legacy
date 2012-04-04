@@ -21,6 +21,9 @@
 #ifndef bempp_ahmed_aux_hpp
 #define bempp_ahmed_aux_hpp
 
+// to ensure there are no inconsistent forward declarations
+#include "ahmed_aux_fwd.hpp"
+
 #include "../common/types.hpp"
 
 #include <boost/scoped_array.hpp>
@@ -121,35 +124,6 @@ public:
 private:
     boost::scoped_array<blcluster*> m_leafClusters;
     size_t m_size;
-};
-
-template <typename ValueType, typename GeometryTypeRows, typename GeometryTypeCols>
-class AhmedMatrix : public Matrix<ValueType>
-{
-public:
-    typedef bemblcluster<GeometryTypeRows, GeometryTypeCols>
-    AhmedBemblcluster;
-
-    AhmedMatrix(unsigned int rowCount, unsigned int columnCount,
-                std::auto_ptr<AhmedBemblcluster> blockCluster,
-                boost::shared_array<mblock<ValueType>*> blocks) :
-        Matrix<double>(rowCount, columnCount),
-        m_blockCluster(blockCluster), m_blocks(blocks)
-    {
-    }
-
-    virtual void amux(ValueType d, ValueType* x, ValueType* y) const {
-        AhmedBemblcluster* ptr = m_blockCluster.get();
-        multaHvec(d, m_blockCluster.get(), m_blocks.get(), x, y);
-    }
-
-    virtual void precond_apply(double* x) const {
-        // TODO
-    }
-
-private:
-    std::auto_ptr<AhmedBemblcluster> m_blockCluster;
-    boost::shared_array<mblock<ValueType>*> m_blocks;
 };
 
 } // namespace Bempp

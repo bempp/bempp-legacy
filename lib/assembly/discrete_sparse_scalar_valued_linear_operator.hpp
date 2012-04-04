@@ -23,15 +23,16 @@
 
 #include "discrete_scalar_valued_linear_operator.hpp"
 
-#include <iostream>
-#include <stdexcept>
+#include <memory>
 
 #ifdef WITH_TRILINOS
-#include <Epetra_FECrsMatrix.h>
-#include <Epetra_SerialComm.h>
+#include <Teuchos_RCP.hpp>
+#include <Thyra_SpmdVectorSpaceBase_decl.hpp>
+class Epetra_FECrsMatrix;
 #endif
 
-namespace Bempp {
+namespace Bempp
+{
 
 template <typename ValueType>
 class DiscreteSparseScalarValuedLinearOperator :
@@ -39,107 +40,50 @@ class DiscreteSparseScalarValuedLinearOperator :
 {
 #ifdef WITH_TRILINOS
 public:
-    DiscreteSparseScalarValuedLinearOperator(std::auto_ptr<Epetra_FECrsMatrix> mat) :
-        m_mat(mat) {}
+    DiscreteSparseScalarValuedLinearOperator(std::auto_ptr<Epetra_FECrsMatrix> mat);
 #else
     // This class cannot be used without Trilinos
 private:
     DiscreteSparseScalarValuedLinearOperator();
 #endif
 
-public:
-    virtual void multiplyAddVector(ValueType multiplier,
-                                   const arma::Col<ValueType>& argument,
-                                   arma::Col<ValueType>& result)
-    {
-        throw std::runtime_error("DiscreteSparseScalarValuedLinearOperator::"
-                                 "multiplyAddVector(): not implemented yet");
-    }
+    virtual void dump() const;
 
-    virtual void dump() const
-    {
-#ifdef WITH_TRILINOS
-        std::cout << *m_mat << std::endl;
-#endif
-    }
+    virtual arma::Mat<ValueType> asMatrix() const;
 
-    virtual arma::Mat<ValueType> asMatrix() const
-    {
-#ifdef WITH_TRILINOS
-        if (m_mat->Comm().NumProc() != 1)
-            throw std::runtime_error(
-                    "DiscreteSparseScalarValuedLinearOperator::asMatrix(): "
-                    "conversion of distributed matrices to local matrices is unsupported");
-
-        const int rowCount = m_mat->NumGlobalRows();
-        const int colCount = m_mat->NumGlobalCols();
-        arma::Mat<ValueType> mat(rowCount, colCount);
-        mat.fill(0.);
-        for (int row = 0; row < rowCount; ++row)
-        {
-            int entryCount = 0;
-            double* values = 0;
-            int* indices = 0;
-            int errorCode = m_mat->ExtractMyRowView(row, entryCount,
-                                                    values, indices);
-            if (errorCode != 0)
-                throw std::runtime_error(
-                        "DiscreteSparseScalarValuedLinearOperator::asMatrix(): "
-                        "Epetra_CrsMatrix::ExtractMyRowView()) failed");
-            for (int entry = 0; entry < entryCount; ++entry)
-                mat(row, indices[entry]) = values[entry];
-        }
-        return mat;
-#endif
-    }
+    virtual unsigned int rowCount() const;
+    virtual unsigned int columnCount() const;
 
     virtual void addBlock(const std::vector<int>& rows,
-                     const std::vector<int>& cols,
-                     arma::Mat<ValueType>& block) const
-    {
+                          const std::vector<int>& cols,
+                          arma::Mat<ValueType>& block) const;
+
+protected:
 #ifdef WITH_TRILINOS
-        if (block.n_rows != rows.size() || block.n_cols != cols.size())
-            throw std::invalid_argument(
-                    "DiscreteSparseScalarValuedLinearOperator::addBlock(): "
-                    "incorrect block size");
+    virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
+    virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > range() const;
 
-        int entryCount = 0;
-        double* values = 0;
-        int* indices = 0;
-
-        for (int row = 0; row < rows.size(); ++row)
-        {
-            // Provision for future MPI support.
-            if (m_mat->IndicesAreLocal())
-            {
-                int errorCode = m_mat->ExtractMyRowView(
-                            rows[row], entryCount, values, indices);
-                if (errorCode != 0)
-                    throw std::runtime_error(
-                            "DiscreteSparseScalarValuedLinearOperator::addBlock(): "
-                            "Epetra_CrsMatrix::ExtractMyRowView()) failed");
-            }
-            else
-            {
-                int errorCode = m_mat->ExtractGlobalRowView(
-                            rows[row], entryCount, values, indices);
-                if (errorCode != 0)
-                    throw std::runtime_error(
-                            "DiscreteSparseScalarValuedLinearOperator::addBlock(): "
-                            "Epetra_CrsMatrix::ExtractGlobalRowView()) failed");
-            }
-
-            for (int col = 0; col < cols.size(); ++col)
-                for (int entry = 0; entry < entryCount; ++entry)
-                    if (indices[entry] == cols[col])
-                        block(row, col) += values[entry];
-        }
+    virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
+    virtual void applyImpl(
+            const Thyra::EOpTransp M_trans,
+            const Thyra::MultiVectorBase<ValueType> &X_in,
+            const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType> > &Y_inout,
+            const ValueType alpha,
+            const ValueType beta) const;
 #endif
-    }
+
+private:
+    virtual void applyBuiltInImpl(const TranspositionMode trans,
+                                  const arma::Col<ValueType>& x_in,
+                                  arma::Col<ValueType>& y_inout,
+                                  const ValueType alpha,
+                                  const ValueType beta) const;
 
 private:
 #ifdef WITH_TRILINOS
     std::auto_ptr<Epetra_FECrsMatrix> m_mat;
+    Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_domainSpace;
+    Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_rangeSpace;
 #endif
 };
 

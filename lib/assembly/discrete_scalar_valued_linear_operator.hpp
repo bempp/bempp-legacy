@@ -23,24 +23,58 @@
 
 #include <armadillo>
 
+#ifdef WITH_TRILINOS
+#include <Thyra_LinearOpDefaultBase_decl.hpp>
+#endif
+
 namespace Bempp {
+
+enum TranspositionMode
+{
+#ifdef WITH_TRILINOS
+    NO_TRANSPOSE = Thyra::NOTRANS,
+    CONJUGATE = Thyra::CONJ,
+    TRANSPOSE = Thyra::TRANS,
+    CONJUGATE_TRANSPOSE = Thyra::CONJTRANS
+#else
+    NO_TRANSPOSE,
+    CONJUGATE,
+    TRANSPOSE,
+    CONJUGATE_TRANSPOSE
+#endif
+};
 
 template <typename ValueType>
 class DiscreteScalarValuedLinearOperator
+#ifdef WITH_TRILINOS
+        : public Thyra::LinearOpDefaultBase<ValueType>
+#endif
 {
 public:
     virtual ~DiscreteScalarValuedLinearOperator() {}
 
+#ifdef WITH_TRILINOS
+    // import the apply() member function from base class
+    // before we overload it
+    using Thyra::LinearOpDefaultBase<ValueType>::apply;
+#endif
+
     /** \brief Matrix-vector multiplication.
 
-      Sets \p result to
+      Sets
 
-      result := result + multiplier * L * argument,
+      \p y_inout := \p alpha * L * \p x_in + \p beta * \p y_inout,
 
-      where L is the linear operator represented by this object. */
-    virtual void multiplyAddVector(ValueType multiplier,
-                           const arma::Col<ValueType>& argument,
-                           arma::Col<ValueType>& result) = 0;
+      where L is the linear operator represented by this object.
+
+      This overload is always supported, even if compiling without Trilinos. */
+    void apply(const TranspositionMode trans,
+               const arma::Col<ValueType>& x_in,
+               arma::Col<ValueType>& y_inout,
+               const ValueType alpha,
+               const ValueType beta) const {
+        applyBuiltInImpl(trans, x_in, y_inout, alpha, beta);
+    }
 
     /** \brief Write a textual representation of the operator to standard output. */
     virtual void dump() const = 0;
@@ -49,6 +83,12 @@ public:
 
     This method need not be supported by all subclasses. */
     virtual arma::Mat<ValueType> asMatrix() const = 0;
+
+    /** \brief Number of rows of the operator. */
+    virtual unsigned int rowCount() const = 0;
+
+    /** \brief Number of columns of the operator. */
+    virtual unsigned int columnCount() const = 0;
 
     /** \brief Calculate a block of this operator's matrix representation and
       add it to \p block.
@@ -66,6 +106,13 @@ public:
     virtual void addBlock(const std::vector<int>& rows,
                           const std::vector<int>& cols,
                           arma::Mat<ValueType>& block) const = 0;
+
+private:
+    virtual void applyBuiltInImpl(const TranspositionMode trans,
+                                  const arma::Col<ValueType>& x_in,
+                                  arma::Col<ValueType>& y_inout,
+                                  const ValueType alpha,
+                                  const ValueType beta) const = 0;
 };
 
 } // namespace Bempp

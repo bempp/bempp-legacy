@@ -53,7 +53,7 @@ public:
      * \note This method is independent of data, unlike the CPU versions, because the
      *   data for multiple elements are pushed to the device separately.
      */
-    virtual std::string evaluateClCode () const;
+    virtual std::pair<const char*,int> evaluateClCode () const;
 
 private:
     ValueType evaluateAtPointPair(const arma::Col<ValueType>& testPoint,

@@ -100,10 +100,10 @@ void DoubleLayerPotential3DKernel<ValueType>::evaluateOnGrid(
 }
 
 template<typename ValueType>
-std::string DoubleLayerPotential3DKernel<ValueType>::evaluateClCode () const
+std::pair<const char*,int> DoubleLayerPotential3DKernel<ValueType>::evaluateClCode () const
 {
-    return std::string (double_layer_potential_3D_kernel_cl,
-			double_layer_potential_3D_kernel_cl_len);
+    return std::make_pair(double_layer_potential_3D_kernel_cl,
+			  double_layer_potential_3D_kernel_cl_len);
 }
 
 #ifdef COMPILE_FOR_FLOAT
