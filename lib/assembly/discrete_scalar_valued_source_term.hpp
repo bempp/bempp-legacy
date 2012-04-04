@@ -23,19 +23,33 @@
 
 #include <armadillo>
 
+#ifdef WITH_TRILINOS
+#include <Thyra_DefaultSpmdVector.hpp>
+#endif
+
 namespace Bempp {
 
 template <typename ValueType>
 class DiscreteScalarValuedSourceTerm
+#ifdef WITH_TRILINOS
+        : public Thyra::DefaultSpmdVector<ValueType>
+#endif
 {
 public:
-    virtual ~DiscreteScalarValuedSourceTerm() {}
+    /** Construct the discrete source term from an Armadillo vector. */
+    DiscreteScalarValuedSourceTerm(const arma::Col<ValueType>& vec);
 
     /** \brief Write a textual representation of the source term to standard output. */
-    virtual void dump() const = 0;
+    void dump() const;
 
-    /** \brief Matrix representation of the source term. */
-    virtual arma::Col<ValueType> asVector() const = 0;
+    /** \brief Vector representation of the source term. */
+    arma::Col<ValueType> asVector() const;
+
+private:
+#ifndef WITH_TRILINOS
+    // fallback implementation
+    arma::Col<ValueType> m_vec;
+#endif
 };
 
 } // namespace Bempp

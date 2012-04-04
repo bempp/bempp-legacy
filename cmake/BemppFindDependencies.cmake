@@ -23,9 +23,17 @@ set(METIS_LIBRARY "" CACHE FILEPATH "Full path to the METIS library")
 
 # Trilinos (optional, used only if WITH_TRILINOS is set)
 set(TRILINOS_ROOT_DIR "" CACHE PATH "Full path to the Trilinos root directory")
+set(HDF5_LIBRARY "" CACHE PATH "Full path to the HDF5 library")
 if (WITH_TRILINOS)
     find_library(EPETRA_LIBRARY epetra ${TRILINOS_ROOT_DIR}/lib)
+    find_library(THYRA_CORE_LIBRARY thyracore ${TRILINOS_ROOT_DIR}/lib)
+    find_library(STRATIMIKOS_LIBRARY stratimikos ${TRILINOS_ROOT_DIR}/lib)
+    find_library(STRATIMIKOS_BELOS_LIBRARY stratimikosbelos ${TRILINOS_ROOT_DIR}/lib)
     set(TRILINOS_INCLUDE_DIR ${TRILINOS_ROOT_DIR}/include)
+
+    # This should be needed only if Trilinos is compiled with MPI (defines HAVE_MPI)
+    set(MPI_INCLUDE_DIR "" CACHE PATH "Full path to the MPI include directory")
+    include_directories(${MPI_INCLUDE_DIR})
 endif ()
 
 # Dune

@@ -23,53 +23,60 @@
 
 #include "discrete_scalar_valued_linear_operator.hpp"
 
-#include <iostream>
+#ifdef WITH_TRILINOS
+#include <Teuchos_RCP.hpp>
+#include <Thyra_SpmdVectorSpaceBase_decl.hpp>
+#endif
 
-namespace Bempp {
+namespace Bempp
+{
 
 template <typename ValueType>
 class DiscreteDenseScalarValuedLinearOperator :
         public DiscreteScalarValuedLinearOperator<ValueType>
 {
-// It is conceivable to make the constructor private,
-// but then all the various LinearOperators
-// would need to be made friends...
 public:
-    DiscreteDenseScalarValuedLinearOperator(const arma::Mat<ValueType>& mat) :
-        m_mat(mat) {}
+    DiscreteDenseScalarValuedLinearOperator(const arma::Mat<ValueType>& mat);
 
-    virtual void multiplyAddVector(ValueType multiplier,
-                           const arma::Col<ValueType>& argument,
-                           arma::Col<ValueType>& result)
-    {
-      //result += multiplier * m_mat * argument;
-    }
+    virtual void dump() const;
 
-    virtual void dump() const
-    {
-        std::cout << m_mat << std::endl;
-    }
+    virtual arma::Mat<ValueType> asMatrix() const;
 
-    virtual arma::Mat<ValueType> asMatrix() const
-    {
-        return m_mat;
-    }
+    virtual unsigned int rowCount() const;
+    virtual unsigned int columnCount() const;
 
     virtual void addBlock(const std::vector<int>& rows,
                           const std::vector<int>& cols,
-                          arma::Mat<ValueType>& block) const
-    {
-        if (block.n_rows != rows.size() || block.n_cols != cols.size())
-            throw std::invalid_argument(
-                    "DiscreteDenseScalarValuedLinearOperator::addBlock(): "
-                    "incorrect block size");
-        for (int col = 0; col < cols.size(); ++col)
-            for (int row = 0; row < rows.size(); ++row)
-                block(row, col) += m_mat(rows[row], cols[col]);
-    }
+                          arma::Mat<ValueType>& block) const;
+
+protected:
+#ifdef WITH_TRILINOS
+    virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
+    virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > range() const;
+
+    virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
+
+    virtual void applyImpl(
+            const Thyra::EOpTransp M_trans,
+            const Thyra::MultiVectorBase<ValueType> &X_in,
+            const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType> > &Y_inout,
+            const ValueType alpha,
+            const ValueType beta) const;
+#endif
+
+private:
+    virtual void applyBuiltInImpl(const TranspositionMode trans,
+                                  const arma::Col<ValueType>& x_in,
+                                  arma::Col<ValueType>& y_inout,
+                                  const ValueType alpha,
+                                  const ValueType beta) const;
 
 private:
     arma::Mat<ValueType> m_mat;
+#ifdef WITH_TRILINOS
+    Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_domainSpace;
+    Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_rangeSpace;
+#endif
 };
 
 } // namespace Bempp

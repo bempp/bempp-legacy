@@ -35,7 +35,6 @@
 #include "assembly/elementary_linear_operator.hpp"
 #include "assembly/discrete_scalar_valued_linear_operator_superposition.hpp"
 #include "grid/geometry_factory.hpp"
-#include "grid/geometry.hpp"
 
 #include "fiber/accuracy_options.hpp"
 #include "fiber/standard_local_assembler_factory_for_operators_on_surfaces.hpp"

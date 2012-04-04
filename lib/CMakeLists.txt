@@ -47,7 +47,7 @@ if (WITH_AHMED)
 endif ()
 
 if (WITH_TRILINOS)
-    target_link_libraries (bempp ${EPETRA_LIBRARY})
+    target_link_libraries (bempp ${EPETRA_LIBRARY} ${THYRA_CORE_LIBRARY})
     add_definitions(-DWITH_TRILINOS)
     include_directories(${TRILINOS_INCLUDE_DIR})
 endif ()

@@ -21,7 +21,7 @@
 #include "source_term.hpp"
 
 #include "assembly_options.hpp"
-#include "discrete_dense_scalar_valued_source_term.hpp"
+#include "discrete_scalar_valued_source_term.hpp"
 
 #include "../fiber/basis.hpp"
 #include "../fiber/local_assembler_factory.hpp"
@@ -144,7 +144,7 @@ SourceTerm<ValueType>::reallyAssembleWeakForm(
     // Create and return a discrete source term represented by the vector that
     // has just been calculated
     return std::auto_ptr<DiscreteScalarValuedSourceTerm<ValueType> >(
-                new DiscreteDenseScalarValuedSourceTerm<ValueType>(result));
+                new DiscreteScalarValuedSourceTerm<ValueType>(result));
 }
 
 

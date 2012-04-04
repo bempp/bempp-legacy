@@ -22,11 +22,16 @@
 #define bempp_discrete_scalar_valued_linear_operator_superposition_hpp
 
 #include "discrete_scalar_valued_linear_operator.hpp"
-#include "../common/not_implemented_error.hpp"
 
 #include <boost/ptr_container/ptr_vector.hpp>
 
-namespace Bempp {
+#ifdef WITH_TRILINOS
+#include <Teuchos_RCP.hpp>
+#include <Thyra_SpmdVectorSpaceBase_decl.hpp>
+#endif
+
+namespace Bempp
+{
 
 template <typename ValueType>
 class DiscreteScalarValuedLinearOperatorSuperposition :
@@ -37,50 +42,44 @@ public:
 
     /* acquires ownership of these operators */
     DiscreteScalarValuedLinearOperatorSuperposition(
-            boost::ptr_vector<TermType>& terms)
-    {
-        m_terms.transfer(m_terms.end(), terms);
-    }
+            boost::ptr_vector<TermType>& terms);
 
-    virtual void multiplyAddVector(ValueType multiplier,
-                           const arma::Col<ValueType>& argument,
-                           arma::Col<ValueType>& result)
-    {
-        for (int i = 0; i < m_terms.size(); ++i)
-            m_terms[i].multiplyAddVector(multiplier, argument, result);
-    }
+    virtual void dump() const;
 
-    virtual void dump() const
-    {
-        throw NotImplementedError(
-                    "DiscreteScalarValuedLinearOperatorSuperposition::dump(): "
-                    "not implemented yet");
-    }
+    virtual arma::Mat<ValueType> asMatrix() const;
 
-    virtual arma::Mat<ValueType> asMatrix() const
-    {
-        arma::Mat<ValueType> result;
-        if (!m_terms.empty()) {
-            result = m_terms[0].asMatrix();
-            for (int i = 1; i < m_terms.size(); ++i)
-                result += m_terms[i].asMatrix();
-        }
-        return result;
-    }
+    virtual unsigned int rowCount() const;
+    virtual unsigned int columnCount() const;
 
     virtual void addBlock(const std::vector<int>& rows,
                           const std::vector<int>& cols,
-                          arma::Mat<ValueType>& block) const
-    {
-        // TODO: implement this
-        throw std::runtime_error("DiscreteScalarValuedLinearOperatorSuperposition::"
-                                 "addBlock(): Not implemented yet");
-        for (int i = 0; i < m_terms.size(); ++i)
-                m_terms[i].addBlock(rows, cols, block);
-    }
+                          arma::Mat<ValueType>& block) const;
+
+#ifdef WITH_TRILINOS
+    virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
+    virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > range() const;
+
+    virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
+    virtual void applyImpl(
+            const Thyra::EOpTransp M_trans,
+            const Thyra::MultiVectorBase<ValueType> &X_in,
+            const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType> > &Y_inout,
+            const ValueType alpha,
+            const ValueType beta) const;
+#endif
 
 private:
+    virtual void applyBuiltInImpl(const TranspositionMode trans,
+                                  const arma::Col<ValueType>& x_in,
+                                  arma::Col<ValueType>& y_inout,
+                                  const ValueType alpha,
+                                  const ValueType beta) const;
+private:
     boost::ptr_vector<TermType> m_terms;
+#ifdef WITH_TRILINOS
+    Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > m_domainSpace;
+    Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > m_rangeSpace;
+#endif
 };
 
 } // namespace Bempp

@@ -38,7 +38,12 @@ class StandardLocalAssemblerFactoryForOperatorsOnSurfaces :
         public LocalAssemblerFactory<ValueType, GeometryFactory>
 {
 public:
-    StandardLocalAssemblerFactoryForOperatorsOnSurfaces(
+    /** \brief Construct a local assembler factory with default accuracy settings. */
+    StandardLocalAssemblerFactoryForOperatorsOnSurfaces() {
+    }
+
+    /** \brief Construct a local assembler factory with specified accuracy settings. */
+    explicit StandardLocalAssemblerFactoryForOperatorsOnSurfaces(
             const AccuracyOptions& accuracyOptions) :
         m_accuracyOptions(accuracyOptions) {
     }
