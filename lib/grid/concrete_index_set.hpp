@@ -76,11 +76,9 @@ public:
     }
 
     virtual IndexType subEntityIndex(const Entity<0>& e, int i, unsigned int codimSub) const {
-#ifndef NDEBUG
         // Prevent an assert in FoamGrid from crashing the Python interpreter
         if (codimSub > DuneGridView::Grid::dimension)
             throw std::invalid_argument("IndexSet::subEntityIndex(): codimSub exceeds grid dimension");
-#endif
         typedef typename DuneGridView::template Codim<0>::Entity DuneEntity;
         typedef ConcreteEntity<0, DuneEntity> ConcEntity;
         const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
