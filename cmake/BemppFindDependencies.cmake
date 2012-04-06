@@ -4,7 +4,7 @@ set(BOOST_INCLUDE_DIR "" CACHE PATH "Directory containing Boost include files")
 include_directories(${BOOST_INCLUDE_DIR})
 
 # BLAS
-set(BLAS_LIBRARIES "" CACHE STRING "Space-separated list of full paths to BLAS libs")
+set(BLAS_LIBRARIES "" CACHE STRING "Semicolon-separated list of full paths to BLAS and LAPACK libs")
 #set(ARMADILLO_CMAKE "" CACHE STRING "Directory of Armadillo Cmake file")
 find_package( Armadillo REQUIRED REQUIRED)
 include_directories(${ARMADILLO_INCLUDE_DIRS})
