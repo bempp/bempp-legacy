@@ -29,6 +29,8 @@ if (WITH_TRILINOS)
     find_library(THYRA_CORE_LIBRARY thyracore ${TRILINOS_ROOT_DIR}/lib)
     find_library(STRATIMIKOS_LIBRARY stratimikos ${TRILINOS_ROOT_DIR}/lib)
     find_library(STRATIMIKOS_BELOS_LIBRARY stratimikosbelos ${TRILINOS_ROOT_DIR}/lib)
+    find_library(TEUCHOS_LIBRARY teuchos ${TRILINOS_ROOT_DIR}/lib)
+    find_library(RTOP_LIBRARY rtop ${TRILINOS_ROOT_DIR}/lib)
     set(TRILINOS_INCLUDE_DIR ${TRILINOS_ROOT_DIR}/include)
 
     # This should be needed only if Trilinos is compiled with MPI (defines HAVE_MPI)
