@@ -142,7 +142,7 @@ int main()
         arma::Mat<double> hsoMatrix = discreteHso->asMatrix();
         arma::Mat<double> idMatrix = discreteId->asMatrix();
 
-        arma::Mat<double> lhs = 0.5 * idMatrix - adlpMatrix;
+        arma::Mat<double> lhs = 0.5 * idMatrix + adlpMatrix;
         arma::Col<double> V(idMatrix.n_rows);
         V.fill(1.);
         arma::Col<double> rhs = -hsoMatrix * V;
