@@ -22,7 +22,7 @@ ValueType devKerneval (const ValueType *testPoint,
     denominatorSum = 0;
     numeratorSum = 0;
     for (k = 0; k < coordCount; k++) {
-        diff = testPoint[k] - trialPoint[k];
+        diff = trialPoint[k] - testPoint[k];
 	denominatorSum += diff * diff;
 	numeratorSum += diff * trialNormal[k];
     }
