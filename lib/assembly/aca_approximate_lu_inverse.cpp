@@ -1,5 +1,7 @@
-#ifdef WITH_AHMED
+#include "../common/config_ahmed.hpp"
+#include "../common/config_trilinos.hpp"
 
+#ifdef WITH_AHMED
 #include "aca_approximate_lu_inverse.hpp"
 
 #include "ahmed_aux.hpp"

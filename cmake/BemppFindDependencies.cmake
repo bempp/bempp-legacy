@@ -51,5 +51,4 @@ if (WITH_OPENCL)
     find_package(OPENCL)
     include_directories(${OPENCL_INCLUDE_DIR})
 
-    add_definitions(-DWITH_OPENCL)
 endif()

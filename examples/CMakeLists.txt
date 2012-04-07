@@ -1,11 +1,7 @@
 include_directories ("${PROJECT_SOURCE_DIR}/lib")
 
-if (WITH_AHMED)
-    add_definitions(-DWITH_AHMED)
-endif ()
 
 if (WITH_TRILINOS)
-    add_definitions(-DWITH_TRILINOS)
     include_directories(${TRILINOS_INCLUDE_DIR})
     add_executable(trilinos trilinos.cpp meshes.cpp)
     target_link_libraries(trilinos bempp

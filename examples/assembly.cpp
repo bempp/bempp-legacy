@@ -88,9 +88,9 @@ int main()
         acaOptions.minimumBlockSize = 2;
         acaOptions.eta = 0.8;
         acaOptions.recompress = true;
-        // assemblyOptions.switchToAca(acaOptions);
+        //assemblyOptions.switchToAca(acaOptions);
 
-        // assemblyOptions.switchToSparse();
+        //assemblyOptions.switchToSparse();
 
         assemblyOptions.switchToTbb();
         assemblyOptions.setSingularIntegralCaching(AssemblyOptions::YES);

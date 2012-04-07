@@ -18,6 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "../common/config_ahmed.hpp"
+#include "../common/config_trilinos.hpp"
 #ifdef WITH_AHMED
 
 #include "discrete_aca_scalar_valued_linear_operator.hpp"
@@ -140,6 +142,14 @@ domain() const
 {
     return m_domainSpace;
 }
+
+template <typename ValueType>
+const DiscreteAcaScalarValuedLinearOperator<ValueType>& 
+DiscreteAcaScalarValuedLinearOperator<ValueType>::castToAca
+    (DiscreteScalarValuedLinearOperator<ValueType>& DiscreteOperator){   
+        return Teuchos::dyn_cast<DiscreteAcaScalarValuedLinearOperator<ValueType> >(DiscreteOperator);
+    }
+
 
 template <typename ValueType>
 Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> >

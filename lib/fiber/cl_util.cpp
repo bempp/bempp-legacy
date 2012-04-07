@@ -1,3 +1,5 @@
+#include "../common/config_opencl.hpp"
+
 #ifdef WITH_OPENCL
 
 #include <math.h>

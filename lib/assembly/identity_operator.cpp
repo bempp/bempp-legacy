@@ -1,3 +1,5 @@
+#include "../common/config_trilinos.hpp"
+
 #include "identity_operator.hpp"
 
 #include <stdexcept>
