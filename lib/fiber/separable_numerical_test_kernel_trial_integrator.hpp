@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "../common/config_opencl.hpp"
+#include "config_opencl.hpp"
 
 #ifndef fiber_separable_numerical_test_kernel_trial_integrator_hpp
 #define fiber_separable_numerical_test_kernel_trial_integrator_hpp

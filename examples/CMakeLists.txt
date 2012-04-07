@@ -1,5 +1,5 @@
 include_directories ("${PROJECT_SOURCE_DIR}/lib")
-
+include_directories(${CMAKE_BINARY_DIR}/include/common)
 
 if (WITH_TRILINOS)
     include_directories(${TRILINOS_INCLUDE_DIR})

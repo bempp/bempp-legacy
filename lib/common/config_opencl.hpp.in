@@ -18,42 +18,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "config_trilinos.hpp"
+#ifndef config_opencl_hpp
+#define config_opencl_hpp
 
-#ifndef bempp_discrete_scalar_valued_source_term_hpp
-#define bempp_discrete_scalar_valued_source_term_hpp
-
-#include <armadillo>
-
-#ifdef WITH_TRILINOS
-#include <Thyra_DefaultSpmdVector.hpp>
-#endif
-
-namespace Bempp {
-
-template <typename ValueType>
-class DiscreteScalarValuedSourceTerm
-#ifdef WITH_TRILINOS
-        : public Thyra::DefaultSpmdVector<ValueType>
-#endif
-{
-public:
-    /** Construct the discrete source term from an Armadillo vector. */
-    DiscreteScalarValuedSourceTerm(const arma::Col<ValueType>& vec);
-
-    /** \brief Write a textual representation of the source term to standard output. */
-    void dump() const;
-
-    /** \brief Vector representation of the source term. */
-    arma::Col<ValueType> asVector() const;
-
-private:
-#ifndef WITH_TRILINOS
-    // fallback implementation
-    arma::Col<ValueType> m_vec;
-#endif
-};
-
-} // namespace Bempp
+#cmakedefine WITH_OPENCL
 
 #endif

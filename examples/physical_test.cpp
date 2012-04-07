@@ -73,7 +73,7 @@ enum Formulation
 
 int main()
 {
-    const MeshVariant meshVariant = SPHERE_152;
+    const MeshVariant meshVariant = SPHERE_644;
     const Formulation formulation = CBIE;
 
     std::auto_ptr<Grid> grid = loadMesh(meshVariant);

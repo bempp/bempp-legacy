@@ -1,13 +1,15 @@
 #Configure All Option files
 configure_file(
 	${CMAKE_SOURCE_DIR}/lib/common/config_trilinos.hpp.in
-	${CMAKE_SOURCE_DIR}/lib/common/config_trilinos.hpp)
+        ${CMAKE_BINARY_DIR}/include/common/config_trilinos.hpp)
 configure_file(
 	${CMAKE_SOURCE_DIR}/lib/common/config_ahmed.hpp.in
-	${CMAKE_SOURCE_DIR}/lib/common/config_ahmed.hpp)
+        ${CMAKE_BINARY_DIR}/include/common/config_ahmed.hpp)
 configure_file(
 	${CMAKE_SOURCE_DIR}/lib/common/config_opencl.hpp.in
-	${CMAKE_SOURCE_DIR}/lib/common/config_opencl.hpp)
+        ${CMAKE_BINARY_DIR}/include/common/config_opencl.hpp)
+include_directories(${CMAKE_BINARY_DIR}/include/common)
+
 # Find all source and header files
 file(GLOB_RECURSE LIB_SOURCES *.cpp)
 file(GLOB_RECURSE LIB_HEADERS *.hpp)

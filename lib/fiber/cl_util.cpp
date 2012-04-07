@@ -1,4 +1,4 @@
-#include "../common/config_opencl.hpp"
+#include "config_opencl.hpp"
 
 #ifdef WITH_OPENCL
 

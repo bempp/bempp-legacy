@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "../common/config_trilinos.hpp"
+#include "config_trilinos.hpp"
 
 #include "discrete_scalar_valued_source_term.hpp"
 

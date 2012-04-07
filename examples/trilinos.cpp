@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "../lib/common/config_trilinos.hpp"
-#include "../lib/common/config_ahmed.hpp"
+#include "config_trilinos.hpp"
+#include "config_ahmed.hpp"
 
 #ifdef WITH_TRILINOS
 

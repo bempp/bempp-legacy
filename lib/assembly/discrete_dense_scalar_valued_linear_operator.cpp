@@ -19,7 +19,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "../common/config_trilinos.hpp"
+#include "config_trilinos.hpp"
 
 #include "discrete_dense_scalar_valued_linear_operator.hpp"
 
