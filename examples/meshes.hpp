@@ -44,7 +44,9 @@ enum MeshVariant
     SPHERE_2590,
     CUBE_6144
     CUBE_6144,
-    CUBE_24576
+    CUBE_24576,
+    SPHERE_152,
+    SPHERE_644
 };
 
 std::auto_ptr<Bempp::Grid> loadMesh(MeshVariant mv);

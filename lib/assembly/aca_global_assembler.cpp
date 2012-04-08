@@ -1,3 +1,5 @@
+#include "config_ahmed.hpp"
+
 #include "aca_global_assembler.hpp"
 
 #include "assembly_options.hpp"

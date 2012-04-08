@@ -18,6 +18,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "config_trilinos.hpp"
+#include "config_ahmed.hpp"
+
 #ifdef WITH_TRILINOS
 
 #include "meshes.hpp"
@@ -47,6 +50,7 @@
 #include <cmath>
 #include <iostream>
 #include <memory>
+#include <typeinfo>
 
 #include <Teuchos_RCPDecl.hpp>
 #include <Teuchos_VerboseObject.hpp>
@@ -96,7 +100,7 @@ int main()
     // If true, compare results obtained with the direct and iterative solvers
     const bool compareArmadilloAndBelos = true;
     // If true, assembly in ACA mode, otherwise in dense mode
-    const bool useAca = true;
+    const bool useAca = false;
 
     std::auto_ptr<Grid> grid = loadMesh(meshVariant);
     dumpElementList(grid.get());
@@ -170,6 +174,11 @@ int main()
         linearOpTester.check(*discreteLhs, out.ptr());
     }
 
+    
+    std::cout << "Operator tested " << std::endl;
+    
+    //std::cout << discreteLhs->asMatrix() << std::endl;
+    
     // Solve the resulting system
 
     // Create a factory for invertible operators
@@ -188,24 +197,29 @@ int main()
     // Upgrade the discrete linear operator to an object supporting the solve operation
 
     RCP<Thyra::LinearOpWithSolveBase<double> > invertibleDiscreteLhs;
+    
+    std::cout << "Invertible Operator created" << std::endl;
 
 #ifdef WITH_AHMED
     if (assemblyOptions.operatorRepresentation() == AssemblyOptions::ACA)
     {
+        try {
         // (a) variant with preconditioner
         AutoTimer precTimer("Preconditioner building took ");
         const double delta = 0.1; // LU approximation accuracy
         // We know that we've built an ACA representation of the operator,
         // so this dynamic cast will succeed
-        const DiscreteAcaScalarValuedLinearOperator<double>& discreteAcaLhs =
-                Teuchos::dyn_cast<DiscreteAcaScalarValuedLinearOperator<double> >(
-                    *discreteLhs);
+        std::cout << "Dynamic Cast" << std::endl;
+        const DiscreteAcaScalarValuedLinearOperator<double>& discreteAcaLhs = 
+        DiscreteAcaScalarValuedLinearOperator<double>::castToAca(*discreteLhs);
         // Construct the linear operator to act as a preconditioner
+        std::cout << "Start creating preconditioner" << std::endl;
         RCP<const Thyra::LinearOpBase<double> > precOp(
                     new AcaApproximateLuInverse<double>(discreteAcaLhs, delta));
         // and wrap it in a PreconditionerBase object
         // (the static cast is there because unspecifiedPrec() returns
         // a ref-counted pointer to a subclass of PreconditionerBase
+        std::cout << "Created approximate inverse" << std::endl;
         RCP<const Thyra::PreconditionerBase<double> > preconditioner =
                 Teuchos::rcp_static_cast<const Thyra::PreconditionerBase<double> >(
                     Thyra::unspecifiedPrec(precOp));
@@ -216,6 +230,10 @@ int main()
                     trilinosDiscreteLhs,
                     preconditioner,
                     invertibleDiscreteLhs.ptr());
+        }
+        catch( const std::bad_cast &e ) {
+            std::cout << e.what() << std::endl;
+        }
     }
     else
     {
@@ -258,4 +276,11 @@ int main()
     }
 }
 
+
+#else
+
+#include <iostream>
+int main(void){
+    std::cout << "This example requires trilinos" << std::endl;
+}
 #endif // WITH_TRILINOS

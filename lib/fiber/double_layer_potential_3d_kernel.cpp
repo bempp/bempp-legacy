@@ -31,7 +31,7 @@ inline ValueType DoubleLayerPotential3DKernel<ValueType>::evaluateAtPointPair(
     ValueType numeratorSum = 0., denominatorSum = 0.;
     for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex)
     {
-        ValueType diff = testPoint(coordIndex) - trialPoint(coordIndex);
+        ValueType diff = trialPoint(coordIndex) - testPoint(coordIndex);
         denominatorSum += diff * diff;
         numeratorSum += diff * trialNormal(coordIndex);
     }

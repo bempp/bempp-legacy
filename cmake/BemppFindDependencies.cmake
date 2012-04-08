@@ -4,7 +4,7 @@ set(BOOST_INCLUDE_DIR "" CACHE PATH "Directory containing Boost include files")
 include_directories(${BOOST_INCLUDE_DIR})
 
 # BLAS
-set(BLAS_LIBRARIES "" CACHE STRING "Space-separated list of full paths to BLAS libs")
+set(BLAS_LIBRARIES "" CACHE STRING "Semicolon-separated list of full paths to BLAS and LAPACK libs")
 #set(ARMADILLO_CMAKE "" CACHE STRING "Directory of Armadillo Cmake file")
 find_package( Armadillo REQUIRED REQUIRED)
 include_directories(${ARMADILLO_INCLUDE_DIRS})
@@ -29,6 +29,8 @@ if (WITH_TRILINOS)
     find_library(THYRA_CORE_LIBRARY thyracore ${TRILINOS_ROOT_DIR}/lib)
     find_library(STRATIMIKOS_LIBRARY stratimikos ${TRILINOS_ROOT_DIR}/lib)
     find_library(STRATIMIKOS_BELOS_LIBRARY stratimikosbelos ${TRILINOS_ROOT_DIR}/lib)
+    find_library(TEUCHOS_LIBRARY teuchos ${TRILINOS_ROOT_DIR}/lib)
+    find_library(RTOP_LIBRARY rtop ${TRILINOS_ROOT_DIR}/lib)
     set(TRILINOS_INCLUDE_DIR ${TRILINOS_ROOT_DIR}/include)
 
     # This should be needed only if Trilinos is compiled with MPI (defines HAVE_MPI)
@@ -49,5 +51,4 @@ if (WITH_OPENCL)
     find_package(OPENCL)
     include_directories(${OPENCL_INCLUDE_DIR})
 
-    add_definitions(-DWITH_OPENCL)
 endif()

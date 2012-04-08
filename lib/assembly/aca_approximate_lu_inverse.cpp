@@ -1,5 +1,7 @@
-#ifdef WITH_AHMED
+#include "config_ahmed.hpp"
+#include "config_trilinos.hpp"
 
+#ifdef WITH_AHMED
 #include "aca_approximate_lu_inverse.hpp"
 
 #include "ahmed_aux.hpp"
@@ -28,9 +30,13 @@ AcaApproximateLuInverse<ValueType>::AcaApproximateLuInverse(
     m_domainPermutation(fwdOp.m_rangePermutation),
     m_rangePermutation(fwdOp.m_domainPermutation)
 {
-    genLUprecond(fwdOp.m_blockCluster.get(), fwdOp.m_blocks.get(),
-                 delta, fwdOp.m_maximumRank,
-                 m_blockCluster, m_blocksL, m_blocksU, true);
+    bool result = genLUprecond(fwdOp.m_blockCluster.get(), fwdOp.m_blocks.get(),
+                               delta, fwdOp.m_maximumRank,
+                               m_blockCluster, m_blocksL, m_blocksU, true);
+    if (!result)
+        throw std::runtime_error(
+                "AcaApproximateLuInverse::AcaApproximateLuInverse(): "
+                "Approximate LU factorisation failed");
 }
 
 template <typename ValueType>

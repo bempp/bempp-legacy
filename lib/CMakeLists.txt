@@ -1,3 +1,15 @@
+#Configure All Option files
+configure_file(
+	${CMAKE_SOURCE_DIR}/lib/common/config_trilinos.hpp.in
+        ${CMAKE_BINARY_DIR}/include/common/config_trilinos.hpp)
+configure_file(
+	${CMAKE_SOURCE_DIR}/lib/common/config_ahmed.hpp.in
+        ${CMAKE_BINARY_DIR}/include/common/config_ahmed.hpp)
+configure_file(
+	${CMAKE_SOURCE_DIR}/lib/common/config_opencl.hpp.in
+        ${CMAKE_BINARY_DIR}/include/common/config_opencl.hpp)
+include_directories(${CMAKE_BINARY_DIR}/include/common)
+
 # Find all source and header files
 file(GLOB_RECURSE LIB_SOURCES *.cpp)
 file(GLOB_RECURSE LIB_HEADERS *.hpp)
@@ -42,13 +54,11 @@ set_property(
 
 if (WITH_AHMED)
     target_link_libraries (bempp ${AHMED_LIBRARY} ${METIS_LIBRARY})
-    add_definitions(-DWITH_AHMED)
     include_directories(${AHMED_INCLUDE_DIR})
 endif ()
 
 if (WITH_TRILINOS)
-    target_link_libraries (bempp ${EPETRA_LIBRARY} ${THYRA_CORE_LIBRARY})
-    add_definitions(-DWITH_TRILINOS)
+    target_link_libraries (bempp ${EPETRA_LIBRARY} ${THYRA_CORE_LIBRARY} ${TEUCHOS_LIBRARY} ${RTOP_LIBRARY})
     include_directories(${TRILINOS_INCLUDE_DIR})
 endif ()
 

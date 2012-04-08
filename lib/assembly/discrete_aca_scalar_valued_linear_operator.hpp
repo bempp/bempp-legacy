@@ -18,6 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "config_trilinos.hpp"
+
 #ifndef bempp_discrete_aca_scalar_valued_linear_operator_hpp
 #define bempp_discrete_aca_scalar_valued_linear_operator_hpp
 
@@ -48,6 +50,7 @@ public:
     typedef bemblcluster<AhmedDofWrapper<ValueType>, AhmedDofWrapper<ValueType> >
     AhmedBemblcluster;
 
+    
     DiscreteAcaScalarValuedLinearOperator(
             unsigned int rowCount, unsigned int columnCount,
             int maximumRank,
@@ -69,6 +72,8 @@ public:
 
 #ifdef WITH_TRILINOS
 public:
+    static const DiscreteAcaScalarValuedLinearOperator<ValueType>& castToAca
+        (DiscreteScalarValuedLinearOperator<ValueType>& DiscreteOperator);
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > range() const;
 
@@ -105,6 +110,7 @@ private:
     IndexPermutation m_domainPermutation;
     IndexPermutation m_rangePermutation;
 };
+
 
 } // namespace Bempp
 

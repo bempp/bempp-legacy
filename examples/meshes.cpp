@@ -51,6 +51,8 @@ loadMesh(MeshVariant mv)
     const char SPHERE_2590_FNAME[] = "sphere-2590.msh";
     const char CUBE_6144_FNAME[] = "cube-6144.msh";
     const char CUBE_24576_FNAME[] = "cube-24576.msh";
+    const char SPHERE_152_FNAME[] = "sphere-152.msh";
+    const char SPHERE_644_FNAME[] = "sphere-644.msh";
 
     const char* MESH_FNAME = 0;
     switch (mv) {
@@ -82,6 +84,10 @@ loadMesh(MeshVariant mv)
         MESH_FNAME = CUBE_6144_FNAME; break;
     case CUBE_24576:
         MESH_FNAME = CUBE_24576_FNAME; break;
+    case SPHERE_152:
+        MESH_FNAME = SPHERE_152_FNAME; break;
+    case SPHERE_644:
+        MESH_FNAME = SPHERE_644_FNAME; break;
     default:
         throw std::runtime_error("Invalid mesh name");
     }
