@@ -100,7 +100,7 @@ int main()
     // If true, compare results obtained with the direct and iterative solvers
     const bool compareArmadilloAndBelos = true;
     // If true, assembly in ACA mode, otherwise in dense mode
-    const bool useAca = false;
+    const bool useAca = true;
 
     std::auto_ptr<Grid> grid = loadMesh(meshVariant);
     dumpElementList(grid.get());

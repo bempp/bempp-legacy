@@ -18,35 +18,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
-#ifndef aca_preconditioner_factory_hpp
-#define	aca_preconditioner_factory_hpp
+#include "default_gmres_solver.hpp"
 
 #include "config_trilinos.hpp"
 
-
 #ifdef WITH_TRILINOS
 
-#include "Teuchos_RCP.hpp"
-#include "Thyra_PreconditionerBase.hpp"
-#include "../assembly/discrete_scalar_valued_linear_operator.hpp"
+
 
 namespace Bempp {
 
-template<typename ValueType>
-class AcaPreconditionerFactory {
-    
-    public:        
-    static Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > AcaOperatorToPreconditioner
-        (DiscreteScalarValuedLinearOperator<ValueType>& discreteOperator, const double delta);
-        
-        
-};
+Teuchos::RCP<Teuchos::ParameterList> defaultParameterList(int nrhs, double tol){
 
+    return Teuchos::RCP<Teuchos::ParameterList>(new Teuchos::ParameterList("DefaultParameters"));
 
 }
 
-#endif /* WITH_TRILINOS */
+}
 
-#endif	/* aca_preconditioner_factory_hpp */
-
+#endif
