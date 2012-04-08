@@ -42,7 +42,6 @@ enum MeshVariant
     CUBE_384,
     SPHERE_614,
     SPHERE_2590,
-    CUBE_6144
     CUBE_6144,
     CUBE_24576,
     SPHERE_152,
