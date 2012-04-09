@@ -35,6 +35,8 @@
 #include "assembly/identity_operator.hpp"
 #include "assembly/double_layer_potential_3d.hpp"
 #include "assembly/linear_operator_superposition.hpp"
+#include "linalg/aca_preconditioner_factory.hpp"
+#include "linalg/default_iterative_solver.hpp"
 
 #include "common/auto_timer.hpp"
 
@@ -113,7 +115,7 @@ int main()
     AcaOptions acaOptions;
     acaOptions.eps = 1e-4;
     acaOptions.maximumRank = 10000;
-    acaOptions.minimumBlockSize = 2;
+    acaOptions.minimumBlockSize = 16;
     acaOptions.eta = 0.8;
     acaOptions.recompress = true;
     if (useAca)
@@ -183,8 +185,10 @@ int main()
 
     // Create a factory for invertible operators
     Thyra::BelosLinearOpWithSolveFactory<double> invertibleOpFactory;
-    RCP<Teuchos::ParameterList> paramList =
-            Teuchos::getParametersFromXmlFile("trilinos-belos.xml");
+    //RCP<Teuchos::ParameterList> paramList =
+    //        Teuchos::getParametersFromXmlFile("trilinos-belos.xml");
+    RCP<Teuchos::ParameterList> paramList = defaultGmresParameterList(1E-10);
+
     invertibleOpFactory.setParameterList(paramList);
     invertibleOpFactory.setOStream(out);
     invertibleOpFactory.setVerbLevel(Teuchos::VERB_HIGH);
@@ -209,20 +213,25 @@ int main()
         const double delta = 0.1; // LU approximation accuracy
         // We know that we've built an ACA representation of the operator,
         // so this dynamic cast will succeed
-        std::cout << "Dynamic Cast" << std::endl;
-        const DiscreteAcaScalarValuedLinearOperator<double>& discreteAcaLhs = 
-        DiscreteAcaScalarValuedLinearOperator<double>::castToAca(*discreteLhs);
-        // Construct the linear operator to act as a preconditioner
-        std::cout << "Start creating preconditioner" << std::endl;
-        RCP<const Thyra::LinearOpBase<double> > precOp(
-                    new AcaApproximateLuInverse<double>(discreteAcaLhs, delta));
-        // and wrap it in a PreconditionerBase object
-        // (the static cast is there because unspecifiedPrec() returns
-        // a ref-counted pointer to a subclass of PreconditionerBase
-        std::cout << "Created approximate inverse" << std::endl;
-        RCP<const Thyra::PreconditionerBase<double> > preconditioner =
-                Teuchos::rcp_static_cast<const Thyra::PreconditionerBase<double> >(
-                    Thyra::unspecifiedPrec(precOp));
+
+        RCP<const Thyra::PreconditionerBase<double> >preconditioner =
+                AcaPreconditionerFactory<double>::AcaOperatorToPreconditioner(*discreteLhs,1E-3);
+
+
+//        std::cout << "Dynamic Cast" << std::endl;
+//        const DiscreteAcaScalarValuedLinearOperator<double>& discreteAcaLhs =
+//        DiscreteAcaScalarValuedLinearOperator<double>::castToAca(*discreteLhs);
+//        // Construct the linear operator to act as a preconditioner
+//        std::cout << "Start creating preconditioner" << std::endl;
+//        RCP<const Thyra::LinearOpBase<double> > precOp(
+//                    new AcaApproximateLuInverse<double>(discreteAcaLhs, delta));
+//        // and wrap it in a PreconditionerBase object
+//        // (the static cast is there because unspecifiedPrec() returns
+//        // a ref-counted pointer to a subclass of PreconditionerBase
+//        std::cout << "Created approximate inverse" << std::endl;
+//        RCP<const Thyra::PreconditionerBase<double> > preconditioner =
+//                Teuchos::rcp_static_cast<const Thyra::PreconditionerBase<double> >(
+//                    Thyra::unspecifiedPrec(precOp));
         // Now create a discrete linear operator with a solve() member function
         invertibleDiscreteLhs = invertibleOpFactory.createOp();
         Thyra::initializePreconditionedOp(

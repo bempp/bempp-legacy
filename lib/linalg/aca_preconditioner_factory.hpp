@@ -38,7 +38,7 @@ class AcaPreconditionerFactory {
     
     public:        
     static Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > AcaOperatorToPreconditioner
-        (DiscreteScalarValuedLinearOperator<ValueType>& discreteOperator, const double delta);
+        (DiscreteScalarValuedLinearOperator<ValueType>& discreteOperator, const double delta=0.1);
         
         
 };

@@ -36,56 +36,63 @@
 #include <Thyra_BelosLinearOpWithSolveFactory_decl.hpp>
 #include "Thyra_LinearOpWithSolveFactoryHelpers.hpp"
 #include "Thyra_MultiVectorBase.hpp"
+#include "Thyra_PreconditionerBase.hpp"
+
+#include "../assembly/discrete_scalar_valued_linear_operator.hpp"
+#include "../assembly/discrete_aca_scalar_valued_linear_operator.hpp"
+#include "../assembly/discrete_scalar_valued_source_term.hpp"
 
 
 
 namespace Bempp {
 
-template <typename ValueType> class DiscreteScalarValuedLinearOperator;
-template <typename ValueType> class DiscreteAcaScalarValuedLinearOperator;
-template <typename ValueType> class DiscreteScalarValuedSourceTerm;
 
-/*
+
 template <typename ValueType>
-class DefaultGmresSolver
+class DefaultIterativeSolver
 {
 public:
 
     enum SolveStatus {CONVERGED, UNCONVGERGED, UNKNOWN};
 
-    DefaultGmresSolver(DiscreteScalarValuedLinearOperator<ValueType>& discreteOperator,
-                       DiscreteScalarValuedSourceTerm<ValueType> rhs, double tol=1E-5);
-    DefaultGmresSolver(DiscreteScalarValuedLinearOperator<ValueType>& discreteOperator,
-                       std::vector<DiscreteScalarValuedLinearOperator<ValueType>* > rhs, double tol=1E-5);
-    DefaultGmresSolver(DiscreteScalarValuedLinearOperator<ValueType>& discreteOperator,
-                       DiscreteScalarValuedSourceTerm<ValueType> rhs,
-                       Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> >& preconditioner, double tol=1E-5);
-    DefaultGmresSolver(DiscreteScalarValuedLinearOperator<ValueType>& discreteOperator,
-                       std::vector<DiscreteScalarValuedSourceTerm<ValueType>* > rhs,
-                       Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> >& preconditioner, double tol=1E-5);
+    DefaultIterativeSolver(DiscreteScalarValuedLinearOperator<ValueType>& discreteOperator,
+                       DiscreteScalarValuedSourceTerm<ValueType>& rhs);
+    DefaultIterativeSolver(DiscreteScalarValuedLinearOperator<ValueType>& discreteOperator,
+                       std::vector<DiscreteScalarValuedSourceTerm<ValueType>* >& rhs);
+
+
+    void addPreconditioner(Teuchos::RCP<Thyra::PreconditionerBase<ValueType> > preconditioner);
+
+
+    void initializeSolver(Teuchos::RCP<Teuchos::ParameterList> paramList);
+
+/*
 
     void solve();
 
     arma::Mat<ValueType> getResult();
 
-    DefaultGmresSolver::SolveStatus getStatus();
+    SolveStatus getStatus();
 
     double getSolveTol();
 
-    Thyra::SolveStatus<ValueType> getThyraStatus();
-
+    Thyra::SolveStatus<ValueType> getThyraSolveStatus();
+*/
 private:
 
-    Teuchos::RCP<Thyra::LinearOpWithSolveBase<ValueType> > lhs;
-    Teuchos::RCP<Thyra::MultiVectorBase<ValueType> > rhs;
-    Teuchos::RCP<Thyra::MultiVectorBase<ValueType> > sol;
-    Teuchos::RCP<Thyra::SolveStatus<ValueType> > status;
-    //Thyra::BelosLinearOpWithSolveFactory<ValueType> solverFactory;
+    DiscreteScalarValuedLinearOperator<ValueType>& m_discreteOperator;
+
+    Teuchos::RCP<Thyra::LinearOpWithSolveBase<ValueType> > m_lhs;
+    Teuchos::RCP<Thyra::MultiVectorBase<ValueType> > m_rhs;
+    Teuchos::RCP<Thyra::MultiVectorBase<ValueType> > m_sol;
+    Teuchos::RCP<Thyra::SolveStatus<ValueType> > m_status;
+    Teuchos::RCP<Thyra::PreconditionerBase<ValueType> > m_preconditioner;
 
 
 };
-*/
-Teuchos::RCP<Teuchos::ParameterList> defaultParameterList(int nrhs, double tol);
+
+Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(double tol);
+Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(double tol);
 
 }
 

@@ -58,7 +58,14 @@ if (WITH_AHMED)
 endif ()
 
 if (WITH_TRILINOS)
-    target_link_libraries (bempp ${EPETRA_LIBRARY} ${THYRA_CORE_LIBRARY} ${TEUCHOS_LIBRARY} ${RTOP_LIBRARY})
+    target_link_libraries (bempp
+        ${STRATIMIKOS_LIBRARY}
+        ${STRATIMIKOS_BELOS_LIBRARY}
+        ${BELOS_LIBRARY}
+        ${EPETRA_LIBRARY}
+        ${THYRA_CORE_LIBRARY}
+        ${TEUCHOS_LIBRARY}
+        ${RTOP_LIBRARY})
     include_directories(${TRILINOS_INCLUDE_DIR})
 endif ()
 
