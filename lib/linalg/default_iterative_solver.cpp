@@ -82,7 +82,7 @@ DefaultIterativeSolver<ValueType>::DefaultIterativeSolver(DiscreteScalarValuedLi
 }
 
 template<typename ValueType>
-void DefaultIterativeSolver<ValueType>::addPreconditioner(Teuchos::RCP<Thyra::PreconditionerBase<ValueType> > preconditioner){
+void DefaultIterativeSolver<ValueType>::addPreconditioner(Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > preconditioner){
     m_preconditioner=preconditioner;
 }
 

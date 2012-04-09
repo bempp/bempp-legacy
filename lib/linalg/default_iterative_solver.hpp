@@ -61,7 +61,7 @@ public:
                        std::vector<DiscreteScalarValuedSourceTerm<ValueType>* >& rhs);
 
 
-    void addPreconditioner(Teuchos::RCP<Thyra::PreconditionerBase<ValueType> > preconditioner);
+    void addPreconditioner(Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > preconditioner);
 
 
     void initializeSolver(Teuchos::RCP<Teuchos::ParameterList> paramList);
@@ -86,7 +86,7 @@ private:
     Teuchos::RCP<Thyra::MultiVectorBase<ValueType> > m_rhs;
     Teuchos::RCP<Thyra::MultiVectorBase<ValueType> > m_sol;
     Teuchos::RCP<Thyra::SolveStatus<ValueType> > m_status;
-    Teuchos::RCP<Thyra::PreconditionerBase<ValueType> > m_preconditioner;
+    Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > m_preconditioner;
 
 
 };
