@@ -166,9 +166,9 @@ int main()
     // DefaultIterativeSolver<double> iterativeSolver(*discreteLhs,srcTerms);
 
 
-    iterativeSolver.addPreconditioner(AcaPreconditionerFactory<double>::AcaOperatorToPreconditioner(*discreteLhs,1E-3));
-    //iterativeSolver.initializeSolver(defaultGmresParameterList(1E-10));
-    iterativeSolver.initializeSolver(Teuchos::getParametersFromXmlFile("trilinos-belos.xml"));
+    //iterativeSolver.addPreconditioner(AcaPreconditionerFactory<double>::AcaOperatorToPreconditioner(*discreteLhs,1E-3));
+    iterativeSolver.initializeSolver(defaultGmresParameterList(1E-5));
+    //iterativeSolver.initializeSolver(Teuchos::getParametersFromXmlFile("trilinos-belos.xml"));
     iterativeSolver.solve();
     std::cout << iterativeSolver.getSolverMessage() << std::endl;
 

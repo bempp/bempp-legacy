@@ -27,6 +27,7 @@
 #include "../common/not_implemented_error.hpp"
 
 #include <iostream>
+#include <fstream>
 
 #ifdef WITH_TRILINOS
 #include <Thyra_DetachedSpmdVectorView.hpp>
@@ -203,10 +204,25 @@ applyImpl(const Thyra::EOpTransp M_trans,
                     const_cast<ValueType*>(xArray.get()), xArray.size(),
                     false /* copy_aux_mem */);
         arma::Col<ValueType> yCol(yArray.get(), yArray.size(), false);
+        std::ofstream xfilein; xfilein.open("xin.txt",std::ios::app);
+        std::ofstream yfilein; yfilein.open("yin.txt",std::ios::app);
+        std::ofstream yfileout; yfileout.open("yout.txt",std::ios::app);
+
+        xfilein << xCol << std::endl;
+        xfilein << std::endl;
+
+        yfilein << yCol << std::endl;
+        yfilein << std::endl;
 
         applyBuiltInImpl(static_cast<TranspositionMode>(M_trans),
                          xCol, yCol, alpha, beta);
 
+        yfileout << yCol << std::endl;
+        yfileout << std::endl;
+
+        xfilein.close();
+        yfilein.close();
+        yfileout.close();
     }
 }
 #endif // WITH_TRILINOS
