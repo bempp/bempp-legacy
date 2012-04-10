@@ -107,7 +107,6 @@ int main()
     const bool useAca = true;
 
     std::auto_ptr<Grid> grid = loadMesh(meshVariant);
-    dumpElementList(grid.get());
 
     PiecewiseLinearContinuousScalarSpace<double> space(*grid);
     space.assignDofs();
@@ -159,7 +158,6 @@ int main()
     DiscreteSourceTermPtr discreteRhs =
             sourceTerm.assembleWeakForm(function, space, factory, assemblyOptions);
 
-
     DefaultIterativeSolver<double> iterativeSolver(*discreteLhs,*discreteRhs);
 
     // It is also possible to initialize with a vector of right-hand sides for block-solves, e.g.
@@ -169,7 +167,8 @@ int main()
 
 
     iterativeSolver.addPreconditioner(AcaPreconditionerFactory<double>::AcaOperatorToPreconditioner(*discreteLhs,1E-3));
-    iterativeSolver.initializeSolver(defaultGmresParameterList(1E-10));
+    //iterativeSolver.initializeSolver(defaultGmresParameterList(1E-10));
+    iterativeSolver.initializeSolver(Teuchos::getParametersFromXmlFile("trilinos-belos.xml"));
     iterativeSolver.solve();
     std::cout << iterativeSolver.getSolverMessage() << std::endl;
 
