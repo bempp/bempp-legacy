@@ -5,6 +5,16 @@
 namespace Bempp
 {
 
+
+AcaOptions::AcaOptions() :
+    eps(1E-4),
+    eta(0.8),
+    maximumRank(10000),
+    minimumBlockSize(16),
+    recompress(true) {}
+
+
+
 AssemblyOptions::AssemblyOptions() :
     // TODO: perhaps set m_acaOptions to some defaults
     m_representation(DENSE),

@@ -73,7 +73,7 @@ public:
 #ifdef WITH_TRILINOS
 public:
     static const DiscreteAcaScalarValuedLinearOperator<ValueType>& castToAca
-        (DiscreteScalarValuedLinearOperator<ValueType>& DiscreteOperator);
+        (DiscreteScalarValuedLinearOperator<ValueType>& discreteOperator);
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > range() const;
 

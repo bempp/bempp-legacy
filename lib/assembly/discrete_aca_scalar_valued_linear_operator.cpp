@@ -146,8 +146,8 @@ domain() const
 template <typename ValueType>
 const DiscreteAcaScalarValuedLinearOperator<ValueType>& 
 DiscreteAcaScalarValuedLinearOperator<ValueType>::castToAca
-    (DiscreteScalarValuedLinearOperator<ValueType>& DiscreteOperator){   
-        return Teuchos::dyn_cast<DiscreteAcaScalarValuedLinearOperator<ValueType> >(DiscreteOperator);
+    (DiscreteScalarValuedLinearOperator<ValueType>& discreteOperator){
+        return Teuchos::dyn_cast<DiscreteAcaScalarValuedLinearOperator<ValueType> >(discreteOperator);
     }
 
 
