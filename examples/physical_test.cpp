@@ -159,4 +159,5 @@ int main()
     // % in Armadillo -> elementwise multiplication
     double stdDev = sqrt(arma::accu(deviation % deviation) / solution.n_rows);
     std::cout << "Standard deviation: " << stdDev << std::endl;
+    std::cout<<solution.n_rows<<std::endl;
 }
