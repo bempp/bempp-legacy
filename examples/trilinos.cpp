@@ -161,6 +161,13 @@ int main()
 
 
     DefaultIterativeSolver<double> iterativeSolver(*discreteLhs,*discreteRhs);
+
+    // It is also possible to initialize with a vector of right-hand sides for block-solves, e.g.
+    // std::vector<DiscreteScalarValuedSourceTerm<double>* > srcTerms;
+    // srcTerms.push_back(&(*discreteRhs));
+    // DefaultIterativeSolver<double> iterativeSolver(*discreteLhs,srcTerms);
+
+
     iterativeSolver.addPreconditioner(AcaPreconditionerFactory<double>::AcaOperatorToPreconditioner(*discreteLhs,1E-3));
     iterativeSolver.initializeSolver(defaultGmresParameterList(1E-10));
     iterativeSolver.solve();
