@@ -204,6 +204,8 @@ applyImpl(const Thyra::EOpTransp M_trans,
                     const_cast<ValueType*>(xArray.get()), xArray.size(),
                     false /* copy_aux_mem */);
         arma::Col<ValueType> yCol(yArray.get(), yArray.size(), false);
+
+        /*
         std::ofstream xfilein; xfilein.open("xin.txt",std::ios::app);
         std::ofstream yfilein; yfilein.open("yin.txt",std::ios::app);
         std::ofstream yfileout; yfileout.open("yout.txt",std::ios::app);
@@ -218,10 +220,11 @@ applyImpl(const Thyra::EOpTransp M_trans,
 
         alphafile << alpha; alphafile << std::endl;
         betafile << beta; betafile << std::endl;
-
+*/
         applyBuiltInImpl(static_cast<TranspositionMode>(M_trans),
                          xCol, yCol, alpha, beta);
 
+/*
         yfileout << yCol << std::endl;
         yfileout << std::endl;
 
@@ -230,6 +233,7 @@ applyImpl(const Thyra::EOpTransp M_trans,
         yfileout.close();
         alphafile.close();
         betafile.close();
+*/
     }
 }
 #endif // WITH_TRILINOS
