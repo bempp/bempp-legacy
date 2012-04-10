@@ -28,6 +28,8 @@ namespace Bempp
 
 struct AcaOptions
 {
+    AcaOptions();
+
     double eps;
     double eta;
     int minimumBlockSize;

@@ -32,6 +32,8 @@
 #include "Thyra_DefaultLinearOpSource.hpp"
 #include "Thyra_SolveSupportTypes.hpp"
 #include "Thyra_LinearOpBase.hpp"
+#include "Thyra_OperatorVectorTypes.hpp"
+#include "Thyra_DetachedMultiVectorView.hpp"
 #include "Teuchos_ArrayRCP.hpp"
 #include "Teuchos_FancyOStream.hpp"
 #include "Teuchos_VerboseObject.hpp"
@@ -112,8 +114,71 @@ void DefaultIterativeSolver<ValueType>::initializeSolver(Teuchos::RCP<Teuchos::P
         m_lhs=Thyra::linearOpWithSolve(invertibleOpFactory, trilinosDiscreteLhs);
     }
 
+}
+
+template <typename ValueType>
+void DefaultIterativeSolver<ValueType>::solve(){
+
+        const size_t size = m_rhs->range()->dim();
+        const size_t nrhs = m_rhs->domain()->dim();
+
+        if (m_lhs.is_null()) throw std::runtime_error("Solver not initialized");
+
+        m_sol=Teuchos::RCP<Thyra::MultiVectorBase<ValueType> >(new Thyra::DefaultSpmdMultiVector<ValueType>(
+                                                       Thyra::defaultSpmdVectorSpace<ValueType>(size),
+                                                       Thyra::defaultSpmdVectorSpace<ValueType>(nrhs)));
+        Thyra::assign(m_sol.ptr(),0.);
+
+        m_status = m_lhs->solve(Thyra::NOTRANS,*m_rhs,m_sol.ptr());
+
 
 }
+
+template <typename ValueType>
+arma::Mat<ValueType> DefaultIterativeSolver<ValueType>::getResult(){
+
+    const size_t size=m_sol->range()->dim();
+    const size_t nrhs=m_sol->domain()->dim();
+
+    Thyra::ConstDetachedMultiVectorView<ValueType> solView(m_sol);
+    return arma::Mat<ValueType>(solView.values(),size,nrhs);
+
+}
+
+
+template <typename ValueType>
+EStatus DefaultIterativeSolver<ValueType>::getStatus(){
+
+    switch (m_status.solveStatus)
+    {
+        case Thyra::SOLVE_STATUS_CONVERGED:
+            return CONVERGED;
+            break;
+        case Thyra::SOLVE_STATUS_UNCONVERGED:
+            return UNCONVGERGED;
+            break;
+    }
+
+    return UNKNOWN;
+
+}
+
+template <typename ValueType>
+double DefaultIterativeSolver<ValueType>::getSolveTol(){
+    return m_status.achievedTol;
+}
+
+template <typename ValueType>
+std::string DefaultIterativeSolver<ValueType>::getSolverMessage(){
+    return m_status.message;
+}
+
+template <typename ValueType>
+Thyra::SolveStatus<ValueType> DefaultIterativeSolver<ValueType>::getThyraSolveStatus(){
+    return m_status;
+}
+
+
 
 Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(double tol){
 

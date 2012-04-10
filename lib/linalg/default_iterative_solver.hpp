@@ -46,14 +46,13 @@
 
 namespace Bempp {
 
-
+enum EStatus {CONVERGED, UNCONVGERGED, UNKNOWN};
 
 template <typename ValueType>
 class DefaultIterativeSolver
 {
 public:
 
-    enum SolveStatus {CONVERGED, UNCONVGERGED, UNKNOWN};
 
     DefaultIterativeSolver(DiscreteScalarValuedLinearOperator<ValueType>& discreteOperator,
                        DiscreteScalarValuedSourceTerm<ValueType>& rhs);
@@ -66,18 +65,22 @@ public:
 
     void initializeSolver(Teuchos::RCP<Teuchos::ParameterList> paramList);
 
-/*
+
 
     void solve();
 
+
+
     arma::Mat<ValueType> getResult();
 
-    SolveStatus getStatus();
+    EStatus getStatus();
 
     double getSolveTol();
 
+    std::string getSolverMessage();
+
     Thyra::SolveStatus<ValueType> getThyraSolveStatus();
-*/
+
 private:
 
     DiscreteScalarValuedLinearOperator<ValueType>& m_discreteOperator;
@@ -85,7 +88,7 @@ private:
     Teuchos::RCP<Thyra::LinearOpWithSolveBase<ValueType> > m_lhs;
     Teuchos::RCP<Thyra::MultiVectorBase<ValueType> > m_rhs;
     Teuchos::RCP<Thyra::MultiVectorBase<ValueType> > m_sol;
-    Teuchos::RCP<Thyra::SolveStatus<ValueType> > m_status;
+    Thyra::SolveStatus<ValueType> m_status;
     Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > m_preconditioner;
 
 
