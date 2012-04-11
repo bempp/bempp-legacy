@@ -26,6 +26,9 @@
 #include "../grid/grid_view.hpp"
 #include "../grid/mapper.hpp"
 
+#include "../grid/geometry.hpp"
+
+
 namespace Bempp
 {
 
@@ -197,9 +200,33 @@ template <typename ValueType>
 void PiecewiseConstantScalarSpace<ValueType>::globalDofPositions(
         std::vector<Point3D<ValueType> >& positions) const
 {
-    throw NotImplementedError("PiecewiseConstantScalarSpace::"
-                              "globalDofPositions(): "
-                              "not implemented yet");
+    const int gridDim = domainDimension();
+    const int globalDofCount_ = globalDofCount();
+    positions.resize(globalDofCount_);
+
+    const IndexSet& indexSet = m_view->indexSet();
+
+    if (gridDim == 1){
+        throw NotImplementedError("PiecewiseConstantScalarSpace::"
+                                      "globalDofPositions(): "
+                                      "not implemented for 2D yet.");
+    }
+    else{
+
+    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    while (!it->finished())
+    {
+        const Entity<0>& e = it->entity();
+        int index = indexSet.entityIndex(e);
+        arma::Col<ValueType> vertex;
+        e.geometry().center(vertex);
+
+        positions[index].x = vertex(0);
+        positions[index].y = vertex(1);
+        positions[index].z = vertex(2);
+        it->next();
+    }
+    }
 }
 
 #ifdef COMPILE_FOR_FLOAT

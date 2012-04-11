@@ -120,9 +120,11 @@ AcaGlobalAssembler<ValueType>::assembleWeakForm(
     for (unsigned int i = 0; i < trialDofCount; ++i)
         p2oTrialDofs[i] = i;
 
+
     std::vector<Point3D<ValueType> > trialDofCenters, testDofCenters;
     trialSpace.globalDofPositions(trialDofCenters);
     testSpace.globalDofPositions(testDofCenters);
+
 
     // Use static_cast to convert from a pointer to Point3D to a pointer to its
     // descendant AhmedDofWrapper, which does not contain any new data members,
@@ -131,7 +133,7 @@ AcaGlobalAssembler<ValueType>::assembleWeakForm(
     const AhmedDofType* ahmedTrialDofCenters =
             static_cast<AhmedDofType*>(&trialDofCenters[0]);
     const AhmedDofType* ahmedTestDofCenters =
-            static_cast<AhmedDofType*>(&trialDofCenters[0]);
+            static_cast<AhmedDofType*>(&testDofCenters[0]);
 
     bemcluster<const AhmedDofType> testClusterTree(
                 ahmedTestDofCenters, &o2pTestDofs[0],

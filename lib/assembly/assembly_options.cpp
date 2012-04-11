@@ -8,7 +8,7 @@ namespace Bempp
 
 AcaOptions::AcaOptions() :
     eps(1E-4),
-    eta(0.8),
+    eta(1.2),
     maximumRank(10000),
     minimumBlockSize(16),
     recompress(true) {}
