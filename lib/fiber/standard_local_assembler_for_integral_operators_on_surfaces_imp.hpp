@@ -477,7 +477,7 @@ regularOrder(int elementIndex, ElementType elementType) const
     //    and estimate the variability of the kernel
     // 2. Take into account the fact that elements might be isoparametric.
 
-    const QuadratureOptions& options = m_accuracyOptions.regular;
+    const QuadratureOptions& options = m_accuracyOptions.doubleRegular;
 
     if (options.mode == QuadratureOptions::EXACT_ORDER)
         return options.order;
@@ -502,7 +502,7 @@ singularOrder(int elementIndex, ElementType elementType) const
     //    (Sauter-Schwab-transformed) kernel
     // 2. Take into account the fact that elements might be isoparametric.
 
-    const QuadratureOptions& options = m_accuracyOptions.singular;
+    const QuadratureOptions& options = m_accuracyOptions.doubleSingular;
 
     if (options.mode == QuadratureOptions::EXACT_ORDER)
         return options.order;

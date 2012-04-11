@@ -10,8 +10,10 @@ namespace Fiber
 struct AccuracyOptions
 {
 public:
-    QuadratureOptions regular;
-    QuadratureOptions singular;
+    /** \brief Integration of regular functions on pairs of elements */
+    QuadratureOptions doubleRegular;
+    /** \brief Integration of singular functions on pairs of elements */
+    QuadratureOptions doubleSingular;
 };
 
 } // namespace Fiber
