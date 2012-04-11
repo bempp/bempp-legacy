@@ -210,14 +210,15 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
 
     // Prepare data for construction of local assembler
 
-    std::auto_ptr<GridView> view = trialSpace.grid().leafView();
+    const Grid& grid = trialSpace.grid();
+    std::auto_ptr<GridView> view = grid.leafView();
     const int elementCount = view->entityCount(0);
 
     // REFACT The following two blocks might disappear in the constructor of
     // LocalAssemblerFactory
 
     // Gather geometric data
-    Fiber::RawGridGeometry<ValueType> rawGeometry;
+    Fiber::RawGridGeometry<ValueType> rawGeometry(grid.dim(), grid.dimWorld());
     view->getRawElementData(
                 rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
                 rawGeometry.auxData());
