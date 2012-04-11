@@ -27,6 +27,7 @@
 #include "standard_local_assembler_for_identity_operator_on_surface.hpp"
 #include "standard_local_assembler_for_integral_operators_on_surfaces.hpp"
 #include "standard_local_assembler_for_grid_functions_on_surfaces.hpp"
+#include "standard_evaluator_for_integral_operators.hpp"
 
 #include <stdexcept>
 
@@ -55,6 +56,8 @@ private:
         LocalAssemblerForIdentityOperator_;
     typedef StandardLocalAssemblerForGridFunctionsOnSurfaces<ValueType, GeometryFactory>
         LocalAssemblerForGridFunctions_;
+    typedef StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>
+        EvaluatorForIntegralOperators_;
 
 public:
     virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
@@ -131,6 +134,25 @@ public:
                         testBases,
                         testExpression, function,
                         openClHandler));
+    }
+
+    virtual std::auto_ptr<EvaluatorForIntegralOperators<ValueType> > make(
+            const GeometryFactory& geometryFactory,
+            const RawGridGeometry<ValueType>& rawGeometry,
+            const std::vector<const Basis<ValueType>*>& trialBases,
+            const Kernel<ValueType>& kernel,
+            const Expression<ValueType>& trialExpression,
+            const std::vector<std::vector<ValueType> >& argumentLocalCoefficients,
+            ValueType multiplier,
+            const OpenClHandler<ValueType, int>& openClHandler) const {
+        return std::auto_ptr<EvaluatorForIntegralOperators<ValueType> >(
+                    new EvaluatorForIntegralOperators_(
+                        geometryFactory, rawGeometry,
+                        trialBases,
+                        kernel, trialExpression, argumentLocalCoefficients,
+                        multiplier,
+                        openClHandler,
+                        m_accuracyOptions.singleRegular));
     }
 
 private:

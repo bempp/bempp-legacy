@@ -27,6 +27,9 @@
 
 #include "assembly/assembly_options.hpp"
 #include "assembly/discrete_scalar_valued_linear_operator.hpp"
+#include "assembly/evaluation_options.hpp"
+#include "assembly/grid_function.hpp"
+#include "assembly/interpolated_function.hpp"
 
 #include "assembly/identity_operator.hpp"
 #include "assembly/single_layer_potential_3d.hpp"
@@ -38,17 +41,12 @@
 
 #include "grid/geometry.hpp"
 #include "grid/geometry_factory.hpp"
+#include "grid/grid_factory.hpp"
 
 #include "space/piecewise_linear_continuous_scalar_space.hpp"
 #include "space/piecewise_constant_scalar_space.hpp"
 
 using namespace Bempp;
-
-enum Formulation
-{
-    CBIE,
-    HBIE // currently doesn't work correctly -- to investigate!
-};
 
 /**
   This script solves the Laplace equation
@@ -73,8 +71,7 @@ enum Formulation
 
 int main()
 {
-    const MeshVariant meshVariant = SPHERE_152;
-    const Formulation formulation = CBIE;
+    const MeshVariant meshVariant = SPHERICAL_SHELL_INNER_SURFACE;
 
     std::auto_ptr<Grid> grid = loadMesh(meshVariant);
     dumpElementList(grid.get());
@@ -88,6 +85,9 @@ int main()
     assemblyOptions.switchToTbb();
     assemblyOptions.setSingularIntegralCaching(AssemblyOptions::YES);
 
+    EvaluationOptions evaluationOptions;
+    evaluationOptions.switchToTbb();
+
     Fiber::OpenClOptions openClOptions;
     //    assemblyOptions.switchToOpenCl(openClOptions);
 
@@ -97,66 +97,59 @@ int main()
 
     typedef std::auto_ptr<LinearOperator<double> > LinearOperatorPtr;
 
-    arma::Col<double> solution;
-    if (formulation == CBIE)
-    {
-        LinearOperatorPtr slp(new SingleLayerPotential3D<double>);
-        LinearOperatorPtr dlp(new DoubleLayerPotential3D<double>);
-        LinearOperatorPtr id(new IdentityOperator<double>);
+    arma::Col<double> solutionCoefficients;
 
-        typedef DiscreteScalarValuedLinearOperator<double> DiscreteLinearOperator;
-        typedef std::auto_ptr<DiscreteLinearOperator> DiscreteLinearOperatorPtr;
-        DiscreteLinearOperatorPtr discreteSlp =
-                slp->assembleWeakForm(space, space, factory, assemblyOptions);
-        DiscreteLinearOperatorPtr discreteDlp =
-                dlp->assembleWeakForm(space, space, factory, assemblyOptions);
-        DiscreteLinearOperatorPtr discreteId =
-                id->assembleWeakForm(space, space, factory, assemblyOptions);
+    SingleLayerPotential3D<double> slp;
+    DoubleLayerPotential3D<double> dlp;
+    IdentityOperator<double> id;
 
-        arma::Mat<double> slpMatrix = discreteSlp->asMatrix();
-        arma::Mat<double> dlpMatrix = discreteDlp->asMatrix();
-        arma::Mat<double> idMatrix = discreteId->asMatrix();
+    typedef DiscreteScalarValuedLinearOperator<double> DiscreteLinearOperator;
+    typedef std::auto_ptr<DiscreteLinearOperator> DiscreteLinearOperatorPtr;
+    DiscreteLinearOperatorPtr discreteSlp =
+            slp.assembleWeakForm(space, space, factory, assemblyOptions);
+    DiscreteLinearOperatorPtr discreteDlp =
+            dlp.assembleWeakForm(space, space, factory, assemblyOptions);
+    DiscreteLinearOperatorPtr discreteId =
+            id.assembleWeakForm(space, space, factory, assemblyOptions);
 
-        arma::Mat<double> lhs = slpMatrix;
-        arma::Col<double> V(idMatrix.n_rows);
-        V.fill(1.);
-        arma::Col<double> rhs = (-0.5 * idMatrix + dlpMatrix) * V;
-        solution = arma::solve(lhs, rhs);
-    }
-    else if (formulation == HBIE)
-    {
-        LinearOperatorPtr adlp(new AdjointDoubleLayerPotential3D<double>);
-        LinearOperatorPtr hso(new HypersingularOperator3D<double>);
-        LinearOperatorPtr id(new IdentityOperator<double>);
+    arma::Mat<double> slpMatrix = discreteSlp->asMatrix();
+    arma::Mat<double> dlpMatrix = discreteDlp->asMatrix();
+    arma::Mat<double> idMatrix = discreteId->asMatrix();
 
-        typedef DiscreteScalarValuedLinearOperator<double> DiscreteLinearOperator;
-        typedef std::auto_ptr<DiscreteLinearOperator> DiscreteLinearOperatorPtr;
-        DiscreteLinearOperatorPtr discreteAdlp =
-                adlp->assembleWeakForm(space, space, factory, assemblyOptions);
-        DiscreteLinearOperatorPtr discreteHso =
-                hso->assembleWeakForm(space, space, factory, assemblyOptions);
-        DiscreteLinearOperatorPtr discreteId =
-                id->assembleWeakForm(space, space, factory, assemblyOptions);
+    arma::Mat<double> lhs = slpMatrix;
+    arma::Col<double> V(idMatrix.n_rows);
+    V.fill(1.);
+    arma::Col<double> rhs = (-0.5 * idMatrix + dlpMatrix) * V;
+    solutionCoefficients = arma::solve(lhs, rhs);
 
-        arma::Mat<double> adlpMatrix = discreteAdlp->asMatrix();
-        arma::Mat<double> hsoMatrix = discreteHso->asMatrix();
-        arma::Mat<double> idMatrix = discreteId->asMatrix();
+    GridFunction<double> trace0(space, V);
+    GridFunction<double> trace1(space, solutionCoefficients);
 
-        arma::Mat<double> lhs = 0.5 * idMatrix + adlpMatrix;
-        arma::Col<double> V(idMatrix.n_rows);
-        V.fill(1.);
-        arma::Col<double> rhs = -hsoMatrix * V;
+    trace1.exportToVtk(VtkWriter::VERTEX_DATA, "Neumann_data", "physical_test_neumann_data_vertex");
+    // doesn't make very much sense -- just for testing
+    trace1.exportToVtk(VtkWriter::CELL_DATA, "Neumann_data", "physical_test_neumann_data_cell");
 
-        hsoMatrix.print("Hypersingular operator");
-        rhs.print("Right-hand side");
-        solution = arma::solve(lhs, rhs);
-    }
-    else
-        throw std::runtime_error("Invalid formulation");
+    GridParameters params;
+    params.topology = GridParameters::TETRAHEDRAL;
 
-    solution.print("Solution:\n");
-    arma::Col<double> deviation = solution - (-1.);
+    std::cout << "Importing 3D grid" << std::endl;
+    std::auto_ptr<Grid> volumeGrid = GridFactory::importGmshGrid(
+                params,
+                "spherical_shell_2194_nodes_volume.msh",
+                true, // verbose
+                false); // insertBoundarySegments
+
+    std::auto_ptr<InterpolatedFunction<double> > slpOfTrace1 =
+            slp.applyOffSurface(trace1, *volumeGrid, factory, evaluationOptions);
+    std::auto_ptr<InterpolatedFunction<double> > dlpOfTrace0 =
+            dlp.applyOffSurface(trace0, *volumeGrid, factory, evaluationOptions);
+    slpOfTrace1->exportToVtk("slp_of_trace1", "physical_test_slp_of_trace1");
+    dlpOfTrace0->exportToVtk("dlp_of_trace0", "physical_test_dlp_of_trace0");
+
+    solutionCoefficients.print("Solution:\n");
+    arma::Col<double> deviation = solutionCoefficients - (-1.);
     // % in Armadillo -> elementwise multiplication
-    double stdDev = sqrt(arma::accu(deviation % deviation) / solution.n_rows);
+    double stdDev = sqrt(arma::accu(deviation % deviation) /
+                         solutionCoefficients.n_rows);
     std::cout << "Standard deviation: " << stdDev << std::endl;
 }

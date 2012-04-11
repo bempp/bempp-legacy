@@ -16,6 +16,7 @@ template <typename ValueType> class RawGridGeometry;
 
 template <typename ValueType> class LocalAssemblerForOperators;
 template <typename ValueType> class LocalAssemblerForGridFunctions;
+template <typename ValueType> class EvaluatorForIntegralOperators;
 
 template <typename ValueType, typename GeometryFactory>
 class LocalAssemblerFactory
@@ -91,6 +92,22 @@ public:
             const Expression<ValueType>& testExpression,
             const Function<ValueType>& function,
             const OpenClHandler<ValueType,int>& openClHandler) const = 0;
+
+    /** @}
+        @name Evaluators for integral operators
+        @{ */
+
+    /** \brief Allocate an evaluator for an integral operator applied to a
+      grid function. */
+    virtual std::auto_ptr<EvaluatorForIntegralOperators<ValueType> > make(
+            const GeometryFactory& geometryFactory,
+            const RawGridGeometry<ValueType>& rawGeometry,
+            const std::vector<const Basis<ValueType>*>& trialBases,
+            const Kernel<ValueType>& kernel,
+            const Expression<ValueType>& trialExpression,
+            const std::vector<std::vector<ValueType> >& argumentLocalCoefficients,
+            ValueType multiplier,
+            const OpenClHandler<ValueType, int>& openClHandler) const = 0;
 
     /** @} */
 };

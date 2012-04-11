@@ -5,7 +5,7 @@
 %include "vtk_writer_docstrings.i"
 
 // Handle the enum Dune::VTK::OutputType like a string
-%typemap(in) Dune::VTK::OutputType 
+%typemap(in) VtkWriter::OutputType
 {
     if (!PyString_Check($input))
     {
@@ -14,13 +14,13 @@
     }
     const std::string s(PyString_AsString($input));
     if (s == "ascii")
-        $1 = Dune::VTK::ascii;
+        $1 = VtkWriter::ASCII;
     else if (s == "base64")
-        $1 = Dune::VTK::base64;
+        $1 = VtkWriter::BASE_64;
     else if (s == "appendedraw")
-        $1 = Dune::VTK::appendedraw;
+        $1 = VtkWriter::APPENDED_RAW;
     else if (s == "appendedbase64")
-        $1 = Dune::VTK::appendedbase64;
+        $1 = VtkWriter::APPENDED_BASE_64;
     else
     {
         PyErr_SetString(PyExc_ValueError, "in method '$symname', argument $argnum: expected one of 'ascii', 'base64', 'appendedraw' or 'appendedbase64'");        
