@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_local_assembler_for_source_terms_hpp
-#define fiber_local_assembler_for_source_terms_hpp
+#ifndef fiber_local_assembler_for_grid_functions_hpp
+#define fiber_local_assembler_for_grid_functions_hpp
 
 #include "array_2d.hpp"
 #include "types.hpp"
@@ -29,16 +29,16 @@
 namespace Fiber
 {
 
-/** \brief Local assembler for source terms.
+/** \brief Local assembler for grid functions.
 
   This assembler provides methods that evaluate local (element-by-element) weak
-  forms of integrals occurring in boundary-element matrices of source terms.
+  forms of integrals occurring in boundary-element matrices of grid functions.
  */
 template <typename ValueType>
-class LocalAssemblerForSourceTerms
+class LocalAssemblerForGridFunctions
 {
 public:
-    virtual ~LocalAssemblerForSourceTerms() {}
+    virtual ~LocalAssemblerForGridFunctions() {}
 
     /** \brief Assemble local weak forms of a source term on specified elements. */
     virtual void evaluateLocalWeakForms(

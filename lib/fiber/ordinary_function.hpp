@@ -27,8 +27,8 @@
 namespace Fiber
 {
 
-/** \brief Function to be used as a source term, depending only on global
-  coordinates.
+/** \brief Function defined via a user-supplied functor, depending only on
+    global coordinates.
 
   The template parameter \p Functor should be a class with the following
   interface:

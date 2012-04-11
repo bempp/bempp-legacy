@@ -15,7 +15,7 @@ template <typename ValueType> class Kernel;
 template <typename ValueType> class RawGridGeometry;
 
 template <typename ValueType> class LocalAssemblerForOperators;
-template <typename ValueType> class LocalAssemblerForSourceTerms;
+template <typename ValueType> class LocalAssemblerForGridFunctions;
 
 template <typename ValueType, typename GeometryFactory>
 class LocalAssemblerFactory
@@ -79,11 +79,12 @@ public:
             const OpenClHandler<ValueType,int>& openClHandler) const = 0;
 
     /** @}
-        @name Local assemblers for source terms
+        @name Local assemblers for grid functions
         @{ */
 
-    /** \brief Allocate a Galerkin-mode local assembler for a source term. */
-    virtual std::auto_ptr<LocalAssemblerForSourceTerms<ValueType> > make(
+    /** \brief Allocate a local assembler for calculations of the projections
+      of functions from a given space on a Fiber::Function. */
+    virtual std::auto_ptr<LocalAssemblerForGridFunctions<ValueType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<ValueType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& testBases,

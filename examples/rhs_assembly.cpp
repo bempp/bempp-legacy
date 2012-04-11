@@ -24,8 +24,7 @@
 
 #include "assembly/assembly_options.hpp"
 #include "fiber/ordinary_function.hpp"
-#include "assembly/source_term.hpp"
-#include "assembly/discrete_scalar_valued_source_term.hpp"
+#include "assembly/grid_function.hpp"
 
 #include "fiber/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 
@@ -81,7 +80,8 @@ public:
     // the array "result"
     inline void evaluate(const arma::Col<ValueType>& point,
                   arma::Col<ValueType>& result) const {
-        result(0) = sin(0.5 * point(0) * cos(0.25 * point(2))) * cos(point(1));
+        // result(0) = sin(0.5 * point(0) * cos(0.25 * point(2))) * cos(point(1));
+        result(0) = 1.;
     }
 };
 
@@ -154,7 +154,7 @@ int main()
     space.assignDofs();
 
     AssemblyOptions assemblyOptions;
-//    assemblyOptions.switchToDense();
+    assemblyOptions.switchToDense();
 
     AcaOptions acaOptions;
     acaOptions.eps = 1e-4;
@@ -162,7 +162,7 @@ int main()
     acaOptions.minimumBlockSize = 2;
     acaOptions.eta = 0.8;
     acaOptions.recompress = true;
-    assemblyOptions.switchToAca(acaOptions);
+//    assemblyOptions.switchToAca(acaOptions);
 
 //    assemblyOptions.switchToSparse();
 
@@ -176,12 +176,12 @@ int main()
     MyFunctor functor;
     Fiber::OrdinaryFunction<MyFunctor> function(functor);
 
-    SourceTerm<double> sourceTerm;
-    std::auto_ptr<DiscreteScalarValuedSourceTerm<double> > result =
-            sourceTerm.assembleWeakForm(function, space, factory, assemblyOptions);
+    GridFunction<double> gridFunction(space, function, factory, assemblyOptions);
+    arma::Col<double> coefficients = gridFunction.coefficients();
+    std::cout << "\nGenerated vector of coefficients:\n" << coefficients << std::endl;
 
-    arma::Col<double> resultVector = result->asVector();
-    std::cout << "\nGenerated vector:\n" << resultVector << std::endl;
+    gridFunction.exportToVtk(VtkWriter::VERTEX_DATA,
+                             "V", "rhs_assembly");
 }
 
 

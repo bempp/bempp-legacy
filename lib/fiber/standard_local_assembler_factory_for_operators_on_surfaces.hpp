@@ -26,7 +26,7 @@
 #include "opencl_options.hpp"
 #include "standard_local_assembler_for_identity_operator_on_surface.hpp"
 #include "standard_local_assembler_for_integral_operators_on_surfaces.hpp"
-#include "standard_local_assembler_for_source_terms_on_surfaces.hpp"
+#include "standard_local_assembler_for_grid_functions_on_surfaces.hpp"
 
 #include <stdexcept>
 
@@ -53,8 +53,8 @@ private:
         LocalAssemblerForIntegralOperators_;
     typedef StandardLocalAssemblerForIdentityOperatorOnSurface<ValueType, GeometryFactory>
         LocalAssemblerForIdentityOperator_;
-    typedef StandardLocalAssemblerForSourceTermsOnSurfaces<ValueType, GeometryFactory>
-        LocalAssemblerForSourceTerms_;
+    typedef StandardLocalAssemblerForGridFunctionsOnSurfaces<ValueType, GeometryFactory>
+        LocalAssemblerForGridFunctions_;
 
 public:
     virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
@@ -118,15 +118,15 @@ public:
                              "make(): collocation mode not implemented yet.");
     }
 
-    virtual std::auto_ptr<LocalAssemblerForSourceTerms<ValueType> > make(
+    virtual std::auto_ptr<LocalAssemblerForGridFunctions<ValueType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<ValueType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& testBases,
             const Expression<ValueType>& testExpression,
             const Function<ValueType>& function,
             const OpenClHandler<ValueType,int>& openClHandler) const {
-        return std::auto_ptr<LocalAssemblerForSourceTerms<ValueType> >(
-                    new LocalAssemblerForSourceTerms_(
+        return std::auto_ptr<LocalAssemblerForGridFunctions<ValueType> >(
+                    new LocalAssemblerForGridFunctions_(
                         geometryFactory, rawGeometry,
                         testBases,
                         testExpression, function,

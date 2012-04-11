@@ -18,10 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_standard_local_assembler_for_source_terms_on_surfaces_hpp
-#define fiber_standard_local_assembler_for_source_terms_on_surfaces_hpp
+#ifndef fiber_standard_local_assembler_for_grid_functions_on_surfaces_hpp
+#define fiber_standard_local_assembler_for_grid_functions_on_surfaces_hpp
 
-#include "local_assembler_for_source_terms.hpp"
+#include "local_assembler_for_grid_functions.hpp"
 #include "test_function_integrator.hpp"
 
 #include <tbb/concurrent_unordered_map.h>
@@ -34,18 +34,18 @@ namespace Fiber
 template <typename ValueType, typename IndexType> class OpenClHandler;
 
 template <typename ValueType, typename GeometryFactory>
-class StandardLocalAssemblerForSourceTermsOnSurfaces :
-        public LocalAssemblerForSourceTerms<ValueType>
+class StandardLocalAssemblerForGridFunctionsOnSurfaces :
+        public LocalAssemblerForGridFunctions<ValueType>
 {    
 public:
-    StandardLocalAssemblerForSourceTermsOnSurfaces(
+    StandardLocalAssemblerForGridFunctionsOnSurfaces(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<ValueType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& testBases,
             const Expression<ValueType>& testExpression,
-            const Function<ValueType>& kernel,
+            const Function<ValueType>& function,
             const OpenClHandler<ValueType,int>& openClHandler);
-    virtual ~StandardLocalAssemblerForSourceTermsOnSurfaces();
+    virtual ~StandardLocalAssemblerForGridFunctionsOnSurfaces();
 
 public:
     virtual void evaluateLocalWeakForms(
@@ -78,6 +78,6 @@ private:
 
 } // namespace Fiber
 
-#include "standard_local_assembler_for_source_terms_on_surfaces_imp.hpp"
+#include "standard_local_assembler_for_grid_functions_on_surfaces_imp.hpp"
 
 #endif

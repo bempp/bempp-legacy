@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 // Keep IDEs happy
-#include "standard_local_assembler_for_source_terms_on_surfaces.hpp"
+#include "standard_local_assembler_for_grid_functions_on_surfaces.hpp"
 
 #include "numerical_test_function_integrator.hpp"
 
@@ -30,8 +30,8 @@ namespace Fiber
 {
 
 template <typename ValueType, typename GeometryFactory>
-StandardLocalAssemblerForSourceTermsOnSurfaces<ValueType, GeometryFactory>::
-StandardLocalAssemblerForSourceTermsOnSurfaces(
+StandardLocalAssemblerForGridFunctionsOnSurfaces<ValueType, GeometryFactory>::
+StandardLocalAssemblerForGridFunctionsOnSurfaces(
         const GeometryFactory& geometryFactory,
         const RawGridGeometry<ValueType>& rawGeometry,
         const std::vector<const Basis<ValueType>*>& testBases,
@@ -47,34 +47,34 @@ StandardLocalAssemblerForSourceTermsOnSurfaces(
 {
     if (rawGeometry.vertices().n_rows != 3)
         throw std::invalid_argument(
-                "StandardLocalAssemblerForSourceTermsOnSurfaces::"
-                "StandardLocalAssemblerForSourceTermsOnSurfaces(): "
+                "StandardLocalAssemblerForGridFunctionsOnSurfaces::"
+                "StandardLocalAssemblerForGridFunctionsOnSurfaces(): "
                 "vertex coordinates must be three-dimensional");
     if (rawGeometry.elementCornerIndices().n_rows < 3 ||
             4 < rawGeometry.elementCornerIndices().n_rows)
         throw std::invalid_argument(
-                "StandardLocalAssemblerForSourceTermsOnSurfaces::"
-                "StandardLocalAssemblerForSourceTermsOnSurfaces(): "
+                "StandardLocalAssemblerForGridFunctionsOnSurfaces::"
+                "StandardLocalAssemblerForGridFunctionsOnSurfaces(): "
                 "all elements must be triangular or quadrilateral");
     const int elementCount = rawGeometry.elementCornerIndices().n_cols;
     if (!rawGeometry.auxData().is_empty() &&
             rawGeometry.auxData().n_cols != elementCount)
         throw std::invalid_argument(
-                "StandardLocalAssemblerForSourceTermsOnSurfaces::"
-                "StandardLocalAssemblerForSourceTermsOnSurfaces(): "
+                "StandardLocalAssemblerForGridFunctionsOnSurfaces::"
+                "StandardLocalAssemblerForGridFunctionsOnSurfaces(): "
                 "number of columns of auxData must match that of "
                 "elementCornerIndices");
     if (testBases.size() != elementCount)
         throw std::invalid_argument(
-                "StandardLocalAssemblerForSourceTermsOnSurfaces::"
-                "StandardLocalAssemblerForSourceTermsOnSurfaces(): "
+                "StandardLocalAssemblerForGridFunctionsOnSurfaces::"
+                "StandardLocalAssemblerForGridFunctionsOnSurfaces(): "
                 "size of testBases must match the number of columns of "
                 "elementCornerIndices");
 }
 
 template <typename ValueType, typename GeometryFactory>
-StandardLocalAssemblerForSourceTermsOnSurfaces<ValueType, GeometryFactory>::
-~StandardLocalAssemblerForSourceTermsOnSurfaces()
+StandardLocalAssemblerForGridFunctionsOnSurfaces<ValueType, GeometryFactory>::
+~StandardLocalAssemblerForGridFunctionsOnSurfaces()
 {
     // Note: obviously the destructor is assumed to be called only after
     // all threads have ceased using the assembler!
@@ -87,7 +87,7 @@ StandardLocalAssemblerForSourceTermsOnSurfaces<ValueType, GeometryFactory>::
 
 template <typename ValueType, typename GeometryFactory>
 void
-StandardLocalAssemblerForSourceTermsOnSurfaces<ValueType, GeometryFactory>::
+StandardLocalAssemblerForGridFunctionsOnSurfaces<ValueType, GeometryFactory>::
 evaluateLocalWeakForms(
         const std::vector<int>& elementIndices,
         std::vector<arma::Col<ValueType> >& result)
@@ -154,7 +154,7 @@ evaluateLocalWeakForms(
 
 template <typename ValueType, typename GeometryFactory>
 const TestFunctionIntegrator<ValueType>&
-StandardLocalAssemblerForSourceTermsOnSurfaces<ValueType, GeometryFactory>::
+StandardLocalAssemblerForGridFunctionsOnSurfaces<ValueType, GeometryFactory>::
 selectIntegrator(int elementIndex)
 {
     SingleQuadratureDescriptor desc;
@@ -171,7 +171,7 @@ selectIntegrator(int elementIndex)
 
 template <typename ValueType, typename GeometryFactory>
 const TestFunctionIntegrator<ValueType>&
-StandardLocalAssemblerForSourceTermsOnSurfaces<ValueType, GeometryFactory>::
+StandardLocalAssemblerForGridFunctionsOnSurfaces<ValueType, GeometryFactory>::
 getIntegrator(const SingleQuadratureDescriptor& desc)
 {
     typename IntegratorMap::iterator it = m_testFunctionIntegrators.find(desc);
@@ -213,7 +213,7 @@ getIntegrator(const SingleQuadratureDescriptor& desc)
 
 template <typename ValueType, typename GeometryFactory>
 inline int
-StandardLocalAssemblerForSourceTermsOnSurfaces<ValueType, GeometryFactory>::
+StandardLocalAssemblerForGridFunctionsOnSurfaces<ValueType, GeometryFactory>::
 orderIncrement(int elementIndex) const
 {
     // TODO: add to constructor an option for increased-order quadrature
