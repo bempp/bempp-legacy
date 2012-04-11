@@ -142,14 +142,14 @@ int main()
     duneNElements[0] = N_ELEMENTS;
     duneNElements[1] = N_ELEMENTS + 1;
 
-    std::auto_ptr<DefaultDuneGrid> duneGrid =
-        Dune::BemppStructuredGridFactory<DefaultDuneGrid>::
+    std::auto_ptr<Default2dIn3dDuneGrid> duneGrid =
+        Dune::BemppStructuredGridFactory<Default2dIn3dDuneGrid>::
         createSimplexGrid(duneLowerLeft, duneUpperRight, duneNElements);
     std::cout << nElements[0] * nElements[1] << " elements created\n";
 
     const int dimWorld = 3;
 
-    DefaultDuneGrid::LeafGridView duneLeafGridView = duneGrid->leafView();
+    Default2dIn3dDuneGrid::LeafGridView duneLeafGridView = duneGrid->leafView();
 
     {
         std::cout << "Iterating over faces..." << std::endl;
@@ -159,7 +159,7 @@ int main()
         gettimeofday(&start, 0);
 
         for (int i = 0; i < N_TRIALS; ++i) {
-            typedef DefaultDuneGrid::LeafGridView::Codim<0> Codim;
+            typedef Default2dIn3dDuneGrid::LeafGridView::Codim<0> Codim;
             Codim::Iterator leafFaceIt = duneLeafGridView.begin<0>();
             Codim::Iterator leafEnd = duneLeafGridView.end<0>();
             for (; leafFaceIt != leafEnd; ++leafFaceIt) {
@@ -189,7 +189,7 @@ int main()
         gettimeofday(&start, 0);
 
         for (int i = 0; i < N_TRIALS; ++i) {
-            typedef DefaultDuneGrid::LeafGridView::Codim<2> Codim;
+            typedef Default2dIn3dDuneGrid::LeafGridView::Codim<2> Codim;
             Codim::Iterator leafVertexIt = duneLeafGridView.begin<2>();
             Codim::Iterator leafEnd = duneLeafGridView.end<2>();
             for (; leafVertexIt != leafEnd; ++leafVertexIt) {
