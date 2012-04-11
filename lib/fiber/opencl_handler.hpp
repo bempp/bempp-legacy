@@ -1,3 +1,5 @@
+#include "config_opencl.hpp"
+
 #ifndef fiber_opencl_handler_hpp
 #define fiber_opencl_handler_hpp
 

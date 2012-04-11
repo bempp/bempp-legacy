@@ -18,10 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <armadillo>
-#include <cmath>
-#include <iostream>
-#include <memory>
+#include "config_alugrid.hpp"
 
 #include "meshes.hpp"
 
@@ -45,6 +42,11 @@
 
 #include "space/piecewise_linear_continuous_scalar_space.hpp"
 #include "space/piecewise_constant_scalar_space.hpp"
+
+#include <armadillo>
+#include <cmath>
+#include <iostream>
+#include <memory>
 
 using namespace Bempp;
 
@@ -132,6 +134,7 @@ int main()
     GridParameters params;
     params.topology = GridParameters::TETRAHEDRAL;
 
+#ifdef WITH_ALUGRID
     std::cout << "Importing 3D grid" << std::endl;
     std::auto_ptr<Grid> volumeGrid = GridFactory::importGmshGrid(
                 params,
@@ -145,6 +148,7 @@ int main()
             dlp.applyOffSurface(trace0, *volumeGrid, factory, evaluationOptions);
     slpOfTrace1->exportToVtk("slp_of_trace1", "physical_test_slp_of_trace1");
     dlpOfTrace0->exportToVtk("dlp_of_trace0", "physical_test_dlp_of_trace0");
+#endif
 
     solutionCoefficients.print("Solution:\n");
     arma::Col<double> deviation = solutionCoefficients - (-1.);

@@ -18,6 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "config_ahmed.hpp"
+#include "config_trilinos.hpp"
 #ifdef WITH_AHMED
 
 #include "discrete_aca_scalar_valued_linear_operator.hpp"
@@ -25,6 +27,7 @@
 #include "../common/not_implemented_error.hpp"
 
 #include <iostream>
+#include <fstream>
 
 #ifdef WITH_TRILINOS
 #include <Thyra_DetachedSpmdVectorView.hpp>
@@ -142,6 +145,14 @@ domain() const
 }
 
 template <typename ValueType>
+const DiscreteAcaScalarValuedLinearOperator<ValueType>& 
+DiscreteAcaScalarValuedLinearOperator<ValueType>::castToAca
+    (DiscreteScalarValuedLinearOperator<ValueType>& discreteOperator){
+        return Teuchos::dyn_cast<DiscreteAcaScalarValuedLinearOperator<ValueType> >(discreteOperator);
+    }
+
+
+template <typename ValueType>
 Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> >
 DiscreteAcaScalarValuedLinearOperator<ValueType>::
 range() const
@@ -194,9 +205,35 @@ applyImpl(const Thyra::EOpTransp M_trans,
                     false /* copy_aux_mem */);
         arma::Col<ValueType> yCol(yArray.get(), yArray.size(), false);
 
+        /*
+        std::ofstream xfilein; xfilein.open("xin.txt",std::ios::app);
+        std::ofstream yfilein; yfilein.open("yin.txt",std::ios::app);
+        std::ofstream yfileout; yfileout.open("yout.txt",std::ios::app);
+        std::ofstream alphafile; alphafile.open("alpha.txt",std::ios::app);
+        std::ofstream betafile; betafile.open("beta.txt",std::ios::app);
+
+        xfilein << xCol << std::endl;
+        xfilein << std::endl;
+
+        yfilein << yCol << std::endl;
+        yfilein << std::endl;
+
+        alphafile << alpha; alphafile << std::endl;
+        betafile << beta; betafile << std::endl;
+*/
         applyBuiltInImpl(static_cast<TranspositionMode>(M_trans),
                          xCol, yCol, alpha, beta);
 
+/*
+        yfileout << yCol << std::endl;
+        yfileout << std::endl;
+
+        xfilein.close();
+        yfilein.close();
+        yfileout.close();
+        alphafile.close();
+        betafile.close();
+*/
     }
 }
 #endif // WITH_TRILINOS

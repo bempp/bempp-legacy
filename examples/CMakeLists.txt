@@ -1,11 +1,7 @@
 include_directories ("${PROJECT_SOURCE_DIR}/lib")
-
-if (WITH_AHMED)
-    add_definitions(-DWITH_AHMED)
-endif ()
+include_directories(${CMAKE_BINARY_DIR}/include/common)
 
 if (WITH_TRILINOS)
-    add_definitions(-DWITH_TRILINOS)
     include_directories(${TRILINOS_INCLUDE_DIR})
     add_executable(trilinos trilinos.cpp meshes.cpp)
     target_link_libraries(trilinos bempp
@@ -25,6 +21,7 @@ add_executable(rhs_assembly rhs_assembly.cpp)
 add_executable(superposition superposition.cpp meshes.cpp)
 add_executable(calderon calderon.cpp meshes.cpp)
 add_executable(physical_test physical_test.cpp meshes.cpp)
+add_executable(tutorial_dirichlet tutorial_dirichlet.cpp)
 target_link_libraries(traversal bempp)
 target_link_libraries(traversal_benchmark bempp)
 target_link_libraries(gmsh_import bempp)
@@ -34,6 +31,7 @@ target_link_libraries(rhs_assembly bempp)
 target_link_libraries(superposition bempp)
 target_link_libraries(calderon bempp)
 target_link_libraries(physical_test bempp)
+target_link_libraries(tutorial_dirichlet bempp)
 
 if (WITH_ALUGRID)
     add_executable(extract_surface_grid extract_surface_grid.cpp)

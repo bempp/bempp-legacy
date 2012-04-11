@@ -1,5 +1,4 @@
-
-// Copyright (C) 2011 by the BEM++ Authors
+// Copyright (C) 2011-2012 by the BEM++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -19,24 +18,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_dune_hpp
-#define bempp_dune_hpp
+#ifndef config_alugrid_hpp
+#define config_alugrid_hpp
 
-#include "config_alugrid.hpp"
-
-#include <memory>
-#include <stack> // fix a bug in foamgrid -- this header is not included where it should be
-#include <dune/foamgrid/foamgrid.hh>
+#cmakedefine WITH_ALUGRID
 #ifdef WITH_ALUGRID
-#include <dune/grid/alugrid.hh>
+#define HAVE_ALUGRID 1
+#define ENABLE_ALUGRID 1
 #endif
-
-namespace Bempp
-{
-typedef Dune::FoamGrid<3 /* dimWorld */> Default2dIn3dDuneGrid;
-#ifdef WITH_ALUGRID
-typedef Dune::ALUSimplexGrid<3 /*dimGrid */, 3 /* dimWorld */> Default3dIn3dDuneGrid;
-#endif
-} // namespace Bempp
 
 #endif

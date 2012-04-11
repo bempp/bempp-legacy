@@ -1,5 +1,7 @@
 #include "grid_function.hpp"
 
+#include "config_trilinos.hpp"
+
 #include "assembly_options.hpp"
 #include "discrete_scalar_valued_linear_operator.hpp"
 #include "identity_operator.hpp"

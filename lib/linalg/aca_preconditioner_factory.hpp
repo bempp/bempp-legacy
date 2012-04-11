@@ -1,5 +1,4 @@
-
-// Copyright (C) 2011 by the BEM++ Authors
+// Copyright (C) 2011-2012 by the BEM++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -19,24 +18,35 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_dune_hpp
-#define bempp_dune_hpp
 
-#include "config_alugrid.hpp"
+#ifndef aca_preconditioner_factory_hpp
+#define	aca_preconditioner_factory_hpp
 
-#include <memory>
-#include <stack> // fix a bug in foamgrid -- this header is not included where it should be
-#include <dune/foamgrid/foamgrid.hh>
-#ifdef WITH_ALUGRID
-#include <dune/grid/alugrid.hh>
-#endif
+#include "config_trilinos.hpp"
 
-namespace Bempp
-{
-typedef Dune::FoamGrid<3 /* dimWorld */> Default2dIn3dDuneGrid;
-#ifdef WITH_ALUGRID
-typedef Dune::ALUSimplexGrid<3 /*dimGrid */, 3 /* dimWorld */> Default3dIn3dDuneGrid;
-#endif
-} // namespace Bempp
 
-#endif
+#ifdef WITH_TRILINOS
+
+#include "Teuchos_RCP.hpp"
+#include "Thyra_PreconditionerBase.hpp"
+#include "../assembly/discrete_scalar_valued_linear_operator.hpp"
+
+namespace Bempp {
+
+template<typename ValueType>
+class AcaPreconditionerFactory {
+    
+    public:        
+    static Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > AcaOperatorToPreconditioner
+        (DiscreteScalarValuedLinearOperator<ValueType>& discreteOperator, const double delta=0.1);
+        
+        
+};
+
+
+}
+
+#endif /* WITH_TRILINOS */
+
+#endif	/* aca_preconditioner_factory_hpp */
+

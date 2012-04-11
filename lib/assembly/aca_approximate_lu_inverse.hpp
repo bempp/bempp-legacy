@@ -1,3 +1,5 @@
+#include "config_trilinos.hpp"
+
 #ifndef bempp_aca_approximate_lu_inverse_hpp
 #define bempp_aca_approximate_lu_inverse_hpp
 

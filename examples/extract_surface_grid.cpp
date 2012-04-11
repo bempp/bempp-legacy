@@ -18,13 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <armadillo>
-#include <deque>
-#include <iostream>
-#include <memory>
-#include <set>
-#include <utility>
-#include <vector>
+#include "config_alugrid.hpp"
 
 #include "grid/concrete_grid.hpp"
 #include "grid/dune.hpp"
@@ -34,6 +28,14 @@
 #include "grid/grid.hpp"
 #include "grid/grid_factory.hpp"
 #include "grid/grid_view.hpp"
+
+#include <armadillo>
+#include <deque>
+#include <iostream>
+#include <memory>
+#include <set>
+#include <utility>
+#include <vector>
 
 using namespace Bempp;
 
@@ -129,6 +131,8 @@ void doStuff()
 
 int main()
 {
+#ifdef WITH_ALUGRID
     doStuff<Default3dIn3dDuneGrid>();
+#endif
 }
 

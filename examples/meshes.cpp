@@ -47,6 +47,8 @@ loadMesh(MeshVariant mv)
     const char CUBE_12_FNAME[] = "cube-12.msh";
     const char CUBE_12_REORIENTED_FNAME[] = "cube-12-reoriented.msh";
     const char CUBE_384_FNAME[] = "cube-384.msh";
+    const char SPHERE_614_FNAME[] = "sphere-614.msh";
+    const char SPHERE_2590_FNAME[] = "sphere-2590.msh";
     const char CUBE_6144_FNAME[] = "cube-6144.msh";
     const char CUBE_24576_FNAME[] = "cube-24576.msh";
     const char SPHERE_152_FNAME[] = "sphere-152.msh";
@@ -76,6 +78,10 @@ loadMesh(MeshVariant mv)
         MESH_FNAME = CUBE_12_REORIENTED_FNAME; break;
     case CUBE_384:
         MESH_FNAME = CUBE_384_FNAME; break;
+    case SPHERE_614:
+    	MESH_FNAME = SPHERE_614_FNAME; break;
+    case SPHERE_2590:
+    	MESH_FNAME = SPHERE_2590_FNAME; break;
     case CUBE_6144:
         MESH_FNAME = CUBE_6144_FNAME; break;
     case CUBE_24576:

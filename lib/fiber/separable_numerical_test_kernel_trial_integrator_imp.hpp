@@ -1,3 +1,5 @@
+#include "config_opencl.hpp"
+
 #include "separable_numerical_test_kernel_trial_integrator.hpp" // To keep IDEs happy
 
 #include "array_2d.hpp"

@@ -40,6 +40,8 @@ enum MeshVariant
     CUBE_12,
     CUBE_12_REORIENTED, // all elements oriented so that normals point outwards
     CUBE_384,
+    SPHERE_614,
+    SPHERE_2590,
     CUBE_6144,
     CUBE_24576,
     SPHERE_152,
