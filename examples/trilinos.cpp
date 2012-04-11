@@ -32,9 +32,11 @@
 #include "assembly/discrete_scalar_valued_linear_operator.hpp"
 #include "assembly/discrete_scalar_valued_source_term.hpp"
 #include "assembly/source_term.hpp"
+#include "space/piecewise_constant_scalar_space.hpp"
 
 #include "assembly/identity_operator.hpp"
 #include "assembly/double_layer_potential_3d.hpp"
+#include "assembly/single_layer_potential_3d.hpp"
 #include "assembly/linear_operator_superposition.hpp"
 #include "linalg/aca_preconditioner_factory.hpp"
 #include "linalg/default_iterative_solver.hpp"
@@ -98,7 +100,7 @@ int main()
 
     // OPTIONS CONTROLLING THE EXECUTION OF THE SCRIPT
     // Mesh to use
-    const MeshVariant meshVariant = CUBE_384;
+    const MeshVariant meshVariant = SPHERE_2590;
     // If true, test whether the discrete linear operator is implemented correctly
     const bool testLinearProperties = false;
     // If true, compare results obtained with the direct and iterative solvers
@@ -108,12 +110,16 @@ int main()
 
     std::auto_ptr<Grid> grid = loadMesh(meshVariant);
 
-    PiecewiseLinearContinuousScalarSpace<double> space(*grid);
+    //PiecewiseLinearContinuousScalarSpace<double> space(*grid);
+    PiecewiseConstantScalarSpace<double> space(*grid);
+
     space.assignDofs();
 
     AssemblyOptions assemblyOptions;
 
     AcaOptions acaOptions;
+    acaOptions.eps=1E-3;
+    acaOptions.eta=1.2;
 /*
     acaOptions.eps = 1e-4;
     acaOptions.maximumRank = 10000;
@@ -127,6 +133,9 @@ int main()
     assemblyOptions.setSingularIntegralCaching(AssemblyOptions::YES);
 
     Fiber::AccuracyOptions accuracyOptions; // default
+    //accuracyOptions.regular.mode=accuracyOptions.regular.EXACT_ORDER;
+    //accuracyOptions.regular.order=8;
+
     Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, GeometryFactory>
             factory(accuracyOptions);
 
@@ -135,9 +144,10 @@ int main()
     typedef std::auto_ptr<ElementaryLinearOperator<double> > LinearOperatorPtr;   
     LinearOperatorPtr halfId(new IdentityOperator<double>);
     halfId->scale(0.5);
-    LinearOperatorPtr potential(new DoubleLayerPotential3D<double>);
+    //LinearOperatorPtr potential(new DoubleLayerPotential3D<double>);
+    SingleLayerPotential3D<double> lhsOperator;
 
-    LinearOperatorSuperposition<double> lhsOperator(halfId, potential);
+    //LinearOperatorSuperposition<double> lhsOperator(halfId, potential);
 
     // Generate discrete linear operator
 
@@ -166,8 +176,8 @@ int main()
     // DefaultIterativeSolver<double> iterativeSolver(*discreteLhs,srcTerms);
 
 
-    //iterativeSolver.addPreconditioner(AcaPreconditionerFactory<double>::AcaOperatorToPreconditioner(*discreteLhs,1E-3));
-    iterativeSolver.initializeSolver(defaultGmresParameterList(1E-5));
+    //iterativeSolver.addPreconditioner(AcaPreconditionerFactory<double>::AcaOperatorToPreconditioner(*discreteLhs,0.1));
+    iterativeSolver.initializeSolver(defaultGmresParameterList(1E-8));
     //iterativeSolver.initializeSolver(Teuchos::getParametersFromXmlFile("trilinos-belos.xml"));
     iterativeSolver.solve();
     std::cout << iterativeSolver.getSolverMessage() << std::endl;
