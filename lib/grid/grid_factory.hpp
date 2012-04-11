@@ -39,10 +39,21 @@ class Grid;
 struct GridParameters {
     /** \brief %Grid topology */
     enum Topology {
-        LINEAR, /**< \brief one-dimensional grid */
-        TRIANGULAR, /**< \brief grid composed of triangular elements */
-        QUADRILATERAL, /**< \brief grid composed of quadrilateral elements */
-        HYBRID /**< \brief grid composed (potentially) both of triangular and quadrilateral elements */
+        /** \brief one-dimensional grid embedded in a two-dimensional space */
+        LINEAR,
+        /** \brief two-dimensional grid composed of triangular elements,
+            embedded in a three-dimensional space */
+        TRIANGULAR,
+        /** \brief two-dimensional grid composed of quadrilateral elements,
+            embedded in a three-dimensional space */
+        QUADRILATERAL,
+        /** \brief two-dimensional grid composed (potentially) both of
+            triangular and quadrilateral elements, embedded in a
+            three-dimensional space */
+        HYBRID_2D,
+        /** \brief three-dimensional grid composed of tetrahedral elements,
+            embedded in a three-dimensional space*/
+        TETRAHEDRAL
     } topology;
 };
 

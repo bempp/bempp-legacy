@@ -29,7 +29,7 @@ struct TriangularLevel0IndexSetManager : public TriangularLevel0GridViewManager 
         duneIndexSet(duneGridView.indexSet()) {
     }
 
-    typedef Bempp::DefaultDuneGrid::LevelGridView::IndexSet DuneIndexSet;
+    typedef Bempp::Default2dIn3dDuneGrid::LevelGridView::IndexSet DuneIndexSet;
     const Bempp::IndexSet& bemppIndexSet;
     const DuneIndexSet& duneIndexSet;
 };
@@ -40,7 +40,7 @@ struct TriangularLeafIndexSetManager : public TriangularLeafGridViewManager {
         duneIndexSet(duneGridView.indexSet()) {
     }
 
-    typedef Bempp::DefaultDuneGrid::LeafGridView::IndexSet DuneIndexSet;
+    typedef Bempp::Default2dIn3dDuneGrid::LeafGridView::IndexSet DuneIndexSet;
     const Bempp::IndexSet& bemppIndexSet;
     const DuneIndexSet& duneIndexSet;
 };

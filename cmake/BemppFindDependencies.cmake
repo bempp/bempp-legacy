@@ -46,6 +46,14 @@ include_directories(${CMAKE_SOURCE_DIR}/contrib/dune/dune-grid)
 include_directories(${CMAKE_SOURCE_DIR}/contrib/dune/dune-localfunctions)
 include_directories(${CMAKE_SOURCE_DIR}/contrib/dune/dune-foamgrid)
 
+set(ALUGRID_ROOT_DIR "" CACHE PATH "Full path to the ALUGrid root directory")
+if (WITH_ALUGRID)
+    find_library(ALUGRID_LIBRARY alugrid ${ALUGRID_ROOT_DIR}/lib)
+    include_directories(${ALUGRID_ROOT_DIR}/include
+                        ${ALUGRID_ROOT_DIR}/include/serial)
+    add_definitions(-DWITH_ALUGRID -DHAVE_ALUGRID=1 -DENABLE_ALUGRID)
+endif ()
+
 # OpenCL installation location
 if (WITH_OPENCL)
     find_package(OPENCL)

@@ -29,7 +29,7 @@ class SimpleTriangularGridManager
 {
 public:
     enum { N_ELEMENTS_X = 3, N_ELEMENTS_Y = 4 };
-    typedef Bempp::DefaultDuneGrid DuneGrid;
+    typedef Bempp::Default2dIn3dDuneGrid DuneGrid;
 
     /** Create two identical simple 2D structured Bempp grids composed of 2 * 3 * 4 triangles.
         Store an auto_ptr to the first one as bemppGrid; from the second one,

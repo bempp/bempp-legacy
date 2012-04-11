@@ -14,8 +14,10 @@ inline void makeGridParameters(GridParameters& params, const std::string& topolo
         params.topology = Bempp::GridParameters::TRIANGULAR;
     else if (topology == "quadrilateral")
         params.topology = Bempp::GridParameters::QUADRILATERAL;
-    else if (topology == "hybrid")
-        params.topology = Bempp::GridParameters::HYBRID;
+    else if (topology == "hybrid_2d")
+        params.topology = Bempp::GridParameters::HYBRID_2D;
+    else if (topology == "tetrahedral")
+        params.topology = Bempp::GridParameters::TETRAHEDRAL;
     else
         throw std::runtime_error("Invalid grid topology requested");
 }

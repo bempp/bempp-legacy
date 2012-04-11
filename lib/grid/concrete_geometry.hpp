@@ -22,8 +22,9 @@
 #define bempp_concrete_geometry_hpp
 
 #include "geometry.hpp"
-#include "geometry_type.hpp"
 #include "common.hpp"
+#include "dune.hpp"
+#include "geometry_type.hpp"
 
 #include "../common/not_implemented_error.hpp"
 #include "../fiber/geometrical_data.hpp"
@@ -42,7 +43,29 @@ namespace Bempp
 
 template <typename DuneGeometry> class ConcreteGeometryFactory;
 
-template<typename DuneGeometry>
+// Internal helper function for setting up geometries manually (independently
+// from the grid).
+
+template <typename DuneGeometry>
+void setupDuneGeometry(
+        typename Dune::MakeableInterfaceObject<DuneGeometry>::ImplementationType& duneGeometry,
+        const GeometryType& type,
+        const std::vector<Dune::FieldVector<ctype, DuneGeometry::dimensionworld> >& corners)
+{
+    throw std::runtime_error("setupDuneGeometry() is only supported for a "
+                             "small number of Dune geometry classes");
+}
+
+template <>
+void setupDuneGeometry<Default2dIn3dDuneGrid::Codim<0>::Geometry>(
+        Dune::MakeableInterfaceObject<Default2dIn3dDuneGrid::Codim<0>::Geometry>::ImplementationType& duneGeometry,
+        const GeometryType& type,
+        const std::vector<Dune::FieldVector<ctype, Default2dIn3dDuneGrid::dimensionworld> >& corners)
+{
+    duneGeometry.setup(type, corners);
+}
+
+template <typename DuneGeometry>
 class ConcreteGeometry : public Geometry
 {
     dune_static_assert((int)DuneGeometry::coorddimension ==
@@ -131,7 +154,8 @@ public:
         typedef typename DuneMakeableGeometry::ImplementationType DuneGeometryImp;
 
         DuneGeometryImp newDuneGeometry;
-        newDuneGeometry.setup(type, duneCorners);
+        setupDuneGeometry<DuneGeometry>(newDuneGeometry, type, duneCorners);
+        // newDuneGeometry.setup(type, duneCorners);
         // I wish I could avoid this heap allocation...
         // unfortunately I can't find a way to obtain access from
         // Dune's Geometry<... GeometryImp> to the underlying GeometryImp object

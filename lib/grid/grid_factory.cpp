@@ -32,7 +32,8 @@ namespace Bempp
 {
 
 // Default grid typedef
-typedef ConcreteGrid<DefaultDuneGrid> DefaultGrid;
+typedef ConcreteGrid<Default2dIn3dDuneGrid> Default2dIn3dGrid;
+typedef ConcreteGrid<Default3dIn3dDuneGrid> Default3dIn3dGrid;
 
 std::auto_ptr<Grid> GridFactory::createStructuredGrid(
     const GridParameters& params, const arma::Col<ctype>& lowerLeft,
@@ -65,11 +66,11 @@ std::auto_ptr<Grid> GridFactory::createStructuredGrid(
     duneNElements[0] = nElements(0);
     duneNElements[1] = nElements(1);
 
-    std::auto_ptr<DefaultDuneGrid> apDuneGrid;
+    std::auto_ptr<Default2dIn3dDuneGrid> apDuneGrid;
     // TODO: Support quadrilateral grids using createCubeGrid()
-    apDuneGrid = Dune::BemppStructuredGridFactory<DefaultDuneGrid>::
+    apDuneGrid = Dune::BemppStructuredGridFactory<Default2dIn3dDuneGrid>::
                  createSimplexGrid(duneLowerLeft, duneUpperRight, duneNElements);
-    return std::auto_ptr<Grid>(new DefaultGrid(apDuneGrid.release(), true)); // true -> owns Dune grid
+    return std::auto_ptr<Grid>(new Default2dIn3dGrid(apDuneGrid.release(), true)); // true -> owns Dune grid
 }
 
 std::auto_ptr<Grid> GridFactory::importGmshGrid(
@@ -77,11 +78,21 @@ std::auto_ptr<Grid> GridFactory::importGmshGrid(
     bool verbose, bool insertBoundarySegments)
 {
     // Check arguments
-    if (params.topology != GridParameters::TRIANGULAR)
-        throw std::invalid_argument("GridFactory::importGmshGrid(): unsupported grid topology");
-
-    DefaultDuneGrid* duneGrid = Dune::GmshReader<DefaultDuneGrid>::read(fileName, verbose, insertBoundarySegments);
-    return std::auto_ptr<Grid>(new DefaultGrid(duneGrid, true)); // true -> owns Dune grid
+    if (params.topology == GridParameters::TRIANGULAR)
+    {
+        Default2dIn3dDuneGrid* duneGrid = Dune::GmshReader<Default2dIn3dDuneGrid>
+                ::read(fileName, verbose, insertBoundarySegments);
+        return std::auto_ptr<Grid>(new Default2dIn3dGrid(duneGrid, true)); // true -> owns Dune grid
+    }
+    else if (params.topology == GridParameters::TETRAHEDRAL)
+    {
+        Default3dIn3dDuneGrid* duneGrid = Dune::GmshReader<Default3dIn3dDuneGrid>
+                ::read(fileName, verbose, insertBoundarySegments);
+        return std::auto_ptr<Grid>(new Default3dIn3dGrid(duneGrid, true));
+    }
+    else
+        throw std::invalid_argument("GridFactory::importGmshGrid(): "
+                                    "unsupported grid topology");
 }
 
 std::auto_ptr<Grid> GridFactory::importGmshGrid(
@@ -91,12 +102,25 @@ std::auto_ptr<Grid> GridFactory::importGmshGrid(
     bool verbose, bool insertBoundarySegments)
 {
     // Check arguments
-    if (params.topology != GridParameters::TRIANGULAR)
-        throw std::invalid_argument("GridFactory::importGmshGrid(): unsupported grid topology");
-
-    DefaultDuneGrid* duneGrid = Dune::GmshReader<DefaultDuneGrid>::read(
-                                    fileName, boundaryId2PhysicalEntity, elementIndex2PhysicalEntity, verbose, insertBoundarySegments);
-    return std::auto_ptr<Grid>(new DefaultGrid(duneGrid, true)); // true -> owns Dune grid
+    if (params.topology == GridParameters::TRIANGULAR)
+    {
+        Default2dIn3dDuneGrid* duneGrid = Dune::GmshReader<Default2dIn3dDuneGrid>
+                ::read(fileName,
+                       boundaryId2PhysicalEntity, elementIndex2PhysicalEntity,
+                       verbose, insertBoundarySegments);
+        return std::auto_ptr<Grid>(new Default2dIn3dGrid(duneGrid, true)); // true -> owns Dune grid
+    }
+    else if (params.topology == GridParameters::TETRAHEDRAL)
+    {
+        Default3dIn3dDuneGrid* duneGrid = Dune::GmshReader<Default3dIn3dDuneGrid>
+                ::read(fileName,
+                       boundaryId2PhysicalEntity, elementIndex2PhysicalEntity,
+                       verbose, insertBoundarySegments);
+        return std::auto_ptr<Grid>(new Default3dIn3dGrid(duneGrid, true)); // true -> owns Dune grid
+    }
+    else
+        throw std::invalid_argument("GridFactory::importGmshGrid(): "
+                                    "unsupported grid topology");
 }
 
 } // namespace Bempp

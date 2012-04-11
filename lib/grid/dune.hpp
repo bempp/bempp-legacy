@@ -25,10 +25,14 @@
 #include <memory>
 #include <stack> // fix a bug in foamgrid -- this header is not included where it should be
 #include <dune/foamgrid/foamgrid.hh>
+#ifdef WITH_ALUGRID
+#include <dune/grid/alugrid.hh>
+#endif
 
 namespace Bempp
 {
-typedef Dune::FoamGrid<3> DefaultDuneGrid; // 3 -> dimWorld
+typedef Dune::FoamGrid<3 /* dimWorld */> Default2dIn3dDuneGrid;
+typedef Dune::ALUSimplexGrid<3 /*dimGrid */, 3 /* dimWorld */> Default3dIn3dDuneGrid;
 } // namespace Bempp
 
 #endif

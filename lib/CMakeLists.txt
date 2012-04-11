@@ -52,6 +52,10 @@ if (WITH_TRILINOS)
     include_directories(${TRILINOS_INCLUDE_DIR})
 endif ()
 
+if (WITH_ALUGRID)
+    target_link_libraries (bempp ${ALUGRID_LIBRARY})
+endif ()
+
 # Add a target to generate API documentation with Doxygen
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
