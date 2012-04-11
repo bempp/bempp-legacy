@@ -16,7 +16,7 @@ enum BasisDataType
 template <typename ValueType>
 struct BasisData
 {
-    // values(i,j,l) = (f_k)_i(x_l) ->
+    // values(i,k,l) = (f_k)_i(x_l) ->
     // ith component of kth basis function at lth point
     arma::Cube<ValueType> values;
     // derivatives(i,j,k,l) = (d_j (f_k)_i)(x_l) ->
