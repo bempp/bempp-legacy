@@ -31,13 +31,8 @@
 #include "assembly/identity_operator.hpp"
 #include "assembly/single_layer_potential_3d.hpp"
 #include "assembly/double_layer_potential_3d.hpp"
-#include "assembly/adjoint_double_layer_potential_3d.hpp"
-#include "assembly/hypersingular_operator_3d.hpp"
-#include "assembly/source_term.hpp"
-#include "assembly/discrete_scalar_valued_source_term.hpp"
 
 #include "fiber/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
-#include "fiber/ordinary_function.hpp"
 
 #include "grid/geometry.hpp"
 #include "grid/geometry_factory.hpp"
@@ -47,29 +42,9 @@
 
 using namespace Bempp;
 
-class MyFunctor
-{
-public:
-    // Type of the function's values (e.g. float or std::complex<double>)
-    typedef double ValueType;
-
-    // Number of components of the function's argument
-    static const int argumentDimension = 3;
-
-    // Number of components of the function's result
-    static const int resultDimension = 1;
-
-    // Evaluate the function at the point "point" and store result in
-    // the array "result"
-    inline void evaluate(const arma::Col<ValueType>& point,
-                  arma::Col<ValueType>& result) const {
-//        result(0) = sin(0.5 * point(0) * cos(0.25 * point(2))) * cos(point(1));
-        result(0) = 1.0;
-    }
-};
 
 /**
-  This script solves the Laplace equation
+  Solve the Laplace equation
 
     \nabla^2 V = 0
 
@@ -86,71 +61,52 @@ public:
     V(x) = 1/|x|,
 
   where |x| is the distance from the centre of the sphere. Thus, the derivative
-  of V on the surface in the (outer) normal direction is -1.
+  of V on the surface in the (outer) normal direction is -1.  More details about this example are given
+  in the tutorial.
   */
-
-int main()
-{
+void tutorial_dirichlet1(){
+	// Load the mesh
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
+    std::auto_ptr<Grid> grid = GridFactory::importGmshGrid(params, "sphere-614.msh", false, false);
 
-//    std::auto_ptr<Grid> grid = GridFactory::importGmshGrid(params, "sphere-614.msh", false, false);
-    std::auto_ptr<Grid> grid = GridFactory::importGmshGrid(params, "cube-12-reoriented.msh", false, false);
+    // Define the approximation spaces
+    PiecewiseLinearContinuousScalarSpace<double> linearCtsSpace(*grid);
+    PiecewiseConstantScalarSpace<double> constSpace(*grid);
 
-    PiecewiseLinearContinuousScalarSpace<double> space(*grid);
-    space.assignDofs();
+    linearCtsSpace.assignDofs();
+    constSpace.assignDofs();
 
-    AssemblyOptions assemblyOptions;
-//    assemblyOptions.switchToDense();
-//    assemblyOptions.switchToTbb();
-//    assemblyOptions.setSingularIntegralCaching(AssemblyOptions::YES);
+    // Representations of the continuous operators
+    SingleLayerPotential3D<double> slp;
+    DoubleLayerPotential3D<double> dlp;
+    IdentityOperator<double> id;
 
-//    Fiber::OpenClOptions openClOptions;
-    //    assemblyOptions.switchToOpenCl(openClOptions);
+    // Initialise Fiber
+    Fiber::AccuracyOptions accuracyOptions; // just use the default options
+    Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, GeometryFactory> factory(accuracyOptions);
 
-    Fiber::AccuracyOptions accuracyOptions; // default
-    Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, GeometryFactory>
-            factory(accuracyOptions);
-
-    typedef std::auto_ptr<LinearOperator<double> > LinearOperatorPtr;
-
-    arma::Col<double> solution;
-    LinearOperatorPtr slp(new SingleLayerPotential3D<double>);
-    LinearOperatorPtr dlp(new DoubleLayerPotential3D<double>);
-    LinearOperatorPtr id(new IdentityOperator<double>);
-
-    typedef DiscreteScalarValuedLinearOperator<double> DiscreteLinearOperator;
-    typedef std::auto_ptr<DiscreteLinearOperator> DiscreteLinearOperatorPtr;
-
+    AssemblyOptions assemblyOptions; // again, use the default
+    typedef std::auto_ptr<DiscreteScalarValuedLinearOperator<double> > DiscreteLinearOperatorPtr;
+    // build the weak forms of the operators
     DiscreteLinearOperatorPtr discreteSlp =
-			slp->assembleWeakForm(space, space, factory, assemblyOptions);
+			slp.assembleWeakForm(constSpace, linearCtsSpace, factory, assemblyOptions);
 	DiscreteLinearOperatorPtr discreteDlp =
-			dlp->assembleWeakForm(space, space, factory, assemblyOptions);
+			dlp.assembleWeakForm(constSpace, linearCtsSpace, factory, assemblyOptions);
 	DiscreteLinearOperatorPtr discreteId =
-			id->assembleWeakForm(space, space, factory, assemblyOptions);
+			id.assembleWeakForm(constSpace, linearCtsSpace, factory, assemblyOptions);
 
-	arma::Mat<double> slpMatrix = discreteSlp->asMatrix();
-	arma::Mat<double> dlpMatrix = discreteDlp->asMatrix();
-	arma::Mat<double> idMatrix = discreteId->asMatrix();
+	// Assemble the linear system ...
+	arma::Mat<double> M = -0.5 * discreteId->asMatrix() + discreteDlp->asMatrix();
+	arma::Mat<double> V = discreteSlp->asMatrix();
+    arma::Col<double> g = arma::ones(linearCtsSpace.globalDofCount(), 1);
 
-	arma::Mat<double> lhs = slpMatrix;
+	// and solve it
+    arma::Col<double> b = arma::solve(V, M * g);
+	std::cout<<"Neumann coefficients"<<b.t();
 
-//	MyFunctor myfn;
-//    Fiber::OrdinaryFunction<MyFunctor> function(myfn);
-//    SourceTerm<double> sourceTerm;
-//    std::auto_ptr<DiscreteScalarValuedSourceTerm<double> > result =
-//            sourceTerm.assembleWeakForm(function, space, factory, assemblyOptions);
+}
 
-    arma::Col<double> g = arma::ones(idMatrix.n_cols);
-    std::cout<<g;
-    std::cout<<"ones"<<idMatrix * arma::ones(idMatrix.n_cols, 1);
-
-    arma::Col<double> rhs = (-0.5 * idMatrix + dlpMatrix) * g;
-	solution = arma::solve(lhs, rhs);
-	std::cout<<"solution"<<solution;
-
-//	arma::Col<double> deviation = solution - (-1.);
-//    // % in Armadillo -> elementwise multiplication
-//    double stdDev = sqrt(arma::accu(deviation % deviation) / solution.n_rows);
-//    std::cout << "Standard deviation: " << stdDev << std::endl;
+int main() {
+	tutorial_dirichlet1();
 }

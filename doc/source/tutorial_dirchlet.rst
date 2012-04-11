@@ -22,6 +22,9 @@ to the Neumann data, :math:`\gamma_1^{ext}u \approx b = \sum_i b_i \phi_i` such 
 
 .. math:: \sum_i g_i (V \phi_i, \phi_j) = \sum_i b_i((-\frac{1}{2} I + K)\phi_i, \phi_j) \qquad \forall j 
 
+Note that the ellipticity of :math:`V` means that the problem is well-posed.  
+Right now, we are not concerned with whether it will give us a good approximation.
+
 Implementation
 --------------
 
