@@ -159,8 +159,8 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
     std::auto_ptr<Geometry> geometryB(m_geometryFactory.make());
 
     arma::Cube<ValueType> testValues, trialValues;
-    Array4D<ValueType> kernelValues(kernelRowCount, kernelColCount,
-                                    testPointCount, trialPointCount);
+    Array4D<ValueType> kernelValues(kernelRowCount, testPointCount,
+                                    kernelColCount, trialPointCount);
 
     result.set_size(testDofCount, trialDofCount, elementACount);
 
@@ -208,7 +208,7 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
                                 sum +=  m_testQuadWeights[testPoint] *
                                         testGeomData.integrationElements(testPoint) *
                                         testValues(dim, testDof, testPoint) *
-                                        kernelValues(0, 0, testPoint, trialPoint) *
+                                        kernelValues(0, testPoint, 0, trialPoint) *
                                         trialValues(dim, trialDof, trialPoint) *
                                         trialGeomData.integrationElements(trialPoint) *
                                         m_trialQuadWeights[trialPoint];
@@ -226,7 +226,7 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
                                     sum +=  m_testQuadWeights[testPoint] *
                                             testGeomData.integrationElements(testPoint) *
                                             testValues(testDim, testDof, testPoint) *
-                                            kernelValues(testDim, trialDim, testPoint, trialPoint) *
+                                            kernelValues(testDim, testPoint, trialDim, trialPoint) *
                                             trialValues(trialDim, trialDof, trialPoint) *
                                             trialGeomData.integrationElements(trialPoint) *
                                             m_trialQuadWeights[trialPoint];
@@ -608,8 +608,8 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
     std::auto_ptr<Geometry> trialGeometry(m_geometryFactory.make());
 
     arma::Cube<ValueType> testValues, trialValues;
-    Array4D<ValueType> kernelValues(kernelRowCount, kernelColCount,
-                                    testPointCount, trialPointCount);
+    Array4D<ValueType> kernelValues(kernelRowCount, testPointCount,
+                                    kernelColCount, trialPointCount);
 
     result.set_size(testDofCount, trialDofCount, geometryPairCount);
 
@@ -639,7 +639,7 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
                                 sum +=  m_testQuadWeights[testPoint] *
                                         testGeomData.integrationElements(testPoint) *
                                         testValues(dim, testDof, testPoint) *
-                                        kernelValues(0, 0, testPoint, trialPoint) *
+                                        kernelValues(0, testPoint, 0, trialPoint) *
                                         trialValues(dim, trialDof, trialPoint) *
                                         trialGeomData.integrationElements(trialPoint) *
                                         m_trialQuadWeights[trialPoint];
@@ -657,7 +657,7 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
                                     sum +=  m_testQuadWeights[testPoint] *
                                             testGeomData.integrationElements(testPoint) *
                                             testValues(testDim, testDof, testPoint) *
-                                            kernelValues(testDim, trialDim, testPoint, trialPoint) *
+                                            kernelValues(testDim, testPoint, trialDim, trialPoint) *
                                             trialValues(trialDim, trialDof, trialPoint) *
                                             trialGeomData.integrationElements(trialPoint) *
                                             m_trialQuadWeights[trialPoint];
@@ -884,7 +884,7 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
                                 sum +=  m_testQuadWeights[testPoint] *
                                         testGeomData.integrationElements(testPoint) *
                                         testValues(dim, testDof, testPoint) *
-                                        kernelValues(0, 0, testPoint, trialPoint) *
+                                        kernelValues(0, testPoint, 0, trialPoint) *
                                         trialValues(dim, trialDof, trialPoint) *
                                         trialGeomData.integrationElements(trialPoint) *
                                         m_trialQuadWeights[trialPoint];
@@ -902,7 +902,7 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
                                     sum +=  m_testQuadWeights[testPoint] *
                                             testGeomData.integrationElements(testPoint) *
                                             testValues(testDim, testDof, testPoint) *
-                                            kernelValues(testDim, trialDim, testPoint, trialPoint) *
+                                            kernelValues(testDim, testPoint, trialDim, trialPoint) *
                                             trialValues(trialDim, trialDof, trialPoint) *
                                             trialGeomData.integrationElements(trialPoint) *
                                             m_trialQuadWeights[trialPoint];
