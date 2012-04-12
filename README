@@ -1,18 +1,19 @@
 BEMPP is a novel open source HPC boundary element library. Coding has started October 2011.
 
 
-The available objects are in an early stage and not yet usable in any application. If you want to compile the code please be aware that we do not yet guarantee that every commit will compile.
+The available objects are in an early stage and not yet recommended for applications. If you want to compile the code please be aware that we do not yet guarantee that every commit will compile.
 
 PREREQUESITES FOR COMPILATION
 
-You need to have the Armadillo C++ Linear Algebra environment installed in a path that can be found by the compiler. Also Boost needs to be installed. 
+You need to have at least the Armadillo C++ Linear Algebra environment installed in a path that can be found by the compiler. Also Boost needs to be installed. 
+To use the full functionality you also need Trilinos and AHMED (see www.bempp.org for further details.)
 
 COMPILATION
 
-1.) Go into the contrib directory and call 'cmake .'. Cmake will now attempt to download Dune and apply a few patches. 
-2.) Go into the main Bempp directory and create a build directory via 'mkdir build'.
-3.) Change into this directory via 'cd build' and call 'cmake ..'
-4.) In the configuration variables give the full filenames of your blas libraries separated by spaces.
-5.) Generate the makefiles and call 'make' to compile everything.
-6.) To get the documentation call 'make doc'. Note that for this Doxygen must be installed.
+1.) Go into the contrib directory and call ‘cmake .’. Cmake will now attempt to download Dune and apply a few patches.
+2.) Go into the main Bempp directory and create a build directory via ‘mkdir build’.
+3.) Change into this directory via ‘cd build’ and call ‘ccmake ..’
+4.) Configure the build as desired.
+5.) Generate the makefiles and call ‘make’ to compile everything.
+6.) To get the class documentation call ‘make doc’. Note that for this Doxygen must be installed.
 
