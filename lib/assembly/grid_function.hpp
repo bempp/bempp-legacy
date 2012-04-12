@@ -26,33 +26,6 @@ class Grid;
 template <int codim> class Entity;
 template <typename ValueType> class Space;
 
-// OUT-OF-DATE COMMENT
-/*
-The GridFunction object has two envisaged applications.
-
-First, its assembleWeakForm() method can be called to evaluate the projections
-of basis functions of a given space on the grid function. This is used in the
-solution of BIEs via the Galerkin method.
-
-This application will essentially be handled by the
-GridFunctionFromExactFunction subclass.
-
-Second, it can be passed to the applyOffSurface() -- or, in future,
-applyOnSurface() -- method of a linear operator. The operator will call the
-GridFunction::evaluate() method. In this application, it is conceivable to use
-both the GridFunctionFromExactFunction and GridFunctionFromCoefficients
-subclasses (e.g. one for known Dirichlet data and the other for calculated
-Neumann data). That's why it is important to have the same interface for both
-subclasses.
-
-Note that in future we will want to handle mixed problems (part-Dirichlet,
-part-Neumann), and then subclasses implementing a combination of exact and
-coefficient-derived functions will be needed. However, the interface will stay
-the same.
-*/
-
-// TODO: We can remove "nonordinary" fiber::function.
-
 /** \brief Function defined on a grid. */
 template <typename ValueType>
 class GridFunction
