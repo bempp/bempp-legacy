@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "discrete_scalar_valued_source_term.hpp"
+#include "vector.hpp"
 
 #include <iostream>
 
@@ -30,7 +30,7 @@ namespace Bempp
 {
 
 template <typename ValueType>
-DiscreteScalarValuedSourceTerm<ValueType>::DiscreteScalarValuedSourceTerm(
+Vector<ValueType>::Vector(
         const arma::Col<ValueType>& vec)
 {
 #ifdef WITH_TRILINOS
@@ -46,17 +46,17 @@ DiscreteScalarValuedSourceTerm<ValueType>::DiscreteScalarValuedSourceTerm(
 }
 
 template <typename ValueType>
-void DiscreteScalarValuedSourceTerm<ValueType>::dump() const
+void Vector<ValueType>::dump() const
 {
 #ifdef WITH_TRILINOS
-    std::cout << asVector() << std::endl; // inefficient
+    std::cout << asArmadilloVector() << std::endl; // inefficient
 #else
     std::cout << m_vec << std::endl;
 #endif
 }
 
 template <typename ValueType>
-arma::Col<ValueType> DiscreteScalarValuedSourceTerm<ValueType>::asVector() const
+arma::Col<ValueType> Vector<ValueType>::asArmadilloVector() const
 {
 #ifdef WITH_TRILINOS
     const size_t size = this->range()->dim();
@@ -71,18 +71,18 @@ arma::Col<ValueType> DiscreteScalarValuedSourceTerm<ValueType>::asVector() const
 
 
 #ifdef COMPILE_FOR_FLOAT
-template class DiscreteScalarValuedSourceTerm<float>;
+template class Vector<float>;
 #endif
 #ifdef COMPILE_FOR_DOUBLE
-template class DiscreteScalarValuedSourceTerm<double>;
+template class Vector<double>;
 #endif
 #ifdef COMPILE_FOR_COMPLEX_FLOAT
 #include <complex>
-template class DiscreteScalarValuedSourceTerm<std::complex<float> >;
+template class Vector<std::complex<float> >;
 #endif
 #ifdef COMPILE_FOR_COMPLEX_DOUBLE
 #include <complex>
-template class DiscreteScalarValuedSourceTerm<std::complex<double> >;
+template class Vector<std::complex<double> >;
 #endif
 
 } // namespace Bempp

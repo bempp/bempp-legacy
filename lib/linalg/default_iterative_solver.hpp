@@ -40,7 +40,7 @@
 
 #include "../assembly/discrete_scalar_valued_linear_operator.hpp"
 #include "../assembly/discrete_aca_scalar_valued_linear_operator.hpp"
-#include "../assembly/discrete_scalar_valued_source_term.hpp"
+#include "../assembly/vector.hpp"
 
 
 
@@ -55,9 +55,9 @@ public:
 
 
     DefaultIterativeSolver(DiscreteScalarValuedLinearOperator<ValueType>& discreteOperator,
-                       DiscreteScalarValuedSourceTerm<ValueType>& rhs);
+                       Vector<ValueType>& rhs);
     DefaultIterativeSolver(DiscreteScalarValuedLinearOperator<ValueType>& discreteOperator,
-                       std::vector<DiscreteScalarValuedSourceTerm<ValueType>* >& rhs);
+                       std::vector<Vector<ValueType>* >& rhs);
 
 
     void addPreconditioner(Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > preconditioner);

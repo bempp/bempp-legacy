@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_discrete_scalar_valued_source_term_hpp
-#define bempp_discrete_scalar_valued_source_term_hpp
+#ifndef bempp_vector_hpp
+#define bempp_vector_hpp
 
 #include "config_trilinos.hpp"
 
@@ -31,21 +31,26 @@
 
 namespace Bempp {
 
+/** \brief Encapsulation of a vector.
+
+  If BEM++ is compiled with Trilinos, Vector is implemented by means of
+  Thyra::DefaultSpmdVector; otherwise an Armadillo-based fallback
+  implementation is used. */
 template <typename ValueType>
-class DiscreteScalarValuedSourceTerm
+class Vector
 #ifdef WITH_TRILINOS
         : public Thyra::DefaultSpmdVector<ValueType>
 #endif
 {
 public:
     /** Construct the discrete source term from an Armadillo vector. */
-    DiscreteScalarValuedSourceTerm(const arma::Col<ValueType>& vec);
+    Vector(const arma::Col<ValueType>& vec);
 
     /** \brief Write a textual representation of the source term to standard output. */
     void dump() const;
 
     /** \brief Vector representation of the source term. */
-    arma::Col<ValueType> asVector() const;
+    arma::Col<ValueType> asArmadilloVector() const;
 
 private:
 #ifndef WITH_TRILINOS

@@ -30,7 +30,7 @@
 #include "assembly/assembly_options.hpp"
 #include "assembly/discrete_aca_scalar_valued_linear_operator.hpp"
 #include "assembly/discrete_scalar_valued_linear_operator.hpp"
-#include "assembly/discrete_scalar_valued_source_term.hpp"
+#include "assembly/vector.hpp"
 #include "space/piecewise_constant_scalar_space.hpp"
 
 #include "assembly/identity_operator.hpp"
@@ -160,17 +160,16 @@ int main()
     MyFunctor functor;
     Fiber::OrdinaryFunction<MyFunctor> function(functor);
 
-    typedef DiscreteScalarValuedSourceTerm<double> DiscreteSourceTerm;
-    typedef std::auto_ptr<DiscreteSourceTerm> DiscreteSourceTermPtr;
+    typedef std::auto_ptr<Vector<double> > VectorPtr;
 
     arma::Col<double> rhsVector(space.globalDofCount());
     rhsVector.fill(1.);
-    DiscreteSourceTermPtr discreteRhs(new DiscreteSourceTerm(rhsVector));
+    VectorPtr discreteRhs(new Vector<double>(rhsVector));
 
     DefaultIterativeSolver<double> iterativeSolver(*discreteLhs,*discreteRhs);
 
     // It is also possible to initialize with a vector of right-hand sides for block-solves, e.g.
-    // std::vector<DiscreteScalarValuedSourceTerm<double>* > srcTerms;
+    // std::vector<Vector<double>* > srcTerms;
     // srcTerms.push_back(&(*discreteRhs));
     // DefaultIterativeSolver<double> iterativeSolver(*discreteLhs,srcTerms);
 
@@ -186,7 +185,6 @@ int main()
     {
         // Solve the system using Armadillo
         arma::Mat<double> lhsMatrix = discreteLhs->asMatrix();
-        arma::Col<double> rhsVector = discreteRhs->asVector();
         arma::Col<double> armaSolution = arma::solve(lhsMatrix, rhsVector);
 
         arma::Mat<double> belosSolution=iterativeSolver.getResult();

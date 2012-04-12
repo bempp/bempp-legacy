@@ -43,7 +43,7 @@ namespace Bempp {
 
 template<typename ValueType>
 DefaultIterativeSolver<ValueType>::DefaultIterativeSolver(DiscreteScalarValuedLinearOperator<ValueType>& discreteOperator,
-                   DiscreteScalarValuedSourceTerm<ValueType>& rhs):
+                   Vector<ValueType>& rhs):
     m_discreteOperator(discreteOperator),
     m_rhs(&rhs,false){
 
@@ -53,7 +53,7 @@ DefaultIterativeSolver<ValueType>::DefaultIterativeSolver(DiscreteScalarValuedLi
 
 template<typename ValueType>
 DefaultIterativeSolver<ValueType>::DefaultIterativeSolver(DiscreteScalarValuedLinearOperator<ValueType>& discreteOperator,
-                   std::vector<DiscreteScalarValuedSourceTerm<ValueType>* >& rhs) :
+                   std::vector<Vector<ValueType>* >& rhs) :
     m_discreteOperator(discreteOperator) {
 
     const size_t nrhs = rhs.size();
