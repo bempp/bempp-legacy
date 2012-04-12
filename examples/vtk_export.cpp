@@ -60,7 +60,7 @@ int main()
     arma::Mat<double> data(1,nVertices);
     arma::Col<double> elementCenter;
 
-    cout << "Traversing the grid..." << endl;
+    cout << "Traversing the grid and evaluating the output function..." << endl;
     std::auto_ptr<EntityIterator<2> > leafVertexIt(leafGridView->entityIterator<2>());
     while (!leafVertexIt->finished()) {
         const Entity<2>& e = leafVertexIt->entity();
@@ -72,10 +72,10 @@ int main()
         leafVertexIt->next();
     }
 
-    cout << "Gathering data..." << endl;
+    cout << "Passing data to VtkWriter..." << endl;
     std::auto_ptr<VtkWriter> vtkWriter = leafGridView->vtkWriter();
     vtkWriter->addVertexData(data, "z_coord");
-    cout << "Exporting data..." << endl;
+    cout << "Exporting data into file..." << endl;
     std::string outputFname = vtkWriter->write("vtkhead");
     cout << "Data exported to '" << outputFname << "'." << endl;
 }
