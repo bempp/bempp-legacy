@@ -24,7 +24,6 @@
 #include "assembly_options.hpp"
 #include "discrete_dense_linear_operator.hpp"
 #include "discrete_linear_operator_superposition.hpp"
-#include "discrete_vector_valued_linear_operator_superposition.hpp"
 #include "elementary_linear_operator.hpp"
 
 #include "../common/auto_timer.hpp"
@@ -103,28 +102,6 @@ void LinearOperatorSuperposition<ValueType>::init(
                                                // somewhat difficult to follow...
 
     }
-}
-
-template <typename ValueType>
-std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
-LinearOperatorSuperposition<ValueType>::assembleOperator(
-        const arma::Mat<ctype>& testPoints,
-        const Space<ValueType>& trialSpace,
-        const LocalAssemblerFactory& factory,
-        const AssemblyOptions& options) const
-{
-    typedef DiscreteVectorValuedLinearOperator<ValueType> DiscreteLinOp;
-    typedef DiscreteVectorValuedLinearOperatorSuperposition<ValueType>
-            DiscreteSuperposition;
-
-    boost::ptr_vector<DiscreteLinOp> discreteOps;
-    for (int i = 0; i < m_terms.size(); ++i)
-    {
-        std::auto_ptr<DiscreteLinOp> discreteOp =
-                m_terms[i].assembleOperator(testPoints, trialSpace, factory, options);
-        discreteOps.push_back(discreteOp);
-    }
-    return std::auto_ptr<DiscreteLinOp>(new DiscreteSuperposition(discreteOps));
 }
 
 template <typename ValueType>

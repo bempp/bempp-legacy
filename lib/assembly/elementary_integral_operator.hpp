@@ -91,13 +91,6 @@ public:
             LocalAssembler& assembler,
             const AssemblyOptions& options) const;
 
-    virtual std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
-    assembleOperator(
-            const arma::Mat<ctype>& testPoints,
-            const Space<ValueType>& trialSpace,
-            const LocalAssemblerFactory& factory,
-            const AssemblyOptions& options) const;
-
     // We might define a superclass IntegralOperator that might represent
     // a superposition of elementary linear operators (defined at points
     // off surface). Then the virtual attribute here would be useful.
@@ -116,25 +109,9 @@ private:
     virtual const Fiber::Expression<ValueType>& trialExpression() const = 0;
 
     /** @}
-        \name Operator assembly
-        @{ */
-    std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
-    assembleOperatorInDenseMode(
-            const arma::Mat<ctype>& testPoints,
-            const Space<ValueType>& trialSpace,
-            LocalAssembler& assembler,
-            const AssemblyOptions& options) const;
-    std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
-    assembleOperatorInAcaMode(
-            const arma::Mat<ctype>& testPoints,
-            const Space<ValueType>& trialSpace,
-            LocalAssembler& assembler,
-            const AssemblyOptions& options) const;
-    std::auto_ptr<DiscreteLinearOperator<ValueType> >
-
-    /** @}
         \name Weak form assembly
         @{ */
+    std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakFormInDenseMode(
             const Space<ValueType>& testSpace,
             const Space<ValueType>& trialSpace,

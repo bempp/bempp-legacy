@@ -42,7 +42,6 @@ namespace Bempp {
 class Grid;
 class GeometryFactory;
 template <typename ValueType> class DiscreteLinearOperator;
-template <typename ValueType> class DiscreteVectorValuedLinearOperator;
 template <typename ValueType> class Space;
 
 /** \brief "Formal" linear operator.
@@ -111,27 +110,6 @@ public:
     virtual std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakForm(
             const Space<ValueType>& testSpace,
-            const Space<ValueType>& trialSpace,
-            const LocalAssemblerFactory& factory,
-            const AssemblyOptions& options) const = 0;
-
-    /** \brief Assemble a discrete representation of the operator.
-
-      Construct a discrete linear operator representing the 3D array
-      \f$L_{ijk}\f$ whose entries have the form
-
-      \f[L_{ijk} = [(L \psi_k)(x_j)]_i,\f]
-
-      where \f$L\f$ is the linear operator represented by this object, \f$S\f$
-      denotes the surface that is the domain of the trial space \f$X\f$ and
-      which is represented by the grid returned by trialSpace.grid(),
-      \f$\psi_k\f$ a function from \f$X\f$, and \f$x_j\f$ is a point from the
-      space \f$T\f$ that is the domain of the test space \f$Y\f$. The symbol
-      \f$[]_i\f$ denotes the \f$i\f$'th component of the quantity in brackets.
-      */
-    virtual std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
-    assembleOperator(
-            const arma::Mat<ctype>& testPoints,
             const Space<ValueType>& trialSpace,
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const = 0;

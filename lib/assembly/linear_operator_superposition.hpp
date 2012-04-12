@@ -63,13 +63,6 @@ public:
     virtual int trialComponentCount() const;
     virtual int testComponentCount() const;
 
-    virtual std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
-    assembleOperator(
-            const arma::Mat<ctype>& testPoints,
-            const Space<ValueType>& trialSpace,
-            const LocalAssemblerFactory& factory,
-            const AssemblyOptions& options) const;
-
     virtual std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakForm(
             const Space<ValueType>& testSpace,

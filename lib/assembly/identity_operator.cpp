@@ -82,18 +82,6 @@ bool IdentityOperator<ValueType>::supportsRepresentation(
 }
 
 template <typename ValueType>
-std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
-IdentityOperator<ValueType>::assembleOperator(
-        const arma::Mat<ctype>& testPoints,
-        const Space<ValueType>& trialSpace,
-        const typename IdentityOperator<ValueType>::LocalAssemblerFactory& factory,
-        const AssemblyOptions& options) const
-{
-    throw std::runtime_error("IdentityOperator::assembleOperator(): "
-                             "not implemented yet");
-}
-
-template <typename ValueType>
 std::auto_ptr<DiscreteLinearOperator<ValueType> >
 IdentityOperator<ValueType>::assembleWeakForm(
         const Space<ValueType>& testSpace,

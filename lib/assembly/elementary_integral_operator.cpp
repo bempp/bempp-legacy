@@ -3,7 +3,6 @@
 #include "aca_global_assembler.hpp"
 #include "assembly_options.hpp"
 #include "discrete_dense_linear_operator.hpp"
-#include "discrete_vector_valued_linear_operator.hpp"
 #include "evaluation_options.hpp"
 #include "grid_function.hpp"
 #include "interpolated_function.hpp"
@@ -128,80 +127,6 @@ ElementaryIntegralOperator<ValueType>::makeAssembler(
 }
 
 template <typename ValueType>
-std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
-ElementaryIntegralOperator<ValueType>::assembleOperator(
-        const arma::Mat<ctype>& testPoints,
-        const Space<ValueType>& trialSpace,
-        const LocalAssemblerFactory& factory,
-        const AssemblyOptions& options) const
-{
-    if (!trialSpace.dofsAssigned())
-        throw std::runtime_error("ElementaryIntegralOperator::assembleOperator(): "
-                                 "degrees of freedom must be assigned "
-                                 "before calling assembleOperator()");
-
-    // Prepare local assembler
-
-    const Grid& grid = trialSpace.grid();
-    std::auto_ptr<GridView> view = grid.leafView();
-    const int elementCount = view->entityCount(0);
-
-    // Gather geometric data
-    Fiber::RawGridGeometry<ValueType> rawGeometry(grid.dim(), grid.dimWorld());
-    view->getRawElementData(
-                rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
-                rawGeometry.auxData());
-
-    // Make geometry factory
-    std::auto_ptr<GeometryFactory> geometryFactory =
-            trialSpace.grid().elementGeometryFactory();
-
-    // Get pointers to test and trial bases of each element
-    std::vector<const Fiber::Basis<ValueType>*> trialBases;
-    trialBases.reserve(elementCount);
-
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-    while (!it->finished())
-    {
-        const Entity<0>& element = it->entity();
-        trialBases.push_back(&trialSpace.basis(element));
-        it->next();
-    }
-
-    // Now create the assembler
-    Fiber::OpenClHandler<ValueType,int> openClHandler(options.openClOptions());
-    if (openClHandler.UseOpenCl())
-        openClHandler.pushGeometry (rawGeometry.vertices(),
-				    rawGeometry.elementCornerIndices());
-    bool cacheSingularIntegrals =
-            (options.singularIntegralCaching() == AssemblyOptions::YES ||
-             (options.singularIntegralCaching() == AssemblyOptions::AUTO &&
-              options.parallelism() == AssemblyOptions::OPEN_CL));
-
-    std::auto_ptr<LocalAssembler> assembler =
-            factory.make(*geometryFactory, rawGeometry,
-                         trialBases,
-                         kernel(), trialExpression(), this->multiplier(),
-                         openClHandler, cacheSingularIntegrals);
-
-    switch (options.operatorRepresentation())
-    {
-    case AssemblyOptions::DENSE:
-        return assembleOperatorInDenseMode(
-                    testPoints, trialSpace, *assembler, options);
-    case AssemblyOptions::ACA:
-        return assembleOperatorInAcaMode(
-                    testPoints, trialSpace, *assembler, options);
-    case AssemblyOptions::FMM:
-        throw std::runtime_error("ElementaryIntegralOperator::assembleOperator(): "
-                                 "assembly mode FMM is not implemented yet");
-    default:
-        throw std::runtime_error("ElementaryIntegralOperator::assembleOperator(): "
-                                 "invalid assembly mode");
-    }
-}
-
-template <typename ValueType>
 std::auto_ptr<DiscreteLinearOperator<ValueType> >
 ElementaryIntegralOperator<ValueType>::assembleWeakForm(
         const Space<ValueType>& testSpace,
@@ -293,32 +218,6 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInternal(
         throw std::runtime_error("ElementaryIntegralOperator::assembleWeakForm(): "
                                  "invalid assembly mode");
     }
-}
-
-template <typename ValueType>
-std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
-ElementaryIntegralOperator<ValueType>::assembleOperatorInDenseMode(
-        const arma::Mat<ctype>& testPoints,
-        const Space<ValueType>& trialSpace,
-        LocalAssembler& assembler,
-        const AssemblyOptions& options) const
-{
-    throw NotImplementedError("ElementaryIntegralOperator::"
-                              "assembleOperatorInDenseMode(): "
-                              "not implemented yet");
-}
-
-template <typename ValueType>
-std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
-ElementaryIntegralOperator<ValueType>::assembleOperatorInAcaMode(
-        const arma::Mat<ctype>& testPoints,
-        const Space<ValueType>& trialSpace,
-        LocalAssembler& assembler,
-        const AssemblyOptions& options) const
-{
-    throw NotImplementedError("ElementaryIntegralOperator::"
-                              "assembleOperatorInAcaMode(): "
-                              "not implemented yet");
 }
 
 template <typename ValueType>
