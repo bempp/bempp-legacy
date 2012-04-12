@@ -130,7 +130,9 @@ int main()
             slp.assembleWeakForm(HminusHalfSpace, HminusHalfSpace, factory, assemblyOptions);
     DiscreteLinearOperatorPtr discreteDlp =
             dlp.assembleWeakForm(HminusHalfSpace, HplusHalfSpace, factory, assemblyOptions);
+#ifdef WITH_TRILINOS
     assemblyOptions.switchToSparse();
+#endif
     DiscreteLinearOperatorPtr discreteId =
             id.assembleWeakForm(HminusHalfSpace, HplusHalfSpace, factory, assemblyOptions);
 
