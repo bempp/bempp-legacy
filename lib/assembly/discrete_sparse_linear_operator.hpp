@@ -31,6 +31,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Thyra_SpmdVectorSpaceBase_decl.hpp>
 class Epetra_FECrsMatrix;
+class Epetra_CrsMatrix;
 #endif
 
 namespace Bempp
@@ -59,6 +60,11 @@ private:
     virtual void addBlock(const std::vector<int>& rows,
                           const std::vector<int>& cols,
                           arma::Mat<ValueType>& block) const;
+
+#ifdef WITH_TRILINOS
+    Epetra_CrsMatrix& epetraMatrix();
+    const Epetra_CrsMatrix& epetraMatrix() const;
+#endif
 
 protected:
 #ifdef WITH_TRILINOS
