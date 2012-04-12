@@ -266,6 +266,7 @@ IdentityOperator<ValueType>::assembleWeakFormInSparseMode(
 //    const int myTestGlobalDofCount = myTestGlobalDofs.size();
 
     const int testGlobalDofCount = testSpace.globalDofCount();
+    const int trialGlobalDofCount = trialSpace.globalDofCount();
     arma::Col<int> nonzeroEntryCountEstimates(testGlobalDofCount);
     nonzeroEntryCountEstimates.fill(0);
 
@@ -295,8 +296,9 @@ IdentityOperator<ValueType>::assembleWeakFormInSparseMode(
 
     Epetra_SerialComm comm; // To be replaced once we begin to use MPI
     Epetra_LocalMap rowMap(testGlobalDofCount, 0 /* index_base */, comm);
+    Epetra_LocalMap colMap(trialGlobalDofCount, 0 /* index_base */, comm);
     std::auto_ptr<Epetra_FECrsMatrix> result(
-                new Epetra_FECrsMatrix(Copy, rowMap,
+                new Epetra_FECrsMatrix(Copy, rowMap, colMap,
                                        nonzeroEntryCountEstimates.memptr()));
 
     // TODO: make each process responsible for a subset of elements
