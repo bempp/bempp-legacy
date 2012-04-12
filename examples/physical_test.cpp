@@ -81,7 +81,7 @@ int main()
 {
 
     // Load a predefined test grid
-    const MeshVariant meshVariant = SPHERE_644;
+    const MeshVariant meshVariant = SPHERE_41440;
     std::auto_ptr<Grid> grid = loadMesh(meshVariant);
 
     // Initialize the spaces
@@ -105,6 +105,13 @@ int main()
 
     // Define the standard integration factory
 
+    Fiber::AccuracyOptions accuracy;
+    Fiber::QuadratureOptions quadOpts;
+
+    quadOpts.mode=quadOpts.EXACT_ORDER;
+    quadOpts.order=5;
+
+    accuracy.doubleRegular=quadOpts;
     Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, GeometryFactory>
             factory;
 
@@ -165,11 +172,11 @@ int main()
 
     // We want a preconditioned solve
 
-    std::cout << "Constructing preconditioner" << std::endl;
-
-    iterativeSolver.addPreconditioner(
-                AcaPreconditionerFactory<double>::
-                AcaOperatorToPreconditioner(*discreteSlp, 0.1));
+//    std::cout << "Constructing preconditioner" << std::endl;
+//
+//    iterativeSolver.addPreconditioner(
+//                AcaPreconditionerFactory<double>::
+//                AcaOperatorToPreconditioner(*discreteSlp, 0.1));
 
     // Initialize the solver with parameters for GMRES
 
