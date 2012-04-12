@@ -25,6 +25,7 @@
 
 #include "assembly_options.hpp"
 #include "discrete_linear_operator.hpp"
+#include "discrete_sparse_linear_operator.hpp"
 #include "identity_operator.hpp"
 
 #include "../common/stl_io.hpp"
@@ -43,6 +44,15 @@
 #include "../space/space.hpp"
 
 #include <set>
+
+#ifdef WITH_TRILINOS
+#include <Amesos.h>
+#include <Amesos_BaseSolver.h>
+#include <Epetra_Map.h>
+#include <Epetra_MultiVector.h>
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_SerialComm.h>
+#endif
 
 // TODO: rewrite the constructor of OpenClHandler.
 // It should take a bool useOpenCl and *in addition to that* openClOptions.
@@ -65,17 +75,55 @@ GridFunction<ValueType>::GridFunction(
             calculateProjections(function, space, factory, assemblyOptions);
 
     AssemblyOptions idAssemblyOptions(assemblyOptions);
-//#ifdef WITH_TRILINOS
-//    assemblyOptions.switchToSparse();
-//#else
+#ifdef WITH_TRILINOS
+    idAssemblyOptions.switchToSparse();
+#else
     idAssemblyOptions.switchToDense();
-//#endif
+#endif
     IdentityOperator<ValueType> id;
     std::auto_ptr<DiscreteLinearOperator<ValueType> > discreteId =
             id.assembleWeakForm(space, space, factory, idAssemblyOptions);
-    // TODO: if WITH_TRILINOS use sparse assembly and do multiplication
-    // using Epetra.
+
+    // Solve the system id * m_coefficients = projections
+#ifdef WITH_TRILINOS
+    DiscreteSparseLinearOperator<ValueType>& sparseDiscreteId =
+            dynamic_cast<DiscreteSparseLinearOperator<ValueType>&>(*discreteId);
+    Epetra_CrsMatrix& epetraMat = sparseDiscreteId.epetraMatrix();
+
+    const int coefficientCount = space.globalDofCount();
+    Epetra_Map map(coefficientCount, 0 /* base index */, Epetra_SerialComm());
+    m_coefficients.set_size(coefficientCount);
+    m_coefficients.fill(0.);
+    Epetra_MultiVector solution(View, map, m_coefficients.memptr(),
+                           coefficientCount /* rowCount */, 1 /* colCount */);
+    Epetra_MultiVector rhs(View, map, projections.memptr(),
+                           coefficientCount /* rowCount */, 1 /* colCount */);
+    Epetra_LinearProblem problem(&epetraMat, &solution, &rhs);
+
+    Amesos amesosFactory;
+    const char* solverName = "Amesos_Klu";
+    if (!amesosFactory.Query(solverName))
+        throw std::runtime_error("GridFunction::GridFunction(): "
+                                 "Amesos_Klu solver not available");
+    std::auto_ptr<Amesos_BaseSolver> solver(
+                amesosFactory.Create("Amesos_Klu", problem));
+    if (!solver.get())
+        throw std::runtime_error("GridFunction::GridFunction(): "
+                                 "Amesos solver could not be constructed");
+
+    if (solver->SymbolicFactorization())
+        throw std::runtime_error("GridFunction::GridFunction(): "
+                                 "Symbolic factorisation with Amesos failed");
+    if (solver->NumericFactorization())
+        throw std::runtime_error("GridFunction::GridFunction(): "
+                                 "Numeric factorisation with Amesos failed");
+    if (solver->Solve())
+        throw std::runtime_error("GridFunction::GridFunction(): "
+                                 "Amesos solve failed");
+
+#else
     m_coefficients = arma::solve(discreteId->asMatrix(), projections);
+#endif
 }
 
 template <typename ValueType>

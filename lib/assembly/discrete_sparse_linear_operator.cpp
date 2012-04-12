@@ -26,6 +26,8 @@
 #include <iostream>
 #include <stdexcept>
 
+#include <Epetra_Map.h>
+#include <Epetra_Vector.h>
 #include <Epetra_FECrsMatrix.h>
 #include <Epetra_SerialComm.h>
 #include <Thyra_SpmdVectorSpaceDefaultBase.hpp>
@@ -132,6 +134,20 @@ void DiscreteSparseLinearOperator<ValueType>::addBlock(
                 if (indices[entry] == cols[col])
                     block(row, col) += values[entry];
     }
+}
+
+template <typename ValueType>
+Epetra_CrsMatrix&
+DiscreteSparseLinearOperator<ValueType>::epetraMatrix()
+{
+    return *m_mat;
+}
+
+template <typename ValueType>
+const Epetra_CrsMatrix&
+DiscreteSparseLinearOperator<ValueType>::epetraMatrix() const
+{
+    return *m_mat;
 }
 
 template <typename ValueType>
