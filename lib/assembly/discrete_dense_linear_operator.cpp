@@ -1,4 +1,3 @@
-
 // Copyright (C) 2011-2012 by the BEM++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
