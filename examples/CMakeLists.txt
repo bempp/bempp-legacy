@@ -12,6 +12,13 @@ if (WITH_TRILINOS)
         ${HDF5_LIBRARY})
 endif ()
 
+if (WITH_ALUGRID)
+    add_definitions(-DWITH_ALUGRID -DHAVE_ALUGRID=1 -DENABLE_ALUGRID)
+    include_directories(${ALUGRID_INCLUDE_DIRS})
+    add_executable(surface_mesh_extraction surface_mesh_extraction.cpp)
+    target_link_libraries(surface_mesh_extraction bempp ${ALUGRID_LIBRARY})
+endif ()
+
 add_executable(traversal traversal.cpp)
 add_executable(traversal_benchmark traversal_benchmark.cpp)
 add_executable(gmsh_import gmsh_import.cpp)

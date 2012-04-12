@@ -31,7 +31,6 @@
 #include "assembly/discrete_aca_scalar_valued_linear_operator.hpp"
 #include "assembly/discrete_scalar_valued_linear_operator.hpp"
 #include "assembly/discrete_scalar_valued_source_term.hpp"
-#include "assembly/source_term.hpp"
 #include "space/piecewise_constant_scalar_space.hpp"
 
 #include "assembly/identity_operator.hpp"
@@ -100,7 +99,7 @@ int main()
 
     // OPTIONS CONTROLLING THE EXECUTION OF THE SCRIPT
     // Mesh to use
-    const MeshVariant meshVariant = SPHERE_2590;
+    const MeshVariant meshVariant = SPHERE_152; // SPHERE_2590;
     // If true, test whether the discrete linear operator is implemented correctly
     const bool testLinearProperties = false;
     // If true, compare results obtained with the direct and iterative solvers
@@ -161,12 +160,12 @@ int main()
     MyFunctor functor;
     Fiber::OrdinaryFunction<MyFunctor> function(functor);
 
-    SourceTerm<double> sourceTerm;
     typedef DiscreteScalarValuedSourceTerm<double> DiscreteSourceTerm;
     typedef std::auto_ptr<DiscreteSourceTerm> DiscreteSourceTermPtr;
 
-    DiscreteSourceTermPtr discreteRhs =
-            sourceTerm.assembleWeakForm(function, space, factory, assemblyOptions);
+    arma::Col<double> rhsVector(space.globalDofCount());
+    rhsVector.fill(1.);
+    DiscreteSourceTermPtr discreteRhs(new DiscreteSourceTerm(rhsVector));
 
     DefaultIterativeSolver<double> iterativeSolver(*discreteLhs,*discreteRhs);
 

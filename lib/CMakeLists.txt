@@ -23,6 +23,9 @@ find_file(ARMA_HEADER armadillo ${ARMADILLO_INCLUDE_DIRS})
 
 add_definitions(-DCOMPILE_FOR_DOUBLE)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
+
 # Headers are ignored by make, but their list is used by IDEs
 # like Qt Creator and Visual Studio to generate project file list.
 add_library(bempp SHARED 
@@ -68,7 +71,8 @@ if (WITH_TRILINOS)
         ${EPETRA_LIBRARY}
         ${THYRA_CORE_LIBRARY}
         ${TEUCHOS_LIBRARY}
-        ${RTOP_LIBRARY})
+        ${RTOP_LIBRARY}
+        ${HDF5_LIBRARY})
     include_directories(${TRILINOS_INCLUDE_DIR})
 endif ()
 
