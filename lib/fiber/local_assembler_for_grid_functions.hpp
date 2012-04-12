@@ -1,4 +1,4 @@
-// Copyright (C) 2011 by the BEM++ Authors
+// Copyright (C) 2011-2012 by the Fiber Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,39 +18,34 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_test_grid_hpp
-#define bempp_test_grid_hpp
+#ifndef fiber_local_assembler_for_grid_functions_hpp
+#define fiber_local_assembler_for_grid_functions_hpp
 
-#include "grid/dune.hpp"
-#include "grid/grid.hpp"
+#include "array_2d.hpp"
+#include "types.hpp"
+#include <vector>
+#include <stdexcept>
 
-/** Fixture class for Bempp::Grid tests */
-class SimpleTriangularGridManager
+namespace Fiber
+{
+
+/** \brief Local assembler for grid functions.
+
+  This assembler provides methods that evaluate local (element-by-element) weak
+  forms of integrals occurring in boundary-element matrices of grid functions.
+ */
+template <typename ValueType>
+class LocalAssemblerForGridFunctions
 {
 public:
-    enum { N_ELEMENTS_X = 3, N_ELEMENTS_Y = 4 };
-    typedef Bempp::Default2dIn3dDuneGrid DuneGrid;
+    virtual ~LocalAssemblerForGridFunctions() {}
 
-    /** Create two identical simple 2D structured Bempp grids composed of 2 * 3 * 4 triangles.
-        Store an auto_ptr to the first one as bemppGrid; from the second one,
-        extract the pointer to the underlying Dune grid and store it as duneGrid. */
-    SimpleTriangularGridManager() {
-        // Create a Bempp grid
-        bemppGrid = createGrid();
-
-        // Create an identical Dune grid
-        duneGrid = createDuneGrid();
-    }
-
-    // No destructor is needed since auto_ptrs release memory automatically
-
-private:
-    std::auto_ptr<Bempp::Grid> createGrid();
-    std::auto_ptr<DuneGrid> createDuneGrid();
-
-public:
-    std::auto_ptr<Bempp::Grid> bemppGrid;
-    std::auto_ptr<DuneGrid> duneGrid;
+    /** \brief Assemble local weak forms of a source term on specified elements. */
+    virtual void evaluateLocalWeakForms(
+            const std::vector<int>& elementIndices,
+            std::vector<arma::Col<ValueType> >& result) = 0;
 };
+
+} // namespace Fiber
 
 #endif

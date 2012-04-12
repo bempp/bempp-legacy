@@ -1,31 +1,23 @@
 #ifndef fiber_accuracy_options_hpp
 #define fiber_accuracy_options_hpp
 
+#include "quadrature_options.hpp"
+
 namespace Fiber
 {
 
-struct QuadratureOptions
-{
-    QuadratureOptions() : mode(ORDER_INCREMENT), orderIncrement(0) {
-    }
-
-    enum Mode {
-        ORDER_INCREMENT, EXACT_ORDER
-    } mode;
-
-    union {
-        int orderIncrement;
-        int order;
-    };
-};
-
-class AccuracyOptions
+/** \brief Options controlling quadrature accuracy. */
+struct AccuracyOptions
 {
 public:
-    QuadratureOptions regular;
-    QuadratureOptions singular;
+    /** \brief Integration of regular functions on single elements */
+    QuadratureOptions singleRegular;
+    /** \brief Integration of regular functions on pairs of elements */
+    QuadratureOptions doubleRegular;
+    /** \brief Integration of singular functions on pairs of elements */
+    QuadratureOptions doubleSingular;
 };
 
-}
+} // namespace Fiber
 
 #endif

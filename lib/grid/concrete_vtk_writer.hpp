@@ -77,13 +77,32 @@ public:
     }
 
     virtual std::string write(const std::string &name,
-                              Dune::VTK::OutputType type = Dune::VTK::ascii) {
-        return m_dune_vtk_writer.write(name, type);
+                              OutputType type = ASCII) {
+        return m_dune_vtk_writer.write(name, duneVtkOutputType(type));
     }
 
     virtual std::string pwrite(const std::string& name, const std::string& path, const std::string& extendpath,
-                               Dune::VTK::OutputType type = Dune::VTK::ascii) {
-        return m_dune_vtk_writer.pwrite(name, path, extendpath, type);
+                               OutputType type = ASCII) {
+        return m_dune_vtk_writer.pwrite(name, path, extendpath,
+                                        duneVtkOutputType(type));
+    }
+
+private:
+    Dune::VTK::OutputType duneVtkOutputType(OutputType type) const
+    {
+        switch (type)
+        {
+        case ASCII:
+            return Dune::VTK::ascii;
+        case BASE_64:
+            return Dune::VTK::base64;
+        case APPENDED_RAW:
+            return Dune::VTK::appendedraw;
+        case APPENDED_BASE_64:
+            return Dune::VTK::appendedbase64;
+        default:
+            return static_cast<Dune::VTK::OutputType>(type);
+        }
     }
 };
 

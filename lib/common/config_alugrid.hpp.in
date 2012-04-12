@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2012 by the Fiber Authors
+// Copyright (C) 2011-2012 by the BEM++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,34 +18,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_local_assembler_for_source_terms_hpp
-#define fiber_local_assembler_for_source_terms_hpp
+#ifndef config_alugrid_hpp
+#define config_alugrid_hpp
 
-#include "array_2d.hpp"
-#include "types.hpp"
-#include <vector>
-#include <stdexcept>
-
-namespace Fiber
-{
-
-/** \brief Local assembler for source terms.
-
-  This assembler provides methods that evaluate local (element-by-element) weak
-  forms of integrals occurring in boundary-element matrices of source terms.
- */
-template <typename ValueType>
-class LocalAssemblerForSourceTerms
-{
-public:
-    virtual ~LocalAssemblerForSourceTerms() {}
-
-    /** \brief Assemble local weak forms of a source term on specified elements. */
-    virtual void evaluateLocalWeakForms(
-            const std::vector<int>& elementIndices,
-            std::vector<arma::Col<ValueType> >& result) = 0;
-};
-
-} // namespace Fiber
+#cmakedefine WITH_ALUGRID
+#ifdef WITH_ALUGRID
+#define HAVE_ALUGRID 1
+#define ENABLE_ALUGRID 1
+#endif
 
 #endif

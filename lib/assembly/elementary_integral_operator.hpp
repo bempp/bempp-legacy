@@ -35,12 +35,16 @@ namespace Fiber
 
 template <typename ValueType> class Expression;
 template <typename ValueType> class LocalAssemblerForOperators;
+template <typename ValueType> class EvaluatorForIntegralOperators;
 
 } // namespace Fiber
 
 namespace Bempp
 {
 
+class EvaluationOptions;
+template <typename ValueType> class GridFunction;
+template <typename ValueType> class InterpolatedFunction;
 template <typename ValueType> class WeakFormAcaAssemblyHelper;
 
 template <typename ValueType>
@@ -50,6 +54,7 @@ public:
     typedef typename ElementaryLinearOperator<ValueType>::LocalAssemblerFactory
     LocalAssemblerFactory;
     typedef typename ElementaryLinearOperator<ValueType>::LocalAssembler LocalAssembler;
+    typedef Fiber::EvaluatorForIntegralOperators<ValueType> Evaluator;
 
     virtual int trialComponentCount() const {
         return kernel().domainDimension();
@@ -93,6 +98,18 @@ public:
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
 
+    // We might define a superclass IntegralOperator that might represent
+    // a superposition of elementary linear operators (defined at points
+    // off surface). Then the virtual attribute here would be useful.
+    virtual std::auto_ptr<InterpolatedFunction<ValueType> > applyOffSurface(
+            const GridFunction<ValueType>& argument,
+            const Grid& evaluationGrid,
+            const LocalAssemblerFactory& factory,
+            const EvaluationOptions& options) const;
+
+    // TODO: probably assembleOperator() should be replaced with applyOnSurface(),
+    // defined for *any* operator (including Id).
+
 private:
     virtual const Fiber::Kernel<ValueType>& kernel() const = 0;
     virtual const Fiber::Expression<ValueType>& testExpression() const = 0;
@@ -130,6 +147,12 @@ private:
             LocalAssembler& assembler,
             const AssemblyOptions& options) const;
     /** @} */
+
+    std::auto_ptr<InterpolatedFunction<ValueType> >
+    applyOffSurfaceWithKnownEvaluator(
+            const Grid& evaluationGrid,
+            const Evaluator& evaluator,
+            const EvaluationOptions& options) const;
 };
 
 } // namespace Bempp

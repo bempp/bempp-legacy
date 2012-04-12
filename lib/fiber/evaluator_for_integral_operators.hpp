@@ -1,4 +1,4 @@
-// Copyright (C) 2011 by the BEM++ Authors
+// Copyright (C) 2011-2012 by the BEM++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,39 +18,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_test_grid_hpp
-#define bempp_test_grid_hpp
+#ifndef fiber_evaluator_for_integral_operators_hpp
+#define fiber_evaluator_for_integral_operators_hpp
 
-#include "grid/dune.hpp"
-#include "grid/grid.hpp"
+#include <armadillo>
 
-/** Fixture class for Bempp::Grid tests */
-class SimpleTriangularGridManager
+namespace Fiber
+{
+
+template <typename ValueType>
+class EvaluatorForIntegralOperators
 {
 public:
-    enum { N_ELEMENTS_X = 3, N_ELEMENTS_Y = 4 };
-    typedef Bempp::Default2dIn3dDuneGrid DuneGrid;
+    enum Region {
+        NEAR_FIELD, FAR_FIELD
+    };
 
-    /** Create two identical simple 2D structured Bempp grids composed of 2 * 3 * 4 triangles.
-        Store an auto_ptr to the first one as bemppGrid; from the second one,
-        extract the pointer to the underlying Dune grid and store it as duneGrid. */
-    SimpleTriangularGridManager() {
-        // Create a Bempp grid
-        bemppGrid = createGrid();
+    virtual ~EvaluatorForIntegralOperators() {}
 
-        // Create an identical Dune grid
-        duneGrid = createDuneGrid();
-    }
-
-    // No destructor is needed since auto_ptrs release memory automatically
-
-private:
-    std::auto_ptr<Bempp::Grid> createGrid();
-    std::auto_ptr<DuneGrid> createDuneGrid();
-
-public:
-    std::auto_ptr<Bempp::Grid> bemppGrid;
-    std::auto_ptr<DuneGrid> duneGrid;
+    virtual void evaluate(Region region,
+                          const arma::Mat<ValueType>& points,
+                          arma::Mat<ValueType>& result) const = 0;
 };
+
+} // namespace Fiber
 
 #endif

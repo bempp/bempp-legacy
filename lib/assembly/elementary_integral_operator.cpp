@@ -4,14 +4,19 @@
 #include "assembly_options.hpp"
 #include "discrete_dense_scalar_valued_linear_operator.hpp"
 #include "discrete_vector_valued_linear_operator.hpp"
+#include "evaluation_options.hpp"
+#include "grid_function.hpp"
+#include "interpolated_function.hpp"
 
 #include "../common/multidimensional_arrays.hpp"
 #include "../common/not_implemented_error.hpp"
 #include "../common/auto_timer.hpp"
+#include "../fiber/evaluator_for_integral_operators.hpp"
 #include "../fiber/local_assembler_factory.hpp"
 #include "../fiber/local_assembler_for_operators.hpp"
 #include "../fiber/opencl_handler.hpp"
 #include "../fiber/raw_grid_geometry.hpp"
+#include "../grid/entity.hpp"
 #include "../grid/entity_iterator.hpp"
 #include "../grid/geometry_factory.hpp"
 #include "../grid/grid.hpp"
@@ -137,11 +142,12 @@ ElementaryIntegralOperator<ValueType>::assembleOperator(
 
     // Prepare local assembler
 
-    std::auto_ptr<GridView> view = trialSpace.grid().leafView();
+    const Grid& grid = trialSpace.grid();
+    std::auto_ptr<GridView> view = grid.leafView();
     const int elementCount = view->entityCount(0);
 
     // Gather geometric data
-    Fiber::RawGridGeometry<ValueType> rawGeometry;
+    Fiber::RawGridGeometry<ValueType> rawGeometry(grid.dim(), grid.dimWorld());
     view->getRawElementData(
                 rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
                 rawGeometry.auxData());
@@ -216,11 +222,12 @@ ElementaryIntegralOperator<ValueType>::assembleWeakForm(
 
     // Prepare local assembler
 
-    std::auto_ptr<GridView> view = trialSpace.grid().leafView();
+    const Grid& grid = trialSpace.grid();
+    std::auto_ptr<GridView> view = grid.leafView();
     const int elementCount = view->entityCount(0);
 
     // Gather geometric data
-    Fiber::RawGridGeometry<ValueType> rawGeometry;
+    Fiber::RawGridGeometry<ValueType> rawGeometry(grid.dim(), grid.dimWorld());
     view->getRawElementData(
                 rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
                 rawGeometry.auxData());
@@ -404,6 +411,128 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInAcaMode(
 {
     return AcaGlobalAssembler<ValueType>::assembleWeakForm(
                 testSpace, trialSpace, assembler, options);
+}
+
+template <typename ValueType>
+std::auto_ptr<InterpolatedFunction<ValueType> >
+ElementaryIntegralOperator<ValueType>::applyOffSurface(
+        const GridFunction<ValueType>& argument,
+        const Grid& evaluationGrid,
+        const LocalAssemblerFactory& factory,
+        const EvaluationOptions& options) const
+{
+    // Prepare evaluator
+    const Space<ValueType>& space = argument.space();
+    const Grid& grid = space.grid();
+    std::auto_ptr<GridView> view = grid.leafView();
+    const int elementCount = view->entityCount(0);
+
+    // Gather geometric data
+    Fiber::RawGridGeometry<ValueType> rawGeometry(grid.dim(), grid.dimWorld());
+    view->getRawElementData(
+                rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
+                rawGeometry.auxData());
+
+    // Make geometry factory
+    std::auto_ptr<GeometryFactory> geometryFactory =
+            grid.elementGeometryFactory();
+
+    // Get pointer to argument's basis in each element
+    // and coefficients of argument's expansion in each element
+    std::vector<const Fiber::Basis<ValueType>*> bases(elementCount);
+    std::vector<std::vector<ValueType> > localCoefficients(elementCount);
+
+    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    for (int i = 0; i < elementCount; ++i)
+    {
+        assert(!it->finished());
+        const Entity<0>& element = it->entity();
+        bases[i] = &space.basis(element);
+        argument.getLocalCoefficients(element, localCoefficients[i]);
+        it->next();
+    }
+
+    Fiber::OpenClHandler<ValueType,int> openClHandler(options.openClOptions());
+    if (openClHandler.UseOpenCl())
+        openClHandler.pushGeometry(rawGeometry.vertices(),
+                                   rawGeometry.elementCornerIndices());
+
+    // Now create the evaluator
+
+    // TODO: distinguish between kernel() and weakFormKernel()
+    // as well as trialExpression() and weakFormTrialExpression()
+    std::auto_ptr<Evaluator> evaluator =
+            factory.make(*geometryFactory, rawGeometry,
+                         bases,
+                         kernel(), trialExpression(), localCoefficients,
+                         this->multiplier(),
+                         openClHandler);
+
+    return applyOffSurfaceWithKnownEvaluator(evaluationGrid, *evaluator, options);
+}
+
+template <typename ValueType>
+std::auto_ptr<InterpolatedFunction<ValueType> >
+ElementaryIntegralOperator<ValueType>::applyOffSurfaceWithKnownEvaluator(
+        const Grid& evaluationGrid,
+        const Evaluator& evaluator,
+        const EvaluationOptions& options) const
+{
+    // Get coordinates of interpolation points, i.e. the evaluationGrid's vertices
+
+    std::auto_ptr<GridView> evalView = evaluationGrid.leafView();
+    const int evalGridDim = evaluationGrid.dim();
+    const int evalPointCount = evalView->entityCount(evalGridDim);
+    arma::Mat<ValueType> evalPoints(evalGridDim, evalPointCount);
+
+    const IndexSet& evalIndexSet = evalView->indexSet();
+    // TODO: extract into template function, perhaps add case evalGridDim == 1
+    if (evalGridDim == 2)
+    {
+        const int vertexCodim = 2;
+        std::auto_ptr<EntityIterator<vertexCodim> > it =
+                evalView->entityIterator<vertexCodim>();
+        while (!it->finished())
+        {
+            const Entity<vertexCodim>& vertex = it->entity();
+            const Geometry& geo = vertex.geometry();
+            const int vertexIndex = evalIndexSet.entityIndex(vertex);
+            arma::Col<ValueType> activeCol(evalPoints.unsafe_col(vertexIndex));
+            geo.center(activeCol);
+            it->next();
+        }
+    }
+    else if (evalGridDim == 3)
+    {
+        const int vertexCodim = 3;
+        std::auto_ptr<EntityIterator<vertexCodim> > it =
+                evalView->entityIterator<vertexCodim>();
+        while (!it->finished())
+        {
+            const Entity<vertexCodim>& vertex = it->entity();
+            const Geometry& geo = vertex.geometry();
+            const int vertexIndex = evalIndexSet.entityIndex(vertex);
+            arma::Col<ValueType> activeCol(evalPoints.unsafe_col(vertexIndex));
+            geo.center(activeCol);
+            it->next();
+        }
+    }
+
+    // right now we don't bother about far and near field
+    // (this might depend on evaluation options)
+
+    arma::Mat<ValueType> result;
+    evaluator.evaluate(Evaluator::FAR_FIELD, evalPoints, result);
+
+//    std::cout << "Interpolation results:\n";
+//    for (int point = 0; point < evalPointCount; ++point)
+//        std::cout << evalPoints(0, point) << "\t"
+//                  << evalPoints(1, point) << "\t"
+//                  << evalPoints(2, point) << "\t"
+//                  << result(0, point) << "\n";
+
+    return std::auto_ptr<InterpolatedFunction<ValueType> >(
+            new InterpolatedFunction<ValueType>(evaluationGrid, result));
 }
 
 #ifdef COMPILE_FOR_FLOAT

@@ -1,6 +1,8 @@
 #ifndef bempp_geometry_factory_hpp
 #define bempp_geometry_factory_hpp
 
+#include "config_alugrid.hpp"
+
 #include "geometry.hpp"
 
 #include <memory>

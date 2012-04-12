@@ -89,10 +89,10 @@ void AdjointDoubleLayerPotential3DKernel<ValueType>::evaluateOnGrid(
 
     const int testPointCount = testPoints.n_cols;
     const int trialPointCount = trialPoints.n_cols;
-    result.set_size(1, 1, testPointCount,  trialPointCount);
+    result.set_size(1, testPointCount, 1, trialPointCount);
     for (int trialIndex = 0; trialIndex < trialPointCount; ++trialIndex)
         for (int testIndex = 0; testIndex < testPointCount; ++testIndex)
-            result(0, 0, testIndex, trialIndex) = evaluateAtPointPair(
+            result(0, testIndex, 0, trialIndex) = evaluateAtPointPair(
                         testPoints.unsafe_col(testIndex),
                         trialPoints.unsafe_col(trialIndex),
                         testNormals.unsafe_col(testIndex));

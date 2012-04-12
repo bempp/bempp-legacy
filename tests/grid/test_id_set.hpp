@@ -31,7 +31,7 @@ struct TriangularGlobalIdSetManager : public TriangularLeafGridViewManager {
         duneIdSet(duneGrid->globalIdSet()) {
     }
 
-    typedef Bempp::DefaultDuneGrid::GlobalIdSet DuneIdSet;
+    typedef Bempp::Default2dIn3dDuneGrid::GlobalIdSet DuneIdSet;
     const Bempp::IdSet& bemppIdSet;
     const DuneIdSet& duneIdSet;
 };

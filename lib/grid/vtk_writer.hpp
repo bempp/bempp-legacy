@@ -39,6 +39,25 @@ namespace Bempp
 class VtkWriter
 {
 public:
+    /** \brief How data should be stored in a VTK file */
+    enum OutputType {
+      //! Output to the file is in ascii.
+      ASCII,
+      //! Output to the file is in inline base64 binary.
+      BASE_64,
+      //! Output to the file is in appended raw binary.
+      APPENDED_RAW,
+      //! Output to the file is in appended base64 binary.
+      APPENDED_BASE_64
+    };
+
+    /** \brief Dataset type. */
+    enum DataType
+    {
+        CELL_DATA,
+        VERTEX_DATA
+    };
+
     /** \brief Destructor */
     virtual ~VtkWriter() {}
 
@@ -75,14 +94,14 @@ public:
      *  \returns Name of the created file.
      */
     virtual std::string write (const std::string &name,
-                               Dune::VTK::OutputType type = Dune::VTK::ascii) = 0;
+                               OutputType type = ASCII) = 0;
 
     /** \brief Write output (interface might change later).
      *
      * "pwrite" means "path write" (i.e. write somewhere else than the current
      * directory).  The "p" does not mean this method has a monopoly on
      * parallel writing, the regular write(const std::string &,
-     * VTK::OutputType) method can do that just fine.
+     * OutputType) method can do that just fine.
      *
      * \param name       Base name of the output files.  This should not
      *                   contain any directory part or filename extensions.
@@ -105,8 +124,9 @@ public:
      * \throw Dune::NotImplemented Extendpath is absolute but path is relative.
      * \throw Dune::IOError        Failed to open a file.
      */
-    virtual std::string pwrite(const std::string& name, const std::string& path, const std::string& extendpath,
-                               Dune::VTK::OutputType type = Dune::VTK::ascii) = 0;
+    virtual std::string pwrite(const std::string& name, const std::string& path,
+                               const std::string& extendpath,
+                               OutputType type = ASCII) = 0;
 };
 
 } // namespace Bempp

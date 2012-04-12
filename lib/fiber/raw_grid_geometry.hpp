@@ -30,6 +30,14 @@ template <typename ValueType>
 class RawGridGeometry
 {
 public:
+    RawGridGeometry(int gridDim, int worldDim) :
+        m_gridDim(gridDim), m_worldDim(worldDim) {
+        if (gridDim > worldDim)
+            throw std::invalid_argument("RawGridGeometry::RawGridGeometry(): "
+                                        "grid dimension cannot be larger than "
+                                        "world dimension");
+    }
+
     // Const accessors
 
     const arma::Mat<ValueType>& vertices() const {
@@ -42,6 +50,18 @@ public:
 
     const arma::Mat<char>& auxData() const {
         return m_auxData;
+    }
+
+    int elementCount() const {
+        return m_elementCornerIndices.n_cols;
+    }
+
+    int gridDimension() const {
+        return m_gridDim;
+    }
+
+    int worldDimension() const {
+        return m_worldDim;
     }
 
     /** \brief Indices of the corners of the given element. */
@@ -90,6 +110,8 @@ public:
     }
 
 private:
+    int m_gridDim;
+    int m_worldDim;
     arma::Mat<ValueType> m_vertices;
     arma::Mat<int> m_elementCornerIndices;
     arma::Mat<char> m_auxData;

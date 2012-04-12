@@ -59,8 +59,8 @@ public:
 		assemblyOptions.switchToDense();
 
 		Fiber::AccuracyOptions accuracyOptions; // default
-		accuracyOptions.regular.orderIncrement = 0;
-		accuracyOptions.singular.orderIncrement = 0;
+        accuracyOptions.doubleRegular.orderIncrement = 0;
+        accuracyOptions.doubleSingular.orderIncrement = 0;
 		Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, GeometryFactory>
 				factory(accuracyOptions);
 

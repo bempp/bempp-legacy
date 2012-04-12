@@ -8,6 +8,9 @@ configure_file(
 configure_file(
 	${CMAKE_SOURCE_DIR}/lib/common/config_opencl.hpp.in
         ${CMAKE_BINARY_DIR}/include/common/config_opencl.hpp)
+configure_file(
+        ${CMAKE_SOURCE_DIR}/lib/common/config_alugrid.hpp.in
+        ${CMAKE_BINARY_DIR}/include/common/config_alugrid.hpp)
 include_directories(${CMAKE_BINARY_DIR}/include/common)
 
 # Find all source and header files
@@ -19,6 +22,9 @@ file(GLOB_RECURSE DUNE_COMMON_HEADERS ${CMAKE_SOURCE_DIR}/contrib/dune/dune-comm
 find_file(ARMA_HEADER armadillo ${ARMADILLO_INCLUDE_DIRS})
 
 add_definitions(-DCOMPILE_FOR_DOUBLE)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
 
 # Headers are ignored by make, but their list is used by IDEs
 # like Qt Creator and Visual Studio to generate project file list.
@@ -65,8 +71,13 @@ if (WITH_TRILINOS)
         ${EPETRA_LIBRARY}
         ${THYRA_CORE_LIBRARY}
         ${TEUCHOS_LIBRARY}
-        ${RTOP_LIBRARY})
+        ${RTOP_LIBRARY}
+        ${HDF5_LIBRARY})
     include_directories(${TRILINOS_INCLUDE_DIR})
+endif ()
+
+if (WITH_ALUGRID)
+    target_link_libraries (bempp ${ALUGRID_LIBRARY})
 endif ()
 
 # Add a target to generate API documentation with Doxygen

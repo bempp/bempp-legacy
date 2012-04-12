@@ -18,10 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "config_trilinos.hpp"
-
 #ifndef bempp_discrete_scalar_valued_source_term_hpp
 #define bempp_discrete_scalar_valued_source_term_hpp
+
+#include "config_trilinos.hpp"
 
 #include <armadillo>
 

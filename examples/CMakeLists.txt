@@ -33,6 +33,11 @@ target_link_libraries(calderon bempp)
 target_link_libraries(physical_test bempp)
 target_link_libraries(tutorial_dirichlet bempp)
 
+if (WITH_ALUGRID)
+    add_executable(extract_surface_grid extract_surface_grid.cpp)
+    target_link_libraries (extract_surface_grid bempp)
+endif ()
+
 if (NOT (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR}))
     file(GLOB_RECURSE EXAMPLE_MESHES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.msh *gmsh)
     file(GLOB_RECURSE TRILINOS_XMLS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.xml)
