@@ -47,6 +47,11 @@ public:
     GridFunction(const Space<ValueType>& space,
                  const arma::Col<ValueType>& coefficients);
 
+    /** \brief Construct from known expansion coefficients in the provided function space,
+        represented as Vector<ValueType>. */
+    GridFunction(const Space<ValueType>& space,
+                 const Vector<ValueType>& coefficients);
+
     /** \brief Grid on which this function is defined. */
     const Grid& grid() const;
 

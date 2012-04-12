@@ -62,12 +62,29 @@ GridFunction<ValueType>::GridFunction(const Space<ValueType>& space,
                                       const arma::Col<ValueType>& coefficients) :
     m_space(space), m_coefficients(coefficients)
 {
-    if (!space.dofsAssigned())
+    if (!m_space.dofsAssigned())
         throw std::runtime_error(
                 "GridFunction::GridFunction(): "
                 "degrees of freedom of the provided space must be assigned "
                 "beforehand");
-    if (space.globalDofCount() != coefficients.n_rows)
+    if (m_space.globalDofCount() != m_coefficients.n_rows)
+        throw std::runtime_error(
+                "GridFunction::GridFunction(): "
+                "dimension of coefficients does not match the number of global "
+                "DOFs in the provided function space");
+}
+
+template <typename ValueType>
+GridFunction<ValueType>::GridFunction(const Space<ValueType>& space,
+                                      const Vector<ValueType>& coefficients) :
+    m_space(space), m_coefficients(coefficients.asArmadilloVector())
+{
+    if (!m_space.dofsAssigned())
+        throw std::runtime_error(
+                "GridFunction::GridFunction(): "
+                "degrees of freedom of the provided space must be assigned "
+                "beforehand");
+    if (m_space.globalDofCount() != m_coefficients.n_rows)
         throw std::runtime_error(
                 "GridFunction::GridFunction(): "
                 "dimension of coefficients does not match the number of global "
