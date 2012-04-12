@@ -199,10 +199,10 @@ AcaGlobalAssembler<ValueType>::assembleWeakForm(
 
 //    matgen_sqntl(helper, doubleClusterTree.get(), doubleClusterTree.get(),
 //                 acaOptions.recompress, acaOptions.eps,
-//                 acaOptions.maximumRank, blocks);
+//                 acaOptions.maximumRank, blocks.get());
 
 //    matgen_omp(helper, blockCount, doubleClusterTree.get(),
-//                   acaOptions.eps, acaOptions.maximumRank, blocks);
+//                   acaOptions.eps, acaOptions.maximumRank, blocks.get());
 
     AhmedLeafClusterArray leafClusters(doubleClusterTree.get());
     const size_t leafClusterCount = leafClusters.size();
