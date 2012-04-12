@@ -46,6 +46,7 @@ enum MeshVariant
     CUBE_24576,
     SPHERE_152,
     SPHERE_644,
+    SPHERE_41440,
     SPHERICAL_SHELL_INNER_SURFACE
 };
 

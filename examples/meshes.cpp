@@ -53,6 +53,7 @@ loadMesh(MeshVariant mv)
     const char CUBE_24576_FNAME[] = "cube-24576.msh";
     const char SPHERE_152_FNAME[] = "sphere-152.msh";
     const char SPHERE_644_FNAME[] = "sphere-644.msh";
+    const char SPHERE_41440_FNAME[] = "sphere-41440.msh";
     const char SPHERICAL_SHELL_INNER_SURFACE_FNAME[] =
             "spherical_shell_2194_nodes_inner_surface.msh";
 
@@ -90,6 +91,8 @@ loadMesh(MeshVariant mv)
         MESH_FNAME = SPHERE_152_FNAME; break;
     case SPHERE_644:
         MESH_FNAME = SPHERE_644_FNAME; break;
+    case SPHERE_41440:
+        MESH_FNAME = SPHERE_41440_FNAME; break;
     case SPHERICAL_SHELL_INNER_SURFACE:
         MESH_FNAME = SPHERICAL_SHELL_INNER_SURFACE_FNAME; break;
     default:
