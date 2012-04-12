@@ -23,7 +23,7 @@
 
 #ifdef WITH_AHMED
 #include "ahmed_aux.hpp"
-#include "discrete_aca_scalar_valued_linear_operator.hpp"
+#include "discrete_aca_linear_operator.hpp"
 #include "weak_form_aca_assembly_helper.hpp"
 #endif
 
@@ -81,7 +81,7 @@ private:
 } // namespace
 
 template <typename ValueType>
-std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+std::auto_ptr<DiscreteLinearOperator<ValueType> >
 AcaGlobalAssembler<ValueType>::assembleWeakForm(
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,
@@ -91,7 +91,7 @@ AcaGlobalAssembler<ValueType>::assembleWeakForm(
 {
 #ifdef WITH_AHMED
     typedef AhmedDofWrapper<ValueType> AhmedDofType;
-    typedef DiscreteAcaScalarValuedLinearOperator<ValueType> DiscreteAcaLinOp;
+    typedef DiscreteAcaLinearOperator<ValueType> DiscreteAcaLinOp;
 
     const AcaOptions& acaOptions = options.acaOptions();
 
@@ -232,7 +232,7 @@ AcaGlobalAssembler<ValueType>::assembleWeakForm(
 }
 
 template <typename ValueType>
-std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+std::auto_ptr<DiscreteLinearOperator<ValueType> >
 AcaGlobalAssembler<ValueType>::assembleWeakForm(
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,

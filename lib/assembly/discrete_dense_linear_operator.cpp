@@ -21,7 +21,7 @@
 
 #include "config_trilinos.hpp"
 
-#include "discrete_dense_scalar_valued_linear_operator.hpp"
+#include "discrete_dense_linear_operator.hpp"
 
 #include <iostream>
 #include <stdexcept>
@@ -35,8 +35,8 @@ namespace Bempp
 {
 
 template <typename ValueType>
-DiscreteDenseScalarValuedLinearOperator<ValueType>::
-DiscreteDenseScalarValuedLinearOperator(const arma::Mat<ValueType>& mat) :
+DiscreteDenseLinearOperator<ValueType>::
+DiscreteDenseLinearOperator(const arma::Mat<ValueType>& mat) :
     m_mat(mat)
 #ifdef WITH_TRILINOS
   , m_domainSpace(Thyra::defaultSpmdVectorSpace<ValueType>(mat.n_cols)),
@@ -46,38 +46,38 @@ DiscreteDenseScalarValuedLinearOperator(const arma::Mat<ValueType>& mat) :
 }
 
 template <typename ValueType>
-void DiscreteDenseScalarValuedLinearOperator<ValueType>::dump() const
+void DiscreteDenseLinearOperator<ValueType>::dump() const
 {
     std::cout << m_mat << std::endl;
 }
 
 template <typename ValueType>
-arma::Mat<ValueType> DiscreteDenseScalarValuedLinearOperator<ValueType>::asMatrix() const
+arma::Mat<ValueType> DiscreteDenseLinearOperator<ValueType>::asMatrix() const
 {
     return m_mat;
 }
 
 template <typename ValueType>
-unsigned int DiscreteDenseScalarValuedLinearOperator<ValueType>::rowCount() const
+unsigned int DiscreteDenseLinearOperator<ValueType>::rowCount() const
 {
     return m_mat.n_rows;
 }
 
 template <typename ValueType>
-unsigned int DiscreteDenseScalarValuedLinearOperator<ValueType>::columnCount() const
+unsigned int DiscreteDenseLinearOperator<ValueType>::columnCount() const
 {
     return m_mat.n_cols;
 }
 
 template <typename ValueType>
-void DiscreteDenseScalarValuedLinearOperator<ValueType>::addBlock(
+void DiscreteDenseLinearOperator<ValueType>::addBlock(
         const std::vector<int>& rows,
         const std::vector<int>& cols,
         arma::Mat<ValueType>& block) const
 {
     if (block.n_rows != rows.size() || block.n_cols != cols.size())
         throw std::invalid_argument(
-                "DiscreteDenseScalarValuedLinearOperator::addBlock(): "
+                "DiscreteDenseLinearOperator::addBlock(): "
                 "incorrect block size");
     for (int col = 0; col < cols.size(); ++col)
         for (int row = 0; row < rows.size(); ++row)
@@ -87,20 +87,20 @@ void DiscreteDenseScalarValuedLinearOperator<ValueType>::addBlock(
 #ifdef WITH_TRILINOS
 template <typename ValueType>
 Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> >
-DiscreteDenseScalarValuedLinearOperator<ValueType>::domain() const
+DiscreteDenseLinearOperator<ValueType>::domain() const
 {
     return m_domainSpace;
 }
 
 template <typename ValueType>
 Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> >
-DiscreteDenseScalarValuedLinearOperator<ValueType>::range() const
+DiscreteDenseLinearOperator<ValueType>::range() const
 {
     return m_rangeSpace;
 }
 
 template <typename ValueType>
-bool DiscreteDenseScalarValuedLinearOperator<ValueType>::opSupportedImpl(
+bool DiscreteDenseLinearOperator<ValueType>::opSupportedImpl(
         Thyra::EOpTransp M_trans) const
 {
     return (M_trans == Thyra::NOTRANS || M_trans == Thyra::TRANS
@@ -108,7 +108,7 @@ bool DiscreteDenseScalarValuedLinearOperator<ValueType>::opSupportedImpl(
 }
 
 template <typename ValueType>
-void DiscreteDenseScalarValuedLinearOperator<ValueType>::applyImpl(
+void DiscreteDenseLinearOperator<ValueType>::applyImpl(
         const Thyra::EOpTransp M_trans,
         const Thyra::MultiVectorBase<ValueType> &X_in,
         const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType> > &Y_inout,
@@ -151,7 +151,7 @@ void DiscreteDenseScalarValuedLinearOperator<ValueType>::applyImpl(
 #endif // WITH_TRILINOS
 
 template <typename ValueType>
-void DiscreteDenseScalarValuedLinearOperator<ValueType>::applyBuiltInImpl(
+void DiscreteDenseLinearOperator<ValueType>::applyBuiltInImpl(
         const TranspositionMode trans,
         const arma::Col<ValueType>& x_in,
         arma::Col<ValueType>& y_inout,
@@ -160,7 +160,7 @@ void DiscreteDenseScalarValuedLinearOperator<ValueType>::applyBuiltInImpl(
 {
     if (columnCount() != x_in.n_rows && rowCount() != y_inout.n_rows)
         throw std::invalid_argument(
-                "DiscreteDenseScalarValuedLinearOperator::applyBuiltInImpl(): "
+                "DiscreteDenseLinearOperator::applyBuiltInImpl(): "
                 "incorrect vector length");
 
     if (beta == 0.)
@@ -191,18 +191,18 @@ void DiscreteDenseScalarValuedLinearOperator<ValueType>::applyBuiltInImpl(
 
 
 #ifdef COMPILE_FOR_FLOAT
-template class DiscreteDenseScalarValuedLinearOperator<float>;
+template class DiscreteDenseLinearOperator<float>;
 #endif
 #ifdef COMPILE_FOR_DOUBLE
-template class DiscreteDenseScalarValuedLinearOperator<double>;
+template class DiscreteDenseLinearOperator<double>;
 #endif
 #ifdef COMPILE_FOR_COMPLEX_FLOAT
 #include <complex>
-template class DiscreteDenseScalarValuedLinearOperator<std::complex<float> >;
+template class DiscreteDenseLinearOperator<std::complex<float> >;
 #endif
 #ifdef COMPILE_FOR_COMPLEX_DOUBLE
 #include <complex>
-template class DiscreteDenseScalarValuedLinearOperator<std::complex<double> >;
+template class DiscreteDenseLinearOperator<std::complex<double> >;
 #endif
 
 } // namespace Bempp

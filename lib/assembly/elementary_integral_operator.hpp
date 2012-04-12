@@ -77,14 +77,14 @@ public:
             const Fiber::OpenClHandler<ValueType, int>& openClHandler,
             bool cacheSingularIntegrals) const;
 
-    virtual std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+    virtual std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakForm(
             const Space<ValueType>& testSpace,
             const Space<ValueType>& trialSpace,
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
 
-    virtual std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+    virtual std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakFormInternal(
             const Space<ValueType>& testSpace,
             const Space<ValueType>& trialSpace,
@@ -130,7 +130,7 @@ private:
             const Space<ValueType>& trialSpace,
             LocalAssembler& assembler,
             const AssemblyOptions& options) const;
-    std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+    std::auto_ptr<DiscreteLinearOperator<ValueType> >
 
     /** @}
         \name Weak form assembly
@@ -140,7 +140,7 @@ private:
             const Space<ValueType>& trialSpace,
             LocalAssembler& assembler,
             const AssemblyOptions &options) const;
-    std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+    std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakFormInAcaMode(
             const Space<ValueType>& testSpace,
             const Space<ValueType>& trialSpace,

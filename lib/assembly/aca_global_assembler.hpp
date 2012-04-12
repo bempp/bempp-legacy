@@ -15,14 +15,14 @@ namespace Bempp
 {
 
 class AssemblyOptions;
-template <typename ValueType> class DiscreteScalarValuedLinearOperator;
+template <typename ValueType> class DiscreteLinearOperator;
 template <typename ValueType> class Space;
 
 template <typename ValueType>
 class AcaGlobalAssembler
 {
 public:
-    typedef DiscreteScalarValuedLinearOperator<ValueType> DiscreteLinOp;
+    typedef DiscreteLinearOperator<ValueType> DiscreteLinOp;
     typedef Fiber::LocalAssemblerForOperators<ValueType> LocalAssembler;
 
     static std::auto_ptr<DiscreteLinOp> assembleWeakForm(

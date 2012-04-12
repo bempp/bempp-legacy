@@ -20,25 +20,34 @@
 
 #include "config_trilinos.hpp"
 
-#ifndef bempp_discrete_dense_scalar_valued_linear_operator_hpp
-#define bempp_discrete_dense_scalar_valued_linear_operator_hpp
+#ifndef bempp_discrete_sparse_linear_operator_hpp
+#define bempp_discrete_sparse_linear_operator_hpp
 
-#include "discrete_scalar_valued_linear_operator.hpp"
+#include "discrete_linear_operator.hpp"
+
+#include <memory>
 
 #ifdef WITH_TRILINOS
 #include <Teuchos_RCP.hpp>
 #include <Thyra_SpmdVectorSpaceBase_decl.hpp>
+class Epetra_FECrsMatrix;
 #endif
 
 namespace Bempp
 {
 
 template <typename ValueType>
-class DiscreteDenseScalarValuedLinearOperator :
-        public DiscreteScalarValuedLinearOperator<ValueType>
+class DiscreteSparseLinearOperator :
+        public DiscreteLinearOperator<ValueType>
 {
+#ifdef WITH_TRILINOS
 public:
-    DiscreteDenseScalarValuedLinearOperator(const arma::Mat<ValueType>& mat);
+    DiscreteSparseLinearOperator(std::auto_ptr<Epetra_FECrsMatrix> mat);
+#else
+    // This class cannot be used without Trilinos
+private:
+    DiscreteSparseLinearOperator();
+#endif
 
     virtual void dump() const;
 
@@ -57,7 +66,6 @@ protected:
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > range() const;
 
     virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
-
     virtual void applyImpl(
             const Thyra::EOpTransp M_trans,
             const Thyra::MultiVectorBase<ValueType> &X_in,
@@ -74,8 +82,8 @@ private:
                                   const ValueType beta) const;
 
 private:
-    arma::Mat<ValueType> m_mat;
 #ifdef WITH_TRILINOS
+    std::auto_ptr<Epetra_FECrsMatrix> m_mat;
     Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_domainSpace;
     Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_rangeSpace;
 #endif

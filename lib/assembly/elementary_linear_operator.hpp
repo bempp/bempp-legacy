@@ -44,7 +44,7 @@ public:
     /** \brief Assemble the operator's weak form using a specified local assembler.
 
       This function is not intended to be called directly by the user. */
-    virtual std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+    virtual std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakFormInternal(
             const Space<ValueType>& testSpace,
             const Space<ValueType>& trialSpace,

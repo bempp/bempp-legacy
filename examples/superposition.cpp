@@ -26,7 +26,7 @@
 #include "meshes.hpp"
 
 #include "assembly/assembly_options.hpp"
-#include "assembly/discrete_scalar_valued_linear_operator.hpp"
+#include "assembly/discrete_linear_operator.hpp"
 
 #include "assembly/identity_operator.hpp"
 #include "assembly/single_layer_potential_3d.hpp"
@@ -97,16 +97,16 @@ int main()
 
 
     assemblyOptions.switchToSparse();
-    std::auto_ptr<DiscreteScalarValuedLinearOperator<double> > resultHalfId =
+    std::auto_ptr<DiscreteLinearOperator<double> > resultHalfId =
             halfId->assembleWeakForm(space, space, factory, assemblyOptions);
     assemblyOptions.switchToDense();
-    std::auto_ptr<DiscreteScalarValuedLinearOperator<double> > resultSlp =
+    std::auto_ptr<DiscreteLinearOperator<double> > resultSlp =
             slp->assembleWeakForm(space, space, factory, assemblyOptions);
 
     assemblyOptions.switchToAca(acaOptions);
 
     LinearOperatorSuperposition<double> superposition(halfId, slp);
-    std::auto_ptr<DiscreteScalarValuedLinearOperator<double> > resultSuperposition =
+    std::auto_ptr<DiscreteLinearOperator<double> > resultSuperposition =
             superposition.assembleWeakForm(space, space, factory, assemblyOptions);
 
     std::cout << "\nHalfId:\n"

@@ -26,7 +26,7 @@
 #include "meshes.hpp"
 
 #include "assembly/assembly_options.hpp"
-#include "assembly/discrete_scalar_valued_linear_operator.hpp"
+#include "assembly/discrete_linear_operator.hpp"
 
 #include "assembly/identity_operator.hpp"
 #include "assembly/single_layer_potential_3d.hpp"
@@ -120,7 +120,7 @@ int main()
             throw std::runtime_error("Invalid operator");
         }
 
-        std::auto_ptr<DiscreteScalarValuedLinearOperator<double> > result =
+        std::auto_ptr<DiscreteLinearOperator<double> > result =
                 op->assembleWeakForm(space, space, factory, assemblyOptions);
 
         arma::Mat<double> resultMatrix = result->asMatrix();

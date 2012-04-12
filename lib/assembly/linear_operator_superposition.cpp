@@ -22,8 +22,8 @@
 
 #include "aca_global_assembler.hpp"
 #include "assembly_options.hpp"
-#include "discrete_dense_scalar_valued_linear_operator.hpp"
-#include "discrete_scalar_valued_linear_operator_superposition.hpp"
+#include "discrete_dense_linear_operator.hpp"
+#include "discrete_linear_operator_superposition.hpp"
 #include "discrete_vector_valued_linear_operator_superposition.hpp"
 #include "elementary_linear_operator.hpp"
 
@@ -128,7 +128,7 @@ LinearOperatorSuperposition<ValueType>::assembleOperator(
 }
 
 template <typename ValueType>
-std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+std::auto_ptr<DiscreteLinearOperator<ValueType> >
 LinearOperatorSuperposition<ValueType>::assembleWeakForm(
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,
@@ -150,15 +150,15 @@ LinearOperatorSuperposition<ValueType>::assembleWeakForm(
 }
 
 template <typename ValueType>
-std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+std::auto_ptr<DiscreteLinearOperator<ValueType> >
 LinearOperatorSuperposition<ValueType>::assembleWeakFormInDenseMode(
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
-    typedef DiscreteScalarValuedLinearOperator<ValueType> DiscreteLinOp;
-    typedef DiscreteDenseScalarValuedLinearOperator<ValueType> DiscreteDenseLinOp;
+    typedef DiscreteLinearOperator<ValueType> DiscreteLinOp;
+    typedef DiscreteDenseLinearOperator<ValueType> DiscreteDenseLinOp;
 
     // Gather matrices of individual operators
     boost::ptr_vector<DiscreteLinOp> discreteOps;
@@ -187,14 +187,14 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInDenseMode(
 }
 
 template <typename ValueType>
-std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+std::auto_ptr<DiscreteLinearOperator<ValueType> >
 LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
-    typedef DiscreteScalarValuedLinearOperator<ValueType> DiscreteLinOp;
+    typedef DiscreteLinearOperator<ValueType> DiscreteLinOp;
 
     AutoTimer timer("\nAssembly took ");
 
@@ -304,7 +304,7 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
 }
 
 template <typename ValueType>
-std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+std::auto_ptr<DiscreteLinearOperator<ValueType> >
 LinearOperatorSuperposition<ValueType>::assembleWeakFormInArbitraryMode(
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,
@@ -313,8 +313,8 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInArbitraryMode(
 {
     // General (less efficient) implementation
 
-    typedef DiscreteScalarValuedLinearOperator<ValueType> DiscreteLinOp;
-    typedef DiscreteScalarValuedLinearOperatorSuperposition<ValueType>
+    typedef DiscreteLinearOperator<ValueType> DiscreteLinOp;
+    typedef DiscreteLinearOperatorSuperposition<ValueType>
             DiscreteSuperposition;
 
     boost::ptr_vector<DiscreteLinOp> discreteOps;

@@ -20,7 +20,7 @@
 
 #include "config_trilinos.hpp"
 
-#include "discrete_sparse_scalar_valued_linear_operator.hpp"
+#include "discrete_sparse_linear_operator.hpp"
 
 #ifdef WITH_TRILINOS
 #include <iostream>
@@ -34,8 +34,8 @@ namespace Bempp
 {
 
 template <typename ValueType>
-DiscreteSparseScalarValuedLinearOperator<ValueType>::
-DiscreteSparseScalarValuedLinearOperator(std::auto_ptr<Epetra_FECrsMatrix> mat) :
+DiscreteSparseLinearOperator<ValueType>::
+DiscreteSparseLinearOperator(std::auto_ptr<Epetra_FECrsMatrix> mat) :
     m_mat(mat),
     m_domainSpace(Thyra::defaultSpmdVectorSpace<ValueType>(m_mat->NumGlobalCols())),
     m_rangeSpace(Thyra::defaultSpmdVectorSpace<ValueType>(m_mat->NumGlobalRows()))
@@ -43,18 +43,18 @@ DiscreteSparseScalarValuedLinearOperator(std::auto_ptr<Epetra_FECrsMatrix> mat) 
 }
 
 template <typename ValueType>
-void DiscreteSparseScalarValuedLinearOperator<ValueType>::dump() const
+void DiscreteSparseLinearOperator<ValueType>::dump() const
 {
     std::cout << *m_mat << std::endl;
 }
 
 template <typename ValueType>
 arma::Mat<ValueType>
-DiscreteSparseScalarValuedLinearOperator<ValueType>::asMatrix() const
+DiscreteSparseLinearOperator<ValueType>::asMatrix() const
 {
     if (m_mat->Comm().NumProc() != 1)
         throw std::runtime_error(
-                "DiscreteSparseScalarValuedLinearOperator::asMatrix(): "
+                "DiscreteSparseLinearOperator::asMatrix(): "
                 "conversion of distributed matrices to local matrices is unsupported");
 
     const int rowCount = m_mat->NumGlobalRows();
@@ -70,7 +70,7 @@ DiscreteSparseScalarValuedLinearOperator<ValueType>::asMatrix() const
                                                 values, indices);
         if (errorCode != 0)
             throw std::runtime_error(
-                    "DiscreteSparseScalarValuedLinearOperator::asMatrix(): "
+                    "DiscreteSparseLinearOperator::asMatrix(): "
                     "Epetra_CrsMatrix::ExtractMyRowView()) failed");
         for (int entry = 0; entry < entryCount; ++entry)
             mat(row, indices[entry]) = values[entry];
@@ -79,26 +79,26 @@ DiscreteSparseScalarValuedLinearOperator<ValueType>::asMatrix() const
 }
 
 template <typename ValueType>
-unsigned int DiscreteSparseScalarValuedLinearOperator<ValueType>::rowCount() const
+unsigned int DiscreteSparseLinearOperator<ValueType>::rowCount() const
 {
     return m_mat->NumGlobalRows();
 }
 
 template <typename ValueType>
-unsigned int DiscreteSparseScalarValuedLinearOperator<ValueType>::columnCount() const
+unsigned int DiscreteSparseLinearOperator<ValueType>::columnCount() const
 {
     return m_mat->NumGlobalCols();
 }
 
 template <typename ValueType>
-void DiscreteSparseScalarValuedLinearOperator<ValueType>::addBlock(
+void DiscreteSparseLinearOperator<ValueType>::addBlock(
         const std::vector<int>& rows,
         const std::vector<int>& cols,
         arma::Mat<ValueType>& block) const
 {
     if (block.n_rows != rows.size() || block.n_cols != cols.size())
         throw std::invalid_argument(
-                "DiscreteSparseScalarValuedLinearOperator::addBlock(): "
+                "DiscreteSparseLinearOperator::addBlock(): "
                 "incorrect block size");
 
     int entryCount = 0;
@@ -114,7 +114,7 @@ void DiscreteSparseScalarValuedLinearOperator<ValueType>::addBlock(
                         rows[row], entryCount, values, indices);
             if (errorCode != 0)
                 throw std::runtime_error(
-                        "DiscreteSparseScalarValuedLinearOperator::addBlock(): "
+                        "DiscreteSparseLinearOperator::addBlock(): "
                         "Epetra_CrsMatrix::ExtractMyRowView()) failed");
         }
         else
@@ -123,7 +123,7 @@ void DiscreteSparseScalarValuedLinearOperator<ValueType>::addBlock(
                         rows[row], entryCount, values, indices);
             if (errorCode != 0)
                 throw std::runtime_error(
-                        "DiscreteSparseScalarValuedLinearOperator::addBlock(): "
+                        "DiscreteSparseLinearOperator::addBlock(): "
                         "Epetra_CrsMatrix::ExtractGlobalRowView()) failed");
         }
 
@@ -136,20 +136,20 @@ void DiscreteSparseScalarValuedLinearOperator<ValueType>::addBlock(
 
 template <typename ValueType>
 Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> >
-DiscreteSparseScalarValuedLinearOperator<ValueType>::domain() const
+DiscreteSparseLinearOperator<ValueType>::domain() const
 {
     return m_domainSpace;
 }
 
 template <typename ValueType>
 Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> >
-DiscreteSparseScalarValuedLinearOperator<ValueType>::range() const
+DiscreteSparseLinearOperator<ValueType>::range() const
 {
     return m_rangeSpace;
 }
 
 template <typename ValueType>
-bool DiscreteSparseScalarValuedLinearOperator<ValueType>::opSupportedImpl(
+bool DiscreteSparseLinearOperator<ValueType>::opSupportedImpl(
         Thyra::EOpTransp M_trans) const
 {
     // TODO: implement remaining variants (transpose & conjugate transpose)
@@ -157,43 +157,43 @@ bool DiscreteSparseScalarValuedLinearOperator<ValueType>::opSupportedImpl(
 }
 
 template <typename ValueType>
-void DiscreteSparseScalarValuedLinearOperator<ValueType>::applyImpl(
+void DiscreteSparseLinearOperator<ValueType>::applyImpl(
         const Thyra::EOpTransp M_trans,
         const Thyra::MultiVectorBase<ValueType> &X_in,
         const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType> > &Y_inout,
         const ValueType alpha,
         const ValueType beta) const
 {
-    throw std::runtime_error("DiscreteSparseScalarValuedLinearOperator::"
+    throw std::runtime_error("DiscreteSparseLinearOperator::"
                              "applyImpl(): not implemented yet");
 }
 
 template <typename ValueType>
-void DiscreteSparseScalarValuedLinearOperator<ValueType>::applyBuiltInImpl(
+void DiscreteSparseLinearOperator<ValueType>::applyBuiltInImpl(
         const TranspositionMode trans,
         const arma::Col<ValueType>& x_in,
         arma::Col<ValueType>& y_inout,
         const ValueType alpha,
         const ValueType beta) const
 {
-    throw std::runtime_error("DiscreteSparseScalarValuedLinearOperator::"
+    throw std::runtime_error("DiscreteSparseLinearOperator::"
                              "applyBuiltInImpl(): not implemented yet");
 }
 
 
 #ifdef COMPILE_FOR_FLOAT
-template class DiscreteSparseScalarValuedLinearOperator<float>;
+template class DiscreteSparseLinearOperator<float>;
 #endif
 #ifdef COMPILE_FOR_DOUBLE
-template class DiscreteSparseScalarValuedLinearOperator<double>;
+template class DiscreteSparseLinearOperator<double>;
 #endif
 #ifdef COMPILE_FOR_COMPLEX_FLOAT
 #include <complex>
-template class DiscreteSparseScalarValuedLinearOperator<std::complex<float> >;
+template class DiscreteSparseLinearOperator<std::complex<float> >;
 #endif
 #ifdef COMPILE_FOR_COMPLEX_DOUBLE
 #include <complex>
-template class DiscreteSparseScalarValuedLinearOperator<std::complex<double> >;
+template class DiscreteSparseLinearOperator<std::complex<double> >;
 #endif
 
 } // namespace Bempp

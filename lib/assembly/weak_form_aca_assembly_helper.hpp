@@ -38,7 +38,7 @@ namespace Bempp
 {
 
 class AssemblyOptions;
-template <typename ValueType> class DiscreteScalarValuedLinearOperator;
+template <typename ValueType> class DiscreteLinearOperator;
 template <typename ValueType> class Space;
 
 /** \brief Class whose methods are called by Ahmed during assembly in the ACA mode. */
@@ -46,7 +46,7 @@ template <typename ValueType>
 class WeakFormAcaAssemblyHelper
 {
 public:
-    typedef DiscreteScalarValuedLinearOperator<ValueType> DiscreteLinOp;
+    typedef DiscreteLinearOperator<ValueType> DiscreteLinOp;
     typedef Fiber::LocalAssemblerForOperators<ValueType> LocalAssembler;
 
     WeakFormAcaAssemblyHelper(const Space<ValueType>& testSpace,

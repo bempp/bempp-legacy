@@ -23,7 +23,7 @@
 #include "meshes.hpp"
 
 #include "assembly/assembly_options.hpp"
-#include "assembly/discrete_scalar_valued_linear_operator.hpp"
+#include "assembly/discrete_linear_operator.hpp"
 #include "assembly/evaluation_options.hpp"
 #include "assembly/grid_function.hpp"
 #include "assembly/interpolated_function.hpp"
@@ -105,7 +105,7 @@ int main()
     DoubleLayerPotential3D<double> dlp;
     IdentityOperator<double> id;
 
-    typedef DiscreteScalarValuedLinearOperator<double> DiscreteLinearOperator;
+    typedef DiscreteLinearOperator<double> DiscreteLinearOperator;
     typedef std::auto_ptr<DiscreteLinearOperator> DiscreteLinearOperatorPtr;
     DiscreteLinearOperatorPtr discreteSlp =
             slp.assembleWeakForm(space, space, factory, assemblyOptions);

@@ -70,7 +70,7 @@ public:
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
 
-    virtual std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+    virtual std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakForm(
             const Space<ValueType>& testSpace,
             const Space<ValueType>& trialSpace,
@@ -82,21 +82,21 @@ public:
 private:
     void init(boost::ptr_vector<ElementaryLinearOperator<ValueType> >& terms);
 
-    std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+    std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakFormInDenseMode(
             const Space<ValueType>& testSpace,
             const Space<ValueType>& trialSpace,
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
 
-    std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+    std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakFormInAcaMode(
             const Space<ValueType>& testSpace,
             const Space<ValueType>& trialSpace,
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
 
-    std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+    std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakFormInArbitraryMode(
             const Space<ValueType>& testSpace,
             const Space<ValueType>& trialSpace,

@@ -20,8 +20,8 @@
 
 #include "config_trilinos.hpp"
 
-#ifndef bempp_discrete_scalar_valued_linear_operator_hpp
-#define bempp_discrete_scalar_valued_linear_operator_hpp
+#ifndef bempp_discrete_linear_operator_hpp
+#define bempp_discrete_linear_operator_hpp
 
 #include <armadillo>
 
@@ -47,13 +47,13 @@ enum TranspositionMode
 };
 
 template <typename ValueType>
-class DiscreteScalarValuedLinearOperator
+class DiscreteLinearOperator
 #ifdef WITH_TRILINOS
         : public Thyra::LinearOpDefaultBase<ValueType>
 #endif
 {
 public:
-    virtual ~DiscreteScalarValuedLinearOperator() {}
+    virtual ~DiscreteLinearOperator() {}
 
 #ifdef WITH_TRILINOS
     // import the apply() member function from base class

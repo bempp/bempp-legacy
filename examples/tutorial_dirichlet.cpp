@@ -26,7 +26,7 @@
 #include "grid/grid_factory.hpp"
 
 #include "assembly/assembly_options.hpp"
-#include "assembly/discrete_scalar_valued_linear_operator.hpp"
+#include "assembly/discrete_linear_operator.hpp"
 
 #include "assembly/identity_operator.hpp"
 #include "assembly/single_layer_potential_3d.hpp"
@@ -87,7 +87,7 @@ void tutorial_dirichlet1(){
     Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, GeometryFactory> factory(accuracyOptions);
 
     AssemblyOptions assemblyOptions; // again, use the default
-    typedef std::auto_ptr<DiscreteScalarValuedLinearOperator<double> > DiscreteLinearOperatorPtr;
+    typedef std::auto_ptr<DiscreteLinearOperator<double> > DiscreteLinearOperatorPtr;
     // build the weak forms of the operators
     DiscreteLinearOperatorPtr discreteSlp =
 			slp.assembleWeakForm(constSpace, linearCtsSpace, factory, assemblyOptions);

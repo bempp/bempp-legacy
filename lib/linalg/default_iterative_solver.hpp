@@ -38,8 +38,8 @@
 #include "Thyra_MultiVectorBase.hpp"
 #include "Thyra_PreconditionerBase.hpp"
 
-#include "../assembly/discrete_scalar_valued_linear_operator.hpp"
-#include "../assembly/discrete_aca_scalar_valued_linear_operator.hpp"
+#include "../assembly/discrete_linear_operator.hpp"
+#include "../assembly/discrete_aca_linear_operator.hpp"
 #include "../assembly/vector.hpp"
 
 
@@ -54,9 +54,9 @@ class DefaultIterativeSolver
 public:
 
 
-    DefaultIterativeSolver(DiscreteScalarValuedLinearOperator<ValueType>& discreteOperator,
+    DefaultIterativeSolver(DiscreteLinearOperator<ValueType>& discreteOperator,
                        Vector<ValueType>& rhs);
-    DefaultIterativeSolver(DiscreteScalarValuedLinearOperator<ValueType>& discreteOperator,
+    DefaultIterativeSolver(DiscreteLinearOperator<ValueType>& discreteOperator,
                        std::vector<Vector<ValueType>* >& rhs);
 
 
@@ -83,7 +83,7 @@ public:
 
 private:
 
-    DiscreteScalarValuedLinearOperator<ValueType>& m_discreteOperator;
+    DiscreteLinearOperator<ValueType>& m_discreteOperator;
 
     Teuchos::RCP<Thyra::LinearOpWithSolveBase<ValueType> > m_lhs;
     Teuchos::RCP<Thyra::MultiVectorBase<ValueType> > m_rhs;

@@ -3,7 +3,7 @@
 #include "config_trilinos.hpp"
 
 #include "assembly_options.hpp"
-#include "discrete_scalar_valued_linear_operator.hpp"
+#include "discrete_linear_operator.hpp"
 #include "identity_operator.hpp"
 
 #include "../common/stl_io.hpp"
@@ -50,7 +50,7 @@ GridFunction<ValueType>::GridFunction(
     idAssemblyOptions.switchToDense();
 //#endif
     IdentityOperator<ValueType> id;
-    std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> > discreteId =
+    std::auto_ptr<DiscreteLinearOperator<ValueType> > discreteId =
             id.assembleWeakForm(space, space, factory, idAssemblyOptions);
     // TODO: if WITH_TRILINOS use sparse assembly and do multiplication
     // using Epetra.

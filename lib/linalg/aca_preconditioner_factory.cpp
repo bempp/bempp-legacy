@@ -22,8 +22,8 @@
 #ifdef WITH_TRILINOS
 
 #include "aca_preconditioner_factory.hpp"
-#include "../assembly/discrete_aca_scalar_valued_linear_operator.hpp"
-#include "../assembly/discrete_scalar_valued_linear_operator.hpp"
+#include "../assembly/discrete_aca_linear_operator.hpp"
+#include "../assembly/discrete_linear_operator.hpp"
 #include "../assembly/aca_approximate_lu_inverse.hpp"
 #include "Teuchos_RCP.hpp"
 #include "Thyra_LinearOpBase.hpp"
@@ -36,11 +36,11 @@ namespace Bempp {
 
 template<typename ValueType>
 Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > AcaPreconditionerFactory<ValueType>::AcaOperatorToPreconditioner
-    (DiscreteScalarValuedLinearOperator<ValueType>& discreteOperator,
+    (DiscreteLinearOperator<ValueType>& discreteOperator,
      const double delta){
 
-    const DiscreteAcaScalarValuedLinearOperator<ValueType>& discreteAcaOperator =
-                DiscreteAcaScalarValuedLinearOperator<ValueType>::castToAca(discreteOperator);
+    const DiscreteAcaLinearOperator<ValueType>& discreteAcaOperator =
+                DiscreteAcaLinearOperator<ValueType>::castToAca(discreteOperator);
 
     Teuchos::RCP<const Thyra::LinearOpBase<ValueType> > precOp(
                 new AcaApproximateLuInverse<ValueType>(discreteAcaOperator,delta));

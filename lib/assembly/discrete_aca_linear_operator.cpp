@@ -22,7 +22,7 @@
 #include "config_trilinos.hpp"
 #ifdef WITH_AHMED
 
-#include "discrete_aca_scalar_valued_linear_operator.hpp"
+#include "discrete_aca_linear_operator.hpp"
 #include "ahmed_aux.hpp"
 #include "../common/not_implemented_error.hpp"
 
@@ -38,8 +38,8 @@ namespace Bempp
 {
 
 template <typename ValueType>
-DiscreteAcaScalarValuedLinearOperator<ValueType>::
-DiscreteAcaScalarValuedLinearOperator(
+DiscreteAcaLinearOperator<ValueType>::
+DiscreteAcaLinearOperator(
         unsigned int rowCount, unsigned int columnCount,
         int maximumRank,
         std::auto_ptr<AhmedBemblcluster> blockCluster,
@@ -61,7 +61,7 @@ DiscreteAcaScalarValuedLinearOperator(
 
 template <typename ValueType>
 void
-DiscreteAcaScalarValuedLinearOperator<ValueType>::
+DiscreteAcaLinearOperator<ValueType>::
 dump() const
 {
     std::cout << asMatrix() << std::endl;
@@ -69,7 +69,7 @@ dump() const
 
 template <typename ValueType>
 arma::Mat<ValueType>
-DiscreteAcaScalarValuedLinearOperator<ValueType>::
+DiscreteAcaLinearOperator<ValueType>::
 asMatrix() const
 {
     const unsigned int nRows = rowCount();
@@ -102,7 +102,7 @@ asMatrix() const
 
 template <typename ValueType>
 unsigned int
-DiscreteAcaScalarValuedLinearOperator<ValueType>::
+DiscreteAcaLinearOperator<ValueType>::
 rowCount() const
 {
 #ifdef WITH_TRILINOS
@@ -114,7 +114,7 @@ rowCount() const
 
 template <typename ValueType>
 unsigned int
-DiscreteAcaScalarValuedLinearOperator<ValueType>::
+DiscreteAcaLinearOperator<ValueType>::
 columnCount() const
 {
 #ifdef WITH_TRILINOS
@@ -126,35 +126,35 @@ columnCount() const
 
 template <typename ValueType>
 void
-DiscreteAcaScalarValuedLinearOperator<ValueType>::
+DiscreteAcaLinearOperator<ValueType>::
 addBlock(const std::vector<int>& rows,
          const std::vector<int>& cols,
          arma::Mat<ValueType>& block) const
 {
-    throw std::runtime_error("DiscreteAcaScalarValuedLinearOperator::"
+    throw std::runtime_error("DiscreteAcaLinearOperator::"
                              "addBlock(): not implemented yet");
 }
 
 #ifdef WITH_TRILINOS
 template <typename ValueType>
 Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> >
-DiscreteAcaScalarValuedLinearOperator<ValueType>::
+DiscreteAcaLinearOperator<ValueType>::
 domain() const
 {
     return m_domainSpace;
 }
 
 template <typename ValueType>
-const DiscreteAcaScalarValuedLinearOperator<ValueType>& 
-DiscreteAcaScalarValuedLinearOperator<ValueType>::castToAca
-    (DiscreteScalarValuedLinearOperator<ValueType>& discreteOperator){
-        return Teuchos::dyn_cast<DiscreteAcaScalarValuedLinearOperator<ValueType> >(discreteOperator);
+const DiscreteAcaLinearOperator<ValueType>& 
+DiscreteAcaLinearOperator<ValueType>::castToAca
+    (DiscreteLinearOperator<ValueType>& discreteOperator){
+        return Teuchos::dyn_cast<DiscreteAcaLinearOperator<ValueType> >(discreteOperator);
     }
 
 
 template <typename ValueType>
 Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> >
-DiscreteAcaScalarValuedLinearOperator<ValueType>::
+DiscreteAcaLinearOperator<ValueType>::
 range() const
 {
     return m_rangeSpace;
@@ -162,7 +162,7 @@ range() const
 
 template <typename ValueType>
 bool
-DiscreteAcaScalarValuedLinearOperator<ValueType>::
+DiscreteAcaLinearOperator<ValueType>::
 opSupportedImpl(Thyra::EOpTransp M_trans) const
 {
     // TODO: implement remaining variants (transpose & conjugate transpose)
@@ -171,7 +171,7 @@ opSupportedImpl(Thyra::EOpTransp M_trans) const
 
 template <typename ValueType>
 void
-DiscreteAcaScalarValuedLinearOperator<ValueType>::
+DiscreteAcaLinearOperator<ValueType>::
 applyImpl(const Thyra::EOpTransp M_trans,
           const Thyra::MultiVectorBase<ValueType>& X_in,
           const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType> >& Y_inout,
@@ -240,7 +240,7 @@ applyImpl(const Thyra::EOpTransp M_trans,
 
 template <typename ValueType>
 void
-DiscreteAcaScalarValuedLinearOperator<ValueType>::
+DiscreteAcaLinearOperator<ValueType>::
 applyBuiltInImpl(const TranspositionMode trans,
                  const arma::Col<ValueType>& x_in,
                  arma::Col<ValueType>& y_inout,
@@ -249,11 +249,11 @@ applyBuiltInImpl(const TranspositionMode trans,
 {
     if (trans != NO_TRANSPOSE)
         throw std::runtime_error(
-                "DiscreteAcaScalarValuedLinearOperator::applyBuiltInImpl(): "
+                "DiscreteAcaLinearOperator::applyBuiltInImpl(): "
                 "transposition modes other than NO_TRANSPOSE are not supported");
     if (columnCount() != x_in.n_rows && rowCount() != y_inout.n_rows)
         throw std::invalid_argument(
-                "DiscreteAcaScalarValuedLinearOperator::applyBuiltInImpl(): "
+                "DiscreteAcaLinearOperator::applyBuiltInImpl(): "
                 "incorrect vector length");
 
     if (beta == 0.)
@@ -275,18 +275,18 @@ applyBuiltInImpl(const TranspositionMode trans,
 }
 
 #ifdef COMPILE_FOR_FLOAT
-template class DiscreteAcaScalarValuedLinearOperator<float>;
+template class DiscreteAcaLinearOperator<float>;
 #endif
 #ifdef COMPILE_FOR_DOUBLE
-template class DiscreteAcaScalarValuedLinearOperator<double>;
+template class DiscreteAcaLinearOperator<double>;
 #endif
 #ifdef COMPILE_FOR_COMPLEX_FLOAT
 #include <complex>
-template class DiscreteAcaScalarValuedLinearOperator<std::complex<float> >;
+template class DiscreteAcaLinearOperator<std::complex<float> >;
 #endif
 #ifdef COMPILE_FOR_COMPLEX_DOUBLE
 #include <complex>
-template class DiscreteAcaScalarValuedLinearOperator<std::complex<double> >;
+template class DiscreteAcaLinearOperator<std::complex<double> >;
 #endif
 
 } // namespace Bempp

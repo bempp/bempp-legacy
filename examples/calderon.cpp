@@ -33,7 +33,7 @@
 #include "assembly/hypersingular_operator_3d.hpp"
 #include "assembly/linear_operator_superposition.hpp"
 #include "assembly/elementary_linear_operator.hpp"
-#include "assembly/discrete_scalar_valued_linear_operator_superposition.hpp"
+#include "assembly/discrete_linear_operator_superposition.hpp"
 #include "grid/geometry_factory.hpp"
 
 #include "fiber/accuracy_options.hpp"
@@ -46,7 +46,7 @@ using namespace arma;
  * Represents the (Laplace) Calderon Projection on a given mesh.
  */
 class Calderon {
-    std::auto_ptr<DiscreteScalarValuedLinearOperator<double> > slp, adj, hyp, dbl, id12, id21;
+    std::auto_ptr<DiscreteLinearOperator<double> > slp, adj, hyp, dbl, id12, id21;
 public:
 	Calderon(Grid* grid){
 		PiecewiseLinearContinuousScalarSpace<double> space1(*grid);

@@ -2,7 +2,7 @@
 
 #include "aca_global_assembler.hpp"
 #include "assembly_options.hpp"
-#include "discrete_dense_scalar_valued_linear_operator.hpp"
+#include "discrete_dense_linear_operator.hpp"
 #include "discrete_vector_valued_linear_operator.hpp"
 #include "evaluation_options.hpp"
 #include "grid_function.hpp"
@@ -202,7 +202,7 @@ ElementaryIntegralOperator<ValueType>::assembleOperator(
 }
 
 template <typename ValueType>
-std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+std::auto_ptr<DiscreteLinearOperator<ValueType> >
 ElementaryIntegralOperator<ValueType>::assembleWeakForm(
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,
@@ -271,7 +271,7 @@ ElementaryIntegralOperator<ValueType>::assembleWeakForm(
 }
 
 template <typename ValueType>
-std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+std::auto_ptr<DiscreteLinearOperator<ValueType> >
 ElementaryIntegralOperator<ValueType>::assembleWeakFormInternal(
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,
@@ -322,7 +322,7 @@ ElementaryIntegralOperator<ValueType>::assembleOperatorInAcaMode(
 }
 
 template <typename ValueType>
-std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+std::auto_ptr<DiscreteLinearOperator<ValueType> >
 ElementaryIntegralOperator<ValueType>::assembleWeakFormInDenseMode(
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,
@@ -397,12 +397,12 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInDenseMode(
 
     // Create and return a discrete operator represented by the matrix that
     // has just been calculated
-    return std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >(
-                new DiscreteDenseScalarValuedLinearOperator<ValueType>(result));
+    return std::auto_ptr<DiscreteLinearOperator<ValueType> >(
+                new DiscreteDenseLinearOperator<ValueType>(result));
 }
 
 template <typename ValueType>
-std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+std::auto_ptr<DiscreteLinearOperator<ValueType> >
 ElementaryIntegralOperator<ValueType>::assembleWeakFormInAcaMode(
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,

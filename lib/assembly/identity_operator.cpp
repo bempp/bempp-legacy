@@ -6,8 +6,8 @@
 #include <vector>
 
 #include "assembly_options.hpp"
-#include "discrete_dense_scalar_valued_linear_operator.hpp"
-#include "discrete_sparse_scalar_valued_linear_operator.hpp"
+#include "discrete_dense_linear_operator.hpp"
+#include "discrete_sparse_linear_operator.hpp"
 
 #include "../common/types.hpp"
 #include "../fiber/basis.hpp"
@@ -94,7 +94,7 @@ IdentityOperator<ValueType>::assembleOperator(
 }
 
 template <typename ValueType>
-std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+std::auto_ptr<DiscreteLinearOperator<ValueType> >
 IdentityOperator<ValueType>::assembleWeakForm(
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,
@@ -157,7 +157,7 @@ IdentityOperator<ValueType>::assembleWeakForm(
 }
 
 template <typename ValueType>
-std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+std::auto_ptr<DiscreteLinearOperator<ValueType> >
 IdentityOperator<ValueType>::assembleWeakFormInternal(
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,
@@ -179,7 +179,7 @@ IdentityOperator<ValueType>::assembleWeakFormInternal(
 }
 
 template <typename ValueType>
-std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+std::auto_ptr<DiscreteLinearOperator<ValueType> >
 IdentityOperator<ValueType>::assembleWeakFormInDenseMode(
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,
@@ -223,12 +223,12 @@ IdentityOperator<ValueType>::assembleWeakFormInDenseMode(
                 result(testGdofs[e][testIndex], trialGdofs[e][trialIndex]) +=
                         localResult[e](testIndex, trialIndex);
 
-    return std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >(
-                new DiscreteDenseScalarValuedLinearOperator<ValueType>(result));
+    return std::auto_ptr<DiscreteLinearOperator<ValueType> >(
+                new DiscreteDenseLinearOperator<ValueType>(result));
 }
 
 template <typename ValueType>
-std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+std::auto_ptr<DiscreteLinearOperator<ValueType> >
 IdentityOperator<ValueType>::assembleWeakFormInSparseMode(
         const Space<ValueType>& testSpace,
         const Space<ValueType>& trialSpace,
@@ -312,8 +312,8 @@ IdentityOperator<ValueType>::assembleWeakFormInSparseMode(
 
     // Create and return a discrete operator represented by the matrix that
     // has just been calculated
-    return std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >(
-                new DiscreteSparseScalarValuedLinearOperator<ValueType>(result));
+    return std::auto_ptr<DiscreteLinearOperator<ValueType> >(
+                new DiscreteSparseLinearOperator<ValueType>(result));
 #else // WITH_TRILINOS
     throw std::runtime_error("To enable assembly in sparse mode, recompile BEM++ "
                              "with the symbol WITH_TRILINOS defined.");

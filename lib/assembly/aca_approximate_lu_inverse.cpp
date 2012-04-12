@@ -5,7 +5,7 @@
 #include "aca_approximate_lu_inverse.hpp"
 
 #include "ahmed_aux.hpp"
-#include "discrete_aca_scalar_valued_linear_operator.hpp"
+#include "discrete_aca_linear_operator.hpp"
 
 #ifdef WITH_TRILINOS
 #include <Thyra_DetachedSpmdVectorView.hpp>
@@ -17,7 +17,7 @@ namespace Bempp
 
 template <typename ValueType>
 AcaApproximateLuInverse<ValueType>::AcaApproximateLuInverse(
-        const DiscreteAcaScalarValuedLinearOperator<ValueType>& fwdOp,
+        const DiscreteAcaLinearOperator<ValueType>& fwdOp,
         ValueType delta) :
     // All range-domain swaps intended!
 #ifdef WITH_TRILINOS

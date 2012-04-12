@@ -28,8 +28,8 @@
 
 #include "assembly/aca_approximate_lu_inverse.hpp"
 #include "assembly/assembly_options.hpp"
-#include "assembly/discrete_aca_scalar_valued_linear_operator.hpp"
-#include "assembly/discrete_scalar_valued_linear_operator.hpp"
+#include "assembly/discrete_aca_linear_operator.hpp"
+#include "assembly/discrete_linear_operator.hpp"
 #include "assembly/vector.hpp"
 #include "space/piecewise_constant_scalar_space.hpp"
 
@@ -150,7 +150,7 @@ int main()
 
     // Generate discrete linear operator
 
-    typedef DiscreteScalarValuedLinearOperator<double> DiscreteLinearOperator;
+    typedef DiscreteLinearOperator<double> DiscreteLinearOperator;
     typedef std::auto_ptr<DiscreteLinearOperator> DiscreteLinearOperatorPtr;
     DiscreteLinearOperatorPtr discreteLhs =
             lhsOperator.assembleWeakForm(space, space, factory, assemblyOptions);

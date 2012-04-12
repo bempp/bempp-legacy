@@ -20,15 +20,15 @@
 
 #include "config_trilinos.hpp"
 
-#include "discrete_scalar_valued_linear_operator_superposition.hpp"
+#include "discrete_linear_operator_superposition.hpp"
 #include "../common/not_implemented_error.hpp"
 
 namespace Bempp
 {
 
 template <typename ValueType>
-DiscreteScalarValuedLinearOperatorSuperposition<ValueType>::
-DiscreteScalarValuedLinearOperatorSuperposition(
+DiscreteLinearOperatorSuperposition<ValueType>::
+DiscreteLinearOperatorSuperposition(
         boost::ptr_vector<TermType>& terms)
 {
     // Check that all terms have the same dimensions
@@ -39,8 +39,8 @@ DiscreteScalarValuedLinearOperatorSuperposition(
         for (int i = 1; i < terms.size(); ++i)
             if (terms[i].rowCount() != nRows || terms[i].columnCount() != nCols)
                 throw std::invalid_argument(
-                        "DiscreteScalarValuedLinearOperatorSuperposition::"
-                        "DiscreteScalarValuedLinearOperatorSuperposition(): "
+                        "DiscreteLinearOperatorSuperposition::"
+                        "DiscreteLinearOperatorSuperposition(): "
                         "all terms must have the same dimensions");
     }
 
@@ -55,16 +55,16 @@ DiscreteScalarValuedLinearOperatorSuperposition(
 }
 
 template <typename ValueType>
-void DiscreteScalarValuedLinearOperatorSuperposition<ValueType>::dump() const
+void DiscreteLinearOperatorSuperposition<ValueType>::dump() const
 {
     throw NotImplementedError(
-                "DiscreteScalarValuedLinearOperatorSuperposition::dump(): "
+                "DiscreteLinearOperatorSuperposition::dump(): "
                 "not implemented yet");
 }
 
 template <typename ValueType>
 arma::Mat<ValueType>
-DiscreteScalarValuedLinearOperatorSuperposition<ValueType>::asMatrix() const
+DiscreteLinearOperatorSuperposition<ValueType>::asMatrix() const
 {
     arma::Mat<ValueType> result;
     if (!m_terms.empty()) {
@@ -77,7 +77,7 @@ DiscreteScalarValuedLinearOperatorSuperposition<ValueType>::asMatrix() const
 
 template <typename ValueType>
 unsigned int
-DiscreteScalarValuedLinearOperatorSuperposition<ValueType>::rowCount() const
+DiscreteLinearOperatorSuperposition<ValueType>::rowCount() const
 {
     if (m_terms.empty())
         return 0;
@@ -87,7 +87,7 @@ DiscreteScalarValuedLinearOperatorSuperposition<ValueType>::rowCount() const
 
 template <typename ValueType>
 unsigned int
-DiscreteScalarValuedLinearOperatorSuperposition<ValueType>::columnCount() const
+DiscreteLinearOperatorSuperposition<ValueType>::columnCount() const
 {
     if (m_terms.empty())
         return 0;
@@ -96,7 +96,7 @@ DiscreteScalarValuedLinearOperatorSuperposition<ValueType>::columnCount() const
 }
 
 template <typename ValueType>
-void DiscreteScalarValuedLinearOperatorSuperposition<ValueType>::addBlock(
+void DiscreteLinearOperatorSuperposition<ValueType>::addBlock(
         const std::vector<int>& rows,
         const std::vector<int>& cols,
         arma::Mat<ValueType>& block) const
@@ -108,20 +108,20 @@ void DiscreteScalarValuedLinearOperatorSuperposition<ValueType>::addBlock(
 #ifdef WITH_TRILINOS
 template <typename ValueType>
 Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> >
-DiscreteScalarValuedLinearOperatorSuperposition<ValueType>::domain() const
+DiscreteLinearOperatorSuperposition<ValueType>::domain() const
 {
     return m_domainSpace;
 }
 
 template <typename ValueType>
 Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> >
-DiscreteScalarValuedLinearOperatorSuperposition<ValueType>::range() const
+DiscreteLinearOperatorSuperposition<ValueType>::range() const
 {
     return m_rangeSpace;
 }
 
 template <typename ValueType>
-bool DiscreteScalarValuedLinearOperatorSuperposition<ValueType>::opSupportedImpl(
+bool DiscreteLinearOperatorSuperposition<ValueType>::opSupportedImpl(
         Thyra::EOpTransp M_trans) const
 {
     // TODO: implement remaining variants (transpose & conjugate transpose)
@@ -129,20 +129,20 @@ bool DiscreteScalarValuedLinearOperatorSuperposition<ValueType>::opSupportedImpl
 }
 
 template <typename ValueType>
-void DiscreteScalarValuedLinearOperatorSuperposition<ValueType>::applyImpl(
+void DiscreteLinearOperatorSuperposition<ValueType>::applyImpl(
         const Thyra::EOpTransp M_trans,
         const Thyra::MultiVectorBase<ValueType> &X_in,
         const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType> > &Y_inout,
         const ValueType alpha,
         const ValueType beta) const
 {
-    throw std::runtime_error("DiscreteScalarValuedLinearOperatorSuperposition::"
+    throw std::runtime_error("DiscreteLinearOperatorSuperposition::"
                              "applyImpl(): not implemented yet");
 }
 #endif // WITH_TRILINOS
 
 template <typename ValueType>
-void DiscreteScalarValuedLinearOperatorSuperposition<ValueType>::
+void DiscreteLinearOperatorSuperposition<ValueType>::
 applyBuiltInImpl(const TranspositionMode trans,
                  const arma::Col<ValueType>& x_in,
                  arma::Col<ValueType>& y_inout,
@@ -161,18 +161,18 @@ applyBuiltInImpl(const TranspositionMode trans,
 
 
 #ifdef COMPILE_FOR_FLOAT
-template class DiscreteScalarValuedLinearOperatorSuperposition<float>;
+template class DiscreteLinearOperatorSuperposition<float>;
 #endif
 #ifdef COMPILE_FOR_DOUBLE
-template class DiscreteScalarValuedLinearOperatorSuperposition<double>;
+template class DiscreteLinearOperatorSuperposition<double>;
 #endif
 #ifdef COMPILE_FOR_COMPLEX_FLOAT
 #include <complex>
-template class DiscreteScalarValuedLinearOperatorSuperposition<std::complex<float> >;
+template class DiscreteLinearOperatorSuperposition<std::complex<float> >;
 #endif
 #ifdef COMPILE_FOR_COMPLEX_DOUBLE
 #include <complex>
-template class DiscreteScalarValuedLinearOperatorSuperposition<std::complex<double> >;
+template class DiscreteLinearOperatorSuperposition<std::complex<double> >;
 #endif
 
 } // namespace Bempp

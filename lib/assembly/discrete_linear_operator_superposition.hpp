@@ -20,10 +20,10 @@
 
 #include "config_trilinos.hpp"
 
-#ifndef bempp_discrete_scalar_valued_linear_operator_superposition_hpp
-#define bempp_discrete_scalar_valued_linear_operator_superposition_hpp
+#ifndef bempp_discrete_linear_operator_superposition_hpp
+#define bempp_discrete_linear_operator_superposition_hpp
 
-#include "discrete_scalar_valued_linear_operator.hpp"
+#include "discrete_linear_operator.hpp"
 
 #include <boost/ptr_container/ptr_vector.hpp>
 
@@ -36,14 +36,14 @@ namespace Bempp
 {
 
 template <typename ValueType>
-class DiscreteScalarValuedLinearOperatorSuperposition :
-        public DiscreteScalarValuedLinearOperator<ValueType>
+class DiscreteLinearOperatorSuperposition :
+        public DiscreteLinearOperator<ValueType>
 {
 public:
-    typedef DiscreteScalarValuedLinearOperator<ValueType> TermType;
+    typedef DiscreteLinearOperator<ValueType> TermType;
 
     /* acquires ownership of these operators */
-    DiscreteScalarValuedLinearOperatorSuperposition(
+    DiscreteLinearOperatorSuperposition(
             boost::ptr_vector<TermType>& terms);
 
     virtual void dump() const;

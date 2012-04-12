@@ -3,7 +3,7 @@
 #ifndef bempp_aca_approximate_lu_inverse_hpp
 #define bempp_aca_approximate_lu_inverse_hpp
 
-#include "discrete_scalar_valued_linear_operator.hpp"
+#include "discrete_linear_operator.hpp"
 
 #ifdef WITH_TRILINOS
 #include <Thyra_SpmdVectorSpaceBase_decl.hpp>
@@ -16,10 +16,10 @@ namespace Bempp
 {
 
 template <typename ValueType>
-class DiscreteAcaScalarValuedLinearOperator;
+class DiscreteAcaLinearOperator;
 
 template <typename ValueType>
-class AcaApproximateLuInverse : public DiscreteScalarValuedLinearOperator<ValueType>
+class AcaApproximateLuInverse : public DiscreteLinearOperator<ValueType>
 {
 public:
     /** \brief Construct an approximate LU decomposition of a H-matrix.
@@ -28,7 +28,7 @@ public:
     \param[in] delta  Requested approximation accuracy (M. Bebendorf recommends
                       delta = 0.1). */
     AcaApproximateLuInverse(
-            const DiscreteAcaScalarValuedLinearOperator<ValueType>& fwdOp,
+            const DiscreteAcaLinearOperator<ValueType>& fwdOp,
             ValueType delta);
 
     virtual ~AcaApproximateLuInverse();

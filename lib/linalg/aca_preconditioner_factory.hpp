@@ -29,7 +29,7 @@
 
 #include "Teuchos_RCP.hpp"
 #include "Thyra_PreconditionerBase.hpp"
-#include "../assembly/discrete_scalar_valued_linear_operator.hpp"
+#include "../assembly/discrete_linear_operator.hpp"
 
 namespace Bempp {
 
@@ -38,7 +38,7 @@ class AcaPreconditionerFactory {
     
     public:        
     static Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > AcaOperatorToPreconditioner
-        (DiscreteScalarValuedLinearOperator<ValueType>& discreteOperator, const double delta=0.1);
+        (DiscreteLinearOperator<ValueType>& discreteOperator, const double delta=0.1);
         
         
 };

@@ -41,7 +41,7 @@ namespace Bempp {
 
 class Grid;
 class GeometryFactory;
-template <typename ValueType> class DiscreteScalarValuedLinearOperator;
+template <typename ValueType> class DiscreteLinearOperator;
 template <typename ValueType> class DiscreteVectorValuedLinearOperator;
 template <typename ValueType> class Space;
 
@@ -108,7 +108,7 @@ public:
       This is the overload intended to be called by the user, who needs to
       provide a local-assembler factory \p factory to be used to construct an
       appropriate local assembler. */
-    virtual std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+    virtual std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakForm(
             const Space<ValueType>& testSpace,
             const Space<ValueType>& trialSpace,

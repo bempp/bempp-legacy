@@ -1,6 +1,6 @@
 #include "weak_form_aca_assembly_helper.hpp"
 
-#include "discrete_scalar_valued_linear_operator.hpp"
+#include "discrete_linear_operator.hpp"
 #include "../common/multidimensional_arrays.hpp"
 #include "../fiber/types.hpp"
 #include "../fiber/local_assembler_for_operators.hpp"

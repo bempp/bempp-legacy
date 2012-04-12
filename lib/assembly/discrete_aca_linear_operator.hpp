@@ -20,34 +20,44 @@
 
 #include "config_trilinos.hpp"
 
-#ifndef bempp_discrete_sparse_scalar_valued_linear_operator_hpp
-#define bempp_discrete_sparse_scalar_valued_linear_operator_hpp
+#ifndef bempp_discrete_aca_linear_operator_hpp
+#define bempp_discrete_aca_linear_operator_hpp
 
-#include "discrete_scalar_valued_linear_operator.hpp"
+#include "discrete_linear_operator.hpp"
+#include "ahmed_aux_fwd.hpp"
+#include "index_permutation.hpp"
+#include "../common/not_implemented_error.hpp"
 
-#include <memory>
+#include <iostream>
+#include <boost/shared_array.hpp>
 
 #ifdef WITH_TRILINOS
 #include <Teuchos_RCP.hpp>
 #include <Thyra_SpmdVectorSpaceBase_decl.hpp>
-class Epetra_FECrsMatrix;
 #endif
 
-namespace Bempp
-{
+namespace Bempp {
+
+template <typename ValueType> class AcaApproximateLuInverse;
 
 template <typename ValueType>
-class DiscreteSparseScalarValuedLinearOperator :
-        public DiscreteScalarValuedLinearOperator<ValueType>
+class DiscreteAcaLinearOperator :
+        public DiscreteLinearOperator<ValueType>
 {
-#ifdef WITH_TRILINOS
+    friend class AcaApproximateLuInverse<ValueType>;
+
 public:
-    DiscreteSparseScalarValuedLinearOperator(std::auto_ptr<Epetra_FECrsMatrix> mat);
-#else
-    // This class cannot be used without Trilinos
-private:
-    DiscreteSparseScalarValuedLinearOperator();
-#endif
+    typedef bemblcluster<AhmedDofWrapper<ValueType>, AhmedDofWrapper<ValueType> >
+    AhmedBemblcluster;
+
+    
+    DiscreteAcaLinearOperator(
+            unsigned int rowCount, unsigned int columnCount,
+            int maximumRank,
+            std::auto_ptr<AhmedBemblcluster> blockCluster,
+            boost::shared_array<mblock<ValueType>*> blocks,
+            const IndexPermutation& domainPermutation,
+            const IndexPermutation& rangePermutation);
 
     virtual void dump() const;
 
@@ -60,16 +70,19 @@ private:
                           const std::vector<int>& cols,
                           arma::Mat<ValueType>& block) const;
 
-protected:
 #ifdef WITH_TRILINOS
+public:
+    static const DiscreteAcaLinearOperator<ValueType>& castToAca
+        (DiscreteLinearOperator<ValueType>& discreteOperator);
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > range() const;
 
+protected:
     virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
     virtual void applyImpl(
             const Thyra::EOpTransp M_trans,
-            const Thyra::MultiVectorBase<ValueType> &X_in,
-            const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType> > &Y_inout,
+            const Thyra::MultiVectorBase<ValueType>& X_in,
+            const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType> >& Y_inout,
             const ValueType alpha,
             const ValueType beta) const;
 #endif
@@ -83,11 +96,21 @@ private:
 
 private:
 #ifdef WITH_TRILINOS
-    std::auto_ptr<Epetra_FECrsMatrix> m_mat;
     Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_domainSpace;
     Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_rangeSpace;
+#else
+    unsigned int m_rowCount;
+    unsigned int m_columnCount;
 #endif
+    int m_maximumRank;
+
+    std::auto_ptr<AhmedBemblcluster> m_blockCluster;
+    boost::shared_array<mblock<ValueType>*> m_blocks;
+
+    IndexPermutation m_domainPermutation;
+    IndexPermutation m_rangePermutation;
 };
+
 
 } // namespace Bempp
 
