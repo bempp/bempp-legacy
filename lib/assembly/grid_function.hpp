@@ -2,6 +2,7 @@
 #define bempp_grid_function_hpp
 
 #include "../grid/vtk_writer.hpp"
+#include "vector.hpp"
 
 #include <armadillo>
 #include <memory>
@@ -55,7 +56,7 @@ public:
     int codomainDimension() const;
 
     // possibly replace output type with DiscreteFunction/GridFunctionCoefficients/sth like this
-    arma::Col<ValueType> coefficients() const;
+    Vector<ValueType> coefficients() const;
     const Fiber::Basis<ValueType>& basis(const Entity<0>& element) const;
     void getLocalCoefficients(const Entity<0>& element,
                               std::vector<ValueType>& coeffs) const;

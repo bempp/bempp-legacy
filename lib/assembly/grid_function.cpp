@@ -93,9 +93,9 @@ int GridFunction<ValueType>::codomainDimension() const
 }
 
 template <typename ValueType>
-arma::Col<ValueType> GridFunction<ValueType>::coefficients() const
+Vector<ValueType> GridFunction<ValueType>::coefficients() const
 {
-    return m_coefficients;
+    return Vector<ValueType>(m_coefficients);
 }
 
 // Redundant, in fact -- can be obtained directly from Space

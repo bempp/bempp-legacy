@@ -177,7 +177,7 @@ int main()
     Fiber::OrdinaryFunction<MyFunctor> function(functor);
 
     GridFunction<double> gridFunction(space, function, factory, assemblyOptions);
-    arma::Col<double> coefficients = gridFunction.coefficients();
+    arma::Col<double> coefficients = gridFunction.coefficients().asArmadilloVector();
     std::cout << "\nGenerated vector of coefficients:\n" << coefficients << std::endl;
 
     gridFunction.exportToVtk(VtkWriter::VERTEX_DATA,
