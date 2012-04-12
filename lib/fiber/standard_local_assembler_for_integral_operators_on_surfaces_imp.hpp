@@ -23,8 +23,61 @@
 
 #include "accuracy_options.hpp"
 
+#include <tbb/parallel_for.h>
+#include <tbb/task_scheduler_init.h>
+
 namespace Fiber
 {
+
+namespace
+{
+
+template <typename ValueType>
+class SingularIntegralCalculatorLoopBody
+{
+public:
+    typedef TestKernelTrialIntegrator<ValueType> Integrator;
+    typedef typename Integrator::ElementIndexPair ElementIndexPair;
+
+    SingularIntegralCalculatorLoopBody(
+            const Integrator& activeIntegrator,
+            const std::vector<ElementIndexPair>& activeElementPairs,
+            const Basis<ValueType>& activeTestBasis,
+            const Basis<ValueType>& activeTrialBasis,
+            arma::Cube<ValueType>& localResult) :
+        m_activeIntegrator(activeIntegrator),
+        m_activeElementPairs(activeElementPairs),
+        m_activeTestBasis(activeTestBasis),
+        m_activeTrialBasis(activeTrialBasis),
+        m_localResult(localResult)
+    {
+    }
+
+    void operator() (const tbb::blocked_range<size_t>& r) const {
+        // copy the relevant subset of m_activeElementPairs into
+        // localActiveElementPairs
+        std::vector<ElementIndexPair> localActiveElementPairs(
+                    &m_activeElementPairs[r.begin()],
+                    &m_activeElementPairs[r.end()]);
+        arma::Cube<ValueType> localLocalResult(
+                    &m_localResult(0, 0, r.begin()),
+                    m_localResult.n_rows,
+                    m_localResult.n_cols,
+                    r.size(),
+                    false /* copy_aux_mem */);
+        m_activeIntegrator.integrate(localActiveElementPairs, m_activeTestBasis,
+                                   m_activeTrialBasis, localLocalResult);
+    }
+
+private:
+    const Integrator& m_activeIntegrator;
+    const std::vector<ElementIndexPair>& m_activeElementPairs;
+    const Basis<ValueType>& m_activeTestBasis;
+    const Basis<ValueType>& m_activeTrialBasis;
+    mutable arma::Cube<ValueType>& m_localResult;
+};
+
+} // namespace
 
 template <typename ValueType, typename GeometryFactory>
 StandardLocalAssemblerForIntegralOperatorsOnSurfaces<ValueType, GeometryFactory>::
@@ -423,9 +476,18 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
         }
 
         // Integrate!
-        arma::Cube<ValueType> localResult;
-        activeIntegrator.integrate(activeElementPairs, activeTestBasis,
-                                   activeTrialBasis, localResult);
+        arma::Cube<ValueType> localResult(activeTestBasis.size(),
+                                          activeTrialBasis.size(),
+                                          activeElementPairs.size());
+//        activeIntegrator.integrate(activeElementPairs, activeTestBasis,
+//                                   activeTrialBasis, localResult);
+
+//        tbb::task_scheduler_init scheduler(maxThreadCount);
+        typedef SingularIntegralCalculatorLoopBody<ValueType> Body;
+        tbb::parallel_for(tbb::blocked_range<size_t>(0, activeElementPairs.size()),
+                          Body(activeIntegrator,
+                               activeElementPairs, activeTestBasis, activeTrialBasis,
+                               localResult));
 
         // Distribute the just calculated integrals into the result array
         // that will be returned to caller
