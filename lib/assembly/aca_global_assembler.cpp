@@ -242,8 +242,8 @@ AcaGlobalAssembler<ValueType>::assembleWeakForm(
                 new DiscreteAcaLinOp(testDofCount, trialDofCount,
                                      acaOptions.maximumRank,
                                      doubleClusterTree, blocks,
-                                     IndexPermutation(o2pTestDofs),
-                                     IndexPermutation(o2pTrialDofs)));
+                                     IndexPermutation(o2pTrialDofs),
+                                     IndexPermutation(o2pTestDofs)));
     return result;
 #else // without Ahmed
     throw std::runtime_error("To enable assembly in ACA mode, recompile BEM++ "
