@@ -71,134 +71,131 @@ public:
     // the array "result"
     inline void evaluate(const arma::Col<ValueType>& point,
                   arma::Col<ValueType>& result) const {
-        // result(0) = sin(0.5 * point(0) * cos(0.25 * point(2))) * cos(point(1));
+        //result(0) = sin(0.5 * point(0) * cos(0.25 * point(2))) * cos(point(1));
         result(0) = 1.;
     }
 };
 
-/**
-  This script solves the Laplace equation
-
-    \nabla^2 V = 0
-
-  outside a sphere with radius 1, with the Dirichlet boundary condition
-
-    V(x) = 1
-
-  imposed on the surface of the sphere and the condition
-
-    lim_{|x|\to\infty} V(x) = 0
-
-  imposed at infinity. The analytical solution is
-
-    V(x) = 1/|x|,
-
-  where |x| is the distance from the centre of the sphere. Thus, the derivative
-  of V on the surface in the (outer) normal direction is -1.
-  */
 
 int main()
 {
-    const MeshVariant meshVariant = SPHERE_644;
 
+    // Load a predefined test grid
+    const MeshVariant meshVariant = SPHERE_644;
     std::auto_ptr<Grid> grid = loadMesh(meshVariant);
-    // dumpElementList(grid.get());
+
+    // Initialize the spaces
 
     PiecewiseLinearContinuousScalarSpace<double> HplusHalfSpace(*grid);
     PiecewiseConstantScalarSpace<double> HminusHalfSpace(*grid);
+
     HplusHalfSpace.assignDofs();
     HminusHalfSpace.assignDofs();
 
+
+    // Define some default options.
+
     AssemblyOptions assemblyOptions;
-    AcaOptions acaOptions; // default
-    assemblyOptions.switchToTbb();
-    assemblyOptions.switchToAca(acaOptions);
     EvaluationOptions evaluationOptions;
+
+    // We want to use ACA
+
+    AcaOptions acaOptions; // Default parameters for ACA
+    assemblyOptions.switchToAca(acaOptions);
+
+    // Define the standard integration factory
 
     Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, GeometryFactory>
             factory;
 
+    // Some typedefs for linear operators
+
     typedef std::auto_ptr<LinearOperator<double> > LinearOperatorPtr;
+    typedef DiscreteLinearOperator<double> DiscreteLinearOperator;
+    typedef std::auto_ptr<DiscreteLinearOperator> DiscreteLinearOperatorPtr;
+
+    // We need the single layer, double layer, and the identity operator
 
     SingleLayerPotential3D<double> slp;
     DoubleLayerPotential3D<double> dlp;
     IdentityOperator<double> id;
 
-    typedef DiscreteLinearOperator<double> DiscreteLinearOperator;
-    typedef std::auto_ptr<DiscreteLinearOperator> DiscreteLinearOperatorPtr;
+
+    // Finally discretize the operators
+
     DiscreteLinearOperatorPtr discreteSlp =
             slp.assembleWeakForm(HminusHalfSpace, HminusHalfSpace, factory, assemblyOptions);
     DiscreteLinearOperatorPtr discreteDlp =
             dlp.assembleWeakForm(HminusHalfSpace, HplusHalfSpace, factory, assemblyOptions);
-#ifdef WITH_TRILINOS
-    assemblyOptions.switchToSparse();
-#else
-    assemblyOptions.switchToDense();
-#endif
     DiscreteLinearOperatorPtr discreteId =
             id.assembleWeakForm(HminusHalfSpace, HplusHalfSpace, factory, assemblyOptions);
+
+    // Now construct the right hand side
+
+    // Initialize the analytic rhs function
 
     MyFunctor functor;
     Fiber::OrdinaryFunction<MyFunctor> function(functor);
 
+    // A GridFunction is a discrete representation
+
     GridFunction<double> trace0(HplusHalfSpace, function, factory, assemblyOptions);
+
+    // Extract the coefficient vector in the given basis
+
     arma::Col<double> V = trace0.coefficients().asArmadilloVector();
 
     std::cout << "Constructing RHS" << std::endl;
+
+    // Form (I+K)*b
 
     arma::Col<double> rhs(HminusHalfSpace.globalDofCount());
     discreteId->apply(NO_TRANSPOSE, V, rhs, -0.5, 0.);
     discreteDlp->apply(NO_TRANSPOSE, V, rhs, 1., 1.);
 
+    // Store in a discrete rhs vector
+
     typedef std::auto_ptr<Vector<double> > VectorPtr;
     VectorPtr discreteRhs(new Vector<double>(rhs));
 
-#ifdef WITH_TRILINOS
+
+    // Initialize the iterative solver
+
     DefaultIterativeSolver<double> iterativeSolver(*discreteSlp, *discreteRhs);
+
+    // We want a preconditioned solve
 
     std::cout << "Constructing preconditioner" << std::endl;
 
     iterativeSolver.addPreconditioner(
                 AcaPreconditionerFactory<double>::
                 AcaOperatorToPreconditioner(*discreteSlp, 0.1));
+
+    // Initialize the solver with parameters for GMRES
+
     iterativeSolver.initializeSolver(defaultGmresParameterList(1e-5));
     std::cout << "Solving" << std::endl;
+
+    // Solve and extract solution
+
     iterativeSolver.solve();
     std::cout << iterativeSolver.getSolverMessage() << std::endl;
 
     arma::Mat<double> solutionCoefficients = iterativeSolver.getResult();
-#else
-    arma::Mat<double> solutionCoefficients = arma::solve(discreteSlp->asMatrix(), rhs);
-#endif
+
+    // We store the result into a Grid function
+
     GridFunction<double> trace1(HminusHalfSpace, solutionCoefficients.col(0));
+
+    // Export the results to VTK
 
     std::cout << "Exporting results to VTK" << std::endl;
 
     trace1.exportToVtk(VtkWriter::VERTEX_DATA, "Neumann_data", "physical_test_neumann_data_vertex");
-    // doesn't make very much sense -- just for testing
-    trace1.exportToVtk(VtkWriter::CELL_DATA, "Neumann_data", "physical_test_neumann_data_cell");
 
-// Plot field in volume
-//    GridParameters params;
-//    params.topology = GridParameters::TETRAHEDRAL;
 
-//#ifdef WITH_ALUGRID
-//    std::cout << "Importing 3D grid" << std::endl;
-//    std::auto_ptr<Grid> volumeGrid = GridFactory::importGmshGrid(
-//                params,
-//                "spherical_shell_2194_nodes_volume.msh",
-//                true, // verbose
-//                false); // insertBoundarySegments
+    // Compare with exact solution
 
-//    std::auto_ptr<InterpolatedFunction<double> > slpOfTrace1 =
-//            slp.applyOffSurface(trace1, *volumeGrid, factory, evaluationOptions);
-//    std::auto_ptr<InterpolatedFunction<double> > dlpOfTrace0 =
-//            dlp.applyOffSurface(trace0, *volumeGrid, factory, evaluationOptions);
-//    slpOfTrace1->exportToVtk("slp_of_trace1", "physical_test_slp_of_trace1");
-//    dlpOfTrace0->exportToVtk("dlp_of_trace0", "physical_test_dlp_of_trace0");
-//#endif
-
-//    solutionCoefficients.print("Solution:\n");
     arma::Col<double> deviation = solutionCoefficients - (-1.);
     // % in Armadillo -> elementwise multiplication
     double stdDev = sqrt(arma::accu(deviation % deviation) /

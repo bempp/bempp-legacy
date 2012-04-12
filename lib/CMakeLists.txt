@@ -65,6 +65,7 @@ endif ()
 
 if (WITH_TRILINOS)
     target_link_libraries (bempp
+        ${AMESOS_LIBRARY}
         ${STRATIMIKOS_LIBRARY}
         ${STRATIMIKOS_BELOS_LIBRARY}
         ${BELOS_LIBRARY}
