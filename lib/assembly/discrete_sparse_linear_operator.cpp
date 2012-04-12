@@ -168,8 +168,8 @@ template <typename ValueType>
 bool DiscreteSparseLinearOperator<ValueType>::opSupportedImpl(
         Thyra::EOpTransp M_trans) const
 {
-    // TODO: implement remaining variants (transpose & conjugate transpose)
-    return (M_trans == Thyra::NOTRANS);
+    return (M_trans == Thyra::NOTRANS || M_trans == Thyra::TRANS ||
+            M_trans == Thyra::CONJ || M_trans == Thyra::CONJTRANS);
 }
 
 template <typename ValueType>
@@ -192,8 +192,21 @@ void DiscreteSparseLinearOperator<ValueType>::applyBuiltInImpl(
         const ValueType alpha,
         const ValueType beta) const
 {
-    throw std::runtime_error("DiscreteSparseLinearOperator::"
-                             "applyBuiltInImpl(): not implemented yet");
+    Epetra_Map map_x(x_in.n_rows, 0, Epetra_SerialComm());
+    Epetra_Map map_y(y_inout.n_rows, 0, Epetra_SerialComm());
+    Epetra_Vector vec_x(View, map_x, const_cast<ValueType*>(x_in.memptr()));
+    // vec_temp will store the result of matrix * x_in
+    Epetra_Vector vec_temp(map_y, false /* no need to initialise to zero */);
+
+    m_mat->Multiply(trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE,
+                    vec_x, vec_temp);
+
+    if (beta == 0.)
+        for (int i = 0; i < y_inout.n_rows; ++i)
+            y_inout(i) = alpha * vec_temp[i];
+    else
+        for (int i = 0; i < y_inout.n_rows; ++i)
+            y_inout(i) = alpha * vec_temp[i] + beta * y_inout(i);
 }
 
 
