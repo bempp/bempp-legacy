@@ -204,8 +204,7 @@ ElementaryIntegralOperator<ValueType>::assembleWeakForm(
 				    rawGeometry.elementCornerIndices());
     bool cacheSingularIntegrals =
             (options.singularIntegralCaching() == AssemblyOptions::YES ||
-             (options.singularIntegralCaching() == AssemblyOptions::AUTO &&
-              options.parallelism() == AssemblyOptions::OPEN_CL));
+             (options.singularIntegralCaching() == AssemblyOptions::AUTO));
 
     std::auto_ptr<LocalAssembler> assembler =
             makeAssembler(factory,
