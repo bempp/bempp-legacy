@@ -48,8 +48,6 @@
 #include "space/piecewise_linear_continuous_scalar_space.hpp"
 #include "space/piecewise_constant_scalar_space.hpp"
 
-#include <Teuchos_Ptr.hpp>
-
 #include <armadillo>
 #include <cmath>
 #include <iostream>
