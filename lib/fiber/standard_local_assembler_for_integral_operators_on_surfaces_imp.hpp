@@ -142,8 +142,10 @@ evaluateLocalWeakForms(
                 result[i] = m_multiplier * it->second;
             else
             {
-                result[i].set_size(it->second.n_rows, 1);
-                result[i] = m_multiplier * it->second.col(localDofIndexB);
+                if (callVariant == TEST_TRIAL)
+                    result[i] = m_multiplier * it->second.col(localDofIndexB);
+                else
+                    result[i] = m_multiplier * it->second.row(localDofIndexB);
             }
         }
         else
