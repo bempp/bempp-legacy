@@ -77,7 +77,7 @@ public:
             result(0)=1;
         }
         else{
-            result(0)=2;
+            result(0)=1;
         }
     }
 };
@@ -101,13 +101,20 @@ int main()
 
     // Define some default options.
 
-    AssemblyOptions assemblyOptions;
+    AssemblyOptions assemblyOptions1;
+    AssemblyOptions assemblyOptions2;
     EvaluationOptions evaluationOptions;
 
     // We want to use ACA
 
-    AcaOptions acaOptions; // Default parameters for ACA
-    assemblyOptions.switchToAca(acaOptions);
+    AcaOptions acaOptions1; // Default parameters for ACA
+    AcaOptions acaOptions2; // Default parameters for ACA
+    acaOptions1.outputPostscript=true;
+    acaOptions2.outputPostscript=true;
+    acaOptions1.outputFname="slp.ps";
+    acaOptions2.outputFname="dlp.ps";
+    assemblyOptions1.switchToAca(acaOptions1);
+    assemblyOptions2.switchToAca(acaOptions2);
 
     // Define the standard integration factory
 
@@ -138,11 +145,11 @@ int main()
     // Finally discretize the operators
 
     DiscreteLinearOperatorPtr discreteSlp =
-            slp.assembleWeakForm(HminusHalfSpace, HminusHalfSpace, factory, assemblyOptions);
+            slp.assembleWeakForm(HminusHalfSpace, HminusHalfSpace, factory, assemblyOptions1);
     DiscreteLinearOperatorPtr discreteDlp =
-            dlp.assembleWeakForm(HminusHalfSpace, HplusHalfSpace, factory, assemblyOptions);
+            dlp.assembleWeakForm(HminusHalfSpace, HplusHalfSpace, factory, assemblyOptions2);
     DiscreteLinearOperatorPtr discreteId =
-            id.assembleWeakForm(HminusHalfSpace, HplusHalfSpace, factory, assemblyOptions);
+            id.assembleWeakForm(HminusHalfSpace, HplusHalfSpace, factory, assemblyOptions2);
 
     // Now construct the right hand side
 
@@ -153,7 +160,7 @@ int main()
 
     // A GridFunction is a discrete representation
 
-    GridFunction<double> trace0(HplusHalfSpace, function, factory, assemblyOptions);
+    GridFunction<double> trace0(HplusHalfSpace, function, factory, assemblyOptions1);
 
     // Extract the coefficient vector in the given basis
 
