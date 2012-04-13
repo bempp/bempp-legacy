@@ -72,7 +72,13 @@ public:
     inline void evaluate(const arma::Col<ValueType>& point,
                   arma::Col<ValueType>& result) const {
         //result(0) = sin(0.5 * point(0) * cos(0.25 * point(2))) * cos(point(1));
-        result(0) = 1.;
+        //result(0) = 1.;
+        if (norm(point,2)>1.3) {
+            result(0)=1;
+        }
+        else{
+            result(0)=2;
+        }
     }
 };
 
@@ -81,7 +87,7 @@ int main()
 {
 
     // Load a predefined test grid
-    const MeshVariant meshVariant = SPHERE_41440;
+    const MeshVariant meshVariant = DOUBLE_SPHERE_5162;
     std::auto_ptr<Grid> grid = loadMesh(meshVariant);
 
     // Initialize the spaces
@@ -199,7 +205,7 @@ int main()
 
     std::cout << "Exporting results to VTK" << std::endl;
 
-    trace1.exportToVtk(VtkWriter::VERTEX_DATA, "Neumann_data", "physical_test_neumann_data_vertex");
+    trace1.exportToVtk(VtkWriter::VERTEX_DATA, "Neumann_data", "physical_test2_neumann_data_vertex");
 
 
     // Compare with exact solution
