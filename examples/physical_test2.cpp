@@ -186,11 +186,11 @@ int main()
 
     // We want a preconditioned solve
 
-//    std::cout << "Constructing preconditioner" << std::endl;
-//
-//    iterativeSolver.addPreconditioner(
-//                AcaPreconditionerFactory<double>::
-//                AcaOperatorToPreconditioner(*discreteSlp, 0.1));
+    std::cout << "Constructing preconditioner" << std::endl;
+
+    iterativeSolver.addPreconditioner(
+                AcaPreconditionerFactory<double>::
+                AcaOperatorToPreconditioner(*discreteSlp, 1E-3));
 
     // Initialize the solver with parameters for GMRES
 
