@@ -251,7 +251,7 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInDenseMode(
 {
 
     const Space<ValueType>& testSpace=this->getTestSpace();
-    const Space<ValueType>& trialSpace=this->trialSpace();
+    const Space<ValueType>& trialSpace=this->getTrialSpace();
 
     // Get the grid's leaf view so that we can iterate over elements
     std::auto_ptr<GridView> view = trialSpace.grid().leafView();

@@ -87,30 +87,23 @@ bool LinearOperatorSuperposition<ValueType>::supportsRepresentation(
 template <typename ValueType>
 std::auto_ptr<DiscreteLinearOperator<ValueType> >
 LinearOperatorSuperposition<ValueType>::assembleWeakForm(
-        const Space<ValueType>& testSpace,
-        const Space<ValueType>& trialSpace,
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
     switch (options.operatorRepresentation())
     {
     case AssemblyOptions::DENSE:
-        return assembleWeakFormInDenseMode(
-                    testSpace, trialSpace, factory, options);
+        return assembleWeakFormInDenseMode(factory, options);
     case AssemblyOptions::ACA:
-        return assembleWeakFormInAcaMode(
-                    testSpace, trialSpace, factory, options);
+        return assembleWeakFormInAcaMode(factory, options);
     default:
-        return assembleWeakFormInArbitraryMode(
-                    testSpace, trialSpace, factory, options);
+        return assembleWeakFormInArbitraryMode(factory, options);
     }
 }
 
 template <typename ValueType>
 std::auto_ptr<DiscreteLinearOperator<ValueType> >
 LinearOperatorSuperposition<ValueType>::assembleWeakFormInDenseMode(
-        const Space<ValueType>& testSpace,
-        const Space<ValueType>& trialSpace,
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
@@ -125,7 +118,7 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInDenseMode(
     for (int i = 0; i < localOperators.size(); ++i)
     {
         std::auto_ptr<DiscreteLinOp> discreteOp =
-                localOperators[i]->assembleWeakForm(testSpace, trialSpace, factory, options);
+                localOperators[i]->assembleWeakForm(factory, options);
         discreteOps.push_back(discreteOp);
     }
 
@@ -141,12 +134,13 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInDenseMode(
 template <typename ValueType>
 std::auto_ptr<DiscreteLinearOperator<ValueType> >
 LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
-        const Space<ValueType>& testSpace,
-        const Space<ValueType>& trialSpace,
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
     typedef DiscreteLinearOperator<ValueType> DiscreteLinOp;
+
+    const Space<ValueType>& testSpace = this->getTestSpace();
+    const Space<ValueType>& trialSpace = this->getTrialSpace();
 
     const std::vector<ElementaryLinearOperator<ValueType> const*> localOperators=this->getLocalOperators();
     const std::vector<ValueType> multipliers=this->getMultipliers();
@@ -231,8 +225,7 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
         if (term->supportsRepresentation(AssemblyOptions::SPARSE))
         {
             std::auto_ptr<DiscreteLinOp> discreteTerm =
-                    term->assembleWeakFormInternal(
-                        testSpace, trialSpace, *assembler, options);
+                    term->assembleWeakFormInternal(*assembler, options);
             sparseDiscreteTerms.push_back(discreteTerm);
             sparseTermsMultipliers.push_back(multipliers[i]);
         }
@@ -268,8 +261,6 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
 template <typename ValueType>
 std::auto_ptr<DiscreteLinearOperator<ValueType> >
 LinearOperatorSuperposition<ValueType>::assembleWeakFormInArbitraryMode(
-        const Space<ValueType>& testSpace,
-        const Space<ValueType>& trialSpace,
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
@@ -287,7 +278,7 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInArbitraryMode(
     for (int i = 0; i < localOperators.size(); ++i)
     {
         std::auto_ptr<DiscreteLinOp> discreteOp =
-                localOperators[i]->assembleWeakForm(testSpace, trialSpace, factory, options);
+                localOperators[i]->assembleWeakForm(factory, options);
         discreteOps.push_back(discreteOp);
     }
     return std::auto_ptr<DiscreteLinOp>(new DiscreteSuperposition(discreteOps,this->getMultipliers()));

@@ -74,8 +74,6 @@ public:
       This function is not intended to be called directly by the user. */
     virtual std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakFormInternal(
-            const Space<ValueType>& testSpace,
-            const Space<ValueType>& trialSpace,
             LocalAssembler& assembler,
             const AssemblyOptions& options) const = 0;
 

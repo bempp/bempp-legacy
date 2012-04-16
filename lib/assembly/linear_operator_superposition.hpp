@@ -68,8 +68,6 @@ public:
 
     virtual std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakForm(
-            const Space<ValueType>& testSpace,
-            const Space<ValueType>& trialSpace,
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
 
@@ -80,22 +78,16 @@ private:
 
     std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakFormInDenseMode(
-            const Space<ValueType>& testSpace,
-            const Space<ValueType>& trialSpace,
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
 
     std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakFormInAcaMode(
-            const Space<ValueType>& testSpace,
-            const Space<ValueType>& trialSpace,
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
 
     std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakFormInArbitraryMode(
-            const Space<ValueType>& testSpace,
-            const Space<ValueType>& trialSpace,
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
 

@@ -77,7 +77,7 @@ GridFunction<ValueType>::GridFunction(
     AssemblyOptions idAssemblyOptions(assemblyOptions);
     IdentityOperator<ValueType> id(space,space);
     std::auto_ptr<DiscreteLinearOperator<ValueType> > discreteId =
-            id.assembleWeakForm(space, space, factory, idAssemblyOptions);
+            id.assembleWeakForm(factory, idAssemblyOptions);
 
     // Solve the system id * m_coefficients = projections
 #ifdef WITH_TRILINOS

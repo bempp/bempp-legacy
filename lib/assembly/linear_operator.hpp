@@ -116,8 +116,6 @@ public:
       appropriate local assembler. */
     virtual std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakForm(
-            const Space<ValueType>& testSpace,
-            const Space<ValueType>& trialSpace,
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const = 0;
 
