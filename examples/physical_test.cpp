@@ -28,6 +28,7 @@
 #include "assembly/evaluation_options.hpp"
 #include "assembly/grid_function.hpp"
 #include "assembly/interpolated_function.hpp"
+#include "assembly/linear_operator_superposition.hpp"
 
 #include "assembly/identity_operator.hpp"
 #include "assembly/single_layer_potential_3d.hpp"
@@ -81,7 +82,7 @@ int main()
 {
 
     // Load a predefined test grid
-    const MeshVariant meshVariant = SPHERE_41440;
+    const MeshVariant meshVariant = SPHERE_152;
     std::auto_ptr<Grid> grid = loadMesh(meshVariant);
 
     // Initialize the spaces
@@ -101,17 +102,12 @@ int main()
     // We want to use ACA
 
     AcaOptions acaOptions; // Default parameters for ACA
+    acaOptions.eps=1E-5;
     assemblyOptions.switchToAca(acaOptions);
 
     // Define the standard integration factory
 
-    Fiber::AccuracyOptions accuracy;
-    Fiber::QuadratureOptions quadOpts;
 
-    quadOpts.mode=quadOpts.EXACT_ORDER;
-    quadOpts.order=5;
-
-    accuracy.doubleRegular=quadOpts;
 
     Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, GeometryFactory>
             factory;
@@ -124,19 +120,18 @@ int main()
 
     // We need the single layer, double layer, and the identity operator
 
-    SingleLayerPotential3D<double> slp;
-    DoubleLayerPotential3D<double> dlp;
-    IdentityOperator<double> id;
+    SingleLayerPotential3D<double> slp(HminusHalfSpace,HminusHalfSpace);
+    DoubleLayerPotential3D<double> dlp(HminusHalfSpace,HplusHalfSpace);
+    IdentityOperator<double> id(HminusHalfSpace,HplusHalfSpace);
+    LinearOperatorSuperposition<double> rhsOp=-.5*id+dlp;
 
 
     // Finally discretize the operators
 
     DiscreteLinearOperatorPtr discreteSlp =
-            slp.assembleWeakForm(HminusHalfSpace, HminusHalfSpace, factory, assemblyOptions);
-    DiscreteLinearOperatorPtr discreteDlp =
-            dlp.assembleWeakForm(HminusHalfSpace, HplusHalfSpace, factory, assemblyOptions);
-    DiscreteLinearOperatorPtr discreteId =
-            id.assembleWeakForm(HminusHalfSpace, HplusHalfSpace, factory, assemblyOptions);
+            slp.assembleWeakForm(factory, assemblyOptions);
+    DiscreteLinearOperatorPtr discreteRhsOp =
+            rhsOp.assembleWeakForm(factory, assemblyOptions);
 
     // Now construct the right hand side
 
@@ -158,18 +153,20 @@ int main()
     // Form (I+K)*b
 
     arma::Col<double> rhs(HminusHalfSpace.globalDofCount());
-    discreteId->apply(NO_TRANSPOSE, V, rhs, -0.5, 0.);
-    discreteDlp->apply(NO_TRANSPOSE, V, rhs, 1., 1.);
+    discreteRhsOp->apply(NO_TRANSPOSE,V,rhs,1.,0.);
+
+    //discreteId->apply(NO_TRANSPOSE, V, rhs, -0.5, 0.);
+    //discreteDlp->apply(NO_TRANSPOSE, V, rhs, 1., 1.);
 
     // Store in a discrete rhs vector
 
     typedef std::auto_ptr<Vector<double> > VectorPtr;
-    VectorPtr discreteRhs(new Vector<double>(rhs));
+    VectorPtr discreteRhsVec(new Vector<double>(rhs));
 
 
     // Initialize the iterative solver
 
-    DefaultIterativeSolver<double> iterativeSolver(*discreteSlp, *discreteRhs);
+    DefaultIterativeSolver<double> iterativeSolver(*discreteSlp, *discreteRhsVec);
 
     // We want a preconditioned solve
 
@@ -181,7 +178,7 @@ int main()
 
     // Initialize the solver with parameters for GMRES
 
-    iterativeSolver.initializeSolver(defaultGmresParameterList(1e-5));
+    iterativeSolver.initializeSolver(defaultGmresParameterList(1e-8));
     std::cout << "Solving" << std::endl;
 
     // Solve and extract solution

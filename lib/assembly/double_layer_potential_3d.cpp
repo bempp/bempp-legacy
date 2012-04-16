@@ -24,6 +24,11 @@
 namespace Bempp
 {
 
+template <typename ValueType>
+DoubleLayerPotential3D<ValueType>::DoubleLayerPotential3D(const Space<ValueType>& testSpace, const Space<ValueType>& trialSpace )
+    : ElementaryWeaklySingularIntegralOperator<ValueType>(testSpace,trialSpace){}
+
+
 #ifdef COMPILE_FOR_FLOAT
 template class DoubleLayerPotential3D<float>;
 #endif

@@ -50,15 +50,18 @@ public:
     typedef typename Fiber::LocalAssemblerForOperators<ValueType>
     LocalAssembler;
 
-    /* acquires ownership of the operators passed via terms */
-    LinearOperatorSuperposition(
-            boost::ptr_vector<ElementaryLinearOperator<ValueType> >& terms);
+//    /* acquires ownership of the operators passed via terms */
+//    LinearOperatorSuperposition(
+//            boost::ptr_vector<ElementaryLinearOperator<ValueType> >& terms);
 
-    // Acquires ownership of the operators passed via terms.
     LinearOperatorSuperposition(
-            std::auto_ptr<ElementaryLinearOperator<ValueType> > term1,
-            std::auto_ptr<ElementaryLinearOperator<ValueType> > term2);
-    // possibly add variants for longer parameter lists
+            const LinearOperator<ValueType>& term1,
+            const LinearOperator<ValueType>& term2);
+
+    LinearOperatorSuperposition(const LinearOperator<ValueType>& term,
+                                const ValueType& scalar);
+
+
 
     virtual int trialComponentCount() const;
     virtual int testComponentCount() const;
@@ -73,7 +76,7 @@ public:
     virtual bool supportsRepresentation(AssemblyOptions::Representation repr) const;
 
 private:
-    void init(boost::ptr_vector<ElementaryLinearOperator<ValueType> >& terms);
+
 
     std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakFormInDenseMode(
@@ -96,9 +99,8 @@ private:
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
 
-private:
-    boost::ptr_vector<ElementaryLinearOperator<ValueType> > m_terms;
 };
+
 
 } //namespace Bempp
 

@@ -96,6 +96,11 @@ inline int epetraSumIntoGlobalValues<double>(Epetra_FECrsMatrix& matrix,
 #endif
 
 template <typename ValueType>
+IdentityOperator<ValueType>::IdentityOperator(const Space<ValueType>& testSpace, const Space<ValueType>& trialSpace)
+    : ElementaryLinearOperator<ValueType>(testSpace,trialSpace){}
+
+
+template <typename ValueType>
 bool IdentityOperator<ValueType>::supportsRepresentation(
         AssemblyOptions::Representation repr) const
 {
@@ -159,7 +164,7 @@ IdentityOperator<ValueType>::assembleWeakForm(
     std::auto_ptr<LocalAssembler> assembler =
             factory.make(*geometryFactory, rawGeometry,
                          testBases, trialBases,
-                         m_expression, m_expression, this->multiplier(),
+                         m_expression, m_expression, 1.0,
                          openClHandler);
 
     return assembleWeakFormInternal(testSpace, trialSpace, *assembler, options);
@@ -344,7 +349,7 @@ IdentityOperator<ValueType>::makeAssembler(
 {
     return assemblerFactory.make(geometryFactory, rawGeometry,
                                  testBases, trialBases,
-                                 m_expression, m_expression, this->multiplier(),
+                                 m_expression, m_expression, 1.0,
                                  openClHandler);
 }
 

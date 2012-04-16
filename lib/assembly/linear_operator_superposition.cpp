@@ -39,40 +39,42 @@
 namespace Bempp
 {
 
+
 template <typename ValueType>
 LinearOperatorSuperposition<ValueType>::LinearOperatorSuperposition(
-        boost::ptr_vector<ElementaryLinearOperator<ValueType> >& terms)
+        const LinearOperator<ValueType>& term1,
+        const LinearOperator<ValueType>& term2)
+    : LinearOperator<ValueType>(term1.getTestSpace(),term1.getTrialSpace())
 {
-   init(terms);
+
+    this->addLocalOperatorsMultipliers(term1.getLocalOperators(),term1.getMultipliers());
+    this->addLocalOperatorsMultipliers(term2.getLocalOperators(),term2.getMultipliers());
 }
 
 template <typename ValueType>
 LinearOperatorSuperposition<ValueType>::LinearOperatorSuperposition(
-        std::auto_ptr<ElementaryLinearOperator<ValueType> > term1,
-        std::auto_ptr<ElementaryLinearOperator<ValueType> > term2)
+        const LinearOperator<ValueType>& term,
+        const ValueType& scalar)
+: LinearOperator<ValueType>(term.getTestSpace(),term.getTrialSpace())
 {
-    boost::ptr_vector<ElementaryLinearOperator<ValueType> > vTerms;
-    vTerms.push_back(term1);
-    vTerms.push_back(term2);
-    init(vTerms);
+    const std::vector<ValueType>& m=term.getMultipliers();
+    std::vector<ValueType> scaledMultipliers;
+    for (int i=0;i<m.size();i++) scaledMultipliers.push_back(scalar*m[i]);
+    this->addLocalOperatorsMultipliers(term.getLocalOperators(),scaledMultipliers);
+
 }
+
 
 template <typename ValueType>
 int LinearOperatorSuperposition<ValueType>::trialComponentCount() const
 {
-    if (m_terms.empty())
-        return 1;
-    else
-        return m_terms[0].trialComponentCount();
+    return this->getLocalOperators()[0]->trialComponentCount();
 }
 
 template <typename ValueType>
 int LinearOperatorSuperposition<ValueType>::testComponentCount() const
 {
-    if (m_terms.empty())
-        return 1;
-    else
-        return m_terms[0].testComponentCount();
+    return this->getLocalOperators()[0]->testComponentCount();
 }
 
 template <typename ValueType>
@@ -80,28 +82,6 @@ bool LinearOperatorSuperposition<ValueType>::supportsRepresentation(
         AssemblyOptions::Representation repr) const
 {
     return (repr == AssemblyOptions::DENSE || repr == AssemblyOptions::ACA);
-}
-
-template <typename ValueType>
-void LinearOperatorSuperposition<ValueType>::init(
-        boost::ptr_vector<ElementaryLinearOperator<ValueType> >& terms)
-{
-    if (!terms.empty())
-    {
-        int testComponentCount_ = terms[0].testComponentCount();
-        int trialComponentCount_ = terms[0].trialComponentCount();
-        for (int i = 0; i < terms.size(); ++i)
-            if (testComponentCount_ != terms[0].testComponentCount() ||
-                    trialComponentCount_ != terms[0].trialComponentCount())
-                throw std::invalid_argument("LinearOperatorSuperposition::init(): "
-                                            "incompatible operator dimensions");
-        const int origTermCount = terms.size();
-        m_terms.transfer(m_terms.end(), terms);
-        const int newTermCount = m_terms.size();
-        assert(origTermCount == newTermCount); // documentation of transfer() is
-                                               // somewhat difficult to follow...
-
-    }
 }
 
 template <typename ValueType>
@@ -137,28 +117,23 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInDenseMode(
     typedef DiscreteLinearOperator<ValueType> DiscreteLinOp;
     typedef DiscreteDenseLinearOperator<ValueType> DiscreteDenseLinOp;
 
+    const std::vector<ElementaryLinearOperator<ValueType> const*> localOperators=this->getLocalOperators();
+    const std::vector<ValueType> multipliers=this->getMultipliers();
+
     // Gather matrices of individual operators
     boost::ptr_vector<DiscreteLinOp> discreteOps;
-    for (int i = 0; i < m_terms.size(); ++i)
+    for (int i = 0; i < localOperators.size(); ++i)
     {
         std::auto_ptr<DiscreteLinOp> discreteOp =
-                m_terms[i].assembleWeakForm(testSpace, trialSpace, factory, options);
+                localOperators[i]->assembleWeakForm(testSpace, trialSpace, factory, options);
         discreteOps.push_back(discreteOp);
     }
 
     // Add the matrices together
     arma::Mat<ValueType> sum;
-    if (discreteOps.empty())
-    {
-        sum.set_size(testSpace.globalDofCount(), trialSpace.globalDofCount());
-        sum.fill(0.);
-    }
-    else
-    {
-        sum = discreteOps[0].asMatrix();
-        for (int i = 1; i < discreteOps.size(); ++i)
-            sum += discreteOps[i].asMatrix();
-    }
+    sum = discreteOps[0].asMatrix();
+    for (int i = 1; i < discreteOps.size(); ++i)
+            sum += discreteOps[i].asMatrix()*multipliers[i];
 
     return std::auto_ptr<DiscreteLinOp>(new DiscreteDenseLinOp(sum));
 }
@@ -172,6 +147,9 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
         const AssemblyOptions& options) const
 {
     typedef DiscreteLinearOperator<ValueType> DiscreteLinOp;
+
+    const std::vector<ElementaryLinearOperator<ValueType> const*> localOperators=this->getLocalOperators();
+    const std::vector<ValueType> multipliers=this->getMultipliers();
 
     AutoTimer timer("\nAssembly took ");
 
@@ -235,27 +213,33 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
     // mode. Populate a vector of dense terms for subsequent ACA-mode assembly.
     boost::ptr_vector<DiscreteLinOp> sparseDiscreteTerms;
     boost::ptr_vector<LocalAssembler> denseTermLocalAssemblers;
-    for (int i = 0; i < m_terms.size(); ++i)
+
+    std::vector<ValueType> sparseTermsMultipliers;
+    std::vector<ValueType> denseTermsMultipliers;
+
+    for (int i = 0; i < localOperators.size(); ++i)
     {
-        const ElementaryLinearOperator<ValueType>& term = m_terms[i];
+        ElementaryLinearOperator<ValueType> const* term = localOperators[i];
 
         // Create local assembler for the current term
-        std::auto_ptr<LocalAssembler> assembler = term.makeAssembler(
+        std::auto_ptr<LocalAssembler> assembler = term->makeAssembler(
                     factory,
                     *geometryFactory, rawGeometry,
                     testBases, trialBases,
                     openClHandler, cacheSingularIntegrals);
 
-        if (term.supportsRepresentation(AssemblyOptions::SPARSE))
+        if (term->supportsRepresentation(AssemblyOptions::SPARSE))
         {
             std::auto_ptr<DiscreteLinOp> discreteTerm =
-                    term.assembleWeakFormInternal(
+                    term->assembleWeakFormInternal(
                         testSpace, trialSpace, *assembler, options);
             sparseDiscreteTerms.push_back(discreteTerm);
+            sparseTermsMultipliers.push_back(multipliers[i]);
         }
         else
         {
             denseTermLocalAssemblers.push_back(assembler);
+            denseTermsMultipliers.push_back(multipliers[i]);
             assert(!assembler.get());
         }
     }
@@ -275,7 +259,10 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
     return AcaGlobalAssembler<ValueType>::assembleWeakForm(
                 testSpace, trialSpace,
                 stlDenseTermLocalAssemblers,
-                stlSparseDiscreteTerms, options);
+                stlSparseDiscreteTerms,
+                denseTermsMultipliers,
+                sparseTermsMultipliers,
+                options);
 }
 
 template <typename ValueType>
@@ -292,15 +279,20 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInArbitraryMode(
     typedef DiscreteLinearOperatorSuperposition<ValueType>
             DiscreteSuperposition;
 
+    const std::vector<ElementaryLinearOperator<ValueType> const*> localOperators=this->getLocalOperators();
+    const std::vector<ValueType> multipliers=this->getMultipliers();
+
+
     boost::ptr_vector<DiscreteLinOp> discreteOps;
-    for (int i = 0; i < m_terms.size(); ++i)
+    for (int i = 0; i < localOperators.size(); ++i)
     {
         std::auto_ptr<DiscreteLinOp> discreteOp =
-                m_terms[i].assembleWeakForm(testSpace, trialSpace, factory, options);
+                localOperators[i]->assembleWeakForm(testSpace, trialSpace, factory, options);
         discreteOps.push_back(discreteOp);
     }
-    return std::auto_ptr<DiscreteLinOp>(new DiscreteSuperposition(discreteOps));
+    return std::auto_ptr<DiscreteLinOp>(new DiscreteSuperposition(discreteOps,this->getMultipliers()));
 }
+
 
 #ifdef COMPILE_FOR_FLOAT
 template class LinearOperatorSuperposition<float>;

@@ -96,6 +96,7 @@ template <typename ValueType>
 void DiscreteSparseLinearOperator<ValueType>::addBlock(
         const std::vector<int>& rows,
         const std::vector<int>& cols,
+        const ValueType alpha,
         arma::Mat<ValueType>& block) const
 {
     if (block.n_rows != rows.size() || block.n_cols != cols.size())
@@ -132,7 +133,7 @@ void DiscreteSparseLinearOperator<ValueType>::addBlock(
         for (int col = 0; col < cols.size(); ++col)
             for (int entry = 0; entry < entryCount; ++entry)
                 if (indices[entry] == cols[col])
-                    block(row, col) += values[entry];
+                    block(row, col) += alpha*values[entry];
     }
 }
 

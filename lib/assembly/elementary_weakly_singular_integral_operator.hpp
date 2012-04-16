@@ -31,6 +31,9 @@ class ElementaryWeaklySingularIntegralOperator :
         public ElementaryIntegralOperator<ValueType>
 {
 public:
+
+    ElementaryWeaklySingularIntegralOperator(const Space<ValueType>& testSpace, const Space<ValueType>& trialSpace)
+        : ElementaryIntegralOperator<ValueType>(testSpace,trialSpace){}
     virtual bool isRegular() const { return false; }
 };
 

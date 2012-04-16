@@ -29,7 +29,8 @@ namespace Bempp
 template <typename ValueType>
 DiscreteLinearOperatorSuperposition<ValueType>::
 DiscreteLinearOperatorSuperposition(
-        boost::ptr_vector<TermType>& terms)
+        boost::ptr_vector<TermType>& terms,
+        const std::vector<ValueType>& multipliers)
 {
     // Check that all terms have the same dimensions
     if (terms.size() > 1)
@@ -45,6 +46,7 @@ DiscreteLinearOperatorSuperposition(
     }
 
     m_terms.transfer(m_terms.end(), terms);
+    m_multipliers.insert(m_multipliers.end(),multipliers.begin(),multipliers.end());
 #ifdef WITH_TRILINOS
     if (!terms.empty())
     {
@@ -70,7 +72,7 @@ DiscreteLinearOperatorSuperposition<ValueType>::asMatrix() const
     if (!m_terms.empty()) {
         result = m_terms[0].asMatrix();
         for (int i = 1; i < m_terms.size(); ++i)
-            result += m_terms[i].asMatrix();
+            result += m_terms[i].asMatrix()*m_multipliers[i];
     }
     return result;
 }
@@ -99,10 +101,11 @@ template <typename ValueType>
 void DiscreteLinearOperatorSuperposition<ValueType>::addBlock(
         const std::vector<int>& rows,
         const std::vector<int>& cols,
+        const ValueType alpha,
         arma::Mat<ValueType>& block) const
 {
     for (int i = 0; i < m_terms.size(); ++i)
-        m_terms[i].addBlock(rows, cols, block);
+        m_terms[i].addBlock(rows, cols, alpha*m_multipliers[i], block);
 }
 
 #ifdef WITH_TRILINOS
@@ -156,7 +159,7 @@ applyBuiltInImpl(const TranspositionMode trans,
 
     for (int i = 0; i < m_terms.size(); ++i)
         m_terms[i].apply(trans, x_in, y_inout,
-                         alpha, 1. /* "+ beta * y_inout" has already been done */ );
+                         alpha*m_multipliers[i], 1. /* "+ beta * y_inout" has already been done */ );
 }
 
 

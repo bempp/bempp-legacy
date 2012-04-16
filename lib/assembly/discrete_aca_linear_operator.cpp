@@ -129,6 +129,7 @@ void
 DiscreteAcaLinearOperator<ValueType>::
 addBlock(const std::vector<int>& rows,
          const std::vector<int>& cols,
+         const ValueType alpha,
          arma::Mat<ValueType>& block) const
 {
     throw std::runtime_error("DiscreteAcaLinearOperator::"

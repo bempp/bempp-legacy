@@ -44,7 +44,7 @@ public:
 
     /* acquires ownership of these operators */
     DiscreteLinearOperatorSuperposition(
-            boost::ptr_vector<TermType>& terms);
+            boost::ptr_vector<TermType>& terms,const std::vector<ValueType>& multipliers);
 
     virtual void dump() const;
 
@@ -55,6 +55,7 @@ public:
 
     virtual void addBlock(const std::vector<int>& rows,
                           const std::vector<int>& cols,
+                          const ValueType alpha,
                           arma::Mat<ValueType>& block) const;
 
 #ifdef WITH_TRILINOS
@@ -78,6 +79,7 @@ private:
                                   const ValueType beta) const;
 private:
     boost::ptr_vector<TermType> m_terms;
+    std::vector<ValueType> m_multipliers;
 #ifdef WITH_TRILINOS
     Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > m_domainSpace;
     Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > m_rangeSpace;

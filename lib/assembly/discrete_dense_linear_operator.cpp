@@ -72,6 +72,7 @@ template <typename ValueType>
 void DiscreteDenseLinearOperator<ValueType>::addBlock(
         const std::vector<int>& rows,
         const std::vector<int>& cols,
+        const ValueType alpha,
         arma::Mat<ValueType>& block) const
 {
     if (block.n_rows != rows.size() || block.n_cols != cols.size())
@@ -80,7 +81,7 @@ void DiscreteDenseLinearOperator<ValueType>::addBlock(
                 "incorrect block size");
     for (int col = 0; col < cols.size(); ++col)
         for (int row = 0; row < rows.size(); ++row)
-            block(row, col) += m_mat(rows[row], cols[col]);
+            block(row, col) += alpha*m_mat(rows[row], cols[col]);
 }
 
 #ifdef WITH_TRILINOS

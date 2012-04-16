@@ -31,6 +31,9 @@ class ElementaryRegularIntegralOperator :
         public ElementaryIntegralOperator<ValueType>
 {
 public:    
+
+    ElementaryRegularIntegralOperator(const Space<ValueType>& testSpace, const Space<ValueType>& trialSpace)
+        : ElementaryIntegralOperator<ValueType>(testSpace,trialSpace){}
     virtual bool isRegular() const { return true; }
 };
 

@@ -32,6 +32,9 @@ template <typename ValueType>
 class SingleLayerPotential3D :
         public ElementaryWeaklySingularIntegralOperator<ValueType>
 {
+public:
+    SingleLayerPotential3D(const Space<ValueType>& testSpace, const Space<ValueType>& trialSpace);
+
 private:
     virtual const Fiber::Kernel<ValueType>& kernel() const {
         return m_kernel;

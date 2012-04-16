@@ -36,6 +36,11 @@ template <typename ValueType>
 class HypersingularOperator3D :
         public ElementaryWeaklySingularIntegralOperator<ValueType>
 {
+
+public:
+    HypersingularOperator3D(const Space<ValueType>& testSpace, const Space<ValueType>& trialSpace );
+
+
 private:
     virtual const Fiber::Kernel<ValueType>& kernel() const {
         return m_kernel;

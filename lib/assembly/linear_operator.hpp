@@ -22,9 +22,11 @@
 #define bempp_linear_operator_hpp
 
 #include "../grid/common.hpp"
+#include "../space/space.hpp"
 #include "assembly_options.hpp"
 
 #include <memory>
+#include <vector>
 
 namespace arma {
 template <typename eT> class Mat;
@@ -42,7 +44,10 @@ namespace Bempp {
 class Grid;
 class GeometryFactory;
 template <typename ValueType> class DiscreteLinearOperator;
-template <typename ValueType> class Space;
+template <typename ValueType> class ElementaryLinearOperator;
+template <typename ValueType> class LinearOperatorSuperposition;
+
+
 
 /** \brief "Formal" linear operator.
 
@@ -71,7 +76,9 @@ public:
     typedef Fiber::LocalAssemblerFactory<ValueType, GeometryFactory>
     LocalAssemblerFactory;
 
-    virtual ~LinearOperator() {}
+    LinearOperator(const Space<ValueType>& testSpace, const Space<ValueType>& trialSpace);
+
+    virtual ~LinearOperator();
 
     // Ideas for better names for all methods here are very welcome!!!
     /** \brief Number of components of the functions from the trial space \f$X\f$.
@@ -113,7 +120,47 @@ public:
             const Space<ValueType>& trialSpace,
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const = 0;
+
+    const std::vector<ElementaryLinearOperator<ValueType> const* >& getLocalOperators() const;
+
+    const std::vector<ValueType >& getMultipliers() const;
+
+    const Space<ValueType>& getTestSpace() const;
+    const Space<ValueType>& getTrialSpace() const;
+
+    bool checkSpaces(const LinearOperator<ValueType>& linOp) const;
+
+protected:
+
+    void addLocalOperatorsMultipliers(const std::vector<ElementaryLinearOperator<ValueType> const*>& localOperators,
+                                      const std::vector<ValueType>& multipliers);
+
+
+private:
+
+    std::vector<ElementaryLinearOperator<ValueType> const* > m_localOperators;
+    std::vector<ValueType> m_multipliers;
+
+    const Space<ValueType>& m_testSpace;
+    const Space<ValueType>& m_trialSpace;
+
+
 };
+
+// Operator overloading
+
+template <typename ValueType>
+LinearOperatorSuperposition<ValueType> operator+(const LinearOperator<ValueType>& op1, const LinearOperator<ValueType>& op2);
+
+template <typename ValueType>
+LinearOperatorSuperposition<ValueType> operator*(const LinearOperator<ValueType>& op, const ValueType& scalar);
+
+template <typename ValueType>
+LinearOperatorSuperposition<ValueType> operator*(const ValueType& scalar, const LinearOperator<ValueType>& op);
+
+template <typename ValueType>
+LinearOperatorSuperposition<ValueType> operator/(const LinearOperator<ValueType>& op, const ValueType& scalar);
+
 
 } // namespace Bempp
 

@@ -123,6 +123,11 @@ private:
 } // namespace
 
 template <typename ValueType>
+ElementaryIntegralOperator<ValueType>::ElementaryIntegralOperator(const Space<ValueType> &testSpace, const Space<ValueType> &trialSpace)
+    : ElementaryLinearOperator<ValueType>(testSpace,trialSpace) {}
+
+
+template <typename ValueType>
 bool ElementaryIntegralOperator<ValueType>::supportsRepresentation(
         AssemblyOptions::Representation repr) const
 {
@@ -143,19 +148,20 @@ ElementaryIntegralOperator<ValueType>::makeAssembler(
     return assemblerFactory.make(geometryFactory, rawGeometry,
                                  testBases, trialBases,
                                  testExpression(), kernel(), trialExpression(),
-                                 this->multiplier(),
+                                 1.0,
                                  openClHandler, cacheSingularIntegrals);
 }
 
 template <typename ValueType>
 std::auto_ptr<DiscreteLinearOperator<ValueType> >
 ElementaryIntegralOperator<ValueType>::assembleWeakForm(
-        const Space<ValueType>& testSpace,
-        const Space<ValueType>& trialSpace,
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
     AutoTimer timer("\nAssembly took ");
+
+    const Space<ValueType>& testSpace = this->getTestSpace();
+    const Space<ValueType>& trialSpace = this->getTrialSpace();
 
     if (!testSpace.dofsAssigned() || !trialSpace.dofsAssigned())
         throw std::runtime_error("ElementaryIntegralOperator::assembleWeakForm(): "
@@ -212,25 +218,22 @@ ElementaryIntegralOperator<ValueType>::assembleWeakForm(
                           testBases, trialBases,
                           openClHandler, cacheSingularIntegrals);
 
-    return assembleWeakFormInternal(testSpace, trialSpace, *assembler, options);
+    return assembleWeakFormInternal(*assembler, options);
 }
 
 template <typename ValueType>
 std::auto_ptr<DiscreteLinearOperator<ValueType> >
 ElementaryIntegralOperator<ValueType>::assembleWeakFormInternal(
-        const Space<ValueType>& testSpace,
-        const Space<ValueType>& trialSpace,
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
+
     switch (options.operatorRepresentation())
     {
     case AssemblyOptions::DENSE:
-        return assembleWeakFormInDenseMode(
-                    testSpace, trialSpace, assembler, options);
+        return assembleWeakFormInDenseMode(assembler, options);
     case AssemblyOptions::ACA:
-        return assembleWeakFormInAcaMode(
-                    testSpace, trialSpace, assembler, options);
+        return assembleWeakFormInAcaMode(assembler, options);
     case AssemblyOptions::FMM:
         throw std::runtime_error("ElementaryIntegralOperator::assembleWeakForm(): "
                                  "assembly mode FMM is not implemented yet");
@@ -243,11 +246,13 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInternal(
 template <typename ValueType>
 std::auto_ptr<DiscreteLinearOperator<ValueType> >
 ElementaryIntegralOperator<ValueType>::assembleWeakFormInDenseMode(
-        const Space<ValueType>& testSpace,
-        const Space<ValueType>& trialSpace,
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
+
+    const Space<ValueType>& testSpace=this->getTestSpace();
+    const Space<ValueType>& trialSpace=this->trialSpace();
+
     // Get the grid's leaf view so that we can iterate over elements
     std::auto_ptr<GridView> view = trialSpace.grid().leafView();
     const int elementCount = view->entityCount(0);
@@ -323,11 +328,12 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInDenseMode(
 template <typename ValueType>
 std::auto_ptr<DiscreteLinearOperator<ValueType> >
 ElementaryIntegralOperator<ValueType>::assembleWeakFormInAcaMode(
-        const Space<ValueType>& testSpace,
-        const Space<ValueType>& trialSpace,
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
+    const Space<ValueType>& testSpace=this->getTestSpace();
+    const Space<ValueType>& trialSpace=this->getTrialSpace();
+
     return AcaGlobalAssembler<ValueType>::assembleWeakForm(
                 testSpace, trialSpace, assembler, options);
 }
@@ -384,7 +390,7 @@ ElementaryIntegralOperator<ValueType>::applyOffSurface(
             factory.make(*geometryFactory, rawGeometry,
                          bases,
                          kernel(), trialExpression(), localCoefficients,
-                         this->multiplier(),
+                         1.0,
                          openClHandler);
 
     return applyOffSurfaceWithKnownEvaluator(evaluationGrid, *evaluator, options);

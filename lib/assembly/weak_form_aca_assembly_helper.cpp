@@ -44,10 +44,14 @@ WeakFormAcaAssemblyHelper<ValueType>::WeakFormAcaAssemblyHelper(
         const std::vector<unsigned int>& p2oTrialDofs,
         const std::vector<LocalAssembler*>& assemblers,
         const std::vector<const DiscreteLinOp*>& sparseTermsToAdd,
+        const std::vector<ValueType>& denseTermsMultipliers,
+        const std::vector<ValueType>& sparseTermsMultipliers,
         const AssemblyOptions& options) :
     m_testSpace(testSpace), m_trialSpace(trialSpace),
     m_p2oTestDofs(p2oTestDofs), m_p2oTrialDofs(p2oTrialDofs),
     m_assemblers(assemblers), m_sparseTermsToAdd(sparseTermsToAdd),
+    m_denseTermsMultipliers(denseTermsMultipliers),
+    m_sparseTermsMultipliers(sparseTermsMultipliers),
     m_options(options)
 {
 }
@@ -117,7 +121,7 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
                              nTestDof < testLocalDofs[nTestElem].size();
                              ++nTestDof)
                             result(blockRows[nTestElem][nTestDof], 0) +=
-                                    localResult[nTestElem](testLocalDofs[nTestElem][nTestDof]);
+                                    m_denseTermsMultipliers[nTerm]*localResult[nTestElem](testLocalDofs[nTestElem][nTestDof]);
                 }
             }
         }
@@ -155,7 +159,7 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
                              nTrialDof < trialLocalDofs[nTrialElem].size();
                              ++nTrialDof)
                             result(0, blockCols[nTrialElem][nTrialDof]) +=
-                                    localResult[nTrialElem](trialLocalDofs[nTrialElem][nTrialDof]);
+                                    m_denseTermsMultipliers[nTerm]*localResult[nTrialElem](trialLocalDofs[nTrialElem][nTrialDof]);
                 }
             }
         }
@@ -186,6 +190,7 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
                              ++nTestDof)
                             result(blockRows[nTestElem][nTestDof],
                                    blockCols[nTrialElem][nTrialDof]) +=
+                                    m_denseTermsMultipliers[nTerm]*
                                     localResult(nTestElem, nTrialElem)
                                     (testLocalDofs[nTestElem][nTestDof],
                                      trialLocalDofs[nTrialElem][nTrialDof]);
@@ -195,7 +200,7 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
     // Now, add the contributions of the sparse terms
     for (int nTerm = 0; nTerm < m_sparseTermsToAdd.size(); ++nTerm)
         m_sparseTermsToAdd[nTerm]->addBlock(
-                    testGlobalDofs, trialGlobalDofs, result);
+                    testGlobalDofs, trialGlobalDofs, m_sparseTermsMultipliers[nTerm], result);
 }
 
 template <typename ValueType>

@@ -1,39 +1,42 @@
 include_directories ("${PROJECT_SOURCE_DIR}/lib")
 include_directories(${CMAKE_BINARY_DIR}/include/common)
 
-if (WITH_TRILINOS)
-    include_directories(${TRILINOS_INCLUDE_DIR})
-    add_executable(trilinos trilinos.cpp meshes.cpp)
-    target_link_libraries(trilinos bempp
-        ${BLAS_LIBRARIES} # must be put before the Trilinos libraries,
-                          # otherwise BLAS behaves incorrectly
-        ${STRATIMIKOS_LIBRARY}
-        ${STRATIMIKOS_BELOS_LIBRARY}
-        ${HDF5_LIBRARY})
-endif ()
+#if (WITH_TRILINOS)
+#    include_directories(${TRILINOS_INCLUDE_DIR})
+#    add_executable(trilinos trilinos.cpp meshes.cpp)
+#    target_link_libraries(trilinos bempp
+#        ${BLAS_LIBRARIES} # must be put before the Trilinos libraries,
+#                          # otherwise BLAS behaves incorrectly
+#        ${STRATIMIKOS_LIBRARY}
+#        ${STRATIMIKOS_BELOS_LIBRARY}
+#        ${HDF5_LIBRARY})
+#endif ()
 
-add_executable(traversal traversal.cpp)
-add_executable(traversal_benchmark traversal_benchmark.cpp)
-add_executable(gmsh_import gmsh_import.cpp)
-add_executable(vtk_export vtk_export.cpp)
-add_executable(assembly assembly.cpp meshes.cpp)
-add_executable(rhs_assembly rhs_assembly.cpp)
-add_executable(superposition superposition.cpp meshes.cpp)
-add_executable(calderon calderon.cpp meshes.cpp)
+add_executable(operator_algebra operator_algebra.cpp meshes.cpp)
+target_link_libraries(operator_algebra bempp)
+
+#add_executable(traversal traversal.cpp)
+#add_executable(traversal_benchmark traversal_benchmark.cpp)
+#add_executable(gmsh_import gmsh_import.cpp)
+#add_executable(vtk_export vtk_export.cpp)
+#add_executable(assembly assembly.cpp meshes.cpp)
+#add_executable(rhs_assembly rhs_assembly.cpp)
+#add_executable(superposition superposition.cpp meshes.cpp)
+#add_executable(calderon calderon.cpp meshes.cpp)
 add_executable(physical_test physical_test.cpp meshes.cpp)
-add_executable(physical_test2 physical_test2.cpp meshes.cpp)
-add_executable(tutorial_dirichlet tutorial_dirichlet.cpp)
-target_link_libraries(traversal bempp)
-target_link_libraries(traversal_benchmark bempp)
-target_link_libraries(gmsh_import bempp)
-target_link_libraries(vtk_export bempp)
-target_link_libraries(assembly bempp)
-target_link_libraries(rhs_assembly bempp)
-target_link_libraries(superposition bempp)
-target_link_libraries(calderon bempp)
+#add_executable(physical_test2 physical_test2.cpp meshes.cpp)
+#add_executable(tutorial_dirichlet tutorial_dirichlet.cpp)
+#target_link_libraries(traversal bempp)
+#target_link_libraries(traversal_benchmark bempp)
+#target_link_libraries(gmsh_import bempp)
+#target_link_libraries(vtk_export bempp)
+#target_link_libraries(assembly bempp)
+#target_link_libraries(rhs_assembly bempp)
+#target_link_libraries(superposition bempp)
+#target_link_libraries(calderon bempp)
 target_link_libraries(physical_test bempp)
-target_link_libraries(physical_test2 bempp)
-target_link_libraries(tutorial_dirichlet bempp)
+#target_link_libraries(physical_test2 bempp)
+#target_link_libraries(tutorial_dirichlet bempp)
 
 if (WITH_ALUGRID)
     add_executable(extract_surface_grid extract_surface_grid.cpp)

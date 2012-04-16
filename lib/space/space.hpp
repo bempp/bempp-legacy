@@ -23,6 +23,7 @@
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <boost/operators.hpp>
 
 #include "../common/types.hpp"
 #include "../common/not_implemented_error.hpp"
@@ -91,10 +92,20 @@ public:
 
         \param[in] space Space to compare with.  */
 
-    bool compare(const Space& space) const {
+    bool operator==(const Space<ValueType>& space) const {
 
         return m_uuid==space.m_uuid;
     }
+
+    /** \brief Compare if two space objects are not identical. Uses a unique object identifier.
+
+        \param[in] space Space to compare with.  */
+
+    bool operator!=(const Space<ValueType>& space) const {
+
+        return m_uuid!=space.m_uuid;
+    }
+
 
     /** \brief Expression returning values of the shape functions of this space. */
     virtual const Fiber::Expression<ValueType>& shapeFunctionValueExpression() const = 0;
