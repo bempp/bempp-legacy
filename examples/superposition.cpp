@@ -96,7 +96,6 @@ int main()
     LinearOperatorPtr slp(new SingleLayerPotential3D<double>);
 
 
-    assemblyOptions.switchToSparse();
     std::auto_ptr<DiscreteLinearOperator<double> > resultHalfId =
             halfId->assembleWeakForm(space, space, factory, assemblyOptions);
     assemblyOptions.switchToDense();

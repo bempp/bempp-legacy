@@ -72,7 +72,13 @@ public:
     inline void evaluate(const arma::Col<ValueType>& point,
                   arma::Col<ValueType>& result) const {
         //result(0) = sin(0.5 * point(0) * cos(0.25 * point(2))) * cos(point(1));
-        result(0) = 1.;
+        //result(0) = 1.;
+        if (norm(point,2)>1.3) {
+            result(0)=1;
+        }
+        else{
+            result(0)=1;
+        }
     }
 };
 
@@ -81,7 +87,7 @@ int main()
 {
 
     // Load a predefined test grid
-    const MeshVariant meshVariant = SPHERE_41440;
+    const MeshVariant meshVariant = DOUBLE_SPHERE_5162;
     std::auto_ptr<Grid> grid = loadMesh(meshVariant);
 
     // Initialize the spaces
@@ -95,13 +101,20 @@ int main()
 
     // Define some default options.
 
-    AssemblyOptions assemblyOptions;
+    AssemblyOptions assemblyOptions1;
+    AssemblyOptions assemblyOptions2;
     EvaluationOptions evaluationOptions;
 
     // We want to use ACA
 
-    AcaOptions acaOptions; // Default parameters for ACA
-    assemblyOptions.switchToAca(acaOptions);
+    AcaOptions acaOptions1; // Default parameters for ACA
+    AcaOptions acaOptions2; // Default parameters for ACA
+    acaOptions1.outputPostscript=true;
+    acaOptions2.outputPostscript=true;
+    acaOptions1.outputFname="slp.ps";
+    acaOptions2.outputFname="dlp.ps";
+    assemblyOptions1.switchToAca(acaOptions1);
+    assemblyOptions2.switchToAca(acaOptions2);
 
     // Define the standard integration factory
 
@@ -132,11 +145,11 @@ int main()
     // Finally discretize the operators
 
     DiscreteLinearOperatorPtr discreteSlp =
-            slp.assembleWeakForm(HminusHalfSpace, HminusHalfSpace, factory, assemblyOptions);
+            slp.assembleWeakForm(HminusHalfSpace, HminusHalfSpace, factory, assemblyOptions1);
     DiscreteLinearOperatorPtr discreteDlp =
-            dlp.assembleWeakForm(HminusHalfSpace, HplusHalfSpace, factory, assemblyOptions);
+            dlp.assembleWeakForm(HminusHalfSpace, HplusHalfSpace, factory, assemblyOptions2);
     DiscreteLinearOperatorPtr discreteId =
-            id.assembleWeakForm(HminusHalfSpace, HplusHalfSpace, factory, assemblyOptions);
+            id.assembleWeakForm(HminusHalfSpace, HplusHalfSpace, factory, assemblyOptions2);
 
     // Now construct the right hand side
 
@@ -147,7 +160,7 @@ int main()
 
     // A GridFunction is a discrete representation
 
-    GridFunction<double> trace0(HplusHalfSpace, function, factory, assemblyOptions);
+    GridFunction<double> trace0(HplusHalfSpace, function, factory, assemblyOptions1);
 
     // Extract the coefficient vector in the given basis
 
@@ -173,11 +186,11 @@ int main()
 
     // We want a preconditioned solve
 
-//    std::cout << "Constructing preconditioner" << std::endl;
-//
-//    iterativeSolver.addPreconditioner(
-//                AcaPreconditionerFactory<double>::
-//                AcaOperatorToPreconditioner(*discreteSlp, 0.1));
+    std::cout << "Constructing preconditioner" << std::endl;
+
+    iterativeSolver.addPreconditioner(
+                AcaPreconditionerFactory<double>::
+                AcaOperatorToPreconditioner(*discreteSlp, 1E-3));
 
     // Initialize the solver with parameters for GMRES
 
@@ -199,7 +212,7 @@ int main()
 
     std::cout << "Exporting results to VTK" << std::endl;
 
-    trace1.exportToVtk(VtkWriter::VERTEX_DATA, "Neumann_data", "physical_test_neumann_data_vertex");
+    trace1.exportToVtk(VtkWriter::VERTEX_DATA, "Neumann_data", "physical_test2_neumann_data_vertex");
 
 
     // Compare with exact solution

@@ -75,11 +75,6 @@ GridFunction<ValueType>::GridFunction(
             calculateProjections(function, space, factory, assemblyOptions);
 
     AssemblyOptions idAssemblyOptions(assemblyOptions);
-#ifdef WITH_TRILINOS
-    idAssemblyOptions.switchToSparse();
-#else
-    idAssemblyOptions.switchToDense();
-#endif
     IdentityOperator<ValueType> id;
     std::auto_ptr<DiscreteLinearOperator<ValueType> > discreteId =
             id.assembleWeakForm(space, space, factory, idAssemblyOptions);

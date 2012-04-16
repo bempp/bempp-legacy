@@ -231,11 +231,13 @@ AcaGlobalAssembler<ValueType>::assembleWeakForm(
                   << "Compressed to " << (100. * ahmedMemory) / origMemory << "%.\n"
                   << std::endl;
 
-        std::cout << "Writing matrix partition ..." << std::flush;
-        std::ofstream os("aca.ps");
-        psoutputH(os, doubleClusterTree.get(), testDofCount, blocks.get());
-        os.close();
-        std::cout << " done." << std::endl;
+        if (acaOptions.outputPostscript){
+            std::cout << "Writing matrix partition ..." << std::flush;
+            std::ofstream os(acaOptions.outputFname.c_str());
+            psoutputH(os, doubleClusterTree.get(), testDofCount, blocks.get());
+            os.close();
+            std::cout << " done." << std::endl;
+        }
     }
 
     result = std::auto_ptr<DiscreteLinOp>(

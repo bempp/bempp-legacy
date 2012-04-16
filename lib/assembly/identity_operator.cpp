@@ -99,7 +99,7 @@ template <typename ValueType>
 bool IdentityOperator<ValueType>::supportsRepresentation(
         AssemblyOptions::Representation repr) const
 {
-    return (repr == AssemblyOptions::DENSE || repr == AssemblyOptions::SPARSE);
+    return (repr == AssemblyOptions::DENSE || repr == AssemblyOptions::SPARSE || repr == AssemblyOptions::ACA);
 }
 
 template <typename ValueType>
@@ -178,7 +178,7 @@ IdentityOperator<ValueType>::assembleWeakFormInternal(
     case AssemblyOptions::DENSE:
         return assembleWeakFormInDenseMode(
                     testSpace, trialSpace, assembler, options);
-    case AssemblyOptions::SPARSE:
+    case AssemblyOptions::ACA:
         return assembleWeakFormInSparseMode(
                     testSpace, trialSpace, assembler, options);
     default:

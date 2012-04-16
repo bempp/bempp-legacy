@@ -230,8 +230,6 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
              (options.singularIntegralCaching() == AssemblyOptions::AUTO &&
               options.parallelism() == AssemblyOptions::OPEN_CL));
 
-    AssemblyOptions sparseModeOptions = options;
-    sparseModeOptions.switchToSparse();
 
     // Construct local assemblers. Immediately assemble sparse terms in sparse
     // mode. Populate a vector of dense terms for subsequent ACA-mode assembly.
@@ -252,7 +250,7 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
         {
             std::auto_ptr<DiscreteLinOp> discreteTerm =
                     term.assembleWeakFormInternal(
-                        testSpace, trialSpace, *assembler, sparseModeOptions);
+                        testSpace, trialSpace, *assembler, options);
             sparseDiscreteTerms.push_back(discreteTerm);
         }
         else

@@ -21,6 +21,9 @@
 #ifndef bempp_space_hpp
 #define bempp_space_hpp
 
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+
 #include "../common/types.hpp"
 #include "../common/not_implemented_error.hpp"
 #include <armadillo>
@@ -51,7 +54,7 @@ public:
     // variant it is necessary to check whether the element is triangular
     // or quadrilateral. Also, requests for element refinement should probably
     // be made via Space rather than via Grid.
-    explicit Space(Grid& grid) : m_grid(grid)
+    explicit Space(Grid& grid) : m_grid(grid), m_uuid(boost::uuids::random_generator()())
     {}
 
     virtual ~Space()
@@ -78,10 +81,20 @@ public:
         \param[out]  bases     On exit, a vector whose ith item is a pointer to
                                the Basis object corresponding to the ith item of
                                \p elements. */
+
     virtual void getBases(const std::vector<const EntityPointer<0>*>& elements,
                           std::vector<const Fiber::Basis<ValueType>*>& bases) const = 0;
 
     virtual const Fiber::Basis<ValueType>& basis(const Entity<0>& element) const = 0;
+
+    /** \brief Compare if two space objects are identical. Uses a unique object identifier.
+
+        \param[in] space Space to compare with.  */
+
+    bool compare(const Space& space) const {
+
+        return m_uuid==space.m_uuid;
+    }
 
     /** \brief Expression returning values of the shape functions of this space. */
     virtual const Fiber::Expression<ValueType>& shapeFunctionValueExpression() const = 0;
@@ -119,6 +132,9 @@ public:
 
 protected:
     Grid& m_grid;
+
+private:
+    boost::uuids::uuid m_uuid;
 };
 
 } //namespace Bempp
