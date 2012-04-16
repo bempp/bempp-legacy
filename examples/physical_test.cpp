@@ -102,8 +102,7 @@ int main()
     // We want to use ACA
 
     AcaOptions acaOptions; // Default parameters for ACA
-    acaOptions.eps=1E-5;
-    assemblyOptions.switchToAca(acaOptions);
+    //assemblyOptions.switchToAca(acaOptions);
 
     // Define the standard integration factory
 
@@ -112,98 +111,148 @@ int main()
     Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, GeometryFactory>
             factory;
 
-    // Some typedefs for linear operators
-
-    typedef std::auto_ptr<LinearOperator<double> > LinearOperatorPtr;
-    typedef DiscreteLinearOperator<double> DiscreteLinearOperator;
-    typedef std::auto_ptr<DiscreteLinearOperator> DiscreteLinearOperatorPtr;
-
     // We need the single layer, double layer, and the identity operator
 
     SingleLayerPotential3D<double> slp(HminusHalfSpace,HminusHalfSpace);
     DoubleLayerPotential3D<double> dlp(HminusHalfSpace,HplusHalfSpace);
     IdentityOperator<double> id(HminusHalfSpace,HplusHalfSpace);
+
+    // Form the right-hand side sum
+
     LinearOperatorSuperposition<double> rhsOp=-.5*id+dlp;
 
+    // Assemble the Operators
 
-    // Finally discretize the operators
+    slp.assemble(factory,assemblyOptions);
+    rhsOp.assemble(factory,assemblyOptions);
 
-    DiscreteLinearOperatorPtr discreteSlp =
-            slp.assembleWeakForm(factory, assemblyOptions);
-    DiscreteLinearOperatorPtr discreteRhsOp =
-            rhsOp.assembleWeakForm(factory, assemblyOptions);
-
-    // Now construct the right hand side
-
-    // Initialize the analytic rhs function
+    // We also want a grid function
 
     MyFunctor functor;
     Fiber::OrdinaryFunction<MyFunctor> function(functor);
 
-    // A GridFunction is a discrete representation
+    GridFunction<double> u(HplusHalfSpace, function, factory, assemblyOptions);
 
-    GridFunction<double> trace0(HplusHalfSpace, function, factory, assemblyOptions);
+    // Assemble the rhs
 
-    // Extract the coefficient vector in the given basis
+    std::cout << "Assemble rhs" << std::endl;
 
-    arma::Col<double> V = trace0.coefficients().asArmadilloVector();
-
-    std::cout << "Constructing RHS" << std::endl;
-
-    // Form (I+K)*b
-
-    arma::Col<double> rhs(HminusHalfSpace.globalDofCount());
-    discreteRhsOp->apply(NO_TRANSPOSE,V,rhs,1.,0.);
-
-    //discreteId->apply(NO_TRANSPOSE, V, rhs, -0.5, 0.);
-    //discreteDlp->apply(NO_TRANSPOSE, V, rhs, 1., 1.);
-
-    // Store in a discrete rhs vector
-
-    typedef std::auto_ptr<Vector<double> > VectorPtr;
-    VectorPtr discreteRhsVec(new Vector<double>(rhs));
-
+    GridFunction<double> rhs=rhsOp.apply(u);
 
     // Initialize the iterative solver
 
-    DefaultIterativeSolver<double> iterativeSolver(*discreteSlp, *discreteRhsVec);
+    std::cout << "Initialize iterative solver" << std::endl;
 
-    // We want a preconditioned solve
-
-//    std::cout << "Constructing preconditioner" << std::endl;
-//
-//    iterativeSolver.addPreconditioner(
-//                AcaPreconditionerFactory<double>::
-//                AcaOperatorToPreconditioner(*discreteSlp, 0.1));
-
-    // Initialize the solver with parameters for GMRES
-
-    iterativeSolver.initializeSolver(defaultGmresParameterList(1e-8));
-    std::cout << "Solving" << std::endl;
-
-    // Solve and extract solution
-
+    DefaultIterativeSolver<double> iterativeSolver(slp, rhs);
+    iterativeSolver.initializeSolver(defaultGmresParameterList(1e-5));
     iterativeSolver.solve();
     std::cout << iterativeSolver.getSolverMessage() << std::endl;
 
-    arma::Mat<double> solutionCoefficients = iterativeSolver.getResult();
+    // Extract the solution
 
-    // We store the result into a Grid function
+    GridFunction<double> solFun=iterativeSolver.getResult();
 
-    GridFunction<double> trace1(HminusHalfSpace, solutionCoefficients.col(0));
+    // Write out as VTK
 
-    // Export the results to VTK
-
-    std::cout << "Exporting results to VTK" << std::endl;
-
-    trace1.exportToVtk(VtkWriter::VERTEX_DATA, "Neumann_data", "physical_test_neumann_data_vertex");
-
+    solFun.exportToVtk(VtkWriter::CELL_DATA, "Neumann_data", "physical_test_neumann_data_vertex");
 
     // Compare with exact solution
+
+    arma::Col<double> solutionCoefficients=solFun.coefficients().asArmadilloVector();
 
     arma::Col<double> deviation = solutionCoefficients - (-1.);
     // % in Armadillo -> elementwise multiplication
     double stdDev = sqrt(arma::accu(deviation % deviation) /
                          solutionCoefficients.n_rows);
     std::cout << "Standard deviation: " << stdDev << std::endl;
+
+
+
+
+
+    // Finally discretize the operators
+
+//    DiscreteLinearOperatorPtr discreteSlp =
+//            slp.assembleWeakForm(factory, assemblyOptions);
+//    DiscreteLinearOperatorPtr discreteRhsOp =
+//            rhsOp.assembleWeakForm(factory, assemblyOptions);
+
+//    slp.assemble(factory,assemblyOptions);
+
+    // Now construct the right hand side
+
+//    // Initialize the analytic rhs function
+
+//    MyFunctor functor;
+//    Fiber::OrdinaryFunction<MyFunctor> function(functor);
+
+//    // A GridFunction is a discrete representation
+
+//    GridFunction<double> trace0(HplusHalfSpace, function, factory, assemblyOptions);
+
+
+
+//    // Extract the coefficient vector in the given basis
+
+//    arma::Col<double> V = trace0.coefficients().asArmadilloVector();
+
+//    std::cout << "Constructing RHS" << std::endl;
+
+//    // Form (I+K)*b
+
+//    arma::Col<double> rhs(HminusHalfSpace.globalDofCount());
+//    discreteRhsOp->apply(NO_TRANSPOSE,V,rhs,1.,0.);
+
+//    //discreteId->apply(NO_TRANSPOSE, V, rhs, -0.5, 0.);
+//    //discreteDlp->apply(NO_TRANSPOSE, V, rhs, 1., 1.);
+
+//    // Store in a discrete rhs vector
+
+//    typedef std::auto_ptr<Vector<double> > VectorPtr;
+//    VectorPtr discreteRhsVec(new Vector<double>(rhs));
+//    GridFunction<double> rhs_grid(HminusHalfSpace,*discreteRhsVec);
+
+
+//    // Initialize the iterative solver
+
+//    DefaultIterativeSolver<double> iterativeSolver(slp, rhs_grid);
+
+//    // We want a preconditioned solve
+
+////    std::cout << "Constructing preconditioner" << std::endl;
+////
+////    iterativeSolver.addPreconditioner(
+////                AcaPreconditionerFactory<double>::
+////                AcaOperatorToPreconditioner(*discreteSlp, 0.1));
+
+//    // Initialize the solver with parameters for GMRES
+
+//    iterativeSolver.initializeSolver(defaultGmresParameterList(1e-8));
+//    std::cout << "Solving" << std::endl;
+
+//    // Solve and extract solution
+
+//    iterativeSolver.solve();
+//    std::cout << iterativeSolver.getSolverMessage() << std::endl;
+
+//    arma::Mat<double> solutionCoefficients = iterativeSolver.getResult().coefficients().asArmadilloVector();
+
+//    // We store the result into a Grid function
+
+//    GridFunction<double> trace1(HminusHalfSpace, solutionCoefficients.col(0));
+
+//    // Export the results to VTK
+
+//    std::cout << "Exporting results to VTK" << std::endl;
+
+//    trace1.exportToVtk(VtkWriter::VERTEX_DATA, "Neumann_data", "physical_test_neumann_data_vertex");
+
+
+    // Compare with exact solution
+
+//    arma::Col<double> deviation = solutionCoefficients - (-1.);
+//    // % in Armadillo -> elementwise multiplication
+//    double stdDev = sqrt(arma::accu(deviation % deviation) /
+//                         solutionCoefficients.n_rows);
+//    std::cout << "Standard deviation: " << stdDev << std::endl;
 }

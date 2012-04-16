@@ -20,6 +20,7 @@
 
 #include "linear_operator.hpp"
 #include "linear_operator_superposition.hpp"
+#include "discrete_linear_operator.hpp"
 #include <stdexcept>
 
 namespace Bempp{
@@ -28,6 +29,60 @@ template <typename ValueType>
 LinearOperator<ValueType>::LinearOperator(const Space<ValueType>& testSpace, const Space<ValueType>& trialSpace) :
     m_testSpace(testSpace), m_trialSpace(trialSpace) {}
 
+template <typename ValueType>
+void LinearOperator<ValueType>::assemble(const LocalAssemblerFactory& factory, const AssemblyOptions& options){
+    m_discreteOperator=this->assembleWeakForm(factory,options);
+}
+
+template <typename ValueType>
+bool LinearOperator<ValueType>::isAssembled() const{
+    return m_discreteOperator.get()!=NULL;
+}
+
+template <typename ValueType>
+GridFunction<ValueType> LinearOperator<ValueType>::apply(
+        const GridFunction<ValueType>& x, const GridFunction<ValueType>&  y, ValueType alpha, ValueType beta) const{
+    if (!this->isAssembled()) throw std::runtime_error("Operator is not assembled");
+
+    // Sanity test
+    if ((m_trialSpace!=x.space()) || (m_testSpace!=y.space())) throw std::runtime_error("Spaces don't match");
+
+    // Extract coefficient vectors
+
+    arma::Col<ValueType> xVals=x.coefficients().asArmadilloVector();
+    arma::Col<ValueType> yVals=y.coefficients().asArmadilloVector();
+
+    // Apply operator and return new GridFunction
+
+    m_discreteOperator->apply(Bempp::NO_TRANSPOSE,xVals,yVals,alpha,beta);
+    return GridFunction<ValueType>(m_testSpace,yVals);
+
+}
+
+template <typename ValueType>
+GridFunction<ValueType> LinearOperator<ValueType>::apply(const GridFunction<ValueType>& x) const{
+     if (!this->isAssembled()) throw std::runtime_error("Operator is not assembled");
+
+     //Sanity test
+
+     if (m_trialSpace!=x.space()) throw std::runtime_error("Spaces don't match");
+
+     arma::Col<ValueType> xVals=x.coefficients().asArmadilloVector();
+     arma::Col<ValueType> yVals=arma::zeros(m_testSpace.globalDofCount());
+     m_discreteOperator->apply(Bempp::NO_TRANSPOSE,xVals,yVals,1.0,1.0);
+     return GridFunction<ValueType>(m_testSpace,yVals);
+
+}
+
+template <typename ValueType>
+const DiscreteLinearOperator<ValueType>& LinearOperator<ValueType>::getDiscreteLinearOperator() const{
+    return *m_discreteOperator;
+}
+
+template<typename ValueType>
+LinearOperator<ValueType>::LinearOperator(const LinearOperator<ValueType>& linOp) :
+    m_testSpace(linOp.m_testSpace), m_trialSpace(linOp.m_trialSpace),
+    m_localOperators(linOp.m_localOperators), m_multipliers(linOp.m_multipliers){}
 
 template <typename ValueType>
 LinearOperator<ValueType>::~LinearOperator(){}

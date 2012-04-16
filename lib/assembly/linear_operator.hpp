@@ -23,7 +23,9 @@
 
 #include "../grid/common.hpp"
 #include "../space/space.hpp"
+#include "grid_function.hpp"
 #include "assembly_options.hpp"
+#include "boost/scoped_ptr.hpp"
 
 #include <memory>
 #include <vector>
@@ -73,12 +75,29 @@ template <typename ValueType>
 class LinearOperator
 {
 public:
-    typedef Fiber::LocalAssemblerFactory<ValueType, GeometryFactory>
-    LocalAssemblerFactory;
+    typedef Fiber::LocalAssemblerFactory<ValueType, GeometryFactory> LocalAssemblerFactory;
 
     LinearOperator(const Space<ValueType>& testSpace, const Space<ValueType>& trialSpace);
 
+    LinearOperator(const LinearOperator<ValueType>& linOp);
+
     virtual ~LinearOperator();
+
+    /** \brief Assemble the discrete operator */
+    void assemble(const LocalAssemblerFactory& factory, const AssemblyOptions& options);
+
+    /** \brief Return \p true if operator is assembled */
+    bool isAssembled() const;
+
+    /** \brief Form y_neu=alphaA*x+beta*y */
+    GridFunction<ValueType> apply(
+            const GridFunction<ValueType>& x, const GridFunction<ValueType>&  y, ValueType alpha, ValueType beta) const;
+
+    /** \brief Form y=A*x */
+    GridFunction<ValueType> apply(const GridFunction<ValueType>& x) const;
+
+    /** \brief Return reference to \p DiscreteLinearOperator. */
+    const DiscreteLinearOperator<ValueType>& getDiscreteLinearOperator() const;
 
     // Ideas for better names for all methods here are very welcome!!!
     /** \brief Number of components of the functions from the trial space \f$X\f$.
@@ -133,7 +152,6 @@ protected:
     void addLocalOperatorsMultipliers(const std::vector<ElementaryLinearOperator<ValueType> const*>& localOperators,
                                       const std::vector<ValueType>& multipliers);
 
-
 private:
 
     std::vector<ElementaryLinearOperator<ValueType> const* > m_localOperators;
@@ -142,6 +160,7 @@ private:
     const Space<ValueType>& m_testSpace;
     const Space<ValueType>& m_trialSpace;
 
+    std::auto_ptr<const DiscreteLinearOperator<ValueType> > m_discreteOperator;
 
 };
 

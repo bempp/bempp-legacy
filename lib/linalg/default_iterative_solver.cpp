@@ -42,46 +42,57 @@
 namespace Bempp {
 
 template<typename ValueType>
-DefaultIterativeSolver<ValueType>::DefaultIterativeSolver(DiscreteLinearOperator<ValueType>& discreteOperator,
-                   Vector<ValueType>& rhs):
-    m_discreteOperator(discreteOperator),
-    m_rhs(&rhs,false){
-
-    if (m_discreteOperator.range()->dim()!=rhs.range()->dim()) throw std::runtime_error("Dimension of LHS != Dimension of RHS.");
-
-    }
-
-template<typename ValueType>
-DefaultIterativeSolver<ValueType>::DefaultIterativeSolver(DiscreteLinearOperator<ValueType>& discreteOperator,
-                   std::vector<Vector<ValueType>* >& rhs) :
-    m_discreteOperator(discreteOperator) {
-
-    const size_t nrhs = rhs.size();
-
-    if (nrhs<1) throw std::runtime_error("At least one right-hand side needed.");
-    const size_t size = rhs[0]->range()->dim();
-
-    // Check ranges
-
-    for (size_t i=0;i<nrhs;i++)
-        if (rhs[i]->range()->dim()!=size) throw std::runtime_error("Not all right-hand sides have same lengths.");
-
-    if (m_discreteOperator.range()->dim()!=size) throw std::runtime_error("Dimension of LHS != Dimension of RHS.");
-
-    // Create Multivector for RHS
-
-    Teuchos::ArrayRCP<ValueType> data(nrhs*size);
-
-    for (size_t i=0;i<nrhs;i++)
-        for (size_t j=0;j<size;j++)
-            data[i*nrhs+j]=rhs[i]->getPtr()[j];
-
-    m_rhs=Teuchos::RCP<Thyra::MultiVectorBase<ValueType> >(new Thyra::DefaultSpmdMultiVector<ValueType>(
-                                                   Thyra::defaultSpmdVectorSpace<ValueType>(size),
-                                                   Thyra::defaultSpmdVectorSpace<ValueType>(nrhs),
-                                                   data));
+DefaultIterativeSolver<ValueType>::DefaultIterativeSolver(const LinearOperator<ValueType>& linOp, const GridFunction<ValueType> gridFun ) :
+    m_discreteOperator(linOp.getDiscreteLinearOperator()),
+    m_rhs(new Vector<ValueType>(gridFun.coefficients())),
+    m_space(linOp.getTrialSpace())
+{
+    if (!linOp.isAssembled()) std::runtime_error("Operator is not assembled");
+    if (!(linOp.getTestSpace()==gridFun.space())) std::runtime_error("Spaces do not match");
 
 }
+
+//template<typename ValueType>
+//DefaultIterativeSolver<ValueType>::DefaultIterativeSolver(DiscreteLinearOperator<ValueType>& discreteOperator,
+//                   Vector<ValueType>& rhs):
+//    m_discreteOperator(discreteOperator),
+//    m_rhs(&rhs,false){
+
+//    if (m_discreteOperator.range()->dim()!=rhs.range()->dim()) throw std::runtime_error("Dimension of LHS != Dimension of RHS.");
+
+//    }
+
+//template<typename ValueType>
+//DefaultIterativeSolver<ValueType>::DefaultIterativeSolver(DiscreteLinearOperator<ValueType>& discreteOperator,
+//                   std::vector<Vector<ValueType>* >& rhs) :
+//    m_discreteOperator(discreteOperator) {
+
+//    const size_t nrhs = rhs.size();
+
+//    if (nrhs<1) throw std::runtime_error("At least one right-hand side needed.");
+//    const size_t size = rhs[0]->range()->dim();
+
+//    // Check ranges
+
+//    for (size_t i=0;i<nrhs;i++)
+//        if (rhs[i]->range()->dim()!=size) throw std::runtime_error("Not all right-hand sides have same lengths.");
+
+//    if (m_discreteOperator.range()->dim()!=size) throw std::runtime_error("Dimension of LHS != Dimension of RHS.");
+
+//    // Create Multivector for RHS
+
+//    Teuchos::ArrayRCP<ValueType> data(nrhs*size);
+
+//    for (size_t i=0;i<nrhs;i++)
+//        for (size_t j=0;j<size;j++)
+//            data[i*nrhs+j]=rhs[i]->getPtr()[j];
+
+//    m_rhs=Teuchos::RCP<Thyra::MultiVectorBase<ValueType> >(new Thyra::DefaultSpmdMultiVector<ValueType>(
+//                                                   Thyra::defaultSpmdVectorSpace<ValueType>(size),
+//                                                   Thyra::defaultSpmdVectorSpace<ValueType>(nrhs),
+//                                                   data));
+
+//}
 
 template<typename ValueType>
 void DefaultIterativeSolver<ValueType>::addPreconditioner(Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > preconditioner){
@@ -135,13 +146,13 @@ void DefaultIterativeSolver<ValueType>::solve(){
 }
 
 template <typename ValueType>
-arma::Mat<ValueType> DefaultIterativeSolver<ValueType>::getResult(){
+GridFunction<ValueType> DefaultIterativeSolver<ValueType>::getResult(){
 
     const size_t size=m_sol->range()->dim();
     const size_t nrhs=m_sol->domain()->dim();
 
     Thyra::ConstDetachedMultiVectorView<ValueType> solView(m_sol);
-    return arma::Mat<ValueType>(solView.values(),size,nrhs);
+    return GridFunction<ValueType>(m_space,arma::Mat<ValueType>(solView.values(),size,nrhs));
 
 }
 

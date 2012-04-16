@@ -41,6 +41,8 @@
 #include "../assembly/discrete_linear_operator.hpp"
 #include "../assembly/discrete_aca_linear_operator.hpp"
 #include "../assembly/vector.hpp"
+#include "../assembly/grid_function.hpp"
+#include "../assembly/linear_operator.hpp"
 
 
 
@@ -54,10 +56,12 @@ class DefaultIterativeSolver
 public:
 
 
-    DefaultIterativeSolver(DiscreteLinearOperator<ValueType>& discreteOperator,
-                       Vector<ValueType>& rhs);
-    DefaultIterativeSolver(DiscreteLinearOperator<ValueType>& discreteOperator,
-                       std::vector<Vector<ValueType>* >& rhs);
+    DefaultIterativeSolver(const LinearOperator<ValueType>& linOp, const GridFunction<ValueType> gridFun );
+
+//    DefaultIterativeSolver(DiscreteLinearOperator<ValueType>& discreteOperator,
+//                       Vector<ValueType>& rhs);
+//    DefaultIterativeSolver(DiscreteLinearOperator<ValueType>& discreteOperator,
+//                       std::vector<Vector<ValueType>* >& rhs);
 
 
     void addPreconditioner(Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > preconditioner);
@@ -71,7 +75,7 @@ public:
 
 
 
-    arma::Mat<ValueType> getResult();
+    GridFunction<ValueType> getResult();
 
     EStatus getStatus();
 
@@ -83,7 +87,8 @@ public:
 
 private:
 
-    DiscreteLinearOperator<ValueType>& m_discreteOperator;
+    const DiscreteLinearOperator<ValueType>& m_discreteOperator;
+    const Space<ValueType>& m_space;
 
     Teuchos::RCP<Thyra::LinearOpWithSolveBase<ValueType> > m_lhs;
     Teuchos::RCP<Thyra::MultiVectorBase<ValueType> > m_rhs;
