@@ -81,13 +81,13 @@ public:
      */
     virtual int cornerCount() const = 0;
 
-    /** \brief Positions of the geometry corners.
+    /** \brief Get the positions of the geometry corners.
      *
      *  \param[out] c Matrix whose \f$i\f$th column contains the coordinates of
      *  the \f$i\f$th corner. The numbering of corners follows the conventions
      *  of the generic reference element.
      */
-    virtual void corners(arma::Mat<ctype>& c) const = 0;
+    virtual void getCorners(arma::Mat<ctype>& c) const = 0;
 
     /** \brief Convert local (logical) to global (physical) coordinates.
 
@@ -109,7 +109,8 @@ public:
     virtual void global2local(const arma::Mat<ctype>& global,
                               arma::Mat<ctype>& local) const = 0;
 
-    /** \brief The factor appearing in the integral transformation formula.
+    /** \brief Get the factor appearing in the integral transformation formula
+      at specified points.
 
       Let \f$ g : D \to W\f$ denote the transformation described by the Geometry.
       Then the jacobian of the transformation is defined as the
@@ -119,7 +120,7 @@ public:
       \vdots & \ddots & \vdots \\ \frac{\partial g_{m-1}}{\partial x_0} &
       \cdots & \frac{\partial g_{m-1}}{\partial x_{n-1}}
       \end{array} \right).\f]
-      Here we abbreviated \f$m=\textrm{cdim}\f$ and \f$n=\textrm{mydim}\f$ for ease of
+      Here we abbreviated \f$m=\textrm{cdim}\f$ and \f$n=\textrm{mydim}\f$ for
       readability.
 
       The integration element \f$\mu(x)\f$ for any \f$x\in D\f$ is then defined as
@@ -132,13 +133,13 @@ public:
       efficiency. For example in an equidistant structured mesh it may be as
       simple as \f$h^\textrm{mydim}\f$.
     */
-    virtual void integrationElement(const arma::Mat<ctype>& local,
-                                    arma::Row<ctype>& int_element) const = 0;
+    virtual void getIntegrationElements(const arma::Mat<ctype>& local,
+                                        arma::Row<ctype>& int_element) const = 0;
 
     /** \brief Volume of geometry. */
     virtual ctype volume() const = 0;
 
-    /** \brief Center of geometry.
+    /** \brief Get center of geometry.
      *
      *  Note that this method is still subject to a change of name and
      *  semantics. At the moment, the center is not required to be the centroid
@@ -152,12 +153,12 @@ public:
      *
      * \param[out]  c  Coordinates of the center of geometry.
      */
-    virtual void center(arma::Col<ctype>& c) const = 0;
+    virtual void getCenter(arma::Col<ctype>& c) const = 0;
 
-    /** \brief Transpose of the Jacobian matrix.
+    /** \brief Get transposed Jacobian matrices at specified points.
      *
      *  The Jacobian matrix is defined in the documentation of
-     *  integrationElement().
+     *  getIntegrationElements().
      *
      *  \param[in]  local
      *    Matrix whose \f$i\f$th column contains the local coordinates of a point \f$x_i \in D\f$.
@@ -165,13 +166,14 @@ public:
      *    3D array whose \f$i\f$th slice (i.e. jacobian_t(:,:,i)) contains the
      *    transposed Jacobian matrix at \f$x_i\f$, i.e. \f$J_g^T(x_i)\f$.
      */
-    virtual void jacobianTransposed(const arma::Mat<ctype>& local,
-                                    arma::Cube<ctype>& jacobian_t) const = 0;
+    virtual void getJacobiansTransposed(
+            const arma::Mat<ctype>& local,
+            arma::Cube<ctype>& jacobian_t) const = 0;
 
-    /** \brief Inverse of the transposed Jacobian matrix.
+    /** \brief Get inverses of transposed Jacobian matrices at specified points.
      *
      *  The Jacobian matrix is defined in the documentation of
-     *  integrationElement().
+     *  getIntegrationElements().
      *
      *  \param[in]  local
      *    Matrix whose \f$i\f$th column contains the local coordinates of a point \f$x_i \in D\f$.
@@ -190,20 +192,22 @@ public:
      *        This means that it is inverse for all tangential vectors in
      *        \f$g(x)\f$ while mapping all normal vectors to zero.
      */
-    virtual void jacobianInverseTransposed(const arma::Mat<ctype>& local,
-                                           arma::Cube<ctype>& jacobian_inv_t) const = 0;
+    virtual void getJacobianInversesTransposed(
+            const arma::Mat<ctype>& local,
+            arma::Cube<ctype>& jacobian_inv_t) const = 0;
 
-    /** \brief Unit vector normal to the entity.
+    /** \brief Get unit vectors normal to the entity at specified points.
      *
      *  An exception is thrown if dim() != dimWorld() - 1.
      *
      *  \param[in]  local
-     *    Matrix whose \f$i\f$th column contains the local coordinates of a point \f$x_i \in D\f$.
+     *    Matrix whose \f$i\f$th column contains the local coordinates of a
+     *    point \f$x_i \in D\f$.
      *  \param[out]  jacobian_t
      *    Matrix whose \f$i\f$th column containts components of a unit vector
      *    normal to the entity at \f$x_i\f$.
      */
-    virtual void normal(const arma::Mat<ctype>& local,
+    virtual void getNormals(const arma::Mat<ctype>& local,
                         arma::Mat<ctype>& normal) const = 0;
 
     virtual void getData(int what, const arma::Mat<ctype>& local,

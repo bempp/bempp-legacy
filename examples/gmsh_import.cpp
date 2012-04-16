@@ -55,7 +55,7 @@ int main()
             const Geometry& geo = e.geometry();
             // Dune::FieldVector<ctype, dimWorld> elementCenter;
             arma::Col<double> elementCenter;
-            geo.center(elementCenter);
+            geo.getCenter(elementCenter);
 
             std::cout << "  visiting leaf element " << gt
                       << " with centre at " << elementCenter << std::endl;
@@ -73,7 +73,7 @@ int main()
             const Geometry& geo = e.geometry();
             // Dune::FieldVector<ctype, dimWorld> elementCenter = geo.center();
             arma::Col<double> elementCenter;
-            geo.center(elementCenter);
+            geo.getCenter(elementCenter);
 
             std::cout << "  visiting leaf element " << gt
                       << " with centre at " << elementCenter << std::endl;
@@ -92,7 +92,7 @@ int main()
             Dune::GeometryType gt = e.type();
             const Geometry& geo = e.geometry();
             arma::Col<double> elementCenter;
-            geo.center(elementCenter);
+            geo.getCenter(elementCenter);
 
             std::cout << "  visiting vertex " << gt
                       << " with centre at " << elementCenter << std::endl;

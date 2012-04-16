@@ -174,7 +174,7 @@ public:
         return m_dune_geometry->corners();
     }
 
-    virtual void corners(arma::Mat<ctype>& c) const {
+    virtual void getCorners(arma::Mat<ctype>& c) const {
         const int cdim = DuneGeometry::dimensionworld;
         const int n = m_dune_geometry->corners();
         c.set_size(cdim, n);
@@ -236,8 +236,8 @@ public:
         }
     }
 
-    virtual void integrationElement(const arma::Mat<ctype>& local,
-                                    arma::Row<ctype>& int_element) const {
+    virtual void getIntegrationElements(const arma::Mat<ctype>& local,
+                                        arma::Row<ctype>& int_element) const {
         const int mdim = DuneGeometry::mydimension;
 #ifndef NDEBUG
         if (local.n_rows != mdim)
@@ -260,7 +260,7 @@ public:
         return m_dune_geometry->volume();
     }
 
-    virtual void center(arma::Col<ctype>& c) const {
+    virtual void getCenter(arma::Col<ctype>& c) const {
         const int cdim = DuneGeometry::coorddimension;
         c.set_size(cdim);
 
@@ -270,13 +270,14 @@ public:
             c(i) = g[i];
     }
 
-    virtual void jacobianTransposed(const arma::Mat<ctype>& local,
-                                    arma::Cube<ctype>& jacobian_t) const {
+    virtual void getJacobiansTransposed(const arma::Mat<ctype>& local,
+                                        arma::Cube<ctype>& jacobian_t) const {
         const int mdim = DuneGeometry::mydimension;
         const int cdim = DuneGeometry::coorddimension;
 #ifndef NDEBUG
         if (local.n_rows != mdim)
-            throw std::invalid_argument("Geometry::jacobianTransposed(): invalid dimensions of the 'local' array");
+            throw std::invalid_argument("Geometry::getJacobiansTransposed(): "
+                                        "invalid dimensions of the 'local' array");
 #endif
         const int n = local.n_cols;
         jacobian_t.set_size(mdim, cdim, n);
@@ -298,13 +299,15 @@ public:
         }
     }
 
-    virtual void jacobianInverseTransposed(const arma::Mat<ctype>& local,
-                                           arma::Cube<ctype>& jacobian_inv_t) const {
+    virtual void getJacobianInversesTransposed(
+            const arma::Mat<ctype>& local,
+            arma::Cube<ctype>& jacobian_inv_t) const {
         const int mdim = DuneGeometry::mydimension;
         const int cdim = DuneGeometry::coorddimension;
 #ifndef NDEBUG
         if (local.n_rows != mdim)
-            throw std::invalid_argument("Geometry::jacobianInverseTransposed(): invalid dimensions of the 'local' array");
+            throw std::invalid_argument("Geometry::getJacobianInversesTransposed(): "
+                                        "invalid dimensions of the 'local' array");
 #endif
         const int n = local.n_cols;
         jacobian_inv_t.set_size(cdim, mdim, n);
@@ -326,10 +329,10 @@ public:
         }
     }
 
-    virtual void normal(const arma::Mat<ctype>& local,
-                        arma::Mat<ctype>& normal) const {
+    virtual void getNormals(const arma::Mat<ctype>& local,
+                            arma::Mat<ctype>& normal) const {
         arma::Cube<ctype> jacobian_t;
-        jacobianTransposed(local, jacobian_t);
+        getJacobiansTransposed(local, jacobian_t);
         calculateNormals(jacobian_t, normal);
     }
 
@@ -344,11 +347,12 @@ public:
         if (what & Fiber::GLOBALS)
             This::local2global(local, data.globals);
         if (what & Fiber::INTEGRATION_ELEMENTS)
-            This::integrationElement(local, data.integrationElements);
+            This::getIntegrationElements(local, data.integrationElements);
         if (what & Fiber::JACOBIANS_TRANSPOSED || what & Fiber::NORMALS)
-            This::jacobianTransposed(local, data.jacobiansTransposed);
+            This::getJacobiansTransposed(local, data.jacobiansTransposed);
         if (what & Fiber::JACOBIAN_INVERSES_TRANSPOSED)
-            This::jacobianInverseTransposed(local, data.jacobianInversesTransposed);
+            This::getJacobianInversesTransposed(
+                        local, data.jacobianInversesTransposed);
         if (what & Fiber::NORMALS)
             calculateNormals(data.jacobiansTransposed, data.normals);
     }

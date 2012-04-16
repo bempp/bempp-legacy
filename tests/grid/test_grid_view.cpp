@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_second_entity_agrees_with_Dune_
         it->next();
         const Entity<codim>& e = it->entity();
         const Geometry& geo = e.geometry();
-        geo.center(elementCenter);
+        geo.getCenter(elementCenter);
     }
 
     Dune::FieldVector<ctype, DuneGrid::dimensionworld> duneElementCenter;
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_FIXTURE_TEST_SUITE(GridView_Triangular_Leaf, TriangularLeafGridViewManager)
 
 // Contents of this test suite are identical with those of the previous one -- the only difference is the fixture.
-// I can't see any elegant way of avoid this duplication, though.
+// I can't see any elegant way of avoiding this duplication, though.
 
 // entityCount()
 
@@ -268,7 +268,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_second_entity_agrees_with_Dune_
         it->next();
         const Entity<codim>& e = it->entity();
         const Geometry& geo = e.geometry();
-        geo.center(elementCenter);
+        geo.getCenter(elementCenter);
     }
 
     Dune::FieldVector<ctype, DuneGrid::dimensionworld> duneElementCenter;

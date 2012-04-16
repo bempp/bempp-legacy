@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(corners_first_corner_agrees_with_Dune_for_codi
     const int nTestedCorner = 0;
 
     arma::Mat<ctype> corners;
-    geo.corners(corners);
+    geo.getCorners(corners);
 
     Dune::FieldVector<ctype, DuneGrid::dimensionworld> duneCorner = duneGeo.corner(nTestedCorner);
 
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(corners_last_corner_agrees_with_Dune_for_codim
     const int nTestedCorner = geo.cornerCount() - 1;
 
     arma::Mat<ctype> corners;
-    geo.corners(corners);
+    geo.getCorners(corners);
 
     Dune::FieldVector<ctype, DuneGrid::dimensionworld> duneCorner = duneGeo.corner(nTestedCorner);
 
@@ -422,7 +422,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(integrationElement_agrees_with_Dune_for_one_po
         local(i,0) = duneLocal[i] = 0.1 * (i + 1);
 
     arma::Row<ctype> intElement;
-    geo.integrationElement(local, intElement);
+    geo.getIntegrationElements(local, intElement);
     ctype duneIntElement = duneGeo.integrationElement(duneLocal);
 
     BOOST_CHECK_EQUAL(intElement(0), duneIntElement);
@@ -455,7 +455,7 @@ static void integrationElement_agrees_with_Dune_for_nth_of_several_points_and_un
         duneLocal[i] = local(i,nTestedPoint);
 
     arma::Row<ctype> intElement;
-    geo.integrationElement(local, intElement);
+    geo.getIntegrationElements(local, intElement);
     ctype duneIntElement = duneGeo.integrationElement(duneLocal);
 
     BOOST_CHECK_EQUAL(intElement(nTestedPoint), duneIntElement);
@@ -506,7 +506,7 @@ static void integrationElement_agrees_with_Dune_for_nth_of_several_points_and_in
     // Note: vector intElement is initialised to incorrect shape
     // (integrationElement is expected to resize it)
     arma::Row<ctype> intElement(50);
-    geo.integrationElement(local, intElement);
+    geo.getIntegrationElements(local, intElement);
     ctype duneIntElement = duneGeo.integrationElement(duneLocal);
 
     BOOST_CHECK_EQUAL(intElement(nTestedPoint), duneIntElement);
@@ -566,7 +566,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(center_agrees_with_Dune_for_codim,
     const typename DuneGrid::Codim<codim>::Entity::Geometry& duneGeo = duneEp->geometry();
 
     arma::Col<ctype> center;
-    geo.center(center);
+    geo.getCenter(center);
     Dune::FieldVector<ctype, dimGlobal> duneCenter = duneGeo.center();
 
     BOOST_CHECK_EQUAL(center, duneCenter);
@@ -596,7 +596,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianTransposed_agrees_with_Dune_for_one_po
     arma::Cube<ctype> jacobianT;
     typename DuneGrid::Codim<codim>::Entity::Geometry::JacobianTransposed duneJacobianT;
 
-    geo.jacobianTransposed(local, jacobianT);
+    geo.getJacobiansTransposed(local, jacobianT);
     duneJacobianT = duneGeo.jacobianTransposed(duneLocal);
 
     // work around a "bug" in Armadillo (which has some issues with handling empty cubes)
@@ -633,7 +633,7 @@ static void jacobianTransposed_agrees_with_Dune_for_nth_of_several_points_and_un
         duneLocal[i] = local(i,nTestedPoint);
 
     arma::Cube<ctype> jacobianT;
-    geo.jacobianTransposed(local, jacobianT);
+    geo.getJacobiansTransposed(local, jacobianT);
     typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::Entity::Geometry::JacobianTransposed
     duneJacobianT = duneGeo.jacobianTransposed(duneLocal);
 
@@ -688,7 +688,7 @@ static void jacobianTransposed_agrees_with_Dune_for_nth_of_several_points_and_in
     // Note: matrix jacobianT is initialised to incorrect shape
     // (jacobianTransposed is expected to resize it)
     arma::Cube<ctype> jacobianT(10,10,10);
-    geo.jacobianTransposed(local, jacobianT);
+    geo.getJacobiansTransposed(local, jacobianT);
     typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::Entity::Geometry::JacobianTransposed
     duneJacobianT = duneGeo.jacobianTransposed(duneLocal);
 
@@ -738,7 +738,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianInverseTransposed_agrees_with_Dune_for
     arma::Cube<ctype> jacobianInvT;
     typename DuneGrid::Codim<codim>::Entity::Geometry::Jacobian duneJacobianInvT;
 
-    geo.jacobianInverseTransposed(local, jacobianInvT);
+    geo.getJacobianInversesTransposed(local, jacobianInvT);
     duneJacobianInvT = duneGeo.jacobianInverseTransposed(duneLocal);
 
     if (dimLocal > 0)
@@ -774,7 +774,7 @@ static void jacobianInverseTransposed_agrees_with_Dune_for_nth_of_several_points
         duneLocal[i] = local(i,nTestedPoint);
 
     arma::Cube<ctype> jacobianInvT;
-    geo.jacobianInverseTransposed(local, jacobianInvT);
+    geo.getJacobianInversesTransposed(local, jacobianInvT);
     typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::Entity::Geometry::Jacobian
     duneJacobianInvT = duneGeo.jacobianInverseTransposed(duneLocal);
 
@@ -827,9 +827,9 @@ static void jacobianInverseTransposed_agrees_with_Dune_for_nth_of_several_points
         duneLocal[i] = local(i,nTestedPoint);
 
     // Note: matrix jacobianInvT is initialised to incorrect shape
-    // (jacobianInverseTransposed is expected to resize it)
+    // (getJacobianInversesTransposed is expected to resize it)
     arma::Cube<ctype> jacobianInvT(10,10,10);
-    geo.jacobianInverseTransposed(local, jacobianInvT);
+    geo.getJacobianInversesTransposed(local, jacobianInvT);
     typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::Entity::Geometry::Jacobian
     duneJacobianInvT = duneGeo.jacobianInverseTransposed(duneLocal);
 

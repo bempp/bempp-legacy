@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(elements_are_in_the_z_plane)
     ctype max_abs_z = 0.;
     arma::Col<ctype> center;
     while(!it->finished()) {
-        it->entity().geometry().center(center);
+        it->entity().geometry().getCenter(center);
         max_abs_z = std::max(max_abs_z, fabs(center(2)));
         it->next();
     }
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(elements_are_cover_the_unit_square)
 
     arma::Col<ctype> center;
     while(!it->finished()) {
-        it->entity().geometry().center(center);
+        it->entity().geometry().getCenter(center);
         max_x = std::max(max_x, center(0));
         max_y = std::max(max_y, center(1));
         min_x = std::min(min_x, center(0));
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(jacobian_is_constant_everywhere_on_the_second_face)
             local(i,j) = 0.1 * (i + 1) + 0.01 * (j + 1);
 
     arma::Row<ctype> intElement;
-    geo.integrationElement(local, intElement);
+    geo.getIntegrationElements(local, intElement);
 
     BOOST_CHECK_SMALL(stddev(intElement), EPSILON);
 }

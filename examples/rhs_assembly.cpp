@@ -143,7 +143,7 @@ int main()
     {
         const Entity<0>& entity = it->entity();
         arma::Mat<double> corners;
-        entity.geometry().corners(corners);
+        entity.geometry().getCorners(corners);
         std::cout << "Element #" << elementMapper.entityIndex(entity) << ":\n";
         std::cout << corners << '\n';
         it->next();

@@ -417,7 +417,7 @@ ElementaryIntegralOperator<ValueType>::applyOffSurfaceWithKnownEvaluator(
             const Geometry& geo = vertex.geometry();
             const int vertexIndex = evalIndexSet.entityIndex(vertex);
             arma::Col<ValueType> activeCol(evalPoints.unsafe_col(vertexIndex));
-            geo.center(activeCol);
+            geo.getCenter(activeCol);
             it->next();
         }
     }
@@ -432,7 +432,7 @@ ElementaryIntegralOperator<ValueType>::applyOffSurfaceWithKnownEvaluator(
             const Geometry& geo = vertex.geometry();
             const int vertexIndex = evalIndexSet.entityIndex(vertex);
             arma::Col<ValueType> activeCol(evalPoints.unsafe_col(vertexIndex));
-            geo.center(activeCol);
+            geo.getCenter(activeCol);
             it->next();
         }
     }

@@ -88,7 +88,7 @@ int main()
                     Dune::GeometryType gt = e.type();
                     const Geometry& geo = e.geometry();
                     arma::Col<double> elementCenter;
-                    geo.center(elementCenter);
+                    geo.getCenter(elementCenter);
                 }
                 leafFaceIt->next();
             }
@@ -117,7 +117,7 @@ int main()
                     GeometryType gt = e.type();
                     const Geometry& geo = e.geometry();
                     arma::Col<double> elementCenter;
-                    geo.center(elementCenter);
+                    geo.getCenter(elementCenter);
                 }
                 leafVertexIt->next();
             }

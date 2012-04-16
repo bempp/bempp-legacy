@@ -244,7 +244,7 @@ void PiecewiseLinearContinuousScalarSpace<ValueType>::globalDofPositions(
             const Entity<1>& e = it->entity();
             int index = indexSet.entityIndex(e);
             arma::Col<ValueType> vertex;
-            e.geometry().center(vertex);
+            e.geometry().getCenter(vertex);
 
             positions[index].x = vertex(0);
             positions[index].y = vertex(1);
@@ -260,7 +260,7 @@ void PiecewiseLinearContinuousScalarSpace<ValueType>::globalDofPositions(
             const Entity<2>& e = it->entity();
             int index = indexSet.entityIndex(e);
             arma::Col<ValueType> vertex;
-            e.geometry().center(vertex);
+            e.geometry().getCenter(vertex);
 
             positions[index].x = vertex(0);
             positions[index].y = vertex(1);

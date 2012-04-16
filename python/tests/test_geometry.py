@@ -129,16 +129,16 @@ class TestGeometry:
     def test_integrationElement_is_array_of_proper_shape_for_codim(self, codim):
         geometry = self.get_entity(codim).geometry()
         local = self.get_local(codim, n_points=5)
-        integrationElement = geometry.integrationElement(local)
-        assert isinstance(integrationElement, np.ndarray)
-        assert integrationElement.shape == (5,)
+        integrationElements = geometry.integrationElements(local)
+        assert isinstance(integrationElements, np.ndarray)
+        assert integrationElements.shape == (5,)
 
     @pytest.mark.parametrize("codim", (0, 1))
     def test_integrationElement_is_finite_for_codim(self, codim):
         geometry = self.get_entity(codim).geometry()
         local = self.get_local(codim, n_points=5)
-        integrationElement = geometry.integrationElement(local)
-        assert np.all(np.isfinite(integrationElement))
+        integrationElements = geometry.integrationElements(local)
+        assert np.all(np.isfinite(integrationElements))
 
 
     @pytest.mark.parametrize("codim", (0, 1, 2))
@@ -168,34 +168,34 @@ class TestGeometry:
     def test_jacobianTransposed_is_array_of_proper_shape_for_codim(self, codim):
         geometry = self.get_entity(codim).geometry()
         local = self.get_local(codim, n_points=5)
-        jacobianTransposed = geometry.jacobianTransposed(local)
-        assert isinstance(jacobianTransposed, np.ndarray)
-        assert jacobianTransposed.shape == \
+        jacobiansTransposed = geometry.jacobiansTransposed(local)
+        assert isinstance(jacobiansTransposed, np.ndarray)
+        assert jacobiansTransposed.shape == \
             (self.grid.dim() - codim, self.grid.dimWorld(), 5)
 
     @pytest.mark.parametrize("codim", (0, 1))
     def test_jacobianTransposed_is_finite_for_codim(self, codim):
         geometry = self.get_entity(codim).geometry()
         local = self.get_local(codim, n_points=5)
-        jacobianTransposed = geometry.jacobianTransposed(local)
-        assert np.all(np.isfinite(jacobianTransposed))
+        jacobiansTransposed = geometry.jacobiansTransposed(local)
+        assert np.all(np.isfinite(jacobiansTransposed))
 
 
     @pytest.mark.parametrize("codim", (0, 1))
     def test_jacobianInverseTransposed_is_array_of_proper_shape_for_codim(self, codim):
         geometry = self.get_entity(codim).geometry()
         local = self.get_local(codim, n_points=5)
-        jacobianInverseTransposed = geometry.jacobianInverseTransposed(local)
-        assert isinstance(jacobianInverseTransposed, np.ndarray)
-        assert jacobianInverseTransposed.shape == \
+        jacobianInversesTransposed = geometry.jacobianInversesTransposed(local)
+        assert isinstance(jacobianInversesTransposed, np.ndarray)
+        assert jacobianInversesTransposed.shape == \
             (self.grid.dimWorld(), self.grid.dim() - codim, 5)
 
     @pytest.mark.parametrize("codim", (0, 1))
     def test_jacobianInverseTransposed_is_finite_for_codim(self, codim):
         geometry = self.get_entity(codim).geometry()
         local = self.get_local(codim, n_points=5)
-        jacobianInverseTransposed = geometry.jacobianInverseTransposed(local)
-        assert np.all(np.isfinite(jacobianInverseTransposed))
+        jacobianInversesTransposed = geometry.jacobianInversesTransposed(local)
+        assert np.all(np.isfinite(jacobianInversesTransposed))
 
 
     @pytest.mark.parametrize("codim", (0, 1, 2))

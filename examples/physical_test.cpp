@@ -79,7 +79,6 @@ public:
 
 int main()
 {
-
     // Load a predefined test grid
     const MeshVariant meshVariant = SPHERE_41440;
     std::auto_ptr<Grid> grid = loadMesh(meshVariant);
@@ -199,11 +198,30 @@ int main()
 
     std::cout << "Exporting results to VTK" << std::endl;
 
-    trace1.exportToVtk(VtkWriter::VERTEX_DATA, "Neumann_data", "physical_test_neumann_data_vertex");
+    trace1.exportToVtk(VtkWriter::VERTEX_DATA, "Neumann_data", 
+		       "physical_test_neumann_data_vertex");
 
+// // Plot field in volume
+// #ifdef WITH_ALUGRID
+//     GridParameters params;
+//     params.topology = GridParameters::TETRAHEDRAL;
+
+//     std::cout << "Importing 3D grid" << std::endl;
+//     std::auto_ptr<Grid> volumeGrid = GridFactory::importGmshGrid(
+//                 params,
+//                 "spherical_shell_2194_nodes_volume.msh",
+//                 true, // verbose
+//                 false); // insertBoundarySegments
+
+//     std::auto_ptr<InterpolatedFunction<double> > slpOfTrace1 =
+//             slp.applyOffSurface(trace1, *volumeGrid, factory, evaluationOptions);
+//     std::auto_ptr<InterpolatedFunction<double> > dlpOfTrace0 =
+//             dlp.applyOffSurface(trace0, *volumeGrid, factory, evaluationOptions);
+//     slpOfTrace1->exportToVtk("slp_of_trace1", "physical_test_slp_of_trace1");
+//     dlpOfTrace0->exportToVtk("dlp_of_trace0", "physical_test_dlp_of_trace0");
+// #endif
 
     // Compare with exact solution
-
     arma::Col<double> deviation = solutionCoefficients - (-1.);
     // % in Armadillo -> elementwise multiplication
     double stdDev = sqrt(arma::accu(deviation % deviation) /

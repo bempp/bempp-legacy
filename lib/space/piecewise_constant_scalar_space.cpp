@@ -218,12 +218,12 @@ void PiecewiseConstantScalarSpace<ValueType>::globalDofPositions(
     {
         const Entity<0>& e = it->entity();
         int index = indexSet.entityIndex(e);
-        arma::Col<ValueType> vertex;
-        e.geometry().center(vertex);
+        arma::Col<ValueType> center;
+        e.geometry().getCenter(center);
 
-        positions[index].x = vertex(0);
-        positions[index].y = vertex(1);
-        positions[index].z = vertex(2);
+        positions[index].x = center(0);
+        positions[index].y = center(1);
+        positions[index].z = center(2);
         it->next();
     }
     }
