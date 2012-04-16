@@ -47,6 +47,8 @@ LinearOperatorSuperposition<ValueType>::LinearOperatorSuperposition(
     : LinearOperator<ValueType>(term1.getTestSpace(),term1.getTrialSpace())
 {
 
+    if ((term1.getTestSpace()!=term2.getTestSpace()) ||
+            (term1.getTrialSpace()!=term2.getTrialSpace()) ) throw std::runtime_error("Spaces don't match");
     this->addLocalOperatorsMultipliers(term1.getLocalOperators(),term1.getMultipliers());
     this->addLocalOperatorsMultipliers(term2.getLocalOperators(),term2.getMultipliers());
 }

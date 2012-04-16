@@ -170,6 +170,9 @@ template <typename ValueType>
 LinearOperatorSuperposition<ValueType> operator+(const LinearOperator<ValueType>& op1, const LinearOperator<ValueType>& op2);
 
 template <typename ValueType>
+LinearOperatorSuperposition<ValueType> operator-(const LinearOperator<ValueType>& op1, const LinearOperator<ValueType>& op2);
+
+template <typename ValueType>
 LinearOperatorSuperposition<ValueType> operator*(const LinearOperator<ValueType>& op, const ValueType& scalar);
 
 template <typename ValueType>
@@ -178,6 +181,8 @@ LinearOperatorSuperposition<ValueType> operator*(const ValueType& scalar, const 
 template <typename ValueType>
 LinearOperatorSuperposition<ValueType> operator/(const LinearOperator<ValueType>& op, const ValueType& scalar);
 
+template <typename ValueType>
+GridFunction<ValueType> operator*(const LinearOperator<ValueType>& op, const GridFunction<ValueType>& fun);
 
 } // namespace Bempp
 

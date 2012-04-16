@@ -131,6 +131,21 @@ private:
     arma::Col<ValueType> m_coefficients;
 };
 
+template<typename ValueType>
+GridFunction<ValueType> operator+(const GridFunction<ValueType>& g1, const GridFunction<ValueType>& g2);
+
+template<typename ValueType>
+GridFunction<ValueType> operator-(const GridFunction<ValueType>& g1, const GridFunction<ValueType>& g2);
+
+template<typename ValueType>
+GridFunction<ValueType> operator*(const GridFunction<ValueType>& g1, const ValueType& scalar);
+
+template<typename ValueType>
+GridFunction<ValueType> operator*(const ValueType& scalar, const GridFunction<ValueType>& g2);
+
+template<typename ValueType>
+GridFunction<ValueType> operator/(const GridFunction<ValueType>& g1, const ValueType& scalar);
+
 } // namespace Bempp
 
 #endif

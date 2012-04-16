@@ -128,6 +128,12 @@ LinearOperatorSuperposition<ValueType> operator+(const LinearOperator<ValueType>
 }
 
 template <typename ValueType>
+LinearOperatorSuperposition<ValueType> operator-(const LinearOperator<ValueType>& op1, const LinearOperator<ValueType>& op2){
+    return op1+(-1.*op2);
+}
+
+
+template <typename ValueType>
 LinearOperatorSuperposition<ValueType> operator*(const LinearOperator<ValueType>& op, const ValueType& scalar){
     return LinearOperatorSuperposition<ValueType>(op,scalar);
 }
@@ -145,35 +151,49 @@ LinearOperatorSuperposition<ValueType> operator/(const LinearOperator<ValueType>
     return LinearOperatorSuperposition<ValueType>(op,1./scalar);
 }
 
+template <typename ValueType>
+GridFunction<ValueType> operator*(const LinearOperator<ValueType>& op, const GridFunction<ValueType>& fun){
+    return op.apply(fun);
+}
+
+
 #ifdef COMPILE_FOR_FLOAT
 template class LinearOperator<float>;
 template LinearOperatorSuperposition<float> operator+(const LinearOperator<float>& op1, const LinearOperator<float>& op2);
+template LinearOperatorSuperposition<float> operator-(const LinearOperator<float>& op1, const LinearOperator<float>& op2);
 template LinearOperatorSuperposition<float> operator*(const LinearOperator<float>& op, const float& scalar);
 template LinearOperatorSuperposition<float> operator*(const float& scalar, const LinearOperator<float>& op);
 template LinearOperatorSuperposition<float> operator/(const LinearOperator<float>& op, const float& scalar);
+template GridFunction<float> operator*(const LinearOperator<float>& op, const GridFunction<float>& fun);
 #endif
 #ifdef COMPILE_FOR_DOUBLE
 template class LinearOperator<double>;
 template LinearOperatorSuperposition<double> operator+(const LinearOperator<double>& op1, const LinearOperator<double>& op2);
+template LinearOperatorSuperposition<double> operator-(const LinearOperator<double>& op1, const LinearOperator<double>& op2);
 template LinearOperatorSuperposition<double> operator*(const LinearOperator<double>& op, const double& scalar);
 template LinearOperatorSuperposition<double> operator*(const double& scalar, const LinearOperator<double>& op);
 template LinearOperatorSuperposition<double> operator/(const LinearOperator<double>& op, const double& scalar);
+template GridFunction<double> operator*(const LinearOperator<double>& op, const GridFunction<double>& fun);
 #endif
 #ifdef COMPILE_FOR_COMPLEX_FLOAT
 #include <complex>
 template class LinearOperator<std::complex<float> >;
 template LinearOperatorSuperposition<std::complex<float> > operator+(const LinearOperator<std::complex<float> >& op1, const LinearOperator<std::complex<float> >& op2);
+template LinearOperatorSuperposition<std::complex<float> > operator-(const LinearOperator<std::complex<float> >& op1, const LinearOperator<std::complex<float> >& op2);
 template LinearOperatorSuperposition<std::complex<float> > operator*(const LinearOperator<std::complex<float> >& op, const std::complex<float>& scalar);
 template LinearOperatorSuperposition<std::complex<float> > operator*(const std::complex<float>& scalar, const LinearOperator<fstd::complex<float> >& op);
 template LinearOperatorSuperposition<std::complex<float> > operator/(const LinearOperator<std::complex<float> >& op, const std::complex<float>& scalar);
+template GridFunction<std::complex<float> > operator*(const LinearOperator<std::complex<float> >& op, const GridFunction<std::complex<float> >& fun);
 #endif
 #ifdef COMPILE_FOR_COMPLEX_DOUBLE
 #include <complex>
 template class LinearOperator<std::complex<double> >;
 template LinearOperatorSuperposition<std::complex<double> > operator+(const LinearOperator<std::complex<double> >& op1, const LinearOperator<std::complex<double> >& op2);
+template LinearOperatorSuperposition<std::complex<double> > operator-(const LinearOperator<std::complex<double> >& op1, const LinearOperator<std::complex<double> >& op2);
 template LinearOperatorSuperposition<std::complex<double> > operator*(const LinearOperator<std::complex<double> >& op, const std::complex<double>& scalar);
 template LinearOperatorSuperposition<std::complex<double> > operator*(const std::complex<double>& scalar, const LinearOperator<std::complex<double> >& op);
 template LinearOperatorSuperposition<std::complex<double> > operator/(const LinearOperator<std::complex<double> >& op, const std::complex<double>& scalar);
+template GridFunction<std::complex<double> > operator*(const LinearOperator<std::complex<double> >& op, const GridFunction<std::complex<double> >& fun);
 #endif
 
 }

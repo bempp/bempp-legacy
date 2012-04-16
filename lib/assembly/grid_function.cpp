@@ -562,19 +562,79 @@ void GridFunction<ValueType>::evaluateAtSpecialPoints(
             result.col(v) /= multiplicities[v];
 }
 
+template<typename ValueType>
+GridFunction<ValueType> operator+(const GridFunction<ValueType>& g1, const GridFunction<ValueType>& g2){
+    if (g1.space()!=g2.space()) throw std::runtime_error("Spaces don't match");
+    arma::Col<ValueType> g1Vals=g1.coefficients().asArmadilloVector();
+    arma::Col<ValueType> g2Vals=g2.coefficients().asArmadilloVector();
+    return GridFunction<ValueType>(g1.space(),g1Vals+g2Vals);
+}
+
+template<typename ValueType>
+GridFunction<ValueType> operator-(const GridFunction<ValueType>& g1, const GridFunction<ValueType>& g2){
+    if (g1.space()!=g2.space()) throw std::runtime_error("Spaces don't match");
+    arma::Col<ValueType> g1Vals=g1.coefficients().asArmadilloVector();
+    arma::Col<ValueType> g2Vals=g2.coefficients().asArmadilloVector();
+    return GridFunction<ValueType>(g1.space(),g1Vals-g2Vals);
+
+}
+
+template<typename ValueType>
+GridFunction<ValueType> operator*(const GridFunction<ValueType>& g1, const ValueType& scalar){
+    arma::Col<ValueType> g1Vals=g1.coefficients().asArmadilloVector();
+    return GridFunction<ValueType>(g1.space(),scalar*g1Vals);
+}
+
+template<typename ValueType>
+GridFunction<ValueType> operator*(const ValueType& scalar, const GridFunction<ValueType>& g2){
+    return g2*scalar;
+}
+
+template<typename ValueType>
+GridFunction<ValueType> operator/(const GridFunction<ValueType>& g1, const ValueType& scalar){
+    if (scalar==0) throw std::runtime_error("Divide by zero");
+    return (1./scalar)*g1;
+}
+
+
+
 #ifdef COMPILE_FOR_FLOAT
 template class GridFunction<float>;
+template GridFunction<float> operator+(const GridFunction<float>& g1, const GridFunction<float>& g2);
+template GridFunction<float> operator-(const GridFunction<float>& g1, const GridFunction<float>& g2);
+template GridFunction<float> operator*(const GridFunction<float>& g1, const float& scalar);
+template GridFunction<float> operator*(const float& scalar, const GridFunction<float>& g2);
+template GridFunction<float> operator/(const GridFunction<float>& g1, const float& scalar);
+
 #endif
 #ifdef COMPILE_FOR_DOUBLE
 template class GridFunction<double>;
+template GridFunction<double> operator+(const GridFunction<double>& g1, const GridFunction<double>& g2);
+template GridFunction<double> operator-(const GridFunction<double>& g1, const GridFunction<double>& g2);
+template GridFunction<double> operator*(const GridFunction<double>& g1, const double& scalar);
+template GridFunction<double> operator*(const double& scalar, const GridFunction<double>& g2);
+template GridFunction<double> operator/(const GridFunction<double>& g1, const double& scalar);
+
 #endif
 #ifdef COMPILE_FOR_COMPLEX_FLOAT
 #include <complex>
 template class GridFunction<std::complex<float> >;
+template GridFunction<std::complex<float> > operator+(const GridFunction<std::complex<float> >& g1, const GridFunction<std::complex<float> >& g2);
+template GridFunction<std::complex<float> > operator-(const GridFunction<std::complex<float> >& g1, const GridFunction<std::complex<float> >& g2);
+template GridFunction<std::complex<float> > operator*(const GridFunction<std::complex<float> >& g1, const std::complex<float> & scalar);
+template GridFunction<std::complex<float> > operator*(const std::complex<float> & scalar, const GridFunction<std::complex<float> >& g2);
+template GridFunction<std::complex<float> > operator/(const GridFunction<std::complex<float> >& g1, const std::complex<float> & scalar);
+
 #endif
 #ifdef COMPILE_FOR_COMPLEX_DOUBLE
 #include <complex>
 template class GridFunction<std::complex<double> >;
+template GridFunction<std::complex<double> > operator+(const GridFunction<std::complex<double> >& g1, const GridFunction<std::complex<double> >& g2);
+template GridFunction<std::complex<double> > operator-(const GridFunction<std::complex<double> >& g1, const GridFunction<std::complex<double> >& g2);
+template GridFunction<std::complex<double> > operator*(const GridFunction<std::complex<double> >& g1, const std::complex<double> & scalar);
+template GridFunction<std::complex<double> > operator*(const std::complex<double> & scalar, const GridFunction<std::complex<double> >& g2);
+template GridFunction<std::complex<double> > operator/(const GridFunction<std::complex<double> >& g1, const std::complex<double> & scalar);
+
 #endif
 
 } // namespace Bempp
