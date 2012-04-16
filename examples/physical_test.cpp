@@ -82,7 +82,7 @@ int main()
 {
 
     // Load a predefined test grid
-    const MeshVariant meshVariant = SPHERE_152;
+    const MeshVariant meshVariant = SPHERE_614;
     std::auto_ptr<Grid> grid = loadMesh(meshVariant);
 
     // Initialize the spaces
@@ -102,7 +102,7 @@ int main()
     // We want to use ACA
 
     AcaOptions acaOptions; // Default parameters for ACA
-    //assemblyOptions.switchToAca(acaOptions);
+    assemblyOptions.switchToAca(acaOptions);
 
     // Define the standard integration factory
 
@@ -132,6 +132,7 @@ int main()
     Fiber::OrdinaryFunction<MyFunctor> function(functor);
 
     GridFunction<double> u(HplusHalfSpace, function, factory, assemblyOptions);
+
 
     // Assemble the rhs
 

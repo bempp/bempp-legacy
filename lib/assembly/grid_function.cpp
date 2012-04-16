@@ -81,44 +81,51 @@ GridFunction<ValueType>::GridFunction(
 
     // Solve the system id * m_coefficients = projections
 #ifdef WITH_TRILINOS
-    DiscreteSparseLinearOperator<ValueType>& sparseDiscreteId =
+
+    if (assemblyOptions.operatorRepresentation()!=assemblyOptions.DENSE){
+
+            DiscreteSparseLinearOperator<ValueType>& sparseDiscreteId =
             dynamic_cast<DiscreteSparseLinearOperator<ValueType>&>(*discreteId);
-    Epetra_CrsMatrix& epetraMat = sparseDiscreteId.epetraMatrix();
+            Epetra_CrsMatrix& epetraMat = sparseDiscreteId.epetraMatrix();
 
-    const int coefficientCount = space.globalDofCount();
-    Epetra_Map map(coefficientCount, 0 /* base index */, Epetra_SerialComm());
-    m_coefficients.set_size(coefficientCount);
-    m_coefficients.fill(0.);
-    Epetra_MultiVector solution(View, map, m_coefficients.memptr(),
-                           coefficientCount /* rowCount */, 1 /* colCount */);
-    Epetra_MultiVector rhs(View, map, projections.memptr(),
-                           coefficientCount /* rowCount */, 1 /* colCount */);
-    Epetra_LinearProblem problem(&epetraMat, &solution, &rhs);
+            const int coefficientCount = space.globalDofCount();
+            Epetra_Map map(coefficientCount, 0 /* base index */, Epetra_SerialComm());
+            m_coefficients.set_size(coefficientCount);
+            m_coefficients.fill(0.);
+            Epetra_MultiVector solution(View, map, m_coefficients.memptr(),
+                                     coefficientCount /* rowCount */, 1 /* colCount */);
+            Epetra_MultiVector rhs(View, map, projections.memptr(),
+                                     coefficientCount /* rowCount */, 1 /* colCount */);
+            Epetra_LinearProblem problem(&epetraMat, &solution, &rhs);
 
-    Amesos amesosFactory;
-    const char* solverName = "Amesos_Klu";
-    if (!amesosFactory.Query(solverName))
-        throw std::runtime_error("GridFunction::GridFunction(): "
-                                 "Amesos_Klu solver not available");
-    std::auto_ptr<Amesos_BaseSolver> solver(
-                amesosFactory.Create("Amesos_Klu", problem));
-    if (!solver.get())
-        throw std::runtime_error("GridFunction::GridFunction(): "
+            Amesos amesosFactory;
+            const char* solverName = "Amesos_Klu";
+            if (!amesosFactory.Query(solverName))
+            throw std::runtime_error("GridFunction::GridFunction(): "
+                                     "Amesos_Klu solver not available");
+            std::auto_ptr<Amesos_BaseSolver> solver(
+                    amesosFactory.Create("Amesos_Klu", problem));
+            if (!solver.get())
+                    throw std::runtime_error("GridFunction::GridFunction(): "
                                  "Amesos solver could not be constructed");
 
-    if (solver->SymbolicFactorization())
-        throw std::runtime_error("GridFunction::GridFunction(): "
-                                 "Symbolic factorisation with Amesos failed");
-    if (solver->NumericFactorization())
-        throw std::runtime_error("GridFunction::GridFunction(): "
-                                 "Numeric factorisation with Amesos failed");
-    if (solver->Solve())
-        throw std::runtime_error("GridFunction::GridFunction(): "
-                                 "Amesos solve failed");
-
+            if (solver->SymbolicFactorization())
+                throw std::runtime_error("GridFunction::GridFunction(): "
+                                     "Symbolic factorisation with Amesos failed");
+            if (solver->NumericFactorization())
+                throw std::runtime_error("GridFunction::GridFunction(): "
+                                     "Numeric factorisation with Amesos failed");
+            if (solver->Solve())
+                throw std::runtime_error("GridFunction::GridFunction(): "
+                                     "Amesos solve failed");
+        }
+        else{
+            m_coefficients = arma::solve(discreteId->asMatrix(),projections);
+        }
 #else
     m_coefficients = arma::solve(discreteId->asMatrix(), projections);
 #endif
+
 }
 
 template <typename ValueType>

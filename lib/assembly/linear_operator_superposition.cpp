@@ -111,7 +111,7 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInDenseMode(
     typedef DiscreteDenseLinearOperator<ValueType> DiscreteDenseLinOp;
 
     const std::vector<ElementaryLinearOperator<ValueType> const*> localOperators=this->getLocalOperators();
-    const std::vector<ValueType> multipliers=this->getMultipliers();
+    const std::vector<ValueType>& multipliers=this->getMultipliers();
 
     // Gather matrices of individual operators
     boost::ptr_vector<DiscreteLinOp> discreteOps;
@@ -124,9 +124,10 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInDenseMode(
 
     // Add the matrices together
     arma::Mat<ValueType> sum;
-    sum = discreteOps[0].asMatrix();
-    for (int i = 1; i < discreteOps.size(); ++i)
+    sum = discreteOps[0].asMatrix()*multipliers[0];
+    for (int i = 1; i < discreteOps.size(); ++i){
             sum += discreteOps[i].asMatrix()*multipliers[i];
+    }
 
     return std::auto_ptr<DiscreteLinOp>(new DiscreteDenseLinOp(sum));
 }
@@ -143,7 +144,7 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
     const Space<ValueType>& trialSpace = this->getTrialSpace();
 
     const std::vector<ElementaryLinearOperator<ValueType> const*> localOperators=this->getLocalOperators();
-    const std::vector<ValueType> multipliers=this->getMultipliers();
+    const std::vector<ValueType>& multipliers=this->getMultipliers();
 
     AutoTimer timer("\nAssembly took ");
 
@@ -271,7 +272,7 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInArbitraryMode(
             DiscreteSuperposition;
 
     const std::vector<ElementaryLinearOperator<ValueType> const*> localOperators=this->getLocalOperators();
-    const std::vector<ValueType> multipliers=this->getMultipliers();
+    const std::vector<ValueType>& multipliers=this->getMultipliers();
 
 
     boost::ptr_vector<DiscreteLinOp> discreteOps;
