@@ -22,8 +22,9 @@
 
 #include "config_trilinos.hpp"
 
-#ifdef WITH_TRILINOS
+#include "../assembly/linear_operator.hpp"
 
+#ifdef WITH_TRILINOS
 #include "Thyra_DefaultSpmdMultiVector.hpp"
 #include "Thyra_DefaultSpmdVectorSpace.hpp"
 #include "Thyra_BelosLinearOpWithSolveFactory_decl.hpp"
@@ -44,7 +45,7 @@ namespace Bempp
 template<typename ValueType>
 DefaultIterativeSolver<ValueType>::DefaultIterativeSolver(
         const LinearOperator<ValueType>& linOp,
-        const GridFunction<ValueType> gridFun ) :
+        const GridFunction<ValueType>& gridFun) :
     m_discreteOperator(linOp.assembledDiscreteLinearOperator()),
     m_rhs(new Vector<ValueType>(gridFun.coefficients())),
     m_space(linOp.trialSpace())
@@ -52,7 +53,7 @@ DefaultIterativeSolver<ValueType>::DefaultIterativeSolver(
     if (!linOp.isAssembled())
         throw std::runtime_error("DefaultIterativeSolver::DefaultIterativeSolver(): "
                                  "operator is not assembled");
-    if (&linOp.testSpace() != &gridFun.space())
+    if (&linOp.trialSpace() != &gridFun.space())
         throw std::runtime_error("DefaultIterativeSolver::DefaultIterativeSolver(): "
                                  "spaces do not match");
 }
@@ -122,18 +123,16 @@ GridFunction<ValueType> DefaultIterativeSolver<ValueType>::getResult() const
 
 
 template <typename ValueType>
-EStatus DefaultIterativeSolver<ValueType>::getStatus() const
+typename Solver<ValueType>::EStatus DefaultIterativeSolver<ValueType>::getStatus() const
 {
     switch (m_status.solveStatus) {
     case Thyra::SOLVE_STATUS_CONVERGED:
-        return CONVERGED;
-        break;
+        return Solver<ValueType>::CONVERGED;
     case Thyra::SOLVE_STATUS_UNCONVERGED:
-        return UNCONVGERGED;
-        break;
+        return Solver<ValueType>::UNCONVERGED;
+    default:
+        return Solver<ValueType>::UNKNOWN;
     }
-
-    return UNKNOWN;
 }
 
 template <typename ValueType>

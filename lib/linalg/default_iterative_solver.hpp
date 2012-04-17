@@ -18,8 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_default_gmres_solver_hpp
-#define bempp_default_gmres_solver_hpp
+#ifndef bempp_default_iterative_solver_hpp
+#define bempp_default_iterative_solver_hpp
+
+#include "solver.hpp"
 
 #include "config_trilinos.hpp"
 
@@ -27,43 +29,41 @@
 
 #include <vector>
 #include <armadillo>
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
-#include "Thyra_PreconditionerBase.hpp"
-#include "Thyra_VectorBase.hpp"
-#include "Thyra_SolveSupportTypes.hpp"
-#include "Thyra_LinearOpWithSolveBase.hpp"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
+#include <Thyra_PreconditionerBase.hpp>
+#include <Thyra_VectorBase.hpp>
+#include <Thyra_SolveSupportTypes.hpp>
+#include <Thyra_LinearOpWithSolveBase.hpp>
 #include <Thyra_BelosLinearOpWithSolveFactory_decl.hpp>
-#include "Thyra_LinearOpWithSolveFactoryHelpers.hpp"
-#include "Thyra_MultiVectorBase.hpp"
-#include "Thyra_PreconditionerBase.hpp"
+#include <Thyra_LinearOpWithSolveFactoryHelpers.hpp>
+#include <Thyra_MultiVectorBase.hpp>
+#include <Thyra_PreconditionerBase.hpp>
 
 #include "../assembly/discrete_linear_operator.hpp"
 #include "../assembly/discrete_aca_linear_operator.hpp"
 #include "../assembly/vector.hpp"
-#include "../assembly/grid_function.hpp"
-#include "../assembly/linear_operator.hpp"
 
 namespace Bempp
 {
 
-enum EStatus {CONVERGED, UNCONVGERGED, UNKNOWN};
+template <typename ValueType> class LinearOperator;
 
 template <typename ValueType>
-class DefaultIterativeSolver
+class DefaultIterativeSolver : public Solver<ValueType>
 {
 public:
     DefaultIterativeSolver(const LinearOperator<ValueType>& linOp,
-                           const GridFunction<ValueType> gridFun);
+                           const GridFunction<ValueType>& gridFun);
 
     void addPreconditioner(
             Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > preconditioner);
     void initializeSolver(Teuchos::RCP<Teuchos::ParameterList> paramList);
 
-    void solve();
+    virtual void solve();
 
-    GridFunction<ValueType> getResult() const;
-    EStatus getStatus() const;
+    virtual GridFunction<ValueType> getResult() const;
+    virtual typename Solver<ValueType>::EStatus getStatus() const;
     double getSolveTolerance() const;
     std::string getSolverMessage() const;
     Thyra::SolveStatus<ValueType> getThyraSolveStatus() const;
@@ -85,4 +85,4 @@ Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(double tol);
 } // namespace Bempp
 
 #endif // WITH_TRILINOS
-#endif // default_gmres_solver_hpp
+#endif
