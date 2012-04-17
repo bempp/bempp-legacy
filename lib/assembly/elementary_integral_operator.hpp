@@ -56,6 +56,9 @@ public:
     typedef typename ElementaryLinearOperator<ValueType>::LocalAssembler LocalAssembler;
     typedef Fiber::EvaluatorForIntegralOperators<ValueType> Evaluator;
 
+    ElementaryIntegralOperator(const Space<ValueType> &testSpace,
+                               const Space<ValueType> &trialSpace);
+
     virtual int trialComponentCount() const {
         return kernel().domainDimension();
     }
@@ -79,15 +82,11 @@ public:
 
     virtual std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakForm(
-            const Space<ValueType>& testSpace,
-            const Space<ValueType>& trialSpace,
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
 
     virtual std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakFormInternal(
-            const Space<ValueType>& testSpace,
-            const Space<ValueType>& trialSpace,
             LocalAssembler& assembler,
             const AssemblyOptions& options) const;
 
@@ -113,14 +112,10 @@ private:
         @{ */
     std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakFormInDenseMode(
-            const Space<ValueType>& testSpace,
-            const Space<ValueType>& trialSpace,
             LocalAssembler& assembler,
             const AssemblyOptions &options) const;
     std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakFormInAcaMode(
-            const Space<ValueType>& testSpace,
-            const Space<ValueType>& trialSpace,
             LocalAssembler& assembler,
             const AssemblyOptions& options) const;
     /** @} */

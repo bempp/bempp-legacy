@@ -107,6 +107,8 @@ AcaGlobalAssembler<ValueType>::assembleWeakForm(
         const Space<ValueType>& trialSpace,
         const std::vector<LocalAssembler*>& localAssemblers,
         const std::vector<const DiscreteLinOp*>& sparseTermsToAdd,
+        const std::vector<ValueType>& denseTermsMultipliers,
+        const std::vector<ValueType>& sparseTermsMultipliers,
         const AssemblyOptions& options)
 {
 #ifdef WITH_AHMED
@@ -192,7 +194,8 @@ AcaGlobalAssembler<ValueType>::assembleWeakForm(
 
     WeakFormAcaAssemblyHelper<ValueType>
             helper(testSpace, trialSpace, p2oTestDofs, p2oTrialDofs,
-                   localAssemblers, sparseTermsToAdd, options);
+                   localAssemblers, sparseTermsToAdd,
+                   denseTermsMultipliers,sparseTermsMultipliers,options);
 
     boost::shared_array<mblock<ValueType>*> blocks =
             allocateAhmedMblockArray<ValueType>(doubleClusterTree.get());
@@ -263,9 +266,14 @@ AcaGlobalAssembler<ValueType>::assembleWeakForm(
 {
     std::vector<LocalAssembler*> localAssemblers(1, &localAssembler);
     std::vector<const DiscreteLinOp*> sparseTermsToAdd;
+    std::vector<ValueType> denseTermsMultipliers(1,1.0);
+    std::vector<ValueType> sparseTermsMultipliers;
 
     return assembleWeakForm(testSpace, trialSpace, localAssemblers,
-                            sparseTermsToAdd, options);
+                            sparseTermsToAdd,
+                            denseTermsMultipliers,
+                            sparseTermsMultipliers,
+                            options);
 }
 
 

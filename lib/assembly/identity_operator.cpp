@@ -96,20 +96,30 @@ inline int epetraSumIntoGlobalValues<double>(Epetra_FECrsMatrix& matrix,
 #endif
 
 template <typename ValueType>
+IdentityOperator<ValueType>::IdentityOperator(const Space<ValueType>& testSpace,
+                                              const Space<ValueType>& trialSpace) :
+    ElementaryLinearOperator<ValueType>(testSpace, trialSpace) {
+}
+
+template <typename ValueType>
 bool IdentityOperator<ValueType>::supportsRepresentation(
         AssemblyOptions::Representation repr) const
 {
-    return (repr == AssemblyOptions::DENSE || repr == AssemblyOptions::SPARSE || repr == AssemblyOptions::ACA);
+    return (repr == AssemblyOptions::DENSE ||
+            repr == AssemblyOptions::SPARSE ||
+            repr == AssemblyOptions::ACA);
 }
 
 template <typename ValueType>
 std::auto_ptr<DiscreteLinearOperator<ValueType> >
 IdentityOperator<ValueType>::assembleWeakForm(
-        const Space<ValueType>& testSpace,
-        const Space<ValueType>& trialSpace,
         const typename IdentityOperator<ValueType>::LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
+
+    const Space<ValueType>& testSpace = this->testSpace();
+    const Space<ValueType>& trialSpace = this->trialSpace();
+
     if (!testSpace.dofsAssigned() || !trialSpace.dofsAssigned())
         throw std::runtime_error("IdentityOperator::assembleWeakForm(): "
                                  "degrees of freedom must be assigned "
@@ -159,28 +169,24 @@ IdentityOperator<ValueType>::assembleWeakForm(
     std::auto_ptr<LocalAssembler> assembler =
             factory.make(*geometryFactory, rawGeometry,
                          testBases, trialBases,
-                         m_expression, m_expression, this->multiplier(),
+                         m_expression, m_expression, 1.0,
                          openClHandler);
 
-    return assembleWeakFormInternal(testSpace, trialSpace, *assembler, options);
+    return assembleWeakFormInternal(*assembler, options);
 }
 
 template <typename ValueType>
 std::auto_ptr<DiscreteLinearOperator<ValueType> >
 IdentityOperator<ValueType>::assembleWeakFormInternal(
-        const Space<ValueType>& testSpace,
-        const Space<ValueType>& trialSpace,
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
     switch (options.operatorRepresentation())
     {
     case AssemblyOptions::DENSE:
-        return assembleWeakFormInDenseMode(
-                    testSpace, trialSpace, assembler, options);
+        return assembleWeakFormInDenseMode(assembler, options);
     case AssemblyOptions::ACA:
-        return assembleWeakFormInSparseMode(
-                    testSpace, trialSpace, assembler, options);
+        return assembleWeakFormInSparseMode(assembler, options);
     default:
         throw std::runtime_error("IdentityOperator::assembleWeakForm(): "
                                  "invalid assembly mode");
@@ -190,11 +196,13 @@ IdentityOperator<ValueType>::assembleWeakFormInternal(
 template <typename ValueType>
 std::auto_ptr<DiscreteLinearOperator<ValueType> >
 IdentityOperator<ValueType>::assembleWeakFormInDenseMode(
-        const Space<ValueType>& testSpace,
-        const Space<ValueType>& trialSpace,
         typename IdentityOperator<ValueType>::LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
+
+    const Space<ValueType>& testSpace = this->testSpace();
+    const Space<ValueType>& trialSpace = this->trialSpace();
+
     // Fill local submatrices
     std::auto_ptr<GridView> view = testSpace.grid().leafView();
     const int elementCount = view->entityCount(0);
@@ -239,12 +247,14 @@ IdentityOperator<ValueType>::assembleWeakFormInDenseMode(
 template <typename ValueType>
 std::auto_ptr<DiscreteLinearOperator<ValueType> >
 IdentityOperator<ValueType>::assembleWeakFormInSparseMode(
-        const Space<ValueType>& testSpace,
-        const Space<ValueType>& trialSpace,
         typename IdentityOperator<ValueType>::LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
 #ifdef WITH_TRILINOS
+
+    const Space<ValueType>& testSpace = this->testSpace();
+    const Space<ValueType>& trialSpace = this->trialSpace();
+
     // Fill local submatrices
     std::auto_ptr<GridView> view = testSpace.grid().leafView();
     const int elementCount = view->entityCount(0);
@@ -344,7 +354,7 @@ IdentityOperator<ValueType>::makeAssembler(
 {
     return assemblerFactory.make(geometryFactory, rawGeometry,
                                  testBases, trialBases,
-                                 m_expression, m_expression, this->multiplier(),
+                                 m_expression, m_expression, 1.0,
                                  openClHandler);
 }
 

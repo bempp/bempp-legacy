@@ -32,6 +32,11 @@ template <typename ValueType>
 class AdjointDoubleLayerPotential3D :
         public ElementaryWeaklySingularIntegralOperator<ValueType>
 {
+
+public:
+    AdjointDoubleLayerPotential3D(const Space<ValueType>& testSpace,
+                                  const Space<ValueType>& trialSpace);
+
 private:
     virtual const Fiber::Kernel<ValueType>& kernel() const {
         return m_kernel;

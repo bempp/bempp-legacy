@@ -33,7 +33,6 @@
 #include "assembly/double_layer_potential_3d.hpp"
 #include "assembly/adjoint_double_layer_potential_3d.hpp"
 #include "assembly/hypersingular_operator_3d.hpp"
-#include "assembly/linear_operator_superposition.hpp"
 
 #include "fiber/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 
@@ -41,89 +40,55 @@
 #include "grid/geometry_factory.hpp"
 
 #include "space/piecewise_linear_continuous_scalar_space.hpp"
+#include "space/piecewise_constant_scalar_space.hpp"
+#include "assembly/linear_operator_superposition.hpp"
 
 using namespace Bempp;
+using std::cout;
+using std::endl;
 
-inline bool approxEqual(double x, double y)
-{
-    return fabs(x - y) / fabs((x + y) / 2.) < 1e-3;
-}
+int main(void){
 
-inline bool approxZero(double x)
-{
-    return fabs(x) < 1e-6;
-}
 
-/**
-    Demonstration of the usage of composite (superposition) operators
-  */
-int main()
-{
-    const MeshVariant meshVariant = CUBE_12_REORIENTED;
+    const MeshVariant meshVariant = CUBE_12; // SPHERE_2590;
 
     std::auto_ptr<Grid> grid = loadMesh(meshVariant);
-    dumpElementList(grid.get());
 
-    PiecewiseLinearContinuousScalarSpace<double> space(*grid);
+    //PiecewiseLinearContinuousScalarSpace<double> space(*grid);
+    PiecewiseConstantScalarSpace<double> space(*grid);
+
     space.assignDofs();
 
     AssemblyOptions assemblyOptions;
-    //assemblyOptions.switchToDense();
-
     AcaOptions acaOptions;
-    acaOptions.eps = 1e-4;
-    acaOptions.maximumRank = 10000;
-    acaOptions.minimumBlockSize = 2;
-    acaOptions.eta = 0.8;
-    acaOptions.recompress = true;
     assemblyOptions.switchToAca(acaOptions);
-
-    // assemblyOptions.switchToSparse();
-
-    assemblyOptions.switchToTbb(1);
-    assemblyOptions.setSingularIntegralCaching(AssemblyOptions::YES);
-
-    // Fiber::OpenClOptions openClOptions;
-    // assemblyOptions.switchToOpenCl(openClOptions);
 
     Fiber::AccuracyOptions accuracyOptions; // default
     Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, GeometryFactory>
             factory(accuracyOptions);
 
     typedef std::auto_ptr<ElementaryLinearOperator<double> > LinearOperatorPtr;
-    LinearOperatorPtr halfId(new IdentityOperator<double>);
-    halfId->scale(0.5);
-    LinearOperatorPtr slp(new SingleLayerPotential3D<double>);
+    IdentityOperator<double> ident(space,space);
+    SingleLayerPotential3D<double> slp(space,space);
+    LinearOperatorSuperposition<double> idSlp=2.*ident+slp;
 
 
-    std::auto_ptr<DiscreteLinearOperator<double> > resultHalfId =
-            halfId->assembleWeakForm(space, space, factory, assemblyOptions);
-    assemblyOptions.switchToDense();
-    std::auto_ptr<DiscreteLinearOperator<double> > resultSlp =
-            slp->assembleWeakForm(space, space, factory, assemblyOptions);
+    std::auto_ptr<DiscreteLinearOperator<double> > discreteId =
+            ident.assembleWeakForm(factory, assemblyOptions);
+    std::auto_ptr<DiscreteLinearOperator<double> > discreteSlp =
+            slp.assembleWeakForm(factory,assemblyOptions);
+    std::auto_ptr<DiscreteLinearOperator<double> > discreteIdSlp =
+            idSlp.assembleWeakForm(factory,assemblyOptions);
 
-    assemblyOptions.switchToAca(acaOptions);
 
-    LinearOperatorSuperposition<double> superposition(halfId, slp);
-    std::auto_ptr<DiscreteLinearOperator<double> > resultSuperposition =
-            superposition.assembleWeakForm(space, space, factory, assemblyOptions);
+    std::cout << "Identity" << std::endl;
+    discreteId->dump();
 
-    std::cout << "\nHalfId:\n"
-              << resultHalfId->asMatrix()
-              << std::endl;
+    std::cout << "SLP" << std::endl;
+    discreteSlp->dump();
 
-    std::cout << "\nSlp:\n"
-              << resultSlp->asMatrix()
-              << std::endl;
+    std::cout << "Sum" << std::endl;
+    discreteIdSlp->dump();
 
-    std::cout << "\nSum of matrices generated separately:\n"
-              << resultHalfId->asMatrix() + resultSlp->asMatrix()
-              << std::endl;
-
-    std::cout << "\nMatrix generated in a single run:\n"
-              << resultSuperposition->asMatrix()
-              << std::endl;
+    return 0;
 }
-
-
-

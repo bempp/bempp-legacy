@@ -24,6 +24,13 @@
 namespace Bempp
 {
 
+template <typename ValueType>
+HypersingularOperator3D<ValueType>::HypersingularOperator3D(
+        const Space<ValueType>& testSpace, const Space<ValueType>& trialSpace) :
+    ElementaryWeaklySingularIntegralOperator<ValueType>(testSpace, trialSpace)
+{
+}
+
 #ifdef COMPILE_FOR_FLOAT
 template class HypersingularOperator3D<float>;
 #endif

@@ -35,7 +35,7 @@ namespace Bempp {
 
 
 template<typename ValueType>
-Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > AcaPreconditionerFactory<ValueType>::AcaOperatorToPreconditioner
+Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > AcaPreconditionerFactory<ValueType>::acaOperatorToPreconditioner
     (DiscreteLinearOperator<ValueType>& discreteOperator,
      const double delta){
 

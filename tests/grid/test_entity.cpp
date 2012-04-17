@@ -20,7 +20,6 @@
 
 #include "test_entity.hpp"
 #include "grid/armadillo_helpers.hpp"
-#include "grid/common.hpp"
 #include "grid/geometry.hpp"
 
 #include <boost/test/unit_test.hpp>
