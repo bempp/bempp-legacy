@@ -21,7 +21,6 @@
 #ifndef bempp_linear_operator_hpp
 #define bempp_linear_operator_hpp
 
-#include "../grid/common.hpp"
 #include "assembly_options.hpp"
 
 #include <memory>

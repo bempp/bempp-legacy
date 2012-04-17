@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_second_entity_agrees_with_Dune_
         geo.getCenter(elementCenter);
     }
 
-    Dune::FieldVector<ctype, DuneGrid::dimensionworld> duneElementCenter;
+    Dune::FieldVector<DuneGrid::ctype, DuneGrid::dimensionworld> duneElementCenter;
     {
         typedef typename DuneGridView::Codim<codim> Codim;
         typename Codim::Iterator duneIt = duneGridView.begin<codim>();
@@ -271,7 +271,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_second_entity_agrees_with_Dune_
         geo.getCenter(elementCenter);
     }
 
-    Dune::FieldVector<ctype, DuneGrid::dimensionworld> duneElementCenter;
+    Dune::FieldVector<DuneGrid::ctype, DuneGrid::dimensionworld> duneElementCenter;
     {
         typedef typename DuneGridView::Codim<codim> Codim;
         typename Codim::Iterator duneIt = duneGridView.begin<codim>();

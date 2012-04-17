@@ -26,6 +26,7 @@
 #include "../num_template.hpp"
 
 using namespace Bempp;
+typedef double ctype;
 
 BOOST_FIXTURE_TEST_SUITE(Geometry_Triangular, TriangularEntityManager)
 

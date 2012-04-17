@@ -169,7 +169,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIterator_second_entity_agrees_with_Du
         geo.getCenter(elementCenter);
     }
 
-    Dune::FieldVector<ctype, DuneGrid::dimensionworld> duneElementCenter;
+    Dune::FieldVector<DuneGrid::ctype, DuneGrid::dimensionworld> duneElementCenter;
     {
         typename DuneGrid::Codim<0>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<0>();
         typedef typename DuneGrid::Codim<codimSub> Codim;

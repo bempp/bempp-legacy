@@ -22,7 +22,6 @@
 #define bempp_concrete_geometry_hpp
 
 #include "geometry.hpp"
-#include "common.hpp"
 #include "dune.hpp"
 #include "geometry_type.hpp"
 
@@ -50,7 +49,7 @@ template <typename DuneGeometry>
 void setupDuneGeometry(
         typename Dune::MakeableInterfaceObject<DuneGeometry>::ImplementationType& duneGeometry,
         const GeometryType& type,
-        const std::vector<Dune::FieldVector<ctype, DuneGeometry::dimensionworld> >& corners)
+        const std::vector<Dune::FieldVector<double, DuneGeometry::dimensionworld> >& corners)
 {
     throw std::runtime_error("setupDuneGeometry() is only supported for a "
                              "small number of Dune geometry classes");
@@ -60,7 +59,7 @@ template <>
 void setupDuneGeometry<Default2dIn3dDuneGrid::Codim<0>::Geometry>(
         Dune::MakeableInterfaceObject<Default2dIn3dDuneGrid::Codim<0>::Geometry>::ImplementationType& duneGeometry,
         const GeometryType& type,
-        const std::vector<Dune::FieldVector<ctype, Default2dIn3dDuneGrid::dimensionworld> >& corners)
+        const std::vector<Dune::FieldVector<double, Default2dIn3dDuneGrid::dimensionworld> >& corners)
 {
     duneGeometry.setup(type, corners);
 }
@@ -119,8 +118,8 @@ public:
         return DuneGeometry::coorddimension;
     }
 
-    virtual void setup(const arma::Mat<ctype>& corners,
-                       const arma::Col<char>& auxData) {
+    virtual void setupImpl(const arma::Mat<double>& corners,
+                           const arma::Col<char>& auxData) {
         const int dimWorld = DuneGeometry::coorddimension;
         const int cornerCount = corners.n_cols;
         assert(corners.n_rows == dimWorld);
@@ -145,7 +144,7 @@ public:
             throw NotImplementedError("ConcreteGeometry::setup(): "
                                       "not implemented yet for 3D entities");
 
-        std::vector<Dune::FieldVector<ctype, dimWorld> > duneCorners(cornerCount);
+        std::vector<Dune::FieldVector<double, dimWorld> > duneCorners(cornerCount);
         for (int i = 0; i < corners.n_cols; ++i)
             for (int j = 0; j < dimWorld; ++j)
                 duneCorners[i][j] = corners(j, i);
@@ -174,7 +173,7 @@ public:
         return m_dune_geometry->corners();
     }
 
-    virtual void getCorners(arma::Mat<ctype>& c) const {
+    virtual void getCornersImpl(arma::Mat<double>& c) const {
         const int cdim = DuneGeometry::dimensionworld;
         const int n = m_dune_geometry->corners();
         c.set_size(cdim, n);
@@ -190,8 +189,8 @@ public:
         }
     }
 
-    virtual void local2global(const arma::Mat<ctype>& local,
-                              arma::Mat<ctype>& global) const {
+    virtual void local2globalImpl(const arma::Mat<double>& local,
+                                  arma::Mat<double>& global) const {
         const int mdim = DuneGeometry::mydimension;
         const int cdim = DuneGeometry::coorddimension;
 #ifndef NDEBUG
@@ -213,8 +212,8 @@ public:
         }
     }
 
-    virtual void global2local(const arma::Mat<ctype>& global,
-                              arma::Mat<ctype>& local) const {
+    virtual void global2localImpl(const arma::Mat<double>& global,
+                                  arma::Mat<double>& local) const {
         const int mdim = DuneGeometry::mydimension;
         const int cdim = DuneGeometry::coorddimension;
 #ifndef NDEBUG
@@ -236,8 +235,8 @@ public:
         }
     }
 
-    virtual void getIntegrationElements(const arma::Mat<ctype>& local,
-                                        arma::Row<ctype>& int_element) const {
+    virtual void getIntegrationElementsImpl(const arma::Mat<double>& local,
+                                            arma::Row<double>& int_element) const {
         const int mdim = DuneGeometry::mydimension;
 #ifndef NDEBUG
         if (local.n_rows != mdim)
@@ -251,16 +250,16 @@ public:
         for (int j = 0; j < n; ++j) {
             for (int i = 0; i < mdim; ++i)
                 l[i] = local(i,j);
-            ctype ie = m_dune_geometry->integrationElement(l);
+            double ie = m_dune_geometry->integrationElement(l);
             int_element(j) = ie;
         }
     }
 
-    virtual ctype volume() const {
+    virtual double volume() const {
         return m_dune_geometry->volume();
     }
 
-    virtual void getCenter(arma::Col<ctype>& c) const {
+    virtual void getCenterImpl(arma::Col<double>& c) const {
         const int cdim = DuneGeometry::coorddimension;
         c.set_size(cdim);
 
@@ -270,8 +269,8 @@ public:
             c(i) = g[i];
     }
 
-    virtual void getJacobiansTransposed(const arma::Mat<ctype>& local,
-                                        arma::Cube<ctype>& jacobian_t) const {
+    virtual void getJacobiansTransposedImpl(const arma::Mat<double>& local,
+                                            arma::Cube<double>& jacobian_t) const {
         const int mdim = DuneGeometry::mydimension;
         const int cdim = DuneGeometry::coorddimension;
 #ifndef NDEBUG
@@ -299,9 +298,9 @@ public:
         }
     }
 
-    virtual void getJacobianInversesTransposed(
-            const arma::Mat<ctype>& local,
-            arma::Cube<ctype>& jacobian_inv_t) const {
+    virtual void getJacobianInversesTransposedImpl(
+            const arma::Mat<double>& local,
+            arma::Cube<double>& jacobian_inv_t) const {
         const int mdim = DuneGeometry::mydimension;
         const int cdim = DuneGeometry::coorddimension;
 #ifndef NDEBUG
@@ -329,15 +328,15 @@ public:
         }
     }
 
-    virtual void getNormals(const arma::Mat<ctype>& local,
-                            arma::Mat<ctype>& normal) const {
-        arma::Cube<ctype> jacobian_t;
+    virtual void getNormalsImpl(const arma::Mat<double>& local,
+                                arma::Mat<double>& normal) const {
+        arma::Cube<double> jacobian_t;
         getJacobiansTransposed(local, jacobian_t);
         calculateNormals(jacobian_t, normal);
     }
 
-    virtual void getData(int what, const arma::Mat<ctype>& local,
-                         Fiber::GeometricalData<ctype>& data) const {
+    virtual void getDataImpl(int what, const arma::Mat<double>& local,
+                             Fiber::GeometricalData<double>& data) const {
         // In this first implementation we call the above virtual functions as required.
         // In future some optimisations (elimination of redundant calculations)
         // might be possible.
@@ -358,8 +357,8 @@ public:
     }
 
 private:
-    void calculateNormals(const arma::Cube<ctype>& jt,
-                          arma::Mat<ctype>& normals) const {
+    void calculateNormals(const arma::Cube<double>& jt,
+                          arma::Mat<double>& normals) const {
         const int mdim = DuneGeometry::mydimension;
         const int cdim = DuneGeometry::coorddimension;
 
@@ -396,7 +395,7 @@ private:
         // Now set vector length to 1.
 
         for (int i = 0; i < pointCount; ++i) {
-            ctype sum = 0.;
+            double sum = 0.;
             for (int dim = 0; dim < cdim; ++dim)
                 sum += normals(dim, i) * normals(dim, i);
             normals.col(i) /= sqrt(sum);

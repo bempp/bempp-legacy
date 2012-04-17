@@ -20,7 +20,6 @@
 
 #include "test_entity.hpp"
 #include "grid/armadillo_helpers.hpp"
-#include "grid/common.hpp"
 #include "grid/entity_iterator.hpp"
 #include "grid/geometry.hpp"
 
@@ -56,6 +55,7 @@ BOOST_AUTO_TEST_CASE(elements_are_in_the_z_plane)
     std::auto_ptr<Bempp::GridView> bemppGridView = bemppGrid->levelView(0);
     std::auto_ptr<Bempp::EntityIterator<2> > it = bemppGridView->entityIterator<2>();
 
+    typedef double ctype;
     ctype max_abs_z = 0.;
     arma::Col<ctype> center;
     while(!it->finished()) {
@@ -72,6 +72,7 @@ BOOST_AUTO_TEST_CASE(elements_are_cover_the_unit_square)
     std::auto_ptr<Bempp::GridView> bemppGridView = bemppGrid->levelView(0);
     std::auto_ptr<Bempp::EntityIterator<2> > it = bemppGridView->entityIterator<2>();
 
+    typedef double ctype;
     ctype min_x =  1e100;
     ctype max_x = -1e100;
     ctype min_y =  1e100;
@@ -103,6 +104,7 @@ BOOST_AUTO_TEST_CASE(jacobian_is_constant_everywhere_on_the_second_face)
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
     const Geometry& geo = ep->entity().geometry();
 
+    typedef double ctype;
     arma::Mat<ctype> local(dimLocal, nPoints);
     Dune::FieldVector<ctype, dimLocal> duneLocal;
     for (int j = 0; j < nPoints; ++j)

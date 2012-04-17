@@ -103,6 +103,7 @@ void doStuff()
 
             int faceLocalIndex = intersection.indexInInside();
 
+            typedef double ctype;
             typedef Dune::GenericReferenceElement<ctype, gridDim> GRE;
             typedef Dune::GenericReferenceElements<ctype, gridDim> GREs;
             const GRE& refElement = GREs::general(element.type());

@@ -58,6 +58,7 @@ int main()
     params.topology = GridParameters::TRIANGULAR;
 
     const int dimGrid = 2;
+    typedef double ctype;
     arma::Col<ctype> lowerLeft(dimGrid);
     arma::Col<ctype> upperRight(dimGrid);
     arma::Col<unsigned int> nElements(dimGrid);
