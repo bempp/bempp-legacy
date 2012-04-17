@@ -48,14 +48,14 @@ public:
     LocalAssemblerFactory;
     typedef Fiber::LocalAssemblerForOperators<ValueType> LocalAssembler;
 
-    ElementaryLinearOperator(const Space<ValueType>& testSpace, const Space<ValueType>& trialSpace)
-        : LinearOperator<ValueType>(testSpace,trialSpace){
+    ElementaryLinearOperator(const Space<ValueType>& testSpace,
+                             const Space<ValueType>& trialSpace) :
+        LinearOperator<ValueType>(testSpace, trialSpace) {
         std::vector<ElementaryLinearOperator<ValueType> const*> v;
         std::vector<ValueType> m;
         v.push_back(this);
         m.push_back(1.0);
-        addLocalOperatorsMultipliers(v,m);
-
+        addLocalOperatorsAndMultipliers(v, m);
     }
 
     /** \brief Using a specified factory, construct a local assembler suitable
@@ -76,23 +76,8 @@ public:
     assembleWeakFormInternal(
             LocalAssembler& assembler,
             const AssemblyOptions& options) const = 0;
-
-//    /** \brief Multiply the operator in-place by a scalar.
-
-//      This method affects the results of subsequent calls to assembleWeakForm()
-//      and assembleOperator(). */
-//    void scale(ValueType multiplier) {
-//        m_multiplier = multiplier;
-//    }
-
-//    /** \brief Return the current value of the scalar by which this operator is multiplied. */
-//    ValueType multiplier() const {
-//        return m_multiplier;
-//    }
-
-
 };
 
-}
+} // namespace Bempp
 
-#endif // bempp_elementary_linear_operator_hpp
+#endif

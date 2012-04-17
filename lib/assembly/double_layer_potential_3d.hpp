@@ -34,7 +34,8 @@ class DoubleLayerPotential3D :
 {
 
 public:
-    DoubleLayerPotential3D(const Space<ValueType>& testSpace, const Space<ValueType>& trialSpace );
+    DoubleLayerPotential3D(const Space<ValueType>& testSpace,
+                           const Space<ValueType>& trialSpace );
 
 private:
     virtual const Fiber::Kernel<ValueType>& kernel() const {

@@ -121,7 +121,8 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
                              nTestDof < testLocalDofs[nTestElem].size();
                              ++nTestDof)
                             result(blockRows[nTestElem][nTestDof], 0) +=
-                                    m_denseTermsMultipliers[nTerm]*localResult[nTestElem](testLocalDofs[nTestElem][nTestDof]);
+                                    m_denseTermsMultipliers[nTerm] *
+                                    localResult[nTestElem](testLocalDofs[nTestElem][nTestDof]);
                 }
             }
         }
@@ -159,7 +160,8 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
                              nTrialDof < trialLocalDofs[nTrialElem].size();
                              ++nTrialDof)
                             result(0, blockCols[nTrialElem][nTrialDof]) +=
-                                    m_denseTermsMultipliers[nTerm]*localResult[nTrialElem](trialLocalDofs[nTrialElem][nTrialDof]);
+                                    m_denseTermsMultipliers[nTerm] *
+                                    localResult[nTrialElem](trialLocalDofs[nTrialElem][nTrialDof]);
                 }
             }
         }
@@ -190,7 +192,7 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
                              ++nTestDof)
                             result(blockRows[nTestElem][nTestDof],
                                    blockCols[nTrialElem][nTrialDof]) +=
-                                    m_denseTermsMultipliers[nTerm]*
+                                    m_denseTermsMultipliers[nTerm] *
                                     localResult(nTestElem, nTrialElem)
                                     (testLocalDofs[nTestElem][nTestDof],
                                      trialLocalDofs[nTrialElem][nTrialDof]);

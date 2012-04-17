@@ -56,7 +56,8 @@ public:
     typedef typename ElementaryLinearOperator<ValueType>::LocalAssembler LocalAssembler;
     typedef Fiber::EvaluatorForIntegralOperators<ValueType> Evaluator;
 
-    ElementaryIntegralOperator(const Space<ValueType> &testSpace, const Space<ValueType> &trialSpace);
+    ElementaryIntegralOperator(const Space<ValueType> &testSpace,
+                               const Space<ValueType> &trialSpace);
 
     virtual int trialComponentCount() const {
         return kernel().domainDimension();

@@ -23,137 +23,167 @@
 #include "discrete_linear_operator.hpp"
 #include <stdexcept>
 
-namespace Bempp{
+namespace Bempp
+{
 
 template <typename ValueType>
-LinearOperator<ValueType>::LinearOperator(const Space<ValueType>& testSpace, const Space<ValueType>& trialSpace) :
-    m_testSpace(testSpace), m_trialSpace(trialSpace) {}
-
-template <typename ValueType>
-void LinearOperator<ValueType>::assemble(const LocalAssemblerFactory& factory, const AssemblyOptions& options){
-    m_discreteOperator=this->assembleWeakForm(factory,options);
-}
-
-template <typename ValueType>
-bool LinearOperator<ValueType>::isAssembled() const{
-    return m_discreteOperator.get()!=NULL;
-}
-
-template <typename ValueType>
-GridFunction<ValueType> LinearOperator<ValueType>::apply(
-        const GridFunction<ValueType>& x, const GridFunction<ValueType>&  y, ValueType alpha, ValueType beta) const{
-    if (!this->isAssembled()) throw std::runtime_error("Operator is not assembled");
-
-    // Sanity test
-    if ((m_trialSpace!=x.space()) || (m_testSpace!=y.space())) throw std::runtime_error("Spaces don't match");
-
-    // Extract coefficient vectors
-
-    arma::Col<ValueType> xVals=x.coefficients().asArmadilloVector();
-    arma::Col<ValueType> yVals=y.coefficients().asArmadilloVector();
-
-    // Apply operator and return new GridFunction
-
-    m_discreteOperator->apply(Bempp::NO_TRANSPOSE,xVals,yVals,alpha,beta);
-    return GridFunction<ValueType>(m_testSpace,yVals);
-
-}
-
-template <typename ValueType>
-GridFunction<ValueType> LinearOperator<ValueType>::apply(const GridFunction<ValueType>& x) const{
-     if (!this->isAssembled()) throw std::runtime_error("Operator is not assembled");
-
-     //Sanity test
-
-     if (m_trialSpace!=x.space()) throw std::runtime_error("Spaces don't match");
-
-     arma::Col<ValueType> xVals=x.coefficients().asArmadilloVector();
-     arma::Col<ValueType> yVals=arma::zeros(m_testSpace.globalDofCount());
-     m_discreteOperator->apply(Bempp::NO_TRANSPOSE,xVals,yVals,1.0,1.0);
-     return GridFunction<ValueType>(m_testSpace,yVals);
-
-}
-
-template <typename ValueType>
-const DiscreteLinearOperator<ValueType>& LinearOperator<ValueType>::getDiscreteLinearOperator() const{
-    return *m_discreteOperator;
+LinearOperator<ValueType>::LinearOperator(const Space<ValueType>& testSpace,
+                                          const Space<ValueType>& trialSpace) :
+    m_testSpace(testSpace), m_trialSpace(trialSpace)
+{
 }
 
 template<typename ValueType>
-LinearOperator<ValueType>::LinearOperator(const LinearOperator<ValueType>& linOp) :
-    m_testSpace(linOp.m_testSpace), m_trialSpace(linOp.m_trialSpace),
-    m_localOperators(linOp.m_localOperators), m_multipliers(linOp.m_multipliers){}
+LinearOperator<ValueType>::LinearOperator(const LinearOperator<ValueType>& other) :
+    m_testSpace(other.m_testSpace), m_trialSpace(other.m_trialSpace),
+    m_localOperators(other.m_localOperators), m_multipliers(other.m_multipliers)
+{
+}
 
 template <typename ValueType>
-LinearOperator<ValueType>::~LinearOperator(){}
+LinearOperator<ValueType>::~LinearOperator()
+{
+}
 
 template <typename ValueType>
-const std::vector<ElementaryLinearOperator<ValueType> const* >& LinearOperator<ValueType>::getLocalOperators() const {
+void LinearOperator<ValueType>::assemble(const LocalAssemblerFactory& factory,
+                                         const AssemblyOptions& options)
+{
+    m_discreteOperator = this->assembleWeakForm(factory, options);
+}
+
+template <typename ValueType>
+bool LinearOperator<ValueType>::isAssembled() const
+{
+    return m_discreteOperator.get() != NULL;
+}
+
+template <typename ValueType>
+void LinearOperator<ValueType>::apply(
+        const TranspositionMode trans,
+        const GridFunction<ValueType>& x_in,
+        GridFunction<ValueType>& y_inout,
+        ValueType alpha, ValueType beta) const
+{
+    if (!this->isAssembled())
+        throw std::runtime_error("LinearOperator::apply(): "
+                                 "operator is not assembled");
+
+    // Sanity test
+    if (&m_trialSpace != &x_in.space() || &m_testSpace != &y_inout.space())
+        throw std::runtime_error("LinearOperator::apply(): Spaces don't match");
+
+    // Extract coefficient vectors
+    arma::Col<ValueType> xVals = x_in.coefficients().asArmadilloVector();
+    arma::Col<ValueType> yVals = y_inout.coefficients().asArmadilloVector();
+
+    // Apply operator and assign the result to y_inout's coefficients
+    m_discreteOperator->apply(trans, xVals, yVals, alpha, beta);
+    // Note: all these armadillo<->vector conversions are horribly
+    // inefficient and unnecessary. But in order to get rid of them, we need
+    // first to make interfaces to the Trilinos and fallback
+    // DiscreteLinearOperator::apply() compatible.
+    // Perhaps by declaring an asPtrToBaseVector method in Vector...
+    y_inout.setCoefficients(Vector<ValueType>(yVals));
+}
+
+template <typename ValueType>
+const DiscreteLinearOperator<ValueType>&
+LinearOperator<ValueType>::assembledDiscreteLinearOperator() const
+{
+    if (!isAssembled())
+        throw std::runtime_error("LinearOperator::assembledDiscreteLinearOperator(): "
+                                 "operator is not assembled");
+    return *m_discreteOperator;
+}
+
+template <typename ValueType>
+const std::vector<ElementaryLinearOperator<ValueType> const*>&
+LinearOperator<ValueType>::localOperators() const
+{
     return m_localOperators;
 }
 
 template <typename ValueType>
-const std::vector<ValueType >& LinearOperator<ValueType>::getMultipliers() const {
+const std::vector<ValueType >& LinearOperator<ValueType>::multipliers() const
+{
     return m_multipliers;
 }
 
 template <typename ValueType>
-const Space<ValueType>& LinearOperator<ValueType>::getTestSpace() const{
+const Space<ValueType>& LinearOperator<ValueType>::testSpace() const
+{
     return m_testSpace;
 }
 
 template <typename ValueType>
-const Space<ValueType>& LinearOperator<ValueType>::getTrialSpace() const{
+const Space<ValueType>& LinearOperator<ValueType>::trialSpace() const
+{
     return m_trialSpace;
 }
 
 template <typename ValueType>
-bool LinearOperator<ValueType>::checkSpaces(const LinearOperator<ValueType>& linOp) const{
-    return ((m_testSpace==linOp.getTestSpace()) && (m_trialSpace==linOp.getTrialSpace()) );
-}
-
-
-template <typename ValueType>
-void LinearOperator<ValueType>::addLocalOperatorsAndMultipliers(const std::vector<ElementaryLinearOperator<ValueType> const*>& localOperators,
-                                                             const std::vector<ValueType>& multipliers)
+void LinearOperator<ValueType>::addLocalOperatorsAndMultipliers(
+        const std::vector<ElementaryLinearOperator<ValueType> const*>& localOperators,
+        const std::vector<ValueType>& multipliers)
 {
-    m_localOperators.insert(m_localOperators.end(),localOperators.begin(),localOperators.end());
-    m_multipliers.insert(m_multipliers.end(),multipliers.begin(),multipliers.end());
-
+    m_localOperators.insert(m_localOperators.end(),
+                            localOperators.begin(), localOperators.end());
+    m_multipliers.insert(m_multipliers.end(),
+                         multipliers.begin(), multipliers.end());
 }
 
 template <typename ValueType>
-LinearOperatorSuperposition<ValueType> operator+(const LinearOperator<ValueType>& op1, const LinearOperator<ValueType>& op2){
-    return LinearOperatorSuperposition<ValueType>(op1,op2);
+LinearOperatorSuperposition<ValueType> operator+(
+        const LinearOperator<ValueType>& op1,
+        const LinearOperator<ValueType>& op2)
+{
+    return LinearOperatorSuperposition<ValueType>(op1, op2);
 }
 
 template <typename ValueType>
-LinearOperatorSuperposition<ValueType> operator-(const LinearOperator<ValueType>& op1, const LinearOperator<ValueType>& op2){
-    return op1+(-1.*op2);
-}
-
-
-template <typename ValueType>
-LinearOperatorSuperposition<ValueType> operator*(const LinearOperator<ValueType>& op, const ValueType& scalar){
-    return LinearOperatorSuperposition<ValueType>(op,scalar);
+LinearOperatorSuperposition<ValueType> operator-(
+        const LinearOperator<ValueType>& op1,
+        const LinearOperator<ValueType>& op2)
+{
+    return op1 + (-1. * op2);
 }
 
 template <typename ValueType>
-LinearOperatorSuperposition<ValueType> operator*(const ValueType& scalar, const LinearOperator<ValueType>& op){
-    return LinearOperatorSuperposition<ValueType>(op,scalar);
+LinearOperatorSuperposition<ValueType> operator*(
+        const LinearOperator<ValueType>& op, const ValueType& scalar)
+{
+    return LinearOperatorSuperposition<ValueType>(op, scalar);
 }
 
 template <typename ValueType>
-LinearOperatorSuperposition<ValueType> operator/(const LinearOperator<ValueType>& op, const ValueType& scalar){
-
-    if (scalar==0) throw std::runtime_error("Division by zero");
-
-    return LinearOperatorSuperposition<ValueType>(op,1./scalar);
+LinearOperatorSuperposition<ValueType> operator*(
+        const ValueType& scalar, const LinearOperator<ValueType>& op)
+{
+    return LinearOperatorSuperposition<ValueType>(op, scalar);
 }
 
 template <typename ValueType>
-GridFunction<ValueType> operator*(const LinearOperator<ValueType>& op, const GridFunction<ValueType>& fun){
-    return op.apply(fun);
+LinearOperatorSuperposition<ValueType> operator/(
+        const LinearOperator<ValueType>& op, const ValueType& scalar)
+{
+    if (scalar == 0)
+        throw std::runtime_error("LinearOperatorSuperposition::operator/(): "
+                                 "Division by zero");
+
+    return LinearOperatorSuperposition<ValueType>(op, 1. / scalar);
+}
+
+template <typename ValueType>
+GridFunction<ValueType> operator*(
+        const LinearOperator<ValueType>& op,
+        const GridFunction<ValueType>& fun)
+{
+    const Space<ValueType>& space = op.testSpace();
+    arma::Col<ValueType> coeffs = arma::zeros(space.globalDofCount());
+    GridFunction<ValueType> result(space, coeffs);
+    op.apply(NO_TRANSPOSE, fun, result, 1., 0.);
+    return result;
 }
 
 

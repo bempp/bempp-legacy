@@ -33,8 +33,7 @@ DiscreteLinearOperatorSuperposition(
         const std::vector<ValueType>& multipliers)
 {
     // Check that all terms have the same dimensions
-    if (terms.size() > 1)
-    {
+    if (terms.size() > 1) {
         const int nRows = terms[0].rowCount();
         const int nCols = terms[0].columnCount();
         for (int i = 1; i < terms.size(); ++i)
@@ -48,8 +47,7 @@ DiscreteLinearOperatorSuperposition(
     m_terms.transfer(m_terms.end(), terms);
     m_multipliers.insert(m_multipliers.end(),multipliers.begin(),multipliers.end());
 #ifdef WITH_TRILINOS
-    if (!terms.empty())
-    {
+    if (!terms.empty()) {
         m_domainSpace = terms[0].domain();
         m_rangeSpace = terms[0].range();
     }
@@ -72,7 +70,7 @@ DiscreteLinearOperatorSuperposition<ValueType>::asMatrix() const
     if (!m_terms.empty()) {
         result = m_terms[0].asMatrix();
         for (int i = 1; i < m_terms.size(); ++i)
-            result += m_terms[i].asMatrix()*m_multipliers[i];
+            result += m_terms[i].asMatrix() * m_multipliers[i];
     }
     return result;
 }
@@ -105,7 +103,7 @@ void DiscreteLinearOperatorSuperposition<ValueType>::addBlock(
         arma::Mat<ValueType>& block) const
 {
     for (int i = 0; i < m_terms.size(); ++i)
-        m_terms[i].addBlock(rows, cols, alpha*m_multipliers[i], block);
+        m_terms[i].addBlock(rows, cols, alpha * m_multipliers[i], block);
 }
 
 #ifdef WITH_TRILINOS
@@ -159,7 +157,8 @@ applyBuiltInImpl(const TranspositionMode trans,
 
     for (int i = 0; i < m_terms.size(); ++i)
         m_terms[i].apply(trans, x_in, y_inout,
-                         alpha*m_multipliers[i], 1. /* "+ beta * y_inout" has already been done */ );
+                         alpha * m_multipliers[i],
+                         1. /* "+ beta * y_inout" has already been done */ );
 }
 
 
@@ -179,4 +178,3 @@ template class DiscreteLinearOperatorSuperposition<std::complex<double> >;
 #endif
 
 } // namespace Bempp
-

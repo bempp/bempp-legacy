@@ -46,6 +46,16 @@ Vector<ValueType>::Vector(
 }
 
 template <typename ValueType>
+size_t Vector<ValueType>::size() const
+{
+#ifdef WITH_TRILINOS
+    return this->range()->dim();
+#else
+    return m_vec.n_rows;
+#endif
+}
+
+template <typename ValueType>
 void Vector<ValueType>::dump() const
 {
 #ifdef WITH_TRILINOS

@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #include "grid_function.hpp"
 
 #include "config_trilinos.hpp"
@@ -81,51 +80,47 @@ GridFunction<ValueType>::GridFunction(
 
     // Solve the system id * m_coefficients = projections
 #ifdef WITH_TRILINOS
+    if (assemblyOptions.operatorRepresentation()!=assemblyOptions.DENSE) {
+        DiscreteSparseLinearOperator<ValueType>& sparseDiscreteId =
+                dynamic_cast<DiscreteSparseLinearOperator<ValueType>&>(*discreteId);
+        Epetra_CrsMatrix& epetraMat = sparseDiscreteId.epetraMatrix();
 
-    if (assemblyOptions.operatorRepresentation()!=assemblyOptions.DENSE){
+        const int coefficientCount = space.globalDofCount();
+        Epetra_Map map(coefficientCount, 0 /* base index */, Epetra_SerialComm());
+        m_coefficients.set_size(coefficientCount);
+        m_coefficients.fill(0.);
+        Epetra_MultiVector solution(View, map, m_coefficients.memptr(),
+                                    coefficientCount /* rowCount */, 1 /* colCount */);
+        Epetra_MultiVector rhs(View, map, projections.memptr(),
+                               coefficientCount /* rowCount */, 1 /* colCount */);
+        Epetra_LinearProblem problem(&epetraMat, &solution, &rhs);
 
-            DiscreteSparseLinearOperator<ValueType>& sparseDiscreteId =
-            dynamic_cast<DiscreteSparseLinearOperator<ValueType>&>(*discreteId);
-            Epetra_CrsMatrix& epetraMat = sparseDiscreteId.epetraMatrix();
-
-            const int coefficientCount = space.globalDofCount();
-            Epetra_Map map(coefficientCount, 0 /* base index */, Epetra_SerialComm());
-            m_coefficients.set_size(coefficientCount);
-            m_coefficients.fill(0.);
-            Epetra_MultiVector solution(View, map, m_coefficients.memptr(),
-                                     coefficientCount /* rowCount */, 1 /* colCount */);
-            Epetra_MultiVector rhs(View, map, projections.memptr(),
-                                     coefficientCount /* rowCount */, 1 /* colCount */);
-            Epetra_LinearProblem problem(&epetraMat, &solution, &rhs);
-
-            Amesos amesosFactory;
-            const char* solverName = "Amesos_Klu";
-            if (!amesosFactory.Query(solverName))
+        Amesos amesosFactory;
+        const char* solverName = "Amesos_Klu";
+        if (!amesosFactory.Query(solverName))
             throw std::runtime_error("GridFunction::GridFunction(): "
                                      "Amesos_Klu solver not available");
-            std::auto_ptr<Amesos_BaseSolver> solver(
+        std::auto_ptr<Amesos_BaseSolver> solver(
                     amesosFactory.Create("Amesos_Klu", problem));
-            if (!solver.get())
-                    throw std::runtime_error("GridFunction::GridFunction(): "
-                                 "Amesos solver could not be constructed");
+        if (!solver.get())
+            throw std::runtime_error("GridFunction::GridFunction(): "
+                                     "Amesos solver could not be constructed");
 
-            if (solver->SymbolicFactorization())
-                throw std::runtime_error("GridFunction::GridFunction(): "
+        if (solver->SymbolicFactorization())
+            throw std::runtime_error("GridFunction::GridFunction(): "
                                      "Symbolic factorisation with Amesos failed");
-            if (solver->NumericFactorization())
-                throw std::runtime_error("GridFunction::GridFunction(): "
+        if (solver->NumericFactorization())
+            throw std::runtime_error("GridFunction::GridFunction(): "
                                      "Numeric factorisation with Amesos failed");
-            if (solver->Solve())
-                throw std::runtime_error("GridFunction::GridFunction(): "
+        if (solver->Solve())
+            throw std::runtime_error("GridFunction::GridFunction(): "
                                      "Amesos solve failed");
-        }
-        else{
-            m_coefficients = arma::solve(discreteId->asMatrix(),projections);
-        }
+    } else {
+        m_coefficients = arma::solve(discreteId->asMatrix(), projections);
+    }
 #else
     m_coefficients = arma::solve(discreteId->asMatrix(), projections);
 #endif
-
 }
 
 template <typename ValueType>
@@ -184,6 +179,16 @@ template <typename ValueType>
 Vector<ValueType> GridFunction<ValueType>::coefficients() const
 {
     return Vector<ValueType>(m_coefficients);
+}
+
+template <typename ValueType>
+void GridFunction<ValueType>::setCoefficients(const Vector<ValueType>& coeffs)
+{
+    if (coeffs.size() != m_space.globalDofCount())
+        throw std::invalid_argument(
+                "GridFunction::setCoefficients(): dimension of the provided "
+                "vector does not match the number of global DOFs");
+    m_coefficients = coeffs.asArmadilloVector();
 }
 
 // Redundant, in fact -- can be obtained directly from Space
@@ -264,8 +269,7 @@ GridFunction<ValueType>::calculateProjections(
     testBases.reserve(elementCount);
 
     std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-    while (!it->finished())
-    {
+    while (!it->finished()) {
         const Entity<0>& element = it->entity();
         testBases.push_back(&space.basis(element));
         it->next();
@@ -278,7 +282,7 @@ GridFunction<ValueType>::calculateProjections(
     // Now create the assembler
     Fiber::OpenClHandler<ValueType,int> openClHandler(options.openClOptions());
     openClHandler.pushGeometry (rawGeometry.vertices(),
-                rawGeometry.elementCornerIndices());
+                                rawGeometry.elementCornerIndices());
 
     std::auto_ptr<LocalAssembler> assembler =
             factory.make(*geometryFactory, rawGeometry,
@@ -309,8 +313,7 @@ GridFunction<ValueType>::reallyCalculateProjections(
     // Gather global DOF lists
     const Mapper& mapper = view->elementMapper();
     std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-    while (!it->finished())
-    {
+    while (!it->finished()) {
         const Entity<0>& element = it->entity();
         const int elementIndex = mapper.entityIndex(element);
         space.globalDofs(element, testGlobalDofs[elementIndex]);
@@ -388,8 +391,7 @@ void GridFunction<ValueType>::evaluateAtSpecialPoints(
     std::vector<std::vector<ValueType> > localCoefficients(elementCount);
     {
         std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-        for (int e = 0; e < elementCount; ++e)
-        {
+        for (int e = 0; e < elementCount; ++e) {
             const Entity<0>& element = it->entity();
             basesAndCornerCounts[e] = BasisAndCornerCount(
                         &m_space.basis(element), rawGeometry.elementCornerCount(e));
@@ -414,8 +416,7 @@ void GridFunction<ValueType>::evaluateAtSpecialPoints(
     typedef typename BasisAndCornerCountSet::const_iterator
             BasisAndCornerCountSetConstIt;
     for (BasisAndCornerCountSetConstIt it = uniqueBasesAndCornerCounts.begin();
-         it != uniqueBasesAndCornerCounts.end(); ++it)
-    {
+         it != uniqueBasesAndCornerCounts.end(); ++it) {
         const BasisAndCornerCount& activeBasisAndCornerCount = *it;
         const Fiber::Basis<ValueType>& activeBasis =
                 *activeBasisAndCornerCount.first;
@@ -424,60 +425,45 @@ void GridFunction<ValueType>::evaluateAtSpecialPoints(
         // Set the local coordinates of either all vertices or the barycentre
         // of the active element type
         arma::Mat<ValueType> local;
-        if (dataType == VtkWriter::CELL_DATA)
-        {
+        if (dataType == VtkWriter::CELL_DATA) {
             local.set_size(gridDim, 1);
 
             // We could actually use Dune for these assignements
-            if (gridDim == 1 && activeCornerCount == 2)
-            {
+            if (gridDim == 1 && activeCornerCount == 2) {
                 // linear segment
                 local(0, 0) = 0.5;
-            }
-            else if (gridDim == 2 && activeCornerCount == 3)
-            {
+            } else if (gridDim == 2 && activeCornerCount == 3) {
                 // triangle
                 local(0, 0) = 1./3.;
                 local(1, 0) = 1./3.;
-            }
-            else if (gridDim == 2 && activeCornerCount == 4)
-            {
+            } else if (gridDim == 2 && activeCornerCount == 4) {
                 // quadrilateral
                 local(0, 0) = 0.5;
                 local(1, 0) = 0.5;
-            }
-            else
+            } else
                 throw std::runtime_error("GridFunction::evaluateAtVertices(): "
                                          "unsupported element type");
-        }
-        else // VERTEX_DATA
-        {
+        } else { // VERTEX_DATA
             local.set_size(gridDim, activeCornerCount);
 
             // We could actually use Dune for these assignements
-            if (gridDim == 1 && activeCornerCount == 2)
-            {
+            if (gridDim == 1 && activeCornerCount == 2) {
                 // linear segment
                 local(0, 0) = 0.;
                 local(0, 1) = 1.;
-            }
-            else if (gridDim == 2 && activeCornerCount == 3)
-            {
+            } else if (gridDim == 2 && activeCornerCount == 3) {
                 // triangle
                 local.fill(0.);
                 local(0, 1) = 1.;
                 local(1, 2) = 1.;
-            }
-            else if (gridDim == 2 && activeCornerCount == 4)
-            {
+            } else if (gridDim == 2 && activeCornerCount == 4) {
                 // quadrilateral
                 local.fill(0.);
                 local(0, 1) = 1.;
                 local(1, 2) = 1.;
                 local(0, 3) = 1.;
                 local(1, 3) = 1.;
-            }
-            else
+            } else
                 throw std::runtime_error("GridFunction::evaluateAtVertices(): "
                                          "unsupported element type");
         }
@@ -499,8 +485,7 @@ void GridFunction<ValueType>::evaluateAtSpecialPoints(
         arma::Cube<ValueType> functionValues;
 
         // Loop over elements and process those that use the active basis
-        for (int e = 0; e < elementCount; ++e)
-        {
+        for (int e = 0; e < elementCount; ++e) {
             if (basesAndCornerCounts[e].first != &activeBasis)
                 continue;
 
@@ -510,8 +495,7 @@ void GridFunction<ValueType>::evaluateAtSpecialPoints(
 
             // Calculate the function's values and/or derivatives
             // at the requested points in the current element
-            if (basisDeps & Fiber::VALUES)
-            {
+            if (basisDeps & Fiber::VALUES) {
                 functionData.values.fill(0.);
                 for (int point = 0; point < basisData.values.n_slices; ++point)
                     for (int dim = 0; dim < basisData.values.n_rows; ++dim)
@@ -520,8 +504,7 @@ void GridFunction<ValueType>::evaluateAtSpecialPoints(
                                     basisData.values(dim, fun, point) *
                                     activeLocalCoefficients[fun];
             }
-            if (basisDeps & Fiber::DERIVATIVES)
-            {
+            if (basisDeps & Fiber::DERIVATIVES) {
                 std::fill(functionData.derivatives.begin(),
                           functionData.derivatives.end(), 0.);
                 for (int point = 0; point < basisData.derivatives.extent(3); ++point)
@@ -529,8 +512,8 @@ void GridFunction<ValueType>::evaluateAtSpecialPoints(
                         for (int comp = 0; comp < basisData.derivatives.extent(0); ++comp)
                             for (int fun = 0; fun < basisData.derivatives.extent(2); ++fun)
                                 functionData.derivatives(comp, dim, 0, point) +=
-                                    basisData.derivatives(comp, dim, fun, point) *
-                                    activeLocalCoefficients[fun];
+                                        basisData.derivatives(comp, dim, fun, point) *
+                                        activeLocalCoefficients[fun];
             }
 
             // Get geometrical data
@@ -542,12 +525,10 @@ void GridFunction<ValueType>::evaluateAtSpecialPoints(
 
             if (dataType == VtkWriter::CELL_DATA)
                 result.col(e) = functionValues.slice(0);
-            else // VERTEX_DATA
-            {
+            else { // VERTEX_DATA
                 // Add the calculated values to the columns of the result array
                 // corresponding to the active element's vertices
-                for (int c = 0; c < activeCornerCount; ++c)
-                {
+                for (int c = 0; c < activeCornerCount; ++c) {
                     int vertexIndex = rawGeometry.elementCornerIndices()(c, e);
                     result.col(vertexIndex) += functionValues.slice(c);
                     ++multiplicities[vertexIndex];
@@ -563,16 +544,22 @@ void GridFunction<ValueType>::evaluateAtSpecialPoints(
 }
 
 template<typename ValueType>
-GridFunction<ValueType> operator+(const GridFunction<ValueType>& g1, const GridFunction<ValueType>& g2){
-    if (g1.space()!=g2.space()) throw std::runtime_error("Spaces don't match");
+GridFunction<ValueType> operator+(const GridFunction<ValueType>& g1,
+                                  const GridFunction<ValueType>& g2)
+{
+    if (&g1.space() != &g2.space())
+        throw std::runtime_error("GridFunction::operator+(): spaces don't match");
     arma::Col<ValueType> g1Vals=g1.coefficients().asArmadilloVector();
     arma::Col<ValueType> g2Vals=g2.coefficients().asArmadilloVector();
     return GridFunction<ValueType>(g1.space(),g1Vals+g2Vals);
 }
 
 template<typename ValueType>
-GridFunction<ValueType> operator-(const GridFunction<ValueType>& g1, const GridFunction<ValueType>& g2){
-    if (g1.space()!=g2.space()) throw std::runtime_error("Spaces don't match");
+GridFunction<ValueType> operator-(const GridFunction<ValueType>& g1,
+                                  const GridFunction<ValueType>& g2)
+{
+    if (&g1.space() != &g2.space())
+        throw std::runtime_error("GridFunction::operator-(): spaces don't match");
     arma::Col<ValueType> g1Vals=g1.coefficients().asArmadilloVector();
     arma::Col<ValueType> g2Vals=g2.coefficients().asArmadilloVector();
     return GridFunction<ValueType>(g1.space(),g1Vals-g2Vals);
@@ -580,18 +567,24 @@ GridFunction<ValueType> operator-(const GridFunction<ValueType>& g1, const GridF
 }
 
 template<typename ValueType>
-GridFunction<ValueType> operator*(const GridFunction<ValueType>& g1, const ValueType& scalar){
+GridFunction<ValueType> operator*(const GridFunction<ValueType>& g1,
+                                  const ValueType& scalar)
+{
     arma::Col<ValueType> g1Vals=g1.coefficients().asArmadilloVector();
     return GridFunction<ValueType>(g1.space(),scalar*g1Vals);
 }
 
 template<typename ValueType>
-GridFunction<ValueType> operator*(const ValueType& scalar, const GridFunction<ValueType>& g2){
+GridFunction<ValueType> operator*(const ValueType& scalar,
+                                  const GridFunction<ValueType>& g2)
+{
     return g2*scalar;
 }
 
 template<typename ValueType>
-GridFunction<ValueType> operator/(const GridFunction<ValueType>& g1, const ValueType& scalar){
+GridFunction<ValueType> operator/(const GridFunction<ValueType>& g1,
+                                  const ValueType& scalar)
+{
     if (scalar==0) throw std::runtime_error("Divide by zero");
     return (1./scalar)*g1;
 }

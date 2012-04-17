@@ -34,8 +34,8 @@ class AdjointDoubleLayerPotential3D :
 {
 
 public:
-
-    AdjointDoubleLayerPotential3D(const Space<ValueType>& testSpace, const Space<ValueType>& trialSpace);
+    AdjointDoubleLayerPotential3D(const Space<ValueType>& testSpace,
+                                  const Space<ValueType>& trialSpace);
 
 private:
     virtual const Fiber::Kernel<ValueType>& kernel() const {

@@ -43,7 +43,8 @@ public:
     LocalAssemblerFactory;
     typedef typename ElementaryLinearOperator<ValueType>::LocalAssembler LocalAssembler;
 
-    IdentityOperator(const Space<ValueType>& testSpace, const Space<ValueType>& trialSpace);
+    IdentityOperator(const Space<ValueType>& testSpace,
+                     const Space<ValueType>& trialSpace);
 
     virtual int trialComponentCount() const { return 1; }
 

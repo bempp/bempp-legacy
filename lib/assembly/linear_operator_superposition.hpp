@@ -23,9 +23,6 @@
 
 #include "linear_operator.hpp"
 
-#include <boost/ptr_container/ptr_vector.hpp>
-#include <boost/tuple/tuple.hpp>
-
 namespace Fiber
 {
 
@@ -50,18 +47,12 @@ public:
     typedef typename Fiber::LocalAssemblerForOperators<ValueType>
     LocalAssembler;
 
-//    /* acquires ownership of the operators passed via terms */
-//    LinearOperatorSuperposition(
-//            boost::ptr_vector<ElementaryLinearOperator<ValueType> >& terms);
-
     LinearOperatorSuperposition(
             const LinearOperator<ValueType>& term1,
             const LinearOperator<ValueType>& term2);
 
     LinearOperatorSuperposition(const LinearOperator<ValueType>& term,
                                 const ValueType& scalar);
-
-
 
     virtual int trialComponentCount() const;
     virtual int testComponentCount() const;
@@ -74,8 +65,6 @@ public:
     virtual bool supportsRepresentation(AssemblyOptions::Representation repr) const;
 
 private:
-
-
     std::auto_ptr<DiscreteLinearOperator<ValueType> >
     assembleWeakFormInDenseMode(
             const LocalAssemblerFactory& factory,
@@ -90,9 +79,7 @@ private:
     assembleWeakFormInArbitraryMode(
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
-
 };
-
 
 } //namespace Bempp
 

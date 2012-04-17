@@ -18,12 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
-#ifndef aca_preconditioner_factory_hpp
-#define	aca_preconditioner_factory_hpp
+#ifndef bempp_aca_preconditioner_factory_hpp
+#define	bempp_aca_preconditioner_factory_hpp
 
 #include "config_trilinos.hpp"
-
 
 #ifdef WITH_TRILINOS
 
@@ -31,22 +29,21 @@
 #include "Thyra_PreconditionerBase.hpp"
 #include "../assembly/discrete_linear_operator.hpp"
 
-namespace Bempp {
+namespace Bempp
+{
 
 template<typename ValueType>
-class AcaPreconditionerFactory {
-    
-    public:        
-    static Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > AcaOperatorToPreconditioner
-        (DiscreteLinearOperator<ValueType>& discreteOperator, const double delta=0.1);
-        
-        
+class AcaPreconditionerFactory
+{
+public:
+    static Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> >
+    acaOperatorToPreconditioner
+    (DiscreteLinearOperator<ValueType>& discreteOperator, const double delta=0.1);
 };
 
-
-}
+} // namespace Bempp
 
 #endif /* WITH_TRILINOS */
 
-#endif	/* aca_preconditioner_factory_hpp */
+#endif
 

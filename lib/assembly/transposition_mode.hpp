@@ -18,47 +18,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_vector_hpp
-#define bempp_vector_hpp
+#ifndef bempp_transposition_mode_hpp
+#define bempp_transposition_mode_hpp
 
 #include "config_trilinos.hpp"
 
-#include <armadillo>
-
 #ifdef WITH_TRILINOS
-#include <Thyra_DefaultSpmdVector.hpp>
+#include <Thyra_OperatorVectorTypes.hpp>
 #endif
-
 namespace Bempp {
 
-/** \brief Encapsulation of a vector.
-
-  If BEM++ is compiled with Trilinos, Vector is implemented by means of
-  Thyra::DefaultSpmdVector; otherwise an Armadillo-based fallback
-  implementation is used. */
-template <typename ValueType>
-class Vector
-#ifdef WITH_TRILINOS
-        : public Thyra::DefaultSpmdVector<ValueType>
-#endif
+enum TranspositionMode
 {
-public:
-    /** \brief Construct the discrete source term from an Armadillo vector. */
-    Vector(const arma::Col<ValueType>& vec);
-
-    /** \brief Vector length. */
-    size_t size() const;
-
-    /** \brief Write a textual representation of the source term to standard output. */
-    void dump() const;
-
-    /** \brief Vector representation of the source term. */
-    arma::Col<ValueType> asArmadilloVector() const;
-
-private:
-#ifndef WITH_TRILINOS
-    // fallback implementation
-    arma::Col<ValueType> m_vec;
+#ifdef WITH_TRILINOS
+    NO_TRANSPOSE = Thyra::NOTRANS,
+    CONJUGATE = Thyra::CONJ,
+    TRANSPOSE = Thyra::TRANS,
+    CONJUGATE_TRANSPOSE = Thyra::CONJTRANS
+#else
+    NO_TRANSPOSE,
+    CONJUGATE,
+    TRANSPOSE,
+    CONJUGATE_TRANSPOSE
 #endif
 };
 

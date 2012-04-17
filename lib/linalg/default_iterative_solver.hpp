@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef default_gmres_solver_hpp
-#define default_gmres_solver_hpp
+#ifndef bempp_default_gmres_solver_hpp
+#define bempp_default_gmres_solver_hpp
 
 #include "config_trilinos.hpp"
 
@@ -44,9 +44,8 @@
 #include "../assembly/grid_function.hpp"
 #include "../assembly/linear_operator.hpp"
 
-
-
-namespace Bempp {
+namespace Bempp
+{
 
 enum EStatus {CONVERGED, UNCONVGERGED, UNKNOWN};
 
@@ -54,39 +53,22 @@ template <typename ValueType>
 class DefaultIterativeSolver
 {
 public:
+    DefaultIterativeSolver(const LinearOperator<ValueType>& linOp,
+                           const GridFunction<ValueType> gridFun);
 
-
-    DefaultIterativeSolver(const LinearOperator<ValueType>& linOp, const GridFunction<ValueType> gridFun );
-
-//    DefaultIterativeSolver(DiscreteLinearOperator<ValueType>& discreteOperator,
-//                       Vector<ValueType>& rhs);
-//    DefaultIterativeSolver(DiscreteLinearOperator<ValueType>& discreteOperator,
-//                       std::vector<Vector<ValueType>* >& rhs);
-
-
-    void addPreconditioner(Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > preconditioner);
-
-
+    void addPreconditioner(
+            Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > preconditioner);
     void initializeSolver(Teuchos::RCP<Teuchos::ParameterList> paramList);
-
-
 
     void solve();
 
-
-
-    GridFunction<ValueType> getResult();
-
-    EStatus getStatus();
-
-    double getSolveTol();
-
-    std::string getSolverMessage();
-
-    Thyra::SolveStatus<ValueType> getThyraSolveStatus();
+    GridFunction<ValueType> getResult() const;
+    EStatus getStatus() const;
+    double getSolveTolerance() const;
+    std::string getSolverMessage() const;
+    Thyra::SolveStatus<ValueType> getThyraSolveStatus() const;
 
 private:
-
     const DiscreteLinearOperator<ValueType>& m_discreteOperator;
     const Space<ValueType>& m_space;
 
@@ -95,14 +77,12 @@ private:
     Teuchos::RCP<Thyra::MultiVectorBase<ValueType> > m_sol;
     Thyra::SolveStatus<ValueType> m_status;
     Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > m_preconditioner;
-
-
 };
 
 Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(double tol);
 Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(double tol);
 
-}
+} // namespace Bempp
 
 #endif // WITH_TRILINOS
 #endif // default_gmres_solver_hpp

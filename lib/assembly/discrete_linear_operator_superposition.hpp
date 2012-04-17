@@ -44,7 +44,8 @@ public:
 
     /* acquires ownership of these operators */
     DiscreteLinearOperatorSuperposition(
-            boost::ptr_vector<TermType>& terms,const std::vector<ValueType>& multipliers);
+            boost::ptr_vector<TermType>& terms,
+            const std::vector<ValueType>& multipliers);
 
     virtual void dump() const;
 

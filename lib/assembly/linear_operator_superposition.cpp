@@ -39,44 +39,47 @@
 namespace Bempp
 {
 
-
 template <typename ValueType>
 LinearOperatorSuperposition<ValueType>::LinearOperatorSuperposition(
         const LinearOperator<ValueType>& term1,
-        const LinearOperator<ValueType>& term2)
-    : LinearOperator<ValueType>(term1.getTestSpace(),term1.getTrialSpace())
+        const LinearOperator<ValueType>& term2) :
+    LinearOperator<ValueType>(term1.testSpace(), term1.trialSpace())
 {
-
-    if ((term1.getTestSpace()!=term2.getTestSpace()) ||
-            (term1.getTrialSpace()!=term2.getTrialSpace()) ) throw std::runtime_error("Spaces don't match");
-    this->addLocalOperatorsAndMultipliers(term1.getLocalOperators(),term1.getMultipliers());
-    this->addLocalOperatorsAndMultipliers(term2.getLocalOperators(),term2.getMultipliers());
+    if (&term1.testSpace() != &term2.testSpace() ||
+            &term1.trialSpace() != &term2.trialSpace())
+        throw std::runtime_error(
+                "LinearOperatorSuperposition::LinearOperatorSuperposition(): "
+                "Spaces don't match");
+    this->addLocalOperatorsAndMultipliers(
+                term1.localOperators(), term1.multipliers());
+    this->addLocalOperatorsAndMultipliers(
+                term2.localOperators(), term2.multipliers());
 }
 
 template <typename ValueType>
 LinearOperatorSuperposition<ValueType>::LinearOperatorSuperposition(
         const LinearOperator<ValueType>& term,
-        const ValueType& scalar)
-: LinearOperator<ValueType>(term.getTestSpace(),term.getTrialSpace())
+        const ValueType& scalar) :
+    LinearOperator<ValueType>(term.testSpace(), term.trialSpace())
 {
-    const std::vector<ValueType>& m=term.getMultipliers();
+    const std::vector<ValueType>& m = term.multipliers();
     std::vector<ValueType> scaledMultipliers;
-    for (int i=0;i<m.size();i++) scaledMultipliers.push_back(scalar*m[i]);
-    this->addLocalOperatorsAndMultipliers(term.getLocalOperators(),scaledMultipliers);
-
+    for (int i = 0; i < m.size(); i++)
+        scaledMultipliers.push_back(scalar * m[i]);
+    this->addLocalOperatorsAndMultipliers(
+                term.localOperators(), scaledMultipliers);
 }
-
 
 template <typename ValueType>
 int LinearOperatorSuperposition<ValueType>::trialComponentCount() const
 {
-    return this->getLocalOperators()[0]->trialComponentCount();
+    return this->localOperators()[0]->trialComponentCount();
 }
 
 template <typename ValueType>
 int LinearOperatorSuperposition<ValueType>::testComponentCount() const
 {
-    return this->getLocalOperators()[0]->testComponentCount();
+    return this->localOperators()[0]->testComponentCount();
 }
 
 template <typename ValueType>
@@ -92,8 +95,7 @@ LinearOperatorSuperposition<ValueType>::assembleWeakForm(
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
-    switch (options.operatorRepresentation())
-    {
+    switch (options.operatorRepresentation()) {
     case AssemblyOptions::DENSE:
         return assembleWeakFormInDenseMode(factory, options);
     case AssemblyOptions::ACA:
@@ -112,13 +114,13 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInDenseMode(
     typedef DiscreteLinearOperator<ValueType> DiscreteLinOp;
     typedef DiscreteDenseLinearOperator<ValueType> DiscreteDenseLinOp;
 
-    const std::vector<ElementaryLinearOperator<ValueType> const*> localOperators=this->getLocalOperators();
-    const std::vector<ValueType>& multipliers=this->getMultipliers();
+    const std::vector<ElementaryLinearOperator<ValueType> const*> localOperators =
+            this->localOperators();
+    const std::vector<ValueType>& multipliers = this->multipliers();
 
     // Gather matrices of individual operators
     boost::ptr_vector<DiscreteLinOp> discreteOps;
-    for (int i = 0; i < localOperators.size(); ++i)
-    {
+    for (int i = 0; i < localOperators.size(); ++i) {
         std::auto_ptr<DiscreteLinOp> discreteOp =
                 localOperators[i]->assembleWeakForm(factory, options);
         discreteOps.push_back(discreteOp);
@@ -127,8 +129,8 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInDenseMode(
     // Add the matrices together
     arma::Mat<ValueType> sum;
     sum = discreteOps[0].asMatrix()*multipliers[0];
-    for (int i = 1; i < discreteOps.size(); ++i){
-            sum += discreteOps[i].asMatrix()*multipliers[i];
+    for (int i = 1; i < discreteOps.size(); ++i) {
+        sum += discreteOps[i].asMatrix()*multipliers[i];
     }
 
     return std::auto_ptr<DiscreteLinOp>(new DiscreteDenseLinOp(sum));
@@ -142,11 +144,12 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
 {
     typedef DiscreteLinearOperator<ValueType> DiscreteLinOp;
 
-    const Space<ValueType>& testSpace = this->getTestSpace();
-    const Space<ValueType>& trialSpace = this->getTrialSpace();
+    const Space<ValueType>& testSpace = this->testSpace();
+    const Space<ValueType>& trialSpace = this->trialSpace();
 
-    const std::vector<ElementaryLinearOperator<ValueType> const*> localOperators=this->getLocalOperators();
-    const std::vector<ValueType>& multipliers=this->getMultipliers();
+    const std::vector<ElementaryLinearOperator<ValueType> const*> localOperators =
+            this->localOperators();
+    const std::vector<ValueType>& multipliers = this->multipliers();
 
     AutoTimer timer("\nAssembly took ");
 
@@ -188,8 +191,7 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
     trialBases.reserve(elementCount);
 
     std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-    while (!it->finished())
-    {
+    while (!it->finished()) {
         const Entity<0>& element = it->entity();
         testBases.push_back(&testSpace.basis(element));
         trialBases.push_back(&trialSpace.basis(element));
@@ -214,8 +216,7 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
     std::vector<ValueType> sparseTermsMultipliers;
     std::vector<ValueType> denseTermsMultipliers;
 
-    for (int i = 0; i < localOperators.size(); ++i)
-    {
+    for (int i = 0; i < localOperators.size(); ++i) {
         ElementaryLinearOperator<ValueType> const* term = localOperators[i];
 
         // Create local assembler for the current term
@@ -225,15 +226,12 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
                     testBases, trialBases,
                     openClHandler, cacheSingularIntegrals);
 
-        if (term->supportsRepresentation(AssemblyOptions::SPARSE))
-        {
+        if (term->supportsRepresentation(AssemblyOptions::SPARSE)) {
             std::auto_ptr<DiscreteLinOp> discreteTerm =
                     term->assembleWeakFormInternal(*assembler, options);
             sparseDiscreteTerms.push_back(discreteTerm);
             sparseTermsMultipliers.push_back(multipliers[i]);
-        }
-        else
-        {
+        } else {
             denseTermLocalAssemblers.push_back(assembler);
             denseTermsMultipliers.push_back(multipliers[i]);
             assert(!assembler.get());
@@ -273,18 +271,18 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInArbitraryMode(
     typedef DiscreteLinearOperatorSuperposition<ValueType>
             DiscreteSuperposition;
 
-    const std::vector<ElementaryLinearOperator<ValueType> const*> localOperators=this->getLocalOperators();
-    const std::vector<ValueType>& multipliers=this->getMultipliers();
-
+    const std::vector<ElementaryLinearOperator<ValueType> const*>
+            localOperators = this->localOperators();
+    const std::vector<ValueType>& multipliers = this->multipliers();
 
     boost::ptr_vector<DiscreteLinOp> discreteOps;
-    for (int i = 0; i < localOperators.size(); ++i)
-    {
+    for (int i = 0; i < localOperators.size(); ++i) {
         std::auto_ptr<DiscreteLinOp> discreteOp =
                 localOperators[i]->assembleWeakForm(factory, options);
         discreteOps.push_back(discreteOp);
     }
-    return std::auto_ptr<DiscreteLinOp>(new DiscreteSuperposition(discreteOps,this->getMultipliers()));
+    return std::auto_ptr<DiscreteLinOp>(
+                new DiscreteSuperposition(discreteOps, this->multipliers()));
 }
 
 

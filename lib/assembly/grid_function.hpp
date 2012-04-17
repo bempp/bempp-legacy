@@ -81,8 +81,9 @@ public:
 
     int codomainDimension() const;
 
-    // possibly replace output type with DiscreteFunction/GridFunctionCoefficients/sth like this
     Vector<ValueType> coefficients() const;
+    void setCoefficients(const Vector<ValueType>& coeffs);
+
     const Fiber::Basis<ValueType>& basis(const Entity<0>& element) const;
     void getLocalCoefficients(const Entity<0>& element,
                               std::vector<ValueType>& coeffs) const;

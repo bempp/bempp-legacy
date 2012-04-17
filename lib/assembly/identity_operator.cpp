@@ -96,15 +96,18 @@ inline int epetraSumIntoGlobalValues<double>(Epetra_FECrsMatrix& matrix,
 #endif
 
 template <typename ValueType>
-IdentityOperator<ValueType>::IdentityOperator(const Space<ValueType>& testSpace, const Space<ValueType>& trialSpace)
-    : ElementaryLinearOperator<ValueType>(testSpace,trialSpace){}
-
+IdentityOperator<ValueType>::IdentityOperator(const Space<ValueType>& testSpace,
+                                              const Space<ValueType>& trialSpace) :
+    ElementaryLinearOperator<ValueType>(testSpace, trialSpace) {
+}
 
 template <typename ValueType>
 bool IdentityOperator<ValueType>::supportsRepresentation(
         AssemblyOptions::Representation repr) const
 {
-    return (repr == AssemblyOptions::DENSE || repr == AssemblyOptions::SPARSE || repr == AssemblyOptions::ACA);
+    return (repr == AssemblyOptions::DENSE ||
+            repr == AssemblyOptions::SPARSE ||
+            repr == AssemblyOptions::ACA);
 }
 
 template <typename ValueType>
@@ -114,8 +117,8 @@ IdentityOperator<ValueType>::assembleWeakForm(
         const AssemblyOptions& options) const
 {
 
-    const Space<ValueType>& testSpace = this->getTestSpace();
-    const Space<ValueType>& trialSpace = this->getTrialSpace();
+    const Space<ValueType>& testSpace = this->testSpace();
+    const Space<ValueType>& trialSpace = this->trialSpace();
 
     if (!testSpace.dofsAssigned() || !trialSpace.dofsAssigned())
         throw std::runtime_error("IdentityOperator::assembleWeakForm(): "
@@ -197,8 +200,8 @@ IdentityOperator<ValueType>::assembleWeakFormInDenseMode(
         const AssemblyOptions& options) const
 {
 
-    const Space<ValueType>& testSpace = this->getTestSpace();
-    const Space<ValueType>& trialSpace = this->getTrialSpace();
+    const Space<ValueType>& testSpace = this->testSpace();
+    const Space<ValueType>& trialSpace = this->trialSpace();
 
     // Fill local submatrices
     std::auto_ptr<GridView> view = testSpace.grid().leafView();
@@ -249,8 +252,8 @@ IdentityOperator<ValueType>::assembleWeakFormInSparseMode(
 {
 #ifdef WITH_TRILINOS
 
-    const Space<ValueType>& testSpace = this->getTestSpace();
-    const Space<ValueType>& trialSpace = this->getTrialSpace();
+    const Space<ValueType>& testSpace = this->testSpace();
+    const Space<ValueType>& trialSpace = this->trialSpace();
 
     // Fill local submatrices
     std::auto_ptr<GridView> view = testSpace.grid().leafView();

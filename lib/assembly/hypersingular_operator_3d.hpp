@@ -38,8 +38,8 @@ class HypersingularOperator3D :
 {
 
 public:
-    HypersingularOperator3D(const Space<ValueType>& testSpace, const Space<ValueType>& trialSpace );
-
+    HypersingularOperator3D(const Space<ValueType>& testSpace,
+                            const Space<ValueType>& trialSpace);
 
 private:
     virtual const Fiber::Kernel<ValueType>& kernel() const {
