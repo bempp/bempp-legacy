@@ -148,9 +148,9 @@ public:
     bool checkSpaces(const LinearOperator<ValueType>& linOp) const;
 
 protected:
-
-    void addLocalOperatorsMultipliers(const std::vector<ElementaryLinearOperator<ValueType> const*>& localOperators,
-                                      const std::vector<ValueType>& multipliers);
+    void addLocalOperatorsAndMultipliers(
+            const std::vector<ElementaryLinearOperator<ValueType> const*>& localOperators,
+            const std::vector<ValueType>& multipliers);
 
 private:
 

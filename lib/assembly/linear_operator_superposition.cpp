@@ -49,8 +49,8 @@ LinearOperatorSuperposition<ValueType>::LinearOperatorSuperposition(
 
     if ((term1.getTestSpace()!=term2.getTestSpace()) ||
             (term1.getTrialSpace()!=term2.getTrialSpace()) ) throw std::runtime_error("Spaces don't match");
-    this->addLocalOperatorsMultipliers(term1.getLocalOperators(),term1.getMultipliers());
-    this->addLocalOperatorsMultipliers(term2.getLocalOperators(),term2.getMultipliers());
+    this->addLocalOperatorsAndMultipliers(term1.getLocalOperators(),term1.getMultipliers());
+    this->addLocalOperatorsAndMultipliers(term2.getLocalOperators(),term2.getMultipliers());
 }
 
 template <typename ValueType>
@@ -62,7 +62,7 @@ LinearOperatorSuperposition<ValueType>::LinearOperatorSuperposition(
     const std::vector<ValueType>& m=term.getMultipliers();
     std::vector<ValueType> scaledMultipliers;
     for (int i=0;i<m.size();i++) scaledMultipliers.push_back(scalar*m[i]);
-    this->addLocalOperatorsMultipliers(term.getLocalOperators(),scaledMultipliers);
+    this->addLocalOperatorsAndMultipliers(term.getLocalOperators(),scaledMultipliers);
 
 }
 

@@ -114,7 +114,7 @@ bool LinearOperator<ValueType>::checkSpaces(const LinearOperator<ValueType>& lin
 
 
 template <typename ValueType>
-void LinearOperator<ValueType>::addLocalOperatorsMultipliers(const std::vector<ElementaryLinearOperator<ValueType> const*>& localOperators,
+void LinearOperator<ValueType>::addLocalOperatorsAndMultipliers(const std::vector<ElementaryLinearOperator<ValueType> const*>& localOperators,
                                                              const std::vector<ValueType>& multipliers)
 {
     m_localOperators.insert(m_localOperators.end(),localOperators.begin(),localOperators.end());
