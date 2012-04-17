@@ -66,7 +66,7 @@ int main()
         const Entity<2>& e = leafVertexIt->entity();
 
         const Geometry& geo = e.geometry();
-        geo.center(elementCenter);
+        geo.getCenter(elementCenter);
         data(0,indexSet.entityIndex(e)) = elementCenter(2); // the z coordinate
 
         leafVertexIt->next();

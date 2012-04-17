@@ -107,21 +107,26 @@ int main()
         switch (opVariant)
         {
         case SINGLE_LAYER_POTENTIAL:
-            op = LinearOperatorPtr(new SingleLayerPotential3D<double>); break;
+            op = LinearOperatorPtr(
+                        new SingleLayerPotential3D<double>(space, space)); break;
         case DOUBLE_LAYER_POTENTIAL:
-            op = LinearOperatorPtr(new DoubleLayerPotential3D<double>); break;
+            op = LinearOperatorPtr(
+                        new DoubleLayerPotential3D<double>(space, space)); break;
         case ADJOINT_DOUBLE_LAYER_POTENTIAL:
-            op = LinearOperatorPtr(new AdjointDoubleLayerPotential3D<double>); break;
+            op = LinearOperatorPtr(
+                        new AdjointDoubleLayerPotential3D<double>(space, space)); break;
         case HYPERSINGULAR_OPERATOR:
-            op = LinearOperatorPtr(new HypersingularOperator3D<double>); break;
+            op = LinearOperatorPtr(
+                        new HypersingularOperator3D<double>(space, space)); break;
         case IDENTITY:
-            op = LinearOperatorPtr(new IdentityOperator<double>); break;
+            op = LinearOperatorPtr(
+                        new IdentityOperator<double>(space, space)); break;
         default:
             throw std::runtime_error("Invalid operator");
         }
 
         std::auto_ptr<DiscreteLinearOperator<double> > result =
-                op->assembleWeakForm(space, space, factory, assemblyOptions);
+                op->assembleWeakForm(factory, assemblyOptions);
 
         arma::Mat<double> resultMatrix = result->asMatrix();
   //      std::cout << "\nGenerated matrix:\n" << resultMatrix << std::endl;

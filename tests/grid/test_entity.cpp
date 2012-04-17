@@ -20,7 +20,6 @@
 
 #include "test_entity.hpp"
 #include "grid/armadillo_helpers.hpp"
-#include "grid/common.hpp"
 #include "grid/geometry.hpp"
 
 #include <boost/test/unit_test.hpp>
@@ -166,10 +165,10 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIterator_second_entity_agrees_with_Du
         it->next();
         const Entity<codimSub>& e = it->entity();
         const Geometry& geo = e.geometry();
-        geo.center(elementCenter);
+        geo.getCenter(elementCenter);
     }
 
-    Dune::FieldVector<ctype, DuneGrid::dimensionworld> duneElementCenter;
+    Dune::FieldVector<DuneGrid::ctype, DuneGrid::dimensionworld> duneElementCenter;
     {
         typename DuneGrid::Codim<0>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<0>();
         typedef typename DuneGrid::Codim<codimSub> Codim;

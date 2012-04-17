@@ -18,20 +18,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_common_hpp
-#define bempp_common_hpp
+#ifndef bempp_transposition_mode_hpp
+#define bempp_transposition_mode_hpp
 
-namespace Bempp
+#include "config_trilinos.hpp"
+
+#ifdef WITH_TRILINOS
+#include <Thyra_OperatorVectorTypes.hpp>
+#endif
+namespace Bempp {
+
+enum TranspositionMode
 {
-/** Numeric type of coordinates */
-typedef double ctype;
-} // namespace Bempp
+#ifdef WITH_TRILINOS
+    NO_TRANSPOSE = Thyra::NOTRANS,
+    CONJUGATE = Thyra::CONJ,
+    TRANSPOSE = Thyra::TRANS,
+    CONJUGATE_TRANSPOSE = Thyra::CONJTRANS
+#else
+    NO_TRANSPOSE,
+    CONJUGATE,
+    TRANSPOSE,
+    CONJUGATE_TRANSPOSE
+#endif
+};
 
-//// TODO: Remove this type
-//namespace Fiber
-//{
-///** Numeric type of coordinates */
-//typedef double ctype;
-//} // namespace Fiber
+} // namespace Bempp
 
 #endif

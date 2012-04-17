@@ -78,6 +78,7 @@ public:
         \param[out]  bases     On exit, a vector whose ith item is a pointer to
                                the Basis object corresponding to the ith item of
                                \p elements. */
+
     virtual void getBases(const std::vector<const EntityPointer<0>*>& elements,
                           std::vector<const Fiber::Basis<ValueType>*>& bases) const = 0;
 

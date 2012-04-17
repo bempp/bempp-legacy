@@ -67,21 +67,21 @@ class DenseWeakFormAssemblerLoopBody
 public:
     typedef tbb::spin_mutex MutexType;
 
-    DenseWeakFormAssemblerLoopBody(const std::vector<int>& testIndices,
-             const std::vector<std::vector<GlobalDofIndex> >& testGlobalDofs,
-             const std::vector<std::vector<GlobalDofIndex> >& trialGlobalDofs,
-             typename ElementaryIntegralOperator<ValueType>::LocalAssembler& assembler,
-             arma::Mat<ValueType>& result, MutexType& mutex) :
+    DenseWeakFormAssemblerLoopBody(
+            const std::vector<int>& testIndices,
+            const std::vector<std::vector<GlobalDofIndex> >& testGlobalDofs,
+            const std::vector<std::vector<GlobalDofIndex> >& trialGlobalDofs,
+            typename ElementaryIntegralOperator<ValueType>::LocalAssembler& assembler,
+            arma::Mat<ValueType>& result, MutexType& mutex) :
         m_testIndices(testIndices),
         m_testGlobalDofs(testGlobalDofs), m_trialGlobalDofs(trialGlobalDofs),
-        m_assembler(assembler), m_result(result), m_mutex(mutex)
-    {}
+        m_assembler(assembler), m_result(result), m_mutex(mutex) {
+    }
 
     void operator() (const tbb::blocked_range<size_t>& r) const {
         const int elementCount = m_testIndices.size();
         std::vector<arma::Mat<ValueType> > localResult;
-        for (size_t trialIndex = r.begin(); trialIndex != r.end(); ++trialIndex)
-        {
+        for (size_t trialIndex = r.begin(); trialIndex != r.end(); ++trialIndex) {
             // Evaluate integrals over pairs of the current trial element and
             // all the test elements
             m_assembler.evaluateLocalWeakForms(TEST_TRIAL, m_testIndices, trialIndex,
@@ -92,8 +92,7 @@ public:
             {
                 MutexType::scoped_lock lock(m_mutex);
                 // Loop over test indices
-                for (int testIndex = 0; testIndex < elementCount; ++testIndex)
-                {
+                for (int testIndex = 0; testIndex < elementCount; ++testIndex) {
                     const int testDofCount = m_testGlobalDofs[testIndex].size();
                     // Add the integrals to appropriate entries in the operator's matrix
                     for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
@@ -123,6 +122,13 @@ private:
 } // namespace
 
 template <typename ValueType>
+ElementaryIntegralOperator<ValueType>::ElementaryIntegralOperator(
+        const Space<ValueType>& testSpace, const Space<ValueType>& trialSpace) :
+    ElementaryLinearOperator<ValueType>(testSpace, trialSpace)
+{
+}
+
+template <typename ValueType>
 bool ElementaryIntegralOperator<ValueType>::supportsRepresentation(
         AssemblyOptions::Representation repr) const
 {
@@ -143,19 +149,20 @@ ElementaryIntegralOperator<ValueType>::makeAssembler(
     return assemblerFactory.make(geometryFactory, rawGeometry,
                                  testBases, trialBases,
                                  testExpression(), kernel(), trialExpression(),
-                                 this->multiplier(),
+                                 1.0,
                                  openClHandler, cacheSingularIntegrals);
 }
 
 template <typename ValueType>
 std::auto_ptr<DiscreteLinearOperator<ValueType> >
 ElementaryIntegralOperator<ValueType>::assembleWeakForm(
-        const Space<ValueType>& testSpace,
-        const Space<ValueType>& trialSpace,
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
     AutoTimer timer("\nAssembly took ");
+
+    const Space<ValueType>& testSpace = this->testSpace();
+    const Space<ValueType>& trialSpace = this->trialSpace();
 
     if (!testSpace.dofsAssigned() || !trialSpace.dofsAssigned())
         throw std::runtime_error("ElementaryIntegralOperator::assembleWeakForm(): "
@@ -189,8 +196,7 @@ ElementaryIntegralOperator<ValueType>::assembleWeakForm(
     trialBases.reserve(elementCount);
 
     std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-    while (!it->finished())
-    {
+    while (!it->finished()) {
         const Entity<0>& element = it->entity();
         testBases.push_back(&testSpace.basis(element));
         trialBases.push_back(&trialSpace.basis(element));
@@ -201,7 +207,7 @@ ElementaryIntegralOperator<ValueType>::assembleWeakForm(
     Fiber::OpenClHandler<ValueType,int> openClHandler(options.openClOptions());
     if (openClHandler.UseOpenCl())
         openClHandler.pushGeometry (rawGeometry.vertices(),
-				    rawGeometry.elementCornerIndices());
+                                    rawGeometry.elementCornerIndices());
     bool cacheSingularIntegrals =
             (options.singularIntegralCaching() == AssemblyOptions::YES ||
              (options.singularIntegralCaching() == AssemblyOptions::AUTO));
@@ -212,25 +218,21 @@ ElementaryIntegralOperator<ValueType>::assembleWeakForm(
                           testBases, trialBases,
                           openClHandler, cacheSingularIntegrals);
 
-    return assembleWeakFormInternal(testSpace, trialSpace, *assembler, options);
+    return assembleWeakFormInternal(*assembler, options);
 }
 
 template <typename ValueType>
 std::auto_ptr<DiscreteLinearOperator<ValueType> >
 ElementaryIntegralOperator<ValueType>::assembleWeakFormInternal(
-        const Space<ValueType>& testSpace,
-        const Space<ValueType>& trialSpace,
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
-    switch (options.operatorRepresentation())
-    {
+
+    switch (options.operatorRepresentation()) {
     case AssemblyOptions::DENSE:
-        return assembleWeakFormInDenseMode(
-                    testSpace, trialSpace, assembler, options);
+        return assembleWeakFormInDenseMode(assembler, options);
     case AssemblyOptions::ACA:
-        return assembleWeakFormInAcaMode(
-                    testSpace, trialSpace, assembler, options);
+        return assembleWeakFormInAcaMode(assembler, options);
     case AssemblyOptions::FMM:
         throw std::runtime_error("ElementaryIntegralOperator::assembleWeakForm(): "
                                  "assembly mode FMM is not implemented yet");
@@ -243,11 +245,13 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInternal(
 template <typename ValueType>
 std::auto_ptr<DiscreteLinearOperator<ValueType> >
 ElementaryIntegralOperator<ValueType>::assembleWeakFormInDenseMode(
-        const Space<ValueType>& testSpace,
-        const Space<ValueType>& trialSpace,
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
+
+    const Space<ValueType>& testSpace=this->testSpace();
+    const Space<ValueType>& trialSpace=this->trialSpace();
+
     // Get the grid's leaf view so that we can iterate over elements
     std::auto_ptr<GridView> view = trialSpace.grid().leafView();
     const int elementCount = view->entityCount(0);
@@ -259,8 +263,7 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInDenseMode(
     // Gather global DOF lists
     const Mapper& mapper = view->elementMapper();
     std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-    while (!it->finished())
-    {
+    while (!it->finished()) {
         const Entity<0>& element = it->entity();
         const int elementIndex = mapper.entityIndex(element);
         testSpace.globalDofs(element, testGlobalDofs[elementIndex]);
@@ -282,8 +285,7 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInDenseMode(
     typename Body::MutexType mutex;
 
     int maxThreadCount = 1;
-    if (options.parallelism() == AssemblyOptions::TBB)
-    {
+    if (options.parallelism() == AssemblyOptions::TBB) {
         if (options.maxThreadCount() == AssemblyOptions::AUTO)
             maxThreadCount = tbb::task_scheduler_init::automatic;
         else
@@ -294,25 +296,25 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInDenseMode(
                       Body(testIndices, testGlobalDofs, trialGlobalDofs,
                            assembler, result, mutex));
 
-//// Old serial code (TODO: decide whether to keep it behind e.g. #ifndef PARALLEL)
-//    std::vector<arma::Mat<ValueType> > localResult;
-//    // Loop over trial elements
-//    for (int trialIndex = 0; trialIndex < elementCount; ++trialIndex)
-//    {
-//        // Evaluate integrals over pairs of the current trial element and
-//        // all the test elements
-//        assembler.evaluateLocalWeakForms(TEST_TRIAL, testIndices, trialIndex,
-//                                         ALL_DOFS, localResult);
+    //// Old serial code (TODO: decide whether to keep it behind e.g. #ifndef PARALLEL)
+    //    std::vector<arma::Mat<ValueType> > localResult;
+    //    // Loop over trial elements
+    //    for (int trialIndex = 0; trialIndex < elementCount; ++trialIndex)
+    //    {
+    //        // Evaluate integrals over pairs of the current trial element and
+    //        // all the test elements
+    //        assembler.evaluateLocalWeakForms(TEST_TRIAL, testIndices, trialIndex,
+    //                                         ALL_DOFS, localResult);
 
-//        // Loop over test indices
-//        for (int testIndex = 0; testIndex < elementCount; ++testIndex)
-//            // Add the integrals to appropriate entries in the operator's matrix
-//            for (int trialDof = 0; trialDof < trialGlobalDofs[trialIndex].size(); ++trialDof)
-//                for (int testDof = 0; testDof < testGlobalDofs[testIndex].size(); ++testDof)
-//                result(testGlobalDofs[testIndex][testDof],
-//                       trialGlobalDofs[trialIndex][trialDof]) +=
-//                        localResult[testIndex](testDof, trialDof);
-//    }
+    //        // Loop over test indices
+    //        for (int testIndex = 0; testIndex < elementCount; ++testIndex)
+    //            // Add the integrals to appropriate entries in the operator's matrix
+    //            for (int trialDof = 0; trialDof < trialGlobalDofs[trialIndex].size(); ++trialDof)
+    //                for (int testDof = 0; testDof < testGlobalDofs[testIndex].size(); ++testDof)
+    //                result(testGlobalDofs[testIndex][testDof],
+    //                       trialGlobalDofs[trialIndex][trialDof]) +=
+    //                        localResult[testIndex](testDof, trialDof);
+    //    }
 
     // Create and return a discrete operator represented by the matrix that
     // has just been calculated
@@ -323,11 +325,12 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInDenseMode(
 template <typename ValueType>
 std::auto_ptr<DiscreteLinearOperator<ValueType> >
 ElementaryIntegralOperator<ValueType>::assembleWeakFormInAcaMode(
-        const Space<ValueType>& testSpace,
-        const Space<ValueType>& trialSpace,
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
+    const Space<ValueType>& testSpace=this->testSpace();
+    const Space<ValueType>& trialSpace=this->trialSpace();
+
     return AcaGlobalAssembler<ValueType>::assembleWeakForm(
                 testSpace, trialSpace, assembler, options);
 }
@@ -362,8 +365,7 @@ ElementaryIntegralOperator<ValueType>::applyOffSurface(
     std::vector<std::vector<ValueType> > localCoefficients(elementCount);
 
     std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-    for (int i = 0; i < elementCount; ++i)
-    {
+    for (int i = 0; i < elementCount; ++i) {
         assert(!it->finished());
         const Entity<0>& element = it->entity();
         bases[i] = &space.basis(element);
@@ -384,7 +386,7 @@ ElementaryIntegralOperator<ValueType>::applyOffSurface(
             factory.make(*geometryFactory, rawGeometry,
                          bases,
                          kernel(), trialExpression(), localCoefficients,
-                         this->multiplier(),
+                         1.0,
                          openClHandler);
 
     return applyOffSurfaceWithKnownEvaluator(evaluationGrid, *evaluator, options);
@@ -406,33 +408,28 @@ ElementaryIntegralOperator<ValueType>::applyOffSurfaceWithKnownEvaluator(
 
     const IndexSet& evalIndexSet = evalView->indexSet();
     // TODO: extract into template function, perhaps add case evalGridDim == 1
-    if (evalGridDim == 2)
-    {
+    if (evalGridDim == 2) {
         const int vertexCodim = 2;
         std::auto_ptr<EntityIterator<vertexCodim> > it =
                 evalView->entityIterator<vertexCodim>();
-        while (!it->finished())
-        {
+        while (!it->finished()) {
             const Entity<vertexCodim>& vertex = it->entity();
             const Geometry& geo = vertex.geometry();
             const int vertexIndex = evalIndexSet.entityIndex(vertex);
             arma::Col<ValueType> activeCol(evalPoints.unsafe_col(vertexIndex));
-            geo.center(activeCol);
+            geo.getCenter(activeCol);
             it->next();
         }
-    }
-    else if (evalGridDim == 3)
-    {
+    } else if (evalGridDim == 3) {
         const int vertexCodim = 3;
         std::auto_ptr<EntityIterator<vertexCodim> > it =
                 evalView->entityIterator<vertexCodim>();
-        while (!it->finished())
-        {
+        while (!it->finished()) {
             const Entity<vertexCodim>& vertex = it->entity();
             const Geometry& geo = vertex.geometry();
             const int vertexIndex = evalIndexSet.entityIndex(vertex);
             arma::Col<ValueType> activeCol(evalPoints.unsafe_col(vertexIndex));
-            geo.center(activeCol);
+            geo.getCenter(activeCol);
             it->next();
         }
     }
@@ -443,15 +440,15 @@ ElementaryIntegralOperator<ValueType>::applyOffSurfaceWithKnownEvaluator(
     arma::Mat<ValueType> result;
     evaluator.evaluate(Evaluator::FAR_FIELD, evalPoints, result);
 
-//    std::cout << "Interpolation results:\n";
-//    for (int point = 0; point < evalPointCount; ++point)
-//        std::cout << evalPoints(0, point) << "\t"
-//                  << evalPoints(1, point) << "\t"
-//                  << evalPoints(2, point) << "\t"
-//                  << result(0, point) << "\n";
+    //    std::cout << "Interpolation results:\n";
+    //    for (int point = 0; point < evalPointCount; ++point)
+    //        std::cout << evalPoints(0, point) << "\t"
+    //                  << evalPoints(1, point) << "\t"
+    //                  << evalPoints(2, point) << "\t"
+    //                  << result(0, point) << "\n";
 
     return std::auto_ptr<InterpolatedFunction<ValueType> >(
-            new InterpolatedFunction<ValueType>(evaluationGrid, result));
+                new InterpolatedFunction<ValueType>(evaluationGrid, result));
 }
 
 #ifdef COMPILE_FOR_FLOAT

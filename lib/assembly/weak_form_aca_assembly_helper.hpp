@@ -55,6 +55,8 @@ public:
                               const std::vector<unsigned int>& p2oTrialDofs,
                               const std::vector<LocalAssembler*>& assemblers,
                               const std::vector<const DiscreteLinOp*>& sparseTermsToAdd,
+                              const std::vector<ValueType>& denseTermsMultipliers,
+                              const std::vector<ValueType>& sparseTermsMultipliers,
                               const AssemblyOptions& options);
 
     /** Store the entries of the block defined
@@ -85,6 +87,8 @@ private:
     const std::vector<unsigned int>& m_p2oTrialDofs;
     const std::vector<LocalAssembler*>& m_assemblers;
     const std::vector<const DiscreteLinOp*>& m_sparseTermsToAdd;
+    const std::vector<ValueType>& m_denseTermsMultipliers;
+    const std::vector<ValueType>& m_sparseTermsMultipliers;
     const AssemblyOptions& m_options;
 };
 

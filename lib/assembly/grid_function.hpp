@@ -81,8 +81,9 @@ public:
 
     int codomainDimension() const;
 
-    // possibly replace output type with DiscreteFunction/GridFunctionCoefficients/sth like this
     Vector<ValueType> coefficients() const;
+    void setCoefficients(const Vector<ValueType>& coeffs);
+
     const Fiber::Basis<ValueType>& basis(const Entity<0>& element) const;
     void getLocalCoefficients(const Entity<0>& element,
                               std::vector<ValueType>& coeffs) const;
@@ -130,6 +131,21 @@ private:
     const Space<ValueType>& m_space;
     arma::Col<ValueType> m_coefficients;
 };
+
+template<typename ValueType>
+GridFunction<ValueType> operator+(const GridFunction<ValueType>& g1, const GridFunction<ValueType>& g2);
+
+template<typename ValueType>
+GridFunction<ValueType> operator-(const GridFunction<ValueType>& g1, const GridFunction<ValueType>& g2);
+
+template<typename ValueType>
+GridFunction<ValueType> operator*(const GridFunction<ValueType>& g1, const ValueType& scalar);
+
+template<typename ValueType>
+GridFunction<ValueType> operator*(const ValueType& scalar, const GridFunction<ValueType>& g2);
+
+template<typename ValueType>
+GridFunction<ValueType> operator/(const GridFunction<ValueType>& g1, const ValueType& scalar);
 
 } // namespace Bempp
 

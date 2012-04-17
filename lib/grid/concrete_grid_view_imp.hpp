@@ -24,8 +24,27 @@ namespace Bempp
 {
 
 template <typename DuneGridView>
-void ConcreteGridView<DuneGridView>::getRawElementData(
-        arma::Mat<ctype>& vertices,
+void ConcreteGridView<DuneGridView>::getRawElementDataDoubleImpl(
+        arma::Mat<double>& vertices,
+        arma::Mat<int>& elementCorners,
+        arma::Mat<char>& auxData) const
+{
+    getRawElementDataImpl(vertices, elementCorners, auxData);
+}
+
+template <typename DuneGridView>
+void ConcreteGridView<DuneGridView>::getRawElementDataFloatImpl(
+        arma::Mat<float>& vertices,
+        arma::Mat<int>& elementCorners,
+        arma::Mat<char>& auxData) const
+{
+    getRawElementDataImpl(vertices, elementCorners, auxData);
+}
+
+template <typename DuneGridView>
+template <typename ValueType>
+void ConcreteGridView<DuneGridView>::getRawElementDataImpl(
+        arma::Mat<ValueType>& vertices,
         arma::Mat<int>& elementCorners,
         arma::Mat<char>& auxData) const
 {
@@ -45,6 +64,7 @@ void ConcreteGridView<DuneGridView>::getRawElementData(
             DuneVertexGeometry;
     typedef typename DuneGridView::template Codim<codimElement>::Geometry
             DuneElementGeometry;
+    typedef typename DuneGrid::ctype ctype;
 
     const DuneIndexSet& indexSet = m_dune_gv.indexSet();
 

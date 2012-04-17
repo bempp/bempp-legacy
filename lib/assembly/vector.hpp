@@ -43,8 +43,11 @@ class Vector
 #endif
 {
 public:
-    /** Construct the discrete source term from an Armadillo vector. */
+    /** \brief Construct the discrete source term from an Armadillo vector. */
     Vector(const arma::Col<ValueType>& vec);
+
+    /** \brief Vector length. */
+    size_t size() const;
 
     /** \brief Write a textual representation of the source term to standard output. */
     void dump() const;

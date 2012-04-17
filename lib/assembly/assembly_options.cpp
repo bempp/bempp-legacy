@@ -19,6 +19,7 @@
 // THE SOFTWARE.
 
 
+#include "config_trilinos.hpp"
 #include "assembly_options.hpp"
 
 #include <stdexcept>
@@ -32,7 +33,9 @@ AcaOptions::AcaOptions() :
     eta(1.2),
     maximumRank(10000),
     minimumBlockSize(16),
-    recompress(true) {}
+    recompress(true),
+    outputPostscript(false),
+    outputFname("aca.ps") {}
 
 
 
@@ -61,10 +64,10 @@ void AssemblyOptions::switchToFmm()
     m_representation = FMM;
 }
 
-void AssemblyOptions::switchToSparse()
-{
-    m_representation = SPARSE;
-}
+//void AssemblyOptions::switchToSparse()
+//{
+//    m_representation = SPARSE;
+//}
 
 void AssemblyOptions::switchToOpenCl(const OpenClOptions& openClOptions)
 {

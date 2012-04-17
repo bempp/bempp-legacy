@@ -51,6 +51,8 @@ public:
             const Space<ValueType>& trialSpace,
             const std::vector<LocalAssembler*>& localAssemblers,
             const std::vector<const DiscreteLinOp*>& sparseTermsToAdd,
+            const std::vector<ValueType>& denseTermsMultipliers,
+            const std::vector<ValueType>& sparseTermsMultipliers,
             const AssemblyOptions& options);
 
     static std::auto_ptr<DiscreteLinOp> assembleWeakForm(

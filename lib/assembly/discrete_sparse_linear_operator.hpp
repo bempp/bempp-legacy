@@ -59,6 +59,7 @@ private:
 
     virtual void addBlock(const std::vector<int>& rows,
                           const std::vector<int>& cols,
+                          const ValueType alpha,
                           arma::Mat<ValueType>& block) const;
 
 #ifdef WITH_TRILINOS

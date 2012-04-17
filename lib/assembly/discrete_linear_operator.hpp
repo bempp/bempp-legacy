@@ -23,28 +23,16 @@
 #ifndef bempp_discrete_linear_operator_hpp
 #define bempp_discrete_linear_operator_hpp
 
+#include "transposition_mode.hpp"
+
 #include <armadillo>
 
 #ifdef WITH_TRILINOS
 #include <Thyra_LinearOpDefaultBase_decl.hpp>
 #endif
 
-namespace Bempp {
-
-enum TranspositionMode
+namespace Bempp
 {
-#ifdef WITH_TRILINOS
-    NO_TRANSPOSE = Thyra::NOTRANS,
-    CONJUGATE = Thyra::CONJ,
-    TRANSPOSE = Thyra::TRANS,
-    CONJUGATE_TRANSPOSE = Thyra::CONJTRANS
-#else
-    NO_TRANSPOSE,
-    CONJUGATE,
-    TRANSPOSE,
-    CONJUGATE_TRANSPOSE
-#endif
-};
 
 template <typename ValueType>
 class DiscreteLinearOperator
@@ -92,21 +80,25 @@ public:
     /** \brief Number of columns of the operator. */
     virtual unsigned int columnCount() const = 0;
 
-    /** \brief Calculate a block of this operator's matrix representation and
-      add it to \p block.
+    /** \brief Perform the operation \p block += alpha*A[\p rows,\p cols], where
+      \p alpha is a scalar and A[\p rows,\p cols] is a subblock of the linear
+      operator A.
 
       \param[in] rows  Vector of row indices.
       \param[in] cols  Vector of col indices.
+      \param[in] alpha scalar multiplier for the block
       \param[in,out] block
         On entry, matrix of size (rows.size(), cols.size()).
         On exit, each element (i, j) of this matrix will be augmented by the
-        element (rows[i], cols[j]) of the matrix representation of this operator.
+        element (rows[i], cols[j]) multiplied with alpha of the matrix
+        representation of this operator.
 
       Row and column indices may be unsorted.
 
       This method need not be supported by all subclasses. */
     virtual void addBlock(const std::vector<int>& rows,
                           const std::vector<int>& cols,
+                          const ValueType alpha,
                           arma::Mat<ValueType>& block) const = 0;
 
 private:

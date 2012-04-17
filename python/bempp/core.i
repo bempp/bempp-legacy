@@ -62,7 +62,12 @@ AUTO_PTR_TYPEMAPS(Bempp::EntityIterator<3>)
 AUTO_PTR_TYPEMAPS(Bempp::VtkWriter)
 
 // Make commonly used typedefs known to Swig
-%include "grid/common.hpp"
+%inline %{
+    namespace Bempp
+    {
+        typedef double ctype;
+    }
+%}
 %include "grid/geometry_type.hpp"
 
 // Wrap Bempp components

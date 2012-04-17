@@ -58,6 +58,7 @@ int main()
     params.topology = GridParameters::TRIANGULAR;
 
     const int dimGrid = 2;
+    typedef double ctype;
     arma::Col<ctype> lowerLeft(dimGrid);
     arma::Col<ctype> upperRight(dimGrid);
     arma::Col<unsigned int> nElements(dimGrid);
@@ -88,7 +89,7 @@ int main()
                     Dune::GeometryType gt = e.type();
                     const Geometry& geo = e.geometry();
                     arma::Col<double> elementCenter;
-                    geo.center(elementCenter);
+                    geo.getCenter(elementCenter);
                 }
                 leafFaceIt->next();
             }
@@ -117,7 +118,7 @@ int main()
                     GeometryType gt = e.type();
                     const Geometry& geo = e.geometry();
                     arma::Col<double> elementCenter;
-                    geo.center(elementCenter);
+                    geo.getCenter(elementCenter);
                 }
                 leafVertexIt->next();
             }

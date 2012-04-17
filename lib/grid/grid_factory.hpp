@@ -21,8 +21,6 @@
 #ifndef bempp_grid_factory_hpp
 #define bempp_grid_factory_hpp
 
-#include "common.hpp"
-
 #include <armadillo>
 #include <memory>
 
@@ -86,8 +84,8 @@ public:
       supported.
     */
     static std::auto_ptr<Grid> createStructuredGrid(const GridParameters& params,
-            const arma::Col<ctype>& lowerLeft,
-            const arma::Col<ctype>& upperRight,
+            const arma::Col<double>& lowerLeft,
+            const arma::Col<double>& upperRight,
             const arma::Col<unsigned int>& nElements);
 
     /** \brief Import grid from a file in Gmsh format.

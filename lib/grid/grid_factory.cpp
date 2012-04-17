@@ -38,8 +38,8 @@ typedef ConcreteGrid<Default3dIn3dDuneGrid> Default3dIn3dGrid;
 #endif
 
 std::auto_ptr<Grid> GridFactory::createStructuredGrid(
-    const GridParameters& params, const arma::Col<ctype>& lowerLeft,
-    const arma::Col<ctype>& upperRight, const arma::Col<unsigned int>& nElements)
+    const GridParameters& params, const arma::Col<double>& lowerLeft,
+    const arma::Col<double>& upperRight, const arma::Col<unsigned int>& nElements)
 {
     // TODO: Support quadrilateral and linear grids
 
@@ -58,6 +58,7 @@ std::auto_ptr<Grid> GridFactory::createStructuredGrid(
 
     // Convert Armadillo vectors to Dune vectors
     // TODO: Write nice conversion functions
+    typedef Default2dIn3dDuneGrid::ctype ctype;
     Dune::FieldVector<ctype,dimGrid> duneLowerLeft;
     duneLowerLeft[0] = lowerLeft(0);
     duneLowerLeft[1] = lowerLeft(1);
