@@ -45,6 +45,7 @@
 
 #include "linalg/aca_preconditioner_factory.hpp"
 #include "linalg/default_iterative_solver.hpp"
+#include "linalg/default_direct_solver.hpp"
 
 #include "space/piecewise_linear_continuous_scalar_space.hpp"
 #include "space/piecewise_constant_scalar_space.hpp"
@@ -115,7 +116,7 @@ int main()
 
     // Form the right-hand side sum
 
-    LinearOperatorSuperposition<double> rhsOp=-.5*id+dlp;
+    LinearOperatorSuperposition<double> rhsOp = -0.5 * id + dlp;
 
     // Assemble the Operators
 
@@ -133,28 +134,33 @@ int main()
 
     std::cout << "Assemble rhs" << std::endl;
 
-    GridFunction<double> rhs=rhsOp*u;
+    GridFunction<double> rhs = rhsOp * u;
 
     // Initialize the iterative solver
 
-    std::cout << "Initialize iterative solver" << std::endl;
+    std::cout << "Initialize solver" << std::endl;
 
-    DefaultIterativeSolver<double> iterativeSolver(slp, rhs);
-    iterativeSolver.initializeSolver(defaultGmresParameterList(1e-5));
-    iterativeSolver.solve();
-    std::cout << iterativeSolver.getSolverMessage() << std::endl;
-
+#ifdef WITH_TRILINOS
+    DefaultIterativeSolver<double> solver(slp, rhs);
+    solver.initializeSolver(defaultGmresParameterList(1e-5));
+    solver.solve();
+    std::cout << solver.getSolverMessage() << std::endl;
+#else
+    DefaultDirectSolver<double> solver(slp, rhs);
+    solver.solve();
+#endif
     // Extract the solution
 
-    GridFunction<double> solFun=iterativeSolver.getResult();
+    GridFunction<double> solFun = solver.getResult();
 
     // Write out as VTK
 
-    solFun.exportToVtk(VtkWriter::CELL_DATA, "Neumann_data", "physical_test_neumann_data_vertex");
+    solFun.exportToVtk(VtkWriter::CELL_DATA, "Neumann_data",
+                       "physical_test_neumann_data");
 
     // Compare with exact solution
 
-    arma::Col<double> solutionCoefficients=solFun.coefficients().asArmadilloVector();
+    arma::Col<double> solutionCoefficients = solFun.coefficients().asArmadilloVector();
 
     arma::Col<double> deviation = solutionCoefficients - (-1.);
     // % in Armadillo -> elementwise multiplication
