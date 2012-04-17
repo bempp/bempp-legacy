@@ -29,15 +29,14 @@
 #include "assembly/grid_function.hpp"
 #include "assembly/interpolated_function.hpp"
 #include "assembly/linear_operator_superposition.hpp"
+#include "assembly/ordinary_function.hpp"
+#include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 
 #include "assembly/identity_operator.hpp"
 #include "assembly/single_layer_potential_3d.hpp"
 #include "assembly/double_layer_potential_3d.hpp"
 #include "assembly/adjoint_double_layer_potential_3d.hpp"
 #include "assembly/hypersingular_operator_3d.hpp"
-
-#include "fiber/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
-#include "fiber/ordinary_function.hpp"
 
 #include "grid/geometry.hpp"
 #include "grid/geometry_factory.hpp"
@@ -105,8 +104,7 @@ int main()
 
     // Define the standard integration factory
 
-    Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, GeometryFactory>
-            factory;
+    StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double> factory;
 
     // We need the single layer, double layer, and the identity operator
 
@@ -126,7 +124,7 @@ int main()
     // We also want a grid function
 
     MyFunctor functor;
-    Fiber::OrdinaryFunction<MyFunctor> function(functor);
+    OrdinaryFunction<MyFunctor> function(functor);
 
     GridFunction<double> u(HplusHalfSpace, function, factory, assemblyOptions);
 
