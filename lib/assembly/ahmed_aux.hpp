@@ -37,7 +37,7 @@
 #include <bemblcluster.h>
 #include <bllist.h>
 // #include <matgen_sqntl.h>
-// #include <matgen_omp.h>
+#include <matgen_omp.h>
 
 bool multaHvec_omp(double d, blcluster* bl, mblock<double>** A, double* x,
            double* y);

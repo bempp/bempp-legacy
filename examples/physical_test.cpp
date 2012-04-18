@@ -81,7 +81,7 @@ public:
 int main()
 {
     // Load a predefined test grid
-    const MeshVariant meshVariant = DOUBLE_SPHERE_20624;
+    const MeshVariant meshVariant = SPHERE_614;
     std::auto_ptr<Grid> grid = loadMesh(meshVariant);
 
     // Initialize the spaces
