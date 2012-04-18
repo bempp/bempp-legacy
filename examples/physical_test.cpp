@@ -83,7 +83,7 @@ public:
 int main()
 {
     // Load a predefined test grid
-    const MeshVariant meshVariant = SPHERE_152;
+    const MeshVariant meshVariant = DOUBLE_SPHERE_20624;
     std::auto_ptr<Grid> grid = loadMesh(meshVariant);
 
     // Initialize the spaces
@@ -101,7 +101,7 @@ int main()
     // We want to use ACA
 
     AcaOptions acaOptions; // Default parameters for ACA
-    //assemblyOptions.switchToAca(acaOptions);
+    assemblyOptions.switchToAca(acaOptions);
 
     // Define the standard integration factory
 
