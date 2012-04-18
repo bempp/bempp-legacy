@@ -146,7 +146,7 @@ LinearOperatorSuperposition<ValueType> operator-(
         const LinearOperator<ValueType>& op1,
         const LinearOperator<ValueType>& op2)
 {
-    return op1 + (-1. * op2);
+    return op1 + (static_cast<ValueType>(-1.) * op2);
 }
 
 template <typename ValueType>
@@ -180,7 +180,8 @@ GridFunction<ValueType> operator*(
         const GridFunction<ValueType>& fun)
 {
     const Space<ValueType>& space = op.testSpace();
-    arma::Col<ValueType> coeffs = arma::zeros(space.globalDofCount());
+    arma::Col<ValueType> coeffs(space.globalDofCount());
+    coeffs.fill(0.);
     GridFunction<ValueType> result(space, coeffs);
     op.apply(NO_TRANSPOSE, fun, result, 1., 0.);
     return result;
