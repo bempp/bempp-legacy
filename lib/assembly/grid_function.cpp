@@ -74,7 +74,7 @@ GridFunction<ValueType>::GridFunction(
             calculateProjections(function, space, factory, assemblyOptions);
 
     AssemblyOptions idAssemblyOptions(assemblyOptions);
-    IdentityOperator<ValueType> id(space,space);
+    IdentityOperator<ValueType> id(space, space);
     std::auto_ptr<DiscreteLinearOperator<ValueType> > discreteId =
             id.assembleWeakForm(factory, idAssemblyOptions);
 
@@ -280,7 +280,7 @@ GridFunction<ValueType>::calculateProjections(
             space.shapeFunctionValueExpression();
 
     // Now create the assembler
-    Fiber::OpenClHandler<ValueType,int> openClHandler(options.openClOptions());
+    Fiber::OpenClHandler<ValueType, int> openClHandler(options.openClOptions());
     openClHandler.pushGeometry (rawGeometry.vertices(),
                                 rawGeometry.elementCornerIndices());
 
@@ -549,9 +549,9 @@ GridFunction<ValueType> operator+(const GridFunction<ValueType>& g1,
 {
     if (&g1.space() != &g2.space())
         throw std::runtime_error("GridFunction::operator+(): spaces don't match");
-    arma::Col<ValueType> g1Vals=g1.coefficients().asArmadilloVector();
-    arma::Col<ValueType> g2Vals=g2.coefficients().asArmadilloVector();
-    return GridFunction<ValueType>(g1.space(),g1Vals+g2Vals);
+    arma::Col<ValueType> g1Vals = g1.coefficients().asArmadilloVector();
+    arma::Col<ValueType> g2Vals = g2.coefficients().asArmadilloVector();
+    return GridFunction<ValueType>(g1.space(), g1Vals + g2Vals);
 }
 
 template<typename ValueType>
@@ -560,25 +560,24 @@ GridFunction<ValueType> operator-(const GridFunction<ValueType>& g1,
 {
     if (&g1.space() != &g2.space())
         throw std::runtime_error("GridFunction::operator-(): spaces don't match");
-    arma::Col<ValueType> g1Vals=g1.coefficients().asArmadilloVector();
-    arma::Col<ValueType> g2Vals=g2.coefficients().asArmadilloVector();
-    return GridFunction<ValueType>(g1.space(),g1Vals-g2Vals);
-
+    arma::Col<ValueType> g1Vals = g1.coefficients().asArmadilloVector();
+    arma::Col<ValueType> g2Vals = g2.coefficients().asArmadilloVector();
+    return GridFunction<ValueType>(g1.space(), g1Vals - g2Vals);
 }
 
 template<typename ValueType>
 GridFunction<ValueType> operator*(const GridFunction<ValueType>& g1,
                                   const ValueType& scalar)
 {
-    arma::Col<ValueType> g1Vals=g1.coefficients().asArmadilloVector();
-    return GridFunction<ValueType>(g1.space(),scalar*g1Vals);
+    arma::Col<ValueType> g1Vals = g1.coefficients().asArmadilloVector();
+    return GridFunction<ValueType>(g1.space(), scalar * g1Vals);
 }
 
 template<typename ValueType>
 GridFunction<ValueType> operator*(const ValueType& scalar,
                                   const GridFunction<ValueType>& g2)
 {
-    return g2*scalar;
+    return g2 * scalar;
 }
 
 template<typename ValueType>
