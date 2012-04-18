@@ -54,24 +54,6 @@ class ConcreteVtkWriter : public VtkWriter
     }
 
 public:
-    virtual void addCellData(const arma::Mat<double>& data, const std::string &name) {
-        const int ncomp = data.n_rows;
-        if (ncomp < 1)
-            return; // empty matrix
-        if (data.n_cols != m_dune_gv->size(0 /* cell codim */))
-            throw std::logic_error("VtkWriter::addCellData(): number of columns of 'data' different from the number of cells");
-        m_dune_vtk_writer.addCellData(data, name, ncomp);
-    }
-
-    virtual void addVertexData(const arma::Mat<double>& data, const std::string &name) {
-        const int ncomp = data.n_rows;
-        if (ncomp < 1)
-            return; // empty matrix
-        if (data.n_cols != m_dune_gv->size(DuneGridView::dimension /* vertex codim */))
-            throw std::logic_error("VtkWriter::addVertexData(): number of columns of 'data' different from the number of vertices");
-        m_dune_vtk_writer.addVertexData(data, name, ncomp);
-    }
-
     virtual void clear() {
         m_dune_vtk_writer.clear();
     }
@@ -88,6 +70,50 @@ public:
     }
 
 private:
+    virtual void addCellDataDoubleImpl(const arma::Mat<double>& data,
+                                       const std::string &name) {
+        addCellDataImpl(data, name);
+    }
+
+    virtual void addCellDataFloatImpl(const arma::Mat<float>& data,
+                                      const std::string &name) {
+        addCellDataImpl(data, name);
+    }
+
+    template <typename ValueType>
+    void addCellDataImpl(const arma::Mat<ValueType>& data,
+                              const std::string &name) {
+        const int ncomp = data.n_rows;
+        if (ncomp < 1)
+            return; // empty matrix
+        if (data.n_cols != m_dune_gv->size(0 /* cell codim */))
+            throw std::logic_error("VtkWriter::addCellData(): number of columns "
+                                   "of 'data' different from the number of cells");
+        m_dune_vtk_writer.addCellData(data, name, ncomp);
+    }
+
+    virtual void addVertexDataDoubleImpl(const arma::Mat<double>& data,
+                                       const std::string &name) {
+        addVertexDataImpl(data, name);
+    }
+
+    virtual void addVertexDataFloatImpl(const arma::Mat<float>& data,
+                                      const std::string &name) {
+        addVertexDataImpl(data, name);
+    }
+
+    template <typename ValueType>
+    void addVertexDataImpl(const arma::Mat<ValueType>& data,
+                           const std::string &name) {
+        const int ncomp = data.n_rows;
+        if (ncomp < 1)
+            return; // empty matrix
+        if (data.n_cols != m_dune_gv->size(DuneGridView::dimension /* vertex codim */))
+            throw std::logic_error("VtkWriter::addVertexData(): number of columns "
+                                   "of 'data' different from the number of vertices");
+        m_dune_vtk_writer.addVertexData(data, name, ncomp);
+    }
+
     Dune::VTK::OutputType duneVtkOutputType(OutputType type) const
     {
         switch (type)
