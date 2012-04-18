@@ -21,7 +21,7 @@
 #ifndef fiber_test_trial_integrator_hpp
 #define fiber_test_trial_integrator_hpp
 
-#include "types.hpp"
+#include "scalar_traits.hpp"
 
 #include <armadillo>
 #include <vector>
@@ -36,6 +36,8 @@ template <typename ValueType>
 class TestTrialIntegrator
 {
 public:
+    typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+
     virtual ~TestTrialIntegrator() {}
 
     virtual void integrate(

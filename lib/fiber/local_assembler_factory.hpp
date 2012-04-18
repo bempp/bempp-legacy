@@ -32,7 +32,7 @@ template <typename ValueType> class Basis;
 template <typename ValueType> class Expression;
 template <typename ValueType> class Function;
 template <typename ValueType> class Kernel;
-template <typename ValueType> class RawGridGeometry;
+template <typename CoordinateType> class RawGridGeometry;
 
 template <typename ValueType> class LocalAssemblerForOperators;
 template <typename ValueType> class LocalAssemblerForGridFunctions;
@@ -50,7 +50,7 @@ public:
     /** \brief Allocate a Galerkin-mode local assembler for an integral operator. */
     virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
             const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& testBases,
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Expression<ValueType>& testExpression,
@@ -65,7 +65,7 @@ public:
         Used also for evaluation of the identity operator at arbitrary points. */
     virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
             const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
@@ -80,7 +80,7 @@ public:
     /** \brief Allocate a Galerkin-mode local assembler for the identity operator. */
     virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
             const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& testBases,
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Expression<ValueType>& testExpression,
@@ -93,7 +93,7 @@ public:
         Used also for evaluation of the identity operator at arbitrary points. */
     virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
             const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Expression<ValueType>& trialExpression,
             ValueType multiplier,
@@ -107,7 +107,7 @@ public:
       of functions from a given space on a Fiber::Function. */
     virtual std::auto_ptr<LocalAssemblerForGridFunctions<ValueType> > make(
             const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& testBases,
             const Expression<ValueType>& testExpression,
             const Function<ValueType>& function,
@@ -121,7 +121,7 @@ public:
       grid function. */
     virtual std::auto_ptr<EvaluatorForIntegralOperators<ValueType> > make(
             const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,

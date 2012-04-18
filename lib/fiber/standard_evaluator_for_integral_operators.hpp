@@ -32,7 +32,7 @@ namespace Fiber
 template <typename ValueType> class Basis;
 template <typename ValueType> class Expression;
 template <typename ValueType> class Kernel;
-template <typename ValueType> class RawGridGeometry;
+template <typename CoordinateType> class RawGridGeometry;
 template <typename CoordinateType, typename IndexType> class OpenClHandler;
 
 template <typename ValueType, typename GeometryFactory>
@@ -44,7 +44,7 @@ public:
 
     StandardEvaluatorForIntegralOperators(
             const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
@@ -62,7 +62,7 @@ private:
     void calcTrialData(
             Region region,
             int kernelTrialGeomDeps,
-            Fiber::GeometricalData<ValueType>& trialGeomData,
+            Fiber::GeometricalData<CoordinateType>& trialGeomData,
             arma::Mat<ValueType>& weightedTrialExprValues) const;
 
     int quadOrder(const Fiber::Basis<ValueType>& basis, Region region) const;
@@ -71,7 +71,7 @@ private:
 
 private:
     const GeometryFactory& m_geometryFactory;
-    const RawGridGeometry<ValueType>& m_rawGeometry;
+    const RawGridGeometry<CoordinateType>& m_rawGeometry;
     const std::vector<const Basis<ValueType>*>& m_trialBases;
     const Kernel<ValueType>& m_kernel;
     const Expression<ValueType>& m_trialExpression;
@@ -80,8 +80,8 @@ private:
     const Fiber::OpenClHandler<ValueType,int>& m_openClHandler;
     const QuadratureOptions& m_quadratureOptions;
 
-    Fiber::GeometricalData<ValueType> m_nearFieldTrialGeomData;
-    Fiber::GeometricalData<ValueType> m_farFieldTrialGeomData;
+    Fiber::GeometricalData<CoordinateType> m_nearFieldTrialGeomData;
+    Fiber::GeometricalData<CoordinateType> m_farFieldTrialGeomData;
     arma::Mat<ValueType> m_nearFieldWeightedTrialExprValues;
     arma::Mat<ValueType> m_farFieldWeightedTrialExprValues;
 };

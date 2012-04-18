@@ -37,10 +37,10 @@ namespace Fiber
 template <typename ValueType, typename GeometryFactory>
 NumericalTestTrialIntegrator<ValueType, GeometryFactory>::
 NumericalTestTrialIntegrator(
-        const arma::Mat<ValueType>& localQuadPoints,
-        const std::vector<ValueType> quadWeights,
+        const arma::Mat<CoordinateType>& localQuadPoints,
+        const std::vector<CoordinateType> quadWeights,
         const GeometryFactory& geometryFactory,
-        const RawGridGeometry<ValueType>& rawGeometry,
+        const RawGridGeometry<CoordinateType>& rawGeometry,
         const Expression<ValueType>& testExpression,
         const Expression<ValueType>& trialExpression,
         const OpenClHandler<ValueType,int>& openClHandler) :
@@ -84,7 +84,7 @@ void NumericalTestTrialIntegrator<ValueType, GeometryFactory>::integrate(
                                  "must have the same number of components");
 
     BasisData<ValueType> testBasisData, trialBasisData;
-    GeometricalData<ValueType> geomData;
+    GeometricalData<CoordinateType> geomData;
 
     int testBasisDeps = 0, trialBasisDeps = 0;
     int geomDeps = INTEGRATION_ELEMENTS;

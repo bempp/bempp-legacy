@@ -33,7 +33,7 @@ template <typename ValueType, typename GeometryFactory>
 StandardLocalAssemblerForGridFunctionsOnSurfaces<ValueType, GeometryFactory>::
 StandardLocalAssemblerForGridFunctionsOnSurfaces(
         const GeometryFactory& geometryFactory,
-        const RawGridGeometry<ValueType>& rawGeometry,
+        const RawGridGeometry<CoordinateType>& rawGeometry,
         const std::vector<const Basis<ValueType>*>& testBases,
         const Expression<ValueType>& testExpression,
         const Function<ValueType>& function,

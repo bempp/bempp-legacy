@@ -36,8 +36,10 @@ namespace Fiber
   class Functor
   {
   public:
-      // Type of the function's values (e.g. float or std::complex<double>)
+      // Type of the function's values (float, double, std::complex<float>
+      // or std::complex<double>)
       typedef <implementiation-defined> ValueType;
+      typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
       // Copy constructor
       Functor(const Functor& other);
@@ -52,7 +54,7 @@ namespace Fiber
       // the array "result"
       // The "point" and "result" arrays will be preinitialised to correct
       // dimensions.
-      void evaluate(const arma::Col<ValueType>& point,
+      void evaluate(const arma::Col<CoordinateType>& point,
                     arma::Col<ValueType>& result) const;
   };
   */
@@ -60,7 +62,9 @@ template <typename Functor>
 class OrdinaryFunction : public Function<typename Functor::ValueType>
 {
 public:
+    typedef Function<typename Functor::ValueType> Base;
     typedef typename Functor::ValueType ValueType;
+    typedef typename Base::CoordinateType CoordinateType;
 
     OrdinaryFunction(const Functor& functor) :
         m_functor(functor) {
@@ -78,9 +82,9 @@ public:
         geomDeps |= GLOBALS;
     }
 
-    virtual void evaluate(const GeometricalData<ValueType>& geomData,
+    virtual void evaluate(const GeometricalData<CoordinateType>& geomData,
                           arma::Mat<ValueType>& result) const {
-        const arma::Mat<ValueType>& points = geomData.globals;
+        const arma::Mat<CoordinateType>& points = geomData.globals;
 
 #ifndef NDEBUG
         if (points.n_rows != worldDimension())

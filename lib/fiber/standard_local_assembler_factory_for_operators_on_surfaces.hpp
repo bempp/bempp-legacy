@@ -62,7 +62,7 @@ private:
 public:
     virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
             const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& testBases,
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Expression<ValueType>& testExpression,
@@ -82,7 +82,7 @@ public:
 
     virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
             const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
@@ -95,7 +95,7 @@ public:
 
     virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
             const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& testBases,
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Expression<ValueType>& testExpression,
@@ -112,7 +112,7 @@ public:
 
     virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
             const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Expression<ValueType>& trialExpression,
             ValueType multiplier,
@@ -123,7 +123,7 @@ public:
 
     virtual std::auto_ptr<LocalAssemblerForGridFunctions<ValueType> > make(
             const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& testBases,
             const Expression<ValueType>& testExpression,
             const Function<ValueType>& function,
@@ -138,7 +138,7 @@ public:
 
     virtual std::auto_ptr<EvaluatorForIntegralOperators<ValueType> > make(
             const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,

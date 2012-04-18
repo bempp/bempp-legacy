@@ -29,37 +29,43 @@ namespace Fiber
 template <typename ValueType, typename IndexType> class OpenClHandler;
 template <typename ValueType> class Expression;
 template <typename ValueType> class Function;
-template <typename ValueType> class RawGridGeometry;
+template <typename CoordinateType> class RawGridGeometry;
 
 /** \brief Integration over pairs of elements on tensor-product point grids. */
-template <typename ValueType, typename GeometryFactory>
-class NumericalTestFunctionIntegrator : public TestFunctionIntegrator<ValueType>
+template <typename BasisValueType, typename FunctionValueType,
+          typename GeometryFactory>
+class NumericalTestFunctionIntegrator :
+        public TestFunctionIntegrator<BasisValueType, FunctionValueType>
 {
 public:
+    typedef typename TestFunctionIntegrator<BasisValueType, FunctionValueType> Base;
+    typedef typename Base::CoordinateType CoordinateType;
+    typedef typename Base::ResultType ResultType;
+
     NumericalTestFunctionIntegrator(
-            const arma::Mat<ValueType>& localQuadPoints,
-            const std::vector<ValueType> quadWeights,
+            const arma::Mat<CoordinateType>& localQuadPoints,
+            const std::vector<CoordinateType> quadWeights,
             const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
-            const Expression<ValueType>& testExpression,
-            const Function<ValueType>& trialExpression,
-            const OpenClHandler<ValueType,int>& openClHandler);
+            const RawGridGeometry<CoordinateType>& rawGeometry,
+            const Expression<BasisValueType>& testExpression,
+            const Function<FunctionValueType>& trialExpression,
+            const OpenClHandler<ResultType,int>& openClHandler);
 
     virtual void integrate(
             const std::vector<int>& elementIndices,
-            const Basis<ValueType>& testBasis,
-            arma::Mat<ValueType>& result) const;
+            const Basis<BasisValueType>& testBasis,
+            arma::Mat<ResultType>& result) const;
 
 private:
-    arma::Mat<ValueType> m_localQuadPoints;
-    std::vector<ValueType> m_quadWeights;
+    arma::Mat<CoordinateType> m_localQuadPoints;
+    std::vector<CoordinateType> m_quadWeights;
 
     const GeometryFactory& m_geometryFactory;
-    const RawGridGeometry<ValueType>& m_rawGeometry;
-    const Expression<ValueType>& m_testExpression;
-    const Function<ValueType>& m_function;
+    const RawGridGeometry<CoordinateType>& m_rawGeometry;
+    const Expression<BasisValueType>& m_testExpression;
+    const Function<FunctionValueType>& m_function;
 
-    const OpenClHandler<ValueType,int>& m_openClHandler;
+    const OpenClHandler<ResultType,int>& m_openClHandler;
 };
 
 } // namespace Fiber

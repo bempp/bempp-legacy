@@ -29,7 +29,7 @@ namespace Fiber
 template <typename ValueType, typename IndexType> class OpenClHandler;
 template <typename ValueType> class Expression;
 template <typename ValueType> class Kernel;
-template <typename ValueType> class RawGridGeometry;
+template <typename CoordinateType> class RawGridGeometry;
 
 /** \brief Integration over pairs of elements on non-tensor-product point grids. */
 template <typename ValueType, typename GeometryFactory>
@@ -44,7 +44,7 @@ public:
             const arma::Mat<ValueType>& localTrialQuadPoints,
             const std::vector<ValueType> quadWeights,
             const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
             const Expression<ValueType>& testExpression,
             const Kernel<ValueType>& kernel,
             const Expression<ValueType>& trialExpression,
@@ -71,7 +71,7 @@ private:
     std::vector<ValueType> m_quadWeights;
 
     const GeometryFactory& m_geometryFactory;
-    const RawGridGeometry<ValueType>& m_rawGeometry;
+    const RawGridGeometry<CoordinateType>& m_rawGeometry;
 
     const Expression<ValueType>& m_testExpression;
     const Kernel<ValueType>& m_kernel;

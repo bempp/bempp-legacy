@@ -83,7 +83,7 @@ template <typename ValueType, typename GeometryFactory>
 StandardLocalAssemblerForIntegralOperatorsOnSurfaces<ValueType, GeometryFactory>::
 StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
         const GeometryFactory& geometryFactory,
-        const RawGridGeometry<ValueType>& rawGeometry,
+        const RawGridGeometry<CoordinateType>& rawGeometry,
         const std::vector<const Basis<ValueType>*>& testBases,
         const std::vector<const Basis<ValueType>*>& trialBases,
         const Expression<ValueType>& testExpression,

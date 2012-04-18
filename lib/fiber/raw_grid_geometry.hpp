@@ -26,7 +26,7 @@
 namespace Fiber
 {
 
-template <typename ValueType>
+template <typename CoordinateType>
 class RawGridGeometry
 {
 public:
@@ -40,7 +40,7 @@ public:
 
     // Const accessors
 
-    const arma::Mat<ValueType>& vertices() const {
+    const arma::Mat<CoordinateType>& vertices() const {
         return m_vertices;
     }
 
@@ -80,7 +80,7 @@ public:
 
     // Non-const accessors (currently needed for construction)
 
-    arma::Mat<ValueType>& vertices() {
+    arma::Mat<CoordinateType>& vertices() {
         return m_vertices;
     }
 
@@ -102,7 +102,7 @@ public:
         for (; cornerCount < m_elementCornerIndices.n_rows; ++cornerCount)
             if (m_elementCornerIndices(cornerCount, elementIndex) < 0)
                 break;
-        arma::Mat<ValueType> corners(dimGrid, cornerCount);
+        arma::Mat<CoordinateType> corners(dimGrid, cornerCount);
         for (int cornerIndex = 0; cornerIndex < cornerCount; ++cornerIndex)
             corners.col(cornerIndex) = m_vertices.col(
                         m_elementCornerIndices(cornerIndex, elementIndex));
@@ -112,7 +112,7 @@ public:
 private:
     int m_gridDim;
     int m_worldDim;
-    arma::Mat<ValueType> m_vertices;
+    arma::Mat<CoordinateType> m_vertices;
     arma::Mat<int> m_elementCornerIndices;
     arma::Mat<char> m_auxData;
 };

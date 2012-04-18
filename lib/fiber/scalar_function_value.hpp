@@ -33,6 +33,8 @@ template <typename ValueType>
 class ScalarFunctionValue : public Expression<ValueType>
 {
 public:
+    typedef typename Expression<ValueType>::CoordinateType CoordinateType;
+
     virtual int domainDimension() const {
         return 1;
     }
@@ -47,7 +49,7 @@ public:
     }
 
     virtual void evaluate(const BasisData<ValueType>& basisData,
-                          const GeometricalData<ValueType>& geomData,
+                          const GeometricalData<CoordinateType>& geomData,
                           arma::Cube<ValueType>& result) const {
         ScalarSpaceMapping<ValueType>::
                 evaluateShapeFunctions(basisData, geomData, result);
@@ -57,16 +59,16 @@ public:
         const {
         std::string funcName ("devExpressionEvaluate");
         std::string str (scalar_function_value_cl,
-			 scalar_function_value_cl_len);
-	if (modifier.size() > 0) {
-	    int n = str.find (funcName);
-	    if (n != std::string::npos) {
-	        size_t len = funcName.size();
-	        funcName.append (modifier);
-	        str.replace (n, len, funcName);
-	    }
-	}
-	return str;
+             scalar_function_value_cl_len);
+    if (modifier.size() > 0) {
+        int n = str.find (funcName);
+        if (n != std::string::npos) {
+            size_t len = funcName.size();
+            funcName.append (modifier);
+            str.replace (n, len, funcName);
+        }
+    }
+    return str;
     }
 };
 

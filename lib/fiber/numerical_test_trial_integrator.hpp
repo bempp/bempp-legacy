@@ -28,18 +28,20 @@ namespace Fiber
 
 template <typename ValueType, typename IndexType> class OpenClHandler;
 template <typename ValueType> class Expression;
-template <typename ValueType> class RawGridGeometry;
+template <typename CoordinateType> class RawGridGeometry;
 
 /** \brief Integration over pairs of elements on tensor-product point grids. */
 template <typename ValueType, typename GeometryFactory>
 class NumericalTestTrialIntegrator : public TestTrialIntegrator<ValueType>
 {
 public:
+    typedef typename TestTrialIntegrator<ValueType>::CoordinateType CoordinateType;
+
     NumericalTestTrialIntegrator(
-            const arma::Mat<ValueType>& localQuadPoints,
-            const std::vector<ValueType> quadWeights,
+            const arma::Mat<CoordinateType>& localQuadPoints,
+            const std::vector<CoordinateType> quadWeights,
             const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
             const Expression<ValueType>& testExpression,
             const Expression<ValueType>& trialExpression,
             const OpenClHandler<ValueType,int>& openClHandler);
@@ -51,11 +53,11 @@ public:
             arma::Cube<ValueType>& result) const;
 
 private:
-    arma::Mat<ValueType> m_localQuadPoints;
-    std::vector<ValueType> m_quadWeights;
+    arma::Mat<CoordinateType> m_localQuadPoints;
+    std::vector<CoordinateType> m_quadWeights;
 
     const GeometryFactory& m_geometryFactory;
-    const RawGridGeometry<ValueType>& m_rawGeometry;
+    const RawGridGeometry<CoordinateType>& m_rawGeometry;
     const Expression<ValueType>& m_testExpression;
     const Expression<ValueType>& m_trialExpression;
 

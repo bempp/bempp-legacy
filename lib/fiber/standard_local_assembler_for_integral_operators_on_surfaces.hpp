@@ -50,7 +50,7 @@ class StandardLocalAssemblerForIntegralOperatorsOnSurfaces :
 public:
     StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
             const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& testBases,
             const std::vector<const Basis<ValueType>*>& trialBases,
             const Expression<ValueType>& testExpression,
@@ -108,7 +108,7 @@ private:
 
 private:
     const GeometryFactory& m_geometryFactory;
-    const RawGridGeometry<ValueType>& m_rawGeometry;
+    const RawGridGeometry<CoordinateType>& m_rawGeometry;
     const std::vector<const Basis<ValueType>*>& m_testBases;
     const std::vector<const Basis<ValueType>*>& m_trialBases;
     const Expression<ValueType>& m_testExpression;

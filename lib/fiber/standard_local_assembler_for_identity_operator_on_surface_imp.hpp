@@ -30,7 +30,7 @@ template <typename ValueType, typename GeometryFactory>
 StandardLocalAssemblerForIdentityOperatorOnSurface<ValueType, GeometryFactory>::
 StandardLocalAssemblerForIdentityOperatorOnSurface(
         const GeometryFactory& geometryFactory,
-        const RawGridGeometry<ValueType>& rawGeometry,
+        const RawGridGeometry<CoordinateType>& rawGeometry,
         const std::vector<const Basis<ValueType>*>& testBases,
         const std::vector<const Basis<ValueType>*>& trialBases,
         const Expression<ValueType>& testExpression,

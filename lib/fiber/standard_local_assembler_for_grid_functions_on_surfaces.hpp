@@ -40,7 +40,7 @@ class StandardLocalAssemblerForGridFunctionsOnSurfaces :
 public:
     StandardLocalAssemblerForGridFunctionsOnSurfaces(
             const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
             const std::vector<const Basis<ValueType>*>& testBases,
             const Expression<ValueType>& testExpression,
             const Function<ValueType>& function,
@@ -67,7 +67,7 @@ private:
 
 private:
     const GeometryFactory& m_geometryFactory;
-    const RawGridGeometry<ValueType>& m_rawGeometry;
+    const RawGridGeometry<CoordinateType>& m_rawGeometry;
     const std::vector<const Basis<ValueType>*>& m_testBases;
     const Expression<ValueType>& m_testExpression;
     const Function<ValueType>& m_function;

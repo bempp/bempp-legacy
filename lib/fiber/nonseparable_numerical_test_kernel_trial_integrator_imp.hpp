@@ -47,7 +47,7 @@ NonseparableNumericalTestKernelTrialIntegrator(
         const arma::Mat<ValueType>& localTrialQuadPoints,
         const std::vector<ValueType> quadWeights,
         const GeometryFactory& geometryFactory,
-        const RawGridGeometry<ValueType>& rawGeometry,
+        const RawGridGeometry<CoordinateType>& rawGeometry,
         const Expression<ValueType>& testExpression,
         const Kernel<ValueType>& kernel,
         const Expression<ValueType>& trialExpression,
@@ -112,7 +112,7 @@ void NonseparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>:
     }
 
     BasisData<ValueType> testBasisData, trialBasisData;
-    GeometricalData<ValueType> testGeomData, trialGeomData;
+    GeometricalData<CoordinateType> testGeomData, trialGeomData;
 
     int testBasisDeps = 0, trialBasisDeps = 0;
     int testGeomDeps = INTEGRATION_ELEMENTS;
@@ -235,7 +235,7 @@ void NonseparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>:
     }
 
     BasisData<ValueType> testBasisData, trialBasisData;
-    GeometricalData<ValueType> testGeomData, trialGeomData;
+    GeometricalData<CoordinateType> testGeomData, trialGeomData;
 
     int testBasisDeps = 0, trialBasisDeps = 0;
     int testGeomDeps = INTEGRATION_ELEMENTS;

@@ -33,6 +33,8 @@ template <typename ValueType>
 class SurfaceCurl3D : public Expression<ValueType>
 {
 public:
+    typedef typename Expression<ValueType>::CoordinateType CoordinateType;
+
     virtual int domainDimension() const {
         return 1;
     }
@@ -47,7 +49,7 @@ public:
     }
 
     virtual void evaluate(const BasisData<ValueType>& basisData,
-                          const GeometricalData<ValueType>& geomData,
+                          const GeometricalData<CoordinateType>& geomData,
                           arma::Cube<ValueType>& result) const {
         ScalarSpaceMapping<ValueType>::
                 evaluateSurfaceCurls3D(basisData, geomData, result);

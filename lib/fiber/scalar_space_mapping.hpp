@@ -25,6 +25,7 @@
 #include <stdexcept>
 #include "basis_data.hpp"
 #include "geometrical_data.hpp"
+#include "scalar_traits.hpp"
 
 namespace Fiber
 {
@@ -35,6 +36,8 @@ template <typename ValueType>
 class ScalarSpaceMapping
 {
 public:
+    typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+
     static void addShapeFunctionDependencies(int& basisDeps, int& geomDeps) {
         basisDeps |= VALUES;
     }
@@ -45,7 +48,7 @@ public:
     }
 
     static void evaluateShapeFunctions(const BasisData<ValueType>& basisData,
-                                       const GeometricalData<ValueType>& geomData,
+                                       const GeometricalData<CoordinateType>& geomData,
                                        arma::Cube<ValueType>& result) {
         result = basisData.values;
     }
@@ -55,8 +58,8 @@ public:
         dimensions: (worldDim, functionCount, pointCount)
     */
     static void evaluateSurfaceCurls3D(const BasisData<ValueType>& basisData,
-                                     const GeometricalData<ValueType>& geomData,
-                                     arma::Cube<ValueType>& result) {
+                                       const GeometricalData<CoordinateType>& geomData,
+                                       arma::Cube<ValueType>& result) {
         const arma::Mat<ValueType>& n = geomData.normals;
         // jt(i, j): dx_j/dq_i
         const arma::Cube<ValueType>& jit = geomData.jacobianInversesTransposed;

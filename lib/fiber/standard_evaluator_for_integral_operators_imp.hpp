@@ -36,7 +36,7 @@ template <typename ValueType, typename GeometryFactory>
 StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>::
 StandardEvaluatorForIntegralOperators(
         const GeometryFactory& geometryFactory,
-        const RawGridGeometry<ValueType>& rawGeometry,
+        const RawGridGeometry<CoordinateType>& rawGeometry,
         const std::vector<const Basis<ValueType>*>& trialBases,
         const Kernel<ValueType>& kernel,
         const Expression<ValueType>& trialExpression,
@@ -109,7 +109,7 @@ void StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>::evaluate
     result.set_size(outputComponentCount, pointCount);
     result.fill(0.);
 
-    const Fiber::GeometricalData<ValueType>& trialGeomData =
+    const Fiber::GeometricalData<CoordinateType>& trialGeomData =
             (region == EvaluatorForIntegralOperators<ValueType>::NEAR_FIELD) ?
                 m_nearFieldTrialGeomData :
                 m_farFieldTrialGeomData;
@@ -124,7 +124,7 @@ void StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>::evaluate
     // too large arrays of kernel values
     const int chunkSize = 96;
     Fiber::Array4D<ValueType> kernelValues;
-    Fiber::GeometricalData<ValueType> testGeomData;
+    Fiber::GeometricalData<CoordinateType> testGeomData;
     for (int start = 0; start < pointCount; start += chunkSize)
     {
         int end = std::min(start + chunkSize - 1, pointCount - 1);
@@ -172,7 +172,7 @@ template <typename ValueType, typename GeometryFactory>
 void StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>::calcTrialData(
         Region region,
         int kernelTrialGeomDeps,
-        Fiber::GeometricalData<ValueType>& trialGeomData,
+        Fiber::GeometricalData<CoordinateType>& trialGeomData,
         arma::Mat<ValueType>& weightedTrialExprValues) const
 {
     const int elementCount = m_rawGeometry.elementCount();
@@ -198,7 +198,7 @@ void StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>::calcTria
     BasisSet uniqueTrialBases(m_trialBases.begin(), m_trialBases.end());
 
     // Initialise temporary (per-element) data containers
-    std::vector<GeometricalData<ValueType> > geomDataPerElement(elementCount);
+    std::vector<GeometricalData<CoordinateType> > geomDataPerElement(elementCount);
     std::vector<arma::Mat<ValueType> > weightedTrialExprValuesPerElement(elementCount);
 
     for (typename BasisSet::const_iterator it = uniqueTrialBases.begin();

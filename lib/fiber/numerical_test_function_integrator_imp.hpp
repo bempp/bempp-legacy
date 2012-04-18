@@ -35,16 +35,16 @@
 namespace Fiber
 {
 
-template <typename ValueType, typename GeometryFactory>
-NumericalTestFunctionIntegrator<ValueType, GeometryFactory>::
+template <typename BasisValueType, typename FunctionValueType, typename GeometryFactory>
+NumericalTestFunctionIntegrator<BasisValueType, FunctionValueType, GeometryFactory>::
 NumericalTestFunctionIntegrator(
-        const arma::Mat<ValueType>& localQuadPoints,
-        const std::vector<ValueType> quadWeights,
+        const arma::Mat<CoordinateType>& localQuadPoints,
+        const std::vector<CoordinateType> quadWeights,
         const GeometryFactory& geometryFactory,
-        const RawGridGeometry<ValueType>& rawGeometry,
-        const Expression<ValueType>& testExpression,
-        const Function<ValueType>& function,
-        const OpenClHandler<ValueType,int>& openClHandler) :
+        const RawGridGeometry<CoordinateType>& rawGeometry,
+        const Expression<BasisValueType>& testExpression,
+        const Function<FunctionValueType>& trialExpression,
+        const OpenClHandler<ResultType,int>& openClHandlerr) :
     m_localQuadPoints(localQuadPoints),
     m_quadWeights(quadWeights),
     m_geometryFactory(geometryFactory),
@@ -59,11 +59,12 @@ NumericalTestFunctionIntegrator(
                                     "numbers of points and weights do not match");
 }
 
-template <typename ValueType, typename GeometryFactory>
-void NumericalTestFunctionIntegrator<ValueType, GeometryFactory>::integrate(
+template <typename BasisValueType, typename FunctionValueType, typename GeometryFactory>
+void NumericalTestFunctionIntegrator<BasisValueType, FunctionValueType, GeometryFactory>::
+integrate(
         const std::vector<int>& elementIndices,
-        const Basis<ValueType>& testBasis,
-        arma::Mat<ValueType>& result) const
+        const Basis<BasisValueType>& testBasis,
+        arma::Mat<ResultType>& result) const
 {
     const int pointCount = m_localQuadPoints.n_cols;
     const int elementCount = elementIndices.size();
@@ -82,8 +83,8 @@ void NumericalTestFunctionIntegrator<ValueType, GeometryFactory>::integrate(
                                  "test functions and the \"arbitrary\" function "
                                  "must have the same number of components");
 
-    BasisData<ValueType> testBasisData;
-    GeometricalData<ValueType> geomData;
+    BasisData<BasisValueType> testBasisData;
+    GeometricalData<CoordinateType> geomData;
 
     int testBasisDeps = 0;
     int geomDeps = INTEGRATION_ELEMENTS;
@@ -94,8 +95,8 @@ void NumericalTestFunctionIntegrator<ValueType, GeometryFactory>::integrate(
     typedef typename GeometryFactory::Geometry Geometry;
     std::auto_ptr<Geometry> geometry(m_geometryFactory.make());
 
-    arma::Cube<ValueType> testValues;
-    arma::Mat<ValueType> functionValues;
+    arma::Cube<BasisValueType> testValues;
+    arma::Mat<FunctionValueType> functionValues;
 
     result.set_size(testDofCount, elementCount);
 

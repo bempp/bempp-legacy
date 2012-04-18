@@ -26,12 +26,14 @@
 namespace Fiber {
 
 template <typename ValueType> class BasisData;
-template <typename ValueType> class GeometricalData;
+template <typename CoordinateType> class GeometricalData;
 
 template <typename ValueType>
 class Expression
 {
 public:
+    typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+
     virtual ~Expression() {}
 
     virtual int domainDimension() const = 0;
@@ -40,7 +42,7 @@ public:
     virtual void addDependencies(int& basisDeps, int& geomDeps) const = 0;
 
     virtual void evaluate(const BasisData<ValueType>& basisData,
-                          const GeometricalData<ValueType>& geomData,
+                          const GeometricalData<CoordinateType>& geomData,
                           arma::Cube<ValueType>& result) const = 0;
 };
 

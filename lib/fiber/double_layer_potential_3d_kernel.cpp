@@ -42,9 +42,9 @@ void DoubleLayerPotential3DKernel<ValueType>::addGeometricalDependencies(
 
 template <typename ValueType>
 inline ValueType DoubleLayerPotential3DKernel<ValueType>::evaluateAtPointPair(
-        const arma::Col<ValueType>& testPoint,
-        const arma::Col<ValueType>& trialPoint,
-        const arma::Col<ValueType>& trialNormal) const
+        const arma::Col<CoordinateType>& testPoint,
+        const arma::Col<CoordinateType>& trialPoint,
+        const arma::Col<CoordinateType>& trialNormal) const
 {
     const int coordCount = testPoint.n_rows;
 
@@ -61,8 +61,8 @@ inline ValueType DoubleLayerPotential3DKernel<ValueType>::evaluateAtPointPair(
 
 template <typename ValueType>
 void DoubleLayerPotential3DKernel<ValueType>::evaluateAtPointPairs(
-        const GeometricalData<ValueType>& testGeomData,
-        const GeometricalData<ValueType>& trialGeomData,
+        const GeometricalData<CoordinateType>& testGeomData,
+        const GeometricalData<CoordinateType>& trialGeomData,
         arma::Cube<ValueType>& result) const
 {
     const arma::Mat<ValueType>& testPoints = testGeomData.globals;
@@ -91,8 +91,8 @@ void DoubleLayerPotential3DKernel<ValueType>::evaluateAtPointPairs(
 
 template <typename ValueType>
 void DoubleLayerPotential3DKernel<ValueType>::evaluateOnGrid(
-        const GeometricalData<ValueType>& testGeomData,
-        const GeometricalData<ValueType>& trialGeomData,
+        const GeometricalData<CoordinateType>& testGeomData,
+        const GeometricalData<CoordinateType>& trialGeomData,
         Array4D<ValueType>& result) const
 {
     const arma::Mat<ValueType>& testPoints = testGeomData.globals;

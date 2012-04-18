@@ -35,25 +35,27 @@ template <typename ValueType> class Expression;
 template <typename ValueType> class Kernel;
 
 /** \brief Integration over pairs of elements on tensor-product point grids. */
-template <typename ValueType, typename GeometryFactory>
+template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
 class SeparableNumericalTestKernelTrialIntegrator :
-        public TestKernelTrialIntegrator<ValueType>
+        public TestKernelTrialIntegrator<BasisValueType, KernelValueType>
 {
 public:
-    typedef typename TestKernelTrialIntegrator<ValueType>::ElementIndexPair
-    ElementIndexPair;
+    typedef typename TestKernelTrialIntegrator<BasisValueType, KernelValueType> Base;
+    typedef typename Base::CoordinateType CoordinateType;
+    typedef typename Base::ResultType ResultType;
+    typedef typename Base::ElementIndexPair ElementIndexPair;
 
     SeparableNumericalTestKernelTrialIntegrator(
-            const arma::Mat<ValueType>& localTestQuadPoints,
-            const arma::Mat<ValueType>& localTrialQuadPoints,
-            const std::vector<ValueType> testQuadWeights,
-            const std::vector<ValueType> trialQuadWeights,
+            const arma::Mat<CoordinateType>& localTestQuadPoints,
+            const arma::Mat<CoordinateType>& localTrialQuadPoints,
+            const std::vector<CoordinateType> testQuadWeights,
+            const std::vector<CoordinateType> trialQuadWeights,
             const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
-            const Expression<ValueType>& testExpression,
-            const Kernel<ValueType>& kernel,
-            const Expression<ValueType>& trialExpression,
-            const OpenClHandler<ValueType,int>& openClHandler);
+            const RawGridGeometry<CoordinateType>& rawGeometry,
+            const Expression<BasisValueType>& testExpression,
+            const Kernel<KernelValueType>& kernel,
+            const Expression<BasisValueType>& trialExpression,
+            const OpenClHandler<ResultType,int>& openClHandler);
 
     virtual ~SeparableNumericalTestKernelTrialIntegrator ();
 
@@ -61,47 +63,47 @@ public:
             CallVariant callVariant,
             const std::vector<int>& elementIndicesA,
             int elementIndexB,
-            const Basis<ValueType>& basisA,
-            const Basis<ValueType>& basisB,
+            const Basis<BasisValueType>& basisA,
+            const Basis<BasisValueType>& basisB,
             LocalDofIndex localDofIndexB,
-            arma::Cube<ValueType>& result) const;
+            arma::Cube<ResultType>& result) const;
 
     virtual void integrate(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<ValueType>& testBasis,
-            const Basis<ValueType>& trialBasis,
-            arma::Cube<ValueType>& result) const;
+            const Basis<BasisValueType>& testBasis,
+            const Basis<BasisValueType>& trialBasis,
+            arma::Cube<ResultType>& result) const;
 
 private:
-    virtual void integrateCpu(
+    void integrateCpu(
             CallVariant callVariant,
             const std::vector<int>& elementIndicesA,
             int elementIndexB,
-            const Basis<ValueType>& basisA,
-            const Basis<ValueType>& basisB,
+            const Basis<BasisValueType>& basisA,
+            const Basis<BasisValueType>& basisB,
             LocalDofIndex localDofIndexB,
-            arma::Cube<ValueType>& result) const;
+            arma::Cube<ResultType>& result) const;
 
-    virtual void integrateCl(
+    void integrateCl(
 	    CallVariant callVariant,
 	    const std::vector<int>& elementIndicesA,
 	    int elementIndexB,
-	    const Basis<ValueType>& basisA,
-	    const Basis<ValueType>& basisB,
+        const Basis<BasisValueType>& basisA,
+        const Basis<BasisValueType>& basisB,
 	    LocalDofIndex localDofIndexB,
-	    arma::Cube<ValueType>& result) const;
+        arma::Cube<ResultType>& result) const;
 
-    virtual void integrateCpu(
+    void integrateCpu(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<ValueType>& testBasis,
-            const Basis<ValueType>& trialBasis,
-            arma::Cube<ValueType>& result) const;
+            const Basis<BasisValueType>& testBasis,
+            const Basis<BasisValueType>& trialBasis,
+            arma::Cube<ResultType>& result) const;
 
-    virtual void integrateCl(
+    void integrateCl(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<ValueType>& testBasis,
-            const Basis<ValueType>& trialBasis,
-            arma::Cube<ValueType>& result) const;
+            const Basis<BasisValueType>& testBasis,
+            const Basis<BasisValueType>& trialBasis,
+            arma::Cube<ResultType>& result) const;
 
     /**
      * \brief Returns an OpenCL code snippet containing the clIntegrate
@@ -109,18 +111,18 @@ private:
      */
     const std::pair<const char*,int> clStrIntegrateRowOrCol () const;
 
-    arma::Mat<ValueType> m_localTestQuadPoints;
-    arma::Mat<ValueType> m_localTrialQuadPoints;
-    std::vector<ValueType> m_testQuadWeights;
-    std::vector<ValueType> m_trialQuadWeights;
+    arma::Mat<CoordinateType> m_localTestQuadPoints;
+    arma::Mat<CoordinateType> m_localTrialQuadPoints;
+    std::vector<CoordinateType> m_testQuadWeights;
+    std::vector<CoordinateType> m_trialQuadWeights;
 
     const GeometryFactory& m_geometryFactory;
-    const RawGridGeometry<ValueType>& m_rawGeometry;
+    const RawGridGeometry<CoordinateType>& m_rawGeometry;
 
-    const Expression<ValueType>& m_testExpression;
-    const Kernel<ValueType>& m_kernel;
-    const Expression<ValueType>& m_trialExpression;
-    const OpenClHandler<ValueType,int>& m_openClHandler;
+    const Expression<BasisValueType>& m_testExpression;
+    const Kernel<KernelValueType>& m_kernel;
+    const Expression<BasisValueType>& m_trialExpression;
+    const OpenClHandler<ResultType,int>& m_openClHandler;
 #ifdef WITH_OPENCL
     cl::Buffer *clTestQuadPoints;
     cl::Buffer *clTrialQuadPoints;
