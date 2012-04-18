@@ -585,7 +585,7 @@ GridFunction<ValueType> operator/(const GridFunction<ValueType>& g1,
                                   const ValueType& scalar)
 {
     if (scalar==0) throw std::runtime_error("Divide by zero");
-    return (1./scalar)*g1;
+    return (static_cast<ValueType>(1.) / scalar) * g1;
 }
 
 
