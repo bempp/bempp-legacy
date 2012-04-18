@@ -56,11 +56,13 @@
 
 using namespace Bempp;
 
+typedef double FloatType;
+
 class MyFunctor
 {
 public:
     // Type of the function's values (e.g. float or std::complex<double>)
-    typedef double ValueType;
+    typedef FloatType ValueType;
 
     // Number of components of the function's argument
     static const int argumentDimension = 3;
@@ -81,13 +83,13 @@ public:
 int main()
 {
     // Load a predefined test grid
-    const MeshVariant meshVariant = SPHERE_614;
+    const MeshVariant meshVariant = SPHERE_152;
     std::auto_ptr<Grid> grid = loadMesh(meshVariant);
 
     // Initialize the spaces
 
-    PiecewiseLinearContinuousScalarSpace<double> HplusHalfSpace(*grid);
-    PiecewiseConstantScalarSpace<double> HminusHalfSpace(*grid);
+    PiecewiseLinearContinuousScalarSpace<FloatType> HplusHalfSpace(*grid);
+    PiecewiseConstantScalarSpace<FloatType> HminusHalfSpace(*grid);
 
     HplusHalfSpace.assignDofs();
     HminusHalfSpace.assignDofs();
@@ -95,7 +97,6 @@ int main()
     // Define some default options.
 
     AssemblyOptions assemblyOptions;
-    EvaluationOptions evaluationOptions;
 
     // We want to use ACA
 
@@ -104,17 +105,23 @@ int main()
 
     // Define the standard integration factory
 
-    StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double> factory;
+    StandardLocalAssemblerFactoryForOperatorsOnSurfaces<FloatType> factory;
 
     // We need the single layer, double layer, and the identity operator
 
-    SingleLayerPotential3D<double> slp(HminusHalfSpace,HminusHalfSpace);
-    DoubleLayerPotential3D<double> dlp(HminusHalfSpace,HplusHalfSpace);
-    IdentityOperator<double> id(HminusHalfSpace,HplusHalfSpace);
+    SingleLayerPotential3D<FloatType> slp(HminusHalfSpace,HminusHalfSpace);
+    DoubleLayerPotential3D<FloatType> dlp(HminusHalfSpace,HplusHalfSpace);
+    IdentityOperator<FloatType> id(HminusHalfSpace,HplusHalfSpace);
 
     // Form the right-hand side sum
 
-    LinearOperatorSuperposition<double> rhsOp = -0.5 * id + dlp;
+    // This static_cast is at present necessary in the case of FloatType ==
+    // float. Possibly it could be eliminated if the arithmetic operators
+    // involving LinearOperator were templated with respect to scalar's type
+    // and the scalar were internally static-casted to ValueType. But we need
+    // to be sure that this doesn't have unintended side-effects.
+    LinearOperatorSuperposition<FloatType> rhsOp =
+            static_cast<FloatType>(-0.5) * id + dlp;
 
     // Assemble the Operators
 
@@ -126,30 +133,30 @@ int main()
     MyFunctor functor;
     OrdinaryFunction<MyFunctor> function(functor);
 
-    GridFunction<double> u(HplusHalfSpace, function, factory, assemblyOptions);
+    GridFunction<FloatType> u(HplusHalfSpace, function, factory, assemblyOptions);
 
     // Assemble the rhs
 
     std::cout << "Assemble rhs" << std::endl;
 
-    GridFunction<double> rhs = rhsOp * u;
+    GridFunction<FloatType> rhs = rhsOp * u;
 
     // Initialize the iterative solver
 
     std::cout << "Initialize solver" << std::endl;
 
 #ifdef WITH_TRILINOS
-    DefaultIterativeSolver<double> solver(slp, rhs);
+    DefaultIterativeSolver<FloatType> solver(slp, rhs);
     solver.initializeSolver(defaultGmresParameterList(1e-5));
     solver.solve();
     std::cout << solver.getSolverMessage() << std::endl;
 #else
-    DefaultDirectSolver<double> solver(slp, rhs);
+    DefaultDirectSolver<FloatType> solver(slp, rhs);
     solver.solve();
 #endif
     // Extract the solution
 
-    GridFunction<double> solFun = solver.getResult();
+    GridFunction<FloatType> solFun = solver.getResult();
 
     // Write out as VTK
 
@@ -158,11 +165,11 @@ int main()
 
     // Compare with exact solution
 
-    arma::Col<double> solutionCoefficients = solFun.coefficients().asArmadilloVector();
+    arma::Col<FloatType> solutionCoefficients = solFun.coefficients().asArmadilloVector();
 
-    arma::Col<double> deviation = solutionCoefficients - (-1.);
+    arma::Col<FloatType> deviation = solutionCoefficients - (-1.);
     // % in Armadillo -> elementwise multiplication
-    double stdDev = sqrt(arma::accu(deviation % deviation) /
+    FloatType stdDev = sqrt(arma::accu(deviation % deviation) /
                          solutionCoefficients.n_rows);
     std::cout << "Standard deviation: " << stdDev << std::endl;
 }
