@@ -28,6 +28,7 @@
 #include "../grid/grid_view.hpp"
 #include "../grid/reverse_element_mapper.hpp"
 #include "../space/space.hpp"
+#include "assembly_options.hpp"
 
 #include <map>
 #include <set>
@@ -209,7 +210,7 @@ template <typename ValueType>
 ValueType WeakFormAcaAssemblyHelper<ValueType>::scale(
         unsigned b1, unsigned n1, unsigned b2, unsigned n2) const
 {
-    return 1.;
+    return m_options.acaOptions().scaling;
 }
 
 template <typename ValueType>

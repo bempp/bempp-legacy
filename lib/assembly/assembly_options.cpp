@@ -35,7 +35,8 @@ AcaOptions::AcaOptions() :
     minimumBlockSize(16),
     recompress(true),
     outputPostscript(false),
-    outputFname("aca.ps") {}
+    outputFname("aca.ps"),
+    scaling(1.0) {}
 
 
 

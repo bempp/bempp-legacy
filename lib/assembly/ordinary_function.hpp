@@ -1,4 +1,4 @@
-// Copyright (C) 2011 by the BEM++ Authors
+// Copyright (C) 2011-2012 by the BEM++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,18 +18,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_meshes_hpp
-#define bempp_meshes_hpp
+#ifndef bempp_ordinary_function_hpp
+#define bempp_ordinary_function_hpp
 
-#include <memory>
+#include "../fiber/ordinary_function.hpp"
 
 namespace Bempp
 {
-    class Grid;
+
+using Fiber::OrdinaryFunction;
+
 } // namespace Bempp
-
-std::auto_ptr<Bempp::Grid> loadTriangularMeshFromFile(const char* fileName);
-
-void dumpElementList(const Bempp::Grid* grid);
 
 #endif

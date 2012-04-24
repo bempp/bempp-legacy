@@ -204,44 +204,44 @@ AcaGlobalAssembler<ValueType>::assembleWeakForm(
 //                 acaOptions.recompress, acaOptions.eps,
 //                 acaOptions.maximumRank, blocks.get());
 
-//    matgen_omp(helper, blockCount, doubleClusterTree.get(),
-//                   acaOptions.eps, acaOptions.maximumRank, blocks.get());
+    matgen_omp(helper, blockCount, doubleClusterTree.get(),
+                   acaOptions.eps, acaOptions.maximumRank, blocks.get());
 
-    AhmedLeafClusterArray leafClusters(doubleClusterTree.get());
-    const size_t leafClusterCount = leafClusters.size();
+//    AhmedLeafClusterArray leafClusters(doubleClusterTree.get());
+//    const size_t leafClusterCount = leafClusters.size();
 
-    int maxThreadCount = 1;
-    if (options.parallelism() == AssemblyOptions::TBB)
-    {
-        if (options.maxThreadCount() == AssemblyOptions::AUTO)
-            maxThreadCount = tbb::task_scheduler_init::automatic;
-        else
-            maxThreadCount = options.maxThreadCount();
-    }
-    tbb::task_scheduler_init scheduler(maxThreadCount);
-    tbb::atomic<size_t> done;
-    done = 0;
+//    int maxThreadCount = 1;
+//    if (options.parallelism() == AssemblyOptions::TBB)
+//    {
+//        if (options.maxThreadCount() == AssemblyOptions::AUTO)
+//            maxThreadCount = tbb::task_scheduler_init::automatic;
+//        else
+//            maxThreadCount = options.maxThreadCount();
+//    }
+//    tbb::task_scheduler_init scheduler(maxThreadCount);
+//    tbb::atomic<size_t> done;
+//    done = 0;
 
-    typedef AcaWeakFormAssemblerLoopBody<ValueType> Body;
-    tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
-                      Body(helper, leafClusters, blocks, acaOptions, done));
+//    typedef AcaWeakFormAssemblerLoopBody<ValueType> Body;
+//    tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
+//                      Body(helper, leafClusters, blocks, acaOptions, done));
 
-    {
-        size_t origMemory = sizeof(ValueType) * testDofCount * trialDofCount;
-        size_t ahmedMemory = sizeH(doubleClusterTree.get(), blocks.get());
-        std::cout << "\nNeeded storage: " << ahmedMemory / 1024. / 1024. << " MB.\n"
-                  << "Without approximation: " << origMemory / 1024. / 1024. << " MB.\n"
-                  << "Compressed to " << (100. * ahmedMemory) / origMemory << "%.\n"
-                  << std::endl;
+//    {
+//        size_t origMemory = sizeof(ValueType) * testDofCount * trialDofCount;
+//        size_t ahmedMemory = sizeH(doubleClusterTree.get(), blocks.get());
+//        std::cout << "\nNeeded storage: " << ahmedMemory / 1024. / 1024. << " MB.\n"
+//                  << "Without approximation: " << origMemory / 1024. / 1024. << " MB.\n"
+//                  << "Compressed to " << (100. * ahmedMemory) / origMemory << "%.\n"
+//                  << std::endl;
 
-        if (acaOptions.outputPostscript){
-            std::cout << "Writing matrix partition ..." << std::flush;
-            std::ofstream os(acaOptions.outputFname.c_str());
-            psoutputH(os, doubleClusterTree.get(), testDofCount, blocks.get());
-            os.close();
-            std::cout << " done." << std::endl;
-        }
-    }
+//        if (acaOptions.outputPostscript){
+//            std::cout << "Writing matrix partition ..." << std::flush;
+//            std::ofstream os(acaOptions.outputFname.c_str());
+//            psoutputH(os, doubleClusterTree.get(), testDofCount, blocks.get());
+//            os.close();
+//            std::cout << " done." << std::endl;
+//        }
+//    }
 
     result = std::auto_ptr<DiscreteLinOp>(
                 new DiscreteAcaLinOp(testDofCount, trialDofCount,
