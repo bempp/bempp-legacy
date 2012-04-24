@@ -35,6 +35,70 @@
 namespace Bempp
 {
 
+// Helper functions for the applyBuiltIn member function
+namespace
+{
+
+template <typename ValueType>
+void reallyApplyBuiltInImpl(const Epetra_CrsMatrix& mat,
+                            const TranspositionMode trans,
+                            const arma::Col<ValueType>& x_in,
+                            arma::Col<ValueType>& y_inout,
+                            const ValueType alpha,
+                            const ValueType beta);
+
+template <>
+void reallyApplyBuiltInImpl<double>(const Epetra_CrsMatrix& mat,
+                                    const TranspositionMode trans,
+                                    const arma::Col<double>& x_in,
+                                    arma::Col<double>& y_inout,
+                                    const double alpha,
+                                    const double beta)
+{
+    Epetra_Map map_x(x_in.n_rows, 0, Epetra_SerialComm());
+    Epetra_Map map_y(y_inout.n_rows, 0, Epetra_SerialComm());
+
+    Epetra_Vector vec_x(View, map_x, const_cast<double*>(x_in.memptr()));
+    // vec_temp will store the result of matrix * x_in
+    Epetra_Vector vec_temp(map_y, false /* no need to initialise to zero */);
+
+    mat.Multiply(trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE,
+                 vec_x, vec_temp);
+
+    if (beta == 0.)
+        for (int i = 0; i < y_inout.n_rows; ++i)
+            y_inout(i) = alpha * vec_temp[i];
+    else
+        for (int i = 0; i < y_inout.n_rows; ++i)
+            y_inout(i) = alpha * vec_temp[i] + beta * y_inout(i);
+}
+
+template <>
+void reallyApplyBuiltInImpl<float>(const Epetra_CrsMatrix& mat,
+                                   const TranspositionMode trans,
+                                   const arma::Col<float>& x_in,
+                                   arma::Col<float>& y_inout,
+                                   const float alpha,
+                                   const float beta)
+{
+    // Copy the float vectors to double vectors
+    arma::Col<double> x_in_double(x_in.n_rows);
+    std::copy(x_in.begin(), x_in.end(), x_in_double.begin());
+    arma::Col<double> y_inout_double(y_inout.n_rows);
+    if (beta != 0.f)
+        std::copy(y_inout.begin(), y_inout.end(), y_inout_double.begin());
+
+    // Do the operation on the double vectors
+    reallyApplyBuiltInImpl<double>(
+                mat, trans, x_in_double, y_inout_double, alpha, beta);
+
+    // Copy the result back to the float vector
+    std::copy(y_inout_double.begin(), y_inout_double.end(), y_inout.begin());
+}
+
+} // namespace
+
+
 template <typename ValueType>
 DiscreteSparseLinearOperator<ValueType>::
 DiscreteSparseLinearOperator(std::auto_ptr<Epetra_FECrsMatrix> mat) :
@@ -193,23 +257,8 @@ void DiscreteSparseLinearOperator<ValueType>::applyBuiltInImpl(
         const ValueType alpha,
         const ValueType beta) const
 {
-    Epetra_Map map_x(x_in.n_rows, 0, Epetra_SerialComm());
-    Epetra_Map map_y(y_inout.n_rows, 0, Epetra_SerialComm());
-    Epetra_Vector vec_x(View, map_x, const_cast<ValueType*>(x_in.memptr()));
-    // vec_temp will store the result of matrix * x_in
-    Epetra_Vector vec_temp(map_y, false /* no need to initialise to zero */);
-
-    m_mat->Multiply(trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE,
-                    vec_x, vec_temp);
-
-    if (beta == 0.)
-        for (int i = 0; i < y_inout.n_rows; ++i)
-            y_inout(i) = alpha * vec_temp[i];
-    else
-        for (int i = 0; i < y_inout.n_rows; ++i)
-            y_inout(i) = alpha * vec_temp[i] + beta * y_inout(i);
+    reallyApplyBuiltInImpl(*m_mat, trans, x_in, y_inout, alpha, beta);
 }
-
 
 #ifdef COMPILE_FOR_FLOAT
 template class DiscreteSparseLinearOperator<float>;

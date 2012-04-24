@@ -62,6 +62,70 @@
 namespace Bempp
 {
 
+// Type-agnostic wrapper for the Amesos solver
+namespace
+{
+
+template <typename ValueType>
+void solveWithAmesos(Epetra_CrsMatrix& mat, arma::Col<ValueType>& solution,
+                     const arma::Col<ValueType>& rhs);
+
+template <>
+void solveWithAmesos<double>(Epetra_CrsMatrix& mat,
+                             arma::Col<double>& armaSolution,
+                             const arma::Col<double>& armaRhs)
+{
+    const int size = mat.NumGlobalRows();
+    assert(size == mat.NumGlobalCols());
+    assert(size == armaSolution.n_rows);
+    assert(size == armaRhs.n_rows);
+
+    Epetra_Map map(size, 0 /* base index */, Epetra_SerialComm());
+    Epetra_MultiVector solution(View, map, armaSolution.memptr(),
+                                size /* rowCount */, 1 /* colCount */);
+    Epetra_MultiVector rhs(View, map, const_cast<double*>(armaRhs.memptr()),
+                           size /* rowCount */, 1 /* colCount */);
+    Epetra_LinearProblem problem(&mat, &solution, &rhs);
+
+    Amesos amesosFactory;
+    const char* solverName = "Amesos_Klu";
+    if (!amesosFactory.Query(solverName))
+        throw std::runtime_error("GridFunction::GridFunction(): "
+                                 "Amesos_Klu solver not available");
+    std::auto_ptr<Amesos_BaseSolver> solver(
+                amesosFactory.Create("Amesos_Klu", problem));
+    if (!solver.get())
+        throw std::runtime_error("GridFunction::GridFunction(): "
+                                 "Amesos solver could not be constructed");
+
+    if (solver->SymbolicFactorization())
+        throw std::runtime_error("GridFunction::GridFunction(): "
+                                 "Symbolic factorisation with Amesos failed");
+    if (solver->NumericFactorization())
+        throw std::runtime_error("GridFunction::GridFunction(): "
+                                 "Numeric factorisation with Amesos failed");
+    if (solver->Solve())
+        throw std::runtime_error("GridFunction::GridFunction(): "
+                                 "Amesos solve failed");
+}
+
+template <>
+void solveWithAmesos<float>(Epetra_CrsMatrix& mat,
+                            arma::Col<float>& armaSolution,
+                            const arma::Col<float>& armaRhs)
+{
+    arma::Col<double> solution_double(armaSolution.n_rows);
+    std::copy(armaSolution.begin(), armaSolution.end(), solution_double.begin());
+    arma::Col<double> rhs_double(armaRhs.n_rows);
+    std::copy(armaRhs.begin(), armaRhs.end(), rhs_double.begin());
+
+    solveWithAmesos<double>(mat, solution_double, rhs_double);
+
+    std::copy(solution_double.begin(), solution_double.end(), armaSolution.begin());
+}
+
+} // namespace
+
 template <typename ValueType>
 GridFunction<ValueType>::GridFunction(
         const Space<ValueType>& space,
@@ -80,41 +144,16 @@ GridFunction<ValueType>::GridFunction(
 
     // Solve the system id * m_coefficients = projections
 #ifdef WITH_TRILINOS
-    if (assemblyOptions.operatorRepresentation()!=assemblyOptions.DENSE) {
+    if (assemblyOptions.operatorRepresentation() != assemblyOptions.DENSE) {
         DiscreteSparseLinearOperator<ValueType>& sparseDiscreteId =
                 dynamic_cast<DiscreteSparseLinearOperator<ValueType>&>(*discreteId);
         Epetra_CrsMatrix& epetraMat = sparseDiscreteId.epetraMatrix();
 
         const int coefficientCount = space.globalDofCount();
-        Epetra_Map map(coefficientCount, 0 /* base index */, Epetra_SerialComm());
         m_coefficients.set_size(coefficientCount);
         m_coefficients.fill(0.);
-        Epetra_MultiVector solution(View, map, m_coefficients.memptr(),
-                                    coefficientCount /* rowCount */, 1 /* colCount */);
-        Epetra_MultiVector rhs(View, map, projections.memptr(),
-                               coefficientCount /* rowCount */, 1 /* colCount */);
-        Epetra_LinearProblem problem(&epetraMat, &solution, &rhs);
 
-        Amesos amesosFactory;
-        const char* solverName = "Amesos_Klu";
-        if (!amesosFactory.Query(solverName))
-            throw std::runtime_error("GridFunction::GridFunction(): "
-                                     "Amesos_Klu solver not available");
-        std::auto_ptr<Amesos_BaseSolver> solver(
-                    amesosFactory.Create("Amesos_Klu", problem));
-        if (!solver.get())
-            throw std::runtime_error("GridFunction::GridFunction(): "
-                                     "Amesos solver could not be constructed");
-
-        if (solver->SymbolicFactorization())
-            throw std::runtime_error("GridFunction::GridFunction(): "
-                                     "Symbolic factorisation with Amesos failed");
-        if (solver->NumericFactorization())
-            throw std::runtime_error("GridFunction::GridFunction(): "
-                                     "Numeric factorisation with Amesos failed");
-        if (solver->Solve())
-            throw std::runtime_error("GridFunction::GridFunction(): "
-                                     "Amesos solve failed");
+        solveWithAmesos(epetraMat, m_coefficients, projections);
     } else {
         m_coefficients = arma::solve(discreteId->asMatrix(), projections);
     }
