@@ -28,32 +28,7 @@ namespace Bempp
     class Grid;
 } // namespace Bempp
 
-enum MeshVariant
-{
-    TWO_DISJOINT_TRIANGLES,
-    TWO_TRIANGLES_SHARING_VERTEX_0,
-    TWO_TRIANGLES_SHARING_VERTICES_2_AND_0,
-    TWO_TRIANGLES_SHARING_VERTICES_1_AND_0,
-    TWO_TRIANGLES_SHARING_EDGES_0_AND_0,
-    TWO_TRIANGLES_SHARING_EDGES_1_AND_0,
-    SIMPLE_MESH_9,
-    CUBE_12,
-    CUBE_12_REORIENTED, // all elements oriented so that normals point outwards
-    CUBE_384,
-    SPHERE_614,
-    SPHERE_2590,
-    DOUBLE_SPHERE_5162,
-    DOUBLE_SPHERE_20624,
-    CUBE_6144,
-    CUBE_24576,
-    SPHERE_152,
-    SPHERE_644,
-    SPHERE_41440,
-    ANGLE1,
-    SPHERICAL_SHELL_INNER_SURFACE
-};
-
-std::auto_ptr<Bempp::Grid> loadMesh(MeshVariant mv);
+std::auto_ptr<Bempp::Grid> loadTriangularMeshFromFile(const char* fileName);
 
 void dumpElementList(const Bempp::Grid* grid);
 

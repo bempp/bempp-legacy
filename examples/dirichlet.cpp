@@ -74,17 +74,21 @@ public:
     // the array "result"
     inline void evaluate(const arma::Col<ValueType>& point,
                   arma::Col<ValueType>& result) const {
-        //result(0) = sin(0.5 * point(0) * cos(0.25 * point(2))) * cos(point(1));
         result(0) = 1.;
     }
 };
 
 
-int main()
+int main(int argc, char* argv[])
 {
-    // Load a predefined test grid
-    const MeshVariant meshVariant = SPHERE_614;
-    std::auto_ptr<Grid> grid = loadMesh(meshVariant);
+    // Load mesh
+
+    if (argc != 2) {
+        std::cout << "Solve a Dirichlet problem for the Laplace equation.\n"
+                     "Usage: " << argv[0] << " <mesh_file>" << std::endl;
+        return 1;
+    }
+    std::auto_ptr<Grid> grid = loadTriangularMeshFromFile(argv[1]);
 
     // Initialize the spaces
 
@@ -109,9 +113,9 @@ int main()
 
     // We need the single layer, double layer, and the identity operator
 
-    SingleLayerPotential3D<FloatType> slp(HminusHalfSpace,HminusHalfSpace);
-    DoubleLayerPotential3D<FloatType> dlp(HminusHalfSpace,HplusHalfSpace);
-    IdentityOperator<FloatType> id(HminusHalfSpace,HplusHalfSpace);
+    SingleLayerPotential3D<FloatType> slp(HminusHalfSpace, HminusHalfSpace);
+    DoubleLayerPotential3D<FloatType> dlp(HminusHalfSpace, HplusHalfSpace);
+    IdentityOperator<FloatType> id(HminusHalfSpace, HplusHalfSpace);
 
     // Form the right-hand side sum
 
@@ -125,8 +129,8 @@ int main()
 
     // Assemble the Operators
 
-    slp.assemble(factory,assemblyOptions);
-    rhsOp.assemble(factory,assemblyOptions);
+    slp.assemble(factory, assemblyOptions);
+    rhsOp.assemble(factory, assemblyOptions);
 
     // We also want a grid function
 
@@ -161,11 +165,12 @@ int main()
     // Write out as VTK
 
     solFun.exportToVtk(VtkWriter::CELL_DATA, "Neumann_data",
-                       "physical_test_neumann_data");
+                       "calculated_neumann_data");
 
     // Compare with exact solution
 
-    arma::Col<FloatType> solutionCoefficients = solFun.coefficients().asArmadilloVector();
+    arma::Col<FloatType> solutionCoefficients =
+            solFun.coefficients().asArmadilloVector();
 
     arma::Col<FloatType> deviation = solutionCoefficients - (-1.);
     // % in Armadillo -> elementwise multiplication
