@@ -136,7 +136,7 @@ typename Solver<ValueType>::EStatus DefaultIterativeSolver<ValueType>::getStatus
 }
 
 template <typename ValueType>
-double DefaultIterativeSolver<ValueType>::getSolveTolerance() const
+ValueType DefaultIterativeSolver<ValueType>::getSolveTolerance() const
 {
     return m_status.achievedTol;
 }
@@ -154,7 +154,9 @@ DefaultIterativeSolver<ValueType>::getThyraSolveStatus() const
     return m_status;
 }
 
-Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(double tol)
+template <typename ValueType>
+Teuchos::RCP<Teuchos::ParameterList>
+DefaultIterativeSolver<ValueType>::defaultGmresParameterList(ValueType tol)
 {
     Teuchos::RCP<Teuchos::ParameterList> paramList(
                 new Teuchos::ParameterList("DefaultParameters"));
@@ -166,7 +168,9 @@ Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(double tol)
     return paramList;
 }
 
-Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(double tol)
+template <typename ValueType>
+Teuchos::RCP<Teuchos::ParameterList>
+DefaultIterativeSolver<ValueType>::defaultCgParameterList(ValueType tol)
 {
     Teuchos::RCP<Teuchos::ParameterList> paramList(
                 new Teuchos::ParameterList("DefaultParameters"));

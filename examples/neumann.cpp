@@ -56,7 +56,7 @@
 
 using namespace Bempp;
 
-typedef double FloatType;
+typedef float FloatType;
 
 class MyFunctor
 {
@@ -144,8 +144,9 @@ int main(int argc, char* argv[])
     std::cout << "Initialize solver" << std::endl;
 
 #ifdef WITH_TRILINOS
-    DefaultIterativeSolver<FloatType> solver(lhsOp, rhs);
-    solver.initializeSolver(defaultGmresParameterList(1e-5));
+    typedef DefaultIterativeSolver<FloatType> Solver;
+    Solver solver(lhsOp, rhs);
+    solver.initializeSolver(Solver::defaultGmresParameterList(1e-5));
     solver.solve();
     std::cout << solver.getSolverMessage() << std::endl;
 #else

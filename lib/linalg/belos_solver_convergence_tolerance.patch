@@ -1,0 +1,27 @@
+--- /home/wojtek/tmp/trilinos-10.10.1-Source/packages/stratimikos/adapters/belos/src/Thyra_BelosLinearOpWithSolve_def.hpp	2012-02-22 23:02:42.000000000 +0000
++++ Thyra_BelosLinearOpWithSolve_def.hpp	2012-04-24 18:16:58.000000000 +0100
+@@ -124,6 +124,8 @@
+   const int convergenceTestFrequency
+   )
+ {
++  typedef typename Teuchos::ScalarTraits<Scalar>::magnitudeType MagnitudeType;
++
+   this->setLinePrefix("BELOS/T");
+   // ToDo: Validate input
+   lp_ = lp;
+@@ -139,13 +141,13 @@
+   // not, use the default from the solver.
+   if ( !is_null(solverPL_) ) {
+     if (solverPL_->isParameter("Convergence Tolerance")) {
+-      defaultTol_ = solverPL_->get<double>("Convergence Tolerance");
++      defaultTol_ = solverPL_->get<MagnitudeType>("Convergence Tolerance");
+     }
+   }
+   else {
+     RCP<const Teuchos::ParameterList> defaultPL =
+       iterativeSolver->getValidParameters();
+-    defaultTol_ = defaultPL->get<double>("Convergence Tolerance");
++    defaultTol_ = defaultPL->get<MagnitudeType>("Convergence Tolerance");
+   }
+ }
+ 
