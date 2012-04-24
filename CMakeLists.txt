@@ -21,11 +21,15 @@ add_subdirectory(python)
 # Examples
 add_subdirectory(examples) 
 
+# Scratch
+if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/scratch/CMakeLists.txt")
+  add_subdirectory(scratch)
+endif ()
+
 # Tests
 if (WITH_TESTS)
   add_subdirectory(tests)
 endif (WITH_TESTS)
-
 
 # Uninstall target
 configure_file(

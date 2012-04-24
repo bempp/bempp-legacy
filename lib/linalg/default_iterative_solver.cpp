@@ -105,7 +105,7 @@ void DefaultIterativeSolver<ValueType>::solve()
     m_sol = Teuchos::RCP<Thyra::MultiVectorBase<ValueType> >(new Thyra::DefaultSpmdMultiVector<ValueType>(
                 Thyra::defaultSpmdVectorSpace<ValueType>(size),
                 Thyra::defaultSpmdVectorSpace<ValueType>(nrhs)));
-    Thyra::assign(m_sol.ptr(), 0.);
+    Thyra::assign(m_sol.ptr(), static_cast<ValueType>(0.));
 
     m_status = m_lhs->solve(Thyra::NOTRANS, *m_rhs, m_sol.ptr());
 }

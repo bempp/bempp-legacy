@@ -179,17 +179,17 @@ LinearOperatorSuperposition<ValueType> operator-(
         const LinearOperator<ValueType>& op1,
         const LinearOperator<ValueType>& op2);
 
-template <typename ValueType>
+template <typename ValueType, typename ScalarType>
 LinearOperatorSuperposition<ValueType> operator*(
-        const LinearOperator<ValueType>& op, const ValueType& scalar);
+        const LinearOperator<ValueType>& op, const ScalarType& scalar);
 
-template <typename ValueType>
+template <typename ValueType, typename ScalarType>
 LinearOperatorSuperposition<ValueType> operator*(
-        const ValueType& scalar, const LinearOperator<ValueType>& op);
+        const ScalarType& scalar, const LinearOperator<ValueType>& op);
 
-template <typename ValueType>
+template <typename ValueType, typename ScalarType>
 LinearOperatorSuperposition<ValueType> operator/(
-        const LinearOperator<ValueType>& op, const ValueType& scalar);
+        const LinearOperator<ValueType>& op, const ScalarType& scalar);
 
 template <typename ValueType>
 GridFunction<ValueType> operator*(

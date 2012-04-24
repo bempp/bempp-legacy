@@ -38,6 +38,7 @@ struct AcaOptions
     int maximumRank;
     bool recompress;
     bool outputPostscript;
+    double scaling;
     std::string outputFname;
 };
 

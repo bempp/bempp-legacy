@@ -74,17 +74,21 @@ public:
     // the array "result"
     inline void evaluate(const arma::Col<ValueType>& point,
                   arma::Col<ValueType>& result) const {
-        //result(0) = sin(0.5 * point(0) * cos(0.25 * point(2))) * cos(point(1));
         result(0) = 1.;
     }
 };
 
 
-int main()
+int main(int argc, char* argv[])
 {
-    // Load a predefined test grid
-    const MeshVariant meshVariant = DOUBLE_SPHERE_20624;
-    std::auto_ptr<Grid> grid = loadMesh(meshVariant);
+    // Load mesh
+
+    if (argc != 2) {
+        std::cout << "Solve a Neumann problem for the Laplace equation.\n"
+                     "Usage: " << argv[0] << " <mesh_file>" << std::endl;
+        return 1;
+    }
+    std::auto_ptr<Grid> grid = loadTriangularMeshFromFile(argv[1]);
 
     // Initialize the spaces
 
@@ -109,31 +113,25 @@ int main()
 
     // We need the single layer, double layer, and the identity operator
 
-    SingleLayerPotential3D<FloatType> slp(HminusHalfSpace,HminusHalfSpace);
-    DoubleLayerPotential3D<FloatType> dlp(HminusHalfSpace,HplusHalfSpace);
-    IdentityOperator<FloatType> id(HminusHalfSpace,HplusHalfSpace);
+    SingleLayerPotential3D<FloatType> rhsOp(HplusHalfSpace, HminusHalfSpace);
+    DoubleLayerPotential3D<FloatType> dlp(HplusHalfSpace, HplusHalfSpace);
+    IdentityOperator<FloatType> id(HplusHalfSpace, HplusHalfSpace);
 
-    // Form the right-hand side sum
+    // Form the left-hand side sum
 
-    // This static_cast is at present necessary in the case of FloatType ==
-    // float. Possibly it could be eliminated if the arithmetic operators
-    // involving LinearOperator were templated with respect to scalar's type
-    // and the scalar were internally static-casted to ValueType. But we need
-    // to be sure that this doesn't have unintended side-effects.
-    LinearOperatorSuperposition<FloatType> rhsOp =
-            static_cast<FloatType>(-0.5) * id + dlp;
+    LinearOperatorSuperposition<FloatType> lhsOp = -0.5 * id + dlp;
 
     // Assemble the Operators
 
-    slp.assemble(factory,assemblyOptions);
-    rhsOp.assemble(factory,assemblyOptions);
+    rhsOp.assemble(factory, assemblyOptions);
+    lhsOp.assemble(factory, assemblyOptions);
 
     // We also want a grid function
 
     MyFunctor functor;
     OrdinaryFunction<MyFunctor> function(functor);
 
-    GridFunction<FloatType> u(HplusHalfSpace, function, factory, assemblyOptions);
+    GridFunction<FloatType> u(HminusHalfSpace, function, factory, assemblyOptions);
 
     // Assemble the rhs
 
@@ -146,30 +144,21 @@ int main()
     std::cout << "Initialize solver" << std::endl;
 
 #ifdef WITH_TRILINOS
-    DefaultIterativeSolver<FloatType> solver(slp, rhs);
+    DefaultIterativeSolver<FloatType> solver(lhsOp, rhs);
     solver.initializeSolver(defaultGmresParameterList(1e-5));
     solver.solve();
     std::cout << solver.getSolverMessage() << std::endl;
 #else
-    DefaultDirectSolver<FloatType> solver(slp, rhs);
+    DefaultDirectSolver<FloatType> solver(lhsOp, rhs);
     solver.solve();
 #endif
+
     // Extract the solution
 
     GridFunction<FloatType> solFun = solver.getResult();
 
     // Write out as VTK
 
-    solFun.exportToVtk(VtkWriter::CELL_DATA, "Neumann_data",
-                       "physical_test_neumann_data");
-
-    // Compare with exact solution
-
-    arma::Col<FloatType> solutionCoefficients = solFun.coefficients().asArmadilloVector();
-
-    arma::Col<FloatType> deviation = solutionCoefficients - (-1.);
-    // % in Armadillo -> elementwise multiplication
-    FloatType stdDev = sqrt(arma::accu(deviation % deviation) /
-                         solutionCoefficients.n_rows);
-    std::cout << "Standard deviation: " << stdDev << std::endl;
+    solFun.exportToVtk(VtkWriter::VERTEX_DATA, "Dirichlet_data",
+                       "calculated_dirichlet_data");
 }
