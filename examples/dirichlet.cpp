@@ -119,13 +119,7 @@ int main(int argc, char* argv[])
 
     // Form the right-hand side sum
 
-    // This static_cast is at present necessary in the case of FloatType ==
-    // float. Possibly it could be eliminated if the arithmetic operators
-    // involving LinearOperator were templated with respect to scalar's type
-    // and the scalar were internally static-casted to ValueType. But we need
-    // to be sure that this doesn't have unintended side-effects.
-    LinearOperatorSuperposition<FloatType> rhsOp =
-            static_cast<FloatType>(-0.5) * id + dlp;
+    LinearOperatorSuperposition<FloatType> rhsOp = -0.5 * id + dlp;
 
     // Assemble the Operators
 
@@ -158,6 +152,7 @@ int main(int argc, char* argv[])
     DefaultDirectSolver<FloatType> solver(slp, rhs);
     solver.solve();
 #endif
+
     // Extract the solution
 
     GridFunction<FloatType> solFun = solver.getResult();
@@ -167,14 +162,15 @@ int main(int argc, char* argv[])
     solFun.exportToVtk(VtkWriter::CELL_DATA, "Neumann_data",
                        "calculated_neumann_data");
 
-    // Compare with exact solution
+    // Uncomment the block below if you are solving the problem on a sphere and
+    // you want to compare the numerical and analytical solution.
 
-    arma::Col<FloatType> solutionCoefficients =
-            solFun.coefficients().asArmadilloVector();
+    // arma::Col<FloatType> solutionCoefficients =
+    //         solFun.coefficients().asArmadilloVector();
 
-    arma::Col<FloatType> deviation = solutionCoefficients - (-1.);
-    // % in Armadillo -> elementwise multiplication
-    FloatType stdDev = sqrt(arma::accu(deviation % deviation) /
-                         solutionCoefficients.n_rows);
-    std::cout << "Standard deviation: " << stdDev << std::endl;
+    // arma::Col<FloatType> deviation = solutionCoefficients - (-1.);
+    // // % in Armadillo -> elementwise multiplication
+    // FloatType stdDev = sqrt(arma::accu(deviation % deviation) /
+    //                      solutionCoefficients.n_rows);
+    // std::cout << "Standard deviation: " << stdDev << std::endl;
 }

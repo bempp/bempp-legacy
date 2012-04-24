@@ -119,13 +119,7 @@ int main(int argc, char* argv[])
 
     // Form the left-hand side sum
 
-    // This static_cast is at present necessary in the case of FloatType ==
-    // float. Possibly it could be eliminated if the arithmetic operators
-    // involving LinearOperator were templated with respect to scalar's type
-    // and the scalar were internally static-casted to ValueType. But we need
-    // to be sure that this doesn't have unintended side-effects.
-    LinearOperatorSuperposition<FloatType> lhsOp =
-            static_cast<FloatType>(-0.5) * id + dlp;
+    LinearOperatorSuperposition<FloatType> lhsOp = -0.5 * id + dlp;
 
     // Assemble the Operators
 
@@ -149,10 +143,15 @@ int main(int argc, char* argv[])
 
     std::cout << "Initialize solver" << std::endl;
 
+#ifdef WITH_TRILINOS
     DefaultIterativeSolver<FloatType> solver(lhsOp, rhs);
     solver.initializeSolver(defaultGmresParameterList(1e-5));
     solver.solve();
     std::cout << solver.getSolverMessage() << std::endl;
+#else
+    DefaultDirectSolver<FloatType> solver(lhsOp, rhs);
+    solver.solve();
+#endif
 
     // Extract the solution
 
