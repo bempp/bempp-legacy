@@ -29,15 +29,16 @@
 namespace Fiber
 {
 
-template <typename ValueType, typename GeometryFactory>
-StandardLocalAssemblerForGridFunctionsOnSurfaces<ValueType, GeometryFactory>::
+template <typename BasisValueType, typename FunctionValueType, typename GeometryFactory>
+StandardLocalAssemblerForGridFunctionsOnSurfaces<BasisValueType,
+FunctionValueType, GeometryFactory>::
 StandardLocalAssemblerForGridFunctionsOnSurfaces(
         const GeometryFactory& geometryFactory,
         const RawGridGeometry<CoordinateType>& rawGeometry,
-        const std::vector<const Basis<ValueType>*>& testBases,
-        const Expression<ValueType>& testExpression,
-        const Function<ValueType>& function,
-        const OpenClHandler<ValueType,int>& openClHandler) :
+        const std::vector<const Basis<BasisValueType>*>& testBases,
+        const Expression<BasisValueType>& testExpression,
+        const Function<FunctionValueType>& function,
+        const OpenClHandler<CoordinateType, int>& openClHandler) :
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
     m_testBases(testBases),
@@ -72,8 +73,9 @@ StandardLocalAssemblerForGridFunctionsOnSurfaces(
                 "elementCornerIndices");
 }
 
-template <typename ValueType, typename GeometryFactory>
-StandardLocalAssemblerForGridFunctionsOnSurfaces<ValueType, GeometryFactory>::
+template <typename BasisValueType, typename FunctionValueType, typename GeometryFactory>
+StandardLocalAssemblerForGridFunctionsOnSurfaces<BasisValueType,
+FunctionValueType, GeometryFactory>::
 ~StandardLocalAssemblerForGridFunctionsOnSurfaces()
 {
     // Note: obviously the destructor is assumed to be called only after
@@ -85,15 +87,15 @@ StandardLocalAssemblerForGridFunctionsOnSurfaces<ValueType, GeometryFactory>::
     m_testFunctionIntegrators.clear();
 }
 
-template <typename ValueType, typename GeometryFactory>
+template <typename BasisValueType, typename FunctionValueType, typename GeometryFactory>
 void
-StandardLocalAssemblerForGridFunctionsOnSurfaces<ValueType, GeometryFactory>::
+StandardLocalAssemblerForGridFunctionsOnSurfaces<BasisValueType,
+FunctionValueType, GeometryFactory>::
 evaluateLocalWeakForms(
         const std::vector<int>& elementIndices,
-        std::vector<arma::Col<ValueType> >& result)
+        std::vector<arma::Col<ResultType> >& result)
 {
-    typedef Fiber::TestFunctionIntegrator<ValueType> Integrator;
-    typedef Fiber::Basis<ValueType> Basis;
+    typedef Fiber::Basis<BasisValueType> Basis;
 
     const int elementCount = elementIndices.size();
     result.resize(elementCount);
@@ -138,7 +140,7 @@ evaluateLocalWeakForms(
                 activeElementIndices.push_back(elementIndices[e]);
 
         // Integrate!
-        arma::Mat<ValueType> localResult;
+        arma::Mat<ResultType> localResult;
         activeIntegrator.integrate(activeElementIndices,
                                    activeTestBasis,
                                    localResult);
@@ -152,9 +154,10 @@ evaluateLocalWeakForms(
     }
 }
 
-template <typename ValueType, typename GeometryFactory>
-const TestFunctionIntegrator<ValueType>&
-StandardLocalAssemblerForGridFunctionsOnSurfaces<ValueType, GeometryFactory>::
+template <typename BasisValueType, typename FunctionValueType, typename GeometryFactory>
+const TestFunctionIntegrator<BasisValueType, FunctionValueType>&
+StandardLocalAssemblerForGridFunctionsOnSurfaces<BasisValueType,
+FunctionValueType, GeometryFactory>::
 selectIntegrator(int elementIndex)
 {
     SingleQuadratureDescriptor desc;
@@ -169,9 +172,10 @@ selectIntegrator(int elementIndex)
     return getIntegrator(desc);
 }
 
-template <typename ValueType, typename GeometryFactory>
-const TestFunctionIntegrator<ValueType>&
-StandardLocalAssemblerForGridFunctionsOnSurfaces<ValueType, GeometryFactory>::
+template <typename BasisValueType, typename FunctionValueType, typename GeometryFactory>
+const TestFunctionIntegrator<BasisValueType, FunctionValueType>&
+StandardLocalAssemblerForGridFunctionsOnSurfaces<BasisValueType,
+FunctionValueType, GeometryFactory>::
 getIntegrator(const SingleQuadratureDescriptor& desc)
 {
     typename IntegratorMap::iterator it = m_testFunctionIntegrators.find(desc);
@@ -183,17 +187,18 @@ getIntegrator(const SingleQuadratureDescriptor& desc)
     // std::cout << "getIntegrator(: " << index << "): integrator not found" << std::endl;
 
     // Integrator doesn't exist yet and must be created.
-    arma::Mat<ValueType> points;
-    std::vector<ValueType> weights;
+    arma::Mat<CoordinateType> points;
+    std::vector<CoordinateType> weights;
     fillSingleQuadraturePointsAndWeights(desc.vertexCount, desc.order,
                                          points, weights);
 
-    typedef NumericalTestFunctionIntegrator<ValueType, GeometryFactory> Integrator;
-    TestFunctionIntegrator<ValueType>* integrator(
-            new Integrator(points, weights,
-                           m_geometryFactory, m_rawGeometry,
-                           m_testExpression, m_function,
-                           m_openClHandler));
+    typedef NumericalTestFunctionIntegrator<BasisValueType, FunctionValueType,
+            GeometryFactory> ConcreteIntegrator;
+    Integrator* integrator(
+                new ConcreteIntegrator(points, weights,
+                                       m_geometryFactory, m_rawGeometry,
+                                       m_testExpression, m_function,
+                                       m_openClHandler));
 
     // Attempt to insert the newly created integrator into the map
     std::pair<typename IntegratorMap::iterator, bool> result =
@@ -211,9 +216,10 @@ getIntegrator(const SingleQuadratureDescriptor& desc)
     return *result.first->second;
 }
 
-template <typename ValueType, typename GeometryFactory>
+template <typename BasisValueType, typename FunctionValueType, typename GeometryFactory>
 inline int
-StandardLocalAssemblerForGridFunctionsOnSurfaces<ValueType, GeometryFactory>::
+StandardLocalAssemblerForGridFunctionsOnSurfaces<BasisValueType,
+FunctionValueType, GeometryFactory>::
 orderIncrement(int elementIndex) const
 {
     // TODO: add to constructor an option for increased-order quadrature

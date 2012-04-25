@@ -22,6 +22,7 @@
 #define fiber_kernel_hpp
 
 #include "array_4d.hpp"
+#include "scalar_traits.hpp"
 
 #include <armadillo>
 

@@ -31,6 +31,8 @@ template <typename ValueType>
 class ScalarSpace : public Space<ValueType>
 {
 public:
+    typedef typename Space<ValueType>::CoordinateType CoordinateType;
+
     explicit ScalarSpace(Grid& grid) : Space<ValueType>(grid) {
     }
 

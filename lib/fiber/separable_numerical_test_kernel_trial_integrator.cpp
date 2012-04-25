@@ -18,29 +18,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-// File to be removed once unit tests of SeparableNumericalTestKernelTrialIntegrator are in place
-
 #include "separable_numerical_test_kernel_trial_integrator.hpp"
+#include "explicit_instantiation.hpp"
 #include "../grid/geometry_factory.hpp"
 #include "../grid/geometry.hpp"
 
 namespace Fiber
 {
 
-#ifdef COMPILE_FOR_FLOAT
-template class SeparableNumericalTestKernelTrialIntegrator<float, Bempp::GeometryFactory>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class SeparableNumericalTestKernelTrialIntegrator<double, Bempp::GeometryFactory>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class SeparableNumericalTestKernelTrialIntegrator<std::complex<float>, Bempp::GeometryFactory>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class SeparableNumericalTestKernelTrialIntegrator<std::complex<double>, Bempp::GeometryFactory>;
-#endif
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_GEOFACTORY(
+        SeparableNumericalTestKernelTrialIntegrator);
 
 } // namespace Fiber
 

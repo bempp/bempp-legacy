@@ -40,7 +40,7 @@ struct PiecewiseLinearContinuousScalarBasisTraits
 
 // Line
 template <typename CoordinateType, typename ValueType>
-struct PiecewiseLinearContinuousScalarBasisTraits<2, ValueType>
+struct PiecewiseLinearContinuousScalarBasisTraits<2, CoordinateType, ValueType>
 {
 public:
     typedef Dune::Q1LocalBasis<CoordinateType, ValueType, 1> DuneBasis;
@@ -48,7 +48,7 @@ public:
 
 // Triangle
 template <typename CoordinateType, typename ValueType>
-struct PiecewiseLinearContinuousScalarBasisTraits<3, ValueType>
+struct PiecewiseLinearContinuousScalarBasisTraits<3, CoordinateType, ValueType>
 {
 public:
     typedef Dune::P1LocalBasis<CoordinateType, ValueType, 2> DuneBasis;
@@ -56,7 +56,7 @@ public:
 
 // Quadrilateral
 template <typename CoordinateType, typename ValueType>
-struct PiecewiseLinearContinuousScalarBasisTraits<4, ValueType>
+struct PiecewiseLinearContinuousScalarBasisTraits<4, CoordinateType, ValueType>
 {
 public:
     typedef Dune::Q1LocalBasis<CoordinateType, ValueType, 2> DuneBasis;
@@ -65,13 +65,14 @@ public:
 template <int elementVertexCount, typename ValueType>
 class PiecewiseLinearContinuousScalarBasis : public Basis<ValueType>
 {
+public:
+    typedef typename Basis<ValueType>::CoordinateType CoordinateType;
+
 private:
     typedef typename PiecewiseLinearContinuousScalarBasisTraits
     <elementVertexCount, CoordinateType, ValueType>::DuneBasis DuneBasis;
 
 public:
-    typedef typename Basis<ValueType>::CoordinateType CoordinateType;
-
     virtual int size() const {
         DuneBasis basis;
         return basis.size();

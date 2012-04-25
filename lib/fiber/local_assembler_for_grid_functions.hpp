@@ -34,7 +34,7 @@ namespace Fiber
   This assembler provides methods that evaluate local (element-by-element) weak
   forms of integrals occurring in boundary-element matrices of grid functions.
  */
-template <typename ValueType>
+template <typename ResultType>
 class LocalAssemblerForGridFunctions
 {
 public:
@@ -43,7 +43,7 @@ public:
     /** \brief Assemble local weak forms of a source term on specified elements. */
     virtual void evaluateLocalWeakForms(
             const std::vector<int>& elementIndices,
-            std::vector<arma::Col<ValueType> >& result) = 0;
+            std::vector<arma::Col<ResultType> >& result) = 0;
 };
 
 } // namespace Fiber

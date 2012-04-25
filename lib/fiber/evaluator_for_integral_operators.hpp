@@ -26,10 +26,12 @@
 namespace Fiber
 {
 
-template <typename ValueType>
+template <typename ResultType>
 class EvaluatorForIntegralOperators
 {
 public:
+    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+
     enum Region {
         NEAR_FIELD, FAR_FIELD
     };
@@ -37,8 +39,8 @@ public:
     virtual ~EvaluatorForIntegralOperators() {}
 
     virtual void evaluate(Region region,
-                          const arma::Mat<ValueType>& points,
-                          arma::Mat<ValueType>& result) const = 0;
+                          const arma::Mat<CoordinateType>& points,
+                          arma::Mat<ResultType>& result) const = 0;
 };
 
 } // namespace Fiber

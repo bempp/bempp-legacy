@@ -21,6 +21,8 @@
 #ifndef fiber_integration_manager_factory_hpp
 #define fiber_integration_manager_factory_hpp
 
+#include "scalar_traits.hpp"
+
 #include <armadillo>
 #include <memory>
 
@@ -34,43 +36,48 @@ template <typename ValueType> class Function;
 template <typename ValueType> class Kernel;
 template <typename CoordinateType> class RawGridGeometry;
 
-template <typename ValueType> class LocalAssemblerForOperators;
-template <typename ValueType> class LocalAssemblerForGridFunctions;
-template <typename ValueType> class EvaluatorForIntegralOperators;
+template <typename ResultType> class LocalAssemblerForOperators;
+template <typename ResultType> class LocalAssemblerForGridFunctions;
+template <typename ResultType> class EvaluatorForIntegralOperators;
 
-template <typename ValueType, typename GeometryFactory>
+template <typename BasisValueType, typename ResultType,
+          typename GeometryFactory>
 class LocalAssemblerFactory
 {
 public:
+    // Type of the output of integral operators. Note that identity operators
+    // output numbers of type BasisValueType.
+    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+
     virtual ~LocalAssemblerFactory() {}
 
     /** @name Local assemblers for integral operators
         @{ */
 
+    // TODO (important): overload for Kernel<ResultType> and
+    // Kernel<ScalarTraits<ResultType> >::RealType
     /** \brief Allocate a Galerkin-mode local assembler for an integral operator. */
-    virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
+    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<ValueType>*>& testBases,
-            const std::vector<const Basis<ValueType>*>& trialBases,
-            const Expression<ValueType>& testExpression,
-            const Kernel<ValueType>& kernel,
-            const Expression<ValueType>& trialExpression,
-            ValueType multiplier,
-            const OpenClHandler<ValueType,int>& openClHandler,
+            const std::vector<const Basis<BasisValueType>*>& testBases,
+            const std::vector<const Basis<BasisValueType>*>& trialBases,
+            const Expression<BasisValueType>& testExpression,
+            const Kernel<ResultType>& kernel,
+            const Expression<BasisValueType>& trialExpression,
+            const OpenClHandler<CoordinateType, int>& openClHandler,
             bool cacheSingularIntegrals) const = 0;
 
     /** \brief Allocate a collocation-mode local assembler for an integral operator.
 
-        Used also for evaluation of the identity operator at arbitrary points. */
-    virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
+        Used also for evaluation of the integral operator at arbitrary points. */
+    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<ValueType>*>& trialBases,
-            const Kernel<ValueType>& kernel,
-            const Expression<ValueType>& trialExpression,
-            ValueType multiplier,
-            const OpenClHandler<ValueType,int>& openClHandler,
+            const std::vector<const Basis<BasisValueType>*>& trialBases,
+            const Kernel<ResultType>& kernel,
+            const Expression<BasisValueType>& trialExpression,
+            const OpenClHandler<CoordinateType, int>& openClHandler,
             bool cacheSingularIntegrals) const = 0;
 
     /** @}
@@ -78,26 +85,24 @@ public:
         @{ */
 
     /** \brief Allocate a Galerkin-mode local assembler for the identity operator. */
-    virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
+    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<ValueType>*>& testBases,
-            const std::vector<const Basis<ValueType>*>& trialBases,
-            const Expression<ValueType>& testExpression,
-            const Expression<ValueType>& trialExpression,
-            ValueType multiplier,
-            const OpenClHandler<ValueType,int>& openClHandler) const = 0;
+            const std::vector<const Basis<BasisValueType>*>& testBases,
+            const std::vector<const Basis<BasisValueType>*>& trialBases,
+            const Expression<BasisValueType>& testExpression,
+            const Expression<BasisValueType>& trialExpression,
+            const OpenClHandler<CoordinateType, int>& openClHandler) const = 0;
 
     /** \brief Allocate a collocation-mode local assembler for an identity operator.
 
         Used also for evaluation of the identity operator at arbitrary points. */
-    virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
+    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<ValueType>*>& trialBases,
-            const Expression<ValueType>& trialExpression,
-            ValueType multiplier,
-            const OpenClHandler<ValueType,int>& openClHandler) const = 0;
+            const std::vector<const Basis<BasisValueType>*>& trialBases,
+            const Expression<BasisValueType>& trialExpression,
+            const OpenClHandler<CoordinateType, int>& openClHandler) const = 0;
 
     /** @}
         @name Local assemblers for grid functions
@@ -105,13 +110,13 @@ public:
 
     /** \brief Allocate a local assembler for calculations of the projections
       of functions from a given space on a Fiber::Function. */
-    virtual std::auto_ptr<LocalAssemblerForGridFunctions<ValueType> > make(
+    virtual std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<ValueType>*>& testBases,
-            const Expression<ValueType>& testExpression,
-            const Function<ValueType>& function,
-            const OpenClHandler<ValueType,int>& openClHandler) const = 0;
+            const std::vector<const Basis<BasisValueType>*>& testBases,
+            const Expression<BasisValueType>& testExpression,
+            const Function<ResultType>& function,
+            const OpenClHandler<CoordinateType, int>& openClHandler) const = 0;
 
     /** @}
         @name Evaluators for integral operators
@@ -119,15 +124,14 @@ public:
 
     /** \brief Allocate an evaluator for an integral operator applied to a
       grid function. */
-    virtual std::auto_ptr<EvaluatorForIntegralOperators<ValueType> > make(
+    virtual std::auto_ptr<EvaluatorForIntegralOperators<ResultType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<ValueType>*>& trialBases,
-            const Kernel<ValueType>& kernel,
-            const Expression<ValueType>& trialExpression,
-            const std::vector<std::vector<ValueType> >& argumentLocalCoefficients,
-            ValueType multiplier,
-            const OpenClHandler<ValueType, int>& openClHandler) const = 0;
+            const std::vector<const Basis<BasisValueType>*>& trialBases,
+            const Kernel<ResultType>& kernel,
+            const Expression<BasisValueType>& trialExpression,
+            const std::vector<std::vector<ResultType> >& argumentLocalCoefficients,
+            const OpenClHandler<CoordinateType, int>& openClHandler) const = 0;
 
     /** @} */
 };

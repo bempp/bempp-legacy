@@ -28,6 +28,7 @@
 
 #include "../common/auto_timer.hpp"
 #include "../fiber/basis.hpp"
+#include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/local_assembler_for_operators.hpp"
 #include "../fiber/opencl_handler.hpp"
 #include "../fiber/raw_grid_geometry.hpp"
@@ -39,11 +40,11 @@
 namespace Bempp
 {
 
-template <typename ValueType>
-LinearOperatorSuperposition<ValueType>::LinearOperatorSuperposition(
-        const LinearOperator<ValueType>& term1,
-        const LinearOperator<ValueType>& term2) :
-    LinearOperator<ValueType>(term1.testSpace(), term1.trialSpace())
+template <typename ArgumentType, typename ResultType>
+LinearOperatorSuperposition<ArgumentType, ResultType>::LinearOperatorSuperposition(
+        const LinearOperator<ArgumentType, ResultType>& term1,
+        const LinearOperator<ArgumentType, ResultType>& term2) :
+    LinearOperator<ArgumentType, ResultType>(term1.testSpace(), term1.trialSpace())
 {
     if (&term1.testSpace() != &term2.testSpace() ||
             &term1.trialSpace() != &term2.trialSpace())
@@ -56,42 +57,42 @@ LinearOperatorSuperposition<ValueType>::LinearOperatorSuperposition(
                 term2.localOperators(), term2.multipliers());
 }
 
-template <typename ValueType>
-LinearOperatorSuperposition<ValueType>::LinearOperatorSuperposition(
-        const LinearOperator<ValueType>& term,
-        const ValueType& scalar) :
-    LinearOperator<ValueType>(term.testSpace(), term.trialSpace())
+template <typename ArgumentType, typename ResultType>
+LinearOperatorSuperposition<ArgumentType, ResultType>::LinearOperatorSuperposition(
+        const LinearOperator<ArgumentType, ResultType>& term,
+        const ResultType& scalar) :
+    LinearOperator<ArgumentType, ResultType>(term.testSpace(), term.trialSpace())
 {
-    const std::vector<ValueType>& m = term.multipliers();
-    std::vector<ValueType> scaledMultipliers;
+    const std::vector<ResultType>& m = term.multipliers();
+    std::vector<ResultType> scaledMultipliers;
     for (int i = 0; i < m.size(); i++)
         scaledMultipliers.push_back(scalar * m[i]);
     this->addLocalOperatorsAndMultipliers(
                 term.localOperators(), scaledMultipliers);
 }
 
-template <typename ValueType>
-int LinearOperatorSuperposition<ValueType>::trialComponentCount() const
+template <typename ArgumentType, typename ResultType>
+int LinearOperatorSuperposition<ArgumentType, ResultType>::trialComponentCount() const
 {
     return this->localOperators()[0]->trialComponentCount();
 }
 
-template <typename ValueType>
-int LinearOperatorSuperposition<ValueType>::testComponentCount() const
+template <typename ArgumentType, typename ResultType>
+int LinearOperatorSuperposition<ArgumentType, ResultType>::testComponentCount() const
 {
     return this->localOperators()[0]->testComponentCount();
 }
 
-template <typename ValueType>
-bool LinearOperatorSuperposition<ValueType>::supportsRepresentation(
+template <typename ArgumentType, typename ResultType>
+bool LinearOperatorSuperposition<ArgumentType, ResultType>::supportsRepresentation(
         AssemblyOptions::Representation repr) const
 {
     return (repr == AssemblyOptions::DENSE || repr == AssemblyOptions::ACA);
 }
 
-template <typename ValueType>
-std::auto_ptr<DiscreteLinearOperator<ValueType> >
-LinearOperatorSuperposition<ValueType>::assembleWeakForm(
+template <typename ArgumentType, typename ResultType>
+std::auto_ptr<DiscreteLinearOperator<ResultType> >
+LinearOperatorSuperposition<ArgumentType, ResultType>::assembleWeakForm(
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
@@ -105,18 +106,18 @@ LinearOperatorSuperposition<ValueType>::assembleWeakForm(
     }
 }
 
-template <typename ValueType>
-std::auto_ptr<DiscreteLinearOperator<ValueType> >
-LinearOperatorSuperposition<ValueType>::assembleWeakFormInDenseMode(
+template <typename ArgumentType, typename ResultType>
+std::auto_ptr<DiscreteLinearOperator<ResultType> >
+LinearOperatorSuperposition<ArgumentType, ResultType>::assembleWeakFormInDenseMode(
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
-    typedef DiscreteLinearOperator<ValueType> DiscreteLinOp;
-    typedef DiscreteDenseLinearOperator<ValueType> DiscreteDenseLinOp;
+    typedef DiscreteLinearOperator<ResultType> DiscreteLinOp;
+    typedef DiscreteDenseLinearOperator<ResultType> DiscreteDenseLinOp;
 
-    const std::vector<ElementaryLinearOperator<ValueType> const*> localOperators =
+    const std::vector<ElementaryLinearOperator<ArgumentType, ResultType> const*> localOperators =
             this->localOperators();
-    const std::vector<ValueType>& multipliers = this->multipliers();
+    const std::vector<ResultType>& multipliers = this->multipliers();
 
     // Gather matrices of individual operators
     boost::ptr_vector<DiscreteLinOp> discreteOps;
@@ -127,7 +128,7 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInDenseMode(
     }
 
     // Add the matrices together
-    arma::Mat<ValueType> sum;
+    arma::Mat<ResultType> sum;
     sum = discreteOps[0].asMatrix()*multipliers[0];
     for (int i = 1; i < discreteOps.size(); ++i) {
         sum += discreteOps[i].asMatrix()*multipliers[i];
@@ -136,20 +137,20 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInDenseMode(
     return std::auto_ptr<DiscreteLinOp>(new DiscreteDenseLinOp(sum));
 }
 
-template <typename ValueType>
-std::auto_ptr<DiscreteLinearOperator<ValueType> >
-LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
+template <typename ArgumentType, typename ResultType>
+std::auto_ptr<DiscreteLinearOperator<ResultType> >
+LinearOperatorSuperposition<ArgumentType, ResultType>::assembleWeakFormInAcaMode(
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
-    typedef DiscreteLinearOperator<ValueType> DiscreteLinOp;
+    typedef DiscreteLinearOperator<ResultType> DiscreteLinOp;
 
-    const Space<ValueType>& testSpace = this->testSpace();
-    const Space<ValueType>& trialSpace = this->trialSpace();
+    const Space<ArgumentType>& testSpace = this->testSpace();
+    const Space<ArgumentType>& trialSpace = this->trialSpace();
 
-    const std::vector<ElementaryLinearOperator<ValueType> const*> localOperators =
+    const std::vector<ElementaryLinearOperator<ArgumentType, ResultType> const*> localOperators =
             this->localOperators();
-    const std::vector<ValueType>& multipliers = this->multipliers();
+    const std::vector<ResultType>& multipliers = this->multipliers();
 
     AutoTimer timer("\nAssembly took ");
 
@@ -173,7 +174,7 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
     // LocalAssemblerFactory
 
     // Gather geometric data
-    Fiber::RawGridGeometry<ValueType> rawGeometry(grid.dim(), grid.dimWorld());
+    Fiber::RawGridGeometry<CoordinateType> rawGeometry(grid.dim(), grid.dimWorld());
     view->getRawElementData(
                 rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
                 rawGeometry.auxData());
@@ -185,8 +186,8 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
     // REFACT Basis retrieval might be moved into Space
 
     // Get pointers to test and trial bases of each element
-    std::vector<const Fiber::Basis<ValueType>*> testBases;
-    std::vector<const Fiber::Basis<ValueType>*> trialBases;
+    std::vector<const Fiber::Basis<ArgumentType>*> testBases;
+    std::vector<const Fiber::Basis<ArgumentType>*> trialBases;
     testBases.reserve(elementCount);
     trialBases.reserve(elementCount);
 
@@ -199,7 +200,7 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
     }
 
     // REFACT This will disappear in the constructor of LocalAssemblerFactory
-    Fiber::OpenClHandler<ValueType, int> openClHandler(options.openClOptions());
+    Fiber::OpenClHandler<CoordinateType, int> openClHandler(options.openClOptions());
 
     // REFACT This is unfortunately going to stay
     bool cacheSingularIntegrals =
@@ -213,11 +214,11 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
     boost::ptr_vector<DiscreteLinOp> sparseDiscreteTerms;
     boost::ptr_vector<LocalAssembler> denseTermLocalAssemblers;
 
-    std::vector<ValueType> sparseTermsMultipliers;
-    std::vector<ValueType> denseTermsMultipliers;
+    std::vector<ResultType> sparseTermsMultipliers;
+    std::vector<ResultType> denseTermsMultipliers;
 
     for (int i = 0; i < localOperators.size(); ++i) {
-        ElementaryLinearOperator<ValueType> const* term = localOperators[i];
+        ElementaryLinearOperator<ArgumentType, ResultType> const* term = localOperators[i];
 
         // Create local assembler for the current term
         std::auto_ptr<LocalAssembler> assembler = term->makeAssembler(
@@ -250,7 +251,7 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
         stlSparseDiscreteTerms[i] = &sparseDiscreteTerms[i];
 
     // Assemble dense terms in ACA mode, simultaneously adding the sparse terms
-    return AcaGlobalAssembler<ValueType>::assembleWeakForm(
+    return AcaGlobalAssembler<ArgumentType, ResultType>::assembleWeakForm(
                 testSpace, trialSpace,
                 stlDenseTermLocalAssemblers,
                 stlSparseDiscreteTerms,
@@ -259,21 +260,21 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInAcaMode(
                 options);
 }
 
-template <typename ValueType>
-std::auto_ptr<DiscreteLinearOperator<ValueType> >
-LinearOperatorSuperposition<ValueType>::assembleWeakFormInArbitraryMode(
+template <typename ArgumentType, typename ResultType>
+std::auto_ptr<DiscreteLinearOperator<ResultType> >
+LinearOperatorSuperposition<ArgumentType, ResultType>::assembleWeakFormInArbitraryMode(
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
     // General (less efficient) implementation
 
-    typedef DiscreteLinearOperator<ValueType> DiscreteLinOp;
-    typedef DiscreteLinearOperatorSuperposition<ValueType>
+    typedef DiscreteLinearOperator<ResultType> DiscreteLinOp;
+    typedef DiscreteLinearOperatorSuperposition<ResultType>
             DiscreteSuperposition;
 
-    const std::vector<ElementaryLinearOperator<ValueType> const*>
+    const std::vector<ElementaryLinearOperator<ArgumentType, ResultType> const*>
             localOperators = this->localOperators();
-    const std::vector<ValueType>& multipliers = this->multipliers();
+    const std::vector<ResultType>& multipliers = this->multipliers();
 
     boost::ptr_vector<DiscreteLinOp> discreteOps;
     for (int i = 0; i < localOperators.size(); ++i) {
@@ -285,20 +286,6 @@ LinearOperatorSuperposition<ValueType>::assembleWeakFormInArbitraryMode(
                 new DiscreteSuperposition(discreteOps, this->multipliers()));
 }
 
-
-#ifdef COMPILE_FOR_FLOAT
-template class LinearOperatorSuperposition<float>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class LinearOperatorSuperposition<double>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class LinearOperatorSuperposition<std::complex<float> >;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class LinearOperatorSuperposition<std::complex<double> >;
-#endif
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperatorSuperposition);
 
 } // namespace Bempp

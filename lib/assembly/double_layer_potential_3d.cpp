@@ -20,30 +20,18 @@
 
 
 #include "double_layer_potential_3d.hpp"
+#include "../fiber/explicit_instantiation.hpp"
 
 namespace Bempp
 {
 
-template <typename ValueType>
-DoubleLayerPotential3D<ValueType>::DoubleLayerPotential3D(
-        const Space<ValueType>& testSpace, const Space<ValueType>& trialSpace) :
-    ElementaryWeaklySingularIntegralOperator<ValueType>(testSpace, trialSpace)
+template <typename ArgumentType, typename ResultType>
+DoubleLayerPotential3D<ArgumentType, ResultType>::DoubleLayerPotential3D(
+        const Space<ArgumentType>& testSpace, const Space<ArgumentType>& trialSpace) :
+    ElementaryWeaklySingularIntegralOperator<ArgumentType, ResultType>(testSpace, trialSpace)
 {
 }
 
-#ifdef COMPILE_FOR_FLOAT
-template class DoubleLayerPotential3D<float>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class DoubleLayerPotential3D<double>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class DoubleLayerPotential3D<std::complex<float> >;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class DoubleLayerPotential3D<std::complex<double> >;
-#endif
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DoubleLayerPotential3D);
 
 } // namespace Bempp

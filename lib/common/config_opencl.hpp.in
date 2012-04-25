@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef config_opencl_hpp
-#define config_opencl_hpp
+#ifndef bempp_config_opencl_hpp
+#define bempp_config_opencl_hpp
 
 #cmakedefine WITH_OPENCL
 

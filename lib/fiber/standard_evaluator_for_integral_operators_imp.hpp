@@ -32,23 +32,21 @@
 namespace Fiber
 {
 
-template <typename ValueType, typename GeometryFactory>
-StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>::
+template <typename BasisValueType, typename ResultType, typename GeometryFactory>
+StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryFactory>::
 StandardEvaluatorForIntegralOperators(
         const GeometryFactory& geometryFactory,
         const RawGridGeometry<CoordinateType>& rawGeometry,
-        const std::vector<const Basis<ValueType>*>& trialBases,
-        const Kernel<ValueType>& kernel,
-        const Expression<ValueType>& trialExpression,
-        const std::vector<std::vector<ValueType> >& argumentLocalCoefficients,
-        ValueType multiplier,
-        const OpenClHandler<ValueType, int>& openClHandler,
+        const std::vector<const Basis<BasisValueType>*>& trialBases,
+        const Kernel<ResultType>& kernel,
+        const Expression<BasisValueType>& trialExpression,
+        const std::vector<std::vector<ResultType> >& argumentLocalCoefficients,
+        const OpenClHandler<CoordinateType, int>& openClHandler,
         const QuadratureOptions& quadratureOptions) :
     m_geometryFactory(geometryFactory), m_rawGeometry(rawGeometry),
     m_trialBases(trialBases), m_kernel(kernel),
     m_trialExpression(trialExpression),
     m_argumentLocalCoefficients(argumentLocalCoefficients),
-    m_multiplier(multiplier),
     m_openClHandler(openClHandler), m_quadratureOptions(quadratureOptions)
 {
     const int elementCount = rawGeometry.elementCount();
@@ -86,10 +84,10 @@ StandardEvaluatorForIntegralOperators(
     cacheTrialData();
 }
 
-template <typename ValueType, typename GeometryFactory>
-void StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>::evaluate(
+template <typename BasisValueType, typename ResultType, typename GeometryFactory>
+void StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryFactory>::evaluate(
         Region region,
-        const arma::Mat<ValueType>& points, arma::Mat<ValueType>& result) const
+        const arma::Mat<CoordinateType>& points, arma::Mat<ResultType>& result) const
 {
     const int pointCount = points.n_cols;
     const int worldDim = points.n_rows;
@@ -110,11 +108,11 @@ void StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>::evaluate
     result.fill(0.);
 
     const Fiber::GeometricalData<CoordinateType>& trialGeomData =
-            (region == EvaluatorForIntegralOperators<ValueType>::NEAR_FIELD) ?
+            (region == EvaluatorForIntegralOperators<ResultType>::NEAR_FIELD) ?
                 m_nearFieldTrialGeomData :
                 m_farFieldTrialGeomData;
-    const arma::Mat<ValueType>& weightedTrialExprValues =
-            (region == EvaluatorForIntegralOperators<ValueType>::NEAR_FIELD) ?
+    const arma::Mat<ResultType>& weightedTrialExprValues =
+            (region == EvaluatorForIntegralOperators<ResultType>::NEAR_FIELD) ?
                 m_nearFieldWeightedTrialExprValues :
                 m_farFieldWeightedTrialExprValues;
 
@@ -123,7 +121,7 @@ void StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>::evaluate
     // Do things in chunks of 96 points -- in order to avoid creating
     // too large arrays of kernel values
     const int chunkSize = 96;
-    Fiber::Array4D<ValueType> kernelValues;
+    Fiber::Array4D<ResultType> kernelValues;
     Fiber::GeometricalData<CoordinateType> testGeomData;
     for (int start = 0; start < pointCount; start += chunkSize)
     {
@@ -148,8 +146,8 @@ void StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>::evaluate
     }
 }
 
-template <typename ValueType, typename GeometryFactory>
-void StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>::cacheTrialData()
+template <typename BasisValueType, typename ResultType, typename GeometryFactory>
+void StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryFactory>::cacheTrialData()
 {
     int testGeomDeps = 0, trialGeomDeps = 0;
     m_kernel.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
@@ -159,21 +157,21 @@ void StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>::cacheTri
                 "integral operators whose kernels depend on other test data "
                 "than global coordinates cannot be evaluated off-surface");
 
-    calcTrialData(EvaluatorForIntegralOperators<ValueType>::FAR_FIELD,
+    calcTrialData(EvaluatorForIntegralOperators<ResultType>::FAR_FIELD,
                   trialGeomDeps, m_farFieldTrialGeomData,
                   m_farFieldWeightedTrialExprValues);
     // near field currently not used
-    calcTrialData(EvaluatorForIntegralOperators<ValueType>::NEAR_FIELD,
+    calcTrialData(EvaluatorForIntegralOperators<ResultType>::NEAR_FIELD,
                   trialGeomDeps, m_nearFieldTrialGeomData,
                   m_nearFieldWeightedTrialExprValues);
 }
 
-template <typename ValueType, typename GeometryFactory>
-void StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>::calcTrialData(
+template <typename BasisValueType, typename ResultType, typename GeometryFactory>
+void StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryFactory>::calcTrialData(
         Region region,
         int kernelTrialGeomDeps,
         Fiber::GeometricalData<CoordinateType>& trialGeomData,
-        arma::Mat<ValueType>& weightedTrialExprValues) const
+        arma::Mat<ResultType>& weightedTrialExprValues) const
 {
     const int elementCount = m_rawGeometry.elementCount();
     const int worldDim = m_rawGeometry.worldDimension();
@@ -194,17 +192,17 @@ void StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>::calcTria
 
     // Find all unique trial bases
     // Set of unique quadrature variants
-    typedef std::set<const Basis<ValueType>*> BasisSet;
+    typedef std::set<const Basis<BasisValueType>*> BasisSet;
     BasisSet uniqueTrialBases(m_trialBases.begin(), m_trialBases.end());
 
     // Initialise temporary (per-element) data containers
     std::vector<GeometricalData<CoordinateType> > geomDataPerElement(elementCount);
-    std::vector<arma::Mat<ValueType> > weightedTrialExprValuesPerElement(elementCount);
+    std::vector<arma::Mat<ResultType> > weightedTrialExprValuesPerElement(elementCount);
 
     for (typename BasisSet::const_iterator it = uniqueTrialBases.begin();
          it != uniqueTrialBases.end(); ++it)
     {
-        const Basis<ValueType>& activeBasis = *(*it);
+        const Basis<BasisValueType>& activeBasis = *(*it);
         int order = quadOrder(activeBasis, region);
 
         // Find out the element type
@@ -217,16 +215,16 @@ void StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>::calcTria
             }
 
         // Get quadrature points and weights
-        arma::Mat<ValueType> localQuadPoints;
-        std::vector<ValueType> quadWeights;
+        arma::Mat<CoordinateType> localQuadPoints;
+        std::vector<CoordinateType> quadWeights;
         fillSingleQuadraturePointsAndWeights(
                     elementCornerCount, order, localQuadPoints, quadWeights);
 
         // Get basis data
-        BasisData<ValueType> basisData;
+        BasisData<BasisValueType> basisData;
         activeBasis.evaluate(basisDeps, localQuadPoints, ALL_DOFS, basisData);
 
-        BasisData<ValueType> argumentData;
+        BasisData<ResultType> argumentData;
         if (basisDeps & VALUES)
             argumentData.values.set_size(basisData.values.n_rows,
                                          1, // just one function
@@ -244,7 +242,7 @@ void StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>::calcTria
                 continue;
 
             // Local coefficients of the argument in the current element
-            const std::vector<ValueType>& localCoefficients =
+            const std::vector<ResultType>& localCoefficients =
                     m_argumentLocalCoefficients[e];
 
             // Calculate the argument function's values and/or derivatives
@@ -277,9 +275,10 @@ void StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>::calcTria
             geometry->getData(trialGeomDeps, localQuadPoints,
                               geomDataPerElement[e]);
 
-            arma::Cube<ValueType> trialValues;
-            m_trialExpression.evaluate(argumentData, geomDataPerElement[e],
-                                       trialValues);
+            arma::Cube<ResultType> trialValues;
+            throw std::logic_error("NOT WORKING!!!!!");
+//            m_trialExpression.evaluate(argumentData, geomDataPerElement[e],
+//                                       trialValues);
 
             assert(trialValues.n_cols == 1);
             weightedTrialExprValuesPerElement[e].set_size(trialValues.n_rows,
@@ -287,7 +286,6 @@ void StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>::calcTria
             for (int point = 0; point < trialValues.n_slices; ++point)
                 for (int dim = 0; dim < trialValues.n_rows; ++dim)
                     weightedTrialExprValuesPerElement[e](dim, point) =
-                            m_multiplier *
                             trialValues(dim, 0, point) *
                             geomDataPerElement[e].integrationElements(point) *
                             quadWeights[point];
@@ -343,19 +341,19 @@ void StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>::calcTria
     }
 }
 
-template <typename ValueType, typename GeometryFactory>
-int StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>::quadOrder(
-        const Fiber::Basis<ValueType>& basis, Region region) const
+template <typename BasisValueType, typename ResultType, typename GeometryFactory>
+int StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryFactory>::quadOrder(
+        const Fiber::Basis<BasisValueType>& basis, Region region) const
 {
-    if (region == EvaluatorForIntegralOperators<ValueType>::NEAR_FIELD)
+    if (region == EvaluatorForIntegralOperators<ResultType>::NEAR_FIELD)
         return nearFieldQuadOrder(basis);
     else
         return farFieldQuadOrder(basis);
 }
 
-template <typename ValueType, typename GeometryFactory>
-int StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>::farFieldQuadOrder(
-        const Fiber::Basis<ValueType>& basis) const
+template <typename BasisValueType, typename ResultType, typename GeometryFactory>
+int StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryFactory>::farFieldQuadOrder(
+        const Fiber::Basis<BasisValueType>& basis) const
 {
     // const QuadratureOptions& options = m_accuracyOptions.farField;
 
@@ -372,9 +370,9 @@ int StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>::farFieldQ
     }
 }
 
-template <typename ValueType, typename GeometryFactory>
-int StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>::nearFieldQuadOrder(
-        const Fiber::Basis<ValueType>& basis) const
+template <typename BasisValueType, typename ResultType, typename GeometryFactory>
+int StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryFactory>::nearFieldQuadOrder(
+        const Fiber::Basis<BasisValueType>& basis) const
 {
     // quick and dirty
     return 2 * farFieldQuadOrder(basis);

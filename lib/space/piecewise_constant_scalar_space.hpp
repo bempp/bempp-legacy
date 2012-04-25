@@ -37,6 +37,8 @@ template <typename ValueType>
 class PiecewiseConstantScalarSpace : public ScalarSpace<ValueType>
 {
 public:
+    typedef typename ScalarSpace<ValueType>::CoordinateType CoordinateType;
+
     explicit PiecewiseConstantScalarSpace(Grid& grid);
 
     virtual int domainDimension() const;
@@ -60,7 +62,7 @@ public:
             const std::vector<GlobalDofIndex>& globalDofs,
             std::vector<std::vector<LocalDof> >& localDofs) const;
     virtual void globalDofPositions(
-            std::vector<Point3D<ValueType> >& positions) const;
+            std::vector<Point3D<CoordinateType> >& positions) const;
 
 private:
     std::auto_ptr<GridView> m_view;

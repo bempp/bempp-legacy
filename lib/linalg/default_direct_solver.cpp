@@ -22,16 +22,17 @@
 
 #include "../assembly/linear_operator.hpp"
 #include "../assembly/discrete_linear_operator.hpp"
+#include "../fiber/explicit_instantiation.hpp"
 
 namespace Bempp
 {
 
-template<typename ValueType>
-DefaultDirectSolver<ValueType>::DefaultDirectSolver(
-        const LinearOperator<ValueType>& linearOperator,
-        const GridFunction<ValueType>& gridFunction) :
+template <typename ArgumentType, typename ResultType>
+DefaultDirectSolver<ArgumentType, ResultType>::DefaultDirectSolver(
+        const LinearOperator<ArgumentType, ResultType>& linearOperator,
+        const GridFunction<ArgumentType, ResultType>& gridFunction) :
     m_linearOperator(linearOperator), m_gridFunction(gridFunction),
-    m_solution(), m_status(Solver<ValueType>::UNKNOWN)
+    m_solution(), m_status(Solver<ArgumentType, ResultType>::UNKNOWN)
 {
     if (!linearOperator.isAssembled())
         throw std::runtime_error("DefaultDirectSolver::DefaultDirectSolver(): "
@@ -41,42 +42,29 @@ DefaultDirectSolver<ValueType>::DefaultDirectSolver(
                                  "spaces do not match");
 }
 
-template <typename ValueType>
-void DefaultDirectSolver<ValueType>::solve()
+template <typename ArgumentType, typename ResultType>
+void DefaultDirectSolver<ArgumentType, ResultType>::solve()
 {
     m_solution = arma::solve(
                 m_linearOperator.assembledDiscreteLinearOperator().asMatrix(),
                 m_gridFunction.coefficients().asArmadilloVector());
-    m_status = Solver<ValueType>::CONVERGED;
+    m_status = Solver<ArgumentType, ResultType>::CONVERGED;
 }
 
-template <typename ValueType>
-GridFunction<ValueType> DefaultDirectSolver<ValueType>::getResult() const
+template <typename ArgumentType, typename ResultType>
+GridFunction<ArgumentType, ResultType> DefaultDirectSolver<ArgumentType, ResultType>::getResult() const
 {
-    return GridFunction<ValueType>(
+    return GridFunction<ArgumentType, ResultType>(
                 m_linearOperator.testSpace(),
                 m_solution);
 }
 
-template <typename ValueType>
-typename Solver<ValueType>::EStatus DefaultDirectSolver<ValueType>::getStatus() const
+template <typename ArgumentType, typename ResultType>
+typename Solver<ArgumentType, ResultType>::EStatus DefaultDirectSolver<ArgumentType, ResultType>::getStatus() const
 {
     return m_status;
 }
 
-#ifdef COMPILE_FOR_FLOAT
-template class DefaultDirectSolver<float>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class DefaultDirectSolver<double>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class DefaultDirectSolver<std::complex<float> >;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class DefaultDirectSolver<std::complex<double> >;
-#endif
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_KERNEL(DefaultDirectSolver);
 
 } // namespace Bempp

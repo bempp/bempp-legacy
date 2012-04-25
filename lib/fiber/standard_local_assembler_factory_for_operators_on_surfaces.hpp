@@ -34,11 +34,17 @@
 namespace Fiber
 {
 
-template <typename ValueType, typename GeometryFactory>
+template <typename BasisValueType, typename ResultType,
+typename GeometryFactory>
 class StandardLocalAssemblerFactoryForOperatorsOnSurfaces :
-        public LocalAssemblerFactory<ValueType, GeometryFactory>
-{
+        public LocalAssemblerFactory<BasisValueType, ResultType,
+        GeometryFactory>
+{   
 public:
+    typedef LocalAssemblerFactory<BasisValueType, ResultType,
+    GeometryFactory> Base;
+    typedef typename Base::CoordinateType CoordinateType;
+
     /** \brief Construct a local assembler factory with default accuracy settings. */
     StandardLocalAssemblerFactoryForOperatorsOnSurfaces() {
     }
@@ -50,85 +56,85 @@ public:
     }
 
 private:
-    typedef StandardLocalAssemblerForIntegralOperatorsOnSurfaces<ValueType, GeometryFactory>
+    typedef StandardLocalAssemblerForIntegralOperatorsOnSurfaces<
+        BasisValueType, ResultType, GeometryFactory>
         LocalAssemblerForIntegralOperators_;
-    typedef StandardLocalAssemblerForIdentityOperatorOnSurface<ValueType, GeometryFactory>
+    typedef StandardLocalAssemblerForIdentityOperatorOnSurface<
+        BasisValueType, ResultType, GeometryFactory>
         LocalAssemblerForIdentityOperator_;
-    typedef StandardLocalAssemblerForGridFunctionsOnSurfaces<ValueType, GeometryFactory>
+    typedef StandardLocalAssemblerForGridFunctionsOnSurfaces<
+        BasisValueType, ResultType, GeometryFactory>
         LocalAssemblerForGridFunctions_;
-    typedef StandardEvaluatorForIntegralOperators<ValueType, GeometryFactory>
+    typedef StandardEvaluatorForIntegralOperators<
+        BasisValueType, ResultType, GeometryFactory>
         EvaluatorForIntegralOperators_;
 
 public:
-    virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
+    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<ValueType>*>& testBases,
-            const std::vector<const Basis<ValueType>*>& trialBases,
-            const Expression<ValueType>& testExpression,
-            const Kernel<ValueType>& kernel,
-            const Expression<ValueType>& trialExpression,
-            ValueType multiplier,
-            const OpenClHandler<ValueType,int>& openClHandler,
+            const std::vector<const Basis<BasisValueType>*>& testBases,
+            const std::vector<const Basis<BasisValueType>*>& trialBases,
+            const Expression<BasisValueType>& testExpression,
+            const Kernel<ResultType>& kernel,
+            const Expression<BasisValueType>& trialExpression,
+            const OpenClHandler<CoordinateType, int>& openClHandler,
             bool cacheSingularIntegrals) const {
-        return std::auto_ptr<LocalAssemblerForOperators<ValueType> >(
+        return std::auto_ptr<LocalAssemblerForOperators<ResultType> >(
                     new LocalAssemblerForIntegralOperators_(
                         geometryFactory, rawGeometry,
                         testBases, trialBases,
-                        testExpression, kernel, trialExpression, multiplier,
+                        testExpression, kernel, trialExpression,
                         openClHandler, cacheSingularIntegrals,
                         m_accuracyOptions));
     }
 
-    virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
+    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<ValueType>*>& trialBases,
-            const Kernel<ValueType>& kernel,
-            const Expression<ValueType>& trialExpression,
-            ValueType multiplier,
-            const OpenClHandler<ValueType,int>& openClHandler,
+            const std::vector<const Basis<BasisValueType>*>& trialBases,
+            const Kernel<ResultType>& kernel,
+            const Expression<BasisValueType>& trialExpression,
+            const OpenClHandler<CoordinateType, int>& openClHandler,
             bool cacheSingularIntegrals) const {
         throw std::runtime_error("StandardLocalAssemblerFactoryForOperatorsOnSurfaces::"
                                  "make(): collocation mode not implemented yet.");
     }
 
-    virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
+    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<ValueType>*>& testBases,
-            const std::vector<const Basis<ValueType>*>& trialBases,
-            const Expression<ValueType>& testExpression,
-            const Expression<ValueType>& trialExpression,
-            ValueType multiplier,
-            const OpenClHandler<ValueType,int>& openClHandler) const {
-        return std::auto_ptr<LocalAssemblerForOperators<ValueType> >(
+            const std::vector<const Basis<BasisValueType>*>& testBases,
+            const std::vector<const Basis<BasisValueType>*>& trialBases,
+            const Expression<BasisValueType>& testExpression,
+            const Expression<BasisValueType>& trialExpression,
+            const OpenClHandler<CoordinateType, int>& openClHandler) const {
+        return std::auto_ptr<LocalAssemblerForOperators<ResultType> >(
                     new LocalAssemblerForIdentityOperator_(
                         geometryFactory, rawGeometry,
                         testBases, trialBases,
-                        testExpression, trialExpression, multiplier,
+                        testExpression, trialExpression,
                         openClHandler));
     }
 
-    virtual std::auto_ptr<LocalAssemblerForOperators<ValueType> > make(
+    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<ValueType>*>& trialBases,
-            const Expression<ValueType>& trialExpression,
-            ValueType multiplier,
-            const OpenClHandler<ValueType,int>& openClHandler) const {
+            const std::vector<const Basis<BasisValueType>*>& trialBases,
+            const Expression<BasisValueType>& trialExpression,
+            const OpenClHandler<CoordinateType, int>& openClHandler) const {
     throw std::runtime_error("StandardLocalAssemblerFactoryForOperatorsOnSurfaces::"
                              "make(): collocation mode not implemented yet.");
     }
 
-    virtual std::auto_ptr<LocalAssemblerForGridFunctions<ValueType> > make(
+    virtual std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<ValueType>*>& testBases,
-            const Expression<ValueType>& testExpression,
-            const Function<ValueType>& function,
-            const OpenClHandler<ValueType,int>& openClHandler) const {
-        return std::auto_ptr<LocalAssemblerForGridFunctions<ValueType> >(
+            const std::vector<const Basis<BasisValueType>*>& testBases,
+            const Expression<BasisValueType>& testExpression,
+            const Function<ResultType>& function,
+            const OpenClHandler<CoordinateType, int>& openClHandler) const {
+        return std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >(
                     new LocalAssemblerForGridFunctions_(
                         geometryFactory, rawGeometry,
                         testBases,
@@ -136,21 +142,19 @@ public:
                         openClHandler));
     }
 
-    virtual std::auto_ptr<EvaluatorForIntegralOperators<ValueType> > make(
+    virtual std::auto_ptr<EvaluatorForIntegralOperators<ResultType> > make(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<ValueType>*>& trialBases,
-            const Kernel<ValueType>& kernel,
-            const Expression<ValueType>& trialExpression,
-            const std::vector<std::vector<ValueType> >& argumentLocalCoefficients,
-            ValueType multiplier,
-            const OpenClHandler<ValueType, int>& openClHandler) const {
-        return std::auto_ptr<EvaluatorForIntegralOperators<ValueType> >(
+            const std::vector<const Basis<BasisValueType>*>& trialBases,
+            const Kernel<ResultType>& kernel,
+            const Expression<BasisValueType>& trialExpression,
+            const std::vector<std::vector<ResultType> >& argumentLocalCoefficients,
+            const OpenClHandler<CoordinateType, int>& openClHandler) const {
+        return std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >(
                     new EvaluatorForIntegralOperators_(
                         geometryFactory, rawGeometry,
                         trialBases,
                         kernel, trialExpression, argumentLocalCoefficients,
-                        multiplier,
                         openClHandler,
                         m_accuracyOptions.singleRegular));
     }

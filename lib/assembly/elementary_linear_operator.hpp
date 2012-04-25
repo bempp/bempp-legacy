@@ -30,8 +30,8 @@
 namespace Fiber
 {
 
-template <typename ValueType> class LocalAssemblerForOperators;
-template <typename ValueType> class RawGridGeometry;
+template <typename ResultType> class LocalAssemblerForOperators;
+template <typename CoordinateType> class RawGridGeometry;
 template <typename ValueType> class Basis;
 template <typename CoordinateType, typename IndexType> class OpenClHandler;
 
@@ -40,19 +40,20 @@ template <typename CoordinateType, typename IndexType> class OpenClHandler;
 namespace Bempp
 {
 
-template <typename ValueType>
-class ElementaryLinearOperator : public LinearOperator<ValueType>
+template <typename ArgumentType, typename ResultType>
+class ElementaryLinearOperator : public LinearOperator<ArgumentType, ResultType>
 {
+    typedef LinearOperator<ArgumentType, ResultType> Base;
 public:
-    typedef typename LinearOperator<ValueType>::LocalAssemblerFactory
-    LocalAssemblerFactory;
-    typedef Fiber::LocalAssemblerForOperators<ValueType> LocalAssembler;
+    typedef typename Base::CoordinateType CoordinateType;
+    typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
+    typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
 
-    ElementaryLinearOperator(const Space<ValueType>& testSpace,
-                             const Space<ValueType>& trialSpace) :
-        LinearOperator<ValueType>(testSpace, trialSpace) {
-        std::vector<ElementaryLinearOperator<ValueType> const*> v;
-        std::vector<ValueType> m;
+    ElementaryLinearOperator(const Space<ArgumentType>& testSpace,
+                             const Space<ArgumentType>& trialSpace) :
+        LinearOperator<ArgumentType, ResultType>(testSpace, trialSpace) {
+        std::vector<ElementaryLinearOperator<ArgumentType, ResultType> const*> v;
+        std::vector<ResultType> m;
         v.push_back(this);
         m.push_back(1.0);
         addLocalOperatorsAndMultipliers(v, m);
@@ -63,16 +64,16 @@ public:
     virtual std::auto_ptr<LocalAssembler> makeAssembler(
             const LocalAssemblerFactory& assemblerFactory,
             const GeometryFactory& geometryFactory,
-            const Fiber::RawGridGeometry<ValueType>& rawGeometry,
-            const std::vector<const Fiber::Basis<ValueType>*>& testBases,
-            const std::vector<const Fiber::Basis<ValueType>*>& trialBases,
-            const Fiber::OpenClHandler<ValueType, int>& openClHandler,
+            const Fiber::RawGridGeometry<CoordinateType>& rawGeometry,
+            const std::vector<const Fiber::Basis<ArgumentType>*>& testBases,
+            const std::vector<const Fiber::Basis<ArgumentType>*>& trialBases,
+            const Fiber::OpenClHandler<CoordinateType, int>& openClHandler,
             bool cacheSingularIntegrals) const = 0;
 
     /** \brief Assemble the operator's weak form using a specified local assembler.
 
       This function is not intended to be called directly by the user. */
-    virtual std::auto_ptr<DiscreteLinearOperator<ValueType> >
+    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakFormInternal(
             LocalAssembler& assembler,
             const AssemblyOptions& options) const = 0;

@@ -21,6 +21,7 @@
 #include "config_trilinos.hpp"
 
 #include "discrete_sparse_linear_operator.hpp"
+#include "../fiber/explicit_instantiation.hpp"
 
 #ifdef WITH_TRILINOS
 #include <iostream>
@@ -94,6 +95,81 @@ void reallyApplyBuiltInImpl<float>(const Epetra_CrsMatrix& mat,
 
     // Copy the result back to the float vector
     std::copy(y_inout_double.begin(), y_inout_double.end(), y_inout.begin());
+}
+
+template <>
+void reallyApplyBuiltInImpl<std::complex<float> >(
+        const Epetra_CrsMatrix& mat,
+        const TranspositionMode trans,
+        const arma::Col<std::complex<float> >& x_in,
+        arma::Col<std::complex<float> >& y_inout,
+        const std::complex<float> alpha,
+        const std::complex<float> beta)
+{
+    // Do the y_inout *= beta part
+    y_inout *= beta;
+
+    // Separate the real and imaginary components and store them in
+    // double-precision vectors
+    arma::Col<double> x_real(x_in.n_rows);
+    for (int i = 0; i < x_in.n_rows; ++i)
+        x_real(i) = x_in(i).real();
+    arma::Col<double> x_imag(x_in.n_rows);
+    for (int i = 0; i < x_in.n_rows; ++i)
+        x_imag(i) = x_in(i).imag();
+    arma::Col<double> y_real(y_inout.n_rows);
+    for (int i = 0; i < y_inout.n_rows; ++i)
+        y_real(i) = y_inout(i).real();
+    arma::Col<double> y_imag(y_inout.n_rows);
+    for (int i = 0; i < y_inout.n_rows; ++i)
+        y_imag(i) = y_inout(i).imag();
+
+    // Do the "+= alpha A x" part (in steps)
+    reallyApplyBuiltInImpl<double>(
+                mat, trans, x_real, y_real, alpha.real(), 1.);
+    reallyApplyBuiltInImpl<double>(
+                mat, trans, x_imag, y_real, -alpha.imag(), 1.);
+    reallyApplyBuiltInImpl<double>(
+                mat, trans, x_real, y_imag, alpha.imag(), 1.);
+    reallyApplyBuiltInImpl<double>(
+                mat, trans, x_imag, y_imag, alpha.real(), 1.);
+
+    // Copy the result back to the complex vector
+    for (int i = 0; i < y_inout.n_rows; ++i)
+        y_inout(i) = std::complex<float>(x_real(i), x_imag(i));
+}
+
+template <>
+void reallyApplyBuiltInImpl<std::complex<double> >(
+        const Epetra_CrsMatrix& mat,
+        const TranspositionMode trans,
+        const arma::Col<std::complex<double> >& x_in,
+        arma::Col<std::complex<double> >& y_inout,
+        const std::complex<double> alpha,
+        const std::complex<double> beta)
+{
+    // Do the y_inout *= beta part
+    y_inout *= beta;
+
+    // Separate the real and imaginary components
+    arma::Col<double> x_real(arma::real(x_in));
+    arma::Col<double> x_imag(arma::imag(x_in));
+    arma::Col<double> y_real(arma::real(y_inout));
+    arma::Col<double> y_imag(arma::imag(y_inout));
+
+    // Do the "+= alpha A x" part (in steps)
+    reallyApplyBuiltInImpl<double>(
+                mat, trans, x_real, y_real, alpha.real(), 1.);
+    reallyApplyBuiltInImpl<double>(
+                mat, trans, x_imag, y_real, -alpha.imag(), 1.);
+    reallyApplyBuiltInImpl<double>(
+                mat, trans, x_real, y_imag, alpha.imag(), 1.);
+    reallyApplyBuiltInImpl<double>(
+                mat, trans, x_imag, y_imag, alpha.real(), 1.);
+
+    // Copy the result back to the complex vector
+    for (int i = 0; i < y_inout.n_rows; ++i)
+        y_inout(i) = std::complex<double>(x_real(i), x_imag(i));
 }
 
 } // namespace
@@ -197,7 +273,8 @@ void DiscreteSparseLinearOperator<ValueType>::addBlock(
         for (int col = 0; col < cols.size(); ++col)
             for (int entry = 0; entry < entryCount; ++entry)
                 if (indices[entry] == cols[col])
-                    block(row, col) += alpha*values[entry];
+                    block(row, col) +=
+                            alpha * static_cast<ValueType>(values[entry]);
     }
 }
 
@@ -260,20 +337,7 @@ void DiscreteSparseLinearOperator<ValueType>::applyBuiltInImpl(
     reallyApplyBuiltInImpl(*m_mat, trans, x_in, y_inout, alpha, beta);
 }
 
-#ifdef COMPILE_FOR_FLOAT
-template class DiscreteSparseLinearOperator<float>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class DiscreteSparseLinearOperator<double>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class DiscreteSparseLinearOperator<std::complex<float> >;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class DiscreteSparseLinearOperator<std::complex<double> >;
-#endif
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteSparseLinearOperator);
 
 } // namespace Bempp
 

@@ -18,26 +18,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_solver_hpp
-#define bempp_solver_hpp
+#ifndef bempp_config_data_types_hpp
+#define bempp_config_data_types_hpp
 
-#include "../assembly/grid_function.hpp"
-
-namespace Bempp
-{
-
-template <typename ArgumentType, typename ResultType>
-class Solver
-{
-public:
-    enum EStatus {CONVERGED, UNCONVERGED, UNKNOWN};
-
-    virtual void solve() = 0;
-
-    virtual GridFunction<ArgumentType, ResultType> getResult() const = 0;
-    virtual EStatus getStatus() const = 0;
-};
-
-} // namespace Bempp
+#cmakedefine ENABLE_SINGLE_PRECISION
+#cmakedefine ENABLE_DOUBLE_PRECISION
+#cmakedefine ENABLE_COMPLEX_KERNELS
+#cmakedefine ENABLE_COMPLEX_BASIS_FUNCTIONS
 
 #endif

@@ -60,9 +60,9 @@ public:
     static void evaluateSurfaceCurls3D(const BasisData<ValueType>& basisData,
                                        const GeometricalData<CoordinateType>& geomData,
                                        arma::Cube<ValueType>& result) {
-        const arma::Mat<ValueType>& n = geomData.normals;
+        const arma::Mat<CoordinateType>& n = geomData.normals;
         // jt(i, j): dx_j/dq_i
-        const arma::Cube<ValueType>& jit = geomData.jacobianInversesTransposed;
+        const arma::Cube<CoordinateType>& jit = geomData.jacobianInversesTransposed;
         const Array4D<ValueType>& d = basisData.derivatives;
 
         assert(d.extent(0) == 1); // scalar functions

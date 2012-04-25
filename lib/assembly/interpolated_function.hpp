@@ -23,6 +23,7 @@
 #define bempp_interpolated_function_hpp
 
 #include "../grid/vtk_writer.hpp"
+#include "../fiber/scalar_traits.hpp"
 #include "../fiber/function.hpp"
 
 #include <armadillo>
@@ -31,7 +32,7 @@ namespace Bempp
 {
 
 class Grid;
-template <typename ValueType> class GridFunction;
+// template <typename ArgumentType, typename ResultType> class GridFunction;
 
 template <typename ValueType> class InterpolatedFunction;
 
@@ -45,6 +46,8 @@ template <typename ValueType>
 class InterpolatedFunction : public Fiber::Function<ValueType>
 {
 public:
+    typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
+
     enum InterpolationMethod {
         LINEAR
     };
@@ -61,7 +64,7 @@ public:
     virtual int codomainDimension() const;
     virtual void addGeometricalDependencies(int& geomDeps) const;
 
-    virtual void evaluate(const Fiber::GeometricalData<ValueType>& geomData,
+    virtual void evaluate(const Fiber::GeometricalData<CoordinateType>& geomData,
                           arma::Mat<ValueType>& result) const;
 
 //    virtual void evaluate(const arma::Mat<ValueType>& global,
@@ -87,12 +90,12 @@ public:
                      const char* fileNamesBase, const char* filesPath = 0,
                      VtkWriter::OutputType type = VtkWriter::ASCII) const;
 
-    /** \brief Copy vertex values from a function defined on a subset of the
-      surface of the interpolation grid. */
-    void setSurfaceValues(const GridFunction<ValueType>& surfaceFunction);
+//    /** \brief Copy vertex values from a function defined on a subset of the
+//      surface of the interpolation grid. */
+//    void setSurfaceValues(const GridFunction<ValueType>& surfaceFunction);
 
-    /** \brief Copy vertex values from a function interpolated on a surface grid. */
-    void setSurfaceValues(const InterpolatedFunction<ValueType>& surfaceFunction);
+//    /** \brief Copy vertex values from a function interpolated on a surface grid. */
+//    void setSurfaceValues(const InterpolatedFunction<ValueType>& surfaceFunction);
 
     InterpolatedFunction<ValueType>& operator+=(
             const InterpolatedFunction<ValueType> &rhs);

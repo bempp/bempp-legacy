@@ -20,30 +20,19 @@
 
 
 #include "hypersingular_operator_3d.hpp"
+#include "../fiber/explicit_instantiation.hpp"
 
 namespace Bempp
 {
 
-template <typename ValueType>
-HypersingularOperator3D<ValueType>::HypersingularOperator3D(
-        const Space<ValueType>& testSpace, const Space<ValueType>& trialSpace) :
-    ElementaryWeaklySingularIntegralOperator<ValueType>(testSpace, trialSpace)
+template <typename ArgumentType, typename ResultType>
+HypersingularOperator3D<ArgumentType, ResultType>::HypersingularOperator3D(
+        const Space<ArgumentType>& testSpace, const Space<ArgumentType>& trialSpace) :
+    ElementaryWeaklySingularIntegralOperator<ArgumentType, ResultType>(
+        testSpace, trialSpace)
 {
 }
 
-#ifdef COMPILE_FOR_FLOAT
-template class HypersingularOperator3D<float>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class HypersingularOperator3D<double>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class HypersingularOperator3D<std::complex<float> >;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class HypersingularOperator3D<std::complex<double> >;
-#endif
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(HypersingularOperator3D);
 
 } // namespace Bempp

@@ -34,8 +34,8 @@ namespace Fiber
 {
 
 template <typename ValueType> class Expression;
-template <typename ValueType> class LocalAssemblerForOperators;
-template <typename ValueType> class EvaluatorForIntegralOperators;
+template <typename ResultType> class LocalAssemblerForOperators;
+template <typename ResultType> class EvaluatorForIntegralOperators;
 
 } // namespace Fiber
 
@@ -43,21 +43,23 @@ namespace Bempp
 {
 
 class EvaluationOptions;
-template <typename ValueType> class GridFunction;
+template <typename ArgumentType, typename ResultType> class GridFunction;
 template <typename ValueType> class InterpolatedFunction;
-template <typename ValueType> class WeakFormAcaAssemblyHelper;
+template <typename ArgumentType, typename ResultType> class WeakFormAcaAssemblyHelper;
 
-template <typename ValueType>
-class ElementaryIntegralOperator : public ElementaryLinearOperator<ValueType>
+template <typename ArgumentType, typename ResultType>
+class ElementaryIntegralOperator :
+        public ElementaryLinearOperator<ArgumentType, ResultType>
 {
+    typedef ElementaryLinearOperator<ArgumentType, ResultType> Base;
 public:
-    typedef typename ElementaryLinearOperator<ValueType>::LocalAssemblerFactory
-    LocalAssemblerFactory;
-    typedef typename ElementaryLinearOperator<ValueType>::LocalAssembler LocalAssembler;
-    typedef Fiber::EvaluatorForIntegralOperators<ValueType> Evaluator;
+    typedef typename Base::CoordinateType CoordinateType;
+    typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
+    typedef typename Base::LocalAssembler LocalAssembler;
+    typedef Fiber::EvaluatorForIntegralOperators<ResultType> Evaluator;
 
-    ElementaryIntegralOperator(const Space<ValueType> &testSpace,
-                               const Space<ValueType> &trialSpace);
+    ElementaryIntegralOperator(const Space<ArgumentType> &testSpace,
+                               const Space<ArgumentType> &trialSpace);
 
     virtual int trialComponentCount() const {
         return kernel().domainDimension();
@@ -74,18 +76,18 @@ public:
     virtual std::auto_ptr<LocalAssembler> makeAssembler(
             const LocalAssemblerFactory& assemblerFactory,
             const GeometryFactory& geometryFactory,
-            const Fiber::RawGridGeometry<ValueType>& rawGeometry,
-            const std::vector<const Fiber::Basis<ValueType>*>& testBases,
-            const std::vector<const Fiber::Basis<ValueType>*>& trialBases,
-            const Fiber::OpenClHandler<ValueType, int>& openClHandler,
+            const Fiber::RawGridGeometry<CoordinateType>& rawGeometry,
+            const std::vector<const Fiber::Basis<ArgumentType>*>& testBases,
+            const std::vector<const Fiber::Basis<ArgumentType>*>& trialBases,
+            const Fiber::OpenClHandler<CoordinateType, int>& openClHandler,
             bool cacheSingularIntegrals) const;
 
-    virtual std::auto_ptr<DiscreteLinearOperator<ValueType> >
+    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakForm(
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
 
-    virtual std::auto_ptr<DiscreteLinearOperator<ValueType> >
+    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakFormInternal(
             LocalAssembler& assembler,
             const AssemblyOptions& options) const;
@@ -93,34 +95,33 @@ public:
     // We might define a superclass IntegralOperator that might represent
     // a superposition of elementary linear operators (defined at points
     // off surface). Then the virtual attribute here would be useful.
-    virtual std::auto_ptr<InterpolatedFunction<ValueType> > applyOffSurface(
-            const GridFunction<ValueType>& argument,
+    virtual std::auto_ptr<InterpolatedFunction<ResultType> > applyOffSurface(
+            const GridFunction<ArgumentType, ResultType>& argument,
             const Grid& evaluationGrid,
             const LocalAssemblerFactory& factory,
             const EvaluationOptions& options) const;
 
-    // TODO: probably assembleOperator() should be replaced with applyOnSurface(),
-    // defined for *any* operator (including Id).
+    // TODO: define applyOnSurface() for *all* operators (including Id).
 
 private:
-    virtual const Fiber::Kernel<ValueType>& kernel() const = 0;
-    virtual const Fiber::Expression<ValueType>& testExpression() const = 0;
-    virtual const Fiber::Expression<ValueType>& trialExpression() const = 0;
+    virtual const Fiber::Kernel<ResultType>& kernel() const = 0;
+    virtual const Fiber::Expression<ArgumentType>& testExpression() const = 0;
+    virtual const Fiber::Expression<ArgumentType>& trialExpression() const = 0;
 
     /** @}
         \name Weak form assembly
         @{ */
-    std::auto_ptr<DiscreteLinearOperator<ValueType> >
+    std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakFormInDenseMode(
             LocalAssembler& assembler,
             const AssemblyOptions &options) const;
-    std::auto_ptr<DiscreteLinearOperator<ValueType> >
+    std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakFormInAcaMode(
             LocalAssembler& assembler,
             const AssemblyOptions& options) const;
     /** @} */
 
-    std::auto_ptr<InterpolatedFunction<ValueType> >
+    std::auto_ptr<InterpolatedFunction<ResultType> >
     applyOffSurfaceWithKnownEvaluator(
             const Grid& evaluationGrid,
             const Evaluator& evaluator,

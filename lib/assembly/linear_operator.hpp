@@ -40,7 +40,8 @@ template <typename eT> class Mat;
 namespace Fiber
 {
 
-template <typename ValueType, typename GeometryFactory> class LocalAssemblerFactory;
+template <typename BasisValueType, typename ResultType, typename GeometryFactory>
+class LocalAssemblerFactory;
 
 } // namespace Fiber
 
@@ -50,8 +51,8 @@ namespace Bempp
 class Grid;
 class GeometryFactory;
 template <typename ValueType> class DiscreteLinearOperator;
-template <typename ValueType> class ElementaryLinearOperator;
-template <typename ValueType> class LinearOperatorSuperposition;
+template <typename ArgumentType, typename ResultType> class ElementaryLinearOperator;
+template <typename ArgumentType, typename ResultType> class LinearOperatorSuperposition;
 
 
 /** \brief "Formal" linear operator.
@@ -74,17 +75,18 @@ template <typename ValueType> class LinearOperatorSuperposition;
                          one of: float, double, std::complex<float> and
                          std::complex<double>.
 */
-template <typename ValueType>
+template <typename ArgumentType, typename ResultType>
 class LinearOperator
 {
 public:
-    typedef Fiber::LocalAssemblerFactory<ValueType, GeometryFactory>
+    typedef Fiber::LocalAssemblerFactory<ArgumentType, ResultType, GeometryFactory>
     LocalAssemblerFactory;
+    typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
 
-    LinearOperator(const Space<ValueType>& testSpace,
-                   const Space<ValueType>& trialSpace);
+    LinearOperator(const Space<ArgumentType>& testSpace,
+                   const Space<ArgumentType>& trialSpace);
 
-    LinearOperator(const LinearOperator<ValueType>& other);
+    LinearOperator(const LinearOperator<ArgumentType, ResultType>& other);
 
     virtual ~LinearOperator();
 
@@ -98,12 +100,12 @@ public:
     /** \brief Set y_inout := alpha * A * x_in + beta * y_inout, where A is
       this operator. */
     void apply(const TranspositionMode trans,
-               const GridFunction<ValueType>& x_in,
-               GridFunction<ValueType>& y_inout,
-               ValueType alpha, ValueType beta) const;
+               const GridFunction<ArgumentType, ResultType>& x_in,
+               GridFunction<ArgumentType, ResultType>& y_inout,
+               ResultType alpha, ResultType beta) const;
 
     /** \brief Return reference to \p DiscreteLinearOperator. */
-    const DiscreteLinearOperator<ValueType>& assembledDiscreteLinearOperator() const;
+    const DiscreteLinearOperator<ResultType>& assembledDiscreteLinearOperator() const;
 
     // Ideas for better names for all methods here are very welcome!!!
     /** \brief Number of components of the functions from the trial space \f$X\f$.
@@ -139,62 +141,64 @@ public:
       This is the overload intended to be called by the user, who needs to
       provide a local-assembler factory \p factory to be used to construct an
       appropriate local assembler. */
-    virtual std::auto_ptr<DiscreteLinearOperator<ValueType> >
+    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakForm(
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const = 0;
 
-    const std::vector<ElementaryLinearOperator<ValueType> const* >&
+    const std::vector<ElementaryLinearOperator<ArgumentType, ResultType> const* >&
     localOperators() const;
 
-    const std::vector<ValueType >& multipliers() const;
+    const std::vector<ResultType>& multipliers() const;
 
-    const Space<ValueType>& testSpace() const;
-    const Space<ValueType>& trialSpace() const;
+    const Space<ArgumentType>& testSpace() const;
+    const Space<ArgumentType>& trialSpace() const;
 
 protected:
     void addLocalOperatorsAndMultipliers(
-            const std::vector<ElementaryLinearOperator<ValueType> const*>& localOperators,
-            const std::vector<ValueType>& multipliers);
+            const std::vector<ElementaryLinearOperator<ArgumentType, ResultType> const*>&
+            localOperators,
+            const std::vector<ResultType>& multipliers);
 
 private:
-    std::vector<ElementaryLinearOperator<ValueType> const* > m_localOperators;
-    std::vector<ValueType> m_multipliers;
+    std::vector<ElementaryLinearOperator<ArgumentType, ResultType> const*>
+    m_localOperators;
+    std::vector<ResultType> m_multipliers;
 
-    const Space<ValueType>& m_testSpace;
-    const Space<ValueType>& m_trialSpace;
+    const Space<ArgumentType>& m_testSpace;
+    const Space<ArgumentType>& m_trialSpace;
 
-    std::auto_ptr<const DiscreteLinearOperator<ValueType> > m_discreteOperator;
+    std::auto_ptr<const DiscreteLinearOperator<ResultType> > m_discreteOperator;
 };
 
 // Operator overloading
 
-template <typename ValueType>
-LinearOperatorSuperposition<ValueType> operator+(
-        const LinearOperator<ValueType>& op1,
-        const LinearOperator<ValueType>& op2);
+template <typename ArgumentType, typename ResultType>
+LinearOperatorSuperposition<ArgumentType, ResultType> operator+(
+        const LinearOperator<ArgumentType, ResultType>& op1,
+        const LinearOperator<ArgumentType, ResultType>& op2);
 
-template <typename ValueType>
-LinearOperatorSuperposition<ValueType> operator-(
-        const LinearOperator<ValueType>& op1,
-        const LinearOperator<ValueType>& op2);
+template <typename ArgumentType, typename ResultType>
+LinearOperatorSuperposition<ArgumentType, ResultType> operator-(
+        const LinearOperator<ArgumentType, ResultType>& op1,
+        const LinearOperator<ArgumentType, ResultType>& op2);
 
-template <typename ValueType, typename ScalarType>
-LinearOperatorSuperposition<ValueType> operator*(
-        const LinearOperator<ValueType>& op, const ScalarType& scalar);
+template <typename ArgumentType, typename ResultType, typename ScalarType>
+LinearOperatorSuperposition<ArgumentType, ResultType> operator*(
+        const LinearOperator<ArgumentType, ResultType>& op, const ScalarType& scalar);
 
-template <typename ValueType, typename ScalarType>
-LinearOperatorSuperposition<ValueType> operator*(
-        const ScalarType& scalar, const LinearOperator<ValueType>& op);
+template <typename ArgumentType, typename ResultType, typename ScalarType>
+LinearOperatorSuperposition<ArgumentType, ResultType> operator*(
+        const ScalarType& scalar, const LinearOperator<ArgumentType, ResultType>& op);
 
-template <typename ValueType, typename ScalarType>
-LinearOperatorSuperposition<ValueType> operator/(
-        const LinearOperator<ValueType>& op, const ScalarType& scalar);
+template <typename ArgumentType, typename ResultType, typename ScalarType>
+LinearOperatorSuperposition<ArgumentType, ResultType> operator/(
+        const LinearOperator<ArgumentType, ResultType>& op, const ScalarType& scalar);
 
-template <typename ValueType>
-GridFunction<ValueType> operator*(
-        const LinearOperator<ValueType>& op,
-        const GridFunction<ValueType>& fun);
+template <typename ArgumentType, typename ResultType>
+GridFunction<ArgumentType, ResultType> operator*(
+        const LinearOperator<ArgumentType, ResultType>& op,
+        const GridFunction<ArgumentType, ResultType>& fun);
 
 } // namespace Bempp
 

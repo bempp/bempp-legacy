@@ -28,6 +28,8 @@
 #include "ahmed_aux.hpp"
 #include "discrete_aca_linear_operator.hpp"
 
+#include "../fiber/explicit_instantiation.hpp"
+
 #ifdef WITH_TRILINOS
 #include <Thyra_DetachedSpmdVectorView.hpp>
 #include <Thyra_SpmdVectorSpaceDefaultBase.hpp>
@@ -39,7 +41,7 @@ namespace Bempp
 template <typename ValueType>
 AcaApproximateLuInverse<ValueType>::AcaApproximateLuInverse(
         const DiscreteAcaLinearOperator<ValueType>& fwdOp,
-        ValueType delta) :
+        MagnitudeType delta) :
     // All range-domain swaps intended!
 #ifdef WITH_TRILINOS
     m_domainSpace(fwdOp.m_rangeSpace),
@@ -58,6 +60,29 @@ AcaApproximateLuInverse<ValueType>::AcaApproximateLuInverse(
         throw std::runtime_error(
                 "AcaApproximateLuInverse::AcaApproximateLuInverse(): "
                 "Approximate LU factorisation failed");
+}
+
+template <>
+AcaApproximateLuInverse<std::complex<float> >::AcaApproximateLuInverse(
+        const DiscreteAcaLinearOperator<std::complex<float> >& fwdOp,
+        MagnitudeType delta) :
+    // All range-domain swaps intended!
+#ifdef WITH_TRILINOS
+    m_domainSpace(fwdOp.m_rangeSpace),
+    m_rangeSpace(fwdOp.m_domainSpace),
+#else
+    m_rowCount(fwdOp.columnCount()), m_columnCount(fwdOp.rowCount()),
+#endif
+    m_blockCluster(0), m_blocksL(0), m_blocksU(0),
+    m_domainPermutation(fwdOp.m_rangePermutation),
+    m_rangePermutation(fwdOp.m_domainPermutation)
+{
+    // Ahmed doesn't define the genLUprecond() variant with
+    // the second parameter of type mblock<scomp>**
+    throw std::runtime_error(
+                "AcaApproximateLuInverse::AcaApproximateLuInverse(): "
+                "due to a deficiency in Ahmed approximate LU factorisation "
+                "of single-precision complex H matrices is not supported");
 }
 
 template <typename ValueType>
@@ -230,8 +255,8 @@ applyBuiltInImpl(const TranspositionMode trans,
                 "AcaApproximateLuInverse::applyBuiltInImpl(): "
                 "incorrect vector length");
 
-    if (beta == 0.)
-        y_inout.fill(0.);
+    if (beta == static_cast<ValueType>(0.))
+        y_inout.fill(static_cast<ValueType>(0.));
     else
         y_inout *= beta;
 
@@ -239,29 +264,14 @@ applyBuiltInImpl(const TranspositionMode trans,
     arma::Col<ValueType> permuted;
     m_domainPermutation.permuteVector(x_in, permuted);
 
-    HLU_solve(m_blockCluster, m_blocksL, m_blocksU, permuted.memptr());
+    HLU_solve(m_blockCluster, m_blocksL, m_blocksU, ahmedCast(permuted.memptr()));
 
     arma::Col<ValueType> operatorActionResult;
     m_rangePermutation.unpermuteVector(permuted, operatorActionResult);
     y_inout += alpha * operatorActionResult;
 }
 
-
-
-#ifdef COMPILE_FOR_FLOAT
-template class AcaApproximateLuInverse<float>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class AcaApproximateLuInverse<double>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class AcaApproximateLuInverse<std::complex<float> >;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class AcaApproximateLuInverse<std::complex<double> >;
-#endif
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(AcaApproximateLuInverse);
 
 } // namespace Bempp
 

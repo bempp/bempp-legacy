@@ -22,13 +22,15 @@
 #ifndef bempp_aca_global_assembler_hpp
 #define bempp_aca_global_assembler_hpp
 
+#include "../fiber/scalar_traits.hpp"
+
 #include <memory>
 #include <vector>
 
 namespace Fiber
 {
 
-template <typename ValueType> class LocalAssemblerForOperators;
+template <typename ResultType> class LocalAssemblerForOperators;
 
 } // namespace Fiber
 
@@ -39,25 +41,27 @@ class AssemblyOptions;
 template <typename ValueType> class DiscreteLinearOperator;
 template <typename ValueType> class Space;
 
-template <typename ValueType>
+template <typename ArgumentType, typename ResultType>
 class AcaGlobalAssembler
 {
+    typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
+
 public:
-    typedef DiscreteLinearOperator<ValueType> DiscreteLinOp;
-    typedef Fiber::LocalAssemblerForOperators<ValueType> LocalAssembler;
+    typedef DiscreteLinearOperator<ResultType> DiscreteLinOp;
+    typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
 
     static std::auto_ptr<DiscreteLinOp> assembleWeakForm(
-            const Space<ValueType>& testSpace,
-            const Space<ValueType>& trialSpace,
+            const Space<ArgumentType>& testSpace,
+            const Space<ArgumentType>& trialSpace,
             const std::vector<LocalAssembler*>& localAssemblers,
             const std::vector<const DiscreteLinOp*>& sparseTermsToAdd,
-            const std::vector<ValueType>& denseTermsMultipliers,
-            const std::vector<ValueType>& sparseTermsMultipliers,
+            const std::vector<ResultType>& denseTermsMultipliers,
+            const std::vector<ResultType>& sparseTermsMultipliers,
             const AssemblyOptions& options);
 
     static std::auto_ptr<DiscreteLinOp> assembleWeakForm(
-            const Space<ValueType>& testSpace,
-            const Space<ValueType>& trialSpace,
+            const Space<ArgumentType>& testSpace,
+            const Space<ArgumentType>& trialSpace,
             LocalAssembler& localAssembler,
             const AssemblyOptions& options);
 };

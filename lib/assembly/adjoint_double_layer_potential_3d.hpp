@@ -28,31 +28,30 @@
 namespace Bempp
 {
 
-template <typename ValueType>
+template <typename ArgumentType, typename ResultType = ArgumentType>
 class AdjointDoubleLayerPotential3D :
-        public ElementaryWeaklySingularIntegralOperator<ValueType>
+        public ElementaryWeaklySingularIntegralOperator<ArgumentType, ResultType>
 {
-
 public:
-    AdjointDoubleLayerPotential3D(const Space<ValueType>& testSpace,
-                                  const Space<ValueType>& trialSpace);
+    AdjointDoubleLayerPotential3D(const Space<ArgumentType>& testSpace,
+                                  const Space<ArgumentType>& trialSpace);
 
 private:
-    virtual const Fiber::Kernel<ValueType>& kernel() const {
+    virtual const Fiber::Kernel<ResultType>& kernel() const {
         return m_kernel;
     }
 
-    virtual const Fiber::Expression<ValueType>& testExpression() const {
+    virtual const Fiber::Expression<ArgumentType>& testExpression() const {
         return m_expression;
     }
 
-    virtual const Fiber::Expression<ValueType>& trialExpression() const {
+    virtual const Fiber::Expression<ArgumentType>& trialExpression() const {
         return m_expression;
     }
 
 private:
-    Fiber::AdjointDoubleLayerPotential3DKernel<ValueType> m_kernel;
-    Fiber::ScalarFunctionValue<ValueType> m_expression;
+    Fiber::AdjointDoubleLayerPotential3DKernel<ResultType> m_kernel;
+    Fiber::ScalarFunctionValue<ArgumentType> m_expression;
 };
 
 } // namespace Bempp

@@ -38,7 +38,7 @@ class NumericalTestFunctionIntegrator :
         public TestFunctionIntegrator<BasisValueType, FunctionValueType>
 {
 public:
-    typedef typename TestFunctionIntegrator<BasisValueType, FunctionValueType> Base;
+    typedef TestFunctionIntegrator<BasisValueType, FunctionValueType> Base;
     typedef typename Base::CoordinateType CoordinateType;
     typedef typename Base::ResultType ResultType;
 
@@ -48,8 +48,8 @@ public:
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
             const Expression<BasisValueType>& testExpression,
-            const Function<FunctionValueType>& trialExpression,
-            const OpenClHandler<ResultType,int>& openClHandler);
+            const Function<FunctionValueType>& function,
+            const OpenClHandler<CoordinateType, int>& openClHandler);
 
     virtual void integrate(
             const std::vector<int>& elementIndices,
@@ -65,7 +65,7 @@ private:
     const Expression<BasisValueType>& m_testExpression;
     const Function<FunctionValueType>& m_function;
 
-    const OpenClHandler<ResultType,int>& m_openClHandler;
+    const OpenClHandler<CoordinateType, int>& m_openClHandler;
 };
 
 } // namespace Fiber

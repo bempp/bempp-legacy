@@ -20,6 +20,8 @@
 
 #include "single_layer_potential_3d_kernel.hpp"
 
+#include "explicit_instantiation.hpp"
+
 #include <armadillo>
 #include <cmath>
 
@@ -50,7 +52,7 @@ inline ValueType SingleLayerPotential3DKernel<ValueType>::evaluateAtPointPair(
         ValueType diff = testPoint(coordIndex) - trialPoint(coordIndex);
         sum += diff * diff;
     }
-    return 1. / (4. * M_PI * sqrt(sum));
+    return static_cast<ValueType>(1. / (4. * M_PI)) / sqrt(sum);
 }
 
 template <typename ValueType>
@@ -112,20 +114,6 @@ std::pair<const char*,int> SingleLayerPotential3DKernel<ValueType>::evaluateClCo
 			   single_layer_potential_3D_kernel_cl_len);
 }
 
-
-#ifdef COMPILE_FOR_FLOAT
-template class SingleLayerPotential3DKernel<float>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class SingleLayerPotential3DKernel<double>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class SingleLayerPotential3DKernel<std::complex<float> >;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class SingleLayerPotential3DKernel<std::complex<double> >;
-#endif
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_KERNEL(SingleLayerPotential3DKernel);
 
 } // namespace Fiber

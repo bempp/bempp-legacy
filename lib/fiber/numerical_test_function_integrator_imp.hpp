@@ -43,8 +43,8 @@ NumericalTestFunctionIntegrator(
         const GeometryFactory& geometryFactory,
         const RawGridGeometry<CoordinateType>& rawGeometry,
         const Expression<BasisValueType>& testExpression,
-        const Function<FunctionValueType>& trialExpression,
-        const OpenClHandler<ResultType,int>& openClHandlerr) :
+        const Function<FunctionValueType>& function,
+        const OpenClHandler<CoordinateType, int>& openClHandler) :
     m_localQuadPoints(localQuadPoints),
     m_quadWeights(quadWeights),
     m_geometryFactory(geometryFactory),
@@ -112,7 +112,7 @@ integrate(
 
         for (int testDof = 0; testDof < testDofCount; ++testDof)
         {
-            ValueType sum = 0.;
+            ResultType sum = 0.;
             for (int point = 0; point < pointCount; ++point)
                 for (int dim = 0; dim < componentCount; ++dim)
                     sum +=  m_quadWeights[point] *

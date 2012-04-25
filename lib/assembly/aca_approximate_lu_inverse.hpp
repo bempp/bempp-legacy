@@ -19,19 +19,19 @@
 // THE SOFTWARE.
 
 
-#include "config_trilinos.hpp"
-
 #ifndef bempp_aca_approximate_lu_inverse_hpp
 #define bempp_aca_approximate_lu_inverse_hpp
 
+#include "config_trilinos.hpp"
 #include "discrete_linear_operator.hpp"
+
+#include "ahmed_aux_fwd.hpp"
+#include "index_permutation.hpp"
+#include "../fiber/scalar_traits.hpp"
 
 #ifdef WITH_TRILINOS
 #include <Thyra_SpmdVectorSpaceBase_decl.hpp>
 #endif
-
-#include "ahmed_aux_fwd.hpp"
-#include "index_permutation.hpp"
 
 namespace Bempp
 {
@@ -43,6 +43,8 @@ template <typename ValueType>
 class AcaApproximateLuInverse : public DiscreteLinearOperator<ValueType>
 {
 public:
+    typedef typename Fiber::ScalarTraits<ValueType>::RealType MagnitudeType;
+
     /** \brief Construct an approximate LU decomposition of a H-matrix.
 
     \param[in] fwdOp  Operator represented internally as a H-matrix.
@@ -50,7 +52,7 @@ public:
                       delta = 0.1). */
     AcaApproximateLuInverse(
             const DiscreteAcaLinearOperator<ValueType>& fwdOp,
-            ValueType delta);
+            MagnitudeType delta);
 
     virtual ~AcaApproximateLuInverse();
 
@@ -89,8 +91,10 @@ private:
                                   const ValueType beta) const;
 
 private:
-    typedef bemblcluster<AhmedDofWrapper<ValueType>, AhmedDofWrapper<ValueType> >
-    AhmedBemblcluster;
+    typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
+    typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
+    typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemblcluster;
+    typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
 
 #ifdef WITH_TRILINOS
     Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_domainSpace;
@@ -101,8 +105,8 @@ private:
 #endif
 
     blcluster* m_blockCluster;
-    mblock<ValueType>** m_blocksL;
-    mblock<ValueType>** m_blocksU;
+    AhmedMblock** m_blocksL;
+    AhmedMblock** m_blocksU;
 
     IndexPermutation m_domainPermutation;
     IndexPermutation m_rangePermutation;

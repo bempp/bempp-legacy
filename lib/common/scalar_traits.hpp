@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2012 by the BEM++ Authors
+// Copyright (C) 2011 by the BEM++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,25 +18,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_solver_hpp
-#define bempp_solver_hpp
+#ifndef bempp_scalar_traits_hpp
+#define bempp_scalar_traits_hpp
 
-#include "../assembly/grid_function.hpp"
+#include "../fiber/scalar_traits.hpp"
 
 namespace Bempp
 {
 
-template <typename ArgumentType, typename ResultType>
-class Solver
-{
-public:
-    enum EStatus {CONVERGED, UNCONVERGED, UNKNOWN};
-
-    virtual void solve() = 0;
-
-    virtual GridFunction<ArgumentType, ResultType> getResult() const = 0;
-    virtual EStatus getStatus() const = 0;
-};
+using Fiber::ScalarTraits;
+using Fiber::Coercion;
 
 } // namespace Bempp
 

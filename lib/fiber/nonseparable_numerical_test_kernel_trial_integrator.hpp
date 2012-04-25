@@ -32,51 +32,54 @@ template <typename ValueType> class Kernel;
 template <typename CoordinateType> class RawGridGeometry;
 
 /** \brief Integration over pairs of elements on non-tensor-product point grids. */
-template <typename ValueType, typename GeometryFactory>
-class NonseparableNumericalTestKernelTrialIntegrator : public TestKernelTrialIntegrator<ValueType>
+template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
+class NonseparableNumericalTestKernelTrialIntegrator :
+        public TestKernelTrialIntegrator<BasisValueType, KernelValueType>
 {
 public:
-    typedef typename TestKernelTrialIntegrator<ValueType>::ElementIndexPair
-    ElementIndexPair;
+    typedef TestKernelTrialIntegrator<BasisValueType, KernelValueType> Base;
+    typedef typename Base::CoordinateType CoordinateType;
+    typedef typename Base::ResultType ResultType;
+    typedef typename Base::ElementIndexPair ElementIndexPair;
 
     NonseparableNumericalTestKernelTrialIntegrator(
-            const arma::Mat<ValueType>& localTestQuadPoints,
-            const arma::Mat<ValueType>& localTrialQuadPoints,
-            const std::vector<ValueType> quadWeights,
+            const arma::Mat<CoordinateType>& localTestQuadPoints,
+            const arma::Mat<CoordinateType>& localTrialQuadPoints,
+            const std::vector<CoordinateType> quadWeights,
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const Expression<ValueType>& testExpression,
-            const Kernel<ValueType>& kernel,
-            const Expression<ValueType>& trialExpression,
-            const OpenClHandler<ValueType,int>& openClHandler);
+            const Expression<BasisValueType>& testExpression,
+            const Kernel<KernelValueType>& kernel,
+            const Expression<BasisValueType>& trialExpression,
+            const OpenClHandler<CoordinateType, int>& openClHandler);
 
     virtual void integrate(
             CallVariant callVariant,
             const std::vector<int>& elementIndicesA,
             int elementIndexB,
-            const Basis<ValueType>& basisA,
-            const Basis<ValueType>& basisB,
+            const Basis<BasisValueType>& basisA,
+            const Basis<BasisValueType>& basisB,
             LocalDofIndex localDofIndexB,
-            arma::Cube<ValueType>& result) const;
+            arma::Cube<ResultType>& result) const;
 
     virtual void integrate(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<ValueType>& testBasis,
-            const Basis<ValueType>& trialBasis,
-            arma::Cube<ValueType>& result) const;
+            const Basis<BasisValueType>& testBasis,
+            const Basis<BasisValueType>& trialBasis,
+            arma::Cube<ResultType>& result) const;
 
 private:
-    arma::Mat<ValueType> m_localTestQuadPoints;
-    arma::Mat<ValueType> m_localTrialQuadPoints;
-    std::vector<ValueType> m_quadWeights;
+    arma::Mat<CoordinateType> m_localTestQuadPoints;
+    arma::Mat<CoordinateType> m_localTrialQuadPoints;
+    std::vector<CoordinateType> m_quadWeights;
 
     const GeometryFactory& m_geometryFactory;
     const RawGridGeometry<CoordinateType>& m_rawGeometry;
 
-    const Expression<ValueType>& m_testExpression;
-    const Kernel<ValueType>& m_kernel;
-    const Expression<ValueType>& m_trialExpression;
-    const OpenClHandler<ValueType,int>& m_openClHandler;
+    const Expression<BasisValueType>& m_testExpression;
+    const Kernel<KernelValueType>& m_kernel;
+    const Expression<BasisValueType>& m_trialExpression;
+    const OpenClHandler<CoordinateType, int>& m_openClHandler;
 };
 
 } // namespace Fiber

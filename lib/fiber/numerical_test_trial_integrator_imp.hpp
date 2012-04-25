@@ -34,16 +34,16 @@
 namespace Fiber
 {
 
-template <typename ValueType, typename GeometryFactory>
-NumericalTestTrialIntegrator<ValueType, GeometryFactory>::
+template <typename BasisValueType, typename ResultType, typename GeometryFactory>
+NumericalTestTrialIntegrator<BasisValueType, ResultType, GeometryFactory>::
 NumericalTestTrialIntegrator(
         const arma::Mat<CoordinateType>& localQuadPoints,
         const std::vector<CoordinateType> quadWeights,
         const GeometryFactory& geometryFactory,
         const RawGridGeometry<CoordinateType>& rawGeometry,
-        const Expression<ValueType>& testExpression,
-        const Expression<ValueType>& trialExpression,
-        const OpenClHandler<ValueType,int>& openClHandler) :
+        const Expression<BasisValueType>& testExpression,
+        const Expression<BasisValueType>& trialExpression,
+        const OpenClHandler<CoordinateType, int>& openClHandler) :
     m_localQuadPoints(localQuadPoints),
     m_quadWeights(quadWeights),
     m_geometryFactory(geometryFactory),
@@ -58,12 +58,12 @@ NumericalTestTrialIntegrator(
                                     "numbers of points and weights do not match");
 }
 
-template <typename ValueType, typename GeometryFactory>
-void NumericalTestTrialIntegrator<ValueType, GeometryFactory>::integrate(
+template <typename BasisValueType, typename ResultType, typename GeometryFactory>
+void NumericalTestTrialIntegrator<BasisValueType, ResultType, GeometryFactory>::integrate(
         const std::vector<int>& elementIndices,
-        const Basis<ValueType>& testBasis,
-        const Basis<ValueType>& trialBasis,
-        arma::Cube<ValueType>& result) const
+        const Basis<BasisValueType>& testBasis,
+        const Basis<BasisValueType>& trialBasis,
+        arma::Cube<ResultType>& result) const
 {
     const int pointCount = m_localQuadPoints.n_cols;
     const int elementCount = elementIndices.size();
@@ -83,7 +83,7 @@ void NumericalTestTrialIntegrator<ValueType, GeometryFactory>::integrate(
                                  "test and trial functions "
                                  "must have the same number of components");
 
-    BasisData<ValueType> testBasisData, trialBasisData;
+    BasisData<BasisValueType> testBasisData, trialBasisData;
     GeometricalData<CoordinateType> geomData;
 
     int testBasisDeps = 0, trialBasisDeps = 0;
@@ -95,7 +95,7 @@ void NumericalTestTrialIntegrator<ValueType, GeometryFactory>::integrate(
     typedef typename GeometryFactory::Geometry Geometry;
     std::auto_ptr<Geometry> geometry(m_geometryFactory.make());
 
-    arma::Cube<ValueType> testValues, trialValues;
+    arma::Cube<BasisValueType> testValues, trialValues;
 
     result.set_size(testDofCount, trialDofCount, elementCount);
 
@@ -113,7 +113,7 @@ void NumericalTestTrialIntegrator<ValueType, GeometryFactory>::integrate(
         for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
             for (int testDof = 0; testDof < testDofCount; ++testDof)
             {
-                ValueType sum = 0.;
+                ResultType sum = 0.;
                 for (int point = 0; point < pointCount; ++point)
                     for (int dim = 0; dim < componentCount; ++dim)
                         sum +=  m_quadWeights[point] *

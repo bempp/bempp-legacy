@@ -11,6 +11,9 @@ configure_file(
 configure_file(
         ${CMAKE_SOURCE_DIR}/lib/common/config_alugrid.hpp.in
         ${CMAKE_BINARY_DIR}/include/common/config_alugrid.hpp)
+configure_file(
+        ${CMAKE_SOURCE_DIR}/lib/common/config_data_types.hpp.in
+        ${CMAKE_BINARY_DIR}/include/common/config_data_types.hpp)
 include_directories(${CMAKE_BINARY_DIR}/include/common)
 
 # Find all source and header files
@@ -21,7 +24,8 @@ file(GLOB_RECURSE DUNE_GRID_HEADERS ${CMAKE_SOURCE_DIR}/contrib/dune/dune-grid/d
 file(GLOB_RECURSE DUNE_COMMON_HEADERS ${CMAKE_SOURCE_DIR}/contrib/dune/dune-common/dune/common/*.hh)
 find_file(ARMA_HEADER armadillo ${ARMADILLO_INCLUDE_DIRS})
 
-add_definitions(-DCOMPILE_FOR_DOUBLE)
+#add_definitions(-DCOMPILE_FOR_DOUBLE)
+#add_definitions(-DCOMPILE_FOR_FLOAT)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")

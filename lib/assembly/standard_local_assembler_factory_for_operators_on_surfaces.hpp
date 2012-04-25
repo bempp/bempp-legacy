@@ -29,13 +29,14 @@ namespace Bempp
 
 using Fiber::AccuracyOptions;
 
-template <typename ValueType>
+template <typename ArgumentType, typename ResultType>
 class StandardLocalAssemblerFactoryForOperatorsOnSurfaces :
-        public Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<ValueType, GeometryFactory>
+        public Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<
+        ArgumentType, ResultType, GeometryFactory>
 {
 private:
     typedef Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<
-    ValueType, GeometryFactory> Base;
+    ArgumentType, ResultType, GeometryFactory> Base;
 public:
     /** \brief Construct a local assembler factory with default accuracy settings. */
     StandardLocalAssemblerFactoryForOperatorsOnSurfaces() :

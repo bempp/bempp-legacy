@@ -23,6 +23,7 @@
 
 #include "../common/types.hpp"
 #include "../common/not_implemented_error.hpp"
+#include "../fiber/scalar_traits.hpp"
 #include <armadillo>
 #include <vector>
 
@@ -47,6 +48,8 @@ template <typename ValueType>
 class Space
 {
 public:
+    typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
+
     // A grid reference is necessary because e.g. when setting the element
     // variant it is necessary to check whether the element is triangular
     // or quadrilateral. Also, requests for element refinement should probably
@@ -115,7 +118,7 @@ public:
     // actual dimension of the space. Once Ahmed's bemcluster is made dimension-
     // independent, we may come up with a more elegant solution.
     virtual void globalDofPositions(
-            std::vector<Point3D<ValueType> >& positions) const = 0;
+            std::vector<Point3D<CoordinateType> >& positions) const = 0;
     /** @} */
 
 protected:

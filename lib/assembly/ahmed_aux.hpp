@@ -28,16 +28,36 @@
 
 #include <boost/scoped_array.hpp>
 #include <boost/shared_array.hpp>
+#include <complex>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
 
 // Ahmed's include files
+#include "cmplx.h"
+
+inline comp<float> operator*=(comp<float>& a, double b)
+{
+    return operator*=(a, static_cast<float>(b));
+}
+
+inline comp<float> operator/(comp<float>& a, double b)
+{
+    return operator/(a, static_cast<float>(b));
+}
+
+inline comp<float> operator/(double a, comp<float>& b)
+{
+    return operator/(static_cast<float>(a), b);
+}
+
 #include <apprx.h>
 #include <bemblcluster.h>
 #include <bllist.h>
 // #include <matgen_sqntl.h>
+// #define _OPENMP
 #include <matgen_omp.h>
+// #undef _OPENMP
 
 bool multaHvec_omp(double d, blcluster* bl, mblock<double>** A, double* x,
            double* y);
@@ -50,10 +70,29 @@ bool multaHvec_omp(double d, blcluster* bl, mblock<double>** A, double* x,
 
 namespace Bempp {
 
-template <typename ValueType>
-struct AhmedDofWrapper : public Point3D<ValueType>
+// Casts.
+
+inline float ahmedCast(float x) {
+    return x;
+}
+
+inline double ahmedCast(double x) {
+    return x;
+}
+
+inline scomp ahmedCast(std::complex<float> x) {
+    return scomp(x.real(), x.imag());
+}
+
+inline dcomp ahmedCast(std::complex<double> x) {
+    return dcomp(x.real(), x.imag());
+}
+
+/** \brief An Ahmed-compatible degree-of-freedom type. */
+template <typename CoordinateType>
+struct AhmedDofWrapper : public Point3D<CoordinateType>
 {
-    ValueType getcenter(int dim) const
+    CoordinateType getcenter(int dim) const
     {
         switch  (dim)
         {
@@ -84,13 +123,15 @@ private:
 };
 
 template <typename ValueType>
-boost::shared_array<mblock<ValueType>*> allocateAhmedMblockArray(
+boost::shared_array<mblock<typename AhmedTypeTraits<ValueType>::Type>*>
+allocateAhmedMblockArray(
         const blcluster* cluster)
 {
-    mblock<ValueType>** blocks = 0;
+    typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
+    AhmedMblock** blocks = 0;
     const size_t blockCount = cluster->nleaves();
     allocmbls(blockCount, blocks);
-    return boost::shared_array<mblock<ValueType>*>(
+    return boost::shared_array<AhmedMblock*>(
                 blocks, AhmedMblockArrayDeleter(blockCount));
 }
 

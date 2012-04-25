@@ -21,6 +21,8 @@
 #ifndef fiber_expression_hpp
 #define fiber_expression_hpp
 
+#include "scalar_traits.hpp"
+
 #include <armadillo>
 
 namespace Fiber {

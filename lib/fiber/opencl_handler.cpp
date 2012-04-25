@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "config_data_types.hpp"
 #include "config_opencl.hpp"
 #include "opencl_handler.hpp"
 
@@ -393,19 +394,11 @@ void OpenClHandler<ValueType,IndexType>::pullValueCube (
 }
 
 
-#ifdef COMPILE_FOR_FLOAT
+#ifdef ENABLE_SINGLE_PRECISION
 template class OpenClHandler<float, int>;
 #endif
-#ifdef COMPILE_FOR_DOUBLE
+#ifdef ENABLE_DOUBLE_PRECISION
 template class OpenClHandler<double, int>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class OpenClHandler<std::complex<float>, int>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class OpenClHandler<std::complex<double>, int>;
 #endif
 
 } // namespace Fiber

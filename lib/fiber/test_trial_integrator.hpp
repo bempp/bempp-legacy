@@ -32,19 +32,19 @@ namespace Fiber
 template <typename ValueType> class Basis;
 
 /** \brief Integration of products of test and trial functions over elements. */
-template <typename ValueType>
+template <typename BasisValueType, typename ResultType>
 class TestTrialIntegrator
 {
 public:
-    typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
     virtual ~TestTrialIntegrator() {}
 
     virtual void integrate(
             const std::vector<int>& elementIndices,
-            const Basis<ValueType>& testBasis,
-            const Basis<ValueType>& trialBasis,
-            arma::Cube<ValueType>& result) const = 0;
+            const Basis<BasisValueType>& testBasis,
+            const Basis<BasisValueType>& trialBasis,
+            arma::Cube<ResultType>& result) const = 0;
 };
 
 } // namespace Fiber

@@ -38,57 +38,58 @@
 namespace Fiber
 {
 
-template <typename ValueType, typename IndexType> class OpenClHandler;
+template <typename CoordinateType, typename IndexType> class OpenClHandler;
 
-template <typename ValueType, typename GeometryFactory>
+template <typename BasisValueType, typename ResultType, typename GeometryFactory>
 class StandardLocalAssemblerForIdentityOperatorOnSurface :
-        public LocalAssemblerForOperators<ValueType>
-{    
+    public LocalAssemblerForOperators<ResultType>
+{
 public:
+    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+
     StandardLocalAssemblerForIdentityOperatorOnSurface(
-            const GeometryFactory& geometryFactory,
-            const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<ValueType>*>& testBases,
-            const std::vector<const Basis<ValueType>*>& trialBases,
-            const Expression<ValueType>& testExpression,
-            const Expression<ValueType>& trialExpression,
-            ValueType multiplier,
-            const OpenClHandler<ValueType,int>& openClHandler);
+        const GeometryFactory& geometryFactory,
+        const RawGridGeometry<CoordinateType>& rawGeometry,
+        const std::vector<const Basis<BasisValueType>*>& testBases,
+        const std::vector<const Basis<BasisValueType>*>& trialBases,
+        const Expression<BasisValueType>& testExpression,
+        const Expression<BasisValueType>& trialExpression,
+        const OpenClHandler<CoordinateType, int>& openClHandler);
 
     virtual void evaluateLocalWeakForms(
-            CallVariant callVariant,
-            const std::vector<int>& elementIndicesA,
-            int elementIndexB,
-            LocalDofIndex localDofIndexB,
-            std::vector<arma::Mat<ValueType> >& result);
+        CallVariant callVariant,
+        const std::vector<int>& elementIndicesA,
+        int elementIndexB,
+        LocalDofIndex localDofIndexB,
+        std::vector<arma::Mat<ResultType> >& result);
 
     virtual void evaluateLocalWeakForms(
-            const std::vector<int>& testElementIndices,
-            const std::vector<int>& trialElementIndices,
-            Fiber::Array2D<arma::Mat<ValueType> >& result);
+        const std::vector<int>& testElementIndices,
+        const std::vector<int>& trialElementIndices,
+        Fiber::Array2D<arma::Mat<ResultType> >& result);
 
     virtual void evaluateLocalWeakForms(
-            const std::vector<int>& elementIndices,
-            std::vector<arma::Mat<ValueType> >& result);
+        const std::vector<int>& elementIndices,
+        std::vector<arma::Mat<ResultType> >& result);
 
 private:
-    const TestTrialIntegrator<ValueType>& selectIntegrator(int elementIndex);
+    const TestTrialIntegrator<BasisValueType, ResultType>&
+    selectIntegrator(int elementIndex);
 
-    const TestTrialIntegrator<ValueType>& getIntegrator(
-            const SingleQuadratureDescriptor& desc);
+    const TestTrialIntegrator<BasisValueType, ResultType>& getIntegrator(
+        const SingleQuadratureDescriptor& desc);
 private:
     typedef boost::ptr_map<SingleQuadratureDescriptor,
-    TestTrialIntegrator<ValueType> > IntegratorMap;
+            TestTrialIntegrator<BasisValueType, ResultType> > IntegratorMap;
 
 private:
     const GeometryFactory& m_geometryFactory;
     const RawGridGeometry<CoordinateType>& m_rawGeometry;
-    const std::vector<const Basis<ValueType>*>& m_testBases;
-    const std::vector<const Basis<ValueType>*>& m_trialBases;
-    const Expression<ValueType>& m_testExpression;
-    const Expression<ValueType>& m_trialExpression;
-    ValueType m_multiplier;
-    const OpenClHandler<ValueType,int>& m_openClHandler;
+    const std::vector<const Basis<BasisValueType>*>& m_testBases;
+    const std::vector<const Basis<BasisValueType>*>& m_trialBases;
+    const Expression<BasisValueType>& m_testExpression;
+    const Expression<BasisValueType>& m_trialExpression;
+    const OpenClHandler<CoordinateType, int>& m_openClHandler;
 
     IntegratorMap m_testTrialIntegrators;
 };

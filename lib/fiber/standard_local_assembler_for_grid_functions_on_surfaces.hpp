@@ -33,45 +33,49 @@ namespace Fiber
 
 template <typename ValueType, typename IndexType> class OpenClHandler;
 
-template <typename ValueType, typename GeometryFactory>
+template <typename BasisValueType, typename FunctionValueType, typename GeometryFactory>
 class StandardLocalAssemblerForGridFunctionsOnSurfaces :
-        public LocalAssemblerForGridFunctions<ValueType>
+        public LocalAssemblerForGridFunctions<
+        typename Coercion<BasisValueType, FunctionValueType>::Type>
 {    
 public:
+    typedef typename Coercion<BasisValueType, FunctionValueType>::Type ResultType;
+    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+
     StandardLocalAssemblerForGridFunctionsOnSurfaces(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<ValueType>*>& testBases,
-            const Expression<ValueType>& testExpression,
-            const Function<ValueType>& function,
-            const OpenClHandler<ValueType,int>& openClHandler);
+            const std::vector<const Basis<BasisValueType>*>& testBases,
+            const Expression<BasisValueType>& testExpression,
+            const Function<FunctionValueType>& function,
+            const OpenClHandler<CoordinateType, int>& openClHandler);
     virtual ~StandardLocalAssemblerForGridFunctionsOnSurfaces();
 
 public:
     virtual void evaluateLocalWeakForms(
             const std::vector<int>& elementIndices,
-            std::vector<arma::Col<ValueType> >& result);
+            std::vector<arma::Col<ResultType> >& result);
 
 private:
-    const TestFunctionIntegrator<ValueType>& selectIntegrator(
-            int elementIndex);
+    typedef TestFunctionIntegrator<BasisValueType, FunctionValueType> Integrator;
+
+    const Integrator& selectIntegrator(int elementIndex);
 
     int orderIncrement(int elementIndex) const;
 
-    const TestFunctionIntegrator<ValueType>& getIntegrator(
-            const SingleQuadratureDescriptor& index);
+    const Integrator& getIntegrator(const SingleQuadratureDescriptor& index);
 
 private:
     typedef tbb::concurrent_unordered_map<SingleQuadratureDescriptor,
-    TestFunctionIntegrator<ValueType>*> IntegratorMap;
+    Integrator*> IntegratorMap;
 
 private:
     const GeometryFactory& m_geometryFactory;
     const RawGridGeometry<CoordinateType>& m_rawGeometry;
-    const std::vector<const Basis<ValueType>*>& m_testBases;
-    const Expression<ValueType>& m_testExpression;
-    const Function<ValueType>& m_function;
-    const OpenClHandler<ValueType,int>& m_openClHandler;
+    const std::vector<const Basis<BasisValueType>*>& m_testBases;
+    const Expression<BasisValueType>& m_testExpression;
+    const Function<FunctionValueType>& m_function;
+    const OpenClHandler<CoordinateType, int>& m_openClHandler;
 
     IntegratorMap m_testFunctionIntegrators;
 };

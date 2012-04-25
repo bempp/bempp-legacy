@@ -20,8 +20,10 @@
 
 #include "piecewise_linear_continuous_scalar_space.hpp"
 
+#include "../fiber/explicit_instantiation.hpp"
 #include "../grid/entity.hpp"
 #include "../grid/entity_iterator.hpp"
+#include "../grid/geometry.hpp"
 #include "../grid/grid.hpp"
 #include "../grid/grid_view.hpp"
 #include "../grid/mapper.hpp"
@@ -31,9 +33,6 @@
 
 #include <stdexcept>
 #include <iostream>
-
-#include "../grid/geometry.hpp"
-
 
 namespace Bempp
 {
@@ -228,7 +227,7 @@ void PiecewiseLinearContinuousScalarSpace<ValueType>::global2localDofs(
 
 template <typename ValueType>
 void PiecewiseLinearContinuousScalarSpace<ValueType>::globalDofPositions(
-        std::vector<Point3D<ValueType> >& positions) const
+        std::vector<Point3D<CoordinateType> >& positions) const
 {
     const int gridDim = domainDimension();
     const int globalDofCount_ = globalDofCount();
@@ -243,7 +242,7 @@ void PiecewiseLinearContinuousScalarSpace<ValueType>::globalDofPositions(
         {
             const Entity<1>& e = it->entity();
             int index = indexSet.entityIndex(e);
-            arma::Col<ValueType> vertex;
+            arma::Col<CoordinateType> vertex;
             e.geometry().getCenter(vertex);
 
             positions[index].x = vertex(0);
@@ -259,7 +258,7 @@ void PiecewiseLinearContinuousScalarSpace<ValueType>::globalDofPositions(
         {
             const Entity<2>& e = it->entity();
             int index = indexSet.entityIndex(e);
-            arma::Col<ValueType> vertex;
+            arma::Col<CoordinateType> vertex;
             e.geometry().getCenter(vertex);
 
             positions[index].x = vertex(0);
@@ -270,20 +269,6 @@ void PiecewiseLinearContinuousScalarSpace<ValueType>::globalDofPositions(
     }
 }
 
-
-#ifdef COMPILE_FOR_FLOAT
-template class PiecewiseLinearContinuousScalarSpace<float>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class PiecewiseLinearContinuousScalarSpace<double>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class PiecewiseLinearContinuousScalarSpace<std::complex<float> >;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class PiecewiseLinearContinuousScalarSpace<std::complex<double> >;
-#endif
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(PiecewiseLinearContinuousScalarSpace);
 
 } // namespace Bempp

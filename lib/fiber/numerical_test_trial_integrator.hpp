@@ -26,31 +26,33 @@
 namespace Fiber
 {
 
-template <typename ValueType, typename IndexType> class OpenClHandler;
+template <typename CoordinateType, typename IndexType> class OpenClHandler;
 template <typename ValueType> class Expression;
 template <typename CoordinateType> class RawGridGeometry;
 
 /** \brief Integration over pairs of elements on tensor-product point grids. */
-template <typename ValueType, typename GeometryFactory>
-class NumericalTestTrialIntegrator : public TestTrialIntegrator<ValueType>
+template <typename BasisValueType, typename ResultType, typename GeometryFactory>
+class NumericalTestTrialIntegrator :
+        public TestTrialIntegrator<BasisValueType, ResultType>
 {
 public:
-    typedef typename TestTrialIntegrator<ValueType>::CoordinateType CoordinateType;
+    typedef typename
+    TestTrialIntegrator<BasisValueType, ResultType>::CoordinateType CoordinateType;
 
     NumericalTestTrialIntegrator(
             const arma::Mat<CoordinateType>& localQuadPoints,
             const std::vector<CoordinateType> quadWeights,
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const Expression<ValueType>& testExpression,
-            const Expression<ValueType>& trialExpression,
-            const OpenClHandler<ValueType,int>& openClHandler);
+            const Expression<BasisValueType>& testExpression,
+            const Expression<BasisValueType>& trialExpression,
+            const OpenClHandler<CoordinateType, int>& openClHandler);
 
     virtual void integrate(
             const std::vector<int>& elementIndices,
-            const Basis<ValueType>& testBasis,
-            const Basis<ValueType>& trialBasis,
-            arma::Cube<ValueType>& result) const;
+            const Basis<BasisValueType>& testBasis,
+            const Basis<BasisValueType>& trialBasis,
+            arma::Cube<ResultType>& result) const;
 
 private:
     arma::Mat<CoordinateType> m_localQuadPoints;
@@ -58,10 +60,10 @@ private:
 
     const GeometryFactory& m_geometryFactory;
     const RawGridGeometry<CoordinateType>& m_rawGeometry;
-    const Expression<ValueType>& m_testExpression;
-    const Expression<ValueType>& m_trialExpression;
+    const Expression<BasisValueType>& m_testExpression;
+    const Expression<BasisValueType>& m_trialExpression;
 
-    const OpenClHandler<ValueType,int>& m_openClHandler;
+    const OpenClHandler<CoordinateType, int>& m_openClHandler;
 };
 
 } // namespace Fiber

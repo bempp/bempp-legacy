@@ -18,28 +18,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-// File to be removed once unit tests are in place
-
 #include "standard_local_assembler_factory_for_operators_on_surfaces.hpp"
+
+#include "explicit_instantiation.hpp"
 #include "../grid/geometry.hpp"
 #include "../grid/geometry_factory.hpp"
 
 namespace Fiber
 {
 
-#ifdef COMPILE_FOR_FLOAT
-template class StandardLocalAssemblerFactoryForOperatorsOnSurfaces<float, Bempp::GeometryFactory>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class StandardLocalAssemblerFactoryForOperatorsOnSurfaces<double, Bempp::GeometryFactory>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class StandardLocalAssemblerFactoryForOperatorsOnSurfaces<std::complex<float>, Bempp::GeometryFactory>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class StandardLocalAssemblerFactoryForOperatorsOnSurfaces<std::complex<double>, Bempp::GeometryFactory>;
-#endif
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_GEOFACTORY(
+        StandardLocalAssemblerFactoryForOperatorsOnSurfaces);
 
 } // namespace Fiber

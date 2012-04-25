@@ -9,7 +9,6 @@ namespace Fiber
 template <typename T>
 struct ScalarTraits
 {
-
 };
 
 template <>
@@ -36,6 +35,59 @@ struct ScalarTraits<std::complex<double> >
     typedef double RealType;
 };
 
+/** \brief "Larger" of the types U and V. */
+template <typename U, typename V>
+struct Coercion
+{
+};
+
+template <>
+struct Coercion<float, float>
+{
+    typedef float Type;
+};
+
+template <>
+struct Coercion<double, double>
+{
+    typedef double Type;
+};
+
+template <>
+struct Coercion<std::complex<float>, std::complex<float> >
+{
+    typedef std::complex<float> Type;
+};
+
+template <>
+struct Coercion<std::complex<double>, std::complex<double> >
+{
+    typedef std::complex<double> Type;
+};
+
+template <>
+struct Coercion<float, std::complex<float> >
+{
+    typedef std::complex<float> Type;
+};
+
+template <>
+struct Coercion<std::complex<float>, float>
+{
+    typedef std::complex<float> Type;
+};
+
+template <>
+struct Coercion<double, std::complex<double> >
+{
+    typedef std::complex<double> Type;
+};
+
+template <>
+struct Coercion<std::complex<double>, double>
+{
+    typedef std::complex<double> Type;
+};
 
 } // namespace Fiber
 

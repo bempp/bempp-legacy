@@ -39,6 +39,8 @@ template <typename ValueType>
 class PiecewiseLinearContinuousScalarSpace : public ScalarSpace<ValueType>
 {
 public:
+    typedef typename Space<ValueType>::CoordinateType CoordinateType;
+
     explicit PiecewiseLinearContinuousScalarSpace(Grid& grid);
 
     virtual int domainDimension() const;
@@ -62,7 +64,7 @@ public:
             const std::vector<GlobalDofIndex>& globalDofs,
             std::vector<std::vector<LocalDof> >& localDofs) const;
 
-    virtual void globalDofPositions(std::vector<Point3D<ValueType> >& positions) const;
+    virtual void globalDofPositions(std::vector<Point3D<CoordinateType> >& positions) const;
 
 private:
     std::auto_ptr<GridView> m_view;

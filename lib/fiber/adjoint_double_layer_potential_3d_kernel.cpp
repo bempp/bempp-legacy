@@ -20,11 +20,12 @@
 
 #include "adjoint_double_layer_potential_3d_kernel.hpp"
 
+#include "explicit_instantiation.hpp"
+#include "geometrical_data.hpp"
+
 #include <armadillo>
 #include <cassert>
 #include <cmath>
-
-#include "geometrical_data.hpp"
 
 namespace Fiber
 {
@@ -47,14 +48,14 @@ inline ValueType AdjointDoubleLayerPotential3DKernel<ValueType>::evaluateAtPoint
 {
     const int coordCount = testPoint.n_rows;
 
-    ValueType numeratorSum = 0., denominatorSum = 0.;
+    CoordinateType numeratorSum = 0., denominatorSum = 0.;
     for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex)
     {
-        ValueType diff = testPoint(coordIndex) - trialPoint(coordIndex);
+        CoordinateType diff = testPoint(coordIndex) - trialPoint(coordIndex);
         denominatorSum += diff * diff;
         numeratorSum += diff * testNormal(coordIndex);
     }
-    ValueType distance = sqrt(denominatorSum);
+    CoordinateType distance = sqrt(denominatorSum);
     return -numeratorSum / (4. * M_PI * distance * distance * distance);
 }
 
@@ -64,9 +65,9 @@ void AdjointDoubleLayerPotential3DKernel<ValueType>::evaluateAtPointPairs(
         const GeometricalData<CoordinateType>& trialGeomData,
         arma::Cube<ValueType>& result) const
 {
-    const arma::Mat<ValueType>& testPoints = testGeomData.globals;
-    const arma::Mat<ValueType>& trialPoints = trialGeomData.globals;
-    const arma::Mat<ValueType>& testNormals = testGeomData.normals;
+    const arma::Mat<CoordinateType>& testPoints = testGeomData.globals;
+    const arma::Mat<CoordinateType>& trialPoints = trialGeomData.globals;
+    const arma::Mat<CoordinateType>& testNormals = testGeomData.normals;
 
 #ifndef NDEBUG
     const int worldDim = worldDimension();
@@ -94,9 +95,9 @@ void AdjointDoubleLayerPotential3DKernel<ValueType>::evaluateOnGrid(
         const GeometricalData<CoordinateType>& trialGeomData,
         Array4D<ValueType>& result) const
 {
-    const arma::Mat<ValueType>& testPoints = testGeomData.globals;
-    const arma::Mat<ValueType>& trialPoints = trialGeomData.globals;
-    const arma::Mat<ValueType>& testNormals = testGeomData.normals;
+    const arma::Mat<CoordinateType>& testPoints = testGeomData.globals;
+    const arma::Mat<CoordinateType>& trialPoints = trialGeomData.globals;
+    const arma::Mat<CoordinateType>& testNormals = testGeomData.normals;
 
 #ifndef NDEBUG
     const int worldDim = worldDimension();
@@ -128,19 +129,6 @@ std::pair<const char*,int> AdjointDoubleLayerPotential3DKernel<ValueType>::evalu
     return std::pair<const char*,int>();
 }
 
-#ifdef COMPILE_FOR_FLOAT
-template class AdjointDoubleLayerPotential3DKernel<float>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class AdjointDoubleLayerPotential3DKernel<double>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class AdjointDoubleLayerPotential3DKernel<std::complex<float> >;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class AdjointDoubleLayerPotential3DKernel<std::complex<double> >;
-#endif
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_KERNEL(AdjointDoubleLayerPotential3DKernel);
 
 } // namespace Fiber

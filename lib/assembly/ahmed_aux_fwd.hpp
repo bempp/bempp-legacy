@@ -24,12 +24,53 @@
 
 template <class T1, class T2> class bemblcluster;
 template <class T> class mblock;
+template <class T> struct comp;
 class blcluster;
+
+namespace std
+{
+
+template <typename _Tp> class complex;
+
+} // namespace std
 
 namespace Bempp
 {
 
-template <typename ValueType> struct AhmedDofWrapper;
+template <typename CoordinateType> struct AhmedDofWrapper;
+
+// Casts.
+
+// Ahmed uses a nonstandard complex type. To all probability, its binary
+// representation is the same as that of the complex type provided by STL.
+
+template <typename T>
+struct AhmedTypeTraits
+{
+    typedef T Type;
+};
+
+template <>
+struct AhmedTypeTraits<std::complex<float> >
+{
+    typedef comp<float> Type;
+};
+
+template <>
+struct AhmedTypeTraits<std::complex<double> >
+{
+    typedef comp<double> Type;
+};
+
+template <typename T>
+inline typename AhmedTypeTraits<T>::Type* ahmedCast(T* x) {
+    return reinterpret_cast<typename AhmedTypeTraits<T>::Type*>(x);
+}
+
+float ahmedCast(float x);
+double ahmedCast(double x);
+comp<float> ahmedCast(std::complex<float> x);
+comp<double> ahmedCast(std::complex<double> x);
 
 } // namespace Bempp
 

@@ -28,23 +28,24 @@
 namespace Fiber
 {
 
-template <typename ValueType> class LocalAssemblerForOperators;
+template <typename ResultType> class LocalAssemblerForOperators;
 
 } // namespace Fiber
 
 namespace Bempp
 {
 
-template <typename ValueType>
-class IdentityOperator : public ElementaryLinearOperator<ValueType>
+template <typename ArgumentType, typename ResultType>
+class IdentityOperator : public ElementaryLinearOperator<ArgumentType, ResultType>
 {
+    typedef ElementaryLinearOperator<ArgumentType, ResultType> Base;
 public:
-    typedef typename ElementaryLinearOperator<ValueType>::LocalAssemblerFactory
-    LocalAssemblerFactory;
-    typedef typename ElementaryLinearOperator<ValueType>::LocalAssembler LocalAssembler;
+    typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
+    typedef typename Base::LocalAssembler LocalAssembler;
+    typedef typename Base::CoordinateType CoordinateType;
 
-    IdentityOperator(const Space<ValueType>& testSpace,
-                     const Space<ValueType>& trialSpace);
+    IdentityOperator(const Space<ArgumentType>& testSpace,
+                     const Space<ArgumentType>& trialSpace);
 
     virtual int trialComponentCount() const { return 1; }
 
@@ -55,35 +56,35 @@ public:
     virtual std::auto_ptr<LocalAssembler> makeAssembler(
             const LocalAssemblerFactory& assemblerFactory,
             const GeometryFactory& geometryFactory,
-            const Fiber::RawGridGeometry<ValueType>& rawGeometry,
-            const std::vector<const Fiber::Basis<ValueType>*>& testBases,
-            const std::vector<const Fiber::Basis<ValueType>*>& trialBases,
-            const Fiber::OpenClHandler<ValueType, int>& openClHandler,
+            const Fiber::RawGridGeometry<CoordinateType>& rawGeometry,
+            const std::vector<const Fiber::Basis<ArgumentType>*>& testBases,
+            const std::vector<const Fiber::Basis<ArgumentType>*>& trialBases,
+            const Fiber::OpenClHandler<CoordinateType, int>& openClHandler,
             bool cacheSingularIntegrals) const;
 
-    virtual std::auto_ptr<DiscreteLinearOperator<ValueType> >
+    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakForm(
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
 
-    virtual std::auto_ptr<DiscreteLinearOperator<ValueType> >
+    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakFormInternal(
             LocalAssembler& assembler,
             const AssemblyOptions& options) const;
 
 private:
-    std::auto_ptr<DiscreteLinearOperator<ValueType> >
+    std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakFormInDenseMode(
             LocalAssembler& assembler,
             const AssemblyOptions& options) const;
 
-    std::auto_ptr<DiscreteLinearOperator<ValueType> >
+    std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakFormInSparseMode(
             LocalAssembler& assembler,
             const AssemblyOptions& options) const;
 
 private:
-    Fiber::ScalarFunctionValue<ValueType> m_expression;
+    Fiber::ScalarFunctionValue<ArgumentType> m_expression;
 };
 
 } // namespace Bempp

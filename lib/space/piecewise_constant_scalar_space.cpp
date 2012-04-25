@@ -20,13 +20,13 @@
 
 #include "piecewise_constant_scalar_space.hpp"
 
+#include "../fiber/explicit_instantiation.hpp"
 #include "../grid/entity.hpp"
 #include "../grid/entity_iterator.hpp"
+#include "../grid/geometry.hpp"
 #include "../grid/grid.hpp"
 #include "../grid/grid_view.hpp"
 #include "../grid/mapper.hpp"
-
-#include "../grid/geometry.hpp"
 
 
 namespace Bempp
@@ -198,7 +198,7 @@ void PiecewiseConstantScalarSpace<ValueType>::global2localDofs(
 
 template <typename ValueType>
 void PiecewiseConstantScalarSpace<ValueType>::globalDofPositions(
-        std::vector<Point3D<ValueType> >& positions) const
+        std::vector<Point3D<CoordinateType> >& positions) const
 {
     const int gridDim = domainDimension();
     const int globalDofCount_ = globalDofCount();
@@ -206,42 +206,27 @@ void PiecewiseConstantScalarSpace<ValueType>::globalDofPositions(
 
     const IndexSet& indexSet = m_view->indexSet();
 
-    if (gridDim == 1){
+    if (gridDim == 1)
         throw NotImplementedError("PiecewiseConstantScalarSpace::"
-                                      "globalDofPositions(): "
-                                      "not implemented for 2D yet.");
-    }
-    else{
+                                  "globalDofPositions(): "
+                                  "not implemented for 2D yet.");
+    else {
+        std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+        while (!it->finished())
+        {
+            const Entity<0>& e = it->entity();
+            int index = indexSet.entityIndex(e);
+            arma::Col<CoordinateType> center;
+            e.geometry().getCenter(center);
 
-    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
-    while (!it->finished())
-    {
-        const Entity<0>& e = it->entity();
-        int index = indexSet.entityIndex(e);
-        arma::Col<ValueType> center;
-        e.geometry().getCenter(center);
-
-        positions[index].x = center(0);
-        positions[index].y = center(1);
-        positions[index].z = center(2);
-        it->next();
-    }
+            positions[index].x = center(0);
+            positions[index].y = center(1);
+            positions[index].z = center(2);
+            it->next();
+        }
     }
 }
 
-#ifdef COMPILE_FOR_FLOAT
-template class PiecewiseConstantScalarSpace<float>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class PiecewiseConstantScalarSpace<double>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class PiecewiseConstantScalarSpace<std::complex<float> >;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class PiecewiseConstantScalarSpace<std::complex<double> >;
-#endif
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(PiecewiseConstantScalarSpace);
 
 } // namespace Bempp

@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef config_alugrid_hpp
-#define config_alugrid_hpp
+#ifndef bempp_config_alugrid_hpp
+#define bempp_config_alugrid_hpp
 
 #cmakedefine WITH_ALUGRID
 #ifdef WITH_ALUGRID

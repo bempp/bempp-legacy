@@ -20,30 +20,20 @@
 
 
 #include "single_layer_potential_3d.hpp"
+#include "../fiber/explicit_instantiation.hpp"
 
 namespace Bempp
 {
 
-template <typename ValueType>
-SingleLayerPotential3D<ValueType>::SingleLayerPotential3D(
-        const Space<ValueType>& testSpace, const Space<ValueType>& trialSpace) :
-    ElementaryWeaklySingularIntegralOperator<ValueType>(testSpace, trialSpace)
+template <typename ArgumentType, typename ResultType>
+SingleLayerPotential3D<ArgumentType, ResultType>::SingleLayerPotential3D(
+        const Space<ArgumentType>& testSpace, const Space<ArgumentType>& trialSpace) :
+    ElementaryWeaklySingularIntegralOperator<ArgumentType, ResultType>(
+        testSpace, trialSpace)
 {
 }
 
-#ifdef COMPILE_FOR_FLOAT
-template class SingleLayerPotential3D<float>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class SingleLayerPotential3D<double>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class SingleLayerPotential3D<std::complex<float> >;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class SingleLayerPotential3D<std::complex<double> >;
-#endif
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(SingleLayerPotential3D);
+
 
 } // namespace Bempp

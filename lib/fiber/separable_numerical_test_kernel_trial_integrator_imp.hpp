@@ -32,6 +32,7 @@
 #include "geometrical_data.hpp"
 #include "kernel.hpp"
 #include "opencl_handler.hpp"
+#include "raw_grid_geometry.hpp"
 #include "types.hpp"
 #include "CL/separable_numerical_double_integrator.cl.str"
 
@@ -55,7 +56,7 @@ SeparableNumericalTestKernelTrialIntegrator(
         const Expression<BasisValueType>& testExpression,
         const Kernel<KernelValueType>& kernel,
         const Expression<BasisValueType>& trialExpression,
-        const OpenClHandler<ResultType,int>& openClHandler) :
+        const OpenClHandler<CoordinateType, int>& openClHandler) :
     m_localTestQuadPoints(localTestQuadPoints),
     m_localTrialQuadPoints(localTrialQuadPoints),
     m_testQuadWeights(testQuadWeights),

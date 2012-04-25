@@ -25,6 +25,7 @@
 #include "discrete_aca_linear_operator.hpp"
 #include "ahmed_aux.hpp"
 #include "../common/not_implemented_error.hpp"
+#include "../fiber/explicit_instantiation.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -43,7 +44,7 @@ DiscreteAcaLinearOperator(
         unsigned int rowCount, unsigned int columnCount,
         int maximumRank,
         std::auto_ptr<AhmedBemblcluster> blockCluster,
-        boost::shared_array<mblock<ValueType>*> blocks,
+        boost::shared_array<AhmedMblock*> blocks,
         const IndexPermutation& domainPermutation,
         const IndexPermutation& rangePermutation) :
 #ifdef WITH_TRILINOS
@@ -86,8 +87,8 @@ asMatrix() const
             unit(col - 1) = 0.;
         unit(col) = 1.;
         multaHvec(1., m_blockCluster.get(), m_blocks.get(),
-                  unit.memptr(),
-                  permutedOutput.colptr(col));
+                  ahmedCast(unit.memptr()),
+                  ahmedCast(permutedOutput.colptr(col)));
     }
 
     arma::Mat<ValueType> output(nRows, nCols );
@@ -257,8 +258,8 @@ applyBuiltInImpl(const TranspositionMode trans,
                 "DiscreteAcaLinearOperator::applyBuiltInImpl(): "
                 "incorrect vector length");
 
-    if (beta == 0.)
-        y_inout.fill(0.);
+    if (beta == static_cast<ValueType>(0.))
+        y_inout.fill(static_cast<ValueType>(0.));
     else
         y_inout *= beta;
 
@@ -269,26 +270,13 @@ applyBuiltInImpl(const TranspositionMode trans,
     // functions, which don't respect const-correctness
     arma::Col<ValueType> permutedResult;
     m_rangePermutation.permuteVector(y_inout, permutedResult);
-    multaHvec(alpha, m_blockCluster.get(), m_blocks.get(),
-              const_cast<ValueType*>(permutedArgument.memptr()),
-              permutedResult.memptr());
+    multaHvec(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
+              ahmedCast(permutedArgument.memptr()),
+              ahmedCast(permutedResult.memptr()));
     m_rangePermutation.unpermuteVector(permutedResult, y_inout);
 }
 
-#ifdef COMPILE_FOR_FLOAT
-template class DiscreteAcaLinearOperator<float>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class DiscreteAcaLinearOperator<double>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class DiscreteAcaLinearOperator<std::complex<float> >;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class DiscreteAcaLinearOperator<std::complex<double> >;
-#endif
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteAcaLinearOperator);
 
 } // namespace Bempp
 

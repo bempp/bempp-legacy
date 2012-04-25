@@ -21,14 +21,18 @@
 #ifndef bempp_default_iterative_solver_hpp
 #define bempp_default_iterative_solver_hpp
 
-#include "solver.hpp"
-
 #include "config_trilinos.hpp"
 
 #ifdef WITH_TRILINOS
 
-#include <vector>
+#include "solver.hpp"
+
+#include "../assembly/discrete_linear_operator.hpp"
+#include "../assembly/discrete_aca_linear_operator.hpp"
+#include "../assembly/vector.hpp"
+
 #include <armadillo>
+#include <vector>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Thyra_PreconditionerBase.hpp>
@@ -40,43 +44,39 @@
 #include <Thyra_MultiVectorBase.hpp>
 #include <Thyra_PreconditionerBase.hpp>
 
-#include "../assembly/discrete_linear_operator.hpp"
-#include "../assembly/discrete_aca_linear_operator.hpp"
-#include "../assembly/vector.hpp"
-
 namespace Bempp
 {
 
-template <typename ValueType> class LinearOperator;
+template <typename ArgumentType, typename ResultType> class LinearOperator;
 
-template <typename ValueType>
-class DefaultIterativeSolver : public Solver<ValueType>
+template <typename ArgumentType, typename ResultType>
+class DefaultIterativeSolver : public Solver<ArgumentType, ResultType>
 {
 public:
-    DefaultIterativeSolver(const LinearOperator<ValueType>& linOp,
-                           const GridFunction<ValueType>& gridFun);
+    DefaultIterativeSolver(const LinearOperator<ArgumentType, ResultType>& linOp,
+                           const GridFunction<ArgumentType, ResultType>& gridFun);
 
     void addPreconditioner(
-            Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > preconditioner);
+            Teuchos::RCP<const Thyra::PreconditionerBase<ResultType> > preconditioner);
     void initializeSolver(Teuchos::RCP<Teuchos::ParameterList> paramList);
 
     virtual void solve();
 
-    virtual GridFunction<ValueType> getResult() const;
-    virtual typename Solver<ValueType>::EStatus getStatus() const;
+    virtual GridFunction<ArgumentType, ResultType> getResult() const;
+    virtual typename Solver<ArgumentType, ResultType>::EStatus getStatus() const;
     double getSolveTolerance() const;
     std::string getSolverMessage() const;
-    Thyra::SolveStatus<ValueType> getThyraSolveStatus() const;
+    Thyra::SolveStatus<ResultType> getThyraSolveStatus() const;
 
 private:
-    const DiscreteLinearOperator<ValueType>& m_discreteOperator;
-    const Space<ValueType>& m_space;
+    const DiscreteLinearOperator<ResultType>& m_discreteOperator;
+    const Space<ArgumentType>& m_space;
 
-    Teuchos::RCP<Thyra::LinearOpWithSolveBase<ValueType> > m_lhs;
-    Teuchos::RCP<Thyra::MultiVectorBase<ValueType> > m_rhs;
-    Teuchos::RCP<Thyra::MultiVectorBase<ValueType> > m_sol;
-    Thyra::SolveStatus<ValueType> m_status;
-    Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > m_preconditioner;
+    Teuchos::RCP<Thyra::LinearOpWithSolveBase<ResultType> > m_lhs;
+    Teuchos::RCP<Thyra::MultiVectorBase<ResultType> > m_rhs;
+    Teuchos::RCP<Thyra::MultiVectorBase<ResultType> > m_sol;
+    Thyra::SolveStatus<ResultType> m_status;
+    Teuchos::RCP<const Thyra::PreconditionerBase<ResultType> > m_preconditioner;
 };
 
 Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(double tol);

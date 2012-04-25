@@ -24,8 +24,6 @@
 #define fiber_separable_numerical_test_kernel_trial_integrator_hpp
 
 #include "test_kernel_trial_integrator.hpp"
-#include "raw_grid_geometry.hpp"
-#include "opencl_handler.hpp"
 
 namespace Fiber
 {
@@ -33,6 +31,7 @@ namespace Fiber
 template <typename ValueType, typename IndexType> class OpenClHandler;
 template <typename ValueType> class Expression;
 template <typename ValueType> class Kernel;
+template <typename CoordinateType> class RawGridGeometry;
 
 /** \brief Integration over pairs of elements on tensor-product point grids. */
 template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
@@ -40,7 +39,7 @@ class SeparableNumericalTestKernelTrialIntegrator :
         public TestKernelTrialIntegrator<BasisValueType, KernelValueType>
 {
 public:
-    typedef typename TestKernelTrialIntegrator<BasisValueType, KernelValueType> Base;
+    typedef TestKernelTrialIntegrator<BasisValueType, KernelValueType> Base;
     typedef typename Base::CoordinateType CoordinateType;
     typedef typename Base::ResultType ResultType;
     typedef typename Base::ElementIndexPair ElementIndexPair;
@@ -55,7 +54,7 @@ public:
             const Expression<BasisValueType>& testExpression,
             const Kernel<KernelValueType>& kernel,
             const Expression<BasisValueType>& trialExpression,
-            const OpenClHandler<ResultType,int>& openClHandler);
+            const OpenClHandler<CoordinateType, int>& openClHandler);
 
     virtual ~SeparableNumericalTestKernelTrialIntegrator ();
 
@@ -109,7 +108,7 @@ private:
      * \brief Returns an OpenCL code snippet containing the clIntegrate
      *   kernel function for integrating a single row or column
      */
-    const std::pair<const char*,int> clStrIntegrateRowOrCol () const;
+    const std::pair<const char*, int> clStrIntegrateRowOrCol () const;
 
     arma::Mat<CoordinateType> m_localTestQuadPoints;
     arma::Mat<CoordinateType> m_localTrialQuadPoints;
@@ -122,7 +121,7 @@ private:
     const Expression<BasisValueType>& m_testExpression;
     const Kernel<KernelValueType>& m_kernel;
     const Expression<BasisValueType>& m_trialExpression;
-    const OpenClHandler<ResultType,int>& m_openClHandler;
+    const OpenClHandler<CoordinateType, int>& m_openClHandler;
 #ifdef WITH_OPENCL
     cl::Buffer *clTestQuadPoints;
     cl::Buffer *clTrialQuadPoints;

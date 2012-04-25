@@ -26,38 +26,38 @@
 namespace Fiber
 {
 
-template <typename ValueType> class LocalAssemblerForOperators;
+template <typename ResultType> class LocalAssemblerForOperators;
 
 } // namespace Fiber
 
 namespace Bempp
 {
 
-template <typename ValueType> class ElementaryLinearOperator;
+template <typename ArgumentType, typename ResultType>
+class ElementaryLinearOperator;
 
 // only scalar multipliers allowed, tensor ones would
 // require knowledge of vector components distribution
 // in the discrete operator
-template <typename ValueType>
-class LinearOperatorSuperposition : public LinearOperator<ValueType>
+template <typename ArgumentType, typename ResultType>
+class LinearOperatorSuperposition :
+        public LinearOperator<ArgumentType, ResultType>
 {
 public:
-    typedef typename LinearOperator<ValueType>::LocalAssemblerFactory
-    LocalAssemblerFactory;
-    typedef typename Fiber::LocalAssemblerForOperators<ValueType>
+    typedef LinearOperator<ArgumentType, ResultType> Base;
+    typedef typename Base::CoordinateType CoordinateType;
+    typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
+    typedef typename Fiber::LocalAssemblerForOperators<ResultType>
     LocalAssembler;
 
-    LinearOperatorSuperposition(
-            const LinearOperator<ValueType>& term1,
-            const LinearOperator<ValueType>& term2);
+    LinearOperatorSuperposition(const Base& term1, const Base& term2);
 
-    LinearOperatorSuperposition(const LinearOperator<ValueType>& term,
-                                const ValueType& scalar);
+    LinearOperatorSuperposition(const Base& term, const ResultType& scalar);
 
     virtual int trialComponentCount() const;
     virtual int testComponentCount() const;
 
-    virtual std::auto_ptr<DiscreteLinearOperator<ValueType> >
+    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakForm(
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
@@ -65,17 +65,17 @@ public:
     virtual bool supportsRepresentation(AssemblyOptions::Representation repr) const;
 
 private:
-    std::auto_ptr<DiscreteLinearOperator<ValueType> >
+    std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakFormInDenseMode(
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
 
-    std::auto_ptr<DiscreteLinearOperator<ValueType> >
+    std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakFormInAcaMode(
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
 
-    std::auto_ptr<DiscreteLinearOperator<ValueType> >
+    std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakFormInArbitraryMode(
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;

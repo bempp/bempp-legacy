@@ -35,27 +35,28 @@ template <typename ValueType> class Kernel;
 template <typename CoordinateType> class RawGridGeometry;
 template <typename CoordinateType, typename IndexType> class OpenClHandler;
 
-template <typename ValueType, typename GeometryFactory>
+template <typename BasisValueType, typename ResultType, typename GeometryFactory>
 class StandardEvaluatorForIntegralOperators :
-        public EvaluatorForIntegralOperators<ValueType>
+        public EvaluatorForIntegralOperators<ResultType>
 {
 public:
-    typedef typename EvaluatorForIntegralOperators<ValueType>::Region Region;
+    typedef EvaluatorForIntegralOperators<ResultType> Base;
+    typedef typename Base::CoordinateType CoordinateType;
+    typedef typename Base::Region Region;
 
     StandardEvaluatorForIntegralOperators(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<ValueType>*>& trialBases,
-            const Kernel<ValueType>& kernel,
-            const Expression<ValueType>& trialExpression,
-            const std::vector<std::vector<ValueType> >& argumentLocalCoefficients,
-            ValueType multiplier,
-            const OpenClHandler<ValueType, int>& openClHandler,
+            const std::vector<const Basis<BasisValueType>*>& trialBases,
+            const Kernel<ResultType>& kernel,
+            const Expression<BasisValueType>& trialExpression,
+            const std::vector<std::vector<ResultType> >& argumentLocalCoefficients,
+            const OpenClHandler<CoordinateType, int>& openClHandler,
             const QuadratureOptions& quadratureOptions);
 
     virtual void evaluate(Region region,
-                          const arma::Mat<ValueType>& points,
-                          arma::Mat<ValueType>& result) const;
+                          const arma::Mat<CoordinateType>& points,
+                          arma::Mat<ResultType>& result) const;
 
 private:
     void cacheTrialData();
@@ -63,27 +64,26 @@ private:
             Region region,
             int kernelTrialGeomDeps,
             Fiber::GeometricalData<CoordinateType>& trialGeomData,
-            arma::Mat<ValueType>& weightedTrialExprValues) const;
+            arma::Mat<ResultType>& weightedTrialExprValues) const;
 
-    int quadOrder(const Fiber::Basis<ValueType>& basis, Region region) const;
-    int farFieldQuadOrder(const Fiber::Basis<ValueType>& basis) const;
-    int nearFieldQuadOrder(const Fiber::Basis<ValueType>& basis) const;
+    int quadOrder(const Fiber::Basis<BasisValueType>& basis, Region region) const;
+    int farFieldQuadOrder(const Fiber::Basis<BasisValueType>& basis) const;
+    int nearFieldQuadOrder(const Fiber::Basis<BasisValueType>& basis) const;
 
 private:
     const GeometryFactory& m_geometryFactory;
     const RawGridGeometry<CoordinateType>& m_rawGeometry;
-    const std::vector<const Basis<ValueType>*>& m_trialBases;
-    const Kernel<ValueType>& m_kernel;
-    const Expression<ValueType>& m_trialExpression;
-    const std::vector<std::vector<ValueType> >& m_argumentLocalCoefficients;
-    ValueType m_multiplier;
-    const Fiber::OpenClHandler<ValueType,int>& m_openClHandler;
+    const std::vector<const Basis<BasisValueType>*>& m_trialBases;
+    const Kernel<ResultType>& m_kernel;
+    const Expression<BasisValueType>& m_trialExpression;
+    const std::vector<std::vector<ResultType> >& m_argumentLocalCoefficients;
+    const Fiber::OpenClHandler<CoordinateType,int>& m_openClHandler;
     const QuadratureOptions& m_quadratureOptions;
 
     Fiber::GeometricalData<CoordinateType> m_nearFieldTrialGeomData;
     Fiber::GeometricalData<CoordinateType> m_farFieldTrialGeomData;
-    arma::Mat<ValueType> m_nearFieldWeightedTrialExprValues;
-    arma::Mat<ValueType> m_farFieldWeightedTrialExprValues;
+    arma::Mat<ResultType> m_nearFieldWeightedTrialExprValues;
+    arma::Mat<ResultType> m_farFieldWeightedTrialExprValues;
 };
 
 } // namespace Bempp
