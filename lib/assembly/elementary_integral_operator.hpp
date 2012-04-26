@@ -105,8 +105,8 @@ public:
 
 private:
     virtual const Fiber::Kernel<ResultType>& kernel() const = 0;
-    virtual const Fiber::Expression<BasisFunctionType>& testExpression() const = 0;
-    virtual const Fiber::Expression<BasisFunctionType>& trialExpression() const = 0;
+    virtual const Fiber::Expression<CoordinateType>& testExpression() const = 0;
+    virtual const Fiber::Expression<CoordinateType>& trialExpression() const = 0;
 
     /** @}
         \name Weak form assembly

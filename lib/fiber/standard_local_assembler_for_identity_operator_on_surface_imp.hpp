@@ -26,15 +26,15 @@
 namespace Fiber
 {
 
-template <typename BasisValueType, typename ResultType, typename GeometryFactory>
-StandardLocalAssemblerForIdentityOperatorOnSurface<BasisValueType, ResultType, GeometryFactory>::
+template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
+StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
 StandardLocalAssemblerForIdentityOperatorOnSurface(
     const GeometryFactory& geometryFactory,
     const RawGridGeometry<CoordinateType>& rawGeometry,
-    const std::vector<const Basis<BasisValueType>*>& testBases,
-    const std::vector<const Basis<BasisValueType>*>& trialBases,
-    const Expression<BasisValueType>& testExpression,
-    const Expression<BasisValueType>& trialExpression,
+    const std::vector<const Basis<BasisFunctionType>*>& testBases,
+    const std::vector<const Basis<BasisFunctionType>*>& trialBases,
+    const Expression<CoordinateType>& testExpression,
+    const Expression<CoordinateType>& trialExpression,
     const OpenClHandler<CoordinateType, int>& openClHandler) :
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
@@ -77,9 +77,9 @@ StandardLocalAssemblerForIdentityOperatorOnSurface(
             "elementCornerIndices");
 }
 
-template <typename BasisValueType, typename ResultType, typename GeometryFactory>
+template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForIdentityOperatorOnSurface<BasisValueType, ResultType, GeometryFactory>::
+StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
 evaluateLocalWeakForms(
     CallVariant callVariant,
     const std::vector<int>& elementIndicesA,
@@ -93,9 +93,9 @@ evaluateLocalWeakForms(
                              "this overload not implemented yet");
 }
 
-template <typename BasisValueType, typename ResultType, typename GeometryFactory>
+template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForIdentityOperatorOnSurface<BasisValueType, ResultType, GeometryFactory>::
+StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
 evaluateLocalWeakForms(
     const std::vector<int>& testElementIndices,
     const std::vector<int>& trialElementIndices,
@@ -107,16 +107,16 @@ evaluateLocalWeakForms(
                              "this overload not implemented yet");
 }
 
-template <typename BasisValueType, typename ResultType, typename GeometryFactory>
+template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForIdentityOperatorOnSurface<BasisValueType, ResultType, GeometryFactory>::
+StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
 evaluateLocalWeakForms(
     const std::vector<int>& elementIndices,
     std::vector<arma::Mat<ResultType> >& result)
 {
     // The only overload likely to be needed for identity operators
-    typedef TestTrialIntegrator<BasisValueType, ResultType> Integrator;
-    typedef Basis<BasisValueType> Basis;
+    typedef TestTrialIntegrator<BasisFunctionType, ResultType> Integrator;
+    typedef Basis<BasisFunctionType> Basis;
 
     const int elementCount = elementIndices.size();
     result.resize(elementCount);
@@ -172,9 +172,9 @@ evaluateLocalWeakForms(
     }
 }
 
-template <typename BasisValueType, typename ResultType, typename GeometryFactory>
-const TestTrialIntegrator<BasisValueType, ResultType>&
-StandardLocalAssemblerForIdentityOperatorOnSurface<BasisValueType, ResultType, GeometryFactory>::
+template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
+const TestTrialIntegrator<BasisFunctionType, ResultType>&
+StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
 selectIntegrator(int elementIndex)
 {
     SingleQuadratureDescriptor desc;
@@ -191,9 +191,9 @@ selectIntegrator(int elementIndex)
     return getIntegrator(desc);
 }
 
-template <typename BasisValueType, typename ResultType, typename GeometryFactory>
-const TestTrialIntegrator<BasisValueType, ResultType>&
-StandardLocalAssemblerForIdentityOperatorOnSurface<BasisValueType, ResultType, GeometryFactory>::
+template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
+const TestTrialIntegrator<BasisFunctionType, ResultType>&
+StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
 getIntegrator(const SingleQuadratureDescriptor& desc)
 {
     typename IntegratorMap::iterator it = m_testTrialIntegrators.find(desc);
@@ -209,9 +209,9 @@ getIntegrator(const SingleQuadratureDescriptor& desc)
     fillSingleQuadraturePointsAndWeights(desc.vertexCount, desc.order,
                                          points, weights);
 
-    typedef NumericalTestTrialIntegrator<BasisValueType, ResultType,
+    typedef NumericalTestTrialIntegrator<BasisFunctionType, ResultType,
             GeometryFactory> Integrator;
-    std::auto_ptr<TestTrialIntegrator<BasisValueType, ResultType> > integrator(
+    std::auto_ptr<TestTrialIntegrator<BasisFunctionType, ResultType> > integrator(
         new Integrator(points, weights,
                        m_geometryFactory, m_rawGeometry,
                        m_testExpression, m_trialExpression,

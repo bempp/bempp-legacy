@@ -32,7 +32,7 @@ namespace Fiber
 template <typename ValueType> class Basis;
 
 /** \brief Integration of products of test and trial functions over elements. */
-template <typename BasisValueType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 class TestTrialIntegrator
 {
 public:
@@ -42,8 +42,8 @@ public:
 
     virtual void integrate(
             const std::vector<int>& elementIndices,
-            const Basis<BasisValueType>& testBasis,
-            const Basis<BasisValueType>& trialBasis,
+            const Basis<BasisFunctionType>& testBasis,
+            const Basis<BasisFunctionType>& trialBasis,
             arma::Cube<ResultType>& result) const = 0;
 };
 

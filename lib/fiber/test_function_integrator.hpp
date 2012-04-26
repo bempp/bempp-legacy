@@ -32,18 +32,18 @@ namespace Fiber
 template <typename ValueType> class Basis;
 
 /** \brief Integration of products of test functions and arbitrary functions over elements. */
-template <typename BasisValueType, typename FunctionValueType>
+template <typename BasisFunctionType, typename FunctionValueType>
 class TestFunctionIntegrator
 {
 public:
-    typedef typename Coercion<BasisValueType, FunctionValueType>::Type ResultType;
+    typedef typename Coercion<BasisFunctionType, FunctionValueType>::Type ResultType;
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
     virtual ~TestFunctionIntegrator() {}
 
     virtual void integrate(
             const std::vector<int>& elementIndices,
-            const Basis<BasisValueType>& testBasis,
+            const Basis<BasisFunctionType>& testBasis,
             arma::Mat<ResultType>& result) const = 0;
 };
 

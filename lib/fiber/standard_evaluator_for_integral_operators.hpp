@@ -29,13 +29,15 @@
 namespace Fiber
 {
 
+struct QuadratureOptions;
 template <typename ValueType> class Basis;
 template <typename ValueType> class Expression;
 template <typename ValueType> class Kernel;
 template <typename CoordinateType> class RawGridGeometry;
 template <typename CoordinateType, typename IndexType> class OpenClHandler;
 
-template <typename BasisValueType, typename ResultType, typename GeometryFactory>
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
 class StandardEvaluatorForIntegralOperators :
         public EvaluatorForIntegralOperators<ResultType>
 {
@@ -47,9 +49,9 @@ public:
     StandardEvaluatorForIntegralOperators(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<BasisValueType>*>& trialBases,
-            const Kernel<ResultType>& kernel,
-            const Expression<BasisValueType>& trialExpression,
+            const std::vector<const Basis<BasisFunctionType>*>& trialBases,
+            const Kernel<KernelType>& kernel,
+            const Expression<CoordinateType>& trialExpression,
             const std::vector<std::vector<ResultType> >& argumentLocalCoefficients,
             const OpenClHandler<CoordinateType, int>& openClHandler,
             const QuadratureOptions& quadratureOptions);
@@ -66,16 +68,16 @@ private:
             Fiber::GeometricalData<CoordinateType>& trialGeomData,
             arma::Mat<ResultType>& weightedTrialExprValues) const;
 
-    int quadOrder(const Fiber::Basis<BasisValueType>& basis, Region region) const;
-    int farFieldQuadOrder(const Fiber::Basis<BasisValueType>& basis) const;
-    int nearFieldQuadOrder(const Fiber::Basis<BasisValueType>& basis) const;
+    int quadOrder(const Fiber::Basis<BasisFunctionType>& basis, Region region) const;
+    int farFieldQuadOrder(const Fiber::Basis<BasisFunctionType>& basis) const;
+    int nearFieldQuadOrder(const Fiber::Basis<BasisFunctionType>& basis) const;
 
 private:
     const GeometryFactory& m_geometryFactory;
     const RawGridGeometry<CoordinateType>& m_rawGeometry;
-    const std::vector<const Basis<BasisValueType>*>& m_trialBases;
-    const Kernel<ResultType>& m_kernel;
-    const Expression<BasisValueType>& m_trialExpression;
+    const std::vector<const Basis<BasisFunctionType>*>& m_trialBases;
+    const Kernel<KernelType>& m_kernel;
+    const Expression<CoordinateType>& m_trialExpression;
     const std::vector<std::vector<ResultType> >& m_argumentLocalCoefficients;
     const Fiber::OpenClHandler<CoordinateType,int>& m_openClHandler;
     const QuadratureOptions& m_quadratureOptions;

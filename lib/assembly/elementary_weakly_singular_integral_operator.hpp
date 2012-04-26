@@ -30,12 +30,15 @@ template <typename BasisFunctionType, typename ResultType>
 class ElementaryWeaklySingularIntegralOperator :
         public ElementaryIntegralOperator<BasisFunctionType, ResultType>
 {
+    typedef ElementaryIntegralOperator<BasisFunctionType, ResultType> Base;
 public:
+    typedef typename Base::CoordinateType CoordinateType;
 
     ElementaryWeaklySingularIntegralOperator(
             const Space<BasisFunctionType>& testSpace,
             const Space<BasisFunctionType>& trialSpace) :
-        ElementaryIntegralOperator<BasisFunctionType, ResultType>(testSpace, trialSpace) {
+        ElementaryIntegralOperator<BasisFunctionType, ResultType>(
+            testSpace, trialSpace) {
     }
 
     virtual bool isRegular() const {

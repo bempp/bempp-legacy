@@ -84,7 +84,7 @@ private:
             const AssemblyOptions& options) const;
 
 private:
-    Fiber::ScalarFunctionValue<BasisFunctionType> m_expression;
+    Fiber::ScalarFunctionValue<CoordinateType> m_expression;
 };
 
 } // namespace Bempp

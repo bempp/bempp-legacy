@@ -34,11 +34,10 @@ namespace Fiber
 template <typename ValueType> class Basis;
 
 /** \brief Integration over pairs of elements. */
-template <typename BasisValueType, typename KernelValueType>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class TestKernelTrialIntegrator
 {
 public:
-    typedef typename Coercion<BasisValueType, KernelValueType>::Type ResultType;
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
     typedef std::pair<int, int> ElementIndexPair;
 
@@ -48,15 +47,15 @@ public:
             CallVariant callVariant,
             const std::vector<int>& elementIndicesA,
             int elementIndexB,
-            const Basis<BasisValueType>& basisA,
-            const Basis<BasisValueType>& basisB,
+            const Basis<BasisFunctionType>& basisA,
+            const Basis<BasisFunctionType>& basisB,
             LocalDofIndex localDofIndexB,
             arma::Cube<ResultType>& result) const = 0;
 
     virtual void integrate(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<BasisValueType>& testBasis,
-            const Basis<BasisValueType>& trialBasis,
+            const Basis<BasisFunctionType>& testBasis,
+            const Basis<BasisFunctionType>& trialBasis,
             arma::Cube<ResultType>& result) const = 0;
 };
 

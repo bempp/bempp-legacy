@@ -40,7 +40,7 @@ namespace Fiber
 
 template <typename CoordinateType, typename IndexType> class OpenClHandler;
 
-template <typename BasisValueType, typename ResultType, typename GeometryFactory>
+template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 class StandardLocalAssemblerForIdentityOperatorOnSurface :
     public LocalAssemblerForOperators<ResultType>
 {
@@ -50,10 +50,10 @@ public:
     StandardLocalAssemblerForIdentityOperatorOnSurface(
         const GeometryFactory& geometryFactory,
         const RawGridGeometry<CoordinateType>& rawGeometry,
-        const std::vector<const Basis<BasisValueType>*>& testBases,
-        const std::vector<const Basis<BasisValueType>*>& trialBases,
-        const Expression<BasisValueType>& testExpression,
-        const Expression<BasisValueType>& trialExpression,
+        const std::vector<const Basis<BasisFunctionType>*>& testBases,
+        const std::vector<const Basis<BasisFunctionType>*>& trialBases,
+        const Expression<CoordinateType>& testExpression,
+        const Expression<CoordinateType>& trialExpression,
         const OpenClHandler<CoordinateType, int>& openClHandler);
 
     virtual void evaluateLocalWeakForms(
@@ -73,22 +73,22 @@ public:
         std::vector<arma::Mat<ResultType> >& result);
 
 private:
-    const TestTrialIntegrator<BasisValueType, ResultType>&
+    const TestTrialIntegrator<BasisFunctionType, ResultType>&
     selectIntegrator(int elementIndex);
 
-    const TestTrialIntegrator<BasisValueType, ResultType>& getIntegrator(
+    const TestTrialIntegrator<BasisFunctionType, ResultType>& getIntegrator(
         const SingleQuadratureDescriptor& desc);
 private:
     typedef boost::ptr_map<SingleQuadratureDescriptor,
-            TestTrialIntegrator<BasisValueType, ResultType> > IntegratorMap;
+            TestTrialIntegrator<BasisFunctionType, ResultType> > IntegratorMap;
 
 private:
     const GeometryFactory& m_geometryFactory;
     const RawGridGeometry<CoordinateType>& m_rawGeometry;
-    const std::vector<const Basis<BasisValueType>*>& m_testBases;
-    const std::vector<const Basis<BasisValueType>*>& m_trialBases;
-    const Expression<BasisValueType>& m_testExpression;
-    const Expression<BasisValueType>& m_trialExpression;
+    const std::vector<const Basis<BasisFunctionType>*>& m_testBases;
+    const std::vector<const Basis<BasisFunctionType>*>& m_trialBases;
+    const Expression<CoordinateType>& m_testExpression;
+    const Expression<CoordinateType>& m_trialExpression;
     const OpenClHandler<CoordinateType, int>& m_openClHandler;
 
     IntegratorMap m_testTrialIntegrators;

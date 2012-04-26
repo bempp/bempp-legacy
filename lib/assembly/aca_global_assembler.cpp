@@ -197,7 +197,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
     WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>
             helper(testSpace, trialSpace, p2oTestDofs, p2oTrialDofs,
                    localAssemblers, sparseTermsToAdd,
-                   denseTermsMultipliers,sparseTermsMultipliers,options);
+                   denseTermsMultipliers, sparseTermsMultipliers, options);
 
     typedef mblock<typename AhmedTypeTraits<ResultType>::Type> AhmedMblock;
     boost::shared_array<AhmedMblock*> blocks =

@@ -29,11 +29,11 @@
 
 namespace Fiber {
 
-template <typename ValueType>
-class SurfaceCurl3D : public Expression<ValueType>
+template <typename CoordinateType>
+class SurfaceCurl3D : public Expression<CoordinateType>
 {
-public:
-    typedef typename Expression<ValueType>::CoordinateType CoordinateType;
+public:    
+    typedef typename Expression<CoordinateType>::ComplexType ComplexType;
 
     virtual int domainDimension() const {
         return 1;
@@ -44,14 +44,22 @@ public:
     }
 
     virtual void addDependencies(int& basisDeps, int& geomDeps) const {
-        ScalarSpaceMapping<ValueType>::
+        ScalarSpaceMapping<CoordinateType>::
                 addSurfaceCurlDependencies(basisDeps, geomDeps);
     }
 
-    virtual void evaluate(const BasisData<ValueType>& basisData,
-                          const GeometricalData<CoordinateType>& geomData,
-                          arma::Cube<ValueType>& result) const {
-        ScalarSpaceMapping<ValueType>::
+private:
+    virtual void evaluateImplReal(const BasisData<CoordinateType>& basisData,
+                                  const GeometricalData<CoordinateType>& geomData,
+                                  arma::Cube<CoordinateType>& result) const {
+        ScalarSpaceMapping<CoordinateType>::
+                evaluateSurfaceCurls3D(basisData, geomData, result);
+    }
+
+    virtual void evaluateImplComplex(const BasisData<ComplexType>& basisData,
+                                     const GeometricalData<CoordinateType>& geomData,
+                                     arma::Cube<ComplexType>& result) const {
+        ScalarSpaceMapping<ComplexType>::
                 evaluateSurfaceCurls3D(basisData, geomData, result);
     }
 };

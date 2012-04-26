@@ -33,20 +33,20 @@ namespace Fiber
 
 template <typename ValueType, typename IndexType> class OpenClHandler;
 
-template <typename BasisValueType, typename FunctionValueType, typename GeometryFactory>
+template <typename BasisFunctionType, typename FunctionValueType, typename GeometryFactory>
 class StandardLocalAssemblerForGridFunctionsOnSurfaces :
         public LocalAssemblerForGridFunctions<
-        typename Coercion<BasisValueType, FunctionValueType>::Type>
+        typename Coercion<BasisFunctionType, FunctionValueType>::Type>
 {    
 public:
-    typedef typename Coercion<BasisValueType, FunctionValueType>::Type ResultType;
+    typedef typename Coercion<BasisFunctionType, FunctionValueType>::Type ResultType;
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
     StandardLocalAssemblerForGridFunctionsOnSurfaces(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<BasisValueType>*>& testBases,
-            const Expression<BasisValueType>& testExpression,
+            const std::vector<const Basis<BasisFunctionType>*>& testBases,
+            const Expression<CoordinateType>& testExpression,
             const Function<FunctionValueType>& function,
             const OpenClHandler<CoordinateType, int>& openClHandler);
     virtual ~StandardLocalAssemblerForGridFunctionsOnSurfaces();
@@ -57,7 +57,7 @@ public:
             std::vector<arma::Col<ResultType> >& result);
 
 private:
-    typedef TestFunctionIntegrator<BasisValueType, FunctionValueType> Integrator;
+    typedef TestFunctionIntegrator<BasisFunctionType, FunctionValueType> Integrator;
 
     const Integrator& selectIntegrator(int elementIndex);
 
@@ -72,8 +72,8 @@ private:
 private:
     const GeometryFactory& m_geometryFactory;
     const RawGridGeometry<CoordinateType>& m_rawGeometry;
-    const std::vector<const Basis<BasisValueType>*>& m_testBases;
-    const Expression<BasisValueType>& m_testExpression;
+    const std::vector<const Basis<BasisFunctionType>*>& m_testBases;
+    const Expression<CoordinateType>& m_testExpression;
     const Function<FunctionValueType>& m_function;
     const OpenClHandler<CoordinateType, int>& m_openClHandler;
 

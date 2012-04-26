@@ -43,22 +43,22 @@ namespace Fiber
 class AccuracyOptions;
 template <typename CoordinateType, typename IndexType> class OpenClHandler;
 
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
 class StandardLocalAssemblerForIntegralOperatorsOnSurfaces :
-        public LocalAssemblerForOperators<typename Coercion<BasisValueType, KernelValueType>::Type>
+        public LocalAssemblerForOperators<ResultType>
 {
 public:
-    typedef typename Coercion<BasisValueType, KernelValueType>::Type ResultType;
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
     StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<BasisValueType>*>& testBases,
-            const std::vector<const Basis<BasisValueType>*>& trialBases,
-            const Expression<BasisValueType>& testExpression,
-            const Kernel<KernelValueType>& kernel,
-            const Expression<BasisValueType>& trialExpression,
+            const std::vector<const Basis<BasisFunctionType>*>& testBases,
+            const std::vector<const Basis<BasisFunctionType>*>& trialBases,
+            const Expression<CoordinateType>& testExpression,
+            const Kernel<KernelType>& kernel,
+            const Expression<CoordinateType>& trialExpression,
             const OpenClHandler<CoordinateType, int>& openClHandler,
             bool cacheSingularIntegrals,
             const AccuracyOptions& accuracyOptions);
@@ -82,7 +82,7 @@ public:
             std::vector<arma::Mat<ResultType> >& result);
 
 private:
-    typedef TestKernelTrialIntegrator<BasisValueType, KernelValueType> Integrator;
+    typedef TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType> Integrator;
     typedef typename Integrator::ElementIndexPair ElementIndexPair;
     typedef std::set<ElementIndexPair> ElementIndexPairSet;
     typedef std::map<ElementIndexPair, arma::Mat<ResultType> > Cache;
@@ -110,11 +110,11 @@ private:
 private:
     const GeometryFactory& m_geometryFactory;
     const RawGridGeometry<CoordinateType>& m_rawGeometry;
-    const std::vector<const Basis<BasisValueType>*>& m_testBases;
-    const std::vector<const Basis<BasisValueType>*>& m_trialBases;
-    const Expression<BasisValueType>& m_testExpression;
-    const Kernel<KernelValueType>& m_kernel;
-    const Expression<BasisValueType>& m_trialExpression;
+    const std::vector<const Basis<BasisFunctionType>*>& m_testBases;
+    const std::vector<const Basis<BasisFunctionType>*>& m_trialBases;
+    const Expression<CoordinateType>& m_testExpression;
+    const Kernel<KernelType>& m_kernel;
+    const Expression<CoordinateType>& m_trialExpression;
     const OpenClHandler<CoordinateType, int>& m_openClHandler;
     const AccuracyOptions& m_accuracyOptions;
 

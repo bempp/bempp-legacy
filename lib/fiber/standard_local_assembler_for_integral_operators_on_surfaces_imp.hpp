@@ -32,19 +32,18 @@ namespace Fiber
 namespace
 {
 
-template <typename BasisValueType, typename KernelValueType>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class SingularIntegralCalculatorLoopBody
 {
 public:
-    typedef typename Coercion<BasisValueType, KernelValueType>::Type ResultType;
-    typedef TestKernelTrialIntegrator<BasisValueType, KernelValueType> Integrator;
+    typedef TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType> Integrator;
     typedef typename Integrator::ElementIndexPair ElementIndexPair;
 
     SingularIntegralCalculatorLoopBody(
             const Integrator& activeIntegrator,
             const std::vector<ElementIndexPair>& activeElementPairs,
-            const Basis<BasisValueType>& activeTestBasis,
-            const Basis<BasisValueType>& activeTrialBasis,
+            const Basis<BasisFunctionType>& activeTestBasis,
+            const Basis<BasisFunctionType>& activeTrialBasis,
             arma::Cube<ResultType>& localResult) :
         m_activeIntegrator(activeIntegrator),
         m_activeElementPairs(activeElementPairs),
@@ -72,24 +71,25 @@ public:
 private:
     const Integrator& m_activeIntegrator;
     const std::vector<ElementIndexPair>& m_activeElementPairs;
-    const Basis<BasisValueType>& m_activeTestBasis;
-    const Basis<BasisValueType>& m_activeTrialBasis;
+    const Basis<BasisFunctionType>& m_activeTestBasis;
+    const Basis<BasisFunctionType>& m_activeTrialBasis;
     mutable arma::Cube<ResultType>& m_localResult;
 };
 
 } // namespace
 
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisValueType,
-KernelValueType, GeometryFactory>::
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+KernelType, ResultType, GeometryFactory>::
 StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
         const GeometryFactory& geometryFactory,
         const RawGridGeometry<CoordinateType>& rawGeometry,
-        const std::vector<const Basis<BasisValueType>*>& testBases,
-        const std::vector<const Basis<BasisValueType>*>& trialBases,
-        const Expression<BasisValueType>& testExpression,
-        const Kernel<KernelValueType>& kernel,
-        const Expression<BasisValueType>& trialExpression,
+        const std::vector<const Basis<BasisFunctionType>*>& testBases,
+        const std::vector<const Basis<BasisFunctionType>*>& trialBases,
+        const Expression<CoordinateType>& testExpression,
+        const Kernel<KernelType>& kernel,
+        const Expression<CoordinateType>& trialExpression,
         const OpenClHandler<CoordinateType, int>& openClHandler,
         bool cacheSingularIntegrals,
         const AccuracyOptions& accuracyOptions) :
@@ -139,9 +139,10 @@ StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
         cacheSingularLocalWeakForms();
 }
 
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisValueType,
-KernelValueType, GeometryFactory>::
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+KernelType, ResultType, GeometryFactory>::
 ~StandardLocalAssemblerForIntegralOperatorsOnSurfaces()
 {
     // Note: obviously the destructor is assumed to be called only after
@@ -153,10 +154,11 @@ KernelValueType, GeometryFactory>::
     m_TestKernelTrialIntegrators.clear();
 }
 
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisValueType,
-KernelValueType, GeometryFactory>::
+StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+KernelType, ResultType, GeometryFactory>::
 evaluateLocalWeakForms(
         CallVariant callVariant,
         const std::vector<int>& elementIndicesA,
@@ -164,7 +166,7 @@ evaluateLocalWeakForms(
         LocalDofIndex localDofIndexB,
         std::vector<arma::Mat<ResultType> >& result)
 {
-    typedef Basis<BasisValueType> Basis;
+    typedef Basis<BasisFunctionType> Basis;
 
     const int elementACount = elementIndicesA.size();
     result.resize(elementACount);
@@ -249,16 +251,17 @@ evaluateLocalWeakForms(
     }
 }
 
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisValueType,
-KernelValueType, GeometryFactory>::
+StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+KernelType, ResultType, GeometryFactory>::
 evaluateLocalWeakForms(
         const std::vector<int>& testElementIndices,
         const std::vector<int>& trialElementIndices,
         Fiber::Array2D<arma::Mat<ResultType> >& result)
 {
-    typedef Fiber::Basis<BasisValueType> Basis;
+    typedef Fiber::Basis<BasisFunctionType> Basis;
 
     const int testElementCount = testElementIndices.size();
     const int trialElementCount = trialElementIndices.size();
@@ -336,10 +339,11 @@ evaluateLocalWeakForms(
     }
 }
 
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisValueType,
-KernelValueType, GeometryFactory>::
+StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+KernelType, ResultType, GeometryFactory>::
 evaluateLocalWeakForms(
         const std::vector<int>& elementIndices,
         std::vector<arma::Mat<ResultType> >& result)
@@ -350,10 +354,11 @@ evaluateLocalWeakForms(
                              "this overload not implemented yet");
 }
 
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisValueType,
-KernelValueType, GeometryFactory>::
+StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+KernelType, ResultType, GeometryFactory>::
 cacheSingularLocalWeakForms()
 {
     ElementIndexPairSet elementIndexPairs;
@@ -363,10 +368,11 @@ cacheSingularLocalWeakForms()
 
 /** \brief Fill \p pairs with the list of pairs of indices of elements
         sharing at least one vertex. */
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisValueType,
-KernelValueType, GeometryFactory>::
+StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+KernelType, ResultType, GeometryFactory>::
 findPairsOfAdjacentElements(ElementIndexPairSet& pairs) const
 {
     const arma::Mat<CoordinateType>& vertices = m_rawGeometry.vertices();
@@ -401,13 +407,14 @@ findPairsOfAdjacentElements(ElementIndexPairSet& pairs) const
     }
 }
 
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisValueType,
-KernelValueType, GeometryFactory>::
+StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+KernelType, ResultType, GeometryFactory>::
 cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
 {
-    typedef Fiber::Basis<BasisValueType> Basis;
+    typedef Fiber::Basis<BasisFunctionType> Basis;
 
     const int elementPairCount = elementIndexPairs.size();
 
@@ -471,7 +478,8 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
         //                                   activeTrialBasis, localResult);
 
         //        tbb::task_scheduler_init scheduler(maxThreadCount);
-        typedef SingularIntegralCalculatorLoopBody<BasisValueType, KernelValueType> Body;
+        typedef SingularIntegralCalculatorLoopBody<
+                BasisFunctionType, KernelType, ResultType> Body;
         tbb::parallel_for(tbb::blocked_range<size_t>(0, activeElementPairs.size()),
                           Body(activeIntegrator,
                                activeElementPairs, activeTestBasis, activeTrialBasis,
@@ -490,10 +498,11 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
     }
 }
 
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
-const  TestKernelTrialIntegrator<BasisValueType, KernelValueType>&
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisValueType,
-KernelValueType, GeometryFactory>::
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+const TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>&
+StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+KernelType, ResultType, GeometryFactory>::
 selectIntegrator(int testElementIndex, int trialElementIndex)
 {
     DoubleQuadratureDescriptor desc;
@@ -518,10 +527,11 @@ selectIntegrator(int testElementIndex, int trialElementIndex)
     return getIntegrator(desc);
 }
 
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
 int
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisValueType,
-KernelValueType, GeometryFactory>::
+StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+KernelType, ResultType, GeometryFactory>::
 regularOrder(int elementIndex, ElementType elementType) const
 {
     // TODO:
@@ -543,10 +553,11 @@ regularOrder(int elementIndex, ElementType elementType) const
     }
 }
 
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
 int
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisValueType,
-KernelValueType, GeometryFactory>::
+StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+KernelType, ResultType, GeometryFactory>::
 singularOrder(int elementIndex, ElementType elementType) const
 {
     // TODO:
@@ -568,10 +579,11 @@ singularOrder(int elementIndex, ElementType elementType) const
     }
 }
 
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
-const  TestKernelTrialIntegrator<BasisValueType, KernelValueType>&
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisValueType,
-KernelValueType, GeometryFactory>::
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+const TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>&
+StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+KernelType, ResultType, GeometryFactory>::
 getIntegrator(const DoubleQuadratureDescriptor& desc)
 {
     typename IntegratorMap::const_iterator it = m_TestKernelTrialIntegrators.find(desc);
@@ -597,8 +609,8 @@ getIntegrator(const DoubleQuadratureDescriptor& desc)
         fillSingleQuadraturePointsAndWeights(topology.trialVertexCount,
                                              desc.trialOrder,
                                              trialPoints, trialWeights);
-        typedef SeparableNumericalTestKernelTrialIntegrator<BasisValueType,
-                KernelValueType, GeometryFactory> ConcreteIntegrator;
+        typedef SeparableNumericalTestKernelTrialIntegrator<BasisFunctionType,
+                KernelType, ResultType, GeometryFactory> ConcreteIntegrator;
         integrator = new ConcreteIntegrator(
                     testPoints, trialPoints, testWeights, trialWeights,
                     m_geometryFactory, m_rawGeometry,
@@ -610,8 +622,8 @@ getIntegrator(const DoubleQuadratureDescriptor& desc)
 
         fillDoubleSingularQuadraturePointsAndWeights(
                     desc, testPoints, trialPoints, weights);
-        typedef NonseparableNumericalTestKernelTrialIntegrator<BasisValueType,
-                KernelValueType, GeometryFactory> ConcreteIntegrator;
+        typedef NonseparableNumericalTestKernelTrialIntegrator<BasisFunctionType,
+                KernelType, ResultType, GeometryFactory> ConcreteIntegrator;
         integrator = new ConcreteIntegrator(
                     testPoints, trialPoints, weights,
                     m_geometryFactory, m_rawGeometry,

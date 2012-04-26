@@ -32,13 +32,13 @@ template <typename ValueType> class Function;
 template <typename CoordinateType> class RawGridGeometry;
 
 /** \brief Integration over pairs of elements on tensor-product point grids. */
-template <typename BasisValueType, typename FunctionValueType,
+template <typename BasisFunctionType, typename FunctionValueType,
           typename GeometryFactory>
 class NumericalTestFunctionIntegrator :
-        public TestFunctionIntegrator<BasisValueType, FunctionValueType>
+        public TestFunctionIntegrator<BasisFunctionType, FunctionValueType>
 {
 public:
-    typedef TestFunctionIntegrator<BasisValueType, FunctionValueType> Base;
+    typedef TestFunctionIntegrator<BasisFunctionType, FunctionValueType> Base;
     typedef typename Base::CoordinateType CoordinateType;
     typedef typename Base::ResultType ResultType;
 
@@ -47,13 +47,13 @@ public:
             const std::vector<CoordinateType> quadWeights,
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const Expression<BasisValueType>& testExpression,
+            const Expression<CoordinateType>& testExpression,
             const Function<FunctionValueType>& function,
             const OpenClHandler<CoordinateType, int>& openClHandler);
 
     virtual void integrate(
             const std::vector<int>& elementIndices,
-            const Basis<BasisValueType>& testBasis,
+            const Basis<BasisFunctionType>& testBasis,
             arma::Mat<ResultType>& result) const;
 
 private:
@@ -62,7 +62,7 @@ private:
 
     const GeometryFactory& m_geometryFactory;
     const RawGridGeometry<CoordinateType>& m_rawGeometry;
-    const Expression<BasisValueType>& m_testExpression;
+    const Expression<CoordinateType>& m_testExpression;
     const Function<FunctionValueType>& m_function;
 
     const OpenClHandler<CoordinateType, int>& m_openClHandler;

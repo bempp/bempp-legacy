@@ -209,10 +209,11 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakForm(
 
     // Now create the assembler
     std::auto_ptr<LocalAssembler> assembler =
-            factory.make(*geometryFactory, rawGeometry,
-                         testBases, trialBases,
-                         m_expression, m_expression,
-                         openClHandler);
+            factory.makeAssemblerForIdentityOperators(
+                *geometryFactory, rawGeometry,
+                testBases, trialBases,
+                m_expression, m_expression,
+                openClHandler);
 
     return assembleWeakFormInternal(*assembler, options);
 }
@@ -393,10 +394,11 @@ IdentityOperator<BasisFunctionType, ResultType>::makeAssembler(
         const Fiber::OpenClHandler<CoordinateType, int>& openClHandler,
         bool /* cacheSingularIntegrals */) const
 {
-    return assemblerFactory.make(geometryFactory, rawGeometry,
-                                 testBases, trialBases,
-                                 m_expression, m_expression,
-                                 openClHandler);
+    return assemblerFactory.makeAssemblerForIdentityOperators(
+                geometryFactory, rawGeometry,
+                testBases, trialBases,
+                m_expression, m_expression,
+                openClHandler);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(IdentityOperator);

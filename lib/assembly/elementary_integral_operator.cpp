@@ -149,10 +149,11 @@ ElementaryIntegralOperator<BasisFunctionType, ResultType>::makeAssembler(
         const Fiber::OpenClHandler<CoordinateType, int>& openClHandler,
         bool cacheSingularIntegrals) const
 {
-    return assemblerFactory.make(geometryFactory, rawGeometry,
-                                 testBases, trialBases,
-                                 testExpression(), kernel(), trialExpression(),
-                                 openClHandler, cacheSingularIntegrals);
+    return assemblerFactory.makeAssemblerForIntegralOperators(
+                geometryFactory, rawGeometry,
+                testBases, trialBases,
+                testExpression(), kernel(), trialExpression(),
+                openClHandler, cacheSingularIntegrals);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -384,10 +385,11 @@ ElementaryIntegralOperator<BasisFunctionType, ResultType>::applyOffSurface(
     // TODO: distinguish between kernel() and weakFormKernel()
     // as well as trialExpression() and weakFormTrialExpression()
     std::auto_ptr<Evaluator> evaluator =
-            factory.make(*geometryFactory, rawGeometry,
-                         bases,
-                         kernel(), trialExpression(), localCoefficients,
-                         openClHandler);
+            factory.makeEvaluatorForIntegralOperators(
+                *geometryFactory, rawGeometry,
+                bases,
+                kernel(), trialExpression(), localCoefficients,
+                openClHandler);
 
     return applyOffSurfaceWithKnownEvaluator(evaluationGrid, *evaluator, options);
 }

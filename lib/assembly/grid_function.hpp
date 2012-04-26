@@ -24,6 +24,7 @@
 
 #include "../grid/vtk_writer.hpp"
 #include "../fiber/scalar_traits.hpp"
+#include "../fiber/local_assembler_factory.hpp"
 #include "vector.hpp"
 
 #include <armadillo>
@@ -32,8 +33,9 @@
 namespace Fiber
 {
 
-template <typename BasisValueType, typename ResultType, typename GeometryFactory>
-class LocalAssemblerFactory;
+//template <typename BasisValueType, typename ResultType,
+//          typename GeometryFactory, typename Enable = void>
+//class LocalAssemblerFactory;
 template <typename ValueType> class Basis;
 template <typename ValueType> class Function;
 template <typename ValueType> class LocalAssemblerForGridFunctions;

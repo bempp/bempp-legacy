@@ -36,12 +36,12 @@ public:
     explicit ScalarSpace(Grid& grid) : Space<ValueType>(grid) {
     }
 
-    virtual const Fiber::Expression<ValueType>& shapeFunctionValueExpression() const {
+    virtual const Fiber::Expression<CoordinateType>& shapeFunctionValueExpression() const {
         return m_shapeFunctionValueExpression;
     }
 
 private:
-    Fiber::ScalarFunctionValue<ValueType> m_shapeFunctionValueExpression;
+    Fiber::ScalarFunctionValue<CoordinateType> m_shapeFunctionValueExpression;
 };
 
 } // namespace Bempp

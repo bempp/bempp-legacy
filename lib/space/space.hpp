@@ -88,7 +88,7 @@ public:
     virtual const Fiber::Basis<ValueType>& basis(const Entity<0>& element) const = 0;
 
     /** \brief Expression returning values of the shape functions of this space. */
-    virtual const Fiber::Expression<ValueType>& shapeFunctionValueExpression() const = 0;
+    virtual const Fiber::Expression<CoordinateType>& shapeFunctionValueExpression() const = 0;
 
     /** @}
         @name Element order management

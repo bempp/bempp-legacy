@@ -31,27 +31,27 @@ template <typename ValueType> class Expression;
 template <typename CoordinateType> class RawGridGeometry;
 
 /** \brief Integration over pairs of elements on tensor-product point grids. */
-template <typename BasisValueType, typename ResultType, typename GeometryFactory>
+template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 class NumericalTestTrialIntegrator :
-        public TestTrialIntegrator<BasisValueType, ResultType>
+        public TestTrialIntegrator<BasisFunctionType, ResultType>
 {
 public:
     typedef typename
-    TestTrialIntegrator<BasisValueType, ResultType>::CoordinateType CoordinateType;
+    TestTrialIntegrator<BasisFunctionType, ResultType>::CoordinateType CoordinateType;
 
     NumericalTestTrialIntegrator(
             const arma::Mat<CoordinateType>& localQuadPoints,
             const std::vector<CoordinateType> quadWeights,
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const Expression<BasisValueType>& testExpression,
-            const Expression<BasisValueType>& trialExpression,
+            const Expression<CoordinateType>& testExpression,
+            const Expression<CoordinateType>& trialExpression,
             const OpenClHandler<CoordinateType, int>& openClHandler);
 
     virtual void integrate(
             const std::vector<int>& elementIndices,
-            const Basis<BasisValueType>& testBasis,
-            const Basis<BasisValueType>& trialBasis,
+            const Basis<BasisFunctionType>& testBasis,
+            const Basis<BasisFunctionType>& trialBasis,
             arma::Cube<ResultType>& result) const;
 
 private:
@@ -60,8 +60,8 @@ private:
 
     const GeometryFactory& m_geometryFactory;
     const RawGridGeometry<CoordinateType>& m_rawGeometry;
-    const Expression<BasisValueType>& m_testExpression;
-    const Expression<BasisValueType>& m_trialExpression;
+    const Expression<CoordinateType>& m_testExpression;
+    const Expression<CoordinateType>& m_trialExpression;
 
     const OpenClHandler<CoordinateType, int>& m_openClHandler;
 };

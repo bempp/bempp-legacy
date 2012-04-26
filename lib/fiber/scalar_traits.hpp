@@ -15,24 +15,28 @@ template <>
 struct ScalarTraits<float>
 {
     typedef float RealType;
+    typedef std::complex<float> ComplexType;
 };
 
 template <>
 struct ScalarTraits<double>
 {
     typedef double RealType;
+    typedef std::complex<double> ComplexType;
 };
 
 template <>
 struct ScalarTraits<std::complex<float> >
 {
     typedef float RealType;
+    typedef std::complex<float> ComplexType;
 };
 
 template <>
 struct ScalarTraits<std::complex<double> >
 {
     typedef double RealType;
+    typedef std::complex<double> ComplexType;
 };
 
 /** \brief "Larger" of the types U and V. */

@@ -41,7 +41,8 @@ namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType>
-LinearOperatorSuperposition<BasisFunctionType, ResultType>::LinearOperatorSuperposition(
+LinearOperatorSuperposition<BasisFunctionType, ResultType>::
+LinearOperatorSuperposition(
         const LinearOperator<BasisFunctionType, ResultType>& term1,
         const LinearOperator<BasisFunctionType, ResultType>& term2) :
     LinearOperator<BasisFunctionType, ResultType>(term1.testSpace(), term1.trialSpace())
@@ -58,7 +59,8 @@ LinearOperatorSuperposition<BasisFunctionType, ResultType>::LinearOperatorSuperp
 }
 
 template <typename BasisFunctionType, typename ResultType>
-LinearOperatorSuperposition<BasisFunctionType, ResultType>::LinearOperatorSuperposition(
+LinearOperatorSuperposition<BasisFunctionType, ResultType>::
+LinearOperatorSuperposition(
         const LinearOperator<BasisFunctionType, ResultType>& term,
         const ResultType& scalar) :
     LinearOperator<BasisFunctionType, ResultType>(term.testSpace(), term.trialSpace())
@@ -72,19 +74,22 @@ LinearOperatorSuperposition<BasisFunctionType, ResultType>::LinearOperatorSuperp
 }
 
 template <typename BasisFunctionType, typename ResultType>
-int LinearOperatorSuperposition<BasisFunctionType, ResultType>::trialComponentCount() const
+int LinearOperatorSuperposition<BasisFunctionType, ResultType>::
+trialComponentCount() const
 {
     return this->localOperators()[0]->trialComponentCount();
 }
 
 template <typename BasisFunctionType, typename ResultType>
-int LinearOperatorSuperposition<BasisFunctionType, ResultType>::testComponentCount() const
+int LinearOperatorSuperposition<BasisFunctionType, ResultType>::
+testComponentCount() const
 {
     return this->localOperators()[0]->testComponentCount();
 }
 
 template <typename BasisFunctionType, typename ResultType>
-bool LinearOperatorSuperposition<BasisFunctionType, ResultType>::supportsRepresentation(
+bool LinearOperatorSuperposition<BasisFunctionType, ResultType>::
+supportsRepresentation(
         AssemblyOptions::Representation repr) const
 {
     return (repr == AssemblyOptions::DENSE || repr == AssemblyOptions::ACA);
@@ -92,7 +97,8 @@ bool LinearOperatorSuperposition<BasisFunctionType, ResultType>::supportsReprese
 
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-LinearOperatorSuperposition<BasisFunctionType, ResultType>::assembleWeakForm(
+LinearOperatorSuperposition<BasisFunctionType, ResultType>::
+assembleWeakForm(
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
@@ -108,15 +114,16 @@ LinearOperatorSuperposition<BasisFunctionType, ResultType>::assembleWeakForm(
 
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-LinearOperatorSuperposition<BasisFunctionType, ResultType>::assembleWeakFormInDenseMode(
+LinearOperatorSuperposition<BasisFunctionType, ResultType>::
+assembleWeakFormInDenseMode(
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
     typedef DiscreteLinearOperator<ResultType> DiscreteLinOp;
     typedef DiscreteDenseLinearOperator<ResultType> DiscreteDenseLinOp;
 
-    const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*> localOperators =
-            this->localOperators();
+    const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>
+            localOperators = this->localOperators();
     const std::vector<ResultType>& multipliers = this->multipliers();
 
     // Gather matrices of individual operators
@@ -129,9 +136,9 @@ LinearOperatorSuperposition<BasisFunctionType, ResultType>::assembleWeakFormInDe
 
     // Add the matrices together
     arma::Mat<ResultType> sum;
-    sum = discreteOps[0].asMatrix()*multipliers[0];
+    sum = discreteOps[0].asMatrix() * multipliers[0];
     for (int i = 1; i < discreteOps.size(); ++i) {
-        sum += discreteOps[i].asMatrix()*multipliers[i];
+        sum += discreteOps[i].asMatrix() * multipliers[i];
     }
 
     return std::auto_ptr<DiscreteLinOp>(new DiscreteDenseLinOp(sum));
@@ -139,7 +146,8 @@ LinearOperatorSuperposition<BasisFunctionType, ResultType>::assembleWeakFormInDe
 
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-LinearOperatorSuperposition<BasisFunctionType, ResultType>::assembleWeakFormInAcaMode(
+LinearOperatorSuperposition<BasisFunctionType, ResultType>::
+assembleWeakFormInAcaMode(
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
@@ -148,8 +156,8 @@ LinearOperatorSuperposition<BasisFunctionType, ResultType>::assembleWeakFormInAc
     const Space<BasisFunctionType>& testSpace = this->testSpace();
     const Space<BasisFunctionType>& trialSpace = this->trialSpace();
 
-    const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*> localOperators =
-            this->localOperators();
+    const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>
+            localOperators = this->localOperators();
     const std::vector<ResultType>& multipliers = this->multipliers();
 
     AutoTimer timer("\nAssembly took ");
@@ -218,7 +226,8 @@ LinearOperatorSuperposition<BasisFunctionType, ResultType>::assembleWeakFormInAc
     std::vector<ResultType> denseTermsMultipliers;
 
     for (int i = 0; i < localOperators.size(); ++i) {
-        ElementaryLinearOperator<BasisFunctionType, ResultType> const* term = localOperators[i];
+        ElementaryLinearOperator<BasisFunctionType, ResultType> const* term =
+                localOperators[i];
 
         // Create local assembler for the current term
         std::auto_ptr<LocalAssembler> assembler = term->makeAssembler(

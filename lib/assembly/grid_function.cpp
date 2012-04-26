@@ -390,7 +390,7 @@ GridFunction<BasisFunctionType, ResultType>::calculateProjections(
     }
 
     // Get reference to the test expression
-    const Fiber::Expression<BasisFunctionType>& testExpression =
+    const Fiber::Expression<CoordinateType>& testExpression =
             space.shapeFunctionValueExpression();
 
     // Now create the assembler
@@ -399,10 +399,10 @@ GridFunction<BasisFunctionType, ResultType>::calculateProjections(
                                 rawGeometry.elementCornerIndices());
 
     std::auto_ptr<LocalAssembler> assembler =
-            factory.make(*geometryFactory, rawGeometry,
-                         testBases,
-                         testExpression, globalFunction,
-                         openClHandler);
+            factory.makeAssemblerForGridFunctions(
+                *geometryFactory, rawGeometry,
+                testBases, testExpression, globalFunction,
+                openClHandler);
 
     return reallyCalculateProjections(
                 space, *assembler, options);
@@ -522,7 +522,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
     int basisDeps = 0, geomDeps = 0;
     // Find out which geometrical data need to be calculated, in addition
     // to those needed by the kernel
-    const Fiber::Expression<BasisFunctionType>& expression =
+    const Fiber::Expression<CoordinateType>& expression =
             m_space.shapeFunctionValueExpression();
     expression.addDependencies(basisDeps, geomDeps);
 
@@ -634,8 +634,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
             rawGeometry.setupGeometry(e, *geometry);
             geometry->getData(geomDeps, local, geomData);
 
-            throw std::logic_error("NOT WORKING!!!");
-            // expression.evaluate(functionData, geomData, functionValues);
+            expression.evaluate(functionData, geomData, functionValues);
             assert(functionValues.n_cols == 1);
 
             if (dataType == VtkWriter::CELL_DATA)

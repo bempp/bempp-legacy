@@ -21,9 +21,14 @@
 #ifndef fiber_integration_manager_factory_hpp
 #define fiber_integration_manager_factory_hpp
 
+//#include "enable_if_is_real.hpp"
 #include "scalar_traits.hpp"
 
 #include <armadillo>
+#include <boost/utility/enable_if.hpp>
+#include <boost/type_traits/is_same.hpp>
+//#include <boost/mpl/has_key.hpp>
+//#include <boost/mpl/set.hpp>
 #include <memory>
 
 namespace Fiber
@@ -40,100 +45,182 @@ template <typename ResultType> class LocalAssemblerForOperators;
 template <typename ResultType> class LocalAssemblerForGridFunctions;
 template <typename ResultType> class EvaluatorForIntegralOperators;
 
-template <typename BasisValueType, typename ResultType,
+template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory>
-class LocalAssemblerFactory
+class LocalAssemblerFactoryBase
 {
 public:
     // Type of the output of integral operators. Note that identity operators
-    // output numbers of type BasisValueType.
+    // output numbers of type BasisFunctionType.
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+private:
+//    typedef mpl::set<ResultType, CoordinateType> AcceptedTypes;
 
-    virtual ~LocalAssemblerFactory() {}
+public:
+    virtual ~LocalAssemblerFactoryBase() {}
 
-    /** @name Local assemblers for integral operators
-        @{ */
-
-    // TODO (important): overload for Kernel<ResultType> and
-    // Kernel<ScalarTraits<ResultType> >::RealType
-    /** \brief Allocate a Galerkin-mode local assembler for an integral operator. */
-    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> > make(
+    /** \brief Allocate a Galerkin-mode local assembler for an integral operator
+        with real kernel. */
+    std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+    makeAssemblerForIntegralOperators(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<BasisValueType>*>& testBases,
-            const std::vector<const Basis<BasisValueType>*>& trialBases,
-            const Expression<BasisValueType>& testExpression,
-            const Kernel<ResultType>& kernel,
-            const Expression<BasisValueType>& trialExpression,
+            const std::vector<const Basis<BasisFunctionType>*>& testBases,
+            const std::vector<const Basis<BasisFunctionType>*>& trialBases,
+            const Expression<CoordinateType>& testExpression,
+            const Kernel<CoordinateType>& kernel,
+            const Expression<CoordinateType>& trialExpression,
             const OpenClHandler<CoordinateType, int>& openClHandler,
-            bool cacheSingularIntegrals) const = 0;
-
-    /** \brief Allocate a collocation-mode local assembler for an integral operator.
-
-        Used also for evaluation of the integral operator at arbitrary points. */
-    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> > make(
-            const GeometryFactory& geometryFactory,
-            const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<BasisValueType>*>& trialBases,
-            const Kernel<ResultType>& kernel,
-            const Expression<BasisValueType>& trialExpression,
-            const OpenClHandler<CoordinateType, int>& openClHandler,
-            bool cacheSingularIntegrals) const = 0;
-
-    /** @}
-        @name Local assemblers for the identity operator
-        @{ */
+            bool cacheSingularIntegrals) const {
+        return this->makeAssemblerForIntegralOperatorsImplRealKernel(
+                    geometryFactory, rawGeometry, testBases, trialBases,
+                    testExpression, kernel, trialExpression, openClHandler,
+                    cacheSingularIntegrals);
+    }
 
     /** \brief Allocate a Galerkin-mode local assembler for the identity operator. */
-    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> > make(
+    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+    makeAssemblerForIdentityOperators(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<BasisValueType>*>& testBases,
-            const std::vector<const Basis<BasisValueType>*>& trialBases,
-            const Expression<BasisValueType>& testExpression,
-            const Expression<BasisValueType>& trialExpression,
+            const std::vector<const Basis<BasisFunctionType>*>& testBases,
+            const std::vector<const Basis<BasisFunctionType>*>& trialBases,
+            const Expression<CoordinateType>& testExpression,
+            const Expression<CoordinateType>& trialExpression,
             const OpenClHandler<CoordinateType, int>& openClHandler) const = 0;
-
-    /** \brief Allocate a collocation-mode local assembler for an identity operator.
-
-        Used also for evaluation of the identity operator at arbitrary points. */
-    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> > make(
-            const GeometryFactory& geometryFactory,
-            const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<BasisValueType>*>& trialBases,
-            const Expression<BasisValueType>& trialExpression,
-            const OpenClHandler<CoordinateType, int>& openClHandler) const = 0;
-
-    /** @}
-        @name Local assemblers for grid functions
-        @{ */
 
     /** \brief Allocate a local assembler for calculations of the projections
       of functions from a given space on a Fiber::Function. */
-    virtual std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> > make(
+    virtual std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >
+    makeAssemblerForGridFunctions(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<BasisValueType>*>& testBases,
-            const Expression<BasisValueType>& testExpression,
+            const std::vector<const Basis<BasisFunctionType>*>& testBases,
+            const Expression<CoordinateType>& testExpression,
             const Function<ResultType>& function,
             const OpenClHandler<CoordinateType, int>& openClHandler) const = 0;
 
-    /** @}
-        @name Evaluators for integral operators
-        @{ */
-
-    /** \brief Allocate an evaluator for an integral operator applied to a
-      grid function. */
-    virtual std::auto_ptr<EvaluatorForIntegralOperators<ResultType> > make(
+    /** \brief Allocate an evaluator for an integral operator with real kernel
+      applied to a grid function. */
+    std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
+    makeEvaluatorForIntegralOperators(
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<BasisValueType>*>& trialBases,
-            const Kernel<ResultType>& kernel,
-            const Expression<BasisValueType>& trialExpression,
+            const std::vector<const Basis<BasisFunctionType>*>& trialBases,
+            const Kernel<CoordinateType>& kernel,
+            const Expression<CoordinateType>& trialExpression,
+            const std::vector<std::vector<ResultType> >& argumentLocalCoefficients,
+            const OpenClHandler<CoordinateType, int>& openClHandler) const {
+        return this->makeEvaluatorForIntegralOperatorsImplRealKernel(
+                    geometryFactory, rawGeometry, trialBases,
+                    kernel, trialExpression, argumentLocalCoefficients,
+                    openClHandler);
+    }
+
+private:
+    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+    makeAssemblerForIntegralOperatorsImplRealKernel(
+            const GeometryFactory& geometryFactory,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
+            const std::vector<const Basis<BasisFunctionType>*>& testBases,
+            const std::vector<const Basis<BasisFunctionType>*>& trialBases,
+            const Expression<CoordinateType>& testExpression,
+            const Kernel<CoordinateType>& kernel, // !
+            const Expression<CoordinateType>& trialExpression,
+            const OpenClHandler<CoordinateType, int>& openClHandler,
+            bool cacheSingularIntegrals) const = 0;
+
+    virtual std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
+    makeEvaluatorForIntegralOperatorsImplRealKernel(
+            const GeometryFactory& geometryFactory,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
+            const std::vector<const Basis<BasisFunctionType>*>& trialBases,
+            const Kernel<CoordinateType>& kernel,
+            const Expression<CoordinateType>& trialExpression,
             const std::vector<std::vector<ResultType> >& argumentLocalCoefficients,
             const OpenClHandler<CoordinateType, int>& openClHandler) const = 0;
+};
 
-    /** @} */
+// complex ResultType
+template <typename BasisFunctionType, typename ResultType,
+          typename GeometryFactory, typename Enable = void>
+class LocalAssemblerFactory :
+        public LocalAssemblerFactoryBase<BasisFunctionType, ResultType, GeometryFactory>
+{
+    typedef LocalAssemblerFactoryBase<BasisFunctionType, ResultType, GeometryFactory> Base;
+public:
+    typedef typename Base::CoordinateType CoordinateType;
+
+    using Base::makeAssemblerForIntegralOperators;
+    using Base::makeEvaluatorForIntegralOperators;
+
+    std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+    makeAssemblerForIntegralOperators(
+            const GeometryFactory& geometryFactory,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
+            const std::vector<const Basis<BasisFunctionType>*>& testBases,
+            const std::vector<const Basis<BasisFunctionType>*>& trialBases,
+            const Expression<CoordinateType>& testExpression,
+            const Kernel<ResultType>& kernel,
+            const Expression<CoordinateType>& trialExpression,
+            const OpenClHandler<CoordinateType, int>& openClHandler,
+            bool cacheSingularIntegrals) const {
+        return this->makeAssemblerForIntegralOperatorsImplComplexKernel(
+                    geometryFactory, rawGeometry, testBases, trialBases,
+                    testExpression, kernel, trialExpression, openClHandler,
+                    cacheSingularIntegrals);
+    }
+
+    /** \brief Allocate an evaluator for an integral operator with real kernel
+      applied to a grid function. */
+    std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
+    makeEvaluatorForIntegralOperators(
+            const GeometryFactory& geometryFactory,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
+            const std::vector<const Basis<BasisFunctionType>*>& trialBases,
+            const Kernel<ResultType>& kernel,
+            const Expression<CoordinateType>& trialExpression,
+            const std::vector<std::vector<ResultType> >& argumentLocalCoefficients,
+            const OpenClHandler<CoordinateType, int>& openClHandler) const {
+        return this->makeEvaluatorForIntegralOperatorsImplComplexKernel(
+                    geometryFactory, rawGeometry, trialBases,
+                    kernel, trialExpression, argumentLocalCoefficients,
+                    openClHandler);
+    }
+
+private:
+    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+    makeAssemblerForIntegralOperatorsImplComplexKernel(
+            const GeometryFactory& geometryFactory,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
+            const std::vector<const Basis<BasisFunctionType>*>& testBases,
+            const std::vector<const Basis<BasisFunctionType>*>& trialBases,
+            const Expression<CoordinateType>& testExpression,
+            const Kernel<ResultType>& kernel, // !
+            const Expression<CoordinateType>& trialExpression,
+            const OpenClHandler<CoordinateType, int>& openClHandler,
+            bool cacheSingularIntegrals) const = 0;
+
+    virtual std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
+    makeEvaluatorForIntegralOperatorsImplComplexKernel(
+            const GeometryFactory& geometryFactory,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
+            const std::vector<const Basis<BasisFunctionType>*>& trialBases,
+            const Kernel<ResultType>& kernel,
+            const Expression<CoordinateType>& trialExpression,
+            const std::vector<std::vector<ResultType> >& argumentLocalCoefficients,
+            const OpenClHandler<CoordinateType, int>& openClHandler) const = 0;
+};
+
+// real ResultType
+template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
+class LocalAssemblerFactory<BasisFunctionType, ResultType, GeometryFactory,
+    typename boost::enable_if<boost::is_same<ResultType, typename ScalarTraits<ResultType>::RealType> >::type > :
+        public LocalAssemblerFactoryBase<BasisFunctionType, ResultType, GeometryFactory>
+{
+    typedef LocalAssemblerFactoryBase<BasisFunctionType, ResultType, GeometryFactory> Base;
+public:
+    typedef typename Base::CoordinateType CoordinateType;
 };
 
 } // namespace Fiber

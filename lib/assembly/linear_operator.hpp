@@ -25,6 +25,7 @@
 #include "grid_function.hpp"
 #include "transposition_mode.hpp"
 
+#include "../fiber/local_assembler_factory.hpp"
 #include "../space/space.hpp"
 
 #include <memory>
@@ -40,8 +41,8 @@ template <typename eT> class Mat;
 namespace Fiber
 {
 
-template <typename BasisValueType, typename ResultType, typename GeometryFactory>
-class LocalAssemblerFactory;
+//template <typename BasisValueType, typename ResultType, typename GeometryFactory>
+//class LocalAssemblerFactory;
 
 } // namespace Fiber
 

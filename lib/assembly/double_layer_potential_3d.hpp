@@ -32,27 +32,29 @@ template <typename BasisFunctionType, typename ResultType = BasisFunctionType>
 class DoubleLayerPotential3D :
         public ElementaryWeaklySingularIntegralOperator<BasisFunctionType, ResultType>
 {
-
+    typedef ElementaryWeaklySingularIntegralOperator<BasisFunctionType, ResultType> Base;
 public:
+    typedef typename Base::CoordinateType CoordinateType;
+
     DoubleLayerPotential3D(const Space<BasisFunctionType>& testSpace,
-                           const Space<BasisFunctionType>& trialSpace );
+                           const Space<BasisFunctionType>& trialSpace);
 
 private:
     virtual const Fiber::Kernel<ResultType>& kernel() const {
         return m_kernel;
     }
 
-    virtual const Fiber::Expression<BasisFunctionType>& testExpression() const {
+    virtual const Fiber::Expression<CoordinateType>& testExpression() const {
         return m_expression;
     }
 
-    virtual const Fiber::Expression<BasisFunctionType>& trialExpression() const {
+    virtual const Fiber::Expression<CoordinateType>& trialExpression() const {
         return m_expression;
     }
 
 private:
     Fiber::DoubleLayerPotential3DKernel<ResultType> m_kernel;
-    Fiber::ScalarFunctionValue<BasisFunctionType> m_expression;
+    Fiber::ScalarFunctionValue<CoordinateType> m_expression;
 };
 
 } // namespace Bempp

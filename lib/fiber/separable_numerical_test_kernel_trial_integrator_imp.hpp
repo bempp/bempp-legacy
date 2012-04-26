@@ -44,8 +44,10 @@
 namespace Fiber
 {
 
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
-SeparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueType, GeometryFactory>::
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+SeparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
 SeparableNumericalTestKernelTrialIntegrator(
         const arma::Mat<CoordinateType>& localTestQuadPoints,
         const arma::Mat<CoordinateType>& localTrialQuadPoints,
@@ -53,9 +55,9 @@ SeparableNumericalTestKernelTrialIntegrator(
         const std::vector<CoordinateType> trialQuadWeights,
         const GeometryFactory& geometryFactory,
         const RawGridGeometry<CoordinateType>& rawGeometry,
-        const Expression<BasisValueType>& testExpression,
-        const Kernel<KernelValueType>& kernel,
-        const Expression<BasisValueType>& trialExpression,
+        const Expression<CoordinateType>& testExpression,
+        const Kernel<KernelType>& kernel,
+        const Expression<CoordinateType>& trialExpression,
         const OpenClHandler<CoordinateType, int>& openClHandler) :
     m_localTestQuadPoints(localTestQuadPoints),
     m_localTrialQuadPoints(localTrialQuadPoints),
@@ -88,8 +90,10 @@ SeparableNumericalTestKernelTrialIntegrator(
 #endif
 }
 
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
-SeparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueType, GeometryFactory>::
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+SeparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
 ~SeparableNumericalTestKernelTrialIntegrator()
 {
 #ifdef WITH_OPENCL
@@ -102,13 +106,16 @@ SeparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueType, Geo
 #endif
 }
 
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
-void SeparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueType, GeometryFactory>::integrate(
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+void SeparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
+integrate(
         CallVariant callVariant,
         const std::vector<int>& elementIndicesA,
         int elementIndexB,
-        const Basis<BasisValueType>& basisA,
-        const Basis<BasisValueType>& basisB,
+        const Basis<BasisFunctionType>& basisA,
+        const Basis<BasisFunctionType>& basisB,
         LocalDofIndex localDofIndexB,
         arma::Cube<ResultType>& result) const
 {
@@ -124,13 +131,16 @@ void SeparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueType
     }
 }
 
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
-void SeparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueType, GeometryFactory>::integrateCpu(
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+void SeparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
+integrateCpu(
         CallVariant callVariant,
         const std::vector<int>& elementIndicesA,
         int elementIndexB,
-        const Basis<BasisValueType>& basisA,
-        const Basis<BasisValueType>& basisB,
+        const Basis<BasisFunctionType>& basisA,
+        const Basis<BasisFunctionType>& basisB,
         LocalDofIndex localDofIndexB,
         arma::Cube<ResultType>& result) const
 {
@@ -166,7 +176,7 @@ void SeparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueType
         assert(kernelColCount == trialComponentCount);
     }
 
-    BasisData<BasisValueType> testBasisData, trialBasisData;
+    BasisData<BasisFunctionType> testBasisData, trialBasisData;
     GeometricalData<CoordinateType> testGeomData, trialGeomData;
 
     int testBasisDeps = 0, trialBasisDeps = 0;
@@ -181,8 +191,8 @@ void SeparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueType
     std::auto_ptr<Geometry> geometryA(m_geometryFactory.make());
     std::auto_ptr<Geometry> geometryB(m_geometryFactory.make());
 
-    arma::Cube<BasisValueType> testValues, trialValues;
-    Array4D<KernelValueType> kernelValues(kernelRowCount, testPointCount,
+    arma::Cube<BasisFunctionType> testValues, trialValues;
+    Array4D<KernelType> kernelValues(kernelRowCount, testPointCount,
                                     kernelColCount, trialPointCount);
 
     result.set_size(testDofCount, trialDofCount, elementACount);
@@ -258,13 +268,17 @@ void SeparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueType
     }
 }
 
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
-void SeparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueType, GeometryFactory>::integrateCl(
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+void
+SeparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
+integrateCl(
         CallVariant callVariant,
         const std::vector<int>& elementIndicesA,
         int elementIndexB,
-        const Basis<BasisValueType>& basisA,
-        const Basis<BasisValueType>& basisB,
+        const Basis<BasisFunctionType>& basisA,
+        const Basis<BasisFunctionType>& basisB,
         LocalDofIndex localDofIndexB,
         arma::Cube<ResultType>& result) const
 {
@@ -561,11 +575,15 @@ void SeparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueType
 }
 
 
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
-void SeparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueType, GeometryFactory>::integrate(
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+void
+SeparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
+integrate(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<BasisValueType>& testBasis,
-            const Basis<BasisValueType>& trialBasis,
+            const Basis<BasisFunctionType>& testBasis,
+            const Basis<BasisFunctionType>& trialBasis,
             arma::Cube<ResultType>& result) const
 {
     if (m_openClHandler.UseOpenCl())
@@ -578,11 +596,15 @@ void SeparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueType
     }
 }
 
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
-void SeparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueType, GeometryFactory>::integrateCpu(
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+void
+SeparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
+integrateCpu(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<BasisValueType>& testBasis,
-            const Basis<BasisValueType>& trialBasis,
+            const Basis<BasisFunctionType>& testBasis,
+            const Basis<BasisFunctionType>& trialBasis,
             arma::Cube<ResultType>& result) const
 {
     const int testPointCount = m_localTestQuadPoints.n_cols;
@@ -615,7 +637,7 @@ void SeparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueType
         assert(kernelColCount == trialComponentCount);
     }
 
-    BasisData<BasisValueType> testBasisData, trialBasisData;
+    BasisData<BasisFunctionType> testBasisData, trialBasisData;
     GeometricalData<CoordinateType> testGeomData, trialGeomData;
 
     int testBasisDeps = 0, trialBasisDeps = 0;
@@ -630,8 +652,8 @@ void SeparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueType
     std::auto_ptr<Geometry> testGeometry(m_geometryFactory.make());
     std::auto_ptr<Geometry> trialGeometry(m_geometryFactory.make());
 
-    arma::Cube<BasisValueType> testValues, trialValues;
-    Array4D<KernelValueType> kernelValues(kernelRowCount, testPointCount,
+    arma::Cube<BasisFunctionType> testValues, trialValues;
+    Array4D<KernelType> kernelValues(kernelRowCount, testPointCount,
                                     kernelColCount, trialPointCount);
 
     result.set_size(testDofCount, trialDofCount, geometryPairCount);
@@ -690,11 +712,14 @@ void SeparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueType
 }
 
 
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
-void SeparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueType, GeometryFactory>::integrateCl(
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+void SeparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
+integrateCl(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<BasisValueType>& testBasis,
-            const Basis<BasisValueType>& trialBasis,
+            const Basis<BasisFunctionType>& testBasis,
+            const Basis<BasisFunctionType>& trialBasis,
             arma::Cube<ResultType>& result) const
 {
 #ifdef WITH_OPENCL
@@ -878,10 +903,11 @@ void SeparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueType
 #endif // WITH_OPENCL
 }
 
-
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
 const std::pair<const char*,int>
-SeparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueType, GeometryFactory>::
+SeparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
 clStrIntegrateRowOrCol () const
 {
   return std::make_pair (separable_numerical_double_integrator_cl,

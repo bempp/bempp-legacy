@@ -32,14 +32,14 @@ template <typename ValueType> class Kernel;
 template <typename CoordinateType> class RawGridGeometry;
 
 /** \brief Integration over pairs of elements on non-tensor-product point grids. */
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
 class NonseparableNumericalTestKernelTrialIntegrator :
-        public TestKernelTrialIntegrator<BasisValueType, KernelValueType>
+        public TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>
 {
 public:
-    typedef TestKernelTrialIntegrator<BasisValueType, KernelValueType> Base;
+    typedef TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType> Base;
     typedef typename Base::CoordinateType CoordinateType;
-    typedef typename Base::ResultType ResultType;
     typedef typename Base::ElementIndexPair ElementIndexPair;
 
     NonseparableNumericalTestKernelTrialIntegrator(
@@ -48,24 +48,24 @@ public:
             const std::vector<CoordinateType> quadWeights,
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const Expression<BasisValueType>& testExpression,
-            const Kernel<KernelValueType>& kernel,
-            const Expression<BasisValueType>& trialExpression,
+            const Expression<CoordinateType>& testExpression,
+            const Kernel<KernelType>& kernel,
+            const Expression<CoordinateType>& trialExpression,
             const OpenClHandler<CoordinateType, int>& openClHandler);
 
     virtual void integrate(
             CallVariant callVariant,
             const std::vector<int>& elementIndicesA,
             int elementIndexB,
-            const Basis<BasisValueType>& basisA,
-            const Basis<BasisValueType>& basisB,
+            const Basis<BasisFunctionType>& basisA,
+            const Basis<BasisFunctionType>& basisB,
             LocalDofIndex localDofIndexB,
             arma::Cube<ResultType>& result) const;
 
     virtual void integrate(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<BasisValueType>& testBasis,
-            const Basis<BasisValueType>& trialBasis,
+            const Basis<BasisFunctionType>& testBasis,
+            const Basis<BasisFunctionType>& trialBasis,
             arma::Cube<ResultType>& result) const;
 
 private:
@@ -76,9 +76,9 @@ private:
     const GeometryFactory& m_geometryFactory;
     const RawGridGeometry<CoordinateType>& m_rawGeometry;
 
-    const Expression<BasisValueType>& m_testExpression;
-    const Kernel<KernelValueType>& m_kernel;
-    const Expression<BasisValueType>& m_trialExpression;
+    const Expression<CoordinateType>& m_testExpression;
+    const Kernel<KernelType>& m_kernel;
+    const Expression<CoordinateType>& m_trialExpression;
     const OpenClHandler<CoordinateType, int>& m_openClHandler;
 };
 

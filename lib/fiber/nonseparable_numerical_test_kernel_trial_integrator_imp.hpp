@@ -40,17 +40,19 @@
 namespace Fiber
 {
 
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
-NonseparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueType, GeometryFactory>::
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+NonseparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
 NonseparableNumericalTestKernelTrialIntegrator(
         const arma::Mat<CoordinateType>& localTestQuadPoints,
         const arma::Mat<CoordinateType>& localTrialQuadPoints,
         const std::vector<CoordinateType> quadWeights,
         const GeometryFactory& geometryFactory,
         const RawGridGeometry<CoordinateType>& rawGeometry,
-        const Expression<BasisValueType>& testExpression,
-        const Kernel<KernelValueType>& kernel,
-        const Expression<BasisValueType>& trialExpression,
+        const Expression<CoordinateType>& testExpression,
+        const Kernel<KernelType>& kernel,
+        const Expression<CoordinateType>& trialExpression,
         const OpenClHandler<CoordinateType, int>& openClHandler) :
     m_localTestQuadPoints(localTestQuadPoints),
     m_localTrialQuadPoints(localTrialQuadPoints),
@@ -70,13 +72,17 @@ NonseparableNumericalTestKernelTrialIntegrator(
                                     "numbers of points and weights do not match");
 }
 
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
-void NonseparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueType, GeometryFactory>::integrate(
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+void
+NonseparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
+integrate(
         CallVariant callVariant,
         const std::vector<int>& elementIndicesA,
         int elementIndexB,
-        const Basis<BasisValueType>& basisA,
-        const Basis<BasisValueType>& basisB,
+        const Basis<BasisFunctionType>& basisA,
+        const Basis<BasisFunctionType>& basisB,
         LocalDofIndex localDofIndexB,
         arma::Cube<ResultType>& result) const
 {
@@ -111,7 +117,7 @@ void NonseparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueT
         assert(kernelColCount == trialComponentCount);
     }
 
-    BasisData<BasisValueType> testBasisData, trialBasisData;
+    BasisData<BasisFunctionType> testBasisData, trialBasisData;
     GeometricalData<CoordinateType> testGeomData, trialGeomData;
 
     int testBasisDeps = 0, trialBasisDeps = 0;
@@ -126,8 +132,8 @@ void NonseparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueT
     std::auto_ptr<Geometry> geometryA(m_geometryFactory.make());
     std::auto_ptr<Geometry> geometryB(m_geometryFactory.make());
 
-    arma::Cube<BasisValueType> testValues, trialValues;
-    arma::Cube<KernelValueType> kernelValues;
+    arma::Cube<BasisFunctionType> testValues, trialValues;
+    arma::Cube<KernelType> kernelValues;
 
     result.set_size(testDofCount, trialDofCount, elementACount);
 
@@ -198,11 +204,15 @@ void NonseparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueT
     }
 }
 
-template <typename BasisValueType, typename KernelValueType, typename GeometryFactory>
-void NonseparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueType, GeometryFactory>::integrate(
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+void
+NonseparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
+integrate(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<BasisValueType>& testBasis,
-            const Basis<BasisValueType>& trialBasis,
+            const Basis<BasisFunctionType>& testBasis,
+            const Basis<BasisFunctionType>& trialBasis,
             arma::Cube<ResultType>& result) const
 {
     const int pointCount = m_quadWeights.size();
@@ -234,7 +244,7 @@ void NonseparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueT
         assert(kernelColCount == trialComponentCount);
     }
 
-    BasisData<BasisValueType> testBasisData, trialBasisData;
+    BasisData<BasisFunctionType> testBasisData, trialBasisData;
     GeometricalData<CoordinateType> testGeomData, trialGeomData;
 
     int testBasisDeps = 0, trialBasisDeps = 0;
@@ -249,8 +259,8 @@ void NonseparableNumericalTestKernelTrialIntegrator<BasisValueType, KernelValueT
     std::auto_ptr<Geometry> testGeometry(m_geometryFactory.make());
     std::auto_ptr<Geometry> trialGeometry(m_geometryFactory.make());
 
-    arma::Cube<BasisValueType> testValues, trialValues;
-    arma::Cube<KernelValueType> kernelValues;
+    arma::Cube<BasisFunctionType> testValues, trialValues;
+    arma::Cube<KernelType> kernelValues;
 
     result.set_size(testDofCount, trialDofCount, geometryPairCount);
 

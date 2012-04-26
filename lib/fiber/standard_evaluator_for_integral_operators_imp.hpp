@@ -32,14 +32,15 @@
 namespace Fiber
 {
 
-template <typename BasisValueType, typename ResultType, typename GeometryFactory>
-StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryFactory>::
-StandardEvaluatorForIntegralOperators(
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+StandardEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
+ResultType, GeometryFactory>::StandardEvaluatorForIntegralOperators(
         const GeometryFactory& geometryFactory,
         const RawGridGeometry<CoordinateType>& rawGeometry,
-        const std::vector<const Basis<BasisValueType>*>& trialBases,
-        const Kernel<ResultType>& kernel,
-        const Expression<BasisValueType>& trialExpression,
+        const std::vector<const Basis<BasisFunctionType>*>& trialBases,
+        const Kernel<KernelType>& kernel,
+        const Expression<CoordinateType>& trialExpression,
         const std::vector<std::vector<ResultType> >& argumentLocalCoefficients,
         const OpenClHandler<CoordinateType, int>& openClHandler,
         const QuadratureOptions& quadratureOptions) :
@@ -84,8 +85,10 @@ StandardEvaluatorForIntegralOperators(
     cacheTrialData();
 }
 
-template <typename BasisValueType, typename ResultType, typename GeometryFactory>
-void StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryFactory>::evaluate(
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+void StandardEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
+ResultType, GeometryFactory>::evaluate(
         Region region,
         const arma::Mat<CoordinateType>& points, arma::Mat<ResultType>& result) const
 {
@@ -121,7 +124,7 @@ void StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryF
     // Do things in chunks of 96 points -- in order to avoid creating
     // too large arrays of kernel values
     const int chunkSize = 96;
-    Fiber::Array4D<ResultType> kernelValues;
+    Fiber::Array4D<KernelType> kernelValues;
     Fiber::GeometricalData<CoordinateType> testGeomData;
     for (int start = 0; start < pointCount; start += chunkSize)
     {
@@ -146,8 +149,10 @@ void StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryF
     }
 }
 
-template <typename BasisValueType, typename ResultType, typename GeometryFactory>
-void StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryFactory>::cacheTrialData()
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+void StandardEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
+ResultType, GeometryFactory>::cacheTrialData()
 {
     int testGeomDeps = 0, trialGeomDeps = 0;
     m_kernel.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
@@ -166,8 +171,10 @@ void StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryF
                   m_nearFieldWeightedTrialExprValues);
 }
 
-template <typename BasisValueType, typename ResultType, typename GeometryFactory>
-void StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryFactory>::calcTrialData(
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+void StandardEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
+ResultType, GeometryFactory>::calcTrialData(
         Region region,
         int kernelTrialGeomDeps,
         Fiber::GeometricalData<CoordinateType>& trialGeomData,
@@ -192,7 +199,7 @@ void StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryF
 
     // Find all unique trial bases
     // Set of unique quadrature variants
-    typedef std::set<const Basis<BasisValueType>*> BasisSet;
+    typedef std::set<const Basis<BasisFunctionType>*> BasisSet;
     BasisSet uniqueTrialBases(m_trialBases.begin(), m_trialBases.end());
 
     // Initialise temporary (per-element) data containers
@@ -202,7 +209,7 @@ void StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryF
     for (typename BasisSet::const_iterator it = uniqueTrialBases.begin();
          it != uniqueTrialBases.end(); ++it)
     {
-        const Basis<BasisValueType>& activeBasis = *(*it);
+        const Basis<BasisFunctionType>& activeBasis = *(*it);
         int order = quadOrder(activeBasis, region);
 
         // Find out the element type
@@ -221,7 +228,7 @@ void StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryF
                     elementCornerCount, order, localQuadPoints, quadWeights);
 
         // Get basis data
-        BasisData<BasisValueType> basisData;
+        BasisData<BasisFunctionType> basisData;
         activeBasis.evaluate(basisDeps, localQuadPoints, ALL_DOFS, basisData);
 
         BasisData<ResultType> argumentData;
@@ -276,9 +283,8 @@ void StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryF
                               geomDataPerElement[e]);
 
             arma::Cube<ResultType> trialValues;
-            throw std::logic_error("NOT WORKING!!!!!");
-//            m_trialExpression.evaluate(argumentData, geomDataPerElement[e],
-//                                       trialValues);
+            m_trialExpression.evaluate(argumentData, geomDataPerElement[e],
+                                       trialValues);
 
             assert(trialValues.n_cols == 1);
             weightedTrialExprValuesPerElement[e].set_size(trialValues.n_rows,
@@ -341,9 +347,11 @@ void StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryF
     }
 }
 
-template <typename BasisValueType, typename ResultType, typename GeometryFactory>
-int StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryFactory>::quadOrder(
-        const Fiber::Basis<BasisValueType>& basis, Region region) const
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+int StandardEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
+ResultType, GeometryFactory>::quadOrder(
+        const Fiber::Basis<BasisFunctionType>& basis, Region region) const
 {
     if (region == EvaluatorForIntegralOperators<ResultType>::NEAR_FIELD)
         return nearFieldQuadOrder(basis);
@@ -351,9 +359,11 @@ int StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryFa
         return farFieldQuadOrder(basis);
 }
 
-template <typename BasisValueType, typename ResultType, typename GeometryFactory>
-int StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryFactory>::farFieldQuadOrder(
-        const Fiber::Basis<BasisValueType>& basis) const
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+int StandardEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
+ResultType, GeometryFactory>::farFieldQuadOrder(
+        const Fiber::Basis<BasisFunctionType>& basis) const
 {
     // const QuadratureOptions& options = m_accuracyOptions.farField;
 
@@ -370,9 +380,11 @@ int StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryFa
     }
 }
 
-template <typename BasisValueType, typename ResultType, typename GeometryFactory>
-int StandardEvaluatorForIntegralOperators<BasisValueType, ResultType, GeometryFactory>::nearFieldQuadOrder(
-        const Fiber::Basis<BasisValueType>& basis) const
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+int StandardEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
+ResultType, GeometryFactory>::nearFieldQuadOrder(
+        const Fiber::Basis<BasisFunctionType>& basis) const
 {
     // quick and dirty
     return 2 * farFieldQuadOrder(basis);

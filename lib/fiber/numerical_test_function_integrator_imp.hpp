@@ -35,14 +35,14 @@
 namespace Fiber
 {
 
-template <typename BasisValueType, typename FunctionValueType, typename GeometryFactory>
-NumericalTestFunctionIntegrator<BasisValueType, FunctionValueType, GeometryFactory>::
+template <typename BasisFunctionType, typename FunctionValueType, typename GeometryFactory>
+NumericalTestFunctionIntegrator<BasisFunctionType, FunctionValueType, GeometryFactory>::
 NumericalTestFunctionIntegrator(
         const arma::Mat<CoordinateType>& localQuadPoints,
         const std::vector<CoordinateType> quadWeights,
         const GeometryFactory& geometryFactory,
         const RawGridGeometry<CoordinateType>& rawGeometry,
-        const Expression<BasisValueType>& testExpression,
+        const Expression<CoordinateType>& testExpression,
         const Function<FunctionValueType>& function,
         const OpenClHandler<CoordinateType, int>& openClHandler) :
     m_localQuadPoints(localQuadPoints),
@@ -59,11 +59,11 @@ NumericalTestFunctionIntegrator(
                                     "numbers of points and weights do not match");
 }
 
-template <typename BasisValueType, typename FunctionValueType, typename GeometryFactory>
-void NumericalTestFunctionIntegrator<BasisValueType, FunctionValueType, GeometryFactory>::
+template <typename BasisFunctionType, typename FunctionValueType, typename GeometryFactory>
+void NumericalTestFunctionIntegrator<BasisFunctionType, FunctionValueType, GeometryFactory>::
 integrate(
         const std::vector<int>& elementIndices,
-        const Basis<BasisValueType>& testBasis,
+        const Basis<BasisFunctionType>& testBasis,
         arma::Mat<ResultType>& result) const
 {
     const int pointCount = m_localQuadPoints.n_cols;
@@ -83,7 +83,7 @@ integrate(
                                  "test functions and the \"arbitrary\" function "
                                  "must have the same number of components");
 
-    BasisData<BasisValueType> testBasisData;
+    BasisData<BasisFunctionType> testBasisData;
     GeometricalData<CoordinateType> geomData;
 
     int testBasisDeps = 0;
@@ -95,7 +95,7 @@ integrate(
     typedef typename GeometryFactory::Geometry Geometry;
     std::auto_ptr<Geometry> geometry(m_geometryFactory.make());
 
-    arma::Cube<BasisValueType> testValues;
+    arma::Cube<BasisFunctionType> testValues;
     arma::Mat<FunctionValueType> functionValues;
 
     result.set_size(testDofCount, elementCount);
