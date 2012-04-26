@@ -43,23 +43,23 @@ namespace Bempp
 {
 
 class EvaluationOptions;
-template <typename ArgumentType, typename ResultType> class GridFunction;
+template <typename BasisFunctionType, typename ResultType> class GridFunction;
 template <typename ValueType> class InterpolatedFunction;
-template <typename ArgumentType, typename ResultType> class WeakFormAcaAssemblyHelper;
+template <typename BasisFunctionType, typename ResultType> class WeakFormAcaAssemblyHelper;
 
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 class ElementaryIntegralOperator :
-        public ElementaryLinearOperator<ArgumentType, ResultType>
+        public ElementaryLinearOperator<BasisFunctionType, ResultType>
 {
-    typedef ElementaryLinearOperator<ArgumentType, ResultType> Base;
+    typedef ElementaryLinearOperator<BasisFunctionType, ResultType> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
     typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
     typedef typename Base::LocalAssembler LocalAssembler;
     typedef Fiber::EvaluatorForIntegralOperators<ResultType> Evaluator;
 
-    ElementaryIntegralOperator(const Space<ArgumentType> &testSpace,
-                               const Space<ArgumentType> &trialSpace);
+    ElementaryIntegralOperator(const Space<BasisFunctionType> &testSpace,
+                               const Space<BasisFunctionType> &trialSpace);
 
     virtual int trialComponentCount() const {
         return kernel().domainDimension();
@@ -77,8 +77,8 @@ public:
             const LocalAssemblerFactory& assemblerFactory,
             const GeometryFactory& geometryFactory,
             const Fiber::RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Fiber::Basis<ArgumentType>*>& testBases,
-            const std::vector<const Fiber::Basis<ArgumentType>*>& trialBases,
+            const std::vector<const Fiber::Basis<BasisFunctionType>*>& testBases,
+            const std::vector<const Fiber::Basis<BasisFunctionType>*>& trialBases,
             const Fiber::OpenClHandler<CoordinateType, int>& openClHandler,
             bool cacheSingularIntegrals) const;
 
@@ -96,7 +96,7 @@ public:
     // a superposition of elementary linear operators (defined at points
     // off surface). Then the virtual attribute here would be useful.
     virtual std::auto_ptr<InterpolatedFunction<ResultType> > applyOffSurface(
-            const GridFunction<ArgumentType, ResultType>& argument,
+            const GridFunction<BasisFunctionType, ResultType>& argument,
             const Grid& evaluationGrid,
             const LocalAssemblerFactory& factory,
             const EvaluationOptions& options) const;
@@ -105,8 +105,8 @@ public:
 
 private:
     virtual const Fiber::Kernel<ResultType>& kernel() const = 0;
-    virtual const Fiber::Expression<ArgumentType>& testExpression() const = 0;
-    virtual const Fiber::Expression<ArgumentType>& trialExpression() const = 0;
+    virtual const Fiber::Expression<BasisFunctionType>& testExpression() const = 0;
+    virtual const Fiber::Expression<BasisFunctionType>& trialExpression() const = 0;
 
     /** @}
         \name Weak form assembly

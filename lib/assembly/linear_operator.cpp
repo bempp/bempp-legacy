@@ -28,46 +28,46 @@
 namespace Bempp
 {
 
-template <typename ArgumentType, typename ResultType>
-LinearOperator<ArgumentType, ResultType>::
-LinearOperator(const Space<ArgumentType>& testSpace,
-               const Space<ArgumentType>& trialSpace) :
+template <typename BasisFunctionType, typename ResultType>
+LinearOperator<BasisFunctionType, ResultType>::
+LinearOperator(const Space<BasisFunctionType>& testSpace,
+               const Space<BasisFunctionType>& trialSpace) :
     m_testSpace(testSpace), m_trialSpace(trialSpace)
 {
 }
 
-template <typename ArgumentType, typename ResultType>
-LinearOperator<ArgumentType, ResultType>::LinearOperator(
-        const LinearOperator<ArgumentType, ResultType>& other) :
+template <typename BasisFunctionType, typename ResultType>
+LinearOperator<BasisFunctionType, ResultType>::LinearOperator(
+        const LinearOperator<BasisFunctionType, ResultType>& other) :
     m_testSpace(other.m_testSpace), m_trialSpace(other.m_trialSpace),
     m_localOperators(other.m_localOperators), m_multipliers(other.m_multipliers)
 {
 }
 
-template <typename ArgumentType, typename ResultType>
-LinearOperator<ArgumentType, ResultType>::~LinearOperator()
+template <typename BasisFunctionType, typename ResultType>
+LinearOperator<BasisFunctionType, ResultType>::~LinearOperator()
 {
 }
 
-template <typename ArgumentType, typename ResultType>
-void LinearOperator<ArgumentType, ResultType>::assemble(
+template <typename BasisFunctionType, typename ResultType>
+void LinearOperator<BasisFunctionType, ResultType>::assemble(
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options)
 {
     m_discreteOperator = this->assembleWeakForm(factory, options);
 }
 
-template <typename ArgumentType, typename ResultType>
-bool LinearOperator<ArgumentType, ResultType>::isAssembled() const
+template <typename BasisFunctionType, typename ResultType>
+bool LinearOperator<BasisFunctionType, ResultType>::isAssembled() const
 {
     return m_discreteOperator.get() != NULL;
 }
 
-template <typename ArgumentType, typename ResultType>
-void LinearOperator<ArgumentType, ResultType>::apply(
+template <typename BasisFunctionType, typename ResultType>
+void LinearOperator<BasisFunctionType, ResultType>::apply(
         const TranspositionMode trans,
-        const GridFunction<ArgumentType, ResultType>& x_in,
-        GridFunction<ArgumentType, ResultType>& y_inout,
+        const GridFunction<BasisFunctionType, ResultType>& x_in,
+        GridFunction<BasisFunctionType, ResultType>& y_inout,
         ResultType alpha, ResultType beta) const
 {
     if (!this->isAssembled())
@@ -92,9 +92,9 @@ void LinearOperator<ArgumentType, ResultType>::apply(
     y_inout.setCoefficients(Vector<ResultType>(yVals));
 }
 
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 const DiscreteLinearOperator<ResultType>&
-LinearOperator<ArgumentType, ResultType>::assembledDiscreteLinearOperator() const
+LinearOperator<BasisFunctionType, ResultType>::assembledDiscreteLinearOperator() const
 {
     if (!isAssembled())
         throw std::runtime_error("LinearOperator::assembledDiscreteLinearOperator(): "
@@ -102,34 +102,34 @@ LinearOperator<ArgumentType, ResultType>::assembledDiscreteLinearOperator() cons
     return *m_discreteOperator;
 }
 
-template <typename ArgumentType, typename ResultType>
-const std::vector<ElementaryLinearOperator<ArgumentType, ResultType> const*>&
-LinearOperator<ArgumentType, ResultType>::localOperators() const
+template <typename BasisFunctionType, typename ResultType>
+const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>&
+LinearOperator<BasisFunctionType, ResultType>::localOperators() const
 {
     return m_localOperators;
 }
 
-template <typename ArgumentType, typename ResultType>
-const std::vector<ResultType>& LinearOperator<ArgumentType, ResultType>::multipliers() const
+template <typename BasisFunctionType, typename ResultType>
+const std::vector<ResultType>& LinearOperator<BasisFunctionType, ResultType>::multipliers() const
 {
     return m_multipliers;
 }
 
-template <typename ArgumentType, typename ResultType>
-const Space<ArgumentType>& LinearOperator<ArgumentType, ResultType>::testSpace() const
+template <typename BasisFunctionType, typename ResultType>
+const Space<BasisFunctionType>& LinearOperator<BasisFunctionType, ResultType>::testSpace() const
 {
     return m_testSpace;
 }
 
-template <typename ArgumentType, typename ResultType>
-const Space<ArgumentType>& LinearOperator<ArgumentType, ResultType>::trialSpace() const
+template <typename BasisFunctionType, typename ResultType>
+const Space<BasisFunctionType>& LinearOperator<BasisFunctionType, ResultType>::trialSpace() const
 {
     return m_trialSpace;
 }
 
-template <typename ArgumentType, typename ResultType>
-void LinearOperator<ArgumentType, ResultType>::addLocalOperatorsAndMultipliers(
-        const std::vector<ElementaryLinearOperator<ArgumentType, ResultType> const*>&
+template <typename BasisFunctionType, typename ResultType>
+void LinearOperator<BasisFunctionType, ResultType>::addLocalOperatorsAndMultipliers(
+        const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>&
         localOperators,
         const std::vector<ResultType>& multipliers)
 {
@@ -139,57 +139,57 @@ void LinearOperator<ArgumentType, ResultType>::addLocalOperatorsAndMultipliers(
                          multipliers.begin(), multipliers.end());
 }
 
-template <typename ArgumentType, typename ResultType>
-LinearOperatorSuperposition<ArgumentType, ResultType> operator+(
-        const LinearOperator<ArgumentType, ResultType>& op1,
-        const LinearOperator<ArgumentType, ResultType>& op2)
+template <typename BasisFunctionType, typename ResultType>
+LinearOperatorSuperposition<BasisFunctionType, ResultType> operator+(
+        const LinearOperator<BasisFunctionType, ResultType>& op1,
+        const LinearOperator<BasisFunctionType, ResultType>& op2)
 {
-    return LinearOperatorSuperposition<ArgumentType, ResultType>(op1, op2);
+    return LinearOperatorSuperposition<BasisFunctionType, ResultType>(op1, op2);
 }
 
-template <typename ArgumentType, typename ResultType>
-LinearOperatorSuperposition<ArgumentType, ResultType> operator-(
-        const LinearOperator<ArgumentType, ResultType>& op1,
-        const LinearOperator<ArgumentType, ResultType>& op2)
+template <typename BasisFunctionType, typename ResultType>
+LinearOperatorSuperposition<BasisFunctionType, ResultType> operator-(
+        const LinearOperator<BasisFunctionType, ResultType>& op1,
+        const LinearOperator<BasisFunctionType, ResultType>& op2)
 {
     return op1 + (static_cast<ResultType>(-1.) * op2);
 }
 
-template <typename ArgumentType, typename ResultType, typename ScalarType>
-LinearOperatorSuperposition<ArgumentType, ResultType> operator*(
-        const LinearOperator<ArgumentType, ResultType>& op, const ScalarType& scalar)
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+LinearOperatorSuperposition<BasisFunctionType, ResultType> operator*(
+        const LinearOperator<BasisFunctionType, ResultType>& op, const ScalarType& scalar)
 {
-    return LinearOperatorSuperposition<ArgumentType, ResultType>(op, scalar);
+    return LinearOperatorSuperposition<BasisFunctionType, ResultType>(op, scalar);
 }
 
-template <typename ArgumentType, typename ResultType, typename ScalarType>
-LinearOperatorSuperposition<ArgumentType, ResultType> operator*(
-        const ScalarType& scalar, const LinearOperator<ArgumentType, ResultType>& op)
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+LinearOperatorSuperposition<BasisFunctionType, ResultType> operator*(
+        const ScalarType& scalar, const LinearOperator<BasisFunctionType, ResultType>& op)
 {
-    return LinearOperatorSuperposition<ArgumentType, ResultType>(op, scalar);
+    return LinearOperatorSuperposition<BasisFunctionType, ResultType>(op, scalar);
 }
 
-template <typename ArgumentType, typename ResultType, typename ScalarType>
-LinearOperatorSuperposition<ArgumentType, ResultType> operator/(
-        const LinearOperator<ArgumentType, ResultType>& op, const ScalarType& scalar)
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+LinearOperatorSuperposition<BasisFunctionType, ResultType> operator/(
+        const LinearOperator<BasisFunctionType, ResultType>& op, const ScalarType& scalar)
 {
     if (scalar == 0.)
         throw std::runtime_error("LinearOperatorSuperposition::operator/(): "
                                  "Division by zero");
 
-    return LinearOperatorSuperposition<ArgumentType, ResultType>(
+    return LinearOperatorSuperposition<BasisFunctionType, ResultType>(
                 op, static_cast<ResultType>(1.) / scalar);
 }
 
-template <typename ArgumentType, typename ResultType>
-GridFunction<ArgumentType, ResultType> operator*(
-        const LinearOperator<ArgumentType, ResultType>& op,
-        const GridFunction<ArgumentType, ResultType>& fun)
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType> operator*(
+        const LinearOperator<BasisFunctionType, ResultType>& op,
+        const GridFunction<BasisFunctionType, ResultType>& fun)
 {
-    const Space<ArgumentType>& space = op.testSpace();
+    const Space<BasisFunctionType>& space = op.testSpace();
     arma::Col<ResultType> coeffs(space.globalDofCount());
     coeffs.fill(0.);
-    GridFunction<ArgumentType, ResultType> result(space, coeffs);
+    GridFunction<BasisFunctionType, ResultType> result(space, coeffs);
     op.apply(NO_TRANSPOSE, fun, result, 1., 0.);
     return result;
 }

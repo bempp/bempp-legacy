@@ -35,17 +35,17 @@ template <typename ResultType> class LocalAssemblerForOperators;
 namespace Bempp
 {
 
-template <typename ArgumentType, typename ResultType>
-class IdentityOperator : public ElementaryLinearOperator<ArgumentType, ResultType>
+template <typename BasisFunctionType, typename ResultType>
+class IdentityOperator : public ElementaryLinearOperator<BasisFunctionType, ResultType>
 {
-    typedef ElementaryLinearOperator<ArgumentType, ResultType> Base;
+    typedef ElementaryLinearOperator<BasisFunctionType, ResultType> Base;
 public:
     typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
     typedef typename Base::LocalAssembler LocalAssembler;
     typedef typename Base::CoordinateType CoordinateType;
 
-    IdentityOperator(const Space<ArgumentType>& testSpace,
-                     const Space<ArgumentType>& trialSpace);
+    IdentityOperator(const Space<BasisFunctionType>& testSpace,
+                     const Space<BasisFunctionType>& trialSpace);
 
     virtual int trialComponentCount() const { return 1; }
 
@@ -57,8 +57,8 @@ public:
             const LocalAssemblerFactory& assemblerFactory,
             const GeometryFactory& geometryFactory,
             const Fiber::RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Fiber::Basis<ArgumentType>*>& testBases,
-            const std::vector<const Fiber::Basis<ArgumentType>*>& trialBases,
+            const std::vector<const Fiber::Basis<BasisFunctionType>*>& testBases,
+            const std::vector<const Fiber::Basis<BasisFunctionType>*>& trialBases,
             const Fiber::OpenClHandler<CoordinateType, int>& openClHandler,
             bool cacheSingularIntegrals) const;
 
@@ -84,7 +84,7 @@ private:
             const AssemblyOptions& options) const;
 
 private:
-    Fiber::ScalarFunctionValue<ArgumentType> m_expression;
+    Fiber::ScalarFunctionValue<BasisFunctionType> m_expression;
 };
 
 } // namespace Bempp

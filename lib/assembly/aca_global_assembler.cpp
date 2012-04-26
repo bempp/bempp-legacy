@@ -57,7 +57,7 @@ namespace
 {
 
 #ifdef WITH_AHMED
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 class AcaWeakFormAssemblerLoopBody
 {
     typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
@@ -67,7 +67,7 @@ class AcaWeakFormAssemblerLoopBody
 
 public:
     AcaWeakFormAssemblerLoopBody(
-            WeakFormAcaAssemblyHelper<ArgumentType, ResultType>& helper,
+            WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>& helper,
             AhmedLeafClusterArray& leafClusters,
             boost::shared_array<AhmedMblock*> blocks,
             const AcaOptions& options,
@@ -93,7 +93,7 @@ public:
     }
 
 private:
-    mutable WeakFormAcaAssemblyHelper<ArgumentType, ResultType>& m_helper;
+    mutable WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>& m_helper;
     size_t m_leafClusterCount;
     AhmedLeafClusterArray& m_leafClusters;
     boost::shared_array<AhmedMblock*> m_blocks;
@@ -104,11 +104,11 @@ private:
 
 } // namespace
 
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-AcaGlobalAssembler<ArgumentType, ResultType>::assembleWeakForm(
-        const Space<ArgumentType>& testSpace,
-        const Space<ArgumentType>& trialSpace,
+AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
+        const Space<BasisFunctionType>& testSpace,
+        const Space<BasisFunctionType>& trialSpace,
         const std::vector<LocalAssembler*>& localAssemblers,
         const std::vector<const DiscreteLinOp*>& sparseTermsToAdd,
         const std::vector<ResultType>& denseTermsMultipliers,
@@ -194,7 +194,7 @@ AcaGlobalAssembler<ArgumentType, ResultType>::assembleWeakForm(
 
     std::auto_ptr<DiscreteLinOp> result;
 
-    WeakFormAcaAssemblyHelper<ArgumentType, ResultType>
+    WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>
             helper(testSpace, trialSpace, p2oTestDofs, p2oTrialDofs,
                    localAssemblers, sparseTermsToAdd,
                    denseTermsMultipliers,sparseTermsMultipliers,options);
@@ -225,7 +225,7 @@ AcaGlobalAssembler<ArgumentType, ResultType>::assembleWeakForm(
 //    tbb::atomic<size_t> done;
 //    done = 0;
 
-//    typedef AcaWeakFormAssemblerLoopBody<ArgumentType, ResultType> Body;
+//    typedef AcaWeakFormAssemblerLoopBody<BasisFunctionType, ResultType> Body;
 //    tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
 //                      Body(helper, leafClusters, blocks, acaOptions, done));
 
@@ -259,11 +259,11 @@ AcaGlobalAssembler<ArgumentType, ResultType>::assembleWeakForm(
 #endif
 }
 
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-AcaGlobalAssembler<ArgumentType, ResultType>::assembleWeakForm(
-        const Space<ArgumentType>& testSpace,
-        const Space<ArgumentType>& trialSpace,
+AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
+        const Space<BasisFunctionType>& testSpace,
+        const Space<BasisFunctionType>& trialSpace,
         LocalAssembler& localAssembler,
         const AssemblyOptions& options)
 {

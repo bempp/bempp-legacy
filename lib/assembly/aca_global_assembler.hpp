@@ -41,7 +41,7 @@ class AssemblyOptions;
 template <typename ValueType> class DiscreteLinearOperator;
 template <typename ValueType> class Space;
 
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 class AcaGlobalAssembler
 {
     typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
@@ -51,8 +51,8 @@ public:
     typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
 
     static std::auto_ptr<DiscreteLinOp> assembleWeakForm(
-            const Space<ArgumentType>& testSpace,
-            const Space<ArgumentType>& trialSpace,
+            const Space<BasisFunctionType>& testSpace,
+            const Space<BasisFunctionType>& trialSpace,
             const std::vector<LocalAssembler*>& localAssemblers,
             const std::vector<const DiscreteLinOp*>& sparseTermsToAdd,
             const std::vector<ResultType>& denseTermsMultipliers,
@@ -60,8 +60,8 @@ public:
             const AssemblyOptions& options);
 
     static std::auto_ptr<DiscreteLinOp> assembleWeakForm(
-            const Space<ArgumentType>& testSpace,
-            const Space<ArgumentType>& trialSpace,
+            const Space<BasisFunctionType>& testSpace,
+            const Space<BasisFunctionType>& trialSpace,
             LocalAssembler& localAssembler,
             const AssemblyOptions& options);
 };

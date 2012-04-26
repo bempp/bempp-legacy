@@ -135,15 +135,15 @@ inline int epetraSumIntoGlobalValues<std::complex<double> >(
 } // anonymous namespace
 #endif
 
-template <typename ArgumentType, typename ResultType>
-IdentityOperator<ArgumentType, ResultType>::IdentityOperator(
-        const Space<ArgumentType>& testSpace,
-        const Space<ArgumentType>& trialSpace) :
-    ElementaryLinearOperator<ArgumentType, ResultType>(testSpace, trialSpace) {
+template <typename BasisFunctionType, typename ResultType>
+IdentityOperator<BasisFunctionType, ResultType>::IdentityOperator(
+        const Space<BasisFunctionType>& testSpace,
+        const Space<BasisFunctionType>& trialSpace) :
+    ElementaryLinearOperator<BasisFunctionType, ResultType>(testSpace, trialSpace) {
 }
 
-template <typename ArgumentType, typename ResultType>
-bool IdentityOperator<ArgumentType, ResultType>::supportsRepresentation(
+template <typename BasisFunctionType, typename ResultType>
+bool IdentityOperator<BasisFunctionType, ResultType>::supportsRepresentation(
         AssemblyOptions::Representation repr) const
 {
     return (repr == AssemblyOptions::DENSE ||
@@ -151,15 +151,15 @@ bool IdentityOperator<ArgumentType, ResultType>::supportsRepresentation(
             repr == AssemblyOptions::ACA);
 }
 
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-IdentityOperator<ArgumentType, ResultType>::assembleWeakForm(
-        const typename IdentityOperator<ArgumentType, ResultType>::LocalAssemblerFactory& factory,
+IdentityOperator<BasisFunctionType, ResultType>::assembleWeakForm(
+        const typename IdentityOperator<BasisFunctionType, ResultType>::LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
 
-    const Space<ArgumentType>& testSpace = this->testSpace();
-    const Space<ArgumentType>& trialSpace = this->trialSpace();
+    const Space<BasisFunctionType>& testSpace = this->testSpace();
+    const Space<BasisFunctionType>& trialSpace = this->trialSpace();
 
     if (!testSpace.dofsAssigned() || !trialSpace.dofsAssigned())
         throw std::runtime_error("IdentityOperator::assembleWeakForm(): "
@@ -187,8 +187,8 @@ IdentityOperator<ArgumentType, ResultType>::assembleWeakForm(
             testSpace.grid().elementGeometryFactory();
 
     // Get pointers to test and trial bases of each element
-    std::vector<const Fiber::Basis<ArgumentType>*> testBases;
-    std::vector<const Fiber::Basis<ArgumentType>*> trialBases;
+    std::vector<const Fiber::Basis<BasisFunctionType>*> testBases;
+    std::vector<const Fiber::Basis<BasisFunctionType>*> trialBases;
     testBases.reserve(elementCount);
     trialBases.reserve(elementCount);
 
@@ -217,9 +217,9 @@ IdentityOperator<ArgumentType, ResultType>::assembleWeakForm(
     return assembleWeakFormInternal(*assembler, options);
 }
 
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-IdentityOperator<ArgumentType, ResultType>::assembleWeakFormInternal(
+IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInternal(
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
@@ -235,15 +235,15 @@ IdentityOperator<ArgumentType, ResultType>::assembleWeakFormInternal(
     }
 }
 
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-IdentityOperator<ArgumentType, ResultType>::assembleWeakFormInDenseMode(
-        typename IdentityOperator<ArgumentType, ResultType>::LocalAssembler& assembler,
+IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInDenseMode(
+        typename IdentityOperator<BasisFunctionType, ResultType>::LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
 
-    const Space<ArgumentType>& testSpace = this->testSpace();
-    const Space<ArgumentType>& trialSpace = this->trialSpace();
+    const Space<BasisFunctionType>& testSpace = this->testSpace();
+    const Space<BasisFunctionType>& trialSpace = this->trialSpace();
 
     // Fill local submatrices
     std::auto_ptr<GridView> view = testSpace.grid().leafView();
@@ -286,15 +286,15 @@ IdentityOperator<ArgumentType, ResultType>::assembleWeakFormInDenseMode(
                 new DiscreteDenseLinearOperator<ResultType>(result));
 }
 
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-IdentityOperator<ArgumentType, ResultType>::assembleWeakFormInSparseMode(
-        typename IdentityOperator<ArgumentType, ResultType>::LocalAssembler& assembler,
+IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparseMode(
+        typename IdentityOperator<BasisFunctionType, ResultType>::LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
 #ifdef WITH_TRILINOS
-    const Space<ArgumentType>& testSpace = this->testSpace();
-    const Space<ArgumentType>& trialSpace = this->trialSpace();
+    const Space<BasisFunctionType>& testSpace = this->testSpace();
+    const Space<BasisFunctionType>& trialSpace = this->trialSpace();
 
     // Fill local submatrices
     std::auto_ptr<GridView> view = testSpace.grid().leafView();
@@ -382,14 +382,14 @@ IdentityOperator<ArgumentType, ResultType>::assembleWeakFormInSparseMode(
 #endif
 }
 
-template <typename ArgumentType, typename ResultType>
-std::auto_ptr<typename IdentityOperator<ArgumentType, ResultType>::LocalAssembler>
-IdentityOperator<ArgumentType, ResultType>::makeAssembler(
+template <typename BasisFunctionType, typename ResultType>
+std::auto_ptr<typename IdentityOperator<BasisFunctionType, ResultType>::LocalAssembler>
+IdentityOperator<BasisFunctionType, ResultType>::makeAssembler(
         const LocalAssemblerFactory& assemblerFactory,
         const GeometryFactory& geometryFactory,
         const Fiber::RawGridGeometry<CoordinateType>& rawGeometry,
-        const std::vector<const Fiber::Basis<ArgumentType>*>& testBases,
-        const std::vector<const Fiber::Basis<ArgumentType>*>& trialBases,
+        const std::vector<const Fiber::Basis<BasisFunctionType>*>& testBases,
+        const std::vector<const Fiber::Basis<BasisFunctionType>*>& trialBases,
         const Fiber::OpenClHandler<CoordinateType, int>& openClHandler,
         bool /* cacheSingularIntegrals */) const
 {

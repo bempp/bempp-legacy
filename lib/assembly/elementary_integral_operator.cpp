@@ -62,7 +62,7 @@ namespace Bempp
 namespace
 {
 
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 class DenseWeakFormAssemblerLoopBody
 {
 public:
@@ -72,7 +72,7 @@ public:
             const std::vector<int>& testIndices,
             const std::vector<std::vector<GlobalDofIndex> >& testGlobalDofs,
             const std::vector<std::vector<GlobalDofIndex> >& trialGlobalDofs,
-            typename ElementaryIntegralOperator<ArgumentType, ResultType>::LocalAssembler& assembler,
+            typename ElementaryIntegralOperator<BasisFunctionType, ResultType>::LocalAssembler& assembler,
             arma::Mat<ResultType>& result, MutexType& mutex) :
         m_testIndices(testIndices),
         m_testGlobalDofs(testGlobalDofs), m_trialGlobalDofs(trialGlobalDofs),
@@ -112,7 +112,7 @@ private:
     const std::vector<std::vector<GlobalDofIndex> >& m_testGlobalDofs;
     // mutable OK because Assembler is thread-safe. (Alternative to "mutable" here:
     // make assembler's internal integrator map mutable)
-    mutable typename ElementaryIntegralOperator<ArgumentType, ResultType>::
+    mutable typename ElementaryIntegralOperator<BasisFunctionType, ResultType>::
         LocalAssembler& m_assembler;
     // mutable OK because write access to this matrix is protected by a mutex
     mutable arma::Mat<ResultType>& m_result;
@@ -123,29 +123,29 @@ private:
 
 } // namespace
 
-template <typename ArgumentType, typename ResultType>
-ElementaryIntegralOperator<ArgumentType, ResultType>::ElementaryIntegralOperator(
-        const Space<ArgumentType>& testSpace,
-        const Space<ArgumentType>& trialSpace) :
-    ElementaryLinearOperator<ArgumentType, ResultType>(testSpace, trialSpace)
+template <typename BasisFunctionType, typename ResultType>
+ElementaryIntegralOperator<BasisFunctionType, ResultType>::ElementaryIntegralOperator(
+        const Space<BasisFunctionType>& testSpace,
+        const Space<BasisFunctionType>& trialSpace) :
+    ElementaryLinearOperator<BasisFunctionType, ResultType>(testSpace, trialSpace)
 {
 }
 
-template <typename ArgumentType, typename ResultType>
-bool ElementaryIntegralOperator<ArgumentType, ResultType>::supportsRepresentation(
+template <typename BasisFunctionType, typename ResultType>
+bool ElementaryIntegralOperator<BasisFunctionType, ResultType>::supportsRepresentation(
         AssemblyOptions::Representation repr) const
 {
     return (repr == AssemblyOptions::DENSE || repr == AssemblyOptions::ACA);
 }
 
-template <typename ArgumentType, typename ResultType>
-std::auto_ptr<typename ElementaryIntegralOperator<ArgumentType, ResultType>::LocalAssembler>
-ElementaryIntegralOperator<ArgumentType, ResultType>::makeAssembler(
+template <typename BasisFunctionType, typename ResultType>
+std::auto_ptr<typename ElementaryIntegralOperator<BasisFunctionType, ResultType>::LocalAssembler>
+ElementaryIntegralOperator<BasisFunctionType, ResultType>::makeAssembler(
         const LocalAssemblerFactory& assemblerFactory,
         const GeometryFactory& geometryFactory,
         const Fiber::RawGridGeometry<CoordinateType>& rawGeometry,
-        const std::vector<const Fiber::Basis<ArgumentType>*>& testBases,
-        const std::vector<const Fiber::Basis<ArgumentType>*>& trialBases,
+        const std::vector<const Fiber::Basis<BasisFunctionType>*>& testBases,
+        const std::vector<const Fiber::Basis<BasisFunctionType>*>& trialBases,
         const Fiber::OpenClHandler<CoordinateType, int>& openClHandler,
         bool cacheSingularIntegrals) const
 {
@@ -155,16 +155,16 @@ ElementaryIntegralOperator<ArgumentType, ResultType>::makeAssembler(
                                  openClHandler, cacheSingularIntegrals);
 }
 
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-ElementaryIntegralOperator<ArgumentType, ResultType>::assembleWeakForm(
+ElementaryIntegralOperator<BasisFunctionType, ResultType>::assembleWeakForm(
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
     AutoTimer timer("\nAssembly took ");
 
-    const Space<ArgumentType>& testSpace = this->testSpace();
-    const Space<ArgumentType>& trialSpace = this->trialSpace();
+    const Space<BasisFunctionType>& testSpace = this->testSpace();
+    const Space<BasisFunctionType>& trialSpace = this->trialSpace();
 
     if (!testSpace.dofsAssigned() || !trialSpace.dofsAssigned())
         throw std::runtime_error("ElementaryIntegralOperator::assembleWeakForm(): "
@@ -192,8 +192,8 @@ ElementaryIntegralOperator<ArgumentType, ResultType>::assembleWeakForm(
             trialSpace.grid().elementGeometryFactory();
 
     // Get pointers to test and trial bases of each element
-    std::vector<const Fiber::Basis<ArgumentType>*> testBases;
-    std::vector<const Fiber::Basis<ArgumentType>*> trialBases;
+    std::vector<const Fiber::Basis<BasisFunctionType>*> testBases;
+    std::vector<const Fiber::Basis<BasisFunctionType>*> trialBases;
     testBases.reserve(elementCount);
     trialBases.reserve(elementCount);
 
@@ -223,9 +223,9 @@ ElementaryIntegralOperator<ArgumentType, ResultType>::assembleWeakForm(
     return assembleWeakFormInternal(*assembler, options);
 }
 
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-ElementaryIntegralOperator<ArgumentType, ResultType>::assembleWeakFormInternal(
+ElementaryIntegralOperator<BasisFunctionType, ResultType>::assembleWeakFormInternal(
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
@@ -244,14 +244,14 @@ ElementaryIntegralOperator<ArgumentType, ResultType>::assembleWeakFormInternal(
     }
 }
 
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-ElementaryIntegralOperator<ArgumentType, ResultType>::assembleWeakFormInDenseMode(
+ElementaryIntegralOperator<BasisFunctionType, ResultType>::assembleWeakFormInDenseMode(
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
-    const Space<ArgumentType>& testSpace = this->testSpace();
-    const Space<ArgumentType>& trialSpace = this->trialSpace();
+    const Space<BasisFunctionType>& testSpace = this->testSpace();
+    const Space<BasisFunctionType>& trialSpace = this->trialSpace();
 
     // Get the grid's leaf view so that we can iterate over elements
     std::auto_ptr<GridView> view = trialSpace.grid().leafView();
@@ -282,7 +282,7 @@ ElementaryIntegralOperator<ArgumentType, ResultType>::assembleWeakFormInDenseMod
                                 trialSpace.globalDofCount());
     result.fill(0.);
 
-    typedef DenseWeakFormAssemblerLoopBody<ArgumentType, ResultType> Body;
+    typedef DenseWeakFormAssemblerLoopBody<BasisFunctionType, ResultType> Body;
     typename Body::MutexType mutex;
 
     int maxThreadCount = 1;
@@ -323,29 +323,29 @@ ElementaryIntegralOperator<ArgumentType, ResultType>::assembleWeakFormInDenseMod
                 new DiscreteDenseLinearOperator<ResultType>(result));
 }
 
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-ElementaryIntegralOperator<ArgumentType, ResultType>::assembleWeakFormInAcaMode(
+ElementaryIntegralOperator<BasisFunctionType, ResultType>::assembleWeakFormInAcaMode(
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
-    const Space<ArgumentType>& testSpace=this->testSpace();
-    const Space<ArgumentType>& trialSpace=this->trialSpace();
+    const Space<BasisFunctionType>& testSpace=this->testSpace();
+    const Space<BasisFunctionType>& trialSpace=this->trialSpace();
 
-    return AcaGlobalAssembler<ArgumentType, ResultType>::assembleWeakForm(
+    return AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
                 testSpace, trialSpace, assembler, options);
 }
 
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<InterpolatedFunction<ResultType> >
-ElementaryIntegralOperator<ArgumentType, ResultType>::applyOffSurface(
-        const GridFunction<ArgumentType, ResultType>& argument,
+ElementaryIntegralOperator<BasisFunctionType, ResultType>::applyOffSurface(
+        const GridFunction<BasisFunctionType, ResultType>& argument,
         const Grid& evaluationGrid,
         const LocalAssemblerFactory& factory,
         const EvaluationOptions& options) const
 {
     // Prepare evaluator
-    const Space<ArgumentType>& space = argument.space();
+    const Space<BasisFunctionType>& space = argument.space();
     const Grid& grid = space.grid();
     std::auto_ptr<GridView> view = grid.leafView();
     const int elementCount = view->entityCount(0);
@@ -362,7 +362,7 @@ ElementaryIntegralOperator<ArgumentType, ResultType>::applyOffSurface(
 
     // Get pointer to argument's basis in each element
     // and coefficients of argument's expansion in each element
-    std::vector<const Fiber::Basis<ArgumentType>*> bases(elementCount);
+    std::vector<const Fiber::Basis<BasisFunctionType>*> bases(elementCount);
     std::vector<std::vector<ResultType> > localCoefficients(elementCount);
 
     std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
@@ -392,9 +392,9 @@ ElementaryIntegralOperator<ArgumentType, ResultType>::applyOffSurface(
     return applyOffSurfaceWithKnownEvaluator(evaluationGrid, *evaluator, options);
 }
 
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<InterpolatedFunction<ResultType> >
-ElementaryIntegralOperator<ArgumentType, ResultType>::applyOffSurfaceWithKnownEvaluator(
+ElementaryIntegralOperator<BasisFunctionType, ResultType>::applyOffSurfaceWithKnownEvaluator(
         const Grid& evaluationGrid,
         const Evaluator& evaluator,
         const EvaluationOptions& options) const

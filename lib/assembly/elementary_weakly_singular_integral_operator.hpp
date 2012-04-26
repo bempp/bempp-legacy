@@ -26,16 +26,16 @@
 namespace Bempp
 {
 
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 class ElementaryWeaklySingularIntegralOperator :
-        public ElementaryIntegralOperator<ArgumentType, ResultType>
+        public ElementaryIntegralOperator<BasisFunctionType, ResultType>
 {
 public:
 
     ElementaryWeaklySingularIntegralOperator(
-            const Space<ArgumentType>& testSpace,
-            const Space<ArgumentType>& trialSpace) :
-        ElementaryIntegralOperator<ArgumentType, ResultType>(testSpace, trialSpace) {
+            const Space<BasisFunctionType>& testSpace,
+            const Space<BasisFunctionType>& trialSpace) :
+        ElementaryIntegralOperator<BasisFunctionType, ResultType>(testSpace, trialSpace) {
     }
 
     virtual bool isRegular() const {

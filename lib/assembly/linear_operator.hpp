@@ -51,8 +51,8 @@ namespace Bempp
 class Grid;
 class GeometryFactory;
 template <typename ValueType> class DiscreteLinearOperator;
-template <typename ArgumentType, typename ResultType> class ElementaryLinearOperator;
-template <typename ArgumentType, typename ResultType> class LinearOperatorSuperposition;
+template <typename BasisFunctionType, typename ResultType> class ElementaryLinearOperator;
+template <typename BasisFunctionType, typename ResultType> class LinearOperatorSuperposition;
 
 
 /** \brief "Formal" linear operator.
@@ -75,18 +75,18 @@ template <typename ArgumentType, typename ResultType> class LinearOperatorSuperp
                          one of: float, double, std::complex<float> and
                          std::complex<double>.
 */
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 class LinearOperator
 {
 public:
-    typedef Fiber::LocalAssemblerFactory<ArgumentType, ResultType, GeometryFactory>
+    typedef Fiber::LocalAssemblerFactory<BasisFunctionType, ResultType, GeometryFactory>
     LocalAssemblerFactory;
     typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
 
-    LinearOperator(const Space<ArgumentType>& testSpace,
-                   const Space<ArgumentType>& trialSpace);
+    LinearOperator(const Space<BasisFunctionType>& testSpace,
+                   const Space<BasisFunctionType>& trialSpace);
 
-    LinearOperator(const LinearOperator<ArgumentType, ResultType>& other);
+    LinearOperator(const LinearOperator<BasisFunctionType, ResultType>& other);
 
     virtual ~LinearOperator();
 
@@ -100,8 +100,8 @@ public:
     /** \brief Set y_inout := alpha * A * x_in + beta * y_inout, where A is
       this operator. */
     void apply(const TranspositionMode trans,
-               const GridFunction<ArgumentType, ResultType>& x_in,
-               GridFunction<ArgumentType, ResultType>& y_inout,
+               const GridFunction<BasisFunctionType, ResultType>& x_in,
+               GridFunction<BasisFunctionType, ResultType>& y_inout,
                ResultType alpha, ResultType beta) const;
 
     /** \brief Return reference to \p DiscreteLinearOperator. */
@@ -146,59 +146,59 @@ public:
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const = 0;
 
-    const std::vector<ElementaryLinearOperator<ArgumentType, ResultType> const* >&
+    const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const* >&
     localOperators() const;
 
     const std::vector<ResultType>& multipliers() const;
 
-    const Space<ArgumentType>& testSpace() const;
-    const Space<ArgumentType>& trialSpace() const;
+    const Space<BasisFunctionType>& testSpace() const;
+    const Space<BasisFunctionType>& trialSpace() const;
 
 protected:
     void addLocalOperatorsAndMultipliers(
-            const std::vector<ElementaryLinearOperator<ArgumentType, ResultType> const*>&
+            const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>&
             localOperators,
             const std::vector<ResultType>& multipliers);
 
 private:
-    std::vector<ElementaryLinearOperator<ArgumentType, ResultType> const*>
+    std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>
     m_localOperators;
     std::vector<ResultType> m_multipliers;
 
-    const Space<ArgumentType>& m_testSpace;
-    const Space<ArgumentType>& m_trialSpace;
+    const Space<BasisFunctionType>& m_testSpace;
+    const Space<BasisFunctionType>& m_trialSpace;
 
     std::auto_ptr<const DiscreteLinearOperator<ResultType> > m_discreteOperator;
 };
 
 // Operator overloading
 
-template <typename ArgumentType, typename ResultType>
-LinearOperatorSuperposition<ArgumentType, ResultType> operator+(
-        const LinearOperator<ArgumentType, ResultType>& op1,
-        const LinearOperator<ArgumentType, ResultType>& op2);
+template <typename BasisFunctionType, typename ResultType>
+LinearOperatorSuperposition<BasisFunctionType, ResultType> operator+(
+        const LinearOperator<BasisFunctionType, ResultType>& op1,
+        const LinearOperator<BasisFunctionType, ResultType>& op2);
 
-template <typename ArgumentType, typename ResultType>
-LinearOperatorSuperposition<ArgumentType, ResultType> operator-(
-        const LinearOperator<ArgumentType, ResultType>& op1,
-        const LinearOperator<ArgumentType, ResultType>& op2);
+template <typename BasisFunctionType, typename ResultType>
+LinearOperatorSuperposition<BasisFunctionType, ResultType> operator-(
+        const LinearOperator<BasisFunctionType, ResultType>& op1,
+        const LinearOperator<BasisFunctionType, ResultType>& op2);
 
-template <typename ArgumentType, typename ResultType, typename ScalarType>
-LinearOperatorSuperposition<ArgumentType, ResultType> operator*(
-        const LinearOperator<ArgumentType, ResultType>& op, const ScalarType& scalar);
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+LinearOperatorSuperposition<BasisFunctionType, ResultType> operator*(
+        const LinearOperator<BasisFunctionType, ResultType>& op, const ScalarType& scalar);
 
-template <typename ArgumentType, typename ResultType, typename ScalarType>
-LinearOperatorSuperposition<ArgumentType, ResultType> operator*(
-        const ScalarType& scalar, const LinearOperator<ArgumentType, ResultType>& op);
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+LinearOperatorSuperposition<BasisFunctionType, ResultType> operator*(
+        const ScalarType& scalar, const LinearOperator<BasisFunctionType, ResultType>& op);
 
-template <typename ArgumentType, typename ResultType, typename ScalarType>
-LinearOperatorSuperposition<ArgumentType, ResultType> operator/(
-        const LinearOperator<ArgumentType, ResultType>& op, const ScalarType& scalar);
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+LinearOperatorSuperposition<BasisFunctionType, ResultType> operator/(
+        const LinearOperator<BasisFunctionType, ResultType>& op, const ScalarType& scalar);
 
-template <typename ArgumentType, typename ResultType>
-GridFunction<ArgumentType, ResultType> operator*(
-        const LinearOperator<ArgumentType, ResultType>& op,
-        const GridFunction<ArgumentType, ResultType>& fun);
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType> operator*(
+        const LinearOperator<BasisFunctionType, ResultType>& op,
+        const GridFunction<BasisFunctionType, ResultType>& fun);
 
 } // namespace Bempp
 

@@ -43,7 +43,7 @@ template <typename ResultType> class DiscreteLinearOperator;
 template <typename ValueType> class Space;
 
 /** \brief Class whose methods are called by Ahmed during assembly in the ACA mode. */
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 class WeakFormAcaAssemblyHelper
 {
 public:
@@ -52,8 +52,8 @@ public:
     typedef typename Fiber::ScalarTraits<ResultType>::RealType MagnitudeType;
     typedef typename AhmedTypeTraits<ResultType>::Type AhmedResultType;
 
-    WeakFormAcaAssemblyHelper(const Space<ArgumentType>& testSpace,
-                              const Space<ArgumentType>& trialSpace,
+    WeakFormAcaAssemblyHelper(const Space<BasisFunctionType>& testSpace,
+                              const Space<BasisFunctionType>& trialSpace,
                               const std::vector<unsigned int>& p2oTestDofs,
                               const std::vector<unsigned int>& p2oTrialDofs,
                               const std::vector<LocalAssembler*>& assemblers,
@@ -77,15 +77,15 @@ private:
     void findLocalDofs(int start,
                        int globalDofCount,
                        const std::vector<unsigned int>& p2o,
-                       const Space<ArgumentType>& space,
+                       const Space<BasisFunctionType>& space,
                        std::vector<GlobalDofIndex>& globalDofIndices,
                        std::vector<int>& elementIndices,
                        std::vector<std::vector<LocalDofIndex> >& localDofIndices,
                        std::vector<std::vector<int> >& arrayIndices) const;
 
 private:
-    const Space<ArgumentType>& m_testSpace;
-    const Space<ArgumentType>& m_trialSpace;
+    const Space<BasisFunctionType>& m_testSpace;
+    const Space<BasisFunctionType>& m_trialSpace;
     const std::vector<unsigned int>& m_p2oTestDofs;
     const std::vector<unsigned int>& m_p2oTrialDofs;
     const std::vector<LocalAssembler*>& m_assemblers;

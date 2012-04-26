@@ -32,7 +32,7 @@ namespace Bempp
 {
 
 class Grid;
-// template <typename ArgumentType, typename ResultType> class GridFunction;
+// template <typename BasisFunctionType, typename ResultType> class GridFunction;
 
 template <typename ValueType> class InterpolatedFunction;
 

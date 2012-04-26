@@ -32,31 +32,31 @@ namespace Bempp
 // weak form apparently can be integrated with methods devised
 // for weakly singular operators.
 // FIXME: maybe rename "weaklysingular" to "singular"
-template <typename ArgumentType, typename ResultType = ArgumentType>
+template <typename BasisFunctionType, typename ResultType = BasisFunctionType>
 class HypersingularOperator3D :
-        public ElementaryWeaklySingularIntegralOperator<ArgumentType, ResultType>
+        public ElementaryWeaklySingularIntegralOperator<BasisFunctionType, ResultType>
 {
 
 public:
-    HypersingularOperator3D(const Space<ArgumentType>& testSpace,
-                            const Space<ArgumentType>& trialSpace);
+    HypersingularOperator3D(const Space<BasisFunctionType>& testSpace,
+                            const Space<BasisFunctionType>& trialSpace);
 
 private:
     virtual const Fiber::Kernel<ResultType>& kernel() const {
         return m_kernel;
     }
 
-    virtual const Fiber::Expression<ArgumentType>& testExpression() const {
+    virtual const Fiber::Expression<BasisFunctionType>& testExpression() const {
         return m_expression;
     }
 
-    virtual const Fiber::Expression<ArgumentType>& trialExpression() const {
+    virtual const Fiber::Expression<BasisFunctionType>& trialExpression() const {
         return m_expression;
     }
 
 private:
     Fiber::SingleLayerPotential3DKernel<ResultType> m_kernel;
-    Fiber::SurfaceCurl3D<ArgumentType> m_expression;
+    Fiber::SurfaceCurl3D<BasisFunctionType> m_expression;
 };
 
 } // namespace Bempp

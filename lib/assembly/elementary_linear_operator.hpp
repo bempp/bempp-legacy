@@ -40,19 +40,19 @@ template <typename CoordinateType, typename IndexType> class OpenClHandler;
 namespace Bempp
 {
 
-template <typename ArgumentType, typename ResultType>
-class ElementaryLinearOperator : public LinearOperator<ArgumentType, ResultType>
+template <typename BasisFunctionType, typename ResultType>
+class ElementaryLinearOperator : public LinearOperator<BasisFunctionType, ResultType>
 {
-    typedef LinearOperator<ArgumentType, ResultType> Base;
+    typedef LinearOperator<BasisFunctionType, ResultType> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
     typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
     typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
 
-    ElementaryLinearOperator(const Space<ArgumentType>& testSpace,
-                             const Space<ArgumentType>& trialSpace) :
-        LinearOperator<ArgumentType, ResultType>(testSpace, trialSpace) {
-        std::vector<ElementaryLinearOperator<ArgumentType, ResultType> const*> v;
+    ElementaryLinearOperator(const Space<BasisFunctionType>& testSpace,
+                             const Space<BasisFunctionType>& trialSpace) :
+        LinearOperator<BasisFunctionType, ResultType>(testSpace, trialSpace) {
+        std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*> v;
         std::vector<ResultType> m;
         v.push_back(this);
         m.push_back(1.0);
@@ -65,8 +65,8 @@ public:
             const LocalAssemblerFactory& assemblerFactory,
             const GeometryFactory& geometryFactory,
             const Fiber::RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Fiber::Basis<ArgumentType>*>& testBases,
-            const std::vector<const Fiber::Basis<ArgumentType>*>& trialBases,
+            const std::vector<const Fiber::Basis<BasisFunctionType>*>& testBases,
+            const std::vector<const Fiber::Basis<BasisFunctionType>*>& trialBases,
             const Fiber::OpenClHandler<CoordinateType, int>& openClHandler,
             bool cacheSingularIntegrals) const = 0;
 

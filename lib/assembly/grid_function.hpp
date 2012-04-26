@@ -50,43 +50,43 @@ template <int codim> class Entity;
 template <typename ValueType> class Space;
 
 /** \brief Function defined on a grid. */
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 class GridFunction
 {
 public:
-    typedef Fiber::LocalAssemblerFactory<ArgumentType, ResultType, GeometryFactory>
+    typedef Fiber::LocalAssemblerFactory<BasisFunctionType, ResultType, GeometryFactory>
     LocalAssemblerFactory;
     typedef Fiber::LocalAssemblerForGridFunctions<ResultType> LocalAssembler;
     typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
 
     /** \brief Construct by evaluating the expansion coefficients of a global
       function in the provided function space. */
-    GridFunction(const Space<ArgumentType>& space,
+    GridFunction(const Space<BasisFunctionType>& space,
                  const Fiber::Function<ResultType>& function,
                  const LocalAssemblerFactory& factory,
                  const AssemblyOptions& assemblyOptions);
 
     /** \brief Construct from known expansion coefficients in the provided function space. */
-    GridFunction(const Space<ArgumentType>& space,
+    GridFunction(const Space<BasisFunctionType>& space,
                  const arma::Col<ResultType>& coefficients);
 
     /** \brief Construct from known expansion coefficients in the provided function space,
         represented as Vector<ValueType>. */
-    GridFunction(const Space<ArgumentType>& space,
+    GridFunction(const Space<BasisFunctionType>& space,
                  const Vector<ResultType>& coefficients);
 
     /** \brief Grid on which this function is defined. */
     const Grid& grid() const;
 
     /** \brief Space in which this function is expanded. */
-    const Space<ArgumentType>& space() const;
+    const Space<BasisFunctionType>& space() const;
 
     int codomainDimension() const;
 
     Vector<ResultType> coefficients() const;
     void setCoefficients(const Vector<ResultType>& coeffs);
 
-    const Fiber::Basis<ArgumentType>& basis(const Entity<0>& element) const;
+    const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
     void getLocalCoefficients(const Entity<0>& element,
                               std::vector<ResultType>& coeffs) const;
 
@@ -119,12 +119,12 @@ private:
       the given space. */
     arma::Col<ResultType> calculateProjections(
             const Fiber::Function<ResultType>& globalFunction,
-            const Space<ArgumentType>& space,
+            const Space<BasisFunctionType>& space,
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
 
     arma::Col<ResultType> reallyCalculateProjections(
-            const Space<ArgumentType>& space,
+            const Space<BasisFunctionType>& space,
             LocalAssembler& assembler,
             const AssemblyOptions& options) const;
 
@@ -133,31 +133,31 @@ private:
             VtkWriter::DataType dataType, arma::Mat<ResultType>& result) const;
 
 private:
-    const Space<ArgumentType>& m_space;
+    const Space<BasisFunctionType>& m_space;
     arma::Col<ResultType> m_coefficients;
 };
 
-template <typename ArgumentType, typename ResultType>
-GridFunction<ArgumentType, ResultType> operator+(
-        const GridFunction<ArgumentType, ResultType>& g1,
-        const GridFunction<ArgumentType, ResultType>& g2);
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType> operator+(
+        const GridFunction<BasisFunctionType, ResultType>& g1,
+        const GridFunction<BasisFunctionType, ResultType>& g2);
 
-template <typename ArgumentType, typename ResultType>
-GridFunction<ArgumentType, ResultType> operator-(
-        const GridFunction<ArgumentType, ResultType>& g1,
-        const GridFunction<ArgumentType, ResultType>& g2);
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType> operator-(
+        const GridFunction<BasisFunctionType, ResultType>& g1,
+        const GridFunction<BasisFunctionType, ResultType>& g2);
 
-template <typename ArgumentType, typename ResultType, typename ScalarType>
-GridFunction<ArgumentType, ResultType> operator*(
-        const GridFunction<ArgumentType, ResultType>& g1, const ScalarType& scalar);
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+GridFunction<BasisFunctionType, ResultType> operator*(
+        const GridFunction<BasisFunctionType, ResultType>& g1, const ScalarType& scalar);
 
-template <typename ArgumentType, typename ResultType, typename ScalarType>
-GridFunction<ArgumentType, ResultType> operator*(
-        const ScalarType& scalar, const GridFunction<ArgumentType, ResultType>& g2);
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+GridFunction<BasisFunctionType, ResultType> operator*(
+        const ScalarType& scalar, const GridFunction<BasisFunctionType, ResultType>& g2);
 
-template <typename ArgumentType, typename ResultType, typename ScalarType>
-GridFunction<ArgumentType, ResultType> operator/(
-        const GridFunction<ArgumentType, ResultType>& g1, const ScalarType& scalar);
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+GridFunction<BasisFunctionType, ResultType> operator/(
+        const GridFunction<BasisFunctionType, ResultType>& g1, const ScalarType& scalar);
 
 } // namespace Bempp
 

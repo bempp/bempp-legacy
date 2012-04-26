@@ -25,10 +25,10 @@
 namespace Bempp
 {
 
-template <typename ArgumentType, typename ResultType>
-HypersingularOperator3D<ArgumentType, ResultType>::HypersingularOperator3D(
-        const Space<ArgumentType>& testSpace, const Space<ArgumentType>& trialSpace) :
-    ElementaryWeaklySingularIntegralOperator<ArgumentType, ResultType>(
+template <typename BasisFunctionType, typename ResultType>
+HypersingularOperator3D<BasisFunctionType, ResultType>::HypersingularOperator3D(
+        const Space<BasisFunctionType>& testSpace, const Space<BasisFunctionType>& trialSpace) :
+    ElementaryWeaklySingularIntegralOperator<BasisFunctionType, ResultType>(
         testSpace, trialSpace)
 {
 }

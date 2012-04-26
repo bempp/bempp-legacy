@@ -25,10 +25,10 @@
 namespace Bempp
 {
 
-template <typename ArgumentType, typename ResultType>
-DoubleLayerPotential3D<ArgumentType, ResultType>::DoubleLayerPotential3D(
-        const Space<ArgumentType>& testSpace, const Space<ArgumentType>& trialSpace) :
-    ElementaryWeaklySingularIntegralOperator<ArgumentType, ResultType>(testSpace, trialSpace)
+template <typename BasisFunctionType, typename ResultType>
+DoubleLayerPotential3D<BasisFunctionType, ResultType>::DoubleLayerPotential3D(
+        const Space<BasisFunctionType>& testSpace, const Space<BasisFunctionType>& trialSpace) :
+    ElementaryWeaklySingularIntegralOperator<BasisFunctionType, ResultType>(testSpace, trialSpace)
 {
 }
 

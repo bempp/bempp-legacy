@@ -37,10 +37,10 @@
 namespace Bempp
 {
 
-template <typename ArgumentType, typename ResultType>
-WeakFormAcaAssemblyHelper<ArgumentType, ResultType>::WeakFormAcaAssemblyHelper(
-        const Space<ArgumentType>& testSpace,
-        const Space<ArgumentType>& trialSpace,
+template <typename BasisFunctionType, typename ResultType>
+WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::WeakFormAcaAssemblyHelper(
+        const Space<BasisFunctionType>& testSpace,
+        const Space<BasisFunctionType>& trialSpace,
         const std::vector<unsigned int>& p2oTestDofs,
         const std::vector<unsigned int>& p2oTrialDofs,
         const std::vector<LocalAssembler*>& assemblers,
@@ -57,8 +57,8 @@ WeakFormAcaAssemblyHelper<ArgumentType, ResultType>::WeakFormAcaAssemblyHelper(
 {
 }
 
-template <typename ArgumentType, typename ResultType>
-void WeakFormAcaAssemblyHelper<ArgumentType, ResultType>::cmpbl(
+template <typename BasisFunctionType, typename ResultType>
+void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
         unsigned b1, unsigned n1, unsigned b2, unsigned n2,
         AhmedResultType* ahmedData) const
 {
@@ -213,20 +213,20 @@ void WeakFormAcaAssemblyHelper<ArgumentType, ResultType>::cmpbl(
                     testGlobalDofs, trialGlobalDofs, m_sparseTermsMultipliers[nTerm], result);
 }
 
-template <typename ArgumentType, typename ResultType>
-typename WeakFormAcaAssemblyHelper<ArgumentType, ResultType>::MagnitudeType
-WeakFormAcaAssemblyHelper<ArgumentType, ResultType>::scale(
+template <typename BasisFunctionType, typename ResultType>
+typename WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::MagnitudeType
+WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::scale(
         unsigned b1, unsigned n1, unsigned b2, unsigned n2) const
 {
     return m_options.acaOptions().scaling;
 }
 
-template <typename ArgumentType, typename ResultType>
-void WeakFormAcaAssemblyHelper<ArgumentType, ResultType>::findLocalDofs(
+template <typename BasisFunctionType, typename ResultType>
+void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::findLocalDofs(
         int start,
         int globalDofCount,
         const std::vector<unsigned int>& p2o,
-        const Space<ArgumentType>& space,
+        const Space<BasisFunctionType>& space,
         std::vector<GlobalDofIndex>& globalDofIndices,
         std::vector<int>& elementIndices,
         std::vector<std::vector<LocalDofIndex> >& localDofIndices,

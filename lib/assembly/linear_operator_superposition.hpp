@@ -33,18 +33,18 @@ template <typename ResultType> class LocalAssemblerForOperators;
 namespace Bempp
 {
 
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 class ElementaryLinearOperator;
 
 // only scalar multipliers allowed, tensor ones would
 // require knowledge of vector components distribution
 // in the discrete operator
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 class LinearOperatorSuperposition :
-        public LinearOperator<ArgumentType, ResultType>
+        public LinearOperator<BasisFunctionType, ResultType>
 {
 public:
-    typedef LinearOperator<ArgumentType, ResultType> Base;
+    typedef LinearOperator<BasisFunctionType, ResultType> Base;
     typedef typename Base::CoordinateType CoordinateType;
     typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
     typedef typename Fiber::LocalAssemblerForOperators<ResultType>

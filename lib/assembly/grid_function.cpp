@@ -197,9 +197,9 @@ void solveWithAmesos<std::complex<double> >(
 
 } // namespace
 
-template <typename ArgumentType, typename ResultType>
-GridFunction<ArgumentType, ResultType>::GridFunction(
-        const Space<ArgumentType>& space,
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>::GridFunction(
+        const Space<BasisFunctionType>& space,
         const Fiber::Function<ResultType>& function,
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& assemblyOptions) :
@@ -209,7 +209,7 @@ GridFunction<ArgumentType, ResultType>::GridFunction(
             calculateProjections(function, space, factory, assemblyOptions);
 
     AssemblyOptions idAssemblyOptions(assemblyOptions);
-    IdentityOperator<ArgumentType, ResultType> id(space, space);
+    IdentityOperator<BasisFunctionType, ResultType> id(space, space);
     std::auto_ptr<DiscreteLinearOperator<ResultType> > discreteId =
             id.assembleWeakForm(factory, idAssemblyOptions);
 
@@ -233,9 +233,9 @@ GridFunction<ArgumentType, ResultType>::GridFunction(
 #endif
 }
 
-template <typename ArgumentType, typename ResultType>
-GridFunction<ArgumentType, ResultType>::GridFunction(
-        const Space<ArgumentType>& space,
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>::GridFunction(
+        const Space<BasisFunctionType>& space,
         const arma::Col<ResultType>& coefficients) :
     m_space(space), m_coefficients(coefficients)
 {
@@ -251,9 +251,9 @@ GridFunction<ArgumentType, ResultType>::GridFunction(
                 "DOFs in the provided function space");
 }
 
-template <typename ArgumentType, typename ResultType>
-GridFunction<ArgumentType, ResultType>::GridFunction(
-        const Space<ArgumentType>& space,
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>::GridFunction(
+        const Space<BasisFunctionType>& space,
         const Vector<ResultType>& coefficients) :
     m_space(space), m_coefficients(coefficients.asArmadilloVector())
 {
@@ -269,32 +269,32 @@ GridFunction<ArgumentType, ResultType>::GridFunction(
                 "DOFs in the provided function space");
 }
 
-template <typename ArgumentType, typename ResultType>
-const Grid& GridFunction<ArgumentType, ResultType>::grid() const
+template <typename BasisFunctionType, typename ResultType>
+const Grid& GridFunction<BasisFunctionType, ResultType>::grid() const
 {
     return m_space.grid();
 }
 
-template <typename ArgumentType, typename ResultType>
-const Space<ArgumentType>& GridFunction<ArgumentType, ResultType>::space() const
+template <typename BasisFunctionType, typename ResultType>
+const Space<BasisFunctionType>& GridFunction<BasisFunctionType, ResultType>::space() const
 {
     return m_space;
 }
 
-template <typename ArgumentType, typename ResultType>
-int GridFunction<ArgumentType, ResultType>::codomainDimension() const
+template <typename BasisFunctionType, typename ResultType>
+int GridFunction<BasisFunctionType, ResultType>::codomainDimension() const
 {
     return m_space.codomainDimension();
 }
 
-template <typename ArgumentType, typename ResultType>
-Vector<ResultType> GridFunction<ArgumentType, ResultType>::coefficients() const
+template <typename BasisFunctionType, typename ResultType>
+Vector<ResultType> GridFunction<BasisFunctionType, ResultType>::coefficients() const
 {
     return Vector<ResultType>(m_coefficients);
 }
 
-template <typename ArgumentType, typename ResultType>
-void GridFunction<ArgumentType, ResultType>::setCoefficients(
+template <typename BasisFunctionType, typename ResultType>
+void GridFunction<BasisFunctionType, ResultType>::setCoefficients(
         const Vector<ResultType>& coeffs)
 {
     if (coeffs.size() != m_space.globalDofCount())
@@ -305,15 +305,15 @@ void GridFunction<ArgumentType, ResultType>::setCoefficients(
 }
 
 // Redundant, in fact -- can be obtained directly from Space
-template <typename ArgumentType, typename ResultType>
-const Fiber::Basis<ArgumentType>& GridFunction<ArgumentType, ResultType>::basis(
+template <typename BasisFunctionType, typename ResultType>
+const Fiber::Basis<BasisFunctionType>& GridFunction<BasisFunctionType, ResultType>::basis(
         const Entity<0>& element) const
 {
     return m_space.basis(element);
 }
 
-template <typename ArgumentType, typename ResultType>
-void GridFunction<ArgumentType, ResultType>::getLocalCoefficients(
+template <typename BasisFunctionType, typename ResultType>
+void GridFunction<BasisFunctionType, ResultType>::getLocalCoefficients(
         const Entity<0>& element, std::vector<ResultType>& coeffs) const
 {
     std::vector<GlobalDofIndex> gdofIndices;
@@ -324,8 +324,8 @@ void GridFunction<ArgumentType, ResultType>::getLocalCoefficients(
         coeffs[i] = m_coefficients(gdofIndices[i]);
 }
 
-template <typename ArgumentType, typename ResultType>
-void GridFunction<ArgumentType, ResultType>::exportToVtk(
+template <typename BasisFunctionType, typename ResultType>
+void GridFunction<BasisFunctionType, ResultType>::exportToVtk(
         VtkWriter::DataType dataType,
         const char* dataLabel,
         const char* fileNamesBase, const char* filesPath,
@@ -348,11 +348,11 @@ void GridFunction<ArgumentType, ResultType>::exportToVtk(
         vtkWriter->write(fileNamesBase, type);
 }
 
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 arma::Col<ResultType>
-GridFunction<ArgumentType, ResultType>::calculateProjections(
+GridFunction<BasisFunctionType, ResultType>::calculateProjections(
         const Fiber::Function<ResultType>& globalFunction,
-        const Space<ArgumentType>& space,
+        const Space<BasisFunctionType>& space,
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
@@ -379,7 +379,7 @@ GridFunction<ArgumentType, ResultType>::calculateProjections(
             grid.elementGeometryFactory();
 
     // Get pointers to test and trial bases of each element
-    std::vector<const Fiber::Basis<ArgumentType>*> testBases;
+    std::vector<const Fiber::Basis<BasisFunctionType>*> testBases;
     testBases.reserve(elementCount);
 
     std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
@@ -390,7 +390,7 @@ GridFunction<ArgumentType, ResultType>::calculateProjections(
     }
 
     // Get reference to the test expression
-    const Fiber::Expression<ArgumentType>& testExpression =
+    const Fiber::Expression<BasisFunctionType>& testExpression =
             space.shapeFunctionValueExpression();
 
     // Now create the assembler
@@ -408,10 +408,10 @@ GridFunction<ArgumentType, ResultType>::calculateProjections(
                 space, *assembler, options);
 }
 
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 arma::Col<ResultType>
-GridFunction<ArgumentType, ResultType>::reallyCalculateProjections(
-        const Space<ArgumentType>& space,
+GridFunction<BasisFunctionType, ResultType>::reallyCalculateProjections(
+        const Space<BasisFunctionType>& space,
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
@@ -458,8 +458,8 @@ GridFunction<ArgumentType, ResultType>::reallyCalculateProjections(
     return result;
 }
 
-template <typename ArgumentType, typename ResultType>
-void GridFunction<ArgumentType, ResultType>::evaluateAtSpecialPoints(
+template <typename BasisFunctionType, typename ResultType>
+void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
         VtkWriter::DataType dataType, arma::Mat<ResultType>& result) const
 {
     if (dataType != VtkWriter::CELL_DATA && dataType != VtkWriter::VERTEX_DATA)
@@ -499,7 +499,7 @@ void GridFunction<ArgumentType, ResultType>::evaluateAtSpecialPoints(
 
     // For each element, get its basis and corner count (this is sufficient
     // to identify its geometry) as well as its local coefficients
-    typedef std::pair<const Fiber::Basis<ArgumentType>*, int> BasisAndCornerCount;
+    typedef std::pair<const Fiber::Basis<BasisFunctionType>*, int> BasisAndCornerCount;
     typedef std::vector<BasisAndCornerCount> BasisAndCornerCountVector;
     BasisAndCornerCountVector basesAndCornerCounts(elementCount);
     std::vector<std::vector<ResultType> > localCoefficients(elementCount);
@@ -522,7 +522,7 @@ void GridFunction<ArgumentType, ResultType>::evaluateAtSpecialPoints(
     int basisDeps = 0, geomDeps = 0;
     // Find out which geometrical data need to be calculated, in addition
     // to those needed by the kernel
-    const Fiber::Expression<ArgumentType>& expression =
+    const Fiber::Expression<BasisFunctionType>& expression =
             m_space.shapeFunctionValueExpression();
     expression.addDependencies(basisDeps, geomDeps);
 
@@ -532,7 +532,7 @@ void GridFunction<ArgumentType, ResultType>::evaluateAtSpecialPoints(
     for (BasisAndCornerCountSetConstIt it = uniqueBasesAndCornerCounts.begin();
          it != uniqueBasesAndCornerCounts.end(); ++it) {
         const BasisAndCornerCount& activeBasisAndCornerCount = *it;
-        const Fiber::Basis<ArgumentType>& activeBasis =
+        const Fiber::Basis<BasisFunctionType>& activeBasis =
                 *activeBasisAndCornerCount.first;
         int activeCornerCount = activeBasisAndCornerCount.second;
 
@@ -583,7 +583,7 @@ void GridFunction<ArgumentType, ResultType>::evaluateAtSpecialPoints(
         }
 
         // Get basis data
-        Fiber::BasisData<ArgumentType> basisData;
+        Fiber::BasisData<BasisFunctionType> basisData;
         activeBasis.evaluate(basisDeps, local, ALL_DOFS, basisData);
 
         Fiber::BasisData<ResultType> functionData;
@@ -658,48 +658,48 @@ void GridFunction<ArgumentType, ResultType>::evaluateAtSpecialPoints(
             result.col(v) /= multiplicities[v];
 }
 
-template <typename ArgumentType, typename ResultType>
-GridFunction<ArgumentType, ResultType> operator+(
-        const GridFunction<ArgumentType, ResultType>& g1,
-        const GridFunction<ArgumentType, ResultType>& g2)
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType> operator+(
+        const GridFunction<BasisFunctionType, ResultType>& g1,
+        const GridFunction<BasisFunctionType, ResultType>& g2)
 {
     if (&g1.space() != &g2.space())
         throw std::runtime_error("GridFunction::operator+(): spaces don't match");
     arma::Col<ResultType> g1Vals = g1.coefficients().asArmadilloVector();
     arma::Col<ResultType> g2Vals = g2.coefficients().asArmadilloVector();
-    return GridFunction<ArgumentType, ResultType>(g1.space(), g1Vals + g2Vals);
+    return GridFunction<BasisFunctionType, ResultType>(g1.space(), g1Vals + g2Vals);
 }
 
-template <typename ArgumentType, typename ResultType>
-GridFunction<ArgumentType, ResultType> operator-(
-        const GridFunction<ArgumentType, ResultType>& g1,
-        const GridFunction<ArgumentType, ResultType>& g2)
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType> operator-(
+        const GridFunction<BasisFunctionType, ResultType>& g1,
+        const GridFunction<BasisFunctionType, ResultType>& g2)
 {
     if (&g1.space() != &g2.space())
         throw std::runtime_error("GridFunction::operator-(): spaces don't match");
     arma::Col<ResultType> g1Vals = g1.coefficients().asArmadilloVector();
     arma::Col<ResultType> g2Vals = g2.coefficients().asArmadilloVector();
-    return GridFunction<ArgumentType, ResultType>(g1.space(), g1Vals - g2Vals);
+    return GridFunction<BasisFunctionType, ResultType>(g1.space(), g1Vals - g2Vals);
 }
 
-template <typename ArgumentType, typename ResultType, typename ScalarType>
-GridFunction<ArgumentType, ResultType> operator*(
-        const GridFunction<ArgumentType, ResultType>& g1, const ScalarType& scalar)
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+GridFunction<BasisFunctionType, ResultType> operator*(
+        const GridFunction<BasisFunctionType, ResultType>& g1, const ScalarType& scalar)
 {
     arma::Col<ResultType> g1Vals = g1.coefficients().asArmadilloVector();
-    return GridFunction<ArgumentType, ResultType>(g1.space(), scalar * g1Vals);
+    return GridFunction<BasisFunctionType, ResultType>(g1.space(), scalar * g1Vals);
 }
 
-template <typename ArgumentType, typename ResultType, typename ScalarType>
-GridFunction<ArgumentType, ResultType> operator*(
-        const ScalarType& scalar, const GridFunction<ArgumentType, ResultType>& g2)
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+GridFunction<BasisFunctionType, ResultType> operator*(
+        const ScalarType& scalar, const GridFunction<BasisFunctionType, ResultType>& g2)
 {
     return g2 * scalar;
 }
 
-template <typename ArgumentType, typename ResultType, typename ScalarType>
-GridFunction<ArgumentType, ResultType> operator/(
-        const GridFunction<ArgumentType, ResultType>& g1, const ScalarType& scalar)
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+GridFunction<BasisFunctionType, ResultType> operator/(
+        const GridFunction<BasisFunctionType, ResultType>& g1, const ScalarType& scalar)
 {
     if (scalar==0) throw std::runtime_error("Divide by zero");
     return (static_cast<ScalarType>(1.) / scalar) * g1;
