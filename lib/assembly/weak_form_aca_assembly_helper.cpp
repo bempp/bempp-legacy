@@ -24,6 +24,7 @@
 #include "discrete_linear_operator.hpp"
 #include "../common/multidimensional_arrays.hpp"
 #include "../fiber/types.hpp"
+#include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/local_assembler_for_operators.hpp"
 #include "../grid/grid_view.hpp"
 #include "../grid/reverse_element_mapper.hpp"
@@ -210,7 +211,8 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
     // Now, add the contributions of the sparse terms
     for (int nTerm = 0; nTerm < m_sparseTermsToAdd.size(); ++nTerm)
         m_sparseTermsToAdd[nTerm]->addBlock(
-                    testGlobalDofs, trialGlobalDofs, m_sparseTermsMultipliers[nTerm], result);
+                    testGlobalDofs, trialGlobalDofs,
+                    m_sparseTermsMultipliers[nTerm], result);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -292,36 +294,6 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::findLocalDofs(
 
 // Explicit instantiations
 
-#ifdef ENABLE_SINGLE_PRECISION
-template class WeakFormAcaAssemblyHelper<float, float>;
-#  ifdef ENABLE_COMPLEX_KERNELS
-#  include <complex>
-template class WeakFormAcaAssemblyHelper<float, std::complex<float> >;
-#    ifdef ENABLE_COMPLEX_BASIS_FUNCTIONS
-template class WeakFormAcaAssemblyHelper<std::complex<float>, std::complex<float> >;
-#    endif // !ENABLE_COMPLEX_BASIS_FUNCTIONS
-#  else // !ENABLE_COMPLEX_KERNELS
-#    ifdef ENABLE_COMPLEX_BASIS_FUNCTIONS
-#    include <complex>
-template class WeakFormAcaAssemblyHelper<std::complex<float>, float>;
-#    endif // !ENABLE_COMPLEX_BASIS_FUNCTIONS
-#  endif // !ENABLE_COMPLEX_KERNELS
-#endif // ENABLE_SINGLE_PRECISION
-
-#ifdef ENABLE_DOUBLE_PRECISION
-template class WeakFormAcaAssemblyHelper<double, double>;
-#  ifdef ENABLE_COMPLEX_KERNELS
-#  include <complex>
-template class WeakFormAcaAssemblyHelper<double, std::complex<double> >;
-#    ifdef ENABLE_COMPLEX_BASIS_FUNCTIONS
-template class WeakFormAcaAssemblyHelper<std::complex<double>, std::complex<double> >;
-#    endif // !ENABLE_COMPLEX_BASIS_FUNCTIONS
-#  else // !ENABLE_COMPLEX_KERNELS
-#    ifdef ENABLE_COMPLEX_BASIS_FUNCTIONS
-#    include <complex>
-template class WeakFormAcaAssemblyHelper<std::complex<double>, double>;
-#    endif // !ENABLE_COMPLEX_BASIS_FUNCTIONS
-#  endif // !ENABLE_COMPLEX_KERNELS
-#endif
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(WeakFormAcaAssemblyHelper);
 
 }
