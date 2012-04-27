@@ -33,13 +33,13 @@ namespace Fiber
 
 template <typename ValueType, typename IndexType> class OpenClHandler;
 
-template <typename BasisFunctionType, typename FunctionValueType, typename GeometryFactory>
+template <typename BasisFunctionType, typename UserFunctionType, typename GeometryFactory>
 class StandardLocalAssemblerForGridFunctionsOnSurfaces :
         public LocalAssemblerForGridFunctions<
-        typename Coercion<BasisFunctionType, FunctionValueType>::Type>
+        typename Coercion<BasisFunctionType, UserFunctionType>::Type>
 {    
 public:
-    typedef typename Coercion<BasisFunctionType, FunctionValueType>::Type ResultType;
+    typedef typename Coercion<BasisFunctionType, UserFunctionType>::Type ResultType;
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
     StandardLocalAssemblerForGridFunctionsOnSurfaces(
@@ -47,7 +47,7 @@ public:
             const RawGridGeometry<CoordinateType>& rawGeometry,
             const std::vector<const Basis<BasisFunctionType>*>& testBases,
             const Expression<CoordinateType>& testExpression,
-            const Function<FunctionValueType>& function,
+            const Function<UserFunctionType>& function,
             const OpenClHandler<CoordinateType, int>& openClHandler);
     virtual ~StandardLocalAssemblerForGridFunctionsOnSurfaces();
 
@@ -57,7 +57,7 @@ public:
             std::vector<arma::Col<ResultType> >& result);
 
 private:
-    typedef TestFunctionIntegrator<BasisFunctionType, FunctionValueType> Integrator;
+    typedef TestFunctionIntegrator<BasisFunctionType, UserFunctionType> Integrator;
 
     const Integrator& selectIntegrator(int elementIndex);
 
@@ -74,7 +74,7 @@ private:
     const RawGridGeometry<CoordinateType>& m_rawGeometry;
     const std::vector<const Basis<BasisFunctionType>*>& m_testBases;
     const Expression<CoordinateType>& m_testExpression;
-    const Function<FunctionValueType>& m_function;
+    const Function<UserFunctionType>& m_function;
     const OpenClHandler<CoordinateType, int>& m_openClHandler;
 
     IntegratorMap m_testFunctionIntegrators;

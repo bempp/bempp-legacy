@@ -35,15 +35,15 @@
 namespace Fiber
 {
 
-template <typename BasisFunctionType, typename FunctionValueType, typename GeometryFactory>
-NumericalTestFunctionIntegrator<BasisFunctionType, FunctionValueType, GeometryFactory>::
+template <typename BasisFunctionType, typename UserFunctionType, typename GeometryFactory>
+NumericalTestFunctionIntegrator<BasisFunctionType, UserFunctionType, GeometryFactory>::
 NumericalTestFunctionIntegrator(
         const arma::Mat<CoordinateType>& localQuadPoints,
         const std::vector<CoordinateType> quadWeights,
         const GeometryFactory& geometryFactory,
         const RawGridGeometry<CoordinateType>& rawGeometry,
         const Expression<CoordinateType>& testExpression,
-        const Function<FunctionValueType>& function,
+        const Function<UserFunctionType>& function,
         const OpenClHandler<CoordinateType, int>& openClHandler) :
     m_localQuadPoints(localQuadPoints),
     m_quadWeights(quadWeights),
@@ -59,8 +59,8 @@ NumericalTestFunctionIntegrator(
                                     "numbers of points and weights do not match");
 }
 
-template <typename BasisFunctionType, typename FunctionValueType, typename GeometryFactory>
-void NumericalTestFunctionIntegrator<BasisFunctionType, FunctionValueType, GeometryFactory>::
+template <typename BasisFunctionType, typename UserFunctionType, typename GeometryFactory>
+void NumericalTestFunctionIntegrator<BasisFunctionType, UserFunctionType, GeometryFactory>::
 integrate(
         const std::vector<int>& elementIndices,
         const Basis<BasisFunctionType>& testBasis,
@@ -96,7 +96,7 @@ integrate(
     std::auto_ptr<Geometry> geometry(m_geometryFactory.make());
 
     arma::Cube<BasisFunctionType> testValues;
-    arma::Mat<FunctionValueType> functionValues;
+    arma::Mat<UserFunctionType> functionValues;
 
     result.set_size(testDofCount, elementCount);
 

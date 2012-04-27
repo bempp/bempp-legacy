@@ -32,13 +32,13 @@ template <typename ValueType> class Function;
 template <typename CoordinateType> class RawGridGeometry;
 
 /** \brief Integration over pairs of elements on tensor-product point grids. */
-template <typename BasisFunctionType, typename FunctionValueType,
+template <typename BasisFunctionType, typename UserFunctionType,
           typename GeometryFactory>
 class NumericalTestFunctionIntegrator :
-        public TestFunctionIntegrator<BasisFunctionType, FunctionValueType>
+        public TestFunctionIntegrator<BasisFunctionType, UserFunctionType>
 {
 public:
-    typedef TestFunctionIntegrator<BasisFunctionType, FunctionValueType> Base;
+    typedef TestFunctionIntegrator<BasisFunctionType, UserFunctionType> Base;
     typedef typename Base::CoordinateType CoordinateType;
     typedef typename Base::ResultType ResultType;
 
@@ -48,7 +48,7 @@ public:
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
             const Expression<CoordinateType>& testExpression,
-            const Function<FunctionValueType>& function,
+            const Function<UserFunctionType>& function,
             const OpenClHandler<CoordinateType, int>& openClHandler);
 
     virtual void integrate(
@@ -63,7 +63,7 @@ private:
     const GeometryFactory& m_geometryFactory;
     const RawGridGeometry<CoordinateType>& m_rawGeometry;
     const Expression<CoordinateType>& m_testExpression;
-    const Function<FunctionValueType>& m_function;
+    const Function<UserFunctionType>& m_function;
 
     const OpenClHandler<CoordinateType, int>& m_openClHandler;
 };
