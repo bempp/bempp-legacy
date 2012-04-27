@@ -65,6 +65,6 @@ typename Solver<BasisFunctionType, ResultType>::EStatus DefaultDirectSolver<Basi
     return m_status;
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_KERNEL(DefaultDirectSolver);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DefaultDirectSolver);
 
 } // namespace Bempp

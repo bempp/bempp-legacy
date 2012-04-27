@@ -183,7 +183,7 @@ Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(double tol)
     return paramList;
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_KERNEL_REAL_ONLY(DefaultIterativeSolver);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT_REAL_ONLY(DefaultIterativeSolver);
 
 } // namespace Bempp
 
