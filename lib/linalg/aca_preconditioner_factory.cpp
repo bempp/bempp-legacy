@@ -25,20 +25,22 @@
 #include "../assembly/discrete_aca_linear_operator.hpp"
 #include "../assembly/discrete_linear_operator.hpp"
 #include "../assembly/aca_approximate_lu_inverse.hpp"
-#include "Teuchos_RCP.hpp"
-#include "Thyra_LinearOpBase.hpp"
-#include "Thyra_PreconditionerBase.hpp"
-#include "Thyra_DefaultPreconditioner.hpp"
+#include "../assembly/discrete_aca_linear_operator.hpp"
+#include "../fiber/explicit_instantiation.hpp"
 
+#include <Teuchos_RCP.hpp>
+#include <Thyra_LinearOpBase.hpp>
+#include <Thyra_PreconditionerBase.hpp>
+#include <Thyra_DefaultPreconditioner.hpp>
 
-namespace Bempp {
-
+namespace Bempp
+{
 
 template<typename ValueType>
-Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > AcaPreconditionerFactory<ValueType>::acaOperatorToPreconditioner
-    (DiscreteLinearOperator<ValueType>& discreteOperator,
-     const double delta){
-
+Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> >
+AcaPreconditionerFactory<ValueType>::acaOperatorToPreconditioner(
+        DiscreteLinearOperator<ValueType>& discreteOperator, const double delta)
+{
     const DiscreteAcaLinearOperator<ValueType>& discreteAcaOperator =
                 DiscreteAcaLinearOperator<ValueType>::castToAca(discreteOperator);
 
@@ -52,22 +54,8 @@ Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > AcaPreconditionerFacto
     return preconditioner;
 }
 
-#ifdef COMPILE_FOR_FLOAT
-template class AcaPreconditionerFactory<float>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class AcaPreconditionerFactory<double>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class AcaPreconditionerFactory<std::complex<float> >;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class AcaPreconditionerFactory<std::complex<double> >;
-#endif
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(AcaPreconditionerFactory);
 
-}
-
+} // namespace Bempp
 
 #endif /* WITH_TRILINOS */

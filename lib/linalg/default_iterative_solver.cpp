@@ -67,7 +67,8 @@ void DefaultIterativeSolver<ArgumentType, ResultType>::addPreconditioner(
 }
 
 template <typename ArgumentType, typename ResultType>
-void DefaultIterativeSolver<ArgumentType, ResultType>::initializeSolver(Teuchos::RCP<Teuchos::ParameterList> paramList)
+void DefaultIterativeSolver<ArgumentType, ResultType>::initializeSolver(
+        Teuchos::RCP<Teuchos::ParameterList> paramList)
 {
     Teuchos::RCP<Teuchos::FancyOStream> out =
             Teuchos::VerboseObjectBase::getDefaultOStream();
@@ -181,7 +182,7 @@ Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(double tol)
     return paramList;
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_KERNEL(DefaultIterativeSolver);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_KERNEL_REAL_ONLY(DefaultIterativeSolver);
 
 } // namespace Bempp
 
