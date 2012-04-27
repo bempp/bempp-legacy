@@ -21,14 +21,11 @@
 #ifndef fiber_integration_manager_factory_hpp
 #define fiber_integration_manager_factory_hpp
 
-//#include "enable_if_is_real.hpp"
 #include "scalar_traits.hpp"
 
 #include <armadillo>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_same.hpp>
-//#include <boost/mpl/has_key.hpp>
-//#include <boost/mpl/set.hpp>
 #include <memory>
 
 namespace Fiber
