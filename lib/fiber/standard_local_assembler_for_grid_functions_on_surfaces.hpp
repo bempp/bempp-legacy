@@ -32,7 +32,7 @@
 namespace Fiber
 {
 
-template <typename ValueType, typename IndexType> class OpenClHandler;
+template <typename CoordinateType, typename IndexType> class OpenClHandler;
 template <typename CoordinateType> class Expression;
 template <typename ValueType> class Function;
 template <typename CoordinateType> class RawGridGeometry;

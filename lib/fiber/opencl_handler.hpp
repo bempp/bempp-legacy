@@ -39,7 +39,7 @@ namespace Fiber
 
 #ifdef WITH_OPENCL
 
-template <typename CoordinateType, typename IndexType>
+template <typename ValueType, typename IndexType>
 class OpenClHandler
 {
 public:
@@ -88,7 +88,7 @@ public:
      * \param mesh mesh instance
      * \note This method populates the cl_meshvtx and cl_meshidx buffers
      */
-    void pushGeometry (const arma::Mat<CoordinateType>& vtx,
+    void pushGeometry (const arma::Mat<ValueType>& vtx,
 		       const arma::Mat<IndexType>& idx) const;
 
     /**
@@ -119,12 +119,12 @@ public:
     /**
      * \brief Push a value vector into an OpenCL buffer and return a pointer to the buffer
      */
-    cl::Buffer *pushValueVector (const std::vector<CoordinateType> &vec) const;
+    cl::Buffer *pushValueVector (const std::vector<ValueType> &vec) const;
 
     /**
      * \brief Push a row into an OpenCL buffer and return a pointer to the buffer
      */
-    cl::Buffer *pushValueRow (const arma::Row<CoordinateType> &row) const;
+    cl::Buffer *pushValueRow (const arma::Row<ValueType> &row) const;
 
     /**
      * \brief Push an index array to the OpenCL buffer and return the buffer
@@ -134,19 +134,19 @@ public:
     /**
      * \brief Push a matrix into an OpenCL buffer and return a pointer to the buffer
      */
-    cl::Buffer *pushValueMatrix (const arma::Mat<CoordinateType> &mat) const;
+    cl::Buffer *pushValueMatrix (const arma::Mat<ValueType> &mat) const;
 
     /**
      * \brief Push a matrix into an OpenCL buffer and return a pointer to the buffer
      */
-    cl::Buffer *pushValueCube (const arma::Cube<CoordinateType> &cube) const;
+    cl::Buffer *pushValueCube (const arma::Cube<ValueType> &cube) const;
 
     void pullValueVector (const cl::Buffer &clbuf,
-			  std::vector<CoordinateType>& vec,
+              std::vector<ValueType>& vec,
 			  int size) const;
   
     void pullValueCube (const cl::Buffer &clbuf,
-			arma::Cube<CoordinateType>& cube) const;
+            arma::Cube<ValueType>& cube) const;
 
     struct MeshGeom {
         struct MeshDims {
@@ -183,7 +183,7 @@ private:
 
 // Dummy implementation for the OpenCL handler
 
-template <typename CoordinateType, typename IndexType>
+template <typename ValueType, typename IndexType>
 class OpenClHandler
 {
 public:
@@ -191,7 +191,7 @@ public:
 
     bool UseOpenCl () const { return false; }
 
-    void pushGeometry (const arma::Mat<CoordinateType>& vtx,
+    void pushGeometry (const arma::Mat<ValueType>& vtx,
 		       const arma::Mat<IndexType>& idx) const {}
 };
 

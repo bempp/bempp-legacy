@@ -27,12 +27,12 @@
 namespace Bempp
 {
 
-template <typename ArgumentType, typename ResultType>
-DefaultDirectSolver<ArgumentType, ResultType>::DefaultDirectSolver(
-        const LinearOperator<ArgumentType, ResultType>& linearOperator,
-        const GridFunction<ArgumentType, ResultType>& gridFunction) :
+template <typename BasisFunctionType, typename ResultType>
+DefaultDirectSolver<BasisFunctionType, ResultType>::DefaultDirectSolver(
+        const LinearOperator<BasisFunctionType, ResultType>& linearOperator,
+        const GridFunction<BasisFunctionType, ResultType>& gridFunction) :
     m_linearOperator(linearOperator), m_gridFunction(gridFunction),
-    m_solution(), m_status(Solver<ArgumentType, ResultType>::UNKNOWN)
+    m_solution(), m_status(Solver<BasisFunctionType, ResultType>::UNKNOWN)
 {
     if (!linearOperator.isAssembled())
         throw std::runtime_error("DefaultDirectSolver::DefaultDirectSolver(): "
@@ -42,25 +42,25 @@ DefaultDirectSolver<ArgumentType, ResultType>::DefaultDirectSolver(
                                  "spaces do not match");
 }
 
-template <typename ArgumentType, typename ResultType>
-void DefaultDirectSolver<ArgumentType, ResultType>::solve()
+template <typename BasisFunctionType, typename ResultType>
+void DefaultDirectSolver<BasisFunctionType, ResultType>::solve()
 {
     m_solution = arma::solve(
                 m_linearOperator.assembledDiscreteLinearOperator().asMatrix(),
                 m_gridFunction.coefficients().asArmadilloVector());
-    m_status = Solver<ArgumentType, ResultType>::CONVERGED;
+    m_status = Solver<BasisFunctionType, ResultType>::CONVERGED;
 }
 
-template <typename ArgumentType, typename ResultType>
-GridFunction<ArgumentType, ResultType> DefaultDirectSolver<ArgumentType, ResultType>::getResult() const
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType> DefaultDirectSolver<BasisFunctionType, ResultType>::getResult() const
 {
-    return GridFunction<ArgumentType, ResultType>(
+    return GridFunction<BasisFunctionType, ResultType>(
                 m_linearOperator.testSpace(),
                 m_solution);
 }
 
-template <typename ArgumentType, typename ResultType>
-typename Solver<ArgumentType, ResultType>::EStatus DefaultDirectSolver<ArgumentType, ResultType>::getStatus() const
+template <typename BasisFunctionType, typename ResultType>
+typename Solver<BasisFunctionType, ResultType>::EStatus DefaultDirectSolver<BasisFunctionType, ResultType>::getStatus() const
 {
     return m_status;
 }

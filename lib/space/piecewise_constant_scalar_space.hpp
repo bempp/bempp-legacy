@@ -33,11 +33,11 @@ namespace Bempp
 
 class GridView;
 
-template <typename ValueType>
-class PiecewiseConstantScalarSpace : public ScalarSpace<ValueType>
+template <typename BasisFunctionType>
+class PiecewiseConstantScalarSpace : public ScalarSpace<BasisFunctionType>
 {
 public:
-    typedef typename ScalarSpace<ValueType>::CoordinateType CoordinateType;
+    typedef typename ScalarSpace<BasisFunctionType>::CoordinateType CoordinateType;
 
     explicit PiecewiseConstantScalarSpace(Grid& grid);
 
@@ -49,9 +49,9 @@ public:
                                    ElementVariant variant);
 
     virtual void getBases(const std::vector<const EntityPointer<0>*>& elements,
-                          std::vector<const Fiber::Basis<ValueType>*>& bases) const;
+                          std::vector<const Fiber::Basis<BasisFunctionType>*>& bases) const;
 
-    virtual const Fiber::Basis<ValueType>& basis(const Entity<0>& element) const;
+    virtual const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
 
     virtual void assignDofs();
     virtual bool dofsAssigned() const;
@@ -66,7 +66,7 @@ public:
 
 private:
     std::auto_ptr<GridView> m_view;
-    Fiber::PiecewiseConstantScalarBasis<ValueType> m_basis;
+    Fiber::PiecewiseConstantScalarBasis<BasisFunctionType> m_basis;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
 };

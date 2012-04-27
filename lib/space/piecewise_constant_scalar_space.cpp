@@ -32,28 +32,29 @@
 namespace Bempp
 {
 
-template <typename ValueType>
-PiecewiseConstantScalarSpace<ValueType>::PiecewiseConstantScalarSpace(Grid& grid) :
-     ScalarSpace<ValueType>(grid)
+template <typename BasisFunctionType>
+PiecewiseConstantScalarSpace<BasisFunctionType>::
+PiecewiseConstantScalarSpace(Grid& grid) :
+     ScalarSpace<BasisFunctionType>(grid)
 {
 }
 
-template <typename ValueType>
-int PiecewiseConstantScalarSpace<ValueType>::domainDimension() const
+template <typename BasisFunctionType>
+int PiecewiseConstantScalarSpace<BasisFunctionType>::domainDimension() const
 {
     return this->m_grid.dim();
 }
 
-template <typename ValueType>
-int PiecewiseConstantScalarSpace<ValueType>::codomainDimension() const
+template <typename BasisFunctionType>
+int PiecewiseConstantScalarSpace<BasisFunctionType>::codomainDimension() const
 {
     return 1;
 }
 
-template <typename ValueType>
-void PiecewiseConstantScalarSpace<ValueType>::getBases(
+template <typename BasisFunctionType>
+void PiecewiseConstantScalarSpace<BasisFunctionType>::getBases(
         const std::vector<const EntityPointer<0>*>& elements,
-        std::vector<const Fiber::Basis<ValueType>*>& bases) const
+        std::vector<const Fiber::Basis<BasisFunctionType>*>& bases) const
 {
     const int elementCount = elements.size();
     bases.resize(elementCount);
@@ -61,56 +62,16 @@ void PiecewiseConstantScalarSpace<ValueType>::getBases(
         bases[i] = &m_basis;
 }
 
-template <typename ValueType>
-const Fiber::Basis<ValueType>& PiecewiseConstantScalarSpace<ValueType>::basis(
+template <typename BasisFunctionType>
+const Fiber::Basis<BasisFunctionType>&
+PiecewiseConstantScalarSpace<BasisFunctionType>::basis(
         const Entity<0>& element) const
 {
     return m_basis;
 }
 
-//template <typename ValueType>
-//void PiecewiseConstantScalarSpace<ValueType>::evaluateBasisFunctions(
-//        ElementVariant elementVariant,
-//        const arma::Mat<ctype>& local,
-//        arma::Cube<ValueType>& result) const
-//{
-//    const int gridDim = domainDimension();
-//    const int pointCount = local.n_cols;
-//    const int codomainDim = codomainDimension();
-//    const int functionCount = basisFunctionCount(elementVariant);
-
-//    if (local.n_rows != gridDim)
-//        throw std::invalid_argument(
-//                "PiecewiseLinearContinuousScalarSpace::evaluateBasisFunctions(): "
-//                "coordinates in 'local' have an incorrect number of components");
-
-//    result.set_size(codomainDim, functionCount, pointCount);
-//    // Basis function equal to 1. everywhere
-//    result.fill(1.);
-//}
-
-//template <typename ValueType>
-//void PiecewiseConstantScalarSpace<ValueType>::evaluateBasisFunctionDerivative(
-//        ElementVariant elementVariant,
-//        const arma::Mat<ctype>& local,
-//        int direction,
-//        arma::Cube<ValueType>& result) const
-//{
-//    const int gridDim = domainDimension();
-//    const int pointCount = local.n_cols;
-//    const int codomainDim = codomainDimension();
-//    const int functionCount = basisFunctionCount(elementVariant);
-
-//    assert(local.n_rows == gridDim);
-//    assert(0 <= direction && direction < gridDim);
-
-//    result.set_size(codomainDim, functionCount, pointCount);
-//    // Constant function -> gradient null everywhere
-//    result.fill(0.);
-//}
-
-template <typename ValueType>
-ElementVariant PiecewiseConstantScalarSpace<ValueType>::elementVariant(
+template <typename BasisFunctionType>
+ElementVariant PiecewiseConstantScalarSpace<BasisFunctionType>::elementVariant(
         const Entity<0>& element) const
 {
     GeometryType type = element.type();
@@ -120,8 +81,8 @@ ElementVariant PiecewiseConstantScalarSpace<ValueType>::elementVariant(
         return 4;
 }
 
-template <typename ValueType>
-void PiecewiseConstantScalarSpace<ValueType>::setElementVariant(
+template <typename BasisFunctionType>
+void PiecewiseConstantScalarSpace<BasisFunctionType>::setElementVariant(
         const Entity<0>& element, ElementVariant variant)
 {
     if (variant != elementVariant(element))
@@ -130,8 +91,8 @@ void PiecewiseConstantScalarSpace<ValueType>::setElementVariant(
                                  "setElementVariant(): invalid variant");
 }
 
-template <typename ValueType>
-void PiecewiseConstantScalarSpace<ValueType>::assignDofs()
+template <typename BasisFunctionType>
+void PiecewiseConstantScalarSpace<BasisFunctionType>::assignDofs()
 {
     m_view = this->m_grid.leafView();
     const Mapper& mapper = m_view->elementMapper();
@@ -165,20 +126,20 @@ void PiecewiseConstantScalarSpace<ValueType>::assignDofs()
     assert(globalDofCount_ == elementCount);
 }
 
-template <typename ValueType>
-bool PiecewiseConstantScalarSpace<ValueType>::dofsAssigned() const
+template <typename BasisFunctionType>
+bool PiecewiseConstantScalarSpace<BasisFunctionType>::dofsAssigned() const
 {
     return globalDofCount() == m_view->entityCount(0);
 }
 
-template <typename ValueType>
-int PiecewiseConstantScalarSpace<ValueType>::globalDofCount() const
+template <typename BasisFunctionType>
+int PiecewiseConstantScalarSpace<BasisFunctionType>::globalDofCount() const
 {
     return m_global2localDofs.size();
 }
 
-template <typename ValueType>
-void PiecewiseConstantScalarSpace<ValueType>::globalDofs(
+template <typename BasisFunctionType>
+void PiecewiseConstantScalarSpace<BasisFunctionType>::globalDofs(
         const Entity<0>& element, std::vector<GlobalDofIndex>& dofs) const
 {
     const Mapper& mapper = m_view->elementMapper();
@@ -186,8 +147,8 @@ void PiecewiseConstantScalarSpace<ValueType>::globalDofs(
     dofs = m_local2globalDofs[index];
 }
 
-template <typename ValueType>
-void PiecewiseConstantScalarSpace<ValueType>::global2localDofs(
+template <typename BasisFunctionType>
+void PiecewiseConstantScalarSpace<BasisFunctionType>::global2localDofs(
         const std::vector<GlobalDofIndex>& globalDofs,
         std::vector<std::vector<LocalDof> >& localDofs) const
 {
@@ -196,8 +157,8 @@ void PiecewiseConstantScalarSpace<ValueType>::global2localDofs(
         localDofs[i] = m_global2localDofs[globalDofs[i]];
 }
 
-template <typename ValueType>
-void PiecewiseConstantScalarSpace<ValueType>::globalDofPositions(
+template <typename BasisFunctionType>
+void PiecewiseConstantScalarSpace<BasisFunctionType>::globalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
     const int gridDim = domainDimension();

@@ -30,7 +30,7 @@
 namespace Fiber
 {
 
-template <typename ValueType> struct GeometricalData;
+template <typename CoordinateType> struct GeometricalData;
 
 } // namespace Fiber
 

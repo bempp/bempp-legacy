@@ -36,12 +36,9 @@
 namespace Fiber
 {
 
-//template <typename BasisValueType, typename ResultType,
-//          typename GeometryFactory, typename Enable = void>
-//class LocalAssemblerFactory;
 template <typename ValueType> class Basis;
 template <typename ValueType> class Function;
-template <typename ValueType> class LocalAssemblerForGridFunctions;
+template <typename ResultType> class LocalAssemblerForGridFunctions;
 
 } // namespace Fiber
 
@@ -52,7 +49,7 @@ class AssemblyOptions;
 class GeometryFactory;
 class Grid;
 template <int codim> class Entity;
-template <typename ValueType> class Space;
+template <typename BasisFunctionType> class Space;
 
 /** \brief Function defined on a grid. */
 template <typename BasisFunctionType, typename ResultType>
@@ -76,7 +73,7 @@ public:
                  const arma::Col<ResultType>& coefficients);
 
     /** \brief Construct from known expansion coefficients in the provided function space,
-        represented as Vector<ValueType>. */
+        represented as Vector<ResultType>. */
     GridFunction(const Space<BasisFunctionType>& space,
                  const Vector<ResultType>& coefficients);
 

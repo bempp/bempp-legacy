@@ -27,13 +27,13 @@
 namespace Bempp
 {
 
-template <typename ValueType>
-class ScalarSpace : public Space<ValueType>
+template <typename BasisFunctionType>
+class ScalarSpace : public Space<BasisFunctionType>
 {
 public:
-    typedef typename Space<ValueType>::CoordinateType CoordinateType;
+    typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
 
-    explicit ScalarSpace(Grid& grid) : Space<ValueType>(grid) {
+    explicit ScalarSpace(Grid& grid) : Space<BasisFunctionType>(grid) {
     }
 
     virtual const Fiber::Expression<CoordinateType>& shapeFunctionValueExpression() const {

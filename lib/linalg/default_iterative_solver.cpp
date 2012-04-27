@@ -43,10 +43,10 @@
 namespace Bempp
 {
 
-template <typename ArgumentType, typename ResultType>
-DefaultIterativeSolver<ArgumentType, ResultType>::DefaultIterativeSolver(
-        const LinearOperator<ArgumentType, ResultType>& linOp,
-        const GridFunction<ArgumentType, ResultType>& gridFun) :
+template <typename BasisFunctionType, typename ResultType>
+DefaultIterativeSolver<BasisFunctionType, ResultType>::DefaultIterativeSolver(
+        const LinearOperator<BasisFunctionType, ResultType>& linOp,
+        const GridFunction<BasisFunctionType, ResultType>& gridFun) :
     m_discreteOperator(linOp.assembledDiscreteLinearOperator()),
     m_rhs(new Vector<ResultType>(gridFun.coefficients())),
     m_space(linOp.trialSpace())
@@ -59,15 +59,15 @@ DefaultIterativeSolver<ArgumentType, ResultType>::DefaultIterativeSolver(
                                  "spaces do not match");
 }
 
-template <typename ArgumentType, typename ResultType>
-void DefaultIterativeSolver<ArgumentType, ResultType>::addPreconditioner(
+template <typename BasisFunctionType, typename ResultType>
+void DefaultIterativeSolver<BasisFunctionType, ResultType>::addPreconditioner(
         Teuchos::RCP<const Thyra::PreconditionerBase<ResultType> > preconditioner)
 {
     m_preconditioner = preconditioner;
 }
 
-template <typename ArgumentType, typename ResultType>
-void DefaultIterativeSolver<ArgumentType, ResultType>::initializeSolver(
+template <typename BasisFunctionType, typename ResultType>
+void DefaultIterativeSolver<BasisFunctionType, ResultType>::initializeSolver(
         Teuchos::RCP<Teuchos::ParameterList> paramList)
 {
     Teuchos::RCP<Teuchos::FancyOStream> out =
@@ -96,8 +96,8 @@ void DefaultIterativeSolver<ArgumentType, ResultType>::initializeSolver(
     }
 }
 
-template <typename ArgumentType, typename ResultType>
-void DefaultIterativeSolver<ArgumentType, ResultType>::solve()
+template <typename BasisFunctionType, typename ResultType>
+void DefaultIterativeSolver<BasisFunctionType, ResultType>::solve()
 {
     const size_t size = m_rhs->range()->dim();
     const size_t nrhs = m_rhs->domain()->dim();
@@ -113,47 +113,48 @@ void DefaultIterativeSolver<ArgumentType, ResultType>::solve()
     m_status = m_lhs->solve(Thyra::NOTRANS, *m_rhs, m_sol.ptr());
 }
 
-template <typename ArgumentType, typename ResultType>
-GridFunction<ArgumentType, ResultType>
-DefaultIterativeSolver<ArgumentType, ResultType>::getResult() const
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>
+DefaultIterativeSolver<BasisFunctionType, ResultType>::getResult() const
 {
     const size_t size = m_sol->range()->dim();
     const size_t nrhs = m_sol->domain()->dim();
 
     Thyra::ConstDetachedMultiVectorView<ResultType> solView(m_sol);
-    return GridFunction<ArgumentType, ResultType>(
+    return GridFunction<BasisFunctionType, ResultType>(
                 m_space, arma::Mat<ResultType>(solView.values(), size, nrhs));
 }
 
-template <typename ArgumentType, typename ResultType>
-typename Solver<ArgumentType, ResultType>::EStatus
-DefaultIterativeSolver<ArgumentType, ResultType>::getStatus() const
+template <typename BasisFunctionType, typename ResultType>
+typename Solver<BasisFunctionType, ResultType>::EStatus
+DefaultIterativeSolver<BasisFunctionType, ResultType>::getStatus() const
 {
     switch (m_status.solveStatus) {
     case Thyra::SOLVE_STATUS_CONVERGED:
-        return Solver<ArgumentType, ResultType>::CONVERGED;
+        return Solver<BasisFunctionType, ResultType>::CONVERGED;
     case Thyra::SOLVE_STATUS_UNCONVERGED:
-        return Solver<ArgumentType, ResultType>::UNCONVERGED;
+        return Solver<BasisFunctionType, ResultType>::UNCONVERGED;
     default:
-        return Solver<ArgumentType, ResultType>::UNKNOWN;
+        return Solver<BasisFunctionType, ResultType>::UNKNOWN;
     }
 }
 
-template <typename ArgumentType, typename ResultType>
-double DefaultIterativeSolver<ArgumentType, ResultType>::getSolveTolerance() const
+template <typename BasisFunctionType, typename ResultType>
+typename DefaultIterativeSolver<BasisFunctionType, ResultType>::MagnitudeType
+DefaultIterativeSolver<BasisFunctionType, ResultType>::getSolveTolerance() const
 {
     return m_status.achievedTol;
 }
 
-template <typename ArgumentType, typename ResultType>
-std::string DefaultIterativeSolver<ArgumentType, ResultType>::getSolverMessage() const
+template <typename BasisFunctionType, typename ResultType>
+std::string DefaultIterativeSolver<BasisFunctionType, ResultType>::getSolverMessage() const
 {
     return m_status.message;
 }
 
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 Thyra::SolveStatus<ResultType>
-DefaultIterativeSolver<ArgumentType, ResultType>::getThyraSolveStatus() const
+DefaultIterativeSolver<BasisFunctionType, ResultType>::getThyraSolveStatus() const
 {
     return m_status;
 }

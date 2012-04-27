@@ -30,6 +30,7 @@
 #include "../assembly/discrete_linear_operator.hpp"
 #include "../assembly/discrete_aca_linear_operator.hpp"
 #include "../assembly/vector.hpp"
+#include "../common/scalar_traits.hpp"
 
 #include <armadillo>
 #include <vector>
@@ -47,14 +48,16 @@
 namespace Bempp
 {
 
-template <typename ArgumentType, typename ResultType> class LinearOperator;
+template <typename BasisFunctionType, typename ResultType> class LinearOperator;
 
-template <typename ArgumentType, typename ResultType>
-class DefaultIterativeSolver : public Solver<ArgumentType, ResultType>
+template <typename BasisFunctionType, typename ResultType>
+class DefaultIterativeSolver : public Solver<BasisFunctionType, ResultType>
 {
 public:
-    DefaultIterativeSolver(const LinearOperator<ArgumentType, ResultType>& linOp,
-                           const GridFunction<ArgumentType, ResultType>& gridFun);
+    typedef typename ScalarTraits<ResultType>::RealType MagnitudeType;
+
+    DefaultIterativeSolver(const LinearOperator<BasisFunctionType, ResultType>& linOp,
+                           const GridFunction<BasisFunctionType, ResultType>& gridFun);
 
     void addPreconditioner(
             Teuchos::RCP<const Thyra::PreconditionerBase<ResultType> > preconditioner);
@@ -62,15 +65,15 @@ public:
 
     virtual void solve();
 
-    virtual GridFunction<ArgumentType, ResultType> getResult() const;
-    virtual typename Solver<ArgumentType, ResultType>::EStatus getStatus() const;
-    double getSolveTolerance() const;
+    virtual GridFunction<BasisFunctionType, ResultType> getResult() const;
+    virtual typename Solver<BasisFunctionType, ResultType>::EStatus getStatus() const;
+    MagnitudeType getSolveTolerance() const;
     std::string getSolverMessage() const;
     Thyra::SolveStatus<ResultType> getThyraSolveStatus() const;
 
 private:
     const DiscreteLinearOperator<ResultType>& m_discreteOperator;
-    const Space<ArgumentType>& m_space;
+    const Space<BasisFunctionType>& m_space;
 
     Teuchos::RCP<Thyra::LinearOpWithSolveBase<ResultType> > m_lhs;
     Teuchos::RCP<Thyra::MultiVectorBase<ResultType> > m_rhs;

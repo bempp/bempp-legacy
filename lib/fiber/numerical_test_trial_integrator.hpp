@@ -27,7 +27,7 @@ namespace Fiber
 {
 
 template <typename CoordinateType, typename IndexType> class OpenClHandler;
-template <typename ValueType> class Expression;
+template <typename CoordinateType> class Expression;
 template <typename CoordinateType> class RawGridGeometry;
 
 /** \brief Integration over pairs of elements on tensor-product point grids. */

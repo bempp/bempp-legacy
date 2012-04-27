@@ -42,9 +42,9 @@ void ConcreteGridView<DuneGridView>::getRawElementDataFloatImpl(
 }
 
 template <typename DuneGridView>
-template <typename ValueType>
+template <typename CoordinateType>
 void ConcreteGridView<DuneGridView>::getRawElementDataImpl(
-        arma::Mat<ValueType>& vertices,
+        arma::Mat<CoordinateType>& vertices,
         arma::Mat<int>& elementCorners,
         arma::Mat<char>& auxData) const
 {

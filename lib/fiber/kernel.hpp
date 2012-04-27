@@ -29,7 +29,7 @@
 namespace Fiber
 {
 
-template <typename ValueType> class GeometricalData;
+template <typename CoordinateType> class GeometricalData;
 
 template <typename ValueType>
 class Kernel

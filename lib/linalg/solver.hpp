@@ -26,7 +26,7 @@
 namespace Bempp
 {
 
-template <typename ArgumentType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 class Solver
 {
 public:
@@ -34,7 +34,7 @@ public:
 
     virtual void solve() = 0;
 
-    virtual GridFunction<ArgumentType, ResultType> getResult() const = 0;
+    virtual GridFunction<BasisFunctionType, ResultType> getResult() const = 0;
     virtual EStatus getStatus() const = 0;
 };
 

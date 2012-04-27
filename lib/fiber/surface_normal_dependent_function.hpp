@@ -37,7 +37,7 @@ namespace Fiber
   public:
       // Type of the function's values (e.g. float or std::complex<double>)
       typedef <implementiation-defined> ValueType;
-      typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+      typedef ScalarTraits<ValueType>::RealType CoordinateType;
 
       // Copy constructor
       Functor(const Functor& other);

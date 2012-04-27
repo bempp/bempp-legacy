@@ -39,7 +39,7 @@ namespace Bempp
 
 class AssemblyOptions;
 template <typename ValueType> class DiscreteLinearOperator;
-template <typename ValueType> class Space;
+template <typename BasisFunctionType> class Space;
 
 template <typename BasisFunctionType, typename ResultType>
 class AcaGlobalAssembler

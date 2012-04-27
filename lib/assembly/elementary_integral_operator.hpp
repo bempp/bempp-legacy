@@ -33,7 +33,7 @@
 namespace Fiber
 {
 
-template <typename ValueType> class Expression;
+template <typename CoordinateType> class Expression;
 template <typename ResultType> class LocalAssemblerForOperators;
 template <typename ResultType> class EvaluatorForIntegralOperators;
 
