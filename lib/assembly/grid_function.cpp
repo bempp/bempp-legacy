@@ -329,7 +329,7 @@ void GridFunction<BasisFunctionType, ResultType>::exportToVtk(
         VtkWriter::DataType dataType,
         const char* dataLabel,
         const char* fileNamesBase, const char* filesPath,
-        VtkWriter::OutputType type) const
+        VtkWriter::OutputType outputType) const
 {
     arma::Mat<ResultType> data;
     evaluateAtSpecialPoints(dataType, data);
@@ -337,15 +337,8 @@ void GridFunction<BasisFunctionType, ResultType>::exportToVtk(
     std::auto_ptr<GridView> view = m_space.grid().leafView();
     std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
 
-    throw std::logic_error("NOT WORKING!!!");
-//    if (dataType == VtkWriter::CELL_DATA)
-//        vtkWriter->addCellData(data, dataLabel);
-//    else // VERTEX_DATA
-//        vtkWriter->addVertexData(data, dataLabel);
-    if (filesPath)
-        vtkWriter->pwrite(fileNamesBase, filesPath, ".", type);
-    else
-        vtkWriter->write(fileNamesBase, type);
+    exportSingleDataSetToVtk(*vtkWriter, data, dataType, dataLabel,
+                             fileNamesBase, filesPath, outputType);
 }
 
 template <typename BasisFunctionType, typename ResultType>

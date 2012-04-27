@@ -26,6 +26,7 @@
 #include "../grid/grid.hpp"
 #include "../grid/grid_view.hpp"
 #include "../grid/vtk_writer.hpp"
+#include "../grid/vtk_writer_helper.hpp"
 
 #include "../space/piecewise_linear_continuous_scalar_space.hpp"
 
@@ -93,17 +94,13 @@ void InterpolatedFunction<ValueType>::evaluate(
 template <typename ValueType>
 void InterpolatedFunction<ValueType>::exportToVtk(
         const char* dataLabel, const char* fileNamesBase, const char* filesPath,
-        VtkWriter::OutputType type) const
+        VtkWriter::OutputType outputType) const
 {
     std::auto_ptr<GridView> view = m_grid.leafView();
     std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
 
-    throw std::logic_error("NOT WORKING!!!");
-//    vtkWriter->addVertexData(m_vertexValues, dataLabel);
-    if (filesPath)
-        vtkWriter->pwrite(fileNamesBase, filesPath, ".", type);
-    else
-        vtkWriter->write(fileNamesBase, type);
+    exportSingleDataSetToVtk(*vtkWriter, m_vertexValues, VtkWriter::VERTEX_DATA,
+                             dataLabel, fileNamesBase, filesPath, outputType);
 }
 
 //template <typename ValueType>
