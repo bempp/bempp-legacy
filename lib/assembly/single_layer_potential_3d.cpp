@@ -27,9 +27,9 @@ namespace Bempp
 
 template <typename BasisFunctionType, typename ResultType>
 SingleLayerPotential3D<BasisFunctionType, ResultType>::SingleLayerPotential3D(
-        const Space<BasisFunctionType>& testSpace, const Space<BasisFunctionType>& trialSpace) :
-    ElementaryWeaklySingularIntegralOperator<BasisFunctionType, ResultType>(
-        testSpace, trialSpace)
+        const Space<BasisFunctionType>& testSpace,
+        const Space<BasisFunctionType>& trialSpace) :
+    Base(testSpace, trialSpace)
 {
 }
 

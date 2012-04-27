@@ -24,15 +24,21 @@
 #include "elementary_weakly_singular_integral_operator.hpp"
 #include "../fiber/double_layer_potential_3d_kernel.hpp"
 #include "../fiber/scalar_function_value.hpp"
+#include "../common/scalar_traits.hpp"
 
 namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType = BasisFunctionType>
 class DoubleLayerPotential3D :
-        public ElementaryWeaklySingularIntegralOperator<BasisFunctionType, ResultType>
+        public ElementaryWeaklySingularIntegralOperator<
+        BasisFunctionType,
+        typename ScalarTraits<ResultType>::RealType,
+        ResultType>
 {
-    typedef ElementaryWeaklySingularIntegralOperator<BasisFunctionType, ResultType> Base;
+    typedef typename ScalarTraits<ResultType>::RealType KernelType;
+    typedef ElementaryWeaklySingularIntegralOperator<
+    BasisFunctionType, KernelType, ResultType> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
@@ -40,7 +46,7 @@ public:
                            const Space<BasisFunctionType>& trialSpace);
 
 private:
-    virtual const Fiber::Kernel<ResultType>& kernel() const {
+    virtual const Fiber::Kernel<KernelType>& kernel() const {
         return m_kernel;
     }
 
@@ -53,7 +59,7 @@ private:
     }
 
 private:
-    Fiber::DoubleLayerPotential3DKernel<ResultType> m_kernel;
+    Fiber::DoubleLayerPotential3DKernel<KernelType> m_kernel;
     Fiber::ScalarFunctionValue<CoordinateType> m_expression;
 };
 

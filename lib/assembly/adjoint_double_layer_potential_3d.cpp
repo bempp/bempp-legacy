@@ -29,8 +29,7 @@ template <typename BasisFunctionType, typename ResultType>
 AdjointDoubleLayerPotential3D<BasisFunctionType, ResultType>::
 AdjointDoubleLayerPotential3D(const Space<BasisFunctionType>& testSpace,
                               const Space<BasisFunctionType>& trialSpace) :
-    ElementaryWeaklySingularIntegralOperator<BasisFunctionType, ResultType>(
-        testSpace, trialSpace)
+    Base(testSpace, trialSpace)
 {
 }
 

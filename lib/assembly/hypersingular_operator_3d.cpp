@@ -28,8 +28,7 @@ namespace Bempp
 template <typename BasisFunctionType, typename ResultType>
 HypersingularOperator3D<BasisFunctionType, ResultType>::HypersingularOperator3D(
         const Space<BasisFunctionType>& testSpace, const Space<BasisFunctionType>& trialSpace) :
-    ElementaryWeaklySingularIntegralOperator<BasisFunctionType, ResultType>(
-        testSpace, trialSpace)
+    Base(testSpace, trialSpace)
 {
 }
 

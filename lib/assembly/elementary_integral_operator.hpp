@@ -47,7 +47,7 @@ template <typename BasisFunctionType, typename ResultType> class GridFunction;
 template <typename ValueType> class InterpolatedFunction;
 template <typename BasisFunctionType, typename ResultType> class WeakFormAcaAssemblyHelper;
 
-template <typename BasisFunctionType, typename ResultType>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class ElementaryIntegralOperator :
         public ElementaryLinearOperator<BasisFunctionType, ResultType>
 {
@@ -104,7 +104,7 @@ public:
     // TODO: define applyOnSurface() for *all* operators (including Id).
 
 private:
-    virtual const Fiber::Kernel<ResultType>& kernel() const = 0;
+    virtual const Fiber::Kernel<KernelType>& kernel() const = 0;
     virtual const Fiber::Expression<CoordinateType>& testExpression() const = 0;
     virtual const Fiber::Expression<CoordinateType>& trialExpression() const = 0;
 

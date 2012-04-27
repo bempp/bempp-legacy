@@ -24,19 +24,25 @@
 #include "elementary_weakly_singular_integral_operator.hpp"
 #include "../fiber/single_layer_potential_3d_kernel.hpp"
 #include "../fiber/surface_curl_3d.hpp"
+#include "../common/scalar_traits.hpp"
 
 namespace Bempp
 {
 
 // Hypersingular is obviously *not* weakly singular... but its
-// weak form apparently can be integrated with methods devised
+// weak form can be calculated with quadrature methods devised
 // for weakly singular operators.
-// FIXME: maybe rename "weaklysingular" to "singular"
+// FIXME: maybe rename "WeaklySingular" to "Singular"
 template <typename BasisFunctionType, typename ResultType = BasisFunctionType>
 class HypersingularOperator3D :
-        public ElementaryWeaklySingularIntegralOperator<BasisFunctionType, ResultType>
+        public ElementaryWeaklySingularIntegralOperator<
+        BasisFunctionType,
+        typename ScalarTraits<ResultType>::RealType,
+        ResultType>
 {
-    typedef ElementaryWeaklySingularIntegralOperator<BasisFunctionType, ResultType> Base;
+    typedef typename ScalarTraits<ResultType>::RealType KernelType;
+    typedef ElementaryWeaklySingularIntegralOperator<
+    BasisFunctionType, KernelType, ResultType> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
@@ -44,7 +50,7 @@ public:
                             const Space<BasisFunctionType>& trialSpace);
 
 private:
-    virtual const Fiber::Kernel<ResultType>& kernel() const {
+    virtual const Fiber::Kernel<KernelType>& kernel() const {
         return m_kernel;
     }
 
@@ -57,7 +63,7 @@ private:
     }
 
 private:
-    Fiber::SingleLayerPotential3DKernel<ResultType> m_kernel;
+    Fiber::SingleLayerPotential3DKernel<KernelType> m_kernel;
     Fiber::SurfaceCurl3D<CoordinateType> m_expression;
 };
 

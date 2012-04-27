@@ -72,7 +72,7 @@ public:
             const std::vector<int>& testIndices,
             const std::vector<std::vector<GlobalDofIndex> >& testGlobalDofs,
             const std::vector<std::vector<GlobalDofIndex> >& trialGlobalDofs,
-            typename ElementaryIntegralOperator<BasisFunctionType, ResultType>::LocalAssembler& assembler,
+            Fiber::LocalAssemblerForOperators<ResultType>& assembler,
             arma::Mat<ResultType>& result, MutexType& mutex) :
         m_testIndices(testIndices),
         m_testGlobalDofs(testGlobalDofs), m_trialGlobalDofs(trialGlobalDofs),
@@ -112,8 +112,7 @@ private:
     const std::vector<std::vector<GlobalDofIndex> >& m_testGlobalDofs;
     // mutable OK because Assembler is thread-safe. (Alternative to "mutable" here:
     // make assembler's internal integrator map mutable)
-    mutable typename ElementaryIntegralOperator<BasisFunctionType, ResultType>::
-        LocalAssembler& m_assembler;
+    mutable typename Fiber::LocalAssemblerForOperators<ResultType>& m_assembler;
     // mutable OK because write access to this matrix is protected by a mutex
     mutable arma::Mat<ResultType>& m_result;
 
@@ -123,24 +122,29 @@ private:
 
 } // namespace
 
-template <typename BasisFunctionType, typename ResultType>
-ElementaryIntegralOperator<BasisFunctionType, ResultType>::ElementaryIntegralOperator(
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+ElementaryIntegralOperator(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace) :
     ElementaryLinearOperator<BasisFunctionType, ResultType>(testSpace, trialSpace)
 {
 }
 
-template <typename BasisFunctionType, typename ResultType>
-bool ElementaryIntegralOperator<BasisFunctionType, ResultType>::supportsRepresentation(
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+bool
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+supportsRepresentation(
         AssemblyOptions::Representation repr) const
 {
     return (repr == AssemblyOptions::DENSE || repr == AssemblyOptions::ACA);
 }
 
-template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<typename ElementaryIntegralOperator<BasisFunctionType, ResultType>::LocalAssembler>
-ElementaryIntegralOperator<BasisFunctionType, ResultType>::makeAssembler(
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+std::auto_ptr<typename ElementaryIntegralOperator<
+BasisFunctionType, KernelType, ResultType>::LocalAssembler>
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+makeAssembler(
         const LocalAssemblerFactory& assemblerFactory,
         const GeometryFactory& geometryFactory,
         const Fiber::RawGridGeometry<CoordinateType>& rawGeometry,
@@ -156,9 +160,10 @@ ElementaryIntegralOperator<BasisFunctionType, ResultType>::makeAssembler(
                 openClHandler, cacheSingularIntegrals);
 }
 
-template <typename BasisFunctionType, typename ResultType>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-ElementaryIntegralOperator<BasisFunctionType, ResultType>::assembleWeakForm(
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+assembleWeakForm(
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
@@ -224,9 +229,10 @@ ElementaryIntegralOperator<BasisFunctionType, ResultType>::assembleWeakForm(
     return assembleWeakFormInternal(*assembler, options);
 }
 
-template <typename BasisFunctionType, typename ResultType>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-ElementaryIntegralOperator<BasisFunctionType, ResultType>::assembleWeakFormInternal(
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+assembleWeakFormInternal(
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
@@ -245,9 +251,10 @@ ElementaryIntegralOperator<BasisFunctionType, ResultType>::assembleWeakFormInter
     }
 }
 
-template <typename BasisFunctionType, typename ResultType>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-ElementaryIntegralOperator<BasisFunctionType, ResultType>::assembleWeakFormInDenseMode(
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+assembleWeakFormInDenseMode(
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
@@ -324,9 +331,10 @@ ElementaryIntegralOperator<BasisFunctionType, ResultType>::assembleWeakFormInDen
                 new DiscreteDenseLinearOperator<ResultType>(result));
 }
 
-template <typename BasisFunctionType, typename ResultType>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-ElementaryIntegralOperator<BasisFunctionType, ResultType>::assembleWeakFormInAcaMode(
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+assembleWeakFormInAcaMode(
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
@@ -337,9 +345,10 @@ ElementaryIntegralOperator<BasisFunctionType, ResultType>::assembleWeakFormInAca
                 testSpace, trialSpace, assembler, options);
 }
 
-template <typename BasisFunctionType, typename ResultType>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<InterpolatedFunction<ResultType> >
-ElementaryIntegralOperator<BasisFunctionType, ResultType>::applyOffSurface(
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+applyOffSurface(
         const GridFunction<BasisFunctionType, ResultType>& argument,
         const Grid& evaluationGrid,
         const LocalAssemblerFactory& factory,
@@ -394,9 +403,10 @@ ElementaryIntegralOperator<BasisFunctionType, ResultType>::applyOffSurface(
     return applyOffSurfaceWithKnownEvaluator(evaluationGrid, *evaluator, options);
 }
 
-template <typename BasisFunctionType, typename ResultType>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<InterpolatedFunction<ResultType> >
-ElementaryIntegralOperator<BasisFunctionType, ResultType>::applyOffSurfaceWithKnownEvaluator(
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+applyOffSurfaceWithKnownEvaluator(
         const Grid& evaluationGrid,
         const Evaluator& evaluator,
         const EvaluationOptions& options) const
@@ -453,6 +463,6 @@ ElementaryIntegralOperator<BasisFunctionType, ResultType>::applyOffSurfaceWithKn
                 new InterpolatedFunction<ResultType>(evaluationGrid, result));
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(ElementaryIntegralOperator);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(ElementaryIntegralOperator);
 
 } // namespace Bempp
