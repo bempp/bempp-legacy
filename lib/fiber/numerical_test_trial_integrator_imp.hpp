@@ -22,6 +22,7 @@
 
 #include "basis.hpp"
 #include "basis_data.hpp"
+#include "conjugate.hpp"
 #include "expression.hpp"
 #include "geometrical_data.hpp"
 #include "opencl_handler.hpp"
@@ -118,7 +119,7 @@ void NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory
                     for (int dim = 0; dim < componentCount; ++dim)
                         sum +=  m_quadWeights[point] *
                                 geomData.integrationElements(point) *
-                                testValues(dim, testDof, point) *
+                                conjugate(testValues(dim, testDof, point)) *
                                 trialValues(dim, trialDof, point);
                 result(testDof, trialDof, e) = sum;
             }
