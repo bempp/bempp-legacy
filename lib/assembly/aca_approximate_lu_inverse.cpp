@@ -172,9 +172,6 @@ void AcaApproximateLuInverse<ValueType>::applyImpl(
         const ValueType alpha,
         const ValueType beta) const
 {
-    //    std::cout << "alpha: " << alpha << "\n";
-    //    std::cout << "beta: " << beta << "\n";
-
     typedef Thyra::Ordinal Ordinal;
 
     // Note: the name is VERY misleading: these asserts don't disappear in
@@ -184,8 +181,6 @@ void AcaApproximateLuInverse<ValueType>::applyImpl(
     TEUCHOS_ASSERT(X_in.range()->isCompatible(*this->domain()));
     TEUCHOS_ASSERT(Y_inout->range()->isCompatible(*this->range()));
     TEUCHOS_ASSERT(Y_inout->domain()->isCompatible(*X_in.domain()));
-
-    //    std::cout << "Matrix top-left:\n" << asMatrix()(arma::span(0,3), arma::span(0,3));
 
     const Ordinal colCount = X_in.domain()->dim();
 
@@ -198,15 +193,6 @@ void AcaApproximateLuInverse<ValueType>::applyImpl(
         const Teuchos::ArrayRCP<const ValueType> xArray(xVec.sv().values());
         const Teuchos::ArrayRCP<ValueType> yArray(yVec.sv().values());
 
-        //        std::cout << "\n\nxArray:\n" << xArray << std::endl;
-        //        for (int i = xArray.lowerOffset(); i <= xArray.upperOffset(); ++i)
-        //            std::cout << xArray[i] << ", ";
-        //        std::cout << "\n";
-        //        std::cout << "\nyArray:\n" << yArray << std::endl;
-        //        for (int i = yArray.lowerOffset(); i <= yArray.upperOffset(); ++i)
-        //            std::cout << yArray[i] << ", ";
-        //        std::cout << "\n";
-
         // const_cast because it's more natural to have
         // a const arma::Col<ValueType> array than
         // an arma::Col<const ValueType> one.
@@ -215,24 +201,8 @@ void AcaApproximateLuInverse<ValueType>::applyImpl(
                     false /* copy_aux_mem */);
         arma::Col<ValueType> yCol(yArray.get(), yArray.size(), false);
 
-        //        std::cout << "xCol:\n" << xCol.t();
-        //        std::cout << "yCol:\n" << yCol.t();
-
         applyBuiltInImpl(static_cast<TranspositionMode>(M_trans),
                          xCol, yCol, alpha, beta);
-
-        //        std::cout << "\nmodified yArray:\n" << yArray << std::endl;
-        //        for (int i = yArray.lowerOffset(); i <= yArray.upperOffset(); ++i)
-        //            std::cout << yArray[i] << ", ";
-        //        std::cout << "\n";
-        //        std::cout << "modified yCol:\n" << yCol.t();
-
-        //        if (alpha == 1. && beta == 0.)
-        //            std::cout << "\n\n\nDIAGNOSTICS\n\n"
-        //                      << "xCol\n" << xCol << "\n"
-        //                      << "mat\n" << asMatrix() << "\n"
-        //                      << "yCol\n" << yCol << "\n\n\n\n########\n";
-
     }
 }
 
