@@ -9,6 +9,9 @@ namespace Fiber
 template <typename T>
 struct ScalarTraits
 {
+    // If you get a compilation error here, you are probably trying to use an
+    // unsupported floating-point type. The supported types are: float, double,
+    // std::complex<float> and std::complex<double>.
 };
 
 template <>
@@ -43,6 +46,9 @@ struct ScalarTraits<std::complex<double> >
 template <typename U, typename V>
 struct Coercion
 {
+    // If you get a compilation error here, chances are that you are trying to
+    // mix floating-point numbers with different precisions (e.g. float and
+    // double or std::complex<float> and double). BEM++ does not support this.
 };
 
 template <>
