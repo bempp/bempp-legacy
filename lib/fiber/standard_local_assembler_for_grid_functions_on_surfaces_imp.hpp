@@ -29,9 +29,10 @@
 namespace Fiber
 {
 
-template <typename BasisFunctionType, typename UserFunctionType, typename GeometryFactory>
-StandardLocalAssemblerForGridFunctionsOnSurfaces<BasisFunctionType,
-UserFunctionType, GeometryFactory>::
+template <typename BasisFunctionType, typename UserFunctionType,
+          typename ResultType, typename GeometryFactory>
+StandardLocalAssemblerForGridFunctionsOnSurfaces<
+BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
 StandardLocalAssemblerForGridFunctionsOnSurfaces(
         const GeometryFactory& geometryFactory,
         const RawGridGeometry<CoordinateType>& rawGeometry,
@@ -73,9 +74,10 @@ StandardLocalAssemblerForGridFunctionsOnSurfaces(
                 "elementCornerIndices");
 }
 
-template <typename BasisFunctionType, typename UserFunctionType, typename GeometryFactory>
-StandardLocalAssemblerForGridFunctionsOnSurfaces<BasisFunctionType,
-UserFunctionType, GeometryFactory>::
+template <typename BasisFunctionType, typename UserFunctionType,
+          typename ResultType, typename GeometryFactory>
+StandardLocalAssemblerForGridFunctionsOnSurfaces<
+BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
 ~StandardLocalAssemblerForGridFunctionsOnSurfaces()
 {
     // Note: obviously the destructor is assumed to be called only after
@@ -87,10 +89,11 @@ UserFunctionType, GeometryFactory>::
     m_testFunctionIntegrators.clear();
 }
 
-template <typename BasisFunctionType, typename UserFunctionType, typename GeometryFactory>
+template <typename BasisFunctionType, typename UserFunctionType,
+          typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForGridFunctionsOnSurfaces<BasisFunctionType,
-UserFunctionType, GeometryFactory>::
+StandardLocalAssemblerForGridFunctionsOnSurfaces<
+BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
 evaluateLocalWeakForms(
         const std::vector<int>& elementIndices,
         std::vector<arma::Col<ResultType> >& result)
@@ -154,10 +157,11 @@ evaluateLocalWeakForms(
     }
 }
 
-template <typename BasisFunctionType, typename UserFunctionType, typename GeometryFactory>
-const TestFunctionIntegrator<BasisFunctionType, UserFunctionType>&
-StandardLocalAssemblerForGridFunctionsOnSurfaces<BasisFunctionType,
-UserFunctionType, GeometryFactory>::
+template <typename BasisFunctionType, typename UserFunctionType,
+          typename ResultType, typename GeometryFactory>
+const TestFunctionIntegrator<BasisFunctionType, ResultType>&
+StandardLocalAssemblerForGridFunctionsOnSurfaces<
+BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
 selectIntegrator(int elementIndex)
 {
     SingleQuadratureDescriptor desc;
@@ -172,10 +176,11 @@ selectIntegrator(int elementIndex)
     return getIntegrator(desc);
 }
 
-template <typename BasisFunctionType, typename UserFunctionType, typename GeometryFactory>
-const TestFunctionIntegrator<BasisFunctionType, UserFunctionType>&
-StandardLocalAssemblerForGridFunctionsOnSurfaces<BasisFunctionType,
-UserFunctionType, GeometryFactory>::
+template <typename BasisFunctionType, typename UserFunctionType,
+          typename ResultType, typename GeometryFactory>
+const TestFunctionIntegrator<BasisFunctionType, ResultType>&
+StandardLocalAssemblerForGridFunctionsOnSurfaces<
+BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
 getIntegrator(const SingleQuadratureDescriptor& desc)
 {
     typename IntegratorMap::iterator it = m_testFunctionIntegrators.find(desc);
@@ -193,7 +198,7 @@ getIntegrator(const SingleQuadratureDescriptor& desc)
                                          points, weights);
 
     typedef NumericalTestFunctionIntegrator<BasisFunctionType, UserFunctionType,
-            GeometryFactory> ConcreteIntegrator;
+            ResultType, GeometryFactory> ConcreteIntegrator;
     Integrator* integrator(
                 new ConcreteIntegrator(points, weights,
                                        m_geometryFactory, m_rawGeometry,
@@ -216,10 +221,11 @@ getIntegrator(const SingleQuadratureDescriptor& desc)
     return *result.first->second;
 }
 
-template <typename BasisFunctionType, typename UserFunctionType, typename GeometryFactory>
+template <typename BasisFunctionType, typename UserFunctionType,
+          typename ResultType, typename GeometryFactory>
 inline int
-StandardLocalAssemblerForGridFunctionsOnSurfaces<BasisFunctionType,
-UserFunctionType, GeometryFactory>::
+StandardLocalAssemblerForGridFunctionsOnSurfaces<
+BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
 orderIncrement(int elementIndex) const
 {
     // TODO: add to constructor an option for increased-order quadrature

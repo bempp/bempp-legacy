@@ -23,6 +23,7 @@
 
 #include "local_assembler_for_grid_functions.hpp"
 #include "test_function_integrator.hpp"
+#include "scalar_traits.hpp"
 
 #include <tbb/concurrent_unordered_map.h>
 #include <map>
@@ -32,14 +33,16 @@ namespace Fiber
 {
 
 template <typename ValueType, typename IndexType> class OpenClHandler;
+template <typename CoordinateType> class Expression;
+template <typename ValueType> class Function;
+template <typename CoordinateType> class RawGridGeometry;
 
-template <typename BasisFunctionType, typename UserFunctionType, typename GeometryFactory>
+template <typename BasisFunctionType, typename UserFunctionType,
+          typename ResultType, typename GeometryFactory>
 class StandardLocalAssemblerForGridFunctionsOnSurfaces :
-        public LocalAssemblerForGridFunctions<
-        typename Coercion<BasisFunctionType, UserFunctionType>::Type>
+        public LocalAssemblerForGridFunctions<ResultType>
 {    
 public:
-    typedef typename Coercion<BasisFunctionType, UserFunctionType>::Type ResultType;
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
     StandardLocalAssemblerForGridFunctionsOnSurfaces(
@@ -57,7 +60,7 @@ public:
             std::vector<arma::Col<ResultType> >& result);
 
 private:
-    typedef TestFunctionIntegrator<BasisFunctionType, UserFunctionType> Integrator;
+    typedef TestFunctionIntegrator<BasisFunctionType, ResultType> Integrator;
 
     const Integrator& selectIntegrator(int elementIndex);
 

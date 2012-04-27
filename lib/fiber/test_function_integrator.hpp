@@ -21,6 +21,7 @@
 #ifndef fiber_test_function_integrator_hpp
 #define fiber_test_function_integrator_hpp
 
+#include "scalar_traits.hpp"
 #include "types.hpp"
 
 #include <armadillo>
@@ -32,11 +33,10 @@ namespace Fiber
 template <typename ValueType> class Basis;
 
 /** \brief Integration of products of test functions and arbitrary functions over elements. */
-template <typename BasisFunctionType, typename UserFunctionType>
+template <typename BasisFunctionType, typename ResultType>
 class TestFunctionIntegrator
 {
 public:
-    typedef typename Coercion<BasisFunctionType, UserFunctionType>::Type ResultType;
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
     virtual ~TestFunctionIntegrator() {}

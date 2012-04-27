@@ -35,8 +35,10 @@
 namespace Fiber
 {
 
-template <typename BasisFunctionType, typename UserFunctionType, typename GeometryFactory>
-NumericalTestFunctionIntegrator<BasisFunctionType, UserFunctionType, GeometryFactory>::
+template <typename BasisFunctionType, typename UserFunctionType,
+          typename ResultType, typename GeometryFactory>
+NumericalTestFunctionIntegrator<
+BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
 NumericalTestFunctionIntegrator(
         const arma::Mat<CoordinateType>& localQuadPoints,
         const std::vector<CoordinateType> quadWeights,
@@ -59,8 +61,10 @@ NumericalTestFunctionIntegrator(
                                     "numbers of points and weights do not match");
 }
 
-template <typename BasisFunctionType, typename UserFunctionType, typename GeometryFactory>
-void NumericalTestFunctionIntegrator<BasisFunctionType, UserFunctionType, GeometryFactory>::
+template <typename BasisFunctionType, typename UserFunctionType,
+          typename ResultType, typename GeometryFactory>
+void NumericalTestFunctionIntegrator<
+BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
 integrate(
         const std::vector<int>& elementIndices,
         const Basis<BasisFunctionType>& testBasis,

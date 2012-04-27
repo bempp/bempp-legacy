@@ -33,14 +33,13 @@ template <typename CoordinateType> class RawGridGeometry;
 
 /** \brief Integration over pairs of elements on tensor-product point grids. */
 template <typename BasisFunctionType, typename UserFunctionType,
-          typename GeometryFactory>
+          typename ResultType, typename GeometryFactory>
 class NumericalTestFunctionIntegrator :
-        public TestFunctionIntegrator<BasisFunctionType, UserFunctionType>
+        public TestFunctionIntegrator<BasisFunctionType, ResultType>
 {
 public:
-    typedef TestFunctionIntegrator<BasisFunctionType, UserFunctionType> Base;
+    typedef TestFunctionIntegrator<BasisFunctionType, ResultType> Base;
     typedef typename Base::CoordinateType CoordinateType;
-    typedef typename Base::ResultType ResultType;
 
     NumericalTestFunctionIntegrator(
             const arma::Mat<CoordinateType>& localQuadPoints,

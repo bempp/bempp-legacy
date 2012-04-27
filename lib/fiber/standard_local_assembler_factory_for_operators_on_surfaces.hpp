@@ -56,14 +56,6 @@ public:
         m_accuracyOptions(accuracyOptions) {
     }
 
-private:
-    typedef StandardLocalAssemblerForIdentityOperatorOnSurface<
-        BasisFunctionType, ResultType, GeometryFactory>
-        LocalAssemblerForIdentityOperator_;
-    typedef StandardLocalAssemblerForGridFunctionsOnSurfaces<
-        BasisFunctionType, ResultType, GeometryFactory>
-        LocalAssemblerForGridFunctions_;
-
 public:
     virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
     makeAssemblerForIdentityOperators(
@@ -74,27 +66,14 @@ public:
             const Expression<CoordinateType>& testExpression,
             const Expression<CoordinateType>& trialExpression,
             const OpenClHandler<CoordinateType, int>& openClHandler) const {
+        typedef StandardLocalAssemblerForIdentityOperatorOnSurface<
+                BasisFunctionType, ResultType, GeometryFactory>
+                LocalAssemblerForIdentityOperator_;
         return std::auto_ptr<LocalAssemblerForOperators<ResultType> >(
                     new LocalAssemblerForIdentityOperator_(
                         geometryFactory, rawGeometry,
                         testBases, trialBases,
                         testExpression, trialExpression,
-                        openClHandler));
-    }
-
-    virtual std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >
-    makeAssemblerForGridFunctions(
-            const GeometryFactory& geometryFactory,
-            const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<BasisFunctionType>*>& testBases,
-            const Expression<CoordinateType>& testExpression,
-            const Function<ResultType>& function,
-            const OpenClHandler<CoordinateType, int>& openClHandler) const {
-        return std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >(
-                    new LocalAssemblerForGridFunctions_(
-                        geometryFactory, rawGeometry,
-                        testBases,
-                        testExpression, function,
                         openClHandler));
     }
 
@@ -121,6 +100,26 @@ private:
                         testExpression, kernel, trialExpression,
                         openClHandler, cacheSingularIntegrals,
                         this->accuracyOptions()));
+    }
+
+    virtual std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >
+    makeAssemblerForGridFunctionsImplRealUserFunction(
+            const GeometryFactory& geometryFactory,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
+            const std::vector<const Basis<BasisFunctionType>*>& testBases,
+            const Expression<CoordinateType>& testExpression,
+            const Function<CoordinateType>& function,
+            const OpenClHandler<CoordinateType, int>& openClHandler) const {
+        typedef CoordinateType UserFunctionType;
+        typedef StandardLocalAssemblerForGridFunctionsOnSurfaces<
+            BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>
+            LocalAssemblerForGridFunctions_;
+        return std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >(
+                    new LocalAssemblerForGridFunctions_(
+                        geometryFactory, rawGeometry,
+                        testBases,
+                        testExpression, function,
+                        openClHandler));
     }
 
     virtual std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
@@ -199,6 +198,26 @@ private:
                         testExpression, kernel, trialExpression,
                         openClHandler, cacheSingularIntegrals,
                         this->accuracyOptions()));
+    }
+
+    virtual std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >
+    makeAssemblerForGridFunctionsImplComplexUserFunction(
+            const GeometryFactory& geometryFactory,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
+            const std::vector<const Basis<BasisFunctionType>*>& testBases,
+            const Expression<CoordinateType>& testExpression,
+            const Function<ResultType>& function,
+            const OpenClHandler<CoordinateType, int>& openClHandler) const {
+        typedef ResultType UserFunctionType;
+        typedef StandardLocalAssemblerForGridFunctionsOnSurfaces<
+            BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>
+            LocalAssemblerForGridFunctions_;
+        return std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >(
+                    new LocalAssemblerForGridFunctions_(
+                        geometryFactory, rawGeometry,
+                        testBases,
+                        testExpression, function,
+                        openClHandler));
     }
 
     virtual std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
