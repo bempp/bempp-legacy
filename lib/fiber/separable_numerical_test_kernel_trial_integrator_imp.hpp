@@ -28,6 +28,7 @@
 
 #include "basis.hpp"
 #include "basis_data.hpp"
+#include "conjugate.hpp"
 #include "expression.hpp"
 #include "geometrical_data.hpp"
 #include "kernel.hpp"
@@ -240,7 +241,7 @@ integrateCpu(
                             for (int dim = 0; dim < testComponentCount; ++dim)
                                 sum +=  m_testQuadWeights[testPoint] *
                                         testGeomData.integrationElements(testPoint) *
-                                        testValues(dim, testDof, testPoint) *
+                                        conjugate(testValues(dim, testDof, testPoint)) *
                                         kernelValues(0, testPoint, 0, trialPoint) *
                                         trialValues(dim, trialDof, trialPoint) *
                                         trialGeomData.integrationElements(trialPoint) *
@@ -258,7 +259,7 @@ integrateCpu(
                                 for (int testDim = 0; testDim < testComponentCount; ++testDim)
                                     sum +=  m_testQuadWeights[testPoint] *
                                             testGeomData.integrationElements(testPoint) *
-                                            testValues(testDim, testDof, testPoint) *
+                                            conjugate(testValues(testDim, testDof, testPoint)) *
                                             kernelValues(testDim, testPoint, trialDim, trialPoint) *
                                             trialValues(trialDim, trialDof, trialPoint) *
                                             trialGeomData.integrationElements(trialPoint) *
@@ -683,7 +684,7 @@ integrateCpu(
                             for (int dim = 0; dim < testComponentCount; ++dim)
                                 sum +=  m_testQuadWeights[testPoint] *
                                         testGeomData.integrationElements(testPoint) *
-                                        testValues(dim, testDof, testPoint) *
+                                        conjugate(testValues(dim, testDof, testPoint)) *
                                         kernelValues(0, testPoint, 0, trialPoint) *
                                         trialValues(dim, trialDof, trialPoint) *
                                         trialGeomData.integrationElements(trialPoint) *
@@ -701,7 +702,7 @@ integrateCpu(
                                 for (int testDim = 0; testDim < testComponentCount; ++testDim)
                                     sum +=  m_testQuadWeights[testPoint] *
                                             testGeomData.integrationElements(testPoint) *
-                                            testValues(testDim, testDof, testPoint) *
+                                            conjugate(testValues(testDim, testDof, testPoint)) *
                                             kernelValues(testDim, testPoint, trialDim, trialPoint) *
                                             trialValues(trialDim, trialDof, trialPoint) *
                                             trialGeomData.integrationElements(trialPoint) *

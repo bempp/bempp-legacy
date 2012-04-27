@@ -26,6 +26,7 @@
 
 #include "basis.hpp"
 #include "basis_data.hpp"
+#include "conjugate.hpp"
 #include "expression.hpp"
 #include "geometrical_data.hpp"
 #include "kernel.hpp"
@@ -179,7 +180,7 @@ integrate(
                         for (int dim = 0; dim < testComponentCount; ++dim)
                             sum +=  m_quadWeights[point] *
                                     testGeomData.integrationElements(point) *
-                                    testValues(dim, testDof, point) *
+                                    conjugate(testValues(dim, testDof, point)) *
                                     kernelValues(0, 0, point) *
                                     trialValues(dim, trialDof, point) *
                                     trialGeomData.integrationElements(point);
@@ -195,7 +196,7 @@ integrate(
                             for (int testDim = 0; testDim < testComponentCount; ++testDim)
                                 sum +=  m_quadWeights[point] *
                                         testGeomData.integrationElements(point) *
-                                        testValues(testDim, testDof, point) *
+                                        conjugate(testValues(testDim, testDof, point)) *
                                         kernelValues(testDim, trialDim, point) *
                                         trialValues(trialDim, trialDof, point) *
                                         trialGeomData.integrationElements(point);
@@ -288,7 +289,7 @@ integrate(
                         for (int dim = 0; dim < testComponentCount; ++dim)
                             sum +=  m_quadWeights[point] *
                                     testGeomData.integrationElements(point) *
-                                    testValues(dim, testDof, point) *
+                                    conjugate(testValues(dim, testDof, point)) *
                                     kernelValues(0, 0, point) *
                                     trialValues(dim, trialDof, point) *
                                     trialGeomData.integrationElements(point);
@@ -304,7 +305,7 @@ integrate(
                             for (int testDim = 0; testDim < testComponentCount; ++testDim)
                                 sum +=  m_quadWeights[point] *
                                         testGeomData.integrationElements(point) *
-                                        testValues(testDim, testDof, point) *
+                                        conjugate(testValues(testDim, testDof, point)) *
                                         kernelValues(testDim, trialDim, point) *
                                         trialValues(trialDim, trialDof, point) *
                                         trialGeomData.integrationElements(point);

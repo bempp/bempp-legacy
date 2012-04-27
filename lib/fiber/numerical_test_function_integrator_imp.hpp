@@ -22,6 +22,7 @@
 
 #include "basis.hpp"
 #include "basis_data.hpp"
+#include "conjugate.hpp"
 #include "expression.hpp"
 #include "function.hpp"
 #include "geometrical_data.hpp"
@@ -121,7 +122,7 @@ integrate(
                 for (int dim = 0; dim < componentCount; ++dim)
                     sum +=  m_quadWeights[point] *
                             geomData.integrationElements(point) *
-                            testValues(dim, testDof, point) *
+                            conjugate(testValues(dim, testDof, point)) *
                             functionValues(dim, point);
             result(testDof, e) = sum;
         }
