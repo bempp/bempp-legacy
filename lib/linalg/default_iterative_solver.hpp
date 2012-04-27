@@ -56,6 +56,11 @@ public:
     DefaultIterativeSolver(const LinearOperator<ValueType>& linOp,
                            const GridFunction<ValueType>& gridFun);
 
+    static Teuchos::RCP<Teuchos::ParameterList>
+        defaultGmresParameterList(ValueType tol);
+    static Teuchos::RCP<Teuchos::ParameterList>
+        defaultCgParameterList(ValueType tol);
+
     void addPreconditioner(
             Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > preconditioner);
     void initializeSolver(Teuchos::RCP<Teuchos::ParameterList> paramList);
@@ -64,7 +69,7 @@ public:
 
     virtual GridFunction<ValueType> getResult() const;
     virtual typename Solver<ValueType>::EStatus getStatus() const;
-    double getSolveTolerance() const;
+    ValueType getSolveTolerance() const;
     std::string getSolverMessage() const;
     Thyra::SolveStatus<ValueType> getThyraSolveStatus() const;
 
@@ -78,9 +83,6 @@ private:
     Thyra::SolveStatus<ValueType> m_status;
     Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > m_preconditioner;
 };
-
-Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(double tol);
-Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(double tol);
 
 } // namespace Bempp
 
