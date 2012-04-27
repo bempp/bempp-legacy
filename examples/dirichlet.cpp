@@ -59,7 +59,7 @@
 using namespace Bempp;
 
 typedef double BFT; // basis function type
-typedef double RT; // kernel (and hence result) type
+typedef double RT; // result type (type used to represent discrete operators)
 
 class MyFunctor
 {
@@ -126,7 +126,7 @@ int main(int argc, char* argv[])
 
     LinearOperatorSuperposition<BFT, RT> rhsOp = -0.5 * id + dlp;
 
-    // Assemble the Operators
+    // Assemble the operators
 
     slp.assemble(factory, assemblyOptions);
     rhsOp.assemble(factory, assemblyOptions);
@@ -137,24 +137,29 @@ int main(int argc, char* argv[])
     OrdinaryFunction<MyFunctor> function(functor);
 
     GridFunction<BFT, RT> u(HplusHalfSpace, function, factory, assemblyOptions);
+    u.coefficients().asArmadilloVector().print("u");
 
     // Assemble the rhs
 
     std::cout << "Assemble rhs" << std::endl;
 
     GridFunction<BFT, RT> rhs = rhsOp * u;
+    rhs.coefficients().asArmadilloVector().print("rhs");
 
-    // Initialize the iterative solver
+    // Initialize the solver
 
     std::cout << "Initialize solver" << std::endl;
 
+    // WARNING: The default iterative solver does not support
+    // complex-valued operators, hence if you typedef RT to std::complex<...>,
+    // you need to use the direct solver.
 #ifdef WITH_TRILINOS
     DefaultIterativeSolver<BFT, RT> solver(slp, rhs);
     solver.initializeSolver(defaultGmresParameterList(1e-5));
     solver.solve();
     std::cout << solver.getSolverMessage() << std::endl;
 #else
-    DefaultDirectSolver<RT> solver(slp, rhs);
+    DefaultDirectSolver<BFT, RT> solver(slp, rhs);
     solver.solve();
 #endif
 
@@ -167,15 +172,16 @@ int main(int argc, char* argv[])
     solFun.exportToVtk(VtkWriter::CELL_DATA, "Neumann_data",
                        "calculated_neumann_data");
 
-    // Uncomment the block below if you are solving the problem on a sphere and
-    // you want to compare the numerical and analytical solution.
+//     Uncomment the block below if you are solving the problem on a sphere and
+//     you want to compare the numerical and analytical solution.
 
-    // arma::Col<FloatType> solutionCoefficients =
-    //         solFun.coefficients().asArmadilloVector();
+//     arma::Col<RT> solutionCoefficients =
+//             solFun.coefficients().asArmadilloVector();
+//     std::cout << solutionCoefficients << std::endl;
 
-    // arma::Col<FloatType> deviation = solutionCoefficients - (-1.);
-    // // % in Armadillo -> elementwise multiplication
-    // FloatType stdDev = sqrt(arma::accu(deviation % deviation) /
-    //                      solutionCoefficients.n_rows);
-    // std::cout << "Standard deviation: " << stdDev << std::endl;
+//     arma::Col<RT> deviation = solutionCoefficients - static_cast<RT>(-1.);
+//     // % in Armadillo -> elementwise multiplication
+//     RT stdDev = sqrt(arma::accu(deviation % deviation) /
+//                          static_cast<RT>(solutionCoefficients.n_rows));
+//     std::cout << "Standard deviation: " << stdDev << std::endl;
 }
