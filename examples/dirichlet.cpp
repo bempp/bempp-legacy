@@ -137,14 +137,12 @@ int main(int argc, char* argv[])
     OrdinaryFunction<MyFunctor> function(functor);
 
     GridFunction<BFT, RT> u(HplusHalfSpace, function, factory, assemblyOptions);
-    u.coefficients().asArmadilloVector().print("u");
 
     // Assemble the rhs
 
     std::cout << "Assemble rhs" << std::endl;
 
     GridFunction<BFT, RT> rhs = rhsOp * u;
-    rhs.coefficients().asArmadilloVector().print("rhs");
 
     // Initialize the solver
 
