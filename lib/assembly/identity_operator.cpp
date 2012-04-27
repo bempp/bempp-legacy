@@ -40,6 +40,7 @@
 #include "../grid/mapper.hpp"
 #include "../space/space.hpp"
 
+#include <boost/type_traits/is_complex.hpp>
 #include <stdexcept>
 #include <vector>
 
@@ -242,7 +243,6 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInDenseMode(
         typename IdentityOperator<BasisFunctionType, ResultType>::LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
-
     const Space<BasisFunctionType>& testSpace = this->testSpace();
     const Space<BasisFunctionType>& trialSpace = this->trialSpace();
 
@@ -294,6 +294,12 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparseMode(
         const AssemblyOptions& options) const
 {
 #ifdef WITH_TRILINOS
+    if (boost::is_complex<BasisFunctionType>::value)
+        throw std::runtime_error(
+                "IdentityOperator::assembleWeakFormInSparseMode(): "
+                "sparse-mode assembly of identity operators for "
+                "complex-valued basis functions is not supported yet");
+
     const Space<BasisFunctionType>& testSpace = this->testSpace();
     const Space<BasisFunctionType>& trialSpace = this->trialSpace();
 
