@@ -96,6 +96,4 @@ private:
 
 } // namespace Fiber
 
-#include "standard_local_assembler_for_identity_operator_on_surface_imp.hpp"
-
 #endif

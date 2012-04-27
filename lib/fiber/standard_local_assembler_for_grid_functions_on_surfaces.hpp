@@ -82,6 +82,4 @@ private:
 
 } // namespace Fiber
 
-#include "standard_local_assembler_for_grid_functions_on_surfaces_imp.hpp"
-
 #endif

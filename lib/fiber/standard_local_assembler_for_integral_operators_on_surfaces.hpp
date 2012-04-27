@@ -124,6 +124,4 @@ private:
 
 } // namespace Fiber
 
-#include "standard_local_assembler_for_integral_operators_on_surfaces_imp.hpp"
-
 #endif
