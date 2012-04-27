@@ -40,14 +40,6 @@ template <typename eT> class Mat;
 
 }
 
-namespace Fiber
-{
-
-//template <typename BasisValueType, typename ResultType, typename GeometryFactory>
-//class LocalAssemblerFactory;
-
-} // namespace Fiber
-
 namespace Bempp
 {
 
