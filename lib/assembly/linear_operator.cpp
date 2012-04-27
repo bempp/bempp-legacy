@@ -21,6 +21,8 @@
 #include "linear_operator.hpp"
 #include "linear_operator_superposition.hpp"
 #include "discrete_linear_operator.hpp"
+#include "grid_function.hpp"
+
 #include "../fiber/explicit_instantiation.hpp"
 
 #include <stdexcept>
@@ -125,6 +127,8 @@ template <typename BasisFunctionType, typename ResultType>
 const Space<BasisFunctionType>& LinearOperator<BasisFunctionType, ResultType>::trialSpace() const
 {
     return m_trialSpace;
+//    LinearOperatorSuperposition<BasisFunctionType, ResultType> ls =
+//            *this * static_cast<ResultType>(5.);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -156,29 +160,38 @@ LinearOperatorSuperposition<BasisFunctionType, ResultType> operator-(
 }
 
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
-LinearOperatorSuperposition<BasisFunctionType, ResultType> operator*(
-        const LinearOperator<BasisFunctionType, ResultType>& op, const ScalarType& scalar)
+typename boost::enable_if<
+    typename boost::mpl::has_key<
+        boost::mpl::set<float, double, std::complex<float>, std::complex<double> >,
+        ScalarType>,
+    LinearOperatorSuperposition<BasisFunctionType, ResultType> >::type
+operator*(
+        const LinearOperator<BasisFunctionType, ResultType>& op,
+        const ScalarType& scalar)
 {
-    return LinearOperatorSuperposition<BasisFunctionType, ResultType>(op, scalar);
+    return LinearOperatorSuperposition<BasisFunctionType, ResultType>(
+                op, static_cast<ResultType>(scalar));
 }
 
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
 LinearOperatorSuperposition<BasisFunctionType, ResultType> operator*(
-        const ScalarType& scalar, const LinearOperator<BasisFunctionType, ResultType>& op)
+        const ScalarType& scalar,
+        const LinearOperator<BasisFunctionType, ResultType>& op)
 {
-    return LinearOperatorSuperposition<BasisFunctionType, ResultType>(op, scalar);
+     return operator*(op, scalar);
 }
 
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
 LinearOperatorSuperposition<BasisFunctionType, ResultType> operator/(
-        const LinearOperator<BasisFunctionType, ResultType>& op, const ScalarType& scalar)
+        const LinearOperator<BasisFunctionType, ResultType>& op,
+        const ScalarType& scalar)
 {
-    if (scalar == 0.)
+    if (scalar == static_cast<ScalarType>(0.))
         throw std::runtime_error("LinearOperatorSuperposition::operator/(): "
                                  "Division by zero");
 
     return LinearOperatorSuperposition<BasisFunctionType, ResultType>(
-                op, static_cast<ResultType>(1.) / scalar);
+                op, static_cast<ResultType>(static_cast<ScalarType>(1.) / scalar));
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -194,156 +207,94 @@ GridFunction<BasisFunctionType, ResultType> operator*(
     return result;
 }
 
+#define INSTANTIATE_FREE_FUNCTIONS(BASIS, RESULT) \
+    template LinearOperatorSuperposition<BASIS, RESULT> operator+( \
+    const LinearOperator<BASIS, RESULT>& op1, \
+    const LinearOperator<BASIS, RESULT>& op2); \
+    template LinearOperatorSuperposition<BASIS, RESULT> operator-( \
+    const LinearOperator<BASIS, RESULT>& op1, \
+    const LinearOperator<BASIS, RESULT>& op2); \
+    template GridFunction<BASIS, RESULT> operator*( \
+    const LinearOperator<BASIS, RESULT>& op, \
+    const GridFunction<BASIS, RESULT>& fun)
+#define INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(BASIS, RESULT, SCALAR) \
+    template LinearOperatorSuperposition<BASIS, RESULT> operator*( \
+    const LinearOperator<BASIS, RESULT>& op, const SCALAR& scalar); \
+    template LinearOperatorSuperposition<BASIS, RESULT> operator*( \
+    const SCALAR& scalar, const LinearOperator<BASIS, RESULT>& op); \
+    template LinearOperatorSuperposition<BASIS, RESULT> operator/( \
+    const LinearOperator<BASIS, RESULT>& op, const SCALAR& scalar)
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperator);
 
-//#ifdef COMPILE_FOR_FLOAT
-//template class LinearOperator<float>;
-//template LinearOperatorSuperposition<float> operator+(
-//    const LinearOperator<float>& op1, const LinearOperator<float>& op2);
-//template LinearOperatorSuperposition<float> operator-(
-//    const LinearOperator<float>& op1, const LinearOperator<float>& op2);
-//template LinearOperatorSuperposition<float> operator*(
-//    const LinearOperator<float>& op, const float& scalar);
-//template LinearOperatorSuperposition<float> operator*(
-//    const LinearOperator<float>& op, const double& scalar);
-//template LinearOperatorSuperposition<float> operator*(
-//    const float& scalar, const LinearOperator<float>& op);
-//template LinearOperatorSuperposition<float> operator*(
-//    const double& scalar, const LinearOperator<float>& op);
-//template LinearOperatorSuperposition<float> operator/(
-//    const LinearOperator<float>& op, const float& scalar);
-//template LinearOperatorSuperposition<float> operator/(
-//    const LinearOperator<float>& op, const double& scalar);
-//template GridFunction<float> operator*(
-//    const LinearOperator<float>& op, const GridFunction<float>& fun);
-//#endif
-//#ifdef COMPILE_FOR_DOUBLE
-//template class LinearOperator<double>;
-//template LinearOperatorSuperposition<double> operator+(
-//    const LinearOperator<double>& op1, const LinearOperator<double>& op2);
-//template LinearOperatorSuperposition<double> operator-(
-//    const LinearOperator<double>& op1, const LinearOperator<double>& op2);
-//template LinearOperatorSuperposition<double> operator*(
-//    const LinearOperator<double>& op, const float& scalar);
-//template LinearOperatorSuperposition<double> operator*(
-//    const LinearOperator<double>& op, const double& scalar);
-//template LinearOperatorSuperposition<double> operator*(
-//    const float& scalar, const LinearOperator<double>& op);
-//template LinearOperatorSuperposition<double> operator*(
-//    const double& scalar, const LinearOperator<double>& op);
-//template LinearOperatorSuperposition<double> operator/(
-//    const LinearOperator<double>& op, const float& scalar);
-//template LinearOperatorSuperposition<double> operator/(
-//    const LinearOperator<double>& op, const double& scalar);
-//template GridFunction<double> operator*(
-//    const LinearOperator<double>& op, const GridFunction<double>& fun);
-//#endif
-//#ifdef COMPILE_FOR_COMPLEX_FLOAT
-//#include <complex>
-//template class LinearOperator<std::complex<float> >;
-//template LinearOperatorSuperposition<std::complex<float> > operator+(
-//    const LinearOperator<std::complex<float> >& op1,
-//    const LinearOperator<std::complex<float> >& op2);
-//template LinearOperatorSuperposition<std::complex<float> > operator-(
-//    const LinearOperator<std::complex<float> >& op1,
-//    const LinearOperator<std::complex<float> >& op2);
+#if defined(ENABLE_SINGLE_PRECISION)
+INSTANTIATE_FREE_FUNCTIONS(
+        float, float);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        float, float, float);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        float, float, double);
+#endif
 
-//template LinearOperatorSuperposition<std::complex<float> > operator*(
-//    const LinearOperator<std::complex<float> >& op,
-//    const float& scalar);
-//template LinearOperatorSuperposition<std::complex<float> > operator*(
-//    const LinearOperator<std::complex<float> >& op,
-//    const double& scalar);
-//template LinearOperatorSuperposition<std::complex<float> > operator*(
-//    const LinearOperator<std::complex<float> >& op,
-//    const std::complex<float>& scalar);
-//template LinearOperatorSuperposition<std::complex<float> > operator*(
-//    const LinearOperator<std::complex<float> >& op,
-//    const std::complex<double>& scalar);
+#if defined(ENABLE_SINGLE_PRECISION) && defined(ENABLE_COMPLEX_KERNELS)
+INSTANTIATE_FREE_FUNCTIONS(
+        float, std::complex<float>);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        float, std::complex<float>, float);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        float, std::complex<float>, double);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        float, std::complex<float>, std::complex<float>);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        float, std::complex<float>, std::complex<double>);
+#endif
 
-//template LinearOperatorSuperposition<std::complex<float> > operator*(
-//    const float& scalar,
-//    const LinearOperator<fstd::complex<float> >& op);
-//template LinearOperatorSuperposition<std::complex<float> > operator*(
-//    const double& scalar,
-//    const LinearOperator<fstd::complex<float> >& op);
-//template LinearOperatorSuperposition<std::complex<float> > operator*(
-//    const std::complex<float>& scalar,
-//    const LinearOperator<fstd::complex<float> >& op);
-//template LinearOperatorSuperposition<std::complex<float> > operator*(
-//    const std::complex<double>& scalar,
-//    const LinearOperator<fstd::complex<float> >& op);
+#if defined(ENABLE_SINGLE_PRECISION) && defined(ENABLE_COMPLEX_BASIS_FUNCTIONS)
+INSTANTIATE_FREE_FUNCTIONS(
+        std::complex<float>, std::complex<float>);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        std::complex<float>, std::complex<float>, float);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        std::complex<float>, std::complex<float>, double);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        std::complex<float>, std::complex<float>, std::complex<float>);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        std::complex<float>, std::complex<float>, std::complex<double>);
+#endif
 
-//template LinearOperatorSuperposition<std::complex<float> > operator/(
-//    const LinearOperator<std::complex<float> >& op,
-//    const float& scalar);
-//template LinearOperatorSuperposition<std::complex<float> > operator/(
-//    const LinearOperator<std::complex<float> >& op,
-//    const double& scalar);
-//template LinearOperatorSuperposition<std::complex<float> > operator/(
-//    const LinearOperator<std::complex<float> >& op,
-//    const std::complex<float>& scalar);
-//template LinearOperatorSuperposition<std::complex<float> > operator/(
-//    const LinearOperator<std::complex<float> >& op,
-//    const std::complex<double>& scalar);
+#if defined(ENABLE_DOUBLE_PRECISION)
+INSTANTIATE_FREE_FUNCTIONS(
+        double, double);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        double, double, float);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        double, double, double);
+#endif
 
-//template GridFunction<std::complex<float> > operator*(
-//    const LinearOperator<std::complex<float> >& op,
-//    const GridFunction<std::complex<float> >& fun);
-//bc;
-//#endif
-//#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-//#include <complex>
-//template class LinearOperator<std::complex<double> >;
-//template LinearOperatorSuperposition<std::complex<double> > operator+(
-//    const LinearOperator<std::complex<double> >& op1,
-//    const LinearOperator<std::complex<double> >& op2);
-//template LinearOperatorSuperposition<std::complex<double> > operator-(
-//    const LinearOperator<std::complex<double> >& op1,
-//    const LinearOperator<std::complex<double> >& op2);
+#if defined(ENABLE_DOUBLE_PRECISION) && defined(ENABLE_COMPLEX_KERNELS)
+INSTANTIATE_FREE_FUNCTIONS(
+        double, std::complex<double>);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        double, std::complex<double>, float);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        double, std::complex<double>, double);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        double, std::complex<double>, std::complex<float>);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        double, std::complex<double>, std::complex<double>);
+#endif
 
-//template LinearOperatorSuperposition<std::complex<double> > operator*(
-//    const LinearOperator<std::complex<double> >& op,
-//    const float& scalar);
-//template LinearOperatorSuperposition<std::complex<double> > operator*(
-//    const LinearOperator<std::complex<double> >& op,
-//    const double& scalar);
-//template LinearOperatorSuperposition<std::complex<double> > operator*(
-//    const LinearOperator<std::complex<double> >& op,
-//    const std::complex<float>& scalar);
-//template LinearOperatorSuperposition<std::complex<double> > operator*(
-//    const LinearOperator<std::complex<double> >& op,
-//    const std::complex<double>& scalar);
+#if defined(ENABLE_DOUBLE_PRECISION) && defined(ENABLE_COMPLEX_BASIS_FUNCTIONS)
+INSTANTIATE_FREE_FUNCTIONS(
+        std::complex<double>, std::complex<double>);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        std::complex<double>, std::complex<double>, float);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        std::complex<double>, std::complex<double>, double);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        std::complex<double>, std::complex<double>, std::complex<float>);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        std::complex<double>, std::complex<double>, std::complex<double>);
+#endif
 
-//template LinearOperatorSuperposition<std::complex<double> > operator*(
-//    const float& scalar,
-//    const LinearOperator<fstd::complex<double> >& op);
-//template LinearOperatorSuperposition<std::complex<double> > operator*(
-//    const double& scalar,
-//    const LinearOperator<fstd::complex<double> >& op);
-//template LinearOperatorSuperposition<std::complex<double> > operator*(
-//    const std::complex<float>& scalar,
-//    const LinearOperator<fstd::complex<double> >& op);
-//template LinearOperatorSuperposition<std::complex<double> > operator*(
-//    const std::complex<double>& scalar,
-//    const LinearOperator<fstd::complex<double> >& op);
-
-//template LinearOperatorSuperposition<std::complex<double> > operator/(
-//    const LinearOperator<std::complex<double> >& op,
-//    const float& scalar);
-//template LinearOperatorSuperposition<std::complex<double> > operator/(
-//    const LinearOperator<std::complex<double> >& op,
-//    const double& scalar);
-//template LinearOperatorSuperposition<std::complex<double> > operator/(
-//    const LinearOperator<std::complex<double> >& op,
-//    const std::complex<float>& scalar);
-//template LinearOperatorSuperposition<std::complex<double> > operator/(
-//    const LinearOperator<std::complex<double> >& op,
-//    const std::complex<double>& scalar);
-
-//template GridFunction<std::complex<double> > operator*(
-//    const LinearOperator<std::complex<double> >& op,
-//    const GridFunction<std::complex<double> >& fun);
-//#endif
-
-}
+} // namespace Bempp

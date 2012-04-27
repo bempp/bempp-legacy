@@ -22,12 +22,14 @@
 #define bempp_linear_operator_hpp
 
 #include "assembly_options.hpp"
-#include "grid_function.hpp"
 #include "transposition_mode.hpp"
 
 #include "../fiber/local_assembler_factory.hpp"
 #include "../space/space.hpp"
 
+#include <boost/mpl/set.hpp>
+#include <boost/mpl/has_key.hpp>
+#include <boost/utility/enable_if.hpp>
 #include <memory>
 #include <vector>
 
@@ -54,7 +56,7 @@ class GeometryFactory;
 template <typename ValueType> class DiscreteLinearOperator;
 template <typename BasisFunctionType, typename ResultType> class ElementaryLinearOperator;
 template <typename BasisFunctionType, typename ResultType> class LinearOperatorSuperposition;
-
+template <typename BasisFunctionType, typename ResultType> class GridFunction;
 
 /** \brief "Formal" linear operator.
 
@@ -184,17 +186,27 @@ LinearOperatorSuperposition<BasisFunctionType, ResultType> operator-(
         const LinearOperator<BasisFunctionType, ResultType>& op1,
         const LinearOperator<BasisFunctionType, ResultType>& op2);
 
+// This type machinery is needed to disambiguate between this operator and
+// the one taking a LinearOperator and a GridFunction
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
-LinearOperatorSuperposition<BasisFunctionType, ResultType> operator*(
-        const LinearOperator<BasisFunctionType, ResultType>& op, const ScalarType& scalar);
+typename boost::enable_if<
+    typename boost::mpl::has_key<
+        boost::mpl::set<float, double, std::complex<float>, std::complex<double> >,
+        ScalarType>,
+    LinearOperatorSuperposition<BasisFunctionType, ResultType> >::type
+operator*(
+        const LinearOperator<BasisFunctionType, ResultType>& op,
+        const ScalarType& scalar);
 
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
 LinearOperatorSuperposition<BasisFunctionType, ResultType> operator*(
-        const ScalarType& scalar, const LinearOperator<BasisFunctionType, ResultType>& op);
+        const ScalarType& scalar,
+        const LinearOperator<BasisFunctionType, ResultType>& op);
 
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
 LinearOperatorSuperposition<BasisFunctionType, ResultType> operator/(
-        const LinearOperator<BasisFunctionType, ResultType>& op, const ScalarType& scalar);
+        const LinearOperator<BasisFunctionType, ResultType>& op,
+        const ScalarType& scalar);
 
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType> operator*(

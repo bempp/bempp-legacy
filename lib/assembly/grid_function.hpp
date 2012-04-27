@@ -28,6 +28,9 @@
 #include "vector.hpp"
 
 #include <armadillo>
+#include <boost/mpl/set.hpp>
+#include <boost/mpl/has_key.hpp>
+#include <boost/utility/enable_if.hpp>
 #include <memory>
 
 namespace Fiber
@@ -153,8 +156,15 @@ template <typename BasisFunctionType, typename ResultType, typename ScalarType>
 GridFunction<BasisFunctionType, ResultType> operator*(
         const GridFunction<BasisFunctionType, ResultType>& g1, const ScalarType& scalar);
 
+// This type machinery is needed to disambiguate between this operator and
+// the one taking a LinearOperator and a GridFunction
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
-GridFunction<BasisFunctionType, ResultType> operator*(
+typename boost::enable_if<
+    typename boost::mpl::has_key<
+        boost::mpl::set<float, double, std::complex<float>, std::complex<double> >,
+        ScalarType>,
+    GridFunction<BasisFunctionType, ResultType> >::type
+operator*(
         const ScalarType& scalar, const GridFunction<BasisFunctionType, ResultType>& g2);
 
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>

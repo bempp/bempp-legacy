@@ -41,6 +41,7 @@
 #include "../grid/entity_iterator.hpp"
 #include "../grid/entity.hpp"
 #include "../grid/mapper.hpp"
+#include "../grid/vtk_writer_helper.hpp"
 #include "../space/space.hpp"
 
 #include <set>
@@ -153,8 +154,8 @@ void solveWithAmesos<std::complex<float> >(
     arma::Mat<double> rhs_double(armaRhs.n_rows, 2);
     for (int i = 0; i < armaRhs.n_rows; ++i)
     {
-        solution_double(i, 0) = armaRhs(i).real();
-        solution_double(i, 1) = armaRhs(i).imag();
+        rhs_double(i, 0) = armaRhs(i).real();
+        rhs_double(i, 1) = armaRhs(i).imag();
     }
 
     solveWithAmesos<double>(mat, solution_double, rhs_double);
@@ -184,8 +185,8 @@ void solveWithAmesos<std::complex<double> >(
     arma::Mat<double> rhs_double(armaRhs.n_rows, 2);
     for (int i = 0; i < armaRhs.n_rows; ++i)
     {
-        solution_double(i, 0) = armaRhs(i).real();
-        solution_double(i, 1) = armaRhs(i).imag();
+        rhs_double(i, 0) = armaRhs(i).real();
+        rhs_double(i, 1) = armaRhs(i).imag();
     }
 
     solveWithAmesos<double>(mat, solution_double, rhs_double);
@@ -679,11 +680,17 @@ GridFunction<BasisFunctionType, ResultType> operator*(
         const GridFunction<BasisFunctionType, ResultType>& g1, const ScalarType& scalar)
 {
     arma::Col<ResultType> g1Vals = g1.coefficients().asArmadilloVector();
-    return GridFunction<BasisFunctionType, ResultType>(g1.space(), scalar * g1Vals);
+    return GridFunction<BasisFunctionType, ResultType>(
+                g1.space(), static_cast<ResultType>(scalar) * g1Vals);
 }
 
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
-GridFunction<BasisFunctionType, ResultType> operator*(
+typename boost::enable_if<
+    typename boost::mpl::has_key<
+        boost::mpl::set<float, double, std::complex<float>, std::complex<double> >,
+        ScalarType>,
+    GridFunction<BasisFunctionType, ResultType> >::type
+operator*(
         const ScalarType& scalar, const GridFunction<BasisFunctionType, ResultType>& g2)
 {
     return g2 * scalar;
@@ -693,164 +700,98 @@ template <typename BasisFunctionType, typename ResultType, typename ScalarType>
 GridFunction<BasisFunctionType, ResultType> operator/(
         const GridFunction<BasisFunctionType, ResultType>& g1, const ScalarType& scalar)
 {
-    if (scalar==0) throw std::runtime_error("Divide by zero");
+    if (scalar == static_cast<ScalarType>(0.))
+        throw std::runtime_error("GridFunction::operator/(): Divide by zero");
     return (static_cast<ScalarType>(1.) / scalar) * g1;
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
 
-//#ifdef ENABLE_SINGLE_PRECISION
-//template class GridFunction<float, float>;
-//template GridFunction<float, float> operator+(
-//const GridFunction<float, float>& g1, const GridFunction<float, float>& g2);
-//template GridFunction<float, float> operator-(
-//const GridFunction<float, float>& g1, const GridFunction<float, float>& g2);
-//template GridFunction<float, float> operator*(
-//const GridFunction<float, float>& g1, const float& scalar);
-//template GridFunction<float, float> operator*(
-//const GridFunction<float, float>& g1, const double& scalar);
-//template GridFunction<float, float> operator*(
-//const float& scalar, const GridFunction<float, float>& g2);
-//template GridFunction<float, float> operator*(
-//const double& scalar, const GridFunction<float, float>& g2);
-//template GridFunction<float, float> operator/(
-//const GridFunction<float, float>& g1, const float& scalar);
-//template GridFunction<float, float> operator/(
-//const GridFunction<float, float>& g1, const double& scalar);
-//#  ifdef ENABLE_COMPLEX_KERNELS
-//#  include <complex>
-//template class GridFunction<float, std::complex<float> >;
+#define INSTANTIATE_FREE_FUNCTIONS(BASIS, RESULT) \
+    template GridFunction<BASIS, RESULT> operator+( \
+    const GridFunction<BASIS, RESULT>& op1, \
+    const GridFunction<BASIS, RESULT>& op2); \
+    template GridFunction<BASIS, RESULT> operator-( \
+    const GridFunction<BASIS, RESULT>& op1, \
+    const GridFunction<BASIS, RESULT>& op2)
+#define INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(BASIS, RESULT, SCALAR) \
+    template GridFunction<BASIS, RESULT> operator*( \
+    const GridFunction<BASIS, RESULT>& op, const SCALAR& scalar); \
+    template GridFunction<BASIS, RESULT> operator*( \
+    const SCALAR& scalar, const GridFunction<BASIS, RESULT>& op); \
+    template GridFunction<BASIS, RESULT> operator/( \
+    const GridFunction<BASIS, RESULT>& op, const SCALAR& scalar)
 
-//template GridFunction<float, std::complex<float> > operator+(
-//const GridFunction<float, std::complex<float> >& g1,
-//const GridFunction<float, std::complex<float> >& g2);
-//template GridFunction<float, std::complex<float> > operator-(
-//const GridFunction<float, std::complex<float> >& g1,
-//const GridFunction<float, std::complex<float> >& g2);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperator);
 
-//template GridFunction<float, std::complex<float> > operator*(
-//const GridFunction<float, std::complex<float> >& g1, const float& scalar);
-//template GridFunction<float, std::complex<float> > operator*(
-//const GridFunction<float, std::complex<float> >& g1, const double& scalar);
-//template GridFunction<float, std::complex<float> > operator*(
-//const GridFunction<float, std::complex<float> >& g1, const std::complex<float>& scalar);
-//template GridFunction<float, std::complex<float> > operator*(
-//const GridFunction<float, std::complex<float> >& g1, const std::complex<double>& scalar);
+#if defined(ENABLE_SINGLE_PRECISION)
+INSTANTIATE_FREE_FUNCTIONS(
+        float, float);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        float, float, float);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        float, float, double);
+#endif
 
-//template GridFunction<float, std::complex<float> > operator*(
-//const float& scalar, const GridFunction<float, std::complex<float> >& g2);
-//template GridFunction<float, std::complex<float> > operator*(
-//const double& scalar, const GridFunction<float, std::complex<float> >& g2);
-//template GridFunction<float, std::complex<float> > operator*(
-//const std::complex<float>& scalar, const GridFunction<float, std::complex<float> >& g2);
-//template GridFunction<float, std::complex<float> > operator*(
-//const std::complex<double>& scalar, const GridFunction<float, std::complex<float> >& g2);
+#if defined(ENABLE_SINGLE_PRECISION) && defined(ENABLE_COMPLEX_KERNELS)
+INSTANTIATE_FREE_FUNCTIONS(
+        float, std::complex<float>);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        float, std::complex<float>, float);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        float, std::complex<float>, double);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        float, std::complex<float>, std::complex<float>);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        float, std::complex<float>, std::complex<double>);
+#endif
 
-//template GridFunction<float, std::complex<float> > operator/(
-//const GridFunction<float, std::complex<float> >& g1, const float& scalar);
-//template GridFunction<float, std::complex<float> > operator/(
-//const GridFunction<float, std::complex<float> >& g1, const double& scalar);
-//template GridFunction<float, std::complex<float> > operator/(
-//const GridFunction<float, std::complex<float> >& g1, const std::complex<float>& scalar);
-//template GridFunction<float, std::complex<float> > operator/(
-//const GridFunction<float, std::complex<float> >& g1, const std::complex<double>& scalar);
-//#    ifdef ENABLE_COMPLEX_BASIS_FUNCTIONS
-//template class GridFunction<std::complex<float>, std::complex<float> >;
+#if defined(ENABLE_SINGLE_PRECISION) && defined(ENABLE_COMPLEX_BASIS_FUNCTIONS)
+INSTANTIATE_FREE_FUNCTIONS(
+        std::complex<float>, std::complex<float>);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        std::complex<float>, std::complex<float>, float);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        std::complex<float>, std::complex<float>, double);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        std::complex<float>, std::complex<float>, std::complex<float>);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        std::complex<float>, std::complex<float>, std::complex<double>);
+#endif
 
-//#    endif // !ENABLE_COMPLEX_BASIS_FUNCTIONS
-//#  else // !ENABLE_COMPLEX_KERNELS
-//#    ifdef ENABLE_COMPLEX_BASIS_FUNCTIONS
-//#    include <complex>
-//template class GridFunction<std::complex<float>, float>;
-//template GridFunction<float, float> operator+(
-//const GridFunction<float, float>& g1, const GridFunction<float, float>& g2);
-//template GridFunction<float, float> operator-(
-//const GridFunction<float, float>& g1, const GridFunction<float, float>& g2);
-//template GridFunction<float, float> operator*(
-//const GridFunction<float, float>& g1, const float& scalar);
-//template GridFunction<float, float> operator*(
-//const GridFunction<float, float>& g1, const double& scalar);
-//template GridFunction<float, float> operator*(
-//const float& scalar, const GridFunction<float, float>& g2);
-//template GridFunction<float, float> operator*(
-//const double& scalar, const GridFunction<float, float>& g2);
-//template GridFunction<float, float> operator/(
-//const GridFunction<float, float>& g1, const float& scalar);
-//template GridFunction<float, float> operator/(
-//const GridFunction<float, float>& g1, const double& scalar);
-//#    endif // !ENABLE_COMPLEX_BASIS_FUNCTIONS
-//#  endif // !ENABLE_COMPLEX_KERNELS
-//#endif // ENABLE_SINGLE_PRECISION
+#if defined(ENABLE_DOUBLE_PRECISION)
+INSTANTIATE_FREE_FUNCTIONS(
+        double, double);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        double, double, float);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        double, double, double);
+#endif
 
-//#ifdef ENABLE_DOUBLE_PRECISION
-//template class GridFunction<double, double>;
-//template GridFunction<double, double> operator+(
-//const GridFunction<double, double>& g1, const GridFunction<double, double>& g2);
-//template GridFunction<double, double> operator-(
-//const GridFunction<double, double>& g1, const GridFunction<double, double>& g2);
-//template GridFunction<double, double> operator*(
-//const GridFunction<double, double>& g1, const float& scalar);
-//template GridFunction<double, double> operator*(
-//const GridFunction<double, double>& g1, const double& scalar);
-//template GridFunction<double, double> operator*(
-//const float& scalar, const GridFunction<double, double>& g2);
-//template GridFunction<double, double> operator*(
-//const double& scalar, const GridFunction<double, double>& g2);
-//template GridFunction<double, double> operator/(
-//const GridFunction<double, double>& g1, const float& scalar);
-//template GridFunction<double, double> operator/(
-//const GridFunction<double, double>& g1, const double& scalar);
-//#  ifdef ENABLE_COMPLEX_KERNELS
-//#  include <complex>
-//template class GridFunction<double, std::complex<double> >;
-//#    ifdef ENABLE_COMPLEX_BASIS_FUNCTIONS
-//template class GridFunction<std::complex<double>, std::complex<double> >;
-//#    endif // !ENABLE_COMPLEX_BASIS_FUNCTIONS
-//#  else // !ENABLE_COMPLEX_KERNELS
-//#    ifdef ENABLE_COMPLEX_BASIS_FUNCTIONS
-//#    include <complex>
-//template class GridFunction<std::complex<double>, double>;
-//#    endif // !ENABLE_COMPLEX_BASIS_FUNCTIONS
-//#  endif // !ENABLE_COMPLEX_KERNELS
-//#endif
+#if defined(ENABLE_DOUBLE_PRECISION) && defined(ENABLE_COMPLEX_KERNELS)
+INSTANTIATE_FREE_FUNCTIONS(
+        double, std::complex<double>);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        double, std::complex<double>, float);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        double, std::complex<double>, double);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        double, std::complex<double>, std::complex<float>);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        double, std::complex<double>, std::complex<double>);
+#endif
 
-//#ifdef COMPILE_FOR_FLOAT
-//template class GridFunction<float>;
-//template GridFunction<float> operator+(const GridFunction<float>& g1, const GridFunction<float>& g2);
-//template GridFunction<float> operator-(const GridFunction<float>& g1, const GridFunction<float>& g2);
-//template GridFunction<float> operator*(const GridFunction<float>& g1, const float& scalar);
-//template GridFunction<float> operator*(const float& scalar, const GridFunction<float>& g2);
-//template GridFunction<float> operator/(const GridFunction<float>& g1, const float& scalar);
-
-//#endif
-//#ifdef COMPILE_FOR_DOUBLE
-//template class GridFunction<double>;
-//template GridFunction<double> operator+(const GridFunction<double>& g1, const GridFunction<double>& g2);
-//template GridFunction<double> operator-(const GridFunction<double>& g1, const GridFunction<double>& g2);
-//template GridFunction<double> operator*(const GridFunction<double>& g1, const double& scalar);
-//template GridFunction<double> operator*(const double& scalar, const GridFunction<double>& g2);
-//template GridFunction<double> operator/(const GridFunction<double>& g1, const double& scalar);
-
-//#endif
-//#ifdef COMPILE_FOR_COMPLEX_FLOAT
-//#include <complex>
-//template class GridFunction<std::complex<float> >;
-//template GridFunction<std::complex<float> > operator+(const GridFunction<std::complex<float> >& g1, const GridFunction<std::complex<float> >& g2);
-//template GridFunction<std::complex<float> > operator-(const GridFunction<std::complex<float> >& g1, const GridFunction<std::complex<float> >& g2);
-//template GridFunction<std::complex<float> > operator*(const GridFunction<std::complex<float> >& g1, const std::complex<float> & scalar);
-//template GridFunction<std::complex<float> > operator*(const std::complex<float> & scalar, const GridFunction<std::complex<float> >& g2);
-//template GridFunction<std::complex<float> > operator/(const GridFunction<std::complex<float> >& g1, const std::complex<float> & scalar);
-
-//#endif
-//#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-//#include <complex>
-//template class GridFunction<std::complex<double> >;
-//template GridFunction<std::complex<double> > operator+(const GridFunction<std::complex<double> >& g1, const GridFunction<std::complex<double> >& g2);
-//template GridFunction<std::complex<double> > operator-(const GridFunction<std::complex<double> >& g1, const GridFunction<std::complex<double> >& g2);
-//template GridFunction<std::complex<double> > operator*(const GridFunction<std::complex<double> >& g1, const std::complex<double> & scalar);
-//template GridFunction<std::complex<double> > operator*(const std::complex<double> & scalar, const GridFunction<std::complex<double> >& g2);
-//template GridFunction<std::complex<double> > operator/(const GridFunction<std::complex<double> >& g1, const std::complex<double> & scalar);
-
-//#endif
+#if defined(ENABLE_DOUBLE_PRECISION) && defined(ENABLE_COMPLEX_BASIS_FUNCTIONS)
+INSTANTIATE_FREE_FUNCTIONS(
+        std::complex<double>, std::complex<double>);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        std::complex<double>, std::complex<double>, float);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        std::complex<double>, std::complex<double>, double);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        std::complex<double>, std::complex<double>, std::complex<float>);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
+        std::complex<double>, std::complex<double>, std::complex<double>);
+#endif
 
 } // namespace Bempp
