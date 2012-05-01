@@ -91,11 +91,13 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 {
     if (m_openClHandler.UseOpenCl())
     {
+      std::cout << "Using OpenCL" << std::endl;
         integrateCl (callVariant, elementIndicesA, elementIndexB, basisA, basisB,
 		     localDofIndexB, result);
     }
     else
     {
+      std::cout << "Not using OpenCL" << std::endl;
         integrateCpu (callVariant, elementIndicesA, elementIndexB, basisA, basisB,
 		      localDofIndexB, result);
     }
@@ -246,10 +248,26 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
         arma::Cube<ValueType>& result) const
 {
 #ifdef WITH_OPENCL
-//  tbb::tick_count t_start, t_end, t0, t1;
-//  tbb::tick_count::interval_t dt_buf, dt_kern, dt_prog, dt_pull;
+  // DEBUG: test latency
+  {
+    int bufsize = 10;
+    std::vector<ValueType> buf(bufsize);
+    tbb::tick_count t0 = tbb::tick_count::now();
+    cl::Buffer *clbuf = m_openClHandler.pushValueVector (buf);
+    tbb::tick_count::interval_t dt1 = tbb::tick_count::now()-t0;
 
-//  t_start = tbb::tick_count::now();
+    t0 = tbb::tick_count::now();
+    m_openClHandler.pullValueVector (*clbuf, buf, bufsize);
+    tbb::tick_count::interval_t dt2 = tbb::tick_count::now()-t0;
+
+    static int callcount = 0;
+    std::cout << callcount++ << "\tpush: " << dt1.seconds() << "\tpull: " << dt2.seconds() << std::endl;
+  }
+
+  //    tbb::tick_count t_start, t_end, t0, t1;
+  //    tbb::tick_count::interval_t dt_buf, dt_kern, dt_prog, dt_pull;
+
+  //    t_start = tbb::tick_count::now();
 
     const int testPointCount = m_localTestQuadPoints.n_cols;
     const int trialPointCount = m_localTrialQuadPoints.n_cols;
@@ -303,14 +321,14 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 
     result.set_size(testDofCount, trialDofCount, elementACount);
 
-//    t0 = tbb::tick_count::now();
+    //    t0 = tbb::tick_count::now();
     clElementIndicesA = m_openClHandler.pushIndexVector (elementIndicesA);
     clResult = m_openClHandler.createValueBuffer (testDofCount*trialDofCount*elementACount,
 						   CL_MEM_WRITE_ONLY);
-//    dt_buf += tbb::tick_count::now()-t0;
+    //    dt_buf += tbb::tick_count::now()-t0;
 
     // Build the OpenCL program
-//    t0 = tbb::tick_count::now();
+    //    t0 = tbb::tick_count::now();
     cl::Program::Sources sources;
     sources.push_back (m_openClHandler.initStr());
     sources.push_back (basisA.clCodeString(true));
@@ -318,17 +336,17 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
     sources.push_back (m_kernel.evaluateClCode());
     sources.push_back (clStrIntegrateRowOrCol());
     m_openClHandler.loadProgramFromStringArray (sources);
-//    dt_prog += tbb::tick_count::now()-t0;
+    //    dt_prog += tbb::tick_count::now()-t0;
 
     // Call the CL kernels to map the trial and test quadrature points
     if (callVariant == TEST_TRIAL)
     {
-//        t0 = tbb::tick_count::now();
+      //        t0 = tbb::tick_count::now();
 	clGlobalTestPoints = m_openClHandler.createValueBuffer(
             elementACount*testPointCount*meshDim, CL_MEM_READ_WRITE);
 	clTestIntegrationElements = m_openClHandler.createValueBuffer(
 	    elementACount*testPointCount, CL_MEM_READ_WRITE);
-//	dt_buf += tbb::tick_count::now()-t0;
+	//	dt_buf += tbb::tick_count::now()-t0;
 	cl::Kernel &clMapTest = m_openClHandler.setKernel ("clMapPointsToElements");
 	argIdx = m_openClHandler.SetGeometryArgs (clMapTest, 0);
 	clMapTest.setArg (argIdx++, *clTestQuadPoints);
@@ -339,18 +357,18 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 	clMapTest.setArg (argIdx++, *clGlobalTestPoints);
 	clMapTest.setArg (argIdx++, *clTestIntegrationElements);
 
-//        t0 = tbb::tick_count::now();
+	//        t0 = tbb::tick_count::now();
 	m_openClHandler.enqueueKernel (cl::NDRange(elementACount, testPointCount));
-//	dt_kern += tbb::tick_count::now()-t0;
+	//	dt_kern += tbb::tick_count::now()-t0;
 
-//        t0 = tbb::tick_count::now();
+	//        t0 = tbb::tick_count::now();
         clGlobalTrialPoints = m_openClHandler.createValueBuffer (
 	    trialPointCount*meshDim, CL_MEM_READ_WRITE);
         clGlobalTrialNormals = m_openClHandler.createValueBuffer (
 	    trialPointCount*meshDim, CL_MEM_READ_WRITE);
 	clTrialIntegrationElements = m_openClHandler.createValueBuffer(
 	    trialPointCount, CL_MEM_READ_WRITE);
-//	dt_buf += tbb::tick_count::now()-t0;
+	//	dt_buf += tbb::tick_count::now()-t0;
 	cl::Kernel &clMapTrial = m_openClHandler.setKernel ("clMapPointsAndNormalsToElement");
 	argIdx = m_openClHandler.SetGeometryArgs (clMapTrial, 0);
 	clMapTrial.setArg (argIdx++, *clTestQuadPoints);
@@ -360,14 +378,14 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 	clMapTrial.setArg (argIdx++, *clGlobalTrialPoints);
 	clMapTrial.setArg (argIdx++, *clGlobalTrialNormals);
 	clMapTrial.setArg (argIdx++, *clTrialIntegrationElements);
-//        t0 = tbb::tick_count::now();
+	//        t0 = tbb::tick_count::now();
 	m_openClHandler.enqueueKernel (cl::NDRange(trialPointCount));
-//	dt_kern += tbb::tick_count::now()-t0;
+	//	dt_kern += tbb::tick_count::now()-t0;
 
-//        t0 = tbb::tick_count::now();
+	//        t0 = tbb::tick_count::now();
 	clTestValues = m_openClHandler.createValueBuffer (
 	    elementACount*testPointCount*testDofCount, CL_MEM_READ_WRITE);
-//	dt_buf += tbb::tick_count::now()-t0;
+	//	dt_buf += tbb::tick_count::now()-t0;
 	cl::Kernel &clBasisTest = m_openClHandler.setKernel ("clBasisfAElements");
 	argIdx = m_openClHandler.SetGeometryArgs (clBasisTest, 0);
 	clBasisTest.setArg (argIdx++, *clElementIndicesA);
@@ -377,14 +395,14 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 	clBasisTest.setArg (argIdx++, pointDim);
 	clBasisTest.setArg (argIdx++, testDofCount);
 	clBasisTest.setArg (argIdx++, *clTestValues);
-//        t0 = tbb::tick_count::now();
+	//        t0 = tbb::tick_count::now();
 	m_openClHandler.enqueueKernel (cl::NDRange(elementACount, testPointCount));
-//	dt_kern += tbb::tick_count::now()-t0;
+	//	dt_kern += tbb::tick_count::now()-t0;
 
-//        t0 = tbb::tick_count::now();
+	//        t0 = tbb::tick_count::now();
 	clTrialValues = m_openClHandler.createValueBuffer (
 	    trialPointCount*trialDofCount, CL_MEM_READ_WRITE);
-//	dt_buf += tbb::tick_count::now()-t0;
+	//	dt_buf += tbb::tick_count::now()-t0;
 	cl::Kernel &clBasisTrial = m_openClHandler.setKernel ("clBasisfBElement");
 	argIdx = m_openClHandler.SetGeometryArgs (clBasisTrial, 0);
 	clBasisTrial.setArg (argIdx++, elementIndexB);
@@ -394,20 +412,20 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 	clBasisTrial.setArg (argIdx++, trialDofCount);
 	clBasisTrial.setArg (argIdx++, localDofIndexB);
 	clBasisTrial.setArg (argIdx++, *clTrialValues);
-//        t0 = tbb::tick_count::now();
+	//        t0 = tbb::tick_count::now();
 	m_openClHandler.enqueueKernel (cl::NDRange(trialPointCount));
-//	dt_kern += tbb::tick_count::now()-t0;
+	//	dt_kern += tbb::tick_count::now()-t0;
     }
     else
     {
-//        t0 = tbb::tick_count::now();
+      //        t0 = tbb::tick_count::now();
         clGlobalTrialPoints = m_openClHandler.createValueBuffer (
 	    elementACount*trialPointCount*meshDim, CL_MEM_READ_WRITE);
         clGlobalTrialNormals = m_openClHandler.createValueBuffer (
 	    elementACount*trialPointCount*meshDim, CL_MEM_READ_WRITE);
 	clTrialIntegrationElements = m_openClHandler.createValueBuffer(
 	    elementACount*trialPointCount, CL_MEM_READ_WRITE);
-//	dt_buf += tbb::tick_count::now()-t0;
+	//	dt_buf += tbb::tick_count::now()-t0;
 	cl::Kernel &clMapTrial = m_openClHandler.setKernel ("clMapPointsAndNormalsToElements");
 	argIdx = m_openClHandler.SetGeometryArgs (clMapTrial, 0);
 	clMapTrial.setArg (argIdx++, *clTrialQuadPoints);
@@ -418,16 +436,16 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 	clMapTrial.setArg (argIdx++, *clGlobalTrialPoints);
 	clMapTrial.setArg (argIdx++, *clGlobalTrialNormals);
 	clMapTrial.setArg (argIdx++, *clTrialIntegrationElements);
-//        t0 = tbb::tick_count::now();
+	//        t0 = tbb::tick_count::now();
 	m_openClHandler.enqueueKernel (cl::NDRange(elementACount, trialPointCount));
-//	dt_kern += tbb::tick_count::now()-t0;
+	//	dt_kern += tbb::tick_count::now()-t0;
 
-//        t0 = tbb::tick_count::now();
+	//        t0 = tbb::tick_count::now();
 	clGlobalTestPoints = m_openClHandler.createValueBuffer(
             testPointCount*meshDim, CL_MEM_READ_WRITE);
 	clTestIntegrationElements = m_openClHandler.createValueBuffer(
 	    testPointCount, CL_MEM_READ_WRITE);
-//	dt_buf += tbb::tick_count::now()-t0;
+	//	dt_buf += tbb::tick_count::now()-t0;
 	cl::Kernel &clMapTest = m_openClHandler.setKernel ("clMapPointsToElement");
 	argIdx = m_openClHandler.SetGeometryArgs (clMapTest, 0);
 	clMapTest.setArg (argIdx++, *clTestQuadPoints);
@@ -436,14 +454,14 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 	clMapTest.setArg (argIdx++, elementIndexB);
 	clMapTest.setArg (argIdx++, *clGlobalTestPoints);
 	clMapTest.setArg (argIdx++, *clTestIntegrationElements);
-//        t0 = tbb::tick_count::now();
+	//        t0 = tbb::tick_count::now();
 	m_openClHandler.enqueueKernel (cl::NDRange(testPointCount));
-//	dt_kern += tbb::tick_count::now()-t0;
+	//	dt_kern += tbb::tick_count::now()-t0;
 
-//        t0 = tbb::tick_count::now();
+	//        t0 = tbb::tick_count::now();
 	clTrialValues = m_openClHandler.createValueBuffer (
 	    elementACount*trialPointCount*trialDofCount, CL_MEM_READ_WRITE);
-//	dt_buf += tbb::tick_count::now()-t0;
+	//	dt_buf += tbb::tick_count::now()-t0;
 	cl::Kernel &clBasisTrial = m_openClHandler.setKernel ("clBasisfAElements");
 	argIdx = m_openClHandler.SetGeometryArgs (clBasisTrial, 0);
 	clBasisTrial.setArg (argIdx++, *clElementIndicesA);
@@ -453,14 +471,14 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 	clBasisTrial.setArg (argIdx++, pointDim);
 	clBasisTrial.setArg (argIdx++, trialDofCount);
 	clBasisTrial.setArg (argIdx++, *clTrialValues);
-//        t0 = tbb::tick_count::now();
+	//        t0 = tbb::tick_count::now();
 	m_openClHandler.enqueueKernel (cl::NDRange(elementACount, trialPointCount));
-//	dt_kern += tbb::tick_count::now()-t0;
+	//	dt_kern += tbb::tick_count::now()-t0;
 
-//        t0 = tbb::tick_count::now();
+	//        t0 = tbb::tick_count::now();
 	clTestValues = m_openClHandler.createValueBuffer (
 	    testPointCount*testDofCount, CL_MEM_READ_WRITE);
-//	dt_buf += tbb::tick_count::now()-t0;
+	//	dt_buf += tbb::tick_count::now()-t0;
 	cl::Kernel &clBasisTest = m_openClHandler.setKernel ("clBasisfBElement");
 	argIdx = m_openClHandler.SetGeometryArgs (clBasisTest, 0);
 	clBasisTest.setArg (argIdx++, elementIndexB);
@@ -470,9 +488,9 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 	clBasisTest.setArg (argIdx++, testDofCount);
 	clBasisTest.setArg (argIdx++, localDofIndexB);
 	clBasisTest.setArg (argIdx++, *clTestValues);
-//        t0 = tbb::tick_count::now();
+	//        t0 = tbb::tick_count::now();
 	m_openClHandler.enqueueKernel (cl::NDRange(testPointCount));
-//	dt_kern += tbb::tick_count::now()-t0;
+	//	dt_kern += tbb::tick_count::now()-t0;
     }
 
     // Build the OpenCL kernel
@@ -503,14 +521,14 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 
 
     // Run the CL kernel
-//    t0 = tbb::tick_count::now();
+    //    t0 = tbb::tick_count::now();
     m_openClHandler.enqueueKernel (cl::NDRange(elementACount));
-//    dt_kern += tbb::tick_count::now()-t0;
+    //    dt_kern += tbb::tick_count::now()-t0;
 
     // Copy results back
-//    t0 = tbb::tick_count::now();
+    //    t0 = tbb::tick_count::now();
     m_openClHandler.pullValueCube (*clResult, result);
-//    dt_pull += tbb::tick_count::now()-t0;
+    //  dt_pull += tbb::tick_count::now()-t0;
 
     // Clean up local device buffers
     delete clElementIndicesA;
@@ -523,14 +541,14 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
     delete clTestIntegrationElements;
     delete clResult;
 
-//    t_end = tbb::tick_count::now();
-//  static int callcount = 0;
-//  std::cout << callcount++ << '\t' << (t_end-t_start).seconds()
-//  	      << "\tprog=" << dt_prog.seconds()
-//  	      << "\tbuf=" << dt_buf.seconds()
-//  	      << "\tkern=" << dt_kern.seconds()
-//	      << "\tpull=" << dt_pull.seconds()
-//  	      << std::endl;
+    //  t_end = tbb::tick_count::now();
+    //  static int callcount = 0;
+    //  std::cout << callcount++ << '\t' << (t_end-t_start).seconds()
+    //	      << "\tprog=" << dt_prog.seconds()
+    //	      << "\tbuf=" << dt_buf.seconds()
+    //	      << "\tkern=" << dt_kern.seconds()
+    //	      << "\tpull=" << dt_pull.seconds()
+    //	      << std::endl;
 
 #else
     throw std::runtime_error ("Trying to call OpenCL method without OpenCL support");

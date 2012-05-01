@@ -355,6 +355,7 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInDenseMode(
     typedef DenseWeakFormAssemblerLoopBody<ValueType> Body;
     typename Body::MutexType mutex;
 
+#ifdef UNDEF
     int maxThreadCount = 1;
     if (options.parallelism() == AssemblyOptions::TBB)
     {
@@ -367,26 +368,27 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInDenseMode(
     tbb::parallel_for(tbb::blocked_range<size_t>(0, elementCount),
                       Body(testIndices, testGlobalDofs, trialGlobalDofs,
                            assembler, result, mutex));
+#else
+// Old serial code (TODO: decide whether to keep it behind e.g. #ifndef PARALLEL)
+    std::vector<arma::Mat<ValueType> > localResult;
+    // Loop over trial elements
+    for (int trialIndex = 0; trialIndex < elementCount; ++trialIndex)
+    {
+        // Evaluate integrals over pairs of the current trial element and
+        // all the test elements
+        assembler.evaluateLocalWeakForms(TEST_TRIAL, testIndices, trialIndex,
+                                         ALL_DOFS, localResult);
 
-//// Old serial code (TODO: decide whether to keep it behind e.g. #ifndef PARALLEL)
-//    std::vector<arma::Mat<ValueType> > localResult;
-//    // Loop over trial elements
-//    for (int trialIndex = 0; trialIndex < elementCount; ++trialIndex)
-//    {
-//        // Evaluate integrals over pairs of the current trial element and
-//        // all the test elements
-//        assembler.evaluateLocalWeakForms(TEST_TRIAL, testIndices, trialIndex,
-//                                         ALL_DOFS, localResult);
-
-//        // Loop over test indices
-//        for (int testIndex = 0; testIndex < elementCount; ++testIndex)
-//            // Add the integrals to appropriate entries in the operator's matrix
-//            for (int trialDof = 0; trialDof < trialGlobalDofs[trialIndex].size(); ++trialDof)
-//                for (int testDof = 0; testDof < testGlobalDofs[testIndex].size(); ++testDof)
-//                result(testGlobalDofs[testIndex][testDof],
-//                       trialGlobalDofs[trialIndex][trialDof]) +=
-//                        localResult[testIndex](testDof, trialDof);
-//    }
+        // Loop over test indices
+        for (int testIndex = 0; testIndex < elementCount; ++testIndex)
+            // Add the integrals to appropriate entries in the operator's matrix
+            for (int trialDof = 0; trialDof < trialGlobalDofs[trialIndex].size(); ++trialDof)
+                for (int testDof = 0; testDof < testGlobalDofs[testIndex].size(); ++testDof)
+                result(testGlobalDofs[testIndex][testDof],
+                       trialGlobalDofs[trialIndex][trialDof]) +=
+                        localResult[testIndex](testDof, trialDof);
+    }
+#endif
 
     // Create and return a discrete operator represented by the matrix that
     // has just been calculated
