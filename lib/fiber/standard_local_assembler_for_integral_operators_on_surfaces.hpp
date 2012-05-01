@@ -41,23 +41,25 @@ namespace Fiber
 {
 
 class AccuracyOptions;
-template <typename ValueType, typename IndexType> class OpenClHandler;
+template <typename CoordinateType, typename IndexType> class OpenClHandler;
 
-template <typename ValueType, typename GeometryFactory>
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
 class StandardLocalAssemblerForIntegralOperatorsOnSurfaces :
-        public LocalAssemblerForOperators<ValueType>
-{    
+        public LocalAssemblerForOperators<ResultType>
+{
 public:
+    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+
     StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
             const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
-            const std::vector<const Basis<ValueType>*>& testBases,
-            const std::vector<const Basis<ValueType>*>& trialBases,
-            const Expression<ValueType>& testExpression,
-            const Kernel<ValueType>& kernel,
-            const Expression<ValueType>& trialExpression,
-            ValueType multiplier,
-            const OpenClHandler<ValueType,int>& openClHandler,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
+            const std::vector<const Basis<BasisFunctionType>*>& testBases,
+            const std::vector<const Basis<BasisFunctionType>*>& trialBases,
+            const Expression<CoordinateType>& testExpression,
+            const Kernel<KernelType>& kernel,
+            const Expression<CoordinateType>& trialExpression,
+            const OpenClHandler<CoordinateType, int>& openClHandler,
             bool cacheSingularIntegrals,
             const AccuracyOptions& accuracyOptions);
     virtual ~StandardLocalAssemblerForIntegralOperatorsOnSurfaces();
@@ -68,28 +70,28 @@ public:
             const std::vector<int>& elementIndicesA,
             int elementIndexB,
             LocalDofIndex localDofIndexB,
-            std::vector<arma::Mat<ValueType> >& result);
+            std::vector<arma::Mat<ResultType> >& result);
 
     virtual void evaluateLocalWeakForms(
             const std::vector<int>& testElementIndices,
             const std::vector<int>& trialElementIndices,
-            Fiber::Array2D<arma::Mat<ValueType> >& result);
+            Fiber::Array2D<arma::Mat<ResultType> >& result);
 
     virtual void evaluateLocalWeakForms(
             const std::vector<int>& elementIndices,
-            std::vector<arma::Mat<ValueType> >& result);
+            std::vector<arma::Mat<ResultType> >& result);
 
 private:
-    typedef typename TestKernelTrialIntegrator<ValueType>::ElementIndexPair
-    ElementIndexPair;
+    typedef TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType> Integrator;
+    typedef typename Integrator::ElementIndexPair ElementIndexPair;
     typedef std::set<ElementIndexPair> ElementIndexPairSet;
-    typedef std::map<ElementIndexPair, arma::Mat<ValueType> > Cache;
+    typedef std::map<ElementIndexPair, arma::Mat<ResultType> > Cache;
 
     void cacheSingularLocalWeakForms();
     void findPairsOfAdjacentElements(ElementIndexPairSet& pairs) const;
     void cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs);
 
-    const TestKernelTrialIntegrator<ValueType>& selectIntegrator(
+    const Integrator& selectIntegrator(
             int testElementIndex, int trialElementIndex);
 
     enum ElementType {
@@ -99,23 +101,21 @@ private:
     int regularOrder(int elementIndex, ElementType elementType) const;
     int singularOrder(int elementIndex, ElementType elementType) const;
 
-    const TestKernelTrialIntegrator<ValueType>& getIntegrator(
-            const DoubleQuadratureDescriptor& index);
+    const Integrator& getIntegrator(const DoubleQuadratureDescriptor& index);
 
 private:
     typedef tbb::concurrent_unordered_map<DoubleQuadratureDescriptor,
-    TestKernelTrialIntegrator<ValueType>*> IntegratorMap;
+    Integrator*> IntegratorMap;
 
 private:
     const GeometryFactory& m_geometryFactory;
-    const RawGridGeometry<ValueType>& m_rawGeometry;
-    const std::vector<const Basis<ValueType>*>& m_testBases;
-    const std::vector<const Basis<ValueType>*>& m_trialBases;
-    const Expression<ValueType>& m_testExpression;
-    const Kernel<ValueType>& m_kernel;
-    const Expression<ValueType>& m_trialExpression;
-    ValueType m_multiplier;
-    const OpenClHandler<ValueType,int>& m_openClHandler;
+    const RawGridGeometry<CoordinateType>& m_rawGeometry;
+    const std::vector<const Basis<BasisFunctionType>*>& m_testBases;
+    const std::vector<const Basis<BasisFunctionType>*>& m_trialBases;
+    const Expression<CoordinateType>& m_testExpression;
+    const Kernel<KernelType>& m_kernel;
+    const Expression<CoordinateType>& m_trialExpression;
+    const OpenClHandler<CoordinateType, int>& m_openClHandler;
     const AccuracyOptions& m_accuracyOptions;
 
     IntegratorMap m_TestKernelTrialIntegrators;
@@ -123,7 +123,5 @@ private:
 };
 
 } // namespace Fiber
-
-#include "standard_local_assembler_for_integral_operators_on_surfaces_imp.hpp"
 
 #endif

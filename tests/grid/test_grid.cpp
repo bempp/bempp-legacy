@@ -34,8 +34,9 @@ std::auto_ptr<Bempp::Grid> SimpleTriangularGridManager::createGrid()
     params.topology = Bempp::GridParameters::TRIANGULAR;
 
     const int dimGrid = 2;
-    arma::Col<Bempp::ctype> lowerLeft(dimGrid);
-    arma::Col<Bempp::ctype> upperRight(dimGrid);
+    typedef double ctype;
+    arma::Col<double> lowerLeft(dimGrid);
+    arma::Col<double> upperRight(dimGrid);
     arma::Col<unsigned int> nElements(dimGrid);
     lowerLeft.fill(0);
     upperRight.fill(1);
@@ -48,9 +49,9 @@ std::auto_ptr<Bempp::Grid> SimpleTriangularGridManager::createGrid()
 std::auto_ptr<SimpleTriangularGridManager::DuneGrid> SimpleTriangularGridManager::createDuneGrid()
 {
     const int dimGrid = 2;
-    Dune::FieldVector<Bempp::ctype,dimGrid> duneLowerLeft;
+    Dune::FieldVector<SimpleTriangularGridManager::DuneGrid::ctype,dimGrid> duneLowerLeft;
     duneLowerLeft[0] = duneLowerLeft[1] = 0;
-    Dune::FieldVector<Bempp::ctype,dimGrid> duneUpperRight;
+    Dune::FieldVector<SimpleTriangularGridManager::DuneGrid::ctype,dimGrid> duneUpperRight;
     duneUpperRight[0] = duneUpperRight[1] = 1;
     Dune::array<unsigned int,dimGrid> duneNElements;
     duneNElements[0] = N_ELEMENTS_X;

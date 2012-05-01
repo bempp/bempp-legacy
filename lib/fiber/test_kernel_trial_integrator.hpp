@@ -21,6 +21,7 @@
 #ifndef fiber_test_kernel_trial_integrator_hpp
 #define fiber_test_kernel_trial_integrator_hpp
 
+#include "scalar_traits.hpp"
 #include "types.hpp"
 
 #include <armadillo>
@@ -33,10 +34,11 @@ namespace Fiber
 template <typename ValueType> class Basis;
 
 /** \brief Integration over pairs of elements. */
-template <typename ValueType>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class TestKernelTrialIntegrator
 {
 public:
+    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
     typedef std::pair<int, int> ElementIndexPair;
 
     virtual ~TestKernelTrialIntegrator() {}
@@ -45,16 +47,16 @@ public:
             CallVariant callVariant,
             const std::vector<int>& elementIndicesA,
             int elementIndexB,
-            const Basis<ValueType>& basisA,
-            const Basis<ValueType>& basisB,
+            const Basis<BasisFunctionType>& basisA,
+            const Basis<BasisFunctionType>& basisB,
             LocalDofIndex localDofIndexB,
-            arma::Cube<ValueType>& result) const = 0;
+            arma::Cube<ResultType>& result) const = 0;
 
     virtual void integrate(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<ValueType>& testBasis,
-            const Basis<ValueType>& trialBasis,
-            arma::Cube<ValueType>& result) const = 0;
+            const Basis<BasisFunctionType>& testBasis,
+            const Basis<BasisFunctionType>& trialBasis,
+            arma::Cube<ResultType>& result) const = 0;
 };
 
 } // namespace Fiber

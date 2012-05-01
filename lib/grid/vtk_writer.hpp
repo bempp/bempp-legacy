@@ -1,4 +1,4 @@
-// Copyright (C) 2011 by the BEM++ Authors
+// Copyright (C) 2011-2012 by the BEM++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,25 @@ namespace Bempp
 class VtkWriter
 {
 public:
+    /** \brief How data should be stored in a VTK file */
+    enum OutputType {
+      //! Output to the file is in ascii.
+      ASCII,
+      //! Output to the file is in inline base64 binary.
+      BASE_64,
+      //! Output to the file is in appended raw binary.
+      APPENDED_RAW,
+      //! Output to the file is in appended base64 binary.
+      APPENDED_BASE_64
+    };
+
+    /** \brief Dataset type. */
+    enum DataType
+    {
+        CELL_DATA,
+        VERTEX_DATA
+    };
+
     /** \brief Destructor */
     virtual ~VtkWriter() {}
 
@@ -48,7 +67,9 @@ public:
      *  \param data Matrix whose (\e m, \e n)th entry contains the value of the <em>m</em>th component of the grid function in the <em>n</em>th cell.
      *  \param name Name to identify the grid function.
      */
-    virtual void addCellData(const arma::Mat<double>& data, const std::string &name) = 0;
+    void addCellData(const arma::Mat<double>& data, const std::string &name);
+    /** \overload */
+    void addCellData(const arma::Mat<float>& data, const std::string &name);
 
     /** \brief Add a grid function (represented by a container) that lives on the vertices of the
      *  grid to the visualization output.
@@ -56,7 +77,9 @@ public:
      *  \param data Matrix whose (\e m, \e n)th entry contains the value of the <em>m</em>th component of the grid function at the <em>n</em>th vertex.
      *  \param name Name to identify the grid function.
      */
-    virtual void addVertexData(const arma::Mat<double>& data, const std::string &name) = 0;
+    void addVertexData(const arma::Mat<double>& data, const std::string &name);
+    /** \overload */
+    void addVertexData(const arma::Mat<float>& data, const std::string &name);
 
     /** \brief Clear the list of registered functions. */
     virtual void clear() = 0;
@@ -75,14 +98,14 @@ public:
      *  \returns Name of the created file.
      */
     virtual std::string write (const std::string &name,
-                               Dune::VTK::OutputType type = Dune::VTK::ascii) = 0;
+                               OutputType type = ASCII) = 0;
 
     /** \brief Write output (interface might change later).
      *
      * "pwrite" means "path write" (i.e. write somewhere else than the current
      * directory).  The "p" does not mean this method has a monopoly on
      * parallel writing, the regular write(const std::string &,
-     * VTK::OutputType) method can do that just fine.
+     * OutputType) method can do that just fine.
      *
      * \param name       Base name of the output files.  This should not
      *                   contain any directory part or filename extensions.
@@ -105,9 +128,45 @@ public:
      * \throw Dune::NotImplemented Extendpath is absolute but path is relative.
      * \throw Dune::IOError        Failed to open a file.
      */
-    virtual std::string pwrite(const std::string& name, const std::string& path, const std::string& extendpath,
-                               Dune::VTK::OutputType type = Dune::VTK::ascii) = 0;
+    virtual std::string pwrite(const std::string& name, const std::string& path,
+                               const std::string& extendpath,
+                               OutputType type = ASCII) = 0;
+
+private:
+    virtual void addCellDataDoubleImpl(
+            const arma::Mat<double>& data, const std::string &name) = 0;
+    virtual void addCellDataFloatImpl(
+            const arma::Mat<float>& data, const std::string &name) = 0;
+
+    virtual void addVertexDataDoubleImpl(
+            const arma::Mat<double>& data, const std::string &name) = 0;
+    virtual void addVertexDataFloatImpl(
+            const arma::Mat<float>& data, const std::string &name) = 0;
 };
+
+inline void VtkWriter::addCellData(const arma::Mat<double>& data,
+                                   const std::string& name)
+{
+    addCellDataDoubleImpl(data, name);
+}
+
+inline void VtkWriter::addCellData(const arma::Mat<float>& data,
+                                   const std::string& name)
+{
+    addCellDataFloatImpl(data, name);
+}
+
+inline void VtkWriter::addVertexData(const arma::Mat<double>& data,
+                                     const std::string& name)
+{
+    addVertexDataDoubleImpl(data, name);
+}
+
+inline void VtkWriter::addVertexData(const arma::Mat<float>& data,
+                                     const std::string& name)
+{
+    addVertexDataFloatImpl(data, name);
+}
 
 } // namespace Bempp
 

@@ -38,63 +38,62 @@
 namespace Fiber
 {
 
-template <typename ValueType, typename IndexType> class OpenClHandler;
+template <typename CoordinateType, typename IndexType> class OpenClHandler;
 
-template <typename ValueType, typename GeometryFactory>
+template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 class StandardLocalAssemblerForIdentityOperatorOnSurface :
-        public LocalAssemblerForOperators<ValueType>
-{    
+    public LocalAssemblerForOperators<ResultType>
+{
 public:
+    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+
     StandardLocalAssemblerForIdentityOperatorOnSurface(
-            const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
-            const std::vector<const Basis<ValueType>*>& testBases,
-            const std::vector<const Basis<ValueType>*>& trialBases,
-            const Expression<ValueType>& testExpression,
-            const Expression<ValueType>& trialExpression,
-            ValueType multiplier,
-            const OpenClHandler<ValueType,int>& openClHandler);
+        const GeometryFactory& geometryFactory,
+        const RawGridGeometry<CoordinateType>& rawGeometry,
+        const std::vector<const Basis<BasisFunctionType>*>& testBases,
+        const std::vector<const Basis<BasisFunctionType>*>& trialBases,
+        const Expression<CoordinateType>& testExpression,
+        const Expression<CoordinateType>& trialExpression,
+        const OpenClHandler<CoordinateType, int>& openClHandler);
 
     virtual void evaluateLocalWeakForms(
-            CallVariant callVariant,
-            const std::vector<int>& elementIndicesA,
-            int elementIndexB,
-            LocalDofIndex localDofIndexB,
-            std::vector<arma::Mat<ValueType> >& result);
+        CallVariant callVariant,
+        const std::vector<int>& elementIndicesA,
+        int elementIndexB,
+        LocalDofIndex localDofIndexB,
+        std::vector<arma::Mat<ResultType> >& result);
 
     virtual void evaluateLocalWeakForms(
-            const std::vector<int>& testElementIndices,
-            const std::vector<int>& trialElementIndices,
-            Fiber::Array2D<arma::Mat<ValueType> >& result);
+        const std::vector<int>& testElementIndices,
+        const std::vector<int>& trialElementIndices,
+        Fiber::Array2D<arma::Mat<ResultType> >& result);
 
     virtual void evaluateLocalWeakForms(
-            const std::vector<int>& elementIndices,
-            std::vector<arma::Mat<ValueType> >& result);
+        const std::vector<int>& elementIndices,
+        std::vector<arma::Mat<ResultType> >& result);
 
 private:
-    const TestTrialIntegrator<ValueType>& selectIntegrator(int elementIndex);
+    const TestTrialIntegrator<BasisFunctionType, ResultType>&
+    selectIntegrator(int elementIndex);
 
-    const TestTrialIntegrator<ValueType>& getIntegrator(
-            const SingleQuadratureDescriptor& desc);
+    const TestTrialIntegrator<BasisFunctionType, ResultType>& getIntegrator(
+        const SingleQuadratureDescriptor& desc);
 private:
     typedef boost::ptr_map<SingleQuadratureDescriptor,
-    TestTrialIntegrator<ValueType> > IntegratorMap;
+            TestTrialIntegrator<BasisFunctionType, ResultType> > IntegratorMap;
 
 private:
     const GeometryFactory& m_geometryFactory;
-    const RawGridGeometry<ValueType>& m_rawGeometry;
-    const std::vector<const Basis<ValueType>*>& m_testBases;
-    const std::vector<const Basis<ValueType>*>& m_trialBases;
-    const Expression<ValueType>& m_testExpression;
-    const Expression<ValueType>& m_trialExpression;
-    ValueType m_multiplier;
-    const OpenClHandler<ValueType,int>& m_openClHandler;
+    const RawGridGeometry<CoordinateType>& m_rawGeometry;
+    const std::vector<const Basis<BasisFunctionType>*>& m_testBases;
+    const std::vector<const Basis<BasisFunctionType>*>& m_trialBases;
+    const Expression<CoordinateType>& m_testExpression;
+    const Expression<CoordinateType>& m_trialExpression;
+    const OpenClHandler<CoordinateType, int>& m_openClHandler;
 
     IntegratorMap m_testTrialIntegrators;
 };
 
 } // namespace Fiber
-
-#include "standard_local_assembler_for_identity_operator_on_surface_imp.hpp"
 
 #endif

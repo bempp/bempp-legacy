@@ -31,6 +31,8 @@ template <typename ValueType>
 class SingleLayerPotential3DKernel : public Kernel<ValueType>
 {
 public:
+    typedef typename Kernel<ValueType>::CoordinateType CoordinateType;
+
     virtual int worldDimension() const { return 3; }
     virtual int domainDimension() const { return 1; }
     virtual int codomainDimension() const { return 1; }
@@ -38,14 +40,13 @@ public:
     virtual void addGeometricalDependencies(int& testGeomDeps,
                                             int& trialGeomDeps) const;
 
-    virtual void evaluateAtPointPairs(const GeometricalData<ValueType>& testGeomData,
-                                      const GeometricalData<ValueType>& trialGeomData,
+    virtual void evaluateAtPointPairs(const GeometricalData<CoordinateType>& testGeomData,
+                                      const GeometricalData<CoordinateType>& trialGeomData,
                                       arma::Cube<ValueType>& result) const;
 
-    virtual void evaluateOnGrid(const GeometricalData<ValueType>& testGeomData,
-                                const GeometricalData<ValueType>& trialGeomData,
+    virtual void evaluateOnGrid(const GeometricalData<CoordinateType>& testGeomData,
+                                const GeometricalData<CoordinateType>& trialGeomData,
                                 Array4D<ValueType>& result) const;
-
 
     /**
      * \brief Returns an OpenCL code snippet for kernel evaluation as a string.
@@ -57,8 +58,8 @@ public:
     virtual std::pair<const char*,int> evaluateClCode () const;
 
 private:
-    ValueType evaluateAtPointPair(const arma::Col<ValueType>& testPoint,
-                                  const arma::Col<ValueType>& trialPoint) const;
+    ValueType evaluateAtPointPair(const arma::Col<CoordinateType>& testPoint,
+                                  const arma::Col<CoordinateType>& trialPoint) const;
 };
 
 } // namespace Fiber

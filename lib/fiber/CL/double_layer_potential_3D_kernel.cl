@@ -9,8 +9,9 @@
  * \brief Double layer potential evaluation for a single point pair
  * \param testPoint test point coordinates
  * \param trialPoint trial point coordinates
+ * \param trialNormal components of the vector normal to the surface at trial point
  * \param coordCount number of coordinates for each point
- * \note testPoint and trialPoint must be of size coordCount
+ * \note testPoint, trialPoint and trialNormal must be of size coordCount
  */
 ValueType devKerneval (const ValueType *testPoint,
 		       const ValueType *trialPoint,
@@ -22,7 +23,7 @@ ValueType devKerneval (const ValueType *testPoint,
     denominatorSum = 0;
     numeratorSum = 0;
     for (k = 0; k < coordCount; k++) {
-        diff = testPoint[k] - trialPoint[k];
+        diff = trialPoint[k] - testPoint[k];
 	denominatorSum += diff * diff;
 	numeratorSum += diff * trialNormal[k];
     }

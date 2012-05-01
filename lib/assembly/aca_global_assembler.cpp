@@ -1,10 +1,34 @@
+// Copyright (C) 2011-2012 by the BEM++ Authors
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+#include "config_ahmed.hpp"
+
 #include "aca_global_assembler.hpp"
 
 #include "assembly_options.hpp"
-#include "discrete_dense_scalar_valued_linear_operator.hpp"
+#include "index_permutation.hpp"
 
 #include "../common/auto_timer.hpp"
+#include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/local_assembler_for_operators.hpp"
+#include "../fiber/scalar_traits.hpp"
 #include "../grid/entity_iterator.hpp"
 #include "../grid/grid.hpp"
 #include "../grid/grid_view.hpp"
@@ -21,7 +45,7 @@
 
 #ifdef WITH_AHMED
 #include "ahmed_aux.hpp"
-#include "discrete_aca_scalar_valued_linear_operator.hpp"
+#include "discrete_aca_linear_operator.hpp"
 #include "weak_form_aca_assembly_helper.hpp"
 #endif
 
@@ -33,17 +57,19 @@ namespace
 {
 
 #ifdef WITH_AHMED
-template <typename ValueType>
+template <typename BasisFunctionType, typename ResultType>
 class AcaWeakFormAssemblerLoopBody
 {
-public:
-    typedef AhmedDofWrapper<ValueType> AhmedDofType;
+    typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
+    typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
     typedef bemblcluster<AhmedDofType, AhmedDofType> DoubleCluster;
+    typedef mblock<typename AhmedTypeTraits<ResultType>::Type> AhmedMblock;
 
+public:
     AcaWeakFormAssemblerLoopBody(
-            WeakFormAcaAssemblyHelper<ValueType>& helper,
+            WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>& helper,
             AhmedLeafClusterArray& leafClusters,
-            boost::shared_array<mblock<ValueType>*> blocks,
+            boost::shared_array<AhmedMblock*> blocks,
             const AcaOptions& options,
             tbb::atomic<size_t>& done) :
         m_helper(helper),
@@ -67,10 +93,10 @@ public:
     }
 
 private:
-    mutable WeakFormAcaAssemblyHelper<ValueType>& m_helper;
+    mutable WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>& m_helper;
     size_t m_leafClusterCount;
     AhmedLeafClusterArray& m_leafClusters;
-    boost::shared_array<mblock<ValueType>*> m_blocks;
+    boost::shared_array<AhmedMblock*> m_blocks;
     const AcaOptions& m_options;
     mutable tbb::atomic<size_t>& m_done;
 };
@@ -78,19 +104,20 @@ private:
 
 } // namespace
 
-template <typename ValueType>
-std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
-AcaGlobalAssembler<ValueType>::assembleWeakForm(
-        const Space<ValueType>& testSpace,
-        const Space<ValueType>& trialSpace,
+template <typename BasisFunctionType, typename ResultType>
+std::auto_ptr<DiscreteLinearOperator<ResultType> >
+AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
+        const Space<BasisFunctionType>& testSpace,
+        const Space<BasisFunctionType>& trialSpace,
         const std::vector<LocalAssembler*>& localAssemblers,
         const std::vector<const DiscreteLinOp*>& sparseTermsToAdd,
+        const std::vector<ResultType>& denseTermsMultipliers,
+        const std::vector<ResultType>& sparseTermsMultipliers,
         const AssemblyOptions& options)
 {
 #ifdef WITH_AHMED
-    typedef AhmedDofWrapper<ValueType> AhmedDofType;
-    typedef DiscreteAcaScalarValuedLinearOperator<ValueType,
-            AhmedDofType, AhmedDofType > DiscreteAcaLinOp;
+    typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
+    typedef DiscreteAcaLinearOperator<ResultType> DiscreteAcaLinOp;
 
     const AcaOptions& acaOptions = options.acaOptions();
 
@@ -119,7 +146,7 @@ AcaGlobalAssembler<ValueType>::assembleWeakForm(
     for (unsigned int i = 0; i < trialDofCount; ++i)
         p2oTrialDofs[i] = i;
 
-    std::vector<Point3D<ValueType> > trialDofCenters, testDofCenters;
+    std::vector<Point3D<CoordinateType> > trialDofCenters, testDofCenters;
     trialSpace.globalDofPositions(trialDofCenters);
     testSpace.globalDofPositions(testDofCenters);
 
@@ -130,7 +157,7 @@ AcaGlobalAssembler<ValueType>::assembleWeakForm(
     const AhmedDofType* ahmedTrialDofCenters =
             static_cast<AhmedDofType*>(&trialDofCenters[0]);
     const AhmedDofType* ahmedTestDofCenters =
-            static_cast<AhmedDofType*>(&trialDofCenters[0]);
+            static_cast<AhmedDofType*>(&testDofCenters[0]);
 
     bemcluster<const AhmedDofType> testClusterTree(
                 ahmedTestDofCenters, &o2pTestDofs[0],
@@ -167,58 +194,64 @@ AcaGlobalAssembler<ValueType>::assembleWeakForm(
 
     std::auto_ptr<DiscreteLinOp> result;
 
-    WeakFormAcaAssemblyHelper<ValueType>
+    WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>
             helper(testSpace, trialSpace, p2oTestDofs, p2oTrialDofs,
-                   localAssemblers, sparseTermsToAdd, options);
+                   localAssemblers, sparseTermsToAdd,
+                   denseTermsMultipliers, sparseTermsMultipliers, options);
 
-    boost::shared_array<mblock<ValueType>*> blocks =
-            allocateAhmedMblockArray<ValueType>(doubleClusterTree.get());
+    typedef mblock<typename AhmedTypeTraits<ResultType>::Type> AhmedMblock;
+    boost::shared_array<AhmedMblock*> blocks =
+            allocateAhmedMblockArray<ResultType>(doubleClusterTree.get());
 
 //    matgen_sqntl(helper, doubleClusterTree.get(), doubleClusterTree.get(),
 //                 acaOptions.recompress, acaOptions.eps,
-//                 acaOptions.maximumRank, blocks);
+//                 acaOptions.maximumRank, blocks.get());
 
-//    matgen_omp(helper, blockCount, doubleClusterTree.get(),
-//                   acaOptions.eps, acaOptions.maximumRank, blocks);
+    matgen_omp(helper, blockCount, doubleClusterTree.get(),
+               acaOptions.eps, acaOptions.maximumRank, blocks.get());
 
-    AhmedLeafClusterArray leafClusters(doubleClusterTree.get());
-    const size_t leafClusterCount = leafClusters.size();
+//    AhmedLeafClusterArray leafClusters(doubleClusterTree.get());
+//    const size_t leafClusterCount = leafClusters.size();
 
-    int maxThreadCount = 1;
-    if (options.parallelism() == AssemblyOptions::TBB)
+//    int maxThreadCount = 1;
+//    if (options.parallelism() == AssemblyOptions::TBB)
+//    {
+//        if (options.maxThreadCount() == AssemblyOptions::AUTO)
+//            maxThreadCount = tbb::task_scheduler_init::automatic;
+//        else
+//            maxThreadCount = options.maxThreadCount();
+//    }
+//    tbb::task_scheduler_init scheduler(maxThreadCount);
+//    tbb::atomic<size_t> done;
+//    done = 0;
+
+//    typedef AcaWeakFormAssemblerLoopBody<BasisFunctionType, ResultType> Body;
+//    tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
+//                      Body(helper, leafClusters, blocks, acaOptions, done));
+
     {
-        if (options.maxThreadCount() == AssemblyOptions::AUTO)
-            maxThreadCount = tbb::task_scheduler_init::automatic;
-        else
-            maxThreadCount = options.maxThreadCount();
-    }
-    tbb::task_scheduler_init scheduler(maxThreadCount);
-    tbb::atomic<size_t> done;
-    done = 0;
-
-    typedef AcaWeakFormAssemblerLoopBody<ValueType> Body;
-    tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
-                      Body(helper, leafClusters, blocks, acaOptions, done));
-
-    {
-        size_t origMemory = sizeof(ValueType) * testDofCount * trialDofCount;
+        size_t origMemory = sizeof(ResultType) * testDofCount * trialDofCount;
         size_t ahmedMemory = sizeH(doubleClusterTree.get(), blocks.get());
         std::cout << "\nNeeded storage: " << ahmedMemory / 1024. / 1024. << " MB.\n"
                   << "Without approximation: " << origMemory / 1024. / 1024. << " MB.\n"
                   << "Compressed to " << (100. * ahmedMemory) / origMemory << "%.\n"
                   << std::endl;
 
-        std::cout << "Writing matrix partition ..." << std::flush;
-        std::ofstream os("aca.ps");
-        psoutputH(os, doubleClusterTree.get(), testDofCount, blocks.get());
-        os.close();
-        std::cout << " done." << std::endl;
+        if (acaOptions.outputPostscript){
+            std::cout << "Writing matrix partition ..." << std::flush;
+            std::ofstream os(acaOptions.outputFname.c_str());
+            psoutputH(os, doubleClusterTree.get(), testDofCount, blocks.get());
+            os.close();
+            std::cout << " done." << std::endl;
+        }
     }
 
     result = std::auto_ptr<DiscreteLinOp>(
                 new DiscreteAcaLinOp(testDofCount, trialDofCount,
+                                     acaOptions.maximumRank,
                                      doubleClusterTree, blocks,
-                                     o2pTestDofs, p2oTrialDofs));
+                                     IndexPermutation(o2pTrialDofs),
+                                     IndexPermutation(o2pTestDofs)));
     return result;
 #else // without Ahmed
     throw std::runtime_error("To enable assembly in ACA mode, recompile BEM++ "
@@ -226,35 +259,26 @@ AcaGlobalAssembler<ValueType>::assembleWeakForm(
 #endif
 }
 
-template <typename ValueType>
-std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
-AcaGlobalAssembler<ValueType>::assembleWeakForm(
-        const Space<ValueType>& testSpace,
-        const Space<ValueType>& trialSpace,
+template <typename BasisFunctionType, typename ResultType>
+std::auto_ptr<DiscreteLinearOperator<ResultType> >
+AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
+        const Space<BasisFunctionType>& testSpace,
+        const Space<BasisFunctionType>& trialSpace,
         LocalAssembler& localAssembler,
         const AssemblyOptions& options)
 {
     std::vector<LocalAssembler*> localAssemblers(1, &localAssembler);
     std::vector<const DiscreteLinOp*> sparseTermsToAdd;
+    std::vector<ResultType> denseTermsMultipliers(1, 1.0);
+    std::vector<ResultType> sparseTermsMultipliers;
 
     return assembleWeakForm(testSpace, trialSpace, localAssemblers,
-                            sparseTermsToAdd, options);
+                            sparseTermsToAdd,
+                            denseTermsMultipliers,
+                            sparseTermsMultipliers,
+                            options);
 }
 
-
-#ifdef COMPILE_FOR_FLOAT
-template class AcaGlobalAssembler<float>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class AcaGlobalAssembler<double>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class AcaGlobalAssembler<std::complex<float> >;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class AcaGlobalAssembler<std::complex<double> >;
-#endif
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(AcaGlobalAssembler);
 
 } // namespace Bempp

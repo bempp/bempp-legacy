@@ -20,8 +20,10 @@
 
 #include "piecewise_linear_continuous_scalar_space.hpp"
 
+#include "../fiber/explicit_instantiation.hpp"
 #include "../grid/entity.hpp"
 #include "../grid/entity_iterator.hpp"
+#include "../grid/geometry.hpp"
 #include "../grid/grid.hpp"
 #include "../grid/grid_view.hpp"
 #include "../grid/mapper.hpp"
@@ -32,16 +34,13 @@
 #include <stdexcept>
 #include <iostream>
 
-#include "../grid/geometry.hpp"
-
-
 namespace Bempp
 {
 
-template <typename ValueType>
-PiecewiseLinearContinuousScalarSpace<ValueType>::
+template <typename BasisFunctionType>
+PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
 PiecewiseLinearContinuousScalarSpace(Grid& grid) :
-     ScalarSpace<ValueType>(grid)
+     ScalarSpace<BasisFunctionType>(grid)
 {
     const int gridDim = grid.dim();
     if (gridDim != 1 && gridDim != 2)
@@ -51,22 +50,22 @@ PiecewiseLinearContinuousScalarSpace(Grid& grid) :
     m_view = this->m_grid.leafView();
 }
 
-template <typename ValueType>
-int PiecewiseLinearContinuousScalarSpace<ValueType>::domainDimension() const
+template <typename BasisFunctionType>
+int PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::domainDimension() const
 {
     return this->m_grid.dim();
 }
 
-template <typename ValueType>
-int PiecewiseLinearContinuousScalarSpace<ValueType>::codomainDimension() const
+template <typename BasisFunctionType>
+int PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::codomainDimension() const
 {
     return 1;
 }
 
-template <typename ValueType>
-void PiecewiseLinearContinuousScalarSpace<ValueType>::getBases(
+template <typename BasisFunctionType>
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getBases(
         const std::vector<const EntityPointer<0>*>& elements,
-        std::vector<const Fiber::Basis<ValueType>*>& bases) const
+        std::vector<const Fiber::Basis<BasisFunctionType>*>& bases) const
 {
     const int elementCount = elements.size();
     bases.resize(elementCount);
@@ -85,9 +84,9 @@ void PiecewiseLinearContinuousScalarSpace<ValueType>::getBases(
         }
 }
 
-template <typename ValueType>
-const Fiber::Basis<ValueType>&
-PiecewiseLinearContinuousScalarSpace<ValueType>::basis(
+template <typename BasisFunctionType>
+const Fiber::Basis<BasisFunctionType>&
+PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::basis(
         const Entity<0>& element) const
 {
     switch (elementVariant(element))
@@ -101,8 +100,8 @@ PiecewiseLinearContinuousScalarSpace<ValueType>::basis(
     }
 }
 
-template <typename ValueType>
-ElementVariant PiecewiseLinearContinuousScalarSpace<ValueType>::elementVariant(
+template <typename BasisFunctionType>
+ElementVariant PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::elementVariant(
         const Entity<0>& element) const
 {
     GeometryType type = element.type();
@@ -118,8 +117,8 @@ ElementVariant PiecewiseLinearContinuousScalarSpace<ValueType>::elementVariant(
                                  "this shouldn't happen!");
 }
 
-template <typename ValueType>
-void PiecewiseLinearContinuousScalarSpace<ValueType>::setElementVariant(
+template <typename BasisFunctionType>
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::setElementVariant(
         const Entity<0>& element, ElementVariant variant)
 {
     if (variant != elementVariant(element))
@@ -128,8 +127,8 @@ void PiecewiseLinearContinuousScalarSpace<ValueType>::setElementVariant(
                                  "setElementVariant(): invalid variant");
 }
 
-template <typename ValueType>
-void PiecewiseLinearContinuousScalarSpace<ValueType>::assignDofs()
+template <typename BasisFunctionType>
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofs()
 {
     const int gridDim = domainDimension();
 
@@ -148,7 +147,7 @@ void PiecewiseLinearContinuousScalarSpace<ValueType>::assignDofs()
 //        const IndexSet& indexSet = m_view->indexSet();
 //        while (!vit->finished())
 //        {
-//            arma::Col<ValueType> vertex;
+//            arma::Col<BasisFunctionType> vertex;
 //            vit->entity().geometry().center(vertex);
 //            std::cout << indexSet.entityIndex(vit->entity()) << ": "
 //                      << vertex(0) << " "
@@ -194,21 +193,21 @@ void PiecewiseLinearContinuousScalarSpace<ValueType>::assignDofs()
     }
 }
 
-template <typename ValueType>
-bool PiecewiseLinearContinuousScalarSpace<ValueType>::dofsAssigned() const
+template <typename BasisFunctionType>
+bool PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::dofsAssigned() const
 {
     const int gridDim = domainDimension();
     return globalDofCount() == m_view->entityCount(gridDim);
 }
 
-template <typename ValueType>
-int PiecewiseLinearContinuousScalarSpace<ValueType>::globalDofCount() const
+template <typename BasisFunctionType>
+int PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::globalDofCount() const
 {
     return m_global2localDofs.size();
 }
 
-template <typename ValueType>
-void PiecewiseLinearContinuousScalarSpace<ValueType>::globalDofs(
+template <typename BasisFunctionType>
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::globalDofs(
         const Entity<0>& element, std::vector<GlobalDofIndex>& dofs) const
 {
     const Mapper& mapper = m_view->elementMapper();
@@ -216,8 +215,8 @@ void PiecewiseLinearContinuousScalarSpace<ValueType>::globalDofs(
     dofs = m_local2globalDofs[index];
 }
 
-template <typename ValueType>
-void PiecewiseLinearContinuousScalarSpace<ValueType>::global2localDofs(
+template <typename BasisFunctionType>
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::global2localDofs(
         const std::vector<GlobalDofIndex>& globalDofs,
         std::vector<std::vector<LocalDof> >& localDofs) const
 {
@@ -226,9 +225,9 @@ void PiecewiseLinearContinuousScalarSpace<ValueType>::global2localDofs(
         localDofs[i] = m_global2localDofs[globalDofs[i]];
 }
 
-template <typename ValueType>
-void PiecewiseLinearContinuousScalarSpace<ValueType>::globalDofPositions(
-        std::vector<Point3D<ValueType> >& positions) const
+template <typename BasisFunctionType>
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::globalDofPositions(
+        std::vector<Point3D<CoordinateType> >& positions) const
 {
     const int gridDim = domainDimension();
     const int globalDofCount_ = globalDofCount();
@@ -243,8 +242,8 @@ void PiecewiseLinearContinuousScalarSpace<ValueType>::globalDofPositions(
         {
             const Entity<1>& e = it->entity();
             int index = indexSet.entityIndex(e);
-            arma::Col<ValueType> vertex;
-            e.geometry().center(vertex);
+            arma::Col<CoordinateType> vertex;
+            e.geometry().getCenter(vertex);
 
             positions[index].x = vertex(0);
             positions[index].y = vertex(1);
@@ -259,8 +258,8 @@ void PiecewiseLinearContinuousScalarSpace<ValueType>::globalDofPositions(
         {
             const Entity<2>& e = it->entity();
             int index = indexSet.entityIndex(e);
-            arma::Col<ValueType> vertex;
-            e.geometry().center(vertex);
+            arma::Col<CoordinateType> vertex;
+            e.geometry().getCenter(vertex);
 
             positions[index].x = vertex(0);
             positions[index].y = vertex(1);
@@ -270,20 +269,6 @@ void PiecewiseLinearContinuousScalarSpace<ValueType>::globalDofPositions(
     }
 }
 
-
-#ifdef COMPILE_FOR_FLOAT
-template class PiecewiseLinearContinuousScalarSpace<float>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class PiecewiseLinearContinuousScalarSpace<double>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class PiecewiseLinearContinuousScalarSpace<std::complex<float> >;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class PiecewiseLinearContinuousScalarSpace<std::complex<double> >;
-#endif
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(PiecewiseLinearContinuousScalarSpace);
 
 } // namespace Bempp

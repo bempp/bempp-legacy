@@ -1,3 +1,25 @@
+// Copyright (C) 2011-2012 by the BEM++ Authors
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+#include "config_opencl.hpp"
+
 #ifndef fiber_opencl_handler_hpp
 #define fiber_opencl_handler_hpp
 
@@ -17,7 +39,7 @@ namespace Fiber
 
 #ifdef WITH_OPENCL
 
-template <typename CoordinateType, typename IndexType>
+template <typename ValueType, typename IndexType>
 class OpenClHandler
 {
 public:
@@ -66,7 +88,7 @@ public:
      * \param mesh mesh instance
      * \note This method populates the cl_meshvtx and cl_meshidx buffers
      */
-    void pushGeometry (const arma::Mat<CoordinateType>& vtx,
+    void pushGeometry (const arma::Mat<ValueType>& vtx,
 		       const arma::Mat<IndexType>& idx) const;
 
     /**
@@ -97,12 +119,12 @@ public:
     /**
      * \brief Push a value vector into an OpenCL buffer and return a pointer to the buffer
      */
-    cl::Buffer *pushValueVector (const std::vector<CoordinateType> &vec) const;
+    cl::Buffer *pushValueVector (const std::vector<ValueType> &vec) const;
 
     /**
      * \brief Push a row into an OpenCL buffer and return a pointer to the buffer
      */
-    cl::Buffer *pushValueRow (const arma::Row<CoordinateType> &row) const;
+    cl::Buffer *pushValueRow (const arma::Row<ValueType> &row) const;
 
     /**
      * \brief Push an index array to the OpenCL buffer and return the buffer
@@ -112,19 +134,19 @@ public:
     /**
      * \brief Push a matrix into an OpenCL buffer and return a pointer to the buffer
      */
-    cl::Buffer *pushValueMatrix (const arma::Mat<CoordinateType> &mat) const;
+    cl::Buffer *pushValueMatrix (const arma::Mat<ValueType> &mat) const;
 
     /**
      * \brief Push a matrix into an OpenCL buffer and return a pointer to the buffer
      */
-    cl::Buffer *pushValueCube (const arma::Cube<CoordinateType> &cube) const;
+    cl::Buffer *pushValueCube (const arma::Cube<ValueType> &cube) const;
 
     void pullValueVector (const cl::Buffer &clbuf,
-			  std::vector<CoordinateType>& vec,
+              std::vector<ValueType>& vec,
 			  int size) const;
   
     void pullValueCube (const cl::Buffer &clbuf,
-			arma::Cube<CoordinateType>& cube) const;
+            arma::Cube<ValueType>& cube) const;
 
     struct MeshGeom {
         struct MeshDims {
@@ -161,7 +183,7 @@ private:
 
 // Dummy implementation for the OpenCL handler
 
-template <typename CoordinateType, typename IndexType>
+template <typename ValueType, typename IndexType>
 class OpenClHandler
 {
 public:
@@ -169,7 +191,7 @@ public:
 
     bool UseOpenCl () const { return false; }
 
-    void pushGeometry (const arma::Mat<CoordinateType>& vtx,
+    void pushGeometry (const arma::Mat<ValueType>& vtx,
 		       const arma::Mat<IndexType>& idx) const {}
 };
 

@@ -33,25 +33,27 @@ namespace Bempp
 
 class GridView;
 
-// Element variants: 2 (line element), 3 (triangular element), 4 (quadrilateral element)
-
-template <typename ValueType>
-class PiecewiseLinearContinuousScalarSpace : public ScalarSpace<ValueType>
+template <typename BasisFunctionType>
+class PiecewiseLinearContinuousScalarSpace : public ScalarSpace<BasisFunctionType>
 {
 public:
+    typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
+
     explicit PiecewiseLinearContinuousScalarSpace(Grid& grid);
 
     virtual int domainDimension() const;
     virtual int codomainDimension() const;
 
+    // Element variants: 2 (linear element), 3 (triangular element),
+    // 4 (quadrilateral element)
     virtual ElementVariant elementVariant(const Entity<0>& element) const;
     virtual void setElementVariant(const Entity<0>& element,
                                    ElementVariant variant);
 
     virtual void getBases(const std::vector<const EntityPointer<0>*>& elements,
-                          std::vector<const Fiber::Basis<ValueType>*>& bases) const;
+                          std::vector<const Fiber::Basis<BasisFunctionType>*>& bases) const;
 
-    virtual const Fiber::Basis<ValueType>& basis(const Entity<0>& element) const;
+    virtual const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
 
     virtual void assignDofs();
     virtual bool dofsAssigned() const;
@@ -62,13 +64,13 @@ public:
             const std::vector<GlobalDofIndex>& globalDofs,
             std::vector<std::vector<LocalDof> >& localDofs) const;
 
-    virtual void globalDofPositions(std::vector<Point3D<ValueType> >& positions) const;
+    virtual void globalDofPositions(std::vector<Point3D<CoordinateType> >& positions) const;
 
 private:
     std::auto_ptr<GridView> m_view;
-    Fiber::PiecewiseLinearContinuousScalarBasis<2, ValueType> m_lineBasis;
-    Fiber::PiecewiseLinearContinuousScalarBasis<3, ValueType> m_triangleBasis;
-    Fiber::PiecewiseLinearContinuousScalarBasis<4, ValueType> m_quadrilateralBasis;
+    Fiber::PiecewiseLinearContinuousScalarBasis<2, BasisFunctionType> m_lineBasis;
+    Fiber::PiecewiseLinearContinuousScalarBasis<3, BasisFunctionType> m_triangleBasis;
+    Fiber::PiecewiseLinearContinuousScalarBasis<4, BasisFunctionType> m_quadrilateralBasis;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
 };

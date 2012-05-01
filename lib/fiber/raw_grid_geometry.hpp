@@ -26,13 +26,21 @@
 namespace Fiber
 {
 
-template <typename ValueType>
+template <typename CoordinateType>
 class RawGridGeometry
 {
 public:
+    RawGridGeometry(int gridDim, int worldDim) :
+        m_gridDim(gridDim), m_worldDim(worldDim) {
+        if (gridDim > worldDim)
+            throw std::invalid_argument("RawGridGeometry::RawGridGeometry(): "
+                                        "grid dimension cannot be larger than "
+                                        "world dimension");
+    }
+
     // Const accessors
 
-    const arma::Mat<ValueType>& vertices() const {
+    const arma::Mat<CoordinateType>& vertices() const {
         return m_vertices;
     }
 
@@ -42,6 +50,18 @@ public:
 
     const arma::Mat<char>& auxData() const {
         return m_auxData;
+    }
+
+    int elementCount() const {
+        return m_elementCornerIndices.n_cols;
+    }
+
+    int gridDimension() const {
+        return m_gridDim;
+    }
+
+    int worldDimension() const {
+        return m_worldDim;
     }
 
     /** \brief Indices of the corners of the given element. */
@@ -60,7 +80,7 @@ public:
 
     // Non-const accessors (currently needed for construction)
 
-    arma::Mat<ValueType>& vertices() {
+    arma::Mat<CoordinateType>& vertices() {
         return m_vertices;
     }
 
@@ -82,7 +102,7 @@ public:
         for (; cornerCount < m_elementCornerIndices.n_rows; ++cornerCount)
             if (m_elementCornerIndices(cornerCount, elementIndex) < 0)
                 break;
-        arma::Mat<ValueType> corners(dimGrid, cornerCount);
+        arma::Mat<CoordinateType> corners(dimGrid, cornerCount);
         for (int cornerIndex = 0; cornerIndex < cornerCount; ++cornerIndex)
             corners.col(cornerIndex) = m_vertices.col(
                         m_elementCornerIndices(cornerIndex, elementIndex));
@@ -90,7 +110,9 @@ public:
     }
 
 private:
-    arma::Mat<ValueType> m_vertices;
+    int m_gridDim;
+    int m_worldDim;
+    arma::Mat<CoordinateType> m_vertices;
     arma::Mat<int> m_elementCornerIndices;
     arma::Mat<char> m_auxData;
 };

@@ -1,3 +1,12 @@
+set(ALUGRID_ROOT_DIR "" CACHE PATH "Full path to the ALUGrid root directory")
+if (WITH_ALUGRID)
+        # Variable used in dunecontrol.conf.in
+        set(DUNE_WITH_ALUGRID_SETTING "--with-alugrid=${ALUGRID_ROOT_DIR}" CACHE INTERNAL "")
+else ()
+        set(DUNE_WITH_ALUGRID_SETTING "" CACHE INTERNAL "")
+endif ()
+configure_file(dunecontrol.conf.in dunecontrol.conf)
+
 add_custom_target(dune
 	DEPENDS dune-grid dune-common dune-localfunctions
 )
@@ -17,7 +26,6 @@ ExternalProject_Add(
 	INSTALL_COMMAND ""
 )
 
-include(ExternalProject)
 ExternalProject_Add(
 	dune-localfunctions
 	PREFIX ${CMAKE_SOURCE_DIR}/dune

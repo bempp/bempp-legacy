@@ -22,7 +22,6 @@
 #define bempp_types_hpp
 
 #include "../fiber/types.hpp"
-#include "../grid/common.hpp" // to be merged with this file
 #include "../grid/geometry_type.hpp"
 #include "../grid/index_set.hpp"
 

@@ -21,20 +21,47 @@
 #ifndef bempp_ahmed_aux_hpp
 #define bempp_ahmed_aux_hpp
 
+// to ensure there are no inconsistent forward declarations
+#include "ahmed_aux_fwd.hpp"
+
 #include "../common/types.hpp"
 
 #include <boost/scoped_array.hpp>
 #include <boost/shared_array.hpp>
+#include <complex>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
 
 // Ahmed's include files
+#include "cmplx.h"
+
+inline comp<float> operator*=(comp<float>& a, double b)
+{
+    return operator*=(a, static_cast<float>(b));
+}
+
+inline comp<float> operator/(comp<float>& a, double b)
+{
+    return operator/(a, static_cast<float>(b));
+}
+
+inline comp<float> operator/(double a, comp<float>& b)
+{
+    return operator/(static_cast<float>(a), b);
+}
+
 #include <apprx.h>
 #include <bemblcluster.h>
 #include <bllist.h>
 // #include <matgen_sqntl.h>
-// #include <matgen_omp.h>
+// #define _OPENMP
+#include <matgen_omp.h>
+// #undef _OPENMP
+
+bool multaHvec_omp(double d, blcluster* bl, mblock<double>** A, double* x,
+           double* y);
+
 #include <matrix.h>
 #undef SIGN
 #undef SQR
@@ -43,10 +70,29 @@
 
 namespace Bempp {
 
-template <typename ValueType>
-struct AhmedDofWrapper : public Point3D<ValueType>
+// Casts.
+
+inline float ahmedCast(float x) {
+    return x;
+}
+
+inline double ahmedCast(double x) {
+    return x;
+}
+
+inline scomp ahmedCast(std::complex<float> x) {
+    return scomp(x.real(), x.imag());
+}
+
+inline dcomp ahmedCast(std::complex<double> x) {
+    return dcomp(x.real(), x.imag());
+}
+
+/** \brief An Ahmed-compatible degree-of-freedom type. */
+template <typename CoordinateType>
+struct AhmedDofWrapper : public Point3D<CoordinateType>
 {
-    ValueType getcenter(int dim) const
+    CoordinateType getcenter(int dim) const
     {
         switch  (dim)
         {
@@ -77,13 +123,15 @@ private:
 };
 
 template <typename ValueType>
-boost::shared_array<mblock<ValueType>*> allocateAhmedMblockArray(
+boost::shared_array<mblock<typename AhmedTypeTraits<ValueType>::Type>*>
+allocateAhmedMblockArray(
         const blcluster* cluster)
 {
-    mblock<ValueType>** blocks = 0;
+    typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
+    AhmedMblock** blocks = 0;
     const size_t blockCount = cluster->nleaves();
     allocmbls(blockCount, blocks);
-    return boost::shared_array<mblock<ValueType>*>(
+    return boost::shared_array<AhmedMblock*>(
                 blocks, AhmedMblockArrayDeleter(blockCount));
 }
 
@@ -121,35 +169,6 @@ public:
 private:
     boost::scoped_array<blcluster*> m_leafClusters;
     size_t m_size;
-};
-
-template <typename ValueType, typename GeometryTypeRows, typename GeometryTypeCols>
-class AhmedMatrix : public Matrix<ValueType>
-{
-public:
-    typedef bemblcluster<GeometryTypeRows, GeometryTypeCols>
-    AhmedBemblcluster;
-
-    AhmedMatrix(unsigned int rowCount, unsigned int columnCount,
-                std::auto_ptr<AhmedBemblcluster> blockCluster,
-                boost::shared_array<mblock<ValueType>*> blocks) :
-        Matrix<double>(rowCount, columnCount),
-        m_blockCluster(blockCluster), m_blocks(blocks)
-    {
-    }
-
-    virtual void amux(ValueType d, ValueType* x, ValueType* y) const {
-        AhmedBemblcluster* ptr = m_blockCluster.get();
-        multaHvec(d, m_blockCluster.get(), m_blocks.get(), x, y);
-    }
-
-    virtual void precond_apply(double* x) const {
-        // TODO
-    }
-
-private:
-    std::auto_ptr<AhmedBemblcluster> m_blockCluster;
-    boost::shared_array<mblock<ValueType>*> m_blocks;
 };
 
 } // namespace Bempp

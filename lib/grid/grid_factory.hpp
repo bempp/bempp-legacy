@@ -1,4 +1,4 @@
-// Copyright (C) 2011 by the BEM++ Authors
+// Copyright (C) 2011-2012 by the BEM++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +21,6 @@
 #ifndef bempp_grid_factory_hpp
 #define bempp_grid_factory_hpp
 
-#include "common.hpp"
-
 #include <armadillo>
 #include <memory>
 
@@ -39,10 +37,21 @@ class Grid;
 struct GridParameters {
     /** \brief %Grid topology */
     enum Topology {
-        LINEAR, /**< \brief one-dimensional grid */
-        TRIANGULAR, /**< \brief grid composed of triangular elements */
-        QUADRILATERAL, /**< \brief grid composed of quadrilateral elements */
-        HYBRID /**< \brief grid composed (potentially) both of triangular and quadrilateral elements */
+        /** \brief one-dimensional grid embedded in a two-dimensional space */
+        LINEAR,
+        /** \brief two-dimensional grid composed of triangular elements,
+            embedded in a three-dimensional space */
+        TRIANGULAR,
+        /** \brief two-dimensional grid composed of quadrilateral elements,
+            embedded in a three-dimensional space */
+        QUADRILATERAL,
+        /** \brief two-dimensional grid composed (potentially) both of
+            triangular and quadrilateral elements, embedded in a
+            three-dimensional space */
+        HYBRID_2D,
+        /** \brief three-dimensional grid composed of tetrahedral elements,
+            embedded in a three-dimensional space*/
+        TETRAHEDRAL
     } topology;
 };
 
@@ -75,8 +84,8 @@ public:
       supported.
     */
     static std::auto_ptr<Grid> createStructuredGrid(const GridParameters& params,
-            const arma::Col<ctype>& lowerLeft,
-            const arma::Col<ctype>& upperRight,
+            const arma::Col<double>& lowerLeft,
+            const arma::Col<double>& upperRight,
             const arma::Col<unsigned int>& nElements);
 
     /** \brief Import grid from a file in Gmsh format.

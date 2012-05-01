@@ -22,19 +22,21 @@
 #define fiber_kernel_hpp
 
 #include "array_4d.hpp"
+#include "scalar_traits.hpp"
 
 #include <armadillo>
 
 namespace Fiber
 {
 
-template <typename ValueType> class BasisData;
-template <typename ValueType> class GeometricalData;
+template <typename CoordinateType> class GeometricalData;
 
 template <typename ValueType>
 class Kernel
 {
 public:
+    typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+
     virtual ~Kernel() {}
 
     virtual int worldDimension() const = 0;
@@ -44,13 +46,15 @@ public:
     virtual void addGeometricalDependencies(int& testGeomDeps,
                                             int& trialGeomDeps) const = 0;
 
-    virtual void evaluateAtPointPairs(const GeometricalData<ValueType>& testGeomData,
-                                      const GeometricalData<ValueType>& trialGeomData,
-                                      arma::Cube<ValueType>& result) const = 0;
+    virtual void evaluateAtPointPairs(
+            const GeometricalData<CoordinateType>& testGeomData,
+            const GeometricalData<CoordinateType>& trialGeomData,
+            arma::Cube<ValueType>& result) const = 0;
 
-    virtual void evaluateOnGrid(const GeometricalData<ValueType>& testGeomData,
-                                const GeometricalData<ValueType>& trialGeomData,
-                                Array4D<ValueType>& result) const = 0;
+    virtual void evaluateOnGrid(
+            const GeometricalData<CoordinateType>& testGeomData,
+            const GeometricalData<CoordinateType>& trialGeomData,
+            Array4D<ValueType>& result) const = 0;
 
     /**
      * \brief Returns an OpenCL code snippet for kernel evaluation as a string.

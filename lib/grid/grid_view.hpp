@@ -1,4 +1,4 @@
-// Copyright (C) 2011 by the BEM++ Authors
+// Copyright (C) 2011-2012 by the BEM++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -17,11 +17,9 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-
 #ifndef bempp_grid_view_hpp
 #define bempp_grid_view_hpp
 
-#include "common.hpp"
 #include "geometry_type.hpp"
 #include "entity_iterator.hpp"
 
@@ -109,9 +107,13 @@ public:
       \note For isoparametric elements we will likely need to add a third
         parameter to contain "arbitrary" auxiliary data.
       */
-    virtual void getRawElementData(arma::Mat<ctype>& vertices,
-                                   arma::Mat<int>& elementCorners,
-                                   arma::Mat<char>& auxData) const = 0;
+    void getRawElementData(arma::Mat<double>& vertices,
+                           arma::Mat<int>& elementCorners,
+                           arma::Mat<char>& auxData) const;
+    /** \overload */
+    void getRawElementData(arma::Mat<float>& vertices,
+                           arma::Mat<int>& elementCorners,
+                           arma::Mat<char>& auxData) const;
 
     /** \brief Mapping from codim-0 entity index to entity pointer.
 
@@ -134,6 +136,15 @@ public:
     // * Iteration over neighbours: Dune methods ibegin() and iend().
 
 private:
+    virtual void getRawElementDataDoubleImpl(
+            arma::Mat<double>& vertices,
+            arma::Mat<int>& elementCorners,
+            arma::Mat<char>& auxData) const = 0;
+    virtual void getRawElementDataFloatImpl(
+            arma::Mat<float>& vertices,
+            arma::Mat<int>& elementCorners,
+            arma::Mat<char>& auxData) const = 0;
+
     /** \brief Iterator over entities of codimension 0 contained in this view. */
     virtual std::auto_ptr<EntityIterator<0> > entityCodim0Iterator() const = 0;
     /** \brief Iterator over entities of codimension 1 contained in this view. */
@@ -143,6 +154,20 @@ private:
     /** \brief Iterator over entities of codimension 3 contained in this view. */
     virtual std::auto_ptr<EntityIterator<3> > entityCodim3Iterator() const = 0;
 };
+
+inline void GridView::getRawElementData(arma::Mat<double>& vertices,
+                                        arma::Mat<int>& elementCorners,
+                                        arma::Mat<char>& auxData) const
+{
+    getRawElementDataDoubleImpl(vertices, elementCorners, auxData);
+}
+
+inline void GridView::getRawElementData(arma::Mat<float>& vertices,
+                                        arma::Mat<int>& elementCorners,
+                                        arma::Mat<char>& auxData) const
+{
+    getRawElementDataFloatImpl(vertices, elementCorners, auxData);
+}
 
 template<>
 inline std::auto_ptr<EntityIterator<0> > GridView::entityIterator<0>() const

@@ -21,17 +21,21 @@
 #ifndef fiber_expression_hpp
 #define fiber_expression_hpp
 
+#include "scalar_traits.hpp"
+
 #include <armadillo>
 
 namespace Fiber {
 
 template <typename ValueType> class BasisData;
-template <typename ValueType> class GeometricalData;
+template <typename CoordinateType> class GeometricalData;
 
-template <typename ValueType>
+template <typename CoordinateType>
 class Expression
 {
 public:
+    typedef typename ScalarTraits<CoordinateType>::ComplexType ComplexType;
+
     virtual ~Expression() {}
 
     virtual int domainDimension() const = 0;
@@ -39,9 +43,28 @@ public:
 
     virtual void addDependencies(int& basisDeps, int& geomDeps) const = 0;
 
-    virtual void evaluate(const BasisData<ValueType>& basisData,
-                          const GeometricalData<ValueType>& geomData,
-                          arma::Cube<ValueType>& result) const = 0;
+    void evaluate(const BasisData<CoordinateType>& basisData,
+                  const GeometricalData<CoordinateType>& geomData,
+                  arma::Cube<CoordinateType>& result) const {
+        evaluateImplReal(basisData, geomData, result);
+    }
+
+    void evaluate(const BasisData<ComplexType>& basisData,
+                  const GeometricalData<CoordinateType>& geomData,
+                  arma::Cube<ComplexType>& result) const {
+        evaluateImplComplex(basisData, geomData, result);
+    }
+
+private:
+    virtual void evaluateImplReal(
+            const BasisData<CoordinateType>& basisData,
+            const GeometricalData<CoordinateType>& geomData,
+            arma::Cube<CoordinateType>& result) const = 0;
+
+    virtual void evaluateImplComplex(
+            const BasisData<ComplexType>& basisData,
+            const GeometricalData<CoordinateType>& geomData,
+            arma::Cube<ComplexType>& result) const = 0;
 };
 
 } // namespace Fiber

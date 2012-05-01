@@ -50,7 +50,7 @@ Convert global (physical) to local (logical) coordinates.
 Returns a 2D whose ith column contains the local coordinates of x_i."
 %enddef
 
-%define Geometry_integrationElement_docstring
+%define Geometry_integrationElements_docstring
 "integrationElement(self, local) -> ndarray
 
 The factor mu appearing in the integral transformation formula.
@@ -88,10 +88,10 @@ properly.
 Returns a vector containing the coordinates of the center of geometry."
 %enddef
 
-%define Geometry_jacobianTransposed_docstring
-"jacobianTransposed(self, local) -> ndarray
+%define Geometry_jacobiansTransposed_docstring
+"jacobiansTransposed(self, local) -> ndarray
 
-Transpose of the Jacobian matrix.
+Transposed Jacobian matrices.
 
 See the documentation of the C++ interface for the definition of the
 Jacobian matrix.
@@ -104,10 +104,10 @@ Returns a 3D array whose ith slice (i.e. ...(:,:,i)) contains the
 transposed Jacobian matrix at x_i."
 %enddef
 
-%define Geometry_jacobianInverseTransposed_docstring
-"jacobianInverseTransposed(self, local) -> ndarray
+%define Geometry_jacobianInversesTransposed_docstring
+"jacobianInversesTransposed(self, local) -> ndarray
 
-Inverse of the transposed Jacobian matrix.
+Inverses of the transposed Jacobian matrices.
 
 See the documentation of the C++ interface for the definition of the
 Jacobian matrix.
@@ -137,10 +137,10 @@ DECLARE_METHOD_DOCSTRING(Geometry, cornerCount, 1);
 DECLARE_METHOD_DOCSTRING(Geometry, corners, 0);
 DECLARE_METHOD_DOCSTRING(Geometry, local2global, 0);
 DECLARE_METHOD_DOCSTRING(Geometry, global2local, 0);
-DECLARE_METHOD_DOCSTRING(Geometry, integrationElement, 0);
+DECLARE_METHOD_DOCSTRING(Geometry, integrationElements, 0);
 DECLARE_METHOD_DOCSTRING(Geometry, volume, 0);
 DECLARE_METHOD_DOCSTRING(Geometry, center, 0);
-DECLARE_METHOD_DOCSTRING(Geometry, jacobianTransposed, 0);
-DECLARE_METHOD_DOCSTRING(Geometry, jacobianInverseTransposed, 0);
+DECLARE_METHOD_DOCSTRING(Geometry, jacobiansTransposed, 0);
+DECLARE_METHOD_DOCSTRING(Geometry, jacobianInversesTransposed, 0);
 
 } // namespace Bempp

@@ -1,4 +1,4 @@
-// Copyright (C) 2011 by the BEM++ Authors
+// Copyright (C) 2011-2012 by the BEM++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -17,7 +17,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-
 #ifndef bempp_concrete_index_set_hpp
 #define bempp_concrete_index_set_hpp
 
@@ -76,11 +75,9 @@ public:
     }
 
     virtual IndexType subEntityIndex(const Entity<0>& e, int i, unsigned int codimSub) const {
-#ifndef NDEBUG
         // Prevent an assert in FoamGrid from crashing the Python interpreter
         if (codimSub > DuneGridView::Grid::dimension)
             throw std::invalid_argument("IndexSet::subEntityIndex(): codimSub exceeds grid dimension");
-#endif
         typedef typename DuneGridView::template Codim<0>::Entity DuneEntity;
         typedef ConcreteEntity<0, DuneEntity> ConcEntity;
         const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);

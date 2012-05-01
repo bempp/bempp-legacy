@@ -21,29 +21,34 @@
 #ifndef bempp_linear_operator_hpp
 #define bempp_linear_operator_hpp
 
-#include "../grid/common.hpp"
 #include "assembly_options.hpp"
+#include "transposition_mode.hpp"
 
+#include "../fiber/local_assembler_factory.hpp"
+#include "../space/space.hpp"
+
+#include <boost/mpl/set.hpp>
+#include <boost/mpl/has_key.hpp>
+#include <boost/utility/enable_if.hpp>
 #include <memory>
+#include <vector>
 
-namespace arma {
-template <typename eT> class Mat;
-}
-
-namespace Fiber
+namespace arma
 {
 
-template <typename ValueType, typename GeometryFactory> class LocalAssemblerFactory;
+template <typename eT> class Mat;
 
-} // namespace Fiber
+}
 
-namespace Bempp {
+namespace Bempp
+{
 
 class Grid;
 class GeometryFactory;
-template <typename ValueType> class DiscreteScalarValuedLinearOperator;
-template <typename ValueType> class DiscreteVectorValuedLinearOperator;
-template <typename ValueType> class Space;
+template <typename ValueType> class DiscreteLinearOperator;
+template <typename BasisFunctionType, typename ResultType> class ElementaryLinearOperator;
+template <typename BasisFunctionType, typename ResultType> class LinearOperatorSuperposition;
+template <typename BasisFunctionType, typename ResultType> class GridFunction;
 
 /** \brief "Formal" linear operator.
 
@@ -63,16 +68,39 @@ template <typename ValueType> class Space;
 
   \tparam ValueType      Type used to represent elements of \f$K\f$. This can be
                          one of: float, double, std::complex<float> and
-                         std::complex<double>.                                                
+                         std::complex<double>.
 */
-template <typename ValueType>
+template <typename BasisFunctionType, typename ResultType>
 class LinearOperator
 {
 public:
-    typedef Fiber::LocalAssemblerFactory<ValueType, GeometryFactory>
+    typedef Fiber::LocalAssemblerFactory<BasisFunctionType, ResultType, GeometryFactory>
     LocalAssemblerFactory;
+    typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
 
-    virtual ~LinearOperator() {}
+    LinearOperator(const Space<BasisFunctionType>& testSpace,
+                   const Space<BasisFunctionType>& trialSpace);
+
+    LinearOperator(const LinearOperator<BasisFunctionType, ResultType>& other);
+
+    virtual ~LinearOperator();
+
+    /** \brief Assemble the discrete operator */
+    void assemble(const LocalAssemblerFactory& factory,
+                  const AssemblyOptions& options);
+
+    /** \brief Return \p true if operator is assembled */
+    bool isAssembled() const;
+
+    /** \brief Set y_inout := alpha * A * x_in + beta * y_inout, where A is
+      this operator. */
+    void apply(const TranspositionMode trans,
+               const GridFunction<BasisFunctionType, ResultType>& x_in,
+               GridFunction<BasisFunctionType, ResultType>& y_inout,
+               ResultType alpha, ResultType beta) const;
+
+    /** \brief Return reference to \p DiscreteLinearOperator. */
+    const DiscreteLinearOperator<ResultType>& assembledDiscreteLinearOperator() const;
 
     // Ideas for better names for all methods here are very welcome!!!
     /** \brief Number of components of the functions from the trial space \f$X\f$.
@@ -108,34 +136,74 @@ public:
       This is the overload intended to be called by the user, who needs to
       provide a local-assembler factory \p factory to be used to construct an
       appropriate local assembler. */
-    virtual std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakForm(
-            const Space<ValueType>& testSpace,
-            const Space<ValueType>& trialSpace,
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const = 0;
 
-    /** \brief Assemble a discrete representation of the operator.
+    const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const* >&
+    localOperators() const;
 
-      Construct a discrete linear operator representing the 3D array
-      \f$L_{ijk}\f$ whose entries have the form
+    const std::vector<ResultType>& multipliers() const;
 
-      \f[L_{ijk} = [(L \psi_k)(x_j)]_i,\f]
+    const Space<BasisFunctionType>& testSpace() const;
+    const Space<BasisFunctionType>& trialSpace() const;
 
-      where \f$L\f$ is the linear operator represented by this object, \f$S\f$
-      denotes the surface that is the domain of the trial space \f$X\f$ and
-      which is represented by the grid returned by trialSpace.grid(),
-      \f$\psi_k\f$ a function from \f$X\f$, and \f$x_j\f$ is a point from the
-      space \f$T\f$ that is the domain of the test space \f$Y\f$. The symbol
-      \f$[]_i\f$ denotes the \f$i\f$'th component of the quantity in brackets.
-      */
-    virtual std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
-    assembleOperator(
-            const arma::Mat<ctype>& testPoints,
-            const Space<ValueType>& trialSpace,
-            const LocalAssemblerFactory& factory,
-            const AssemblyOptions& options) const = 0;
+protected:
+    void addLocalOperatorsAndMultipliers(
+            const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>&
+            localOperators,
+            const std::vector<ResultType>& multipliers);
+
+private:
+    std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>
+    m_localOperators;
+    std::vector<ResultType> m_multipliers;
+
+    const Space<BasisFunctionType>& m_testSpace;
+    const Space<BasisFunctionType>& m_trialSpace;
+
+    std::auto_ptr<const DiscreteLinearOperator<ResultType> > m_discreteOperator;
 };
+
+// Operator overloading
+
+template <typename BasisFunctionType, typename ResultType>
+LinearOperatorSuperposition<BasisFunctionType, ResultType> operator+(
+        const LinearOperator<BasisFunctionType, ResultType>& op1,
+        const LinearOperator<BasisFunctionType, ResultType>& op2);
+
+template <typename BasisFunctionType, typename ResultType>
+LinearOperatorSuperposition<BasisFunctionType, ResultType> operator-(
+        const LinearOperator<BasisFunctionType, ResultType>& op1,
+        const LinearOperator<BasisFunctionType, ResultType>& op2);
+
+// This type machinery is needed to disambiguate between this operator and
+// the one taking a LinearOperator and a GridFunction
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+typename boost::enable_if<
+    typename boost::mpl::has_key<
+        boost::mpl::set<float, double, std::complex<float>, std::complex<double> >,
+        ScalarType>,
+    LinearOperatorSuperposition<BasisFunctionType, ResultType> >::type
+operator*(
+        const LinearOperator<BasisFunctionType, ResultType>& op,
+        const ScalarType& scalar);
+
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+LinearOperatorSuperposition<BasisFunctionType, ResultType> operator*(
+        const ScalarType& scalar,
+        const LinearOperator<BasisFunctionType, ResultType>& op);
+
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+LinearOperatorSuperposition<BasisFunctionType, ResultType> operator/(
+        const LinearOperator<BasisFunctionType, ResultType>& op,
+        const ScalarType& scalar);
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType> operator*(
+        const LinearOperator<BasisFunctionType, ResultType>& op,
+        const GridFunction<BasisFunctionType, ResultType>& fun);
 
 } // namespace Bempp
 

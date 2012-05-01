@@ -23,88 +23,62 @@
 
 #include "linear_operator.hpp"
 
-#include <boost/ptr_container/ptr_vector.hpp>
-#include <boost/tuple/tuple.hpp>
-
 namespace Fiber
 {
 
-template <typename ValueType> class LocalAssemblerForOperators;
+template <typename ResultType> class LocalAssemblerForOperators;
 
 } // namespace Fiber
 
 namespace Bempp
 {
 
-template <typename ValueType> class ElementaryLinearOperator;
+template <typename BasisFunctionType, typename ResultType>
+class ElementaryLinearOperator;
 
 // only scalar multipliers allowed, tensor ones would
 // require knowledge of vector components distribution
 // in the discrete operator
-template <typename ValueType>
-class LinearOperatorSuperposition : public LinearOperator<ValueType>
+template <typename BasisFunctionType, typename ResultType>
+class LinearOperatorSuperposition :
+        public LinearOperator<BasisFunctionType, ResultType>
 {
 public:
-    typedef typename LinearOperator<ValueType>::LocalAssemblerFactory
-    LocalAssemblerFactory;
-    typedef typename Fiber::LocalAssemblerForOperators<ValueType>
+    typedef LinearOperator<BasisFunctionType, ResultType> Base;
+    typedef typename Base::CoordinateType CoordinateType;
+    typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
+    typedef typename Fiber::LocalAssemblerForOperators<ResultType>
     LocalAssembler;
 
-    /* acquires ownership of the operators passed via terms */
-    LinearOperatorSuperposition(
-            boost::ptr_vector<ElementaryLinearOperator<ValueType> >& terms);
+    LinearOperatorSuperposition(const Base& term1, const Base& term2);
 
-    // Acquires ownership of the operators passed via terms.
-    LinearOperatorSuperposition(
-            std::auto_ptr<ElementaryLinearOperator<ValueType> > term1,
-            std::auto_ptr<ElementaryLinearOperator<ValueType> > term2);
-    // possibly add variants for longer parameter lists
+    LinearOperatorSuperposition(const Base& term, const ResultType& scalar);
 
     virtual int trialComponentCount() const;
     virtual int testComponentCount() const;
 
-    virtual std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
-    assembleOperator(
-            const arma::Mat<ctype>& testPoints,
-            const Space<ValueType>& trialSpace,
-            const LocalAssemblerFactory& factory,
-            const AssemblyOptions& options) const;
-
-    virtual std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakForm(
-            const Space<ValueType>& testSpace,
-            const Space<ValueType>& trialSpace,
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
 
     virtual bool supportsRepresentation(AssemblyOptions::Representation repr) const;
 
 private:
-    void init(boost::ptr_vector<ElementaryLinearOperator<ValueType> >& terms);
-
-    std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+    std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakFormInDenseMode(
-            const Space<ValueType>& testSpace,
-            const Space<ValueType>& trialSpace,
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
 
-    std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+    std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakFormInAcaMode(
-            const Space<ValueType>& testSpace,
-            const Space<ValueType>& trialSpace,
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
 
-    std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
+    std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakFormInArbitraryMode(
-            const Space<ValueType>& testSpace,
-            const Space<ValueType>& trialSpace,
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
-
-private:
-    boost::ptr_vector<ElementaryLinearOperator<ValueType> > m_terms;
 };
 
 } //namespace Bempp

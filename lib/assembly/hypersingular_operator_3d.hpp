@@ -24,34 +24,47 @@
 #include "elementary_weakly_singular_integral_operator.hpp"
 #include "../fiber/single_layer_potential_3d_kernel.hpp"
 #include "../fiber/surface_curl_3d.hpp"
+#include "../common/scalar_traits.hpp"
 
 namespace Bempp
 {
 
 // Hypersingular is obviously *not* weakly singular... but its
-// weak form apparently can be integrated with methods devised
+// weak form can be calculated with quadrature methods devised
 // for weakly singular operators.
-// FIXME: maybe rename "weaklysingular" to "singular"
-template <typename ValueType>
+// FIXME: maybe rename "WeaklySingular" to "Singular"
+template <typename BasisFunctionType, typename ResultType = BasisFunctionType>
 class HypersingularOperator3D :
-        public ElementaryWeaklySingularIntegralOperator<ValueType>
+        public ElementaryWeaklySingularIntegralOperator<
+        BasisFunctionType,
+        typename ScalarTraits<ResultType>::RealType,
+        ResultType>
 {
+    typedef typename ScalarTraits<ResultType>::RealType KernelType;
+    typedef ElementaryWeaklySingularIntegralOperator<
+    BasisFunctionType, KernelType, ResultType> Base;
+public:
+    typedef typename Base::CoordinateType CoordinateType;
+
+    HypersingularOperator3D(const Space<BasisFunctionType>& testSpace,
+                            const Space<BasisFunctionType>& trialSpace);
+
 private:
-    virtual const Fiber::Kernel<ValueType>& kernel() const {
+    virtual const Fiber::Kernel<KernelType>& kernel() const {
         return m_kernel;
     }
 
-    virtual const Fiber::Expression<ValueType>& testExpression() const {
+    virtual const Fiber::Expression<CoordinateType>& testExpression() const {
         return m_expression;
     }
 
-    virtual const Fiber::Expression<ValueType>& trialExpression() const {
+    virtual const Fiber::Expression<CoordinateType>& trialExpression() const {
         return m_expression;
     }
 
 private:
-    Fiber::SingleLayerPotential3DKernel<ValueType> m_kernel;
-    Fiber::SurfaceCurl3D<ValueType> m_expression;
+    Fiber::SingleLayerPotential3DKernel<KernelType> m_kernel;
+    Fiber::SurfaceCurl3D<CoordinateType> m_expression;
 };
 
 } // namespace Bempp

@@ -26,57 +26,60 @@
 namespace Fiber
 {
 
-template <typename ValueType, typename IndexType> class OpenClHandler;
-template <typename ValueType> class Expression;
+template <typename CoordinateType, typename IndexType> class OpenClHandler;
+template <typename CoordinateType> class Expression;
 template <typename ValueType> class Kernel;
-template <typename ValueType> class RawGridGeometry;
+template <typename CoordinateType> class RawGridGeometry;
 
 /** \brief Integration over pairs of elements on non-tensor-product point grids. */
-template <typename ValueType, typename GeometryFactory>
-class NonseparableNumericalTestKernelTrialIntegrator : public TestKernelTrialIntegrator<ValueType>
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+class NonseparableNumericalTestKernelTrialIntegrator :
+        public TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>
 {
 public:
-    typedef typename TestKernelTrialIntegrator<ValueType>::ElementIndexPair
-    ElementIndexPair;
+    typedef TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType> Base;
+    typedef typename Base::CoordinateType CoordinateType;
+    typedef typename Base::ElementIndexPair ElementIndexPair;
 
     NonseparableNumericalTestKernelTrialIntegrator(
-            const arma::Mat<ValueType>& localTestQuadPoints,
-            const arma::Mat<ValueType>& localTrialQuadPoints,
-            const std::vector<ValueType> quadWeights,
+            const arma::Mat<CoordinateType>& localTestQuadPoints,
+            const arma::Mat<CoordinateType>& localTrialQuadPoints,
+            const std::vector<CoordinateType> quadWeights,
             const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
-            const Expression<ValueType>& testExpression,
-            const Kernel<ValueType>& kernel,
-            const Expression<ValueType>& trialExpression,
-            const OpenClHandler<ValueType,int>& openClHandler);
+            const RawGridGeometry<CoordinateType>& rawGeometry,
+            const Expression<CoordinateType>& testExpression,
+            const Kernel<KernelType>& kernel,
+            const Expression<CoordinateType>& trialExpression,
+            const OpenClHandler<CoordinateType, int>& openClHandler);
 
     virtual void integrate(
             CallVariant callVariant,
             const std::vector<int>& elementIndicesA,
             int elementIndexB,
-            const Basis<ValueType>& basisA,
-            const Basis<ValueType>& basisB,
+            const Basis<BasisFunctionType>& basisA,
+            const Basis<BasisFunctionType>& basisB,
             LocalDofIndex localDofIndexB,
-            arma::Cube<ValueType>& result) const;
+            arma::Cube<ResultType>& result) const;
 
     virtual void integrate(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<ValueType>& testBasis,
-            const Basis<ValueType>& trialBasis,
-            arma::Cube<ValueType>& result) const;
+            const Basis<BasisFunctionType>& testBasis,
+            const Basis<BasisFunctionType>& trialBasis,
+            arma::Cube<ResultType>& result) const;
 
 private:
-    arma::Mat<ValueType> m_localTestQuadPoints;
-    arma::Mat<ValueType> m_localTrialQuadPoints;
-    std::vector<ValueType> m_quadWeights;
+    arma::Mat<CoordinateType> m_localTestQuadPoints;
+    arma::Mat<CoordinateType> m_localTrialQuadPoints;
+    std::vector<CoordinateType> m_quadWeights;
 
     const GeometryFactory& m_geometryFactory;
-    const RawGridGeometry<ValueType>& m_rawGeometry;
+    const RawGridGeometry<CoordinateType>& m_rawGeometry;
 
-    const Expression<ValueType>& m_testExpression;
-    const Kernel<ValueType>& m_kernel;
-    const Expression<ValueType>& m_trialExpression;
-    const OpenClHandler<ValueType,int>& m_openClHandler;
+    const Expression<CoordinateType>& m_testExpression;
+    const Kernel<KernelType>& m_kernel;
+    const Expression<CoordinateType>& m_trialExpression;
+    const OpenClHandler<CoordinateType, int>& m_openClHandler;
 };
 
 } // namespace Fiber

@@ -1,4 +1,26 @@
+// Copyright (C) 2011-2012 by the BEM++ Authors
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
 #include "single_layer_potential_3d_kernel.hpp"
+
+#include "explicit_instantiation.hpp"
 
 #include <armadillo>
 #include <cmath>
@@ -19,8 +41,8 @@ void SingleLayerPotential3DKernel<ValueType>::addGeometricalDependencies(
 
 template <typename ValueType>
 inline ValueType SingleLayerPotential3DKernel<ValueType>::evaluateAtPointPair(
-        const arma::Col<ValueType>& testPoint,
-        const arma::Col<ValueType>& trialPoint) const
+        const arma::Col<CoordinateType>& testPoint,
+        const arma::Col<CoordinateType>& trialPoint) const
 {
     const int coordCount = testPoint.n_rows;
 
@@ -30,17 +52,17 @@ inline ValueType SingleLayerPotential3DKernel<ValueType>::evaluateAtPointPair(
         ValueType diff = testPoint(coordIndex) - trialPoint(coordIndex);
         sum += diff * diff;
     }
-    return 1. / (4. * M_PI * sqrt(sum));
+    return static_cast<ValueType>(1. / (4. * M_PI)) / sqrt(sum);
 }
 
 template <typename ValueType>
 void SingleLayerPotential3DKernel<ValueType>::evaluateAtPointPairs(
-        const GeometricalData<ValueType>& testGeomData,
-        const GeometricalData<ValueType>& trialGeomData,
+        const GeometricalData<CoordinateType>& testGeomData,
+        const GeometricalData<CoordinateType>& trialGeomData,
         arma::Cube<ValueType>& result) const
 {
-    const arma::Mat<ValueType>& testPoints = testGeomData.globals;
-    const arma::Mat<ValueType>& trialPoints = trialGeomData.globals;
+    const arma::Mat<CoordinateType>& testPoints = testGeomData.globals;
+    const arma::Mat<CoordinateType>& trialPoints = trialGeomData.globals;
 
 #ifndef NDEBUG
     if (testPoints.n_rows != worldDimension() ||
@@ -61,12 +83,12 @@ void SingleLayerPotential3DKernel<ValueType>::evaluateAtPointPairs(
 
 template <typename ValueType>
 void SingleLayerPotential3DKernel<ValueType>::evaluateOnGrid(
-        const GeometricalData<ValueType>& testGeomData,
-        const GeometricalData<ValueType>& trialGeomData,
+        const GeometricalData<CoordinateType>& testGeomData,
+        const GeometricalData<CoordinateType>& trialGeomData,
         Array4D<ValueType>& result) const
 {
-    const arma::Mat<ValueType>& testPoints = testGeomData.globals;
-    const arma::Mat<ValueType>& trialPoints = trialGeomData.globals;
+    const arma::Mat<CoordinateType>& testPoints = testGeomData.globals;
+    const arma::Mat<CoordinateType>& trialPoints = trialGeomData.globals;
 
 #ifndef NDEBUG
     if (testPoints.n_rows != worldDimension() ||
@@ -77,11 +99,10 @@ void SingleLayerPotential3DKernel<ValueType>::evaluateOnGrid(
 
     const int testPointCount = testPoints.n_cols;
     const int trialPointCount = trialPoints.n_cols;
-    const int coordCount = testPoints.n_rows;
-    result.set_size(1, 1, testPointCount,  trialPointCount);
+    result.set_size(1, testPointCount, 1, trialPointCount);
     for (int trialIndex = 0; trialIndex < trialPointCount; ++trialIndex)
         for (int testIndex = 0; testIndex < testPointCount; ++testIndex)
-            result(0, 0, testIndex, trialIndex) =
+            result(0, testIndex, 0, trialIndex) =
                     evaluateAtPointPair(testPoints.unsafe_col(testIndex),
                                         trialPoints.unsafe_col(trialIndex));
 }
@@ -93,20 +114,6 @@ std::pair<const char*,int> SingleLayerPotential3DKernel<ValueType>::evaluateClCo
 			   single_layer_potential_3D_kernel_cl_len);
 }
 
-
-#ifdef COMPILE_FOR_FLOAT
-template class SingleLayerPotential3DKernel<float>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class SingleLayerPotential3DKernel<double>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class SingleLayerPotential3DKernel<std::complex<float> >;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class SingleLayerPotential3DKernel<std::complex<double> >;
-#endif
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_KERNEL(SingleLayerPotential3DKernel);
 
 } // namespace Fiber

@@ -1,4 +1,4 @@
-// Copyright (C) 2011 by the BEM++ Authors
+// Copyright (C) 2011-2012 by the BEM++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -17,7 +17,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-
 #ifndef bempp_concrete_grid_view_hpp
 #define bempp_concrete_grid_view_hpp
 
@@ -91,26 +90,12 @@ public:
         return containsEntityCodimN(e);
     }
 
-    /** \brief Get raw data describing the geometry of all codim-0 entities
-      contained in this grid view.
-
-      This method is mainly intended for use in the OpenCL implementation.
-
-      \param[out] vertices
-        On output, a 2D array whose (i,j)th element is the ith
-        coordinate of the vertex of index j.
-
-      \param[out] elementCorners
-        On output, a 2D array whose (i,j)th element is the index of the ith
-        corner of jth codim-0 entity, or -1 if this entity has less than
-        i-1 corners.
-
-      \note For isoparametric elements we will likely need to add a third
-        parameter to contain "arbirary" auxiliary data.
-      */
-    virtual void getRawElementData(arma::Mat<ctype>& vertices,
-                                   arma::Mat<int>& elementCorners,
-                                   arma::Mat<char>& auxData) const;
+    virtual void getRawElementDataDoubleImpl(arma::Mat<double>& vertices,
+                                             arma::Mat<int>& elementCorners,
+                                             arma::Mat<char>& auxData) const;
+    virtual void getRawElementDataFloatImpl(arma::Mat<float>& vertices,
+                                             arma::Mat<int>& elementCorners,
+                                             arma::Mat<char>& auxData) const;
 
     virtual const ReverseElementMapper& reverseElementMapper() const {
         if (!m_reverse_element_mapper_is_up_to_date)
@@ -170,6 +155,11 @@ private:
                    new ConcIterator(m_dune_gv.template begin<codim>(),
                                     m_dune_gv.template end<codim>()));
     }
+
+    template <typename CoordinateType>
+    void getRawElementDataImpl(arma::Mat<CoordinateType>& vertices,
+                               arma::Mat<int>& elementCorners,
+                               arma::Mat<char>& auxData) const;
 };
 
 } // namespace Bempp

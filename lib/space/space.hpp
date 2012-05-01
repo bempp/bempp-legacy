@@ -23,6 +23,7 @@
 
 #include "../common/types.hpp"
 #include "../common/not_implemented_error.hpp"
+#include "../fiber/scalar_traits.hpp"
 #include <armadillo>
 #include <vector>
 
@@ -31,8 +32,8 @@ namespace Fiber
 
 template <typename ValueType> class Basis;
 template <typename ValueType> class BasisData;
-template <typename ValueType> class Expression;
-template <typename ValueType> class GeometricalData;
+template <typename CoordinateType> class Expression;
+template <typename CoordinateType> class GeometricalData;
 
 }
 
@@ -43,10 +44,12 @@ class Grid;
 template <int codim> class Entity;
 template <int codim> class EntityPointer;
 
-template <typename ValueType>
+template <typename BasisFunctionType>
 class Space
 {
 public:
+    typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+
     // A grid reference is necessary because e.g. when setting the element
     // variant it is necessary to check whether the element is triangular
     // or quadrilateral. Also, requests for element refinement should probably
@@ -78,13 +81,14 @@ public:
         \param[out]  bases     On exit, a vector whose ith item is a pointer to
                                the Basis object corresponding to the ith item of
                                \p elements. */
-    virtual void getBases(const std::vector<const EntityPointer<0>*>& elements,
-                          std::vector<const Fiber::Basis<ValueType>*>& bases) const = 0;
 
-    virtual const Fiber::Basis<ValueType>& basis(const Entity<0>& element) const = 0;
+    virtual void getBases(const std::vector<const EntityPointer<0>*>& elements,
+                          std::vector<const Fiber::Basis<BasisFunctionType>*>& bases) const = 0;
+
+    virtual const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const = 0;
 
     /** \brief Expression returning values of the shape functions of this space. */
-    virtual const Fiber::Expression<ValueType>& shapeFunctionValueExpression() const = 0;
+    virtual const Fiber::Expression<CoordinateType>& shapeFunctionValueExpression() const = 0;
 
     /** @}
         @name Element order management
@@ -98,9 +102,15 @@ public:
         @name DOF management
         @{ */
 
+    /** \brief Assign global degrees of freedom to local degrees of freedom. */
     virtual void assignDofs() = 0;
-    virtual bool dofsAssigned() const = 0; // returns a flag that is set to true via assignDofs()
 
+    /** \brief True if assignDofs() has been called before, false otherwise. */
+    virtual bool dofsAssigned() const = 0;
+
+    /** \brief Number of global degrees of freedom.
+
+        \note Must not be called before asignDofs(). */
     virtual int globalDofCount() const = 0;
     virtual void globalDofs(const Entity<0>& element,
                             std::vector<GlobalDofIndex>& dofs) const = 0;
@@ -114,7 +124,7 @@ public:
     // actual dimension of the space. Once Ahmed's bemcluster is made dimension-
     // independent, we may come up with a more elegant solution.
     virtual void globalDofPositions(
-            std::vector<Point3D<ValueType> >& positions) const = 0;
+            std::vector<Point3D<CoordinateType> >& positions) const = 0;
     /** @} */
 
 protected:

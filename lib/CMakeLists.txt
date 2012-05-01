@@ -1,3 +1,21 @@
+#Configure All Option files
+configure_file(
+	${CMAKE_SOURCE_DIR}/lib/common/config_trilinos.hpp.in
+        ${CMAKE_BINARY_DIR}/include/common/config_trilinos.hpp)
+configure_file(
+	${CMAKE_SOURCE_DIR}/lib/common/config_ahmed.hpp.in
+        ${CMAKE_BINARY_DIR}/include/common/config_ahmed.hpp)
+configure_file(
+	${CMAKE_SOURCE_DIR}/lib/common/config_opencl.hpp.in
+        ${CMAKE_BINARY_DIR}/include/common/config_opencl.hpp)
+configure_file(
+        ${CMAKE_SOURCE_DIR}/lib/common/config_alugrid.hpp.in
+        ${CMAKE_BINARY_DIR}/include/common/config_alugrid.hpp)
+configure_file(
+        ${CMAKE_SOURCE_DIR}/lib/common/config_data_types.hpp.in
+        ${CMAKE_BINARY_DIR}/include/common/config_data_types.hpp)
+include_directories(${CMAKE_BINARY_DIR}/include/common)
+
 # Find all source and header files
 file(GLOB_RECURSE LIB_SOURCES *.cpp)
 file(GLOB_RECURSE LIB_HEADERS *.hpp)
@@ -6,7 +24,11 @@ file(GLOB_RECURSE DUNE_GRID_HEADERS ${CMAKE_SOURCE_DIR}/contrib/dune/dune-grid/d
 file(GLOB_RECURSE DUNE_COMMON_HEADERS ${CMAKE_SOURCE_DIR}/contrib/dune/dune-common/dune/common/*.hh)
 find_file(ARMA_HEADER armadillo ${ARMADILLO_INCLUDE_DIRS})
 
-add_definitions(-DCOMPILE_FOR_DOUBLE)
+#add_definitions(-DCOMPILE_FOR_DOUBLE)
+#add_definitions(-DCOMPILE_FOR_FLOAT)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
 
 # Headers are ignored by make, but their list is used by IDEs
 # like Qt Creator and Visual Studio to generate project file list.
@@ -42,14 +64,25 @@ set_property(
 
 if (WITH_AHMED)
     target_link_libraries (bempp ${AHMED_LIBRARY} ${METIS_LIBRARY})
-    add_definitions(-DWITH_AHMED)
     include_directories(${AHMED_INCLUDE_DIR})
 endif ()
 
 if (WITH_TRILINOS)
-    target_link_libraries (bempp ${EPETRA_LIBRARY})
-    add_definitions(-DWITH_TRILINOS)
+    target_link_libraries (bempp
+        ${AMESOS_LIBRARY}
+        ${STRATIMIKOS_LIBRARY}
+        ${STRATIMIKOS_BELOS_LIBRARY}
+        ${BELOS_LIBRARY}
+        ${EPETRA_LIBRARY}
+        ${THYRA_CORE_LIBRARY}
+        ${TEUCHOS_LIBRARY}
+        ${RTOP_LIBRARY}
+        ${HDF5_LIBRARY})
     include_directories(${TRILINOS_INCLUDE_DIR})
+endif ()
+
+if (WITH_ALUGRID)
+    target_link_libraries (bempp ${ALUGRID_LIBRARY})
 endif ()
 
 # Add a target to generate API documentation with Doxygen

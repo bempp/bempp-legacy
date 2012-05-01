@@ -40,7 +40,7 @@ namespace Fiber
   well-adapted for evaluation of specific integrals occurring in matrix
   representations of different classes of operators.
  */
-template <typename ValueType>
+template <typename ResultType>
 class LocalAssemblerForOperators
 {
 public:
@@ -70,7 +70,7 @@ public:
             const std::vector<int>& elementIndicesA,
             int elementIndexB,
             LocalDofIndex localDofIndexB,
-            std::vector<arma::Mat<ValueType> >& result) = 0;
+            std::vector<arma::Mat<ResultType> >& result) = 0;
 
     /** \brief Assemble local weak forms.
 
@@ -84,7 +84,7 @@ public:
     virtual void evaluateLocalWeakForms(
             const std::vector<int>& testElementIndices,
             const std::vector<int>& trialElementIndices,
-            Fiber::Array2D<arma::Mat<ValueType> >& result) = 0;
+            Fiber::Array2D<arma::Mat<ResultType> >& result) = 0;
 
     /** \brief Assemble local weak forms.
 
@@ -95,7 +95,7 @@ public:
                                  for \p i in \p elementIndices. */
     virtual void evaluateLocalWeakForms(
             const std::vector<int>& elementIndices,
-            std::vector<arma::Mat<ValueType> >& result) = 0;
+            std::vector<arma::Mat<ResultType> >& result) = 0;
 
     // TODO: evaluateLocalOperator or something similar
 };

@@ -1,17 +1,43 @@
+// Copyright (C) 2011-2012 by the BEM++ Authors
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+
 #include "elementary_integral_operator.hpp"
 
 #include "aca_global_assembler.hpp"
 #include "assembly_options.hpp"
-#include "discrete_dense_scalar_valued_linear_operator.hpp"
-#include "discrete_vector_valued_linear_operator.hpp"
+#include "discrete_dense_linear_operator.hpp"
+#include "evaluation_options.hpp"
+#include "grid_function.hpp"
+#include "interpolated_function.hpp"
 
 #include "../common/multidimensional_arrays.hpp"
 #include "../common/not_implemented_error.hpp"
 #include "../common/auto_timer.hpp"
+#include "../fiber/evaluator_for_integral_operators.hpp"
+#include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/local_assembler_factory.hpp"
 #include "../fiber/local_assembler_for_operators.hpp"
 #include "../fiber/opencl_handler.hpp"
 #include "../fiber/raw_grid_geometry.hpp"
+#include "../grid/entity.hpp"
 #include "../grid/entity_iterator.hpp"
 #include "../grid/geometry_factory.hpp"
 #include "../grid/grid.hpp"
@@ -36,27 +62,27 @@ namespace Bempp
 namespace
 {
 
-template <typename ValueType>
+template <typename BasisFunctionType, typename ResultType>
 class DenseWeakFormAssemblerLoopBody
 {
 public:
     typedef tbb::spin_mutex MutexType;
 
-    DenseWeakFormAssemblerLoopBody(const std::vector<int>& testIndices,
-             const std::vector<std::vector<GlobalDofIndex> >& testGlobalDofs,
-             const std::vector<std::vector<GlobalDofIndex> >& trialGlobalDofs,
-             typename ElementaryIntegralOperator<ValueType>::LocalAssembler& assembler,
-             arma::Mat<ValueType>& result, MutexType& mutex) :
+    DenseWeakFormAssemblerLoopBody(
+            const std::vector<int>& testIndices,
+            const std::vector<std::vector<GlobalDofIndex> >& testGlobalDofs,
+            const std::vector<std::vector<GlobalDofIndex> >& trialGlobalDofs,
+            Fiber::LocalAssemblerForOperators<ResultType>& assembler,
+            arma::Mat<ResultType>& result, MutexType& mutex) :
         m_testIndices(testIndices),
         m_testGlobalDofs(testGlobalDofs), m_trialGlobalDofs(trialGlobalDofs),
-        m_assembler(assembler), m_result(result), m_mutex(mutex)
-    {}
+        m_assembler(assembler), m_result(result), m_mutex(mutex) {
+    }
 
     void operator() (const tbb::blocked_range<size_t>& r) const {
         const int elementCount = m_testIndices.size();
-        std::vector<arma::Mat<ValueType> > localResult;
-        for (size_t trialIndex = r.begin(); trialIndex != r.end(); ++trialIndex)
-        {
+        std::vector<arma::Mat<ResultType> > localResult;
+        for (size_t trialIndex = r.begin(); trialIndex != r.end(); ++trialIndex) {
             // Evaluate integrals over pairs of the current trial element and
             // all the test elements
             m_assembler.evaluateLocalWeakForms(TEST_TRIAL, m_testIndices, trialIndex,
@@ -67,8 +93,7 @@ public:
             {
                 MutexType::scoped_lock lock(m_mutex);
                 // Loop over test indices
-                for (int testIndex = 0; testIndex < elementCount; ++testIndex)
-                {
+                for (int testIndex = 0; testIndex < elementCount; ++testIndex) {
                     const int testDofCount = m_testGlobalDofs[testIndex].size();
                     // Add the integrals to appropriate entries in the operator's matrix
                     for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
@@ -87,9 +112,9 @@ private:
     const std::vector<std::vector<GlobalDofIndex> >& m_testGlobalDofs;
     // mutable OK because Assembler is thread-safe. (Alternative to "mutable" here:
     // make assembler's internal integrator map mutable)
-    mutable typename ElementaryIntegralOperator<ValueType>::LocalAssembler& m_assembler;
+    mutable typename Fiber::LocalAssemblerForOperators<ResultType>& m_assembler;
     // mutable OK because write access to this matrix is protected by a mutex
-    mutable arma::Mat<ValueType>& m_result;
+    mutable arma::Mat<ResultType>& m_result;
 
     // mutex must be mutable because we need to lock and unlock it
     mutable MutexType& m_mutex;
@@ -97,113 +122,55 @@ private:
 
 } // namespace
 
-template <typename ValueType>
-bool ElementaryIntegralOperator<ValueType>::supportsRepresentation(
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+ElementaryIntegralOperator(
+        const Space<BasisFunctionType>& testSpace,
+        const Space<BasisFunctionType>& trialSpace) :
+    ElementaryLinearOperator<BasisFunctionType, ResultType>(testSpace, trialSpace)
+{
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+bool
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+supportsRepresentation(
         AssemblyOptions::Representation repr) const
 {
     return (repr == AssemblyOptions::DENSE || repr == AssemblyOptions::ACA);
 }
 
-template <typename ValueType>
-std::auto_ptr<typename ElementaryIntegralOperator<ValueType>::LocalAssembler>
-ElementaryIntegralOperator<ValueType>::makeAssembler(
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+std::auto_ptr<typename ElementaryIntegralOperator<
+BasisFunctionType, KernelType, ResultType>::LocalAssembler>
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+makeAssembler(
         const LocalAssemblerFactory& assemblerFactory,
         const GeometryFactory& geometryFactory,
-        const Fiber::RawGridGeometry<ValueType>& rawGeometry,
-        const std::vector<const Fiber::Basis<ValueType>*>& testBases,
-        const std::vector<const Fiber::Basis<ValueType>*>& trialBases,
-        const Fiber::OpenClHandler<ValueType, int>& openClHandler,
+        const Fiber::RawGridGeometry<CoordinateType>& rawGeometry,
+        const std::vector<const Fiber::Basis<BasisFunctionType>*>& testBases,
+        const std::vector<const Fiber::Basis<BasisFunctionType>*>& trialBases,
+        const Fiber::OpenClHandler<CoordinateType, int>& openClHandler,
         bool cacheSingularIntegrals) const
 {
-    return assemblerFactory.make(geometryFactory, rawGeometry,
-                                 testBases, trialBases,
-                                 testExpression(), kernel(), trialExpression(),
-                                 this->multiplier(),
-                                 openClHandler, cacheSingularIntegrals);
+    return assemblerFactory.makeAssemblerForIntegralOperators(
+                geometryFactory, rawGeometry,
+                testBases, trialBases,
+                testExpression(), kernel(), trialExpression(),
+                openClHandler, cacheSingularIntegrals);
 }
 
-template <typename ValueType>
-std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
-ElementaryIntegralOperator<ValueType>::assembleOperator(
-        const arma::Mat<ctype>& testPoints,
-        const Space<ValueType>& trialSpace,
-        const LocalAssemblerFactory& factory,
-        const AssemblyOptions& options) const
-{
-    if (!trialSpace.dofsAssigned())
-        throw std::runtime_error("ElementaryIntegralOperator::assembleOperator(): "
-                                 "degrees of freedom must be assigned "
-                                 "before calling assembleOperator()");
-
-    // Prepare local assembler
-
-    std::auto_ptr<GridView> view = trialSpace.grid().leafView();
-    const int elementCount = view->entityCount(0);
-
-    // Gather geometric data
-    Fiber::RawGridGeometry<ValueType> rawGeometry;
-    view->getRawElementData(
-                rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
-                rawGeometry.auxData());
-
-    // Make geometry factory
-    std::auto_ptr<GeometryFactory> geometryFactory =
-            trialSpace.grid().elementGeometryFactory();
-
-    // Get pointers to test and trial bases of each element
-    std::vector<const Fiber::Basis<ValueType>*> trialBases;
-    trialBases.reserve(elementCount);
-
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-    while (!it->finished())
-    {
-        const Entity<0>& element = it->entity();
-        trialBases.push_back(&trialSpace.basis(element));
-        it->next();
-    }
-
-    // Now create the assembler
-    Fiber::OpenClHandler<ValueType,int> openClHandler(options.openClOptions());
-    if (openClHandler.UseOpenCl())
-        openClHandler.pushGeometry (rawGeometry.vertices(),
-				    rawGeometry.elementCornerIndices());
-    bool cacheSingularIntegrals =
-            (options.singularIntegralCaching() == AssemblyOptions::YES ||
-             (options.singularIntegralCaching() == AssemblyOptions::AUTO &&
-              options.parallelism() == AssemblyOptions::OPEN_CL));
-
-    std::auto_ptr<LocalAssembler> assembler =
-            factory.make(*geometryFactory, rawGeometry,
-                         trialBases,
-                         kernel(), trialExpression(), this->multiplier(),
-                         openClHandler, cacheSingularIntegrals);
-
-    switch (options.operatorRepresentation())
-    {
-    case AssemblyOptions::DENSE:
-        return assembleOperatorInDenseMode(
-                    testPoints, trialSpace, *assembler, options);
-    case AssemblyOptions::ACA:
-        return assembleOperatorInAcaMode(
-                    testPoints, trialSpace, *assembler, options);
-    case AssemblyOptions::FMM:
-        throw std::runtime_error("ElementaryIntegralOperator::assembleOperator(): "
-                                 "assembly mode FMM is not implemented yet");
-    default:
-        throw std::runtime_error("ElementaryIntegralOperator::assembleOperator(): "
-                                 "invalid assembly mode");
-    }
-}
-
-template <typename ValueType>
-std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
-ElementaryIntegralOperator<ValueType>::assembleWeakForm(
-        const Space<ValueType>& testSpace,
-        const Space<ValueType>& trialSpace,
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+std::auto_ptr<DiscreteLinearOperator<ResultType> >
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+assembleWeakForm(
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
     AutoTimer timer("\nAssembly took ");
+
+    const Space<BasisFunctionType>& testSpace = this->testSpace();
+    const Space<BasisFunctionType>& trialSpace = this->trialSpace();
 
     if (!testSpace.dofsAssigned() || !trialSpace.dofsAssigned())
         throw std::runtime_error("ElementaryIntegralOperator::assembleWeakForm(): "
@@ -216,11 +183,12 @@ ElementaryIntegralOperator<ValueType>::assembleWeakForm(
 
     // Prepare local assembler
 
-    std::auto_ptr<GridView> view = trialSpace.grid().leafView();
+    const Grid& grid = trialSpace.grid();
+    std::auto_ptr<GridView> view = grid.leafView();
     const int elementCount = view->entityCount(0);
 
     // Gather geometric data
-    Fiber::RawGridGeometry<ValueType> rawGeometry;
+    Fiber::RawGridGeometry<CoordinateType> rawGeometry(grid.dim(), grid.dimWorld());
     view->getRawElementData(
                 rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
                 rawGeometry.auxData());
@@ -230,14 +198,13 @@ ElementaryIntegralOperator<ValueType>::assembleWeakForm(
             trialSpace.grid().elementGeometryFactory();
 
     // Get pointers to test and trial bases of each element
-    std::vector<const Fiber::Basis<ValueType>*> testBases;
-    std::vector<const Fiber::Basis<ValueType>*> trialBases;
+    std::vector<const Fiber::Basis<BasisFunctionType>*> testBases;
+    std::vector<const Fiber::Basis<BasisFunctionType>*> trialBases;
     testBases.reserve(elementCount);
     trialBases.reserve(elementCount);
 
     std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-    while (!it->finished())
-    {
+    while (!it->finished()) {
         const Entity<0>& element = it->entity();
         testBases.push_back(&testSpace.basis(element));
         trialBases.push_back(&trialSpace.basis(element));
@@ -245,14 +212,13 @@ ElementaryIntegralOperator<ValueType>::assembleWeakForm(
     }
 
     // Now create the assembler
-    Fiber::OpenClHandler<ValueType,int> openClHandler(options.openClOptions());
+    Fiber::OpenClHandler<CoordinateType,int> openClHandler(options.openClOptions());
     if (openClHandler.UseOpenCl())
         openClHandler.pushGeometry (rawGeometry.vertices(),
-				    rawGeometry.elementCornerIndices());
+                                    rawGeometry.elementCornerIndices());
     bool cacheSingularIntegrals =
             (options.singularIntegralCaching() == AssemblyOptions::YES ||
-             (options.singularIntegralCaching() == AssemblyOptions::AUTO &&
-              options.parallelism() == AssemblyOptions::OPEN_CL));
+             (options.singularIntegralCaching() == AssemblyOptions::AUTO));
 
     std::auto_ptr<LocalAssembler> assembler =
             makeAssembler(factory,
@@ -260,25 +226,22 @@ ElementaryIntegralOperator<ValueType>::assembleWeakForm(
                           testBases, trialBases,
                           openClHandler, cacheSingularIntegrals);
 
-    return assembleWeakFormInternal(testSpace, trialSpace, *assembler, options);
+    return assembleWeakFormInternal(*assembler, options);
 }
 
-template <typename ValueType>
-std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
-ElementaryIntegralOperator<ValueType>::assembleWeakFormInternal(
-        const Space<ValueType>& testSpace,
-        const Space<ValueType>& trialSpace,
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+std::auto_ptr<DiscreteLinearOperator<ResultType> >
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+assembleWeakFormInternal(
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
-    switch (options.operatorRepresentation())
-    {
+
+    switch (options.operatorRepresentation()) {
     case AssemblyOptions::DENSE:
-        return assembleWeakFormInDenseMode(
-                    testSpace, trialSpace, assembler, options);
+        return assembleWeakFormInDenseMode(assembler, options);
     case AssemblyOptions::ACA:
-        return assembleWeakFormInAcaMode(
-                    testSpace, trialSpace, assembler, options);
+        return assembleWeakFormInAcaMode(assembler, options);
     case AssemblyOptions::FMM:
         throw std::runtime_error("ElementaryIntegralOperator::assembleWeakForm(): "
                                  "assembly mode FMM is not implemented yet");
@@ -288,40 +251,16 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInternal(
     }
 }
 
-template <typename ValueType>
-std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
-ElementaryIntegralOperator<ValueType>::assembleOperatorInDenseMode(
-        const arma::Mat<ctype>& testPoints,
-        const Space<ValueType>& trialSpace,
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+std::auto_ptr<DiscreteLinearOperator<ResultType> >
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+assembleWeakFormInDenseMode(
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
-    throw NotImplementedError("ElementaryIntegralOperator::"
-                              "assembleOperatorInDenseMode(): "
-                              "not implemented yet");
-}
+    const Space<BasisFunctionType>& testSpace = this->testSpace();
+    const Space<BasisFunctionType>& trialSpace = this->trialSpace();
 
-template <typename ValueType>
-std::auto_ptr<DiscreteVectorValuedLinearOperator<ValueType> >
-ElementaryIntegralOperator<ValueType>::assembleOperatorInAcaMode(
-        const arma::Mat<ctype>& testPoints,
-        const Space<ValueType>& trialSpace,
-        LocalAssembler& assembler,
-        const AssemblyOptions& options) const
-{
-    throw NotImplementedError("ElementaryIntegralOperator::"
-                              "assembleOperatorInAcaMode(): "
-                              "not implemented yet");
-}
-
-template <typename ValueType>
-std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
-ElementaryIntegralOperator<ValueType>::assembleWeakFormInDenseMode(
-        const Space<ValueType>& testSpace,
-        const Space<ValueType>& trialSpace,
-        LocalAssembler& assembler,
-        const AssemblyOptions& options) const
-{
     // Get the grid's leaf view so that we can iterate over elements
     std::auto_ptr<GridView> view = trialSpace.grid().leafView();
     const int elementCount = view->entityCount(0);
@@ -333,8 +272,7 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInDenseMode(
     // Gather global DOF lists
     const Mapper& mapper = view->elementMapper();
     std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-    while (!it->finished())
-    {
+    while (!it->finished()) {
         const Entity<0>& element = it->entity();
         const int elementIndex = mapper.entityIndex(element);
         testSpace.globalDofs(element, testGlobalDofs[elementIndex]);
@@ -348,17 +286,15 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInDenseMode(
         testIndices[i] = i;
 
     // Create the operator's matrix
-    arma::Mat<ValueType> result(testSpace.globalDofCount(),
+    arma::Mat<ResultType> result(testSpace.globalDofCount(),
                                 trialSpace.globalDofCount());
     result.fill(0.);
 
-    typedef DenseWeakFormAssemblerLoopBody<ValueType> Body;
+    typedef DenseWeakFormAssemblerLoopBody<BasisFunctionType, ResultType> Body;
     typename Body::MutexType mutex;
 
-#ifdef UNDEF
     int maxThreadCount = 1;
-    if (options.parallelism() == AssemblyOptions::TBB)
-    {
+    if (options.parallelism() == AssemblyOptions::TBB) {
         if (options.maxThreadCount() == AssemblyOptions::AUTO)
             maxThreadCount = tbb::task_scheduler_init::automatic;
         else
@@ -368,59 +304,165 @@ ElementaryIntegralOperator<ValueType>::assembleWeakFormInDenseMode(
     tbb::parallel_for(tbb::blocked_range<size_t>(0, elementCount),
                       Body(testIndices, testGlobalDofs, trialGlobalDofs,
                            assembler, result, mutex));
-#else
-// Old serial code (TODO: decide whether to keep it behind e.g. #ifndef PARALLEL)
-    std::vector<arma::Mat<ValueType> > localResult;
-    // Loop over trial elements
-    for (int trialIndex = 0; trialIndex < elementCount; ++trialIndex)
-    {
-        // Evaluate integrals over pairs of the current trial element and
-        // all the test elements
-        assembler.evaluateLocalWeakForms(TEST_TRIAL, testIndices, trialIndex,
-                                         ALL_DOFS, localResult);
 
-        // Loop over test indices
-        for (int testIndex = 0; testIndex < elementCount; ++testIndex)
-            // Add the integrals to appropriate entries in the operator's matrix
-            for (int trialDof = 0; trialDof < trialGlobalDofs[trialIndex].size(); ++trialDof)
-                for (int testDof = 0; testDof < testGlobalDofs[testIndex].size(); ++testDof)
-                result(testGlobalDofs[testIndex][testDof],
-                       trialGlobalDofs[trialIndex][trialDof]) +=
-                        localResult[testIndex](testDof, trialDof);
-    }
-#endif
+    //// Old serial code (TODO: decide whether to keep it behind e.g. #ifndef PARALLEL)
+    //    std::vector<arma::Mat<ValueType> > localResult;
+    //    // Loop over trial elements
+    //    for (int trialIndex = 0; trialIndex < elementCount; ++trialIndex)
+    //    {
+    //        // Evaluate integrals over pairs of the current trial element and
+    //        // all the test elements
+    //        assembler.evaluateLocalWeakForms(TEST_TRIAL, testIndices, trialIndex,
+    //                                         ALL_DOFS, localResult);
+
+    //        // Loop over test indices
+    //        for (int testIndex = 0; testIndex < elementCount; ++testIndex)
+    //            // Add the integrals to appropriate entries in the operator's matrix
+    //            for (int trialDof = 0; trialDof < trialGlobalDofs[trialIndex].size(); ++trialDof)
+    //                for (int testDof = 0; testDof < testGlobalDofs[testIndex].size(); ++testDof)
+    //                result(testGlobalDofs[testIndex][testDof],
+    //                       trialGlobalDofs[trialIndex][trialDof]) +=
+    //                        localResult[testIndex](testDof, trialDof);
+    //    }
 
     // Create and return a discrete operator represented by the matrix that
     // has just been calculated
-    return std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >(
-                new DiscreteDenseScalarValuedLinearOperator<ValueType>(result));
+    return std::auto_ptr<DiscreteLinearOperator<ResultType> >(
+                new DiscreteDenseLinearOperator<ResultType>(result));
 }
 
-template <typename ValueType>
-std::auto_ptr<DiscreteScalarValuedLinearOperator<ValueType> >
-ElementaryIntegralOperator<ValueType>::assembleWeakFormInAcaMode(
-        const Space<ValueType>& testSpace,
-        const Space<ValueType>& trialSpace,
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+std::auto_ptr<DiscreteLinearOperator<ResultType> >
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+assembleWeakFormInAcaMode(
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
-    return AcaGlobalAssembler<ValueType>::assembleWeakForm(
+    const Space<BasisFunctionType>& testSpace=this->testSpace();
+    const Space<BasisFunctionType>& trialSpace=this->trialSpace();
+
+    return AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
                 testSpace, trialSpace, assembler, options);
 }
 
-#ifdef COMPILE_FOR_FLOAT
-template class ElementaryIntegralOperator<float>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class ElementaryIntegralOperator<double>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class ElementaryIntegralOperator<std::complex<float> >;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class ElementaryIntegralOperator<std::complex<double> >;
-#endif
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+std::auto_ptr<InterpolatedFunction<ResultType> >
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+applyOffSurface(
+        const GridFunction<BasisFunctionType, ResultType>& argument,
+        const Grid& evaluationGrid,
+        const LocalAssemblerFactory& factory,
+        const EvaluationOptions& options) const
+{
+    // Prepare evaluator
+    const Space<BasisFunctionType>& space = argument.space();
+    const Grid& grid = space.grid();
+    std::auto_ptr<GridView> view = grid.leafView();
+    const int elementCount = view->entityCount(0);
+
+    // Gather geometric data
+    Fiber::RawGridGeometry<CoordinateType> rawGeometry(grid.dim(), grid.dimWorld());
+    view->getRawElementData(
+                rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
+                rawGeometry.auxData());
+
+    // Make geometry factory
+    std::auto_ptr<GeometryFactory> geometryFactory =
+            grid.elementGeometryFactory();
+
+    // Get pointer to argument's basis in each element
+    // and coefficients of argument's expansion in each element
+    std::vector<const Fiber::Basis<BasisFunctionType>*> bases(elementCount);
+    std::vector<std::vector<ResultType> > localCoefficients(elementCount);
+
+    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    for (int i = 0; i < elementCount; ++i) {
+        assert(!it->finished());
+        const Entity<0>& element = it->entity();
+        bases[i] = &space.basis(element);
+        argument.getLocalCoefficients(element, localCoefficients[i]);
+        it->next();
+    }
+
+    Fiber::OpenClHandler<CoordinateType,int> openClHandler(options.openClOptions());
+    if (openClHandler.UseOpenCl())
+        openClHandler.pushGeometry(rawGeometry.vertices(),
+                                   rawGeometry.elementCornerIndices());
+
+    // Now create the evaluator
+
+    // TODO: distinguish between kernel() and weakFormKernel()
+    // as well as trialExpression() and weakFormTrialExpression()
+    std::auto_ptr<Evaluator> evaluator =
+            factory.makeEvaluatorForIntegralOperators(
+                *geometryFactory, rawGeometry,
+                bases,
+                kernel(), trialExpression(), localCoefficients,
+                openClHandler);
+
+    return applyOffSurfaceWithKnownEvaluator(evaluationGrid, *evaluator, options);
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+std::auto_ptr<InterpolatedFunction<ResultType> >
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+applyOffSurfaceWithKnownEvaluator(
+        const Grid& evaluationGrid,
+        const Evaluator& evaluator,
+        const EvaluationOptions& options) const
+{
+    // Get coordinates of interpolation points, i.e. the evaluationGrid's vertices
+
+    std::auto_ptr<GridView> evalView = evaluationGrid.leafView();
+    const int evalGridDim = evaluationGrid.dim();
+    const int evalPointCount = evalView->entityCount(evalGridDim);
+    arma::Mat<CoordinateType> evalPoints(evalGridDim, evalPointCount);
+
+    const IndexSet& evalIndexSet = evalView->indexSet();
+    // TODO: extract into template function, perhaps add case evalGridDim == 1
+    if (evalGridDim == 2) {
+        const int vertexCodim = 2;
+        std::auto_ptr<EntityIterator<vertexCodim> > it =
+                evalView->entityIterator<vertexCodim>();
+        while (!it->finished()) {
+            const Entity<vertexCodim>& vertex = it->entity();
+            const Geometry& geo = vertex.geometry();
+            const int vertexIndex = evalIndexSet.entityIndex(vertex);
+            arma::Col<CoordinateType> activeCol(evalPoints.unsafe_col(vertexIndex));
+            geo.getCenter(activeCol);
+            it->next();
+        }
+    } else if (evalGridDim == 3) {
+        const int vertexCodim = 3;
+        std::auto_ptr<EntityIterator<vertexCodim> > it =
+                evalView->entityIterator<vertexCodim>();
+        while (!it->finished()) {
+            const Entity<vertexCodim>& vertex = it->entity();
+            const Geometry& geo = vertex.geometry();
+            const int vertexIndex = evalIndexSet.entityIndex(vertex);
+            arma::Col<CoordinateType> activeCol(evalPoints.unsafe_col(vertexIndex));
+            geo.getCenter(activeCol);
+            it->next();
+        }
+    }
+
+    // right now we don't bother about far and near field
+    // (this might depend on evaluation options)
+
+    arma::Mat<ResultType> result;
+    evaluator.evaluate(Evaluator::FAR_FIELD, evalPoints, result);
+
+    //    std::cout << "Interpolation results:\n";
+    //    for (int point = 0; point < evalPointCount; ++point)
+    //        std::cout << evalPoints(0, point) << "\t"
+    //                  << evalPoints(1, point) << "\t"
+    //                  << evalPoints(2, point) << "\t"
+    //                  << result(0, point) << "\n";
+
+    return std::auto_ptr<InterpolatedFunction<ResultType> >(
+                new InterpolatedFunction<ResultType>(evaluationGrid, result));
+}
+
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(ElementaryIntegralOperator);
 
 } // namespace Bempp

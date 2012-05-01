@@ -1,12 +1,35 @@
+// Copyright (C) 2011-2012 by the BEM++ Authors
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+
 #include "weak_form_aca_assembly_helper.hpp"
 
-#include "discrete_scalar_valued_linear_operator.hpp"
+#include "discrete_linear_operator.hpp"
 #include "../common/multidimensional_arrays.hpp"
 #include "../fiber/types.hpp"
+#include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/local_assembler_for_operators.hpp"
 #include "../grid/grid_view.hpp"
 #include "../grid/reverse_element_mapper.hpp"
 #include "../space/space.hpp"
+#include "assembly_options.hpp"
 
 #include <map>
 #include <set>
@@ -15,28 +38,39 @@
 namespace Bempp
 {
 
-template <typename ValueType>
-WeakFormAcaAssemblyHelper<ValueType>::WeakFormAcaAssemblyHelper(
-        const Space<ValueType>& testSpace,
-        const Space<ValueType>& trialSpace,
+template <typename BasisFunctionType, typename ResultType>
+WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::WeakFormAcaAssemblyHelper(
+        const Space<BasisFunctionType>& testSpace,
+        const Space<BasisFunctionType>& trialSpace,
         const std::vector<unsigned int>& p2oTestDofs,
         const std::vector<unsigned int>& p2oTrialDofs,
         const std::vector<LocalAssembler*>& assemblers,
         const std::vector<const DiscreteLinOp*>& sparseTermsToAdd,
+        const std::vector<ResultType>& denseTermsMultipliers,
+        const std::vector<ResultType>& sparseTermsMultipliers,
         const AssemblyOptions& options) :
     m_testSpace(testSpace), m_trialSpace(trialSpace),
     m_p2oTestDofs(p2oTestDofs), m_p2oTrialDofs(p2oTrialDofs),
     m_assemblers(assemblers), m_sparseTermsToAdd(sparseTermsToAdd),
+    m_denseTermsMultipliers(denseTermsMultipliers),
+    m_sparseTermsMultipliers(sparseTermsMultipliers),
     m_options(options)
 {
 }
 
-template <typename ValueType>
-void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
-        unsigned b1, unsigned n1, unsigned b2, unsigned n2, ValueType* data) const
+template <typename BasisFunctionType, typename ResultType>
+void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
+        unsigned b1, unsigned n1, unsigned b2, unsigned n2,
+        AhmedResultType* ahmedData) const
 {
 //    std::cout << "\nRequested block: (" << b1 << ", " << n1 << "; "
 //              << b2 << ", " << n2 << ")" << std::endl;
+
+    // This is a non-op for real types. For complex types, it converts a pointer
+    // to Ahmed's scomp (resp. dcomp) to a pointer to std::complex<float>
+    // (resp. std::complex<double>), which should be perfectly safe since these
+    // types have the same binary representation.
+    ResultType* data = reinterpret_cast<ResultType*>(ahmedData);
 
     // Requested global dof indices
     std::vector<GlobalDofIndex> testGlobalDofs;
@@ -57,7 +91,7 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
     findLocalDofs(b2, n2, m_p2oTrialDofs, m_trialSpace,
                   trialGlobalDofs, trialElementIndices, trialLocalDofs, blockCols);
 
-    arma::Mat<ValueType> result(data, n1, n2, false /*copy_aux_mem*/,
+    arma::Mat<ResultType> result(data, n1, n2, false /*copy_aux_mem*/,
                                 true /*strict*/);
     result.fill(0.);
 
@@ -68,7 +102,7 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
         // one local DOF from just one or a few trialElements. Evaluate the
         // local weak form for one local trial DOF at a time.
 
-        std::vector<arma::Mat<ValueType> > localResult;
+        std::vector<arma::Mat<ResultType> > localResult;
         for (int nTrialElem = 0;
              nTrialElem < trialElementIndices.size();
              ++nTrialElem)
@@ -96,6 +130,7 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
                              nTestDof < testLocalDofs[nTestElem].size();
                              ++nTestDof)
                             result(blockRows[nTestElem][nTestDof], 0) +=
+                                    m_denseTermsMultipliers[nTerm] *
                                     localResult[nTestElem](testLocalDofs[nTestElem][nTestDof]);
                 }
             }
@@ -107,7 +142,7 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
         // one local DOF from just one or a few testElements. Evaluate the
         // local weak form for one local test DOF at a time.
 
-        std::vector<arma::Mat<ValueType> > localResult;
+        std::vector<arma::Mat<ResultType> > localResult;
         for (int nTestElem = 0;
              nTestElem < testElementIndices.size();
              ++nTestElem)
@@ -134,6 +169,7 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
                              nTrialDof < trialLocalDofs[nTrialElem].size();
                              ++nTrialDof)
                             result(0, blockCols[nTrialElem][nTrialDof]) +=
+                                    m_denseTermsMultipliers[nTerm] *
                                     localResult[nTrialElem](trialLocalDofs[nTrialElem][nTrialDof]);
                 }
             }
@@ -146,7 +182,7 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
         // Evaluate the full local weak form for each pair of test and trial
         // elements and then select the entries that we need.
 
-        Fiber::Array2D<arma::Mat<ValueType> > localResult;
+        Fiber::Array2D<arma::Mat<ResultType> > localResult;
         for (int nTerm = 0; nTerm < m_assemblers.size(); ++nTerm)
         {
             m_assemblers[nTerm]->evaluateLocalWeakForms(
@@ -165,6 +201,7 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
                              ++nTestDof)
                             result(blockRows[nTestElem][nTestDof],
                                    blockCols[nTrialElem][nTrialDof]) +=
+                                    m_denseTermsMultipliers[nTerm] *
                                     localResult(nTestElem, nTrialElem)
                                     (testLocalDofs[nTestElem][nTestDof],
                                      trialLocalDofs[nTrialElem][nTrialDof]);
@@ -174,22 +211,24 @@ void WeakFormAcaAssemblyHelper<ValueType>::cmpbl(
     // Now, add the contributions of the sparse terms
     for (int nTerm = 0; nTerm < m_sparseTermsToAdd.size(); ++nTerm)
         m_sparseTermsToAdd[nTerm]->addBlock(
-                    testGlobalDofs, trialGlobalDofs, result);
+                    testGlobalDofs, trialGlobalDofs,
+                    m_sparseTermsMultipliers[nTerm], result);
 }
 
-template <typename ValueType>
-ValueType WeakFormAcaAssemblyHelper<ValueType>::scale(
+template <typename BasisFunctionType, typename ResultType>
+typename WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::MagnitudeType
+WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::scale(
         unsigned b1, unsigned n1, unsigned b2, unsigned n2) const
 {
-    return 1.;
+    return m_options.acaOptions().scaling;
 }
 
-template <typename ValueType>
-void WeakFormAcaAssemblyHelper<ValueType>::findLocalDofs(
+template <typename BasisFunctionType, typename ResultType>
+void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::findLocalDofs(
         int start,
         int globalDofCount,
         const std::vector<unsigned int>& p2o,
-        const Space<ValueType>& space,
+        const Space<BasisFunctionType>& space,
         std::vector<GlobalDofIndex>& globalDofIndices,
         std::vector<int>& elementIndices,
         std::vector<std::vector<LocalDofIndex> >& localDofIndices,
@@ -255,19 +294,6 @@ void WeakFormAcaAssemblyHelper<ValueType>::findLocalDofs(
 
 // Explicit instantiations
 
-#ifdef COMPILE_FOR_FLOAT
-template class WeakFormAcaAssemblyHelper<float>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class WeakFormAcaAssemblyHelper<double>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class WeakFormAcaAssemblyHelper<std::complex<float> >;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class WeakFormAcaAssemblyHelper<std::complex<double> >;
-#endif
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(WeakFormAcaAssemblyHelper);
 
 }

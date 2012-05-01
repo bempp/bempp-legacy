@@ -1,4 +1,26 @@
+// Copyright (C) 2011-2012 by the BEM++ Authors
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
 #include "numerical_quadrature.hpp"
+
+#include "config_data_types.hpp"
 
 // Hyena code
 #include "quadrature/galerkinduffy.hpp"
@@ -310,7 +332,7 @@ void fillDoubleSingularQuadraturePointsAndWeights(
                                     "meshes are not implemented yet.");
 }
 
-#ifdef COMPILE_FOR_FLOAT
+#ifdef ENABLE_SINGLE_PRECISION
 template
 void fillSingleQuadraturePointsAndWeights<float>(
         int elementCornerCount,
@@ -324,7 +346,7 @@ void fillDoubleSingularQuadraturePointsAndWeights<float>(
         arma::Mat<float>& trialPoints,
         std::vector<float>& weights);
 #endif
-#ifdef COMPILE_FOR_DOUBLE
+#ifdef ENABLE_DOUBLE_PRECISION
 template
 void fillSingleQuadraturePointsAndWeights<double>(
         int elementCornerCount,
@@ -337,36 +359,6 @@ void fillDoubleSingularQuadraturePointsAndWeights<double>(
         arma::Mat<double>& testPoints,
         arma::Mat<double>& trialPoints,
         std::vector<double>& weights);
-#endif
-// TODO: remove these unnecessary variants
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template
-void fillSingleQuadraturePointsAndWeights<std::complex<float> >(
-        int elementCornerCount, int quadratureOrder,
-        arma::Mat<std::complex<float> >& points,
-        std::vector<std::complex<float> >& weights);
-template
-void fillDoubleSingularQuadraturePointsAndWeights<float>(
-        const DoubleQuadratureDescriptor& desc,
-        arma::Mat<std::complex<float> >& testPoints,
-        arma::Mat<std::complex<float> >& trialPoints,
-        std::vector<std::complex<float> >& weights);
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template
-void fillSingleQuadraturePointsAndWeights<std::complex<double> >(
-        int elementCornerCount,
-        int quadratureOrder,
-        arma::Mat<std::complex<double> >& points,
-        std::vector<std::complex<double> >& weights);
-template
-void fillDoubleSingularQuadraturePointsAndWeights<float>(
-        const DoubleQuadratureDescriptor& desc,
-        arma::Mat<std::complex<double> >& testPoints,
-        arma::Mat<std::complex<double> >& trialPoints,
-        std::vector<std::complex<double> >& weights);
 #endif
 
 } // namespace Fiber

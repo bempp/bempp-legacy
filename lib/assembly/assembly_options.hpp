@@ -21,6 +21,8 @@
 #ifndef bempp_assembly_options_hpp
 #define bempp_assembly_options_hpp
 
+#include <string>
+
 #include "../fiber/opencl_options.hpp"
 
 namespace Bempp
@@ -28,11 +30,16 @@ namespace Bempp
 
 struct AcaOptions
 {
+    AcaOptions();
+
     double eps;
     double eta;
     int minimumBlockSize;
     int maximumRank;
     bool recompress;
+    bool outputPostscript;
+    double scaling;
+    std::string outputFname;
 };
 
 using Fiber::OpenClOptions;
@@ -58,11 +65,11 @@ public:
     void switchToDense();
     void switchToAca(const AcaOptions& acaOptions);
     void switchToFmm();
-    void switchToSparse();
 
     Representation operatorRepresentation() const {
         return m_representation;
     }
+
 
     const AcaOptions& acaOptions() const {
         return m_acaOptions;

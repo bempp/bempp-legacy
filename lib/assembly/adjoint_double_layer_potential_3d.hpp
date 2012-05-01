@@ -24,30 +24,43 @@
 #include "elementary_weakly_singular_integral_operator.hpp"
 #include "../fiber/adjoint_double_layer_potential_3d_kernel.hpp"
 #include "../fiber/scalar_function_value.hpp"
+#include "../common/scalar_traits.hpp"
 
 namespace Bempp
 {
 
-template <typename ValueType>
+template <typename BasisFunctionType, typename ResultType = BasisFunctionType>
 class AdjointDoubleLayerPotential3D :
-        public ElementaryWeaklySingularIntegralOperator<ValueType>
+        public ElementaryWeaklySingularIntegralOperator<
+        BasisFunctionType,
+        typename ScalarTraits<ResultType>::RealType,
+        ResultType>
 {
+    typedef typename ScalarTraits<ResultType>::RealType KernelType;
+    typedef ElementaryWeaklySingularIntegralOperator<
+    BasisFunctionType, KernelType, ResultType> Base;
+public:
+    typedef typename Base::CoordinateType CoordinateType;
+
+    AdjointDoubleLayerPotential3D(const Space<BasisFunctionType>& testSpace,
+                                  const Space<BasisFunctionType>& trialSpace);
+
 private:
-    virtual const Fiber::Kernel<ValueType>& kernel() const {
+    virtual const Fiber::Kernel<KernelType>& kernel() const {
         return m_kernel;
     }
 
-    virtual const Fiber::Expression<ValueType>& testExpression() const {
+    virtual const Fiber::Expression<CoordinateType>& testExpression() const {
         return m_expression;
     }
 
-    virtual const Fiber::Expression<ValueType>& trialExpression() const {
+    virtual const Fiber::Expression<CoordinateType>& trialExpression() const {
         return m_expression;
     }
 
 private:
-    Fiber::AdjointDoubleLayerPotential3DKernel<ValueType> m_kernel;
-    Fiber::ScalarFunctionValue<ValueType> m_expression;
+    Fiber::AdjointDoubleLayerPotential3DKernel<KernelType> m_kernel;
+    Fiber::ScalarFunctionValue<CoordinateType> m_expression;
 };
 
 } // namespace Bempp

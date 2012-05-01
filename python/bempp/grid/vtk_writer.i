@@ -4,8 +4,11 @@
 
 %include "vtk_writer_docstrings.i"
 
-// Handle the enum Dune::VTK::OutputType like a string
-%typemap(in) Dune::VTK::OutputType 
+namespace Bempp
+{
+
+// Handle the enum VtkWriter::OutputType like a string
+%typemap(in) VtkWriter::OutputType
 {
     if (!PyString_Check($input))
     {
@@ -14,22 +17,19 @@
     }
     const std::string s(PyString_AsString($input));
     if (s == "ascii")
-        $1 = Dune::VTK::ascii;
+        $1 = Bempp::VtkWriter::ASCII;
     else if (s == "base64")
-        $1 = Dune::VTK::base64;
+        $1 = Bempp::VtkWriter::BASE_64;
     else if (s == "appendedraw")
-        $1 = Dune::VTK::appendedraw;
+        $1 = Bempp::VtkWriter::APPENDED_RAW;
     else if (s == "appendedbase64")
-        $1 = Dune::VTK::appendedbase64;
+        $1 = Bempp::VtkWriter::APPENDED_BASE_64;
     else
     {
         PyErr_SetString(PyExc_ValueError, "in method '$symname', argument $argnum: expected one of 'ascii', 'base64', 'appendedraw' or 'appendedbase64'");        
         SWIG_fail;
     }
 }
-    
-namespace Bempp 
-{
     
 %apply const arma::Mat<double>& IN_MAT_OUT_WRAPPERS {
     const arma::Mat<double>& data
