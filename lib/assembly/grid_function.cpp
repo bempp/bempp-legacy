@@ -722,8 +722,6 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
     template GridFunction<BASIS, RESULT> operator/( \
     const GridFunction<BASIS, RESULT>& op, const SCALAR& scalar)
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperator);
-
 #if defined(ENABLE_SINGLE_PRECISION)
 INSTANTIATE_FREE_FUNCTIONS(
         float, float);
