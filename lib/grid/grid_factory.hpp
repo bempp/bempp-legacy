@@ -101,7 +101,7 @@ public:
     */
     static std::auto_ptr<Grid> importGmshGrid(const GridParameters& params,
             const std::string& fileName,
-            bool verbose=true, bool insertBoundarySegments=true);
+            bool verbose=true, bool insertBoundarySegments=false);
 
     /** \brief Import grid from a file in Gmsh format.
 
@@ -120,7 +120,7 @@ public:
             const std::string& fileName,
             std::vector<int>& boundaryId2PhysicalEntity,
             std::vector<int>& elementIndex2PhysicalEntity,
-            bool verbose=true, bool insertBoundarySegments=true);
+            bool verbose=true, bool insertBoundarySegments=false);
 };
 
 } // namespace Bempp
