@@ -39,7 +39,7 @@ StandardLocalAssemblerForGridFunctionsOnSurfaces(
         const std::vector<const Basis<BasisFunctionType>*>& testBases,
         const Expression<CoordinateType>& testExpression,
         const Function<UserFunctionType>& function,
-        const OpenClHandler<CoordinateType, int>& openClHandler) :
+        const OpenClHandler& openClHandler) :
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
     m_testBases(testBases),

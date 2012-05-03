@@ -42,7 +42,7 @@ ResultType, GeometryFactory>::StandardEvaluatorForIntegralOperators(
         const Kernel<KernelType>& kernel,
         const Expression<CoordinateType>& trialExpression,
         const std::vector<std::vector<ResultType> >& argumentLocalCoefficients,
-        const OpenClHandler<CoordinateType, int>& openClHandler,
+        const OpenClHandler& openClHandler,
         const QuadratureOptions& quadratureOptions) :
     m_geometryFactory(geometryFactory), m_rawGeometry(rawGeometry),
     m_trialBases(trialBases), m_kernel(kernel),

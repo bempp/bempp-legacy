@@ -34,7 +34,7 @@ template <typename ValueType> class Basis;
 template <typename CoordinateType> class Expression;
 template <typename ValueType> class Kernel;
 template <typename CoordinateType> class RawGridGeometry;
-template <typename CoordinateType, typename IndexType> class OpenClHandler;
+class OpenClHandler;
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
@@ -53,7 +53,7 @@ public:
             const Kernel<KernelType>& kernel,
             const Expression<CoordinateType>& trialExpression,
             const std::vector<std::vector<ResultType> >& argumentLocalCoefficients,
-            const OpenClHandler<CoordinateType, int>& openClHandler,
+            const OpenClHandler& openClHandler,
             const QuadratureOptions& quadratureOptions);
 
     virtual void evaluate(Region region,
@@ -79,7 +79,7 @@ private:
     const Kernel<KernelType>& m_kernel;
     const Expression<CoordinateType>& m_trialExpression;
     const std::vector<std::vector<ResultType> >& m_argumentLocalCoefficients;
-    const Fiber::OpenClHandler<CoordinateType,int>& m_openClHandler;
+    const Fiber::OpenClHandler& m_openClHandler;
     const QuadratureOptions& m_quadratureOptions;
 
     Fiber::GeometricalData<CoordinateType> m_nearFieldTrialGeomData;

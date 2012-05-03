@@ -32,7 +32,7 @@
 namespace Fiber
 {
 
-template <typename CoordinateType, typename IndexType> class OpenClHandler;
+class OpenClHandler;
 template <typename CoordinateType> class Expression;
 template <typename ValueType> class Function;
 template <typename CoordinateType> class RawGridGeometry;
@@ -51,7 +51,7 @@ public:
             const std::vector<const Basis<BasisFunctionType>*>& testBases,
             const Expression<CoordinateType>& testExpression,
             const Function<UserFunctionType>& function,
-            const OpenClHandler<CoordinateType, int>& openClHandler);
+            const OpenClHandler& openClHandler);
     virtual ~StandardLocalAssemblerForGridFunctionsOnSurfaces();
 
 public:
@@ -78,7 +78,7 @@ private:
     const std::vector<const Basis<BasisFunctionType>*>& m_testBases;
     const Expression<CoordinateType>& m_testExpression;
     const Function<UserFunctionType>& m_function;
-    const OpenClHandler<CoordinateType, int>& m_openClHandler;
+    const OpenClHandler& m_openClHandler;
 
     IntegratorMap m_testFunctionIntegrators;
 };

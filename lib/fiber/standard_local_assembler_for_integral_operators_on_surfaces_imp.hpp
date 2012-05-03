@@ -90,7 +90,7 @@ StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
         const Expression<CoordinateType>& testExpression,
         const Kernel<KernelType>& kernel,
         const Expression<CoordinateType>& trialExpression,
-        const OpenClHandler<CoordinateType, int>& openClHandler,
+        const OpenClHandler& openClHandler,
         bool cacheSingularIntegrals,
         const AccuracyOptions& accuracyOptions) :
     m_geometryFactory(geometryFactory),

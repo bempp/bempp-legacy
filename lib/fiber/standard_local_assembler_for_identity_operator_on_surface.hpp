@@ -38,7 +38,7 @@
 namespace Fiber
 {
 
-template <typename CoordinateType, typename IndexType> class OpenClHandler;
+class OpenClHandler;
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 class StandardLocalAssemblerForIdentityOperatorOnSurface :
@@ -54,7 +54,7 @@ public:
         const std::vector<const Basis<BasisFunctionType>*>& trialBases,
         const Expression<CoordinateType>& testExpression,
         const Expression<CoordinateType>& trialExpression,
-        const OpenClHandler<CoordinateType, int>& openClHandler);
+        const OpenClHandler& openClHandler);
 
     virtual void evaluateLocalWeakForms(
         CallVariant callVariant,
@@ -89,7 +89,7 @@ private:
     const std::vector<const Basis<BasisFunctionType>*>& m_trialBases;
     const Expression<CoordinateType>& m_testExpression;
     const Expression<CoordinateType>& m_trialExpression;
-    const OpenClHandler<CoordinateType, int>& m_openClHandler;
+    const OpenClHandler& m_openClHandler;
 
     IntegratorMap m_testTrialIntegrators;
 };

@@ -388,8 +388,8 @@ GridFunction<BasisFunctionType, ResultType>::calculateProjections(
             space.shapeFunctionValueExpression();
 
     // Now create the assembler
-    Fiber::OpenClHandler<CoordinateType, int> openClHandler(options.openClOptions());
-    openClHandler.pushGeometry (rawGeometry.vertices(),
+    Fiber::OpenClHandler openClHandler(options.openClOptions());
+    openClHandler.pushGeometry<CoordinateType,int> (rawGeometry.vertices(),
                                 rawGeometry.elementCornerIndices());
 
     std::auto_ptr<LocalAssembler> assembler =

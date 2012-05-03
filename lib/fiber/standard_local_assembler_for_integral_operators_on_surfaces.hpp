@@ -41,7 +41,7 @@ namespace Fiber
 {
 
 class AccuracyOptions;
-template <typename CoordinateType, typename IndexType> class OpenClHandler;
+class OpenClHandler;
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
@@ -59,7 +59,7 @@ public:
             const Expression<CoordinateType>& testExpression,
             const Kernel<KernelType>& kernel,
             const Expression<CoordinateType>& trialExpression,
-            const OpenClHandler<CoordinateType, int>& openClHandler,
+            const OpenClHandler& openClHandler,
             bool cacheSingularIntegrals,
             const AccuracyOptions& accuracyOptions);
     virtual ~StandardLocalAssemblerForIntegralOperatorsOnSurfaces();
@@ -115,7 +115,7 @@ private:
     const Expression<CoordinateType>& m_testExpression;
     const Kernel<KernelType>& m_kernel;
     const Expression<CoordinateType>& m_trialExpression;
-    const OpenClHandler<CoordinateType, int>& m_openClHandler;
+    const OpenClHandler& m_openClHandler;
     const AccuracyOptions& m_accuracyOptions;
 
     IntegratorMap m_TestKernelTrialIntegrators;

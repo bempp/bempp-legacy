@@ -59,7 +59,7 @@ public:
             const Fiber::RawGridGeometry<CoordinateType>& rawGeometry,
             const std::vector<const Fiber::Basis<BasisFunctionType>*>& testBases,
             const std::vector<const Fiber::Basis<BasisFunctionType>*>& trialBases,
-            const Fiber::OpenClHandler<CoordinateType, int>& openClHandler,
+            const Fiber::OpenClHandler& openClHandler,
             bool cacheSingularIntegrals) const;
 
     virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >

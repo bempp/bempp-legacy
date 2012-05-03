@@ -208,7 +208,7 @@ assembleWeakFormInAcaMode(
     }
 
     // REFACT This will disappear in the constructor of LocalAssemblerFactory
-    Fiber::OpenClHandler<CoordinateType, int> openClHandler(options.openClOptions());
+    Fiber::OpenClHandler openClHandler(options.openClOptions());
 
     // REFACT This is unfortunately going to stay
     bool cacheSingularIntegrals =
