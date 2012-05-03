@@ -24,6 +24,8 @@
 #include "scalar_traits.hpp"
 #include "types.hpp"
 
+#include <armadillo>
+
 namespace Fiber
 {
 
