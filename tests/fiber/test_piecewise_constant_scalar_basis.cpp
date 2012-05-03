@@ -1,0 +1,184 @@
+// Copyright (C) 2011 by the BEM++ Authors
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+#include "fiber/piecewise_constant_scalar_basis.hpp"
+#include "../type_template.hpp"
+
+#include <algorithm>
+#include <armadillo>
+#include <boost/test/unit_test.hpp>
+#include <boost/test/floating_point_comparison.hpp>
+#include <boost/version.hpp>
+
+// Tests
+
+BOOST_AUTO_TEST_SUITE(PiecewiseConstantScalarBasis)
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(size_is_1, ValueType, numeric_types)
+{
+    Fiber::PiecewiseConstantScalarBasis<ValueType> basis;
+    BOOST_CHECK_EQUAL(basis.size(), 1);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(order_is_0, ValueType, numeric_types)
+{
+    Fiber::PiecewiseConstantScalarBasis<ValueType> basis;
+    BOOST_CHECK_EQUAL(basis.order(), 0);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs,
+                              ValueType, numeric_types)
+{
+    typedef Fiber::PiecewiseConstantScalarBasis<ValueType> Basis;
+    Basis basis;
+    arma::Mat<typename Basis::CoordinateType> points(3, 4);
+    srand(1);
+    points.randu();
+    Fiber::BasisData<ValueType> data;
+    basis.evaluate(Fiber::VALUES, points, Fiber::ALL_DOFS, data);
+
+    arma::Cube<ValueType> expected(1, 1, points.n_cols);
+    expected.fill(1.);
+
+    BOOST_CHECK_EQUAL(data.values.n_rows, 1); // 1 component
+    BOOST_CHECK_EQUAL(data.values.n_cols, 1); // 1 basis function
+    BOOST_CHECK_EQUAL(data.values.n_slices, points.n_cols);
+    BOOST_CHECK_EQUAL_COLLECTIONS(data.values.begin(),
+                                  data.values.end(),
+                                  expected.begin(),
+                                  expected.end());
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_one_dof,
+                              ValueType, numeric_types)
+{
+    typedef Fiber::PiecewiseConstantScalarBasis<ValueType> Basis;
+    Basis basis;
+    arma::Mat<typename Basis::CoordinateType> points(3, 4);
+    srand(1);
+    points.randu();
+    Fiber::BasisData<ValueType> data;
+    basis.evaluate(Fiber::VALUES, points, 0 /* dof number */, data);
+
+    arma::Cube<ValueType> expected(1, 1, points.n_cols);
+    expected.fill(1.);
+
+    BOOST_CHECK_EQUAL(data.values.n_rows, 1); // 1 component
+    BOOST_CHECK_EQUAL(data.values.n_cols, 1); // 1 basis function
+    BOOST_CHECK_EQUAL(data.values.n_slices, points.n_cols);
+    BOOST_CHECK_EQUAL_COLLECTIONS(data.values.begin(),
+                                  data.values.end(),
+                                  expected.begin(),
+                                  expected.end());
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_all_dofs,
+                              ValueType, numeric_types)
+{
+    typedef Fiber::PiecewiseConstantScalarBasis<ValueType> Basis;
+    Basis basis;
+    arma::Mat<typename Basis::CoordinateType> points(3, 4);
+    srand(1);
+    points.randu();
+    Fiber::BasisData<ValueType> data;
+    basis.evaluate(Fiber::DERIVATIVES, points, Fiber::ALL_DOFS, data);
+
+    Fiber::Array4D<ValueType> expected(1,  // 1 component
+                                       points.n_rows,
+                                       1,  // 1 basis functions
+                                       points.n_cols);
+    std::fill(expected.begin(), expected.end(), 0.);
+    BOOST_CHECK_EQUAL(data.derivatives.extent(0), expected.extent(0));
+    BOOST_CHECK_EQUAL(data.derivatives.extent(1), expected.extent(1));
+    BOOST_CHECK_EQUAL(data.derivatives.extent(2), expected.extent(2));
+    BOOST_CHECK_EQUAL(data.derivatives.extent(3), expected.extent(3));
+    BOOST_CHECK_EQUAL_COLLECTIONS(data.derivatives.begin(),
+                                  data.derivatives.end(),
+                                  expected.begin(),
+                                  expected.end());
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_one_dof,
+                              ValueType, numeric_types)
+{
+    typedef Fiber::PiecewiseConstantScalarBasis<ValueType> Basis;
+    Basis basis;
+    arma::Mat<typename Basis::CoordinateType> points(3, 4);
+    srand(1);
+    points.randu();
+    Fiber::BasisData<ValueType> data;
+    basis.evaluate(Fiber::DERIVATIVES, points, 0 /* dof number */, data);
+
+    Fiber::Array4D<ValueType> expected(1,  // 1 component
+                                       points.n_rows,
+                                       1,  // 1 basis functions
+                                       points.n_cols);
+    std::fill(expected.begin(), expected.end(), 0.);
+    BOOST_CHECK_EQUAL(data.derivatives.extent(0), expected.extent(0));
+    BOOST_CHECK_EQUAL(data.derivatives.extent(1), expected.extent(1));
+    BOOST_CHECK_EQUAL(data.derivatives.extent(2), expected.extent(2));
+    BOOST_CHECK_EQUAL(data.derivatives.extent(3), expected.extent(3));
+    BOOST_CHECK_EQUAL_COLLECTIONS(data.derivatives.begin(),
+                                  data.derivatives.end(),
+                                  expected.begin(),
+                                  expected.end());
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_and_derivatives_works_for_all_dofs,
+                              ValueType, numeric_types)
+{
+    typedef Fiber::PiecewiseConstantScalarBasis<ValueType> Basis;
+    Basis basis;
+    arma::Mat<typename Basis::CoordinateType> points(3, 4);
+    srand(1);
+    points.randu();
+    Fiber::BasisData<ValueType> data;
+    basis.evaluate(Fiber::VALUES | Fiber::DERIVATIVES, points, 0 /* dof number */, data);
+
+    {
+        arma::Cube<ValueType> expected(1, 1, points.n_cols);
+        expected.fill(1.);
+        BOOST_CHECK_EQUAL(data.values.n_rows, 1); // 1 component
+        BOOST_CHECK_EQUAL(data.values.n_cols, 1); // 1 basis function
+        BOOST_CHECK_EQUAL(data.values.n_slices, points.n_cols);
+        BOOST_CHECK_EQUAL_COLLECTIONS(data.values.begin(),
+                                      data.values.end(),
+                                      expected.begin(),
+                                      expected.end());
+    }
+
+    {
+        Fiber::Array4D<ValueType> expected(1,  // 1 component
+                                           points.n_rows,
+                                           1,  // 1 basis functions
+                                           points.n_cols);
+        std::fill(expected.begin(), expected.end(), 0.);
+        BOOST_CHECK_EQUAL(data.derivatives.extent(0), expected.extent(0));
+        BOOST_CHECK_EQUAL(data.derivatives.extent(1), expected.extent(1));
+        BOOST_CHECK_EQUAL(data.derivatives.extent(2), expected.extent(2));
+        BOOST_CHECK_EQUAL(data.derivatives.extent(3), expected.extent(3));
+        BOOST_CHECK_EQUAL_COLLECTIONS(data.derivatives.begin(),
+                                      data.derivatives.end(),
+                                      expected.begin(),
+                                      expected.end());
+    }
+}
+
+BOOST_AUTO_TEST_SUITE_END()
