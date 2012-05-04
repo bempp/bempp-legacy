@@ -272,7 +272,6 @@ LinearOperatorSuperposition<BasisFunctionType, ResultType>::assembleWeakFormInAr
 
     const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>
             localOperators = this->localOperators();
-    const std::vector<ResultType>& multipliers = this->multipliers();
 
     boost::ptr_vector<DiscreteLinOp> discreteOps;
     for (int i = 0; i < localOperators.size(); ++i) {
