@@ -61,6 +61,10 @@
 // and other configurable execution parameters.
 // If there are no such parameters, OpenClOptions should just be removed.
 
+// Justification: right now there can be a conflict: the user can invoke
+// AssemblyOptions::switchToOpenCl() and pass to it an instance of OpenClOptions
+// with useOpenCl set to false. This makes no sense.
+
 namespace Bempp
 {
 
