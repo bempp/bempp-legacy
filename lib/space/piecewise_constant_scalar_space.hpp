@@ -48,9 +48,6 @@ public:
     virtual void setElementVariant(const Entity<0>& element,
                                    ElementVariant variant);
 
-    virtual void getBases(const std::vector<const EntityPointer<0>*>& elements,
-                          std::vector<const Fiber::Basis<BasisFunctionType>*>& bases) const;
-
     virtual const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
 
     virtual void assignDofs();

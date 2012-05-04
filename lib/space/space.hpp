@@ -74,17 +74,7 @@ public:
     /** \brief Reference to the grid on which the functions are defined. */
     const Grid& grid() const { return m_grid; }
 
-    /** \brief Get pointers to Basis objects corresponding to specified elements.
-
-        \param[in]   elements  List of pointers to elements whose bases should
-                               be retrieved.
-        \param[out]  bases     On exit, a vector whose ith item is a pointer to
-                               the Basis object corresponding to the ith item of
-                               \p elements. */
-
-    virtual void getBases(const std::vector<const EntityPointer<0>*>& elements,
-                          std::vector<const Fiber::Basis<BasisFunctionType>*>& bases) const = 0;
-
+    /** \brief Reference to the basis attached to the specified element. */
     virtual const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const = 0;
 
     /** \brief Expression returning values of the shape functions of this space. */
@@ -130,6 +120,11 @@ public:
 protected:
     Grid& m_grid;
 };
+
+/** \brief Get pointers to Basis objects corresponding to all elements. */
+template <typename BasisFunctionType>
+void getAllBases(const Space<BasisFunctionType>& space,
+        std::vector<const Fiber::Basis<BasisFunctionType>*>& bases);
 
 } //namespace Bempp
 

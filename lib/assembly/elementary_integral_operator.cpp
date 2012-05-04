@@ -185,7 +185,6 @@ assembleWeakForm(
 
     const Grid& grid = trialSpace.grid();
     std::auto_ptr<GridView> view = grid.leafView();
-    const int elementCount = view->entityCount(0);
 
     // Gather geometric data
     Fiber::RawGridGeometry<CoordinateType> rawGeometry(grid.dim(), grid.dimWorld());
@@ -200,16 +199,8 @@ assembleWeakForm(
     // Get pointers to test and trial bases of each element
     std::vector<const Fiber::Basis<BasisFunctionType>*> testBases;
     std::vector<const Fiber::Basis<BasisFunctionType>*> trialBases;
-    testBases.reserve(elementCount);
-    trialBases.reserve(elementCount);
-
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-    while (!it->finished()) {
-        const Entity<0>& element = it->entity();
-        testBases.push_back(&testSpace.basis(element));
-        trialBases.push_back(&trialSpace.basis(element));
-        it->next();
-    }
+    getAllBases(testSpace, testBases);
+    getAllBases(trialSpace, trialBases);
 
     // Now create the assembler
     Fiber::OpenClHandler<CoordinateType,int> openClHandler(options.openClOptions());

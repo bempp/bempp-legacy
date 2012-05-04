@@ -63,28 +63,6 @@ int PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::codomainDimension()
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getBases(
-        const std::vector<const EntityPointer<0>*>& elements,
-        std::vector<const Fiber::Basis<BasisFunctionType>*>& bases) const
-{
-    const int elementCount = elements.size();
-    bases.resize(elementCount);
-    for (int i = 0; i < elementCount; ++i)
-        switch (elementVariant(elements[i]->entity()))
-        {
-        case 3:
-            bases[i] = &m_triangleBasis;
-            break;
-        case 4:
-            bases[i] = &m_quadrilateralBasis;
-            break;
-        case 2:
-            bases[i] = &m_lineBasis;
-            break;
-        }
-}
-
-template <typename BasisFunctionType>
 const Fiber::Basis<BasisFunctionType>&
 PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::basis(
         const Entity<0>& element) const
@@ -97,6 +75,9 @@ PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::basis(
         return m_quadrilateralBasis;
     case 2:
         return m_lineBasis;
+    default:
+        throw std::logic_error("PiecewiseLinearContinuousScalarSpace::basis(): "
+                               "invalid element variant, this shouldn't happen!");
     }
 }
 

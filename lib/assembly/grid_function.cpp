@@ -360,7 +360,6 @@ GridFunction<BasisFunctionType, ResultType>::calculateProjections(
 
     const Grid& grid = space.grid();
     std::auto_ptr<GridView> view = grid.leafView();
-    const int elementCount = view->entityCount(0);
 
     // Gather geometric data
     Fiber::RawGridGeometry<CoordinateType> rawGeometry(grid.dim(), grid.dimWorld());
@@ -374,14 +373,7 @@ GridFunction<BasisFunctionType, ResultType>::calculateProjections(
 
     // Get pointers to test and trial bases of each element
     std::vector<const Fiber::Basis<BasisFunctionType>*> testBases;
-    testBases.reserve(elementCount);
-
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-    while (!it->finished()) {
-        const Entity<0>& element = it->entity();
-        testBases.push_back(&space.basis(element));
-        it->next();
-    }
+    getAllBases(space, testBases);
 
     // Get reference to the test expression
     const Fiber::Expression<CoordinateType>& testExpression =
