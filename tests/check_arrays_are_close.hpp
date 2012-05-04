@@ -22,6 +22,7 @@
 #define bempp_check_arrays_are_close_hpp
 
 #include "fiber/scalar_traits.hpp"
+#include "fiber/array_2d.hpp"
 #include "fiber/array_4d.hpp"
 
 #include <armadillo>
@@ -132,6 +133,100 @@ check_arrays_are_close(const Fiber::Array4D<ValueType>& left,
                                          << right(r, c, s, u) << "]";
                     }
                 }
+
+    return result;
+}
+
+template <typename ValueType>
+boost::test_tools::predicate_result
+check_arrays_are_close(const Fiber::Array2D<arma::Mat<ValueType> >& leftArrays,
+                       const Fiber::Array2D<arma::Mat<ValueType> >& rightArrays,
+                       typename Fiber::ScalarTraits<ValueType>::RealType tolerance)
+{
+    boost::test_tools::predicate_result result(true);
+    if (leftArrays.extent(0) != rightArrays.extent(0) ||
+            leftArrays.extent(1) != rightArrays.extent(1)) {
+        result = false;
+        result.message() << "Size mismatch of Fiber::Array2D [("
+                         << leftArrays.extent(0) << ", "
+                         << leftArrays.extent(1) << ") != ("
+                         << rightArrays.extent(0) << ", "
+                         << rightArrays.extent(1) << "]";
+        return result;
+    }
+
+    for (int ra = 0; ra < leftArrays.extent(0); ++ra)
+        for (int ca = 0; ca < leftArrays.extent(1); ++ca) {
+            const arma::Mat<ValueType>& left = leftArrays(ra, ca);
+            const arma::Mat<ValueType>& right = rightArrays(ra, ca);
+            if (left.n_rows != right.n_rows || left.n_cols != right.n_cols) {
+                result = false;
+                result.message() << "Size mismatch of matrix ("
+                                 << ra << ", " << ca << ") [("
+                                 << left.n_rows << ", " << left.n_cols << ") != ("
+                                 << right.n_rows << ", " << right.n_cols << ")]";
+                return result;
+            }
+            for (int r = 0; r < left.n_rows; ++r)
+                for (int c = 0; c < left.n_cols; ++c) {
+                    typename Fiber::ScalarTraits<ValueType>::RealType diff =
+                            std::abs(left(r, c) - right(r, c));
+                    typename Fiber::ScalarTraits<ValueType>::RealType avg =
+                            std::abs(left(r, c) + right(r, c)) / 2.;
+                    if (diff > tolerance * (1 + avg)) {
+                        result = false;
+                        result.message() << "\n  Mismatch in matrix ("
+                                         << ra << ", " << ca << ") at position ("
+                                         << r << ", " << c << ") ["
+                                         << left(r, c) << " != " << right(r, c) << "]";
+                    }
+                }
+        }
+
+    return result;
+}
+
+template <typename ValueType>
+boost::test_tools::predicate_result
+check_arrays_are_close(const std::vector<arma::Mat<ValueType> >& leftArrays,
+                       const std::vector<arma::Mat<ValueType> >& rightArrays,
+                       typename Fiber::ScalarTraits<ValueType>::RealType tolerance)
+{
+    boost::test_tools::predicate_result result(true);
+    if (leftArrays.size() != rightArrays.size()) {
+        result = false;
+        result.message() << "Size mismatch of std::vector ["
+                         << leftArrays.size() << " != "
+                         << rightArrays.size() << "]";
+        return result;
+    }
+
+    for (int ra = 0; ra < leftArrays.size(); ++ra) {
+        const arma::Mat<ValueType>& left = leftArrays[ra];
+        const arma::Mat<ValueType>& right = rightArrays[ra];
+        if (left.n_rows != right.n_rows || left.n_cols != right.n_cols) {
+            result = false;
+            result.message() << "Size mismatch of matrix ("
+                             << ra << ") [("
+                             << left.n_rows << ", " << left.n_cols << ") != ("
+                             << right.n_rows << ", " << right.n_cols << ")]";
+            return result;
+        }
+        for (int r = 0; r < left.n_rows; ++r)
+            for (int c = 0; c < left.n_cols; ++c) {
+                typename Fiber::ScalarTraits<ValueType>::RealType diff =
+                        std::abs(left(r, c) - right(r, c));
+                typename Fiber::ScalarTraits<ValueType>::RealType avg =
+                        std::abs(left(r, c) + right(r, c)) / 2.;
+                if (diff > tolerance * (1 + avg)) {
+                    result = false;
+                    result.message() << "\n  Mismatch in matrix ("
+                                     << ra << ") at position ("
+                                     << r << ", " << c << ") ["
+                                     << left(r, c) << " != " << right(r, c) << "]";
+                }
+            }
+    }
 
     return result;
 }
