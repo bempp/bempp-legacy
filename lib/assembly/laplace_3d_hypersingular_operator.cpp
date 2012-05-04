@@ -19,22 +19,21 @@
 // THE SOFTWARE.
 
 
-#include "dot_double_layer_potential_3d.hpp"
+#include "laplace_3d_hypersingular_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType>
-DotDoubleLayerPotential3D<BasisFunctionType, ResultType>::DotDoubleLayerPotential3D(
+Laplace3dHypersingularOperator<BasisFunctionType, ResultType>::
+Laplace3dHypersingularOperator(
         const Space<BasisFunctionType>& testSpace,
-	const Space<BasisFunctionType>& trialSpace,
-	KernelType waveNumber) :
+        const Space<BasisFunctionType>& trialSpace) :
     Base(testSpace, trialSpace)
 {
-    m_kernel.setWaveNumber (waveNumber);
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DotDoubleLayerPotential3D);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dHypersingularOperator);
 
 } // namespace Bempp

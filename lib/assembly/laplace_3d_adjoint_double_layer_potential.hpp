@@ -18,11 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_dot_double_layer_potential_3d_hpp
-#define bempp_dot_double_layer_potential_3d_hpp
+#ifndef bempp_laplace_3d_adjoint_double_layer_potential_hpp
+#define bempp_laplace_3d_adjoint_double_layer_potential_hpp
 
 #include "elementary_weakly_singular_integral_operator.hpp"
-#include "../fiber/dot_double_layer_potential_3d_kernel.hpp"
+#include "../fiber/laplace_3d_adjoint_double_layer_potential_kernel.hpp"
 #include "../fiber/scalar_function_value.hpp"
 #include "../common/scalar_traits.hpp"
 
@@ -30,22 +30,20 @@ namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType = BasisFunctionType>
-class DotDoubleLayerPotential3D :
+class Laplace3dAdjointDoubleLayerPotential :
         public ElementaryWeaklySingularIntegralOperator<
         BasisFunctionType,
-        ResultType, // typename ScalarTraits<ResultType>::RealType,
+        typename ScalarTraits<ResultType>::RealType,
         ResultType>
 {
-  //typedef typename ScalarTraits<ResultType>::RealType KernelType;
-    typedef ResultType KernelType;
+    typedef typename ScalarTraits<ResultType>::RealType KernelType;
     typedef ElementaryWeaklySingularIntegralOperator<
     BasisFunctionType, KernelType, ResultType> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
-    DotDoubleLayerPotential3D(const Space<BasisFunctionType>& testSpace,
-			      const Space<BasisFunctionType>& trialSpace,
-			      KernelType waveNumber);
+    Laplace3dAdjointDoubleLayerPotential(const Space<BasisFunctionType>& testSpace,
+                                  const Space<BasisFunctionType>& trialSpace);
 
 private:
     virtual const Fiber::Kernel<KernelType>& kernel() const {
@@ -61,7 +59,7 @@ private:
     }
 
 private:
-    Fiber::DotDoubleLayerPotential3DKernel<KernelType> m_kernel;
+    Fiber::Laplace3dAdjointDoubleLayerPotentialKernel<KernelType> m_kernel;
     Fiber::ScalarFunctionValue<CoordinateType> m_expression;
 };
 

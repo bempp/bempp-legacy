@@ -19,21 +19,22 @@
 // THE SOFTWARE.
 
 
-#include "adjoint_double_layer_potential_3d.hpp"
+#include "dot_3d_single_layer_potential.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType>
-AdjointDoubleLayerPotential3D<BasisFunctionType, ResultType>::
-AdjointDoubleLayerPotential3D(const Space<BasisFunctionType>& testSpace,
-                              const Space<BasisFunctionType>& trialSpace) :
+Dot3dSingleLayerPotential<BasisFunctionType, ResultType>::Dot3dSingleLayerPotential(
+        const Space<BasisFunctionType>& testSpace,
+        const Space<BasisFunctionType>& trialSpace,
+	KernelType waveNumber) :
     Base(testSpace, trialSpace)
 {
+    m_kernel.setWaveNumber (waveNumber);
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(AdjointDoubleLayerPotential3D);
-
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Dot3dSingleLayerPotential);
 
 } // namespace Bempp

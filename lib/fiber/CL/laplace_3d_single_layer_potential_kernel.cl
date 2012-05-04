@@ -1,7 +1,7 @@
 // -*-C++-*-
 
 /**
- * \file single_layer_potential_3D_kernel.cl
+ * \file laplace_3d_single_layer_potential_kernel.cl
  * OpenCL implementation for single layer potential kernel evaluation
  */
 

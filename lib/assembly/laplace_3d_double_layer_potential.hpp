@@ -18,11 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_adjoint_double_layer_potential_3d_hpp
-#define bempp_adjoint_double_layer_potential_3d_hpp
+#ifndef bempp_laplace_3d_double_layer_potential_hpp
+#define bempp_laplace_3d_double_layer_potential_hpp
 
 #include "elementary_weakly_singular_integral_operator.hpp"
-#include "../fiber/adjoint_double_layer_potential_3d_kernel.hpp"
+#include "../fiber/laplace_3d_double_layer_potential_kernel.hpp"
 #include "../fiber/scalar_function_value.hpp"
 #include "../common/scalar_traits.hpp"
 
@@ -30,7 +30,7 @@ namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType = BasisFunctionType>
-class AdjointDoubleLayerPotential3D :
+class Laplace3dDoubleLayerPotential :
         public ElementaryWeaklySingularIntegralOperator<
         BasisFunctionType,
         typename ScalarTraits<ResultType>::RealType,
@@ -42,8 +42,8 @@ class AdjointDoubleLayerPotential3D :
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
-    AdjointDoubleLayerPotential3D(const Space<BasisFunctionType>& testSpace,
-                                  const Space<BasisFunctionType>& trialSpace);
+    Laplace3dDoubleLayerPotential(const Space<BasisFunctionType>& testSpace,
+                           const Space<BasisFunctionType>& trialSpace);
 
 private:
     virtual const Fiber::Kernel<KernelType>& kernel() const {
@@ -59,7 +59,7 @@ private:
     }
 
 private:
-    Fiber::AdjointDoubleLayerPotential3DKernel<KernelType> m_kernel;
+    Fiber::Laplace3dDoubleLayerPotentialKernel<KernelType> m_kernel;
     Fiber::ScalarFunctionValue<CoordinateType> m_expression;
 };
 

@@ -18,32 +18,34 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_single_layer_potential_3d_hpp
-#define bempp_single_layer_potential_3d_hpp
+#ifndef bempp_dot_3d_single_layer_potential_hpp
+#define bempp_dot_3d_single_layer_potential_hpp
 
 #include "elementary_weakly_singular_integral_operator.hpp"
 #include "../common/scalar_traits.hpp"
-#include "../fiber/single_layer_potential_3d_kernel.hpp"
+#include "../fiber/dot_3d_single_layer_potential_kernel.hpp"
 #include "../fiber/scalar_function_value.hpp"
 
 namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType = BasisFunctionType>
-class SingleLayerPotential3D :
+class Dot3dSingleLayerPotential :
         public ElementaryWeaklySingularIntegralOperator<
         BasisFunctionType,
-        typename ScalarTraits<ResultType>::RealType,
+        ResultType, //typename ScalarTraits<ResultType>::RealType,
         ResultType>
 {
-    typedef typename ScalarTraits<ResultType>::RealType KernelType;
+  //typedef typename ScalarTraits<ResultType>::RealType KernelType;
+    typedef ResultType KernelType;
     typedef ElementaryWeaklySingularIntegralOperator<
     BasisFunctionType, KernelType, ResultType> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
-    SingleLayerPotential3D(const Space<BasisFunctionType>& testSpace,
-                           const Space<BasisFunctionType>& trialSpace);
+    Dot3dSingleLayerPotential(const Space<BasisFunctionType>& testSpace,
+			      const Space<BasisFunctionType>& trialSpace,
+			      KernelType waveNumber);
 
 private:
     virtual const Fiber::Kernel<KernelType>& kernel() const {
@@ -59,7 +61,7 @@ private:
     }
 
 private:
-    Fiber::SingleLayerPotential3DKernel<KernelType> m_kernel;
+    Fiber::Dot3dSingleLayerPotentialKernel<KernelType> m_kernel;
     Fiber::ScalarFunctionValue<CoordinateType> m_expression;
 };
 

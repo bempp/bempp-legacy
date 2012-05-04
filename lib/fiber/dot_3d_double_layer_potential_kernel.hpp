@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_dot_double_layer_potential_3d_kernel_hpp
-#define fiber_dot_double_layer_potential_3d_kernel_hpp
+#ifndef fiber_dot_3d_double_layer_potential_kernel_hpp
+#define fiber_dot_3d_double_layer_potential_kernel_hpp
 
 #include "kernel.hpp"
 #include <armadillo>
@@ -28,7 +28,7 @@ namespace Fiber
 {
 
 template <typename ValueType>
-class DotDoubleLayerPotential3DKernel : public Kernel<ValueType>
+class Dot3dDoubleLayerPotentialKernel : public Kernel<ValueType>
 {
 public:
     typedef typename Kernel<ValueType>::CoordinateType CoordinateType;
@@ -56,7 +56,7 @@ public:
     /**
      * \brief Returns an OpenCL code snippet for kernel evaluation as a string.
      * \note The code snippet provides device functions devKernevalGrid and devKernevalPair
-     *   (see CL/single_layer_potential_3D_kernel.cl)
+     *   (see CL/single_layer_potential_kernel.cl)
      * \note This method is independent of data, unlike the CPU versions, because the
      *   data for multiple elements are pushed to the device separately.
      */

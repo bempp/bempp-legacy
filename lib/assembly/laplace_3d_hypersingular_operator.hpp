@@ -18,34 +18,36 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_dot_single_layer_potential_3d_hpp
-#define bempp_dot_single_layer_potential_3d_hpp
+#ifndef bempp_laplace_3d_hypersingular_operator_hpp
+#define bempp_laplace_3d_hypersingular_operator_hpp
 
 #include "elementary_weakly_singular_integral_operator.hpp"
+#include "../fiber/laplace_3d_single_layer_potential_kernel.hpp"
+#include "../fiber/surface_curl_3d.hpp"
 #include "../common/scalar_traits.hpp"
-#include "../fiber/dot_single_layer_potential_3d_kernel.hpp"
-#include "../fiber/scalar_function_value.hpp"
 
 namespace Bempp
 {
 
+// Hypersingular is obviously *not* weakly singular... but its
+// weak form can be calculated with quadrature methods devised
+// for weakly singular operators.
+// FIXME: maybe rename "WeaklySingular" to "Singular"
 template <typename BasisFunctionType, typename ResultType = BasisFunctionType>
-class DotSingleLayerPotential3D :
+class Laplace3dHypersingularOperator :
         public ElementaryWeaklySingularIntegralOperator<
         BasisFunctionType,
-        ResultType, //typename ScalarTraits<ResultType>::RealType,
+        typename ScalarTraits<ResultType>::RealType,
         ResultType>
 {
-  //typedef typename ScalarTraits<ResultType>::RealType KernelType;
-    typedef ResultType KernelType;
+    typedef typename ScalarTraits<ResultType>::RealType KernelType;
     typedef ElementaryWeaklySingularIntegralOperator<
     BasisFunctionType, KernelType, ResultType> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
-    DotSingleLayerPotential3D(const Space<BasisFunctionType>& testSpace,
-			      const Space<BasisFunctionType>& trialSpace,
-			      KernelType waveNumber);
+    Laplace3dHypersingularOperator(const Space<BasisFunctionType>& testSpace,
+                            const Space<BasisFunctionType>& trialSpace);
 
 private:
     virtual const Fiber::Kernel<KernelType>& kernel() const {
@@ -61,8 +63,8 @@ private:
     }
 
 private:
-    Fiber::DotSingleLayerPotential3DKernel<KernelType> m_kernel;
-    Fiber::ScalarFunctionValue<CoordinateType> m_expression;
+    Fiber::Laplace3dSingleLayerPotentialKernel<KernelType> m_kernel;
+    Fiber::SurfaceCurl3d<CoordinateType> m_expression;
 };
 
 } // namespace Bempp

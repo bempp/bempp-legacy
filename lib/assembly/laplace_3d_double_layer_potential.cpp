@@ -18,20 +18,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
-#include "double_layer_potential_3d.hpp"
+#include "laplace_3d_double_layer_potential.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType>
-DoubleLayerPotential3D<BasisFunctionType, ResultType>::DoubleLayerPotential3D(
+Laplace3dDoubleLayerPotential<BasisFunctionType, ResultType>::Laplace3dDoubleLayerPotential(
         const Space<BasisFunctionType>& testSpace, const Space<BasisFunctionType>& trialSpace) :
     Base(testSpace, trialSpace)
 {
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DoubleLayerPotential3D);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dDoubleLayerPotential);
 
 } // namespace Bempp

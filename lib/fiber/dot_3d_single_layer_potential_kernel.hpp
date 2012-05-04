@@ -18,17 +18,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_adjoint_double_layer_potential_3d_kernel_hpp
-#define fiber_adjoint_double_layer_potential_3d_kernel_hpp
+#ifndef fiber_dot_3d_single_layer_potential_kernel_hpp
+#define fiber_dot_3d_single_layer_potential_kernel_hpp
 
 #include "kernel.hpp"
-#include <armadillo>
 
 namespace Fiber
 {
 
 template <typename ValueType>
-class AdjointDoubleLayerPotential3DKernel : public Kernel<ValueType>
+class Dot3dSingleLayerPotentialKernel : public Kernel<ValueType>
 {
 public:
     typedef typename Kernel<ValueType>::CoordinateType CoordinateType;
@@ -40,6 +39,9 @@ public:
     virtual void addGeometricalDependencies(int& testGeomDeps,
                                             int& trialGeomDeps) const;
 
+    virtual ValueType waveNumber () const { return m_waveNumber; }
+    virtual void setWaveNumber (ValueType k) { m_waveNumber = k; }
+
     virtual void evaluateAtPointPairs(const GeometricalData<CoordinateType>& testGeomData,
                                       const GeometricalData<CoordinateType>& trialGeomData,
                                       arma::Cube<ValueType>& result) const;
@@ -48,21 +50,15 @@ public:
                                 const GeometricalData<CoordinateType>& trialGeomData,
                                 Array4D<ValueType>& result) const;
 
-    /**
-     * \brief Returns an OpenCL code snippet for kernel evaluation as a string.
-     * \note The code snippet provides device functions devKernevalGrid and devKernevalPair
-     *   (see CL/single_layer_potential_3D_kernel.cl)
-     * \note This method is independent of data, unlike the CPU versions, because the
-     *   data for multiple elements are pushed to the device separately.
-     */
     virtual std::pair<const char*,int> evaluateClCode () const;
 
 private:
     ValueType evaluateAtPointPair(const arma::Col<CoordinateType>& testPoint,
-                                  const arma::Col<CoordinateType>& trialPoint,
-                                  const arma::Col<CoordinateType>& testNormal) const;
+                                  const arma::Col<CoordinateType>& trialPoint) const;
+
+    ValueType m_waveNumber;
 };
 
-} // namespace Fiber
+} // namespace fiber
 
-#endif
+#endif 

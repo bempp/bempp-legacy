@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "fiber/double_layer_potential_3d_kernel.hpp"
-#include "fiber/adjoint_double_layer_potential_3d_kernel.hpp"
+#include "fiber/laplace_3d_double_layer_potential_kernel.hpp"
+#include "fiber/laplace_3d_adjoint_double_layer_potential_kernel.hpp"
 #include "fiber/geometrical_data.hpp"
 #include "../type_template.hpp"
 #include "../check_arrays_are_close.hpp"
@@ -33,30 +33,30 @@
 
 // Tests
 
-BOOST_AUTO_TEST_SUITE(AdjointDoubleLayerPotential3DKernel)
+BOOST_AUTO_TEST_SUITE(Laplace3dAdjointDoubleLayerPotentialKernel)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(worldDimension_is_3, ValueType, kernel_types)
 {
-    Fiber::AdjointDoubleLayerPotential3DKernel<ValueType> op;
+    Fiber::Laplace3dAdjointDoubleLayerPotentialKernel<ValueType> op;
     BOOST_CHECK_EQUAL(op.worldDimension(), 3);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(domainDimension_is_1, ValueType, kernel_types)
 {
-    Fiber::AdjointDoubleLayerPotential3DKernel<ValueType> op;
+    Fiber::Laplace3dAdjointDoubleLayerPotentialKernel<ValueType> op;
     BOOST_CHECK_EQUAL(op.domainDimension(), 1);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(codomainDimension_is_1, ValueType, kernel_types)
 {
-    Fiber::AdjointDoubleLayerPotential3DKernel<ValueType> op;
+    Fiber::Laplace3dAdjointDoubleLayerPotentialKernel<ValueType> op;
     BOOST_CHECK_EQUAL(op.domainDimension(), 1);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(addGeometricalDependencies_works,
                               ValueType, kernel_types)
 {
-    Fiber::AdjointDoubleLayerPotential3DKernel<ValueType> op;
+    Fiber::Laplace3dAdjointDoubleLayerPotentialKernel<ValueType> op;
     int testGeomDeps = 1024, trialGeomDeps = 16; // random initial values
     op.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 
@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_double_layer_potential,
 {
     // Check that DLP(x, y) = ADLP(y, x)
 
-    typedef Fiber::AdjointDoubleLayerPotential3DKernel<ValueType> ADLPOperator;
+    typedef Fiber::Laplace3dAdjointDoubleLayerPotentialKernel<ValueType> ADLPOperator;
     ADLPOperator adlpOp;
     Fiber::GeometricalData<typename ADLPOperator::CoordinateType> testGeomData, trialGeomData;
     const int worldDim = 3;
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_double_layer_potential,
     Fiber::Array4D<ValueType> adlpResult;
     adlpOp.evaluateOnGrid(testGeomData, trialGeomData, adlpResult);
 
-    typedef Fiber::DoubleLayerPotential3DKernel<ValueType> DLPOperator;
+    typedef Fiber::Laplace3dDoubleLayerPotentialKernel<ValueType> DLPOperator;
     DLPOperator dlpOp;
     std::swap(testGeomData, trialGeomData);
 
@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_double_layer_potential,
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_evaluateAtPointPairs,
                               ValueType, kernel_types)
 {
-    typedef Fiber::AdjointDoubleLayerPotential3DKernel<ValueType> Operator;
+    typedef Fiber::Laplace3dAdjointDoubleLayerPotentialKernel<ValueType> Operator;
     Operator op;
 
     typedef Fiber::GeometricalData<typename Operator::CoordinateType> GeomData;

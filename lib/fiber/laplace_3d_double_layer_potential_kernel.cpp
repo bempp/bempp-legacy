@@ -18,84 +18,96 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "dot_single_layer_potential_3d_kernel.hpp"
+#include "laplace_3d_double_layer_potential_kernel.hpp"
 
 #include "explicit_instantiation.hpp"
+#include "geometrical_data.hpp"
+#include "CL/laplace_3d_double_layer_potential_kernel.cl.str"
 
 #include <armadillo>
+#include <cassert>
 #include <cmath>
-
-#include "geometrical_data.hpp"
-//#include "CL/dot_single_layer_potential_3D_kernel.cl.str"
 
 namespace Fiber
 {
 
+// Double potential: derivative wrt. trial normal
+
 template <typename ValueType>
-void DotSingleLayerPotential3DKernel<ValueType>::addGeometricalDependencies(
+void Laplace3dDoubleLayerPotentialKernel<ValueType>::addGeometricalDependencies(
         int& testGeomDeps, int& trialGeomDeps) const
 {
     testGeomDeps |= GLOBALS;
-    trialGeomDeps |= GLOBALS;
+    trialGeomDeps |= GLOBALS | NORMALS;
 }
 
 template <typename ValueType>
-inline ValueType DotSingleLayerPotential3DKernel<ValueType>::evaluateAtPointPair(
+inline ValueType Laplace3dDoubleLayerPotentialKernel<ValueType>::evaluateAtPointPair(
         const arma::Col<CoordinateType>& testPoint,
-        const arma::Col<CoordinateType>& trialPoint) const
+        const arma::Col<CoordinateType>& trialPoint,
+        const arma::Col<CoordinateType>& trialNormal) const
 {
     const int coordCount = testPoint.n_rows;
 
-    CoordinateType sum = 0;
+    CoordinateType numeratorSum = 0., denominatorSum = 0.;
     for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex)
     {
-        CoordinateType diff = testPoint(coordIndex) - trialPoint(coordIndex);
-        sum += diff * diff;
+        CoordinateType diff = trialPoint(coordIndex) - testPoint(coordIndex);
+        denominatorSum += diff * diff;
+        numeratorSum += diff * trialNormal(coordIndex);
     }
-    CoordinateType distance = sqrt(sum);
-    return static_cast<ValueType>(1.0 / (4.0*M_PI)) / distance * exp(-m_waveNumber/distance);
+    CoordinateType distance = sqrt(denominatorSum);
+    return -numeratorSum / (static_cast<ValueType>(4. * M_PI) *
+                            distance * distance * distance);
 }
 
 template <typename ValueType>
-void DotSingleLayerPotential3DKernel<ValueType>::evaluateAtPointPairs(
+void Laplace3dDoubleLayerPotentialKernel<ValueType>::evaluateAtPointPairs(
         const GeometricalData<CoordinateType>& testGeomData,
         const GeometricalData<CoordinateType>& trialGeomData,
         arma::Cube<ValueType>& result) const
 {
     const arma::Mat<CoordinateType>& testPoints = testGeomData.globals;
     const arma::Mat<CoordinateType>& trialPoints = trialGeomData.globals;
+    const arma::Mat<CoordinateType>& trialNormals = trialGeomData.normals;
 
 #ifndef NDEBUG
-    if (testPoints.n_rows != worldDimension() ||
-            trialPoints.n_rows != worldDimension())
-        throw std::invalid_argument("SingleLayerPotential3DKernel::evaluateAtPointPairs(): "
+    const int worldDim = worldDimension();
+    if (testPoints.n_rows != worldDim || trialPoints.n_rows != worldDim)
+        throw std::invalid_argument("Laplace3dDoubleLayerPotentialKernel::evaluateAtPointPairs(): "
                                     "3D coordinates required");
     if (testPoints.n_cols != trialPoints.n_cols)
-        throw std::invalid_argument("SingleLayerPotential3DKernel::evaluateAtPointPairs(): "
+        throw std::invalid_argument("Laplace3dDoubleLayerPotentialKernel::evaluateAtPointPairs(): "
                                     "number of test and trial points must be equal");
+    assert(trialNormals.n_rows == worldDim);
+    assert(trialNormals.n_cols == trialPoints.n_cols);
 #endif
 
     const int pointCount = testPoints.n_cols;
     result.set_size(1, 1, pointCount);
     for (int i = 0; i < pointCount; ++i)
-        result(0, 0, i) = evaluateAtPointPair(testPoints.unsafe_col(i),
-                                              trialPoints.unsafe_col(i));
+        result(0, 0, i) = evaluateAtPointPair(
+                    testPoints.unsafe_col(i), trialPoints.unsafe_col(i),
+                    trialNormals.unsafe_col(i));
 }
 
 template <typename ValueType>
-void DotSingleLayerPotential3DKernel<ValueType>::evaluateOnGrid(
+void Laplace3dDoubleLayerPotentialKernel<ValueType>::evaluateOnGrid(
         const GeometricalData<CoordinateType>& testGeomData,
         const GeometricalData<CoordinateType>& trialGeomData,
         Array4D<ValueType>& result) const
 {
     const arma::Mat<CoordinateType>& testPoints = testGeomData.globals;
     const arma::Mat<CoordinateType>& trialPoints = trialGeomData.globals;
+    const arma::Mat<CoordinateType>& trialNormals = trialGeomData.normals;
 
 #ifndef NDEBUG
-    if (testPoints.n_rows != worldDimension() ||
-            trialPoints.n_rows != worldDimension())
-        throw std::invalid_argument("SingleLayerPotential3DKernel::evaluate(): "
+    const int worldDim = worldDimension();
+    if (testPoints.n_rows != worldDim || trialPoints.n_rows != worldDim)
+        throw std::invalid_argument("Laplace3dDoubleLayerPotentialKernel::evaluate(): "
                                     "3D coordinates required");
+    assert(trialNormals.n_rows == worldDim);
+    assert(trialNormals.n_cols == trialPoints.n_cols);
 #endif
 
     const int testPointCount = testPoints.n_cols;
@@ -103,20 +115,19 @@ void DotSingleLayerPotential3DKernel<ValueType>::evaluateOnGrid(
     result.set_size(1, testPointCount, 1, trialPointCount);
     for (int trialIndex = 0; trialIndex < trialPointCount; ++trialIndex)
         for (int testIndex = 0; testIndex < testPointCount; ++testIndex)
-            result(0, testIndex, 0, trialIndex) =
-                    evaluateAtPointPair(testPoints.unsafe_col(testIndex),
-                                        trialPoints.unsafe_col(trialIndex));
+            result(0, testIndex, 0, trialIndex) = evaluateAtPointPair(
+                        testPoints.unsafe_col(testIndex),
+                        trialPoints.unsafe_col(trialIndex),
+                        trialNormals.unsafe_col(trialIndex));
 }
 
 template<typename ValueType>
-std::pair<const char*,int> DotSingleLayerPotential3DKernel<ValueType>::evaluateClCode () const
+std::pair<const char*,int> Laplace3dDoubleLayerPotentialKernel<ValueType>::evaluateClCode () const
 {
-    return std::make_pair ("", 0);  // TODO
-
-  //    return std::make_pair (dot_single_layer_potential_3D_kernel_cl,
-  //			   dot_single_layer_potential_3D_kernel_cl_len);
+    return std::make_pair(laplace_3d_double_layer_potential_kernel_cl,
+                          laplace_3d_double_layer_potential_kernel_cl_len);
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_KERNEL(DotSingleLayerPotential3DKernel);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_KERNEL(Laplace3dDoubleLayerPotentialKernel);
 
 } // namespace Fiber

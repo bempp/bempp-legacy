@@ -57,7 +57,7 @@ public:
       \param[out] result
         dimensions: (worldDim, functionCount, pointCount)
     */
-    static void evaluateSurfaceCurls3D(const BasisData<ValueType>& basisData,
+    static void evaluateSurfaceCurls3d(const BasisData<ValueType>& basisData,
                                        const GeometricalData<CoordinateType>& geomData,
                                        arma::Cube<ValueType>& result) {
         const arma::Mat<CoordinateType>& n = geomData.normals;

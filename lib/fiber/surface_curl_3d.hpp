@@ -30,7 +30,7 @@
 namespace Fiber {
 
 template <typename CoordinateType>
-class SurfaceCurl3D : public Expression<CoordinateType>
+class SurfaceCurl3d : public Expression<CoordinateType>
 {
 public:    
     typedef typename Expression<CoordinateType>::ComplexType ComplexType;
@@ -53,14 +53,14 @@ private:
                                   const GeometricalData<CoordinateType>& geomData,
                                   arma::Cube<CoordinateType>& result) const {
         ScalarSpaceMapping<CoordinateType>::
-                evaluateSurfaceCurls3D(basisData, geomData, result);
+                evaluateSurfaceCurls3d(basisData, geomData, result);
     }
 
     virtual void evaluateImplComplex(const BasisData<ComplexType>& basisData,
                                      const GeometricalData<CoordinateType>& geomData,
                                      arma::Cube<ComplexType>& result) const {
         ScalarSpaceMapping<ComplexType>::
-                evaluateSurfaceCurls3D(basisData, geomData, result);
+                evaluateSurfaceCurls3d(basisData, geomData, result);
     }
 };
 

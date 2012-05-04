@@ -21,11 +21,11 @@
 #include "../type_template.hpp"
 #include "../check_arrays_are_close.hpp"
 
-#include "assembly/single_layer_potential_3d.hpp"
+#include "assembly/laplace_3d_single_layer_potential.hpp"
 #include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 #include "common/scalar_traits.hpp"
 #include "fiber/geometrical_data.hpp"
-#include "fiber/single_layer_potential_3d_kernel.hpp"
+#include "fiber/laplace_3d_single_layer_potential_kernel.hpp"
 #include "grid/grid.hpp"
 #include "grid/grid_factory.hpp"
 #include "grid/grid_view.hpp"
@@ -54,7 +54,7 @@ public:
     typedef typename ScalarTraits<RT>::RealType CT;
     typedef PiecewiseConstantScalarSpace<BFT> TestSpace;
     typedef PiecewiseLinearContinuousScalarSpace<BFT> TrialSpace;
-    typedef SingleLayerPotential3D<BFT, RT> Operator;
+    typedef Laplace3dSingleLayerPotential<BFT, RT> Operator;
     typedef StandardLocalAssemblerFactoryForOperatorsOnSurfaces<BFT, RT> AssemblerFactory;
     typedef Fiber::RawGridGeometry<CT> RawGridGeometry;
 

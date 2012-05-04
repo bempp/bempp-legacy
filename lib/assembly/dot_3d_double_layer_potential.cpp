@@ -18,22 +18,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
-#include "single_layer_potential_3d.hpp"
+#include "dot_3d_double_layer_potential.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType>
-SingleLayerPotential3D<BasisFunctionType, ResultType>::SingleLayerPotential3D(
+Dot3dDoubleLayerPotential<BasisFunctionType, ResultType>::Dot3dDoubleLayerPotential(
         const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace) :
+	const Space<BasisFunctionType>& trialSpace,
+	KernelType waveNumber) :
     Base(testSpace, trialSpace)
 {
+    m_kernel.setWaveNumber (waveNumber);
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(SingleLayerPotential3D);
-
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Dot3dDoubleLayerPotential);
 
 } // namespace Bempp

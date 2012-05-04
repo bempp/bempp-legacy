@@ -18,20 +18,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
-#include "hypersingular_operator_3d.hpp"
+#include "laplace_3d_adjoint_double_layer_potential.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType>
-HypersingularOperator3D<BasisFunctionType, ResultType>::HypersingularOperator3D(
-        const Space<BasisFunctionType>& testSpace, const Space<BasisFunctionType>& trialSpace) :
+Laplace3dAdjointDoubleLayerPotential<BasisFunctionType, ResultType>::
+Laplace3dAdjointDoubleLayerPotential(const Space<BasisFunctionType>& testSpace,
+                              const Space<BasisFunctionType>& trialSpace) :
     Base(testSpace, trialSpace)
 {
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(HypersingularOperator3D);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dAdjointDoubleLayerPotential);
+
 
 } // namespace Bempp

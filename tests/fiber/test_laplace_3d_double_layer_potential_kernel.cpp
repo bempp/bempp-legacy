@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "fiber/double_layer_potential_3d_kernel.hpp"
+#include "fiber/laplace_3d_double_layer_potential_kernel.hpp"
 #include "fiber/geometrical_data.hpp"
 #include "../type_template.hpp"
 #include "../check_arrays_are_close.hpp"
@@ -32,30 +32,30 @@
 
 // Tests
 
-BOOST_AUTO_TEST_SUITE(DoubleLayerPotential3DKernel)
+BOOST_AUTO_TEST_SUITE(Laplace3dDoubleLayerPotentialKernel)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(worldDimension_is_3, ValueType, kernel_types)
 {
-    Fiber::DoubleLayerPotential3DKernel<ValueType> op;
+    Fiber::Laplace3dDoubleLayerPotentialKernel<ValueType> op;
     BOOST_CHECK_EQUAL(op.worldDimension(), 3);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(domainDimension_is_1, ValueType, kernel_types)
 {
-    Fiber::DoubleLayerPotential3DKernel<ValueType> op;
+    Fiber::Laplace3dDoubleLayerPotentialKernel<ValueType> op;
     BOOST_CHECK_EQUAL(op.domainDimension(), 1);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(codomainDimension_is_1, ValueType, kernel_types)
 {
-    Fiber::DoubleLayerPotential3DKernel<ValueType> op;
+    Fiber::Laplace3dDoubleLayerPotentialKernel<ValueType> op;
     BOOST_CHECK_EQUAL(op.domainDimension(), 1);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(addGeometricalDependencies_works,
                               ValueType, kernel_types)
 {
-    Fiber::DoubleLayerPotential3DKernel<ValueType> op;
+    Fiber::Laplace3dDoubleLayerPotentialKernel<ValueType> op;
     int testGeomDeps = 1024, trialGeomDeps = 16; // random initial values
     op.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(addGeometricalDependencies_works,
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_x_axis,
                               ValueType, kernel_types)
 {
-    typedef Fiber::DoubleLayerPotential3DKernel<ValueType> Operator;
+    typedef Fiber::Laplace3dDoubleLayerPotentialKernel<ValueType> Operator;
     Operator op;
     Fiber::GeometricalData<typename Operator::CoordinateType> testGeomData, trialGeomData;
     const int worldDim = 3;
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_x_axis,
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_y_axis,
                               ValueType, kernel_types)
 {
-    typedef Fiber::DoubleLayerPotential3DKernel<ValueType> Operator;
+    typedef Fiber::Laplace3dDoubleLayerPotentialKernel<ValueType> Operator;
     Operator op;
     Fiber::GeometricalData<typename Operator::CoordinateType> testGeomData, trialGeomData;
     const int worldDim = 3;
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_y_axis,
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_evaluateAtPointPairs,
                               ValueType, kernel_types)
 {
-    typedef Fiber::DoubleLayerPotential3DKernel<ValueType> Operator;
+    typedef Fiber::Laplace3dDoubleLayerPotentialKernel<ValueType> Operator;
     Operator op;
 
     typedef Fiber::GeometricalData<typename Operator::CoordinateType> GeomData;
