@@ -91,7 +91,7 @@ inline int epetraSumIntoGlobalValues<float>(
     // Convert data from float into double (expected by Epetra)
     arma::Mat<double> doubleValues(values.n_rows, values.n_cols);
     std::copy(values.begin(), values.end(), doubleValues.begin());
-    epetraSumIntoGlobalValues<double>(
+    return epetraSumIntoGlobalValues<double>(
                 matrix, rowIndices, colIndices, doubleValues);
 }
 
@@ -111,7 +111,7 @@ inline int epetraSumIntoGlobalValues<std::complex<float> >(
     // this assert will fail)
     for (int i = 0; i < values.n_elem; ++i)
         doubleValues[i] = values[i].real();
-    epetraSumIntoGlobalValues<double>(
+    return epetraSumIntoGlobalValues<double>(
                 matrix, rowIndices, colIndices, doubleValues);
 }
 
@@ -129,7 +129,7 @@ inline int epetraSumIntoGlobalValues<std::complex<double> >(
     arma::Mat<double> doubleValues(values.n_rows, values.n_cols);
     for (int i = 0; i < values.n_elem; ++i)
         doubleValues[i] = values[i].real();
-    epetraSumIntoGlobalValues<double>(
+    return epetraSumIntoGlobalValues<double>(
                 matrix, rowIndices, colIndices, doubleValues);
 }
 
