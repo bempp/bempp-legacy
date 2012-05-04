@@ -36,6 +36,8 @@ class GeometryFactory
 public:
     typedef Bempp::Geometry Geometry;
 
+    virtual ~GeometryFactory() {}
+
     virtual std::auto_ptr<Geometry> make() const = 0;
 };
 
