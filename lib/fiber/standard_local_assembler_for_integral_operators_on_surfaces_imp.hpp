@@ -549,26 +549,6 @@ regularOrder(int elementIndex, ElementType elementType) const
         return options.order;
     else {
         // Order required for exact quadrature on affine elements with a constant kernel
-
-//        double h_x = se_x->getMeshSize();
-//        double h_y = se_y->getMeshSize();
-//        double distance_x2y = fabs( ( se_x->getMidPoint() -
-//                                      se_y->getMidPoint() ).norm()
-//                                    - .5*( h_x + h_y ) );
-
-//        double mesh_size = ( h_x > h_y ? h_x : h_y );
-
-//        distance_x2y /= mesh_size;
-
-//        // integration order chosen based on the proximity of the two superelements
-//        unsigned int order;
-
-//        if(      distance_x2y >  5.                       )	order = 3;
-//        else if( distance_x2y >  1. && distance_x2y <= 5. )	order = 4;
-//        else                                               	order = 5;
-
-
-
         int elementOrder = (elementType == TEST ?
                                 m_testBases[elementIndex]->order() :
                                 m_trialBases[elementIndex]->order());
