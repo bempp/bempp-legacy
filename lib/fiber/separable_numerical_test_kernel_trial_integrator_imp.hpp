@@ -122,13 +122,13 @@ integrate(
 {
     if (m_openClHandler.UseOpenCl())
     {
-      std::cout << "Using OpenCL" << std::endl;
+        // std::cout << "Using OpenCL" << std::endl;
         integrateCl (callVariant, elementIndicesA, elementIndexB, basisA, basisB,
 		     localDofIndexB, result);
     }
     else
     {
-      std::cout << "Not using OpenCL" << std::endl;
+        // std::cout << "Not using OpenCL" << std::endl;
         integrateCpu (callVariant, elementIndicesA, elementIndexB, basisA, basisB,
 		      localDofIndexB, result);
     }
