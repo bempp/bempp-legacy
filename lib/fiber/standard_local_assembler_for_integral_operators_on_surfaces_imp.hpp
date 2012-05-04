@@ -21,6 +21,9 @@
 // Keep IDEs happy
 #include "standard_local_assembler_for_integral_operators_on_surfaces.hpp"
 
+#include "nonseparable_numerical_test_kernel_trial_integrator.hpp"
+#include "separable_numerical_test_kernel_trial_integrator.hpp"
+
 #include <tbb/parallel_for.h>
 #include <tbb/task_scheduler_init.h>
 

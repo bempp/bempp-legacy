@@ -26,10 +26,9 @@
 #include "accuracy_options.hpp"
 #include "array_2d.hpp"
 #include "element_pair_topology.hpp"
-#include "nonseparable_numerical_test_kernel_trial_integrator.hpp"
 #include "numerical_quadrature.hpp"
 #include "parallelisation_options.hpp"
-#include "separable_numerical_test_kernel_trial_integrator.hpp"
+#include "test_kernel_trial_integrator.hpp"
 
 #include <boost/static_assert.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
