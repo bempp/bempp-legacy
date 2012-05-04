@@ -89,10 +89,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_x_axis,
     trialGeomData.normals(0, 1) = 1.;
     trialGeomData.normals(0, 2) = 1.;
 
-    Fiber::Array4D<ValueType> result;
+    Fiber::Array4d<ValueType> result;
     op.evaluateOnGrid(testGeomData, trialGeomData, result);
 
-    Fiber::Array4D<ValueType> expected(1, testPointCount, 1, trialPointCount);
+    Fiber::Array4d<ValueType> expected(1, testPointCount, 1, trialPointCount);
     for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
         for (int testPoint = 0; testPoint < testPointCount; ++testPoint) {
             typename Operator::CoordinateType diff =
@@ -130,10 +130,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_y_axis,
     trialGeomData.normals(1, 1) = 1.;
     trialGeomData.normals(1, 2) = 1.;
 
-    Fiber::Array4D<ValueType> result;
+    Fiber::Array4d<ValueType> result;
     op.evaluateOnGrid(testGeomData, trialGeomData, result);
 
-    Fiber::Array4D<ValueType> expected(1, testPointCount, 1, trialPointCount);
+    Fiber::Array4d<ValueType> expected(1, testPointCount, 1, trialPointCount);
     for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
         for (int testPoint = 0; testPoint < testPointCount; ++testPoint) {
             typename Operator::CoordinateType diff =
@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_evaluateAtPointPairs,
     trialGeomDataOnGrid.normals(1, 1) = 1.;
     trialGeomDataOnGrid.normals(1, 2) = 1.;
 
-    Fiber::Array4D<ValueType> resultOnGrid;
+    Fiber::Array4d<ValueType> resultOnGrid;
     op.evaluateOnGrid(testGeomDataOnGrid, trialGeomDataOnGrid, resultOnGrid);
 
     arma::Cube<ValueType> convertedResultOnGrid(1, 1, testPointCount * trialPointCount);

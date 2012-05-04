@@ -90,18 +90,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_double_layer_potential,
     trialGeomData.globals(0, 1) = 3.;
     trialGeomData.globals(0, 2) = 4.;
 
-    Fiber::Array4D<ValueType> adlpResult;
+    Fiber::Array4d<ValueType> adlpResult;
     adlpOp.evaluateOnGrid(testGeomData, trialGeomData, adlpResult);
 
     typedef Fiber::Laplace3dDoubleLayerPotentialKernel<ValueType> DLPOperator;
     DLPOperator dlpOp;
     std::swap(testGeomData, trialGeomData);
 
-    Fiber::Array4D<ValueType> dlpResult;
+    Fiber::Array4d<ValueType> dlpResult;
     dlpOp.evaluateOnGrid(testGeomData, trialGeomData, dlpResult);
 
     // swap test and trial point indexing
-    Fiber::Array4D<ValueType> reorderedDlpResult(dlpResult.extent(2),
+    Fiber::Array4d<ValueType> reorderedDlpResult(dlpResult.extent(2),
                                                  dlpResult.extent(3),
                                                  dlpResult.extent(0),
                                                  dlpResult.extent(1));
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_evaluateAtPointPairs,
     trialGeomDataOnGrid.globals(0, 1) = 3.;
     trialGeomDataOnGrid.globals(0, 2) = 4.;
 
-    Fiber::Array4D<ValueType> resultOnGrid;
+    Fiber::Array4d<ValueType> resultOnGrid;
     op.evaluateOnGrid(testGeomDataOnGrid, trialGeomDataOnGrid, resultOnGrid);
 
     arma::Cube<ValueType> convertedResultOnGrid(1, 1, testPointCount * trialPointCount);

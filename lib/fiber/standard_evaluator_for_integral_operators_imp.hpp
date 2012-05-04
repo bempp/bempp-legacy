@@ -124,7 +124,7 @@ ResultType, GeometryFactory>::evaluate(
     // Do things in chunks of 96 points -- in order to avoid creating
     // too large arrays of kernel values
     const int chunkSize = 96;
-    Fiber::Array4D<KernelType> kernelValues;
+    Fiber::Array4d<KernelType> kernelValues;
     Fiber::GeometricalData<CoordinateType> testGeomData;
     for (int start = 0; start < pointCount; start += chunkSize)
     {

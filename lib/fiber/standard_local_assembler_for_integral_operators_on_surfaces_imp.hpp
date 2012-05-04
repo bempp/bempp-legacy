@@ -264,7 +264,7 @@ KernelType, ResultType, GeometryFactory>::
 evaluateLocalWeakForms(
         const std::vector<int>& testElementIndices,
         const std::vector<int>& trialElementIndices,
-        Fiber::Array2D<arma::Mat<ResultType> >& result)
+        Fiber::Array2d<arma::Mat<ResultType> >& result)
 {
     typedef Fiber::Basis<BasisFunctionType> Basis;
 
@@ -276,7 +276,7 @@ evaluateLocalWeakForms(
     typedef boost::tuples::tuple<const Integrator*, const Basis*, const Basis*>
             QuadVariant;
     const QuadVariant CACHED(0, 0, 0);
-    Fiber::Array2D<QuadVariant> quadVariants(testElementCount, trialElementCount);
+    Fiber::Array2d<QuadVariant> quadVariants(testElementCount, trialElementCount);
 
     for (int trialIndex = 0; trialIndex < trialElementCount; ++trialIndex)
         for (int testIndex = 0; testIndex < testElementCount; ++testIndex) {

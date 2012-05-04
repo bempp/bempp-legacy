@@ -182,7 +182,7 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
         // Evaluate the full local weak form for each pair of test and trial
         // elements and then select the entries that we need.
 
-        Fiber::Array2D<arma::Mat<ResultType> > localResult;
+        Fiber::Array2d<arma::Mat<ResultType> > localResult;
         for (int nTerm = 0; nTerm < m_assemblers.size(); ++nTerm)
         {
             m_assemblers[nTerm]->evaluateLocalWeakForms(

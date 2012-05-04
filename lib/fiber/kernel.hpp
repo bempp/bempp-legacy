@@ -54,7 +54,7 @@ public:
     virtual void evaluateOnGrid(
             const GeometricalData<CoordinateType>& testGeomData,
             const GeometricalData<CoordinateType>& trialGeomData,
-            Array4D<ValueType>& result) const = 0;
+            Array4d<ValueType>& result) const = 0;
 
     /**
      * \brief Returns an OpenCL code snippet for kernel evaluation as a string.

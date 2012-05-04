@@ -84,7 +84,7 @@ public:
     virtual void evaluateLocalWeakForms(
             const std::vector<int>& testElementIndices,
             const std::vector<int>& trialElementIndices,
-            Fiber::Array2D<arma::Mat<ResultType> >& result) = 0;
+            Fiber::Array2d<arma::Mat<ResultType> >& result) = 0;
 
     /** \brief Assemble local weak forms.
 

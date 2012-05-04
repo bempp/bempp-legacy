@@ -99,8 +99,8 @@ check_arrays_are_close(const arma::Cube<ValueType>& left,
 
 template <typename ValueType>
 boost::test_tools::predicate_result
-check_arrays_are_close(const Fiber::Array4D<ValueType>& left,
-                       const Fiber::Array4D<ValueType>& right,
+check_arrays_are_close(const Fiber::Array4d<ValueType>& left,
+                       const Fiber::Array4d<ValueType>& right,
                        typename Fiber::ScalarTraits<ValueType>::RealType tolerance)
 {
     boost::test_tools::predicate_result result(true);
@@ -139,15 +139,15 @@ check_arrays_are_close(const Fiber::Array4D<ValueType>& left,
 
 template <typename ValueType>
 boost::test_tools::predicate_result
-check_arrays_are_close(const Fiber::Array2D<arma::Mat<ValueType> >& leftArrays,
-                       const Fiber::Array2D<arma::Mat<ValueType> >& rightArrays,
+check_arrays_are_close(const Fiber::Array2d<arma::Mat<ValueType> >& leftArrays,
+                       const Fiber::Array2d<arma::Mat<ValueType> >& rightArrays,
                        typename Fiber::ScalarTraits<ValueType>::RealType tolerance)
 {
     boost::test_tools::predicate_result result(true);
     if (leftArrays.extent(0) != rightArrays.extent(0) ||
             leftArrays.extent(1) != rightArrays.extent(1)) {
         result = false;
-        result.message() << "Size mismatch of Fiber::Array2D [("
+        result.message() << "Size mismatch of Fiber::Array2d [("
                          << leftArrays.extent(0) << ", "
                          << leftArrays.extent(1) << ") != ("
                          << rightArrays.extent(0) << ", "

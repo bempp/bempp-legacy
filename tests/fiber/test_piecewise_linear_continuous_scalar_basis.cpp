@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_all_dofs,
     Fiber::BasisData<ValueType> data;
     basis.evaluate(Fiber::DERIVATIVES, points, Fiber::ALL_DOFS, data);
 
-    Fiber::Array4D<ValueType> expected(1, // component count
+    Fiber::Array4d<ValueType> expected(1, // component count
                                        elementDim,
                                        vertexCount,
                                        pointCount);
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_and_derivatives_works_for_all_dofs
         BOOST_CHECK(check_arrays_are_close<ValueType>(data.values, expected, 1e-10));
     }
     {
-        Fiber::Array4D<ValueType> expected(1, // component count
+        Fiber::Array4d<ValueType> expected(1, // component count
                                            elementDim,
                                            vertexCount,
                                            pointCount);
@@ -271,7 +271,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_all_dofs,
     Fiber::BasisData<ValueType> data;
     basis.evaluate(Fiber::DERIVATIVES, points, Fiber::ALL_DOFS, data);
 
-    Fiber::Array4D<ValueType> expected(1, // component count
+    Fiber::Array4d<ValueType> expected(1, // component count
                                        elementDim,
                                        vertexCount,
                                        pointCount);
@@ -320,7 +320,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_and_derivatives_works_for_all_dofs
         BOOST_CHECK(check_arrays_are_close<ValueType>(data.values, expected, 1e-10));
     }
     {
-        Fiber::Array4D<ValueType> expected(1, // component count
+        Fiber::Array4d<ValueType> expected(1, // component count
                                            elementDim,
                                            vertexCount,
                                            pointCount);

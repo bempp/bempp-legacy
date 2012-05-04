@@ -95,7 +95,7 @@ template <typename ValueType>
 void Laplace3dAdjointDoubleLayerPotentialKernel<ValueType>::evaluateOnGrid(
         const GeometricalData<CoordinateType>& testGeomData,
         const GeometricalData<CoordinateType>& trialGeomData,
-        Array4D<ValueType>& result) const
+        Array4d<ValueType>& result) const
 {
     const arma::Mat<CoordinateType>& testPoints = testGeomData.globals;
     const arma::Mat<CoordinateType>& trialPoints = trialGeomData.globals;

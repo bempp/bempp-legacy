@@ -195,7 +195,7 @@ integrateCpu(
     std::auto_ptr<Geometry> geometryB(m_geometryFactory.make());
 
     arma::Cube<BasisFunctionType> testValues, trialValues;
-    Array4D<KernelType> kernelValues(kernelRowCount, testPointCount,
+    Array4d<KernelType> kernelValues(kernelRowCount, testPointCount,
                                     kernelColCount, trialPointCount);
 
     result.set_size(testDofCount, trialDofCount, elementACount);
@@ -672,7 +672,7 @@ integrateCpu(
     std::auto_ptr<Geometry> trialGeometry(m_geometryFactory.make());
 
     arma::Cube<BasisFunctionType> testValues, trialValues;
-    Array4D<KernelType> kernelValues(kernelRowCount, testPointCount,
+    Array4d<KernelType> kernelValues(kernelRowCount, testPointCount,
                                     kernelColCount, trialPointCount);
 
     result.set_size(testDofCount, trialDofCount, geometryPairCount);

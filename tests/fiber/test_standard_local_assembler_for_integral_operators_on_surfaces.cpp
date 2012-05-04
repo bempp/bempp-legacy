@@ -154,11 +154,11 @@ both_variants_of_evaluateLocalWeakForms_agree_for_callVariant_TEST_TRIAL_and_cac
     for (int i = 0; i < trialIndexCount; ++i)
         trialIndices[i] = i;
 
-    Fiber::Array2D<arma::Mat<ResultType> > resultVariant2;
+    Fiber::Array2d<arma::Mat<ResultType> > resultVariant2;
     mgr.assembler->evaluateLocalWeakForms(testIndices, trialIndices, resultVariant2);
 
     // Gather successive columns
-    Fiber::Array2D<arma::Mat<ResultType> > resultVariant1(
+    Fiber::Array2d<arma::Mat<ResultType> > resultVariant1(
                 testIndexCount, trialIndexCount);
     std::vector<arma::Mat<ResultType> > colResult;
     for (int trialI = 0; trialI < trialIndexCount; ++trialI)
@@ -208,11 +208,11 @@ both_variants_of_evaluateLocalWeakForms_agree_for_callVariant_TRIAL_TEST_and_cac
     for (int i = 0; i < trialIndexCount; ++i)
         trialIndices[i] = i;
 
-    Fiber::Array2D<arma::Mat<ResultType> > resultVariant2;
+    Fiber::Array2d<arma::Mat<ResultType> > resultVariant2;
     mgr.assembler->evaluateLocalWeakForms(testIndices, trialIndices, resultVariant2);
 
     // Gather successive rows
-    Fiber::Array2D<arma::Mat<ResultType> > resultVariant1(
+    Fiber::Array2d<arma::Mat<ResultType> > resultVariant1(
                 testIndexCount, trialIndexCount);
     std::vector<arma::Mat<ResultType> > rowResult;
     for (int testI = 0; testI < testIndexCount; ++testI)
@@ -372,8 +372,8 @@ evaluateLocalWeakForms_with_and_without_singular_integral_caching_gives_same_res
     for (int i = 0; i < trialIndexCount; ++i)
         trialIndices[i] = i;
 
-    Fiber::Array2D<arma::Mat<ResultType> > resultWithCaching;
-    Fiber::Array2D<arma::Mat<ResultType> > resultWithoutCaching;
+    Fiber::Array2d<arma::Mat<ResultType> > resultWithCaching;
+    Fiber::Array2d<arma::Mat<ResultType> > resultWithoutCaching;
 
     {
         StandardLocalAssemblerForIntegralOperatorsOnSurfacesManager<

@@ -30,14 +30,14 @@ namespace Fiber {
 Bound checking can optionally be activated by defining the symbol
 FIBER_CHECK_ARRAY_BOUNDS. */
 template <typename T>
-class Array2D
+class Array2d
 {
 public:
-    Array2D();
-    Array2D(int extent0, int extent1);
-    Array2D(int extent0, int extent1, T* data);
+    Array2d();
+    Array2d(int extent0, int extent1);
+    Array2d(int extent0, int extent1, T* data);
 
-    ~Array2D();
+    ~Array2d();
 
     T& operator()(int index0, int index1);
     const T& operator()(int index0, int index1) const;
@@ -62,8 +62,8 @@ private:
 
 private:
     // Disable copy constructor and assignment operator
-    Array2D(const Array2D& rhs);
-    Array2D& operator=(const Array2D& rhs);
+    Array2d(const Array2d& rhs);
+    Array2d& operator=(const Array2d& rhs);
 
 private:
     int m_extents[2];
