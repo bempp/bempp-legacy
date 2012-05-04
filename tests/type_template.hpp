@@ -21,10 +21,53 @@
 #ifndef bempp_type_template_hpp
 #define bempp_type_template_hpp
 
+#include "../common/config_data_types.hpp"
+
 #include <boost/mpl/list.hpp>
 #include <complex>
 
+#ifdef ENABLE_SINGLE_PRECISION
+#  ifdef ENABLE_DOUBLE_PRECISION
 typedef boost::mpl::list<float, double, std::complex<float>, std::complex<double> >
 numeric_types;
+typedef boost::mpl::list<float, double>
+real_numeric_types;
+#  else
+typedef boost::mpl::list<float, std::complex<float> >
+numeric_types;
+typedef boost::mpl::list<float>
+real_numeric_types;
+#  endif
+#else
+#  ifdef ENABLE_DOUBLE_PRECISION
+typedef boost::mpl::list<double, std::complex<double> >
+numeric_types;
+typedef boost::mpl::list<double>
+real_numeric_types;
+#  else
+typedef boost::mpl::list<>
+numeric_types;
+typedef boost::mpl::list<>
+real_numeric_types;
+#  endif
+#endif
+
+#ifdef ENABLE_COMPLEX_BASIS_FUNCTIONS
+typedef numeric_types basis_function_types;
+#else
+typedef real_numeric_types basis_function_types;
+#endif
+
+#ifdef ENABLE_COMPLEX_KERNELS
+typedef numeric_types kernel_types;
+#else
+typedef real_numeric_types kernel_types;
+#endif
+
+#if defined(ENABLE_COMPLEX_KERNELS) || defined(ENABLE_COMPLEX_BASIS_FUNCTIONS)
+typedef numeric_types result_types;
+#else
+typedef real_numeric_types result_types;
+#endif
 
 #endif

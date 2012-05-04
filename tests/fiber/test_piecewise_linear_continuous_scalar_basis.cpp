@@ -34,20 +34,20 @@
 
 BOOST_AUTO_TEST_SUITE(PiecewiseLinearContinuousScalarBasis_triangle)
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(size_is_3, ValueType, numeric_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(size_is_3, ValueType, basis_function_types)
 {
     Fiber::PiecewiseLinearContinuousScalarBasis<3, ValueType> basis;
     BOOST_CHECK_EQUAL(basis.size(), 3);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(order_is_1, ValueType, numeric_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(order_is_1, ValueType, basis_function_types)
 {
     Fiber::PiecewiseLinearContinuousScalarBasis<3, ValueType> basis;
     BOOST_CHECK_EQUAL(basis.order(), 1);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs,
-                              ValueType, numeric_types)
+                              ValueType, basis_function_types)
 {
     const int vertexCount = 3;
     const int elementDim = 2;
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs,
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_second_dof,
-                              ValueType, numeric_types)
+                              ValueType, basis_function_types)
 {
     const int vertexCount = 3;
     const int elementDim = 2;
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_second_dof,
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_all_dofs,
-                              ValueType, numeric_types)
+                              ValueType, basis_function_types)
 {
     const int vertexCount = 3;
     const int elementDim = 2;
@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_all_dofs,
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_and_derivatives_works_for_all_dofs,
-                              ValueType, numeric_types)
+                              ValueType, basis_function_types)
 {
     const int vertexCount = 3;
     const int elementDim = 2;
@@ -185,20 +185,20 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(PiecewiseLinearContinuousScalarBasis_square)
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(size_is_4, ValueType, numeric_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(size_is_4, ValueType, basis_function_types)
 {
     Fiber::PiecewiseLinearContinuousScalarBasis<4, ValueType> basis;
     BOOST_CHECK_EQUAL(basis.size(), 4);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(order_is_1, ValueType, numeric_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(order_is_1, ValueType, basis_function_types)
 {
     Fiber::PiecewiseLinearContinuousScalarBasis<4, ValueType> basis;
     BOOST_CHECK_EQUAL(basis.order(), 1);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs,
-                              ValueType, numeric_types)
+                              ValueType, basis_function_types)
 {
     const int vertexCount = 4;
     const int elementDim = 2;
@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs,
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_second_dof,
-                              ValueType, numeric_types)
+                              ValueType, basis_function_types)
 {
     const int vertexCount = 4;
     const int elementDim = 2;
@@ -254,7 +254,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_second_dof,
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_all_dofs,
-                              ValueType, numeric_types)
+                              ValueType, basis_function_types)
 {
     const int vertexCount = 4;
     const int elementDim = 2;
@@ -291,7 +291,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_all_dofs,
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_and_derivatives_works_for_all_dofs,
-                              ValueType, numeric_types)
+                              ValueType, basis_function_types)
 {
     const int vertexCount = 4;
     const int elementDim = 2;

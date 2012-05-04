@@ -35,26 +35,26 @@
 
 BOOST_AUTO_TEST_SUITE(AdjointDoubleLayerPotential3DKernel)
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(worldDimension_is_3, ValueType, numeric_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(worldDimension_is_3, ValueType, kernel_types)
 {
     Fiber::AdjointDoubleLayerPotential3DKernel<ValueType> op;
     BOOST_CHECK_EQUAL(op.worldDimension(), 3);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(domainDimension_is_1, ValueType, numeric_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(domainDimension_is_1, ValueType, kernel_types)
 {
     Fiber::AdjointDoubleLayerPotential3DKernel<ValueType> op;
     BOOST_CHECK_EQUAL(op.domainDimension(), 1);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(codomainDimension_is_1, ValueType, numeric_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(codomainDimension_is_1, ValueType, kernel_types)
 {
     Fiber::AdjointDoubleLayerPotential3DKernel<ValueType> op;
     BOOST_CHECK_EQUAL(op.domainDimension(), 1);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(addGeometricalDependencies_works,
-                              ValueType, numeric_types)
+                              ValueType, kernel_types)
 {
     Fiber::AdjointDoubleLayerPotential3DKernel<ValueType> op;
     int testGeomDeps = 1024, trialGeomDeps = 16; // random initial values
@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(addGeometricalDependencies_works,
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_double_layer_potential,
-                              ValueType, numeric_types)
+                              ValueType, kernel_types)
 {
     // Check that DLP(x, y) = ADLP(y, x)
 
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_double_layer_potential,
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_evaluateAtPointPairs,
-                              ValueType, numeric_types)
+                              ValueType, kernel_types)
 {
     typedef Fiber::AdjointDoubleLayerPotential3DKernel<ValueType> Operator;
     Operator op;

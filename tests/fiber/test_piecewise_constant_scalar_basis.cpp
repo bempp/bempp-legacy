@@ -31,20 +31,20 @@
 
 BOOST_AUTO_TEST_SUITE(PiecewiseConstantScalarBasis)
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(size_is_1, ValueType, numeric_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(size_is_1, ValueType, basis_function_types)
 {
     Fiber::PiecewiseConstantScalarBasis<ValueType> basis;
     BOOST_CHECK_EQUAL(basis.size(), 1);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(order_is_0, ValueType, numeric_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(order_is_0, ValueType, basis_function_types)
 {
     Fiber::PiecewiseConstantScalarBasis<ValueType> basis;
     BOOST_CHECK_EQUAL(basis.order(), 0);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs,
-                              ValueType, numeric_types)
+                              ValueType, basis_function_types)
 {
     typedef Fiber::PiecewiseConstantScalarBasis<ValueType> Basis;
     Basis basis;
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs,
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_one_dof,
-                              ValueType, numeric_types)
+                              ValueType, basis_function_types)
 {
     typedef Fiber::PiecewiseConstantScalarBasis<ValueType> Basis;
     Basis basis;
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_one_dof,
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_all_dofs,
-                              ValueType, numeric_types)
+                              ValueType, basis_function_types)
 {
     typedef Fiber::PiecewiseConstantScalarBasis<ValueType> Basis;
     Basis basis;
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_all_dofs,
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_one_dof,
-                              ValueType, numeric_types)
+                              ValueType, basis_function_types)
 {
     typedef Fiber::PiecewiseConstantScalarBasis<ValueType> Basis;
     Basis basis;
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_one_dof,
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_and_derivatives_works_for_all_dofs,
-                              ValueType, numeric_types)
+                              ValueType, basis_function_types)
 {
     typedef Fiber::PiecewiseConstantScalarBasis<ValueType> Basis;
     Basis basis;

@@ -34,26 +34,26 @@
 
 BOOST_AUTO_TEST_SUITE(DoubleLayerPotential3DKernel)
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(worldDimension_is_3, ValueType, numeric_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(worldDimension_is_3, ValueType, kernel_types)
 {
     Fiber::DoubleLayerPotential3DKernel<ValueType> op;
     BOOST_CHECK_EQUAL(op.worldDimension(), 3);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(domainDimension_is_1, ValueType, numeric_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(domainDimension_is_1, ValueType, kernel_types)
 {
     Fiber::DoubleLayerPotential3DKernel<ValueType> op;
     BOOST_CHECK_EQUAL(op.domainDimension(), 1);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(codomainDimension_is_1, ValueType, numeric_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(codomainDimension_is_1, ValueType, kernel_types)
 {
     Fiber::DoubleLayerPotential3DKernel<ValueType> op;
     BOOST_CHECK_EQUAL(op.domainDimension(), 1);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(addGeometricalDependencies_works,
-                              ValueType, numeric_types)
+                              ValueType, kernel_types)
 {
     Fiber::DoubleLayerPotential3DKernel<ValueType> op;
     int testGeomDeps = 1024, trialGeomDeps = 16; // random initial values
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(addGeometricalDependencies_works,
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_x_axis,
-                              ValueType, numeric_types)
+                              ValueType, kernel_types)
 {
     typedef Fiber::DoubleLayerPotential3DKernel<ValueType> Operator;
     Operator op;
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_x_axis,
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_y_axis,
-                              ValueType, numeric_types)
+                              ValueType, kernel_types)
 {
     typedef Fiber::DoubleLayerPotential3DKernel<ValueType> Operator;
     Operator op;
@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_y_axis,
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_evaluateAtPointPairs,
-                              ValueType, numeric_types)
+                              ValueType, kernel_types)
 {
     typedef Fiber::DoubleLayerPotential3DKernel<ValueType> Operator;
     Operator op;
