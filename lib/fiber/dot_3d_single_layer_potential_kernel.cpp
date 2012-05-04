@@ -53,7 +53,7 @@ inline ValueType Dot3dSingleLayerPotentialKernel<ValueType>::evaluateAtPointPair
         sum += diff * diff;
     }
     CoordinateType distance = sqrt(sum);
-    return static_cast<ValueType>(1.0 / (4.0*M_PI)) / distance * exp(-m_waveNumber/distance);
+    return static_cast<ValueType>(1.0 / (4.0*M_PI)) / distance * exp(-m_waveNumber*distance);
 }
 
 template <typename ValueType>
