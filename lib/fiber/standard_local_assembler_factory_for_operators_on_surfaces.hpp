@@ -88,6 +88,7 @@ private:
             const Kernel<CoordinateType>& kernel,
             const Expression<CoordinateType>& trialExpression,
             const OpenClHandler<CoordinateType, int>& openClHandler,
+            const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const {
         typedef CoordinateType KernelType;
         typedef StandardLocalAssemblerForIntegralOperatorsOnSurfaces<
@@ -98,7 +99,8 @@ private:
                         geometryFactory, rawGeometry,
                         testBases, trialBases,
                         testExpression, kernel, trialExpression,
-                        openClHandler, cacheSingularIntegrals,
+                        openClHandler, parallelisationOptions,
+                        cacheSingularIntegrals,
                         this->accuracyOptions()));
     }
 
@@ -186,6 +188,7 @@ private:
             const Kernel<ResultType>& kernel,
             const Expression<CoordinateType>& trialExpression,
             const OpenClHandler<CoordinateType, int>& openClHandler,
+            const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const {
         typedef ResultType KernelType;
         typedef StandardLocalAssemblerForIntegralOperatorsOnSurfaces<
@@ -196,7 +199,8 @@ private:
                         geometryFactory, rawGeometry,
                         testBases, trialBases,
                         testExpression, kernel, trialExpression,
-                        openClHandler, cacheSingularIntegrals,
+                        openClHandler, parallelisationOptions,
+                        cacheSingularIntegrals,
                         this->accuracyOptions()));
     }
 

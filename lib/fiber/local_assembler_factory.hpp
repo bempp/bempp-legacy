@@ -30,6 +30,7 @@
 
 namespace Fiber
 {
+class ParallelisationOptions;
 template <typename CoordinateType, typename IndexType> class OpenClHandler;
 
 template <typename ValueType> class Basis;
@@ -63,11 +64,12 @@ public:
             const Kernel<CoordinateType>& kernel,
             const Expression<CoordinateType>& trialExpression,
             const OpenClHandler<CoordinateType, int>& openClHandler,
+            const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const {
         return this->makeAssemblerForIntegralOperatorsImplRealKernel(
                     geometryFactory, rawGeometry, testBases, trialBases,
                     testExpression, kernel, trialExpression, openClHandler,
-                    cacheSingularIntegrals);
+                    parallelisationOptions, cacheSingularIntegrals);
     }
 
     /** \brief Allocate a Galerkin-mode local assembler for the identity operator. */
@@ -124,6 +126,7 @@ private:
             const Kernel<CoordinateType>& kernel, // !
             const Expression<CoordinateType>& trialExpression,
             const OpenClHandler<CoordinateType, int>& openClHandler,
+            const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const = 0;
 
     virtual std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >
@@ -172,11 +175,12 @@ public:
             const Kernel<ResultType>& kernel,
             const Expression<CoordinateType>& trialExpression,
             const OpenClHandler<CoordinateType, int>& openClHandler,
+            const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const {
         return this->makeAssemblerForIntegralOperatorsImplComplexKernel(
                     geometryFactory, rawGeometry, testBases, trialBases,
                     testExpression, kernel, trialExpression, openClHandler,
-                    cacheSingularIntegrals);
+                    parallelisationOptions, cacheSingularIntegrals);
     }
 
     /** \brief Allocate a local assembler for calculations of the projections
@@ -222,6 +226,7 @@ private:
             const Kernel<ResultType>& kernel, // !
             const Expression<CoordinateType>& trialExpression,
             const OpenClHandler<CoordinateType, int>& openClHandler,
+            const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const = 0;
 
     virtual std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >

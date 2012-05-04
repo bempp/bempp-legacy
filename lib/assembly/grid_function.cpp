@@ -380,7 +380,10 @@ GridFunction<BasisFunctionType, ResultType>::calculateProjections(
             space.shapeFunctionValueExpression();
 
     // Now create the assembler
-    Fiber::OpenClHandler<CoordinateType, int> openClHandler(options.openClOptions());
+    const ParallelisationOptions& parallelOptions =
+            options.parallelisationOptions();
+    Fiber::OpenClHandler<CoordinateType, int> openClHandler(
+                parallelOptions.openClOptions());
     openClHandler.pushGeometry (rawGeometry.vertices(),
                                 rawGeometry.elementCornerIndices());
 

@@ -151,13 +151,14 @@ makeAssembler(
         const std::vector<const Fiber::Basis<BasisFunctionType>*>& testBases,
         const std::vector<const Fiber::Basis<BasisFunctionType>*>& trialBases,
         const Fiber::OpenClHandler<CoordinateType, int>& openClHandler,
+        const ParallelisationOptions& parallelisationOptions,
         bool cacheSingularIntegrals) const
 {
     return assemblerFactory.makeAssemblerForIntegralOperators(
                 geometryFactory, rawGeometry,
                 testBases, trialBases,
                 testExpression(), kernel(), trialExpression(),
-                openClHandler, cacheSingularIntegrals);
+                openClHandler, parallelisationOptions, cacheSingularIntegrals);
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
@@ -203,7 +204,10 @@ assembleWeakForm(
     getAllBases(trialSpace, trialBases);
 
     // Now create the assembler
-    Fiber::OpenClHandler<CoordinateType,int> openClHandler(options.openClOptions());
+    const ParallelisationOptions& parallelOptions =
+            options.parallelisationOptions();
+    Fiber::OpenClHandler<CoordinateType,int> openClHandler(
+                parallelOptions.openClOptions());
     if (openClHandler.UseOpenCl())
         openClHandler.pushGeometry (rawGeometry.vertices(),
                                     rawGeometry.elementCornerIndices());
@@ -215,7 +219,8 @@ assembleWeakForm(
             makeAssembler(factory,
                           *geometryFactory, rawGeometry,
                           testBases, trialBases,
-                          openClHandler, cacheSingularIntegrals);
+                          openClHandler, parallelOptions,
+                          cacheSingularIntegrals);
 
     return assembleWeakFormInternal(*assembler, options);
 }
@@ -284,12 +289,14 @@ assembleWeakFormInDenseMode(
     typedef DenseWeakFormAssemblerLoopBody<BasisFunctionType, ResultType> Body;
     typename Body::MutexType mutex;
 
+    const ParallelisationOptions& parallelOptions =
+            options.parallelisationOptions();
     int maxThreadCount = 1;
-    if (options.parallelism() == AssemblyOptions::TBB) {
-        if (options.maxThreadCount() == AssemblyOptions::AUTO)
+    if (parallelOptions.mode() == ParallelisationOptions::TBB) {
+        if (parallelOptions.maxThreadCount() == ParallelisationOptions::AUTO)
             maxThreadCount = tbb::task_scheduler_init::automatic;
         else
-            maxThreadCount = options.maxThreadCount();
+            maxThreadCount = parallelOptions.maxThreadCount();
     }
     tbb::task_scheduler_init scheduler(maxThreadCount);
     tbb::parallel_for(tbb::blocked_range<size_t>(0, elementCount),

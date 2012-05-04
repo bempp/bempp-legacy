@@ -60,6 +60,7 @@ public:
             const Kernel<KernelType>& kernel,
             const Expression<CoordinateType>& trialExpression,
             const OpenClHandler<CoordinateType, int>& openClHandler,
+            const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals,
             const AccuracyOptions& accuracyOptions);
     virtual ~StandardLocalAssemblerForIntegralOperatorsOnSurfaces();
@@ -116,6 +117,7 @@ private:
     const Kernel<KernelType>& m_kernel;
     const Expression<CoordinateType>& m_trialExpression;
     const OpenClHandler<CoordinateType, int>& m_openClHandler;
+    const ParallelisationOptions& m_parallelisationOptions;
     const AccuracyOptions& m_accuracyOptions;
 
     IntegratorMap m_TestKernelTrialIntegrators;

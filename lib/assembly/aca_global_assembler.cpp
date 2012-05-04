@@ -176,8 +176,8 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
     std::cout << "Test cluster count: " << testClusterTree.getncl()
               << "\nTrial cluster count: " << trialClusterTree.getncl()
               << std::endl;
-//    std::cout << "o2pTest:\n" << o2pTestDofs << std::endl;
-//    std::cout << "p2oTest:\n" << p2oTestDofs << std::endl;
+    //    std::cout << "o2pTest:\n" << o2pTestDofs << std::endl;
+    //    std::cout << "p2oTest:\n" << p2oTestDofs << std::endl;
 #endif
 
     typedef bemblcluster<AhmedDofType, AhmedDofType> DoubleCluster;
@@ -203,9 +203,9 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
     boost::shared_array<AhmedMblock*> blocks =
             allocateAhmedMblockArray<ResultType>(doubleClusterTree.get());
 
-//    matgen_sqntl(helper, doubleClusterTree.get(), doubleClusterTree.get(),
-//                 acaOptions.recompress, acaOptions.eps,
-//                 acaOptions.maximumRank, blocks.get());
+    //    matgen_sqntl(helper, doubleClusterTree.get(), doubleClusterTree.get(),
+    //                 acaOptions.recompress, acaOptions.eps,
+    //                 acaOptions.maximumRank, blocks.get());
 
     matgen_omp(helper, blockCount, doubleClusterTree.get(),
                acaOptions.eps, acaOptions.maximumRank, blocks.get());
@@ -213,13 +213,15 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
 //    AhmedLeafClusterArray leafClusters(doubleClusterTree.get());
 //    const size_t leafClusterCount = leafClusters.size();
 
+//    const ParallelisationOptions& parallelOptions =
+//            options.parallelisationOptions();
 //    int maxThreadCount = 1;
-//    if (options.parallelism() == AssemblyOptions::TBB)
+//    if (parallelOptions.mode() == ParallelisationOptions::TBB)
 //    {
-//        if (options.maxThreadCount() == AssemblyOptions::AUTO)
+//        if (parallelOptions.maxThreadCount() == ParallelisationOptions::AUTO)
 //            maxThreadCount = tbb::task_scheduler_init::automatic;
 //        else
-//            maxThreadCount = options.maxThreadCount();
+//            maxThreadCount = parallelOptions.maxThreadCount();
 //    }
 //    tbb::task_scheduler_init scheduler(maxThreadCount);
 //    tbb::atomic<size_t> done;

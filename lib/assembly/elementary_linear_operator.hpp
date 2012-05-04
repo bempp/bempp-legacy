@@ -68,6 +68,7 @@ public:
             const std::vector<const Fiber::Basis<BasisFunctionType>*>& testBases,
             const std::vector<const Fiber::Basis<BasisFunctionType>*>& trialBases,
             const Fiber::OpenClHandler<CoordinateType, int>& openClHandler,
+            const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const = 0;
 
     /** \brief Assemble the operator's weak form using a specified local assembler.

@@ -197,14 +197,16 @@ assembleWeakFormInAcaMode(
     getAllBases(trialSpace, trialBases);
 
     // REFACT This will disappear in the constructor of LocalAssemblerFactory
-    Fiber::OpenClHandler<CoordinateType, int> openClHandler(options.openClOptions());
+    const ParallelisationOptions& parallelOptions =
+            options.parallelisationOptions();
+    Fiber::OpenClHandler<CoordinateType, int> openClHandler(
+                parallelOptions.openClOptions());
 
     // REFACT This is unfortunately going to stay
     bool cacheSingularIntegrals =
             (options.singularIntegralCaching() == AssemblyOptions::YES ||
              (options.singularIntegralCaching() == AssemblyOptions::AUTO &&
-              options.parallelism() == AssemblyOptions::OPEN_CL));
-
+              parallelOptions.mode() == ParallelisationOptions::OPEN_CL));
 
     // Construct local assemblers. Immediately assemble sparse terms in sparse
     // mode. Populate a vector of dense terms for subsequent ACA-mode assembly.
@@ -223,7 +225,7 @@ assembleWeakFormInAcaMode(
                     factory,
                     *geometryFactory, rawGeometry,
                     testBases, trialBases,
-                    openClHandler, cacheSingularIntegrals);
+                    openClHandler, parallelOptions, cacheSingularIntegrals);
 
         if (term->supportsRepresentation(AssemblyOptions::SPARSE)) {
             std::auto_ptr<DiscreteLinOp> discreteTerm =

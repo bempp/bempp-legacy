@@ -22,6 +22,7 @@
 #include "standard_local_assembler_for_integral_operators_on_surfaces.hpp"
 
 #include "accuracy_options.hpp"
+#include "parallelisation_options.hpp"
 
 #include <tbb/parallel_for.h>
 #include <tbb/task_scheduler_init.h>
@@ -91,6 +92,7 @@ StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
         const Kernel<KernelType>& kernel,
         const Expression<CoordinateType>& trialExpression,
         const OpenClHandler<CoordinateType, int>& openClHandler,
+        const ParallelisationOptions& parallelisationOptions,
         bool cacheSingularIntegrals,
         const AccuracyOptions& accuracyOptions) :
     m_geometryFactory(geometryFactory),
@@ -101,6 +103,7 @@ StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
     m_kernel(kernel),
     m_trialExpression(trialExpression),
     m_openClHandler(openClHandler),
+    m_parallelisationOptions(parallelisationOptions),
     m_accuracyOptions(accuracyOptions)
 {
     if (rawGeometry.vertices().n_rows != 3)
@@ -476,10 +479,14 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
         arma::Cube<ResultType> localResult(activeTestBasis.size(),
                                           activeTrialBasis.size(),
                                           activeElementPairs.size());
-        //        activeIntegrator.integrate(activeElementPairs, activeTestBasis,
-        //                                   activeTrialBasis, localResult);
+        // Old serial version
+        // activeIntegrator.integrate(activeElementPairs, activeTestBasis,
+        //                            activeTrialBasis, localResult);
 
-        //        tbb::task_scheduler_init scheduler(maxThreadCount);
+        const int maxThreadCount =
+                m_parallelisationOptions.mode() == ParallelisationOptions::TBB ?
+                    m_parallelisationOptions.maxThreadCount() : 1;
+        tbb::task_scheduler_init scheduler(maxThreadCount);
         typedef SingularIntegralCalculatorLoopBody<
                 BasisFunctionType, KernelType, ResultType> Body;
         tbb::parallel_for(tbb::blocked_range<size_t>(0, activeElementPairs.size()),
@@ -487,8 +494,6 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
                                activeElementPairs, activeTestBasis, activeTrialBasis,
                                localResult));
 
-        // Distribute the just calculated integrals into the result array
-        // that will be returned to caller
         {
             ElementIndexPairIterator pairIt = elementIndexPairs.begin();
             QuadVariantIterator qvIt = quadVariants.begin();
@@ -547,6 +552,26 @@ regularOrder(int elementIndex, ElementType elementType) const
         return options.order;
     else {
         // Order required for exact quadrature on affine elements with a constant kernel
+
+//        double h_x = se_x->getMeshSize();
+//        double h_y = se_y->getMeshSize();
+//        double distance_x2y = fabs( ( se_x->getMidPoint() -
+//                                      se_y->getMidPoint() ).norm()
+//                                    - .5*( h_x + h_y ) );
+
+//        double mesh_size = ( h_x > h_y ? h_x : h_y );
+
+//        distance_x2y /= mesh_size;
+
+//        // integration order chosen based on the proximity of the two superelements
+//        unsigned int order;
+
+//        if(      distance_x2y >  5.                       )	order = 3;
+//        else if( distance_x2y >  1. && distance_x2y <= 5. )	order = 4;
+//        else                                               	order = 5;
+
+
+
         int elementOrder = (elementType == TEST ?
                                 m_testBases[elementIndex]->order() :
                                 m_trialBases[elementIndex]->order());
