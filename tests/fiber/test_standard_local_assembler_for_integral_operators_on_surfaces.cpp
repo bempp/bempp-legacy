@@ -127,7 +127,7 @@ public:
     std::auto_ptr<GeometryFactory> geometryFactory;
     std::auto_ptr<RawGridGeometry> rawGeometry;
     std::vector<const Fiber::Basis<BFT>*> testBases, trialBases;
-    Fiber::OpenClHandler<CT, int> openClHandler;
+    Fiber::OpenClHandler openClHandler;
 
     std::auto_ptr<typename Operator::LocalAssembler> assembler;
 };

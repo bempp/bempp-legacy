@@ -150,7 +150,7 @@ makeAssembler(
         const Fiber::RawGridGeometry<CoordinateType>& rawGeometry,
         const std::vector<const Fiber::Basis<BasisFunctionType>*>& testBases,
         const std::vector<const Fiber::Basis<BasisFunctionType>*>& trialBases,
-        const Fiber::OpenClHandler<CoordinateType, int>& openClHandler,
+        const Fiber::OpenClHandler& openClHandler,
         const ParallelisationOptions& parallelisationOptions,
         bool cacheSingularIntegrals) const
 {
@@ -206,8 +206,7 @@ assembleWeakForm(
     // Now create the assembler
     const ParallelisationOptions& parallelOptions =
             options.parallelisationOptions();
-    Fiber::OpenClHandler<CoordinateType,int> openClHandler(
-                parallelOptions.openClOptions());
+    Fiber::OpenClHandler openClHandler(parallelOptions.openClOptions());
     if (openClHandler.UseOpenCl())
         openClHandler.pushGeometry (rawGeometry.vertices(),
                                     rawGeometry.elementCornerIndices());
@@ -382,7 +381,7 @@ applyOffSurface(
         it->next();
     }
 
-    Fiber::OpenClHandler<CoordinateType,int> openClHandler(options.openClOptions());
+    Fiber::OpenClHandler openClHandler(options.openClOptions());
     if (openClHandler.UseOpenCl())
         openClHandler.pushGeometry(rawGeometry.vertices(),
                                    rawGeometry.elementCornerIndices());

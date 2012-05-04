@@ -18,16 +18,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "adjoint_double_layer_potential_3d_kernel.hpp"
+#include "dot_double_layer_potential_3d_kernel.hpp"
 
 #include "explicit_instantiation.hpp"
 #include "geometrical_data.hpp"
+//#include "CL/double_layer_potential_3D_kernel.cl.str"
 
 #include <armadillo>
 #include <cassert>
 #include <cmath>
-
-#include "CL/adjoint_double_layer_potential_3D_kernel.cl.str"
 
 namespace Fiber
 {
@@ -35,52 +34,53 @@ namespace Fiber
 // Double potential: derivative wrt. trial normal
 
 template <typename ValueType>
-void AdjointDoubleLayerPotential3DKernel<ValueType>::addGeometricalDependencies(
+void DotDoubleLayerPotential3DKernel<ValueType>::addGeometricalDependencies(
         int& testGeomDeps, int& trialGeomDeps) const
 {
-    testGeomDeps |= GLOBALS | NORMALS;
-    trialGeomDeps |= GLOBALS;
+    testGeomDeps |= GLOBALS;
+    trialGeomDeps |= GLOBALS | NORMALS;
 }
 
 template <typename ValueType>
-inline ValueType AdjointDoubleLayerPotential3DKernel<ValueType>::evaluateAtPointPair(
+inline ValueType DotDoubleLayerPotential3DKernel<ValueType>::evaluateAtPointPair(
         const arma::Col<CoordinateType>& testPoint,
         const arma::Col<CoordinateType>& trialPoint,
-        const arma::Col<CoordinateType>& testNormal) const
+        const arma::Col<CoordinateType>& trialNormal) const
 {
     const int coordCount = testPoint.n_rows;
 
     CoordinateType numeratorSum = 0., denominatorSum = 0.;
     for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex)
     {
-        CoordinateType diff = testPoint(coordIndex) - trialPoint(coordIndex);
+        CoordinateType diff = trialPoint(coordIndex) - testPoint(coordIndex);
         denominatorSum += diff * diff;
-        numeratorSum += diff * testNormal(coordIndex);
+        numeratorSum += diff * trialNormal(coordIndex);
     }
     CoordinateType distance = sqrt(denominatorSum);
-    return -numeratorSum / (4. * M_PI * distance * distance * distance);
+    return -numeratorSum / (static_cast<ValueType>(4.0 * M_PI) * denominatorSum) *
+      (m_waveNumber - static_cast<ValueType>(1.0) / distance) * exp (-m_waveNumber / distance);
 }
 
 template <typename ValueType>
-void AdjointDoubleLayerPotential3DKernel<ValueType>::evaluateAtPointPairs(
+void DotDoubleLayerPotential3DKernel<ValueType>::evaluateAtPointPairs(
         const GeometricalData<CoordinateType>& testGeomData,
         const GeometricalData<CoordinateType>& trialGeomData,
         arma::Cube<ValueType>& result) const
 {
     const arma::Mat<CoordinateType>& testPoints = testGeomData.globals;
     const arma::Mat<CoordinateType>& trialPoints = trialGeomData.globals;
-    const arma::Mat<CoordinateType>& testNormals = testGeomData.normals;
+    const arma::Mat<CoordinateType>& trialNormals = trialGeomData.normals;
 
 #ifndef NDEBUG
     const int worldDim = worldDimension();
     if (testPoints.n_rows != worldDim || trialPoints.n_rows != worldDim)
-        throw std::invalid_argument("AdjointDoubleLayerPotential3DKernel::evaluateAtPointPairs(): "
+        throw std::invalid_argument("DotDoubleLayerPotential3DKernel::evaluateAtPointPairs(): "
                                     "3D coordinates required");
     if (testPoints.n_cols != trialPoints.n_cols)
-        throw std::invalid_argument("AdjointDoubleLayerPotential3DKernel::evaluateAtPointPairs(): "
+        throw std::invalid_argument("DotDoubleLayerPotential3DKernel::evaluateAtPointPairs(): "
                                     "number of test and trial points must be equal");
-    assert(testNormals.n_rows == worldDim);
-    assert(testNormals.n_cols == testPoints.n_cols);
+    assert(trialNormals.n_rows == worldDim);
+    assert(trialNormals.n_cols == trialPoints.n_cols);
 #endif
 
     const int pointCount = testPoints.n_cols;
@@ -88,26 +88,26 @@ void AdjointDoubleLayerPotential3DKernel<ValueType>::evaluateAtPointPairs(
     for (int i = 0; i < pointCount; ++i)
         result(0, 0, i) = evaluateAtPointPair(
                     testPoints.unsafe_col(i), trialPoints.unsafe_col(i),
-                    testNormals.unsafe_col(i));
+                    trialNormals.unsafe_col(i));
 }
 
 template <typename ValueType>
-void AdjointDoubleLayerPotential3DKernel<ValueType>::evaluateOnGrid(
+void DotDoubleLayerPotential3DKernel<ValueType>::evaluateOnGrid(
         const GeometricalData<CoordinateType>& testGeomData,
         const GeometricalData<CoordinateType>& trialGeomData,
         Array4D<ValueType>& result) const
 {
     const arma::Mat<CoordinateType>& testPoints = testGeomData.globals;
     const arma::Mat<CoordinateType>& trialPoints = trialGeomData.globals;
-    const arma::Mat<CoordinateType>& testNormals = testGeomData.normals;
+    const arma::Mat<CoordinateType>& trialNormals = trialGeomData.normals;
 
 #ifndef NDEBUG
     const int worldDim = worldDimension();
     if (testPoints.n_rows != worldDim || trialPoints.n_rows != worldDim)
-        throw std::invalid_argument("AdjointDoubleLayerPotential3DKernel::evaluate(): "
+        throw std::invalid_argument("DotDoubleLayerPotential3DKernel::evaluate(): "
                                     "3D coordinates required");
-    assert(testNormals.n_rows == worldDim);
-    assert(testNormals.n_cols == testPoints.n_cols);
+    assert(trialNormals.n_rows == worldDim);
+    assert(trialNormals.n_cols == trialPoints.n_cols);
 #endif
 
     const int testPointCount = testPoints.n_cols;
@@ -118,16 +118,18 @@ void AdjointDoubleLayerPotential3DKernel<ValueType>::evaluateOnGrid(
             result(0, testIndex, 0, trialIndex) = evaluateAtPointPair(
                         testPoints.unsafe_col(testIndex),
                         trialPoints.unsafe_col(trialIndex),
-                        testNormals.unsafe_col(testIndex));
+                        trialNormals.unsafe_col(trialIndex));
 }
 
 template<typename ValueType>
-std::pair<const char*,int> AdjointDoubleLayerPotential3DKernel<ValueType>::evaluateClCode () const
+std::pair<const char*,int> DotDoubleLayerPotential3DKernel<ValueType>::evaluateClCode () const
 {
-    return std::make_pair(adjoint_double_layer_potential_3D_kernel_cl,
-			  adjoint_double_layer_potential_3D_kernel_cl_len);
+    return std::make_pair ("", 0);  // TODO
+
+  //    return std::make_pair(dot_double_layer_potential_3D_kernel_cl,
+  //			  dot_double_layer_potential_3D_kernel_cl_len);
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_KERNEL(AdjointDoubleLayerPotential3DKernel);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_KERNEL(DotDoubleLayerPotential3DKernel);
 
 } // namespace Fiber

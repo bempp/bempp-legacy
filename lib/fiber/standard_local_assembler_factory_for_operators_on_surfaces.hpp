@@ -65,7 +65,7 @@ public:
             const std::vector<const Basis<BasisFunctionType>*>& trialBases,
             const Expression<CoordinateType>& testExpression,
             const Expression<CoordinateType>& trialExpression,
-            const OpenClHandler<CoordinateType, int>& openClHandler) const {
+            const OpenClHandler& openClHandler) const {
         typedef StandardLocalAssemblerForIdentityOperatorOnSurface<
                 BasisFunctionType, ResultType, GeometryFactory>
                 LocalAssemblerForIdentityOperator_;
@@ -87,7 +87,7 @@ private:
             const Expression<CoordinateType>& testExpression,
             const Kernel<CoordinateType>& kernel,
             const Expression<CoordinateType>& trialExpression,
-            const OpenClHandler<CoordinateType, int>& openClHandler,
+            const OpenClHandler& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const {
         typedef CoordinateType KernelType;
@@ -111,7 +111,7 @@ private:
             const std::vector<const Basis<BasisFunctionType>*>& testBases,
             const Expression<CoordinateType>& testExpression,
             const Function<CoordinateType>& function,
-            const OpenClHandler<CoordinateType, int>& openClHandler) const {
+            const OpenClHandler& openClHandler) const {
         typedef CoordinateType UserFunctionType;
         typedef StandardLocalAssemblerForGridFunctionsOnSurfaces<
             BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>
@@ -132,7 +132,7 @@ private:
             const Kernel<CoordinateType>& kernel,
             const Expression<CoordinateType>& trialExpression,
             const std::vector<std::vector<ResultType> >& argumentLocalCoefficients,
-            const OpenClHandler<CoordinateType, int>& openClHandler) const {
+            const OpenClHandler& openClHandler) const {
         typedef CoordinateType KernelType;
         typedef StandardEvaluatorForIntegralOperators<
             BasisFunctionType, KernelType, ResultType, GeometryFactory>
@@ -187,7 +187,7 @@ private:
             const Expression<CoordinateType>& testExpression,
             const Kernel<ResultType>& kernel,
             const Expression<CoordinateType>& trialExpression,
-            const OpenClHandler<CoordinateType, int>& openClHandler,
+            const OpenClHandler& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const {
         typedef ResultType KernelType;
@@ -211,7 +211,7 @@ private:
             const std::vector<const Basis<BasisFunctionType>*>& testBases,
             const Expression<CoordinateType>& testExpression,
             const Function<ResultType>& function,
-            const OpenClHandler<CoordinateType, int>& openClHandler) const {
+            const OpenClHandler& openClHandler) const {
         typedef ResultType UserFunctionType;
         typedef StandardLocalAssemblerForGridFunctionsOnSurfaces<
             BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>
@@ -232,7 +232,7 @@ private:
             const Kernel<ResultType>& kernel,
             const Expression<CoordinateType>& trialExpression,
             const std::vector<std::vector<ResultType> >& argumentLocalCoefficients,
-            const OpenClHandler<CoordinateType, int>& openClHandler) const {
+            const OpenClHandler& openClHandler) const {
         typedef ResultType KernelType;
         typedef StandardEvaluatorForIntegralOperators<
             BasisFunctionType, KernelType, ResultType, GeometryFactory>

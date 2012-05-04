@@ -42,7 +42,7 @@
 namespace Fiber
 {
 
-template <typename CoordinateType, typename IndexType> class OpenClHandler;
+class OpenClHandler;
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
@@ -60,7 +60,7 @@ public:
             const Expression<CoordinateType>& testExpression,
             const Kernel<KernelType>& kernel,
             const Expression<CoordinateType>& trialExpression,
-            const OpenClHandler<CoordinateType, int>& openClHandler,
+            const OpenClHandler& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals,
             const AccuracyOptions& accuracyOptions);
@@ -117,7 +117,7 @@ private:
     const Expression<CoordinateType>& m_testExpression;
     const Kernel<KernelType>& m_kernel;
     const Expression<CoordinateType>& m_trialExpression;
-    const OpenClHandler<CoordinateType, int>& m_openClHandler;
+    const OpenClHandler& m_openClHandler;
     ParallelisationOptions m_parallelisationOptions;
     AccuracyOptions m_accuracyOptions;
 

@@ -37,8 +37,7 @@
 
 namespace Fiber {
 
-template<typename ValueType, typename IndexType>
-OpenClHandler<ValueType,IndexType>::OpenClHandler(const OpenClOptions& options)
+OpenClHandler::OpenClHandler(const OpenClOptions& options)
 {
     cl_int err;
     useOpenCl = options.useOpenCl;
@@ -68,23 +67,20 @@ OpenClHandler<ValueType,IndexType>::OpenClHandler(const OpenClOptions& options)
     }
 }
 
-template<typename ValueType, typename IndexType>
-OpenClHandler<ValueType,IndexType>::~OpenClHandler()
+OpenClHandler::~OpenClHandler()
 {
     if (nProgBuf) delete []progBuf;
 }
 
-template<>
-const std::pair<const char*,int> OpenClHandler<float,int>::typedefStr () const
-{
-    static const char *str =
-        "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\ntypedef float ValueType;\n";
-    static int len = strlen(str);
-    return std::make_pair(str,len);
-}
+//const std::pair<const char*,int> OpenClHandler::typedefStr () const
+//{
+//    static const char *str =
+//        "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\ntypedef float ValueType;\n";
+//    static int len = strlen(str);
+//    return std::make_pair(str,len);
+//}
 
-template<>
-const std::pair<const char*,int> OpenClHandler<double,int>::typedefStr () const
+const std::pair<const char*,int> OpenClHandler::typedefStr () const
 {
     static const char *str =
         "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\ntypedef double ValueType;\n";
@@ -92,8 +88,7 @@ const std::pair<const char*,int> OpenClHandler<double,int>::typedefStr () const
     return std::make_pair(str,len);
 }
 
-template<typename ValueType, typename IndexType>
-const std::pair<const char*,int> OpenClHandler<ValueType,IndexType>::initStr () const
+const std::pair<const char*,int> OpenClHandler::initStr () const
 {
     CALLECHO();
 
@@ -104,15 +99,15 @@ const std::pair<const char*,int> OpenClHandler<ValueType,IndexType>::initStr () 
         std::pair<const char*,int> tdef = typedefStr();
 	str.first = new char[tdef.second + commontypes_h_len + 1];
 	strcpy (str.first, tdef.first);
-	strcpy (str.first+tdef.second, commontypes_h);
+	strncpy (str.first+tdef.second, commontypes_h, commontypes_h_len);
+	str.first[tdef.second + commontypes_h_len] = '\0';
 	str.second = tdef.second + commontypes_h_len;
 	need_setup = false;
     }
     return str;
 }
 
-template<typename ValueType, typename IndexType>
-void OpenClHandler<ValueType,IndexType>::loadProgramFromString(
+void OpenClHandler::loadProgramFromString(
     std::string strSource)
 {
     CALLECHO();
@@ -151,8 +146,7 @@ void OpenClHandler<ValueType,IndexType>::loadProgramFromString(
     std::cout << "x11" << std::endl;
 }
 
-template<typename ValueType, typename IndexType>
-void OpenClHandler<ValueType,IndexType>::loadProgramFromStringArray (
+void OpenClHandler::loadProgramFromStringArray (
     cl::Program::Sources strSources) const
 {
     CALLECHO();
@@ -206,8 +200,7 @@ void OpenClHandler<ValueType,IndexType>::loadProgramFromStringArray (
 #endif
 }
 
-template <typename ValueType, typename IndexType>
-cl::Kernel &OpenClHandler<ValueType,IndexType>::setKernel (const char *kernelName) const
+cl::Kernel &OpenClHandler::setKernel (const char *kernelName) const
 {
     CALLECHO();
 
@@ -221,8 +214,7 @@ cl::Kernel &OpenClHandler<ValueType,IndexType>::setKernel (const char *kernelNam
     return kernel;
 }
 
-template <typename ValueType, typename IndexType>
-void OpenClHandler<ValueType,IndexType>::enqueueKernel (const cl::NDRange &global) const
+void OpenClHandler::enqueueKernel (const cl::NDRange &global) const
 {
     CALLECHO();
 
@@ -231,8 +223,7 @@ void OpenClHandler<ValueType,IndexType>::enqueueKernel (const cl::NDRange &globa
 				     NULL, &event);
 }
 
-template <typename ValueType, typename IndexType>
-int OpenClHandler<ValueType,IndexType>::SetGeometryArgs (cl::Kernel &kernel, int argid) const
+int OpenClHandler::SetGeometryArgs (cl::Kernel &kernel, int argid) const
 {
     CALLECHO();
 
@@ -242,9 +233,9 @@ int OpenClHandler<ValueType,IndexType>::SetGeometryArgs (cl::Kernel &kernel, int
     return argid;
 }
 
-template <typename ValueType, typename IndexType>
-void OpenClHandler<ValueType,IndexType>::pushGeometry (
-    const arma::Mat<ValueType>& vtx,
+template<typename CoordinateType, typename IndexType>
+void OpenClHandler::pushGeometry (
+    const arma::Mat<CoordinateType>& vtx,
     const arma::Mat<IndexType>& idx) const
 {
     CALLECHO();
@@ -253,7 +244,7 @@ void OpenClHandler<ValueType,IndexType>::pushGeometry (
     // Allocate the buffers
     meshgeom.size.dim = vtx.n_rows;
     meshgeom.size.nvtx = vtx.n_cols;
-    size_t vtxbuf_size = meshgeom.size.dim*meshgeom.size.nvtx*sizeof(ValueType);
+    size_t vtxbuf_size = meshgeom.size.dim*meshgeom.size.nvtx*sizeof(CoordinateType);
     meshgeom.cl_vtxbuf = cl::Buffer (context, CL_MEM_READ_ONLY,
 				     vtxbuf_size, NULL, &err);
 
@@ -277,129 +268,165 @@ void OpenClHandler<ValueType,IndexType>::pushGeometry (
     queue.finish();
 }
 
-template <typename ValueType, typename IndexType>
-cl::Buffer *OpenClHandler<ValueType,IndexType>::createValueBuffer (int size,
+template <typename BufferType>
+cl::Buffer *OpenClHandler::createBuffer (int size,
     cl_mem_flags usage) const
 {
     CALLECHO();
 
     cl_int err;
-    size_t bufsize = size * sizeof(ValueType);
+    size_t bufsize = size * sizeof(BufferType);
     return new cl::Buffer (context, usage, bufsize, NULL, &err);
 }
 
-template <typename ValueType, typename IndexType>
-cl::Buffer *OpenClHandler<ValueType,IndexType>::pushValueVector (
-    const std::vector<ValueType>& vec) const
+template <typename BufferType>
+cl::Buffer *OpenClHandler::pushVector (
+    const std::vector<BufferType>& vec) const
 {
     CALLECHO();
 
     cl_int err;
-    size_t bufsize = vec.size() * sizeof(ValueType);
-    const ValueType *vecptr = &vec[0];
+    size_t bufsize = vec.size() * sizeof(BufferType);
+    const BufferType *vecptr = &vec[0];
     cl::Buffer *clbuf = new cl::Buffer (context, CL_MEM_READ_ONLY, bufsize, NULL, &err);
     queue.enqueueWriteBuffer (*clbuf, CL_TRUE, 0, bufsize, vecptr, NULL, &event);
     return clbuf;
 }
 
-template <typename ValueType, typename IndexType>
-cl::Buffer *OpenClHandler<ValueType,IndexType>::pushIndexVector (
-    const std::vector<IndexType>& vec) const
+template <typename BufferType>
+cl::Buffer *OpenClHandler::pushBuffer (
+    const BufferType *buf, int size) const
 {
     CALLECHO();
 
     cl_int err;
-    size_t bufsize = vec.size() * sizeof(IndexType);
-    const IndexType *vecptr = &vec[0];
-    cl::Buffer *clbuf = new cl::Buffer (context, CL_MEM_READ_ONLY, bufsize, NULL, &err);
-    queue.enqueueWriteBuffer (*clbuf, CL_TRUE, 0, bufsize, vecptr, NULL, &event);
-    return clbuf;
-}
-
-template <typename ValueType, typename IndexType>
-cl::Buffer *OpenClHandler<ValueType,IndexType>::pushIndexBuffer (
-    const IndexType *buf, int size) const
-{
-    CALLECHO();
-
-    cl_int err;
-    size_t bufsize = size * sizeof(IndexType);
+    size_t bufsize = size * sizeof(BufferType);
     cl::Buffer *clbuf = new cl::Buffer (context, CL_MEM_READ_ONLY, bufsize, NULL, &err);
     queue.enqueueWriteBuffer (*clbuf, CL_TRUE, 0, bufsize, buf, NULL, &event);
     return clbuf;
 }
 
 
-template <typename ValueType, typename IndexType>
-cl::Buffer *OpenClHandler<ValueType,IndexType>::pushValueRow (
-    const arma::Row<ValueType>& row) const
+template <typename BufferType>
+cl::Buffer *OpenClHandler::pushRow (
+    const arma::Row<BufferType>& row) const
 {
     CALLECHO();
 
     cl_int err;
-    size_t bufsize = row.n_rows * row.n_cols * sizeof(ValueType);
+    size_t bufsize = row.n_rows * row.n_cols * sizeof(BufferType);
     cl::Buffer *clbuf = new cl::Buffer (context, CL_MEM_READ_ONLY, bufsize, NULL, &err);
     queue.enqueueWriteBuffer (*clbuf, CL_TRUE, 0, bufsize, row.memptr(), NULL, &event);
     return clbuf;
 }
 
-template <typename ValueType, typename IndexType>
-cl::Buffer *OpenClHandler<ValueType,IndexType>::pushValueMatrix (
-    const arma::Mat<ValueType>& mat) const
+template <typename BufferType>
+cl::Buffer *OpenClHandler::pushMatrix (
+    const arma::Mat<BufferType>& mat) const
 {
     CALLECHO();
 
     cl_int err;
-    size_t bufsize = mat.n_rows * mat.n_cols * sizeof(ValueType);
+    size_t bufsize = mat.n_rows * mat.n_cols * sizeof(BufferType);
     cl::Buffer *clbuf = new cl::Buffer (context, CL_MEM_READ_ONLY, bufsize, NULL, &err);
     queue.enqueueWriteBuffer (*clbuf, CL_TRUE, 0, bufsize, mat.memptr(), NULL, &event);
     return clbuf;
 }
 
-template <typename ValueType, typename IndexType>
-cl::Buffer *OpenClHandler<ValueType,IndexType>::pushValueCube (
-    const arma::Cube<ValueType>& cube) const
+template <typename BufferType>
+cl::Buffer *OpenClHandler::pushCube (
+    const arma::Cube<BufferType>& cube) const
 {
     CALLECHO();
 
     cl_int err;
-    size_t bufsize = cube.n_rows * cube.n_cols * cube.n_slices * sizeof(ValueType);
+    size_t bufsize = cube.n_rows * cube.n_cols * cube.n_slices * sizeof(BufferType);
     cl::Buffer *clbuf = new cl::Buffer (context, CL_MEM_READ_ONLY, bufsize, NULL, &err);
     queue.enqueueWriteBuffer (*clbuf, CL_TRUE, 0, bufsize, cube.memptr(), NULL, &event);
     return clbuf;
 }
 
-template <typename ValueType, typename IndexType>
-void OpenClHandler<ValueType,IndexType>::pullValueVector (
+template <typename BufferType>
+void OpenClHandler::pullVector (
     const cl::Buffer &clbuf,
-    std::vector<ValueType>& vec,
+    std::vector<BufferType>& vec,
     int size) const
 {
     CALLECHO();
 
-    ValueType *vecptr = &vec[0];
-    size_t bufsize = size*sizeof(ValueType);
+    BufferType *vecptr = &vec[0];
+    size_t bufsize = size*sizeof(BufferType);
     queue.enqueueReadBuffer (clbuf, CL_TRUE, 0, bufsize, vecptr, NULL, &event);
 }
 
-template <typename ValueType, typename IndexType>
-void OpenClHandler<ValueType,IndexType>::pullValueCube (
+template <typename BufferType>
+void OpenClHandler::pullCube (
     const cl::Buffer &clbuf,
-    arma::Cube<ValueType>& cube) const
+    arma::Cube<BufferType>& cube) const
 {
     CALLECHO();
 
-    size_t bufsize = cube.n_rows * cube.n_cols * cube.n_slices * sizeof(ValueType);
+    size_t bufsize = cube.n_rows * cube.n_cols * cube.n_slices * sizeof(BufferType);
     queue.enqueueReadBuffer (clbuf, CL_TRUE, 0, bufsize, cube.memptr(), NULL, &event);
 }
 
+// Integer instantiations
+template cl::Buffer *OpenClHandler::pushVector<int> (
+    const std::vector<int> &vec) const;
 
-#ifdef ENABLE_SINGLE_PRECISION
-template class OpenClHandler<float, int>;
-#endif
-#ifdef ENABLE_DOUBLE_PRECISION
-template class OpenClHandler<double, int>;
-#endif
+// Single-precision instantiations
+template void OpenClHandler::pushGeometry<float,int>(
+    const arma::Mat<float> &vtx,
+    const arma::Mat<int>& idx) const;
+template cl::Buffer *OpenClHandler::createBuffer<float> (
+    int size, cl_mem_flags usage) const;
+template cl::Buffer *OpenClHandler::pushVector<float> (
+    const std::vector<float> &vec) const;
+template cl::Buffer *OpenClHandler::pushMatrix<float> (
+    const arma::Mat<float> &mat) const;
+template void OpenClHandler::pullVector<float> (
+    const cl::Buffer &clbuf,
+    std::vector<float>& vec, int size) const;
+template void OpenClHandler::pullCube<float> (
+    const cl::Buffer &clbuf, arma::Cube<float>& cube) const;
+
+// Double-precision instantiations
+template void OpenClHandler::pushGeometry<double,int>(
+    const arma::Mat<double> &vtx,
+    const arma::Mat<int>& idx) const;
+template cl::Buffer *OpenClHandler::createBuffer<double> (
+    int size, cl_mem_flags usage) const;
+template cl::Buffer *OpenClHandler::pushVector<double> (
+    const std::vector<double> &vec) const;
+template cl::Buffer *OpenClHandler::pushMatrix<double> (
+    const arma::Mat<double> &mat) const;
+template void OpenClHandler::pullVector<double> (
+    const cl::Buffer &clbuf,
+    std::vector<double>& vec, int size) const;
+template void OpenClHandler::pullCube<double> (
+    const cl::Buffer &clbuf, arma::Cube<double>& cube) const;
+
+// Single-precision complex instantiations
+template cl::Buffer *OpenClHandler::createBuffer<std::complex<float> > (
+    int size, cl_mem_flags usage) const;
+template cl::Buffer *OpenClHandler::pushVector<std::complex<float> > (
+    const std::vector<std::complex<float> > &vec) const;
+template void OpenClHandler::pullVector<std::complex<float> > (
+    const cl::Buffer &clbuf,
+    std::vector<std::complex<float> >& vec, int size) const;
+template void OpenClHandler::pullCube<std::complex<float> > (
+    const cl::Buffer &clbuf, arma::Cube<std::complex<float> >& cube) const;
+
+// Double-precision complex instantiations
+template cl::Buffer *OpenClHandler::createBuffer<std::complex<double> > (
+    int size, cl_mem_flags usage) const;
+template cl::Buffer *OpenClHandler::pushVector<std::complex<double> > (
+    const std::vector<std::complex<double> > &vec) const;
+template void OpenClHandler::pullVector<std::complex<double> > (
+    const cl::Buffer &clbuf,
+    std::vector<std::complex<double> >& vec, int size) const;
+template void OpenClHandler::pullCube<std::complex<double> > (
+    const cl::Buffer &clbuf, arma::Cube<std::complex<double> >& cube) const;
 
 } // namespace Fiber
 

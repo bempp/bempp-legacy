@@ -192,10 +192,10 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakForm(
     getAllBases(testSpace, testBases);
     getAllBases(trialSpace, trialBases);
 
-    Fiber::OpenClHandler<CoordinateType, int> openClHandler(
+    Fiber::OpenClHandler openClHandler(
                 options.parallelisationOptions().openClOptions());
     if (openClHandler.UseOpenCl())
-        openClHandler.pushGeometry (rawGeometry.vertices(),
+        openClHandler.pushGeometry<CoordinateType,int> (rawGeometry.vertices(),
                                     rawGeometry.elementCornerIndices());
 
     // Now create the assembler
@@ -387,7 +387,7 @@ IdentityOperator<BasisFunctionType, ResultType>::makeAssembler(
         const Fiber::RawGridGeometry<CoordinateType>& rawGeometry,
         const std::vector<const Fiber::Basis<BasisFunctionType>*>& testBases,
         const std::vector<const Fiber::Basis<BasisFunctionType>*>& trialBases,
-        const Fiber::OpenClHandler<CoordinateType, int>& openClHandler,
+        const Fiber::OpenClHandler& openClHandler,
         const ParallelisationOptions&,
         bool /* cacheSingularIntegrals */) const
 {

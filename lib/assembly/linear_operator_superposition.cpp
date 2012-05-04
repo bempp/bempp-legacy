@@ -199,8 +199,7 @@ assembleWeakFormInAcaMode(
     // REFACT This will disappear in the constructor of LocalAssemblerFactory
     const ParallelisationOptions& parallelOptions =
             options.parallelisationOptions();
-    Fiber::OpenClHandler<CoordinateType, int> openClHandler(
-                parallelOptions.openClOptions());
+    Fiber::OpenClHandler openClHandler(parallelOptions.openClOptions());
 
     // REFACT This is unfortunately going to stay
     bool cacheSingularIntegrals =

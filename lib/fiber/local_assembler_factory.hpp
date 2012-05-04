@@ -31,7 +31,7 @@
 namespace Fiber
 {
 class ParallelisationOptions;
-template <typename CoordinateType, typename IndexType> class OpenClHandler;
+class OpenClHandler;
 
 template <typename ValueType> class Basis;
 template <typename CoordinateType> class Expression;
@@ -63,7 +63,7 @@ public:
             const Expression<CoordinateType>& testExpression,
             const Kernel<CoordinateType>& kernel,
             const Expression<CoordinateType>& trialExpression,
-            const OpenClHandler<CoordinateType, int>& openClHandler,
+            const OpenClHandler& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const {
         return this->makeAssemblerForIntegralOperatorsImplRealKernel(
@@ -81,7 +81,7 @@ public:
             const std::vector<const Basis<BasisFunctionType>*>& trialBases,
             const Expression<CoordinateType>& testExpression,
             const Expression<CoordinateType>& trialExpression,
-            const OpenClHandler<CoordinateType, int>& openClHandler) const = 0;
+            const OpenClHandler& openClHandler) const = 0;
 
     /** \brief Allocate a local assembler for calculations of the projections
       of functions from a given space on a Fiber::Function. */
@@ -92,7 +92,7 @@ public:
             const std::vector<const Basis<BasisFunctionType>*>& testBases,
             const Expression<CoordinateType>& testExpression,
             const Function<ResultType>& function,
-            const OpenClHandler<CoordinateType, int>& openClHandler) const {
+            const OpenClHandler& openClHandler) const {
         return this->makeAssemblerForGridFunctionsImplRealUserFunction(
                     geometryFactory, rawGeometry, testBases,
                     testExpression, function, openClHandler);
@@ -108,7 +108,7 @@ public:
             const Kernel<CoordinateType>& kernel,
             const Expression<CoordinateType>& trialExpression,
             const std::vector<std::vector<ResultType> >& argumentLocalCoefficients,
-            const OpenClHandler<CoordinateType, int>& openClHandler) const {
+            const OpenClHandler& openClHandler) const {
         return this->makeEvaluatorForIntegralOperatorsImplRealKernel(
                     geometryFactory, rawGeometry, trialBases,
                     kernel, trialExpression, argumentLocalCoefficients,
@@ -125,7 +125,7 @@ private:
             const Expression<CoordinateType>& testExpression,
             const Kernel<CoordinateType>& kernel, // !
             const Expression<CoordinateType>& trialExpression,
-            const OpenClHandler<CoordinateType, int>& openClHandler,
+            const OpenClHandler& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const = 0;
 
@@ -136,7 +136,7 @@ private:
             const std::vector<const Basis<BasisFunctionType>*>& testBases,
             const Expression<CoordinateType>& testExpression,
             const Function<CoordinateType>& function,
-            const OpenClHandler<CoordinateType, int>& openClHandler) const = 0;
+            const OpenClHandler& openClHandler) const = 0;
 
     virtual std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
     makeEvaluatorForIntegralOperatorsImplRealKernel(
@@ -146,7 +146,7 @@ private:
             const Kernel<CoordinateType>& kernel,
             const Expression<CoordinateType>& trialExpression,
             const std::vector<std::vector<ResultType> >& argumentLocalCoefficients,
-            const OpenClHandler<CoordinateType, int>& openClHandler) const = 0;
+            const OpenClHandler& openClHandler) const = 0;
 };
 
 // complex ResultType
@@ -174,7 +174,7 @@ public:
             const Expression<CoordinateType>& testExpression,
             const Kernel<ResultType>& kernel,
             const Expression<CoordinateType>& trialExpression,
-            const OpenClHandler<CoordinateType, int>& openClHandler,
+            const OpenClHandler& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const {
         return this->makeAssemblerForIntegralOperatorsImplComplexKernel(
@@ -192,7 +192,7 @@ public:
             const std::vector<const Basis<BasisFunctionType>*>& testBases,
             const Expression<CoordinateType>& testExpression,
             const Function<ResultType>& function,
-            const OpenClHandler<CoordinateType, int>& openClHandler) const {
+            const OpenClHandler& openClHandler) const {
         return this->makeAssemblerForGridFunctionsImplComplexUserFunction(
                     geometryFactory, rawGeometry, testBases,
                     testExpression, function, openClHandler);
@@ -208,7 +208,7 @@ public:
             const Kernel<ResultType>& kernel,
             const Expression<CoordinateType>& trialExpression,
             const std::vector<std::vector<ResultType> >& argumentLocalCoefficients,
-            const OpenClHandler<CoordinateType, int>& openClHandler) const {
+            const OpenClHandler& openClHandler) const {
         return this->makeEvaluatorForIntegralOperatorsImplComplexKernel(
                     geometryFactory, rawGeometry, trialBases,
                     kernel, trialExpression, argumentLocalCoefficients,
@@ -225,7 +225,7 @@ private:
             const Expression<CoordinateType>& testExpression,
             const Kernel<ResultType>& kernel, // !
             const Expression<CoordinateType>& trialExpression,
-            const OpenClHandler<CoordinateType, int>& openClHandler,
+            const OpenClHandler& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const = 0;
 
@@ -236,7 +236,7 @@ private:
             const std::vector<const Basis<BasisFunctionType>*>& testBases,
             const Expression<CoordinateType>& testExpression,
             const Function<ResultType>& function,
-            const OpenClHandler<CoordinateType, int>& openClHandler) const = 0;
+            const OpenClHandler& openClHandler) const = 0;
 
     virtual std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
     makeEvaluatorForIntegralOperatorsImplComplexKernel(
@@ -246,7 +246,7 @@ private:
             const Kernel<ResultType>& kernel,
             const Expression<CoordinateType>& trialExpression,
             const std::vector<std::vector<ResultType> >& argumentLocalCoefficients,
-            const OpenClHandler<CoordinateType, int>& openClHandler) const = 0;
+            const OpenClHandler& openClHandler) const = 0;
 };
 
 // real ResultType

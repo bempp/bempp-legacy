@@ -54,7 +54,7 @@ NonseparableNumericalTestKernelTrialIntegrator(
         const Expression<CoordinateType>& testExpression,
         const Kernel<KernelType>& kernel,
         const Expression<CoordinateType>& trialExpression,
-        const OpenClHandler<CoordinateType, int>& openClHandler) :
+        const OpenClHandler& openClHandler) :
     m_localTestQuadPoints(localTestQuadPoints),
     m_localTrialQuadPoints(localTrialQuadPoints),
     m_quadWeights(quadWeights),

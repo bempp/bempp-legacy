@@ -33,7 +33,7 @@ namespace Fiber
 template <typename ResultType> class LocalAssemblerForOperators;
 template <typename CoordinateType> class RawGridGeometry;
 template <typename ValueType> class Basis;
-template <typename CoordinateType, typename IndexType> class OpenClHandler;
+class OpenClHandler;
 
 } // namespace Fiber
 
@@ -67,7 +67,7 @@ public:
             const Fiber::RawGridGeometry<CoordinateType>& rawGeometry,
             const std::vector<const Fiber::Basis<BasisFunctionType>*>& testBases,
             const std::vector<const Fiber::Basis<BasisFunctionType>*>& trialBases,
-            const Fiber::OpenClHandler<CoordinateType, int>& openClHandler,
+            const Fiber::OpenClHandler& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const = 0;
 

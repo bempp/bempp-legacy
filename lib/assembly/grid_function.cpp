@@ -386,9 +386,10 @@ GridFunction<BasisFunctionType, ResultType>::calculateProjections(
     // Now create the assembler
     const ParallelisationOptions& parallelOptions =
             options.parallelisationOptions();
-    Fiber::OpenClHandler<CoordinateType, int> openClHandler(
+    Fiber::OpenClHandler openClHandler(
                 parallelOptions.openClOptions());
     openClHandler.pushGeometry (rawGeometry.vertices(),
+//    openClHandler.pushGeometry<CoordinateType,int> (rawGeometry.vertices(),
                                 rawGeometry.elementCornerIndices());
 
     std::auto_ptr<LocalAssembler> assembler =

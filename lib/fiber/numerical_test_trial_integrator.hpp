@@ -26,7 +26,7 @@
 namespace Fiber
 {
 
-template <typename CoordinateType, typename IndexType> class OpenClHandler;
+class OpenClHandler;
 template <typename CoordinateType> class Expression;
 template <typename CoordinateType> class RawGridGeometry;
 
@@ -46,7 +46,7 @@ public:
             const RawGridGeometry<CoordinateType>& rawGeometry,
             const Expression<CoordinateType>& testExpression,
             const Expression<CoordinateType>& trialExpression,
-            const OpenClHandler<CoordinateType, int>& openClHandler);
+            const OpenClHandler& openClHandler);
 
     virtual void integrate(
             const std::vector<int>& elementIndices,
@@ -63,7 +63,7 @@ private:
     const Expression<CoordinateType>& m_testExpression;
     const Expression<CoordinateType>& m_trialExpression;
 
-    const OpenClHandler<CoordinateType, int>& m_openClHandler;
+    const OpenClHandler& m_openClHandler;
 };
 
 } // namespace Fiber
