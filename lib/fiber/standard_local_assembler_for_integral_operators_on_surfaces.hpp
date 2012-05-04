@@ -23,10 +23,12 @@
 
 #include "local_assembler_for_operators.hpp"
 
+#include "accuracy_options.hpp"
 #include "array_2d.hpp"
 #include "element_pair_topology.hpp"
 #include "nonseparable_numerical_test_kernel_trial_integrator.hpp"
 #include "numerical_quadrature.hpp"
+#include "parallelisation_options.hpp"
 #include "separable_numerical_test_kernel_trial_integrator.hpp"
 
 #include <boost/static_assert.hpp>
@@ -40,7 +42,6 @@
 namespace Fiber
 {
 
-class AccuracyOptions;
 template <typename CoordinateType, typename IndexType> class OpenClHandler;
 
 template <typename BasisFunctionType, typename KernelType,
@@ -117,8 +118,8 @@ private:
     const Kernel<KernelType>& m_kernel;
     const Expression<CoordinateType>& m_trialExpression;
     const OpenClHandler<CoordinateType, int>& m_openClHandler;
-    const ParallelisationOptions& m_parallelisationOptions;
-    const AccuracyOptions& m_accuracyOptions;
+    ParallelisationOptions m_parallelisationOptions;
+    AccuracyOptions m_accuracyOptions;
 
     IntegratorMap m_TestKernelTrialIntegrators;
     Cache m_cache;

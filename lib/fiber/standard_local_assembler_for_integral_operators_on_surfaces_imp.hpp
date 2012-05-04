@@ -21,9 +21,6 @@
 // Keep IDEs happy
 #include "standard_local_assembler_for_integral_operators_on_surfaces.hpp"
 
-#include "accuracy_options.hpp"
-#include "parallelisation_options.hpp"
-
 #include <tbb/parallel_for.h>
 #include <tbb/task_scheduler_init.h>
 
