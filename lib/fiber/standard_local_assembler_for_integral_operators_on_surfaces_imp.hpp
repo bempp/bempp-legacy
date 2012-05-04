@@ -188,7 +188,9 @@ evaluateLocalWeakForms(
     std::vector<QuadVariant> quadVariants(elementACount);
     for (int i = 0; i < elementACount; ++i) {
         typename Cache::const_iterator it = m_cache.find(
-                    ElementIndexPair(elementIndicesA[i], elementIndexB));
+                    callVariant == TEST_TRIAL ?
+                        ElementIndexPair(elementIndicesA[i], elementIndexB) :
+                        ElementIndexPair(elementIndexB, elementIndicesA[i]));
         if (it != m_cache.end()) { // Matrix found in cache
             quadVariants[i] = CACHED;
             if (localDofIndexB == ALL_DOFS)
@@ -401,7 +403,7 @@ findPairsOfAdjacentElements(ElementIndexPairSet& pairs) const
         // Add to pairs each pair of elements adjacent to vertex v
         const int adjacentElementCount = adjacentElements.size();
         for (int e1 = 0; e1 < adjacentElementCount; ++e1)
-            for (int e2 = e1; e2 < adjacentElementCount; ++e2)
+            for (int e2 = 0; e2 < adjacentElementCount; ++e2)
                 pairs.insert(ElementIndexPair(adjacentElements[e1],
                                               adjacentElements[e2]));
     }
