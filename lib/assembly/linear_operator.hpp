@@ -156,12 +156,12 @@ protected:
             const std::vector<ResultType>& multipliers);
 
 private:
+    const Space<BasisFunctionType>& m_testSpace;
+    const Space<BasisFunctionType>& m_trialSpace;
+
     std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>
     m_localOperators;
     std::vector<ResultType> m_multipliers;
-
-    const Space<BasisFunctionType>& m_testSpace;
-    const Space<BasisFunctionType>& m_trialSpace;
 
     std::auto_ptr<const DiscreteLinearOperator<ResultType> > m_discreteOperator;
 };

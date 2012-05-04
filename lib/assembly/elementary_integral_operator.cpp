@@ -108,8 +108,8 @@ public:
 
 private:
     const std::vector<int>& m_testIndices;
-    const std::vector<std::vector<GlobalDofIndex> >& m_trialGlobalDofs;
     const std::vector<std::vector<GlobalDofIndex> >& m_testGlobalDofs;
+    const std::vector<std::vector<GlobalDofIndex> >& m_trialGlobalDofs;
     // mutable OK because Assembler is thread-safe. (Alternative to "mutable" here:
     // make assembler's internal integrator map mutable)
     mutable typename Fiber::LocalAssemblerForOperators<ResultType>& m_assembler;

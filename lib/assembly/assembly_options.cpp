@@ -31,12 +31,13 @@ namespace Bempp
 AcaOptions::AcaOptions() :
     eps(1E-4),
     eta(1.2),
-    maximumRank(10000),
     minimumBlockSize(16),
+    maximumRank(10000),
     recompress(true),
     outputPostscript(false),
-    outputFname("aca.ps"),
-    scaling(1.0) {}
+    scaling(1.0),
+    outputFname("aca.ps")
+{}
 
 
 
