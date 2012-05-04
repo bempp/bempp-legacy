@@ -52,17 +52,6 @@ int PiecewiseConstantScalarSpace<BasisFunctionType>::codomainDimension() const
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantScalarSpace<BasisFunctionType>::getBases(
-        const std::vector<const EntityPointer<0>*>& elements,
-        std::vector<const Fiber::Basis<BasisFunctionType>*>& bases) const
-{
-    const int elementCount = elements.size();
-    bases.resize(elementCount);
-    for (int i = 0; i < elementCount; ++i)
-        bases[i] = &m_basis;
-}
-
-template <typename BasisFunctionType>
 const Fiber::Basis<BasisFunctionType>&
 PiecewiseConstantScalarSpace<BasisFunctionType>::basis(
         const Entity<0>& element) const

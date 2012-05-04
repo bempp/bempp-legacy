@@ -65,7 +65,7 @@ template <typename CoordinateType, typename ValueType, typename DuneBasis>
 void evaluateBasisFunctionDerivativesWithDune(
         const arma::Mat<CoordinateType>& local,
         LocalDofIndex localDofIndex,
-        Array4D<ValueType>& result)
+        Array4d<ValueType>& result)
 {
     typedef typename DuneBasis::Traits Traits;
 

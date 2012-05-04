@@ -21,7 +21,8 @@
 // Keep IDEs happy
 #include "standard_local_assembler_for_integral_operators_on_surfaces.hpp"
 
-#include "accuracy_options.hpp"
+#include "nonseparable_numerical_test_kernel_trial_integrator.hpp"
+#include "separable_numerical_test_kernel_trial_integrator.hpp"
 
 #include <tbb/parallel_for.h>
 #include <tbb/task_scheduler_init.h>
@@ -91,6 +92,7 @@ StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
         const Kernel<KernelType>& kernel,
         const Expression<CoordinateType>& trialExpression,
         const OpenClHandler& openClHandler,
+        const ParallelisationOptions& parallelisationOptions,
         bool cacheSingularIntegrals,
         const AccuracyOptions& accuracyOptions) :
     m_geometryFactory(geometryFactory),
@@ -101,6 +103,7 @@ StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
     m_kernel(kernel),
     m_trialExpression(trialExpression),
     m_openClHandler(openClHandler),
+    m_parallelisationOptions(parallelisationOptions),
     m_accuracyOptions(accuracyOptions)
 {
     if (rawGeometry.vertices().n_rows != 3)
@@ -188,7 +191,9 @@ evaluateLocalWeakForms(
     std::vector<QuadVariant> quadVariants(elementACount);
     for (int i = 0; i < elementACount; ++i) {
         typename Cache::const_iterator it = m_cache.find(
-                    ElementIndexPair(elementIndicesA[i], elementIndexB));
+                    callVariant == TEST_TRIAL ?
+                        ElementIndexPair(elementIndicesA[i], elementIndexB) :
+                        ElementIndexPair(elementIndexB, elementIndicesA[i]));
         if (it != m_cache.end()) { // Matrix found in cache
             quadVariants[i] = CACHED;
             if (localDofIndexB == ALL_DOFS)
@@ -259,7 +264,7 @@ KernelType, ResultType, GeometryFactory>::
 evaluateLocalWeakForms(
         const std::vector<int>& testElementIndices,
         const std::vector<int>& trialElementIndices,
-        Fiber::Array2D<arma::Mat<ResultType> >& result)
+        Fiber::Array2d<arma::Mat<ResultType> >& result)
 {
     typedef Fiber::Basis<BasisFunctionType> Basis;
 
@@ -271,7 +276,7 @@ evaluateLocalWeakForms(
     typedef boost::tuples::tuple<const Integrator*, const Basis*, const Basis*>
             QuadVariant;
     const QuadVariant CACHED(0, 0, 0);
-    Fiber::Array2D<QuadVariant> quadVariants(testElementCount, trialElementCount);
+    Fiber::Array2d<QuadVariant> quadVariants(testElementCount, trialElementCount);
 
     for (int trialIndex = 0; trialIndex < trialElementCount; ++trialIndex)
         for (int testIndex = 0; testIndex < testElementCount; ++testIndex) {
@@ -401,7 +406,7 @@ findPairsOfAdjacentElements(ElementIndexPairSet& pairs) const
         // Add to pairs each pair of elements adjacent to vertex v
         const int adjacentElementCount = adjacentElements.size();
         for (int e1 = 0; e1 < adjacentElementCount; ++e1)
-            for (int e2 = e1; e2 < adjacentElementCount; ++e2)
+            for (int e2 = 0; e2 < adjacentElementCount; ++e2)
                 pairs.insert(ElementIndexPair(adjacentElements[e1],
                                               adjacentElements[e2]));
     }
@@ -474,10 +479,14 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
         arma::Cube<ResultType> localResult(activeTestBasis.size(),
                                           activeTrialBasis.size(),
                                           activeElementPairs.size());
-        //        activeIntegrator.integrate(activeElementPairs, activeTestBasis,
-        //                                   activeTrialBasis, localResult);
+        // Old serial version
+        // activeIntegrator.integrate(activeElementPairs, activeTestBasis,
+        //                            activeTrialBasis, localResult);
 
-        //        tbb::task_scheduler_init scheduler(maxThreadCount);
+        const int maxThreadCount =
+                m_parallelisationOptions.mode() == ParallelisationOptions::TBB ?
+                    m_parallelisationOptions.maxThreadCount() : 1;
+        tbb::task_scheduler_init scheduler(maxThreadCount);
         typedef SingularIntegralCalculatorLoopBody<
                 BasisFunctionType, KernelType, ResultType> Body;
         tbb::parallel_for(tbb::blocked_range<size_t>(0, activeElementPairs.size()),
@@ -485,8 +494,6 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
                                activeElementPairs, activeTestBasis, activeTrialBasis,
                                localResult));
 
-        // Distribute the just calculated integrals into the result array
-        // that will be returned to caller
         {
             ElementIndexPairIterator pairIt = elementIndexPairs.begin();
             QuadVariantIterator qvIt = quadVariants.begin();

@@ -91,7 +91,7 @@ inline int epetraSumIntoGlobalValues<float>(
     // Convert data from float into double (expected by Epetra)
     arma::Mat<double> doubleValues(values.n_rows, values.n_cols);
     std::copy(values.begin(), values.end(), doubleValues.begin());
-    epetraSumIntoGlobalValues<double>(
+    return epetraSumIntoGlobalValues<double>(
                 matrix, rowIndices, colIndices, doubleValues);
 }
 
@@ -111,7 +111,7 @@ inline int epetraSumIntoGlobalValues<std::complex<float> >(
     // this assert will fail)
     for (int i = 0; i < values.n_elem; ++i)
         doubleValues[i] = values[i].real();
-    epetraSumIntoGlobalValues<double>(
+    return epetraSumIntoGlobalValues<double>(
                 matrix, rowIndices, colIndices, doubleValues);
 }
 
@@ -129,7 +129,7 @@ inline int epetraSumIntoGlobalValues<std::complex<double> >(
     arma::Mat<double> doubleValues(values.n_rows, values.n_cols);
     for (int i = 0; i < values.n_elem; ++i)
         doubleValues[i] = values[i].real();
-    epetraSumIntoGlobalValues<double>(
+    return epetraSumIntoGlobalValues<double>(
                 matrix, rowIndices, colIndices, doubleValues);
 }
 
@@ -175,7 +175,6 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakForm(
 
     const Grid& grid = trialSpace.grid();
     std::auto_ptr<GridView> view = grid.leafView();
-    const int elementCount = view->entityCount(0);
 
     // Gather geometric data
     Fiber::RawGridGeometry<CoordinateType> rawGeometry(grid.dim(), grid.dimWorld());
@@ -190,20 +189,11 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakForm(
     // Get pointers to test and trial bases of each element
     std::vector<const Fiber::Basis<BasisFunctionType>*> testBases;
     std::vector<const Fiber::Basis<BasisFunctionType>*> trialBases;
-    testBases.reserve(elementCount);
-    trialBases.reserve(elementCount);
-
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-    while (!it->finished())
-    {
-        const Entity<0>& element = it->entity();
-        testBases.push_back(&testSpace.basis(element));
-        trialBases.push_back(&trialSpace.basis(element));
-        it->next();
-    }
+    getAllBases(testSpace, testBases);
+    getAllBases(trialSpace, trialBases);
 
     Fiber::OpenClHandler openClHandler(
-                options.openClOptions());
+                options.parallelisationOptions().openClOptions());
     if (openClHandler.UseOpenCl())
         openClHandler.pushGeometry<CoordinateType,int> (rawGeometry.vertices(),
                                     rawGeometry.elementCornerIndices());
@@ -398,6 +388,7 @@ IdentityOperator<BasisFunctionType, ResultType>::makeAssembler(
         const std::vector<const Fiber::Basis<BasisFunctionType>*>& testBases,
         const std::vector<const Fiber::Basis<BasisFunctionType>*>& trialBases,
         const Fiber::OpenClHandler& openClHandler,
+        const ParallelisationOptions&,
         bool /* cacheSingularIntegrals */) const
 {
     return assemblerFactory.makeAssemblerForIdentityOperators(

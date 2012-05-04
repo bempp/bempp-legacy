@@ -1,5 +1,9 @@
 include_directories(${CMAKE_BINARY_DIR}/include/common)
 
+if (WITH_TRILINOS)
+    include_directories(${TRILINOS_INCLUDE_DIR})
+endif ()
+
 add_definitions(-DBOOST_TEST_DYN_LINK)
 #find_package(Boost COMPONENTS unit_test_framework REQUIRED)
 include_directories(${PROJECT_SOURCE_DIR}/lib ${Boost_INCLUDE_DIR})

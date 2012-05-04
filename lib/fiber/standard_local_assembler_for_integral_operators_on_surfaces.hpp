@@ -23,11 +23,12 @@
 
 #include "local_assembler_for_operators.hpp"
 
+#include "accuracy_options.hpp"
 #include "array_2d.hpp"
 #include "element_pair_topology.hpp"
-#include "nonseparable_numerical_test_kernel_trial_integrator.hpp"
 #include "numerical_quadrature.hpp"
-#include "separable_numerical_test_kernel_trial_integrator.hpp"
+#include "parallelisation_options.hpp"
+#include "test_kernel_trial_integrator.hpp"
 
 #include <boost/static_assert.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
@@ -40,7 +41,6 @@
 namespace Fiber
 {
 
-class AccuracyOptions;
 class OpenClHandler;
 
 template <typename BasisFunctionType, typename KernelType,
@@ -60,6 +60,7 @@ public:
             const Kernel<KernelType>& kernel,
             const Expression<CoordinateType>& trialExpression,
             const OpenClHandler& openClHandler,
+            const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals,
             const AccuracyOptions& accuracyOptions);
     virtual ~StandardLocalAssemblerForIntegralOperatorsOnSurfaces();
@@ -75,7 +76,7 @@ public:
     virtual void evaluateLocalWeakForms(
             const std::vector<int>& testElementIndices,
             const std::vector<int>& trialElementIndices,
-            Fiber::Array2D<arma::Mat<ResultType> >& result);
+            Fiber::Array2d<arma::Mat<ResultType> >& result);
 
     virtual void evaluateLocalWeakForms(
             const std::vector<int>& elementIndices,
@@ -116,7 +117,8 @@ private:
     const Kernel<KernelType>& m_kernel;
     const Expression<CoordinateType>& m_trialExpression;
     const OpenClHandler& m_openClHandler;
-    const AccuracyOptions& m_accuracyOptions;
+    ParallelisationOptions m_parallelisationOptions;
+    AccuracyOptions m_accuracyOptions;
 
     IntegratorMap m_TestKernelTrialIntegrators;
     Cache m_cache;

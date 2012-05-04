@@ -24,7 +24,7 @@ namespace Fiber
 {
 
 template <typename T>
-inline Array2D<T>::Array2D()
+inline Array2d<T>::Array2d()
 {
     m_extents[0] = 0;
     m_extents[1] = 0;
@@ -33,7 +33,7 @@ inline Array2D<T>::Array2D()
 }
 
 template <typename T>
-inline Array2D<T>::Array2D(int extent0, int extent1)
+inline Array2d<T>::Array2d(int extent0, int extent1)
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_extents(extent0, extent1);
@@ -45,7 +45,7 @@ inline Array2D<T>::Array2D(int extent0, int extent1)
 }
 
 template <typename T>
-inline Array2D<T>::Array2D(int extent0, int extent1, T* data)
+inline Array2d<T>::Array2d(int extent0, int extent1, T* data)
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_extents(extent0, extent1);
@@ -57,14 +57,14 @@ inline Array2D<T>::Array2D(int extent0, int extent1, T* data)
 }
 
 template <typename T>
-inline Array2D<T>::~Array2D()
+inline Array2d<T>::~Array2d()
 {
     if (m_owns && m_storage)
         delete[] m_storage;
 }
 
 template <typename T>
-inline T& Array2D<T>::operator()(int index0, int index1)
+inline T& Array2d<T>::operator()(int index0, int index1)
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_indices(index0, index1);
@@ -73,7 +73,7 @@ inline T& Array2D<T>::operator()(int index0, int index1)
 }
 
 template <typename T>
-inline const T& Array2D<T>::operator()(int index0, int index1) const
+inline const T& Array2d<T>::operator()(int index0, int index1) const
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_indices(index0, index1);
@@ -82,7 +82,7 @@ inline const T& Array2D<T>::operator()(int index0, int index1) const
 }
 
 template <typename T>
-inline int Array2D<T>::extent(int dimension) const
+inline int Array2d<T>::extent(int dimension) const
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_dimension(dimension);
@@ -91,7 +91,7 @@ inline int Array2D<T>::extent(int dimension) const
 }
 
 template <typename T>
-inline void Array2D<T>::set_size(int extent0, int extent1)
+inline void Array2d<T>::set_size(int extent0, int extent1)
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_extents(extent0, extent1);
@@ -111,46 +111,46 @@ inline void Array2D<T>::set_size(int extent0, int extent1)
 }
 
 template <typename T>
-inline typename Array2D<T>::iterator Array2D<T>::begin()
+inline typename Array2d<T>::iterator Array2d<T>::begin()
 {
     return m_storage;
 }
 
 template <typename T>
-inline typename Array2D<T>::const_iterator Array2D<T>::begin() const
+inline typename Array2d<T>::const_iterator Array2d<T>::begin() const
 {
     return m_storage;
 }
 
 template <typename T>
-inline typename Array2D<T>::iterator Array2D<T>::end()
+inline typename Array2d<T>::iterator Array2d<T>::end()
 {
     return m_storage + m_extents[0] * m_extents[1];
 }
 
 template <typename T>
-inline typename Array2D<T>::const_iterator Array2D<T>::end() const
+inline typename Array2d<T>::const_iterator Array2d<T>::end() const
 {
     return m_storage + m_extents[0] * m_extents[1];
 }
 
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
 template <typename T>
-inline void Array2D<T>::check_dimension(int dimension) const
+inline void Array2d<T>::check_dimension(int dimension) const
 {
     if (dimension < 0 || 1 < dimension)
         throw std::invalid_argument("Invalid dimension");
 }
 
 template <typename T>
-inline void Array2D<T>::check_extents(int extent0, int extent1) const
+inline void Array2d<T>::check_extents(int extent0, int extent1) const
 {
     if (extent0 <= 0 || extent1 <= 0)
         throw std::length_error("Invalid extent");
 }
 
 template <typename T>
-inline void Array2D<T>::check_indices(int index0, int index1) const
+inline void Array2d<T>::check_indices(int index0, int index1) const
 {
     if (index0 < 0 || m_extents[0] <= index0 ||
         index1 < 0 || m_extents[1] <= index1)

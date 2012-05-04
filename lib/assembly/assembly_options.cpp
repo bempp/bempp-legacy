@@ -31,22 +31,20 @@ namespace Bempp
 AcaOptions::AcaOptions() :
     eps(1E-4),
     eta(1.2),
-    maximumRank(10000),
     minimumBlockSize(16),
+    maximumRank(10000),
     recompress(true),
     outputPostscript(false),
-    outputFname("aca.ps"),
-    scaling(1.0) {}
+    scaling(1.0),
+    outputFname("aca.ps")
+{}
 
 
 
 AssemblyOptions::AssemblyOptions() :
-    // TODO: perhaps set m_acaOptions to some defaults
     m_representation(DENSE),
-    m_parallelism(TBB), m_maxThreadCount(AUTO),
     m_singularIntegralCaching(AUTO)
 {
-    m_openClOptions.useOpenCl = false;
 }
 
 void AssemblyOptions::switchToDense()
@@ -72,19 +70,12 @@ void AssemblyOptions::switchToFmm()
 
 void AssemblyOptions::switchToOpenCl(const OpenClOptions& openClOptions)
 {
-    m_parallelism = OPEN_CL;
-    m_openClOptions = openClOptions;
-    m_openClOptions.useOpenCl = true;
+    m_parallelisationOptions.switchToOpenCl(openClOptions);
 }
 
 void AssemblyOptions::switchToTbb(int maxThreadCount)
 {
-    m_parallelism = TBB;
-    m_openClOptions.useOpenCl = false;
-    if (maxThreadCount <= 0 && maxThreadCount != AUTO)
-        throw std::runtime_error("AssemblyOptions::switchToTbb(): "
-                                 "maxThreadCount must be positive or equal to AUTO");
-    m_maxThreadCount = maxThreadCount;
+    m_parallelisationOptions.switchToTbb(maxThreadCount);
 }
 
 void AssemblyOptions::setSingularIntegralCaching(Mode mode)

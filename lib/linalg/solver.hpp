@@ -32,6 +32,8 @@ class Solver
 public:
     enum EStatus {CONVERGED, UNCONVERGED, UNKNOWN};
 
+    virtual ~Solver() {}
+
     virtual void solve() = 0;
 
     virtual GridFunction<BasisFunctionType, ResultType> getResult() const = 0;

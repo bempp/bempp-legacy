@@ -108,8 +108,8 @@ public:
 
 private:
     const std::vector<int>& m_testIndices;
-    const std::vector<std::vector<GlobalDofIndex> >& m_trialGlobalDofs;
     const std::vector<std::vector<GlobalDofIndex> >& m_testGlobalDofs;
+    const std::vector<std::vector<GlobalDofIndex> >& m_trialGlobalDofs;
     // mutable OK because Assembler is thread-safe. (Alternative to "mutable" here:
     // make assembler's internal integrator map mutable)
     mutable typename Fiber::LocalAssemblerForOperators<ResultType>& m_assembler;
@@ -151,13 +151,14 @@ makeAssembler(
         const std::vector<const Fiber::Basis<BasisFunctionType>*>& testBases,
         const std::vector<const Fiber::Basis<BasisFunctionType>*>& trialBases,
         const Fiber::OpenClHandler& openClHandler,
+        const ParallelisationOptions& parallelisationOptions,
         bool cacheSingularIntegrals) const
 {
     return assemblerFactory.makeAssemblerForIntegralOperators(
                 geometryFactory, rawGeometry,
                 testBases, trialBases,
                 testExpression(), kernel(), trialExpression(),
-                openClHandler, cacheSingularIntegrals);
+                openClHandler, parallelisationOptions, cacheSingularIntegrals);
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
@@ -185,7 +186,6 @@ assembleWeakForm(
 
     const Grid& grid = trialSpace.grid();
     std::auto_ptr<GridView> view = grid.leafView();
-    const int elementCount = view->entityCount(0);
 
     // Gather geometric data
     Fiber::RawGridGeometry<CoordinateType> rawGeometry(grid.dim(), grid.dimWorld());
@@ -200,19 +200,13 @@ assembleWeakForm(
     // Get pointers to test and trial bases of each element
     std::vector<const Fiber::Basis<BasisFunctionType>*> testBases;
     std::vector<const Fiber::Basis<BasisFunctionType>*> trialBases;
-    testBases.reserve(elementCount);
-    trialBases.reserve(elementCount);
-
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-    while (!it->finished()) {
-        const Entity<0>& element = it->entity();
-        testBases.push_back(&testSpace.basis(element));
-        trialBases.push_back(&trialSpace.basis(element));
-        it->next();
-    }
+    getAllBases(testSpace, testBases);
+    getAllBases(trialSpace, trialBases);
 
     // Now create the assembler
-    Fiber::OpenClHandler openClHandler(options.openClOptions());
+    const ParallelisationOptions& parallelOptions =
+            options.parallelisationOptions();
+    Fiber::OpenClHandler openClHandler(parallelOptions.openClOptions());
     if (openClHandler.UseOpenCl())
         openClHandler.pushGeometry (rawGeometry.vertices(),
                                     rawGeometry.elementCornerIndices());
@@ -224,7 +218,8 @@ assembleWeakForm(
             makeAssembler(factory,
                           *geometryFactory, rawGeometry,
                           testBases, trialBases,
-                          openClHandler, cacheSingularIntegrals);
+                          openClHandler, parallelOptions,
+                          cacheSingularIntegrals);
 
     return assembleWeakFormInternal(*assembler, options);
 }
@@ -293,12 +288,14 @@ assembleWeakFormInDenseMode(
     typedef DenseWeakFormAssemblerLoopBody<BasisFunctionType, ResultType> Body;
     typename Body::MutexType mutex;
 
+    const ParallelisationOptions& parallelOptions =
+            options.parallelisationOptions();
     int maxThreadCount = 1;
-    if (options.parallelism() == AssemblyOptions::TBB) {
-        if (options.maxThreadCount() == AssemblyOptions::AUTO)
+    if (parallelOptions.mode() == ParallelisationOptions::TBB) {
+        if (parallelOptions.maxThreadCount() == ParallelisationOptions::AUTO)
             maxThreadCount = tbb::task_scheduler_init::automatic;
         else
-            maxThreadCount = options.maxThreadCount();
+            maxThreadCount = parallelOptions.maxThreadCount();
     }
     tbb::task_scheduler_init scheduler(maxThreadCount);
     tbb::parallel_for(tbb::blocked_range<size_t>(0, elementCount),

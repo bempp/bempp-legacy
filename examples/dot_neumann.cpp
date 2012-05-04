@@ -33,10 +33,8 @@
 #include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 
 #include "assembly/identity_operator.hpp"
-#include "assembly/dot_single_layer_potential_3d.hpp"
-#include "assembly/dot_double_layer_potential_3d.hpp"
-#include "assembly/adjoint_double_layer_potential_3d.hpp"
-#include "assembly/hypersingular_operator_3d.hpp"
+#include "assembly/dot_3d_single_layer_potential.hpp"
+#include "assembly/dot_3d_double_layer_potential.hpp"
 
 #include "common/scalar_traits.hpp"
 
@@ -134,8 +132,8 @@ int main(int argc, char* argv[])
 
     // We need the single layer, double layer, and the identity operator
 
-    DotSingleLayerPotential3D<BFT, RT> rhsOp(HplusHalfSpace, HminusHalfSpace, waveNo);
-    DotDoubleLayerPotential3D<BFT, RT> dlp(HplusHalfSpace, HplusHalfSpace, waveNo);
+    Dot3dSingleLayerPotential<BFT, RT> rhsOp(HplusHalfSpace, HminusHalfSpace, waveNo);
+    Dot3dDoubleLayerPotential<BFT, RT> dlp(HplusHalfSpace, HplusHalfSpace, waveNo);
     IdentityOperator<BFT, RT> id(HplusHalfSpace, HplusHalfSpace);
 
     // Form the left-hand side sum
@@ -164,15 +162,17 @@ int main(int argc, char* argv[])
 
     std::cout << "Initialize solver" << std::endl;
 
-#ifdef WITH_TRILINOS
-    DefaultIterativeSolver<BFT, RT> solver(lhsOp, rhs);
-    solver.initializeSolver(defaultGmresParameterList(1e-5));
-    solver.solve();
-    std::cout << solver.getSolverMessage() << std::endl;
-#else
+    // The interface to the iterative solver from Trilinos doesn't support
+    // complex numbers yet.
+//#ifdef WITH_TRILINOS
+//    DefaultIterativeSolver<BFT, RT> solver(lhsOp, rhs);
+//    solver.initializeSolver(defaultGmresParameterList(1e-5));
+//    solver.solve();
+//    std::cout << solver.getSolverMessage() << std::endl;
+//#else
     DefaultDirectSolver<BFT, RT> solver(lhsOp, rhs);
     solver.solve();
-#endif
+//#endif
 
     // Extract the solution
 

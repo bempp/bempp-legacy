@@ -99,7 +99,7 @@ StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType
 evaluateLocalWeakForms(
     const std::vector<int>& testElementIndices,
     const std::vector<int>& trialElementIndices,
-    Fiber::Array2D<arma::Mat<ResultType> >& result)
+    Fiber::Array2d<arma::Mat<ResultType> >& result)
 {
     // Probably will never be called
     throw std::runtime_error("StandardLocalAssemblerForIdentityOperatorOnSurface::"

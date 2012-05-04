@@ -57,13 +57,13 @@ public:
       \param[out] result
         dimensions: (worldDim, functionCount, pointCount)
     */
-    static void evaluateSurfaceCurls3D(const BasisData<ValueType>& basisData,
+    static void evaluateSurfaceCurls3d(const BasisData<ValueType>& basisData,
                                        const GeometricalData<CoordinateType>& geomData,
                                        arma::Cube<ValueType>& result) {
         const arma::Mat<CoordinateType>& n = geomData.normals;
         // jt(i, j): dx_j/dq_i
         const arma::Cube<CoordinateType>& jit = geomData.jacobianInversesTransposed;
-        const Array4D<ValueType>& d = basisData.derivatives;
+        const Array4d<ValueType>& d = basisData.derivatives;
 
         assert(d.extent(0) == 1); // scalar functions
         const int worldDim = 3;

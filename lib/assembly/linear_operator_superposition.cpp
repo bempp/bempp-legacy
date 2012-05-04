@@ -176,7 +176,6 @@ assembleWeakFormInAcaMode(
 
     const Grid& grid = trialSpace.grid();
     std::auto_ptr<GridView> view = grid.leafView();
-    const int elementCount = view->entityCount(0);
 
     // REFACT The following two blocks might disappear in the constructor of
     // LocalAssemblerFactory
@@ -191,31 +190,22 @@ assembleWeakFormInAcaMode(
     std::auto_ptr<GeometryFactory> geometryFactory =
             trialSpace.grid().elementGeometryFactory();
 
-    // REFACT Basis retrieval might be moved into Space
-
     // Get pointers to test and trial bases of each element
     std::vector<const Fiber::Basis<BasisFunctionType>*> testBases;
     std::vector<const Fiber::Basis<BasisFunctionType>*> trialBases;
-    testBases.reserve(elementCount);
-    trialBases.reserve(elementCount);
-
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-    while (!it->finished()) {
-        const Entity<0>& element = it->entity();
-        testBases.push_back(&testSpace.basis(element));
-        trialBases.push_back(&trialSpace.basis(element));
-        it->next();
-    }
+    getAllBases(testSpace, testBases);
+    getAllBases(trialSpace, trialBases);
 
     // REFACT This will disappear in the constructor of LocalAssemblerFactory
-    Fiber::OpenClHandler openClHandler(options.openClOptions());
+    const ParallelisationOptions& parallelOptions =
+            options.parallelisationOptions();
+    Fiber::OpenClHandler openClHandler(parallelOptions.openClOptions());
 
     // REFACT This is unfortunately going to stay
     bool cacheSingularIntegrals =
             (options.singularIntegralCaching() == AssemblyOptions::YES ||
              (options.singularIntegralCaching() == AssemblyOptions::AUTO &&
-              options.parallelism() == AssemblyOptions::OPEN_CL));
-
+              parallelOptions.mode() == ParallelisationOptions::OPEN_CL));
 
     // Construct local assemblers. Immediately assemble sparse terms in sparse
     // mode. Populate a vector of dense terms for subsequent ACA-mode assembly.
@@ -234,7 +224,7 @@ assembleWeakFormInAcaMode(
                     factory,
                     *geometryFactory, rawGeometry,
                     testBases, trialBases,
-                    openClHandler, cacheSingularIntegrals);
+                    openClHandler, parallelOptions, cacheSingularIntegrals);
 
         if (term->supportsRepresentation(AssemblyOptions::SPARSE)) {
             std::auto_ptr<DiscreteLinOp> discreteTerm =
@@ -283,7 +273,6 @@ LinearOperatorSuperposition<BasisFunctionType, ResultType>::assembleWeakFormInAr
 
     const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>
             localOperators = this->localOperators();
-    const std::vector<ResultType>& multipliers = this->multipliers();
 
     boost::ptr_vector<DiscreteLinOp> discreteOps;
     for (int i = 0; i < localOperators.size(); ++i) {

@@ -60,6 +60,7 @@ public:
             const std::vector<const Fiber::Basis<BasisFunctionType>*>& testBases,
             const std::vector<const Fiber::Basis<BasisFunctionType>*>& trialBases,
             const Fiber::OpenClHandler& openClHandler,
+            const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const;
 
     virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >

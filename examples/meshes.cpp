@@ -39,9 +39,7 @@ loadTriangularMeshFromFile(const char* fileName)
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
 
-    return GridFactory::importGmshGrid(params, std::string(fileName),
-                                       true, // verbose
-                                       false); // insertBoundarySegments
+    return GridFactory::importGmshGrid(params, std::string(fileName));
 }
 
 void dumpElementList(const Grid* grid)

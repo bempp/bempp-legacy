@@ -54,13 +54,13 @@ public:
     virtual void evaluateOnGrid(
             const GeometricalData<CoordinateType>& testGeomData,
             const GeometricalData<CoordinateType>& trialGeomData,
-            Array4D<ValueType>& result) const = 0;
+            Array4d<ValueType>& result) const = 0;
 
     /**
      * \brief Returns an OpenCL code snippet for kernel evaluation as a string.
      * \note The code snippet must provide device functions devKernevalGrid and
      *    devKernevalPair (for an implementation example, see
-     *    CL/single_layer_potential_3D_kernel.cl)
+     *    CL/laplace_3d_single_layer_potential_kernel.cl)
      * \note The required data must have been pushed to device memory before
      *    invokation.
      */

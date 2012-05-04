@@ -24,6 +24,7 @@
 #include <string>
 
 #include "../fiber/opencl_options.hpp"
+#include "../fiber/parallelisation_options.hpp"
 
 namespace Bempp
 {
@@ -43,6 +44,7 @@ struct AcaOptions
 };
 
 using Fiber::OpenClOptions;
+using Fiber::ParallelisationOptions;
 
 class AssemblyOptions
 {
@@ -70,7 +72,6 @@ public:
         return m_representation;
     }
 
-
     const AcaOptions& acaOptions() const {
         return m_acaOptions;
     }
@@ -79,23 +80,11 @@ public:
       @name Parallelism
       @{ */
 
-    enum Parallelism {
-        TBB, OPEN_CL
-    };
-
     void switchToOpenCl(const OpenClOptions& openClOptions);
     void switchToTbb(int maxThreadCount = AUTO);
 
-    Parallelism parallelism() const {
-        return m_parallelism;
-    }
-
-    const OpenClOptions& openClOptions() const {
-        return m_openClOptions;
-    }
-
-    int maxThreadCount() const {
-        return m_maxThreadCount;
+    const ParallelisationOptions& parallelisationOptions() const {
+        return m_parallelisationOptions;
     }
 
     /** @}
@@ -121,9 +110,7 @@ public:
 private:
     Representation m_representation;
     AcaOptions m_acaOptions;
-    Parallelism m_parallelism;
-    OpenClOptions m_openClOptions;
-    int m_maxThreadCount;
+    Fiber::ParallelisationOptions m_parallelisationOptions;
     Mode m_singularIntegralCaching;
 };
 

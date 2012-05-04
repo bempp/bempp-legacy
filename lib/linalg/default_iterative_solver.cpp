@@ -48,8 +48,8 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::DefaultIterativeSolver(
         const LinearOperator<BasisFunctionType, ResultType>& linOp,
         const GridFunction<BasisFunctionType, ResultType>& gridFun) :
     m_discreteOperator(linOp.assembledDiscreteLinearOperator()),
-    m_rhs(new Vector<ResultType>(gridFun.coefficients())),
-    m_space(linOp.trialSpace())
+    m_space(linOp.trialSpace()),
+    m_rhs(new Vector<ResultType>(gridFun.coefficients()))
 {
     if (!linOp.isAssembled())
         throw std::runtime_error("DefaultIterativeSolver::DefaultIterativeSolver(): "

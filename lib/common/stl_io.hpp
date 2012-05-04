@@ -31,6 +31,7 @@ std::ostream& operator<< (std::ostream& dest, const std::vector<T>& v)
     for (int i = 0; i < v.size(); ++i)
         dest << v[i] << '\n';
     dest.flush();
+    return dest;
 }
 
 #endif

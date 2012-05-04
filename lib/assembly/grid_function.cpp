@@ -61,6 +61,10 @@
 // and other configurable execution parameters.
 // If there are no such parameters, OpenClOptions should just be removed.
 
+// Justification: right now there can be a conflict: the user can invoke
+// AssemblyOptions::switchToOpenCl() and pass to it an instance of OpenClOptions
+// with useOpenCl set to false. This makes no sense.
+
 namespace Bempp
 {
 
@@ -360,7 +364,6 @@ GridFunction<BasisFunctionType, ResultType>::calculateProjections(
 
     const Grid& grid = space.grid();
     std::auto_ptr<GridView> view = grid.leafView();
-    const int elementCount = view->entityCount(0);
 
     // Gather geometric data
     Fiber::RawGridGeometry<CoordinateType> rawGeometry(grid.dim(), grid.dimWorld());
@@ -374,22 +377,19 @@ GridFunction<BasisFunctionType, ResultType>::calculateProjections(
 
     // Get pointers to test and trial bases of each element
     std::vector<const Fiber::Basis<BasisFunctionType>*> testBases;
-    testBases.reserve(elementCount);
-
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-    while (!it->finished()) {
-        const Entity<0>& element = it->entity();
-        testBases.push_back(&space.basis(element));
-        it->next();
-    }
+    getAllBases(space, testBases);
 
     // Get reference to the test expression
     const Fiber::Expression<CoordinateType>& testExpression =
             space.shapeFunctionValueExpression();
 
     // Now create the assembler
-    Fiber::OpenClHandler openClHandler(options.openClOptions());
-    openClHandler.pushGeometry<CoordinateType,int> (rawGeometry.vertices(),
+    const ParallelisationOptions& parallelOptions =
+            options.parallelisationOptions();
+    Fiber::OpenClHandler openClHandler(
+                parallelOptions.openClOptions());
+    openClHandler.pushGeometry (rawGeometry.vertices(),
+//    openClHandler.pushGeometry<CoordinateType,int> (rawGeometry.vertices(),
                                 rawGeometry.elementCornerIndices());
 
     std::auto_ptr<LocalAssembler> assembler =
@@ -721,8 +721,6 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
     const SCALAR& scalar, const GridFunction<BASIS, RESULT>& op); \
     template GridFunction<BASIS, RESULT> operator/( \
     const GridFunction<BASIS, RESULT>& op, const SCALAR& scalar)
-
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperator);
 
 #if defined(ENABLE_SINGLE_PRECISION)
 INSTANTIATE_FREE_FUNCTIONS(
