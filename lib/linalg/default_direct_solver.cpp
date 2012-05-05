@@ -52,7 +52,8 @@ void DefaultDirectSolver<BasisFunctionType, ResultType>::solve()
 }
 
 template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType, ResultType> DefaultDirectSolver<BasisFunctionType, ResultType>::getResult() const
+GridFunction<BasisFunctionType, ResultType>
+DefaultDirectSolver<BasisFunctionType, ResultType>::getResult() const
 {
     return GridFunction<BasisFunctionType, ResultType>(
                 m_linearOperator.testSpace(),
@@ -60,7 +61,8 @@ GridFunction<BasisFunctionType, ResultType> DefaultDirectSolver<BasisFunctionTyp
 }
 
 template <typename BasisFunctionType, typename ResultType>
-typename Solver<BasisFunctionType, ResultType>::EStatus DefaultDirectSolver<BasisFunctionType, ResultType>::getStatus() const
+typename Solver<BasisFunctionType, ResultType>::EStatus
+DefaultDirectSolver<BasisFunctionType, ResultType>::getStatus() const
 {
     return m_status;
 }

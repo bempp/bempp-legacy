@@ -161,17 +161,15 @@ int main(int argc, char* argv[])
 
     std::cout << "Initialize solver" << std::endl;
 
-    // The interface to the iterative solver from Trilinos doesn't support
-    // complex numbers yet.
-//#ifdef WITH_TRILINOS
-//    DefaultIterativeSolver<BFT, RT> solver(lhsOp, rhs);
-//    solver.initializeSolver(defaultGmresParameterList(1e-5));
-//    solver.solve();
-//    std::cout << solver.getSolverMessage() << std::endl;
-//#else
+#ifdef WITH_TRILINOS
+    DefaultIterativeSolver<BFT, RT> solver(lhsOp, rhs);
+    solver.initializeSolver(defaultGmresParameterList(1e-5));
+    solver.solve();
+    std::cout << solver.getSolverMessage() << std::endl;
+#else
     DefaultDirectSolver<BFT, RT> solver(lhsOp, rhs);
     solver.solve();
-//#endif
+#endif
 
     // Extract the solution
 
