@@ -52,11 +52,12 @@ public:
                           const ValueType alpha,
                           arma::Mat<ValueType>& block) const;
 
-protected:
 #ifdef WITH_TRILINOS
+public:
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > range() const;
 
+protected:
     virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
 
     virtual void applyImpl(

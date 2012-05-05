@@ -48,6 +48,7 @@ public:
     // This class cannot be used without Trilinos
 private:
     DiscreteSparseLinearOperator();
+public:
 #endif
 
     virtual void dump() const;
@@ -67,11 +68,12 @@ private:
     const Epetra_CrsMatrix& epetraMatrix() const;
 #endif
 
-protected:
 #ifdef WITH_TRILINOS
+public:
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > range() const;
 
+protected:
     virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
     virtual void applyImpl(
             const Thyra::EOpTransp M_trans,
