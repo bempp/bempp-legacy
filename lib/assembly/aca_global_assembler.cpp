@@ -56,6 +56,16 @@ namespace Bempp
 namespace
 {
 
+struct ChunkStats
+{
+    ChunkStats() : valid(false) {}
+    bool valid;
+    size_t chunkStart;
+    size_t chunkSize;
+    tbb::tick_count startTime;
+    tbb::tick_count endTime;
+};
+
 #ifdef WITH_AHMED
 template <typename BasisFunctionType, typename ResultType>
 class AcaWeakFormAssemblerLoopBody
@@ -71,16 +81,23 @@ public:
             AhmedLeafClusterArray& leafClusters,
             boost::shared_array<AhmedMblock*> blocks,
             const AcaOptions& options,
-            tbb::atomic<size_t>& done) :
+            tbb::atomic<size_t>& done
+            ,std::vector<ChunkStats>& stats) :
         m_helper(helper),
         m_leafClusters(leafClusters), m_blocks(blocks),
         m_options(options), m_done(done)
+      , m_stats(stats)
     {
     }
 
     void operator() (const tbb::blocked_range<size_t>& r) const {
-        const char* TEXT = "Approximating ... ";
         for (size_t i = r.begin(); i != r.end(); ++i)
+        m_stats[r.begin()].valid = true;
+        m_stats[r.begin()].chunkStart = r.begin();
+        m_stats[r.begin()].chunkSize = r.size();
+        m_stats[r.begin()].startTime = tbb::tick_count::now();
+
+        const char* TEXT = "Approximating ... ";        
         {
             DoubleCluster* cluster = dynamic_cast<DoubleCluster*>(m_leafClusters[i]);
             apprx_unsym(m_helper, m_blocks[cluster->getidx()],
@@ -90,6 +107,8 @@ public:
             progressbar(std::cout, TEXT, (++m_done) - 1,
                         m_leafClusters.size(), HASH_COUNT, true);
         }
+
+        m_stats[r.begin()].endTime = tbb::tick_count::now();
     }
 
 private:
@@ -99,6 +118,7 @@ private:
     boost::shared_array<AhmedMblock*> m_blocks;
     const AcaOptions& m_options;
     mutable tbb::atomic<size_t>& m_done;
+    mutable std::vector<ChunkStats>& m_stats;
 };
 #endif
 
@@ -227,9 +247,35 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
 //    tbb::atomic<size_t> done;
 //    done = 0;
 
+//    std::vector<ChunkStats> chunkStats(leafClusterCount);
+
 //    typedef AcaWeakFormAssemblerLoopBody<BasisFunctionType, ResultType> Body;
+//    std::cout << "Loop start" << std::endl;
+//    tbb::tick_count loopStart = tbb::tick_count::now();
+////    tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
+////                      Body(helper, leafClusters, blocks, acaOptions, done
+////                           , chunkStats));
 //    tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
 //                      Body(helper, leafClusters, blocks, acaOptions, done));
+//    tbb::tick_count loopEnd = tbb::tick_count::now();
+//    std::cout << "Loop end" << std::endl;
+
+//    std::cout << "\nChunks:\n";
+//    for (int i = 0; i < leafClusterCount; ++i)
+//        if (chunkStats[i].valid) {
+//            int blockIndex = leafClusters[i]->getidx();
+//            std::cout << chunkStats[i].chunkStart << "\t"
+//                      << chunkStats[i].chunkSize << "\t"
+//                      << (chunkStats[i].startTime - loopStart).seconds() << "\t"
+//                      << (chunkStats[i].endTime - loopStart).seconds() << "\t"
+//                      << (chunkStats[i].endTime - chunkStats[i].startTime).seconds() << "\t"
+//                      << blocks[blockIndex]->getn1() << "\t"
+//                      << blocks[blockIndex]->getn2() << "\t"
+//                      << blocks[blockIndex]->islwr() << "\t"
+//                      << (blocks[blockIndex]->islwr() ? blocks[blockIndex]->rank() : 0) << "\n";
+//        }
+
+//    std::cout << "Total time: " << (loopEnd - loopStart).seconds() << std::endl;
 
     {
         size_t origMemory = sizeof(ResultType) * testDofCount * trialDofCount;
