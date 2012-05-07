@@ -108,11 +108,15 @@ int main(int argc, char* argv[])
     // We want to use ACA
 
     AcaOptions acaOptions; // Default parameters for ACA
+    acaOptions.eps = 1e-5;
     assemblyOptions.switchToAca(acaOptions);
 
     // Define the standard integration factory
 
-    StandardLocalAssemblerFactoryForOperatorsOnSurfaces<BFT, RT> factory;
+    AccuracyOptions accuracyOptions;
+    accuracyOptions.doubleRegular.orderIncrement = 1;
+    StandardLocalAssemblerFactoryForOperatorsOnSurfaces<BFT, RT>
+            factory(accuracyOptions);
 
     // We need the single layer, double layer, and the identity operator
 
@@ -166,7 +170,9 @@ int main(int argc, char* argv[])
     // Write out as VTK
 
     solFun.exportToVtk(VtkWriter::CELL_DATA, "Neumann_data",
-                       "calculated_neumann_data");
+                       "calculated_neumann_data_cell");
+    solFun.exportToVtk(VtkWriter::VERTEX_DATA, "Neumann_data",
+                       "calculated_neumann_data_vertex");
 
 //    // Uncomment the block below if you are solving the problem on a sphere and
 //    // you want to compare the numerical and analytical solution.
