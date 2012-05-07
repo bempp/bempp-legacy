@@ -46,6 +46,7 @@
 #ifdef WITH_AHMED
 #include "ahmed_aux.hpp"
 #include "discrete_aca_linear_operator.hpp"
+#include "scattered_range.hpp"
 #include "weak_form_aca_assembly_helper.hpp"
 #endif
 
@@ -90,14 +91,15 @@ public:
     {
     }
 
-    void operator() (const tbb::blocked_range<size_t>& r) const {
-        for (size_t i = r.begin(); i != r.end(); ++i)
+    template <typename Range>
+    void operator() (const Range& r) const {
         m_stats[r.begin()].valid = true;
         m_stats[r.begin()].chunkStart = r.begin();
         m_stats[r.begin()].chunkSize = r.size();
         m_stats[r.begin()].startTime = tbb::tick_count::now();
 
         const char* TEXT = "Approximating ... ";        
+        for (typename Range::const_iterator i = r.begin(); i != r.end(); ++i)
         {
             DoubleCluster* cluster = dynamic_cast<DoubleCluster*>(m_leafClusters[i]);
             apprx_unsym(m_helper, m_blocks[cluster->getidx()],
@@ -231,6 +233,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
                acaOptions.eps, acaOptions.maximumRank, blocks.get());
 
 //    AhmedLeafClusterArray leafClusters(doubleClusterTree.get());
+//    leafClusters.sortAccordingToClusterSize();
 //    const size_t leafClusterCount = leafClusters.size();
 
 //    const ParallelisationOptions& parallelOptions =
@@ -255,8 +258,9 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
 ////    tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
 ////                      Body(helper, leafClusters, blocks, acaOptions, done
 ////                           , chunkStats));
-//    tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
-//                      Body(helper, leafClusters, blocks, acaOptions, done));
+//    tbb::parallel_for(ScatteredRange(0, leafClusterCount),
+//                      Body(helper, leafClusters, blocks, acaOptions, done
+//                           , chunkStats));
 //    tbb::tick_count loopEnd = tbb::tick_count::now();
 //    std::cout << "Loop end" << std::endl;
 
