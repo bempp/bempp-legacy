@@ -214,6 +214,7 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
             calculateProjections(function, space, factory, assemblyOptions);
 
     AssemblyOptions idAssemblyOptions(assemblyOptions);
+    idAssemblyOptions.switchToAca(AcaOptions());
     IdentityOperator<BasisFunctionType, ResultType> id(space, space);
     std::auto_ptr<DiscreteLinearOperator<ResultType> > discreteId =
             id.assembleWeakForm(factory, idAssemblyOptions);
