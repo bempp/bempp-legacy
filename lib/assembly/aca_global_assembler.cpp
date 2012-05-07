@@ -229,6 +229,26 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
     //                 acaOptions.recompress, acaOptions.eps,
     //                 acaOptions.maximumRank, blocks.get());
 
+    const int mblockCount = doubleClusterTree->nleaves();
+    for (int i = 0; i < mblockCount; ++i)
+        if (blocks[i]->isdns())
+        {
+            char  buffer[1024];
+            sprintf(buffer, "mblock-dns-%d-%d.txt",
+                    blocks[i]->getn1(), blocks[i]->getn2());
+            arma::Col<ResultType> block((ResultType*)blocks[i]->getdata(),
+                                        blocks[i]->nvals());
+            arma::diskio::save_raw_ascii(block, buffer);
+        }
+        else
+        {
+            char buffer[1024];
+            sprintf(buffer, "mblock-lwr-%d-%d.txt",
+                    blocks[i]->getn1(), blocks[i]->getn2());
+            arma::Col<ResultType> block((ResultType*)blocks[i]->getdata(),
+                                        blocks[i]->nvals());
+            arma::diskio::save_raw_ascii(block, buffer);
+        }
     matgen_omp(helper, blockCount, doubleClusterTree.get(),
                acaOptions.eps, acaOptions.maximumRank, blocks.get());
 

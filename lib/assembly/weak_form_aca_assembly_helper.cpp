@@ -34,6 +34,7 @@
 #include <map>
 #include <set>
 #include <utility>
+#include <cstdio>
 
 namespace Bempp
 {
@@ -213,6 +214,10 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
         m_sparseTermsToAdd[nTerm]->addBlock(
                     testGlobalDofs, trialGlobalDofs,
                     m_sparseTermsMultipliers[nTerm], result);
+
+     char buffer[1024];
+     sprintf(buffer, "block-%d-%d-%d-%d.txt", b1, n1, b2, n2);
+     arma::diskio::save_raw_ascii(result, buffer);
 }
 
 template <typename BasisFunctionType, typename ResultType>
