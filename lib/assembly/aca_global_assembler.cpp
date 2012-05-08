@@ -229,6 +229,9 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
     //                 acaOptions.recompress, acaOptions.eps,
     //                 acaOptions.maximumRank, blocks.get());
 
+    matgen_omp(helper, blockCount, doubleClusterTree.get(),
+               acaOptions.eps, acaOptions.maximumRank, blocks.get());
+
     const int mblockCount = doubleClusterTree->nleaves();
     for (int i = 0; i < mblockCount; ++i)
         if (blocks[i]->isdns())
@@ -249,8 +252,6 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
                                         blocks[i]->nvals());
             arma::diskio::save_raw_ascii(block, buffer);
         }
-    matgen_omp(helper, blockCount, doubleClusterTree.get(),
-               acaOptions.eps, acaOptions.maximumRank, blocks.get());
 
 //    AhmedLeafClusterArray leafClusters(doubleClusterTree.get());
 //    leafClusters.sortAccordingToClusterSize();
