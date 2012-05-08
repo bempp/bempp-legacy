@@ -59,6 +59,8 @@ using namespace Bempp;
 typedef double BFT; // basis function type
 typedef std::complex<double> RT; // result type (type used to represent discrete operators)
 
+double g_kappa;
+
 class MyFunctor
 {
 public:
@@ -77,7 +79,15 @@ public:
     // the array "result"
     inline void evaluate(const arma::Col<CoordinateType>& point,
                          arma::Col<ValueType>& result) const {
-        result(0) = 1.;
+       std::vector<double> src(3);
+       src[0] = 0.9; src[1] = 0.0; src[2] = 0.0;
+       double dst = 0.0;
+       for (int i = 0; i < 3; i++) {
+	 double d = src[i] - point[i];
+	 dst += d*d;
+       }
+       dst = sqrt(dst);
+       result(0) = exp (-g_kappa*dst);
     }
 };
 
@@ -95,6 +105,7 @@ int main(int argc, char* argv[])
     BFT c = c0/refind;       // speed of light in medium [mm/ps]
     BFT kappa = 1.0/(3.0*(mua+mus));   // diffusion coefficient
     BFT omega = 2.0*M_PI * freq*1e-12; // modulation frequency [cycles/ps]
+    g_kappa = kappa;
 
     // Construct wave number
     RT waveNo = sqrt (RT(mua/kappa, omega/(c*kappa)));
@@ -132,17 +143,18 @@ int main(int argc, char* argv[])
 
     // We need the single layer, double layer, and the identity operator
 
-    Dot3dSingleLayerPotential<BFT, RT> rhsOp(HplusHalfSpace, HminusHalfSpace, waveNo);
+    Dot3dSingleLayerPotential<BFT, RT> slp(HplusHalfSpace, HplusHalfSpace, waveNo);
     Dot3dDoubleLayerPotential<BFT, RT> dlp(HplusHalfSpace, HplusHalfSpace, waveNo);
     IdentityOperator<BFT, RT> id(HplusHalfSpace, HplusHalfSpace);
 
     // Form the left-hand side sum
 
-    LinearOperatorSuperposition<BFT, RT> lhsOp = -0.5 * id + dlp;
+    LinearOperatorSuperposition<BFT, RT> lhsOp = 0.5 * id + dlp + (1.0/(2.0*kappa)) * slp;
+    //LinearOperatorSuperposition<BFT, RT> rhsOp = id;
 
     // Assemble the Operators
 
-    rhsOp.assemble(factory, assemblyOptions);
+    id.assemble(factory, assemblyOptions);
     lhsOp.assemble(factory, assemblyOptions);
 
     // We also want a grid function
@@ -150,13 +162,13 @@ int main(int argc, char* argv[])
     MyFunctor functor;
     OrdinaryFunction<MyFunctor> function(functor);
 
-    GridFunction<BFT, RT> u(HminusHalfSpace, function, factory, assemblyOptions);
+    GridFunction<BFT, RT> u(HplusHalfSpace, function, factory, assemblyOptions);
 
     // Assemble the rhs
 
     std::cout << "Assemble rhs" << std::endl;
 
-    GridFunction<BFT, RT> rhs = rhsOp * u;
+    GridFunction<BFT, RT> rhs = id * u;
 
     // Initialize the solver
 
