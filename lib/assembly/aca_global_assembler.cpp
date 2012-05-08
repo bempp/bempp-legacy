@@ -42,6 +42,7 @@
 #include <tbb/atomic.h>
 #include <tbb/parallel_for.h>
 #include <tbb/task_scheduler_init.h>
+#include <tbb/concurrent_queue.h>
 
 #ifdef WITH_AHMED
 #include "ahmed_aux.hpp"
@@ -57,6 +58,7 @@ namespace Bempp
 namespace
 {
 
+// For profiling the parallel scheduler
 struct ChunkStats
 {
     ChunkStats() : valid(false) {}
@@ -75,19 +77,22 @@ class AcaWeakFormAssemblerLoopBody
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
     typedef bemblcluster<AhmedDofType, AhmedDofType> DoubleCluster;
     typedef mblock<typename AhmedTypeTraits<ResultType>::Type> AhmedMblock;
-
 public:
+    typedef tbb::concurrent_queue<size_t> LeafClusterIndexQueue;
+
     AcaWeakFormAssemblerLoopBody(
             WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>& helper,
             AhmedLeafClusterArray& leafClusters,
             boost::shared_array<AhmedMblock*> blocks,
             const AcaOptions& options,
-            tbb::atomic<size_t>& done
-            ,std::vector<ChunkStats>& stats) :
+            tbb::atomic<size_t>& done,
+            LeafClusterIndexQueue& leafClusterIndexQueue,
+            std::vector<ChunkStats>& stats) :
         m_helper(helper),
         m_leafClusters(leafClusters), m_blocks(blocks),
-        m_options(options), m_done(done)
-      , m_stats(stats)
+        m_options(options), m_done(done),
+        m_leafClusterIndexQueue(leafClusterIndexQueue),
+        m_stats(stats)
     {
     }
 
@@ -98,10 +103,18 @@ public:
         m_stats[r.begin()].chunkSize = r.size();
         m_stats[r.begin()].startTime = tbb::tick_count::now();
 
-        const char* TEXT = "Approximating ... ";        
-        for (typename Range::const_iterator i = r.begin(); i != r.end(); ++i)
-        {
-            DoubleCluster* cluster = dynamic_cast<DoubleCluster*>(m_leafClusters[i]);
+        const char* TEXT = "Approximating ... ";
+        for (typename Range::const_iterator i = r.begin(); i != r.end(); ++i) {
+            size_t leafClusterIndex = -1;
+            if (!m_leafClusterIndexQueue.try_pop(leafClusterIndex)) {
+                std::cerr << "AcaWeakFormAssemblerLoopBody::operator(): "
+                             "Warning: try_pop failed; this shouldn't happen!"
+                          << std::endl;
+                continue;
+            }
+
+            DoubleCluster* cluster =
+                    dynamic_cast<DoubleCluster*>(m_leafClusters[leafClusterIndex]);
             apprx_unsym(m_helper, m_blocks[cluster->getidx()],
                         cluster, m_options.eps, m_options.maximumRank);
             // TODO: recompress
@@ -120,6 +133,7 @@ private:
     boost::shared_array<AhmedMblock*> m_blocks;
     const AcaOptions& m_options;
     mutable tbb::atomic<size_t>& m_done;
+    mutable LeafClusterIndexQueue& m_leafClusterIndexQueue;
     mutable std::vector<ChunkStats>& m_stats;
 };
 #endif
@@ -225,82 +239,95 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
     boost::shared_array<AhmedMblock*> blocks =
             allocateAhmedMblockArray<ResultType>(doubleClusterTree.get());
 
-    //    matgen_sqntl(helper, doubleClusterTree.get(), doubleClusterTree.get(),
-    //                 acaOptions.recompress, acaOptions.eps,
-    //                 acaOptions.maximumRank, blocks.get());
+    // matgen_sqntl(helper, doubleClusterTree.get(), doubleClusterTree.get(),
+    //              acaOptions.recompress, acaOptions.eps,
+    //              acaOptions.maximumRank, blocks.get());
 
-    matgen_omp(helper, blockCount, doubleClusterTree.get(),
-               acaOptions.eps, acaOptions.maximumRank, blocks.get());
+    // matgen_omp(helper, blockCount, doubleClusterTree.get(),
+    //            acaOptions.eps, acaOptions.maximumRank, blocks.get());
 
-    const int mblockCount = doubleClusterTree->nleaves();
-    for (int i = 0; i < mblockCount; ++i)
-        if (blocks[i]->isdns())
-        {
-            char  buffer[1024];
-            sprintf(buffer, "mblock-dns-%d-%d.txt",
-                    blocks[i]->getn1(), blocks[i]->getn2());
-            arma::Col<ResultType> block((ResultType*)blocks[i]->getdata(),
-                                        blocks[i]->nvals());
-            arma::diskio::save_raw_ascii(block, buffer);
-        }
+    // // Dump mblocks
+    // const int mblockCount = doubleClusterTree->nleaves();
+    // for (int i = 0; i < mblockCount; ++i)
+    //     if (blocks[i]->isdns())
+    //     {
+    //         char  buffer[1024];
+    //         sprintf(buffer, "mblock-dns-%d-%d.txt",
+    //                 blocks[i]->getn1(), blocks[i]->getn2());
+    //         arma::Col<ResultType> block((ResultType*)blocks[i]->getdata(),
+    //                                     blocks[i]->nvals());
+    //         arma::diskio::save_raw_ascii(block, buffer);
+    //     }
+    //     else
+    //     {
+    //         char buffer[1024];
+    //         sprintf(buffer, "mblock-lwr-%d-%d.txt",
+    //                 blocks[i]->getn1(), blocks[i]->getn2());
+    //         arma::Col<ResultType> block((ResultType*)blocks[i]->getdata(),
+    //                                     blocks[i]->nvals());
+    //         arma::diskio::save_raw_ascii(block, buffer);
+    //     }
+
+    AhmedLeafClusterArray leafClusters(doubleClusterTree.get());
+    leafClusters.sortAccordingToClusterSize();
+    const size_t leafClusterCount = leafClusters.size();
+
+    const ParallelisationOptions& parallelOptions =
+            options.parallelisationOptions();
+    int maxThreadCount = 1;
+    if (parallelOptions.mode() == ParallelisationOptions::TBB)
+    {
+        if (parallelOptions.maxThreadCount() == ParallelisationOptions::AUTO)
+            maxThreadCount = tbb::task_scheduler_init::automatic;
         else
-        {
-            char buffer[1024];
-            sprintf(buffer, "mblock-lwr-%d-%d.txt",
-                    blocks[i]->getn1(), blocks[i]->getn2());
-            arma::Col<ResultType> block((ResultType*)blocks[i]->getdata(),
-                                        blocks[i]->nvals());
-            arma::diskio::save_raw_ascii(block, buffer);
-        }
+            maxThreadCount = parallelOptions.maxThreadCount();
+    }
+    tbb::task_scheduler_init scheduler(maxThreadCount);
+    tbb::atomic<size_t> done;
+    done = 0;
 
-//    AhmedLeafClusterArray leafClusters(doubleClusterTree.get());
-//    leafClusters.sortAccordingToClusterSize();
-//    const size_t leafClusterCount = leafClusters.size();
+    std::vector<ChunkStats> chunkStats(leafClusterCount);
 
-//    const ParallelisationOptions& parallelOptions =
-//            options.parallelisationOptions();
-//    int maxThreadCount = 1;
-//    if (parallelOptions.mode() == ParallelisationOptions::TBB)
-//    {
-//        if (parallelOptions.maxThreadCount() == ParallelisationOptions::AUTO)
-//            maxThreadCount = tbb::task_scheduler_init::automatic;
-//        else
-//            maxThreadCount = parallelOptions.maxThreadCount();
-//    }
-//    tbb::task_scheduler_init scheduler(maxThreadCount);
-//    tbb::atomic<size_t> done;
-//    done = 0;
+    //    typedef AcaWeakFormAssemblerLoopBody<BasisFunctionType, ResultType> Body;
+    //    // std::cout << "Loop start" << std::endl;
+    //    tbb::tick_count loopStart = tbb::tick_count::now();
+    // //    tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
+    // //                      Body(helper, leafClusters, blocks, acaOptions, done
+    // //                           , chunkStats));
+    //    tbb::parallel_for(ScatteredRange(0, leafClusterCount),
+    //                      Body(helper, leafClusters, blocks, acaOptions, done
+    //                           , chunkStats));
+    //    tbb::tick_count loopEnd = tbb::tick_count::now();
+    //    // std::cout << "Loop end" << std::endl;
 
-//    std::vector<ChunkStats> chunkStats(leafClusterCount);
+    typedef AcaWeakFormAssemblerLoopBody<BasisFunctionType, ResultType> Body;
+    typename Body::LeafClusterIndexQueue leafClusterIndexQueue;
+    for (size_t i = 0; i < leafClusterCount; ++i)
+        leafClusterIndexQueue.push(i);
 
-//    typedef AcaWeakFormAssemblerLoopBody<BasisFunctionType, ResultType> Body;
-//    std::cout << "Loop start" << std::endl;
-//    tbb::tick_count loopStart = tbb::tick_count::now();
-////    tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
-////                      Body(helper, leafClusters, blocks, acaOptions, done
-////                           , chunkStats));
-//    tbb::parallel_for(ScatteredRange(0, leafClusterCount),
-//                      Body(helper, leafClusters, blocks, acaOptions, done
-//                           , chunkStats));
-//    tbb::tick_count loopEnd = tbb::tick_count::now();
-//    std::cout << "Loop end" << std::endl;
+    tbb::tick_count loopStart = tbb::tick_count::now();
+    tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
+                      Body(helper, leafClusters, blocks, acaOptions, done,
+                           leafClusterIndexQueue, chunkStats));
+    tbb::tick_count loopEnd = tbb::tick_count::now();
 
-//    std::cout << "\nChunks:\n";
-//    for (int i = 0; i < leafClusterCount; ++i)
-//        if (chunkStats[i].valid) {
-//            int blockIndex = leafClusters[i]->getidx();
-//            std::cout << chunkStats[i].chunkStart << "\t"
-//                      << chunkStats[i].chunkSize << "\t"
-//                      << (chunkStats[i].startTime - loopStart).seconds() << "\t"
-//                      << (chunkStats[i].endTime - loopStart).seconds() << "\t"
-//                      << (chunkStats[i].endTime - chunkStats[i].startTime).seconds() << "\t"
-//                      << blocks[blockIndex]->getn1() << "\t"
-//                      << blocks[blockIndex]->getn2() << "\t"
-//                      << blocks[blockIndex]->islwr() << "\t"
-//                      << (blocks[blockIndex]->islwr() ? blocks[blockIndex]->rank() : 0) << "\n";
-//        }
+    // // Dump timing data of individual chunks
+    //    std::cout << "\nChunks:\n";
+    //    for (int i = 0; i < leafClusterCount; ++i)
+    //        if (chunkStats[i].valid) {
+    //            int blockIndex = leafClusters[i]->getidx();
+    //            std::cout << chunkStats[i].chunkStart << "\t"
+    //                      << chunkStats[i].chunkSize << "\t"
+    //                      << (chunkStats[i].startTime - loopStart).seconds() << "\t"
+    //                      << (chunkStats[i].endTime - loopStart).seconds() << "\t"
+    //                      << (chunkStats[i].endTime - chunkStats[i].startTime).seconds() << "\t"
+    //                      << blocks[blockIndex]->getn1() << "\t"
+    //                      << blocks[blockIndex]->getn2() << "\t"
+    //                      << blocks[blockIndex]->islwr() << "\t"
+    //                      << (blocks[blockIndex]->islwr() ? blocks[blockIndex]->rank() : 0) << "\n";
+    //        }
 
-//    std::cout << "Total time: " << (loopEnd - loopStart).seconds() << std::endl;
+    std::cout << "\nTotal time: " << (loopEnd - loopStart).seconds() << std::endl;
 
     {
         size_t origMemory = sizeof(ResultType) * testDofCount * trialDofCount;
@@ -310,7 +337,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
                   << "Compressed to " << (100. * ahmedMemory) / origMemory << "%.\n"
                   << std::endl;
 
-        if (acaOptions.outputPostscript){
+        if (acaOptions.outputPostscript) {
             std::cout << "Writing matrix partition ..." << std::flush;
             std::ofstream os(acaOptions.outputFname.c_str());
             psoutputH(os, doubleClusterTree.get(), testDofCount, blocks.get());
