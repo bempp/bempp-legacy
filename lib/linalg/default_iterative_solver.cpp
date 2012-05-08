@@ -18,27 +18,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "default_iterative_solver.hpp"
-
 #include "config_trilinos.hpp"
 
+#ifdef WITH_TRILINOS
+
+#include "default_iterative_solver.hpp"
+
+#include "real_wrapper_of_complex_thyra_linear_operator.hpp"
+#include "../assembly/discrete_linear_operator.hpp"
 #include "../assembly/linear_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
-
-#ifdef WITH_TRILINOS
-#include "Thyra_DefaultSpmdMultiVector.hpp"
-#include "Thyra_DefaultSpmdVectorSpace.hpp"
-#include "Thyra_BelosLinearOpWithSolveFactory_decl.hpp"
-#include "Thyra_LinearOpWithSolveFactoryHelpers.hpp"
-#include "Thyra_LinearOpSourceBase.hpp"
-#include "Thyra_DefaultLinearOpSource.hpp"
-#include "Thyra_SolveSupportTypes.hpp"
-#include "Thyra_LinearOpBase.hpp"
-#include "Thyra_OperatorVectorTypes.hpp"
-#include "Thyra_DetachedMultiVectorView.hpp"
-#include "Teuchos_ArrayRCP.hpp"
-#include "Teuchos_FancyOStream.hpp"
-#include "Teuchos_VerboseObject.hpp"
 
 namespace Bempp
 {
@@ -47,13 +36,14 @@ template <typename BasisFunctionType, typename ResultType>
 DefaultIterativeSolver<BasisFunctionType, ResultType>::DefaultIterativeSolver(
         const LinearOperator<BasisFunctionType, ResultType>& linOp,
         const GridFunction<BasisFunctionType, ResultType>& gridFun) :
-    m_discreteOperator(linOp.assembledDiscreteLinearOperator()),
+    m_belosSolverWrapper(
+        Teuchos::rcpFromRef<const Thyra::LinearOpBase<ResultType> >(
+            linOp.assembledDiscreteLinearOperator())),
     m_space(linOp.trialSpace()),
+    // TODO: gridFun.coefficients should return a shared pointer to Vector
+    // rather than a Vector
     m_rhs(new Vector<ResultType>(gridFun.coefficients()))
 {
-    if (!linOp.isAssembled())
-        throw std::runtime_error("DefaultIterativeSolver::DefaultIterativeSolver(): "
-                                 "operator is not assembled");
     if (&linOp.trialSpace() != &gridFun.space())
         throw std::runtime_error("DefaultIterativeSolver::DefaultIterativeSolver(): "
                                  "spaces do not match");
@@ -61,68 +51,44 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::DefaultIterativeSolver(
 
 template <typename BasisFunctionType, typename ResultType>
 void DefaultIterativeSolver<BasisFunctionType, ResultType>::addPreconditioner(
-        Teuchos::RCP<const Thyra::PreconditionerBase<ResultType> > preconditioner)
+        const Teuchos::RCP<const Thyra::PreconditionerBase<ResultType> >& preconditioner)
 {
-    m_preconditioner = preconditioner;
+    m_belosSolverWrapper.addPreconditioner(preconditioner);
 }
 
 template <typename BasisFunctionType, typename ResultType>
 void DefaultIterativeSolver<BasisFunctionType, ResultType>::initializeSolver(
-        Teuchos::RCP<Teuchos::ParameterList> paramList)
+        const Teuchos::RCP<Teuchos::ParameterList>& paramList)
 {
-    Teuchos::RCP<Teuchos::FancyOStream> out =
-            Teuchos::VerboseObjectBase::getDefaultOStream();
-
-    Thyra::BelosLinearOpWithSolveFactory<ResultType> invertibleOpFactory;
-    invertibleOpFactory.setParameterList(paramList);
-    invertibleOpFactory.setOStream(out);
-    invertibleOpFactory.setVerbLevel(Teuchos::VERB_DEFAULT);
-    // Wrap discreteOperator in reference counted Trilinos pointer.
-    Teuchos::RCP<const Thyra::LinearOpBase<ResultType> > trilinosDiscreteLhs(
-                &m_discreteOperator, false /*don't own*/);
-    Teuchos::RCP<const Thyra::LinearOpSourceBase<ResultType> > linearOpSourcePtr(
-                new Thyra::DefaultLinearOpSource<ResultType>(trilinosDiscreteLhs));
-
-    if (!m_preconditioner.is_null()) {
-        // Preconditioner defined
-        m_lhs = invertibleOpFactory.createOp();
-        invertibleOpFactory.initializePreconditionedOp(linearOpSourcePtr,
-                m_preconditioner,
-                m_lhs.get(),
-                Thyra::SUPPORT_SOLVE_UNSPECIFIED);
-    } else {
-        // No preconditioner
-        m_lhs = Thyra::linearOpWithSolve(invertibleOpFactory, trilinosDiscreteLhs);
-    }
+    m_belosSolverWrapper.initializeSolver(paramList);
 }
 
 template <typename BasisFunctionType, typename ResultType>
 void DefaultIterativeSolver<BasisFunctionType, ResultType>::solve()
 {
+    assert(m_rhs->domain()->dim() == 1);
+
     const size_t size = m_rhs->range()->dim();
-    const size_t nrhs = m_rhs->domain()->dim();
+    m_sol.set_size(size);
+    m_sol.fill(static_cast<ResultType>(0.));
 
-    if (m_lhs.is_null()) throw std::runtime_error("Solver not initialized");
+    typedef Thyra::DefaultSpmdVector<ResultType> DenseVector;
+    Teuchos::ArrayRCP<ResultType> solArray =
+            Teuchos::arcp(m_sol.memptr(), 0 /* lowerOffset */,
+                          size, false /* doesn't own memory */);
+    DenseVector sol(Thyra::defaultSpmdVectorSpace<ResultType>(size),
+                    solArray, 1 /* stride */);
 
-    m_sol = Teuchos::RCP<Thyra::MultiVectorBase<ResultType> >(
-                new Thyra::DefaultSpmdMultiVector<ResultType>(
-                Thyra::defaultSpmdVectorSpace<ResultType>(size),
-                Thyra::defaultSpmdVectorSpace<ResultType>(nrhs)));
-    Thyra::assign(m_sol.ptr(), static_cast<ResultType>(0.));
-
-    m_status = m_lhs->solve(Thyra::NOTRANS, *m_rhs, m_sol.ptr());
+    m_status = m_belosSolverWrapper.solve(
+                Thyra::NOTRANS, *m_rhs,
+                Teuchos::ptr<Thyra::MultiVectorBase<ResultType> >(&sol));
 }
 
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>
 DefaultIterativeSolver<BasisFunctionType, ResultType>::getResult() const
 {
-    const size_t size = m_sol->range()->dim();
-    const size_t nrhs = m_sol->domain()->dim();
-
-    Thyra::ConstDetachedMultiVectorView<ResultType> solView(m_sol);
-    return GridFunction<BasisFunctionType, ResultType>(
-                m_space, arma::Mat<ResultType>(solView.values(), size, nrhs));
+    return GridFunction<BasisFunctionType, ResultType>(m_space, m_sol);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -153,37 +119,13 @@ std::string DefaultIterativeSolver<BasisFunctionType, ResultType>::getSolverMess
 }
 
 template <typename BasisFunctionType, typename ResultType>
-Thyra::SolveStatus<ResultType>
+Thyra::SolveStatus<typename DefaultIterativeSolver<BasisFunctionType, ResultType>::MagnitudeType>
 DefaultIterativeSolver<BasisFunctionType, ResultType>::getThyraSolveStatus() const
 {
     return m_status;
 }
 
-Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(double tol)
-{
-    Teuchos::RCP<Teuchos::ParameterList> paramList(
-                new Teuchos::ParameterList("DefaultParameters"));
-    paramList->set("Solver Type", "Pseudo Block GMRES");
-    Teuchos::ParameterList& solverTypesList = paramList->sublist("Solver Types");
-    Teuchos::ParameterList& pseudoBlockGmresList =
-            solverTypesList.sublist("Pseudo Block GMRES");
-    pseudoBlockGmresList.set("Convergence Tolerance", tol);
-    return paramList;
-}
-
-Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(double tol)
-{
-    Teuchos::RCP<Teuchos::ParameterList> paramList(
-                new Teuchos::ParameterList("DefaultParameters"));
-    paramList->set("Solver Type", "Pseudo Block CG");
-    Teuchos::ParameterList& solverTypesList = paramList->sublist("Solver Types");
-    Teuchos::ParameterList& pseudoBlockCgList =
-            solverTypesList.sublist("Pseudo Block CG");
-    pseudoBlockCgList.set("Convergence Tolerance", tol);
-    return paramList;
-}
-
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT_REAL_ONLY(DefaultIterativeSolver);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DefaultIterativeSolver);
 
 } // namespace Bempp
 

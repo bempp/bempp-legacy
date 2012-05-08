@@ -20,75 +20,47 @@
 
 #include "config_trilinos.hpp"
 
-#ifndef bempp_discrete_linear_operator_superposition_hpp
-#define bempp_discrete_linear_operator_superposition_hpp
-
-#include "discrete_linear_operator.hpp"
-
-#include <boost/ptr_container/ptr_vector.hpp>
+#ifndef bempp_real_wrapper_of_complex_thyra_linear_operator_hpp
+#define bempp_real_wrapper_of_complex_thyra_linear_operator_hpp
 
 #ifdef WITH_TRILINOS
-#include <Teuchos_RCP.hpp>
-#include <Thyra_SpmdVectorSpaceBase_decl.hpp>
-#endif
+#include <Thyra_LinearOpDefaultBase_decl.hpp>
 
 namespace Bempp
 {
 
 template <typename ValueType>
-class DiscreteLinearOperatorSuperposition :
-        public DiscreteLinearOperator<ValueType>
+class RealWrapperOfComplexThyraLinearOperator
+        : public Thyra::LinearOpDefaultBase<ValueType>
 {
 public:
-    typedef DiscreteLinearOperator<ValueType> TermType;
+    typedef std::complex<ValueType> ComplexValueType;
+    typedef Thyra::LinearOpBase<std::complex<ValueType> > ComplexLinearOp;
 
-    /* acquires ownership of these operators */
-    DiscreteLinearOperatorSuperposition(
-            boost::ptr_vector<TermType>& terms,
-            const std::vector<ValueType>& multipliers);
+    RealWrapperOfComplexThyraLinearOperator(
+            const Teuchos::RCP<const ComplexLinearOp>& complexOperator);
 
-    virtual void dump() const;
-
-    virtual arma::Mat<ValueType> asMatrix() const;
-
-    virtual unsigned int rowCount() const;
-    virtual unsigned int columnCount() const;
-
-    virtual void addBlock(const std::vector<int>& rows,
-                          const std::vector<int>& cols,
-                          const ValueType alpha,
-                          arma::Mat<ValueType>& block) const;
-
-#ifdef WITH_TRILINOS
-public:
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > range() const;
 
 protected:
     virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
+
     virtual void applyImpl(
             const Thyra::EOpTransp M_trans,
             const Thyra::MultiVectorBase<ValueType> &X_in,
             const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType> > &Y_inout,
             const ValueType alpha,
             const ValueType beta) const;
-#endif
 
 private:
-    virtual void applyBuiltInImpl(const TranspositionMode trans,
-                                  const arma::Col<ValueType>& x_in,
-                                  arma::Col<ValueType>& y_inout,
-                                  const ValueType alpha,
-                                  const ValueType beta) const;
-private:
-    boost::ptr_vector<TermType> m_terms;
-    std::vector<ValueType> m_multipliers;
-#ifdef WITH_TRILINOS
+    Teuchos::RCP<const ComplexLinearOp> m_complexOperator;
     Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > m_domainSpace;
     Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > m_rangeSpace;
-#endif
 };
 
 } // namespace Bempp
+
+#endif // WITH_TRILINOS
 
 #endif

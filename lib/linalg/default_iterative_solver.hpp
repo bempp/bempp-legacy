@@ -27,23 +27,9 @@
 
 #include "solver.hpp"
 
-#include "../assembly/discrete_linear_operator.hpp"
-#include "../assembly/discrete_aca_linear_operator.hpp"
-#include "../assembly/vector.hpp"
-#include "../common/scalar_traits.hpp"
+#include "belos_solver_wrapper.hpp"
 
 #include <armadillo>
-#include <vector>
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include <Thyra_PreconditionerBase.hpp>
-#include <Thyra_VectorBase.hpp>
-#include <Thyra_SolveSupportTypes.hpp>
-#include <Thyra_LinearOpWithSolveBase.hpp>
-#include <Thyra_BelosLinearOpWithSolveFactory_decl.hpp>
-#include <Thyra_LinearOpWithSolveFactoryHelpers.hpp>
-#include <Thyra_MultiVectorBase.hpp>
-#include <Thyra_PreconditionerBase.hpp>
 
 namespace Bempp
 {
@@ -60,8 +46,8 @@ public:
                            const GridFunction<BasisFunctionType, ResultType>& gridFun);
 
     void addPreconditioner(
-            Teuchos::RCP<const Thyra::PreconditionerBase<ResultType> > preconditioner);
-    void initializeSolver(Teuchos::RCP<Teuchos::ParameterList> paramList);
+            const Teuchos::RCP<const Thyra::PreconditionerBase<ResultType> >& preconditioner);
+    void initializeSolver(const Teuchos::RCP<Teuchos::ParameterList>& paramList);
 
     virtual void solve();
 
@@ -69,17 +55,17 @@ public:
     virtual typename Solver<BasisFunctionType, ResultType>::EStatus getStatus() const;
     MagnitudeType getSolveTolerance() const;
     std::string getSolverMessage() const;
-    Thyra::SolveStatus<ResultType> getThyraSolveStatus() const;
+    Thyra::SolveStatus<MagnitudeType> getThyraSolveStatus() const;
 
 private:
-    const DiscreteLinearOperator<ResultType>& m_discreteOperator;
+    BelosSolverWrapper<ResultType> m_belosSolverWrapper;
     const Space<BasisFunctionType>& m_space;
-
-    Teuchos::RCP<Thyra::LinearOpWithSolveBase<ResultType> > m_lhs;
     Teuchos::RCP<Thyra::MultiVectorBase<ResultType> > m_rhs;
-    Teuchos::RCP<Thyra::MultiVectorBase<ResultType> > m_sol;
-    Thyra::SolveStatus<ResultType> m_status;
-    Teuchos::RCP<const Thyra::PreconditionerBase<ResultType> > m_preconditioner;
+
+    // as long as a GridFunction is initialised with an Armadillo array
+    // rather than a Vector, this is the right format for solution storage
+    arma::Col<ResultType> m_sol;
+    Thyra::SolveStatus<MagnitudeType> m_status;
 };
 
 Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(double tol);
@@ -88,4 +74,5 @@ Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(double tol);
 } // namespace Bempp
 
 #endif // WITH_TRILINOS
+
 #endif
