@@ -1,8 +1,9 @@
 #include "ahmed_leaf_cluster_array.hpp"
 
+#ifdef WITH_AHMED
+
 #include <algorithm>
 #include <cmath>
-//#include <iostream>
 
 #define BASMOD // prevent inclusion of Ahmed's basmod.h, which contains
                // a conflicting definition of swap()
@@ -48,9 +49,8 @@ void AhmedLeafClusterArray::sortAccordingToClusterSize()
 {
     std::sort(&m_leafClusters[0], &m_leafClusters[m_size],
               isFirstClusterBigger);
-//    for (int i = 0; i < m_size; ++i)
-//        std::cout << i << " " <<
-//                     m_leafClusters[i]->getn1() * m_leafClusters[i]->getn2() << "\n";
 }
 
 } // namespace Bempp
+
+#endif
