@@ -25,6 +25,7 @@
 #include "../grid/entity_iterator.hpp"
 #include "../grid/grid.hpp"
 #include "../grid/grid_view.hpp"
+#include "../grid/mapper.hpp"
 
 #include <complex>
 
@@ -37,14 +38,15 @@ void getAllBases(const Space<BasisFunctionType>& space,
         std::vector<const Fiber::Basis<BasisFunctionType>*>& bases)
 {
     std::auto_ptr<GridView> view = space.grid().leafView();
+    const Mapper& mapper = view->elementMapper();
     const int elementCount = view->entityCount(0);
 
-    bases.clear();
-    bases.reserve(elementCount);
+    bases.resize(elementCount);
 
     std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
     while (!it->finished()) {
-        bases.push_back(&space.basis(it->entity()));
+        const Entity<0>& e = it->entity();
+        bases[mapper.entityIndex(e)] = &space.basis(e);
         it->next();
     }
 }
