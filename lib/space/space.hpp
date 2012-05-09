@@ -117,6 +117,9 @@ public:
             std::vector<Point3D<CoordinateType> >& positions) const = 0;
     /** @} */
 
+    virtual void dumpClusterIds(const char* fileName,
+                                const std::vector<unsigned int>& clusterIds) const = 0;
+
 protected:
     Grid& m_grid;
 };

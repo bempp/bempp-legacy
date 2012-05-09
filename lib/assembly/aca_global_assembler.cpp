@@ -137,6 +137,28 @@ private:
 };
 #endif
 
+void reallyGetClusterIds(const cluster& clusterTree,
+                   const std::vector<unsigned int>& p2oDofs,
+                   std::vector<unsigned int>& clusterIds,
+                   unsigned int& id)
+{
+    if (clusterTree.isleaf())
+        for (int nDof = clusterTree.getnbeg(); nDof < clusterTree.getnend(); ++nDof)
+            clusterIds[p2oDofs[nDof]] = id;
+    else
+        for (int nSon = 0; nSon < clusterTree.getns(); ++nSon)
+            reallyGetClusterIds(*clusterTree.getson(nSon), p2oDofs, clusterIds, ++id);
+}
+
+void getClusterIds(const cluster& clusterTree,
+                   const std::vector<unsigned int>& p2oDofs,
+                   std::vector<unsigned int>& clusterIds)
+{
+    clusterIds.resize(p2oDofs.size());
+    unsigned int id = 0;
+    reallyGetClusterIds(clusterTree, p2oDofs, clusterIds, id);
+}
+
 } // namespace
 
 template <typename BasisFunctionType, typename ResultType>
@@ -202,6 +224,14 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
     trialClusterTree.createClusterTree(
                 acaOptions.minimumBlockSize,
                 &o2pTrialDofs[0], &p2oTrialDofs[0]);
+
+    // // Export VTK plots showing the disctribution of leaf cluster ids
+    // std::vector<unsigned int> testClusterIds;
+    // getClusterIds(testClusterTree, p2oTestDofs, testClusterIds);
+    // testSpace.dumpClusterIds("testClusterIds", testClusterIds);
+    // std::vector<unsigned int> trialClusterIds;
+    // getClusterIds(trialClusterTree, p2oTrialDofs, trialClusterIds);
+    // trialSpace.dumpClusterIds("trialClusterIds", trialClusterIds);
 
 #ifndef NDEBUG
     std::cout << "Test cluster count: " << testClusterTree.getncl()

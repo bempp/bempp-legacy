@@ -61,6 +61,9 @@ public:
     virtual void globalDofPositions(
             std::vector<Point3D<CoordinateType> >& positions) const;
 
+    virtual void dumpClusterIds(const char* fileName,
+                                const std::vector<unsigned int>& clusterIds) const;
+
 private:
     std::auto_ptr<GridView> m_view;
     Fiber::PiecewiseConstantScalarBasis<BasisFunctionType> m_basis;
