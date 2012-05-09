@@ -31,7 +31,6 @@
 #include "../fiber/scalar_traits.hpp"
 #include "../grid/entity_iterator.hpp"
 #include "../grid/grid.hpp"
-#include "../grid/grid_view.hpp"
 #include "../space/space.hpp"
 
 #include <armadillo>
@@ -157,12 +156,8 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
 
     const AcaOptions& acaOptions = options.acaOptions();
 
-    // Get the grid's leaf view so that we can iterate over elements
-    std::auto_ptr<GridView> view = trialSpace.grid().leafView();
-
-    // const int elementCount = view.entityCount(0);
-    const int trialDofCount = trialSpace.globalDofCount();
     const int testDofCount = testSpace.globalDofCount();
+    const int trialDofCount = trialSpace.globalDofCount();
 
 #ifndef NDEBUG
     std::cout << "Generating cluster trees... " << std::endl;
