@@ -154,7 +154,7 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::globalDofPositions(
     const int globalDofCount_ = globalDofCount();
     positions.resize(globalDofCount_);
 
-    const IndexSet& indexSet = m_view->indexSet();
+    const Mapper& mapper = m_view->elementMapper();
 
     if (gridDim == 1)
         throw NotImplementedError("PiecewiseConstantScalarSpace::"
@@ -165,7 +165,7 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::globalDofPositions(
         while (!it->finished())
         {
             const Entity<0>& e = it->entity();
-            int index = indexSet.entityIndex(e);
+            int index = mapper.entityIndex(e);
             arma::Col<CoordinateType> center;
             e.geometry().getCenter(center);
 
