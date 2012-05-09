@@ -212,18 +212,20 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
     const AhmedDofType* ahmedTestDofCenters =
             static_cast<AhmedDofType*>(&testDofCenters[0]);
 
+    // NOTE: Ahmed uses names "op_perm" and "po_perm", which
+    // correspond to BEM++'s "p2o" and "o2p", NOT the other way round.
     bemcluster<const AhmedDofType> testClusterTree(
-                ahmedTestDofCenters, &o2pTestDofs[0],
+                ahmedTestDofCenters, &p2oTestDofs[0],
                 0, testDofCount);
     testClusterTree.createClusterTree(
                 acaOptions.minimumBlockSize,
-                &o2pTestDofs[0], &p2oTestDofs[0]);
+                &p2oTestDofs[0], &o2pTestDofs[0]);
     bemcluster<const AhmedDofType> trialClusterTree(
-                ahmedTrialDofCenters, &o2pTrialDofs[0],
+                ahmedTrialDofCenters, &p2oTrialDofs[0],
                 0, trialDofCount);
     trialClusterTree.createClusterTree(
                 acaOptions.minimumBlockSize,
-                &o2pTrialDofs[0], &p2oTrialDofs[0]);
+                &p2oTrialDofs[0], &o2pTrialDofs[0]);
 
     // // Export VTK plots showing the disctribution of leaf cluster ids
     // std::vector<unsigned int> testClusterIds;
