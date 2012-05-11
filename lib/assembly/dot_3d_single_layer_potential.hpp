@@ -29,15 +29,12 @@
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename ResultType = BasisFunctionType>
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType = typename Coercion<BasisFunctionType, KernelType>::Type>
 class Dot3dSingleLayerPotential :
         public ElementaryWeaklySingularIntegralOperator<
-        BasisFunctionType,
-        ResultType, //typename ScalarTraits<ResultType>::RealType,
-        ResultType>
+        BasisFunctionType, KernelType, ResultType>
 {
-  //typedef typename ScalarTraits<ResultType>::RealType KernelType;
-    typedef ResultType KernelType;
     typedef ElementaryWeaklySingularIntegralOperator<
     BasisFunctionType, KernelType, ResultType> Base;
 public:

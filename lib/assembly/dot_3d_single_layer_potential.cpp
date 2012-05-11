@@ -25,8 +25,8 @@
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename ResultType>
-Dot3dSingleLayerPotential<BasisFunctionType, ResultType>::Dot3dSingleLayerPotential(
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+Dot3dSingleLayerPotential<BasisFunctionType, KernelType, ResultType>::Dot3dSingleLayerPotential(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
 	KernelType waveNumber) :
@@ -35,6 +35,6 @@ Dot3dSingleLayerPotential<BasisFunctionType, ResultType>::Dot3dSingleLayerPotent
     m_kernel.setWaveNumber (waveNumber);
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Dot3dSingleLayerPotential);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(Dot3dSingleLayerPotential);
 
 } // namespace Bempp
