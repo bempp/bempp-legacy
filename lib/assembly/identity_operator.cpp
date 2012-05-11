@@ -220,7 +220,11 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInternal(
     case AssemblyOptions::DENSE:
         return assembleWeakFormInDenseMode(assembler, options);
     case AssemblyOptions::ACA:
+#ifdef WITH_TRILINOS
         return assembleWeakFormInSparseMode(assembler, options);
+#else // Fallback to dense mode. Don't know whether whis should be signalled to the user.
+        return assembleWeakFormInDenseMode(assembler, options);
+#endif
     default:
         throw std::runtime_error("IdentityOperator::assembleWeakForm(): "
                                  "invalid assembly mode");
