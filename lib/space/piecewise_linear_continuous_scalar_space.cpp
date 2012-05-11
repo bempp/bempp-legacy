@@ -27,6 +27,7 @@
 #include "../grid/grid.hpp"
 #include "../grid/grid_view.hpp"
 #include "../grid/mapper.hpp"
+#include "../grid/vtk_writer.hpp"
 
 #include <dune/localfunctions/lagrange/p1/p1localbasis.hh>
 #include <dune/localfunctions/lagrange/q1/q1localbasis.hh>
@@ -248,6 +249,25 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::globalDofPositions
             it->next();
         }
     }
+}
+
+template <typename BasisFunctionType>
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::dumpClusterIds(
+        const char* fileName,
+        const std::vector<unsigned int>& clusterIds) const
+{
+    const int idCount = clusterIds.size();
+    if (idCount != globalDofCount())
+        throw std::invalid_argument("PiecewiseLinearContinuousScalarSpace::"
+                                    "dumpClusterIds(): incorrect dimension");
+
+    std::auto_ptr<GridView> view = this->m_grid.leafView();
+    std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
+    arma::Row<double> data(idCount);
+    for (int i = 0; i < idCount; ++i)
+        data(i) = clusterIds[i];
+    vtkWriter->addVertexData(data, "ids");
+    vtkWriter->write(fileName);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(PiecewiseLinearContinuousScalarSpace);

@@ -24,6 +24,7 @@
 // to ensure there are no inconsistent forward declarations
 #include "ahmed_aux_fwd.hpp"
 
+#include "ahmed_leaf_cluster_array.hpp"
 #include "../common/types.hpp"
 
 #include <boost/scoped_array.hpp>
@@ -135,41 +136,6 @@ allocateAhmedMblockArray(
                 blocks, AhmedMblockArrayDeleter(blockCount));
 }
 
-class AhmedLeafClusterArray
-{
-public:
-    // The parameter should actually be const, but Ahmed's gen_BlSequence lacks
-    // const-correctness
-    explicit AhmedLeafClusterArray(blcluster* clusterTree) :
-        m_size(0) {
-        blcluster** leafClusters = 0;
-        try {
-            gen_BlSequence(clusterTree, leafClusters);
-        }
-        catch (...) {
-            delete[] leafClusters;
-            throw; // rethrow the exception
-        }
-        m_leafClusters.reset(leafClusters);
-        m_size = clusterTree->nleaves();
-    }
-
-    size_t size() const {
-        return m_size;
-    }
-
-    blcluster* operator[] (size_t n) {
-        return m_leafClusters[n];
-    }
-
-    const blcluster* operator[] (size_t n) const {
-        return m_leafClusters[n];
-    }
-
-private:
-    boost::scoped_array<blcluster*> m_leafClusters;
-    size_t m_size;
-};
 
 } // namespace Bempp
 

@@ -80,8 +80,7 @@ void DefaultIterativeSolver<BasisFunctionType, ResultType>::solve()
                     solArray, 1 /* stride */);
 
     m_status = m_belosSolverWrapper.solve(
-                Thyra::NOTRANS, *m_rhs,
-                Teuchos::ptr<Thyra::MultiVectorBase<ResultType> >(&sol));
+                Thyra::NOTRANS, *m_rhs, Teuchos::ptr(&sol));
 }
 
 template <typename BasisFunctionType, typename ResultType>

@@ -220,7 +220,11 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInternal(
     case AssemblyOptions::DENSE:
         return assembleWeakFormInDenseMode(assembler, options);
     case AssemblyOptions::ACA:
+#ifdef WITH_TRILINOS
         return assembleWeakFormInSparseMode(assembler, options);
+#else // Fallback to dense mode. Don't know whether whis should be signalled to the user.
+        return assembleWeakFormInDenseMode(assembler, options);
+#endif
     default:
         throw std::runtime_error("IdentityOperator::assembleWeakForm(): "
                                  "invalid assembly mode");
@@ -374,7 +378,8 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparseMode(
     return std::auto_ptr<DiscreteLinearOperator<ResultType> >(
                 new DiscreteSparseLinearOperator<ResultType>(result));
 #else // WITH_TRILINOS
-    throw std::runtime_error("To enable assembly in sparse mode, recompile BEM++ "
+    throw std::runtime_error("IdentityOperator::assembleWeakFormInSparseMode(): "
+                             "To enable assembly in sparse mode, recompile BEM++ "
                              "with the symbol WITH_TRILINOS defined.");
 #endif
 }

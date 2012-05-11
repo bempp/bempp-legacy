@@ -214,6 +214,10 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
             calculateProjections(function, space, factory, assemblyOptions);
 
     AssemblyOptions idAssemblyOptions(assemblyOptions);
+#ifdef WITH_TRILINOS
+    // This effectively switches to sparse mode
+    idAssemblyOptions.switchToAca(AcaOptions());
+#endif
     IdentityOperator<BasisFunctionType, ResultType> id(space, space);
     std::auto_ptr<DiscreteLinearOperator<ResultType> > discreteId =
             id.assembleWeakForm(factory, idAssemblyOptions);

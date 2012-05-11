@@ -27,7 +27,7 @@
 #include "../grid/grid.hpp"
 #include "../grid/grid_view.hpp"
 #include "../grid/mapper.hpp"
-
+#include "../grid/vtk_writer.hpp"
 
 namespace Bempp
 {
@@ -154,7 +154,7 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::globalDofPositions(
     const int globalDofCount_ = globalDofCount();
     positions.resize(globalDofCount_);
 
-    const IndexSet& indexSet = m_view->indexSet();
+    const Mapper& mapper = m_view->elementMapper();
 
     if (gridDim == 1)
         throw NotImplementedError("PiecewiseConstantScalarSpace::"
@@ -165,7 +165,7 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::globalDofPositions(
         while (!it->finished())
         {
             const Entity<0>& e = it->entity();
-            int index = indexSet.entityIndex(e);
+            int index = mapper.entityIndex(e);
             arma::Col<CoordinateType> center;
             e.geometry().getCenter(center);
 
@@ -175,6 +175,26 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::globalDofPositions(
             it->next();
         }
     }
+}
+
+
+template <typename BasisFunctionType>
+void PiecewiseConstantScalarSpace<BasisFunctionType>::dumpClusterIds(
+        const char* fileName,
+        const std::vector<unsigned int>& clusterIds) const
+{
+    const int idCount = clusterIds.size();
+    if (idCount != globalDofCount())
+        throw std::invalid_argument("PiecewiseConstantScalarSpace::"
+                                    "dumpClusterIds(): incorrect dimension");
+
+    std::auto_ptr<GridView> view = this->m_grid.leafView();
+    std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
+    arma::Row<double> data(idCount);
+    for (int i = 0; i < idCount; ++i)
+        data(i) = clusterIds[i];
+    vtkWriter->addCellData(data, "ids");
+    vtkWriter->write(fileName);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(PiecewiseConstantScalarSpace);

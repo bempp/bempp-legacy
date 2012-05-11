@@ -34,6 +34,7 @@
 #include <map>
 #include <set>
 #include <utility>
+#include <cstdio>
 
 namespace Bempp
 {
