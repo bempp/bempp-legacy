@@ -130,9 +130,6 @@ public:
       \f$\phi_j\f$ is a function from the test space \f$Y\f$ and \f$\psi_k\f$ a
       function from \f$X\f$.
 
-      Note: trialSpace.grid() and testSpace.grid() must return a reference to
-      the same object.
-
       This is the overload intended to be called by the user, who needs to
       provide a local-assembler factory \p factory to be used to construct an
       appropriate local assembler. */

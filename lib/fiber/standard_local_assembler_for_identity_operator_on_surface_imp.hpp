@@ -29,13 +29,13 @@ namespace Fiber
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
 StandardLocalAssemblerForIdentityOperatorOnSurface(
-    const GeometryFactory& geometryFactory,
-    const RawGridGeometry<CoordinateType>& rawGeometry,
-    const std::vector<const Basis<BasisFunctionType>*>& testBases,
-    const std::vector<const Basis<BasisFunctionType>*>& trialBases,
-    const Expression<CoordinateType>& testExpression,
-    const Expression<CoordinateType>& trialExpression,
-    const OpenClHandler& openClHandler) :
+    boost::shared_ptr<const GeometryFactory>& geometryFactory,
+    boost::shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+    boost::shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
+    boost::shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+    boost::shared_ptr<const Expression<CoordinateType> >& testExpression,
+    boost::shared_ptr<const Expression<CoordinateType> >& trialExpression,
+    boost::shared_ptr<const OpenClHandler>& openClHandler) :
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
     m_testBases(testBases),

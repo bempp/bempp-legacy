@@ -30,6 +30,7 @@
 #include "parallelisation_options.hpp"
 #include "test_kernel_trial_integrator.hpp"
 
+#include <boost/shared_ptr.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 #include <tbb/concurrent_unordered_map.h>
@@ -52,14 +53,14 @@ public:
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
     StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
-            const GeometryFactory& geometryFactory,
-            const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<BasisFunctionType>*>& testBases,
-            const std::vector<const Basis<BasisFunctionType>*>& trialBases,
-            const Expression<CoordinateType>& testExpression,
-            const Kernel<KernelType>& kernel,
-            const Expression<CoordinateType>& trialExpression,
-            const OpenClHandler& openClHandler,
+            boost::shared_ptr<const GeometryFactory>& geometryFactory,
+            boost::shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+            boost::shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
+            boost::shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+            boost::shared_ptr<const Expression<CoordinateType> >& testExpression,
+            boost::shared_ptr<const Kernel<KernelType> >& kernel,
+            boost::shared_ptr<const Expression<CoordinateType> >& trialExpression,
+            boost::shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals,
             const AccuracyOptions& accuracyOptions);
@@ -109,14 +110,14 @@ private:
     Integrator*> IntegratorMap;
 
 private:
-    const GeometryFactory& m_geometryFactory;
-    const RawGridGeometry<CoordinateType>& m_rawGeometry;
-    const std::vector<const Basis<BasisFunctionType>*>& m_testBases;
-    const std::vector<const Basis<BasisFunctionType>*>& m_trialBases;
-    const Expression<CoordinateType>& m_testExpression;
-    const Kernel<KernelType>& m_kernel;
-    const Expression<CoordinateType>& m_trialExpression;
-    const OpenClHandler& m_openClHandler;
+    boost::shared_ptr<const GeometryFactory> m_geometryFactory;
+    boost::shared_ptr<const RawGridGeometry<CoordinateType> > m_rawGeometry;
+    boost::shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_testBases;
+    boost::shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_trialBases;
+    boost::shared_ptr<const Expression<CoordinateType> > m_testExpression;
+    boost::shared_ptr<const Kernel<KernelType> > m_kernel;
+    boost::shared_ptr<const Expression<CoordinateType> > m_trialExpression;
+    boost::shared_ptr<const OpenClHandler> m_openClHandler;
     ParallelisationOptions m_parallelisationOptions;
     AccuracyOptions m_accuracyOptions;
 

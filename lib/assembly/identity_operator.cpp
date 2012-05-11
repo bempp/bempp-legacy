@@ -166,12 +166,11 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakForm(
         throw std::runtime_error("IdentityOperator::assembleWeakForm(): "
                                  "degrees of freedom must be assigned "
                                  "before calling assembleWeakForm()");
-    if (&testSpace.grid() != &trialSpace.grid())
-        throw std::runtime_error("IdentityOperator::assembleWeakForm(): "
-                                 "testSpace and trialSpace must be defined over "
-                                 "the same grid");
 
     // Prepare local assembler
+
+//    collectDataForLocalAssemblerConstruction(grid, rawGeometry, geometryFactory,
+//                                             bases);
 
     const Grid& grid = trialSpace.grid();
     std::auto_ptr<GridView> view = grid.leafView();
