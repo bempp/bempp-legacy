@@ -374,7 +374,8 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparseMode(
     return std::auto_ptr<DiscreteLinearOperator<ResultType> >(
                 new DiscreteSparseLinearOperator<ResultType>(result));
 #else // WITH_TRILINOS
-    throw std::runtime_error("To enable assembly in sparse mode, recompile BEM++ "
+    throw std::runtime_error("IdentityOperator::assembleWeakFormInSparseMode(): "
+                             "To enable assembly in sparse mode, recompile BEM++ "
                              "with the symbol WITH_TRILINOS defined.");
 #endif
 }

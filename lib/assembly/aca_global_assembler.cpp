@@ -381,7 +381,8 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
                                      IndexPermutation(o2pTestDofs)));
     return result;
 #else // without Ahmed
-    throw std::runtime_error("To enable assembly in ACA mode, recompile BEM++ "
+    throw std::runtime_error("AcaGlobalAssembler::assembleWeakForm(): "
+                             "To enable assembly in ACA mode, recompile BEM++ "
                              "with the symbol WITH_AHMED defined.");
 #endif
 }
