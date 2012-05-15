@@ -59,7 +59,7 @@ using namespace Bempp;
 typedef double BFT; // basis function type
 typedef std::complex<double> RT; // result type (type used to represent discrete operators)
 
-double g_kappa;
+RT g_waveNo;
 
 class MyFunctor
 {
@@ -87,7 +87,7 @@ public:
 	 dst += d*d;
        }
        dst = sqrt(dst);
-       result(0) = exp (-g_kappa*dst);
+       result(0) = exp (-g_waveNo*dst);
     }
 };
 
@@ -105,10 +105,10 @@ int main(int argc, char* argv[])
     BFT c = c0/refind;       // speed of light in medium [mm/ps]
     BFT kappa = 1.0/(3.0*(mua+mus));   // diffusion coefficient
     BFT omega = 2.0*M_PI * freq*1e-12; // modulation frequency [cycles/ps]
-    g_kappa = kappa;
 
     // Construct wave number
     RT waveNo = sqrt (RT(mua/kappa, omega/(c*kappa)));
+    g_waveNo = waveNo;
 
     // Load mesh
 
