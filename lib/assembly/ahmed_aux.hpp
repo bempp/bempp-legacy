@@ -35,7 +35,7 @@
 #include <stdexcept>
 
 // Ahmed's include files
-#include "cmplx.h"
+#include <cmplx.h>
 
 inline comp<float> operator*=(comp<float>& a, double b)
 {
