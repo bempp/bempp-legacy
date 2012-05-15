@@ -48,8 +48,6 @@ using namespace Bempp;
 typedef double BFT; // basis function type
 typedef std::complex<double> RT; // result type (type used to represent discrete operators)
 
-RT g_waveNo;
-
 class MyFunctor
 {
 public:
@@ -60,24 +58,28 @@ public:
 
     // Number of components of the function's argument
     static const int argumentDimension = 3;
-
     // Number of components of the function's result
     static const int resultDimension = 1;
+
+    MyFunctor(RT waveNumber) : m_waveNumber(waveNumber) {}
 
     // Evaluate the function at the point "point" and store result in
     // the array "result"
     inline void evaluate(const arma::Col<CoordinateType>& point,
                          arma::Col<ValueType>& result) const {
-       std::vector<double> src(3);
-       src[0] = 0.9; src[1] = 0.0; src[2] = 0.0;
-       double dst = 0.0;
-       for (int i = 0; i < 3; i++) {
-	 double d = src[i] - point[i];
-	 dst += d*d;
-       }
-       dst = sqrt(dst);
-       result(0) = exp (-g_waveNo*dst);
+        std::vector<CoordinateType> src(3);
+        src[0] = 0.9; src[1] = 0.0; src[2] = 0.0;
+        CoordinateType dst = 0.0;
+        for (int i = 0; i < 3; i++) {
+            CoordinateType d = src[i] - point[i];
+            dst += d*d;
+        }
+        dst = sqrt(dst);
+        result(0) = exp (-m_waveNumber*dst);
     }
+
+private:
+    RT m_waveNumber;
 };
 
 
@@ -95,9 +97,8 @@ int main(int argc, char* argv[])
     BFT kappa = 1.0/(3.0*(mua+mus));   // diffusion coefficient
     BFT omega = 2.0*M_PI * freq*1e-12; // modulation frequency [cycles/ps]
 
-    // Construct wave number
-    RT waveNo = sqrt (RT(mua/kappa, omega/(c*kappa)));
-    g_waveNo = waveNo;
+    // Calculate the wave number
+    RT waveNumber = sqrt (RT(mua/kappa, omega/(c*kappa)));
 
     // Load mesh
 
@@ -124,7 +125,6 @@ int main(int argc, char* argv[])
 
     AcaOptions acaOptions; // Default parameters for ACA
     //assemblyOptions.switchToAca(acaOptions);
-    assemblyOptions.switchToDense();
 
     // Define the standard integration factory
 
@@ -132,8 +132,8 @@ int main(int argc, char* argv[])
 
     // We need the single layer, double layer, and the identity operator
 
-    Dot3dSingleLayerPotential<BFT, RT> slp(HplusHalfSpace, HplusHalfSpace, waveNo);
-    Dot3dDoubleLayerPotential<BFT, RT> dlp(HplusHalfSpace, HplusHalfSpace, waveNo);
+    Dot3dSingleLayerPotential<BFT, RT> slp(HplusHalfSpace, HplusHalfSpace, waveNumber);
+    Dot3dDoubleLayerPotential<BFT, RT> dlp(HplusHalfSpace, HplusHalfSpace, waveNumber);
     IdentityOperator<BFT, RT> id(HplusHalfSpace, HplusHalfSpace);
 
     // Form the left-hand side sum
@@ -148,7 +148,7 @@ int main(int argc, char* argv[])
 
     // We also want a grid function
 
-    MyFunctor functor;
+    MyFunctor functor(waveNumber);
     OrdinaryFunction<MyFunctor> function(functor);
 
     GridFunction<BFT, RT> u(HplusHalfSpace, function, factory, assemblyOptions);
