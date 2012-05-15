@@ -136,7 +136,7 @@ void reallyApplyBuiltInImpl<std::complex<float> >(
 
     // Copy the result back to the complex vector
     for (int i = 0; i < y_inout.n_rows; ++i)
-        y_inout(i) = std::complex<float>(x_real(i), x_imag(i));
+        y_inout(i) = std::complex<float>(y_real(i), y_imag(i));
 }
 
 template <>
@@ -169,7 +169,7 @@ void reallyApplyBuiltInImpl<std::complex<double> >(
 
     // Copy the result back to the complex vector
     for (int i = 0; i < y_inout.n_rows; ++i)
-        y_inout(i) = std::complex<double>(x_real(i), x_imag(i));
+        y_inout(i) = std::complex<double>(y_real(i), y_imag(i));
 }
 
 } // namespace
