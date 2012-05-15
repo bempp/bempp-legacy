@@ -276,6 +276,16 @@ applyBuiltInImpl(const TranspositionMode trans,
     m_rangePermutation.unpermuteVector(permutedResult, y_inout);
 }
 
+template <typename ValueType>
+void
+DiscreteAcaLinearOperator<ValueType>::
+makeAllMblocksDense()
+{
+    for (int i = 0; i < m_blockCluster->nleaves(); ++i)
+        if (m_blocks[i]->islwr())
+            m_blocks[i]->conv_lwr_to_dns();
+}
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteAcaLinearOperator);
 
 } // namespace Bempp

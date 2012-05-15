@@ -73,6 +73,8 @@ public:
                           const ValueType alpha,
                           arma::Mat<ValueType>& block) const;
 
+    void makeAllMblocksDense(); // for debugging
+
 #ifdef WITH_TRILINOS
 public:
     static const DiscreteAcaLinearOperator<ValueType>& castToAca
