@@ -25,9 +25,7 @@
 
 #include "assembly/assembly_options.hpp"
 #include "assembly/discrete_linear_operator.hpp"
-#include "assembly/evaluation_options.hpp"
 #include "assembly/grid_function.hpp"
-#include "assembly/interpolated_function.hpp"
 #include "assembly/linear_operator_superposition.hpp"
 #include "assembly/ordinary_function.hpp"
 #include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
@@ -38,21 +36,12 @@
 
 #include "common/scalar_traits.hpp"
 
-#include "grid/geometry.hpp"
-#include "grid/geometry_factory.hpp"
-#include "grid/grid_factory.hpp"
-
 #include "linalg/aca_preconditioner_factory.hpp"
 #include "linalg/default_iterative_solver.hpp"
 #include "linalg/default_direct_solver.hpp"
 
 #include "space/piecewise_linear_continuous_scalar_space.hpp"
 #include "space/piecewise_constant_scalar_space.hpp"
-
-#include <armadillo>
-#include <cmath>
-#include <iostream>
-#include <memory>
 
 using namespace Bempp;
 
