@@ -137,6 +137,14 @@ addBlock(const std::vector<int>& rows,
                              "addBlock(): not implemented yet");
 }
 
+template <typename ValueType>
+const DiscreteAcaLinearOperator<ValueType>&
+DiscreteAcaLinearOperator<ValueType>::castToAca(
+        const DiscreteLinearOperator<ValueType>& discreteOperator)
+{
+    return dynamic_cast<const DiscreteAcaLinearOperator<ValueType>&>(discreteOperator);
+}
+
 #ifdef WITH_TRILINOS
 template <typename ValueType>
 Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> >
@@ -145,14 +153,6 @@ domain() const
 {
     return m_domainSpace;
 }
-
-template <typename ValueType>
-const DiscreteAcaLinearOperator<ValueType>& 
-DiscreteAcaLinearOperator<ValueType>::castToAca
-    (DiscreteLinearOperator<ValueType>& discreteOperator){
-        return Teuchos::dyn_cast<DiscreteAcaLinearOperator<ValueType> >(discreteOperator);
-    }
-
 
 template <typename ValueType>
 Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> >
