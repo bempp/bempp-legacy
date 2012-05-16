@@ -84,19 +84,23 @@ template <typename BasisFunctionType, typename KernelType,
 StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
-        const GeometryFactory& geometryFactory,
-        const RawGridGeometry<CoordinateType>& rawGeometry,
-        const std::vector<const Basis<BasisFunctionType>*>& testBases,
-        const std::vector<const Basis<BasisFunctionType>*>& trialBases,
-        const Expression<CoordinateType>& testExpression,
-        const Kernel<KernelType>& kernel,
-        const Expression<CoordinateType>& trialExpression,
-        const OpenClHandler& openClHandler,
+        const shared_ptr<const GeometryFactory>& testGeometryFactory,
+        const shared_ptr<const GeometryFactory>& trialGeometryFactory,
+        const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
+        const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
+        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
+        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+        const shared_ptr<const Expression<CoordinateType> >& testExpression,
+        const shared_ptr<const Kernel<KernelType> >& kernel,
+        const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+        const shared_ptr<const OpenClHandler>& openClHandler,
         const ParallelisationOptions& parallelisationOptions,
         bool cacheSingularIntegrals,
         const AccuracyOptions& accuracyOptions) :
-    m_geometryFactory(geometryFactory),
-    m_rawGeometry(rawGeometry),
+    m_testGeometryFactory(testGeometryFactory),
+    m_trialGeometryFactory(trialGeometryFactory),
+    m_testRawGeometry(testRawGeometry),
+    m_trialRawGeometry(trialRawGeometry),
     m_testBases(testBases),
     m_trialBases(trialBases),
     m_testExpression(testExpression),
@@ -106,37 +110,8 @@ StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
     m_parallelisationOptions(parallelisationOptions),
     m_accuracyOptions(accuracyOptions)
 {
-    if (rawGeometry.vertices().n_rows != 3)
-        throw std::invalid_argument(
-                "StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
-                "StandardLocalAssemblerForIntegralOperatorsOnSurfaces(): "
-                "vertex coordinates must be three-dimensional");
-    if (rawGeometry.elementCornerIndices().n_rows < 3 ||
-            4 < rawGeometry.elementCornerIndices().n_rows)
-        throw std::invalid_argument(
-                "StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
-                "StandardLocalAssemblerForIntegralOperatorsOnSurfaces(): "
-                "all elements must be triangular or quadrilateral");
-    const int elementCount = rawGeometry.elementCornerIndices().n_cols;
-    if (!rawGeometry.auxData().is_empty() &&
-            rawGeometry.auxData().n_cols != elementCount)
-        throw std::invalid_argument(
-                "StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
-                "StandardLocalAssemblerForIntegralOperatorsOnSurfaces(): "
-                "number of columns of auxData must match that of "
-                "elementCornerIndices");
-    if (testBases.size() != elementCount)
-        throw std::invalid_argument(
-                "StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
-                "StandardLocalAssemblerForIntegralOperatorsOnSurfaces(): "
-                "size of testBases must match the number of columns of "
-                "elementCornerIndices");
-    if (trialBases.size() != elementCount)
-        throw std::invalid_argument(
-                "StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
-                "StandardLocalAssemblerForIntegralOperatorsOnSurfaces(): "
-                "size of trialBases must match the number of columns of "
-                "elementCornerIndices");
+    checkConsistencyOfGeometryAndBases(*testRawGeometry, *testBases);
+    checkConsistencyOfGeometryAndBases(*trialRawGeometry, *trialBases);
 
     if (cacheSingularIntegrals)
         cacheSingularLocalWeakForms();
@@ -162,6 +137,52 @@ template <typename BasisFunctionType, typename KernelType,
 void
 StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
+checkConsistencyOfGeometryAndBases(
+        const RawGridGeometry<CoordinateType>& rawGeometry,
+        const std::vector<const Basis<BasisFunctionType>*>& bases) const
+{
+    if (rawGeometry.vertices().n_rows != 3)
+        throw std::invalid_argument(
+            "StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
+            "checkConsistencyOfGeometryAndBases(): "
+            "vertex coordinates must be three-dimensional");
+    const int elementCount = rawGeometry.elementCornerIndices().n_cols;
+    if (rawGeometry.elementCornerIndices().n_rows < 3 ||
+            4 < rawGeometry.elementCornerIndices().n_rows)
+        throw std::invalid_argument(
+            "StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
+            "checkConsistencyOfGeometryAndBases(): "
+            "Elements must have either 3 or 4 corners");
+    if (!rawGeometry.auxData().is_empty() &&
+            rawGeometry.auxData().n_cols != elementCount)
+        throw std::invalid_argument(
+            "StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
+            "checkConsistencyOfGeometryAndBases(): "
+            "number of columns of auxData must match that of "
+            "elementCornerIndices");
+    if (bases.size() != elementCount)
+        throw std::invalid_argument(
+            "StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
+            "checkConsistencyOfGeometryAndBases(): "
+            "size of bases must match the number of columns of "
+            "elementCornerIndices");
+}
+
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+inline bool
+StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+KernelType, ResultType, GeometryFactory>::
+testAndTrialGridsAreIdentical() const
+{
+    return m_testRawGeometry.get() == m_trialRawGeometry.get();
+}
+
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+void
+StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+KernelType, ResultType, GeometryFactory>::
 evaluateLocalWeakForms(
         CallVariant callVariant,
         const std::vector<int>& elementIndicesA,
@@ -177,9 +198,9 @@ evaluateLocalWeakForms(
     // TODO: remove this unnecessary copy
     // Get bases
     const std::vector<const Basis*>& m_basesA =
-            callVariant == TEST_TRIAL ? m_testBases : m_trialBases;
+            callVariant == TEST_TRIAL ? *m_testBases : *m_trialBases;
     const std::vector<const Basis*>& m_basesB =
-            callVariant == TEST_TRIAL ? m_trialBases : m_testBases;
+            callVariant == TEST_TRIAL ? *m_trialBases : *m_testBases;
     std::vector<const Basis*> basesA(elementACount);
     for (int i = 0; i < elementACount; ++i)
         basesA[i] = m_basesA[elementIndicesA[i]];
@@ -293,8 +314,8 @@ evaluateLocalWeakForms(
                         &selectIntegrator(activeTestElementIndex,
                                           activeTrialElementIndex);
                 quadVariants(testIndex, trialIndex) = QuadVariant(
-                            integrator, m_testBases[activeTestElementIndex],
-                            m_trialBases[activeTrialElementIndex]);
+                            integrator, (*m_testBases)[activeTestElementIndex],
+                            (*m_trialBases)[activeTrialElementIndex]);
             }
         }
 
@@ -380,9 +401,16 @@ StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 findPairsOfAdjacentElements(ElementIndexPairSet& pairs) const
 {
-    const arma::Mat<CoordinateType>& vertices = m_rawGeometry.vertices();
+    pairs.clear();
+
+    if (!testAndTrialGridsAreIdentical())
+        return; // we assume that nonidentical grids are always disjoint
+
+    const RawGridGeometry<CoordinateType>& rawGeometry = *m_testRawGeometry;
+
+    const arma::Mat<CoordinateType>& vertices = rawGeometry.vertices();
     const arma::Mat<int>& elementCornerIndices =
-            m_rawGeometry.elementCornerIndices();
+            rawGeometry.elementCornerIndices();
 
     const int vertexCount = vertices.n_cols;
     const int elementCount = elementCornerIndices.n_cols;
@@ -399,7 +427,6 @@ findPairsOfAdjacentElements(ElementIndexPairSet& pairs) const
                 elementsAdjacentToVertex[index].push_back(e);
         }
 
-    pairs.clear();
     // Loop over vertex indices
     for (int v = 0; v < vertexCount; ++v) {
         const ElementIndexVector& adjacentElements = elementsAdjacentToVertex[v];
@@ -440,8 +467,8 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
             const Integrator* integrator =
                     &selectIntegrator(testElementIndex, trialElementIndex);
             *qvIt = QuadVariant(integrator,
-                                m_testBases[testElementIndex],
-                                m_trialBases[trialElementIndex]);
+                                (*m_testBases)[testElementIndex],
+                                (*m_trialBases)[trialElementIndex]);
         }
     }
 
@@ -514,21 +541,25 @@ selectIntegrator(int testElementIndex, int trialElementIndex)
 {
     DoubleQuadratureDescriptor desc;
 
-    // Get corner indices of the specified elements
-    arma::Col<int> testElementCornerIndices =
-            m_rawGeometry.elementCornerIndices(testElementIndex);
-    arma::Col<int> trialElementCornerIndices =
-            m_rawGeometry.elementCornerIndices(trialElementIndex);
+    if (testAndTrialGridsAreIdentical()) {
+        // Get corner indices of the specified elements
+        arma::Col<int> testElementCornerIndices =
+                m_testRawGeometry->elementCornerIndices(testElementIndex);
+        arma::Col<int> trialElementCornerIndices =
+                m_trialRawGeometry->elementCornerIndices(trialElementIndex);
 
-    desc.topology = determineElementPairTopologyIn3D(
-                testElementCornerIndices, trialElementCornerIndices);
+        desc.topology = determineElementPairTopologyIn3D(
+                    testElementCornerIndices, trialElementCornerIndices);
+    }
+    else
+        desc.topology.type = ElementPairTopology::Disjoint;
 
     if (desc.topology.type == ElementPairTopology::Disjoint) {
         desc.testOrder = regularOrder(testElementIndex, TEST);
-        desc.trialOrder = regularOrder(testElementIndex, TRIAL);
+        desc.trialOrder = regularOrder(trialElementIndex, TRIAL);
     } else { // singular integral
         desc.testOrder = singularOrder(testElementIndex, TEST);
-        desc.trialOrder = singularOrder(testElementIndex, TRIAL);
+        desc.trialOrder = singularOrder(trialElementIndex, TRIAL);
     }
 
     return getIntegrator(desc);
@@ -553,8 +584,8 @@ regularOrder(int elementIndex, ElementType elementType) const
     else {
         // Order required for exact quadrature on affine elements with a constant kernel
         int elementOrder = (elementType == TEST ?
-                                m_testBases[elementIndex]->order() :
-                                m_trialBases[elementIndex]->order());
+                                (*m_testBases)[elementIndex]->order() :
+                                (*m_trialBases)[elementIndex]->order());
         int minimumOrder = ((elementOrder + 1) + 1) / 2;
         return minimumOrder + options.orderIncrement;
     }
@@ -579,8 +610,8 @@ singularOrder(int elementIndex, ElementType elementType) const
     else {
         // Order required for exact quadrature on affine elements with a constant kernel
         int elementOrder = (elementType == TEST ?
-                                m_testBases[elementIndex]->order() :
-                                m_trialBases[elementIndex]->order());
+                                (*m_testBases)[elementIndex]->order() :
+                                (*m_trialBases)[elementIndex]->order());
         int minimumOrder = ((elementOrder + 1) + 1) / 2;
         return minimumOrder + 3 + options.orderIncrement;
     }
@@ -620,9 +651,10 @@ getIntegrator(const DoubleQuadratureDescriptor& desc)
                 KernelType, ResultType, GeometryFactory> ConcreteIntegrator;
         integrator = new ConcreteIntegrator(
                     testPoints, trialPoints, testWeights, trialWeights,
-                    m_geometryFactory, m_rawGeometry,
-                    m_testExpression, m_kernel, m_trialExpression,
-                    m_openClHandler);
+                    *m_testGeometryFactory, *m_trialGeometryFactory,
+                    *m_testRawGeometry, *m_trialRawGeometry,
+                    *m_testExpression, *m_kernel, *m_trialExpression,
+                    *m_openClHandler);
     } else {
         arma::Mat<CoordinateType> testPoints, trialPoints;
         std::vector<CoordinateType> weights;
@@ -633,9 +665,10 @@ getIntegrator(const DoubleQuadratureDescriptor& desc)
                 KernelType, ResultType, GeometryFactory> ConcreteIntegrator;
         integrator = new ConcreteIntegrator(
                     testPoints, trialPoints, weights,
-                    m_geometryFactory, m_rawGeometry,
-                    m_testExpression, m_kernel, m_trialExpression,
-                    m_openClHandler);
+                    *m_testGeometryFactory, *m_trialGeometryFactory,
+                    *m_testRawGeometry, *m_trialRawGeometry,
+                    *m_testExpression, *m_kernel, *m_trialExpression,
+                    *m_openClHandler);
     }
 
     // Attempt to insert the newly created integrator into the map

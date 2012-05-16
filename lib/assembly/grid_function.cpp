@@ -26,6 +26,7 @@
 #include "discrete_linear_operator.hpp"
 #include "discrete_sparse_linear_operator.hpp"
 #include "identity_operator.hpp"
+#include "local_assembler_construction_helper.hpp"
 
 #include "../common/stl_io.hpp"
 #include "../fiber/basis.hpp"
@@ -365,45 +366,34 @@ GridFunction<BasisFunctionType, ResultType>::calculateProjections(
                 "before calling calculateProjections()");
 
     // Prepare local assembler
+    typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
+    typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
+    typedef LocalAssemblerConstructionHelper Helper;
 
-    const Grid& grid = space.grid();
-    std::auto_ptr<GridView> view = grid.leafView();
+    shared_ptr<RawGridGeometry> rawGeometry;
+    shared_ptr<GeometryFactory> geometryFactory;
+    shared_ptr<Fiber::OpenClHandler> openClHandler;
+    shared_ptr<BasisPtrVector> testBases;
 
-    // Gather geometric data
-    Fiber::RawGridGeometry<CoordinateType> rawGeometry(grid.dim(), grid.dimWorld());
-    view->getRawElementData(
-                rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
-                rawGeometry.auxData());
-
-    // Make geometry factory
-    std::auto_ptr<GeometryFactory> geometryFactory =
-            grid.elementGeometryFactory();
-
-    // Get pointers to test and trial bases of each element
-    std::vector<const Fiber::Basis<BasisFunctionType>*> testBases;
-    getAllBases(space, testBases);
+    Helper::collectGridData(space.grid(),
+                            rawGeometry, geometryFactory);
+    Helper::makeOpenClHandler(options.parallelisationOptions().openClOptions(),
+                              rawGeometry, openClHandler);
+    Helper::collectBases(space, testBases);
 
     // Get reference to the test expression
     const Fiber::Expression<CoordinateType>& testExpression =
             space.shapeFunctionValueExpression();
 
-    // Now create the assembler
-    const ParallelisationOptions& parallelOptions =
-            options.parallelisationOptions();
-    Fiber::OpenClHandler openClHandler(
-                parallelOptions.openClOptions());
-    openClHandler.pushGeometry (rawGeometry.vertices(),
-//    openClHandler.pushGeometry<CoordinateType,int> (rawGeometry.vertices(),
-                                rawGeometry.elementCornerIndices());
-
     std::auto_ptr<LocalAssembler> assembler =
             factory.makeAssemblerForGridFunctions(
-                *geometryFactory, rawGeometry,
-                testBases, testExpression, globalFunction,
+                geometryFactory, rawGeometry,
+                testBases,
+                make_shared_from_ref(testExpression),
+                make_shared_from_ref(globalFunction),
                 openClHandler);
 
-    return reallyCalculateProjections(
-                space, *assembler, options);
+    return reallyCalculateProjections(space, *assembler, options);
 }
 
 template <typename BasisFunctionType, typename ResultType>

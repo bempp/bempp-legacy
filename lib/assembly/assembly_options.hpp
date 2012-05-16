@@ -77,7 +77,7 @@ public:
     }
 
     /** @}
-      @name Parallelism
+      @name Parallelisation
       @{ */
 
     void switchToOpenCl(const OpenClOptions& openClOptions);
@@ -110,7 +110,7 @@ public:
 private:
     Representation m_representation;
     AcaOptions m_acaOptions;
-    Fiber::ParallelisationOptions m_parallelisationOptions;
+    ParallelisationOptions m_parallelisationOptions;
     Mode m_singularIntegralCaching;
 };
 

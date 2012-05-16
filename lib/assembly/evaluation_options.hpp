@@ -23,11 +23,13 @@
 #define bempp_evaluation_options_hpp
 
 #include "../fiber/opencl_options.hpp"
+#include "../fiber/parallelisation_options.hpp"
 
 namespace Bempp
 {
 
 using Fiber::OpenClOptions;
+using Fiber::ParallelisationOptions;
 
 class EvaluationOptions
 {
@@ -41,32 +43,20 @@ public:
     };
 
     /** @}
-      @name Parallelism
+      @name Parallelisation
       @{ */
-
-    enum Parallelism {
-        TBB, OPEN_CL
-    };
 
     void switchToOpenCl(const OpenClOptions& openClOptions);
     void switchToTbb(int maxThreadCount = AUTO);
 
-    Parallelism parallelism() const {
-        return m_parallelism;
+    const ParallelisationOptions& parallelisationOptions() const {
+        return m_parallelisationOptions;
     }
 
-    const OpenClOptions& openClOptions() const {
-        return m_openClOptions;
-    }
-
-    int maxThreadCount() const {
-        return m_maxThreadCount;
-    }
+    /** @} */
 
 private:
-    Parallelism m_parallelism;
-    OpenClOptions m_openClOptions;
-    int m_maxThreadCount;
+    ParallelisationOptions m_parallelisationOptions;
 };
 
 } // namespace Bempp

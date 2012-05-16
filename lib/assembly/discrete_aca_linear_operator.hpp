@@ -75,10 +75,11 @@ public:
 
     void makeAllMblocksDense(); // for debugging
 
+    static const DiscreteAcaLinearOperator<ValueType>& castToAca(
+            const DiscreteLinearOperator<ValueType>& discreteOperator);
+
 #ifdef WITH_TRILINOS
 public:
-    static const DiscreteAcaLinearOperator<ValueType>& castToAca
-        (DiscreteLinearOperator<ValueType>& discreteOperator);
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > range() const;
 

@@ -27,10 +27,11 @@
 #include "evaluation_options.hpp"
 #include "grid_function.hpp"
 #include "interpolated_function.hpp"
+#include "local_assembler_construction_helper.hpp"
 
+#include "../common/auto_timer.hpp"
 #include "../common/multidimensional_arrays.hpp"
 #include "../common/not_implemented_error.hpp"
-#include "../common/auto_timer.hpp"
 #include "../fiber/evaluator_for_integral_operators.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/local_assembler_factory.hpp"
@@ -46,6 +47,7 @@
 #include "../space/space.hpp"
 
 #include <armadillo>
+#include <boost/make_shared.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <stdexcept>
 #include <iostream>
@@ -146,18 +148,23 @@ BasisFunctionType, KernelType, ResultType>::LocalAssembler>
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 makeAssembler(
         const LocalAssemblerFactory& assemblerFactory,
-        const GeometryFactory& geometryFactory,
-        const Fiber::RawGridGeometry<CoordinateType>& rawGeometry,
-        const std::vector<const Fiber::Basis<BasisFunctionType>*>& testBases,
-        const std::vector<const Fiber::Basis<BasisFunctionType>*>& trialBases,
-        const Fiber::OpenClHandler& openClHandler,
+        const shared_ptr<const GeometryFactory>& testGeometryFactory,
+        const shared_ptr<const GeometryFactory>& trialGeometryFactory,
+        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
+        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
+        const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
+        const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+        const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
         const ParallelisationOptions& parallelisationOptions,
         bool cacheSingularIntegrals) const
 {
     return assemblerFactory.makeAssemblerForIntegralOperators(
-                geometryFactory, rawGeometry,
+                testGeometryFactory, trialGeometryFactory,
+                testRawGeometry, trialRawGeometry,
                 testBases, trialBases,
-                testExpression(), kernel(), trialExpression(),
+                make_shared_from_ref(testExpression()),
+                make_shared_from_ref(kernel()),
+                make_shared_from_ref(trialExpression()),
                 openClHandler, parallelisationOptions, cacheSingularIntegrals);
 }
 
@@ -169,58 +176,8 @@ assembleWeakForm(
         const AssemblyOptions& options) const
 {
     AutoTimer timer("\nAssembly took ");
-
-    const Space<BasisFunctionType>& testSpace = this->testSpace();
-    const Space<BasisFunctionType>& trialSpace = this->trialSpace();
-
-    if (!testSpace.dofsAssigned() || !trialSpace.dofsAssigned())
-        throw std::runtime_error("ElementaryIntegralOperator::assembleWeakForm(): "
-                                 "degrees of freedom must be assigned "
-                                 "before calling assembleWeakForm()");
-    if (&testSpace.grid() != &trialSpace.grid())
-        throw std::runtime_error("ElementaryIntegralOperator::assembleWeakForm(): "
-                                 "testSpace and trialSpace must be defined over "
-                                 "the same grid");
-
-    // Prepare local assembler
-
-    const Grid& grid = trialSpace.grid();
-    std::auto_ptr<GridView> view = grid.leafView();
-
-    // Gather geometric data
-    Fiber::RawGridGeometry<CoordinateType> rawGeometry(grid.dim(), grid.dimWorld());
-    view->getRawElementData(
-                rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
-                rawGeometry.auxData());
-
-    // Make geometry factory
-    std::auto_ptr<GeometryFactory> geometryFactory =
-            trialSpace.grid().elementGeometryFactory();
-
-    // Get pointers to test and trial bases of each element
-    std::vector<const Fiber::Basis<BasisFunctionType>*> testBases;
-    std::vector<const Fiber::Basis<BasisFunctionType>*> trialBases;
-    getAllBases(testSpace, testBases);
-    getAllBases(trialSpace, trialBases);
-
-    // Now create the assembler
-    const ParallelisationOptions& parallelOptions =
-            options.parallelisationOptions();
-    Fiber::OpenClHandler openClHandler(parallelOptions.openClOptions());
-    if (openClHandler.UseOpenCl())
-        openClHandler.pushGeometry (rawGeometry.vertices(),
-                                    rawGeometry.elementCornerIndices());
-    bool cacheSingularIntegrals =
-            (options.singularIntegralCaching() == AssemblyOptions::YES ||
-             (options.singularIntegralCaching() == AssemblyOptions::AUTO));
-
     std::auto_ptr<LocalAssembler> assembler =
-            makeAssembler(factory,
-                          *geometryFactory, rawGeometry,
-                          testBases, trialBases,
-                          openClHandler, parallelOptions,
-                          cacheSingularIntegrals);
-
+            makeAssemblerFromScratch(factory, options);
     return assembleWeakFormInternal(*assembler, options);
 }
 
@@ -231,7 +188,6 @@ assembleWeakFormInternal(
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
-
     switch (options.operatorRepresentation()) {
     case AssemblyOptions::DENSE:
         return assembleWeakFormInDenseMode(assembler, options);
@@ -343,71 +299,69 @@ assembleWeakFormInAcaMode(
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-std::auto_ptr<InterpolatedFunction<ResultType> >
+std::auto_ptr<typename ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::Evaluator>
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-applyOffSurface(
+makeEvaluator(
         const GridFunction<BasisFunctionType, ResultType>& argument,
-        const Grid& evaluationGrid,
-        const LocalAssemblerFactory& factory,
+        const LocalAssemblerFactory& assemblerFactory,
         const EvaluationOptions& options) const
 {
-    // Prepare evaluator
+    // Collect the standard set of data necessary for construction of
+    // evaluators and assemblers
+    typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
+    typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
+    typedef std::vector<std::vector<ResultType> > CoefficientsVector;
+    typedef LocalAssemblerConstructionHelper Helper;
+
+    shared_ptr<RawGridGeometry> rawGeometry;
+    shared_ptr<GeometryFactory> geometryFactory;
+    shared_ptr<Fiber::OpenClHandler> openClHandler;
+    shared_ptr<BasisPtrVector> bases;
+
     const Space<BasisFunctionType>& space = argument.space();
+    Helper::collectGridData(space.grid(),
+                            rawGeometry, geometryFactory);
+    Helper::makeOpenClHandler(options.parallelisationOptions().openClOptions(),
+                              rawGeometry, openClHandler);
+    Helper::collectBases(space, bases);
+
+    // In addition, get coefficients of argument's expansion in each element
     const Grid& grid = space.grid();
     std::auto_ptr<GridView> view = grid.leafView();
     const int elementCount = view->entityCount(0);
 
-    // Gather geometric data
-    Fiber::RawGridGeometry<CoordinateType> rawGeometry(grid.dim(), grid.dimWorld());
-    view->getRawElementData(
-                rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
-                rawGeometry.auxData());
-
-    // Make geometry factory
-    std::auto_ptr<GeometryFactory> geometryFactory =
-            grid.elementGeometryFactory();
-
-    // Get pointer to argument's basis in each element
-    // and coefficients of argument's expansion in each element
-    std::vector<const Fiber::Basis<BasisFunctionType>*> bases(elementCount);
-    std::vector<std::vector<ResultType> > localCoefficients(elementCount);
+    shared_ptr<CoefficientsVector> localCoefficients =
+            boost::make_shared<CoefficientsVector>(elementCount);
 
     std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
     for (int i = 0; i < elementCount; ++i) {
-        assert(!it->finished());
         const Entity<0>& element = it->entity();
-        bases[i] = &space.basis(element);
-        argument.getLocalCoefficients(element, localCoefficients[i]);
+        argument.getLocalCoefficients(element, (*localCoefficients)[i]);
         it->next();
     }
 
-    Fiber::OpenClHandler openClHandler(options.openClOptions());
-    if (openClHandler.UseOpenCl())
-        openClHandler.pushGeometry(rawGeometry.vertices(),
-                                   rawGeometry.elementCornerIndices());
-
     // Now create the evaluator
-
-    // TODO: distinguish between kernel() and weakFormKernel()
-    // as well as trialExpression() and weakFormTrialExpression()
-    std::auto_ptr<Evaluator> evaluator =
-            factory.makeEvaluatorForIntegralOperators(
-                *geometryFactory, rawGeometry,
+    return assemblerFactory.makeEvaluatorForIntegralOperators(
+                geometryFactory, rawGeometry,
                 bases,
-                kernel(), trialExpression(), localCoefficients,
+                make_shared_from_ref(kernel()),
+                make_shared_from_ref(trialExpression()),
+                localCoefficients,
                 openClHandler);
-
-    return applyOffSurfaceWithKnownEvaluator(evaluationGrid, *evaluator, options);
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<InterpolatedFunction<ResultType> >
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-applyOffSurfaceWithKnownEvaluator(
+applyOffSurface(
+        const GridFunction<BasisFunctionType, ResultType>& argument,
         const Grid& evaluationGrid,
-        const Evaluator& evaluator,
+        const LocalAssemblerFactory& assemblerFactory,
         const EvaluationOptions& options) const
 {
+    std::auto_ptr<Evaluator> evaluator =
+            makeEvaluator(argument, assemblerFactory, options);
+
     // Get coordinates of interpolation points, i.e. the evaluationGrid's vertices
 
     std::auto_ptr<GridView> evalView = evaluationGrid.leafView();
@@ -447,7 +401,7 @@ applyOffSurfaceWithKnownEvaluator(
     // (this might depend on evaluation options)
 
     arma::Mat<ResultType> result;
-    evaluator.evaluate(Evaluator::FAR_FIELD, evalPoints, result);
+    evaluator->evaluate(Evaluator::FAR_FIELD, evalPoints, result);
 
     //    std::cout << "Interpolation results:\n";
     //    for (int point = 0; point < evalPointCount; ++point)

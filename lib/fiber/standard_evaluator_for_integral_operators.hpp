@@ -47,13 +47,13 @@ public:
     typedef typename Base::Region Region;
 
     StandardEvaluatorForIntegralOperators(
-            const GeometryFactory& geometryFactory,
-            const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<BasisFunctionType>*>& trialBases,
-            const Kernel<KernelType>& kernel,
-            const Expression<CoordinateType>& trialExpression,
-            const std::vector<std::vector<ResultType> >& argumentLocalCoefficients,
-            const OpenClHandler& openClHandler,
+            const shared_ptr<const GeometryFactory >& geometryFactory,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const Kernel<KernelType> >& kernel,
+            const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+            const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
+            const shared_ptr<const OpenClHandler>& openClHandler,
             const QuadratureOptions& quadratureOptions);
 
     virtual void evaluate(Region region,
@@ -73,13 +73,13 @@ private:
     int nearFieldQuadOrder(const Fiber::Basis<BasisFunctionType>& basis) const;
 
 private:
-    const GeometryFactory& m_geometryFactory;
-    const RawGridGeometry<CoordinateType>& m_rawGeometry;
-    const std::vector<const Basis<BasisFunctionType>*>& m_trialBases;
-    const Kernel<KernelType>& m_kernel;
-    const Expression<CoordinateType>& m_trialExpression;
-    const std::vector<std::vector<ResultType> >& m_argumentLocalCoefficients;
-    const Fiber::OpenClHandler& m_openClHandler;
+    const shared_ptr<const GeometryFactory> m_geometryFactory;
+    const shared_ptr<const RawGridGeometry<CoordinateType> > m_rawGeometry;
+    const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_trialBases;
+    const shared_ptr<const Kernel<KernelType> > m_kernel;
+    const shared_ptr<const Expression<CoordinateType> > m_trialExpression;
+    const shared_ptr<const std::vector<std::vector<ResultType> > > m_argumentLocalCoefficients;
+    const shared_ptr<const Fiber::OpenClHandler> m_openClHandler;
     const QuadratureOptions& m_quadratureOptions;
 
     Fiber::GeometricalData<CoordinateType> m_nearFieldTrialGeomData;

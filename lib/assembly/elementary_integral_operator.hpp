@@ -75,11 +75,13 @@ public:
 
     virtual std::auto_ptr<LocalAssembler> makeAssembler(
             const LocalAssemblerFactory& assemblerFactory,
-            const GeometryFactory& geometryFactory,
-            const Fiber::RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Fiber::Basis<BasisFunctionType>*>& testBases,
-            const std::vector<const Fiber::Basis<BasisFunctionType>*>& trialBases,
-            const Fiber::OpenClHandler& openClHandler,
+            const shared_ptr<const GeometryFactory>& testGeometryFactory,
+            const shared_ptr<const GeometryFactory>& trialGeometryFactory,
+            const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
+            const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
+            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
+            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const;
 
@@ -109,6 +111,12 @@ private:
     virtual const Fiber::Expression<CoordinateType>& testExpression() const = 0;
     virtual const Fiber::Expression<CoordinateType>& trialExpression() const = 0;
 
+    std::auto_ptr<Evaluator>
+    makeEvaluator(
+            const GridFunction<BasisFunctionType, ResultType>& argument,
+            const LocalAssemblerFactory& factory,
+            const EvaluationOptions& options) const;
+
     /** @}
         \name Weak form assembly
         @{ */
@@ -122,11 +130,6 @@ private:
             const AssemblyOptions& options) const;
     /** @} */
 
-    std::auto_ptr<InterpolatedFunction<ResultType> >
-    applyOffSurfaceWithKnownEvaluator(
-            const Grid& evaluationGrid,
-            const Evaluator& evaluator,
-            const EvaluationOptions& options) const;
 };
 
 } // namespace Bempp
