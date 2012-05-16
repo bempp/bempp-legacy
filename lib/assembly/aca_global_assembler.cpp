@@ -135,12 +135,11 @@ private:
     mutable LeafClusterIndexQueue& m_leafClusterIndexQueue;
     mutable std::vector<ChunkStats>& m_stats;
 };
-#endif
 
 void reallyGetClusterIds(const cluster& clusterTree,
-                   const std::vector<unsigned int>& p2oDofs,
-                   std::vector<unsigned int>& clusterIds,
-                   unsigned int& id)
+                         const std::vector<unsigned int>& p2oDofs,
+                         std::vector<unsigned int>& clusterIds,
+                         unsigned int& id)
 {
     if (clusterTree.isleaf())
         for (int nDof = clusterTree.getnbeg(); nDof < clusterTree.getnend(); ++nDof)
@@ -158,6 +157,7 @@ void getClusterIds(const cluster& clusterTree,
     unsigned int id = 0;
     reallyGetClusterIds(clusterTree, p2oDofs, clusterIds, id);
 }
+#endif
 
 } // namespace
 
