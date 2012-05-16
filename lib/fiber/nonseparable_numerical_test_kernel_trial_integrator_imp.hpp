@@ -49,8 +49,10 @@ NonseparableNumericalTestKernelTrialIntegrator(
         const arma::Mat<CoordinateType>& localTestQuadPoints,
         const arma::Mat<CoordinateType>& localTrialQuadPoints,
         const std::vector<CoordinateType> quadWeights,
-        const GeometryFactory& geometryFactory,
-        const RawGridGeometry<CoordinateType>& rawGeometry,
+        const GeometryFactory& testGeometryFactory,
+        const GeometryFactory& trialGeometryFactory,
+        const RawGridGeometry<CoordinateType>& testRawGeometry,
+        const RawGridGeometry<CoordinateType>& trialRawGeometry,
         const Expression<CoordinateType>& testExpression,
         const Kernel<KernelType>& kernel,
         const Expression<CoordinateType>& trialExpression,
@@ -58,8 +60,10 @@ NonseparableNumericalTestKernelTrialIntegrator(
     m_localTestQuadPoints(localTestQuadPoints),
     m_localTrialQuadPoints(localTrialQuadPoints),
     m_quadWeights(quadWeights),
-    m_geometryFactory(geometryFactory),
-    m_rawGeometry(rawGeometry),
+    m_testGeometryFactory(testGeometryFactory),
+    m_trialGeometryFactory(trialGeometryFactory),
+    m_testRawGeometry(testRawGeometry),
+    m_trialRawGeometry(trialRawGeometry),
     m_testExpression(testExpression),
     m_kernel(kernel),
     m_trialExpression(trialExpression),
@@ -130,15 +134,30 @@ integrate(
     m_kernel.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 
     typedef typename GeometryFactory::Geometry Geometry;
-    std::auto_ptr<Geometry> geometryA(m_geometryFactory.make());
-    std::auto_ptr<Geometry> geometryB(m_geometryFactory.make());
+
+    std::auto_ptr<Geometry> geometryA, geometryB;
+    const RawGridGeometry<CoordinateType> *rawGeometryA = 0, *rawGeometryB = 0;
+    if (callVariant == TEST_TRIAL)
+    {
+        geometryA = m_testGeometryFactory.make();
+        geometryB = m_trialGeometryFactory.make();
+        rawGeometryA = &m_testRawGeometry;
+        rawGeometryB = &m_trialRawGeometry;
+    }
+    else
+    {
+        geometryA = m_trialGeometryFactory.make();
+        geometryB = m_testGeometryFactory.make();
+        rawGeometryA = &m_trialRawGeometry;
+        rawGeometryB = &m_testRawGeometry;
+    }
 
     arma::Cube<BasisFunctionType> testValues, trialValues;
     arma::Cube<KernelType> kernelValues;
 
     result.set_size(testDofCount, trialDofCount, elementACount);
 
-    m_rawGeometry.setupGeometry(elementIndexB, *geometryB);
+    rawGeometryB->setupGeometry(elementIndexB, *geometryB);
     if (callVariant == TEST_TRIAL)
     {
         basisA.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS, testBasisData);
@@ -157,7 +176,7 @@ integrate(
     // Iterate over the elements
     for (int indexA = 0; indexA < elementACount; ++indexA)
     {
-        m_rawGeometry.setupGeometry(elementIndicesA[indexA], *geometryA);
+        rawGeometryA->setupGeometry(elementIndicesA[indexA], *geometryA);
         if (callVariant == TEST_TRIAL)
         {
             geometryA->getData(testGeomDeps, m_localTestQuadPoints, testGeomData);
@@ -257,8 +276,8 @@ integrate(
     m_kernel.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 
     typedef typename GeometryFactory::Geometry Geometry;
-    std::auto_ptr<Geometry> testGeometry(m_geometryFactory.make());
-    std::auto_ptr<Geometry> trialGeometry(m_geometryFactory.make());
+    std::auto_ptr<Geometry> testGeometry(m_testGeometryFactory.make());
+    std::auto_ptr<Geometry> trialGeometry(m_trialGeometryFactory.make());
 
     arma::Cube<BasisFunctionType> testValues, trialValues;
     arma::Cube<KernelType> kernelValues;
@@ -271,8 +290,8 @@ integrate(
     // Iterate over the elements
     for (int pairIndex = 0; pairIndex < geometryPairCount; ++pairIndex)
     {
-        m_rawGeometry.setupGeometry(elementIndexPairs[pairIndex].first, *testGeometry);
-        m_rawGeometry.setupGeometry(elementIndexPairs[pairIndex].second, *trialGeometry);
+        m_testRawGeometry.setupGeometry(elementIndexPairs[pairIndex].first, *testGeometry);
+        m_trialRawGeometry.setupGeometry(elementIndexPairs[pairIndex].second, *trialGeometry);
         testGeometry->getData(testGeomDeps, m_localTestQuadPoints, testGeomData);
         trialGeometry->getData(trialGeomDeps, m_localTrialQuadPoints, trialGeomData);
         m_testExpression.evaluate(testBasisData, testGeomData, testValues);

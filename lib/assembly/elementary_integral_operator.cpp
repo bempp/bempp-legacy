@@ -148,8 +148,10 @@ BasisFunctionType, KernelType, ResultType>::LocalAssembler>
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 makeAssembler(
         const LocalAssemblerFactory& assemblerFactory,
-        const shared_ptr<const GeometryFactory >& geometryFactory,
-        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& rawGeometry,
+        const shared_ptr<const GeometryFactory>& testGeometryFactory,
+        const shared_ptr<const GeometryFactory>& trialGeometryFactory,
+        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
+        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
         const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
         const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
         const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
@@ -157,7 +159,8 @@ makeAssembler(
         bool cacheSingularIntegrals) const
 {
     return assemblerFactory.makeAssemblerForIntegralOperators(
-                geometryFactory, rawGeometry,
+                testGeometryFactory, trialGeometryFactory,
+                testRawGeometry, trialRawGeometry,
                 testBases, trialBases,
                 make_shared_from_ref(testExpression()),
                 make_shared_from_ref(kernel()),

@@ -53,8 +53,10 @@ public:
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
     StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
-            const shared_ptr<const GeometryFactory>& geometryFactory,
-            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+            const shared_ptr<const GeometryFactory>& testGeometryFactory,
+            const shared_ptr<const GeometryFactory>& trialGeometryFactory,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
             const shared_ptr<const Expression<CoordinateType> >& testExpression,
@@ -89,6 +91,12 @@ private:
     typedef std::set<ElementIndexPair> ElementIndexPairSet;
     typedef std::map<ElementIndexPair, arma::Mat<ResultType> > Cache;
 
+    void checkConsistencyOfGeometryAndBases(
+            const RawGridGeometry<CoordinateType>& rawGeometry,
+            const std::vector<const Basis<BasisFunctionType>*>& bases) const;
+
+    bool testAndTrialGridsAreIdentical() const;
+
     void cacheSingularLocalWeakForms();
     void findPairsOfAdjacentElements(ElementIndexPairSet& pairs) const;
     void cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs);
@@ -110,8 +118,10 @@ private:
     Integrator*> IntegratorMap;
 
 private:
-    shared_ptr<const GeometryFactory> m_geometryFactory;
-    shared_ptr<const RawGridGeometry<CoordinateType> > m_rawGeometry;
+    shared_ptr<const GeometryFactory> m_testGeometryFactory;
+    shared_ptr<const GeometryFactory> m_trialGeometryFactory;
+    shared_ptr<const RawGridGeometry<CoordinateType> > m_testRawGeometry;
+    shared_ptr<const RawGridGeometry<CoordinateType> > m_trialRawGeometry;
     shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_testBases;
     shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_trialBases;
     shared_ptr<const Expression<CoordinateType> > m_testExpression;

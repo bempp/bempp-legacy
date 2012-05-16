@@ -84,8 +84,10 @@ template <typename BasisFunctionType, typename KernelType,
 StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
-        const shared_ptr<const GeometryFactory>& geometryFactory,
-        const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+        const shared_ptr<const GeometryFactory>& testGeometryFactory,
+        const shared_ptr<const GeometryFactory>& trialGeometryFactory,
+        const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
+        const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
         const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
         const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
         const shared_ptr<const Expression<CoordinateType> >& testExpression,
@@ -95,8 +97,10 @@ StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
         const ParallelisationOptions& parallelisationOptions,
         bool cacheSingularIntegrals,
         const AccuracyOptions& accuracyOptions) :
-    m_geometryFactory(geometryFactory),
-    m_rawGeometry(rawGeometry),
+    m_testGeometryFactory(testGeometryFactory),
+    m_trialGeometryFactory(trialGeometryFactory),
+    m_testRawGeometry(testRawGeometry),
+    m_trialRawGeometry(trialRawGeometry),
     m_testBases(testBases),
     m_trialBases(trialBases),
     m_testExpression(testExpression),
@@ -106,37 +110,8 @@ StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
     m_parallelisationOptions(parallelisationOptions),
     m_accuracyOptions(accuracyOptions)
 {
-    if (rawGeometry->vertices().n_rows != 3)
-        throw std::invalid_argument(
-                "StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
-                "StandardLocalAssemblerForIntegralOperatorsOnSurfaces(): "
-                "vertex coordinates must be three-dimensional");
-    if (rawGeometry->elementCornerIndices().n_rows < 3 ||
-            4 < rawGeometry->elementCornerIndices().n_rows)
-        throw std::invalid_argument(
-                "StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
-                "StandardLocalAssemblerForIntegralOperatorsOnSurfaces(): "
-                "all elements must be triangular or quadrilateral");
-    const int elementCount = rawGeometry->elementCornerIndices().n_cols;
-    if (!rawGeometry->auxData().is_empty() &&
-            rawGeometry->auxData().n_cols != elementCount)
-        throw std::invalid_argument(
-                "StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
-                "StandardLocalAssemblerForIntegralOperatorsOnSurfaces(): "
-                "number of columns of auxData must match that of "
-                "elementCornerIndices");
-    if (testBases->size() != elementCount)
-        throw std::invalid_argument(
-                "StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
-                "StandardLocalAssemblerForIntegralOperatorsOnSurfaces(): "
-                "size of testBases must match the number of columns of "
-                "elementCornerIndices");
-    if (trialBases->size() != elementCount)
-        throw std::invalid_argument(
-                "StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
-                "StandardLocalAssemblerForIntegralOperatorsOnSurfaces(): "
-                "size of trialBases must match the number of columns of "
-                "elementCornerIndices");
+    checkConsistencyOfGeometryAndBases(*testRawGeometry, *testBases);
+    checkConsistencyOfGeometryAndBases(*trialRawGeometry, *trialBases);
 
     if (cacheSingularIntegrals)
         cacheSingularLocalWeakForms();
@@ -155,6 +130,52 @@ KernelType, ResultType, GeometryFactory>::
          it != m_TestKernelTrialIntegrators.end(); ++it)
         delete it->second;
     m_TestKernelTrialIntegrators.clear();
+}
+
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+void
+StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+KernelType, ResultType, GeometryFactory>::
+checkConsistencyOfGeometryAndBases(
+        const RawGridGeometry<CoordinateType>& rawGeometry,
+        const std::vector<const Basis<BasisFunctionType>*>& bases) const
+{
+    if (rawGeometry.vertices().n_rows != 3)
+        throw std::invalid_argument(
+            "StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
+            "checkConsistencyOfGeometryAndBases(): "
+            "vertex coordinates must be three-dimensional");
+    const int elementCount = rawGeometry.elementCornerIndices().n_cols;
+    if (rawGeometry.elementCornerIndices().n_rows < 3 ||
+            4 < rawGeometry.elementCornerIndices().n_rows)
+        throw std::invalid_argument(
+            "StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
+            "checkConsistencyOfGeometryAndBases(): "
+            "Elements must have either 3 or 4 corners");
+    if (!rawGeometry.auxData().is_empty() &&
+            rawGeometry.auxData().n_cols != elementCount)
+        throw std::invalid_argument(
+            "StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
+            "checkConsistencyOfGeometryAndBases(): "
+            "number of columns of auxData must match that of "
+            "elementCornerIndices");
+    if (bases.size() != elementCount)
+        throw std::invalid_argument(
+            "StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
+            "checkConsistencyOfGeometryAndBases(): "
+            "size of bases must match the number of columns of "
+            "elementCornerIndices");
+}
+
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+inline bool
+StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+KernelType, ResultType, GeometryFactory>::
+testAndTrialGridsAreIdentical() const
+{
+    return m_testRawGeometry.get() == m_trialRawGeometry.get();
 }
 
 template <typename BasisFunctionType, typename KernelType,
@@ -380,9 +401,16 @@ StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 findPairsOfAdjacentElements(ElementIndexPairSet& pairs) const
 {
-    const arma::Mat<CoordinateType>& vertices = m_rawGeometry->vertices();
+    pairs.clear();
+
+    if (!testAndTrialGridsAreIdentical())
+        return; // we assume that nonidentical grids are always disjoint
+
+    const RawGridGeometry<CoordinateType>& rawGeometry = *m_testRawGeometry;
+
+    const arma::Mat<CoordinateType>& vertices = rawGeometry.vertices();
     const arma::Mat<int>& elementCornerIndices =
-            m_rawGeometry->elementCornerIndices();
+            rawGeometry.elementCornerIndices();
 
     const int vertexCount = vertices.n_cols;
     const int elementCount = elementCornerIndices.n_cols;
@@ -399,7 +427,6 @@ findPairsOfAdjacentElements(ElementIndexPairSet& pairs) const
                 elementsAdjacentToVertex[index].push_back(e);
         }
 
-    pairs.clear();
     // Loop over vertex indices
     for (int v = 0; v < vertexCount; ++v) {
         const ElementIndexVector& adjacentElements = elementsAdjacentToVertex[v];
@@ -514,14 +541,18 @@ selectIntegrator(int testElementIndex, int trialElementIndex)
 {
     DoubleQuadratureDescriptor desc;
 
-    // Get corner indices of the specified elements
-    arma::Col<int> testElementCornerIndices =
-            m_rawGeometry->elementCornerIndices(testElementIndex);
-    arma::Col<int> trialElementCornerIndices =
-            m_rawGeometry->elementCornerIndices(trialElementIndex);
+    if (testAndTrialGridsAreIdentical()) {
+        // Get corner indices of the specified elements
+        arma::Col<int> testElementCornerIndices =
+                m_testRawGeometry->elementCornerIndices(testElementIndex);
+        arma::Col<int> trialElementCornerIndices =
+                m_trialRawGeometry->elementCornerIndices(trialElementIndex);
 
-    desc.topology = determineElementPairTopologyIn3D(
-                testElementCornerIndices, trialElementCornerIndices);
+        desc.topology = determineElementPairTopologyIn3D(
+                    testElementCornerIndices, trialElementCornerIndices);
+    }
+    else
+        desc.topology.type = ElementPairTopology::Disjoint;
 
     if (desc.topology.type == ElementPairTopology::Disjoint) {
         desc.testOrder = regularOrder(testElementIndex, TEST);
@@ -620,7 +651,8 @@ getIntegrator(const DoubleQuadratureDescriptor& desc)
                 KernelType, ResultType, GeometryFactory> ConcreteIntegrator;
         integrator = new ConcreteIntegrator(
                     testPoints, trialPoints, testWeights, trialWeights,
-                    *m_geometryFactory, *m_rawGeometry,
+                    *m_testGeometryFactory, *m_trialGeometryFactory,
+                    *m_testRawGeometry, *m_trialRawGeometry,
                     *m_testExpression, *m_kernel, *m_trialExpression,
                     *m_openClHandler);
     } else {
@@ -633,7 +665,8 @@ getIntegrator(const DoubleQuadratureDescriptor& desc)
                 KernelType, ResultType, GeometryFactory> ConcreteIntegrator;
         integrator = new ConcreteIntegrator(
                     testPoints, trialPoints, weights,
-                    *m_geometryFactory, *m_rawGeometry,
+                    *m_testGeometryFactory, *m_trialGeometryFactory,
+                    *m_testRawGeometry, *m_trialRawGeometry,
                     *m_testExpression, *m_kernel, *m_trialExpression,
                     *m_openClHandler);
     }

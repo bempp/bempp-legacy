@@ -346,8 +346,10 @@ template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<typename IdentityOperator<BasisFunctionType, ResultType>::LocalAssembler>
 IdentityOperator<BasisFunctionType, ResultType>::makeAssembler(
         const LocalAssemblerFactory& assemblerFactory,        
-        const shared_ptr<const GeometryFactory>& geometryFactory,
-        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& rawGeometry,
+        const shared_ptr<const GeometryFactory>& testGeometryFactory,
+        const shared_ptr<const GeometryFactory>& trialGeometryFactory,
+        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
+        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
         const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
         const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
         const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
@@ -357,8 +359,13 @@ IdentityOperator<BasisFunctionType, ResultType>::makeAssembler(
     shared_ptr<const Fiber::Expression<CoordinateType> > expression =
             make_shared_from_ref(m_expression);
 
+    if (testGeometryFactory.get() != trialGeometryFactory.get() ||
+            testRawGeometry.get() != trialRawGeometry.get())
+        throw std::invalid_argument("IdentityOperator::makeAssembler(): "
+                                    "the test and trial spaces must be defined "
+                                    "on the same grid");
     return assemblerFactory.makeAssemblerForIdentityOperators(
-                geometryFactory, rawGeometry,
+                testGeometryFactory, testRawGeometry,
                 testBases, trialBases,
                 expression, expression,
                 openClHandler);

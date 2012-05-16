@@ -74,6 +74,10 @@ public:
         std::vector<arma::Mat<ResultType> >& result);
 
 private:
+    void checkConsistencyOfGeometryAndBases(
+            const RawGridGeometry<CoordinateType>& rawGeometry,
+            const std::vector<const Basis<BasisFunctionType>*>& bases) const;
+
     const TestTrialIntegrator<BasisFunctionType, ResultType>&
     selectIntegrator(int elementIndex);
 

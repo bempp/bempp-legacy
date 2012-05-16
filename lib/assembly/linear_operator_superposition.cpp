@@ -189,8 +189,8 @@ assembleWeakFormInAcaMode(
         // Create local assembler for the current term
         std::auto_ptr<LocalAssembler> assembler = term->makeAssembler(
                     factory,
-                    testGeometryFactory, testRawGeometry,
-                    // TODO: add parameters for trial*
+                    testGeometryFactory, trialGeometryFactory,
+                    testRawGeometry, trialRawGeometry,
                     testBases, trialBases,
                     openClHandler,
                     options.parallelisationOptions(), cacheSingularIntegrals);

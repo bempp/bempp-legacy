@@ -57,8 +57,10 @@ public:
         with real kernel. */
     std::auto_ptr<LocalAssemblerForOperators<ResultType> >
     makeAssemblerForIntegralOperators(
-            const shared_ptr<const GeometryFactory>& geometryFactory,
-            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+            const shared_ptr<const GeometryFactory>& testGeometryFactory,
+            const shared_ptr<const GeometryFactory>& trialGeometryFactory,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
             const shared_ptr<const Expression<CoordinateType> >& testExpression,
@@ -68,7 +70,9 @@ public:
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const {
         return this->makeAssemblerForIntegralOperatorsImplRealKernel(
-                    geometryFactory, rawGeometry, testBases, trialBases,
+                    testGeometryFactory, trialGeometryFactory,
+                    testRawGeometry, trialRawGeometry,
+                    testBases, trialBases,
                     testExpression, kernel, trialExpression, openClHandler,
                     parallelisationOptions, cacheSingularIntegrals);
     }
@@ -119,8 +123,10 @@ public:
 private:
     virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
     makeAssemblerForIntegralOperatorsImplRealKernel(
-            const shared_ptr<const GeometryFactory>& geometryFactory,
-            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+            const shared_ptr<const GeometryFactory>& testGeometryFactory,
+            const shared_ptr<const GeometryFactory>& trialGeometryFactory,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
             const shared_ptr<const Expression<CoordinateType> >& testExpression,
@@ -168,8 +174,10 @@ public:
         with complex kernel. */
     std::auto_ptr<LocalAssemblerForOperators<ResultType> >
     makeAssemblerForIntegralOperators(
-            const shared_ptr<const GeometryFactory>& geometryFactory,
-            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+            const shared_ptr<const GeometryFactory>& testGeometryFactory,
+            const shared_ptr<const GeometryFactory>& trialGeometryFactory,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
             const shared_ptr<const Expression<CoordinateType> >& testExpression,
@@ -179,7 +187,9 @@ public:
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const {
         return this->makeAssemblerForIntegralOperatorsImplComplexKernel(
-                    geometryFactory, rawGeometry, testBases, trialBases,
+                    testGeometryFactory, trialGeometryFactory,
+                    testRawGeometry, trialRawGeometry,
+                    testBases, trialBases,
                     testExpression, kernel, trialExpression, openClHandler,
                     parallelisationOptions, cacheSingularIntegrals);
     }
@@ -219,8 +229,10 @@ public:
 private:
     virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
     makeAssemblerForIntegralOperatorsImplComplexKernel(
-            const shared_ptr<const GeometryFactory>& geometryFactory,
-            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+            const shared_ptr<const GeometryFactory>& testGeometryFactory,
+            const shared_ptr<const GeometryFactory>& trialGeometryFactory,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
             const shared_ptr<const Expression<CoordinateType> >& testExpression,

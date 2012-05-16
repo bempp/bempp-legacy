@@ -44,36 +44,41 @@ StandardLocalAssemblerForIdentityOperatorOnSurface(
     m_trialExpression(trialExpression),
     m_openClHandler(openClHandler)
 {
-    if (rawGeometry->vertices().n_rows != 3)
+    checkConsistencyOfGeometryAndBases(*rawGeometry, *testBases);
+    checkConsistencyOfGeometryAndBases(*rawGeometry, *trialBases);
+}
+
+template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
+void
+StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
+checkConsistencyOfGeometryAndBases(
+        const RawGridGeometry<CoordinateType>& rawGeometry,
+        const std::vector<const Basis<BasisFunctionType>*>& bases) const
+{
+    if (rawGeometry.vertices().n_rows != 3)
         throw std::invalid_argument(
             "StandardLocalAssemblerForIdentityOperatorOnSurface::"
-            "StandardLocalAssemblerForIdentityOperatorOnSurface(): "
+            "checkConsistencyOfGeometryAndBases(): "
             "vertex coordinates must be three-dimensional");
-    const int elementCount = rawGeometry->elementCornerIndices().n_cols;
-    if (rawGeometry->elementCornerIndices().n_rows < 3 ||
-            4 < rawGeometry->elementCornerIndices().n_rows)
+    const int elementCount = rawGeometry.elementCornerIndices().n_cols;
+    if (rawGeometry.elementCornerIndices().n_rows < 3 ||
+            4 < rawGeometry.elementCornerIndices().n_rows)
         throw std::invalid_argument(
             "StandardLocalAssemblerForIdentityOperatorOnSurface::"
-            "StandardLocalAssemblerForIdentityOperatorOnSurface(): "
+            "checkConsistencyOfGeometryAndBases(): "
             "Elements must have either 3 or 4 corners");
-    if (!rawGeometry->auxData().is_empty() &&
-            rawGeometry->auxData().n_cols != elementCount)
+    if (!rawGeometry.auxData().is_empty() &&
+            rawGeometry.auxData().n_cols != elementCount)
         throw std::invalid_argument(
             "StandardLocalAssemblerForIdentityOperatorOnSurface::"
-            "StandardLocalAssemblerForIdentityOperatorOnSurface(): "
+            "checkConsistencyOfGeometryAndBases(): "
             "number of columns of auxData must match that of "
             "elementCornerIndices");
-    if (testBases->size() != elementCount)
+    if (bases.size() != elementCount)
         throw std::invalid_argument(
             "StandardLocalAssemblerForIdentityOperatorOnSurface::"
-            "StandardLocalAssemblerForIdentityOperatorOnSurface(): "
-            "size of testBases must match the number of columns of "
-            "elementCornerIndices");
-    if (trialBases->size() != elementCount)
-        throw std::invalid_argument(
-            "StandardLocalAssemblerForIdentityOperatorOnSurface::"
-            "StandardLocalAssemblerForIdentityOperatorOnSurface(): "
-            "size of trialBases must match the number of columns of "
+            "checkConsistencyOfGeometryAndBases(): "
+            "size of bases must match the number of columns of "
             "elementCornerIndices");
 }
 

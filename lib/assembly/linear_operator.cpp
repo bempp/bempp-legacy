@@ -161,18 +161,14 @@ LinearOperator<BasisFunctionType, ResultType>::collectDataForAssemblerConstructi
     typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
     typedef LocalAssemblerConstructionHelper Helper;
 
-    // make disappear!!!
-    const Space<BasisFunctionType>& testSpace = this->testSpace();
-    const Space<BasisFunctionType>& trialSpace = this->trialSpace();
-
     // Collect grid data
-    Helper::collectGridData(testSpace.grid(),
+    Helper::collectGridData(m_testSpace.grid(),
                             testRawGeometry, testGeometryFactory);
-    if (&testSpace.grid() == &trialSpace.grid()) {
+    if (&m_testSpace.grid() == &m_trialSpace.grid()) {
         trialRawGeometry = testRawGeometry;
         trialGeometryFactory = testGeometryFactory;
     } else
-        Helper::collectGridData(trialSpace.grid(),
+        Helper::collectGridData(m_trialSpace.grid(),
                                 trialRawGeometry, trialGeometryFactory);
 
     // Construct the OpenClHandler
@@ -180,11 +176,11 @@ LinearOperator<BasisFunctionType, ResultType>::collectDataForAssemblerConstructi
                               testRawGeometry, trialRawGeometry, openClHandler);
 
     // Get pointers to test and trial bases of each element
-    Helper::collectBases(testSpace, testBases);
-    if (&testSpace == &trialSpace)
+    Helper::collectBases(m_testSpace, testBases);
+    if (&m_testSpace == &m_trialSpace)
         trialBases = testBases;
     else
-        Helper::collectBases(trialSpace, trialBases);
+        Helper::collectBases(m_trialSpace, trialBases);
 
     cacheSingularIntegrals =
             (options.singularIntegralCaching() == AssemblyOptions::YES ||

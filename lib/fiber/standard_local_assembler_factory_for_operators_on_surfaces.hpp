@@ -80,8 +80,10 @@ public:
 private:
     virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
     makeAssemblerForIntegralOperatorsImplRealKernel(
-            const shared_ptr<const GeometryFactory>& geometryFactory,
-            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+            const shared_ptr<const GeometryFactory>& testGeometryFactory,
+            const shared_ptr<const GeometryFactory>& trialGeometryFactory,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
             const shared_ptr<const Expression<CoordinateType> >& testExpression,
@@ -96,7 +98,8 @@ private:
             LocalAssemblerForIntegralOperators_;
         return std::auto_ptr<LocalAssemblerForOperators<ResultType> >(
                     new LocalAssemblerForIntegralOperators_(
-                        geometryFactory, rawGeometry,
+                        testGeometryFactory, trialGeometryFactory,
+                        testRawGeometry, trialRawGeometry,
                         testBases, trialBases,
                         testExpression, kernel, trialExpression,
                         openClHandler, parallelisationOptions,
@@ -180,8 +183,10 @@ public:
 private:
     virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
     makeAssemblerForIntegralOperatorsImplComplexKernel(
-            const shared_ptr<const GeometryFactory>& geometryFactory,
-            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+            const shared_ptr<const GeometryFactory>& testGeometryFactory,
+            const shared_ptr<const GeometryFactory>& trialGeometryFactory,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
             const shared_ptr<const Expression<CoordinateType> >& testExpression,
@@ -196,7 +201,8 @@ private:
             LocalAssemblerForIntegralOperators_;
         return std::auto_ptr<LocalAssemblerForOperators<ResultType> >(
                     new LocalAssemblerForIntegralOperators_(
-                        geometryFactory, rawGeometry,
+                        testGeometryFactory, trialGeometryFactory,
+                        testRawGeometry, trialRawGeometry,
                         testBases, trialBases,
                         testExpression, kernel, trialExpression,
                         openClHandler, parallelisationOptions,

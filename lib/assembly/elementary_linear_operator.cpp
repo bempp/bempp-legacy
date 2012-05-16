@@ -26,8 +26,9 @@ ElementaryLinearOperator<BasisFunctionType, ResultType>::makeAssemblerFromScratc
                                         testBases, trialBases,
                                         openClHandler, cacheSingularIntegrals);
 
-    return makeAssembler(assemblerFactory, testGeometryFactory, testRawGeometry,
-                         // TODO: add parameters for trial*
+    return makeAssembler(assemblerFactory,
+                         testGeometryFactory, trialGeometryFactory,
+                         testRawGeometry, trialRawGeometry,
                          testBases, trialBases, openClHandler,
                          options.parallelisationOptions(), cacheSingularIntegrals);
 }
