@@ -27,8 +27,8 @@ namespace Bempp
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 Dot3dDoubleLayerPotential<BasisFunctionType, KernelType, ResultType>::Dot3dDoubleLayerPotential(
         const Space<BasisFunctionType>& testSpace,
-	const Space<BasisFunctionType>& trialSpace,
-	KernelType waveNumber) :
+        const Space<BasisFunctionType>& trialSpace,
+        KernelType waveNumber) :
     Base(testSpace, trialSpace)
 {
     m_kernel.setWaveNumber (waveNumber);

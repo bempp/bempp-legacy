@@ -47,7 +47,7 @@ public:
     typedef typename Base::CoordinateType CoordinateType;
 
     Laplace3dHypersingularOperator(const Space<BasisFunctionType>& testSpace,
-                            const Space<BasisFunctionType>& trialSpace);
+                                   const Space<BasisFunctionType>& trialSpace);
 
 private:
     virtual const Fiber::Kernel<KernelType>& kernel() const {
