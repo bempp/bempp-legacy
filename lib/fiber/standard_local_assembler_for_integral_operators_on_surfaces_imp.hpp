@@ -525,10 +525,10 @@ selectIntegrator(int testElementIndex, int trialElementIndex)
 
     if (desc.topology.type == ElementPairTopology::Disjoint) {
         desc.testOrder = regularOrder(testElementIndex, TEST);
-        desc.trialOrder = regularOrder(testElementIndex, TRIAL);
+        desc.trialOrder = regularOrder(trialElementIndex, TRIAL);
     } else { // singular integral
         desc.testOrder = singularOrder(testElementIndex, TEST);
-        desc.trialOrder = singularOrder(testElementIndex, TRIAL);
+        desc.trialOrder = singularOrder(trialElementIndex, TRIAL);
     }
 
     return getIntegrator(desc);
