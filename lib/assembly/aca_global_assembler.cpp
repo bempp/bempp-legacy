@@ -97,11 +97,6 @@ public:
 
     template <typename Range>
     void operator() (const Range& r) const {
-        m_stats[r.begin()].valid = true;
-        m_stats[r.begin()].chunkStart = r.begin();
-        m_stats[r.begin()].chunkSize = r.size();
-        m_stats[r.begin()].startTime = tbb::tick_count::now();
-
         const char* TEXT = "Approximating ... ";
         for (typename Range::const_iterator i = r.begin(); i != r.end(); ++i) {
             size_t leafClusterIndex = -1;
@@ -111,18 +106,22 @@ public:
                           << std::endl;
                 continue;
             }
+            m_stats[leafClusterIndex].valid = true;
+            m_stats[leafClusterIndex].chunkStart = r.begin();
+            m_stats[leafClusterIndex].chunkSize = r.size();
+            m_stats[leafClusterIndex].startTime = tbb::tick_count::now();
 
             DoubleCluster* cluster =
                     dynamic_cast<DoubleCluster*>(m_leafClusters[leafClusterIndex]);
             apprx_unsym(m_helper, m_blocks[cluster->getidx()],
                         cluster, m_options.eps, m_options.maximumRank);
+            m_stats[leafClusterIndex].endTime = tbb::tick_count::now();
             // TODO: recompress
             const int HASH_COUNT = 20;
             progressbar(std::cout, TEXT, (++m_done) - 1,
                         m_leafClusters.size(), HASH_COUNT, true);
         }
 
-        m_stats[r.begin()].endTime = tbb::tick_count::now();
     }
 
 private:
