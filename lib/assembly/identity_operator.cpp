@@ -27,6 +27,7 @@
 #include "discrete_dense_linear_operator.hpp"
 #include "discrete_sparse_linear_operator.hpp"
 
+#include "../common/auto_timer.hpp"
 #include "../common/types.hpp"
 #include "../fiber/basis.hpp"
 #include "../fiber/explicit_instantiation.hpp"
@@ -35,11 +36,13 @@
 #include "../fiber/opencl_handler.hpp"
 #include "../fiber/raw_grid_geometry.hpp"
 #include "../grid/entity_iterator.hpp"
+#include "../grid/geometry_factory.hpp"
 #include "../grid/grid.hpp"
 #include "../grid/grid_view.hpp"
 #include "../grid/mapper.hpp"
 #include "../space/space.hpp"
 
+#include <boost/make_shared.hpp>
 #include <boost/type_traits/is_complex.hpp>
 #include <stdexcept>
 #include <vector>
@@ -155,56 +158,12 @@ bool IdentityOperator<BasisFunctionType, ResultType>::supportsRepresentation(
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
 IdentityOperator<BasisFunctionType, ResultType>::assembleWeakForm(
-        const typename IdentityOperator<BasisFunctionType, ResultType>::LocalAssemblerFactory& factory,
+        const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
-
-    const Space<BasisFunctionType>& testSpace = this->testSpace();
-    const Space<BasisFunctionType>& trialSpace = this->trialSpace();
-
-    if (!testSpace.dofsAssigned() || !trialSpace.dofsAssigned())
-        throw std::runtime_error("IdentityOperator::assembleWeakForm(): "
-                                 "degrees of freedom must be assigned "
-                                 "before calling assembleWeakForm()");
-
-    // Prepare local assembler
-
-//    collectDataForLocalAssemblerConstruction(grid, rawGeometry, geometryFactory,
-//                                             bases);
-
-    const Grid& grid = trialSpace.grid();
-    std::auto_ptr<GridView> view = grid.leafView();
-
-    // Gather geometric data
-    Fiber::RawGridGeometry<CoordinateType> rawGeometry(grid.dim(), grid.dimWorld());
-    view->getRawElementData(
-                rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
-                rawGeometry.auxData());
-
-    // Make geometry factory
-    std::auto_ptr<GeometryFactory> geometryFactory =
-            testSpace.grid().elementGeometryFactory();
-
-    // Get pointers to test and trial bases of each element
-    std::vector<const Fiber::Basis<BasisFunctionType>*> testBases;
-    std::vector<const Fiber::Basis<BasisFunctionType>*> trialBases;
-    getAllBases(testSpace, testBases);
-    getAllBases(trialSpace, trialBases);
-
-    Fiber::OpenClHandler openClHandler(
-                options.parallelisationOptions().openClOptions());
-    if (openClHandler.UseOpenCl())
-        openClHandler.pushGeometry<CoordinateType,int> (rawGeometry.vertices(),
-                                    rawGeometry.elementCornerIndices());
-
-    // Now create the assembler
+    AutoTimer timer("\nAssembly took ");
     std::auto_ptr<LocalAssembler> assembler =
-            factory.makeAssemblerForIdentityOperators(
-                *geometryFactory, rawGeometry,
-                testBases, trialBases,
-                m_expression, m_expression,
-                openClHandler);
-
+            makeAssemblerFromScratch(factory, options);
     return assembleWeakFormInternal(*assembler, options);
 }
 
@@ -386,19 +345,22 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparseMode(
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<typename IdentityOperator<BasisFunctionType, ResultType>::LocalAssembler>
 IdentityOperator<BasisFunctionType, ResultType>::makeAssembler(
-        const LocalAssemblerFactory& assemblerFactory,
-        const GeometryFactory& geometryFactory,
-        const Fiber::RawGridGeometry<CoordinateType>& rawGeometry,
-        const std::vector<const Fiber::Basis<BasisFunctionType>*>& testBases,
-        const std::vector<const Fiber::Basis<BasisFunctionType>*>& trialBases,
-        const Fiber::OpenClHandler& openClHandler,
+        const LocalAssemblerFactory& assemblerFactory,        
+        const shared_ptr<const GeometryFactory>& geometryFactory,
+        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& rawGeometry,
+        const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
+        const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+        const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
         const ParallelisationOptions&,
         bool /* cacheSingularIntegrals */) const
 {
+    shared_ptr<const Fiber::Expression<CoordinateType> > expression =
+            make_shared_from_ref(m_expression);
+
     return assemblerFactory.makeAssemblerForIdentityOperators(
                 geometryFactory, rawGeometry,
                 testBases, trialBases,
-                m_expression, m_expression,
+                expression, expression,
                 openClHandler);
 }
 

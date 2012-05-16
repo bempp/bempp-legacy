@@ -24,8 +24,9 @@
 
 #include "linear_operator.hpp"
 
-#include <vector>
+#include "../common/shared_ptr.hpp"
 #include <stdexcept>
+#include <vector>
 
 namespace Fiber
 {
@@ -63,13 +64,17 @@ public:
        for this operator. */
     virtual std::auto_ptr<LocalAssembler> makeAssembler(
             const LocalAssemblerFactory& assemblerFactory,
-            const GeometryFactory& geometryFactory,
-            const Fiber::RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Fiber::Basis<BasisFunctionType>*>& testBases,
-            const std::vector<const Fiber::Basis<BasisFunctionType>*>& trialBases,
-            const Fiber::OpenClHandler& openClHandler,
+            const shared_ptr<const GeometryFactory>& geometryFactory,
+            const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& rawGeometry,
+            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
+            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const = 0;
+
+    std::auto_ptr<LocalAssembler> makeAssemblerFromScratch(
+            const LocalAssemblerFactory& assemblerFactory,
+            const AssemblyOptions& options) const;
 
     /** \brief Assemble the operator's weak form using a specified local assembler.
 
@@ -78,6 +83,7 @@ public:
     assembleWeakFormInternal(
             LocalAssembler& assembler,
             const AssemblyOptions& options) const = 0;
+
 };
 
 } // namespace Bempp

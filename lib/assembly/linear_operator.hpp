@@ -24,6 +24,7 @@
 #include "assembly_options.hpp"
 #include "transposition_mode.hpp"
 
+#include "../common/shared_ptr.hpp"
 #include "../fiber/local_assembler_factory.hpp"
 #include "../space/space.hpp"
 
@@ -151,6 +152,17 @@ protected:
             const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>&
             localOperators,
             const std::vector<ResultType>& multipliers);
+
+    void collectDataForAssemblerConstruction(
+            const AssemblyOptions& options,
+            shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
+            shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
+            shared_ptr<GeometryFactory>& testGeometryFactory,
+            shared_ptr<GeometryFactory>& trialGeometryFactory,
+            shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
+            shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+            shared_ptr<Fiber::OpenClHandler>& openClHandler,
+            bool& cacheSingularIntegrals) const;
 
 private:
     const Space<BasisFunctionType>& m_testSpace;

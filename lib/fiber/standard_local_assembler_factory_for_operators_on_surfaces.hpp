@@ -30,7 +30,6 @@
 #include "standard_local_assembler_for_grid_functions_on_surfaces.hpp"
 #include "standard_evaluator_for_integral_operators.hpp"
 
-#include <boost/shared_ptr.hpp>
 #include <stdexcept>
 
 namespace Fiber
@@ -60,13 +59,13 @@ public:
 public:
     virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
     makeAssemblerForIdentityOperators(
-            boost::shared_ptr<const GeometryFactory>& geometryFactory,
-            boost::shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-            boost::shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-            boost::shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            boost::shared_ptr<const Expression<CoordinateType> >& testExpression,
-            boost::shared_ptr<const Expression<CoordinateType> >& trialExpression,
-            boost::shared_ptr<const OpenClHandler>& openClHandler) const {
+            const shared_ptr<const GeometryFactory>& geometryFactory,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
+            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const Expression<CoordinateType> >& testExpression,
+            const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+            const shared_ptr<const OpenClHandler>& openClHandler) const {
         typedef StandardLocalAssemblerForIdentityOperatorOnSurface<
                 BasisFunctionType, ResultType, GeometryFactory>
                 LocalAssemblerForIdentityOperator_;
@@ -81,14 +80,14 @@ public:
 private:
     virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
     makeAssemblerForIntegralOperatorsImplRealKernel(
-            boost::shared_ptr<const GeometryFactory>& geometryFactory,
-            boost::shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-            boost::shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-            boost::shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            boost::shared_ptr<const Expression<CoordinateType> >& testExpression,
-            boost::shared_ptr<const Kernel<CoordinateType> >& kernel,
-            boost::shared_ptr<const Expression<CoordinateType> >& trialExpression,
-            boost::shared_ptr<const OpenClHandler>& openClHandler,
+            const shared_ptr<const GeometryFactory>& geometryFactory,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
+            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const Expression<CoordinateType> >& testExpression,
+            const shared_ptr<const Kernel<CoordinateType> >& kernel,
+            const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+            const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const {
         typedef CoordinateType KernelType;
@@ -107,12 +106,12 @@ private:
 
     virtual std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >
     makeAssemblerForGridFunctionsImplRealUserFunction(
-            boost::shared_ptr<const GeometryFactory>& geometryFactory,
-            boost::shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-            boost::shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-            boost::shared_ptr<const Expression<CoordinateType> >& testExpression,
-            boost::shared_ptr<const Function<CoordinateType> >& function,
-            boost::shared_ptr<const OpenClHandler>& openClHandler) const {
+            const shared_ptr<const GeometryFactory>& geometryFactory,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
+            const shared_ptr<const Expression<CoordinateType> >& testExpression,
+            const shared_ptr<const Function<CoordinateType> >& function,
+            const shared_ptr<const OpenClHandler>& openClHandler) const {
         typedef CoordinateType UserFunctionType;
         typedef StandardLocalAssemblerForGridFunctionsOnSurfaces<
             BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>
@@ -127,13 +126,13 @@ private:
 
     virtual std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
     makeEvaluatorForIntegralOperatorsImplRealKernel(
-            boost::shared_ptr<const GeometryFactory>& geometryFactory,
-            boost::shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-            boost::shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            boost::shared_ptr<const Kernel<CoordinateType> >& kernel,
-            boost::shared_ptr<const Expression<CoordinateType> >& trialExpression,
-            boost::shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
-            boost::shared_ptr<const OpenClHandler>& openClHandler) const {
+            const shared_ptr<const GeometryFactory>& geometryFactory,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const Kernel<CoordinateType> >& kernel,
+            const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+            const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
+            const shared_ptr<const OpenClHandler>& openClHandler) const {
         typedef CoordinateType KernelType;
         typedef StandardEvaluatorForIntegralOperators<
             BasisFunctionType, KernelType, ResultType, GeometryFactory>
@@ -181,14 +180,14 @@ public:
 private:
     virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
     makeAssemblerForIntegralOperatorsImplComplexKernel(
-            boost::shared_ptr<const GeometryFactory>& geometryFactory,
-            boost::shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-            boost::shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-            boost::shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            boost::shared_ptr<const Expression<CoordinateType> >& testExpression,
-            boost::shared_ptr<const Kernel<ResultType> >& kernel,
-            boost::shared_ptr<const Expression<CoordinateType> >& trialExpression,
-            boost::shared_ptr<const OpenClHandler>& openClHandler,
+            const shared_ptr<const GeometryFactory>& geometryFactory,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
+            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const Expression<CoordinateType> >& testExpression,
+            const shared_ptr<const Kernel<ResultType> >& kernel,
+            const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+            const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const {
         typedef ResultType KernelType;
@@ -207,12 +206,12 @@ private:
 
     virtual std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >
     makeAssemblerForGridFunctionsImplComplexUserFunction(
-            boost::shared_ptr<const GeometryFactory& geometryFactory,
-            boost::shared_ptr<const RawGridGeometry<CoordinateType>& rawGeometry,
-            boost::shared_ptr<const std::vector<const Basis<BasisFunctionType>*>& testBases,
-            boost::shared_ptr<const Expression<CoordinateType>& testExpression,
-            boost::shared_ptr<const Function<ResultType>& function,
-            boost::shared_ptr<const OpenClHandler& openClHandler) const {
+            const shared_ptr<const GeometryFactory>& geometryFactory,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
+            const shared_ptr<const Expression<CoordinateType> >& testExpression,
+            const shared_ptr<const Function<ResultType> >& function,
+            const shared_ptr<const OpenClHandler>& openClHandler) const {
         typedef ResultType UserFunctionType;
         typedef StandardLocalAssemblerForGridFunctionsOnSurfaces<
             BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>
@@ -227,13 +226,13 @@ private:
 
     virtual std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
     makeEvaluatorForIntegralOperatorsImplComplexKernel(
-            boost::shared_ptr<const GeometryFactory>& geometryFactory,
-            boost::shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-            boost::shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            boost::shared_ptr<const Kernel<ResultType> >& kernel,
-            boost::shared_ptr<const Expression<CoordinateType> >& trialExpression,
-            boost::shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
-            boost::shared_ptr<const OpenClHandler>& openClHandler) const {
+            const shared_ptr<const GeometryFactory>& geometryFactory,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const Kernel<ResultType> >& kernel,
+            const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+            const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
+            const shared_ptr<const OpenClHandler>& openClHandler) const {
         typedef ResultType KernelType;
         typedef StandardEvaluatorForIntegralOperators<
             BasisFunctionType, KernelType, ResultType, GeometryFactory>

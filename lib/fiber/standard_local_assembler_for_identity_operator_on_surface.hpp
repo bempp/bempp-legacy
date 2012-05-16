@@ -24,9 +24,9 @@
 #include "local_assembler_for_operators.hpp"
 #include "numerical_quadrature.hpp"
 #include "numerical_test_trial_integrator.hpp"
+#include "shared_ptr.hpp"
 
 #include <armadillo>
-#include <boost/shared_ptr.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/ptr_container/ptr_map.hpp>
 #include <cstring>
@@ -49,13 +49,13 @@ public:
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
     StandardLocalAssemblerForIdentityOperatorOnSurface(
-        boost::shared_ptr<const GeometryFactory>& geometryFactory,
-        boost::shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        boost::shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-        boost::shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-        boost::shared_ptr<const Expression<CoordinateType> >& testExpression,
-        boost::shared_ptr<const Expression<CoordinateType> >& trialExpression,
-        boost::shared_ptr<const OpenClHandler >& openClHandler);
+        const shared_ptr<const GeometryFactory>& geometryFactory,
+        const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
+        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+        const shared_ptr<const Expression<CoordinateType> >& testExpression,
+        const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+        const shared_ptr<const OpenClHandler >& openClHandler);
 
     virtual void evaluateLocalWeakForms(
         CallVariant callVariant,
@@ -84,13 +84,13 @@ private:
             TestTrialIntegrator<BasisFunctionType, ResultType> > IntegratorMap;
 
 private:
-    boost::shared_ptr<const GeometryFactory>& m_geometryFactory;
-    boost::shared_ptr<const RawGridGeometry<CoordinateType> >& m_rawGeometry;
-    boost::shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& m_testBases;
-    boost::shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& m_trialBases;
-    boost::shared_ptr<const Expression<CoordinateType> >& m_testExpression;
-    boost::shared_ptr<const Expression<CoordinateType> >& m_trialExpression;
-    boost::shared_ptr<const OpenClHandler>& m_openClHandler;
+    shared_ptr<const GeometryFactory> m_geometryFactory;
+    shared_ptr<const RawGridGeometry<CoordinateType> > m_rawGeometry;
+    shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_testBases;
+    shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_trialBases;
+    shared_ptr<const Expression<CoordinateType> > m_testExpression;
+    shared_ptr<const Expression<CoordinateType> > m_trialExpression;
+    shared_ptr<const OpenClHandler> m_openClHandler;
 
     IntegratorMap m_testTrialIntegrators;
 };

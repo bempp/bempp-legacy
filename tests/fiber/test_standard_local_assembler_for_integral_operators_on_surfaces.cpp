@@ -59,8 +59,7 @@ public:
     typedef Fiber::RawGridGeometry<CT> RawGridGeometry;
 
     StandardLocalAssemblerForIntegralOperatorsOnSurfacesManager(
-            bool cacheSingularIntegrals) :
-        openClHandler(Fiber::OpenClOptions())
+            bool cacheSingularIntegrals)
     {
         // Create a Bempp grid
         grid = createGrid();
@@ -74,28 +73,15 @@ public:
 
         // Construct local assembler
 
-        // Gather geometric data
-        rawGeometry = std::auto_ptr<RawGridGeometry>(
-                    new RawGridGeometry(grid->dim(), grid->dimWorld()));
-        std::auto_ptr<GridView> view = grid->leafView();
-        view->getRawElementData(
-                    rawGeometry->vertices(), rawGeometry->elementCornerIndices(),
-                    rawGeometry->auxData());
-
-        geometryFactory = grid->elementGeometryFactory();
-
-        getAllBases(*testSpace, testBases);
-        getAllBases(*trialSpace, trialBases);
-
         Fiber::AccuracyOptions options;
         options.doubleRegular.orderIncrement = 1;
         assemblerFactory = std::auto_ptr<AssemblerFactory>(new AssemblerFactory);
 
-        Fiber::ParallelisationOptions parallelOptions;
-        assembler = op->makeAssembler(
-                    *assemblerFactory, *geometryFactory, *rawGeometry,
-                    testBases, trialBases, openClHandler, parallelOptions,
-                    cacheSingularIntegrals);
+        AssemblyOptions assemblyOptions;
+        assemblyOptions.setSingularIntegralCaching(
+                    cacheSingularIntegrals ?
+                        AssemblyOptions::YES : AssemblyOptions::NO);
+        assembler = op->makeAssemblerFromScratch(*assemblerFactory, assemblyOptions);
     }
 
 private:
@@ -124,11 +110,6 @@ public:
     std::auto_ptr<Operator> op;
 
     std::auto_ptr<AssemblerFactory> assemblerFactory;
-    std::auto_ptr<GeometryFactory> geometryFactory;
-    std::auto_ptr<RawGridGeometry> rawGeometry;
-    std::vector<const Fiber::Basis<BFT>*> testBases, trialBases;
-    Fiber::OpenClHandler openClHandler;
-
     std::auto_ptr<typename Operator::LocalAssembler> assembler;
 };
 
