@@ -25,6 +25,10 @@ options='bempp.cfg'
 
 import sys,os
 from py_modules.boost import checkAndBuildBoost
+from py_modules.tbb import checkAndBuildTbb
+from py_modules.armadillo import checkAndBuildArmadillo
+from py_modules.dune import checkAndBuildDune
+from py_modules.trilinos import checkAndBuildTrilinos
 from py_modules.tools import writeOptions
 from ConfigParser import ConfigParser
 
@@ -45,16 +49,15 @@ def module_path():
 
 ###########################
 
-
-
-
-###########################
-
 if __name__ == "__main__":
     root=module_path()
     config=ConfigParser()
     config.read(options)
     checkAndBuildBoost(root,config)
+    checkAndBuildTbb(root,config)
+    checkAndBuildArmadillo(root,config)
+    checkAndBuildDune(root,config)
+    checkAndBuildTrilinos(root,config)
     writeOptions(root,config)
 
 

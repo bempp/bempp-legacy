@@ -21,6 +21,6 @@
 #ifndef config_trilinos_hpp
 #define config_trilinos_hpp
 
-#cmakedefine WITH_TRILINOS
+#define WITH_TRILINOS
 
 #endif
