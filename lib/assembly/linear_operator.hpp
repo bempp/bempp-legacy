@@ -24,6 +24,7 @@
 #include "assembly_options.hpp"
 #include "transposition_mode.hpp"
 
+#include "../common/shared_ptr.hpp"
 #include "../fiber/local_assembler_factory.hpp"
 #include "../space/space.hpp"
 
@@ -130,9 +131,6 @@ public:
       \f$\phi_j\f$ is a function from the test space \f$Y\f$ and \f$\psi_k\f$ a
       function from \f$X\f$.
 
-      Note: trialSpace.grid() and testSpace.grid() must return a reference to
-      the same object.
-
       This is the overload intended to be called by the user, who needs to
       provide a local-assembler factory \p factory to be used to construct an
       appropriate local assembler. */
@@ -154,6 +152,17 @@ protected:
             const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>&
             localOperators,
             const std::vector<ResultType>& multipliers);
+
+    void collectDataForAssemblerConstruction(
+            const AssemblyOptions& options,
+            shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
+            shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
+            shared_ptr<GeometryFactory>& testGeometryFactory,
+            shared_ptr<GeometryFactory>& trialGeometryFactory,
+            shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
+            shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+            shared_ptr<Fiber::OpenClHandler>& openClHandler,
+            bool& cacheSingularIntegrals) const;
 
 private:
     const Space<BasisFunctionType>& m_testSpace;

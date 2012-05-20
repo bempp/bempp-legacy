@@ -28,6 +28,7 @@
 #include "element_pair_topology.hpp"
 #include "numerical_quadrature.hpp"
 #include "parallelisation_options.hpp"
+#include "shared_ptr.hpp"
 #include "test_kernel_trial_integrator.hpp"
 
 #include <boost/static_assert.hpp>
@@ -52,14 +53,16 @@ public:
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
     StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
-            const GeometryFactory& geometryFactory,
-            const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<BasisFunctionType>*>& testBases,
-            const std::vector<const Basis<BasisFunctionType>*>& trialBases,
-            const Expression<CoordinateType>& testExpression,
-            const Kernel<KernelType>& kernel,
-            const Expression<CoordinateType>& trialExpression,
-            const OpenClHandler& openClHandler,
+            const shared_ptr<const GeometryFactory>& testGeometryFactory,
+            const shared_ptr<const GeometryFactory>& trialGeometryFactory,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
+            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
+            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const Expression<CoordinateType> >& testExpression,
+            const shared_ptr<const Kernel<KernelType> >& kernel,
+            const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+            const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals,
             const AccuracyOptions& accuracyOptions);
@@ -88,6 +91,12 @@ private:
     typedef std::set<ElementIndexPair> ElementIndexPairSet;
     typedef std::map<ElementIndexPair, arma::Mat<ResultType> > Cache;
 
+    void checkConsistencyOfGeometryAndBases(
+            const RawGridGeometry<CoordinateType>& rawGeometry,
+            const std::vector<const Basis<BasisFunctionType>*>& bases) const;
+
+    bool testAndTrialGridsAreIdentical() const;
+
     void cacheSingularLocalWeakForms();
     void findPairsOfAdjacentElements(ElementIndexPairSet& pairs) const;
     void cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs);
@@ -109,14 +118,16 @@ private:
     Integrator*> IntegratorMap;
 
 private:
-    const GeometryFactory& m_geometryFactory;
-    const RawGridGeometry<CoordinateType>& m_rawGeometry;
-    const std::vector<const Basis<BasisFunctionType>*>& m_testBases;
-    const std::vector<const Basis<BasisFunctionType>*>& m_trialBases;
-    const Expression<CoordinateType>& m_testExpression;
-    const Kernel<KernelType>& m_kernel;
-    const Expression<CoordinateType>& m_trialExpression;
-    const OpenClHandler& m_openClHandler;
+    shared_ptr<const GeometryFactory> m_testGeometryFactory;
+    shared_ptr<const GeometryFactory> m_trialGeometryFactory;
+    shared_ptr<const RawGridGeometry<CoordinateType> > m_testRawGeometry;
+    shared_ptr<const RawGridGeometry<CoordinateType> > m_trialRawGeometry;
+    shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_testBases;
+    shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_trialBases;
+    shared_ptr<const Expression<CoordinateType> > m_testExpression;
+    shared_ptr<const Kernel<KernelType> > m_kernel;
+    shared_ptr<const Expression<CoordinateType> > m_trialExpression;
+    shared_ptr<const OpenClHandler> m_openClHandler;
     ParallelisationOptions m_parallelisationOptions;
     AccuracyOptions m_accuracyOptions;
 

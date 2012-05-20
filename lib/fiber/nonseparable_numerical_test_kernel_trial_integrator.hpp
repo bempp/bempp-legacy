@@ -46,8 +46,10 @@ public:
             const arma::Mat<CoordinateType>& localTestQuadPoints,
             const arma::Mat<CoordinateType>& localTrialQuadPoints,
             const std::vector<CoordinateType> quadWeights,
-            const GeometryFactory& geometryFactory,
-            const RawGridGeometry<CoordinateType>& rawGeometry,
+            const GeometryFactory& testGeometryFactory,
+            const GeometryFactory& trialGgeometryFactory,
+            const RawGridGeometry<CoordinateType>& testRawGeometry,
+            const RawGridGeometry<CoordinateType>& trialRawGeometry,
             const Expression<CoordinateType>& testExpression,
             const Kernel<KernelType>& kernel,
             const Expression<CoordinateType>& trialExpression,
@@ -73,8 +75,10 @@ private:
     arma::Mat<CoordinateType> m_localTrialQuadPoints;
     std::vector<CoordinateType> m_quadWeights;
 
-    const GeometryFactory& m_geometryFactory;
-    const RawGridGeometry<CoordinateType>& m_rawGeometry;
+    const GeometryFactory& m_testGeometryFactory;
+    const GeometryFactory& m_trialGeometryFactory;
+    const RawGridGeometry<CoordinateType>& m_testRawGeometry;
+    const RawGridGeometry<CoordinateType>& m_trialRawGeometry;
 
     const Expression<CoordinateType>& m_testExpression;
     const Kernel<KernelType>& m_kernel;

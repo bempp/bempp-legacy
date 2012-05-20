@@ -46,12 +46,12 @@ public:
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
     StandardLocalAssemblerForGridFunctionsOnSurfaces(
-            const GeometryFactory& geometryFactory,
-            const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<BasisFunctionType>*>& testBases,
-            const Expression<CoordinateType>& testExpression,
-            const Function<UserFunctionType>& function,
-            const OpenClHandler& openClHandler);
+            const shared_ptr<const GeometryFactory>& geometryFactory,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
+            const shared_ptr<const Expression<CoordinateType> >& testExpression,
+            const shared_ptr<const Function<UserFunctionType> >& function,
+            const shared_ptr<const OpenClHandler>& openClHandler);
     virtual ~StandardLocalAssemblerForGridFunctionsOnSurfaces();
 
 public:
@@ -73,12 +73,12 @@ private:
     Integrator*> IntegratorMap;
 
 private:
-    const GeometryFactory& m_geometryFactory;
-    const RawGridGeometry<CoordinateType>& m_rawGeometry;
-    const std::vector<const Basis<BasisFunctionType>*>& m_testBases;
-    const Expression<CoordinateType>& m_testExpression;
-    const Function<UserFunctionType>& m_function;
-    const OpenClHandler& m_openClHandler;
+    shared_ptr<const GeometryFactory> m_geometryFactory;
+    shared_ptr<const RawGridGeometry<CoordinateType> > m_rawGeometry;
+    shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_testBases;
+    shared_ptr<const Expression<CoordinateType> > m_testExpression;
+    shared_ptr<const Function<UserFunctionType> > m_function;
+    shared_ptr<const OpenClHandler> m_openClHandler;
 
     IntegratorMap m_testFunctionIntegrators;
 };

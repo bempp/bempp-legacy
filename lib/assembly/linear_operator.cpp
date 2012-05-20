@@ -22,6 +22,7 @@
 #include "linear_operator_superposition.hpp"
 #include "discrete_linear_operator.hpp"
 #include "grid_function.hpp"
+#include "local_assembler_construction_helper.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -141,6 +142,49 @@ void LinearOperator<BasisFunctionType, ResultType>::addLocalOperatorsAndMultipli
                             localOperators.begin(), localOperators.end());
     m_multipliers.insert(m_multipliers.end(),
                          multipliers.begin(), multipliers.end());
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void
+LinearOperator<BasisFunctionType, ResultType>::collectDataForAssemblerConstruction(
+        const AssemblyOptions& options,
+        shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
+        shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
+        shared_ptr<GeometryFactory>& testGeometryFactory,
+        shared_ptr<GeometryFactory>& trialGeometryFactory,
+        shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
+        shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+        shared_ptr<Fiber::OpenClHandler>& openClHandler,
+        bool& cacheSingularIntegrals) const
+{
+    typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
+    typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
+    typedef LocalAssemblerConstructionHelper Helper;
+
+    // Collect grid data
+    Helper::collectGridData(m_testSpace.grid(),
+                            testRawGeometry, testGeometryFactory);
+    if (&m_testSpace.grid() == &m_trialSpace.grid()) {
+        trialRawGeometry = testRawGeometry;
+        trialGeometryFactory = testGeometryFactory;
+    } else
+        Helper::collectGridData(m_trialSpace.grid(),
+                                trialRawGeometry, trialGeometryFactory);
+
+    // Construct the OpenClHandler
+    Helper::makeOpenClHandler(options.parallelisationOptions().openClOptions(),
+                              testRawGeometry, trialRawGeometry, openClHandler);
+
+    // Get pointers to test and trial bases of each element
+    Helper::collectBases(m_testSpace, testBases);
+    if (&m_testSpace == &m_trialSpace)
+        trialBases = testBases;
+    else
+        Helper::collectBases(m_trialSpace, trialBases);
+
+    cacheSingularIntegrals =
+            (options.singularIntegralCaching() == AssemblyOptions::YES ||
+             (options.singularIntegralCaching() == AssemblyOptions::AUTO));
 }
 
 template <typename BasisFunctionType, typename ResultType>

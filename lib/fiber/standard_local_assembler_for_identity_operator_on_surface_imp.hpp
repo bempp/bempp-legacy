@@ -29,13 +29,13 @@ namespace Fiber
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
 StandardLocalAssemblerForIdentityOperatorOnSurface(
-    const GeometryFactory& geometryFactory,
-    const RawGridGeometry<CoordinateType>& rawGeometry,
-    const std::vector<const Basis<BasisFunctionType>*>& testBases,
-    const std::vector<const Basis<BasisFunctionType>*>& trialBases,
-    const Expression<CoordinateType>& testExpression,
-    const Expression<CoordinateType>& trialExpression,
-    const OpenClHandler& openClHandler) :
+    const shared_ptr<const GeometryFactory>& geometryFactory,
+    const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+    const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
+    const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+    const shared_ptr<const Expression<CoordinateType> >& testExpression,
+    const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+    const shared_ptr<const OpenClHandler>& openClHandler) :
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
     m_testBases(testBases),
@@ -44,36 +44,41 @@ StandardLocalAssemblerForIdentityOperatorOnSurface(
     m_trialExpression(trialExpression),
     m_openClHandler(openClHandler)
 {
+    checkConsistencyOfGeometryAndBases(*rawGeometry, *testBases);
+    checkConsistencyOfGeometryAndBases(*rawGeometry, *trialBases);
+}
+
+template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
+void
+StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
+checkConsistencyOfGeometryAndBases(
+        const RawGridGeometry<CoordinateType>& rawGeometry,
+        const std::vector<const Basis<BasisFunctionType>*>& bases) const
+{
     if (rawGeometry.vertices().n_rows != 3)
         throw std::invalid_argument(
             "StandardLocalAssemblerForIdentityOperatorOnSurface::"
-            "StandardLocalAssemblerForIdentityOperatorOnSurface(): "
+            "checkConsistencyOfGeometryAndBases(): "
             "vertex coordinates must be three-dimensional");
     const int elementCount = rawGeometry.elementCornerIndices().n_cols;
     if (rawGeometry.elementCornerIndices().n_rows < 3 ||
             4 < rawGeometry.elementCornerIndices().n_rows)
         throw std::invalid_argument(
             "StandardLocalAssemblerForIdentityOperatorOnSurface::"
-            "StandardLocalAssemblerForIdentityOperatorOnSurface(): "
+            "checkConsistencyOfGeometryAndBases(): "
             "Elements must have either 3 or 4 corners");
     if (!rawGeometry.auxData().is_empty() &&
             rawGeometry.auxData().n_cols != elementCount)
         throw std::invalid_argument(
             "StandardLocalAssemblerForIdentityOperatorOnSurface::"
-            "StandardLocalAssemblerForIdentityOperatorOnSurface(): "
+            "checkConsistencyOfGeometryAndBases(): "
             "number of columns of auxData must match that of "
             "elementCornerIndices");
-    if (testBases.size() != elementCount)
+    if (bases.size() != elementCount)
         throw std::invalid_argument(
             "StandardLocalAssemblerForIdentityOperatorOnSurface::"
-            "StandardLocalAssemblerForIdentityOperatorOnSurface(): "
-            "size of testBases must match the number of columns of "
-            "elementCornerIndices");
-    if (trialBases.size() != elementCount)
-        throw std::invalid_argument(
-            "StandardLocalAssemblerForIdentityOperatorOnSurface::"
-            "StandardLocalAssemblerForIdentityOperatorOnSurface(): "
-            "size of trialBases must match the number of columns of "
+            "checkConsistencyOfGeometryAndBases(): "
+            "size of bases must match the number of columns of "
             "elementCornerIndices");
 }
 
@@ -127,8 +132,8 @@ evaluateLocalWeakForms(
     std::vector<QuadVariant> quadVariants(elementCount);
     for (int i = 0; i < elementCount; ++i) {
         const Integrator* integrator = &selectIntegrator(elementIndices[i]);
-        quadVariants[i] = QuadVariant(integrator, m_testBases[elementIndices[i]],
-                                      m_trialBases[elementIndices[i]]);
+        quadVariants[i] = QuadVariant(integrator, (*m_testBases)[elementIndices[i]],
+                                      (*m_trialBases)[elementIndices[i]]);
     }
 
     // Integration will proceed in batches of test elements having the same
@@ -180,12 +185,12 @@ selectIntegrator(int elementIndex)
     SingleQuadratureDescriptor desc;
 
     // Get number of corners of the specified element
-    desc.vertexCount = m_rawGeometry.elementCornerCount(elementIndex);
+    desc.vertexCount = m_rawGeometry->elementCornerCount(elementIndex);
 
     // Determine integrand's order and required quadrature order
     const int expressionOrder =
-        m_testBases[elementIndex]->order() +
-        m_trialBases[elementIndex]->order();
+        (*m_testBases)[elementIndex]->order() +
+        (*m_trialBases)[elementIndex]->order();
     desc.order = ((expressionOrder + 1) + 1 /* round up */) / 2;
 
     return getIntegrator(desc);
@@ -213,9 +218,9 @@ getIntegrator(const SingleQuadratureDescriptor& desc)
             GeometryFactory> Integrator;
     std::auto_ptr<TestTrialIntegrator<BasisFunctionType, ResultType> > integrator(
         new Integrator(points, weights,
-                       m_geometryFactory, m_rawGeometry,
-                       m_testExpression, m_trialExpression,
-                       m_openClHandler));
+                       *m_geometryFactory, *m_rawGeometry,
+                       *m_testExpression, *m_trialExpression,
+                       *m_openClHandler));
 
     return *m_testTrialIntegrators.insert(desc, integrator).first->second;
 }

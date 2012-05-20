@@ -151,61 +151,28 @@ assembleWeakFormInAcaMode(
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options) const
 {
-    typedef DiscreteLinearOperator<ResultType> DiscreteLinOp;
+    AutoTimer timer("\nAssembly took ");
 
-    const Space<BasisFunctionType>& testSpace = this->testSpace();
-    const Space<BasisFunctionType>& trialSpace = this->trialSpace();
+    typedef DiscreteLinearOperator<ResultType> DiscreteLinOp;
 
     const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>
             localOperators = this->localOperators();
     const std::vector<ResultType>& multipliers = this->multipliers();
 
-    AutoTimer timer("\nAssembly took ");
+    typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
+    typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
 
-    if (!testSpace.dofsAssigned() || !trialSpace.dofsAssigned())
-        throw std::runtime_error(
-                "LinearOperatorSuperposition::assembleWeakFormInAcaMode(): "
-                "degrees of freedom must be assigned "
-                "before calling assembleWeakForm()");
-    if (&testSpace.grid() != &trialSpace.grid())
-        throw std::runtime_error(
-                "LinearOperatorSuperposition::assembleWeakFormInAcaMode(): "
-                "testSpace and trialSpace must be defined over the same grid");
+    shared_ptr<RawGridGeometry> testRawGeometry, trialRawGeometry;
+    shared_ptr<GeometryFactory> testGeometryFactory, trialGeometryFactory;
+    shared_ptr<Fiber::OpenClHandler> openClHandler;
+    shared_ptr<BasisPtrVector> testBases, trialBases;
+    bool cacheSingularIntegrals;
 
-    // Prepare data for construction of local assembler
-
-    const Grid& grid = trialSpace.grid();
-    std::auto_ptr<GridView> view = grid.leafView();
-
-    // REFACT The following two blocks might disappear in the constructor of
-    // LocalAssemblerFactory
-
-    // Gather geometric data
-    Fiber::RawGridGeometry<CoordinateType> rawGeometry(grid.dim(), grid.dimWorld());
-    view->getRawElementData(
-                rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
-                rawGeometry.auxData());
-
-    // Make geometry factory
-    std::auto_ptr<GeometryFactory> geometryFactory =
-            trialSpace.grid().elementGeometryFactory();
-
-    // Get pointers to test and trial bases of each element
-    std::vector<const Fiber::Basis<BasisFunctionType>*> testBases;
-    std::vector<const Fiber::Basis<BasisFunctionType>*> trialBases;
-    getAllBases(testSpace, testBases);
-    getAllBases(trialSpace, trialBases);
-
-    // REFACT This will disappear in the constructor of LocalAssemblerFactory
-    const ParallelisationOptions& parallelOptions =
-            options.parallelisationOptions();
-    Fiber::OpenClHandler openClHandler(parallelOptions.openClOptions());
-
-    // REFACT This is unfortunately going to stay
-    bool cacheSingularIntegrals =
-            (options.singularIntegralCaching() == AssemblyOptions::YES ||
-             (options.singularIntegralCaching() == AssemblyOptions::AUTO &&
-              parallelOptions.mode() == ParallelisationOptions::OPEN_CL));
+    collectDataForAssemblerConstruction(options,
+                                        testRawGeometry, trialRawGeometry,
+                                        testGeometryFactory, trialGeometryFactory,
+                                        testBases, trialBases,
+                                        openClHandler, cacheSingularIntegrals);
 
     // Construct local assemblers. Immediately assemble sparse terms in sparse
     // mode. Populate a vector of dense terms for subsequent ACA-mode assembly.
@@ -222,9 +189,11 @@ assembleWeakFormInAcaMode(
         // Create local assembler for the current term
         std::auto_ptr<LocalAssembler> assembler = term->makeAssembler(
                     factory,
-                    *geometryFactory, rawGeometry,
+                    testGeometryFactory, trialGeometryFactory,
+                    testRawGeometry, trialRawGeometry,
                     testBases, trialBases,
-                    openClHandler, parallelOptions, cacheSingularIntegrals);
+                    openClHandler,
+                    options.parallelisationOptions(), cacheSingularIntegrals);
 
         if (term->supportsRepresentation(AssemblyOptions::SPARSE)) {
             std::auto_ptr<DiscreteLinOp> discreteTerm =
@@ -251,7 +220,7 @@ assembleWeakFormInAcaMode(
 
     // Assemble dense terms in ACA mode, simultaneously adding the sparse terms
     return AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
-                testSpace, trialSpace,
+                this->testSpace(), this->trialSpace(),
                 stlDenseTermLocalAssemblers,
                 stlSparseDiscreteTerms,
                 denseTermsMultipliers,

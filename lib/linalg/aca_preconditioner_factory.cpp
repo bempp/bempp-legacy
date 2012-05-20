@@ -19,7 +19,9 @@
 // THE SOFTWARE.
 
 #include "config_trilinos.hpp"
-#ifdef WITH_TRILINOS
+#include "config_ahmed.hpp"
+
+#if defined(WITH_TRILINOS) && defined(WITH_AHMED)
 
 #include "aca_preconditioner_factory.hpp"
 #include "../assembly/discrete_aca_linear_operator.hpp"
@@ -58,4 +60,4 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(AcaPreconditionerFactory);
 
 } // namespace Bempp
 
-#endif /* WITH_TRILINOS */
+#endif // WITH_TRILINOS && WITH_AHMED

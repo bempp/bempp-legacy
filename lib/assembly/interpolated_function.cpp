@@ -185,23 +185,9 @@ InterpolatedFunction<ValueType>::operator-(
 
 template <typename ValueType>
 const InterpolatedFunction<ValueType>
-InterpolatedFunction<ValueType>::operator*(ValueType other) const
-{
-    return InterpolatedFunction<ValueType>(*this) *= other;
-}
-
-template <typename ValueType>
-const InterpolatedFunction<ValueType>
 InterpolatedFunction<ValueType>::operator/(ValueType other) const
 {
     return InterpolatedFunction<ValueType>(*this) /= other;
-}
-
-template <typename ValueType>
-const InterpolatedFunction<ValueType> operator*(
-        ValueType lhs, const InterpolatedFunction<ValueType>& rhs)
-{
-    return InterpolatedFunction<ValueType>(rhs) *= lhs;
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(InterpolatedFunction);

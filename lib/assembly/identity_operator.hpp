@@ -55,11 +55,13 @@ public:
 
     virtual std::auto_ptr<LocalAssembler> makeAssembler(
             const LocalAssemblerFactory& assemblerFactory,
-            const GeometryFactory& geometryFactory,
-            const Fiber::RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Fiber::Basis<BasisFunctionType>*>& testBases,
-            const std::vector<const Fiber::Basis<BasisFunctionType>*>& trialBases,
-            const Fiber::OpenClHandler& openClHandler,
+            const shared_ptr<const GeometryFactory>& testGeometryFactory,
+            const shared_ptr<const GeometryFactory>& trialGeometryFactory,
+            const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
+            const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
+            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
+            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const;
 

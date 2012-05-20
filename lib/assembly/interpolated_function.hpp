@@ -32,13 +32,8 @@ namespace Bempp
 {
 
 class Grid;
-// template <typename BasisFunctionType, typename ResultType> class GridFunction;
 
 template <typename ValueType> class InterpolatedFunction;
-
-template <typename ValueType>
-const InterpolatedFunction<ValueType> operator*(
-        ValueType lhs, const InterpolatedFunction<ValueType>& rhs);
 
 /** \brief Function defined by its values at a set of interpolation points
       and an interpolation method. */
@@ -109,14 +104,8 @@ public:
     const InterpolatedFunction<ValueType> operator-(
             const InterpolatedFunction<ValueType> &other) const;
 
-    const InterpolatedFunction<ValueType> operator*(
-            ValueType other) const;
     const InterpolatedFunction<ValueType> operator/(
             ValueType other) const;
-
-//    template <typename ValueType>
-    friend const InterpolatedFunction<ValueType> operator*(
-            ValueType lhs, const InterpolatedFunction<ValueType>& rhs);
 
 private:
     void checkCompatibility(const InterpolatedFunction<ValueType>& other) const;
@@ -126,6 +115,20 @@ private:
     arma::Mat<ValueType> m_vertexValues;
     InterpolationMethod m_method;
 };
+
+template <typename ValueType>
+const InterpolatedFunction<ValueType> operator*(
+        ValueType lhs, const InterpolatedFunction<ValueType>& rhs)
+{
+    return InterpolatedFunction<ValueType>(rhs) *= lhs;
+}
+
+template <typename ValueType>
+const InterpolatedFunction<ValueType> operator*(
+        const InterpolatedFunction<ValueType>& lhs, ValueType rhs)
+{
+    return operator*(rhs, lhs);
+}
 
 } // namespace Bempp
 
