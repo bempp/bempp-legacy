@@ -21,7 +21,7 @@
 # This script downloads necessary third party libraries, which are needed for BEM++
 
 
-options='bempp.cfg'
+options='bempp_options.cfg'
 
 import sys,os
 from py_modules.tools import writeOptions
@@ -32,8 +32,8 @@ import py_modules.armadillo as armadillo
 import py_modules.tbb as tbb
 import py_modules.dune as dune
 import py_modules.trilinos as trilinos
-
-
+import py_modules.bempp as bempp
+import py_modules.ahmed as ahmed
 
 ###########################
 
@@ -55,6 +55,8 @@ def configureAll(root,config):
     tbb.configureTbb(root,config)
     armadillo.configureArmadillo(root,config)
     trilinos.configureTrilinos(root,config)
+    ahmed.configureAhmed(root,config)
+    bempp.configureBempp(root,config)
 
 def buildAll(root,config):
     boost.buildBoost(root,config)
@@ -62,7 +64,21 @@ def buildAll(root,config):
     tbb.buildTbb(root,config)
     armadillo.buildArmadillo(root,config)
     trilinos.buildTrilinos(root,config)
+    ahmed.buildAhmed(root,config)
+    bempp.buildBempp(root,config)
 
+def prepare(root,config):
+    # Test whether the main options are present
+    if not config.has_option('Main','prefix'): raise Exception('prefix not defined')
+    if not config.has_option('Main','cc'): raise Exception('cc not defined')
+    if not config.has_option('Main','cxx'): raise Exception('cxx not defined')
+
+    prefix=config.get('Main','prefix')
+    if not os.path.isdir(prefix+"/bempp"):
+        os.mkdir(prefix+"/bempp")
+        os.mkdir(prefix+"/bempp/contrib")
+    if not os.path.isdir(root+"/contrib/files"):
+        os.mkdir(prefix+"/contrib/files")
 
 ###########################
 
@@ -70,6 +86,7 @@ if __name__ == "__main__":
     root=module_path()
     config=ConfigParser()
     config.read(options)
+    prepare(root,config)
     configureAll(root,config)
     writeOptions(root,config)
     buildAll(root,config)

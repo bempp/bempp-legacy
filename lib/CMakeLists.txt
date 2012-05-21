@@ -19,7 +19,7 @@ include_directories(${CMAKE_BINARY_DIR}/include/common)
 # Find all source and header files
 file(GLOB_RECURSE LIB_SOURCES *.cpp)
 file(GLOB_RECURSE LIB_HEADERS *.hpp)
-
+file(GLOB COMMON_HEADERS ${CMAKE_BINARY_DIR}/include/common/*.hpp)
 
 # Headers are ignored by make, but their list is used by IDEs
 # like Qt Creator and Visual Studio to generate project file list.
@@ -79,6 +79,7 @@ install(TARGETS bempp
   LIBRARY DESTINATION bempp/lib
   ARCHIVE DESTINATION bempp/lib)
 
+install(FILES ${COMMON_HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/bempp/include/common)
 
 #include(CMakeDeployHeaders)
 #InstallHeaderHierarchy( "${CMAKE_SOURCE_DIR}" "lib" "*.hpp" "${CMAKE_INSTALL_PREFIX}/bempp/include")

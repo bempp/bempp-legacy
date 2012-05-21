@@ -34,8 +34,8 @@ def to_bool(value):
            Possible True  values: 1, True, "1", "TRue", "yes", "y", "t"
            Possible False values: 0, False, None, [], {}, "", "0", "faLse", "no", "n", "f", 0.0, ...
     """
-    if str(value).lower() in ("yes", "y", "true",  "t", "1"): return True
-    if str(value).lower() in ("no",  "n", "false", "f", "0", "0.0", "", "none", "[]", "{}"): return False
+    if str(value).lower() in ("on", "yes", "y", "true",  "t", "1"): return True
+    if str(value).lower() in ("off", "no",  "n", "false", "f", "0", "0.0", "", "none", "[]", "{}"): return False
     raise Exception('Invalid value for boolean conversion: ' + str(value))
 
 ##########################

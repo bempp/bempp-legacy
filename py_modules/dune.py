@@ -42,7 +42,7 @@ def configureDune(root,config):
     
 
     download_dune=True
-    os.mkdir(dune_dir)
+    if not os.path.isdir(dune_dir): os.mkdir(dune_dir)
     # Download files
     for i in range(3):
         if not os.path.isfile(root+"/contrib/files/"+dune_fnames[i]):
@@ -68,12 +68,14 @@ def buildDune(root,config):
     prefix=config.get('Main','prefix')
     dune_dir=root+"/contrib/dune"
     dune_install_dir=prefix+"/bempp/contrib/dune"
-    if not os.path.isfile(dune_install_dir):
+    cxx=config.get('Main','cxx')
+    cc=config.get('Main','cc')
+    if not os.path.isdir(dune_install_dir):
         print "Build Dune"
         cwd=os.getcwd()
         os.chdir(root+"/contrib/dune")
         f=open('dune_opts.ops','w')
-        f.write("CONFIGURE_FLAGS=\"--enable-shared=yes --disable-documentation --enable-static=no --prefix="+dune_install_dir+"\"")
+        f.write("CONFIGURE_FLAGS=\" CXX="+cxx+" CC="+cc+" --enable-shared=yes --disable-documentation --enable-static=no --prefix="+dune_install_dir+"\"")
         f.close()
         subprocess.call("./dune-common/bin/dunecontrol --opts=./dune_opts.ops all",shell=True)
         subprocess.call("./dune-common/bin/dunecontrol make install",shell=True)
