@@ -93,7 +93,6 @@ private:
 private:
     typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
-    typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemblcluster;
     typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
 
 #ifdef WITH_TRILINOS

@@ -38,6 +38,7 @@ namespace Bempp
 {
 
 template <typename CoordinateType> struct AhmedDofWrapper;
+template <typename T> class ExtendedBemCluster;
 
 // Casts.
 

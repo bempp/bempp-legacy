@@ -35,8 +35,9 @@ struct AcaOptions
 
     double eps;
     double eta;
-    int minimumBlockSize;
-    int maximumRank;
+    unsigned int minimumBlockSize;
+    unsigned int maximumBlockSize;
+    unsigned int maximumRank;
     bool recompress;
     bool outputPostscript;
     double scaling;

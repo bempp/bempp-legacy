@@ -23,16 +23,17 @@
 #include "assembly_options.hpp"
 
 #include <stdexcept>
+#include <limits>
 
 namespace Bempp
 {
-
 
 AcaOptions::AcaOptions() :
     eps(1E-4),
     eta(1.2),
     minimumBlockSize(16),
-    maximumRank(10000),
+    maximumBlockSize(std::numeric_limits<unsigned int>::max()),
+    maximumRank(std::numeric_limits<unsigned int>::max()),
     recompress(true),
     outputPostscript(false),
     scaling(1.0),

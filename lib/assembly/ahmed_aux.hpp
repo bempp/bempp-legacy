@@ -69,7 +69,8 @@ bool multaHvec_omp(double d, blcluster* bl, mblock<double>** A, double* x,
 #undef MIN
 #undef MAX
 
-namespace Bempp {
+namespace Bempp
+{
 
 // Casts.
 
@@ -105,6 +106,42 @@ struct AhmedDofWrapper : public Point3D<CoordinateType>
                                         "invalid dimension index");
         }
     }
+};
+
+template <typename T>
+class ExtendedBemCluster : public bemcluster<T>
+{
+public:
+    ExtendedBemCluster(
+            T* dofs, unsigned int* op_perm,
+            unsigned int k, unsigned int l,
+            unsigned int maximumBlockSize =
+            std::numeric_limits<unsigned int>::max()) :
+        bemcluster<T>(dofs, op_perm, k, l),
+        m_maximumBlockSize(maximumBlockSize) {
+    }
+
+    virtual ExtendedBemCluster* clone(unsigned int* op_perm,
+                                      unsigned int beg,
+                                      unsigned int end) const {
+        return new ExtendedBemCluster(cluster_pca<T>::dofs, op_perm, beg, end,
+                                      m_maximumBlockSize);
+    }
+
+    virtual bool isadm(double eta2, cluster* cl, bl_info& info) {
+        if (this->size() > m_maximumBlockSize ||
+                cl->size() > m_maximumBlockSize)
+            return (info.is_adm = false);
+        else
+            return bemcluster<T>::isadm(eta2, cl, info);
+    }
+
+    unsigned int maximumBlockSize() const {
+        return m_maximumBlockSize;
+    }
+
+private:
+    unsigned int m_maximumBlockSize;
 };
 
 class AhmedMblockArrayDeleter
