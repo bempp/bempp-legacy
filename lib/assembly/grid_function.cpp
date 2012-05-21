@@ -225,7 +225,7 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
 
     // Solve the system id * m_coefficients = projections
 #ifdef WITH_TRILINOS
-    if (assemblyOptions.operatorRepresentation() != assemblyOptions.DENSE) {
+    if (idAssemblyOptions.operatorRepresentation() != AssemblyOptions::DENSE) {
         DiscreteSparseLinearOperator<ResultType>& sparseDiscreteId =
                 dynamic_cast<DiscreteSparseLinearOperator<ResultType>&>(*discreteId);
         Epetra_CrsMatrix& epetraMat = sparseDiscreteId.epetraMatrix();
