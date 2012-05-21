@@ -213,15 +213,15 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
 
     // NOTE: Ahmed uses names "op_perm" and "po_perm", which
     // correspond to BEM++'s "p2o" and "o2p", NOT the other way round.
-    bemcluster<const AhmedDofType> testClusterTree(
+    ExtendedBemCluster<const AhmedDofType> testClusterTree(
                 ahmedTestDofCenters, &p2oTestDofs[0],
-                0, testDofCount);
+                0, testDofCount, acaOptions.maximumBlockSize);
     testClusterTree.createClusterTree(
                 acaOptions.minimumBlockSize,
                 &p2oTestDofs[0], &o2pTestDofs[0]);
-    bemcluster<const AhmedDofType> trialClusterTree(
+    ExtendedBemCluster<const AhmedDofType> trialClusterTree(
                 ahmedTrialDofCenters, &p2oTrialDofs[0],
-                0, trialDofCount);
+                0, trialDofCount, acaOptions.maximumBlockSize);
     trialClusterTree.createClusterTree(
                 acaOptions.minimumBlockSize,
                 &p2oTrialDofs[0], &o2pTrialDofs[0]);
