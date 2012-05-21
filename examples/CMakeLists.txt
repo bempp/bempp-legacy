@@ -7,8 +7,10 @@ include_directories(${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/dune-localfunctio
 include_directories(${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/dune-foamgrid)
 
 
-#include_directories ("${PROJECT_SOURCE_DIR}/lib")
+include_directories ("${PROJECT_SOURCE_DIR}/lib")
 include_directories(${CMAKE_BINARY_DIR}/include/common)
+include_directories(${ARMADILLO_INCLUDE_DIR})
+include_directories(${BOOST_INCLUDE_DIR})
 
 add_executable(dirichlet dirichlet.cpp meshes.cpp)
 add_executable(neumann neumann.cpp meshes.cpp)

@@ -81,10 +81,10 @@ include_directories(${ARMADILLO_INCLUDE_DIR})
 
 # Install library
 install(TARGETS bempp
-  RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib)
+  RUNTIME DESTINATION bempp/bin
+  LIBRARY DESTINATION bempp/lib
+  ARCHIVE DESTINATION bempp/lib)
 
 # Install header files
 install(FILES ${LIB_HEADERS}
-  DESTINATION include)
+  DESTINATION bempp/include)
