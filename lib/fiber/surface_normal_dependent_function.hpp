@@ -95,9 +95,11 @@ public:
 
         const int pointCount = points.n_cols;
         result.set_size(codomainDimension(), pointCount);
-        for (int i = 0; i < pointCount; ++i)
+        for (int i = 0; i < pointCount; ++i) {
+            arma::Col<ValueType> activeResultColumn = result.unsafe_col(i);
             m_functor.evaluate(points.unsafe_col(i), normals.unsafe_col(i),
-                               result.unsafe_col(i));
+                               activeResultColumn);
+        }
     }
 
 private:
