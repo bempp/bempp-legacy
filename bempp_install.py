@@ -24,13 +24,15 @@
 options='bempp.cfg'
 
 import sys,os
-from py_modules.boost import checkAndBuildBoost
-from py_modules.tbb import checkAndBuildTbb
-from py_modules.armadillo import checkAndBuildArmadillo
-from py_modules.dune import checkAndBuildDune
-from py_modules.trilinos import checkAndBuildTrilinos
 from py_modules.tools import writeOptions
 from ConfigParser import ConfigParser
+
+import py_modules.boost as boost
+import py_modules.armadillo as armadillo
+import py_modules.tbb as tbb
+import py_modules.dune as dune
+import py_modules.trilinos as trilinos
+
 
 
 ###########################
@@ -47,18 +49,30 @@ def module_path():
         return os.path.split(os.path.abspath(sys.executable))[0]
     return os.path.split(os.path.abspath(__file__))[0]
 
+def configureAll(root,config):
+    boost.configureBoost(root,config)
+    dune.configureDune(root,config)
+    tbb.configureTbb(root,config)
+    armadillo.configureArmadillo(root,config)
+    trilinos.configureTrilinos(root,config)
+
+def buildAll(root,config):
+    boost.buildBoost(root,config)
+    dune.buildDune(root,config)
+    tbb.buildTbb(root,config)
+    armadillo.buildArmadillo(root,config)
+    trilinos.buildTrilinos(root,config)
+
+
 ###########################
 
 if __name__ == "__main__":
     root=module_path()
     config=ConfigParser()
     config.read(options)
-    checkAndBuildBoost(root,config)
-    checkAndBuildTbb(root,config)
-    checkAndBuildArmadillo(root,config)
-    checkAndBuildDune(root,config)
-    checkAndBuildTrilinos(root,config)
+    configureAll(root,config)
     writeOptions(root,config)
+    buildAll(root,config)
 
 
     

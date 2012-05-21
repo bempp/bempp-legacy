@@ -30,8 +30,8 @@ trilinos_url='http://trilinos.sandia.gov/download/files/trilinos-10.10.2-Source.
 
 
 
-def checkAndBuildTrilinos(root,config):
-    """Download and build Trilinos if required"""
+def configureTrilinos(root,config):
+    """Download Trilinos if required"""
 
     trilinos_full_dir=root+"/contrib/"+trilinos_dir
     trilinos_download_name=root+"/contrib/files/"+trilinos_fname
@@ -60,11 +60,6 @@ def checkAndBuildTrilinos(root,config):
         
 
     if download_trilinos:
-        if not os.path.isdir(prefix+"/bempp/contrib/trilinos"):
-            print "Install Trilinos"
-            cwd=os.getcwd()
-            os.chdir(trilinos_full_dir)
-            subprocess.call("sh ./trilinos_build.sh",shell=True)
         if not config.has_section("Trilinos"): config.add_section("Trilinos")
         config.set("Trilinos",'cmake_path',prefix+"/bempp/contrib/trilinos/lib/cmake/Trilinos/")
         
@@ -73,7 +68,21 @@ def checkAndBuildTrilinos(root,config):
             raise Exception("You need to specify 'cmake_path' under the 'Trilinos' header in the configuration file")
 
     
+def buildTrilinos(root,config):
 
+    trilinos_full_dir=root+"/contrib/"+trilinos_dir
+    trilinos_download_name=root+"/contrib/files/"+trilinos_fname
+
+    prefix=config.get('Main','prefix')    
+    download_trilinos=True
+    if config.has_option('Trilinos','download_trilinos'): download_trilinos=to_bool(config.get('Trilinos','download_trilinos'))
+    if download_trilinos:
+        if not os.path.isdir(prefix+"/bempp/contrib/trilinos"):
+            print "Build Trilinos"
+            cwd=os.getcwd()
+            os.chdir(trilinos_full_dir)
+            subprocess.call("sh ./trilinos_build.sh",shell=True)
+            os.chdir(cwd)
         
     
         

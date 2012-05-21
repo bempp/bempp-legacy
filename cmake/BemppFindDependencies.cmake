@@ -30,13 +30,9 @@ endif ()
 
 # Dune
 
-find_library(LIB_DUNE_COMMON common ${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/dune-common/dune/common/.libs)
-find_library(LIB_DUNE_GRID grid ${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/dune-grid/dune/grid/.libs)
-
-file(GLOB_RECURSE DUNE_FOAMGRID_HEADERS ${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/dune-foamgrid/dune/foamgrid/*.hh)
-file(GLOB_RECURSE DUNE_GRID_HEADERS ${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/dune-grid/dune/grid/*.hh)
-file(GLOB_RECURSE DUNE_COMMON_HEADERS ${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/dune-common/dune/common/*.hh)
-file(GLOB_RECURSE DUNE_LOCALFUNCTIONS_HEADERS ${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/dune-localfunctions/dune/localfunctions/*.hh)
+find_library(LIB_DUNE_COMMON dunecommon ${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/lib)
+find_library(LIB_DUNE_GRID dunegrid ${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/lib)
+file(GLOB_RECURSE DUNE_HEADERS ${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/include/*.hh)
 
 # Trilinos
 

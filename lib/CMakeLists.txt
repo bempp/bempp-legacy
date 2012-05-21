@@ -26,10 +26,7 @@ file(GLOB_RECURSE LIB_HEADERS *.hpp)
 add_library(bempp SHARED 
 	${LIB_SOURCES} 
 	${LIB_HEADERS}
-	${DUNE_FOAMGRID_HEADERS}
-	${DUNE_GRID_HEADERS}
-	${DUNE_COMMON_HEADERS}
-        ${DUNE_LOCALFUNCTIONS_HEADERS}
+	${DUNE_HEADERS}
 	)
 
 # Add includes and target links
@@ -55,10 +52,7 @@ if (WITH_AHMED)
 endif ()
 
 # Dune
-include_directories(${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/dune-common)
-include_directories(${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/dune-grid)
-include_directories(${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/dune-localfunctions)
-include_directories(${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/dune-foamgrid)
+include_directories(${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/include)
 target_link_libraries (bempp
 	${LIB_DUNE_COMMON}
 	${LIB_DUNE_GRID}
@@ -85,6 +79,7 @@ install(TARGETS bempp
   LIBRARY DESTINATION bempp/lib
   ARCHIVE DESTINATION bempp/lib)
 
-# Install header files
-install(FILES ${LIB_HEADERS}
-  DESTINATION bempp/include)
+
+#include(CMakeDeployHeaders)
+#InstallHeaderHierarchy( "${CMAKE_SOURCE_DIR}" "lib" "*.hpp" "${CMAKE_INSTALL_PREFIX}/bempp/include")
+  

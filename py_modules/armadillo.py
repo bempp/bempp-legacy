@@ -28,8 +28,8 @@ arma_url='http://sourceforge.net/projects/arma/files/armadillo-3.2.0.tar.gz'
 arma_extract_dir='armadillo-3.2.0'
 arma_dir='armadillo'
 
-def checkAndBuildArmadillo(root,config):
-    """Download and build Armadillo if required"""
+def configureArmadillo(root,config):
+    """Download Armadillo if required"""
 
 
     prefix=config.get('Main','prefix')
@@ -64,7 +64,8 @@ def checkAndBuildArmadillo(root,config):
             raise Exception("You need to specify 'include_dir' under the 'Armadillo' header in the configuration file")
 
      
-
+def buildArmadillo(root,config):
+    pass
     
 
         

@@ -32,8 +32,8 @@ dune_names=['dune-common','dune-grid','dune-localfunctions']
 
 
 
-def checkAndBuildDune(root,config):
-    """Download and build Dune if required"""
+def configureDune(root,config):
+    """Download and configure if required"""
 
 
     prefix=config.get('Main','prefix')
@@ -42,30 +42,43 @@ def checkAndBuildDune(root,config):
     
 
     download_dune=True
-    if not os.path.isdir(prefix+"/bempp/contrib/dune"):
-        os.mkdir(dune_dir)
-        # Download files
-        for i in range(3):
-            if not os.path.isfile(root+"/contrib/files/"+dune_fnames[i]):
-                print "Download "+dune_names[i]
-                urllib.urlretrieve(dune_urls[i],root+"/contrib/files/"+dune_fnames[i])
+    os.mkdir(dune_dir)
+    # Download files
+    for i in range(3):
+        if not os.path.isfile(root+"/contrib/files/"+dune_fnames[i]):
+            print "Download "+dune_names[i]
+            urllib.urlretrieve(dune_urls[i],root+"/contrib/files/"+dune_fnames[i])
         # Extract and patch
-        for i in range(3):
+    for i in range(3):
+        if not os.path.isdir(root+"/contrib/dune/"+dune_names[i]):
             print "Extract "+dune_names[i]
-            extract_file(root+"/contrib/files/"+dune_fnames[i],prefix+"/bempp/contrib/dune/")
-            os.rename(prefix+"/bempp/contrib/dune/"+dune_extract_names[i],prefix+"/bempp/contrib/dune/"+dune_names[i])
-        shutil.copytree(root+"/contrib/dune/dune-foamgrid",prefix+"/bempp/contrib/dune/dune-foamgrid")
-        print "Apply patch"
-        patch=py_patch.fromfile(root+"/contrib/patch/dune-grid.patch")
-        cwd=os.getcwd()
-        os.chdir(prefix+"/bempp/contrib/dune/dune-grid/dune/grid/utility")
-        patch.apply()
-        os.chdir(cwd)
-        print "Build Dune"
-        os.chdir(prefix+"/bempp/contrib/dune")
-        subprocess.call("./dune-common/bin/dunecontrol all",shell=True)
+            extract_file(root+"/contrib/files/"+dune_fnames[i],root+"/contrib/dune/")
+            os.rename(root+"/contrib/dune/"+dune_extract_names[i],root+"/contrib/dune/"+dune_names[i])
+        #shutil.copytree(root+"/contrib/dune/dune-foamgrid",prefix+"/bempp/contrib/dune/dune-foamgrid")
+            if i==1:
+                print "Apply patch for "+dune_names[i]
+                patch=py_patch.fromfile(root+"/contrib/patch/dune-grid.patch")
+                cwd=os.getcwd()
+                os.chdir(root+"/contrib/dune/dune-grid/dune/grid/utility")
+                patch.apply()
+                os.chdir(cwd)
 
-    
+def buildDune(root,config):
+
+    prefix=config.get('Main','prefix')
+    dune_dir=root+"/contrib/dune"
+    dune_install_dir=prefix+"/bempp/contrib/dune"
+    if not os.path.isfile(dune_install_dir):
+        print "Build Dune"
+        cwd=os.getcwd()
+        os.chdir(root+"/contrib/dune")
+        f=open('dune_opts.ops','w')
+        f.write("CONFIGURE_FLAGS=\"--enable-shared=yes --disable-documentation --enable-static=no --prefix="+dune_install_dir+"\"")
+        f.close()
+        subprocess.call("./dune-common/bin/dunecontrol --opts=./dune_opts.ops all",shell=True)
+        subprocess.call("./dune-common/bin/dunecontrol make install",shell=True)
+        os.remove('./dune_opts.ops')
+        os.chdir(cwd)
 
         
     

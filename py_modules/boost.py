@@ -28,8 +28,8 @@ boost_extract_dir='boost-cmake'
 boost_dir='boost'
 boost_version="1.49.0"
 
-def checkAndBuildBoost(root,config):
-    """Download and build Boost if required"""
+def configureBoost(root,config):
+    """Download Boost if required"""
 
     boost_full_dir=root+"/contrib/"+boost_dir
     boost_download_name=root+"/contrib/files/"+boost_fname
@@ -47,7 +47,6 @@ def checkAndBuildBoost(root,config):
     boost_unit_test_lib=prefix+"/bempp/contrib/boost/lib/boost-"+boost_version+"/"+unit_test_lib_name
 
     download_boost=True
-    build_boost=True
     if config.has_option('Boost','download_boost'): download_boost=to_bool(config.get('Boost','download_boost'))
     
     if download_boost and not os.path.isdir(boost_full_dir):
@@ -63,11 +62,6 @@ def checkAndBuildBoost(root,config):
         shutil.copy(root+"/contrib/build_scripts/posix/boost_build.sh",boost_full_dir+"/boost_build.sh")
 
     if download_boost:
-        if not os.path.isdir(prefix+"/bempp/contrib/boost"):
-            print "Install Boost"
-            cwd=os.getcwd()
-            os.chdir(boost_full_dir)
-            subprocess.call("sh ./boost_build.sh",shell=True)
         if not config.has_section("Boost"): config.add_section("Boost")
         config.set("Boost",'unit_test_lib',boost_unit_test_lib)
         config.set("Boost",'include_dir',boost_include_dir)
@@ -76,8 +70,21 @@ def checkAndBuildBoost(root,config):
         if not (config.has_option('Boost','unit_test_lib') and config.has_option('Boost','include_dir')):
             raise Exception("You need to specify 'unit_test_lib' and 'include_dir' under the 'Boost' header in the configuration file")
 
-    
+def buildBoost(root,config):
 
+    download_boost=True
+    if config.has_option('Boost','download_boost'): download_boost=to_bool(config.get('Boost','download_boost'))
+
+    boost_full_dir=root+"/contrib/"+boost_dir
+
+    prefix=config.get('Main','prefix')
+
+    if download_boost and not os.path.isdir(prefix+"/bempp/contrib/boost"):
+            print "Build Boost"
+            cwd=os.getcwd()
+            os.chdir(boost_full_dir)
+            subprocess.call("sh ./boost_build.sh",shell=True)
+            os.chdir(cwd)
     
 
         

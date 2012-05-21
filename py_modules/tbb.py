@@ -29,8 +29,8 @@ tbb_url_linux='http://threadingbuildingblocks.org/uploads/78/181/4.0%20update%20
 tbb_extract_dir='tbb40_297oss'
 tbb_dir='tbb'
 
-def checkAndBuildTbb(root,config):
-    """Download and build Tbb if required"""
+def configureTbb(root,config):
+    """Download Tbb if required"""
 
     tbb_full_dir=root+"/contrib/"+tbb_dir
     if sys.platform.startswith('darwin'):
@@ -80,6 +80,8 @@ def checkAndBuildTbb(root,config):
             raise Exception("You need to specify 'lib', 'lib_debug' and 'include_dir' under the 'Tbb' header in the configuration file")
 
      
+def buildTbb(root,config):
+    pass
 
     
 

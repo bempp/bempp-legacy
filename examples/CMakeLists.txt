@@ -1,10 +1,7 @@
 include_directories(${Trilinos_INCLUDE_DIRS} ${Trilinos_TPL_INCLUDE_DIRS})
 
 # Dune
-include_directories(${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/dune-common)
-include_directories(${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/dune-grid)
-include_directories(${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/dune-localfunctions)
-include_directories(${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/dune-foamgrid)
+include_directories(${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/include)
 
 
 include_directories ("${PROJECT_SOURCE_DIR}/lib")
