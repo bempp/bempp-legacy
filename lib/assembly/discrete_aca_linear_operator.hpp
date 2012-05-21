@@ -50,13 +50,13 @@ class DiscreteAcaLinearOperator :
 public:
     typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
-    typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemblcluster;
+    typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
     typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
 
     DiscreteAcaLinearOperator(
             unsigned int rowCount, unsigned int columnCount,
             int maximumRank,
-            std::auto_ptr<AhmedBemblcluster> blockCluster,
+            std::auto_ptr<AhmedBemBlcluster> blockCluster,
             boost::shared_array<AhmedMblock*> blocks,
             const IndexPermutation& domainPermutation,
             const IndexPermutation& rangePermutation);
@@ -110,7 +110,7 @@ private:
 #endif
     int m_maximumRank;
 
-    std::auto_ptr<AhmedBemblcluster> m_blockCluster;
+    std::auto_ptr<AhmedBemBlcluster> m_blockCluster;
     boost::shared_array<AhmedMblock*> m_blocks;
 
     IndexPermutation m_domainPermutation;

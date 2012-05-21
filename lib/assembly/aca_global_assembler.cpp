@@ -74,7 +74,7 @@ class AcaWeakFormAssemblerLoopBody
 {
     typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
-    typedef bemblcluster<AhmedDofType, AhmedDofType> DoubleCluster;
+    typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
     typedef mblock<typename AhmedTypeTraits<ResultType>::Type> AhmedMblock;
 public:
     typedef tbb::concurrent_queue<size_t> LeafClusterIndexQueue;
@@ -111,8 +111,8 @@ public:
             m_stats[leafClusterIndex].chunkSize = r.size();
             m_stats[leafClusterIndex].startTime = tbb::tick_count::now();
 
-            DoubleCluster* cluster =
-                    dynamic_cast<DoubleCluster*>(m_leafClusters[leafClusterIndex]);
+            AhmedBemBlcluster* cluster =
+                    dynamic_cast<AhmedBemBlcluster*>(m_leafClusters[leafClusterIndex]);
             apprx_unsym(m_helper, m_blocks[cluster->getidx()],
                         cluster, m_options.eps, m_options.maximumRank);
             m_stats[leafClusterIndex].endTime = tbb::tick_count::now();
@@ -242,11 +242,11 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
     //    std::cout << "p2oTest:\n" << p2oTestDofs << std::endl;
 #endif
 
-    typedef bemblcluster<AhmedDofType, AhmedDofType> DoubleCluster;
-    std::auto_ptr<DoubleCluster> doubleClusterTree(
-                new DoubleCluster(0, 0, testDofCount, trialDofCount));
+    typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
+    std::auto_ptr<AhmedBemBlcluster> bemBlclusterTree(
+                new AhmedBemBlcluster(0, 0, testDofCount, trialDofCount));
     unsigned int blockCount = 0;
-    doubleClusterTree->subdivide(&testClusterTree, &trialClusterTree,
+    bemBlclusterTree->subdivide(&testClusterTree, &trialClusterTree,
                                  acaOptions.eta * acaOptions.eta,
                                  blockCount);
 
@@ -263,17 +263,17 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
 
     typedef mblock<typename AhmedTypeTraits<ResultType>::Type> AhmedMblock;
     boost::shared_array<AhmedMblock*> blocks =
-            allocateAhmedMblockArray<ResultType>(doubleClusterTree.get());
+            allocateAhmedMblockArray<ResultType>(bemBlclusterTree.get());
 
-    // matgen_sqntl(helper, doubleClusterTree.get(), doubleClusterTree.get(),
+    // matgen_sqntl(helper, AhmedBemBlclusterTree.get(), AhmedBemBlclusterTree.get(),
     //              acaOptions.recompress, acaOptions.eps,
     //              acaOptions.maximumRank, blocks.get());
 
-    // matgen_omp(helper, blockCount, doubleClusterTree.get(),
+    // matgen_omp(helper, blockCount, AhmedBemBlclusterTree.get(),
     //            acaOptions.eps, acaOptions.maximumRank, blocks.get());
 
     // // Dump mblocks
-    // const int mblockCount = doubleClusterTree->nleaves();
+    // const int mblockCount = AhmedBemBlclusterTree->nleaves();
     // for (int i = 0; i < mblockCount; ++i)
     //     if (blocks[i]->isdns())
     //     {
@@ -294,7 +294,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
     //         arma::diskio::save_raw_ascii(block, buffer);
     //     }
 
-    AhmedLeafClusterArray leafClusters(doubleClusterTree.get());
+    AhmedLeafClusterArray leafClusters(bemBlclusterTree.get());
     leafClusters.sortAccordingToClusterSize();
     const size_t leafClusterCount = leafClusters.size();
 
@@ -357,7 +357,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
 
     {
         size_t origMemory = sizeof(ResultType) * testDofCount * trialDofCount;
-        size_t ahmedMemory = sizeH(doubleClusterTree.get(), blocks.get());
+        size_t ahmedMemory = sizeH(bemBlclusterTree.get(), blocks.get());
         std::cout << "\nNeeded storage: " << ahmedMemory / 1024. / 1024. << " MB.\n"
                   << "Without approximation: " << origMemory / 1024. / 1024. << " MB.\n"
                   << "Compressed to " << (100. * ahmedMemory) / origMemory << "%.\n"
@@ -366,7 +366,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
         if (acaOptions.outputPostscript) {
             std::cout << "Writing matrix partition ..." << std::flush;
             std::ofstream os(acaOptions.outputFname.c_str());
-            psoutputH(os, doubleClusterTree.get(), testDofCount, blocks.get());
+            psoutputH(os, bemBlclusterTree.get(), testDofCount, blocks.get());
             os.close();
             std::cout << " done." << std::endl;
         }
@@ -375,7 +375,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
     result = std::auto_ptr<DiscreteLinOp>(
                 new DiscreteAcaLinOp(testDofCount, trialDofCount,
                                      acaOptions.maximumRank,
-                                     doubleClusterTree, blocks,
+                                     bemBlclusterTree, blocks,
                                      IndexPermutation(o2pTrialDofs),
                                      IndexPermutation(o2pTestDofs)));
     return result;

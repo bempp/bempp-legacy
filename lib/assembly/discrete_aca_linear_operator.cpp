@@ -43,7 +43,7 @@ DiscreteAcaLinearOperator<ValueType>::
 DiscreteAcaLinearOperator(
         unsigned int rowCount, unsigned int columnCount,
         int maximumRank,
-        std::auto_ptr<AhmedBemblcluster> blockCluster,
+        std::auto_ptr<AhmedBemBlcluster> blockCluster,
         boost::shared_array<AhmedMblock*> blocks,
         const IndexPermutation& domainPermutation,
         const IndexPermutation& rangePermutation) :
