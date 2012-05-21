@@ -78,7 +78,7 @@ def prepare(root,config):
         os.mkdir(prefix+"/bempp")
         os.mkdir(prefix+"/bempp/contrib")
     if not os.path.isdir(root+"/contrib/files"):
-        os.mkdir(prefix+"/contrib/files")
+        os.mkdir(root+"/contrib/files")
 
 ###########################
 
