@@ -30,7 +30,7 @@ def configureBempp(root,config):
     """Prepare the build of Bempp """
 
     debug=setDefaultConfigOption(config,'Bempp','enable_debug','false')
-    if debug:
+    if to_bool(debug):
         config.set('Bempp','build_type','Debug')
     else:
         config.set('Bempp','build_type','Release')
