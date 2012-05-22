@@ -37,11 +37,11 @@ def configureBempp(root,config):
 
     setDefaultConfigOption(config,'Bempp','build','true')
     setDefaultConfigOption(config,'Bempp','build_dir',root+'/build')
-    subprocess.call("sh .build.sh",shell=True)
 
     
 def buildBempp(root,config):
 
+    subprocess.call("sh .build.sh",shell=True)
     if to_bool(config.get('Bempp','build','true')):
         prefix=config.get('Main','prefix')
         build_dir=config.get('Bempp','build_dir')
