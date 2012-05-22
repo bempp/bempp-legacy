@@ -60,7 +60,7 @@ def setDefaultConfigOption(config,section,option,value):
     if config.has_option(section,option):
         return config.get(section,option)
     else:
-        if not config.has_section: config.add_section(section)
+        if not config.has_section(section): config.add_section(section)
         config.set(section,option,value)
         return value
 
