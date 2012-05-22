@@ -97,7 +97,15 @@ endif()
 if (WITH_AHMED)
    get_filename_component(AHMED_PATH "${AHMED_LIB}" PATH)
    get_filename_component(METIS_PATH "${METIS_LIB}" PATH)
-   SET(BEMPP_RPATH "${BEMPP_RPATH};${AHMED_PATH};${METIS_PATH}")
+   # Check if it is not a system dir
+   LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${AHMED_PATH}" isSystemDir)
+   IF("${isSystemDir}" STREQUAL "-1")
+   		       SET(BEMPP_RPATH "${BEMPP_RPATH};${AHMED_PATH}")   		          		       
+   ENDIF("${isSystemDir}" STREQUAL "-1") 
+   LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${METIS_PATH}" isSystemDir)
+   IF("${isSystemDir}" STREQUAL "-1")
+   		       SET(BEMPP_RPATH "${BEMPP_RPATH};${METIS_PATH}")   		          		       
+   ENDIF("${isSystemDir}" STREQUAL "-1")    
 endif()
 
 SET_TARGET_PROPERTIES(bempp
