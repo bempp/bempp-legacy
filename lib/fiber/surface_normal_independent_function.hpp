@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_ordinary_function_hpp
-#define fiber_ordinary_function_hpp
+#ifndef fiber_surface_normal_independent_function_hpp
+#define fiber_surface_normal_independent_function_hpp
 
 #include "function.hpp"
 #include "geometrical_data.hpp"
@@ -59,14 +59,15 @@ namespace Fiber
   };
   */
 template <typename Functor>
-class OrdinaryFunction : public Function<typename Functor::ValueType>
+class SurfaceNormalIndependentFunction :
+        public Function<typename Functor::ValueType>
 {
 public:
     typedef Function<typename Functor::ValueType> Base;
     typedef typename Functor::ValueType ValueType;
     typedef typename Base::CoordinateType CoordinateType;
 
-    OrdinaryFunction(const Functor& functor) :
+    SurfaceNormalIndependentFunction(const Functor& functor) :
         m_functor(functor) {
     }
 

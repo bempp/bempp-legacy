@@ -22,6 +22,7 @@
 #define fiber_surface_normal_dependent_function_hpp
 
 #include "function.hpp"
+#include "geometrical_data.hpp"
 
 namespace Fiber
 {

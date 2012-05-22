@@ -18,15 +18,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_ordinary_function_hpp
-#define bempp_ordinary_function_hpp
+#ifndef bempp_surface_normal_independent_function_hpp
+#define bempp_surface_normal_independent_function_hpp
 
-#include "../fiber/ordinary_function.hpp"
+#include "../fiber/surface_normal_independent_function.hpp"
 
 namespace Bempp
 {
 
-using Fiber::OrdinaryFunction;
+using Fiber::SurfaceNormalIndependentFunction;
 
 } // namespace Bempp
 

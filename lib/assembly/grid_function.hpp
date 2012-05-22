@@ -23,8 +23,10 @@
 #define bempp_grid_function_hpp
 
 #include "../grid/vtk_writer.hpp"
-#include "../fiber/scalar_traits.hpp"
 #include "../fiber/local_assembler_factory.hpp"
+#include "../fiber/scalar_traits.hpp"
+#include "../fiber/surface_normal_dependent_function.hpp"
+#include "../fiber/surface_normal_independent_function.hpp"
 #include "vector.hpp"
 
 #include <armadillo>
@@ -62,7 +64,12 @@ public:
     typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
 
     /** \brief Construct by evaluating the expansion coefficients of a global
-      function in the provided function space. */
+      function in the provided function space.
+
+      \note Often it is more convenient to use the non-member functions
+      surfaceNormalIndependentGridFunction() and
+      surfaceNormalDependentGridFunction(), which automatically construct an
+      appropriate Fiber::Function object from a user-defined functor. */
     GridFunction(const Space<BasisFunctionType>& space,
                  const Fiber::Function<ResultType>& function,
                  const LocalAssemblerFactory& factory,
@@ -139,6 +146,8 @@ private:
     arma::Col<ResultType> m_coefficients;
 };
 
+// Overloaded operators
+
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType> operator+(
         const GridFunction<BasisFunctionType, ResultType>& g1,
@@ -167,6 +176,34 @@ operator*(
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
 GridFunction<BasisFunctionType, ResultType> operator/(
         const GridFunction<BasisFunctionType, ResultType>& g1, const ScalarType& scalar);
+
+// Non-member utility functions
+
+template <typename BasisFunctionType, typename Functor>
+GridFunction<BasisFunctionType, typename Functor::ValueType>
+surfaceNormalIndependentGridFunction(
+        const Space<BasisFunctionType>& space,
+        const Functor& functor,
+        const typename GridFunction<BasisFunctionType, typename Functor::ValueType>::LocalAssemblerFactory& factory,
+        const AssemblyOptions& assemblyOptions)
+{
+    Fiber::SurfaceNormalIndependentFunction<Functor> fiberFunction(functor);
+    return GridFunction<BasisFunctionType, typename Functor::ValueType>(
+                space, fiberFunction, factory, assemblyOptions);
+}
+
+template <typename BasisFunctionType, typename Functor>
+GridFunction<BasisFunctionType, typename Functor::ValueType>
+surfaceNormalDependentGridFunction(
+        const Space<BasisFunctionType>& space,
+        const Functor& functor,
+        const typename GridFunction<BasisFunctionType, typename Functor::ValueType>::LocalAssemblerFactory& factory,
+        const AssemblyOptions& assemblyOptions)
+{
+    Fiber::SurfaceNormalDependentFunction<Functor> fiberFunction(functor);
+    return GridFunction<BasisFunctionType, typename Functor::ValueType>(
+                space, fiberFunction, factory, assemblyOptions);
+}
 
 } // namespace Bempp
 

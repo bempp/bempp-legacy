@@ -29,7 +29,6 @@
 #include "assembly/grid_function.hpp"
 #include "assembly/interpolated_function.hpp"
 #include "assembly/linear_operator_superposition.hpp"
-#include "assembly/ordinary_function.hpp"
 #include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 
 #include "assembly/identity_operator.hpp"
@@ -135,10 +134,8 @@ int main(int argc, char* argv[])
 
     // We also want a grid function
 
-    MyFunctor functor;
-    OrdinaryFunction<MyFunctor> function(functor);
-
-    GridFunction<BFT, RT> u(HplusHalfSpace, function, factory, assemblyOptions);
+    GridFunction<BFT, RT> u = surfaceNormalIndependentGridFunction(
+                HplusHalfSpace, MyFunctor(), factory, assemblyOptions);
 
     // Assemble the rhs
 
