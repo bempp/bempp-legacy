@@ -29,8 +29,6 @@ if (WITH_TESTS)
   add_subdirectory(tests)
 endif (WITH_TESTS)
 
-# Install headers
-install(DIRECTORY lib/ DESTINATION bempp/include FILES_MATCHING PATTERN "*.hpp")
 
 
 # Uninstall target
@@ -41,5 +39,3 @@ configure_file(
 
 add_custom_target(uninstall 
   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
-
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)

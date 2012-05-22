@@ -79,8 +79,27 @@ install(TARGETS bempp
   LIBRARY DESTINATION bempp/lib
   ARCHIVE DESTINATION bempp/lib)
 
+# Install headers
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/lib/ DESTINATION bempp/include FILES_MATCHING PATTERN "*.hpp")
 install(FILES ${COMMON_HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/bempp/include/common)
 
-#include(CMakeDeployHeaders)
-#InstallHeaderHierarchy( "${CMAKE_SOURCE_DIR}" "lib" "*.hpp" "${CMAKE_INSTALL_PREFIX}/bempp/include")
-  
+
+# Create correct rpath for installation
+SET(BEMPP_RPATH "\$ORIGIN/../contrib/dune/lib;\$ORIGIN/../contrib/trilinos/lib;\$ORIGIN/../contrib/boost/lib/boost-1.49.0")
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+   # Add Tbb for Mac
+   SET(BEMPP_RPATH "${BEMPP_RPATH};\$ORIGIN/../contrib/tbb/lib")
+endif()
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+   # Add Tbb for Linux
+   SET(BEMPP_RPATH "${BEMPP_RPATH};\$ORIGIN/../contrib/tbb/lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21")
+endif()
+if (WITH_AHMED)
+   get_filename_component(AHMED_PATH "${AHMED_LIB}" PATH)
+   get_filename_component(METIS_PATH "${METIS_LIB}" PATH)
+   SET(BEMPP_RPATH "${BEMPP_RPATH};${AHMED_PATH};${METIS_PATH}")
+endif()
+
+SET_TARGET_PROPERTIES(bempp
+	PROPERTIES INSTALL_RPATH "${BEMPP_RPATH}")
+	
