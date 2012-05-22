@@ -21,4 +21,4 @@ cmake \
     -D AHMED_LIB:STRING=$AHMED_lib \
     -D METIS_LIB:STRING=$AHMED_metis_lib \
     -D TRILINOS_CMAKE_PATH:STRING=$Trilinos_cmake_path \
-$Bempp_build_dir
+$Main_root_dir
