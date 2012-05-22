@@ -70,7 +70,7 @@ def buildDune(root,config):
     dune_install_dir=prefix+"/bempp/contrib/dune"
     cxx=config.get('Main','cxx')
     cc=config.get('Main','cc')
-    if not os.path.isdir(dune_install_dir):
+    if not os.path.isdir(dune_install_dir+"/lib"):
         print "Build Dune"
         cwd=os.getcwd()
         os.chdir(root+"/contrib/dune")
