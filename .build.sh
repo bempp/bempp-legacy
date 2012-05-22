@@ -1,13 +1,13 @@
 #!/usr/bin/sh
 source ./options.cfg
 
-mkdir build
-cd build
+mkdir $Bempp_build_dir
+cd $Bempp_build_dir
 cmake \
     -D CMAKE_CXX_COMPILER:STRING=$Main_cxx \
     -D CMAKE_C_COMPILER:STRING=$Main_cc \
     -D CMAKE_INSTALL_PREFIX:STRING=$Main_prefix \
-    -D CMAKE_BUILD_TYPE:STRING=$Main_build_type \
+    -D CMAKE_BUILD_TYPE:STRING=$Bempp_build_type \
     -D WITH_AHMED:STRING=$AHMED_enable_ahmed \
     -D BOOST_INCLUDE_DIR:STRING=$Boost_include_dir \
     -D BOOST_UNIT_TEST_LIB:STRING=$Boost_unit_test_lib \
@@ -21,6 +21,4 @@ cmake \
     -D AHMED_LIB:STRING=$AHMED_lib \
     -D METIS_LIB:STRING=$AHMED_metis_lib \
     -D TRILINOS_CMAKE_PATH:STRING=$Trilinos_cmake_path \
-..
-make
-make install
+$Bempp_build_dir

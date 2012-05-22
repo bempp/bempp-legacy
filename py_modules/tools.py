@@ -49,3 +49,18 @@ def writeOptions(root,config):
         for option in config.items(section):
             f.write(section+"_"+option[0]+"="+"\""+option[1]+"\""+"\n")
     f.close()
+
+############################
+
+def setDefaultConfigOption(config,section,option,value):
+    """Enter a default option into the ConfigParser object 'config'. If option already exists returns
+       the existing value, otherwise the value 'value'.
+    """
+
+    if config.has_option(section,option):
+        return config.get(section,option)
+    else:
+        if not config.has_section: config.add_section(section)
+        config.set(section,option,value)
+        return value
+

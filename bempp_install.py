@@ -72,6 +72,7 @@ def prepare(root,config):
     if not config.has_option('Main','prefix'): raise Exception('prefix not defined')
     if not config.has_option('Main','cc'): raise Exception('cc not defined')
     if not config.has_option('Main','cxx'): raise Exception('cxx not defined')
+    if not config.has_option('Main','root_dir'): config.set('Main','root_dir',root)
 
     prefix=config.get('Main','prefix')
     if not os.path.isdir(prefix+"/bempp"):

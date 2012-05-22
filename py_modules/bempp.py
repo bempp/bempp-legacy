@@ -19,7 +19,7 @@
 #THE SOFTWARE.
 
 import os,urllib,shutil,subprocess,sys
-from py_modules.tools import extract_file, to_bool
+from py_modules.tools import extract_file, to_bool, setDefaultConfigOption
 from py_modules import python_patch as py_patch
 
 
@@ -29,21 +29,25 @@ from py_modules import python_patch as py_patch
 def configureBempp(root,config):
     """Prepare the build of Bempp """
 
-    debug=False
-    if config.has_option('Main','enable_debug'):
-        debug=to_bool(config.get('Main','enable_debug'))
+    debug=setDefaultConfigOption(config,'Bempp','enable_debug','false')
     if debug:
-        config.set('Main','build_type','Debug')
+        config.set('Bempp','build_type','Debug')
     else:
-        config.set('Main','build_type','Release')
+        config.set('Bempp','build_type','Release')
+
+    setDefaultConfigOption(config,'Bempp','build','true')
+    setDefaultConfigOption(config,'Bempp','build_dir',root+'/build')
+    subprocess.call("sh .build.sh",shell=True)
 
     
 def buildBempp(root,config):
 
-    prefix=config.get('Main','prefix')
-    if not os.path.isdir(prefix+"/bempp/lib"):
-        print "Build Bempp"
-        subprocess.call("sh .build.sh",shell=True)
+    if to_bool(config.get('Bempp','build','true')):
+        prefix=config.get('Main','prefix')
+        build_dir=config.get('Bempp','build_dir')
+        if not os.path.isdir(prefix+"/bempp/lib"):
+            print "Build Bempp"
+            subprocess.call("cd "+build_dir+"; make install",shell=True)
 
         
     
