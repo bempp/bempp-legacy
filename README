@@ -3,17 +3,10 @@ BEMPP is a novel open source HPC boundary element library. Coding has started Oc
 
 The available objects are in an early stage and not yet recommended for applications. If you want to compile the code please be aware that we do not yet guarantee that every commit will compile.
 
-PREREQUESITES FOR COMPILATION
+The library has been tested under Scientific Linux 6 (RedHat Enterprise 6 compatible).
+Do build the library please adapt the LAPACK and BLAS path in the file bempp_options.cfg. If you do not have AHMED please comment
+out the corresponding section. Then call 'python bempp_install.py'. This will download all dependencies and install the library, 
+which takes about an hour in total.
 
-You need to have at least the Armadillo C++ Linear Algebra environment installed in a path that can be found by the compiler. Also Boost needs to be installed. 
-To use the full functionality you also need Trilinos and AHMED (see www.bempp.org for further details.)
-
-COMPILATION
-
-1.) Go into the contrib directory and call ‘cmake .’. Cmake will now attempt to download Dune and apply a few patches.
-2.) Go into the main Bempp directory and create a build directory via ‘mkdir build’.
-3.) Change into this directory via ‘cd build’ and call ‘ccmake ..’
-4.) Configure the build as desired.
-5.) Generate the makefiles and call ‘make’ to compile everything.
-6.) To get the class documentation call ‘make doc’. Note that for this Doxygen must be installed.
+More detailed installation instructions will be available when the library will first be officially released.
 
