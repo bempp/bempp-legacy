@@ -414,6 +414,27 @@ applyOffSurface(
                 new InterpolatedFunction<ResultType>(evaluationGrid, result));
 }
 
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+arma::Mat<ResultType>
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+applyOffSurface(
+        const GridFunction<BasisFunctionType, ResultType>& argument,
+        const arma::Mat<CoordinateType>& evaluationPoints,
+        const LocalAssemblerFactory& assemblerFactory,
+        const EvaluationOptions& options) const
+{
+    std::auto_ptr<Evaluator> evaluator =
+            makeEvaluator(argument, assemblerFactory, options);
+
+    // right now we don't bother about far and near field
+    // (this might depend on evaluation options)
+
+    arma::Mat<ResultType> result;
+    evaluator->evaluate(Evaluator::FAR_FIELD, evaluationPoints, result);
+
+    return result;
+}
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(ElementaryIntegralOperator);
 
 } // namespace Bempp

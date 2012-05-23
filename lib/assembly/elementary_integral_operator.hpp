@@ -104,6 +104,11 @@ public:
             const LocalAssemblerFactory& factory,
             const EvaluationOptions& options) const;
 
+    virtual arma::Mat<ResultType> applyOffSurface(
+            const GridFunction<BasisFunctionType, ResultType>& argument,
+            const arma::Mat<CoordinateType>& evaluationPoints,
+            const LocalAssemblerFactory& assemblerFactory,
+            const EvaluationOptions& options) const;
     // TODO: define applyOnSurface() for *all* operators (including Id).
 
 private:
