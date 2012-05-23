@@ -137,6 +137,7 @@ public:
         return m_global_id_set;
     }
 
+    /** @} */
     /** @}
     @name Adaptivity and grid refinement
     @{ */
