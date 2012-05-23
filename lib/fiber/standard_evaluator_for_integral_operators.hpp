@@ -80,7 +80,7 @@ private:
     const shared_ptr<const Expression<CoordinateType> > m_trialExpression;
     const shared_ptr<const std::vector<std::vector<ResultType> > > m_argumentLocalCoefficients;
     const shared_ptr<const Fiber::OpenClHandler> m_openClHandler;
-    const QuadratureOptions& m_quadratureOptions;
+    const QuadratureOptions m_quadratureOptions;
 
     Fiber::GeometricalData<CoordinateType> m_nearFieldTrialGeomData;
     Fiber::GeometricalData<CoordinateType> m_farFieldTrialGeomData;
