@@ -85,69 +85,6 @@ public:
 
     /** \brief Reference to the grid's global id set. */
     virtual const IdSet& globalIdSet() const = 0;
-
-    /** @}
-    @name Adaptivity and grid refinement
-    @{ */
-
-    /** \brief Refine the grid \p refCount times using the default
-     refinement rule.
-
-     This behaves like marking all elements for refinement and then
-     calling preAdapt(), adapt() and postAdapt(). The state after
-     refineGlobally() is comparable to the state after postAdapt().
-     */
-    virtual void refineGlobally(int refCount) = 0;
-
-    /** \brief Mark an entity to be refined/coarsened in a subsequent adapt().
-
-     \param[in] refCount Number of subdivisions that should be
-     applied. Negative value means coarsening.
-
-     \param[in] e        Entity that should be marked
-
-     \return True if \p e was marked, false otherwise.
-     */
-    virtual bool mark(int refCount, const Entity<0>& e) = 0;
-
-    /** \brief Adaptation mark for entity \p e. */
-    virtual int getMark(const Entity<0>& e) const = 0;
-
-    /** \brief To be called after marking entities, but before calling
-     adapt().
-
-     This sets the \p mightVanish flags of the elements for the next adapt() call.
-
-     \return True if an entity may be coarsened during a subsequent
-     adapt(), false otherwise.
-     */
-    virtual bool preAdapt() = 0;
-
-    /** \brief Refine all positive marked leaf entities, coarsen all
-     negative marked entities if possible.
-
-     \return True if a least one entity was refined, false otherwise.
-
-     The complete adaptation process works as follows:
-
-     - mark entities with the mark() method
-     - call preAdapt()
-     - if preAdapt() returned true: possibly save current solution
-     - call adapt()
-     - if adapt() returned true: possibly interpolate the (saved) solution
-     - call postAdapt()
-     */
-    virtual bool adapt() = 0;
-
-    /** \brief To be called when the grid has been adapted and
-     information left over by the adaptation has been processed.
-
-     This removes the \e isNew flags of the elements from the last
-     adapt() call.
-     */
-    virtual void postAdapt() = 0;
-
-    /** @} */
 };
 
 } // namespace Bempp

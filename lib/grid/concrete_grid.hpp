@@ -138,41 +138,6 @@ public:
     }
 
     /** @} */
-    /** @}
-    @name Adaptivity and grid refinement
-    @{ */
-
-    virtual void refineGlobally(int refCount) {
-        m_dune_grid->globalRefine(refCount);
-    }
-
-    virtual bool mark(int refCount, const Entity<0>& e) {
-        /// FIXME: should we catch std::bad_cast or leave it to the user?
-        typedef typename DuneGrid::template Codim<0>::Entity DuneEntity;
-        typedef ConcreteEntity<0, DuneEntity> ConcEntity;
-        const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
-        return m_dune_grid->mark(refCount, ce.duneEntity());
-    }
-
-    virtual int getMark(const Entity<0>& e) const {
-        /// FIXME: should we catch std::bad_cast or leave it to the user?
-        typedef typename DuneGrid::template Codim<0>::Entity DuneEntity;
-        typedef ConcreteEntity<0, DuneEntity> ConcEntity;
-        const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
-        return m_dune_grid->getMark(ce.duneEntity());
-    }
-
-    virtual bool preAdapt() {
-        return m_dune_grid->preAdapt();
-    }
-
-    virtual bool adapt() {
-        return m_dune_grid->adapt();
-    }
-
-    virtual void postAdapt() {
-        m_dune_grid->postAdapt();
-    }
 
 private:
     // Disable copy constructor and assignment operator
