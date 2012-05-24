@@ -23,19 +23,24 @@
 #define bempp_grid_function_hpp
 
 #include "../grid/vtk_writer.hpp"
+#include "../fiber/local_assembler_factory.hpp"
+#include "../fiber/scalar_traits.hpp"
+#include "../fiber/surface_normal_dependent_function.hpp"
+#include "../fiber/surface_normal_independent_function.hpp"
 #include "vector.hpp"
 
 #include <armadillo>
+#include <boost/mpl/set.hpp>
+#include <boost/mpl/has_key.hpp>
+#include <boost/utility/enable_if.hpp>
 #include <memory>
 
 namespace Fiber
 {
 
-template <typename ValueType, typename GeometryFactory>
-class LocalAssemblerFactory;
 template <typename ValueType> class Basis;
 template <typename ValueType> class Function;
-template <typename ValueType> class LocalAssemblerForGridFunctions;
+template <typename ResultType> class LocalAssemblerForGridFunctions;
 
 } // namespace Fiber
 
@@ -46,49 +51,57 @@ class AssemblyOptions;
 class GeometryFactory;
 class Grid;
 template <int codim> class Entity;
-template <typename ValueType> class Space;
+template <typename BasisFunctionType> class Space;
+
+template <typename BasisFunctionType, typename ResultType>
+class GridFunction;
 
 /** \brief Function defined on a grid. */
-template <typename ValueType>
+template <typename BasisFunctionType, typename ResultType>
 class GridFunction
 {
 public:
-    typedef Fiber::LocalAssemblerFactory<ValueType, GeometryFactory>
+    typedef Fiber::LocalAssemblerFactory<BasisFunctionType, ResultType, GeometryFactory>
     LocalAssemblerFactory;
-    typedef Fiber::LocalAssemblerForGridFunctions<ValueType> LocalAssembler;
+    typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
 
-    /** \brief Construct by evaluating the expansion coefficients of a global
-      function in the provided function space. */
-    GridFunction(const Space<ValueType>& space,
-                 const Fiber::Function<ValueType>& function,
-                 const LocalAssemblerFactory& factory,
-                 const AssemblyOptions& assemblyOptions);
+    /** \brief Constructor.
+     *
+     * \param[in] space        Function space to expand the grid function in.
+     * \param[in] coefficients Vector of the expansion coefficients of the grid
+     *                         function in the chosen space.
+     * \param[in] projections  Vector of the scalar products of the grid
+     *                         function and the basis functions from the chosen
+     *                         space.
 
-    /** \brief Construct from known expansion coefficients in the provided function space. */
-    GridFunction(const Space<ValueType>& space,
-                 const arma::Col<ValueType>& coefficients);
-
-    /** \brief Construct from known expansion coefficients in the provided function space,
-        represented as Vector<ValueType>. */
-    GridFunction(const Space<ValueType>& space,
-                 const Vector<ValueType>& coefficients);
+     * \note End users should not need to call this constructor directly.
+     * Use instead one of the "non-member constructors"
+     * gridFunctionFrom...(). */
+    GridFunction(const Space<BasisFunctionType>& space,
+                 const arma::Col<ResultType>& coefficients,
+                 const arma::Col<ResultType>& projections);
 
     /** \brief Grid on which this function is defined. */
     const Grid& grid() const;
 
     /** \brief Space in which this function is expanded. */
-    const Space<ValueType>& space() const;
+    const Space<BasisFunctionType>& space() const;
 
     int codomainDimension() const;
 
-    Vector<ValueType> coefficients() const;
-    void setCoefficients(const Vector<ValueType>& coeffs);
+    const arma::Col<ResultType>& coefficients() const;
+    const arma::Col<ResultType>& projections() const;
+    void setCoefficients(const arma::Col<ResultType>& coeffs);
+    void setProjections(const arma::Col<ResultType>& projects);
 
-    const Fiber::Basis<ValueType>& basis(const Entity<0>& element) const;
+    const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
     void getLocalCoefficients(const Entity<0>& element,
-                              std::vector<ValueType>& coeffs) const;
+                              std::vector<ResultType>& coeffs) const;
 
     /** Export the function to a VTK file.
+
+      \param[in] dataType
+        Determines whether data are attaches to vertices or cells.
 
       \param[in] dataLabel
         Label used to identify the function in the VTK file.
@@ -110,42 +123,129 @@ public:
                      VtkWriter::OutputType type = VtkWriter::ASCII) const;
 
 private:
-    /** \brief Calculate projections of the function on test functions from
-      the given space. */
-    arma::Col<ValueType> calculateProjections(
-            const Fiber::Function<ValueType>& globalFunction,
-            const Space<ValueType>& space,
-            const LocalAssemblerFactory& factory,
-            const AssemblyOptions& options) const;
-
-    arma::Col<ValueType> reallyCalculateProjections(
-            const Space<ValueType>& space,
-            LocalAssembler& assembler,
-            const AssemblyOptions& options) const;
-
     /** \brief Evaluate function at either vertices or barycentres. */
     void evaluateAtSpecialPoints(
-            VtkWriter::DataType dataType, arma::Mat<ValueType>& result) const;
+            VtkWriter::DataType dataType, arma::Mat<ResultType>& result) const;
 
 private:
-    const Space<ValueType>& m_space;
-    arma::Col<ValueType> m_coefficients;
+    const Space<BasisFunctionType>& m_space;
+    arma::Col<ResultType> m_coefficients;
+    arma::Col<ResultType> m_projections;
 };
 
-template<typename ValueType>
-GridFunction<ValueType> operator+(const GridFunction<ValueType>& g1, const GridFunction<ValueType>& g2);
+// Overloaded operators
 
-template<typename ValueType>
-GridFunction<ValueType> operator-(const GridFunction<ValueType>& g1, const GridFunction<ValueType>& g2);
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType> operator+(
+        const GridFunction<BasisFunctionType, ResultType>& g1,
+        const GridFunction<BasisFunctionType, ResultType>& g2);
 
-template<typename ValueType>
-GridFunction<ValueType> operator*(const GridFunction<ValueType>& g1, const ValueType& scalar);
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType> operator-(
+        const GridFunction<BasisFunctionType, ResultType>& g1,
+        const GridFunction<BasisFunctionType, ResultType>& g2);
 
-template<typename ValueType>
-GridFunction<ValueType> operator*(const ValueType& scalar, const GridFunction<ValueType>& g2);
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+GridFunction<BasisFunctionType, ResultType> operator*(
+        const GridFunction<BasisFunctionType, ResultType>& g1, const ScalarType& scalar);
 
-template<typename ValueType>
-GridFunction<ValueType> operator/(const GridFunction<ValueType>& g1, const ValueType& scalar);
+// This type machinery is needed to disambiguate between this operator and
+// the one taking a LinearOperator and a GridFunction
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+typename boost::enable_if<
+    typename boost::mpl::has_key<
+        boost::mpl::set<float, double, std::complex<float>, std::complex<double> >,
+        ScalarType>,
+    GridFunction<BasisFunctionType, ResultType> >::type
+operator*(
+        const ScalarType& scalar, const GridFunction<BasisFunctionType, ResultType>& g2);
+
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+GridFunction<BasisFunctionType, ResultType> operator/(
+        const GridFunction<BasisFunctionType, ResultType>& g1, const ScalarType& scalar);
+
+// Non-member constructors
+
+/** \brief Construct a grid function from its expansion coefficients in a function space.
+ *
+ * \param[in] space        Function space to expand the grid function in.
+ * \param[in] coefficients Expansion coefficients of the grid
+ *                         function in the chosen space. */
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>
+gridFunctionFromCoefficients(const Space<BasisFunctionType>& space,
+                             const arma::Col<ResultType>& coefficients);
+
+/** \brief Construct a grid function from its expansion coefficients in a function space.
+ *
+ * \param[in] space        Function space to expand the grid function in.
+ * \param[in] projections  Scalar products of the grid function and the basis
+ *                         functions of the chosen space. */
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>
+gridFunctionFromProjections(const Space<BasisFunctionType>& space,
+                            const arma::Col<ResultType>& projections);
+
+/** \brief Construct a grid function from a Fiber::Function object. */
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>
+gridFunctionFromFiberFunction(
+        const Space<BasisFunctionType>& space,
+        const Fiber::Function<ResultType>& function,
+        const typename GridFunction<BasisFunctionType, ResultType>::LocalAssemblerFactory& factory,
+        const AssemblyOptions& assemblyOptions);
+
+/** \brief Construct a grid function from a functor independent from surface orientation.
+ *
+ * \param[in] space           Function space to expand the grid function in.
+ * \param[in] functor         Functor object fulfilling the requirements
+ *                            described in the documentation of
+ *                            Fiber::SurfaceNormalIndependentFunction.
+ * \param[in] factory         Factory to be used to generate the necessary local
+ *                            assembler, which will be employed to evaluate
+ *                            the scalar products of the grid function with the
+ *                            basis functions of the chosen space.
+ * \param[in] assemblyOptions Options controlling the assembly procedure.
+ *
+ * \returns The constructed grid function. */
+template <typename BasisFunctionType, typename Functor>
+GridFunction<BasisFunctionType, typename Functor::ValueType>
+inline gridFunctionFromSurfaceNormalIndependentFunctor(
+        const Space<BasisFunctionType>& space,
+        const Functor& functor,
+        const typename GridFunction<BasisFunctionType, typename Functor::ValueType>::LocalAssemblerFactory& factory,
+        const AssemblyOptions& assemblyOptions)
+{
+    Fiber::SurfaceNormalIndependentFunction<Functor> fiberFunction(functor);
+    return gridFunctionFromFiberFunction(
+                space, fiberFunction, factory, assemblyOptions);
+}
+
+/** \brief Construct a grid function from a functor dependent on surface orientation.
+ *
+ * \param[in] space           Function space to expand the grid function in.
+ * \param[in] functor         Functor object fulfilling the requirements
+ *                            described in the documentation of
+ *                            Fiber::SurfaceNormalDependentFunction.
+ * \param[in] factory         Factory to be used to generate the necessary local
+ *                            assembler, which will be employed to evaluate
+ *                            the scalar products of the grid function with the
+ *                            basis functions of the chosen space.
+ * \param[in] assemblyOptions Options controlling the assembly procedure.
+ *
+ * \returns The constructed grid function. */
+template <typename BasisFunctionType, typename Functor>
+GridFunction<BasisFunctionType, typename Functor::ValueType>
+inline gridFunctionFromSurfaceNormalDependentFunctor(
+        const Space<BasisFunctionType>& space,
+        const Functor& functor,
+        const typename GridFunction<BasisFunctionType, typename Functor::ValueType>::LocalAssemblerFactory& factory,
+        const AssemblyOptions& assemblyOptions)
+{
+    Fiber::SurfaceNormalDependentFunction<Functor> fiberFunction(functor);
+    return gridFunctionFromFiberFunction(
+                space, fiberFunction, factory, assemblyOptions);
+}
 
 } // namespace Bempp
 

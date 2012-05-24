@@ -26,25 +26,25 @@
 namespace Bempp
 {
 
-template <typename ValueType> class LinearOperator;
+template <typename BasisFunctionType, typename ResultType> class LinearOperator;
 
-template <typename ValueType>
-class DefaultDirectSolver : public Solver<ValueType>
+template <typename BasisFunctionType, typename ResultType>
+class DefaultDirectSolver : public Solver<BasisFunctionType, ResultType>
 {
 public:
-    DefaultDirectSolver(const LinearOperator<ValueType>& linOp,
-                        const GridFunction<ValueType>& gridFun);
+    DefaultDirectSolver(const LinearOperator<BasisFunctionType, ResultType>& linOp,
+                        const GridFunction<BasisFunctionType, ResultType>& gridFun);
 
     virtual void solve();
 
-    virtual GridFunction<ValueType> getResult() const;
-    virtual typename Solver<ValueType>::EStatus getStatus() const;
+    virtual GridFunction<BasisFunctionType, ResultType> getResult() const;
+    virtual typename Solver<BasisFunctionType, ResultType>::EStatus getStatus() const;
 
 private:
-    const LinearOperator<ValueType>& m_linearOperator;
-    const GridFunction<ValueType>& m_gridFunction;
-    arma::Col<ValueType> m_solution;
-    typename Solver<ValueType>::EStatus m_status;
+    const LinearOperator<BasisFunctionType, ResultType>& m_linearOperator;
+    const GridFunction<BasisFunctionType, ResultType>& m_gridFunction;
+    arma::Col<ResultType> m_solution;
+    typename Solver<BasisFunctionType, ResultType>::EStatus m_status;
 };
 
 } // namespace Bempp

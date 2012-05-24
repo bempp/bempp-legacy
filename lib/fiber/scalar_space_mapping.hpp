@@ -25,6 +25,7 @@
 #include <stdexcept>
 #include "basis_data.hpp"
 #include "geometrical_data.hpp"
+#include "scalar_traits.hpp"
 
 namespace Fiber
 {
@@ -35,6 +36,8 @@ template <typename ValueType>
 class ScalarSpaceMapping
 {
 public:
+    typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+
     static void addShapeFunctionDependencies(int& basisDeps, int& geomDeps) {
         basisDeps |= VALUES;
     }
@@ -45,7 +48,7 @@ public:
     }
 
     static void evaluateShapeFunctions(const BasisData<ValueType>& basisData,
-                                       const GeometricalData<ValueType>& geomData,
+                                       const GeometricalData<CoordinateType>& geomData,
                                        arma::Cube<ValueType>& result) {
         result = basisData.values;
     }
@@ -54,13 +57,13 @@ public:
       \param[out] result
         dimensions: (worldDim, functionCount, pointCount)
     */
-    static void evaluateSurfaceCurls3D(const BasisData<ValueType>& basisData,
-                                     const GeometricalData<ValueType>& geomData,
-                                     arma::Cube<ValueType>& result) {
-        const arma::Mat<ValueType>& n = geomData.normals;
+    static void evaluateSurfaceCurls3d(const BasisData<ValueType>& basisData,
+                                       const GeometricalData<CoordinateType>& geomData,
+                                       arma::Cube<ValueType>& result) {
+        const arma::Mat<CoordinateType>& n = geomData.normals;
         // jt(i, j): dx_j/dq_i
-        const arma::Cube<ValueType>& jit = geomData.jacobianInversesTransposed;
-        const Array4D<ValueType>& d = basisData.derivatives;
+        const arma::Cube<CoordinateType>& jit = geomData.jacobianInversesTransposed;
+        const Array4d<ValueType>& d = basisData.derivatives;
 
         assert(d.extent(0) == 1); // scalar functions
         const int worldDim = 3;

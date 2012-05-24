@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2012 by the Fiber Authors
+// Copyright (C) 2011-2012 by the Bem++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,36 +24,39 @@
 #define fiber_separable_numerical_test_kernel_trial_integrator_hpp
 
 #include "test_kernel_trial_integrator.hpp"
-#include "raw_grid_geometry.hpp"
-#include "opencl_handler.hpp"
 
 namespace Fiber
 {
 
-template <typename ValueType, typename IndexType> class OpenClHandler;
-template <typename ValueType> class Expression;
+class OpenClHandler;
+template <typename CoordinateType> class Expression;
 template <typename ValueType> class Kernel;
+template <typename CoordinateType> class RawGridGeometry;
 
 /** \brief Integration over pairs of elements on tensor-product point grids. */
-template <typename ValueType, typename GeometryFactory>
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
 class SeparableNumericalTestKernelTrialIntegrator :
-        public TestKernelTrialIntegrator<ValueType>
+        public TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>
 {
 public:
-    typedef typename TestKernelTrialIntegrator<ValueType>::ElementIndexPair
-    ElementIndexPair;
+    typedef TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType> Base;
+    typedef typename Base::CoordinateType CoordinateType;
+    typedef typename Base::ElementIndexPair ElementIndexPair;
 
     SeparableNumericalTestKernelTrialIntegrator(
-            const arma::Mat<ValueType>& localTestQuadPoints,
-            const arma::Mat<ValueType>& localTrialQuadPoints,
-            const std::vector<ValueType> testQuadWeights,
-            const std::vector<ValueType> trialQuadWeights,
-            const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
-            const Expression<ValueType>& testExpression,
-            const Kernel<ValueType>& kernel,
-            const Expression<ValueType>& trialExpression,
-            const OpenClHandler<ValueType,int>& openClHandler);
+            const arma::Mat<CoordinateType>& localTestQuadPoints,
+            const arma::Mat<CoordinateType>& localTrialQuadPoints,
+            const std::vector<CoordinateType> testQuadWeights,
+            const std::vector<CoordinateType> trialQuadWeights,
+            const GeometryFactory& testGeometryFactory,
+            const GeometryFactory& trialGeometryFactory,
+            const RawGridGeometry<CoordinateType>& testRawGeometry,
+            const RawGridGeometry<CoordinateType>& trialRawGeometry,
+            const Expression<CoordinateType>& testExpression,
+            const Kernel<KernelType>& kernel,
+            const Expression<CoordinateType>& trialExpression,
+            const OpenClHandler& openClHandler);
 
     virtual ~SeparableNumericalTestKernelTrialIntegrator ();
 
@@ -61,66 +64,68 @@ public:
             CallVariant callVariant,
             const std::vector<int>& elementIndicesA,
             int elementIndexB,
-            const Basis<ValueType>& basisA,
-            const Basis<ValueType>& basisB,
+            const Basis<BasisFunctionType>& basisA,
+            const Basis<BasisFunctionType>& basisB,
             LocalDofIndex localDofIndexB,
-            arma::Cube<ValueType>& result) const;
+            arma::Cube<ResultType>& result) const;
 
     virtual void integrate(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<ValueType>& testBasis,
-            const Basis<ValueType>& trialBasis,
-            arma::Cube<ValueType>& result) const;
+            const Basis<BasisFunctionType>& testBasis,
+            const Basis<BasisFunctionType>& trialBasis,
+            arma::Cube<ResultType>& result) const;
 
 private:
-    virtual void integrateCpu(
+    void integrateCpu(
             CallVariant callVariant,
             const std::vector<int>& elementIndicesA,
             int elementIndexB,
-            const Basis<ValueType>& basisA,
-            const Basis<ValueType>& basisB,
+            const Basis<BasisFunctionType>& basisA,
+            const Basis<BasisFunctionType>& basisB,
             LocalDofIndex localDofIndexB,
-            arma::Cube<ValueType>& result) const;
+            arma::Cube<ResultType>& result) const;
 
-    virtual void integrateCl(
+    void integrateCl(
 	    CallVariant callVariant,
 	    const std::vector<int>& elementIndicesA,
 	    int elementIndexB,
-	    const Basis<ValueType>& basisA,
-	    const Basis<ValueType>& basisB,
+        const Basis<BasisFunctionType>& basisA,
+        const Basis<BasisFunctionType>& basisB,
 	    LocalDofIndex localDofIndexB,
-	    arma::Cube<ValueType>& result) const;
+        arma::Cube<ResultType>& result) const;
 
-    virtual void integrateCpu(
+    void integrateCpu(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<ValueType>& testBasis,
-            const Basis<ValueType>& trialBasis,
-            arma::Cube<ValueType>& result) const;
+            const Basis<BasisFunctionType>& testBasis,
+            const Basis<BasisFunctionType>& trialBasis,
+            arma::Cube<ResultType>& result) const;
 
-    virtual void integrateCl(
+    void integrateCl(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<ValueType>& testBasis,
-            const Basis<ValueType>& trialBasis,
-            arma::Cube<ValueType>& result) const;
+            const Basis<BasisFunctionType>& testBasis,
+            const Basis<BasisFunctionType>& trialBasis,
+            arma::Cube<ResultType>& result) const;
 
     /**
      * \brief Returns an OpenCL code snippet containing the clIntegrate
      *   kernel function for integrating a single row or column
      */
-    const std::pair<const char*,int> clStrIntegrateRowOrCol () const;
+    const std::pair<const char*, int> clStrIntegrateRowOrCol () const;
 
-    arma::Mat<ValueType> m_localTestQuadPoints;
-    arma::Mat<ValueType> m_localTrialQuadPoints;
-    std::vector<ValueType> m_testQuadWeights;
-    std::vector<ValueType> m_trialQuadWeights;
+    arma::Mat<CoordinateType> m_localTestQuadPoints;
+    arma::Mat<CoordinateType> m_localTrialQuadPoints;
+    std::vector<CoordinateType> m_testQuadWeights;
+    std::vector<CoordinateType> m_trialQuadWeights;
 
-    const GeometryFactory& m_geometryFactory;
-    const RawGridGeometry<ValueType>& m_rawGeometry;
+    const GeometryFactory& m_testGeometryFactory;
+    const GeometryFactory& m_trialGeometryFactory;
+    const RawGridGeometry<CoordinateType>& m_testRawGeometry;
+    const RawGridGeometry<CoordinateType>& m_trialRawGeometry;
 
-    const Expression<ValueType>& m_testExpression;
-    const Kernel<ValueType>& m_kernel;
-    const Expression<ValueType>& m_trialExpression;
-    const OpenClHandler<ValueType,int>& m_openClHandler;
+    const Expression<CoordinateType>& m_testExpression;
+    const Kernel<KernelType>& m_kernel;
+    const Expression<CoordinateType>& m_trialExpression;
+    const OpenClHandler& m_openClHandler;
 #ifdef WITH_OPENCL
     cl::Buffer *clTestQuadPoints;
     cl::Buffer *clTrialQuadPoints;

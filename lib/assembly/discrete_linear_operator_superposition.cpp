@@ -21,6 +21,7 @@
 #include "config_trilinos.hpp"
 
 #include "discrete_linear_operator_superposition.hpp"
+#include "../fiber/explicit_instantiation.hpp"
 #include "../common/not_implemented_error.hpp"
 
 namespace Bempp
@@ -150,8 +151,8 @@ applyBuiltInImpl(const TranspositionMode trans,
                  const ValueType alpha,
                  const ValueType beta) const
 {
-    if (beta == 0.)
-        y_inout.fill(0.);
+    if (beta == static_cast<ValueType>(0.))
+        y_inout.fill(static_cast<ValueType>(0.));
     else
         y_inout *= beta;
 
@@ -161,20 +162,6 @@ applyBuiltInImpl(const TranspositionMode trans,
                          1. /* "+ beta * y_inout" has already been done */ );
 }
 
-
-#ifdef COMPILE_FOR_FLOAT
-template class DiscreteLinearOperatorSuperposition<float>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class DiscreteLinearOperatorSuperposition<double>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class DiscreteLinearOperatorSuperposition<std::complex<float> >;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class DiscreteLinearOperatorSuperposition<std::complex<double> >;
-#endif
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteLinearOperatorSuperposition);
 
 } // namespace Bempp

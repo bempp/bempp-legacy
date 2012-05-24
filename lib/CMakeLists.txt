@@ -11,94 +11,103 @@ configure_file(
 configure_file(
         ${CMAKE_SOURCE_DIR}/lib/common/config_alugrid.hpp.in
         ${CMAKE_BINARY_DIR}/include/common/config_alugrid.hpp)
+configure_file(
+        ${CMAKE_SOURCE_DIR}/lib/common/config_data_types.hpp.in
+        ${CMAKE_BINARY_DIR}/include/common/config_data_types.hpp)
 include_directories(${CMAKE_BINARY_DIR}/include/common)
 
 # Find all source and header files
 file(GLOB_RECURSE LIB_SOURCES *.cpp)
 file(GLOB_RECURSE LIB_HEADERS *.hpp)
-file(GLOB_RECURSE DUNE_FOAMGRID_HEADERS ${CMAKE_SOURCE_DIR}/contrib/dune/dune-foamgrid/dune/foamgrid/*.hh)
-file(GLOB_RECURSE DUNE_GRID_HEADERS ${CMAKE_SOURCE_DIR}/contrib/dune/dune-grid/dune/grid/*.hh)
-file(GLOB_RECURSE DUNE_COMMON_HEADERS ${CMAKE_SOURCE_DIR}/contrib/dune/dune-common/dune/common/*.hh)
-find_file(ARMA_HEADER armadillo ${ARMADILLO_INCLUDE_DIRS})
-
-add_definitions(-DCOMPILE_FOR_DOUBLE)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
+file(GLOB COMMON_HEADERS ${CMAKE_BINARY_DIR}/include/common/*.hpp)
 
 # Headers are ignored by make, but their list is used by IDEs
 # like Qt Creator and Visual Studio to generate project file list.
 add_library(bempp SHARED 
 	${LIB_SOURCES} 
 	${LIB_HEADERS}
-	${DUNE_FOAMGRID_HEADERS}
-	${DUNE_GRID_HEADERS}
-	${DUNE_COMMON_HEADERS}
-	${ARMA_HEADER}
+	${DUNE_HEADERS}
 	)
 
-target_link_libraries (bempp
-	${BLAS_LIBRARIES}
-	${LIB_DUNE_COMMON}
-	${LIB_DUNE_GRID}
-	${OPENCL_LIBRARIES}
-	${ARMADILLO_LIBRARIES}
-	)
+# Add includes and target links
+
+# BLAS and LAPACK
+target_link_libraries(bempp ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+
+# Boost
+include_directories(${BOOST_INCLUDE_DIR})
 
 # TBB
-
-if (TBB_LIBRARY_DEBUG_FOUND)
-	target_link_libraries (bempp debug ${TBB_LIBRARY_DEBUG} optimized ${TBB_LIBRARY_RELEASE})
-else ()
-	target_link_libraries (bempp ${TBB_LIBRARY_RELEASE})
-endif ()
-
+include_directories(${TBB_INCLUDE_DIR})
+target_link_libraries (bempp debug ${TBB_LIBRARY_DEBUG} optimized ${TBB_LIBRARY})
 set_property(
    TARGET bempp
    PROPERTY COMPILE_DEFINITIONS_DEBUG TBB_USE_DEBUG=1
    )
 
+# AHMED
 if (WITH_AHMED)
-    target_link_libraries (bempp ${AHMED_LIBRARY} ${METIS_LIBRARY})
+    target_link_libraries (bempp ${AHMED_LIB} ${METIS_LIB})
     include_directories(${AHMED_INCLUDE_DIR})
 endif ()
 
-if (WITH_TRILINOS)
-    target_link_libraries (bempp
-        ${AMESOS_LIBRARY}
-        ${STRATIMIKOS_LIBRARY}
-        ${STRATIMIKOS_BELOS_LIBRARY}
-        ${BELOS_LIBRARY}
-        ${EPETRA_LIBRARY}
-        ${THYRA_CORE_LIBRARY}
-        ${TEUCHOS_LIBRARY}
-        ${RTOP_LIBRARY}
-        ${HDF5_LIBRARY})
-    include_directories(${TRILINOS_INCLUDE_DIR})
-endif ()
+# Dune
+include_directories(${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/include)
+target_link_libraries (bempp
+	${LIB_DUNE_COMMON}
+	${LIB_DUNE_GRID}
+	)
 
-if (WITH_ALUGRID)
-    target_link_libraries (bempp ${ALUGRID_LIBRARY})
-endif ()
+#Trilinos
+include_directories(${Trilinos_INCLUDE_DIRS} ${Trilinos_TPL_INCLUDE_DIRS})
+target_link_libraries (bempp amesos
+                             stratimikos
+                             stratimikosbelos
+                             belos
+                             epetra
+                             thyracore
+			     teuchos
+			     rtop
+)
 
-# Add a target to generate API documentation with Doxygen
-find_package(Doxygen)
-if (DOXYGEN_FOUND)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in 
-    ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
-  file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../doc)
-  add_custom_target(doc 
-    ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../doc
-    COMMENT "Generate API documentation with Doxygen" VERBATIM)
-endif(DOXYGEN_FOUND)
+# ARMADILLO
+include_directories(${ARMADILLO_INCLUDE_DIR})
 
 # Install library
 install(TARGETS bempp
-  RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib)
+  RUNTIME DESTINATION bempp/bin
+  LIBRARY DESTINATION bempp/lib
+  ARCHIVE DESTINATION bempp/lib)
 
-# Install header files
-install(FILES ${LIB_HEADERS}
-  DESTINATION include/bempp)
+# Install headers
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/lib/ DESTINATION bempp/include FILES_MATCHING PATTERN "*.hpp")
+install(FILES ${COMMON_HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/bempp/include/common)
+
+
+# Create correct rpath for installation
+SET(BEMPP_RPATH "\$ORIGIN/../contrib/dune/lib;\$ORIGIN/../contrib/trilinos/lib;\$ORIGIN/../contrib/boost/lib/boost-1.49.0")
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+   # Add Tbb for Mac
+   SET(BEMPP_RPATH "${BEMPP_RPATH};\$ORIGIN/../contrib/tbb/lib")
+endif()
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+   # Add Tbb for Linux
+   SET(BEMPP_RPATH "${BEMPP_RPATH};\$ORIGIN/../contrib/tbb/lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21")
+endif()
+if (WITH_AHMED)
+   get_filename_component(AHMED_PATH "${AHMED_LIB}" PATH)
+   get_filename_component(METIS_PATH "${METIS_LIB}" PATH)
+   # Check if it is not a system dir
+   LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${AHMED_PATH}" isSystemDir)
+   IF("${isSystemDir}" STREQUAL "-1")
+   		       SET(BEMPP_RPATH "${BEMPP_RPATH};${AHMED_PATH}")   		          		       
+   ENDIF("${isSystemDir}" STREQUAL "-1") 
+   LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${METIS_PATH}" isSystemDir)
+   IF("${isSystemDir}" STREQUAL "-1")
+   		       SET(BEMPP_RPATH "${BEMPP_RPATH};${METIS_PATH}")   		          		       
+   ENDIF("${isSystemDir}" STREQUAL "-1")    
+endif()
+
+SET_TARGET_PROPERTIES(bempp
+	PROPERTIES INSTALL_RPATH "${BEMPP_RPATH}")
+	

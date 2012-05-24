@@ -24,35 +24,37 @@
 
 #include "linear_operator.hpp"
 
-#include <vector>
+#include "../common/shared_ptr.hpp"
 #include <stdexcept>
+#include <vector>
 
 namespace Fiber
 {
 
-template <typename ValueType> class LocalAssemblerForOperators;
-template <typename ValueType> class RawGridGeometry;
+template <typename ResultType> class LocalAssemblerForOperators;
+template <typename CoordinateType> class RawGridGeometry;
 template <typename ValueType> class Basis;
-template <typename CoordinateType, typename IndexType> class OpenClHandler;
+class OpenClHandler;
 
 } // namespace Fiber
 
 namespace Bempp
 {
 
-template <typename ValueType>
-class ElementaryLinearOperator : public LinearOperator<ValueType>
+template <typename BasisFunctionType, typename ResultType>
+class ElementaryLinearOperator : public LinearOperator<BasisFunctionType, ResultType>
 {
+    typedef LinearOperator<BasisFunctionType, ResultType> Base;
 public:
-    typedef typename LinearOperator<ValueType>::LocalAssemblerFactory
-    LocalAssemblerFactory;
-    typedef Fiber::LocalAssemblerForOperators<ValueType> LocalAssembler;
+    typedef typename Base::CoordinateType CoordinateType;
+    typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
+    typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
 
-    ElementaryLinearOperator(const Space<ValueType>& testSpace,
-                             const Space<ValueType>& trialSpace) :
-        LinearOperator<ValueType>(testSpace, trialSpace) {
-        std::vector<ElementaryLinearOperator<ValueType> const*> v;
-        std::vector<ValueType> m;
+    ElementaryLinearOperator(const Space<BasisFunctionType>& testSpace,
+                             const Space<BasisFunctionType>& trialSpace) :
+        LinearOperator<BasisFunctionType, ResultType>(testSpace, trialSpace) {
+        std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*> v;
+        std::vector<ResultType> m;
         v.push_back(this);
         m.push_back(1.0);
         addLocalOperatorsAndMultipliers(v, m);
@@ -62,20 +64,28 @@ public:
        for this operator. */
     virtual std::auto_ptr<LocalAssembler> makeAssembler(
             const LocalAssemblerFactory& assemblerFactory,
-            const GeometryFactory& geometryFactory,
-            const Fiber::RawGridGeometry<ValueType>& rawGeometry,
-            const std::vector<const Fiber::Basis<ValueType>*>& testBases,
-            const std::vector<const Fiber::Basis<ValueType>*>& trialBases,
-            const Fiber::OpenClHandler<ValueType, int>& openClHandler,
+            const shared_ptr<const GeometryFactory>& testGeometryFactory,
+            const shared_ptr<const GeometryFactory>& trialGeometryFactory,
+            const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
+            const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
+            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
+            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
+            const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const = 0;
+
+    std::auto_ptr<LocalAssembler> makeAssemblerFromScratch(
+            const LocalAssemblerFactory& assemblerFactory,
+            const AssemblyOptions& options) const;
 
     /** \brief Assemble the operator's weak form using a specified local assembler.
 
       This function is not intended to be called directly by the user. */
-    virtual std::auto_ptr<DiscreteLinearOperator<ValueType> >
+    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakFormInternal(
             LocalAssembler& assembler,
             const AssemblyOptions& options) const = 0;
+
 };
 
 } // namespace Bempp

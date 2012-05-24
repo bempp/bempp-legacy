@@ -29,61 +29,63 @@
 namespace Fiber
 {
 
+struct QuadratureOptions;
 template <typename ValueType> class Basis;
-template <typename ValueType> class Expression;
+template <typename CoordinateType> class Expression;
 template <typename ValueType> class Kernel;
-template <typename ValueType> class RawGridGeometry;
-template <typename CoordinateType, typename IndexType> class OpenClHandler;
+template <typename CoordinateType> class RawGridGeometry;
+class OpenClHandler;
 
-template <typename ValueType, typename GeometryFactory>
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
 class StandardEvaluatorForIntegralOperators :
-        public EvaluatorForIntegralOperators<ValueType>
+        public EvaluatorForIntegralOperators<ResultType>
 {
 public:
-    typedef typename EvaluatorForIntegralOperators<ValueType>::Region Region;
+    typedef EvaluatorForIntegralOperators<ResultType> Base;
+    typedef typename Base::CoordinateType CoordinateType;
+    typedef typename Base::Region Region;
 
     StandardEvaluatorForIntegralOperators(
-            const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
-            const std::vector<const Basis<ValueType>*>& trialBases,
-            const Kernel<ValueType>& kernel,
-            const Expression<ValueType>& trialExpression,
-            const std::vector<std::vector<ValueType> >& argumentLocalCoefficients,
-            ValueType multiplier,
-            const OpenClHandler<ValueType, int>& openClHandler,
+            const shared_ptr<const GeometryFactory >& geometryFactory,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const Kernel<KernelType> >& kernel,
+            const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+            const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
+            const shared_ptr<const OpenClHandler>& openClHandler,
             const QuadratureOptions& quadratureOptions);
 
     virtual void evaluate(Region region,
-                          const arma::Mat<ValueType>& points,
-                          arma::Mat<ValueType>& result) const;
+                          const arma::Mat<CoordinateType>& points,
+                          arma::Mat<ResultType>& result) const;
 
 private:
     void cacheTrialData();
     void calcTrialData(
             Region region,
             int kernelTrialGeomDeps,
-            Fiber::GeometricalData<ValueType>& trialGeomData,
-            arma::Mat<ValueType>& weightedTrialExprValues) const;
+            Fiber::GeometricalData<CoordinateType>& trialGeomData,
+            arma::Mat<ResultType>& weightedTrialExprValues) const;
 
-    int quadOrder(const Fiber::Basis<ValueType>& basis, Region region) const;
-    int farFieldQuadOrder(const Fiber::Basis<ValueType>& basis) const;
-    int nearFieldQuadOrder(const Fiber::Basis<ValueType>& basis) const;
+    int quadOrder(const Fiber::Basis<BasisFunctionType>& basis, Region region) const;
+    int farFieldQuadOrder(const Fiber::Basis<BasisFunctionType>& basis) const;
+    int nearFieldQuadOrder(const Fiber::Basis<BasisFunctionType>& basis) const;
 
 private:
-    const GeometryFactory& m_geometryFactory;
-    const RawGridGeometry<ValueType>& m_rawGeometry;
-    const std::vector<const Basis<ValueType>*>& m_trialBases;
-    const Kernel<ValueType>& m_kernel;
-    const Expression<ValueType>& m_trialExpression;
-    const std::vector<std::vector<ValueType> >& m_argumentLocalCoefficients;
-    ValueType m_multiplier;
-    const Fiber::OpenClHandler<ValueType,int>& m_openClHandler;
-    const QuadratureOptions& m_quadratureOptions;
+    const shared_ptr<const GeometryFactory> m_geometryFactory;
+    const shared_ptr<const RawGridGeometry<CoordinateType> > m_rawGeometry;
+    const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_trialBases;
+    const shared_ptr<const Kernel<KernelType> > m_kernel;
+    const shared_ptr<const Expression<CoordinateType> > m_trialExpression;
+    const shared_ptr<const std::vector<std::vector<ResultType> > > m_argumentLocalCoefficients;
+    const shared_ptr<const Fiber::OpenClHandler> m_openClHandler;
+    const QuadratureOptions m_quadratureOptions;
 
-    Fiber::GeometricalData<ValueType> m_nearFieldTrialGeomData;
-    Fiber::GeometricalData<ValueType> m_farFieldTrialGeomData;
-    arma::Mat<ValueType> m_nearFieldWeightedTrialExprValues;
-    arma::Mat<ValueType> m_farFieldWeightedTrialExprValues;
+    Fiber::GeometricalData<CoordinateType> m_nearFieldTrialGeomData;
+    Fiber::GeometricalData<CoordinateType> m_farFieldTrialGeomData;
+    arma::Mat<ResultType> m_nearFieldWeightedTrialExprValues;
+    arma::Mat<ResultType> m_farFieldWeightedTrialExprValues;
 };
 
 } // namespace Bempp

@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2012 by the Fiber Authors
+// Copyright (C) 2011-2012 by the Bem++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@
 #define fiber_surface_normal_dependent_function_hpp
 
 #include "function.hpp"
+#include "geometrical_data.hpp"
 
 namespace Fiber
 {
@@ -37,6 +38,7 @@ namespace Fiber
   public:
       // Type of the function's values (e.g. float or std::complex<double>)
       typedef <implementiation-defined> ValueType;
+      typedef ScalarTraits<ValueType>::RealType CoordinateType;
 
       // Copy constructor
       Functor(const Functor& other);
@@ -51,8 +53,8 @@ namespace Fiber
       // surface given in the argument "normal", and store result in the array
       // "result".
       // All arrays will be preinitialised to correct dimensions.
-      void evaluate(const arma::Col<ValueType>& point,
-                    const arma::Col<ValueType>& normal,
+      void evaluate(const arma::Col<CoordinateType>& point,
+                    const arma::Col<CoordinateType>& normal,
                     arma::Col<ValueType>& result) const;
   };
   */
@@ -60,7 +62,9 @@ template <typename Functor>
 class SurfaceNormalDependentFunction : public Function<typename Functor::ValueType>
 {
 public:
+    typedef Function<typename Functor::ValueType> Base;
     typedef typename Functor::ValueType ValueType;
+    typedef typename Base::CoordinateType CoordinateType;
 
     SurfaceNormalDependentFunction(const Functor& functor) :
         m_functor(functor) {
@@ -78,10 +82,10 @@ public:
         geomDeps |= GLOBALS | NORMALS;
     }
 
-    virtual void evaluate(const GeometricalData<ValueType>& geomData,
+    virtual void evaluate(const GeometricalData<CoordinateType>& geomData,
                           arma::Mat<ValueType>& result) const {
-        const arma::Mat<ValueType>& points  = geomData.globals;
-        const arma::Mat<ValueType>& normals = geomData.normals;
+        const arma::Mat<CoordinateType>& points  = geomData.globals;
+        const arma::Mat<CoordinateType>& normals = geomData.normals;
 
 #ifndef NDEBUG
         if (points.n_rows != worldDimension())
@@ -92,9 +96,11 @@ public:
 
         const int pointCount = points.n_cols;
         result.set_size(codomainDimension(), pointCount);
-        for (int i = 0; i < pointCount; ++i)
+        for (int i = 0; i < pointCount; ++i) {
+            arma::Col<ValueType> activeResultColumn = result.unsafe_col(i);
             m_functor.evaluate(points.unsafe_col(i), normals.unsafe_col(i),
-                               result.unsafe_col(i));
+                               activeResultColumn);
+        }
     }
 
 private:

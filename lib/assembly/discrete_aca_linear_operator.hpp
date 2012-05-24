@@ -26,6 +26,7 @@
 #include "discrete_linear_operator.hpp"
 #include "ahmed_aux_fwd.hpp"
 #include "index_permutation.hpp"
+#include "../fiber/scalar_traits.hpp"
 #include "../common/not_implemented_error.hpp"
 
 #include <iostream>
@@ -47,15 +48,16 @@ class DiscreteAcaLinearOperator :
     friend class AcaApproximateLuInverse<ValueType>;
 
 public:
-    typedef bemblcluster<AhmedDofWrapper<ValueType>, AhmedDofWrapper<ValueType> >
-    AhmedBemblcluster;
+    typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
+    typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
+    typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
+    typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
 
-    
     DiscreteAcaLinearOperator(
             unsigned int rowCount, unsigned int columnCount,
             int maximumRank,
-            std::auto_ptr<AhmedBemblcluster> blockCluster,
-            boost::shared_array<mblock<ValueType>*> blocks,
+            std::auto_ptr<AhmedBemBlcluster> blockCluster,
+            boost::shared_array<AhmedMblock*> blocks,
             const IndexPermutation& domainPermutation,
             const IndexPermutation& rangePermutation);
 
@@ -71,10 +73,13 @@ public:
                           const ValueType alpha,
                           arma::Mat<ValueType>& block) const;
 
+    void makeAllMblocksDense(); // for debugging
+
+    static const DiscreteAcaLinearOperator<ValueType>& castToAca(
+            const DiscreteLinearOperator<ValueType>& discreteOperator);
+
 #ifdef WITH_TRILINOS
 public:
-    static const DiscreteAcaLinearOperator<ValueType>& castToAca
-        (DiscreteLinearOperator<ValueType>& discreteOperator);
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > range() const;
 
@@ -105,8 +110,8 @@ private:
 #endif
     int m_maximumRank;
 
-    std::auto_ptr<AhmedBemblcluster> m_blockCluster;
-    boost::shared_array<mblock<ValueType>*> m_blocks;
+    std::auto_ptr<AhmedBemBlcluster> m_blockCluster;
+    boost::shared_array<AhmedMblock*> m_blocks;
 
     IndexPermutation m_domainPermutation;
     IndexPermutation m_rangePermutation;

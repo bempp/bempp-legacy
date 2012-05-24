@@ -19,6 +19,7 @@
 // THE SOFTWARE.
 
 #include "vector.hpp"
+#include "../fiber/explicit_instantiation.hpp"
 
 #include <iostream>
 
@@ -79,21 +80,7 @@ arma::Col<ValueType> Vector<ValueType>::asArmadilloVector() const
 #endif
 }
 
-
-#ifdef COMPILE_FOR_FLOAT
-template class Vector<float>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class Vector<double>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class Vector<std::complex<float> >;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class Vector<std::complex<double> >;
-#endif
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(Vector);
 
 } // namespace Bempp
 

@@ -26,28 +26,20 @@
 namespace Bempp
 {
 
-EvaluationOptions::EvaluationOptions() :
-    m_parallelism(TBB), m_maxThreadCount(AUTO)
+EvaluationOptions::EvaluationOptions()
 {
-    m_openClOptions.useOpenCl = false;
 }
 
 void EvaluationOptions::switchToOpenCl(const OpenClOptions& openClOptions)
 {
-    m_parallelism = OPEN_CL;
-    m_openClOptions = openClOptions;
-    m_openClOptions.useOpenCl = true;
+    m_parallelisationOptions.switchToOpenCl(openClOptions);
 }
 
 void EvaluationOptions::switchToTbb(int maxThreadCount)
 {
-    m_parallelism = TBB;
-    m_openClOptions.useOpenCl = false;
-    if (maxThreadCount <= 0 && maxThreadCount != AUTO)
-        throw std::runtime_error("EvaluationOptions::switchToTbb(): "
-                                 "maxThreadCount must be positive or equal to AUTO");
-    m_maxThreadCount = maxThreadCount;
+    m_parallelisationOptions.switchToTbb(maxThreadCount);
 }
+
 
 } // namespace Bempp
 

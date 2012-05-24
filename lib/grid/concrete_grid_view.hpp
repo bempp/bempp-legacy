@@ -156,8 +156,8 @@ private:
                                     m_dune_gv.template end<codim>()));
     }
 
-    template <typename ValueType>
-    void getRawElementDataImpl(arma::Mat<ValueType>& vertices,
+    template <typename CoordinateType>
+    void getRawElementDataImpl(arma::Mat<CoordinateType>& vertices,
                                arma::Mat<int>& elementCorners,
                                arma::Mat<char>& auxData) const;
 };

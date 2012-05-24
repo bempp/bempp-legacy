@@ -29,14 +29,13 @@
 #include "assembly/grid_function.hpp"
 #include "assembly/interpolated_function.hpp"
 #include "assembly/linear_operator_superposition.hpp"
-#include "assembly/ordinary_function.hpp"
 #include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 
 #include "assembly/identity_operator.hpp"
-#include "assembly/single_layer_potential_3d.hpp"
-#include "assembly/double_layer_potential_3d.hpp"
-#include "assembly/adjoint_double_layer_potential_3d.hpp"
-#include "assembly/hypersingular_operator_3d.hpp"
+#include "assembly/laplace_3d_single_layer_potential.hpp"
+#include "assembly/laplace_3d_double_layer_potential.hpp"
+
+#include "common/scalar_traits.hpp"
 
 #include "grid/geometry.hpp"
 #include "grid/geometry_factory.hpp"
@@ -56,13 +55,16 @@
 
 using namespace Bempp;
 
-typedef float FloatType;
+typedef double BFT; // basis function type
+typedef double RT; // result type (type used to represent discrete operators)
 
 class MyFunctor
 {
 public:
     // Type of the function's values (e.g. float or std::complex<double>)
-    typedef FloatType ValueType;
+    typedef RT ValueType;
+    // Type of coordinates (must be the "real part" of ValueType)
+    typedef ScalarTraits<RT>::RealType CoordinateType;
 
     // Number of components of the function's argument
     static const int argumentDimension = 3;
@@ -72,8 +74,8 @@ public:
 
     // Evaluate the function at the point "point" and store result in
     // the array "result"
-    inline void evaluate(const arma::Col<ValueType>& point,
-                  arma::Col<ValueType>& result) const {
+    inline void evaluate(const arma::Col<CoordinateType>& point,
+                         arma::Col<ValueType>& result) const {
         result(0) = 1.;
     }
 };
@@ -92,8 +94,8 @@ int main(int argc, char* argv[])
 
     // Initialize the spaces
 
-    PiecewiseLinearContinuousScalarSpace<FloatType> HplusHalfSpace(*grid);
-    PiecewiseConstantScalarSpace<FloatType> HminusHalfSpace(*grid);
+    PiecewiseLinearContinuousScalarSpace<BFT> HplusHalfSpace(*grid);
+    PiecewiseConstantScalarSpace<BFT> HminusHalfSpace(*grid);
 
     HplusHalfSpace.assignDofs();
     HminusHalfSpace.assignDofs();
@@ -109,17 +111,17 @@ int main(int argc, char* argv[])
 
     // Define the standard integration factory
 
-    StandardLocalAssemblerFactoryForOperatorsOnSurfaces<FloatType> factory;
+    StandardLocalAssemblerFactoryForOperatorsOnSurfaces<BFT, RT> factory;
 
     // We need the single layer, double layer, and the identity operator
 
-    SingleLayerPotential3D<FloatType> rhsOp(HplusHalfSpace, HminusHalfSpace);
-    DoubleLayerPotential3D<FloatType> dlp(HplusHalfSpace, HplusHalfSpace);
-    IdentityOperator<FloatType> id(HplusHalfSpace, HplusHalfSpace);
+    Laplace3dSingleLayerPotential<BFT, RT> rhsOp(HplusHalfSpace, HminusHalfSpace);
+    Laplace3dDoubleLayerPotential<BFT, RT> dlp(HplusHalfSpace, HplusHalfSpace);
+    IdentityOperator<BFT, RT> id(HplusHalfSpace, HplusHalfSpace);
 
     // Form the left-hand side sum
 
-    LinearOperatorSuperposition<FloatType> lhsOp = -0.5 * id + dlp;
+    LinearOperatorSuperposition<BFT, RT> lhsOp = -0.5 * id + dlp;
 
     // Assemble the Operators
 
@@ -128,35 +130,32 @@ int main(int argc, char* argv[])
 
     // We also want a grid function
 
-    MyFunctor functor;
-    OrdinaryFunction<MyFunctor> function(functor);
-
-    GridFunction<FloatType> u(HminusHalfSpace, function, factory, assemblyOptions);
+    GridFunction<BFT, RT> u = gridFunctionFromSurfaceNormalIndependentFunctor(
+                HminusHalfSpace, MyFunctor(), factory, assemblyOptions);
 
     // Assemble the rhs
 
     std::cout << "Assemble rhs" << std::endl;
 
-    GridFunction<FloatType> rhs = rhsOp * u;
+    GridFunction<BFT, RT> rhs = rhsOp * u;
 
-    // Initialize the iterative solver
+    // Initialize the solver
 
     std::cout << "Initialize solver" << std::endl;
 
 #ifdef WITH_TRILINOS
-    typedef DefaultIterativeSolver<FloatType> Solver;
-    Solver solver(lhsOp, rhs);
-    solver.initializeSolver(Solver::defaultGmresParameterList(1e-5));
+    DefaultIterativeSolver<BFT, RT> solver(lhsOp, rhs);
+    solver.initializeSolver(defaultGmresParameterList(1e-5));
     solver.solve();
     std::cout << solver.getSolverMessage() << std::endl;
 #else
-    DefaultDirectSolver<FloatType> solver(lhsOp, rhs);
+    DefaultDirectSolver<BFT, RT> solver(lhsOp, rhs);
     solver.solve();
 #endif
 
     // Extract the solution
 
-    GridFunction<FloatType> solFun = solver.getResult();
+    GridFunction<BFT, RT> solFun = solver.getResult();
 
     // Write out as VTK
 

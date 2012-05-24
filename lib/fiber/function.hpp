@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2012 by the Fiber Authors
+// Copyright (C) 2011-2012 by the Bem++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,18 +21,22 @@
 #ifndef fiber_function_hpp
 #define fiber_function_hpp
 
+#include "scalar_traits.hpp"
+
 #include <armadillo>
 
 namespace Fiber
 {
 
-template <typename ValueType> class GeometricalData;
+template <typename CoordinateType> class GeometricalData;
 
 /** \brief Function to be used as a source term. */
 template <typename ValueType>
 class Function
 {
 public:
+    typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+
     virtual ~Function() {}
 
     virtual int worldDimension() const = 0;
@@ -40,7 +44,7 @@ public:
 
     virtual void addGeometricalDependencies(int& geomDeps) const = 0;
 
-    virtual void evaluate(const GeometricalData<ValueType>& geomData,
+    virtual void evaluate(const GeometricalData<CoordinateType>& geomData,
                           arma::Mat<ValueType>& result) const = 0;
 };
 

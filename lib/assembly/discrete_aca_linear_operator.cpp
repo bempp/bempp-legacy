@@ -25,6 +25,7 @@
 #include "discrete_aca_linear_operator.hpp"
 #include "ahmed_aux.hpp"
 #include "../common/not_implemented_error.hpp"
+#include "../fiber/explicit_instantiation.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -42,8 +43,8 @@ DiscreteAcaLinearOperator<ValueType>::
 DiscreteAcaLinearOperator(
         unsigned int rowCount, unsigned int columnCount,
         int maximumRank,
-        std::auto_ptr<AhmedBemblcluster> blockCluster,
-        boost::shared_array<mblock<ValueType>*> blocks,
+        std::auto_ptr<AhmedBemBlcluster> blockCluster,
+        boost::shared_array<AhmedMblock*> blocks,
         const IndexPermutation& domainPermutation,
         const IndexPermutation& rangePermutation) :
 #ifdef WITH_TRILINOS
@@ -86,8 +87,8 @@ asMatrix() const
             unit(col - 1) = 0.;
         unit(col) = 1.;
         multaHvec(1., m_blockCluster.get(), m_blocks.get(),
-                  unit.memptr(),
-                  permutedOutput.colptr(col));
+                  ahmedCast(unit.memptr()),
+                  ahmedCast(permutedOutput.colptr(col)));
     }
 
     arma::Mat<ValueType> output(nRows, nCols );
@@ -136,6 +137,14 @@ addBlock(const std::vector<int>& rows,
                              "addBlock(): not implemented yet");
 }
 
+template <typename ValueType>
+const DiscreteAcaLinearOperator<ValueType>&
+DiscreteAcaLinearOperator<ValueType>::castToAca(
+        const DiscreteLinearOperator<ValueType>& discreteOperator)
+{
+    return dynamic_cast<const DiscreteAcaLinearOperator<ValueType>&>(discreteOperator);
+}
+
 #ifdef WITH_TRILINOS
 template <typename ValueType>
 Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> >
@@ -144,14 +153,6 @@ domain() const
 {
     return m_domainSpace;
 }
-
-template <typename ValueType>
-const DiscreteAcaLinearOperator<ValueType>& 
-DiscreteAcaLinearOperator<ValueType>::castToAca
-    (DiscreteLinearOperator<ValueType>& discreteOperator){
-        return Teuchos::dyn_cast<DiscreteAcaLinearOperator<ValueType> >(discreteOperator);
-    }
-
 
 template <typename ValueType>
 Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> >
@@ -206,35 +207,8 @@ applyImpl(const Thyra::EOpTransp M_trans,
                     false /* copy_aux_mem */);
         arma::Col<ValueType> yCol(yArray.get(), yArray.size(), false);
 
-        /*
-        std::ofstream xfilein; xfilein.open("xin.txt",std::ios::app);
-        std::ofstream yfilein; yfilein.open("yin.txt",std::ios::app);
-        std::ofstream yfileout; yfileout.open("yout.txt",std::ios::app);
-        std::ofstream alphafile; alphafile.open("alpha.txt",std::ios::app);
-        std::ofstream betafile; betafile.open("beta.txt",std::ios::app);
-
-        xfilein << xCol << std::endl;
-        xfilein << std::endl;
-
-        yfilein << yCol << std::endl;
-        yfilein << std::endl;
-
-        alphafile << alpha; alphafile << std::endl;
-        betafile << beta; betafile << std::endl;
-*/
         applyBuiltInImpl(static_cast<TranspositionMode>(M_trans),
                          xCol, yCol, alpha, beta);
-
-/*
-        yfileout << yCol << std::endl;
-        yfileout << std::endl;
-
-        xfilein.close();
-        yfilein.close();
-        yfileout.close();
-        alphafile.close();
-        betafile.close();
-*/
     }
 }
 #endif // WITH_TRILINOS
@@ -257,8 +231,8 @@ applyBuiltInImpl(const TranspositionMode trans,
                 "DiscreteAcaLinearOperator::applyBuiltInImpl(): "
                 "incorrect vector length");
 
-    if (beta == 0.)
-        y_inout.fill(0.);
+    if (beta == static_cast<ValueType>(0.))
+        y_inout.fill(static_cast<ValueType>(0.));
     else
         y_inout *= beta;
 
@@ -269,26 +243,23 @@ applyBuiltInImpl(const TranspositionMode trans,
     // functions, which don't respect const-correctness
     arma::Col<ValueType> permutedResult;
     m_rangePermutation.permuteVector(y_inout, permutedResult);
-    multaHvec(alpha, m_blockCluster.get(), m_blocks.get(),
-              const_cast<ValueType*>(permutedArgument.memptr()),
-              permutedResult.memptr());
+    multaHvec(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
+              ahmedCast(permutedArgument.memptr()),
+              ahmedCast(permutedResult.memptr()));
     m_rangePermutation.unpermuteVector(permutedResult, y_inout);
 }
 
-#ifdef COMPILE_FOR_FLOAT
-template class DiscreteAcaLinearOperator<float>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class DiscreteAcaLinearOperator<double>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class DiscreteAcaLinearOperator<std::complex<float> >;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class DiscreteAcaLinearOperator<std::complex<double> >;
-#endif
+template <typename ValueType>
+void
+DiscreteAcaLinearOperator<ValueType>::
+makeAllMblocksDense()
+{
+    for (int i = 0; i < m_blockCluster->nleaves(); ++i)
+        if (m_blocks[i]->islwr())
+            m_blocks[i]->conv_lwr_to_dns();
+}
+
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteAcaLinearOperator);
 
 } // namespace Bempp
 

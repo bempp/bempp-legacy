@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2012 by the Fiber Authors
+// Copyright (C) 2011-2012 by the Bem++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,14 +30,14 @@ namespace Fiber {
 Bound checking can optionally be activated by defining the symbol
 FIBER_CHECK_ARRAY_BOUNDS. */
 template <typename T>
-class Array4D
+class Array4d
 {
 public:
-    Array4D();
-    Array4D(int extent0, int extent1, int extent2, int extent3);
-    Array4D(int extent0, int extent1, int extent2, int extent3, T* data);
+    Array4d();
+    Array4d(int extent0, int extent1, int extent2, int extent3);
+    Array4d(int extent0, int extent1, int extent2, int extent3, T* data);
 
-    ~Array4D();
+    ~Array4d();
 
     T& operator()(int index0, int index1, int index2, int index3);
     const T& operator()(int index0, int index1, int index2, int index3) const;
@@ -62,8 +62,8 @@ private:
 
 private:
     // Disable copy constructor and assignment operator
-    Array4D(const Array4D& rhs);
-    Array4D& operator=(const Array4D& rhs);
+    Array4d(const Array4d& rhs);
+    Array4d& operator=(const Array4d& rhs);
 
 private:
     int m_extents[4];

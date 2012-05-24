@@ -41,7 +41,7 @@ struct BasisData
     arma::Cube<ValueType> values;
     // derivatives(i,j,k,l) = (d_j (f_k)_i)(x_l) ->
     // derivative in direction j of ith component of kth basis function at lth point
-    Array4D<ValueType> derivatives;
+    Array4d<ValueType> derivatives;
 };
 
 } // namespace Fiber

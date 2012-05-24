@@ -28,23 +28,24 @@
 namespace Fiber
 {
 
-template <typename ValueType> class LocalAssemblerForOperators;
+template <typename ResultType> class LocalAssemblerForOperators;
 
 } // namespace Fiber
 
 namespace Bempp
 {
 
-template <typename ValueType>
-class IdentityOperator : public ElementaryLinearOperator<ValueType>
+template <typename BasisFunctionType, typename ResultType>
+class IdentityOperator : public ElementaryLinearOperator<BasisFunctionType, ResultType>
 {
+    typedef ElementaryLinearOperator<BasisFunctionType, ResultType> Base;
 public:
-    typedef typename ElementaryLinearOperator<ValueType>::LocalAssemblerFactory
-    LocalAssemblerFactory;
-    typedef typename ElementaryLinearOperator<ValueType>::LocalAssembler LocalAssembler;
+    typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
+    typedef typename Base::LocalAssembler LocalAssembler;
+    typedef typename Base::CoordinateType CoordinateType;
 
-    IdentityOperator(const Space<ValueType>& testSpace,
-                     const Space<ValueType>& trialSpace);
+    IdentityOperator(const Space<BasisFunctionType>& testSpace,
+                     const Space<BasisFunctionType>& trialSpace);
 
     virtual int trialComponentCount() const { return 1; }
 
@@ -54,36 +55,39 @@ public:
 
     virtual std::auto_ptr<LocalAssembler> makeAssembler(
             const LocalAssemblerFactory& assemblerFactory,
-            const GeometryFactory& geometryFactory,
-            const Fiber::RawGridGeometry<ValueType>& rawGeometry,
-            const std::vector<const Fiber::Basis<ValueType>*>& testBases,
-            const std::vector<const Fiber::Basis<ValueType>*>& trialBases,
-            const Fiber::OpenClHandler<ValueType, int>& openClHandler,
+            const shared_ptr<const GeometryFactory>& testGeometryFactory,
+            const shared_ptr<const GeometryFactory>& trialGeometryFactory,
+            const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
+            const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
+            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
+            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
+            const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const;
 
-    virtual std::auto_ptr<DiscreteLinearOperator<ValueType> >
+    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakForm(
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const;
 
-    virtual std::auto_ptr<DiscreteLinearOperator<ValueType> >
+    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakFormInternal(
             LocalAssembler& assembler,
             const AssemblyOptions& options) const;
 
 private:
-    std::auto_ptr<DiscreteLinearOperator<ValueType> >
+    std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakFormInDenseMode(
             LocalAssembler& assembler,
             const AssemblyOptions& options) const;
 
-    std::auto_ptr<DiscreteLinearOperator<ValueType> >
+    std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakFormInSparseMode(
             LocalAssembler& assembler,
             const AssemblyOptions& options) const;
 
 private:
-    Fiber::ScalarFunctionValue<ValueType> m_expression;
+    Fiber::ScalarFunctionValue<CoordinateType> m_expression;
 };
 
 } // namespace Bempp

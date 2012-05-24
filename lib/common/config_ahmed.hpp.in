@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef config_ahmed_hpp
-#define config_ahmed_hpp
+#ifndef bempp_config_ahmed_hpp
+#define bempp_config_ahmed_hpp
 
 #cmakedefine WITH_AHMED
 

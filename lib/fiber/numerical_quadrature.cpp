@@ -20,6 +20,8 @@
 
 #include "numerical_quadrature.hpp"
 
+#include "config_data_types.hpp"
+
 // Hyena code
 #include "quadrature/galerkinduffy.hpp"
 #include "quadrature/quadrature.hpp"
@@ -330,7 +332,7 @@ void fillDoubleSingularQuadraturePointsAndWeights(
                                     "meshes are not implemented yet.");
 }
 
-#ifdef COMPILE_FOR_FLOAT
+#ifdef ENABLE_SINGLE_PRECISION
 template
 void fillSingleQuadraturePointsAndWeights<float>(
         int elementCornerCount,
@@ -344,7 +346,7 @@ void fillDoubleSingularQuadraturePointsAndWeights<float>(
         arma::Mat<float>& trialPoints,
         std::vector<float>& weights);
 #endif
-#ifdef COMPILE_FOR_DOUBLE
+#ifdef ENABLE_DOUBLE_PRECISION
 template
 void fillSingleQuadraturePointsAndWeights<double>(
         int elementCornerCount,
@@ -357,36 +359,6 @@ void fillDoubleSingularQuadraturePointsAndWeights<double>(
         arma::Mat<double>& testPoints,
         arma::Mat<double>& trialPoints,
         std::vector<double>& weights);
-#endif
-// TODO: remove these unnecessary variants
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template
-void fillSingleQuadraturePointsAndWeights<std::complex<float> >(
-        int elementCornerCount, int quadratureOrder,
-        arma::Mat<std::complex<float> >& points,
-        std::vector<std::complex<float> >& weights);
-template
-void fillDoubleSingularQuadraturePointsAndWeights<float>(
-        const DoubleQuadratureDescriptor& desc,
-        arma::Mat<std::complex<float> >& testPoints,
-        arma::Mat<std::complex<float> >& trialPoints,
-        std::vector<std::complex<float> >& weights);
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template
-void fillSingleQuadraturePointsAndWeights<std::complex<double> >(
-        int elementCornerCount,
-        int quadratureOrder,
-        arma::Mat<std::complex<double> >& points,
-        std::vector<std::complex<double> >& weights);
-template
-void fillDoubleSingularQuadraturePointsAndWeights<float>(
-        const DoubleQuadratureDescriptor& desc,
-        arma::Mat<std::complex<double> >& testPoints,
-        arma::Mat<std::complex<double> >& trialPoints,
-        std::vector<std::complex<double> >& weights);
 #endif
 
 } // namespace Fiber

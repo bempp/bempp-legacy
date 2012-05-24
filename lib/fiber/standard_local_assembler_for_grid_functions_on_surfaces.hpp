@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2012 by the Fiber Authors
+// Copyright (C) 2011-2012 by the Bem++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
 
 #include "local_assembler_for_grid_functions.hpp"
 #include "test_function_integrator.hpp"
+#include "scalar_traits.hpp"
 
 #include <tbb/concurrent_unordered_map.h>
 #include <map>
@@ -31,53 +32,57 @@
 namespace Fiber
 {
 
-template <typename ValueType, typename IndexType> class OpenClHandler;
+class OpenClHandler;
+template <typename CoordinateType> class Expression;
+template <typename ValueType> class Function;
+template <typename CoordinateType> class RawGridGeometry;
 
-template <typename ValueType, typename GeometryFactory>
+template <typename BasisFunctionType, typename UserFunctionType,
+          typename ResultType, typename GeometryFactory>
 class StandardLocalAssemblerForGridFunctionsOnSurfaces :
-        public LocalAssemblerForGridFunctions<ValueType>
+        public LocalAssemblerForGridFunctions<ResultType>
 {    
 public:
+    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+
     StandardLocalAssemblerForGridFunctionsOnSurfaces(
-            const GeometryFactory& geometryFactory,
-            const RawGridGeometry<ValueType>& rawGeometry,
-            const std::vector<const Basis<ValueType>*>& testBases,
-            const Expression<ValueType>& testExpression,
-            const Function<ValueType>& function,
-            const OpenClHandler<ValueType,int>& openClHandler);
+            const shared_ptr<const GeometryFactory>& geometryFactory,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
+            const shared_ptr<const Expression<CoordinateType> >& testExpression,
+            const shared_ptr<const Function<UserFunctionType> >& function,
+            const shared_ptr<const OpenClHandler>& openClHandler);
     virtual ~StandardLocalAssemblerForGridFunctionsOnSurfaces();
 
 public:
     virtual void evaluateLocalWeakForms(
             const std::vector<int>& elementIndices,
-            std::vector<arma::Col<ValueType> >& result);
+            std::vector<arma::Col<ResultType> >& result);
 
 private:
-    const TestFunctionIntegrator<ValueType>& selectIntegrator(
-            int elementIndex);
+    typedef TestFunctionIntegrator<BasisFunctionType, ResultType> Integrator;
+
+    const Integrator& selectIntegrator(int elementIndex);
 
     int orderIncrement(int elementIndex) const;
 
-    const TestFunctionIntegrator<ValueType>& getIntegrator(
-            const SingleQuadratureDescriptor& index);
+    const Integrator& getIntegrator(const SingleQuadratureDescriptor& index);
 
 private:
     typedef tbb::concurrent_unordered_map<SingleQuadratureDescriptor,
-    TestFunctionIntegrator<ValueType>*> IntegratorMap;
+    Integrator*> IntegratorMap;
 
 private:
-    const GeometryFactory& m_geometryFactory;
-    const RawGridGeometry<ValueType>& m_rawGeometry;
-    const std::vector<const Basis<ValueType>*>& m_testBases;
-    const Expression<ValueType>& m_testExpression;
-    const Function<ValueType>& m_function;
-    const OpenClHandler<ValueType,int>& m_openClHandler;
+    shared_ptr<const GeometryFactory> m_geometryFactory;
+    shared_ptr<const RawGridGeometry<CoordinateType> > m_rawGeometry;
+    shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_testBases;
+    shared_ptr<const Expression<CoordinateType> > m_testExpression;
+    shared_ptr<const Function<UserFunctionType> > m_function;
+    shared_ptr<const OpenClHandler> m_openClHandler;
 
     IntegratorMap m_testFunctionIntegrators;
 };
 
 } // namespace Fiber
-
-#include "standard_local_assembler_for_grid_functions_on_surfaces_imp.hpp"
 
 #endif

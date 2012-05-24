@@ -22,11 +22,15 @@
 #define bempp_linear_operator_hpp
 
 #include "assembly_options.hpp"
-#include "grid_function.hpp"
 #include "transposition_mode.hpp"
 
+#include "../common/shared_ptr.hpp"
+#include "../fiber/local_assembler_factory.hpp"
 #include "../space/space.hpp"
 
+#include <boost/mpl/set.hpp>
+#include <boost/mpl/has_key.hpp>
+#include <boost/utility/enable_if.hpp>
 #include <memory>
 #include <vector>
 
@@ -37,22 +41,15 @@ template <typename eT> class Mat;
 
 }
 
-namespace Fiber
-{
-
-template <typename ValueType, typename GeometryFactory> class LocalAssemblerFactory;
-
-} // namespace Fiber
-
 namespace Bempp
 {
 
 class Grid;
 class GeometryFactory;
 template <typename ValueType> class DiscreteLinearOperator;
-template <typename ValueType> class ElementaryLinearOperator;
-template <typename ValueType> class LinearOperatorSuperposition;
-
+template <typename BasisFunctionType, typename ResultType> class ElementaryLinearOperator;
+template <typename BasisFunctionType, typename ResultType> class LinearOperatorSuperposition;
+template <typename BasisFunctionType, typename ResultType> class GridFunction;
 
 /** \brief "Formal" linear operator.
 
@@ -74,17 +71,18 @@ template <typename ValueType> class LinearOperatorSuperposition;
                          one of: float, double, std::complex<float> and
                          std::complex<double>.
 */
-template <typename ValueType>
+template <typename BasisFunctionType, typename ResultType>
 class LinearOperator
 {
 public:
-    typedef Fiber::LocalAssemblerFactory<ValueType, GeometryFactory>
+    typedef Fiber::LocalAssemblerFactory<BasisFunctionType, ResultType, GeometryFactory>
     LocalAssemblerFactory;
+    typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
 
-    LinearOperator(const Space<ValueType>& testSpace,
-                   const Space<ValueType>& trialSpace);
+    LinearOperator(const Space<BasisFunctionType>& testSpace,
+                   const Space<BasisFunctionType>& trialSpace);
 
-    LinearOperator(const LinearOperator<ValueType>& other);
+    LinearOperator(const LinearOperator<BasisFunctionType, ResultType>& other);
 
     virtual ~LinearOperator();
 
@@ -98,12 +96,12 @@ public:
     /** \brief Set y_inout := alpha * A * x_in + beta * y_inout, where A is
       this operator. */
     void apply(const TranspositionMode trans,
-               const GridFunction<ValueType>& x_in,
-               GridFunction<ValueType>& y_inout,
-               ValueType alpha, ValueType beta) const;
+               const GridFunction<BasisFunctionType, ResultType>& x_in,
+               GridFunction<BasisFunctionType, ResultType>& y_inout,
+               ResultType alpha, ResultType beta) const;
 
     /** \brief Return reference to \p DiscreteLinearOperator. */
-    const DiscreteLinearOperator<ValueType>& assembledDiscreteLinearOperator() const;
+    const DiscreteLinearOperator<ResultType>& assembledDiscreteLinearOperator() const;
 
     // Ideas for better names for all methods here are very welcome!!!
     /** \brief Number of components of the functions from the trial space \f$X\f$.
@@ -133,68 +131,88 @@ public:
       \f$\phi_j\f$ is a function from the test space \f$Y\f$ and \f$\psi_k\f$ a
       function from \f$X\f$.
 
-      Note: trialSpace.grid() and testSpace.grid() must return a reference to
-      the same object.
-
       This is the overload intended to be called by the user, who needs to
       provide a local-assembler factory \p factory to be used to construct an
       appropriate local assembler. */
-    virtual std::auto_ptr<DiscreteLinearOperator<ValueType> >
+    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleWeakForm(
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options) const = 0;
 
-    const std::vector<ElementaryLinearOperator<ValueType> const* >&
+    const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const* >&
     localOperators() const;
 
-    const std::vector<ValueType >& multipliers() const;
+    const std::vector<ResultType>& multipliers() const;
 
-    const Space<ValueType>& testSpace() const;
-    const Space<ValueType>& trialSpace() const;
+    const Space<BasisFunctionType>& testSpace() const;
+    const Space<BasisFunctionType>& trialSpace() const;
 
 protected:
     void addLocalOperatorsAndMultipliers(
-            const std::vector<ElementaryLinearOperator<ValueType> const*>& localOperators,
-            const std::vector<ValueType>& multipliers);
+            const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>&
+            localOperators,
+            const std::vector<ResultType>& multipliers);
+
+    void collectDataForAssemblerConstruction(
+            const AssemblyOptions& options,
+            shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
+            shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
+            shared_ptr<GeometryFactory>& testGeometryFactory,
+            shared_ptr<GeometryFactory>& trialGeometryFactory,
+            shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
+            shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+            shared_ptr<Fiber::OpenClHandler>& openClHandler,
+            bool& cacheSingularIntegrals) const;
 
 private:
-    std::vector<ElementaryLinearOperator<ValueType> const* > m_localOperators;
-    std::vector<ValueType> m_multipliers;
+    const Space<BasisFunctionType>& m_testSpace;
+    const Space<BasisFunctionType>& m_trialSpace;
 
-    const Space<ValueType>& m_testSpace;
-    const Space<ValueType>& m_trialSpace;
+    std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>
+    m_localOperators;
+    std::vector<ResultType> m_multipliers;
 
-    std::auto_ptr<const DiscreteLinearOperator<ValueType> > m_discreteOperator;
+    std::auto_ptr<const DiscreteLinearOperator<ResultType> > m_discreteOperator;
 };
 
 // Operator overloading
 
-template <typename ValueType>
-LinearOperatorSuperposition<ValueType> operator+(
-        const LinearOperator<ValueType>& op1,
-        const LinearOperator<ValueType>& op2);
+template <typename BasisFunctionType, typename ResultType>
+LinearOperatorSuperposition<BasisFunctionType, ResultType> operator+(
+        const LinearOperator<BasisFunctionType, ResultType>& op1,
+        const LinearOperator<BasisFunctionType, ResultType>& op2);
 
-template <typename ValueType>
-LinearOperatorSuperposition<ValueType> operator-(
-        const LinearOperator<ValueType>& op1,
-        const LinearOperator<ValueType>& op2);
+template <typename BasisFunctionType, typename ResultType>
+LinearOperatorSuperposition<BasisFunctionType, ResultType> operator-(
+        const LinearOperator<BasisFunctionType, ResultType>& op1,
+        const LinearOperator<BasisFunctionType, ResultType>& op2);
 
-template <typename ValueType, typename ScalarType>
-LinearOperatorSuperposition<ValueType> operator*(
-        const LinearOperator<ValueType>& op, const ScalarType& scalar);
+// This type machinery is needed to disambiguate between this operator and
+// the one taking a LinearOperator and a GridFunction
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+typename boost::enable_if<
+    typename boost::mpl::has_key<
+        boost::mpl::set<float, double, std::complex<float>, std::complex<double> >,
+        ScalarType>,
+    LinearOperatorSuperposition<BasisFunctionType, ResultType> >::type
+operator*(
+        const LinearOperator<BasisFunctionType, ResultType>& op,
+        const ScalarType& scalar);
 
-template <typename ValueType, typename ScalarType>
-LinearOperatorSuperposition<ValueType> operator*(
-        const ScalarType& scalar, const LinearOperator<ValueType>& op);
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+LinearOperatorSuperposition<BasisFunctionType, ResultType> operator*(
+        const ScalarType& scalar,
+        const LinearOperator<BasisFunctionType, ResultType>& op);
 
-template <typename ValueType, typename ScalarType>
-LinearOperatorSuperposition<ValueType> operator/(
-        const LinearOperator<ValueType>& op, const ScalarType& scalar);
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+LinearOperatorSuperposition<BasisFunctionType, ResultType> operator/(
+        const LinearOperator<BasisFunctionType, ResultType>& op,
+        const ScalarType& scalar);
 
-template <typename ValueType>
-GridFunction<ValueType> operator*(
-        const LinearOperator<ValueType>& op,
-        const GridFunction<ValueType>& fun);
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType> operator*(
+        const LinearOperator<BasisFunctionType, ResultType>& op,
+        const GridFunction<BasisFunctionType, ResultType>& fun);
 
 } // namespace Bempp
 

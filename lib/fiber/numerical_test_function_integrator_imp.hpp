@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2012 by the Fiber Authors
+// Copyright (C) 2011-2012 by the Bem++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@
 
 #include "basis.hpp"
 #include "basis_data.hpp"
+#include "conjugate.hpp"
 #include "expression.hpp"
 #include "function.hpp"
 #include "geometrical_data.hpp"
@@ -35,16 +36,18 @@
 namespace Fiber
 {
 
-template <typename ValueType, typename GeometryFactory>
-NumericalTestFunctionIntegrator<ValueType, GeometryFactory>::
+template <typename BasisFunctionType, typename UserFunctionType,
+          typename ResultType, typename GeometryFactory>
+NumericalTestFunctionIntegrator<
+BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
 NumericalTestFunctionIntegrator(
-        const arma::Mat<ValueType>& localQuadPoints,
-        const std::vector<ValueType> quadWeights,
+        const arma::Mat<CoordinateType>& localQuadPoints,
+        const std::vector<CoordinateType> quadWeights,
         const GeometryFactory& geometryFactory,
-        const RawGridGeometry<ValueType>& rawGeometry,
-        const Expression<ValueType>& testExpression,
-        const Function<ValueType>& function,
-        const OpenClHandler<ValueType,int>& openClHandler) :
+        const RawGridGeometry<CoordinateType>& rawGeometry,
+        const Expression<CoordinateType>& testExpression,
+        const Function<UserFunctionType>& function,
+        const OpenClHandler& openClHandler) :
     m_localQuadPoints(localQuadPoints),
     m_quadWeights(quadWeights),
     m_geometryFactory(geometryFactory),
@@ -59,11 +62,14 @@ NumericalTestFunctionIntegrator(
                                     "numbers of points and weights do not match");
 }
 
-template <typename ValueType, typename GeometryFactory>
-void NumericalTestFunctionIntegrator<ValueType, GeometryFactory>::integrate(
+template <typename BasisFunctionType, typename UserFunctionType,
+          typename ResultType, typename GeometryFactory>
+void NumericalTestFunctionIntegrator<
+BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
+integrate(
         const std::vector<int>& elementIndices,
-        const Basis<ValueType>& testBasis,
-        arma::Mat<ValueType>& result) const
+        const Basis<BasisFunctionType>& testBasis,
+        arma::Mat<ResultType>& result) const
 {
     const int pointCount = m_localQuadPoints.n_cols;
     const int elementCount = elementIndices.size();
@@ -82,8 +88,8 @@ void NumericalTestFunctionIntegrator<ValueType, GeometryFactory>::integrate(
                                  "test functions and the \"arbitrary\" function "
                                  "must have the same number of components");
 
-    BasisData<ValueType> testBasisData;
-    GeometricalData<ValueType> geomData;
+    BasisData<BasisFunctionType> testBasisData;
+    GeometricalData<CoordinateType> geomData;
 
     int testBasisDeps = 0;
     int geomDeps = INTEGRATION_ELEMENTS;
@@ -94,8 +100,8 @@ void NumericalTestFunctionIntegrator<ValueType, GeometryFactory>::integrate(
     typedef typename GeometryFactory::Geometry Geometry;
     std::auto_ptr<Geometry> geometry(m_geometryFactory.make());
 
-    arma::Cube<ValueType> testValues;
-    arma::Mat<ValueType> functionValues;
+    arma::Cube<BasisFunctionType> testValues;
+    arma::Mat<UserFunctionType> functionValues;
 
     result.set_size(testDofCount, elementCount);
 
@@ -111,12 +117,12 @@ void NumericalTestFunctionIntegrator<ValueType, GeometryFactory>::integrate(
 
         for (int testDof = 0; testDof < testDofCount; ++testDof)
         {
-            ValueType sum = 0.;
+            ResultType sum = 0.;
             for (int point = 0; point < pointCount; ++point)
                 for (int dim = 0; dim < componentCount; ++dim)
                     sum +=  m_quadWeights[point] *
                             geomData.integrationElements(point) *
-                            testValues(dim, testDof, point) *
+                            conjugate(testValues(dim, testDof, point)) *
                             functionValues(dim, point);
             result(testDof, e) = sum;
         }

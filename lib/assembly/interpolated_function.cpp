@@ -22,9 +22,11 @@
 #include "interpolated_function.hpp"
 
 #include "../fiber/geometrical_data.hpp"
+#include "../fiber/explicit_instantiation.hpp"
 #include "../grid/grid.hpp"
 #include "../grid/grid_view.hpp"
 #include "../grid/vtk_writer.hpp"
+#include "../grid/vtk_writer_helper.hpp"
 
 #include "../space/piecewise_linear_continuous_scalar_space.hpp"
 
@@ -74,10 +76,10 @@ void InterpolatedFunction<ValueType>::addGeometricalDependencies(int& geomDeps) 
 
 template <typename ValueType>
 void InterpolatedFunction<ValueType>::evaluate(
-        const Fiber::GeometricalData<ValueType>& geomData,
+        const Fiber::GeometricalData<CoordinateType>& geomData,
         arma::Mat<ValueType>& result) const
 {
-    const arma::Mat<ValueType>& points = geomData.globals;
+    const arma::Mat<CoordinateType>& points = geomData.globals;
 
 #ifndef NDEBUG
     if (points.n_rows != worldDimension())
@@ -92,33 +94,30 @@ void InterpolatedFunction<ValueType>::evaluate(
 template <typename ValueType>
 void InterpolatedFunction<ValueType>::exportToVtk(
         const char* dataLabel, const char* fileNamesBase, const char* filesPath,
-        VtkWriter::OutputType type) const
+        VtkWriter::OutputType outputType) const
 {
     std::auto_ptr<GridView> view = m_grid.leafView();
     std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
 
-    vtkWriter->addVertexData(m_vertexValues, dataLabel);
-    if (filesPath)
-        vtkWriter->pwrite(fileNamesBase, filesPath, ".", type);
-    else
-        vtkWriter->write(fileNamesBase, type);
+    exportSingleDataSetToVtk(*vtkWriter, m_vertexValues, VtkWriter::VERTEX_DATA,
+                             dataLabel, fileNamesBase, filesPath, outputType);
 }
 
-template <typename ValueType>
-void InterpolatedFunction<ValueType>::setSurfaceValues(
-        const GridFunction<ValueType>& surfaceFunction)
-{
-    throw std::runtime_error("InterpolatedFunction::setSurfaceValues(): "
-                             "not implemented yet");
-}
+//template <typename ValueType>
+//void InterpolatedFunction<ValueType>::setSurfaceValues(
+//        const GridFunction<ValueType>& surfaceFunction)
+//{
+//    throw std::runtime_error("InterpolatedFunction::setSurfaceValues(): "
+//                             "not implemented yet");
+//}
 
-template <typename ValueType>
-void InterpolatedFunction<ValueType>::setSurfaceValues(
-        const InterpolatedFunction<ValueType>& surfaceFunction)
-{
-    throw std::runtime_error("InterpolatedFunction::setSurfaceValues(): "
-                             "not implemented yet");
-}
+//template <typename ValueType>
+//void InterpolatedFunction<ValueType>::setSurfaceValues(
+//        const InterpolatedFunction<ValueType>& surfaceFunction)
+//{
+//    throw std::runtime_error("InterpolatedFunction::setSurfaceValues(): "
+//                             "not implemented yet");
+//}
 
 template <typename ValueType>
 void InterpolatedFunction<ValueType>::checkCompatibility(
@@ -164,7 +163,7 @@ template <typename ValueType>
 InterpolatedFunction<ValueType>&
 InterpolatedFunction<ValueType>::operator/=(ValueType rhs)
 {
-    m_vertexValues *= 1. / rhs;
+    m_vertexValues *= static_cast<ValueType>(1.) / rhs;
     return *this;
 }
 
@@ -186,38 +185,11 @@ InterpolatedFunction<ValueType>::operator-(
 
 template <typename ValueType>
 const InterpolatedFunction<ValueType>
-InterpolatedFunction<ValueType>::operator*(ValueType other) const
-{
-    return InterpolatedFunction<ValueType>(*this) *= other;
-}
-
-template <typename ValueType>
-const InterpolatedFunction<ValueType>
 InterpolatedFunction<ValueType>::operator/(ValueType other) const
 {
     return InterpolatedFunction<ValueType>(*this) /= other;
 }
 
-template <typename ValueType>
-const InterpolatedFunction<ValueType> operator*(
-        ValueType lhs, const InterpolatedFunction<ValueType>& rhs)
-{
-    return InterpolatedFunction<ValueType>(rhs) *= lhs;
-}
-
-#ifdef COMPILE_FOR_FLOAT
-template class InterpolatedFunction<float>;
-#endif
-#ifdef COMPILE_FOR_DOUBLE
-template class InterpolatedFunction<double>;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_FLOAT
-#include <complex>
-template class InterpolatedFunction<std::complex<float> >;
-#endif
-#ifdef COMPILE_FOR_COMPLEX_DOUBLE
-#include <complex>
-template class InterpolatedFunction<std::complex<double> >;
-#endif
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(InterpolatedFunction);
 
 } // namespace Bempp

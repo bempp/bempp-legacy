@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2012 by the Fiber Authors
+// Copyright (C) 2011-2012 by the Bem++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
 #ifndef fiber_test_trial_integrator_hpp
 #define fiber_test_trial_integrator_hpp
 
-#include "types.hpp"
+#include "scalar_traits.hpp"
 
 #include <armadillo>
 #include <vector>
@@ -32,17 +32,19 @@ namespace Fiber
 template <typename ValueType> class Basis;
 
 /** \brief Integration of products of test and trial functions over elements. */
-template <typename ValueType>
+template <typename BasisFunctionType, typename ResultType>
 class TestTrialIntegrator
 {
 public:
+    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+
     virtual ~TestTrialIntegrator() {}
 
     virtual void integrate(
             const std::vector<int>& elementIndices,
-            const Basis<ValueType>& testBasis,
-            const Basis<ValueType>& trialBasis,
-            arma::Cube<ValueType>& result) const = 0;
+            const Basis<BasisFunctionType>& testBasis,
+            const Basis<BasisFunctionType>& trialBasis,
+            arma::Cube<ResultType>& result) const = 0;
 };
 
 } // namespace Fiber

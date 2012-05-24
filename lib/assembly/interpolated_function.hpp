@@ -23,6 +23,7 @@
 #define bempp_interpolated_function_hpp
 
 #include "../grid/vtk_writer.hpp"
+#include "../fiber/scalar_traits.hpp"
 #include "../fiber/function.hpp"
 
 #include <armadillo>
@@ -31,13 +32,8 @@ namespace Bempp
 {
 
 class Grid;
-template <typename ValueType> class GridFunction;
 
 template <typename ValueType> class InterpolatedFunction;
-
-template <typename ValueType>
-const InterpolatedFunction<ValueType> operator*(
-        ValueType lhs, const InterpolatedFunction<ValueType>& rhs);
 
 /** \brief Function defined by its values at a set of interpolation points
       and an interpolation method. */
@@ -45,6 +41,8 @@ template <typename ValueType>
 class InterpolatedFunction : public Fiber::Function<ValueType>
 {
 public:
+    typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
+
     enum InterpolationMethod {
         LINEAR
     };
@@ -61,7 +59,7 @@ public:
     virtual int codomainDimension() const;
     virtual void addGeometricalDependencies(int& geomDeps) const;
 
-    virtual void evaluate(const Fiber::GeometricalData<ValueType>& geomData,
+    virtual void evaluate(const Fiber::GeometricalData<CoordinateType>& geomData,
                           arma::Mat<ValueType>& result) const;
 
 //    virtual void evaluate(const arma::Mat<ValueType>& global,
@@ -87,12 +85,12 @@ public:
                      const char* fileNamesBase, const char* filesPath = 0,
                      VtkWriter::OutputType type = VtkWriter::ASCII) const;
 
-    /** \brief Copy vertex values from a function defined on a subset of the
-      surface of the interpolation grid. */
-    void setSurfaceValues(const GridFunction<ValueType>& surfaceFunction);
+//    /** \brief Copy vertex values from a function defined on a subset of the
+//      surface of the interpolation grid. */
+//    void setSurfaceValues(const GridFunction<ValueType>& surfaceFunction);
 
-    /** \brief Copy vertex values from a function interpolated on a surface grid. */
-    void setSurfaceValues(const InterpolatedFunction<ValueType>& surfaceFunction);
+//    /** \brief Copy vertex values from a function interpolated on a surface grid. */
+//    void setSurfaceValues(const InterpolatedFunction<ValueType>& surfaceFunction);
 
     InterpolatedFunction<ValueType>& operator+=(
             const InterpolatedFunction<ValueType> &rhs);
@@ -106,14 +104,8 @@ public:
     const InterpolatedFunction<ValueType> operator-(
             const InterpolatedFunction<ValueType> &other) const;
 
-    const InterpolatedFunction<ValueType> operator*(
-            ValueType other) const;
     const InterpolatedFunction<ValueType> operator/(
             ValueType other) const;
-
-//    template <typename ValueType>
-    friend const InterpolatedFunction<ValueType> operator*(
-            ValueType lhs, const InterpolatedFunction<ValueType>& rhs);
 
 private:
     void checkCompatibility(const InterpolatedFunction<ValueType>& other) const;
@@ -123,6 +115,20 @@ private:
     arma::Mat<ValueType> m_vertexValues;
     InterpolationMethod m_method;
 };
+
+template <typename ValueType>
+const InterpolatedFunction<ValueType> operator*(
+        ValueType lhs, const InterpolatedFunction<ValueType>& rhs)
+{
+    return InterpolatedFunction<ValueType>(rhs) *= lhs;
+}
+
+template <typename ValueType>
+const InterpolatedFunction<ValueType> operator*(
+        const InterpolatedFunction<ValueType>& lhs, ValueType rhs)
+{
+    return operator*(rhs, lhs);
+}
 
 } // namespace Bempp
 

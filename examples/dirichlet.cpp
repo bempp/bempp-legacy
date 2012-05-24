@@ -29,14 +29,13 @@
 #include "assembly/grid_function.hpp"
 #include "assembly/interpolated_function.hpp"
 #include "assembly/linear_operator_superposition.hpp"
-#include "assembly/ordinary_function.hpp"
 #include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 
 #include "assembly/identity_operator.hpp"
-#include "assembly/single_layer_potential_3d.hpp"
-#include "assembly/double_layer_potential_3d.hpp"
-#include "assembly/adjoint_double_layer_potential_3d.hpp"
-#include "assembly/hypersingular_operator_3d.hpp"
+#include "assembly/laplace_3d_single_layer_potential.hpp"
+#include "assembly/laplace_3d_double_layer_potential.hpp"
+
+#include "common/scalar_traits.hpp"
 
 #include "grid/geometry.hpp"
 #include "grid/geometry_factory.hpp"
@@ -56,13 +55,16 @@
 
 using namespace Bempp;
 
-typedef double FloatType;
+typedef double BFT; // basis function type
+typedef double RT; // result type (type used to represent discrete operators)
 
 class MyFunctor
 {
 public:
     // Type of the function's values (e.g. float or std::complex<double>)
-    typedef FloatType ValueType;
+    typedef RT ValueType;
+    // Type of coordinates (must be the "real part" of ValueType)
+    typedef ScalarTraits<RT>::RealType CoordinateType;
 
     // Number of components of the function's argument
     static const int argumentDimension = 3;
@@ -72,8 +74,8 @@ public:
 
     // Evaluate the function at the point "point" and store result in
     // the array "result"
-    inline void evaluate(const arma::Col<ValueType>& point,
-                  arma::Col<ValueType>& result) const {
+    inline void evaluate(const arma::Col<CoordinateType>& point,
+                         arma::Col<ValueType>& result) const {
         result(0) = 1.;
     }
 };
@@ -92,8 +94,8 @@ int main(int argc, char* argv[])
 
     // Initialize the spaces
 
-    PiecewiseLinearContinuousScalarSpace<FloatType> HplusHalfSpace(*grid);
-    PiecewiseConstantScalarSpace<FloatType> HminusHalfSpace(*grid);
+    PiecewiseLinearContinuousScalarSpace<BFT> HplusHalfSpace(*grid);
+    PiecewiseConstantScalarSpace<BFT> HminusHalfSpace(*grid);
 
     HplusHalfSpace.assignDofs();
     HminusHalfSpace.assignDofs();
@@ -105,73 +107,79 @@ int main(int argc, char* argv[])
     // We want to use ACA
 
     AcaOptions acaOptions; // Default parameters for ACA
+    acaOptions.eps = 1e-5;
     assemblyOptions.switchToAca(acaOptions);
 
     // Define the standard integration factory
 
-    StandardLocalAssemblerFactoryForOperatorsOnSurfaces<FloatType> factory;
+    AccuracyOptions accuracyOptions;
+    accuracyOptions.doubleRegular.orderIncrement = 1;
+    StandardLocalAssemblerFactoryForOperatorsOnSurfaces<BFT, RT>
+            factory(accuracyOptions);
 
     // We need the single layer, double layer, and the identity operator
 
-    SingleLayerPotential3D<FloatType> slp(HminusHalfSpace, HminusHalfSpace);
-    DoubleLayerPotential3D<FloatType> dlp(HminusHalfSpace, HplusHalfSpace);
-    IdentityOperator<FloatType> id(HminusHalfSpace, HplusHalfSpace);
+    Laplace3dSingleLayerPotential<BFT, RT> slp(HminusHalfSpace, HminusHalfSpace);
+    Laplace3dDoubleLayerPotential<BFT, RT> dlp(HminusHalfSpace, HplusHalfSpace);
+    IdentityOperator<BFT, RT> id(HminusHalfSpace, HplusHalfSpace);
 
     // Form the right-hand side sum
 
-    LinearOperatorSuperposition<FloatType> rhsOp = -0.5 * id + dlp;
+    LinearOperatorSuperposition<BFT, RT> rhsOp = -0.5 * id + dlp;
 
-    // Assemble the Operators
+    // Assemble the operators
 
     slp.assemble(factory, assemblyOptions);
     rhsOp.assemble(factory, assemblyOptions);
 
     // We also want a grid function
 
-    MyFunctor functor;
-    OrdinaryFunction<MyFunctor> function(functor);
-
-    GridFunction<FloatType> u(HplusHalfSpace, function, factory, assemblyOptions);
+    GridFunction<BFT, RT> u = gridFunctionFromSurfaceNormalIndependentFunctor(
+                HplusHalfSpace, MyFunctor(), factory, assemblyOptions);
 
     // Assemble the rhs
 
     std::cout << "Assemble rhs" << std::endl;
 
-    GridFunction<FloatType> rhs = rhsOp * u;
+    GridFunction<BFT, RT> rhs = rhsOp * u;
 
-    // Initialize the iterative solver
+    // Initialize the solver
 
     std::cout << "Initialize solver" << std::endl;
 
+    // WARNING: The default iterative solver does not support
+    // complex-valued operators, hence if you typedef RT to std::complex<...>,
+    // you need to use the direct solver.
 #ifdef WITH_TRILINOS
-    typedef DefaultIterativeSolver<FloatType> Solver;
-    Solver solver(slp, rhs);
-    solver.initializeSolver(Solver::defaultGmresParameterList(1e-5));
+    DefaultIterativeSolver<BFT, RT> solver(slp, rhs);
+    solver.initializeSolver(defaultGmresParameterList(1e-5));
     solver.solve();
     std::cout << solver.getSolverMessage() << std::endl;
 #else
-    DefaultDirectSolver<FloatType> solver(slp, rhs);
+    DefaultDirectSolver<BFT, RT> solver(slp, rhs);
     solver.solve();
 #endif
 
     // Extract the solution
 
-    GridFunction<FloatType> solFun = solver.getResult();
+    GridFunction<BFT, RT> solFun = solver.getResult();
 
     // Write out as VTK
 
     solFun.exportToVtk(VtkWriter::CELL_DATA, "Neumann_data",
-                       "calculated_neumann_data");
+                       "calculated_neumann_data_cell");
+    solFun.exportToVtk(VtkWriter::VERTEX_DATA, "Neumann_data",
+                       "calculated_neumann_data_vertex");
 
-    // Uncomment the block below if you are solving the problem on a sphere and
-    // you want to compare the numerical and analytical solution.
+//    // Uncomment the block below if you are solving the problem on a sphere and
+//    // you want to compare the numerical and analytical solution.
 
-    // arma::Col<FloatType> solutionCoefficients =
-    //         solFun.coefficients().asArmadilloVector();
+//    arma::Col<RT> solutionCoefficients = solFun.coefficients();
+//    std::cout << solutionCoefficients << std::endl;
 
-    // arma::Col<FloatType> deviation = solutionCoefficients - (-1.);
-    // // % in Armadillo -> elementwise multiplication
-    // FloatType stdDev = sqrt(arma::accu(deviation % deviation) /
-    //                      solutionCoefficients.n_rows);
-    // std::cout << "Standard deviation: " << stdDev << std::endl;
+//    arma::Col<RT> deviation = solutionCoefficients - static_cast<RT>(-1.);
+//    // % in Armadillo -> elementwise multiplication
+//    RT stdDev = sqrt(arma::accu(deviation % deviation) /
+//                     static_cast<RT>(solutionCoefficients.n_rows));
+//    std::cout << "Standard deviation: " << stdDev << std::endl;
 }

@@ -24,20 +24,41 @@
 // to ensure there are no inconsistent forward declarations
 #include "ahmed_aux_fwd.hpp"
 
+#include "ahmed_leaf_cluster_array.hpp"
 #include "../common/types.hpp"
 
 #include <boost/scoped_array.hpp>
 #include <boost/shared_array.hpp>
+#include <complex>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
 
 // Ahmed's include files
+#include <cmplx.h>
+
+inline comp<float> operator*=(comp<float>& a, double b)
+{
+    return operator*=(a, static_cast<float>(b));
+}
+
+inline comp<float> operator/(comp<float>& a, double b)
+{
+    return operator/(a, static_cast<float>(b));
+}
+
+inline comp<float> operator/(double a, comp<float>& b)
+{
+    return operator/(static_cast<float>(a), b);
+}
+
 #include <apprx.h>
 #include <bemblcluster.h>
 #include <bllist.h>
 // #include <matgen_sqntl.h>
-#include <matgen_omp.h>
+// #define _OPENMP
+// #include <matgen_omp.h>
+// #undef _OPENMP
 
 bool multaHvec_omp(double d, blcluster* bl, mblock<double>** A, double* x,
            double* y);
@@ -48,12 +69,32 @@ bool multaHvec_omp(double d, blcluster* bl, mblock<double>** A, double* x,
 #undef MIN
 #undef MAX
 
-namespace Bempp {
-
-template <typename ValueType>
-struct AhmedDofWrapper : public Point3D<ValueType>
+namespace Bempp
 {
-    ValueType getcenter(int dim) const
+
+// Casts.
+
+inline float ahmedCast(float x) {
+    return x;
+}
+
+inline double ahmedCast(double x) {
+    return x;
+}
+
+inline scomp ahmedCast(std::complex<float> x) {
+    return scomp(x.real(), x.imag());
+}
+
+inline dcomp ahmedCast(std::complex<double> x) {
+    return dcomp(x.real(), x.imag());
+}
+
+/** \brief An Ahmed-compatible degree-of-freedom type. */
+template <typename CoordinateType>
+struct AhmedDofWrapper : public Point3D<CoordinateType>
+{
+    CoordinateType getcenter(int dim) const
     {
         switch  (dim)
         {
@@ -65,6 +106,42 @@ struct AhmedDofWrapper : public Point3D<ValueType>
                                         "invalid dimension index");
         }
     }
+};
+
+template <typename T>
+class ExtendedBemCluster : public bemcluster<T>
+{
+public:
+    ExtendedBemCluster(
+            T* dofs, unsigned int* op_perm,
+            unsigned int k, unsigned int l,
+            unsigned int maximumBlockSize =
+            std::numeric_limits<unsigned int>::max()) :
+        bemcluster<T>(dofs, op_perm, k, l),
+        m_maximumBlockSize(maximumBlockSize) {
+    }
+
+    virtual ExtendedBemCluster* clone(unsigned int* op_perm,
+                                      unsigned int beg,
+                                      unsigned int end) const {
+        return new ExtendedBemCluster(cluster_pca<T>::dofs, op_perm, beg, end,
+                                      m_maximumBlockSize);
+    }
+
+    virtual bool isadm(double eta2, cluster* cl, bl_info& info) {
+        if (this->size() > m_maximumBlockSize ||
+                cl->size() > m_maximumBlockSize)
+            return (info.is_adm = false);
+        else
+            return bemcluster<T>::isadm(eta2, cl, info);
+    }
+
+    unsigned int maximumBlockSize() const {
+        return m_maximumBlockSize;
+    }
+
+private:
+    unsigned int m_maximumBlockSize;
 };
 
 class AhmedMblockArrayDeleter
@@ -84,51 +161,18 @@ private:
 };
 
 template <typename ValueType>
-boost::shared_array<mblock<ValueType>*> allocateAhmedMblockArray(
+boost::shared_array<mblock<typename AhmedTypeTraits<ValueType>::Type>*>
+allocateAhmedMblockArray(
         const blcluster* cluster)
 {
-    mblock<ValueType>** blocks = 0;
+    typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
+    AhmedMblock** blocks = 0;
     const size_t blockCount = cluster->nleaves();
     allocmbls(blockCount, blocks);
-    return boost::shared_array<mblock<ValueType>*>(
+    return boost::shared_array<AhmedMblock*>(
                 blocks, AhmedMblockArrayDeleter(blockCount));
 }
 
-class AhmedLeafClusterArray
-{
-public:
-    // The parameter should actually be const, but Ahmed's gen_BlSequence lacks
-    // const-correctness
-    explicit AhmedLeafClusterArray(blcluster* clusterTree) :
-        m_size(0) {
-        blcluster** leafClusters = 0;
-        try {
-            gen_BlSequence(clusterTree, leafClusters);
-        }
-        catch (...) {
-            delete[] leafClusters;
-            throw; // rethrow the exception
-        }
-        m_leafClusters.reset(leafClusters);
-        m_size = clusterTree->nleaves();
-    }
-
-    size_t size() const {
-        return m_size;
-    }
-
-    blcluster* operator[] (size_t n) {
-        return m_leafClusters[n];
-    }
-
-    const blcluster* operator[] (size_t n) const {
-        return m_leafClusters[n];
-    }
-
-private:
-    boost::scoped_array<blcluster*> m_leafClusters;
-    size_t m_size;
-};
 
 } // namespace Bempp
 

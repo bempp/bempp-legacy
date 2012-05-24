@@ -28,10 +28,12 @@
 
 #include "basis.hpp"
 #include "basis_data.hpp"
+#include "conjugate.hpp"
 #include "expression.hpp"
 #include "geometrical_data.hpp"
 #include "kernel.hpp"
 #include "opencl_handler.hpp"
+#include "raw_grid_geometry.hpp"
 #include "types.hpp"
 #include "CL/separable_numerical_double_integrator.cl.str"
 
@@ -43,25 +45,31 @@
 namespace Fiber
 {
 
-template <typename ValueType, typename GeometryFactory>
-SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+SeparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
 SeparableNumericalTestKernelTrialIntegrator(
-        const arma::Mat<ValueType>& localTestQuadPoints,
-        const arma::Mat<ValueType>& localTrialQuadPoints,
-        const std::vector<ValueType> testQuadWeights,
-        const std::vector<ValueType> trialQuadWeights,
-        const GeometryFactory& geometryFactory,
-        const RawGridGeometry<ValueType>& rawGeometry,
-        const Expression<ValueType>& testExpression,
-        const Kernel<ValueType>& kernel,
-        const Expression<ValueType>& trialExpression,
-        const OpenClHandler<ValueType,int>& openClHandler) :
+        const arma::Mat<CoordinateType>& localTestQuadPoints,
+        const arma::Mat<CoordinateType>& localTrialQuadPoints,
+        const std::vector<CoordinateType> testQuadWeights,
+        const std::vector<CoordinateType> trialQuadWeights,
+        const GeometryFactory& testGeometryFactory,
+        const GeometryFactory& trialGeometryFactory,
+        const RawGridGeometry<CoordinateType>& testRawGeometry,
+        const RawGridGeometry<CoordinateType>& trialRawGeometry,
+        const Expression<CoordinateType>& testExpression,
+        const Kernel<KernelType>& kernel,
+        const Expression<CoordinateType>& trialExpression,
+        const OpenClHandler& openClHandler) :
     m_localTestQuadPoints(localTestQuadPoints),
     m_localTrialQuadPoints(localTrialQuadPoints),
     m_testQuadWeights(testQuadWeights),
     m_trialQuadWeights(trialQuadWeights),
-    m_geometryFactory(geometryFactory),
-    m_rawGeometry(rawGeometry),
+    m_testGeometryFactory(testGeometryFactory),
+    m_trialGeometryFactory(trialGeometryFactory),
+    m_testRawGeometry(testRawGeometry),
+    m_trialRawGeometry(trialRawGeometry),
     m_testExpression(testExpression),
     m_kernel(kernel),
     m_trialExpression(trialExpression),
@@ -79,16 +87,18 @@ SeparableNumericalTestKernelTrialIntegrator(
 #ifdef WITH_OPENCL
     if (openClHandler.UseOpenCl()) {
         // push integration points to CL device
-        clTestQuadPoints = openClHandler.pushValueMatrix (localTestQuadPoints);
-	clTrialQuadPoints = openClHandler.pushValueMatrix (localTrialQuadPoints);
-	clTestQuadWeights = openClHandler.pushValueVector (testQuadWeights);
-	clTrialQuadWeights = openClHandler.pushValueVector (trialQuadWeights);
+        clTestQuadPoints = openClHandler.pushMatrix<CoordinateType> (localTestQuadPoints);
+	clTrialQuadPoints = openClHandler.pushMatrix<CoordinateType> (localTrialQuadPoints);
+	clTestQuadWeights = openClHandler.pushVector<CoordinateType> (testQuadWeights);
+	clTrialQuadWeights = openClHandler.pushVector<CoordinateType> (trialQuadWeights);
     }
 #endif
 }
 
-template <typename ValueType, typename GeometryFactory>
-SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+SeparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
 ~SeparableNumericalTestKernelTrialIntegrator()
 {
 #ifdef WITH_OPENCL
@@ -101,15 +111,18 @@ SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::
 #endif
 }
 
-template <typename ValueType, typename GeometryFactory>
-void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::integrate(
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+void SeparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
+integrate(
         CallVariant callVariant,
         const std::vector<int>& elementIndicesA,
         int elementIndexB,
-        const Basis<ValueType>& basisA,
-        const Basis<ValueType>& basisB,
+        const Basis<BasisFunctionType>& basisA,
+        const Basis<BasisFunctionType>& basisB,
         LocalDofIndex localDofIndexB,
-        arma::Cube<ValueType>& result) const
+        arma::Cube<ResultType>& result) const
 {
     if (m_openClHandler.UseOpenCl())
     {
@@ -123,15 +136,18 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
     }
 }
 
-template <typename ValueType, typename GeometryFactory>
-void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::integrateCpu(
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+void SeparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
+integrateCpu(
         CallVariant callVariant,
         const std::vector<int>& elementIndicesA,
         int elementIndexB,
-        const Basis<ValueType>& basisA,
-        const Basis<ValueType>& basisB,
+        const Basis<BasisFunctionType>& basisA,
+        const Basis<BasisFunctionType>& basisB,
         LocalDofIndex localDofIndexB,
-        arma::Cube<ValueType>& result) const
+        arma::Cube<ResultType>& result) const
 {
     const int testPointCount = m_localTestQuadPoints.n_cols;
     const int trialPointCount = m_localTrialQuadPoints.n_cols;
@@ -165,8 +181,8 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
         assert(kernelColCount == trialComponentCount);
     }
 
-    BasisData<ValueType> testBasisData, trialBasisData;
-    GeometricalData<ValueType> testGeomData, trialGeomData;
+    BasisData<BasisFunctionType> testBasisData, trialBasisData;
+    GeometricalData<CoordinateType> testGeomData, trialGeomData;
 
     int testBasisDeps = 0, trialBasisDeps = 0;
     int testGeomDeps = INTEGRATION_ELEMENTS;
@@ -177,16 +193,30 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
     m_kernel.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 
     typedef typename GeometryFactory::Geometry Geometry;
-    std::auto_ptr<Geometry> geometryA(m_geometryFactory.make());
-    std::auto_ptr<Geometry> geometryB(m_geometryFactory.make());
+    std::auto_ptr<Geometry> geometryA, geometryB;
+    const RawGridGeometry<CoordinateType> *rawGeometryA = 0, *rawGeometryB = 0;
+    if (callVariant == TEST_TRIAL)
+    {
+        geometryA = m_testGeometryFactory.make();
+        geometryB = m_trialGeometryFactory.make();
+        rawGeometryA = &m_testRawGeometry;
+        rawGeometryB = &m_trialRawGeometry;
+    }
+    else
+    {
+        geometryA = m_trialGeometryFactory.make();
+        geometryB = m_testGeometryFactory.make();
+        rawGeometryA = &m_trialRawGeometry;
+        rawGeometryB = &m_testRawGeometry;
+    }
 
-    arma::Cube<ValueType> testValues, trialValues;
-    Array4D<ValueType> kernelValues(kernelRowCount, testPointCount,
+    arma::Cube<BasisFunctionType> testValues, trialValues;
+    Array4d<KernelType> kernelValues(kernelRowCount, testPointCount,
                                     kernelColCount, trialPointCount);
 
     result.set_size(testDofCount, trialDofCount, elementACount);
 
-    m_rawGeometry.setupGeometry(elementIndexB, *geometryB);
+    rawGeometryB->setupGeometry(elementIndexB, *geometryB);
     if (callVariant == TEST_TRIAL)
     {
         basisA.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS, testBasisData);
@@ -205,7 +235,7 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
     // Iterate over the elements
     for (int indexA = 0; indexA < elementACount; ++indexA)
     {
-        m_rawGeometry.setupGeometry(elementIndicesA[indexA], *geometryA);
+        rawGeometryA->setupGeometry(elementIndicesA[indexA], *geometryA);
         if (callVariant == TEST_TRIAL)
         {
             geometryA->getData(testGeomDeps, m_localTestQuadPoints, testGeomData);
@@ -223,13 +253,13 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
             for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
                 for (int testDof = 0; testDof < testDofCount; ++testDof)
                 {
-                    ValueType sum = 0.;
+                    ResultType sum = 0.;
                     for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
                         for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
                             for (int dim = 0; dim < testComponentCount; ++dim)
                                 sum +=  m_testQuadWeights[testPoint] *
                                         testGeomData.integrationElements(testPoint) *
-                                        testValues(dim, testDof, testPoint) *
+                                        conjugate(testValues(dim, testDof, testPoint)) *
                                         kernelValues(0, testPoint, 0, trialPoint) *
                                         trialValues(dim, trialDof, trialPoint) *
                                         trialGeomData.integrationElements(trialPoint) *
@@ -240,14 +270,14 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
             for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
                 for (int testDof = 0; testDof < testDofCount; ++testDof)
                 {
-                    ValueType sum = 0.;
+                    ResultType sum = 0.;
                     for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
                         for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
                             for (int trialDim = 0; trialDim < trialComponentCount; ++trialDim)
                                 for (int testDim = 0; testDim < testComponentCount; ++testDim)
                                     sum +=  m_testQuadWeights[testPoint] *
                                             testGeomData.integrationElements(testPoint) *
-                                            testValues(testDim, testDof, testPoint) *
+                                            conjugate(testValues(testDim, testDof, testPoint)) *
                                             kernelValues(testDim, testPoint, trialDim, trialPoint) *
                                             trialValues(trialDim, trialDof, trialPoint) *
                                             trialGeomData.integrationElements(trialPoint) *
@@ -257,21 +287,41 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
     }
 }
 
-template <typename ValueType, typename GeometryFactory>
-void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::integrateCl(
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+void
+SeparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
+integrateCl(
         CallVariant callVariant,
         const std::vector<int>& elementIndicesA,
         int elementIndexB,
-        const Basis<ValueType>& basisA,
-        const Basis<ValueType>& basisB,
+        const Basis<BasisFunctionType>& basisA,
+        const Basis<BasisFunctionType>& basisB,
         LocalDofIndex localDofIndexB,
-        arma::Cube<ValueType>& result) const
+        arma::Cube<ResultType>& result) const
 {
 #ifdef WITH_OPENCL
-    tbb::tick_count t_start, t_end, t0, t1;
-    tbb::tick_count::interval_t dt_buf, dt_kern, dt_prog, dt_pull;
+  // DEBUG: test latency
+  {
+    int bufsize = 10;
+    std::vector<ResultType> buf(bufsize);
+    tbb::tick_count t0 = tbb::tick_count::now();
+    cl::Buffer *clbuf = m_openClHandler.pushVector<ResultType> (buf);
+    tbb::tick_count::interval_t dt1 = tbb::tick_count::now()-t0;
 
-    t_start = tbb::tick_count::now();
+    t0 = tbb::tick_count::now();
+    m_openClHandler.pullVector<ResultType> (*clbuf, buf, bufsize);
+    tbb::tick_count::interval_t dt2 = tbb::tick_count::now()-t0;
+
+    static int callcount = 0;
+    std::cout << callcount++ << "\tpush: " << dt1.seconds() << "\tpull: " << dt2.seconds() << std::endl;
+  }
+
+  //    tbb::tick_count t_start, t_end, t0, t1;
+  //    tbb::tick_count::interval_t dt_buf, dt_kern, dt_prog, dt_pull;
+
+  //    t_start = tbb::tick_count::now();
 
     const int testPointCount = m_localTestQuadPoints.n_cols;
     const int trialPointCount = m_localTrialQuadPoints.n_cols;
@@ -325,14 +375,14 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 
     result.set_size(testDofCount, trialDofCount, elementACount);
 
-    t0 = tbb::tick_count::now();
-    clElementIndicesA = m_openClHandler.pushIndexVector (elementIndicesA);
-    clResult = m_openClHandler.createValueBuffer (testDofCount*trialDofCount*elementACount,
-						   CL_MEM_WRITE_ONLY);
-    dt_buf += tbb::tick_count::now()-t0;
+    //    t0 = tbb::tick_count::now();
+    clElementIndicesA = m_openClHandler.pushVector<int> (elementIndicesA);
+    clResult = m_openClHandler.createBuffer<ResultType> (testDofCount*trialDofCount*elementACount,
+							 CL_MEM_WRITE_ONLY);
+    //    dt_buf += tbb::tick_count::now()-t0;
 
     // Build the OpenCL program
-    t0 = tbb::tick_count::now();
+    //    t0 = tbb::tick_count::now();
     cl::Program::Sources sources;
     sources.push_back (m_openClHandler.initStr());
     sources.push_back (basisA.clCodeString(true));
@@ -340,17 +390,17 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
     sources.push_back (m_kernel.evaluateClCode());
     sources.push_back (clStrIntegrateRowOrCol());
     m_openClHandler.loadProgramFromStringArray (sources);
-    dt_prog += tbb::tick_count::now()-t0;
+    //    dt_prog += tbb::tick_count::now()-t0;
 
     // Call the CL kernels to map the trial and test quadrature points
     if (callVariant == TEST_TRIAL)
     {
-        t0 = tbb::tick_count::now();
-	clGlobalTestPoints = m_openClHandler.createValueBuffer(
+        //        t0 = tbb::tick_count::now();
+        clGlobalTestPoints = m_openClHandler.createBuffer<CoordinateType>(
             elementACount*testPointCount*meshDim, CL_MEM_READ_WRITE);
-	clTestIntegrationElements = m_openClHandler.createValueBuffer(
+	clTestIntegrationElements = m_openClHandler.createBuffer<CoordinateType>(
 	    elementACount*testPointCount, CL_MEM_READ_WRITE);
-	dt_buf += tbb::tick_count::now()-t0;
+	//	dt_buf += tbb::tick_count::now()-t0;
 	cl::Kernel &clMapTest = m_openClHandler.setKernel ("clMapPointsToElements");
 	argIdx = m_openClHandler.SetGeometryArgs (clMapTest, 0);
 	clMapTest.setArg (argIdx++, *clTestQuadPoints);
@@ -361,18 +411,18 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 	clMapTest.setArg (argIdx++, *clGlobalTestPoints);
 	clMapTest.setArg (argIdx++, *clTestIntegrationElements);
 
-        t0 = tbb::tick_count::now();
+	//        t0 = tbb::tick_count::now();
 	m_openClHandler.enqueueKernel (cl::NDRange(elementACount, testPointCount));
-	dt_kern += tbb::tick_count::now()-t0;
+	//	dt_kern += tbb::tick_count::now()-t0;
 
-        t0 = tbb::tick_count::now();
-        clGlobalTrialPoints = m_openClHandler.createValueBuffer (
+	//        t0 = tbb::tick_count::now();
+        clGlobalTrialPoints = m_openClHandler.createBuffer<CoordinateType> (
 	    trialPointCount*meshDim, CL_MEM_READ_WRITE);
-        clGlobalTrialNormals = m_openClHandler.createValueBuffer (
+        clGlobalTrialNormals = m_openClHandler.createBuffer<CoordinateType> (
 	    trialPointCount*meshDim, CL_MEM_READ_WRITE);
-	clTrialIntegrationElements = m_openClHandler.createValueBuffer(
+	clTrialIntegrationElements = m_openClHandler.createBuffer<CoordinateType>(
 	    trialPointCount, CL_MEM_READ_WRITE);
-	dt_buf += tbb::tick_count::now()-t0;
+	//	dt_buf += tbb::tick_count::now()-t0;
 	cl::Kernel &clMapTrial = m_openClHandler.setKernel ("clMapPointsAndNormalsToElement");
 	argIdx = m_openClHandler.SetGeometryArgs (clMapTrial, 0);
 	clMapTrial.setArg (argIdx++, *clTestQuadPoints);
@@ -382,14 +432,14 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 	clMapTrial.setArg (argIdx++, *clGlobalTrialPoints);
 	clMapTrial.setArg (argIdx++, *clGlobalTrialNormals);
 	clMapTrial.setArg (argIdx++, *clTrialIntegrationElements);
-        t0 = tbb::tick_count::now();
+	//        t0 = tbb::tick_count::now();
 	m_openClHandler.enqueueKernel (cl::NDRange(trialPointCount));
-	dt_kern += tbb::tick_count::now()-t0;
+	//	dt_kern += tbb::tick_count::now()-t0;
 
-        t0 = tbb::tick_count::now();
-	clTestValues = m_openClHandler.createValueBuffer (
+	//        t0 = tbb::tick_count::now();
+	clTestValues = m_openClHandler.createBuffer<BasisFunctionType> (
 	    elementACount*testPointCount*testDofCount, CL_MEM_READ_WRITE);
-	dt_buf += tbb::tick_count::now()-t0;
+	//	dt_buf += tbb::tick_count::now()-t0;
 	cl::Kernel &clBasisTest = m_openClHandler.setKernel ("clBasisfAElements");
 	argIdx = m_openClHandler.SetGeometryArgs (clBasisTest, 0);
 	clBasisTest.setArg (argIdx++, *clElementIndicesA);
@@ -399,14 +449,14 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 	clBasisTest.setArg (argIdx++, pointDim);
 	clBasisTest.setArg (argIdx++, testDofCount);
 	clBasisTest.setArg (argIdx++, *clTestValues);
-        t0 = tbb::tick_count::now();
+	//        t0 = tbb::tick_count::now();
 	m_openClHandler.enqueueKernel (cl::NDRange(elementACount, testPointCount));
-	dt_kern += tbb::tick_count::now()-t0;
+	//	dt_kern += tbb::tick_count::now()-t0;
 
-        t0 = tbb::tick_count::now();
-	clTrialValues = m_openClHandler.createValueBuffer (
+	//        t0 = tbb::tick_count::now();
+	clTrialValues = m_openClHandler.createBuffer<BasisFunctionType> (
 	    trialPointCount*trialDofCount, CL_MEM_READ_WRITE);
-	dt_buf += tbb::tick_count::now()-t0;
+	//	dt_buf += tbb::tick_count::now()-t0;
 	cl::Kernel &clBasisTrial = m_openClHandler.setKernel ("clBasisfBElement");
 	argIdx = m_openClHandler.SetGeometryArgs (clBasisTrial, 0);
 	clBasisTrial.setArg (argIdx++, elementIndexB);
@@ -416,20 +466,20 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 	clBasisTrial.setArg (argIdx++, trialDofCount);
 	clBasisTrial.setArg (argIdx++, localDofIndexB);
 	clBasisTrial.setArg (argIdx++, *clTrialValues);
-        t0 = tbb::tick_count::now();
+	//        t0 = tbb::tick_count::now();
 	m_openClHandler.enqueueKernel (cl::NDRange(trialPointCount));
-	dt_kern += tbb::tick_count::now()-t0;
+	//	dt_kern += tbb::tick_count::now()-t0;
     }
     else
     {
-        t0 = tbb::tick_count::now();
-        clGlobalTrialPoints = m_openClHandler.createValueBuffer (
+      //        t0 = tbb::tick_count::now();
+        clGlobalTrialPoints = m_openClHandler.createBuffer<CoordinateType> (
 	    elementACount*trialPointCount*meshDim, CL_MEM_READ_WRITE);
-        clGlobalTrialNormals = m_openClHandler.createValueBuffer (
+        clGlobalTrialNormals = m_openClHandler.createBuffer<CoordinateType> (
 	    elementACount*trialPointCount*meshDim, CL_MEM_READ_WRITE);
-	clTrialIntegrationElements = m_openClHandler.createValueBuffer(
+	clTrialIntegrationElements = m_openClHandler.createBuffer<CoordinateType> (
 	    elementACount*trialPointCount, CL_MEM_READ_WRITE);
-	dt_buf += tbb::tick_count::now()-t0;
+	//	dt_buf += tbb::tick_count::now()-t0;
 	cl::Kernel &clMapTrial = m_openClHandler.setKernel ("clMapPointsAndNormalsToElements");
 	argIdx = m_openClHandler.SetGeometryArgs (clMapTrial, 0);
 	clMapTrial.setArg (argIdx++, *clTrialQuadPoints);
@@ -440,16 +490,16 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 	clMapTrial.setArg (argIdx++, *clGlobalTrialPoints);
 	clMapTrial.setArg (argIdx++, *clGlobalTrialNormals);
 	clMapTrial.setArg (argIdx++, *clTrialIntegrationElements);
-        t0 = tbb::tick_count::now();
+	//        t0 = tbb::tick_count::now();
 	m_openClHandler.enqueueKernel (cl::NDRange(elementACount, trialPointCount));
-	dt_kern += tbb::tick_count::now()-t0;
+	//	dt_kern += tbb::tick_count::now()-t0;
 
-        t0 = tbb::tick_count::now();
-	clGlobalTestPoints = m_openClHandler.createValueBuffer(
+	//        t0 = tbb::tick_count::now();
+	clGlobalTestPoints = m_openClHandler.createBuffer<CoordinateType> (
             testPointCount*meshDim, CL_MEM_READ_WRITE);
-	clTestIntegrationElements = m_openClHandler.createValueBuffer(
+	clTestIntegrationElements = m_openClHandler.createBuffer<CoordinateType> (
 	    testPointCount, CL_MEM_READ_WRITE);
-	dt_buf += tbb::tick_count::now()-t0;
+	//	dt_buf += tbb::tick_count::now()-t0;
 	cl::Kernel &clMapTest = m_openClHandler.setKernel ("clMapPointsToElement");
 	argIdx = m_openClHandler.SetGeometryArgs (clMapTest, 0);
 	clMapTest.setArg (argIdx++, *clTestQuadPoints);
@@ -458,14 +508,14 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 	clMapTest.setArg (argIdx++, elementIndexB);
 	clMapTest.setArg (argIdx++, *clGlobalTestPoints);
 	clMapTest.setArg (argIdx++, *clTestIntegrationElements);
-        t0 = tbb::tick_count::now();
+	//        t0 = tbb::tick_count::now();
 	m_openClHandler.enqueueKernel (cl::NDRange(testPointCount));
-	dt_kern += tbb::tick_count::now()-t0;
+	//	dt_kern += tbb::tick_count::now()-t0;
 
-        t0 = tbb::tick_count::now();
-	clTrialValues = m_openClHandler.createValueBuffer (
+	//        t0 = tbb::tick_count::now();
+	clTrialValues = m_openClHandler.createBuffer<BasisFunctionType> (
 	    elementACount*trialPointCount*trialDofCount, CL_MEM_READ_WRITE);
-	dt_buf += tbb::tick_count::now()-t0;
+	//	dt_buf += tbb::tick_count::now()-t0;
 	cl::Kernel &clBasisTrial = m_openClHandler.setKernel ("clBasisfAElements");
 	argIdx = m_openClHandler.SetGeometryArgs (clBasisTrial, 0);
 	clBasisTrial.setArg (argIdx++, *clElementIndicesA);
@@ -475,14 +525,14 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 	clBasisTrial.setArg (argIdx++, pointDim);
 	clBasisTrial.setArg (argIdx++, trialDofCount);
 	clBasisTrial.setArg (argIdx++, *clTrialValues);
-        t0 = tbb::tick_count::now();
+	//        t0 = tbb::tick_count::now();
 	m_openClHandler.enqueueKernel (cl::NDRange(elementACount, trialPointCount));
-	dt_kern += tbb::tick_count::now()-t0;
+	//	dt_kern += tbb::tick_count::now()-t0;
 
-        t0 = tbb::tick_count::now();
-	clTestValues = m_openClHandler.createValueBuffer (
+	//        t0 = tbb::tick_count::now();
+	clTestValues = m_openClHandler.createBuffer<BasisFunctionType> (
 	    testPointCount*testDofCount, CL_MEM_READ_WRITE);
-	dt_buf += tbb::tick_count::now()-t0;
+	//	dt_buf += tbb::tick_count::now()-t0;
 	cl::Kernel &clBasisTest = m_openClHandler.setKernel ("clBasisfBElement");
 	argIdx = m_openClHandler.SetGeometryArgs (clBasisTest, 0);
 	clBasisTest.setArg (argIdx++, elementIndexB);
@@ -492,9 +542,9 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 	clBasisTest.setArg (argIdx++, testDofCount);
 	clBasisTest.setArg (argIdx++, localDofIndexB);
 	clBasisTest.setArg (argIdx++, *clTestValues);
-        t0 = tbb::tick_count::now();
+	//        t0 = tbb::tick_count::now();
 	m_openClHandler.enqueueKernel (cl::NDRange(testPointCount));
-	dt_kern += tbb::tick_count::now()-t0;
+	//	dt_kern += tbb::tick_count::now()-t0;
     }
 
     // Build the OpenCL kernel
@@ -525,14 +575,14 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 
 
     // Run the CL kernel
-    t0 = tbb::tick_count::now();
+    //    t0 = tbb::tick_count::now();
     m_openClHandler.enqueueKernel (cl::NDRange(elementACount));
-    dt_kern += tbb::tick_count::now()-t0;
+    //    dt_kern += tbb::tick_count::now()-t0;
 
     // Copy results back
-    t0 = tbb::tick_count::now();
-    m_openClHandler.pullValueCube (*clResult, result);
-    dt_pull += tbb::tick_count::now()-t0;
+    //    t0 = tbb::tick_count::now();
+    m_openClHandler.pullCube<ResultType> (*clResult, result);
+    //  dt_pull += tbb::tick_count::now()-t0;
 
     // Clean up local device buffers
     delete clElementIndicesA;
@@ -545,14 +595,14 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
     delete clTestIntegrationElements;
     delete clResult;
 
-    t_end = tbb::tick_count::now();
-    static int callcount = 0;
-    std::cout << callcount++ << '\t' << (t_end-t_start).seconds()
-    	      << "\tprog=" << dt_prog.seconds()
-    	      << "\tbuf=" << dt_buf.seconds()
-    	      << "\tkern=" << dt_kern.seconds()
-	      << "\tpull=" << dt_pull.seconds()
-    	      << std::endl;
+    //  t_end = tbb::tick_count::now();
+    //  static int callcount = 0;
+    //  std::cout << callcount++ << '\t' << (t_end-t_start).seconds()
+    //	      << "\tprog=" << dt_prog.seconds()
+    //	      << "\tbuf=" << dt_buf.seconds()
+    //	      << "\tkern=" << dt_kern.seconds()
+    //	      << "\tpull=" << dt_pull.seconds()
+    //	      << std::endl;
 
 #else
     throw std::runtime_error ("Trying to call OpenCL method without OpenCL support");
@@ -560,12 +610,16 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 }
 
 
-template <typename ValueType, typename GeometryFactory>
-void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::integrate(
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+void
+SeparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
+integrate(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<ValueType>& testBasis,
-            const Basis<ValueType>& trialBasis,
-            arma::Cube<ValueType>& result) const
+            const Basis<BasisFunctionType>& testBasis,
+            const Basis<BasisFunctionType>& trialBasis,
+            arma::Cube<ResultType>& result) const
 {
     if (m_openClHandler.UseOpenCl())
     {
@@ -577,12 +631,16 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
     }
 }
 
-template <typename ValueType, typename GeometryFactory>
-void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::integrateCpu(
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+void
+SeparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
+integrateCpu(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<ValueType>& testBasis,
-            const Basis<ValueType>& trialBasis,
-            arma::Cube<ValueType>& result) const
+            const Basis<BasisFunctionType>& testBasis,
+            const Basis<BasisFunctionType>& trialBasis,
+            arma::Cube<ResultType>& result) const
 {
     const int testPointCount = m_localTestQuadPoints.n_cols;
     const int trialPointCount = m_localTrialQuadPoints.n_cols;
@@ -614,8 +672,8 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
         assert(kernelColCount == trialComponentCount);
     }
 
-    BasisData<ValueType> testBasisData, trialBasisData;
-    GeometricalData<ValueType> testGeomData, trialGeomData;
+    BasisData<BasisFunctionType> testBasisData, trialBasisData;
+    GeometricalData<CoordinateType> testGeomData, trialGeomData;
 
     int testBasisDeps = 0, trialBasisDeps = 0;
     int testGeomDeps = INTEGRATION_ELEMENTS;
@@ -626,11 +684,11 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
     m_kernel.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 
     typedef typename GeometryFactory::Geometry Geometry;
-    std::auto_ptr<Geometry> testGeometry(m_geometryFactory.make());
-    std::auto_ptr<Geometry> trialGeometry(m_geometryFactory.make());
+    std::auto_ptr<Geometry> testGeometry(m_testGeometryFactory.make());
+    std::auto_ptr<Geometry> trialGeometry(m_trialGeometryFactory.make());
 
-    arma::Cube<ValueType> testValues, trialValues;
-    Array4D<ValueType> kernelValues(kernelRowCount, testPointCount,
+    arma::Cube<BasisFunctionType> testValues, trialValues;
+    Array4d<KernelType> kernelValues(kernelRowCount, testPointCount,
                                     kernelColCount, trialPointCount);
 
     result.set_size(testDofCount, trialDofCount, geometryPairCount);
@@ -641,8 +699,8 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
     // Iterate over the elements
     for (int pairIndex = 0; pairIndex < geometryPairCount; ++pairIndex)
     {
-        m_rawGeometry.setupGeometry(elementIndexPairs[pairIndex].first, *testGeometry);
-        m_rawGeometry.setupGeometry(elementIndexPairs[pairIndex].second, *trialGeometry);
+        m_testRawGeometry.setupGeometry(elementIndexPairs[pairIndex].first, *testGeometry);
+        m_trialRawGeometry.setupGeometry(elementIndexPairs[pairIndex].second, *trialGeometry);
         testGeometry->getData(testGeomDeps, m_localTestQuadPoints, testGeomData);
         trialGeometry->getData(trialGeomDeps, m_localTrialQuadPoints, trialGeomData);
         m_testExpression.evaluate(testBasisData, testGeomData, testValues);
@@ -654,13 +712,13 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
             for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
                 for (int testDof = 0; testDof < testDofCount; ++testDof)
                 {
-                    ValueType sum = 0.;
+                    ResultType sum = 0.;
                     for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
                         for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
                             for (int dim = 0; dim < testComponentCount; ++dim)
                                 sum +=  m_testQuadWeights[testPoint] *
                                         testGeomData.integrationElements(testPoint) *
-                                        testValues(dim, testDof, testPoint) *
+                                        conjugate(testValues(dim, testDof, testPoint)) *
                                         kernelValues(0, testPoint, 0, trialPoint) *
                                         trialValues(dim, trialDof, trialPoint) *
                                         trialGeomData.integrationElements(trialPoint) *
@@ -671,14 +729,14 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
             for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
                 for (int testDof = 0; testDof < testDofCount; ++testDof)
                 {
-                    ValueType sum = 0.;
+                    ResultType sum = 0.;
                     for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
                         for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
                             for (int trialDim = 0; trialDim < trialComponentCount; ++trialDim)
                                 for (int testDim = 0; testDim < testComponentCount; ++testDim)
                                     sum +=  m_testQuadWeights[testPoint] *
                                             testGeomData.integrationElements(testPoint) *
-                                            testValues(testDim, testDof, testPoint) *
+                                            conjugate(testValues(testDim, testDof, testPoint)) *
                                             kernelValues(testDim, testPoint, trialDim, trialPoint) *
                                             trialValues(trialDim, trialDof, trialPoint) *
                                             trialGeomData.integrationElements(trialPoint) *
@@ -689,12 +747,15 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 }
 
 
-template <typename ValueType, typename GeometryFactory>
-void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::integrateCl(
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+void SeparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
+integrateCl(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<ValueType>& testBasis,
-            const Basis<ValueType>& trialBasis,
-            arma::Cube<ValueType>& result) const
+            const Basis<BasisFunctionType>& testBasis,
+            const Basis<BasisFunctionType>& trialBasis,
+            arma::Cube<ResultType>& result) const
 {
 #ifdef WITH_OPENCL
     const int testPointCount = m_localTestQuadPoints.n_cols;
@@ -764,23 +825,23 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
     }
 
     // push the element index pairs
-    clElementIndexA = m_openClHandler.pushIndexVector (elementIndexA);
-    clElementIndexB = m_openClHandler.pushIndexVector (elementIndexB);
-    clGlobalTestPoints = m_openClHandler.createValueBuffer (
+    clElementIndexA = m_openClHandler.pushVector<int> (elementIndexA);
+    clElementIndexB = m_openClHandler.pushVector<int> (elementIndexB);
+    clGlobalTestPoints = m_openClHandler.createBuffer<CoordinateType> (
         geometryPairCount*testPointCount*meshDim, CL_MEM_READ_WRITE);
-    clGlobalTrialPoints = m_openClHandler.createValueBuffer (
+    clGlobalTrialPoints = m_openClHandler.createBuffer<CoordinateType> (
         geometryPairCount*trialPointCount*meshDim, CL_MEM_READ_WRITE);
-    clGlobalTrialNormals = m_openClHandler.createValueBuffer (
+    clGlobalTrialNormals = m_openClHandler.createBuffer<CoordinateType> (
 	geometryPairCount*trialPointCount*meshDim, CL_MEM_READ_WRITE);
-    clTestIntegrationElements = m_openClHandler.createValueBuffer (
+    clTestIntegrationElements = m_openClHandler.createBuffer<CoordinateType> (
         geometryPairCount*testPointCount, CL_MEM_READ_WRITE);
-    clTrialIntegrationElements = m_openClHandler.createValueBuffer (
+    clTrialIntegrationElements = m_openClHandler.createBuffer<CoordinateType> (
         geometryPairCount*trialPointCount, CL_MEM_READ_WRITE);
-    clTestValues = m_openClHandler.createValueBuffer (
+    clTestValues = m_openClHandler.createBuffer<BasisFunctionType> (
 	geometryPairCount*testPointCount*testDofCount, CL_MEM_READ_WRITE);
-    clTrialValues = m_openClHandler.createValueBuffer (
+    clTrialValues = m_openClHandler.createBuffer<BasisFunctionType> (
 	geometryPairCount*trialPointCount*trialDofCount, CL_MEM_READ_WRITE);
-    clResult = m_openClHandler.createValueBuffer (testDofCount*trialDofCount*geometryPairCount,
+    clResult = m_openClHandler.createBuffer<ResultType> (testDofCount*trialDofCount*geometryPairCount,
         CL_MEM_WRITE_ONLY);
 
     // Call the CL kernels to map the trial and test quadrature points
@@ -858,80 +919,7 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
     m_openClHandler.enqueueKernel (cl::NDRange(geometryPairCount));
 
     // Copy results back
-    m_openClHandler.pullValueCube (*clResult, result);
-    
-#ifdef UNDEF
-    BasisData<ValueType> testBasisData, trialBasisData;
-    GeometricalData<ValueType> testGeomData, trialGeomData;
-
-    int testBasisDeps = 0, trialBasisDeps = 0;
-    int testGeomDeps = INTEGRATION_ELEMENTS;
-    int trialGeomDeps = INTEGRATION_ELEMENTS;
-
-    m_testExpression.addDependencies(testBasisDeps, testGeomDeps);
-    m_trialExpression.addDependencies(trialBasisDeps, trialGeomDeps);
-    m_kernel.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
-
-    typedef typename GeometryFactory::Geometry Geometry;
-    std::auto_ptr<Geometry> testGeometry(m_geometryFactory.make());
-    std::auto_ptr<Geometry> trialGeometry(m_geometryFactory.make());
-
-    arma::Cube<ValueType> testValues, trialValues;
-    Array4D<ValueType> kernelValues(kernelRowCount, kernelColCount,
-                                    testPointCount, trialPointCount);
-
-    testBasis.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS, testBasisData);
-    trialBasis.evaluate(trialBasisDeps, m_localTrialQuadPoints, ALL_DOFS, trialBasisData);
-
-    // Iterate over the elements
-    for (int pairIndex = 0; pairIndex < geometryPairCount; ++pairIndex)
-    {
-        m_rawGeometry.setupGeometry(elementIndexPairs[pairIndex].first, *testGeometry);
-        m_rawGeometry.setupGeometry(elementIndexPairs[pairIndex].second, *trialGeometry);
-        testGeometry->getData(testGeomDeps, m_localTestQuadPoints, testGeomData);
-        trialGeometry->getData(trialGeomDeps, m_localTrialQuadPoints, trialGeomData);
-        m_testExpression.evaluate(testBasisData, testGeomData, testValues);
-        m_trialExpression.evaluate(trialBasisData, trialGeomData, trialValues);
-
-        m_kernel.evaluateOnGrid(testGeomData, trialGeomData, kernelValues);
-
-        if (scalarKernel)
-            for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
-                for (int testDof = 0; testDof < testDofCount; ++testDof)
-                {
-                    ValueType sum = 0.;
-                    for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
-                        for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
-                            for (int dim = 0; dim < testComponentCount; ++dim)
-                                sum +=  m_testQuadWeights[testPoint] *
-                                        testGeomData.integrationElements(testPoint) *
-                                        testValues(dim, testDof, testPoint) *
-                                        kernelValues(0, testPoint, 0, trialPoint) *
-                                        trialValues(dim, trialDof, trialPoint) *
-                                        trialGeomData.integrationElements(trialPoint) *
-                                        m_trialQuadWeights[trialPoint];
-                    result(testDof, trialDof, pairIndex) = sum;
-                }
-        else
-            for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
-                for (int testDof = 0; testDof < testDofCount; ++testDof)
-                {
-                    ValueType sum = 0.;
-                    for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
-                        for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
-                            for (int trialDim = 0; trialDim < trialComponentCount; ++trialDim)
-                                for (int testDim = 0; testDim < testComponentCount; ++testDim)
-                                    sum +=  m_testQuadWeights[testPoint] *
-                                            testGeomData.integrationElements(testPoint) *
-                                            testValues(testDim, testDof, testPoint) *
-                                            kernelValues(testDim, testPoint, trialDim, trialPoint) *
-                                            trialValues(trialDim, trialDof, trialPoint) *
-                                            trialGeomData.integrationElements(trialPoint) *
-                                            m_trialQuadWeights[trialPoint];
-                    result(testDof, trialDof, pairIndex) = sum;
-                }
-    }
-#endif
+    m_openClHandler.pullCube<ResultType> (*clResult, result);
 
     // clean up local device buffers
     delete clElementIndexA;
@@ -950,12 +938,15 @@ void SeparableNumericalTestKernelTrialIntegrator<ValueType, GeometryFactory>::in
 #endif // WITH_OPENCL
 }
 
-
-template <typename ValueType, typename GeometryFactory>
-const std::pair<const char*,int> SeparableNumericalTestKernelTrialIntegrator<ValueType,
-    GeometryFactory>::clStrIntegrateRowOrCol () const
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+const std::pair<const char*,int>
+SeparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
+clStrIntegrateRowOrCol () const
 {
   return std::make_pair (separable_numerical_double_integrator_cl,
 			 separable_numerical_double_integrator_cl_len);
 }
+
 } // namespace Fiber

@@ -26,15 +26,17 @@
 namespace Bempp
 {
 
-template <typename ValueType>
+template <typename BasisFunctionType, typename ResultType>
 class Solver
 {
 public:
     enum EStatus {CONVERGED, UNCONVERGED, UNKNOWN};
 
+    virtual ~Solver() {}
+
     virtual void solve() = 0;
 
-    virtual GridFunction<ValueType> getResult() const = 0;
+    virtual GridFunction<BasisFunctionType, ResultType> getResult() const = 0;
     virtual EStatus getStatus() const = 0;
 };
 

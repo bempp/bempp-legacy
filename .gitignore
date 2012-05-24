@@ -1,10 +1,13 @@
 /build*
 *~
-bempp.*
 .cproject
 .project
 *.DS_Store
 /nbproject/private/
+/contrib/dune/
+/contrib/boost/
+/contrib/files/
+/contrib/trilinos/
 /contrib/dune-common/dune/common/.deps/
 /contrib/dune-common/lib/.deps/
 /contrib/dune-common/dune/common/test/.deps/
@@ -12,3 +15,4 @@ bempp.*
 /contrib/dune-common/dune/common/.libs/
 /contrib/dune-common/lib/.libs/
 /doc/build*
+*.pyc

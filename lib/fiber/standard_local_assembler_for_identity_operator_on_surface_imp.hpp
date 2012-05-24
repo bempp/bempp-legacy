@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2012 by the Fiber Authors
+// Copyright (C) 2011-2012 by the Bem++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,68 +26,71 @@
 namespace Fiber
 {
 
-template <typename ValueType, typename GeometryFactory>
-StandardLocalAssemblerForIdentityOperatorOnSurface<ValueType, GeometryFactory>::
+template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
+StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
 StandardLocalAssemblerForIdentityOperatorOnSurface(
-        const GeometryFactory& geometryFactory,
-        const RawGridGeometry<ValueType>& rawGeometry,
-        const std::vector<const Basis<ValueType>*>& testBases,
-        const std::vector<const Basis<ValueType>*>& trialBases,
-        const Expression<ValueType>& testExpression,
-        const Expression<ValueType>& trialExpression,
-        ValueType multiplier,
-        const OpenClHandler<ValueType,int>& openClHandler) :
+    const shared_ptr<const GeometryFactory>& geometryFactory,
+    const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+    const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
+    const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+    const shared_ptr<const Expression<CoordinateType> >& testExpression,
+    const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+    const shared_ptr<const OpenClHandler>& openClHandler) :
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
     m_testBases(testBases),
     m_trialBases(trialBases),
     m_testExpression(testExpression),
     m_trialExpression(trialExpression),
-    m_multiplier(multiplier),
     m_openClHandler(openClHandler)
+{
+    checkConsistencyOfGeometryAndBases(*rawGeometry, *testBases);
+    checkConsistencyOfGeometryAndBases(*rawGeometry, *trialBases);
+}
+
+template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
+void
+StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
+checkConsistencyOfGeometryAndBases(
+        const RawGridGeometry<CoordinateType>& rawGeometry,
+        const std::vector<const Basis<BasisFunctionType>*>& bases) const
 {
     if (rawGeometry.vertices().n_rows != 3)
         throw std::invalid_argument(
-                "StandardLocalAssemblerForIdentityOperatorOnSurface::"
-                "StandardLocalAssemblerForIdentityOperatorOnSurface(): "
-                "vertex coordinates must be three-dimensional");
+            "StandardLocalAssemblerForIdentityOperatorOnSurface::"
+            "checkConsistencyOfGeometryAndBases(): "
+            "vertex coordinates must be three-dimensional");
     const int elementCount = rawGeometry.elementCornerIndices().n_cols;
     if (rawGeometry.elementCornerIndices().n_rows < 3 ||
             4 < rawGeometry.elementCornerIndices().n_rows)
         throw std::invalid_argument(
-                "StandardLocalAssemblerForIdentityOperatorOnSurface::"
-                "StandardLocalAssemblerForIdentityOperatorOnSurface(): "
-                "Elements must have either 3 or 4 corners");
+            "StandardLocalAssemblerForIdentityOperatorOnSurface::"
+            "checkConsistencyOfGeometryAndBases(): "
+            "Elements must have either 3 or 4 corners");
     if (!rawGeometry.auxData().is_empty() &&
             rawGeometry.auxData().n_cols != elementCount)
         throw std::invalid_argument(
-                "StandardLocalAssemblerForIdentityOperatorOnSurface::"
-                "StandardLocalAssemblerForIdentityOperatorOnSurface(): "
-                "number of columns of auxData must match that of "
-                "elementCornerIndices");
-    if (testBases.size() != elementCount)
+            "StandardLocalAssemblerForIdentityOperatorOnSurface::"
+            "checkConsistencyOfGeometryAndBases(): "
+            "number of columns of auxData must match that of "
+            "elementCornerIndices");
+    if (bases.size() != elementCount)
         throw std::invalid_argument(
-                "StandardLocalAssemblerForIdentityOperatorOnSurface::"
-                "StandardLocalAssemblerForIdentityOperatorOnSurface(): "
-                "size of testBases must match the number of columns of "
-                "elementCornerIndices");
-    if (trialBases.size() != elementCount)
-        throw std::invalid_argument(
-                "StandardLocalAssemblerForIdentityOperatorOnSurface::"
-                "StandardLocalAssemblerForIdentityOperatorOnSurface(): "
-                "size of trialBases must match the number of columns of "
-                "elementCornerIndices");
+            "StandardLocalAssemblerForIdentityOperatorOnSurface::"
+            "checkConsistencyOfGeometryAndBases(): "
+            "size of bases must match the number of columns of "
+            "elementCornerIndices");
 }
 
-template <typename ValueType, typename GeometryFactory>
+template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForIdentityOperatorOnSurface<ValueType, GeometryFactory>::
+StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
 evaluateLocalWeakForms(
-        CallVariant callVariant,
-        const std::vector<int>& elementIndicesA,
-        int elementIndexB,
-        LocalDofIndex localDofIndexB,
-        std::vector<arma::Mat<ValueType> >& result)
+    CallVariant callVariant,
+    const std::vector<int>& elementIndicesA,
+    int elementIndexB,
+    LocalDofIndex localDofIndexB,
+    std::vector<arma::Mat<ResultType> >& result)
 {
     // Probably will never be called
     throw std::runtime_error("StandardLocalAssemblerForIdentityOperatorOnSurface::"
@@ -95,13 +98,13 @@ evaluateLocalWeakForms(
                              "this overload not implemented yet");
 }
 
-template <typename ValueType, typename GeometryFactory>
+template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForIdentityOperatorOnSurface<ValueType, GeometryFactory>::
+StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
 evaluateLocalWeakForms(
-        const std::vector<int>& testElementIndices,
-        const std::vector<int>& trialElementIndices,
-        Fiber::Array2D<arma::Mat<ValueType> >& result)
+    const std::vector<int>& testElementIndices,
+    const std::vector<int>& trialElementIndices,
+    Fiber::Array2d<arma::Mat<ResultType> >& result)
 {
     // Probably will never be called
     throw std::runtime_error("StandardLocalAssemblerForIdentityOperatorOnSurface::"
@@ -109,29 +112,28 @@ evaluateLocalWeakForms(
                              "this overload not implemented yet");
 }
 
-template <typename ValueType, typename GeometryFactory>
+template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForIdentityOperatorOnSurface<ValueType, GeometryFactory>::
+StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
 evaluateLocalWeakForms(
-        const std::vector<int>& elementIndices,
-        std::vector<arma::Mat<ValueType> >& result)
+    const std::vector<int>& elementIndices,
+    std::vector<arma::Mat<ResultType> >& result)
 {
     // The only overload likely to be needed for identity operators
-    typedef TestTrialIntegrator<ValueType> Integrator;
-    typedef Basis<ValueType> Basis;
+    typedef TestTrialIntegrator<BasisFunctionType, ResultType> Integrator;
+    typedef Basis<BasisFunctionType> Basis;
 
     const int elementCount = elementIndices.size();
     result.resize(elementCount);
 
     // Select integrator for each element
     typedef boost::tuples::tuple<const Integrator*, const Basis*, const Basis*>
-            QuadVariant;
+    QuadVariant;
     std::vector<QuadVariant> quadVariants(elementCount);
-    for (int i = 0; i < elementCount; ++i)
-    {
+    for (int i = 0; i < elementCount; ++i) {
         const Integrator* integrator = &selectIntegrator(elementIndices[i]);
-        quadVariants[i] = QuadVariant(integrator, m_testBases[elementIndices[i]],
-                                      m_trialBases[elementIndices[i]]);
+        quadVariants[i] = QuadVariant(integrator, (*m_testBases)[elementIndices[i]],
+                                      (*m_trialBases)[elementIndices[i]]);
     }
 
     // Integration will proceed in batches of test elements having the same
@@ -147,8 +149,7 @@ evaluateLocalWeakForms(
 
     // Now loop over unique quadrature variants
     for (typename QuadVariantSet::const_iterator it = uniqueQuadVariants.begin();
-         it != uniqueQuadVariants.end(); ++it)
-    {
+            it != uniqueQuadVariants.end(); ++it) {
         const QuadVariant activeQuadVariant = *it;
         const Integrator& activeIntegrator = *it->template get<0>();
         const Basis& activeTestBasis  = *it->template get<1>();
@@ -162,7 +163,7 @@ evaluateLocalWeakForms(
                 activeElementIndices.push_back(elementIndices[e]);
 
         // Integrate!
-        arma::Cube<ValueType> localResult;
+        arma::Cube<ResultType> localResult;
         activeIntegrator.integrate(activeElementIndices,
                                    activeTestBasis, activeTrialBasis,
                                    localResult);
@@ -172,54 +173,54 @@ evaluateLocalWeakForms(
         int i = 0;
         for (int e = 0; e < elementCount; ++e)
             if (quadVariants[e] == activeQuadVariant)
-                result[e] = m_multiplier * localResult.slice(i++);
+                result[e] = localResult.slice(i++);
     }
 }
 
-template <typename ValueType, typename GeometryFactory>
-const TestTrialIntegrator<ValueType>&
-StandardLocalAssemblerForIdentityOperatorOnSurface<ValueType, GeometryFactory>::
+template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
+const TestTrialIntegrator<BasisFunctionType, ResultType>&
+StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
 selectIntegrator(int elementIndex)
 {
     SingleQuadratureDescriptor desc;
 
     // Get number of corners of the specified element
-    desc.vertexCount = m_rawGeometry.elementCornerCount(elementIndex);
+    desc.vertexCount = m_rawGeometry->elementCornerCount(elementIndex);
 
     // Determine integrand's order and required quadrature order
     const int expressionOrder =
-            m_testBases[elementIndex]->order() +
-            m_trialBases[elementIndex]->order();
+        (*m_testBases)[elementIndex]->order() +
+        (*m_trialBases)[elementIndex]->order();
     desc.order = ((expressionOrder + 1) + 1 /* round up */) / 2;
 
     return getIntegrator(desc);
 }
 
-template <typename ValueType, typename GeometryFactory>
-const TestTrialIntegrator<ValueType>&
-StandardLocalAssemblerForIdentityOperatorOnSurface<ValueType, GeometryFactory>::
+template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
+const TestTrialIntegrator<BasisFunctionType, ResultType>&
+StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
 getIntegrator(const SingleQuadratureDescriptor& desc)
 {
     typename IntegratorMap::iterator it = m_testTrialIntegrators.find(desc);
-    if (it != m_testTrialIntegrators.end())
-    {
+    if (it != m_testTrialIntegrators.end()) {
 //            std::cout << "getIntegrator(: " << index << "): integrator found" << std::endl;
         return *it->second;
     }
 //        std::cout << "getIntegrator(: " << index << "): integrator not found" << std::endl;
 
     // Integrator doesn't exist yet and must be created.
-    arma::Mat<ValueType> points;
-    std::vector<ValueType> weights;
+    arma::Mat<CoordinateType> points;
+    std::vector<CoordinateType> weights;
     fillSingleQuadraturePointsAndWeights(desc.vertexCount, desc.order,
                                          points, weights);
 
-    typedef NumericalTestTrialIntegrator<ValueType, GeometryFactory> Integrator;
-    std::auto_ptr<TestTrialIntegrator<ValueType> > integrator(
-            new Integrator(points, weights,
-                           m_geometryFactory, m_rawGeometry,
-                           m_testExpression, m_trialExpression,
-                           m_openClHandler));
+    typedef NumericalTestTrialIntegrator<BasisFunctionType, ResultType,
+            GeometryFactory> Integrator;
+    std::auto_ptr<TestTrialIntegrator<BasisFunctionType, ResultType> > integrator(
+        new Integrator(points, weights,
+                       *m_geometryFactory, *m_rawGeometry,
+                       *m_testExpression, *m_trialExpression,
+                       *m_openClHandler));
 
     return *m_testTrialIntegrators.insert(desc, integrator).first->second;
 }

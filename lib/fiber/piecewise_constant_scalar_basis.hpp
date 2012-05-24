@@ -33,6 +33,8 @@ template <typename ValueType>
 class PiecewiseConstantScalarBasis : public Basis<ValueType>
 {
 public:
+    typedef typename Basis<ValueType>::CoordinateType CoordinateType;
+
     virtual int size() const {
         return 1;
     }
@@ -42,7 +44,7 @@ public:
     }
 
     virtual void evaluate(int what,
-                          const arma::Mat<ValueType>& points,
+                          const arma::Mat<CoordinateType>& points,
                           LocalDofIndex localDofIndex,
                           BasisData<ValueType>& data) const {
         if (localDofIndex != ALL_DOFS && localDofIndex != 0)

@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2012 by the Fiber Authors
+// Copyright (C) 2011-2012 by the Bem++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,14 +30,14 @@ namespace Fiber {
 Bound checking can optionally be activated by defining the symbol
 FIBER_CHECK_ARRAY_BOUNDS. */
 template <typename T>
-class Array3D
+class Array3d
 {
 public:
-    Array3D();
-    Array3D(int extent0, int extent1, int extent2);
-    Array3D(int extent0, int extent1, int extent2, T* data);
+    Array3d();
+    Array3d(int extent0, int extent1, int extent2);
+    Array3d(int extent0, int extent1, int extent2, T* data);
 
-    ~Array3D();
+    ~Array3d();
 
     T& operator()(int index0, int index1, int index2);
     const T& operator()(int index0, int index1, int index2) const;
@@ -62,8 +62,8 @@ private:
 
 private:
     // Disable copy constructor and assignment operator
-    Array3D(const Array3D& rhs);
-    Array3D& operator=(const Array3D& rhs);
+    Array3d(const Array3d& rhs);
+    Array3d& operator=(const Array3d& rhs);
 
 private:
     int m_extents[3];
