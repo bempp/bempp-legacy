@@ -30,8 +30,6 @@
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/local_assembler_for_operators.hpp"
 #include "../fiber/scalar_traits.hpp"
-#include "../grid/entity_iterator.hpp"
-#include "../grid/grid.hpp"
 #include "../space/space.hpp"
 
 #include <armadillo>
@@ -116,7 +114,6 @@ public:
 
 private:
     mutable WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>& m_helper;
-    size_t m_leafClusterCount;
     AhmedLeafClusterArray& m_leafClusters;
     boost::shared_array<AhmedMblock*> m_blocks;
     const AcaOptions& m_options;
