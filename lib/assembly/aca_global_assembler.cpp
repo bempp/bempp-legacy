@@ -318,6 +318,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
     for (size_t i = 0; i < leafClusterCount; ++i)
         leafClusterIndexQueue.push(i);
 
+    std::cout << "About to start the ACA assembly loop" << std::endl;
     tbb::tick_count loopStart = tbb::tick_count::now();
     tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
                       Body(helper, leafClusters, blocks, acaOptions, done,

@@ -20,11 +20,13 @@ ElementaryLinearOperator<BasisFunctionType, ResultType>::makeAssemblerFromScratc
     shared_ptr<BasisPtrVector> testBases, trialBases;
     bool cacheSingularIntegrals;
 
+    std::cout << "Collecting data for assembler construction" << std::endl;
     collectDataForAssemblerConstruction(options,
                                         testRawGeometry, trialRawGeometry,
                                         testGeometryFactory, trialGeometryFactory,
                                         testBases, trialBases,
                                         openClHandler, cacheSingularIntegrals);
+    std::cout << "Collection finished." << std::endl;
 
     return makeAssembler(assemblerFactory,
                          testGeometryFactory, trialGeometryFactory,
