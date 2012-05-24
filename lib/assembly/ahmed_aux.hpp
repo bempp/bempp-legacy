@@ -57,7 +57,7 @@ inline comp<float> operator/(double a, comp<float>& b)
 #include <bllist.h>
 // #include <matgen_sqntl.h>
 // #define _OPENMP
-#include <matgen_omp.h>
+// #include <matgen_omp.h>
 // #undef _OPENMP
 
 bool multaHvec_omp(double d, blcluster* bl, mblock<double>** A, double* x,
