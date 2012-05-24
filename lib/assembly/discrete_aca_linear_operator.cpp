@@ -25,18 +25,110 @@
 #include "discrete_aca_linear_operator.hpp"
 #include "ahmed_aux.hpp"
 #include "../common/not_implemented_error.hpp"
+#include "../common/chunk_statistics.hpp"
 #include "../fiber/explicit_instantiation.hpp"
-
-#include <iostream>
-#include <fstream>
 
 #ifdef WITH_TRILINOS
 #include <Thyra_DetachedSpmdVectorView.hpp>
 #include <Thyra_SpmdVectorSpaceDefaultBase.hpp>
 #endif
 
+#include <tbb/blocked_range.h>
+#include <tbb/concurrent_queue.h>
+#include <tbb/parallel_reduce.h>
+#include <tbb/task_scheduler_init.h>
+
+#include <iostream>
+#include <fstream>
+
+bool multaHvec_omp(double d, blcluster* bl, mblock<double>** A, double* x,
+           double* y);
+bool multaHvec_omp(float d, blcluster* bl, mblock<float>** A, float* x,
+           float* y);
+bool multaHvec_omp(dcomp d, blcluster* bl, mblock<dcomp>** A, dcomp* x,
+           dcomp* y);
+bool multaHvec_omp(scomp d, blcluster* bl, mblock<scomp>** A, scomp* x,
+           scomp* y);
+
 namespace Bempp
 {
+
+namespace
+{
+
+template <typename ValueType>
+class MblockMultiplicationLoopBody
+{
+    typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
+public:
+    typedef tbb::concurrent_queue<size_t> LeafClusterIndexQueue;
+
+    MblockMultiplicationLoopBody(
+            ValueType multiplier,
+            arma::Col<ValueType>& x,
+            arma::Col<ValueType>& y,
+            AhmedLeafClusterArray& leafClusters,
+            boost::shared_array<AhmedMblock*> blocks,
+            LeafClusterIndexQueue& leafClusterIndexQueue,
+            std::vector<ChunkStatistics>& stats) :
+        m_multiplier(multiplier), m_x(x), m_local_y(y),
+        m_leafClusters(leafClusters), m_blocks(blocks),
+        m_leafClusterIndexQueue(leafClusterIndexQueue),
+        m_stats(stats)
+    {
+        // m_local_y.fill(static_cast<ValueType>(0.));
+    }
+
+    MblockMultiplicationLoopBody(MblockMultiplicationLoopBody& other, tbb::split) :
+        m_multiplier(other.m_multiplier),
+        m_x(other.m_x), m_local_y(other.m_local_y.n_rows),
+        m_leafClusters(other.m_leafClusters), m_blocks(other.m_blocks),
+        m_leafClusterIndexQueue(other.m_leafClusterIndexQueue),
+        m_stats(other.m_stats)
+    {
+        m_local_y.fill(static_cast<ValueType>(0.));
+    }
+
+    template <typename Range>
+    void operator() (const Range& r) {
+        for (typename Range::const_iterator i = r.begin(); i != r.end(); ++i) {
+            size_t leafClusterIndex = -1;
+            if (!m_leafClusterIndexQueue.try_pop(leafClusterIndex)) {
+                std::cerr << "MblockMultiplicationLoopBody::operator(): "
+                             "Warning: try_pop failed; this shouldn't happen!"
+                          << std::endl;
+                continue;
+            }
+            m_stats[leafClusterIndex].valid = true;
+            m_stats[leafClusterIndex].chunkStart = r.begin();
+            m_stats[leafClusterIndex].chunkSize = r.size();
+            m_stats[leafClusterIndex].startTime = tbb::tick_count::now();
+
+            blcluster* cluster = m_leafClusters[leafClusterIndex];
+            m_blocks[cluster->getidx()]->multa_vec(ahmedCast(m_multiplier),
+                                                   ahmedCast(&m_x(cluster->getb2())),
+                                                   ahmedCast(&m_local_y(cluster->getb1())));
+            m_stats[leafClusterIndex].endTime = tbb::tick_count::now();
+        }
+    }
+
+    void join(const MblockMultiplicationLoopBody& other) {
+        m_local_y += other.m_local_y;
+    }
+
+private:
+    ValueType m_multiplier;
+    arma::Col<ValueType>& m_x;
+public:
+    arma::Col<ValueType> m_local_y;
+private:
+    AhmedLeafClusterArray& m_leafClusters;
+    boost::shared_array<AhmedMblock*> m_blocks;
+    LeafClusterIndexQueue& m_leafClusterIndexQueue;
+    std::vector<ChunkStatistics>& m_stats;
+};
+
+} // namespace
 
 template <typename ValueType>
 DiscreteAcaLinearOperator<ValueType>::
@@ -243,9 +335,42 @@ applyBuiltInImpl(const TranspositionMode trans,
     // functions, which don't respect const-correctness
     arma::Col<ValueType> permutedResult;
     m_rangePermutation.permuteVector(y_inout, permutedResult);
-    multaHvec(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
-              ahmedCast(permutedArgument.memptr()),
-              ahmedCast(permutedResult.memptr()));
+
+    // Old serial version
+//    std::cout << "----------------------------\nperm Arg\n" << permutedArgument;
+//    std::cout << "perm Res\n" << permutedResult;
+      multaHvec(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
+                ahmedCast(permutedArgument.memptr()),
+                ahmedCast(permutedResult.memptr()));
+//     std::cout << "perm Res2\n" << permutedResult;
+
+   // multaHvec_omp(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
+   //           ahmedCast(permutedArgument.memptr()),
+   //           ahmedCast(permutedResult.memptr()));
+
+//    AhmedLeafClusterArray leafClusters(m_blockCluster.get());
+//    leafClusters.sortAccordingToClusterSize();
+//    const size_t leafClusterCount = leafClusters.size();
+
+//    // TODO: make it possible to select number of threads
+//    tbb::task_scheduler_init scheduler;
+//    std::vector<ChunkStatistics> chunkStats(leafClusterCount);
+
+//    typedef MblockMultiplicationLoopBody<ValueType> Body;
+//    typename Body::LeafClusterIndexQueue leafClusterIndexQueue;
+//    for (size_t i = 0; i < leafClusterCount; ++i)
+//        leafClusterIndexQueue.push(i);
+
+//    // std::cout << "----------------------------\nperm Arg\n" << permutedArgument;
+//    // std::cout << "perm Res\n" << permutedResult;
+//    Body body(alpha, permutedArgument, permutedResult,
+//              leafClusters, m_blocks,
+//              leafClusterIndexQueue, chunkStats);
+//    tbb::parallel_reduce(tbb::blocked_range<size_t>(0, leafClusterCount),
+//                         body);
+//    permutedResult = body.m_local_y;
+//    // std::cout << "perm Res2\n" << permutedResult;
+
     m_rangePermutation.unpermuteVector(permutedResult, y_inout);
 }
 
