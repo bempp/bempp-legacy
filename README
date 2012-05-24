@@ -1,12 +1,19 @@
-BEMPP is a novel open source HPC boundary element library. Coding has started October 2011.
+BEMPP is a novel open source HPC boundary element library. Coding 
+started in October 2011.
 
+The available objects are in an early stage and not yet recommended
+for applications. If you want to compile the code please be aware that
+we do not yet guarantee that every commit will compile.
 
-The available objects are in an early stage and not yet recommended for applications. If you want to compile the code please be aware that we do not yet guarantee that every commit will compile.
+The library has been tested under Scientific Linux 6 (RedHat
+Enterprise 6 compatible).
 
-The library has been tested under Scientific Linux 6 (RedHat Enterprise 6 compatible).
-Do build the library please adapt the LAPACK and BLAS path in the file bempp_options.cfg. If you do not have AHMED please comment
-out the corresponding section. Then call 'python bempp_install.py'. This will download all dependencies and install the library, 
-which takes about an hour in total.
+To build the library please adapt the LAPACK and BLAS path in the file
+bempp_options.cfg. If you do not have AHMED, please comment out the
+corresponding section. Then call 'python bempp_install.py'. This will
+download all dependencies and install the library, which takes about
+an hour in total.
 
-More detailed installation instructions will be available when the library will first be officially released.
+More detailed installation instructions will be available when the
+library will first be officially released.
 

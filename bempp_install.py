@@ -18,7 +18,7 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #THE SOFTWARE.
 
-# This script downloads necessary third party libraries, which are needed for BEM++
+# This script downloads the third-party libraries required by BEM++
 
 
 options='bempp_options.cfg'
@@ -37,7 +37,7 @@ import py_modules.ahmed as ahmed
 
 ###########################
 
-# The following functions determine the directory, in which the file resides.
+# The following functions determine the directory in which the file resides.
 # Trick taken from http://stackoverflow.com/questions/2632199/how-do-i-get-the-path-of-the-current-executed-file-in-python
 
 def we_are_frozen():
