@@ -42,7 +42,7 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::DefaultIterativeSolver(
     m_space(linOp.trialSpace()),
     // TODO: gridFun.coefficients should return a shared pointer to Vector
     // rather than a Vector
-    m_rhs(new Vector<ResultType>(gridFun.coefficients()))
+    m_rhs(new Vector<ResultType>(gridFun.projections()))
 {
     if (&linOp.trialSpace() != &gridFun.space())
         throw std::runtime_error("DefaultIterativeSolver::DefaultIterativeSolver(): "
@@ -87,7 +87,7 @@ template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>
 DefaultIterativeSolver<BasisFunctionType, ResultType>::getResult() const
 {
-    return GridFunction<BasisFunctionType, ResultType>(m_space, m_sol);
+    return gridFunctionFromCoefficients(m_space, m_sol);
 }
 
 template <typename BasisFunctionType, typename ResultType>

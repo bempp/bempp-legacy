@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
 
     // We also want a grid function
 
-    GridFunction<BFT, RT> u = surfaceNormalIndependentGridFunction(
+    GridFunction<BFT, RT> u = gridFunctionFromSurfaceNormalIndependentFunctor(
                 HplusHalfSpace, MyFunctor(), factory, assemblyOptions);
 
     // Assemble the rhs

@@ -21,10 +21,16 @@
 #ifndef bempp_space_hpp
 #define bempp_space_hpp
 
-#include "../common/types.hpp"
+#include "mass_matrix_container_initialiser.hpp"
+
+#include "../common/lazy.hpp"
 #include "../common/not_implemented_error.hpp"
+#include "../common/types.hpp"
 #include "../fiber/scalar_traits.hpp"
+
 #include <armadillo>
+#include <boost/utility/enable_if.hpp>
+#include <boost/type_traits/is_same.hpp>
 #include <vector>
 
 namespace Fiber
@@ -44,21 +50,22 @@ class Grid;
 template <int codim> class Entity;
 template <int codim> class EntityPointer;
 
+template <typename ValueType> class MassMatrixContainer;
+
 template <typename BasisFunctionType>
 class Space
 {
 public:
     typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+    typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType ComplexType;
 
     // A grid reference is necessary because e.g. when setting the element
     // variant it is necessary to check whether the element is triangular
     // or quadrilateral. Also, requests for element refinement should probably
     // be made via Space rather than via Grid.
-    explicit Space(Grid& grid) : m_grid(grid)
-    {}
+    explicit Space(Grid& grid);
 
-    virtual ~Space()
-    {}
+    virtual ~Space();
 
     /** @name Attributes
     @{ */
@@ -117,11 +124,54 @@ public:
             std::vector<Point3D<CoordinateType> >& positions) const = 0;
     /** @} */
 
+    /** @}
+        @name Mass matrix and inverse mass matrix management
+        @} */
+
+    template <typename ResultType>
+    typename boost::enable_if_c<boost::is_same<ResultType, BasisFunctionType>::value ||
+                                boost::is_same<ResultType, ComplexType>::value>::type
+    applyMassMatrix(const arma::Col<ResultType>& argument,
+                    arma::Col<ResultType>& result) const;
+    template <typename ResultType>
+    typename boost::enable_if_c<boost::is_same<ResultType, BasisFunctionType>::value ||
+                                boost::is_same<ResultType, ComplexType>::value>::type
+    applyInverseMassMatrix(const arma::Col<ResultType>& argument,
+                           arma::Col<ResultType>& result) const;
+
+    /** @}
+        @name Debugging
+        @} */
     virtual void dumpClusterIds(const char* fileName,
                                 const std::vector<unsigned int>& clusterIds) const = 0;
+    /** @} */
+
+protected:
+    // void resetMassMatrixContainers() const; // TODO
 
 protected:
     Grid& m_grid;
+
+private:
+    void applyMassMatrixBasisFunctionType(
+            const arma::Col<BasisFunctionType>& argument,
+            arma::Col<BasisFunctionType>& result) const;
+    void applyMassMatrixComplexType(
+            const arma::Col<ComplexType>& argument,
+            arma::Col<ComplexType>& result) const;
+    void applyInverseMassMatrixBasisFunctionType(
+            const arma::Col<BasisFunctionType>& argument,
+            arma::Col<BasisFunctionType>& result) const;
+    void applyInverseMassMatrixComplexType(
+            const arma::Col<ComplexType>& argument,
+            arma::Col<ComplexType>& result) const;
+
+    mutable Lazy<MassMatrixContainer<BasisFunctionType>,
+    MassMatrixContainerInitialiser<BasisFunctionType, BasisFunctionType> >
+    m_bftMassMatrixContainer;
+    mutable Lazy<MassMatrixContainer<ComplexType>,
+    MassMatrixContainerInitialiser<BasisFunctionType, ComplexType> >
+    m_ctMassMatrixContainer;
 };
 
 /** \brief Get pointers to Basis objects corresponding to all elements. */

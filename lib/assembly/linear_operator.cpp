@@ -82,17 +82,15 @@ void LinearOperator<BasisFunctionType, ResultType>::apply(
         throw std::runtime_error("LinearOperator::apply(): Spaces don't match");
 
     // Extract coefficient vectors
-    arma::Col<ResultType> xVals = x_in.coefficients().asArmadilloVector();
-    arma::Col<ResultType> yVals = y_inout.coefficients().asArmadilloVector();
+    arma::Col<ResultType> xVals = x_in.coefficients();
+    arma::Col<ResultType> yVals = y_inout.projections();
 
-    // Apply operator and assign the result to y_inout's coefficients
+    // Apply operator and assign the result to y_inout's projections
     m_discreteOperator->apply(trans, xVals, yVals, alpha, beta);
-    // Note: all these armadillo<->vector conversions are horribly
-    // inefficient and unnecessary. But in order to get rid of them, we need
-    // first to make interfaces to the Trilinos and fallback
+    // TODO: make interfaces to the Trilinos and fallback
     // DiscreteLinearOperator::apply() compatible.
     // Perhaps by declaring an asPtrToBaseVector method in Vector...
-    y_inout.setCoefficients(Vector<ResultType>(yVals));
+    y_inout.setProjections(yVals);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -128,8 +126,6 @@ template <typename BasisFunctionType, typename ResultType>
 const Space<BasisFunctionType>& LinearOperator<BasisFunctionType, ResultType>::trialSpace() const
 {
     return m_trialSpace;
-//    LinearOperatorSuperposition<BasisFunctionType, ResultType> ls =
-//            *this * static_cast<ResultType>(5.);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -244,9 +240,11 @@ GridFunction<BasisFunctionType, ResultType> operator*(
         const GridFunction<BasisFunctionType, ResultType>& fun)
 {
     const Space<BasisFunctionType>& space = op.testSpace();
-    arma::Col<ResultType> coeffs(space.globalDofCount());
-    coeffs.fill(0.);
-    GridFunction<BasisFunctionType, ResultType> result(space, coeffs);
+    arma::Col<ResultType> coefficients(space.globalDofCount());
+    coefficients.fill(0.);
+    arma::Col<ResultType> projections(space.globalDofCount());
+    projections.fill(0.);
+    GridFunction<BasisFunctionType, ResultType> result(space, coefficients, projections);
     op.apply(NO_TRANSPOSE, fun, result, 1., 0.);
     return result;
 }

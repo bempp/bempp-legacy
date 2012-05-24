@@ -19,11 +19,11 @@
 // THE SOFTWARE.
 
 #include "config_trilinos.hpp"
+#ifdef WITH_TRILINOS
 
 #include "discrete_sparse_linear_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
-#ifdef WITH_TRILINOS
 #include <iostream>
 #include <stdexcept>
 

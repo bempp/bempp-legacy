@@ -20,17 +20,14 @@
 
 #include "grid_function.hpp"
 
-#include "config_trilinos.hpp"
-
 #include "assembly_options.hpp"
-#include "discrete_linear_operator.hpp"
-#include "discrete_sparse_linear_operator.hpp"
-#include "identity_operator.hpp"
 #include "local_assembler_construction_helper.hpp"
 
 #include "../common/stl_io.hpp"
 #include "../fiber/basis.hpp"
+#include "../fiber/basis_data.hpp"
 #include "../fiber/explicit_instantiation.hpp"
+#include "../fiber/expression.hpp"
 #include "../fiber/function.hpp"
 #include "../fiber/local_assembler_factory.hpp"
 #include "../fiber/local_assembler_for_grid_functions.hpp"
@@ -47,15 +44,6 @@
 
 #include <set>
 
-#ifdef WITH_TRILINOS
-#include <Amesos.h>
-#include <Amesos_BaseSolver.h>
-#include <Epetra_Map.h>
-#include <Epetra_MultiVector.h>
-#include <Epetra_CrsMatrix.h>
-#include <Epetra_SerialComm.h>
-#endif
-
 // TODO: rewrite the constructor of OpenClHandler.
 // It should take a bool useOpenCl and *in addition to that* openClOptions.
 // The role of the latter should be to e.g. select the device to use
@@ -69,339 +57,14 @@
 namespace Bempp
 {
 
-// Type-agnostic wrapper for the Amesos solver
 namespace
 {
 
-#ifdef WITH_TRILINOS
-template <typename ValueType>
-void solveWithAmesos(Epetra_CrsMatrix& mat, arma::Mat<ValueType>& solution,
-                     const arma::Mat<ValueType>& rhs);
-
-template <>
-void solveWithAmesos<double>(Epetra_CrsMatrix& mat,
-                             arma::Mat<double>& armaSolution,
-                             const arma::Mat<double>& armaRhs)
-{
-    const int rowCount = mat.NumGlobalRows();
-    assert(rowCount == mat.NumGlobalCols());
-    assert(rowCount == armaSolution.n_rows);
-    assert(rowCount == armaRhs.n_rows);
-    const int rhsCount = armaRhs.n_cols;
-    assert(rhsCount == armaSolution.n_cols);
-
-    Epetra_Map map(rowCount, 0 /* base index */, Epetra_SerialComm());
-    Epetra_MultiVector solution(View, map, armaSolution.memptr(),
-                                rowCount, rhsCount);
-    Epetra_MultiVector rhs(View, map, const_cast<double*>(armaRhs.memptr()),
-                           rowCount, rhsCount);
-    Epetra_LinearProblem problem(&mat, &solution, &rhs);
-
-    Amesos amesosFactory;
-    const char* solverName = "Amesos_Klu";
-    if (!amesosFactory.Query(solverName))
-        throw std::runtime_error("GridFunction::GridFunction(): "
-                                 "Amesos_Klu solver not available");
-    std::auto_ptr<Amesos_BaseSolver> solver(
-                amesosFactory.Create("Amesos_Klu", problem));
-    if (!solver.get())
-        throw std::runtime_error("GridFunction::GridFunction(): "
-                                 "Amesos solver could not be constructed");
-
-    if (solver->SymbolicFactorization())
-        throw std::runtime_error("GridFunction::GridFunction(): "
-                                 "Symbolic factorisation with Amesos failed");
-    if (solver->NumericFactorization())
-        throw std::runtime_error("GridFunction::GridFunction(): "
-                                 "Numeric factorisation with Amesos failed");
-    if (solver->Solve())
-        throw std::runtime_error("GridFunction::GridFunction(): "
-                                 "Amesos solve failed");
-}
-
-template <>
-void solveWithAmesos<float>(Epetra_CrsMatrix& mat,
-                            arma::Mat<float>& armaSolution,
-                            const arma::Mat<float>& armaRhs)
-{
-    // Right now we only support single rhs vectors
-    assert(armaSolution.n_cols == 1);
-    assert(armaRhs.n_cols == 1);
-
-    arma::Col<double> solution_double(armaSolution.n_rows);
-    std::copy(armaSolution.begin(), armaSolution.end(), solution_double.begin());
-    arma::Col<double> rhs_double(armaRhs.n_rows);
-    std::copy(armaRhs.begin(), armaRhs.end(), rhs_double.begin());
-
-    solveWithAmesos<double>(mat, solution_double, rhs_double);
-
-    std::copy(solution_double.begin(), solution_double.end(), armaSolution.begin());
-}
-
-template <>
-void solveWithAmesos<std::complex<float> >(
-        Epetra_CrsMatrix& mat,
-        arma::Mat<std::complex<float> >& armaSolution,
-        const arma::Mat<std::complex<float> >& armaRhs)
-{
-    // Right now we only support single rhs vectors
-    assert(armaSolution.n_cols == 1);
-    assert(armaRhs.n_cols == 1);
-
-    // Solve for the real and imaginary part separately
-    // (The copy of the solution (before solving) is probably not necessary...)
-    arma::Mat<double> solution_double(armaSolution.n_rows, 2);
-    for (int i = 0; i < armaSolution.n_rows; ++i)
-    {
-        solution_double(i, 0) = armaSolution(i).real();
-        solution_double(i, 1) = armaSolution(i).imag();
-    }
-    arma::Mat<double> rhs_double(armaRhs.n_rows, 2);
-    for (int i = 0; i < armaRhs.n_rows; ++i)
-    {
-        rhs_double(i, 0) = armaRhs(i).real();
-        rhs_double(i, 1) = armaRhs(i).imag();
-    }
-
-    solveWithAmesos<double>(mat, solution_double, rhs_double);
-    for (int i = 0; i < armaSolution.n_rows; ++i)
-        armaSolution(i) = std::complex<float>(solution_double(i, 0),
-                                              solution_double(i, 1));
-}
-
-template <>
-void solveWithAmesos<std::complex<double> >(
-        Epetra_CrsMatrix& mat,
-        arma::Mat<std::complex<double> >& armaSolution,
-        const arma::Mat<std::complex<double> >& armaRhs)
-{
-    // Right now we only support single rhs vectors
-    assert(armaSolution.n_cols == 1);
-    assert(armaRhs.n_cols == 1);
-
-    // Solve for the real and imaginary part separately
-    // (The copy of the solution (before solving) is probably not necessary...)
-    arma::Mat<double> solution_double(armaSolution.n_rows, 2);
-    for (int i = 0; i < armaSolution.n_rows; ++i)
-    {
-        solution_double(i, 0) = armaSolution(i).real();
-        solution_double(i, 1) = armaSolution(i).imag();
-    }
-    arma::Mat<double> rhs_double(armaRhs.n_rows, 2);
-    for (int i = 0; i < armaRhs.n_rows; ++i)
-    {
-        rhs_double(i, 0) = armaRhs(i).real();
-        rhs_double(i, 1) = armaRhs(i).imag();
-    }
-
-    solveWithAmesos<double>(mat, solution_double, rhs_double);
-    for (int i = 0; i < armaSolution.n_rows; ++i)
-        armaSolution(i) = std::complex<double>(solution_double(i, 0),
-                                               solution_double(i, 1));
-}
-#endif
-
-} // namespace
-
 template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType, ResultType>::GridFunction(
+arma::Col<ResultType> reallyCalculateProjections(
         const Space<BasisFunctionType>& space,
-        const Fiber::Function<ResultType>& function,
-        const LocalAssemblerFactory& factory,
-        const AssemblyOptions& assemblyOptions) :
-    m_space(space)
-{
-    arma::Col<ResultType> projections =
-            calculateProjections(function, space, factory, assemblyOptions);
-
-    AssemblyOptions idAssemblyOptions(assemblyOptions);
-#ifdef WITH_TRILINOS
-    // This effectively switches to sparse mode
-    idAssemblyOptions.switchToAca(AcaOptions());
-#endif
-    IdentityOperator<BasisFunctionType, ResultType> id(space, space);
-    std::auto_ptr<DiscreteLinearOperator<ResultType> > discreteId =
-            id.assembleWeakForm(factory, idAssemblyOptions);
-
-    // Solve the system id * m_coefficients = projections
-#ifdef WITH_TRILINOS
-    if (idAssemblyOptions.operatorRepresentation() != AssemblyOptions::DENSE) {
-        DiscreteSparseLinearOperator<ResultType>& sparseDiscreteId =
-                dynamic_cast<DiscreteSparseLinearOperator<ResultType>&>(*discreteId);
-        Epetra_CrsMatrix& epetraMat = sparseDiscreteId.epetraMatrix();
-
-        const int coefficientCount = space.globalDofCount();
-        m_coefficients.set_size(coefficientCount);
-        m_coefficients.fill(0.);
-
-        solveWithAmesos(epetraMat, m_coefficients, projections);
-    } else {
-        m_coefficients = arma::solve(discreteId->asMatrix(), projections);
-    }
-#else
-    m_coefficients = arma::solve(discreteId->asMatrix(), projections);
-#endif
-}
-
-template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType, ResultType>::GridFunction(
-        const Space<BasisFunctionType>& space,
-        const arma::Col<ResultType>& coefficients) :
-    m_space(space), m_coefficients(coefficients)
-{
-    if (!m_space.dofsAssigned())
-        throw std::runtime_error(
-                "GridFunction::GridFunction(): "
-                "degrees of freedom of the provided space must be assigned "
-                "beforehand");
-    if (m_space.globalDofCount() != m_coefficients.n_rows)
-        throw std::runtime_error(
-                "GridFunction::GridFunction(): "
-                "dimension of coefficients does not match the number of global "
-                "DOFs in the provided function space");
-}
-
-template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType, ResultType>::GridFunction(
-        const Space<BasisFunctionType>& space,
-        const Vector<ResultType>& coefficients) :
-    m_space(space), m_coefficients(coefficients.asArmadilloVector())
-{
-    if (!m_space.dofsAssigned())
-        throw std::runtime_error(
-                "GridFunction::GridFunction(): "
-                "degrees of freedom of the provided space must be assigned "
-                "beforehand");
-    if (m_space.globalDofCount() != m_coefficients.n_rows)
-        throw std::runtime_error(
-                "GridFunction::GridFunction(): "
-                "dimension of coefficients does not match the number of global "
-                "DOFs in the provided function space");
-}
-
-template <typename BasisFunctionType, typename ResultType>
-const Grid& GridFunction<BasisFunctionType, ResultType>::grid() const
-{
-    return m_space.grid();
-}
-
-template <typename BasisFunctionType, typename ResultType>
-const Space<BasisFunctionType>& GridFunction<BasisFunctionType, ResultType>::space() const
-{
-    return m_space;
-}
-
-template <typename BasisFunctionType, typename ResultType>
-int GridFunction<BasisFunctionType, ResultType>::codomainDimension() const
-{
-    return m_space.codomainDimension();
-}
-
-template <typename BasisFunctionType, typename ResultType>
-Vector<ResultType> GridFunction<BasisFunctionType, ResultType>::coefficients() const
-{
-    return Vector<ResultType>(m_coefficients);
-}
-
-template <typename BasisFunctionType, typename ResultType>
-void GridFunction<BasisFunctionType, ResultType>::setCoefficients(
-        const Vector<ResultType>& coeffs)
-{
-    if (coeffs.size() != m_space.globalDofCount())
-        throw std::invalid_argument(
-                "GridFunction::setCoefficients(): dimension of the provided "
-                "vector does not match the number of global DOFs");
-    m_coefficients = coeffs.asArmadilloVector();
-}
-
-// Redundant, in fact -- can be obtained directly from Space
-template <typename BasisFunctionType, typename ResultType>
-const Fiber::Basis<BasisFunctionType>& GridFunction<BasisFunctionType, ResultType>::basis(
-        const Entity<0>& element) const
-{
-    return m_space.basis(element);
-}
-
-template <typename BasisFunctionType, typename ResultType>
-void GridFunction<BasisFunctionType, ResultType>::getLocalCoefficients(
-        const Entity<0>& element, std::vector<ResultType>& coeffs) const
-{
-    std::vector<GlobalDofIndex> gdofIndices;
-    m_space.globalDofs(element, gdofIndices);
-    const int gdofCount = gdofIndices.size();
-    coeffs.resize(gdofCount);
-    for (int i = 0; i < gdofCount; ++i)
-        coeffs[i] = m_coefficients(gdofIndices[i]);
-}
-
-template <typename BasisFunctionType, typename ResultType>
-void GridFunction<BasisFunctionType, ResultType>::exportToVtk(
-        VtkWriter::DataType dataType,
-        const char* dataLabel,
-        const char* fileNamesBase, const char* filesPath,
-        VtkWriter::OutputType outputType) const
-{
-    arma::Mat<ResultType> data;
-    evaluateAtSpecialPoints(dataType, data);
-
-    std::auto_ptr<GridView> view = m_space.grid().leafView();
-    std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
-
-    exportSingleDataSetToVtk(*vtkWriter, data, dataType, dataLabel,
-                             fileNamesBase, filesPath, outputType);
-}
-
-template <typename BasisFunctionType, typename ResultType>
-arma::Col<ResultType>
-GridFunction<BasisFunctionType, ResultType>::calculateProjections(
-        const Fiber::Function<ResultType>& globalFunction,
-        const Space<BasisFunctionType>& space,
-        const LocalAssemblerFactory& factory,
-        const AssemblyOptions& options) const
-{
-    if (!space.dofsAssigned())
-        throw std::runtime_error(
-                "GridFunction::calculateProjections(): "
-                "degrees of freedom of the provided space must be assigned "
-                "before calling calculateProjections()");
-
-    // Prepare local assembler
-    typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
-    typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
-    typedef LocalAssemblerConstructionHelper Helper;
-
-    shared_ptr<RawGridGeometry> rawGeometry;
-    shared_ptr<GeometryFactory> geometryFactory;
-    shared_ptr<Fiber::OpenClHandler> openClHandler;
-    shared_ptr<BasisPtrVector> testBases;
-
-    Helper::collectGridData(space.grid(),
-                            rawGeometry, geometryFactory);
-    Helper::makeOpenClHandler(options.parallelisationOptions().openClOptions(),
-                              rawGeometry, openClHandler);
-    Helper::collectBases(space, testBases);
-
-    // Get reference to the test expression
-    const Fiber::Expression<CoordinateType>& testExpression =
-            space.shapeFunctionValueExpression();
-
-    std::auto_ptr<LocalAssembler> assembler =
-            factory.makeAssemblerForGridFunctions(
-                geometryFactory, rawGeometry,
-                testBases,
-                make_shared_from_ref(testExpression),
-                make_shared_from_ref(globalFunction),
-                openClHandler);
-
-    return reallyCalculateProjections(space, *assembler, options);
-}
-
-template <typename BasisFunctionType, typename ResultType>
-arma::Col<ResultType>
-GridFunction<BasisFunctionType, ResultType>::reallyCalculateProjections(
-        const Space<BasisFunctionType>& space,
-        LocalAssembler& assembler,
-        const AssemblyOptions& options) const
+        Fiber::LocalAssemblerForGridFunctions<ResultType>& assembler,
+        const AssemblyOptions& options)
 {
     // TODO: parallelise using TBB (the parameter options will then start be used)
 
@@ -445,6 +108,217 @@ GridFunction<BasisFunctionType, ResultType>::reallyCalculateProjections(
     // Return the vector of projections <phi_i, f>
     return result;
 }
+
+/** \brief Calculate projections of the function on test functions from
+  the given space. */
+template <typename BasisFunctionType, typename ResultType>
+arma::Col<ResultType> calculateProjections(
+        const Fiber::Function<ResultType>& globalFunction,
+        const Space<BasisFunctionType>& space,
+        const typename GridFunction<BasisFunctionType, ResultType>::LocalAssemblerFactory& factory,
+        const AssemblyOptions& options)
+{
+    if (!space.dofsAssigned())
+        throw std::runtime_error(
+                "GridFunction::calculateProjections(): "
+                "degrees of freedom of the provided space must be assigned "
+                "before calling calculateProjections()");
+
+    // Prepare local assembler
+    typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
+    typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
+    typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
+    typedef LocalAssemblerConstructionHelper Helper;
+
+    shared_ptr<RawGridGeometry> rawGeometry;
+    shared_ptr<GeometryFactory> geometryFactory;
+    shared_ptr<Fiber::OpenClHandler> openClHandler;
+    shared_ptr<BasisPtrVector> testBases;
+
+    Helper::collectGridData(space.grid(),
+                            rawGeometry, geometryFactory);
+    Helper::makeOpenClHandler(options.parallelisationOptions().openClOptions(),
+                              rawGeometry, openClHandler);
+    Helper::collectBases(space, testBases);
+
+    // Get reference to the test expression
+    const Fiber::Expression<CoordinateType>& testExpression =
+            space.shapeFunctionValueExpression();
+
+    typedef Fiber::LocalAssemblerForGridFunctions<ResultType> LocalAssembler;
+    std::auto_ptr<LocalAssembler> assembler =
+            factory.makeAssemblerForGridFunctions(
+                geometryFactory, rawGeometry,
+                testBases,
+                make_shared_from_ref(testExpression),
+                make_shared_from_ref(globalFunction),
+                openClHandler);
+
+    return reallyCalculateProjections(space, *assembler, options);
+}
+
+} // namespace
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>
+gridFunctionFromFiberFunction(
+        const Space<BasisFunctionType>& space,
+        const Fiber::Function<ResultType>& function,
+        const typename GridFunction<BasisFunctionType, ResultType>::LocalAssemblerFactory& factory,
+        const AssemblyOptions& assemblyOptions)
+{
+    arma::Col<ResultType> projections =
+            calculateProjections(function, space, factory, assemblyOptions);
+    return gridFunctionFromProjections(space, projections);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>
+gridFunctionFromCoefficients(const Space<BasisFunctionType>& space,
+                             const arma::Col<ResultType>& coefficients)
+{
+    typedef GridFunction<BasisFunctionType, ResultType> GF;
+
+    if (!space.dofsAssigned())
+        throw std::runtime_error(
+                "GridFunction::GridFunction(): "
+                "degrees of freedom of the provided space must be assigned "
+                "beforehand");
+    if (space.globalDofCount() != coefficients.n_rows)
+        throw std::runtime_error(
+                "GridFunction::GridFunction(): "
+                "dimension of coefficients does not match the number of global "
+                "DOFs in the provided function space");
+
+    arma::Col<ResultType> projections;
+    space.applyMassMatrix(coefficients, projections);
+    return GF(space, coefficients, projections);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>
+gridFunctionFromProjections(const Space<BasisFunctionType>& space,
+                            const arma::Col<ResultType>& projections)
+{
+    typedef GridFunction<BasisFunctionType, ResultType> GF;
+
+    if (!space.dofsAssigned())
+        throw std::runtime_error(
+                "GridFunction::GridFunction(): "
+                "degrees of freedom of the provided space must be assigned "
+                "beforehand");
+    if (space.globalDofCount() != projections.n_rows)
+        throw std::runtime_error(
+                "GridFunction::GridFunction(): "
+                "dimension of projections does not match the number of global "
+                "DOFs in the provided function space");
+
+    arma::Col<ResultType> coefficients;
+    space.applyInverseMassMatrix(projections, coefficients);
+    return GF(space, coefficients, projections);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>::GridFunction(
+        const Space<BasisFunctionType>& space,
+        const arma::Col<ResultType>& coefficients,
+        const arma::Col<ResultType>& projections) :
+    m_space(space), m_coefficients(coefficients), m_projections(projections)
+{
+    // TODO: assert that dimensions are correct
+}
+
+template <typename BasisFunctionType, typename ResultType>
+const Grid& GridFunction<BasisFunctionType, ResultType>::grid() const
+{
+    return m_space.grid();
+}
+
+template <typename BasisFunctionType, typename ResultType>
+const Space<BasisFunctionType>& GridFunction<BasisFunctionType, ResultType>::space() const
+{
+    return m_space;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+int GridFunction<BasisFunctionType, ResultType>::codomainDimension() const
+{
+    return m_space.codomainDimension();
+}
+
+template <typename BasisFunctionType, typename ResultType>
+const arma::Col<ResultType>& GridFunction<BasisFunctionType, ResultType>::coefficients() const
+{
+    return m_coefficients;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void GridFunction<BasisFunctionType, ResultType>::setCoefficients(
+        const arma::Col<ResultType>& coeffs)
+{
+    if (coeffs.n_rows != m_space.globalDofCount())
+        throw std::invalid_argument(
+                "GridFunction::setCoefficients(): dimension of the provided "
+                "vector does not match the number of global DOFs");
+    m_coefficients = coeffs;
+    m_space.applyMassMatrix(coeffs, m_projections);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+const arma::Col<ResultType>& GridFunction<BasisFunctionType, ResultType>::projections() const
+{
+    return m_projections;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void GridFunction<BasisFunctionType, ResultType>::setProjections(
+        const arma::Col<ResultType>& projects)
+{
+    if (projects.n_rows != m_space.globalDofCount())
+        throw std::invalid_argument(
+                "GridFunction::setCoefficients(): dimension of the provided "
+                "vector does not match the number of global DOFs");
+    m_projections = projects;
+    m_space.applyInverseMassMatrix(projects, m_coefficients);
+}
+
+// Redundant, in fact -- can be obtained directly from Space
+template <typename BasisFunctionType, typename ResultType>
+const Fiber::Basis<BasisFunctionType>& GridFunction<BasisFunctionType, ResultType>::basis(
+        const Entity<0>& element) const
+{
+    return m_space.basis(element);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void GridFunction<BasisFunctionType, ResultType>::getLocalCoefficients(
+        const Entity<0>& element, std::vector<ResultType>& coeffs) const
+{
+    std::vector<GlobalDofIndex> gdofIndices;
+    m_space.globalDofs(element, gdofIndices);
+    const int gdofCount = gdofIndices.size();
+    coeffs.resize(gdofCount);
+    for (int i = 0; i < gdofCount; ++i)
+        coeffs[i] = m_coefficients(gdofIndices[i]);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void GridFunction<BasisFunctionType, ResultType>::exportToVtk(
+        VtkWriter::DataType dataType,
+        const char* dataLabel,
+        const char* fileNamesBase, const char* filesPath,
+        VtkWriter::OutputType outputType) const
+{
+    arma::Mat<ResultType> data;
+    evaluateAtSpecialPoints(dataType, data);
+
+    std::auto_ptr<GridView> view = m_space.grid().leafView();
+    std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
+
+    exportSingleDataSetToVtk(*vtkWriter, data, dataType, dataLabel,
+                             fileNamesBase, filesPath, outputType);
+}
+
 
 template <typename BasisFunctionType, typename ResultType>
 void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
@@ -652,9 +526,10 @@ GridFunction<BasisFunctionType, ResultType> operator+(
 {
     if (&g1.space() != &g2.space())
         throw std::runtime_error("GridFunction::operator+(): spaces don't match");
-    arma::Col<ResultType> g1Vals = g1.coefficients().asArmadilloVector();
-    arma::Col<ResultType> g2Vals = g2.coefficients().asArmadilloVector();
-    return GridFunction<BasisFunctionType, ResultType>(g1.space(), g1Vals + g2Vals);
+    return GridFunction<BasisFunctionType, ResultType>(
+                g1.space(),
+                g1.coefficients() + g2.coefficients(),
+                g1.projections() + g2.projections());
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -664,18 +539,20 @@ GridFunction<BasisFunctionType, ResultType> operator-(
 {
     if (&g1.space() != &g2.space())
         throw std::runtime_error("GridFunction::operator-(): spaces don't match");
-    arma::Col<ResultType> g1Vals = g1.coefficients().asArmadilloVector();
-    arma::Col<ResultType> g2Vals = g2.coefficients().asArmadilloVector();
-    return GridFunction<BasisFunctionType, ResultType>(g1.space(), g1Vals - g2Vals);
+    return GridFunction<BasisFunctionType, ResultType>(
+                g1.space(),
+                g1.coefficients() - g2.coefficients(),
+                g1.projections() - g2.projections());
 }
 
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
 GridFunction<BasisFunctionType, ResultType> operator*(
         const GridFunction<BasisFunctionType, ResultType>& g1, const ScalarType& scalar)
 {
-    arma::Col<ResultType> g1Vals = g1.coefficients().asArmadilloVector();
     return GridFunction<BasisFunctionType, ResultType>(
-                g1.space(), static_cast<ResultType>(scalar) * g1Vals);
+                g1.space(),
+                static_cast<ResultType>(scalar) * g1.coefficients(),
+                static_cast<ResultType>(scalar) * g1.projections());
 }
 
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
@@ -702,9 +579,25 @@ GridFunction<BasisFunctionType, ResultType> operator/(
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
 
 #define INSTANTIATE_FREE_FUNCTIONS(BASIS, RESULT) \
+    template GridFunction<BASIS, RESULT> \
+    gridFunctionFromFiberFunction( \
+    const Space<BASIS>& space, \
+    const Fiber::Function<RESULT>& function, \
+    const GridFunction<BASIS, RESULT>::LocalAssemblerFactory& factory, \
+    const AssemblyOptions& assemblyOptions); \
+    \
+    template GridFunction<BASIS, RESULT> \
+    gridFunctionFromCoefficients(const Space<BASIS>& space, \
+    const arma::Col<RESULT>& coefficients); \
+    \
+    template GridFunction<BASIS, RESULT> \
+    gridFunctionFromProjections(const Space<BASIS>& space, \
+    const arma::Col<RESULT>& coefficients); \
+    \
     template GridFunction<BASIS, RESULT> operator+( \
     const GridFunction<BASIS, RESULT>& op1, \
     const GridFunction<BASIS, RESULT>& op2); \
+    \
     template GridFunction<BASIS, RESULT> operator-( \
     const GridFunction<BASIS, RESULT>& op1, \
     const GridFunction<BASIS, RESULT>& op2)
@@ -725,7 +618,7 @@ INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
         float, float, double);
 #endif
 
-#if defined(ENABLE_SINGLE_PRECISION) && defined(ENABLE_COMPLEX_KERNELS)
+#if defined(ENABLE_SINGLE_PRECISION) && (defined(ENABLE_COMPLEX_KERNELS) || defined(ENABLE_COMPLEX_BASIS_FUNCTIONS))
 INSTANTIATE_FREE_FUNCTIONS(
         float, std::complex<float>);
 INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
@@ -760,7 +653,7 @@ INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
         double, double, double);
 #endif
 
-#if defined(ENABLE_DOUBLE_PRECISION) && defined(ENABLE_COMPLEX_KERNELS)
+#if defined(ENABLE_DOUBLE_PRECISION) && (defined(ENABLE_COMPLEX_KERNELS) || defined(ENABLE_COMPLEX_BASIS_FUNCTIONS))
 INSTANTIATE_FREE_FUNCTIONS(
         double, std::complex<double>);
 INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(

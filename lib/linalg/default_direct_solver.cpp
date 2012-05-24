@@ -47,7 +47,7 @@ void DefaultDirectSolver<BasisFunctionType, ResultType>::solve()
 {
     m_solution = arma::solve(
                 m_linearOperator.assembledDiscreteLinearOperator().asMatrix(),
-                m_gridFunction.coefficients().asArmadilloVector());
+                m_gridFunction.projections());
     m_status = Solver<BasisFunctionType, ResultType>::CONVERGED;
 }
 
@@ -55,9 +55,8 @@ template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>
 DefaultDirectSolver<BasisFunctionType, ResultType>::getResult() const
 {
-    return GridFunction<BasisFunctionType, ResultType>(
-                m_linearOperator.testSpace(),
-                m_solution);
+    return gridFunctionFromCoefficients(m_linearOperator.testSpace(),
+                                        m_solution);
 }
 
 template <typename BasisFunctionType, typename ResultType>
