@@ -26,6 +26,7 @@
 #include "index_permutation.hpp"
 
 #include "../common/auto_timer.hpp"
+#include "../common/chunk_statistics.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/local_assembler_for_operators.hpp"
 #include "../fiber/scalar_traits.hpp"
@@ -57,17 +58,6 @@ namespace Bempp
 namespace
 {
 
-// For profiling the parallel scheduler
-struct ChunkStats
-{
-    ChunkStats() : valid(false) {}
-    bool valid;
-    size_t chunkStart;
-    size_t chunkSize;
-    tbb::tick_count startTime;
-    tbb::tick_count endTime;
-};
-
 #ifdef WITH_AHMED
 template <typename BasisFunctionType, typename ResultType>
 class AcaWeakFormAssemblerLoopBody
@@ -86,7 +76,7 @@ public:
             const AcaOptions& options,
             tbb::atomic<size_t>& done,
             LeafClusterIndexQueue& leafClusterIndexQueue,
-            std::vector<ChunkStats>& stats) :
+            std::vector<ChunkStatistics>& stats) :
         m_helper(helper),
         m_leafClusters(leafClusters), m_blocks(blocks),
         m_options(options), m_done(done),
@@ -132,7 +122,7 @@ private:
     const AcaOptions& m_options;
     mutable tbb::atomic<size_t>& m_done;
     mutable LeafClusterIndexQueue& m_leafClusterIndexQueue;
-    mutable std::vector<ChunkStats>& m_stats;
+    mutable std::vector<ChunkStatistics>& m_stats;
 };
 
 void reallyGetClusterIds(const cluster& clusterTree,
@@ -312,7 +302,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
     tbb::atomic<size_t> done;
     done = 0;
 
-    std::vector<ChunkStats> chunkStats(leafClusterCount);
+    std::vector<ChunkStatistics> chunkStats(leafClusterCount);
 
     //    typedef AcaWeakFormAssemblerLoopBody<BasisFunctionType, ResultType> Body;
     //    // std::cout << "Loop start" << std::endl;
