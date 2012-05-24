@@ -174,8 +174,7 @@ int main(int argc, char* argv[])
 //    // Uncomment the block below if you are solving the problem on a sphere and
 //    // you want to compare the numerical and analytical solution.
 
-//    arma::Col<RT> solutionCoefficients =
-//            solFun.coefficients().asArmadilloVector();
+//    arma::Col<RT> solutionCoefficients = solFun.coefficients();
 //    std::cout << solutionCoefficients << std::endl;
 
 //    arma::Col<RT> deviation = solutionCoefficients - static_cast<RT>(-1.);
