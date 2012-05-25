@@ -123,7 +123,7 @@ int main(int argc, char* argv[])
     // We want to use ACA
 
     AcaOptions acaOptions; // Default parameters for ACA
-    //assemblyOptions.switchToAca(acaOptions);
+    assemblyOptions.switchToAca(acaOptions);
 
     // Define the standard integration factory
 
