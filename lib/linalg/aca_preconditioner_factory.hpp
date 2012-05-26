@@ -38,7 +38,7 @@ class AcaPreconditionerFactory
 public:
     static Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> >
     acaOperatorToPreconditioner
-    (DiscreteLinearOperator<ValueType>& discreteOperator, const double delta=0.1);
+    (const DiscreteLinearOperator<ValueType>& discreteOperator, const double delta=0.1);
 };
 
 } // namespace Bempp
