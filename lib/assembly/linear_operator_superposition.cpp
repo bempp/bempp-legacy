@@ -106,7 +106,7 @@ assembleWeakForm(
     case AssemblyOptions::DENSE:
         return assembleWeakFormInDenseMode(factory, options);
     case AssemblyOptions::ACA:
-        return assembleWeakFormInAcaMode(factory, options);
+        // return assembleWeakFormInAcaMode(factory, options);
     default:
         return assembleWeakFormInArbitraryMode(factory, options);
     }
