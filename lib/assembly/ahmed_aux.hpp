@@ -35,22 +35,7 @@
 #include <stdexcept>
 
 // Ahmed's include files
-#include <cmplx.h>
-
-inline comp<float> operator*=(comp<float>& a, double b)
-{
-    return operator*=(a, static_cast<float>(b));
-}
-
-inline comp<float> operator/(comp<float>& a, double b)
-{
-    return operator/(a, static_cast<float>(b));
-}
-
-inline comp<float> operator/(double a, comp<float>& b)
-{
-    return operator/(static_cast<float>(a), b);
-}
+#include "ahmed_complex.hpp"
 
 #include <apprx.h>
 #include <bemblcluster.h>
@@ -71,24 +56,6 @@ bool multaHvec_omp(double d, blcluster* bl, mblock<double>** A, double* x,
 
 namespace Bempp
 {
-
-// Casts.
-
-inline float ahmedCast(float x) {
-    return x;
-}
-
-inline double ahmedCast(double x) {
-    return x;
-}
-
-inline scomp ahmedCast(std::complex<float> x) {
-    return scomp(x.real(), x.imag());
-}
-
-inline dcomp ahmedCast(std::complex<double> x) {
-    return dcomp(x.real(), x.imag());
-}
 
 /** \brief An Ahmed-compatible degree-of-freedom type. */
 template <typename CoordinateType>
