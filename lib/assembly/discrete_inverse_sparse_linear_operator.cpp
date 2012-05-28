@@ -162,15 +162,19 @@ void solveWithAmesos<std::complex<double> >(
 
 template <typename ValueType>
 DiscreteInverseSparseLinearOperator<ValueType>::
-DiscreteInverseSparseLinearOperator(const Epetra_CrsMatrix& mat) :
+DiscreteInverseSparseLinearOperator(const Epetra_CrsMatrix& mat,
+                                    bool symmetric) :
     m_problem(new Epetra_LinearProblem),
-    m_space(Thyra::defaultSpmdVectorSpace<ValueType>(mat.NumGlobalRows()))
+    m_space(Thyra::defaultSpmdVectorSpace<ValueType>(mat.NumGlobalRows())),
+    m_symmetric(symmetric)
 {
     if (mat.NumGlobalRows() != mat.NumGlobalCols())
         throw std::invalid_argument("DiscreteInverseSparseLinearOperator::"
                                     "DiscreteInverseSparseLinearOperator(): "
                                     "square matrix expected");
     m_problem->SetOperator(const_cast<Epetra_CrsMatrix*>(&mat));
+    if (m_symmetric)
+        m_problem->AssertSymmetric();
 
     Amesos amesosFactory;
     const char* solverName = "Amesos_Klu";

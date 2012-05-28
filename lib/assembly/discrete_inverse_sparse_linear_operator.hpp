@@ -42,7 +42,8 @@ class DiscreteInverseSparseLinearOperator :
         public DiscreteLinearOperator<ValueType>
 {
 public:
-    DiscreteInverseSparseLinearOperator(const Epetra_CrsMatrix& mat);
+    DiscreteInverseSparseLinearOperator(const Epetra_CrsMatrix& mat,
+                                        bool m_symmetric = false);
 
     virtual void dump() const;
 
@@ -78,8 +79,9 @@ private:
 
 private:
     std::auto_ptr<Epetra_LinearProblem> m_problem;
-    std::auto_ptr<Amesos_BaseSolver> m_solver;
     Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_space;
+    bool m_symmetric;
+    std::auto_ptr<Amesos_BaseSolver> m_solver;
 };
 
 } // namespace Bempp

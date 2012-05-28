@@ -45,7 +45,8 @@ MassMatrixContainerInitialiser<BasisFunctionType, ResultType>::operator()() cons
             dynamic_cast<DiscreteSparseLinOp&>(*result->massMatrix);
     Epetra_CrsMatrix& epetraMat = sparseDiscreteId.epetraMatrix();
 
-    result->inverseMassMatrix.reset(new DiscreteInverseSparseLinOp(epetraMat));
+    result->inverseMassMatrix.reset(
+                new DiscreteInverseSparseLinOp(epetraMat, true /* symmetric */));
 #else
     // TODO: store an LU decomposition instead of the inverse matrix.
     // (the problem will disappear if we make Trilinos a mandatory dependence).
