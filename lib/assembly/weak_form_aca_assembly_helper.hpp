@@ -62,12 +62,19 @@ public:
                               const std::vector<ResultType>& sparseTermsMultipliers,
                               const AssemblyOptions& options);
 
-    /** Store the entries of the block defined
-        by b1, n1, b2, n2 (in permuted ordering) in data */
+    /** \brief Evaluate entries of a general block.
+     *
+     *  Store the entries of the block defined
+     *  by \p b1, \p n1, \p b2, \p n2 (in permuted ordering) in data. */
     void cmpbl(unsigned b1, unsigned n1, unsigned b2, unsigned n2,
                AhmedResultType* data) const;
+    /** \brief Evaluate entries of a symmetric block.
+     *
+     * Store the upper part of the (symmetric) block defined
+     * by \p b1, \p n1, \p b1, \p n1 (in permuted ordering) columnwise in \p data. */
+    void cmpblsym(unsigned b1, unsigned n1, AhmedResultType* data) const;
 
-    /** Expected size of the entries in this block. */
+    /** \brief Expected size of the entries in this block. */
     MagnitudeType scale(unsigned b1, unsigned n1, unsigned b2, unsigned n2) const;
 
 private:

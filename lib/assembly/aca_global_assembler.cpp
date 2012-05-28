@@ -74,11 +74,13 @@ public:
             const AcaOptions& options,
             tbb::atomic<size_t>& done,
             LeafClusterIndexQueue& leafClusterIndexQueue,
+            bool symmetric,
             std::vector<ChunkStatistics>& stats) :
         m_helper(helper),
         m_leafClusters(leafClusters), m_blocks(blocks),
         m_options(options), m_done(done),
         m_leafClusterIndexQueue(leafClusterIndexQueue),
+        m_symmetric(symmetric),
         m_stats(stats)
     {
     }
@@ -101,8 +103,12 @@ public:
 
             AhmedBemBlcluster* cluster =
                     dynamic_cast<AhmedBemBlcluster*>(m_leafClusters[leafClusterIndex]);
-            apprx_unsym(m_helper, m_blocks[cluster->getidx()],
-                        cluster, m_options.eps, m_options.maximumRank);
+            if (m_symmetric)
+                apprx_sym(m_helper, m_blocks[cluster->getidx()],
+                          cluster, m_options.eps, m_options.maximumRank);
+            else
+                apprx_unsym(m_helper, m_blocks[cluster->getidx()],
+                            cluster, m_options.eps, m_options.maximumRank);
             m_stats[leafClusterIndex].endTime = tbb::tick_count::now();
             // TODO: recompress
             const int HASH_COUNT = 20;
@@ -119,6 +125,7 @@ private:
     const AcaOptions& m_options;
     mutable tbb::atomic<size_t>& m_done;
     mutable LeafClusterIndexQueue& m_leafClusterIndexQueue;
+    bool m_symmetric;
     mutable std::vector<ChunkStatistics>& m_stats;
 };
 
@@ -167,6 +174,12 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
     const int testDofCount = testSpace.globalDofCount();
     const int trialDofCount = trialSpace.globalDofCount();
+
+    if (symmetric && testDofCount != trialDofCount)
+        throw std::invalid_argument("AcaGlobalAssembler::assembleDetachedWeakForm(): "
+                                    "you cannot generate a symmetric weak form "
+                                    "using test and trial spaces with different "
+                                    "numbers of DOFs");
 
 #ifndef NDEBUG
     std::cout << "Generating cluster trees... " << std::endl;
@@ -234,9 +247,14 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     std::auto_ptr<AhmedBemBlcluster> bemBlclusterTree(
                 new AhmedBemBlcluster(0, 0, testDofCount, trialDofCount));
     unsigned int blockCount = 0;
-    bemBlclusterTree->subdivide(&testClusterTree, &trialClusterTree,
-                                 acaOptions.eta * acaOptions.eta,
-                                 blockCount);
+    if (symmetric)
+        bemBlclusterTree->subdivide_sym(&testClusterTree,
+                                        acaOptions.eta * acaOptions.eta,
+                                        blockCount);
+    else
+        bemBlclusterTree->subdivide(&testClusterTree, &trialClusterTree,
+                                    acaOptions.eta * acaOptions.eta,
+                                    blockCount);
 
 #ifndef NDEBUG
     std::cout << "Double cluster count: " << blockCount << std::endl;
@@ -323,7 +341,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     tbb::tick_count loopStart = tbb::tick_count::now();
     tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
                       Body(helper, leafClusters, blocks, acaOptions, done,
-                           leafClusterIndexQueue, chunkStats));
+                           leafClusterIndexQueue, symmetric, chunkStats));
     tbb::tick_count loopEnd = tbb::tick_count::now();
 
     // // Dump timing data of individual chunks
@@ -355,7 +373,10 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         if (acaOptions.outputPostscript) {
             std::cout << "Writing matrix partition ..." << std::flush;
             std::ofstream os(acaOptions.outputFname.c_str());
-            psoutputH(os, bemBlclusterTree.get(), testDofCount, blocks.get());
+            if (symmetric)
+                psoutputHSym(os, bemBlclusterTree.get(), testDofCount, blocks.get());
+            else
+                psoutputH(os, bemBlclusterTree.get(), testDofCount, blocks.get());
             os.close();
             std::cout << " done." << std::endl;
         }
@@ -364,6 +385,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     result = std::auto_ptr<DiscreteLinOp>(
                 new DiscreteAcaLinOp(testDofCount, trialDofCount,
                                      acaOptions.maximumRank,
+                                     symmetric,
                                      bemBlclusterTree, blocks,
                                      IndexPermutation(o2pTrialDofs),
                                      IndexPermutation(o2pTestDofs)));

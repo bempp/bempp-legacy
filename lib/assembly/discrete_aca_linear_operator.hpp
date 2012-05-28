@@ -56,6 +56,7 @@ public:
     DiscreteAcaLinearOperator(
             unsigned int rowCount, unsigned int columnCount,
             int maximumRank,
+            bool symmetric,
             std::auto_ptr<AhmedBemBlcluster> blockCluster,
             boost::shared_array<AhmedMblock*> blocks,
             const IndexPermutation& domainPermutation,
@@ -108,7 +109,8 @@ private:
     unsigned int m_rowCount;
     unsigned int m_columnCount;
 #endif
-    int m_maximumRank;
+    int m_maximumRank; // used by the approximate-LU preconditioner
+    bool m_symmetric;
 
     std::auto_ptr<AhmedBemBlcluster> m_blockCluster;
     boost::shared_array<AhmedMblock*> m_blocks;

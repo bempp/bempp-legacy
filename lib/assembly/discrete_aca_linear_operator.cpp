@@ -43,6 +43,7 @@ DiscreteAcaLinearOperator<ValueType>::
 DiscreteAcaLinearOperator(
         unsigned int rowCount, unsigned int columnCount,
         int maximumRank,
+        bool symmetric,
         std::auto_ptr<AhmedBemBlcluster> blockCluster,
         boost::shared_array<AhmedMblock*> blocks,
         const IndexPermutation& domainPermutation,
@@ -54,6 +55,7 @@ DiscreteAcaLinearOperator(
     m_rowCount(rowCount), m_columnCount(columnCount),
 #endif
     m_maximumRank(maximumRank),
+    m_symmetric(symmetric),
     m_blockCluster(blockCluster), m_blocks(blocks),
     m_domainPermutation(domainPermutation),
     m_rangePermutation(rangePermutation)
@@ -86,9 +88,14 @@ asMatrix() const
         if (col > 0)
             unit(col - 1) = 0.;
         unit(col) = 1.;
-        multaHvec(1., m_blockCluster.get(), m_blocks.get(),
-                  ahmedCast(unit.memptr()),
-                  ahmedCast(permutedOutput.colptr(col)));
+        if (m_symmetric)
+            multaHSymvec(1., m_blockCluster.get(), m_blocks.get(),
+                      ahmedCast(unit.memptr()),
+                      ahmedCast(permutedOutput.colptr(col)));
+        else
+            multaHvec(1., m_blockCluster.get(), m_blocks.get(),
+                      ahmedCast(unit.memptr()),
+                      ahmedCast(permutedOutput.colptr(col)));
     }
 
     arma::Mat<ValueType> output(nRows, nCols );
@@ -243,9 +250,14 @@ applyBuiltInImpl(const TranspositionMode trans,
     // functions, which don't respect const-correctness
     arma::Col<ValueType> permutedResult;
     m_rangePermutation.permuteVector(y_inout, permutedResult);
-    multaHvec(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
-              ahmedCast(permutedArgument.memptr()),
-              ahmedCast(permutedResult.memptr()));
+    if (m_symmetric)
+        multaHSymvec(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
+                     ahmedCast(permutedArgument.memptr()),
+                     ahmedCast(permutedResult.memptr()));
+    else
+        multaHvec(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
+                  ahmedCast(permutedArgument.memptr()),
+                  ahmedCast(permutedResult.memptr()));
     m_rangePermutation.unpermuteVector(permutedResult, y_inout);
 }
 

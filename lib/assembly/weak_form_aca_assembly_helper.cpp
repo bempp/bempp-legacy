@@ -18,6 +18,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "config_ahmed.hpp"
+
+#ifdef WITH_AHMED
 
 #include "weak_form_aca_assembly_helper.hpp"
 
@@ -30,6 +33,8 @@
 #include "../grid/reverse_element_mapper.hpp"
 #include "../space/space.hpp"
 #include "assembly_options.hpp"
+
+#include "ahmed_complex.hpp"
 
 #include <map>
 #include <set>
@@ -217,6 +222,21 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
 }
 
 template <typename BasisFunctionType, typename ResultType>
+void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpblsym(
+        unsigned b1, unsigned n1, AhmedResultType* ahmedData) const
+{
+    // Calculate results as usual (without taking symmetry into account)
+    arma::Mat<ResultType> block(n1, n1);
+    cmpbl(b1, n1, b1, n1, ahmedCast(block.memptr()));
+
+    // and now store the upper part of the matrix in the memory block
+    // provided by Ahmed
+    for (int col = 0; col < n1; ++col)
+        for (int row = 0; row <= col; ++row)
+            *ahmedData++ = ahmedCast(block(row, col));
+}
+
+template <typename BasisFunctionType, typename ResultType>
 typename WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::MagnitudeType
 WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::scale(
         unsigned b1, unsigned n1, unsigned b2, unsigned n2) const
@@ -298,3 +318,5 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::findLocalDofs(
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(WeakFormAcaAssemblyHelper);
 
 }
+
+#endif // WITH_AHMED
