@@ -149,14 +149,15 @@ void getClusterIds(const cluster& clusterTree,
 
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
+AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
         const std::vector<LocalAssembler*>& localAssemblers,
         const std::vector<const DiscreteLinOp*>& sparseTermsToAdd,
         const std::vector<ResultType>& denseTermsMultipliers,
         const std::vector<ResultType>& sparseTermsMultipliers,
-        const AssemblyOptions& options)
+        const AssemblyOptions& options,
+        bool symmetric)
 {
 #ifdef WITH_AHMED
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
@@ -368,7 +369,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
                                      IndexPermutation(o2pTestDofs)));
     return result;
 #else // without Ahmed
-    throw std::runtime_error("AcaGlobalAssembler::assembleWeakForm(): "
+    throw std::runtime_error("AcaGlobalAssembler::assembleDetachedWeakForm(): "
                              "To enable assembly in ACA mode, recompile BEM++ "
                              "with the symbol WITH_AHMED defined.");
 #endif
@@ -376,22 +377,23 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
 
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
+AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
         LocalAssembler& localAssembler,
-        const AssemblyOptions& options)
+        const AssemblyOptions& options,
+        bool symmetric)
 {
     std::vector<LocalAssembler*> localAssemblers(1, &localAssembler);
     std::vector<const DiscreteLinOp*> sparseTermsToAdd;
     std::vector<ResultType> denseTermsMultipliers(1, 1.0);
     std::vector<ResultType> sparseTermsMultipliers;
 
-    return assembleWeakForm(testSpace, trialSpace, localAssemblers,
+    return assembleDetachedWeakForm(testSpace, trialSpace, localAssemblers,
                             sparseTermsToAdd,
                             denseTermsMultipliers,
                             sparseTermsMultipliers,
-                            options);
+                            options, symmetric);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(AcaGlobalAssembler);

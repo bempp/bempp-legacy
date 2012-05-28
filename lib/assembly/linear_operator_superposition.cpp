@@ -98,26 +98,28 @@ supportsRepresentation(
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
 LinearOperatorSuperposition<BasisFunctionType, ResultType>::
-assembleWeakForm(
+assembleDetachedWeakFormImpl(
         const LocalAssemblerFactory& factory,
-        const AssemblyOptions& options) const
+        const AssemblyOptions& options,
+        Symmetry symmetry) const
 {
     switch (options.operatorRepresentation()) {
     case AssemblyOptions::DENSE:
-        return assembleWeakFormInDenseMode(factory, options);
+        return assembleDetachedWeakFormInDenseMode(factory, options, symmetry);
     case AssemblyOptions::ACA:
-        // return assembleWeakFormInAcaMode(factory, options);
+        // return assembleDetachedWeakFormInAcaMode(factory, options, symmetry);
     default:
-        return assembleWeakFormInArbitraryMode(factory, options);
+        return assembleDetachedWeakFormInArbitraryMode(factory, options, symmetry);
     }
 }
 
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
 LinearOperatorSuperposition<BasisFunctionType, ResultType>::
-assembleWeakFormInDenseMode(
+assembleDetachedWeakFormInDenseMode(
         const LocalAssemblerFactory& factory,
-        const AssemblyOptions& options) const
+        const AssemblyOptions& options,
+        Symmetry symmetry) const
 {
     typedef DiscreteLinearOperator<ResultType> DiscreteLinOp;
     typedef DiscreteDenseLinearOperator<ResultType> DiscreteDenseLinOp;
@@ -130,7 +132,7 @@ assembleWeakFormInDenseMode(
     boost::ptr_vector<DiscreteLinOp> discreteOps;
     for (int i = 0; i < localOperators.size(); ++i) {
         std::auto_ptr<DiscreteLinOp> discreteOp =
-                localOperators[i]->assembleWeakForm(factory, options);
+                localOperators[i]->assembleDetachedWeakForm(factory, options, symmetry);
         discreteOps.push_back(discreteOp);
     }
 
@@ -147,9 +149,10 @@ assembleWeakFormInDenseMode(
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
 LinearOperatorSuperposition<BasisFunctionType, ResultType>::
-assembleWeakFormInAcaMode(
+assembleDetachedWeakFormInAcaMode(
         const LocalAssemblerFactory& factory,
-        const AssemblyOptions& options) const
+        const AssemblyOptions& options,
+        Symmetry symmetry) const
 {
     AutoTimer timer("\nAssembly took ");
 
@@ -197,7 +200,7 @@ assembleWeakFormInAcaMode(
 
         if (term->supportsRepresentation(AssemblyOptions::SPARSE)) {
             std::auto_ptr<DiscreteLinOp> discreteTerm =
-                    term->assembleWeakFormInternal(*assembler, options);
+                    term->assembleDetachedWeakFormInternal(*assembler, options);
             sparseDiscreteTerms.push_back(discreteTerm);
             sparseTermsMultipliers.push_back(multipliers[i]);
         } else {
@@ -219,20 +222,23 @@ assembleWeakFormInAcaMode(
         stlSparseDiscreteTerms[i] = &sparseDiscreteTerms[i];
 
     // Assemble dense terms in ACA mode, simultaneously adding the sparse terms
-    return AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
+    return AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                 this->testSpace(), this->trialSpace(),
                 stlDenseTermLocalAssemblers,
                 stlSparseDiscreteTerms,
                 denseTermsMultipliers,
                 sparseTermsMultipliers,
-                options);
+                options,
+                symmetry);
 }
 
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-LinearOperatorSuperposition<BasisFunctionType, ResultType>::assembleWeakFormInArbitraryMode(
+LinearOperatorSuperposition<BasisFunctionType, ResultType>::
+assembleDetachedWeakFormInArbitraryMode(
         const LocalAssemblerFactory& factory,
-        const AssemblyOptions& options) const
+        const AssemblyOptions& options,
+        Symmetry symmetry) const
 {
     // General (less efficient) implementation
 
@@ -246,7 +252,7 @@ LinearOperatorSuperposition<BasisFunctionType, ResultType>::assembleWeakFormInAr
     boost::ptr_vector<DiscreteLinOp> discreteOps;
     for (int i = 0; i < localOperators.size(); ++i) {
         std::auto_ptr<DiscreteLinOp> discreteOp =
-                localOperators[i]->assembleWeakForm(factory, options);
+                localOperators[i]->assembleDetachedWeakForm(factory, options, symmetry);
         discreteOps.push_back(discreteOp);
     }
     return std::auto_ptr<DiscreteLinOp>(

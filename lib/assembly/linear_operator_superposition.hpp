@@ -57,28 +57,32 @@ public:
     virtual int trialComponentCount() const;
     virtual int testComponentCount() const;
 
-    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
-    assembleWeakForm(
-            const LocalAssemblerFactory& factory,
-            const AssemblyOptions& options) const;
-
     virtual bool supportsRepresentation(AssemblyOptions::Representation repr) const;
 
 private:
-    std::auto_ptr<DiscreteLinearOperator<ResultType> >
-    assembleWeakFormInDenseMode(
+    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
+    assembleDetachedWeakFormImpl(
             const LocalAssemblerFactory& factory,
-            const AssemblyOptions& options) const;
+            const AssemblyOptions& options,
+            Symmetry symmetry) const;
 
     std::auto_ptr<DiscreteLinearOperator<ResultType> >
-    assembleWeakFormInAcaMode(
+    assembleDetachedWeakFormInDenseMode(
             const LocalAssemblerFactory& factory,
-            const AssemblyOptions& options) const;
+            const AssemblyOptions& options,
+            Symmetry symmetry) const;
 
     std::auto_ptr<DiscreteLinearOperator<ResultType> >
-    assembleWeakFormInArbitraryMode(
+    assembleDetachedWeakFormInAcaMode(
             const LocalAssemblerFactory& factory,
-            const AssemblyOptions& options) const;
+            const AssemblyOptions& options,
+            Symmetry symmetry) const;
+
+    std::auto_ptr<DiscreteLinearOperator<ResultType> >
+    assembleDetachedWeakFormInArbitraryMode(
+            const LocalAssemblerFactory& factory,
+            const AssemblyOptions& options,
+            Symmetry symmetry) const;
 };
 
 } //namespace Bempp

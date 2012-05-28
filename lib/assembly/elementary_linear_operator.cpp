@@ -6,6 +6,30 @@ namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType>
+ElementaryLinearOperator<BasisFunctionType, ResultType>::
+ElementaryLinearOperator(const Space<BasisFunctionType>& testSpace,
+                         const Space<BasisFunctionType>& trialSpace) :
+    LinearOperator<BasisFunctionType, ResultType>(testSpace, trialSpace)
+{
+    std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*> v;
+    std::vector<ResultType> m;
+    v.push_back(this);
+    m.push_back(1.0);
+    addLocalOperatorsAndMultipliers(v, m);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+std::auto_ptr<DiscreteLinearOperator<ResultType> >
+ElementaryLinearOperator<BasisFunctionType, ResultType>::
+assembleDetachedWeakFormInternal(
+        LocalAssembler& assembler,
+        const AssemblyOptions& options,
+        Symmetry symmetry) const
+{
+    return assembleDetachedWeakFormInternalImpl(assembler, options, symmetry);
+}
+
+template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<typename ElementaryLinearOperator<BasisFunctionType, ResultType>::LocalAssembler>
 ElementaryLinearOperator<BasisFunctionType, ResultType>::makeAssemblerFromScratch(
         const LocalAssemblerFactory& assemblerFactory,

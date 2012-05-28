@@ -50,20 +50,22 @@ public:
     typedef DiscreteLinearOperator<ResultType> DiscreteLinOp;
     typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
 
-    static std::auto_ptr<DiscreteLinOp> assembleWeakForm(
+    static std::auto_ptr<DiscreteLinOp> assembleDetachedWeakForm(
             const Space<BasisFunctionType>& testSpace,
             const Space<BasisFunctionType>& trialSpace,
             const std::vector<LocalAssembler*>& localAssemblers,
             const std::vector<const DiscreteLinOp*>& sparseTermsToAdd,
             const std::vector<ResultType>& denseTermsMultipliers,
             const std::vector<ResultType>& sparseTermsMultipliers,
-            const AssemblyOptions& options);
+            const AssemblyOptions& options,
+            bool symmetric);
 
-    static std::auto_ptr<DiscreteLinOp> assembleWeakForm(
+    static std::auto_ptr<DiscreteLinOp> assembleDetachedWeakForm(
             const Space<BasisFunctionType>& testSpace,
             const Space<BasisFunctionType>& trialSpace,
             LocalAssembler& localAssembler,
-            const AssemblyOptions& options);
+            const AssemblyOptions& options,
+            bool symmetric);
 };
 
 } // namespace Bempp

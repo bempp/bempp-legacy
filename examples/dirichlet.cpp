@@ -129,8 +129,8 @@ int main(int argc, char* argv[])
 
     // Assemble the operators
 
-    slp.assemble(factory, assemblyOptions);
-    rhsOp.assemble(factory, assemblyOptions);
+    slp.assembleWeakForm(factory, assemblyOptions, UNSYMMETRIC);
+    rhsOp.assembleWeakForm(factory, assemblyOptions);
 
     // We also want a grid function
 

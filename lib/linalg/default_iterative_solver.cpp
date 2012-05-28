@@ -38,7 +38,7 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::DefaultIterativeSolver(
         const GridFunction<BasisFunctionType, ResultType>& gridFun) :
     m_belosSolverWrapper(
         Teuchos::rcpFromRef<const Thyra::LinearOpBase<ResultType> >(
-            linOp.assembledDiscreteLinearOperator())),
+            linOp.weakForm())),
     m_space(linOp.trialSpace()),
     // TODO: gridFun.coefficients should return a shared pointer to Vector
     // rather than a Vector

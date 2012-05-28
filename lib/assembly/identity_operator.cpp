@@ -143,7 +143,9 @@ template <typename BasisFunctionType, typename ResultType>
 IdentityOperator<BasisFunctionType, ResultType>::IdentityOperator(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace) :
-    ElementaryLinearOperator<BasisFunctionType, ResultType>(testSpace, trialSpace) {
+    ElementaryLinearOperator<BasisFunctionType, ResultType>(
+        testSpace, trialSpace)
+{
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -157,43 +159,46 @@ bool IdentityOperator<BasisFunctionType, ResultType>::supportsRepresentation(
 
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-IdentityOperator<BasisFunctionType, ResultType>::assembleWeakForm(
+IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormImpl(
         const LocalAssemblerFactory& factory,
-        const AssemblyOptions& options) const
+        const AssemblyOptions& options,
+        Symmetry symmetry) const
 {
     AutoTimer timer("\nAssembly took ");
     std::auto_ptr<LocalAssembler> assembler =
             makeAssemblerFromScratch(factory, options);
-    return assembleWeakFormInternal(*assembler, options);
+    return assembleDetachedWeakFormInternalImpl(*assembler, options, symmetry);
 }
 
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInternal(
+IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInternalImpl(
         LocalAssembler& assembler,
-        const AssemblyOptions& options) const
+        const AssemblyOptions& options,
+        Symmetry symmetry) const
 {
     switch (options.operatorRepresentation())
     {
     case AssemblyOptions::DENSE:
-        return assembleWeakFormInDenseMode(assembler, options);
+        return assembleDetachedWeakFormInDenseMode(assembler, options, symmetry);
     case AssemblyOptions::ACA:
 #ifdef WITH_TRILINOS
-        return assembleWeakFormInSparseMode(assembler, options);
-#else // Fallback to dense mode. Don't know whether whis should be signalled to the user.
-        return assembleWeakFormInDenseMode(assembler, options);
+        return assembleDetachedWeakFormInSparseMode(assembler, options, symmetry);
+#else // Fallback to dense mode. Don't know whether this should be signalled to the user.
+        return assembleDetachedWeakFormInDenseMode(assembler, options, symmetry);
 #endif
     default:
-        throw std::runtime_error("IdentityOperator::assembleWeakForm(): "
+        throw std::runtime_error("IdentityOperator::assembleDetachedWeakFormImpl(): "
                                  "invalid assembly mode");
     }
 }
 
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInDenseMode(
+IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInDenseMode(
         typename IdentityOperator<BasisFunctionType, ResultType>::LocalAssembler& assembler,
-        const AssemblyOptions& options) const
+        const AssemblyOptions& options,
+        Symmetry symmetry) const
 {
     const Space<BasisFunctionType>& testSpace = this->testSpace();
     const Space<BasisFunctionType>& trialSpace = this->trialSpace();
@@ -241,14 +246,15 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInDenseMode(
 
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparseMode(
+IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInSparseMode(
         typename IdentityOperator<BasisFunctionType, ResultType>::LocalAssembler& assembler,
-        const AssemblyOptions& options) const
+        const AssemblyOptions& options,
+        Symmetry symmetry) const
 {
 #ifdef WITH_TRILINOS
     if (boost::is_complex<BasisFunctionType>::value)
         throw std::runtime_error(
-                "IdentityOperator::assembleWeakFormInSparseMode(): "
+                "IdentityOperator::assembleDetachedWeakFormInSparseMode(): "
                 "sparse-mode assembly of identity operators for "
                 "complex-valued basis functions is not supported yet");
 
@@ -336,7 +342,7 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparseMode(
     return std::auto_ptr<DiscreteLinearOperator<ResultType> >(
                 new DiscreteSparseLinearOperator<ResultType>(result));
 #else // WITH_TRILINOS
-    throw std::runtime_error("IdentityOperator::assembleWeakFormInSparseMode(): "
+    throw std::runtime_error("IdentityOperator::assembleDetachedWeakFormInSparseMode(): "
                              "To enable assembly in sparse mode, recompile BEM++ "
                              "with the symbol WITH_TRILINOS defined.");
 #endif

@@ -38,7 +38,7 @@ MassMatrixContainerInitialiser<BasisFunctionType, ResultType>::operator()() cons
     IdentityOperator<BasisFunctionType, ResultType> id(m_space, m_space);
     StandardLocalAssemblerFactoryForOperatorsOnSurfaces<
             BasisFunctionType, ResultType> factory;
-    result->massMatrix = id.assembleWeakForm(factory, assemblyOptions);
+    result->massMatrix = id.assembleDetachedWeakForm(factory, assemblyOptions);
 
 #ifdef WITH_TRILINOS
     DiscreteSparseLinOp& sparseDiscreteId =

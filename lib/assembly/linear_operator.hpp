@@ -22,6 +22,7 @@
 #define bempp_linear_operator_hpp
 
 #include "assembly_options.hpp"
+#include "symmetry.hpp"
 #include "transposition_mode.hpp"
 
 #include "../common/shared_ptr.hpp"
@@ -79,6 +80,9 @@ public:
     LocalAssemblerFactory;
     typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
 
+    /** @name Constructors and destructors
+     *  @{ */
+
     LinearOperator(const Space<BasisFunctionType>& testSpace,
                    const Space<BasisFunctionType>& trialSpace);
 
@@ -86,24 +90,13 @@ public:
 
     virtual ~LinearOperator();
 
-    /** \brief Assemble the discrete operator */
-    void assemble(const LocalAssemblerFactory& factory,
-                  const AssemblyOptions& options);
+    /** @}
+     *  @name Spaces
+     *  @{ */
 
-    /** \brief Return \p true if operator is assembled */
-    bool isAssembled() const;
+    const Space<BasisFunctionType>& testSpace() const;
+    const Space<BasisFunctionType>& trialSpace() const;
 
-    /** \brief Set y_inout := alpha * A * x_in + beta * y_inout, where A is
-      this operator. */
-    void apply(const TranspositionMode trans,
-               const GridFunction<BasisFunctionType, ResultType>& x_in,
-               GridFunction<BasisFunctionType, ResultType>& y_inout,
-               ResultType alpha, ResultType beta) const;
-
-    /** \brief Return reference to \p DiscreteLinearOperator. */
-    const DiscreteLinearOperator<ResultType>& assembledDiscreteLinearOperator() const;
-
-    // Ideas for better names for all methods here are very welcome!!!
     /** \brief Number of components of the functions from the trial space \f$X\f$.
 
       This is equal to \f$p\f$ in the notation above. */
@@ -114,14 +107,27 @@ public:
       This is equal to \f$q\f$ in the notation above. */
     virtual int testComponentCount() const = 0;
 
+    /** @}
+     *  @name Constituent elementary operators
+     *  @{ */
+
+    const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const* >&
+    localOperators() const;
+
+    const std::vector<ResultType>& multipliers() const;
+
+    /** @}
+     *  @name Assembly
+     *  @{ */
+
     /** \brief True if this operator supports the representation \p repr. */
     virtual bool supportsRepresentation(
             AssemblyOptions::Representation repr) const = 0;
 
-    /** \brief Assemble the operator's weak form.
+    /** \brief Assemble the operator's weak form and store it internally.
 
-      Construct a discrete linear operator representing the matrix \f$W_{jk}\f$
-      whose entries have the form
+      This function constructs a discrete linear operator representing the
+      matrix \f$W_{jk}\f$ with entries of the form
 
       \f[W_{jk} = \int_S \phi_j L \psi_k,\f]
 
@@ -131,21 +137,52 @@ public:
       \f$\phi_j\f$ is a function from the test space \f$Y\f$ and \f$\psi_k\f$ a
       function from \f$X\f$.
 
-      This is the overload intended to be called by the user, who needs to
-      provide a local-assembler factory \p factory to be used to construct an
-      appropriate local assembler. */
-    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
-    assembleWeakForm(
-            const LocalAssemblerFactory& factory,
-            const AssemblyOptions& options) const = 0;
+      The resulting discrete linear operator is stored internally and, if
+      necessary, can subsequently be accessed via weakForm() or detached
+      via detachWeakForm(). */
+    void assembleWeakForm(const LocalAssemblerFactory& factory,
+                          const AssemblyOptions& options,
+                          Symmetry symmetry = UNSYMMETRIC);
 
-    const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const* >&
-    localOperators() const;
+    /** \brief Assemble and return the operator's weak form.
+     *
+     * This function constructs the weak form as described in the reference of
+     * assembleWeakForm(), but instead of storing the resulting discrete linear
+     * operator internally, it transfers its ownership to the caller. */
+    std::auto_ptr<DiscreteLinearOperator<ResultType> >
+    assembleDetachedWeakForm(const LocalAssemblerFactory& factory,
+                             const AssemblyOptions& options,
+                             Symmetry symmetry = UNSYMMETRIC) const;
 
-    const std::vector<ResultType>& multipliers() const;
+    /** \brief Return \p true if the operator stores its assembled weak form. */
+    bool isWeakFormAssembled() const;
 
-    const Space<BasisFunctionType>& testSpace() const;
-    const Space<BasisFunctionType>& trialSpace() const;
+    /** \brief Return a reference to the weak form assembled beforehand.
+     *
+     * If the weak form has not previously been assembled, a std::runtime_error
+     * exception is thrown. */
+    const DiscreteLinearOperator<ResultType>& weakForm() const;
+
+    /** \brief Clear the internal pointer to the assembled weak form and
+     * transfer its ownership to the caller.
+     *
+     * \note: Owing to the behaviour of the copy constructor of an auto_ptr, if
+     * the value returned by this function is not assigned to anything, the weak
+     * form is destroyed and the memory it occupied is freed. */
+    std::auto_ptr<DiscreteLinearOperator<ResultType> > detachWeakForm();
+
+    /** @}
+     *  @name Action
+     *  @{ */
+
+    /** \brief Set y_inout := alpha * A * x_in + beta * y_inout, where A is
+      this operator. */
+    void apply(const TranspositionMode trans,
+               const GridFunction<BasisFunctionType, ResultType>& x_in,
+               GridFunction<BasisFunctionType, ResultType>& y_inout,
+               ResultType alpha, ResultType beta) const;
+
+    /** @} */
 
 protected:
     void addLocalOperatorsAndMultipliers(
@@ -164,6 +201,23 @@ protected:
             shared_ptr<Fiber::OpenClHandler>& openClHandler,
             bool& cacheSingularIntegrals) const;
 
+    /** \brief Implementation of the weak-form assembly.
+
+      Construct a discrete linear operator representing the matrix \f$W_{jk}\f$
+      whose entries have the form
+
+      \f[W_{jk} = \int_S \phi_j L \psi_k,\f]
+
+      where \f$L\f$ is the linear operator represented by this object, \f$S\f$
+      denotes the surface that is the domain of the trial space \f$X\f$ and
+      which is represented by the grid returned by trialSpace.grid(),
+      \f$\phi_j\f$ is a function from the test space \f$Y\f$ and \f$\psi_k\f$ a
+      function from \f$X\f$. */
+    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
+    assembleDetachedWeakFormImpl(const LocalAssemblerFactory& factory,
+                                 const AssemblyOptions& options,
+                                 Symmetry symmetry) const = 0;
+
 private:
     const Space<BasisFunctionType>& m_testSpace;
     const Space<BasisFunctionType>& m_trialSpace;
@@ -172,7 +226,7 @@ private:
     m_localOperators;
     std::vector<ResultType> m_multipliers;
 
-    std::auto_ptr<const DiscreteLinearOperator<ResultType> > m_discreteOperator;
+    std::auto_ptr<DiscreteLinearOperator<ResultType> > m_weakForm;
 };
 
 // Operator overloading

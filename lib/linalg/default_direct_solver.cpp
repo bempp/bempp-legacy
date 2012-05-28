@@ -34,7 +34,7 @@ DefaultDirectSolver<BasisFunctionType, ResultType>::DefaultDirectSolver(
     m_linearOperator(linearOperator), m_gridFunction(gridFunction),
     m_solution(), m_status(Solver<BasisFunctionType, ResultType>::UNKNOWN)
 {
-    if (!linearOperator.isAssembled())
+    if (!linearOperator.isWeakFormAssembled())
         throw std::runtime_error("DefaultDirectSolver::DefaultDirectSolver(): "
                                  "operator is not assembled");
     if (&linearOperator.trialSpace() != &gridFunction.space())
@@ -46,7 +46,7 @@ template <typename BasisFunctionType, typename ResultType>
 void DefaultDirectSolver<BasisFunctionType, ResultType>::solve()
 {
     m_solution = arma::solve(
-                m_linearOperator.assembledDiscreteLinearOperator().asMatrix(),
+                m_linearOperator.weakForm().asMatrix(),
                 m_gridFunction.projections());
     m_status = Solver<BasisFunctionType, ResultType>::CONVERGED;
 }

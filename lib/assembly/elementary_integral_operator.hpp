@@ -85,16 +85,6 @@ public:
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const;
 
-    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
-    assembleWeakForm(
-            const LocalAssemblerFactory& factory,
-            const AssemblyOptions& options) const;
-
-    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
-    assembleWeakFormInternal(
-            LocalAssembler& assembler,
-            const AssemblyOptions& options) const;
-
     // We might define a superclass IntegralOperator that might represent
     // a superposition of elementary linear operators (defined at points
     // off surface). Then the virtual attribute here would be useful.
@@ -125,14 +115,27 @@ private:
     /** @}
         \name Weak form assembly
         @{ */
-    std::auto_ptr<DiscreteLinearOperator<ResultType> >
-    assembleWeakFormInDenseMode(
+    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
+    assembleDetachedWeakFormImpl(
+            const LocalAssemblerFactory& factory,
+            const AssemblyOptions& options,
+            Symmetry symmetry) const;
+    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
+    assembleDetachedWeakFormInternalImpl(
             LocalAssembler& assembler,
-            const AssemblyOptions &options) const;
+            const AssemblyOptions& options,
+            Symmetry symmetry) const;
+
     std::auto_ptr<DiscreteLinearOperator<ResultType> >
-    assembleWeakFormInAcaMode(
+    assembleDetachedWeakFormInDenseMode(
             LocalAssembler& assembler,
-            const AssemblyOptions& options) const;
+            const AssemblyOptions &options,
+            Symmetry symmetry) const;
+    std::auto_ptr<DiscreteLinearOperator<ResultType> >
+    assembleDetachedWeakFormInAcaMode(
+            LocalAssembler& assembler,
+            const AssemblyOptions& options,
+            Symmetry symmetry) const;
     /** @} */
 
 };

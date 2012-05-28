@@ -125,8 +125,8 @@ int main(int argc, char* argv[])
 
     // Assemble the Operators
 
-    rhsOp.assemble(factory, assemblyOptions);
-    lhsOp.assemble(factory, assemblyOptions);
+    rhsOp.assembleWeakForm(factory, assemblyOptions);
+    lhsOp.assembleWeakForm(factory, assemblyOptions);
 
     // We also want a grid function
 

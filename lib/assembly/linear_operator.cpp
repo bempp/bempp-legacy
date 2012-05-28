@@ -53,17 +53,45 @@ LinearOperator<BasisFunctionType, ResultType>::~LinearOperator()
 }
 
 template <typename BasisFunctionType, typename ResultType>
-void LinearOperator<BasisFunctionType, ResultType>::assemble(
+void LinearOperator<BasisFunctionType, ResultType>::assembleWeakForm(
         const LocalAssemblerFactory& factory,
-        const AssemblyOptions& options)
+        const AssemblyOptions& options,
+        Symmetry symmetry)
 {
-    m_discreteOperator = this->assembleWeakForm(factory, options);
+    m_weakForm = this->assembleDetachedWeakFormImpl(factory, options, symmetry);
 }
 
 template <typename BasisFunctionType, typename ResultType>
-bool LinearOperator<BasisFunctionType, ResultType>::isAssembled() const
+std::auto_ptr<DiscreteLinearOperator<ResultType> >
+LinearOperator<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
+        const LocalAssemblerFactory& factory,
+        const AssemblyOptions& options,
+        Symmetry symmetry) const
 {
-    return m_discreteOperator.get() != NULL;
+    return this->assembleDetachedWeakFormImpl(factory, options, symmetry);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+bool LinearOperator<BasisFunctionType, ResultType>::isWeakFormAssembled() const
+{
+    return m_weakForm.get() != 0;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+const DiscreteLinearOperator<ResultType>&
+LinearOperator<BasisFunctionType, ResultType>::weakForm() const
+{
+    if (!isWeakFormAssembled())
+        throw std::runtime_error("LinearOperator::weakForm(): "
+                                 "the weak form is not assembled");
+    return *m_weakForm;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+std::auto_ptr<DiscreteLinearOperator<ResultType> >
+LinearOperator<BasisFunctionType, ResultType>::detachWeakForm()
+{
+    return std::auto_ptr<DiscreteLinearOperator<ResultType> >(m_weakForm.release());
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -73,9 +101,9 @@ void LinearOperator<BasisFunctionType, ResultType>::apply(
         GridFunction<BasisFunctionType, ResultType>& y_inout,
         ResultType alpha, ResultType beta) const
 {
-    if (!this->isAssembled())
+    if (!isWeakFormAssembled())
         throw std::runtime_error("LinearOperator::apply(): "
-                                 "operator is not assembled");
+                                 "the weak form is not assembled");
 
     // Sanity test
     if (&m_trialSpace != &x_in.space() || &m_testSpace != &y_inout.space())
@@ -86,21 +114,11 @@ void LinearOperator<BasisFunctionType, ResultType>::apply(
     arma::Col<ResultType> yVals = y_inout.projections();
 
     // Apply operator and assign the result to y_inout's projections
-    m_discreteOperator->apply(trans, xVals, yVals, alpha, beta);
+    m_weakForm->apply(trans, xVals, yVals, alpha, beta);
     // TODO: make interfaces to the Trilinos and fallback
     // DiscreteLinearOperator::apply() compatible.
     // Perhaps by declaring an asPtrToBaseVector method in Vector...
     y_inout.setProjections(yVals);
-}
-
-template <typename BasisFunctionType, typename ResultType>
-const DiscreteLinearOperator<ResultType>&
-LinearOperator<BasisFunctionType, ResultType>::assembledDiscreteLinearOperator() const
-{
-    if (!isAssembled())
-        throw std::runtime_error("LinearOperator::assembledDiscreteLinearOperator(): "
-                                 "operator is not assembled");
-    return *m_discreteOperator;
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -111,19 +129,22 @@ LinearOperator<BasisFunctionType, ResultType>::localOperators() const
 }
 
 template <typename BasisFunctionType, typename ResultType>
-const std::vector<ResultType>& LinearOperator<BasisFunctionType, ResultType>::multipliers() const
+const std::vector<ResultType>&
+LinearOperator<BasisFunctionType, ResultType>::multipliers() const
 {
     return m_multipliers;
 }
 
 template <typename BasisFunctionType, typename ResultType>
-const Space<BasisFunctionType>& LinearOperator<BasisFunctionType, ResultType>::testSpace() const
+const Space<BasisFunctionType>&
+LinearOperator<BasisFunctionType, ResultType>::testSpace() const
 {
     return m_testSpace;
 }
 
 template <typename BasisFunctionType, typename ResultType>
-const Space<BasisFunctionType>& LinearOperator<BasisFunctionType, ResultType>::trialSpace() const
+const Space<BasisFunctionType>&
+LinearOperator<BasisFunctionType, ResultType>::trialSpace() const
 {
     return m_trialSpace;
 }

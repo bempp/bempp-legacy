@@ -51,14 +51,7 @@ public:
     typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
 
     ElementaryLinearOperator(const Space<BasisFunctionType>& testSpace,
-                             const Space<BasisFunctionType>& trialSpace) :
-        LinearOperator<BasisFunctionType, ResultType>(testSpace, trialSpace) {
-        std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*> v;
-        std::vector<ResultType> m;
-        v.push_back(this);
-        m.push_back(1.0);
-        addLocalOperatorsAndMultipliers(v, m);
-    }
+                             const Space<BasisFunctionType>& trialSpace);
 
     /** \brief Using a specified factory, construct a local assembler suitable
        for this operator. */
@@ -81,11 +74,18 @@ public:
     /** \brief Assemble the operator's weak form using a specified local assembler.
 
       This function is not intended to be called directly by the user. */
-    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
-    assembleWeakFormInternal(
+    std::auto_ptr<DiscreteLinearOperator<ResultType> >
+    assembleDetachedWeakFormInternal(
             LocalAssembler& assembler,
-            const AssemblyOptions& options) const = 0;
+            const AssemblyOptions& options,
+            Symmetry symmetry = UNSYMMETRIC) const;
 
+private:
+    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
+    assembleDetachedWeakFormInternalImpl(
+            LocalAssembler& assembler,
+            const AssemblyOptions& options,
+            Symmetry symmetry) const = 0;
 };
 
 } // namespace Bempp

@@ -65,26 +65,30 @@ public:
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const;
 
-    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
-    assembleWeakForm(
-            const LocalAssemblerFactory& factory,
-            const AssemblyOptions& options) const;
-
-    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
-    assembleWeakFormInternal(
-            LocalAssembler& assembler,
-            const AssemblyOptions& options) const;
-
 private:
-    std::auto_ptr<DiscreteLinearOperator<ResultType> >
-    assembleWeakFormInDenseMode(
+    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
+    assembleDetachedWeakFormImpl(
+            const LocalAssemblerFactory& factory,
+            const AssemblyOptions& options,
+            Symmetry symmetry) const;
+
+    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
+    assembleDetachedWeakFormInternalImpl(
             LocalAssembler& assembler,
-            const AssemblyOptions& options) const;
+            const AssemblyOptions& options,
+            Symmetry symmetry) const;
 
     std::auto_ptr<DiscreteLinearOperator<ResultType> >
-    assembleWeakFormInSparseMode(
+    assembleDetachedWeakFormInDenseMode(
             LocalAssembler& assembler,
-            const AssemblyOptions& options) const;
+            const AssemblyOptions& options,
+            Symmetry symmetry) const;
+
+    std::auto_ptr<DiscreteLinearOperator<ResultType> >
+    assembleDetachedWeakFormInSparseMode(
+            LocalAssembler& assembler,
+            const AssemblyOptions& options,
+            Symmetry symmetry) const;
 
 private:
     Fiber::ScalarFunctionValue<CoordinateType> m_expression;

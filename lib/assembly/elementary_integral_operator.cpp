@@ -129,7 +129,8 @@ ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 ElementaryIntegralOperator(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace) :
-    ElementaryLinearOperator<BasisFunctionType, ResultType>(testSpace, trialSpace)
+    ElementaryLinearOperator<BasisFunctionType, ResultType>(
+        testSpace, trialSpace)
 {
 }
 
@@ -171,43 +172,48 @@ makeAssembler(
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-assembleWeakForm(
+assembleDetachedWeakFormImpl(
         const LocalAssemblerFactory& factory,
-        const AssemblyOptions& options) const
+        const AssemblyOptions& options,
+        Symmetry symmetry) const
 {
     AutoTimer timer("\nAssembly took ");
     std::auto_ptr<LocalAssembler> assembler =
             makeAssemblerFromScratch(factory, options);
-    return assembleWeakFormInternal(*assembler, options);
+    return assembleDetachedWeakFormInternalImpl(*assembler, options, symmetry);
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-assembleWeakFormInternal(
+assembleDetachedWeakFormInternalImpl(
         LocalAssembler& assembler,
-        const AssemblyOptions& options) const
+        const AssemblyOptions& options,
+        Symmetry symmetry) const
 {
     switch (options.operatorRepresentation()) {
     case AssemblyOptions::DENSE:
-        return assembleWeakFormInDenseMode(assembler, options);
+        return assembleDetachedWeakFormInDenseMode(assembler, options, symmetry);
     case AssemblyOptions::ACA:
-        return assembleWeakFormInAcaMode(assembler, options);
+        return assembleDetachedWeakFormInAcaMode(assembler, options, symmetry);
     case AssemblyOptions::FMM:
-        throw std::runtime_error("ElementaryIntegralOperator::assembleWeakForm(): "
-                                 "assembly mode FMM is not implemented yet");
+        throw std::runtime_error(
+                    "ElementaryIntegralOperator::assembleDetachedWeakFormInternalImpl(): "
+                    "assembly mode FMM is not implemented yet");
     default:
-        throw std::runtime_error("ElementaryIntegralOperator::assembleWeakForm(): "
-                                 "invalid assembly mode");
+        throw std::runtime_error(
+                    "ElementaryIntegralOperator::assembleDetachedWeakFormInternalImpl(): "
+                    "invalid assembly mode");
     }
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-assembleWeakFormInDenseMode(
+assembleDetachedWeakFormInDenseMode(
         LocalAssembler& assembler,
-        const AssemblyOptions& options) const
+        const AssemblyOptions& options,
+        Symmetry symmetry) const
 {
     const Space<BasisFunctionType>& testSpace = this->testSpace();
     const Space<BasisFunctionType>& trialSpace = this->trialSpace();
@@ -287,15 +293,17 @@ assembleWeakFormInDenseMode(
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-assembleWeakFormInAcaMode(
+assembleDetachedWeakFormInAcaMode(
         LocalAssembler& assembler,
-        const AssemblyOptions& options) const
+        const AssemblyOptions& options,
+        Symmetry symmetry) const
 {
     const Space<BasisFunctionType>& testSpace=this->testSpace();
     const Space<BasisFunctionType>& trialSpace=this->trialSpace();
 
-    return AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleWeakForm(
-                testSpace, trialSpace, assembler, options);
+    return AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
+                testSpace, trialSpace, assembler, options,
+                symmetry & SYMMETRIC);
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
