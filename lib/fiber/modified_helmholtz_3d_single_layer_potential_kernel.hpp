@@ -26,13 +26,45 @@
 namespace Fiber
 {
 
+/** \defgroup modified_helmholtz_3d Modified Helmholtz equation in 3D
+ *
+ *  The classes from this group implement kernels and operators related to the
+ *  modified Helmholtz equation in 3D,
+ *  \f[
+ *      \biggl(\frac{\partial^2}{\partial x^2} +
+ *      \frac{\partial^2}{\partial y^2} +
+ *      \frac{\partial^2}{\partial z^2} -
+ *      k^2\biggr)
+ *      u(x, y, z) = 0.
+ *  \f]
+ *  The number \f$k\f$ is referred to as the <em>wave number</em>.
+ *
+ *  \note The term <em>wave number</em> refers to different physical quantities
+ *  in the modified Helmholtz equation and in the
+ *  \ref helmholtz_3d "standard Helmholtz equation".
+ */
+
+/** \ingroup modified_helmholtz_3d
+ *  \brief Single-layer-potential kernel for the modified Helmholtz equation in 3D.
+ *
+ *  \tparam ValueType Type used to represent the values of the kernel. It can
+ *  be one of: \c float, \c double, <tt>std::complex<float></tt> and
+ *  <tt>std::complex<double></tt>. Note that setting \p ValueType to a real
+ *  type implies that the wave number will also be purely real.
+ *
+ *  \see modified_helmholtz_3d
+ */
 template <typename ValueType>
 class ModifiedHelmholtz3dSingleLayerPotentialKernel : public Kernel<ValueType>
 {
 public:
     typedef typename Kernel<ValueType>::CoordinateType CoordinateType;
 
+    /** \brief Construct the kernel, setting the wave number to \p k.
+     *
+     * See \ref modified_helmholtz_3d for the definition of the wave number. */
     explicit ModifiedHelmholtz3dSingleLayerPotentialKernel(ValueType k);
+
     virtual int worldDimension() const { return 3; }
     virtual int domainDimension() const { return 1; }
     virtual int codomainDimension() const { return 1; }
@@ -40,9 +72,16 @@ public:
     virtual void addGeometricalDependencies(int& testGeomDeps,
                                             int& trialGeomDeps) const;
 
+    /** \brief Return the current value of wave number.
+     *
+     * See \ref modified_helmholtz_3d for the definition of the wave number. */
     ValueType waveNumber() const { return m_waveNumber; }
 
+    /** \brief Set the wave number to \p k.
+     *
+     * See \ref modified_helmholtz_3d for the definition of the wave number. */
     void setWaveNumber(ValueType k) { m_waveNumber = k; }
+
     virtual void evaluateAtPointPairs(const GeometricalData<CoordinateType>& testGeomData,
                                       const GeometricalData<CoordinateType>& trialGeomData,
                                       arma::Cube<ValueType>& result) const;

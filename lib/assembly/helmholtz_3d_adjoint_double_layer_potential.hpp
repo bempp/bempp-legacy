@@ -29,6 +29,15 @@
 namespace Bempp
 {
 
+/** \ingroup helmholtz_3d
+ *  \brief Single-layer-potential operator for the Helmholtz equation in 3D.
+ *
+ *  \tparam BasisFunctionType
+ *    Type used to represent the values of basis functions. It can take the
+ *    following values: \c float, \c double, <tt>std::complex<float></tt> and
+ *    <tt>std::complex<double></tt>.
+ *
+ *  \see helmholtz_3d */
 template <typename BasisFunctionType>
 class Helmholtz3dAdjointDoubleLayerPotential :
         public ElementaryWeaklySingularIntegralOperator<
@@ -37,6 +46,7 @@ class Helmholtz3dAdjointDoubleLayerPotential :
         typename ScalarTraits<BasisFunctionType>::ComplexType>
 {
 public:
+    // TODO: move these typedefs to ElementaryIntegralOperator and import them from there.
     typedef typename ScalarTraits<BasisFunctionType>::ComplexType KernelType;
     typedef KernelType ResultType;
 private:
@@ -45,6 +55,13 @@ private:
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
+    /** \brief Construct the operator.
+     *
+     * \param testSpace Test function space.
+     * \param trialSpace Trial function space.
+     * \param waveNumber Wave number.
+     *
+     * See \ref helmholtz_3d for the definition of the wave number. */
     Helmholtz3dAdjointDoubleLayerPotential(const Space<BasisFunctionType>& testSpace,
                                            const Space<BasisFunctionType>& trialSpace,
                                            KernelType waveNumber);

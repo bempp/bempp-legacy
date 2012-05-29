@@ -29,6 +29,33 @@
 namespace Bempp
 {
 
+/** \defgroup helmholtz_3d Helmholtz equation in 3D
+ *
+ *  The classes from this group implement operators related to the
+ *  Helmholtz equation in 3D,
+ *  \f[
+ *      \biggl(\frac{\partial^2}{\partial x^2} +
+ *      \frac{\partial^2}{\partial y^2} +
+ *      \frac{\partial^2}{\partial z^2} +
+ *      k^2\biggr)
+ *      u(x, y, z) = 0.
+ *  \f]
+ *  The number \f$k\f$ is referred to as the <em>wave number</em>.
+ *
+ *  \note The term <em>wave number</em> refers to different physical quantities
+ *  in the Helmholtz equation and in the
+ *  \ref modified_helmholtz_3d "modified Helmholtz equation".
+ */
+
+/** \ingroup helmholtz_3d
+ *  \brief Single-layer-potential operator for the Helmholtz equation in 3D.
+ *
+ *  \tparam BasisFunctionType
+ *    Type used to represent the values of basis functions. It can take the
+ *    following values: \c float, \c double, <tt>std::complex<float></tt> and
+ *    <tt>std::complex<double></tt>.
+ *
+ *  \see helmholtz_3d */
 template <typename BasisFunctionType>
 class Helmholtz3dSingleLayerPotential :
         public ElementaryWeaklySingularIntegralOperator<
@@ -45,6 +72,13 @@ private:
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
+    /** \brief Construct the operator.
+     *
+     * \param testSpace Test function space.
+     * \param trialSpace Trial function space.
+     * \param waveNumber Wave number.
+     *
+     * See \ref helmholtz_3d for the definition of the wave number. */
     Helmholtz3dSingleLayerPotential(const Space<BasisFunctionType>& testSpace,
                                     const Space<BasisFunctionType>& trialSpace,
                                     KernelType waveNumber);
