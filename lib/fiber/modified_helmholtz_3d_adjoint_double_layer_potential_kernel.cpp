@@ -121,7 +121,8 @@ void ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernel<ValueType>::evaluateOn
 }
 
 template<typename ValueType>
-std::pair<const char*,int> ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernel<ValueType>::evaluateClCode () const
+std::pair<const char*,int>
+ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernel<ValueType>::evaluateClCode () const
 {
     return std::make_pair ("", 0);  // TODO
 
