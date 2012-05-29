@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_dot_3d_adjoint_double_layer_potential_kernel_hpp
-#define fiber_dot_3d_adjoint_double_layer_potential_kernel_hpp
+#ifndef fiber_modified_helmholtz_3d_double_layer_potential_kernel_hpp
+#define fiber_modified_helmholtz_3d_double_layer_potential_kernel_hpp
 
 #include "kernel.hpp"
 #include <armadillo>
@@ -28,7 +28,7 @@ namespace Fiber
 {
 
 template <typename ValueType>
-class Dot3dAdjointDoubleLayerPotentialKernel : public Kernel<ValueType>
+class ModifiedHelmholtz3dDoubleLayerPotentialKernel : public Kernel<ValueType>
 {
 public:
     typedef typename Kernel<ValueType>::CoordinateType CoordinateType;
@@ -65,7 +65,7 @@ public:
 private:
     ValueType evaluateAtPointPair(const arma::Col<CoordinateType>& testPoint,
                                   const arma::Col<CoordinateType>& trialPoint,
-                                  const arma::Col<CoordinateType>& testNormal) const;
+                                  const arma::Col<CoordinateType>& trialNormal) const;
 
     ValueType m_waveNumber;
 };

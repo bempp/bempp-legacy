@@ -18,11 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "dot_3d_adjoint_double_layer_potential_kernel.hpp"
+#include "modified_helmholtz_3d_double_layer_potential_kernel.hpp"
 
 #include "explicit_instantiation.hpp"
 #include "geometrical_data.hpp"
-//#include "CL/dot_3d_adjoint_double_layer_potential_kernel.cl.str"
+//#include "CL/modified_helmholtz_3d_double_layer_potential_kernel.cl.str"
 
 #include <armadillo>
 #include <cassert>
@@ -34,27 +34,27 @@ namespace Fiber
 // Double potential: derivative wrt. trial normal
 
 template <typename ValueType>
-void Dot3dAdjointDoubleLayerPotentialKernel<ValueType>::addGeometricalDependencies(
+void ModifiedHelmholtz3dDoubleLayerPotentialKernel<ValueType>::addGeometricalDependencies(
         int& testGeomDeps, int& trialGeomDeps) const
 {
-    testGeomDeps |= GLOBALS | NORMALS;
-    trialGeomDeps |= GLOBALS;
+    testGeomDeps |= GLOBALS;
+    trialGeomDeps |= GLOBALS | NORMALS;
 }
 
 template <typename ValueType>
-inline ValueType Dot3dAdjointDoubleLayerPotentialKernel<ValueType>::evaluateAtPointPair(
+inline ValueType ModifiedHelmholtz3dDoubleLayerPotentialKernel<ValueType>::evaluateAtPointPair(
         const arma::Col<CoordinateType>& testPoint,
         const arma::Col<CoordinateType>& trialPoint,
-        const arma::Col<CoordinateType>& testNormal) const
+        const arma::Col<CoordinateType>& trialNormal) const
 {
     const int coordCount = testPoint.n_rows;
 
     CoordinateType numeratorSum = 0., denominatorSum = 0.;
     for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex)
     {
-        CoordinateType diff = testPoint(coordIndex) - trialPoint(coordIndex);
+        CoordinateType diff = trialPoint(coordIndex) - testPoint(coordIndex);
         denominatorSum += diff * diff;
-        numeratorSum += diff * testNormal(coordIndex);
+        numeratorSum += diff * trialNormal(coordIndex);
     }
     CoordinateType distance = sqrt(denominatorSum);
     return -numeratorSum / (static_cast<ValueType>(4.0 * M_PI) * denominatorSum) *
@@ -62,25 +62,25 @@ inline ValueType Dot3dAdjointDoubleLayerPotentialKernel<ValueType>::evaluateAtPo
 }
 
 template <typename ValueType>
-void Dot3dAdjointDoubleLayerPotentialKernel<ValueType>::evaluateAtPointPairs(
+void ModifiedHelmholtz3dDoubleLayerPotentialKernel<ValueType>::evaluateAtPointPairs(
         const GeometricalData<CoordinateType>& testGeomData,
         const GeometricalData<CoordinateType>& trialGeomData,
         arma::Cube<ValueType>& result) const
 {
     const arma::Mat<CoordinateType>& testPoints = testGeomData.globals;
-    const arma::Mat<CoordinateType>& testNormals = testGeomData.normals;
     const arma::Mat<CoordinateType>& trialPoints = trialGeomData.globals;
+    const arma::Mat<CoordinateType>& trialNormals = trialGeomData.normals;
 
 #ifndef NDEBUG
     const int worldDim = worldDimension();
     if (testPoints.n_rows != worldDim || trialPoints.n_rows != worldDim)
-        throw std::invalid_argument("Dot3dAdjointDoubleLayerPotentialKernel::evaluateAtPointPairs(): "
+        throw std::invalid_argument("ModifiedHelmholtz3dDoubleLayerPotentialKernel::evaluateAtPointPairs(): "
                                     "3D coordinates required");
     if (testPoints.n_cols != trialPoints.n_cols)
-        throw std::invalid_argument("Dot3dAdjointDoubleLayerPotentialKernel::evaluateAtPointPairs(): "
+        throw std::invalid_argument("ModifiedHelmholtz3dDoubleLayerPotentialKernel::evaluateAtPointPairs(): "
                                     "number of test and trial points must be equal");
-    assert(testNormals.n_rows == worldDim);
-    assert(testNormals.n_cols == testPoints.n_cols);
+    assert(trialNormals.n_rows == worldDim);
+    assert(trialNormals.n_cols == trialPoints.n_cols);
 #endif
 
     const int pointCount = testPoints.n_cols;
@@ -88,26 +88,26 @@ void Dot3dAdjointDoubleLayerPotentialKernel<ValueType>::evaluateAtPointPairs(
     for (int i = 0; i < pointCount; ++i)
         result(0, 0, i) = evaluateAtPointPair(
                     testPoints.unsafe_col(i), trialPoints.unsafe_col(i),
-                    testNormals.unsafe_col(i));
+                    trialNormals.unsafe_col(i));
 }
 
 template <typename ValueType>
-void Dot3dAdjointDoubleLayerPotentialKernel<ValueType>::evaluateOnGrid(
+void ModifiedHelmholtz3dDoubleLayerPotentialKernel<ValueType>::evaluateOnGrid(
         const GeometricalData<CoordinateType>& testGeomData,
         const GeometricalData<CoordinateType>& trialGeomData,
         Array4d<ValueType>& result) const
 {
     const arma::Mat<CoordinateType>& testPoints = testGeomData.globals;
-    const arma::Mat<CoordinateType>& testNormals = testGeomData.normals;
     const arma::Mat<CoordinateType>& trialPoints = trialGeomData.globals;
+    const arma::Mat<CoordinateType>& trialNormals = trialGeomData.normals;
 
 #ifndef NDEBUG
     const int worldDim = worldDimension();
     if (testPoints.n_rows != worldDim || trialPoints.n_rows != worldDim)
-        throw std::invalid_argument("Dot3dAdjointDoubleLayerPotentialKernel::evaluate(): "
+        throw std::invalid_argument("ModifiedHelmholtz3dDoubleLayerPotentialKernel::evaluate(): "
                                     "3D coordinates required");
-    assert(testNormals.n_rows == worldDim);
-    assert(testNormals.n_cols == testPoints.n_cols);
+    assert(trialNormals.n_rows == worldDim);
+    assert(trialNormals.n_cols == trialPoints.n_cols);
 #endif
 
     const int testPointCount = testPoints.n_cols;
@@ -118,18 +118,18 @@ void Dot3dAdjointDoubleLayerPotentialKernel<ValueType>::evaluateOnGrid(
             result(0, testIndex, 0, trialIndex) = evaluateAtPointPair(
                         testPoints.unsafe_col(testIndex),
                         trialPoints.unsafe_col(trialIndex),
-                        testNormals.unsafe_col(trialIndex));
+                        trialNormals.unsafe_col(trialIndex));
 }
 
 template<typename ValueType>
-std::pair<const char*,int> Dot3dAdjointDoubleLayerPotentialKernel<ValueType>::evaluateClCode () const
+std::pair<const char*,int> ModifiedHelmholtz3dDoubleLayerPotentialKernel<ValueType>::evaluateClCode () const
 {
     return std::make_pair ("", 0);  // TODO
 
-  //    return std::make_pair(dot_3d_double_layer_potential_kernel_cl,
-  //			  dot_3d_double_layer_potential_kernel_cl_len);
+  //    return std::make_pair(modified_helmholtz_3d_double_layer_potential_kernel_cl,
+  //			  modified_helmholtz_3d_double_layer_potential_kernel_cl_len);
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_KERNEL(Dot3dAdjointDoubleLayerPotentialKernel);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_KERNEL(ModifiedHelmholtz3dDoubleLayerPotentialKernel);
 
 } // namespace Fiber

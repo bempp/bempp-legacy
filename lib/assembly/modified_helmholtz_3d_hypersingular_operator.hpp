@@ -18,20 +18,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_dot_3d_double_layer_potential_hpp
-#define bempp_dot_3d_double_layer_potential_hpp
+#ifndef bempp_modified_helmholtz_3d_hypersingular_operator_hpp
+#define bempp_modified_helmholtz_3d_hypersingular_operator_hpp
 
 #include "elementary_weakly_singular_integral_operator.hpp"
-#include "../fiber/dot_3d_double_layer_potential_kernel.hpp"
-#include "../fiber/scalar_function_value.hpp"
+#include "../fiber/modified_helmholtz_3d_single_layer_potential_kernel.hpp"
+#include "../fiber/surface_curl_3d.hpp"
 #include "../common/scalar_traits.hpp"
 
 namespace Bempp
 {
 
+// Hypersingular is obviously *not* weakly singular... but its
+// weak form can be calculated with quadrature methods devised
+// for weakly singular operators.
+// FIXME: maybe rename "WeaklySingular" to "Singular"
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType = typename Coercion<BasisFunctionType, KernelType>::Type>
-class Dot3dDoubleLayerPotential :
+class ModifiedHelmholtz3dHypersingularOperator :
         public ElementaryWeaklySingularIntegralOperator<
         BasisFunctionType, KernelType, ResultType>
 {
@@ -40,9 +44,10 @@ class Dot3dDoubleLayerPotential :
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
-    Dot3dDoubleLayerPotential(const Space<BasisFunctionType>& testSpace,
-			      const Space<BasisFunctionType>& trialSpace,
-			      KernelType waveNumber);
+    ModifiedHelmholtz3dHypersingularOperator(
+            const Space<BasisFunctionType>& testSpace,
+            const Space<BasisFunctionType>& trialSpace,
+            KernelType waveNumber);
 
 private:
     virtual const Fiber::Kernel<KernelType>& kernel() const {
@@ -58,8 +63,8 @@ private:
     }
 
 private:
-    Fiber::Dot3dDoubleLayerPotentialKernel<KernelType> m_kernel;
-    Fiber::ScalarFunctionValue<CoordinateType> m_expression;
+    Fiber::ModifiedHelmholtz3dSingleLayerPotentialKernel<KernelType> m_kernel;
+    Fiber::SurfaceCurl3d<CoordinateType> m_expression;
 };
 
 } // namespace Bempp

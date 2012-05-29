@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_dot_3d_single_layer_potential_kernel_hpp
-#define fiber_dot_3d_single_layer_potential_kernel_hpp
+#ifndef fiber_modified_helmholtz_3d_single_layer_potential_kernel_hpp
+#define fiber_modified_helmholtz_3d_single_layer_potential_kernel_hpp
 
 #include "kernel.hpp"
 
@@ -27,7 +27,7 @@ namespace Fiber
 {
 
 template <typename ValueType>
-class Dot3dSingleLayerPotentialKernel : public Kernel<ValueType>
+class ModifiedHelmholtz3dSingleLayerPotentialKernel : public Kernel<ValueType>
 {
 public:
     typedef typename Kernel<ValueType>::CoordinateType CoordinateType;
@@ -39,8 +39,8 @@ public:
     virtual void addGeometricalDependencies(int& testGeomDeps,
                                             int& trialGeomDeps) const;
 
-    virtual ValueType waveNumber () const { return m_waveNumber; }
-    virtual void setWaveNumber (ValueType k) { m_waveNumber = k; }
+    virtual ValueType waveNumber() const { return m_waveNumber; }
+    virtual void setWaveNumber(ValueType k) { m_waveNumber = k; }
 
     virtual void evaluateAtPointPairs(const GeometricalData<CoordinateType>& testGeomData,
                                       const GeometricalData<CoordinateType>& trialGeomData,

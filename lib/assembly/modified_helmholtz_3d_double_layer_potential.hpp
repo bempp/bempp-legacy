@@ -18,11 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_dot_3d_adjoint_double_layer_potential_hpp
-#define bempp_dot_3d_adjoint_double_layer_potential_hpp
+#ifndef bempp_modified_helmholtz_3d_double_layer_potential_hpp
+#define bempp_modified_helmholtz_3d_double_layer_potential_hpp
 
 #include "elementary_weakly_singular_integral_operator.hpp"
-#include "../fiber/dot_3d_adjoint_double_layer_potential_kernel.hpp"
+#include "../fiber/modified_helmholtz_3d_double_layer_potential_kernel.hpp"
 #include "../fiber/scalar_function_value.hpp"
 #include "../common/scalar_traits.hpp"
 
@@ -31,7 +31,7 @@ namespace Bempp
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType = typename Coercion<BasisFunctionType, KernelType>::Type>
-class Dot3dAdjointDoubleLayerPotential :
+class ModifiedHelmholtz3dDoubleLayerPotential :
         public ElementaryWeaklySingularIntegralOperator<
         BasisFunctionType, KernelType, ResultType>
 {
@@ -40,9 +40,10 @@ class Dot3dAdjointDoubleLayerPotential :
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
-    Dot3dAdjointDoubleLayerPotential(const Space<BasisFunctionType>& testSpace,
-			      const Space<BasisFunctionType>& trialSpace,
-			      KernelType waveNumber);
+    ModifiedHelmholtz3dDoubleLayerPotential(
+            const Space<BasisFunctionType>& testSpace,
+            const Space<BasisFunctionType>& trialSpace,
+            KernelType waveNumber);
 
 private:
     virtual const Fiber::Kernel<KernelType>& kernel() const {
@@ -58,7 +59,7 @@ private:
     }
 
 private:
-    Fiber::Dot3dAdjointDoubleLayerPotentialKernel<KernelType> m_kernel;
+    Fiber::ModifiedHelmholtz3dDoubleLayerPotentialKernel<KernelType> m_kernel;
     Fiber::ScalarFunctionValue<CoordinateType> m_expression;
 };
 

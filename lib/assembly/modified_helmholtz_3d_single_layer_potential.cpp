@@ -19,14 +19,15 @@
 // THE SOFTWARE.
 
 
-#include "dot_3d_single_layer_potential.hpp"
+#include "modified_helmholtz_3d_single_layer_potential.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 namespace Bempp
 {
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-Dot3dSingleLayerPotential<BasisFunctionType, KernelType, ResultType>::Dot3dSingleLayerPotential(
+ModifiedHelmholtz3dSingleLayerPotential<BasisFunctionType, KernelType, ResultType>::
+ModifiedHelmholtz3dSingleLayerPotential(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
 	KernelType waveNumber) :
@@ -35,6 +36,6 @@ Dot3dSingleLayerPotential<BasisFunctionType, KernelType, ResultType>::Dot3dSingl
     m_kernel.setWaveNumber (waveNumber);
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(Dot3dSingleLayerPotential);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(ModifiedHelmholtz3dSingleLayerPotential);
 
 } // namespace Bempp

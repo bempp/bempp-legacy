@@ -19,15 +19,15 @@
 // THE SOFTWARE.
 
 
-#include "dot_3d_hypersingular_operator.hpp"
+#include "modified_helmholtz_3d_hypersingular_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 namespace Bempp
 {
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-Dot3dHypersingularOperator<BasisFunctionType, KernelType, ResultType>::
-Dot3dHypersingularOperator(
+ModifiedHelmholtz3dHypersingularOperator<BasisFunctionType, KernelType, ResultType>::
+ModifiedHelmholtz3dHypersingularOperator(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
         KernelType waveNumber) :
@@ -36,6 +36,6 @@ Dot3dHypersingularOperator(
     m_kernel.setWaveNumber (waveNumber);
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(Dot3dHypersingularOperator);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(ModifiedHelmholtz3dHypersingularOperator);
 
 } // namespace Bempp
