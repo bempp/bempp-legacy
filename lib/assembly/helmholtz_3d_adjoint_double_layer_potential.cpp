@@ -30,10 +30,8 @@ Helmholtz3dAdjointDoubleLayerPotential(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
         KernelType waveNumber) :
-    Base(testSpace, trialSpace)
+    Base(testSpace, trialSpace), m_kernel(waveNumber / KernelType(0., 1.))
 {
-    const KernelType I(0., 1.);
-    m_kernel.setWaveNumber(waveNumber / I);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dAdjointDoubleLayerPotential);
