@@ -33,6 +33,7 @@ ModifiedHelmholtz3dSingleLayerPotential(
         KernelType waveNumber) :
     Base(testSpace, trialSpace), m_kernel(waveNumber)
 {
+    m_expressionList.addTerm(m_expression);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(ModifiedHelmholtz3dSingleLayerPotential);

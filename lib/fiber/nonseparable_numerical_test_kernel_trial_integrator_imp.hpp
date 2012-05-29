@@ -53,9 +53,9 @@ NonseparableNumericalTestKernelTrialIntegrator(
         const GeometryFactory& trialGeometryFactory,
         const RawGridGeometry<CoordinateType>& testRawGeometry,
         const RawGridGeometry<CoordinateType>& trialRawGeometry,
-        const Expression<CoordinateType>& testExpression,
+        const ExpressionList<ResultType>& testExpressionList,
         const Kernel<KernelType>& kernel,
-        const Expression<CoordinateType>& trialExpression,
+        const ExpressionList<ResultType>& trialExpressionList,
         const OpenClHandler& openClHandler) :
     m_localTestQuadPoints(localTestQuadPoints),
     m_localTrialQuadPoints(localTrialQuadPoints),
@@ -64,9 +64,9 @@ NonseparableNumericalTestKernelTrialIntegrator(
     m_trialGeometryFactory(trialGeometryFactory),
     m_testRawGeometry(testRawGeometry),
     m_trialRawGeometry(trialRawGeometry),
-    m_testExpression(testExpression),
+    m_testExpressionList(testExpressionList),
     m_kernel(kernel),
-    m_trialExpression(trialExpression),
+    m_trialExpressionList(trialExpressionList),
     m_openClHandler(openClHandler)
 {
     const int pointCount = quadWeights.size();
@@ -75,6 +75,19 @@ NonseparableNumericalTestKernelTrialIntegrator(
         throw std::invalid_argument("NonseparableNumericalTestKernelTrialIntegrator::"
                                     "NonseparableNumericalTestKernelTrialIntegrator(): "
                                     "numbers of points and weights do not match");
+
+    const int expressionCount = testExpressionList.termCount();
+    if (expressionCount != trialExpressionList.termCount())
+        throw std::invalid_argument("SeparableNumericalTestKernelTrialIntegrator::"
+                                    "SeparableNumericalTestKernelTrialIntegrator(): "
+                                    "test and trial expression lists have "
+                                    "different lengths");
+    assert(expressionCount > 0);
+    // Multiply the test and trial expression weigths and store them
+    m_expressionWeights.resize(expressionCount);
+    for (int i = 0; i < expressionCount; ++i)
+        m_expressionWeights[i] =
+                testExpressionList.weight(i) * trialExpressionList.weight(i);
 }
 
 template <typename BasisFunctionType, typename KernelType,
@@ -100,8 +113,12 @@ integrate(
     // geometryCount != 0, set elements of result to 0.
 
     // Evaluate constants
-    const int testComponentCount = m_testExpression.codomainDimension();
-    const int trialComponentCount = m_trialExpression.codomainDimension();
+    const int testComponentCount = m_testExpressionList.codomainDimension();
+    const int trialComponentCount = m_trialExpressionList.codomainDimension();
+    // In the constructor we have checked that m_trialExpressionList has
+    // the same number of terms
+    const int expressionCount = m_testExpressionList.termCount();
+
     const int dofCountA = basisA.size();
     const int dofCountB = localDofIndexB == ALL_DOFS ? basisB.size() : 1;
     const int testDofCount = callVariant == TEST_TRIAL ? dofCountA : dofCountB;
@@ -129,8 +146,8 @@ integrate(
     int testGeomDeps = INTEGRATION_ELEMENTS;
     int trialGeomDeps = INTEGRATION_ELEMENTS;
 
-    m_testExpression.addDependencies(testBasisDeps, testGeomDeps);
-    m_trialExpression.addDependencies(trialBasisDeps, trialGeomDeps);
+    m_testExpressionList.addDependencies(testBasisDeps, testGeomDeps);
+    m_trialExpressionList.addDependencies(trialBasisDeps, trialGeomDeps);
     m_kernel.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 
     typedef typename GeometryFactory::Geometry Geometry;
@@ -152,7 +169,7 @@ integrate(
         rawGeometryB = &m_testRawGeometry;
     }
 
-    arma::Cube<BasisFunctionType> testValues, trialValues;
+    std::vector<arma::Cube<BasisFunctionType> > testValues, trialValues;
     arma::Cube<KernelType> kernelValues;
 
     result.set_size(testDofCount, trialDofCount, elementACount);
@@ -163,14 +180,14 @@ integrate(
         basisA.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS, testBasisData);
         basisB.evaluate(trialBasisDeps, m_localTrialQuadPoints, localDofIndexB, trialBasisData);
         geometryB->getData(trialGeomDeps, m_localTrialQuadPoints, trialGeomData);
-        m_trialExpression.evaluate(trialBasisData, trialGeomData, trialValues);
+        m_trialExpressionList.evaluate(trialBasisData, trialGeomData, trialValues);
     }
     else
     {
         basisA.evaluate(trialBasisDeps, m_localTrialQuadPoints, ALL_DOFS, trialBasisData);
         basisB.evaluate(testBasisDeps, m_localTestQuadPoints, localDofIndexB, testBasisData);
         geometryB->getData(testGeomDeps, m_localTestQuadPoints, testGeomData);
-        m_testExpression.evaluate(testBasisData, testGeomData, testValues);
+        m_testExpressionList.evaluate(testBasisData, testGeomData, testValues);
     }
 
     // Iterate over the elements
@@ -180,12 +197,12 @@ integrate(
         if (callVariant == TEST_TRIAL)
         {
             geometryA->getData(testGeomDeps, m_localTestQuadPoints, testGeomData);
-            m_testExpression.evaluate(testBasisData, testGeomData, testValues);
+            m_testExpressionList.evaluate(testBasisData, testGeomData, testValues);
         }
         else
         {
             geometryA->getData(trialGeomDeps, m_localTrialQuadPoints, trialGeomData);
-            m_trialExpression.evaluate(trialBasisData, trialGeomData, trialValues);
+            m_trialExpressionList.evaluate(trialBasisData, trialGeomData, trialValues);
         }
 
         m_kernel.evaluateAtPointPairs(testGeomData, trialGeomData, kernelValues);
@@ -196,13 +213,15 @@ integrate(
                 {
                     ResultType sum = 0.;
                     for (int point = 0; point < pointCount; ++point)
-                        for (int dim = 0; dim < testComponentCount; ++dim)
-                            sum +=  m_quadWeights[point] *
-                                    testGeomData.integrationElements(point) *
-                                    conjugate(testValues(dim, testDof, point)) *
-                                    kernelValues(0, 0, point) *
-                                    trialValues(dim, trialDof, point) *
-                                    trialGeomData.integrationElements(point);
+                        for (int expression = 0; expression < expressionCount; ++expression)
+                            for (int dim = 0; dim < testComponentCount; ++dim)
+                                sum +=  m_quadWeights[point] *
+                                        testGeomData.integrationElements(point) *
+                                        m_expressionWeights[expression] *
+                                        conjugate(testValues[expression](dim, testDof, point)) *
+                                        kernelValues(0, 0, point) *
+                                        trialValues[expression](dim, trialDof, point) *
+                                        trialGeomData.integrationElements(point);
                     result(testDof, trialDof, indexA) = sum;
                 }
         else
@@ -211,14 +230,16 @@ integrate(
                 {
                     ResultType sum = 0.;
                     for (int point = 0; point < pointCount; ++point)
-                        for (int trialDim = 0; trialDim < trialComponentCount; ++trialDim)
-                            for (int testDim = 0; testDim < testComponentCount; ++testDim)
-                                sum +=  m_quadWeights[point] *
-                                        testGeomData.integrationElements(point) *
-                                        conjugate(testValues(testDim, testDof, point)) *
-                                        kernelValues(testDim, trialDim, point) *
-                                        trialValues(trialDim, trialDof, point) *
-                                        trialGeomData.integrationElements(point);
+                        for (int expression = 0; expression < expressionCount; ++expression)
+                            for (int trialDim = 0; trialDim < trialComponentCount; ++trialDim)
+                                for (int testDim = 0; testDim < testComponentCount; ++testDim)
+                                    sum +=  m_quadWeights[point] *
+                                            testGeomData.integrationElements(point) *
+                                            m_expressionWeights[expression] *
+                                            conjugate(testValues[expression](testDim, testDof, point)) *
+                                            kernelValues(testDim, trialDim, point) *
+                                            trialValues[expression](trialDim, trialDof, point) *
+                                            trialGeomData.integrationElements(point);
                     result(testDof, trialDof, indexA) = sum;
                 }
     }
@@ -230,10 +251,10 @@ void
 NonseparableNumericalTestKernelTrialIntegrator<
 BasisFunctionType, KernelType, ResultType, GeometryFactory>::
 integrate(
-            const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<BasisFunctionType>& testBasis,
-            const Basis<BasisFunctionType>& trialBasis,
-            arma::Cube<ResultType>& result) const
+        const std::vector<ElementIndexPair>& elementIndexPairs,
+        const Basis<BasisFunctionType>& testBasis,
+        const Basis<BasisFunctionType>& trialBasis,
+        arma::Cube<ResultType>& result) const
 {
     const int pointCount = m_quadWeights.size();
     const int geometryPairCount = elementIndexPairs.size();
@@ -244,8 +265,12 @@ integrate(
     // geometryPairCount != 0, set elements of result to 0.
 
     // Evaluate constants
-    const int testComponentCount = m_testExpression.codomainDimension();
-    const int trialComponentCount = m_trialExpression.codomainDimension();
+    const int testComponentCount = m_testExpressionList.codomainDimension();
+    const int trialComponentCount = m_trialExpressionList.codomainDimension();
+    // In the constructor we have checked that m_trialExpressionList has
+    // the same number of terms
+    const int expressionCount = m_testExpressionList.termCount();
+
     const int testDofCount = testBasis.size();
     const int trialDofCount = trialBasis.size();
 
@@ -271,15 +296,15 @@ integrate(
     int testGeomDeps = INTEGRATION_ELEMENTS;
     int trialGeomDeps = INTEGRATION_ELEMENTS;
 
-    m_testExpression.addDependencies(testBasisDeps, testGeomDeps);
-    m_trialExpression.addDependencies(trialBasisDeps, trialGeomDeps);
+    m_testExpressionList.addDependencies(testBasisDeps, testGeomDeps);
+    m_trialExpressionList.addDependencies(trialBasisDeps, trialGeomDeps);
     m_kernel.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 
     typedef typename GeometryFactory::Geometry Geometry;
     std::auto_ptr<Geometry> testGeometry(m_testGeometryFactory.make());
     std::auto_ptr<Geometry> trialGeometry(m_trialGeometryFactory.make());
 
-    arma::Cube<BasisFunctionType> testValues, trialValues;
+    std::vector<arma::Cube<BasisFunctionType> > testValues, trialValues;
     arma::Cube<KernelType> kernelValues;
 
     result.set_size(testDofCount, trialDofCount, geometryPairCount);
@@ -294,8 +319,8 @@ integrate(
         m_trialRawGeometry.setupGeometry(elementIndexPairs[pairIndex].second, *trialGeometry);
         testGeometry->getData(testGeomDeps, m_localTestQuadPoints, testGeomData);
         trialGeometry->getData(trialGeomDeps, m_localTrialQuadPoints, trialGeomData);
-        m_testExpression.evaluate(testBasisData, testGeomData, testValues);
-        m_trialExpression.evaluate(trialBasisData, trialGeomData, trialValues);
+        m_testExpressionList.evaluate(testBasisData, testGeomData, testValues);
+        m_trialExpressionList.evaluate(trialBasisData, trialGeomData, trialValues);
 
         m_kernel.evaluateAtPointPairs(testGeomData, trialGeomData, kernelValues);
 
@@ -305,13 +330,15 @@ integrate(
                 {
                     ResultType sum = 0.;
                     for (int point = 0; point < pointCount; ++point)
-                        for (int dim = 0; dim < testComponentCount; ++dim)
-                            sum +=  m_quadWeights[point] *
-                                    testGeomData.integrationElements(point) *
-                                    conjugate(testValues(dim, testDof, point)) *
-                                    kernelValues(0, 0, point) *
-                                    trialValues(dim, trialDof, point) *
-                                    trialGeomData.integrationElements(point);
+                        for (int expression = 0; expression < expressionCount; ++expression)
+                            for (int dim = 0; dim < testComponentCount; ++dim)
+                                sum +=  m_quadWeights[point] *
+                                        testGeomData.integrationElements(point) *
+                                        m_expressionWeights[expression] *
+                                        conjugate(testValues[expression](dim, testDof, point)) *
+                                        kernelValues(0, 0, point) *
+                                        trialValues[expression](dim, trialDof, point) *
+                                        trialGeomData.integrationElements(point);
                     result(testDof, trialDof, pairIndex) = sum;
                 }
         else
@@ -320,14 +347,16 @@ integrate(
                 {
                     ResultType sum = 0.;
                     for (int point = 0; point < pointCount; ++point)
-                        for (int trialDim = 0; trialDim < trialComponentCount; ++trialDim)
-                            for (int testDim = 0; testDim < testComponentCount; ++testDim)
-                                sum +=  m_quadWeights[point] *
-                                        testGeomData.integrationElements(point) *
-                                        conjugate(testValues(testDim, testDof, point)) *
-                                        kernelValues(testDim, trialDim, point) *
-                                        trialValues(trialDim, trialDof, point) *
-                                        trialGeomData.integrationElements(point);
+                        for (int expression = 0; expression < expressionCount; ++expression)
+                            for (int trialDim = 0; trialDim < trialComponentCount; ++trialDim)
+                                for (int testDim = 0; testDim < testComponentCount; ++testDim)
+                                    sum +=  m_quadWeights[point] *
+                                            testGeomData.integrationElements(point) *
+                                            m_expressionWeights[expression] *
+                                            conjugate(testValues[expression](testDim, testDof, point)) *
+                                            kernelValues(testDim, trialDim, point) *
+                                            trialValues[expression](trialDim, trialDof, point) *
+                                            trialGeomData.integrationElements(point);
                     result(testDof, trialDof, pairIndex) = sum;
                 }
 

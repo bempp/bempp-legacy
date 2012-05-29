@@ -33,6 +33,7 @@ Helmholtz3dSingleLayerPotential(
         KernelType waveNumber) :
     Base(testSpace, trialSpace), m_kernel(waveNumber / KernelType(0., 1.))
 {
+    m_expressionList.addTerm(m_expression);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dSingleLayerPotential);

@@ -29,7 +29,7 @@ namespace Fiber
 {
 
 class OpenClHandler;
-template <typename CoordinateType> class Expression;
+template <typename ResultType> class ExpressionList;
 template <typename ValueType> class Kernel;
 template <typename CoordinateType> class RawGridGeometry;
 
@@ -53,9 +53,9 @@ public:
             const GeometryFactory& trialGeometryFactory,
             const RawGridGeometry<CoordinateType>& testRawGeometry,
             const RawGridGeometry<CoordinateType>& trialRawGeometry,
-            const Expression<CoordinateType>& testExpression,
+            const ExpressionList<ResultType>& testExpressionList,
             const Kernel<KernelType>& kernel,
-            const Expression<CoordinateType>& trialExpression,
+            const ExpressionList<ResultType>& trialExpressionList,
             const OpenClHandler& openClHandler);
 
     virtual ~SeparableNumericalTestKernelTrialIntegrator ();
@@ -122,10 +122,13 @@ private:
     const RawGridGeometry<CoordinateType>& m_testRawGeometry;
     const RawGridGeometry<CoordinateType>& m_trialRawGeometry;
 
-    const Expression<CoordinateType>& m_testExpression;
+    const ExpressionList<ResultType>& m_testExpressionList;
     const Kernel<KernelType>& m_kernel;
-    const Expression<CoordinateType>& m_trialExpression;
+    const ExpressionList<ResultType>& m_trialExpressionList;
     const OpenClHandler& m_openClHandler;
+
+    std::vector<ResultType> m_expressionWeights;
+
 #ifdef WITH_OPENCL
     cl::Buffer *clTestQuadPoints;
     cl::Buffer *clTrialQuadPoints;

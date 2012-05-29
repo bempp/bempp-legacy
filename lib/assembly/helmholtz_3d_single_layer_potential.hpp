@@ -23,6 +23,7 @@
 
 #include "elementary_weakly_singular_integral_operator.hpp"
 #include "../common/scalar_traits.hpp"
+#include "../fiber/expression_list.hpp"
 #include "../fiber/modified_helmholtz_3d_single_layer_potential_kernel.hpp"
 #include "../fiber/scalar_function_value.hpp"
 
@@ -88,17 +89,18 @@ private:
         return m_kernel;
     }
 
-    virtual const Fiber::Expression<CoordinateType>& testExpression() const {
-        return m_expression;
+    virtual const Fiber::ExpressionList<ResultType>& testExpressionList() const {
+        return m_expressionList;
     }
 
-    virtual const Fiber::Expression<CoordinateType>& trialExpression() const {
-        return m_expression;
+    virtual const Fiber::ExpressionList<ResultType>& trialExpressionList() const {
+        return m_expressionList;
     }
 
 private:
     Fiber::ModifiedHelmholtz3dSingleLayerPotentialKernel<KernelType> m_kernel;
     Fiber::ScalarFunctionValue<CoordinateType> m_expression;
+    Fiber::ExpressionList<ResultType> m_expressionList;
 };
 
 } // namespace Bempp

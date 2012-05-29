@@ -49,6 +49,7 @@ public:
                 addShapeFunctionDependencies(basisDeps, geomDeps);
     }
 
+    // This seems unused
     virtual const std::string clStringEvaluate (const std::string modifier)
         const {
         std::string funcName ("devExpressionEvaluate");

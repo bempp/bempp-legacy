@@ -22,9 +22,10 @@
 #define bempp_laplace_3d_hypersingular_operator_hpp
 
 #include "elementary_weakly_singular_integral_operator.hpp"
+#include "../common/scalar_traits.hpp"
+#include "../fiber/expression_list.hpp"
 #include "../fiber/laplace_3d_single_layer_potential_kernel.hpp"
 #include "../fiber/surface_curl_3d.hpp"
-#include "../common/scalar_traits.hpp"
 
 namespace Bempp
 {
@@ -54,17 +55,18 @@ private:
         return m_kernel;
     }
 
-    virtual const Fiber::Expression<CoordinateType>& testExpression() const {
-        return m_expression;
+    virtual const Fiber::ExpressionList<ResultType>& testExpressionList() const {
+        return m_expressionList;
     }
 
-    virtual const Fiber::Expression<CoordinateType>& trialExpression() const {
-        return m_expression;
+    virtual const Fiber::ExpressionList<ResultType>& trialExpressionList() const {
+        return m_expressionList;
     }
 
 private:
     Fiber::Laplace3dSingleLayerPotentialKernel<KernelType> m_kernel;
     Fiber::SurfaceCurl3d<CoordinateType> m_expression;
+    Fiber::ExpressionList<ResultType> m_expressionList;
 };
 
 } // namespace Bempp

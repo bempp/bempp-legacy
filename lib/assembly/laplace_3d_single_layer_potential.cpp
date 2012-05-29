@@ -30,6 +30,7 @@ Laplace3dSingleLayerPotential<BasisFunctionType, ResultType>::Laplace3dSingleLay
         const Space<BasisFunctionType>& trialSpace) :
     Base(testSpace, trialSpace)
 {
+    m_expressionList.addTerm(m_expression);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dSingleLayerPotential);

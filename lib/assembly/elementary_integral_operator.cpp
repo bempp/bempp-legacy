@@ -34,6 +34,7 @@
 #include "../common/not_implemented_error.hpp"
 #include "../fiber/evaluator_for_integral_operators.hpp"
 #include "../fiber/explicit_instantiation.hpp"
+#include "../fiber/expression_list.hpp"
 #include "../fiber/local_assembler_factory.hpp"
 #include "../fiber/local_assembler_for_operators.hpp"
 #include "../fiber/opencl_handler.hpp"
@@ -134,6 +135,22 @@ ElementaryIntegralOperator(
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
+int
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+testComponentCount() const
+{
+    return kernel().codomainDimension();
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+int
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+trialComponentCount() const
+{
+    return kernel().domainDimension();
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
 bool
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 supportsRepresentation(
@@ -162,9 +179,9 @@ makeAssembler(
                 testGeometryFactory, trialGeometryFactory,
                 testRawGeometry, trialRawGeometry,
                 testBases, trialBases,
-                make_shared_from_ref(testExpression()),
+                make_shared_from_ref(testExpressionList()),
                 make_shared_from_ref(kernel()),
-                make_shared_from_ref(trialExpression()),
+                make_shared_from_ref(trialExpressionList()),
                 openClHandler, parallelisationOptions, cacheSingularIntegrals);
 }
 
@@ -340,12 +357,20 @@ makeEvaluator(
         it->next();
     }
 
+    // Get a reference to the trial expression
+    if (!trialExpressionList().isTrivial())
+        throw std::runtime_error("ElementaryIntegralOperator::makeEvaluator(): "
+                                 "operators with multi-element expression lists "
+                                 "are not supported at present");
+    const Fiber::Expression<CoordinateType>& trialExpression =
+            trialExpressionList().term(0);
+
     // Now create the evaluator
     return assemblerFactory.makeEvaluatorForIntegralOperators(
                 geometryFactory, rawGeometry,
                 bases,
                 make_shared_from_ref(kernel()),
-                make_shared_from_ref(trialExpression()),
+                make_shared_from_ref(trialExpression),
                 localCoefficients,
                 openClHandler);
 }
