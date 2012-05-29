@@ -40,9 +40,9 @@ public:
     virtual void addGeometricalDependencies(int& testGeomDeps,
                                             int& trialGeomDeps) const;
 
-    virtual ValueType waveNumber () const { return m_waveNumber; }
-    virtual void setWaveNumber (ValueType k) { m_waveNumber = k; }
+    ValueType waveNumber() const { return m_waveNumber; }
 
+    void setWaveNumber(ValueType k) { m_waveNumber = k; }
     virtual void evaluateAtPointPairs(
             const GeometricalData<CoordinateType>& testGeomData,
             const GeometricalData<CoordinateType>& trialGeomData,
