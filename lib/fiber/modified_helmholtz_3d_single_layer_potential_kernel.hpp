@@ -32,6 +32,7 @@ class ModifiedHelmholtz3dSingleLayerPotentialKernel : public Kernel<ValueType>
 public:
     typedef typename Kernel<ValueType>::CoordinateType CoordinateType;
 
+    explicit ModifiedHelmholtz3dSingleLayerPotentialKernel(ValueType k);
     virtual int worldDimension() const { return 3; }
     virtual int domainDimension() const { return 1; }
     virtual int codomainDimension() const { return 1; }

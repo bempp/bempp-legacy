@@ -33,6 +33,7 @@ class ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernel : public Kernel<Value
 public:
     typedef typename Kernel<ValueType>::CoordinateType CoordinateType;
 
+    explicit ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernel(ValueType k);
     virtual int worldDimension() const { return 3; }
     virtual int domainDimension() const { return 1; }
     virtual int codomainDimension() const { return 1; }

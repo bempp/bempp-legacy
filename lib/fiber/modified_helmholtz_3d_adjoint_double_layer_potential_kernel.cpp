@@ -31,6 +31,12 @@
 namespace Fiber
 {
 
+template <typename ValueType>
+ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernel<ValueType>::
+ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernel(ValueType k)
+{
+    setWaveNumber(k);
+}
 
 template <typename ValueType>
 void ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernel<ValueType>::addGeometricalDependencies(

@@ -32,6 +32,13 @@ namespace Fiber
 {
 
 template <typename ValueType>
+ModifiedHelmholtz3dSingleLayerPotentialKernel<ValueType>::
+ModifiedHelmholtz3dSingleLayerPotentialKernel(ValueType k)
+{
+    setWaveNumber(k);
+}
+
+template <typename ValueType>
 void ModifiedHelmholtz3dSingleLayerPotentialKernel<ValueType>::addGeometricalDependencies(
         int& testGeomDeps, int& trialGeomDeps) const
 {
