@@ -31,7 +31,6 @@
 namespace Fiber
 {
 
-// Double potential: derivative wrt. trial normal
 
 template <typename ValueType>
 void ModifiedHelmholtz3dDoubleLayerPotentialKernel<ValueType>::addGeometricalDependencies(
