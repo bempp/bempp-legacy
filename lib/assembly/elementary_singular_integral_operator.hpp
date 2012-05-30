@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_elementary_weakly_singular_integral_operator_hpp
-#define bempp_elementary_weakly_singular_integral_operator_hpp
+#ifndef bempp_elementary_singular_integral_operator_hpp
+#define bempp_elementary_singular_integral_operator_hpp
 
 #include "elementary_integral_operator.hpp"
 
@@ -27,14 +27,14 @@ namespace Bempp
 {
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-class ElementaryWeaklySingularIntegralOperator :
+class ElementarySingularIntegralOperator :
         public ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>
 {
     typedef ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
-    ElementaryWeaklySingularIntegralOperator(
+    ElementarySingularIntegralOperator(
             const Space<BasisFunctionType>& testSpace,
             const Space<BasisFunctionType>& trialSpace) :
         Base(testSpace, trialSpace) {

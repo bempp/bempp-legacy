@@ -21,7 +21,7 @@
 #ifndef bempp_laplace_3d_single_layer_potential_hpp
 #define bempp_laplace_3d_single_layer_potential_hpp
 
-#include "elementary_weakly_singular_integral_operator.hpp"
+#include "elementary_singular_integral_operator.hpp"
 #include "../common/scalar_traits.hpp"
 #include "../fiber/expression_list.hpp"
 #include "../fiber/laplace_3d_single_layer_potential_kernel.hpp"
@@ -32,13 +32,13 @@ namespace Bempp
 
 template <typename BasisFunctionType, typename ResultType = BasisFunctionType>
 class Laplace3dSingleLayerPotential :
-        public ElementaryWeaklySingularIntegralOperator<
+        public ElementarySingularIntegralOperator<
         BasisFunctionType,
         typename ScalarTraits<ResultType>::RealType,
         ResultType>
 {
     typedef typename ScalarTraits<ResultType>::RealType KernelType;
-    typedef ElementaryWeaklySingularIntegralOperator<
+    typedef ElementarySingularIntegralOperator<
     BasisFunctionType, KernelType, ResultType> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;

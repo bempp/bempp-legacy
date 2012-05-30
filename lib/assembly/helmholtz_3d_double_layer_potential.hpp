@@ -21,7 +21,7 @@
 #ifndef bempp_helmholtz_3d_double_layer_potential_hpp
 #define bempp_helmholtz_3d_double_layer_potential_hpp
 
-#include "elementary_weakly_singular_integral_operator.hpp"
+#include "elementary_singular_integral_operator.hpp"
 #include "../common/scalar_traits.hpp"
 #include "../fiber/expression_list.hpp"
 #include "../fiber/modified_helmholtz_3d_double_layer_potential_kernel.hpp"
@@ -41,7 +41,7 @@ namespace Bempp
  *  \see helmholtz_3d */
 template <typename BasisFunctionType>
 class Helmholtz3dDoubleLayerPotential :
-        public ElementaryWeaklySingularIntegralOperator<
+        public ElementarySingularIntegralOperator<
         BasisFunctionType,
         typename ScalarTraits<BasisFunctionType>::ComplexType,
         typename ScalarTraits<BasisFunctionType>::ComplexType>
@@ -50,7 +50,7 @@ public:
     typedef typename ScalarTraits<BasisFunctionType>::ComplexType KernelType;
     typedef KernelType ResultType;
 private:
-    typedef ElementaryWeaklySingularIntegralOperator<
+    typedef ElementarySingularIntegralOperator<
     BasisFunctionType, KernelType, ResultType> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;

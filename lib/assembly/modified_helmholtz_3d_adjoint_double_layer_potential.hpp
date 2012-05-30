@@ -21,7 +21,7 @@
 #ifndef bempp_modified_helmholtz_3d_adjoint_double_layer_potential_hpp
 #define bempp_modified_helmholtz_3d_adjoint_double_layer_potential_hpp
 
-#include "elementary_weakly_singular_integral_operator.hpp"
+#include "elementary_singular_integral_operator.hpp"
 #include "../common/scalar_traits.hpp"
 #include "../fiber/expression_list.hpp"
 #include "../fiber/modified_helmholtz_3d_adjoint_double_layer_potential_kernel.hpp"
@@ -60,10 +60,10 @@ namespace Bempp
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType = typename Coercion<BasisFunctionType, KernelType>::Type>
 class ModifiedHelmholtz3dAdjointDoubleLayerPotential :
-        public ElementaryWeaklySingularIntegralOperator<
+        public ElementarySingularIntegralOperator<
         BasisFunctionType, KernelType, ResultType>
 {
-    typedef ElementaryWeaklySingularIntegralOperator<
+    typedef ElementarySingularIntegralOperator<
     BasisFunctionType, KernelType, ResultType> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
