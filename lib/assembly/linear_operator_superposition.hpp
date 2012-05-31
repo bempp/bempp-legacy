@@ -36,9 +36,10 @@ namespace Bempp
 template <typename BasisFunctionType, typename ResultType>
 class ElementaryLinearOperator;
 
-// only scalar multipliers allowed, tensor ones would
-// require knowledge of vector components distribution
-// in the discrete operator
+/** \brief Superposition of linear operators.
+ *
+ *  \ingroup assembly
+ */
 template <typename BasisFunctionType, typename ResultType>
 class LinearOperatorSuperposition :
         public LinearOperator<BasisFunctionType, ResultType>
