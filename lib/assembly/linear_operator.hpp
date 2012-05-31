@@ -52,7 +52,8 @@ template <typename BasisFunctionType, typename ResultType> class ElementaryLinea
 template <typename BasisFunctionType, typename ResultType> class LinearOperatorSuperposition;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
 
-/** \brief "Formal" linear operator.
+/** \ingroup assembly
+  \brief "Formal" linear operator.
 
   This class template is used as a base class for all implementations of
   various types of linear operators, in particular integral operators.
@@ -64,37 +65,60 @@ template <typename BasisFunctionType, typename ResultType> class GridFunction;
   \f$K\f$ denotes either the set of real or complex numbers.
 
   The operator is called "formal" because its domain \f$X\f$ is not specified
-  yet. The functions assembleWeakForm() and assembleOperator() construct "true"
-  linear operators acting on functions from the space passed as the trialSpace
-  parameter.
+  yet. The functions assembleWeakForm() and assembleDetachedWeakForm()
+  construct "true" linear operators acting on functions from the space passed
+  as the trialSpace parameter.
 
   \tparam ValueType      Type used to represent elements of \f$K\f$. This can be
-                         one of: float, double, std::complex<float> and
-                         std::complex<double>.
+                         one of: \c float, \c double,
+                         <tt>std::complex<float></tt> and
+                         <tt>std::complex<double></tt>.
 */
 template <typename BasisFunctionType, typename ResultType>
 class LinearOperator
 {
 public:
+    /** \brief Type used to represent coordinates. */
+    typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
+    /** \brief Type of the appropriate instantiation of Fiber::LocalAssemblerFactory. */
     typedef Fiber::LocalAssemblerFactory<BasisFunctionType, ResultType, GeometryFactory>
     LocalAssemblerFactory;
-    typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
 
-    /** @name Constructors and destructors
+    /** @name Construction and destruction
      *  @{ */
 
+    /** \brief Constructor.
+     *
+     *  \param[in] testSpace
+     *    Function space whose elements will be used as test functions during
+     *    a subsequent assembly of the weak form of the operator.
+     *
+     *  \param[in] trialSpace
+     *    Function space whose elements will be used as trial functions during
+     *    a subsequent assembly of the weak form of the operator.
+     *
+     *  The objects referenced by \p testSpace and \p trialSpace must continue
+     *  to exist at least until the weak form of the operator is assembled.
+     */
     LinearOperator(const Space<BasisFunctionType>& testSpace,
                    const Space<BasisFunctionType>& trialSpace);
 
+    /** \brief Copy constructor.
+     *
+     *  \note If \p other owns an assembled weak form, this weak form is not
+     *  copied to the copy-constructed LinearOperator. */
     LinearOperator(const LinearOperator<BasisFunctionType, ResultType>& other);
 
+    /** \brief Destructor. */
     virtual ~LinearOperator();
 
     /** @}
      *  @name Spaces
      *  @{ */
 
+    /** \brief %Space of test functions. */
     const Space<BasisFunctionType>& testSpace() const;
+    /** \brief %Space of trial functions. */
     const Space<BasisFunctionType>& trialSpace() const;
 
     /** \brief Number of components of the functions from the trial space \f$X\f$.
@@ -111,35 +135,53 @@ public:
      *  @name Constituent elementary operators
      *  @{ */
 
+    /** \brief Return a vector of pointers to the elementary linear operators
+     *  making up this linear operator.
+     *
+     *  Each linear operator \f$L\f$ is internally represented by a linear
+     *  superposition of <em>elementary</em> linear operators \f$E_i\f$ (see
+     *  \ref ElementaryLinearOperator) with weights \f$w_i\f$:
+     *
+     *  \f[ L = \sum_i w_i E_i. \f]
+     *
+     *  This function can be used to retrieve the list of the operators \f$E_i\f$.
+     *
+     *  \sa constituentOperatorWeights.
+     */
     const std::vector<const ElementaryLinearOperator<BasisFunctionType, ResultType>*>&
     constituentOperators() const;
 
+    /** \brief Return weigths of the elementary linear operators
+     *  making up this linear operator.
+     *
+     *  \see constituentOperators.
+     */
     const std::vector<ResultType>& constituentOperatorWeights() const;
 
     /** @}
      *  @name Assembly
      *  @{ */
 
-    /** \brief True if this operator supports the representation \p repr. */
+    /** \brief Return true if this operator supports the representation \p repr. */
     virtual bool supportsRepresentation(
             AssemblyOptions::Representation repr) const = 0;
 
     /** \brief Assemble the operator's weak form and store it internally.
-
-      This function constructs a discrete linear operator representing the
-      matrix \f$W_{jk}\f$ with entries of the form
-
-      \f[W_{jk} = \int_S \phi_j L \psi_k,\f]
-
-      where \f$L\f$ is the linear operator represented by this object, \f$S\f$
-      denotes the surface that is the domain of the trial space \f$X\f$ and
-      which is represented by the grid returned by trialSpace.grid(),
-      \f$\phi_j\f$ is a function from the test space \f$Y\f$ and \f$\psi_k\f$ a
-      function from \f$X\f$.
-
-      The resulting discrete linear operator is stored internally and, if
-      necessary, can subsequently be accessed via weakForm() or detached
-      via detachWeakForm(). */
+     *
+     *  This function constructs a discrete linear operator representing the
+     *  matrix \f$W_{jk}\f$ with entries of the form
+     *
+     *  \f[W_{jk} = \int_S \phi_j L \psi_k,\f]
+     *
+     *  where \f$L\f$ is the linear operator represented by this object, \f$S\f$
+     *  denotes the surface that is the domain of the trial space \f$X\f$ and
+     *  which is represented by the grid returned by trialSpace.grid(),
+     *  \f$\phi_j\f$ is a function from the test space \f$Y\f$ and \f$\psi_k\f$ a
+     *  function from \f$X\f$.
+     *
+     *  The resulting discrete linear operator is stored internally and, if
+     *  necessary, can subsequently be accessed via weakForm() or detached
+     *  via detachWeakForm(). */
     void assembleWeakForm(const LocalAssemblerFactory& factory,
                           const AssemblyOptions& options,
                           Symmetry symmetry = UNSYMMETRIC);
@@ -175,8 +217,8 @@ public:
      *  @name Action
      *  @{ */
 
-    /** \brief Set y_inout := alpha * A * x_in + beta * y_inout, where A is
-      this operator. */
+    /** \brief Set <tt>y_inout := alpha * A * x_in + beta * y_inout</tt>, where
+     *  \c A is this operator. */
     void apply(const TranspositionMode trans,
                const GridFunction<BasisFunctionType, ResultType>& x_in,
                GridFunction<BasisFunctionType, ResultType>& y_inout,
@@ -185,11 +227,30 @@ public:
     /** @} */
 
 protected:
+    /** @name Constituent elementary operators list management
+     *  @{ */
+
+    /** \brief Append operators to the list of constituent elementary operators.
+     *
+     *  \param[in] operators
+     *    Vector of pointers to the elementary linear operators to be appended
+     *    to the list of constituent operators. These objects must continue to
+     *    exist at least until the weak form of this operator is assembled.
+     *
+     *  \param[in] weights
+     *    Vector of the corresponding weights.
+     *
+     *  \see constituentOperators.
+     */
     void addConstituentOperators(
             const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>&
             operators,
             const std::vector<ResultType>& weights);
 
+    /** @} */
+
+    /** \brief Given an AssemblyOptions object, construct objects necessary for
+     *  subsequent local assembler construction. */
     void collectDataForAssemblerConstruction(
             const AssemblyOptions& options,
             shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
@@ -202,17 +263,17 @@ protected:
             bool& cacheSingularIntegrals) const;
 
     /** \brief Implementation of the weak-form assembly.
-
-      Construct a discrete linear operator representing the matrix \f$W_{jk}\f$
-      whose entries have the form
-
-      \f[W_{jk} = \int_S \phi_j L \psi_k,\f]
-
-      where \f$L\f$ is the linear operator represented by this object, \f$S\f$
-      denotes the surface that is the domain of the trial space \f$X\f$ and
-      which is represented by the grid returned by trialSpace.grid(),
-      \f$\phi_j\f$ is a function from the test space \f$Y\f$ and \f$\psi_k\f$ a
-      function from \f$X\f$. */
+     *
+     *  Construct a discrete linear operator representing the matrix \f$W_{jk}\f$
+     *  whose entries have the form
+     *
+     *  \f[ W_{jk} = \int_S \phi_j L \psi_k, \f]
+     *
+     *  where \f$L\f$ is the linear operator represented by this object, \f$S\f$
+     *  denotes the surface that is the domain of the trial space \f$X\f$ and
+     *  which is represented by the grid returned by <tt>trialSpace.grid()</tt>,
+     *  \f$\phi_j\f$ is a function from the test space \f$Y\f$ and \f$\psi_k\f$ a
+     *  function from \f$X\f$. */
     virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleDetachedWeakFormImpl(const LocalAssemblerFactory& factory,
                                  const AssemblyOptions& options,
