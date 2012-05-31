@@ -43,7 +43,8 @@ template <typename BasisFunctionType, typename ResultType>
 LinearOperator<BasisFunctionType, ResultType>::LinearOperator(
         const LinearOperator<BasisFunctionType, ResultType>& other) :
     m_testSpace(other.m_testSpace), m_trialSpace(other.m_trialSpace),
-    m_localOperators(other.m_localOperators), m_multipliers(other.m_multipliers)
+    m_constituentOperators(other.m_constituentOperators),
+    m_constituentOperatorWeights(other.m_constituentOperatorWeights)
 {
 }
 
@@ -123,16 +124,16 @@ void LinearOperator<BasisFunctionType, ResultType>::apply(
 
 template <typename BasisFunctionType, typename ResultType>
 const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>&
-LinearOperator<BasisFunctionType, ResultType>::localOperators() const
+LinearOperator<BasisFunctionType, ResultType>::constituentOperators() const
 {
-    return m_localOperators;
+    return m_constituentOperators;
 }
 
 template <typename BasisFunctionType, typename ResultType>
 const std::vector<ResultType>&
-LinearOperator<BasisFunctionType, ResultType>::multipliers() const
+LinearOperator<BasisFunctionType, ResultType>::constituentOperatorWeights() const
 {
-    return m_multipliers;
+    return m_constituentOperatorWeights;
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -150,18 +151,18 @@ LinearOperator<BasisFunctionType, ResultType>::trialSpace() const
 }
 
 template <typename BasisFunctionType, typename ResultType>
-void LinearOperator<BasisFunctionType, ResultType>::addLocalOperatorsAndMultipliers(
+void LinearOperator<BasisFunctionType, ResultType>::addConstituentOperators(
         const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>&
-        localOperators,
-        const std::vector<ResultType>& multipliers)
+        operators,
+        const std::vector<ResultType>& weights)
 {
     if (operators.size() != weights.size())
         throw std::invalid_argument("LinearOperator::addConstituentOperators(): "
                                     "argument lengths do not match");
-    m_localOperators.insert(m_localOperators.end(),
-                            localOperators.begin(), localOperators.end());
-    m_multipliers.insert(m_multipliers.end(),
-                         multipliers.begin(), multipliers.end());
+    m_constituentOperators.insert(m_constituentOperators.end(),
+                                  operators.begin(), operators.end());
+    m_constituentOperatorWeights.insert(m_constituentOperatorWeights.end(),
+                                        weights.begin(), weights.end());
 }
 
 template <typename BasisFunctionType, typename ResultType>

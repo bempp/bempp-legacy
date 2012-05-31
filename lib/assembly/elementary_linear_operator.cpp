@@ -15,7 +15,7 @@ ElementaryLinearOperator(const Space<BasisFunctionType>& testSpace,
     std::vector<ResultType> m;
     v.push_back(this);
     m.push_back(1.0);
-    addLocalOperatorsAndMultipliers(v, m);
+    addConstituentOperators(v, m);
 }
 
 template <typename BasisFunctionType, typename ResultType>

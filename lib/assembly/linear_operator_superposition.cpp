@@ -52,10 +52,10 @@ LinearOperatorSuperposition(
         throw std::runtime_error(
                 "LinearOperatorSuperposition::LinearOperatorSuperposition(): "
                 "Spaces don't match");
-    this->addLocalOperatorsAndMultipliers(
-                term1.localOperators(), term1.multipliers());
-    this->addLocalOperatorsAndMultipliers(
-                term2.localOperators(), term2.multipliers());
+    this->addConstituentOperators(
+                term1.constituentOperators(), term1.constituentOperatorWeights());
+    this->addConstituentOperators(
+                term2.constituentOperators(), term2.constituentOperatorWeights());
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -65,26 +65,26 @@ LinearOperatorSuperposition(
         const ResultType& scalar) :
     LinearOperator<BasisFunctionType, ResultType>(term.testSpace(), term.trialSpace())
 {
-    const std::vector<ResultType>& m = term.multipliers();
-    std::vector<ResultType> scaledMultipliers;
-    for (int i = 0; i < m.size(); i++)
-        scaledMultipliers.push_back(scalar * m[i]);
-    this->addLocalOperatorsAndMultipliers(
-                term.localOperators(), scaledMultipliers);
+    const std::vector<ResultType>& weights = term.constituentOperatorWeights();
+    std::vector<ResultType> scaledWeigths;
+    for (int i = 0; i < weights.size(); i++)
+        scaledWeigths.push_back(scalar * weights[i]);
+    this->addConstituentOperators(
+                term.constituentOperators(), scaledWeigths);
 }
 
 template <typename BasisFunctionType, typename ResultType>
 int LinearOperatorSuperposition<BasisFunctionType, ResultType>::
 trialComponentCount() const
 {
-    return this->localOperators()[0]->trialComponentCount();
+    return this->constituentOperators()[0]->trialComponentCount();
 }
 
 template <typename BasisFunctionType, typename ResultType>
 int LinearOperatorSuperposition<BasisFunctionType, ResultType>::
 testComponentCount() const
 {
-    return this->localOperators()[0]->testComponentCount();
+    return this->constituentOperators()[0]->testComponentCount();
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -125,22 +125,22 @@ assembleDetachedWeakFormInDenseMode(
     typedef DiscreteDenseLinearOperator<ResultType> DiscreteDenseLinOp;
 
     const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>
-            localOperators = this->localOperators();
-    const std::vector<ResultType>& multipliers = this->multipliers();
+            operators = this->constituentOperators();
+    const std::vector<ResultType>& weights = this->constituentOperatorWeights();
 
     // Gather matrices of individual operators
     boost::ptr_vector<DiscreteLinOp> discreteOps;
-    for (int i = 0; i < localOperators.size(); ++i) {
+    for (int i = 0; i < operators.size(); ++i) {
         std::auto_ptr<DiscreteLinOp> discreteOp =
-                localOperators[i]->assembleDetachedWeakForm(factory, options, symmetry);
+                operators[i]->assembleDetachedWeakForm(factory, options, symmetry);
         discreteOps.push_back(discreteOp);
     }
 
     // Add the matrices together
     arma::Mat<ResultType> sum;
-    sum = discreteOps[0].asMatrix() * multipliers[0];
+    sum = discreteOps[0].asMatrix() * weights[0];
     for (int i = 1; i < discreteOps.size(); ++i) {
-        sum += discreteOps[i].asMatrix() * multipliers[i];
+        sum += discreteOps[i].asMatrix() * weights[i];
     }
 
     return std::auto_ptr<DiscreteLinOp>(new DiscreteDenseLinOp(sum));
@@ -159,8 +159,8 @@ assembleDetachedWeakFormInAcaMode(
     typedef DiscreteLinearOperator<ResultType> DiscreteLinOp;
 
     const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>
-            localOperators = this->localOperators();
-    const std::vector<ResultType>& multipliers = this->multipliers();
+            operators = this->constituentOperators();
+    const std::vector<ResultType>& weights = this->constituentOperatorWeights();
 
     typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
     typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
@@ -185,9 +185,9 @@ assembleDetachedWeakFormInAcaMode(
     std::vector<ResultType> sparseTermsMultipliers;
     std::vector<ResultType> denseTermsMultipliers;
 
-    for (int i = 0; i < localOperators.size(); ++i) {
+    for (int i = 0; i < operators.size(); ++i) {
         ElementaryLinearOperator<BasisFunctionType, ResultType> const* term =
-                localOperators[i];
+                operators[i];
 
         // Create local assembler for the current term
         std::auto_ptr<LocalAssembler> assembler = term->makeAssembler(
@@ -202,10 +202,10 @@ assembleDetachedWeakFormInAcaMode(
             std::auto_ptr<DiscreteLinOp> discreteTerm =
                     term->assembleDetachedWeakFormInternal(*assembler, options);
             sparseDiscreteTerms.push_back(discreteTerm);
-            sparseTermsMultipliers.push_back(multipliers[i]);
+            sparseTermsMultipliers.push_back(weights[i]);
         } else {
             denseTermLocalAssemblers.push_back(assembler);
-            denseTermsMultipliers.push_back(multipliers[i]);
+            denseTermsMultipliers.push_back(weights[i]);
             assert(!assembler.get());
         }
     }
@@ -247,16 +247,17 @@ assembleDetachedWeakFormInArbitraryMode(
             DiscreteSuperposition;
 
     const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>
-            localOperators = this->localOperators();
+            operators = this->constituentOperators();
 
     boost::ptr_vector<DiscreteLinOp> discreteOps;
-    for (int i = 0; i < localOperators.size(); ++i) {
+    for (int i = 0; i < operators.size(); ++i) {
         std::auto_ptr<DiscreteLinOp> discreteOp =
-                localOperators[i]->assembleDetachedWeakForm(factory, options, symmetry);
+                operators[i]->assembleDetachedWeakForm(factory, options, symmetry);
         discreteOps.push_back(discreteOp);
     }
     return std::auto_ptr<DiscreteLinOp>(
-                new DiscreteSuperposition(discreteOps, this->multipliers()));
+                new DiscreteSuperposition(discreteOps,
+                                          this->constituentOperatorWeights()));
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperatorSuperposition);

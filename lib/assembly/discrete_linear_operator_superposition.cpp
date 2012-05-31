@@ -36,7 +36,7 @@ template <typename ValueType>
 DiscreteLinearOperatorSuperposition<ValueType>::
 DiscreteLinearOperatorSuperposition(
         boost::ptr_vector<TermType>& terms,
-        const std::vector<ValueType>& multipliers)
+        const std::vector<ValueType>& weights)
 {
     // Check that all terms have the same dimensions
     if (terms.size() > 1) {
@@ -51,7 +51,7 @@ DiscreteLinearOperatorSuperposition(
     }
 
     m_terms.transfer(m_terms.end(), terms);
-    m_multipliers.insert(m_multipliers.end(),multipliers.begin(),multipliers.end());
+    m_weights.insert(m_weights.end(), weights.begin(), weights.end());
 #ifdef WITH_TRILINOS
     if (!m_terms.empty()) {
         m_domainSpace = m_terms[0].domain();
@@ -76,7 +76,7 @@ DiscreteLinearOperatorSuperposition<ValueType>::asMatrix() const
     if (!m_terms.empty()) {
         result = m_terms[0].asMatrix();
         for (int i = 1; i < m_terms.size(); ++i)
-            result += m_terms[i].asMatrix() * m_multipliers[i];
+            result += m_terms[i].asMatrix() * m_weights[i];
     }
     return result;
 }
@@ -109,7 +109,7 @@ void DiscreteLinearOperatorSuperposition<ValueType>::addBlock(
         arma::Mat<ValueType>& block) const
 {
     for (int i = 0; i < m_terms.size(); ++i)
-        m_terms[i].addBlock(rows, cols, alpha * m_multipliers[i], block);
+        m_terms[i].addBlock(rows, cols, alpha * m_weights[i], block);
 }
 
 #ifdef WITH_TRILINOS
@@ -193,7 +193,7 @@ applyBuiltInImpl(const TranspositionMode trans,
 
     for (int i = 0; i < m_terms.size(); ++i)
         m_terms[i].apply(trans, x_in, y_inout,
-                         alpha * m_multipliers[i],
+                         alpha * m_weights[i],
                          1. /* "+ beta * y_inout" has already been done */ );
 }
 

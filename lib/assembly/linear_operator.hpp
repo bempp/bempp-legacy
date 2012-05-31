@@ -111,10 +111,10 @@ public:
      *  @name Constituent elementary operators
      *  @{ */
 
-    const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const* >&
-    localOperators() const;
+    const std::vector<const ElementaryLinearOperator<BasisFunctionType, ResultType>*>&
+    constituentOperators() const;
 
-    const std::vector<ResultType>& multipliers() const;
+    const std::vector<ResultType>& constituentOperatorWeights() const;
 
     /** @}
      *  @name Assembly
@@ -185,10 +185,10 @@ public:
     /** @} */
 
 protected:
-    void addLocalOperatorsAndMultipliers(
+    void addConstituentOperators(
             const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>&
-            localOperators,
-            const std::vector<ResultType>& multipliers);
+            operators,
+            const std::vector<ResultType>& weights);
 
     void collectDataForAssemblerConstruction(
             const AssemblyOptions& options,
@@ -223,8 +223,8 @@ private:
     const Space<BasisFunctionType>& m_trialSpace;
 
     std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>
-    m_localOperators;
-    std::vector<ResultType> m_multipliers;
+    m_constituentOperators;
+    std::vector<ResultType> m_constituentOperatorWeights;
 
     std::auto_ptr<DiscreteLinearOperator<ResultType> > m_weakForm;
 };
