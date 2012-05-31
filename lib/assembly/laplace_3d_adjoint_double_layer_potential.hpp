@@ -30,6 +30,23 @@
 namespace Bempp
 {
 
+/** \ingroup laplace_3d
+ *  \brief Adjoint double-layer-potential operator for the Laplace equation in 3D.
+ *
+ *  \tparam BasisFunctionType
+ *    Type used to represent the values of basis functions.
+ *  \tparam ResultType
+ *    Type used to represent entries in the discrete form of the operator.
+ *
+ *  Both template parameters can take the following values: \c float, \c
+ *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
+ *  Both types must have the same precision: for instance, mixing \c float with
+ *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType
+ *  is by default set to \p BasisFunctionType. You should override that only if
+ *  you set \p BasisFunctionType to a real type, but you want the entries of
+ *  the operator's weak form to be stored as complex numbers.
+ *
+ *  \see laplace_3d */
 template <typename BasisFunctionType, typename ResultType = BasisFunctionType>
 class Laplace3dAdjointDoubleLayerPotential :
         public ElementarySingularIntegralOperator<

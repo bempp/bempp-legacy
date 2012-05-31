@@ -27,6 +27,17 @@
 namespace Fiber
 {
 
+/** \ingroup laplace_3d
+ *  \ingroup fiber
+ *  \brief Single-layer-potential kernel for the Laplace equation in 3D.
+ *
+ *  \tparam ValueType Type used to represent the values of the kernel. It can
+ *  be one of: \c float, \c double, <tt>std::complex<float></tt> and
+ *  <tt>std::complex<double></tt>. Note that setting \p ValueType to a real
+ *  type implies that the wave number will also be purely real.
+ *
+ *  \see laplace_3d
+ */
 template <typename ValueType>
 class Laplace3dSingleLayerPotentialKernel : public Kernel<ValueType>
 {
