@@ -53,27 +53,33 @@ template <typename BasisFunctionType, typename ResultType> class LinearOperatorS
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
 
 /** \ingroup assembly
-  \brief "Formal" linear operator.
-
-  This class template is used as a base class for all implementations of
-  various types of linear operators, in particular integral operators.
-
-  A LinearOperator represents a linear mapping \f$L : X \to Y\f$, where \f$X :
-  S \to K^p\f$ and \f$Y : T \to K^q\f$ are function spaces, with \f$S\f$
-  standing for an \f$n\f$-dimensional surface and \f$T\f$ either equal to
-  \f$S\f$ or to a \f$(n+1)\f$-dimensional domain in which \f$S\f$ is embedded.
-  \f$K\f$ denotes either the set of real or complex numbers.
-
-  The operator is called "formal" because its domain \f$X\f$ is not specified
-  yet. The functions assembleWeakForm() and assembleDetachedWeakForm()
-  construct "true" linear operators acting on functions from the space passed
-  as the trialSpace parameter.
-
-  \tparam ValueType      Type used to represent elements of \f$K\f$. This can be
-                         one of: \c float, \c double,
-                         <tt>std::complex<float></tt> and
-                         <tt>std::complex<double></tt>.
-*/
+ *  \brief "Formal" linear operator.
+ *
+ *  This class template is used as a base class for all implementations of
+ *  various types of linear operators, in particular integral operators.
+ *
+ *  A LinearOperator represents a linear mapping \f$L : X \to Y\f$, where \f$X :
+ *  S \to K^p\f$ and \f$Y : T \to K^q\f$ are function spaces, with \f$S\f$
+ *  standing for an \f$n\f$-dimensional surface and \f$T\f$ either equal to
+ *  \f$S\f$ or to a \f$(n+1)\f$-dimensional domain in which \f$S\f$ is embedded.
+ *  \f$K\f$ denotes either the set of real or complex numbers.
+ *
+ *  The operator is called "formal" because its domain \f$X\f$ is not specified
+ *  yet. The functions assembleWeakForm() and assembleDetachedWeakForm()
+ *  construct "true" linear operators acting on functions from the space passed
+ *  as the trialSpace parameter.
+ *
+ *  \tparam BasisFunctionType
+ *    Type used to represent components of the test and trial functions.
+ *  \tparam ResultType
+ *    Type used to represent elements of the weak form of this operator.
+ *
+ *  Both template parameters can take the following values: \c float, \c
+ *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
+ *  Both types must have the same precision: for instance, mixing \c float with
+ *  <tt>std::complex<double></tt> is not allowed. If \p BasisFunctionType is
+ *  set to a complex type, then \p ResultType must be set to the same type.
+ */
 template <typename BasisFunctionType, typename ResultType>
 class LinearOperator
 {
@@ -116,9 +122,16 @@ public:
      *  @name Spaces
      *  @{ */
 
-    /** \brief %Space of test functions. */
+    /** \brief Test function space.
+     *
+     *  Return a reference to the function space whose elements are used as
+     *  test functions during assembly of the weak form of the operator. */
     const Space<BasisFunctionType>& testSpace() const;
-    /** \brief %Space of trial functions. */
+
+    /** \brief Trial function space.
+     *
+     *  Return a reference to the function space whose elements are used as
+     *  trial functions during assembly of the weak form of the operator. */
     const Space<BasisFunctionType>& trialSpace() const;
 
     /** \brief Number of components of the functions from the trial space \f$X\f$.
