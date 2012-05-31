@@ -31,7 +31,7 @@ namespace Bempp
 {
 
 /** \ingroup modified_helmholtz_3d
- *  \brief Adjoint double-layer-potential operator for the modified Helmholtz
+ *  \brief Single-layer-potential operator for the modified Helmholtz
  *  equation in 3D.
  *
  *  \tparam BasisFunctionType

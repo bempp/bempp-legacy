@@ -28,6 +28,7 @@ namespace Fiber
 {
 
 /** \ingroup modified_helmholtz_3d
+ *  \ingroup fiber
  *  \brief Adjoint double-layer-potential kernel for the modified Helmholtz
  *  equation in 3D.
  *

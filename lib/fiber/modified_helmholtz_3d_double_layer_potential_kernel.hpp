@@ -28,6 +28,7 @@ namespace Fiber
 {
 
 /** \ingroup modified_helmholtz_3d
+ *  \ingroup fiber
  *  \brief Double-layer-potential kernel for the modified Helmholtz equation in 3D.
  *
  *  \tparam ValueType Type used to represent the values of the kernel. It can
