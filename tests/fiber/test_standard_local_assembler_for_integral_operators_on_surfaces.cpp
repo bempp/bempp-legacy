@@ -81,7 +81,7 @@ public:
         assemblyOptions.setSingularIntegralCaching(
                     cacheSingularIntegrals ?
                         AssemblyOptions::YES : AssemblyOptions::NO);
-        assembler = op->makeAssemblerFromScratch(*assemblerFactory, assemblyOptions);
+        assembler = op->makeAssembler(*assemblerFactory, assemblyOptions);
     }
 
 private:
