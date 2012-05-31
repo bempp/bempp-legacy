@@ -48,6 +48,9 @@ template <typename BasisFunctionType, typename ResultType> class GridFunction;
 template <typename ValueType> class InterpolatedFunction;
 template <typename BasisFunctionType, typename ResultType> class WeakFormAcaAssemblyHelper;
 
+/** \ingroup assembly
+ *  \brief Elementary integral operator.
+ */
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class ElementaryIntegralOperator :
         public ElementaryLinearOperator<BasisFunctionType, ResultType>
