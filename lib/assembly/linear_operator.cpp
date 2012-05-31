@@ -155,6 +155,9 @@ void LinearOperator<BasisFunctionType, ResultType>::addLocalOperatorsAndMultipli
         localOperators,
         const std::vector<ResultType>& multipliers)
 {
+    if (operators.size() != weights.size())
+        throw std::invalid_argument("LinearOperator::addConstituentOperators(): "
+                                    "argument lengths do not match");
     m_localOperators.insert(m_localOperators.end(),
                             localOperators.begin(), localOperators.end());
     m_multipliers.insert(m_multipliers.end(),
