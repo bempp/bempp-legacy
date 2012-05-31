@@ -88,6 +88,9 @@ struct AcaOptions
 using Fiber::OpenClOptions;
 using Fiber::ParallelisationOptions;
 
+/** \ingroup assembly
+ *  \brief Options determining how weak-form assembly is done.
+ */
 class AssemblyOptions
 {
 public:
