@@ -36,8 +36,8 @@ AcaOptions::AcaOptions() :
     maximumRank(std::numeric_limits<unsigned int>::max()),
     recompress(true),
     outputPostscript(false),
-    scaling(1.0),
-    outputFname("aca.ps")
+    outputFname("aca.ps"),
+    scaling(1.0)
 {}
 
 

@@ -40,8 +40,8 @@ struct AcaOptions
     unsigned int maximumRank;
     bool recompress;
     bool outputPostscript;
-    double scaling;
     std::string outputFname;
+    double scaling;
 };
 
 using Fiber::OpenClOptions;
