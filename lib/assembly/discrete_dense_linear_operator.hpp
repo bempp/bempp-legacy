@@ -33,6 +33,9 @@
 namespace Bempp
 {
 
+/** \ingroup assembly
+ *  \brief Discrete linear operator stored as a dense matrix.
+ */
 template <typename ValueType>
 class DiscreteDenseLinearOperator :
         public DiscreteLinearOperator<ValueType>

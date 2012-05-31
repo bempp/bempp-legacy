@@ -35,6 +35,9 @@
 namespace Bempp
 {
 
+/** \ingroup assembly
+ *  \brief Superposition of discrete linear operators stored separately.
+ */
 template <typename ValueType>
 class DiscreteLinearOperatorSuperposition :
         public DiscreteLinearOperator<ValueType>
