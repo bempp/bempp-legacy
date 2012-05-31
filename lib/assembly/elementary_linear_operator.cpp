@@ -31,7 +31,29 @@ assembleDetachedWeakFormInternal(
 
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<typename ElementaryLinearOperator<BasisFunctionType, ResultType>::LocalAssembler>
-ElementaryLinearOperator<BasisFunctionType, ResultType>::makeAssemblerFromScratch(
+ElementaryLinearOperator<BasisFunctionType, ResultType>::makeAssembler(
+        const LocalAssemblerFactory& assemblerFactory,
+        const shared_ptr<const GeometryFactory>& testGeometryFactory,
+        const shared_ptr<const GeometryFactory>& trialGeometryFactory,
+        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
+        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
+        const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
+        const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+        const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
+        const ParallelisationOptions& parallelisationOptions,
+        bool cacheSingularIntegrals) const
+{
+    return makeAssemblerImpl(assemblerFactory,
+                             testGeometryFactory, trialGeometryFactory,
+                             testRawGeometry, trialRawGeometry,
+                             testBases, trialBases, openClHandler,
+                             parallelisationOptions,
+                             cacheSingularIntegrals);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+std::auto_ptr<typename ElementaryLinearOperator<BasisFunctionType, ResultType>::LocalAssembler>
+ElementaryLinearOperator<BasisFunctionType, ResultType>::makeAssembler(
         const LocalAssemblerFactory& assemblerFactory,
         const AssemblyOptions& options) const
 {
@@ -52,11 +74,12 @@ ElementaryLinearOperator<BasisFunctionType, ResultType>::makeAssemblerFromScratc
                                         openClHandler, cacheSingularIntegrals);
     std::cout << "Collection finished." << std::endl;
 
-    return makeAssembler(assemblerFactory,
-                         testGeometryFactory, trialGeometryFactory,
-                         testRawGeometry, trialRawGeometry,
-                         testBases, trialBases, openClHandler,
-                         options.parallelisationOptions(), cacheSingularIntegrals);
+    return makeAssemblerImpl(assemblerFactory,
+                             testGeometryFactory, trialGeometryFactory,
+                             testRawGeometry, trialRawGeometry,
+                             testBases, trialBases, openClHandler,
+                             options.parallelisationOptions(),
+                             cacheSingularIntegrals);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(ElementaryLinearOperator);

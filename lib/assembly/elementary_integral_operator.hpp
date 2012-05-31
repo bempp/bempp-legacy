@@ -69,18 +69,6 @@ public:
 
     virtual bool isRegular() const = 0;
 
-    virtual std::auto_ptr<LocalAssembler> makeAssembler(
-            const LocalAssemblerFactory& assemblerFactory,
-            const shared_ptr<const GeometryFactory>& testGeometryFactory,
-            const shared_ptr<const GeometryFactory>& trialGeometryFactory,
-            const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
-            const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
-            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
-            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
-            const ParallelisationOptions& parallelisationOptions,
-            bool cacheSingularIntegrals) const;
-
     // We might define a superclass IntegralOperator that might represent
     // a superposition of elementary linear operators (defined at points
     // off surface). Then the virtual attribute here would be useful.
@@ -101,6 +89,18 @@ private:
     virtual const Fiber::Kernel<KernelType>& kernel() const = 0;
     virtual const Fiber::ExpressionList<ResultType>& testExpressionList() const = 0;
     virtual const Fiber::ExpressionList<ResultType>& trialExpressionList() const = 0;
+
+    virtual std::auto_ptr<LocalAssembler> makeAssemblerImpl(
+            const LocalAssemblerFactory& assemblerFactory,
+            const shared_ptr<const GeometryFactory>& testGeometryFactory,
+            const shared_ptr<const GeometryFactory>& trialGeometryFactory,
+            const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
+            const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
+            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
+            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
+            const ParallelisationOptions& parallelisationOptions,
+            bool cacheSingularIntegrals) const;
 
     std::auto_ptr<Evaluator>
     makeEvaluator(

@@ -53,7 +53,8 @@ public:
 
     virtual bool supportsRepresentation(AssemblyOptions::Representation repr) const;
 
-    virtual std::auto_ptr<LocalAssembler> makeAssembler(
+private:
+    virtual std::auto_ptr<LocalAssembler> makeAssemblerImpl(
             const LocalAssemblerFactory& assemblerFactory,
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
@@ -65,7 +66,6 @@ public:
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const;
 
-private:
     virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleDetachedWeakFormImpl(
             const LocalAssemblerFactory& factory,

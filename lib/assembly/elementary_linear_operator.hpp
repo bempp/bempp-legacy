@@ -55,7 +55,7 @@ public:
 
     /** \brief Using a specified factory, construct a local assembler suitable
        for this operator. */
-    virtual std::auto_ptr<LocalAssembler> makeAssembler(
+    std::auto_ptr<LocalAssembler> makeAssembler(
             const LocalAssemblerFactory& assemblerFactory,
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
@@ -65,9 +65,9 @@ public:
             const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
             const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
-            bool cacheSingularIntegrals) const = 0;
+            bool cacheSingularIntegrals) const;
 
-    std::auto_ptr<LocalAssembler> makeAssemblerFromScratch(
+    std::auto_ptr<LocalAssembler> makeAssembler(
             const LocalAssemblerFactory& assemblerFactory,
             const AssemblyOptions& options) const;
 
@@ -81,6 +81,18 @@ public:
             Symmetry symmetry = UNSYMMETRIC) const;
 
 private:
+    virtual std::auto_ptr<LocalAssembler> makeAssemblerImpl(
+            const LocalAssemblerFactory& assemblerFactory,
+            const shared_ptr<const GeometryFactory>& testGeometryFactory,
+            const shared_ptr<const GeometryFactory>& trialGeometryFactory,
+            const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
+            const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
+            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
+            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
+            const ParallelisationOptions& parallelisationOptions,
+            bool cacheSingularIntegrals) const = 0;
+
     virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleDetachedWeakFormInternalImpl(
             LocalAssembler& assembler,

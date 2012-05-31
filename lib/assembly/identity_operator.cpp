@@ -165,8 +165,7 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormImpl(
         Symmetry symmetry) const
 {
     AutoTimer timer("\nAssembly took ");
-    std::auto_ptr<LocalAssembler> assembler =
-            makeAssemblerFromScratch(factory, options);
+    std::auto_ptr<LocalAssembler> assembler = makeAssembler(factory, options);
     return assembleDetachedWeakFormInternalImpl(*assembler, options, symmetry);
 }
 
@@ -350,7 +349,7 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInSpars
 
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<typename IdentityOperator<BasisFunctionType, ResultType>::LocalAssembler>
-IdentityOperator<BasisFunctionType, ResultType>::makeAssembler(
+IdentityOperator<BasisFunctionType, ResultType>::makeAssemblerImpl(
         const LocalAssemblerFactory& assemblerFactory,        
         const shared_ptr<const GeometryFactory>& testGeometryFactory,
         const shared_ptr<const GeometryFactory>& trialGeometryFactory,
@@ -367,7 +366,7 @@ IdentityOperator<BasisFunctionType, ResultType>::makeAssembler(
 
     if (testGeometryFactory.get() != trialGeometryFactory.get() ||
             testRawGeometry.get() != trialRawGeometry.get())
-        throw std::invalid_argument("IdentityOperator::makeAssembler(): "
+        throw std::invalid_argument("IdentityOperator::makeAssemblerImpl(): "
                                     "the test and trial spaces must be defined "
                                     "on the same grid");
     return assemblerFactory.makeAssemblerForIdentityOperators(

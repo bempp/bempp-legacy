@@ -164,7 +164,7 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<typename ElementaryIntegralOperator<
 BasisFunctionType, KernelType, ResultType>::LocalAssembler>
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-makeAssembler(
+makeAssemblerImpl(
         const LocalAssemblerFactory& assemblerFactory,
         const shared_ptr<const GeometryFactory>& testGeometryFactory,
         const shared_ptr<const GeometryFactory>& trialGeometryFactory,
@@ -195,8 +195,7 @@ assembleDetachedWeakFormImpl(
         Symmetry symmetry) const
 {
     AutoTimer timer("\nAssembly took ");
-    std::auto_ptr<LocalAssembler> assembler =
-            makeAssemblerFromScratch(factory, options);
+    std::auto_ptr<LocalAssembler> assembler = makeAssembler(factory, options);
     return assembleDetachedWeakFormInternalImpl(*assembler, options, symmetry);
 }
 
