@@ -26,25 +26,8 @@
 namespace Fiber
 {
 
-/** \defgroup modified_helmholtz_3d Modified Helmholtz equation in 3D
- *
- *  The classes from this group implement kernels and operators related to the
- *  modified Helmholtz equation in 3D,
- *  \f[
- *      \biggl(\frac{\partial^2}{\partial x^2} +
- *      \frac{\partial^2}{\partial y^2} +
- *      \frac{\partial^2}{\partial z^2} -
- *      k^2\biggr)
- *      u(x, y, z) = 0.
- *  \f]
- *  The number \f$k\f$ is referred to as the <em>wave number</em>.
- *
- *  \note The term <em>wave number</em> refers to different physical quantities
- *  in the modified Helmholtz equation and in the
- *  \ref helmholtz_3d "standard Helmholtz equation".
- */
-
 /** \ingroup modified_helmholtz_3d
+ *  \ingroup fiber
  *  \brief Single-layer-potential kernel for the modified Helmholtz equation in 3D.
  *
  *  \tparam ValueType Type used to represent the values of the kernel. It can
