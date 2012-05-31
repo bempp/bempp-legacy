@@ -18,33 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_elementary_weakly_singular_integral_operator_hpp
-#define bempp_elementary_weakly_singular_integral_operator_hpp
-
-#include "elementary_integral_operator.hpp"
+#include "modified_helmholtz_3d_adjoint_double_layer_potential.hpp"
+#include "../fiber/explicit_instantiation.hpp"
 
 namespace Bempp
 {
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-class ElementaryWeaklySingularIntegralOperator :
-        public ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>
+ModifiedHelmholtz3dAdjointDoubleLayerPotential<BasisFunctionType, KernelType, ResultType>::
+ModifiedHelmholtz3dAdjointDoubleLayerPotential(
+        const Space<BasisFunctionType>& testSpace,
+        const Space<BasisFunctionType>& trialSpace,
+        KernelType waveNumber) :
+    Base(testSpace, trialSpace), m_kernel(waveNumber)
 {
-    typedef ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType> Base;
-public:
-    typedef typename Base::CoordinateType CoordinateType;
+    m_expressionList.addTerm(m_expression);
+}
 
-    ElementaryWeaklySingularIntegralOperator(
-            const Space<BasisFunctionType>& testSpace,
-            const Space<BasisFunctionType>& trialSpace) :
-        Base(testSpace, trialSpace) {
-    }
-
-    virtual bool isRegular() const {
-        return false;
-    }
-};
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(ModifiedHelmholtz3dAdjointDoubleLayerPotential);
 
 } // namespace Bempp
-
-#endif

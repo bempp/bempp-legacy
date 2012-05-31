@@ -21,7 +21,8 @@
 #ifndef bempp_laplace_3d_adjoint_double_layer_potential_hpp
 #define bempp_laplace_3d_adjoint_double_layer_potential_hpp
 
-#include "elementary_weakly_singular_integral_operator.hpp"
+#include "elementary_singular_integral_operator.hpp"
+#include "../fiber/expression_list.hpp"
 #include "../fiber/laplace_3d_adjoint_double_layer_potential_kernel.hpp"
 #include "../fiber/scalar_function_value.hpp"
 #include "../common/scalar_traits.hpp"
@@ -31,13 +32,13 @@ namespace Bempp
 
 template <typename BasisFunctionType, typename ResultType = BasisFunctionType>
 class Laplace3dAdjointDoubleLayerPotential :
-        public ElementaryWeaklySingularIntegralOperator<
+        public ElementarySingularIntegralOperator<
         BasisFunctionType,
         typename ScalarTraits<ResultType>::RealType,
         ResultType>
 {
     typedef typename ScalarTraits<ResultType>::RealType KernelType;
-    typedef ElementaryWeaklySingularIntegralOperator<
+    typedef ElementarySingularIntegralOperator<
     BasisFunctionType, KernelType, ResultType> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
@@ -50,17 +51,18 @@ private:
         return m_kernel;
     }
 
-    virtual const Fiber::Expression<CoordinateType>& testExpression() const {
-        return m_expression;
+    virtual const Fiber::ExpressionList<ResultType>& testExpressionList() const {
+        return m_expressionList;
     }
 
-    virtual const Fiber::Expression<CoordinateType>& trialExpression() const {
-        return m_expression;
+    virtual const Fiber::ExpressionList<ResultType>& trialExpressionList() const {
+        return m_expressionList;
     }
 
 private:
     Fiber::Laplace3dAdjointDoubleLayerPotentialKernel<KernelType> m_kernel;
     Fiber::ScalarFunctionValue<CoordinateType> m_expression;
+    Fiber::ExpressionList<ResultType> m_expressionList;
 };
 
 } // namespace Bempp

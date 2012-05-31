@@ -33,7 +33,8 @@
 namespace Fiber
 {
 
-template <typename CoordinateType> class Expression;
+template <typename ResultType> class Expression;
+template <typename ResultType> class ExpressionList;
 template <typename ResultType> class LocalAssemblerForOperators;
 template <typename ResultType> class EvaluatorForIntegralOperators;
 
@@ -61,13 +62,8 @@ public:
     ElementaryIntegralOperator(const Space<BasisFunctionType> &testSpace,
                                const Space<BasisFunctionType> &trialSpace);
 
-    virtual int trialComponentCount() const {
-        return kernel().domainDimension();
-    }
-
-    virtual int testComponentCount() const {
-        return kernel().codomainDimension();
-    }
+    virtual int trialComponentCount() const;
+    virtual int testComponentCount() const;
 
     virtual bool supportsRepresentation(AssemblyOptions::Representation repr) const;
 
@@ -103,8 +99,8 @@ public:
 
 private:
     virtual const Fiber::Kernel<KernelType>& kernel() const = 0;
-    virtual const Fiber::Expression<CoordinateType>& testExpression() const = 0;
-    virtual const Fiber::Expression<CoordinateType>& trialExpression() const = 0;
+    virtual const Fiber::ExpressionList<ResultType>& testExpressionList() const = 0;
+    virtual const Fiber::ExpressionList<ResultType>& trialExpressionList() const = 0;
 
     std::auto_ptr<Evaluator>
     makeEvaluator(

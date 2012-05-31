@@ -18,33 +18,54 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_laplace_3d_double_layer_potential_hpp
-#define bempp_laplace_3d_double_layer_potential_hpp
+#ifndef bempp_helmholtz_3d_hypersingular_operator_hpp
+#define bempp_helmholtz_3d_hypersingular_operator_hpp
 
 #include "elementary_singular_integral_operator.hpp"
-#include "../fiber/expression_list.hpp"
-#include "../fiber/laplace_3d_double_layer_potential_kernel.hpp"
-#include "../fiber/scalar_function_value.hpp"
 #include "../common/scalar_traits.hpp"
+#include "../fiber/expression_list.hpp"
+#include "../fiber/modified_helmholtz_3d_single_layer_potential_kernel.hpp"
+#include "../fiber/scalar_function_value_times_normal_3d.hpp"
+#include "../fiber/surface_curl_3d.hpp"
 
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename ResultType = BasisFunctionType>
-class Laplace3dDoubleLayerPotential :
+/** \ingroup helmholtz_3d
+ *  \brief Hypersingular operator for the Helmholtz equation in 3D.
+ *
+ *  \tparam BasisFunctionType
+ *    Type used to represent the values of basis functions. It can take the
+ *    following values: \c float, \c double, <tt>std::complex<float></tt> and
+ *    <tt>std::complex<double></tt>.
+ *
+ *  \see helmholtz_3d */
+template <typename BasisFunctionType>
+class Helmholtz3dHypersingularOperator :
         public ElementarySingularIntegralOperator<
         BasisFunctionType,
-        typename ScalarTraits<ResultType>::RealType,
-        ResultType>
+        typename ScalarTraits<BasisFunctionType>::ComplexType,
+        typename ScalarTraits<BasisFunctionType>::ComplexType>
 {
-    typedef typename ScalarTraits<ResultType>::RealType KernelType;
+public:
+    typedef typename ScalarTraits<BasisFunctionType>::ComplexType KernelType;
+    typedef KernelType ResultType;
+private:
     typedef ElementarySingularIntegralOperator<
     BasisFunctionType, KernelType, ResultType> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
-    Laplace3dDoubleLayerPotential(const Space<BasisFunctionType>& testSpace,
-                                  const Space<BasisFunctionType>& trialSpace);
+    /** \brief Construct the operator.
+     *
+     * \param testSpace Test function space.
+     * \param trialSpace Trial function space.
+     * \param waveNumber Wave number.
+     *
+     * See \ref helmholtz_3d for the definition of the wave number. */
+    Helmholtz3dHypersingularOperator(const Space<BasisFunctionType>& testSpace,
+                                     const Space<BasisFunctionType>& trialSpace,
+                                     KernelType waveNumber);
 
 private:
     virtual const Fiber::Kernel<KernelType>& kernel() const {
@@ -60,8 +81,9 @@ private:
     }
 
 private:
-    Fiber::Laplace3dDoubleLayerPotentialKernel<KernelType> m_kernel;
-    Fiber::ScalarFunctionValue<CoordinateType> m_expression;
+    Fiber::ModifiedHelmholtz3dSingleLayerPotentialKernel<KernelType> m_kernel;
+    Fiber::SurfaceCurl3d<CoordinateType> m_surfaceCurl;
+    Fiber::ScalarFunctionValueTimesNormal3d<CoordinateType> m_valueTimesNormal;
     Fiber::ExpressionList<ResultType> m_expressionList;
 };
 

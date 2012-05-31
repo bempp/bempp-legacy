@@ -18,22 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "dot_3d_double_layer_potential.hpp"
+#include "helmholtz_3d_double_layer_potential.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
-Dot3dDoubleLayerPotential<BasisFunctionType, KernelType, ResultType>::Dot3dDoubleLayerPotential(
+template <typename BasisFunctionType>
+Helmholtz3dDoubleLayerPotential<BasisFunctionType>::
+Helmholtz3dDoubleLayerPotential(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
         KernelType waveNumber) :
-    Base(testSpace, trialSpace)
+    Base(testSpace, trialSpace), m_kernel(waveNumber / KernelType(0., 1.))
 {
-    m_kernel.setWaveNumber (waveNumber);
+    m_expressionList.addTerm(m_expression);
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(Dot3dDoubleLayerPotential);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dDoubleLayerPotential);
 
 } // namespace Bempp

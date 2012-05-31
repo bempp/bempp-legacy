@@ -43,6 +43,10 @@ public:
 
     virtual void addDependencies(int& basisDeps, int& geomDeps) const = 0;
 
+    /** \brief Evaluate expression at specified points.
+     *
+     *  \param[out] result
+     *    Result. Array dimensions: (codomainDim, functionCount, pointCount). */
     void evaluate(const BasisData<CoordinateType>& basisData,
                   const GeometricalData<CoordinateType>& geomData,
                   arma::Cube<CoordinateType>& result) const {

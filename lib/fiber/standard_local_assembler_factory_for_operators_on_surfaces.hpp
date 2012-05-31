@@ -86,9 +86,9 @@ private:
             const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const Expression<CoordinateType> >& testExpression,
+            const shared_ptr<const ExpressionList<ResultType> >& testExpressionList,
             const shared_ptr<const Kernel<CoordinateType> >& kernel,
-            const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+            const shared_ptr<const ExpressionList<ResultType> >& trialExpressionList,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const {
@@ -101,7 +101,7 @@ private:
                         testGeometryFactory, trialGeometryFactory,
                         testRawGeometry, trialRawGeometry,
                         testBases, trialBases,
-                        testExpression, kernel, trialExpression,
+                        testExpressionList, kernel, trialExpressionList,
                         openClHandler, parallelisationOptions,
                         cacheSingularIntegrals,
                         this->accuracyOptions()));
@@ -189,9 +189,9 @@ private:
             const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const Expression<CoordinateType> >& testExpression,
+            const shared_ptr<const ExpressionList<ResultType> >& testExpressionList,
             const shared_ptr<const Kernel<ResultType> >& kernel,
-            const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+            const shared_ptr<const ExpressionList<ResultType> >& trialExpressionList,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const {
@@ -204,7 +204,7 @@ private:
                         testGeometryFactory, trialGeometryFactory,
                         testRawGeometry, trialRawGeometry,
                         testBases, trialBases,
-                        testExpression, kernel, trialExpression,
+                        testExpressionList, kernel, trialExpressionList,
                         openClHandler, parallelisationOptions,
                         cacheSingularIntegrals,
                         this->accuracyOptions()));

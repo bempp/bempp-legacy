@@ -18,20 +18,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "laplace_3d_double_layer_potential.hpp"
+
+#include "modified_helmholtz_3d_single_layer_potential.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename ResultType>
-Laplace3dDoubleLayerPotential<BasisFunctionType, ResultType>::Laplace3dDoubleLayerPotential(
-        const Space<BasisFunctionType>& testSpace, const Space<BasisFunctionType>& trialSpace) :
-    Base(testSpace, trialSpace)
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+ModifiedHelmholtz3dSingleLayerPotential<BasisFunctionType, KernelType, ResultType>::
+ModifiedHelmholtz3dSingleLayerPotential(
+        const Space<BasisFunctionType>& testSpace,
+        const Space<BasisFunctionType>& trialSpace,
+        KernelType waveNumber) :
+    Base(testSpace, trialSpace), m_kernel(waveNumber)
 {
     m_expressionList.addTerm(m_expression);
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dDoubleLayerPotential);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(ModifiedHelmholtz3dSingleLayerPotential);
 
 } // namespace Bempp

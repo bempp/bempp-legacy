@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_dot_3d_adjoint_double_layer_potential_kernel_hpp
-#define fiber_dot_3d_adjoint_double_layer_potential_kernel_hpp
+#ifndef fiber_modified_helmholtz_3d_adjoint_double_layer_potential_kernel_hpp
+#define fiber_modified_helmholtz_3d_adjoint_double_layer_potential_kernel_hpp
 
 #include "kernel.hpp"
 #include <armadillo>
@@ -27,11 +27,27 @@
 namespace Fiber
 {
 
+/** \ingroup modified_helmholtz_3d
+ *  \brief Adjoint double-layer-potential kernel for the modified Helmholtz
+ *  equation in 3D.
+ *
+ *  \tparam ValueType Type used to represent the values of the kernel. It can
+ *  be one of: \c float, \c double, <tt>std::complex<float></tt> and
+ *  <tt>std::complex<double></tt>. Note that setting \p ValueType to a real
+ *  type implies that the wave number will also be purely real.
+ *
+ *  \see modified_helmholtz_3d
+ */
 template <typename ValueType>
-class Dot3dAdjointDoubleLayerPotentialKernel : public Kernel<ValueType>
+class ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernel : public Kernel<ValueType>
 {
 public:
     typedef typename Kernel<ValueType>::CoordinateType CoordinateType;
+
+    /** \brief Construct the kernel, setting the wave number to \p k.
+     *
+     * See \ref modified_helmholtz_3d for the definition of the wave number. */
+    explicit ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernel(ValueType k);
 
     virtual int worldDimension() const { return 3; }
     virtual int domainDimension() const { return 1; }
@@ -40,8 +56,15 @@ public:
     virtual void addGeometricalDependencies(int& testGeomDeps,
                                             int& trialGeomDeps) const;
 
-    virtual ValueType waveNumber () const { return m_waveNumber; }
-    virtual void setWaveNumber (ValueType k) { m_waveNumber = k; }
+    /** \brief Return the current value of wave number.
+     *
+     * See \ref modified_helmholtz_3d for the definition of the wave number. */
+    ValueType waveNumber() const { return m_waveNumber; }
+
+    /** \brief Set the wave number to \p k.
+     *
+     * See \ref modified_helmholtz_3d for the definition of the wave number. */
+    void setWaveNumber(ValueType k) { m_waveNumber = k; }
 
     virtual void evaluateAtPointPairs(
             const GeometricalData<CoordinateType>& testGeomData,

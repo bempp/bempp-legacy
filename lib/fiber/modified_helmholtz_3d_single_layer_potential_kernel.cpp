@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "dot_3d_single_layer_potential_kernel.hpp"
+#include "modified_helmholtz_3d_single_layer_potential_kernel.hpp"
 
 #include "explicit_instantiation.hpp"
 
@@ -26,13 +26,20 @@
 #include <cmath>
 
 #include "geometrical_data.hpp"
-//#include "CL/dot_3d_single_layer_potential_kernel.cl.str"
+//#include "CL/modified_helmholtz_3d_single_layer_potential_kernel.cl.str"
 
 namespace Fiber
 {
 
 template <typename ValueType>
-void Dot3dSingleLayerPotentialKernel<ValueType>::addGeometricalDependencies(
+ModifiedHelmholtz3dSingleLayerPotentialKernel<ValueType>::
+ModifiedHelmholtz3dSingleLayerPotentialKernel(ValueType k)
+{
+    setWaveNumber(k);
+}
+
+template <typename ValueType>
+void ModifiedHelmholtz3dSingleLayerPotentialKernel<ValueType>::addGeometricalDependencies(
         int& testGeomDeps, int& trialGeomDeps) const
 {
     testGeomDeps |= GLOBALS;
@@ -40,7 +47,7 @@ void Dot3dSingleLayerPotentialKernel<ValueType>::addGeometricalDependencies(
 }
 
 template <typename ValueType>
-inline ValueType Dot3dSingleLayerPotentialKernel<ValueType>::evaluateAtPointPair(
+inline ValueType ModifiedHelmholtz3dSingleLayerPotentialKernel<ValueType>::evaluateAtPointPair(
         const arma::Col<CoordinateType>& testPoint,
         const arma::Col<CoordinateType>& trialPoint) const
 {
@@ -57,7 +64,7 @@ inline ValueType Dot3dSingleLayerPotentialKernel<ValueType>::evaluateAtPointPair
 }
 
 template <typename ValueType>
-void Dot3dSingleLayerPotentialKernel<ValueType>::evaluateAtPointPairs(
+void ModifiedHelmholtz3dSingleLayerPotentialKernel<ValueType>::evaluateAtPointPairs(
         const GeometricalData<CoordinateType>& testGeomData,
         const GeometricalData<CoordinateType>& trialGeomData,
         arma::Cube<ValueType>& result) const
@@ -83,7 +90,7 @@ void Dot3dSingleLayerPotentialKernel<ValueType>::evaluateAtPointPairs(
 }
 
 template <typename ValueType>
-void Dot3dSingleLayerPotentialKernel<ValueType>::evaluateOnGrid(
+void ModifiedHelmholtz3dSingleLayerPotentialKernel<ValueType>::evaluateOnGrid(
         const GeometricalData<CoordinateType>& testGeomData,
         const GeometricalData<CoordinateType>& trialGeomData,
         Array4d<ValueType>& result) const
@@ -109,14 +116,14 @@ void Dot3dSingleLayerPotentialKernel<ValueType>::evaluateOnGrid(
 }
 
 template<typename ValueType>
-std::pair<const char*,int> Dot3dSingleLayerPotentialKernel<ValueType>::evaluateClCode () const
+std::pair<const char*,int> ModifiedHelmholtz3dSingleLayerPotentialKernel<ValueType>::evaluateClCode () const
 {
     return std::make_pair ("", 0);  // TODO
 
-  //    return std::make_pair (dot_3d_single_layer_potential_kernel_cl,
-  //			   dot_3d_single_layer_potential_kernel_cl_len);
+  //    return std::make_pair (modified_helmholtz_3d_single_layer_potential_kernel_cl,
+  //			   modified_helmholtz_3d_single_layer_potential_kernel_cl_len);
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_KERNEL(Dot3dSingleLayerPotentialKernel);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_KERNEL(ModifiedHelmholtz3dSingleLayerPotentialKernel);
 
 } // namespace Fiber

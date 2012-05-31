@@ -26,18 +26,18 @@
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename ResultType>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class ElementaryRegularIntegralOperator :
-    public ElementaryIntegralOperator<BasisFunctionType, ResultType>
+        public ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>
 {
-    typedef ElementaryIntegralOperator<BasisFunctionType, ResultType> Base;
+    typedef ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
     ElementaryRegularIntegralOperator(
             const Space<BasisFunctionType>& testSpace,
             const Space<BasisFunctionType>& trialSpace) :
-        ElementaryIntegralOperator<ValueType>(testSpace, trialSpace) {
+        Base(testSpace, trialSpace) {
     }
 
     virtual bool isRegular() const {

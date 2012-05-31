@@ -32,8 +32,6 @@
 namespace Fiber
 {
 
-// Double potential: derivative wrt. trial normal
-
 template <typename ValueType>
 void Laplace3dAdjointDoubleLayerPotentialKernel<ValueType>::addGeometricalDependencies(
         int& testGeomDeps, int& trialGeomDeps) const

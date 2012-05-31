@@ -18,20 +18,33 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "laplace_3d_double_layer_potential.hpp"
-#include "../fiber/explicit_instantiation.hpp"
+#ifndef bempp_elementary_singular_integral_operator_hpp
+#define bempp_elementary_singular_integral_operator_hpp
+
+#include "elementary_integral_operator.hpp"
 
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename ResultType>
-Laplace3dDoubleLayerPotential<BasisFunctionType, ResultType>::Laplace3dDoubleLayerPotential(
-        const Space<BasisFunctionType>& testSpace, const Space<BasisFunctionType>& trialSpace) :
-    Base(testSpace, trialSpace)
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+class ElementarySingularIntegralOperator :
+        public ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>
 {
-    m_expressionList.addTerm(m_expression);
-}
+    typedef ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType> Base;
+public:
+    typedef typename Base::CoordinateType CoordinateType;
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dDoubleLayerPotential);
+    ElementarySingularIntegralOperator(
+            const Space<BasisFunctionType>& testSpace,
+            const Space<BasisFunctionType>& trialSpace) :
+        Base(testSpace, trialSpace) {
+    }
+
+    virtual bool isRegular() const {
+        return false;
+    }
+};
 
 } // namespace Bempp
+
+#endif

@@ -18,22 +18,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "dot_3d_adjoint_double_layer_potential.hpp"
+
+#include "helmholtz_3d_hypersingular_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
-Dot3dAdjointDoubleLayerPotential<BasisFunctionType, KernelType, ResultType>::
-Dot3dAdjointDoubleLayerPotential(const Space<BasisFunctionType>& testSpace,
-                                 const Space<BasisFunctionType>& trialSpace,
-                                 KernelType waveNumber) :
-    Base(testSpace, trialSpace)
+template <typename BasisFunctionType>
+Helmholtz3dHypersingularOperator<BasisFunctionType>::
+Helmholtz3dHypersingularOperator(
+        const Space<BasisFunctionType>& testSpace,
+        const Space<BasisFunctionType>& trialSpace,
+        KernelType waveNumber) :
+    Base(testSpace, trialSpace), m_kernel(waveNumber / KernelType(0., 1.))
 {
-    m_kernel.setWaveNumber (waveNumber);
+    m_expressionList.addTerm(m_surfaceCurl);
+    m_expressionList.addTerm(m_valueTimesNormal, KernelType(0., 1.) * waveNumber);
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(Dot3dAdjointDoubleLayerPotential);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dHypersingularOperator);
 
 } // namespace Bempp

@@ -43,6 +43,9 @@ namespace Fiber
 {
 
 class OpenClHandler;
+template <typename ResultType> class ExpressionList;
+template <typename ValueType> class Kernel;
+template <typename CoordinateType> class RawGridGeometry;
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
@@ -59,9 +62,9 @@ public:
             const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const Expression<CoordinateType> >& testExpression,
+            const shared_ptr<const ExpressionList<ResultType> >& testExpressionList,
             const shared_ptr<const Kernel<KernelType> >& kernel,
-            const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+            const shared_ptr<const ExpressionList<ResultType> >& trialExpressionList,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals,
@@ -124,9 +127,9 @@ private:
     shared_ptr<const RawGridGeometry<CoordinateType> > m_trialRawGeometry;
     shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_testBases;
     shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_trialBases;
-    shared_ptr<const Expression<CoordinateType> > m_testExpression;
+    shared_ptr<const ExpressionList<ResultType> > m_testExpressionList;
     shared_ptr<const Kernel<KernelType> > m_kernel;
-    shared_ptr<const Expression<CoordinateType> > m_trialExpression;
+    shared_ptr<const ExpressionList<ResultType> > m_trialExpressionList;
     shared_ptr<const OpenClHandler> m_openClHandler;
     ParallelisationOptions m_parallelisationOptions;
     AccuracyOptions m_accuracyOptions;

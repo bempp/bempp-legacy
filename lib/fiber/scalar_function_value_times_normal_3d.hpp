@@ -18,20 +18,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_scalar_function_value_hpp
-#define fiber_scalar_function_value_hpp
+#ifndef fiber_scalar_function_value_times_normal_3d_hpp
+#define fiber_scalar_function_value_times_normal_3d_hpp
 
 #include "expression.hpp"
 #include "scalar_space_mapping.hpp"
-#include "CL/scalar_function_value.cl.str"
 
 #include <armadillo>
 
 namespace Fiber
 {
 
+/** \brief Expression defined as the vector normal to (3D) surface multiplied
+ *  by a scalar function. */
 template <typename CoordinateType>
-class ScalarFunctionValue : public Expression<CoordinateType>
+class ScalarFunctionValueTimesNormal3d : public Expression<CoordinateType>
 {
 public:
     typedef typename Expression<CoordinateType>::ComplexType ComplexType;
@@ -41,45 +42,47 @@ public:
     }
 
     virtual int codomainDimension() const {
-        return 1;
+        return 3;
     }
 
     virtual void addDependencies(int& basisDeps, int& geomDeps) const {
         ScalarSpaceMapping<CoordinateType>::
                 addShapeFunctionDependencies(basisDeps, geomDeps);
-    }
-
-    // This seems unused
-    virtual const std::string clStringEvaluate (const std::string modifier)
-        const {
-        std::string funcName ("devExpressionEvaluate");
-        std::string str (scalar_function_value_cl,
-             scalar_function_value_cl_len);
-        if (modifier.size() > 0) {
-            int n = str.find (funcName);
-            if (n != std::string::npos) {
-                size_t len = funcName.size();
-                funcName.append (modifier);
-                str.replace (n, len, funcName);
-            }
-        }
-        return str;
+        geomDeps |= NORMALS;
     }
 
 private:
+    template <typename ValueType>
+    void evaluateImpl(const BasisData<ValueType>& basisData,
+                      const GeometricalData<CoordinateType>& geomData,
+                      arma::Cube<ValueType>& result) const {
+        arma::Cube<ValueType> scalarFunctionValues;
+        ScalarSpaceMapping<ValueType>::
+                evaluateShapeFunctions(basisData, geomData, scalarFunctionValues);
+        const arma::Mat<CoordinateType>& n = geomData.normals;
+
+        const int dimWorld = 3;
+        const int functionCount = scalarFunctionValues.n_cols;
+        const int pointCount = scalarFunctionValues.n_slices;
+        result.set_size(dimWorld, functionCount, pointCount);
+        for (int p = 0; p < pointCount; ++p)
+            for (int f = 0; f < functionCount; ++f)
+                for (int d = 0; d < dimWorld; ++d)
+                    result(d, f, p) = scalarFunctionValues(0, f, p) * n(d, p);
+    }
+
     virtual void evaluateImplReal(const BasisData<CoordinateType>& basisData,
                                   const GeometricalData<CoordinateType>& geomData,
                                   arma::Cube<CoordinateType>& result) const {
-        ScalarSpaceMapping<CoordinateType>::
-                evaluateShapeFunctions(basisData, geomData, result);
+        evaluateImpl(basisData, geomData, result);
     }
 
     virtual void evaluateImplComplex(const BasisData<ComplexType>& basisData,
                                      const GeometricalData<CoordinateType>& geomData,
                                      arma::Cube<ComplexType>& result) const {
-        ScalarSpaceMapping<ComplexType>::
-                evaluateShapeFunctions(basisData, geomData, result);
+        evaluateImpl(basisData, geomData, result);
     }
+
 };
 
 } // namespace Fiber
