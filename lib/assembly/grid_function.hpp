@@ -56,7 +56,9 @@ template <typename BasisFunctionType> class Space;
 template <typename BasisFunctionType, typename ResultType>
 class GridFunction;
 
-/** \brief Function defined on a grid. */
+/** \brief Function defined on a grid.
+ *  \ingroup assembly
+ */
 template <typename BasisFunctionType, typename ResultType>
 class GridFunction
 {
