@@ -62,7 +62,7 @@ public:
      *    devKernevalPair (for an implementation example, see
      *    CL/laplace_3d_single_layer_potential_kernel.cl)
      * \note The required data must have been pushed to device memory before
-     *    invokation.
+     *    invocation.
      */
     virtual std::pair<const char*,int> evaluateClCode () const = 0;
 };

@@ -1,3 +1,4 @@
+
 // Copyright (C) 2011-2012 by the BEM++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -43,6 +44,35 @@ struct GeometricalData
     arma::Cube<CoordinateType> jacobiansTransposed;
     arma::Cube<CoordinateType> jacobianInversesTransposed;
     arma::Mat<CoordinateType> normals;
+};
+
+template <typename CoordinateType>
+class ConstGeometricalDataSlice
+{
+public:
+    ConstGeometricalDataSlice(const GeometricalData<CoordinateType>& geomData,
+                              int point) :
+        m_geomData(geomData), m_point(point) {}
+
+    CoordinateType globals(int dim) {
+        return m_geomData.globals(dim, m_point);
+    }
+    CoordinateType integrationElement() {
+        return m_geomData.integrationElements(m_point);
+    }
+    CoordinateType jacobianTransposed(int row, int col) {
+        return m_geomData.jacobiansTransposed(row, col, m_point);
+    }
+    CoordinateType jacobianInverseTransposed(int row, int col) {
+        return m_geomData.jacobianInversesTransposed(row, col, m_point);
+    }
+    CoordinateType normal(int dim) {
+        return m_geomData.normals(dim, m_point);
+    }
+
+private:
+    const GeometricalData<CoordinateType>& m_geomData;
+    int m_point;
 };
 
 } // namespace Fiber
