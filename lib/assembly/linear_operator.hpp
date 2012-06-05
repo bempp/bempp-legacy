@@ -161,15 +161,15 @@ public:
      *
      *  \sa constituentOperatorWeights.
      */
-    const std::vector<const ElementaryLinearOperator<BasisFunctionType, ResultType>*>&
-    constituentOperators() const;
+    virtual std::vector<const ElementaryLinearOperator<BasisFunctionType, ResultType>*>
+    constituentOperators() const = 0;
 
     /** \brief Return weigths of the elementary linear operators
      *  making up this linear operator.
      *
      *  \see constituentOperators.
      */
-    const std::vector<ResultType>& constituentOperatorWeights() const;
+    virtual std::vector<ResultType> constituentOperatorWeights() const = 0;
 
     /** @}
      *  @name Assembly
@@ -240,26 +240,6 @@ public:
     /** @} */
 
 protected:
-    /** @name Constituent elementary operators list management
-     *  @{ */
-
-    /** \brief Append operators to the list of constituent elementary operators.
-     *
-     *  \param[in] operators
-     *    Vector of pointers to the elementary linear operators to be appended
-     *    to the list of constituent operators. These objects must continue to
-     *    exist at least until the weak form of this operator is assembled.
-     *
-     *  \param[in] weights
-     *    Vector of the corresponding weights.
-     *
-     *  \see constituentOperators.
-     */
-    void addConstituentOperators(
-            const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>&
-            operators,
-            const std::vector<ResultType>& weights);
-
     /** @} */
 
     /** \brief Given an AssemblyOptions object, construct objects necessary for
@@ -295,10 +275,6 @@ protected:
 private:
     const Space<BasisFunctionType>& m_testSpace;
     const Space<BasisFunctionType>& m_trialSpace;
-
-    std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>
-    m_constituentOperators;
-    std::vector<ResultType> m_constituentOperatorWeights;
 
     std::auto_ptr<DiscreteLinearOperator<ResultType> > m_weakForm;
 };

@@ -51,10 +51,10 @@ LinearOperatorSuperposition(
             &term1.trialSpace() != &term2.trialSpace())
         throw std::runtime_error(
                 "LinearOperatorSuperposition::LinearOperatorSuperposition(): "
-                "Spaces don't match");
-    this->addConstituentOperators(
+                "Spaces don't match");    
+    addConstituentOperators(
                 term1.constituentOperators(), term1.constituentOperatorWeights());
-    this->addConstituentOperators(
+    addConstituentOperators(
                 term2.constituentOperators(), term2.constituentOperatorWeights());
 }
 
@@ -69,22 +69,37 @@ LinearOperatorSuperposition(
     std::vector<ResultType> scaledWeigths;
     for (int i = 0; i < weights.size(); i++)
         scaledWeigths.push_back(scalar * weights[i]);
-    this->addConstituentOperators(
-                term.constituentOperators(), scaledWeigths);
+    addConstituentOperators(term.constituentOperators(), scaledWeigths);
 }
 
 template <typename BasisFunctionType, typename ResultType>
 int LinearOperatorSuperposition<BasisFunctionType, ResultType>::
 trialComponentCount() const
 {
-    return this->constituentOperators()[0]->trialComponentCount();
+    return m_constituentOperators[0]->trialComponentCount();
 }
 
 template <typename BasisFunctionType, typename ResultType>
 int LinearOperatorSuperposition<BasisFunctionType, ResultType>::
 testComponentCount() const
 {
-    return this->constituentOperators()[0]->testComponentCount();
+    return m_constituentOperators[0]->testComponentCount();
+}
+
+template <typename BasisFunctionType, typename ResultType>
+std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>
+LinearOperatorSuperposition<BasisFunctionType, ResultType>::
+constituentOperators() const
+{
+    return m_constituentOperators;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+std::vector<ResultType>
+LinearOperatorSuperposition<BasisFunctionType, ResultType>::
+constituentOperatorWeights() const
+{
+    return m_constituentOperatorWeights;
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -93,6 +108,23 @@ supportsRepresentation(
         AssemblyOptions::Representation repr) const
 {
     return (repr == AssemblyOptions::DENSE || repr == AssemblyOptions::ACA);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void LinearOperatorSuperposition<BasisFunctionType, ResultType>::
+addConstituentOperators(
+        const std::vector<ElementaryLinearOperator<
+        BasisFunctionType, ResultType> const*>& operators,
+        const std::vector<ResultType>& weights)
+{
+    if (operators.size() != weights.size())
+        throw std::invalid_argument("LinearOperatorSuperposition::"
+                                    "addConstituentOperators(): "
+                                    "argument lengths do not match");
+    m_constituentOperators.insert(m_constituentOperators.end(),
+                                  operators.begin(), operators.end());
+    m_constituentOperatorWeights.insert(m_constituentOperatorWeights.end(),
+                                        weights.begin(), weights.end());
 }
 
 template <typename BasisFunctionType, typename ResultType>

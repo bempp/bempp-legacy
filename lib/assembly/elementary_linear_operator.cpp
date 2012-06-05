@@ -11,11 +11,23 @@ ElementaryLinearOperator(const Space<BasisFunctionType>& testSpace,
                          const Space<BasisFunctionType>& trialSpace) :
     LinearOperator<BasisFunctionType, ResultType>(testSpace, trialSpace)
 {
-    std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*> v;
-    std::vector<ResultType> m;
-    v.push_back(this);
-    m.push_back(1.0);
-    addConstituentOperators(v, m);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+std::vector<const ElementaryLinearOperator<BasisFunctionType, ResultType>*>
+ElementaryLinearOperator<BasisFunctionType, ResultType>::
+constituentOperators() const
+{
+    return std::vector<const ElementaryLinearOperator<
+            BasisFunctionType, ResultType>*>(1 /* size */, this);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+std::vector<ResultType>
+ElementaryLinearOperator<BasisFunctionType, ResultType>::
+constituentOperatorWeights() const
+{
+    return std::vector<ResultType>(1 /* size */, 1.);
 }
 
 template <typename BasisFunctionType, typename ResultType>
