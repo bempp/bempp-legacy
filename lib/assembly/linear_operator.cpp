@@ -122,7 +122,7 @@ void LinearOperator<BasisFunctionType, ResultType>::apply(
 
 template <typename BasisFunctionType, typename ResultType>
 const Space<BasisFunctionType>&
-LinearOperatorSuperposition<BasisFunctionType, ResultType>::testSpace() const
+LinearOperator<BasisFunctionType, ResultType>::testSpace() const
 {
     return m_testSpace;
 }
