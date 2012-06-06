@@ -18,26 +18,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_laplace_3d_single_layer_potential_hpp
-#define bempp_laplace_3d_single_layer_potential_hpp
+#ifndef bempp_laplace_3d_double_layer_potential_operator_hpp
+#define bempp_laplace_3d_double_layer_potential_operator_hpp
 
-#include "elementary_potential.hpp"
-#include "../common/scalar_traits.hpp"
+#include "elementary_singular_integral_operator.hpp"
 #include "../fiber/expression_list.hpp"
-#include "../fiber/laplace_3d_single_layer_potential_kernel.hpp"
+#include "../fiber/laplace_3d_double_layer_potential_kernel.hpp"
 #include "../fiber/scalar_function_value.hpp"
+#include "../common/scalar_traits.hpp"
 
 namespace Bempp
 {
 
 /** \ingroup laplace_3d
- *  \brief Single-layer potential for the Laplace equation in 3D.
+ *  \brief Double-layer-potential operator for the Laplace equation in 3D.
  *
  *  \tparam BasisFunctionType
- *    Type used to represent the values of basis functions into which
- *    the argument of the potential is expanded.
+ *    Type used to represent the values of basis functions.
  *  \tparam ResultType
- *    Type used to represent the values of the potential.
+ *    Type used to represent entries in the discrete form of the operator.
  *
  *  Both template parameters can take the following values: \c float, \c
  *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
@@ -49,20 +48,28 @@ namespace Bempp
  *
  *  \see laplace_3d */
 template <typename BasisFunctionType, typename ResultType = BasisFunctionType>
-class Laplace3dSingleLayerPotential :
-        public ElementaryPotential<
+class Laplace3dDoubleLayerPotentialOperator :
+        public ElementarySingularIntegralOperator<
         BasisFunctionType,
         typename ScalarTraits<ResultType>::RealType,
         ResultType>
 {
     typedef typename ScalarTraits<ResultType>::RealType KernelType;
-    typedef ElementaryPotential<BasisFunctionType, KernelType, ResultType> Base;
+    typedef ElementarySingularIntegralOperator<
+    BasisFunctionType, KernelType, ResultType> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
+
+    Laplace3dDoubleLayerPotentialOperator(const Space<BasisFunctionType>& testSpace,
+                                  const Space<BasisFunctionType>& trialSpace);
 
 private:
     virtual const Fiber::Kernel<KernelType>& kernel() const {
         return m_kernel;
+    }
+
+    virtual const Fiber::ExpressionList<ResultType>& testExpressionList() const {
+        return m_expressionList;
     }
 
     virtual const Fiber::ExpressionList<ResultType>& trialExpressionList() const {
@@ -70,7 +77,7 @@ private:
     }
 
 private:
-    Fiber::Laplace3dSingleLayerPotentialKernel<KernelType> m_kernel;
+    Fiber::Laplace3dDoubleLayerPotentialKernel<KernelType> m_kernel;
     Fiber::ScalarFunctionValue<CoordinateType> m_expression;
     Fiber::ExpressionList<ResultType> m_expressionList;
 };

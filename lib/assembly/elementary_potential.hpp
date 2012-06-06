@@ -6,17 +6,22 @@
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename ResultType>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class ElementaryPotential : public Potential<BasisFunctionType, ResultType>
 {
+    typedef Potential<BasisFunctionType, ResultType> Base;
 public:
-    virtual std::auto_ptr<InterpolatedFunction<ResultType> > applyOffSurface(
+    typedef typename Base::CoordinateType CoordinateType;
+    typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
+    typedef Fiber::EvaluatorForIntegralOperators<ResultType> Evaluator;
+
+    virtual std::auto_ptr<InterpolatedFunction<ResultType> > evaluateOnGrid(
             const GridFunction<BasisFunctionType, ResultType>& argument,
             const Grid& evaluationGrid,
-            const LocalAssemblerFactory& factory,
+            const LocalAssemblerFactory& assemblerFactory,
             const EvaluationOptions& options) const;
 
-    virtual arma::Mat<ResultType> applyOffSurface(
+    virtual arma::Mat<ResultType> evaluateAtPoints(
             const GridFunction<BasisFunctionType, ResultType>& argument,
             const arma::Mat<CoordinateType>& evaluationPoints,
             const LocalAssemblerFactory& assemblerFactory,
@@ -35,4 +40,4 @@ private:
 
 } // namespace Bempp
 
-#endif // bempp_elementary_potential_hpp
+#endif

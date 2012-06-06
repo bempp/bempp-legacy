@@ -27,11 +27,8 @@ namespace Bempp
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 ModifiedHelmholtz3dSingleLayerPotential<BasisFunctionType, KernelType, ResultType>::
-ModifiedHelmholtz3dSingleLayerPotential(
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace,
-        KernelType waveNumber) :
-    Base(testSpace, trialSpace), m_kernel(waveNumber)
+ModifiedHelmholtz3dSingleLayerPotential(KernelType waveNumber) :
+    m_kernel(waveNumber)
 {
     m_expressionList.addTerm(m_expression);
 }

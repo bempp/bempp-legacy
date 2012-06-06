@@ -18,51 +18,61 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_laplace_3d_single_layer_potential_hpp
-#define bempp_laplace_3d_single_layer_potential_hpp
+#ifndef bempp_helmholtz_3d_single_layer_potential_operator_hpp
+#define bempp_helmholtz_3d_single_layer_potential_operator_hpp
 
-#include "elementary_potential.hpp"
+#include "elementary_singular_integral_operator.hpp"
 #include "../common/scalar_traits.hpp"
 #include "../fiber/expression_list.hpp"
-#include "../fiber/laplace_3d_single_layer_potential_kernel.hpp"
+#include "../fiber/modified_helmholtz_3d_single_layer_potential_kernel.hpp"
 #include "../fiber/scalar_function_value.hpp"
 
 namespace Bempp
 {
 
-/** \ingroup laplace_3d
- *  \brief Single-layer potential for the Laplace equation in 3D.
+/** \ingroup helmholtz_3d
+ *  \brief Single-layer-potential operator for the Helmholtz equation in 3D.
  *
  *  \tparam BasisFunctionType
- *    Type used to represent the values of basis functions into which
- *    the argument of the potential is expanded.
- *  \tparam ResultType
- *    Type used to represent the values of the potential.
+ *    Type used to represent the values of basis functions. It can take the
+ *    following values: \c float, \c double, <tt>std::complex<float></tt> and
+ *    <tt>std::complex<double></tt>.
  *
- *  Both template parameters can take the following values: \c float, \c
- *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
- *  Both types must have the same precision: for instance, mixing \c float with
- *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType
- *  is by default set to \p BasisFunctionType. You should override that only if
- *  you set \p BasisFunctionType to a real type, but you want the entries of
- *  the operator's weak form to be stored as complex numbers.
- *
- *  \see laplace_3d */
-template <typename BasisFunctionType, typename ResultType = BasisFunctionType>
-class Laplace3dSingleLayerPotential :
-        public ElementaryPotential<
+ *  \see helmholtz_3d */
+template <typename BasisFunctionType>
+class Helmholtz3dSingleLayerPotentialOperator :
+        public ElementarySingularIntegralOperator<
         BasisFunctionType,
-        typename ScalarTraits<ResultType>::RealType,
-        ResultType>
+        typename ScalarTraits<BasisFunctionType>::ComplexType,
+        typename ScalarTraits<BasisFunctionType>::ComplexType>
 {
-    typedef typename ScalarTraits<ResultType>::RealType KernelType;
-    typedef ElementaryPotential<BasisFunctionType, KernelType, ResultType> Base;
+public:
+    typedef typename ScalarTraits<BasisFunctionType>::ComplexType KernelType;
+    typedef KernelType ResultType;
+private:
+    typedef ElementarySingularIntegralOperator<
+    BasisFunctionType, KernelType, ResultType> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
+
+    /** \brief Construct the operator.
+     *
+     * \param testSpace Test function space.
+     * \param trialSpace Trial function space.
+     * \param waveNumber Wave number.
+     *
+     * See \ref helmholtz_3d for the definition of the wave number. */
+    Helmholtz3dSingleLayerPotentialOperator(const Space<BasisFunctionType>& testSpace,
+                                    const Space<BasisFunctionType>& trialSpace,
+                                    KernelType waveNumber);
 
 private:
     virtual const Fiber::Kernel<KernelType>& kernel() const {
         return m_kernel;
+    }
+
+    virtual const Fiber::ExpressionList<ResultType>& testExpressionList() const {
+        return m_expressionList;
     }
 
     virtual const Fiber::ExpressionList<ResultType>& trialExpressionList() const {
@@ -70,7 +80,7 @@ private:
     }
 
 private:
-    Fiber::Laplace3dSingleLayerPotentialKernel<KernelType> m_kernel;
+    Fiber::ModifiedHelmholtz3dSingleLayerPotentialKernel<KernelType> m_kernel;
     Fiber::ScalarFunctionValue<CoordinateType> m_expression;
     Fiber::ExpressionList<ResultType> m_expressionList;
 };

@@ -18,12 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "laplace_3d_double_layer_potential.hpp"
+#include "helmholtz_3d_adjoint_double_layer_potential_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 namespace Bempp
 {
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dDoubleLayerPotential);
+template <typename BasisFunctionType>
+Helmholtz3dAdjointDoubleLayerPotentialOperator<BasisFunctionType>::
+Helmholtz3dAdjointDoubleLayerPotentialOperator(
+        const Space<BasisFunctionType>& testSpace,
+        const Space<BasisFunctionType>& trialSpace,
+        KernelType waveNumber) :
+    Base(testSpace, trialSpace), m_kernel(waveNumber / KernelType(0., 1.))
+{
+    m_expressionList.addTerm(m_expression);
+}
+
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dAdjointDoubleLayerPotentialOperator);
 
 } // namespace Bempp

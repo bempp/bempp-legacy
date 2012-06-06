@@ -60,7 +60,6 @@ public:
     typedef typename Base::CoordinateType CoordinateType;
     typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
     typedef typename Base::LocalAssembler LocalAssembler;
-    typedef Fiber::EvaluatorForIntegralOperators<ResultType> Evaluator;
 
     ElementaryIntegralOperator(const Space<BasisFunctionType> &testSpace,
                                const Space<BasisFunctionType> &trialSpace);
@@ -71,22 +70,6 @@ public:
     virtual bool supportsRepresentation(AssemblyOptions::Representation repr) const;
 
     virtual bool isRegular() const = 0;
-
-    // We might define a superclass IntegralOperator that might represent
-    // a superposition of elementary linear operators (defined at points
-    // off surface). Then the virtual attribute here would be useful.
-    virtual std::auto_ptr<InterpolatedFunction<ResultType> > applyOffSurface(
-            const GridFunction<BasisFunctionType, ResultType>& argument,
-            const Grid& evaluationGrid,
-            const LocalAssemblerFactory& factory,
-            const EvaluationOptions& options) const;
-
-    virtual arma::Mat<ResultType> applyOffSurface(
-            const GridFunction<BasisFunctionType, ResultType>& argument,
-            const arma::Mat<CoordinateType>& evaluationPoints,
-            const LocalAssemblerFactory& assemblerFactory,
-            const EvaluationOptions& options) const;
-    // TODO: define applyOnSurface() for *all* operators (including Id).
 
 private:
     virtual const Fiber::Kernel<KernelType>& kernel() const = 0;
@@ -104,12 +87,6 @@ private:
             const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const;
-
-    std::auto_ptr<Evaluator>
-    makeEvaluator(
-            const GridFunction<BasisFunctionType, ResultType>& argument,
-            const LocalAssemblerFactory& factory,
-            const EvaluationOptions& options) const;
 
     /** @}
         \name Weak form assembly

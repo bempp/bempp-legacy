@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #include "helmholtz_3d_single_layer_potential.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -27,11 +26,8 @@ namespace Bempp
 
 template <typename BasisFunctionType>
 Helmholtz3dSingleLayerPotential<BasisFunctionType>::
-Helmholtz3dSingleLayerPotential(
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace,
-        KernelType waveNumber) :
-    Base(testSpace, trialSpace), m_kernel(waveNumber / KernelType(0., 1.))
+Helmholtz3dSingleLayerPotential(KernelType waveNumber) :
+    m_kernel(waveNumber / KernelType(0., 1.))
 {
     m_expressionList.addTerm(m_expression);
 }

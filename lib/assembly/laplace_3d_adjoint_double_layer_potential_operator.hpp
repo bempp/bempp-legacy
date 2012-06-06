@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_laplace_3d_adjoint_double_layer_potential_hpp
-#define bempp_laplace_3d_adjoint_double_layer_potential_hpp
+#ifndef bempp_laplace_3d_adjoint_double_layer_potential_operator_hpp
+#define bempp_laplace_3d_adjoint_double_layer_potential_operator_hpp
 
 #include "elementary_singular_integral_operator.hpp"
 #include "../fiber/expression_list.hpp"
@@ -48,7 +48,7 @@ namespace Bempp
  *
  *  \see laplace_3d */
 template <typename BasisFunctionType, typename ResultType = BasisFunctionType>
-class Laplace3dAdjointDoubleLayerPotential :
+class Laplace3dAdjointDoubleLayerPotentialOperator :
         public ElementarySingularIntegralOperator<
         BasisFunctionType,
         typename ScalarTraits<ResultType>::RealType,
@@ -60,7 +60,7 @@ class Laplace3dAdjointDoubleLayerPotential :
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
-    Laplace3dAdjointDoubleLayerPotential(const Space<BasisFunctionType>& testSpace,
+    Laplace3dAdjointDoubleLayerPotentialOperator(const Space<BasisFunctionType>& testSpace,
                                   const Space<BasisFunctionType>& trialSpace);
 
 private:

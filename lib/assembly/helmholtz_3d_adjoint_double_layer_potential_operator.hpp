@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_helmholtz_3d_adjoint_double_layer_potential_hpp
-#define bempp_helmholtz_3d_adjoint_double_layer_potential_hpp
+#ifndef bempp_helmholtz_3d_adjoint_double_layer_potential_operator_hpp
+#define bempp_helmholtz_3d_adjoint_double_layer_potential_operator_hpp
 
 #include "elementary_singular_integral_operator.hpp"
 #include "../common/scalar_traits.hpp"
@@ -40,7 +40,7 @@ namespace Bempp
  *
  *  \see helmholtz_3d */
 template <typename BasisFunctionType>
-class Helmholtz3dAdjointDoubleLayerPotential :
+class Helmholtz3dAdjointDoubleLayerPotentialOperator :
         public ElementarySingularIntegralOperator<
         BasisFunctionType,
         typename ScalarTraits<BasisFunctionType>::ComplexType,
@@ -63,7 +63,7 @@ public:
      * \param waveNumber Wave number.
      *
      * See \ref helmholtz_3d for the definition of the wave number. */
-    Helmholtz3dAdjointDoubleLayerPotential(const Space<BasisFunctionType>& testSpace,
+    Helmholtz3dAdjointDoubleLayerPotentialOperator(const Space<BasisFunctionType>& testSpace,
                                            const Space<BasisFunctionType>& trialSpace,
                                            KernelType waveNumber);
 

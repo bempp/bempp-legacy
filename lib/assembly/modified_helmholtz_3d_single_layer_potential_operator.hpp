@@ -18,20 +18,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_modified_helmholtz_3d_adjoint_double_layer_potential_hpp
-#define bempp_modified_helmholtz_3d_adjoint_double_layer_potential_hpp
+#ifndef bempp_modified_helmholtz_3d_single_layer_potential_operator_hpp
+#define bempp_modified_helmholtz_3d_single_layer_potential_operator_hpp
 
 #include "elementary_singular_integral_operator.hpp"
 #include "../common/scalar_traits.hpp"
 #include "../fiber/expression_list.hpp"
-#include "../fiber/modified_helmholtz_3d_adjoint_double_layer_potential_kernel.hpp"
+#include "../fiber/modified_helmholtz_3d_single_layer_potential_kernel.hpp"
 #include "../fiber/scalar_function_value.hpp"
 
 namespace Bempp
 {
 
 /** \ingroup modified_helmholtz_3d
- *  \brief Adjoint double-layer-potential operator for the modified Helmholtz
+ *  \brief Single-layer-potential operator for the modified Helmholtz
  *  equation in 3D.
  *
  *  \tparam BasisFunctionType
@@ -59,7 +59,7 @@ namespace Bempp
  */
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType = typename Coercion<BasisFunctionType, KernelType>::Type>
-class ModifiedHelmholtz3dAdjointDoubleLayerPotential :
+class ModifiedHelmholtz3dSingleLayerPotentialOperator :
         public ElementarySingularIntegralOperator<
         BasisFunctionType, KernelType, ResultType>
 {
@@ -75,7 +75,7 @@ public:
      * \param waveNumber Wave number.
      *
      * See \ref modified_helmholtz_3d for the definition of the wave number. */
-    ModifiedHelmholtz3dAdjointDoubleLayerPotential(
+    ModifiedHelmholtz3dSingleLayerPotentialOperator(
             const Space<BasisFunctionType>& testSpace,
             const Space<BasisFunctionType>& trialSpace,
             KernelType waveNumber);
@@ -94,7 +94,7 @@ private:
     }
 
 private:
-    Fiber::ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernel<KernelType> m_kernel;
+    Fiber::ModifiedHelmholtz3dSingleLayerPotentialKernel<KernelType> m_kernel;
     Fiber::ScalarFunctionValue<CoordinateType> m_expression;
     Fiber::ExpressionList<ResultType> m_expressionList;
 };

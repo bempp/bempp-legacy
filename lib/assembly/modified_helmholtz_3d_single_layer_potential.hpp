@@ -21,7 +21,7 @@
 #ifndef bempp_modified_helmholtz_3d_single_layer_potential_hpp
 #define bempp_modified_helmholtz_3d_single_layer_potential_hpp
 
-#include "elementary_singular_integral_operator.hpp"
+#include "elementary_potential.hpp"
 #include "../common/scalar_traits.hpp"
 #include "../fiber/expression_list.hpp"
 #include "../fiber/modified_helmholtz_3d_single_layer_potential_kernel.hpp"
@@ -31,15 +31,16 @@ namespace Bempp
 {
 
 /** \ingroup modified_helmholtz_3d
- *  \brief Single-layer-potential operator for the modified Helmholtz
+ *  \brief Single-layer-potential for the modified Helmholtz
  *  equation in 3D.
  *
  *  \tparam BasisFunctionType
- *    Type used to represent the values of basis functions.
+ *    Type used to represent the values of basis functions into which
+ *    the argument of the potential is expanded.
  *  \tparam KernelType
  *    Type used to represent the values of the kernel.
  *  \tparam ResultType
- *    Type used to represent entries in the discrete form of the operator.
+ *    Type used to represent the values of the potential.
  *
  *  All three template parameters can take the following values: \c float, \c
  *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>. All
@@ -49,8 +50,8 @@ namespace Bempp
  *  e.g. for \p BasisFunctionType = \c double and \p KernelType =
  *  <tt>std::complex<double></tt> it is set to <tt>std::complex<double></tt>.
  *  You should override that only if you set both \p BasisFunctionType and \p
- *  KernelType to a real type, but you want the entries of the operator's weak
- *  form to be stored as complex numbers.
+ *  KernelType to a real type, but you want the values of the potential to be
+ *  stored as complex numbers.
  *
  *  Note that setting \p KernelType to a real type implies that the wave number
  *  must also be chosen purely real.
@@ -59,34 +60,25 @@ namespace Bempp
  */
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType = typename Coercion<BasisFunctionType, KernelType>::Type>
-class ModifiedHelmholtz3dSingleLayerPotential :
-        public ElementarySingularIntegralOperator<
+class ModifiedHelmholtz3dSingleLayerPotential:
+        public ElementaryPotential<
         BasisFunctionType, KernelType, ResultType>
 {
-    typedef ElementarySingularIntegralOperator<
+    typedef ElementaryPotential<
     BasisFunctionType, KernelType, ResultType> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
-    /** \brief Construct the operator.
+    /** \brief Construct the potential.
      *
-     * \param testSpace Test function space.
-     * \param trialSpace Trial function space.
      * \param waveNumber Wave number.
      *
      * See \ref modified_helmholtz_3d for the definition of the wave number. */
-    ModifiedHelmholtz3dSingleLayerPotential(
-            const Space<BasisFunctionType>& testSpace,
-            const Space<BasisFunctionType>& trialSpace,
-            KernelType waveNumber);
+    ModifiedHelmholtz3dSingleLayerPotential(KernelType waveNumber);
 
 private:
     virtual const Fiber::Kernel<KernelType>& kernel() const {
         return m_kernel;
-    }
-
-    virtual const Fiber::ExpressionList<ResultType>& testExpressionList() const {
-        return m_expressionList;
     }
 
     virtual const Fiber::ExpressionList<ResultType>& trialExpressionList() const {

@@ -26,11 +26,8 @@ namespace Bempp
 
 template <typename BasisFunctionType>
 Helmholtz3dDoubleLayerPotential<BasisFunctionType>::
-Helmholtz3dDoubleLayerPotential(
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace,
-        KernelType waveNumber) :
-    Base(testSpace, trialSpace), m_kernel(waveNumber / KernelType(0., 1.))
+Helmholtz3dDoubleLayerPotential(KernelType waveNumber) :
+    m_kernel(waveNumber / KernelType(0., 1.))
 {
     m_expressionList.addTerm(m_expression);
 }

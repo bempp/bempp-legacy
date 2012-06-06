@@ -24,16 +24,6 @@
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename ResultType>
-Laplace3dSingleLayerPotential<BasisFunctionType, ResultType>::Laplace3dSingleLayerPotential(
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace) :
-    Base(testSpace, trialSpace)
-{
-    m_expressionList.addTerm(m_expression);
-}
-
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dSingleLayerPotential);
-
 
 } // namespace Bempp

@@ -21,7 +21,7 @@
 #ifndef bempp_helmholtz_3d_double_layer_potential_hpp
 #define bempp_helmholtz_3d_double_layer_potential_hpp
 
-#include "elementary_singular_integral_operator.hpp"
+#include "elementary_potential.hpp"
 #include "../common/scalar_traits.hpp"
 #include "../fiber/expression_list.hpp"
 #include "../fiber/modified_helmholtz_3d_double_layer_potential_kernel.hpp"
@@ -31,7 +31,7 @@ namespace Bempp
 {
 
 /** \ingroup helmholtz_3d
- *  \brief Single-layer-potential operator for the Helmholtz equation in 3D.
+ *  \brief Double-layer-potential operator for the Helmholtz equation in 3D.
  *
  *  \tparam BasisFunctionType
  *    Type used to represent the values of basis functions. It can take the
@@ -41,7 +41,7 @@ namespace Bempp
  *  \see helmholtz_3d */
 template <typename BasisFunctionType>
 class Helmholtz3dDoubleLayerPotential :
-        public ElementarySingularIntegralOperator<
+        public ElementaryPotential<
         BasisFunctionType,
         typename ScalarTraits<BasisFunctionType>::ComplexType,
         typename ScalarTraits<BasisFunctionType>::ComplexType>
@@ -50,29 +50,23 @@ public:
     typedef typename ScalarTraits<BasisFunctionType>::ComplexType KernelType;
     typedef KernelType ResultType;
 private:
-    typedef ElementarySingularIntegralOperator<
+    typedef ElementaryPotential<
     BasisFunctionType, KernelType, ResultType> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
-    /** \brief Construct the operator.
+    /** \brief Construct the potential.
      *
      * \param testSpace Test function space.
      * \param trialSpace Trial function space.
      * \param waveNumber Wave number.
      *
      * See \ref helmholtz_3d for the definition of the wave number. */
-    Helmholtz3dDoubleLayerPotential(const Space<BasisFunctionType>& testSpace,
-                                    const Space<BasisFunctionType>& trialSpace,
-                                    KernelType waveNumber);
+    Helmholtz3dDoubleLayerPotential(KernelType waveNumber);
 
 private:
     virtual const Fiber::Kernel<KernelType>& kernel() const {
         return m_kernel;
-    }
-
-    virtual const Fiber::ExpressionList<ResultType>& testExpressionList() const {
-        return m_expressionList;
     }
 
     virtual const Fiber::ExpressionList<ResultType>& trialExpressionList() const {

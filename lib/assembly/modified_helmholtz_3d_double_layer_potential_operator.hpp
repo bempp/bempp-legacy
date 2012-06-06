@@ -18,10 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_modified_helmholtz_3d_double_layer_potential_hpp
-#define bempp_modified_helmholtz_3d_double_layer_potential_hpp
+#ifndef bempp_modified_helmholtz_3d_double_layer_potential_operator_hpp
+#define bempp_modified_helmholtz_3d_double_layer_potential_operator_hpp
 
-#include "elementary_potential.hpp"
+#include "elementary_singular_integral_operator.hpp"
 #include "../common/scalar_traits.hpp"
 #include "../fiber/expression_list.hpp"
 #include "../fiber/modified_helmholtz_3d_double_layer_potential_kernel.hpp"
@@ -31,16 +31,15 @@ namespace Bempp
 {
 
 /** \ingroup modified_helmholtz_3d
- *  \brief Double-layer potential for the modified Helmholtz
+ *  \brief Double-layer-potential operator for the modified Helmholtz
  *  equation in 3D.
  *
  *  \tparam BasisFunctionType
- *    Type used to represent the values of basis functions into which
- *    the argument of the potential is expanded.
+ *    Type used to represent the values of basis functions.
  *  \tparam KernelType
  *    Type used to represent the values of the kernel.
  *  \tparam ResultType
- *    Type used to represent the values of the potential.
+ *    Type used to represent entries in the discrete form of the operator.
  *
  *  All three template parameters can take the following values: \c float, \c
  *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>. All
@@ -50,8 +49,8 @@ namespace Bempp
  *  e.g. for \p BasisFunctionType = \c double and \p KernelType =
  *  <tt>std::complex<double></tt> it is set to <tt>std::complex<double></tt>.
  *  You should override that only if you set both \p BasisFunctionType and \p
- *  KernelType to a real type, but you want the values of the potential to be
- *  stored as complex numbers.
+ *  KernelType to a real type, but you want the entries of the operator's weak
+ *  form to be stored as complex numbers.
  *
  *  Note that setting \p KernelType to a real type implies that the wave number
  *  must also be chosen purely real.
@@ -60,25 +59,34 @@ namespace Bempp
  */
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType = typename Coercion<BasisFunctionType, KernelType>::Type>
-class ModifiedHelmholtz3dDoubleLayerPotential:
-        public ElementaryPotential<
+class ModifiedHelmholtz3dDoubleLayerPotentialOperator :
+        public ElementarySingularIntegralOperator<
         BasisFunctionType, KernelType, ResultType>
 {
-    typedef ElementaryPotential<
+    typedef ElementarySingularIntegralOperator<
     BasisFunctionType, KernelType, ResultType> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
-    /** \brief Construct the potential.
+    /** \brief Construct the operator.
      *
+     * \param testSpace Test function space.
+     * \param trialSpace Trial function space.
      * \param waveNumber Wave number.
      *
      * See \ref modified_helmholtz_3d for the definition of the wave number. */
-    ModifiedHelmholtz3dDoubleLayerPotential(KernelType waveNumber);
+    ModifiedHelmholtz3dDoubleLayerPotentialOperator(
+            const Space<BasisFunctionType>& testSpace,
+            const Space<BasisFunctionType>& trialSpace,
+            KernelType waveNumber);
 
 private:
     virtual const Fiber::Kernel<KernelType>& kernel() const {
         return m_kernel;
+    }
+
+    virtual const Fiber::ExpressionList<ResultType>& testExpressionList() const {
+        return m_expressionList;
     }
 
     virtual const Fiber::ExpressionList<ResultType>& trialExpressionList() const {

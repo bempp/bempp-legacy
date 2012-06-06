@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+
 #include "modified_helmholtz_3d_double_layer_potential.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -26,15 +27,13 @@ namespace Bempp
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 ModifiedHelmholtz3dDoubleLayerPotential<BasisFunctionType, KernelType, ResultType>::
-ModifiedHelmholtz3dDoubleLayerPotential(
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace,
-        KernelType waveNumber) :
-    Base(testSpace, trialSpace), m_kernel(waveNumber)
+ModifiedHelmholtz3dDoubleLayerPotential(KernelType waveNumber) :
+    m_kernel(waveNumber)
 {
     m_expressionList.addTerm(m_expression);
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(ModifiedHelmholtz3dDoubleLayerPotential);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
+        ModifiedHelmholtz3dDoubleLayerPotential);
 
 } // namespace Bempp
