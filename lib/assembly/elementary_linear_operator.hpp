@@ -67,6 +67,10 @@ public:
     ElementaryLinearOperator(const Space<BasisFunctionType>& testSpace,
                              const Space<BasisFunctionType>& trialSpace);
 
+    virtual std::vector<const ElementaryLinearOperator<BasisFunctionType, ResultType>*>
+    constituentOperators() const;
+    virtual std::vector<ResultType> constituentOperatorWeights() const;
+
     /** \brief Construct a local assembler suitable for this operator using a specified factory.
      *
      *  \param[in] assemblerFactory  Assembler factory to be used to construct the assembler.

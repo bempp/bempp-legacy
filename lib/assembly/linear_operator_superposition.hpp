@@ -58,9 +58,33 @@ public:
     virtual int trialComponentCount() const;
     virtual int testComponentCount() const;
 
+    virtual std::vector<const ElementaryLinearOperator<BasisFunctionType, ResultType>*>
+    constituentOperators() const;
+    virtual std::vector<ResultType> constituentOperatorWeights() const;
+
     virtual bool supportsRepresentation(AssemblyOptions::Representation repr) const;
 
 private:
+    /** @name Constituent elementary operators list management
+     *  @{ */
+
+    /** \brief Append operators to the list of constituent elementary operators.
+     *
+     *  \param[in] operators
+     *    Vector of pointers to the elementary linear operators to be appended
+     *    to the list of constituent operators. These objects must continue to
+     *    exist at least until the weak form of this operator is assembled.
+     *
+     *  \param[in] weights
+     *    Vector of the corresponding weights.
+     *
+     *  \see constituentOperators(), constituentOperatorWeights().
+     */
+    void addConstituentOperators(
+            const std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>&
+            operators,
+            const std::vector<ResultType>& weights);
+
     virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
     assembleDetachedWeakFormImpl(
             const LocalAssemblerFactory& factory,
@@ -84,6 +108,11 @@ private:
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options,
             Symmetry symmetry) const;
+
+private:
+    std::vector<ElementaryLinearOperator<BasisFunctionType, ResultType> const*>
+    m_constituentOperators;
+    std::vector<ResultType> m_constituentOperatorWeights;
 };
 
 } //namespace Bempp
