@@ -104,8 +104,14 @@ public:
             AhmedBemBlcluster* cluster =
                     dynamic_cast<AhmedBemBlcluster*>(m_leafClusters[leafClusterIndex]);
             if (m_symmetric)
+#ifdef AHMED_PRERELEASE
                 apprx_sym(m_helper, m_blocks[cluster->getidx()],
                           cluster, m_options.eps, m_options.maximumRank);
+#else
+                apprx_sym(m_helper, m_blocks[cluster->getidx()],
+                          cluster, m_options.eps, m_options.maximumRank,
+                          true /* complex_sym */);
+#endif
             else
                 apprx_unsym(m_helper, m_blocks[cluster->getidx()],
                             cluster, m_options.eps, m_options.maximumRank);
@@ -374,9 +380,17 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
             std::cout << "Writing matrix partition ..." << std::flush;
             std::ofstream os(acaOptions.outputFname.c_str());
             if (symmetric)
+#if AHMED_PRERELEASE
                 psoutputHSym(os, bemBlclusterTree.get(), testDofCount, blocks.get());
+#else
+                psoutputHeH(os, bemBlclusterTree.get(), testDofCount, blocks.get());
+#endif
             else
+#if AHMED_PRERELEASE
                 psoutputH(os, bemBlclusterTree.get(), testDofCount, blocks.get());
+#else
+                psoutputGeH(os, bemBlclusterTree.get(), testDofCount, blocks.get());
+#endif
             os.close();
             std::cout << " done." << std::endl;
         }
