@@ -21,6 +21,7 @@
 import os,urllib,shutil,subprocess,sys
 from py_modules.tools import extract_file, to_bool
 
+import struct
 
 tbb_fname_mac='tbb40_297oss_mac.tgz'
 tbb_fname_linux='tbb40_297oss_lin.tgz'
@@ -51,8 +52,14 @@ def configureTbb(root,config):
         tbb_lib_name="lib/libtbb.dylib"
         tbb_lib_name_debug="lib/libtbb_debug.dylib"
     elif sys.platform.startswith('linux'):
-        tbb_lib_name="lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21/libtbb.so"
-        tbb_lib_name_debug="lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21/libtbb.so"
+        if struct.calcsize("P") == 8:
+            # 64 bit
+            tbb_lib_name="lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21/libtbb.so"
+            tbb_lib_name_debug="lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21/libtbb.so"
+        else:
+            # presumably 32 bit
+            tbb_lib_name="lib/ia32/cc4.1.0_libc2.4_kernel2.6.16.21/libtbb.so"
+            tbb_lib_name_debug="lib/ia32/cc4.1.0_libc2.4_kernel2.6.16.21/libtbb.so"
     else:
         raise Exception("Platform not supported")
 
