@@ -18,18 +18,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_helmholtz_3d_hypersingular_operator_hpp
-#define bempp_helmholtz_3d_hypersingular_operator_hpp
+#ifndef bempp_helmholtz_3d_hypersingularoperator_hpp
+#define bempp_helmholtz_3d_hypersingularoperator_hpp
 
-#include "elementary_singular_integral_operator.hpp"
-#include "../common/scalar_traits.hpp"
-#include "../fiber/expression_list.hpp"
-#include "../fiber/modified_helmholtz_3d_single_layer_potential_kernel.hpp"
-#include "../fiber/scalar_function_value_times_normal_3d.hpp"
-#include "../fiber/surface_curl_3d.hpp"
+#include "helmholtz_3d_operator_base.hpp"
+
+#include <boost/scoped_ptr.hpp>
 
 namespace Bempp
 {
+
+template <typename BasisFunctionType>
+struct Helmholtz3dHypersingularOperatorImpl;
 
 /** \ingroup helmholtz_3d
  *  \brief Hypersingular operator for the Helmholtz equation in 3D.
@@ -40,21 +40,24 @@ namespace Bempp
  *    <tt>std::complex<double></tt>.
  *
  *  \see helmholtz_3d */
-template <typename BasisFunctionType>
+template <typename BasisFunctionType_>
 class Helmholtz3dHypersingularOperator :
-        public ElementarySingularIntegralOperator<
-        BasisFunctionType,
-        typename ScalarTraits<BasisFunctionType>::ComplexType,
-        typename ScalarTraits<BasisFunctionType>::ComplexType>
+        public Helmholtz3dOperatorBase<
+                Helmholtz3dHypersingularOperatorImpl<BasisFunctionType_>,
+                BasisFunctionType_>
 {
+    typedef Helmholtz3dOperatorBase<
+    Helmholtz3dHypersingularOperatorImpl<BasisFunctionType_>,
+    BasisFunctionType_> Base;
 public:
-    typedef typename ScalarTraits<BasisFunctionType>::ComplexType KernelType;
-    typedef KernelType ResultType;
-private:
-    typedef ElementarySingularIntegralOperator<
-    BasisFunctionType, KernelType, ResultType> Base;
-public:
+    typedef typename Base::BasisFunctionType BasisFunctionType;
+    typedef typename Base::KernelType KernelType;
+    typedef typename Base::ResultType ResultType;
     typedef typename Base::CoordinateType CoordinateType;
+    typedef typename Base::CollectionOfBasisTransformations
+    CollectionOfBasisTransformations;
+    typedef typename Base::CollectionOfKernels CollectionOfKernels;
+    typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
     /** \brief Construct the operator.
      *
@@ -63,28 +66,12 @@ public:
      * \param waveNumber Wave number.
      *
      * See \ref helmholtz_3d for the definition of the wave number. */
-    Helmholtz3dHypersingularOperator(const Space<BasisFunctionType>& testSpace,
-                                     const Space<BasisFunctionType>& trialSpace,
-                                     KernelType waveNumber);
-
-private:
-    virtual const Fiber::Kernel<KernelType>& kernel() const {
-        return m_kernel;
-    }
-
-    virtual const Fiber::ExpressionList<ResultType>& testExpressionList() const {
-        return m_expressionList;
-    }
-
-    virtual const Fiber::ExpressionList<ResultType>& trialExpressionList() const {
-        return m_expressionList;
-    }
-
-private:
-    Fiber::ModifiedHelmholtz3dSingleLayerPotentialKernel<KernelType> m_kernel;
-    Fiber::SurfaceCurl3d<CoordinateType> m_surfaceCurl;
-    Fiber::ScalarFunctionValueTimesNormal3d<CoordinateType> m_valueTimesNormal;
-    Fiber::ExpressionList<ResultType> m_expressionList;
+    Helmholtz3dHypersingularOperator(
+            const Space<BasisFunctionType>& testSpace,
+            const Space<BasisFunctionType>& trialSpace,
+            KernelType waveNumber) :
+        Base(testSpace, trialSpace, waveNumber)
+    {}
 };
 
 } // namespace Bempp

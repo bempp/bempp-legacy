@@ -90,9 +90,10 @@ StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
         const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
         const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
         const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-        const shared_ptr<const ExpressionList<ResultType> >& testExpressionList,
-        const shared_ptr<const Kernel<KernelType> >& kernel,
-        const shared_ptr<const ExpressionList<ResultType> >& trialExpressionList,
+        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+        const shared_ptr<const CollectionOfKernels<KernelType> >& kernels,
+        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> >& integral,
         const shared_ptr<const OpenClHandler>& openClHandler,
         const ParallelisationOptions& parallelisationOptions,
         bool cacheSingularIntegrals,
@@ -103,9 +104,10 @@ StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
     m_trialRawGeometry(trialRawGeometry),
     m_testBases(testBases),
     m_trialBases(trialBases),
-    m_testExpressionList(testExpressionList),
-    m_kernel(kernel),
-    m_trialExpressionList(trialExpressionList),
+    m_testTransformations(testTransformations),
+    m_kernels(kernels),
+    m_trialTransformations(trialTransformations),
+    m_integral(integral),
     m_openClHandler(openClHandler),
     m_parallelisationOptions(parallelisationOptions),
     m_accuracyOptions(accuracyOptions)
@@ -285,7 +287,7 @@ KernelType, ResultType, GeometryFactory>::
 evaluateLocalWeakForms(
         const std::vector<int>& testElementIndices,
         const std::vector<int>& trialElementIndices,
-        Fiber::Array2d<arma::Mat<ResultType> >& result)
+        Fiber::_2dArray<arma::Mat<ResultType> >& result)
 {
     typedef Fiber::Basis<BasisFunctionType> Basis;
 
@@ -297,7 +299,7 @@ evaluateLocalWeakForms(
     typedef boost::tuples::tuple<const Integrator*, const Basis*, const Basis*>
             QuadVariant;
     const QuadVariant CACHED(0, 0, 0);
-    Fiber::Array2d<QuadVariant> quadVariants(testElementCount, trialElementCount);
+    Fiber::_2dArray<QuadVariant> quadVariants(testElementCount, trialElementCount);
 
     for (int trialIndex = 0; trialIndex < trialElementCount; ++trialIndex)
         for (int testIndex = 0; testIndex < testElementCount; ++testIndex) {
@@ -655,7 +657,8 @@ getIntegrator(const DoubleQuadratureDescriptor& desc)
                     testPoints, trialPoints, testWeights, trialWeights,
                     *m_testGeometryFactory, *m_trialGeometryFactory,
                     *m_testRawGeometry, *m_trialRawGeometry,
-                    *m_testExpressionList, *m_kernel, *m_trialExpressionList,
+                    *m_testTransformations, *m_kernels, *m_trialTransformations,
+                    *m_integral,
                     *m_openClHandler);
     } else {
         arma::Mat<CoordinateType> testPoints, trialPoints;
@@ -669,7 +672,8 @@ getIntegrator(const DoubleQuadratureDescriptor& desc)
                     testPoints, trialPoints, weights,
                     *m_testGeometryFactory, *m_trialGeometryFactory,
                     *m_testRawGeometry, *m_trialRawGeometry,
-                    *m_testExpressionList, *m_kernel, *m_trialExpressionList,
+                    *m_testTransformations, *m_kernels, *m_trialTransformations,
+                    *m_integral,
                     *m_openClHandler);
     }
 

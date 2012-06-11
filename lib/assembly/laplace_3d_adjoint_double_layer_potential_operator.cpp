@@ -19,21 +19,48 @@
 // THE SOFTWARE.
 
 #include "laplace_3d_adjoint_double_layer_potential_operator.hpp"
+#include "laplace_3d_operator_base_imp.hpp"
+
 #include "../fiber/explicit_instantiation.hpp"
+
+#include "../fiber/laplace_3d_adjoint_double_layer_potential_kernel_functor.hpp"
+#include "../fiber/scalar_function_value_functor.hpp"
+#include "../fiber/simple_test_scalar_kernel_trial_integrand_functor.hpp"
+
+#include "../fiber/standard_collection_of_kernels.hpp"
+#include "../fiber/standard_collection_of_basis_transformations.hpp"
+#include "../fiber/standard_test_kernel_trial_integral.hpp"
 
 namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType>
-Laplace3dAdjointDoubleLayerPotentialOperator<BasisFunctionType, ResultType>::
-Laplace3dAdjointDoubleLayerPotentialOperator(const Space<BasisFunctionType>& testSpace,
-                              const Space<BasisFunctionType>& trialSpace) :
-    Base(testSpace, trialSpace)
+struct Laplace3dAdjointDoubleLayerPotentialOperatorImpl
 {
-    m_expressionList.addTerm(m_expression);
-}
+    typedef typename Laplace3dOperatorBase<BasisFunctionType, ResultType>::KernelType
+    KernelType;
+    typedef typename Laplace3dOperatorBase<BasisFunctionType, ResultType>::CoordinateType
+    CoordinateType;
+
+    typedef Fiber::Laplace3dAdjointDoubleLayerPotentialKernelFunctor<KernelType>
+    KernelFunctor;
+    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
+    TransformationFunctor;
+    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
+    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+
+    Laplace3dAdjointDoubleLayerPotentialOperatorImpl() :
+        kernels(KernelFunctor()),
+        transformations(TransformationFunctor()),
+        integral(IntegrandFunctor())
+    {}
+
+    Fiber::StandardCollectionOfKernels<KernelFunctor> kernels;
+    Fiber::StandardCollectionOfBasisTransformations<TransformationFunctor>
+    transformations;
+    Fiber::StandardTestKernelTrialIntegral<IntegrandFunctor> integral;
+};
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dAdjointDoubleLayerPotentialOperator);
-
 
 } // namespace Bempp

@@ -33,7 +33,7 @@ namespace Fiber
 {
 
 class OpenClHandler;
-template <typename CoordinateType> class Expression;
+template <typename CoordinateType> class CollectionOfBasisTransformations;
 template <typename ValueType> class Function;
 template <typename CoordinateType> class RawGridGeometry;
 
@@ -49,7 +49,7 @@ public:
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-            const shared_ptr<const Expression<CoordinateType> >& testExpression,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
             const shared_ptr<const Function<UserFunctionType> >& function,
             const shared_ptr<const OpenClHandler>& openClHandler);
     virtual ~StandardLocalAssemblerForGridFunctionsOnSurfaces();
@@ -76,7 +76,7 @@ private:
     shared_ptr<const GeometryFactory> m_geometryFactory;
     shared_ptr<const RawGridGeometry<CoordinateType> > m_rawGeometry;
     shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_testBases;
-    shared_ptr<const Expression<CoordinateType> > m_testExpression;
+    shared_ptr<const CollectionOfBasisTransformations<CoordinateType> > m_testTransformations;
     shared_ptr<const Function<UserFunctionType> > m_function;
     shared_ptr<const OpenClHandler> m_openClHandler;
 

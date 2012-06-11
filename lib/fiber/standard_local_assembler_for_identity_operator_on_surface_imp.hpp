@@ -33,15 +33,15 @@ StandardLocalAssemblerForIdentityOperatorOnSurface(
     const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
     const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
     const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-    const shared_ptr<const Expression<CoordinateType> >& testExpression,
-    const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+    const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+    const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
     const shared_ptr<const OpenClHandler>& openClHandler) :
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
     m_testBases(testBases),
     m_trialBases(trialBases),
-    m_testExpression(testExpression),
-    m_trialExpression(trialExpression),
+    m_testTransformations(testTransformations),
+    m_trialTransformations(trialTransformations),
     m_openClHandler(openClHandler)
 {
     checkConsistencyOfGeometryAndBases(*rawGeometry, *testBases);
@@ -104,7 +104,7 @@ StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType
 evaluateLocalWeakForms(
     const std::vector<int>& testElementIndices,
     const std::vector<int>& trialElementIndices,
-    Fiber::Array2d<arma::Mat<ResultType> >& result)
+    Fiber::_2dArray<arma::Mat<ResultType> >& result)
 {
     // Probably will never be called
     throw std::runtime_error("StandardLocalAssemblerForIdentityOperatorOnSurface::"
@@ -219,7 +219,7 @@ getIntegrator(const SingleQuadratureDescriptor& desc)
     std::auto_ptr<TestTrialIntegrator<BasisFunctionType, ResultType> > integrator(
         new Integrator(points, weights,
                        *m_geometryFactory, *m_rawGeometry,
-                       *m_testExpression, *m_trialExpression,
+                       *m_testTransformations, *m_trialTransformations,
                        *m_openClHandler));
 
     return *m_testTrialIntegrators.insert(desc, integrator).first->second;

@@ -21,11 +21,10 @@
 #include "../type_template.hpp"
 #include "../check_arrays_are_close.hpp"
 
-#include "assembly/laplace_3d_single_layer_potential.hpp"
+#include "assembly/laplace_3d_single_layer_potential_operator.hpp"
 #include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 #include "common/scalar_traits.hpp"
 #include "fiber/geometrical_data.hpp"
-#include "fiber/laplace_3d_single_layer_potential_kernel.hpp"
 #include "grid/grid.hpp"
 #include "grid/grid_factory.hpp"
 #include "grid/grid_view.hpp"
@@ -38,6 +37,7 @@
 #include <algorithm>
 #include <armadillo>
 #include <boost/test/unit_test.hpp>
+#include <boost/test/test_case_template.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/version.hpp>
 #include <complex>
@@ -54,7 +54,7 @@ public:
     typedef typename ScalarTraits<RT>::RealType CT;
     typedef PiecewiseConstantScalarSpace<BFT> TestSpace;
     typedef PiecewiseLinearContinuousScalarSpace<BFT> TrialSpace;
-    typedef Laplace3dSingleLayerPotential<BFT, RT> Operator;
+    typedef Laplace3dSingleLayerPotentialOperator<BFT, RT> Operator;
     typedef StandardLocalAssemblerFactoryForOperatorsOnSurfaces<BFT, RT> AssemblerFactory;
     typedef Fiber::RawGridGeometry<CT> RawGridGeometry;
 
@@ -135,11 +135,11 @@ both_variants_of_evaluateLocalWeakForms_agree_for_callVariant_TEST_TRIAL_and_cac
     for (int i = 0; i < trialIndexCount; ++i)
         trialIndices[i] = i;
 
-    Fiber::Array2d<arma::Mat<ResultType> > resultVariant2;
+    Fiber::_2dArray<arma::Mat<ResultType> > resultVariant2;
     mgr.assembler->evaluateLocalWeakForms(testIndices, trialIndices, resultVariant2);
 
     // Gather successive columns
-    Fiber::Array2d<arma::Mat<ResultType> > resultVariant1(
+    Fiber::_2dArray<arma::Mat<ResultType> > resultVariant1(
                 testIndexCount, trialIndexCount);
     std::vector<arma::Mat<ResultType> > colResult;
     for (int trialI = 0; trialI < trialIndexCount; ++trialI)
@@ -189,11 +189,11 @@ both_variants_of_evaluateLocalWeakForms_agree_for_callVariant_TRIAL_TEST_and_cac
     for (int i = 0; i < trialIndexCount; ++i)
         trialIndices[i] = i;
 
-    Fiber::Array2d<arma::Mat<ResultType> > resultVariant2;
+    Fiber::_2dArray<arma::Mat<ResultType> > resultVariant2;
     mgr.assembler->evaluateLocalWeakForms(testIndices, trialIndices, resultVariant2);
 
     // Gather successive rows
-    Fiber::Array2d<arma::Mat<ResultType> > resultVariant1(
+    Fiber::_2dArray<arma::Mat<ResultType> > resultVariant1(
                 testIndexCount, trialIndexCount);
     std::vector<arma::Mat<ResultType> > rowResult;
     for (int testI = 0; testI < testIndexCount; ++testI)
@@ -353,8 +353,8 @@ evaluateLocalWeakForms_with_and_without_singular_integral_caching_gives_same_res
     for (int i = 0; i < trialIndexCount; ++i)
         trialIndices[i] = i;
 
-    Fiber::Array2d<arma::Mat<ResultType> > resultWithCaching;
-    Fiber::Array2d<arma::Mat<ResultType> > resultWithoutCaching;
+    Fiber::_2dArray<arma::Mat<ResultType> > resultWithCaching;
+    Fiber::_2dArray<arma::Mat<ResultType> > resultWithoutCaching;
 
     {
         StandardLocalAssemblerForIntegralOperatorsOnSurfacesManager<

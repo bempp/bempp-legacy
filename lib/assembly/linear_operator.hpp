@@ -80,12 +80,16 @@ template <typename BasisFunctionType, typename ResultType> class GridFunction;
  *  <tt>std::complex<double></tt> is not allowed. If \p BasisFunctionType is
  *  set to a complex type, then \p ResultType must be set to the same type.
  */
-template <typename BasisFunctionType, typename ResultType>
+template <typename BasisFunctionType_, typename ResultType_>
 class LinearOperator
 {
 public:
+    /** \brief Type used to represent components of the test and trial functions. */
+    typedef BasisFunctionType_ BasisFunctionType;
+    /** \brief Type used to represent elements of the operator's weak form. */
+    typedef ResultType_ ResultType;
     /** \brief Type used to represent coordinates. */
-    typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
+    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
     /** \brief Type of the appropriate instantiation of Fiber::LocalAssemblerFactory. */
     typedef Fiber::LocalAssemblerFactory<BasisFunctionType, ResultType, GeometryFactory>
     LocalAssemblerFactory;

@@ -51,11 +51,15 @@ namespace Bempp
  *  identity operator and for integral operators as defined in the
  *  documentation of ElementaryIntegralOperator.
  */
-template <typename BasisFunctionType, typename ResultType>
-class ElementaryLinearOperator : public LinearOperator<BasisFunctionType, ResultType>
+template <typename BasisFunctionType_, typename ResultType_>
+class ElementaryLinearOperator : public LinearOperator<BasisFunctionType_, ResultType_>
 {
-    typedef LinearOperator<BasisFunctionType, ResultType> Base;
+    typedef LinearOperator<BasisFunctionType_, ResultType_> Base;
 public:
+    /** \copydoc LinearOperator::BasisFunctionType */
+    typedef typename Base::BasisFunctionType BasisFunctionType;
+    /** \copydoc LinearOperator::ResultType */
+    typedef typename Base::ResultType ResultType;
     /** \copydoc LinearOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
     /** \copydoc LinearOperator::LocalAssemblerFactory */
@@ -67,9 +71,11 @@ public:
     ElementaryLinearOperator(const Space<BasisFunctionType>& testSpace,
                              const Space<BasisFunctionType>& trialSpace);
 
-    virtual std::vector<const ElementaryLinearOperator<BasisFunctionType, ResultType>*>
+    ~ElementaryLinearOperator();
+
+    virtual std::vector<const ElementaryLinearOperator<BasisFunctionType_, ResultType_>*>
     constituentOperators() const;
-    virtual std::vector<ResultType> constituentOperatorWeights() const;
+    virtual std::vector<ResultType_> constituentOperatorWeights() const;
 
     /** \brief Construct a local assembler suitable for this operator using a specified factory.
      *
@@ -108,7 +114,7 @@ public:
      *  should not need to call it directly. They should use
      *  LinearOperator::assembleDetachedWeakForm() instead.
      */
-    std::auto_ptr<DiscreteLinearOperator<ResultType> >
+    std::auto_ptr<DiscreteLinearOperator<ResultType_> >
     assembleDetachedWeakFormInternal(
             LocalAssembler& assembler,
             const AssemblyOptions& options,

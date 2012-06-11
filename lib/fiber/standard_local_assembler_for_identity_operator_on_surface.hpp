@@ -53,9 +53,9 @@ public:
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
         const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
         const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-        const shared_ptr<const Expression<CoordinateType> >& testExpression,
-        const shared_ptr<const Expression<CoordinateType> >& trialExpression,
-        const shared_ptr<const OpenClHandler >& openClHandler);
+        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const OpenClHandler>& openClHandler);
 
     virtual void evaluateLocalWeakForms(
         CallVariant callVariant,
@@ -67,7 +67,7 @@ public:
     virtual void evaluateLocalWeakForms(
         const std::vector<int>& testElementIndices,
         const std::vector<int>& trialElementIndices,
-        Fiber::Array2d<arma::Mat<ResultType> >& result);
+        Fiber::_2dArray<arma::Mat<ResultType> >& result);
 
     virtual void evaluateLocalWeakForms(
         const std::vector<int>& elementIndices,
@@ -92,8 +92,8 @@ private:
     shared_ptr<const RawGridGeometry<CoordinateType> > m_rawGeometry;
     shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_testBases;
     shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_trialBases;
-    shared_ptr<const Expression<CoordinateType> > m_testExpression;
-    shared_ptr<const Expression<CoordinateType> > m_trialExpression;
+    shared_ptr<const CollectionOfBasisTransformations<CoordinateType> > m_testTransformations;
+    shared_ptr<const CollectionOfBasisTransformations<CoordinateType> > m_trialTransformations;
     shared_ptr<const OpenClHandler> m_openClHandler;
 
     IntegratorMap m_testTrialIntegrators;

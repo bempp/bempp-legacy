@@ -24,7 +24,6 @@
 #include "elementary_linear_operator.hpp"
 #include "../common/multidimensional_arrays.hpp"
 #include "../common/types.hpp"
-#include "../fiber/kernel.hpp"
 #include "../fiber/types.hpp"
 
 #include <vector>
@@ -33,10 +32,11 @@
 namespace Fiber
 {
 
-template <typename ResultType> class Expression;
-template <typename ResultType> class ExpressionList;
+template <typename CoordinateType> class CollectionOfBasisTransformations;
+template <typename KernelType> class CollectionOfKernels;
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+class TestKernelTrialIntegral;
 template <typename ResultType> class LocalAssemblerForOperators;
-template <typename ResultType> class EvaluatorForIntegralOperators;
 
 } // namespace Fiber
 
@@ -51,15 +51,23 @@ template <typename BasisFunctionType, typename ResultType> class WeakFormAcaAsse
 /** \ingroup assembly
  *  \brief Elementary integral operator.
  */
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
+template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
 class ElementaryIntegralOperator :
-        public ElementaryLinearOperator<BasisFunctionType, ResultType>
+        public ElementaryLinearOperator<BasisFunctionType_, ResultType_>
 {
-    typedef ElementaryLinearOperator<BasisFunctionType, ResultType> Base;
+    typedef ElementaryLinearOperator<BasisFunctionType_, ResultType_> Base;
 public:
+    typedef typename Base::BasisFunctionType BasisFunctionType;
+    typedef typename Base::ResultType ResultType;
     typedef typename Base::CoordinateType CoordinateType;
     typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
     typedef typename Base::LocalAssembler LocalAssembler;
+    typedef KernelType_ KernelType;
+    typedef Fiber::CollectionOfBasisTransformations<CoordinateType>
+    CollectionOfBasisTransformations;
+    typedef Fiber::CollectionOfKernels<KernelType> CollectionOfKernels;
+    typedef Fiber::TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>
+    TestKernelTrialIntegral;
 
     ElementaryIntegralOperator(const Space<BasisFunctionType> &testSpace,
                                const Space<BasisFunctionType> &trialSpace);
@@ -72,9 +80,12 @@ public:
     virtual bool isRegular() const = 0;
 
 private:
-    virtual const Fiber::Kernel<KernelType>& kernel() const = 0;
-    virtual const Fiber::ExpressionList<ResultType>& testExpressionList() const = 0;
-    virtual const Fiber::ExpressionList<ResultType>& trialExpressionList() const = 0;
+    virtual const CollectionOfKernels& kernels() const = 0;
+    virtual const CollectionOfBasisTransformations&
+    testTransformations() const = 0;
+    virtual const CollectionOfBasisTransformations&
+    trialTransformations() const = 0;
+    virtual const TestKernelTrialIntegral& integral() const = 0;
 
     virtual std::auto_ptr<LocalAssembler> makeAssemblerImpl(
             const LocalAssemblerFactory& assemblerFactory,
@@ -91,23 +102,23 @@ private:
     /** @}
         \name Weak form assembly
         @{ */
-    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
+    virtual std::auto_ptr<DiscreteLinearOperator<ResultType_> >
     assembleDetachedWeakFormImpl(
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options,
             Symmetry symmetry) const;
-    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
+    virtual std::auto_ptr<DiscreteLinearOperator<ResultType_> >
     assembleDetachedWeakFormInternalImpl(
             LocalAssembler& assembler,
             const AssemblyOptions& options,
             Symmetry symmetry) const;
 
-    std::auto_ptr<DiscreteLinearOperator<ResultType> >
+    std::auto_ptr<DiscreteLinearOperator<ResultType_> >
     assembleDetachedWeakFormInDenseMode(
             LocalAssembler& assembler,
             const AssemblyOptions &options,
             Symmetry symmetry) const;
-    std::auto_ptr<DiscreteLinearOperator<ResultType> >
+    std::auto_ptr<DiscreteLinearOperator<ResultType_> >
     assembleDetachedWeakFormInAcaMode(
             LocalAssembler& assembler,
             const AssemblyOptions& options,

@@ -18,24 +18,52 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #include "helmholtz_3d_hypersingular_operator.hpp"
+#include "helmholtz_3d_operator_base_imp.hpp"
+
 #include "../fiber/explicit_instantiation.hpp"
+
+#include "../fiber/modified_helmholtz_3d_single_layer_potential_kernel_functor.hpp"
+#include "../fiber/modified_helmholtz_3d_hypersingular_transformation_functor.hpp"
+#include "../fiber/modified_helmholtz_3d_hypersingular_integrand_functor.hpp"
+
+#include "../fiber/standard_collection_of_kernels.hpp"
+#include "../fiber/standard_collection_of_basis_transformations.hpp"
+#include "../fiber/standard_test_kernel_trial_integral.hpp"
+
+//    m_expressionList.addTerm(m_surfaceCurl);
+//    m_expressionList.addTerm(m_valueTimesNormal, KernelType(0., 1.) * waveNumber);
 
 namespace Bempp
 {
 
 template <typename BasisFunctionType>
-Helmholtz3dHypersingularOperator<BasisFunctionType>::
-Helmholtz3dHypersingularOperator(
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace,
-        KernelType waveNumber) :
-    Base(testSpace, trialSpace), m_kernel(waveNumber / KernelType(0., 1.))
+struct Helmholtz3dHypersingularOperatorImpl
 {
-    m_expressionList.addTerm(m_surfaceCurl);
-    m_expressionList.addTerm(m_valueTimesNormal, KernelType(0., 1.) * waveNumber);
-}
+    typedef Helmholtz3dHypersingularOperatorImpl<BasisFunctionType> This;
+    typedef Helmholtz3dOperatorBase<This, BasisFunctionType> OperatorBase;
+    typedef typename OperatorBase::CoordinateType CoordinateType;
+    typedef typename OperatorBase::KernelType KernelType;
+    typedef typename OperatorBase::ResultType ResultType;
+
+    typedef Fiber::ModifiedHelmholtz3dSingleLayerPotentialKernelFunctor<KernelType>
+    KernelFunctor;
+    typedef Fiber::ModifiedHelmholtz3dHypersingularTransformationFunctor<CoordinateType>
+    TransformationFunctor;
+    typedef Fiber::ModifiedHelmholtz3dHypersingularIntegrandFunctor<
+    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+
+    explicit Helmholtz3dHypersingularOperatorImpl(KernelType waveNumber) :
+        kernels(KernelFunctor(waveNumber / KernelType(0., 1.))),
+        transformations(TransformationFunctor()),
+        integral(IntegrandFunctor(waveNumber / KernelType(0., 1.)))
+    {}
+
+    Fiber::StandardCollectionOfKernels<KernelFunctor> kernels;
+    Fiber::StandardCollectionOfBasisTransformations<TransformationFunctor>
+    transformations;
+    Fiber::StandardTestKernelTrialIntegral<IntegrandFunctor> integral;
+};
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dHypersingularOperator);
 

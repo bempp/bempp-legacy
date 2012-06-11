@@ -21,14 +21,15 @@
 #ifndef bempp_modified_helmholtz_3d_single_layer_potential_operator_hpp
 #define bempp_modified_helmholtz_3d_single_layer_potential_operator_hpp
 
-#include "elementary_singular_integral_operator.hpp"
-#include "../common/scalar_traits.hpp"
-#include "../fiber/expression_list.hpp"
-#include "../fiber/modified_helmholtz_3d_single_layer_potential_kernel.hpp"
-#include "../fiber/scalar_function_value.hpp"
+#include "modified_helmholtz_3d_operator_base.hpp"
+
+#include <boost/scoped_ptr.hpp>
 
 namespace Bempp
 {
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+struct ModifiedHelmholtz3dSingleLayerPotentialOperatorImpl;
 
 /** \ingroup modified_helmholtz_3d
  *  \brief Single-layer-potential operator for the modified Helmholtz
@@ -57,16 +58,28 @@ namespace Bempp
  *
  *  \see modified_helmholtz_3d
  */
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType = typename Coercion<BasisFunctionType, KernelType>::Type>
+
+template <typename BasisFunctionType_, typename KernelType_,
+          typename ResultType_ = typename Coercion<BasisFunctionType_, KernelType_>::Type>
 class ModifiedHelmholtz3dSingleLayerPotentialOperator :
-        public ElementarySingularIntegralOperator<
-        BasisFunctionType, KernelType, ResultType>
+        public ModifiedHelmholtz3dOperatorBase<
+            ModifiedHelmholtz3dSingleLayerPotentialOperatorImpl<
+                BasisFunctionType_, KernelType_, ResultType_>,
+            BasisFunctionType_, KernelType_, ResultType_>
 {
-    typedef ElementarySingularIntegralOperator<
-    BasisFunctionType, KernelType, ResultType> Base;
+    typedef ModifiedHelmholtz3dOperatorBase<
+    ModifiedHelmholtz3dSingleLayerPotentialOperatorImpl<
+        BasisFunctionType_, KernelType_, ResultType_>,
+    BasisFunctionType_, KernelType_, ResultType_> Base;
 public:
+    typedef typename Base::BasisFunctionType BasisFunctionType;
+    typedef typename Base::KernelType KernelType;
+    typedef typename Base::ResultType ResultType;
     typedef typename Base::CoordinateType CoordinateType;
+    typedef typename Base::CollectionOfBasisTransformations
+    CollectionOfBasisTransformations;
+    typedef typename Base::CollectionOfKernels CollectionOfKernels;
+    typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
     /** \brief Construct the operator.
      *
@@ -74,29 +87,13 @@ public:
      * \param trialSpace Trial function space.
      * \param waveNumber Wave number.
      *
-     * See \ref modified_helmholtz_3d for the definition of the wave number. */
+     * See \ref helmholtz_3d for the definition of the wave number. */
     ModifiedHelmholtz3dSingleLayerPotentialOperator(
             const Space<BasisFunctionType>& testSpace,
             const Space<BasisFunctionType>& trialSpace,
-            KernelType waveNumber);
-
-private:
-    virtual const Fiber::Kernel<KernelType>& kernel() const {
-        return m_kernel;
-    }
-
-    virtual const Fiber::ExpressionList<ResultType>& testExpressionList() const {
-        return m_expressionList;
-    }
-
-    virtual const Fiber::ExpressionList<ResultType>& trialExpressionList() const {
-        return m_expressionList;
-    }
-
-private:
-    Fiber::ModifiedHelmholtz3dSingleLayerPotentialKernel<KernelType> m_kernel;
-    Fiber::ScalarFunctionValue<CoordinateType> m_expression;
-    Fiber::ExpressionList<ResultType> m_expressionList;
+            KernelType waveNumber) :
+        Base(testSpace, trialSpace, waveNumber)
+    {}
 };
 
 } // namespace Bempp

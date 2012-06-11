@@ -26,13 +26,20 @@
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
+template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
 class ElementarySingularIntegralOperator :
-        public ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>
+        public ElementaryIntegralOperator<BasisFunctionType_, KernelType_, ResultType_>
 {
-    typedef ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType> Base;
+    typedef ElementaryIntegralOperator<BasisFunctionType_, KernelType_, ResultType_> Base;
 public:
+    typedef typename Base::BasisFunctionType BasisFunctionType;
+    typedef typename Base::KernelType KernelType;
+    typedef typename Base::ResultType ResultType;
     typedef typename Base::CoordinateType CoordinateType;
+    typedef typename Base::CollectionOfBasisTransformations
+    CollectionOfBasisTransformations;
+    typedef typename Base::CollectionOfKernels CollectionOfKernels;
+    typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
     ElementarySingularIntegralOperator(
             const Space<BasisFunctionType>& testSpace,

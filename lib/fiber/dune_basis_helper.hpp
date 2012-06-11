@@ -22,7 +22,7 @@
 #define fiber_dune_basis_helper_hpp
 
 #include "types.hpp"
-#include "array_4d.hpp"
+#include "_4d_array.hpp"
 
 #include <armadillo>
 #include <vector>
@@ -65,7 +65,7 @@ template <typename CoordinateType, typename ValueType, typename DuneBasis>
 void evaluateBasisFunctionDerivativesWithDune(
         const arma::Mat<CoordinateType>& local,
         LocalDofIndex localDofIndex,
-        Array4d<ValueType>& result)
+        _4dArray<ValueType>& result)
 {
     typedef typename DuneBasis::Traits Traits;
 

@@ -22,8 +22,8 @@
 #define bempp_check_arrays_are_close_hpp
 
 #include "fiber/scalar_traits.hpp"
-#include "fiber/array_2d.hpp"
-#include "fiber/array_4d.hpp"
+#include "fiber/_2d_array.hpp"
+#include "fiber/_4d_array.hpp"
 
 #include <armadillo>
 #include <complex>
@@ -99,8 +99,8 @@ check_arrays_are_close(const arma::Cube<ValueType>& left,
 
 template <typename ValueType>
 boost::test_tools::predicate_result
-check_arrays_are_close(const Fiber::Array4d<ValueType>& left,
-                       const Fiber::Array4d<ValueType>& right,
+check_arrays_are_close(const Fiber::_4dArray<ValueType>& left,
+                       const Fiber::_4dArray<ValueType>& right,
                        typename Fiber::ScalarTraits<ValueType>::RealType tolerance)
 {
     boost::test_tools::predicate_result result(true);
@@ -139,15 +139,15 @@ check_arrays_are_close(const Fiber::Array4d<ValueType>& left,
 
 template <typename ValueType>
 boost::test_tools::predicate_result
-check_arrays_are_close(const Fiber::Array2d<arma::Mat<ValueType> >& leftArrays,
-                       const Fiber::Array2d<arma::Mat<ValueType> >& rightArrays,
+check_arrays_are_close(const Fiber::_2dArray<arma::Mat<ValueType> >& leftArrays,
+                       const Fiber::_2dArray<arma::Mat<ValueType> >& rightArrays,
                        typename Fiber::ScalarTraits<ValueType>::RealType tolerance)
 {
     boost::test_tools::predicate_result result(true);
     if (leftArrays.extent(0) != rightArrays.extent(0) ||
             leftArrays.extent(1) != rightArrays.extent(1)) {
         result = false;
-        result.message() << "Size mismatch of Fiber::Array2d [("
+        result.message() << "Size mismatch of Fiber::_2dArray [("
                          << leftArrays.extent(0) << ", "
                          << leftArrays.extent(1) << ") != ("
                          << rightArrays.extent(0) << ", "

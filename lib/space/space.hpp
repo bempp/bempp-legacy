@@ -22,6 +22,7 @@
 #define bempp_space_hpp
 
 #include "mass_matrix_container_initialiser.hpp"
+#include "mass_matrix_container.hpp"
 
 #include "../common/lazy.hpp"
 #include "../common/not_implemented_error.hpp"
@@ -38,7 +39,7 @@ namespace Fiber
 
 template <typename ValueType> class Basis;
 template <typename ValueType> class BasisData;
-template <typename CoordinateType> class Expression;
+template <typename CoordinateType> class CollectionOfBasisTransformations;
 template <typename CoordinateType> class GeometricalData;
 
 }
@@ -58,6 +59,8 @@ class Space
 public:
     typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
     typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType ComplexType;
+    typedef Fiber::CollectionOfBasisTransformations<CoordinateType>
+    CollectionOfBasisTransformations;
 
     // A grid reference is necessary because e.g. when setting the element
     // variant it is necessary to check whether the element is triangular
@@ -84,8 +87,10 @@ public:
     /** \brief Reference to the basis attached to the specified element. */
     virtual const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const = 0;
 
-    /** \brief Expression returning values of the shape functions of this space. */
-    virtual const Fiber::Expression<CoordinateType>& shapeFunctionValueExpression() const = 0;
+    /** \brief Basis-function transformation returning values of the shape
+     *  functions of this space. */
+    virtual const CollectionOfBasisTransformations&
+    shapeFunctionValue() const = 0;
 
     /** @}
         @name Element order management

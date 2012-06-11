@@ -37,13 +37,13 @@ StandardLocalAssemblerForGridFunctionsOnSurfaces(
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
         const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-        const shared_ptr<const Expression<CoordinateType> >& testExpression,
+        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
         const shared_ptr<const Function<UserFunctionType> >& function,
         const shared_ptr<const OpenClHandler>& openClHandler) :
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
     m_testBases(testBases),
-    m_testExpression(testExpression),
+    m_testTransformations(testTransformations),
     m_function(function),
     m_openClHandler(openClHandler)
 {
@@ -202,7 +202,7 @@ getIntegrator(const SingleQuadratureDescriptor& desc)
     Integrator* integrator(
                 new ConcreteIntegrator(points, weights,
                                        *m_geometryFactory, *m_rawGeometry,
-                                       *m_testExpression, *m_function,
+                                       *m_testTransformations, *m_function,
                                        *m_openClHandler));
 
     // Attempt to insert the newly created integrator into the map

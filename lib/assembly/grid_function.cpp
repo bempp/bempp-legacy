@@ -24,10 +24,11 @@
 #include "local_assembler_construction_helper.hpp"
 
 #include "../common/stl_io.hpp"
+#include "../fiber/collection_of_3d_arrays.hpp"
 #include "../fiber/basis.hpp"
 #include "../fiber/basis_data.hpp"
+#include "../fiber/collection_of_basis_transformations.hpp"
 #include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/expression.hpp"
 #include "../fiber/function.hpp"
 #include "../fiber/local_assembler_factory.hpp"
 #include "../fiber/local_assembler_for_grid_functions.hpp"
@@ -141,16 +142,16 @@ arma::Col<ResultType> calculateProjections(
                               rawGeometry, openClHandler);
     Helper::collectBases(space, testBases);
 
-    // Get reference to the test expression
-    const Fiber::Expression<CoordinateType>& testExpression =
-            space.shapeFunctionValueExpression();
+    // Get reference to the test basis transformation
+    const Fiber::CollectionOfBasisTransformations<CoordinateType>&
+            testTransformations = space.shapeFunctionValue();
 
     typedef Fiber::LocalAssemblerForGridFunctions<ResultType> LocalAssembler;
     std::auto_ptr<LocalAssembler> assembler =
             factory.makeAssemblerForGridFunctions(
                 geometryFactory, rawGeometry,
                 testBases,
-                make_shared_from_ref(testExpression),
+                make_shared_from_ref(testTransformations),
                 make_shared_from_ref(globalFunction),
                 openClHandler);
 
@@ -332,6 +333,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
     const int gridDim = grid.dim();
     const int elementCodim = 0;
     const int vertexCodim = grid.dim();
+    const int codomainDim = codomainDimension();
 
     std::auto_ptr<GridView> view = grid.leafView();
     const int elementCount = view->entityCount(elementCodim);
@@ -384,9 +386,10 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
     int basisDeps = 0, geomDeps = 0;
     // Find out which geometrical data need to be calculated, in addition
     // to those needed by the kernel
-    const Fiber::Expression<CoordinateType>& expression =
-            m_space.shapeFunctionValueExpression();
-    expression.addDependencies(basisDeps, geomDeps);
+    const Fiber::CollectionOfBasisTransformations<CoordinateType>& transformations =
+            m_space.shapeFunctionValue();
+    assert(codomainDim == transformations.resultDimension(0));
+    transformations.addDependencies(basisDeps, geomDeps);
 
     // Loop over unique combinations of basis and element corner count
     typedef typename BasisAndCornerCountSet::const_iterator
@@ -458,7 +461,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
                                               basisData.derivatives.extent(1),
                                               1, // just one function
                                               basisData.derivatives.extent(3));
-        arma::Cube<ResultType> functionValues;
+        Fiber::CollectionOf3dArrays<ResultType> functionValues;
 
         // Loop over elements and process those that use the active basis
         for (int e = 0; e < elementCount; ++e) {
@@ -496,17 +499,22 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
             rawGeometry.setupGeometry(e, *geometry);
             geometry->getData(geomDeps, local, geomData);
 
-            expression.evaluate(functionData, geomData, functionValues);
-            assert(functionValues.n_cols == 1);
+            transformations.evaluate(functionData, geomData, functionValues);
+            assert(functionValues[0].extent(1) == 1); // one function
 
             if (dataType == VtkWriter::CELL_DATA)
-                result.col(e) = functionValues.slice(0);
+                for (int dim = 0; dim < codomainDim; ++dim)
+                    result(dim, e) = functionValues[0](     // array index
+                                                       dim, // component
+                                                       0,   // function index
+                                                       0);  // point index
             else { // VERTEX_DATA
                 // Add the calculated values to the columns of the result array
                 // corresponding to the active element's vertices
                 for (int c = 0; c < activeCornerCount; ++c) {
                     int vertexIndex = rawGeometry.elementCornerIndices()(c, e);
-                    result.col(vertexIndex) += functionValues.slice(c);
+                    for (int dim = 0; dim < codomainDim; ++dim)
+                        result(dim, vertexIndex) += functionValues[0](dim, 0, c);
                     ++multiplicities[vertexIndex];
                 }
             }

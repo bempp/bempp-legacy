@@ -35,10 +35,13 @@ class ParallelisationOptions;
 class OpenClHandler;
 
 template <typename ValueType> class Basis;
-template <typename CoordinateType> class Expression;
-template <typename ResultType> class ExpressionList;
+template <typename CoordinateType> class CollectionOfBasisTransformations;
 template <typename ValueType> class Function;
-template <typename ValueType> class Kernel;
+template <typename ValueType> class CollectionOfKernels;
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+class TestKernelTrialIntegral;
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+class KernelTrialIntegral;
 template <typename CoordinateType> class RawGridGeometry;
 
 template <typename ResultType> class LocalAssemblerForOperators;
@@ -64,9 +67,10 @@ public:
             const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const ExpressionList<ResultType> >& testExpressionList,
-            const shared_ptr<const Kernel<CoordinateType> >& kernel,
-            const shared_ptr<const ExpressionList<ResultType> >& trialExpressionList,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+            const shared_ptr<const CollectionOfKernels<CoordinateType> >& kernels,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+            const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const {
@@ -74,7 +78,8 @@ public:
                     testGeometryFactory, trialGeometryFactory,
                     testRawGeometry, trialRawGeometry,
                     testBases, trialBases,
-                    testExpressionList, kernel, trialExpressionList, openClHandler,
+                    testTransformations, kernels, trialTransformations, integral,
+                    openClHandler,
                     parallelisationOptions, cacheSingularIntegrals);
     }
 
@@ -85,8 +90,8 @@ public:
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const Expression<CoordinateType> >& testExpression,
-            const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
             const shared_ptr<const OpenClHandler>& openClHandler) const = 0;
 
     /** \brief Allocate a local assembler for calculations of the projections
@@ -96,12 +101,12 @@ public:
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-            const shared_ptr<const Expression<CoordinateType> >& testExpression,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
             const shared_ptr<const Function<ResultType> >& function,
             const shared_ptr<const OpenClHandler>& openClHandler) const {
         return this->makeAssemblerForGridFunctionsImplRealUserFunction(
                     geometryFactory, rawGeometry, testBases,
-                    testExpression, function, openClHandler);
+                    testTransformations, function, openClHandler);
     }
 
     /** \brief Allocate an evaluator for an integral operator with real kernel
@@ -111,13 +116,14 @@ public:
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const Kernel<CoordinateType> >& kernel,
-            const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+            const shared_ptr<const CollectionOfKernels<CoordinateType> >& kernels,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+            const shared_ptr<const KernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
             const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
             const shared_ptr<const OpenClHandler>& openClHandler) const {
         return this->makeEvaluatorForIntegralOperatorsImplRealKernel(
                     geometryFactory, rawGeometry, trialBases,
-                    kernel, trialExpression, argumentLocalCoefficients,
+                    kernels, trialTransformations, integral, argumentLocalCoefficients,
                     openClHandler);
     }
 
@@ -130,9 +136,10 @@ private:
             const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const ExpressionList<ResultType> >& testExpressionList,
-            const shared_ptr<const Kernel<CoordinateType> >& kernel,
-            const shared_ptr<const ExpressionList<ResultType> >& trialExpressionList,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+            const shared_ptr<const CollectionOfKernels<CoordinateType> >& kernel,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+            const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const = 0;
@@ -142,7 +149,7 @@ private:
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-            const shared_ptr<const Expression<CoordinateType> >& testExpression,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
             const shared_ptr<const Function<CoordinateType> >& function,
             const shared_ptr<const OpenClHandler>& openClHandler) const = 0;
 
@@ -151,8 +158,9 @@ private:
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const Kernel<CoordinateType> >& kernel,
-            const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+            const shared_ptr<const CollectionOfKernels<CoordinateType> >& kernel,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+            const shared_ptr<const KernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
             const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
             const shared_ptr<const OpenClHandler>& openClHandler) const = 0;
 };
@@ -181,9 +189,10 @@ public:
             const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const ExpressionList<ResultType> >& testExpressionList,
-            const shared_ptr<const Kernel<ResultType> >& kernel,
-            const shared_ptr<const ExpressionList<ResultType> >& trialExpressionList,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+            const shared_ptr<const CollectionOfKernels<ResultType> >& kernels,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+            const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const {
@@ -191,7 +200,8 @@ public:
                     testGeometryFactory, trialGeometryFactory,
                     testRawGeometry, trialRawGeometry,
                     testBases, trialBases,
-                    testExpressionList, kernel, trialExpressionList, openClHandler,
+                    testTransformations, kernels, trialTransformations, integral,
+                    openClHandler,
                     parallelisationOptions, cacheSingularIntegrals);
     }
 
@@ -202,12 +212,12 @@ public:
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-            const shared_ptr<const Expression<CoordinateType> >& testExpression,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
             const shared_ptr<const Function<ResultType> >& function,
             const shared_ptr<const OpenClHandler>& openClHandler) const {
         return this->makeAssemblerForGridFunctionsImplComplexUserFunction(
                     geometryFactory, rawGeometry, testBases,
-                    testExpression, function, openClHandler);
+                    testTransformations, function, openClHandler);
     }
 
     /** \brief Allocate an evaluator for an integral operator with
@@ -217,13 +227,14 @@ public:
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const Kernel<ResultType> >& kernel,
-            const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+            const shared_ptr<const CollectionOfKernels<ResultType> >& kernel,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+            const shared_ptr<const KernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
             const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
             const shared_ptr<const OpenClHandler>& openClHandler) const {
         return this->makeEvaluatorForIntegralOperatorsImplComplexKernel(
                     geometryFactory, rawGeometry, trialBases,
-                    kernel, trialExpression, argumentLocalCoefficients,
+                    kernel, trialTransformations, integral, argumentLocalCoefficients,
                     openClHandler);
     }
 
@@ -236,9 +247,10 @@ private:
             const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const ExpressionList<ResultType> >& testExpressionList,
-            const shared_ptr<const Kernel<ResultType> >& kernel,
-            const shared_ptr<const ExpressionList<ResultType> >& trialExpressionList,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+            const shared_ptr<const CollectionOfKernels<ResultType> >& kernels,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+            const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const = 0;
@@ -248,7 +260,7 @@ private:
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-            const shared_ptr<const Expression<CoordinateType> >& testExpression,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
             const shared_ptr<const Function<ResultType> >& function,
             const shared_ptr<const OpenClHandler>& openClHandler) const = 0;
 
@@ -257,8 +269,9 @@ private:
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const Kernel<ResultType> >& kernel,
-            const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+            const shared_ptr<const CollectionOfKernels<ResultType> >& kernels,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+            const shared_ptr<const KernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
             const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
             const shared_ptr<const OpenClHandler>& openClHandler) const = 0;
 };

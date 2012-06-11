@@ -23,7 +23,8 @@
 #define bempp_identity_operator_hpp
 
 #include "elementary_linear_operator.hpp"
-#include "../fiber/scalar_function_value.hpp"
+
+#include <boost/scoped_ptr.hpp>
 
 namespace Fiber
 {
@@ -46,6 +47,8 @@ public:
 
     IdentityOperator(const Space<BasisFunctionType>& testSpace,
                      const Space<BasisFunctionType>& trialSpace);
+    IdentityOperator(const IdentityOperator& other);
+    virtual ~IdentityOperator() ;
 
     virtual int trialComponentCount() const { return 1; }
 
@@ -91,7 +94,8 @@ private:
             Symmetry symmetry) const;
 
 private:
-    Fiber::ScalarFunctionValue<CoordinateType> m_expression;
+    struct Impl;
+    boost::scoped_ptr<Impl> m_impl;
 };
 
 } // namespace Bempp

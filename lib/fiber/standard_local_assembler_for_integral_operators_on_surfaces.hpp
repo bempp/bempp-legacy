@@ -24,7 +24,7 @@
 #include "local_assembler_for_operators.hpp"
 
 #include "accuracy_options.hpp"
-#include "array_2d.hpp"
+#include "_2d_array.hpp"
 #include "element_pair_topology.hpp"
 #include "numerical_quadrature.hpp"
 #include "parallelisation_options.hpp"
@@ -43,8 +43,10 @@ namespace Fiber
 {
 
 class OpenClHandler;
-template <typename ResultType> class ExpressionList;
-template <typename ValueType> class Kernel;
+template <typename CoordinateType> class CollectionOfBasisTransformations;
+template <typename ValueType> class CollectionOfKernels;
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+class TestKernelTrialIntegral;
 template <typename CoordinateType> class RawGridGeometry;
 
 template <typename BasisFunctionType, typename KernelType,
@@ -62,9 +64,10 @@ public:
             const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const ExpressionList<ResultType> >& testExpressionList,
-            const shared_ptr<const Kernel<KernelType> >& kernel,
-            const shared_ptr<const ExpressionList<ResultType> >& trialExpressionList,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+            const shared_ptr<const CollectionOfKernels<KernelType> >& kernel,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+            const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> >& integral,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals,
@@ -82,7 +85,7 @@ public:
     virtual void evaluateLocalWeakForms(
             const std::vector<int>& testElementIndices,
             const std::vector<int>& trialElementIndices,
-            Fiber::Array2d<arma::Mat<ResultType> >& result);
+            Fiber::_2dArray<arma::Mat<ResultType> >& result);
 
     virtual void evaluateLocalWeakForms(
             const std::vector<int>& elementIndices,
@@ -127,9 +130,10 @@ private:
     shared_ptr<const RawGridGeometry<CoordinateType> > m_trialRawGeometry;
     shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_testBases;
     shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_trialBases;
-    shared_ptr<const ExpressionList<ResultType> > m_testExpressionList;
-    shared_ptr<const Kernel<KernelType> > m_kernel;
-    shared_ptr<const ExpressionList<ResultType> > m_trialExpressionList;
+    shared_ptr<const CollectionOfBasisTransformations<CoordinateType> > m_testTransformations;
+    shared_ptr<const CollectionOfKernels<KernelType> > m_kernels;
+    shared_ptr<const CollectionOfBasisTransformations<CoordinateType> > m_trialTransformations;
+    shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> > m_integral;
     shared_ptr<const OpenClHandler> m_openClHandler;
     ParallelisationOptions m_parallelisationOptions;
     AccuracyOptions m_accuracyOptions;

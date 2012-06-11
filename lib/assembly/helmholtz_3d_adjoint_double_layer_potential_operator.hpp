@@ -21,17 +21,18 @@
 #ifndef bempp_helmholtz_3d_adjoint_double_layer_potential_operator_hpp
 #define bempp_helmholtz_3d_adjoint_double_layer_potential_operator_hpp
 
-#include "elementary_singular_integral_operator.hpp"
-#include "../common/scalar_traits.hpp"
-#include "../fiber/expression_list.hpp"
-#include "../fiber/modified_helmholtz_3d_adjoint_double_layer_potential_kernel.hpp"
-#include "../fiber/scalar_function_value.hpp"
+#include "helmholtz_3d_operator_base.hpp"
+
+#include <boost/scoped_ptr.hpp>
 
 namespace Bempp
 {
 
+template <typename BasisFunctionType>
+struct Helmholtz3dAdjointDoubleLayerPotentialOperatorImpl;
+
 /** \ingroup helmholtz_3d
- *  \brief Single-layer-potential operator for the Helmholtz equation in 3D.
+ *  \brief Adjoint double-layer-potential operator for the Helmholtz equation in 3D.
  *
  *  \tparam BasisFunctionType
  *    Type used to represent the values of basis functions. It can take the
@@ -39,22 +40,24 @@ namespace Bempp
  *    <tt>std::complex<double></tt>.
  *
  *  \see helmholtz_3d */
-template <typename BasisFunctionType>
+template <typename BasisFunctionType_>
 class Helmholtz3dAdjointDoubleLayerPotentialOperator :
-        public ElementarySingularIntegralOperator<
-        BasisFunctionType,
-        typename ScalarTraits<BasisFunctionType>::ComplexType,
-        typename ScalarTraits<BasisFunctionType>::ComplexType>
+        public Helmholtz3dOperatorBase<
+                Helmholtz3dAdjointDoubleLayerPotentialOperatorImpl<BasisFunctionType_>,
+                BasisFunctionType_>
 {
+    typedef Helmholtz3dOperatorBase<
+    Helmholtz3dAdjointDoubleLayerPotentialOperatorImpl<BasisFunctionType_>,
+    BasisFunctionType_> Base;
 public:
-    // TODO: move these typedefs to ElementaryIntegralOperator and import them from there.
-    typedef typename ScalarTraits<BasisFunctionType>::ComplexType KernelType;
-    typedef KernelType ResultType;
-private:
-    typedef ElementarySingularIntegralOperator<
-    BasisFunctionType, KernelType, ResultType> Base;
-public:
+    typedef typename Base::BasisFunctionType BasisFunctionType;
+    typedef typename Base::KernelType KernelType;
+    typedef typename Base::ResultType ResultType;
     typedef typename Base::CoordinateType CoordinateType;
+    typedef typename Base::CollectionOfBasisTransformations
+    CollectionOfBasisTransformations;
+    typedef typename Base::CollectionOfKernels CollectionOfKernels;
+    typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
     /** \brief Construct the operator.
      *
@@ -63,27 +66,12 @@ public:
      * \param waveNumber Wave number.
      *
      * See \ref helmholtz_3d for the definition of the wave number. */
-    Helmholtz3dAdjointDoubleLayerPotentialOperator(const Space<BasisFunctionType>& testSpace,
-                                           const Space<BasisFunctionType>& trialSpace,
-                                           KernelType waveNumber);
-
-private:
-    virtual const Fiber::Kernel<KernelType>& kernel() const {
-        return m_kernel;
-    }
-
-    virtual const Fiber::ExpressionList<ResultType>& testExpressionList() const {
-        return m_expressionList;
-    }
-
-    virtual const Fiber::ExpressionList<ResultType>& trialExpressionList() const {
-        return m_expressionList;
-    }
-
-private:
-    Fiber::ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernel<KernelType> m_kernel;
-    Fiber::ScalarFunctionValue<CoordinateType> m_expression;
-    Fiber::ExpressionList<ResultType> m_expressionList;
+    Helmholtz3dAdjointDoubleLayerPotentialOperator(
+            const Space<BasisFunctionType>& testSpace,
+            const Space<BasisFunctionType>& trialSpace,
+            KernelType waveNumber) :
+        Base(testSpace, trialSpace, waveNumber)
+    {}
 };
 
 } // namespace Bempp

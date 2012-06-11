@@ -27,7 +27,7 @@ namespace Fiber
 {
 
 class OpenClHandler;
-template <typename CoordinateType> class Expression;
+template <typename CoordinateType> class CollectionOfBasisTransformations;
 template <typename CoordinateType> class RawGridGeometry;
 
 /** \brief Integration over pairs of elements on tensor-product point grids. */
@@ -44,8 +44,8 @@ public:
             const std::vector<CoordinateType> quadWeights,
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const Expression<CoordinateType>& testExpression,
-            const Expression<CoordinateType>& trialExpression,
+            const CollectionOfBasisTransformations<CoordinateType>& testTransformations,
+            const CollectionOfBasisTransformations<CoordinateType>& trialTransformations,
             const OpenClHandler& openClHandler);
 
     virtual void integrate(
@@ -60,8 +60,8 @@ private:
 
     const GeometryFactory& m_geometryFactory;
     const RawGridGeometry<CoordinateType>& m_rawGeometry;
-    const Expression<CoordinateType>& m_testExpression;
-    const Expression<CoordinateType>& m_trialExpression;
+    const CollectionOfBasisTransformations<CoordinateType>& m_testTransformations;
+    const CollectionOfBasisTransformations<CoordinateType>& m_trialTransformations;
 
     const OpenClHandler& m_openClHandler;
 };

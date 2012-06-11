@@ -21,14 +21,15 @@
 #ifndef bempp_laplace_3d_double_layer_potential_operator_hpp
 #define bempp_laplace_3d_double_layer_potential_operator_hpp
 
-#include "elementary_singular_integral_operator.hpp"
-#include "../fiber/expression_list.hpp"
-#include "../fiber/laplace_3d_double_layer_potential_kernel.hpp"
-#include "../fiber/scalar_function_value.hpp"
-#include "../common/scalar_traits.hpp"
+#include "laplace_3d_operator_base.hpp"
+
+#include <boost/scoped_ptr.hpp>
 
 namespace Bempp
 {
+
+template <typename BasisFunctionType, typename ResultType>
+struct Laplace3dDoubleLayerPotentialOperatorImpl;
 
 /** \ingroup laplace_3d
  *  \brief Double-layer-potential operator for the Laplace equation in 3D.
@@ -47,39 +48,33 @@ namespace Bempp
  *  the operator's weak form to be stored as complex numbers.
  *
  *  \see laplace_3d */
-template <typename BasisFunctionType, typename ResultType = BasisFunctionType>
+template <typename BasisFunctionType_, typename ResultType_ = BasisFunctionType_>
 class Laplace3dDoubleLayerPotentialOperator :
-        public ElementarySingularIntegralOperator<
-        BasisFunctionType,
-        typename ScalarTraits<ResultType>::RealType,
-        ResultType>
+        public Laplace3dOperatorBase<
+        Laplace3dDoubleLayerPotentialOperatorImpl<BasisFunctionType_, ResultType_>,
+        BasisFunctionType_,
+        ResultType_>
 {
-    typedef typename ScalarTraits<ResultType>::RealType KernelType;
-    typedef ElementarySingularIntegralOperator<
-    BasisFunctionType, KernelType, ResultType> Base;
+    typedef Laplace3dOperatorBase<
+    Laplace3dDoubleLayerPotentialOperatorImpl<BasisFunctionType_, ResultType_>,
+    BasisFunctionType_,
+    ResultType_>
+    Base;
 public:
+    typedef typename Base::BasisFunctionType BasisFunctionType;
+    typedef typename Base::KernelType KernelType;
+    typedef typename Base::ResultType ResultType;
     typedef typename Base::CoordinateType CoordinateType;
+    typedef typename Base::CollectionOfBasisTransformations
+    CollectionOfBasisTransformations;
+    typedef typename Base::CollectionOfKernels CollectionOfKernels;
+    typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
-    Laplace3dDoubleLayerPotentialOperator(const Space<BasisFunctionType>& testSpace,
-                                  const Space<BasisFunctionType>& trialSpace);
-
-private:
-    virtual const Fiber::Kernel<KernelType>& kernel() const {
-        return m_kernel;
-    }
-
-    virtual const Fiber::ExpressionList<ResultType>& testExpressionList() const {
-        return m_expressionList;
-    }
-
-    virtual const Fiber::ExpressionList<ResultType>& trialExpressionList() const {
-        return m_expressionList;
-    }
-
-private:
-    Fiber::Laplace3dDoubleLayerPotentialKernel<KernelType> m_kernel;
-    Fiber::ScalarFunctionValue<CoordinateType> m_expression;
-    Fiber::ExpressionList<ResultType> m_expressionList;
+    Laplace3dDoubleLayerPotentialOperator(
+            const Space<BasisFunctionType>& testSpace,
+            const Space<BasisFunctionType>& trialSpace) :
+        Base(testSpace, trialSpace)
+    {}
 };
 
 } // namespace Bempp

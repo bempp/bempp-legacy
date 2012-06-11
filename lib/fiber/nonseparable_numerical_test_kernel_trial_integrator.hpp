@@ -27,9 +27,11 @@ namespace Fiber
 {
 
 class OpenClHandler;
-template <typename ResultType> class ExpressionList;
-template <typename ValueType> class Kernel;
+template <typename CoordinateType> class CollectionOfBasisTransformations;
+template <typename ValueType> class CollectionOfKernels;
 template <typename CoordinateType> class RawGridGeometry;
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+class TestKernelTrialIntegral;
 
 /** \brief Integration over pairs of elements on non-tensor-product point grids. */
 template <typename BasisFunctionType, typename KernelType,
@@ -50,9 +52,10 @@ public:
             const GeometryFactory& trialGgeometryFactory,
             const RawGridGeometry<CoordinateType>& testRawGeometry,
             const RawGridGeometry<CoordinateType>& trialRawGeometry,
-            const ExpressionList<ResultType>& testExpressionList,
-            const Kernel<KernelType>& kernel,
-            const ExpressionList<ResultType>& trialExpressionList,
+            const CollectionOfBasisTransformations<CoordinateType>& testTransformations,
+            const CollectionOfKernels<KernelType>& kernel,
+            const CollectionOfBasisTransformations<CoordinateType>& trialTransformations,
+            const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& integral,
             const OpenClHandler& openClHandler);
 
     virtual void integrate(
@@ -80,12 +83,12 @@ private:
     const RawGridGeometry<CoordinateType>& m_testRawGeometry;
     const RawGridGeometry<CoordinateType>& m_trialRawGeometry;
 
-    const ExpressionList<ResultType>& m_testExpressionList;
-    const Kernel<KernelType>& m_kernel;
-    const ExpressionList<ResultType>& m_trialExpressionList;
-    const OpenClHandler& m_openClHandler;
+    const CollectionOfBasisTransformations<CoordinateType>& m_testTransformations;
+    const CollectionOfKernels<KernelType>& m_kernels;
+    const CollectionOfBasisTransformations<CoordinateType>& m_trialTransformations;
+    const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& m_integral;
 
-    std::vector<ResultType> m_expressionWeights;
+    const OpenClHandler& m_openClHandler;
 };
 
 } // namespace Fiber

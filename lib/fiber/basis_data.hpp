@@ -33,6 +33,8 @@ enum BasisDataType
     DERIVATIVES = 0x0002
 };
 
+template <typename ValueType> class ConstBasisDataSlice;
+
 template <typename ValueType>
 struct BasisData
 {
@@ -41,7 +43,48 @@ struct BasisData
     arma::Cube<ValueType> values;
     // derivatives(i,j,k,l) = (d_j (f_k)_i)(x_l) ->
     // derivative in direction j of ith component of kth basis function at lth point
-    Array4d<ValueType> derivatives;
+    _4dArray<ValueType> derivatives;
+
+    int componentCount() const {
+        return std::max<int>(values.n_rows, derivatives.extent(0));
+    }
+
+    int functionCount() const {
+        return std::max<int>(values.n_cols, derivatives.extent(2));
+    }
+
+    int pointCount() const {
+        return std::max<int>(values.n_slices, derivatives.extent(3));
+    }
+
+    ConstBasisDataSlice<ValueType> const_slice(int function, int point) const {
+        return ConstBasisDataSlice<ValueType>(*this, function, point);
+    }
+};
+
+template <typename ValueType>
+class ConstBasisDataSlice
+{
+public:
+    ConstBasisDataSlice(const BasisData<ValueType>& basisData,
+                        int function, int point) :
+        m_basisData(basisData), m_function(function), m_point(point) {}
+
+    ValueType values(int dim) const {
+        return m_basisData.values(dim, m_function, m_point);
+    }
+
+    ValueType derivatives(int dim, int direction) const {
+        return m_basisData.derivatives(dim, direction, m_function, m_point);
+    }
+
+    int componentCount() const {
+        return m_basisData.componentCount();
+    }
+
+private:
+    const BasisData<ValueType>& m_basisData;
+    int m_function, m_point;
 };
 
 } // namespace Fiber

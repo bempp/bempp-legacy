@@ -35,6 +35,8 @@
 #include "../fiber/local_assembler_for_operators.hpp"
 #include "../fiber/opencl_handler.hpp"
 #include "../fiber/raw_grid_geometry.hpp"
+#include "../fiber/scalar_function_value_functor.hpp"
+#include "../fiber/standard_collection_of_basis_transformations.hpp"
 #include "../grid/entity_iterator.hpp"
 #include "../grid/geometry_factory.hpp"
 #include "../grid/grid.hpp"
@@ -140,11 +142,37 @@ inline int epetraSumIntoGlobalValues<std::complex<double> >(
 #endif
 
 template <typename BasisFunctionType, typename ResultType>
+struct IdentityOperator<BasisFunctionType, ResultType>::Impl
+{
+    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
+    TransformationFunctor;
+
+    Impl() : transformations(TransformationFunctor())
+    {}
+
+    Fiber::StandardCollectionOfBasisTransformations<TransformationFunctor>
+    transformations;
+};
+
+template <typename BasisFunctionType, typename ResultType>
 IdentityOperator<BasisFunctionType, ResultType>::IdentityOperator(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace) :
     ElementaryLinearOperator<BasisFunctionType, ResultType>(
-        testSpace, trialSpace)
+        testSpace, trialSpace),
+    m_impl(new Impl)
+{
+}
+
+template <typename BasisFunctionType, typename ResultType>
+IdentityOperator<BasisFunctionType, ResultType>::IdentityOperator(
+        const IdentityOperator& other) :
+    Base(other), m_impl(new Impl(*other.m_impl))
+{
+}
+
+template <typename BasisFunctionType, typename ResultType>
+IdentityOperator<BasisFunctionType, ResultType>::~IdentityOperator()
 {
 }
 
@@ -361,8 +389,8 @@ IdentityOperator<BasisFunctionType, ResultType>::makeAssemblerImpl(
         const ParallelisationOptions&,
         bool /* cacheSingularIntegrals */) const
 {
-    shared_ptr<const Fiber::Expression<CoordinateType> > expression =
-            make_shared_from_ref(m_expression);
+    shared_ptr<const Fiber::CollectionOfBasisTransformations<CoordinateType> >
+            transformations = make_shared_from_ref(m_impl->transformations);
 
     if (testGeometryFactory.get() != trialGeometryFactory.get() ||
             testRawGeometry.get() != trialRawGeometry.get())
@@ -372,7 +400,7 @@ IdentityOperator<BasisFunctionType, ResultType>::makeAssemblerImpl(
     return assemblerFactory.makeAssemblerForIdentityOperators(
                 testGeometryFactory, testRawGeometry,
                 testBases, trialBases,
-                expression, expression,
+                transformations, transformations,
                 openClHandler);
 }
 

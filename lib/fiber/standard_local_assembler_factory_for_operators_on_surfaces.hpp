@@ -63,8 +63,8 @@ public:
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const Expression<CoordinateType> >& testExpression,
-            const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
             const shared_ptr<const OpenClHandler>& openClHandler) const {
         typedef StandardLocalAssemblerForIdentityOperatorOnSurface<
                 BasisFunctionType, ResultType, GeometryFactory>
@@ -73,7 +73,7 @@ public:
                     new LocalAssemblerForIdentityOperator_(
                         geometryFactory, rawGeometry,
                         testBases, trialBases,
-                        testExpression, trialExpression,
+                        testTransformations, trialTransformations,
                         openClHandler));
     }
 
@@ -86,9 +86,10 @@ private:
             const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const ExpressionList<ResultType> >& testExpressionList,
-            const shared_ptr<const Kernel<CoordinateType> >& kernel,
-            const shared_ptr<const ExpressionList<ResultType> >& trialExpressionList,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+            const shared_ptr<const CollectionOfKernels<CoordinateType> >& kernels,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+            const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const {
@@ -101,7 +102,8 @@ private:
                         testGeometryFactory, trialGeometryFactory,
                         testRawGeometry, trialRawGeometry,
                         testBases, trialBases,
-                        testExpressionList, kernel, trialExpressionList,
+                        testTransformations, kernels, trialTransformations,
+                        integral,
                         openClHandler, parallelisationOptions,
                         cacheSingularIntegrals,
                         this->accuracyOptions()));
@@ -112,7 +114,7 @@ private:
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-            const shared_ptr<const Expression<CoordinateType> >& testExpression,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
             const shared_ptr<const Function<CoordinateType> >& function,
             const shared_ptr<const OpenClHandler>& openClHandler) const {
         typedef CoordinateType UserFunctionType;
@@ -123,7 +125,7 @@ private:
                     new LocalAssemblerForGridFunctions_(
                         geometryFactory, rawGeometry,
                         testBases,
-                        testExpression, function,
+                        testTransformations, function,
                         openClHandler));
     }
 
@@ -132,8 +134,9 @@ private:
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const Kernel<CoordinateType> >& kernel,
-            const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+            const shared_ptr<const CollectionOfKernels<CoordinateType> >& kernels,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+            const shared_ptr<const KernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
             const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
             const shared_ptr<const OpenClHandler>& openClHandler) const {
         typedef CoordinateType KernelType;
@@ -144,7 +147,8 @@ private:
                     new EvaluatorForIntegralOperators_(
                         geometryFactory, rawGeometry,
                         trialBases,
-                        kernel, trialExpression, argumentLocalCoefficients,
+                        kernels, trialTransformations, integral,
+                        argumentLocalCoefficients,
                         openClHandler,
                         this->accuracyOptions().singleRegular));
     }
@@ -189,9 +193,10 @@ private:
             const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const ExpressionList<ResultType> >& testExpressionList,
-            const shared_ptr<const Kernel<ResultType> >& kernel,
-            const shared_ptr<const ExpressionList<ResultType> >& trialExpressionList,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+            const shared_ptr<const CollectionOfKernels<ResultType> >& kernels,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+            const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const {
@@ -204,7 +209,8 @@ private:
                         testGeometryFactory, trialGeometryFactory,
                         testRawGeometry, trialRawGeometry,
                         testBases, trialBases,
-                        testExpressionList, kernel, trialExpressionList,
+                        testTransformations, kernels, trialTransformations,
+                        integral,
                         openClHandler, parallelisationOptions,
                         cacheSingularIntegrals,
                         this->accuracyOptions()));
@@ -215,7 +221,7 @@ private:
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-            const shared_ptr<const Expression<CoordinateType> >& testExpression,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
             const shared_ptr<const Function<ResultType> >& function,
             const shared_ptr<const OpenClHandler>& openClHandler) const {
         typedef ResultType UserFunctionType;
@@ -226,7 +232,7 @@ private:
                     new LocalAssemblerForGridFunctions_(
                         geometryFactory, rawGeometry,
                         testBases,
-                        testExpression, function,
+                        testTransformations, function,
                         openClHandler));
     }
 
@@ -235,8 +241,9 @@ private:
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const Kernel<ResultType> >& kernel,
-            const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+            const shared_ptr<const CollectionOfKernels<ResultType> >& kernels,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+            const shared_ptr<const KernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
             const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
             const shared_ptr<const OpenClHandler>& openClHandler) const {
         typedef ResultType KernelType;
@@ -247,7 +254,8 @@ private:
                     new EvaluatorForIntegralOperators_(
                         geometryFactory, rawGeometry,
                         trialBases,
-                        kernel, trialExpression, argumentLocalCoefficients,
+                        kernels, trialTransformations, integral,
+                        argumentLocalCoefficients,
                         openClHandler,
                         this->accuracyOptions().singleRegular));
     }

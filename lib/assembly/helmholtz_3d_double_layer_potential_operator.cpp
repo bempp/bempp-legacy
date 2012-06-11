@@ -19,21 +19,48 @@
 // THE SOFTWARE.
 
 #include "helmholtz_3d_double_layer_potential_operator.hpp"
+#include "helmholtz_3d_operator_base_imp.hpp"
+
 #include "../fiber/explicit_instantiation.hpp"
+
+#include "../fiber/modified_helmholtz_3d_double_layer_potential_kernel_functor.hpp"
+#include "../fiber/scalar_function_value_functor.hpp"
+#include "../fiber/simple_test_scalar_kernel_trial_integrand_functor.hpp"
+
+#include "../fiber/standard_collection_of_kernels.hpp"
+#include "../fiber/standard_collection_of_basis_transformations.hpp"
+#include "../fiber/standard_test_kernel_trial_integral.hpp"
 
 namespace Bempp
 {
 
 template <typename BasisFunctionType>
-Helmholtz3dDoubleLayerPotentialOperator<BasisFunctionType>::
-Helmholtz3dDoubleLayerPotentialOperator(
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace,
-        KernelType waveNumber) :
-    Base(testSpace, trialSpace), m_kernel(waveNumber / KernelType(0., 1.))
+struct Helmholtz3dDoubleLayerPotentialOperatorImpl
 {
-    m_expressionList.addTerm(m_expression);
-}
+    typedef Helmholtz3dDoubleLayerPotentialOperatorImpl<BasisFunctionType> This;
+    typedef Helmholtz3dOperatorBase<This, BasisFunctionType> OperatorBase;
+    typedef typename OperatorBase::CoordinateType CoordinateType;
+    typedef typename OperatorBase::KernelType KernelType;
+    typedef typename OperatorBase::ResultType ResultType;
+
+    typedef Fiber::ModifiedHelmholtz3dDoubleLayerPotentialKernelFunctor<KernelType>
+    KernelFunctor;
+    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
+    TransformationFunctor;
+    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
+    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+
+    explicit Helmholtz3dDoubleLayerPotentialOperatorImpl(KernelType waveNumber) :
+        kernels(KernelFunctor(waveNumber / KernelType(0., 1.))),
+        transformations(TransformationFunctor()),
+        integral(IntegrandFunctor())
+    {}
+
+    Fiber::StandardCollectionOfKernels<KernelFunctor> kernels;
+    Fiber::StandardCollectionOfBasisTransformations<TransformationFunctor>
+    transformations;
+    Fiber::StandardTestKernelTrialIntegral<IntegrandFunctor> integral;
+};
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dDoubleLayerPotentialOperator);
 

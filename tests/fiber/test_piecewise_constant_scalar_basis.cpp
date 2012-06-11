@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <armadillo>
 #include <boost/test/unit_test.hpp>
+#include <boost/test/test_case_template.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/version.hpp>
 
@@ -100,7 +101,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_all_dofs,
     Fiber::BasisData<ValueType> data;
     basis.evaluate(Fiber::DERIVATIVES, points, Fiber::ALL_DOFS, data);
 
-    Fiber::Array4d<ValueType> expected(1,  // 1 component
+    Fiber::_4dArray<ValueType> expected(1,  // 1 component
                                        points.n_rows,
                                        1,  // 1 basis functions
                                        points.n_cols);
@@ -126,7 +127,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_one_dof,
     Fiber::BasisData<ValueType> data;
     basis.evaluate(Fiber::DERIVATIVES, points, 0 /* dof number */, data);
 
-    Fiber::Array4d<ValueType> expected(1,  // 1 component
+    Fiber::_4dArray<ValueType> expected(1,  // 1 component
                                        points.n_rows,
                                        1,  // 1 basis functions
                                        points.n_cols);
@@ -165,7 +166,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_and_derivatives_works_for_all_dofs
     }
 
     {
-        Fiber::Array4d<ValueType> expected(1,  // 1 component
+        Fiber::_4dArray<ValueType> expected(1,  // 1 component
                                            points.n_rows,
                                            1,  // 1 basis functions
                                            points.n_cols);

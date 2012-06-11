@@ -19,21 +19,49 @@
 // THE SOFTWARE.
 
 #include "laplace_3d_single_layer_potential_operator.hpp"
+#include "laplace_3d_operator_base_imp.hpp"
+
 #include "../fiber/explicit_instantiation.hpp"
+
+#include "../fiber/laplace_3d_single_layer_potential_kernel_functor.hpp"
+#include "../fiber/scalar_function_value_functor.hpp"
+#include "../fiber/simple_test_scalar_kernel_trial_integrand_functor.hpp"
+
+#include "../fiber/standard_collection_of_kernels.hpp"
+#include "../fiber/standard_collection_of_basis_transformations.hpp"
+#include "../fiber/standard_test_kernel_trial_integral.hpp"
 
 namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType>
-Laplace3dSingleLayerPotentialOperator<BasisFunctionType, ResultType>::Laplace3dSingleLayerPotentialOperator(
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace) :
-    Base(testSpace, trialSpace)
+struct Laplace3dSingleLayerPotentialOperatorImpl
 {
-    m_expressionList.addTerm(m_expression);
-}
+    typedef Laplace3dSingleLayerPotentialOperatorImpl<BasisFunctionType, ResultType>
+    This;
+    typedef Laplace3dOperatorBase<This, BasisFunctionType, ResultType> OperatorBase;
+    typedef typename OperatorBase::KernelType KernelType;
+    typedef typename OperatorBase::CoordinateType CoordinateType;
+
+    typedef Fiber::Laplace3dSingleLayerPotentialKernelFunctor<KernelType>
+    KernelFunctor;
+    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
+    TransformationFunctor;
+    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
+    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+
+    Laplace3dSingleLayerPotentialOperatorImpl() :
+        kernels(KernelFunctor()),
+        transformations(TransformationFunctor()),
+        integral(IntegrandFunctor())
+    {}
+
+    Fiber::StandardCollectionOfKernels<KernelFunctor> kernels;
+    Fiber::StandardCollectionOfBasisTransformations<TransformationFunctor>
+    transformations;
+    Fiber::StandardTestKernelTrialIntegral<IntegrandFunctor> integral;
+};
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dSingleLayerPotentialOperator);
-
 
 } // namespace Bempp

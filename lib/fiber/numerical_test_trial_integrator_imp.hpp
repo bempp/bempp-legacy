@@ -23,7 +23,7 @@
 #include "basis.hpp"
 #include "basis_data.hpp"
 #include "conjugate.hpp"
-#include "expression.hpp"
+#include "collection_of_basis_transformations.hpp"
 #include "geometrical_data.hpp"
 #include "opencl_handler.hpp"
 #include "raw_grid_geometry.hpp"
@@ -42,21 +42,32 @@ NumericalTestTrialIntegrator(
         const std::vector<CoordinateType> quadWeights,
         const GeometryFactory& geometryFactory,
         const RawGridGeometry<CoordinateType>& rawGeometry,
-        const Expression<CoordinateType>& testExpression,
-        const Expression<CoordinateType>& trialExpression,
+        const CollectionOfBasisTransformations<CoordinateType>& testTransformations,
+        const CollectionOfBasisTransformations<CoordinateType>& trialTransformations,
         const OpenClHandler& openClHandler) :
     m_localQuadPoints(localQuadPoints),
     m_quadWeights(quadWeights),
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
-    m_testExpression(testExpression),
-    m_trialExpression(trialExpression),
+    m_testTransformations(testTransformations),
+    m_trialTransformations(trialTransformations),
     m_openClHandler(openClHandler)
 {
     if (localQuadPoints.n_cols != quadWeights.size())
         throw std::invalid_argument("NumericalTestTrialIntegrator::"
                                     "NumericalTestTrialIntegrator(): "
                                     "numbers of points and weights do not match");
+    if (testTransformations.transformationCount() != 1 ||
+            trialTransformations.transformationCount() != 1)
+        throw std::invalid_argument("NumericalTestTrialIntegrator::"
+                                    "NumericalTestTrialIntegrator(): "
+                                    "test and trial transformation collections "
+                                    "must contain one element each");
+    if (testTransformations.resultDimension(0) != trialTransformations.resultDimension(0))
+        throw std::invalid_argument("NumericalTestTrialIntegrator::"
+                                    "NumericalTestTrialIntegrator(): "
+                                    "test and trial transformations "
+                                    "must return vectors of the same dimension");
 }
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
@@ -75,14 +86,14 @@ void NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory
     // elementCount != 0, set elements of result to 0.
 
     // Evaluate constants
-    const int componentCount = m_testExpression.codomainDimension();
+    const int componentCount = m_testTransformations.resultDimension(0);
     const int testDofCount = testBasis.size();
     const int trialDofCount = trialBasis.size();
 
-    if (m_trialExpression.codomainDimension() != componentCount)
-        throw std::runtime_error("NumericalTestTrialIntegrator::integrate(): "
-                                 "test and trial functions "
-                                 "must have the same number of components");
+//    if (m_trialTransformations.codomainDimension() != componentCount)
+//        throw std::runtime_error("NumericalTestTrialIntegrator::integrate(): "
+//                                 "test and trial functions "
+//                                 "must have the same number of components");
 
     BasisData<BasisFunctionType> testBasisData, trialBasisData;
     GeometricalData<CoordinateType> geomData;
@@ -90,13 +101,13 @@ void NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory
     int testBasisDeps = 0, trialBasisDeps = 0;
     int geomDeps = INTEGRATION_ELEMENTS;
 
-    m_testExpression.addDependencies(testBasisDeps, geomDeps);
-    m_trialExpression.addDependencies(trialBasisDeps, geomDeps);
+    m_testTransformations.addDependencies(testBasisDeps, geomDeps);
+    m_trialTransformations.addDependencies(trialBasisDeps, geomDeps);
 
     typedef typename GeometryFactory::Geometry Geometry;
     std::auto_ptr<Geometry> geometry(m_geometryFactory.make());
 
-    arma::Cube<BasisFunctionType> testValues, trialValues;
+    CollectionOf3dArrays<BasisFunctionType> testValues, trialValues;
 
     result.set_size(testDofCount, trialDofCount, elementCount);
 
@@ -108,8 +119,8 @@ void NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory
     {
         m_rawGeometry.setupGeometry(elementIndices[e], *geometry);
         geometry->getData(geomDeps, m_localQuadPoints, geomData);
-        m_testExpression.evaluate(testBasisData, geomData, testValues);
-        m_trialExpression.evaluate(trialBasisData, geomData, trialValues);
+        m_testTransformations.evaluate(testBasisData, geomData, testValues);
+        m_trialTransformations.evaluate(trialBasisData, geomData, trialValues);
 
         for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
             for (int testDof = 0; testDof < testDofCount; ++testDof)
@@ -119,8 +130,8 @@ void NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory
                     for (int dim = 0; dim < componentCount; ++dim)
                         sum +=  m_quadWeights[point] *
                                 geomData.integrationElements(point) *
-                                conjugate(testValues(dim, testDof, point)) *
-                                trialValues(dim, trialDof, point);
+                                conjugate(testValues[0](dim, testDof, point)) *
+                                trialValues[0](dim, trialDof, point);
                 result(testDof, trialDof, e) = sum;
             }
     }
