@@ -18,44 +18,46 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_laplace_3d_double_layer_potential_hpp
-#define bempp_laplace_3d_double_layer_potential_hpp
+#ifndef bempp_laplace_3d_potential_base_hpp
+#define bempp_laplace_3d_potential_base_hpp
 
-#include "laplace_3d_potential_base.hpp"
+#include "elementary_potential.hpp"
+
+#include <boost/scoped_ptr.hpp>
 
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename ResultType>
-struct Laplace3dDoubleLayerPotentialImpl;
-
 /** \ingroup laplace_3d
- *  \brief Double-layer-potential operator for the Laplace equation in 3D.
+ *  \brief Base class for potentials related to the Laplace equation in 3D.
  *
+ *  \tparam Impl
+ *    Type of the internal implementation pointer.
  *  \tparam BasisFunctionType
  *    Type used to represent the values of basis functions.
  *  \tparam ResultType
- *    Type used to represent values of the potential.
+ *    Type used to represent entries in the discrete form of the operator.
  *
- *  Both template parameters can take the following values: \c float, \c
+ *  The latter two template parameters can take the following values: \c float, \c
  *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
  *  Both types must have the same precision: for instance, mixing \c float with
  *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType
  *  is by default set to \p BasisFunctionType. You should override that only if
- *  you set \p BasisFunctionType to a real type, but you want the values of the
- *  potential to be stored as complex numbers.
+ *  you set \p BasisFunctionType to a real type, but you want the potential
+ *  values to be stored as complex numbers.
  *
  *  \see laplace_3d */
-template <typename BasisFunctionType_, typename ResultType_ = BasisFunctionType_>
-class Laplace3dDoubleLayerPotential:
-        public Laplace3dPotentialBase<
-        Laplace3dDoubleLayerPotentialImpl<BasisFunctionType_, ResultType_>,
+template <typename Impl,
+          typename BasisFunctionType_, typename ResultType_ = BasisFunctionType_>
+class Laplace3dPotentialBase :
+        public ElementaryPotential<
         BasisFunctionType_,
+        typename ScalarTraits<ResultType_>::RealType,
         ResultType_>
 {
-    typedef Laplace3dPotentialBase<
-    Laplace3dDoubleLayerPotentialImpl<BasisFunctionType_, ResultType_>,
+    typedef ElementaryPotential<
     BasisFunctionType_,
+    typename ScalarTraits<ResultType_>::RealType,
     ResultType_>
     Base;
 public:
@@ -67,6 +69,19 @@ public:
     CollectionOfBasisTransformations;
     typedef typename Base::CollectionOfKernels CollectionOfKernels;
     typedef typename Base::KernelTrialIntegral KernelTrialIntegral;
+
+    Laplace3dPotentialBase();
+    Laplace3dPotentialBase(const Laplace3dPotentialBase& other);
+    virtual ~Laplace3dPotentialBase();
+
+private:
+    virtual const CollectionOfKernels& kernels() const;
+    virtual const CollectionOfBasisTransformations&
+    trialTransformations() const;
+    virtual const KernelTrialIntegral& integral() const;
+
+private:
+    boost::scoped_ptr<Impl> m_impl;
 };
 
 } // namespace Bempp

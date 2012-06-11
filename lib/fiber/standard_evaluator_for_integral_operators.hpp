@@ -23,6 +23,8 @@
 
 #include "evaluator_for_integral_operators.hpp"
 
+#include "collection_of_2d_arrays.hpp"
+
 #include <armadillo>
 #include <vector>
 
@@ -31,8 +33,10 @@ namespace Fiber
 
 struct QuadratureOptions;
 template <typename ValueType> class Basis;
-template <typename CoordinateType> class Expression;
-template <typename ValueType> class Kernel;
+template <typename CoordinateType> class CollectionOfBasisTransformations;
+template <typename ValueType> class CollectionOfKernels;
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+class KernelTrialIntegral;
 template <typename CoordinateType> class RawGridGeometry;
 class OpenClHandler;
 
@@ -50,8 +54,9 @@ public:
             const shared_ptr<const GeometryFactory >& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const Kernel<KernelType> >& kernel,
-            const shared_ptr<const Expression<CoordinateType> >& trialExpression,
+            const shared_ptr<const CollectionOfKernels<KernelType> >& kernels,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+            const shared_ptr<const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> >& integral,
             const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const QuadratureOptions& quadratureOptions);
@@ -65,8 +70,8 @@ private:
     void calcTrialData(
             Region region,
             int kernelTrialGeomDeps,
-            Fiber::GeometricalData<CoordinateType>& trialGeomData,
-            arma::Mat<ResultType>& weightedTrialExprValues) const;
+            GeometricalData<CoordinateType>& trialGeomData,
+            CollectionOf2dArrays<ResultType>& weightedTrialExprValues) const;
 
     int quadOrder(const Fiber::Basis<BasisFunctionType>& basis, Region region) const;
     int farFieldQuadOrder(const Fiber::Basis<BasisFunctionType>& basis) const;
@@ -76,19 +81,20 @@ private:
     const shared_ptr<const GeometryFactory> m_geometryFactory;
     const shared_ptr<const RawGridGeometry<CoordinateType> > m_rawGeometry;
     const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_trialBases;
-    const shared_ptr<const Kernel<KernelType> > m_kernel;
-    const shared_ptr<const Expression<CoordinateType> > m_trialExpression;
+    const shared_ptr<const CollectionOfKernels<KernelType> > m_kernels;
+    const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> > m_trialTransformations;
+    const shared_ptr<const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> > m_integral;
     const shared_ptr<const std::vector<std::vector<ResultType> > > m_argumentLocalCoefficients;
     const shared_ptr<const Fiber::OpenClHandler> m_openClHandler;
     const QuadratureOptions m_quadratureOptions;
 
     Fiber::GeometricalData<CoordinateType> m_nearFieldTrialGeomData;
     Fiber::GeometricalData<CoordinateType> m_farFieldTrialGeomData;
-    arma::Mat<ResultType> m_nearFieldWeightedTrialExprValues;
-    arma::Mat<ResultType> m_farFieldWeightedTrialExprValues;
+    CollectionOf2dArrays<ResultType> m_nearFieldWeightedTrialTransfValues;
+    CollectionOf2dArrays<ResultType> m_farFieldWeightedTrialTransfValues;
 };
 
-} // namespace Bempp
+} // namespace Fiber
 
 #include "standard_evaluator_for_integral_operators_imp.hpp"
 

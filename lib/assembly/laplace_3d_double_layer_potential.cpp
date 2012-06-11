@@ -19,10 +19,48 @@
 // THE SOFTWARE.
 
 #include "laplace_3d_double_layer_potential.hpp"
+#include "laplace_3d_potential_base_imp.hpp"
+
 #include "../fiber/explicit_instantiation.hpp"
+
+#include "../fiber/laplace_3d_double_layer_potential_kernel_functor.hpp"
+#include "../fiber/scalar_function_value_functor.hpp"
+#include "../fiber/simple_scalar_kernel_trial_integrand_functor.hpp"
+
+#include "../fiber/standard_collection_of_kernels.hpp"
+#include "../fiber/standard_collection_of_basis_transformations.hpp"
+#include "../fiber/standard_kernel_trial_integral.hpp"
 
 namespace Bempp
 {
+
+template <typename BasisFunctionType, typename ResultType>
+struct Laplace3dDoubleLayerPotentialImpl
+{
+    typedef Laplace3dDoubleLayerPotentialImpl<BasisFunctionType, ResultType>
+    This;
+    typedef Laplace3dPotentialBase<This, BasisFunctionType, ResultType> PotentialBase;
+    typedef typename PotentialBase::KernelType KernelType;
+    typedef typename PotentialBase::CoordinateType CoordinateType;
+
+    typedef Fiber::Laplace3dDoubleLayerPotentialKernelFunctor<KernelType>
+    KernelFunctor;
+    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
+    TransformationFunctor;
+    typedef Fiber::SimpleScalarKernelTrialIntegrandFunctor<
+    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+
+    Laplace3dDoubleLayerPotentialImpl() :
+        kernels(KernelFunctor()),
+        transformations(TransformationFunctor()),
+        integral(IntegrandFunctor())
+    {}
+
+    Fiber::StandardCollectionOfKernels<KernelFunctor> kernels;
+    Fiber::StandardCollectionOfBasisTransformations<TransformationFunctor>
+    transformations;
+    Fiber::StandardKernelTrialIntegral<IntegrandFunctor> integral;
+};
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dDoubleLayerPotential);
 

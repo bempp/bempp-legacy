@@ -21,58 +21,54 @@
 #ifndef bempp_laplace_3d_single_layer_potential_hpp
 #define bempp_laplace_3d_single_layer_potential_hpp
 
-#include "elementary_potential.hpp"
-#include "../common/scalar_traits.hpp"
-#include "../fiber/expression_list.hpp"
-#include "../fiber/laplace_3d_single_layer_potential_kernel.hpp"
-#include "../fiber/scalar_function_value.hpp"
+#include "laplace_3d_potential_base.hpp"
 
 namespace Bempp
 {
 
+template <typename BasisFunctionType, typename ResultType>
+struct Laplace3dSingleLayerPotentialImpl;
+
 /** \ingroup laplace_3d
- *  \brief Single-layer potential for the Laplace equation in 3D.
+ *  \brief Single-layer-potential operator for the Laplace equation in 3D.
  *
  *  \tparam BasisFunctionType
- *    Type used to represent the values of basis functions into which
- *    the argument of the potential is expanded.
+ *    Type used to represent the values of basis functions.
  *  \tparam ResultType
- *    Type used to represent the values of the potential.
+ *    Type used to represent values of the potential.
  *
  *  Both template parameters can take the following values: \c float, \c
  *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
  *  Both types must have the same precision: for instance, mixing \c float with
  *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType
  *  is by default set to \p BasisFunctionType. You should override that only if
- *  you set \p BasisFunctionType to a real type, but you want the entries of
- *  the operator's weak form to be stored as complex numbers.
+ *  you set \p BasisFunctionType to a real type, but you want the values of the
+ *  potential to be stored as complex numbers.
  *
  *  \see laplace_3d */
-template <typename BasisFunctionType, typename ResultType = BasisFunctionType>
+template <typename BasisFunctionType_, typename ResultType_ = BasisFunctionType_>
 class Laplace3dSingleLayerPotential :
-        public ElementaryPotential<
-        BasisFunctionType,
-        typename ScalarTraits<ResultType>::RealType,
-        ResultType>
+        public Laplace3dPotentialBase<
+        Laplace3dSingleLayerPotentialImpl<BasisFunctionType_, ResultType_>,
+        BasisFunctionType_,
+        ResultType_>
 {
-    typedef typename ScalarTraits<ResultType>::RealType KernelType;
-    typedef ElementaryPotential<BasisFunctionType, KernelType, ResultType> Base;
+    typedef Laplace3dPotentialBase<
+    Laplace3dSingleLayerPotentialImpl<BasisFunctionType_, ResultType_>,
+    BasisFunctionType_,
+    ResultType_>
+    Base;
 public:
+    typedef typename Base::BasisFunctionType BasisFunctionType;
+    typedef typename Base::KernelType KernelType;
+    typedef typename Base::ResultType ResultType;
     typedef typename Base::CoordinateType CoordinateType;
+    typedef typename Base::CollectionOfBasisTransformations
+    CollectionOfBasisTransformations;
+    typedef typename Base::CollectionOfKernels CollectionOfKernels;
+    typedef typename Base::KernelTrialIntegral KernelTrialIntegral;
 
-private:
-    virtual const Fiber::Kernel<KernelType>& kernel() const {
-        return m_kernel;
-    }
-
-    virtual const Fiber::ExpressionList<ResultType>& trialExpressionList() const {
-        return m_expressionList;
-    }
-
-private:
-    Fiber::Laplace3dSingleLayerPotentialKernel<KernelType> m_kernel;
-    Fiber::ScalarFunctionValue<CoordinateType> m_expression;
-    Fiber::ExpressionList<ResultType> m_expressionList;
+    Laplace3dSingleLayerPotential() {}
 };
 
 } // namespace Bempp

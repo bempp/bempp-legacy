@@ -29,7 +29,6 @@
 
 #include "../fiber/evaluator_for_integral_operators.hpp"
 #include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/expression_list.hpp"
 
 #include "../grid/entity.hpp"
 #include "../grid/entity_iterator.hpp"
@@ -164,20 +163,13 @@ ElementaryPotential<BasisFunctionType, KernelType, ResultType>::makeEvaluator(
         it->next();
     }
 
-    // Get a reference to the trial expression
-    if (!trialExpressionList().isTrivial())
-        throw std::runtime_error("ElementaryIntegralOperator::makeEvaluator(): "
-                                 "operators with multi-element expression lists "
-                                 "are not supported at present");
-    const Fiber::Expression<CoordinateType>& trialExpression =
-            trialExpressionList().term(0);
-
     // Now create the evaluator
     return assemblerFactory.makeEvaluatorForIntegralOperators(
                 geometryFactory, rawGeometry,
                 bases,
-                make_shared_from_ref(kernel()),
-                make_shared_from_ref(trialExpression),
+                make_shared_from_ref(kernels()),
+                make_shared_from_ref(trialTransformations()),
+                make_shared_from_ref(integral()),
                 localCoefficients,
                 openClHandler);
 }

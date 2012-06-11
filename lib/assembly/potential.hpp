@@ -26,10 +26,14 @@ template <typename ResultType> class InterpolatedFunction;
  * where the integration goes over a surface \f$\Gamma\f$ and the point \f$x\f$
  * does not lie on \f$\Gamma\f$.
  */
-template <typename BasisFunctionType, typename ResultType>
+template <typename BasisFunctionType_, typename ResultType_>
 class Potential
 {
 public:
+    /** \copydoc LinearOperator::BasisFunctionType */
+    typedef BasisFunctionType_ BasisFunctionType;
+    /** \copydoc LinearOperator::ResultType */
+    typedef ResultType_ ResultType;
     /** \copydoc LinearOperator::CoordinateType */
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
     /** \copydoc LinearOperator::LocalAssemblerFactory. */
@@ -56,8 +60,8 @@ public:
      *
      * \note This function is not designed to yield accurate values of the
      * potential on the surface containing the charge distribution, i.e.
-     * <tt>moment::grid()</tt>. Hence values of the potential at any vertices
-     * of \p evaluationGrid that coincide with <tt>moment::grid()</tt> can be
+     * <tt>argument.grid()</tt>. Hence values of the potential at any vertices
+     * of \p evaluationGrid that coincide with <tt>argument.grid()</tt> can be
      * badly wrong.
      */
     virtual std::auto_ptr<InterpolatedFunction<ResultType> > evaluateOnGrid(
