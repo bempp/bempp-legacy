@@ -39,15 +39,11 @@ private:
     BasisFunctionType, ResultType, GeometryFactory> Base;
 public:
     /** \brief Construct a local assembler factory with default accuracy settings. */
-    StandardLocalAssemblerFactoryForOperatorsOnSurfaces() :
-        Base() {
-    }
+    StandardLocalAssemblerFactoryForOperatorsOnSurfaces();
 
     /** \brief Construct a local assembler factory with specified accuracy settings. */
     explicit StandardLocalAssemblerFactoryForOperatorsOnSurfaces(
-            const AccuracyOptions& accuracyOptions) :
-        Base(accuracyOptions) {
-    }
+            const AccuracyOptions& accuracyOptions);
 };
 
 } // namespace Bempp

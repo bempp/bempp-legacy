@@ -26,6 +26,7 @@
 #include "common/scalar_traits.hpp"
 #include "fiber/geometrical_data.hpp"
 #include "fiber/laplace_3d_single_layer_potential_kernel.hpp"
+#include "fiber/local_assembler_for_operators.hpp"
 #include "grid/grid.hpp"
 #include "grid/grid_factory.hpp"
 #include "grid/grid_view.hpp"
