@@ -3,7 +3,7 @@
 
 # mkdir $Main_prefix/bempp/contrib/boost
 mkdir -p $Main_prefix/bempp/contrib
-mkdir build
+mkdir -p build
 
 cd build
 

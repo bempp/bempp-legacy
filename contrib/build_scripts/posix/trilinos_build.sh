@@ -3,7 +3,7 @@
 
 # mkdir $Main_prefix/bempp/contrib/trilinos
 mkdir -p $Main_prefix/bempp/contrib
-mkdir build
+mkdir -p build
 cd build
 cmake \
     -D CMAKE_CXX_COMPILER:STRING=$Main_cxx \
