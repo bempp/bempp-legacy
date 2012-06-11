@@ -30,8 +30,8 @@
 #include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 
 #include "assembly/identity_operator.hpp"
-#include "assembly/modified_helmholtz_3d_single_layer_potential.hpp"
-#include "assembly/modified_helmholtz_3d_double_layer_potential.hpp"
+#include "assembly/modified_helmholtz_3d_single_layer_potential_operator.hpp"
+#include "assembly/modified_helmholtz_3d_double_layer_potential_operator.hpp"
 
 #include "common/scalar_traits.hpp"
 
@@ -131,9 +131,9 @@ int main(int argc, char* argv[])
 
     // We need the single layer, double layer, and the identity operator
 
-    ModifiedHelmholtz3dSingleLayerPotential<BFT, RT> slp(
+    ModifiedHelmholtz3dSingleLayerPotentialOperator<BFT, RT> slp(
                 HplusHalfSpace, HplusHalfSpace, waveNumber);
-    ModifiedHelmholtz3dDoubleLayerPotential<BFT, RT> dlp(
+    ModifiedHelmholtz3dDoubleLayerPotentialOperator<BFT, RT> dlp(
                 HplusHalfSpace, HplusHalfSpace, waveNumber);
     IdentityOperator<BFT, RT> id(HplusHalfSpace, HplusHalfSpace);
 

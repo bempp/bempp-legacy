@@ -32,8 +32,8 @@
 #include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 
 #include "assembly/identity_operator.hpp"
-#include "assembly/laplace_3d_single_layer_potential.hpp"
-#include "assembly/laplace_3d_double_layer_potential.hpp"
+#include "assembly/laplace_3d_single_layer_potential_operator.hpp"
+#include "assembly/laplace_3d_double_layer_potential_operator.hpp"
 
 #include "common/scalar_traits.hpp"
 
@@ -115,8 +115,8 @@ int main(int argc, char* argv[])
 
     // We need the single layer, double layer, and the identity operator
 
-    Laplace3dSingleLayerPotential<BFT, RT> rhsOp(HplusHalfSpace, HminusHalfSpace);
-    Laplace3dDoubleLayerPotential<BFT, RT> dlp(HplusHalfSpace, HplusHalfSpace);
+    Laplace3dSingleLayerPotentialOperator<BFT, RT> rhsOp(HplusHalfSpace, HminusHalfSpace);
+    Laplace3dDoubleLayerPotentialOperator<BFT, RT> dlp(HplusHalfSpace, HplusHalfSpace);
     IdentityOperator<BFT, RT> id(HplusHalfSpace, HplusHalfSpace);
 
     // Form the left-hand side sum

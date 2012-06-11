@@ -32,6 +32,8 @@
 #include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 
 #include "assembly/identity_operator.hpp"
+#include "assembly/laplace_3d_single_layer_potential_operator.hpp"
+#include "assembly/laplace_3d_double_layer_potential_operator.hpp"
 #include "assembly/laplace_3d_single_layer_potential.hpp"
 #include "assembly/laplace_3d_double_layer_potential.hpp"
 
@@ -57,6 +59,7 @@ using namespace Bempp;
 
 typedef double BFT; // basis function type
 typedef double RT; // result type (type used to represent discrete operators)
+typedef double CT; // coordinate type
 
 class MyFunctor
 {
@@ -119,17 +122,17 @@ int main(int argc, char* argv[])
 
     // We need the single layer, double layer, and the identity operator
 
-    Laplace3dSingleLayerPotential<BFT, RT> slp(HminusHalfSpace, HminusHalfSpace);
-    Laplace3dDoubleLayerPotential<BFT, RT> dlp(HminusHalfSpace, HplusHalfSpace);
+    Laplace3dSingleLayerPotentialOperator<BFT, RT> slpOp(HminusHalfSpace, HminusHalfSpace);
+    Laplace3dDoubleLayerPotentialOperator<BFT, RT> dlpOp(HminusHalfSpace, HplusHalfSpace);
     IdentityOperator<BFT, RT> id(HminusHalfSpace, HplusHalfSpace);
 
     // Form the right-hand side sum
 
-    LinearOperatorSuperposition<BFT, RT> rhsOp = -0.5 * id + dlp;
+    LinearOperatorSuperposition<BFT, RT> rhsOp = -0.5 * id + dlpOp;
 
     // Assemble the operators
 
-    slp.assembleWeakForm(factory, assemblyOptions, UNSYMMETRIC);
+    slpOp.assembleWeakForm(factory, assemblyOptions, UNSYMMETRIC);
     rhsOp.assembleWeakForm(factory, assemblyOptions);
 
     // We also want a grid function
@@ -151,7 +154,7 @@ int main(int argc, char* argv[])
     // complex-valued operators, hence if you typedef RT to std::complex<...>,
     // you need to use the direct solver.
 #ifdef WITH_TRILINOS
-    DefaultIterativeSolver<BFT, RT> solver(slp, rhs);
+    DefaultIterativeSolver<BFT, RT> solver(slpOp, rhs);
     solver.initializeSolver(defaultGmresParameterList(1e-5));
     solver.solve();
     std::cout << solver.getSolverMessage() << std::endl;
