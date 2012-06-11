@@ -25,6 +25,7 @@
 #include "symmetry.hpp"
 #include "transposition_mode.hpp"
 
+#include "../common/scalar_traits.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../fiber/local_assembler_factory.hpp"
 #include "../space/space.hpp"
@@ -53,21 +54,21 @@ template <typename BasisFunctionType, typename ResultType> class LinearOperatorS
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
 
 /** \ingroup assembly
- *  \brief "Formal" linear operator.
+ *  \brief Boundary linear operator.
  *
- *  This class template is used as a base class for all implementations of
- *  various types of linear operators, in particular integral operators.
+ *  A BoundaryOperator represents a linear mapping \f$L : X \to Y\f$ between
+ *  two function spaces \f$X : S \to K^p\f$ and \f$Y : S \to K^q\f$ defined on
+ *  an \f$n\f$-dimensional surface \f$S\f$ embedded in an
+ *  \f$(n+1)\f$-dimensional domain. \f$K\f$ denotes either the set of real or
+ *  complex numbers.
  *
- *  A LinearOperator represents a linear mapping \f$L : X \to Y\f$, where \f$X :
- *  S \to K^p\f$ and \f$Y : T \to K^q\f$ are function spaces, with \f$S\f$
- *  standing for an \f$n\f$-dimensional surface and \f$T\f$ either equal to
- *  \f$S\f$ or to a \f$(n+1)\f$-dimensional domain in which \f$S\f$ is embedded.
- *  \f$K\f$ denotes either the set of real or complex numbers.
- *
- *  The operator is called "formal" because its domain \f$X\f$ is not specified
- *  yet. The functions assembleWeakForm() and assembleDetachedWeakForm()
- *  construct "true" linear operators acting on functions from the space passed
- *  as the trialSpace parameter.
+ *  The functions assembleWeakForm() and assembleDetachedWeakForm() can be used
+ *  to calculate the weak form of the operator. The weak form constructed with
+ *  the former function is stored internally in the BoundaryOperator object,
+ *  which can subsequently be used as a typical linear operator (i.e. act on
+ *  functions defined on the surface \f$S\f$, represented as GridFunction
+ *  objects). The weak form constructed with the latter function is not stored
+ *  in BoundaryOperator, but its ownership is passed directly to the caller.
  *
  *  \tparam BasisFunctionType
  *    Type used to represent components of the test and trial functions.
@@ -186,19 +187,19 @@ public:
     /** \brief Assemble the operator's weak form and store it internally.
      *
      *  This function constructs a discrete linear operator representing the
-     *  matrix \f$W_{jk}\f$ with entries of the form
+     *  matrix \f$L_{jk}\f$ with entries of the form
      *
-     *  \f[W_{jk} = \int_S \phi_j L \psi_k,\f]
+     *  \f[L_{jk} = \int_S \phi_j L \psi_k,\f]
      *
      *  where \f$L\f$ is the linear operator represented by this object, \f$S\f$
      *  denotes the surface that is the domain of the trial space \f$X\f$ and
-     *  which is represented by the grid returned by trialSpace.grid(),
+     *  which is represented by the grid returned by <tt>trialSpace.grid()</tt>,
      *  \f$\phi_j\f$ is a function from the test space \f$Y\f$ and \f$\psi_k\f$ a
      *  function from \f$X\f$.
      *
-     *  The resulting discrete linear operator is stored internally and, if
-     *  necessary, can subsequently be accessed via weakForm() or detached
-     *  via detachWeakForm(). */
+     *  The resulting discrete linear operator is stored internally. It can
+     *  subsequently be accessed via weakForm() or, if necessary, detached via
+     *  detachWeakForm(). */
     void assembleWeakForm(const LocalAssemblerFactory& factory,
                           const AssemblyOptions& options,
                           Symmetry symmetry = UNSYMMETRIC);
