@@ -24,6 +24,7 @@
 /** \file Ahmed's complex numbers */
 #include <cmplx.h>
 
+#ifndef AHMED_USES_STD_COMPLEX
 inline scomp operator*=(scomp& a, double b)
 {
     return operator*=(a, static_cast<float>(b));
@@ -38,6 +39,7 @@ inline scomp operator/(double a, scomp& b)
 {
     return operator/(static_cast<float>(a), b);
 }
+#endif
 
 namespace Bempp
 {
