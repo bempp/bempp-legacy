@@ -17,6 +17,8 @@ public:
         m_space(space) {
     }
 
+    ~MassMatrixContainerInitialiser();
+
     std::auto_ptr<MassMatrixContainer<ResultType> > operator()() const;
 
 private:

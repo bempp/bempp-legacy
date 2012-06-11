@@ -18,6 +18,12 @@ namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType>
+MassMatrixContainerInitialiser<BasisFunctionType, ResultType>::
+~MassMatrixContainerInitialiser()
+{
+}
+
+template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<MassMatrixContainer<ResultType> >
 MassMatrixContainerInitialiser<BasisFunctionType, ResultType>::operator()() const
 {

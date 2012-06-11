@@ -18,25 +18,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_mass_matrix_container_hpp
-#define bempp_mass_matrix_container_hpp
-
-#include <memory>
+#include "mass_matrix_container.hpp"
+#include "../assembly/discrete_linear_operator.hpp"
+#include "../fiber/explicit_instantiation.hpp"
 
 namespace Bempp
 {
 
-template <typename ValueType> class DiscreteLinearOperator;
-
 template <typename BasisFunctionType>
-struct MassMatrixContainer
+MassMatrixContainer<BasisFunctionType>::~MassMatrixContainer()
 {
-    ~MassMatrixContainer();
+}
 
-    std::auto_ptr<DiscreteLinearOperator<BasisFunctionType> > massMatrix;
-    std::auto_ptr<DiscreteLinearOperator<BasisFunctionType> > inverseMassMatrix;
-};
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(MassMatrixContainer);
 
-} //namespace Bempp
-
-#endif
+} // namespace Bempp
