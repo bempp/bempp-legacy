@@ -22,9 +22,10 @@
 #ifndef bempp_ahmed_aux_fwd_hpp
 #define bempp_ahmed_aux_fwd_hpp
 
+#include "config_ahmed.hpp"
+
 template <class T1, class T2> class bemblcluster;
 template <class T> class mblock;
-template <class T> struct comp;
 class blcluster;
 
 namespace std
@@ -34,6 +35,15 @@ template <typename _Tp> class complex;
 
 } // namespace std
 
+#ifdef AHMED_USES_STD_COMPLEX
+typedef std::complex<float> scomp;
+typedef std::complex<double> dcomp;
+#else
+template <typename T> class comp;
+typedef comp<float> scomp;
+typedef comp<double> dcomp;
+#endif
+
 namespace Bempp
 {
 
@@ -42,8 +52,10 @@ template <typename T> class ExtendedBemCluster;
 
 // Casts.
 
-// Ahmed uses a nonstandard complex type. To all probability, its binary
-// representation is the same as that of the complex type provided by STL.
+// If Ahmed is compiled with STD_CMPLX undefined, it uses a
+// nonstandard complex type. To all probability, its binary
+// representation is the same as that of the complex type provided by
+// STL.
 
 template <typename T>
 struct AhmedTypeTraits
@@ -54,24 +66,28 @@ struct AhmedTypeTraits
 template <>
 struct AhmedTypeTraits<std::complex<float> >
 {
-    typedef comp<float> Type;
+    typedef scomp Type;
 };
 
 template <>
 struct AhmedTypeTraits<std::complex<double> >
 {
-    typedef comp<double> Type;
+    typedef dcomp Type;
 };
 
 template <typename T>
 inline typename AhmedTypeTraits<T>::Type* ahmedCast(T* x) {
+#ifdef AHMED_USES_STD_COMPLEX
+    return x;
+#else
     return reinterpret_cast<typename AhmedTypeTraits<T>::Type*>(x);
+#endif 
 }
 
 float ahmedCast(float x);
 double ahmedCast(double x);
-comp<float> ahmedCast(std::complex<float> x);
-comp<double> ahmedCast(std::complex<double> x);
+scomp ahmedCast(std::complex<float> x);
+dcomp ahmedCast(std::complex<double> x);
 
 } // namespace Bempp
 

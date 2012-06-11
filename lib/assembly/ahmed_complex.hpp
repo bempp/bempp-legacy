@@ -24,17 +24,17 @@
 /** \file Ahmed's complex numbers */
 #include <cmplx.h>
 
-inline comp<float> operator*=(comp<float>& a, double b)
+inline scomp operator*=(scomp& a, double b)
 {
     return operator*=(a, static_cast<float>(b));
 }
 
-inline comp<float> operator/(comp<float>& a, double b)
+inline scomp operator/(scomp& a, double b)
 {
     return operator/(a, static_cast<float>(b));
 }
 
-inline comp<float> operator/(double a, comp<float>& b)
+inline scomp operator/(double a, scomp& b)
 {
     return operator/(static_cast<float>(a), b);
 }

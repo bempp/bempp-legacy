@@ -89,11 +89,21 @@ asMatrix() const
             unit(col - 1) = 0.;
         unit(col) = 1.;
         if (m_symmetric)
-            multaHSymvec(1., m_blockCluster.get(), m_blocks.get(),
+#ifdef AHMED_PRERELEASE
+            multaHSymvec
+#else
+            mltaHeHVec
+#endif
+                (1., m_blockCluster.get(), m_blocks.get(),
                       ahmedCast(unit.memptr()),
                       ahmedCast(permutedOutput.colptr(col)));
         else
-            multaHvec(1., m_blockCluster.get(), m_blocks.get(),
+#ifdef AHMED_PRERELEASE
+            multaHvec
+#else
+            mltaGeHVec
+#endif
+                (1., m_blockCluster.get(), m_blocks.get(),
                       ahmedCast(unit.memptr()),
                       ahmedCast(permutedOutput.colptr(col)));
     }
@@ -251,11 +261,21 @@ applyBuiltInImpl(const TranspositionMode trans,
     arma::Col<ValueType> permutedResult;
     m_rangePermutation.permuteVector(y_inout, permutedResult);
     if (m_symmetric)
-        multaHSymvec(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
+#ifdef AHMED_PRERELEASE
+            multaHSymvec
+#else
+            mltaHeHVec
+#endif
+                (ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
                      ahmedCast(permutedArgument.memptr()),
                      ahmedCast(permutedResult.memptr()));
     else
-        multaHvec(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
+#ifdef AHMED_PRERELEASE
+            multaHvec
+#else
+            mltaGeHVec
+#endif
+                (ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
                   ahmedCast(permutedArgument.memptr()),
                   ahmedCast(permutedResult.memptr()));
     m_rangePermutation.unpermuteVector(permutedResult, y_inout);
@@ -267,8 +287,13 @@ DiscreteAcaLinearOperator<ValueType>::
 makeAllMblocksDense()
 {
     for (int i = 0; i < m_blockCluster->nleaves(); ++i)
+#ifdef AHMED_PRERELEASE
         if (m_blocks[i]->islwr())
             m_blocks[i]->conv_lwr_to_dns();
+#else
+        if (m_blocks[i]->isLrM())
+            m_blocks[i]->convLrM_toGeM();
+#endif
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteAcaLinearOperator);
