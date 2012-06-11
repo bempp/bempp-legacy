@@ -27,7 +27,7 @@
 namespace Bempp
 {
 
-template <int codim> class EntityPointer;
+template <size_t codim> class EntityPointer;
 class GridView;
 
 /** \brief Mapping from codim-0 entity indices to entity pointers. */

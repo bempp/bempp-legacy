@@ -34,7 +34,7 @@ inline Array3d<T>::Array3d()
 }
 
 template <typename T>
-inline Array3d<T>::Array3d(int extent0, int extent1, int extent2)
+inline Array3d<T>::Array3d(size_t extent0, size_t extent1, size_t extent2)
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_extents(extent0, extent1, extent2);
@@ -47,7 +47,7 @@ inline Array3d<T>::Array3d(int extent0, int extent1, int extent2)
 }
 
 template <typename T>
-inline Array3d<T>::Array3d(int extent0, int extent1, int extent2, T* data)
+inline Array3d<T>::Array3d(size_t extent0, size_t extent1, size_t extent2, T* data)
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_extents(extent0, extent1, extent2);
@@ -67,7 +67,7 @@ inline Array3d<T>::~Array3d()
 }
 
 template <typename T>
-inline T& Array3d<T>::operator()(int index0, int index1, int index2)
+inline T& Array3d<T>::operator()(size_t index0, size_t index1, size_t index2)
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_indices(index0, index1, index2);
@@ -79,7 +79,7 @@ inline T& Array3d<T>::operator()(int index0, int index1, int index2)
 }
 
 template <typename T>
-inline const T& Array3d<T>::operator()(int index0, int index1, int index2) const
+inline const T& Array3d<T>::operator()(size_t index0, size_t index1, size_t index2) const
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_indices(index0, index1, index2);
@@ -91,7 +91,7 @@ inline const T& Array3d<T>::operator()(int index0, int index1, int index2) const
 }
 
 template <typename T>
-inline int Array3d<T>::extent(int dimension) const
+inline size_t Array3d<T>::extent(size_t dimension) const
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_dimension(dimension);
@@ -100,7 +100,7 @@ inline int Array3d<T>::extent(int dimension) const
 }
 
 template <typename T>
-inline void Array3d<T>::set_size(int extent0, int extent1, int extent2)
+inline void Array3d<T>::set_size(size_t extent0, size_t extent1, size_t extent2)
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_extents(extent0, extent1, extent2);
@@ -148,21 +148,21 @@ inline typename Array3d<T>::const_iterator Array3d<T>::end() const
 
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
 template <typename T>
-inline void Array3d<T>::check_dimension(int dimension) const
+inline void Array3d<T>::check_dimension(size_t dimension) const
 {
     if (dimension < 0 || 2 < dimension)
         throw std::invalid_argument("Invalid dimension");
 }
 
 template <typename T>
-inline void Array3d<T>::check_extents(int extent0, int extent1, int extent2) const
+inline void Array3d<T>::check_extents(size_t extent0, size_t extent1, size_t extent2) const
 {
     if (extent0 <= 0 || extent1 <= 0 || extent2 <= 0)
         throw std::length_error("Invalid extent");
 }
 
 template <typename T>
-inline void Array3d<T>::check_indices(int index0, int index1, int index2) const
+inline void Array3d<T>::check_indices(size_t index0, size_t index1, size_t index2) const
 {
     if (index0 < 0 || m_extents[0] <= index0 ||
         index1 < 0 || m_extents[1] <= index1 ||

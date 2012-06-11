@@ -39,12 +39,12 @@ public:
 
     virtual ~Kernel() {}
 
-    virtual int worldDimension() const = 0;
-    virtual int domainDimension() const = 0;
-    virtual int codomainDimension() const = 0;
+    virtual size_t worldDimension() const = 0;
+    virtual size_t domainDimension() const = 0;
+    virtual size_t codomainDimension() const = 0;
 
-    virtual void addGeometricalDependencies(int& testGeomDeps,
-                                            int& trialGeomDeps) const = 0;
+    virtual void addGeometricalDependencies(size_t& testGeomDeps,
+                                            size_t& trialGeomDeps) const = 0;
 
     virtual void evaluateAtPointPairs(
             const GeometricalData<CoordinateType>& testGeomData,

@@ -69,14 +69,14 @@ NonseparableNumericalTestKernelTrialIntegrator(
     m_trialExpressionList(trialExpressionList),
     m_openClHandler(openClHandler)
 {
-    const int pointCount = quadWeights.size();
+    const size_t pointCount = quadWeights.size();
     if (localTestQuadPoints.n_cols != pointCount ||
             localTrialQuadPoints.n_cols != pointCount)
         throw std::invalid_argument("NonseparableNumericalTestKernelTrialIntegrator::"
                                     "NonseparableNumericalTestKernelTrialIntegrator(): "
                                     "numbers of points and weights do not match");
 
-    const int expressionCount = testExpressionList.termCount();
+    const size_t expressionCount = testExpressionList.termCount();
     if (expressionCount != trialExpressionList.termCount())
         throw std::invalid_argument("SeparableNumericalTestKernelTrialIntegrator::"
                                     "SeparableNumericalTestKernelTrialIntegrator(): "
@@ -85,7 +85,7 @@ NonseparableNumericalTestKernelTrialIntegrator(
     assert(expressionCount > 0);
     // Multiply the test and trial expression weigths and store them
     m_expressionWeights.resize(expressionCount);
-    for (int i = 0; i < expressionCount; ++i)
+    for (size_t i = 0; i < expressionCount; ++i)
         m_expressionWeights[i] =
                 testExpressionList.weight(i) * trialExpressionList.weight(i);
 }
@@ -142,9 +142,9 @@ integrate(
     BasisData<BasisFunctionType> testBasisData, trialBasisData;
     GeometricalData<CoordinateType> testGeomData, trialGeomData;
 
-    int testBasisDeps = 0, trialBasisDeps = 0;
-    int testGeomDeps = INTEGRATION_ELEMENTS;
-    int trialGeomDeps = INTEGRATION_ELEMENTS;
+    size_t testBasisDeps = 0, trialBasisDeps = 0;
+    size_t testGeomDeps = INTEGRATION_ELEMENTS;
+    size_t trialGeomDeps = INTEGRATION_ELEMENTS;
 
     m_testExpressionList.addDependencies(testBasisDeps, testGeomDeps);
     m_trialExpressionList.addDependencies(trialBasisDeps, trialGeomDeps);
@@ -292,9 +292,9 @@ integrate(
     BasisData<BasisFunctionType> testBasisData, trialBasisData;
     GeometricalData<CoordinateType> testGeomData, trialGeomData;
 
-    int testBasisDeps = 0, trialBasisDeps = 0;
-    int testGeomDeps = INTEGRATION_ELEMENTS;
-    int trialGeomDeps = INTEGRATION_ELEMENTS;
+    size_t testBasisDeps = 0, trialBasisDeps = 0;
+    size_t testGeomDeps = INTEGRATION_ELEMENTS;
+    size_t trialGeomDeps = INTEGRATION_ELEMENTS;
 
     m_testExpressionList.addDependencies(testBasisDeps, testGeomDeps);
     m_trialExpressionList.addDependencies(trialBasisDeps, trialGeomDeps);

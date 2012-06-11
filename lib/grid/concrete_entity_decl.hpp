@@ -38,7 +38,7 @@ namespace Bempp
  derived from the traits of \p DuneEntity) because this class needs to be
  specialised for entities of codimension 0.
  */
-template<int codim, typename DuneEntity>
+template<size_t codim, typename DuneEntity>
 class ConcreteEntity: public Entity<codim>
 {
     dune_static_assert((int)DuneEntity::codimension == (int)Entity<codim>::codimension,
@@ -52,7 +52,7 @@ private:
 
     template<typename > friend class ConcreteEntityPointer;
     template<typename, typename> friend class ConcreteRangeEntityIterator;
-    template<typename, int> friend class ConcreteSubentityIterator;
+    template<typename, size_t> friend class ConcreteSubentityIterator;
 
     void setDuneEntity(const DuneEntity* dune_entity) {
         m_dune_entity = dune_entity;
@@ -76,7 +76,7 @@ public:
         return *m_dune_entity;
     }
 
-    virtual int level() const {
+    virtual size_t level() const {
         return m_dune_entity->level();
     }
 
@@ -107,7 +107,7 @@ private:
 
     template<typename > friend class ConcreteEntityPointer;
     template<typename, typename> friend class ConcreteRangeEntityIterator;
-    template<typename, int> friend class ConcreteSubentityIterator;
+    template<typename, size_t> friend class ConcreteSubentityIterator;
 
     void setDuneEntity(const DuneEntity* dune_entity) {
         m_dune_entity = dune_entity;
@@ -131,7 +131,7 @@ public:
         return *m_dune_entity;
     }
 
-    virtual int level() const {
+    virtual size_t level() const {
         return m_dune_entity->level();
     }
 
@@ -158,7 +158,7 @@ public:
         return m_dune_entity->isRegular();
     }
 
-    virtual std::auto_ptr<EntityIterator<0> > sonIterator(int maxlevel) const;
+    virtual std::auto_ptr<EntityIterator<0> > sonIterator(size_t maxlevel) const;
 
     virtual bool isNew() const {
         return m_dune_entity->isNew();
@@ -182,32 +182,32 @@ private:
     // these methods are implemented in entity.hpp (outside the declaration of
     // ConcreteEntity) because they need to know the full declaration of
     // concrete iterator (which may not be available at this stage)
-    template <int codimSub>
+    template <size_t codimSub>
     typename boost::disable_if_c<codimSub <= DuneEntity::dimension, std::auto_ptr<EntityIterator<codimSub> > >::type
     subEntityCodimNIterator() const;
 
-    template <int codimSub>
+    template <size_t codimSub>
     typename boost::enable_if_c<codimSub <= DuneEntity::dimension, std::auto_ptr<EntityIterator<codimSub> > >::type
     subEntityCodimNIterator() const;
 
-    virtual int subEntityCodim1Count() const {
+    virtual size_t subEntityCodim1Count() const {
         return subEntityCodimNCount<1>();
     }
-    virtual int subEntityCodim2Count() const {
+    virtual size_t subEntityCodim2Count() const {
         return subEntityCodimNCount<2>();
     }
-    virtual int subEntityCodim3Count() const {
+    virtual size_t subEntityCodim3Count() const {
         return subEntityCodimNCount<3>();
     }
 
-    template <int codimSub>
-    typename boost::disable_if_c<codimSub <= DuneEntity::dimension, int>::type
+    template <size_t codimSub>
+    typename boost::disable_if_c<codimSub <= DuneEntity::dimension, size_t>::type
     subEntityCodimNCount() const {
         return 0;
     }
 
-    template <int codimSub>
-    typename boost::enable_if_c<codimSub <= DuneEntity::dimension, int>::type
+    template <size_t codimSub>
+    typename boost::enable_if_c<codimSub <= DuneEntity::dimension, size_t>::type
     subEntityCodimNCount() const {
         return m_dune_entity->template count<codimSub>();
     }

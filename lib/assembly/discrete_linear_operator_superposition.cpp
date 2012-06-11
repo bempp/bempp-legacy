@@ -40,9 +40,9 @@ DiscreteLinearOperatorSuperposition(
 {
     // Check that all terms have the same dimensions
     if (terms.size() > 1) {
-        const int nRows = terms[0].rowCount();
-        const int nCols = terms[0].columnCount();
-        for (int i = 1; i < terms.size(); ++i)
+        const size_t nRows = terms[0].rowCount();
+        const size_t nCols = terms[0].columnCount();
+        for (size_t i = 1; i < terms.size(); ++i)
             if (terms[i].rowCount() != nRows || terms[i].columnCount() != nCols)
                 throw std::invalid_argument(
                         "DiscreteLinearOperatorSuperposition::"
@@ -75,7 +75,7 @@ DiscreteLinearOperatorSuperposition<ValueType>::asMatrix() const
     arma::Mat<ValueType> result;
     if (!m_terms.empty()) {
         result = m_terms[0].asMatrix();
-        for (int i = 1; i < m_terms.size(); ++i)
+        for (size_t i = 1; i < m_terms.size(); ++i)
             result += m_terms[i].asMatrix() * m_weights[i];
     }
     return result;
@@ -108,7 +108,7 @@ void DiscreteLinearOperatorSuperposition<ValueType>::addBlock(
         const ValueType alpha,
         arma::Mat<ValueType>& block) const
 {
-    for (int i = 0; i < m_terms.size(); ++i)
+    for (size_t i = 0; i < m_terms.size(); ++i)
         m_terms[i].addBlock(rows, cols, alpha * m_weights[i], block);
 }
 
@@ -191,7 +191,7 @@ applyBuiltInImpl(const TranspositionMode trans,
     else
         y_inout *= beta;
 
-    for (int i = 0; i < m_terms.size(); ++i)
+    for (size_t i = 0; i < m_terms.size(); ++i)
         m_terms[i].apply(trans, x_in, y_inout,
                          alpha * m_weights[i],
                          1. /* "+ beta * y_inout" has already been done */ );

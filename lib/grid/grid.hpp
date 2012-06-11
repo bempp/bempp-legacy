@@ -27,7 +27,7 @@ namespace Bempp
 {
 
 // Forward declarations
-template<int codim> class Entity;
+template<size_t codim> class Entity;
 class GeometryFactory;
 class GridView;
 class IdSet;
@@ -47,16 +47,16 @@ public:
     @{ */
 
     /** \brief Dimension of the grid. */
-    virtual int dim() const = 0;
+    virtual size_t dim() const = 0;
 
     /** \brief Dimension of the space containing the grid. */
-    virtual int dimWorld() const = 0;
+    virtual size_t dimWorld() const = 0;
 
     /** \brief Maximum level defined in this grid.
 
      Levels are numbered 0 ... maxLevel() with 0 the coarsest level.
      */
-    virtual int maxLevel() const = 0;
+    virtual size_t maxLevel() const = 0;
 
     /** \brief Number of boundary segments within the macro (level-0) grid. */
     virtual size_t boundarySegmentCount() const = 0;
@@ -66,7 +66,7 @@ public:
     @{ */
 
     /** \brief View of the entities on grid level \p level. */
-    virtual std::auto_ptr<GridView> levelView(int level) const = 0;
+    virtual std::auto_ptr<GridView> levelView(size_t level) const = 0;
 
     /** \brief View of the leaf entities. */
     virtual std::auto_ptr<GridView> leafView() const = 0;

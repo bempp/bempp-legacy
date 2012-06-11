@@ -286,7 +286,7 @@ void
 DiscreteAcaLinearOperator<ValueType>::
 makeAllMblocksDense()
 {
-    for (int i = 0; i < m_blockCluster->nleaves(); ++i)
+    for (unsigned int i = 0; i < m_blockCluster->nleaves(); ++i)
 #ifdef AHMED_PRERELEASE
         if (m_blocks[i]->islwr())
             m_blocks[i]->conv_lwr_to_dns();

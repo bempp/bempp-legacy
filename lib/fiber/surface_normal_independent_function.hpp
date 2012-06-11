@@ -71,15 +71,15 @@ public:
         m_functor(functor) {
     }
 
-    virtual int worldDimension() const {
+    virtual size_t worldDimension() const {
         return m_functor.argumentDimension;
     }
 
-    virtual int codomainDimension() const {
+    virtual size_t codomainDimension() const {
         return m_functor.resultDimension;
     }
 
-    virtual void addGeometricalDependencies(int& geomDeps) const {
+    virtual void addGeometricalDependencies(size_t& geomDeps) const {
         geomDeps |= GLOBALS;
     }
 
@@ -93,9 +93,9 @@ public:
                                         "incompatible world dimension");
 #endif
 
-        const int pointCount = points.n_cols;
+        const size_t pointCount = points.n_cols;
         result.set_size(codomainDimension(), pointCount);
-        for (int i = 0; i < pointCount; ++i)
+        for (size_t i = 0; i < pointCount; ++i)
         {
             arma::Col<ValueType> activeResultColumn = result.unsafe_col(i);
             m_functor.evaluate(points.unsafe_col(i), activeResultColumn);

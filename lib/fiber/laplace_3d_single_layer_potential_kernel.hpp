@@ -44,12 +44,12 @@ class Laplace3dSingleLayerPotentialKernel : public Kernel<ValueType>
 public:
     typedef typename Kernel<ValueType>::CoordinateType CoordinateType;
 
-    virtual int worldDimension() const { return 3; }
-    virtual int domainDimension() const { return 1; }
-    virtual int codomainDimension() const { return 1; }
+    virtual size_t worldDimension() const { return 3; }
+    virtual size_t domainDimension() const { return 1; }
+    virtual size_t codomainDimension() const { return 1; }
 
-    virtual void addGeometricalDependencies(int& testGeomDeps,
-                                            int& trialGeomDeps) const;
+    virtual void addGeometricalDependencies(size_t& testGeomDeps,
+                                            size_t& trialGeomDeps) const;
 
     virtual void evaluateAtPointPairs(const GeometricalData<CoordinateType>& testGeomData,
                                       const GeometricalData<CoordinateType>& trialGeomData,

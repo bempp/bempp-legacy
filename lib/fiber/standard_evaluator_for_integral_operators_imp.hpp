@@ -50,7 +50,7 @@ ResultType, GeometryFactory>::StandardEvaluatorForIntegralOperators(
     m_argumentLocalCoefficients(argumentLocalCoefficients),
     m_openClHandler(openClHandler), m_quadratureOptions(quadratureOptions)
 {
-    const int elementCount = rawGeometry->elementCount();
+    const size_t elementCount = rawGeometry->elementCount();
     if (!rawGeometry->auxData().is_empty() &&
             rawGeometry->auxData().n_cols != elementCount)
         throw std::invalid_argument(
@@ -92,8 +92,8 @@ ResultType, GeometryFactory>::evaluate(
         Region region,
         const arma::Mat<CoordinateType>& points, arma::Mat<ResultType>& result) const
 {
-    const int pointCount = points.n_cols;
-    const int worldDim = points.n_rows;
+    const size_t pointCount = points.n_cols;
+    const size_t worldDim = points.n_rows;
     if (worldDim != m_kernel->worldDimension())
         throw std::invalid_argument(
                 "StandardEvaluatorForIntegralOperators::evaluateFarField(): "
@@ -126,9 +126,9 @@ ResultType, GeometryFactory>::evaluate(
     const int chunkSize = 96;
     Fiber::Array4d<KernelType> kernelValues;
     Fiber::GeometricalData<CoordinateType> testGeomData;
-    for (int start = 0; start < pointCount; start += chunkSize)
+    for (int start = 0; start < (int)pointCount; start += chunkSize)
     {
-        int end = std::min(start + chunkSize - 1, pointCount - 1);
+        int end = std::min(start + chunkSize - 1, (int)pointCount - 1);
         testGeomData.globals = points.cols(start, end);
         m_kernel->evaluateOnGrid(testGeomData, trialGeomData, kernelValues);
         if (scalarKernel)
@@ -154,7 +154,7 @@ template <typename BasisFunctionType, typename KernelType,
 void StandardEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
 ResultType, GeometryFactory>::cacheTrialData()
 {
-    int testGeomDeps = 0, trialGeomDeps = 0;
+    size_t testGeomDeps = 0, trialGeomDeps = 0;
     m_kernel->addGeometricalDependencies(testGeomDeps, trialGeomDeps);
     if (testGeomDeps != 0 && testGeomDeps != Fiber::GLOBALS)
         throw std::runtime_error(
@@ -186,10 +186,10 @@ ResultType, GeometryFactory>::calcTrialData(
     const int trialExprComponentCount = m_trialExpression->codomainDimension();
 
     // Find out which basis data need to be calculated
-    int basisDeps = 0;
+    size_t basisDeps = 0;
     // Find out which geometrical data need to be calculated, in addition
     // to those needed by the kernel
-    int trialGeomDeps = kernelTrialGeomDeps;
+    size_t trialGeomDeps = kernelTrialGeomDeps;
     m_trialExpression->addDependencies(basisDeps, trialGeomDeps);
     trialGeomDeps |= INTEGRATION_ELEMENTS;
 
@@ -257,9 +257,9 @@ ResultType, GeometryFactory>::calcTrialData(
             if (basisDeps & VALUES)
             {
                 argumentData.values.fill(0.);
-                for (int point = 0; point < basisData.values.n_slices; ++point)
-                    for (int dim = 0; dim < basisData.values.n_rows; ++dim)
-                        for (int fun = 0; fun < basisData.values.n_cols; ++fun)
+                for (size_t point = 0; point < basisData.values.n_slices; ++point)
+                    for (size_t dim = 0; dim < basisData.values.n_rows; ++dim)
+                        for (size_t fun = 0; fun < basisData.values.n_cols; ++fun)
                             argumentData.values(dim, 0, point) +=
                                     basisData.values(dim, fun, point) *
                                     localCoefficients[fun];
@@ -268,10 +268,10 @@ ResultType, GeometryFactory>::calcTrialData(
             {
                 std::fill(argumentData.derivatives.begin(),
                           argumentData.derivatives.end(), 0.);
-                for (int point = 0; point < basisData.derivatives.extent(3); ++point)
-                    for (int dim = 0; dim < basisData.derivatives.extent(1); ++dim)
-                        for (int comp = 0; comp < basisData.derivatives.extent(0); ++comp)
-                            for (int fun = 0; fun < basisData.derivatives.extent(2); ++fun)
+                for (size_t point = 0; point < basisData.derivatives.extent(3); ++point)
+                    for (size_t dim = 0; dim < basisData.derivatives.extent(1); ++dim)
+                        for (size_t comp = 0; comp < basisData.derivatives.extent(0); ++comp)
+                            for (size_t fun = 0; fun < basisData.derivatives.extent(2); ++fun)
                                 argumentData.derivatives(comp, dim, 0, point) +=
                                     basisData.derivatives(comp, dim, fun, point) *
                                     localCoefficients[fun];
@@ -289,8 +289,8 @@ ResultType, GeometryFactory>::calcTrialData(
             assert(trialValues.n_cols == 1);
             weightedTrialExprValuesPerElement[e].set_size(trialValues.n_rows,
                                                           trialValues.n_slices);
-            for (int point = 0; point < trialValues.n_slices; ++point)
-                for (int dim = 0; dim < trialValues.n_rows; ++dim)
+            for (size_t point = 0; point < trialValues.n_slices; ++point)
+                for (size_t dim = 0; dim < trialValues.n_rows; ++dim)
                     weightedTrialExprValuesPerElement[e](dim, point) =
                             trialValues(dim, 0, point) *
                             geomDataPerElement[e].integrationElements(point) *

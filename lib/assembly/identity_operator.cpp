@@ -112,7 +112,7 @@ inline int epetraSumIntoGlobalValues<std::complex<float> >(
     arma::Mat<double> doubleValues(values.n_rows, values.n_cols);
     // Check whether arma::real returns a view or a copy (if the latter,
     // this assert will fail)
-    for (int i = 0; i < values.n_elem; ++i)
+    for (size_t i = 0; i < values.n_elem; ++i)
         doubleValues[i] = values[i].real();
     return epetraSumIntoGlobalValues<double>(
                 matrix, rowIndices, colIndices, doubleValues);
@@ -130,7 +130,7 @@ inline int epetraSumIntoGlobalValues<std::complex<double> >(
 {
     // Extract the real part of "values" into an array of type double
     arma::Mat<double> doubleValues(values.n_rows, values.n_cols);
-    for (int i = 0; i < values.n_elem; ++i)
+    for (size_t i = 0; i < values.n_elem; ++i)
         doubleValues[i] = values[i].real();
     return epetraSumIntoGlobalValues<double>(
                 matrix, rowIndices, colIndices, doubleValues);
@@ -204,9 +204,9 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInDense
 
     // Fill local submatrices
     std::auto_ptr<GridView> view = testSpace.grid().leafView();
-    const int elementCount = view->entityCount(0);
+    const size_t elementCount = view->entityCount(0);
     std::vector<int> elementIndices(elementCount);
-    for (int i = 0; i < elementCount; ++i)
+    for (size_t i = 0; i < elementCount; ++i)
         elementIndices[i] = i;
     std::vector<arma::Mat<ResultType> > localResult;
     assembler.evaluateLocalWeakForms(elementIndices, localResult);
@@ -233,9 +233,9 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInDense
     }
 
     // Distribute local matrices into the global matrix
-    for (int e = 0; e < elementCount; ++e)
-        for (int trialIndex = 0; trialIndex < trialGdofs[e].size(); ++trialIndex)
-            for (int testIndex = 0; testIndex < testGdofs[e].size(); ++testIndex)
+    for (size_t e = 0; e < elementCount; ++e)
+        for (size_t trialIndex = 0; trialIndex < trialGdofs[e].size(); ++trialIndex)
+            for (size_t testIndex = 0; testIndex < testGdofs[e].size(); ++testIndex)
                 result(testGdofs[e][testIndex], trialGdofs[e][trialIndex]) +=
                         localResult[e](testIndex, trialIndex);
 
@@ -262,9 +262,9 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInSpars
 
     // Fill local submatrices
     std::auto_ptr<GridView> view = testSpace.grid().leafView();
-    const int elementCount = view->entityCount(0);
+    const size_t elementCount = view->entityCount(0);
     std::vector<int> elementIndices(elementCount);
-    for (int i = 0; i < elementCount; ++i)
+    for (size_t i = 0; i < elementCount; ++i)
         elementIndices[i] = i;
     std::vector<arma::Mat<ResultType> > localResult;
     assembler.evaluateLocalWeakForms(elementIndices, localResult);
@@ -304,8 +304,8 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInSpars
     // Upper estimate for the number of global trial DOFs coupled to a given
     // global test DOF: sum of the local trial DOF counts for each element that
     // contributes to the global test DOF in question
-    for (int e = 0; e < elementCount; ++e)
-        for (int testLdof = 0; testLdof < testGdofs[e].size(); ++testLdof)
+    for (size_t e = 0; e < elementCount; ++e)
+        for (size_t testLdof = 0; testLdof < testGdofs[e].size(); ++testLdof)
             nonzeroEntryCountEstimates(testGdofs[e][testLdof]) +=
                     trialGdofs[e].size();
 
@@ -319,19 +319,19 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInSpars
     // TODO: make each process responsible for a subset of elements
     // Find maximum number of local dofs per element
     size_t maxLdofCount = 0;
-    for (int e = 0; e < elementCount; ++e)
+    for (size_t e = 0; e < elementCount; ++e)
         maxLdofCount = std::max(maxLdofCount,
                                 testGdofs[e].size() * trialGdofs[e].size());
 
     // Initialise sparse matrix with zeros at required positions
     arma::Col<double> zeros(maxLdofCount);
     zeros.fill(0.);
-    for (int e = 0; e < elementCount; ++e)
+    for (size_t e = 0; e < elementCount; ++e)
         result->InsertGlobalValues(testGdofs[e].size(), &testGdofs[e][0],
                                    trialGdofs[e].size(), &trialGdofs[e][0],
                                    zeros.memptr());
     // Add contributions from individual elements
-    for (int e = 0; e < elementCount; ++e)
+    for (size_t e = 0; e < elementCount; ++e)
         epetraSumIntoGlobalValues(
                     *result, testGdofs[e], trialGdofs[e], localResult[e]);
     result->GlobalAssemble();

@@ -107,20 +107,20 @@ void solveWithAmesos<std::complex<float> >(
     // Solve for the real and imaginary part separately
     // (The copy of the solution (before solving) is probably not necessary...)
     arma::Mat<double> solution_double(armaSolution.n_rows, 2);
-    for (int i = 0; i < armaSolution.n_rows; ++i)
+    for (size_t i = 0; i < armaSolution.n_rows; ++i)
     {
         solution_double(i, 0) = armaSolution(i).real();
         solution_double(i, 1) = armaSolution(i).imag();
     }
     arma::Mat<double> rhs_double(armaRhs.n_rows, 2);
-    for (int i = 0; i < armaRhs.n_rows; ++i)
+    for (size_t i = 0; i < armaRhs.n_rows; ++i)
     {
         rhs_double(i, 0) = armaRhs(i).real();
         rhs_double(i, 1) = armaRhs(i).imag();
     }
 
     solveWithAmesos<double>(problem, solver, solution_double, rhs_double);
-    for (int i = 0; i < armaSolution.n_rows; ++i)
+    for (size_t i = 0; i < armaSolution.n_rows; ++i)
         armaSolution(i) = std::complex<float>(solution_double(i, 0),
                                               solution_double(i, 1));
 }
@@ -139,20 +139,20 @@ void solveWithAmesos<std::complex<double> >(
     // Solve for the real and imaginary part separately
     // (The copy of the solution (before solving) is probably not necessary...)
     arma::Mat<double> solution_double(armaSolution.n_rows, 2);
-    for (int i = 0; i < armaSolution.n_rows; ++i)
+    for (size_t i = 0; i < armaSolution.n_rows; ++i)
     {
         solution_double(i, 0) = armaSolution(i).real();
         solution_double(i, 1) = armaSolution(i).imag();
     }
     arma::Mat<double> rhs_double(armaRhs.n_rows, 2);
-    for (int i = 0; i < armaRhs.n_rows; ++i)
+    for (size_t i = 0; i < armaRhs.n_rows; ++i)
     {
         rhs_double(i, 0) = armaRhs(i).real();
         rhs_double(i, 1) = armaRhs(i).imag();
     }
 
     solveWithAmesos<double>(problem, solver, solution_double, rhs_double);
-    for (int i = 0; i < armaSolution.n_rows; ++i)
+    for (size_t i = 0; i < armaSolution.n_rows; ++i)
         armaSolution(i) = std::complex<double>(solution_double(i, 0),
                                                solution_double(i, 1));
 }
@@ -281,7 +281,7 @@ void DiscreteInverseSparseLinearOperator<ValueType>::applyBuiltInImpl(
         throw std::invalid_argument("DiscreteInverseSparseLinearOperator::"
                                     "applyBuiltInImpl(): "
                                     "transposes and conjugates are not supported");
-    const int dim = m_space->dim();
+    const size_t dim = m_space->dim();
     if (x_in.n_rows != dim || y_inout.n_rows != dim)
         throw std::invalid_argument("DiscreteInverseSparseLinearOperator::"
                                     "applyBuiltInImpl(): "

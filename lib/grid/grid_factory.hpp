@@ -118,8 +118,8 @@ public:
     */
     static std::auto_ptr<Grid> importGmshGrid(const GridParameters& params,
             const std::string& fileName,
-            std::vector<int>& boundaryId2PhysicalEntity,
-            std::vector<int>& elementIndex2PhysicalEntity,
+            std::vector<int> &boundaryId2PhysicalEntity,
+            std::vector<int> &elementIndex2PhysicalEntity,
             bool verbose=true, bool insertBoundarySegments=false);
 };
 

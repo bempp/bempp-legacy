@@ -38,26 +38,26 @@ BOOST_AUTO_TEST_SUITE(Laplace3dAdjointDoubleLayerPotentialKernel)
 BOOST_AUTO_TEST_CASE_TEMPLATE(worldDimension_is_3, ValueType, kernel_types)
 {
     Fiber::Laplace3dAdjointDoubleLayerPotentialKernel<ValueType> op;
-    BOOST_CHECK_EQUAL(op.worldDimension(), 3);
+    BOOST_CHECK_EQUAL(op.worldDimension(), (size_t)3);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(domainDimension_is_1, ValueType, kernel_types)
 {
     Fiber::Laplace3dAdjointDoubleLayerPotentialKernel<ValueType> op;
-    BOOST_CHECK_EQUAL(op.domainDimension(), 1);
+    BOOST_CHECK_EQUAL(op.domainDimension(), (size_t)1);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(codomainDimension_is_1, ValueType, kernel_types)
 {
     Fiber::Laplace3dAdjointDoubleLayerPotentialKernel<ValueType> op;
-    BOOST_CHECK_EQUAL(op.domainDimension(), 1);
+    BOOST_CHECK_EQUAL(op.domainDimension(), (size_t)1);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(addGeometricalDependencies_works,
                               ValueType, kernel_types)
 {
     Fiber::Laplace3dAdjointDoubleLayerPotentialKernel<ValueType> op;
-    int testGeomDeps = 1024, trialGeomDeps = 16; // random initial values
+    size_t testGeomDeps = 1024, trialGeomDeps = 16; // random initial values
     op.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 
     BOOST_CHECK(testGeomDeps & Fiber::GLOBALS);
@@ -105,10 +105,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_double_layer_potential,
                                                  dlpResult.extent(3),
                                                  dlpResult.extent(0),
                                                  dlpResult.extent(1));
-    for (int i0 = 0; i0 < dlpResult.extent(0); ++i0)
-        for (int i1 = 0; i1 < dlpResult.extent(1); ++i1)
-            for (int i2 = 0; i2 < dlpResult.extent(2); ++i2)
-                for (int i3 = 0; i3 < dlpResult.extent(3); ++i3)
+    for (size_t i0 = 0; i0 < dlpResult.extent(0); ++i0)
+        for (size_t i1 = 0; i1 < dlpResult.extent(1); ++i1)
+            for (size_t i2 = 0; i2 < dlpResult.extent(2); ++i2)
+                for (size_t i3 = 0; i3 < dlpResult.extent(3); ++i3)
                     reorderedDlpResult(i2, i3, i0, i1) =
                             dlpResult(i0, i1, i2, i3);
 

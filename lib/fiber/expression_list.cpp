@@ -25,7 +25,7 @@ namespace Fiber
 {
 
 template <typename ResultType>
-int ExpressionList<ResultType>::domainDimension() const
+size_t ExpressionList<ResultType>::domainDimension() const
 {
     if (m_terms.empty())
         return 0;
@@ -34,7 +34,7 @@ int ExpressionList<ResultType>::domainDimension() const
 }
 
 template <typename ResultType>
-int ExpressionList<ResultType>::codomainDimension() const
+size_t ExpressionList<ResultType>::codomainDimension() const
 {
     if (m_terms.empty())
         return 0;
@@ -44,9 +44,9 @@ int ExpressionList<ResultType>::codomainDimension() const
 
 template <typename ResultType>
 void ExpressionList<ResultType>::addDependencies(
-        int& basisDeps, int& geomDeps) const
+        size_t& basisDeps, size_t& geomDeps) const
 {
-    for (int i = 0; i < m_terms.size(); ++i)
+    for (size_t i = 0; i < m_terms.size(); ++i)
         m_terms[i]->addDependencies(basisDeps, geomDeps);
 }
 
@@ -85,9 +85,9 @@ void ExpressionList<ResultType>::evaluate(
         const GeometricalData<CoordinateType>& geomData,
         std::vector<arma::Cube<CoordinateType> >& result) const
 {
-    const int termCount = m_terms.size();
+    const size_t termCount = m_terms.size();
     result.resize(termCount);
-    for (int i = 0; i < termCount; ++i)
+    for (size_t i = 0; i < termCount; ++i)
         m_terms[i]->evaluate(basisData, geomData, result[i]);
 }
 
@@ -97,9 +97,9 @@ void ExpressionList<ResultType>::evaluate(
         const GeometricalData<CoordinateType>& geomData,
         std::vector<arma::Cube<ComplexType> >& result) const
 {
-    const int termCount = m_terms.size();
+    const size_t termCount = m_terms.size();
     result.resize(termCount);
-    for (int i = 0; i < termCount; ++i)
+    for (size_t i = 0; i < termCount; ++i)
         m_terms[i]->evaluate(basisData, geomData, result[i]);
 }
 

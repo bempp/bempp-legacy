@@ -37,13 +37,13 @@ public:
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
     typedef typename ScalarTraits<ResultType>::ComplexType ComplexType;
 
-    int domainDimension() const;
-    int codomainDimension() const;
+    size_t domainDimension() const;
+    size_t codomainDimension() const;
 
-    void addDependencies(int& basisDeps, int& geomDeps) const;
+    void addDependencies(size_t& basisDeps, size_t& geomDeps) const;
     void addTerm(const Expression<CoordinateType>& expression,
                  ResultType weight = ResultType(1.));
-    int termCount() const { return m_terms.size(); }
+    size_t termCount() const { return m_terms.size(); }
     /** \brief Return true if the list consists of only one term with unit weight. */
     bool isTrivial() const;
     void clear();
@@ -55,8 +55,8 @@ public:
                        const GeometricalData<CoordinateType>& geomData,
                        std::vector<arma::Cube<ComplexType> >& result) const;
 
-    const Expression<CoordinateType>& term(int i) const { return *m_terms[i]; }
-    ResultType weight(int i) const { return m_weights[i]; }
+    const Expression<CoordinateType>& term(size_t i) const { return *m_terms[i]; }
+    ResultType weight(size_t i) const { return m_weights[i]; }
 
 private:
     std::vector<const Expression<CoordinateType>*> m_terms;

@@ -38,10 +38,10 @@ public:
 
     virtual ~Expression() {}
 
-    virtual int domainDimension() const = 0;
-    virtual int codomainDimension() const = 0;
+    virtual size_t domainDimension() const = 0;
+    virtual size_t codomainDimension() const = 0;
 
-    virtual void addDependencies(int& basisDeps, int& geomDeps) const = 0;
+    virtual void addDependencies(size_t& basisDeps, size_t& geomDeps) const = 0;
 
     /** \brief Evaluate expression at specified points.
      *

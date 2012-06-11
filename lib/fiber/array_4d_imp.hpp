@@ -35,7 +35,7 @@ inline Array4d<T>::Array4d()
 }
 
 template <typename T>
-inline Array4d<T>::Array4d(int extent0, int extent1, int extent2, int extent3)
+inline Array4d<T>::Array4d(size_t extent0, size_t extent1, size_t extent2, size_t extent3)
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_extents(extent0, extent1, extent2, extent3);
@@ -49,7 +49,7 @@ inline Array4d<T>::Array4d(int extent0, int extent1, int extent2, int extent3)
 }
 
 template <typename T>
-inline Array4d<T>::Array4d(int extent0, int extent1, int extent2, int extent3, T* data)
+inline Array4d<T>::Array4d(size_t extent0, size_t extent1, size_t extent2, size_t extent3, T* data)
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_extents(extent0, extent1, extent2, extent3);
@@ -70,7 +70,7 @@ inline Array4d<T>::~Array4d()
 }
 
 template <typename T>
-inline T& Array4d<T>::operator()(int index0, int index1, int index2, int index3)
+inline T& Array4d<T>::operator()(size_t index0, size_t index1, size_t index2, size_t index3)
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_indices(index0, index1, index2, index3);
@@ -83,7 +83,7 @@ inline T& Array4d<T>::operator()(int index0, int index1, int index2, int index3)
 }
 
 template <typename T>
-inline const T& Array4d<T>::operator()(int index0, int index1, int index2, int index3) const
+inline const T& Array4d<T>::operator()(size_t index0, size_t index1, size_t index2, size_t index3) const
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_indices(index0, index1, index2, index3);
@@ -96,7 +96,7 @@ inline const T& Array4d<T>::operator()(int index0, int index1, int index2, int i
 }
 
 template <typename T>
-inline int Array4d<T>::extent(int dimension) const
+inline size_t Array4d<T>::extent(size_t dimension) const
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_dimension(dimension);
@@ -105,7 +105,7 @@ inline int Array4d<T>::extent(int dimension) const
 }
 
 template <typename T>
-inline void Array4d<T>::set_size(int extent0, int extent1, int extent2, int extent3)
+inline void Array4d<T>::set_size(size_t extent0, size_t extent1, size_t extent2, size_t extent3)
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_extents(extent0, extent1, extent2, extent3);
@@ -157,21 +157,21 @@ inline typename Array4d<T>::const_iterator Array4d<T>::end() const
 
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
 template <typename T>
-inline void Array4d<T>::check_dimension(int dimension) const
+inline void Array4d<T>::check_dimension(size_t dimension) const
 {
     if (dimension < 0 || 3 < dimension)
         throw std::invalid_argument("Invalid dimension");
 }
 
 template <typename T>
-inline void Array4d<T>::check_extents(int extent0, int extent1, int extent2, int extent3) const
+inline void Array4d<T>::check_extents(size_t extent0, size_t extent1, size_t extent2, size_t extent3) const
 {
     if (extent0 <= 0 || extent1 <= 0 || extent2 <= 0 || extent3 <= 0)
         throw std::length_error("Invalid extent");
 }
 
 template <typename T>
-inline void Array4d<T>::check_indices(int index0, int index1, int index2, int index3) const
+inline void Array4d<T>::check_indices(size_t index0, size_t index1, size_t index2, size_t index3) const
 {
     if (index0 < 0 || m_extents[0] <= index0 ||
         index1 < 0 || m_extents[1] <= index1 ||

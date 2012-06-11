@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(addGeometricalDependencies_works,
                               ValueType, kernel_types)
 {
     Fiber::Laplace3dSingleLayerPotentialKernel<ValueType> op;
-    int testGeomDeps = 1024, trialGeomDeps = 16; // random initial values
+    size_t testGeomDeps = 1024, trialGeomDeps = 16; // random initial values
     op.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 
     BOOST_CHECK(testGeomDeps & Fiber::GLOBALS);
@@ -69,8 +69,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_x_axis,
     typedef Fiber::Laplace3dSingleLayerPotentialKernel<ValueType> Operator;
     Operator op;
     Fiber::GeometricalData<typename Operator::CoordinateType> testGeomData, trialGeomData;
-    const int worldDim = 3;
-    const int testPointCount = 2, trialPointCount = 3;
+    const size_t worldDim = 3;
+    const size_t testPointCount = 2, trialPointCount = 3;
     // Note: points lying on x axis only
     testGeomData.globals.set_size(worldDim, testPointCount);
     testGeomData.globals.fill(0.);
@@ -86,8 +86,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_x_axis,
     op.evaluateOnGrid(testGeomData, trialGeomData, result);
 
     Fiber::Array4d<ValueType> expected(1, testPointCount, 1, trialPointCount);
-    for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
-        for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
+    for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
+        for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint)
             expected(0, testPoint, 0, trialPoint) =
                     (1. / (4. * M_PI)) /
                     std::abs(testGeomData.globals(0, testPoint) -
@@ -102,8 +102,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_y_axis,
     typedef Fiber::Laplace3dSingleLayerPotentialKernel<ValueType> Operator;
     Operator op;
     Fiber::GeometricalData<typename Operator::CoordinateType> testGeomData, trialGeomData;
-    const int worldDim = 3;
-    const int testPointCount = 2, trialPointCount = 3;
+    const size_t worldDim = 3;
+    const size_t testPointCount = 2, trialPointCount = 3;
     // Note: points lying on y axis only
     testGeomData.globals.set_size(worldDim, testPointCount);
     testGeomData.globals.fill(0.);
@@ -119,8 +119,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_y_axis,
     op.evaluateOnGrid(testGeomData, trialGeomData, result);
 
     Fiber::Array4d<ValueType> expected(1, testPointCount, 1, trialPointCount);
-    for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
-        for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
+    for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
+        for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint)
             expected(0, testPoint, 0, trialPoint) =
                     (1. / (4. * M_PI)) /
                     std::abs(testGeomData.globals(0, testPoint) -
@@ -137,8 +137,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_evaluateAtPointPairs,
 
     typedef Fiber::GeometricalData<typename Operator::CoordinateType> GeomData;
 
-    const int worldDim = 3;
-    const int testPointCount = 2, trialPointCount = 3;
+    const size_t worldDim = 3;
+    const size_t testPointCount = 2, trialPointCount = 3;
 
     // Collect data with evaluateOnGrid
     GeomData testGeomDataOnGrid, trialGeomDataOnGrid;
@@ -157,8 +157,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_evaluateAtPointPairs,
     op.evaluateOnGrid(testGeomDataOnGrid, trialGeomDataOnGrid, resultOnGrid);
 
     arma::Cube<ValueType> convertedResultOnGrid(1, 1, testPointCount * trialPointCount);
-    for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
-        for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
+    for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint)
+        for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
             convertedResultOnGrid(testPoint + trialPoint * testPointCount) =
                     resultOnGrid(0, testPoint, 0, trialPoint);
 
@@ -166,8 +166,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_evaluateAtPointPairs,
     GeomData testGeomDataAtPointPairs, trialGeomDataAtPointPairs;
     testGeomDataAtPointPairs.globals.set_size(worldDim, testPointCount * trialPointCount);
     trialGeomDataAtPointPairs.globals.set_size(worldDim, testPointCount * trialPointCount);
-    for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
-        for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
+    for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint)
+        for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
             testGeomDataAtPointPairs.globals.col(testPoint + trialPoint * testPointCount) =
                     testGeomDataOnGrid.globals.col(testPoint);
             trialGeomDataAtPointPairs.globals.col(testPoint + trialPoint * testPointCount) =

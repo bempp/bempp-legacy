@@ -34,16 +34,16 @@ class Array2d
 {
 public:
     Array2d();
-    Array2d(int extent0, int extent1);
-    Array2d(int extent0, int extent1, T* data);
+    Array2d(size_t extent0, size_t extent1);
+    Array2d(size_t extent0, size_t extent1, T* data);
 
     ~Array2d();
 
-    T& operator()(int index0, int index1);
-    const T& operator()(int index0, int index1) const;
+    T& operator()(size_t index0, size_t index1);
+    const T& operator()(size_t index0, size_t index1) const;
 
-    int extent(int dimension) const;
-    void set_size(int extent0, int extent1);
+    size_t extent(size_t dimension) const;
+    void set_size(size_t extent0, size_t extent1);
 
     typedef T* iterator;
     typedef const T* const_iterator;
@@ -55,9 +55,9 @@ public:
 
 private:
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
-    void check_dimension(int dimension) const;
-    void check_extents(int extent0, int extent1) const;
-    void check_indices(int index0, int index1) const;
+    void check_dimension(size_t dimension) const;
+    void check_extents(size_t extent0, size_t extent1) const;
+    void check_indices(size_t index0, size_t index1) const;
 #endif
 
 private:
@@ -66,7 +66,7 @@ private:
     Array2d& operator=(const Array2d& rhs);
 
 private:
-    int m_extents[2];
+    size_t m_extents[2];
     bool m_owns;
     T* m_storage;
 };

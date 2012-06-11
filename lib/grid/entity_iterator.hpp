@@ -28,7 +28,7 @@ namespace Bempp
 {
 
 // Forward declarations
-template<int codim> class Entity;
+template<size_t codim> class Entity;
 
 /** \brief Abstract base class for iterators over entities.
 
@@ -51,7 +51,7 @@ template<int codim> class Entity;
     entity() method must know the codimension of the entity to which it returns
     a reference.
 */
-template<int codim>
+template<size_t codim>
 class EntityIterator: public EntityPointer<codim>
 {
 protected: /* Can't be changed to private, derived classes use it */

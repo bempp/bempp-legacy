@@ -33,7 +33,7 @@ namespace Fiber
 
 template <typename ValueType>
 void Laplace3dSingleLayerPotentialKernel<ValueType>::addGeometricalDependencies(
-        int& testGeomDeps, int& trialGeomDeps) const
+        size_t& testGeomDeps, size_t& trialGeomDeps) const
 {
     testGeomDeps |= GLOBALS;
     trialGeomDeps |= GLOBALS;
@@ -44,10 +44,10 @@ inline ValueType Laplace3dSingleLayerPotentialKernel<ValueType>::evaluateAtPoint
         const arma::Col<CoordinateType>& testPoint,
         const arma::Col<CoordinateType>& trialPoint) const
 {
-    const int coordCount = testPoint.n_rows;
+    const size_t coordCount = testPoint.n_rows;
 
     ValueType sum = 0;
-    for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex)
+    for (size_t coordIndex = 0; coordIndex < coordCount; ++coordIndex)
     {
         ValueType diff = testPoint(coordIndex) - trialPoint(coordIndex);
         sum += diff * diff;
@@ -74,9 +74,9 @@ void Laplace3dSingleLayerPotentialKernel<ValueType>::evaluateAtPointPairs(
                                     "number of test and trial points must be equal");
 #endif
 
-    const int pointCount = testPoints.n_cols;
+    const size_t pointCount = testPoints.n_cols;
     result.set_size(1, 1, pointCount);
-    for (int i = 0; i < pointCount; ++i)
+    for (size_t i = 0; i < pointCount; ++i)
         result(0, 0, i) = evaluateAtPointPair(testPoints.unsafe_col(i),
                                               trialPoints.unsafe_col(i));
 }
@@ -97,11 +97,11 @@ void Laplace3dSingleLayerPotentialKernel<ValueType>::evaluateOnGrid(
                                     "3D coordinates required");
 #endif
 
-    const int testPointCount = testPoints.n_cols;
-    const int trialPointCount = trialPoints.n_cols;
+    const size_t testPointCount = testPoints.n_cols;
+    const size_t trialPointCount = trialPoints.n_cols;
     result.set_size(1, testPointCount, 1, trialPointCount);
-    for (int trialIndex = 0; trialIndex < trialPointCount; ++trialIndex)
-        for (int testIndex = 0; testIndex < testPointCount; ++testIndex)
+    for (size_t trialIndex = 0; trialIndex < trialPointCount; ++trialIndex)
+        for (size_t testIndex = 0; testIndex < testPointCount; ++testIndex)
             result(0, testIndex, 0, trialIndex) =
                     evaluateAtPointPair(testPoints.unsafe_col(testIndex),
                                         trialPoints.unsafe_col(trialIndex));

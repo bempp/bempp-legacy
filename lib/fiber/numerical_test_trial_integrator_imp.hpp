@@ -66,8 +66,8 @@ void NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory
         const Basis<BasisFunctionType>& trialBasis,
         arma::Cube<ResultType>& result) const
 {
-    const int pointCount = m_localQuadPoints.n_cols;
-    const int elementCount = elementIndices.size();
+    const size_t pointCount = m_localQuadPoints.n_cols;
+    const size_t elementCount = elementIndices.size();
 
     if (pointCount == 0 || elementCount == 0)
         return;
@@ -75,9 +75,9 @@ void NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory
     // elementCount != 0, set elements of result to 0.
 
     // Evaluate constants
-    const int componentCount = m_testExpression.codomainDimension();
-    const int testDofCount = testBasis.size();
-    const int trialDofCount = trialBasis.size();
+    const size_t componentCount = m_testExpression.codomainDimension();
+    const size_t testDofCount = testBasis.size();
+    const size_t trialDofCount = trialBasis.size();
 
     if (m_trialExpression.codomainDimension() != componentCount)
         throw std::runtime_error("NumericalTestTrialIntegrator::integrate(): "
@@ -87,8 +87,8 @@ void NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory
     BasisData<BasisFunctionType> testBasisData, trialBasisData;
     GeometricalData<CoordinateType> geomData;
 
-    int testBasisDeps = 0, trialBasisDeps = 0;
-    int geomDeps = INTEGRATION_ELEMENTS;
+    size_t testBasisDeps = 0, trialBasisDeps = 0;
+    size_t geomDeps = INTEGRATION_ELEMENTS;
 
     m_testExpression.addDependencies(testBasisDeps, geomDeps);
     m_trialExpression.addDependencies(trialBasisDeps, geomDeps);
@@ -104,19 +104,19 @@ void NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory
     trialBasis.evaluate(trialBasisDeps, m_localQuadPoints, ALL_DOFS, trialBasisData);
 
     // Iterate over the elements
-    for (int e = 0; e < elementCount; ++e)
+    for (size_t e = 0; e < elementCount; ++e)
     {
         m_rawGeometry.setupGeometry(elementIndices[e], *geometry);
         geometry->getData(geomDeps, m_localQuadPoints, geomData);
         m_testExpression.evaluate(testBasisData, geomData, testValues);
         m_trialExpression.evaluate(trialBasisData, geomData, trialValues);
 
-        for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
-            for (int testDof = 0; testDof < testDofCount; ++testDof)
+        for (size_t trialDof = 0; trialDof < trialDofCount; ++trialDof)
+            for (size_t testDof = 0; testDof < testDofCount; ++testDof)
             {
                 ResultType sum = 0.;
-                for (int point = 0; point < pointCount; ++point)
-                    for (int dim = 0; dim < componentCount; ++dim)
+                for (size_t point = 0; point < pointCount; ++point)
+                    for (size_t dim = 0; dim < componentCount; ++dim)
                         sum +=  m_quadWeights[point] *
                                 geomData.integrationElements(point) *
                                 conjugate(testValues(dim, testDof, point)) *

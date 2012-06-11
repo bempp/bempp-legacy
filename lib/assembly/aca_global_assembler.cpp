@@ -141,10 +141,10 @@ void reallyGetClusterIds(const cluster& clusterTree,
                          unsigned int& id)
 {
     if (clusterTree.isleaf())
-        for (int nDof = clusterTree.getnbeg(); nDof < clusterTree.getnend(); ++nDof)
+        for (unsigned int nDof = clusterTree.getnbeg(); nDof < clusterTree.getnend(); ++nDof)
             clusterIds[p2oDofs[nDof]] = id;
     else
-        for (int nSon = 0; nSon < clusterTree.getns(); ++nSon)
+        for (unsigned int nSon = 0; nSon < clusterTree.getns(); ++nSon)
             reallyGetClusterIds(*clusterTree.getson(nSon), p2oDofs, clusterIds, ++id);
 }
 
@@ -178,8 +178,8 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
     const AcaOptions& acaOptions = options.acaOptions();
 
-    const int testDofCount = testSpace.globalDofCount();
-    const int trialDofCount = trialSpace.globalDofCount();
+    const size_t testDofCount = testSpace.globalDofCount();
+    const size_t trialDofCount = trialSpace.globalDofCount();
 
     if (symmetric && testDofCount != trialDofCount)
         throw std::invalid_argument("AcaGlobalAssembler::assembleDetachedWeakForm(): "
@@ -196,13 +196,13 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     std::vector<unsigned int> p2oTestDofs(testDofCount);
     std::vector<unsigned int> o2pTrialDofs(trialDofCount);
     std::vector<unsigned int> p2oTrialDofs(trialDofCount);
-    for (unsigned int i = 0; i < testDofCount; ++i)
+    for (size_t i = 0; i < testDofCount; ++i)
         o2pTestDofs[i] = i;
-    for (unsigned int i = 0; i < testDofCount; ++i)
+    for (size_t i = 0; i < testDofCount; ++i)
         p2oTestDofs[i] = i;
-    for (unsigned int i = 0; i < trialDofCount; ++i)
+    for (size_t i = 0; i < trialDofCount; ++i)
         o2pTrialDofs[i] = i;
-    for (unsigned int i = 0; i < trialDofCount; ++i)
+    for (size_t i = 0; i < trialDofCount; ++i)
         p2oTrialDofs[i] = i;
 
     std::vector<Point3D<CoordinateType> > trialDofCenters, testDofCenters;

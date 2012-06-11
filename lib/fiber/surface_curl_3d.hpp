@@ -35,15 +35,15 @@ class SurfaceCurl3d : public Expression<CoordinateType>
 public:    
     typedef typename Expression<CoordinateType>::ComplexType ComplexType;
 
-    virtual int domainDimension() const {
+    virtual size_t domainDimension() const {
         return 1;
     }
 
-    virtual int codomainDimension() const {
+    virtual size_t codomainDimension() const {
         return 3;
     }
 
-    virtual void addDependencies(int& basisDeps, int& geomDeps) const {
+    virtual void addDependencies(size_t& basisDeps, size_t& geomDeps) const {
         ScalarSpaceMapping<CoordinateType>::
                 addSurfaceCurlDependencies(basisDeps, geomDeps);
     }

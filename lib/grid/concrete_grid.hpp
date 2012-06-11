@@ -33,7 +33,7 @@ namespace Bempp
 {
 
 // Forward declarations
-template<int codim> class Entity;
+template<size_t codim> class Entity;
 class GridView;
 
 /**
@@ -90,15 +90,15 @@ public:
     /** @name Grid parameters
     @{ */
 
-    virtual int dimWorld() const {
+    virtual size_t dimWorld() const {
         return DuneGrid::dimensionworld;
     }
 
-    virtual int dim() const {
+    virtual size_t dim() const {
         return DuneGrid::dimension;
     }
 
-    virtual int maxLevel() const {
+    virtual size_t maxLevel() const {
         return m_dune_grid->maxLevel();
     }
 
@@ -110,7 +110,7 @@ public:
     @name Views
     @{ */
 
-    virtual std::auto_ptr<GridView> levelView(int level) const {
+    virtual std::auto_ptr<GridView> levelView(size_t level) const {
         return std::auto_ptr<GridView>(new ConcreteGridView<typename DuneGrid::LevelGridView>(
                                            m_dune_grid->levelView(level)));
     }

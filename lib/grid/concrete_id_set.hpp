@@ -68,7 +68,7 @@ public:
         return entityCodimNId(e);
     }
 
-    virtual IdType subEntityId(const Entity<0>& e, int i, unsigned int codimSub) const {
+    virtual IdType subEntityId(const Entity<0>& e, size_t i, size_t codimSub) const {
 #ifndef NDEBUG
         // Prevent an assert in FoamGrid from crashing the Python interpreter
         if (codimSub > DuneGrid::dimension)
@@ -82,7 +82,7 @@ public:
 
 private:
     // Below there are essentially two overloads of
-    // template <int codim>
+    // template <size_t codim>
     // IdType entityCodimNId(const Entity<codim>& e) const;
     // valid for codim > DuneGrid::dimension (throws exception)
     // and for the opposite case (does real work).
@@ -91,13 +91,13 @@ private:
     // The problem is that we cannot allow the compiler to instantiate
     // Dune::Entity objects with codim > DuneGrid::dimension
     // because that throws a static assert in Dune code.
-    template <int codim>
+    template <size_t codim>
     typename boost::disable_if_c<codim <= DuneGrid::dimension, IdType>::type
     entityCodimNId(const Entity<codim>& e) const {
         throw std::logic_error("IdSet::entityId(): invalid entity codimension");
     }
 
-    template <int codim>
+    template <size_t codim>
     typename boost::enable_if_c<codim <= DuneGrid::dimension, IdType>::type
     entityCodimNId(const Entity<codim>& e) const {
         typedef typename DuneGrid::template Codim<codim>::Entity DuneEntity;

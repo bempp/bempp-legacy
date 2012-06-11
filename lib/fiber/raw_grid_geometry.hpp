@@ -98,12 +98,12 @@ public:
     void setupGeometry(int elementIndex, Geometry& geometry) const
     {
         const int dimGrid = m_vertices.n_rows;
-        int cornerCount = 0;
+        size_t cornerCount = 0;
         for (; cornerCount < m_elementCornerIndices.n_rows; ++cornerCount)
             if (m_elementCornerIndices(cornerCount, elementIndex) < 0)
                 break;
         arma::Mat<CoordinateType> corners(dimGrid, cornerCount);
-        for (int cornerIndex = 0; cornerIndex < cornerCount; ++cornerIndex)
+        for (size_t cornerIndex = 0; cornerIndex < cornerCount; ++cornerIndex)
             corners.col(cornerIndex) = m_vertices.col(
                         m_elementCornerIndices(cornerIndex, elementIndex));
         geometry.setup(corners, m_auxData.unsafe_col(elementIndex));

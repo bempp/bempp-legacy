@@ -69,11 +69,11 @@ public:
         return m_element_mapper;
     }
 
-    virtual int entityCount(int codim) const {
+    virtual size_t entityCount(size_t codim) const {
         return m_dune_gv.size(codim);
     }
 
-    virtual int entityCount(const GeometryType &type) const {
+    virtual size_t entityCount(const GeometryType &type) const {
         return m_dune_gv.size(type);
     }
 
@@ -124,13 +124,13 @@ private:
         return entityCodimNIterator<3>();
     }
 
-    template <int codim>
+    template <size_t codim>
     typename boost::disable_if_c<codim <= DuneGridView::dimension, bool>::type
     containsEntityCodimN(const Entity<codim>& e) const {
         throw std::logic_error("GridView::containsEntity(): invalid entity codimension");
     }
 
-    template <int codim>
+    template <size_t codim>
     typename boost::enable_if_c<codim <= DuneGridView::dimension, bool>::type
     containsEntityCodimN(const Entity<codim>& e) const {
         typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
@@ -139,13 +139,13 @@ private:
         return m_dune_gv.contains(ce.duneEntity());
     }
 
-    template <int codim>
+    template <size_t codim>
     typename boost::disable_if_c<codim <= DuneGridView::dimension, std::auto_ptr<EntityIterator<codim> > >::type
     entityCodimNIterator() const {
         throw std::logic_error("GridView::entityIterator(): invalid entity codimension");
     }
 
-    template <int codim>
+    template <size_t codim>
     typename boost::enable_if_c<codim <= DuneGridView::dimension, std::auto_ptr<EntityIterator<codim> > >::type
     entityCodimNIterator() const {
         typedef typename DuneGridView::template Codim<codim>::Iterator DuneIterator;

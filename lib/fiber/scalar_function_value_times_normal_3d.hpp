@@ -37,15 +37,15 @@ class ScalarFunctionValueTimesNormal3d : public Expression<CoordinateType>
 public:
     typedef typename Expression<CoordinateType>::ComplexType ComplexType;
 
-    virtual int domainDimension() const {
+    virtual size_t domainDimension() const {
         return 1;
     }
 
-    virtual int codomainDimension() const {
+    virtual size_t codomainDimension() const {
         return 3;
     }
 
-    virtual void addDependencies(int& basisDeps, int& geomDeps) const {
+    virtual void addDependencies(size_t& basisDeps, size_t& geomDeps) const {
         ScalarSpaceMapping<CoordinateType>::
                 addShapeFunctionDependencies(basisDeps, geomDeps);
         geomDeps |= NORMALS;
@@ -61,13 +61,13 @@ private:
                 evaluateShapeFunctions(basisData, geomData, scalarFunctionValues);
         const arma::Mat<CoordinateType>& n = geomData.normals;
 
-        const int dimWorld = 3;
-        const int functionCount = scalarFunctionValues.n_cols;
-        const int pointCount = scalarFunctionValues.n_slices;
+        const size_t dimWorld = 3;
+        const size_t functionCount = scalarFunctionValues.n_cols;
+        const size_t pointCount = scalarFunctionValues.n_slices;
         result.set_size(dimWorld, functionCount, pointCount);
-        for (int p = 0; p < pointCount; ++p)
-            for (int f = 0; f < functionCount; ++f)
-                for (int d = 0; d < dimWorld; ++d)
+        for (size_t p = 0; p < pointCount; ++p)
+            for (size_t f = 0; f < functionCount; ++f)
+                for (size_t d = 0; d < dimWorld; ++d)
                     result(d, f, p) = scalarFunctionValues(0, f, p) * n(d, p);
     }
 

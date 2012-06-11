@@ -34,11 +34,11 @@ namespace Bempp
 
 // Forward declarations
 class Geometry;
-template<int codim> class EntityPointer;
-template<int codim> class EntityIterator;
+template<size_t codim> class EntityPointer;
+template<size_t codim> class EntityIterator;
 
 /** \brief Abstract wrapper of an entity of codimension \p codim. */
-template<int codim>
+template<size_t codim>
 class Entity
 {
 public:
@@ -52,7 +52,7 @@ public:
     };
 
     /** \brief %Entity level. */
-    virtual int level() const = 0;
+    virtual size_t level() const = 0;
 
     /** \brief Reference to the geometry of this entity.
 
@@ -89,7 +89,7 @@ public:
     @{ */
 
     /** \brief %Entity level */
-    virtual int level() const = 0;
+    virtual size_t level() const = 0;
 
     /** \brief Reference to the geometry of this entity.
 
@@ -120,7 +120,7 @@ public:
      */
     // Default implementation, specialisations for potentially allowed
     // codimensions (1 to 3) follow after class declaration.
-    template<int codimSub> int subEntityCount() const {
+    template<size_t codimSub> size_t subEntityCount() const {
         return 0;
     }
 
@@ -129,7 +129,7 @@ public:
     \note codimSub must be greater than 0 and less than the dimension of the grid. */
     // Default implementation, specialisations for potentially allowed codimensions follow
     // after class declaration.
-    template<int codimSub>
+    template<size_t codimSub>
     std::auto_ptr<EntityIterator<codimSub> > subEntityIterator() const {
         throw std::logic_error("Entity::subEntityIterator(): invalid entity codimension");
     }
@@ -171,7 +171,7 @@ public:
      or implemented in general.
      For some grids it might be available, though.
      */
-    virtual std::auto_ptr<EntityIterator<0> > sonIterator(int maxlevel) const = 0;
+    virtual std::auto_ptr<EntityIterator<0> > sonIterator(size_t maxlevel) const = 0;
 
     /** \brief True if the entity has been created during the last call to adapt().
      */
@@ -202,11 +202,11 @@ private:
     virtual std::auto_ptr<EntityIterator<3> > subEntityCodim3Iterator() const = 0;
 
     /** \brief Number of subentities of codimension 1. */
-    virtual int subEntityCodim1Count() const = 0;
+    virtual size_t subEntityCodim1Count() const = 0;
     /** \brief Number of subentities of codimension 1. */
-    virtual int subEntityCodim2Count() const = 0;
+    virtual size_t subEntityCodim2Count() const = 0;
     /** \brief Number of subentities of codimension 1. */
-    virtual int subEntityCodim3Count() const = 0;
+    virtual size_t subEntityCodim3Count() const = 0;
 
     /** @} */
 };
@@ -235,17 +235,17 @@ inline std::auto_ptr<EntityIterator<3> > Entity<0>::subEntityIterator<3>() const
 }
 
 template<>
-inline int Entity<0>::subEntityCount<1>() const
+inline size_t Entity<0>::subEntityCount<1>() const
 {
     return subEntityCodim1Count();
 }
 template<>
-inline int Entity<0>::subEntityCount<2>() const
+inline size_t Entity<0>::subEntityCount<2>() const
 {
     return subEntityCodim2Count();
 }
 template<>
-inline int Entity<0>::subEntityCount<3>() const
+inline size_t Entity<0>::subEntityCount<3>() const
 {
     return subEntityCodim3Count();
 }

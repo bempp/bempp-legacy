@@ -36,15 +36,15 @@ class ScalarFunctionValue : public Expression<CoordinateType>
 public:
     typedef typename Expression<CoordinateType>::ComplexType ComplexType;
 
-    virtual int domainDimension() const {
+    virtual size_t domainDimension() const {
         return 1;
     }
 
-    virtual int codomainDimension() const {
+    virtual size_t codomainDimension() const {
         return 1;
     }
 
-    virtual void addDependencies(int& basisDeps, int& geomDeps) const {
+    virtual void addDependencies(size_t& basisDeps, size_t& geomDeps) const {
         ScalarSpaceMapping<CoordinateType>::
                 addShapeFunctionDependencies(basisDeps, geomDeps);
     }
@@ -56,7 +56,7 @@ public:
         std::string str (scalar_function_value_cl,
              scalar_function_value_cl_len);
         if (modifier.size() > 0) {
-            int n = str.find (funcName);
+            size_t n = str.find (funcName);
             if (n != std::string::npos) {
                 size_t len = funcName.size();
                 funcName.append (modifier);

@@ -71,8 +71,8 @@ integrate(
         const Basis<BasisFunctionType>& testBasis,
         arma::Mat<ResultType>& result) const
 {
-    const int pointCount = m_localQuadPoints.n_cols;
-    const int elementCount = elementIndices.size();
+    const size_t pointCount = m_localQuadPoints.n_cols;
+    const size_t elementCount = elementIndices.size();
 
     if (pointCount == 0 || elementCount == 0)
         return;
@@ -80,8 +80,8 @@ integrate(
     // elementCount != 0, set elements of result to 0.
 
     // Evaluate constants
-    const int componentCount = m_testExpression.codomainDimension();
-    const int testDofCount = testBasis.size();
+    const size_t componentCount = m_testExpression.codomainDimension();
+    const size_t testDofCount = testBasis.size();
 
     if (m_function.codomainDimension() != componentCount)
         throw std::runtime_error("NumericalTestFunctionIntegrator::integrate(): "
@@ -91,8 +91,8 @@ integrate(
     BasisData<BasisFunctionType> testBasisData;
     GeometricalData<CoordinateType> geomData;
 
-    int testBasisDeps = 0;
-    int geomDeps = INTEGRATION_ELEMENTS;
+    size_t testBasisDeps = 0;
+    size_t geomDeps = INTEGRATION_ELEMENTS;
 
     m_testExpression.addDependencies(testBasisDeps, geomDeps);
     m_function.addGeometricalDependencies(geomDeps);
@@ -108,18 +108,18 @@ integrate(
     testBasis.evaluate(testBasisDeps, m_localQuadPoints, ALL_DOFS, testBasisData);
 
     // Iterate over the elements
-    for (int e = 0; e < elementCount; ++e)
+    for (size_t e = 0; e < elementCount; ++e)
     {
         m_rawGeometry.setupGeometry(elementIndices[e], *geometry);
         geometry->getData(geomDeps, m_localQuadPoints, geomData);
         m_testExpression.evaluate(testBasisData, geomData, testValues);
         m_function.evaluate(geomData, functionValues);
 
-        for (int testDof = 0; testDof < testDofCount; ++testDof)
+        for (size_t testDof = 0; testDof < testDofCount; ++testDof)
         {
             ResultType sum = 0.;
-            for (int point = 0; point < pointCount; ++point)
-                for (int dim = 0; dim < componentCount; ++dim)
+            for (size_t point = 0; point < pointCount; ++point)
+                for (size_t dim = 0; dim < componentCount; ++dim)
                     sum +=  m_quadWeights[point] *
                             geomData.integrationElements(point) *
                             conjugate(testValues(dim, testDof, point)) *

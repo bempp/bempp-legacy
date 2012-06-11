@@ -28,6 +28,7 @@
 using namespace Bempp;
 typedef double ctype;
 
+/*
 BOOST_FIXTURE_TEST_SUITE(Geometry_Triangular, TriangularEntityManager)
 
 // type()
@@ -718,6 +719,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianTransposed_agrees_with_Dune_for_last_o
 // ____________________________________________________________________________
 // jacobianInverseTransposed()
 
+/*
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianInverseTransposed_agrees_with_Dune_for_one_point_and_uninitialised_output_and_codim,
                                   T, list_0_to_2)
 {
@@ -857,3 +859,4 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianInverseTransposed_agrees_with_Dune_for
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+*/

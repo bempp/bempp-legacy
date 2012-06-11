@@ -78,9 +78,9 @@ check_arrays_are_close(const arma::Cube<ValueType>& left,
                          << right.n_slices << ")]";
         return result;
     }
-    for (int r = 0; r < left.n_rows; ++r)
-        for (int c = 0; c < left.n_cols; ++c)
-            for (int s = 0; s < left.n_slices; ++s) {
+    for (size_t r = 0; r < left.n_rows; ++r)
+        for (size_t c = 0; c < left.n_cols; ++c)
+            for (size_t s = 0; s < left.n_slices; ++s) {
                 typename Fiber::ScalarTraits<ValueType>::RealType diff =
                         std::abs(left(r, c, s) - right(r, c, s));
                 typename Fiber::ScalarTraits<ValueType>::RealType avg =
@@ -116,10 +116,10 @@ check_arrays_are_close(const Fiber::Array4d<ValueType>& left,
                          << right.extent(2) << ", " << right.extent(3) << "]";
         return result;
     }
-    for (int r = 0; r < left.extent(0); ++r)
-        for (int c = 0; c < left.extent(1); ++c)
-            for (int s = 0; s < left.extent(2); ++s)
-                for (int u = 0; u < left.extent(3); ++u) {
+    for (size_t r = 0; r < left.extent(0); ++r)
+        for (size_t c = 0; c < left.extent(1); ++c)
+            for (size_t s = 0; s < left.extent(2); ++s)
+                for (size_t u = 0; u < left.extent(3); ++u) {
                     typename Fiber::ScalarTraits<ValueType>::RealType diff =
                             std::abs(left(r, c, s, u) - right(r, c, s, u));
                     typename Fiber::ScalarTraits<ValueType>::RealType avg =
@@ -155,8 +155,8 @@ check_arrays_are_close(const Fiber::Array2d<arma::Mat<ValueType> >& leftArrays,
         return result;
     }
 
-    for (int ra = 0; ra < leftArrays.extent(0); ++ra)
-        for (int ca = 0; ca < leftArrays.extent(1); ++ca) {
+    for (size_t ra = 0; ra < leftArrays.extent(0); ++ra)
+        for (size_t ca = 0; ca < leftArrays.extent(1); ++ca) {
             const arma::Mat<ValueType>& left = leftArrays(ra, ca);
             const arma::Mat<ValueType>& right = rightArrays(ra, ca);
             if (left.n_rows != right.n_rows || left.n_cols != right.n_cols) {
@@ -167,8 +167,8 @@ check_arrays_are_close(const Fiber::Array2d<arma::Mat<ValueType> >& leftArrays,
                                  << right.n_rows << ", " << right.n_cols << ")]";
                 return result;
             }
-            for (int r = 0; r < left.n_rows; ++r)
-                for (int c = 0; c < left.n_cols; ++c) {
+            for (size_t r = 0; r < left.n_rows; ++r)
+                for (size_t c = 0; c < left.n_cols; ++c) {
                     typename Fiber::ScalarTraits<ValueType>::RealType diff =
                             std::abs(left(r, c) - right(r, c));
                     typename Fiber::ScalarTraits<ValueType>::RealType avg =
@@ -201,7 +201,7 @@ check_arrays_are_close(const std::vector<arma::Mat<ValueType> >& leftArrays,
         return result;
     }
 
-    for (int ra = 0; ra < leftArrays.size(); ++ra) {
+    for (size_t ra = 0; ra < leftArrays.size(); ++ra) {
         const arma::Mat<ValueType>& left = leftArrays[ra];
         const arma::Mat<ValueType>& right = rightArrays[ra];
         if (left.n_rows != right.n_rows || left.n_cols != right.n_cols) {
@@ -212,8 +212,8 @@ check_arrays_are_close(const std::vector<arma::Mat<ValueType> >& leftArrays,
                              << right.n_rows << ", " << right.n_cols << ")]";
             return result;
         }
-        for (int r = 0; r < left.n_rows; ++r)
-            for (int c = 0; c < left.n_cols; ++c) {
+        for (size_t r = 0; r < left.n_rows; ++r)
+            for (size_t c = 0; c < left.n_cols; ++c) {
                 typename Fiber::ScalarTraits<ValueType>::RealType diff =
                         std::abs(left(r, c) - right(r, c));
                 typename Fiber::ScalarTraits<ValueType>::RealType avg =

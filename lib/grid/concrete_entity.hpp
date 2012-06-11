@@ -30,7 +30,7 @@ namespace Bempp
 {
 
 template<typename DuneEntity>
-template<int codimSub>
+template<size_t codimSub>
 inline typename boost::disable_if_c<(codimSub <= DuneEntity::dimension), std::auto_ptr<EntityIterator<codimSub> > >::type
 ConcreteEntity<0, DuneEntity>::subEntityCodimNIterator() const
 {
@@ -38,7 +38,7 @@ ConcreteEntity<0, DuneEntity>::subEntityCodimNIterator() const
 }
 
 template<typename DuneEntity>
-template<int codimSub>
+template<size_t codimSub>
 inline typename boost::enable_if_c<(codimSub <= DuneEntity::dimension), std::auto_ptr<EntityIterator<codimSub> > >::type
 ConcreteEntity<0, DuneEntity>::subEntityCodimNIterator() const
 {
@@ -58,7 +58,7 @@ std::auto_ptr<EntityPointer<0> > ConcreteEntity<0, DuneEntity>::father() const
 
 template<typename DuneEntity>
 std::auto_ptr<EntityIterator<0> > ConcreteEntity<0, DuneEntity>::sonIterator(
-    int maxlevel) const
+    size_t maxlevel) const
 {
     typedef typename DuneEntity::HierarchicIterator DuneIterator;
     typedef typename DuneEntity::EntityPointer DuneEntityPointer;

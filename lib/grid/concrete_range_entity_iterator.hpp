@@ -72,7 +72,7 @@ public:
     }
 
     virtual std::auto_ptr<EntityPointer<ConcreteRangeEntityIterator::codimension> > frozen() const {
-        const int codim = ConcreteRangeEntityIterator::codimension;
+        const size_t codim = ConcreteRangeEntityIterator::codimension;
         return std::auto_ptr<EntityPointer<codim> >(
                     new ConcreteEntityPointer<DuneEntityPointer>(*m_cur));
     }

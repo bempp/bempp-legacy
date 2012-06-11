@@ -25,7 +25,7 @@ namespace Bempp
 {
 
 // Forward declarations
-template<int codim> class Entity;
+template<size_t codim> class Entity;
 
 /** \brief Abstract wrapper of an index set. */
 class IndexSet
@@ -39,7 +39,7 @@ public:
 
      \internal Sadly, it is necessary to specify this type uniformly for all grid classes.
      */
-    typedef unsigned int IndexType;
+    typedef size_t IndexType;
 
     /** \brief Index of the entity \e of codimension 0.
 
@@ -67,7 +67,7 @@ public:
 
     /** \brief Index of \p i'th subentity of codimension \p codimSub of entity \p e of codimension 0.
      */
-    virtual IndexType subEntityIndex(const Entity<0>& e, int i, unsigned int codimSub) const = 0;
+    virtual IndexType subEntityIndex(const Entity<0>& e, size_t i, size_t codimSub) const = 0;
 };
 
 } // namespace Bempp

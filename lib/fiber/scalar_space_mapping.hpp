@@ -38,11 +38,11 @@ class ScalarSpaceMapping
 public:
     typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
-    static void addShapeFunctionDependencies(int& basisDeps, int& geomDeps) {
+    static void addShapeFunctionDependencies(size_t& basisDeps, size_t& geomDeps) {
         basisDeps |= VALUES;
     }
 
-    static void addSurfaceCurlDependencies(int& basisDeps, int& geomDeps) {
+    static void addSurfaceCurlDependencies(size_t& basisDeps, size_t& geomDeps) {
         basisDeps |= DERIVATIVES;
         geomDeps |= NORMALS | JACOBIAN_INVERSES_TRANSPOSED;
     }
@@ -66,15 +66,15 @@ public:
         const Array4d<ValueType>& d = basisData.derivatives;
 
         assert(d.extent(0) == 1); // scalar functions
-        const int worldDim = 3;
+        const size_t worldDim = 3;
         assert(d.extent(1) + 1 == worldDim);
-        const int functionCount = d.extent(2);
-        const int pointCount = d.extent(3);
+        const size_t functionCount = d.extent(2);
+        const size_t pointCount = d.extent(3);
 
         result.set_size(worldDim, functionCount, pointCount);
 
-        for (int p = 0; p < pointCount; ++p)
-            for (int f = 0; f < functionCount; ++f) {
+        for (size_t p = 0; p < pointCount; ++p)
+            for (size_t f = 0; f < functionCount; ++f) {
                 // vec := gradient of the basis function extended outside
                 // the surface so that its normal derivative on the surf. is zero
                 arma::Col<ValueType> vec(3);

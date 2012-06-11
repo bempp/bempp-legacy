@@ -45,10 +45,10 @@ public:
     virtual ~Geometry() {}
 
     /** \brief Dimension of the geometry. */
-    virtual int dim() const = 0;
+    virtual size_t dim() const = 0;
 
     /** \brief Dimension of the space containing the geometry. */
-    virtual int dimWorld() const = 0;
+    virtual size_t dimWorld() const = 0;
 
     /** \brief Set up geometry of an entity.
 
@@ -81,7 +81,7 @@ public:
       information is also available via the reference element. It is
       here for efficiency and ease of use.
      */
-    virtual int cornerCount() const = 0;
+    virtual size_t cornerCount() const = 0;
 
     /** \brief Get the positions of the geometry corners.
      *
@@ -236,10 +236,10 @@ public:
     void getNormals(const arma::Mat<float>& local,
                     arma::Mat<float>& normal) const;
 
-    void getData(int what, const arma::Mat<double>& local,
+    void getData(size_t what, const arma::Mat<double>& local,
                  Fiber::GeometricalData<double>& data) const;
     /** \overload */
-    void getData(int what, const arma::Mat<float>& local,
+    void getData(size_t what, const arma::Mat<float>& local,
                  Fiber::GeometricalData<float>& data) const;
 
 private:
@@ -268,7 +268,7 @@ private:
             const arma::Mat<double>& local,
             arma::Mat<double>& normal) const = 0;
     virtual void getDataImpl(
-            int what, const arma::Mat<double>& local,
+            size_t what, const arma::Mat<double>& local,
             Fiber::GeometricalData<double>& data) const = 0;
 
     // Helper functions for implementation

@@ -52,7 +52,7 @@ public:
 
     virtual void assignDofs();
     virtual bool dofsAssigned() const;
-    virtual int globalDofCount() const;
+    virtual size_t globalDofCount() const;
     virtual void globalDofs(const Entity<0>& element,
                             std::vector<GlobalDofIndex>& dofs) const;    
     virtual void global2localDofs(

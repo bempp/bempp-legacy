@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(addGeometricalDependencies_works,
                               ValueType, kernel_types)
 {
     Fiber::Laplace3dDoubleLayerPotentialKernel<ValueType> op;
-    int testGeomDeps = 1024, trialGeomDeps = 16; // random initial values
+    size_t testGeomDeps = 1024, trialGeomDeps = 16; // random initial values
     op.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 
     BOOST_CHECK(testGeomDeps & Fiber::GLOBALS);

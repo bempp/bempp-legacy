@@ -60,7 +60,7 @@ checkConsistencyOfGeometryAndBases(
             "StandardLocalAssemblerForIdentityOperatorOnSurface::"
             "checkConsistencyOfGeometryAndBases(): "
             "vertex coordinates must be three-dimensional");
-    const int elementCount = rawGeometry.elementCornerIndices().n_cols;
+    const size_t elementCount = rawGeometry.elementCornerIndices().n_cols;
     if (rawGeometry.elementCornerIndices().n_rows < 3 ||
             4 < rawGeometry.elementCornerIndices().n_rows)
         throw std::invalid_argument(

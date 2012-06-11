@@ -168,7 +168,7 @@ inline void remapPointsSharedEdgeTriangle(
     arma::Mat<ValueType> oldPoints(points);
 
     // points := A * oldPoints + b[extended to pointCount columns)
-    for (int col = 0; col < points.n_cols; ++col)
+    for (size_t col = 0; col < points.n_cols; ++col)
         for (int dim = 0; dim < 2; ++dim)
             points(dim, col) =
                     A(dim, 0) * oldPoints(0, col) +

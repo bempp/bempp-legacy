@@ -44,10 +44,10 @@ namespace Fiber
       Functor(const Functor& other);
 
       // Number of components of the function's arguments ("point" and "normal")
-      static const int argumentDimension;
+      static const size_t argumentDimension;
 
       // Number of components of the function's result
-      static const int resultDimension;
+      static const size_t resultDimension;
 
       // Evaluate the function at the point "point", with vector normal to the
       // surface given in the argument "normal", and store result in the array
@@ -70,15 +70,15 @@ public:
         m_functor(functor) {
     }
 
-    virtual int worldDimension() const {
+    virtual size_t worldDimension() const {
         return m_functor.argumentDimension;
     }
 
-    virtual int codomainDimension() const {
+    virtual size_t codomainDimension() const {
         return m_functor.resultDimension;
     }
 
-    virtual void addGeometricalDependencies(int& geomDeps) const {
+    virtual void addGeometricalDependencies(size_t& geomDeps) const {
         geomDeps |= GLOBALS | NORMALS;
     }
 
@@ -94,9 +94,9 @@ public:
                     "incompatible world dimension");
 #endif
 
-        const int pointCount = points.n_cols;
+        const size_t pointCount = points.n_cols;
         result.set_size(codomainDimension(), pointCount);
-        for (int i = 0; i < pointCount; ++i) {
+        for (size_t i = 0; i < pointCount; ++i) {
             arma::Col<ValueType> activeResultColumn = result.unsafe_col(i);
             m_functor.evaluate(points.unsafe_col(i), normals.unsafe_col(i),
                                activeResultColumn);

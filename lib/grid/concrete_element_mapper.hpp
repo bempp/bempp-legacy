@@ -43,37 +43,37 @@ public:
                       Dune::MCMGElementLayout<DuneGridView::dimension>())
     {}
 
-    virtual int size() const {
+    virtual size_t size() const {
         return m_dune_mapper.size();
     }
 
-    virtual int entityIndex(const Entity<0>& e) const {
+    virtual size_t entityIndex(const Entity<0>& e) const {
         typedef typename DuneGridView::template Codim<0>::Entity DuneEntity;
         typedef ConcreteEntity<0, DuneEntity> ConcEntity;
         const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
         return m_dune_mapper.map(ce.duneEntity());
     }
 
-    virtual int entityIndex(const Entity<1>& e) const {
+    virtual size_t entityIndex(const Entity<1>& e) const {
         throw std::logic_error("ConcreteElementMapper::entityIndex(): "
                                "entities of codimension 1 do not belong to the "
                                "managed set.");
     }
 
-    virtual int entityIndex(const Entity<2>& e) const {
+    virtual size_t entityIndex(const Entity<2>& e) const {
         throw std::logic_error("ConcreteElementMapper::entityIndex(): "
                                "entities of codimension 2 do not belong to the "
                                "managed set.");
     }
 
-    virtual int entityIndex(const Entity<3>& e) const {
+    virtual size_t entityIndex(const Entity<3>& e) const {
         throw std::logic_error("ConcreteElementMapper::entityIndex(): "
                                "entities of codimension 2 do not belong to the "
                                 "managed set.");
     }
 
-    virtual int subEntityIndex(const Entity<0>& e, int i,
-                               unsigned int codimSub) const {
+    virtual size_t subEntityIndex(const Entity<0>& e, size_t i,
+                               size_t codimSub) const {
         typedef typename DuneGridView::template Codim<0>::Entity DuneEntity;
         typedef ConcreteEntity<0, DuneEntity> ConcEntity;
         const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);

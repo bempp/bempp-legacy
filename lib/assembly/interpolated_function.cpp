@@ -57,19 +57,19 @@ const Grid& InterpolatedFunction<ValueType>::grid() const
 }
 
 template <typename ValueType>
-int InterpolatedFunction<ValueType>::worldDimension() const
+size_t InterpolatedFunction<ValueType>::worldDimension() const
 {
     return m_grid.dimWorld();
 }
 
 template <typename ValueType>
-int InterpolatedFunction<ValueType>::codomainDimension() const
+size_t InterpolatedFunction<ValueType>::codomainDimension() const
 {
     return m_vertexValues.n_rows;
 }
 
 template <typename ValueType>
-void InterpolatedFunction<ValueType>::addGeometricalDependencies(int& geomDeps) const
+void InterpolatedFunction<ValueType>::addGeometricalDependencies(size_t& geomDeps) const
 {
     geomDeps |= Fiber::GLOBALS;
 }
@@ -79,9 +79,9 @@ void InterpolatedFunction<ValueType>::evaluate(
         const Fiber::GeometricalData<CoordinateType>& geomData,
         arma::Mat<ValueType>& result) const
 {
-    const arma::Mat<CoordinateType>& points = geomData.globals;
 
 #ifndef NDEBUG
+    const arma::Mat<CoordinateType>& points = geomData.globals;
     if (points.n_rows != worldDimension())
         throw std::invalid_argument("InterpolatedFunction::evaluate(): "
                                     "incompatible world dimension");

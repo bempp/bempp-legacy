@@ -80,8 +80,8 @@ void DiscreteDenseLinearOperator<ValueType>::addBlock(
         throw std::invalid_argument(
                 "DiscreteDenseLinearOperator::addBlock(): "
                 "incorrect block size");
-    for (int col = 0; col < cols.size(); ++col)
-        for (int row = 0; row < rows.size(); ++row)
+    for (size_t col = 0; col < cols.size(); ++col)
+        for (size_t row = 0; row < rows.size(); ++row)
             block(row, col) += alpha*m_mat(rows[row], cols[col]);
 }
 

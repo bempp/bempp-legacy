@@ -47,8 +47,8 @@ namespace Bempp
 {
 
 class Grid;
-template <int codim> class Entity;
-template <int codim> class EntityPointer;
+template <size_t codim> class Entity;
+template <size_t codim> class EntityPointer;
 
 template <typename ValueType> class MassMatrixContainer;
 
@@ -108,7 +108,7 @@ public:
     /** \brief Number of global degrees of freedom.
 
         \note Must not be called before asignDofs(). */
-    virtual int globalDofCount() const = 0;
+    virtual size_t globalDofCount() const = 0;
     virtual void globalDofs(const Entity<0>& element,
                             std::vector<GlobalDofIndex>& dofs) const = 0;
 
