@@ -1,9 +1,9 @@
 #!/usr/bin/sh
 . ../../options.cfg
 
-mkdir $Main_prefix/bempp/contrib/boost
+# mkdir $Main_prefix/bempp/contrib/boost
+mkdir -p $Main_prefix/bempp/contrib
 mkdir build
-
 
 cd build
 

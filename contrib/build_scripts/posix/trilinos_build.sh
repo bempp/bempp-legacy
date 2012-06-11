@@ -1,7 +1,8 @@
 #!/usr/bin/sh
 . ../../options.cfg
 
-mkdir $Main_prefix/bempp/contrib/trilinos
+# mkdir $Main_prefix/bempp/contrib/trilinos
+mkdir -p $Main_prefix/bempp/contrib
 mkdir build
 cd build
 cmake \
