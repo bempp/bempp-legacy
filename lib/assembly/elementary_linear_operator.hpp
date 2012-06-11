@@ -25,6 +25,7 @@
 #include "linear_operator.hpp"
 
 #include "../common/shared_ptr.hpp"
+
 #include <stdexcept>
 #include <vector>
 

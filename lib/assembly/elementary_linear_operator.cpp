@@ -1,6 +1,8 @@
 #include "elementary_linear_operator.hpp"
 
+#include "discrete_linear_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
+#include "../fiber/local_assembler_for_operators.hpp"
 
 namespace Bempp
 {

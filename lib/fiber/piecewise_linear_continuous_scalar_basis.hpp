@@ -73,16 +73,16 @@ private:
     <elementVertexCount, CoordinateType, ValueType>::DuneBasis DuneBasis;
 
 public:
-    virtual int size() const {
+    virtual size_t size() const {
         DuneBasis basis;
         return basis.size();
     }
 
-    virtual int order() const {
+    virtual size_t order() const {
         return 1;
     }
 
-    virtual void evaluate(int what,
+    virtual void evaluate(size_t what,
                           const arma::Mat<CoordinateType>& points,
                           LocalDofIndex localDofIndex,
                           BasisData<ValueType>& data) const {

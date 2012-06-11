@@ -35,15 +35,15 @@ class PiecewiseConstantScalarBasis : public Basis<ValueType>
 public:
     typedef typename Basis<ValueType>::CoordinateType CoordinateType;
 
-    virtual int size() const {
+    virtual size_t size() const {
         return 1;
     }
 
-    virtual int order() const {
+    virtual size_t order() const {
         return 0;
     }
 
-    virtual void evaluate(int what,
+    virtual void evaluate(size_t what,
                           const arma::Mat<CoordinateType>& points,
                           LocalDofIndex localDofIndex,
                           BasisData<ValueType>& data) const {

@@ -36,14 +36,15 @@ BOOST_FIXTURE_TEST_SUITE(GridView_Triangular_Level0, TriangularLevel0GridViewMan
 
 BOOST_AUTO_TEST_CASE(entityCount_is_zero_for_codim_3)
 {
-    BOOST_CHECK_EQUAL(bemppGridView->entityCount(3), 0);
+    size_t val=0;
+    BOOST_CHECK_EQUAL(bemppGridView->entityCount(3), val);
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityCount_agrees_with_Dune_for_codim,
                                   T, list_0_to_3)
 {
     const size_t codim = T::value;
-    BOOST_CHECK_EQUAL(bemppGridView->entityCount(codim), duneGridView.size(codim));
+    BOOST_CHECK_EQUAL(bemppGridView->entityCount(codim), (size_t) duneGridView.size(codim));
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityCount_agrees_with_Dune_for_simplex_of_dim,
@@ -51,19 +52,20 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityCount_agrees_with_Dune_for_simplex_of_di
 {
     const int dim = T::value;
     const GeometryType type(GeometryType::simplex, dim);
-    BOOST_CHECK_EQUAL(bemppGridView->entityCount(type), duneGridView.size(type));
+    BOOST_CHECK_EQUAL(bemppGridView->entityCount(type), (size_t) duneGridView.size(type));
 }
 
 BOOST_AUTO_TEST_CASE(entityCount_agrees_with_Dune_for_cube_of_dim_2)
 {
     const GeometryType type(GeometryType::cube, 2);
-    BOOST_CHECK_EQUAL(bemppGridView->entityCount(type), duneGridView.size(type));
+    BOOST_CHECK_EQUAL(bemppGridView->entityCount(type), (size_t) duneGridView.size(type));
 }
 
 BOOST_AUTO_TEST_CASE(entityCount_is_zero_for_cube_of_dim_2)
 {
     const GeometryType type(GeometryType::cube, 2);
-    BOOST_CHECK_EQUAL(bemppGridView->entityCount(type), 0);
+    size_t val=0;
+    BOOST_CHECK_EQUAL(bemppGridView->entityCount(type), val);
 }
 
 // entityIterator()
@@ -111,7 +113,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_finished_does_not_return_true_i
     std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
     BOOST_CHECK(!it->finished());
 }
-/*
+
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_second_entity_agrees_with_Dune_for_codim,
                                   T, list_0_to_2)
 {
@@ -166,14 +168,15 @@ BOOST_FIXTURE_TEST_SUITE(GridView_Triangular_Leaf, TriangularLeafGridViewManager
 
 BOOST_AUTO_TEST_CASE(entityCount_is_zero_for_codim_3)
 {
-    BOOST_CHECK_EQUAL(bemppGridView->entityCount(3), 0);
+    size_t val=0;
+    BOOST_CHECK_EQUAL(bemppGridView->entityCount(3), val);
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityCount_agrees_with_Dune_for_codim,
                                   T, list_0_to_3)
 {
     const int codim = T::value;
-    BOOST_CHECK_EQUAL(bemppGridView->entityCount(codim), duneGridView.size(codim));
+    BOOST_CHECK_EQUAL(bemppGridView->entityCount(codim), (size_t) duneGridView.size(codim));
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityCount_agrees_with_Dune_for_simplex_of_dim,
@@ -181,13 +184,13 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityCount_agrees_with_Dune_for_simplex_of_di
 {
     const int dim = T::value;
     const GeometryType type(GeometryType::simplex, dim);
-    BOOST_CHECK_EQUAL(bemppGridView->entityCount(type), duneGridView.size(type));
+    BOOST_CHECK_EQUAL(bemppGridView->entityCount(type), (size_t) duneGridView.size(type));
 }
 
 BOOST_AUTO_TEST_CASE(entityCount_agrees_with_Dune_for_cube_of_dim_2)
 {
     const GeometryType type(GeometryType::cube, 2);
-    BOOST_CHECK_EQUAL(bemppGridView->entityCount(type), duneGridView.size(type));
+    BOOST_CHECK_EQUAL(bemppGridView->entityCount(type), (size_t) duneGridView.size(type));
 }
 
 // This test fails -- there is a bug in FoamGridLeafIndexSet::size(GeometryType)
@@ -205,7 +208,8 @@ BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES(entityCount_is_zero_for_cube_of_dim_2, 1)
 BOOST_AUTO_TEST_CASE(entityCount_is_zero_for_cube_of_dim_2)
 {
     const GeometryType type(GeometryType::cube, 2);
-    BOOST_CHECK_EQUAL(bemppGridView->entityCount(type), 0);
+    size_t val=0;
+    BOOST_CHECK_EQUAL(bemppGridView->entityCount(type), val);
 }
 
 // entityIterator()
@@ -295,7 +299,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(containsEntity_returns_true_for_second_entity_
     it->next();
     BOOST_CHECK(bemppGridView->containsEntity(it->entity()));
 }
-*/
+
 BOOST_AUTO_TEST_SUITE_END()
 
 

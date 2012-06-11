@@ -92,7 +92,10 @@ inline ElementPairTopology determineElementPairTopologyIn3D(
     ElementPairTopology topology;
 
     // Determine number of element corners
-    const int MIN_VERTEX_COUNT = 3, MAX_VERTEX_COUNT = 4;
+#ifndef NDEBUG
+    const int MIN_VERTEX_COUNT = 3;
+#endif
+    const int MAX_VERTEX_COUNT = 4;
     topology.testVertexCount = testElementCornerIndices.n_rows;
     assert(MIN_VERTEX_COUNT <= topology.testVertexCount &&
            topology.testVertexCount <= MAX_VERTEX_COUNT);

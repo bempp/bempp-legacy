@@ -33,6 +33,8 @@
 #include "assembly/modified_helmholtz_3d_single_layer_potential.hpp"
 #include "assembly/modified_helmholtz_3d_double_layer_potential.hpp"
 
+#include "grid/grid.hpp"
+
 #include "common/scalar_traits.hpp"
 
 #include "linalg/aca_preconditioner_factory.hpp"

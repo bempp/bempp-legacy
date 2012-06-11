@@ -34,13 +34,15 @@ BOOST_AUTO_TEST_SUITE(PiecewiseConstantScalarBasis)
 BOOST_AUTO_TEST_CASE_TEMPLATE(size_is_1, ValueType, basis_function_types)
 {
     Fiber::PiecewiseConstantScalarBasis<ValueType> basis;
-    BOOST_CHECK_EQUAL(basis.size(), 1);
+    size_t val=1;
+    BOOST_CHECK_EQUAL(basis.size(), val);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(order_is_0, ValueType, basis_function_types)
 {
     Fiber::PiecewiseConstantScalarBasis<ValueType> basis;
-    BOOST_CHECK_EQUAL(basis.order(), 0);
+    size_t val=0;
+    BOOST_CHECK_EQUAL(basis.order(), val);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs,
@@ -57,8 +59,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs,
     arma::Cube<ValueType> expected(1, 1, points.n_cols);
     expected.fill(1.);
 
-    BOOST_CHECK_EQUAL(data.values.n_rows, 1); // 1 component
-    BOOST_CHECK_EQUAL(data.values.n_cols, 1); // 1 basis function
+    size_t val=1;
+    BOOST_CHECK_EQUAL(data.values.n_rows, val); // 1 component
+    BOOST_CHECK_EQUAL(data.values.n_cols, val); // 1 basis function
     BOOST_CHECK_EQUAL(data.values.n_slices, points.n_cols);
     BOOST_CHECK_EQUAL_COLLECTIONS(data.values.begin(),
                                   data.values.end(),
@@ -80,8 +83,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_one_dof,
     arma::Cube<ValueType> expected(1, 1, points.n_cols);
     expected.fill(1.);
 
-    BOOST_CHECK_EQUAL(data.values.n_rows, 1); // 1 component
-    BOOST_CHECK_EQUAL(data.values.n_cols, 1); // 1 basis function
+    size_t val=1;
+    BOOST_CHECK_EQUAL(data.values.n_rows, val); // 1 component
+    BOOST_CHECK_EQUAL(data.values.n_cols, val); // 1 basis function
     BOOST_CHECK_EQUAL(data.values.n_slices, points.n_cols);
     BOOST_CHECK_EQUAL_COLLECTIONS(data.values.begin(),
                                   data.values.end(),
@@ -155,8 +159,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_and_derivatives_works_for_all_dofs
     {
         arma::Cube<ValueType> expected(1, 1, points.n_cols);
         expected.fill(1.);
-        BOOST_CHECK_EQUAL(data.values.n_rows, 1); // 1 component
-        BOOST_CHECK_EQUAL(data.values.n_cols, 1); // 1 basis function
+        size_t val=1;
+        BOOST_CHECK_EQUAL(data.values.n_rows, val); // 1 component
+        BOOST_CHECK_EQUAL(data.values.n_cols, val); // 1 basis function
         BOOST_CHECK_EQUAL(data.values.n_slices, points.n_cols);
         BOOST_CHECK_EQUAL_COLLECTIONS(data.values.begin(),
                                       data.values.end(),

@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIterator_number_of_iterations_is_3_fo
     BOOST_CHECK_EQUAL(numIterations, 3);
 }
 
-/*
+
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIterator_second_entity_agrees_with_Dune_for_codimSub,
                                   T, list_1_to_2)
 {
@@ -181,5 +181,5 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIterator_second_entity_agrees_with_Du
 
     BOOST_CHECK_EQUAL(elementCenter, duneElementCenter);
 }
-*/
+
 BOOST_AUTO_TEST_SUITE_END()

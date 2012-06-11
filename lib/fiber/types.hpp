@@ -30,7 +30,7 @@ enum CallVariant
     TRIAL_TEST = 1
 };
 
-typedef int LocalDofIndex;
+typedef unsigned int LocalDofIndex;
 const LocalDofIndex ALL_DOFS = -1;
 
 }

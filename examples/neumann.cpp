@@ -40,6 +40,7 @@
 #include "grid/geometry.hpp"
 #include "grid/geometry_factory.hpp"
 #include "grid/grid_factory.hpp"
+#include "grid/grid.hpp"
 
 #include "linalg/aca_preconditioner_factory.hpp"
 #include "linalg/default_iterative_solver.hpp"

@@ -37,13 +37,15 @@ BOOST_AUTO_TEST_SUITE(PiecewiseLinearContinuousScalarBasis_triangle)
 BOOST_AUTO_TEST_CASE_TEMPLATE(size_is_3, ValueType, basis_function_types)
 {
     Fiber::PiecewiseLinearContinuousScalarBasis<3, ValueType> basis;
-    BOOST_CHECK_EQUAL(basis.size(), 3);
+    size_t val=3;
+    BOOST_CHECK_EQUAL(basis.size(), val);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(order_is_1, ValueType, basis_function_types)
 {
     Fiber::PiecewiseLinearContinuousScalarBasis<3, ValueType> basis;
-    BOOST_CHECK_EQUAL(basis.order(), 1);
+    size_t val=1;
+    BOOST_CHECK_EQUAL(basis.order(), val);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs,
@@ -188,13 +190,15 @@ BOOST_AUTO_TEST_SUITE(PiecewiseLinearContinuousScalarBasis_square)
 BOOST_AUTO_TEST_CASE_TEMPLATE(size_is_4, ValueType, basis_function_types)
 {
     Fiber::PiecewiseLinearContinuousScalarBasis<4, ValueType> basis;
-    BOOST_CHECK_EQUAL(basis.size(), 4);
+    size_t val=4;
+    BOOST_CHECK_EQUAL(basis.size(), val);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(order_is_1, ValueType, basis_function_types)
 {
     Fiber::PiecewiseLinearContinuousScalarBasis<4, ValueType> basis;
-    BOOST_CHECK_EQUAL(basis.order(), 1);
+    size_t val=1;
+    BOOST_CHECK_EQUAL(basis.order(), val);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs,

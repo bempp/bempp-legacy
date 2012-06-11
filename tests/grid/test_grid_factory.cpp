@@ -35,12 +35,14 @@ BOOST_FIXTURE_TEST_SUITE(GridFactory_Triangular, TriangularEntityManager)
 
 BOOST_AUTO_TEST_CASE(number_of_faces_is_correct)
 {
-    BOOST_CHECK_EQUAL(bemppGrid->levelView(0)->entityCount(0), 2 * N_ELEMENTS_X * N_ELEMENTS_Y);
+    size_t val=2*N_ELEMENTS_X*N_ELEMENTS_Y;
+    BOOST_CHECK_EQUAL(bemppGrid->levelView(0)->entityCount(0), val);
 }
 
 BOOST_AUTO_TEST_CASE(number_of_vertices_is_correct)
 {
-    BOOST_CHECK_EQUAL(bemppGrid->levelView(0)->entityCount(2), (N_ELEMENTS_X + 1) * (N_ELEMENTS_Y + 1));
+    size_t val=(N_ELEMENTS_X + 1) * (N_ELEMENTS_Y + 1);
+    BOOST_CHECK_EQUAL(bemppGrid->levelView(0)->entityCount(2), val);
 }
 
 BOOST_AUTO_TEST_CASE(second_face_is_a_triangle)
@@ -97,7 +99,7 @@ BOOST_AUTO_TEST_CASE(elements_are_cover_the_unit_square)
 BOOST_AUTO_TEST_CASE(jacobian_is_constant_everywhere_on_the_second_face)
 {
     const int codim = 0;
-    const int dimGlobal = DuneGrid::dimensionworld;
+    //const int dimGlobal = DuneGrid::dimensionworld;
     const int dimLocal = DuneGrid::dimension - codim;
     const int nPoints = 5;
 

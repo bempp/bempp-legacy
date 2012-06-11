@@ -43,8 +43,8 @@ check_arrays_are_close(const arma::Mat<ValueType>& left,
                          << right.n_rows << ", " << right.n_cols << ")]";
         return result;
     }
-    for (int r = 0; r < left.n_rows; ++r)
-        for (int c = 0; c < left.n_cols; ++c) {
+    for (size_t r = 0; r < left.n_rows; ++r)
+        for (size_t c = 0; c < left.n_cols; ++c) {
             typename Fiber::ScalarTraits<ValueType>::RealType diff =
                     std::abs(left(r, c) - right(r, c));
             typename Fiber::ScalarTraits<ValueType>::RealType avg =
