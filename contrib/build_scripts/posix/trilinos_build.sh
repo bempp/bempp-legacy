@@ -1,5 +1,5 @@
 #!/usr/bin/sh
-source ../../options.cfg
+. ../../options.cfg
 
 mkdir $Main_prefix/bempp/contrib/trilinos
 mkdir build
