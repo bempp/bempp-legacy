@@ -89,7 +89,7 @@ public:
     void operator() (const Range& r) const {
         const char* TEXT = "Approximating ... ";
         for (typename Range::const_iterator i = r.begin(); i != r.end(); ++i) {
-            size_t leafClusterIndex = -1;
+            int leafClusterIndex = -1;
             if (!m_leafClusterIndexQueue.try_pop(leafClusterIndex)) {
                 std::cerr << "AcaWeakFormAssemblerLoopBody::operator(): "
                              "Warning: try_pop failed; this shouldn't happen!"
