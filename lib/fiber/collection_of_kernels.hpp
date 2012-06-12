@@ -21,6 +21,8 @@
 #ifndef fiber_collection_of_kernels_hpp
 #define fiber_collection_of_kernels_hpp
 
+#include "../common/common.hpp"
+
 #include "scalar_traits.hpp"
 
 #include <utility>

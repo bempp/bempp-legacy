@@ -21,6 +21,8 @@
 #ifndef fiber_4d_array_hpp
 #define fiber_4d_array_hpp
 
+#include "../common/common.hpp"
+
 #include <stdexcept>
 
 namespace Fiber {

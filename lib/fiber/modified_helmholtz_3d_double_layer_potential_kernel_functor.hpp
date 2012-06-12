@@ -21,9 +21,10 @@
 #ifndef fiber_modified_helmholtz_3d_double_layer_potential_kernel_functor_hpp
 #define fiber_modified_helmholtz_3d_double_layer_potential_kernel_functor_hpp
 
+#include "../common/common.hpp"
+
 #include "geometrical_data.hpp"
 #include "scalar_traits.hpp"
-#include <armadillo>
 
 namespace Fiber
 {

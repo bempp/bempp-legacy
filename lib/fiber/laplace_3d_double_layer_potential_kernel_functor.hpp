@@ -21,8 +21,9 @@
 #ifndef fiber_laplace_3d_double_layer_potential_kernel_functor_hpp
 #define fiber_laplace_3d_double_layer_potential_kernel_functor_hpp
 
+#include "../common/common.hpp"
+
 #include "geometrical_data.hpp"
-#include <armadillo>
 
 namespace Fiber
 {

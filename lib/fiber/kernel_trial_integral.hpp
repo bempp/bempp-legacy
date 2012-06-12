@@ -21,10 +21,9 @@
 #ifndef fiber_kernel_trial_integral_hpp
 #define fiber_kernel_trial_integral_hpp
 
-#include "scalar_traits.hpp"
+#include "../common/common.hpp"
 
-#include <armadillo>
-#include <vector>
+#include "scalar_traits.hpp"
 
 namespace Fiber
 {
