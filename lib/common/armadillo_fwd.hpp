@@ -19,8 +19,12 @@
 // THE SOFTWARE.
 
 
-#ifndef ARMADILLO_FWD_HPP
-#define ARMADILLO_FWD_HPP
+#ifndef bempp_armadillo_fwd_hpp
+#define bempp_armadillo_fwd_hpp
+
+// Disable diagnostic 2089: definition of base class type not completed yet
+// Disable diagnostic 488: entity-kind "entity" is not used in declaring the
+// parameter types of entity-kind "entity"
 
 #ifdef __INTEL_COMPILER
 #pragma warning(disable:2089 488)
@@ -33,4 +37,4 @@
 #endif
 
 
-#endif // ARMADILLO_FWD_HPP
+#endif

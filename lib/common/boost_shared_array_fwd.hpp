@@ -19,8 +19,11 @@
 // THE SOFTWARE.
 
 
-#ifndef BOOST_SHARED_ARRAY_FWD_HPP
-#define BOOST_SHARED_ARRAY_FWD_HPP
+#ifndef bempp_boost_shared_array_fwd_hpp
+#define bempp_boost_shared_array_fwd_hpp
+
+// Disable diagnostic 279: controlling expression is constant
+// Disable diagnostic 858: type qualifier on return type is meaningless
 
 #ifdef __INTEL_COMPILER
 #pragma warning(disable:279 858)
@@ -33,4 +36,4 @@
 #endif
 
 
-#endif // BOOST_SHARED_ARRAY_FWD_HPP
+#endif

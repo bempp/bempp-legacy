@@ -19,8 +19,11 @@
 // THE SOFTWARE.
 
 
-#ifndef BOOST_MAKE_SHARED_FWD_HPP
-#define BOOST_MAKE_SHARED_FWD_HPP
+#ifndef bempp_boost_make_shared_fwd_hpp
+#define bempp_boost_make_shared_fwd_hpp
+
+// Disable diagnostic 279: controlling expression is constant
+// Disable diagnostic 858: type qualifier on return type is meaningless
 
 #ifdef __INTEL_COMPILER
 #pragma warning(disable:279 858)
@@ -33,4 +36,4 @@
 #endif
 
 
-#endif // BOOST_MAKE_SHARED_FWD_HPP
+#endif
