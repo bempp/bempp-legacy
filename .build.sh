@@ -1,5 +1,5 @@
 #!/usr/bin/sh
-source ./options.cfg
+. ./options.cfg
 
 mkdir $Bempp_build_dir
 cd $Bempp_build_dir
