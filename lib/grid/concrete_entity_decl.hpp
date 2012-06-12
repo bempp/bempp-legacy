@@ -160,7 +160,7 @@ public:
         return m_dune_entity->isRegular();
     }
 
-    virtual std::auto_ptr<EntityIterator<0> > sonIterator(size_t maxlevel) const;
+    virtual std::auto_ptr<EntityIterator<0> > sonIterator(int maxlevel) const;
 
     virtual bool isNew() const {
         return m_dune_entity->isNew();

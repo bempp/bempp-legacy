@@ -95,7 +95,7 @@ ResultType, GeometryFactory>::evaluate(
         const arma::Mat<CoordinateType>& points, arma::Mat<ResultType>& result) const
 {
     const size_t pointCount = points.n_cols;
-    const size_t worldDim = points.n_rows;
+    const int worldDim = points.n_rows;
     if (worldDim != m_kernel->worldDimension())
         throw std::invalid_argument(
                 "StandardEvaluatorForIntegralOperators::evaluateFarField(): "

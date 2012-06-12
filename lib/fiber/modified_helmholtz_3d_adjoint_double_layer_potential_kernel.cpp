@@ -77,14 +77,14 @@ void ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernel<ValueType>::evaluateAt
     const arma::Mat<CoordinateType>& trialPoints = trialGeomData.globals;
 
 #ifndef NDEBUG
-    const size_t worldDim = worldDimension();
-    if (testPoints.n_rows != worldDim || trialPoints.n_rows != worldDim)
+    const int worldDim = worldDimension();
+    if ((int)testPoints.n_rows != worldDim || (int)trialPoints.n_rows != worldDim)
         throw std::invalid_argument("ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernel::evaluateAtPointPairs(): "
                                     "3D coordinates required");
     if (testPoints.n_cols != trialPoints.n_cols)
         throw std::invalid_argument("ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernel::evaluateAtPointPairs(): "
                                     "number of test and trial points must be equal");
-    assert(testNormals.n_rows == worldDim);
+    assert((int)testNormals.n_rows == worldDim);
     assert(testNormals.n_cols == testPoints.n_cols);
 #endif
 
@@ -107,11 +107,12 @@ void ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernel<ValueType>::evaluateOn
     const arma::Mat<CoordinateType>& trialPoints = trialGeomData.globals;
 
 #ifndef NDEBUG
-    const size_t worldDim = worldDimension();
-    if (testPoints.n_rows != worldDim || trialPoints.n_rows != worldDim)
+    const int worldDim = worldDimension();
+    if ((int)testPoints.n_rows != worldDim ||
+            (int)trialPoints.n_rows != worldDim)
         throw std::invalid_argument("ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernel::evaluate(): "
                                     "3D coordinates required");
-    assert(testNormals.n_rows == worldDim);
+    assert((int)testNormals.n_rows == worldDim);
     assert(testNormals.n_cols == testPoints.n_cols);
 #endif
 

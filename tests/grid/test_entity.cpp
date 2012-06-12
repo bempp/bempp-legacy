@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIterator_number_of_iterations_is_3_fo
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIterator_second_entity_agrees_with_Dune_for_codimSub,
                                   T, list_1_to_2)
 {
-    const size_t codimSub = T::value;
+    const int codimSub = T::value;
 
     arma::Col<double> elementCenter;
     {

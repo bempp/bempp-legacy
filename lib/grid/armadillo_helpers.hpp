@@ -32,7 +32,7 @@ bool _armadillo_fieldvector_compare(const M& x, const Dune::FieldVector<T, size>
 {
     if (x.n_rows != size)
         return false;
-    for (size_t i = 0; i < size; ++i)
+    for (int i = 0; i < size; ++i)
         if (x(i) != y[i])
             return false;
     return true;
@@ -43,8 +43,8 @@ bool _armadillo_fieldmatrix_compare(const M& x, const Dune::FieldMatrix<T, rows,
 {
     if (x.n_rows != rows || x.n_cols != cols)
         return false;
-    for (size_t j = 0; j < cols; ++j)
-        for (size_t i = 0; i < rows; ++i)
+    for (int j = 0; j < cols; ++j)
+        for (int i = 0; i < rows; ++i)
             if (x(i,j) != y[i][j])
                 return false;
     return true;

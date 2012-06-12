@@ -38,19 +38,19 @@ BOOST_AUTO_TEST_SUITE(Laplace3dAdjointDoubleLayerPotentialKernel)
 BOOST_AUTO_TEST_CASE_TEMPLATE(worldDimension_is_3, ValueType, kernel_types)
 {
     Fiber::Laplace3dAdjointDoubleLayerPotentialKernel<ValueType> op;
-    BOOST_CHECK_EQUAL(op.worldDimension(), (size_t)3);
+    BOOST_CHECK_EQUAL(op.worldDimension(), 3);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(domainDimension_is_1, ValueType, kernel_types)
 {
     Fiber::Laplace3dAdjointDoubleLayerPotentialKernel<ValueType> op;
-    BOOST_CHECK_EQUAL(op.domainDimension(), (size_t)1);
+    BOOST_CHECK_EQUAL(op.domainDimension(), 1);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(codomainDimension_is_1, ValueType, kernel_types)
 {
     Fiber::Laplace3dAdjointDoubleLayerPotentialKernel<ValueType> op;
-    BOOST_CHECK_EQUAL(op.domainDimension(), (size_t)1);
+    BOOST_CHECK_EQUAL(op.domainDimension(), 1);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(addGeometricalDependencies_works,

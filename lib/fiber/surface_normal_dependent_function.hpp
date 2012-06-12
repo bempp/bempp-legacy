@@ -46,10 +46,10 @@ namespace Fiber
       Functor(const Functor& other);
 
       // Number of components of the function's arguments ("point" and "normal")
-      static const size_t argumentDimension;
+      static const int argumentDimension;
 
       // Number of components of the function's result
-      static const size_t resultDimension;
+      static const int resultDimension;
 
       // Evaluate the function at the point "point", with vector normal to the
       // surface given in the argument "normal", and store result in the array
@@ -72,11 +72,11 @@ public:
         m_functor(functor) {
     }
 
-    virtual size_t worldDimension() const {
+    virtual int worldDimension() const {
         return m_functor.argumentDimension;
     }
 
-    virtual size_t codomainDimension() const {
+    virtual int codomainDimension() const {
         return m_functor.resultDimension;
     }
 
@@ -90,7 +90,7 @@ public:
         const arma::Mat<CoordinateType>& normals = geomData.normals;
 
 #ifndef NDEBUG
-        if (points.n_rows != worldDimension())
+        if ((int)points.n_rows != worldDimension())
             throw std::invalid_argument(
                     "SurfaceNormalDependentFunction::evaluate(): "
                     "incompatible world dimension");

@@ -67,17 +67,17 @@ BOOST_FIXTURE_TEST_SUITE(Grid, SimpleTriangularGridManager)
 
 BOOST_AUTO_TEST_CASE(dimWorld_agrees_with_Dune)
 {
-    BOOST_CHECK_EQUAL(bemppGrid->dimWorld(), (size_t)duneGrid->dimensionworld);
+    BOOST_CHECK_EQUAL(bemppGrid->dimWorld(), (int)duneGrid->dimensionworld);
 }
 
 BOOST_AUTO_TEST_CASE(dim_agrees_with_Dune)
 {
-    BOOST_CHECK_EQUAL(bemppGrid->dim(), (size_t)duneGrid->dimension);
+    BOOST_CHECK_EQUAL(bemppGrid->dim(), (int)duneGrid->dimension);
 }
 
 BOOST_AUTO_TEST_CASE(maxLevel_agrees_with_Dune)
 {
-    BOOST_CHECK_EQUAL(bemppGrid->maxLevel(), (size_t) duneGrid->maxLevel());
+    BOOST_CHECK_EQUAL(bemppGrid->maxLevel(), duneGrid->maxLevel());
 }
 
 // The test below fails because the numBoundarySegments method is not

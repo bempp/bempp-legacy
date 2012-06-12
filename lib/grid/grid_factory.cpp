@@ -46,12 +46,12 @@ std::auto_ptr<Grid> GridFactory::createStructuredGrid(
     // Check arguments
     if (params.topology != GridParameters::TRIANGULAR)
         throw std::invalid_argument("GridFactory::createStructuredGrid(): unsupported grid topology");
-    const size_t dimGrid = 2;
-    if (lowerLeft.n_rows != dimGrid)
+    const int dimGrid = 2;
+    if ((int)lowerLeft.n_rows != dimGrid)
         throw std::invalid_argument("GridFactory::createStructuredGrid(): lowerLeft must be two-dimensional");
-    if (upperRight.n_rows != dimGrid)
+    if ((int)upperRight.n_rows != dimGrid)
         throw std::invalid_argument("GridFactory::createStructuredGrid(): lowerLeft must be two-dimensional");
-    if (nElements.n_rows != dimGrid)
+    if ((int)nElements.n_rows != dimGrid)
         throw std::invalid_argument("GridFactory::createStructuredGrid(): nElements must be two-dimensional");
     if (nElements(0) < 1 || nElements(1) < 1)
         throw std::invalid_argument("GridFactory::createStructuredGrid(): all entries in nElements must be positive");

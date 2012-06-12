@@ -52,8 +52,8 @@ void ConcreteGridView<DuneGridView>::getRawElementDataImpl(
 {
     typedef typename DuneGridView::Grid DuneGrid;
     typedef typename DuneGridView::IndexSet DuneIndexSet;
-    const size_t dimGrid = DuneGrid::dimension;
-    const size_t dimWorld = DuneGrid::dimensionworld;
+    const int dimGrid = DuneGrid::dimension;
+    const int dimWorld = DuneGrid::dimensionworld;
     const int codimVertex = dimGrid;
     const int codimElement = 0;
     typedef Dune::LeafMultipleCodimMultipleGeomTypeMapper<DuneGrid,
@@ -77,11 +77,11 @@ void ConcreteGridView<DuneGridView>::getRawElementDataImpl(
         size_t index = indexSet.index(*it);
         const DuneVertexGeometry& geom = it->geometry();
         Dune::FieldVector<ctype, dimWorld> vertex = geom.corner(0);
-        for (size_t i = 0; i < dimWorld; ++i)
+        for (int i = 0; i < dimWorld; ++i)
             vertices(i, index) = vertex[i];
     }
 
-    const size_t MAX_CORNER_COUNT = dimWorld == 2 ? 2 : 4;
+    const int MAX_CORNER_COUNT = dimWorld == 2 ? 2 : 4;
     DuneElementMapper elementMapper(m_dune_gv.grid());
     elementCorners.set_size(MAX_CORNER_COUNT, elementMapper.size());
     for (DuneElementIterator it = m_dune_gv.template begin<codimElement>();
@@ -90,11 +90,11 @@ void ConcreteGridView<DuneGridView>::getRawElementDataImpl(
         size_t index = elementMapper.map(*it);
         const Dune::GenericReferenceElement<ctype, dimGrid>& refElement =
                 Dune::GenericReferenceElements<ctype, dimGrid>::general(it->type());
-        const size_t cornerCount = refElement.size(codimVertex);
+        const int cornerCount = refElement.size(codimVertex);
         assert(cornerCount <= MAX_CORNER_COUNT);
-        for (size_t i = 0; i < cornerCount; ++i)
+        for (int i = 0; i < cornerCount; ++i)
             elementCorners(i, index) = indexSet.subIndex(*it, i, codimVertex);
-        for (size_t i = cornerCount; i < MAX_CORNER_COUNT; ++i)
+        for (int i = cornerCount; i < MAX_CORNER_COUNT; ++i)
             elementCorners(i, index) = -1;
     }
 

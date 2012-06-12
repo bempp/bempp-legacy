@@ -37,11 +37,11 @@ class SurfaceCurl3d : public Expression<CoordinateType>
 public:    
     typedef typename Expression<CoordinateType>::ComplexType ComplexType;
 
-    virtual size_t domainDimension() const {
+    virtual int domainDimension() const {
         return 1;
     }
 
-    virtual size_t codomainDimension() const {
+    virtual int codomainDimension() const {
         return 3;
     }
 

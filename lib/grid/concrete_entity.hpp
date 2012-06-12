@@ -60,7 +60,7 @@ std::auto_ptr<EntityPointer<0> > ConcreteEntity<0, DuneEntity>::father() const
 
 template<typename DuneEntity>
 std::auto_ptr<EntityIterator<0> > ConcreteEntity<0, DuneEntity>::sonIterator(
-    size_t maxlevel) const
+    int maxlevel) const
 {
     typedef typename DuneEntity::HierarchicIterator DuneIterator;
     typedef typename DuneEntity::EntityPointer DuneEntityPointer;

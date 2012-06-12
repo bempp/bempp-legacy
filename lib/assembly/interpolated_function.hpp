@@ -57,8 +57,8 @@ public:
     /** \brief Interpolation grid. */
     const Grid& grid() const;
 
-    virtual size_t worldDimension() const;
-    virtual size_t codomainDimension() const;
+    virtual int worldDimension() const;
+    virtual int codomainDimension() const;
     virtual void addGeometricalDependencies(size_t& geomDeps) const;
 
     virtual void evaluate(const Fiber::GeometricalData<CoordinateType>& geomData,

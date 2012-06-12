@@ -39,8 +39,8 @@ public:
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
     typedef typename ScalarTraits<ResultType>::ComplexType ComplexType;
 
-    size_t domainDimension() const;
-    size_t codomainDimension() const;
+    int domainDimension() const;
+    int codomainDimension() const;
 
     void addDependencies(size_t& basisDeps, size_t& geomDeps) const;
     void addTerm(const Expression<CoordinateType>& expression,

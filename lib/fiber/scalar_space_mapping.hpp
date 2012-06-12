@@ -68,8 +68,8 @@ public:
         const Array4d<ValueType>& d = basisData.derivatives;
 
         assert(d.extent(0) == 1); // scalar functions
-        const size_t worldDim = 3;
-        assert(d.extent(1) + 1 == worldDim);
+        const int worldDim = 3;
+        assert(static_cast<int>(d.extent(1)) + 1 == worldDim);
         const size_t functionCount = d.extent(2);
         const size_t pointCount = d.extent(3);
 

@@ -39,11 +39,11 @@ class ScalarFunctionValueTimesNormal3d : public Expression<CoordinateType>
 public:
     typedef typename Expression<CoordinateType>::ComplexType ComplexType;
 
-    virtual size_t domainDimension() const {
+    virtual int domainDimension() const {
         return 1;
     }
 
-    virtual size_t codomainDimension() const {
+    virtual int codomainDimension() const {
         return 3;
     }
 
@@ -63,13 +63,13 @@ private:
                 evaluateShapeFunctions(basisData, geomData, scalarFunctionValues);
         const arma::Mat<CoordinateType>& n = geomData.normals;
 
-        const size_t dimWorld = 3;
+        const int dimWorld = 3;
         const size_t functionCount = scalarFunctionValues.n_cols;
         const size_t pointCount = scalarFunctionValues.n_slices;
         result.set_size(dimWorld, functionCount, pointCount);
         for (size_t p = 0; p < pointCount; ++p)
             for (size_t f = 0; f < functionCount; ++f)
-                for (size_t d = 0; d < dimWorld; ++d)
+                for (int d = 0; d < dimWorld; ++d)
                     result(d, f, p) = scalarFunctionValues(0, f, p) * n(d, p);
     }
 

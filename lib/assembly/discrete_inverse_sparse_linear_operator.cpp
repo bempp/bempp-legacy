@@ -56,9 +56,9 @@ void solveWithAmesos<double>(Epetra_LinearProblem& problem,
                              arma::Mat<double>& armaSolution,
                              const arma::Mat<double>& armaRhs)
 {
-    const int rowCount = armaRhs.n_rows;
+    const size_t rowCount = armaRhs.n_rows;
     assert(rowCount == armaSolution.n_rows);
-    const int rhsCount = armaRhs.n_cols;
+    const size_t rhsCount = armaRhs.n_cols;
     assert(rhsCount == armaSolution.n_cols);
 
     Epetra_Map map(rowCount, 0 /* base index */, Epetra_SerialComm());

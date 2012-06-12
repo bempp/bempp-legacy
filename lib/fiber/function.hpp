@@ -41,8 +41,8 @@ public:
 
     virtual ~Function() {}
 
-    virtual size_t worldDimension() const = 0;
-    virtual size_t codomainDimension() const = 0;
+    virtual int worldDimension() const = 0;
+    virtual int codomainDimension() const = 0;
 
     virtual void addGeometricalDependencies(size_t& geomDeps) const = 0;
 

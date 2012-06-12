@@ -82,8 +82,8 @@ integrate(
     // elementCount != 0, set elements of result to 0.
 
     // Evaluate constants
-    const size_t componentCount = m_testExpression.codomainDimension();
-    const size_t testDofCount = testBasis.size();
+    const int componentCount = m_testExpression.codomainDimension();
+    const int testDofCount = testBasis.size();
 
     if (m_function.codomainDimension() != componentCount)
         throw std::runtime_error("NumericalTestFunctionIntegrator::integrate(): "
@@ -117,11 +117,11 @@ integrate(
         m_testExpression.evaluate(testBasisData, geomData, testValues);
         m_function.evaluate(geomData, functionValues);
 
-        for (size_t testDof = 0; testDof < testDofCount; ++testDof)
+        for (int testDof = 0; testDof < testDofCount; ++testDof)
         {
             ResultType sum = 0.;
             for (size_t point = 0; point < pointCount; ++point)
-                for (size_t dim = 0; dim < componentCount; ++dim)
+                for (int dim = 0; dim < componentCount; ++dim)
                     sum +=  m_quadWeights[point] *
                             geomData.integrationElements(point) *
                             conjugate(testValues(dim, testDof, point)) *

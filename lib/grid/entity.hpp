@@ -173,7 +173,7 @@ public:
      or implemented in general.
      For some grids it might be available, though.
      */
-    virtual std::auto_ptr<EntityIterator<0> > sonIterator(size_t maxlevel) const = 0;
+    virtual std::auto_ptr<EntityIterator<0> > sonIterator(int maxlevel) const = 0;
 
     /** \brief True if the entity has been created during the last call to adapt().
      */

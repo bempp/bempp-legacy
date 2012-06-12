@@ -57,13 +57,13 @@ const Grid& InterpolatedFunction<ValueType>::grid() const
 }
 
 template <typename ValueType>
-size_t InterpolatedFunction<ValueType>::worldDimension() const
+int InterpolatedFunction<ValueType>::worldDimension() const
 {
     return m_grid.dimWorld();
 }
 
 template <typename ValueType>
-size_t InterpolatedFunction<ValueType>::codomainDimension() const
+int InterpolatedFunction<ValueType>::codomainDimension() const
 {
     return m_vertexValues.n_rows;
 }
@@ -82,7 +82,7 @@ void InterpolatedFunction<ValueType>::evaluate(
 
 #ifndef NDEBUG
     const arma::Mat<CoordinateType>& points = geomData.globals;
-    if (points.n_rows != worldDimension())
+    if ((int)points.n_rows != worldDimension())
         throw std::invalid_argument("InterpolatedFunction::evaluate(): "
                                     "incompatible world dimension");
 #endif

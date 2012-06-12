@@ -846,7 +846,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianInverseTransposed_agrees_with_Dune_for
                                   T, list_0_to_2)
 {
     const int codim = T::value;
-    const size_t nTestedPoint = 0;
+    const int nTestedPoint = 0;
     jacobianInverseTransposed_agrees_with_Dune_for_nth_of_several_points_and_initialised_output_and_codim<codim>(*this, nTestedPoint);
 }
 
@@ -854,7 +854,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianInverseTransposed_agrees_with_Dune_for
                                   T, list_0_to_2)
 {
     const int codim = T::value;
-    const size_t nTestedPoint = 4;
+    const int nTestedPoint = 4;
     jacobianInverseTransposed_agrees_with_Dune_for_nth_of_several_points_and_initialised_output_and_codim<codim>(*this, nTestedPoint);
 }
 

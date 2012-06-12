@@ -65,8 +65,8 @@ void Laplace3dSingleLayerPotentialKernel<ValueType>::evaluateAtPointPairs(
     const arma::Mat<CoordinateType>& trialPoints = trialGeomData.globals;
 
 #ifndef NDEBUG
-    if (testPoints.n_rows != worldDimension() ||
-            trialPoints.n_rows != worldDimension())
+    if ((int)testPoints.n_rows != worldDimension() ||
+            (int)trialPoints.n_rows != worldDimension())
         throw std::invalid_argument("Laplace3dSingleLayerPotentialKernel::evaluateAtPointPairs(): "
                                     "3D coordinates required");
     if (testPoints.n_cols != trialPoints.n_cols)
@@ -91,8 +91,8 @@ void Laplace3dSingleLayerPotentialKernel<ValueType>::evaluateOnGrid(
     const arma::Mat<CoordinateType>& trialPoints = trialGeomData.globals;
 
 #ifndef NDEBUG
-    if (testPoints.n_rows != worldDimension() ||
-            trialPoints.n_rows != worldDimension())
+    if ((int)testPoints.n_rows != worldDimension() ||
+            (int)trialPoints.n_rows != worldDimension())
         throw std::invalid_argument("Laplace3dSingleLayerPotentialKernel::evaluate(): "
                                     "3D coordinates required");
 #endif

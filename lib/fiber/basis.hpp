@@ -41,9 +41,9 @@ public:
 
     virtual ~Basis() {}
 
-    virtual size_t size() const = 0;
+    virtual int size() const = 0;
     /** \brief Maximum polynomial order of basis elements. */
-    virtual size_t order() const = 0;
+    virtual int order() const = 0;
     virtual void evaluate(size_t what,
                           const arma::Mat<CoordinateType>& points,
                           LocalDofIndex localDofIndex,

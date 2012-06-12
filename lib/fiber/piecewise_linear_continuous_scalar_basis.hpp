@@ -75,12 +75,12 @@ private:
     <elementVertexCount, CoordinateType, ValueType>::DuneBasis DuneBasis;
 
 public:
-    virtual size_t size() const {
+    virtual int size() const {
         DuneBasis basis;
         return basis.size();
     }
 
-    virtual size_t order() const {
+    virtual int order() const {
         return 1;
     }
 

@@ -92,15 +92,15 @@ public:
     /** @name Grid parameters
     @{ */
 
-    virtual size_t dimWorld() const {
+    virtual int dimWorld() const {
         return DuneGrid::dimensionworld;
     }
 
-    virtual size_t dim() const {
+    virtual int dim() const {
         return DuneGrid::dimension;
     }
 
-    virtual size_t maxLevel() const {
+    virtual int maxLevel() const {
         return m_dune_grid->maxLevel();
     }
 

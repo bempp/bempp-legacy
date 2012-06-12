@@ -47,10 +47,10 @@ public:
     virtual ~Geometry() {}
 
     /** \brief Dimension of the geometry. */
-    virtual size_t dim() const = 0;
+    virtual int dim() const = 0;
 
     /** \brief Dimension of the space containing the geometry. */
-    virtual size_t dimWorld() const = 0;
+    virtual int dimWorld() const = 0;
 
     /** \brief Set up geometry of an entity.
 
@@ -83,7 +83,7 @@ public:
       information is also available via the reference element. It is
       here for efficiency and ease of use.
      */
-    virtual size_t cornerCount() const = 0;
+    virtual int cornerCount() const = 0;
 
     /** \brief Get the positions of the geometry corners.
      *

@@ -73,11 +73,11 @@ public:
         m_functor(functor) {
     }
 
-    virtual size_t worldDimension() const {
+    virtual int worldDimension() const {
         return m_functor.argumentDimension;
     }
 
-    virtual size_t codomainDimension() const {
+    virtual int codomainDimension() const {
         return m_functor.resultDimension;
     }
 
@@ -90,7 +90,7 @@ public:
         const arma::Mat<CoordinateType>& points = geomData.globals;
 
 #ifndef NDEBUG
-        if (points.n_rows != worldDimension())
+        if ((int)points.n_rows != worldDimension())
             throw std::invalid_argument("OrdinaryScalarFunction::evaluate(): "
                                         "incompatible world dimension");
 #endif

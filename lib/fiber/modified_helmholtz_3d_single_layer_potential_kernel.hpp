@@ -50,9 +50,9 @@ public:
      * See \ref modified_helmholtz_3d for the definition of the wave number. */
     explicit ModifiedHelmholtz3dSingleLayerPotentialKernel(ValueType k);
 
-    virtual size_t worldDimension() const { return 3; }
-    virtual size_t domainDimension() const { return 1; }
-    virtual size_t codomainDimension() const { return 1; }
+    virtual int worldDimension() const { return 3; }
+    virtual int domainDimension() const { return 1; }
+    virtual int codomainDimension() const { return 1; }
 
     virtual void addGeometricalDependencies(size_t& testGeomDeps,
                                             size_t& trialGeomDeps) const;

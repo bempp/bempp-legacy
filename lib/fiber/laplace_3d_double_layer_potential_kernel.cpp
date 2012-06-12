@@ -70,14 +70,14 @@ void Laplace3dDoubleLayerPotentialKernel<ValueType>::evaluateAtPointPairs(
     const arma::Mat<CoordinateType>& trialNormals = trialGeomData.normals;
 
 #ifndef NDEBUG
-    const size_t worldDim = worldDimension();
-    if (testPoints.n_rows != worldDim || trialPoints.n_rows != worldDim)
+    const int worldDim = worldDimension();
+    if ((int)testPoints.n_rows != worldDim || (int)trialPoints.n_rows != worldDim)
         throw std::invalid_argument("Laplace3dDoubleLayerPotentialKernel::evaluateAtPointPairs(): "
                                     "3D coordinates required");
     if (testPoints.n_cols != trialPoints.n_cols)
         throw std::invalid_argument("Laplace3dDoubleLayerPotentialKernel::evaluateAtPointPairs(): "
                                     "number of test and trial points must be equal");
-    assert(trialNormals.n_rows == worldDim);
+    assert((int)trialNormals.n_rows == worldDim);
     assert(trialNormals.n_cols == trialPoints.n_cols);
 #endif
 
@@ -100,11 +100,11 @@ void Laplace3dDoubleLayerPotentialKernel<ValueType>::evaluateOnGrid(
     const arma::Mat<CoordinateType>& trialNormals = trialGeomData.normals;
 
 #ifndef NDEBUG
-    const size_t worldDim = worldDimension();
-    if (testPoints.n_rows != worldDim || trialPoints.n_rows != worldDim)
+    const int worldDim = worldDimension();
+    if ((int)testPoints.n_rows != worldDim || (int)trialPoints.n_rows != worldDim)
         throw std::invalid_argument("Laplace3dDoubleLayerPotentialKernel::evaluate(): "
                                     "3D coordinates required");
-    assert(trialNormals.n_rows == worldDim);
+    assert((int)trialNormals.n_rows == worldDim);
     assert(trialNormals.n_cols == trialPoints.n_cols);
 #endif
 

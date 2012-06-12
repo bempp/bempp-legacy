@@ -49,16 +49,16 @@ public:
     @{ */
 
     /** \brief Dimension of the grid. */
-    virtual size_t dim() const = 0;
+    virtual int dim() const = 0;
 
     /** \brief Dimension of the space containing the grid. */
-    virtual size_t dimWorld() const = 0;
+    virtual int dimWorld() const = 0;
 
     /** \brief Maximum level defined in this grid.
 
      Levels are numbered 0 ... maxLevel() with 0 the coarsest level.
      */
-    virtual size_t maxLevel() const = 0;
+    virtual int maxLevel() const = 0;
 
     /** \brief Number of boundary segments within the macro (level-0) grid. */
     virtual size_t boundarySegmentCount() const = 0;

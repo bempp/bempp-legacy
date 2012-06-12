@@ -25,7 +25,7 @@ namespace Fiber
 {
 
 template <typename ResultType>
-size_t ExpressionList<ResultType>::domainDimension() const
+int ExpressionList<ResultType>::domainDimension() const
 {
     if (m_terms.empty())
         return 0;
@@ -34,7 +34,7 @@ size_t ExpressionList<ResultType>::domainDimension() const
 }
 
 template <typename ResultType>
-size_t ExpressionList<ResultType>::codomainDimension() const
+int ExpressionList<ResultType>::codomainDimension() const
 {
     if (m_terms.empty())
         return 0;

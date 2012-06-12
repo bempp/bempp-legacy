@@ -37,11 +37,11 @@ class PiecewiseConstantScalarBasis : public Basis<ValueType>
 public:
     typedef typename Basis<ValueType>::CoordinateType CoordinateType;
 
-    virtual size_t size() const {
+    virtual int size() const {
         return 1;
     }
 
-    virtual size_t order() const {
+    virtual int order() const {
         return 0;
     }
 
