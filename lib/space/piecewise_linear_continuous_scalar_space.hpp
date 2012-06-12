@@ -26,7 +26,6 @@
 #include "scalar_space.hpp"
 #include "../common/types.hpp"
 #include "../fiber/piecewise_linear_continuous_scalar_basis.hpp"
-#include "../grid/grid_view.hpp"
 
 #include <map>
 #include <memory>
@@ -34,6 +33,7 @@
 namespace Bempp
 {
 
+class GridView;
 
 template <typename BasisFunctionType>
 class PiecewiseLinearContinuousScalarSpace : public ScalarSpace<BasisFunctionType>
@@ -42,6 +42,7 @@ public:
     typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
 
     explicit PiecewiseLinearContinuousScalarSpace(Grid& grid);
+    virtual ~PiecewiseLinearContinuousScalarSpace();
 
     virtual int domainDimension() const;
     virtual int codomainDimension() const;

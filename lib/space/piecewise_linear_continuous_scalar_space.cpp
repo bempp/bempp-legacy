@@ -52,6 +52,12 @@ PiecewiseLinearContinuousScalarSpace(Grid& grid) :
 }
 
 template <typename BasisFunctionType>
+PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
+~PiecewiseLinearContinuousScalarSpace()
+{
+}
+
+template <typename BasisFunctionType>
 int PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::domainDimension() const
 {
     return this->m_grid.dim();
