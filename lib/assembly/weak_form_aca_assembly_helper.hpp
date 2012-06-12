@@ -21,11 +21,13 @@
 #ifndef bempp_weak_form_aca_assembly_helper_hpp
 #define bempp_weak_form_aca_assembly_helper_hpp
 
+#include "../common/common.hpp"
+
 #include "../common/types.hpp"
 #include "../fiber/scalar_traits.hpp"
 #include "ahmed_aux_fwd.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 #include <vector>
 
 namespace Fiber

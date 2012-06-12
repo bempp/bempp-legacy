@@ -21,6 +21,8 @@
 #ifndef bempp_concrete_id_set_hpp
 #define bempp_concrete_id_set_hpp
 
+#include "../common/common.hpp"
+
 #include "id_set.hpp"
 #include "concrete_entity.hpp"
 

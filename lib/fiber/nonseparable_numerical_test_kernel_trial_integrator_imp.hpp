@@ -18,6 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "../common/common.hpp"
+
 #include "nonseparable_numerical_test_kernel_trial_integrator.hpp" // To keep IDEs happy
 
 #include "array_2d.hpp"

@@ -21,6 +21,8 @@
 #ifndef bempp_concrete_geometry_hpp
 #define bempp_concrete_geometry_hpp
 
+#include "../common/common.hpp"
+
 #include "geometry.hpp"
 #include "dune.hpp"
 #include "geometry_type.hpp"
@@ -32,7 +34,7 @@
 #include <dune/common/static_assert.hh>
 #include <dune/grid/common/grid.hh>
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 #include <memory>
 
 namespace Bempp

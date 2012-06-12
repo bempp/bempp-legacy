@@ -21,6 +21,8 @@
 #ifndef bempp_concrete_entity_pointer_hpp
 #define bempp_concrete_entity_pointer_hpp
 
+#include "../common/common.hpp"
+
 #include "entity_pointer.hpp"
 #include "concrete_entity_decl.hpp"
 

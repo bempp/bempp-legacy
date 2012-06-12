@@ -21,6 +21,8 @@
 #ifndef bempp_piecewise_linear_continuous_scalar_space_hpp
 #define bempp_piecewise_linear_continuous_scalar_space_hpp
 
+#include "../common/common.hpp"
+
 #include "scalar_space.hpp"
 #include "../common/types.hpp"
 #include "../fiber/piecewise_linear_continuous_scalar_basis.hpp"

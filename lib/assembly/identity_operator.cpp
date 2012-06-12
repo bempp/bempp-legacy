@@ -42,7 +42,7 @@
 #include "../grid/mapper.hpp"
 #include "../space/space.hpp"
 
-#include <boost/make_shared.hpp>
+#include "../common/boost_make_shared_fwd.hpp"
 #include <boost/type_traits/is_complex.hpp>
 #include <stdexcept>
 #include <vector>

@@ -20,10 +20,12 @@
 #ifndef bempp_grid_view_hpp
 #define bempp_grid_view_hpp
 
+#include "../common/common.hpp"
+
 #include "geometry_type.hpp"
 #include "entity_iterator.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 #include <boost/utility/enable_if.hpp>
 #include <dune/grid/io/file/vtk/vtkwriter.hh>
 #include <memory>

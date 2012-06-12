@@ -21,6 +21,8 @@
 #ifndef fiber_array_3d_hpp
 #define fiber_array_3d_hpp
 
+#include "../common/common.hpp"
+
 #include <stdexcept>
 
 namespace Fiber {

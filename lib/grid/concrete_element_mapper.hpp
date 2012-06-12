@@ -21,6 +21,8 @@
 #ifndef bempp_concrete_element_mapper_hpp
 #define bempp_concrete_element_mapper_hpp
 
+#include "../common/common.hpp"
+
 #include "mapper.hpp"
 
 #include <dune/grid/common/mcmgmapper.hh>

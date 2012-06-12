@@ -22,6 +22,8 @@
 #ifndef bempp_elementary_linear_operator_hpp
 #define bempp_elementary_linear_operator_hpp
 
+#include "../common/common.hpp"
+
 #include "linear_operator.hpp"
 
 #include "../common/shared_ptr.hpp"

@@ -21,6 +21,8 @@
 #ifndef fiber_types_hpp
 #define fiber_types_hpp
 
+#include "../common/common.hpp"
+
 namespace Fiber
 {
 

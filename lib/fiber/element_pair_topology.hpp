@@ -21,7 +21,9 @@
 #ifndef fiber_element_pair_topology_hpp
 #define fiber_element_pair_topology_hpp
 
-#include <armadillo>
+#include "../common/common.hpp"
+
+#include "../common/armadillo_fwd.hpp"
 #include <cassert>
 #include <iostream>
 #include <boost/tuple/tuple_comparison.hpp>

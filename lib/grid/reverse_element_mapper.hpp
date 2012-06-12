@@ -21,7 +21,9 @@
 #ifndef bempp_reverse_element_mapper_hpp
 #define bempp_reverse_element_mapper_hpp
 
-#include <boost/ptr_container/ptr_vector.hpp>
+#include "../common/common.hpp"
+
+#include "../common/boost_ptr_vector_fwd.hpp"
 #include "../common/types.hpp"
 
 namespace Bempp

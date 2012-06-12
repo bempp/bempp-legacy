@@ -21,6 +21,8 @@
 #ifndef fiber_surface_normal_dependent_function_hpp
 #define fiber_surface_normal_dependent_function_hpp
 
+#include "../common/common.hpp"
+
 #include "function.hpp"
 #include "geometrical_data.hpp"
 

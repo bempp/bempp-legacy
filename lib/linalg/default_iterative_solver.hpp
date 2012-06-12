@@ -21,6 +21,8 @@
 #ifndef bempp_default_iterative_solver_hpp
 #define bempp_default_iterative_solver_hpp
 
+#include "../common/common.hpp"
+
 #include "config_trilinos.hpp"
 
 #ifdef WITH_TRILINOS
@@ -29,7 +31,7 @@
 
 #include "belos_solver_wrapper.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 
 namespace Bempp
 {

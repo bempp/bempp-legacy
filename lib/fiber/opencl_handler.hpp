@@ -18,6 +18,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "../common/common.hpp"
+
+
 #include "config_opencl.hpp"
 
 #ifndef fiber_opencl_handler_hpp
@@ -27,7 +30,7 @@
 
 #include <string>
 #include <vector>
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 #include "opencl_options.hpp"
 
 #ifdef WITH_OPENCL

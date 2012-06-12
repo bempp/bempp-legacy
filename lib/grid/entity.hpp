@@ -21,6 +21,8 @@
 #ifndef bempp_entity_hpp
 #define bempp_entity_hpp
 
+#include "../common/common.hpp"
+
 #include "geometry_type.hpp"
 
 #include <boost/utility/enable_if.hpp>

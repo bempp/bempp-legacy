@@ -21,6 +21,8 @@
 #ifndef bempp_elementary_regular_integral_operator_hpp
 #define bempp_elementary_regular_integral_operator_hpp
 
+#include "../common/common.hpp"
+
 #include "elementary_integral_operator.hpp"
 
 namespace Bempp

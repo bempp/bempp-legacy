@@ -21,6 +21,8 @@
 #ifndef fiber_scalar_space_mapping_hpp
 #define fiber_scalar_space_mapping_hpp
 
+#include "../common/common.hpp"
+
 #include <cassert>
 #include <stdexcept>
 #include "basis_data.hpp"

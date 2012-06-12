@@ -21,6 +21,8 @@
 #ifndef bempp_concrete_entity_decl_hpp
 #define bempp_concrete_entity_decl_hpp
 
+#include "../common/common.hpp"
+
 #include "entity.hpp"
 #include "concrete_geometry.hpp"
 #include "geometry_type.hpp"

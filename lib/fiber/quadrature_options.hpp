@@ -21,6 +21,8 @@
 #ifndef fiber_quadrature_options_hpp
 #define fiber_quadrature_options_hpp
 
+#include "../common/common.hpp"
+
 namespace Fiber
 {
 

@@ -21,6 +21,8 @@
 #ifndef fiber_piecewise_linear_continuous_scalar_basis_hpp
 #define fiber_piecewise_linear_continuous_scalar_basis_hpp
 
+#include "../common/common.hpp"
+
 #include "basis.hpp"
 
 #include "basis_data.hpp"

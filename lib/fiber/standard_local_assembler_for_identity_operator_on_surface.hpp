@@ -21,14 +21,16 @@
 #ifndef fiber_standard_local_assembler_for_identity_operator_on_surface_hpp
 #define fiber_standard_local_assembler_for_identity_operator_on_surface_hpp
 
+#include "../common/common.hpp"
+
 #include "local_assembler_for_operators.hpp"
 #include "numerical_quadrature.hpp"
 #include "numerical_test_trial_integrator.hpp"
 #include "shared_ptr.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 #include <boost/static_assert.hpp>
-#include <boost/ptr_container/ptr_map.hpp>
+#include "../common/boost_ptr_map_fwd.hpp"
 #include <cstring>
 #include <iostream>
 #include <map>

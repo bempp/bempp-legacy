@@ -23,6 +23,9 @@
 #ifndef bempp_real_wrapper_of_complex_thyra_linear_operator_hpp
 #define bempp_real_wrapper_of_complex_thyra_linear_operator_hpp
 
+#include "../common/common.hpp"
+
+
 #ifdef WITH_TRILINOS
 #include <Thyra_LinearOpDefaultBase_decl.hpp>
 

@@ -21,6 +21,8 @@
 #ifndef bempp_standard_local_assembler_factory_for_operators_on_surfaces_hpp
 #define bempp_standard_local_assembler_factory_for_operators_on_surfaces_hpp
 
+#include "../common/common.hpp"
+
 #include "../fiber/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 #include "../grid/geometry_factory.hpp"
 

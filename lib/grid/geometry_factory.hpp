@@ -21,6 +21,8 @@
 #ifndef bempp_geometry_factory_hpp
 #define bempp_geometry_factory_hpp
 
+#include "../common/common.hpp"
+
 #include "config_alugrid.hpp"
 
 #include "geometry.hpp"

@@ -21,8 +21,10 @@
 #ifndef fiber_evaluator_for_integral_operators_hpp
 #define fiber_evaluator_for_integral_operators_hpp
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 #include "scalar_traits.hpp"
+
+#include "../common/common.hpp"
 
 namespace Fiber
 {

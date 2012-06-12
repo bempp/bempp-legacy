@@ -21,6 +21,8 @@
 #ifndef bempp_geometry_imp_hpp
 #define bempp_geometry_imp_hpp
 
+#include "../common/common.hpp"
+
 #include "geometry.hpp" // keep IDEs happy
 #include "../fiber/geometrical_data.hpp"
 

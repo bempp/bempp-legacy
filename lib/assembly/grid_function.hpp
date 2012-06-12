@@ -22,6 +22,8 @@
 #ifndef bempp_grid_function_hpp
 #define bempp_grid_function_hpp
 
+#include "../common/common.hpp"
+
 #include "../grid/vtk_writer.hpp"
 #include "../fiber/local_assembler_factory.hpp"
 #include "../fiber/scalar_traits.hpp"
@@ -29,7 +31,7 @@
 #include "../fiber/surface_normal_independent_function.hpp"
 #include "vector.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 #include <boost/mpl/set.hpp>
 #include <boost/mpl/has_key.hpp>
 #include <boost/utility/enable_if.hpp>

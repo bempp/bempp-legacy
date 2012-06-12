@@ -21,6 +21,8 @@
 #ifndef bempp_structured_grid_factory_hpp
 #define bempp_structured_grid_factory_hpp
 
+#include "../common/common.hpp"
+
 /** \file
     \brief A class to construct structured cube and simplex grids using the grid factory
 */

@@ -21,6 +21,8 @@
 #ifndef bempp_concrete_entity_hpp
 #define bempp_concrete_entity_hpp
 
+#include "../common/common.hpp"
+
 #include "concrete_entity_decl.hpp"
 #include "concrete_entity_pointer.hpp"
 #include "concrete_range_entity_iterator.hpp"

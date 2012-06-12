@@ -21,10 +21,12 @@
 #ifndef fiber_test_function_integrator_hpp
 #define fiber_test_function_integrator_hpp
 
+#include "../common/common.hpp"
+
 #include "scalar_traits.hpp"
 #include "types.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 #include <vector>
 
 namespace Fiber

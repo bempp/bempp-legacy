@@ -21,6 +21,9 @@
 #ifndef bempp_default_direct_solver_hpp
 #define bempp_default_direct_solver_hpp
 
+#include "../common/common.hpp"
+
+
 #include "solver.hpp"
 
 namespace Bempp

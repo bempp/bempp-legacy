@@ -25,7 +25,7 @@
 #include "fiber/array_2d.hpp"
 #include "fiber/array_4d.hpp"
 
-#include <armadillo>
+#include "common/armadillo_fwd.hpp"
 #include <complex>
 #include <boost/test/unit_test.hpp>
 

@@ -18,6 +18,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "../common/common.hpp"
+
+
 // Keep IDEs happy
 #include "standard_local_assembler_for_identity_operator_on_surface.hpp"
 

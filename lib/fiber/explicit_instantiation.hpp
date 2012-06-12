@@ -21,6 +21,8 @@
 #ifndef fiber_explicit_instantiation_hpp
 #define fiber_explicit_instantiation_hpp
 
+#include "../common/common.hpp"
+
 #include "config_data_types.hpp"
 #include <complex>
 

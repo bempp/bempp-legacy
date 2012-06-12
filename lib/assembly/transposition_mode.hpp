@@ -21,6 +21,8 @@
 #ifndef bempp_transposition_mode_hpp
 #define bempp_transposition_mode_hpp
 
+#include "../common/common.hpp"
+
 #include "config_trilinos.hpp"
 
 #ifdef WITH_TRILINOS

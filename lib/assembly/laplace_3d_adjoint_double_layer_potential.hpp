@@ -21,6 +21,8 @@
 #ifndef bempp_laplace_3d_adjoint_double_layer_potential_hpp
 #define bempp_laplace_3d_adjoint_double_layer_potential_hpp
 
+#include "../common/common.hpp"
+
 #include "elementary_singular_integral_operator.hpp"
 #include "../fiber/expression_list.hpp"
 #include "../fiber/laplace_3d_adjoint_double_layer_potential_kernel.hpp"

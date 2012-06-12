@@ -1,6 +1,8 @@
 #ifndef fiber_parallelisation_options_hpp
 #define fiber_parallelisation_options_hpp
 
+#include "../common/common.hpp"
+
 #include "opencl_options.hpp"
 
 namespace Fiber

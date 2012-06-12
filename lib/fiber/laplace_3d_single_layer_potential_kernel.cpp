@@ -22,7 +22,7 @@
 
 #include "explicit_instantiation.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 #include <cmath>
 
 #include "geometrical_data.hpp"

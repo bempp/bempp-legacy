@@ -21,6 +21,8 @@
 #ifndef bempp_grid_hpp
 #define bempp_grid_hpp
 
+#include "../common/common.hpp"
+
 #include <memory>
 
 namespace Bempp

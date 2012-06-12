@@ -1,7 +1,18 @@
 #ifndef fiber_shared_ptr_hpp
 #define fiber_shared_ptr_hpp
 
+#include "../common/common.hpp"
+
+
+#ifdef __INTEL_COMPILER
+#pragma warning(disable:279 858)
+#endif
+
 #include <boost/shared_ptr.hpp>
+
+#ifdef __INTEL_COMPILER
+#pragma warning(default:858)
+#endif
 
 namespace Fiber
 {

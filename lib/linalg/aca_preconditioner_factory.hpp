@@ -21,6 +21,8 @@
 #ifndef bempp_aca_preconditioner_factory_hpp
 #define	bempp_aca_preconditioner_factory_hpp
 
+#include "../common/common.hpp"
+
 #include "config_trilinos.hpp"
 
 #ifdef WITH_TRILINOS

@@ -21,6 +21,8 @@
 #ifndef bempp_space_hpp
 #define bempp_space_hpp
 
+#include "../common/common.hpp"
+
 #include "mass_matrix_container_initialiser.hpp"
 
 #include "../common/lazy.hpp"
@@ -28,7 +30,7 @@
 #include "../common/types.hpp"
 #include "../fiber/scalar_traits.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <vector>

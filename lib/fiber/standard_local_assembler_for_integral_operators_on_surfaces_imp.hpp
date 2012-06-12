@@ -18,6 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "../common/common.hpp"
+
 // Keep IDEs happy
 #include "standard_local_assembler_for_integral_operators_on_surfaces.hpp"
 
@@ -74,7 +76,7 @@ private:
     const std::vector<ElementIndexPair>& m_activeElementPairs;
     const Basis<BasisFunctionType>& m_activeTestBasis;
     const Basis<BasisFunctionType>& m_activeTrialBasis;
-    mutable arma::Cube<ResultType>& m_localResult;
+    arma::Cube<ResultType>& m_localResult;
 };
 
 } // namespace

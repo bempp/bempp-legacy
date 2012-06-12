@@ -21,6 +21,8 @@
 #ifndef bempp_linear_operator_superposition_hpp
 #define bempp_linear_operator_superposition_hpp
 
+#include "../common/common.hpp"
+
 #include "linear_operator.hpp"
 
 namespace Fiber

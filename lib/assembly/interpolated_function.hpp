@@ -22,11 +22,13 @@
 #ifndef bempp_interpolated_function_hpp
 #define bempp_interpolated_function_hpp
 
+#include "../common/common.hpp"
+
 #include "../grid/vtk_writer.hpp"
 #include "../fiber/scalar_traits.hpp"
 #include "../fiber/function.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 
 namespace Bempp
 {

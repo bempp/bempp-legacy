@@ -21,9 +21,11 @@
 #ifndef fiber_function_hpp
 #define fiber_function_hpp
 
+#include "../common/common.hpp"
+
 #include "scalar_traits.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 
 namespace Fiber
 {

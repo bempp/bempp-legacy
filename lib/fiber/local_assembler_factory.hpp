@@ -21,10 +21,12 @@
 #ifndef fiber_integration_manager_factory_hpp
 #define fiber_integration_manager_factory_hpp
 
+#include "../common/common.hpp"
+
 #include "scalar_traits.hpp"
 #include "shared_ptr.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 #include <boost/type_traits/is_same.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <memory>

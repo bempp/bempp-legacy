@@ -47,9 +47,9 @@
 #include "../grid/mapper.hpp"
 #include "../space/space.hpp"
 
-#include <armadillo>
-#include <boost/make_shared.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
+#include "../common/armadillo_fwd.hpp"
+#include "../common/boost_make_shared_fwd.hpp"
+#include "../common/boost_ptr_vector_fwd.hpp"
 #include <stdexcept>
 #include <iostream>
 
@@ -115,12 +115,12 @@ private:
     const std::vector<std::vector<GlobalDofIndex> >& m_trialGlobalDofs;
     // mutable OK because Assembler is thread-safe. (Alternative to "mutable" here:
     // make assembler's internal integrator map mutable)
-    mutable typename Fiber::LocalAssemblerForOperators<ResultType>& m_assembler;
+    typename Fiber::LocalAssemblerForOperators<ResultType>& m_assembler;
     // mutable OK because write access to this matrix is protected by a mutex
-    mutable arma::Mat<ResultType>& m_result;
+    arma::Mat<ResultType>& m_result;
 
     // mutex must be mutable because we need to lock and unlock it
-    mutable MutexType& m_mutex;
+    MutexType& m_mutex;
 };
 
 } // namespace

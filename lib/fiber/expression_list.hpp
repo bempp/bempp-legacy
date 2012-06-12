@@ -21,10 +21,12 @@
 #ifndef fiber_expression_list_hpp
 #define fiber_expression_list_hpp
 
+#include "../common/common.hpp"
+
 #include "expression.hpp"
 #include "scalar_traits.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 #include <vector>
 
 namespace Fiber

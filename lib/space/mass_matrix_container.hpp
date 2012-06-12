@@ -1,6 +1,8 @@
 #ifndef bempp_mass_matrix_container_hpp
 #define bempp_mass_matrix_container_hpp
 
+#include "../common/common.hpp"
+
 #include <memory>
 
 namespace Bempp

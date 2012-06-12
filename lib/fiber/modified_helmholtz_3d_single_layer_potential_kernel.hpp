@@ -21,6 +21,8 @@
 #ifndef fiber_modified_helmholtz_3d_single_layer_potential_kernel_hpp
 #define fiber_modified_helmholtz_3d_single_layer_potential_kernel_hpp
 
+#include "../common/common.hpp"
+
 #include "kernel.hpp"
 
 namespace Fiber

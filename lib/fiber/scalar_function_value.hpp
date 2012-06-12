@@ -21,11 +21,13 @@
 #ifndef fiber_scalar_function_value_hpp
 #define fiber_scalar_function_value_hpp
 
+#include "../common/common.hpp"
+
 #include "expression.hpp"
 #include "scalar_space_mapping.hpp"
 #include "CL/scalar_function_value.cl.str"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 
 namespace Fiber
 {

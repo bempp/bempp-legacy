@@ -20,6 +20,8 @@
 
 #include "numerical_test_function_integrator.hpp" // To keep IDEs happy
 
+#include "../common/common.hpp"
+
 #include "basis.hpp"
 #include "basis_data.hpp"
 #include "conjugate.hpp"

@@ -1,11 +1,14 @@
 #ifndef bempp_ahmed_leaf_cluster_array_hpp
 #define bempp_ahmed_leaf_cluster_array_hpp
 
+#include "../common/common.hpp"
+
+
 #include "config_ahmed.hpp"
 
 #ifdef WITH_AHMED
 
-#include <boost/scoped_array.hpp>
+#include "../common/boost_scoped_array_fwd.hpp"
 
 class blcluster;
 

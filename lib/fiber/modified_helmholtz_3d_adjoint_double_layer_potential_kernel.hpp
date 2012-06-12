@@ -21,8 +21,10 @@
 #ifndef fiber_modified_helmholtz_3d_adjoint_double_layer_potential_kernel_hpp
 #define fiber_modified_helmholtz_3d_adjoint_double_layer_potential_kernel_hpp
 
+#include "../common/common.hpp"
+
 #include "kernel.hpp"
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 
 namespace Fiber
 {

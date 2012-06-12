@@ -21,20 +21,27 @@
 #ifndef bempp_ahmed_aux_hpp
 #define bempp_ahmed_aux_hpp
 
+#include "../common/common.hpp"
+
 // to ensure there are no inconsistent forward declarations
 #include "ahmed_aux_fwd.hpp"
 
 #include "ahmed_leaf_cluster_array.hpp"
 #include "../common/types.hpp"
 
-#include <boost/scoped_array.hpp>
-#include <boost/shared_array.hpp>
+#include "../common/boost_scoped_array_fwd.hpp"
+#include "../common/boost_shared_array_fwd.hpp"
 #include <complex>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
 
 // Ahmed's include files
+
+#ifdef __INTEL_COMPILER
+#pragma warning(disable:381)
+#endif
+
 #include "ahmed_complex.hpp"
 
 #include <apprx.h>
@@ -53,6 +60,11 @@ bool multaHvec_omp(double d, blcluster* bl, mblock<double>** A, double* x,
 #undef SQR
 #undef MIN
 #undef MAX
+
+#ifdef __INTEL_COMPILER
+#pragma warning(default:381)
+#endif
+
 
 namespace Bempp
 {

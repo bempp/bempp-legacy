@@ -21,6 +21,8 @@
 #ifndef bempp_helmholtz_3d_adjoint_double_layer_potential_hpp
 #define bempp_helmholtz_3d_adjoint_double_layer_potential_hpp
 
+#include "../common/common.hpp"
+
 #include "elementary_singular_integral_operator.hpp"
 #include "../common/scalar_traits.hpp"
 #include "../fiber/expression_list.hpp"

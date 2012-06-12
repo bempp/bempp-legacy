@@ -24,7 +24,7 @@
 #include "geometrical_data.hpp"
 //#include "CL/modified_helmholtz_3d_adjoint_double_layer_potential_kernel.cl.str"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 #include <cassert>
 #include <cmath>
 

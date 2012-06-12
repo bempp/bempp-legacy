@@ -21,6 +21,8 @@
 #ifndef fiber_local_assembler_for_grid_functions_hpp
 #define fiber_local_assembler_for_grid_functions_hpp
 
+#include "../common/common.hpp"
+
 #include "array_2d.hpp"
 #include "types.hpp"
 #include <vector>

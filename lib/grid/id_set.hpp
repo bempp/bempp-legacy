@@ -21,6 +21,8 @@
 #ifndef bempp_id_set_hpp
 #define bempp_id_set_hpp
 
+#include "../common/common.hpp"
+
 #include <boost/utility/enable_if.hpp>
 
 namespace Bempp

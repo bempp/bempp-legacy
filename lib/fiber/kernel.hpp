@@ -21,10 +21,12 @@
 #ifndef fiber_kernel_hpp
 #define fiber_kernel_hpp
 
+#include "../common/common.hpp"
+
 #include "array_4d.hpp"
 #include "scalar_traits.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 
 namespace Fiber
 {

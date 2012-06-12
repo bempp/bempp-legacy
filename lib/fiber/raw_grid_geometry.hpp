@@ -21,7 +21,9 @@
 #ifndef fiber_raw_grid_geometry_hpp
 #define fiber_raw_grid_geometry_hpp
 
-#include <armadillo>
+#include "../common/common.hpp"
+
+#include "../common/armadillo_fwd.hpp"
 
 namespace Fiber
 {

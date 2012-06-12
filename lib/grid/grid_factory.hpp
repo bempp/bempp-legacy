@@ -21,7 +21,9 @@
 #ifndef bempp_grid_factory_hpp
 #define bempp_grid_factory_hpp
 
-#include <armadillo>
+#include "../common/common.hpp"
+
+#include "../common/armadillo_fwd.hpp"
 #include <memory>
 
 namespace Bempp

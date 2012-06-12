@@ -21,11 +21,13 @@
 #ifndef bempp_geometry_hpp
 #define bempp_geometry_hpp
 
+#include "../common/common.hpp"
+
 #include "geometry_type.hpp"
 
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 
 namespace Fiber
 {

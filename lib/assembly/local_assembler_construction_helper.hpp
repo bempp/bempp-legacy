@@ -1,6 +1,8 @@
 #ifndef bempp_local_assembler_construction_helper_hpp
 #define bempp_local_assembler_construction_helper_hpp
 
+#include "../common/common.hpp"
+
 #include "assembly_options.hpp"
 #include "../common/not_implemented_error.hpp"
 #include "../common/shared_ptr.hpp"
@@ -11,7 +13,7 @@
 #include "../grid/grid_view.hpp"
 #include "../space/space.hpp"
 
-#include <boost/make_shared.hpp>
+#include "../common/boost_make_shared_fwd.hpp"
 
 namespace Bempp
 {

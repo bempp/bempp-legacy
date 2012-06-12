@@ -21,6 +21,8 @@
 #ifndef bempp_concrete_grid_hpp
 #define bempp_concrete_grid_hpp
 
+#include "../common/common.hpp"
+
 #include "grid.hpp"
 #include "concrete_entity.hpp"
 #include "concrete_geometry_factory.hpp"

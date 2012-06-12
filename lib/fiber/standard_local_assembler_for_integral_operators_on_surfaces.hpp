@@ -21,6 +21,8 @@
 #ifndef fiber_standard_local_assembler_for_integral_operators_on_surfaces_hpp
 #define fiber_standard_local_assembler_for_integral_operators_on_surfaces_hpp
 
+#include "../common/common.hpp"
+
 #include "local_assembler_for_operators.hpp"
 
 #include "accuracy_options.hpp"

@@ -21,6 +21,8 @@
 #ifndef bempp_solver_hpp
 #define bempp_solver_hpp
 
+#include "../common/common.hpp"
+
 #include "../assembly/grid_function.hpp"
 
 namespace Bempp

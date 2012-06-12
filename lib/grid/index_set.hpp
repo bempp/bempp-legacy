@@ -21,6 +21,8 @@
 #ifndef bempp_index_set_hpp
 #define bempp_index_set_hpp
 
+#include "../common/common.hpp"
+
 namespace Bempp
 {
 

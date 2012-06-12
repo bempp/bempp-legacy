@@ -21,6 +21,8 @@
 #ifndef bempp_laplace_3d_hypersingular_operator_hpp
 #define bempp_laplace_3d_hypersingular_operator_hpp
 
+#include "../common/common.hpp"
+
 #include "elementary_singular_integral_operator.hpp"
 #include "../common/scalar_traits.hpp"
 #include "../fiber/expression_list.hpp"

@@ -20,6 +20,8 @@
 #ifndef bempp_concrete_index_set_hpp
 #define bempp_concrete_index_set_hpp
 
+#include "../common/common.hpp"
+
 #include "index_set.hpp"
 #include "concrete_entity.hpp"
 

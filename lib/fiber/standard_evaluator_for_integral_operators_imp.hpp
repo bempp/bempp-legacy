@@ -20,6 +20,8 @@
 
 #include "standard_evaluator_for_integral_operators.hpp" // keep IDEs happy
 
+#include "../common/common.hpp"
+
 #include "basis.hpp"
 #include "basis_data.hpp"
 #include "expression.hpp"

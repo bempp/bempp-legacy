@@ -295,3 +295,4 @@ assembleDetachedWeakFormInArbitraryMode(
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperatorSuperposition);
 
 } // namespace Bempp
+

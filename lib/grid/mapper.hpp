@@ -21,6 +21,8 @@
 #ifndef bempp_mapper_hpp
 #define bempp_mapper_hpp
 
+#include "../common/common.hpp"
+
 namespace Bempp
 {
 

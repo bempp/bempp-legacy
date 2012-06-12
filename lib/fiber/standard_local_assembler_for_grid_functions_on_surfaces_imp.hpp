@@ -21,6 +21,8 @@
 // Keep IDEs happy
 #include "standard_local_assembler_for_grid_functions_on_surfaces.hpp"
 
+#include "../common/common.hpp"
+
 #include "numerical_test_function_integrator.hpp"
 
 #include <set>

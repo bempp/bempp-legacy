@@ -21,10 +21,12 @@
 #ifndef fiber_surface_curl_3d_hpp
 #define fiber_surface_curl_3d_hpp
 
+#include "../common/common.hpp"
+
 #include "expression.hpp"
 #include "scalar_space_mapping.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 #include <vector>
 
 namespace Fiber {
