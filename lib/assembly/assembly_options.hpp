@@ -21,6 +21,8 @@
 #ifndef bempp_assembly_options_hpp
 #define bempp_assembly_options_hpp
 
+#include "../common/common.hpp"
+
 #include <string>
 
 #include "../fiber/opencl_options.hpp"

@@ -40,27 +40,27 @@ class CollectionOf4dArrays
 {
 public:
     CollectionOf4dArrays();
-    explicit CollectionOf4dArrays(int arrayCount);
+    explicit CollectionOf4dArrays(size_t arrayCount);
 
-    void set_size(int new_size);
-    int size() const;
+    void set_size(size_t new_size);
+    size_t size() const;
 
-    _4dArray<T>& operator[](int index);
-    const _4dArray<T>& operator[](int index) const;
+    _4dArray<T>& operator[](size_t index);
+    const _4dArray<T>& operator[](size_t index) const;
 
     void fill(const T& value);
 
-    CollectionOf3dSlicesOf4dArrays<T> slice(int index3);
-    CollectionOf3dSlicesOfConst4dArrays<T> const_slice(int index3) const;
-    CollectionOf2dSlicesOf4dArrays<T> slice(int index2, int index3);
-    CollectionOf2dSlicesOfConst4dArrays<T> const_slice(int index2, int index3) const;
-    CollectionOf1dSlicesOf4dArrays<T> slice(int index1, int index2, int index3);
-    CollectionOf1dSlicesOfConst4dArrays<T> const_slice(int index1, int index2, int index3) const;
+    CollectionOf3dSlicesOf4dArrays<T> slice(size_t index3);
+    CollectionOf3dSlicesOfConst4dArrays<T> const_slice(size_t index3) const;
+    CollectionOf2dSlicesOf4dArrays<T> slice(size_t index2, size_t index3);
+    CollectionOf2dSlicesOfConst4dArrays<T> const_slice(size_t index2, size_t index3) const;
+    CollectionOf1dSlicesOf4dArrays<T> slice(size_t index1, size_t index2, size_t index3);
+    CollectionOf1dSlicesOfConst4dArrays<T> const_slice(size_t index1, size_t index2, size_t index3) const;
 
 private:
-    _4dArray<T>& array(int index);
-    const _4dArray<T>& array(int index) const;
-    void check_array_index(int array_index) const;
+    _4dArray<T>& array(size_t index);
+    const _4dArray<T>& array(size_t index) const;
+    void check_array_index(size_t array_index) const;
 
 private:
     // Disable copy constructor and assignment operator
@@ -68,7 +68,7 @@ private:
     CollectionOf4dArrays& operator=(const CollectionOf4dArrays& rhs);
 
 private:
-    int m_size;
+    size_t m_size;
     boost::scoped_array<_4dArray<T> > m_arrays;
 };
 
@@ -76,7 +76,7 @@ template <typename T>
 class CollectionOf3dSlicesOf4dArrays
 {
 public:
-    CollectionOf3dSlicesOf4dArrays(CollectionOf4dArrays<T>& collection, int index3);
+    CollectionOf3dSlicesOf4dArrays(CollectionOf4dArrays<T>& collection, size_t index3);
 
     /** \brief Returns a reference to self.
 
@@ -88,14 +88,14 @@ public:
       support for rvalue references. */
     CollectionOf3dSlicesOf4dArrays& self();
 
-    _3dSliceOfConst4dArray<T> operator[](int index) const;
-    _3dSliceOf4dArray<T> operator[](int index);
+    _3dSliceOfConst4dArray<T> operator[](size_t index) const;
+    _3dSliceOf4dArray<T> operator[](size_t index);
 
-    int size() const;
+    size_t size() const;
 
 private:
     CollectionOf4dArrays<T>& m_collection;
-    int m_index3;
+    size_t m_index3;
 };
 
 template <typename T>
@@ -103,22 +103,22 @@ class CollectionOf3dSlicesOfConst4dArrays
 {
 public:
     CollectionOf3dSlicesOfConst4dArrays(
-            const CollectionOf4dArrays<T>& collection, int index3);
+            const CollectionOf4dArrays<T>& collection, size_t index3);
 
-    _3dSliceOfConst4dArray<T> operator[](int index) const;
+    _3dSliceOfConst4dArray<T> operator[](size_t index) const;
 
-    int size() const;
+    size_t size() const;
 
 private:
     const CollectionOf4dArrays<T>& m_collection;
-    int m_index3;
+    size_t m_index3;
 };
 
 template <typename T>
 class CollectionOf2dSlicesOf4dArrays
 {
 public:
-    CollectionOf2dSlicesOf4dArrays(CollectionOf4dArrays<T>& collection, int index2, int index3);
+    CollectionOf2dSlicesOf4dArrays(CollectionOf4dArrays<T>& collection, size_t index2, size_t index3);
 
     /** \brief Returns a reference to self.
 
@@ -130,14 +130,14 @@ public:
       support for rvalue references. */
     CollectionOf2dSlicesOf4dArrays& self();
 
-    _2dSliceOfConst4dArray<T> operator[](int index) const;
-    _2dSliceOf4dArray<T> operator[](int index);
+    _2dSliceOfConst4dArray<T> operator[](size_t index) const;
+    _2dSliceOf4dArray<T> operator[](size_t index);
 
-    int size() const;
+    size_t size() const;
 
 private:
     CollectionOf4dArrays<T>& m_collection;
-    int m_index2, m_index3;
+    size_t m_index2, m_index3;
 };
 
 template <typename T>
@@ -145,15 +145,15 @@ class CollectionOf2dSlicesOfConst4dArrays
 {
 public:
     CollectionOf2dSlicesOfConst4dArrays(
-            const CollectionOf4dArrays<T>& collection, int index2, int index3);
+            const CollectionOf4dArrays<T>& collection, size_t index2, size_t index3);
 
-    _2dSliceOfConst4dArray<T> operator[](int index) const;
+    _2dSliceOfConst4dArray<T> operator[](size_t index) const;
 
-    int size() const;
+    size_t size() const;
 
 private:
     const CollectionOf4dArrays<T>& m_collection;
-    int m_index2, m_index3;
+    size_t m_index2, m_index3;
 };
 
 template <typename T>
@@ -161,7 +161,7 @@ class CollectionOf1dSlicesOf4dArrays
 {
 public:
     CollectionOf1dSlicesOf4dArrays(CollectionOf4dArrays<T>& collection,
-                                   int index1, int index2, int index3);
+                                   size_t index1, size_t index2, size_t index3);
 
     /** \brief Returns a reference to self.
 
@@ -173,14 +173,14 @@ public:
       support for rvalue references. */
     CollectionOf1dSlicesOf4dArrays& self();
 
-    _1dSliceOfConst4dArray<T> operator[](int index) const;
-    _1dSliceOf4dArray<T> operator[](int index);
+    _1dSliceOfConst4dArray<T> operator[](size_t index) const;
+    _1dSliceOf4dArray<T> operator[](size_t index);
 
-    int size() const;
+    size_t size() const;
 
 private:
     CollectionOf4dArrays<T>& m_collection;
-    int m_index1, m_index2, m_index3;
+    size_t m_index1, m_index2, m_index3;
 };
 
 template <typename T>
@@ -188,15 +188,15 @@ class CollectionOf1dSlicesOfConst4dArrays
 {
 public:
     CollectionOf1dSlicesOfConst4dArrays(
-            const CollectionOf4dArrays<T>& collection, int index1, int index2, int index3);
+            const CollectionOf4dArrays<T>& collection, size_t index1, size_t index2, size_t index3);
 
-    _1dSliceOfConst4dArray<T> operator[](int index) const;
+    _1dSliceOfConst4dArray<T> operator[](size_t index) const;
 
-    int size() const;
+    size_t size() const;
 
 private:
     const CollectionOf4dArrays<T>& m_collection;
-    int m_index1, m_index2, m_index3;
+    size_t m_index1, m_index2, m_index3;
 };
 
 } // namespace Fiber

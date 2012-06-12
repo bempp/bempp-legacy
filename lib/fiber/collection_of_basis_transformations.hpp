@@ -21,6 +21,8 @@
 #ifndef fiber_collection_of_basis_transformations_hpp
 #define fiber_collection_of_basis_transformations_hpp
 
+#include "../common/common.hpp"
+
 #include "scalar_traits.hpp"
 
 namespace Fiber
@@ -44,7 +46,7 @@ public:
     virtual int argumentDimension() const = 0;
     virtual int resultDimension(int transformationIndex) const = 0;
 
-    virtual void addDependencies(int& basisDeps, int& geomDeps) const = 0;
+    virtual void addDependencies(size_t& basisDeps, size_t& geomDeps) const = 0;
 
     /** \brief Evaluate basis function transformations at specified points.
      *

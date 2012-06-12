@@ -21,6 +21,8 @@
 #ifndef fiber_scalar_traits_hpp
 #define fiber_scalar_traits_hpp
 
+#include "../common/common.hpp"
+
 #include <complex>
 
 namespace Fiber

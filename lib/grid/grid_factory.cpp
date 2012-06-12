@@ -39,7 +39,7 @@ typedef ConcreteGrid<Default3dIn3dDuneGrid> Default3dIn3dGrid;
 
 std::auto_ptr<Grid> GridFactory::createStructuredGrid(
     const GridParameters& params, const arma::Col<double>& lowerLeft,
-    const arma::Col<double>& upperRight, const arma::Col<unsigned int>& nElements)
+    const arma::Col<double>& upperRight, const arma::Col<unsigned int> &nElements)
 {
     // TODO: Support quadrilateral and linear grids
 
@@ -47,11 +47,11 @@ std::auto_ptr<Grid> GridFactory::createStructuredGrid(
     if (params.topology != GridParameters::TRIANGULAR)
         throw std::invalid_argument("GridFactory::createStructuredGrid(): unsupported grid topology");
     const int dimGrid = 2;
-    if (lowerLeft.n_rows != dimGrid)
+    if ((int)lowerLeft.n_rows != dimGrid)
         throw std::invalid_argument("GridFactory::createStructuredGrid(): lowerLeft must be two-dimensional");
-    if (upperRight.n_rows != dimGrid)
+    if ((int)upperRight.n_rows != dimGrid)
         throw std::invalid_argument("GridFactory::createStructuredGrid(): lowerLeft must be two-dimensional");
-    if (nElements.n_rows != dimGrid)
+    if ((int)nElements.n_rows != dimGrid)
         throw std::invalid_argument("GridFactory::createStructuredGrid(): nElements must be two-dimensional");
     if (nElements(0) < 1 || nElements(1) < 1)
         throw std::invalid_argument("GridFactory::createStructuredGrid(): all entries in nElements must be positive");
@@ -65,7 +65,7 @@ std::auto_ptr<Grid> GridFactory::createStructuredGrid(
     Dune::FieldVector<ctype,dimGrid> duneUpperRight;
     duneUpperRight[0] = upperRight(0);
     duneUpperRight[1] = upperRight(1);
-    Dune::array<unsigned int,dimGrid> duneNElements;
+    Dune::array<int,dimGrid> duneNElements;
     duneNElements[0] = nElements(0);
     duneNElements[1] = nElements(1);
 

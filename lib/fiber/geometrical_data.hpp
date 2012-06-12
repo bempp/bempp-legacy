@@ -22,7 +22,10 @@
 #ifndef fiber_geometrical_data_hpp
 #define fiber_geometrical_data_hpp
 
-#include <armadillo>
+#include "../common/common.hpp"
+
+#include "../common/armadillo_fwd.hpp"
+
 #include <cassert>
 
 namespace Fiber

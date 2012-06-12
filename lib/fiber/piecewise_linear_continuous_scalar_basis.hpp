@@ -21,6 +21,8 @@
 #ifndef fiber_piecewise_linear_continuous_scalar_basis_hpp
 #define fiber_piecewise_linear_continuous_scalar_basis_hpp
 
+#include "../common/common.hpp"
+
 #include "basis.hpp"
 
 #include "basis_data.hpp"
@@ -82,7 +84,7 @@ public:
         return 1;
     }
 
-    virtual void evaluate(int what,
+    virtual void evaluate(size_t what,
                           const arma::Mat<CoordinateType>& points,
                           LocalDofIndex localDofIndex,
                           BasisData<ValueType>& data) const {
@@ -114,7 +116,7 @@ public:
             std::string code (piecewise_linear_continuous_scalar_basis_cl,
                               piecewise_linear_continuous_scalar_basis_cl_len);
             size_t len = funcName.size();
-            int n = code.find (funcName);
+            size_t n = code.find (funcName);
             while (n != std::string::npos) {
                 code.insert (n+len, modifier);
                 n = code.find (funcName, n+len);

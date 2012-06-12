@@ -21,6 +21,8 @@
 #ifndef bempp_concrete_entity_decl_hpp
 #define bempp_concrete_entity_decl_hpp
 
+#include "../common/common.hpp"
+
 #include "entity.hpp"
 #include "concrete_geometry.hpp"
 #include "geometry_type.hpp"
@@ -76,7 +78,7 @@ public:
         return *m_dune_entity;
     }
 
-    virtual int level() const {
+    virtual size_t level() const {
         return m_dune_entity->level();
     }
 
@@ -131,7 +133,7 @@ public:
         return *m_dune_entity;
     }
 
-    virtual int level() const {
+    virtual size_t level() const {
         return m_dune_entity->level();
     }
 
@@ -190,24 +192,24 @@ private:
     typename boost::enable_if_c<codimSub <= DuneEntity::dimension, std::auto_ptr<EntityIterator<codimSub> > >::type
     subEntityCodimNIterator() const;
 
-    virtual int subEntityCodim1Count() const {
+    virtual size_t subEntityCodim1Count() const {
         return subEntityCodimNCount<1>();
     }
-    virtual int subEntityCodim2Count() const {
+    virtual size_t subEntityCodim2Count() const {
         return subEntityCodimNCount<2>();
     }
-    virtual int subEntityCodim3Count() const {
+    virtual size_t subEntityCodim3Count() const {
         return subEntityCodimNCount<3>();
     }
 
     template <int codimSub>
-    typename boost::disable_if_c<codimSub <= DuneEntity::dimension, int>::type
+    typename boost::disable_if_c<codimSub <= DuneEntity::dimension, size_t>::type
     subEntityCodimNCount() const {
         return 0;
     }
 
     template <int codimSub>
-    typename boost::enable_if_c<codimSub <= DuneEntity::dimension, int>::type
+    typename boost::enable_if_c<codimSub <= DuneEntity::dimension, size_t>::type
     subEntityCodimNCount() const {
         return m_dune_entity->template count<codimSub>();
     }

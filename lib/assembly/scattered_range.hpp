@@ -21,6 +21,8 @@
 #ifndef bempp_scattered_range_hpp
 #define bempp_scattered_range_hpp
 
+#include "../common/common.hpp"
+
 #include <tbb/tbb_stddef.h> // split class
 #include <cmath>
 #include <cassert>

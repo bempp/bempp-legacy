@@ -18,39 +18,45 @@
 //// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //// THE SOFTWARE.
 
-//#include "fiber/laplace_3d_single_layer_potential_kernel_functor.hpp"
+//#include "fiber/laplace_3d_single_layer_potential_kernel.hpp"
 //#include "fiber/geometrical_data.hpp"
 //#include "../type_template.hpp"
 //#include "../check_arrays_are_close.hpp"
 
 //#include <algorithm>
-//#include <armadillo>
+//#include "common/armadillo_fwd.hpp"
 //#include <boost/test/unit_test.hpp>
-//#include <boost/test/test_case_template.hpp>
 //#include <boost/test/floating_point_comparison.hpp>
 //#include <boost/version.hpp>
 //#include <complex>
 
 //// Tests
 
-//BOOST_AUTO_TEST_SUITE(Laplace3dSingleLayerPotentialKernelFunctor)
+//BOOST_AUTO_TEST_SUITE(Laplace3dSingleLayerPotentialKernel)
 
-//BOOST_AUTO_TEST_CASE_TEMPLATE(addGeometricalDependencies_works_for_nonzero_initial_values,
-//                              ValueType, kernel_types)
+//BOOST_AUTO_TEST_CASE_TEMPLATE(worldDimension_is_3, ValueType, kernel_types)
 //{
-//    Fiber::Laplace3dSingleLayerPotentialKernelFunctor<ValueType> op;
-//    int testGeomDeps = 1024, trialGeomDeps = 16; // random initial values
-//    op.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
-
-//    BOOST_CHECK(testGeomDeps & Fiber::GLOBALS);
-//    BOOST_CHECK(trialGeomDeps & Fiber::GLOBALS);
+//    Fiber::Laplace3dSingleLayerPotentialKernel<ValueType> op;
+//    BOOST_CHECK_EQUAL(op.worldDimension(), 3);
 //}
 
-//BOOST_AUTO_TEST_CASE_TEMPLATE(addGeometricalDependencies_works_for_zero_initial_values,
+//BOOST_AUTO_TEST_CASE_TEMPLATE(domainDimension_is_1, ValueType, kernel_types)
+//{
+//    Fiber::Laplace3dSingleLayerPotentialKernel<ValueType> op;
+//    BOOST_CHECK_EQUAL(op.domainDimension(), 1);
+//}
+
+//BOOST_AUTO_TEST_CASE_TEMPLATE(codomainDimension_is_1, ValueType, kernel_types)
+//{
+//    Fiber::Laplace3dSingleLayerPotentialKernel<ValueType> op;
+//    BOOST_CHECK_EQUAL(op.domainDimension(), 1);
+//}
+
+//BOOST_AUTO_TEST_CASE_TEMPLATE(addGeometricalDependencies_works,
 //                              ValueType, kernel_types)
 //{
-//    Fiber::Laplace3dSingleLayerPotentialKernelFunctor<ValueType> op;
-//    int testGeomDeps = 0, trialGeomDeps = 0;
+//    Fiber::Laplace3dSingleLayerPotentialKernel<ValueType> op;
+//    size_t testGeomDeps = 1024, trialGeomDeps = 16; // random initial values
 //    op.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 
 //    BOOST_CHECK(testGeomDeps & Fiber::GLOBALS);
@@ -76,10 +82,10 @@
 //    trialGeomData.globals(0, 1) = 3.;
 //    trialGeomData.globals(0, 2) = 4.;
 
-//    Fiber::_4dArray<ValueType> result;
+//    Fiber::Array4d<ValueType> result;
 //    op.evaluateOnGrid(testGeomData, trialGeomData, result);
 
-//    Fiber::_4dArray<ValueType> expected(1, testPointCount, 1, trialPointCount);
+//    Fiber::Array4d<ValueType> expected(1, testPointCount, 1, trialPointCount);
 //    for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
 //        for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
 //            expected(0, testPoint, 0, trialPoint) =
@@ -109,10 +115,10 @@
 //    trialGeomData.globals(1, 1) = 3.;
 //    trialGeomData.globals(1, 2) = 4.;
 
-//    Fiber::_4dArray<ValueType> result;
+//    Fiber::Array4d<ValueType> result;
 //    op.evaluateOnGrid(testGeomData, trialGeomData, result);
 
-//    Fiber::_4dArray<ValueType> expected(1, testPointCount, 1, trialPointCount);
+//    Fiber::Array4d<ValueType> expected(1, testPointCount, 1, trialPointCount);
 //    for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
 //        for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
 //            expected(0, testPoint, 0, trialPoint) =
@@ -147,7 +153,7 @@
 //    trialGeomDataOnGrid.globals(0, 1) = 3.;
 //    trialGeomDataOnGrid.globals(0, 2) = 4.;
 
-//    Fiber::_4dArray<ValueType> resultOnGrid;
+//    Fiber::Array4d<ValueType> resultOnGrid;
 //    op.evaluateOnGrid(testGeomDataOnGrid, trialGeomDataOnGrid, resultOnGrid);
 
 //    arma::Cube<ValueType> convertedResultOnGrid(1, 1, testPointCount * trialPointCount);

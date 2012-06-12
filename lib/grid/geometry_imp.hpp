@@ -21,6 +21,8 @@
 #ifndef bempp_geometry_imp_hpp
 #define bempp_geometry_imp_hpp
 
+#include "../common/common.hpp"
+
 #include "geometry.hpp" // keep IDEs happy
 #include "../fiber/geometrical_data.hpp"
 
@@ -162,13 +164,13 @@ inline void Geometry::getNormals(const arma::Mat<float>& local,
     convertMat(normalDouble, normal);
 }
 
-inline void Geometry::getData(int what, const arma::Mat<double>& local,
+inline void Geometry::getData(size_t what, const arma::Mat<double>& local,
                               Fiber::GeometricalData<double>& data) const
 {
     getDataImpl(what, local, data);
 }
 
-inline void Geometry::getData(int what, const arma::Mat<float>& local,
+inline void Geometry::getData(size_t what, const arma::Mat<float>& local,
                               Fiber::GeometricalData<float>& data) const
 {
     arma::Mat<double> localDouble;
@@ -186,7 +188,7 @@ template <typename T1, typename T2>
 void Geometry::convertMat(const arma::Mat<T1>& in, arma::Mat<T2>& out) const
 {
     out.set_size(in.n_rows, in.n_cols);
-    for (int elem = 0; elem < in.n_elem; ++elem)
+    for (size_t elem = 0; elem < in.n_elem; ++elem)
         out[elem] = in[elem];
 }
 
@@ -194,7 +196,7 @@ template <typename T1, typename T2>
 void Geometry::convertCube(const arma::Cube<T1>& in, arma::Cube<T2>& out) const
 {
     out.set_size(in.n_rows, in.n_cols, in.n_slices);
-    for (int elem = 0; elem < in.n_elem; ++elem)
+    for (size_t elem = 0; elem < in.n_elem; ++elem)
         out[elem] = in[elem];
 }
 

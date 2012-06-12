@@ -1,6 +1,8 @@
 #ifndef belos_solver_wrapper_hpp
 #define belos_solver_wrapper_hpp
 
+#include "../common/common.hpp"
+
 #include "config_trilinos.hpp"
 
 #ifdef WITH_TRILINOS

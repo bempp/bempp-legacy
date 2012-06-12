@@ -20,7 +20,7 @@ public:
     int argumentDimension() const { return 1.; }
     int resultDimension() const { return 3; }
 
-    void addDependencies(int& basisDeps, int& geomDeps) const {
+    void addDependencies(size_t& basisDeps, size_t& geomDeps) const {
         basisDeps |= DERIVATIVES;
         geomDeps |= NORMALS | JACOBIAN_INVERSES_TRANSPOSED;
     }

@@ -36,7 +36,7 @@ inline _3dArray<T>::_3dArray()
 }
 
 template <typename T>
-inline _3dArray<T>::_3dArray(int extent0, int extent1, int extent2)
+inline _3dArray<T>::_3dArray(size_t extent0, size_t extent1, size_t extent2)
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_extents(extent0, extent1, extent2);
@@ -49,7 +49,7 @@ inline _3dArray<T>::_3dArray(int extent0, int extent1, int extent2)
 }
 
 template <typename T>
-inline _3dArray<T>::_3dArray(int extent0, int extent1, int extent2, T* data)
+inline _3dArray<T>::_3dArray(size_t extent0, size_t extent1, size_t extent2, T* data)
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_extents(extent0, extent1, extent2);
@@ -69,7 +69,7 @@ inline _3dArray<T>::~_3dArray()
 }
 
 template <typename T>
-inline T& _3dArray<T>::operator()(int index0, int index1, int index2)
+inline T& _3dArray<T>::operator()(size_t index0, size_t index1, size_t index2)
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_indices(index0, index1, index2);
@@ -81,7 +81,7 @@ inline T& _3dArray<T>::operator()(int index0, int index1, int index2)
 }
 
 template <typename T>
-inline const T& _3dArray<T>::operator()(int index0, int index1, int index2) const
+inline const T& _3dArray<T>::operator()(size_t index0, size_t index1, size_t index2) const
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_indices(index0, index1, index2);
@@ -93,7 +93,7 @@ inline const T& _3dArray<T>::operator()(int index0, int index1, int index2) cons
 }
 
 template <typename T>
-inline int _3dArray<T>::extent(int dimension) const
+inline size_t _3dArray<T>::extent(size_t dimension) const
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_dimension(dimension);
@@ -102,7 +102,7 @@ inline int _3dArray<T>::extent(int dimension) const
 }
 
 template <typename T>
-inline void _3dArray<T>::set_size(int extent0, int extent1, int extent2)
+inline void _3dArray<T>::set_size(size_t extent0, size_t extent1, size_t extent2)
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_extents(extent0, extent1, extent2);
@@ -150,21 +150,21 @@ inline typename _3dArray<T>::const_iterator _3dArray<T>::end() const
 
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
 template <typename T>
-inline void _3dArray<T>::check_dimension(int dimension) const
+inline void _3dArray<T>::check_dimension(size_t dimension) const
 {
     if (dimension < 0 || 2 < dimension)
         throw std::invalid_argument("Invalid dimension");
 }
 
 template <typename T>
-inline void _3dArray<T>::check_extents(int extent0, int extent1, int extent2) const
+inline void _3dArray<T>::check_extents(size_t extent0, size_t extent1, size_t extent2) const
 {
     if (extent0 <= 0 || extent1 <= 0 || extent2 <= 0)
         throw std::length_error("Invalid extent");
 }
 
 template <typename T>
-inline void _3dArray<T>::check_indices(int index0, int index1, int index2) const
+inline void _3dArray<T>::check_indices(size_t index0, size_t index1, size_t index2) const
 {
     if (index0 < 0 || m_extents[0] <= index0 ||
         index1 < 0 || m_extents[1] <= index1 ||
@@ -176,7 +176,7 @@ inline void _3dArray<T>::check_indices(int index0, int index1, int index2) const
 // _2dSliceOf3dArray
 
 template <typename T>
-inline _2dSliceOf3dArray<T>::_2dSliceOf3dArray(_3dArray<T>& array, int index2) :
+inline _2dSliceOf3dArray<T>::_2dSliceOf3dArray(_3dArray<T>& array, size_t index2) :
     m_array(array), m_index2(index2)
 {}
 
@@ -186,23 +186,23 @@ inline _2dSliceOf3dArray<T>& _2dSliceOf3dArray<T>::self() {
 }
 
 template <typename T>
-inline const T& _2dSliceOf3dArray<T>::operator()(int index0, int index1) const {
+inline const T& _2dSliceOf3dArray<T>::operator()(size_t index0, size_t index1) const {
     return m_array(index0, index1, m_index2);
 }
 
 template <typename T>
-inline T& _2dSliceOf3dArray<T>::operator()(int index0, int index1) {
+inline T& _2dSliceOf3dArray<T>::operator()(size_t index0, size_t index1) {
     return m_array(index0, index1, m_index2);
 }
 
 template <typename T>
-inline int _2dSliceOf3dArray<T>::extent(int dimension) const {
+inline size_t _2dSliceOf3dArray<T>::extent(size_t dimension) const {
     check_dimension(dimension);
     return m_array.extent(dimension);
 }
 
 template <typename T>
-inline void _2dSliceOf3dArray<T>::check_dimension(int dimension) const {
+inline void _2dSliceOf3dArray<T>::check_dimension(size_t dimension) const {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     if (dimension < 0 || 1 < dimension)
         throw std::invalid_argument("Invalid dimension");
@@ -213,23 +213,23 @@ inline void _2dSliceOf3dArray<T>::check_dimension(int dimension) const {
 
 template <typename T>
 inline _2dSliceOfConst3dArray<T>::_2dSliceOfConst3dArray(
-        const _3dArray<T>& array, int index2) :
+        const _3dArray<T>& array, size_t index2) :
     m_array(array), m_index2(index2)
 {}
 
 template <typename T>
-inline const T& _2dSliceOfConst3dArray<T>::operator()(int index0, int index1) const {
+inline const T& _2dSliceOfConst3dArray<T>::operator()(size_t index0, size_t index1) const {
     return m_array(index0, index1, m_index2);
 }
 
 template <typename T>
-inline int _2dSliceOfConst3dArray<T>::extent(int dimension) const {
+inline size_t _2dSliceOfConst3dArray<T>::extent(size_t dimension) const {
     check_dimension(dimension);
     return m_array.extent(dimension);
 }
 
 template <typename T>
-inline void _2dSliceOfConst3dArray<T>::check_dimension(int dimension) const {
+inline void _2dSliceOfConst3dArray<T>::check_dimension(size_t dimension) const {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     if (dimension < 0 || 1 < dimension)
         throw std::invalid_argument("Invalid dimension");
@@ -240,7 +240,7 @@ inline void _2dSliceOfConst3dArray<T>::check_dimension(int dimension) const {
 
 template <typename T>
 inline _1dSliceOf3dArray<T>::_1dSliceOf3dArray(
-        _3dArray<T>& array, int index1, int index2) :
+        _3dArray<T>& array, size_t index1, size_t index2) :
     m_array(array), m_index1(index1), m_index2(index2)
 {}
 
@@ -250,23 +250,23 @@ inline _1dSliceOf3dArray<T>& _1dSliceOf3dArray<T>::self() {
 }
 
 template <typename T>
-inline const T& _1dSliceOf3dArray<T>::operator()(int index0) const {
+inline const T& _1dSliceOf3dArray<T>::operator()(size_t index0) const {
     return m_array(index0, m_index1, m_index2);
 }
 
 template <typename T>
-inline T& _1dSliceOf3dArray<T>::operator()(int index0) {
+inline T& _1dSliceOf3dArray<T>::operator()(size_t index0) {
     return m_array(index0, m_index1, m_index2);
 }
 
 template <typename T>
-inline int _1dSliceOf3dArray<T>::extent(int dimension) const {
+inline size_t _1dSliceOf3dArray<T>::extent(size_t dimension) const {
     check_dimension(dimension);
     return m_array.extent(dimension);
 }
 
 template <typename T>
-inline void _1dSliceOf3dArray<T>::check_dimension(int dimension) const {
+inline void _1dSliceOf3dArray<T>::check_dimension(size_t dimension) const {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     if (dimension < 0 || 0 < dimension)
         throw std::invalid_argument("Invalid dimension");
@@ -277,23 +277,23 @@ inline void _1dSliceOf3dArray<T>::check_dimension(int dimension) const {
 
 template <typename T>
 inline _1dSliceOfConst3dArray<T>::_1dSliceOfConst3dArray(
-        const _3dArray<T>& array, int index1, int index2) :
+        const _3dArray<T>& array, size_t index1, size_t index2) :
     m_array(array), m_index1(index1), m_index2(index2)
 {}
 
 template <typename T>
-inline const T& _1dSliceOfConst3dArray<T>::operator()(int index0) const {
+inline const T& _1dSliceOfConst3dArray<T>::operator()(size_t index0) const {
     return m_array(index0, m_index1, m_index2);
 }
 
 template <typename T>
-inline int _1dSliceOfConst3dArray<T>::extent(int dimension) const {
+inline size_t _1dSliceOfConst3dArray<T>::extent(size_t dimension) const {
     check_dimension(dimension);
     return m_array.extent(dimension);
 }
 
 template <typename T>
-inline void _1dSliceOfConst3dArray<T>::check_dimension(int dimension) const {
+inline void _1dSliceOfConst3dArray<T>::check_dimension(size_t dimension) const {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     if (dimension < 0 || 0 < dimension)
         throw std::invalid_argument("Invalid dimension");

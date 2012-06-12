@@ -20,6 +20,8 @@
 #ifndef bempp_concrete_grid_view_hpp
 #define bempp_concrete_grid_view_hpp
 
+#include "../common/common.hpp"
+
 #include "grid_view.hpp"
 #include "concrete_element_mapper.hpp"
 #include "concrete_entity.hpp"
@@ -69,11 +71,11 @@ public:
         return m_element_mapper;
     }
 
-    virtual int entityCount(int codim) const {
+    virtual size_t entityCount(int codim) const {
         return m_dune_gv.size(codim);
     }
 
-    virtual int entityCount(const GeometryType &type) const {
+    virtual size_t entityCount(const GeometryType &type) const {
         return m_dune_gv.size(type);
     }
 

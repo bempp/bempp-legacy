@@ -43,7 +43,7 @@ public:
     virtual int transformationCount() const;
     virtual int argumentDimension() const;
     virtual int resultDimension(int transformationIndex) const;
-    virtual void addDependencies(int& basisDeps, int& geomDeps) const;
+    virtual void addDependencies(size_t& basisDeps, size_t& geomDeps) const;
 
 private:
     template <typename ValueType>

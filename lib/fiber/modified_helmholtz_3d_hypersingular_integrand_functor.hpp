@@ -23,7 +23,7 @@ public:
         m_waveNumber(waveNumber)
     {}
 
-    void addGeometricalDependencies(int& testGeomDeps, int& trialGeomDeps) const {
+    void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const {
         testGeomDeps |= NORMALS;
         trialGeomDeps |= NORMALS;
     }
@@ -58,8 +58,8 @@ public:
         _1dSliceOfConst3dArray<BasisFunctionType> trialSurfaceCurls = trialTransfValues[1];
         assert(testValues.extent(0) == 1);
         assert(trialValues.extent(0) == 1);
-        assert(testSurfaceCurls.extent(0) == dimWorld);
-        assert(trialSurfaceCurls.extent(0) == dimWorld);
+        assert((int)testSurfaceCurls.extent(0) == dimWorld);
+        assert((int)trialSurfaceCurls.extent(0) == dimWorld);
 
         // K(x, y) [kappa^2 u*(x) v(y) n(x) . n(y) + curl u*(x) . curl v(y)]
 

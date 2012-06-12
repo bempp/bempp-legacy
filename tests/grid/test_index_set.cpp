@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE(subEntityIndex_returns_the_same_as_entityIndex_for_entity_o
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIndex_throws_for_invalid_codimension_and_codimSub,
                                   T, list_0_to_2)
 {
-    const int codimSub = T::value;
+    //const int codimSub = T::value;
 
     std::auto_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
     it->next();

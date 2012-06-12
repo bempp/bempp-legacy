@@ -21,6 +21,8 @@
 #ifndef bempp_scalar_space_hpp
 #define bempp_scalar_space_hpp
 
+#include "../common/common.hpp"
+
 #include "space.hpp"
 
 #include <boost/scoped_ptr.hpp>

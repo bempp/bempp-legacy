@@ -18,6 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "../common/common.hpp"
+
 #include "nonseparable_numerical_test_kernel_trial_integrator.hpp" // To keep IDEs happy
 
 #include "_3d_array.hpp"
@@ -73,7 +75,7 @@ NonseparableNumericalTestKernelTrialIntegrator(
     m_integral(integral),
     m_openClHandler(openClHandler)
 {
-    const int pointCount = quadWeights.size();
+    const size_t pointCount = quadWeights.size();
     if (localTestQuadPoints.n_cols != pointCount ||
             localTrialQuadPoints.n_cols != pointCount)
         throw std::invalid_argument("NonseparableNumericalTestKernelTrialIntegrator::"
@@ -113,8 +115,8 @@ integrate(
     BasisData<BasisFunctionType> testBasisData, trialBasisData;
     GeometricalData<CoordinateType> testGeomData, trialGeomData;
 
-    int testBasisDeps = 0, trialBasisDeps = 0;
-    int testGeomDeps = 0, trialGeomDeps = 0;
+    size_t testBasisDeps = 0, trialBasisDeps = 0;
+    size_t testGeomDeps = 0, trialGeomDeps = 0;
 
     m_testTransformations.addDependencies(testBasisDeps, testGeomDeps);
     m_trialTransformations.addDependencies(trialBasisDeps, trialGeomDeps);
@@ -209,8 +211,8 @@ integrate(
     BasisData<BasisFunctionType> testBasisData, trialBasisData;
     GeometricalData<CoordinateType> testGeomData, trialGeomData;
 
-    int testBasisDeps = 0, trialBasisDeps = 0;
-    int testGeomDeps = 0, trialGeomDeps = 0;
+    size_t testBasisDeps = 0, trialBasisDeps = 0;
+    size_t testGeomDeps = 0, trialGeomDeps = 0;
 
     m_testTransformations.addDependencies(testBasisDeps, testGeomDeps);
     m_trialTransformations.addDependencies(trialBasisDeps, trialGeomDeps);

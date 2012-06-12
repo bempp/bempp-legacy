@@ -21,6 +21,8 @@
 #ifndef bempp_entity_hpp
 #define bempp_entity_hpp
 
+#include "../common/common.hpp"
+
 #include "geometry_type.hpp"
 
 #include <boost/utility/enable_if.hpp>
@@ -52,7 +54,7 @@ public:
     };
 
     /** \brief %Entity level. */
-    virtual int level() const = 0;
+    virtual size_t level() const = 0;
 
     /** \brief Reference to the geometry of this entity.
 
@@ -89,7 +91,7 @@ public:
     @{ */
 
     /** \brief %Entity level */
-    virtual int level() const = 0;
+    virtual size_t level() const = 0;
 
     /** \brief Reference to the geometry of this entity.
 
@@ -120,7 +122,7 @@ public:
      */
     // Default implementation, specialisations for potentially allowed
     // codimensions (1 to 3) follow after class declaration.
-    template<int codimSub> int subEntityCount() const {
+    template<int codimSub> size_t subEntityCount() const {
         return 0;
     }
 
@@ -202,11 +204,11 @@ private:
     virtual std::auto_ptr<EntityIterator<3> > subEntityCodim3Iterator() const = 0;
 
     /** \brief Number of subentities of codimension 1. */
-    virtual int subEntityCodim1Count() const = 0;
+    virtual size_t subEntityCodim1Count() const = 0;
     /** \brief Number of subentities of codimension 1. */
-    virtual int subEntityCodim2Count() const = 0;
+    virtual size_t subEntityCodim2Count() const = 0;
     /** \brief Number of subentities of codimension 1. */
-    virtual int subEntityCodim3Count() const = 0;
+    virtual size_t subEntityCodim3Count() const = 0;
 
     /** @} */
 };
@@ -235,17 +237,17 @@ inline std::auto_ptr<EntityIterator<3> > Entity<0>::subEntityIterator<3>() const
 }
 
 template<>
-inline int Entity<0>::subEntityCount<1>() const
+inline size_t Entity<0>::subEntityCount<1>() const
 {
     return subEntityCodim1Count();
 }
 template<>
-inline int Entity<0>::subEntityCount<2>() const
+inline size_t Entity<0>::subEntityCount<2>() const
 {
     return subEntityCodim2Count();
 }
 template<>
-inline int Entity<0>::subEntityCount<3>() const
+inline size_t Entity<0>::subEntityCount<3>() const
 {
     return subEntityCodim3Count();
 }

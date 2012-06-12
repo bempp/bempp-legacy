@@ -67,7 +67,7 @@ LinearOperatorSuperposition(
 {
     const std::vector<ResultType>& weights = term.constituentOperatorWeights();
     std::vector<ResultType> scaledWeigths;
-    for (int i = 0; i < weights.size(); i++)
+    for (size_t i = 0; i < weights.size(); i++)
         scaledWeigths.push_back(scalar * weights[i]);
     addConstituentOperators(term.constituentOperators(), scaledWeigths);
 }
@@ -162,7 +162,7 @@ assembleDetachedWeakFormInDenseMode(
 
     // Gather matrices of individual operators
     boost::ptr_vector<DiscreteLinOp> discreteOps;
-    for (int i = 0; i < operators.size(); ++i) {
+    for (size_t i = 0; i < operators.size(); ++i) {
         std::auto_ptr<DiscreteLinOp> discreteOp =
                 operators[i]->assembleDetachedWeakForm(factory, options, symmetry);
         discreteOps.push_back(discreteOp);
@@ -171,7 +171,7 @@ assembleDetachedWeakFormInDenseMode(
     // Add the matrices together
     arma::Mat<ResultType> sum;
     sum = discreteOps[0].asMatrix() * weights[0];
-    for (int i = 1; i < discreteOps.size(); ++i) {
+    for (size_t i = 1; i < discreteOps.size(); ++i) {
         sum += discreteOps[i].asMatrix() * weights[i];
     }
 
@@ -217,7 +217,7 @@ assembleDetachedWeakFormInAcaMode(
     std::vector<ResultType> sparseTermsMultipliers;
     std::vector<ResultType> denseTermsMultipliers;
 
-    for (int i = 0; i < operators.size(); ++i) {
+    for (size_t i = 0; i < operators.size(); ++i) {
         ElementaryLinearOperator<BasisFunctionType, ResultType> const* term =
                 operators[i];
 
@@ -245,12 +245,12 @@ assembleDetachedWeakFormInAcaMode(
     // Convert boost::ptr_vectors to std::vectors
     std::vector<LocalAssembler*> stlDenseTermLocalAssemblers(
                 denseTermLocalAssemblers.size());
-    for (int i = 0; i < denseTermLocalAssemblers.size(); ++i)
+    for (size_t i = 0; i < denseTermLocalAssemblers.size(); ++i)
         stlDenseTermLocalAssemblers[i] = &denseTermLocalAssemblers[i];
 
     std::vector<const DiscreteLinOp*> stlSparseDiscreteTerms(
                 sparseDiscreteTerms.size());
-    for (int i = 0; i < sparseDiscreteTerms.size(); ++i)
+    for (size_t i = 0; i < sparseDiscreteTerms.size(); ++i)
         stlSparseDiscreteTerms[i] = &sparseDiscreteTerms[i];
 
     // Assemble dense terms in ACA mode, simultaneously adding the sparse terms
@@ -282,7 +282,7 @@ assembleDetachedWeakFormInArbitraryMode(
             operators = this->constituentOperators();
 
     boost::ptr_vector<DiscreteLinOp> discreteOps;
-    for (int i = 0; i < operators.size(); ++i) {
+    for (size_t i = 0; i < operators.size(); ++i) {
         std::auto_ptr<DiscreteLinOp> discreteOp =
                 operators[i]->assembleDetachedWeakForm(factory, options, symmetry);
         discreteOps.push_back(discreteOp);
@@ -295,3 +295,4 @@ assembleDetachedWeakFormInArbitraryMode(
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperatorSuperposition);
 
 } // namespace Bempp
+

@@ -53,7 +53,7 @@ public:
 
 template <typename IntegrandFunctor>
 void StandardKernelTrialIntegral<IntegrandFunctor>::
-addGeometricalDependencies(int& trialGeomDeps) const
+addGeometricalDependencies(size_t& trialGeomDeps) const
 {
     m_functor.addGeometricalDependencies(trialGeomDeps);
 }
@@ -71,25 +71,25 @@ void StandardKernelTrialIntegral<IntegrandFunctor>::evaluate(
         const CollectionOf2dArrays<ResultType>& weightedTrialTransformations,
         _2dArray<ResultType>& result) const
 {
-    const int evalPointCount = kernels[0].extent(2);
-    const int quadPointCount = kernels[0].extent(3);
+    const size_t evalPointCount = kernels[0].extent(2);
+    const size_t quadPointCount = kernels[0].extent(3);
     const int resultComponentCount = m_functor.resultDimension();
 
-    for (int i = 0; i < kernels.size(); ++i) {
+    for (size_t i = 0; i < kernels.size(); ++i) {
         assert(kernels[i].extent(2) == evalPointCount);
         assert(kernels[i].extent(3) == quadPointCount);
     }
-    for (int i = 0; i < weightedTrialTransformations.size(); ++i) {
-        assert(weightedTrialTransformations[i].extent(0) == resultComponentCount);
+    for (size_t i = 0; i < weightedTrialTransformations.size(); ++i) {
+        assert((int)weightedTrialTransformations[i].extent(0) == resultComponentCount);
         assert(weightedTrialTransformations[i].extent(1) == quadPointCount);
     }
 
     result.set_size(resultComponentCount, evalPointCount);
     std::fill(result.begin(), result.end(), 0.);
 
-    for (int evalPoint = 0; evalPoint < evalPointCount; ++evalPoint)
+    for (size_t evalPoint = 0; evalPoint < evalPointCount; ++evalPoint)
         for (int dim = 0; dim < resultComponentCount; ++dim)
-            for (int quadPoint = 0; quadPoint < quadPointCount; ++quadPoint)
+            for (size_t quadPoint = 0; quadPoint < quadPointCount; ++quadPoint)
                 result(dim, evalPoint) += m_functor.evaluate(
                             trialGeomData.const_slice(quadPoint),
                             kernels.const_slice(evalPoint, quadPoint),

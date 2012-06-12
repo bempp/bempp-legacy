@@ -21,6 +21,8 @@
 #ifndef bempp_linear_operator_hpp
 #define bempp_linear_operator_hpp
 
+#include "../common/common.hpp"
+
 #include "assembly_options.hpp"
 #include "symmetry.hpp"
 #include "transposition_mode.hpp"

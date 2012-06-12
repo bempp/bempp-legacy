@@ -109,7 +109,7 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
         // local weak form for one local trial DOF at a time.
 
         std::vector<arma::Mat<ResultType> > localResult;
-        for (int nTrialElem = 0;
+        for (size_t nTrialElem = 0;
              nTrialElem < trialElementIndices.size();
              ++nTrialElem)
         {
@@ -117,22 +117,22 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
 
             // The body of this loop will very probably only run once (single
             // local DOF per trial element)
-            for (int nTrialDof = 0;
+            for (size_t nTrialDof = 0;
                  nTrialDof < trialLocalDofs[nTrialElem].size();
                  ++nTrialDof)
             {
                 LocalDofIndex activeTrialLocalDof =
                         trialLocalDofs[nTrialElem][nTrialDof];
-                for (int nTerm = 0; nTerm < m_assemblers.size(); ++nTerm)
+                for (size_t nTerm = 0; nTerm < m_assemblers.size(); ++nTerm)
                 {
                     m_assemblers[nTerm]->evaluateLocalWeakForms(
                                 Fiber::TEST_TRIAL, testElementIndices,
                                 activeTrialElementIndex, activeTrialLocalDof,
                                 localResult);
-                    for (int nTestElem = 0;
+                    for (size_t nTestElem = 0;
                          nTestElem < testElementIndices.size();
                          ++nTestElem)
-                        for (int nTestDof = 0;
+                        for (size_t nTestDof = 0;
                              nTestDof < testLocalDofs[nTestElem].size();
                              ++nTestDof)
                             result(blockRows[nTestElem][nTestDof], 0) +=
@@ -149,29 +149,29 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
         // local weak form for one local test DOF at a time.
 
         std::vector<arma::Mat<ResultType> > localResult;
-        for (int nTestElem = 0;
+        for (size_t nTestElem = 0;
              nTestElem < testElementIndices.size();
              ++nTestElem)
         {
             const int activeTestElementIndex = testElementIndices[nTestElem];
             // The body of this loop will very probably only run once (single
             // local DOF per test element)
-            for (int nTestDof = 0;
+            for (size_t nTestDof = 0;
                  nTestDof < testLocalDofs[nTestElem].size();
                  ++nTestDof)
             {
                 LocalDofIndex activeTestLocalDof =
                         testLocalDofs[nTestElem][nTestDof];
-                for (int nTerm = 0; nTerm < m_assemblers.size(); ++nTerm)
+                for (size_t nTerm = 0; nTerm < m_assemblers.size(); ++nTerm)
                 {
                     m_assemblers[nTerm]->evaluateLocalWeakForms(
                                 Fiber::TRIAL_TEST, trialElementIndices,
                                 activeTestElementIndex, activeTestLocalDof,
                                 localResult);
-                    for (int nTrialElem = 0;
+                    for (size_t nTrialElem = 0;
                          nTrialElem < trialElementIndices.size();
                          ++nTrialElem)
-                        for (int nTrialDof = 0;
+                        for (size_t nTrialDof = 0;
                              nTrialDof < trialLocalDofs[nTrialElem].size();
                              ++nTrialDof)
                             result(0, blockCols[nTrialElem][nTrialDof]) +=
@@ -189,20 +189,20 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
         // elements and then select the entries that we need.
 
         Fiber::_2dArray<arma::Mat<ResultType> > localResult;
-        for (int nTerm = 0; nTerm < m_assemblers.size(); ++nTerm)
+        for (size_t nTerm = 0; nTerm < m_assemblers.size(); ++nTerm)
         {
             m_assemblers[nTerm]->evaluateLocalWeakForms(
                         testElementIndices, trialElementIndices, localResult);
-            for (int nTrialElem = 0;
+            for (size_t nTrialElem = 0;
                  nTrialElem < trialElementIndices.size();
                  ++nTrialElem)
-                for (int nTrialDof = 0;
+                for (size_t nTrialDof = 0;
                      nTrialDof < trialLocalDofs[nTrialElem].size();
                      ++nTrialDof)
-                    for (int nTestElem = 0;
+                    for (size_t nTestElem = 0;
                          nTestElem < testElementIndices.size();
                          ++nTestElem)
-                        for (int nTestDof = 0;
+                        for (size_t nTestDof = 0;
                              nTestDof < testLocalDofs[nTestElem].size();
                              ++nTestDof)
                             result(blockRows[nTestElem][nTestDof],
@@ -215,7 +215,7 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
     }
 
     // Now, add the contributions of the sparse terms
-    for (int nTerm = 0; nTerm < m_sparseTermsToAdd.size(); ++nTerm)
+    for (size_t nTerm = 0; nTerm < m_sparseTermsToAdd.size(); ++nTerm)
         m_sparseTermsToAdd[nTerm]->addBlock(
                     testGlobalDofs, trialGlobalDofs,
                     m_sparseTermsMultipliers[nTerm], result);
@@ -231,8 +231,8 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpblsym(
 
     // and now store the upper part of the matrix in the memory block
     // provided by Ahmed
-    for (int col = 0; col < n1; ++col)
-        for (int row = 0; row <= col; ++row)
+    for (size_t col = 0; col < n1; ++col)
+        for (size_t row = 0; row <= col; ++row)
             *ahmedData++ = ahmedCast(block(row, col));
 }
 
@@ -280,7 +280,7 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::findLocalDofs(
     for (int arrayIndex = 0; arrayIndex < globalDofCount; ++arrayIndex)
     {
         const vector<LocalDof>& currentLocalDofs = localDofs[arrayIndex];
-        for (int j = 0; j < currentLocalDofs.size(); ++j)
+        for (size_t j = 0; j < currentLocalDofs.size(); ++j)
             requiredLocalDofs[currentLocalDofs[j].entityIndex]
                     .insert(make_pair(currentLocalDofs[j].dofIndex, arrayIndex));
     }

@@ -24,9 +24,8 @@
 //#include "../check_arrays_are_close.hpp"
 
 //#include <algorithm>
-//#include <armadillo>
+//#include "common/armadillo_fwd.hpp"
 //#include <boost/test/unit_test.hpp>
-//#include <boost/test/test_case_template.hpp>
 //#include <boost/test/floating_point_comparison.hpp>
 //#include <boost/version.hpp>
 //#include <complex>
@@ -57,7 +56,7 @@
 //                              ValueType, kernel_types)
 //{
 //    Fiber::Laplace3dDoubleLayerPotentialKernel<ValueType> op;
-//    int testGeomDeps = 1024, trialGeomDeps = 16; // random initial values
+//    size_t testGeomDeps = 1024, trialGeomDeps = 16; // random initial values
 //    op.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 
 //    BOOST_CHECK(testGeomDeps & Fiber::GLOBALS);
@@ -90,10 +89,10 @@
 //    trialGeomData.normals(0, 1) = 1.;
 //    trialGeomData.normals(0, 2) = 1.;
 
-//    Fiber::_4dArray<ValueType> result;
+//    Fiber::Array4d<ValueType> result;
 //    op.evaluateOnGrid(testGeomData, trialGeomData, result);
 
-//    Fiber::_4dArray<ValueType> expected(1, testPointCount, 1, trialPointCount);
+//    Fiber::Array4d<ValueType> expected(1, testPointCount, 1, trialPointCount);
 //    for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
 //        for (int testPoint = 0; testPoint < testPointCount; ++testPoint) {
 //            typename Operator::CoordinateType diff =
@@ -131,10 +130,10 @@
 //    trialGeomData.normals(1, 1) = 1.;
 //    trialGeomData.normals(1, 2) = 1.;
 
-//    Fiber::_4dArray<ValueType> result;
+//    Fiber::Array4d<ValueType> result;
 //    op.evaluateOnGrid(testGeomData, trialGeomData, result);
 
-//    Fiber::_4dArray<ValueType> expected(1, testPointCount, 1, trialPointCount);
+//    Fiber::Array4d<ValueType> expected(1, testPointCount, 1, trialPointCount);
 //    for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
 //        for (int testPoint = 0; testPoint < testPointCount; ++testPoint) {
 //            typename Operator::CoordinateType diff =
@@ -177,7 +176,7 @@
 //    trialGeomDataOnGrid.normals(1, 1) = 1.;
 //    trialGeomDataOnGrid.normals(1, 2) = 1.;
 
-//    Fiber::_4dArray<ValueType> resultOnGrid;
+//    Fiber::Array4d<ValueType> resultOnGrid;
 //    op.evaluateOnGrid(testGeomDataOnGrid, trialGeomDataOnGrid, resultOnGrid);
 
 //    arma::Cube<ValueType> convertedResultOnGrid(1, 1, testPointCount * trialPointCount);

@@ -25,6 +25,7 @@
 #include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 #include "common/scalar_traits.hpp"
 #include "fiber/geometrical_data.hpp"
+#include "fiber/local_assembler_for_operators.hpp"
 #include "grid/grid.hpp"
 #include "grid/grid_factory.hpp"
 #include "grid/grid_view.hpp"
@@ -35,7 +36,7 @@
 #include "grid/mapper.hpp"
 
 #include <algorithm>
-#include <armadillo>
+#include "common/armadillo_fwd.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_case_template.hpp>
 #include <boost/test/floating_point_comparison.hpp>

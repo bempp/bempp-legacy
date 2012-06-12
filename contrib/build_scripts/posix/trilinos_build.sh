@@ -1,8 +1,9 @@
 #!/usr/bin/sh
-source ../../options.cfg
+. ../../options.cfg
 
-mkdir $Main_prefix/bempp/contrib/trilinos
-mkdir build
+# mkdir $Main_prefix/bempp/contrib/trilinos
+mkdir -p $Main_prefix/bempp/contrib
+mkdir -p build
 cd build
 cmake \
     -D CMAKE_CXX_COMPILER:STRING=$Main_cxx \

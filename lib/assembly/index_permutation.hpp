@@ -22,7 +22,9 @@
 #ifndef bempp_index_permutation_hpp
 #define bempp_index_permutation_hpp
 
-#include <armadillo>
+#include "../common/common.hpp"
+
+#include "../common/armadillo_fwd.hpp"
 
 namespace Bempp
 {

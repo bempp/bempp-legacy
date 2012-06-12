@@ -20,6 +20,8 @@
 
 #include "numerical_test_function_integrator.hpp" // To keep IDEs happy
 
+#include "../common/common.hpp"
+
 #include "basis.hpp"
 #include "basis_data.hpp"
 #include "collection_of_basis_transformations.hpp"
@@ -78,8 +80,8 @@ integrate(
         const Basis<BasisFunctionType>& testBasis,
         arma::Mat<ResultType>& result) const
 {
-    const int pointCount = m_localQuadPoints.n_cols;
-    const int elementCount = elementIndices.size();
+    const size_t pointCount = m_localQuadPoints.n_cols;
+    const size_t elementCount = elementIndices.size();
 
     if (pointCount == 0 || elementCount == 0)
         return;
@@ -98,8 +100,8 @@ integrate(
     BasisData<BasisFunctionType> testBasisData;
     GeometricalData<CoordinateType> geomData;
 
-    int testBasisDeps = 0;
-    int geomDeps = INTEGRATION_ELEMENTS;
+    size_t testBasisDeps = 0;
+    size_t geomDeps = INTEGRATION_ELEMENTS;
 
     m_testTransformations.addDependencies(testBasisDeps, geomDeps);
     m_function.addGeometricalDependencies(geomDeps);
@@ -115,7 +117,7 @@ integrate(
     testBasis.evaluate(testBasisDeps, m_localQuadPoints, ALL_DOFS, testBasisData);
 
     // Iterate over the elements
-    for (int e = 0; e < elementCount; ++e)
+    for (size_t e = 0; e < elementCount; ++e)
     {
         m_rawGeometry.setupGeometry(elementIndices[e], *geometry);
         geometry->getData(geomDeps, m_localQuadPoints, geomData);
@@ -125,7 +127,7 @@ integrate(
         for (int testDof = 0; testDof < testDofCount; ++testDof)
         {
             ResultType sum = 0.;
-            for (int point = 0; point < pointCount; ++point)
+            for (size_t point = 0; point < pointCount; ++point)
                 for (int dim = 0; dim < componentCount; ++dim)
                     sum +=  m_quadWeights[point] *
                             geomData.integrationElements(point) *

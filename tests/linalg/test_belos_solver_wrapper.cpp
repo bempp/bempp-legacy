@@ -28,7 +28,7 @@
 #include "assembly/discrete_dense_linear_operator.hpp"
 #include "linalg/belos_solver_wrapper.hpp"
 
-#include <armadillo>
+#include "common/armadillo_fwd.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/type_traits/is_complex.hpp>

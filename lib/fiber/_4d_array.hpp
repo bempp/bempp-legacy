@@ -41,16 +41,16 @@ class _4dArray
 {
 public:
     _4dArray();
-    _4dArray(int extent0, int extent1, int extent2, int extent3);
-    _4dArray(int extent0, int extent1, int extent2, int extent3, T* data);
+    _4dArray(size_t extent0, size_t extent1, size_t extent2, size_t extent3);
+    _4dArray(size_t extent0, size_t extent1, size_t extent2, size_t extent3, T* data);
 
     ~_4dArray();
 
-    T& operator()(int index0, int index1, int index2, int index3);
-    const T& operator()(int index0, int index1, int index2, int index3) const;
+    T& operator()(size_t index0, size_t index1, size_t index2, size_t index3);
+    const T& operator()(size_t index0, size_t index1, size_t index2, size_t index3) const;
 
-    int extent(int dimension) const;
-    void set_size(int extent0, int extent1, int extent2, int extent3);
+    size_t extent(size_t dimension) const;
+    void set_size(size_t extent0, size_t extent1, size_t extent2, size_t extent3);
 
     typedef T* iterator;
     typedef const T* const_iterator;
@@ -62,9 +62,9 @@ public:
 
 private:
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
-    void check_dimension(int dimension) const;
-    void check_extents(int extent0, int extent1, int extent2, int extent3) const;
-    void check_indices(int index0, int index1, int index2, int index3) const;
+    void check_dimension(size_t dimension) const;
+    void check_extents(size_t extent0, size_t extent1, size_t extent2, size_t extent3) const;
+    void check_indices(size_t index0, size_t index1, size_t index2, size_t index3) const;
 #endif
 
 private:
@@ -73,7 +73,7 @@ private:
     _4dArray& operator=(const _4dArray& rhs);
 
 private:
-    int m_extents[4];
+    size_t m_extents[4];
     bool m_owns;
     T* m_storage;
 };
@@ -83,7 +83,7 @@ template <typename T>
 class _3dSliceOf4dArray
 {
 public:
-    _3dSliceOf4dArray(_4dArray<T>& array, int index3);
+    _3dSliceOf4dArray(_4dArray<T>& array, size_t index3);
 
     /** \brief Returns a reference to self.
 
@@ -94,17 +94,17 @@ public:
       support for rvalue references. */
     _3dSliceOf4dArray& self();
 
-    const T& operator()(int index0, int index1, int index2) const;
-    T& operator()(int index0, int index1, int index2);
+    const T& operator()(size_t index0, size_t index1, size_t index2) const;
+    T& operator()(size_t index0, size_t index1, size_t index2);
 
-    int extent(int dimension) const;
+    size_t extent(size_t dimension) const;
 
 private:
-    void check_dimension(int dimension) const;
+    void check_dimension(size_t dimension) const;
 
 private:
     _4dArray<T>& m_array;
-    int m_index3;
+    size_t m_index3;
 };
 
 /** \brief Lightweight encapsulation of a 2D slice of a constant 4d array. */
@@ -112,18 +112,18 @@ template <typename T>
 class _3dSliceOfConst4dArray
 {
 public:
-    _3dSliceOfConst4dArray(const _4dArray<T>& array, int index3);
+    _3dSliceOfConst4dArray(const _4dArray<T>& array, size_t index3);
 
-    const T& operator()(int index0, int index1, int index2) const;
+    const T& operator()(size_t index0, size_t index1, size_t index2) const;
 
-    int extent(int dimension) const;
+    size_t extent(size_t dimension) const;
 
 private:
-    void check_dimension(int dimension) const;
+    void check_dimension(size_t dimension) const;
 
 private:
     const _4dArray<T>& m_array;
-    int m_index3;
+    size_t m_index3;
 };
 
 /** \brief Lightweight encapsulation of a 2D slice of a 4d array. */
@@ -131,7 +131,7 @@ template <typename T>
 class _2dSliceOf4dArray
 {
 public:
-    _2dSliceOf4dArray(_4dArray<T>& array, int index2, int index3);
+    _2dSliceOf4dArray(_4dArray<T>& array, size_t index2, size_t index3);
 
     /** \brief Returns a reference to self.
 
@@ -142,17 +142,17 @@ public:
       support for rvalue references. */
     _2dSliceOf4dArray& self();
 
-    const T& operator()(int index0, int index1) const;
-    T& operator()(int index0, int index1);
+    const T& operator()(size_t index0, size_t index1) const;
+    T& operator()(size_t index0, size_t index1);
 
-    int extent(int dimension) const;
+    size_t extent(size_t dimension) const;
 
 private:
-    void check_dimension(int dimension) const;
+    void check_dimension(size_t dimension) const;
 
 private:
     _4dArray<T>& m_array;
-    int m_index2, m_index3;
+    size_t m_index2, m_index3;
 };
 
 /** \brief Lightweight encapsulation of a 2D slice of a constant 4d array. */
@@ -160,18 +160,18 @@ template <typename T>
 class _2dSliceOfConst4dArray
 {
 public:
-    _2dSliceOfConst4dArray(const _4dArray<T>& array, int index2, int index3);
+    _2dSliceOfConst4dArray(const _4dArray<T>& array, size_t index2, size_t index3);
 
-    const T& operator()(int index0, int index1) const;
+    const T& operator()(size_t index0, size_t index1) const;
 
-    int extent(int dimension) const;
+    size_t extent(size_t dimension) const;
 
 private:
-    void check_dimension(int dimension) const;
+    void check_dimension(size_t dimension) const;
 
 private:
     const _4dArray<T>& m_array;
-    int m_index2, m_index3;
+    size_t m_index2, m_index3;
 };
 
 /** \brief Lightweight encapsulation of a 1D slice of a 4d array. */
@@ -180,7 +180,7 @@ class _1dSliceOf4dArray
 {
 public:
     /** \brief Construct a slice consisting of the elements array(:,index1,index2,index3) */
-    _1dSliceOf4dArray(_4dArray<T>& array, int index1, int index2, int index3);
+    _1dSliceOf4dArray(_4dArray<T>& array, size_t index1, size_t index2, size_t index3);
 
     /** \brief Returns a reference to self.
 
@@ -191,17 +191,17 @@ public:
       support for rvalue references. */
     _1dSliceOf4dArray& self();
 
-    const T& operator()(int index0) const;
-    T& operator()(int index0);
+    const T& operator()(size_t index0) const;
+    T& operator()(size_t index0);
 
-    int extent(int dimension) const;
+    size_t extent(size_t dimension) const;
 
 private:
-    void check_dimension(int dimension) const;
+    void check_dimension(size_t dimension) const;
 
 private:
     _4dArray<T>& m_array;
-    int m_index1, m_index2, m_index3;
+    size_t m_index1, m_index2, m_index3;
 };
 
 /** \brief Lightweight encapsulation of a 2D slice of a constant 4d array. */
@@ -209,18 +209,18 @@ template <typename T>
 class _1dSliceOfConst4dArray
 {
 public:
-    _1dSliceOfConst4dArray(const _4dArray<T>& array, int index1, int index2, int index3);
+    _1dSliceOfConst4dArray(const _4dArray<T>& array, size_t index1, size_t index2, size_t index3);
 
-    const T& operator()(int index0) const;
+    const T& operator()(size_t index0) const;
 
-    int extent(int dimension) const;
+    size_t extent(size_t dimension) const;
 
 private:
-    void check_dimension(int dimension) const;
+    void check_dimension(size_t dimension) const;
 
 private:
     const _4dArray<T>& m_array;
-    int m_index1, m_index2, m_index3;
+    size_t m_index1, m_index2, m_index3;
 };
 
 } // namespace Fiber

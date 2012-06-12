@@ -22,7 +22,7 @@
 #include "../type_template.hpp"
 
 #include <algorithm>
-#include <armadillo>
+#include "common/armadillo_fwd.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_case_template.hpp>
 #include <boost/test/floating_point_comparison.hpp>
@@ -58,8 +58,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs,
     arma::Cube<ValueType> expected(1, 1, points.n_cols);
     expected.fill(1.);
 
-    BOOST_CHECK_EQUAL(data.values.n_rows, 1); // 1 component
-    BOOST_CHECK_EQUAL(data.values.n_cols, 1); // 1 basis function
+    BOOST_CHECK_EQUAL(data.values.n_rows, 1u); // 1 component
+    BOOST_CHECK_EQUAL(data.values.n_cols, 1u); // 1 basis function
     BOOST_CHECK_EQUAL(data.values.n_slices, points.n_cols);
     BOOST_CHECK_EQUAL_COLLECTIONS(data.values.begin(),
                                   data.values.end(),
@@ -81,8 +81,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_one_dof,
     arma::Cube<ValueType> expected(1, 1, points.n_cols);
     expected.fill(1.);
 
-    BOOST_CHECK_EQUAL(data.values.n_rows, 1); // 1 component
-    BOOST_CHECK_EQUAL(data.values.n_cols, 1); // 1 basis function
+    size_t val=1;
+    BOOST_CHECK_EQUAL(data.values.n_rows, val); // 1 component
+    BOOST_CHECK_EQUAL(data.values.n_cols, val); // 1 basis function
     BOOST_CHECK_EQUAL(data.values.n_slices, points.n_cols);
     BOOST_CHECK_EQUAL_COLLECTIONS(data.values.begin(),
                                   data.values.end(),
@@ -156,8 +157,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_and_derivatives_works_for_all_dofs
     {
         arma::Cube<ValueType> expected(1, 1, points.n_cols);
         expected.fill(1.);
-        BOOST_CHECK_EQUAL(data.values.n_rows, 1); // 1 component
-        BOOST_CHECK_EQUAL(data.values.n_cols, 1); // 1 basis function
+        size_t val=1;
+        BOOST_CHECK_EQUAL(data.values.n_rows, val); // 1 component
+        BOOST_CHECK_EQUAL(data.values.n_cols, val); // 1 basis function
         BOOST_CHECK_EQUAL(data.values.n_slices, points.n_cols);
         BOOST_CHECK_EQUAL_COLLECTIONS(data.values.begin(),
                                       data.values.end(),

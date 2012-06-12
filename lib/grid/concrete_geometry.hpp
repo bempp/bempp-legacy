@@ -21,6 +21,8 @@
 #ifndef bempp_concrete_geometry_hpp
 #define bempp_concrete_geometry_hpp
 
+#include "../common/common.hpp"
+
 #include "geometry.hpp"
 #include "dune.hpp"
 #include "geometry_type.hpp"
@@ -32,7 +34,7 @@
 #include <dune/common/static_assert.hh>
 #include <dune/grid/common/grid.hh>
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 #include <memory>
 
 namespace Bempp
@@ -122,7 +124,7 @@ public:
                            const arma::Col<char>& auxData) {
         const int dimWorld = DuneGeometry::coorddimension;
         const int cornerCount = corners.n_cols;
-        assert(corners.n_rows == dimWorld);
+        assert((int)corners.n_rows == dimWorld);
 
         GeometryType type;
         if (DuneGeometry::mydimension == 0) {
@@ -145,7 +147,7 @@ public:
                                       "not implemented yet for 3D entities");
 
         std::vector<Dune::FieldVector<double, dimWorld> > duneCorners(cornerCount);
-        for (int i = 0; i < corners.n_cols; ++i)
+        for (size_t i = 0; i < corners.n_cols; ++i)
             for (int j = 0; j < dimWorld; ++j)
                 duneCorners[i][j] = corners(j, i);
 
@@ -194,16 +196,16 @@ public:
         const int mdim = DuneGeometry::mydimension;
         const int cdim = DuneGeometry::coorddimension;
 #ifndef NDEBUG
-        if (local.n_rows != mdim)
+        if ((int)local.n_rows != mdim)
             throw std::invalid_argument("Geometry::local2global(): invalid dimensions of the 'local' array");
 #endif
-        const int n = local.n_cols;
+        const size_t n = local.n_cols;
         global.set_size(cdim, n);
 
         /** \fixme Optimise (get rid of data copying). */
         typename DuneGeometry::GlobalCoordinate g;
         typename DuneGeometry::LocalCoordinate l;
-        for (int j = 0; j < n; ++j) {
+        for (size_t j = 0; j < n; ++j) {
             for (int i = 0; i < mdim; ++i)
                 l[i] = local(i,j);
             g = m_dune_geometry->global(l);
@@ -217,16 +219,16 @@ public:
         const int mdim = DuneGeometry::mydimension;
         const int cdim = DuneGeometry::coorddimension;
 #ifndef NDEBUG
-        if (global.n_rows != cdim)
+        if ((int)global.n_rows != cdim)
             throw std::invalid_argument("Geometry::global2local(): invalid dimensions of the 'global' array");
 #endif
-        const int n = global.n_cols;
+        const size_t n = global.n_cols;
         local.set_size(mdim, n);
 
         /** \fixme Optimise (get rid of data copying). */
         typename DuneGeometry::GlobalCoordinate g;
         typename DuneGeometry::LocalCoordinate l;
-        for (int j = 0; j < n; ++j) {
+        for (size_t j = 0; j < n; ++j) {
             for (int i = 0; i < cdim; ++i)
                 g[i] = global(i,j);
             l = m_dune_geometry->local(g);
@@ -239,15 +241,15 @@ public:
                                             arma::Row<double>& int_element) const {
         const int mdim = DuneGeometry::mydimension;
 #ifndef NDEBUG
-        if (local.n_rows != mdim)
+        if ((int)local.n_rows != mdim)
             throw std::invalid_argument("Geometry::local2global(): invalid dimensions of the 'local' array");
 #endif
-        const int n = local.n_cols;
+        const size_t n = local.n_cols;
         int_element.set_size(n);
 
         /** \fixme Optimise (get rid of data copying). */
         typename DuneGeometry::LocalCoordinate l;
-        for (int j = 0; j < n; ++j) {
+        for (size_t j = 0; j < n; ++j) {
             for (int i = 0; i < mdim; ++i)
                 l[i] = local(i,j);
             double ie = m_dune_geometry->integrationElement(l);
@@ -274,11 +276,11 @@ public:
         const int mdim = DuneGeometry::mydimension;
         const int cdim = DuneGeometry::coorddimension;
 #ifndef NDEBUG
-        if (local.n_rows != mdim)
+        if ((int)local.n_rows != mdim)
             throw std::invalid_argument("Geometry::getJacobiansTransposed(): "
                                         "invalid dimensions of the 'local' array");
 #endif
-        const int n = local.n_cols;
+        const size_t n = local.n_cols;
         jacobian_t.set_size(mdim, cdim, n);
 
         /** \bug Unfortunately Dune::FieldMatrix (the underlying type of
@@ -287,7 +289,7 @@ public:
         unavoidable). */
         typename DuneGeometry::JacobianTransposed j_t;
         typename DuneGeometry::LocalCoordinate l;
-        for (int k = 0; k < n; ++k) {
+        for (size_t k = 0; k < n; ++k) {
             /** \fixme However, this bit of data copying could be avoided. */
             for (int i = 0; i < mdim; ++i)
                 l[i] = local(i,k);
@@ -304,11 +306,11 @@ public:
         const int mdim = DuneGeometry::mydimension;
         const int cdim = DuneGeometry::coorddimension;
 #ifndef NDEBUG
-        if (local.n_rows != mdim)
+        if ((int)local.n_rows != mdim)
             throw std::invalid_argument("Geometry::getJacobianInversesTransposed(): "
                                         "invalid dimensions of the 'local' array");
 #endif
-        const int n = local.n_cols;
+        const size_t n = local.n_cols;
         jacobian_inv_t.set_size(cdim, mdim, n);
 
         /** \bug Unfortunately Dune::FieldMatrix (the underlying type of
@@ -317,7 +319,7 @@ public:
         unavoidable). */
         typename DuneGeometry::Jacobian j_inv_t;
         typename DuneGeometry::LocalCoordinate l;
-        for (int k = 0; k < n; ++k) {
+        for (size_t k = 0; k < n; ++k) {
             /** \fixme However, this bit of data copying could be avoided. */
             for (int i = 0; i < mdim; ++i)
                 l[i] = local(i,k);
@@ -335,7 +337,7 @@ public:
         calculateNormals(jacobian_t, normal);
     }
 
-    virtual void getDataImpl(int what, const arma::Mat<double>& local,
+    virtual void getDataImpl(size_t what, const arma::Mat<double>& local,
                              Fiber::GeometricalData<double>& data) const {
         // In this first implementation we call the above virtual functions as required.
         // In future some optimisations (elimination of redundant calculations)
@@ -367,25 +369,25 @@ private:
                                    "normal vectors are defined only for "
                                    "entities of dimension (worldDimension - 1)");
 
-        const int pointCount = jt.n_slices;
+        const size_t pointCount = jt.n_slices;
         normals.set_size(cdim, pointCount);
 
         // First calculate normal vectors of arbitrary length
 
         // Compile-time if
         if (cdim == 3)
-            for (int i = 0; i < pointCount; ++i) {
+            for (size_t i = 0; i < pointCount; ++i) {
                 normals(0,i) = jt(0,1,i) * jt(1,2,i) - jt(0,2,i) * jt(1,1,i);
                 normals(1,i) = jt(0,2,i) * jt(1,0,i) - jt(0,0,i) * jt(1,2,i);
                 normals(2,i) = jt(0,0,i) * jt(1,1,i) - jt(0,1,i) * jt(1,0,i);
             }
         else if (cdim == 2)
-            for (int i = 0; i < pointCount; ++i) {
+            for (size_t i = 0; i < pointCount; ++i) {
                 normals(0,i) = jt(0,1,i);
                 normals(1,i) = jt(0,0,i);
             }
         else if (cdim == 1) // probably unnecessary
-            for (int i = 0; i < pointCount; ++i)
+            for (size_t i = 0; i < pointCount; ++i)
                 normals(0,i) = 1.;
         else
             throw std::runtime_error("ConcreteGeometry::calculateNormals(): "
@@ -394,7 +396,7 @@ private:
 
         // Now set vector length to 1.
 
-        for (int i = 0; i < pointCount; ++i) {
+        for (size_t i = 0; i < pointCount; ++i) {
             double sum = 0.;
             for (int dim = 0; dim < cdim; ++dim)
                 sum += normals(dim, i) * normals(dim, i);

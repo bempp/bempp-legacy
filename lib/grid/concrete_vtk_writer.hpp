@@ -21,9 +21,11 @@
 #ifndef bempp_concrete_vtk_writer_hpp
 #define bempp_concrete_vtk_writer_hpp
 
+#include "../common/common.hpp"
+
 #include "vtk_writer.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 #include <memory>
 #include <string>
 
@@ -83,10 +85,10 @@ private:
     template <typename ValueType>
     void addCellDataImpl(const arma::Mat<ValueType>& data,
                               const std::string &name) {
-        const int ncomp = data.n_rows;
+        const size_t ncomp = data.n_rows;
         if (ncomp < 1)
             return; // empty matrix
-        if (data.n_cols != m_dune_gv->size(0 /* cell codim */))
+        if ((int)data.n_cols != m_dune_gv->size(0 /* cell codim */))
             throw std::logic_error("VtkWriter::addCellData(): number of columns "
                                    "of 'data' different from the number of cells");
         m_dune_vtk_writer.addCellData(data, name, ncomp);
@@ -105,10 +107,10 @@ private:
     template <typename ValueType>
     void addVertexDataImpl(const arma::Mat<ValueType>& data,
                            const std::string &name) {
-        const int ncomp = data.n_rows;
+        const size_t ncomp = data.n_rows;
         if (ncomp < 1)
             return; // empty matrix
-        if (data.n_cols != m_dune_gv->size(DuneGridView::dimension /* vertex codim */))
+        if ((int)data.n_cols != m_dune_gv->size(DuneGridView::dimension /* vertex codim */))
             throw std::logic_error("VtkWriter::addVertexData(): number of columns "
                                    "of 'data' different from the number of vertices");
         m_dune_vtk_writer.addVertexData(data, name, ncomp);

@@ -21,13 +21,15 @@
 #ifndef bempp_elementary_integral_operator_hpp
 #define bempp_elementary_integral_operator_hpp
 
+#include "../common/common.hpp"
+
 #include "elementary_linear_operator.hpp"
 #include "../common/multidimensional_arrays.hpp"
 #include "../common/types.hpp"
 #include "../fiber/types.hpp"
 
 #include <vector>
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 
 namespace Fiber
 {

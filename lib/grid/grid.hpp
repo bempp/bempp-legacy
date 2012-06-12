@@ -21,6 +21,8 @@
 #ifndef bempp_grid_hpp
 #define bempp_grid_hpp
 
+#include "../common/common.hpp"
+
 #include <memory>
 
 namespace Bempp
@@ -66,7 +68,7 @@ public:
     @{ */
 
     /** \brief View of the entities on grid level \p level. */
-    virtual std::auto_ptr<GridView> levelView(int level) const = 0;
+    virtual std::auto_ptr<GridView> levelView(size_t level) const = 0;
 
     /** \brief View of the leaf entities. */
     virtual std::auto_ptr<GridView> leafView() const = 0;

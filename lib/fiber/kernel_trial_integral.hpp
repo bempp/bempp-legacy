@@ -49,7 +49,7 @@ public:
 
     virtual int resultDimension() const = 0;
 
-    virtual void addGeometricalDependencies(int& trialGeomDeps) const = 0;
+    virtual void addGeometricalDependencies(size_t& trialGeomDeps) const = 0;
 
     virtual void evaluate(
             const GeometricalData<CoordinateType>& trialGeomData,

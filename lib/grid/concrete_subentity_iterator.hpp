@@ -21,6 +21,8 @@
 #ifndef bempp_concrete_subentity_iterator_hpp
 #define bempp_concrete_subentity_iterator_hpp
 
+#include "../common/common.hpp"
+
 #include "entity_iterator.hpp"
 #include "concrete_entity_decl.hpp"
 

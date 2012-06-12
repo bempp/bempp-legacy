@@ -71,7 +71,7 @@ arma::Col<ResultType> reallyCalculateProjections(
 
     // Get the grid's leaf view so that we can iterate over elements
     std::auto_ptr<GridView> view = space.grid().leafView();
-    const int elementCount = view->entityCount(0);
+    const size_t elementCount = view->entityCount(0);
 
     // Global DOF indices corresponding to local DOFs on elements
     std::vector<std::vector<GlobalDofIndex> > testGlobalDofs(elementCount);
@@ -88,7 +88,7 @@ arma::Col<ResultType> reallyCalculateProjections(
 
     // Make a vector of all element indices
     std::vector<int> testIndices(elementCount);
-    for (int i = 0; i < elementCount; ++i)
+    for (size_t i = 0; i < elementCount; ++i)
         testIndices[i] = i;
 
     // Create the weak form's column vector
@@ -100,9 +100,9 @@ arma::Col<ResultType> reallyCalculateProjections(
     assembler.evaluateLocalWeakForms(testIndices, localResult);
 
     // Loop over test indices
-    for (int testIndex = 0; testIndex < elementCount; ++testIndex)
+    for (size_t testIndex = 0; testIndex < elementCount; ++testIndex)
         // Add the integrals to appropriate entries in the global weak form
-        for (int testDof = 0; testDof < testGlobalDofs[testIndex].size(); ++testDof)
+        for (size_t testDof = 0; testDof < testGlobalDofs[testIndex].size(); ++testDof)
             result(testGlobalDofs[testIndex][testDof]) +=
                     localResult[testIndex](testDof);
 
@@ -336,8 +336,8 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
     const int codomainDim = codomainDimension();
 
     std::auto_ptr<GridView> view = grid.leafView();
-    const int elementCount = view->entityCount(elementCodim);
-    const int vertexCount = view->entityCount(vertexCodim);
+    const size_t elementCount = view->entityCount(elementCodim);
+    const size_t vertexCount = view->entityCount(vertexCodim);
 
     result.set_size(codomainDimension(),
                     dataType == VtkWriter::CELL_DATA ? elementCount : vertexCount);
@@ -369,7 +369,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
     std::vector<std::vector<ResultType> > localCoefficients(elementCount);
     {
         std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-        for (int e = 0; e < elementCount; ++e) {
+        for (size_t e = 0; e < elementCount; ++e) {
             const Entity<0>& element = it->entity();
             basesAndCornerCounts[e] = BasisAndCornerCount(
                         &m_space.basis(element), rawGeometry.elementCornerCount(e));
@@ -383,7 +383,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
                 basesAndCornerCounts.begin(), basesAndCornerCounts.end());
 
     // Find out which basis data need to be calculated
-    int basisDeps = 0, geomDeps = 0;
+    size_t basisDeps = 0, geomDeps = 0;
     // Find out which geometrical data need to be calculated, in addition
     // to those needed by the kernel
     const Fiber::CollectionOfBasisTransformations<CoordinateType>& transformations =
@@ -464,7 +464,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
         Fiber::CollectionOf3dArrays<ResultType> functionValues;
 
         // Loop over elements and process those that use the active basis
-        for (int e = 0; e < elementCount; ++e) {
+        for (size_t e = 0; e < elementCount; ++e) {
             if (basesAndCornerCounts[e].first != &activeBasis)
                 continue;
 
@@ -476,9 +476,9 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
             // at the requested points in the current element
             if (basisDeps & Fiber::VALUES) {
                 functionData.values.fill(0.);
-                for (int point = 0; point < basisData.values.n_slices; ++point)
-                    for (int dim = 0; dim < basisData.values.n_rows; ++dim)
-                        for (int fun = 0; fun < basisData.values.n_cols; ++fun)
+                for (size_t point = 0; point < basisData.values.n_slices; ++point)
+                    for (size_t dim = 0; dim < basisData.values.n_rows; ++dim)
+                        for (size_t fun = 0; fun < basisData.values.n_cols; ++fun)
                             functionData.values(dim, 0, point) +=
                                     basisData.values(dim, fun, point) *
                                     activeLocalCoefficients[fun];
@@ -486,10 +486,10 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
             if (basisDeps & Fiber::DERIVATIVES) {
                 std::fill(functionData.derivatives.begin(),
                           functionData.derivatives.end(), 0.);
-                for (int point = 0; point < basisData.derivatives.extent(3); ++point)
-                    for (int dim = 0; dim < basisData.derivatives.extent(1); ++dim)
-                        for (int comp = 0; comp < basisData.derivatives.extent(0); ++comp)
-                            for (int fun = 0; fun < basisData.derivatives.extent(2); ++fun)
+                for (size_t point = 0; point < basisData.derivatives.extent(3); ++point)
+                    for (size_t dim = 0; dim < basisData.derivatives.extent(1); ++dim)
+                        for (size_t comp = 0; comp < basisData.derivatives.extent(0); ++comp)
+                            for (size_t fun = 0; fun < basisData.derivatives.extent(2); ++fun)
                                 functionData.derivatives(comp, dim, 0, point) +=
                                         basisData.derivatives(comp, dim, fun, point) *
                                         activeLocalCoefficients[fun];
@@ -523,7 +523,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
 
     // Take average of the vertex values obtained in each of the adjacent elements
     if (dataType == VtkWriter::VERTEX_DATA)
-        for (int v = 0; v < vertexCount; ++v)
+        for (size_t v = 0; v < vertexCount; ++v)
             result.col(v) /= multiplicities[v];
 }
 

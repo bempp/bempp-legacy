@@ -44,6 +44,7 @@
 
 
 
+
 //! total number of rules
 static const unsigned int numberOf1DRules = 30;
 
@@ -524,6 +525,8 @@ const double gw1D[ totalNumber1D ] = {
 	0.057493156217619 ,  0.048402672830594 ,  0.038799192569627 ,  
 	0.028784707883323 ,  0.018466468311091 ,  0.007968192496167
 };
+
+
 
 
 #endif

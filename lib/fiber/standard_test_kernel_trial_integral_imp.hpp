@@ -9,7 +9,7 @@ namespace Fiber
 
 template <typename IntegrandFunctor>
 void StandardTestKernelTrialIntegral<IntegrandFunctor>::
-addGeometricalDependencies(int& testGeomDeps, int& trialGeomDeps) const
+addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const
 {
     testGeomDeps |= INTEGRATION_ELEMENTS;
     trialGeomDeps |= INTEGRATION_ELEMENTS;
@@ -31,31 +31,31 @@ evaluateWithTensorQuadratureRule(
 {
     // Evaluate constants
 
-    const int testDofCount = testValues[0].extent(1);
-    const int trialDofCount = trialValues[0].extent(1);
+    const size_t testDofCount = testValues[0].extent(1);
+    const size_t trialDofCount = trialValues[0].extent(1);
 
-    const int testPointCount = testQuadWeights.size();
-    const int trialPointCount = trialQuadWeights.size();
+    const size_t testPointCount = testQuadWeights.size();
+    const size_t trialPointCount = trialQuadWeights.size();
 
     // Assert that array dimensions are correct
 
-    for (int i = 0; i < kernelValues.size(); ++i) {
+    for (size_t i = 0; i < kernelValues.size(); ++i) {
         assert(kernelValues[i].extent(2) == testPointCount);
         assert(kernelValues[i].extent(3) == trialPointCount);
     }
-    for (int i = 0; i < testValues.size(); ++i)
+    for (size_t i = 0; i < testValues.size(); ++i)
         assert(testValues[i].extent(2) == testPointCount);
-    for (int i = 0; i < trialValues.size(); ++i)
+    for (size_t i = 0; i < trialValues.size(); ++i)
         assert(trialValues[i].extent(2) == trialPointCount);
 
     // Integrate
 
-    for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
-        for (int testDof = 0; testDof < testDofCount; ++testDof)
+    for (size_t trialDof = 0; trialDof < trialDofCount; ++trialDof)
+        for (size_t testDof = 0; testDof < testDofCount; ++testDof)
         {
             ResultType sum = 0.;
-            for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
-                for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
+            for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
+                for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint)
                     sum += m_functor.evaluate(
                                 testGeomData.const_slice(testPoint),
                                 trialGeomData.const_slice(trialPoint),
@@ -83,27 +83,27 @@ evaluateWithNontensorQuadratureRule(
 {
     // Evaluate constants
 
-    const int testDofCount = testValues[0].extent(1);
-    const int trialDofCount = trialValues[0].extent(1);
+    const size_t testDofCount = testValues[0].extent(1);
+    const size_t trialDofCount = trialValues[0].extent(1);
 
-    const int pointCount = quadWeights.size();
+    const size_t pointCount = quadWeights.size();
 
     // Assert that array dimensions are correct
 
-    for (int i = 0; i < kernelValues.size(); ++i)
+    for (size_t i = 0; i < kernelValues.size(); ++i)
         assert(kernelValues[i].extent(2) == pointCount);
-    for (int i = 0; i < testValues.size(); ++i)
+    for (size_t i = 0; i < testValues.size(); ++i)
         assert(testValues[i].extent(2) == pointCount);
-    for (int i = 0; i < trialValues.size(); ++i)
+    for (size_t i = 0; i < trialValues.size(); ++i)
         assert(trialValues[i].extent(2) == pointCount);
 
     // Integrate
 
-    for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
-        for (int testDof = 0; testDof < testDofCount; ++testDof)
+    for (size_t trialDof = 0; trialDof < trialDofCount; ++trialDof)
+        for (size_t testDof = 0; testDof < testDofCount; ++testDof)
         {
             ResultType sum = 0.;
-            for (int point = 0; point < pointCount; ++point)
+            for (size_t point = 0; point < pointCount; ++point)
                 sum += m_functor.evaluate(
                             testGeomData.const_slice(point),
                             trialGeomData.const_slice(point),

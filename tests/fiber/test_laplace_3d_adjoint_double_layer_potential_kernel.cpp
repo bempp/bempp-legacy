@@ -25,9 +25,8 @@
 //#include "../check_arrays_are_close.hpp"
 
 //#include <algorithm>
-//#include <armadillo>
+//#include "common/armadillo_fwd.hpp"
 //#include <boost/test/unit_test.hpp>
-//#include <boost/test/test_case_template.hpp>
 //#include <boost/test/floating_point_comparison.hpp>
 //#include <boost/version.hpp>
 //#include <complex>
@@ -58,7 +57,7 @@
 //                              ValueType, kernel_types)
 //{
 //    Fiber::Laplace3dAdjointDoubleLayerPotentialKernel<ValueType> op;
-//    int testGeomDeps = 1024, trialGeomDeps = 16; // random initial values
+//    size_t testGeomDeps = 1024, trialGeomDeps = 16; // random initial values
 //    op.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 
 //    BOOST_CHECK(testGeomDeps & Fiber::GLOBALS);
@@ -91,25 +90,25 @@
 //    trialGeomData.globals(0, 1) = 3.;
 //    trialGeomData.globals(0, 2) = 4.;
 
-//    Fiber::_4dArray<ValueType> adlpResult;
+//    Fiber::Array4d<ValueType> adlpResult;
 //    adlpOp.evaluateOnGrid(testGeomData, trialGeomData, adlpResult);
 
 //    typedef Fiber::Laplace3dDoubleLayerPotentialKernel<ValueType> DLPOperator;
 //    DLPOperator dlpOp;
 //    std::swap(testGeomData, trialGeomData);
 
-//    Fiber::_4dArray<ValueType> dlpResult;
+//    Fiber::Array4d<ValueType> dlpResult;
 //    dlpOp.evaluateOnGrid(testGeomData, trialGeomData, dlpResult);
 
 //    // swap test and trial point indexing
-//    Fiber::_4dArray<ValueType> reorderedDlpResult(dlpResult.extent(2),
+//    Fiber::Array4d<ValueType> reorderedDlpResult(dlpResult.extent(2),
 //                                                 dlpResult.extent(3),
 //                                                 dlpResult.extent(0),
 //                                                 dlpResult.extent(1));
-//    for (int i0 = 0; i0 < dlpResult.extent(0); ++i0)
-//        for (int i1 = 0; i1 < dlpResult.extent(1); ++i1)
-//            for (int i2 = 0; i2 < dlpResult.extent(2); ++i2)
-//                for (int i3 = 0; i3 < dlpResult.extent(3); ++i3)
+//    for (size_t i0 = 0; i0 < dlpResult.extent(0); ++i0)
+//        for (size_t i1 = 0; i1 < dlpResult.extent(1); ++i1)
+//            for (size_t i2 = 0; i2 < dlpResult.extent(2); ++i2)
+//                for (size_t i3 = 0; i3 < dlpResult.extent(3); ++i3)
 //                    reorderedDlpResult(i2, i3, i0, i1) =
 //                            dlpResult(i0, i1, i2, i3);
 
@@ -145,7 +144,7 @@
 //    trialGeomDataOnGrid.globals(0, 1) = 3.;
 //    trialGeomDataOnGrid.globals(0, 2) = 4.;
 
-//    Fiber::_4dArray<ValueType> resultOnGrid;
+//    Fiber::Array4d<ValueType> resultOnGrid;
 //    op.evaluateOnGrid(testGeomDataOnGrid, trialGeomDataOnGrid, resultOnGrid);
 
 //    arma::Cube<ValueType> convertedResultOnGrid(1, 1, testPointCount * trialPointCount);

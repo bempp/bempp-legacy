@@ -18,6 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "../common/common.hpp"
+
 #include "config_opencl.hpp"
 
 #include "separable_numerical_test_kernel_trial_integrator.hpp" // To keep IDEs happy
@@ -171,8 +173,8 @@ integrateCpu(
     BasisData<BasisFunctionType> testBasisData, trialBasisData;
     GeometricalData<CoordinateType> testGeomData, trialGeomData;
 
-    int testBasisDeps = 0, trialBasisDeps = 0;
-    int testGeomDeps = 0, trialGeomDeps = 0;
+    size_t testBasisDeps = 0, trialBasisDeps = 0;
+    size_t testGeomDeps = 0, trialGeomDeps = 0;
 
     m_testTransformations.addDependencies(testBasisDeps, testGeomDeps);
     m_trialTransformations.addDependencies(trialBasisDeps, trialGeomDeps);
@@ -621,8 +623,8 @@ integrateCpu(
     BasisData<BasisFunctionType> testBasisData, trialBasisData;
     GeometricalData<CoordinateType> testGeomData, trialGeomData;
 
-    int testBasisDeps = 0, trialBasisDeps = 0;
-    int testGeomDeps = 0, trialGeomDeps = 0;
+    size_t testBasisDeps = 0, trialBasisDeps = 0;
+    size_t testGeomDeps = 0, trialGeomDeps = 0;
 
     m_testTransformations.addDependencies(testBasisDeps, testGeomDeps);
     m_trialTransformations.addDependencies(trialBasisDeps, trialGeomDeps);

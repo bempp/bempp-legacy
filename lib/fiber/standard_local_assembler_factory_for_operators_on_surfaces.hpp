@@ -21,16 +21,11 @@
 #ifndef fiber_standard_local_assembler_factory_for_operators_on_surfaces_hpp
 #define fiber_standard_local_assembler_factory_for_operators_on_surfaces_hpp
 
+#include "../common/common.hpp"
+
 #include "local_assembler_factory.hpp"
 
 #include "accuracy_options.hpp"
-#include "opencl_options.hpp"
-#include "standard_local_assembler_for_identity_operator_on_surface.hpp"
-#include "standard_local_assembler_for_integral_operators_on_surfaces.hpp"
-#include "standard_local_assembler_for_grid_functions_on_surfaces.hpp"
-#include "standard_evaluator_for_integral_operators.hpp"
-
-#include <stdexcept>
 
 namespace Fiber
 {
@@ -47,14 +42,11 @@ public:
     typedef typename Base::CoordinateType CoordinateType;
 
     /** \brief Construct a local assembler factory with default accuracy settings. */
-    StandardLocalAssemblerFactoryForOperatorsOnSurfacesBase() {
-    }
+    StandardLocalAssemblerFactoryForOperatorsOnSurfacesBase();
 
     /** \brief Construct a local assembler factory with specified accuracy settings. */
     explicit StandardLocalAssemblerFactoryForOperatorsOnSurfacesBase(
-            const AccuracyOptions& accuracyOptions) :
-        m_accuracyOptions(accuracyOptions) {
-    }
+            const AccuracyOptions& accuracyOptions);
 
 public:
     virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
@@ -65,17 +57,7 @@ public:
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
             const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
             const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
-            const shared_ptr<const OpenClHandler>& openClHandler) const {
-        typedef StandardLocalAssemblerForIdentityOperatorOnSurface<
-                BasisFunctionType, ResultType, GeometryFactory>
-                LocalAssemblerForIdentityOperator_;
-        return std::auto_ptr<LocalAssemblerForOperators<ResultType> >(
-                    new LocalAssemblerForIdentityOperator_(
-                        geometryFactory, rawGeometry,
-                        testBases, trialBases,
-                        testTransformations, trialTransformations,
-                        openClHandler));
-    }
+            const shared_ptr<const OpenClHandler>& openClHandler) const;
 
 private:
     virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
@@ -92,22 +74,7 @@ private:
             const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
-            bool cacheSingularIntegrals) const {
-        typedef CoordinateType KernelType;
-        typedef StandardLocalAssemblerForIntegralOperatorsOnSurfaces<
-            BasisFunctionType, KernelType, ResultType, GeometryFactory>
-            LocalAssemblerForIntegralOperators_;
-        return std::auto_ptr<LocalAssemblerForOperators<ResultType> >(
-                    new LocalAssemblerForIntegralOperators_(
-                        testGeometryFactory, trialGeometryFactory,
-                        testRawGeometry, trialRawGeometry,
-                        testBases, trialBases,
-                        testTransformations, kernels, trialTransformations,
-                        integral,
-                        openClHandler, parallelisationOptions,
-                        cacheSingularIntegrals,
-                        this->accuracyOptions()));
-    }
+            bool cacheSingularIntegrals) const;
 
     virtual std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >
     makeAssemblerForGridFunctionsImplRealUserFunction(
@@ -116,18 +83,7 @@ private:
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
             const shared_ptr<const Function<CoordinateType> >& function,
-            const shared_ptr<const OpenClHandler>& openClHandler) const {
-        typedef CoordinateType UserFunctionType;
-        typedef StandardLocalAssemblerForGridFunctionsOnSurfaces<
-            BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>
-            LocalAssemblerForGridFunctions_;
-        return std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >(
-                    new LocalAssemblerForGridFunctions_(
-                        geometryFactory, rawGeometry,
-                        testBases,
-                        testTransformations, function,
-                        openClHandler));
-    }
+            const shared_ptr<const OpenClHandler>& openClHandler) const;
 
     virtual std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
     makeEvaluatorForIntegralOperatorsImplRealKernel(
@@ -138,25 +94,10 @@ private:
             const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
             const shared_ptr<const KernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
             const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
-            const shared_ptr<const OpenClHandler>& openClHandler) const {
-        typedef CoordinateType KernelType;
-        typedef StandardEvaluatorForIntegralOperators<
-            BasisFunctionType, KernelType, ResultType, GeometryFactory>
-            EvaluatorForIntegralOperators_;
-        return std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >(
-                    new EvaluatorForIntegralOperators_(
-                        geometryFactory, rawGeometry,
-                        trialBases,
-                        kernels, trialTransformations, integral,
-                        argumentLocalCoefficients,
-                        openClHandler,
-                        this->accuracyOptions().singleRegular));
-    }
+            const shared_ptr<const OpenClHandler>& openClHandler) const;
 
 public:
-    const AccuracyOptions& accuracyOptions() const {
-        return m_accuracyOptions;
-    }
+    const AccuracyOptions& accuracyOptions() const;
 
 private:
     AccuracyOptions m_accuracyOptions;
@@ -175,14 +116,11 @@ public:
     typedef typename Base::CoordinateType CoordinateType;
 
     /** \brief Construct a local assembler factory with default accuracy settings. */
-    StandardLocalAssemblerFactoryForOperatorsOnSurfaces() : Base() {
-    }
+    StandardLocalAssemblerFactoryForOperatorsOnSurfaces();
 
     /** \brief Construct a local assembler factory with specified accuracy settings. */
     explicit StandardLocalAssemblerFactoryForOperatorsOnSurfaces(
-            const AccuracyOptions& accuracyOptions) :
-        Base(accuracyOptions) {
-    }
+            const AccuracyOptions& accuracyOptions);
 
 private:
     virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
@@ -199,22 +137,7 @@ private:
             const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
-            bool cacheSingularIntegrals) const {
-        typedef ResultType KernelType;
-        typedef StandardLocalAssemblerForIntegralOperatorsOnSurfaces<
-            BasisFunctionType, KernelType, ResultType, GeometryFactory>
-            LocalAssemblerForIntegralOperators_;
-        return std::auto_ptr<LocalAssemblerForOperators<ResultType> >(
-                    new LocalAssemblerForIntegralOperators_(
-                        testGeometryFactory, trialGeometryFactory,
-                        testRawGeometry, trialRawGeometry,
-                        testBases, trialBases,
-                        testTransformations, kernels, trialTransformations,
-                        integral,
-                        openClHandler, parallelisationOptions,
-                        cacheSingularIntegrals,
-                        this->accuracyOptions()));
-    }
+            bool cacheSingularIntegrals) const;
 
     virtual std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >
     makeAssemblerForGridFunctionsImplComplexUserFunction(
@@ -223,18 +146,7 @@ private:
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
             const shared_ptr<const Function<ResultType> >& function,
-            const shared_ptr<const OpenClHandler>& openClHandler) const {
-        typedef ResultType UserFunctionType;
-        typedef StandardLocalAssemblerForGridFunctionsOnSurfaces<
-            BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>
-            LocalAssemblerForGridFunctions_;
-        return std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >(
-                    new LocalAssemblerForGridFunctions_(
-                        geometryFactory, rawGeometry,
-                        testBases,
-                        testTransformations, function,
-                        openClHandler));
-    }
+            const shared_ptr<const OpenClHandler>& openClHandler) const;
 
     virtual std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
     makeEvaluatorForIntegralOperatorsImplComplexKernel(
@@ -245,20 +157,7 @@ private:
             const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
             const shared_ptr<const KernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
             const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
-            const shared_ptr<const OpenClHandler>& openClHandler) const {
-        typedef ResultType KernelType;
-        typedef StandardEvaluatorForIntegralOperators<
-            BasisFunctionType, KernelType, ResultType, GeometryFactory>
-            EvaluatorForIntegralOperators_;
-        return std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >(
-                    new EvaluatorForIntegralOperators_(
-                        geometryFactory, rawGeometry,
-                        trialBases,
-                        kernels, trialTransformations, integral,
-                        argumentLocalCoefficients,
-                        openClHandler,
-                        this->accuracyOptions().singleRegular));
-    }
+            const shared_ptr<const OpenClHandler>& openClHandler) const;
 };
 
 // RealResultType
@@ -277,14 +176,11 @@ public:
     typedef typename Base::CoordinateType CoordinateType;
 
     /** \brief Construct a local assembler factory with default accuracy settings. */
-    StandardLocalAssemblerFactoryForOperatorsOnSurfaces() : Base() {
-    }
+    StandardLocalAssemblerFactoryForOperatorsOnSurfaces();
 
     /** \brief Construct a local assembler factory with specified accuracy settings. */
     explicit StandardLocalAssemblerFactoryForOperatorsOnSurfaces(
-            const AccuracyOptions& accuracyOptions) :
-        Base(accuracyOptions) {
-    }
+            const AccuracyOptions& accuracyOptions);
 };
 
 } // namespace Fiber

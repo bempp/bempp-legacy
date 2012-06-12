@@ -38,25 +38,25 @@ class CollectionOf3dArrays
 {
 public:
     CollectionOf3dArrays();
-    explicit CollectionOf3dArrays(int arrayCount);
+    explicit CollectionOf3dArrays(size_t arrayCount);
 
-    void set_size(int new_size);
-    int size() const;
+    void set_size(size_t new_size);
+    size_t size() const;
 
-    _3dArray<T>& operator[](int index);
-    const _3dArray<T>& operator[](int index) const;
+    _3dArray<T>& operator[](size_t index);
+    const _3dArray<T>& operator[](size_t index) const;
 
     void fill(const T& value);
 
-    CollectionOf2dSlicesOf3dArrays<T> slice(int index2);
-    CollectionOf2dSlicesOfConst3dArrays<T> const_slice(int index2) const;
-    CollectionOf1dSlicesOf3dArrays<T> slice(int index1, int index2);
-    CollectionOf1dSlicesOfConst3dArrays<T> const_slice(int index1, int index2) const;
+    CollectionOf2dSlicesOf3dArrays<T> slice(size_t index2);
+    CollectionOf2dSlicesOfConst3dArrays<T> const_slice(size_t index2) const;
+    CollectionOf1dSlicesOf3dArrays<T> slice(size_t index1, size_t index2);
+    CollectionOf1dSlicesOfConst3dArrays<T> const_slice(size_t index1, size_t index2) const;
 
 private:
-    _3dArray<T>& array(int index);
-    const _3dArray<T>& array(int index) const;
-    void check_array_index(int array_index) const;
+    _3dArray<T>& array(size_t index);
+    const _3dArray<T>& array(size_t index) const;
+    void check_array_index(size_t array_index) const;
 
 private:
     // Disable copy constructor and assignment operator
@@ -64,7 +64,7 @@ private:
     CollectionOf3dArrays& operator=(const CollectionOf3dArrays& rhs);
 
 private:
-    int m_size;
+    size_t m_size;
     boost::scoped_array<_3dArray<T> > m_arrays;
 };
 
@@ -72,7 +72,7 @@ template <typename T>
 class CollectionOf2dSlicesOf3dArrays
 {
 public:
-    CollectionOf2dSlicesOf3dArrays(CollectionOf3dArrays<T>& collection, int index2);
+    CollectionOf2dSlicesOf3dArrays(CollectionOf3dArrays<T>& collection, size_t index2);
 
     /** \brief Returns a reference to self.
 
@@ -84,14 +84,14 @@ public:
       support for rvalue references. */
     CollectionOf2dSlicesOf3dArrays& self();
 
-    _2dSliceOfConst3dArray<T> operator[](int index) const;
-    _2dSliceOf3dArray<T> operator[](int index);
+    _2dSliceOfConst3dArray<T> operator[](size_t index) const;
+    _2dSliceOf3dArray<T> operator[](size_t index);
 
-    int size() const;
+    size_t size() const;
 
 private:
     CollectionOf3dArrays<T>& m_collection;
-    int m_index2;
+    size_t m_index2;
 };
 
 template <typename T>
@@ -99,15 +99,15 @@ class CollectionOf2dSlicesOfConst3dArrays
 {
 public:
     CollectionOf2dSlicesOfConst3dArrays(
-            const CollectionOf3dArrays<T>& collection, int index2);
+            const CollectionOf3dArrays<T>& collection, size_t index2);
 
-    _2dSliceOfConst3dArray<T> operator[](int index) const;
+    _2dSliceOfConst3dArray<T> operator[](size_t index) const;
 
-    int size() const;
+    size_t size() const;
 
 private:
     const CollectionOf3dArrays<T>& m_collection;
-    int m_index2;
+    size_t m_index2;
 };
 
 template <typename T>
@@ -115,7 +115,7 @@ class CollectionOf1dSlicesOf3dArrays
 {
 public:
     CollectionOf1dSlicesOf3dArrays(CollectionOf3dArrays<T>& collection,
-                                   int index1, int index2);
+                                   size_t index1, size_t index2);
 
     /** \brief Returns a reference to self.
 
@@ -127,14 +127,14 @@ public:
       support for rvalue references. */
     CollectionOf1dSlicesOf3dArrays& self();
 
-    _1dSliceOfConst3dArray<T> operator[](int index) const;
-    _1dSliceOf3dArray<T> operator[](int index);
+    _1dSliceOfConst3dArray<T> operator[](size_t index) const;
+    _1dSliceOf3dArray<T> operator[](size_t index);
 
-    int size() const;
+    size_t size() const;
 
 private:
     CollectionOf3dArrays<T>& m_collection;
-    int m_index1, m_index2;
+    size_t m_index1, m_index2;
 };
 
 template <typename T>
@@ -142,15 +142,15 @@ class CollectionOf1dSlicesOfConst3dArrays
 {
 public:
     CollectionOf1dSlicesOfConst3dArrays(
-            const CollectionOf3dArrays<T>& collection, int index1, int index2);
+            const CollectionOf3dArrays<T>& collection, size_t index1, size_t index2);
 
-    _1dSliceOfConst3dArray<T> operator[](int index) const;
+    _1dSliceOfConst3dArray<T> operator[](size_t index) const;
 
-    int size() const;
+    size_t size() const;
 
 private:
     const CollectionOf3dArrays<T>& m_collection;
-    int m_index1, m_index2;
+    size_t m_index1, m_index2;
 };
 
 } // namespace Fiber

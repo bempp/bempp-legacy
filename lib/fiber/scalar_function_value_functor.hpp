@@ -18,7 +18,7 @@ public:
     int argumentDimension() const { return 1; }
     int resultDimension() const { return 1; }
 
-    void addDependencies(int& basisDeps, int& geomDeps) const {
+    void addDependencies(size_t& basisDeps, size_t& geomDeps) const {
         basisDeps |= VALUES;
     }
 

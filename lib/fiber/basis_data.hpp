@@ -21,7 +21,9 @@
 #ifndef fiber_basis_data_hpp
 #define fiber_basis_data_hpp
 
-#include <armadillo>
+#include "../common/common.hpp"
+
+#include "../common/armadillo_fwd.hpp"
 #include "../common/multidimensional_arrays.hpp"
 
 namespace Fiber

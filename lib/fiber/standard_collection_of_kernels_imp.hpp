@@ -14,7 +14,7 @@ namespace Fiber
 
 template <typename Functor>
 void StandardCollectionOfKernels<Functor>::addGeometricalDependencies(
-        int& testGeomDeps, int& trialGeomDeps) const
+        size_t& testGeomDeps, size_t& trialGeomDeps) const
 {
     m_functor.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 }
@@ -27,15 +27,15 @@ void StandardCollectionOfKernels<Functor>::evaluateAtPointPairs(
 {
     assert(testGeomData.pointCount() == trialGeomData.pointCount());
 
-    const int pointCount = testGeomData.pointCount();
-    const int kernelCount = m_functor.kernelCount();
+    const size_t pointCount = testGeomData.pointCount();
+    const size_t kernelCount = m_functor.kernelCount();
     result.set_size(kernelCount);
-    for (int k = 0; k < kernelCount; ++k)
+    for (size_t k = 0; k < kernelCount; ++k)
         result[k].set_size(m_functor.kernelRowCount(k),
                            m_functor.kernelColCount(k),
                            pointCount);
 
-    for (int p = 0; p < pointCount; ++p)
+    for (size_t p = 0; p < pointCount; ++p)
         m_functor.evaluate(testGeomData.const_slice(p),
                            trialGeomData.const_slice(p),
                            result.slice(p).self());
@@ -47,18 +47,18 @@ void StandardCollectionOfKernels<ValueType>::evaluateOnGrid(
         const GeometricalData<CoordinateType>& trialGeomData,
         CollectionOf4dArrays<ValueType>& result) const
 {
-    const int testPointCount = testGeomData.pointCount();
-    const int trialPointCount = trialGeomData.pointCount();
-    const int kernelCount = m_functor.kernelCount();
+    const size_t testPointCount = testGeomData.pointCount();
+    const size_t trialPointCount = trialGeomData.pointCount();
+    const size_t kernelCount = m_functor.kernelCount();
     result.set_size(kernelCount);
-    for (int k = 0; k < kernelCount; ++k)
+    for (size_t k = 0; k < kernelCount; ++k)
         result[k].set_size(m_functor.kernelRowCount(k),
                            m_functor.kernelColCount(k),
                            testPointCount,
                            trialPointCount);
 
-    for (int trialIndex = 0; trialIndex < trialPointCount; ++trialIndex)
-        for (int testIndex = 0; testIndex < testPointCount; ++testIndex)
+    for (size_t trialIndex = 0; trialIndex < trialPointCount; ++trialIndex)
+        for (size_t testIndex = 0; testIndex < testPointCount; ++testIndex)
             m_functor.evaluate(testGeomData.const_slice(testIndex),
                                trialGeomData.const_slice(trialIndex),
                                result.slice(testIndex, trialIndex).self());

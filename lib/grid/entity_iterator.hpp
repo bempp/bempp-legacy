@@ -21,6 +21,8 @@
 #ifndef bempp_entity_iterator_hpp
 #define bempp_entity_iterator_hpp
 
+#include "../common/common.hpp"
+
 #include "entity_pointer.hpp"
 #include <memory>
 

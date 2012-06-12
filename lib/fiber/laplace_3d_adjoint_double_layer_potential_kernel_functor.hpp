@@ -49,7 +49,7 @@ public:
     int kernelRowCount(int /* kernelIndex */) const { return 1; }
     int kernelColCount(int /* kernelIndex */) const { return 1; }
 
-    void addGeometricalDependencies(int& testGeomDeps, int& trialGeomDeps) const {
+    void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const {
         testGeomDeps |= GLOBALS | NORMALS;
         trialGeomDeps |= GLOBALS;
     }

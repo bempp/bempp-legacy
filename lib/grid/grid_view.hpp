@@ -20,10 +20,12 @@
 #ifndef bempp_grid_view_hpp
 #define bempp_grid_view_hpp
 
+#include "../common/common.hpp"
+
 #include "geometry_type.hpp"
 #include "entity_iterator.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 #include <boost/utility/enable_if.hpp>
 #include <dune/grid/io/file/vtk/vtkwriter.hh>
 #include <memory>
@@ -55,10 +57,10 @@ public:
     virtual const Mapper& elementMapper() const = 0;
 
     /** \brief Number of entities with codimension \p codim. */
-    virtual int entityCount(int codim) const = 0;
+    virtual size_t entityCount(int codim) const = 0;
 
     /** \brief Number of entities with geometry type \p type. */
-    virtual int entityCount(const GeometryType &type) const = 0;
+    virtual size_t entityCount(const GeometryType &type) const = 0;
 
     /** \brief True if the entity \p e of codimension 0 is contained in this grid view.
        *

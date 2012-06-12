@@ -23,9 +23,11 @@
 #ifndef bempp_discrete_linear_operator_superposition_hpp
 #define bempp_discrete_linear_operator_superposition_hpp
 
+#include "../common/common.hpp"
+
 #include "discrete_linear_operator.hpp"
 
-#include <boost/ptr_container/ptr_vector.hpp>
+#include "../common/boost_ptr_vector_fwd.hpp"
 
 #ifdef WITH_TRILINOS
 #include <Teuchos_RCP.hpp>

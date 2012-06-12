@@ -20,7 +20,7 @@ public:
     typedef ResultType_ ResultType;
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    void addGeometricalDependencies(int& trialGeomDeps) const {
+    void addGeometricalDependencies(size_t& trialGeomDeps) const {
         // do nothing
     }
 

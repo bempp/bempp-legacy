@@ -20,6 +20,8 @@
 #ifndef bempp_entity_pointer_hpp
 #define bempp_entity_pointer_hpp
 
+#include "../common/common.hpp"
+
 namespace Bempp
 {
 

@@ -42,6 +42,7 @@
 #include "grid/geometry.hpp"
 #include "grid/geometry_factory.hpp"
 #include "grid/grid_factory.hpp"
+#include "grid/grid.hpp"
 
 #include "linalg/aca_preconditioner_factory.hpp"
 #include "linalg/default_iterative_solver.hpp"
@@ -50,7 +51,7 @@
 #include "space/piecewise_linear_continuous_scalar_space.hpp"
 #include "space/piecewise_constant_scalar_space.hpp"
 
-#include <armadillo>
+#include "common/armadillo_fwd.hpp"
 #include <cmath>
 #include <iostream>
 #include <memory>

@@ -20,6 +20,8 @@
 #ifndef bempp_concrete_index_set_hpp
 #define bempp_concrete_index_set_hpp
 
+#include "../common/common.hpp"
+
 #include "index_set.hpp"
 #include "concrete_entity.hpp"
 
@@ -74,7 +76,7 @@ public:
         return entityCodimNIndex(e);
     }
 
-    virtual IndexType subEntityIndex(const Entity<0>& e, int i, unsigned int codimSub) const {
+    virtual IndexType subEntityIndex(const Entity<0>& e, size_t i, int codimSub) const {
         // Prevent an assert in FoamGrid from crashing the Python interpreter
         if (codimSub > DuneGridView::Grid::dimension)
             throw std::invalid_argument("IndexSet::subEntityIndex(): codimSub exceeds grid dimension");

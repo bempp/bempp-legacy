@@ -48,7 +48,7 @@ public:
     typedef ... ResultType;
     typedef ... CoordinateType;
 
-    void addGeometricalDependencies(int& testGeomDeps, int& trialGeomDeps) const;
+    void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const;
 
     ResultType evaluate(
             const GeometricalDataSlice<CoordinateType>& testGeomData,
@@ -65,7 +65,7 @@ public:
   to the surface at test and trial points, the function could have the form
 
   \code{.cpp}
-void addGeometricalDependencies(int& testGeomDeps, int& trialGeomDeps) const
+void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const
 {
     testGeomDeps |= NORMALS;
     trialGeomDeps |= NORMALS;
@@ -110,7 +110,7 @@ public:
     {}
 
     virtual void addGeometricalDependencies(
-            int& testGeomDeps, int& trialGeomDeps) const;
+            size_t& testGeomDeps, size_t& trialGeomDeps) const;
 
     virtual void evaluateWithTensorQuadratureRule(
             const GeometricalData<CoordinateType>& testGeomData,

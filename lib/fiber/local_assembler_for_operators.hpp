@@ -21,8 +21,11 @@
 #ifndef fiber_local_assembler_for_operators_hpp
 #define fiber_local_assembler_for_operators_hpp
 
+#include "../common/common.hpp"
+
 #include "_2d_array.hpp"
 #include "types.hpp"
+
 #include <vector>
 
 namespace Fiber

@@ -23,9 +23,11 @@
 #ifndef bempp_discrete_linear_operator_hpp
 #define bempp_discrete_linear_operator_hpp
 
+#include "../common/common.hpp"
+
 #include "transposition_mode.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 
 #ifdef WITH_TRILINOS
 #include <Thyra_LinearOpDefaultBase_decl.hpp>

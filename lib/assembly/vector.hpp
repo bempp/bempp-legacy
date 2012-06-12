@@ -21,9 +21,11 @@
 #ifndef bempp_vector_hpp
 #define bempp_vector_hpp
 
+#include "../common/common.hpp"
+
 #include "config_trilinos.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 
 #ifdef WITH_TRILINOS
 #include <Thyra_DefaultSpmdVector.hpp>

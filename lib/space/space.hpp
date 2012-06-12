@@ -21,6 +21,8 @@
 #ifndef bempp_space_hpp
 #define bempp_space_hpp
 
+#include "../common/common.hpp"
+
 #include "mass_matrix_container_initialiser.hpp"
 #include "mass_matrix_container.hpp"
 
@@ -29,7 +31,7 @@
 #include "../common/types.hpp"
 #include "../fiber/scalar_traits.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <vector>
@@ -113,7 +115,7 @@ public:
     /** \brief Number of global degrees of freedom.
 
         \note Must not be called before asignDofs(). */
-    virtual int globalDofCount() const = 0;
+    virtual size_t globalDofCount() const = 0;
     virtual void globalDofs(const Entity<0>& element,
                             std::vector<GlobalDofIndex>& dofs) const = 0;
 

@@ -21,6 +21,8 @@
 #ifndef bempp_id_set_hpp
 #define bempp_id_set_hpp
 
+#include "../common/common.hpp"
+
 #include <boost/utility/enable_if.hpp>
 
 namespace Bempp
@@ -41,7 +43,7 @@ public:
 
      \internal Sadly, it is necessary to specify this type uniformly for all grid classes.
      */
-    typedef unsigned int IdType;
+    typedef size_t IdType;
 
     /** \brief Id of the entity \p e of codimension 0. */
     virtual IdType entityId(const Entity<0>& e) const = 0;
@@ -54,7 +56,7 @@ public:
 
     /** \brief Id of \p i'th subentity of codimension \p codimSub of entity \p e of codimension 0.
      */
-    virtual IdType subEntityId(const Entity<0>& e, int i, unsigned int codimSub) const = 0;
+    virtual IdType subEntityId(const Entity<0>& e, size_t i, int codimSub) const = 0;
 };
 
 } // namespace Bempp

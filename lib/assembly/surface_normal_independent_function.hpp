@@ -21,6 +21,8 @@
 #ifndef bempp_surface_normal_independent_function_hpp
 #define bempp_surface_normal_independent_function_hpp
 
+#include "../common/common.hpp"
+
 #include "../fiber/surface_normal_independent_function.hpp"
 
 namespace Bempp

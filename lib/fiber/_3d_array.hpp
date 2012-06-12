@@ -40,23 +40,23 @@ class _3dArray
 {
 public:
     _3dArray();
-    _3dArray(int extent0, int extent1, int extent2);
-    _3dArray(int extent0, int extent1, int extent2, T* data);
+    _3dArray(size_t extent0, size_t extent1, size_t extent2);
+    _3dArray(size_t extent0, size_t extent1, size_t extent2, T* data);
 
     ~_3dArray();
 
-    T& operator()(int index0, int index1, int index2);
-    const T& operator()(int index0, int index1, int index2) const;
+    T& operator()(size_t index0, size_t index1, size_t index2);
+    const T& operator()(size_t index0, size_t index1, size_t index2) const;
 
 //    so far unused, to be implemented later
-//    _2dSliceOf3dArray slice(int index2);
-//    Const2dSliceOf3dArray const_slice(int index2) const;
+//    _2dSliceOf3dArray slice(size_t index2);
+//    Const2dSliceOf3dArray const_slice(size_t index2) const;
 
-//    _1dSliceOf3dArray slice(int index1, int index2);
-//    Const1dSliceOf3dArray const_slice(int index2) const;
+//    _1dSliceOf3dArray slice(size_t index1, size_t index2);
+//    Const1dSliceOf3dArray const_slice(size_t index2) const;
 
-    int extent(int dimension) const;
-    void set_size(int extent0, int extent1, int extent2);
+    size_t extent(size_t dimension) const;
+    void set_size(size_t extent0, size_t extent1, size_t extent2);
 
     typedef T* iterator;
     typedef const T* const_iterator;
@@ -68,9 +68,9 @@ public:
 
 private:
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
-    void check_dimension(int dimension) const;
-    void check_extents(int extent0, int extent1, int extent2) const;
-    void check_indices(int index0, int index1, int index2) const;
+    void check_dimension(size_t dimension) const;
+    void check_extents(size_t extent0, size_t extent1, size_t extent2) const;
+    void check_indices(size_t index0, size_t index1, size_t index2) const;
 #endif
 
 private:
@@ -79,7 +79,7 @@ private:
     _3dArray& operator=(const _3dArray& rhs);
 
 private:
-    int m_extents[3];
+    size_t m_extents[3];
     bool m_owns;
     T* m_storage;
 };
@@ -89,7 +89,7 @@ template <typename T>
 class _2dSliceOf3dArray
 {
 public:
-    _2dSliceOf3dArray(_3dArray<T>& array, int index2);
+    _2dSliceOf3dArray(_3dArray<T>& array, size_t index2);
 
     /** \brief Returns a reference to self.
 
@@ -100,17 +100,17 @@ public:
       support for rvalue references. */
     _2dSliceOf3dArray& self();
 
-    const T& operator()(int index0, int index1) const;
-    T& operator()(int index0, int index1);
+    const T& operator()(size_t index0, size_t index1) const;
+    T& operator()(size_t index0, size_t index1);
 
-    int extent(int dimension) const;
+    size_t extent(size_t dimension) const;
 
 private:
-    void check_dimension(int dimension) const;
+    void check_dimension(size_t dimension) const;
 
 private:
     _3dArray<T>& m_array;
-    int m_index2;
+    size_t m_index2;
 };
 
 /** \brief Lightweight encapsulation of a 2D slice of a constant 3D array. */
@@ -118,18 +118,18 @@ template <typename T>
 class _2dSliceOfConst3dArray
 {
 public:
-    _2dSliceOfConst3dArray(const _3dArray<T>& array, int index2);
+    _2dSliceOfConst3dArray(const _3dArray<T>& array, size_t index2);
 
-    const T& operator()(int index0, int index1) const;
+    const T& operator()(size_t index0, size_t index1) const;
 
-    int extent(int dimension) const;
+    size_t extent(size_t dimension) const;
 
 private:
-    void check_dimension(int dimension) const;
+    void check_dimension(size_t dimension) const;
 
 private:
     const _3dArray<T>& m_array;
-    int m_index2;
+    size_t m_index2;
 };
 
 /** \brief Lightweight encapsulation of a 1D slice of a 3D array. */
@@ -138,7 +138,7 @@ class _1dSliceOf3dArray
 {
 public:
     /** \brief Construct a slice consisting of the elements array(:,index1,index2) */
-    _1dSliceOf3dArray(_3dArray<T>& array, int index1, int index2);
+    _1dSliceOf3dArray(_3dArray<T>& array, size_t index1, size_t index2);
 
     /** \brief Returns a reference to self.
 
@@ -149,17 +149,17 @@ public:
       support for rvalue references. */
     _1dSliceOf3dArray& self();
 
-    const T& operator()(int index0) const;
-    T& operator()(int index0);
+    const T& operator()(size_t index0) const;
+    T& operator()(size_t index0);
 
-    int extent(int dimension) const;
+    size_t extent(size_t dimension) const;
 
 private:
-    void check_dimension(int dimension) const;
+    void check_dimension(size_t dimension) const;
 
 private:
     _3dArray<T>& m_array;
-    int m_index1, m_index2;
+    size_t m_index1, m_index2;
 };
 
 /** \brief Lightweight encapsulation of a 1D slice of a constant 3D array. */
@@ -167,18 +167,18 @@ template <typename T>
 class _1dSliceOfConst3dArray
 {
 public:
-    _1dSliceOfConst3dArray(const _3dArray<T>& array, int index1, int index2);
+    _1dSliceOfConst3dArray(const _3dArray<T>& array, size_t index1, size_t index2);
 
-    const T& operator()(int index0) const;
+    const T& operator()(size_t index0) const;
 
-    int extent(int dimension) const;
+    size_t extent(size_t dimension) const;
 
 private:
-    void check_dimension(int dimension) const;
+    void check_dimension(size_t dimension) const;
 
 private:
     const _3dArray<T>& m_array;
-    int m_index1, m_index2;
+    size_t m_index1, m_index2;
 };
 
 } // namespace Fiber

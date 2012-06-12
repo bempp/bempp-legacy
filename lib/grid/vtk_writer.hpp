@@ -21,7 +21,9 @@
 #ifndef bempp_vtk_writer_hpp
 #define bempp_vtk_writer_hpp
 
-#include <armadillo>
+#include "../common/common.hpp"
+
+#include "../common/armadillo_fwd.hpp"
 #include <memory>
 #include <string>
 

@@ -49,7 +49,7 @@ public:
     {}
 
     virtual void addGeometricalDependencies(
-            int& testGeomDeps, int& trialGeomDeps) const = 0;
+            size_t& testGeomDeps, size_t& trialGeomDeps) const = 0;
 
     virtual void evaluateWithTensorQuadratureRule(
             const GeometricalData<CoordinateType>& testGeomData,

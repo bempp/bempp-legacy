@@ -52,6 +52,12 @@ PiecewiseLinearContinuousScalarSpace(Grid& grid) :
 }
 
 template <typename BasisFunctionType>
+PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
+~PiecewiseLinearContinuousScalarSpace()
+{
+}
+
+template <typename BasisFunctionType>
 int PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::domainDimension() const
 {
     return this->m_grid.dim();
@@ -183,7 +189,7 @@ bool PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::dofsAssigned() con
 }
 
 template <typename BasisFunctionType>
-int PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::globalDofCount() const
+size_t PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::globalDofCount() const
 {
     return m_global2localDofs.size();
 }
@@ -203,7 +209,7 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::global2localDofs(
         std::vector<std::vector<LocalDof> >& localDofs) const
 {
     localDofs.resize(globalDofs.size());
-    for (int i = 0; i < globalDofs.size(); ++i)
+    for (size_t i = 0; i < globalDofs.size(); ++i)
         localDofs[i] = m_global2localDofs[globalDofs[i]];
 }
 
@@ -256,7 +262,7 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::dumpClusterIds(
         const char* fileName,
         const std::vector<unsigned int>& clusterIds) const
 {
-    const int idCount = clusterIds.size();
+    const size_t idCount = clusterIds.size();
     if (idCount != globalDofCount())
         throw std::invalid_argument("PiecewiseLinearContinuousScalarSpace::"
                                     "dumpClusterIds(): incorrect dimension");
@@ -264,7 +270,7 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::dumpClusterIds(
     std::auto_ptr<GridView> view = this->m_grid.leafView();
     std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
     arma::Row<double> data(idCount);
-    for (int i = 0; i < idCount; ++i)
+    for (size_t i = 0; i < idCount; ++i)
         data(i) = clusterIds[i];
     vtkWriter->addVertexData(data, "ids");
     vtkWriter->write(fileName);

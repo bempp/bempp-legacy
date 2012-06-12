@@ -23,6 +23,8 @@
 #ifndef bempp_discrete_aca_linear_operator_hpp
 #define bempp_discrete_aca_linear_operator_hpp
 
+#include "../common/common.hpp"
+
 #include "discrete_linear_operator.hpp"
 #include "ahmed_aux_fwd.hpp"
 #include "index_permutation.hpp"
@@ -30,7 +32,7 @@
 #include "../common/not_implemented_error.hpp"
 
 #include <iostream>
-#include <boost/shared_array.hpp>
+#include "../common/boost_shared_array_fwd.hpp"
 
 #ifdef WITH_TRILINOS
 #include <Teuchos_RCP.hpp>

@@ -22,6 +22,8 @@
 #ifndef bempp_evaluation_options_hpp
 #define bempp_evaluation_options_hpp
 
+#include "../common/common.hpp"
+
 #include "../fiber/opencl_options.hpp"
 #include "../fiber/parallelisation_options.hpp"
 

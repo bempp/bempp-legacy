@@ -21,6 +21,8 @@
 #ifndef bempp_discrete_inverse_sparse_linear_operator_hpp
 #define bempp_discrete_inverse_sparse_linear_operator_hpp
 
+#include "../common/common.hpp"
+
 #include "config_trilinos.hpp"
 
 #ifdef WITH_TRILINOS

@@ -21,6 +21,8 @@
 #ifndef bempp_concrete_geometry_factory_hpp
 #define bempp_concrete_geometry_factory_hpp
 
+#include "../common/common.hpp"
+
 #include "geometry_factory.hpp"
 #include "concrete_geometry.hpp"
 

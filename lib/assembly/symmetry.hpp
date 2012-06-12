@@ -21,6 +21,8 @@
 #ifndef bempp_symmetry_hpp
 #define bempp_symmetry_hpp
 
+#include "../common/common.hpp"
+
 namespace Bempp
 {
 

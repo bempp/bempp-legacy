@@ -15,7 +15,7 @@ class ElementaryBasisTransformationFunctorWrapper
 public:
     typedef typename ElementaryFunctor::CoordinateType CoordinateType;
 
-    int transformationCount() const {
+    size_t transformationCount() const {
         return 1;
     }
 
@@ -23,12 +23,12 @@ public:
         return m_functor.argumentDimension();
     }
 
-    int resultDimension(int transformationIndex) const {
+    int resultDimension(size_t transformationIndex) const {
         assert(transformationIndex == 0);
         return m_functor.resultDimension();
     }
 
-    void addDependencies(int& basisDeps, int& geomDeps) const {
+    void addDependencies(size_t& basisDeps, size_t& geomDeps) const {
         m_functor.addDependencies(basisDeps, geomDeps);
     }
 
@@ -72,7 +72,7 @@ public:
         }
     }
 
-    void addDependencies(int& basisDeps, int& geomDeps) const {
+    void addDependencies(size_t& basisDeps, size_t& geomDeps) const {
         m_functor0.addDependencies(basisDeps, geomDeps);
         m_functor1.addDependencies(basisDeps, geomDeps);
     }

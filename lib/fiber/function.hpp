@@ -21,9 +21,11 @@
 #ifndef fiber_function_hpp
 #define fiber_function_hpp
 
+#include "../common/common.hpp"
+
 #include "scalar_traits.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 
 namespace Fiber
 {
@@ -42,7 +44,7 @@ public:
     virtual int worldDimension() const = 0;
     virtual int codomainDimension() const = 0;
 
-    virtual void addGeometricalDependencies(int& geomDeps) const = 0;
+    virtual void addGeometricalDependencies(size_t& geomDeps) const = 0;
 
     virtual void evaluate(const GeometricalData<CoordinateType>& geomData,
                           arma::Mat<ValueType>& result) const = 0;

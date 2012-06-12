@@ -18,6 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "../common/common.hpp"
+
 #include "concrete_grid_view.hpp" // to make IDEs happy
 
 namespace Bempp
@@ -72,7 +74,7 @@ void ConcreteGridView<DuneGridView>::getRawElementDataImpl(
     for (DuneVertexIterator it = m_dune_gv.template begin<codimVertex>();
          it != m_dune_gv.template end<codimVertex>(); ++it)
     {
-        int index = indexSet.index(*it);
+        size_t index = indexSet.index(*it);
         const DuneVertexGeometry& geom = it->geometry();
         Dune::FieldVector<ctype, dimWorld> vertex = geom.corner(0);
         for (int i = 0; i < dimWorld; ++i)
@@ -85,7 +87,7 @@ void ConcreteGridView<DuneGridView>::getRawElementDataImpl(
     for (DuneElementIterator it = m_dune_gv.template begin<codimElement>();
          it != m_dune_gv.template end<codimElement>(); ++it)
     {
-        int index = elementMapper.map(*it);
+        size_t index = elementMapper.map(*it);
         const Dune::GenericReferenceElement<ctype, dimGrid>& refElement =
                 Dune::GenericReferenceElements<ctype, dimGrid>::general(it->type());
         const int cornerCount = refElement.size(codimVertex);

@@ -21,6 +21,8 @@
 #ifndef fiber_piecewise_constant_scalar_basis_hpp
 #define fiber_piecewise_constant_scalar_basis_hpp
 
+#include "../common/common.hpp"
+
 #include "basis.hpp"
 #include "basis_data.hpp"
 
@@ -43,7 +45,7 @@ public:
         return 0;
     }
 
-    virtual void evaluate(int what,
+    virtual void evaluate(size_t what,
                           const arma::Mat<CoordinateType>& points,
                           LocalDofIndex localDofIndex,
                           BasisData<ValueType>& data) const {

@@ -5,7 +5,7 @@ namespace Fiber
 
 template <typename Functor>
 void StandardCollectionOfBasisTransformations<Functor>::addDependencies(
-        int& basisDeps, int& geomDeps) const
+        size_t& basisDeps, size_t& geomDeps) const
 {
     m_functor.addDependencies(basisDeps, geomDeps);
 }

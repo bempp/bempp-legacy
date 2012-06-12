@@ -22,6 +22,8 @@
 #ifndef bempp_identity_operator_hpp
 #define bempp_identity_operator_hpp
 
+#include "../common/common.hpp"
+
 #include "elementary_linear_operator.hpp"
 
 #include <boost/scoped_ptr.hpp>

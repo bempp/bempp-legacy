@@ -29,8 +29,6 @@
 #define galerkin_duffy_h
 
 
-
-
 // own includes
 #include "singularitytraits.H"
 #include "enumerators.H"
@@ -606,6 +604,7 @@ transform (point_type& reference_points_x,
   weights[ 3 ] = weights[ 0 ];
 
 }
+
 
 
 

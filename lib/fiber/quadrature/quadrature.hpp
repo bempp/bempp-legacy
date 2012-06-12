@@ -36,8 +36,6 @@
 
 
 
-
-
 // own includeds  
 #include "gausstensor.hpp"
 #include "gausstria.hpp"
@@ -369,6 +367,7 @@ getNumPoints(unsigned int order) const
 //     }
 // 	}		
 // }
+
 
 
 

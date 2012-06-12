@@ -21,11 +21,13 @@
 #ifndef bempp_geometry_hpp
 #define bempp_geometry_hpp
 
+#include "../common/common.hpp"
+
 #include "geometry_type.hpp"
 
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 
 namespace Fiber
 {
@@ -236,10 +238,10 @@ public:
     void getNormals(const arma::Mat<float>& local,
                     arma::Mat<float>& normal) const;
 
-    void getData(int what, const arma::Mat<double>& local,
+    void getData(size_t what, const arma::Mat<double>& local,
                  Fiber::GeometricalData<double>& data) const;
     /** \overload */
-    void getData(int what, const arma::Mat<float>& local,
+    void getData(size_t what, const arma::Mat<float>& local,
                  Fiber::GeometricalData<float>& data) const;
 
 private:
@@ -268,7 +270,7 @@ private:
             const arma::Mat<double>& local,
             arma::Mat<double>& normal) const = 0;
     virtual void getDataImpl(
-            int what, const arma::Mat<double>& local,
+            size_t what, const arma::Mat<double>& local,
             Fiber::GeometricalData<double>& data) const = 0;
 
     // Helper functions for implementation

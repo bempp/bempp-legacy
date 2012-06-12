@@ -21,6 +21,8 @@
 #ifndef fiber_numerical_test_trial_integrator_hpp
 #define fiber_numerical_test_trial_integrator_hpp
 
+#include "../common/common.hpp"
+
 #include "test_trial_integrator.hpp"
 
 namespace Fiber

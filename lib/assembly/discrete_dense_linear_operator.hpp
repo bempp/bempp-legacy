@@ -23,6 +23,8 @@
 #ifndef bempp_discrete_dense_linear_operator_hpp
 #define bempp_discrete_dense_linear_operator_hpp
 
+#include "../common/common.hpp"
+
 #include "discrete_linear_operator.hpp"
 
 #ifdef WITH_TRILINOS

@@ -21,6 +21,8 @@
 #ifndef fiber_surface_normal_dependent_function_hpp
 #define fiber_surface_normal_dependent_function_hpp
 
+#include "../common/common.hpp"
+
 #include "function.hpp"
 #include "geometrical_data.hpp"
 
@@ -78,7 +80,7 @@ public:
         return m_functor.resultDimension;
     }
 
-    virtual void addGeometricalDependencies(int& geomDeps) const {
+    virtual void addGeometricalDependencies(size_t& geomDeps) const {
         geomDeps |= GLOBALS | NORMALS;
     }
 
@@ -88,15 +90,15 @@ public:
         const arma::Mat<CoordinateType>& normals = geomData.normals;
 
 #ifndef NDEBUG
-        if (points.n_rows != worldDimension())
+        if ((int)points.n_rows != worldDimension())
             throw std::invalid_argument(
                     "SurfaceNormalDependentFunction::evaluate(): "
                     "incompatible world dimension");
 #endif
 
-        const int pointCount = points.n_cols;
+        const size_t pointCount = points.n_cols;
         result.set_size(codomainDimension(), pointCount);
-        for (int i = 0; i < pointCount; ++i) {
+        for (size_t i = 0; i < pointCount; ++i) {
             arma::Col<ValueType> activeResultColumn = result.unsafe_col(i);
             m_functor.evaluate(points.unsafe_col(i), normals.unsafe_col(i),
                                activeResultColumn);

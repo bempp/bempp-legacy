@@ -21,10 +21,12 @@
 #ifndef fiber_basis_hpp
 #define fiber_basis_hpp
 
+#include "../common/common.hpp"
+
 #include "scalar_traits.hpp"
 #include "types.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 
 namespace Fiber
 {
@@ -42,7 +44,7 @@ public:
     virtual int size() const = 0;
     /** \brief Maximum polynomial order of basis elements. */
     virtual int order() const = 0;
-    virtual void evaluate(int what,
+    virtual void evaluate(size_t what,
                           const arma::Mat<CoordinateType>& points,
                           LocalDofIndex localDofIndex,
                           BasisData<ValueType>& data) const = 0;

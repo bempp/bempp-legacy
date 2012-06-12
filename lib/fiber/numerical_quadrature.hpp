@@ -21,11 +21,13 @@
 #ifndef fiber_numerical_quadrature_hpp
 #define fiber_numerical_quadrature_hpp
 
+#include "../common/common.hpp"
+
 /** \file Low-level functions filling arrays of quadrature points and weights. */
 
 #include "element_pair_topology.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 #include <boost/tuple/tuple_comparison.hpp>
 #include <ostream>
 

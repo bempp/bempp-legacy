@@ -68,10 +68,10 @@ void reallyApplyBuiltInImpl<double>(const Epetra_CrsMatrix& mat,
                  vec_x, vec_temp);
 
     if (beta == 0.)
-        for (int i = 0; i < y_inout.n_rows; ++i)
+        for (size_t i = 0; i < y_inout.n_rows; ++i)
             y_inout(i) = alpha * vec_temp[i];
     else
-        for (int i = 0; i < y_inout.n_rows; ++i)
+        for (size_t i = 0; i < y_inout.n_rows; ++i)
             y_inout(i) = alpha * vec_temp[i] + beta * y_inout(i);
 }
 
@@ -113,16 +113,16 @@ void reallyApplyBuiltInImpl<std::complex<float> >(
     // Separate the real and imaginary components and store them in
     // double-precision vectors
     arma::Col<double> x_real(x_in.n_rows);
-    for (int i = 0; i < x_in.n_rows; ++i)
+    for (size_t i = 0; i < x_in.n_rows; ++i)
         x_real(i) = x_in(i).real();
     arma::Col<double> x_imag(x_in.n_rows);
-    for (int i = 0; i < x_in.n_rows; ++i)
+    for (size_t i = 0; i < x_in.n_rows; ++i)
         x_imag(i) = x_in(i).imag();
     arma::Col<double> y_real(y_inout.n_rows);
-    for (int i = 0; i < y_inout.n_rows; ++i)
+    for (size_t i = 0; i < y_inout.n_rows; ++i)
         y_real(i) = y_inout(i).real();
     arma::Col<double> y_imag(y_inout.n_rows);
-    for (int i = 0; i < y_inout.n_rows; ++i)
+    for (size_t i = 0; i < y_inout.n_rows; ++i)
         y_imag(i) = y_inout(i).imag();
 
     // Do the "+= alpha A x" part (in steps)
@@ -136,7 +136,7 @@ void reallyApplyBuiltInImpl<std::complex<float> >(
                 mat, trans, x_imag, y_imag, alpha.real(), 1.);
 
     // Copy the result back to the complex vector
-    for (int i = 0; i < y_inout.n_rows; ++i)
+    for (size_t i = 0; i < y_inout.n_rows; ++i)
         y_inout(i) = std::complex<float>(y_real(i), y_imag(i));
 }
 
@@ -169,7 +169,7 @@ void reallyApplyBuiltInImpl<std::complex<double> >(
                 mat, trans, x_imag, y_imag, alpha.real(), 1.);
 
     // Copy the result back to the complex vector
-    for (int i = 0; i < y_inout.n_rows; ++i)
+    for (size_t i = 0; i < y_inout.n_rows; ++i)
         y_inout(i) = std::complex<double>(y_real(i), y_imag(i));
 }
 
@@ -249,7 +249,7 @@ void DiscreteSparseLinearOperator<ValueType>::addBlock(
     double* values = 0;
     int* indices = 0;
 
-    for (int row = 0; row < rows.size(); ++row)
+    for (size_t row = 0; row < rows.size(); ++row)
     {
         // Provision for future MPI support.
         if (m_mat->IndicesAreLocal())
@@ -271,7 +271,7 @@ void DiscreteSparseLinearOperator<ValueType>::addBlock(
                         "Epetra_CrsMatrix::ExtractGlobalRowView()) failed");
         }
 
-        for (int col = 0; col < cols.size(); ++col)
+        for (size_t col = 0; col < cols.size(); ++col)
             for (int entry = 0; entry < entryCount; ++entry)
                 if (indices[entry] == cols[col])
                     block(row, col) +=

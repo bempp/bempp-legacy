@@ -21,6 +21,9 @@
 #ifndef bempp_piecewise_constant_scalar_space_hpp
 #define bempp_piecewise_constant_scalar_space_hpp
 
+#include "../common/common.hpp"
+
+
 #include "scalar_space.hpp"
 #include "../common/types.hpp"
 #include "../fiber/piecewise_constant_scalar_basis.hpp"
@@ -52,7 +55,7 @@ public:
 
     virtual void assignDofs();
     virtual bool dofsAssigned() const;
-    virtual int globalDofCount() const;
+    virtual size_t globalDofCount() const;
     virtual void globalDofs(const Entity<0>& element,
                             std::vector<GlobalDofIndex>& dofs) const;    
     virtual void global2localDofs(

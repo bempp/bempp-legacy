@@ -36,28 +36,28 @@ class CollectionOf2dArrays
 {
 public:
     CollectionOf2dArrays();
-    explicit CollectionOf2dArrays(int arrayCount);
+    explicit CollectionOf2dArrays(size_t arrayCount);
     CollectionOf2dArrays(const CollectionOf2dArrays& rhs);
     CollectionOf2dArrays& operator=(const CollectionOf2dArrays& rhs);
 
-    void set_size(int new_size);
-    int size() const;
+    void set_size(size_t new_size);
+    size_t size() const;
 
-    _2dArray<T>& operator[](int index);
-    const _2dArray<T>& operator[](int index) const;
+    _2dArray<T>& operator[](size_t index);
+    const _2dArray<T>& operator[](size_t index) const;
 
     void fill(const T& value);
 
-    CollectionOf1dSlicesOf2dArrays<T> slice(int index1);
-    CollectionOf1dSlicesOfConst2dArrays<T> const_slice(int index1) const;
+    CollectionOf1dSlicesOf2dArrays<T> slice(size_t index1);
+    CollectionOf1dSlicesOfConst2dArrays<T> const_slice(size_t index1) const;
 
 private:
-    _2dArray<T>& array(int index);
-    const _2dArray<T>& array(int index) const;
-    void check_array_index(int array_index) const;
+    _2dArray<T>& array(size_t index);
+    const _2dArray<T>& array(size_t index) const;
+    void check_array_index(size_t array_index) const;
 
 private:
-    int m_size;
+    size_t m_size;
     boost::scoped_array<_2dArray<T> > m_arrays;
 };
 
@@ -67,7 +67,7 @@ class CollectionOf1dSlicesOf2dArrays
 {
 public:
     CollectionOf1dSlicesOf2dArrays(CollectionOf2dArrays<T>& collection,
-                                   int index1);
+                                   size_t index1);
 
     /** \brief Returns a reference to self.
 
@@ -79,14 +79,14 @@ public:
       support for rvalue references. */
     CollectionOf1dSlicesOf2dArrays& self();
 
-    _1dSliceOfConst2dArray<T> operator[](int index) const;
-    _1dSliceOf2dArray<T> operator[](int index);
+    _1dSliceOfConst2dArray<T> operator[](size_t index) const;
+    _1dSliceOf2dArray<T> operator[](size_t index);
 
-    int size() const;
+    size_t size() const;
 
 private:
     CollectionOf2dArrays<T>& m_collection;
-    int m_index1;
+    size_t m_index1;
 };
 
 template <typename T>
@@ -94,15 +94,15 @@ class CollectionOf1dSlicesOfConst2dArrays
 {
 public:
     CollectionOf1dSlicesOfConst2dArrays(
-            const CollectionOf2dArrays<T>& collection, int index1);
+            const CollectionOf2dArrays<T>& collection, size_t index1);
 
-    _1dSliceOfConst2dArray<T> operator[](int index) const;
+    _1dSliceOfConst2dArray<T> operator[](size_t index) const;
 
-    int size() const;
+    size_t size() const;
 
 private:
     const CollectionOf2dArrays<T>& m_collection;
-    int m_index1;
+    size_t m_index1;
 };
 
 } // namespace Fiber

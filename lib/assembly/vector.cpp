@@ -37,7 +37,7 @@ Vector<ValueType>::Vector(
 #ifdef WITH_TRILINOS
     const size_t size = vec.n_rows;
     Teuchos::ArrayRCP<ValueType> data(size);
-    for (int i = 0; i < size; ++i)
+    for (size_t i = 0; i < size; ++i)
         data[i] = vec(i);
     this->initialize(Thyra::defaultSpmdVectorSpace<ValueType>(size),
                      data, 1 /* stride */);
@@ -72,7 +72,7 @@ arma::Col<ValueType> Vector<ValueType>::asArmadilloVector() const
 #ifdef WITH_TRILINOS
     const size_t size = this->range()->dim();
     arma::Col<ValueType> col(size);
-    for (int i = 0; i < size; ++i)
+    for (size_t i = 0; i < size; ++i)
         col(i) = this->getPtr()[i];
     return col;
 #else

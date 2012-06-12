@@ -21,6 +21,8 @@
 #ifndef bempp_index_set_hpp
 #define bempp_index_set_hpp
 
+#include "../common/common.hpp"
+
 namespace Bempp
 {
 
@@ -39,7 +41,7 @@ public:
 
      \internal Sadly, it is necessary to specify this type uniformly for all grid classes.
      */
-    typedef unsigned int IndexType;
+    typedef size_t IndexType;
 
     /** \brief Index of the entity \e of codimension 0.
 
@@ -67,7 +69,7 @@ public:
 
     /** \brief Index of \p i'th subentity of codimension \p codimSub of entity \p e of codimension 0.
      */
-    virtual IndexType subEntityIndex(const Entity<0>& e, int i, unsigned int codimSub) const = 0;
+    virtual IndexType subEntityIndex(const Entity<0>& e, size_t i, int codimSub) const = 0;
 };
 
 } // namespace Bempp

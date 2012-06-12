@@ -21,10 +21,12 @@
 #ifndef fiber_dune_basis_helper_hpp
 #define fiber_dune_basis_helper_hpp
 
+#include "../common/common.hpp"
+
 #include "types.hpp"
 #include "_4d_array.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 #include <vector>
 
 namespace Fiber

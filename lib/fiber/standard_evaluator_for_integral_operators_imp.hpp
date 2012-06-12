@@ -20,6 +20,8 @@
 
 #include "standard_evaluator_for_integral_operators.hpp" // keep IDEs happy
 
+#include "../common/common.hpp"
+
 #include "basis.hpp"
 #include "basis_data.hpp"
 #include "collection_of_basis_transformations.hpp"
@@ -55,7 +57,7 @@ ResultType, GeometryFactory>::StandardEvaluatorForIntegralOperators(
     m_argumentLocalCoefficients(argumentLocalCoefficients),
     m_openClHandler(openClHandler), m_quadratureOptions(quadratureOptions)
 {
-    const int elementCount = rawGeometry->elementCount();
+    const size_t elementCount = rawGeometry->elementCount();
     if (!rawGeometry->auxData().is_empty() &&
             rawGeometry->auxData().n_cols != elementCount)
         throw std::invalid_argument(
@@ -82,7 +84,7 @@ ResultType, GeometryFactory>::evaluate(
         Region region,
         const arma::Mat<CoordinateType>& points, arma::Mat<ResultType>& result) const
 {
-    const int pointCount = points.n_cols;
+    const size_t pointCount = points.n_cols;
     const int outputComponentCount = m_integral->resultDimension();
 
     result.set_size(outputComponentCount, pointCount);
@@ -99,12 +101,12 @@ ResultType, GeometryFactory>::evaluate(
 
     // Do things in chunks of 96 points -- in order to avoid creating
     // too large arrays of kernel values
-    const int chunkSize = 96;
+    const size_t chunkSize = 96;
     CollectionOf4dArrays<KernelType> kernelValues;
     GeometricalData<CoordinateType> evalPointGeomData;
-    for (int start = 0; start < pointCount; start += chunkSize)
+    for (size_t start = 0; start < pointCount; start += chunkSize)
     {
-        int end = std::min(start + chunkSize, pointCount);
+        size_t end = std::min(start + chunkSize, pointCount);
         evalPointGeomData.globals = points.cols(start, end - 1 /* inclusive */);
         m_kernels->evaluateOnGrid(evalPointGeomData, trialGeomData, kernelValues);
         // View into the current chunk of the "result" array
@@ -122,7 +124,7 @@ template <typename BasisFunctionType, typename KernelType,
 void StandardEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
 ResultType, GeometryFactory>::cacheTrialData()
 {
-    int testGeomDeps = 0, trialGeomDeps = 0;
+    size_t testGeomDeps = 0, trialGeomDeps = 0;
     m_kernels->addGeometricalDependencies(testGeomDeps, trialGeomDeps);
     if (testGeomDeps != 0 && testGeomDeps != GLOBALS)
         throw std::runtime_error(
@@ -154,10 +156,10 @@ ResultType, GeometryFactory>::calcTrialData(
     const int transformationCount = m_trialTransformations->transformationCount();
 
     // Find out which basis data need to be calculated
-    int basisDeps = 0;
+    size_t basisDeps = 0;
     // Find out which geometrical data need to be calculated, in addition
     // to those needed by the kernel
-    int trialGeomDeps = kernelTrialGeomDeps;
+    size_t trialGeomDeps = kernelTrialGeomDeps;
     m_trialTransformations->addDependencies(basisDeps, trialGeomDeps);
     trialGeomDeps |= INTEGRATION_ELEMENTS;
 
@@ -229,9 +231,9 @@ ResultType, GeometryFactory>::calcTrialData(
             if (basisDeps & VALUES)
             {
                 argumentData.values.fill(0.);
-                for (int point = 0; point < basisData.values.n_slices; ++point)
-                    for (int dim = 0; dim < basisData.values.n_rows; ++dim)
-                        for (int fun = 0; fun < basisData.values.n_cols; ++fun)
+                for (size_t point = 0; point < basisData.values.n_slices; ++point)
+                    for (size_t dim = 0; dim < basisData.values.n_rows; ++dim)
+                        for (size_t fun = 0; fun < basisData.values.n_cols; ++fun)
                             argumentData.values(dim, 0, point) +=
                                     basisData.values(dim, fun, point) *
                                     localCoefficients[fun];
@@ -240,10 +242,10 @@ ResultType, GeometryFactory>::calcTrialData(
             {
                 std::fill(argumentData.derivatives.begin(),
                           argumentData.derivatives.end(), 0.);
-                for (int point = 0; point < basisData.derivatives.extent(3); ++point)
-                    for (int dim = 0; dim < basisData.derivatives.extent(1); ++dim)
-                        for (int comp = 0; comp < basisData.derivatives.extent(0); ++comp)
-                            for (int fun = 0; fun < basisData.derivatives.extent(2); ++fun)
+                for (size_t point = 0; point < basisData.derivatives.extent(3); ++point)
+                    for (size_t dim = 0; dim < basisData.derivatives.extent(1); ++dim)
+                        for (size_t comp = 0; comp < basisData.derivatives.extent(0); ++comp)
+                            for (size_t fun = 0; fun < basisData.derivatives.extent(2); ++fun)
                                 argumentData.derivatives(comp, dim, 0, point) +=
                                     basisData.derivatives(comp, dim, fun, point) *
                                     localCoefficients[fun];
@@ -260,12 +262,12 @@ ResultType, GeometryFactory>::calcTrialData(
             weightedTrialTransfValuesPerElement[e].set_size(transformationCount);
             for (int transf = 0; transf < transformationCount; ++transf)
             {
-                const int dimCount = trialValues[transf].extent(0);
-                const int quadPointCount = trialValues[transf].extent(2);
+                const size_t dimCount = trialValues[transf].extent(0);
+                const size_t quadPointCount = trialValues[transf].extent(2);
                 weightedTrialTransfValuesPerElement[e][transf].set_size(
                             dimCount, quadPointCount);
-                for (int point = 0; point < quadPointCount; ++point)
-                    for (int dim = 0; dim < dimCount; ++dim)
+                for (size_t point = 0; point < quadPointCount; ++point)
+                    for (size_t dim = 0; dim < dimCount; ++dim)
                         weightedTrialTransfValuesPerElement[e][transf](dim, point) =
                                 trialValues[transf](dim, 0, point) *
                                 geomDataPerElement[e].integrationElements(point) *
@@ -319,8 +321,8 @@ ResultType, GeometryFactory>::calcTrialData(
             trialGeomData.jacobianInversesTransposed.slices(startCol, endCol) =
                     geomDataPerElement[e].jacobianInversesTransposed;
         for (int transf = 0; transf < transformationCount; ++transf)
-            for (int point = 0; point < weightedTrialTransfValuesPerElement[e][transf].extent(1); ++point)
-                for (int dim = 0; dim < weightedTrialTransfValuesPerElement[e][transf].extent(0); ++dim)
+            for (size_t point = 0; point < weightedTrialTransfValuesPerElement[e][transf].extent(1); ++point)
+                for (size_t dim = 0; dim < weightedTrialTransfValuesPerElement[e][transf].extent(0); ++dim)
                     weightedTrialTransfValues[transf](dim, startCol + point) =
                             weightedTrialTransfValuesPerElement[e][transf](dim, point);
     }

@@ -21,7 +21,9 @@
 #ifndef bempp_grid_factory_hpp
 #define bempp_grid_factory_hpp
 
-#include <armadillo>
+#include "../common/common.hpp"
+
+#include "../common/armadillo_fwd.hpp"
 #include <memory>
 
 namespace Bempp
@@ -118,8 +120,8 @@ public:
     */
     static std::auto_ptr<Grid> importGmshGrid(const GridParameters& params,
             const std::string& fileName,
-            std::vector<int>& boundaryId2PhysicalEntity,
-            std::vector<int>& elementIndex2PhysicalEntity,
+            std::vector<int> &boundaryId2PhysicalEntity,
+            std::vector<int> &elementIndex2PhysicalEntity,
             bool verbose=true, bool insertBoundarySegments=false);
 };
 

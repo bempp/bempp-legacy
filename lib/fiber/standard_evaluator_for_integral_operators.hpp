@@ -21,11 +21,13 @@
 #ifndef fiber_standard_evaluator_for_integral_operators_hpp
 #define fiber_standard_evaluator_for_integral_operators_hpp
 
+#include "../common/common.hpp"
+
 #include "evaluator_for_integral_operators.hpp"
 
 #include "collection_of_2d_arrays.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 #include <vector>
 
 namespace Fiber

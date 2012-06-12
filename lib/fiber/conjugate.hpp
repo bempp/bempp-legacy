@@ -21,6 +21,9 @@
 #ifndef fiber_conjugate_hpp
 #define fiber_conjugate_hpp
 
+#include "../common/common.hpp"
+
+
 #include <complex>
 
 namespace Fiber

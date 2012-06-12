@@ -21,6 +21,8 @@
 // Keep IDEs happy
 #include "standard_local_assembler_for_grid_functions_on_surfaces.hpp"
 
+#include "../common/common.hpp"
+
 #include "numerical_test_function_integrator.hpp"
 
 #include <set>
@@ -58,7 +60,7 @@ StandardLocalAssemblerForGridFunctionsOnSurfaces(
                 "StandardLocalAssemblerForGridFunctionsOnSurfaces::"
                 "StandardLocalAssemblerForGridFunctionsOnSurfaces(): "
                 "all elements must be triangular or quadrilateral");
-    const int elementCount = rawGeometry->elementCornerIndices().n_cols;
+    const size_t elementCount = rawGeometry->elementCornerIndices().n_cols;
     if (!rawGeometry->auxData().is_empty() &&
             rawGeometry->auxData().n_cols != elementCount)
         throw std::invalid_argument(

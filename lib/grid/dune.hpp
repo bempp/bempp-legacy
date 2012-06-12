@@ -21,6 +21,8 @@
 #ifndef bempp_dune_hpp
 #define bempp_dune_hpp
 
+#include "../common/common.hpp"
+
 #include "config_alugrid.hpp"
 
 #include <memory>

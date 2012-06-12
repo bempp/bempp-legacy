@@ -28,6 +28,7 @@
 using namespace Bempp;
 typedef double ctype;
 
+
 BOOST_FIXTURE_TEST_SUITE(Geometry_Triangular, TriangularEntityManager)
 
 // type()
@@ -84,7 +85,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(cornerCount_agrees_with_Dune_for_codim,
     const Geometry& geo = ep->entity().geometry();
     const typename DuneGrid::Codim<codim>::Entity::Geometry& duneGeo = duneEp->geometry();
 
-    BOOST_CHECK_EQUAL(geo.cornerCount(), duneGeo.corners());
+    BOOST_CHECK_EQUAL((int)geo.cornerCount(), duneGeo.corners());
 }
 
 // corners()
@@ -408,7 +409,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(integrationElement_agrees_with_Dune_for_one_po
                                   T, list_0_to_2)
 {
     const int codim = T::value;
-    const int dimGlobal = DuneGrid::dimensionworld;
+    //const int dimGlobal = DuneGrid::dimensionworld;
     const int dimLocal = DuneGrid::dimension - codim;
 
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
@@ -434,7 +435,7 @@ template <int codim>
 static void integrationElement_agrees_with_Dune_for_nth_of_several_points_and_uninitialised_output_and_codim(
     BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
 {
-    const int dimGlobal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimensionworld;
+    //const int dimGlobal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimensionworld;
     const int dimLocal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimension - codim;
     const int nPoints = 5;
 
@@ -483,7 +484,7 @@ template <int codim>
 static void integrationElement_agrees_with_Dune_for_nth_of_several_points_and_initialised_output_and_codim(
     BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
 {
-    const int dimGlobal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimensionworld;
+    //const int dimGlobal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimensionworld;
     const int dimLocal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimension - codim;
     const int nPoints = 5;
 
@@ -580,7 +581,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianTransposed_agrees_with_Dune_for_one_po
                                   T, list_0_to_2)
 {
     const int codim = T::value;
-    const int dimGlobal = DuneGrid::dimensionworld;
+    //const int dimGlobal = DuneGrid::dimensionworld;
     const int dimLocal = DuneGrid::dimension - codim;
 
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
@@ -612,7 +613,7 @@ template <int codim>
 static void jacobianTransposed_agrees_with_Dune_for_nth_of_several_points_and_uninitialised_output_and_codim(
     BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
 {
-    const int dimGlobal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimensionworld;
+    //const int dimGlobal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimensionworld;
     const int dimLocal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimension - codim;
     const int nPoints = 5;
 
@@ -665,7 +666,7 @@ template <int codim>
 static void jacobianTransposed_agrees_with_Dune_for_nth_of_several_points_and_initialised_output_and_codim(
     BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
 {
-    const int dimGlobal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimensionworld;
+    //const int dimGlobal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimensionworld;
     const int dimLocal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimension - codim;
     const int nPoints = 5;
 
@@ -718,11 +719,12 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianTransposed_agrees_with_Dune_for_last_o
 // ____________________________________________________________________________
 // jacobianInverseTransposed()
 
+
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianInverseTransposed_agrees_with_Dune_for_one_point_and_uninitialised_output_and_codim,
                                   T, list_0_to_2)
 {
     const int codim = T::value;
-    const int dimGlobal = DuneGrid::dimensionworld;
+    //const int dimGlobal = DuneGrid::dimensionworld;
     const int dimLocal = DuneGrid::dimension - codim;
 
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
@@ -753,7 +755,7 @@ template <int codim>
 static void jacobianInverseTransposed_agrees_with_Dune_for_nth_of_several_points_and_uninitialised_output_and_codim(
     BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
 {
-    const int dimGlobal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimensionworld;
+    //const int dimGlobal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimensionworld;
     const int dimLocal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimension - codim;
     const int nPoints = 5;
 
@@ -806,7 +808,7 @@ template <int codim>
 static void jacobianInverseTransposed_agrees_with_Dune_for_nth_of_several_points_and_initialised_output_and_codim(
     BOOST_AUTO_TEST_CASE_FIXTURE& f, int nTestedPoint)
 {
-    const int dimGlobal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimensionworld;
+    //const int dimGlobal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimensionworld;
     const int dimLocal = BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::dimension - codim;
     const int nPoints = 5;
 
@@ -857,3 +859,4 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianInverseTransposed_agrees_with_Dune_for
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+

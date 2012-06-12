@@ -32,14 +32,14 @@ inline CollectionOf3dArrays<T>::CollectionOf3dArrays() :
 }
 
 template <typename T>
-inline CollectionOf3dArrays<T>::CollectionOf3dArrays(int size) :
+inline CollectionOf3dArrays<T>::CollectionOf3dArrays(size_t size) :
     m_size(size), m_arrays(new _3dArray<T>[size])
 {
     // should we initialise to 0?
 }
 
 template <typename T>
-inline void CollectionOf3dArrays<T>::set_size(int new_size)
+inline void CollectionOf3dArrays<T>::set_size(size_t new_size)
 {
     if (new_size == m_size)
         return;
@@ -48,7 +48,7 @@ inline void CollectionOf3dArrays<T>::set_size(int new_size)
 }
 
 template <typename T>
-inline int CollectionOf3dArrays<T>::size() const
+inline size_t CollectionOf3dArrays<T>::size() const
 {
     return m_size;
 }
@@ -56,50 +56,50 @@ inline int CollectionOf3dArrays<T>::size() const
 template <typename T>
 inline void CollectionOf3dArrays<T>::fill(const T& value)
 {
-    for (int a = 0; a < m_size; ++a)
+    for (size_t a = 0; a < m_size; ++a)
         std::fill((*this)[a].begin(), (*this)[a].end(), value);
 }
 
 template <typename T>
-inline _3dArray<T>& CollectionOf3dArrays<T>::operator[](int index)
+inline _3dArray<T>& CollectionOf3dArrays<T>::operator[](size_t index)
 {
     return array(index);
 }
 
 template <typename T>
-inline const _3dArray<T>& CollectionOf3dArrays<T>::operator[](int index) const
+inline const _3dArray<T>& CollectionOf3dArrays<T>::operator[](size_t index) const
 {
     return array(index);
 }
 
 template <typename T>
-inline CollectionOf2dSlicesOf3dArrays<T> CollectionOf3dArrays<T>::slice(int index2)
+inline CollectionOf2dSlicesOf3dArrays<T> CollectionOf3dArrays<T>::slice(size_t index2)
 {
     return CollectionOf2dSlicesOf3dArrays<T>(*this, index2);
 }
 
 template <typename T>
 inline CollectionOf2dSlicesOfConst3dArrays<T> CollectionOf3dArrays<T>::const_slice(
-        int index2) const
+        size_t index2) const
 {
     return CollectionOf2dSlicesOfConst3dArrays<T>(*this, index2);
 }
 
 template <typename T>
-inline CollectionOf1dSlicesOf3dArrays<T> CollectionOf3dArrays<T>::slice(int index1, int index2)
+inline CollectionOf1dSlicesOf3dArrays<T> CollectionOf3dArrays<T>::slice(size_t index1, size_t index2)
 {
     return CollectionOf1dSlicesOf3dArrays<T>(*this, index1, index2);
 }
 
 template <typename T>
 inline CollectionOf1dSlicesOfConst3dArrays<T> CollectionOf3dArrays<T>::const_slice(
-        int index1, int index2) const
+        size_t index1, size_t index2) const
 {
     return CollectionOf1dSlicesOfConst3dArrays<T>(*this, index1, index2);
 }
 
 template <typename T>
-inline _3dArray<T>& CollectionOf3dArrays<T>::array(int i)
+inline _3dArray<T>& CollectionOf3dArrays<T>::array(size_t i)
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_array_index(i);
@@ -108,7 +108,7 @@ inline _3dArray<T>& CollectionOf3dArrays<T>::array(int i)
 }
 
 template <typename T>
-inline const _3dArray<T>& CollectionOf3dArrays<T>::array(int i) const
+inline const _3dArray<T>& CollectionOf3dArrays<T>::array(size_t i) const
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_array_index(i);
@@ -117,7 +117,7 @@ inline const _3dArray<T>& CollectionOf3dArrays<T>::array(int i) const
 }
 
 template <typename T>
-inline void CollectionOf3dArrays<T>::check_array_index(int array_index) const
+inline void CollectionOf3dArrays<T>::check_array_index(size_t array_index) const
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     if (array_index < 0 || m_size <= array_index)
@@ -129,7 +129,7 @@ inline void CollectionOf3dArrays<T>::check_array_index(int array_index) const
 
 template <typename T>
 inline CollectionOf2dSlicesOf3dArrays<T>::
-CollectionOf2dSlicesOf3dArrays(CollectionOf3dArrays<T>& collection, int index2) :
+CollectionOf2dSlicesOf3dArrays(CollectionOf3dArrays<T>& collection, size_t index2) :
     m_collection(collection), m_index2(index2)
 {}
 
@@ -141,18 +141,18 @@ self() {
 
 template <typename T>
 inline _2dSliceOfConst3dArray<T> CollectionOf2dSlicesOf3dArrays<T>::
-operator[](int index) const {
+operator[](size_t index) const {
     return _2dSliceOfConst3dArray<T>(m_collection[index], m_index2);
 }
 
 template <typename T>
 inline _2dSliceOf3dArray<T> CollectionOf2dSlicesOf3dArrays<T>::
-operator[](int index) {
+operator[](size_t index) {
     return _2dSliceOf3dArray<T>(m_collection[index], m_index2);
 }
 
 template <typename T>
-inline int CollectionOf2dSlicesOf3dArrays<T>::size() const {
+inline size_t CollectionOf2dSlicesOf3dArrays<T>::size() const {
     return m_collection.size();
 }
 
@@ -161,18 +161,18 @@ inline int CollectionOf2dSlicesOf3dArrays<T>::size() const {
 template <typename T>
 inline CollectionOf2dSlicesOfConst3dArrays<T>::
 CollectionOf2dSlicesOfConst3dArrays(const CollectionOf3dArrays<T>& collection,
-                                    int index2) :
+                                    size_t index2) :
         m_collection(collection), m_index2(index2)
 {}
 
 template <typename T>
 inline _2dSliceOfConst3dArray<T> CollectionOf2dSlicesOfConst3dArrays<T>::
-operator[](int index) const {
+operator[](size_t index) const {
     return _2dSliceOfConst3dArray<T>(m_collection[index], m_index2);
 }
 
 template <typename T>
-inline int CollectionOf2dSlicesOfConst3dArrays<T>::size() const {
+inline size_t CollectionOf2dSlicesOfConst3dArrays<T>::size() const {
     return m_collection.size();
 }
 
@@ -181,7 +181,7 @@ inline int CollectionOf2dSlicesOfConst3dArrays<T>::size() const {
 template <typename T>
 inline CollectionOf1dSlicesOf3dArrays<T>::
 CollectionOf1dSlicesOf3dArrays(CollectionOf3dArrays<T>& collection,
-                               int index1, int index2) :
+                               size_t index1, size_t index2) :
     m_collection(collection), m_index1(index1), m_index2(index2)
 {}
 
@@ -193,18 +193,18 @@ self() {
 
 template <typename T>
 inline _1dSliceOfConst3dArray<T> CollectionOf1dSlicesOf3dArrays<T>::
-operator[](int index) const {
+operator[](size_t index) const {
     return _1dSliceOfConst3dArray<T>(m_collection[index], m_index1, m_index2);
 }
 
 template <typename T>
 inline _1dSliceOf3dArray<T> CollectionOf1dSlicesOf3dArrays<T>::
-operator[](int index) {
+operator[](size_t index) {
     return _1dSliceOf3dArray<T>(m_collection[index], m_index1, m_index2);
 }
 
 template <typename T>
-inline int CollectionOf1dSlicesOf3dArrays<T>::size() const {
+inline size_t CollectionOf1dSlicesOf3dArrays<T>::size() const {
     return m_collection.size();
 }
 
@@ -213,18 +213,18 @@ inline int CollectionOf1dSlicesOf3dArrays<T>::size() const {
 template <typename T>
 inline CollectionOf1dSlicesOfConst3dArrays<T>::
 CollectionOf1dSlicesOfConst3dArrays(const CollectionOf3dArrays<T>& collection,
-                                    int index1, int index2) :
+                                    size_t index1, size_t index2) :
         m_collection(collection), m_index1(index1), m_index2(index2)
 {}
 
 template <typename T>
 inline _1dSliceOfConst3dArray<T> CollectionOf1dSlicesOfConst3dArrays<T>::
-operator[](int index) const {
+operator[](size_t index) const {
     return _1dSliceOfConst3dArray<T>(m_collection[index], m_index1, m_index2);
 }
 
 template <typename T>
-inline int CollectionOf1dSlicesOfConst3dArrays<T>::size() const {
+inline size_t CollectionOf1dSlicesOfConst3dArrays<T>::size() const {
     return m_collection.size();
 }
 

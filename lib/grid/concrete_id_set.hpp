@@ -21,6 +21,8 @@
 #ifndef bempp_concrete_id_set_hpp
 #define bempp_concrete_id_set_hpp
 
+#include "../common/common.hpp"
+
 #include "id_set.hpp"
 #include "concrete_entity.hpp"
 
@@ -68,7 +70,7 @@ public:
         return entityCodimNId(e);
     }
 
-    virtual IdType subEntityId(const Entity<0>& e, int i, unsigned int codimSub) const {
+    virtual IdType subEntityId(const Entity<0>& e, size_t i, int codimSub) const {
 #ifndef NDEBUG
         // Prevent an assert in FoamGrid from crashing the Python interpreter
         if (codimSub > DuneGrid::dimension)

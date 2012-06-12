@@ -22,6 +22,8 @@
 #ifndef bempp_aca_approximate_lu_inverse_hpp
 #define bempp_aca_approximate_lu_inverse_hpp
 
+#include "../common/common.hpp"
+
 #include "config_trilinos.hpp"
 #include "discrete_linear_operator.hpp"
 

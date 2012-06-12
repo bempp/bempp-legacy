@@ -20,7 +20,10 @@
 #ifndef bempp_armadillo_helpers_hpp
 #define bempp_armadillo_helpers_hpp
 
-#include <armadillo>
+#include "../common/common.hpp"
+
+
+#include "../common/armadillo_fwd.hpp"
 #include <dune/common/fvector.hh>
 
 // Internal implementations for general Armadillo objects

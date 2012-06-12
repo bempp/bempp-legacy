@@ -22,6 +22,8 @@
 #ifndef bempp_aca_global_assembler_hpp
 #define bempp_aca_global_assembler_hpp
 
+#include "../common/common.hpp"
+
 #include "../fiber/scalar_traits.hpp"
 
 #include <memory>

@@ -69,7 +69,7 @@ int InterpolatedFunction<ValueType>::codomainDimension() const
 }
 
 template <typename ValueType>
-void InterpolatedFunction<ValueType>::addGeometricalDependencies(int& geomDeps) const
+void InterpolatedFunction<ValueType>::addGeometricalDependencies(size_t& geomDeps) const
 {
     geomDeps |= Fiber::GLOBALS;
 }
@@ -79,10 +79,10 @@ void InterpolatedFunction<ValueType>::evaluate(
         const Fiber::GeometricalData<CoordinateType>& geomData,
         arma::Mat<ValueType>& result) const
 {
-    const arma::Mat<CoordinateType>& points = geomData.globals;
 
 #ifndef NDEBUG
-    if (points.n_rows != worldDimension())
+    const arma::Mat<CoordinateType>& points = geomData.globals;
+    if ((int)points.n_rows != worldDimension())
         throw std::invalid_argument("InterpolatedFunction::evaluate(): "
                                     "incompatible world dimension");
 #endif

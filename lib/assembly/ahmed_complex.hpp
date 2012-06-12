@@ -21,6 +21,8 @@
 #ifndef bempp_ahmed_complex_hpp
 #define bempp_ahmed_complex_hpp
 
+#include "../common/common.hpp"
+
 /** \file Ahmed's complex numbers */
 #include <cmplx.h>
 

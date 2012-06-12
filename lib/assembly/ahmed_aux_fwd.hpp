@@ -22,6 +22,8 @@
 #ifndef bempp_ahmed_aux_fwd_hpp
 #define bempp_ahmed_aux_fwd_hpp
 
+#include "../common/common.hpp"
+
 #include "config_ahmed.hpp"
 
 template <class T1, class T2> class bemblcluster;

@@ -21,6 +21,8 @@
 #ifndef bempp_structured_grid_factory_hpp
 #define bempp_structured_grid_factory_hpp
 
+#include "../common/common.hpp"
+
 /** \file
     \brief A class to construct structured cube and simplex grids using the grid factory
 */
@@ -62,15 +64,15 @@ class BemppStructuredGridFactory
     /** \brief dim-dimensional multi-index.  The range for each component can be set individually
     */
     class MultiIndex
-        : public array<unsigned int,dim>
+        : public array<int,dim>
     {
 
         // The range of each component
-        array<unsigned int,dim> limits_;
+        array<int,dim> limits_;
 
     public:
         /** \brief Constructor with a given range for each digit */
-        MultiIndex(const array<unsigned int,dim>& limits)
+        MultiIndex(const array<int,dim>& limits)
             : limits_(limits) {
             std::fill(this->begin(), this->end(), 0);
         }
@@ -94,8 +96,8 @@ class BemppStructuredGridFactory
         }
 
         /** \brief Compute how many times you can call operator++ before getting to (0,...,0) again */
-        size_t cycle() const {
-            size_t result = 1;
+        int cycle() const {
+            int result = 1;
             for (int i=0; i<dim; i++)
                 result *= limits_[i];
             return result;
@@ -107,7 +109,7 @@ class BemppStructuredGridFactory
     static void insertVertices(GridFactory<GridType>& factory,
                                const FieldVector<ctype,dim>& lowerLeft,
                                const FieldVector<ctype,dim>& upperRight,
-                               const array<unsigned int,dim>& vertices) {
+                               const array<int,dim>& vertices) {
 
         // Pad lowerLeft and upperRight with zeros to dimworld dimensions
         FieldVector<ctype,dimworld> fullLowerLeft(0.);
@@ -138,8 +140,8 @@ class BemppStructuredGridFactory
 
     // Compute the index offsets needed to move to the adjacent vertices
     // in the different coordinate directions
-    static array<unsigned int, dim> computeUnitOffsets(const array<unsigned int,dim>& vertices) {
-        array<unsigned int, dim> unitOffsets;
+    static array<int, dim> computeUnitOffsets(const array<int,dim>& vertices) {
+        array<int, dim> unitOffsets;
         if (dim>0)  // paranoia
             unitOffsets[0] = 1;
 
@@ -158,14 +160,14 @@ public:
     */
     static std::auto_ptr<GridType> createCubeGrid(const FieldVector<ctype,dim>& lowerLeft,
             const FieldVector<ctype,dim>& upperRight,
-            const array<unsigned int,dim>& elements) {
+            const array<int,dim>& elements) {
         // The grid factory
         GridFactory<GridType> factory;
 
         if (MPIHelper::getCollectiveCommunication().rank() == 0) {
             // Insert uniformly spaced vertices
-            array<unsigned int,dim> vertices = elements;
-            for( size_t i = 0; i < vertices.size(); ++i )
+            array<int,dim> vertices = elements;
+            for( int i = 0; i < vertices.size(); ++i )
                 vertices[i]++;
 
             // Insert vertices for structured grid into the factory
@@ -173,16 +175,16 @@ public:
 
             // Compute the index offsets needed to move to the adjacent
             // vertices in the different coordinate directions
-            array<unsigned int, dim> unitOffsets =
+            array<int, dim> unitOffsets =
                 computeUnitOffsets(vertices);
 
             // Compute an element template (the cube at (0,...,0).  All
             // other cubes are constructed by moving this template around
-            unsigned int nCorners = 1<<dim;
+            int nCorners = 1<<dim;
 
-            std::vector<unsigned int> cornersTemplate(nCorners,0);
+            std::vector<int> cornersTemplate(nCorners,0);
 
-            for (size_t i=0; i<nCorners; i++)
+            for (int i=0; i<nCorners; i++)
                 for (int j=0; j<dim; j++)
                     if ( i & (1<<j) )
                         cornersTemplate[i] += unitOffsets[j];
@@ -196,12 +198,12 @@ public:
             for (int i=0; i<numElements; i++, ++index) {
 
                 // 'base' is the index of the lower left element corner
-                unsigned int base = 0;
+                int base = 0;
                 for (int j=0; j<dim; j++)
                     base += index[j] * unitOffsets[j];
 
                 // insert new element
-                std::vector<unsigned int> corners = cornersTemplate;
+                std::vector<int> corners = cornersTemplate;
                 for (size_t j=0; j<corners.size(); j++)
                     corners[j] += base;
 
@@ -225,13 +227,13 @@ public:
     */
     static std::auto_ptr<GridType> createSimplexGrid(const FieldVector<ctype,dim>& lowerLeft,
             const FieldVector<ctype,dim>& upperRight,
-            const array<unsigned int,dim>& elements) {
+            const array<int,dim>& elements) {
         // The grid factory
         GridFactory<GridType> factory;
 
         if(MPIHelper::getCollectiveCommunication().rank() == 0) {
             // Insert uniformly spaced vertices
-            array<unsigned int,dim> vertices = elements;
+            array<int,dim> vertices = elements;
             for (std::size_t i=0; i<vertices.size(); i++)
                 vertices[i]++;
 
@@ -239,21 +241,21 @@ public:
 
             // Compute the index offsets needed to move to the adjacent
             // vertices in the different coordinate directions
-            array<unsigned int, dim> unitOffsets =
+            array<int, dim> unitOffsets =
                 computeUnitOffsets(vertices);
 
             // Insert the elements
-            std::vector<unsigned int> corners(dim+1);
+            std::vector<int> corners(dim+1);
 
             // Loop over all "cubes", and split up each cube into dim!
             // (factorial) simplices
             MultiIndex elementsIndex(elements);
-            size_t cycle = elementsIndex.cycle();
+            int cycle = elementsIndex.cycle();
 
-            for (size_t i=0; i<cycle; ++elementsIndex, i++) {
+            for (int i=0; i<cycle; ++elementsIndex, i++) {
 
                 // 'base' is the index of the lower left element corner
-                unsigned int base = 0;
+                int base = 0;
                 for (int j=0; j<dim; j++)
                     base += elementsIndex[j] * unitOffsets[j];
 
@@ -318,7 +320,7 @@ public:
     static std::auto_ptr<GridType>
     createCubeGrid(const FieldVector<ctype,dimworld>& lowerLeft,
                    const FieldVector<ctype,dimworld>& upperRight,
-                   const array<unsigned int,dim>& elements) {
+                   const array<int,dim>& elements) {
         for(int d = 0; d < dimworld; ++d)
             if(std::abs(lowerLeft[d]) > std::abs(upperRight[d])*1e-10)
                 DUNE_THROW(GridError, className<BemppStructuredGridFactory>()
@@ -341,7 +343,7 @@ public:
     static std::auto_ptr<GridType>
     createSimplexGrid(const FieldVector<ctype,dimworld>& lowerLeft,
                       const FieldVector<ctype,dimworld>& upperRight,
-                      const array<unsigned int,dim>& elements) {
+                      const array<int,dim>& elements) {
         DUNE_THROW(GridError, className<BemppStructuredGridFactory>()
                    << "::createSimplexGrid(): Simplices are not supported "
                    "by YaspGrid.");

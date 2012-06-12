@@ -53,7 +53,7 @@ std::auto_ptr<SimpleTriangularGridManager::DuneGrid> SimpleTriangularGridManager
     duneLowerLeft[0] = duneLowerLeft[1] = 0;
     Dune::FieldVector<SimpleTriangularGridManager::DuneGrid::ctype,dimGrid> duneUpperRight;
     duneUpperRight[0] = duneUpperRight[1] = 1;
-    Dune::array<unsigned int,dimGrid> duneNElements;
+    Dune::array<int,dimGrid> duneNElements;
     duneNElements[0] = N_ELEMENTS_X;
     duneNElements[1] = N_ELEMENTS_Y;
 

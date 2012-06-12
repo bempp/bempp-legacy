@@ -50,7 +50,7 @@ public:
     }
 
     virtual void addGeometricalDependencies(
-            int& testGeomDeps, int& trialGeomDeps) const;
+            size_t& testGeomDeps, size_t& trialGeomDeps) const;
 
     virtual void evaluateAtPointPairs(
             const GeometricalData<CoordinateType>& testGeomData,

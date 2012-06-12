@@ -21,6 +21,8 @@
 #ifndef fiber_standard_local_assembler_for_grid_functions_on_surfaces_hpp
 #define fiber_standard_local_assembler_for_grid_functions_on_surfaces_hpp
 
+#include "../common/common.hpp"
+
 #include "local_assembler_for_grid_functions.hpp"
 #include "test_function_integrator.hpp"
 #include "scalar_traits.hpp"
@@ -84,5 +86,7 @@ private:
 };
 
 } // namespace Fiber
+
+#include "standard_local_assembler_for_grid_functions_on_surfaces_imp.hpp"
 
 #endif

@@ -21,6 +21,8 @@
 #ifndef bempp_concrete_grid_hpp
 #define bempp_concrete_grid_hpp
 
+#include "../common/common.hpp"
+
 #include "grid.hpp"
 #include "concrete_entity.hpp"
 #include "concrete_geometry_factory.hpp"
@@ -110,7 +112,7 @@ public:
     @name Views
     @{ */
 
-    virtual std::auto_ptr<GridView> levelView(int level) const {
+    virtual std::auto_ptr<GridView> levelView(size_t level) const {
         return std::auto_ptr<GridView>(new ConcreteGridView<typename DuneGrid::LevelGridView>(
                                            m_dune_grid->levelView(level)));
     }
