@@ -76,7 +76,7 @@ public:
         return entityCodimNIndex(e);
     }
 
-    virtual IndexType subEntityIndex(const Entity<0>& e, size_t i, size_t codimSub) const {
+    virtual IndexType subEntityIndex(const Entity<0>& e, size_t i, int codimSub) const {
         // Prevent an assert in FoamGrid from crashing the Python interpreter
         if (codimSub > DuneGridView::Grid::dimension)
             throw std::invalid_argument("IndexSet::subEntityIndex(): codimSub exceeds grid dimension");
@@ -87,13 +87,13 @@ public:
     }
 
 private:
-    template <size_t codim>
+    template <int codim>
     typename boost::disable_if_c<codim <= DuneGridView::dimension, IndexType>::type
     entityCodimNIndex(const Entity<codim>& e) const {
         throw std::logic_error("IndexSet::entityIndex(): invalid entity codimension");
     }
 
-    template <size_t codim>
+    template <int codim>
     typename boost::enable_if_c<codim <= DuneGridView::dimension, IndexType>::type
     entityCodimNIndex(const Entity<codim>& e) const {
         typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;

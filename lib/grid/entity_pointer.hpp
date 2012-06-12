@@ -26,7 +26,7 @@ namespace Bempp
 {
 
 // Forward declarations
-template<size_t codim> class Entity;
+template<int codim> class Entity;
 
 /**
  \brief Abstract base class for an object providing read-only access to an
@@ -36,7 +36,7 @@ template<size_t codim> class Entity;
  entity() method must know the codimension of the entity to which it returns
  a reference.
  */
-template<size_t codim>
+template<int codim>
 class EntityPointer
 {
 public:

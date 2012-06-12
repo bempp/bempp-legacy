@@ -54,8 +54,8 @@ void ConcreteGridView<DuneGridView>::getRawElementDataImpl(
     typedef typename DuneGridView::IndexSet DuneIndexSet;
     const size_t dimGrid = DuneGrid::dimension;
     const size_t dimWorld = DuneGrid::dimensionworld;
-    const size_t codimVertex = dimGrid;
-    const size_t codimElement = 0;
+    const int codimVertex = dimGrid;
+    const int codimElement = 0;
     typedef Dune::LeafMultipleCodimMultipleGeomTypeMapper<DuneGrid,
             Dune::MCMGElementLayout> DuneElementMapper;
     typedef typename DuneGridView::template Codim<codimVertex>::Iterator

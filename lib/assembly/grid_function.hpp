@@ -52,7 +52,7 @@ namespace Bempp
 class AssemblyOptions;
 class GeometryFactory;
 class Grid;
-template <size_t codim> class Entity;
+template <int codim> class Entity;
 template <typename BasisFunctionType> class Space;
 
 template <typename BasisFunctionType, typename ResultType>

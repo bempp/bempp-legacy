@@ -29,7 +29,7 @@ namespace Bempp
 {
 
 // Forward declarations
-template<size_t codim> class Entity;
+template<int codim> class Entity;
 
 /** \brief Abstract wrapper of an id set. */
 class IdSet
@@ -56,7 +56,7 @@ public:
 
     /** \brief Id of \p i'th subentity of codimension \p codimSub of entity \p e of codimension 0.
      */
-    virtual IdType subEntityId(const Entity<0>& e, size_t i, size_t codimSub) const = 0;
+    virtual IdType subEntityId(const Entity<0>& e, size_t i, int codimSub) const = 0;
 };
 
 } // namespace Bempp

@@ -32,7 +32,7 @@ namespace Bempp
 {
 
 template<typename DuneEntity>
-template<size_t codimSub>
+template<int codimSub>
 inline typename boost::disable_if_c<(codimSub <= DuneEntity::dimension), std::auto_ptr<EntityIterator<codimSub> > >::type
 ConcreteEntity<0, DuneEntity>::subEntityCodimNIterator() const
 {
@@ -40,7 +40,7 @@ ConcreteEntity<0, DuneEntity>::subEntityCodimNIterator() const
 }
 
 template<typename DuneEntity>
-template<size_t codimSub>
+template<int codimSub>
 inline typename boost::enable_if_c<(codimSub <= DuneEntity::dimension), std::auto_ptr<EntityIterator<codimSub> > >::type
 ConcreteEntity<0, DuneEntity>::subEntityCodimNIterator() const
 {

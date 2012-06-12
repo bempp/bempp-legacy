@@ -26,7 +26,7 @@
 namespace Bempp
 {
 
-template <size_t codim> class Entity;
+template <int codim> class Entity;
 
 /** \brief Abstract mapper class.
 
@@ -67,7 +67,7 @@ public:
      entity \p e of codimension 0. */
 
     virtual size_t subEntityIndex(const Entity<0>& e, size_t i,
-                               size_t codimSub) const = 0;
+                               int codimSub) const = 0;
 };
 
 } // namespace Bempp

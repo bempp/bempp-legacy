@@ -33,7 +33,7 @@ namespace Bempp
 
 /** \brief Iterator over the subentities of codimension \p codimSub
     of a given Dune entity of type \p DuneEntity. */
-template<typename DuneEntity, size_t codimSub>
+template<typename DuneEntity, int codimSub>
 class ConcreteSubentityIterator: public EntityIterator<codimSub>
 {
     dune_static_assert(DuneEntity::codimension == 0,
@@ -89,7 +89,7 @@ public:
     }
 
     virtual std::auto_ptr<EntityPointer<ConcreteSubentityIterator::codimension> > frozen() const {
-        const size_t codim = ConcreteSubentityIterator::codimension;
+        const int codim = ConcreteSubentityIterator::codimension;
         return std::auto_ptr<EntityPointer<codim> >(
                     new ConcreteEntityPointer<DuneSubentityPointer>(m_subentity.duneEntity()));
     }

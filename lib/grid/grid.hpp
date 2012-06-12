@@ -29,7 +29,7 @@ namespace Bempp
 {
 
 // Forward declarations
-template<size_t codim> class Entity;
+template<int codim> class Entity;
 class GeometryFactory;
 class GridView;
 class IdSet;

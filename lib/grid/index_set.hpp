@@ -27,7 +27,7 @@ namespace Bempp
 {
 
 // Forward declarations
-template<size_t codim> class Entity;
+template<int codim> class Entity;
 
 /** \brief Abstract wrapper of an index set. */
 class IndexSet
@@ -69,7 +69,7 @@ public:
 
     /** \brief Index of \p i'th subentity of codimension \p codimSub of entity \p e of codimension 0.
      */
-    virtual IndexType subEntityIndex(const Entity<0>& e, size_t i, size_t codimSub) const = 0;
+    virtual IndexType subEntityIndex(const Entity<0>& e, size_t i, int codimSub) const = 0;
 };
 
 } // namespace Bempp

@@ -35,8 +35,8 @@ namespace Bempp
 {
 
 // Forward declarations
-template<size_t codim> class Entity;
-template<size_t codim> class EntityCache;
+template<int codim> class Entity;
+template<int codim> class EntityCache;
 class IndexSet;
 class Mapper;
 class ReverseElementMapper;
@@ -57,7 +57,7 @@ public:
     virtual const Mapper& elementMapper() const = 0;
 
     /** \brief Number of entities with codimension \p codim. */
-    virtual size_t entityCount(size_t codim) const = 0;
+    virtual size_t entityCount(int codim) const = 0;
 
     /** \brief Number of entities with geometry type \p type. */
     virtual size_t entityCount(const GeometryType &type) const = 0;
@@ -87,7 +87,7 @@ public:
     /** \brief Iterator over entities of codimension \p codim contained in this view. */
     // Default implementation; specialisations for potentially allowed codimensions follow
     // after class declaration.
-    template<size_t codim>
+    template<int codim>
     std::auto_ptr<EntityIterator<codim> > entityIterator() const {
         throw std::logic_error("GridView::entityIterator(): invalid entity codimension");
     }

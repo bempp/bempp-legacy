@@ -75,7 +75,7 @@ public:
     }
 
     virtual size_t subEntityIndex(const Entity<0>& e, size_t i,
-                               size_t codimSub) const {
+                               int codimSub) const {
         typedef typename DuneGridView::template Codim<0>::Entity DuneEntity;
         typedef ConcreteEntity<0, DuneEntity> ConcEntity;
         const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);

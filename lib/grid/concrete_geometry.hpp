@@ -91,7 +91,7 @@ private:
         m_owns_dune_geometry = owns;
     }
 
-    template<size_t codim, typename DuneEntity> friend class ConcreteEntity;
+    template<int codim, typename DuneEntity> friend class ConcreteEntity;
     friend class ConcreteGeometryFactory<DuneGeometry>;
 
 public:

@@ -36,11 +36,11 @@ namespace Bempp
 
 // Forward declarations
 class Geometry;
-template<size_t codim> class EntityPointer;
-template<size_t codim> class EntityIterator;
+template<int codim> class EntityPointer;
+template<int codim> class EntityIterator;
 
 /** \brief Abstract wrapper of an entity of codimension \p codim. */
-template<size_t codim>
+template<int codim>
 class Entity
 {
 public:
@@ -122,7 +122,7 @@ public:
      */
     // Default implementation, specialisations for potentially allowed
     // codimensions (1 to 3) follow after class declaration.
-    template<size_t codimSub> size_t subEntityCount() const {
+    template<int codimSub> size_t subEntityCount() const {
         return 0;
     }
 
@@ -131,7 +131,7 @@ public:
     \note codimSub must be greater than 0 and less than the dimension of the grid. */
     // Default implementation, specialisations for potentially allowed codimensions follow
     // after class declaration.
-    template<size_t codimSub>
+    template<int codimSub>
     std::auto_ptr<EntityIterator<codimSub> > subEntityIterator() const {
         throw std::logic_error("Entity::subEntityIterator(): invalid entity codimension");
     }

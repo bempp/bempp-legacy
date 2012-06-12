@@ -49,8 +49,8 @@ namespace Bempp
 {
 
 class Grid;
-template <size_t codim> class Entity;
-template <size_t codim> class EntityPointer;
+template <int codim> class Entity;
+template <int codim> class EntityPointer;
 
 template <typename ValueType> class MassMatrixContainer;
 

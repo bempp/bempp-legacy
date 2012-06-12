@@ -40,7 +40,7 @@ namespace Bempp
  derived from the traits of \p DuneEntity) because this class needs to be
  specialised for entities of codimension 0.
  */
-template<size_t codim, typename DuneEntity>
+template<int codim, typename DuneEntity>
 class ConcreteEntity: public Entity<codim>
 {
     dune_static_assert((int)DuneEntity::codimension == (int)Entity<codim>::codimension,
@@ -54,7 +54,7 @@ private:
 
     template<typename > friend class ConcreteEntityPointer;
     template<typename, typename> friend class ConcreteRangeEntityIterator;
-    template<typename, size_t> friend class ConcreteSubentityIterator;
+    template<typename, int> friend class ConcreteSubentityIterator;
 
     void setDuneEntity(const DuneEntity* dune_entity) {
         m_dune_entity = dune_entity;
@@ -109,7 +109,7 @@ private:
 
     template<typename > friend class ConcreteEntityPointer;
     template<typename, typename> friend class ConcreteRangeEntityIterator;
-    template<typename, size_t> friend class ConcreteSubentityIterator;
+    template<typename, int> friend class ConcreteSubentityIterator;
 
     void setDuneEntity(const DuneEntity* dune_entity) {
         m_dune_entity = dune_entity;
@@ -184,11 +184,11 @@ private:
     // these methods are implemented in entity.hpp (outside the declaration of
     // ConcreteEntity) because they need to know the full declaration of
     // concrete iterator (which may not be available at this stage)
-    template <size_t codimSub>
+    template <int codimSub>
     typename boost::disable_if_c<codimSub <= DuneEntity::dimension, std::auto_ptr<EntityIterator<codimSub> > >::type
     subEntityCodimNIterator() const;
 
-    template <size_t codimSub>
+    template <int codimSub>
     typename boost::enable_if_c<codimSub <= DuneEntity::dimension, std::auto_ptr<EntityIterator<codimSub> > >::type
     subEntityCodimNIterator() const;
 
@@ -202,13 +202,13 @@ private:
         return subEntityCodimNCount<3>();
     }
 
-    template <size_t codimSub>
+    template <int codimSub>
     typename boost::disable_if_c<codimSub <= DuneEntity::dimension, size_t>::type
     subEntityCodimNCount() const {
         return 0;
     }
 
-    template <size_t codimSub>
+    template <int codimSub>
     typename boost::enable_if_c<codimSub <= DuneEntity::dimension, size_t>::type
     subEntityCodimNCount() const {
         return m_dune_entity->template count<codimSub>();
