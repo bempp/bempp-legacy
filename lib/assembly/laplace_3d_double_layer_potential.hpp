@@ -67,6 +67,8 @@ public:
     CollectionOfBasisTransformations;
     typedef typename Base::CollectionOfKernels CollectionOfKernels;
     typedef typename Base::KernelTrialIntegral KernelTrialIntegral;
+
+    Laplace3dDoubleLayerPotential();
 };
 
 } // namespace Bempp

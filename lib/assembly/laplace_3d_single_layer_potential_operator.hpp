@@ -23,8 +23,6 @@
 
 #include "laplace_3d_operator_base.hpp"
 
-#include <boost/scoped_ptr.hpp>
-
 namespace Bempp
 {
 
@@ -72,9 +70,7 @@ public:
 
     Laplace3dSingleLayerPotentialOperator(
             const Space<BasisFunctionType>& testSpace,
-            const Space<BasisFunctionType>& trialSpace) :
-        Base(testSpace, trialSpace)
-    {}
+            const Space<BasisFunctionType>& trialSpace);
 };
 
 } // namespace Bempp

@@ -68,7 +68,7 @@ public:
     typedef typename Base::CollectionOfKernels CollectionOfKernels;
     typedef typename Base::KernelTrialIntegral KernelTrialIntegral;
 
-    Laplace3dSingleLayerPotential() {}
+    Laplace3dSingleLayerPotential();
 };
 
 } // namespace Bempp

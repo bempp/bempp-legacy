@@ -72,9 +72,7 @@ public:
 
     Laplace3dHypersingularOperator(
             const Space<BasisFunctionType>& testSpace,
-            const Space<BasisFunctionType>& trialSpace) :
-        Base(testSpace, trialSpace)
-    {}
+            const Space<BasisFunctionType>& trialSpace);
 };
 
 } // namespace Bempp

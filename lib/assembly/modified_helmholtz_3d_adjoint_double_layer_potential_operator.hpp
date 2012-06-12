@@ -91,9 +91,7 @@ public:
     ModifiedHelmholtz3dAdjointDoubleLayerPotentialOperator(
             const Space<BasisFunctionType>& testSpace,
             const Space<BasisFunctionType>& trialSpace,
-            KernelType waveNumber) :
-        Base(testSpace, trialSpace, waveNumber)
-    {}
+            KernelType waveNumber);
 };
 
 } // namespace Bempp

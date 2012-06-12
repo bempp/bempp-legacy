@@ -61,6 +61,15 @@ struct Laplace3dAdjointDoubleLayerPotentialOperatorImpl
     Fiber::StandardTestKernelTrialIntegral<IntegrandFunctor> integral;
 };
 
+template <typename BasisFunctionType, typename ResultType>
+Laplace3dAdjointDoubleLayerPotentialOperator<BasisFunctionType, ResultType>::
+Laplace3dAdjointDoubleLayerPotentialOperator(
+        const Space<BasisFunctionType>& testSpace,
+        const Space<BasisFunctionType>& trialSpace) :
+    Base(testSpace, trialSpace)
+{
+}
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dAdjointDoubleLayerPotentialOperator);
 
 } // namespace Bempp

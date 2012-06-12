@@ -62,6 +62,15 @@ struct Laplace3dSingleLayerPotentialOperatorImpl
     Fiber::StandardTestKernelTrialIntegral<IntegrandFunctor> integral;
 };
 
+template <typename BasisFunctionType, typename ResultType>
+Laplace3dSingleLayerPotentialOperator<BasisFunctionType, ResultType>::
+Laplace3dSingleLayerPotentialOperator(
+        const Space<BasisFunctionType>& testSpace,
+        const Space<BasisFunctionType>& trialSpace) :
+    Base(testSpace, trialSpace)
+{
+}
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dSingleLayerPotentialOperator);
 
 } // namespace Bempp

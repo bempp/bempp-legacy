@@ -62,6 +62,16 @@ struct Helmholtz3dSingleLayerPotentialOperatorImpl
     Fiber::StandardTestKernelTrialIntegral<IntegrandFunctor> integral;
 };
 
+template <typename BasisFunctionType>
+Helmholtz3dSingleLayerPotentialOperator<BasisFunctionType>::
+Helmholtz3dSingleLayerPotentialOperator(
+        const Space<BasisFunctionType>& testSpace,
+        const Space<BasisFunctionType>& trialSpace,
+        KernelType waveNumber) :
+    Base(testSpace, trialSpace, waveNumber)
+{
+}
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dSingleLayerPotentialOperator);
 
 } // namespace Bempp

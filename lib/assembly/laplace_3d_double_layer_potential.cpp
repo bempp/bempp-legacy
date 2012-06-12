@@ -62,6 +62,12 @@ struct Laplace3dDoubleLayerPotentialImpl
     Fiber::StandardKernelTrialIntegral<IntegrandFunctor> integral;
 };
 
+template <typename BasisFunctionType, typename ResultType>
+Laplace3dDoubleLayerPotential<BasisFunctionType, ResultType>::
+Laplace3dDoubleLayerPotential()
+{
+}
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dDoubleLayerPotential);
 
 } // namespace Bempp

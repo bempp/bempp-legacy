@@ -65,6 +65,16 @@ struct Helmholtz3dHypersingularOperatorImpl
     Fiber::StandardTestKernelTrialIntegral<IntegrandFunctor> integral;
 };
 
+template <typename BasisFunctionType>
+Helmholtz3dHypersingularOperator<BasisFunctionType>::
+Helmholtz3dHypersingularOperator(
+        const Space<BasisFunctionType>& testSpace,
+        const Space<BasisFunctionType>& trialSpace,
+        KernelType waveNumber) :
+    Base(testSpace, trialSpace, waveNumber)
+{
+}
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dHypersingularOperator);
 
 } // namespace Bempp

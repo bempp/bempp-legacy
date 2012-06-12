@@ -69,9 +69,7 @@ public:
     Helmholtz3dHypersingularOperator(
             const Space<BasisFunctionType>& testSpace,
             const Space<BasisFunctionType>& trialSpace,
-            KernelType waveNumber) :
-        Base(testSpace, trialSpace, waveNumber)
-    {}
+            KernelType waveNumber);
 };
 
 } // namespace Bempp

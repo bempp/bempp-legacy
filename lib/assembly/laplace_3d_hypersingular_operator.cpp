@@ -61,6 +61,15 @@ struct Laplace3dHypersingularOperatorImpl
     Fiber::StandardTestKernelTrialIntegral<IntegrandFunctor> integral;
 };
 
+template <typename BasisFunctionType, typename ResultType>
+Laplace3dHypersingularOperator<BasisFunctionType, ResultType>::
+Laplace3dHypersingularOperator(
+        const Space<BasisFunctionType>& testSpace,
+        const Space<BasisFunctionType>& trialSpace) :
+    Base(testSpace, trialSpace)
+{
+}
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dHypersingularOperator);
 
 } // namespace Bempp
