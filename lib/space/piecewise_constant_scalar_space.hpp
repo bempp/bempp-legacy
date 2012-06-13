@@ -23,7 +23,7 @@
 
 #include "../common/common.hpp"
 
-
+#include "../grid/grid_view.hpp"
 #include "scalar_space.hpp"
 #include "../common/types.hpp"
 #include "../fiber/piecewise_constant_scalar_basis.hpp"
