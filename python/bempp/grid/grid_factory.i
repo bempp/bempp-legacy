@@ -40,7 +40,7 @@ namespace Bempp
     %feature("compactdefaultargs") importGmshGrid;
     static std::auto_ptr<Bempp::Grid> importGmshGrid(
             const std::string& topology, const std::string& fileName, 
-            bool verbose=true, bool insertBoundarySegments=true) {
+            bool verbose=true, bool insertBoundarySegments=false) {
         Bempp::GridParameters params;
         makeGridParameters(params, topology);
         return Bempp::GridFactory::importGmshGrid(params, fileName, verbose, insertBoundarySegments);

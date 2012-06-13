@@ -1,5 +1,6 @@
 %{
   #include "space/space.hpp"
+  #include <complex>
 %}
 
 // TODO
@@ -50,6 +51,21 @@ namespace Bempp
 
 %include "space/space.hpp"
 
-namespace Bempp{
-  %template(SpaceDouble) Space<double>;
-     }
+namespace Bempp
+{
+  %template(Space_float64)     Space<double>;
+  %template(Space_float32)     Space<float>;
+  %template(Space_complex64)   Space<std::complex<float> >;
+  %template(Space_complex128)  Space<std::complex<double> >;
+
+}
+
+%pythoncode %{
+
+class Space(object):
+
+  def assignDofs(self):
+      """Assign degrees of freedom to the space"""
+      pass
+
+     %}

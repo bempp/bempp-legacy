@@ -1,5 +1,6 @@
 %{
 #include "space/space.hpp"
+#include <complex>
 %}
 
 
@@ -11,5 +12,18 @@
 
 namespace Bempp
 {
-  %template(ScalarSpaceDouble) ScalarSpace<double>;
+
+  %template(ScalarSpace_float64)     ScalarSpace<double>;
+  %template(ScalarSpace_float32)     ScalarSpace<float>;
+  %template(ScalarSpace_complex64)   ScalarSpace<std::complex<float> >;
+  %template(ScalarSpace_complex128)  ScalarSpace<std::complex<double> >;
+
+
 } 
+
+%pythoncode %{
+
+class ScalarSpace(Space):
+   pass
+
+     %}

@@ -24,6 +24,7 @@
 #define SWIG_FILE_WITH_INIT
 
 #include <dune/common/exceptions.hh>
+#include <complex>
 %}
 
 // Import docstring macros
@@ -34,6 +35,9 @@
 %include "auto_ptr.i"
 %include "exception.i"
 %include "std_string.i"
+
+// Useful Python tools
+%include "py_defs.i"
 
 // Setup a handler for C++ exceptions
 %exception {
