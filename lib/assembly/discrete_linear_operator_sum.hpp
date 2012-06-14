@@ -20,8 +20,8 @@
 
 #include "config_trilinos.hpp"
 
-#ifndef bempp_discrete_linear_operator_superposition_hpp
-#define bempp_discrete_linear_operator_superposition_hpp
+#ifndef bempp_discrete_linear_operator_sum_hpp
+#define bempp_discrete_linear_operator_sum_hpp
 
 #include "../common/common.hpp"
 
@@ -31,28 +31,29 @@
 
 #ifdef WITH_TRILINOS
 #include <Teuchos_RCP.hpp>
-#include <Thyra_SpmdVectorSpaceBase_decl.hpp>
 #endif
 
 namespace Bempp
 {
 
 /** \ingroup assembly
- *  \brief Superposition of discrete linear operators stored separately.
+ *  \brief Sum of discrete linear operators stored separately.
  */
 template <typename ValueType>
-class DiscreteLinearOperatorSuperposition :
-        public DiscreteLinearOperator<ValueType>
+class DiscreteLinearOperatorSum : public DiscreteLinearOperator<ValueType>
 {
 public:
-    typedef DiscreteLinearOperator<ValueType> TermType;
+    typedef DiscreteLinearOperator<ValueType> Base;
 
-    /* acquires ownership of these operators */
-    DiscreteLinearOperatorSuperposition(
-            boost::ptr_vector<TermType>& terms,
-            const std::vector<ValueType>& weights);
-
-    virtual void dump() const;
+    /** \brief Constructor.
+     *
+     *  Construct a discrete operator representing the sum of the operators
+     *  \p term1 and \p term2.
+     *
+     *  \note Both operators must have identical dimensions, otherwise
+     *  a <tt>std::invalid_argument</tt> exception is thrown. */
+    DiscreteLinearOperatorSum(std::auto_ptr<Base>& term1,
+                              std::auto_ptr<Base>& term2);
 
     virtual arma::Mat<ValueType> asMatrix() const;
 
@@ -71,12 +72,6 @@ public:
 
 protected:
     virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
-    virtual void applyImpl(
-            const Thyra::EOpTransp M_trans,
-            const Thyra::MultiVectorBase<ValueType> &X_in,
-            const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType> > &Y_inout,
-            const ValueType alpha,
-            const ValueType beta) const;
 #endif
 
 private:
@@ -86,12 +81,7 @@ private:
                                   const ValueType alpha,
                                   const ValueType beta) const;
 private:
-    boost::ptr_vector<TermType> m_terms;
-    std::vector<ValueType> m_weights;
-#ifdef WITH_TRILINOS
-    Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > m_domainSpace;
-    Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > m_rangeSpace;
-#endif
+    std::auto_ptr<Base> m_term1, m_term2;
 };
 
 } // namespace Bempp
