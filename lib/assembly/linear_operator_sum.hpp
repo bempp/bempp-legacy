@@ -72,19 +72,6 @@ public:
             Symmetry symmetry);
 
 private:
-    shared_ptr<DiscreteLinearOperator<ResultType_> >
-    assembleWeakFormInDenseMode(
-            const LocalAssemblerFactory& factory,
-            const AssemblyOptions& options,
-            Symmetry symmetry);
-
-    shared_ptr<DiscreteLinearOperator<ResultType_> >
-    assembleWeakFormInArbitraryMode(
-            const LocalAssemblerFactory& factory,
-            const AssemblyOptions& options,
-            Symmetry symmetry);
-
-private:
     std::auto_ptr<Base> m_term1, m_term2;
 };
 

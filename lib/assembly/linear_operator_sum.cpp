@@ -21,7 +21,6 @@
 #include "linear_operator_sum.hpp"
 
 #include "discrete_linear_operator_sum.hpp"
-#include "discrete_dense_linear_operator.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 
