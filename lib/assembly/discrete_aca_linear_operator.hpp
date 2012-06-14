@@ -67,8 +67,6 @@ public:
             const IndexPermutation& domainPermutation,
             const IndexPermutation& rangePermutation);
 
-    virtual void dump() const;
-
     virtual arma::Mat<ValueType> asMatrix() const;
 
     virtual unsigned int rowCount() const;
@@ -91,12 +89,6 @@ public:
 
 protected:
     virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
-    virtual void applyImpl(
-            const Thyra::EOpTransp M_trans,
-            const Thyra::MultiVectorBase<ValueType>& X_in,
-            const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType> >& Y_inout,
-            const ValueType alpha,
-            const ValueType beta) const;
 #endif
 
 private:

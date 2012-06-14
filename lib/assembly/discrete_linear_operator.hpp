@@ -111,8 +111,11 @@ public:
         applyBuiltInImpl(trans, x_in, y_inout, alpha, beta);
     }
 
-    /** \brief Write a textual representation of the operator to standard output. */
-    virtual void dump() const = 0;
+    /** \brief Write a textual representation of the operator to standard output.
+     *
+     *  The default implementation prints the matrix returned by asMatrix().
+     */
+    virtual void dump() const;
 
     /** \brief Matrix representation of the operator.
 
@@ -146,6 +149,16 @@ public:
                           const std::vector<int>& cols,
                           const ValueType alpha,
                           arma::Mat<ValueType>& block) const = 0;
+
+#ifdef WITH_TRILINOS
+protected:
+    virtual void applyImpl(
+            const Thyra::EOpTransp M_trans,
+            const Thyra::MultiVectorBase<ValueType> &X_in,
+            const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType> > &Y_inout,
+            const ValueType alpha,
+            const ValueType beta) const;
+#endif
 
 private:
     virtual void applyBuiltInImpl(const TranspositionMode trans,

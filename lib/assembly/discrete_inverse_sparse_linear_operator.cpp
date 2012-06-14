@@ -198,13 +198,6 @@ DiscreteInverseSparseLinearOperator(const Epetra_CrsMatrix& mat,
 }
 
 template <typename ValueType>
-void DiscreteInverseSparseLinearOperator<ValueType>::dump() const
-{
-    throw std::runtime_error("DiscreteInverseSparseLinearOperator::"
-                             "dump(): not implemented");
-}
-
-template <typename ValueType>
 arma::Mat<ValueType>
 DiscreteInverseSparseLinearOperator<ValueType>::asMatrix() const
 {
@@ -254,18 +247,6 @@ bool DiscreteInverseSparseLinearOperator<ValueType>::opSupportedImpl(
         Thyra::EOpTransp M_trans) const
 {
     return (M_trans == Thyra::NOTRANS);
-}
-
-template <typename ValueType>
-void DiscreteInverseSparseLinearOperator<ValueType>::applyImpl(
-        const Thyra::EOpTransp M_trans,
-        const Thyra::MultiVectorBase<ValueType> &X_in,
-        const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType> > &Y_inout,
-        const ValueType alpha,
-        const ValueType beta) const
-{
-    throw std::runtime_error("DiscreteInverseSparseLinearOperator::"
-                             "applyImpl(): not implemented yet");
 }
 
 template <typename ValueType>
