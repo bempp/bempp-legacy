@@ -64,10 +64,21 @@ struct Laplace3dHypersingularOperatorImpl
 template <typename BasisFunctionType, typename ResultType>
 Laplace3dHypersingularOperator<BasisFunctionType, ResultType>::
 Laplace3dHypersingularOperator(
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace) :
-    Base(testSpace, trialSpace)
+        const Space<BasisFunctionType>& domain,
+        const Space<BasisFunctionType>& range,
+        const Space<BasisFunctionType>& dualToRange,
+        const std::string& label) :
+    Base(domain, range, dualToRange, label)
 {
+}
+
+template <typename BasisFunctionType, typename ResultType>
+std::auto_ptr<LinearOperator<BasisFunctionType, ResultType> >
+Laplace3dHypersingularOperator<BasisFunctionType, ResultType>::clone() const
+{
+    typedef LinearOperator<BasisFunctionType, ResultType> LinOp;
+    typedef Laplace3dHypersingularOperator<BasisFunctionType, ResultType> This;
+    return std::auto_ptr<LinOp>(new This(*this));
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dHypersingularOperator);

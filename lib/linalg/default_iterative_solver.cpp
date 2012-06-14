@@ -39,12 +39,12 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::DefaultIterativeSolver(
     m_belosSolverWrapper(
         Teuchos::rcpFromRef<const Thyra::LinearOpBase<ResultType> >(
             linOp.weakForm())),
-    m_space(linOp.trialSpace()),
+    m_space(linOp.range()), m_dualSpace(linOp.dualToRange()),
     // TODO: gridFun.coefficients should return a shared pointer to Vector
     // rather than a Vector
     m_rhs(new Vector<ResultType>(gridFun.projections()))
 {
-    if (&linOp.trialSpace() != &gridFun.space())
+    if (&linOp.domain() != &gridFun.space())
         throw std::runtime_error("DefaultIterativeSolver::DefaultIterativeSolver(): "
                                  "spaces do not match");
 }
@@ -87,7 +87,7 @@ template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>
 DefaultIterativeSolver<BasisFunctionType, ResultType>::getResult() const
 {
-    return gridFunctionFromCoefficients(m_space, m_sol);
+    return gridFunctionFromCoefficients(m_space, m_dualSpace, m_sol);
 }
 
 template <typename BasisFunctionType, typename ResultType>

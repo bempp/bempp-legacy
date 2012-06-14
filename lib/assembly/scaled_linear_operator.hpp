@@ -18,41 +18,46 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_elementary_singular_integral_operator_hpp
-#define bempp_elementary_singular_integral_operator_hpp
+#ifndef bempp_scaled_linear_operator_hpp
+#define bempp_scaled_linear_operator_hpp
 
-#include "../common/common.hpp"
-
-#include "elementary_integral_operator.hpp"
+#include "linear_operator.hpp"
 
 namespace Bempp
 {
 
-template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
-class ElementarySingularIntegralOperator :
-        public ElementaryIntegralOperator<BasisFunctionType_, KernelType_, ResultType_>
+template <typename BasisFunctionType_, typename ResultType_>
+class ScaledLinearOperator :
+        public LinearOperator<BasisFunctionType_, ResultType_>
 {
-    typedef ElementaryIntegralOperator<BasisFunctionType_, KernelType_, ResultType_> Base;
+    typedef LinearOperator<BasisFunctionType_, ResultType_> Base;
 public:
+    /** \copydoc LinearOperator::BasisFunctionType */
     typedef typename Base::BasisFunctionType BasisFunctionType;
-    typedef typename Base::KernelType KernelType;
+    /** \copydoc LinearOperator::ResultType */
     typedef typename Base::ResultType ResultType;
+    /** \copydoc LinearOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
-    typedef typename Base::CollectionOfBasisTransformations
-    CollectionOfBasisTransformations;
-    typedef typename Base::CollectionOfKernels CollectionOfKernels;
-    typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
+    /** \copydoc LinearOperator::LocalAssemblerFactory */
+    typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
 
-    ElementarySingularIntegralOperator(const Space<BasisFunctionType>& domain,
-                                       const Space<BasisFunctionType>& range,
-                                       const Space<BasisFunctionType>& dualToRange,
-                                       const std::string& label = "") :
-        Base(domain, range, dualToRange, label) {
-    }
+    ScaledLinearOperator(ResultType weight, const Base& linOp);
+    ScaledLinearOperator(const ScaledLinearOperator& other);
 
-    virtual bool isRegular() const {
-        return false;
-    }
+    virtual std::auto_ptr<LinearOperator<BasisFunctionType_, ResultType_> >
+    clone() const;
+
+    virtual bool supportsRepresentation(
+            AssemblyOptions::Representation repr) const;
+
+    virtual std::auto_ptr<DiscreteLinearOperator<ResultType_> >
+    assembleDetachedWeakFormImpl(const LocalAssemblerFactory& factory,
+                                 const AssemblyOptions& options,
+                                 Symmetry symmetry) const;
+
+private:
+    ResultType m_weight;
+    std::auto_ptr<Base> m_operator;
 };
 
 } // namespace Bempp

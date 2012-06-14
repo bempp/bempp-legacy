@@ -156,10 +156,11 @@ struct IdentityOperator<BasisFunctionType, ResultType>::Impl
 
 template <typename BasisFunctionType, typename ResultType>
 IdentityOperator<BasisFunctionType, ResultType>::IdentityOperator(
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace) :
-    ElementaryLinearOperator<BasisFunctionType, ResultType>(
-        testSpace, trialSpace),
+        const Space<BasisFunctionType>& domain,
+        const Space<BasisFunctionType>& range,
+        const Space<BasisFunctionType>& dualToRange,
+        const std::string& label) :
+    Base(domain, range, dualToRange, label),
     m_impl(new Impl)
 {
 }
@@ -174,6 +175,15 @@ IdentityOperator<BasisFunctionType, ResultType>::IdentityOperator(
 template <typename BasisFunctionType, typename ResultType>
 IdentityOperator<BasisFunctionType, ResultType>::~IdentityOperator()
 {
+}
+
+template <typename BasisFunctionType, typename ResultType>
+std::auto_ptr<LinearOperator<BasisFunctionType, ResultType> >
+IdentityOperator<BasisFunctionType, ResultType>::clone() const
+{
+    typedef LinearOperator<BasisFunctionType, ResultType> LinOp;
+    typedef IdentityOperator<BasisFunctionType, ResultType> This;
+    return std::auto_ptr<LinOp>(new This(*this));
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -223,12 +233,12 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInterna
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
 IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInDenseMode(
-        typename IdentityOperator<BasisFunctionType, ResultType>::LocalAssembler& assembler,
+        LocalAssembler& assembler,
         const AssemblyOptions& options,
         Symmetry symmetry) const
 {
-    const Space<BasisFunctionType>& testSpace = this->testSpace();
-    const Space<BasisFunctionType>& trialSpace = this->trialSpace();
+    const Space<BasisFunctionType>& testSpace = this->dualToRange();
+    const Space<BasisFunctionType>& trialSpace = this->domain();
 
     // Fill local submatrices
     std::auto_ptr<GridView> view = testSpace.grid().leafView();
@@ -274,7 +284,7 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInDense
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
 IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInSparseMode(
-        typename IdentityOperator<BasisFunctionType, ResultType>::LocalAssembler& assembler,
+        LocalAssembler& assembler,
         const AssemblyOptions& options,
         Symmetry symmetry) const
 {
@@ -285,8 +295,8 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInSpars
                 "sparse-mode assembly of identity operators for "
                 "complex-valued basis functions is not supported yet");
 
-    const Space<BasisFunctionType>& testSpace = this->testSpace();
-    const Space<BasisFunctionType>& trialSpace = this->trialSpace();
+    const Space<BasisFunctionType>& testSpace = this->dualToRange();
+    const Space<BasisFunctionType>& trialSpace = this->domain();
 
     // Fill local submatrices
     std::auto_ptr<GridView> view = testSpace.grid().leafView();

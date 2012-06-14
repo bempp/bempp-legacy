@@ -30,9 +30,11 @@ namespace Bempp
 
 template <typename BasisFunctionType, typename ResultType>
 ElementaryLinearOperator<BasisFunctionType, ResultType>::
-ElementaryLinearOperator(const Space<BasisFunctionType>& testSpace,
-                         const Space<BasisFunctionType>& trialSpace) :
-    LinearOperator<BasisFunctionType, ResultType>(testSpace, trialSpace)
+ElementaryLinearOperator(const Space<BasisFunctionType>& domain,
+                         const Space<BasisFunctionType>& range,
+                         const Space<BasisFunctionType>& dualToRange,
+                         const std::string& label) :
+    Base(domain, range, dualToRange, label)
 {
 }
 

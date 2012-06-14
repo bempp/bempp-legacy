@@ -29,9 +29,11 @@ namespace Bempp
 template <typename Impl, typename BasisFunctionType, typename ResultType>
 Laplace3dOperatorBase<Impl, BasisFunctionType, ResultType>::
 Laplace3dOperatorBase(
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace) :
-    Base(testSpace, trialSpace), m_impl(new Impl)
+        const Space<BasisFunctionType>& domain,
+        const Space<BasisFunctionType>& range,
+        const Space<BasisFunctionType>& dualToRange,
+        const std::string& label) :
+    Base(domain, range, dualToRange, label), m_impl(new Impl)
 {
 }
 

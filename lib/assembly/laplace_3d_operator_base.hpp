@@ -71,8 +71,10 @@ public:
     typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
     Laplace3dOperatorBase(
-            const Space<BasisFunctionType>& testSpace,
-            const Space<BasisFunctionType>& trialSpace);
+            const Space<BasisFunctionType>& domain,
+            const Space<BasisFunctionType>& range,
+            const Space<BasisFunctionType>& dualToRange,
+            const std::string& label = "");
     Laplace3dOperatorBase(
             const Laplace3dOperatorBase& other);
     virtual ~Laplace3dOperatorBase();

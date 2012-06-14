@@ -18,35 +18,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_elementary_regular_integral_operator_hpp
-#define bempp_elementary_regular_integral_operator_hpp
+#ifndef bempp_to_string_hpp
+#define bempp_to_string_hpp
 
-#include "../common/common.hpp"
-
-#include "elementary_integral_operator.hpp"
+#include <boost/lexical_cast.hpp>
+#include <string>
 
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
-class ElementaryRegularIntegralOperator :
-        public ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>
+template <typename Source>
+inline std::string toString(const Source& arg)
 {
-    typedef ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType> Base;
-public:
-    typedef typename Base::CoordinateType CoordinateType;
-
-    ElementaryRegularIntegralOperator(const Space<BasisFunctionType>& domain,
-                                      const Space<BasisFunctionType>& range,
-                                      const Space<BasisFunctionType>& dualToRange,
-                                      const std::string& label = "") :
-       Base(domain, range, dualToRange, label) {
-   }
-
-    virtual bool isRegular() const {
-        return true;
-    }
-};
+    return boost::lexical_cast<std::string>(arg);
+}
 
 } // namespace Bempp
 

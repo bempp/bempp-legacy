@@ -36,6 +36,7 @@
 #include <boost/mpl/has_key.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace arma
@@ -52,14 +53,15 @@ class Grid;
 class GeometryFactory;
 template <typename ValueType> class DiscreteLinearOperator;
 template <typename BasisFunctionType, typename ResultType> class ElementaryLinearOperator;
-template <typename BasisFunctionType, typename ResultType> class LinearOperatorSuperposition;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
+template <typename BasisFunctionType_, typename ResultType_> class ScaledLinearOperator;
+template <typename BasisFunctionType_, typename ResultType_> class LinearOperatorSum;
 
 /** \ingroup assembly
  *  \brief Boundary linear operator.
  *
  *  A BoundaryOperator represents a linear mapping \f$L : X \to Y\f$ between
- *  two function spaces \f$X : S \to K^p\f$ and \f$Y : S \to K^q\f$ defined on
+ *  two function spaces \f$X : S \to K^p\f$ (_domain_) and \f$Y : S \to K^q\f$ (_range_) defined on
  *  an \f$n\f$-dimensional surface \f$S\f$ embedded in an
  *  \f$(n+1)\f$-dimensional domain. \f$K\f$ denotes either the set of real or
  *  complex numbers.
@@ -102,19 +104,27 @@ public:
 
     /** \brief Constructor.
      *
-     *  \param[in] testSpace
-     *    Function space whose elements will be used as test functions during
-     *    a subsequent assembly of the weak form of the operator.
+     *  \param[in] domain
+     *    Function space being the domain of the operator.
      *
-     *  \param[in] trialSpace
-     *    Function space whose elements will be used as trial functions during
-     *    a subsequent assembly of the weak form of the operator.
+     *  \param[in] range
+     *    Function space being the range of the operator.
      *
-     *  The objects referenced by \p testSpace and \p trialSpace must continue
-     *  to exist at least until the weak form of the operator is assembled.
+     *  \param[in] dualToRange
+     *    Function space dual to the the range of the operator.
+     *
+     *  \param[in] label
+     *    Textual label of the operator (optional, used for debugging).
+     *
+     *  The objects referenced by \p domain, \p range and \p dualToRange must
+     *  continue to exist at least until the weak form of the operator is
+     *  assembled. The spaces \p range and \p dualToRange must be defined on
+     *  the same grid.
      */
-    LinearOperator(const Space<BasisFunctionType>& testSpace,
-                   const Space<BasisFunctionType>& trialSpace);
+    LinearOperator(const Space<BasisFunctionType>& domain,
+                   const Space<BasisFunctionType>& range,
+                   const Space<BasisFunctionType>& dualToRange,
+                   const std::string& label = "");
 
     /** \brief Copy constructor.
      *
@@ -125,58 +135,40 @@ public:
     /** \brief Destructor. */
     virtual ~LinearOperator();
 
+    /** \brief Clone operator.
+     *
+     *  Returns an auto pointer to a copy of this operator allocated on the heap.
+     */
+    virtual std::auto_ptr<LinearOperator> clone() const = 0;
+
     /** @}
      *  @name Spaces
      *  @{ */
 
-    /** \brief Test function space.
+    /** \brief Domain.
      *
-     *  Return a reference to the function space whose elements are used as
-     *  test functions during assembly of the weak form of the operator. */
-    const Space<BasisFunctionType>& testSpace() const;
+     *  Return a reference to the function space being the domain of the operator. */
+    const Space<BasisFunctionType>& domain() const;
 
-    /** \brief Trial function space.
+    /** \brief Range.
      *
-     *  Return a reference to the function space whose elements are used as
-     *  trial functions during assembly of the weak form of the operator. */
-    const Space<BasisFunctionType>& trialSpace() const;
+     *  Return a reference to the function space being the range of the operator. */
+    const Space<BasisFunctionType>& range() const;
 
-    /** \brief Number of components of the functions from the trial space \f$X\f$.
-
-      This is equal to \f$p\f$ in the notation above. */
-    virtual int trialComponentCount() const = 0;
-
-    /** \brief Number of components of the functions from the test space \f$Y\f$.
-
-      This is equal to \f$q\f$ in the notation above. */
-    virtual int testComponentCount() const = 0;
+    /** \brief Dual to range.
+     *
+     *  Return a reference to the function space dual to the range of the operator. */
+    const Space<BasisFunctionType>& dualToRange() const;
 
     /** @}
-     *  @name Constituent elementary operators
+     *  @name Label
      *  @{ */
 
-    /** \brief Return a vector of pointers to the elementary linear operators
-     *  making up this linear operator.
-     *
-     *  Each linear operator \f$L\f$ is internally represented by a linear
-     *  superposition of <em>elementary</em> linear operators \f$E_i\f$ (see
-     *  \ref ElementaryLinearOperator) with weights \f$w_i\f$:
-     *
-     *  \f[ L = \sum_i w_i E_i. \f]
-     *
-     *  This function can be used to retrieve the list of the operators \f$E_i\f$.
-     *
-     *  \sa constituentOperatorWeights.
-     */
-    virtual std::vector<const ElementaryLinearOperator<BasisFunctionType, ResultType>*>
-    constituentOperators() const = 0;
+    /** \brief Return the label of the operator. */
+    std::string label() const;
 
-    /** \brief Return weigths of the elementary linear operators
-     *  making up this linear operator.
-     *
-     *  \see constituentOperators.
-     */
-    virtual std::vector<ResultType> constituentOperatorWeights() const = 0;
+    /** \brief Set the label of the operator. */
+    void setLabel(const std::string& newLabel);
 
     /** @}
      *  @name Assembly
@@ -193,11 +185,12 @@ public:
      *
      *  \f[L_{jk} = \int_S \phi_j L \psi_k,\f]
      *
-     *  where \f$L\f$ is the linear operator represented by this object, \f$S\f$
-     *  denotes the surface that is the domain of the trial space \f$X\f$ and
-     *  which is represented by the grid returned by <tt>trialSpace.grid()</tt>,
-     *  \f$\phi_j\f$ is a function from the test space \f$Y\f$ and \f$\psi_k\f$ a
-     *  function from \f$X\f$.
+     *  where \f$L\f$ is the linear operator represented by this object,
+     *  \f$S\f$ denotes the surface on which the domain function space \f$X\f$
+     *  is defined and which is represented by the grid returned by
+     *  <tt>domain.grid()</tt>, \f$\phi_j\f$ is a _trial function_ from the
+     *  space \f$Y'\f$ dual to the range of the operator, \f$Y\$, and
+     *  \f$\psi_k\f$ is a _test function_ from the domain space \f$X\f$.
      *
      *  The resulting discrete linear operator is stored internally. It can
      *  subsequently be accessed via weakForm() or, if necessary, detached via
@@ -280,21 +273,34 @@ protected:
                                  Symmetry symmetry) const = 0;
 
 private:
-    const Space<BasisFunctionType>& m_testSpace;
-    const Space<BasisFunctionType>& m_trialSpace;
+    const Space<BasisFunctionType>& m_domain;
+    const Space<BasisFunctionType>& m_range;
+    const Space<BasisFunctionType>& m_dualToRange;
+    std::string m_label;
 
     std::auto_ptr<DiscreteLinearOperator<ResultType> > m_weakForm;
 };
 
+} // namespace Bempp
+
+// The includes below are not strictly needed, but convenient for users
+// employing the arithmetic operator overloads
+#include "scaled_linear_operator.hpp"
+#include "linear_operator_sum.hpp"
+// #include "linear_operator_composition.hpp"
+
 // Operator overloading
 
+namespace Bempp
+{
+
 template <typename BasisFunctionType, typename ResultType>
-LinearOperatorSuperposition<BasisFunctionType, ResultType> operator+(
+LinearOperatorSum<BasisFunctionType, ResultType> operator+(
         const LinearOperator<BasisFunctionType, ResultType>& op1,
         const LinearOperator<BasisFunctionType, ResultType>& op2);
 
 template <typename BasisFunctionType, typename ResultType>
-LinearOperatorSuperposition<BasisFunctionType, ResultType> operator-(
+LinearOperatorSum<BasisFunctionType, ResultType> operator-(
         const LinearOperator<BasisFunctionType, ResultType>& op1,
         const LinearOperator<BasisFunctionType, ResultType>& op2);
 
@@ -305,18 +311,18 @@ typename boost::enable_if<
     typename boost::mpl::has_key<
         boost::mpl::set<float, double, std::complex<float>, std::complex<double> >,
         ScalarType>,
-    LinearOperatorSuperposition<BasisFunctionType, ResultType> >::type
+    ScaledLinearOperator<BasisFunctionType, ResultType> >::type
 operator*(
         const LinearOperator<BasisFunctionType, ResultType>& op,
         const ScalarType& scalar);
 
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
-LinearOperatorSuperposition<BasisFunctionType, ResultType> operator*(
+ScaledLinearOperator<BasisFunctionType, ResultType> operator*(
         const ScalarType& scalar,
         const LinearOperator<BasisFunctionType, ResultType>& op);
 
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
-LinearOperatorSuperposition<BasisFunctionType, ResultType> operator/(
+ScaledLinearOperator<BasisFunctionType, ResultType> operator/(
         const LinearOperator<BasisFunctionType, ResultType>& op,
         const ScalarType& scalar);
 
@@ -324,6 +330,11 @@ template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType> operator*(
         const LinearOperator<BasisFunctionType, ResultType>& op,
         const GridFunction<BasisFunctionType, ResultType>& fun);
+
+//template <typename BasisFunctionType, typename ResultType>
+//LinearOperatorComposition<BasisFunctionType, ResultType> operator*(
+//        const LinearOperator<BasisFunctionType, ResultType>& op1,
+//        const LinearOperator<BasisFunctionType, ResultType>& op2);
 
 } // namespace Bempp
 

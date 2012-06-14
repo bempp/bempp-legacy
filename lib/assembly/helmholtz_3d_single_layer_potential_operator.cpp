@@ -65,10 +65,12 @@ struct Helmholtz3dSingleLayerPotentialOperatorImpl
 template <typename BasisFunctionType>
 Helmholtz3dSingleLayerPotentialOperator<BasisFunctionType>::
 Helmholtz3dSingleLayerPotentialOperator(
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace,
-        KernelType waveNumber) :
-    Base(testSpace, trialSpace, waveNumber)
+        const Space<BasisFunctionType>& domain,
+        const Space<BasisFunctionType>& range,
+        const Space<BasisFunctionType>& dualToRange,
+        KernelType waveNumber,
+        const std::string& label) :
+    Base(domain, range, dualToRange, waveNumber, label)
 {
 }
 

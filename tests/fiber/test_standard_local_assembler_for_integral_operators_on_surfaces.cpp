@@ -53,8 +53,8 @@ class StandardLocalAssemblerForIntegralOperatorsOnSurfacesManager
 {
 public:
     typedef typename ScalarTraits<RT>::RealType CT;
-    typedef PiecewiseConstantScalarSpace<BFT> TestSpace;
-    typedef PiecewiseLinearContinuousScalarSpace<BFT> TrialSpace;
+    typedef PiecewiseConstantScalarSpace<BFT> PiecewiseConstantSpace;
+    typedef PiecewiseLinearContinuousScalarSpace<BFT> PiecewiseLinearSpace;
     typedef Laplace3dSingleLayerPotentialOperator<BFT, RT> Operator;
     typedef StandardLocalAssemblerFactoryForOperatorsOnSurfaces<BFT, RT> AssemblerFactory;
     typedef Fiber::RawGridGeometry<CT> RawGridGeometry;
@@ -65,12 +65,18 @@ public:
         // Create a Bempp grid
         grid = createGrid();
 
-        testSpace = std::auto_ptr<TestSpace>(new TestSpace(*grid));
-        trialSpace = std::auto_ptr<TrialSpace>(new TrialSpace(*grid));
-        testSpace->assignDofs();
-        trialSpace->assignDofs();
+        // These important thing is that the domain and dualToRange spaces are
+        // different
+        piecewiseConstantSpace = std::auto_ptr<PiecewiseConstantSpace>(
+                    new PiecewiseConstantSpace(*grid));
+        piecewiseLinearSpace = std::auto_ptr<PiecewiseLinearSpace>(
+                    new PiecewiseLinearSpace(*grid));
+        piecewiseConstantSpace->assignDofs();
+        piecewiseLinearSpace->assignDofs();
 
-        op = std::auto_ptr<Operator>(new Operator(*testSpace, *trialSpace));
+        op = std::auto_ptr<Operator>(new Operator(*piecewiseConstantSpace,
+                                                  *piecewiseLinearSpace,
+                                                  *piecewiseLinearSpace));
 
         // Construct local assembler
 
@@ -106,8 +112,8 @@ private:
 
 public:
     std::auto_ptr<Bempp::Grid> grid;
-    std::auto_ptr<TestSpace> testSpace;
-    std::auto_ptr<TrialSpace> trialSpace;
+    std::auto_ptr<PiecewiseConstantSpace> piecewiseConstantSpace;
+    std::auto_ptr<PiecewiseLinearSpace> piecewiseLinearSpace;
     std::auto_ptr<Operator> op;
 
     std::auto_ptr<AssemblerFactory> assemblerFactory;

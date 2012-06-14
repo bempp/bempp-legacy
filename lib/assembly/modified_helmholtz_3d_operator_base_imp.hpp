@@ -47,10 +47,12 @@ template <typename Impl, typename BasisFunctionType,
           typename KernelType, typename ResultType>
 ModifiedHelmholtz3dOperatorBase<Impl, BasisFunctionType, KernelType, ResultType>::
 ModifiedHelmholtz3dOperatorBase(
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace,
-        KernelType waveNumber) :
-    Base(testSpace, trialSpace), m_impl(new Impl(waveNumber))
+        const Space<BasisFunctionType>& domain,
+        const Space<BasisFunctionType>& range,
+        const Space<BasisFunctionType>& dualToRange,
+        KernelType waveNumber,
+        const std::string& label) :
+    Base(domain, range, dualToRange, label), m_impl(new Impl(waveNumber))
 {
 }
 

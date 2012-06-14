@@ -37,7 +37,7 @@ DefaultDirectSolver<BasisFunctionType, ResultType>::DefaultDirectSolver(
     if (!linearOperator.isWeakFormAssembled())
         throw std::runtime_error("DefaultDirectSolver::DefaultDirectSolver(): "
                                  "operator is not assembled");
-    if (&linearOperator.trialSpace() != &gridFunction.space())
+    if (&linearOperator.domain() != &gridFunction.space())
         throw std::runtime_error("DefaultDirectSolver::DefaultDirectSolver(): "
                                  "spaces do not match");
 }
@@ -55,7 +55,8 @@ template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>
 DefaultDirectSolver<BasisFunctionType, ResultType>::getResult() const
 {
-    return gridFunctionFromCoefficients(m_linearOperator.testSpace(),
+    return gridFunctionFromCoefficients(m_linearOperator.range(),
+                                        m_linearOperator.dualToRange(),
                                         m_solution);
 }
 

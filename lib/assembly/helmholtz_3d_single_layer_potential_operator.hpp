@@ -67,9 +67,11 @@ public:
      *
      * See \ref helmholtz_3d for the definition of the wave number. */
     Helmholtz3dSingleLayerPotentialOperator(
-            const Space<BasisFunctionType>& testSpace,
-            const Space<BasisFunctionType>& trialSpace,
-            KernelType waveNumber);
+            const Space<BasisFunctionType>& domain,
+            const Space<BasisFunctionType>& range,
+            const Space<BasisFunctionType>& dualToRange,
+            KernelType waveNumber,
+            const std::string& label = "");
 };
 
 } // namespace Bempp

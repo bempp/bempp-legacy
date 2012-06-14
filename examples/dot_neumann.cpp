@@ -26,7 +26,6 @@
 #include "assembly/assembly_options.hpp"
 #include "assembly/discrete_linear_operator.hpp"
 #include "assembly/grid_function.hpp"
-#include "assembly/linear_operator_superposition.hpp"
 #include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 
 #include "assembly/identity_operator.hpp"
@@ -141,7 +140,7 @@ int main(int argc, char* argv[])
 
     // Form the left-hand side sum
 
-    LinearOperatorSuperposition<BFT, RT> lhsOp = 0.5 * id + dlp + (1.0/(2.0*kappa)) * slp;
+    LinearOperatorSum<BFT, RT> lhsOp = 0.5 * id + dlp + (1.0/(2.0*kappa)) * slp;
     //LinearOperatorSuperposition<BFT, RT> rhsOp = id;
 
     // Assemble the Operators

@@ -65,10 +65,12 @@ struct ModifiedHelmholtz3dAdjointDoubleLayerPotentialOperatorImpl
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 ModifiedHelmholtz3dAdjointDoubleLayerPotentialOperator<BasisFunctionType, KernelType, ResultType>::
 ModifiedHelmholtz3dAdjointDoubleLayerPotentialOperator(
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace,
-        KernelType waveNumber) :
-    Base(testSpace, trialSpace, waveNumber)
+        const Space<BasisFunctionType>& domain,
+        const Space<BasisFunctionType>& range,
+        const Space<BasisFunctionType>& dualToRange,
+        KernelType waveNumber,
+        const std::string& label) :
+    Base(domain, range, dualToRange, waveNumber, label)
 {
 }
 

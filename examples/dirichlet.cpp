@@ -28,7 +28,7 @@
 #include "assembly/evaluation_options.hpp"
 #include "assembly/grid_function.hpp"
 #include "assembly/interpolated_function.hpp"
-#include "assembly/linear_operator_superposition.hpp"
+#include "assembly/linear_operator_sum.hpp"
 #include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 
 #include "assembly/identity_operator.hpp"
@@ -123,13 +123,16 @@ int main(int argc, char* argv[])
 
     // We need the single layer, double layer, and the identity operator
 
-    Laplace3dSingleLayerPotentialOperator<BFT, RT> slpOp(HminusHalfSpace, HminusHalfSpace);
-    Laplace3dDoubleLayerPotentialOperator<BFT, RT> dlpOp(HminusHalfSpace, HplusHalfSpace);
-    IdentityOperator<BFT, RT> id(HminusHalfSpace, HplusHalfSpace);
+    Laplace3dSingleLayerPotentialOperator<BFT, RT> slpOp(
+                HminusHalfSpace, HplusHalfSpace, HminusHalfSpace);
+    Laplace3dDoubleLayerPotentialOperator<BFT, RT> dlpOp(
+                HplusHalfSpace, HplusHalfSpace, HminusHalfSpace);
+    IdentityOperator<BFT, RT> id(
+                HplusHalfSpace, HplusHalfSpace, HminusHalfSpace);
 
     // Form the right-hand side sum
 
-    LinearOperatorSuperposition<BFT, RT> rhsOp = -0.5 * id + dlpOp;
+    LinearOperatorSum<BFT, RT> rhsOp = -0.5 * id + dlpOp;
 
     // Assemble the operators
 
@@ -139,7 +142,8 @@ int main(int argc, char* argv[])
     // We also want a grid function
 
     GridFunction<BFT, RT> u = gridFunctionFromSurfaceNormalIndependentFunctor(
-                HplusHalfSpace, MyFunctor(), factory, assemblyOptions);
+                HplusHalfSpace, HplusHalfSpace /* is this the right choice? */,
+                MyFunctor(), factory, assemblyOptions);
 
     // Assemble the rhs
 

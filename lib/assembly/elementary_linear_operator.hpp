@@ -71,8 +71,10 @@ public:
     typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
 
     /** \copydoc LinearOperator::LinearOperator(const Space<BasisFunctionType>&, const Space<BasisFunctionType>&) */
-    ElementaryLinearOperator(const Space<BasisFunctionType>& testSpace,
-                             const Space<BasisFunctionType>& trialSpace);
+    ElementaryLinearOperator(const Space<BasisFunctionType>& domain,
+                             const Space<BasisFunctionType>& range,
+                             const Space<BasisFunctionType>& dualToRange,
+                             const std::string& label = "");
 
     ~ElementaryLinearOperator();
 

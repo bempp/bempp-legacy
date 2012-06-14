@@ -45,11 +45,13 @@ void setWaveNumber(const Impl& impl, typename Impl::KernelType waveNumber)
 
 template <typename Impl, typename BasisFunctionType>
 Helmholtz3dOperatorBase<Impl, BasisFunctionType>::
-Helmholtz3dOperatorBase(
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace,
-        KernelType waveNumber) :
-    Base(testSpace, trialSpace), m_impl(new Impl(waveNumber))
+Helmholtz3dOperatorBase(       
+        const Space<BasisFunctionType>& domain,
+        const Space<BasisFunctionType>& range,
+        const Space<BasisFunctionType>& dualToRange,
+        KernelType waveNumber,
+        const std::string& label) :
+    Base(domain, range, dualToRange, label), m_impl(new Impl(waveNumber))
 {
 }
 

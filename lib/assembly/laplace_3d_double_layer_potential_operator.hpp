@@ -69,8 +69,13 @@ public:
     typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
     Laplace3dDoubleLayerPotentialOperator(
-            const Space<BasisFunctionType>& testSpace,
-            const Space<BasisFunctionType>& trialSpace);
+            const Space<BasisFunctionType>& domain,
+            const Space<BasisFunctionType>& range,
+            const Space<BasisFunctionType>& dualToRange,
+            const std::string& label = "");
+
+    virtual std::auto_ptr<LinearOperator<BasisFunctionType_, ResultType_> >
+    clone() const;
 };
 
 } // namespace Bempp

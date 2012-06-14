@@ -19,10 +19,12 @@
 // THE SOFTWARE.
 
 #include "linear_operator.hpp"
-#include "linear_operator_superposition.hpp"
 #include "discrete_linear_operator.hpp"
 #include "grid_function.hpp"
+// #include "linear_operator_composition.hpp"
+#include "linear_operator_sum.hpp"
 #include "local_assembler_construction_helper.hpp"
+#include "scaled_linear_operator.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -33,16 +35,20 @@ namespace Bempp
 
 template <typename BasisFunctionType, typename ResultType>
 LinearOperator<BasisFunctionType, ResultType>::
-LinearOperator(const Space<BasisFunctionType>& testSpace,
-               const Space<BasisFunctionType>& trialSpace) :
-    m_testSpace(testSpace), m_trialSpace(trialSpace)
+LinearOperator(const Space<BasisFunctionType>& domain,
+               const Space<BasisFunctionType>& range,
+               const Space<BasisFunctionType>& dualToRange,
+               const std::string& label) :
+    m_domain(domain), m_range(range), m_dualToRange(dualToRange),
+    m_label(label)
 {
 }
 
 template <typename BasisFunctionType, typename ResultType>
 LinearOperator<BasisFunctionType, ResultType>::LinearOperator(
         const LinearOperator<BasisFunctionType, ResultType>& other) :
-    m_testSpace(other.m_testSpace), m_trialSpace(other.m_trialSpace)
+    m_domain(other.m_domain), m_range(other.m_range),
+    m_dualToRange(other.m_dualToRange), m_label(other.m_label)
 {
 }
 
@@ -105,7 +111,9 @@ void LinearOperator<BasisFunctionType, ResultType>::apply(
                                  "the weak form is not assembled");
 
     // Sanity test
-    if (&m_trialSpace != &x_in.space() || &m_testSpace != &y_inout.space())
+    if (&m_domain != &x_in.space() ||
+            &m_range != &y_inout.space() ||
+            &m_dualToRange != &y_inout.dualSpace())
         throw std::runtime_error("LinearOperator::apply(): Spaces don't match");
 
     // Extract coefficient vectors
@@ -122,16 +130,38 @@ void LinearOperator<BasisFunctionType, ResultType>::apply(
 
 template <typename BasisFunctionType, typename ResultType>
 const Space<BasisFunctionType>&
-LinearOperator<BasisFunctionType, ResultType>::testSpace() const
+LinearOperator<BasisFunctionType, ResultType>::domain() const
 {
-    return m_testSpace;
+    return m_domain;
 }
 
 template <typename BasisFunctionType, typename ResultType>
 const Space<BasisFunctionType>&
-LinearOperator<BasisFunctionType, ResultType>::trialSpace() const
+LinearOperator<BasisFunctionType, ResultType>::range() const
 {
-    return m_trialSpace;
+    return m_range;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+const Space<BasisFunctionType>&
+LinearOperator<BasisFunctionType, ResultType>::dualToRange() const
+{
+    return m_dualToRange;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+std::string
+LinearOperator<BasisFunctionType, ResultType>::label() const
+{
+    return m_label;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void
+LinearOperator<BasisFunctionType, ResultType>::setLabel(
+        const std::string &newLabel)
+{
+    m_label = newLabel;
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -152,13 +182,13 @@ LinearOperator<BasisFunctionType, ResultType>::collectDataForAssemblerConstructi
     typedef LocalAssemblerConstructionHelper Helper;
 
     // Collect grid data
-    Helper::collectGridData(m_testSpace.grid(),
+    Helper::collectGridData(m_dualToRange.grid(),
                             testRawGeometry, testGeometryFactory);
-    if (&m_testSpace.grid() == &m_trialSpace.grid()) {
+    if (&m_dualToRange.grid() == &m_domain.grid()) {
         trialRawGeometry = testRawGeometry;
         trialGeometryFactory = testGeometryFactory;
     } else
-        Helper::collectGridData(m_trialSpace.grid(),
+        Helper::collectGridData(m_domain.grid(),
                                 trialRawGeometry, trialGeometryFactory);
 
     // Construct the OpenClHandler
@@ -166,11 +196,11 @@ LinearOperator<BasisFunctionType, ResultType>::collectDataForAssemblerConstructi
                               testRawGeometry, trialRawGeometry, openClHandler);
 
     // Get pointers to test and trial bases of each element
-    Helper::collectBases(m_testSpace, testBases);
-    if (&m_testSpace == &m_trialSpace)
+    Helper::collectBases(m_dualToRange, testBases);
+    if (&m_dualToRange == &m_domain)
         trialBases = testBases;
     else
-        Helper::collectBases(m_trialSpace, trialBases);
+        Helper::collectBases(m_domain, trialBases);
 
     cacheSingularIntegrals =
             (options.singularIntegralCaching() == AssemblyOptions::YES ||
@@ -178,15 +208,15 @@ LinearOperator<BasisFunctionType, ResultType>::collectDataForAssemblerConstructi
 }
 
 template <typename BasisFunctionType, typename ResultType>
-LinearOperatorSuperposition<BasisFunctionType, ResultType> operator+(
+LinearOperatorSum<BasisFunctionType, ResultType> operator+(
         const LinearOperator<BasisFunctionType, ResultType>& op1,
         const LinearOperator<BasisFunctionType, ResultType>& op2)
 {
-    return LinearOperatorSuperposition<BasisFunctionType, ResultType>(op1, op2);
+    return LinearOperatorSum<BasisFunctionType, ResultType>(op1, op2);
 }
 
 template <typename BasisFunctionType, typename ResultType>
-LinearOperatorSuperposition<BasisFunctionType, ResultType> operator-(
+LinearOperatorSum<BasisFunctionType, ResultType> operator-(
         const LinearOperator<BasisFunctionType, ResultType>& op1,
         const LinearOperator<BasisFunctionType, ResultType>& op2)
 {
@@ -198,17 +228,17 @@ typename boost::enable_if<
     typename boost::mpl::has_key<
         boost::mpl::set<float, double, std::complex<float>, std::complex<double> >,
         ScalarType>,
-    LinearOperatorSuperposition<BasisFunctionType, ResultType> >::type
+    ScaledLinearOperator<BasisFunctionType, ResultType> >::type
 operator*(
         const LinearOperator<BasisFunctionType, ResultType>& op,
         const ScalarType& scalar)
 {
-    return LinearOperatorSuperposition<BasisFunctionType, ResultType>(
-                op, static_cast<ResultType>(scalar));
+    return ScaledLinearOperator<BasisFunctionType, ResultType>(
+                static_cast<ResultType>(scalar), op);
 }
 
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
-LinearOperatorSuperposition<BasisFunctionType, ResultType> operator*(
+ScaledLinearOperator<BasisFunctionType, ResultType> operator*(
         const ScalarType& scalar,
         const LinearOperator<BasisFunctionType, ResultType>& op)
 {
@@ -216,7 +246,7 @@ LinearOperatorSuperposition<BasisFunctionType, ResultType> operator*(
 }
 
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
-LinearOperatorSuperposition<BasisFunctionType, ResultType> operator/(
+ScaledLinearOperator<BasisFunctionType, ResultType> operator/(
         const LinearOperator<BasisFunctionType, ResultType>& op,
         const ScalarType& scalar)
 {
@@ -224,8 +254,8 @@ LinearOperatorSuperposition<BasisFunctionType, ResultType> operator/(
         throw std::runtime_error("LinearOperatorSuperposition::operator/(): "
                                  "Division by zero");
 
-    return LinearOperatorSuperposition<BasisFunctionType, ResultType>(
-                op, static_cast<ResultType>(static_cast<ScalarType>(1.) / scalar));
+    return ScaledLinearOperator<BasisFunctionType, ResultType>(
+                static_cast<ResultType>(static_cast<ScalarType>(1.) / scalar), op);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -233,32 +263,35 @@ GridFunction<BasisFunctionType, ResultType> operator*(
         const LinearOperator<BasisFunctionType, ResultType>& op,
         const GridFunction<BasisFunctionType, ResultType>& fun)
 {
-    const Space<BasisFunctionType>& space = op.testSpace();
+    // To be modified.
+    const Space<BasisFunctionType>& space = op.range();
+    const Space<BasisFunctionType>& dualSpace = op.dualToRange();
     arma::Col<ResultType> coefficients(space.globalDofCount());
     coefficients.fill(0.);
-    arma::Col<ResultType> projections(space.globalDofCount());
+    arma::Col<ResultType> projections(dualSpace.globalDofCount());
     projections.fill(0.);
-    GridFunction<BasisFunctionType, ResultType> result(space, coefficients, projections);
+    GridFunction<BasisFunctionType, ResultType> result(
+                space, dualSpace, coefficients, projections);
     op.apply(NO_TRANSPOSE, fun, result, 1., 0.);
     return result;
 }
 
 #define INSTANTIATE_FREE_FUNCTIONS(BASIS, RESULT) \
-    template LinearOperatorSuperposition<BASIS, RESULT> operator+( \
+    template LinearOperatorSum<BASIS, RESULT> operator+( \
     const LinearOperator<BASIS, RESULT>& op1, \
     const LinearOperator<BASIS, RESULT>& op2); \
-    template LinearOperatorSuperposition<BASIS, RESULT> operator-( \
+    template LinearOperatorSum<BASIS, RESULT> operator-( \
     const LinearOperator<BASIS, RESULT>& op1, \
     const LinearOperator<BASIS, RESULT>& op2); \
     template GridFunction<BASIS, RESULT> operator*( \
     const LinearOperator<BASIS, RESULT>& op, \
     const GridFunction<BASIS, RESULT>& fun)
 #define INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(BASIS, RESULT, SCALAR) \
-    template LinearOperatorSuperposition<BASIS, RESULT> operator*( \
+    template ScaledLinearOperator<BASIS, RESULT> operator*( \
     const LinearOperator<BASIS, RESULT>& op, const SCALAR& scalar); \
-    template LinearOperatorSuperposition<BASIS, RESULT> operator*( \
+    template ScaledLinearOperator<BASIS, RESULT> operator*( \
     const SCALAR& scalar, const LinearOperator<BASIS, RESULT>& op); \
-    template LinearOperatorSuperposition<BASIS, RESULT> operator/( \
+    template ScaledLinearOperator<BASIS, RESULT> operator/( \
     const LinearOperator<BASIS, RESULT>& op, const SCALAR& scalar)
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperator);

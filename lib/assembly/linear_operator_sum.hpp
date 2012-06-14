@@ -18,15 +18,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
-#ifndef bempp_identity_operator_hpp
-#define bempp_identity_operator_hpp
+#ifndef bempp_linear_operator_sum_hpp
+#define bempp_linear_operator_sum_hpp
 
 #include "../common/common.hpp"
 
-#include "elementary_linear_operator.hpp"
-
-#include <boost/scoped_ptr.hpp>
+#include "linear_operator.hpp"
 
 namespace Fiber
 {
@@ -38,42 +35,35 @@ template <typename ResultType> class LocalAssemblerForOperators;
 namespace Bempp
 {
 
+/** \brief Sum of linear operators.
+ *
+ *  \ingroup assembly
+ */
 template <typename BasisFunctionType_, typename ResultType_>
-class IdentityOperator :
-        public ElementaryLinearOperator<BasisFunctionType_, ResultType_>
+class LinearOperatorSum :
+        public LinearOperator<BasisFunctionType_, ResultType_>
 {
-    typedef ElementaryLinearOperator<BasisFunctionType_, ResultType_> Base;
+    typedef LinearOperator<BasisFunctionType_, ResultType_> Base;
 public:
+    /** \copydoc LinearOperator::BasisFunctionType */
     typedef typename Base::BasisFunctionType BasisFunctionType;
+    /** \copydoc LinearOperator::ResultType */
     typedef typename Base::ResultType ResultType;
+    /** \copydoc LinearOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
+    /** \copydoc LinearOperator::LocalAssemblerFactory */
     typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
-    typedef typename Base::LocalAssembler LocalAssembler;
+    typedef typename Fiber::LocalAssemblerForOperators<ResultType>
+    LocalAssembler;
 
-    IdentityOperator(const Space<BasisFunctionType>& domain,
-                     const Space<BasisFunctionType>& range,
-                     const Space<BasisFunctionType>& dualToRange,
-                     const std::string& label = "");
-    IdentityOperator(const IdentityOperator& other);
-    virtual ~IdentityOperator();
+    LinearOperatorSum(const Base& term1, const Base& term2);
+    LinearOperatorSum(const LinearOperatorSum& other);
 
     virtual std::auto_ptr<LinearOperator<BasisFunctionType_, ResultType_> >
     clone() const;
 
-    virtual bool supportsRepresentation(AssemblyOptions::Representation repr) const;
-
-private:
-    virtual std::auto_ptr<LocalAssembler> makeAssemblerImpl(
-            const LocalAssemblerFactory& assemblerFactory,
-            const shared_ptr<const GeometryFactory>& testGeometryFactory,
-            const shared_ptr<const GeometryFactory>& trialGeometryFactory,
-            const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
-            const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
-            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
-            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
-            const ParallelisationOptions& parallelisationOptions,
-            bool cacheSingularIntegrals) const;
+    virtual bool supportsRepresentation(
+            AssemblyOptions::Representation repr) const;
 
     virtual std::auto_ptr<DiscreteLinearOperator<ResultType_> >
     assembleDetachedWeakFormImpl(
@@ -81,29 +71,23 @@ private:
             const AssemblyOptions& options,
             Symmetry symmetry) const;
 
-    virtual std::auto_ptr<DiscreteLinearOperator<ResultType_> >
-    assembleDetachedWeakFormInternalImpl(
-            LocalAssembler& assembler,
-            const AssemblyOptions& options,
-            Symmetry symmetry) const;
-
+private:
     std::auto_ptr<DiscreteLinearOperator<ResultType_> >
     assembleDetachedWeakFormInDenseMode(
-            LocalAssembler& assembler,
+            const LocalAssemblerFactory& factory,
             const AssemblyOptions& options,
             Symmetry symmetry) const;
 
     std::auto_ptr<DiscreteLinearOperator<ResultType_> >
-    assembleDetachedWeakFormInSparseMode(
-            LocalAssembler& assembler,
+    assembleDetachedWeakFormInArbitraryMode(
+            const LocalAssemblerFactory& factory,
             const AssemblyOptions& options,
             Symmetry symmetry) const;
 
 private:
-    struct Impl;
-    boost::scoped_ptr<Impl> m_impl;
+    std::auto_ptr<Base> m_term1, m_term2;
 };
 
-} // namespace Bempp
+} //namespace Bempp
 
 #endif

@@ -61,7 +61,7 @@ MassMatrixContainerInitialiser<BasisFunctionType, ResultType>::operator()() cons
     // This effectively switches to sparse mode
     assemblyOptions.switchToAca(AcaOptions());
 #endif
-    IdentityOperator<BasisFunctionType, ResultType> id(m_space, m_space);
+    IdentityOperator<BasisFunctionType, ResultType> id(m_space, m_space, m_space);
     StandardLocalAssemblerFactoryForOperatorsOnSurfaces<
             BasisFunctionType, ResultType> factory;
     result->massMatrix = id.assembleDetachedWeakForm(factory, assemblyOptions);
