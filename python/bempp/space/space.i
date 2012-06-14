@@ -6,10 +6,13 @@
 // TODO
 // %include "space_docstrings.i"
 
+
+
 namespace Bempp 
 {
 
   template<typename BasisFunctionType> class Space;
+
 
   %extend Space
   {
@@ -33,15 +36,13 @@ namespace Bempp
 
     // this function is only for internal use
     %ignore globalDofPositions;
-    
-    // this function is only for internal use
-    %ignore globalDofPositions;
 
-
-    %ignore applyMassMatrix;
-    %ignore applyInverseMassMatrix;
 
     %ignore dumpClusterIds;
+
+    %ignore applyMassMatrix;
+
+    %ignore applyInverseMassMatrix;
 
   }
 
@@ -53,6 +54,7 @@ namespace Bempp
 
 namespace Bempp
 {
+
   %template(Space_float64)     Space<double>;
   %template(Space_float32)     Space<float>;
   %template(Space_complex64)   Space<std::complex<float> >;
@@ -64,8 +66,36 @@ namespace Bempp
 
 class Space(object):
 
+  def domainDimension(self):
+      """Dimension of the surface on which the functions are defined."""
+      pass
+
+  def codomainDimension(self):
+      """Dimension of the codomain of the functions.
+
+         In other words, number of components of the values of the functions.
+         (E.g. H1 space -> 1, H(curl) space on a 2D surface -> 2).
+         virtual int codomainDimension() const = 0;
+      """
+      pass
+
+  def grid(self):
+      """Reference to the grid on which the functions are defined."""
+      pass
+
   def assignDofs(self):
-      """Assign degrees of freedom to the space"""
+      """Assign global degrees of freedom to local degrees of freedom."""
+      pass
+
+  def dofsAssigned(self):
+      """True if assignDofs() has been called before, false otherwise."""
+      pass
+
+  def globalDofCount(self):
+      """Number of global degrees of freedom."""
+      pass     
+
+  def global2localDofs(self):
       pass
 
      %}

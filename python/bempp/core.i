@@ -89,7 +89,8 @@ AUTO_PTR_TYPEMAPS(Bempp::VtkWriter)
 %include "grid/vtk_writer.i" 
 %include "grid/grid_factory.i" 
 
- // Space
- %include "space/space.i"
- %include "space/scalar_space.i"
- %include "space/piecewise_constant_scalar_space.i"
+// Space
+%include "space/space.i"
+%include "space/scalar_space.i"
+%include "space/piecewise_constant_scalar_space.i"
+%include "space/piecewise_linear_continuous_scalar_space.i"
