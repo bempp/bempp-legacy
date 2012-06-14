@@ -36,6 +36,28 @@ LinearOperatorSum(const Base& term1, const Base& term2) :
 {
     assert(m_term1.get());
     assert(m_term2.get());
+
+    if (&m_term1->domain() != &m_term2->domain())
+        throw std::invalid_argument(
+                "LinearOperatorSum::LinearOperatorSum(" +
+                m_term1->label() +
+                ", " +
+                m_term2->label() +
+                "): Domains of the two terms must be equal");
+    if (&m_term1->range() != &m_term2->range())
+        throw std::invalid_argument(
+                "LinearOperatorSum::LinearOperatorSum(" +
+                m_term1->label() +
+                ", " +
+                m_term2->label() +
+                "): Ranges of the two terms must be equal");
+    if (&m_term1->dualToRange() != &m_term2->dualToRange())
+        throw std::invalid_argument(
+                "LinearOperatorSum::LinearOperatorSum(" +
+                m_term1->label() +
+                ", " +
+                m_term2->label() +
+                "): Spaces dual to the ranges of the two terms must be equal");
 }
 
 template <typename BasisFunctionType, typename ResultType>
