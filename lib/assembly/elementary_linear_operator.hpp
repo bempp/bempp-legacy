@@ -119,11 +119,11 @@ public:
      *  should not need to call it directly. They should use
      *  LinearOperator::assembleDetachedWeakForm() instead.
      */
-    std::auto_ptr<DiscreteLinearOperator<ResultType_> >
-    assembleDetachedWeakFormInternal(
+    shared_ptr<DiscreteLinearOperator<ResultType_> >
+    assembleWeakFormInternal(
             LocalAssembler& assembler,
             const AssemblyOptions& options,
-            Symmetry symmetry = UNSYMMETRIC) const;
+            Symmetry symmetry = UNSYMMETRIC);
 
 private:
     virtual std::auto_ptr<LocalAssembler> makeAssemblerImpl(
@@ -138,11 +138,11 @@ private:
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const = 0;
 
-    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
-    assembleDetachedWeakFormInternalImpl(
+    virtual shared_ptr<DiscreteLinearOperator<ResultType> >
+    assembleWeakFormInternalImpl(
             LocalAssembler& assembler,
             const AssemblyOptions& options,
-            Symmetry symmetry) const = 0;
+            Symmetry symmetry) = 0;
 };
 
 } // namespace Bempp

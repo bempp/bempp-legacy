@@ -7,7 +7,7 @@ namespace Bempp
 
 template <typename ValueType>
 ScaledDiscreteLinearOperator<ValueType>::ScaledDiscreteLinearOperator(
-        ValueType multiplier, std::auto_ptr<Base>& op) :
+        ValueType multiplier, shared_ptr<const Base> &op) :
     m_multiplier(multiplier), m_operator(op)
 {
     if (!m_operator.get())

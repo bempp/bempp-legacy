@@ -29,6 +29,8 @@
 #include "../assembly/linear_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
+#include <Teuchos_RCPBoostSharedPtrConversions.hpp>
+
 namespace Bempp
 {
 
@@ -37,7 +39,7 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::DefaultIterativeSolver(
         const LinearOperator<BasisFunctionType, ResultType>& linOp,
         const GridFunction<BasisFunctionType, ResultType>& gridFun) :
     m_belosSolverWrapper(
-        Teuchos::rcpFromRef<const Thyra::LinearOpBase<ResultType> >(
+        Teuchos::rcp<const Thyra::LinearOpBase<ResultType> >(
             linOp.weakForm())),
     m_space(linOp.range()), m_dualSpace(linOp.dualToRange()),
     // TODO: gridFun.coefficients should return a shared pointer to Vector

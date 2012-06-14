@@ -22,8 +22,7 @@
 #define bempp_mass_matrix_container_hpp
 
 #include "../common/common.hpp"
-
-#include <memory>
+#include "../common/shared_ptr.hpp"
 
 namespace Bempp
 {
@@ -35,8 +34,8 @@ struct MassMatrixContainer
 {
     ~MassMatrixContainer();
 
-    std::auto_ptr<DiscreteLinearOperator<BasisFunctionType> > massMatrix;
-    std::auto_ptr<DiscreteLinearOperator<BasisFunctionType> > inverseMassMatrix;
+    shared_ptr<const DiscreteLinearOperator<BasisFunctionType> > massMatrix;
+    shared_ptr<const DiscreteLinearOperator<BasisFunctionType> > inverseMassMatrix;
 };
 
 } //namespace Bempp

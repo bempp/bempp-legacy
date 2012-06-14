@@ -46,7 +46,7 @@ template <typename BasisFunctionType, typename ResultType>
 void DefaultDirectSolver<BasisFunctionType, ResultType>::solve()
 {
     m_solution = arma::solve(
-                m_linearOperator.weakForm().asMatrix(),
+                m_linearOperator.weakForm()->asMatrix(),
                 m_gridFunction.projections());
     m_status = Solver<BasisFunctionType, ResultType>::CONVERGED;
 }

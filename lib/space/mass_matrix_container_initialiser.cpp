@@ -64,12 +64,13 @@ MassMatrixContainerInitialiser<BasisFunctionType, ResultType>::operator()() cons
     IdentityOperator<BasisFunctionType, ResultType> id(m_space, m_space, m_space);
     StandardLocalAssemblerFactoryForOperatorsOnSurfaces<
             BasisFunctionType, ResultType> factory;
-    result->massMatrix = id.assembleDetachedWeakForm(factory, assemblyOptions);
+    id.assembleWeakForm(factory, assemblyOptions);
+    result->massMatrix = id.weakForm();
 
 #ifdef WITH_TRILINOS
-    DiscreteSparseLinOp& sparseDiscreteId =
-            dynamic_cast<DiscreteSparseLinOp&>(*result->massMatrix);
-    Epetra_CrsMatrix& epetraMat = sparseDiscreteId.epetraMatrix();
+    const DiscreteSparseLinOp& sparseDiscreteId =
+            dynamic_cast<const DiscreteSparseLinOp&>(*result->massMatrix);
+    const Epetra_CrsMatrix& epetraMat = sparseDiscreteId.epetraMatrix();
 
     result->inverseMassMatrix.reset(
                 new DiscreteInverseSparseLinOp(epetraMat, true /* symmetric */));

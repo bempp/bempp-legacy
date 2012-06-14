@@ -27,7 +27,7 @@
 
 #include "discrete_linear_operator.hpp"
 
-#include "../common/boost_ptr_vector_fwd.hpp"
+#include "../common/shared_ptr.hpp"
 
 #ifdef WITH_TRILINOS
 #include <Teuchos_RCP.hpp>
@@ -47,7 +47,7 @@ public:
     typedef DiscreteLinearOperator<ValueType> Base;
 
     ScaledDiscreteLinearOperator(ValueType multiplier,
-                                 std::auto_ptr<Base>& op);
+                                 shared_ptr<const Base>& op);
 
     virtual arma::Mat<ValueType> asMatrix() const;
 
@@ -77,7 +77,7 @@ private:
 
 private:
     ValueType m_multiplier;
-    std::auto_ptr<Base> m_operator;
+    shared_ptr<const Base> m_operator;
 };
 
 } // namespace Bempp

@@ -188,38 +188,42 @@ makeAssemblerImpl(
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-std::auto_ptr<DiscreteLinearOperator<ResultType> >
+shared_ptr<DiscreteLinearOperator<ResultType> >
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-assembleDetachedWeakFormImpl(
+assembleWeakFormImpl(
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options,
-        Symmetry symmetry) const
+        Symmetry symmetry)
 {
     AutoTimer timer("\nAssembly took ");
     std::auto_ptr<LocalAssembler> assembler = makeAssembler(factory, options);
-    return assembleDetachedWeakFormInternalImpl(*assembler, options, symmetry);
+    return assembleWeakFormInternalImpl(*assembler, options, symmetry);
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-std::auto_ptr<DiscreteLinearOperator<ResultType> >
+shared_ptr<DiscreteLinearOperator<ResultType> >
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-assembleDetachedWeakFormInternalImpl(
+assembleWeakFormInternalImpl(
         LocalAssembler& assembler,
         const AssemblyOptions& options,
-        Symmetry symmetry) const
+        Symmetry symmetry)
 {
     switch (options.operatorRepresentation()) {
     case AssemblyOptions::DENSE:
-        return assembleDetachedWeakFormInDenseMode(assembler, options, symmetry);
+        return shared_ptr<DiscreteLinearOperator<ResultType> >(
+                    assembleWeakFormInDenseMode(
+                        assembler, options, symmetry).release());
     case AssemblyOptions::ACA:
-        return assembleDetachedWeakFormInAcaMode(assembler, options, symmetry);
+        return shared_ptr<DiscreteLinearOperator<ResultType> >(
+                    assembleWeakFormInAcaMode(
+                        assembler, options, symmetry).release());
     case AssemblyOptions::FMM:
         throw std::runtime_error(
-                    "ElementaryIntegralOperator::assembleDetachedWeakFormInternalImpl(): "
+                    "ElementaryIntegralOperator::assembleWeakFormInternalImpl(): "
                     "assembly mode FMM is not implemented yet");
     default:
         throw std::runtime_error(
-                    "ElementaryIntegralOperator::assembleDetachedWeakFormInternalImpl(): "
+                    "ElementaryIntegralOperator::assembleWeakFormInternalImpl(): "
                     "invalid assembly mode");
     }
 }
@@ -227,7 +231,7 @@ assembleDetachedWeakFormInternalImpl(
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-assembleDetachedWeakFormInDenseMode(
+assembleWeakFormInDenseMode(
         LocalAssembler& assembler,
         const AssemblyOptions& options,
         Symmetry symmetry) const
@@ -310,7 +314,7 @@ assembleDetachedWeakFormInDenseMode(
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-assembleDetachedWeakFormInAcaMode(
+assembleWeakFormInAcaMode(
         LocalAssembler& assembler,
         const AssemblyOptions& options,
         Symmetry symmetry) const

@@ -40,15 +40,7 @@ LinearOperator(const Space<BasisFunctionType>& domain,
                const Space<BasisFunctionType>& dualToRange,
                const std::string& label) :
     m_domain(domain), m_range(range), m_dualToRange(dualToRange),
-    m_label(label)
-{
-}
-
-template <typename BasisFunctionType, typename ResultType>
-LinearOperator<BasisFunctionType, ResultType>::LinearOperator(
-        const LinearOperator<BasisFunctionType, ResultType>& other) :
-    m_domain(other.m_domain), m_range(other.m_range),
-    m_dualToRange(other.m_dualToRange), m_label(other.m_label)
+    m_label(label), m_weakForm(new shared_ptr<DiscreteLinearOperator<ResultType> >)
 {
 }
 
@@ -63,27 +55,17 @@ void LinearOperator<BasisFunctionType, ResultType>::assembleWeakForm(
         const AssemblyOptions& options,
         Symmetry symmetry)
 {
-    m_weakForm = this->assembleDetachedWeakFormImpl(factory, options, symmetry);
-}
-
-template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteLinearOperator<ResultType> >
-LinearOperator<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
-        const LocalAssemblerFactory& factory,
-        const AssemblyOptions& options,
-        Symmetry symmetry) const
-{
-    return this->assembleDetachedWeakFormImpl(factory, options, symmetry);
+    *m_weakForm = this->assembleWeakFormImpl(factory, options, symmetry);
 }
 
 template <typename BasisFunctionType, typename ResultType>
 bool LinearOperator<BasisFunctionType, ResultType>::isWeakFormAssembled() const
 {
-    return m_weakForm.get() != 0;
+    return (*m_weakForm).get() != 0;
 }
 
 template <typename BasisFunctionType, typename ResultType>
-const DiscreteLinearOperator<ResultType>&
+shared_ptr<const DiscreteLinearOperator<ResultType> >
 LinearOperator<BasisFunctionType, ResultType>::weakForm() const
 {
     if (!isWeakFormAssembled())
@@ -93,10 +75,10 @@ LinearOperator<BasisFunctionType, ResultType>::weakForm() const
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteLinearOperator<ResultType> >
-LinearOperator<BasisFunctionType, ResultType>::detachWeakForm()
+void
+LinearOperator<BasisFunctionType, ResultType>::resetWeakForm()
 {
-    return std::auto_ptr<DiscreteLinearOperator<ResultType> >(m_weakForm.release());
+    m_weakForm.reset(new shared_ptr<DiscreteLinearOperator<ResultType> >);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -121,7 +103,7 @@ void LinearOperator<BasisFunctionType, ResultType>::apply(
     arma::Col<ResultType> yVals = y_inout.projections();
 
     // Apply operator and assign the result to y_inout's projections
-    m_weakForm->apply(trans, xVals, yVals, alpha, beta);
+    (*m_weakForm)->apply(trans, xVals, yVals, alpha, beta);
     // TODO: make interfaces to the Trilinos and fallback
     // DiscreteLinearOperator::apply() compatible.
     // Perhaps by declaring an asPtrToBaseVector method in Vector...

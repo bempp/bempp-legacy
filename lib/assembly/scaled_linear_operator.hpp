@@ -50,10 +50,10 @@ public:
     virtual bool supportsRepresentation(
             AssemblyOptions::Representation repr) const;
 
-    virtual std::auto_ptr<DiscreteLinearOperator<ResultType_> >
-    assembleDetachedWeakFormImpl(const LocalAssemblerFactory& factory,
-                                 const AssemblyOptions& options,
-                                 Symmetry symmetry) const;
+    virtual shared_ptr<DiscreteLinearOperator<ResultType_> >
+    assembleWeakFormImpl(const LocalAssemblerFactory& factory,
+                         const AssemblyOptions& options,
+                         Symmetry symmetry);
 
 private:
     ResultType m_weight;

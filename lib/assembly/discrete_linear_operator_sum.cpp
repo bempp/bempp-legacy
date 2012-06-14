@@ -28,10 +28,11 @@ namespace Bempp
 
 template <typename ValueType>
 DiscreteLinearOperatorSum<ValueType>::
-DiscreteLinearOperatorSum(std::auto_ptr<Base>& term1, std::auto_ptr<Base>& term2) :
+DiscreteLinearOperatorSum(shared_ptr<const Base> &term1,
+                          shared_ptr<const Base> &term2) :
     m_term1(term1), m_term2(term2)
 {
-    if (!m_term1.get() || !m_term2.get())
+    if (!m_term1 || !m_term2)
         throw std::invalid_argument(
             "DiscreteLinearOperatorSum::DiscreteLinearOperatorSum(): "
             "arguments must not be NULL");

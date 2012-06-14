@@ -126,11 +126,10 @@ public:
                    const Space<BasisFunctionType>& dualToRange,
                    const std::string& label = "");
 
-    /** \brief Copy constructor.
-     *
-     *  \note If \p other owns an assembled weak form, this weak form is not
-     *  copied to the copy-constructed LinearOperator. */
-    LinearOperator(const LinearOperator<BasisFunctionType, ResultType>& other);
+    // Default "shallow" copy constructor is used (thus the internal pointer
+    // to the weak form is shared among all copies). To make a deep copy of
+    // a LinearOperator, use the deepCopy() method (not yet written).
+    // LinearOperator(const LinearOperator<BasisFunctionType, ResultType>& other);
 
     /** \brief Destructor. */
     virtual ~LinearOperator();
@@ -178,6 +177,8 @@ public:
     virtual bool supportsRepresentation(
             AssemblyOptions::Representation repr) const = 0;
 
+    //*  \param[in] force
+    //*    If true (default), the weak form will be reassembled even if an older one already exists. If false, any existing a weak form
     /** \brief Assemble the operator's weak form and store it internally.
      *
      *  This function constructs a discrete linear operator representing the
@@ -193,38 +194,38 @@ public:
      *  \f$\psi_k\f$ is a _test function_ from the domain space \f$X\f$.
      *
      *  The resulting discrete linear operator is stored internally. It can
-     *  subsequently be accessed via weakForm() or, if necessary, detached via
-     *  detachWeakForm(). */
+     *  subsequently be accessed via weakForm() or, if necessary, reset via
+     *  resetWeakForm().
+     *
+     *  Note that the weak form is assembled anew even if the function
+     *  has already been called before. In order to avoid a repeated assembly,
+     *  simply write
+     *
+     *  \code{cpp}
+     *  if (!op.isWeakFormAssembled())
+     *      op.assembleWeakForm(...);
+     *  \endcode
+     */
     void assembleWeakForm(const LocalAssemblerFactory& factory,
                           const AssemblyOptions& options,
-                          Symmetry symmetry = UNSYMMETRIC);
-
-    /** \brief Assemble and return the operator's weak form.
-     *
-     * This function constructs the weak form as described in the reference of
-     * assembleWeakForm(), but instead of storing the resulting discrete linear
-     * operator internally, it transfers its ownership to the caller. */
-    std::auto_ptr<DiscreteLinearOperator<ResultType> >
-    assembleDetachedWeakForm(const LocalAssemblerFactory& factory,
-                             const AssemblyOptions& options,
-                             Symmetry symmetry = UNSYMMETRIC) const;
+                          Symmetry symmetry = UNSYMMETRIC/*,
+                          bool force = true*/);
 
     /** \brief Return \p true if the operator stores its assembled weak form. */
     bool isWeakFormAssembled() const;
 
-    /** \brief Return a reference to the weak form assembled beforehand.
+    /** \brief Return a shared pointer to the weak form assembled beforehand.
      *
      * If the weak form has not previously been assembled, a std::runtime_error
      * exception is thrown. */
-    const DiscreteLinearOperator<ResultType>& weakForm() const;
+    shared_ptr<const DiscreteLinearOperator<ResultType> > weakForm() const;
 
-    /** \brief Clear the internal pointer to the assembled weak form and
-     * transfer its ownership to the caller.
+    /** \brief Reset the internal shared pointer to the weak form.
      *
-     * \note: Owing to the behaviour of the copy constructor of an auto_ptr, if
-     * the value returned by this function is not assigned to anything, the weak
-     * form is destroyed and the memory it occupied is freed. */
-    std::auto_ptr<DiscreteLinearOperator<ResultType> > detachWeakForm();
+     *  Note that other objects (e.g. composite operators) may also store shared
+     *  pointers to this weak form. Its memory will only be freed after the
+     *  last such shared pointer is reset. */
+    void resetWeakForm();
 
     /** @}
      *  @name Action
@@ -257,20 +258,13 @@ protected:
 
     /** \brief Implementation of the weak-form assembly.
      *
-     *  Construct a discrete linear operator representing the matrix \f$W_{jk}\f$
-     *  whose entries have the form
-     *
-     *  \f[ W_{jk} = \int_S \phi_j L \psi_k, \f]
-     *
-     *  where \f$L\f$ is the linear operator represented by this object, \f$S\f$
-     *  denotes the surface that is the domain of the trial space \f$X\f$ and
-     *  which is represented by the grid returned by <tt>trialSpace.grid()</tt>,
-     *  \f$\phi_j\f$ is a function from the test space \f$Y\f$ and \f$\psi_k\f$ a
-     *  function from \f$X\f$. */
-    virtual std::auto_ptr<DiscreteLinearOperator<ResultType> >
-    assembleDetachedWeakFormImpl(const LocalAssemblerFactory& factory,
-                                 const AssemblyOptions& options,
-                                 Symmetry symmetry) const = 0;
+     *  Construct a discrete linear operator representing the matrix \f$L_{jk}\f$
+     *  described in assembleWeakForm() and return a shared pointer to it.
+     */
+    virtual shared_ptr<DiscreteLinearOperator<ResultType> >
+    assembleWeakFormImpl(const LocalAssemblerFactory& factory,
+                         const AssemblyOptions& options,
+                         Symmetry symmetry) = 0;
 
 private:
     const Space<BasisFunctionType>& m_domain;
@@ -278,7 +272,7 @@ private:
     const Space<BasisFunctionType>& m_dualToRange;
     std::string m_label;
 
-    std::auto_ptr<DiscreteLinearOperator<ResultType> > m_weakForm;
+    shared_ptr<shared_ptr<DiscreteLinearOperator<ResultType> > > m_weakForm;
 };
 
 } // namespace Bempp

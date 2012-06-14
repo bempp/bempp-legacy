@@ -66,58 +66,26 @@ bool LinearOperatorSum<BasisFunctionType, ResultType>::supportsRepresentation(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteLinearOperator<ResultType> >
+shared_ptr<DiscreteLinearOperator<ResultType> >
 LinearOperatorSum<BasisFunctionType, ResultType>::
-assembleDetachedWeakFormImpl(const LocalAssemblerFactory& factory,
-                             const AssemblyOptions& options,
-                             Symmetry symmetry) const
-{
-    if (options.operatorRepresentation() == AssemblyOptions::DENSE)
-        return assembleDetachedWeakFormInDenseMode(factory, options, symmetry);
-    else
-        return assembleDetachedWeakFormInArbitraryMode(factory, options, symmetry);
-}
-
-template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteLinearOperator<ResultType> >
-LinearOperatorSum<BasisFunctionType, ResultType>::
-assembleDetachedWeakFormInDenseMode(
-        const LocalAssemblerFactory& factory,
-        const AssemblyOptions& options,
-        Symmetry symmetry) const
+assembleWeakFormImpl(const LocalAssemblerFactory& factory,
+                     const AssemblyOptions& options,
+                     Symmetry symmetry)
 {
     typedef DiscreteLinearOperator<ResultType> DiscreteLinOp;
-    typedef DiscreteDenseLinearOperator<ResultType> DiscreteDenseLinOp;
 
-    // The reset() calls below are made to release memory as early as possible
-    std::auto_ptr<DiscreteLinOp> discreteTerm1 =
-                m_term1->assembleDetachedWeakForm(factory, options, symmetry);
-    arma::Mat<ResultType> sum = discreteTerm1->asMatrix();
-    discreteTerm1.reset();
-    std::auto_ptr<DiscreteLinOp> discreteTerm2 =
-                m_term1->assembleDetachedWeakForm(factory, options, symmetry);
-    sum += discreteTerm2->asMatrix();
-    discreteTerm2.reset();
+    if (!m_term1->isWeakFormAssembled())
+        m_term1->assembleWeakForm(factory, options, symmetry);
+    shared_ptr<const DiscreteLinOp> discreteTerm1 = m_term1->weakForm();
+    assert(discreteTerm1);
 
-    return std::auto_ptr<DiscreteLinOp>(new DiscreteDenseLinOp(sum));
-}
+    if (!m_term2->isWeakFormAssembled())
+        m_term2->assembleWeakForm(factory, options, symmetry);
+    shared_ptr<const DiscreteLinOp> discreteTerm2 = m_term2->weakForm();
+    assert(discreteTerm2);
 
-template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteLinearOperator<ResultType> >
-LinearOperatorSum<BasisFunctionType, ResultType>::
-assembleDetachedWeakFormInArbitraryMode(const LocalAssemblerFactory& factory,
-                                        const AssemblyOptions& options,
-                                        Symmetry symmetry) const
-{
-    typedef std::auto_ptr<DiscreteLinearOperator<ResultType> > DiscreteLinOpPtr;
-    DiscreteLinOpPtr discreteTerm1 = 
-        m_term1->assembleDetachedWeakForm(factory, options, symmetry);
-    DiscreteLinOpPtr discreteTerm2 = 
-        m_term2->assembleDetachedWeakForm(factory, options, symmetry);
-    assert(discreteTerm1.get());
-    assert(discreteTerm2.get());
-    return DiscreteLinOpPtr(new DiscreteLinearOperatorSum<ResultType>(
-                                discreteTerm1, discreteTerm2));
+    return shared_ptr<DiscreteLinOp>(new DiscreteLinearOperatorSum<ResultType>(
+                                         discreteTerm1, discreteTerm2));
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperatorSum);

@@ -18,16 +18,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "config_trilinos.hpp"
-
 #ifndef bempp_discrete_linear_operator_sum_hpp
 #define bempp_discrete_linear_operator_sum_hpp
+
+#include "config_trilinos.hpp"
 
 #include "../common/common.hpp"
 
 #include "discrete_linear_operator.hpp"
 
-#include "../common/boost_ptr_vector_fwd.hpp"
+#include "../common/shared_ptr.hpp"
 
 #ifdef WITH_TRILINOS
 #include <Teuchos_RCP.hpp>
@@ -52,8 +52,8 @@ public:
      *
      *  \note Both operators must have identical dimensions, otherwise
      *  a <tt>std::invalid_argument</tt> exception is thrown. */
-    DiscreteLinearOperatorSum(std::auto_ptr<Base>& term1,
-                              std::auto_ptr<Base>& term2);
+    DiscreteLinearOperatorSum(shared_ptr<const Base>& term1,
+                              shared_ptr<const Base>& term2);
 
     virtual arma::Mat<ValueType> asMatrix() const;
 
@@ -81,7 +81,7 @@ private:
                                   const ValueType alpha,
                                   const ValueType beta) const;
 private:
-    std::auto_ptr<Base> m_term1, m_term2;
+    shared_ptr<const Base> m_term1, m_term2;
 };
 
 } // namespace Bempp

@@ -106,24 +106,24 @@ private:
     /** @}
         \name Weak form assembly
         @{ */
-    virtual std::auto_ptr<DiscreteLinearOperator<ResultType_> >
-    assembleDetachedWeakFormImpl(
+    virtual shared_ptr<DiscreteLinearOperator<ResultType_> >
+    assembleWeakFormImpl(
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options,
-            Symmetry symmetry) const;
-    virtual std::auto_ptr<DiscreteLinearOperator<ResultType_> >
-    assembleDetachedWeakFormInternalImpl(
+            Symmetry symmetry);
+    virtual shared_ptr<DiscreteLinearOperator<ResultType_> >
+    assembleWeakFormInternalImpl(
             LocalAssembler& assembler,
             const AssemblyOptions& options,
-            Symmetry symmetry) const;
+            Symmetry symmetry);
 
     std::auto_ptr<DiscreteLinearOperator<ResultType_> >
-    assembleDetachedWeakFormInDenseMode(
+    assembleWeakFormInDenseMode(
             LocalAssembler& assembler,
             const AssemblyOptions &options,
             Symmetry symmetry) const;
     std::auto_ptr<DiscreteLinearOperator<ResultType_> >
-    assembleDetachedWeakFormInAcaMode(
+    assembleWeakFormInAcaMode(
             LocalAssembler& assembler,
             const AssemblyOptions& options,
             Symmetry symmetry) const;

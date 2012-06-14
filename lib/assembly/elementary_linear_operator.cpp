@@ -62,14 +62,14 @@ constituentOperatorWeights() const
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteLinearOperator<ResultType> >
+shared_ptr<DiscreteLinearOperator<ResultType> >
 ElementaryLinearOperator<BasisFunctionType, ResultType>::
-assembleDetachedWeakFormInternal(
+assembleWeakFormInternal(
         LocalAssembler& assembler,
         const AssemblyOptions& options,
-        Symmetry symmetry) const
+        Symmetry symmetry)
 {
-    return assembleDetachedWeakFormInternalImpl(assembler, options, symmetry);
+    return assembleWeakFormInternalImpl(assembler, options, symmetry);
 }
 
 template <typename BasisFunctionType, typename ResultType>

@@ -196,43 +196,49 @@ bool IdentityOperator<BasisFunctionType, ResultType>::supportsRepresentation(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteLinearOperator<ResultType> >
-IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormImpl(
+shared_ptr<DiscreteLinearOperator<ResultType> >
+IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormImpl(
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options,
-        Symmetry symmetry) const
+        Symmetry symmetry)
 {
     AutoTimer timer("\nAssembly took ");
     std::auto_ptr<LocalAssembler> assembler = makeAssembler(factory, options);
-    return assembleDetachedWeakFormInternalImpl(*assembler, options, symmetry);
+    return assembleWeakFormInternalImpl(*assembler, options, symmetry);
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteLinearOperator<ResultType> >
-IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInternalImpl(
+shared_ptr<DiscreteLinearOperator<ResultType> >
+IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInternalImpl(
         LocalAssembler& assembler,
         const AssemblyOptions& options,
-        Symmetry symmetry) const
+        Symmetry symmetry)
 {
     switch (options.operatorRepresentation())
     {
     case AssemblyOptions::DENSE:
-        return assembleDetachedWeakFormInDenseMode(assembler, options, symmetry);
+        return shared_ptr<DiscreteLinearOperator<ResultType> >(
+                    assembleWeakFormInDenseMode(
+                        assembler, options, symmetry).release());
     case AssemblyOptions::ACA:
 #ifdef WITH_TRILINOS
-        return assembleDetachedWeakFormInSparseMode(assembler, options, symmetry);
+        return shared_ptr<DiscreteLinearOperator<ResultType> >(
+                    assembleWeakFormInSparseMode(
+                        assembler, options, symmetry).release());
 #else // Fallback to dense mode. Don't know whether this should be signalled to the user.
-        return assembleDetachedWeakFormInDenseMode(assembler, options, symmetry);
+        return shared_ptr<DiscreteLinearOperator<ResultType> >(
+                    assembleWeakFormInDenseMode(
+                        assembler, options, symmetry).release());
 #endif
     default:
-        throw std::runtime_error("IdentityOperator::assembleDetachedWeakFormImpl(): "
+        throw std::runtime_error("IdentityOperator::assembleWeakFormImpl(): "
                                  "invalid assembly mode");
     }
 }
 
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInDenseMode(
+IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInDenseMode(
         LocalAssembler& assembler,
         const AssemblyOptions& options,
         Symmetry symmetry) const
@@ -283,7 +289,7 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInDense
 
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteLinearOperator<ResultType> >
-IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInSparseMode(
+IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparseMode(
         LocalAssembler& assembler,
         const AssemblyOptions& options,
         Symmetry symmetry) const
@@ -291,7 +297,7 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInSpars
 #ifdef WITH_TRILINOS
     if (boost::is_complex<BasisFunctionType>::value)
         throw std::runtime_error(
-                "IdentityOperator::assembleDetachedWeakFormInSparseMode(): "
+                "IdentityOperator::assembleWeakFormInSparseMode(): "
                 "sparse-mode assembly of identity operators for "
                 "complex-valued basis functions is not supported yet");
 
@@ -379,7 +385,7 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInSpars
     return std::auto_ptr<DiscreteLinearOperator<ResultType> >(
                 new DiscreteSparseLinearOperator<ResultType>(result));
 #else // WITH_TRILINOS
-    throw std::runtime_error("IdentityOperator::assembleDetachedWeakFormInSparseMode(): "
+    throw std::runtime_error("IdentityOperator::assembleWeakFormInSparseMode(): "
                              "To enable assembly in sparse mode, recompile BEM++ "
                              "with the symbol WITH_TRILINOS defined.");
 #endif

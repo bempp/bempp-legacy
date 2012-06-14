@@ -75,26 +75,26 @@ private:
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const;
 
-    virtual std::auto_ptr<DiscreteLinearOperator<ResultType_> >
-    assembleDetachedWeakFormImpl(
+    virtual shared_ptr<DiscreteLinearOperator<ResultType_> >
+    assembleWeakFormImpl(
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options,
-            Symmetry symmetry) const;
+            Symmetry symmetry);
 
-    virtual std::auto_ptr<DiscreteLinearOperator<ResultType_> >
-    assembleDetachedWeakFormInternalImpl(
+    virtual shared_ptr<DiscreteLinearOperator<ResultType_> >
+    assembleWeakFormInternalImpl(
+            LocalAssembler& assembler,
+            const AssemblyOptions& options,
+            Symmetry symmetry);
+
+    std::auto_ptr<DiscreteLinearOperator<ResultType_> >
+    assembleWeakFormInDenseMode(
             LocalAssembler& assembler,
             const AssemblyOptions& options,
             Symmetry symmetry) const;
 
     std::auto_ptr<DiscreteLinearOperator<ResultType_> >
-    assembleDetachedWeakFormInDenseMode(
-            LocalAssembler& assembler,
-            const AssemblyOptions& options,
-            Symmetry symmetry) const;
-
-    std::auto_ptr<DiscreteLinearOperator<ResultType_> >
-    assembleDetachedWeakFormInSparseMode(
+    assembleWeakFormInSparseMode(
             LocalAssembler& assembler,
             const AssemblyOptions& options,
             Symmetry symmetry) const;

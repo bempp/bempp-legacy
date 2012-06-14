@@ -65,24 +65,24 @@ public:
     virtual bool supportsRepresentation(
             AssemblyOptions::Representation repr) const;
 
-    virtual std::auto_ptr<DiscreteLinearOperator<ResultType_> >
-    assembleDetachedWeakFormImpl(
+    virtual shared_ptr<DiscreteLinearOperator<ResultType_> >
+    assembleWeakFormImpl(
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options,
-            Symmetry symmetry) const;
+            Symmetry symmetry);
 
 private:
-    std::auto_ptr<DiscreteLinearOperator<ResultType_> >
-    assembleDetachedWeakFormInDenseMode(
+    shared_ptr<DiscreteLinearOperator<ResultType_> >
+    assembleWeakFormInDenseMode(
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options,
-            Symmetry symmetry) const;
+            Symmetry symmetry);
 
-    std::auto_ptr<DiscreteLinearOperator<ResultType_> >
-    assembleDetachedWeakFormInArbitraryMode(
+    shared_ptr<DiscreteLinearOperator<ResultType_> >
+    assembleWeakFormInArbitraryMode(
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options,
-            Symmetry symmetry) const;
+            Symmetry symmetry);
 
 private:
     std::auto_ptr<Base> m_term1, m_term2;

@@ -63,15 +63,17 @@ bool ScaledLinearOperator<BasisFunctionType, ResultType>::supportsRepresentation
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteLinearOperator<ResultType> >
+shared_ptr<DiscreteLinearOperator<ResultType> >
 ScaledLinearOperator<BasisFunctionType, ResultType>::
-assembleDetachedWeakFormImpl(const LocalAssemblerFactory& factory,
-                             const AssemblyOptions& options,
-                             Symmetry symmetry) const
+assembleWeakFormImpl(const LocalAssemblerFactory& factory,
+                     const AssemblyOptions& options,
+                     Symmetry symmetry)
 {
-    std::auto_ptr<DiscreteLinearOperator<ResultType> > wrappedDiscreteLinOp = 
-        m_operator->assembleDetachedWeakForm(factory, options, symmetry);
-    return std::auto_ptr<DiscreteLinearOperator<ResultType> >(
+    if (!m_operator->isWeakFormAssembled())
+        m_operator->assembleWeakForm(factory, options, symmetry);
+    shared_ptr<const DiscreteLinearOperator<ResultType> > wrappedDiscreteLinOp =
+            m_operator->weakForm();
+    return shared_ptr<DiscreteLinearOperator<ResultType> >(
                 new ScaledDiscreteLinearOperator<ResultType>(
                     m_weight, wrappedDiscreteLinOp));
 }
