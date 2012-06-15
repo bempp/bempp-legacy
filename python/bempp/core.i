@@ -105,10 +105,10 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "grid/geometry_factory.i"
 
 // Fiber
-//%include "fiber/parallelisation_options.i"
-//%include "fiber/opencl_options.i"
-//%include "fiber/quadrature_options.i"
-//%include "fiber/accuracy_options.i"
+%include "fiber/parallelisation_options.i"
+%include "fiber/opencl_options.i"
+%include "fiber/quadrature_options.i"
+%include "fiber/accuracy_options.i"
 
 // Space
 %include "space/space.i"
