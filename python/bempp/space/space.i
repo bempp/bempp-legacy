@@ -23,10 +23,10 @@ namespace Bempp
     // this function is only for internal use
     %ignore shapeFunctionValueExpression;
 
-    // this function is only for internal use
+    // to be wrapped later...
     %ignore setElementVariant;
 
-    // this function is only for internal use
+    // to be wrapped later...
     %ignore elementVariant;
 
 
