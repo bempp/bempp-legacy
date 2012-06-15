@@ -16,7 +16,9 @@ grid = bempp.GridFactory.importGmshGrid("triangular", "../../examples/meshes/sph
 space=bempp.piecewiseConstantScalarSpace('float32',grid)
 space.assignDofs()
 print space.dofsAssigned()
-# print space.templateType
-# print object.__getattribute__(space,'impl')
+print space._basisFunctionType
+
+op = bempp.laplace3dSingleLayerPotential('complex64', space, space)
+print "operator has a singular kernel?", not op.isRegular()
 
 
