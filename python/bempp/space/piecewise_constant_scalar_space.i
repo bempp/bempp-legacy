@@ -11,7 +11,25 @@
 //}
 
 
+%feature("pythonappend") Bempp::PiecewiseConstantScalarSpace<float>::PiecewiseConstantScalarSpace(Grid& grid)%{
+self._BasisFunctionType='float32'
+  %}
+
+
+%feature("pythonappend") Bempp::PiecewiseConstantScalarSpace<double>::PiecewiseConstantScalarSpace(Grid& grid)%{
+self._BasisFunctionType='float64'
+  %}
+
+%feature("pythonappend") Bempp::PiecewiseConstantScalarSpace<std::complex<float> >::PiecewiseConstantScalarSpace(Grid& grid)%{
+self._BasisFunctionType='complex64'
+  %}
+
+%feature("pythonappend") Bempp::PiecewiseConstantScalarSpace<std::complex<double> >::PiecewiseConstantScalarSpace(Grid& grid)%{
+self._BasisFunctionType='complex128'
+  %}
+
 %include "space/piecewise_constant_scalar_space.hpp"
+
 
 namespace Bempp
 {
@@ -23,12 +41,13 @@ namespace Bempp
 
 }
 
+
 %pythoncode %{
 
-class PiecewiseConstantScalarSpace(Template1,ScalarSpace):
+def PiecewiseConstantScalarSpace(grid,BasisFunctionType='float64'):
     """Space of piecewise constant scalar functions"""
-    def __init__(self,dtype1,*args,**kwargs):
-        super(PiecewiseConstantScalarSpace,self).__init__('PiecewiseConstantScalarSpace',dtype1,*args,**kwargs)
-
-	  %}
+    name='PiecewiseConstantScalarSpace'+'_'+checkType(BasisFunctionType)
+    return globals()[name](grid)
+	 
+ %}
 

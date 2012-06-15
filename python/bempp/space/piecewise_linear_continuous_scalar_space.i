@@ -6,7 +6,31 @@
 // %include "space_docstrings.i"
 
 
+
+%feature("pythonappend") Bempp::PiecewiseLinearContinuousScalarSpace<float>::PiecewiseLinearContinuousScalarSpace(Grid& grid)%{
+self._BasisFunctionType='float32'
+  %}
+
+
+%feature("pythonappend") Bempp::PiecewiseLinearContinuousScalarSpace<double>::PiecewiseLinearContinuousScalarSpace(Grid& grid)%{
+self._BasisFunctionType='float64'
+  %}
+
+%feature("pythonappend") Bempp::PiecewiseLinearContinuousScalarSpace<std::complex<float> >::PiecewiseLinearContinuousScalarSpace(Grid& grid)%{
+self._BasisFunctionType='complex64'
+  %}
+
+%feature("pythonappend") Bempp::PiecewiseLinearContinuousScalarSpace<std::complex<double> >::PiecewiseLinearContinuousScalarSpace(Grid& grid)%{
+self._BasisFunctionType='complex128'
+  %}
+
+
+
 %include "space/piecewise_linear_continuous_scalar_space.hpp"
+
+
+
+
 
 namespace Bempp
 {
@@ -20,10 +44,11 @@ namespace Bempp
 
 %pythoncode %{
 
-class PiecewiseLinearContinuousScalarSpace(Template1,ScalarSpace):
-    """Space of piecewise linear scalar functions"""
-    def __init__(self,dtype1,*args,**kwargs):
-        super(PiecewiseLinearContinuousScalarSpace,self).__init__('PiecewiseLinearContinuousScalarSpace',dtype1,*args,**kwargs)
+
+def PiecewiseLinearContinuousScalarSpace(grid,BasisFunctionType='float64'):
+   """Create a space if piecewise linear constant functions."""
+   name='PiecewiseLinearContinuousScalarSpace'+'_'+checkType(BasisFunctionType)
+   return globals()[name](grid)
 
 	  %}
 

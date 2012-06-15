@@ -16,7 +16,5 @@ grid = bempp.GridFactory.importGmshGrid("triangular", "../../examples/meshes/sph
 space=bempp.PiecewiseConstantScalarSpace('float32',grid)
 space.assignDofs()
 print space.dofsAssigned()
-print space.templateType
-print object.__getattribute__(space,'impl')
 
 

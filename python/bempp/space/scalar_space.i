@@ -21,9 +21,3 @@ namespace Bempp
 
 } 
 
-%pythoncode %{
-
-class ScalarSpace(Space):
-   pass
-
-     %}

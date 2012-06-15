@@ -36,7 +36,8 @@
 %include "exception.i"
 %include "std_string.i"
 
-// Useful Python tools
+
+// Some useful Python routines
 %include "py_defs.i"
 
 // Import macros for explicit template instantiations

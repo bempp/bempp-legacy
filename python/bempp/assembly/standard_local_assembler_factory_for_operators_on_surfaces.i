@@ -5,6 +5,15 @@
 
 %warnfilter(401) Bempp::StandardLocalAssemblerFactoryForOperatorsOnSurfaces;
 
+%feature("pythonappend") Bempp::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<float,float>::StandardLocalAssemblerFactoryForOperatorsOnSurfaces(const AccuracyOptions& accuracyOptions)%{
+self._BasisFunctionType='float32'
+self._ResultType='float32'
+  %}
+
+
+
+
+
 %include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 
 
@@ -24,9 +33,8 @@ namespace Bempp
 
 %pythoncode %{
 
-class StandardLocalAssemblerFactoryForOperatorsOnSurfaces(Template2,ScalarSpace):
-    """Standard assembler factory"""
-    def __init__(self,dtype1,dtype2,*args,**kwargs):
-          super(StandardLocalAssemblerFactoryForOperatorsOnSurfaces,self).__init__('StandardLocalAssemblerFactoryForOperatorsOnSurfaces',dtype1,dtype2,*args,**kwargs)
+  class StandardLocalAssemblerFactoryForOperatorsOnSurfaces(BasisFunctionType='float64',ResultType='float64',AccuracyOptions=None):
+      if ResultType is not None:
+            dtype=checkType(
 
 	  %}
