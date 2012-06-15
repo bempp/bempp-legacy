@@ -76,6 +76,9 @@ AUTO_PTR_TYPEMAPS(Bempp::VtkWriter)
 
 // Wrap Bempp components
 
+// Common
+%include "common/scalar_traits.i"
+
 // Grid
 %include "grid/geometry.i"  
 %include "grid/geometry_type.i"  
