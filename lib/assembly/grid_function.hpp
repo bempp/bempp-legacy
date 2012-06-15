@@ -153,16 +153,105 @@ template <typename BasisFunctionType, typename ResultType, typename ScalarType>
 GridFunction<BasisFunctionType, ResultType> operator*(
         const GridFunction<BasisFunctionType, ResultType>& g1, const ScalarType& scalar);
 
+
+
+
+template <typename BasisFunctionType>
+GridFunction<BasisFunctionType,float>
+operator*(const float scalar, const GridFunction<BasisFunctionType, float>& g2)
+{
+  return g2 * scalar;
+}
+
+template <typename BasisFunctionType>
+GridFunction<BasisFunctionType,float>
+operator*(const double scalar, const GridFunction<BasisFunctionType, float>& g2)
+{
+  return g2 * scalar;
+}
+
+
+template <typename BasisFunctionType>
+GridFunction<BasisFunctionType,double>
+operator*(const float scalar, const GridFunction<BasisFunctionType, double>& g2)
+{
+  return g2 * scalar;
+}
+
+template <typename BasisFunctionType>
+GridFunction<BasisFunctionType,double>
+operator*(const double scalar, const GridFunction<BasisFunctionType, double>& g2)
+{
+  return g2 * scalar;
+}
+
+template <typename BasisFunctionType>
+GridFunction<BasisFunctionType,std::complex<float> >
+operator*(const float scalar, const GridFunction<BasisFunctionType, std::complex<float> >& g2)
+{
+  return g2 * scalar;
+}
+
+template <typename BasisFunctionType>
+GridFunction<BasisFunctionType,std::complex<float> >
+operator*(const double scalar, const GridFunction<BasisFunctionType, std::complex<float> >& g2)
+{
+  return g2 * scalar;
+}
+
+template <typename BasisFunctionType>
+GridFunction<BasisFunctionType,std::complex<float> >
+operator*(const std::complex<float> scalar, const GridFunction<BasisFunctionType, std::complex<float> >& g2)
+{
+  return g2 * scalar;
+}
+
+template <typename BasisFunctionType>
+GridFunction<BasisFunctionType,std::complex<float> >
+operator*(const std::complex<double> scalar, const GridFunction<BasisFunctionType, std::complex<float> >& g2)
+{
+  return g2 * scalar;
+}
+
+template <typename BasisFunctionType>
+GridFunction<BasisFunctionType,std::complex<double> >
+operator*(const float scalar, const GridFunction<BasisFunctionType, std::complex<double> >& g2)
+{
+  return g2 * scalar;
+}
+
+template <typename BasisFunctionType>
+GridFunction<BasisFunctionType,std::complex<double> >
+operator*(const double scalar, const GridFunction<BasisFunctionType, std::complex<double> >& g2)
+{
+  return g2 * scalar;
+}
+
+template <typename BasisFunctionType>
+GridFunction<BasisFunctionType,std::complex<double> >
+operator*(const std::complex<float> scalar, const GridFunction<BasisFunctionType, std::complex<double> >& g2)
+{
+  return g2 * scalar;
+}
+
+template <typename BasisFunctionType>
+GridFunction<BasisFunctionType,std::complex<double> >
+operator*(const std::complex<double> scalar, const GridFunction<BasisFunctionType, std::complex<double> >& g2)
+{
+  return g2 * scalar;
+}
+
+
 // This type machinery is needed to disambiguate between this operator and
 // the one taking a LinearOperator and a GridFunction
-template <typename BasisFunctionType, typename ResultType, typename ScalarType>
-typename boost::enable_if<
-    typename boost::mpl::has_key<
-        boost::mpl::set<float, double, std::complex<float>, std::complex<double> >,
-        ScalarType>,
-    GridFunction<BasisFunctionType, ResultType> >::type
-operator*(
-        const ScalarType& scalar, const GridFunction<BasisFunctionType, ResultType>& g2);
+//template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+//typename boost::enable_if<
+//    typename boost::mpl::has_key<
+//        boost::mpl::set<float, double, std::complex<float>, std::complex<double> >,
+//        ScalarType>,
+//    GridFunction<BasisFunctionType, ResultType> >::type
+//operator*(
+//        const ScalarType& scalar, const GridFunction<BasisFunctionType, ResultType>& g2);
 
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
 GridFunction<BasisFunctionType, ResultType> operator/(

@@ -63,6 +63,7 @@ AUTO_PTR_TYPEMAPS(Bempp::EntityIterator<0>)
 AUTO_PTR_TYPEMAPS(Bempp::EntityIterator<1>)
 AUTO_PTR_TYPEMAPS(Bempp::EntityIterator<2>)
 AUTO_PTR_TYPEMAPS(Bempp::EntityIterator<3>)
+AUTO_PTR_TYPEMAPS(Bempp::Geometry)
 AUTO_PTR_TYPEMAPS(Bempp::VtkWriter)
 
 // Make commonly used typedefs known to Swig
@@ -87,10 +88,26 @@ AUTO_PTR_TYPEMAPS(Bempp::VtkWriter)
 %include "grid/grid_view.i"  
 %include "grid/index_set.i"
 %include "grid/vtk_writer.i" 
-%include "grid/grid_factory.i" 
+%include "grid/grid_factory.i"
+%include "grid/geometry_factory.i"
 
 // Space
 %include "space/space.i"
 %include "space/scalar_space.i"
 %include "space/piecewise_constant_scalar_space.i"
 %include "space/piecewise_linear_continuous_scalar_space.i"
+
+// Fiber
+%include "fiber/parallelisation_options.i"
+%include "fiber/opencl_options.i"
+%include "fiber/quadrature_options.i"
+%include "fiber/accuracy_options.i"
+ //%include "fiber/standard_local_assembler_factory_for_operators_on_surfaces.i"
+
+
+// Assembly
+%include "assembly/assembly_options.i"
+%include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.i"
+
+
+
