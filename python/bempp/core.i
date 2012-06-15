@@ -39,6 +39,9 @@
 // Useful Python tools
 %include "py_defs.i"
 
+// Import macros for explicit template instantiations
+%include "template_instantiations.i"
+
 // Setup a handler for C++ exceptions
 %exception {
     try {
@@ -53,6 +56,8 @@
 }
 
 // Declare all necessary auto_ptr typemaps
+
+// Grid
 AUTO_PTR_TYPEMAPS(Bempp::Grid)
 AUTO_PTR_TYPEMAPS(Bempp::GridView)
 AUTO_PTR_TYPEMAPS(Bempp::EntityPointer<0>)
@@ -64,6 +69,11 @@ AUTO_PTR_TYPEMAPS(Bempp::EntityIterator<1>)
 AUTO_PTR_TYPEMAPS(Bempp::EntityIterator<2>)
 AUTO_PTR_TYPEMAPS(Bempp::EntityIterator<3>)
 AUTO_PTR_TYPEMAPS(Bempp::VtkWriter)
+
+AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::DiscreteLinearOperator)
+AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
+
+// End of auto_ptr typemaps
 
 // Make commonly used typedefs known to Swig
 %inline %{
@@ -97,3 +107,17 @@ AUTO_PTR_TYPEMAPS(Bempp::VtkWriter)
 %include "space/scalar_space.i"
 %include "space/piecewise_constant_scalar_space.i"
 %include "space/piecewise_linear_continuous_scalar_space.i"
+
+// Assembly
+%include "assembly/assembly_options.i"
+%include "assembly/transposition_mode.i"
+%include "assembly/linear_operator.i"
+%include "assembly/linear_operator_superposition.i"
+%include "assembly/elementary_linear_operator.i"
+%include "assembly/elementary_integral_operator.i"
+%include "assembly/elementary_singular_integral_operator.i"
+%include "assembly/laplace_3d_operators.i"
+
+// Linear algebra
+// %include "linalg/default_iterative_solver.i"
+
