@@ -28,17 +28,15 @@ namespace Fiber
 
 struct QuadratureOptions
 {
-    QuadratureOptions() : mode(ORDER_INCREMENT), orderIncrement(0) {
+   QuadratureOptions() : mode(ORDER_INCREMENT), orderIncrement(0),order(0) {
     }
 
     enum Mode {
         ORDER_INCREMENT, EXACT_ORDER
     } mode;
 
-    union {
-        int orderIncrement;
-        int order;
-    };
+    int orderIncrement;
+    int order;
 };
 
 }

@@ -68,6 +68,7 @@ AUTO_PTR_TYPEMAPS(Bempp::EntityIterator<0>)
 AUTO_PTR_TYPEMAPS(Bempp::EntityIterator<1>)
 AUTO_PTR_TYPEMAPS(Bempp::EntityIterator<2>)
 AUTO_PTR_TYPEMAPS(Bempp::EntityIterator<3>)
+AUTO_PTR_TYPEMAPS(Bempp::Geometry)
 AUTO_PTR_TYPEMAPS(Bempp::VtkWriter)
 
 AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::DiscreteLinearOperator)
@@ -100,7 +101,14 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "grid/grid_view.i"  
 %include "grid/index_set.i"
 %include "grid/vtk_writer.i" 
-%include "grid/grid_factory.i" 
+%include "grid/grid_factory.i"
+%include "grid/geometry_factory.i"
+
+// Fiber
+//%include "fiber/parallelisation_options.i"
+//%include "fiber/opencl_options.i"
+//%include "fiber/quadrature_options.i"
+//%include "fiber/accuracy_options.i"
 
 // Space
 %include "space/space.i"
@@ -117,7 +125,7 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "assembly/elementary_integral_operator.i"
 %include "assembly/elementary_singular_integral_operator.i"
 %include "assembly/laplace_3d_operators.i"
+//%include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.i"
 
-// Linear algebra
-// %include "linalg/default_iterative_solver.i"
+
 
