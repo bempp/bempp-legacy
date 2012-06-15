@@ -8,7 +8,7 @@
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename ResultType> class ElementaryLinearOperator;
+BEMPP_PYTHON_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(ElementaryLinearOperator);
 
 %extend ElementaryLinearOperator
 {
@@ -27,11 +27,3 @@ namespace Bempp
 {
 BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(ElementaryLinearOperator);
 }
-
-%pythoncode %{
-
-class ElementaryLinearOperator(LinearOperator):
-    pass
-    # TODO: docs
-
-%}
