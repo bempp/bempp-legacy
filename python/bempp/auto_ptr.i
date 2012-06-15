@@ -6,6 +6,13 @@
 %}
 %template() std::auto_ptr<TYPE >;
 %enddef
+
+%define AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(TYPE)
+AUTO_PTR_TYPEMAPS(TYPE<float>);
+AUTO_PTR_TYPEMAPS(TYPE<double>);
+AUTO_PTR_TYPEMAPS(TYPE<std::complex<float> >);
+AUTO_PTR_TYPEMAPS(TYPE<std::complex<double> >);
+%enddef
 #endif
 
 namespace std {
