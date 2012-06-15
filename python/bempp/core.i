@@ -40,7 +40,9 @@
 %include "py_defs.i"
 
 // Import macros for explicit template instantiations
-%include "template_instantiations.i"
+%include "template_instantiations_basis.i"
+%include "template_instantiations_basis_result.i"
+%include "template_instantiations_basis_kernel_result.i"
 
 // Setup a handler for C++ exceptions
 %exception {
