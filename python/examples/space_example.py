@@ -20,3 +20,9 @@ print space._basisFunctionType
 
 op = bempp.laplace3dSingleLayerPotential(space, space)
 print "operator has a singular kernel?", not op.isRegular()
+
+factory = bempp.standardLocalAssemblerFactoryForOperatorsOnSurfaces()
+options = bempp.AssemblyOptions()
+options.switchToAca(bempp.AcaOptions())
+op.assembleWeakForm(factory, options)
+wf = op.weakForm()
