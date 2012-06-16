@@ -13,8 +13,10 @@ import numpy as np
 # Create the grid, the leaf view and its index set
 print "Importing grid..."
 grid = bempp.GridFactory.importGmshGrid("triangular", "../../examples/meshes/sphere-614.msh")
-space=bempp.PiecewiseConstantScalarSpace('float32',grid)
+space=bempp.piecewiseConstantScalarSpace(grid)
 space.assignDofs()
 print space.dofsAssigned()
+print space._basisFunctionType
 
-
+op = bempp.laplace3dSingleLayerPotential(space, space)
+print "operator has a singular kernel?", not op.isRegular()

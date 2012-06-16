@@ -14,8 +14,17 @@ BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dSingleLaye
 
 %pythoncode %{
 
-class Laplace3dSingleLayerPotential(Template2, ElementarySingularIntegralOperator):
-    pass
-    # TODO: docs
+  def Laplace3dSingleLayerPotential(testSpace,trialSpace,BasisFunctionType=None,ResultType=None):
+      if BasisFunctionType is None: BasisFunctionType=testSpace._basisFunctionType
+      if ResultType is None: ResultType=BasisFunctionType
+      dtype1=checkType(BasisFunctionType)
+      dtype2=checkType(ResultType)
+      name='Laplace3dSingleLayerPotential'+'_'+dtype1+'_'+dtype2
+      fullName=name+'_'+dtype1+'_'+dtype2
+      keys=globals()
+      if not name in keys: 
+          raise Exception('Class '+name+' with BasisFunctionType '+dtype1+' and ResultType '+dtype2+' does not exist.')
+      return keys[fullName](testSpace,trialSpace)
+
 
 %}

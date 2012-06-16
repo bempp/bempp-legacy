@@ -5,7 +5,7 @@
 class Template1(object):
     def __init__(self,name,dtype1,*args,**kwargs):
         keys=globals()
-	dtype1=checkType(dtype1)
+        dtype1=checkType(dtype1)
         fullName=name+'_'+dtype1
         if not fullName in keys: 
             raise Exception('Class '+name+' with template type '+dtype1+' does not exist.')
@@ -30,7 +30,7 @@ class Template2(object):
             raise Exception('Class '+name+' with template types '+(dtype1,dtype2)+' does not exist.')
         self.impl=keys[fullName](*args,**kwargs)
 	self.templateType=[dtype1,dtype2]
-
+        
     def __getattribute__(self,attr):
         if attr=='templateType':
             return object.__getattribute__(self,'templateType')

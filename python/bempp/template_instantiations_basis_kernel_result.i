@@ -1,20 +1,4 @@
-%define BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(CLASS)
-
-%template(CLASS ## _float32_float32)
-    CLASS<float, float>;
-%template(CLASS ## _float32_complex64)
-    CLASS<float, std::complex<float> >;
-%template(CLASS ## _complex64_complex64)
-    CLASS<std::complex<float>, std::complex<float> >;
-
-%template(CLASS ## _float64_float64)
-    CLASS<double, double>;
-%template(CLASS ## _float64_complex128)
-    CLASS<double, std::complex<double> >;
-%template(CLASS ## _complex128_complex128)
-    CLASS<std::complex<double>, std::complex<double> >
-
-%enddef
+// Macros for classes templated on basis, kernel and result type
 
 %define BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(CLASS)
 

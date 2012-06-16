@@ -15,46 +15,44 @@
 
 namespace Bempp
 {
-BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dSingleLayerPotential);
-BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dDoubleLayerPotential);
-BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dAdjointDoubleLayerPotential);
-BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dHypersingularOperator);
-}
+
+BEMPP_PYTHON_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dSingleLayerPotential);
+BEMPP_PYTHON_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dDoubleLayerPotential);
+BEMPP_PYTHON_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dAdjointDoubleLayerPotential);
+BEMPP_PYTHON_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dHypersingularOperator);
+
+} // namespace Bempp
 
 %pythoncode %{
 
-class Laplace3dSingleLayerPotential(Template2, ElementarySingularIntegralOperator):
-    """Single-layer-potential operator for the Laplace equation in 3D."""
-    def __init__(self, basisFunctionType, resultType, *args, **kwargs):
-        """Initialise operator."""
-        super(Laplace3dSingleLayerPotential,self).\
-            __init__('Laplace3dSingleLayerPotential', basisFunctionType, resultType,
-                     *args, **kwargs)
+def _constructLaplaceOperator(className, testSpace, trialSpace, resultType=None):
+    basisFunctionType = testSpace._basisFunctionType
+    if resultType is None: resultType=basisFunctionType
+    resultType=checkType(resultType)
+    if (basisFunctionType != trialSpace._basisFunctionType):
+        raise TypeError("BasisFunctionType of testSpace must match that of trialSpace")
+    return constructObjectTemplatedOnBasisAndResult(
+        className, basisFunctionType, resultType, 
+        testSpace, trialSpace)
 
-class Laplace3dDoubleLayerPotential(Template2, ElementarySingularIntegralOperator):
-    """Single-layer-potential operator for the Laplace equation in 3D."""
-    def __init__(self, basisFunctionType, resultType, *args, **kwargs):
-        """Initialise operator."""
-        super(Laplace3dDoubleLayerPotential,self).\
-            __init__('Laplace3dDoubleLayerPotential', basisFunctionType, resultType,
-                     *args, **kwargs)
+def laplace3dSingleLayerPotential(testSpace, trialSpace, resultType=None):
+    """Construct a single-layer-potential operator for the Laplace equation in 3D."""
+    return _constructLaplaceOperator(
+    "Laplace3dSingleLayerPotential", testSpace, trialSpace, resultType)
 
-class Laplace3dAdjointDoubleLayerPotential(Template2, ElementarySingularIntegralOperator):
-    """Single-layer-potential operator for the Laplace equation in 3D."""
-    def __init__(self, basisFunctionType, resultType, *args, **kwargs):
-        """Initialise operator."""
-        super(Laplace3dAdjointDoubleLayerPotential,self).\
-            __init__('Laplace3dAdjointDoubleLayerPotential', basisFunctionType, resultType,
-                     *args, **kwargs)
+def laplace3dDoubleLayerPotential(testSpace, trialSpace, resultType=None):
+    """Construct a double-layer-potential operator for the Laplace equation in 3D."""
+    return _constructLaplaceOperator(
+    "Laplace3dDoubleLayerPotential", testSpace, trialSpace, resultType)
 
-class Laplace3dHypersingularOperator(Template2, ElementarySingularIntegralOperator):
-    """Single-layer-potential operator for the Laplace equation in 3D."""
-    def __init__(self, basisFunctionType, resultType, *args, **kwargs):
-        """Initialise operator."""
-        super(Laplace3dHypersingularOperator,self).\
-            __init__('Laplace3dHypersingularOperator', basisFunctionType, resultType,
-                     *args, **kwargs)
+def laplace3dAdjointDoubleLayerPotential(testSpace, trialSpace, resultType=None):
+    """Construct an adjoint double-layer-potential operator for the Laplace equation in 3D."""
+    return _constructLaplaceOperator(
+    "Laplace3dAdjointDoubleLayerPotential", testSpace, trialSpace, resultType)
 
-# TODO: docs
+def laplace3dHypersingularOperator(testSpace, trialSpace, resultType=None):
+    """Construct a hypersingular operator for the Laplace equation in 3D."""
+    return _constructLaplaceOperator(
+    "Laplace3dHypersingularOperator", testSpace, trialSpace, resultType)
 
 %}
