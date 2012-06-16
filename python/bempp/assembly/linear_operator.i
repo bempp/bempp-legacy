@@ -56,6 +56,8 @@ class Symmetry;
     }
 }
 
+BEMPP_PYTHON_EXTEND_INTERFACE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperator);
+
 } // namespace Bempp
 
 %include "assembly/linear_operator.hpp"
