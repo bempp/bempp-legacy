@@ -3,8 +3,6 @@
   %}
 
 
-%warnfilter(401) Bempp::StandardLocalAssemblerFactoryForOperatorsOnSurfaces;
-
 %include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 
 
