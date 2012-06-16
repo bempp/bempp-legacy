@@ -24,6 +24,7 @@
 #include <algorithm> // std::copy
 #include <armadillo>
 #include <iostream>
+#include <new>
 %}
 
 // This must be called at the start of each module to import numpy.
@@ -243,6 +244,38 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
         reinterpret_cast<DATA_TYPE*>(array_data(array$argnum)));
     $result = SWIG_Python_AppendOutput($result, 
         reinterpret_cast<PyObject*>(array$argnum));
+}
+
+/**************************/
+/* Inplace Array Typemaps */
+/**************************/
+
+/* Typemap suite for (DATA_TYPE* INPLACE_ARRAY1, DIM_TYPE DIM1)
+ */
+%typecheck(SWIG_TYPECHECK_DOUBLE_ARRAY,
+           fragment="NumPy_Macros")
+  (arma::Col< DATA_TYPE >& INPLACE_COL)
+{
+  $1 = is_array($input) && PyArray_EquivTypenums(array_type($input),
+                                                 DATA_TYPECODE);
+}
+%typemap(in,
+         fragment="NumPy_Fragments")
+  (arma::Col< DATA_TYPE >& INPLACE_COL)
+  (PyArrayObject* array=NULL, arma::Col< DATA_TYPE > arma_array)
+{
+  array = obj_to_array_no_conversion($input, DATA_TYPECODE);
+  if (!array || !require_dimensions(array,1) || !require_contiguous(array)
+      || !require_native(array)) SWIG_fail;
+  // Use placement new to reinitialise the Armadillo array using the
+  // "advanced" constructor taking a pointer to existing data. This is needed
+  // because SWIG initialises variables with the default constructor.
+  // (Another way would be to allocate a new Col object on the heap),
+  arma_array.~Col< DATA_TYPE >();
+  new (&arma_array) arma::Col< DATA_TYPE >((DATA_TYPE*) array_data(array),
+                                           array_size(array, 0),
+                                           false); // don't copy data
+  $1 = &arma_array;
 }
 
 %enddef    /* %arma_numpy_typemaps() macro */
