@@ -27,8 +27,8 @@ BEMPP_PYTHON_FORWARD_DECLARE_CLASS_TEMPLATED_ON_VALUE(DiscreteLinearOperator);
     %apply const arma::Col<std::complex<float> >& IN_COL {
         const arma::Col<std::complex<float> >& x_in
     };
-    %apply const arma::Col<std::complex<double>& IN_COL {
-        const arma::Col<std::complex<double>& x_in
+    %apply const arma::Col<std::complex<double> >& IN_COL {
+        const arma::Col<std::complex<double> >& x_in
     };
 
     %apply arma::Col<float>& INPLACE_COL {
