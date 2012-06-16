@@ -1,5 +1,6 @@
 %{
 #include "assembly/linear_operator.hpp"
+#include "assembly/linear_operator_superposition.hpp"
 #include <complex>
 %}
 
@@ -23,6 +24,36 @@ class Symmetry;
 
     // this function is only for internal use
     %ignore constituentOperatorWeights;
+
+    LinearOperatorSuperposition<BasisFunctionType, ResultType> __add__(
+        const LinearOperator<BasisFunctionType, ResultType>& other)
+    {
+        return *$self + other;
+    }
+
+    LinearOperatorSuperposition<BasisFunctionType, ResultType> __sub__(
+        const LinearOperator<BasisFunctionType, ResultType>& other)
+    {
+        return *$self - other;
+    }
+
+    LinearOperatorSuperposition<BasisFunctionType, ResultType> __mul__(
+        ResultType other)
+    {
+        return *$self * other;
+    }
+
+    LinearOperatorSuperposition<BasisFunctionType, ResultType> __rmul__(
+        ResultType other)
+    {
+        return *$self * other;
+    }
+
+    LinearOperatorSuperposition<BasisFunctionType, ResultType> __div__(
+        ResultType other)
+    {
+        return *$self / other;
+    }
 }
 
 } // namespace Bempp

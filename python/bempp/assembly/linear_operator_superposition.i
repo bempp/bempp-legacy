@@ -9,5 +9,6 @@
 
 namespace Bempp
 {
+BEMPP_PYTHON_EXTEND_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperatorSuperposition);
 BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperatorSuperposition);
 }
