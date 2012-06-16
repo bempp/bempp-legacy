@@ -42,14 +42,11 @@ namespace Fiber
       typedef <implementiation-defined> ValueType;
       typedef ScalarTraits<ValueType>::RealType CoordinateType;
 
-      // Copy constructor
-      Functor(const Functor& other);
-
       // Number of components of the function's arguments ("point" and "normal")
-      static const int argumentDimension;
+      int argumentDimension() const;
 
       // Number of components of the function's result
-      static const int resultDimension;
+      int resultDimension() const;
 
       // Evaluate the function at the point "point", with vector normal to the
       // surface given in the argument "normal", and store result in the array
@@ -73,11 +70,11 @@ public:
     }
 
     virtual int worldDimension() const {
-        return m_functor.argumentDimension;
+        return m_functor.argumentDimension();
     }
 
     virtual int codomainDimension() const {
-        return m_functor.resultDimension;
+        return m_functor.resultDimension();
     }
 
     virtual void addGeometricalDependencies(size_t& geomDeps) const {
@@ -106,7 +103,7 @@ public:
     }
 
 private:
-    Functor m_functor;
+    const Functor& m_functor;
 };
 
 } // namespace Fiber

@@ -34,6 +34,8 @@
 #include "assembly/identity_operator.hpp"
 #include "assembly/laplace_3d_single_layer_potential.hpp"
 #include "assembly/laplace_3d_double_layer_potential.hpp"
+#include "assembly/surface_normal_independent_function.hpp"
+#include "assembly/surface_normal_independent_functor.hpp"
 
 #include "common/scalar_traits.hpp"
 
@@ -59,19 +61,13 @@ using namespace Bempp;
 typedef double BFT; // basis function type
 typedef double RT; // result type (type used to represent discrete operators)
 
-class MyFunctor
+class MyFunctor : public Bempp::SurfaceNormalIndependentFunctor<RT>
 {
 public:
-    // Type of the function's values (e.g. float or std::complex<double>)
-    typedef RT ValueType;
-    // Type of coordinates (must be the "real part" of ValueType)
-    typedef ScalarTraits<RT>::RealType CoordinateType;
-
     // Number of components of the function's argument
-    static const int argumentDimension = 3;
+    int argumentDimension() const {return 3;}
 
-    // Number of components of the function's result
-    static const int resultDimension = 1;
+    int resultDimension() const {return 1;}
 
     // Evaluate the function at the point "point" and store result in
     // the array "result"
@@ -131,8 +127,10 @@ int main(int argc, char* argv[])
 
     // We also want a grid function
 
+    MyFunctor myFun;
+
     GridFunction<BFT, RT> u = gridFunctionFromSurfaceNormalIndependentFunctor(
-                HminusHalfSpace, MyFunctor(), factory, assemblyOptions);
+                HminusHalfSpace, myFun, factory, assemblyOptions);
 
     // Assemble the rhs
 
