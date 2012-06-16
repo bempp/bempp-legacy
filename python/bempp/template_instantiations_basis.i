@@ -17,12 +17,13 @@ template <typename BasisFunctionType> class CLASS;
 
 %enddef // BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS
 
+// deprecated
 %define BEMPP_PYTHON_EXTEND_CLASS_TEMPLATED_ON_BASIS(CLASS)
 
 %extend CLASS<float>
 {
     %pythonappend CLASS
-    %{ 
+    %{
         self._basisFunctionType = "float32"
     %}
 }
@@ -30,7 +31,7 @@ template <typename BasisFunctionType> class CLASS;
 %extend CLASS<double>
 {
     %pythonappend CLASS
-    %{ 
+    %{
         self._basisFunctionType = "float64"
     %}
 }
@@ -38,7 +39,7 @@ template <typename BasisFunctionType> class CLASS;
 %extend CLASS<std::complex<float> >
 {
     %pythonappend CLASS
-    %{ 
+    %{
         self._basisFunctionType = "complex64"
     %}
 }
@@ -46,18 +47,101 @@ template <typename BasisFunctionType> class CLASS;
 %extend CLASS<std::complex<double> >
 {
     %pythonappend CLASS
-    %{ 
+    %{
         self._basisFunctionType = "complex128"
     %}
 }
 
 %enddef // BEMPP_PYTHON_EXTEND_CLASS_TEMPLATED_ON_BASIS
 
+%define BEMPP_PYTHON_EXTEND_INTERFACE_CLASS_TEMPLATED_ON_BASIS(CLASS)
+
+%extend CLASS<float>
+{
+    %pythoncode
+    %{
+        def _initTypes(self):
+            self._basisFunctionType = "float32"
+    %}
+}
+
+%extend CLASS<double>
+{
+    %pythoncode
+    %{
+        def _initTypes(self):
+            self._basisFunctionType = "float64"
+    %}
+}
+
+%extend CLASS<std::complex<float> >
+{
+    %pythoncode
+    %{
+        def _initTypes(self):
+            self._basisFunctionType = "complex64"
+    %}
+}
+
+%extend CLASS<std::complex<double> >
+{
+    %pythoncode
+    %{
+        def _initTypes(self):
+            self._basisFunctionType = "complex128"
+    %}
+}
+
+%enddef // BEMPP_PYTHON_EXTEND_INTERFACE_CLASS_TEMPLATED_ON_BASIS
+
+%define BEMPP_PYTHON_EXTEND_CONCRETE_CLASS_TEMPLATED_ON_BASIS(CLASS)
+
+%extend CLASS<float>
+{
+    %pythonappend CLASS
+    %{
+        self._initTypes()
+    %}
+}
+
+%extend CLASS<double>
+{
+    %pythonappend CLASS
+    %{
+        self._initTypes()
+    %}
+}
+
+%extend CLASS<std::complex<float> >
+{
+    %pythonappend CLASS
+    %{
+        self._initTypes()
+    %}
+}
+
+%extend CLASS<std::complex<double> >
+{
+    %pythonappend CLASS
+    %{
+        self._initTypes()
+    %}
+}
+
+%enddef // BEMPP_PYTHON_EXTEND_CONCRETE_CLASS_TEMPLATED_ON_BASIS
+
+// deprecated
 %define BEMPP_PYTHON_DECLARE_CLASS_TEMPLATED_ON_BASIS(CLASS)
 BEMPP_PYTHON_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(CLASS);
 BEMPP_PYTHON_EXTEND_CLASS_TEMPLATED_ON_BASIS(CLASS);
 BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(CLASS);
 %enddef // BEMPP_PYTHON_DECLARE_CLASS_TEMPLATED_ON_BASIS
+
+%define BEMPP_PYTHON_DECLARE_CONCRETE_CLASS_TEMPLATED_ON_BASIS(CLASS)
+BEMPP_PYTHON_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(CLASS);
+BEMPP_PYTHON_EXTEND_CONCRETE_CLASS_TEMPLATED_ON_BASIS(CLASS);
+BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(CLASS);
+%enddef // BEMPP_PYTHON_DECLARE_CONCRETE_CLASS_TEMPLATED_ON_BASIS
 
 %pythoncode %{
 

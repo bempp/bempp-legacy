@@ -55,10 +55,8 @@ namespace Bempp
 namespace Bempp
 {
 
-  %template(Space_float64)     Space<double>;
-  %template(Space_float32)     Space<float>;
-  %template(Space_complex64)   Space<std::complex<float> >;
-  %template(Space_complex128)  Space<std::complex<double> >;
+BEMPP_PYTHON_EXTEND_INTERFACE_CLASS_TEMPLATED_ON_BASIS(Space);
+BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Space);
 
 }
 
