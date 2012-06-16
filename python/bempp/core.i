@@ -43,6 +43,7 @@
 // Import macros for explicit template instantiations
 %include "template_instantiations_basis.i"
 %include "template_instantiations_basis_result.i"
+%include "template_instantiations_basis_result_geometry_factory.i"
 %include "template_instantiations_basis_kernel_result.i"
 
 // Setup a handler for C++ exceptions
@@ -112,6 +113,8 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "fiber/opencl_options.i"
 %include "fiber/quadrature_options.i"
 %include "fiber/accuracy_options.i"
+%include "fiber/local_assembler_factory.i"
+%include "fiber/standard_local_assembler_factory_for_operators_on_surfaces.i"
 
 // Space
 %include "space/space.i"

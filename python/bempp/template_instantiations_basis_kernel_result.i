@@ -1,4 +1,4 @@
-// Macros for classes templated on basis, kernel and result type
+// Macros for classes templated on basis function, kernel and result type
 
 %define BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(CLASS)
 

@@ -1,4 +1,4 @@
-// Macros for classes templated on basis and result
+// Macros for classes templated on basis function type and result type
 
 %define BEMPP_PYTHON_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(CLASS)
 template <typename BasisFunctionType, typename ResultType> class CLASS;
