@@ -55,7 +55,7 @@ SURFACE_NORMAL_INDEPENDENT_FUNCTOR_COMPLEX(double,complex64)
 
 def surfaceNormalIndependentFunctor(fun,valueType='float64',argumentDimension=3,resultDimension=1):
 
-    dtype=valueType
+    dtype=checkType(valueType)
     base=None
     if dtype=='float32':
         base=SurfaceNormalIndependentFunctor_float32
@@ -65,19 +65,19 @@ def surfaceNormalIndependentFunctor(fun,valueType='float64',argumentDimension=3,
         base=SurfaceNormalIndependentFunctor_complex64
     elif dtype=='complex128':
         base=SurfaceNormalIndependentFunctor_complex128
-    class BemppFunctor(base):
+    class SurfaceNormalIndependentFunctor(base):
         def __init__(self,fun,argumentDimension,resultDimension):
             self.fun=fun
             self.argDim=argumentDimension
             self.resultDim=resultDimension        
-	    super(BemppFunctor,self).__init__()
+	    super(SurfaceNormalIndependentFunctor,self).__init__()
         def argumentDimension(self):
             return self.argDim
         def resultDimension(self):
             return self.resultDim
         def evaluate(self,point,result):
             result[:]=self.fun(point) 
-    return BemppFunctor(fun,argumentDimension,resultDimension)
+    return SurfaceNormalIndependentFunctor(fun,argumentDimension,resultDimension)
 
 	      %}
 
