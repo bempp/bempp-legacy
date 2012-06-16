@@ -21,7 +21,8 @@
 #ifndef bempp_surface_normal_dependent_functor_hpp
 #define bempp_surface_normal_dependent_functor_hpp
 
-#include "fiber/scalar_traits.hpp"
+#include "../fiber/scalar_traits.hpp"
+#include <armadillo>
 
 namespace Bempp
 {
@@ -31,7 +32,7 @@ class SurfaceNormalDependentFunctor{
 public:
 
     typedef ValueType_ ValueType;
-    typedef typename ScalarTraits<ValueType_>::RealType CoordinateType;
+    typedef typename Fiber::ScalarTraits<ValueType_>::RealType CoordinateType;
 
     virtual int argumentDimension() const=0;
 
@@ -39,8 +40,9 @@ public:
 
     virtual void evaluate(const arma::Col<CoordinateType>& point,
                           const arma::Col<CoordinateType>& normal,
-                          arma::Col<ValueType>& result) const=0;
+                          arma::Col<ValueType>& result_) const=0;
 
+    virtual ~SurfaceNormalDependentFunctor(){}
 };
 
 }

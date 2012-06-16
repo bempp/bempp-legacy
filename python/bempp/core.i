@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 // Construct a Swig module
-%module core
+%module(directors="1") core
 %{
 #define SWIG_FILE_WITH_INIT
 
@@ -136,6 +136,8 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "assembly/helmholtz_3d_operators.i"
 %include "assembly/identity_operator.i"
 %include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.i"
+%include "assembly/surface_normal_independent_functor.i"
+%include "assembly/test_functor.i"
 
 %include "assembly/discrete_linear_operator.i"
 
