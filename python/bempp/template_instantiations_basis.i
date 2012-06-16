@@ -53,6 +53,43 @@ template <typename BasisFunctionType> class CLASS;
 
 %enddef // BEMPP_PYTHON_EXTEND_CLASS_TEMPLATED_ON_BASIS
 
+%define BEMPP_PYTHON_EXTEND_CLASS_TEMPLATED_ON_VALUE(CLASS)
+
+%extend CLASS<float>
+{
+    %pythonappend CLASS
+    %{ 
+        self._valueType = "float32"
+    %}
+}
+
+%extend CLASS<double>
+{
+    %pythonappend CLASS
+    %{ 
+        self._valueType = "float64"
+    %}
+}
+
+%extend CLASS<std::complex<float> >
+{
+    %pythonappend CLASS
+    %{ 
+        self._valueType = "complex64"
+    %}
+}
+
+%extend CLASS<std::complex<double> >
+{
+    %pythonappend CLASS
+    %{ 
+        self._valueType = "complex128"
+    %}
+}
+
+%enddef // BEMPP_PYTHON_EXTEND_CLASS_TEMPLATED_ON_VALUE
+
+
 %define BEMPP_PYTHON_DECLARE_CLASS_TEMPLATED_ON_BASIS(CLASS)
 BEMPP_PYTHON_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(CLASS);
 BEMPP_PYTHON_EXTEND_CLASS_TEMPLATED_ON_BASIS(CLASS);

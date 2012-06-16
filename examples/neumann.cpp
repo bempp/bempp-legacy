@@ -36,6 +36,7 @@
 #include "assembly/laplace_3d_double_layer_potential.hpp"
 #include "assembly/surface_normal_independent_function.hpp"
 #include "assembly/surface_normal_independent_functor.hpp"
+#include "assembly/test_functor.hpp"
 
 #include "common/scalar_traits.hpp"
 
@@ -128,6 +129,7 @@ int main(int argc, char* argv[])
     // We also want a grid function
 
     MyFunctor myFun;
+    testFunctor(myFun);
 
     GridFunction<BFT, RT> u = gridFunctionFromSurfaceNormalIndependentFunctor(
                 HminusHalfSpace, myFun, factory, assemblyOptions);
