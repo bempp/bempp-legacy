@@ -130,5 +130,7 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "assembly/laplace_3d_operators.i"
 %include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.i"
 
-
+ // Linear algebra
+%include "linalg/solver.i"
+%include "linalg/default_iterative_solver.i"
 

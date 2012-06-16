@@ -12,11 +12,3 @@ namespace Bempp
 BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
     ElementaryIntegralOperator);
 }
-
-%pythoncode %{
-
-class ElementaryIntegralOperator(ElementaryLinearOperator):
-    pass
-    # TODO: docs
-
-%}

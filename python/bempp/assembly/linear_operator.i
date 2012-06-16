@@ -9,7 +9,7 @@
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename ResultType> class LinearOperator;
+BEMPP_PYTHON_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperator);
 
 template <typename BasisFunctionType> class GridFunction;
 template <typename BasisFunctionType> class Space;
@@ -33,11 +33,3 @@ namespace Bempp
 {
 BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperator);
 }
-
-%pythoncode %{
-
-class LinearOperator(object):
-    pass
-    # TODO: docs
-
-%}
