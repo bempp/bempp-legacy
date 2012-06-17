@@ -20,7 +20,7 @@
 
 %include "numpy.i"
 
-%header %{
+%headertypemap %{
 #include <algorithm> // std::copy
 #include <armadillo>
 #include <iostream>

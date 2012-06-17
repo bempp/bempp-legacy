@@ -4,13 +4,8 @@
 
 
 
-namespace Bempp{
-BEMPP_PYTHON_EXTEND_CLASS_TEMPLATED_ON_VALUE(CLASS)
-  }
-
-
 %define SURFACE_NORMAL_INDEPENDENT_FUNCTOR_REAL(TYPE,NPYNAME)
-%apply arma::Col<TYPE>& ARGOUT_COL { arma::Col<TYPE>& result_ };
+%apply arma::Col<TYPE>& INPLACE_COL { arma::Col<TYPE>& result_ };
 %apply const arma::Col<TYPE>& IN_COL { const arma::Col<TYPE>& point };
 
 
@@ -69,7 +64,8 @@ def surfaceNormalIndependentFunctor(fun,valueType='float64',argumentDimension=3,
         def __init__(self,fun,argumentDimension,resultDimension):
             self.fun=fun
             self.argDim=argumentDimension
-            self.resultDim=resultDimension        
+            self.resultDim=resultDimension
+	    self._valueType=dtype
 	    super(SurfaceNormalIndependentFunctor,self).__init__()
         def argumentDimension(self):
             return self.argDim

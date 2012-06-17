@@ -12,7 +12,7 @@ namespace Bempp
 
 BEMPP_PYTHON_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperator);
 
-template <typename BasisFunctionType> class GridFunction;
+ template <typename BasisFunctionType, typename ResultType> class GridFunction;
 template <typename BasisFunctionType> class Space;
 class AssemblyOptions;
 class Symmetry;

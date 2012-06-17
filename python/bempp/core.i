@@ -36,6 +36,8 @@
 %include "exception.i"
 %include "std_string.i"
 
+// Useful macros
+%include "macros.i"
 
 // Some useful Python routines
 %include "py_defs.i"
@@ -127,6 +129,9 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "assembly/construct_operator.i" // Python code
 %include "assembly/assembly_options.i"
 %include "assembly/transposition_mode.i"
+%include "assembly/surface_normal_independent_functor.i"
+%include "assembly/test_functor.i"
+%include "assembly/grid_function.i"
 %include "assembly/linear_operator.i"
 %include "assembly/linear_operator_superposition.i"
 %include "assembly/elementary_linear_operator.i"
@@ -136,8 +141,6 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "assembly/helmholtz_3d_operators.i"
 %include "assembly/identity_operator.i"
 %include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.i"
-%include "assembly/surface_normal_independent_functor.i"
-%include "assembly/test_functor.i"
 
 %include "assembly/discrete_linear_operator.i"
 

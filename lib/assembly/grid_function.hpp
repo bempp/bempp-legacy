@@ -31,6 +31,9 @@
 #include "../fiber/surface_normal_independent_function.hpp"
 #include "vector.hpp"
 
+#include "surface_normal_dependent_functor.hpp"
+#include "surface_normal_independent_functor.hpp"
+
 #include "../common/armadillo_fwd.hpp"
 #include <boost/mpl/set.hpp>
 #include <boost/mpl/has_key.hpp>
@@ -55,8 +58,6 @@ class Grid;
 template <int codim> class Entity;
 template <typename BasisFunctionType> class Space;
 
-template <typename BasisFunctionType, typename ResultType>
-class GridFunction;
 
 /** \brief Function defined on a grid.
  *  \ingroup assembly
@@ -301,15 +302,15 @@ gridFunctionFromFiberFunction(
  * \param[in] assemblyOptions Options controlling the assembly procedure.
  *
  * \returns The constructed grid function. */
-template <typename BasisFunctionType, typename Functor>
-GridFunction<BasisFunctionType, typename Functor::ValueType>
-inline gridFunctionFromSurfaceNormalIndependentFunctor(
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>
+gridFunctionFromSurfaceNormalIndependentFunctor(
         const Space<BasisFunctionType>& space,
-        const Functor& functor,
-        const typename GridFunction<BasisFunctionType, typename Functor::ValueType>::LocalAssemblerFactory& factory,
+        const SurfaceNormalIndependentFunctor<ResultType>& functor,
+        const typename GridFunction<BasisFunctionType, ResultType>::LocalAssemblerFactory& factory,
         const AssemblyOptions& assemblyOptions)
 {
-    Fiber::SurfaceNormalIndependentFunction<Functor> fiberFunction(functor);
+    Fiber::SurfaceNormalIndependentFunction<SurfaceNormalIndependentFunctor<ResultType> > fiberFunction(functor);
     return gridFunctionFromFiberFunction(
                 space, fiberFunction, factory, assemblyOptions);
 }
@@ -329,7 +330,7 @@ inline gridFunctionFromSurfaceNormalIndependentFunctor(
  * \returns The constructed grid function. */
 template <typename BasisFunctionType, typename Functor>
 GridFunction<BasisFunctionType, typename Functor::ValueType>
-inline gridFunctionFromSurfaceNormalDependentFunctor(
+gridFunctionFromSurfaceNormalDependentFunctor(
         const Space<BasisFunctionType>& space,
         const Functor& functor,
         const typename GridFunction<BasisFunctionType, typename Functor::ValueType>::LocalAssemblerFactory& factory,
