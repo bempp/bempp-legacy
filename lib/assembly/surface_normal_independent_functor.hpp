@@ -39,7 +39,7 @@ public:
     virtual int resultDimension() const=0;
 
     virtual void evaluate(const arma::Col<CoordinateType>& point,
-                          arma::Col<ValueType>& result_) const=0;
+                          arma::Col<ValueType_>& result_) const=0;
 
     virtual ~SurfaceNormalIndependentFunctor(){}
 };

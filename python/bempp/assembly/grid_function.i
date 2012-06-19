@@ -2,6 +2,7 @@
 #include "assembly/grid_function.hpp"
 %}
 
+
 %define BEMPP_DECLARE_GRID_FUNCTION(CLASS1,CLASS2,NPY1,NPY2)
 
 namespace Bempp
@@ -20,19 +21,15 @@ namespace Bempp
 
     %ignore basis;
     %ignore getLocalCoefficients;
-    %ignore exportToVtk;
+
+
 
  }
 
 
  %ignore gridFunctionFromFiberFunction;
- %ignore gridFunctionFromSurfaceNormalDependentFunctor;
 
 } // Bempp
-
-%apply const arma::Col< CLASS2 >& IN_COL { const std::arma::Col< CLASS2 >& coefficients };
-%apply const arma::Col< CLASS2 >& IN_COL { const std::arma::Col< CLASS2 >& projections };
-
 
 %include "assembly/grid_function.hpp";
 
@@ -41,27 +38,40 @@ namespace Bempp
   %template(GridFunction_## NPY1 ##_## NPY2 ) GridFunction< CLASS1 , CLASS2 >;
   %template(gridFunctionFromSurfaceNormalIndependentFunctor_## NPY1 ##_## NPY2) 
      gridFunctionFromSurfaceNormalIndependentFunctor< CLASS1 , CLASS2 >;
+  %template(gridFunctionFromSurfaceNormalDependentFunctor_## NPY1 ##_## NPY2) 
+     gridFunctionFromSurfaceNormalDependentFunctor< CLASS1 , CLASS2 >;
 }
 
-%clear const std::arma::Col< CLASS2 >& coefficients;
-%clear const std::arma::Col< CLASS2 >& projections;
 %enddef // BEMPP_DECLARE_GRID_FUNCTION
 
 ITERATE_OVER_BASIS_RESULT_TYPES(BEMPP_DECLARE_GRID_FUNCTION)
 
-/*
+%pythoncode %{
 
-%define GRID_FUNCTION_APPLY_MAPS_ENABLE(TYPE)
-%enddef
+def gridFunctionFromSurfaceNormalDependentFunctor(space,functor,factory,assemblyOptions,basisType='float64',valueType='float64'):
+        dtype1=checkType(basisType)
+	dtype2=checkType(valueType)
+        if not dtype2==functor._valueType:
+                raise ValueError("ValueType of functor is "+functor._valueType+"!")
+	fullName="gridFunctionFromSurfaceNormalDependentFunctor"+"_"+dtype1+"_"+dtype2
+	keys=globals()
+	if not fullName in keys: raise NameError("Could not find "+fullName+"!")
+	tmp=keys[fullName](space,functor,factory,assemblyOptions)
+        tmp._basisType=checkType(basisType)
+        tmp._valueType=checkType(valueType)
+        return tmp
 
-%define GRID_FUNCTION_APPLY_MAPS_DISABLE(TYPE)
-%enddef
+def gridFunctionFromSurfaceNormalIndependentFunctor(space,functor,factory,assemblyOptions,basisType='float64',valueType='float64'):
+        dtype1=checkType(basisType)
+	dtype2=checkType(valueType)
+        if not dtype2==functor._valueType:
+                raise ValueError("ValueType of functor is "+functor._valueType+"!")
+	fullName="gridFunctionFromSurfaceNormalIndependentFunctor"+"_"+dtype1+"_"+dtype2
+	keys=globals()
+	if not fullName in keys: raise NameError("Could not find "+fullName+"!")
+	tmp=keys[fullName](space,functor,factory,assemblyOptions)
+        tmp._basisType=dtype1
+        tmp._valueType=dtype2
+        return tmp
 
-ITERATE_OVER_TYPES(GRID_FUNCTION_APPLY_MAPS_ENABLE)
-
-%include "assembly/grid_function.hpp"
-
-
-ITERATE_OVER_TYPES(GRID_FUNCTION_APPLY_MAPS_DISABLE)
-
-*/
+  %}

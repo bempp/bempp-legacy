@@ -6,7 +6,7 @@
 namespace Bempp
 {
 
-  int testFunctor(const SurfaceNormalIndependentFunctor<double>& functor);
+  double testFunctor(const SurfaceNormalIndependentFunctor<double>& functor);
 
 }
 

@@ -292,9 +292,8 @@ gridFunctionFromFiberFunction(
 /** \brief Construct a grid function from a functor independent from surface orientation.
  *
  * \param[in] space           Function space to expand the grid function in.
- * \param[in] functor         Functor object fulfilling the requirements
- *                            described in the documentation of
- *                            Fiber::SurfaceNormalIndependentFunction.
+ * \param[in] functor         Functor object deriving from
+ *                            Bempp::SurfaceNormalIndependentFunctor
  * \param[in] factory         Factory to be used to generate the necessary local
  *                            assembler, which will be employed to evaluate
  *                            the scalar products of the grid function with the
@@ -318,9 +317,8 @@ gridFunctionFromSurfaceNormalIndependentFunctor(
 /** \brief Construct a grid function from a functor dependent on surface orientation.
  *
  * \param[in] space           Function space to expand the grid function in.
- * \param[in] functor         Functor object fulfilling the requirements
- *                            described in the documentation of
- *                            Fiber::SurfaceNormalDependentFunction.
+ * \param[in] functor         Functor object deriving from
+ *                            Bempp::SurfaceNormalDependentFunctor
  * \param[in] factory         Factory to be used to generate the necessary local
  *                            assembler, which will be employed to evaluate
  *                            the scalar products of the grid function with the
@@ -328,15 +326,15 @@ gridFunctionFromSurfaceNormalIndependentFunctor(
  * \param[in] assemblyOptions Options controlling the assembly procedure.
  *
  * \returns The constructed grid function. */
-template <typename BasisFunctionType, typename Functor>
-GridFunction<BasisFunctionType, typename Functor::ValueType>
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>
 gridFunctionFromSurfaceNormalDependentFunctor(
         const Space<BasisFunctionType>& space,
-        const Functor& functor,
-        const typename GridFunction<BasisFunctionType, typename Functor::ValueType>::LocalAssemblerFactory& factory,
+        const SurfaceNormalDependentFunctor<ResultType>& functor,
+        const typename GridFunction<BasisFunctionType, ResultType>::LocalAssemblerFactory& factory,
         const AssemblyOptions& assemblyOptions)
 {
-    Fiber::SurfaceNormalDependentFunction<Functor> fiberFunction(functor);
+  Fiber::SurfaceNormalDependentFunction<SurfaceNormalDependentFunctor<ResultType> > fiberFunction(functor);
     return gridFunctionFromFiberFunction(
                 space, fiberFunction, factory, assemblyOptions);
 }
