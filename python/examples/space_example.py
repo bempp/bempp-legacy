@@ -10,10 +10,9 @@ sys.path.append("..")
 import bempp
 import numpy as np
 
-# Create the grid, the leaf view and its index set
 print "Importing grid..."
 grid = bempp.GridFactory.importGmshGrid("triangular", "../../examples/meshes/sphere-614.msh")
-space=bempp.piecewiseConstantScalarSpace(grid)
+space = bempp.piecewiseConstantScalarSpace(grid)
 space.assignDofs()
 print space.dofsAssigned()
 print space._basisFunctionType
