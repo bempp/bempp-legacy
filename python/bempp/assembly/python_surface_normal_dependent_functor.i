@@ -65,6 +65,8 @@ class PythonSurfaceNormalDependentFunctor_## NPY_NAME : public SurfaceNormalDepe
     npy_intp dims1[1];
     dims1[0]=point.n_rows;
     PyObject* pyPoint = PyArray_ZEROS(1, dims1, NPY_TYPE , NPY_FORTRAN);
+    if (!pyPoint)
+        throw std::runtime_error("Point array creation failed");
     TYPE* pdata=(TYPE*)array_data(pyPoint);
     for (size_t i=0;i<dims1[0];i++) pdata[i]=point(i);
 
@@ -103,7 +105,8 @@ class PythonSurfaceNormalDependentFunctor_## NPY_NAME : public SurfaceNormalDepe
 	Py_XDECREF(pyNormal);
 	Py_XDECREF(pyReturnVal);
 	Py_XDECREF(pyReturnValArray);
-	Py_XDECREF(pyReturnValArrayCont);
+    if (is_new_object)
+     Py_XDECREF(pyReturnValArrayCont);
 	throw std::runtime_error("Return array has wrong dimensions!");
       }
       asize=array_size(pyReturnValArrayCont,0);
@@ -113,7 +116,8 @@ class PythonSurfaceNormalDependentFunctor_## NPY_NAME : public SurfaceNormalDepe
       Py_XDECREF(pyPoint);
       Py_XDECREF(pyReturnVal);
       Py_XDECREF(pyReturnValArray);
-      Py_XDECREF(pyReturnValArrayCont);
+      if (is_new_object)
+       Py_XDECREF(pyReturnValArrayCont);
       throw std::runtime_error("Return array has wrong dimensions");
     }
      
@@ -127,7 +131,8 @@ class PythonSurfaceNormalDependentFunctor_## NPY_NAME : public SurfaceNormalDepe
     Py_XDECREF(pyNormal);
     Py_XDECREF(pyReturnVal);
     Py_XDECREF(pyReturnValArray);
-    Py_XDECREF(pyReturnValArrayCont);
+    if (is_new_object)
+     Py_XDECREF(pyReturnValArrayCont);
 
   }    
 
