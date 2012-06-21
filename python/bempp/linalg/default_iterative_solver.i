@@ -10,7 +10,7 @@
 namespace Bempp
 {
 
-BEMPP_PYTHON_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DefaultIterativeSolver);
+BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DefaultIterativeSolver);
 
 %extend DefaultIterativeSolver
 {
@@ -20,7 +20,6 @@ BEMPP_PYTHON_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DefaultIterativ
     %ignore getThyraSolveStatus;
 }
 
-BEMPP_PYTHON_EXTEND_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DefaultIterativeSolver);
 
 } // namespace Bempp
 
@@ -28,7 +27,7 @@ BEMPP_PYTHON_EXTEND_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DefaultIterativeSolver);
 
 namespace Bempp
 {
-BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DefaultIterativeSolver);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(DefaultIterativeSolver);
 } // namespace Bempp
 
 %pythoncode %{
@@ -41,17 +40,17 @@ def defaultIterativeSolver(linearOperator, gridFunction):
     argument and g the function represented by the gridFunction
     argument
     """
-    basisFunctionType = linearOperator._basisFunctionType
-    if (basisFunctionType != gridFunction._basisFunctionType):
+    basisFunctionType = linearOperator.basisFunctionType()
+    if (basisFunctionType != gridFunction.basisFunctionType()):
         raise TypeError("BasisFunctionType of linearOperator and "
                         "gridFunction must be the same")
-    resultType = linearOperator._resultType
-    if (resultType != gridFunction._resultType):
+    resultType = linearOperator.resultType()
+    if (resultType != gridFunction.resultType()):
         raise TypeError("ResultType of linearOperator and "
                         "gridFunction must be the same")
     return constructObjectTemplatedOnBasisAndResult(
-        "DefaultIterativeSolver", basisFunctionType, resultType, 
-        testSpace, trialSpace)
+        "DefaultIterativeSolver", basisFunctionType, resultType,
+        linearOperator, gridFunction)
 
 %}
 

@@ -10,9 +10,9 @@
 namespace Bempp
 {
 
-BEMPP_PYTHON_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperator);
+BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperator);
 
- template <typename BasisFunctionType, typename ResultType> class GridFunction;
+template <typename BasisFunctionType, typename ResultType> class GridFunction;
 template <typename BasisFunctionType> class Space;
 class AssemblyOptions;
 class Symmetry;
@@ -43,6 +43,12 @@ class Symmetry;
         return *$self * other;
     }
 
+    GridFunction<BasisFunctionType, ResultType> __mul__(
+        const GridFunction<BasisFunctionType, ResultType>& other)
+    {
+        return *$self * other;
+    }
+
     LinearOperatorSuperposition<BasisFunctionType, ResultType> __rmul__(
         ResultType other)
     {
@@ -56,7 +62,7 @@ class Symmetry;
     }
 }
 
-BEMPP_PYTHON_EXTEND_INTERFACE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperator);
+BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperator);
 
 } // namespace Bempp
 
@@ -64,5 +70,5 @@ BEMPP_PYTHON_EXTEND_INTERFACE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperator
 
 namespace Bempp
 {
-BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperator);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperator);
 }

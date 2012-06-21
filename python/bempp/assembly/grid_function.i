@@ -2,76 +2,62 @@
 #include "assembly/grid_function.hpp"
 %}
 
-
-%define BEMPP_DECLARE_GRID_FUNCTION(CLASS1,CLASS2,NPY1,NPY2)
-
 namespace Bempp
 {
 
-%extend GridFunction< CLASS1 , CLASS2 >
- {
+BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
 
+//%define BEMPP_DECLARE_GRID_FUNCTION(CLASS1,CLASS2,NPY1,NPY2)
+
+%extend GridFunction
+{
     %ignore coefficients;
     %ignore projections;
     %ignore setCoefficients;
     %ignore setProjections;
-    %ignore grid;
     %ignore codomainDimension;
     %ignore space;
 
     %ignore basis;
     %ignore getLocalCoefficients;
+}
 
+%ignore gridFunctionFromFiberFunction;
 
-
- }
-
-
- %ignore gridFunctionFromFiberFunction;
-
-} // Bempp
+} // namespace Bempp
 
 %include "assembly/grid_function.hpp";
 
 namespace Bempp
 {
-  %template(GridFunction_## NPY1 ##_## NPY2 ) GridFunction< CLASS1 , CLASS2 >;
-  %template(gridFunctionFromSurfaceNormalIndependentFunctor_## NPY1 ##_## NPY2) 
-     gridFunctionFromSurfaceNormalIndependentFunctor< CLASS1 , CLASS2 >;
-  %template(gridFunctionFromSurfaceNormalDependentFunctor_## NPY1 ##_## NPY2) 
-     gridFunctionFromSurfaceNormalDependentFunctor< CLASS1 , CLASS2 >;
-}
 
-%enddef // BEMPP_DECLARE_GRID_FUNCTION
+BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction)
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
+    gridFunctionFromSurfaceNormalIndependentFunctor);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
+    gridFunctionFromSurfaceNormalDependentFunctor);
 
-ITERATE_OVER_BASIS_RESULT_TYPES(BEMPP_DECLARE_GRID_FUNCTION)
+} // namespace Bempp
 
 %pythoncode %{
 
-def gridFunctionFromSurfaceNormalDependentFunctor(space,functor,factory,assemblyOptions,basisType='float64',valueType='float64'):
-        dtype1=checkType(basisType)
-	dtype2=checkType(valueType)
-        if not dtype2==functor._valueType:
-                raise ValueError("ValueType of functor is "+functor._valueType+"!")
-	fullName="gridFunctionFromSurfaceNormalDependentFunctor"+"_"+dtype1+"_"+dtype2
-	keys=globals()
-	if not fullName in keys: raise NameError("Could not find "+fullName+"!")
-	tmp=keys[fullName](space,functor,factory,assemblyOptions)
-        tmp._basisType=checkType(basisType)
-        tmp._valueType=checkType(valueType)
-        return tmp
+def gridFunctionFromSurfaceNormalDependentFunctor(space, functor, factory,
+        assemblyOptions):
+    basisFunctionType = checkType(space.basisFunctionType())
+    resultType = checkType(functor.valueType())
+    return constructObjectTemplatedOnBasisAndResult(
+        "gridFunctionFromSurfaceNormalDependentFunctor",
+        basisFunctionType, resultType,
+        space, functor, factory, assemblyOptions)
 
-def gridFunctionFromSurfaceNormalIndependentFunctor(space,functor,factory,assemblyOptions,basisType='float64',valueType='float64'):
-        dtype1=checkType(basisType)
-	dtype2=checkType(valueType)
-        if not dtype2==functor._valueType:
-                raise ValueError("ValueType of functor is "+functor._valueType+"!")
-	fullName="gridFunctionFromSurfaceNormalIndependentFunctor"+"_"+dtype1+"_"+dtype2
-	keys=globals()
-	if not fullName in keys: raise NameError("Could not find "+fullName+"!")
-	tmp=keys[fullName](space,functor,factory,assemblyOptions)
-        tmp._basisType=dtype1
-        tmp._valueType=dtype2
-        return tmp
+def gridFunctionFromSurfaceNormalIndependentFunctor(space, functor, factory,
+        assemblyOptions, basisFunctionType='float64'):
+    basisFunctionType = checkType(space.basisFunctionType())
+    resultType = checkType(functor.valueType())
+    return constructObjectTemplatedOnBasisAndResult(
+        "gridFunctionFromSurfaceNormalIndependentFunctor",
+        basisFunctionType, resultType,
+        space, functor, factory, assemblyOptions)
 
-  %}
+%}

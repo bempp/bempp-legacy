@@ -11,7 +11,7 @@ namespace Bempp
 
 DECLARE_TEMPLATE_VALUE_METHOD_AUTO_DOCSTRING(DiscreteLinearOperator, apply);
 
-BEMPP_PYTHON_FORWARD_DECLARE_CLASS_TEMPLATED_ON_VALUE(DiscreteLinearOperator);
+BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_VALUE(DiscreteLinearOperator);
 
 %extend DiscreteLinearOperator
 {
@@ -70,7 +70,7 @@ BEMPP_PYTHON_FORWARD_DECLARE_CLASS_TEMPLATED_ON_VALUE(DiscreteLinearOperator);
 
 namespace Bempp
 {
-BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_VALUE(DiscreteLinearOperator);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_VALUE(DiscreteLinearOperator);
 
 %clear const arma::Col<float>& x_in;
 %clear const arma::Col<double>& x_in;
@@ -87,7 +87,5 @@ BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_VALUE(DiscreteLinearOperator);
 %clear arma::Mat<std::complex<float> >& mat_out;
 %clear arma::Mat<std::complex<float> >& mat_out;
 
-/*%clear const arma::Col<ValueType>& x_in;
-%clear arma::Col<ValueType>& y_inout;*/
 } // namespace Bempp
 

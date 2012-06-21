@@ -1,22 +1,16 @@
 %{
 #include "assembly/surface_normal_independent_functor.hpp"
-  %}
+%}
 
-
-
-
-%define SURFACE_NORMAL_INDEPENDENT_FUNCTOR(TYPE,NPYNAME)
+namespace Bempp
+{
+BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_VALUE(SurfaceNormalIndependentFunctor);
+BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(SurfaceNormalIndependentFunctor);
+} // namespace Bempp
 
 %include "assembly/surface_normal_independent_functor.hpp"
 
-namespace Bempp{
-  %template(SurfaceNormalIndependentFunctor_## NPYNAME) SurfaceNormalIndependentFunctor< TYPE >;
-    }
-
-%enddef // SURFACE_NORMAL_INDEPENDENT_FUNCTOR_REAL
-
-
-SURFACE_NORMAL_INDEPENDENT_FUNCTOR(float,float32)
-SURFACE_NORMAL_INDEPENDENT_FUNCTOR(double,float64)
-SURFACE_NORMAL_INDEPENDENT_FUNCTOR(std::complex<float>,complex32)
-SURFACE_NORMAL_INDEPENDENT_FUNCTOR(std::complex<double>,complex64)
+namespace Bempp
+{
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_VALUE(SurfaceNormalIndependentFunctor);
+} // namespace Bempp

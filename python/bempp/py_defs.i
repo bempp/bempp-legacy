@@ -26,4 +26,4 @@ def promoteTypeToComplex(dtype):
     else:
         raise ValueError('Data type does not exist.')
 
-  %}
+%}

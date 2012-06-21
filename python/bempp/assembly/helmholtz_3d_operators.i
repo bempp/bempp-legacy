@@ -3,13 +3,13 @@
 // would be to do these things in LinearOperator.__init__,
 // but SWIG puts exception-raising code in abstract class constructors...
 
-%define BEMPP_PYTHON_EXTEND_HELMHOLTZ_OPERATOR(CLASS)
+%define BEMPP_EXTEND_HELMHOLTZ_OPERATOR(CLASS)
 
 %extend CLASS<float>
 {
     %pythonappend CLASS
     %{
-        self._resultType = "complex64"
+        self.resultType() = "complex64"
     %}
 }
 
@@ -17,7 +17,7 @@
 {
     %pythonappend CLASS
     %{
-        self._resultType = "complex128"
+        self.resultType() = "complex128"
     %}
 }
 
@@ -25,7 +25,7 @@
 {
     %pythonappend CLASS
     %{
-        self._resultType = "complex64"
+        self.resultType() = "complex64"
     %}
 }
 
@@ -33,11 +33,11 @@
 {
     %pythonappend CLASS
     %{
-        self._resultType = "complex128"
+        self.resultType() = "complex128"
     %}
 }
 
-%enddef // BEMPP_PYTHON_EXTEND_HELMHOLTZ_OPERATOR*/
+%enddef // BEMPP_EXTEND_HELMHOLTZ_OPERATOR*/
 
 %{
 #include "assembly/helmholtz_3d_single_layer_potential.hpp"
@@ -52,10 +52,10 @@
 
 namespace Bempp
 {
-BEMPP_PYTHON_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dSingleLayerPotential);
-BEMPP_PYTHON_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dDoubleLayerPotential);
-BEMPP_PYTHON_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dAdjointDoubleLayerPotential);
-BEMPP_PYTHON_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dHypersingularOperator);
+BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dSingleLayerPotential);
+BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dDoubleLayerPotential);
+BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dAdjointDoubleLayerPotential);
+BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dHypersingularOperator);
 
 } // namespace Bempp
 
@@ -84,28 +84,28 @@ namespace Bempp
     %ignore Helmholtz3dSingleLayerPotential;
 }*/
 
-BEMPP_PYTHON_DECLARE_CONCRETE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dSingleLayerPotential);
-BEMPP_PYTHON_DECLARE_CONCRETE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dDoubleLayerPotential);
-BEMPP_PYTHON_DECLARE_CONCRETE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dAdjointDoubleLayerPotential);
-BEMPP_PYTHON_DECLARE_CONCRETE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dHypersingularOperator);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(Helmholtz3dSingleLayerPotential);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(Helmholtz3dDoubleLayerPotential);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(Helmholtz3dAdjointDoubleLayerPotential);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(Helmholtz3dHypersingularOperator);
 
-/*BEMPP_PYTHON_EXTEND_CONCRETE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dSingleLayerPotential);
-BEMPP_PYTHON_EXTEND_CONCRETE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dDoubleLayerPotential);
-BEMPP_PYTHON_EXTEND_CONCRETE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dAdjointDoubleLayerPotential);
-BEMPP_PYTHON_EXTEND_CONCRETE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dHypersingularOperator);
+/*BEMPP_EXTEND_CONCRETE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dSingleLayerPotential);
+BEMPP_EXTEND_CONCRETE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dDoubleLayerPotential);
+BEMPP_EXTEND_CONCRETE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dAdjointDoubleLayerPotential);
+BEMPP_EXTEND_CONCRETE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dHypersingularOperator);
 
-BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dSingleLayerPotential);
-BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dDoubleLayerPotential);
-BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dAdjointDoubleLayerPotential);
-BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dHypersingularOperator);*/
+BEMPP_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dSingleLayerPotential);
+BEMPP_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dDoubleLayerPotential);
+BEMPP_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dAdjointDoubleLayerPotential);
+BEMPP_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dHypersingularOperator);*/
 
 } // namespace Bempp
 
 %pythoncode %{
 
 def _constructHelmholtzOperator(className, testSpace, trialSpace, waveNumber):
-    basisFunctionType = testSpace._basisFunctionType
-    if (basisFunctionType != trialSpace._basisFunctionType):
+    basisFunctionType = testSpace.basisFunctionType()
+    if (basisFunctionType != trialSpace.basisFunctionType()):
         raise TypeError("BasisFunctionType of testSpace must match that of trialSpace")
     resultType = promoteTypeToComplex(basisFunctionType)
     return constructObjectTemplatedOnBasis(

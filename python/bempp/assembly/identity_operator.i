@@ -9,7 +9,7 @@
 
 namespace Bempp
 {
-BEMPP_PYTHON_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(IdentityOperator);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(IdentityOperator);
 }
 
 %pythoncode %{

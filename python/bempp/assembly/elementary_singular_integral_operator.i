@@ -9,5 +9,6 @@
 
 namespace Bempp
 {
-BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(ElementarySingularIntegralOperator);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
+ElementarySingularIntegralOperator);
 }
