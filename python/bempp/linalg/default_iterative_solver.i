@@ -1,5 +1,6 @@
 %{
 #include "linalg/default_iterative_solver.hpp"
+#include "linalg/belos_solver_wrapper.hpp"
 %}
 
 // TODO
@@ -20,6 +21,8 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DefaultIterativeSolver
     %ignore getThyraSolveStatus;
 }
 
+Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(double tol);
+Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(double tol);
 
 } // namespace Bempp
 
