@@ -1,10 +1,10 @@
 // Macros for classes templated on value type
 
-%define BEMPP_PYTHON_FORWARD_DECLARE_CLASS_TEMPLATED_ON_VALUE(CLASS)
+%define BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_VALUE(CLASS)
 template <typename ValueType> class CLASS;
 %enddef
 
-%define BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_VALUE(CLASS)
+%define BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_VALUE(CLASS)
 
 %template(CLASS ## _float32)
     CLASS<float>;
@@ -16,49 +16,30 @@ template <typename ValueType> class CLASS;
 %template(CLASS ## _complex128)
     CLASS<std::complex<double> >;
 
-%enddef // BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_VALUE
+%enddef // BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_VALUE
 
-%define BEMPP_PYTHON_EXTEND_CLASS_TEMPLATED_ON_VALUE(CLASS)
+// Invoke this macro for all *base* classes templated on ValueType
+%define BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(CLASS)
+    %extend CLASS<float>
+    {
+        std::string valueType() const { return "float32"; }
+    }
 
-%extend CLASS<float>
-{
-    %pythonappend CLASS
-    %{ 
-        self._valueType = "float32"
-    %}
-}
+    %extend CLASS<double>
+    {
+        std::string valueType() const { return "float64"; }
+    }
 
-%extend CLASS<double>
-{
-    %pythonappend CLASS
-    %{ 
-        self._valueType = "float64"
-    %}
-}
+    %extend CLASS<std::complex<float> >
+    {
+        std::string valueType() const { return "complex64"; }
+    }
 
-%extend CLASS<std::complex<float> >
-{
-    %pythonappend CLASS
-    %{ 
-        self._valueType = "complex64"
-    %}
-}
-
-%extend CLASS<std::complex<double> >
-{
-    %pythonappend CLASS
-    %{ 
-        self._valueType = "complex128"
-    %}
-}
-
-%enddef // BEMPP_PYTHON_EXTEND_CLASS_TEMPLATED_ON_VALUE
-
-%define BEMPP_PYTHON_DECLARE_CLASS_TEMPLATED_ON_VALUE(CLASS)
-BEMPP_PYTHON_FORWARD_DECLARE_CLASS_TEMPLATED_ON_VALUE(CLASS);
-BEMPP_PYTHON_EXTEND_CLASS_TEMPLATED_ON_VALUE(CLASS);
-BEMPP_PYTHON_INSTANTIATE_CLASS_TEMPLATED_ON_VALUE(CLASS);
-%enddef // BEMPP_PYTHON_DECLARE_CLASS_TEMPLATED_ON_VALUE
+    %extend CLASS<std::complex<double> >
+    {
+        std::string valueType() const { return "complex128"; }
+    }
+%enddef // BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE
 
 %pythoncode 
 %{
