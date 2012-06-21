@@ -27,6 +27,8 @@
 #include <complex>
 %}
 
+%include "config.i"
+
 // Import docstring macros
 %include "docstrings.i"
 
@@ -147,7 +149,8 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 
 %include "assembly/discrete_linear_operator.i"
 
- // Linear algebra
+// Linear algebra
+%include "linalg/parameter_list.i"
 %include "linalg/solver.i"
 %include "linalg/default_iterative_solver.i"
 

@@ -1,12 +1,9 @@
 %{
-#include "config_trilinos.hpp"
 #include "linalg/default_iterative_solver.hpp"
 %}
 
 // TODO
 // %include "default_iterative_solver_docstrings.i"
-
-%include "config_trilinos.hpp"
 
 #ifdef WITH_TRILINOS
 
