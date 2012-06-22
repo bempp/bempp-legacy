@@ -28,7 +28,7 @@ namespace Bempp
 
 enum Symmetry
 {
-    UNSYMMETRIC = 0x0000,
+    NO_SYMMETRY = 0x0000,
     SYMMETRIC = 0x0001,
     HERMITIAN = 0x0002
 };

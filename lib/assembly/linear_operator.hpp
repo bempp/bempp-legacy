@@ -208,7 +208,7 @@ public:
      */
     void assembleWeakForm(const LocalAssemblerFactory& factory,
                           const AssemblyOptions& options,
-                          Symmetry symmetry = UNSYMMETRIC/*,
+                          Symmetry symmetry = NO_SYMMETRY/*,
                           bool force = true*/);
 
     /** \brief Return \p true if the operator stores its assembled weak form. */
