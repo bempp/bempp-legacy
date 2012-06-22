@@ -351,7 +351,7 @@ void DiscreteSparseLinearOperator<ValueType>::applyBuiltInImpl(
     assert(x_in.n_rows == columnCount());
     assert(y_inout.n_rows == rowCount());
 
-    reallyApplyBuiltInImpl(*m_mat, trans, x_in, y_inout, alpha, beta);
+    reallyApplyBuiltInImpl(*m_mat, realTrans, x_in, y_inout, alpha, beta);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteSparseLinearOperator);
