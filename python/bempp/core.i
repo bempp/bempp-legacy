@@ -37,6 +37,7 @@
 %include "auto_ptr.i"
 %include "exception.i"
 %include "std_string.i"
+%include "std_complex.i"
 
 // Useful macros
 %include "macros.i"
