@@ -136,7 +136,9 @@ public:
 
     /** \brief Clone operator.
      *
-     *  Returns an auto pointer to a copy of this operator allocated on the heap.
+     *  Returns an auto pointer to a shallow copy (i.e. sharing a
+     *  reference-counted pointer to the weak form) of this operator
+     *  allocated on the heap.
      */
     virtual std::auto_ptr<LinearOperator> clone() const = 0;
 
