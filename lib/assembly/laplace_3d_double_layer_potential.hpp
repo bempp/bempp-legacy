@@ -30,7 +30,7 @@ template <typename BasisFunctionType, typename ResultType>
 struct Laplace3dDoubleLayerPotentialImpl;
 
 /** \ingroup laplace_3d
- *  \brief Double-layer-potential operator for the Laplace equation in 3D.
+ *  \brief Double-layer-potential for the Laplace equation in 3D.
  *
  *  \tparam BasisFunctionType
  *    Type used to represent the values of basis functions.
