@@ -123,7 +123,7 @@ public:
     assembleWeakFormInternal(
             LocalAssembler& assembler,
             const AssemblyOptions& options,
-            Symmetry symmetry = UNSYMMETRIC);
+            Symmetry symmetry = NO_SYMMETRY);
 
 private:
     virtual std::auto_ptr<LocalAssembler> makeAssemblerImpl(
