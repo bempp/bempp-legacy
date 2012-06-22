@@ -28,8 +28,8 @@ namespace Bempp
 
 template <typename ValueType>
 DiscreteLinearOperatorComposition<ValueType>::
-DiscreteLinearOperatorComposition(shared_ptr<const Base> &outer,
-                                  shared_ptr<const Base> &inner) :
+DiscreteLinearOperatorComposition(const shared_ptr<const Base> &outer,
+                                  const shared_ptr<const Base> &inner) :
     m_outer(outer), m_inner(inner)
 {
     if (!m_outer || !m_inner)
@@ -43,12 +43,16 @@ DiscreteLinearOperatorComposition(shared_ptr<const Base> &outer,
     // TODO: perhaps test for compatibility of Thyra spaces
 }
 
-template <typename ValueType>
-arma::Mat<ValueType>
-DiscreteLinearOperatorComposition<ValueType>::asMatrix() const
-{
-    return m_outer->asMatrix() * m_inner->asMatrix();
-}
+// This is (a) slower than the default implementation unless m_inner and m_outer
+// are dense, (b) misleading in case there is a bug in the implementation of
+// applyBuiltInImpl()
+
+//template <typename ValueType>
+//arma::Mat<ValueType>
+//DiscreteLinearOperatorComposition<ValueType>::asMatrix() const
+//{
+//    return m_outer->asMatrix() * m_inner->asMatrix();
+//}
 
 template <typename ValueType>
 unsigned int

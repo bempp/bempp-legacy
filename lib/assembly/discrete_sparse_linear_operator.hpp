@@ -18,21 +18,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "config_trilinos.hpp"
-
 #ifndef bempp_discrete_sparse_linear_operator_hpp
 #define bempp_discrete_sparse_linear_operator_hpp
 
 #include "../common/common.hpp"
+#include "config_trilinos.hpp"
 
 #include "discrete_linear_operator.hpp"
 
-#include <memory>
+#include "symmetry.hpp"
+#include "transposition_mode.hpp"
+#include "../common/shared_ptr.hpp"
 
 #ifdef WITH_TRILINOS
 #include <Teuchos_RCP.hpp>
 #include <Thyra_SpmdVectorSpaceBase_decl.hpp>
-class Epetra_FECrsMatrix;
 class Epetra_CrsMatrix;
 #endif
 
@@ -48,7 +48,9 @@ class DiscreteSparseLinearOperator :
 {
 #ifdef WITH_TRILINOS
 public:
-    DiscreteSparseLinearOperator(std::auto_ptr<Epetra_FECrsMatrix> mat);
+    DiscreteSparseLinearOperator(const shared_ptr<const Epetra_CrsMatrix>& mat,
+                                 Symmetry symmetry = NO_SYMMETRY,
+                                 TranspositionMode trans = NO_TRANSPOSE);
 #else
     // This class cannot be used without Trilinos
 private:
@@ -69,8 +71,7 @@ public:
                           arma::Mat<ValueType>& block) const;
 
 #ifdef WITH_TRILINOS
-    Epetra_CrsMatrix& epetraMatrix();
-    const Epetra_CrsMatrix& epetraMatrix() const;
+    shared_ptr<const Epetra_CrsMatrix> epetraMatrix() const;
 #endif
 
 #ifdef WITH_TRILINOS
@@ -88,10 +89,13 @@ private:
                                   arma::Col<ValueType>& y_inout,
                                   const ValueType alpha,
                                   const ValueType beta) const;
+    bool isTransposed() const;
 
 private:
 #ifdef WITH_TRILINOS
-    std::auto_ptr<Epetra_FECrsMatrix> m_mat;
+    shared_ptr<const Epetra_CrsMatrix> m_mat;
+    Symmetry m_symmetry;
+    TranspositionMode m_trans;
     Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_domainSpace;
     Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_rangeSpace;
 #endif

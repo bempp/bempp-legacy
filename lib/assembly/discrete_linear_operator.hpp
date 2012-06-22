@@ -119,8 +119,8 @@ public:
 
     /** \brief Matrix representation of the operator.
 
-    This method need not be supported by all subclasses. */
-    virtual arma::Mat<ValueType> asMatrix() const = 0;
+    The default implementation is slow and should be overridden where possible. */
+    virtual arma::Mat<ValueType> asMatrix() const;
 
     /** \brief Number of rows of the operator. */
     virtual unsigned int rowCount() const = 0;

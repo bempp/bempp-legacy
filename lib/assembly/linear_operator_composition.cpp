@@ -18,12 +18,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "../common/config_trilinos.hpp"
+
 #include "linear_operator_composition.hpp"
 
 #include "discrete_linear_operator_composition.hpp"
-#include "identity_operator.hpp"
+#include "mass_matrix_container.hpp"
+#include "mass_matrix_container_initialiser.hpp"
 
+#include "../common/shared_ptr.hpp"
 #include "../fiber/explicit_instantiation.hpp"
+
+#ifdef WITH_TRILINOS
+
+#include <boost/make_shared.hpp>
+#endif
 
 namespace Bempp
 {
@@ -93,26 +102,16 @@ assembleWeakFormImpl(const LocalAssemblerFactory& factory,
     shared_ptr<const DiscreteLinOp> discreteInner = m_inner->weakForm();
     assert(discreteInner);
 
-    shared_ptr<const DiscreteLinOp> discreteId =
-            assembleId(factory, options, symmetry);
+    // Calculate the (pseudo)inverse mass matrix
+    MassMatrixContainerInitialiser<BasisFunctionType, ResultType> mmcInitialiser(
+                m_inner->range(), m_inner->dualToRange());
+    std::auto_ptr<MassMatrixContainer<ResultType> > mmc = mmcInitialiser();
 
-    return shared_ptr<DiscreteLinOp>(new DiscreteLinearOperatorComposition<ResultType>(
-                                         discreteOuter, discreteInner));
-}
-
-template <typename BasisFunctionType, typename ResultType>
-shared_ptr<DiscreteLinearOperator<ResultType> >
-LinearOperatorComposition<BasisFunctionType, ResultType>::
-assembleConversionOperator(const LocalAssemblerFactory& factory,
-           const AssemblyOptions& options,
-           Symmetry symmetry)
-{
-    // Construct a conversion operator from m_inner.dualToRange() to
-    // m_inner.range() == m_outer.domain()
-
-    IdentityOperator<BasisFunctionType, ResultType> id(
-                m_inner->range(), m_inner->range(), m_inner->dualToRange());
-    id.assembleWeakForm(factory, options);
+    shared_ptr<const DiscreteLinOp> temp =
+            boost::make_shared<DiscreteLinearOperatorComposition<ResultType> >(
+                mmc->massMatrixPseudoinverse, discreteInner);
+    return boost::make_shared<DiscreteLinearOperatorComposition<ResultType> >(
+                discreteOuter, temp);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LinearOperatorComposition);

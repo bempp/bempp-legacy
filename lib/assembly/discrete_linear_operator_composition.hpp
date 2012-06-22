@@ -52,10 +52,10 @@ public:
      *
      *  \note Both operators must have identical dimensions, otherwise
      *  a <tt>std::invalid_argument</tt> exception is thrown. */
-    DiscreteLinearOperatorComposition(shared_ptr<const Base>& outer,
-                              shared_ptr<const Base>& inner);
+    DiscreteLinearOperatorComposition(const shared_ptr<const Base>& outer,
+                                      const shared_ptr<const Base>& inner);
 
-    virtual arma::Mat<ValueType> asMatrix() const;
+//    virtual arma::Mat<ValueType> asMatrix() const;
 
     virtual unsigned int rowCount() const;
     virtual unsigned int columnCount() const;

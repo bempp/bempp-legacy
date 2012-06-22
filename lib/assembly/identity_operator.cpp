@@ -356,9 +356,9 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparseMode(
     Epetra_SerialComm comm; // To be replaced once we begin to use MPI
     Epetra_LocalMap rowMap(testGlobalDofCount, 0 /* index_base */, comm);
     Epetra_LocalMap colMap(trialGlobalDofCount, 0 /* index_base */, comm);
-    std::auto_ptr<Epetra_FECrsMatrix> result(
-                new Epetra_FECrsMatrix(Copy, rowMap, colMap,
-                                       nonzeroEntryCountEstimates.memptr()));
+    shared_ptr<Epetra_FECrsMatrix> result = boost::make_shared<Epetra_FECrsMatrix>(
+                Copy, rowMap, colMap,
+                nonzeroEntryCountEstimates.memptr());
 
     // TODO: make each process responsible for a subset of elements
     // Find maximum number of local dofs per element

@@ -25,6 +25,8 @@
 
 #include "linear_operator.hpp"
 
+#include "../common/shared_ptr.hpp"
+
 namespace Fiber
 {
 
@@ -70,6 +72,11 @@ public:
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options,
             Symmetry symmetry);
+
+private:
+    shared_ptr<DiscreteLinearOperator<ResultType_> >
+    assembleConversionOperator(const LocalAssemblerFactory& factory,
+                               const AssemblyOptions& options);
 
 private:
     std::auto_ptr<Base> m_outer, m_inner;

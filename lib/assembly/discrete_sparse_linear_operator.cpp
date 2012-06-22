@@ -29,7 +29,7 @@
 
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
-#include <Epetra_FECrsMatrix.h>
+#include <Epetra_CrsMatrix.h>
 #include <Epetra_SerialComm.h>
 #include <Thyra_DetachedSpmdVectorView.hpp>
 #include <Thyra_SpmdVectorSpaceDefaultBase.hpp>
@@ -178,17 +178,23 @@ void reallyApplyBuiltInImpl<std::complex<double> >(
 
 template <typename ValueType>
 DiscreteSparseLinearOperator<ValueType>::
-DiscreteSparseLinearOperator(std::auto_ptr<Epetra_FECrsMatrix> mat) :
-    m_mat(mat),
-    m_domainSpace(Thyra::defaultSpmdVectorSpace<ValueType>(m_mat->NumGlobalCols())),
-    m_rangeSpace(Thyra::defaultSpmdVectorSpace<ValueType>(m_mat->NumGlobalRows()))
+DiscreteSparseLinearOperator(const shared_ptr<const Epetra_CrsMatrix>& mat,
+                             Symmetry symmetry, TranspositionMode trans) :
+    m_mat(mat), m_symmetry(symmetry), m_trans(trans)
 {
+    m_domainSpace = Thyra::defaultSpmdVectorSpace<ValueType>(
+                isTransposed() ? m_mat->NumGlobalRows() : m_mat->NumGlobalCols());
+    m_rangeSpace = Thyra::defaultSpmdVectorSpace<ValueType>(
+                isTransposed() ? m_mat->NumGlobalCols() : m_mat->NumGlobalRows());
 }
 
 template <typename ValueType>
 void DiscreteSparseLinearOperator<ValueType>::dump() const
 {
-    std::cout << *m_mat << std::endl;
+    if (isTransposed())
+        std::cout << "Transpose of " << *m_mat << std::endl;
+    else
+        std::cout << *m_mat << std::endl;
 }
 
 template <typename ValueType>
@@ -200,11 +206,11 @@ DiscreteSparseLinearOperator<ValueType>::asMatrix() const
                 "DiscreteSparseLinearOperator::asMatrix(): "
                 "conversion of distributed matrices to local matrices is unsupported");
 
-    const int rowCount = m_mat->NumGlobalRows();
-    const int colCount = m_mat->NumGlobalCols();
-    arma::Mat<ValueType> mat(rowCount, colCount);
+    bool transposed = isTransposed();
+    const int untransposedRowCount = m_mat->NumGlobalRows();
+    arma::Mat<ValueType> mat(rowCount(), columnCount());
     mat.fill(0.);
-    for (int row = 0; row < rowCount; ++row)
+    for (int row = 0; row < untransposedRowCount; ++row)
     {
         int entryCount = 0;
         double* values = 0;
@@ -215,8 +221,12 @@ DiscreteSparseLinearOperator<ValueType>::asMatrix() const
             throw std::runtime_error(
                     "DiscreteSparseLinearOperator::asMatrix(): "
                     "Epetra_CrsMatrix::ExtractMyRowView()) failed");
-        for (int entry = 0; entry < entryCount; ++entry)
-            mat(row, indices[entry]) = values[entry];
+        if (transposed)
+            for (int entry = 0; entry < entryCount; ++entry)
+                mat(indices[entry], row) = values[entry];
+        else
+            for (int entry = 0; entry < entryCount; ++entry)
+                mat(row, indices[entry]) = values[entry];
     }
     return mat;
 }
@@ -224,13 +234,13 @@ DiscreteSparseLinearOperator<ValueType>::asMatrix() const
 template <typename ValueType>
 unsigned int DiscreteSparseLinearOperator<ValueType>::rowCount() const
 {
-    return m_mat->NumGlobalRows();
+    return isTransposed() ? m_mat->NumGlobalCols() : m_mat->NumGlobalRows();
 }
 
 template <typename ValueType>
 unsigned int DiscreteSparseLinearOperator<ValueType>::columnCount() const
 {
-    return m_mat->NumGlobalCols();
+    return isTransposed() ? m_mat->NumGlobalRows() : m_mat->NumGlobalCols();
 }
 
 template <typename ValueType>
@@ -240,6 +250,11 @@ void DiscreteSparseLinearOperator<ValueType>::addBlock(
         const ValueType alpha,
         arma::Mat<ValueType>& block) const
 {
+    // indices of entries of the untransposed (stored) matrix
+    bool transposed = isTransposed();
+    const std::vector<int>& untransposedRows = transposed ? cols : rows;
+    const std::vector<int>& untransposedCols = transposed ? rows : cols;
+
     if (block.n_rows != rows.size() || block.n_cols != cols.size())
         throw std::invalid_argument(
                 "DiscreteSparseLinearOperator::addBlock(): "
@@ -249,13 +264,13 @@ void DiscreteSparseLinearOperator<ValueType>::addBlock(
     double* values = 0;
     int* indices = 0;
 
-    for (size_t row = 0; row < rows.size(); ++row)
+    for (size_t row = 0; row < untransposedRows.size(); ++row)
     {
         // Provision for future MPI support.
         if (m_mat->IndicesAreLocal())
         {
             int errorCode = m_mat->ExtractMyRowView(
-                        rows[row], entryCount, values, indices);
+                        untransposedRows[row], entryCount, values, indices);
             if (errorCode != 0)
                 throw std::runtime_error(
                         "DiscreteSparseLinearOperator::addBlock(): "
@@ -264,33 +279,26 @@ void DiscreteSparseLinearOperator<ValueType>::addBlock(
         else
         {
             int errorCode = m_mat->ExtractGlobalRowView(
-                        rows[row], entryCount, values, indices);
+                        untransposedRows[row], entryCount, values, indices);
             if (errorCode != 0)
                 throw std::runtime_error(
                         "DiscreteSparseLinearOperator::addBlock(): "
                         "Epetra_CrsMatrix::ExtractGlobalRowView()) failed");
         }
 
-        for (size_t col = 0; col < cols.size(); ++col)
+        for (size_t col = 0; col < untransposedCols.size(); ++col)
             for (int entry = 0; entry < entryCount; ++entry)
                 if (indices[entry] == cols[col])
-                    block(row, col) +=
+                    block(transposed ? col : row, transposed ? row : col) +=
                             alpha * static_cast<ValueType>(values[entry]);
     }
 }
 
 template <typename ValueType>
-Epetra_CrsMatrix&
-DiscreteSparseLinearOperator<ValueType>::epetraMatrix()
-{
-    return *m_mat;
-}
-
-template <typename ValueType>
-const Epetra_CrsMatrix&
+shared_ptr<const Epetra_CrsMatrix>
 DiscreteSparseLinearOperator<ValueType>::epetraMatrix() const
 {
-    return *m_mat;
+    return m_mat;
 }
 
 template <typename ValueType>
@@ -316,13 +324,33 @@ bool DiscreteSparseLinearOperator<ValueType>::opSupportedImpl(
 }
 
 template <typename ValueType>
+bool DiscreteSparseLinearOperator<ValueType>::isTransposed() const
+{
+    return m_trans & (TRANSPOSE | CONJUGATE_TRANSPOSE);
+}
+
+template <typename ValueType>
 void DiscreteSparseLinearOperator<ValueType>::applyBuiltInImpl(
         const TranspositionMode trans,
         const arma::Col<ValueType>& x_in,
         arma::Col<ValueType>& y_inout,
         const ValueType alpha,
         const ValueType beta) const
-{
+{    
+    TranspositionMode realTrans = trans;
+    bool transposed = isTransposed();
+    if (transposed)
+        switch (trans) {
+        case NO_TRANSPOSE: realTrans = TRANSPOSE; break;
+        case TRANSPOSE: realTrans = NO_TRANSPOSE; break;
+        case CONJUGATE: realTrans = CONJUGATE_TRANSPOSE; break;
+        case CONJUGATE_TRANSPOSE: realTrans = CONJUGATE; break;
+        // default: should not happen; anyway, don't change trans
+        }
+
+    assert(x_in.n_rows == columnCount());
+    assert(y_inout.n_rows == rowCount());
+
     reallyApplyBuiltInImpl(*m_mat, trans, x_in, y_inout, alpha, beta);
 }
 

@@ -22,6 +22,7 @@
 #define bempp_mass_matrix_container_initialiser_hpp
 
 #include "../common/common.hpp"
+#include "config_trilinos.hpp"
 
 #include <memory>
 
@@ -35,16 +36,24 @@ template <typename BasisFunctionType, typename ResultType>
 class MassMatrixContainerInitialiser
 {
 public:
-    MassMatrixContainerInitialiser(const Space<BasisFunctionType>& space) :
-        m_space(space) {
-    }
-
-    ~MassMatrixContainerInitialiser();
+    MassMatrixContainerInitialiser(const Space<BasisFunctionType>& space,
+                                   const Space<BasisFunctionType>& dualSpace,
+                                   bool forceDense = false);
 
     std::auto_ptr<MassMatrixContainer<ResultType> > operator()() const;
 
 private:
+    std::auto_ptr<MassMatrixContainer<ResultType> >
+    assembleOperatorsInDenseMode() const;
+#ifdef WITH_TRILINOS
+    std::auto_ptr<MassMatrixContainer<ResultType> >
+    assembleOperatorsInSparseMode() const;
+#endif
+
+private:
     const Space<BasisFunctionType>& m_space;
+    const Space<BasisFunctionType>& m_dualSpace;
+    bool m_forceDense;
 };
 
 } // namespace Bempp

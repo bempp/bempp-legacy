@@ -8,6 +8,30 @@ namespace Bempp
 {
 
 template <typename ValueType>
+arma::Mat<ValueType> DiscreteLinearOperator<ValueType>::asMatrix() const
+{
+    // Default brute-force implementation: apply operator to all basis vectors
+    const size_t nRows = rowCount();
+    const size_t nCols = columnCount();
+    arma::Col<ValueType> unit(nCols);
+    arma::Mat<ValueType> result(nRows, nCols);
+    result.fill(0.); // for safety, in case there was a bug in the handling of
+                     // beta == 0. in a particular subclass' applyBuiltInImpl()
+                     // override...
+    unit.fill(0.);
+    for (size_t i = 0; i < nCols; ++i) {
+        arma::Col<ValueType> activeCol(result.unsafe_col(i));
+        if (i > 0) {
+            unit(i - 1) = 0.;
+            unit(i) = 1.;
+        }
+        applyBuiltInImpl(NO_TRANSPOSE, unit, activeCol, 1., 0.);
+    }
+
+    return result;
+}
+
+template <typename ValueType>
 void DiscreteLinearOperator<ValueType>::dump() const
 {
     std::cout << asMatrix() << std::endl;

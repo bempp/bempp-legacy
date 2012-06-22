@@ -28,6 +28,9 @@
 #ifdef WITH_TRILINOS
 #include "discrete_linear_operator.hpp"
 
+#include "symmetry.hpp"
+#include "../common/shared_ptr.hpp"
+
 #include <memory>
 
 #include <Teuchos_RCP.hpp>
@@ -47,8 +50,9 @@ class DiscreteInverseSparseLinearOperator :
         public DiscreteLinearOperator<ValueType>
 {
 public:
-    DiscreteInverseSparseLinearOperator(const Epetra_CrsMatrix& mat,
-                                        bool m_symmetric = false);
+    DiscreteInverseSparseLinearOperator(
+            const shared_ptr<const Epetra_CrsMatrix>& mat,
+            Symmetry symmetry = NO_SYMMETRY);
 
     virtual arma::Mat<ValueType> asMatrix() const;
 
@@ -75,9 +79,10 @@ private:
                                   const ValueType beta) const;
 
 private:
+    shared_ptr<const Epetra_CrsMatrix> m_mat;
     std::auto_ptr<Epetra_LinearProblem> m_problem;
     Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_space;
-    bool m_symmetric;
+    Symmetry m_symmetry;
     std::auto_ptr<Amesos_BaseSolver> m_solver;
 };
 

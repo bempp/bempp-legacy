@@ -162,18 +162,22 @@ void solveWithAmesos<std::complex<double> >(
 
 template <typename ValueType>
 DiscreteInverseSparseLinearOperator<ValueType>::
-DiscreteInverseSparseLinearOperator(const Epetra_CrsMatrix& mat,
-                                    bool symmetric) :
+DiscreteInverseSparseLinearOperator(const shared_ptr<const Epetra_CrsMatrix>& mat,
+                                    Symmetry symmetry) :
+    m_mat(mat),
     m_problem(new Epetra_LinearProblem),
-    m_space(Thyra::defaultSpmdVectorSpace<ValueType>(mat.NumGlobalRows())),
-    m_symmetric(symmetric)
+    m_space(Thyra::defaultSpmdVectorSpace<ValueType>(mat->NumGlobalRows())),
+    m_symmetry(symmetry)
 {
-    if (mat.NumGlobalRows() != mat.NumGlobalCols())
+    if (m_mat->NumGlobalRows() != m_mat->NumGlobalCols())
         throw std::invalid_argument("DiscreteInverseSparseLinearOperator::"
                                     "DiscreteInverseSparseLinearOperator(): "
                                     "square matrix expected");
-    m_problem->SetOperator(const_cast<Epetra_CrsMatrix*>(&mat));
-    if (m_symmetric)
+    // const_cast: Amesos is not const-correct. Amesos2 will be,
+    // and Amesos2 takes a RCP to a const matrix.
+    m_problem->SetOperator(const_cast<Epetra_CrsMatrix*>(m_mat.get()));
+    if (m_symmetry & (SYMMETRIC | HERMITIAN)) // Epetra matrices are real, so
+                                              // symmetric == Hermitian
         m_problem->AssertSymmetric();
 
     Amesos amesosFactory;
@@ -195,14 +199,6 @@ DiscreteInverseSparseLinearOperator(const Epetra_CrsMatrix& mat,
         throw std::runtime_error("DiscreteInverseSparseLinearOperator::"
                                  "DiscreteInverseSparseLinearOperator(): "
                                  "Numeric factorisation with Amesos failed");
-}
-
-template <typename ValueType>
-arma::Mat<ValueType>
-DiscreteInverseSparseLinearOperator<ValueType>::asMatrix() const
-{
-    throw std::runtime_error("DiscreteInverseSparseLinearOperator::"
-                             "asMatrix(): not implemented yet");
 }
 
 template <typename ValueType>

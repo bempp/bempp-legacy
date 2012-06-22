@@ -23,10 +23,6 @@
 
 #include "../common/common.hpp"
 
-#include "mass_matrix_container_initialiser.hpp"
-#include "mass_matrix_container.hpp"
-
-#include "../common/lazy.hpp"
 #include "../common/not_implemented_error.hpp"
 #include "../common/types.hpp"
 #include "../fiber/scalar_traits.hpp"
@@ -129,22 +125,6 @@ public:
     // independent, we may come up with a more elegant solution.
     virtual void globalDofPositions(
             std::vector<Point3D<CoordinateType> >& positions) const = 0;
-    /** @} */
-
-    /** @}
-        @name Mass matrix and inverse mass matrix management
-        @} */
-
-    template <typename ResultType>
-    typename boost::enable_if_c<boost::is_same<ResultType, BasisFunctionType>::value ||
-                                boost::is_same<ResultType, ComplexType>::value>::type
-    applyMassMatrix(const arma::Col<ResultType>& argument,
-                    arma::Col<ResultType>& result) const;
-    template <typename ResultType>
-    typename boost::enable_if_c<boost::is_same<ResultType, BasisFunctionType>::value ||
-                                boost::is_same<ResultType, ComplexType>::value>::type
-    applyInverseMassMatrix(const arma::Col<ResultType>& argument,
-                           arma::Col<ResultType>& result) const;
 
     /** @}
         @name Debugging
@@ -154,31 +134,7 @@ public:
     /** @} */
 
 protected:
-    // void resetMassMatrixContainers() const; // TODO
-
-protected:
     Grid& m_grid;
-
-private:
-    void applyMassMatrixBasisFunctionType(
-            const arma::Col<BasisFunctionType>& argument,
-            arma::Col<BasisFunctionType>& result) const;
-    void applyMassMatrixComplexType(
-            const arma::Col<ComplexType>& argument,
-            arma::Col<ComplexType>& result) const;
-    void applyInverseMassMatrixBasisFunctionType(
-            const arma::Col<BasisFunctionType>& argument,
-            arma::Col<BasisFunctionType>& result) const;
-    void applyInverseMassMatrixComplexType(
-            const arma::Col<ComplexType>& argument,
-            arma::Col<ComplexType>& result) const;
-
-    mutable Lazy<MassMatrixContainer<BasisFunctionType>,
-    MassMatrixContainerInitialiser<BasisFunctionType, BasisFunctionType> >
-    m_bftMassMatrixContainer;
-    mutable Lazy<MassMatrixContainer<ComplexType>,
-    MassMatrixContainerInitialiser<BasisFunctionType, ComplexType> >
-    m_ctMassMatrixContainer;
 };
 
 /** \brief Get pointers to Basis objects corresponding to all elements. */

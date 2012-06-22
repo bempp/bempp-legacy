@@ -35,7 +35,7 @@ struct MassMatrixContainer
     ~MassMatrixContainer();
 
     shared_ptr<const DiscreteLinearOperator<BasisFunctionType> > massMatrix;
-    shared_ptr<const DiscreteLinearOperator<BasisFunctionType> > inverseMassMatrix;
+    shared_ptr<const DiscreteLinearOperator<BasisFunctionType> > massMatrixPseudoinverse;
 };
 
 } //namespace Bempp
