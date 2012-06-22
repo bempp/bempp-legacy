@@ -108,6 +108,14 @@ public:
                arma::Col<ValueType>& y_inout,
                const ValueType alpha,
                const ValueType beta) const {
+        bool transposed = (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE);
+        if (x_in.n_rows != (transposed ? rowCount() : columnCount()))
+            throw std::invalid_argument("DiscreteLinearOperator::apply(): "
+                                        "vector x_in has invalid length");
+        if (y_inout.n_rows != (transposed ? columnCount() : rowCount()))
+            throw std::invalid_argument("DiscreteLinearOperator::apply(): "
+                                        "vector y_inout has invalid length");
+
         applyBuiltInImpl(trans, x_in, y_inout, alpha, beta);
     }
 
