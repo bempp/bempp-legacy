@@ -112,17 +112,14 @@ applyBuiltInImpl(const TranspositionMode trans,
                  const ValueType alpha,
                  const ValueType beta) const
 {
-    if (beta == static_cast<ValueType>(0.))
-        y_inout.fill(0.);
-    else
-        y_inout *= beta;
+    arma::Col<ValueType> tmp(y_inout.n_rows);
 
     if (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE) {
-        m_outer->apply(trans, x_in, y_inout, alpha, 1.);
-        m_inner->apply(trans, x_in, y_inout, 1., 1.);
+        m_outer->apply(trans, x_in, tmp, alpha, 0.);
+        m_inner->apply(trans, tmp, y_inout, 1., beta);
     } else {
-        m_inner->apply(trans, x_in, y_inout, alpha, 1.);
-        m_outer->apply(trans, x_in, y_inout, 1., 1.);
+        m_inner->apply(trans, x_in, tmp, alpha, 0.);
+        m_outer->apply(trans, tmp, y_inout, 1., beta);
     }
 }
 
