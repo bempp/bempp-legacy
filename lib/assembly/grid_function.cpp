@@ -301,7 +301,6 @@ GridFunction<BasisFunctionType, ResultType>::coefficients() const
         try {
             std::cout << "Recalculating coefficients" << std::endl;
             m_coefficients.set_size(m_space.globalDofCount());
-//            m_massMatrixContainer.get().massMatrix->dump()  ;
             m_massMatrixContainer.get().massMatrixPseudoinverse->apply(
                         NO_TRANSPOSE, m_projections, m_coefficients,
                         static_cast<ResultType>(1.), static_cast<ResultType>(0.));
@@ -311,7 +310,6 @@ GridFunction<BasisFunctionType, ResultType>::coefficients() const
             throw;
         }
     }
-    std::cout << "Returning coefficients" << std::endl;
     return m_coefficients;
 }
 
