@@ -57,6 +57,14 @@ void reallyApplyBuiltInImpl<double>(const Epetra_CrsMatrix& mat,
                                     const double alpha,
                                     const double beta)
 {
+    if (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE) {
+        assert(mat.NumGlobalRows() == static_cast<int>(x_in.n_rows));
+        assert(mat.NumGlobalCols() == static_cast<int>(y_inout.n_rows));
+    } else {
+        assert(mat.NumGlobalCols() == static_cast<int>(x_in.n_rows));
+        assert(mat.NumGlobalRows() == static_cast<int>(y_inout.n_rows));
+    }
+
     Epetra_Map map_x(x_in.n_rows, 0, Epetra_SerialComm());
     Epetra_Map map_y(y_inout.n_rows, 0, Epetra_SerialComm());
 
@@ -347,9 +355,6 @@ void DiscreteSparseLinearOperator<ValueType>::applyBuiltInImpl(
         case CONJUGATE_TRANSPOSE: realTrans = CONJUGATE; break;
         // default: should not happen; anyway, don't change trans
         }
-
-    assert(x_in.n_rows == columnCount());
-    assert(y_inout.n_rows == rowCount());
 
     reallyApplyBuiltInImpl(*m_mat, realTrans, x_in, y_inout, alpha, beta);
 }
