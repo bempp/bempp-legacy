@@ -272,7 +272,7 @@ private:
     const Space<BasisFunctionType>& m_dualToRange;
     std::string m_label;
 
-    shared_ptr<shared_ptr<DiscreteLinearOperator<ResultType> > > m_weakForm;
+    shared_ptr<DiscreteLinearOperator<ResultType> > m_weakForm;
 };
 
 } // namespace Bempp

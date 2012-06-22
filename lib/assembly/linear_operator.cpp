@@ -40,7 +40,7 @@ LinearOperator(const Space<BasisFunctionType>& domain,
                const Space<BasisFunctionType>& dualToRange,
                const std::string& label) :
     m_domain(domain), m_range(range), m_dualToRange(dualToRange),
-    m_label(label), m_weakForm(new shared_ptr<DiscreteLinearOperator<ResultType> >)
+    m_label(label)
 {
 }
 
@@ -55,13 +55,13 @@ void LinearOperator<BasisFunctionType, ResultType>::assembleWeakForm(
         const AssemblyOptions& options,
         Symmetry symmetry)
 {
-    *m_weakForm = this->assembleWeakFormImpl(factory, options, symmetry);
+    m_weakForm = this->assembleWeakFormImpl(factory, options, symmetry);
 }
 
 template <typename BasisFunctionType, typename ResultType>
 bool LinearOperator<BasisFunctionType, ResultType>::isWeakFormAssembled() const
 {
-    return (*m_weakForm).get() != 0;
+    return m_weakForm.get() != 0;
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -71,14 +71,14 @@ LinearOperator<BasisFunctionType, ResultType>::weakForm() const
     if (!isWeakFormAssembled())
         throw std::runtime_error("LinearOperator::weakForm(): "
                                  "the weak form is not assembled");
-    return *m_weakForm;
+    return m_weakForm;
 }
 
 template <typename BasisFunctionType, typename ResultType>
 void
 LinearOperator<BasisFunctionType, ResultType>::resetWeakForm()
 {
-    m_weakForm.reset(new shared_ptr<DiscreteLinearOperator<ResultType> >);
+    m_weakForm.reset();
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -103,7 +103,7 @@ void LinearOperator<BasisFunctionType, ResultType>::apply(
     arma::Col<ResultType> yVals = y_inout.projections();
 
     // Apply operator and assign the result to y_inout's projections
-    (*m_weakForm)->apply(trans, xVals, yVals, alpha, beta);
+    m_weakForm->apply(trans, xVals, yVals, alpha, beta);
     // TODO: make interfaces to the Trilinos and fallback
     // DiscreteLinearOperator::apply() compatible.
     // Perhaps by declaring an asPtrToBaseVector method in Vector...
