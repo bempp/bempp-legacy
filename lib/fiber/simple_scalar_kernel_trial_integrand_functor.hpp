@@ -66,8 +66,10 @@ public:
         // Assert that there is only a single weighted trial transformation
         // and that it is scalar
         assert(weightedTransformedTrialValues.size() == 1);
+#ifndef NDEBUG
         const int transformationDim = weightedTransformedTrialValues[0].extent(0);
         assert(transformationDim == 1);
+#endif
 
         return weightedTransformedTrialValues[0](0) * kernelValues[0](0, 0);
     }
