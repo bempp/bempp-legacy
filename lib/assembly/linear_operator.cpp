@@ -245,15 +245,17 @@ GridFunction<BasisFunctionType, ResultType> operator*(
         const LinearOperator<BasisFunctionType, ResultType>& op,
         const GridFunction<BasisFunctionType, ResultType>& fun)
 {
-    // To be modified.
+    typedef GridFunction<BasisFunctionType, ResultType> GF;
+
     const Space<BasisFunctionType>& space = op.range();
     const Space<BasisFunctionType>& dualSpace = op.dualToRange();
     arma::Col<ResultType> coefficients(space.globalDofCount());
     coefficients.fill(0.);
     arma::Col<ResultType> projections(dualSpace.globalDofCount());
     projections.fill(0.);
-    GridFunction<BasisFunctionType, ResultType> result(
-                space, dualSpace, coefficients, projections);
+//    GF result(space, dualSpace, coefficients, projections);
+    GF result(space, dualSpace, projections, GF::PROJECTIONS);
+//    GF result(space, dualSpace, coefficients, GF::COEFFICIENTS);
     op.apply(NO_TRANSPOSE, fun, result, 1., 0.);
     return result;
 }

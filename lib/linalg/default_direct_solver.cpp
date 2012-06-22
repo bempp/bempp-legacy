@@ -55,8 +55,8 @@ template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>
 DefaultDirectSolver<BasisFunctionType, ResultType>::getResult() const
 {
-    return gridFunctionFromCoefficients(m_linearOperator.range(),
-                                        m_linearOperator.dualToRange(),
+    return gridFunctionFromCoefficients(m_linearOperator.domain(),
+                                        m_linearOperator.domain(), // is this the right choice?
                                         m_solution);
 }
 

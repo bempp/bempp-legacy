@@ -37,16 +37,16 @@ namespace Bempp
 template <typename BasisFunctionType, typename ResultType>
 DefaultIterativeSolver<BasisFunctionType, ResultType>::DefaultIterativeSolver(
         const LinearOperator<BasisFunctionType, ResultType>& linOp,
-        const GridFunction<BasisFunctionType, ResultType>& gridFun) :
+        const GridFunction<BasisFunctionType, ResultType>& rhsGridFun) :
     m_belosSolverWrapper(
         Teuchos::rcp<const Thyra::LinearOpBase<ResultType> >(
             linOp.weakForm())),
-    m_space(linOp.range()), m_dualSpace(linOp.dualToRange()),
-    // TODO: gridFun.coefficients should return a shared pointer to Vector
+    m_space(linOp.domain()),
+    // TODO: gridFun.projections should return a shared pointer to Vector
     // rather than a Vector
-    m_rhs(new Vector<ResultType>(gridFun.projections()))
+    m_rhs(new Vector<ResultType>(rhsGridFun.projections()))
 {
-    if (&linOp.domain() != &gridFun.space())
+    if (&linOp.dualToRange() != &rhsGridFun.dualSpace())
         throw std::runtime_error("DefaultIterativeSolver::DefaultIterativeSolver(): "
                                  "spaces do not match");
 }
@@ -89,7 +89,9 @@ template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>
 DefaultIterativeSolver<BasisFunctionType, ResultType>::getResult() const
 {
-    return gridFunctionFromCoefficients(m_space, m_dualSpace, m_sol);
+    return gridFunctionFromCoefficients(m_space,
+                                        m_space, // is this the right choice?
+                                        m_sol);
 }
 
 template <typename BasisFunctionType, typename ResultType>

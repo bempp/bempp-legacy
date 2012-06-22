@@ -24,14 +24,19 @@
 
 #include "../common/common.hpp"
 
+#include "mass_matrix_container_initialiser.hpp"
+#include "mass_matrix_container.hpp"
+#include "vector.hpp"
+
+#include "../common/armadillo_fwd.hpp"
+#include "../common/lazy.hpp"
+
 #include "../grid/vtk_writer.hpp"
 #include "../fiber/local_assembler_factory.hpp"
 #include "../fiber/scalar_traits.hpp"
 #include "../fiber/surface_normal_dependent_function.hpp"
 #include "../fiber/surface_normal_independent_function.hpp"
-#include "vector.hpp"
 
-#include "../common/armadillo_fwd.hpp"
 #include <boost/mpl/set.hpp>
 #include <boost/mpl/has_key.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -69,7 +74,30 @@ public:
     LocalAssemblerFactory;
     typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
 
+    enum DataType { COEFFICIENTS, PROJECTIONS };
+
     // TODO: clarify this description
+    /** \brief Constructor.
+     *
+     * \param[in] space        Function space to expand the grid function in.
+     * \param[in] dualSpace    Function space dual to \p space.
+     * \param[in] data
+     *   Depending on the value of \dataType, vector of the expansion
+     *   coefficients of the grid function in the space \p space. or vector of
+     *   the scalar products of the grid function and the basis functions of
+     *   the space \p dualSpace (in other words, the element of \p dualSpace
+     *   yielded by the Riesz map of \p space applied to this grid function).
+     * \param[in] dataType     Interpretation of the vector
+     *                         passed via the argument \p data.
+     *
+     * \note End users should not need to call this constructor directly.
+     * Use instead one of the "non-member constructors"
+     * <tt>gridFunctionFrom...()</tt>. */
+    GridFunction(const Space<BasisFunctionType>& space,
+                 const Space<BasisFunctionType>& dualSpace,
+                 const arma::Col<ResultType>& data,
+                 DataType dataType);
+
     /** \brief Constructor.
      *
      * \param[in] space        Function space to expand the grid function in.
@@ -142,8 +170,12 @@ private:
 private:
     const Space<BasisFunctionType>& m_space;
     const Space<BasisFunctionType>& m_dualSpace;
-    arma::Col<ResultType> m_coefficients;
-    arma::Col<ResultType> m_projections;
+    mutable arma::Col<ResultType> m_coefficients;
+    mutable arma::Col<ResultType> m_projections;
+
+    mutable Lazy<MassMatrixContainer<ResultType>,
+    MassMatrixContainerInitialiser<BasisFunctionType, ResultType> >
+    m_massMatrixContainer;
 };
 
 // Overloaded operators

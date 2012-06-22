@@ -45,7 +45,7 @@ public:
     typedef typename ScalarTraits<ResultType>::RealType MagnitudeType;
 
     DefaultIterativeSolver(const LinearOperator<BasisFunctionType, ResultType>& linOp,
-                           const GridFunction<BasisFunctionType, ResultType>& gridFun);
+                           const GridFunction<BasisFunctionType, ResultType>& rhsGridFun);
 
     void addPreconditioner(
             const Teuchos::RCP<const Thyra::PreconditionerBase<ResultType> >& preconditioner);
@@ -62,7 +62,6 @@ public:
 private:
     BelosSolverWrapper<ResultType> m_belosSolverWrapper;
     const Space<BasisFunctionType>& m_space;
-    const Space<BasisFunctionType>& m_dualSpace;
     Teuchos::RCP<Thyra::MultiVectorBase<ResultType> > m_rhs;
 
     // as long as a GridFunction is initialised with an Armadillo array

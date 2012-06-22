@@ -21,6 +21,7 @@
 #include "grid_function.hpp"
 
 #include "assembly_options.hpp"
+#include "discrete_linear_operator.hpp"
 #include "local_assembler_construction_helper.hpp"
 
 #include "../common/stl_io.hpp"
@@ -63,14 +64,14 @@ namespace
 
 template <typename BasisFunctionType, typename ResultType>
 arma::Col<ResultType> reallyCalculateProjections(
-        const Space<BasisFunctionType>& space,
+        const Space<BasisFunctionType>& dualSpace,
         Fiber::LocalAssemblerForGridFunctions<ResultType>& assembler,
         const AssemblyOptions& options)
 {
     // TODO: parallelise using TBB (the parameter options will then start be used)
 
     // Get the grid's leaf view so that we can iterate over elements
-    std::auto_ptr<GridView> view = space.grid().leafView();
+    std::auto_ptr<GridView> view = dualSpace.grid().leafView();
     const size_t elementCount = view->entityCount(0);
 
     // Global DOF indices corresponding to local DOFs on elements
@@ -82,7 +83,7 @@ arma::Col<ResultType> reallyCalculateProjections(
     while (!it->finished()) {
         const Entity<0>& element = it->entity();
         const int elementIndex = mapper.entityIndex(element);
-        space.globalDofs(element, testGlobalDofs[elementIndex]);
+        dualSpace.globalDofs(element, testGlobalDofs[elementIndex]);
         it->next();
     }
 
@@ -92,7 +93,7 @@ arma::Col<ResultType> reallyCalculateProjections(
         testIndices[i] = i;
 
     // Create the weak form's column vector
-    arma::Col<ResultType> result(space.globalDofCount());
+    arma::Col<ResultType> result(dualSpace.globalDofCount());
     result.fill(0.);
 
     std::vector<arma::Col<ResultType> > localResult;
@@ -110,19 +111,19 @@ arma::Col<ResultType> reallyCalculateProjections(
     return result;
 }
 
-/** \brief Calculate projections of the function on test functions from
-  the given space. */
+/** \brief Calculate projections of the function on the basis functions of
+  the given dual space. */
 template <typename BasisFunctionType, typename ResultType>
 arma::Col<ResultType> calculateProjections(
         const Fiber::Function<ResultType>& globalFunction,
-        const Space<BasisFunctionType>& space,
+        const Space<BasisFunctionType>& dualSpace,
         const typename GridFunction<BasisFunctionType, ResultType>::LocalAssemblerFactory& factory,
         const AssemblyOptions& options)
 {
-    if (!space.dofsAssigned())
+    if (!dualSpace.dofsAssigned())
         throw std::runtime_error(
                 "GridFunction::calculateProjections(): "
-                "degrees of freedom of the provided space must be assigned "
+                "degrees of freedom of the provided dual space must be assigned "
                 "before calling calculateProjections()");
 
     // Prepare local assembler
@@ -136,15 +137,15 @@ arma::Col<ResultType> calculateProjections(
     shared_ptr<Fiber::OpenClHandler> openClHandler;
     shared_ptr<BasisPtrVector> testBases;
 
-    Helper::collectGridData(space.grid(),
+    Helper::collectGridData(dualSpace.grid(),
                             rawGeometry, geometryFactory);
     Helper::makeOpenClHandler(options.parallelisationOptions().openClOptions(),
                               rawGeometry, openClHandler);
-    Helper::collectBases(space, testBases);
+    Helper::collectBases(dualSpace, testBases);
 
     // Get reference to the test basis transformation
     const Fiber::CollectionOfBasisTransformations<CoordinateType>&
-            testTransformations = space.shapeFunctionValue();
+            testTransformations = dualSpace.shapeFunctionValue();
 
     typedef Fiber::LocalAssemblerForGridFunctions<ResultType> LocalAssembler;
     std::auto_ptr<LocalAssembler> assembler =
@@ -155,7 +156,7 @@ arma::Col<ResultType> calculateProjections(
                 make_shared_from_ref(globalFunction),
                 openClHandler);
 
-    return reallyCalculateProjections(space, *assembler, options);
+    return reallyCalculateProjections(dualSpace, *assembler, options);
 }
 
 } // namespace
@@ -171,7 +172,8 @@ gridFunctionFromFiberFunction(
 {
     // TODO: use dualSpace
     arma::Col<ResultType> projections =
-            calculateProjections(function, space, factory, assemblyOptions);
+            calculateProjections(function, dualSpace, factory, assemblyOptions);
+    std::cout << "projections calculated" << std::endl;
     return gridFunctionFromProjections(space, dualSpace, projections);
 }
 
@@ -182,22 +184,7 @@ gridFunctionFromCoefficients(const Space<BasisFunctionType>& space,
                              const arma::Col<ResultType>& coefficients)
 {
     typedef GridFunction<BasisFunctionType, ResultType> GF;
-
-    if (!space.dofsAssigned() || !dualSpace.dofsAssigned())
-        throw std::runtime_error(
-                "GridFunction::GridFunction(): "
-                "degrees of freedom of the provided spaces must be assigned "
-                "beforehand");
-    if (space.globalDofCount() != coefficients.n_rows)
-        throw std::runtime_error(
-                "GridFunction::GridFunction(): "
-                "dimension of coefficients does not match the number of global "
-                "DOFs in the provided function space");
-
-    arma::Col<ResultType> projections;
-    // TODO: handle the case of space different from dualSpace
-    space.applyMassMatrix(coefficients, projections);
-    return GF(space, dualSpace, coefficients, projections);
+    return GF(space, dualSpace, coefficients, GF::COEFFICIENTS);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -207,22 +194,44 @@ gridFunctionFromProjections(const Space<BasisFunctionType>& space,
                             const arma::Col<ResultType>& projections)
 {
     typedef GridFunction<BasisFunctionType, ResultType> GF;
+    return GF(space, dualSpace, projections, GF::PROJECTIONS);
+}
 
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>::GridFunction(
+        const Space<BasisFunctionType>& space,
+        const Space<BasisFunctionType>& dualSpace,
+        const arma::Col<ResultType>& data,
+        DataType dataType) :
+    m_space(space), m_dualSpace(dualSpace),
+    m_massMatrixContainer(
+        MassMatrixContainerInitialiser<BasisFunctionType, ResultType>(
+            space, dualSpace))
+{
+    if (&space.grid() != &dualSpace.grid())
+        throw std::invalid_argument(
+                "GridFunction::GridFunction(): "
+                "space and dualSpace must be defined on the same grid");
     if (!space.dofsAssigned() || !dualSpace.dofsAssigned())
         throw std::runtime_error(
                 "GridFunction::GridFunction(): "
                 "degrees of freedom of the provided spaces must be assigned "
                 "beforehand");
-    if (dualSpace.globalDofCount() != projections.n_rows)
-        throw std::runtime_error(
-                "GridFunction::GridFunction(): "
-                "dimension of projections does not match the number of global "
-                "DOFs in the provided function space");
-
-    arma::Col<ResultType> coefficients;
-    // TODO: handle the case of space different from dualSpace
-    space.applyInverseMassMatrix(projections, coefficients);
-    return GF(space, dualSpace, coefficients, projections);
+    if (dataType == COEFFICIENTS) {
+        if (data.n_rows != space.globalDofCount())
+            throw std::invalid_argument(
+                    "GridFunction::GridFunction(): "
+                    "the coefficients vector has incorrect length");
+        m_coefficients = data;
+    } else if (dataType == PROJECTIONS) {
+        if (data.n_rows != dualSpace.globalDofCount())
+            throw std::invalid_argument(
+                    "GridFunction::GridFunction(): "
+                    "the projections vector has incorrect length");
+        m_projections = data;
+    } else
+        throw std::invalid_argument(
+                "GridFunction::GridFunction(): invalid data type");
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -232,20 +241,30 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
         const arma::Col<ResultType>& coefficients,
         const arma::Col<ResultType>& projections) :
     m_space(space), m_dualSpace(dualSpace),
-    m_coefficients(coefficients), m_projections(projections)
+    m_coefficients(coefficients), m_projections(projections),
+    m_massMatrixContainer(
+        MassMatrixContainerInitialiser<BasisFunctionType, ResultType>(
+            space, dualSpace, true /*force dense*/))
 {
     if (&space.grid() != &dualSpace.grid())
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): "
                 "space and dualSpace must be defined on the same grid");
+    if (!space.dofsAssigned() || !dualSpace.dofsAssigned())
+        throw std::runtime_error(
+                "GridFunction::GridFunction(): "
+                "degrees of freedom of the provided spaces must be assigned "
+                "beforehand");
     if (coefficients.n_rows != space.globalDofCount())
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): "
                 "the coefficients vector has incorrect length");
+    m_coefficients = coefficients;
     if (projections.n_rows != dualSpace.globalDofCount())
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): "
                 "the projections vector has incorrect length");
+    m_projections = projections;
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -278,6 +297,21 @@ template <typename BasisFunctionType, typename ResultType>
 const arma::Col<ResultType>& 
 GridFunction<BasisFunctionType, ResultType>::coefficients() const
 {
+    if (m_coefficients.n_rows != m_space.globalDofCount()) {
+        try {
+            std::cout << "Recalculating coefficients" << std::endl;
+            m_coefficients.set_size(m_space.globalDofCount());
+//            m_massMatrixContainer.get().massMatrix->dump()  ;
+            m_massMatrixContainer.get().massMatrixPseudoinverse->apply(
+                        NO_TRANSPOSE, m_projections, m_coefficients,
+                        static_cast<ResultType>(1.), static_cast<ResultType>(0.));
+        }
+        catch (...) {
+            m_coefficients.set_size(0);
+            throw;
+        }
+    }
+    std::cout << "Returning coefficients" << std::endl;
     return m_coefficients;
 }
 
@@ -285,18 +319,34 @@ template <typename BasisFunctionType, typename ResultType>
 void GridFunction<BasisFunctionType, ResultType>::setCoefficients(
         const arma::Col<ResultType>& coeffs)
 {
+    // TODO: make thread-safe
     if (coeffs.n_rows != m_space.globalDofCount())
         throw std::invalid_argument(
                 "GridFunction::setCoefficients(): dimension of the provided "
-                "vector does not match the number of global DOFs");
+                "vector does not match the number of global DOFs in the primal space");
     m_coefficients = coeffs;
-    m_space.applyMassMatrix(coeffs, m_projections);
+    m_projections.set_size(0); // invalidate the projections vector
 }
 
 template <typename BasisFunctionType, typename ResultType>
 const arma::Col<ResultType>&
 GridFunction<BasisFunctionType, ResultType>::projections() const
 {
+    // TODO: make thread-safe
+    if (m_projections.n_rows != m_dualSpace.globalDofCount()) {
+        std::cout << "Recalculating projections" << std::endl;
+        try {
+            m_projections.set_size(m_dualSpace.globalDofCount());
+            m_massMatrixContainer.get().massMatrix->apply(
+                        NO_TRANSPOSE, m_coefficients, m_projections,
+                        static_cast<ResultType>(1.), static_cast<ResultType>(0.));
+        }
+        catch (...) {
+            m_projections.set_size(0);
+            throw;
+        }
+    }
+    std::cout << "Returning projections" << std::endl;
     return m_projections;
 }
 
@@ -307,10 +357,9 @@ void GridFunction<BasisFunctionType, ResultType>::setProjections(
     if (projects.n_rows != m_dualSpace.globalDofCount())
         throw std::invalid_argument(
                 "GridFunction::setProjections(): dimension of the provided "
-                "vector does not match the number of global DOFs");
+                "vector does not match the number of global DOFs in the dual space");
     m_projections = projects;
-    // TODO: do sth sensible
-    m_space.applyInverseMassMatrix(projects, m_coefficients);
+    m_coefficients.set_size(0); // invalidate the coefficients vector
 }
 
 // Redundant, in fact -- can be obtained directly from Space
@@ -330,8 +379,9 @@ void GridFunction<BasisFunctionType, ResultType>::getLocalCoefficients(
     m_space.globalDofs(element, gdofIndices);
     const int gdofCount = gdofIndices.size();
     coeffs.resize(gdofCount);
+    const arma::Col<ResultType>& globalCoefficients = coefficients();
     for (int i = 0; i < gdofCount; ++i)
-        coeffs[i] = m_coefficients(gdofIndices[i]);
+        coeffs[i] = globalCoefficients(gdofIndices[i]);
 }
 
 template <typename BasisFunctionType, typename ResultType>
