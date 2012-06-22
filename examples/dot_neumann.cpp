@@ -133,25 +133,27 @@ int main(int argc, char* argv[])
     // We need the single layer, double layer, and the identity operator
 
     ModifiedHelmholtz3dSingleLayerPotentialOperator<BFT, RT> slp(
-                HplusHalfSpace, HplusHalfSpace, waveNumber);
+                HplusHalfSpace, HplusHalfSpace, HplusHalfSpace, waveNumber);
     ModifiedHelmholtz3dDoubleLayerPotentialOperator<BFT, RT> dlp(
-                HplusHalfSpace, HplusHalfSpace, waveNumber);
-    IdentityOperator<BFT, RT> id(HplusHalfSpace, HplusHalfSpace);
+                HplusHalfSpace, HplusHalfSpace, HplusHalfSpace, waveNumber);
+    IdentityOperator<BFT, RT> id(
+                HplusHalfSpace, HplusHalfSpace, HplusHalfSpace);
 
     // Form the left-hand side sum
 
     LinearOperatorSum<BFT, RT> lhsOp = 0.5 * id + dlp + (1.0/(2.0*kappa)) * slp;
-    //LinearOperatorSuperposition<BFT, RT> rhsOp = id;
+    LinearOperator<BFT, RT>& rhsOp = id;
 
     // Assemble the Operators
 
-    id.assembleWeakForm(factory, assemblyOptions);
     lhsOp.assembleWeakForm(factory, assemblyOptions);
+    rhsOp.assembleWeakForm(factory, assemblyOptions);
 
     // We also want a grid function
 
     GridFunction<BFT, RT> u = gridFunctionFromSurfaceNormalIndependentFunctor(
-                HplusHalfSpace, MyFunctor(waveNumber), factory, assemblyOptions);
+                HplusHalfSpace, HplusHalfSpace,
+                MyFunctor(waveNumber), factory, assemblyOptions);
 
     // Assemble the rhs
 
