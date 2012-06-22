@@ -116,23 +116,28 @@ int main(int argc, char* argv[])
 
     // We need the single layer, double layer, and the identity operator
 
-    Laplace3dSingleLayerPotentialOperator<BFT, RT> rhsOp(HplusHalfSpace, HminusHalfSpace);
-    Laplace3dDoubleLayerPotentialOperator<BFT, RT> dlp(HplusHalfSpace, HplusHalfSpace);
-    IdentityOperator<BFT, RT> id(HplusHalfSpace, HplusHalfSpace);
+    Laplace3dSingleLayerPotentialOperator<BFT, RT> slpOp(
+                HminusHalfSpace, HplusHalfSpace, HplusHalfSpace);
+    Laplace3dDoubleLayerPotentialOperator<BFT, RT> dlpOp(
+                HplusHalfSpace, HplusHalfSpace, HplusHalfSpace);
+    IdentityOperator<BFT, RT> id(
+                HplusHalfSpace, HplusHalfSpace, HplusHalfSpace);
 
-    // Form the left-hand side sum
+    // Define the operators standing on the left- and right-hand side
 
-    LinearOperatorSum<BFT, RT> lhsOp = -0.5 * id + dlp;
+    LinearOperatorSum<BFT, RT> lhsOp = -0.5 * id + dlpOp;
+    LinearOperator<BFT, RT>& rhsOp = slpOp;
 
-    // Assemble the Operators
+    // Assemble the operators
 
-    rhsOp.assembleWeakForm(factory, assemblyOptions);
     lhsOp.assembleWeakForm(factory, assemblyOptions);
+    rhsOp.assembleWeakForm(factory, assemblyOptions);
 
     // We also want a grid function
 
     GridFunction<BFT, RT> u = gridFunctionFromSurfaceNormalIndependentFunctor(
-                HminusHalfSpace, MyFunctor(), factory, assemblyOptions);
+                HminusHalfSpace, HminusHalfSpace, /* is this the right choice? */
+                MyFunctor(), factory, assemblyOptions);
 
     // Assemble the rhs
 
