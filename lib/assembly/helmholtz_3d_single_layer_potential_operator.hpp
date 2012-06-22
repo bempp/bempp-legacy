@@ -72,6 +72,9 @@ public:
             const Space<BasisFunctionType>& dualToRange,
             KernelType waveNumber,
             const std::string& label = "");
+
+    virtual std::auto_ptr<LinearOperator<BasisFunctionType_, ResultType> >
+    clone() const;
 };
 
 } // namespace Bempp

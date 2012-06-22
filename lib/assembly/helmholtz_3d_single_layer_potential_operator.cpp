@@ -74,6 +74,17 @@ Helmholtz3dSingleLayerPotentialOperator(
 {
 }
 
+template <typename BasisFunctionType>
+std::auto_ptr<LinearOperator<BasisFunctionType,
+typename Helmholtz3dSingleLayerPotentialOperator<BasisFunctionType>::ResultType> >
+Helmholtz3dSingleLayerPotentialOperator<BasisFunctionType>::
+clone() const
+{
+    typedef LinearOperator<BasisFunctionType, ResultType> LinOp;
+    typedef Helmholtz3dSingleLayerPotentialOperator<BasisFunctionType> This;
+    return std::auto_ptr<LinOp>(new This(*this));
+}
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dSingleLayerPotentialOperator);
 
 } // namespace Bempp

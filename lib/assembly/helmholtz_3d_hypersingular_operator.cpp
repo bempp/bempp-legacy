@@ -77,6 +77,17 @@ Helmholtz3dHypersingularOperator(
 {
 }
 
+template <typename BasisFunctionType>
+std::auto_ptr<LinearOperator<BasisFunctionType,
+typename Helmholtz3dHypersingularOperator<BasisFunctionType>::ResultType> >
+Helmholtz3dHypersingularOperator<BasisFunctionType>::
+clone() const
+{
+    typedef LinearOperator<BasisFunctionType, ResultType> LinOp;
+    typedef Helmholtz3dHypersingularOperator<BasisFunctionType> This;
+    return std::auto_ptr<LinOp>(new This(*this));
+}
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dHypersingularOperator);
 
 } // namespace Bempp

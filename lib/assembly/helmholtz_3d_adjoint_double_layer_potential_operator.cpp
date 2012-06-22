@@ -74,6 +74,17 @@ Helmholtz3dAdjointDoubleLayerPotentialOperator(
 {
 }
 
+template <typename BasisFunctionType>
+std::auto_ptr<LinearOperator<BasisFunctionType,
+typename Helmholtz3dAdjointDoubleLayerPotentialOperator<BasisFunctionType>::ResultType> >
+Helmholtz3dAdjointDoubleLayerPotentialOperator<BasisFunctionType>::
+clone() const
+{
+    typedef LinearOperator<BasisFunctionType, ResultType> LinOp;
+    typedef Helmholtz3dAdjointDoubleLayerPotentialOperator<BasisFunctionType> This;
+    return std::auto_ptr<LinOp>(new This(*this));
+}
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dAdjointDoubleLayerPotentialOperator);
 
 } // namespace Bempp
