@@ -54,8 +54,6 @@ public:
             const shared_ptr<const Epetra_CrsMatrix>& mat,
             Symmetry symmetry = NO_SYMMETRY);
 
-    virtual arma::Mat<ValueType> asMatrix() const;
-
     virtual unsigned int rowCount() const;
     virtual unsigned int columnCount() const;
 
