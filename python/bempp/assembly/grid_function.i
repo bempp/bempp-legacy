@@ -46,18 +46,22 @@ def gridFunctionFromSurfaceNormalDependentFunctor(space, functor, factory,
         assemblyOptions):
     basisFunctionType = checkType(space.basisFunctionType())
     resultType = checkType(functor.valueType())
-    return constructObjectTemplatedOnBasisAndResult(
+    result = constructObjectTemplatedOnBasisAndResult(
         "gridFunctionFromSurfaceNormalDependentFunctor",
         basisFunctionType, resultType,
         space, functor, factory, assemblyOptions)
+    result._space = space
+    return result
 
 def gridFunctionFromSurfaceNormalIndependentFunctor(space, functor, factory,
         assemblyOptions, basisFunctionType='float64'):
     basisFunctionType = checkType(space.basisFunctionType())
     resultType = checkType(functor.valueType())
-    return constructObjectTemplatedOnBasisAndResult(
+    result = constructObjectTemplatedOnBasisAndResult(
         "gridFunctionFromSurfaceNormalIndependentFunctor",
         basisFunctionType, resultType,
         space, functor, factory, assemblyOptions)
+    result._space = space
+    return result
 
 %}

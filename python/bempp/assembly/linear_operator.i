@@ -25,6 +25,11 @@ class Symmetry;
     // this function is only for internal use
     %ignore constituentOperatorWeights;
 
+    // to be modified/removed once the C++ weakForm() returns a shared_ptr
+    %pythonappend weakForm %{
+        val._parentLinearOperator = self
+    %}
+
     LinearOperatorSuperposition<BasisFunctionType, ResultType> __add__(
         const LinearOperator<BasisFunctionType, ResultType>& other)
     {

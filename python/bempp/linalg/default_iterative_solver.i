@@ -51,9 +51,11 @@ def defaultIterativeSolver(linearOperator, gridFunction):
     if (resultType != gridFunction.resultType()):
         raise TypeError("ResultType of linearOperator and "
                         "gridFunction must be the same")
-    return constructObjectTemplatedOnBasisAndResult(
+    result = constructObjectTemplatedOnBasisAndResult(
         "DefaultIterativeSolver", basisFunctionType, resultType,
         linearOperator, gridFunction)
+    result._space = linearOperator.trialSpace()
+    return result
 
 %}
 

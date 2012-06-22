@@ -6,8 +6,11 @@ def _constructOperator(className, testSpace, trialSpace, resultType):
     resultType=checkType(resultType)
     if (basisFunctionType != trialSpace.basisFunctionType()):
         raise TypeError("BasisFunctionType of testSpace must match that of trialSpace")
-    return constructObjectTemplatedOnBasisAndResult(
+    result = constructObjectTemplatedOnBasisAndResult(
         className, basisFunctionType, resultType,
         testSpace, trialSpace)
+    result._testSpace = testSpace
+    result._trialSpace = trialSpace
+    return result
 
 %}
