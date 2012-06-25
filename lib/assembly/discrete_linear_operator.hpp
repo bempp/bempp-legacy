@@ -176,6 +176,33 @@ private:
                                   const ValueType beta) const = 0;
 };
 
+// doesn't work, is merged with the other apply() overload :-(
+//// don't split the following long line!
+///** \fn void DiscreteLinearOperator::apply(const Thyra::EOpTransp M_trans, const Thyra::MultiVectorBase<ValueType>& x_in, const Thyra::Ptr<Thyra::MultiVectorBase<ValueType> >& y_inout, const ValueType alpha,	const ValueType beta) const
+// *  \brief Apply the linear operator to a multivector.
+// *
+// *  Set the elements of the multivector <tt>y_inout</tt> to
+// *
+// *  <tt>y_inout := alpha * trans(L) * x_in + beta * y_inout</tt>,
+// *
+// *  where \c L is the linear operator represented by this object.
+// *
+// *  \param[in] trans
+// *    Determines whether what is applied is the "bare" operator, its
+// *    transpose, conjugate or conjugate transpose.
+// *  \param[in] x_in
+// *    The right-hand-side multivector.
+// *  \param[in,out] y_inout
+// *    The target multivector being transformed. When <tt>beta == 0.0</tt>,
+// *    this multivector can have uninitialized elements.
+// *  \param[in] alpha
+// *    Scalar multiplying this operator.
+// *  \param[in] beta
+// *    The multiplier for the target multivector \p y_inout.
+// *
+// *  This overload is available only if the library was compiled using Trilinos.
+// */
+
 } // namespace Bempp
 
 #endif
