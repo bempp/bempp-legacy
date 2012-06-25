@@ -31,29 +31,29 @@ namespace Bempp
         view=self.leafView()
         id_set=self.globalIdSet()
         vertex_view=view.entities(2)
-        self.vertices={}
+        self.__vertices={}
         for v in vertex_view:
             id=id_set.entityId(v)
-            self.vertices[id]=v.geometry().corners()[:,0]
+            self.__vertices[id]=v.geometry().corners()[:,0]
 
         element_view=view.entities(0)
-        self.elements={}
+        self.__elements={}
         for e in element_view:
             points=e.subEntities(2)
             elem_id=id_set.entityId(e)
-            self.elements[elem_id]=[]
+            self.__elements[elem_id]=[]
             for p in points:
-                self.elements[elem_id].append(id_set.entityId(p))
+                self.__elements[elem_id].append(id_set.entityId(p))
 
     def getVertices(self):
         """Return the vertices of the grid"""
-        if not hasattr(self,'vertices'): self.__enumerateGridData()
-        return self.vertices
+        if not hasattr(self,'_Grid__vertices'): self.__enumerateGridData()
+        return self.__vertices
 
     def getElements(self):
         """Return the elements of the grid"""
-        if not hasattr(self,'elements'): self.__enumerateGridData()
-        return self.elements
+        if not hasattr(self,'_Grid__elements'): self.__enumerateGridData()
+        return self.__elements
 
     def plot(self):
         """Plot the grid using VTK"""
@@ -63,7 +63,7 @@ namespace Bempp
             print "The Python VTK bindings needs to be installed for this method!"
             return
 
-        if not hasattr(self,'vertices'): self.__enumerateGridData()
+        if not hasattr(self,'__Grid_vertices'): self.__enumerateGridData()
 
         def create_cell(elem):
             polygon=vtk.vtkPolygon()
@@ -74,12 +74,12 @@ namespace Bempp
             return polygon
 
         points=vtk.vtkPoints()
-        points.SetNumberOfPoints(len(self.vertices.keys()))
-        for i in self.vertices:
-            points.InsertPoint(i,self.vertices[i][0],self.vertices[i][1],self.vertices[i][2])
+        points.SetNumberOfPoints(len(self.__vertices.keys()))
+        for i in self.__vertices:
+            points.InsertPoint(i,self.__vertices[i][0],self.__vertices[i][1],self.__vertices[i][2])
         polyGrid=vtk.vtkUnstructuredGrid()
         polyGrid.SetPoints(points)
-        cells=[create_cell(self.elements[i]) for i in self.elements]
+        cells=[create_cell(self.__elements[i]) for i in self.__elements]
         for cell in cells:
             polyGrid.InsertNextCell(cell.GetCellType(),cell.GetPointIds())
         mapper=vtk.vtkDataSetMapper()
