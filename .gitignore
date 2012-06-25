@@ -17,3 +17,4 @@
 /doc/build*
 *.pyc
 options.cfg
+CMakeLists.txt.user
