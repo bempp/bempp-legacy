@@ -105,7 +105,7 @@ public:
     typedef typename Base::KernelType KernelType;
     typedef typename Base::ResultType ResultType;
 
-    StandardTestKernelTrialIntegral(const IntegrandFunctor& functor) :
+    explicit StandardTestKernelTrialIntegral(const IntegrandFunctor& functor) :
         m_functor(functor)
     {}
 

@@ -56,7 +56,7 @@ public:
     typedef typename Base::CoordinateType CoordinateType;
     typedef typename Base::ComplexType ComplexType;
 
-    StandardCollectionOfBasisTransformations(const Functor& functor) :
+    explicit StandardCollectionOfBasisTransformations(const Functor& functor) :
         m_functor(functor)
     {}
 

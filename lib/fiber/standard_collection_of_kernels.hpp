@@ -57,7 +57,7 @@ public:
     typedef typename Base::ValueType ValueType;
     typedef typename Base::CoordinateType CoordinateType;
 
-    StandardCollectionOfKernels(const Functor& functor) :
+    explicit StandardCollectionOfKernels(const Functor& functor) :
         m_functor(functor)
     {}
 
