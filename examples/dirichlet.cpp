@@ -71,10 +71,9 @@ public:
     typedef ScalarTraits<RT>::RealType CoordinateType;
 
     // Number of components of the function's argument
-    static const int argumentDimension = 3;
+    int argumentDimension() const { return 3; }
 
-    // Number of components of the function's result
-    static const int resultDimension = 1;
+    int resultDimension() const { return 1; }
 
     // Evaluate the function at the point "point" and store result in
     // the array "result"

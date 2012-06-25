@@ -20,6 +20,9 @@ include(BemppFindDependencies)
 # Main library
 add_subdirectory(lib)
 
+# Python Support
+add_subdirectory(python)
+
 # Examples
 add_subdirectory(examples) 
 

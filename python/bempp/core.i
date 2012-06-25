@@ -19,12 +19,15 @@
 // THE SOFTWARE.
 
 // Construct a Swig module
-%module core
+%module(directors="1") core
 %{
 #define SWIG_FILE_WITH_INIT
 
 #include <dune/common/exceptions.hh>
+#include <complex>
 %}
+
+%include "config.i"
 
 // Import docstring macros
 %include "docstrings.i"
@@ -34,6 +37,20 @@
 %include "auto_ptr.i"
 %include "exception.i"
 %include "std_string.i"
+%include "std_complex.i"
+
+// Useful macros
+%include "macros.i"
+
+// Some useful Python routines
+%include "py_defs.i"
+
+// Import macros for explicit template instantiations
+%include "template_instantiations_basis.i"
+%include "template_instantiations_basis_result.i"
+%include "template_instantiations_basis_result_geometry_factory.i"
+%include "template_instantiations_basis_kernel_result.i"
+%include "template_instantiations_value.i"
 
 // Setup a handler for C++ exceptions
 %exception {
@@ -49,6 +66,8 @@
 }
 
 // Declare all necessary auto_ptr typemaps
+
+// Grid
 AUTO_PTR_TYPEMAPS(Bempp::Grid)
 AUTO_PTR_TYPEMAPS(Bempp::GridView)
 AUTO_PTR_TYPEMAPS(Bempp::EntityPointer<0>)
@@ -59,7 +78,13 @@ AUTO_PTR_TYPEMAPS(Bempp::EntityIterator<0>)
 AUTO_PTR_TYPEMAPS(Bempp::EntityIterator<1>)
 AUTO_PTR_TYPEMAPS(Bempp::EntityIterator<2>)
 AUTO_PTR_TYPEMAPS(Bempp::EntityIterator<3>)
+AUTO_PTR_TYPEMAPS(Bempp::Geometry)
 AUTO_PTR_TYPEMAPS(Bempp::VtkWriter)
+
+AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::DiscreteLinearOperator)
+AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
+
+// End of auto_ptr typemaps
 
 // Make commonly used typedefs known to Swig
 %inline %{
@@ -72,6 +97,9 @@ AUTO_PTR_TYPEMAPS(Bempp::VtkWriter)
 
 // Wrap Bempp components
 
+// Common
+%include "common/scalar_traits.i"
+
 // Grid
 %include "grid/geometry.i"  
 %include "grid/geometry_type.i"  
@@ -83,4 +111,47 @@ AUTO_PTR_TYPEMAPS(Bempp::VtkWriter)
 %include "grid/grid_view.i"  
 %include "grid/index_set.i"
 %include "grid/vtk_writer.i" 
-%include "grid/grid_factory.i" 
+%include "grid/grid_factory.i"
+%include "grid/geometry_factory.i"
+
+// Fiber
+%include "fiber/parallelisation_options.i"
+%include "fiber/opencl_options.i"
+%include "fiber/quadrature_options.i"
+%include "fiber/accuracy_options.i"
+%include "fiber/local_assembler_factory.i"
+%include "fiber/standard_local_assembler_factory_for_operators_on_surfaces.i"
+
+// Space
+%include "space/space.i"
+%include "space/scalar_space.i"
+%include "space/piecewise_constant_scalar_space.i"
+%include "space/piecewise_linear_continuous_scalar_space.i"
+
+// Assembly
+%include "assembly/construct_operator.i" // Python code
+%include "assembly/assembly_options.i"
+%include "assembly/transposition_mode.i"
+%include "assembly/surface_normal_independent_functor.i"
+%include "assembly/python_surface_normal_independent_functor.i"
+%include "assembly/surface_normal_dependent_functor.i"
+%include "assembly/python_surface_normal_dependent_functor.i"
+%include "assembly/test_functor.i"
+%include "assembly/grid_function.i"
+%include "assembly/linear_operator.i"
+%include "assembly/linear_operator_superposition.i"
+%include "assembly/elementary_linear_operator.i"
+%include "assembly/elementary_integral_operator.i"
+%include "assembly/elementary_singular_integral_operator.i"
+%include "assembly/laplace_3d_operators.i"
+%include "assembly/helmholtz_3d_operators.i"
+%include "assembly/identity_operator.i"
+%include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.i"
+
+%include "assembly/discrete_linear_operator.i"
+
+// Linear algebra
+%include "linalg/parameter_list.i"
+%include "linalg/solver.i"
+%include "linalg/default_iterative_solver.i"
+

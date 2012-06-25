@@ -117,7 +117,7 @@ void DiscreteDenseLinearOperator<ValueType>::applyBuiltInImpl(
         const ValueType alpha,
         const ValueType beta) const
 {
-    if (columnCount() != x_in.n_rows && rowCount() != y_inout.n_rows)
+    if (columnCount() != x_in.n_rows || rowCount() != y_inout.n_rows)
         throw std::invalid_argument(
                 "DiscreteDenseLinearOperator::applyBuiltInImpl(): "
                 "incorrect vector length");

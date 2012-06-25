@@ -40,7 +40,7 @@ Each side of the cube parallel to the nth coordinate axis is subdivided into nEl
 
 %define GridFactory_importGmshGrid_docstring
 "importGmshGrid(topology, fileName, verbose = True, 
-    insertBoundarySegments = True) -> Grid
+    insertBoundarySegments = False) -> Grid
 
 Import grid from a file in Gmsh format.
 
@@ -52,7 +52,7 @@ Import grid from a file in Gmsh format.
         Name of the Gmsh file.
     verbose (bool, default: True)
         Output diagnostic information.
-    insertBoundarySegments (bool, default: True)
+    insertBoundarySegments (bool, default: False)
         Insert boundary segments.
 
 See http://geuz.org/gmsh for information about the Gmsh file format.

@@ -24,3 +24,10 @@
 #endif
 %feature("docstring", python_class ## _ ## method ## _docstring) cpp_class::method
 %enddef
+
+%define DECLARE_TEMPLATE_VALUE_METHOD_AUTO_DOCSTRING(class, method)
+%feature("autodoc", 2) class<float>::method;
+%feature("autodoc", 2) class<double>::method;
+%feature("autodoc", 2) class<std::complex<float> >::method;
+%feature("autodoc", 2) class<std::complex<double> >::method;
+%enddef

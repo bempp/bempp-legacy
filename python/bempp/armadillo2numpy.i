@@ -24,6 +24,7 @@
 #include <algorithm> // std::copy
 #include <armadillo>
 #include <iostream>
+#include <new>
 %}
 
 // This must be called at the start of each module to import numpy.
@@ -39,26 +40,26 @@
 
 %typecheck(SWIG_TYPECHECK_DOUBLE_ARRAY,
            fragment="NumPy_Macros")
-    (const arma::Col<DATA_TYPE>& IN_COL)
+    (const arma::Col< DATA_TYPE >& IN_COL)
 {
     $1 = is_array($input) || PySequence_Check($input);
 }
 %typemap(in,
          fragment="NumPy_Fragments")
-    (const arma::Col<DATA_TYPE>& IN_COL)
-    (PyArrayObject* array=NULL, int is_new_object=0, arma::Col<DATA_TYPE> arma_array)
+    (const arma::Col< DATA_TYPE >& IN_COL)
+    (PyArrayObject* array=NULL, int is_new_object=0, arma::Col< DATA_TYPE > arma_array)
 {
     array = obj_to_array_contiguous_allow_conversion($input, DATA_TYPECODE,
                                                    &is_new_object);
     if (!array || !require_dimensions(array, 1))
         SWIG_fail;
-    arma_array = arma::Col<DATA_TYPE>((DATA_TYPE*) array_data(array),
+    arma_array = arma::Col< DATA_TYPE >((DATA_TYPE*) array_data(array),
                                array_size(array, 0),
                                false); // don't copy data
     $1 = &arma_array;
 }
 %typemap(freearg)
-    (const arma::Col<DATA_TYPE>& IN_COL)
+    (const arma::Col< DATA_TYPE >& IN_COL)
 {
     if (is_new_object$argnum && array$argnum) {
         Py_DECREF(array$argnum); 
@@ -69,27 +70,27 @@
 
 %typecheck(SWIG_TYPECHECK_DOUBLE_ARRAY,
            fragment="NumPy_Macros")
-    (const arma::Mat<DATA_TYPE>& IN_MAT)
+    (const arma::Mat< DATA_TYPE >& IN_MAT)
 {
     $1 = is_array($input) || PySequence_Check($input);
 }
 %typemap(in,
          fragment="NumPy_Fragments")
-    (const arma::Mat<DATA_TYPE>& IN_MAT)
-    (PyArrayObject* array=NULL, int is_new_object=0, arma::Mat<DATA_TYPE> arma_array)
+    (const arma::Mat< DATA_TYPE >& IN_MAT)
+    (PyArrayObject* array=NULL, int is_new_object=0, arma::Mat< DATA_TYPE > arma_array)
 {
     array = obj_to_array_fortran_allow_conversion($input, DATA_TYPECODE,
         &is_new_object); 
     if (!array || !require_dimensions(array, 2) || !require_fortran(array))
         SWIG_fail;
-    arma_array = arma::Mat<DATA_TYPE>((DATA_TYPE*) array_data(array),
+    arma_array = arma::Mat< DATA_TYPE >((DATA_TYPE*) array_data(array),
                                       array_size(array, 0),
                                       array_size(array, 1),
                                       false); // don't copy data
     $1 = &arma_array;
 }
 %typemap(freearg)
-    (const arma::Mat<DATA_TYPE>& IN_MAT)
+    (const arma::Mat< DATA_TYPE >& IN_MAT)
 {
   if (is_new_object$argnum && array$argnum) {
       Py_DECREF(array$argnum); 
@@ -103,19 +104,19 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
 
 %typecheck(SWIG_TYPECHECK_DOUBLE_ARRAY,
            fragment="NumPy_Macros")
-    (const arma::Mat<DATA_TYPE>& IN_MAT_OUT_WRAPPERS)
+    (const arma::Mat< DATA_TYPE >& IN_MAT_OUT_WRAPPERS)
 {
     $1 = is_array($input) || PySequence_Check($input);
 }
 %typemap(in, fragment="NumPy_Fragments")
-    (const arma::Mat<DATA_TYPE>& IN_MAT_OUT_WRAPPERS)
-    (PyArrayObject* array=NULL, int is_new_object=0, arma::Mat<DATA_TYPE>* arma_array)
+    (const arma::Mat< DATA_TYPE >& IN_MAT_OUT_WRAPPERS)
+    (PyArrayObject* array=NULL, int is_new_object=0, arma::Mat< DATA_TYPE >* arma_array)
 {
     array = obj_to_array_fortran_allow_conversion($input, DATA_TYPECODE,
         &is_new_object); 
     if (!array || !require_dimensions(array, 2) || !require_fortran(array))
         SWIG_fail;
-    arma_array = new arma::Mat<DATA_TYPE>((DATA_TYPE*) array_data(array),
+    arma_array = new arma::Mat< DATA_TYPE >((DATA_TYPE*) array_data(array),
                                           array_size(array, 0),
                                           array_size(array, 1),
                                           false); // don't copy data
@@ -127,7 +128,7 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
     $1 = arma_array;
 }
 %typemap(argout)
-    (const arma::Mat<DATA_TYPE>& IN_MAT_OUT_WRAPPERS)
+    (const arma::Mat< DATA_TYPE >& IN_MAT_OUT_WRAPPERS)
 {
     PyObject* wrapper_arma_mat = 
         SWIG_NewPointerObj(%as_voidptr(arma_array$argnum), 
@@ -150,13 +151,13 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
  
 %typemap(in, numinputs=0,
          fragment="NumPy_Fragments")
-    (arma::Col<DATA_TYPE>& ARGOUT_COL) 
-    (PyArrayObject* array=NULL, arma::Col<DATA_TYPE> arma_array)
+    (arma::Col< DATA_TYPE >& ARGOUT_COL)
+    (PyArrayObject* array=NULL, arma::Col< DATA_TYPE > arma_array)
 {
     $1 = &arma_array;
 }
 %typemap(argout)
-    (arma::Col<DATA_TYPE>& ARGOUT_COL)
+    (arma::Col< DATA_TYPE >& ARGOUT_COL)
 {
     npy_intp dims[1];
     dims[0] = arma_array$argnum.n_rows;
@@ -174,13 +175,13 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
 
 %typemap(in, numinputs=0,
          fragment="NumPy_Fragments")
-    (arma::Row<DATA_TYPE>& ARGOUT_ROW)
-    (PyArrayObject* array=NULL, arma::Row<DATA_TYPE> arma_array)
+    (arma::Row< DATA_TYPE >& ARGOUT_ROW)
+    (PyArrayObject* array=NULL, arma::Row< DATA_TYPE > arma_array)
 {
     $1 = &arma_array;
 }
 %typemap(argout)
-    (arma::Row<DATA_TYPE>& ARGOUT_ROW)
+    (arma::Row< DATA_TYPE >& ARGOUT_ROW)
 {
     npy_intp dims[1];
     dims[0] = arma_array$argnum.n_cols;
@@ -198,13 +199,13 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
 
 %typemap(in, numinputs=0,
          fragment="NumPy_Fragments")
-    (arma::Mat<DATA_TYPE>& ARGOUT_MAT)
-    (PyArrayObject* array=NULL, arma::Mat<DATA_TYPE> arma_array)
+    (arma::Mat< DATA_TYPE >& ARGOUT_MAT)
+    (PyArrayObject* array=NULL, arma::Mat< DATA_TYPE > arma_array)
 {
     $1 = &arma_array;
 }
 %typemap(argout)
-    (arma::Mat<DATA_TYPE>& ARGOUT_MAT)
+    (arma::Mat< DATA_TYPE >& ARGOUT_MAT)
 {
     npy_intp dims[2];
     dims[0] = arma_array$argnum.n_rows;
@@ -223,13 +224,13 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
 
 %typemap(in, numinputs=0,
          fragment="NumPy_Fragments")
-    (arma::Cube<DATA_TYPE>& ARGOUT_CUBE)
-    (PyArrayObject* array=NULL, arma::Cube<DATA_TYPE> arma_array)
+    (arma::Cube< DATA_TYPE >& ARGOUT_CUBE)
+    (PyArrayObject* array=NULL, arma::Cube< DATA_TYPE > arma_array)
 {
     $1 = &arma_array;
 }
 %typemap(argout)
-    (arma::Cube<DATA_TYPE>& ARGOUT_CUBE)
+    (arma::Cube< DATA_TYPE >& ARGOUT_CUBE)
 {
     npy_intp dims[3];
     dims[0] = arma_array$argnum.n_rows;
@@ -243,6 +244,38 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
         reinterpret_cast<DATA_TYPE*>(array_data(array$argnum)));
     $result = SWIG_Python_AppendOutput($result, 
         reinterpret_cast<PyObject*>(array$argnum));
+}
+
+/**************************/
+/* Inplace Array Typemaps */
+/**************************/
+
+/* Typemap suite for (DATA_TYPE* INPLACE_ARRAY1, DIM_TYPE DIM1)
+ */
+%typecheck(SWIG_TYPECHECK_DOUBLE_ARRAY,
+           fragment="NumPy_Macros")
+  (arma::Col< DATA_TYPE >& INPLACE_COL)
+{
+  $1 = is_array($input) && PyArray_EquivTypenums(array_type($input),
+                                                 DATA_TYPECODE);
+}
+%typemap(in,
+         fragment="NumPy_Fragments")
+  (arma::Col< DATA_TYPE >& INPLACE_COL)
+  (PyArrayObject* array=NULL, arma::Col< DATA_TYPE > arma_array)
+{
+  array = obj_to_array_no_conversion($input, DATA_TYPECODE);
+  if (!array || !require_dimensions(array,1) || !require_contiguous(array)
+      || !require_native(array)) SWIG_fail;
+  // Use placement new to reinitialise the Armadillo array using the
+  // "advanced" constructor taking a pointer to existing data. This is needed
+  // because SWIG initialises variables with the default constructor.
+  // (Another way would be to allocate a new Col object on the heap),
+  arma_array.~Col< DATA_TYPE >();
+  new (&arma_array) arma::Col< DATA_TYPE >((DATA_TYPE*) array_data(array),
+                                           array_size(array, 0),
+                                           false); // don't copy data
+  $1 = &arma_array;
 }
 
 %enddef    /* %arma_numpy_typemaps() macro */
@@ -265,3 +298,6 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
 %arma_numpy_typemaps(double            , NPY_DOUBLE   )
 
 %arma_numpy_typemaps(Bempp::ctype      , NPY_DOUBLE   )
+
+%arma_numpy_typemaps(std::complex<float>,  NPY_CFLOAT  );
+%arma_numpy_typemaps(std::complex<double>, NPY_CDOUBLE );

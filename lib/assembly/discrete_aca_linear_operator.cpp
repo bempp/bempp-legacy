@@ -194,7 +194,7 @@ applyBuiltInImpl(const TranspositionMode trans,
         throw std::runtime_error(
                 "DiscreteAcaLinearOperator::applyBuiltInImpl(): "
                 "transposition modes other than NO_TRANSPOSE are not supported");
-    if (columnCount() != x_in.n_rows && rowCount() != y_inout.n_rows)
+    if (columnCount() != x_in.n_rows || rowCount() != y_inout.n_rows)
         throw std::invalid_argument(
                 "DiscreteAcaLinearOperator::applyBuiltInImpl(): "
                 "incorrect vector length");

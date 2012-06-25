@@ -60,8 +60,6 @@ class Grid;
 template <int codim> class Entity;
 template <typename BasisFunctionType> class Space;
 
-template <typename BasisFunctionType, typename ResultType>
-class GridFunction;
 
 /** \brief Function defined on a grid.
  *  \ingroup assembly
@@ -194,6 +192,95 @@ template <typename BasisFunctionType, typename ResultType, typename ScalarType>
 GridFunction<BasisFunctionType, ResultType> operator*(
         const GridFunction<BasisFunctionType, ResultType>& g1, const ScalarType& scalar);
 
+
+
+
+//template <typename BasisFunctionType>
+//GridFunction<BasisFunctionType,float>
+//operator*(const float scalar, const GridFunction<BasisFunctionType, float>& g2)
+//{
+//  return g2 * scalar;
+//}
+
+//template <typename BasisFunctionType>
+//GridFunction<BasisFunctionType,float>
+//operator*(const double scalar, const GridFunction<BasisFunctionType, float>& g2)
+//{
+//  return g2 * scalar;
+//}
+
+
+//template <typename BasisFunctionType>
+//GridFunction<BasisFunctionType,double>
+//operator*(const float scalar, const GridFunction<BasisFunctionType, double>& g2)
+//{
+//  return g2 * scalar;
+//}
+
+//template <typename BasisFunctionType>
+//GridFunction<BasisFunctionType,double>
+//operator*(const double scalar, const GridFunction<BasisFunctionType, double>& g2)
+//{
+//  return g2 * scalar;
+//}
+
+//template <typename BasisFunctionType>
+//GridFunction<BasisFunctionType,std::complex<float> >
+//operator*(const float scalar, const GridFunction<BasisFunctionType, std::complex<float> >& g2)
+//{
+//  return g2 * scalar;
+//}
+
+//template <typename BasisFunctionType>
+//GridFunction<BasisFunctionType,std::complex<float> >
+//operator*(const double scalar, const GridFunction<BasisFunctionType, std::complex<float> >& g2)
+//{
+//  return g2 * scalar;
+//}
+
+//template <typename BasisFunctionType>
+//GridFunction<BasisFunctionType,std::complex<float> >
+//operator*(const std::complex<float> scalar, const GridFunction<BasisFunctionType, std::complex<float> >& g2)
+//{
+//  return g2 * scalar;
+//}
+
+//template <typename BasisFunctionType>
+//GridFunction<BasisFunctionType,std::complex<float> >
+//operator*(const std::complex<double> scalar, const GridFunction<BasisFunctionType, std::complex<float> >& g2)
+//{
+//  return g2 * scalar;
+//}
+
+//template <typename BasisFunctionType>
+//GridFunction<BasisFunctionType,std::complex<double> >
+//operator*(const float scalar, const GridFunction<BasisFunctionType, std::complex<double> >& g2)
+//{
+//  return g2 * scalar;
+//}
+
+//template <typename BasisFunctionType>
+//GridFunction<BasisFunctionType,std::complex<double> >
+//operator*(const double scalar, const GridFunction<BasisFunctionType, std::complex<double> >& g2)
+//{
+//  return g2 * scalar;
+//}
+
+//template <typename BasisFunctionType>
+//GridFunction<BasisFunctionType,std::complex<double> >
+//operator*(const std::complex<float> scalar, const GridFunction<BasisFunctionType, std::complex<double> >& g2)
+//{
+//  return g2 * scalar;
+//}
+
+//template <typename BasisFunctionType>
+//GridFunction<BasisFunctionType,std::complex<double> >
+//operator*(const std::complex<double> scalar, const GridFunction<BasisFunctionType, std::complex<double> >& g2)
+//{
+//  return g2 * scalar;
+//}
+
+
 // This type machinery is needed to disambiguate between this operator and
 // the one taking a LinearOperator and a GridFunction
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
@@ -246,9 +333,8 @@ gridFunctionFromFiberFunction(
 /** \brief Construct a grid function from a functor independent from surface orientation.
  *
  * \param[in] space           Function space to expand the grid function in.
- * \param[in] functor         Functor object fulfilling the requirements
- *                            described in the documentation of
- *                            Fiber::SurfaceNormalIndependentFunction.
+ * \param[in] functor         Functor object deriving from
+ *                            Bempp::SurfaceNormalIndependentFunctor
  * \param[in] factory         Factory to be used to generate the necessary local
  *                            assembler, which will be employed to evaluate
  *                            the scalar products of the grid function with the

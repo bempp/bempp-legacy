@@ -704,6 +704,34 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
     template GridFunction<BASIS, RESULT> operator/( \
     const GridFunction<BASIS, RESULT>& op, const SCALAR& scalar)
 
+//#define INSTANTIATE_FREE_FUNCTIONS_FOR_REAL_BASIS(BASIS) \
+//    template GridFunction<BASIS, float> \
+//    operator*(const float scalar, const GridFunction<BASIS, float>& g2); \
+//    template GridFunction<BASIS, float> \
+//    operator*(const double scalar, const GridFunction<BASIS, float>& g2); \
+//    template GridFunction<BASIS, double> \
+//    operator*(const float scalar, const GridFunction<BASIS, double>& g2); \
+//    template GridFunction<BASIS, double> \
+//    operator*(const double scalar, const GridFunction<BASIS, double>& g2)
+
+//#define INSTANTIATE_FREE_FUNCTIONS_FOR_COMPLEX_BASIS(BASIS) \
+//    template GridFunction<BASIS, std::complex<float> >			\
+//    operator*(const float scalar, const GridFunction<BASIS, std::complex<float> >& g2); \
+//    template GridFunction<BASIS, std::complex<float> >			\
+//    operator*(const double scalar, const GridFunction<BASIS, std::complex<float> >& g2); \
+//    template GridFunction<BASIS, std::complex<float> >			\
+//    operator*(const std::complex<float> scalar, const GridFunction<BASIS, std::complex<float> >& g2); \
+//    template GridFunction<BASIS, std::complex<float> >			\
+//    operator*(const std::complex<double> scalar, const GridFunction<BASIS, std::complex<float> >& g2); \
+//    template GridFunction<BASIS, std::complex<double> >			\
+//    operator*(const float scalar, const GridFunction<BASIS, std::complex<double> >& g2); \
+//    template GridFunction<BASIS, std::complex<double> >			\
+//    operator*(const double scalar, const GridFunction<BASIS, std::complex<double> >& g2); \
+//    template GridFunction<BASIS, std::complex<double> >			\
+//    operator*(const std::complex<float> scalar, const GridFunction<BASIS, std::complex<double> >& g2); \
+//    template GridFunction<BASIS, std::complex<double> >			\
+//    operator*(const std::complex<double> scalar, const GridFunction<BASIS, std::complex<double> >& g2)
+
 #if defined(ENABLE_SINGLE_PRECISION)
 INSTANTIATE_FREE_FUNCTIONS(
         float, float);
@@ -711,6 +739,7 @@ INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
         float, float, float);
 INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
         float, float, double);
+// INSTANTIATE_FREE_FUNCTIONS_FOR_REAL_BASIS(float);
 #endif
 
 #if defined(ENABLE_SINGLE_PRECISION) && (defined(ENABLE_COMPLEX_KERNELS) || defined(ENABLE_COMPLEX_BASIS_FUNCTIONS))
@@ -737,6 +766,7 @@ INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
         std::complex<float>, std::complex<float>, std::complex<float>);
 INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
         std::complex<float>, std::complex<float>, std::complex<double>);
+// INSTANTIATE_FREE_FUNCTIONS_FOR_COMPLEX_BASIS(std::complex<float>);
 #endif
 
 #if defined(ENABLE_DOUBLE_PRECISION)
@@ -746,6 +776,7 @@ INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
         double, double, float);
 INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
         double, double, double);
+// INSTANTIATE_FREE_FUNCTIONS_FOR_REAL_BASIS(double);
 #endif
 
 #if defined(ENABLE_DOUBLE_PRECISION) && (defined(ENABLE_COMPLEX_KERNELS) || defined(ENABLE_COMPLEX_BASIS_FUNCTIONS))
@@ -772,6 +803,7 @@ INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
         std::complex<double>, std::complex<double>, std::complex<float>);
 INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
         std::complex<double>, std::complex<double>, std::complex<double>);
+// INSTANTIATE_FREE_FUNCTIONS_FOR_COMPLEX_BASIS(std::complex<double>);
 #endif
 
 } // namespace Bempp

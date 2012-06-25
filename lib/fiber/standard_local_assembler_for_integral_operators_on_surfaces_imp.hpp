@@ -547,18 +547,20 @@ selectIntegrator(int testElementIndex, int trialElementIndex)
 {
     DoubleQuadratureDescriptor desc;
 
+    // Get corner indices of the specified elements
+    arma::Col<int> testElementCornerIndices =
+            m_testRawGeometry->elementCornerIndices(testElementIndex);
+    arma::Col<int> trialElementCornerIndices =
+            m_trialRawGeometry->elementCornerIndices(trialElementIndex);
     if (testAndTrialGridsAreIdentical()) {
-        // Get corner indices of the specified elements
-        arma::Col<int> testElementCornerIndices =
-                m_testRawGeometry->elementCornerIndices(testElementIndex);
-        arma::Col<int> trialElementCornerIndices =
-                m_trialRawGeometry->elementCornerIndices(trialElementIndex);
-
         desc.topology = determineElementPairTopologyIn3D(
                     testElementCornerIndices, trialElementCornerIndices);
     }
-    else
+    else {
+        desc.topology.testVertexCount = testElementCornerIndices.n_rows;
+        desc.topology.trialVertexCount = trialElementCornerIndices.n_rows;
         desc.topology.type = ElementPairTopology::Disjoint;
+    }
 
     if (desc.topology.type == ElementPairTopology::Disjoint) {
         desc.testOrder = regularOrder(testElementIndex, TEST);
