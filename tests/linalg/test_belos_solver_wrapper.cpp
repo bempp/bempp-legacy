@@ -26,6 +26,7 @@
 #include "../check_arrays_are_close.hpp"
 
 #include "assembly/discrete_dense_linear_operator.hpp"
+#include "common/scalar_traits.hpp"
 #include "linalg/belos_solver_wrapper.hpp"
 
 #include "common/armadillo_fwd.hpp"
@@ -64,9 +65,6 @@ generateRandomMatrix(int rowCount, int colCount)
 
 BOOST_AUTO_TEST_SUITE(BelosSolverWrapper)
 
-// THIS TEST FAILS FOR float AND std::complex<float> DUE TO A BUG IN TRILINOS.
-// I DON'T KNOW YET HOW TO REGISTER EXPECTED FAILURES FOR TEMPLATED TESTS.
-
 BOOST_AUTO_TEST_CASE_TEMPLATE(solve_works_for_single_rhs, ValueType, result_types)
 {
     std::srand(1);
@@ -93,7 +91,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(solve_works_for_single_rhs, ValueType, result_type
 
     typedef Bempp::BelosSolverWrapper<ValueType> Solver;
     Solver solver(Teuchos::rcpFromRef<const Thyra::LinearOpBase<ValueType> >(op));
-    solver.initializeSolver(Bempp::defaultGmresParameterList(1e-10));
+    typedef typename Bempp::ScalarTraits<ValueType>::RealType MagnitudeType;
+    const MagnitudeType tol = std::numeric_limits<MagnitudeType>::epsilon() * 100.;
+    solver.initializeSolver(Bempp::defaultGmresParameterList(tol));
 
     Thyra::SolveStatus<typename Solver::MagnitudeType > status =
             solver.solve(Thyra::NOTRANS, rhsVector,
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(solve_works_for_single_rhs, ValueType, result_type
 
     arma::Col<ValueType> armaSol = arma::solve(mat, rhs);
 
-    BOOST_CHECK(check_arrays_are_close<ValueType>(sol, armaSol, 1e-6));
+    BOOST_CHECK(check_arrays_are_close<ValueType>(sol, armaSol, tol * 10));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

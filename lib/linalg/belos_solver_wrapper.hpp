@@ -63,6 +63,8 @@ private:
 
 Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(double tol);
 Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(double tol);
+Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(float tol);
+Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(float tol);
 
 } // namespace Bempp
 

@@ -246,7 +246,12 @@ BelosSolverWrapper<ValueType>::solve(
 
 // nonmember functions
 
-Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(double tol)
+namespace
+{
+
+template <typename MagnitudeType>
+Teuchos::RCP<Teuchos::ParameterList>
+inline defaultGmresParameterListInternal(MagnitudeType tol)
 {
     Teuchos::RCP<Teuchos::ParameterList> paramList(
                 new Teuchos::ParameterList("DefaultParameters"));
@@ -258,7 +263,9 @@ Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(double tol)
     return paramList;
 }
 
-Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(double tol)
+template <typename MagnitudeType>
+Teuchos::RCP<Teuchos::ParameterList>
+inline defaultCgParameterListInternal(MagnitudeType tol)
 {
     Teuchos::RCP<Teuchos::ParameterList> paramList(
                 new Teuchos::ParameterList("DefaultParameters"));
@@ -268,6 +275,28 @@ Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(double tol)
             solverTypesList.sublist("Pseudo Block CG");
     pseudoBlockCgList.set("Convergence Tolerance", tol);
     return paramList;
+}
+
+} // namespace
+
+Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(double tol)
+{
+    return defaultGmresParameterListInternal(tol);
+}
+
+Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(float tol)
+{
+    return defaultGmresParameterListInternal(tol);
+}
+
+Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(double tol)
+{
+    return defaultCgParameterListInternal(tol);
+}
+
+Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(float tol)
+{
+    return defaultCgParameterListInternal(tol);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(BelosSolverWrapper);
