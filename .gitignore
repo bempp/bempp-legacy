@@ -16,3 +16,4 @@
 /contrib/dune-common/lib/.libs/
 /doc/build*
 *.pyc
+options.cfg
