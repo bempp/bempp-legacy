@@ -40,11 +40,11 @@ public:
 
     void addGeometricalDependencies(int& testGeomDeps, int& trialGeomDeps) const;
 
-    template <template <typename T> class ArrayNdNonconstSlice2dCollection>
+    template <template <typename T> class CollectionOf2dSlicesOfNdArrays>
     void evaluate(
-            const GeometricDataSlice<CoordinateType>& testGeomData,
-            const GeometricDataSlice<CoordinateType>& trialGeomData,
-            ArrayNdNonconstSlice2dCollection<ValueType>& result) const;
+            const ConstGeometricDataSlice<CoordinateType>& testGeomData,
+            const ConstGeometricDataSlice<CoordinateType>& trialGeomData,
+            CollectionOf2dSlicesOfNdArrays<ValueType>& result) const;
 };
 */
 
