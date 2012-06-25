@@ -24,6 +24,7 @@
 #include "../common/common.hpp"
 
 #include "geometrical_data.hpp"
+#include "scalar_traits.hpp"
 
 namespace Fiber
 {
