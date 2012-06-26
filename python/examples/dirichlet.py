@@ -16,7 +16,7 @@ def eval_dirichlet_data(point):
 
 print "Importing grid..."
 grid = bempp.GridFactory.importGmshGrid("triangular",
-                                        "../../examples/meshes/sphere-152.msh")
+                                        "../../examples/meshes/double-sphere-5162.msh")
 
 pwiseConstants = bempp.piecewiseConstantScalarSpace(grid)
 pwiseLinears = bempp.piecewiseLinearContinuousScalarSpace(grid)
@@ -57,3 +57,5 @@ neumann_data.exportToVtk(bempp.VtkWriter.VERTEX_DATA,
     "neumann_data", "neumann_data_vertex")
 neumann_data.exportToVtk(bempp.VtkWriter.CELL_DATA,
     "neumann_data", "neumann_data_cell")
+
+neumann_data.plot()

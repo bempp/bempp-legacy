@@ -9,6 +9,23 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
 
 //%define BEMPP_DECLARE_GRID_FUNCTION(CLASS1,CLASS2,NPY1,NPY2)
 
+    %apply arma::Mat<float>& ARGOUT_MAT {
+    arma::Mat<float>& result_
+    };
+
+    %apply arma::Mat<double>& ARGOUT_MAT {
+    arma::Mat<double>& result_
+    };
+
+    %apply arma::Mat<std::complex<float> >& ARGOUT_MAT {
+    arma::Mat<std::complex<float> >& result_
+    };
+
+    %apply arma::Mat<std::complex<double> >& ARGOUT_MAT {
+    arma::Mat<std::complex<double> >& result_
+    };
+
+
 %extend GridFunction
 {
     %ignore setCoefficients;
@@ -44,6 +61,75 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
 
     %ignore coefficients;
     %ignore projections;
+
+    %pythoncode %{
+
+def plot(self,mode=VtkWriter.VERTEX_DATA,realImag='real'):
+    """Plot a grid function in a VTK Window"""
+
+    import numpy
+
+    try:
+        import vtk
+    except ImportError:
+        print "The Python VTK bindings needs to be installed for this method!"
+        return
+
+    if not mode in [VtkWriter.VERTEX_DATA, VtkWriter.CELL_DATA]:
+        raise ValueError('Unknown mode specified. Valid modes are bempp.VtkWriter.VERTEX_DATA and bempp.VtkWriter.CELL_DATA!')
+
+    if not realImag in ['real', 'imag']:
+        raise ValueError("Unknown value for 'realImag'. It needs to be either 'real' or 'imag'!")
+
+
+    polyGrid = self.grid().getVtkGrid()
+    if mode==VtkWriter.VERTEX_DATA:
+        values = self.evaluateAtSpecialPoints(VtkWriter.VERTEX_DATA).flatten()
+        vtk_data = polyGrid.GetPointData()
+    elif mode==VtkWriter.CELL_DATA:
+        values = self.evaluateAtSpecialPoints(VtkWriter.CELL_DATA).flatten()
+        vtk_data = polyGrid.GetCellData()
+
+    if realImag=='real':
+        values = numpy.real(values)
+    else:
+        values = numpy.imag(values)
+
+    count = len(values)
+    vtk_array = vtk.vtkDoubleArray()
+    vtk_array.SetNumberOfValues(count)
+    for i,p in enumerate(values): vtk_array.SetValue(i,p)
+    vtk_data.SetScalars(vtk_array)
+
+    mapper = vtk.vtkDataSetMapper()
+    mapper.SetInput(polyGrid)
+    mapper.SetScalarRange(vtk_array.GetRange())
+
+    data_actor = vtk.vtkActor()
+    data_actor.SetMapper(mapper)
+
+    scalar_bar = vtk.vtkScalarBarActor()
+    scalar_bar.SetLookupTable(mapper.GetLookupTable())
+
+    renderer=vtk.vtkRenderer()
+    renderer.AddActor(data_actor)
+    renderer.AddActor(scalar_bar)
+    renderer.SetBackground(.1,.2,.4)
+
+    window=vtk.vtkRenderWindow()
+    window.AddRenderer(renderer)
+    window.SetSize(800,600)
+
+    irenderer=vtk.vtkRenderWindowInteractor()
+    irenderer.SetRenderWindow(window)
+    irenderer.Initialize()
+
+    window.Render()
+    irenderer.Start()
+
+
+      %}
+
 }
 
 %ignore gridFunctionFromFiberFunction;
@@ -61,6 +147,12 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
     gridFunctionFromSurfaceNormalIndependentFunctor);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
     gridFunctionFromSurfaceNormalDependentFunctor);
+
+%clear arma::Mat<float>& result_;
+%clear arma::Mat<double>& result_;
+%clear arma::Mat<std::complex<float> >& result_;
+%clear arma::Mat<std::complex<float> >& result_;
+
 
 %clear arma::Col<float>& col_out;
 %clear arma::Col<double>& col_out;

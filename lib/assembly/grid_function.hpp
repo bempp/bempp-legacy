@@ -103,6 +103,10 @@ public:
     void getLocalCoefficients(const Entity<0>& element,
                               std::vector<ResultType>& coeffs) const;
 
+    /** \brief Evaluate function at either vertices or barycentres. */
+    void evaluateAtSpecialPoints(
+            VtkWriter::DataType dataType, arma::Mat<ResultType>& result_) const;
+
     /** Export the function to a VTK file.
 
       \param[in] dataType
@@ -126,11 +130,6 @@ public:
                      const char* dataLabel,
                      const char* fileNamesBase, const char* filesPath = 0,
                      VtkWriter::OutputType type = VtkWriter::ASCII) const;
-
-private:
-    /** \brief Evaluate function at either vertices or barycentres. */
-    void evaluateAtSpecialPoints(
-            VtkWriter::DataType dataType, arma::Mat<ResultType>& result) const;
 
 private:
     const Space<BasisFunctionType>& m_space;
