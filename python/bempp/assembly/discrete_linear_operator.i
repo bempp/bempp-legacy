@@ -102,7 +102,6 @@ namespace Bempp
 {
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_VALUE(DiscreteLinearOperator);
 
-
 %clear const arma::Col<float>& x_in;
 %clear const arma::Col<double>& x_in;
 %clear const arma::Col<std::complex<float> >& x_in;
@@ -116,7 +115,7 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_VALUE(DiscreteLinearOperator);
 %clear arma::Mat<float>& mat_out;
 %clear arma::Mat<double>& mat_out;
 %clear arma::Mat<std::complex<float> >& mat_out;
-%clear arma::Mat<std::complex<float> >& mat_out;
+%clear arma::Mat<std::complex<double> >& mat_out;
 
 } // namespace Bempp
 
