@@ -54,7 +54,7 @@ def defaultIterativeSolver(linearOperator, gridFunction):
     result = constructObjectTemplatedOnBasisAndResult(
         "DefaultIterativeSolver", basisFunctionType, resultType,
         linearOperator, gridFunction)
-    result._space = linearOperator.trialSpace()
+    result._space = linearOperator.domain()
     return result
 
 %}
