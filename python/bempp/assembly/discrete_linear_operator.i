@@ -6,6 +6,31 @@
 // TODO
 // %include "discrete_linear_operator_docstrings.i"
 
+%shared_ptr(Thyra::LinearOpDefaultBase<float>);
+%shared_ptr(Thyra::LinearOpDefaultBase<double>);
+%shared_ptr(Thyra::LinearOpDefaultBase<std::complex<float> >);
+%shared_ptr(Thyra::LinearOpDefaultBase<std::complex<double> >);
+
+%shared_ptr(Bempp::DiscreteLinearOperator<float>);
+%shared_ptr(Bempp::DiscreteLinearOperator<double>);
+%shared_ptr(Bempp::DiscreteLinearOperator<std::complex<float> >);
+%shared_ptr(Bempp::DiscreteLinearOperator<std::complex<double> >);
+
+namespace Thyra
+{
+
+BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_VALUE(LinearOpDefaultBase);
+
+template <typename ValueType>
+class LinearOpDefaultBase
+{
+public:
+    virtual ~LinearOpDefaultBase() = 0; // prevent instantiation
+};
+
+} // namespace Thyra
+
+
 namespace Bempp
 {
 
@@ -68,9 +93,15 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_VALUE(DiscreteLinearOperator);
 
 %include "assembly/discrete_linear_operator.hpp"
 
+namespace Thyra
+{
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_VALUE(LinearOpDefaultBase);
+}
+
 namespace Bempp
 {
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_VALUE(DiscreteLinearOperator);
+
 
 %clear const arma::Col<float>& x_in;
 %clear const arma::Col<double>& x_in;

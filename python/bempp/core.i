@@ -36,6 +36,7 @@
 %include "armadillo.i"
 %include "auto_ptr.i"
 %include "exception.i"
+%include "shared_ptr.i"
 %include "std_string.i"
 %include "std_complex.i"
 
@@ -138,6 +139,7 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "assembly/python_surface_normal_dependent_functor.i"
 %include "assembly/test_functor.i"
 %include "assembly/grid_function.i"
+%include "assembly/discrete_linear_operator.i"
 %include "assembly/linear_operator.i"
 %include "assembly/linear_operator_sum.i"
 %include "assembly/scaled_linear_operator.i"
@@ -149,7 +151,6 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "assembly/identity_operator.i"
 %include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.i"
 
-%include "assembly/discrete_linear_operator.i"
 
 // Linear algebra
 %include "linalg/parameter_list.i"
