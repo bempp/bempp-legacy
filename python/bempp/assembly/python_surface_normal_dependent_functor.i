@@ -1,5 +1,6 @@
 %{
 #include "assembly/surface_normal_dependent_functor.hpp"
+#include "common/scalar_traits.hpp"
 #include <armadillo>
 %}
 
@@ -9,28 +10,31 @@
         PyErr_SetString(PyExc_TypeError, "Callable object expected!");
         return NULL;
     }
-    $1=$input;
+    $1 = $input;
 }
 
-%define BEMPP_DECLARE_PYTHON_SURFACE_NORMAL_DEPENDENT_FUNCTOR( TYPE , NPY_NAME , NPY_TYPE )
 %inline %{
 
 namespace Bempp
 {
 
-class PythonSurfaceNormalDependentFunctor_## NPY_NAME :
-    public SurfaceNormalDependentFunctor< TYPE >
+template <typename ValueType_>
+class PythonSurfaceNormalDependentFunctor
 {
 public:
-    PythonSurfaceNormalDependentFunctor_## NPY_NAME(
-            PyObject *pyFunc, int argumentDimension, int resultDimension) :
+    typedef ValueType_ ValueType;
+    typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+
+    PythonSurfaceNormalDependentFunctor(
+        PyObject *pyFunc, int argumentDimension, int resultDimension) :
             m_pyFunc(pyFunc), m_argumentDimension(argumentDimension),
             m_resultDimension(resultDimension) {
-        if (!PyCallable_Check(pyFunc)) PyErr_SetString(PyExc_TypeError, "Python object is not callable");
-        Py_INCREF(m_pyFunc); // Increase shared pointer
+        if (!PyCallable_Check(pyFunc))
+            PyErr_SetString(PyExc_TypeError, "Python object is not callable");
+        Py_INCREF(m_pyFunc); // Increase shared pointer reference count
     }
 
-    ~PythonSurfaceNormalDependentFunctor_##NPY_NAME() {
+    ~PythonSurfaceNormalDependentFunctor() {
         Py_DECREF(m_pyFunc);
     }
 
@@ -46,20 +50,23 @@ public:
                   const arma::Col<CoordinateType>& normal,
           arma::Col<ValueType>& result_) const
     {
+        const int coordinateNumpyType = PythonScalarTraits<CoordinateType>::numpyType;
+        const int valueNumpyType = PythonScalarTraits<ValueType>::numpyType;
+
         // Create the input array
         npy_intp dims1[1];
         dims1[0] = point.n_rows;
-        PyObject* pyPoint = PyArray_ZEROS(1, dims1, NPY_TYPE , NPY_FORTRAN);
+        PyObject* pyPoint = PyArray_ZEROS(1, dims1, coordinateNumpyType, NPY_FORTRAN);
         if (!pyPoint)
             throw std::runtime_error("Point array creation failed");
-        TYPE* pdata = (TYPE*)array_data(pyPoint);
+        CoordinateType* pdata = (CoordinateType*)array_data(pyPoint);
         for (size_t i = 0; i < dims1[0]; i++)
             pdata[i] = point(i);
 
         npy_intp dims2[1];
         dims2[0] = normal.n_rows;
-        PyObject* pyNormal = PyArray_ZEROS(1, dims2, NPY_TYPE , NPY_FORTRAN);
-        TYPE* ndata = (TYPE*)array_data(pyNormal);
+        PyObject* pyNormal = PyArray_ZEROS(1, dims2, coordinateNumpyType, NPY_FORTRAN);
+        CoordinateType* ndata = (CoordinateType*)array_data(pyNormal);
         for (size_t i = 0; i<dims2[0]; i++)
             ndata[i] = normal(i);
 
@@ -71,7 +78,7 @@ public:
             Py_XDECREF(pyNormal);
             throw std::runtime_error("Callable did not execute successfully");
         }
-        PyObject* pyReturnValArray = PyArray_FROM_OT(pyReturnVal, NPY_TYPE);
+        PyObject* pyReturnValArray = PyArray_FROM_OT(pyReturnVal, valueNumpyType);
         if (!pyReturnValArray) {
             Py_XDECREF(pyPoint);
             Py_XDECREF(pyNormal);
@@ -81,7 +88,7 @@ public:
         int is_new_object;
         PyArrayObject* pyReturnValArrayCont =
             obj_to_array_contiguous_allow_conversion(
-                pyReturnValArray,NPY_TYPE,&is_new_object);
+                pyReturnValArray, valueNumpyType, &is_new_object);
 
         // Check size of array
         int asize;
@@ -99,9 +106,9 @@ public:
                     Py_XDECREF(pyReturnValArrayCont);
                 throw std::runtime_error("Return array has wrong dimensions!");
             }
-            asize=array_size(pyReturnValArrayCont,0);
+            asize = array_size(pyReturnValArrayCont,0);
         }
-        if (asize!=m_resultDimension) {
+        if (asize != m_resultDimension) {
             Py_XDECREF(pyNormal);
             Py_XDECREF(pyPoint);
             Py_XDECREF(pyReturnVal);
@@ -112,7 +119,7 @@ public:
         }
 
         // Copy data back
-        TYPE* data = (TYPE*) array_data(pyReturnValArrayCont);
+        ValueType* data = (ValueType*) array_data(pyReturnValArrayCont);
         for (size_t i = 0; i < m_resultDimension; i++)
             result_(i) = data[i];
 
@@ -136,9 +143,14 @@ public:
 
 %}
 
-%enddef
+namespace Bempp
+{
 
-BEMPP_DECLARE_PYTHON_SURFACE_NORMAL_DEPENDENT_FUNCTOR(float,float32,NPY_FLOAT)
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_VALUE(PythonSurfaceNormalDependentFunctor);
+
+} // namespace Bempp
+
+/*BEMPP_DECLARE_PYTHON_SURFACE_NORMAL_DEPENDENT_FUNCTOR(float,float32,NPY_FLOAT)
 BEMPP_DECLARE_PYTHON_SURFACE_NORMAL_DEPENDENT_FUNCTOR(double,float64,NPY_DOUBLE)
 BEMPP_DECLARE_PYTHON_SURFACE_NORMAL_DEPENDENT_FUNCTOR(std::complex<float>,complex64,NPY_CFLOAT)
 BEMPP_DECLARE_PYTHON_SURFACE_NORMAL_DEPENDENT_FUNCTOR(std::complex<double>,complex128,NPY_CDOUBLE)
@@ -153,4 +165,4 @@ def surfaceNormalDependentFunctor(fun, valueType='float64',
         valueType, fun, argumentDimension, resultDimension)
 
 %}
-
+*/
