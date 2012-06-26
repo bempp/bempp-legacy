@@ -55,8 +55,8 @@ namespace Bempp
         if not hasattr(self,'_Grid__elements'): self.__enumerateGridData()
         return self.__elements
 
-    def plot(self):
-        """Plot the grid using VTK"""
+    def getVtkGrid(self):
+        """Return a VTK Object containing the grid"""
         try:
             import vtk
         except ImportError:
@@ -82,6 +82,21 @@ namespace Bempp
         cells=[create_cell(self.__elements[i]) for i in self.__elements]
         for cell in cells:
             polyGrid.InsertNextCell(cell.GetCellType(),cell.GetPointIds())
+        return polyGrid
+
+
+
+    def plot(self):
+        """Plot the grid using VTK"""
+        try:
+            import vtk
+        except ImportError:
+            print "The Python VTK bindings needs to be installed for this method!"
+            return
+
+        if not hasattr(self,'__Grid_vertices'): self.__enumerateGridData()
+        polyGrid=self.getVtkGrid()
+
         mapper=vtk.vtkDataSetMapper()
         mapper.SetInput(polyGrid)
         actor=vtk.vtkActor()
