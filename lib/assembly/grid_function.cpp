@@ -344,7 +344,6 @@ GridFunction<BasisFunctionType, ResultType>::projections() const
             throw;
         }
     }
-    std::cout << "Returning projections" << std::endl;
     return m_projections;
 }
 
