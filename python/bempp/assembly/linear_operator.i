@@ -1,6 +1,6 @@
 %{
 #include "assembly/linear_operator.hpp"
-#include "assembly/linear_operator_superposition.hpp"
+#include "assembly/linear_operator_sum.hpp"
 #include <complex>
 %}
 
@@ -19,30 +19,30 @@ class Symmetry;
 
 %extend LinearOperator
 {
-    // this function is only for internal use
-    %ignore constituentOperators;
+    %ignore clone;
 
-    // this function is only for internal use
-    %ignore constituentOperatorWeights;
+    // SWIG doesn't handle properly the using boost::shared_ptr declaration
+    // in BEM++'s code, therefore this wrapper returning a fully qualified
+    // shared_ptr is needed
+    boost::shared_ptr<const DiscreteLinearOperator<ResultType> > weakForm() const
+    {
+        return $self->weakForm();
+    }
+    %ignore weakForm;
 
-    // to be modified/removed once the C++ weakForm() returns a shared_ptr
-    %pythonappend weakForm %{
-        val._parentLinearOperator = self
-    %}
-
-    LinearOperatorSuperposition<BasisFunctionType, ResultType> __add__(
+    LinearOperatorSum<BasisFunctionType, ResultType> __add__(
         const LinearOperator<BasisFunctionType, ResultType>& other)
     {
         return *$self + other;
     }
 
-    LinearOperatorSuperposition<BasisFunctionType, ResultType> __sub__(
+    LinearOperatorSum<BasisFunctionType, ResultType> __sub__(
         const LinearOperator<BasisFunctionType, ResultType>& other)
     {
         return *$self - other;
     }
 
-    LinearOperatorSuperposition<BasisFunctionType, ResultType> __mul__(
+    ScaledLinearOperator<BasisFunctionType, ResultType> __mul__(
         ResultType other)
     {
         return *$self * other;
@@ -54,13 +54,13 @@ class Symmetry;
         return *$self * other;
     }
 
-    LinearOperatorSuperposition<BasisFunctionType, ResultType> __rmul__(
+    ScaledLinearOperator<BasisFunctionType, ResultType> __rmul__(
         ResultType other)
     {
         return *$self * other;
     }
 
-    LinearOperatorSuperposition<BasisFunctionType, ResultType> __div__(
+    ScaledLinearOperator<BasisFunctionType, ResultType> __div__(
         ResultType other)
     {
         return *$self / other;

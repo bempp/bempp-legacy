@@ -14,9 +14,9 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(IdentityOperator);
 
 %pythoncode %{
 
-def identityOperator(testSpace, trialSpace, resultType=None):
+def identityOperator(domain, range, dualToRange, resultType=None):
     """Construct a single-layer-potential operator for the Laplace equation in 3D."""
     return _constructOperator(
-    "IdentityOperator", testSpace, trialSpace, resultType)
+    "IdentityOperator", domain, range, dualToRange, resultType)
 
 %}

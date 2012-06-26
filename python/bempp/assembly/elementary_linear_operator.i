@@ -16,7 +16,7 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(ElementaryLinearOperat
     %ignore makeAssembler;
 
     // this function is only for internal use
-    %ignore assembleDetachedWeakFormInternal;
+    %ignore assembleWeakFormInternal;
 }
 
 } // namespace Bempp
