@@ -85,6 +85,10 @@ clone() const
     return std::auto_ptr<LinOp>(new This(*this));
 }
 
+#define INSTANTIATE_BASE(BASIS) \
+    template class Helmholtz3dOperatorBase< \
+    Helmholtz3dDoubleLayerPotentialOperatorImpl<BASIS>, BASIS>
+FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_BASE);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dDoubleLayerPotentialOperator);
 
 } // namespace Bempp
