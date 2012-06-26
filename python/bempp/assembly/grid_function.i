@@ -25,14 +25,38 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
 
 %extend GridFunction
 {
-    %ignore coefficients;
-    %ignore projections;
     %ignore setCoefficients;
     %ignore setProjections;
     %ignore codomainDimension;
 
     %ignore basis;
     %ignore getLocalCoefficients;
+
+    %apply arma::Col<float>& ARGOUT_COL {
+        arma::Col<float>& col_out
+    };
+    %apply arma::Col<double>& ARGOUT_COL {
+        arma::Col<double>& col_out
+    };
+    %apply arma::Col<std::complex<float> >& ARGOUT_COL {
+        arma::Col<std::complex<float> >& col_out
+    };
+    %apply arma::Col<std::complex<double> >& ARGOUT_COL {
+        arma::Col<std::complex<double> >& col_out
+    };
+
+    void coefficients(arma::Col<ResultType>& col_out)
+    {
+        col_out = $self->coefficients();
+    }
+
+    void projections(arma::Col<ResultType>& col_out)
+    {
+        col_out = $self->projections();
+    }
+
+    %ignore coefficients;
+    %ignore projections;
 }
 
 %ignore gridFunctionFromFiberFunction;
@@ -51,6 +75,11 @@ BEMPP_INSTANTIATE_GRID_FUNCTION_FROM_FUNCTOR(
     SurfaceNormalIndependentFunctor);
 BEMPP_INSTANTIATE_GRID_FUNCTION_FROM_FUNCTOR(
     SurfaceNormalDependentFunctor);
+
+%clear arma::Col<float>& col_out;
+%clear arma::Col<double>& col_out;
+%clear arma::Col<std::complex<float> >& col_out;
+%clear arma::Col<std::complex<float> >& col_out;
 
 } // namespace Bempp
 
