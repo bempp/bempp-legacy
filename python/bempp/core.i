@@ -99,7 +99,6 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 
 // Common
 %include "common/scalar_traits.i"
-#include "common/types.i"
 
 // Grid
 %include "grid/geometry.i"  

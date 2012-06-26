@@ -9,6 +9,8 @@
 namespace Bempp
 {
 
+%warnfilter(401,315) DiscreteLinearOperator;
+
 DECLARE_TEMPLATE_VALUE_METHOD_AUTO_DOCSTRING(DiscreteLinearOperator, apply);
 
 BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_VALUE(DiscreteLinearOperator);
