@@ -62,6 +62,13 @@ public:
 
     virtual bool supportsRepresentation(AssemblyOptions::Representation repr) const;
 
+protected:
+    virtual shared_ptr<DiscreteLinearOperator<ResultType_> >
+    assembleWeakFormImpl(
+            const LocalAssemblerFactory& factory,
+            const AssemblyOptions& options,
+            Symmetry symmetry);
+
 private:
     virtual std::auto_ptr<LocalAssembler> makeAssemblerImpl(
             const LocalAssemblerFactory& assemblerFactory,
@@ -74,12 +81,6 @@ private:
             const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const;
-
-    virtual shared_ptr<DiscreteLinearOperator<ResultType_> >
-    assembleWeakFormImpl(
-            const LocalAssemblerFactory& factory,
-            const AssemblyOptions& options,
-            Symmetry symmetry);
 
     virtual shared_ptr<DiscreteLinearOperator<ResultType_> >
     assembleWeakFormInternalImpl(

@@ -45,8 +45,8 @@ template <typename BasisFunctionType_, typename ResultType_>
 class LinearOperatorComposition :
         public LinearOperator<BasisFunctionType_, ResultType_>
 {
-    typedef LinearOperator<BasisFunctionType_, ResultType_> Base;
 public:
+    typedef LinearOperator<BasisFunctionType_, ResultType_> Base;
     /** \copydoc LinearOperator::BasisFunctionType */
     typedef typename Base::BasisFunctionType BasisFunctionType;
     /** \copydoc LinearOperator::ResultType */
@@ -67,6 +67,7 @@ public:
     virtual bool supportsRepresentation(
             AssemblyOptions::Representation repr) const;
 
+protected:
     virtual shared_ptr<DiscreteLinearOperator<ResultType_> >
     assembleWeakFormImpl(
             const LocalAssemblerFactory& factory,

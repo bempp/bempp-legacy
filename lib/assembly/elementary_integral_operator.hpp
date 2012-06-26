@@ -83,6 +83,16 @@ public:
 
     virtual bool isRegular() const = 0;
 
+protected:
+    /** @}
+        \name Weak form assembly
+        @{ */
+    virtual shared_ptr<DiscreteLinearOperator<ResultType_> >
+    assembleWeakFormImpl(
+            const LocalAssemblerFactory& factory,
+            const AssemblyOptions& options,
+            Symmetry symmetry);
+
 private:
     virtual const CollectionOfKernels& kernels() const = 0;
     virtual const CollectionOfBasisTransformations&
@@ -103,14 +113,6 @@ private:
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const;
 
-    /** @}
-        \name Weak form assembly
-        @{ */
-    virtual shared_ptr<DiscreteLinearOperator<ResultType_> >
-    assembleWeakFormImpl(
-            const LocalAssemblerFactory& factory,
-            const AssemblyOptions& options,
-            Symmetry symmetry);
     virtual shared_ptr<DiscreteLinearOperator<ResultType_> >
     assembleWeakFormInternalImpl(
             LocalAssembler& assembler,
