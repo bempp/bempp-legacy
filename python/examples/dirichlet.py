@@ -11,7 +11,7 @@ import bempp
 import numpy as np
 
 
-def eval_dirichlet_data(point):
+def evalDirichletData(point):
     return -1
 
 print "Importing grid..."
@@ -23,37 +23,38 @@ pwiseLinears = bempp.piecewiseLinearContinuousScalarSpace(grid)
 pwiseConstants.assignDofs()
 pwiseLinears.assignDofs()
 
-slp = bempp.laplace3dSingleLayerPotential(pwiseConstants, pwiseConstants)
-dlp = bempp.laplace3dDoubleLayerPotential(pwiseConstants, pwiseLinears)
-id = bempp.identityOperator(pwiseConstants, pwiseLinears)
+slpOp = bempp.laplace3dSingleLayerPotentialOperator(
+    pwiseConstants, pwiseLinears, pwiseConstants)
+dlpOp = bempp.laplace3dDoubleLayerPotentialOperator(
+    pwiseLinears, pwiseLinears, pwiseConstants)
+idOp = bempp.identityOperator(
+    pwiseLinears, pwiseLinears, pwiseConstants)
 
-lhs_op = slp
-rhs_op = -0.5 * id + dlp
+lhsOp = slpOp
+rhsOp = -0.5 * idOp + dlpOp
 
 factory = bempp.standardLocalAssemblerFactoryForOperatorsOnSurfaces()
 options = bempp.AssemblyOptions()
 options.switchToAca(bempp.AcaOptions())
 print "Assembling LHS operator..."
-lhs_op.assembleWeakForm(factory, options)
+lhsOp.assembleWeakForm(factory, options)
 print "Assembling RHS operator..."
-rhs_op.assembleWeakForm(factory, options)
+rhsOp.assembleWeakForm(factory, options)
 
 print "Evaluating Dirichlet data..."
-dirichlet_data_functor = bempp.surfaceNormalIndependentFunctor(
-    eval_dirichlet_data)
-dirichlet_data = bempp.gridFunctionFromSurfaceNormalIndependentFunctor(
-    pwiseLinears, dirichlet_data_functor, factory, options)
+dirichletData = bempp.gridFunctionFromSurfaceNormalIndependentFunction(
+    pwiseLinears, pwiseLinears, evalDirichletData, factory, options)
 
-rhs = rhs_op * dirichlet_data
+rhs = rhsOp * dirichletData
 
-solver = bempp.defaultIterativeSolver(lhs_op, rhs)
+solver = bempp.defaultIterativeSolver(lhsOp, rhs)
 params = bempp.defaultGmresParameterList(1e-5)
 solver.initializeSolver(params)
 solver.solve()
 
-neumann_data = solver.getResult()
+neumannData = solver.getResult()
 
-neumann_data.exportToVtk(bempp.VtkWriter.VERTEX_DATA,
+neumannData.exportToVtk(bempp.VtkWriter.VERTEX_DATA,
     "neumann_data", "neumann_data_vertex")
-neumann_data.exportToVtk(bempp.VtkWriter.CELL_DATA,
+neumannData.exportToVtk(bempp.VtkWriter.CELL_DATA,
     "neumann_data", "neumann_data_cell")

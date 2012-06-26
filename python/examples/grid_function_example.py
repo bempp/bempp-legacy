@@ -1,22 +1,23 @@
 import sys
 sys.path.append("..")
 import bempp
-import numpy
+import math
 
 # Define some functor
 
 def fun(point):
-    return numpy.cos(4*point[0])*numpy.sin(5*point[1])
+    return math.cos(4 * point[0]) * math.sin(5 * point[1])
 
 print "Importing grid..."
-grid = bempp.GridFactory.importGmshGrid("triangular", "../../examples/meshes/sphere-41440.msh")
-space=bempp.piecewiseConstantScalarSpace(grid)
+grid = bempp.GridFactory.importGmshGrid(
+    "triangular", "../../examples/meshes/sphere-41440.msh")
+space = bempp.piecewiseConstantScalarSpace(grid)
 space.assignDofs()
-ops=bempp.AssemblyOptions()
+ops = bempp.AssemblyOptions()
 
-factory=bempp.standardLocalAssemblerFactoryForOperatorsOnSurfaces()
-f=bempp.surfaceNormalIndependentFunctor(fun,'float64',3,1)
-g=bempp.gridFunctionFromSurfaceNormalIndependentFunctor(space,f,factory,ops)
+factory = bempp.standardLocalAssemblerFactoryForOperatorsOnSurfaces()
+f = bempp.gridFunctionFromSurfaceNormalIndependentFunction(
+    space, space, fun, factory, ops)
 
-g.exportToVtk(bempp.VtkWriter.CELL_DATA,"py_grid_fun","py_gridfun")
+f.exportToVtk(bempp.VtkWriter.CELL_DATA, "py_grid_fun", "py_gridfun")
 
