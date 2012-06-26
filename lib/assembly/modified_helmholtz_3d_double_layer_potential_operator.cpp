@@ -34,9 +34,10 @@
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
+template <typename BasisFunctionType, typename KernelType_, typename ResultType>
 struct ModifiedHelmholtz3dDoubleLayerPotentialOperatorImpl
 {
+    typedef KernelType_ KernelType;
     typedef ModifiedHelmholtz3dDoubleLayerPotentialOperatorImpl<
     BasisFunctionType, KernelType, ResultType> This;
     typedef ModifiedHelmholtz3dOperatorBase<This,
@@ -85,6 +86,12 @@ clone() const
     return std::auto_ptr<LinOp>(new This(*this));
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(ModifiedHelmholtz3dDoubleLayerPotentialOperator);
+#define INSTANTIATE_BASE(BASIS, KERNEL, RESULT) \
+    template class ModifiedHelmholtz3dOperatorBase< \
+    ModifiedHelmholtz3dDoubleLayerPotentialOperatorImpl<BASIS, KERNEL, RESULT>, \
+    BASIS, KERNEL, RESULT>
+FIBER_ITERATE_OVER_BASIS_KERNEL_AND_RESULT_TYPES(INSTANTIATE_BASE);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
+        ModifiedHelmholtz3dDoubleLayerPotentialOperator);
 
 } // namespace Bempp
