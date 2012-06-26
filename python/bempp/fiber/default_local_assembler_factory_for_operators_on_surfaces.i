@@ -3,7 +3,7 @@ namespace Fiber
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory>
-class StandardLocalAssemblerFactoryForOperatorsOnSurfaces :
+class DefaultLocalAssemblerFactoryForOperatorsOnSurfaces :
     public LocalAssemblerFactory<
         BasisFunctionType, ResultType, GeometryFactory>
 {
@@ -16,5 +16,5 @@ class StandardLocalAssemblerFactoryForOperatorsOnSurfaces :
 namespace Fiber
 {
 BEMPP_INSTANTIATE_ANONYMOUSLY_SYMBOL_TEMPLATED_ON_BASIS_RESULT_AND_GEOMETRY_FACTORY(
-StandardLocalAssemblerFactoryForOperatorsOnSurfaces);
+DefaultLocalAssemblerFactoryForOperatorsOnSurfaces);
 }

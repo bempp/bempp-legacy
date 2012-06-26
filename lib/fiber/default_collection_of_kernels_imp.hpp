@@ -18,10 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_standard_collection_of_kernels_imp_hpp
-#define fiber_standard_collection_of_kernels_imp_hpp
+#ifndef fiber_default_collection_of_kernels_imp_hpp
+#define fiber_default_collection_of_kernels_imp_hpp
 
-#include "standard_collection_of_kernels.hpp"
+#include "default_collection_of_kernels.hpp"
 
 #include "collection_of_3d_arrays.hpp"
 #include "collection_of_4d_arrays.hpp"
@@ -33,14 +33,14 @@ namespace Fiber
 {
 
 template <typename Functor>
-void StandardCollectionOfKernels<Functor>::addGeometricalDependencies(
+void DefaultCollectionOfKernels<Functor>::addGeometricalDependencies(
         size_t& testGeomDeps, size_t& trialGeomDeps) const
 {
     m_functor.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 }
 
 template <typename Functor>
-void StandardCollectionOfKernels<Functor>::evaluateAtPointPairs(
+void DefaultCollectionOfKernels<Functor>::evaluateAtPointPairs(
         const GeometricalData<CoordinateType>& testGeomData,
         const GeometricalData<CoordinateType>& trialGeomData,
         CollectionOf3dArrays<ValueType>& result) const
@@ -62,7 +62,7 @@ void StandardCollectionOfKernels<Functor>::evaluateAtPointPairs(
 }
 
 template <typename ValueType>
-void StandardCollectionOfKernels<ValueType>::evaluateOnGrid(
+void DefaultCollectionOfKernels<ValueType>::evaluateOnGrid(
         const GeometricalData<CoordinateType>& testGeomData,
         const GeometricalData<CoordinateType>& trialGeomData,
         CollectionOf4dArrays<ValueType>& result) const
@@ -86,8 +86,8 @@ void StandardCollectionOfKernels<ValueType>::evaluateOnGrid(
 
 template <typename ValueType>
 std::pair<const char*, int>
-StandardCollectionOfKernels<ValueType>::evaluateClCode() const {
-    throw std::runtime_error("StandardCollectionOfKernels::evaluateClCode(): "
+DefaultCollectionOfKernels<ValueType>::evaluateClCode() const {
+    throw std::runtime_error("DefaultCollectionOfKernels::evaluateClCode(): "
                              "not implemented yet");
 }
 

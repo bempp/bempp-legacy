@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_standard_kernel_trial_integral_hpp
-#define fiber_standard_kernel_trial_integral_hpp
+#ifndef fiber_default_kernel_trial_integral_hpp
+#define fiber_default_kernel_trial_integral_hpp
 
 #include "kernel_trial_integral.hpp"
 
@@ -27,7 +27,7 @@ namespace Fiber
 {
 
 template <typename IntegrandFunctor>
-class StandardKernelTrialIntegral :
+class DefaultKernelTrialIntegral :
         public KernelTrialIntegral<
         typename IntegrandFunctor::BasisFunctionType,
         typename IntegrandFunctor::KernelType,
@@ -44,7 +44,7 @@ public:
     typedef typename Base::KernelType KernelType;
     typedef typename Base::ResultType ResultType;
 
-    explicit StandardKernelTrialIntegral(const IntegrandFunctor& functor) :
+    explicit DefaultKernelTrialIntegral(const IntegrandFunctor& functor) :
         m_functor(functor)
     {}
 
@@ -64,6 +64,6 @@ private:
 
 } // namespace Fiber
 
-#include "standard_kernel_trial_integral_imp.hpp"
+#include "default_kernel_trial_integral_imp.hpp"
 
 #endif

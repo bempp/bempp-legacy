@@ -22,7 +22,7 @@
 #include "../check_arrays_are_close.hpp"
 
 #include "assembly/laplace_3d_single_layer_boundary_operator.hpp"
-#include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
+#include "assembly/default_local_assembler_factory_for_operators_on_surfaces.hpp"
 #include "common/scalar_traits.hpp"
 #include "fiber/geometrical_data.hpp"
 #include "fiber/local_assembler_for_operators.hpp"
@@ -49,17 +49,17 @@ const int N_ELEMENTS_X = 2, N_ELEMENTS_Y = 3;
 
 /** \brief Fixture class. */
 template <typename BFT, typename RT>
-class StandardLocalAssemblerForIntegralOperatorsOnSurfacesManager
+class DefaultLocalAssemblerForIntegralOperatorsOnSurfacesManager
 {
 public:
     typedef typename ScalarTraits<RT>::RealType CT;
     typedef PiecewiseConstantScalarSpace<BFT> PiecewiseConstantSpace;
     typedef PiecewiseLinearContinuousScalarSpace<BFT> PiecewiseLinearSpace;
     typedef Laplace3dSingleLayerBoundaryOperator<BFT, RT> Operator;
-    typedef StandardLocalAssemblerFactoryForOperatorsOnSurfaces<BFT, RT> AssemblerFactory;
+    typedef DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<BFT, RT> AssemblerFactory;
     typedef Fiber::RawGridGeometry<CT> RawGridGeometry;
 
-    StandardLocalAssemblerForIntegralOperatorsOnSurfacesManager(
+    DefaultLocalAssemblerForIntegralOperatorsOnSurfacesManager(
             bool cacheSingularIntegrals)
     {
         // Create a Bempp grid
@@ -122,14 +122,14 @@ public:
 
 // Tests
 
-BOOST_AUTO_TEST_SUITE(StandardLocalAssemblerForIntegralOperatorsOnSurfaces)
+BOOST_AUTO_TEST_SUITE(DefaultLocalAssemblerForIntegralOperatorsOnSurfaces)
 
 template <typename ResultType>
 void
 both_variants_of_evaluateLocalWeakForms_agree_for_callVariant_TEST_TRIAL_and_cacheSingularIntegrals(
         bool cacheSingularIntegrals)
 {
-    StandardLocalAssemblerForIntegralOperatorsOnSurfacesManager<
+    DefaultLocalAssemblerForIntegralOperatorsOnSurfacesManager<
             typename ScalarTraits<ResultType>::RealType, ResultType> mgr(
                 cacheSingularIntegrals);
 
@@ -183,7 +183,7 @@ void
 both_variants_of_evaluateLocalWeakForms_agree_for_callVariant_TRIAL_TEST_and_cacheSingularIntegrals(
         bool cacheSingularIntegrals)
 {
-    StandardLocalAssemblerForIntegralOperatorsOnSurfacesManager<
+    DefaultLocalAssemblerForIntegralOperatorsOnSurfacesManager<
             typename ScalarTraits<ResultType>::RealType, ResultType> mgr(
                 cacheSingularIntegrals);
 
@@ -237,7 +237,7 @@ void
 evaluateLocalWeakForms_for_ALL_DOFS_and_single_dof_agree_for_callVariant_TEST_TRIAL_and_cacheSingularIntegrals(
         bool cacheSingularIntegrals)
 {
-    StandardLocalAssemblerForIntegralOperatorsOnSurfacesManager<
+    DefaultLocalAssemblerForIntegralOperatorsOnSurfacesManager<
             typename ScalarTraits<ResultType>::RealType, ResultType> mgr(
                 cacheSingularIntegrals);
 
@@ -294,7 +294,7 @@ void
 evaluateLocalWeakForms_for_ALL_DOFS_and_single_dof_agree_for_callVariant_TRIAL_TEST_and_cacheSingularIntegrals(
         bool cacheSingularIntegrals)
 {
-    StandardLocalAssemblerForIntegralOperatorsOnSurfacesManager<
+    DefaultLocalAssemblerForIntegralOperatorsOnSurfacesManager<
             typename ScalarTraits<ResultType>::RealType, ResultType> mgr(
                 cacheSingularIntegrals);
 
@@ -364,14 +364,14 @@ evaluateLocalWeakForms_with_and_without_singular_integral_caching_gives_same_res
     Fiber::_2dArray<arma::Mat<ResultType> > resultWithoutCaching;
 
     {
-        StandardLocalAssemblerForIntegralOperatorsOnSurfacesManager<
+        DefaultLocalAssemblerForIntegralOperatorsOnSurfacesManager<
                 typename ScalarTraits<ResultType>::RealType, ResultType> mgr(
                     true);
         mgr.assembler->evaluateLocalWeakForms(testIndices, trialIndices,
                                               resultWithCaching);
     }
     {
-        StandardLocalAssemblerForIntegralOperatorsOnSurfacesManager<
+        DefaultLocalAssemblerForIntegralOperatorsOnSurfacesManager<
             typename ScalarTraits<ResultType>::RealType, ResultType> mgr(
                 false);
         mgr.assembler->evaluateLocalWeakForms(testIndices, trialIndices,

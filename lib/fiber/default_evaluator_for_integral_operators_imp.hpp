@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "standard_evaluator_for_integral_operators.hpp" // keep IDEs happy
+#include "default_evaluator_for_integral_operators.hpp" // keep IDEs happy
 
 #include "../common/common.hpp"
 
@@ -40,8 +40,8 @@ namespace Fiber
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
-StandardEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
-ResultType, GeometryFactory>::StandardEvaluatorForIntegralOperators(
+DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
+ResultType, GeometryFactory>::DefaultEvaluatorForIntegralOperators(
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
         const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
@@ -61,14 +61,14 @@ ResultType, GeometryFactory>::StandardEvaluatorForIntegralOperators(
     if (!rawGeometry->auxData().is_empty() &&
             rawGeometry->auxData().n_cols != elementCount)
         throw std::invalid_argument(
-                "StandardEvaluatorForIntegralOperators::"
-                "StandardEvaluatorForIntegralOperators(): "
+                "DefaultEvaluatorForIntegralOperators::"
+                "DefaultEvaluatorForIntegralOperators(): "
                 "number of columns of auxData must match that of "
                 "elementCornerIndices");
     if (trialBases->size() != elementCount)
         throw std::invalid_argument(
-                "StandardEvaluatorForIntegralOperators::"
-                "StandardEvaluatorForIntegralOperators(): "
+                "DefaultEvaluatorForIntegralOperators::"
+                "DefaultEvaluatorForIntegralOperators(): "
                 "size of testBases must match the number of columns of "
                 "elementCornerIndices");
 
@@ -79,7 +79,7 @@ ResultType, GeometryFactory>::StandardEvaluatorForIntegralOperators(
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
-void StandardEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
+void DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
 ResultType, GeometryFactory>::evaluate(
         Region region,
         const arma::Mat<CoordinateType>& points, arma::Mat<ResultType>& result) const
@@ -121,14 +121,14 @@ ResultType, GeometryFactory>::evaluate(
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
-void StandardEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
+void DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
 ResultType, GeometryFactory>::cacheTrialData()
 {
     size_t testGeomDeps = 0, trialGeomDeps = 0;
     m_kernels->addGeometricalDependencies(testGeomDeps, trialGeomDeps);
     if (testGeomDeps != 0 && testGeomDeps != GLOBALS)
         throw std::runtime_error(
-                "StandardEvaluatorForIntegralOperators::cacheTrialData(): "
+                "DefaultEvaluatorForIntegralOperators::cacheTrialData(): "
                 "potentials cannot contain kernels that depend on other test data "
                 "than global coordinates");
 
@@ -143,7 +143,7 @@ ResultType, GeometryFactory>::cacheTrialData()
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
-void StandardEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
+void DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
 ResultType, GeometryFactory>::calcTrialData(
         Region region,
         int kernelTrialGeomDeps,
@@ -330,7 +330,7 @@ ResultType, GeometryFactory>::calcTrialData(
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
-int StandardEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
+int DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
 ResultType, GeometryFactory>::quadOrder(
         const Basis<BasisFunctionType>& basis, Region region) const
 {
@@ -342,7 +342,7 @@ ResultType, GeometryFactory>::quadOrder(
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
-int StandardEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
+int DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
 ResultType, GeometryFactory>::farFieldQuadOrder(
         const Basis<BasisFunctionType>& basis) const
 {
@@ -361,7 +361,7 @@ ResultType, GeometryFactory>::farFieldQuadOrder(
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
-int StandardEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
+int DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
 ResultType, GeometryFactory>::nearFieldQuadOrder(
         const Basis<BasisFunctionType>& basis) const
 {

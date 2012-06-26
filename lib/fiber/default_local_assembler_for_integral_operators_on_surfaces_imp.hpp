@@ -21,7 +21,7 @@
 #include "../common/common.hpp"
 
 // Keep IDEs happy
-#include "standard_local_assembler_for_integral_operators_on_surfaces.hpp"
+#include "default_local_assembler_for_integral_operators_on_surfaces.hpp"
 
 #include "nonseparable_numerical_test_kernel_trial_integrator.hpp"
 #include "separable_numerical_test_kernel_trial_integrator.hpp"
@@ -83,9 +83,9 @@ private:
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces(
         const shared_ptr<const GeometryFactory>& testGeometryFactory,
         const shared_ptr<const GeometryFactory>& trialGeometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
@@ -123,9 +123,9 @@ StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
-~StandardLocalAssemblerForIntegralOperatorsOnSurfaces()
+~DefaultLocalAssemblerForIntegralOperatorsOnSurfaces()
 {
     // Note: obviously the destructor is assumed to be called only after
     // all threads have ceased using the assembler!
@@ -139,7 +139,7 @@ KernelType, ResultType, GeometryFactory>::
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 checkConsistencyOfGeometryAndBases(
         const RawGridGeometry<CoordinateType>& rawGeometry,
@@ -147,26 +147,26 @@ checkConsistencyOfGeometryAndBases(
 {
     if (rawGeometry.vertices().n_rows != 3)
         throw std::invalid_argument(
-            "StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
+            "DefaultLocalAssemblerForIntegralOperatorsOnSurfaces::"
             "checkConsistencyOfGeometryAndBases(): "
             "vertex coordinates must be three-dimensional");
     const size_t elementCount = rawGeometry.elementCornerIndices().n_cols;
     if (rawGeometry.elementCornerIndices().n_rows < 3 ||
             4 < rawGeometry.elementCornerIndices().n_rows)
         throw std::invalid_argument(
-            "StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
+            "DefaultLocalAssemblerForIntegralOperatorsOnSurfaces::"
             "checkConsistencyOfGeometryAndBases(): "
             "Elements must have either 3 or 4 corners");
     if (!rawGeometry.auxData().is_empty() &&
             rawGeometry.auxData().n_cols != elementCount)
         throw std::invalid_argument(
-            "StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
+            "DefaultLocalAssemblerForIntegralOperatorsOnSurfaces::"
             "checkConsistencyOfGeometryAndBases(): "
             "number of columns of auxData must match that of "
             "elementCornerIndices");
     if (bases.size() != elementCount)
         throw std::invalid_argument(
-            "StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
+            "DefaultLocalAssemblerForIntegralOperatorsOnSurfaces::"
             "checkConsistencyOfGeometryAndBases(): "
             "size of bases must match the number of columns of "
             "elementCornerIndices");
@@ -175,7 +175,7 @@ checkConsistencyOfGeometryAndBases(
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
 inline bool
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 testAndTrialGridsAreIdentical() const
 {
@@ -185,7 +185,7 @@ testAndTrialGridsAreIdentical() const
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 evaluateLocalWeakForms(
         CallVariant callVariant,
@@ -284,7 +284,7 @@ evaluateLocalWeakForms(
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 evaluateLocalWeakForms(
         const std::vector<int>& testElementIndices,
@@ -372,14 +372,14 @@ evaluateLocalWeakForms(
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 evaluateLocalWeakForms(
         const std::vector<int>& elementIndices,
         std::vector<arma::Mat<ResultType> >& result)
 {
     // This overload is mostly useful only for the identity operator
-    throw std::runtime_error("StandardLocalAssemblerForIntegralOperatorsOnSurfaces::"
+    throw std::runtime_error("DefaultLocalAssemblerForIntegralOperatorsOnSurfaces::"
                              "evaluateLocalWeakForms(): "
                              "this overload not implemented yet");
 }
@@ -387,7 +387,7 @@ evaluateLocalWeakForms(
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 cacheSingularLocalWeakForms()
 {
@@ -401,7 +401,7 @@ cacheSingularLocalWeakForms()
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 findPairsOfAdjacentElements(ElementIndexPairSet& pairs) const
 {
@@ -446,7 +446,7 @@ findPairsOfAdjacentElements(ElementIndexPairSet& pairs) const
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
 {
@@ -541,7 +541,7 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
 const TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>&
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 selectIntegrator(int testElementIndex, int trialElementIndex)
 {
@@ -576,7 +576,7 @@ selectIntegrator(int testElementIndex, int trialElementIndex)
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
 int
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 regularOrder(int elementIndex, ElementType elementType) const
 {
@@ -602,7 +602,7 @@ regularOrder(int elementIndex, ElementType elementType) const
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
 int
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 singularOrder(int elementIndex, ElementType elementType) const
 {
@@ -628,7 +628,7 @@ singularOrder(int elementIndex, ElementType elementType) const
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
 const TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>&
-StandardLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 getIntegrator(const DoubleQuadratureDescriptor& desc)
 {

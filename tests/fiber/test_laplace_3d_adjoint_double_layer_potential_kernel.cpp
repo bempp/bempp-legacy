@@ -21,7 +21,7 @@
 #include "fiber/geometrical_data.hpp"
 #include "fiber/laplace_3d_adjoint_double_layer_potential_kernel_functor.hpp"
 #include "fiber/laplace_3d_double_layer_potential_kernel_functor.hpp"
-#include "fiber/standard_collection_of_kernels.hpp"
+#include "fiber/default_collection_of_kernels.hpp"
 
 #include "../type_template.hpp"
 #include "../check_arrays_are_close.hpp"
@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_double_layer_potential,
     // Check that DLP(x, y) = ADLP(y, x)
 
     typedef Fiber::Laplace3dAdjointDoubleLayerPotentialKernelFunctor<ValueType> ADLPFunctor;
-    typedef Fiber::StandardCollectionOfKernels<ADLPFunctor> ADLPKernels;
+    typedef Fiber::DefaultCollectionOfKernels<ADLPFunctor> ADLPKernels;
     ADLPKernels adlpKernels((ADLPFunctor()));
 
     Fiber::GeometricalData<typename ADLPFunctor::CoordinateType> testGeomData, trialGeomData;
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_double_layer_potential,
     Fiber::_4dArray<ValueType>& adlpResult = adlpResults[0];
 
     typedef Fiber::Laplace3dDoubleLayerPotentialKernelFunctor<ValueType> DLPFunctor;
-    typedef Fiber::StandardCollectionOfKernels<DLPFunctor> DLPKernels;
+    typedef Fiber::DefaultCollectionOfKernels<DLPFunctor> DLPKernels;
     DLPKernels dlpKernels((DLPFunctor()));
     std::swap(testGeomData, trialGeomData);
 
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_evaluateAtPointPairs,
                               ValueType, kernel_types)
 {
     typedef Fiber::Laplace3dAdjointDoubleLayerPotentialKernelFunctor<ValueType> Functor;
-    typedef Fiber::StandardCollectionOfKernels<Functor> Kernels;
+    typedef Fiber::DefaultCollectionOfKernels<Functor> Kernels;
     Kernels kernels((Functor()));
 
     typedef Fiber::GeometricalData<typename Functor::CoordinateType> GeomData;

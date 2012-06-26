@@ -18,15 +18,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_standard_local_assembler_factory_for_operators_on_surfaces_imp_hpp
-#define fiber_standard_local_assembler_factory_for_operators_on_surfaces_imp_hpp
+#ifndef fiber_default_local_assembler_factory_for_operators_on_surfaces_imp_hpp
+#define fiber_default_local_assembler_factory_for_operators_on_surfaces_imp_hpp
 
-#include "standard_local_assembler_factory_for_operators_on_surfaces.hpp"
+#include "default_local_assembler_factory_for_operators_on_surfaces.hpp"
 
-#include "standard_local_assembler_for_identity_operator_on_surface.hpp"
-#include "standard_local_assembler_for_integral_operators_on_surfaces.hpp"
-#include "standard_local_assembler_for_grid_functions_on_surfaces.hpp"
-#include "standard_evaluator_for_integral_operators.hpp"
+#include "default_local_assembler_for_identity_operator_on_surface.hpp"
+#include "default_local_assembler_for_integral_operators_on_surfaces.hpp"
+#include "default_local_assembler_for_grid_functions_on_surfaces.hpp"
+#include "default_evaluator_for_integral_operators.hpp"
 
 #include <stdexcept>
 
@@ -35,17 +35,17 @@ namespace Fiber
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-StandardLocalAssemblerFactoryForOperatorsOnSurfacesBase<
+DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
-StandardLocalAssemblerFactoryForOperatorsOnSurfacesBase()
+DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase()
 {
 }
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-StandardLocalAssemblerFactoryForOperatorsOnSurfacesBase<
+DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
-StandardLocalAssemblerFactoryForOperatorsOnSurfacesBase(
+DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase(
         const AccuracyOptions& accuracyOptions) :
     m_accuracyOptions(accuracyOptions)
 {
@@ -54,7 +54,7 @@ StandardLocalAssemblerFactoryForOperatorsOnSurfacesBase(
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
 std::auto_ptr<LocalAssemblerForOperators<ResultType> >
-StandardLocalAssemblerFactoryForOperatorsOnSurfacesBase<
+DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForIdentityOperators(
         const shared_ptr<const GeometryFactory>& geometryFactory,
@@ -65,7 +65,7 @@ makeAssemblerForIdentityOperators(
         const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const OpenClHandler>& openClHandler) const
 {
-    typedef StandardLocalAssemblerForIdentityOperatorOnSurface<
+    typedef DefaultLocalAssemblerForIdentityOperatorOnSurface<
             BasisFunctionType, ResultType, GeometryFactory>
             LocalAssemblerForIdentityOperator_;
     return std::auto_ptr<LocalAssemblerForOperators<ResultType> >(
@@ -79,7 +79,7 @@ makeAssemblerForIdentityOperators(
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
 std::auto_ptr<LocalAssemblerForOperators<ResultType> >
-StandardLocalAssemblerFactoryForOperatorsOnSurfacesBase<
+DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForIntegralOperatorsImplRealKernel(
         const shared_ptr<const GeometryFactory>& testGeometryFactory,
@@ -97,7 +97,7 @@ makeAssemblerForIntegralOperatorsImplRealKernel(
         bool cacheSingularIntegrals) const
 {
     typedef CoordinateType KernelType;
-    typedef StandardLocalAssemblerForIntegralOperatorsOnSurfaces<
+    typedef DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
             BasisFunctionType, KernelType, ResultType, GeometryFactory>
             LocalAssemblerForIntegralOperators_;
     return std::auto_ptr<LocalAssemblerForOperators<ResultType> >(
@@ -114,7 +114,7 @@ makeAssemblerForIntegralOperatorsImplRealKernel(
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
 std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >
-StandardLocalAssemblerFactoryForOperatorsOnSurfacesBase<
+DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForGridFunctionsImplRealUserFunction(
         const shared_ptr<const GeometryFactory>& geometryFactory,
@@ -125,7 +125,7 @@ makeAssemblerForGridFunctionsImplRealUserFunction(
         const shared_ptr<const OpenClHandler>& openClHandler) const
 {
     typedef CoordinateType UserFunctionType;
-    typedef StandardLocalAssemblerForGridFunctionsOnSurfaces<
+    typedef DefaultLocalAssemblerForGridFunctionsOnSurfaces<
             BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>
             LocalAssemblerForGridFunctions_;
     return std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >(
@@ -139,7 +139,7 @@ makeAssemblerForGridFunctionsImplRealUserFunction(
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
 std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
-StandardLocalAssemblerFactoryForOperatorsOnSurfacesBase<
+DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeEvaluatorForIntegralOperatorsImplRealKernel(
         const shared_ptr<const GeometryFactory>& geometryFactory,
@@ -152,7 +152,7 @@ makeEvaluatorForIntegralOperatorsImplRealKernel(
         const shared_ptr<const OpenClHandler>& openClHandler) const
 {
     typedef CoordinateType KernelType;
-    typedef StandardEvaluatorForIntegralOperators<
+    typedef DefaultEvaluatorForIntegralOperators<
             BasisFunctionType, KernelType, ResultType, GeometryFactory>
             EvaluatorForIntegralOperators_;
     return std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >(
@@ -168,7 +168,7 @@ makeEvaluatorForIntegralOperatorsImplRealKernel(
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
 const AccuracyOptions&
-StandardLocalAssemblerFactoryForOperatorsOnSurfacesBase<
+DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 accuracyOptions() const
 {
@@ -178,18 +178,18 @@ accuracyOptions() const
 // Complex ResultType
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-StandardLocalAssemblerFactoryForOperatorsOnSurfaces<
+DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
-StandardLocalAssemblerFactoryForOperatorsOnSurfaces() :
+DefaultLocalAssemblerFactoryForOperatorsOnSurfaces() :
     Base()
 {
 }
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-StandardLocalAssemblerFactoryForOperatorsOnSurfaces<
+DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
-StandardLocalAssemblerFactoryForOperatorsOnSurfaces(
+DefaultLocalAssemblerFactoryForOperatorsOnSurfaces(
         const AccuracyOptions& accuracyOptions) :
     Base(accuracyOptions)
 {
@@ -198,7 +198,7 @@ StandardLocalAssemblerFactoryForOperatorsOnSurfaces(
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
 std::auto_ptr<LocalAssemblerForOperators<ResultType> >
-StandardLocalAssemblerFactoryForOperatorsOnSurfaces<
+DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForIntegralOperatorsImplComplexKernel(
         const shared_ptr<const GeometryFactory>& testGeometryFactory,
@@ -216,7 +216,7 @@ makeAssemblerForIntegralOperatorsImplComplexKernel(
         bool cacheSingularIntegrals) const
 {
     typedef ResultType KernelType;
-    typedef StandardLocalAssemblerForIntegralOperatorsOnSurfaces<
+    typedef DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
             BasisFunctionType, KernelType, ResultType, GeometryFactory>
             LocalAssemblerForIntegralOperators_;
     return std::auto_ptr<LocalAssemblerForOperators<ResultType> >(
@@ -233,7 +233,7 @@ makeAssemblerForIntegralOperatorsImplComplexKernel(
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
 std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >
-StandardLocalAssemblerFactoryForOperatorsOnSurfaces<
+DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForGridFunctionsImplComplexUserFunction(
         const shared_ptr<const GeometryFactory>& geometryFactory,
@@ -244,7 +244,7 @@ makeAssemblerForGridFunctionsImplComplexUserFunction(
         const shared_ptr<const OpenClHandler>& openClHandler) const
 {
     typedef ResultType UserFunctionType;
-    typedef StandardLocalAssemblerForGridFunctionsOnSurfaces<
+    typedef DefaultLocalAssemblerForGridFunctionsOnSurfaces<
             BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>
             LocalAssemblerForGridFunctions_;
     return std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >(
@@ -258,7 +258,7 @@ makeAssemblerForGridFunctionsImplComplexUserFunction(
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
 std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
-StandardLocalAssemblerFactoryForOperatorsOnSurfaces<
+DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeEvaluatorForIntegralOperatorsImplComplexKernel(
         const shared_ptr<const GeometryFactory>& geometryFactory,
@@ -271,7 +271,7 @@ makeEvaluatorForIntegralOperatorsImplComplexKernel(
         const shared_ptr<const OpenClHandler>& openClHandler) const
 {
     typedef ResultType KernelType;
-    typedef StandardEvaluatorForIntegralOperators<
+    typedef DefaultEvaluatorForIntegralOperators<
             BasisFunctionType, KernelType, ResultType, GeometryFactory>
             EvaluatorForIntegralOperators_;
     return std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >(
@@ -285,23 +285,23 @@ makeEvaluatorForIntegralOperatorsImplComplexKernel(
 }
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
-StandardLocalAssemblerFactoryForOperatorsOnSurfaces<
+DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<
         BasisFunctionType, ResultType, GeometryFactory,
         typename boost::enable_if<
         boost::is_same<ResultType,
         typename ScalarTraits<ResultType>::RealType> >::type>::
-StandardLocalAssemblerFactoryForOperatorsOnSurfaces() :
+DefaultLocalAssemblerFactoryForOperatorsOnSurfaces() :
     Base()
 {
 }
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
-StandardLocalAssemblerFactoryForOperatorsOnSurfaces<
+DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<
         BasisFunctionType, ResultType, GeometryFactory,
         typename boost::enable_if<
         boost::is_same<ResultType,
         typename ScalarTraits<ResultType>::RealType> >::type>::
-StandardLocalAssemblerFactoryForOperatorsOnSurfaces(
+DefaultLocalAssemblerFactoryForOperatorsOnSurfaces(
         const AccuracyOptions& accuracyOptions) :
     Base(accuracyOptions)
 {

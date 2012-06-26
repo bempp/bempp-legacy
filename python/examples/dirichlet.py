@@ -33,7 +33,7 @@ idOp = bempp.identityOperator(
 lhsOp = slpOp
 rhsOp = -0.5 * idOp + dlpOp
 
-factory = bempp.standardLocalAssemblerFactoryForOperatorsOnSurfaces()
+factory = bempp.defaultLocalAssemblerFactoryForOperatorsOnSurfaces()
 options = bempp.AssemblyOptions()
 options.switchToAca(bempp.AcaOptions())
 print "Assembling LHS operator..."

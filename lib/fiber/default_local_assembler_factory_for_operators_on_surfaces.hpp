@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_standard_local_assembler_factory_for_operators_on_surfaces_hpp
-#define fiber_standard_local_assembler_factory_for_operators_on_surfaces_hpp
+#ifndef fiber_default_local_assembler_factory_for_operators_on_surfaces_hpp
+#define fiber_default_local_assembler_factory_for_operators_on_surfaces_hpp
 
 #include "../common/common.hpp"
 
@@ -32,7 +32,7 @@ namespace Fiber
 
 template <typename BasisFunctionType, typename ResultType,
 typename GeometryFactory, typename Enable>
-class StandardLocalAssemblerFactoryForOperatorsOnSurfacesBase :
+class DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase :
         public LocalAssemblerFactory<BasisFunctionType, ResultType,
         GeometryFactory, Enable>
 {   
@@ -42,10 +42,10 @@ public:
     typedef typename Base::CoordinateType CoordinateType;
 
     /** \brief Construct a local assembler factory with default accuracy settings. */
-    StandardLocalAssemblerFactoryForOperatorsOnSurfacesBase();
+    DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase();
 
     /** \brief Construct a local assembler factory with specified accuracy settings. */
-    explicit StandardLocalAssemblerFactoryForOperatorsOnSurfacesBase(
+    explicit DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase(
             const AccuracyOptions& accuracyOptions);
 
 public:
@@ -106,20 +106,20 @@ private:
 // Complex ResultType
 template <typename BasisFunctionType, typename ResultType,
 typename GeometryFactory, typename Enable = void>
-class StandardLocalAssemblerFactoryForOperatorsOnSurfaces :
-        public StandardLocalAssemblerFactoryForOperatorsOnSurfacesBase<
+class DefaultLocalAssemblerFactoryForOperatorsOnSurfaces :
+        public DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase<
         BasisFunctionType, ResultType, GeometryFactory, Enable>
 {
-    typedef StandardLocalAssemblerFactoryForOperatorsOnSurfacesBase<
+    typedef DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase<
     BasisFunctionType, ResultType, GeometryFactory, Enable> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
     /** \brief Construct a local assembler factory with default accuracy settings. */
-    StandardLocalAssemblerFactoryForOperatorsOnSurfaces();
+    DefaultLocalAssemblerFactoryForOperatorsOnSurfaces();
 
     /** \brief Construct a local assembler factory with specified accuracy settings. */
-    explicit StandardLocalAssemblerFactoryForOperatorsOnSurfaces(
+    explicit DefaultLocalAssemblerFactoryForOperatorsOnSurfaces(
             const AccuracyOptions& accuracyOptions);
 
 private:
@@ -162,24 +162,24 @@ private:
 
 // RealResultType
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
-class StandardLocalAssemblerFactoryForOperatorsOnSurfaces<
+class DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<
     BasisFunctionType, ResultType, GeometryFactory,
     typename boost::enable_if<boost::is_same<ResultType, typename ScalarTraits<ResultType>::RealType> >::type> :
-        public StandardLocalAssemblerFactoryForOperatorsOnSurfacesBase<
+        public DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase<
             BasisFunctionType, ResultType, GeometryFactory,
             typename boost::enable_if<boost::is_same<ResultType, typename ScalarTraits<ResultType>::RealType> >::type>
 {
     typedef typename boost::enable_if<boost::is_same<ResultType, typename ScalarTraits<ResultType>::RealType> >::type Enable;
-    typedef StandardLocalAssemblerFactoryForOperatorsOnSurfacesBase<
+    typedef DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase<
     BasisFunctionType, ResultType, GeometryFactory, Enable> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
     /** \brief Construct a local assembler factory with default accuracy settings. */
-    StandardLocalAssemblerFactoryForOperatorsOnSurfaces();
+    DefaultLocalAssemblerFactoryForOperatorsOnSurfaces();
 
     /** \brief Construct a local assembler factory with specified accuracy settings. */
-    explicit StandardLocalAssemblerFactoryForOperatorsOnSurfaces(
+    explicit DefaultLocalAssemblerFactoryForOperatorsOnSurfaces(
             const AccuracyOptions& accuracyOptions);
 };
 

@@ -27,9 +27,9 @@
 #include "../fiber/modified_helmholtz_3d_hypersingular_transformation_functor.hpp"
 #include "../fiber/modified_helmholtz_3d_hypersingular_integrand_functor.hpp"
 
-#include "../fiber/standard_collection_of_kernels.hpp"
-#include "../fiber/standard_collection_of_basis_transformations.hpp"
-#include "../fiber/standard_test_kernel_trial_integral.hpp"
+#include "../fiber/default_collection_of_kernels.hpp"
+#include "../fiber/default_collection_of_basis_transformations.hpp"
+#include "../fiber/default_test_kernel_trial_integral.hpp"
 
 //    m_expressionList.addTerm(m_surfaceCurl);
 //    m_expressionList.addTerm(m_valueTimesNormal, KernelType(0., 1.) * waveNumber);
@@ -59,10 +59,10 @@ struct Helmholtz3dHypersingularBoundaryOperatorImpl
         integral(IntegrandFunctor(waveNumber / KernelType(0., 1.)))
     {}
 
-    Fiber::StandardCollectionOfKernels<KernelFunctor> kernels;
-    Fiber::StandardCollectionOfBasisTransformations<TransformationFunctor>
+    Fiber::DefaultCollectionOfKernels<KernelFunctor> kernels;
+    Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
     transformations;
-    Fiber::StandardTestKernelTrialIntegral<IntegrandFunctor> integral;
+    Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor> integral;
 };
 
 template <typename BasisFunctionType>

@@ -22,7 +22,7 @@
 
 
 // Keep IDEs happy
-#include "standard_local_assembler_for_identity_operator_on_surface.hpp"
+#include "default_local_assembler_for_identity_operator_on_surface.hpp"
 
 #include <boost/tuple/tuple_comparison.hpp>
 
@@ -30,8 +30,8 @@ namespace Fiber
 {
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
-StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
-StandardLocalAssemblerForIdentityOperatorOnSurface(
+DefaultLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
+DefaultLocalAssemblerForIdentityOperatorOnSurface(
     const shared_ptr<const GeometryFactory>& geometryFactory,
     const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
     const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
@@ -53,33 +53,33 @@ StandardLocalAssemblerForIdentityOperatorOnSurface(
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
+DefaultLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
 checkConsistencyOfGeometryAndBases(
         const RawGridGeometry<CoordinateType>& rawGeometry,
         const std::vector<const Basis<BasisFunctionType>*>& bases) const
 {
     if (rawGeometry.vertices().n_rows != 3)
         throw std::invalid_argument(
-            "StandardLocalAssemblerForIdentityOperatorOnSurface::"
+            "DefaultLocalAssemblerForIdentityOperatorOnSurface::"
             "checkConsistencyOfGeometryAndBases(): "
             "vertex coordinates must be three-dimensional");
     const size_t elementCount = rawGeometry.elementCornerIndices().n_cols;
     if (rawGeometry.elementCornerIndices().n_rows < 3 ||
             4 < rawGeometry.elementCornerIndices().n_rows)
         throw std::invalid_argument(
-            "StandardLocalAssemblerForIdentityOperatorOnSurface::"
+            "DefaultLocalAssemblerForIdentityOperatorOnSurface::"
             "checkConsistencyOfGeometryAndBases(): "
             "Elements must have either 3 or 4 corners");
     if (!rawGeometry.auxData().is_empty() &&
             rawGeometry.auxData().n_cols != elementCount)
         throw std::invalid_argument(
-            "StandardLocalAssemblerForIdentityOperatorOnSurface::"
+            "DefaultLocalAssemblerForIdentityOperatorOnSurface::"
             "checkConsistencyOfGeometryAndBases(): "
             "number of columns of auxData must match that of "
             "elementCornerIndices");
     if (bases.size() != elementCount)
         throw std::invalid_argument(
-            "StandardLocalAssemblerForIdentityOperatorOnSurface::"
+            "DefaultLocalAssemblerForIdentityOperatorOnSurface::"
             "checkConsistencyOfGeometryAndBases(): "
             "size of bases must match the number of columns of "
             "elementCornerIndices");
@@ -87,7 +87,7 @@ checkConsistencyOfGeometryAndBases(
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
+DefaultLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
 evaluateLocalWeakForms(
     CallVariant callVariant,
     const std::vector<int>& elementIndicesA,
@@ -96,28 +96,28 @@ evaluateLocalWeakForms(
     std::vector<arma::Mat<ResultType> >& result)
 {
     // Probably will never be called
-    throw std::runtime_error("StandardLocalAssemblerForIdentityOperatorOnSurface::"
+    throw std::runtime_error("DefaultLocalAssemblerForIdentityOperatorOnSurface::"
                              "evaluateLocalWeakForms(): "
                              "this overload not implemented yet");
 }
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
+DefaultLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
 evaluateLocalWeakForms(
     const std::vector<int>& testElementIndices,
     const std::vector<int>& trialElementIndices,
     Fiber::_2dArray<arma::Mat<ResultType> >& result)
 {
     // Probably will never be called
-    throw std::runtime_error("StandardLocalAssemblerForIdentityOperatorOnSurface::"
+    throw std::runtime_error("DefaultLocalAssemblerForIdentityOperatorOnSurface::"
                              "evaluateLocalWeakForms(): "
                              "this overload not implemented yet");
 }
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
+DefaultLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
 evaluateLocalWeakForms(
     const std::vector<int>& elementIndices,
     std::vector<arma::Mat<ResultType> >& result)
@@ -182,7 +182,7 @@ evaluateLocalWeakForms(
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 const TestTrialIntegrator<BasisFunctionType, ResultType>&
-StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
+DefaultLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
 selectIntegrator(int elementIndex)
 {
     SingleQuadratureDescriptor desc;
@@ -201,7 +201,7 @@ selectIntegrator(int elementIndex)
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 const TestTrialIntegrator<BasisFunctionType, ResultType>&
-StandardLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
+DefaultLocalAssemblerForIdentityOperatorOnSurface<BasisFunctionType, ResultType, GeometryFactory>::
 getIntegrator(const SingleQuadratureDescriptor& desc)
 {
     typename IntegratorMap::iterator it = m_testTrialIntegrators.find(desc);

@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_standard_local_assembler_for_integral_operators_on_surfaces_hpp
-#define fiber_standard_local_assembler_for_integral_operators_on_surfaces_hpp
+#ifndef fiber_default_local_assembler_for_integral_operators_on_surfaces_hpp
+#define fiber_default_local_assembler_for_integral_operators_on_surfaces_hpp
 
 #include "../common/common.hpp"
 
@@ -53,13 +53,13 @@ template <typename CoordinateType> class RawGridGeometry;
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
-class StandardLocalAssemblerForIntegralOperatorsOnSurfaces :
+class DefaultLocalAssemblerForIntegralOperatorsOnSurfaces :
         public LocalAssemblerForOperators<ResultType>
 {
 public:
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    StandardLocalAssemblerForIntegralOperatorsOnSurfaces(
+    DefaultLocalAssemblerForIntegralOperatorsOnSurfaces(
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
@@ -74,7 +74,7 @@ public:
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals,
             const AccuracyOptions& accuracyOptions);
-    virtual ~StandardLocalAssemblerForIntegralOperatorsOnSurfaces();
+    virtual ~DefaultLocalAssemblerForIntegralOperatorsOnSurfaces();
 
 public:
     virtual void evaluateLocalWeakForms(
@@ -146,6 +146,6 @@ private:
 
 } // namespace Fiber
 
-#include "standard_local_assembler_for_integral_operators_on_surfaces_imp.hpp"
+#include "default_local_assembler_for_integral_operators_on_surfaces_imp.hpp"
 
 #endif

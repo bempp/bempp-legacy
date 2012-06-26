@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_functor_wrappers_for_standard_collection_of_basis_transformations_hpp
-#define fiber_functor_wrappers_for_standard_collection_of_basis_transformations_hpp
+#ifndef fiber_functor_wrappers_for_default_collection_of_basis_transformations_hpp
+#define fiber_functor_wrappers_for_default_collection_of_basis_transformations_hpp
 
 #include "basis_data.hpp"
 #include "geometrical_data.hpp"

@@ -18,36 +18,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_standard_local_assembler_factory_for_operators_on_surfaces_hpp
-#define bempp_standard_local_assembler_factory_for_operators_on_surfaces_hpp
+#include "default_local_assembler_factory_for_operators_on_surfaces.hpp"
 
-#include "../common/common.hpp"
-
-#include "../fiber/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
-#include "../grid/geometry_factory.hpp"
+#include "../fiber/explicit_instantiation.hpp"
+#include "../fiber/default_local_assembler_factory_for_operators_on_surfaces_imp.hpp"
 
 namespace Bempp
 {
 
-using Fiber::AccuracyOptions;
+template <typename BasisFunctionType, typename ResultType>
+DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<BasisFunctionType, ResultType>::
+DefaultLocalAssemblerFactoryForOperatorsOnSurfaces() :
+    Base()
+{
+}
 
 template <typename BasisFunctionType, typename ResultType>
-class StandardLocalAssemblerFactoryForOperatorsOnSurfaces :
-        public Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<
-        BasisFunctionType, ResultType, GeometryFactory>
+DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<BasisFunctionType, ResultType>::
+DefaultLocalAssemblerFactoryForOperatorsOnSurfaces(
+        const AccuracyOptions& accuracyOptions) :
+    Base(accuracyOptions)
 {
-private:
-    typedef Fiber::StandardLocalAssemblerFactoryForOperatorsOnSurfaces<
-    BasisFunctionType, ResultType, GeometryFactory> Base;
-public:
-    /** \brief Construct a local assembler factory with default accuracy settings. */
-    StandardLocalAssemblerFactoryForOperatorsOnSurfaces();
+}
 
-    /** \brief Construct a local assembler factory with specified accuracy settings. */
-    explicit StandardLocalAssemblerFactoryForOperatorsOnSurfaces(
-            const AccuracyOptions& accuracyOptions);
-};
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(
+        DefaultLocalAssemblerFactoryForOperatorsOnSurfaces);
 
 } // namespace Bempp
-
-#endif

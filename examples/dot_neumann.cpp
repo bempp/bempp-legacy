@@ -26,7 +26,7 @@
 #include "assembly/assembly_options.hpp"
 #include "assembly/discrete_boundary_operator.hpp"
 #include "assembly/grid_function.hpp"
-#include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
+#include "assembly/default_local_assembler_factory_for_operators_on_surfaces.hpp"
 
 #include "assembly/identity_operator.hpp"
 #include "assembly/modified_helmholtz_3d_single_layer_boundary_operator.hpp"
@@ -129,7 +129,7 @@ int main(int argc, char* argv[])
 
     // Define the standard integration factory
 
-    StandardLocalAssemblerFactoryForOperatorsOnSurfaces<BFT, RT> factory;
+    DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<BFT, RT> factory;
 
     // We need the single layer, double layer, and the identity operator
 

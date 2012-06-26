@@ -15,7 +15,7 @@ space = bempp.piecewiseConstantScalarSpace(grid)
 space.assignDofs()
 ops = bempp.AssemblyOptions()
 
-factory = bempp.standardLocalAssemblerFactoryForOperatorsOnSurfaces()
+factory = bempp.defaultLocalAssemblerFactoryForOperatorsOnSurfaces()
 f = bempp.gridFunctionFromSurfaceNormalIndependentFunction(
     space, space, fun, factory, ops)
 

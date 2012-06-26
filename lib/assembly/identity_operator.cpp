@@ -36,7 +36,7 @@
 #include "../fiber/opencl_handler.hpp"
 #include "../fiber/raw_grid_geometry.hpp"
 #include "../fiber/scalar_function_value_functor.hpp"
-#include "../fiber/standard_collection_of_basis_transformations.hpp"
+#include "../fiber/default_collection_of_basis_transformations.hpp"
 #include "../grid/entity_iterator.hpp"
 #include "../grid/geometry_factory.hpp"
 #include "../grid/grid.hpp"
@@ -150,7 +150,7 @@ struct IdentityOperator<BasisFunctionType, ResultType>::Impl
     Impl() : transformations(TransformationFunctor())
     {}
 
-    Fiber::StandardCollectionOfBasisTransformations<TransformationFunctor>
+    Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
     transformations;
 };
 

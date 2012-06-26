@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "standard_test_kernel_trial_integral.hpp"
+#include "default_test_kernel_trial_integral.hpp"
 
 #include "geometrical_data.hpp"
 
@@ -28,7 +28,7 @@ namespace Fiber
 {
 
 template <typename IntegrandFunctor>
-void StandardTestKernelTrialIntegral<IntegrandFunctor>::
+void DefaultTestKernelTrialIntegral<IntegrandFunctor>::
 addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const
 {
     testGeomDeps |= INTEGRATION_ELEMENTS;
@@ -38,7 +38,7 @@ addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const
 }
 
 template <typename IntegrandFunctor>
-void StandardTestKernelTrialIntegral<IntegrandFunctor>::
+void DefaultTestKernelTrialIntegral<IntegrandFunctor>::
 evaluateWithTensorQuadratureRule(
         const GeometricalData<CoordinateType>& testGeomData,
         const GeometricalData<CoordinateType>& trialGeomData,
@@ -91,7 +91,7 @@ evaluateWithTensorQuadratureRule(
 }
 
 template <typename IntegrandFunctor>
-void StandardTestKernelTrialIntegral<IntegrandFunctor>::
+void DefaultTestKernelTrialIntegral<IntegrandFunctor>::
 evaluateWithNontensorQuadratureRule(
         const GeometricalData<CoordinateType>& testGeomData,
         const GeometricalData<CoordinateType>& trialGeomData,

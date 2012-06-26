@@ -20,7 +20,7 @@
 
 #include "fiber/geometrical_data.hpp"
 #include "fiber/laplace_3d_double_layer_potential_kernel_functor.hpp"
-#include "fiber/standard_collection_of_kernels.hpp"
+#include "fiber/default_collection_of_kernels.hpp"
 
 #include "../type_template.hpp"
 #include "../check_arrays_are_close.hpp"
@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_x_axis,
                               ValueType, kernel_types)
 {
     typedef Fiber::Laplace3dDoubleLayerPotentialKernelFunctor<ValueType> Functor;
-    typedef Fiber::StandardCollectionOfKernels<Functor> Kernels;
+    typedef Fiber::DefaultCollectionOfKernels<Functor> Kernels;
     Kernels kernels((Functor()));
 
     Fiber::GeometricalData<typename Functor::CoordinateType>
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_y_axis,
                               ValueType, kernel_types)
 {
     typedef Fiber::Laplace3dDoubleLayerPotentialKernelFunctor<ValueType> Functor;
-    typedef Fiber::StandardCollectionOfKernels<Functor> Kernels;
+    typedef Fiber::DefaultCollectionOfKernels<Functor> Kernels;
     Kernels kernels((Functor()));
 
     Fiber::GeometricalData<typename Functor::CoordinateType>
@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_evaluateAtPointPairs,
                               ValueType, kernel_types)
 {
     typedef Fiber::Laplace3dDoubleLayerPotentialKernelFunctor<ValueType> Functor;
-    typedef Fiber::StandardCollectionOfKernels<Functor> Kernels;
+    typedef Fiber::DefaultCollectionOfKernels<Functor> Kernels;
     Kernels kernels((Functor()));
 
     typedef Fiber::GeometricalData<typename Functor::CoordinateType> GeomData;

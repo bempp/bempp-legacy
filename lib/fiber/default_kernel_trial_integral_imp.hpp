@@ -18,10 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_standard_standard_kernel_trial_integral_imp_hpp
-#define fiber_standard_standard_kernel_trial_integral_imp_hpp
+#ifndef fiber_default_default_kernel_trial_integral_imp_hpp
+#define fiber_default_default_kernel_trial_integral_imp_hpp
 
-#include "standard_kernel_trial_integral.hpp"
+#include "default_kernel_trial_integral.hpp"
 
 #include "geometrical_data.hpp"
 
@@ -52,20 +52,20 @@ public:
 */
 
 template <typename IntegrandFunctor>
-void StandardKernelTrialIntegral<IntegrandFunctor>::
+void DefaultKernelTrialIntegral<IntegrandFunctor>::
 addGeometricalDependencies(size_t& trialGeomDeps) const
 {
     m_functor.addGeometricalDependencies(trialGeomDeps);
 }
 
 template <typename IntegrandFunctor>
-int StandardKernelTrialIntegral<IntegrandFunctor>::resultDimension() const
+int DefaultKernelTrialIntegral<IntegrandFunctor>::resultDimension() const
 {
     return m_functor.resultDimension();
 }
 
 template <typename IntegrandFunctor>
-void StandardKernelTrialIntegral<IntegrandFunctor>::evaluate(
+void DefaultKernelTrialIntegral<IntegrandFunctor>::evaluate(
         const GeometricalData<CoordinateType>& trialGeomData,
         const CollectionOf4dArrays<KernelType>& kernels,
         const CollectionOf2dArrays<ResultType>& weightedTrialTransformations,

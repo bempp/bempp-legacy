@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_standard_collection_of_basis_transformations_hpp
-#define fiber_standard_collection_of_basis_transformations_hpp
+#ifndef fiber_default_collection_of_basis_transformations_hpp
+#define fiber_default_collection_of_basis_transformations_hpp
 
 #include "collection_of_basis_transformations.hpp"
 
@@ -47,7 +47,7 @@ public:
 */
 
 template <typename Functor>
-class StandardCollectionOfBasisTransformations :
+class DefaultCollectionOfBasisTransformations :
         public CollectionOfBasisTransformations<typename Functor::CoordinateType>
 {
     typedef CollectionOfBasisTransformations<typename Functor::CoordinateType>
@@ -56,7 +56,7 @@ public:
     typedef typename Base::CoordinateType CoordinateType;
     typedef typename Base::ComplexType ComplexType;
 
-    explicit StandardCollectionOfBasisTransformations(const Functor& functor) :
+    explicit DefaultCollectionOfBasisTransformations(const Functor& functor) :
         m_functor(functor)
     {}
 
@@ -88,6 +88,6 @@ private:
 
 } // namespace Fiber
 
-#include "standard_collection_of_basis_transformations_imp.hpp"
+#include "default_collection_of_basis_transformations_imp.hpp"
 
 #endif

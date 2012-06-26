@@ -26,7 +26,7 @@
 #include "../assembly/assembly_options.hpp"
 #include "../assembly/discrete_dense_boundary_operator.hpp"
 #include "../assembly/identity_operator.hpp"
-#include "../assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
+#include "../assembly/default_local_assembler_factory_for_operators_on_surfaces.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -81,7 +81,7 @@ assembleOperatorsInDenseMode() const
 
     IdentityOperator<BasisFunctionType, ResultType> id(m_space, m_space, m_dualSpace);
     AssemblyOptions assemblyOptions;
-    StandardLocalAssemblerFactoryForOperatorsOnSurfaces<
+    DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<
             BasisFunctionType, ResultType> factory;
     id.assembleWeakForm(factory, assemblyOptions);
     result->massMatrix = id.weakForm();
@@ -115,7 +115,7 @@ assembleOperatorsInSparseMode() const
 
     // Construct the mass matrix
     IdentityOperator<BasisFunctionType, ResultType> id(m_space, m_space, m_dualSpace);
-    StandardLocalAssemblerFactoryForOperatorsOnSurfaces<
+    DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<
             BasisFunctionType, ResultType> factory;
     AssemblyOptions assemblyOptions;
     // This effectively switches to sparse mode

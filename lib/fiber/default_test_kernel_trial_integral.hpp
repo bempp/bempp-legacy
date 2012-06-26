@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_standard_test_kernel_trial_integral_hpp
-#define fiber_standard_test_kernel_trial_integral_hpp
+#ifndef fiber_default_test_kernel_trial_integral_hpp
+#define fiber_default_test_kernel_trial_integral_hpp
 
 #include "test_kernel_trial_integral.hpp"
 
@@ -88,7 +88,7 @@ void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) con
   \todo Perhaps implement IntegrandFunctor using the curiously recurring template pattern.
  */
 template <typename IntegrandFunctor>
-class StandardTestKernelTrialIntegral :
+class DefaultTestKernelTrialIntegral :
         public TestKernelTrialIntegral<
         typename IntegrandFunctor::BasisFunctionType,
         typename IntegrandFunctor::KernelType,
@@ -105,7 +105,7 @@ public:
     typedef typename Base::KernelType KernelType;
     typedef typename Base::ResultType ResultType;
 
-    explicit StandardTestKernelTrialIntegral(const IntegrandFunctor& functor) :
+    explicit DefaultTestKernelTrialIntegral(const IntegrandFunctor& functor) :
         m_functor(functor)
     {}
 
@@ -137,6 +137,6 @@ private:
 
 } // namespace Fiber
 
-#include "standard_test_kernel_trial_integral_imp.hpp"
+#include "default_test_kernel_trial_integral_imp.hpp"
 
 #endif

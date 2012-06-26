@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 // Keep IDEs happy
-#include "standard_local_assembler_for_grid_functions_on_surfaces.hpp"
+#include "default_local_assembler_for_grid_functions_on_surfaces.hpp"
 
 #include "../common/common.hpp"
 
@@ -33,9 +33,9 @@ namespace Fiber
 
 template <typename BasisFunctionType, typename UserFunctionType,
           typename ResultType, typename GeometryFactory>
-StandardLocalAssemblerForGridFunctionsOnSurfaces<
+DefaultLocalAssemblerForGridFunctionsOnSurfaces<
 BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
-StandardLocalAssemblerForGridFunctionsOnSurfaces(
+DefaultLocalAssemblerForGridFunctionsOnSurfaces(
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
         const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
@@ -51,36 +51,36 @@ StandardLocalAssemblerForGridFunctionsOnSurfaces(
 {
     if (rawGeometry->vertices().n_rows != 3)
         throw std::invalid_argument(
-                "StandardLocalAssemblerForGridFunctionsOnSurfaces::"
-                "StandardLocalAssemblerForGridFunctionsOnSurfaces(): "
+                "DefaultLocalAssemblerForGridFunctionsOnSurfaces::"
+                "DefaultLocalAssemblerForGridFunctionsOnSurfaces(): "
                 "vertex coordinates must be three-dimensional");
     if (rawGeometry->elementCornerIndices().n_rows < 3 ||
             4 < rawGeometry->elementCornerIndices().n_rows)
         throw std::invalid_argument(
-                "StandardLocalAssemblerForGridFunctionsOnSurfaces::"
-                "StandardLocalAssemblerForGridFunctionsOnSurfaces(): "
+                "DefaultLocalAssemblerForGridFunctionsOnSurfaces::"
+                "DefaultLocalAssemblerForGridFunctionsOnSurfaces(): "
                 "all elements must be triangular or quadrilateral");
     const size_t elementCount = rawGeometry->elementCornerIndices().n_cols;
     if (!rawGeometry->auxData().is_empty() &&
             rawGeometry->auxData().n_cols != elementCount)
         throw std::invalid_argument(
-                "StandardLocalAssemblerForGridFunctionsOnSurfaces::"
-                "StandardLocalAssemblerForGridFunctionsOnSurfaces(): "
+                "DefaultLocalAssemblerForGridFunctionsOnSurfaces::"
+                "DefaultLocalAssemblerForGridFunctionsOnSurfaces(): "
                 "number of columns of auxData must match that of "
                 "elementCornerIndices");
     if (testBases->size() != elementCount)
         throw std::invalid_argument(
-                "StandardLocalAssemblerForGridFunctionsOnSurfaces::"
-                "StandardLocalAssemblerForGridFunctionsOnSurfaces(): "
+                "DefaultLocalAssemblerForGridFunctionsOnSurfaces::"
+                "DefaultLocalAssemblerForGridFunctionsOnSurfaces(): "
                 "size of testBases must match the number of columns of "
                 "elementCornerIndices");
 }
 
 template <typename BasisFunctionType, typename UserFunctionType,
           typename ResultType, typename GeometryFactory>
-StandardLocalAssemblerForGridFunctionsOnSurfaces<
+DefaultLocalAssemblerForGridFunctionsOnSurfaces<
 BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
-~StandardLocalAssemblerForGridFunctionsOnSurfaces()
+~DefaultLocalAssemblerForGridFunctionsOnSurfaces()
 {
     // Note: obviously the destructor is assumed to be called only after
     // all threads have ceased using the assembler!
@@ -94,7 +94,7 @@ BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
 template <typename BasisFunctionType, typename UserFunctionType,
           typename ResultType, typename GeometryFactory>
 void
-StandardLocalAssemblerForGridFunctionsOnSurfaces<
+DefaultLocalAssemblerForGridFunctionsOnSurfaces<
 BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
 evaluateLocalWeakForms(
         const std::vector<int>& elementIndices,
@@ -162,7 +162,7 @@ evaluateLocalWeakForms(
 template <typename BasisFunctionType, typename UserFunctionType,
           typename ResultType, typename GeometryFactory>
 const TestFunctionIntegrator<BasisFunctionType, ResultType>&
-StandardLocalAssemblerForGridFunctionsOnSurfaces<
+DefaultLocalAssemblerForGridFunctionsOnSurfaces<
 BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
 selectIntegrator(int elementIndex)
 {
@@ -181,7 +181,7 @@ selectIntegrator(int elementIndex)
 template <typename BasisFunctionType, typename UserFunctionType,
           typename ResultType, typename GeometryFactory>
 const TestFunctionIntegrator<BasisFunctionType, ResultType>&
-StandardLocalAssemblerForGridFunctionsOnSurfaces<
+DefaultLocalAssemblerForGridFunctionsOnSurfaces<
 BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
 getIntegrator(const SingleQuadratureDescriptor& desc)
 {
@@ -226,7 +226,7 @@ getIntegrator(const SingleQuadratureDescriptor& desc)
 template <typename BasisFunctionType, typename UserFunctionType,
           typename ResultType, typename GeometryFactory>
 inline int
-StandardLocalAssemblerForGridFunctionsOnSurfaces<
+DefaultLocalAssemblerForGridFunctionsOnSurfaces<
 BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
 orderIncrement(int elementIndex) const
 {

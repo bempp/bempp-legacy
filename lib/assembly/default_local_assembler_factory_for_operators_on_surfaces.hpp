@@ -18,30 +18,36 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "standard_local_assembler_factory_for_operators_on_surfaces.hpp"
+#ifndef bempp_default_local_assembler_factory_for_operators_on_surfaces_hpp
+#define bempp_default_local_assembler_factory_for_operators_on_surfaces_hpp
 
-#include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/standard_local_assembler_factory_for_operators_on_surfaces_imp.hpp"
+#include "../common/common.hpp"
+
+#include "../fiber/default_local_assembler_factory_for_operators_on_surfaces.hpp"
+#include "../grid/geometry_factory.hpp"
 
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename ResultType>
-StandardLocalAssemblerFactoryForOperatorsOnSurfaces<BasisFunctionType, ResultType>::
-StandardLocalAssemblerFactoryForOperatorsOnSurfaces() :
-    Base()
-{
-}
+using Fiber::AccuracyOptions;
 
 template <typename BasisFunctionType, typename ResultType>
-StandardLocalAssemblerFactoryForOperatorsOnSurfaces<BasisFunctionType, ResultType>::
-StandardLocalAssemblerFactoryForOperatorsOnSurfaces(
-        const AccuracyOptions& accuracyOptions) :
-    Base(accuracyOptions)
+class DefaultLocalAssemblerFactoryForOperatorsOnSurfaces :
+        public Fiber::DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<
+        BasisFunctionType, ResultType, GeometryFactory>
 {
-}
+private:
+    typedef Fiber::DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<
+    BasisFunctionType, ResultType, GeometryFactory> Base;
+public:
+    /** \brief Construct a local assembler factory with default accuracy settings. */
+    DefaultLocalAssemblerFactoryForOperatorsOnSurfaces();
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(
-        StandardLocalAssemblerFactoryForOperatorsOnSurfaces);
+    /** \brief Construct a local assembler factory with specified accuracy settings. */
+    explicit DefaultLocalAssemblerFactoryForOperatorsOnSurfaces(
+            const AccuracyOptions& accuracyOptions);
+};
 
 } // namespace Bempp
+
+#endif

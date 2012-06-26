@@ -20,7 +20,7 @@ print space.dofsAssigned()
 op = bempp.laplace3dSingleLayerBoundaryOperator(space, space, space)
 print "operator has a singular kernel?", not op.isRegular()
 
-factory = bempp.standardLocalAssemblerFactoryForOperatorsOnSurfaces()
+factory = bempp.defaultLocalAssemblerFactoryForOperatorsOnSurfaces()
 options = bempp.AssemblyOptions()
 options.switchToAca(bempp.AcaOptions())
 op.assembleWeakForm(factory, options)

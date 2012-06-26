@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_standard_collection_of_kernels_hpp
-#define fiber_standard_collection_of_kernels_hpp
+#ifndef fiber_default_collection_of_kernels_hpp
+#define fiber_default_collection_of_kernels_hpp
 
 #include "collection_of_kernels.hpp"
 
@@ -49,7 +49,7 @@ public:
 */
 
 template <typename Functor>
-class StandardCollectionOfKernels :
+class DefaultCollectionOfKernels :
         public CollectionOfKernels<typename Functor::ValueType>
 {
     typedef CollectionOfKernels<typename Functor::ValueType> Base;
@@ -57,7 +57,7 @@ public:
     typedef typename Base::ValueType ValueType;
     typedef typename Base::CoordinateType CoordinateType;
 
-    explicit StandardCollectionOfKernels(const Functor& functor) :
+    explicit DefaultCollectionOfKernels(const Functor& functor) :
         m_functor(functor)
     {}
 
@@ -90,6 +90,6 @@ private:
 
 } // namespace Fiber
 
-#include "standard_collection_of_kernels_imp.hpp"
+#include "default_collection_of_kernels_imp.hpp"
 
 #endif

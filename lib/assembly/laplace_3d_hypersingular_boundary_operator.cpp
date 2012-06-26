@@ -27,9 +27,9 @@
 #include "../fiber/surface_curl_3d_functor.hpp"
 #include "../fiber/simple_test_scalar_kernel_trial_integrand_functor.hpp"
 
-#include "../fiber/standard_collection_of_kernels.hpp"
-#include "../fiber/standard_collection_of_basis_transformations.hpp"
-#include "../fiber/standard_test_kernel_trial_integral.hpp"
+#include "../fiber/default_collection_of_kernels.hpp"
+#include "../fiber/default_collection_of_basis_transformations.hpp"
+#include "../fiber/default_test_kernel_trial_integral.hpp"
 
 namespace Bempp
 {
@@ -55,10 +55,10 @@ struct Laplace3dHypersingularBoundaryOperatorImpl
         integral(IntegrandFunctor())
     {}
 
-    Fiber::StandardCollectionOfKernels<KernelFunctor> kernels;
-    Fiber::StandardCollectionOfBasisTransformations<TransformationFunctor>
+    Fiber::DefaultCollectionOfKernels<KernelFunctor> kernels;
+    Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
     transformations;
-    Fiber::StandardTestKernelTrialIntegral<IntegrandFunctor> integral;
+    Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor> integral;
 };
 
 template <typename BasisFunctionType, typename ResultType>

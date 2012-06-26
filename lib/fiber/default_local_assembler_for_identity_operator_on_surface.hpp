@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_standard_local_assembler_for_identity_operator_on_surface_hpp
-#define fiber_standard_local_assembler_for_identity_operator_on_surface_hpp
+#ifndef fiber_default_local_assembler_for_identity_operator_on_surface_hpp
+#define fiber_default_local_assembler_for_identity_operator_on_surface_hpp
 
 #include "../common/common.hpp"
 
@@ -44,13 +44,13 @@ namespace Fiber
 class OpenClHandler;
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
-class StandardLocalAssemblerForIdentityOperatorOnSurface :
+class DefaultLocalAssemblerForIdentityOperatorOnSurface :
     public LocalAssemblerForOperators<ResultType>
 {
 public:
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    StandardLocalAssemblerForIdentityOperatorOnSurface(
+    DefaultLocalAssemblerForIdentityOperatorOnSurface(
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
         const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
@@ -103,6 +103,6 @@ private:
 
 } // namespace Fiber
 
-#include "standard_local_assembler_for_identity_operator_on_surface_imp.hpp"
+#include "default_local_assembler_for_identity_operator_on_surface_imp.hpp"
 
 #endif

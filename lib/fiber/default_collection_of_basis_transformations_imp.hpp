@@ -18,34 +18,34 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "standard_collection_of_basis_transformations.hpp"
+#include "default_collection_of_basis_transformations.hpp"
 
 namespace Fiber
 {
 
 template <typename Functor>
-void StandardCollectionOfBasisTransformations<Functor>::addDependencies(
+void DefaultCollectionOfBasisTransformations<Functor>::addDependencies(
         size_t& basisDeps, size_t& geomDeps) const
 {
     m_functor.addDependencies(basisDeps, geomDeps);
 }
 
 template <typename Functor>
-int StandardCollectionOfBasisTransformations<Functor>::
+int DefaultCollectionOfBasisTransformations<Functor>::
 transformationCount() const
 {
     return m_functor.transformationCount();
 }
 
 template <typename Functor>
-int StandardCollectionOfBasisTransformations<Functor>::
+int DefaultCollectionOfBasisTransformations<Functor>::
 argumentDimension() const
 {
     return m_functor.argumentDimension();
 }
 
 template <typename Functor>
-int StandardCollectionOfBasisTransformations<Functor>::
+int DefaultCollectionOfBasisTransformations<Functor>::
 resultDimension(int transformationIndex) const
 {
     return m_functor.resultDimension(transformationIndex);
@@ -53,7 +53,7 @@ resultDimension(int transformationIndex) const
 
 template <typename Functor>
 template <typename ValueType>
-void StandardCollectionOfBasisTransformations<Functor>::evaluateImpl(
+void DefaultCollectionOfBasisTransformations<Functor>::evaluateImpl(
         const BasisData<ValueType>& basisData,
         const GeometricalData<CoordinateType>& geomData,
         CollectionOf3dArrays<ValueType>& result) const
@@ -75,7 +75,7 @@ void StandardCollectionOfBasisTransformations<Functor>::evaluateImpl(
 }
 
 template <typename Functor>
-void StandardCollectionOfBasisTransformations<Functor>::evaluateImplReal(
+void DefaultCollectionOfBasisTransformations<Functor>::evaluateImplReal(
                 const BasisData<CoordinateType>& basisData,
                 const GeometricalData<CoordinateType>& geomData,
                 CollectionOf3dArrays<CoordinateType>& result) const
@@ -84,7 +84,7 @@ void StandardCollectionOfBasisTransformations<Functor>::evaluateImplReal(
 }
 
 template <typename Functor>
-void StandardCollectionOfBasisTransformations<Functor>::evaluateImplComplex(
+void DefaultCollectionOfBasisTransformations<Functor>::evaluateImplComplex(
                 const BasisData<ComplexType>& basisData,
                 const GeometricalData<CoordinateType>& geomData,
                 CollectionOf3dArrays<ComplexType>& result) const

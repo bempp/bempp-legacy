@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_standard_evaluator_for_integral_operators_hpp
-#define fiber_standard_evaluator_for_integral_operators_hpp
+#ifndef fiber_default_evaluator_for_integral_operators_hpp
+#define fiber_default_evaluator_for_integral_operators_hpp
 
 #include "../common/common.hpp"
 
@@ -44,7 +44,7 @@ class OpenClHandler;
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
-class StandardEvaluatorForIntegralOperators :
+class DefaultEvaluatorForIntegralOperators :
         public EvaluatorForIntegralOperators<ResultType>
 {
 public:
@@ -52,7 +52,7 @@ public:
     typedef typename Base::CoordinateType CoordinateType;
     typedef typename Base::Region Region;
 
-    StandardEvaluatorForIntegralOperators(
+    DefaultEvaluatorForIntegralOperators(
             const shared_ptr<const GeometryFactory >& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
@@ -98,6 +98,6 @@ private:
 
 } // namespace Fiber
 
-#include "standard_evaluator_for_integral_operators_imp.hpp"
+#include "default_evaluator_for_integral_operators_imp.hpp"
 
 #endif

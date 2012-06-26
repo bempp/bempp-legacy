@@ -21,7 +21,7 @@
 #include "scalar_space.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/scalar_function_value_functor.hpp"
-#include "../fiber/standard_collection_of_basis_transformations.hpp"
+#include "../fiber/default_collection_of_basis_transformations.hpp"
 
 namespace Bempp
 {
@@ -35,7 +35,7 @@ struct ScalarSpace<BasisFunctionType>::Impl
     Impl() : transformations(TransformationFunctor())
     {}
 
-    Fiber::StandardCollectionOfBasisTransformations<TransformationFunctor>
+    Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
     transformations;
 };
 

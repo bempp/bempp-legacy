@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_standard_local_assembler_for_grid_functions_on_surfaces_hpp
-#define fiber_standard_local_assembler_for_grid_functions_on_surfaces_hpp
+#ifndef fiber_default_local_assembler_for_grid_functions_on_surfaces_hpp
+#define fiber_default_local_assembler_for_grid_functions_on_surfaces_hpp
 
 #include "../common/common.hpp"
 
@@ -41,20 +41,20 @@ template <typename CoordinateType> class RawGridGeometry;
 
 template <typename BasisFunctionType, typename UserFunctionType,
           typename ResultType, typename GeometryFactory>
-class StandardLocalAssemblerForGridFunctionsOnSurfaces :
+class DefaultLocalAssemblerForGridFunctionsOnSurfaces :
         public LocalAssemblerForGridFunctions<ResultType>
 {    
 public:
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    StandardLocalAssemblerForGridFunctionsOnSurfaces(
+    DefaultLocalAssemblerForGridFunctionsOnSurfaces(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
             const shared_ptr<const Function<UserFunctionType> >& function,
             const shared_ptr<const OpenClHandler>& openClHandler);
-    virtual ~StandardLocalAssemblerForGridFunctionsOnSurfaces();
+    virtual ~DefaultLocalAssemblerForGridFunctionsOnSurfaces();
 
 public:
     virtual void evaluateLocalWeakForms(
@@ -87,6 +87,6 @@ private:
 
 } // namespace Fiber
 
-#include "standard_local_assembler_for_grid_functions_on_surfaces_imp.hpp"
+#include "default_local_assembler_for_grid_functions_on_surfaces_imp.hpp"
 
 #endif
