@@ -12,12 +12,12 @@
     MACRO(std::complex<double> , complex128)
 %enddef // BEMPP_ITERATE_OVER_BASIS_TYPES
 
-%define BEMPP_ITERATE_OVER_BASIS_RESULT_TYPES(MACRO)
+%define BEMPP_ITERATE_OVER_BASIS_AND_RESULT_TYPES(MACRO)
     MACRO(float, float, float32, float32)
     MACRO(float, std::complex<float> , float32, complex64)
     MACRO(std::complex<float> , std::complex<float> , complex64, complex64)
     MACRO(double, double, float64, float64)
     MACRO(double, std::complex<double> , float64, complex128)
     MACRO(std::complex<double> , std::complex<double> , complex128, complex128)
-%enddef // BEMPP_ITERATE_OVER_BASIS_RESULT_TYPES
+%enddef // BEMPP_ITERATE_OVER_BASIS_AND_RESULT_TYPES
 
