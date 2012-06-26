@@ -1,7 +1,8 @@
 %{
-#include "assembly/helmholtz_3d_single_layer_potential.hpp"
-#include "assembly/helmholtz_3d_double_layer_potential.hpp"
-#include "assembly/helmholtz_3d_adjoint_double_layer_potential.hpp"
+#include "assembly/helmholtz_3d_operator_base.hpp"
+#include "assembly/helmholtz_3d_single_layer_potential_operator.hpp"
+#include "assembly/helmholtz_3d_double_layer_potential_operator.hpp"
+#include "assembly/helmholtz_3d_adjoint_double_layer_potential_operator.hpp"
 #include "assembly/helmholtz_3d_hypersingular_operator.hpp"
 %}
 
@@ -10,130 +11,88 @@
 
 namespace Bempp
 {
-BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dSingleLayerPotential);
-BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dDoubleLayerPotential);
-BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dAdjointDoubleLayerPotential);
-BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dHypersingularOperator);
 
-// Workaround for SWIG being unable to decipher
-// "typename ScalarTraits<...>::ComplexType"
-
-%extend Helmholtz3dSingleLayerPotential
-{
-    Helmholtz3dSingleLayerPotential(
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace,
-        const std::complex<double>& waveNumber) {
-            return new Bempp::Helmholtz3dSingleLayerPotential<BasisFunctionType >(
-                testSpace, trialSpace,
-                static_cast<Bempp::Helmholtz3dSingleLayerPotential<BasisFunctionType >::KernelType>(waveNumber));
-        }
-}
-
-%extend Helmholtz3dSingleLayerPotential
-{
-    %ignore Helmholtz3dSingleLayerPotential;
-}
-
-%extend Helmholtz3dDoubleLayerPotential
-{
-    Helmholtz3dDoubleLayerPotential(
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace,
-        const std::complex<double>& waveNumber) {
-            return new Bempp::Helmholtz3dDoubleLayerPotential<BasisFunctionType >(
-                testSpace, trialSpace,
-                static_cast<Bempp::Helmholtz3dDoubleLayerPotential<BasisFunctionType >::KernelType>(waveNumber));
-        }
-}
-
-%extend Helmholtz3dDoubleLayerPotential
-{
-    %ignore Helmholtz3dDoubleLayerPotential;
-}
-
-%extend Helmholtz3dAdjointDoubleLayerPotential
-{
-    Helmholtz3dAdjointDoubleLayerPotential(
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace,
-        const std::complex<double>& waveNumber) {
-            return new Bempp::Helmholtz3dAdjointDoubleLayerPotential<BasisFunctionType >(
-                testSpace, trialSpace,
-                static_cast<Bempp::Helmholtz3dAdjointDoubleLayerPotential<BasisFunctionType >::KernelType>(waveNumber));
-        }
-}
-
-%extend Helmholtz3dAdjointDoubleLayerPotential
-{
-    %ignore Helmholtz3dAdjointDoubleLayerPotential;
-}
-
-%extend Helmholtz3dHypersingularOperator
-{
-    Helmholtz3dHypersingularOperator(
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace,
-        const std::complex<double>& waveNumber) {
-            return new Bempp::Helmholtz3dHypersingularOperator<BasisFunctionType >(
-                testSpace, trialSpace,
-                static_cast<Bempp::Helmholtz3dHypersingularOperator<BasisFunctionType >::KernelType>(waveNumber));
-        }
-}
-
-%extend Helmholtz3dHypersingularOperator
-{
-    %ignore Helmholtz3dHypersingularOperator;
-}
+%extend Helmholtz3dSingleLayerPotentialOperator { %ignore clone; }
+%extend Helmholtz3dDoubleLayerPotentialOperator { %ignore clone; }
+%extend Helmholtz3dAdjointDoubleLayerPotentialOperator { %ignore clone; }
+%extend Helmholtz3dHypersingularOperator { %ignore clone; }
 
 } // namespace Bempp
 
-%include "assembly/helmholtz_3d_single_layer_potential.hpp"
-%include "assembly/helmholtz_3d_double_layer_potential.hpp"
-%include "assembly/helmholtz_3d_adjoint_double_layer_potential.hpp"
+%include "assembly/helmholtz_3d_operator_base.hpp"
+%include "assembly/helmholtz_3d_single_layer_potential_operator.hpp"
+%include "assembly/helmholtz_3d_double_layer_potential_operator.hpp"
+%include "assembly/helmholtz_3d_adjoint_double_layer_potential_operator.hpp"
 %include "assembly/helmholtz_3d_hypersingular_operator.hpp"
+
+%define BEMPP_INSTANTIATE_HELMHOLTZ_3D_BASE(BASIS, PY_BASIS)
+    %template(Helmholtz3dOperatorBase_Single_ ## _ ## PY_BASIS)
+        Helmholtz3dOperatorBase<
+        Helmholtz3dSingleLayerPotentialOperatorImpl< BASIS >, BASIS >;
+
+    %template(Helmholtz3dOperatorBase_Double_ ## _ ## PY_BASIS)
+        Helmholtz3dOperatorBase<
+        Helmholtz3dDoubleLayerPotentialOperatorImpl< BASIS >, BASIS >;
+
+    %template(Helmholtz3dOperatorBase_AdjointDouble_ ## _ ## PY_BASIS)
+        Helmholtz3dOperatorBase<
+        Helmholtz3dAdjointDoubleLayerPotentialOperatorImpl< BASIS >, BASIS >;
+
+    %template(Helmholtz3dOperatorBase_Hypersingular_ ## _ ## PY_BASIS)
+        Helmholtz3dOperatorBase<
+        Helmholtz3dHypersingularOperatorImpl< BASIS >, BASIS >;
+%enddef
 
 namespace Bempp
 {
 
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(Helmholtz3dSingleLayerPotential);
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(Helmholtz3dDoubleLayerPotential);
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(Helmholtz3dAdjointDoubleLayerPotential);
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(Helmholtz3dHypersingularOperator);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(
+    Helmholtz3dSingleLayerPotentialOperatorImpl);
+BEMPP_ITERATE_OVER_BASIS_TYPES(BEMPP_INSTANTIATE_HELMHOLTZ_3D_BASE);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(
+    Helmholtz3dSingleLayerPotentialOperator);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(
+    Helmholtz3dDoubleLayerPotentialOperator);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(
+    Helmholtz3dAdjointDoubleLayerPotentialOperator);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(
+    Helmholtz3dHypersingularOperator);
 
 } // namespace Bempp
 
 %pythoncode %{
 
-def _constructHelmholtzOperator(className, testSpace, trialSpace, waveNumber):
-    basisFunctionType = testSpace.basisFunctionType()
-    if (basisFunctionType != trialSpace.basisFunctionType()):
-        raise TypeError("BasisFunctionType of testSpace must match that of trialSpace")
+def _constructHelmholtzOperator(className, domain, range, dualToRange, waveNumber):
+    basisFunctionType = domain.basisFunctionType()
+    if (basisFunctionType != range.basisFunctionType() or
+            basisFunctionType != dualToRange.basisFunctionType()):
+        raise TypeError("BasisFunctionType of all spaces must be the same")
     resultType = promoteTypeToComplex(basisFunctionType)
     result = constructObjectTemplatedOnBasis(
-        className, basisFunctionType, testSpace, trialSpace, waveNumber)
-    result._testSpace = testSpace
-    result._trialSpace = trialSpace
+        className, basisFunctionType, domain, range, dualToRange, waveNumber)
+    result._domain = domain
+    result._range = range
+    result._dualToRange = dualToRange
     return result
 
-def helmholtz3dSingleLayerPotential(testSpace, trialSpace, waveNumber):
+def helmholtz3dSingleLayerPotentialOperator(domain, range, dualToRange, waveNumber):
     """Construct a single-layer-potential operator for the Helmholtz equation in 3D."""
     return _constructHelmholtzOperator(
-        "Helmholtz3dSingleLayerPotential", testSpace, trialSpace, waveNumber)
+        "Helmholtz3dSingleLayerPotentialOperator", domain, range, dualToRange, waveNumber)
 
-def helmholtz3dDoubleLayerPotential(testSpace, trialSpace, waveNumber):
+def helmholtz3dDoubleLayerPotentialOperator(domain, range, dualToRange, waveNumber):
     """Construct a double-layer-potential operator for the Helmholtz equation in 3D."""
     return _constructHelmholtzOperator(
-        "Helmholtz3dDoubleLayerPotential", testSpace, trialSpace, waveNumber)
+        "Helmholtz3dDoubleLayerPotentialOperator", domain, range, dualToRange, waveNumber)
 
-def helmholtz3dAdjointDoubleLayerPotential(testSpace, trialSpace, waveNumber):
+def helmholtz3dAdjointDoubleLayerPotentialOperator(domain, range, dualToRange, waveNumber):
     """Construct an adjoint double-layer-potential operator for the Helmholtz equation in 3D."""
     return _constructHelmholtzOperator(
-        "Helmholtz3dAdjointDoubleLayerPotential", testSpace, trialSpace, waveNumber)
+        "Helmholtz3dAdjointDoubleLayerPotentialOperator", domain, range, dualToRange, waveNumber)
 
-def helmholtz3dHypersingularOperator(testSpace, trialSpace, waveNumber):
+def helmholtz3dHypersingularOperator(domain, range, dualToRange, waveNumber):
     """Construct a hypersingular operator for the Helmholtz equation in 3D."""
     return _constructHelmholtzOperator(
-        "Helmholtz3dHypersingularOperator", testSpace, trialSpace, waveNumber)
+        "Helmholtz3dHypersingularOperator", domain, range, dualToRange, waveNumber)
 
 %}
