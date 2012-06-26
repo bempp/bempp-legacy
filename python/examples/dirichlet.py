@@ -58,4 +58,4 @@ neumann_data.exportToVtk(bempp.VtkWriter.VERTEX_DATA,
 neumann_data.exportToVtk(bempp.VtkWriter.CELL_DATA,
     "neumann_data", "neumann_data_cell")
 
-neumann_data.plot(mode=bempp.VtkWriter.CELL_DATA)
+neumann_data.plot(data_type="VERTEX_DATA")

@@ -64,7 +64,7 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
 
     %pythoncode %{
 
-def plot(self,mode=VtkWriter.VERTEX_DATA,realImag='real'):
+def plot(self,data_type="CELL_DATA",transformation='real'):
     """Plot a grid function in a VTK Window"""
 
     import numpy
@@ -75,25 +75,32 @@ def plot(self,mode=VtkWriter.VERTEX_DATA,realImag='real'):
         print "The Python VTK bindings needs to be installed for this method!"
         return
 
-    if not mode in [VtkWriter.VERTEX_DATA, VtkWriter.CELL_DATA]:
-        raise ValueError('Unknown mode specified. Valid modes are bempp.VtkWriter.VERTEX_DATA and bempp.VtkWriter.CELL_DATA!')
+    if not data_type in ["VERTEX_DATA", "CELL_DATA"]:
+        raise ValueError("Unknown mode specified. Valid modes are 'VERTEX_DATA' and 'CELL_DATA'!")
 
-    if not realImag in ['real', 'imag']:
-        raise ValueError("Unknown value for 'realImag'. It needs to be either 'real' or 'imag'!")
+    if not hasattr(transformation, '__call__'):
+        if transformation=='real':
+            data_transform = lambda x:numpy.real(x)
+        elif transformation=='imag':
+            data_transform = lambda x:numpy.imag(x)
+        elif transformation=='abs':
+            data_transform = lambda x:numpy.abs(x)
+        else:
+            raise ValueError("Unknown value for 'transformation'. It needs to be 'real', 'imag', 'abs' or a Python Callable!")
+    else:
+        data_transform = transformation
 
+    data_transform = numpy.vectorize(data_transform)
 
     polyGrid = self.grid().getVtkGrid()
-    if mode==VtkWriter.VERTEX_DATA:
+    if data_type=="VERTEX_DATA":
         values = self.evaluateAtSpecialPoints(VtkWriter.VERTEX_DATA).flatten()
         vtk_data = polyGrid.GetPointData()
-    elif mode==VtkWriter.CELL_DATA:
+    elif data_type=="CELL_DATA":
         values = self.evaluateAtSpecialPoints(VtkWriter.CELL_DATA).flatten()
         vtk_data = polyGrid.GetCellData()
 
-    if realImag=='real':
-        values = numpy.real(values)
-    else:
-        values = numpy.imag(values)
+    values = data_transform(values)
 
     count = len(values)
     vtk_array = vtk.vtkDoubleArray()
