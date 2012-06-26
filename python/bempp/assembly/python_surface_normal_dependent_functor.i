@@ -1,10 +1,3 @@
-%{
-#include "assembly/surface_normal_dependent_functor.hpp"
-#include "common/scalar_traits.hpp"
-#include <armadillo>
-%}
-
-
 %typemap(in) PyObject *pyfunc {
     if (!PyCallable_Check($input)) {
         PyErr_SetString(PyExc_TypeError, "Callable object expected!");
