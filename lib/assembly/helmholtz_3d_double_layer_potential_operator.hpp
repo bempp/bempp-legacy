@@ -21,9 +21,7 @@
 #ifndef bempp_helmholtz_3d_double_layer_potential_operator_hpp
 #define bempp_helmholtz_3d_double_layer_potential_operator_hpp
 
-#include "helmholtz_3d_operator_base.hpp"
-
-#include <boost/scoped_ptr.hpp>
+#include "helmholtz_3d_potential_operator_base.hpp"
 
 namespace Bempp
 {
@@ -32,7 +30,7 @@ template <typename BasisFunctionType>
 struct Helmholtz3dDoubleLayerPotentialOperatorImpl;
 
 /** \ingroup helmholtz_3d
- *  \brief Double-layer-potential operator for the Helmholtz equation in 3D.
+ *  \brief Double-layer-potential for the Helmholtz equation in 3D.
  *
  *  \tparam BasisFunctionType
  *    Type used to represent the values of basis functions. It can take the
@@ -42,13 +40,14 @@ struct Helmholtz3dDoubleLayerPotentialOperatorImpl;
  *  \see helmholtz_3d */
 template <typename BasisFunctionType_>
 class Helmholtz3dDoubleLayerPotentialOperator :
-        public Helmholtz3dOperatorBase<
-                Helmholtz3dDoubleLayerPotentialOperatorImpl<BasisFunctionType_>,
-                BasisFunctionType_>
+        public Helmholtz3dPotentialOperatorBase<
+        Helmholtz3dDoubleLayerPotentialOperatorImpl<BasisFunctionType_>,
+        BasisFunctionType_>
 {
-    typedef Helmholtz3dOperatorBase<
+    typedef Helmholtz3dPotentialOperatorBase<
     Helmholtz3dDoubleLayerPotentialOperatorImpl<BasisFunctionType_>,
-    BasisFunctionType_> Base;
+    BasisFunctionType_>
+    Base;
 public:
     typedef typename Base::BasisFunctionType BasisFunctionType;
     typedef typename Base::KernelType KernelType;
@@ -57,24 +56,14 @@ public:
     typedef typename Base::CollectionOfBasisTransformations
     CollectionOfBasisTransformations;
     typedef typename Base::CollectionOfKernels CollectionOfKernels;
-    typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
+    typedef typename Base::KernelTrialIntegral KernelTrialIntegral;
 
-    /** \brief Construct the operator.
+    /** \brief Construct the potential.
      *
-     * \param testSpace Test function space.
-     * \param trialSpace Trial function space.
      * \param waveNumber Wave number.
      *
      * See \ref helmholtz_3d for the definition of the wave number. */
-    Helmholtz3dDoubleLayerPotentialOperator(
-            const Space<BasisFunctionType>& domain,
-            const Space<BasisFunctionType>& range,
-            const Space<BasisFunctionType>& dualToRange,
-            KernelType waveNumber,
-            const std::string& label = "");
-
-    virtual std::auto_ptr<LinearOperator<BasisFunctionType_, ResultType> >
-    clone() const;
+    Helmholtz3dDoubleLayerPotentialOperator(KernelType waveNumber);
 };
 
 } // namespace Bempp

@@ -24,16 +24,16 @@
 #include "meshes.hpp"
 
 #include "assembly/assembly_options.hpp"
-#include "assembly/discrete_linear_operator.hpp"
+#include "assembly/discrete_boundary_operator.hpp"
 #include "assembly/evaluation_options.hpp"
 #include "assembly/grid_function.hpp"
 #include "assembly/interpolated_function.hpp"
-#include "assembly/linear_operator_sum.hpp"
+#include "assembly/boundary_operator_sum.hpp"
 #include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 
 #include "assembly/identity_operator.hpp"
-#include "assembly/laplace_3d_single_layer_potential_operator.hpp"
-#include "assembly/laplace_3d_double_layer_potential_operator.hpp"
+#include "assembly/laplace_3d_single_layer_boundary_operator.hpp"
+#include "assembly/laplace_3d_double_layer_boundary_operator.hpp"
 
 #include "common/scalar_traits.hpp"
 
@@ -115,17 +115,17 @@ int main(int argc, char* argv[])
 
     // We need the single layer, double layer, and the identity operator
 
-    Laplace3dSingleLayerPotentialOperator<BFT, RT> slpOp(
+    Laplace3dSingleLayerBoundaryOperator<BFT, RT> slpOp(
                 HminusHalfSpace, HplusHalfSpace, HplusHalfSpace);
-    Laplace3dDoubleLayerPotentialOperator<BFT, RT> dlpOp(
+    Laplace3dDoubleLayerBoundaryOperator<BFT, RT> dlpOp(
                 HplusHalfSpace, HplusHalfSpace, HplusHalfSpace);
     IdentityOperator<BFT, RT> id(
                 HplusHalfSpace, HplusHalfSpace, HplusHalfSpace);
 
     // Define the operators standing on the left- and right-hand side
 
-    LinearOperatorSum<BFT, RT> lhsOp = -0.5 * id + dlpOp;
-    LinearOperator<BFT, RT>& rhsOp = slpOp;
+    BoundaryOperatorSum<BFT, RT> lhsOp = -0.5 * id + dlpOp;
+    BoundaryOperator<BFT, RT>& rhsOp = slpOp;
 
     // Assemble the operators
 

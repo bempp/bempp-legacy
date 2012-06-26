@@ -23,7 +23,7 @@
 //#include "mass_matrix_container.hpp"
 //#include "mass_matrix_container_initialiser.hpp"
 
-//#include "../assembly/discrete_linear_operator.hpp"
+//#include "../assembly/discrete_boundary_operator.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 

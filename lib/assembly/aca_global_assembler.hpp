@@ -40,7 +40,7 @@ namespace Bempp
 {
 
 class AssemblyOptions;
-template <typename ValueType> class DiscreteLinearOperator;
+template <typename ValueType> class DiscreteBoundaryOperator;
 template <typename BasisFunctionType> class Space;
 
 template <typename BasisFunctionType, typename ResultType>
@@ -49,7 +49,7 @@ class AcaGlobalAssembler
     typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
 
 public:
-    typedef DiscreteLinearOperator<ResultType> DiscreteLinOp;
+    typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
     typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
 
     static std::auto_ptr<DiscreteLinOp> assembleDetachedWeakForm(

@@ -19,17 +19,17 @@
 // THE SOFTWARE.
 
 #include "helmholtz_3d_double_layer_potential_operator.hpp"
-#include "helmholtz_3d_operator_base_imp.hpp"
+#include "helmholtz_3d_potential_operator_base_imp.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 
 #include "../fiber/modified_helmholtz_3d_double_layer_potential_kernel_functor.hpp"
 #include "../fiber/scalar_function_value_functor.hpp"
-#include "../fiber/simple_test_scalar_kernel_trial_integrand_functor.hpp"
+#include "../fiber/simple_scalar_kernel_trial_integrand_functor.hpp"
 
 #include "../fiber/standard_collection_of_kernels.hpp"
 #include "../fiber/standard_collection_of_basis_transformations.hpp"
-#include "../fiber/standard_test_kernel_trial_integral.hpp"
+#include "../fiber/standard_kernel_trial_integral.hpp"
 
 namespace Bempp
 {
@@ -37,20 +37,21 @@ namespace Bempp
 template <typename BasisFunctionType>
 struct Helmholtz3dDoubleLayerPotentialOperatorImpl
 {
-    typedef Helmholtz3dDoubleLayerPotentialOperatorImpl<BasisFunctionType> This;
-    typedef Helmholtz3dOperatorBase<This, BasisFunctionType> OperatorBase;
-    typedef typename OperatorBase::CoordinateType CoordinateType;
-    typedef typename OperatorBase::KernelType KernelType;
-    typedef typename OperatorBase::ResultType ResultType;
+    typedef Helmholtz3dDoubleLayerPotentialOperatorImpl<BasisFunctionType>
+    This;
+    typedef Helmholtz3dPotentialOperatorBase<This, BasisFunctionType> PotentialOperatorBase;
+    typedef typename PotentialOperatorBase::KernelType KernelType;
+    typedef typename PotentialOperatorBase::ResultType ResultType;
+    typedef typename PotentialOperatorBase::CoordinateType CoordinateType;
 
     typedef Fiber::ModifiedHelmholtz3dDoubleLayerPotentialKernelFunctor<KernelType>
     KernelFunctor;
     typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
     TransformationFunctor;
-    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
+    typedef Fiber::SimpleScalarKernelTrialIntegrandFunctor<
     BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
 
-    explicit Helmholtz3dDoubleLayerPotentialOperatorImpl(KernelType waveNumber) :
+    Helmholtz3dDoubleLayerPotentialOperatorImpl(KernelType waveNumber) :
         kernels(KernelFunctor(waveNumber / KernelType(0., 1.))),
         transformations(TransformationFunctor()),
         integral(IntegrandFunctor())
@@ -59,36 +60,16 @@ struct Helmholtz3dDoubleLayerPotentialOperatorImpl
     Fiber::StandardCollectionOfKernels<KernelFunctor> kernels;
     Fiber::StandardCollectionOfBasisTransformations<TransformationFunctor>
     transformations;
-    Fiber::StandardTestKernelTrialIntegral<IntegrandFunctor> integral;
+    Fiber::StandardKernelTrialIntegral<IntegrandFunctor> integral;
 };
 
 template <typename BasisFunctionType>
 Helmholtz3dDoubleLayerPotentialOperator<BasisFunctionType>::
-Helmholtz3dDoubleLayerPotentialOperator(
-        const Space<BasisFunctionType>& domain,
-        const Space<BasisFunctionType>& range,
-        const Space<BasisFunctionType>& dualToRange,
-        KernelType waveNumber,
-        const std::string& label) :
-    Base(domain, range, dualToRange, waveNumber, label)
+Helmholtz3dDoubleLayerPotentialOperator(KernelType waveNumber) :
+    Base(waveNumber)
 {
 }
 
-template <typename BasisFunctionType>
-std::auto_ptr<LinearOperator<BasisFunctionType,
-typename Helmholtz3dDoubleLayerPotentialOperator<BasisFunctionType>::ResultType> >
-Helmholtz3dDoubleLayerPotentialOperator<BasisFunctionType>::
-clone() const
-{
-    typedef LinearOperator<BasisFunctionType, ResultType> LinOp;
-    typedef Helmholtz3dDoubleLayerPotentialOperator<BasisFunctionType> This;
-    return std::auto_ptr<LinOp>(new This(*this));
-}
-
-#define INSTANTIATE_BASE(BASIS) \
-    template class Helmholtz3dOperatorBase< \
-    Helmholtz3dDoubleLayerPotentialOperatorImpl<BASIS>, BASIS>
-FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_BASE);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dDoubleLayerPotentialOperator);
 
 } // namespace Bempp

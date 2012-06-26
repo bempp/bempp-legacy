@@ -21,7 +21,7 @@
 #ifndef bempp_laplace_3d_single_layer_potential_operator_hpp
 #define bempp_laplace_3d_single_layer_potential_operator_hpp
 
-#include "laplace_3d_operator_base.hpp"
+#include "laplace_3d_potential_operator_base.hpp"
 
 namespace Bempp
 {
@@ -30,30 +30,30 @@ template <typename BasisFunctionType, typename ResultType>
 struct Laplace3dSingleLayerPotentialOperatorImpl;
 
 /** \ingroup laplace_3d
- *  \brief Single-layer-potential operator for the Laplace equation in 3D.
+ *  \brief Single-layer-potential for the Laplace equation in 3D.
  *
  *  \tparam BasisFunctionType
  *    Type used to represent the values of basis functions.
  *  \tparam ResultType
- *    Type used to represent entries in the discrete form of the operator.
+ *    Type used to represent values of the potential.
  *
  *  Both template parameters can take the following values: \c float, \c
  *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
  *  Both types must have the same precision: for instance, mixing \c float with
  *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType
  *  is by default set to \p BasisFunctionType. You should override that only if
- *  you set \p BasisFunctionType to a real type, but you want the entries of
- *  the operator's weak form to be stored as complex numbers.
+ *  you set \p BasisFunctionType to a real type, but you want the values of the
+ *  potential to be stored as complex numbers.
  *
  *  \see laplace_3d */
 template <typename BasisFunctionType_, typename ResultType_ = BasisFunctionType_>
 class Laplace3dSingleLayerPotentialOperator :
-        public Laplace3dOperatorBase<
+        public Laplace3dPotentialOperatorBase<
         Laplace3dSingleLayerPotentialOperatorImpl<BasisFunctionType_, ResultType_>,
         BasisFunctionType_,
         ResultType_>
 {
-    typedef Laplace3dOperatorBase<
+    typedef Laplace3dPotentialOperatorBase<
     Laplace3dSingleLayerPotentialOperatorImpl<BasisFunctionType_, ResultType_>,
     BasisFunctionType_,
     ResultType_>
@@ -66,16 +66,9 @@ public:
     typedef typename Base::CollectionOfBasisTransformations
     CollectionOfBasisTransformations;
     typedef typename Base::CollectionOfKernels CollectionOfKernels;
-    typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
+    typedef typename Base::KernelTrialIntegral KernelTrialIntegral;
 
-    Laplace3dSingleLayerPotentialOperator(
-            const Space<BasisFunctionType>& domain,
-            const Space<BasisFunctionType>& range,
-            const Space<BasisFunctionType>& dualToRange,
-            const std::string& label = "");
-
-    virtual std::auto_ptr<LinearOperator<BasisFunctionType_, ResultType_> >
-    clone() const;
+    Laplace3dSingleLayerPotentialOperator();
 };
 
 } // namespace Bempp

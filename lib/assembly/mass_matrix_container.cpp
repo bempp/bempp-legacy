@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 #include "mass_matrix_container.hpp"
-#include "../assembly/discrete_linear_operator.hpp"
+#include "../assembly/discrete_boundary_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 namespace Bempp

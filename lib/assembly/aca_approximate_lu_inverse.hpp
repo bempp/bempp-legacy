@@ -25,7 +25,7 @@
 #include "../common/common.hpp"
 
 #include "config_trilinos.hpp"
-#include "discrete_linear_operator.hpp"
+#include "discrete_boundary_operator.hpp"
 
 #include "ahmed_aux_fwd.hpp"
 #include "index_permutation.hpp"
@@ -39,10 +39,10 @@ namespace Bempp
 {
 
 template <typename ValueType>
-class DiscreteAcaLinearOperator;
+class DiscreteAcaBoundaryOperator;
 
 template <typename ValueType>
-class AcaApproximateLuInverse : public DiscreteLinearOperator<ValueType>
+class AcaApproximateLuInverse : public DiscreteBoundaryOperator<ValueType>
 {
 public:
     typedef typename Fiber::ScalarTraits<ValueType>::RealType MagnitudeType;
@@ -53,7 +53,7 @@ public:
     \param[in] delta  Requested approximation accuracy (M. Bebendorf recommends
                       delta = 0.1). */
     AcaApproximateLuInverse(
-            const DiscreteAcaLinearOperator<ValueType>& fwdOp,
+            const DiscreteAcaBoundaryOperator<ValueType>& fwdOp,
             MagnitudeType delta);
 
     virtual ~AcaApproximateLuInverse();

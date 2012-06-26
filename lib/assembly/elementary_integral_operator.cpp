@@ -23,7 +23,7 @@
 
 #include "aca_global_assembler.hpp"
 #include "assembly_options.hpp"
-#include "discrete_dense_linear_operator.hpp"
+#include "discrete_dense_boundary_operator.hpp"
 #include "evaluation_options.hpp"
 #include "grid_function.hpp"
 #include "interpolated_function.hpp"
@@ -188,7 +188,7 @@ makeAssemblerImpl(
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-shared_ptr<DiscreteLinearOperator<ResultType> >
+shared_ptr<DiscreteBoundaryOperator<ResultType> >
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 assembleWeakFormImpl(
         const LocalAssemblerFactory& factory,
@@ -201,7 +201,7 @@ assembleWeakFormImpl(
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-shared_ptr<DiscreteLinearOperator<ResultType> >
+shared_ptr<DiscreteBoundaryOperator<ResultType> >
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 assembleWeakFormInternalImpl(
         LocalAssembler& assembler,
@@ -210,11 +210,11 @@ assembleWeakFormInternalImpl(
 {
     switch (options.operatorRepresentation()) {
     case AssemblyOptions::DENSE:
-        return shared_ptr<DiscreteLinearOperator<ResultType> >(
+        return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
                     assembleWeakFormInDenseMode(
                         assembler, options, symmetry).release());
     case AssemblyOptions::ACA:
-        return shared_ptr<DiscreteLinearOperator<ResultType> >(
+        return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
                     assembleWeakFormInAcaMode(
                         assembler, options, symmetry).release());
     case AssemblyOptions::FMM:
@@ -229,7 +229,7 @@ assembleWeakFormInternalImpl(
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-std::auto_ptr<DiscreteLinearOperator<ResultType> >
+std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 assembleWeakFormInDenseMode(
         LocalAssembler& assembler,
@@ -307,12 +307,12 @@ assembleWeakFormInDenseMode(
 
     // Create and return a discrete operator represented by the matrix that
     // has just been calculated
-    return std::auto_ptr<DiscreteLinearOperator<ResultType> >(
-                new DiscreteDenseLinearOperator<ResultType>(result));
+    return std::auto_ptr<DiscreteBoundaryOperator<ResultType> >(
+                new DiscreteDenseBoundaryOperator<ResultType>(result));
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-std::auto_ptr<DiscreteLinearOperator<ResultType> >
+std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 assembleWeakFormInAcaMode(
         LocalAssembler& assembler,

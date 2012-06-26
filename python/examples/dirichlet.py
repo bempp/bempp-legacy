@@ -23,9 +23,9 @@ pwiseLinears = bempp.piecewiseLinearContinuousScalarSpace(grid)
 pwiseConstants.assignDofs()
 pwiseLinears.assignDofs()
 
-slpOp = bempp.laplace3dSingleLayerPotentialOperator(
+slpOp = bempp.laplace3dSingleLayerBoundaryOperator(
     pwiseConstants, pwiseLinears, pwiseConstants)
-dlpOp = bempp.laplace3dDoubleLayerPotentialOperator(
+dlpOp = bempp.laplace3dDoubleLayerBoundaryOperator(
     pwiseLinears, pwiseLinears, pwiseConstants)
 idOp = bempp.identityOperator(
     pwiseLinears, pwiseLinears, pwiseConstants)

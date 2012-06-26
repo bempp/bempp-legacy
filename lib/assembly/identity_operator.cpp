@@ -24,8 +24,8 @@
 #include "identity_operator.hpp"
 
 #include "assembly_options.hpp"
-#include "discrete_dense_linear_operator.hpp"
-#include "discrete_sparse_linear_operator.hpp"
+#include "discrete_dense_boundary_operator.hpp"
+#include "discrete_sparse_boundary_operator.hpp"
 
 #include "../common/auto_timer.hpp"
 #include "../common/types.hpp"
@@ -178,10 +178,10 @@ IdentityOperator<BasisFunctionType, ResultType>::~IdentityOperator()
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<LinearOperator<BasisFunctionType, ResultType> >
+std::auto_ptr<BoundaryOperator<BasisFunctionType, ResultType> >
 IdentityOperator<BasisFunctionType, ResultType>::clone() const
 {
-    typedef LinearOperator<BasisFunctionType, ResultType> LinOp;
+    typedef BoundaryOperator<BasisFunctionType, ResultType> LinOp;
     typedef IdentityOperator<BasisFunctionType, ResultType> This;
     return std::auto_ptr<LinOp>(new This(*this));
 }
@@ -196,7 +196,7 @@ bool IdentityOperator<BasisFunctionType, ResultType>::supportsRepresentation(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<DiscreteLinearOperator<ResultType> >
+shared_ptr<DiscreteBoundaryOperator<ResultType> >
 IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormImpl(
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options,
@@ -208,7 +208,7 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormImpl(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<DiscreteLinearOperator<ResultType> >
+shared_ptr<DiscreteBoundaryOperator<ResultType> >
 IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInternalImpl(
         LocalAssembler& assembler,
         const AssemblyOptions& options,
@@ -217,16 +217,16 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInternalImpl(
     switch (options.operatorRepresentation())
     {
     case AssemblyOptions::DENSE:
-        return shared_ptr<DiscreteLinearOperator<ResultType> >(
+        return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
                     assembleWeakFormInDenseMode(
                         assembler, options, symmetry).release());
     case AssemblyOptions::ACA:
 #ifdef WITH_TRILINOS
-        return shared_ptr<DiscreteLinearOperator<ResultType> >(
+        return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
                     assembleWeakFormInSparseMode(
                         assembler, options, symmetry).release());
 #else // Fallback to dense mode. Don't know whether this should be signalled to the user.
-        return shared_ptr<DiscreteLinearOperator<ResultType> >(
+        return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
                     assembleWeakFormInDenseMode(
                         assembler, options, symmetry).release());
 #endif
@@ -237,7 +237,7 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInternalImpl(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteLinearOperator<ResultType> >
+std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
 IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInDenseMode(
         LocalAssembler& assembler,
         const AssemblyOptions& options,
@@ -283,12 +283,12 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInDenseMode(
                 result(testGdofs[e][testIndex], trialGdofs[e][trialIndex]) +=
                         localResult[e](testIndex, trialIndex);
 
-    return std::auto_ptr<DiscreteLinearOperator<ResultType> >(
-                new DiscreteDenseLinearOperator<ResultType>(result));
+    return std::auto_ptr<DiscreteBoundaryOperator<ResultType> >(
+                new DiscreteDenseBoundaryOperator<ResultType>(result));
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteLinearOperator<ResultType> >
+std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
 IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparseMode(
         LocalAssembler& assembler,
         const AssemblyOptions& options,
@@ -382,8 +382,8 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparseMode(
 
     // Create and return a discrete operator represented by the matrix that
     // has just been calculated
-    return std::auto_ptr<DiscreteLinearOperator<ResultType> >(
-                new DiscreteSparseLinearOperator<ResultType>(result));
+    return std::auto_ptr<DiscreteBoundaryOperator<ResultType> >(
+                new DiscreteSparseBoundaryOperator<ResultType>(result));
 #else // WITH_TRILINOS
     throw std::runtime_error("IdentityOperator::assembleWeakFormInSparseMode(): "
                              "To enable assembly in sparse mode, recompile BEM++ "

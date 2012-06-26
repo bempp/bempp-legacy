@@ -21,7 +21,7 @@
 #include "grid_function.hpp"
 
 #include "assembly_options.hpp"
-#include "discrete_linear_operator.hpp"
+#include "discrete_boundary_operator.hpp"
 #include "local_assembler_construction_helper.hpp"
 
 #include "../common/stl_io.hpp"

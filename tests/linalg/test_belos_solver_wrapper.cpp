@@ -25,7 +25,7 @@
 #include "../type_template.hpp"
 #include "../check_arrays_are_close.hpp"
 
-#include "assembly/discrete_dense_linear_operator.hpp"
+#include "assembly/discrete_dense_boundary_operator.hpp"
 #include "common/scalar_traits.hpp"
 #include "linalg/belos_solver_wrapper.hpp"
 
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(solve_works_for_single_rhs, ValueType, result_type
 
     const int size = 50;
     arma::Mat<ValueType> mat = generateRandomMatrix<ValueType>(size, size);
-    Bempp::DiscreteDenseLinearOperator<ValueType> op(mat);
+    Bempp::DiscreteDenseBoundaryOperator<ValueType> op(mat);
 
     arma::Col<ValueType> rhs = generateRandomMatrix<ValueType>(size, 1);
     arma::Col<ValueType> sol(size);

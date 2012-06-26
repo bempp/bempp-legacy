@@ -24,7 +24,7 @@
 #include "../space/space.hpp"
 
 #include "../assembly/assembly_options.hpp"
-#include "../assembly/discrete_dense_linear_operator.hpp"
+#include "../assembly/discrete_dense_boundary_operator.hpp"
 #include "../assembly/identity_operator.hpp"
 #include "../assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 
@@ -32,9 +32,9 @@
 
 #ifdef WITH_TRILINOS
 
-#include "../assembly/discrete_inverse_sparse_linear_operator.hpp"
-#include "../assembly/discrete_sparse_linear_operator.hpp"
-#include "../assembly/discrete_linear_operator_composition.hpp"
+#include "../assembly/discrete_inverse_sparse_boundary_operator.hpp"
+#include "../assembly/discrete_sparse_boundary_operator.hpp"
+#include "../assembly/discrete_boundary_operator_composition.hpp"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_LocalMap.h>
@@ -75,7 +75,7 @@ std::auto_ptr<MassMatrixContainer<ResultType> >
 MassMatrixContainerInitialiser<BasisFunctionType, ResultType>::
 assembleOperatorsInDenseMode() const
 {
-    typedef DiscreteDenseLinearOperator<ResultType> DiscreteDenseLinOp;
+    typedef DiscreteDenseBoundaryOperator<ResultType> DiscreteDenseLinOp;
     std::auto_ptr<MassMatrixContainer<ResultType> > result(
                 new MassMatrixContainer<ResultType>);
 
@@ -106,9 +106,9 @@ std::auto_ptr<MassMatrixContainer<ResultType> >
 MassMatrixContainerInitialiser<BasisFunctionType, ResultType>::
 assembleOperatorsInSparseMode() const
 {
-    typedef DiscreteLinearOperator<ResultType> DiscreteLinOp;
-    typedef DiscreteSparseLinearOperator<ResultType> DiscreteSparseLinOp;
-    typedef DiscreteInverseSparseLinearOperator<ResultType> DiscreteInverseSparseLinOp;
+    typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
+    typedef DiscreteSparseBoundaryOperator<ResultType> DiscreteSparseLinOp;
+    typedef DiscreteInverseSparseBoundaryOperator<ResultType> DiscreteInverseSparseLinOp;
 
     std::auto_ptr<MassMatrixContainer<ResultType> > result(
                 new MassMatrixContainer<ResultType>);
@@ -165,7 +165,7 @@ assembleOperatorsInSparseMode() const
                         productMatrix, HERMITIAN);
 
             result->massMatrixPseudoinverse =
-                    boost::make_shared<DiscreteLinearOperatorComposition<ResultType> >(
+                    boost::make_shared<DiscreteBoundaryOperatorComposition<ResultType> >(
                         productInverseOp, transposeOp);
         } else {
             // Wide matrix (underdetermined least-square problem);
@@ -177,7 +177,7 @@ assembleOperatorsInSparseMode() const
                     boost::make_shared<DiscreteInverseSparseLinOp>(
                         productMatrix, HERMITIAN);
             result->massMatrixPseudoinverse =
-                    boost::make_shared<DiscreteLinearOperatorComposition<ResultType> >(
+                    boost::make_shared<DiscreteBoundaryOperatorComposition<ResultType> >(
                         transposeOp, productInverseOp);
         }
     }

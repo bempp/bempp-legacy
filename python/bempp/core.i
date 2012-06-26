@@ -82,7 +82,7 @@ AUTO_PTR_TYPEMAPS(Bempp::EntityIterator<3>)
 AUTO_PTR_TYPEMAPS(Bempp::Geometry)
 AUTO_PTR_TYPEMAPS(Bempp::VtkWriter)
 
-AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::DiscreteLinearOperator)
+AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::DiscreteBoundaryOperator)
 AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 
 // End of auto_ptr typemaps
@@ -136,11 +136,11 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "assembly/python_surface_normal_independent_functor.i"
 %include "assembly/python_surface_normal_dependent_functor.i"
 %include "assembly/grid_function.i"
-%include "assembly/discrete_linear_operator.i"
-%include "assembly/linear_operator.i"
-%include "assembly/linear_operator_sum.i"
-%include "assembly/scaled_linear_operator.i"
-%include "assembly/elementary_linear_operator.i"
+%include "assembly/discrete_boundary_operator.i"
+%include "assembly/boundary_operator.i"
+%include "assembly/boundary_operator_sum.i"
+%include "assembly/scaled_boundary_operator.i"
+%include "assembly/elementary_boundary_operator.i"
 %include "assembly/elementary_integral_operator.i"
 %include "assembly/elementary_singular_integral_operator.i"
 %include "assembly/laplace_3d_operators.i"

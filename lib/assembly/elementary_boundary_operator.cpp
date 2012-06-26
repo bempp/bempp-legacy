@@ -1,0 +1,130 @@
+// Copyright (C) 2011-2012 by the BEM++ Authors
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+#include "elementary_boundary_operator.hpp"
+
+#include "discrete_boundary_operator.hpp"
+
+#include "../fiber/explicit_instantiation.hpp"
+#include "../fiber/local_assembler_for_operators.hpp"
+
+namespace Bempp
+{
+
+template <typename BasisFunctionType, typename ResultType>
+ElementaryBoundaryOperator<BasisFunctionType, ResultType>::
+ElementaryBoundaryOperator(const Space<BasisFunctionType>& domain,
+                         const Space<BasisFunctionType>& range,
+                         const Space<BasisFunctionType>& dualToRange,
+                         const std::string& label) :
+    Base(domain, range, dualToRange, label)
+{
+}
+
+template <typename BasisFunctionType, typename ResultType>
+ElementaryBoundaryOperator<BasisFunctionType, ResultType>::
+~ElementaryBoundaryOperator()
+{
+}
+
+template <typename BasisFunctionType, typename ResultType>
+std::vector<const ElementaryBoundaryOperator<BasisFunctionType, ResultType>*>
+ElementaryBoundaryOperator<BasisFunctionType, ResultType>::
+constituentOperators() const
+{
+    return std::vector<const ElementaryBoundaryOperator<
+            BasisFunctionType, ResultType>*>(1 /* size */, this);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+std::vector<ResultType>
+ElementaryBoundaryOperator<BasisFunctionType, ResultType>::
+constituentOperatorWeights() const
+{
+    return std::vector<ResultType>(1 /* size */, 1.);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+shared_ptr<DiscreteBoundaryOperator<ResultType> >
+ElementaryBoundaryOperator<BasisFunctionType, ResultType>::
+assembleWeakFormInternal(
+        LocalAssembler& assembler,
+        const AssemblyOptions& options,
+        Symmetry symmetry)
+{
+    return assembleWeakFormInternalImpl(assembler, options, symmetry);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+std::auto_ptr<typename ElementaryBoundaryOperator<BasisFunctionType, ResultType>::LocalAssembler>
+ElementaryBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler(
+        const LocalAssemblerFactory& assemblerFactory,
+        const shared_ptr<const GeometryFactory>& testGeometryFactory,
+        const shared_ptr<const GeometryFactory>& trialGeometryFactory,
+        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
+        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
+        const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
+        const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+        const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
+        const ParallelisationOptions& parallelisationOptions,
+        bool cacheSingularIntegrals) const
+{
+    return makeAssemblerImpl(assemblerFactory,
+                             testGeometryFactory, trialGeometryFactory,
+                             testRawGeometry, trialRawGeometry,
+                             testBases, trialBases, openClHandler,
+                             parallelisationOptions,
+                             cacheSingularIntegrals);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+std::auto_ptr<typename ElementaryBoundaryOperator<BasisFunctionType, ResultType>::LocalAssembler>
+ElementaryBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler(
+        const LocalAssemblerFactory& assemblerFactory,
+        const AssemblyOptions& options) const
+{
+    typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
+    typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
+
+    shared_ptr<RawGridGeometry> testRawGeometry, trialRawGeometry;
+    shared_ptr<GeometryFactory> testGeometryFactory, trialGeometryFactory;
+    shared_ptr<Fiber::OpenClHandler> openClHandler;
+    shared_ptr<BasisPtrVector> testBases, trialBases;
+    bool cacheSingularIntegrals;
+
+    std::cout << "Collecting data for assembler construction" << std::endl;
+    collectDataForAssemblerConstruction(options,
+                                        testRawGeometry, trialRawGeometry,
+                                        testGeometryFactory, trialGeometryFactory,
+                                        testBases, trialBases,
+                                        openClHandler, cacheSingularIntegrals);
+    std::cout << "Collection finished." << std::endl;
+
+    return makeAssemblerImpl(assemblerFactory,
+                             testGeometryFactory, trialGeometryFactory,
+                             testRawGeometry, trialRawGeometry,
+                             testBases, trialBases, openClHandler,
+                             options.parallelisationOptions(),
+                             cacheSingularIntegrals);
+}
+
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(ElementaryBoundaryOperator);
+
+} // namespace Bempp

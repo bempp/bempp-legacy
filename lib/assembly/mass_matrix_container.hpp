@@ -27,15 +27,15 @@
 namespace Bempp
 {
 
-template <typename ValueType> class DiscreteLinearOperator;
+template <typename ValueType> class DiscreteBoundaryOperator;
 
 template <typename BasisFunctionType>
 struct MassMatrixContainer
 {
     ~MassMatrixContainer();
 
-    shared_ptr<const DiscreteLinearOperator<BasisFunctionType> > massMatrix;
-    shared_ptr<const DiscreteLinearOperator<BasisFunctionType> > massMatrixPseudoinverse;
+    shared_ptr<const DiscreteBoundaryOperator<BasisFunctionType> > massMatrix;
+    shared_ptr<const DiscreteBoundaryOperator<BasisFunctionType> > massMatrixPseudoinverse;
 };
 
 } //namespace Bempp

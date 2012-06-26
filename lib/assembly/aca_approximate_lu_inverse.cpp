@@ -26,7 +26,7 @@
 #include "aca_approximate_lu_inverse.hpp"
 
 #include "ahmed_aux.hpp"
-#include "discrete_aca_linear_operator.hpp"
+#include "discrete_aca_boundary_operator.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -40,7 +40,7 @@ namespace Bempp
 
 template <typename ValueType>
 AcaApproximateLuInverse<ValueType>::AcaApproximateLuInverse(
-        const DiscreteAcaLinearOperator<ValueType>& fwdOp,
+        const DiscreteAcaBoundaryOperator<ValueType>& fwdOp,
         MagnitudeType delta) :
     // All range-domain swaps intended!
 #ifdef WITH_TRILINOS
@@ -64,7 +64,7 @@ AcaApproximateLuInverse<ValueType>::AcaApproximateLuInverse(
 
 template <>
 AcaApproximateLuInverse<std::complex<float> >::AcaApproximateLuInverse(
-        const DiscreteAcaLinearOperator<std::complex<float> >& fwdOp,
+        const DiscreteAcaBoundaryOperator<std::complex<float> >& fwdOp,
         MagnitudeType delta) :
     // All range-domain swaps intended!
 #ifdef WITH_TRILINOS

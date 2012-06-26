@@ -24,7 +24,7 @@
 
 #include "weak_form_aca_assembly_helper.hpp"
 
-#include "discrete_linear_operator.hpp"
+#include "discrete_boundary_operator.hpp"
 #include "../common/multidimensional_arrays.hpp"
 #include "../fiber/types.hpp"
 #include "../fiber/explicit_instantiation.hpp"

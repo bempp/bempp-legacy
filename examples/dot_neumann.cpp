@@ -24,13 +24,13 @@
 #include "meshes.hpp"
 
 #include "assembly/assembly_options.hpp"
-#include "assembly/discrete_linear_operator.hpp"
+#include "assembly/discrete_boundary_operator.hpp"
 #include "assembly/grid_function.hpp"
 #include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 
 #include "assembly/identity_operator.hpp"
-#include "assembly/modified_helmholtz_3d_single_layer_potential_operator.hpp"
-#include "assembly/modified_helmholtz_3d_double_layer_potential_operator.hpp"
+#include "assembly/modified_helmholtz_3d_single_layer_boundary_operator.hpp"
+#include "assembly/modified_helmholtz_3d_double_layer_boundary_operator.hpp"
 
 #include "grid/grid.hpp"
 
@@ -133,17 +133,17 @@ int main(int argc, char* argv[])
 
     // We need the single layer, double layer, and the identity operator
 
-    ModifiedHelmholtz3dSingleLayerPotentialOperator<BFT, RT> slp(
+    ModifiedHelmholtz3dSingleLayerBoundaryOperator<BFT, RT> slp(
                 HplusHalfSpace, HplusHalfSpace, HplusHalfSpace, waveNumber);
-    ModifiedHelmholtz3dDoubleLayerPotentialOperator<BFT, RT> dlp(
+    ModifiedHelmholtz3dDoubleLayerBoundaryOperator<BFT, RT> dlp(
                 HplusHalfSpace, HplusHalfSpace, HplusHalfSpace, waveNumber);
     IdentityOperator<BFT, RT> id(
                 HplusHalfSpace, HplusHalfSpace, HplusHalfSpace);
 
     // Form the left-hand side sum
 
-    LinearOperatorSum<BFT, RT> lhsOp = 0.5 * id + dlp + (1.0/(2.0*kappa)) * slp;
-    LinearOperator<BFT, RT>& rhsOp = id;
+    BoundaryOperatorSum<BFT, RT> lhsOp = 0.5 * id + dlp + (1.0/(2.0*kappa)) * slp;
+    BoundaryOperator<BFT, RT>& rhsOp = id;
 
     // Assemble the Operators
 

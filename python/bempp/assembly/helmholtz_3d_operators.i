@@ -1,9 +1,9 @@
 %{
-#include "assembly/helmholtz_3d_operator_base.hpp"
-#include "assembly/helmholtz_3d_single_layer_potential_operator.hpp"
-#include "assembly/helmholtz_3d_double_layer_potential_operator.hpp"
-#include "assembly/helmholtz_3d_adjoint_double_layer_potential_operator.hpp"
-#include "assembly/helmholtz_3d_hypersingular_operator.hpp"
+#include "assembly/helmholtz_3d_boundary_operator_base.hpp"
+#include "assembly/helmholtz_3d_single_layer_boundary_operator.hpp"
+#include "assembly/helmholtz_3d_double_layer_boundary_operator.hpp"
+#include "assembly/helmholtz_3d_adjoint_double_layer_boundary_operator.hpp"
+#include "assembly/helmholtz_3d_hypersingular_boundary_operator.hpp"
 %}
 
 // TODO
@@ -12,51 +12,51 @@
 namespace Bempp
 {
 
-%extend Helmholtz3dSingleLayerPotentialOperator { %ignore clone; }
-%extend Helmholtz3dDoubleLayerPotentialOperator { %ignore clone; }
-%extend Helmholtz3dAdjointDoubleLayerPotentialOperator { %ignore clone; }
-%extend Helmholtz3dHypersingularOperator { %ignore clone; }
+%extend Helmholtz3dSingleLayerBoundaryOperator { %ignore clone; }
+%extend Helmholtz3dDoubleLayerBoundaryOperator { %ignore clone; }
+%extend Helmholtz3dAdjointDoubleLayerBoundaryOperator { %ignore clone; }
+%extend Helmholtz3dHypersingularBoundaryOperator { %ignore clone; }
 
 } // namespace Bempp
 
-%include "assembly/helmholtz_3d_operator_base.hpp"
-%include "assembly/helmholtz_3d_single_layer_potential_operator.hpp"
-%include "assembly/helmholtz_3d_double_layer_potential_operator.hpp"
-%include "assembly/helmholtz_3d_adjoint_double_layer_potential_operator.hpp"
-%include "assembly/helmholtz_3d_hypersingular_operator.hpp"
+%include "assembly/helmholtz_3d_boundary_operator_base.hpp"
+%include "assembly/helmholtz_3d_single_layer_boundary_operator.hpp"
+%include "assembly/helmholtz_3d_double_layer_boundary_operator.hpp"
+%include "assembly/helmholtz_3d_adjoint_double_layer_boundary_operator.hpp"
+%include "assembly/helmholtz_3d_hypersingular_boundary_operator.hpp"
 
 %define BEMPP_INSTANTIATE_HELMHOLTZ_3D_BASE(BASIS, PY_BASIS)
-    %template(Helmholtz3dOperatorBase_Single_ ## _ ## PY_BASIS)
-        Helmholtz3dOperatorBase<
-        Helmholtz3dSingleLayerPotentialOperatorImpl< BASIS >, BASIS >;
+    %template(Helmholtz3dBoundaryOperatorBase_Single_ ## _ ## PY_BASIS)
+        Helmholtz3dBoundaryOperatorBase<
+        Helmholtz3dSingleLayerBoundaryOperatorImpl< BASIS >, BASIS >;
 
-    %template(Helmholtz3dOperatorBase_Double_ ## _ ## PY_BASIS)
-        Helmholtz3dOperatorBase<
-        Helmholtz3dDoubleLayerPotentialOperatorImpl< BASIS >, BASIS >;
+    %template(Helmholtz3dBoundaryOperatorBase_Double_ ## _ ## PY_BASIS)
+        Helmholtz3dBoundaryOperatorBase<
+        Helmholtz3dDoubleLayerBoundaryOperatorImpl< BASIS >, BASIS >;
 
-    %template(Helmholtz3dOperatorBase_AdjointDouble_ ## _ ## PY_BASIS)
-        Helmholtz3dOperatorBase<
-        Helmholtz3dAdjointDoubleLayerPotentialOperatorImpl< BASIS >, BASIS >;
+    %template(Helmholtz3dBoundaryOperatorBase_AdjointDouble_ ## _ ## PY_BASIS)
+        Helmholtz3dBoundaryOperatorBase<
+        Helmholtz3dAdjointDoubleLayerBoundaryOperatorImpl< BASIS >, BASIS >;
 
-    %template(Helmholtz3dOperatorBase_Hypersingular_ ## _ ## PY_BASIS)
-        Helmholtz3dOperatorBase<
-        Helmholtz3dHypersingularOperatorImpl< BASIS >, BASIS >;
+    %template(Helmholtz3dBoundaryOperatorBase_Hypersingular_ ## _ ## PY_BASIS)
+        Helmholtz3dBoundaryOperatorBase<
+        Helmholtz3dHypersingularBoundaryOperatorImpl< BASIS >, BASIS >;
 %enddef
 
 namespace Bempp
 {
 
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(
-    Helmholtz3dSingleLayerPotentialOperatorImpl);
+    Helmholtz3dSingleLayerBoundaryOperatorImpl);
 BEMPP_ITERATE_OVER_BASIS_TYPES(BEMPP_INSTANTIATE_HELMHOLTZ_3D_BASE);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(
-    Helmholtz3dSingleLayerPotentialOperator);
+    Helmholtz3dSingleLayerBoundaryOperator);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(
-    Helmholtz3dDoubleLayerPotentialOperator);
+    Helmholtz3dDoubleLayerBoundaryOperator);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(
-    Helmholtz3dAdjointDoubleLayerPotentialOperator);
+    Helmholtz3dAdjointDoubleLayerBoundaryOperator);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(
-    Helmholtz3dHypersingularOperator);
+    Helmholtz3dHypersingularBoundaryOperator);
 
 } // namespace Bempp
 
@@ -75,24 +75,24 @@ def _constructHelmholtzOperator(className, domain, range, dualToRange, waveNumbe
     result._dualToRange = dualToRange
     return result
 
-def helmholtz3dSingleLayerPotentialOperator(domain, range, dualToRange, waveNumber):
+def helmholtz3dSingleLayerBoundaryOperator(domain, range, dualToRange, waveNumber):
     """Construct a single-layer-potential operator for the Helmholtz equation in 3D."""
     return _constructHelmholtzOperator(
-        "Helmholtz3dSingleLayerPotentialOperator", domain, range, dualToRange, waveNumber)
+        "Helmholtz3dSingleLayerBoundaryOperator", domain, range, dualToRange, waveNumber)
 
-def helmholtz3dDoubleLayerPotentialOperator(domain, range, dualToRange, waveNumber):
+def helmholtz3dDoubleLayerBoundaryOperator(domain, range, dualToRange, waveNumber):
     """Construct a double-layer-potential operator for the Helmholtz equation in 3D."""
     return _constructHelmholtzOperator(
-        "Helmholtz3dDoubleLayerPotentialOperator", domain, range, dualToRange, waveNumber)
+        "Helmholtz3dDoubleLayerBoundaryOperator", domain, range, dualToRange, waveNumber)
 
-def helmholtz3dAdjointDoubleLayerPotentialOperator(domain, range, dualToRange, waveNumber):
+def helmholtz3dAdjointDoubleLayerBoundaryOperator(domain, range, dualToRange, waveNumber):
     """Construct an adjoint double-layer-potential operator for the Helmholtz equation in 3D."""
     return _constructHelmholtzOperator(
-        "Helmholtz3dAdjointDoubleLayerPotentialOperator", domain, range, dualToRange, waveNumber)
+        "Helmholtz3dAdjointDoubleLayerBoundaryOperator", domain, range, dualToRange, waveNumber)
 
-def helmholtz3dHypersingularOperator(domain, range, dualToRange, waveNumber):
+def helmholtz3dHypersingularBoundaryOperator(domain, range, dualToRange, waveNumber):
     """Construct a hypersingular operator for the Helmholtz equation in 3D."""
     return _constructHelmholtzOperator(
-        "Helmholtz3dHypersingularOperator", domain, range, dualToRange, waveNumber)
+        "Helmholtz3dHypersingularBoundaryOperator", domain, range, dualToRange, waveNumber)
 
 %}

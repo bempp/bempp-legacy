@@ -23,7 +23,7 @@
 
 #include "../common/common.hpp"
 
-#include "elementary_linear_operator.hpp"
+#include "elementary_boundary_operator.hpp"
 #include "../common/multidimensional_arrays.hpp"
 #include "../common/types.hpp"
 #include "../fiber/types.hpp"
@@ -55,9 +55,9 @@ template <typename BasisFunctionType, typename ResultType> class WeakFormAcaAsse
  */
 template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
 class ElementaryIntegralOperator :
-        public ElementaryLinearOperator<BasisFunctionType_, ResultType_>
+        public ElementaryBoundaryOperator<BasisFunctionType_, ResultType_>
 {
-    typedef ElementaryLinearOperator<BasisFunctionType_, ResultType_> Base;
+    typedef ElementaryBoundaryOperator<BasisFunctionType_, ResultType_> Base;
 public:
     typedef typename Base::BasisFunctionType BasisFunctionType;
     typedef typename Base::ResultType ResultType;
@@ -87,7 +87,7 @@ protected:
     /** @}
         \name Weak form assembly
         @{ */
-    virtual shared_ptr<DiscreteLinearOperator<ResultType_> >
+    virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormImpl(
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options,
@@ -113,18 +113,18 @@ private:
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const;
 
-    virtual shared_ptr<DiscreteLinearOperator<ResultType_> >
+    virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInternalImpl(
             LocalAssembler& assembler,
             const AssemblyOptions& options,
             Symmetry symmetry);
 
-    std::auto_ptr<DiscreteLinearOperator<ResultType_> >
+    std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInDenseMode(
             LocalAssembler& assembler,
             const AssemblyOptions &options,
             Symmetry symmetry) const;
-    std::auto_ptr<DiscreteLinearOperator<ResultType_> >
+    std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInAcaMode(
             LocalAssembler& assembler,
             const AssemblyOptions& options,

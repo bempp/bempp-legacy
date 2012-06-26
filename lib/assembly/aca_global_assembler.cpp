@@ -44,7 +44,7 @@
 
 #ifdef WITH_AHMED
 #include "ahmed_aux.hpp"
-#include "discrete_aca_linear_operator.hpp"
+#include "discrete_aca_boundary_operator.hpp"
 #include "scattered_range.hpp"
 #include "weak_form_aca_assembly_helper.hpp"
 #endif
@@ -161,7 +161,7 @@ void getClusterIds(const cluster& clusterTree,
 } // namespace
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteLinearOperator<ResultType> >
+std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
 AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
@@ -174,7 +174,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 {
 #ifdef WITH_AHMED
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
-    typedef DiscreteAcaLinearOperator<ResultType> DiscreteAcaLinOp;
+    typedef DiscreteAcaBoundaryOperator<ResultType> DiscreteAcaLinOp;
 
     const AcaOptions& acaOptions = options.acaOptions();
 
@@ -412,7 +412,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteLinearOperator<ResultType> >
+std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
 AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,

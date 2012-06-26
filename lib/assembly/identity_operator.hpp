@@ -24,7 +24,7 @@
 
 #include "../common/common.hpp"
 
-#include "elementary_linear_operator.hpp"
+#include "elementary_boundary_operator.hpp"
 
 #include <boost/scoped_ptr.hpp>
 
@@ -40,9 +40,9 @@ namespace Bempp
 
 template <typename BasisFunctionType_, typename ResultType_>
 class IdentityOperator :
-        public ElementaryLinearOperator<BasisFunctionType_, ResultType_>
+        public ElementaryBoundaryOperator<BasisFunctionType_, ResultType_>
 {
-    typedef ElementaryLinearOperator<BasisFunctionType_, ResultType_> Base;
+    typedef ElementaryBoundaryOperator<BasisFunctionType_, ResultType_> Base;
 public:
     typedef typename Base::BasisFunctionType BasisFunctionType;
     typedef typename Base::ResultType ResultType;
@@ -57,13 +57,13 @@ public:
     IdentityOperator(const IdentityOperator& other);
     virtual ~IdentityOperator();
 
-    virtual std::auto_ptr<LinearOperator<BasisFunctionType_, ResultType_> >
+    virtual std::auto_ptr<BoundaryOperator<BasisFunctionType_, ResultType_> >
     clone() const;
 
     virtual bool supportsRepresentation(AssemblyOptions::Representation repr) const;
 
 protected:
-    virtual shared_ptr<DiscreteLinearOperator<ResultType_> >
+    virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormImpl(
             const LocalAssemblerFactory& factory,
             const AssemblyOptions& options,
@@ -82,19 +82,19 @@ private:
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const;
 
-    virtual shared_ptr<DiscreteLinearOperator<ResultType_> >
+    virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInternalImpl(
             LocalAssembler& assembler,
             const AssemblyOptions& options,
             Symmetry symmetry);
 
-    std::auto_ptr<DiscreteLinearOperator<ResultType_> >
+    std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInDenseMode(
             LocalAssembler& assembler,
             const AssemblyOptions& options,
             Symmetry symmetry) const;
 
-    std::auto_ptr<DiscreteLinearOperator<ResultType_> >
+    std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInSparseMode(
             LocalAssembler& assembler,
             const AssemblyOptions& options,

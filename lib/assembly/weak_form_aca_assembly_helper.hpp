@@ -41,7 +41,7 @@ namespace Bempp
 {
 
 class AssemblyOptions;
-template <typename ResultType> class DiscreteLinearOperator;
+template <typename ResultType> class DiscreteBoundaryOperator;
 template <typename BasisFunctionType> class Space;
 
 /** \brief Class whose methods are called by Ahmed during assembly in the ACA mode. */
@@ -49,7 +49,7 @@ template <typename BasisFunctionType, typename ResultType>
 class WeakFormAcaAssemblyHelper
 {
 public:
-    typedef DiscreteLinearOperator<ResultType> DiscreteLinOp;
+    typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
     typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
     typedef typename Fiber::ScalarTraits<ResultType>::RealType MagnitudeType;
     typedef typename AhmedTypeTraits<ResultType>::Type AhmedResultType;

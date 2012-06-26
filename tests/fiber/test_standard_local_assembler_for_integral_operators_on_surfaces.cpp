@@ -21,7 +21,7 @@
 #include "../type_template.hpp"
 #include "../check_arrays_are_close.hpp"
 
-#include "assembly/laplace_3d_single_layer_potential_operator.hpp"
+#include "assembly/laplace_3d_single_layer_boundary_operator.hpp"
 #include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
 #include "common/scalar_traits.hpp"
 #include "fiber/geometrical_data.hpp"
@@ -55,7 +55,7 @@ public:
     typedef typename ScalarTraits<RT>::RealType CT;
     typedef PiecewiseConstantScalarSpace<BFT> PiecewiseConstantSpace;
     typedef PiecewiseLinearContinuousScalarSpace<BFT> PiecewiseLinearSpace;
-    typedef Laplace3dSingleLayerPotentialOperator<BFT, RT> Operator;
+    typedef Laplace3dSingleLayerBoundaryOperator<BFT, RT> Operator;
     typedef StandardLocalAssemblerFactoryForOperatorsOnSurfaces<BFT, RT> AssemblerFactory;
     typedef Fiber::RawGridGeometry<CT> RawGridGeometry;
 
