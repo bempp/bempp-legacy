@@ -67,3 +67,9 @@ if (NOT (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR}))
 endif ()
 
 ###############################################################################
+
+
+install(DIRECTORY ${CMAKE_BINARY_DIR}/python/bempp DESTINATION bempp/python/site-packages FILES_MATCHING 
+	PATTERN "CMakeFiles" EXCLUDE
+        PATTERN "determineNumpyPath.py" EXCLUDE	  
+        PATTERN "*.py" PATTERN "*.so")
