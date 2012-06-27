@@ -131,6 +131,7 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 // Assembly
 %include "assembly/construct_operator.i" // Python code
 %include "assembly/assembly_options.i"
+%include "assembly/evaluation_options.i"
 %include "assembly/transposition_mode.i"
 %include "assembly/surface_normal_independent_functor.i"
 %include "assembly/python_surface_normal_independent_functor.i"
