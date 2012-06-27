@@ -7,24 +7,21 @@ namespace Bempp
 
 BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
 
-//%define BEMPP_DECLARE_GRID_FUNCTION(CLASS1,CLASS2,NPY1,NPY2)
+%apply arma::Mat<float>& ARGOUT_MAT {
+arma::Mat<float>& result_
+};
 
-    %apply arma::Mat<float>& ARGOUT_MAT {
-    arma::Mat<float>& result_
-    };
+%apply arma::Mat<double>& ARGOUT_MAT {
+arma::Mat<double>& result_
+};
 
-    %apply arma::Mat<double>& ARGOUT_MAT {
-    arma::Mat<double>& result_
-    };
+%apply arma::Mat<std::complex<float> >& ARGOUT_MAT {
+arma::Mat<std::complex<float> >& result_
+};
 
-    %apply arma::Mat<std::complex<float> >& ARGOUT_MAT {
-    arma::Mat<std::complex<float> >& result_
-    };
-
-    %apply arma::Mat<std::complex<double> >& ARGOUT_MAT {
-    arma::Mat<std::complex<double> >& result_
-    };
-
+%apply arma::Mat<std::complex<double> >& ARGOUT_MAT {
+arma::Mat<std::complex<double> >& result_
+};
 
 %extend GridFunction
 {
@@ -127,8 +124,7 @@ def plot(self,mode=VtkWriter.VERTEX_DATA,realImag='real'):
     window.Render()
     irenderer.Start()
 
-
-      %}
+%}
 
 }
 

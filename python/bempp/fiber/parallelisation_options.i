@@ -1,15 +1,15 @@
 %{
 #include "fiber/parallelisation_options.hpp"
-  %}
+%}
 
 namespace Fiber
 {
 
-  %extend ParallelisationOptions
-  {
-    %ignore switchToOpenCl;
-    %ignore openClOptions;
-  }
+    %extend ParallelisationOptions
+    {
+        %ignore switchToOpenCl;
+        %ignore openClOptions;
+    }
 
 }
 
