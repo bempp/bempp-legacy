@@ -147,13 +147,12 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
 %clear arma::Mat<float>& result_;
 %clear arma::Mat<double>& result_;
 %clear arma::Mat<std::complex<float> >& result_;
-%clear arma::Mat<std::complex<float> >& result_;
-
+%clear arma::Mat<std::complex<double> >& result_;
 
 %clear arma::Col<float>& col_out;
 %clear arma::Col<double>& col_out;
 %clear arma::Col<std::complex<float> >& col_out;
-%clear arma::Col<std::complex<float> >& col_out;
+%clear arma::Col<std::complex<double> >& col_out;
 
 } // namespace Bempp
 
