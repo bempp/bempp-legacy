@@ -128,21 +128,3 @@ namespace Bempp
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_VALUE(PythonSurfaceNormalIndependentFunctor);
 
 } // namespace Bempp
-
-
-/*BEMPP_DECLARE_PYTHON_SURFACE_NORMAL_INDEPENDENT_FUNCTOR(float, float32, NPY_FLOAT)
-BEMPP_DECLARE_PYTHON_SURFACE_NORMAL_INDEPENDENT_FUNCTOR(double, float64, NPY_DOUBLE)
-BEMPP_DECLARE_PYTHON_SURFACE_NORMAL_INDEPENDENT_FUNCTOR(std::complex<float>, complex64, NPY_CFLOAT)
-BEMPP_DECLARE_PYTHON_SURFACE_NORMAL_INDEPENDENT_FUNCTOR(std::complex<double>, complex128, NPY_CDOUBLE)*/
-
-/*%pythoncode %{
-
-def surfaceNormalIndependentFunctor(fun, valueType='float64',
-        argumentDimension=3, resultDimension=1):
-    valueType = checkType(valueType)
-    return constructObjectTemplatedOnValue(
-        "PythonSurfaceNormalIndependentFunctor",
-        valueType, fun, argumentDimension, resultDimension)
-
-%}*/
-

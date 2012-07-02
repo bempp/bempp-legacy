@@ -142,20 +142,3 @@ namespace Bempp
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_VALUE(PythonSurfaceNormalDependentFunctor);
 
 } // namespace Bempp
-
-/*BEMPP_DECLARE_PYTHON_SURFACE_NORMAL_DEPENDENT_FUNCTOR(float,float32,NPY_FLOAT)
-BEMPP_DECLARE_PYTHON_SURFACE_NORMAL_DEPENDENT_FUNCTOR(double,float64,NPY_DOUBLE)
-BEMPP_DECLARE_PYTHON_SURFACE_NORMAL_DEPENDENT_FUNCTOR(std::complex<float>,complex64,NPY_CFLOAT)
-BEMPP_DECLARE_PYTHON_SURFACE_NORMAL_DEPENDENT_FUNCTOR(std::complex<double>,complex128,NPY_CDOUBLE)
-
-%pythoncode %{
-
-def surfaceNormalDependentFunctor(fun, valueType='float64',
-        argumentDimension=3, resultDimension=1):
-    valueType = checkType(valueType)
-    return constructObjectTemplatedOnValue(
-        "PythonSurfaceNormalDependentFunctor",
-        valueType, fun, argumentDimension, resultDimension)
-
-%}
-*/
