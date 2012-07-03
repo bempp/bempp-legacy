@@ -18,6 +18,8 @@ cmake \
     -D TPL_ENABLE_BLAS:BOOL=ON \
     -D TPL_ENABLE_LAPACK:BOOL=ON \
     -D TPL_ENABLE_TBB:BOOL=ON \
+    -D TPL_ENABLE_Boost:BOOL=ON \
+    -D TPL_Boost_INCLUDE_DIRS:STRING=$Boost_include_dir \
     -D Trilinos_ENABLE_Amesos:BOOL=ON \
     -D Trilinos_ENABLE_Belos:BOOL=ON \
     -D Trilinos_ENABLE_Epetra:BOOL=ON \
