@@ -282,7 +282,7 @@ GridFunction<BasisFunctionType, ResultType> operator*(
 
 
 // This type machinery is needed to disambiguate between this operator and
-// the one taking a BoundaryOperator and a GridFunction
+// the one taking a AbstractBoundaryOperator and a GridFunction
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
 typename boost::enable_if<
     typename boost::mpl::has_key<

@@ -24,7 +24,7 @@
 
 #include "../common/common.hpp"
 
-#include "elementary_boundary_operator.hpp"
+#include "elementary_abstract_boundary_operator.hpp"
 
 #include <boost/scoped_ptr.hpp>
 
@@ -40,9 +40,9 @@ namespace Bempp
 
 template <typename BasisFunctionType_, typename ResultType_>
 class IdentityOperator :
-        public ElementaryBoundaryOperator<BasisFunctionType_, ResultType_>
+        public ElementaryAbstractBoundaryOperator<BasisFunctionType_, ResultType_>
 {
-    typedef ElementaryBoundaryOperator<BasisFunctionType_, ResultType_> Base;
+    typedef ElementaryAbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
 public:
     typedef typename Base::BasisFunctionType BasisFunctionType;
     typedef typename Base::ResultType ResultType;
@@ -57,7 +57,7 @@ public:
     IdentityOperator(const IdentityOperator& other);
     virtual ~IdentityOperator();
 
-    virtual std::auto_ptr<BoundaryOperator<BasisFunctionType_, ResultType_> >
+    virtual std::auto_ptr<AbstractBoundaryOperator<BasisFunctionType_, ResultType_> >
     clone() const;
 
     virtual bool supportsRepresentation(AssemblyOptions::Representation repr) const;

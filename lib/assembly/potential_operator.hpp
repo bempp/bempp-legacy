@@ -52,13 +52,13 @@ template <typename BasisFunctionType_, typename ResultType_>
 class PotentialOperator
 {
 public:
-    /** \copydoc BoundaryOperator::BasisFunctionType */
+    /** \copydoc AbstractBoundaryOperator::BasisFunctionType */
     typedef BasisFunctionType_ BasisFunctionType;
-    /** \copydoc BoundaryOperator::ResultType */
+    /** \copydoc AbstractBoundaryOperator::ResultType */
     typedef ResultType_ ResultType;
-    /** \copydoc BoundaryOperator::CoordinateType */
+    /** \copydoc AbstractBoundaryOperator::CoordinateType */
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
-    /** \copydoc BoundaryOperator::LocalAssemblerFactory. */
+    /** \copydoc AbstractBoundaryOperator::LocalAssemblerFactory. */
     typedef Fiber::LocalAssemblerFactory<BasisFunctionType, ResultType, GeometryFactory>
     LocalAssemblerFactory;
 

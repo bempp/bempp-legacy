@@ -36,7 +36,7 @@
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename ResultType> class BoundaryOperator;
+template <typename BasisFunctionType, typename ResultType> class AbstractBoundaryOperator;
 
 template <typename BasisFunctionType, typename ResultType>
 class DefaultIterativeSolver : public Solver<BasisFunctionType, ResultType>
@@ -44,7 +44,7 @@ class DefaultIterativeSolver : public Solver<BasisFunctionType, ResultType>
 public:
     typedef typename ScalarTraits<ResultType>::RealType MagnitudeType;
 
-    DefaultIterativeSolver(const BoundaryOperator<BasisFunctionType, ResultType>& linOp,
+    DefaultIterativeSolver(const AbstractBoundaryOperator<BasisFunctionType, ResultType>& linOp,
                            const GridFunction<BasisFunctionType, ResultType>& rhsGridFun);
 
     void addPreconditioner(

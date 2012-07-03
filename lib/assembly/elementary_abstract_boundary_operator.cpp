@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "elementary_boundary_operator.hpp"
+#include "elementary_abstract_boundary_operator.hpp"
 
 #include "discrete_boundary_operator.hpp"
 
@@ -29,8 +29,8 @@ namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType>
-ElementaryBoundaryOperator<BasisFunctionType, ResultType>::
-ElementaryBoundaryOperator(const Space<BasisFunctionType>& domain,
+ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::
+ElementaryAbstractBoundaryOperator(const Space<BasisFunctionType>& domain,
                          const Space<BasisFunctionType>& range,
                          const Space<BasisFunctionType>& dualToRange,
                          const std::string& label) :
@@ -39,23 +39,23 @@ ElementaryBoundaryOperator(const Space<BasisFunctionType>& domain,
 }
 
 template <typename BasisFunctionType, typename ResultType>
-ElementaryBoundaryOperator<BasisFunctionType, ResultType>::
-~ElementaryBoundaryOperator()
+ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::
+~ElementaryAbstractBoundaryOperator()
 {
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::vector<const ElementaryBoundaryOperator<BasisFunctionType, ResultType>*>
-ElementaryBoundaryOperator<BasisFunctionType, ResultType>::
+std::vector<const ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>*>
+ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::
 constituentOperators() const
 {
-    return std::vector<const ElementaryBoundaryOperator<
+    return std::vector<const ElementaryAbstractBoundaryOperator<
             BasisFunctionType, ResultType>*>(1 /* size */, this);
 }
 
 template <typename BasisFunctionType, typename ResultType>
 std::vector<ResultType>
-ElementaryBoundaryOperator<BasisFunctionType, ResultType>::
+ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::
 constituentOperatorWeights() const
 {
     return std::vector<ResultType>(1 /* size */, 1.);
@@ -63,7 +63,7 @@ constituentOperatorWeights() const
 
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteBoundaryOperator<ResultType> >
-ElementaryBoundaryOperator<BasisFunctionType, ResultType>::
+ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::
 assembleWeakFormInternal(
         LocalAssembler& assembler,
         const AssemblyOptions& options,
@@ -73,8 +73,8 @@ assembleWeakFormInternal(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<typename ElementaryBoundaryOperator<BasisFunctionType, ResultType>::LocalAssembler>
-ElementaryBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler(
+std::auto_ptr<typename ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::LocalAssembler>
+ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler(
         const LocalAssemblerFactory& assemblerFactory,
         const shared_ptr<const GeometryFactory>& testGeometryFactory,
         const shared_ptr<const GeometryFactory>& trialGeometryFactory,
@@ -95,8 +95,8 @@ ElementaryBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<typename ElementaryBoundaryOperator<BasisFunctionType, ResultType>::LocalAssembler>
-ElementaryBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler(
+std::auto_ptr<typename ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::LocalAssembler>
+ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler(
         const LocalAssemblerFactory& assemblerFactory,
         const AssemblyOptions& options) const
 {
@@ -125,6 +125,6 @@ ElementaryBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler(
                              cacheSingularIntegrals);
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(ElementaryBoundaryOperator);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(ElementaryAbstractBoundaryOperator);
 
 } // namespace Bempp

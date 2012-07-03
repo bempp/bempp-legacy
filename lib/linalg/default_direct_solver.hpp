@@ -29,13 +29,13 @@
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename ResultType> class BoundaryOperator;
+template <typename BasisFunctionType, typename ResultType> class AbstractBoundaryOperator;
 
 template <typename BasisFunctionType, typename ResultType>
 class DefaultDirectSolver : public Solver<BasisFunctionType, ResultType>
 {
 public:
-    DefaultDirectSolver(const BoundaryOperator<BasisFunctionType, ResultType>& linOp,
+    DefaultDirectSolver(const AbstractBoundaryOperator<BasisFunctionType, ResultType>& linOp,
                         const GridFunction<BasisFunctionType, ResultType>& gridFun);
 
     virtual void solve();
@@ -44,7 +44,7 @@ public:
     virtual typename Solver<BasisFunctionType, ResultType>::EStatus getStatus() const;
 
 private:
-    const BoundaryOperator<BasisFunctionType, ResultType>& m_linearOperator;
+    const AbstractBoundaryOperator<BasisFunctionType, ResultType>& m_linearOperator;
     const GridFunction<BasisFunctionType, ResultType>& m_gridFunction;
     arma::Col<ResultType> m_solution;
     typename Solver<BasisFunctionType, ResultType>::EStatus m_status;

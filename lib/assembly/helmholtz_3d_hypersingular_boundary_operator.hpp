@@ -73,7 +73,7 @@ public:
             KernelType waveNumber,
             const std::string& label = "");
 
-    virtual std::auto_ptr<BoundaryOperator<BasisFunctionType_, ResultType> >
+    virtual std::auto_ptr<AbstractBoundaryOperator<BasisFunctionType_, ResultType> >
     clone() const;
 };
 

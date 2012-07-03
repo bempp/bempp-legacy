@@ -78,12 +78,12 @@ Helmholtz3dHypersingularBoundaryOperator(
 }
 
 template <typename BasisFunctionType>
-std::auto_ptr<BoundaryOperator<BasisFunctionType,
+std::auto_ptr<AbstractBoundaryOperator<BasisFunctionType,
 typename Helmholtz3dHypersingularBoundaryOperator<BasisFunctionType>::ResultType> >
 Helmholtz3dHypersingularBoundaryOperator<BasisFunctionType>::
 clone() const
 {
-    typedef BoundaryOperator<BasisFunctionType, ResultType> LinOp;
+    typedef AbstractBoundaryOperator<BasisFunctionType, ResultType> LinOp;
     typedef Helmholtz3dHypersingularBoundaryOperator<BasisFunctionType> This;
     return std::auto_ptr<LinOp>(new This(*this));
 }

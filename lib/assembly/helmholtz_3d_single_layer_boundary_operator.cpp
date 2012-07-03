@@ -75,12 +75,12 @@ Helmholtz3dSingleLayerBoundaryOperator(
 }
 
 template <typename BasisFunctionType>
-std::auto_ptr<BoundaryOperator<BasisFunctionType,
+std::auto_ptr<AbstractBoundaryOperator<BasisFunctionType,
 typename Helmholtz3dSingleLayerBoundaryOperator<BasisFunctionType>::ResultType> >
 Helmholtz3dSingleLayerBoundaryOperator<BasisFunctionType>::
 clone() const
 {
-    typedef BoundaryOperator<BasisFunctionType, ResultType> LinOp;
+    typedef AbstractBoundaryOperator<BasisFunctionType, ResultType> LinOp;
     typedef Helmholtz3dSingleLayerBoundaryOperator<BasisFunctionType> This;
     return std::auto_ptr<LinOp>(new This(*this));
 }

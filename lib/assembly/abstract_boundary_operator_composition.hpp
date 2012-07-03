@@ -23,7 +23,7 @@
 
 #include "../common/common.hpp"
 
-#include "boundary_operator.hpp"
+#include "abstract_boundary_operator.hpp"
 
 #include "../common/shared_ptr.hpp"
 
@@ -42,26 +42,26 @@ namespace Bempp
  *  \ingroup assembly
  */
 template <typename BasisFunctionType_, typename ResultType_>
-class BoundaryOperatorComposition :
-        public BoundaryOperator<BasisFunctionType_, ResultType_>
+class AbstractBoundaryOperatorComposition :
+        public AbstractBoundaryOperator<BasisFunctionType_, ResultType_>
 {
 public:
-    typedef BoundaryOperator<BasisFunctionType_, ResultType_> Base;
-    /** \copydoc BoundaryOperator::BasisFunctionType */
+    typedef AbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
+    /** \copydoc AbstractBoundaryOperator::BasisFunctionType */
     typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc BoundaryOperator::ResultType */
+    /** \copydoc AbstractBoundaryOperator::ResultType */
     typedef typename Base::ResultType ResultType;
-    /** \copydoc BoundaryOperator::CoordinateType */
+    /** \copydoc AbstractBoundaryOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc BoundaryOperator::LocalAssemblerFactory */
+    /** \copydoc AbstractBoundaryOperator::LocalAssemblerFactory */
     typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
     typedef typename Fiber::LocalAssemblerForOperators<ResultType>
     LocalAssembler;
 
-    BoundaryOperatorComposition(const Base& outer, const Base& inner);
-    BoundaryOperatorComposition(const BoundaryOperatorComposition& other);
+    AbstractBoundaryOperatorComposition(const Base& outer, const Base& inner);
+    AbstractBoundaryOperatorComposition(const AbstractBoundaryOperatorComposition& other);
 
-    virtual std::auto_ptr<BoundaryOperator<BasisFunctionType_, ResultType_> >
+    virtual std::auto_ptr<AbstractBoundaryOperator<BasisFunctionType_, ResultType_> >
     clone() const;
 
     virtual bool supportsRepresentation(

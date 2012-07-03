@@ -75,12 +75,12 @@ Helmholtz3dAdjointDoubleLayerBoundaryOperator(
 }
 
 template <typename BasisFunctionType>
-std::auto_ptr<BoundaryOperator<BasisFunctionType,
+std::auto_ptr<AbstractBoundaryOperator<BasisFunctionType,
 typename Helmholtz3dAdjointDoubleLayerBoundaryOperator<BasisFunctionType>::ResultType> >
 Helmholtz3dAdjointDoubleLayerBoundaryOperator<BasisFunctionType>::
 clone() const
 {
-    typedef BoundaryOperator<BasisFunctionType, ResultType> LinOp;
+    typedef AbstractBoundaryOperator<BasisFunctionType, ResultType> LinOp;
     typedef Helmholtz3dAdjointDoubleLayerBoundaryOperator<BasisFunctionType> This;
     return std::auto_ptr<LinOp>(new This(*this));
 }

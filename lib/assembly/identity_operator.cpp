@@ -178,10 +178,10 @@ IdentityOperator<BasisFunctionType, ResultType>::~IdentityOperator()
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<BoundaryOperator<BasisFunctionType, ResultType> >
+std::auto_ptr<AbstractBoundaryOperator<BasisFunctionType, ResultType> >
 IdentityOperator<BasisFunctionType, ResultType>::clone() const
 {
-    typedef BoundaryOperator<BasisFunctionType, ResultType> LinOp;
+    typedef AbstractBoundaryOperator<BasisFunctionType, ResultType> LinOp;
     typedef IdentityOperator<BasisFunctionType, ResultType> This;
     return std::auto_ptr<LinOp>(new This(*this));
 }

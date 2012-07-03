@@ -28,7 +28,7 @@
 #include "assembly/evaluation_options.hpp"
 #include "assembly/grid_function.hpp"
 #include "assembly/interpolated_function.hpp"
-#include "assembly/boundary_operator_sum.hpp"
+#include "assembly/abstract_boundary_operator_sum.hpp"
 #include "assembly/default_local_assembler_factory_for_operators_on_surfaces.hpp"
 
 #include "assembly/identity_operator.hpp"
@@ -124,8 +124,8 @@ int main(int argc, char* argv[])
 
     // Define the operators standing on the left- and right-hand side
 
-    BoundaryOperatorSum<BFT, RT> lhsOp = -0.5 * id + dlpOp;
-    BoundaryOperator<BFT, RT>& rhsOp = slpOp;
+    AbstractBoundaryOperatorSum<BFT, RT> lhsOp = -0.5 * id + dlpOp;
+    AbstractBoundaryOperator<BFT, RT>& rhsOp = slpOp;
 
     // Assemble the operators
 

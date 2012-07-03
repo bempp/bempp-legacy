@@ -23,7 +23,7 @@
 
 #include "../common/common.hpp"
 
-#include "elementary_boundary_operator.hpp"
+#include "elementary_abstract_boundary_operator.hpp"
 #include "../common/multidimensional_arrays.hpp"
 #include "../common/types.hpp"
 #include "../fiber/types.hpp"
@@ -55,9 +55,9 @@ template <typename BasisFunctionType, typename ResultType> class WeakFormAcaAsse
  */
 template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
 class ElementaryIntegralOperator :
-        public ElementaryBoundaryOperator<BasisFunctionType_, ResultType_>
+        public ElementaryAbstractBoundaryOperator<BasisFunctionType_, ResultType_>
 {
-    typedef ElementaryBoundaryOperator<BasisFunctionType_, ResultType_> Base;
+    typedef ElementaryAbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
 public:
     typedef typename Base::BasisFunctionType BasisFunctionType;
     typedef typename Base::ResultType ResultType;

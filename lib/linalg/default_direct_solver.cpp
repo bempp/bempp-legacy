@@ -20,7 +20,7 @@
 
 #include "default_direct_solver.hpp"
 
-#include "../assembly/boundary_operator.hpp"
+#include "../assembly/abstract_boundary_operator.hpp"
 #include "../assembly/discrete_boundary_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -29,7 +29,7 @@ namespace Bempp
 
 template <typename BasisFunctionType, typename ResultType>
 DefaultDirectSolver<BasisFunctionType, ResultType>::DefaultDirectSolver(
-        const BoundaryOperator<BasisFunctionType, ResultType>& linearOperator,
+        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& linearOperator,
         const GridFunction<BasisFunctionType, ResultType>& gridFunction) :
     m_linearOperator(linearOperator), m_gridFunction(gridFunction),
     m_solution(), m_status(Solver<BasisFunctionType, ResultType>::UNKNOWN)

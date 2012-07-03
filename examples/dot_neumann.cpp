@@ -142,8 +142,8 @@ int main(int argc, char* argv[])
 
     // Form the left-hand side sum
 
-    BoundaryOperatorSum<BFT, RT> lhsOp = 0.5 * id + dlp + (1.0/(2.0*kappa)) * slp;
-    BoundaryOperator<BFT, RT>& rhsOp = id;
+    AbstractBoundaryOperatorSum<BFT, RT> lhsOp = 0.5 * id + dlp + (1.0/(2.0*kappa)) * slp;
+    AbstractBoundaryOperator<BFT, RT>& rhsOp = id;
 
     // Assemble the Operators
 

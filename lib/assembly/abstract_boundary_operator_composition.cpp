@@ -20,7 +20,7 @@
 
 #include "../common/config_trilinos.hpp"
 
-#include "boundary_operator_composition.hpp"
+#include "abstract_boundary_operator_composition.hpp"
 
 #include "discrete_boundary_operator_composition.hpp"
 #include "mass_matrix_container.hpp"
@@ -38,8 +38,8 @@ namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType>
-BoundaryOperatorComposition<BasisFunctionType, ResultType>::
-BoundaryOperatorComposition(const Base& outer, const Base& inner) :
+AbstractBoundaryOperatorComposition<BasisFunctionType, ResultType>::
+AbstractBoundaryOperatorComposition(const Base& outer, const Base& inner) :
     Base(outer.domain(), outer.range(), outer.dualToRange(),
          outer.label() + " * " + inner.label()),
     m_outer(outer.clone()), m_inner(inner.clone())
@@ -49,7 +49,7 @@ BoundaryOperatorComposition(const Base& outer, const Base& inner) :
 
     if (&m_outer->domain() != &m_inner->range())
         throw std::invalid_argument(
-                "BoundaryOperatorComposition::BoundaryOperatorComposition(" +
+                "AbstractBoundaryOperatorComposition::AbstractBoundaryOperatorComposition(" +
                 m_outer->label() +
                 ", " +
                 m_inner->label() +
@@ -58,8 +58,8 @@ BoundaryOperatorComposition(const Base& outer, const Base& inner) :
 }
 
 template <typename BasisFunctionType, typename ResultType>
-BoundaryOperatorComposition<BasisFunctionType, ResultType>::
-BoundaryOperatorComposition(const BoundaryOperatorComposition& other) :
+AbstractBoundaryOperatorComposition<BasisFunctionType, ResultType>::
+AbstractBoundaryOperatorComposition(const AbstractBoundaryOperatorComposition& other) :
     Base(other), m_outer(other.m_outer->clone()), m_inner(other.m_inner->clone())
 {
     assert(m_outer.get());
@@ -67,16 +67,16 @@ BoundaryOperatorComposition(const BoundaryOperatorComposition& other) :
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<BoundaryOperator<BasisFunctionType, ResultType> >
-BoundaryOperatorComposition<BasisFunctionType, ResultType>::clone() const
+std::auto_ptr<AbstractBoundaryOperator<BasisFunctionType, ResultType> >
+AbstractBoundaryOperatorComposition<BasisFunctionType, ResultType>::clone() const
 {
-    typedef BoundaryOperator<BasisFunctionType, ResultType> LinOp;
-    typedef BoundaryOperatorComposition<BasisFunctionType, ResultType> This;
+    typedef AbstractBoundaryOperator<BasisFunctionType, ResultType> LinOp;
+    typedef AbstractBoundaryOperatorComposition<BasisFunctionType, ResultType> This;
     return std::auto_ptr<LinOp>(new This(*this));
 }
 
 template <typename BasisFunctionType, typename ResultType>
-bool BoundaryOperatorComposition<BasisFunctionType, ResultType>::supportsRepresentation(
+bool AbstractBoundaryOperatorComposition<BasisFunctionType, ResultType>::supportsRepresentation(
         AssemblyOptions::Representation repr) const
 {
     return (m_outer->supportsRepresentation(repr) &&
@@ -85,7 +85,7 @@ bool BoundaryOperatorComposition<BasisFunctionType, ResultType>::supportsReprese
 
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteBoundaryOperator<ResultType> >
-BoundaryOperatorComposition<BasisFunctionType, ResultType>::
+AbstractBoundaryOperatorComposition<BasisFunctionType, ResultType>::
 assembleWeakFormImpl(const LocalAssemblerFactory& factory,
                      const AssemblyOptions& options,
                      Symmetry symmetry)
@@ -114,6 +114,6 @@ assembleWeakFormImpl(const LocalAssemblerFactory& factory,
                 discreteOuter, temp);
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(BoundaryOperatorComposition);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(AbstractBoundaryOperatorComposition);
 
 } // namespace Bempp

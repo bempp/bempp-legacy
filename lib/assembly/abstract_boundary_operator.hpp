@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_boundary_operator_hpp
-#define bempp_boundary_operator_hpp
+#ifndef bempp_abstract_boundary_operator_hpp
+#define bempp_abstract_boundary_operator_hpp
 
 #include "../common/common.hpp"
 
@@ -52,15 +52,15 @@ namespace Bempp
 class Grid;
 class GeometryFactory;
 template <typename ValueType> class DiscreteBoundaryOperator;
-template <typename BasisFunctionType, typename ResultType> class ElementaryBoundaryOperator;
+template <typename BasisFunctionType, typename ResultType> class ElementaryAbstractBoundaryOperator;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
-template <typename BasisFunctionType_, typename ResultType_> class ScaledBoundaryOperator;
-template <typename BasisFunctionType_, typename ResultType_> class BoundaryOperatorSum;
+template <typename BasisFunctionType_, typename ResultType_> class ScaledAbstractBoundaryOperator;
+template <typename BasisFunctionType_, typename ResultType_> class AbstractBoundaryOperatorSum;
 
 /** \ingroup assembly
- *  \brief Boundary operator.
+ *  \brief Abstract boundary operator.
  *
- *  A BoundaryOperator represents a linear mapping \f$L : X \to Y\f$ between
+ *  An AbstractBoundaryOperator represents a linear mapping \f$L : X \to Y\f$ between
  *  two function spaces \f$X : S \to K^p\f$ (_domain_) and \f$Y : S \to K^q\f$ (_range_) defined on
  *  an \f$n\f$-dimensional surface \f$S\f$ embedded in an
  *  \f$(n+1)\f$-dimensional domain. \f$K\f$ denotes either the set of real or
@@ -68,11 +68,11 @@ template <typename BasisFunctionType_, typename ResultType_> class BoundaryOpera
  *
  *  The functions assembleWeakForm() and assembleDetachedWeakForm() can be used
  *  to calculate the weak form of the operator. The weak form constructed with
- *  the former function is stored internally in the BoundaryOperator object,
+ *  the former function is stored internally in the AbstractBoundaryOperator object,
  *  which can subsequently be used as a typical linear operator (i.e. act on
  *  functions defined on the surface \f$S\f$, represented as GridFunction
  *  objects). The weak form constructed with the latter function is not stored
- *  in BoundaryOperator, but its ownership is passed directly to the caller.
+ *  in AbstractBoundaryOperator, but its ownership is passed directly to the caller.
  *
  *  \tparam BasisFunctionType
  *    Type used to represent components of the test and trial functions.
@@ -86,7 +86,7 @@ template <typename BasisFunctionType_, typename ResultType_> class BoundaryOpera
  *  set to a complex type, then \p ResultType must be set to the same type.
  */
 template <typename BasisFunctionType_, typename ResultType_>
-class BoundaryOperator
+class AbstractBoundaryOperator
 {
 public:
     /** \brief Type used to represent components of the test and trial functions. */
@@ -121,18 +121,18 @@ public:
      *  assembled. The spaces \p range and \p dualToRange must be defined on
      *  the same grid.
      */
-    BoundaryOperator(const Space<BasisFunctionType>& domain,
+    AbstractBoundaryOperator(const Space<BasisFunctionType>& domain,
                    const Space<BasisFunctionType>& range,
                    const Space<BasisFunctionType>& dualToRange,
                    const std::string& label = "");
 
     // Default "shallow" copy constructor is used (thus the internal pointer
     // to the weak form is shared among all copies). To make a deep copy of
-    // a BoundaryOperator, use the deepCopy() method (not yet written).
-    // BoundaryOperator(const BoundaryOperator<BasisFunctionType, ResultType>& other);
+    // a AbstractBoundaryOperator, use the deepCopy() method (not yet written).
+    // AbstractBoundaryOperator(const AbstractBoundaryOperator<BasisFunctionType, ResultType>& other);
 
     /** \brief Destructor. */
-    virtual ~BoundaryOperator();
+    virtual ~AbstractBoundaryOperator();
 
     /** \brief Clone operator.
      *
@@ -140,7 +140,7 @@ public:
      *  reference-counted pointer to the weak form) of this operator
      *  allocated on the heap.
      */
-    virtual std::auto_ptr<BoundaryOperator> clone() const = 0;
+    virtual std::auto_ptr<AbstractBoundaryOperator> clone() const = 0;
 
     /** @}
      *  @name Spaces
@@ -281,8 +281,8 @@ private:
 
 // The includes below are not strictly needed, but convenient for users
 // employing the arithmetic operator overloads
-#include "scaled_boundary_operator.hpp"
-#include "boundary_operator_sum.hpp"
+#include "scaled_abstract_boundary_operator.hpp"
+#include "abstract_boundary_operator_sum.hpp"
 // #include "boundary_operator_composition.hpp"
 
 // Operator overloading
@@ -291,46 +291,46 @@ namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType>
-BoundaryOperatorSum<BasisFunctionType, ResultType> operator+(
-        const BoundaryOperator<BasisFunctionType, ResultType>& op1,
-        const BoundaryOperator<BasisFunctionType, ResultType>& op2);
+AbstractBoundaryOperatorSum<BasisFunctionType, ResultType> operator+(
+        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op1,
+        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op2);
 
 template <typename BasisFunctionType, typename ResultType>
-BoundaryOperatorSum<BasisFunctionType, ResultType> operator-(
-        const BoundaryOperator<BasisFunctionType, ResultType>& op1,
-        const BoundaryOperator<BasisFunctionType, ResultType>& op2);
+AbstractBoundaryOperatorSum<BasisFunctionType, ResultType> operator-(
+        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op1,
+        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op2);
 
 // This type machinery is needed to disambiguate between this operator and
-// the one taking a BoundaryOperator and a GridFunction
+// the one taking a AbstractBoundaryOperator and a GridFunction
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
 typename boost::enable_if<
     typename boost::mpl::has_key<
         boost::mpl::set<float, double, std::complex<float>, std::complex<double> >,
         ScalarType>,
-    ScaledBoundaryOperator<BasisFunctionType, ResultType> >::type
+    ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType> >::type
 operator*(
-        const BoundaryOperator<BasisFunctionType, ResultType>& op,
+        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op,
         const ScalarType& scalar);
 
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
-ScaledBoundaryOperator<BasisFunctionType, ResultType> operator*(
+ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType> operator*(
         const ScalarType& scalar,
-        const BoundaryOperator<BasisFunctionType, ResultType>& op);
+        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op);
 
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
-ScaledBoundaryOperator<BasisFunctionType, ResultType> operator/(
-        const BoundaryOperator<BasisFunctionType, ResultType>& op,
+ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType> operator/(
+        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op,
         const ScalarType& scalar);
 
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType> operator*(
-        const BoundaryOperator<BasisFunctionType, ResultType>& op,
+        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op,
         const GridFunction<BasisFunctionType, ResultType>& fun);
 
 //template <typename BasisFunctionType, typename ResultType>
-//BoundaryOperatorComposition<BasisFunctionType, ResultType> operator*(
-//        const BoundaryOperator<BasisFunctionType, ResultType>& op1,
-//        const BoundaryOperator<BasisFunctionType, ResultType>& op2);
+//AbstractBoundaryOperatorComposition<BasisFunctionType, ResultType> operator*(
+//        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op1,
+//        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op2);
 
 } // namespace Bempp
 

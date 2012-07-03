@@ -18,33 +18,48 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_scaled_boundary_operator_hpp
-#define bempp_scaled_boundary_operator_hpp
+#ifndef bempp_abstract_boundary_operator_sum_hpp
+#define bempp_abstract_boundary_operator_sum_hpp
 
-#include "boundary_operator.hpp"
+#include "../common/common.hpp"
+
+#include "abstract_boundary_operator.hpp"
+
+namespace Fiber
+{
+
+template <typename ResultType> class LocalAssemblerForOperators;
+
+} // namespace Fiber
 
 namespace Bempp
 {
 
+/** \brief Sum of linear operators.
+ *
+ *  \ingroup assembly
+ */
 template <typename BasisFunctionType_, typename ResultType_>
-class ScaledBoundaryOperator :
-        public BoundaryOperator<BasisFunctionType_, ResultType_>
+class AbstractBoundaryOperatorSum :
+        public AbstractBoundaryOperator<BasisFunctionType_, ResultType_>
 {
 public:
-    typedef BoundaryOperator<BasisFunctionType_, ResultType_> Base;
-    /** \copydoc BoundaryOperator::BasisFunctionType */
+    typedef AbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
+    /** \copydoc AbstractBoundaryOperator::BasisFunctionType */
     typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc BoundaryOperator::ResultType */
+    /** \copydoc AbstractBoundaryOperator::ResultType */
     typedef typename Base::ResultType ResultType;
-    /** \copydoc BoundaryOperator::CoordinateType */
+    /** \copydoc AbstractBoundaryOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc BoundaryOperator::LocalAssemblerFactory */
+    /** \copydoc AbstractBoundaryOperator::LocalAssemblerFactory */
     typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
+    typedef typename Fiber::LocalAssemblerForOperators<ResultType>
+    LocalAssembler;
 
-    ScaledBoundaryOperator(ResultType weight, const Base& linOp);
-    ScaledBoundaryOperator(const ScaledBoundaryOperator& other);
+    AbstractBoundaryOperatorSum(const Base& term1, const Base& term2);
+    AbstractBoundaryOperatorSum(const AbstractBoundaryOperatorSum& other);
 
-    virtual std::auto_ptr<BoundaryOperator<BasisFunctionType_, ResultType_> >
+    virtual std::auto_ptr<AbstractBoundaryOperator<BasisFunctionType_, ResultType_> >
     clone() const;
 
     virtual bool supportsRepresentation(
@@ -52,15 +67,15 @@ public:
 
 protected:
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
-    assembleWeakFormImpl(const LocalAssemblerFactory& factory,
-                         const AssemblyOptions& options,
-                         Symmetry symmetry);
+    assembleWeakFormImpl(
+            const LocalAssemblerFactory& factory,
+            const AssemblyOptions& options,
+            Symmetry symmetry);
 
 private:
-    ResultType m_weight;
-    std::auto_ptr<Base> m_operator;
+    std::auto_ptr<Base> m_term1, m_term2;
 };
 
-} // namespace Bempp
+} //namespace Bempp
 
 #endif

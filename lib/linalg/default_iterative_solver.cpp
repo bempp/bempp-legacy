@@ -26,7 +26,7 @@
 
 #include "real_wrapper_of_complex_thyra_linear_operator.hpp"
 #include "../assembly/discrete_boundary_operator.hpp"
-#include "../assembly/boundary_operator.hpp"
+#include "../assembly/abstract_boundary_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 #include <Teuchos_RCPBoostSharedPtrConversions.hpp>
@@ -36,7 +36,7 @@ namespace Bempp
 
 template <typename BasisFunctionType, typename ResultType>
 DefaultIterativeSolver<BasisFunctionType, ResultType>::DefaultIterativeSolver(
-        const BoundaryOperator<BasisFunctionType, ResultType>& linOp,
+        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& linOp,
         const GridFunction<BasisFunctionType, ResultType>& rhsGridFun) :
     m_belosSolverWrapper(
         Teuchos::rcp<const Thyra::LinearOpBase<ResultType> >(

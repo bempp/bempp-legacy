@@ -73,10 +73,10 @@ Laplace3dHypersingularBoundaryOperator(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<BoundaryOperator<BasisFunctionType, ResultType> >
+std::auto_ptr<AbstractBoundaryOperator<BasisFunctionType, ResultType> >
 Laplace3dHypersingularBoundaryOperator<BasisFunctionType, ResultType>::clone() const
 {
-    typedef BoundaryOperator<BasisFunctionType, ResultType> LinOp;
+    typedef AbstractBoundaryOperator<BasisFunctionType, ResultType> LinOp;
     typedef Laplace3dHypersingularBoundaryOperator<BasisFunctionType, ResultType> This;
     return std::auto_ptr<LinOp>(new This(*this));
 }

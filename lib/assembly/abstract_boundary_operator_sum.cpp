@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "boundary_operator_sum.hpp"
+#include "abstract_boundary_operator_sum.hpp"
 
 #include "discrete_boundary_operator_sum.hpp"
 
@@ -28,8 +28,8 @@ namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType>
-BoundaryOperatorSum<BasisFunctionType, ResultType>::
-BoundaryOperatorSum(const Base& term1, const Base& term2) :
+AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::
+AbstractBoundaryOperatorSum(const Base& term1, const Base& term2) :
     Base(term1.domain(), term1.range(), term1.dualToRange(),
          term1.label() + " + " + term2.label()),
     m_term1(term1.clone()), m_term2(term2.clone())
@@ -39,21 +39,21 @@ BoundaryOperatorSum(const Base& term1, const Base& term2) :
 
     if (&m_term1->domain() != &m_term2->domain())
         throw std::invalid_argument(
-                "BoundaryOperatorSum::BoundaryOperatorSum(" +
+                "AbstractBoundaryOperatorSum::AbstractBoundaryOperatorSum(" +
                 m_term1->label() +
                 ", " +
                 m_term2->label() +
                 "): Domains of the two terms must be equal");
     if (&m_term1->range() != &m_term2->range())
         throw std::invalid_argument(
-                "BoundaryOperatorSum::BoundaryOperatorSum(" +
+                "AbstractBoundaryOperatorSum::AbstractBoundaryOperatorSum(" +
                 m_term1->label() +
                 ", " +
                 m_term2->label() +
                 "): Ranges of the two terms must be equal");
     if (&m_term1->dualToRange() != &m_term2->dualToRange())
         throw std::invalid_argument(
-                "BoundaryOperatorSum::BoundaryOperatorSum(" +
+                "AbstractBoundaryOperatorSum::AbstractBoundaryOperatorSum(" +
                 m_term1->label() +
                 ", " +
                 m_term2->label() +
@@ -61,8 +61,8 @@ BoundaryOperatorSum(const Base& term1, const Base& term2) :
 }
 
 template <typename BasisFunctionType, typename ResultType>
-BoundaryOperatorSum<BasisFunctionType, ResultType>::
-BoundaryOperatorSum(const BoundaryOperatorSum& other) :
+AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::
+AbstractBoundaryOperatorSum(const AbstractBoundaryOperatorSum& other) :
     Base(other), m_term1(other.m_term1->clone()), m_term2(other.m_term2->clone())
 {
     assert(m_term1.get());
@@ -70,16 +70,16 @@ BoundaryOperatorSum(const BoundaryOperatorSum& other) :
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<BoundaryOperator<BasisFunctionType, ResultType> >
-BoundaryOperatorSum<BasisFunctionType, ResultType>::clone() const
+std::auto_ptr<AbstractBoundaryOperator<BasisFunctionType, ResultType> >
+AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::clone() const
 {
-    typedef BoundaryOperator<BasisFunctionType, ResultType> LinOp;
-    typedef BoundaryOperatorSum<BasisFunctionType, ResultType> This;
+    typedef AbstractBoundaryOperator<BasisFunctionType, ResultType> LinOp;
+    typedef AbstractBoundaryOperatorSum<BasisFunctionType, ResultType> This;
     return std::auto_ptr<LinOp>(new This(*this));
 }
 
 template <typename BasisFunctionType, typename ResultType>
-bool BoundaryOperatorSum<BasisFunctionType, ResultType>::supportsRepresentation(
+bool AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::supportsRepresentation(
         AssemblyOptions::Representation repr) const
 {
     return (m_term1->supportsRepresentation(repr) &&
@@ -88,7 +88,7 @@ bool BoundaryOperatorSum<BasisFunctionType, ResultType>::supportsRepresentation(
 
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteBoundaryOperator<ResultType> >
-BoundaryOperatorSum<BasisFunctionType, ResultType>::
+AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::
 assembleWeakFormImpl(const LocalAssemblerFactory& factory,
                      const AssemblyOptions& options,
                      Symmetry symmetry)
@@ -109,6 +109,6 @@ assembleWeakFormImpl(const LocalAssemblerFactory& factory,
                                          discreteTerm1, discreteTerm2));
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(BoundaryOperatorSum);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(AbstractBoundaryOperatorSum);
 
 } // namespace Bempp

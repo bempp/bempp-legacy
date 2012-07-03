@@ -24,7 +24,7 @@
 
 #include "../common/common.hpp"
 
-#include "boundary_operator.hpp"
+#include "abstract_boundary_operator.hpp"
 
 #include "../common/shared_ptr.hpp"
 
@@ -55,30 +55,30 @@ namespace Bempp
  *  documentation of ElementaryIntegralOperator.
  */
 template <typename BasisFunctionType_, typename ResultType_>
-class ElementaryBoundaryOperator : public BoundaryOperator<BasisFunctionType_, ResultType_>
+class ElementaryAbstractBoundaryOperator : public AbstractBoundaryOperator<BasisFunctionType_, ResultType_>
 {
-    typedef BoundaryOperator<BasisFunctionType_, ResultType_> Base;
+    typedef AbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
 public:
-    /** \copydoc BoundaryOperator::BasisFunctionType */
+    /** \copydoc AbstractBoundaryOperator::BasisFunctionType */
     typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc BoundaryOperator::ResultType */
+    /** \copydoc AbstractBoundaryOperator::ResultType */
     typedef typename Base::ResultType ResultType;
-    /** \copydoc BoundaryOperator::CoordinateType */
+    /** \copydoc AbstractBoundaryOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc BoundaryOperator::LocalAssemblerFactory */
+    /** \copydoc AbstractBoundaryOperator::LocalAssemblerFactory */
     typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
     /** \brief Type of the appropriate instantiation of Fiber::LocalAssemblerForOperators. */
     typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
 
-    /** \copydoc BoundaryOperator::BoundaryOperator(const Space<BasisFunctionType>&, const Space<BasisFunctionType>&) */
-    ElementaryBoundaryOperator(const Space<BasisFunctionType>& domain,
+    /** \copydoc AbstractBoundaryOperator::AbstractBoundaryOperator(const Space<BasisFunctionType>&, const Space<BasisFunctionType>&) */
+    ElementaryAbstractBoundaryOperator(const Space<BasisFunctionType>& domain,
                              const Space<BasisFunctionType>& range,
                              const Space<BasisFunctionType>& dualToRange,
                              const std::string& label = "");
 
-    ~ElementaryBoundaryOperator();
+    ~ElementaryAbstractBoundaryOperator();
 
-    virtual std::vector<const ElementaryBoundaryOperator<BasisFunctionType_, ResultType_>*>
+    virtual std::vector<const ElementaryAbstractBoundaryOperator<BasisFunctionType_, ResultType_>*>
     constituentOperators() const;
     virtual std::vector<ResultType_> constituentOperatorWeights() const;
 
@@ -117,7 +117,7 @@ public:
      *
      *  This function is intended for internal use of the library. End users
      *  should not need to call it directly. They should use
-     *  BoundaryOperator::assembleDetachedWeakForm() instead.
+     *  AbstractBoundaryOperator::assembleDetachedWeakForm() instead.
      */
     shared_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInternal(
