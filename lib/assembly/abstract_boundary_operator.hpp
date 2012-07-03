@@ -49,6 +49,7 @@ template <typename eT> class Mat;
 namespace Bempp
 {
 
+class AbstractBoundaryOperatorId;
 class Grid;
 class GeometryFactory;
 template <typename ValueType> class DiscreteBoundaryOperator;
@@ -141,6 +142,18 @@ public:
      *  allocated on the heap.
      */
     virtual std::auto_ptr<AbstractBoundaryOperator> clone() const = 0;
+
+    /** \brief Identifier.
+     *
+     *  If the weak form of this operator is cacheable, return a shared pointer
+     *  to a valid instance of a subclass of AbstractBoundaryOperatorId that
+     *  is guaranteed to be different for all *logically different* abstract
+     *  boundary operators.
+     *
+     *  If the weak form of this operator is not cacheable, return a null shared
+     *  pointer. This is the default implementation.
+     */
+    virtual shared_ptr<AbstractBoundaryOperatorId> id() const;
 
     /** @}
      *  @name Spaces

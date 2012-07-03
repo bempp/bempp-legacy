@@ -50,6 +50,13 @@ AbstractBoundaryOperator<BasisFunctionType, ResultType>::~AbstractBoundaryOperat
 }
 
 template <typename BasisFunctionType, typename ResultType>
+shared_ptr<AbstractBoundaryOperatorId>
+AbstractBoundaryOperator<BasisFunctionType, ResultType>::id() const
+{
+    return shared_ptr<AbstractBoundaryOperatorId>();
+}
+
+template <typename BasisFunctionType, typename ResultType>
 void AbstractBoundaryOperator<BasisFunctionType, ResultType>::assembleWeakForm(
         const LocalAssemblerFactory& factory,
         const AssemblyOptions& options,
