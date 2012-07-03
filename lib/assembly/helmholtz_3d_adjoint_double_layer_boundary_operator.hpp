@@ -73,6 +73,8 @@ public:
             KernelType waveNumber,
             const std::string& label = "");
 
+    virtual ~Helmholtz3dAdjointDoubleLayerBoundaryOperator();
+
     virtual std::auto_ptr<BoundaryOperator<BasisFunctionType_, ResultType> >
     clone() const;
 };

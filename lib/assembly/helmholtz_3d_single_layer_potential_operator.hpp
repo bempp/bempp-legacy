@@ -64,6 +64,8 @@ public:
      *
      * See \ref helmholtz_3d for the definition of the wave number. */
     Helmholtz3dSingleLayerPotentialOperator(KernelType waveNumber);
+
+    virtual ~Helmholtz3dSingleLayerPotentialOperator();
 };
 
 } // namespace Bempp

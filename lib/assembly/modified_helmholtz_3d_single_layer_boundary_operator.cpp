@@ -76,6 +76,12 @@ ModifiedHelmholtz3dSingleLayerBoundaryOperator(
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
+ModifiedHelmholtz3dSingleLayerBoundaryOperator<BasisFunctionType, KernelType, ResultType>::
+~ModifiedHelmholtz3dSingleLayerBoundaryOperator()
+{
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<BoundaryOperator<BasisFunctionType, ResultType> >
 ModifiedHelmholtz3dSingleLayerBoundaryOperator<BasisFunctionType, KernelType, ResultType>::
 clone() const

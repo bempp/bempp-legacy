@@ -70,6 +70,12 @@ Helmholtz3dDoubleLayerPotentialOperator(KernelType waveNumber) :
 {
 }
 
+template <typename BasisFunctionType>
+Helmholtz3dDoubleLayerPotentialOperator<BasisFunctionType>::
+~Helmholtz3dDoubleLayerPotentialOperator()
+{
+}
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dDoubleLayerPotentialOperator);
 
 } // namespace Bempp

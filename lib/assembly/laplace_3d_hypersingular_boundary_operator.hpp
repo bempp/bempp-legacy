@@ -76,6 +76,8 @@ public:
             const Space<BasisFunctionType>& dualToRange,
             const std::string& label = "");
 
+    virtual ~Laplace3dHypersingularBoundaryOperator();
+
     virtual std::auto_ptr<BoundaryOperator<BasisFunctionType_, ResultType_> >
     clone() const;
 };

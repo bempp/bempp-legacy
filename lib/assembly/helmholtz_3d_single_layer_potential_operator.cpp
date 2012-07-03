@@ -70,6 +70,12 @@ Helmholtz3dSingleLayerPotentialOperator(KernelType waveNumber) :
 {
 }
 
+template <typename BasisFunctionType>
+Helmholtz3dSingleLayerPotentialOperator<BasisFunctionType>::
+~Helmholtz3dSingleLayerPotentialOperator()
+{
+}
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dSingleLayerPotentialOperator);
 
 } // namespace Bempp

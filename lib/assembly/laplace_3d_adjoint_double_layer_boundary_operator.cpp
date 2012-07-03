@@ -73,6 +73,12 @@ Laplace3dAdjointDoubleLayerBoundaryOperator(
 }
 
 template <typename BasisFunctionType, typename ResultType>
+Laplace3dAdjointDoubleLayerBoundaryOperator<BasisFunctionType, ResultType>::
+~Laplace3dAdjointDoubleLayerBoundaryOperator()
+{
+}
+
+template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<BoundaryOperator<BasisFunctionType, ResultType> >
 Laplace3dAdjointDoubleLayerBoundaryOperator<BasisFunctionType, ResultType>::clone() const
 {

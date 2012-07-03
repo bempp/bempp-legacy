@@ -78,6 +78,12 @@ Helmholtz3dHypersingularBoundaryOperator(
 }
 
 template <typename BasisFunctionType>
+Helmholtz3dHypersingularBoundaryOperator<BasisFunctionType>::
+~Helmholtz3dHypersingularBoundaryOperator()
+{
+}
+
+template <typename BasisFunctionType>
 std::auto_ptr<BoundaryOperator<BasisFunctionType,
 typename Helmholtz3dHypersingularBoundaryOperator<BasisFunctionType>::ResultType> >
 Helmholtz3dHypersingularBoundaryOperator<BasisFunctionType>::

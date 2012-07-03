@@ -75,6 +75,12 @@ Helmholtz3dDoubleLayerBoundaryOperator(
 }
 
 template <typename BasisFunctionType>
+Helmholtz3dDoubleLayerBoundaryOperator<BasisFunctionType>::
+~Helmholtz3dDoubleLayerBoundaryOperator()
+{
+}
+
+template <typename BasisFunctionType>
 std::auto_ptr<BoundaryOperator<BasisFunctionType,
 typename Helmholtz3dDoubleLayerBoundaryOperator<BasisFunctionType>::ResultType> >
 Helmholtz3dDoubleLayerBoundaryOperator<BasisFunctionType>::

@@ -76,6 +76,12 @@ ModifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
+ModifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator<BasisFunctionType, KernelType, ResultType>::
+~ModifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator()
+{
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<BoundaryOperator<BasisFunctionType, ResultType> >
 ModifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator<BasisFunctionType, KernelType, ResultType>::
 clone() const

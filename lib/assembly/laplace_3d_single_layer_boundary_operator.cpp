@@ -64,17 +64,18 @@ struct Laplace3dSingleLayerBoundaryOperatorImpl
 
 template <typename BasisFunctionType, typename ResultType>
 Laplace3dSingleLayerBoundaryOperator<BasisFunctionType, ResultType>::
-~Laplace3dSingleLayerBoundaryOperator(){}
-
-
-template <typename BasisFunctionType, typename ResultType>
-Laplace3dSingleLayerBoundaryOperator<BasisFunctionType, ResultType>::
 Laplace3dSingleLayerBoundaryOperator(
         const Space<BasisFunctionType>& domain,
         const Space<BasisFunctionType>& range,
         const Space<BasisFunctionType>& dualToRange,
         const std::string& label) :
     Base(domain, range, dualToRange, label)
+{
+}
+
+template <typename BasisFunctionType, typename ResultType>
+Laplace3dSingleLayerBoundaryOperator<BasisFunctionType, ResultType>::
+~Laplace3dSingleLayerBoundaryOperator()
 {
 }
 

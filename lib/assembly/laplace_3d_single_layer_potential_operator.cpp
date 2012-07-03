@@ -68,6 +68,13 @@ Laplace3dSingleLayerPotentialOperator()
 {
 }
 
+template <typename BasisFunctionType, typename ResultType>
+Laplace3dSingleLayerPotentialOperator<BasisFunctionType, ResultType>::
+~Laplace3dSingleLayerPotentialOperator()
+{
+}
+
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dSingleLayerPotentialOperator);
 
 } // namespace Bempp

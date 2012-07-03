@@ -76,8 +76,9 @@ Laplace3dDoubleLayerBoundaryOperator(
 
 template <typename BasisFunctionType, typename ResultType>
 Laplace3dDoubleLayerBoundaryOperator<BasisFunctionType, ResultType>::
-~Laplace3dDoubleLayerBoundaryOperator(){}
-
+~Laplace3dDoubleLayerBoundaryOperator()
+{
+}
 
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<BoundaryOperator<BasisFunctionType, ResultType> >

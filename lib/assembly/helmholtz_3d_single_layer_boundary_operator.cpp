@@ -75,6 +75,12 @@ Helmholtz3dSingleLayerBoundaryOperator(
 }
 
 template <typename BasisFunctionType>
+Helmholtz3dSingleLayerBoundaryOperator<BasisFunctionType>::
+~Helmholtz3dSingleLayerBoundaryOperator()
+{
+}
+
+template <typename BasisFunctionType>
 std::auto_ptr<BoundaryOperator<BasisFunctionType,
 typename Helmholtz3dSingleLayerBoundaryOperator<BasisFunctionType>::ResultType> >
 Helmholtz3dSingleLayerBoundaryOperator<BasisFunctionType>::
