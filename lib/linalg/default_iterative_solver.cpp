@@ -106,7 +106,7 @@ void DefaultIterativeSolver<BasisFunctionType, ResultType>::solve()
 {
     assert(m_rhs->domain()->dim() == 1);
 
-    const size_t size = m_rhs->range()->dim();
+    const size_t size = m_space.globalDofCount();
     m_sol.set_size(size);
     m_sol.fill(static_cast<ResultType>(0.));
 
