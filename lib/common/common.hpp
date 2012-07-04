@@ -19,11 +19,11 @@
 // THE SOFTWARE.
 
 
-#ifndef COMMON_HPP
-#define COMMON_HPP
+#ifndef bempp_common_hpp
+#define bempp_common_hpp
 
 #ifdef __INTEL_COMPILER
 #pragma warning(disable:279 186 858 262 1011 654 597)
 #endif
 
-#endif // COMMON_HPP
+#endif
