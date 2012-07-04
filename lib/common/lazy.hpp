@@ -64,6 +64,14 @@ public:
         return *m_value;
     }
 
+    T& operator*() {
+        return get();
+    }
+
+    T* operator->() {
+        return &get();
+    }
+
 private:
     Initialiser m_init;
     tbb::atomic<T*> m_value;
