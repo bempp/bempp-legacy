@@ -53,7 +53,7 @@ BoundaryOperatorComposition(const Base& outer, const Base& inner) :
                 m_outer->label() +
                 ", " +
                 m_inner->label() +
-                "): Domains of the outer term must be equal to the range of "
+                "): Domain of the outer term must be equal to the range of "
                 "the inner term");
 }
 
