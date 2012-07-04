@@ -78,10 +78,6 @@ public:
 
     ~ElementaryAbstractBoundaryOperator();
 
-    virtual std::vector<const ElementaryAbstractBoundaryOperator<BasisFunctionType_, ResultType_>*>
-    constituentOperators() const;
-    virtual std::vector<ResultType_> constituentOperatorWeights() const;
-
     /** \brief Construct a local assembler suitable for this operator using a specified factory.
      *
      *  \param[in] assemblerFactory  Assembler factory to be used to construct the assembler.

@@ -45,23 +45,6 @@ ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::vector<const ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>*>
-ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::
-constituentOperators() const
-{
-    return std::vector<const ElementaryAbstractBoundaryOperator<
-            BasisFunctionType, ResultType>*>(1 /* size */, this);
-}
-
-template <typename BasisFunctionType, typename ResultType>
-std::vector<ResultType>
-ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::
-constituentOperatorWeights() const
-{
-    return std::vector<ResultType>(1 /* size */, 1.);
-}
-
-template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteBoundaryOperator<ResultType> >
 ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::
 assembleWeakFormInternal(
