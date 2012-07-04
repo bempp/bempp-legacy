@@ -25,6 +25,7 @@
 #include "belos_solver_wrapper.hpp"
 
 #include "real_wrapper_of_complex_thyra_linear_operator.hpp"
+#include "real_wrapper_of_complex_thyra_preconditioner.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 #include <Teuchos_ArrayRCP.hpp>
@@ -35,6 +36,7 @@
 #include <Thyra_LinearOpWithSolveFactoryHelpers.hpp>
 #include <Thyra_SolveSupportTypes.hpp>
 #include <Thyra_OperatorVectorTypes.hpp>
+#include <Thyra_PreconditionerBase.hpp>
 
 #include <boost/type_traits/is_same.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -105,12 +107,22 @@ makeOperatorWithSolve(
     Teuchos::RCP<const Thyra::LinearOpBase<RealType> > realLinOp(
                 new RealWrapperOfComplexThyraLinearOperator<RealType>(linOp));
 
+    Teuchos::RCP<Thyra::LinearOpWithSolveBase<RealType> > result;
     if (preconditioner.is_null())
         // No preconditioner
-        return Thyra::linearOpWithSolve(invertibleOpFactory, realLinOp);
-    else
-        throw std::runtime_error("makeOperatorWithSolve(): preconditioners for"
-                                 "complex-valued operators are not supported yet");
+        result = Thyra::linearOpWithSolve(invertibleOpFactory, realLinOp);
+    else {
+        // Preconditioner defined
+        result = invertibleOpFactory.createOp();
+        Teuchos::RCP<const Thyra::LinearOpSourceBase<RealType> > realLinOpSourcePtr(
+                    new Thyra::DefaultLinearOpSource<RealType>(realLinOp));
+        Teuchos::RCP<const Thyra::PreconditionerBase<RealType> > realPreconditioner(
+                    new RealWrapperOfComplexThyraPreconditioner<RealType>(preconditioner));
+        invertibleOpFactory.initializePreconditionedOp(
+                    realLinOpSourcePtr, realPreconditioner, result.get(),
+                    Thyra::SUPPORT_SOLVE_UNSPECIFIED);
+    }
+    return result;
 }
 
 // Real ValueType
