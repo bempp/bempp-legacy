@@ -23,14 +23,14 @@
 
 #include "../common/common.hpp"
 
-#include "config_trilinos.hpp"
-
-#ifdef WITH_TRILINOS
-
+#include "belos_solver_wrapper_fwd.hpp"
 #include "../common/scalar_traits.hpp"
 
-#include <Thyra_SolveSupportTypes.hpp>
-#include <Thyra_PreconditionerBase.hpp>
+namespace Thyra
+{
+template <typename ValueType> class PreconditionerBase;
+template <typename ValueType> class LinearOpWithSolveBase;
+}
 
 namespace Bempp
 {
@@ -44,7 +44,9 @@ public:
     BelosSolverWrapper(
             const Teuchos::RCP<const Thyra::LinearOpBase<ValueType> >& linOp);
 
-    void addPreconditioner(
+    ~BelosSolverWrapper();
+
+    void setPreconditioner(
             const Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> >& preconditioner);
 
     void initializeSolver(
@@ -61,13 +63,6 @@ private:
     Teuchos::RCP<const Thyra::LinearOpWithSolveBase<MagnitudeType> > m_linOpWithSolve;
 };
 
-Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(double tol);
-Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(double tol);
-Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(float tol);
-Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(float tol);
-
 } // namespace Bempp
-
-#endif // WITH_TRILINOS
 
 #endif

@@ -229,7 +229,12 @@ BelosSolverWrapper<ValueType>::BelosSolverWrapper(
 }
 
 template <typename ValueType>
-void BelosSolverWrapper<ValueType>::addPreconditioner(
+BelosSolverWrapper<ValueType>::~BelosSolverWrapper()
+{
+}
+
+template <typename ValueType>
+void BelosSolverWrapper<ValueType>::setPreconditioner(
         const Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> >& preconditioner)
 {
     m_preconditioner = preconditioner;
