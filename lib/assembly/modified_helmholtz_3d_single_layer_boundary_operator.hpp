@@ -22,8 +22,7 @@
 #define bempp_modified_helmholtz_3d_single_layer_boundary_operator_hpp
 
 #include "modified_helmholtz_3d_boundary_operator_base.hpp"
-
-#include <boost/scoped_ptr.hpp>
+#include "boundary_operator.hpp"
 
 namespace Bempp
 {
@@ -95,6 +94,16 @@ public:
             KernelType waveNumber,
             const std::string& label = "");
 };
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
+modifiedHelmholtz3dSingleLayerBoundaryOperator(
+        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+        KernelType waveNumber,
+        const std::string& label = "");
 
 } // namespace Bempp
 

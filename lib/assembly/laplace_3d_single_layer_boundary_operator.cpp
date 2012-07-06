@@ -78,25 +78,25 @@ Laplace3dSingleLayerBoundaryOperator(
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 laplace3dSingleLayerBoundaryOperator(
-        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const Space<BasisFunctionType>& domain,
-        const Space<BasisFunctionType>& range,
-        const Space<BasisFunctionType>& dualToRange,
-        const std::string& label)
+       const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+       const shared_ptr<const Space<BasisFunctionType> >& domain,
+       const shared_ptr<const Space<BasisFunctionType> >& range,
+       const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+       const std::string& label)
 {
-    typedef Laplace3dSingleLayerBoundaryOperator<BasisFunctionType, ResultType> Op;
-    return BoundaryOperator<BasisFunctionType, ResultType>(
-                context, boost::make_shared<Op>(domain, range, dualToRange, label));
+   typedef Laplace3dSingleLayerBoundaryOperator<BasisFunctionType, ResultType> Op;
+   return BoundaryOperator<BasisFunctionType, ResultType>(
+               context, boost::make_shared<Op>(domain, range, dualToRange, label));
 }
 
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT) \
-    template BoundaryOperator<BASIS, RESULT> \
-    laplace3dSingleLayerBoundaryOperator( \
-        const shared_ptr<const Context<BASIS, RESULT> >&, \
-        const Space<BASIS>&, \
-        const Space<BASIS>&, \
-        const Space<BASIS>&, \
-        const std::string&)
+   template BoundaryOperator<BASIS, RESULT> \
+   laplace3dSingleLayerBoundaryOperator( \
+       const shared_ptr<const Context<BASIS, RESULT> >&, \
+       const shared_ptr<const Space<BASIS> >&, \
+       const shared_ptr<const Space<BASIS> >&, \
+       const shared_ptr<const Space<BASIS> >&, \
+       const std::string&)
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dSingleLayerBoundaryOperator);

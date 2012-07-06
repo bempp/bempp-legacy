@@ -31,6 +31,8 @@
 #include "../fiber/default_collection_of_basis_transformations.hpp"
 #include "../fiber/default_test_kernel_trial_integral.hpp"
 
+#include "../common/boost_make_shared_fwd.hpp"
+
 namespace Bempp
 {
 
@@ -73,6 +75,35 @@ Helmholtz3dSingleLayerBoundaryOperator(
     Base(domain, range, dualToRange, waveNumber, label)
 {
 }
+
+template <typename BasisFunctionType>
+BoundaryOperator<BasisFunctionType,
+typename Helmholtz3dSingleLayerBoundaryOperator<BasisFunctionType>::ResultType>
+helmholtz3dSingleLayerBoundaryOperator(
+        const shared_ptr<const Context<BasisFunctionType,
+        typename Helmholtz3dSingleLayerBoundaryOperator<BasisFunctionType>::ResultType> >& context,
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+        typename Helmholtz3dSingleLayerBoundaryOperator<BasisFunctionType>::KernelType waveNumber,
+        const std::string& label)
+{
+    typedef typename Helmholtz3dSingleLayerBoundaryOperator<BasisFunctionType>::ResultType ResultType;
+    typedef Helmholtz3dSingleLayerBoundaryOperator<BasisFunctionType> Op;
+    return BoundaryOperator<BasisFunctionType, ResultType>(
+                context, boost::make_shared<Op>(domain, range, dualToRange, waveNumber, label));
+}
+
+#define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS) \
+   template BoundaryOperator<BASIS, Helmholtz3dSingleLayerBoundaryOperator<BASIS>::ResultType> \
+   helmholtz3dSingleLayerBoundaryOperator( \
+       const shared_ptr<const Context<BASIS, Helmholtz3dSingleLayerBoundaryOperator<BASIS>::ResultType> >&, \
+       const shared_ptr<const Space<BASIS> >&, \
+       const shared_ptr<const Space<BASIS> >&, \
+       const shared_ptr<const Space<BASIS> >&, \
+       Helmholtz3dSingleLayerBoundaryOperator<BASIS>::KernelType, \
+       const std::string&)
+FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 #define INSTANTIATE_BASE(BASIS) \
     template class Helmholtz3dBoundaryOperatorBase< \

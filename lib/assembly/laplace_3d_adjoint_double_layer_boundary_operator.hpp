@@ -22,8 +22,7 @@
 #define bempp_laplace_3d_adjoint_double_layer_boundary_operator_hpp
 
 #include "laplace_3d_boundary_operator_base.hpp"
-
-#include <boost/scoped_ptr.hpp>
+#include "boundary_operator.hpp"
 
 namespace Bempp
 {
@@ -76,6 +75,15 @@ public:
             const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
             const std::string& label = "");
 };
+
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
+laplace3dAdjointDoubleLayerBoundaryOperator(
+        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+        const std::string& label = "");
 
 } // namespace Bempp
 

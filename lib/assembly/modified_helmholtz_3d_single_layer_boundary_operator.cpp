@@ -31,6 +31,8 @@
 #include "../fiber/default_collection_of_basis_transformations.hpp"
 #include "../fiber/default_test_kernel_trial_integral.hpp"
 
+#include "../common/boost_make_shared_fwd.hpp"
+
 namespace Bempp
 {
 
@@ -74,6 +76,34 @@ ModifiedHelmholtz3dSingleLayerBoundaryOperator(
     Base(domain, range, dualToRange, waveNumber, label)
 {
 }
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
+modifiedHelmholtz3dSingleLayerBoundaryOperator(
+       const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+       const shared_ptr<const Space<BasisFunctionType> >& domain,
+       const shared_ptr<const Space<BasisFunctionType> >& range,
+       const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+       KernelType waveNumber,
+       const std::string& label)
+{
+   typedef ModifiedHelmholtz3dSingleLayerBoundaryOperator<
+            BasisFunctionType, KernelType, ResultType> Op;
+   return BoundaryOperator<BasisFunctionType, ResultType>(
+               context,
+               boost::make_shared<Op>(domain, range, dualToRange, waveNumber, label));
+}
+
+#define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, KERNEL, RESULT) \
+   template BoundaryOperator<BASIS, RESULT> \
+   modifiedHelmholtz3dSingleLayerBoundaryOperator( \
+       const shared_ptr<const Context<BASIS, RESULT> >&, \
+       const shared_ptr<const Space<BASIS> >&, \
+       const shared_ptr<const Space<BASIS> >&, \
+       const shared_ptr<const Space<BASIS> >&, \
+       KERNEL, \
+       const std::string&)
+FIBER_ITERATE_OVER_BASIS_KERNEL_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 #define INSTANTIATE_BASE(BASIS, KERNEL, RESULT) \
     template class ModifiedHelmholtz3dBoundaryOperatorBase< \

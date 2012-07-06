@@ -24,11 +24,16 @@
 #include "laplace_3d_boundary_operator_base.hpp"
 #include "boundary_operator.hpp"
 
+#include "../common/boost_make_shared_fwd.hpp"
+
 namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType>
 struct Laplace3dSingleLayerBoundaryOperatorImpl;
+
+template <typename BasisFunctionType, typename ResultType>
+class Laplace3dSingleLayerBoundaryOperator;
 
 /** \ingroup laplace_3d
  *  \brief Single-layer-potential operator for the Laplace equation in 3D.
@@ -80,9 +85,9 @@ template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 laplace3dSingleLayerBoundaryOperator(
         const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const Space<BasisFunctionType>& domain,
-        const Space<BasisFunctionType>& range,
-        const Space<BasisFunctionType>& dualToRange,
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         const std::string& label = "");
 
 } // namespace Bempp
