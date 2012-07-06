@@ -24,8 +24,10 @@
 #include "identity_operator.hpp"
 
 #include "assembly_options.hpp"
+#include "boundary_operator.hpp"
 #include "discrete_dense_boundary_operator.hpp"
 #include "discrete_sparse_boundary_operator.hpp"
+#include "context.hpp"
 
 #include "../common/auto_timer.hpp"
 #include "../common/types.hpp"
@@ -141,6 +143,49 @@ inline int epetraSumIntoGlobalValues<std::complex<double> >(
 } // anonymous namespace
 #endif
 
+////////////////////////////////////////////////////////////////////////////////
+// IdentityOperatorId
+
+template <typename BasisFunctionType, typename ResultType>
+IdentityOperatorId<BasisFunctionType, ResultType>::IdentityOperatorId(
+        const IdentityOperator<BasisFunctionType, ResultType>& op) :
+    m_domain(&op.domain()), m_range(&op.range()), m_dualToRange(&op.dualToRange())
+{
+}
+
+template <typename BasisFunctionType, typename ResultType>
+size_t IdentityOperatorId<BasisFunctionType, ResultType>::hash() const
+{
+    typedef IdentityOperator<BasisFunctionType, ResultType>
+            OperatorType;
+    size_t result = tbb::tbb_hasher(typeid(OperatorType).name());
+    tbb_hash_combine(result, m_domain);
+    tbb_hash_combine(result, m_range);
+    tbb_hash_combine(result, m_dualToRange);
+    return result;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+bool IdentityOperatorId<BasisFunctionType, ResultType>::isEqual(
+        const AbstractBoundaryOperatorId &other) const
+{
+    // dynamic_cast won't suffice since we want to make sure both objects
+    // are of exactly the same type (dynamic_cast would succeed for a subclass)
+    if (typeid(other) == typeid(*this))
+    {
+        const IdentityOperatorId& otherCompatible =
+            static_cast<const IdentityOperatorId&>(other);
+        return (m_domain == otherCompatible.m_domain &&
+                m_range == otherCompatible.m_range &&
+                m_dualToRange == otherCompatible.m_dualToRange);
+    }
+    else
+        return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// IdentityOperator
+
 template <typename BasisFunctionType, typename ResultType>
 struct IdentityOperator<BasisFunctionType, ResultType>::Impl
 {
@@ -161,14 +206,17 @@ IdentityOperator<BasisFunctionType, ResultType>::IdentityOperator(
         const Space<BasisFunctionType>& dualToRange,
         const std::string& label) :
     Base(domain, range, dualToRange, label),
-    m_impl(new Impl)
+    m_impl(new Impl),
+    m_id(boost::make_shared<IdentityOperatorId<BasisFunctionType, ResultType> >(
+             *this))
 {
 }
 
 template <typename BasisFunctionType, typename ResultType>
 IdentityOperator<BasisFunctionType, ResultType>::IdentityOperator(
         const IdentityOperator& other) :
-    Base(other), m_impl(new Impl(*other.m_impl))
+    Base(other), m_impl(new Impl(*other.m_impl)),
+    m_id(other.m_id)
 {
 }
 
@@ -178,12 +226,10 @@ IdentityOperator<BasisFunctionType, ResultType>::~IdentityOperator()
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<AbstractBoundaryOperator<BasisFunctionType, ResultType> >
-IdentityOperator<BasisFunctionType, ResultType>::clone() const
+shared_ptr<const AbstractBoundaryOperatorId>
+IdentityOperator<BasisFunctionType, ResultType>::id() const
 {
-    typedef AbstractBoundaryOperator<BasisFunctionType, ResultType> LinOp;
-    typedef IdentityOperator<BasisFunctionType, ResultType> This;
-    return std::auto_ptr<LinOp>(new This(*this));
+    return m_id;
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -198,37 +244,32 @@ bool IdentityOperator<BasisFunctionType, ResultType>::supportsRepresentation(
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteBoundaryOperator<ResultType> >
 IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormImpl(
-        const LocalAssemblerFactory& factory,
-        const AssemblyOptions& options,
-        Symmetry symmetry)
+        const Context<BasisFunctionType, ResultType>& context) const
 {
     AutoTimer timer("\nAssembly took ");
-    std::auto_ptr<LocalAssembler> assembler = makeAssembler(factory, options);
-    return assembleWeakFormInternalImpl(*assembler, options, symmetry);
+    std::auto_ptr<LocalAssembler> assembler = makeAssembler(
+                context.localAssemblerFactory(), context.assemblyOptions());
+    return assembleWeakFormInternalImpl(*assembler, context.assemblyOptions());
 }
 
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteBoundaryOperator<ResultType> >
 IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInternalImpl(
         LocalAssembler& assembler,
-        const AssemblyOptions& options,
-        Symmetry symmetry)
+        const AssemblyOptions& options) const
 {
     switch (options.operatorRepresentation())
     {
     case AssemblyOptions::DENSE:
         return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
-                    assembleWeakFormInDenseMode(
-                        assembler, options, symmetry).release());
+                    assembleWeakFormInDenseMode(assembler, options).release());
     case AssemblyOptions::ACA:
 #ifdef WITH_TRILINOS
         return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
-                    assembleWeakFormInSparseMode(
-                        assembler, options, symmetry).release());
+                    assembleWeakFormInSparseMode(assembler, options).release());
 #else // Fallback to dense mode. Don't know whether this should be signalled to the user.
         return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
-                    assembleWeakFormInDenseMode(
-                        assembler, options, symmetry).release());
+                    assembleWeakFormInDenseMode(assembler, options).release());
 #endif
     default:
         throw std::runtime_error("IdentityOperator::assembleWeakFormImpl(): "
@@ -240,8 +281,7 @@ template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
 IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInDenseMode(
         LocalAssembler& assembler,
-        const AssemblyOptions& options,
-        Symmetry symmetry) const
+        const AssemblyOptions& options) const
 {
     const Space<BasisFunctionType>& testSpace = this->dualToRange();
     const Space<BasisFunctionType>& trialSpace = this->domain();
@@ -291,8 +331,7 @@ template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
 IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparseMode(
         LocalAssembler& assembler,
-        const AssemblyOptions& options,
-        Symmetry symmetry) const
+        const AssemblyOptions& options) const
 {
 #ifdef WITH_TRILINOS
     if (boost::is_complex<BasisFunctionType>::value)
@@ -419,6 +458,30 @@ IdentityOperator<BasisFunctionType, ResultType>::makeAssemblerImpl(
                 transformations, transformations,
                 openClHandler);
 }
+
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
+identityOperator(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+                 const Space<BasisFunctionType>& domain,
+                 const Space<BasisFunctionType>& range,
+                 const Space<BasisFunctionType>& dualToRange,
+                 const std::string& label)
+{
+    typedef IdentityOperator<BasisFunctionType, ResultType> Id;
+    return BoundaryOperator<BasisFunctionType, ResultType>(
+                context,
+                boost::make_shared<Id>(domain, range, dualToRange, label));
+}
+
+#define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT) \
+    template BoundaryOperator<BASIS, RESULT> \
+    identityOperator( \
+        const shared_ptr<const Context<BASIS, RESULT> >&, \
+        const Space<BASIS>&, \
+        const Space<BASIS>&, \
+        const Space<BASIS>&, \
+        const std::string&)
+FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(IdentityOperator);
 

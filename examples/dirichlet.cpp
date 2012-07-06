@@ -18,18 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#define private public
+
 #include "config_alugrid.hpp"
 #include "config_trilinos.hpp"
 
 #include "meshes.hpp"
 
 #include "assembly/assembly_options.hpp"
+#include "assembly/abstract_boundary_operator_sum.hpp"
+#include "assembly/boundary_operator.hpp"
+#include "assembly/context.hpp"
 #include "assembly/discrete_boundary_operator.hpp"
 #include "assembly/evaluation_options.hpp"
 #include "assembly/grid_function.hpp"
 #include "assembly/interpolated_function.hpp"
-#include "assembly/abstract_boundary_operator_sum.hpp"
 #include "assembly/default_local_assembler_factory_for_operators_on_surfaces.hpp"
+#include "assembly/surface_normal_independent_function.hpp"
 
 #include "assembly/identity_operator.hpp"
 #include "assembly/laplace_3d_single_layer_boundary_operator.hpp"
@@ -37,10 +42,9 @@
 #include "assembly/laplace_3d_single_layer_potential_operator.hpp"
 #include "assembly/laplace_3d_double_layer_potential_operator.hpp"
 
+#include "common/boost_make_shared_fwd.hpp"
 #include "common/scalar_traits.hpp"
 
-#include "grid/geometry.hpp"
-#include "grid/geometry_factory.hpp"
 #include "grid/grid_factory.hpp"
 #include "grid/grid.hpp"
 
@@ -120,29 +124,33 @@ int main(int argc, char* argv[])
     DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<BFT, RT>
             factory(accuracyOptions);
 
-    // We need the single layer, double layer, and the identity operator
+    Context<BFT, RT> context(make_shared_from_ref(factory), assemblyOptions);
 
-    Laplace3dSingleLayerBoundaryOperator<BFT, RT> slpOp(
+    // We need the single layer, double layer, and the identity operator
+    BoundaryOperator<BFT, RT> slpOp = laplace3dSingleLayerBoundaryOperator<BFT, RT>(
+                make_shared_from_ref(context),
                 HminusHalfSpace, HplusHalfSpace, HminusHalfSpace);
-    Laplace3dDoubleLayerBoundaryOperator<BFT, RT> dlpOp(
+    BoundaryOperator<BFT, RT> dlpOp = laplace3dDoubleLayerBoundaryOperator<BFT, RT>(
+                make_shared_from_ref(context),
                 HplusHalfSpace, HplusHalfSpace, HminusHalfSpace);
-    IdentityOperator<BFT, RT> id(
+    BoundaryOperator<BFT, RT> id = identityOperator<BFT, RT>(
+                make_shared_from_ref(context),
                 HplusHalfSpace, HplusHalfSpace, HminusHalfSpace);
 
     // Form the right-hand side sum
 
-    AbstractBoundaryOperatorSum<BFT, RT> rhsOp = -0.5 * id + dlpOp;
-
-    // Assemble the operators
-
-    slpOp.assembleWeakForm(factory, assemblyOptions);
-    rhsOp.assembleWeakForm(factory, assemblyOptions);
+    BoundaryOperator<BFT, RT> rhsOp = -0.5 * id + dlpOp;
 
     // We also want a grid function
 
-    GridFunction<BFT, RT> u = gridFunctionFromSurfaceNormalIndependentFunctor(
+//    GridFunction<BFT, RT> u = gridFunctionFromSurfaceNormalIndependentFunctor(
+//                make_shared_from_const_ref(context),
+//                HplusHalfSpace, HplusHalfSpace /* is this the right choice? */,
+//                MyFunctor());
+    GridFunction<BFT, RT> u = gridFunctionFromFiberFunction<BFT, RT>(
+                make_shared_from_ref(context),
                 HplusHalfSpace, HplusHalfSpace /* is this the right choice? */,
-                MyFunctor(), factory, assemblyOptions);
+                surfaceNormalIndependentFunction(MyFunctor()));
 
     // Assemble the rhs
 
@@ -154,9 +162,6 @@ int main(int argc, char* argv[])
 
     std::cout << "Initialize solver" << std::endl;
 
-    // WARNING: The default iterative solver does not support
-    // complex-valued operators, hence if you typedef RT to std::complex<...>,
-    // you need to use the direct solver.
 #ifdef WITH_TRILINOS
     DefaultIterativeSolver<BFT, RT> solver(slpOp, rhs);
     solver.initializeSolver(defaultGmresParameterList(1e-5));
@@ -166,6 +171,21 @@ int main(int argc, char* argv[])
     DefaultDirectSolver<BFT, RT> solver(slp, rhs);
     solver.solve();
 #endif
+
+    dlpOp.abstractOperator()->id()->dump();
+    const AbstractBoundaryOperatorSum<BFT, RT>& sumOp =
+            dynamic_cast<const AbstractBoundaryOperatorSum<BFT, RT>& >(
+                *(rhsOp.abstractOperator()));
+    sumOp.m_term2.abstractOperator()->id()->dump();
+    std::cout << "hashes: " << tbb::tbb_hasher(dlpOp.abstractOperator()->id()) << " "
+              << tbb::tbb_hasher(sumOp.m_term2.abstractOperator()->id()) << std::endl;
+
+    std::cout << "equal? " << (*sumOp.m_term2.abstractOperator()->id() == *dlpOp.abstractOperator()->id()) << std::endl;
+
+    std::cout << "slp" << std::endl;
+    slpOp.weakForm();
+    std::cout << "dlp" << std::endl;
+    dlpOp.weakForm();
 
     // Extract the solution
 
@@ -178,15 +198,15 @@ int main(int argc, char* argv[])
     solFun.exportToVtk(VtkWriter::VERTEX_DATA, "Neumann_data",
                        "calculated_neumann_data_vertex");
 
-//    // Uncomment the block below if you are solving the problem on a sphere and
-//    // you want to compare the numerical and analytical solution.
+    // Uncomment the block below if you are solving the problem on a sphere and
+    // you want to compare the numerical and analytical solution.
 
-//    arma::Col<RT> solutionCoefficients = solFun.coefficients();
-//    std::cout << solutionCoefficients << std::endl;
+    arma::Col<RT> solutionCoefficients = solFun.coefficients();
+    // std::cout << solutionCoefficients << std::endl;
 
-//    arma::Col<RT> deviation = solutionCoefficients - static_cast<RT>(-1.);
-//    // % in Armadillo -> elementwise multiplication
-//    RT stdDev = sqrt(arma::accu(deviation % deviation) /
-//                     static_cast<RT>(solutionCoefficients.n_rows));
-//    std::cout << "Standard deviation: " << stdDev << std::endl;
+    arma::Col<RT> deviation = solutionCoefficients - static_cast<RT>(-1.);
+    // % in Armadillo -> elementwise multiplication
+    RT stdDev = sqrt(arma::accu(deviation % deviation) /
+                     static_cast<RT>(solutionCoefficients.n_rows));
+    std::cout << "Standard deviation: " << stdDev << std::endl;
 }

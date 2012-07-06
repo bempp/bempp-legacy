@@ -22,8 +22,8 @@ public:
     typedef Fiber::LocalAssemblerFactory<BasisFunctionType, ResultType, GeometryFactory>
     LocalAssemblerFactory;
 
-    Context(const AssemblyOptions& assemblyOptions,
-            const shared_ptr<LocalAssemblerFactory>& localAssemblerFactory);
+    Context(const shared_ptr<LocalAssemblerFactory>& localAssemblerFactory,
+            const AssemblyOptions& assemblyOptions);
 
 //    static shared_ptr<const Context>& defaultContext() {
 //        return m_defaultContext;
@@ -36,11 +36,19 @@ public:
         return m_cache.getWeakForm(*this, op);
     }
 
+    const AssemblyOptions& assemblyOptions() const {
+        return m_assemblyOptions;
+    }
+
+    const LocalAssemblerFactory& localAssemblerFactory() const {
+        return *m_localAssemblerFactory;
+    }
+
 private:
 //    static shared_ptr<const Context> m_defaultContext;
 
-    AssemblyOptions m_assemblyOptions;
     shared_ptr<LocalAssemblerFactory> m_localAssemblerFactory;
+    AssemblyOptions m_assemblyOptions;
 
     mutable DiscreteBoundaryOperatorCache<BasisFunctionType, ResultType> m_cache;
 };

@@ -72,9 +72,10 @@ public:
 
     /** \copydoc AbstractBoundaryOperator::AbstractBoundaryOperator(const Space<BasisFunctionType>&, const Space<BasisFunctionType>&) */
     ElementaryAbstractBoundaryOperator(const Space<BasisFunctionType>& domain,
-                             const Space<BasisFunctionType>& range,
-                             const Space<BasisFunctionType>& dualToRange,
-                             const std::string& label = "");
+                                       const Space<BasisFunctionType>& range,
+                                       const Space<BasisFunctionType>& dualToRange,
+                                       const std::string& label = "",
+                                       Symmetry symmetry = NO_SYMMETRY);
 
     ~ElementaryAbstractBoundaryOperator();
 
@@ -118,8 +119,7 @@ public:
     shared_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInternal(
             LocalAssembler& assembler,
-            const AssemblyOptions& options,
-            Symmetry symmetry = NO_SYMMETRY);
+            const AssemblyOptions& options) const;
 
 private:
     virtual std::auto_ptr<LocalAssembler> makeAssemblerImpl(
@@ -137,8 +137,7 @@ private:
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType> >
     assembleWeakFormInternalImpl(
             LocalAssembler& assembler,
-            const AssemblyOptions& options,
-            Symmetry symmetry) = 0;
+            const AssemblyOptions& options) const = 0;
 };
 
 } // namespace Bempp

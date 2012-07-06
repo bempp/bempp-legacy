@@ -7,7 +7,7 @@ namespace Bempp
 
 template <typename ValueType>
 ScaledDiscreteBoundaryOperator<ValueType>::ScaledDiscreteBoundaryOperator(
-        ValueType multiplier, shared_ptr<const Base> &op) :
+        ValueType multiplier, const shared_ptr<const Base>& op) :
     m_multiplier(multiplier), m_operator(op)
 {
     if (!m_operator.get())

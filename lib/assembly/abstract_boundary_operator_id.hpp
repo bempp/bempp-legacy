@@ -1,6 +1,9 @@
 #ifndef bempp_abstract_boundary_operator_id_hpp
 #define bempp_abstract_boundary_operator_id_hpp
 
+#include "../common/common.hpp"
+#include "../common/shared_ptr.hpp"
+
 namespace Bempp
 {
 
@@ -8,9 +11,46 @@ class AbstractBoundaryOperatorId
 {
 public:
     virtual ~AbstractBoundaryOperatorId() {}
-    virtual bool less(const AbstractBoundaryOperatorId& other) const = 0;
+    virtual size_t hash() const = 0;
+    virtual void dump() const {}
+    virtual bool isEqual(const AbstractBoundaryOperatorId& other) const = 0;
+
+    bool operator==(const AbstractBoundaryOperatorId& other) const {
+        std::cout << "operator==(): " << isEqual(other) << std::endl;
+        return isEqual(other);
+    }
+
+    bool operator!=(const AbstractBoundaryOperatorId& other) const {
+        return !operator==(other);
+    }
 };
 
 } // namespace Bempp
+
+namespace tbb
+{
+
+inline size_t tbb_hasher(
+        const boost::shared_ptr<const Bempp::AbstractBoundaryOperatorId>& id)
+{
+    std::cout << "tbb_hasher<sp<ABId> >(): " << id->hash() << std::endl;
+    return id->hash();
+}
+
+} // namespace tbb
+
+#include <tbb/concurrent_unordered_map.h>
+
+namespace Bempp
+{
+
+// copied from Boost
+template <typename T>
+inline void tbb_hash_combine(size_t& seed, const T& v)
+{
+    seed ^= tbb::tbb_hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
+
+}
 
 #endif // bempp_abstract_boundary_operator_id_hpp

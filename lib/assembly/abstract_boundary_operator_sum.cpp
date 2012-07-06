@@ -20,6 +20,7 @@
 
 #include "abstract_boundary_operator_sum.hpp"
 
+#include "context.hpp"
 #include "discrete_boundary_operator_sum.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
@@ -29,81 +30,56 @@ namespace Bempp
 
 template <typename BasisFunctionType, typename ResultType>
 AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::
-AbstractBoundaryOperatorSum(const Base& term1, const Base& term2) :
+AbstractBoundaryOperatorSum(
+        const BoundaryOperator<BasisFunctionType, ResultType>& term1,
+        const BoundaryOperator<BasisFunctionType, ResultType>& term2) :
     Base(term1.domain(), term1.range(), term1.dualToRange(),
-         term1.label() + " + " + term2.label()),
-    m_term1(term1.clone()), m_term2(term2.clone())
+         "(" + term1.label() + " + " + term2.label() + ")"),
+    m_term1(term1), m_term2(term2)
 {
-    assert(m_term1.get());
-    assert(m_term2.get());
+    assert(m_term1.abstractOperator());
+    assert(m_term2.abstractOperator());
 
-    if (&m_term1->domain() != &m_term2->domain())
+    if (&m_term1.domain() != &m_term2.domain())
         throw std::invalid_argument(
                 "AbstractBoundaryOperatorSum::AbstractBoundaryOperatorSum(" +
-                m_term1->label() +
+                m_term1.label() +
                 ", " +
-                m_term2->label() +
+                m_term2.label() +
                 "): Domains of the two terms must be equal");
-    if (&m_term1->range() != &m_term2->range())
+    if (&m_term1.range() != &m_term2.range())
         throw std::invalid_argument(
                 "AbstractBoundaryOperatorSum::AbstractBoundaryOperatorSum(" +
-                m_term1->label() +
+                m_term1.label() +
                 ", " +
-                m_term2->label() +
+                m_term2.label() +
                 "): Ranges of the two terms must be equal");
-    if (&m_term1->dualToRange() != &m_term2->dualToRange())
+    if (&m_term1.dualToRange() != &m_term2.dualToRange())
         throw std::invalid_argument(
                 "AbstractBoundaryOperatorSum::AbstractBoundaryOperatorSum(" +
-                m_term1->label() +
+                m_term1.label() +
                 ", " +
-                m_term2->label() +
+                m_term2.label() +
                 "): Spaces dual to the ranges of the two terms must be equal");
-}
-
-template <typename BasisFunctionType, typename ResultType>
-AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::
-AbstractBoundaryOperatorSum(const AbstractBoundaryOperatorSum& other) :
-    Base(other), m_term1(other.m_term1->clone()), m_term2(other.m_term2->clone())
-{
-    assert(m_term1.get());
-    assert(m_term2.get());
-}
-
-template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<AbstractBoundaryOperator<BasisFunctionType, ResultType> >
-AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::clone() const
-{
-    typedef AbstractBoundaryOperator<BasisFunctionType, ResultType> LinOp;
-    typedef AbstractBoundaryOperatorSum<BasisFunctionType, ResultType> This;
-    return std::auto_ptr<LinOp>(new This(*this));
 }
 
 template <typename BasisFunctionType, typename ResultType>
 bool AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::supportsRepresentation(
         AssemblyOptions::Representation repr) const
 {
-    return (m_term1->supportsRepresentation(repr) &&
-            m_term2->supportsRepresentation(repr));
+    return (m_term1.abstractOperator()->supportsRepresentation(repr) &&
+            m_term2.abstractOperator()->supportsRepresentation(repr));
 }
 
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteBoundaryOperator<ResultType> >
 AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::
-assembleWeakFormImpl(const LocalAssemblerFactory& factory,
-                     const AssemblyOptions& options,
-                     Symmetry symmetry)
+assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) const
 {
     typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
 
-    if (!m_term1->isWeakFormAssembled())
-        m_term1->assembleWeakForm(factory, options, symmetry);
-    shared_ptr<const DiscreteLinOp> discreteTerm1 = m_term1->weakForm();
-    assert(discreteTerm1);
-
-    if (!m_term2->isWeakFormAssembled())
-        m_term2->assembleWeakForm(factory, options, symmetry);
-    shared_ptr<const DiscreteLinOp> discreteTerm2 = m_term2->weakForm();
-    assert(discreteTerm2);
+    shared_ptr<const DiscreteLinOp> discreteTerm1 = m_term1.weakForm();
+    shared_ptr<const DiscreteLinOp> discreteTerm2 = m_term2.weakForm();
 
     return shared_ptr<DiscreteLinOp>(new DiscreteBoundaryOperatorSum<ResultType>(
                                          discreteTerm1, discreteTerm2));

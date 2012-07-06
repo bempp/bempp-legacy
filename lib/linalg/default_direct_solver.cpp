@@ -21,6 +21,7 @@
 #include "default_direct_solver.hpp"
 
 #include "../assembly/abstract_boundary_operator.hpp"
+#include "../assembly/boundary_operator.hpp"
 #include "../assembly/discrete_boundary_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -29,15 +30,12 @@ namespace Bempp
 
 template <typename BasisFunctionType, typename ResultType>
 DefaultDirectSolver<BasisFunctionType, ResultType>::DefaultDirectSolver(
-        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& linearOperator,
+        const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOperator,
         const GridFunction<BasisFunctionType, ResultType>& gridFunction) :
-    m_linearOperator(linearOperator), m_gridFunction(gridFunction),
+    m_boundaryOperator(boundaryOperator), m_gridFunction(gridFunction),
     m_solution(), m_status(Solver<BasisFunctionType, ResultType>::UNKNOWN)
 {
-    if (!linearOperator.isWeakFormAssembled())
-        throw std::runtime_error("DefaultDirectSolver::DefaultDirectSolver(): "
-                                 "operator is not assembled");
-    if (&linearOperator.domain() != &gridFunction.space())
+    if (&boundaryOperator.abstractOperator()->domain() != &gridFunction.space())
         throw std::runtime_error("DefaultDirectSolver::DefaultDirectSolver(): "
                                  "spaces do not match");
 }
@@ -46,7 +44,7 @@ template <typename BasisFunctionType, typename ResultType>
 void DefaultDirectSolver<BasisFunctionType, ResultType>::solve()
 {
     m_solution = arma::solve(
-                m_linearOperator.weakForm()->asMatrix(),
+                m_boundaryOperator.weakForm()->asMatrix(),
                 m_gridFunction.projections());
     m_status = Solver<BasisFunctionType, ResultType>::CONVERGED;
 }
@@ -55,9 +53,11 @@ template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>
 DefaultDirectSolver<BasisFunctionType, ResultType>::getResult() const
 {
-    return gridFunctionFromCoefficients(m_linearOperator.domain(),
-                                        m_linearOperator.domain(), // is this the right choice?
-                                        m_solution);
+    return gridFunctionFromCoefficients(
+                m_boundaryOperator.context(),
+                m_boundaryOperator.abstractOperator()->domain(),
+                m_boundaryOperator.abstractOperator()->domain(), // is this the right choice?
+                m_solution);
 }
 
 template <typename BasisFunctionType, typename ResultType>

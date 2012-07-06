@@ -22,9 +22,60 @@
 #define bempp_laplace_3d_boundary_operator_base_imp_hpp
 
 #include "laplace_3d_boundary_operator_base.hpp"
+#include "../common/boost_make_shared_fwd.hpp"
 
 namespace Bempp
 {
+
+////////////////////////////////////////////////////////////////////////////////
+// Laplace3dBoundaryOperatorId
+
+template <typename BasisFunctionType>
+template <typename Impl, typename ResultType>
+Laplace3dBoundaryOperatorId<BasisFunctionType>::Laplace3dBoundaryOperatorId(
+        const Laplace3dBoundaryOperatorBase<Impl, BasisFunctionType, ResultType>& op) :
+    m_typeInfo(typeid(op)),
+    m_domain(&op.domain()), m_range(&op.range()), m_dualToRange(&op.dualToRange())
+{
+}
+
+template <typename BasisFunctionType>
+size_t Laplace3dBoundaryOperatorId<BasisFunctionType>::hash() const
+{
+    size_t result = tbb::tbb_hasher(m_typeInfo.name());
+    tbb_hash_combine(result, m_domain);
+    tbb_hash_combine(result, m_range);
+    tbb_hash_combine(result, m_dualToRange);
+    return result;
+}
+
+template <typename BasisFunctionType>
+void Laplace3dBoundaryOperatorId<BasisFunctionType>::dump() const
+{
+    std::cout << m_typeInfo.name() << ", " << m_domain << ", "
+              << m_range << ", " << m_dualToRange << std::endl;
+}
+
+template <typename BasisFunctionType>
+bool Laplace3dBoundaryOperatorId<BasisFunctionType>::isEqual(
+        const AbstractBoundaryOperatorId &other) const
+{
+    // dynamic_cast won't suffice since we want to make sure both objects
+    // are of exactly the same type (dynamic_cast would succeed for a subclass)
+    if (typeid(other) == typeid(*this)) {
+        const Laplace3dBoundaryOperatorId& otherCompatible =
+            static_cast<const Laplace3dBoundaryOperatorId&>(other);
+        return (m_typeInfo == otherCompatible.m_typeInfo &&
+                m_domain == otherCompatible.m_domain &&
+                m_range == otherCompatible.m_range &&
+                m_dualToRange == otherCompatible.m_dualToRange);
+    }
+    else
+        return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Laplace3dBoundaryOperatorBase
 
 template <typename Impl, typename BasisFunctionType, typename ResultType>
 Laplace3dBoundaryOperatorBase<Impl, BasisFunctionType, ResultType>::
@@ -33,7 +84,9 @@ Laplace3dBoundaryOperatorBase(
         const Space<BasisFunctionType>& range,
         const Space<BasisFunctionType>& dualToRange,
         const std::string& label) :
-    Base(domain, range, dualToRange, label), m_impl(new Impl)
+    Base(domain, range, dualToRange, label), m_impl(new Impl),
+    m_id(boost::make_shared<Laplace3dBoundaryOperatorId<BasisFunctionType> >(
+             *this))
 {
 }
 
@@ -41,7 +94,7 @@ template <typename Impl, typename BasisFunctionType, typename ResultType>
 Laplace3dBoundaryOperatorBase<Impl, BasisFunctionType, ResultType>::
 Laplace3dBoundaryOperatorBase(
         const Laplace3dBoundaryOperatorBase& other) :
-    Base(other), m_impl(new Impl(*other.m_impl))
+    Base(other), m_impl(new Impl(*other.m_impl)), m_id(other.m_id)
 {
 }
 
@@ -49,6 +102,13 @@ template <typename Impl, typename BasisFunctionType, typename ResultType>
 Laplace3dBoundaryOperatorBase<Impl, BasisFunctionType, ResultType>::
 ~Laplace3dBoundaryOperatorBase()
 {
+}
+
+template <typename Impl, typename BasisFunctionType, typename ResultType>
+shared_ptr<const AbstractBoundaryOperatorId>
+Laplace3dBoundaryOperatorBase<Impl, BasisFunctionType, ResultType>::id() const
+{
+    return m_id;
 }
 
 template <typename Impl, typename BasisFunctionType, typename ResultType>

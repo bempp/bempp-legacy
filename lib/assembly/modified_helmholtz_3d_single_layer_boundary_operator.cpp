@@ -75,17 +75,6 @@ ModifiedHelmholtz3dSingleLayerBoundaryOperator(
 {
 }
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
-std::auto_ptr<AbstractBoundaryOperator<BasisFunctionType, ResultType> >
-ModifiedHelmholtz3dSingleLayerBoundaryOperator<BasisFunctionType, KernelType, ResultType>::
-clone() const
-{
-    typedef AbstractBoundaryOperator<BasisFunctionType, ResultType> LinOp;
-    typedef ModifiedHelmholtz3dSingleLayerBoundaryOperator<
-            BasisFunctionType, KernelType, ResultType> This;
-    return std::auto_ptr<LinOp>(new This(*this));
-}
-
 #define INSTANTIATE_BASE(BASIS, KERNEL, RESULT) \
     template class ModifiedHelmholtz3dBoundaryOperatorBase< \
     ModifiedHelmholtz3dSingleLayerBoundaryOperatorImpl<BASIS, KERNEL, RESULT>, \

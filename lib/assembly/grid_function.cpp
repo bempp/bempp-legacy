@@ -20,8 +20,12 @@
 
 #include "grid_function.hpp"
 
+#include "abstract_boundary_operator_pseudoinverse.hpp"
 #include "assembly_options.hpp"
+#include "boundary_operator.hpp"
+#include "context.hpp"
 #include "discrete_boundary_operator.hpp"
+#include "identity_operator.hpp"
 #include "local_assembler_construction_helper.hpp"
 
 #include "../common/stl_io.hpp"
@@ -115,16 +119,17 @@ arma::Col<ResultType> reallyCalculateProjections(
   the given dual space. */
 template <typename BasisFunctionType, typename ResultType>
 arma::Col<ResultType> calculateProjections(
+        const Context<BasisFunctionType, ResultType>& context,
         const Fiber::Function<ResultType>& globalFunction,
-        const Space<BasisFunctionType>& dualSpace,
-        const typename GridFunction<BasisFunctionType, ResultType>::LocalAssemblerFactory& factory,
-        const AssemblyOptions& options)
+        const Space<BasisFunctionType>& dualSpace)
 {
     if (!dualSpace.dofsAssigned())
         throw std::runtime_error(
                 "GridFunction::calculateProjections(): "
                 "degrees of freedom of the provided dual space must be assigned "
                 "before calling calculateProjections()");
+
+    const AssemblyOptions& options = context.assemblyOptions();
 
     // Prepare local assembler
     typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
@@ -149,7 +154,7 @@ arma::Col<ResultType> calculateProjections(
 
     typedef Fiber::LocalAssemblerForGridFunctions<ResultType> LocalAssembler;
     std::auto_ptr<LocalAssembler> assembler =
-            factory.makeAssemblerForGridFunctions(
+            context.localAssemblerFactory().makeAssemblerForGridFunctions(
                 geometryFactory, rawGeometry,
                 testBases,
                 make_shared_from_ref(testTransformations),
@@ -164,49 +169,50 @@ arma::Col<ResultType> calculateProjections(
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>
 gridFunctionFromFiberFunction(
+        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
         const Space<BasisFunctionType>& space,
         const Space<BasisFunctionType>& dualSpace,
-        const Fiber::Function<ResultType>& function,
-        const typename GridFunction<BasisFunctionType, ResultType>::LocalAssemblerFactory& factory,
-        const AssemblyOptions& assemblyOptions)
+        const Fiber::Function<ResultType>& function)
 {
     // TODO: use dualSpace
     arma::Col<ResultType> projections =
-            calculateProjections(function, dualSpace, factory, assemblyOptions);
+            calculateProjections(*context, function, dualSpace);
     std::cout << "projections calculated" << std::endl;
-    return gridFunctionFromProjections(space, dualSpace, projections);
+    return gridFunctionFromProjections(context, space, dualSpace, projections);
 }
 
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>
-gridFunctionFromCoefficients(const Space<BasisFunctionType>& space,
-                             const Space<BasisFunctionType>& dualSpace,
-                             const arma::Col<ResultType>& coefficients)
+gridFunctionFromCoefficients(
+        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+        const Space<BasisFunctionType>& space,
+        const Space<BasisFunctionType>& dualSpace,
+        const arma::Col<ResultType>& coefficients)
 {
     typedef GridFunction<BasisFunctionType, ResultType> GF;
-    return GF(space, dualSpace, coefficients, GF::COEFFICIENTS);
+    return GF(context, space, dualSpace, coefficients, GF::COEFFICIENTS);
 }
 
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>
-gridFunctionFromProjections(const Space<BasisFunctionType>& space,
-                            const Space<BasisFunctionType>& dualSpace,
-                            const arma::Col<ResultType>& projections)
+gridFunctionFromProjections(
+        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+        const Space<BasisFunctionType>& space,
+        const Space<BasisFunctionType>& dualSpace,
+        const arma::Col<ResultType>& projections)
 {
     typedef GridFunction<BasisFunctionType, ResultType> GF;
-    return GF(space, dualSpace, projections, GF::PROJECTIONS);
+    return GF(context, space, dualSpace, projections, GF::PROJECTIONS);
 }
 
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>::GridFunction(
+        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
         const Space<BasisFunctionType>& space,
         const Space<BasisFunctionType>& dualSpace,
         const arma::Col<ResultType>& data,
         DataType dataType) :
-    m_space(space), m_dualSpace(dualSpace),
-    m_massMatrixContainer(
-        MassMatrixContainerInitialiser<BasisFunctionType, ResultType>(
-            space, dualSpace))
+    m_context(context), m_space(space), m_dualSpace(dualSpace)
 {
     if (&space.grid() != &dualSpace.grid())
         throw std::invalid_argument(
@@ -236,15 +242,13 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
 
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>::GridFunction(
+        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
         const Space<BasisFunctionType>& space,
         const Space<BasisFunctionType>& dualSpace,
         const arma::Col<ResultType>& coefficients,
         const arma::Col<ResultType>& projections) :
-    m_space(space), m_dualSpace(dualSpace),
-    m_coefficients(coefficients), m_projections(projections),
-    m_massMatrixContainer(
-        MassMatrixContainerInitialiser<BasisFunctionType, ResultType>(
-            space, dualSpace, true /*force dense*/))
+    m_context(context), m_space(space), m_dualSpace(dualSpace),
+    m_coefficients(coefficients), m_projections(projections)
 {
     if (&space.grid() != &dualSpace.grid())
         throw std::invalid_argument(
@@ -287,6 +291,14 @@ GridFunction<BasisFunctionType, ResultType>::dualSpace() const
     return m_dualSpace;
 }
 
+
+template <typename BasisFunctionType, typename ResultType>
+shared_ptr<const Context<BasisFunctionType, ResultType> >
+GridFunction<BasisFunctionType, ResultType>::context() const
+{
+    return m_context;
+}
+
 template <typename BasisFunctionType, typename ResultType>
 int GridFunction<BasisFunctionType, ResultType>::codomainDimension() const
 {
@@ -297,11 +309,16 @@ template <typename BasisFunctionType, typename ResultType>
 const arma::Col<ResultType>& 
 GridFunction<BasisFunctionType, ResultType>::coefficients() const
 {
+    typedef BoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
     if (m_coefficients.n_rows != m_space.globalDofCount()) {
         try {
-            std::cout << "Recalculating coefficients" << std::endl;
+            // Calculate the (pseudo)inverse mass matrix
+            BoundaryOp id = identityOperator(
+                        m_context, m_space, m_space, m_dualSpace, "I");
+            BoundaryOp pinvId = pseudoinverse(id);
+
             m_coefficients.set_size(m_space.globalDofCount());
-            m_massMatrixContainer.get().massMatrixPseudoinverse->apply(
+            pinvId.weakForm()->apply(
                         NO_TRANSPOSE, m_projections, m_coefficients,
                         static_cast<ResultType>(1.), static_cast<ResultType>(0.));
         }
@@ -331,11 +348,16 @@ const arma::Col<ResultType>&
 GridFunction<BasisFunctionType, ResultType>::projections() const
 {
     // TODO: make thread-safe
+    typedef BoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
     if (m_projections.n_rows != m_dualSpace.globalDofCount()) {
         std::cout << "Recalculating projections" << std::endl;
         try {
+            // Calculate the (pseudo)inverse mass matrix
+            BoundaryOp id = identityOperator(
+                        m_context, m_space, m_space, m_dualSpace, "I");
+
             m_projections.set_size(m_dualSpace.globalDofCount());
-            m_massMatrixContainer.get().massMatrix->apply(
+            id.weakForm()->apply(
                         NO_TRANSPOSE, m_coefficients, m_projections,
                         static_cast<ResultType>(1.), static_cast<ResultType>(0.));
         }
@@ -613,6 +635,7 @@ GridFunction<BasisFunctionType, ResultType> operator+(
     if (&g1.space() != &g2.space())
         throw std::runtime_error("GridFunction::operator+(): spaces don't match");
     return GridFunction<BasisFunctionType, ResultType>(
+                g1.context(), // arbitrary choice...
                 g1.space(),
                 g1.dualSpace(),
                 g1.coefficients() + g2.coefficients(),
@@ -627,6 +650,7 @@ GridFunction<BasisFunctionType, ResultType> operator-(
     if (&g1.space() != &g2.space())
         throw std::runtime_error("GridFunction::operator-(): spaces don't match");
     return GridFunction<BasisFunctionType, ResultType>(
+                g1.context(), // arbitrary choice...
                 g1.space(),
                 g1.dualSpace(),
                 g1.coefficients() - g2.coefficients(),
@@ -638,6 +662,7 @@ GridFunction<BasisFunctionType, ResultType> operator*(
         const GridFunction<BasisFunctionType, ResultType>& g1, const ScalarType& scalar)
 {
     return GridFunction<BasisFunctionType, ResultType>(
+                g1.context(), // arbitrary choice...
                 g1.space(),
                 g1.dualSpace(),
                 static_cast<ResultType>(scalar) * g1.coefficients(),
@@ -670,20 +695,21 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
 #define INSTANTIATE_FREE_FUNCTIONS(BASIS, RESULT) \
     template GridFunction<BASIS, RESULT> \
     gridFunctionFromFiberFunction( \
+    const shared_ptr<const Context<BASIS, RESULT> >& context, \
     const Space<BASIS>& space, \
     const Space<BASIS>& dualSpace, \
-    const Fiber::Function<RESULT>& function, \
-    const GridFunction<BASIS, RESULT>::LocalAssemblerFactory& factory, \
-    const AssemblyOptions& assemblyOptions); \
+    const Fiber::Function<RESULT>& function); \
     \
     template GridFunction<BASIS, RESULT> \
     gridFunctionFromCoefficients( \
+    const shared_ptr<const Context<BASIS, RESULT> >& context, \
     const Space<BASIS>& space, \
     const Space<BASIS>& dualSpace, \
     const arma::Col<RESULT>& coefficients); \
     \
     template GridFunction<BASIS, RESULT> \
     gridFunctionFromProjections( \
+    const shared_ptr<const Context<BASIS, RESULT> >& context, \
     const Space<BASIS>& space, \
     const Space<BASIS>& dualSpace, \
     const arma::Col<RESULT>& coefficients); \

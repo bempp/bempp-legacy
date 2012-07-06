@@ -24,6 +24,7 @@
 #include "../common/common.hpp"
 
 #include "abstract_boundary_operator.hpp"
+#include "boundary_operator.hpp"
 
 namespace Fiber
 {
@@ -43,8 +44,8 @@ template <typename BasisFunctionType_, typename ResultType_>
 class AbstractBoundaryOperatorSum :
         public AbstractBoundaryOperator<BasisFunctionType_, ResultType_>
 {
-public:
     typedef AbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
+public:
     /** \copydoc AbstractBoundaryOperator::BasisFunctionType */
     typedef typename Base::BasisFunctionType BasisFunctionType;
     /** \copydoc AbstractBoundaryOperator::ResultType */
@@ -56,11 +57,9 @@ public:
     typedef typename Fiber::LocalAssemblerForOperators<ResultType>
     LocalAssembler;
 
-    AbstractBoundaryOperatorSum(const Base& term1, const Base& term2);
-    AbstractBoundaryOperatorSum(const AbstractBoundaryOperatorSum& other);
-
-    virtual std::auto_ptr<AbstractBoundaryOperator<BasisFunctionType_, ResultType_> >
-    clone() const;
+    AbstractBoundaryOperatorSum(
+            const BoundaryOperator<BasisFunctionType, ResultType>& term1,
+            const BoundaryOperator<BasisFunctionType, ResultType>& term2);
 
     virtual bool supportsRepresentation(
             AssemblyOptions::Representation repr) const;
@@ -68,12 +67,10 @@ public:
 protected:
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormImpl(
-            const LocalAssemblerFactory& factory,
-            const AssemblyOptions& options,
-            Symmetry symmetry);
+            const Context<BasisFunctionType, ResultType>& context) const;
 
 private:
-    std::auto_ptr<Base> m_term1, m_term2;
+    BoundaryOperator<BasisFunctionType, ResultType> m_term1, m_term2;
 };
 
 } //namespace Bempp

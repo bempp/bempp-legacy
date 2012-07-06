@@ -89,9 +89,7 @@ protected:
         @{ */
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormImpl(
-            const LocalAssemblerFactory& factory,
-            const AssemblyOptions& options,
-            Symmetry symmetry);
+            const Context<BasisFunctionType, ResultType>& context) const;
 
 private:
     virtual const CollectionOfKernels& kernels() const = 0;
@@ -116,19 +114,16 @@ private:
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInternalImpl(
             LocalAssembler& assembler,
-            const AssemblyOptions& options,
-            Symmetry symmetry);
+            const AssemblyOptions& options) const;
 
     std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInDenseMode(
             LocalAssembler& assembler,
-            const AssemblyOptions &options,
-            Symmetry symmetry) const;
+            const AssemblyOptions &options) const;
     std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInAcaMode(
             LocalAssembler& assembler,
-            const AssemblyOptions& options,
-            Symmetry symmetry) const;
+            const AssemblyOptions& options) const;
     /** @} */
 
 };

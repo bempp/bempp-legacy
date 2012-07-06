@@ -26,6 +26,7 @@
 
 #include "elementary_abstract_boundary_operator.hpp"
 
+#include "abstract_boundary_operator_id.hpp"
 #include <boost/scoped_ptr.hpp>
 
 namespace Fiber
@@ -37,6 +38,23 @@ template <typename ResultType> class LocalAssemblerForOperators;
 
 namespace Bempp
 {
+
+template <typename BasisFunctionType, typename ResultType> class BoundaryOperator;
+template <typename BasisFunctionType, typename ResultType> class IdentityOperator;
+
+template <typename BasisFunctionType, typename ResultType>
+class IdentityOperatorId : public AbstractBoundaryOperatorId
+{
+public:
+    IdentityOperatorId(const IdentityOperator<BasisFunctionType, ResultType>& op);
+    virtual size_t hash() const;
+    virtual bool isEqual(const AbstractBoundaryOperatorId &other) const;
+
+private:
+    const Space<BasisFunctionType>* m_domain;
+    const Space<BasisFunctionType>* m_range;
+    const Space<BasisFunctionType>* m_dualToRange;
+};
 
 template <typename BasisFunctionType_, typename ResultType_>
 class IdentityOperator :
@@ -57,17 +75,14 @@ public:
     IdentityOperator(const IdentityOperator& other);
     virtual ~IdentityOperator();
 
-    virtual std::auto_ptr<AbstractBoundaryOperator<BasisFunctionType_, ResultType_> >
-    clone() const;
+    virtual shared_ptr<const AbstractBoundaryOperatorId> id() const;
 
     virtual bool supportsRepresentation(AssemblyOptions::Representation repr) const;
 
 protected:
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormImpl(
-            const LocalAssemblerFactory& factory,
-            const AssemblyOptions& options,
-            Symmetry symmetry);
+            const Context<BasisFunctionType, ResultType>& context) const;
 
 private:
     virtual std::auto_ptr<LocalAssembler> makeAssemblerImpl(
@@ -85,25 +100,31 @@ private:
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInternalImpl(
             LocalAssembler& assembler,
-            const AssemblyOptions& options,
-            Symmetry symmetry);
+            const AssemblyOptions& options) const;
 
     std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInDenseMode(
             LocalAssembler& assembler,
-            const AssemblyOptions& options,
-            Symmetry symmetry) const;
+            const AssemblyOptions& options) const;
 
     std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInSparseMode(
             LocalAssembler& assembler,
-            const AssemblyOptions& options,
-            Symmetry symmetry) const;
+            const AssemblyOptions& options) const;
 
 private:
     struct Impl;
     boost::scoped_ptr<Impl> m_impl;
+    boost::shared_ptr<const AbstractBoundaryOperatorId> m_id;
 };
+
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
+identityOperator(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+                 const Space<BasisFunctionType>& domain,
+                 const Space<BasisFunctionType>& range,
+                 const Space<BasisFunctionType>& dualToRange,
+                 const std::string& label = "");
 
 } // namespace Bempp
 

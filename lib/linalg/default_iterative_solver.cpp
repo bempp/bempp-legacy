@@ -27,6 +27,7 @@
 #include "real_wrapper_of_complex_thyra_linear_operator.hpp"
 #include "../assembly/discrete_boundary_operator.hpp"
 #include "../assembly/abstract_boundary_operator.hpp"
+#include "../assembly/boundary_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 #include <Teuchos_RCPBoostSharedPtrConversions.hpp>
@@ -36,17 +37,18 @@ namespace Bempp
 
 template <typename BasisFunctionType, typename ResultType>
 DefaultIterativeSolver<BasisFunctionType, ResultType>::DefaultIterativeSolver(
-        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& linOp,
+        const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
         const GridFunction<BasisFunctionType, ResultType>& rhsGridFun) :
+    m_context(boundaryOp.context()),
     m_belosSolverWrapper(
         Teuchos::rcp<const Thyra::LinearOpBase<ResultType> >(
-            linOp.weakForm())),
-    m_space(linOp.domain()),
+            boundaryOp.weakForm())),
+    m_space(boundaryOp.domain()),
     // TODO: gridFun.projections should return a shared pointer to Vector
     // rather than a Vector
     m_rhs(new Vector<ResultType>(rhsGridFun.projections()))
 {
-    if (&linOp.dualToRange() != &rhsGridFun.dualSpace())
+    if (&boundaryOp.dualToRange() != &rhsGridFun.dualSpace())
         throw std::runtime_error("DefaultIterativeSolver::DefaultIterativeSolver(): "
                                  "spaces do not match");
 }
@@ -89,7 +91,8 @@ template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>
 DefaultIterativeSolver<BasisFunctionType, ResultType>::getResult() const
 {
-    return gridFunctionFromCoefficients(m_space,
+    return gridFunctionFromCoefficients(m_context,
+                                        m_space,
                                         m_space, // is this the right choice?
                                         m_sol);
 }

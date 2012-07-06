@@ -24,12 +24,11 @@
 
 #include "../common/common.hpp"
 
-#include "mass_matrix_container_initialiser.hpp"
-#include "mass_matrix_container.hpp"
 #include "vector.hpp"
 
 #include "../common/armadillo_fwd.hpp"
 #include "../common/lazy.hpp"
+#include "../common/shared_ptr.hpp"
 
 #include "../grid/vtk_writer.hpp"
 #include "../fiber/local_assembler_factory.hpp"
@@ -59,7 +58,7 @@ class GeometryFactory;
 class Grid;
 template <int codim> class Entity;
 template <typename BasisFunctionType> class Space;
-
+template <typename BasisFunctionType, typename ResultType> class Context;
 
 /** \brief Function defined on a grid.
  *  \ingroup assembly
@@ -91,7 +90,8 @@ public:
      * \note End users should not need to call this constructor directly.
      * Use instead one of the "non-member constructors"
      * <tt>gridFunctionFrom...()</tt>. */
-    GridFunction(const Space<BasisFunctionType>& space,
+    GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+                 const Space<BasisFunctionType>& space,
                  const Space<BasisFunctionType>& dualSpace,
                  const arma::Col<ResultType>& data,
                  DataType dataType);
@@ -111,7 +111,8 @@ public:
      * \note End users should not need to call this constructor directly.
      * Use instead one of the "non-member constructors"
      * <tt>gridFunctionFrom...()</tt>. */
-    GridFunction(const Space<BasisFunctionType>& space,
+    GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+                 const Space<BasisFunctionType>& space,
                  const Space<BasisFunctionType>& dualSpace,
                  const arma::Col<ResultType>& coefficients,
                  const arma::Col<ResultType>& projections);
@@ -124,6 +125,8 @@ public:
 
     /** \brief Space dual to the space in which this function is expanded. */
     const Space<BasisFunctionType>& dualSpace() const;
+
+    shared_ptr<const Context<BasisFunctionType, ResultType> > context() const;
 
     int codomainDimension() const;
 
@@ -166,14 +169,11 @@ private:
             VtkWriter::DataType dataType, arma::Mat<ResultType>& result) const;
 
 private:
+    const shared_ptr<const Context<BasisFunctionType, ResultType> > m_context;
     const Space<BasisFunctionType>& m_space;
     const Space<BasisFunctionType>& m_dualSpace;
     mutable arma::Col<ResultType> m_coefficients;
     mutable arma::Col<ResultType> m_projections;
-
-    mutable Lazy<MassMatrixContainer<ResultType>,
-    MassMatrixContainerInitialiser<BasisFunctionType, ResultType> >
-    m_massMatrixContainer;
 };
 
 // Overloaded operators
@@ -305,9 +305,11 @@ GridFunction<BasisFunctionType, ResultType> operator/(
  *                         function in the chosen space. */
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>
-gridFunctionFromCoefficients(const Space<BasisFunctionType>& space,
-                             const Space<BasisFunctionType>& dualSpace,
-                             const arma::Col<ResultType>& coefficients);
+gridFunctionFromCoefficients(
+        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+        const Space<BasisFunctionType>& space,
+        const Space<BasisFunctionType>& dualSpace,
+        const arma::Col<ResultType>& coefficients);
 
 /** \brief Construct a grid function from its expansion coefficients in a function space.
  *
@@ -316,19 +318,20 @@ gridFunctionFromCoefficients(const Space<BasisFunctionType>& space,
  *                         functions of the chosen space. */
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>
-gridFunctionFromProjections(const Space<BasisFunctionType>& space,
-                            const Space<BasisFunctionType>& dualSpace,
-                            const arma::Col<ResultType>& projections);
+gridFunctionFromProjections(
+        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+        const Space<BasisFunctionType>& space,
+        const Space<BasisFunctionType>& dualSpace,
+        const arma::Col<ResultType>& projections);
 
 /** \brief Construct a grid function from a Fiber::Function object. */
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>
 gridFunctionFromFiberFunction(
+        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
         const Space<BasisFunctionType>& space,
         const Space<BasisFunctionType>& dualSpace,
-        const Fiber::Function<ResultType>& function,
-        const typename GridFunction<BasisFunctionType, ResultType>::LocalAssemblerFactory& factory,
-        const AssemblyOptions& assemblyOptions);
+        const Fiber::Function<ResultType>& function);
 
 /** \brief Construct a grid function from a functor independent from surface orientation.
  *
@@ -345,15 +348,14 @@ gridFunctionFromFiberFunction(
 template <typename BasisFunctionType, typename Functor>
 GridFunction<BasisFunctionType, typename Functor::ValueType>
 inline gridFunctionFromSurfaceNormalIndependentFunctor(
+        const shared_ptr<const Context<BasisFunctionType, typename Functor::ValueType> >& context,
         const Space<BasisFunctionType>& space,
         const Space<BasisFunctionType>& dualSpace,
-        const Functor& functor,
-        const typename GridFunction<BasisFunctionType, typename Functor::ValueType>::LocalAssemblerFactory& factory,
-        const AssemblyOptions& assemblyOptions)
+        const Functor& functor)
 {
     Fiber::SurfaceNormalIndependentFunction<Functor> fiberFunction(functor);
     return gridFunctionFromFiberFunction(
-                space, dualSpace, fiberFunction, factory, assemblyOptions);
+                context, space, dualSpace, fiberFunction);
 }
 
 /** \brief Construct a grid function from a functor dependent on surface orientation.
@@ -372,15 +374,14 @@ inline gridFunctionFromSurfaceNormalIndependentFunctor(
 template <typename BasisFunctionType, typename Functor>
 GridFunction<BasisFunctionType, typename Functor::ValueType>
 inline gridFunctionFromSurfaceNormalDependentFunctor(
+        const shared_ptr<const Context<BasisFunctionType, typename Functor::ValueType> >& context,
         const Space<BasisFunctionType>& space,
         const Space<BasisFunctionType>& dualSpace,
-        const Functor& functor,
-        const typename GridFunction<BasisFunctionType, typename Functor::ValueType>::LocalAssemblerFactory& factory,
-        const AssemblyOptions& assemblyOptions)
+        const Functor& functor)
 {
     Fiber::SurfaceNormalDependentFunction<Functor> fiberFunction(functor);
     return gridFunctionFromFiberFunction(
-                space, dualSpace, fiberFunction, factory, assemblyOptions);
+                context, space, dualSpace, fiberFunction);
 }
 
 } // namespace Bempp

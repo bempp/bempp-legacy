@@ -72,15 +72,6 @@ Laplace3dAdjointDoubleLayerBoundaryOperator(
 {
 }
 
-template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<AbstractBoundaryOperator<BasisFunctionType, ResultType> >
-Laplace3dAdjointDoubleLayerBoundaryOperator<BasisFunctionType, ResultType>::clone() const
-{
-    typedef AbstractBoundaryOperator<BasisFunctionType, ResultType> LinOp;
-    typedef Laplace3dAdjointDoubleLayerBoundaryOperator<BasisFunctionType, ResultType> This;
-    return std::auto_ptr<LinOp>(new This(*this));
-}
-
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dAdjointDoubleLayerBoundaryOperator);
 
 } // namespace Bempp

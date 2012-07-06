@@ -47,7 +47,7 @@ public:
     typedef DiscreteBoundaryOperator<ValueType> Base;
 
     ScaledDiscreteBoundaryOperator(ValueType multiplier,
-                                 shared_ptr<const Base>& op);
+                                   const shared_ptr<const Base>& op);
 
     virtual arma::Mat<ValueType> asMatrix() const;
 

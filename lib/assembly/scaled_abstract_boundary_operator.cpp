@@ -20,6 +20,7 @@
 
 #include "scaled_abstract_boundary_operator.hpp"
 
+#include "context.hpp"
 #include "scaled_discrete_boundary_operator.hpp"
 
 #include "../common/to_string.hpp"
@@ -30,52 +31,31 @@ namespace Bempp
 
 template <typename BasisFunctionType, typename ResultType>
 ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType>::
-ScaledAbstractBoundaryOperator(ResultType weight, const Base& linOp) :
-    Base(linOp.domain(), linOp.range(), linOp.dualToRange(),
-         toString(weight) + " * " + linOp.label()),
-    m_weight(weight), m_operator(linOp.clone())
+ScaledAbstractBoundaryOperator(
+        ResultType weight,
+        const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp) :
+    Base(boundaryOp.domain(),
+         boundaryOp.range(), boundaryOp.dualToRange(),
+         "(" + toString(weight) + " * " + boundaryOp.label() + ")"),
+    m_weight(weight), m_operator(boundaryOp)
 {
-    assert(m_operator.get());
-}
-
-template <typename BasisFunctionType, typename ResultType>
-ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType>::
-ScaledAbstractBoundaryOperator(const ScaledAbstractBoundaryOperator& other) :
-    Base(other), m_weight(other.m_weight), m_operator(other.m_operator->clone())
-{
-    assert(m_operator.get());
-}
-
-template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<AbstractBoundaryOperator<BasisFunctionType, ResultType> >
-ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType>::clone() const
-{
-    typedef AbstractBoundaryOperator<BasisFunctionType, ResultType> LinOp;
-    typedef ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType> This;
-    return std::auto_ptr<LinOp>(new This(*this));
 }
 
 template <typename BasisFunctionType, typename ResultType>
 bool ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType>::supportsRepresentation(
         AssemblyOptions::Representation repr) const
 {
-    return m_operator->supportsRepresentation(repr);
+    return m_operator.abstractOperator()->supportsRepresentation(repr);
 }
 
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteBoundaryOperator<ResultType> >
 ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType>::
-assembleWeakFormImpl(const LocalAssemblerFactory& factory,
-                     const AssemblyOptions& options,
-                     Symmetry symmetry)
+assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) const
 {
-    if (!m_operator->isWeakFormAssembled())
-        m_operator->assembleWeakForm(factory, options, symmetry);
-    shared_ptr<const DiscreteBoundaryOperator<ResultType> > wrappedDiscreteLinOp =
-            m_operator->weakForm();
     return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
                 new ScaledDiscreteBoundaryOperator<ResultType>(
-                    m_weight, wrappedDiscreteLinOp));
+                    m_weight, m_operator.weakForm()));
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(ScaledAbstractBoundaryOperator);

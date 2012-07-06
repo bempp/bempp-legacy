@@ -32,11 +32,12 @@
 #include "belos_solver_wrapper.hpp"
 
 #include "../common/armadillo_fwd.hpp"
+#include "../common/shared_ptr.hpp"
 
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename ResultType> class AbstractBoundaryOperator;
+template <typename BasisFunctionType, typename ResultType> class BoundaryOperator;
 
 template <typename BasisFunctionType, typename ResultType>
 class DefaultIterativeSolver : public Solver<BasisFunctionType, ResultType>
@@ -44,7 +45,7 @@ class DefaultIterativeSolver : public Solver<BasisFunctionType, ResultType>
 public:
     typedef typename ScalarTraits<ResultType>::RealType MagnitudeType;
 
-    DefaultIterativeSolver(const AbstractBoundaryOperator<BasisFunctionType, ResultType>& linOp,
+    DefaultIterativeSolver(const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
                            const GridFunction<BasisFunctionType, ResultType>& rhsGridFun);
 
     void addPreconditioner(
@@ -60,6 +61,7 @@ public:
     Thyra::SolveStatus<MagnitudeType> getThyraSolveStatus() const;
 
 private:
+    shared_ptr<const Context<BasisFunctionType, ResultType> > m_context;
     BelosSolverWrapper<ResultType> m_belosSolverWrapper;
     const Space<BasisFunctionType>& m_space;
     Teuchos::RCP<Thyra::MultiVectorBase<ResultType> > m_rhs;

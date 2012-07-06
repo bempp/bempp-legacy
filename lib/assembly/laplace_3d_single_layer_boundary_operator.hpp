@@ -22,6 +22,7 @@
 #define bempp_laplace_3d_single_layer_boundary_operator_hpp
 
 #include "laplace_3d_boundary_operator_base.hpp"
+#include "boundary_operator.hpp"
 
 namespace Bempp
 {
@@ -73,10 +74,16 @@ public:
             const Space<BasisFunctionType>& range,
             const Space<BasisFunctionType>& dualToRange,
             const std::string& label = "");
-
-    virtual std::auto_ptr<AbstractBoundaryOperator<BasisFunctionType_, ResultType_> >
-    clone() const;
 };
+
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
+laplace3dSingleLayerBoundaryOperator(
+        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+        const Space<BasisFunctionType>& domain,
+        const Space<BasisFunctionType>& range,
+        const Space<BasisFunctionType>& dualToRange,
+        const std::string& label = "");
 
 } // namespace Bempp
 

@@ -53,7 +53,7 @@ public:
      *  \note Both operators must have identical dimensions, otherwise
      *  a <tt>std::invalid_argument</tt> exception is thrown. */
     DiscreteBoundaryOperatorComposition(const shared_ptr<const Base>& outer,
-                                      const shared_ptr<const Base>& inner);
+                                        const shared_ptr<const Base>& inner);
 
 //    virtual arma::Mat<ValueType> asMatrix() const;
 

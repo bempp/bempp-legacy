@@ -25,16 +25,12 @@
 
 #include "assembly_options.hpp"
 #include "symmetry.hpp"
-#include "transposition_mode.hpp"
 
 #include "../common/scalar_traits.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../fiber/local_assembler_factory.hpp"
 #include "../space/space.hpp"
 
-#include <boost/mpl/set.hpp>
-#include <boost/mpl/has_key.hpp>
-#include <boost/utility/enable_if.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -53,10 +49,11 @@ class AbstractBoundaryOperatorId;
 class Grid;
 class GeometryFactory;
 template <typename ValueType> class DiscreteBoundaryOperator;
+template <typename BasisFunctionType, typename ResultType> class AbstractBoundaryOperatorSum;
+template <typename BasisFunctionType, typename ResultType> class Context;
 template <typename BasisFunctionType, typename ResultType> class ElementaryAbstractBoundaryOperator;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
-template <typename BasisFunctionType_, typename ResultType_> class ScaledAbstractBoundaryOperator;
-template <typename BasisFunctionType_, typename ResultType_> class AbstractBoundaryOperatorSum;
+template <typename BasisFunctionType, typename ResultType> class ScaledAbstractBoundaryOperator;
 
 /** \ingroup assembly
  *  \brief Abstract boundary operator.
@@ -123,9 +120,10 @@ public:
      *  the same grid.
      */
     AbstractBoundaryOperator(const Space<BasisFunctionType>& domain,
-                   const Space<BasisFunctionType>& range,
-                   const Space<BasisFunctionType>& dualToRange,
-                   const std::string& label = "");
+                             const Space<BasisFunctionType>& range,
+                             const Space<BasisFunctionType>& dualToRange,
+                             const std::string& label = "",
+                             const Symmetry symmetry = NO_SYMMETRY);
 
     // Default "shallow" copy constructor is used (thus the internal pointer
     // to the weak form is shared among all copies). To make a deep copy of
@@ -134,14 +132,6 @@ public:
 
     /** \brief Destructor. */
     virtual ~AbstractBoundaryOperator();
-
-    /** \brief Clone operator.
-     *
-     *  Returns an auto pointer to a shallow copy (i.e. sharing a
-     *  reference-counted pointer to the weak form) of this operator
-     *  allocated on the heap.
-     */
-    virtual std::auto_ptr<AbstractBoundaryOperator> clone() const = 0;
 
     /** \brief Identifier.
      *
@@ -153,7 +143,7 @@ public:
      *  If the weak form of this operator is not cacheable, return a null shared
      *  pointer. This is the default implementation.
      */
-    virtual shared_ptr<AbstractBoundaryOperatorId> id() const;
+    virtual shared_ptr<const AbstractBoundaryOperatorId> id() const;
 
     /** @}
      *  @name Spaces
@@ -181,8 +171,7 @@ public:
     /** \brief Return the label of the operator. */
     std::string label() const;
 
-    /** \brief Set the label of the operator. */
-    void setLabel(const std::string& newLabel);
+    Symmetry symmetry() const;
 
     /** @}
      *  @name Assembly
@@ -221,39 +210,9 @@ public:
      *      op.assembleWeakForm(...);
      *  \endcode
      */
-    void assembleWeakForm(const LocalAssemblerFactory& factory,
-                          const AssemblyOptions& options,
-                          Symmetry symmetry = NO_SYMMETRY/*,
-                          bool force = true*/);
+    shared_ptr<DiscreteBoundaryOperator<ResultType> > assembleWeakForm(
+            const Context<BasisFunctionType, ResultType>& context) const;
 
-    /** \brief Return \p true if the operator stores its assembled weak form. */
-    bool isWeakFormAssembled() const;
-
-    /** \brief Return a shared pointer to the weak form assembled beforehand.
-     *
-     * If the weak form has not previously been assembled, a std::runtime_error
-     * exception is thrown. */
-    shared_ptr<const DiscreteBoundaryOperator<ResultType> > weakForm() const;
-
-    /** \brief Reset the internal shared pointer to the weak form.
-     *
-     *  Note that other objects (e.g. composite operators) may also store shared
-     *  pointers to this weak form. Its memory will only be freed after the
-     *  last such shared pointer is reset. */
-    void resetWeakForm();
-
-    /** @}
-     *  @name Action
-     *  @{ */
-
-    /** \brief Set <tt>y_inout := alpha * A * x_in + beta * y_inout</tt>, where
-     *  \c A is this operator. */
-    void apply(const TranspositionMode trans,
-               const GridFunction<BasisFunctionType, ResultType>& x_in,
-               GridFunction<BasisFunctionType, ResultType>& y_inout,
-               ResultType alpha, ResultType beta) const;
-
-    /** @} */
 
 protected:
     /** @} */
@@ -271,79 +230,22 @@ protected:
             shared_ptr<Fiber::OpenClHandler>& openClHandler,
             bool& cacheSingularIntegrals) const;
 
+    // Probably can be made public
     /** \brief Implementation of the weak-form assembly.
      *
      *  Construct a discrete linear operator representing the matrix \f$L_{jk}\f$
      *  described in assembleWeakForm() and return a shared pointer to it.
      */
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType> >
-    assembleWeakFormImpl(const LocalAssemblerFactory& factory,
-                         const AssemblyOptions& options,
-                         Symmetry symmetry) = 0;
+    assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) const = 0;
 
 private:
     const Space<BasisFunctionType>& m_domain;
     const Space<BasisFunctionType>& m_range;
     const Space<BasisFunctionType>& m_dualToRange;
     std::string m_label;
-
-    shared_ptr<DiscreteBoundaryOperator<ResultType> > m_weakForm;
+    Symmetry m_symmetry;
 };
-
-} // namespace Bempp
-
-// The includes below are not strictly needed, but convenient for users
-// employing the arithmetic operator overloads
-#include "scaled_abstract_boundary_operator.hpp"
-#include "abstract_boundary_operator_sum.hpp"
-// #include "boundary_operator_composition.hpp"
-
-// Operator overloading
-
-namespace Bempp
-{
-
-template <typename BasisFunctionType, typename ResultType>
-AbstractBoundaryOperatorSum<BasisFunctionType, ResultType> operator+(
-        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op1,
-        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op2);
-
-template <typename BasisFunctionType, typename ResultType>
-AbstractBoundaryOperatorSum<BasisFunctionType, ResultType> operator-(
-        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op1,
-        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op2);
-
-// This type machinery is needed to disambiguate between this operator and
-// the one taking a AbstractBoundaryOperator and a GridFunction
-template <typename BasisFunctionType, typename ResultType, typename ScalarType>
-typename boost::enable_if<
-    typename boost::mpl::has_key<
-        boost::mpl::set<float, double, std::complex<float>, std::complex<double> >,
-        ScalarType>,
-    ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType> >::type
-operator*(
-        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op,
-        const ScalarType& scalar);
-
-template <typename BasisFunctionType, typename ResultType, typename ScalarType>
-ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType> operator*(
-        const ScalarType& scalar,
-        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op);
-
-template <typename BasisFunctionType, typename ResultType, typename ScalarType>
-ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType> operator/(
-        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op,
-        const ScalarType& scalar);
-
-template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType, ResultType> operator*(
-        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op,
-        const GridFunction<BasisFunctionType, ResultType>& fun);
-
-//template <typename BasisFunctionType, typename ResultType>
-//AbstractBoundaryOperatorComposition<BasisFunctionType, ResultType> operator*(
-//        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op1,
-//        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op2);
 
 } // namespace Bempp
 

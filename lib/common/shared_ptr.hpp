@@ -28,6 +28,7 @@ namespace Bempp
 
 using Fiber::shared_ptr;
 using Fiber::make_shared_from_ref;
+using Fiber::make_shared_from_const_ref;
 using Fiber::null_deleter;
 
 } // namespace Bempp

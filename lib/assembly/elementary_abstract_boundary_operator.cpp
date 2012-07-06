@@ -31,10 +31,11 @@ namespace Bempp
 template <typename BasisFunctionType, typename ResultType>
 ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::
 ElementaryAbstractBoundaryOperator(const Space<BasisFunctionType>& domain,
-                         const Space<BasisFunctionType>& range,
-                         const Space<BasisFunctionType>& dualToRange,
-                         const std::string& label) :
-    Base(domain, range, dualToRange, label)
+                                   const Space<BasisFunctionType>& range,
+                                   const Space<BasisFunctionType>& dualToRange,
+                                   const std::string& label,
+                                   Symmetry symmetry) :
+    Base(domain, range, dualToRange, label, symmetry)
 {
 }
 
@@ -49,10 +50,9 @@ shared_ptr<DiscreteBoundaryOperator<ResultType> >
 ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::
 assembleWeakFormInternal(
         LocalAssembler& assembler,
-        const AssemblyOptions& options,
-        Symmetry symmetry)
+        const AssemblyOptions& options) const
 {
-    return assembleWeakFormInternalImpl(assembler, options, symmetry);
+    return assembleWeakFormInternalImpl(assembler, options);
 }
 
 template <typename BasisFunctionType, typename ResultType>

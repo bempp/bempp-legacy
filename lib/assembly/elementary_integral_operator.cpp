@@ -24,6 +24,7 @@
 #include "aca_global_assembler.hpp"
 #include "assembly_options.hpp"
 #include "discrete_dense_boundary_operator.hpp"
+#include "context.hpp"
 #include "evaluation_options.hpp"
 #include "grid_function.hpp"
 #include "interpolated_function.hpp"
@@ -191,13 +192,12 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType>
 shared_ptr<DiscreteBoundaryOperator<ResultType> >
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 assembleWeakFormImpl(
-        const LocalAssemblerFactory& factory,
-        const AssemblyOptions& options,
-        Symmetry symmetry)
+        const Context<BasisFunctionType, ResultType>& context) const
 {
     AutoTimer timer("\nAssembly took ");
-    std::auto_ptr<LocalAssembler> assembler = makeAssembler(factory, options);
-    return assembleWeakFormInternalImpl(*assembler, options, symmetry);
+    std::auto_ptr<LocalAssembler> assembler =
+            makeAssembler(context.localAssemblerFactory(), context.assemblyOptions());
+    return assembleWeakFormInternalImpl(*assembler, context.assemblyOptions());
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
@@ -205,18 +205,15 @@ shared_ptr<DiscreteBoundaryOperator<ResultType> >
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 assembleWeakFormInternalImpl(
         LocalAssembler& assembler,
-        const AssemblyOptions& options,
-        Symmetry symmetry)
+        const AssemblyOptions& options) const
 {
     switch (options.operatorRepresentation()) {
     case AssemblyOptions::DENSE:
         return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
-                    assembleWeakFormInDenseMode(
-                        assembler, options, symmetry).release());
+                    assembleWeakFormInDenseMode(assembler, options).release());
     case AssemblyOptions::ACA:
         return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
-                    assembleWeakFormInAcaMode(
-                        assembler, options, symmetry).release());
+                    assembleWeakFormInAcaMode(assembler, options).release());
     case AssemblyOptions::FMM:
         throw std::runtime_error(
                     "ElementaryIntegralOperator::assembleWeakFormInternalImpl(): "
@@ -233,8 +230,7 @@ std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 assembleWeakFormInDenseMode(
         LocalAssembler& assembler,
-        const AssemblyOptions& options,
-        Symmetry symmetry) const
+        const AssemblyOptions& options) const
 {
     const Space<BasisFunctionType>& testSpace = this->dualToRange();
     const Space<BasisFunctionType>& trialSpace = this->domain();
@@ -316,15 +312,14 @@ std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 assembleWeakFormInAcaMode(
         LocalAssembler& assembler,
-        const AssemblyOptions& options,
-        Symmetry symmetry) const
+        const AssemblyOptions& options) const
 {
     const Space<BasisFunctionType>& testSpace = this->dualToRange();
     const Space<BasisFunctionType>& trialSpace = this->domain();
 
     return AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                 testSpace, trialSpace, assembler, options,
-                symmetry & SYMMETRIC);
+                this->symmetry() & SYMMETRIC);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(ElementaryIntegralOperator);

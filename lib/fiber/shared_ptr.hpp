@@ -53,6 +53,12 @@ inline shared_ptr<T> make_shared_from_ref(T& t)
     return shared_ptr<T>(&t, null_deleter());
 }
 
+template <typename T>
+inline shared_ptr<const T> make_shared_from_const_ref(const T& t)
+{
+    return shared_ptr<const T>(&t, null_deleter());
+}
+
 } // namespace Fiber
 
 #endif // fiber_shared_ptr_hpp

@@ -36,11 +36,12 @@ namespace Bempp
 template <typename BasisFunctionType, typename ResultType>
 AbstractBoundaryOperator<BasisFunctionType, ResultType>::
 AbstractBoundaryOperator(const Space<BasisFunctionType>& domain,
-               const Space<BasisFunctionType>& range,
-               const Space<BasisFunctionType>& dualToRange,
-               const std::string& label) :
+                         const Space<BasisFunctionType>& range,
+                         const Space<BasisFunctionType>& dualToRange,
+                         const std::string& label,
+                         const Symmetry symmetry) :
     m_domain(domain), m_range(range), m_dualToRange(dualToRange),
-    m_label(label)
+    m_label(label), m_symmetry(symmetry)
 {
 }
 
@@ -50,71 +51,18 @@ AbstractBoundaryOperator<BasisFunctionType, ResultType>::~AbstractBoundaryOperat
 }
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<AbstractBoundaryOperatorId>
+shared_ptr<const AbstractBoundaryOperatorId>
 AbstractBoundaryOperator<BasisFunctionType, ResultType>::id() const
 {
-    return shared_ptr<AbstractBoundaryOperatorId>();
+    return shared_ptr<const AbstractBoundaryOperatorId>();
 }
 
 template <typename BasisFunctionType, typename ResultType>
-void AbstractBoundaryOperator<BasisFunctionType, ResultType>::assembleWeakForm(
-        const LocalAssemblerFactory& factory,
-        const AssemblyOptions& options,
-        Symmetry symmetry)
+shared_ptr<DiscreteBoundaryOperator<ResultType> >
+AbstractBoundaryOperator<BasisFunctionType, ResultType>::assembleWeakForm(
+        const Context<BasisFunctionType, ResultType>& context) const
 {
-    m_weakForm = this->assembleWeakFormImpl(factory, options, symmetry);
-}
-
-template <typename BasisFunctionType, typename ResultType>
-bool AbstractBoundaryOperator<BasisFunctionType, ResultType>::isWeakFormAssembled() const
-{
-    return m_weakForm.get() != 0;
-}
-
-template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const DiscreteBoundaryOperator<ResultType> >
-AbstractBoundaryOperator<BasisFunctionType, ResultType>::weakForm() const
-{
-    if (!isWeakFormAssembled())
-        throw std::runtime_error("AbstractBoundaryOperator::weakForm(): "
-                                 "the weak form is not assembled");
-    return m_weakForm;
-}
-
-template <typename BasisFunctionType, typename ResultType>
-void
-AbstractBoundaryOperator<BasisFunctionType, ResultType>::resetWeakForm()
-{
-    m_weakForm.reset();
-}
-
-template <typename BasisFunctionType, typename ResultType>
-void AbstractBoundaryOperator<BasisFunctionType, ResultType>::apply(
-        const TranspositionMode trans,
-        const GridFunction<BasisFunctionType, ResultType>& x_in,
-        GridFunction<BasisFunctionType, ResultType>& y_inout,
-        ResultType alpha, ResultType beta) const
-{
-    if (!isWeakFormAssembled())
-        throw std::runtime_error("AbstractBoundaryOperator::apply(): "
-                                 "the weak form is not assembled");
-
-    // Sanity test
-    if (&m_domain != &x_in.space() ||
-            &m_range != &y_inout.space() ||
-            &m_dualToRange != &y_inout.dualSpace())
-        throw std::runtime_error("AbstractBoundaryOperator::apply(): Spaces don't match");
-
-    // Extract coefficient vectors
-    arma::Col<ResultType> xVals = x_in.coefficients();
-    arma::Col<ResultType> yVals = y_inout.projections();
-
-    // Apply operator and assign the result to y_inout's projections
-    m_weakForm->apply(trans, xVals, yVals, alpha, beta);
-    // TODO: make interfaces to the Trilinos and fallback
-    // DiscreteBoundaryOperator::apply() compatible.
-    // Perhaps by declaring an asPtrToBaseVector method in Vector...
-    y_inout.setProjections(yVals);
+    return this->assembleWeakFormImpl(context);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -146,11 +94,10 @@ AbstractBoundaryOperator<BasisFunctionType, ResultType>::label() const
 }
 
 template <typename BasisFunctionType, typename ResultType>
-void
-AbstractBoundaryOperator<BasisFunctionType, ResultType>::setLabel(
-        const std::string &newLabel)
+Symmetry
+AbstractBoundaryOperator<BasisFunctionType, ResultType>::symmetry() const
 {
-    m_label = newLabel;
+    return m_symmetry;
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -196,165 +143,6 @@ AbstractBoundaryOperator<BasisFunctionType, ResultType>::collectDataForAssembler
              (options.singularIntegralCaching() == AssemblyOptions::AUTO));
 }
 
-template <typename BasisFunctionType, typename ResultType>
-AbstractBoundaryOperatorSum<BasisFunctionType, ResultType> operator+(
-        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op1,
-        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op2)
-{
-    return AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>(op1, op2);
-}
-
-template <typename BasisFunctionType, typename ResultType>
-AbstractBoundaryOperatorSum<BasisFunctionType, ResultType> operator-(
-        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op1,
-        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op2)
-{
-    return op1 + (static_cast<ResultType>(-1.) * op2);
-}
-
-template <typename BasisFunctionType, typename ResultType, typename ScalarType>
-typename boost::enable_if<
-    typename boost::mpl::has_key<
-        boost::mpl::set<float, double, std::complex<float>, std::complex<double> >,
-        ScalarType>,
-    ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType> >::type
-operator*(
-        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op,
-        const ScalarType& scalar)
-{
-    return ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType>(
-                static_cast<ResultType>(scalar), op);
-}
-
-template <typename BasisFunctionType, typename ResultType, typename ScalarType>
-ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType> operator*(
-        const ScalarType& scalar,
-        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op)
-{
-     return operator*(op, scalar);
-}
-
-template <typename BasisFunctionType, typename ResultType, typename ScalarType>
-ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType> operator/(
-        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op,
-        const ScalarType& scalar)
-{
-    if (scalar == static_cast<ScalarType>(0.))
-        throw std::runtime_error("ScaledAbstractBoundaryOperator::operator/(): "
-                                 "Division by zero");
-
-    return ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType>(
-                static_cast<ResultType>(static_cast<ScalarType>(1.) / scalar), op);
-}
-
-template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType, ResultType> operator*(
-        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op,
-        const GridFunction<BasisFunctionType, ResultType>& fun)
-{
-    typedef GridFunction<BasisFunctionType, ResultType> GF;
-
-    const Space<BasisFunctionType>& space = op.range();
-    const Space<BasisFunctionType>& dualSpace = op.dualToRange();
-    arma::Col<ResultType> coefficients(space.globalDofCount());
-    coefficients.fill(0.);
-    arma::Col<ResultType> projections(dualSpace.globalDofCount());
-    projections.fill(0.);
-//    GF result(space, dualSpace, coefficients, projections);
-    GF result(space, dualSpace, projections, GF::PROJECTIONS);
-//    GF result(space, dualSpace, coefficients, GF::COEFFICIENTS);
-    op.apply(NO_TRANSPOSE, fun, result, 1., 0.);
-    return result;
-}
-
-#define INSTANTIATE_FREE_FUNCTIONS(BASIS, RESULT) \
-    template AbstractBoundaryOperatorSum<BASIS, RESULT> operator+( \
-    const AbstractBoundaryOperator<BASIS, RESULT>& op1, \
-    const AbstractBoundaryOperator<BASIS, RESULT>& op2); \
-    template AbstractBoundaryOperatorSum<BASIS, RESULT> operator-( \
-    const AbstractBoundaryOperator<BASIS, RESULT>& op1, \
-    const AbstractBoundaryOperator<BASIS, RESULT>& op2); \
-    template GridFunction<BASIS, RESULT> operator*( \
-    const AbstractBoundaryOperator<BASIS, RESULT>& op, \
-    const GridFunction<BASIS, RESULT>& fun)
-#define INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(BASIS, RESULT, SCALAR) \
-    template ScaledAbstractBoundaryOperator<BASIS, RESULT> operator*( \
-    const AbstractBoundaryOperator<BASIS, RESULT>& op, const SCALAR& scalar); \
-    template ScaledAbstractBoundaryOperator<BASIS, RESULT> operator*( \
-    const SCALAR& scalar, const AbstractBoundaryOperator<BASIS, RESULT>& op); \
-    template ScaledAbstractBoundaryOperator<BASIS, RESULT> operator/( \
-    const AbstractBoundaryOperator<BASIS, RESULT>& op, const SCALAR& scalar)
-
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(AbstractBoundaryOperator);
-
-#if defined(ENABLE_SINGLE_PRECISION)
-INSTANTIATE_FREE_FUNCTIONS(
-        float, float);
-INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
-        float, float, float);
-INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
-        float, float, double);
-#endif
-
-#if defined(ENABLE_SINGLE_PRECISION) && defined(ENABLE_COMPLEX_KERNELS)
-INSTANTIATE_FREE_FUNCTIONS(
-        float, std::complex<float>);
-INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
-        float, std::complex<float>, float);
-INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
-        float, std::complex<float>, double);
-INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
-        float, std::complex<float>, std::complex<float>);
-INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
-        float, std::complex<float>, std::complex<double>);
-#endif
-
-#if defined(ENABLE_SINGLE_PRECISION) && defined(ENABLE_COMPLEX_BASIS_FUNCTIONS)
-INSTANTIATE_FREE_FUNCTIONS(
-        std::complex<float>, std::complex<float>);
-INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
-        std::complex<float>, std::complex<float>, float);
-INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
-        std::complex<float>, std::complex<float>, double);
-INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
-        std::complex<float>, std::complex<float>, std::complex<float>);
-INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
-        std::complex<float>, std::complex<float>, std::complex<double>);
-#endif
-
-#if defined(ENABLE_DOUBLE_PRECISION)
-INSTANTIATE_FREE_FUNCTIONS(
-        double, double);
-INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
-        double, double, float);
-INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
-        double, double, double);
-#endif
-
-#if defined(ENABLE_DOUBLE_PRECISION) && defined(ENABLE_COMPLEX_KERNELS)
-INSTANTIATE_FREE_FUNCTIONS(
-        double, std::complex<double>);
-INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
-        double, std::complex<double>, float);
-INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
-        double, std::complex<double>, double);
-INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
-        double, std::complex<double>, std::complex<float>);
-INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
-        double, std::complex<double>, std::complex<double>);
-#endif
-
-#if defined(ENABLE_DOUBLE_PRECISION) && defined(ENABLE_COMPLEX_BASIS_FUNCTIONS)
-INSTANTIATE_FREE_FUNCTIONS(
-        std::complex<double>, std::complex<double>);
-INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
-        std::complex<double>, std::complex<double>, float);
-INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
-        std::complex<double>, std::complex<double>, double);
-INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
-        std::complex<double>, std::complex<double>, std::complex<float>);
-INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
-        std::complex<double>, std::complex<double>, std::complex<double>);
-#endif
 
 } // namespace Bempp

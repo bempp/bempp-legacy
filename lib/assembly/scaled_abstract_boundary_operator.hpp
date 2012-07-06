@@ -22,6 +22,7 @@
 #define bempp_scaled_abstract_boundary_operator_hpp
 
 #include "abstract_boundary_operator.hpp"
+#include "boundary_operator.hpp"
 
 namespace Bempp
 {
@@ -30,8 +31,8 @@ template <typename BasisFunctionType_, typename ResultType_>
 class ScaledAbstractBoundaryOperator :
         public AbstractBoundaryOperator<BasisFunctionType_, ResultType_>
 {
-public:
     typedef AbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
+public:
     /** \copydoc AbstractBoundaryOperator::BasisFunctionType */
     typedef typename Base::BasisFunctionType BasisFunctionType;
     /** \copydoc AbstractBoundaryOperator::ResultType */
@@ -41,24 +42,21 @@ public:
     /** \copydoc AbstractBoundaryOperator::LocalAssemblerFactory */
     typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
 
-    ScaledAbstractBoundaryOperator(ResultType weight, const Base& linOp);
-    ScaledAbstractBoundaryOperator(const ScaledAbstractBoundaryOperator& other);
-
-    virtual std::auto_ptr<AbstractBoundaryOperator<BasisFunctionType_, ResultType_> >
-    clone() const;
+    ScaledAbstractBoundaryOperator(
+            ResultType weight,
+            const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp);
 
     virtual bool supportsRepresentation(
             AssemblyOptions::Representation repr) const;
 
 protected:
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
-    assembleWeakFormImpl(const LocalAssemblerFactory& factory,
-                         const AssemblyOptions& options,
-                         Symmetry symmetry);
+    assembleWeakFormImpl(
+            const Context<BasisFunctionType, ResultType>& context) const;
 
 private:
     ResultType m_weight;
-    std::auto_ptr<Base> m_operator;
+    BoundaryOperator<BasisFunctionType, ResultType> m_operator;
 };
 
 } // namespace Bempp

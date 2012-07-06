@@ -72,15 +72,6 @@ Laplace3dHypersingularBoundaryOperator(
 {
 }
 
-template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<AbstractBoundaryOperator<BasisFunctionType, ResultType> >
-Laplace3dHypersingularBoundaryOperator<BasisFunctionType, ResultType>::clone() const
-{
-    typedef AbstractBoundaryOperator<BasisFunctionType, ResultType> LinOp;
-    typedef Laplace3dHypersingularBoundaryOperator<BasisFunctionType, ResultType> This;
-    return std::auto_ptr<LinOp>(new This(*this));
-}
-
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dHypersingularBoundaryOperator);
 
 } // namespace Bempp
