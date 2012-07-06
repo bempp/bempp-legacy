@@ -114,9 +114,7 @@ public:
      *  \param[in] label
      *    Textual label of the operator (optional, used for debugging).
      *
-     *  The objects referenced by \p domain, \p range and \p dualToRange must
-     *  continue to exist at least until the weak form of the operator is
-     *  assembled. The spaces \p range and \p dualToRange must be defined on
+     *  The spaces \p range and \p dualToRange must be defined on
      *  the same grid.
      */
     AbstractBoundaryOperator(const shared_ptr<const Space<BasisFunctionType> >& domain,
@@ -183,7 +181,7 @@ public:
 
     //*  \param[in] force
     //*    If true (default), the weak form will be reassembled even if an older one already exists. If false, any existing a weak form
-    /** \brief Assemble the operator's weak form and store it internally.
+    /** \brief Assemble and returns the operator's weak form.
      *
      *  This function constructs a discrete linear operator representing the
      *  matrix \f$L_{jk}\f$ with entries of the form
@@ -196,19 +194,6 @@ public:
      *  <tt>domain.grid()</tt>, \f$\phi_j\f$ is a _trial function_ from the
      *  space \f$Y'\f$ dual to the range of the operator, \f$Y\$, and
      *  \f$\psi_k\f$ is a _test function_ from the domain space \f$X\f$.
-     *
-     *  The resulting discrete linear operator is stored internally. It can
-     *  subsequently be accessed via weakForm() or, if necessary, reset via
-     *  resetWeakForm().
-     *
-     *  Note that the weak form is assembled anew even if the function
-     *  has already been called before. In order to avoid a repeated assembly,
-     *  simply write
-     *
-     *  \code{cpp}
-     *  if (!op.isWeakFormAssembled())
-     *      op.assembleWeakForm(...);
-     *  \endcode
      */
     shared_ptr<DiscreteBoundaryOperator<ResultType> > assembleWeakForm(
             const Context<BasisFunctionType, ResultType>& context) const;
