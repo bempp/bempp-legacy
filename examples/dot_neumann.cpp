@@ -24,9 +24,11 @@
 #include "meshes.hpp"
 
 #include "assembly/assembly_options.hpp"
+#include "assembly/context.hpp"
 #include "assembly/discrete_boundary_operator.hpp"
 #include "assembly/grid_function.hpp"
 #include "assembly/default_local_assembler_factory_for_operators_on_surfaces.hpp"
+#include "assembly/surface_normal_independent_function.hpp"
 
 #include "assembly/identity_operator.hpp"
 #include "assembly/modified_helmholtz_3d_single_layer_boundary_operator.hpp"
@@ -131,30 +133,42 @@ int main(int argc, char* argv[])
 
     DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<BFT, RT> factory;
 
+    Context<BFT, RT> context(make_shared_from_ref(factory), assemblyOptions);
+
     // We need the single layer, double layer, and the identity operator
 
-    ModifiedHelmholtz3dSingleLayerBoundaryOperator<BFT, RT> slp(
-                HplusHalfSpace, HplusHalfSpace, HplusHalfSpace, waveNumber);
-    ModifiedHelmholtz3dDoubleLayerBoundaryOperator<BFT, RT> dlp(
-                HplusHalfSpace, HplusHalfSpace, HplusHalfSpace, waveNumber);
-    IdentityOperator<BFT, RT> id(
-                HplusHalfSpace, HplusHalfSpace, HplusHalfSpace);
+    BoundaryOperator<BFT, RT> slp =
+            modifiedHelmholtz3dSingleLayerBoundaryOperator<BFT, RT, RT>(
+                make_shared_from_ref(context),
+                make_shared_from_ref(HminusHalfSpace),
+                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(HminusHalfSpace),
+                waveNumber);
+    BoundaryOperator<BFT, RT> dlp =
+            modifiedHelmholtz3dDoubleLayerBoundaryOperator<BFT, RT, RT>(
+                make_shared_from_ref(context),
+                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(HminusHalfSpace),
+                waveNumber);
+    BoundaryOperator<BFT, RT> id = identityOperator<BFT, RT>(
+                make_shared_from_ref(context),
+                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(HminusHalfSpace));
 
     // Form the left-hand side sum
 
-    AbstractBoundaryOperatorSum<BFT, RT> lhsOp = 0.5 * id + dlp + (1.0/(2.0*kappa)) * slp;
-    AbstractBoundaryOperator<BFT, RT>& rhsOp = id;
-
-    // Assemble the Operators
-
-    lhsOp.assembleWeakForm(factory, assemblyOptions);
-    rhsOp.assembleWeakForm(factory, assemblyOptions);
+    BoundaryOperator<BFT, RT> lhsOp = 0.5 * id + dlp + (1.0/(2.0*kappa)) * slp;
+    BoundaryOperator<BFT, RT>& rhsOp = id;
 
     // We also want a grid function
 
-    GridFunction<BFT, RT> u = gridFunctionFromSurfaceNormalIndependentFunctor(
-                HplusHalfSpace, HplusHalfSpace,
-                MyFunctor(waveNumber), factory, assemblyOptions);
+    GridFunction<BFT, RT> u(
+                make_shared_from_ref(context),
+                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(HplusHalfSpace),
+                surfaceNormalIndependentFunction(MyFunctor(waveNumber)));
 
     // Assemble the rhs
 

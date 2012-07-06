@@ -24,12 +24,13 @@
 #include "meshes.hpp"
 
 #include "assembly/assembly_options.hpp"
+#include "assembly/context.hpp"
 #include "assembly/discrete_boundary_operator.hpp"
 #include "assembly/evaluation_options.hpp"
 #include "assembly/grid_function.hpp"
-#include "assembly/interpolated_function.hpp"
 #include "assembly/abstract_boundary_operator_sum.hpp"
 #include "assembly/default_local_assembler_factory_for_operators_on_surfaces.hpp"
+#include "assembly/surface_normal_independent_function.hpp"
 
 #include "assembly/identity_operator.hpp"
 #include "assembly/laplace_3d_single_layer_boundary_operator.hpp"
@@ -113,30 +114,38 @@ int main(int argc, char* argv[])
 
     DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<BFT, RT> factory;
 
-    // We need the single layer, double layer, and the identity operator
+    Context<BFT, RT> context(make_shared_from_ref(factory), assemblyOptions);
 
-    Laplace3dSingleLayerBoundaryOperator<BFT, RT> slpOp(
-                HminusHalfSpace, HplusHalfSpace, HplusHalfSpace);
-    Laplace3dDoubleLayerBoundaryOperator<BFT, RT> dlpOp(
-                HplusHalfSpace, HplusHalfSpace, HplusHalfSpace);
-    IdentityOperator<BFT, RT> id(
-                HplusHalfSpace, HplusHalfSpace, HplusHalfSpace);
+    // We need the single layer, double layer, and the identity operator
+    BoundaryOperator<BFT, RT> slpOp = laplace3dSingleLayerBoundaryOperator<BFT, RT>(
+                make_shared_from_ref(context),
+                make_shared_from_ref(HminusHalfSpace),
+                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(HminusHalfSpace));
+    BoundaryOperator<BFT, RT> dlpOp = laplace3dDoubleLayerBoundaryOperator<BFT, RT>(
+                make_shared_from_ref(context),
+                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(HminusHalfSpace));
+    BoundaryOperator<BFT, RT> id = identityOperator<BFT, RT>(
+                make_shared_from_ref(context),
+                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(HminusHalfSpace));
 
     // Define the operators standing on the left- and right-hand side
 
-    AbstractBoundaryOperatorSum<BFT, RT> lhsOp = -0.5 * id + dlpOp;
-    AbstractBoundaryOperator<BFT, RT>& rhsOp = slpOp;
+    BoundaryOperator<BFT, RT> lhsOp = -0.5 * id + dlpOp;
+    BoundaryOperator<BFT, RT>& rhsOp = slpOp;
 
-    // Assemble the operators
-
-    lhsOp.assembleWeakForm(factory, assemblyOptions);
-    rhsOp.assembleWeakForm(factory, assemblyOptions);
 
     // We also want a grid function
 
-    GridFunction<BFT, RT> u = gridFunctionFromSurfaceNormalIndependentFunctor(
-                HminusHalfSpace, HminusHalfSpace, /* is this the right choice? */
-                MyFunctor(), factory, assemblyOptions);
+    GridFunction<BFT, RT> u(
+                make_shared_from_ref(context),
+                make_shared_from_ref(HminusHalfSpace),
+                make_shared_from_ref(HminusHalfSpace), // is this the right choice?
+                surfaceNormalIndependentFunction(MyFunctor()));
 
     // Assemble the rhs
 

@@ -129,13 +129,19 @@ int main(int argc, char* argv[])
     // We need the single layer, double layer, and the identity operator
     BoundaryOperator<BFT, RT> slpOp = laplace3dSingleLayerBoundaryOperator<BFT, RT>(
                 make_shared_from_ref(context),
-                HminusHalfSpace, HplusHalfSpace, HminusHalfSpace);
+                make_shared_from_ref(HminusHalfSpace),
+                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(HminusHalfSpace));
     BoundaryOperator<BFT, RT> dlpOp = laplace3dDoubleLayerBoundaryOperator<BFT, RT>(
                 make_shared_from_ref(context),
-                HplusHalfSpace, HplusHalfSpace, HminusHalfSpace);
+                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(HminusHalfSpace));
     BoundaryOperator<BFT, RT> id = identityOperator<BFT, RT>(
                 make_shared_from_ref(context),
-                HplusHalfSpace, HplusHalfSpace, HminusHalfSpace);
+                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(HminusHalfSpace));
 
     // Form the right-hand side sum
 
@@ -143,13 +149,10 @@ int main(int argc, char* argv[])
 
     // We also want a grid function
 
-//    GridFunction<BFT, RT> u = gridFunctionFromSurfaceNormalIndependentFunctor(
-//                make_shared_from_const_ref(context),
-//                HplusHalfSpace, HplusHalfSpace /* is this the right choice? */,
-//                MyFunctor());
     GridFunction<BFT, RT> u(
                 make_shared_from_ref(context),
-                HplusHalfSpace, HplusHalfSpace /* is this the right choice? */,
+                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(HplusHalfSpace), // is this the right choice?
                 surfaceNormalIndependentFunction(MyFunctor()));
 
     // Assemble the rhs
@@ -171,21 +174,6 @@ int main(int argc, char* argv[])
     DefaultDirectSolver<BFT, RT> solver(slp, rhs);
     solver.solve();
 #endif
-
-    dlpOp.abstractOperator()->id()->dump();
-    const AbstractBoundaryOperatorSum<BFT, RT>& sumOp =
-            dynamic_cast<const AbstractBoundaryOperatorSum<BFT, RT>& >(
-                *(rhsOp.abstractOperator()));
-    sumOp.m_term2.abstractOperator()->id()->dump();
-    std::cout << "hashes: " << tbb::tbb_hasher(dlpOp.abstractOperator()->id()) << " "
-              << tbb::tbb_hasher(sumOp.m_term2.abstractOperator()->id()) << std::endl;
-
-    std::cout << "equal? " << (*sumOp.m_term2.abstractOperator()->id() == *dlpOp.abstractOperator()->id()) << std::endl;
-
-    std::cout << "slp" << std::endl;
-    slpOp.weakForm();
-    std::cout << "dlp" << std::endl;
-    dlpOp.weakForm();
 
     // Extract the solution
 
