@@ -206,7 +206,8 @@ IdentityOperator<BasisFunctionType, ResultType>::IdentityOperator(
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         const std::string& label) :
-    Base(domain, range, dualToRange, label),
+    Base(domain, range, dualToRange, label,
+         domain == dualToRange ? HERMITIAN : NO_SYMMETRY),
     m_impl(new Impl),
     m_id(boost::make_shared<IdentityOperatorId<BasisFunctionType, ResultType> >(
              *this))
