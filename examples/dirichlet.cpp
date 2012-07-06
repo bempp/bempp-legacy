@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
 //                make_shared_from_const_ref(context),
 //                HplusHalfSpace, HplusHalfSpace /* is this the right choice? */,
 //                MyFunctor());
-    GridFunction<BFT, RT> u = gridFunctionFromFiberFunction<BFT, RT>(
+    GridFunction<BFT, RT> u(
                 make_shared_from_ref(context),
                 HplusHalfSpace, HplusHalfSpace /* is this the right choice? */,
                 surfaceNormalIndependentFunction(MyFunctor()));

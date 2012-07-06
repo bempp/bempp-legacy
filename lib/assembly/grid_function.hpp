@@ -117,6 +117,11 @@ public:
                  const arma::Col<ResultType>& coefficients,
                  const arma::Col<ResultType>& projections);
 
+    GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+                 const Space<BasisFunctionType>& space,
+                 const Space<BasisFunctionType>& dualSpace,
+                 const Fiber::Function<ResultType>& function);
+
     /** \brief Grid on which this function is defined. */
     const Grid& grid() const;
 

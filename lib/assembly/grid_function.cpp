@@ -174,7 +174,6 @@ gridFunctionFromFiberFunction(
         const Space<BasisFunctionType>& dualSpace,
         const Fiber::Function<ResultType>& function)
 {
-    // TODO: use dualSpace
     arma::Col<ResultType> projections =
             calculateProjections(*context, function, dualSpace);
     std::cout << "projections calculated" << std::endl;
@@ -269,6 +268,26 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
                 "GridFunction::GridFunction(): "
                 "the projections vector has incorrect length");
     m_projections = projections;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>::GridFunction(
+        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+        const Space<BasisFunctionType>& space,
+        const Space<BasisFunctionType>& dualSpace,
+        const Fiber::Function<ResultType>& function) :
+    m_context(context), m_space(space), m_dualSpace(dualSpace),
+    m_projections(calculateProjections(*context, function, dualSpace))
+{
+    if (&space.grid() != &dualSpace.grid())
+        throw std::invalid_argument(
+                "GridFunction::GridFunction(): "
+                "space and dualSpace must be defined on the same grid");
+    if (!space.dofsAssigned() || !dualSpace.dofsAssigned())
+        throw std::runtime_error(
+                "GridFunction::GridFunction(): "
+                "degrees of freedom of the provided spaces must be assigned "
+                "beforehand");
 }
 
 template <typename BasisFunctionType, typename ResultType>
