@@ -74,7 +74,8 @@ public:
     ElementaryIntegralOperator(const shared_ptr<const Space<BasisFunctionType> >& domain,
                                const shared_ptr<const Space<BasisFunctionType> >& range,
                                const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-                               const std::string& label = "");
+                               const std::string& label = "",
+                               const Symmetry = NO_SYMMETRY);
 
     virtual int trialComponentCount() const;
     virtual int testComponentCount() const;

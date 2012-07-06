@@ -35,8 +35,7 @@ public:
 
     shared_ptr<const Context<BasisFunctionType, ResultType> > context() const;
 
-    shared_ptr<const DiscreteBoundaryOperator<ResultType> >
-    weakForm() const;
+    shared_ptr<const DiscreteBoundaryOperator<ResultType> > weakForm() const;
 
     shared_ptr<const Space<BasisFunctionType> > domain() const;
     shared_ptr<const Space<BasisFunctionType> > range() const;

@@ -131,8 +131,9 @@ ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 ElementaryIntegralOperator(const shared_ptr<const Space<BasisFunctionType> >& domain,
                            const shared_ptr<const Space<BasisFunctionType> >& range,
                            const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-                           const std::string& label) :
-    Base(domain, range, dualToRange, label)
+                           const std::string& label,
+                           Symmetry symmetry) :
+    Base(domain, range, dualToRange, label, symmetry)
 {
 }
 

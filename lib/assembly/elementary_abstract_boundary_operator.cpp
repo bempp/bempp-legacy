@@ -30,11 +30,12 @@ namespace Bempp
 
 template <typename BasisFunctionType, typename ResultType>
 ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::
-ElementaryAbstractBoundaryOperator(const shared_ptr<const Space<BasisFunctionType> >& domain,
-                                   const shared_ptr<const Space<BasisFunctionType> >& range,
-                                   const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-                                   const std::string& label,
-                                   Symmetry symmetry) :
+ElementaryAbstractBoundaryOperator(
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+        const std::string& label,
+        Symmetry symmetry) :
     Base(domain, range, dualToRange, label, symmetry)
 {
 }
