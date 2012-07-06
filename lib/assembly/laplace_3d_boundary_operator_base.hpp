@@ -93,9 +93,9 @@ public:
     typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
     Laplace3dBoundaryOperatorBase(
-            const Space<BasisFunctionType>& domain,
-            const Space<BasisFunctionType>& range,
-            const Space<BasisFunctionType>& dualToRange,
+            const shared_ptr<const Space<BasisFunctionType> >& domain,
+            const shared_ptr<const Space<BasisFunctionType> >& range,
+            const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
             const std::string& label = "");
     Laplace3dBoundaryOperatorBase(
             const Laplace3dBoundaryOperatorBase& other);

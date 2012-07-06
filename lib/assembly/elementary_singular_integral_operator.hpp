@@ -43,10 +43,11 @@ public:
     typedef typename Base::CollectionOfKernels CollectionOfKernels;
     typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
-    ElementarySingularIntegralOperator(const Space<BasisFunctionType>& domain,
-                                       const Space<BasisFunctionType>& range,
-                                       const Space<BasisFunctionType>& dualToRange,
-                                       const std::string& label = "") :
+    ElementarySingularIntegralOperator(
+            const shared_ptr<const Space<BasisFunctionType> >& domain,
+            const shared_ptr<const Space<BasisFunctionType> >& range,
+            const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+            const std::string& label = "") :
         Base(domain, range, dualToRange, label) {
     }
 

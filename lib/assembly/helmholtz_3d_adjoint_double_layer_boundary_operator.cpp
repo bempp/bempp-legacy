@@ -65,9 +65,9 @@ struct Helmholtz3dAdjointDoubleLayerBoundaryOperatorImpl
 template <typename BasisFunctionType>
 Helmholtz3dAdjointDoubleLayerBoundaryOperator<BasisFunctionType>::
 Helmholtz3dAdjointDoubleLayerBoundaryOperator(
-        const Space<BasisFunctionType>& domain,
-        const Space<BasisFunctionType>& range,
-        const Space<BasisFunctionType>& dualToRange,
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         KernelType waveNumber,
         const std::string& label) :
     Base(domain, range, dualToRange, waveNumber, label)

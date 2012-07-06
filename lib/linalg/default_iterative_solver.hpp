@@ -63,7 +63,7 @@ public:
 private:
     shared_ptr<const Context<BasisFunctionType, ResultType> > m_context;
     BelosSolverWrapper<ResultType> m_belosSolverWrapper;
-    const Space<BasisFunctionType>& m_space;
+    shared_ptr<const Space<BasisFunctionType> > m_space;
     Teuchos::RCP<Thyra::MultiVectorBase<ResultType> > m_rhs;
 
     // as long as a GridFunction is initialised with an Armadillo array

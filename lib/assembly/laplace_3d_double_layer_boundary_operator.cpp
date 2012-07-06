@@ -66,9 +66,9 @@ struct Laplace3dDoubleLayerBoundaryOperatorImpl
 template <typename BasisFunctionType, typename ResultType>
 Laplace3dDoubleLayerBoundaryOperator<BasisFunctionType, ResultType>::
 Laplace3dDoubleLayerBoundaryOperator(
-        const Space<BasisFunctionType>& domain,
-        const Space<BasisFunctionType>& range,
-        const Space<BasisFunctionType>& dualToRange,
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         const std::string& label) :
     Base(domain, range, dualToRange, label)
 {
@@ -78,9 +78,9 @@ template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 laplace3dDoubleLayerBoundaryOperator(
         const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const Space<BasisFunctionType>& domain,
-        const Space<BasisFunctionType>& range,
-        const Space<BasisFunctionType>& dualToRange,
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         const std::string& label)
 {
     typedef Laplace3dDoubleLayerBoundaryOperator<BasisFunctionType, ResultType> Op;
@@ -92,9 +92,9 @@ laplace3dDoubleLayerBoundaryOperator(
     template BoundaryOperator<BASIS, RESULT> \
     laplace3dDoubleLayerBoundaryOperator( \
         const shared_ptr<const Context<BASIS, RESULT> >&, \
-        const Space<BASIS>&, \
-        const Space<BASIS>&, \
-        const Space<BASIS>&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
         const std::string&)
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 

@@ -119,9 +119,9 @@ public:
      *  assembled. The spaces \p range and \p dualToRange must be defined on
      *  the same grid.
      */
-    AbstractBoundaryOperator(const Space<BasisFunctionType>& domain,
-                             const Space<BasisFunctionType>& range,
-                             const Space<BasisFunctionType>& dualToRange,
+    AbstractBoundaryOperator(const shared_ptr<const Space<BasisFunctionType> >& domain,
+                             const shared_ptr<const Space<BasisFunctionType> >& range,
+                             const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
                              const std::string& label = "",
                              const Symmetry symmetry = NO_SYMMETRY);
 
@@ -152,17 +152,17 @@ public:
     /** \brief Domain.
      *
      *  Return a reference to the function space being the domain of the operator. */
-    const Space<BasisFunctionType>& domain() const;
+    shared_ptr<const Space<BasisFunctionType> > domain() const;
 
     /** \brief Range.
      *
      *  Return a reference to the function space being the range of the operator. */
-    const Space<BasisFunctionType>& range() const;
+    shared_ptr<const Space<BasisFunctionType> > range() const;
 
     /** \brief Dual to range.
      *
      *  Return a reference to the function space dual to the range of the operator. */
-    const Space<BasisFunctionType>& dualToRange() const;
+    shared_ptr<const Space<BasisFunctionType> > dualToRange() const;
 
     /** @}
      *  @name Label
@@ -213,7 +213,6 @@ public:
     shared_ptr<DiscreteBoundaryOperator<ResultType> > assembleWeakForm(
             const Context<BasisFunctionType, ResultType>& context) const;
 
-
 protected:
     /** @} */
 
@@ -240,9 +239,9 @@ protected:
     assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) const = 0;
 
 private:
-    const Space<BasisFunctionType>& m_domain;
-    const Space<BasisFunctionType>& m_range;
-    const Space<BasisFunctionType>& m_dualToRange;
+    shared_ptr<const Space<BasisFunctionType> > m_domain;
+    shared_ptr<const Space<BasisFunctionType> > m_range;
+    shared_ptr<const Space<BasisFunctionType> > m_dualToRange;
     std::string m_label;
     Symmetry m_symmetry;
 };

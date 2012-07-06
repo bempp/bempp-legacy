@@ -64,9 +64,9 @@ struct Laplace3dAdjointDoubleLayerBoundaryOperatorImpl
 template <typename BasisFunctionType, typename ResultType>
 Laplace3dAdjointDoubleLayerBoundaryOperator<BasisFunctionType, ResultType>::
 Laplace3dAdjointDoubleLayerBoundaryOperator(
-        const Space<BasisFunctionType>& domain,
-        const Space<BasisFunctionType>& range,
-        const Space<BasisFunctionType>& dualToRange,
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         const std::string& label) :
     Base(domain, range, dualToRange, label)
 {

@@ -40,21 +40,21 @@ AbstractBoundaryOperatorSum(
     assert(m_term1.abstractOperator());
     assert(m_term2.abstractOperator());
 
-    if (&m_term1.domain() != &m_term2.domain())
+    if (m_term1.domain() != m_term2.domain())
         throw std::invalid_argument(
                 "AbstractBoundaryOperatorSum::AbstractBoundaryOperatorSum(" +
                 m_term1.label() +
                 ", " +
                 m_term2.label() +
                 "): Domains of the two terms must be equal");
-    if (&m_term1.range() != &m_term2.range())
+    if (m_term1.range() != m_term2.range())
         throw std::invalid_argument(
                 "AbstractBoundaryOperatorSum::AbstractBoundaryOperatorSum(" +
                 m_term1.label() +
                 ", " +
                 m_term2.label() +
                 "): Ranges of the two terms must be equal");
-    if (&m_term1.dualToRange() != &m_term2.dualToRange())
+    if (m_term1.dualToRange() != m_term2.dualToRange())
         throw std::invalid_argument(
                 "AbstractBoundaryOperatorSum::AbstractBoundaryOperatorSum(" +
                 m_term1.label() +

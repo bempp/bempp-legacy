@@ -56,21 +56,21 @@ BoundaryOperator<BasisFunctionType, ResultType>::weakForm() const
 }
 
 template <typename BasisFunctionType, typename ResultType>
-const Space<BasisFunctionType>&
+shared_ptr<const Space<BasisFunctionType> >
 BoundaryOperator<BasisFunctionType, ResultType>::domain() const
 {
     return m_abstractOp->domain();
 }
 
 template <typename BasisFunctionType, typename ResultType>
-const Space<BasisFunctionType>&
+shared_ptr<const Space<BasisFunctionType> >
 BoundaryOperator<BasisFunctionType, ResultType>::range() const
 {
     return m_abstractOp->range();
 }
 
 template <typename BasisFunctionType, typename ResultType>
-const Space<BasisFunctionType>&
+shared_ptr<const Space<BasisFunctionType> >
 BoundaryOperator<BasisFunctionType, ResultType>::dualToRange() const
 {
     return m_abstractOp->dualToRange();
@@ -91,9 +91,9 @@ void BoundaryOperator<BasisFunctionType, ResultType>::apply(
         ResultType alpha, ResultType beta) const
 {
     // Sanity test
-    if (&m_abstractOp->domain() != &x_in.space() ||
-            &m_abstractOp->range() != &y_inout.space() ||
-            &m_abstractOp->dualToRange() != &y_inout.dualSpace())
+    if (m_abstractOp->domain() != x_in.space() ||
+            m_abstractOp->range() != y_inout.space() ||
+            m_abstractOp->dualToRange() != y_inout.dualSpace())
         throw std::runtime_error("AbstractBoundaryOperator::apply(): Spaces don't match");
 
     // Extract coefficient vectors
@@ -169,11 +169,11 @@ GridFunction<BasisFunctionType, ResultType> operator*(
 {
     typedef GridFunction<BasisFunctionType, ResultType> GF;
 
-    const Space<BasisFunctionType>& space = op.abstractOperator()->range();
-    const Space<BasisFunctionType>& dualSpace = op.abstractOperator()->dualToRange();
-    arma::Col<ResultType> coefficients(space.globalDofCount());
+    shared_ptr<const Space<BasisFunctionType> > space = op.range();
+    shared_ptr<const Space<BasisFunctionType> > dualSpace = op.dualToRange();
+    arma::Col<ResultType> coefficients(space->globalDofCount());
     coefficients.fill(0.);
-    arma::Col<ResultType> projections(dualSpace.globalDofCount());
+    arma::Col<ResultType> projections(dualSpace->globalDofCount());
     projections.fill(0.);
     GF result(op.context(), space, dualSpace, projections, GF::PROJECTIONS);
     op.apply(NO_TRANSPOSE, fun, result, 1., 0.);

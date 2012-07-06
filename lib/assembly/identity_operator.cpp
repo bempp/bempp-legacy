@@ -149,7 +149,8 @@ inline int epetraSumIntoGlobalValues<std::complex<double> >(
 template <typename BasisFunctionType, typename ResultType>
 IdentityOperatorId<BasisFunctionType, ResultType>::IdentityOperatorId(
         const IdentityOperator<BasisFunctionType, ResultType>& op) :
-    m_domain(&op.domain()), m_range(&op.range()), m_dualToRange(&op.dualToRange())
+    m_domain(op.domain().get()), m_range(op.range().get()),
+    m_dualToRange(op.dualToRange().get())
 {
 }
 
@@ -201,9 +202,9 @@ struct IdentityOperator<BasisFunctionType, ResultType>::Impl
 
 template <typename BasisFunctionType, typename ResultType>
 IdentityOperator<BasisFunctionType, ResultType>::IdentityOperator(
-        const Space<BasisFunctionType>& domain,
-        const Space<BasisFunctionType>& range,
-        const Space<BasisFunctionType>& dualToRange,
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         const std::string& label) :
     Base(domain, range, dualToRange, label),
     m_impl(new Impl),
@@ -283,8 +284,8 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInDenseMode(
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
-    const Space<BasisFunctionType>& testSpace = this->dualToRange();
-    const Space<BasisFunctionType>& trialSpace = this->domain();
+    const Space<BasisFunctionType>& testSpace = *this->dualToRange();
+    const Space<BasisFunctionType>& trialSpace = *this->domain();
 
     // Fill local submatrices
     std::auto_ptr<GridView> view = testSpace.grid().leafView();
@@ -340,8 +341,8 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparseMode(
                 "sparse-mode assembly of identity operators for "
                 "complex-valued basis functions is not supported yet");
 
-    const Space<BasisFunctionType>& testSpace = this->dualToRange();
-    const Space<BasisFunctionType>& trialSpace = this->domain();
+    const Space<BasisFunctionType>& testSpace = *this->dualToRange();
+    const Space<BasisFunctionType>& trialSpace = *this->domain();
 
     // Fill local submatrices
     std::auto_ptr<GridView> view = testSpace.grid().leafView();
@@ -462,9 +463,9 @@ IdentityOperator<BasisFunctionType, ResultType>::makeAssemblerImpl(
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 identityOperator(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-                 const Space<BasisFunctionType>& domain,
-                 const Space<BasisFunctionType>& range,
-                 const Space<BasisFunctionType>& dualToRange,
+                 const shared_ptr<const Space<BasisFunctionType> >& domain,
+                 const shared_ptr<const Space<BasisFunctionType> >& range,
+                 const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
                  const std::string& label)
 {
     typedef IdentityOperator<BasisFunctionType, ResultType> Id;
@@ -477,9 +478,9 @@ identityOperator(const shared_ptr<const Context<BasisFunctionType, ResultType> >
     template BoundaryOperator<BASIS, RESULT> \
     identityOperator( \
         const shared_ptr<const Context<BASIS, RESULT> >&, \
-        const Space<BASIS>&, \
-        const Space<BASIS>&, \
-        const Space<BASIS>&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
         const std::string&)
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 

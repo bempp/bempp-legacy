@@ -38,9 +38,9 @@ public:
     shared_ptr<const DiscreteBoundaryOperator<ResultType> >
     weakForm() const;
 
-    const Space<BasisFunctionType>& domain() const;
-    const Space<BasisFunctionType>& range() const;
-    const Space<BasisFunctionType>& dualToRange() const;
+    shared_ptr<const Space<BasisFunctionType> > domain() const;
+    shared_ptr<const Space<BasisFunctionType> > range() const;
+    shared_ptr<const Space<BasisFunctionType> > dualToRange() const;
 
     std::string label() const;
 

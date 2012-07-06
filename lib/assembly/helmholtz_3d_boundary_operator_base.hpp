@@ -63,9 +63,9 @@ public:
     typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
     Helmholtz3dBoundaryOperatorBase(
-            const Space<BasisFunctionType>& domain,
-            const Space<BasisFunctionType>& range,
-            const Space<BasisFunctionType>& dualToRange,
+            const shared_ptr<const Space<BasisFunctionType> >& domain,
+            const shared_ptr<const Space<BasisFunctionType> >& range,
+            const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
             KernelType waveNumber,
             const std::string& label = "");
     Helmholtz3dBoundaryOperatorBase(

@@ -52,7 +52,7 @@ AbstractBoundaryOperatorComposition(
     assert(m_outer.abstractOperator());
     assert(m_inner.abstractOperator());
 
-    if (&m_outer.domain() != &m_inner.range())
+    if (m_outer.domain() != m_inner.range())
         throw std::invalid_argument(
                 "AbstractBoundaryOperatorComposition::AbstractBoundaryOperatorComposition(" +
                 m_outer.label() +

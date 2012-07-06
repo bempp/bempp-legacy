@@ -128,9 +128,9 @@ private:
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-ElementaryIntegralOperator(const Space<BasisFunctionType>& domain,
-                           const Space<BasisFunctionType>& range,
-                           const Space<BasisFunctionType>& dualToRange,
+ElementaryIntegralOperator(const shared_ptr<const Space<BasisFunctionType> >& domain,
+                           const shared_ptr<const Space<BasisFunctionType> >& range,
+                           const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
                            const std::string& label) :
     Base(domain, range, dualToRange, label)
 {
@@ -232,8 +232,8 @@ assembleWeakFormInDenseMode(
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
-    const Space<BasisFunctionType>& testSpace = this->dualToRange();
-    const Space<BasisFunctionType>& trialSpace = this->domain();
+    const Space<BasisFunctionType>& testSpace = *this->dualToRange();
+    const Space<BasisFunctionType>& trialSpace = *this->domain();
 
     // Get the grid's leaf view so that we can iterate over elements
     std::auto_ptr<GridView> view = trialSpace.grid().leafView();
@@ -314,8 +314,8 @@ assembleWeakFormInAcaMode(
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
-    const Space<BasisFunctionType>& testSpace = this->dualToRange();
-    const Space<BasisFunctionType>& trialSpace = this->domain();
+    const Space<BasisFunctionType>& testSpace = *this->dualToRange();
+    const Space<BasisFunctionType>& trialSpace = *this->domain();
 
     return AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                 testSpace, trialSpace, assembler, options,

@@ -35,9 +35,9 @@ namespace Bempp
 
 template <typename BasisFunctionType, typename ResultType>
 AbstractBoundaryOperator<BasisFunctionType, ResultType>::
-AbstractBoundaryOperator(const Space<BasisFunctionType>& domain,
-                         const Space<BasisFunctionType>& range,
-                         const Space<BasisFunctionType>& dualToRange,
+AbstractBoundaryOperator(const shared_ptr<const Space<BasisFunctionType> >& domain,
+                         const shared_ptr<const Space<BasisFunctionType> >& range,
+                         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
                          const std::string& label,
                          const Symmetry symmetry) :
     m_domain(domain), m_range(range), m_dualToRange(dualToRange),
@@ -66,21 +66,21 @@ AbstractBoundaryOperator<BasisFunctionType, ResultType>::assembleWeakForm(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-const Space<BasisFunctionType>&
+shared_ptr<const Space<BasisFunctionType> >
 AbstractBoundaryOperator<BasisFunctionType, ResultType>::domain() const
 {
     return m_domain;
 }
 
 template <typename BasisFunctionType, typename ResultType>
-const Space<BasisFunctionType>&
+shared_ptr<const Space<BasisFunctionType> >
 AbstractBoundaryOperator<BasisFunctionType, ResultType>::range() const
 {
     return m_range;
 }
 
 template <typename BasisFunctionType, typename ResultType>
-const Space<BasisFunctionType>&
+shared_ptr<const Space<BasisFunctionType> >
 AbstractBoundaryOperator<BasisFunctionType, ResultType>::dualToRange() const
 {
     return m_dualToRange;
@@ -118,13 +118,13 @@ AbstractBoundaryOperator<BasisFunctionType, ResultType>::collectDataForAssembler
     typedef LocalAssemblerConstructionHelper Helper;
 
     // Collect grid data
-    Helper::collectGridData(m_dualToRange.grid(),
+    Helper::collectGridData(m_dualToRange->grid(),
                             testRawGeometry, testGeometryFactory);
-    if (&m_dualToRange.grid() == &m_domain.grid()) {
+    if (&m_dualToRange->grid() == &m_domain->grid()) {
         trialRawGeometry = testRawGeometry;
         trialGeometryFactory = testGeometryFactory;
     } else
-        Helper::collectGridData(m_domain.grid(),
+        Helper::collectGridData(m_domain->grid(),
                                 trialRawGeometry, trialGeometryFactory);
 
     // Construct the OpenClHandler
@@ -132,11 +132,11 @@ AbstractBoundaryOperator<BasisFunctionType, ResultType>::collectDataForAssembler
                               testRawGeometry, trialRawGeometry, openClHandler);
 
     // Get pointers to test and trial bases of each element
-    Helper::collectBases(m_dualToRange, testBases);
-    if (&m_dualToRange == &m_domain)
+    Helper::collectBases(*m_dualToRange, testBases);
+    if (m_dualToRange == m_domain)
         trialBases = testBases;
     else
-        Helper::collectBases(m_domain, trialBases);
+        Helper::collectBases(*m_domain, trialBases);
 
     cacheSingularIntegrals =
             (options.singularIntegralCaching() == AssemblyOptions::YES ||

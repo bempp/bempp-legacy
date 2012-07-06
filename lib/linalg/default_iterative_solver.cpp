@@ -48,7 +48,7 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::DefaultIterativeSolver(
     // rather than a Vector
     m_rhs(new Vector<ResultType>(rhsGridFun.projections()))
 {
-    if (&boundaryOp.dualToRange() != &rhsGridFun.dualSpace())
+    if (boundaryOp.dualToRange() != rhsGridFun.dualSpace())
         throw std::runtime_error("DefaultIterativeSolver::DefaultIterativeSolver(): "
                                  "spaces do not match");
 }

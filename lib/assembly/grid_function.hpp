@@ -91,8 +91,8 @@ public:
      * Use instead one of the "non-member constructors"
      * <tt>gridFunctionFrom...()</tt>. */
     GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-                 const Space<BasisFunctionType>& space,
-                 const Space<BasisFunctionType>& dualSpace,
+                 const shared_ptr<const Space<BasisFunctionType> >& space,
+                 const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
                  const arma::Col<ResultType>& data,
                  DataType dataType);
 
@@ -112,24 +112,24 @@ public:
      * Use instead one of the "non-member constructors"
      * <tt>gridFunctionFrom...()</tt>. */
     GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-                 const Space<BasisFunctionType>& space,
-                 const Space<BasisFunctionType>& dualSpace,
+                 const shared_ptr<const Space<BasisFunctionType> >& space,
+                 const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
                  const arma::Col<ResultType>& coefficients,
                  const arma::Col<ResultType>& projections);
 
     GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-                 const Space<BasisFunctionType>& space,
-                 const Space<BasisFunctionType>& dualSpace,
+                 const shared_ptr<const Space<BasisFunctionType> >& space,
+                 const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
                  const Fiber::Function<ResultType>& function);
 
     /** \brief Grid on which this function is defined. */
     const Grid& grid() const;
 
     /** \brief Space in which this function is expanded. */
-    const Space<BasisFunctionType>& space() const;
+    shared_ptr<const Space<BasisFunctionType> > space() const;
 
     /** \brief Space dual to the space in which this function is expanded. */
-    const Space<BasisFunctionType>& dualSpace() const;
+    shared_ptr<const Space<BasisFunctionType> > dualSpace() const;
 
     shared_ptr<const Context<BasisFunctionType, ResultType> > context() const;
 
@@ -174,9 +174,9 @@ private:
             VtkWriter::DataType dataType, arma::Mat<ResultType>& result) const;
 
 private:
-    const shared_ptr<const Context<BasisFunctionType, ResultType> > m_context;
-    const Space<BasisFunctionType>& m_space;
-    const Space<BasisFunctionType>& m_dualSpace;
+    shared_ptr<const Context<BasisFunctionType, ResultType> > m_context;
+    shared_ptr<const Space<BasisFunctionType> > m_space;
+    shared_ptr<const Space<BasisFunctionType> > m_dualSpace;
     mutable arma::Col<ResultType> m_coefficients;
     mutable arma::Col<ResultType> m_projections;
 };
@@ -312,8 +312,8 @@ template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>
 gridFunctionFromCoefficients(
         const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const Space<BasisFunctionType>& space,
-        const Space<BasisFunctionType>& dualSpace,
+        const shared_ptr<const Space<BasisFunctionType> >& space,
+        const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
         const arma::Col<ResultType>& coefficients);
 
 /** \brief Construct a grid function from its expansion coefficients in a function space.
@@ -325,8 +325,8 @@ template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>
 gridFunctionFromProjections(
         const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const Space<BasisFunctionType>& space,
-        const Space<BasisFunctionType>& dualSpace,
+        const shared_ptr<const Space<BasisFunctionType> >& space,
+        const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
         const arma::Col<ResultType>& projections);
 
 /** \brief Construct a grid function from a Fiber::Function object. */
@@ -334,8 +334,8 @@ template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>
 gridFunctionFromFiberFunction(
         const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const Space<BasisFunctionType>& space,
-        const Space<BasisFunctionType>& dualSpace,
+        const shared_ptr<const Space<BasisFunctionType> >& space,
+        const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
         const Fiber::Function<ResultType>& function);
 
 /** \brief Construct a grid function from a functor independent from surface orientation.
@@ -354,8 +354,8 @@ template <typename BasisFunctionType, typename Functor>
 GridFunction<BasisFunctionType, typename Functor::ValueType>
 inline gridFunctionFromSurfaceNormalIndependentFunctor(
         const shared_ptr<const Context<BasisFunctionType, typename Functor::ValueType> >& context,
-        const Space<BasisFunctionType>& space,
-        const Space<BasisFunctionType>& dualSpace,
+        const shared_ptr<const Space<BasisFunctionType> >& space,
+        const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
         const Functor& functor)
 {
     Fiber::SurfaceNormalIndependentFunction<Functor> fiberFunction(functor);
@@ -380,8 +380,8 @@ template <typename BasisFunctionType, typename Functor>
 GridFunction<BasisFunctionType, typename Functor::ValueType>
 inline gridFunctionFromSurfaceNormalDependentFunctor(
         const shared_ptr<const Context<BasisFunctionType, typename Functor::ValueType> >& context,
-        const Space<BasisFunctionType>& space,
-        const Space<BasisFunctionType>& dualSpace,
+        const shared_ptr<const Space<BasisFunctionType> >& space,
+        const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
         const Functor& functor)
 {
     Fiber::SurfaceNormalDependentFunction<Functor> fiberFunction(functor);

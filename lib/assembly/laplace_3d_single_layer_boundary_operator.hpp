@@ -70,10 +70,10 @@ public:
     typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
     Laplace3dSingleLayerBoundaryOperator(
-            const Space<BasisFunctionType>& domain,
-            const Space<BasisFunctionType>& range,
-            const Space<BasisFunctionType>& dualToRange,
-            const std::string& label = "");
+            const shared_ptr<const Space<BasisFunctionType> >& domain,
+            const shared_ptr<const Space<BasisFunctionType> >& range,
+            const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+            const std::string& label);
 };
 
 template <typename BasisFunctionType, typename ResultType>

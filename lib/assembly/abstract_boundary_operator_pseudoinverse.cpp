@@ -100,14 +100,12 @@ AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>::
 AbstractBoundaryOperatorPseudoinverse(
         // TODO: add a solver argument specifying how to calculate the pseudoinv.
         const BoundaryOperator<BasisFunctionType, ResultType>& operatorToInvert) :
-    Base(operatorToInvert.abstractOperator()->range(),
-         operatorToInvert.abstractOperator()->domain(),
-         &operatorToInvert.abstractOperator()->domain() ==
-         &operatorToInvert.abstractOperator()->range() ?
-             operatorToInvert.abstractOperator()->dualToRange() :
+    Base(operatorToInvert.range(), operatorToInvert.domain(),
+         operatorToInvert.domain() == operatorToInvert.range() ?
+             operatorToInvert.dualToRange() :
              // assume that domain == dualToRange, we'll verify it
              // in the body of the constructor
-             operatorToInvert.abstractOperator()->range(),
+             operatorToInvert.range(),
          "pinv(" + operatorToInvert.label() + ")",
          operatorToInvert.abstractOperator()->symmetry()),
     m_operator(operatorToInvert),
@@ -115,10 +113,8 @@ AbstractBoundaryOperatorPseudoinverse(
          BasisFunctionType, ResultType> >(
              operatorToInvert))
 {
-    if (&operatorToInvert.abstractOperator()->domain() !=
-            &operatorToInvert.abstractOperator()->range() &&
-            &operatorToInvert.abstractOperator()->domain() !=
-            &operatorToInvert.abstractOperator()->dualToRange())
+    if (operatorToInvert.domain() != operatorToInvert.range() &&
+            operatorToInvert.domain() != operatorToInvert.dualToRange())
         throw std::runtime_error(
                 "AbstractBoundaryOperatorPseudoinverse::"
                 "AbstractBoundaryOperatorPseudoinverse(): "
@@ -181,7 +177,7 @@ assembleWeakFormForSparseOperator(
     const int colCount = matrix->NumGlobalCols();
     if (rowCount == colCount) {
         // Square matrix; construct M^{-1}
-        bool sameSpace = &this->domain() == &this->dualToRange();
+        bool sameSpace = this->domain() == this->dualToRange();
         return boost::make_shared<DiscreteInverseSparseOp>(
                     matrix, sameSpace ? HERMITIAN : NO_SYMMETRY);
     } else {

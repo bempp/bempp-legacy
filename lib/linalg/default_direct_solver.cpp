@@ -35,7 +35,7 @@ DefaultDirectSolver<BasisFunctionType, ResultType>::DefaultDirectSolver(
     m_boundaryOperator(boundaryOperator), m_gridFunction(gridFunction),
     m_solution(), m_status(Solver<BasisFunctionType, ResultType>::UNKNOWN)
 {
-    if (&boundaryOperator.abstractOperator()->domain() != &gridFunction.space())
+    if (boundaryOperator.domain() != gridFunction.space())
         throw std::runtime_error("DefaultDirectSolver::DefaultDirectSolver(): "
                                  "spaces do not match");
 }

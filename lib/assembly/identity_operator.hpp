@@ -68,9 +68,9 @@ public:
     typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
     typedef typename Base::LocalAssembler LocalAssembler;
 
-    IdentityOperator(const Space<BasisFunctionType>& domain,
-                     const Space<BasisFunctionType>& range,
-                     const Space<BasisFunctionType>& dualToRange,
+    IdentityOperator(const shared_ptr<const Space<BasisFunctionType> >& domain,
+                     const shared_ptr<const Space<BasisFunctionType> >& range,
+                     const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
                      const std::string& label = "");
     IdentityOperator(const IdentityOperator& other);
     virtual ~IdentityOperator();
@@ -121,9 +121,9 @@ private:
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 identityOperator(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-                 const Space<BasisFunctionType>& domain,
-                 const Space<BasisFunctionType>& range,
-                 const Space<BasisFunctionType>& dualToRange,
+                 const shared_ptr<const Space<BasisFunctionType> >& domain,
+                 const shared_ptr<const Space<BasisFunctionType> >& range,
+                 const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
                  const std::string& label = "");
 
 } // namespace Bempp

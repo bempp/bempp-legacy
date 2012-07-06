@@ -48,9 +48,9 @@ inline void setWaveNumberImpl(Impl& impl, typename Impl::KernelType waveNumber)
 template <typename Impl, typename BasisFunctionType>
 Helmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType>::
 Helmholtz3dBoundaryOperatorBase(       
-        const Space<BasisFunctionType>& domain,
-        const Space<BasisFunctionType>& range,
-        const Space<BasisFunctionType>& dualToRange,
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         KernelType waveNumber,
         const std::string& label) :
     Base(domain, range, dualToRange, label), m_impl(new Impl(waveNumber))

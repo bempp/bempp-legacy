@@ -35,7 +35,8 @@ template <typename Impl, typename ResultType>
 Laplace3dBoundaryOperatorId<BasisFunctionType>::Laplace3dBoundaryOperatorId(
         const Laplace3dBoundaryOperatorBase<Impl, BasisFunctionType, ResultType>& op) :
     m_typeInfo(typeid(op)),
-    m_domain(&op.domain()), m_range(&op.range()), m_dualToRange(&op.dualToRange())
+    m_domain(op.domain().get()), m_range(op.range().get()),
+    m_dualToRange(op.dualToRange().get())
 {
 }
 
@@ -80,9 +81,9 @@ bool Laplace3dBoundaryOperatorId<BasisFunctionType>::isEqual(
 template <typename Impl, typename BasisFunctionType, typename ResultType>
 Laplace3dBoundaryOperatorBase<Impl, BasisFunctionType, ResultType>::
 Laplace3dBoundaryOperatorBase(
-        const Space<BasisFunctionType>& domain,
-        const Space<BasisFunctionType>& range,
-        const Space<BasisFunctionType>& dualToRange,
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         const std::string& label) :
     Base(domain, range, dualToRange, label), m_impl(new Impl),
     m_id(boost::make_shared<Laplace3dBoundaryOperatorId<BasisFunctionType> >(

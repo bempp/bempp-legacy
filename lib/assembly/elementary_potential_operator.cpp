@@ -141,7 +141,7 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::makeEval
     shared_ptr<Fiber::OpenClHandler> openClHandler;
     shared_ptr<BasisPtrVector> bases;
 
-    const Space<BasisFunctionType>& space = argument.space();
+    const Space<BasisFunctionType>& space = *argument.space();
     Helper::collectGridData(space.grid(),
                             rawGeometry, geometryFactory);
     Helper::makeOpenClHandler(options.parallelisationOptions().openClOptions(),

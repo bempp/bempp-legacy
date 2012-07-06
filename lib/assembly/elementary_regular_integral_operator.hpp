@@ -36,10 +36,11 @@ class ElementaryRegularIntegralOperator :
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
-    ElementaryRegularIntegralOperator(const Space<BasisFunctionType>& domain,
-                                      const Space<BasisFunctionType>& range,
-                                      const Space<BasisFunctionType>& dualToRange,
-                                      const std::string& label = "") :
+    ElementaryRegularIntegralOperator(
+            const shared_ptr<const Space<BasisFunctionType> >& domain,
+            const shared_ptr<const Space<BasisFunctionType> >& range,
+            const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+            const std::string& label = "") :
        Base(domain, range, dualToRange, label) {
    }
 
