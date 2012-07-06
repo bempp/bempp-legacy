@@ -1,3 +1,10 @@
+%shared_ptr(Fiber::LocalAssemblerFactory<float, float, GeometryFactory>);
+%shared_ptr(Fiber::LocalAssemblerFactory<float, std::complex<float> , GeometryFactory>);
+%shared_ptr(Fiber::LocalAssemblerFactory<std::complex<float>, std::complex<float> , GeometryFactory>);
+%shared_ptr(Fiber::LocalAssemblerFactory<double, double, GeometryFactory>);
+%shared_ptr(Fiber::LocalAssemblerFactory<double, std::complex<double> , GeometryFactory>);
+%shared_ptr(Fiber::LocalAssemblerFactory<std::complex<double>, std::complex<double> , GeometryFactory>);
+
 namespace Fiber
 {
 

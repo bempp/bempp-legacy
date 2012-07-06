@@ -23,6 +23,12 @@ pwiseLinears = bempp.piecewiseLinearContinuousScalarSpace(grid)
 pwiseConstants.assignDofs()
 pwiseLinears.assignDofs()
 
+factory = bempp.defaultLocalAssemblerFactoryForOperatorsOnSurfaces()
+options = bempp.AssemblyOptions()
+options.switchToAca(bempp.AcaOptions())
+
+context = bempp.Context_float64_float64(factory, options)
+
 slpOp = bempp.laplace3dSingleLayerBoundaryOperator(
     pwiseConstants, pwiseLinears, pwiseConstants)
 dlpOp = bempp.laplace3dDoubleLayerBoundaryOperator(
@@ -33,9 +39,6 @@ idOp = bempp.identityOperator(
 lhsOp = slpOp
 rhsOp = -0.5 * idOp + dlpOp
 
-factory = bempp.defaultLocalAssemblerFactoryForOperatorsOnSurfaces()
-options = bempp.AssemblyOptions()
-options.switchToAca(bempp.AcaOptions())
 print "Assembling LHS operator..."
 lhsOp.assembleWeakForm(factory, options)
 print "Assembling RHS operator..."

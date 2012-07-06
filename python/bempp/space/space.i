@@ -1,7 +1,12 @@
 %{
-  #include "space/space.hpp"
-  #include <complex>
+#include "space/space.hpp"
+#include <complex>
 %}
+
+%shared_ptr(Bempp::Space<float>);
+%shared_ptr(Bempp::Space<double>);
+%shared_ptr(Bempp::Space<std::complex<float> >);
+%shared_ptr(Bempp::Space<std::complex<double> >);
 
 // TODO
 // %include "space_docstrings.i"

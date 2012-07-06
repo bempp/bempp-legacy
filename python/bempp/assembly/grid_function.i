@@ -2,6 +2,36 @@
 #include "assembly/grid_function.hpp"
 %}
 
+%inline %{
+
+namespace Bempp
+{
+template <typename BasisFunctionType, typename Functor>
+GridFunction<BasisFunctionType, typename Functor::ValueType>
+inline gridFunctionFromSurfaceNormalIndependentFunctorX(
+    const boost::shared_ptr<const Context<BasisFunctionType, typename Functor::ValueType> >& context,
+    const boost::shared_ptr<const Space<BasisFunctionType> >& space,
+    const boost::shared_ptr<const Space<BasisFunctionType> >& dualSpace,
+    const Functor& functor)
+{
+    gridFunctionFromSurfaceNormalIndependentFunctor(context, space, dualSpace, functor);
+}
+
+template <typename BasisFunctionType, typename Functor>
+GridFunction<BasisFunctionType, typename Functor::ValueType>
+inline gridFunctionFromSurfaceNormalDependentFunctorX(
+    const boost::shared_ptr<const Context<BasisFunctionType, typename Functor::ValueType> >& context,
+    const boost::shared_ptr<const Space<BasisFunctionType> >& space,
+    const boost::shared_ptr<const Space<BasisFunctionType> >& dualSpace,
+    const Functor& functor)
+{
+    gridFunctionFromSurfaceNormalDependentFunctor(context, space, dualSpace, functor);
+}
+
+} // namespace Bempp
+
+%}
+
 namespace Bempp
 {
 
@@ -9,22 +39,42 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
 
 %define BEMPP_INSTANTIATE_GRID_FUNCTION_FROM_FUNCTOR(FUNCTOR)
     %template(pythonGridFunctionFrom ## FUNCTOR ## _float32_float32)
-        gridFunctionFrom ## FUNCTOR<float, Python ## FUNCTOR<float> >;
+        gridFunctionFrom ## FUNCTOR ## X<float, Python ## FUNCTOR<float> >;
     %template(pythonGridFunctionFrom ## FUNCTOR ## _float32_complex64)
-        gridFunctionFrom ## FUNCTOR<float, Python ## FUNCTOR<std::complex<float> > >;
+        gridFunctionFrom ## FUNCTOR ## X<float, Python ## FUNCTOR<std::complex<float> > >;
     %template(pythonGridFunctionFrom ## FUNCTOR ## _complex64_complex64)
-        gridFunctionFrom ## FUNCTOR<std::complex<float>, Python ## FUNCTOR<std::complex<float> > >;
+        gridFunctionFrom ## FUNCTOR ## X<std::complex<float>, Python ## FUNCTOR<std::complex<float> > >;
 
     %template(pythonGridFunctionFrom ## FUNCTOR ## _float64_float64)
-        gridFunctionFrom ## FUNCTOR<double, Python ## FUNCTOR<double> >;
+        gridFunctionFrom ## FUNCTOR ## X<double, Python ## FUNCTOR<double> >;
     %template(pythonGridFunctionFrom ## FUNCTOR ## _float64_complex128)
-        gridFunctionFrom ## FUNCTOR<double, Python ## FUNCTOR<std::complex<double> > >;
+        gridFunctionFrom ## FUNCTOR ## X<double, Python ## FUNCTOR<std::complex<double> > >;
     %template(pythonGridFunctionFrom ## FUNCTOR ## _complex128_complex128)
-        gridFunctionFrom ## FUNCTOR<std::complex<double>, Python ## FUNCTOR<std::complex<double> > >
+        gridFunctionFrom ## FUNCTOR ## X<std::complex<double>, Python ## FUNCTOR<std::complex<double> > >
 %enddef
 
 %extend GridFunction
 {
+    %ignore GridFunction;
+
+    boost::shared_ptr<const Space<BasisFunctionType> > space() const
+    {
+        return $self->space();
+    }
+    %ignore space;
+
+    boost::shared_ptr<const Space<BasisFunctionType> > dualSpace() const
+    {
+        return $self->dualSpace();
+    }
+    %ignore dualSpace;
+
+    boost::shared_ptr<const Context<BasisFunctionType, ResultType> > context() const
+    {
+        return $self->context();
+    }
+    %ignore context;
+
     %ignore setCoefficients;
     %ignore setProjections;
     %ignore codomainDimension;

@@ -3,21 +3,23 @@
 #include <complex>
 %}
 
+%shared_ptr(Bempp::ScalarSpace<float>);
+%shared_ptr(Bempp::ScalarSpace<double>);
+%shared_ptr(Bempp::ScalarSpace<std::complex<float> >);
+%shared_ptr(Bempp::ScalarSpace<std::complex<double> >);
 
 // TODO
 // %include "grid_docstrings.i"
 
 
-%include "space/scalar_space.hpp";
+namespace Bempp
+{
+BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(ScalarSpace);
+}
+
+%include "space/scalar_space.hpp"
 
 namespace Bempp
 {
-
-  %template(ScalarSpace_float64)     ScalarSpace<double>;
-  %template(ScalarSpace_float32)     ScalarSpace<float>;
-  %template(ScalarSpace_complex64)   ScalarSpace<std::complex<float> >;
-  %template(ScalarSpace_complex128)  ScalarSpace<std::complex<double> >;
-
-
-} 
-
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(ScalarSpace);
+}

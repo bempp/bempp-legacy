@@ -5,6 +5,11 @@
 // TODO
 // %include "space_docstrings.i"
 
+%shared_ptr(Bempp::PiecewiseLinearContinuousScalarSpace<float>);
+%shared_ptr(Bempp::PiecewiseLinearContinuousScalarSpace<double>);
+%shared_ptr(Bempp::PiecewiseLinearContinuousScalarSpace<std::complex<float> >);
+%shared_ptr(Bempp::PiecewiseLinearContinuousScalarSpace<std::complex<double> >);
+
 namespace Bempp
 {
 BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(PiecewiseLinearContinuousScalarSpace);

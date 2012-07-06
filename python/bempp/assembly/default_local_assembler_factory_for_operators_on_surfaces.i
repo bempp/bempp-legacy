@@ -4,6 +4,13 @@
 
 %include "assembly/default_local_assembler_factory_for_operators_on_surfaces.hpp"
 
+%shared_ptr(Bempp::DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<float, float>);
+%shared_ptr(Bempp::DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<float, std::complex<float> >);
+%shared_ptr(Bempp::DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<std::complex<float>, std::complex<float> >);
+%shared_ptr(Bempp::DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<double, double>);
+%shared_ptr(Bempp::DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<double, std::complex<double> >);
+%shared_ptr(Bempp::DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<std::complex<double>, std::complex<double> >);
+
 namespace Bempp
 {
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(

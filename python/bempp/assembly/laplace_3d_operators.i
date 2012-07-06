@@ -14,7 +14,8 @@ namespace Bempp
 
 // for some reason, SWIG doesn't see that this is an override of BoundaryOperator::clone()
 // (which it has been told to ignore)
-%extend Laplace3dSingleLayerBoundaryOperator { %ignore clone; }
+%extend Laplace3dBoundaryOperatorBase { %ignore Laplace3dBoundaryOperatorBase; }
+    %extend Laplace3dSingleLayerBoundaryOperator { %ignore Laplace3dSingleLayerBoundaryOperator; }
 %extend Laplace3dDoubleLayerBoundaryOperator { %ignore clone; }
 %extend Laplace3dAdjointDoubleLayerBoundaryOperator { %ignore clone; }
 %extend Laplace3dHypersingularBoundaryOperator { %ignore clone; }
@@ -59,6 +60,14 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
     Laplace3dAdjointDoubleLayerBoundaryOperator);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
     Laplace3dHypersingularBoundaryOperator);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
+    laplace3dSingleLayerBoundaryOperator);
+/* BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT( */
+/*     laplace3dDoubleLayerBoundaryOperator); */
+/* BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT( */
+/*     laplace3dAdjointDoubleLayerBoundaryOperator); */
+/* BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT( */
+/*     laplace3dHypersingularBoundaryOperator); */
 
 } // namespace Bempp
 
@@ -67,21 +76,22 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
 def laplace3dSingleLayerBoundaryOperator(domain, range, dualToRange, resultType=None):
     """Construct a single-layer-potential operator for the Laplace equation in 3D."""
     return _constructOperator(
-    "Laplace3dSingleLayerBoundaryOperator", domain, range, dualToRange, resultType)
+    "laplace3dSingleLayerBoundaryOperator", domain, range, dualToRange, resultType)
 
 def laplace3dDoubleLayerBoundaryOperator(domain, range, dualToRange, resultType=None):
     """Construct a double-layer-potential operator for the Laplace equation in 3D."""
     return _constructOperator(
-    "Laplace3dDoubleLayerBoundaryOperator", domain, range, dualToRange, resultType)
+    "laplace3dDoubleLayerBoundaryOperator", domain, range, dualToRange, resultType)
 
 def laplace3dAdjointDoubleLayerBoundaryOperator(domain, range, dualToRange, resultType=None):
     """Construct an adjoint double-layer-potential operator for the Laplace equation in 3D."""
     return _constructOperator(
-    "Laplace3dAdjointDoubleLayerBoundaryOperator", domain, range, dualToRange, resultType)
+    "laplace3dAdjointDoubleLayerBoundaryOperator", domain, range, dualToRange, resultType)
 
 def laplace3dHypersingularBoundaryOperator(domain, range, dualToRange, resultType=None):
     """Construct a hypersingular operator for the Laplace equation in 3D."""
     return _constructOperator(
-    "Laplace3dHypersingularBoundaryOperator", domain, range, dualToRange, resultType)
+    "laplace3dHypersingularBoundaryOperator", domain, range, dualToRange, resultType)
 
 %}
+
