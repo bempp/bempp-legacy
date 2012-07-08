@@ -23,32 +23,10 @@
 
 #include "elementary_singular_integral_operator.hpp"
 
-#include "abstract_boundary_operator_id.hpp"
 #include <boost/scoped_ptr.hpp>
 
 namespace Bempp
 {
-
-template <typename Impl, typename BasisFunctionType, typename ResultType>
-class Laplace3dBoundaryOperatorBase;
-
-template <typename BasisFunctionType>
-class Laplace3dBoundaryOperatorId : public AbstractBoundaryOperatorId
-{
-public:
-    template <typename Impl, typename ResultType>
-    explicit Laplace3dBoundaryOperatorId(
-            const Laplace3dBoundaryOperatorBase<Impl, BasisFunctionType, ResultType>& op);
-    virtual size_t hash() const;
-    virtual void dump() const;
-    virtual bool isEqual(const AbstractBoundaryOperatorId &other) const;
-
-private:
-    const std::type_info& m_typeInfo;
-    const Space<BasisFunctionType>* m_domain;
-    const Space<BasisFunctionType>* m_range;
-    const Space<BasisFunctionType>* m_dualToRange;
-};
 
 /** \ingroup laplace_3d
  *  \brief Base class for boundary operators for the Laplace equation in 3D.

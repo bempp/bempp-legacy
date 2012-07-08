@@ -22,8 +22,7 @@
 #define bempp_helmholtz_3d_hypersingular_boundaryoperator_hpp
 
 #include "helmholtz_3d_boundary_operator_base.hpp"
-
-#include <boost/scoped_ptr.hpp>
+#include "boundary_operator.hpp"
 
 namespace Bempp
 {
@@ -73,6 +72,18 @@ public:
             KernelType waveNumber,
             const std::string& label = "");
 };
+
+template <typename BasisFunctionType>
+BoundaryOperator<BasisFunctionType,
+typename Helmholtz3dHypersingularBoundaryOperator<BasisFunctionType>::ResultType>
+helmholtz3dHypersingularBoundaryOperator(
+        const shared_ptr<const Context<BasisFunctionType,
+        typename Helmholtz3dHypersingularBoundaryOperator<BasisFunctionType>::ResultType> >& context,
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+        typename Helmholtz3dHypersingularBoundaryOperator<BasisFunctionType>::KernelType waveNumber,
+        const std::string& label = "");
 
 } // namespace Bempp
 

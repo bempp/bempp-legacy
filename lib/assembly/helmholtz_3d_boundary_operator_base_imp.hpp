@@ -22,6 +22,8 @@
 #define bempp_helmholtz_3d_boundary_operator_base_imp_hpp
 
 #include "helmholtz_3d_boundary_operator_base.hpp"
+#include "abstract_boundary_operator_id.hpp"
+#include "../common/boost_make_shared_fwd.hpp"
 
 namespace Bempp
 {
@@ -45,6 +47,80 @@ inline void setWaveNumberImpl(Impl& impl, typename Impl::KernelType waveNumber)
 
 } // namespace
 
+////////////////////////////////////////////////////////////////////////////////
+// Helmholtz3dBoundaryOperatorId
+
+template <typename BasisFunctionType>
+class Helmholtz3dBoundaryOperatorId : public AbstractBoundaryOperatorId
+{
+public:
+    template <typename Impl>
+    explicit Helmholtz3dBoundaryOperatorId(
+            const Helmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType>& op);
+    virtual size_t hash() const;
+    virtual void dump() const;
+    virtual bool isEqual(const AbstractBoundaryOperatorId &other) const;
+
+private:
+    const std::type_info& m_typeInfo;
+    const Space<BasisFunctionType>* m_domain;
+    const Space<BasisFunctionType>* m_range;
+    const Space<BasisFunctionType>* m_dualToRange;
+    typename ScalarTraits<BasisFunctionType>::ComplexType m_waveNumber;
+};
+
+template <typename BasisFunctionType>
+template <typename Impl>
+Helmholtz3dBoundaryOperatorId<BasisFunctionType>::Helmholtz3dBoundaryOperatorId(
+        const Helmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType>& op) :
+    m_typeInfo(typeid(op)),
+    m_domain(op.domain().get()), m_range(op.range().get()),
+    m_dualToRange(op.dualToRange().get()),
+    m_waveNumber(op.waveNumber())
+{
+}
+
+template <typename BasisFunctionType>
+size_t Helmholtz3dBoundaryOperatorId<BasisFunctionType>::hash() const
+{
+    size_t result = tbb::tbb_hasher(m_typeInfo.name());
+    tbb_hash_combine(result, m_domain);
+    tbb_hash_combine(result, m_range);
+    tbb_hash_combine(result, m_dualToRange);
+    tbb_hash_combine(result, std::abs(m_waveNumber));
+    return result;
+}
+
+template <typename BasisFunctionType>
+void Helmholtz3dBoundaryOperatorId<BasisFunctionType>::dump() const
+{
+    std::cout << m_typeInfo.name() << ", " << m_domain << ", "
+              << m_range << ", " << m_dualToRange 
+              << ", " << m_waveNumber << std::endl;
+}
+
+template <typename BasisFunctionType>
+bool Helmholtz3dBoundaryOperatorId<BasisFunctionType>::isEqual(
+        const AbstractBoundaryOperatorId &other) const
+{
+    // dynamic_cast won't suffice since we want to make sure both objects
+    // are of exactly the same type (dynamic_cast would succeed for a subclass)
+    if (typeid(other) == typeid(*this)) {
+        const Helmholtz3dBoundaryOperatorId& otherCompatible =
+            static_cast<const Helmholtz3dBoundaryOperatorId&>(other);
+        return (m_typeInfo == otherCompatible.m_typeInfo &&
+                m_domain == otherCompatible.m_domain &&
+                m_range == otherCompatible.m_range &&
+                m_dualToRange == otherCompatible.m_dualToRange &&
+                m_waveNumber == otherCompatible.m_waveNumber);
+    }
+    else
+        return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Helmholtz3dBoundaryOperatorBase
+
 template <typename Impl, typename BasisFunctionType>
 Helmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType>::
 Helmholtz3dBoundaryOperatorBase(       
@@ -53,7 +129,9 @@ Helmholtz3dBoundaryOperatorBase(
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         KernelType waveNumber,
         const std::string& label) :
-    Base(domain, range, dualToRange, label), m_impl(new Impl(waveNumber))
+    Base(domain, range, dualToRange, label), m_impl(new Impl(waveNumber)),
+    m_id(boost::make_shared<Helmholtz3dBoundaryOperatorId<BasisFunctionType> >(
+             *this))
 {
 }
 
@@ -61,7 +139,7 @@ template <typename Impl, typename BasisFunctionType>
 Helmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType>::
 Helmholtz3dBoundaryOperatorBase(
         const Helmholtz3dBoundaryOperatorBase& other) :
-    Base(other), m_impl(new Impl(*other.m_impl))
+    Base(other), m_impl(new Impl(*other.m_impl)), m_id(other.m_id)
 {
 }
 
@@ -85,6 +163,13 @@ Helmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType>::
 setWaveNumber(KernelType waveNumber)
 {
     setWaveNumberImpl(*m_impl, waveNumber);
+}
+
+template <typename Impl, typename BasisFunctionType>
+shared_ptr<const AbstractBoundaryOperatorId>
+Helmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType>::id() const
+{
+    return m_id;
 }
 
 template <typename Impl, typename BasisFunctionType>

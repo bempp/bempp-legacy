@@ -22,6 +22,7 @@
 #define bempp_laplace_3d_boundary_operator_base_imp_hpp
 
 #include "laplace_3d_boundary_operator_base.hpp"
+#include "abstract_boundary_operator_id.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
 
 namespace Bempp
@@ -29,6 +30,24 @@ namespace Bempp
 
 ////////////////////////////////////////////////////////////////////////////////
 // Laplace3dBoundaryOperatorId
+
+template <typename BasisFunctionType>
+class Laplace3dBoundaryOperatorId : public AbstractBoundaryOperatorId
+{
+public:
+    template <typename Impl, typename ResultType>
+    explicit Laplace3dBoundaryOperatorId(
+            const Laplace3dBoundaryOperatorBase<Impl, BasisFunctionType, ResultType>& op);
+    virtual size_t hash() const;
+    virtual void dump() const;
+    virtual bool isEqual(const AbstractBoundaryOperatorId &other) const;
+
+private:
+    const std::type_info& m_typeInfo;
+    const Space<BasisFunctionType>* m_domain;
+    const Space<BasisFunctionType>* m_range;
+    const Space<BasisFunctionType>* m_dualToRange;
+};
 
 template <typename BasisFunctionType>
 template <typename Impl, typename ResultType>

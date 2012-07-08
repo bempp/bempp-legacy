@@ -89,6 +89,8 @@ public:
     void setWaveNumber(KernelType waveNumber);
     KernelType waveNumber() const;
 
+    virtual shared_ptr<const AbstractBoundaryOperatorId> id() const;
+
 private:
     virtual const CollectionOfKernels& kernels() const;
     virtual const CollectionOfBasisTransformations&
@@ -99,6 +101,7 @@ private:
 
 private:
     boost::scoped_ptr<Impl> m_impl;
+    shared_ptr<AbstractBoundaryOperatorId> m_id;
 };
 
 } // namespace Bempp

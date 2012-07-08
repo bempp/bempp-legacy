@@ -82,7 +82,7 @@ helmholtz3dDoubleLayerBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        typename Helmholtz3dDoubleLayerBoundaryOperator<BasisFunctionType>::KernelType waveBumber,
+        typename Helmholtz3dDoubleLayerBoundaryOperator<BasisFunctionType>::KernelType waveNumber,
         const std::string& label = "");
 
 } // namespace Bempp

@@ -23,7 +23,6 @@
 
 #include "laplace_3d_boundary_operator_base.hpp"
 #include "boundary_operator.hpp"
-#include "../common/boost_make_shared_fwd.hpp"
 
 namespace Bempp
 {
