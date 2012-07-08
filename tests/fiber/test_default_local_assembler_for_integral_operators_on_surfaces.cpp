@@ -74,9 +74,11 @@ public:
         piecewiseConstantSpace->assignDofs();
         piecewiseLinearSpace->assignDofs();
 
-        op = std::auto_ptr<Operator>(new Operator(*piecewiseConstantSpace,
-                                                  *piecewiseLinearSpace,
-                                                  *piecewiseLinearSpace));
+        op = std::auto_ptr<Operator>(new Operator(
+                                         make_shared_from_ref(*piecewiseConstantSpace),
+                                         make_shared_from_ref(*piecewiseLinearSpace),
+                                         make_shared_from_ref(*piecewiseLinearSpace),
+                                         "SLP"));
 
         // Construct local assembler
 
