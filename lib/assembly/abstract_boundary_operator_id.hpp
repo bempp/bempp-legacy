@@ -4,6 +4,8 @@
 #include "../common/common.hpp"
 #include "../common/shared_ptr.hpp"
 
+#include <boost/functional/hash.hpp>
+
 namespace Bempp
 {
 
@@ -35,6 +37,16 @@ inline size_t tbb_hasher(
 {
     std::cout << "tbb_hasher<sp<ABId> >(): " << id->hash() << std::endl;
     return id->hash();
+}
+
+inline size_t tbb_hasher(float id)
+{
+    return boost::hash<float>()(id);
+}
+
+inline size_t tbb_hasher(double id)
+{
+    return boost::hash<double>()(id);
 }
 
 } // namespace tbb
