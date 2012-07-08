@@ -1,6 +1,6 @@
 %pythoncode %{
 
-def _constructOperator(className, domain, range, dualToRange, resultType):
+def _constructOperator(className, context, domain, range, dualToRange):
     # determine basis function type
     basisFunctionType = domain.basisFunctionType()
     if (basisFunctionType != range.basisFunctionType() or
@@ -8,13 +8,12 @@ def _constructOperator(className, domain, range, dualToRange, resultType):
         raise TypeError("BasisFunctionType of all spaces must be the same")
 
     # determine result type
-    if resultType is None:
-        resultType = basisFunctionType
-    resultType = checkType(resultType)
+    resultType = context.resultType()
 
     result = constructObjectTemplatedOnBasisAndResult(
         className, basisFunctionType, resultType,
-        domain, range, dualToRange)
+        context, domain, range, dualToRange)
+    result._context = context
     result._domain = domain
     result._range = range
     result._dualToRange = dualToRange

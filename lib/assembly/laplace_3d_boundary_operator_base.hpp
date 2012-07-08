@@ -91,7 +91,7 @@ private:
 
 private:
     boost::scoped_ptr<Impl> m_impl;
-    boost::shared_ptr<AbstractBoundaryOperatorId> m_id;
+    shared_ptr<AbstractBoundaryOperatorId> m_id;
 };
 
 } // namespace Bempp

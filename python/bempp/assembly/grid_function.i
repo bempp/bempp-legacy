@@ -1,31 +1,40 @@
 %{
 #include "assembly/grid_function.hpp"
+#include "assembly/surface_normal_dependent_function.hpp"
+#include "assembly/surface_normal_independent_function.hpp"
 %}
+
+%newobject gridFunctionFromPythonSurfaceNormalIndependentFunctor;
 
 %inline %{
 
 namespace Bempp
 {
-template <typename BasisFunctionType, typename Functor>
-GridFunction<BasisFunctionType, typename Functor::ValueType>
-inline gridFunctionFromSurfaceNormalIndependentFunctorX(
-    const boost::shared_ptr<const Context<BasisFunctionType, typename Functor::ValueType> >& context,
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>*
+gridFunctionFromPythonSurfaceNormalIndependentFunctor(
+    const boost::shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
     const boost::shared_ptr<const Space<BasisFunctionType> >& space,
     const boost::shared_ptr<const Space<BasisFunctionType> >& dualSpace,
-    const Functor& functor)
+    const PythonSurfaceNormalIndependentFunctor<ResultType>& functor)
 {
-    gridFunctionFromSurfaceNormalIndependentFunctor(context, space, dualSpace, functor);
+    return new GridFunction<BasisFunctionType, ResultType>(
+        context, space, dualSpace,
+        surfaceNormalIndependentFunction(functor));
 }
 
-template <typename BasisFunctionType, typename Functor>
-GridFunction<BasisFunctionType, typename Functor::ValueType>
-inline gridFunctionFromSurfaceNormalDependentFunctorX(
-    const boost::shared_ptr<const Context<BasisFunctionType, typename Functor::ValueType> >& context,
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>*
+gridFunctionFromPythonSurfaceNormalDependentFunctor(
+    const boost::shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
     const boost::shared_ptr<const Space<BasisFunctionType> >& space,
     const boost::shared_ptr<const Space<BasisFunctionType> >& dualSpace,
-    const Functor& functor)
+    const PythonSurfaceNormalDependentFunctor<ResultType>& functor)
 {
-    gridFunctionFromSurfaceNormalDependentFunctor(context, space, dualSpace, functor);
+    return new GridFunction<BasisFunctionType, ResultType>(
+        context, space, dualSpace,
+        surfaceNormalDependentFunction(functor));
 }
 
 } // namespace Bempp
@@ -37,43 +46,9 @@ namespace Bempp
 
 BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
 
-%define BEMPP_INSTANTIATE_GRID_FUNCTION_FROM_FUNCTOR(FUNCTOR)
-    %template(pythonGridFunctionFrom ## FUNCTOR ## _float32_float32)
-        gridFunctionFrom ## FUNCTOR ## X<float, Python ## FUNCTOR<float> >;
-    %template(pythonGridFunctionFrom ## FUNCTOR ## _float32_complex64)
-        gridFunctionFrom ## FUNCTOR ## X<float, Python ## FUNCTOR<std::complex<float> > >;
-    %template(pythonGridFunctionFrom ## FUNCTOR ## _complex64_complex64)
-        gridFunctionFrom ## FUNCTOR ## X<std::complex<float>, Python ## FUNCTOR<std::complex<float> > >;
-
-    %template(pythonGridFunctionFrom ## FUNCTOR ## _float64_float64)
-        gridFunctionFrom ## FUNCTOR ## X<double, Python ## FUNCTOR<double> >;
-    %template(pythonGridFunctionFrom ## FUNCTOR ## _float64_complex128)
-        gridFunctionFrom ## FUNCTOR ## X<double, Python ## FUNCTOR<std::complex<double> > >;
-    %template(pythonGridFunctionFrom ## FUNCTOR ## _complex128_complex128)
-        gridFunctionFrom ## FUNCTOR ## X<std::complex<double>, Python ## FUNCTOR<std::complex<double> > >
-%enddef
-
 %extend GridFunction
 {
     %ignore GridFunction;
-
-    boost::shared_ptr<const Space<BasisFunctionType> > space() const
-    {
-        return $self->space();
-    }
-    %ignore space;
-
-    boost::shared_ptr<const Space<BasisFunctionType> > dualSpace() const
-    {
-        return $self->dualSpace();
-    }
-    %ignore dualSpace;
-
-    boost::shared_ptr<const Context<BasisFunctionType, ResultType> > context() const
-    {
-        return $self->context();
-    }
-    %ignore context;
 
     %ignore setCoefficients;
     %ignore setProjections;
@@ -143,7 +118,9 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
 
 } // namespace Bempp
 
+#define shared_ptr boost::shared_ptr
 %include "assembly/grid_function.hpp";
+#undef shared_ptr
 
 namespace Bempp
 {
@@ -151,10 +128,7 @@ namespace Bempp
 BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction)
 
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
-BEMPP_INSTANTIATE_GRID_FUNCTION_FROM_FUNCTOR(
-    SurfaceNormalIndependentFunctor);
-BEMPP_INSTANTIATE_GRID_FUNCTION_FROM_FUNCTOR(
-    SurfaceNormalDependentFunctor);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromPythonSurfaceNormalIndependentFunctor);
 
 %clear arma::Col<float>& col_out;
 %clear arma::Col<double>& col_out;
@@ -168,35 +142,40 @@ BEMPP_INSTANTIATE_GRID_FUNCTION_FROM_FUNCTOR(
 # functorType: "SurfaceNormalDependentFunctor" or "SurfaceNormalIndependentFunctor"
 def _gridFunctionFromFunctor(
         functorType,
-        space, dualSpace, function, factory, assemblyOptions,
-        valueType, argumentDimension, resultDimension):
-    basisFunctionType = checkType(space.basisFunctionType())
-    resultType = checkType(valueType)
+        context, space, dualSpace, function,
+        argumentDimension, resultDimension):
+    basisFunctionType = checkType(context.basisFunctionType())
+    resultType = checkType(context.resultType())
+    if (basisFunctionType != space.basisFunctionType() or
+            basisFunctionType != dualSpace.basisFunctionType()):
+        raise TypeError("BasisFunctionType of context, space and dualSpace must be the same")
+
     functor = constructObjectTemplatedOnValue(
         "Python" + functorType,
-        valueType, function, argumentDimension, resultDimension)
+        resultType, function, argumentDimension, resultDimension)
     result = constructObjectTemplatedOnBasisAndResult(
-        "pythonGridFunctionFrom" + functorType,
+        "gridFunctionFromPython" + functorType,
         basisFunctionType, resultType,
-        space, dualSpace, functor, factory, assemblyOptions)
+        context, space, dualSpace, functor)
+    result._context = context
     result._space = space
     result._dualSpace = dualSpace
     return result
 
 def gridFunctionFromSurfaceNormalDependentFunction(
-        space, dualSpace, function, factory, assemblyOptions,
-        valueType='float64', argumentDimension=3, resultDimension=1):
+        context, space, dualSpace, function,
+        argumentDimension=3, resultDimension=1):
     return _gridFunctionFromFunctor(
         "SurfaceNormalDependentFunctor",
-        space, dualSpace, function, factory, assemblyOptions,
-        valueType, argumentDimension, resultDimension)
+        context, space, dualSpace, function, 
+        argumentDimension, resultDimension)
 
 def gridFunctionFromSurfaceNormalIndependentFunction(
-        space, dualSpace, function, factory, assemblyOptions,
-        valueType='float64', argumentDimension=3, resultDimension=1):
+        context, space, dualSpace, function,
+        argumentDimension=3, resultDimension=1):
     return _gridFunctionFromFunctor(
         "SurfaceNormalIndependentFunctor",
-        space, dualSpace, function, factory, assemblyOptions,
-        valueType, argumentDimension, resultDimension)
+        context, space, dualSpace, function,
+        argumentDimension, resultDimension)
 
 %}

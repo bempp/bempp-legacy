@@ -1,10 +1,3 @@
-%shared_ptr(Fiber::DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<float, float, GeometryFactory>);
-%shared_ptr(Fiber::DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<float, std::complex<float>, GeometryFactory >);
-%shared_ptr(Fiber::DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<std::complex<float>, std::complex<float>, GeometryFactory >);
-%shared_ptr(Fiber::DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<double, double, GeometryFactory>);
-%shared_ptr(Fiber::DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<double, std::complex<double>, GeometryFactory >);
-%shared_ptr(Fiber::DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<std::complex<double>, std::complex<double>, GeometryFactory >);
-
 namespace Fiber
 {
 
@@ -19,6 +12,13 @@ class DefaultLocalAssemblerFactoryForOperatorsOnSurfaces :
 };
 
 } // namespace Fiber
+
+%shared_ptr(Fiber::DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<float, float, Bempp::GeometryFactory>);
+%shared_ptr(Fiber::DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<float, std::complex<float>, Bempp::GeometryFactory >);
+%shared_ptr(Fiber::DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<std::complex<float>, std::complex<float>, Bempp::GeometryFactory >);
+%shared_ptr(Fiber::DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<double, double, Bempp::GeometryFactory>);
+%shared_ptr(Fiber::DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<double, std::complex<double>, Bempp::GeometryFactory >);
+%shared_ptr(Fiber::DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<std::complex<double>, std::complex<double>, Bempp::GeometryFactory >);
 
 namespace Fiber
 {

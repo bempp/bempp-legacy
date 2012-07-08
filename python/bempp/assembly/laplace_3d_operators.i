@@ -9,24 +9,13 @@
 // TODO
 // %include "laplace_3d_operators_docstrings.i"
 
-namespace Bempp
-{
-
-// for some reason, SWIG doesn't see that this is an override of BoundaryOperator::clone()
-// (which it has been told to ignore)
-%extend Laplace3dBoundaryOperatorBase { %ignore Laplace3dBoundaryOperatorBase; }
-    %extend Laplace3dSingleLayerBoundaryOperator { %ignore Laplace3dSingleLayerBoundaryOperator; }
-%extend Laplace3dDoubleLayerBoundaryOperator { %ignore clone; }
-%extend Laplace3dAdjointDoubleLayerBoundaryOperator { %ignore clone; }
-%extend Laplace3dHypersingularBoundaryOperator { %ignore clone; }
-
-}
-
+#define shared_ptr boost::shared_ptr
 %include "assembly/laplace_3d_boundary_operator_base.hpp"
 %include "assembly/laplace_3d_single_layer_boundary_operator.hpp"
 %include "assembly/laplace_3d_double_layer_boundary_operator.hpp"
 %include "assembly/laplace_3d_adjoint_double_layer_boundary_operator.hpp"
 %include "assembly/laplace_3d_hypersingular_boundary_operator.hpp"
+#undef shared_ptr
 
 %define BEMPP_INSTANTIATE_LAPLACE_3D_BASE(BASIS, RESULT, PY_BASIS, PY_RESULT)
     %template(Laplace3dBoundaryOperatorBase_Single_ ## _ ## PY_BASIS ## _ ## PY_RESULT)
@@ -62,36 +51,36 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
     Laplace3dHypersingularBoundaryOperator);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
     laplace3dSingleLayerBoundaryOperator);
-/* BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT( */
-/*     laplace3dDoubleLayerBoundaryOperator); */
-/* BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT( */
-/*     laplace3dAdjointDoubleLayerBoundaryOperator); */
-/* BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT( */
-/*     laplace3dHypersingularBoundaryOperator); */
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
+    laplace3dDoubleLayerBoundaryOperator);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
+    laplace3dAdjointDoubleLayerBoundaryOperator);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
+    laplace3dHypersingularBoundaryOperator);
 
 } // namespace Bempp
 
 %pythoncode %{
 
-def laplace3dSingleLayerBoundaryOperator(domain, range, dualToRange, resultType=None):
+def laplace3dSingleLayerBoundaryOperator(context, domain, range, dualToRange):
     """Construct a single-layer-potential operator for the Laplace equation in 3D."""
     return _constructOperator(
-    "laplace3dSingleLayerBoundaryOperator", domain, range, dualToRange, resultType)
+    "laplace3dSingleLayerBoundaryOperator", context, domain, range, dualToRange)
 
-def laplace3dDoubleLayerBoundaryOperator(domain, range, dualToRange, resultType=None):
+def laplace3dDoubleLayerBoundaryOperator(context, domain, range, dualToRange):
     """Construct a double-layer-potential operator for the Laplace equation in 3D."""
     return _constructOperator(
-    "laplace3dDoubleLayerBoundaryOperator", domain, range, dualToRange, resultType)
+    "laplace3dDoubleLayerBoundaryOperator", context, domain, range, dualToRange)
 
-def laplace3dAdjointDoubleLayerBoundaryOperator(domain, range, dualToRange, resultType=None):
+def laplace3dAdjointDoubleLayerBoundaryOperator(context, domain, range, dualToRange):
     """Construct an adjoint double-layer-potential operator for the Laplace equation in 3D."""
     return _constructOperator(
-    "laplace3dAdjointDoubleLayerBoundaryOperator", domain, range, dualToRange, resultType)
+    "laplace3dAdjointDoubleLayerBoundaryOperator", context, domain, range, dualToRange)
 
-def laplace3dHypersingularBoundaryOperator(domain, range, dualToRange, resultType=None):
+def laplace3dHypersingularBoundaryOperator(context, domain, range, dualToRange):
     """Construct a hypersingular operator for the Laplace equation in 3D."""
     return _constructOperator(
-    "laplace3dHypersingularBoundaryOperator", domain, range, dualToRange, resultType)
+    "laplace3dHypersingularBoundaryOperator", context, domain, range, dualToRange)
 
 %}
 

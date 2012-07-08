@@ -19,8 +19,8 @@ template <typename BasisFunctionType, typename ResultType> class Context;
 
 struct CompareSharedPtrsToConstAbstractBoundaryOperatorIds
 {
-    bool operator()(const boost::shared_ptr<const Bempp::AbstractBoundaryOperatorId>& a,
-                    const boost::shared_ptr<const Bempp::AbstractBoundaryOperatorId>& b) const {
+    bool operator()(const shared_ptr<const Bempp::AbstractBoundaryOperatorId>& a,
+                    const shared_ptr<const Bempp::AbstractBoundaryOperatorId>& b) const {
         return *a == *b;
     }
 };

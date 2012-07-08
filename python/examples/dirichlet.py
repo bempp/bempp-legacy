@@ -18,35 +18,30 @@ print "Importing grid..."
 grid = bempp.GridFactory.importGmshGrid("triangular",
                                         "../../examples/meshes/sphere-152.msh")
 
+factory = bempp.defaultLocalAssemblerFactoryForOperatorsOnSurfaces()
+options = bempp.AssemblyOptions()
+options.switchToAca(bempp.AcaOptions())
+
+context = bempp.context(factory, options)
+
 pwiseConstants = bempp.piecewiseConstantScalarSpace(grid)
 pwiseLinears = bempp.piecewiseLinearContinuousScalarSpace(grid)
 pwiseConstants.assignDofs()
 pwiseLinears.assignDofs()
 
-factory = bempp.defaultLocalAssemblerFactoryForOperatorsOnSurfaces()
-options = bempp.AssemblyOptions()
-options.switchToAca(bempp.AcaOptions())
-
-context = bempp.Context_float64_float64(factory, options)
-
 slpOp = bempp.laplace3dSingleLayerBoundaryOperator(
-    pwiseConstants, pwiseLinears, pwiseConstants)
+    context, pwiseConstants, pwiseLinears, pwiseConstants)
 dlpOp = bempp.laplace3dDoubleLayerBoundaryOperator(
-    pwiseLinears, pwiseLinears, pwiseConstants)
+    context, pwiseLinears, pwiseLinears, pwiseConstants)
 idOp = bempp.identityOperator(
-    pwiseLinears, pwiseLinears, pwiseConstants)
+    context, pwiseLinears, pwiseLinears, pwiseConstants)
 
 lhsOp = slpOp
 rhsOp = -0.5 * idOp + dlpOp
 
-print "Assembling LHS operator..."
-lhsOp.assembleWeakForm(factory, options)
-print "Assembling RHS operator..."
-rhsOp.assembleWeakForm(factory, options)
-
 print "Evaluating Dirichlet data..."
 dirichletData = bempp.gridFunctionFromSurfaceNormalIndependentFunction(
-    pwiseLinears, pwiseLinears, evalDirichletData, factory, options)
+    context, pwiseLinears, pwiseLinears, evalDirichletData)
 
 rhs = rhsOp * dirichletData
 

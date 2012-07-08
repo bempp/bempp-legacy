@@ -19,45 +19,6 @@ class Symmetry;
 {
     %ignore BoundaryOperator;
 
-    // SWIG doesn't handle properly the "using boost::shared_ptr" declaration
-    // in BEM++'s code, therefore these wrappers returning fully qualified
-    // shared_ptrs are needed
-    boost::shared_ptr<const DiscreteBoundaryOperator<ResultType> > weakForm() const
-    {
-        return $self->weakForm();
-    }
-    %ignore weakForm;
-
-    boost::shared_ptr<const AbstractBoundaryOperator<BasisFunctionType, ResultType> > abstractOperator() const
-    {
-        return $self->abstractOperator();
-    }
-    %ignore abstractOperator;
-
-    boost::shared_ptr<const Context<BasisFunctionType, ResultType> > context() const
-    {
-        return $self->context();
-    }
-    %ignore context;
-
-    boost::shared_ptr<const Space<BasisFunctionType> > domain() const
-    {
-        return $self->domain();
-    }
-    %ignore domain;
-
-    boost::shared_ptr<const Space<BasisFunctionType> > range() const
-    {
-        return $self->range();
-    }
-    %ignore range;
-
-    boost::shared_ptr<const Space<BasisFunctionType> > dualToRange() const
-    {
-        return $self->dualToRange();
-    }
-    %ignore dualToRange;
-
     BoundaryOperator<BasisFunctionType, ResultType> __add__(
         const BoundaryOperator<BasisFunctionType, ResultType>& other)
     {
@@ -99,7 +60,9 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(BoundaryOperator);
 
 } // namespace Bempp
 
+#define shared_ptr boost::shared_ptr
 %include "assembly/boundary_operator.hpp"
+#undef shared_ptr
 
 namespace Bempp
 {

@@ -115,7 +115,7 @@ private:
 private:
     struct Impl;
     boost::scoped_ptr<Impl> m_impl;
-    boost::shared_ptr<const AbstractBoundaryOperatorId> m_id;
+    shared_ptr<const AbstractBoundaryOperatorId> m_id;
 };
 
 template <typename BasisFunctionType, typename ResultType>

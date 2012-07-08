@@ -132,12 +132,12 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "assembly/construct_operator.i" // Python code
 %include "assembly/assembly_options.i"
 %include "assembly/default_local_assembler_factory_for_operators_on_surfaces.i"
-%include "assembly/context.i"
 %include "assembly/transposition_mode.i"
 %include "assembly/python_surface_normal_independent_functor.i"
 %include "assembly/python_surface_normal_dependent_functor.i"
-%include "assembly/grid_function.i"
 %include "assembly/discrete_boundary_operator.i"
+%include "assembly/context.i"
+%include "assembly/grid_function.i"
 %include "assembly/abstract_boundary_operator.i"
 // %include "assembly/abstract_boundary_operator_sum.i"
 // %include "assembly/scaled_abstract_boundary_operator.i"
@@ -146,10 +146,9 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "assembly/elementary_integral_operator.i"
 %include "assembly/elementary_singular_integral_operator.i"
 %include "assembly/laplace_3d_operators.i"
-// %include "assembly/helmholtz_3d_operators.i"
+%include "assembly/helmholtz_3d_operators.i"
 // %include "assembly/modified_helmholtz_3d_operators.i"
-// %include "assembly/identity_operator.i"
-
+%include "assembly/identity_operator.i"
 
 // Linear algebra
 %include "linalg/parameter_list.i"

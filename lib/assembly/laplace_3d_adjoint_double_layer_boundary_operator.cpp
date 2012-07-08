@@ -96,6 +96,10 @@ laplace3dAdjointDoubleLayerBoundaryOperator(
        const std::string&)
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
+#define INSTANTIATE_BASE(BASIS, RESULT) \
+    template class Laplace3dBoundaryOperatorBase< \
+        Laplace3dAdjointDoubleLayerBoundaryOperatorImpl<BASIS, RESULT>, BASIS, RESULT>
+FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_BASE);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dAdjointDoubleLayerBoundaryOperator);
 
 } // namespace Bempp

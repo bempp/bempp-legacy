@@ -2,6 +2,14 @@
 #include "assembly/default_local_assembler_factory_for_operators_on_surfaces.hpp"
 %}
 
+namespace Bempp
+{
+BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(
+    DefaultLocalAssemblerFactoryForOperatorsOnSurfaces);
+BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(
+    DefaultLocalAssemblerFactoryForOperatorsOnSurfaces);
+}
+
 %include "assembly/default_local_assembler_factory_for_operators_on_surfaces.hpp"
 
 %shared_ptr(Bempp::DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<float, float>);
