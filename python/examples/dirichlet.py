@@ -18,7 +18,7 @@ print "Importing grid..."
 grid = bempp.GridFactory.importGmshGrid("triangular",
                                         "../../examples/meshes/sphere-152.msh")
 
-factory = bempp.defaultLocalAssemblerFactoryForOperatorsOnSurfaces()
+factory = bempp.numericalQuadratureStrategy()
 options = bempp.AssemblyOptions()
 options.switchToAca(bempp.AcaOptions())
 
