@@ -305,9 +305,12 @@ GridFunction<BasisFunctionType, ResultType> operator/(
 
 /** \brief Construct a grid function from its expansion coefficients in a function space.
  *
+ * \param[in] context      Assembly context that controls numerical
+ *                         integration settings.
  * \param[in] space        Function space to expand the grid function in.
- * \param[in] coefficients Expansion coefficients of the grid
- *                         function in the chosen space. */
+ * \param[in] dualSpace    Function space on which to project the function.
+ * \param[in] coefficients Expansion coefficients of the grid function in
+ *                         \p space. */
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>
 gridFunctionFromCoefficients(
@@ -318,9 +321,12 @@ gridFunctionFromCoefficients(
 
 /** \brief Construct a grid function from its expansion coefficients in a function space.
  *
+ * \param[in] context      Assembly context that controls numerical
+ *                         integration settings.
  * \param[in] space        Function space to expand the grid function in.
+ * \param[in] dualSpace    Function space on which to project the function.
  * \param[in] projections  Scalar products of the grid function and the basis
- *                         functions of the chosen space. */
+ *                         functions of \p dualSpace. */
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>
 gridFunctionFromProjections(
@@ -340,14 +346,13 @@ gridFunctionFromFiberFunction(
 
 /** \brief Construct a grid function from a functor independent from surface orientation.
  *
+ * \param[in] context         Assembly context that controls numerical
+ *                            integration settings.
  * \param[in] space           Function space to expand the grid function in.
- * \param[in] functor         Functor object deriving from
- *                            Bempp::SurfaceNormalIndependentFunctor
- * \param[in] factory         Factory to be used to generate the necessary local
- *                            assembler, which will be employed to evaluate
- *                            the scalar products of the grid function with the
- *                            basis functions of the chosen space.
- * \param[in] assemblyOptions Options controlling the assembly procedure.
+ * \param[in] dualSpace       Function space on which to project the functor.
+ * \param[in] functor         Functor object fulfilling the requirements
+ *                            described in the documentation of
+ *                            Fiber::SurfaceNormalIndependentFunction.
  *
  * \returns The constructed grid function. */
 template <typename BasisFunctionType, typename Functor>
@@ -365,15 +370,13 @@ inline gridFunctionFromSurfaceNormalIndependentFunctor(
 
 /** \brief Construct a grid function from a functor dependent on surface orientation.
  *
+ * \param[in] context         Assembly context that controls numerical
+ *                            integration settings.
  * \param[in] space           Function space to expand the grid function in.
+ * \param[in] dualSpace       Function space on which to project the functor.
  * \param[in] functor         Functor object fulfilling the requirements
  *                            described in the documentation of
  *                            Fiber::SurfaceNormalDependentFunction.
- * \param[in] factory         Factory to be used to generate the necessary local
- *                            assembler, which will be employed to evaluate
- *                            the scalar products of the grid function with the
- *                            basis functions of the chosen space.
- * \param[in] assemblyOptions Options controlling the assembly procedure.
  *
  * \returns The constructed grid function. */
 template <typename BasisFunctionType, typename Functor>
