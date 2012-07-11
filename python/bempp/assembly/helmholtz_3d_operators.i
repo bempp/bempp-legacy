@@ -9,11 +9,6 @@
 // TODO
 // %include "helmholtz_3d_operators_docstrings.i"
 
-namespace Bempp
-{
-
-} // namespace Bempp
-
 #define shared_ptr boost::shared_ptr
 %include "assembly/helmholtz_3d_boundary_operator_base.hpp"
 %include "assembly/helmholtz_3d_single_layer_boundary_operator.hpp"
@@ -82,24 +77,32 @@ def _constructHelmholtzOperator(className, context, domain, range, dualToRange, 
     result._dualToRange = dualToRange
     return result
 
-def helmholtz3dSingleLayerBoundaryOperator(context, domain, range, dualToRange, waveNumber):
+def helmholtz3dSingleLayerBoundaryOperator(
+        context, domain, range, dualToRange, waveNumber):
     """Construct a single-layer-potential operator for the Helmholtz equation in 3D."""
     return _constructHelmholtzOperator(
-        "helmholtz3dSingleLayerBoundaryOperator", context, domain, range, dualToRange, waveNumber)
+        "helmholtz3dSingleLayerBoundaryOperator", context,
+        domain, range, dualToRange, waveNumber)
 
-def helmholtz3dDoubleLayerBoundaryOperator(context, domain, range, dualToRange, waveNumber):
+def helmholtz3dDoubleLayerBoundaryOperator(
+        context, domain, range, dualToRange, waveNumber):
     """Construct a double-layer-potential operator for the Helmholtz equation in 3D."""
     return _constructHelmholtzOperator(
-        "helmholtz3dDoubleLayerBoundaryOperator", context, domain, range, dualToRange, waveNumber)
+        "helmholtz3dDoubleLayerBoundaryOperator", context,
+        domain, range, dualToRange, waveNumber)
 
-def helmholtz3dAdjointDoubleLayerBoundaryOperator(context, domain, range, dualToRange, waveNumber):
+def helmholtz3dAdjointDoubleLayerBoundaryOperator(
+        context, domain, range, dualToRange, waveNumber):
     """Construct an adjoint double-layer-potential operator for the Helmholtz equation in 3D."""
     return _constructHelmholtzOperator(
-        "helmholtz3dAdjointDoubleLayerBoundaryOperator", context, domain, range, dualToRange, waveNumber)
+        "helmholtz3dAdjointDoubleLayerBoundaryOperator", context,
+        domain, range, dualToRange, waveNumber)
 
-def helmholtz3dHypersingularBoundaryOperator(context, domain, range, dualToRange, waveNumber):
+def helmholtz3dHypersingularBoundaryOperator(
+        context, domain, range, dualToRange, waveNumber):
     """Construct a hypersingular operator for the Helmholtz equation in 3D."""
     return _constructHelmholtzOperator(
-        "helmholtz3dHypersingularBoundaryOperator", context, domain, range, dualToRange, waveNumber)
+        "helmholtz3dHypersingularBoundaryOperator", context,
+        domain, range, dualToRange, waveNumber)
 
 %}
