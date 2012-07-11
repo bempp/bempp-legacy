@@ -27,12 +27,31 @@ NumericalQuadratureStrategy);
 
 %pythoncode %{
 
-def numericalQuadratureStrategy(accuracyOptions=None,
-        basisFunctionType='float64',resultType='float64'):
-    if basisFunctionType is not None:
-        basisFunctionType = checkType(basisFunctionType)
-    if resultType is not None:
-        resultType = checkType(resultType)
+def numericalQuadratureStrategy(basisFunctionType, resultType, accuracyOptions=None):
+    """Construct a NumericalQuadratureStrategy object.
+
+    *Arguments:*
+        basisFunctionType (string)
+            Type used to represent values of basis functions.
+
+        resultType (string)
+            Type used to represent values of boundary-element integrals.
+
+        accuracyOptions (AccuracyOptions)
+            Determines quadrature order. If set to None, default quadrature orders
+            are used.
+
+        The following combinations of basisFunctionType and resultType are allowed:
+
+            basisFunctionType     resultType
+            --------------------------------
+            "float32"             "float32" or "complex64"
+            "float64"             "float64" or "complex128"
+            "complex64"           "complex64"
+            "complex128"          "complex128"
+    """
+    basisFunctionType = checkType(basisFunctionType)
+    resultType = checkType(resultType)
     if accuracyOptions is None:
         accuracyOptions = AccuracyOptions()
     name = 'NumericalQuadratureStrategy'
