@@ -23,7 +23,7 @@
 
 #include "../common/common.hpp"
 
-#include "../fiber/local_assembler_factory.hpp"
+#include "../fiber/quadrature_strategy.hpp"
 #include "../common/scalar_traits.hpp"
 
 #include "../common/armadillo_fwd.hpp"
@@ -58,9 +58,9 @@ public:
     typedef ResultType_ ResultType;
     /** \copydoc AbstractBoundaryOperator::CoordinateType */
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
-    /** \copydoc AbstractBoundaryOperator::LocalAssemblerFactory. */
-    typedef Fiber::LocalAssemblerFactory<BasisFunctionType, ResultType, GeometryFactory>
-    LocalAssemblerFactory;
+    /** \copydoc AbstractBoundaryOperator::QuadratureStrategy. */
+    typedef Fiber::QuadratureStrategy<BasisFunctionType, ResultType, GeometryFactory>
+    QuadratureStrategy;
 
     /** \brief Destructor */
     virtual ~PotentialOperator() {}
@@ -72,7 +72,7 @@ public:
      *   represented by a grid function.
      * \param[in] evaluationGrid
      *   Surface or volume grid at whose vertices the potential will be evaluated.
-     * \param[in] assemblerFactory
+     * \param[in] quadStrategy
      *   Factory that will be used to generate appropriate evaluator objects.
      * \param[in] options
      *   Options.
@@ -89,15 +89,15 @@ public:
     virtual std::auto_ptr<InterpolatedFunction<ResultType> > evaluateOnGrid(
             const GridFunction<BasisFunctionType, ResultType>& argument,
             const Grid& evaluationGrid,
-            const Fiber::LocalAssemblerFactory<
-            BasisFunctionType, ResultType, GeometryFactory>& assemblerFactory,
+            const Fiber::QuadratureStrategy<
+            BasisFunctionType, ResultType, GeometryFactory>& quadStrategy,
             const EvaluationOptions& options) const = 0;
 
     virtual arma::Mat<ResultType> evaluateAtPoints(
             const GridFunction<BasisFunctionType, ResultType>& argument,
             const arma::Mat<CoordinateType>& evaluationPoints,
-            const Fiber::LocalAssemblerFactory<
-            BasisFunctionType, ResultType, GeometryFactory>& assemblerFactory,
+            const Fiber::QuadratureStrategy<
+            BasisFunctionType, ResultType, GeometryFactory>& quadStrategy,
             const EvaluationOptions& options) const = 0;
 };
 

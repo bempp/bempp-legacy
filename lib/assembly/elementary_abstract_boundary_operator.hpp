@@ -65,8 +65,8 @@ public:
     typedef typename Base::ResultType ResultType;
     /** \copydoc AbstractBoundaryOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc AbstractBoundaryOperator::LocalAssemblerFactory */
-    typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
+    /** \copydoc AbstractBoundaryOperator::QuadratureStrategy */
+    typedef typename Base::QuadratureStrategy QuadratureStrategy;
     /** \brief Type of the appropriate instantiation of Fiber::LocalAssemblerForOperators. */
     typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
 
@@ -79,14 +79,14 @@ public:
 
     ~ElementaryAbstractBoundaryOperator();
 
-    /** \brief Construct a local assembler suitable for this operator using a specified factory.
+    /** \brief Construct a local assembler suitable for this operator.
      *
-     *  \param[in] assemblerFactory  Assembler factory to be used to construct the assembler.
+     *  \param[in] quadStrategy  Quadrature strategy to be used to construct the assembler.
      *
      *  (TODO: finish description of the other parameters.)
      */
     std::auto_ptr<LocalAssembler> makeAssembler(
-            const LocalAssemblerFactory& assemblerFactory,
+            const QuadratureStrategy& quadStrategy,
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
             const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
@@ -97,9 +97,10 @@ public:
             const ParallelisationOptions& parallelisationOptions,
             bool cacheSingularIntegrals) const;
 
-    /** \brief Construct a local assembler suitable for this operator using a specified factory.
+    /** \brief Construct a local assembler suitable for this operator using a
+     *  specified quadrature strategy.
      *
-     *  \param[in] assemblerFactory  Assembler factory to be used to construct the assembler.
+     *  \param[in] quadStrategy  Quadrature strategy to be used to construct the assembler.
      *  \param[in] options           Assembly options.
      *
      *  This is an overloaded function, provided for convenience. It
@@ -107,7 +108,7 @@ public:
      *  overload.
      */
     std::auto_ptr<LocalAssembler> makeAssembler(
-            const LocalAssemblerFactory& assemblerFactory,
+            const QuadratureStrategy& quadStrategy,
             const AssemblyOptions& options) const;
 
     /** \brief Assemble the operator's weak form using a specified local assembler.
@@ -123,7 +124,7 @@ public:
 
 private:
     virtual std::auto_ptr<LocalAssembler> makeAssemblerImpl(
-            const LocalAssemblerFactory& assemblerFactory,
+            const QuadratureStrategy& quadStrategy,
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
             const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,

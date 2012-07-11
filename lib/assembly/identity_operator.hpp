@@ -65,7 +65,7 @@ public:
     typedef typename Base::BasisFunctionType BasisFunctionType;
     typedef typename Base::ResultType ResultType;
     typedef typename Base::CoordinateType CoordinateType;
-    typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
+    typedef typename Base::QuadratureStrategy QuadratureStrategy;
     typedef typename Base::LocalAssembler LocalAssembler;
 
     IdentityOperator(const shared_ptr<const Space<BasisFunctionType> >& domain,
@@ -86,7 +86,7 @@ protected:
 
 private:
     virtual std::auto_ptr<LocalAssembler> makeAssemblerImpl(
-            const LocalAssemblerFactory& assemblerFactory,
+            const QuadratureStrategy& quadStrategy,
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
             const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,

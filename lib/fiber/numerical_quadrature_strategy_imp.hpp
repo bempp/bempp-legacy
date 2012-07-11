@@ -18,10 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_default_local_assembler_factory_for_operators_on_surfaces_imp_hpp
-#define fiber_default_local_assembler_factory_for_operators_on_surfaces_imp_hpp
+#ifndef fiber_numerical_quadrature_strategy_imp_hpp
+#define fiber_numerical_quadrature_strategy_imp_hpp
 
-#include "default_local_assembler_factory_for_operators_on_surfaces.hpp"
+#include "numerical_quadrature_strategy.hpp"
 
 #include "default_local_assembler_for_identity_operator_on_surface.hpp"
 #include "default_local_assembler_for_integral_operators_on_surfaces.hpp"
@@ -35,17 +35,17 @@ namespace Fiber
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase<
+NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
-DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase()
+NumericalQuadratureStrategyBase()
 {
 }
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase<
+NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
-DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase(
+NumericalQuadratureStrategyBase(
         const AccuracyOptions& accuracyOptions) :
     m_accuracyOptions(accuracyOptions)
 {
@@ -54,7 +54,7 @@ DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase(
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
 std::auto_ptr<LocalAssemblerForOperators<ResultType> >
-DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase<
+NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForIdentityOperators(
         const shared_ptr<const GeometryFactory>& geometryFactory,
@@ -79,7 +79,7 @@ makeAssemblerForIdentityOperators(
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
 std::auto_ptr<LocalAssemblerForOperators<ResultType> >
-DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase<
+NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForIntegralOperatorsImplRealKernel(
         const shared_ptr<const GeometryFactory>& testGeometryFactory,
@@ -114,7 +114,7 @@ makeAssemblerForIntegralOperatorsImplRealKernel(
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
 std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >
-DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase<
+NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForGridFunctionsImplRealUserFunction(
         const shared_ptr<const GeometryFactory>& geometryFactory,
@@ -139,7 +139,7 @@ makeAssemblerForGridFunctionsImplRealUserFunction(
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
 std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
-DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase<
+NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeEvaluatorForIntegralOperatorsImplRealKernel(
         const shared_ptr<const GeometryFactory>& geometryFactory,
@@ -168,7 +168,7 @@ makeEvaluatorForIntegralOperatorsImplRealKernel(
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
 const AccuracyOptions&
-DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase<
+NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 accuracyOptions() const
 {
@@ -178,18 +178,18 @@ accuracyOptions() const
 // Complex ResultType
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<
+NumericalQuadratureStrategy<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
-DefaultLocalAssemblerFactoryForOperatorsOnSurfaces() :
+NumericalQuadratureStrategy() :
     Base()
 {
 }
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<
+NumericalQuadratureStrategy<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
-DefaultLocalAssemblerFactoryForOperatorsOnSurfaces(
+NumericalQuadratureStrategy(
         const AccuracyOptions& accuracyOptions) :
     Base(accuracyOptions)
 {
@@ -198,7 +198,7 @@ DefaultLocalAssemblerFactoryForOperatorsOnSurfaces(
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
 std::auto_ptr<LocalAssemblerForOperators<ResultType> >
-DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<
+NumericalQuadratureStrategy<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForIntegralOperatorsImplComplexKernel(
         const shared_ptr<const GeometryFactory>& testGeometryFactory,
@@ -233,7 +233,7 @@ makeAssemblerForIntegralOperatorsImplComplexKernel(
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
 std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >
-DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<
+NumericalQuadratureStrategy<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForGridFunctionsImplComplexUserFunction(
         const shared_ptr<const GeometryFactory>& geometryFactory,
@@ -258,7 +258,7 @@ makeAssemblerForGridFunctionsImplComplexUserFunction(
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
 std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
-DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<
+NumericalQuadratureStrategy<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeEvaluatorForIntegralOperatorsImplComplexKernel(
         const shared_ptr<const GeometryFactory>& geometryFactory,
@@ -285,23 +285,23 @@ makeEvaluatorForIntegralOperatorsImplComplexKernel(
 }
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
-DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<
+NumericalQuadratureStrategy<
         BasisFunctionType, ResultType, GeometryFactory,
         typename boost::enable_if<
         boost::is_same<ResultType,
         typename ScalarTraits<ResultType>::RealType> >::type>::
-DefaultLocalAssemblerFactoryForOperatorsOnSurfaces() :
+NumericalQuadratureStrategy() :
     Base()
 {
 }
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
-DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<
+NumericalQuadratureStrategy<
         BasisFunctionType, ResultType, GeometryFactory,
         typename boost::enable_if<
         boost::is_same<ResultType,
         typename ScalarTraits<ResultType>::RealType> >::type>::
-DefaultLocalAssemblerFactoryForOperatorsOnSurfaces(
+NumericalQuadratureStrategy(
         const AccuracyOptions& accuracyOptions) :
     Base(accuracyOptions)
 {

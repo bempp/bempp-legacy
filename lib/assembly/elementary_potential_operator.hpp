@@ -46,7 +46,7 @@ public:
     typedef typename Base::ResultType ResultType;
     typedef KernelType_ KernelType;
     typedef typename Base::CoordinateType CoordinateType;
-    typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
+    typedef typename Base::QuadratureStrategy QuadratureStrategy;
     typedef Fiber::EvaluatorForIntegralOperators<ResultType> Evaluator;
     typedef Fiber::CollectionOfBasisTransformations<CoordinateType>
     CollectionOfBasisTransformations;
@@ -57,20 +57,20 @@ public:
     virtual std::auto_ptr<InterpolatedFunction<ResultType_> > evaluateOnGrid(
             const GridFunction<BasisFunctionType, ResultType>& argument,
             const Grid& evaluationGrid,
-            const LocalAssemblerFactory& assemblerFactory,
+            const QuadratureStrategy& quadStrategy,
             const EvaluationOptions& options) const;
 
     virtual arma::Mat<ResultType_> evaluateAtPoints(
             const GridFunction<BasisFunctionType, ResultType>& argument,
             const arma::Mat<CoordinateType>& evaluationPoints,
-            const LocalAssemblerFactory& assemblerFactory,
+            const QuadratureStrategy& quadStrategy,
             const EvaluationOptions& options) const;
 
 private:
     std::auto_ptr<Evaluator>
     makeEvaluator(
             const GridFunction<BasisFunctionType, ResultType>& argument,
-            const LocalAssemblerFactory& factory,
+            const QuadratureStrategy& quadStrategy,
             const EvaluationOptions& options) const;
 
     virtual const CollectionOfKernels& kernels() const = 0;

@@ -35,7 +35,7 @@
 #include "../fiber/collection_of_basis_transformations.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/function.hpp"
-#include "../fiber/local_assembler_factory.hpp"
+#include "../fiber/quadrature_strategy.hpp"
 #include "../fiber/local_assembler_for_grid_functions.hpp"
 #include "../fiber/opencl_handler.hpp"
 #include "../fiber/raw_grid_geometry.hpp"
@@ -154,7 +154,7 @@ arma::Col<ResultType> calculateProjections(
 
     typedef Fiber::LocalAssemblerForGridFunctions<ResultType> LocalAssembler;
     std::auto_ptr<LocalAssembler> assembler =
-            context.localAssemblerFactory().makeAssemblerForGridFunctions(
+            context.quadStrategy().makeAssemblerForGridFunctions(
                 geometryFactory, rawGeometry,
                 testBases,
                 make_shared_from_ref(testTransformations),

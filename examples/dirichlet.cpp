@@ -33,7 +33,7 @@
 #include "assembly/evaluation_options.hpp"
 #include "assembly/grid_function.hpp"
 #include "assembly/interpolated_function.hpp"
-#include "assembly/default_local_assembler_factory_for_operators_on_surfaces.hpp"
+#include "assembly/numerical_quadrature_strategy.hpp"
 #include "assembly/surface_normal_independent_function.hpp"
 
 #include "assembly/identity_operator.hpp"
@@ -121,10 +121,9 @@ int main(int argc, char* argv[])
 
     AccuracyOptions accuracyOptions;
     accuracyOptions.doubleRegular.orderIncrement = 1;
-    DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<BFT, RT>
-            factory(accuracyOptions);
+    NumericalQuadratureStrategy<BFT, RT> quadStrategy(accuracyOptions);
 
-    Context<BFT, RT> context(make_shared_from_ref(factory), assemblyOptions);
+    Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);
 
     // We need the single layer, double layer, and the identity operator
     BoundaryOperator<BFT, RT> slpOp = laplace3dSingleLayerBoundaryOperator<BFT, RT>(

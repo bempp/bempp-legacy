@@ -54,8 +54,8 @@ public:
     typedef typename Base::ResultType ResultType;
     /** \copydoc AbstractBoundaryOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc AbstractBoundaryOperator::LocalAssemblerFactory */
-    typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
+    /** \copydoc AbstractBoundaryOperator::QuadratureStrategy */
+    typedef typename Base::QuadratureStrategy QuadratureStrategy;
     typedef typename Fiber::LocalAssemblerForOperators<ResultType>
     LocalAssembler;
 
@@ -73,7 +73,7 @@ protected:
 
 private:
     shared_ptr<DiscreteBoundaryOperator<ResultType_> >
-    assembleConversionOperator(const LocalAssemblerFactory& factory,
+    assembleConversionOperator(const QuadratureStrategy& quadStrategy,
                                const AssemblyOptions& options);
 
 private:

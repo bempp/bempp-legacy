@@ -119,8 +119,8 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "fiber/opencl_options.i"
 %include "fiber/quadrature_options.i"
 %include "fiber/accuracy_options.i"
-%include "fiber/local_assembler_factory.i"
-%include "fiber/default_local_assembler_factory_for_operators_on_surfaces.i"
+%include "fiber/quadrature_strategy.i"
+%include "fiber/numerical_quadrature_strategy.i"
 
 // Space
 %include "space/space.i"
@@ -131,7 +131,7 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 // Assembly
 %include "assembly/construct_operator.i" // Python code
 %include "assembly/assembly_options.i"
-%include "assembly/default_local_assembler_factory_for_operators_on_surfaces.i"
+%include "assembly/numerical_quadrature_strategy.i"
 %include "assembly/transposition_mode.i"
 %include "assembly/python_surface_normal_independent_functor.i"
 %include "assembly/python_surface_normal_dependent_functor.i"

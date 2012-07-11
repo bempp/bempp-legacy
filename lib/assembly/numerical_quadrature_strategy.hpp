@@ -18,30 +18,36 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "default_local_assembler_factory_for_operators_on_surfaces.hpp"
+#ifndef bempp_numerical_quadrature_strategy_hpp
+#define bempp_numerical_quadrature_strategy_hpp
 
-#include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/default_local_assembler_factory_for_operators_on_surfaces_imp.hpp"
+#include "../common/common.hpp"
+
+#include "../fiber/numerical_quadrature_strategy.hpp"
+#include "../grid/geometry_factory.hpp"
 
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename ResultType>
-DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<BasisFunctionType, ResultType>::
-DefaultLocalAssemblerFactoryForOperatorsOnSurfaces() :
-    Base()
-{
-}
+using Fiber::AccuracyOptions;
 
 template <typename BasisFunctionType, typename ResultType>
-DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<BasisFunctionType, ResultType>::
-DefaultLocalAssemblerFactoryForOperatorsOnSurfaces(
-        const AccuracyOptions& accuracyOptions) :
-    Base(accuracyOptions)
+class NumericalQuadratureStrategy :
+        public Fiber::NumericalQuadratureStrategy<
+        BasisFunctionType, ResultType, GeometryFactory>
 {
-}
+private:
+    typedef Fiber::NumericalQuadratureStrategy<
+    BasisFunctionType, ResultType, GeometryFactory> Base;
+public:
+    /** \brief Construct a local assembler factory with default accuracy settings. */
+    NumericalQuadratureStrategy();
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(
-        DefaultLocalAssemblerFactoryForOperatorsOnSurfaces);
+    /** \brief Construct a local assembler factory with specified accuracy settings. */
+    explicit NumericalQuadratureStrategy(
+            const AccuracyOptions& accuracyOptions);
+};
 
 } // namespace Bempp
+
+#endif

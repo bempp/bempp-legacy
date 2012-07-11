@@ -31,7 +31,7 @@
 #include "../common/shared_ptr.hpp"
 
 #include "../grid/vtk_writer.hpp"
-#include "../fiber/local_assembler_factory.hpp"
+#include "../fiber/quadrature_strategy.hpp"
 #include "../fiber/scalar_traits.hpp"
 #include "../fiber/surface_normal_dependent_function.hpp"
 #include "../fiber/surface_normal_independent_function.hpp"
@@ -67,8 +67,6 @@ template <typename BasisFunctionType, typename ResultType>
 class GridFunction
 {
 public:
-    typedef Fiber::LocalAssemblerFactory<BasisFunctionType, ResultType, GeometryFactory>
-    LocalAssemblerFactory;
     typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
 
     enum DataType { COEFFICIENTS, PROJECTIONS };

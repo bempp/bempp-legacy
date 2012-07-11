@@ -28,7 +28,7 @@
 
 #include "../common/scalar_traits.hpp"
 #include "../common/shared_ptr.hpp"
-#include "../fiber/local_assembler_factory.hpp"
+#include "../fiber/quadrature_strategy.hpp"
 #include "../space/space.hpp"
 
 #include <memory>
@@ -93,9 +93,9 @@ public:
     typedef ResultType_ ResultType;
     /** \brief Type used to represent coordinates. */
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
-    /** \brief Type of the appropriate instantiation of Fiber::LocalAssemblerFactory. */
-    typedef Fiber::LocalAssemblerFactory<BasisFunctionType, ResultType, GeometryFactory>
-    LocalAssemblerFactory;
+    /** \brief Type of the appropriate instantiation of Fiber::QuadratureStrategy. */
+    typedef Fiber::QuadratureStrategy<BasisFunctionType, ResultType, GeometryFactory>
+    QuadratureStrategy;
 
     /** @name Construction and destruction
      *  @{ */

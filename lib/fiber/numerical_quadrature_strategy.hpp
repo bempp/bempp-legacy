@@ -18,12 +18,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_default_local_assembler_factory_for_operators_on_surfaces_hpp
-#define fiber_default_local_assembler_factory_for_operators_on_surfaces_hpp
+#ifndef fiber_numerical_quadrature_strategy_hpp
+#define fiber_numerical_quadrature_strategy_hpp
 
 #include "../common/common.hpp"
 
-#include "local_assembler_factory.hpp"
+#include "quadrature_strategy.hpp"
 
 #include "accuracy_options.hpp"
 
@@ -32,20 +32,20 @@ namespace Fiber
 
 template <typename BasisFunctionType, typename ResultType,
 typename GeometryFactory, typename Enable>
-class DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase :
-        public LocalAssemblerFactory<BasisFunctionType, ResultType,
+class NumericalQuadratureStrategyBase :
+        public QuadratureStrategy<BasisFunctionType, ResultType,
         GeometryFactory, Enable>
 {   
 public:
-    typedef LocalAssemblerFactory<BasisFunctionType, ResultType,
+    typedef QuadratureStrategy<BasisFunctionType, ResultType,
     GeometryFactory, Enable> Base;
     typedef typename Base::CoordinateType CoordinateType;
 
     /** \brief Construct a local assembler factory with default accuracy settings. */
-    DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase();
+    NumericalQuadratureStrategyBase();
 
     /** \brief Construct a local assembler factory with specified accuracy settings. */
-    explicit DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase(
+    explicit NumericalQuadratureStrategyBase(
             const AccuracyOptions& accuracyOptions);
 
 public:
@@ -106,20 +106,20 @@ private:
 // Complex ResultType
 template <typename BasisFunctionType, typename ResultType,
 typename GeometryFactory, typename Enable = void>
-class DefaultLocalAssemblerFactoryForOperatorsOnSurfaces :
-        public DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase<
+class NumericalQuadratureStrategy :
+        public NumericalQuadratureStrategyBase<
         BasisFunctionType, ResultType, GeometryFactory, Enable>
 {
-    typedef DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase<
+    typedef NumericalQuadratureStrategyBase<
     BasisFunctionType, ResultType, GeometryFactory, Enable> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
     /** \brief Construct a local assembler factory with default accuracy settings. */
-    DefaultLocalAssemblerFactoryForOperatorsOnSurfaces();
+    NumericalQuadratureStrategy();
 
     /** \brief Construct a local assembler factory with specified accuracy settings. */
-    explicit DefaultLocalAssemblerFactoryForOperatorsOnSurfaces(
+    explicit NumericalQuadratureStrategy(
             const AccuracyOptions& accuracyOptions);
 
 private:
@@ -162,24 +162,24 @@ private:
 
 // RealResultType
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
-class DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<
+class NumericalQuadratureStrategy<
     BasisFunctionType, ResultType, GeometryFactory,
     typename boost::enable_if<boost::is_same<ResultType, typename ScalarTraits<ResultType>::RealType> >::type> :
-        public DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase<
+        public NumericalQuadratureStrategyBase<
             BasisFunctionType, ResultType, GeometryFactory,
             typename boost::enable_if<boost::is_same<ResultType, typename ScalarTraits<ResultType>::RealType> >::type>
 {
     typedef typename boost::enable_if<boost::is_same<ResultType, typename ScalarTraits<ResultType>::RealType> >::type Enable;
-    typedef DefaultLocalAssemblerFactoryForOperatorsOnSurfacesBase<
+    typedef NumericalQuadratureStrategyBase<
     BasisFunctionType, ResultType, GeometryFactory, Enable> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
     /** \brief Construct a local assembler factory with default accuracy settings. */
-    DefaultLocalAssemblerFactoryForOperatorsOnSurfaces();
+    NumericalQuadratureStrategy();
 
     /** \brief Construct a local assembler factory with specified accuracy settings. */
-    explicit DefaultLocalAssemblerFactoryForOperatorsOnSurfaces(
+    explicit NumericalQuadratureStrategy(
             const AccuracyOptions& accuracyOptions);
 };
 

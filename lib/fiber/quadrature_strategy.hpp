@@ -52,12 +52,12 @@ template <typename ResultType> class EvaluatorForIntegralOperators;
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory>
-class LocalAssemblerFactoryBase
+class QuadratureStrategyBase
 {
 public:
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    virtual ~LocalAssemblerFactoryBase() {}
+    virtual ~QuadratureStrategyBase() {}
 
     /** \brief Allocate a Galerkin-mode local assembler for an integral operator
         with real kernel. */
@@ -170,10 +170,10 @@ private:
 // complex ResultType
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable = void>
-class LocalAssemblerFactory :
-        public LocalAssemblerFactoryBase<BasisFunctionType, ResultType, GeometryFactory>
+class QuadratureStrategy :
+        public QuadratureStrategyBase<BasisFunctionType, ResultType, GeometryFactory>
 {
-    typedef LocalAssemblerFactoryBase<BasisFunctionType, ResultType, GeometryFactory> Base;
+    typedef QuadratureStrategyBase<BasisFunctionType, ResultType, GeometryFactory> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
@@ -280,11 +280,11 @@ private:
 
 // real ResultType
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
-class LocalAssemblerFactory<BasisFunctionType, ResultType, GeometryFactory,
+class QuadratureStrategy<BasisFunctionType, ResultType, GeometryFactory,
     typename boost::enable_if<boost::is_same<ResultType, typename ScalarTraits<ResultType>::RealType> >::type > :
-        public LocalAssemblerFactoryBase<BasisFunctionType, ResultType, GeometryFactory>
+        public QuadratureStrategyBase<BasisFunctionType, ResultType, GeometryFactory>
 {
-    typedef LocalAssemblerFactoryBase<BasisFunctionType, ResultType, GeometryFactory> Base;
+    typedef QuadratureStrategyBase<BasisFunctionType, ResultType, GeometryFactory> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
 };

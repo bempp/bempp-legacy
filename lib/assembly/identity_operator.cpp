@@ -33,7 +33,7 @@
 #include "../common/types.hpp"
 #include "../fiber/basis.hpp"
 #include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/local_assembler_factory.hpp"
+#include "../fiber/quadrature_strategy.hpp"
 #include "../fiber/local_assembler_for_operators.hpp"
 #include "../fiber/opencl_handler.hpp"
 #include "../fiber/raw_grid_geometry.hpp"
@@ -250,7 +250,7 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormImpl(
 {
     AutoTimer timer("\nAssembly took ");
     std::auto_ptr<LocalAssembler> assembler = makeAssembler(
-                context.localAssemblerFactory(), context.assemblyOptions());
+                context.quadStrategy(), context.assemblyOptions());
     return assembleWeakFormInternalImpl(*assembler, context.assemblyOptions());
 }
 
@@ -435,7 +435,7 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparseMode(
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<typename IdentityOperator<BasisFunctionType, ResultType>::LocalAssembler>
 IdentityOperator<BasisFunctionType, ResultType>::makeAssemblerImpl(
-        const LocalAssemblerFactory& assemblerFactory,        
+        const QuadratureStrategy& quadStrategy,        
         const shared_ptr<const GeometryFactory>& testGeometryFactory,
         const shared_ptr<const GeometryFactory>& trialGeometryFactory,
         const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
@@ -454,7 +454,7 @@ IdentityOperator<BasisFunctionType, ResultType>::makeAssemblerImpl(
         throw std::invalid_argument("IdentityOperator::makeAssemblerImpl(): "
                                     "the test and trial spaces must be defined "
                                     "on the same grid");
-    return assemblerFactory.makeAssemblerForIdentityOperators(
+    return quadStrategy.makeAssemblerForIdentityOperators(
                 testGeometryFactory, testRawGeometry,
                 testBases, trialBases,
                 transformations, transformations,

@@ -18,36 +18,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_default_local_assembler_factory_for_operators_on_surfaces_hpp
-#define bempp_default_local_assembler_factory_for_operators_on_surfaces_hpp
+#include "numerical_quadrature_strategy.hpp"
 
-#include "../common/common.hpp"
-
-#include "../fiber/default_local_assembler_factory_for_operators_on_surfaces.hpp"
-#include "../grid/geometry_factory.hpp"
+#include "../fiber/explicit_instantiation.hpp"
+#include "../fiber/numerical_quadrature_strategy_imp.hpp"
 
 namespace Bempp
 {
 
-using Fiber::AccuracyOptions;
+template <typename BasisFunctionType, typename ResultType>
+NumericalQuadratureStrategy<BasisFunctionType, ResultType>::
+NumericalQuadratureStrategy() :
+    Base()
+{
+}
 
 template <typename BasisFunctionType, typename ResultType>
-class DefaultLocalAssemblerFactoryForOperatorsOnSurfaces :
-        public Fiber::DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<
-        BasisFunctionType, ResultType, GeometryFactory>
+NumericalQuadratureStrategy<BasisFunctionType, ResultType>::
+NumericalQuadratureStrategy(
+        const AccuracyOptions& accuracyOptions) :
+    Base(accuracyOptions)
 {
-private:
-    typedef Fiber::DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<
-    BasisFunctionType, ResultType, GeometryFactory> Base;
-public:
-    /** \brief Construct a local assembler factory with default accuracy settings. */
-    DefaultLocalAssemblerFactoryForOperatorsOnSurfaces();
+}
 
-    /** \brief Construct a local assembler factory with specified accuracy settings. */
-    explicit DefaultLocalAssemblerFactoryForOperatorsOnSurfaces(
-            const AccuracyOptions& accuracyOptions);
-};
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(
+        NumericalQuadratureStrategy);
 
 } // namespace Bempp
-
-#endif

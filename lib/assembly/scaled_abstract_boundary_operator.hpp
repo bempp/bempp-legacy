@@ -39,8 +39,8 @@ public:
     typedef typename Base::ResultType ResultType;
     /** \copydoc AbstractBoundaryOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc AbstractBoundaryOperator::LocalAssemblerFactory */
-    typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
+    /** \copydoc AbstractBoundaryOperator::QuadratureStrategy */
+    typedef typename Base::QuadratureStrategy QuadratureStrategy;
 
     ScaledAbstractBoundaryOperator(
             ResultType weight,

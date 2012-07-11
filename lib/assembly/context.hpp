@@ -3,7 +3,7 @@
 
 #include "../common/common.hpp"
 #include "../common/shared_ptr.hpp"
-#include "../fiber/local_assembler_factory.hpp"
+#include "../fiber/quadrature_strategy.hpp"
 #include "assembly_options.hpp"
 #include "discrete_boundary_operator_cache.hpp"
 
@@ -18,11 +18,11 @@ template <typename BasisFunctionType, typename ResultType>
 class Context
 {
 public:
-    /** \brief Type of the appropriate instantiation of Fiber::LocalAssemblerFactory. */
-    typedef Fiber::LocalAssemblerFactory<BasisFunctionType, ResultType, GeometryFactory>
-    LocalAssemblerFactory;
+    /** \brief Type of the appropriate instantiation of Fiber::QuadratureStrategy. */
+    typedef Fiber::QuadratureStrategy<BasisFunctionType, ResultType, GeometryFactory>
+    QuadratureStrategy;
 
-    Context(const shared_ptr<LocalAssemblerFactory>& localAssemblerFactory,
+    Context(const shared_ptr<QuadratureStrategy>& quadStrategy,
             const AssemblyOptions& assemblyOptions);
 
 //    static shared_ptr<const Context>& defaultContext() {
@@ -40,14 +40,14 @@ public:
         return m_assemblyOptions;
     }
 
-    const LocalAssemblerFactory& localAssemblerFactory() const {
-        return *m_localAssemblerFactory;
+    const QuadratureStrategy& quadStrategy() const {
+        return *m_quadStrategy;
     }
 
 private:
 //    static shared_ptr<const Context> m_defaultContext;
 
-    shared_ptr<LocalAssemblerFactory> m_localAssemblerFactory;
+    shared_ptr<QuadratureStrategy> m_quadStrategy;
     AssemblyOptions m_assemblyOptions;
 
     mutable DiscreteBoundaryOperatorCache<BasisFunctionType, ResultType> m_cache;

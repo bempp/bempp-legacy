@@ -44,11 +44,11 @@ std::auto_ptr<InterpolatedFunction<ResultType> >
 ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::evaluateOnGrid(
         const GridFunction<BasisFunctionType, ResultType>& argument,
         const Grid& evaluationGrid,
-        const LocalAssemblerFactory& assemblerFactory,
+        const QuadratureStrategy& quadStrategy,
         const EvaluationOptions& options) const
 {
     std::auto_ptr<Evaluator> evaluator =
-            makeEvaluator(argument, assemblerFactory, options);
+            makeEvaluator(argument, quadStrategy, options);
 
     // Get coordinates of interpolation points, i.e. the evaluationGrid's vertices
 
@@ -107,11 +107,11 @@ arma::Mat<ResultType>
 ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::evaluateAtPoints(
         const GridFunction<BasisFunctionType, ResultType>& argument,
         const arma::Mat<CoordinateType>& evaluationPoints,
-        const LocalAssemblerFactory& assemblerFactory,
+        const QuadratureStrategy& quadStrategy,
         const EvaluationOptions& options) const
 {
     std::auto_ptr<Evaluator> evaluator =
-            makeEvaluator(argument, assemblerFactory, options);
+            makeEvaluator(argument, quadStrategy, options);
 
     // right now we don't bother about far and near field
     // (this might depend on evaluation options)
@@ -126,7 +126,7 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<typename ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::Evaluator>
 ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::makeEvaluator(
         const GridFunction<BasisFunctionType, ResultType>& argument,
-        const LocalAssemblerFactory& assemblerFactory,
+        const QuadratureStrategy& quadStrategy,
         const EvaluationOptions& options) const
 {
     // Collect the standard set of data necessary for construction of
@@ -164,7 +164,7 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::makeEval
     }
 
     // Now create the evaluator
-    return assemblerFactory.makeEvaluatorForIntegralOperators(
+    return quadStrategy.makeEvaluatorForIntegralOperators(
                 geometryFactory, rawGeometry,
                 bases,
                 make_shared_from_ref(kernels()),

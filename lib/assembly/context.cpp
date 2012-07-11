@@ -20,7 +20,7 @@
 
 #include "context.hpp"
 #include "../fiber/explicit_instantiation.hpp"
-#include "default_local_assembler_factory_for_operators_on_surfaces.hpp"
+//#include "numerical_quadrature_strategy.hpp"
 
 #include <boost/make_shared.hpp>
 
@@ -32,19 +32,19 @@ namespace Bempp
 //Context<BasisFunctionType, ResultType>::m_defaultContext(
 //        boost::make_shared<Context<BasisFunctionType, ResultType>(
 //            AssemblyOptions(),
-//            boost::make_shared<DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<
+//            boost::make_shared<DefaultQuadratureStrategyForOperatorsOnSurfaces<
 //            BasisFunctionType, ResultType> >()));
 
 template <typename BasisFunctionType, typename ResultType>
 Context<BasisFunctionType, ResultType>::Context(
-        const shared_ptr<LocalAssemblerFactory>& localAssemblerFactory,
+        const shared_ptr<QuadratureStrategy>& quadStrategy,
         const AssemblyOptions& assemblyOptions) :
-    m_localAssemblerFactory(localAssemblerFactory),
+    m_quadStrategy(quadStrategy),
     m_assemblyOptions(assemblyOptions)
 {
-    if (localAssemblerFactory.get() == 0)
+    if (quadStrategy.get() == 0)
         throw std::invalid_argument("Context::Context(): "
-                                    "localAssemblerFactory cannot be null");
+                                    "quadStrategy cannot be null");
 }
 
 //template <typename BasisFunctionType, typename ResultType>

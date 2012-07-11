@@ -22,7 +22,7 @@
 #include "../check_arrays_are_close.hpp"
 
 #include "assembly/laplace_3d_single_layer_boundary_operator.hpp"
-#include "assembly/default_local_assembler_factory_for_operators_on_surfaces.hpp"
+#include "assembly/numerical_quadrature_strategy.hpp"
 #include "common/scalar_traits.hpp"
 #include "fiber/geometrical_data.hpp"
 #include "fiber/local_assembler_for_operators.hpp"
@@ -56,7 +56,7 @@ public:
     typedef PiecewiseConstantScalarSpace<BFT> PiecewiseConstantSpace;
     typedef PiecewiseLinearContinuousScalarSpace<BFT> PiecewiseLinearSpace;
     typedef Laplace3dSingleLayerBoundaryOperator<BFT, RT> Operator;
-    typedef DefaultLocalAssemblerFactoryForOperatorsOnSurfaces<BFT, RT> AssemblerFactory;
+    typedef NumericalQuadratureStrategy<BFT, RT> QuadratureStrategy;
     typedef Fiber::RawGridGeometry<CT> RawGridGeometry;
 
     DefaultLocalAssemblerForIntegralOperatorsOnSurfacesManager(
@@ -84,13 +84,13 @@ public:
 
         Fiber::AccuracyOptions options;
         options.doubleRegular.orderIncrement = 1;
-        assemblerFactory = std::auto_ptr<AssemblerFactory>(new AssemblerFactory);
+        quadStrategy = std::auto_ptr<QuadratureStrategy>(new QuadratureStrategy);
 
         AssemblyOptions assemblyOptions;
         assemblyOptions.setSingularIntegralCaching(
                     cacheSingularIntegrals ?
                         AssemblyOptions::YES : AssemblyOptions::NO);
-        assembler = op->makeAssembler(*assemblerFactory, assemblyOptions);
+        assembler = op->makeAssembler(*quadStrategy, assemblyOptions);
     }
 
 private:
@@ -118,7 +118,7 @@ public:
     std::auto_ptr<PiecewiseLinearSpace> piecewiseLinearSpace;
     std::auto_ptr<Operator> op;
 
-    std::auto_ptr<AssemblerFactory> assemblerFactory;
+    std::auto_ptr<QuadratureStrategy> quadStrategy;
     std::auto_ptr<typename Operator::LocalAssembler> assembler;
 };
 

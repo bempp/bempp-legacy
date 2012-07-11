@@ -62,7 +62,7 @@ public:
     typedef typename Base::BasisFunctionType BasisFunctionType;
     typedef typename Base::ResultType ResultType;
     typedef typename Base::CoordinateType CoordinateType;
-    typedef typename Base::LocalAssemblerFactory LocalAssemblerFactory;
+    typedef typename Base::QuadratureStrategy QuadratureStrategy;
     typedef typename Base::LocalAssembler LocalAssembler;
     typedef KernelType_ KernelType;
     typedef Fiber::CollectionOfBasisTransformations<CoordinateType>
@@ -101,7 +101,7 @@ private:
     virtual const TestKernelTrialIntegral& integral() const = 0;
 
     virtual std::auto_ptr<LocalAssembler> makeAssemblerImpl(
-            const LocalAssemblerFactory& assemblerFactory,
+            const QuadratureStrategy& quadStrategy,
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
             const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,

@@ -1,7 +1,7 @@
 namespace Fiber
 {
-BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_RESULT_AND_GEOMETRY_FACTORY(LocalAssemblerFactory);
-BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS_RESULT_AND_GEOMETRY_FACTORY(LocalAssemblerFactory);
+BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_RESULT_AND_GEOMETRY_FACTORY(QuadratureStrategy);
+BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS_RESULT_AND_GEOMETRY_FACTORY(QuadratureStrategy);
 }
 
 namespace Fiber
@@ -9,29 +9,29 @@ namespace Fiber
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory>
-class LocalAssemblerFactory
+class QuadratureStrategy
 {
 /* public: */
-/*     virtual ~LocalAssemblerFactory() = 0; */
+/*     virtual ~QuadratureStrategy() = 0; */
 };
 
 } // namespace Fiber
 
-%shared_ptr(Fiber::LocalAssemblerFactory<
+%shared_ptr(Fiber::QuadratureStrategy<
             float, float, Bempp::GeometryFactory>);
-%shared_ptr(Fiber::LocalAssemblerFactory<
+%shared_ptr(Fiber::QuadratureStrategy<
             float, std::complex<float>, Bempp::GeometryFactory>);
-%shared_ptr(Fiber::LocalAssemblerFactory<
+%shared_ptr(Fiber::QuadratureStrategy<
             std::complex<float>, std::complex<float>, Bempp::GeometryFactory>);
-%shared_ptr(Fiber::LocalAssemblerFactory<
+%shared_ptr(Fiber::QuadratureStrategy<
             double, double, Bempp::GeometryFactory>);
-%shared_ptr(Fiber::LocalAssemblerFactory<
+%shared_ptr(Fiber::QuadratureStrategy<
             double, std::complex<double>, Bempp::GeometryFactory>);
-%shared_ptr(Fiber::LocalAssemblerFactory<
+%shared_ptr(Fiber::QuadratureStrategy<
             std::complex<double>, std::complex<double>, Bempp::GeometryFactory>);
 
 namespace Fiber
 {
 BEMPP_INSTANTIATE_ANONYMOUSLY_SYMBOL_TEMPLATED_ON_BASIS_RESULT_AND_GEOMETRY_FACTORY(
-LocalAssemblerFactory);
+QuadratureStrategy);
 }

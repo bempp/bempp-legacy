@@ -59,7 +59,7 @@ assembleWeakFormInternal(
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<typename ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::LocalAssembler>
 ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler(
-        const LocalAssemblerFactory& assemblerFactory,
+        const QuadratureStrategy& quadStrategy,
         const shared_ptr<const GeometryFactory>& testGeometryFactory,
         const shared_ptr<const GeometryFactory>& trialGeometryFactory,
         const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
@@ -70,7 +70,7 @@ ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler
         const ParallelisationOptions& parallelisationOptions,
         bool cacheSingularIntegrals) const
 {
-    return makeAssemblerImpl(assemblerFactory,
+    return makeAssemblerImpl(quadStrategy,
                              testGeometryFactory, trialGeometryFactory,
                              testRawGeometry, trialRawGeometry,
                              testBases, trialBases, openClHandler,
@@ -81,7 +81,7 @@ ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<typename ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::LocalAssembler>
 ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler(
-        const LocalAssemblerFactory& assemblerFactory,
+        const QuadratureStrategy& quadStrategy,
         const AssemblyOptions& options) const
 {
     typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
@@ -101,7 +101,7 @@ ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler
                                         openClHandler, cacheSingularIntegrals);
     std::cout << "Collection finished." << std::endl;
 
-    return makeAssemblerImpl(assemblerFactory,
+    return makeAssemblerImpl(quadStrategy,
                              testGeometryFactory, trialGeometryFactory,
                              testRawGeometry, trialRawGeometry,
                              testBases, trialBases, openClHandler,
