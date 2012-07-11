@@ -22,24 +22,8 @@ include_directories(${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/include)
 set(CMAKE_SWIG_FLAGS "-modern")
 
 set_source_files_properties(core.i PROPERTIES CPLUSPLUS ON)
-set(SWIG_MODULE_core_EXTRA_DEPS core.i armadillo2numpy.i auto_ptr.i numpy.i 
-    docstrings.i
-
-    grid/entity.i grid/entity_iterator.i grid/entity_pointer.i 
-    grid/geometry.i grid/geometry_type.i
-    grid/grid.i grid/grid_factory.i grid/grid_view.i
-    grid/id_set.i grid/index_set.i grid/vtk_writer.i
-    grid/entity_pointer_docstrings.i grid/entity_iterator_docstrings.i
-    grid/grid_docstrings.i grid/grid_view_docstrings.i 
-    grid/id_set_docstrings.i grid/index_set_docstrings.i 
-    grid/geometry_docstrings.i grid/geometry_type_docstrings.i 
-    grid/grid_factory_docstrings.i grid/vtk_writer_docstrings.i
-
-    
-    space/space.i
-    space/scalar_space.i
-    space/piecewise_constant_scalar_space.i
-)
+file(GLOB_RECURSE SWIG_SOURCES *.i)
+set(SWIG_MODULE_core_EXTRA_DEPS ${SWIG_SOURCES})
 swig_add_module(core python core.i)
 swig_link_libraries(core ${PYTHON_LIBRARIES} bempp)
 
