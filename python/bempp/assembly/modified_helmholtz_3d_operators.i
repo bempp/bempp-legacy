@@ -8,21 +8,13 @@
 // TODO
 // %include "modified_helmholtz_3d_operators_docstrings.i"
 
-namespace Bempp
-{
-
-%extend ModifiedHelmholtz3dSingleLayerBoundaryOperator { %ignore clone; }
-%extend ModifiedHelmholtz3dDoubleLayerBoundaryOperator { %ignore clone; }
-%extend ModifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator { %ignore clone; }
-// %extend ModifiedHelmholtz3dHypersingularBoundaryOperator { %ignore clone; }
-
-} // namespace Bempp
-
+#define shared_ptr boost::shared_ptr
 %include "assembly/modified_helmholtz_3d_boundary_operator_base.hpp"
 %include "assembly/modified_helmholtz_3d_single_layer_boundary_operator.hpp"
 %include "assembly/modified_helmholtz_3d_double_layer_boundary_operator.hpp"
 %include "assembly/modified_helmholtz_3d_adjoint_double_layer_boundary_operator.hpp"
 // %include "assembly/modified_helmholtz_3d_hypersingular_boundary_operator.hpp"
+#undef shared_ptr
 
 %define BEMPP_INSTANTIATE_MODIFIED_HELMHOLTZ_3D_BASE(BASIS, KERNEL, RESULT, PY_BASIS, PY_KERNEL, PY_RESULT)
     %template(ModifiedHelmholtz3dBoundaryOperatorBase_Single_ ## _ ## PY_BASIS ## _ ## PY_KERNEL ## _ ## PY_RESULT)
@@ -61,28 +53,31 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
     ModifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator);
 // BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
 //     ModifiedHelmholtz3dHypersingularBoundaryOperator);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
+    modifiedHelmholtz3dSingleLayerBoundaryOperator);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
+    modifiedHelmholtz3dDoubleLayerBoundaryOperator);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
+    modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator);
+// BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
+//     modifiedHelmholtz3dHypersingularBoundaryOperator);
 
 } // namespace Bempp
 
 %pythoncode %{
 
-def _constructModifiedHelmholtzOperator(className, domain, range, dualToRange, waveNumber, resultType):
-    basisFunctionType = domain.basisFunctionType()
-    if (basisFunctionType != range.basisFunctionType() or
+def _constructModifiedHelmholtzOperator(className, context,
+                                        domain, range, dualToRange, waveNumber):
+    basisFunctionType = context.basisFunctionType()
+    if (basisFunctionType != domain.basisFunctionType() or
+            basisFunctionType != range.basisFunctionType() or
             basisFunctionType != dualToRange.basisFunctionType()):
-        raise TypeError("BasisFunctionType of all spaces must be the same")
-    waveNumberIsComplex = complex(waveNumber).imag != 0
+        raise TypeError("BasisFunctionType of context and all spaces must be the same")
+    resultType = context.resultType()
 
-    # determine resultType
+    waveNumberIsComplex = complex(waveNumber).imag != 0
     if waveNumberIsComplex and resultType in ("float32", "float64"):
         raise TypeError("Real result type given for a complex wave number")
-    if resultType is None:
-        if waveNumberIsComplex:
-            resultType = "complex128"
-        else:
-            resultType = "float64"
-    else:
-        resultType = checkType(resultType)
 
     # determine kernelType
     if waveNumberIsComplex:
@@ -96,38 +91,39 @@ def _constructModifiedHelmholtzOperator(className, domain, range, dualToRange, w
     # construct object
     result = constructObjectTemplatedOnBasisKernelAndResult(
         className, basisFunctionType, kernelType, resultType,
-        domain, range, dualToRange, waveNumber)
+        context, domain, range, dualToRange, waveNumber)
+    result._context = context
     result._domain = domain
     result._range = range
     result._dualToRange = dualToRange
     return result
 
 def modifiedHelmholtz3dSingleLayerBoundaryOperator(
-        domain, range, dualToRange, waveNumber, resultType=None):
+        context, domain, range, dualToRange, waveNumber):
     """Construct a single-layer-potential operator for the modified Helmholtz equation in 3D."""
     return _constructModifiedHelmholtzOperator(
-        "ModifiedHelmholtz3dSingleLayerBoundaryOperator", domain, range, dualToRange,
-        waveNumber, resultType)
+        "modifiedHelmholtz3dSingleLayerBoundaryOperator", context,
+        domain, range, dualToRange, waveNumber)
 
 def modifiedHelmholtz3dDoubleLayerBoundaryOperator(
-        domain, range, dualToRange, waveNumber, resultType=None):
+        context, domain, range, dualToRange, waveNumber):
     """Construct a double-layer-potential operator for the modified Helmholtz equation in 3D."""
     return _constructModifiedHelmholtzOperator(
-        "ModifiedHelmholtz3dDoubleLayerBoundaryOperator", domain, range, dualToRange,
-        waveNumber, resultType)
+        "modifiedHelmholtz3dDoubleLayerBoundaryOperator", context,
+        domain, range, dualToRange, waveNumber)
 
 def modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
-        domain, range, dualToRange, waveNumber, resultType=None):
+        context, domain, range, dualToRange, waveNumber):
     """Construct an adjoint double-layer-potential operator for the modified Helmholtz equation in 3D."""
     return _constructModifiedHelmholtzOperator(
-        "ModifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator", domain, range, dualToRange,
-        waveNumber, resultType)
+        "modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator", context,
+        domain, range, dualToRange, waveNumber)
 
 # def modifiedHelmholtz3dHypersingularBoundaryOperator(
 #         domain, range, dualToRange, waveNumber, resultType=None):
 #     """Construct a hypersingular operator for the modified Helmholtz equation in 3D."""
 #     return _constructModifiedHelmholtzOperator(
-#         "ModifiedHelmholtz3dHypersingularBoundaryOperator", domain, range, dualToRange,
+#         "modifiedHelmholtz3dHypersingularBoundaryOperator", context, domain, range, dualToRange,
 #         waveNumber, resultType)
 
 %}
