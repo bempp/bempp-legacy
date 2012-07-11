@@ -24,8 +24,8 @@ options.switchToAca(bempp.AcaOptions())
 
 context = bempp.context(factory, options)
 
-pwiseConstants = bempp.piecewiseConstantScalarSpace(grid)
-pwiseLinears = bempp.piecewiseLinearContinuousScalarSpace(grid)
+pwiseConstants = bempp.piecewiseConstantScalarSpace(context, grid)
+pwiseLinears = bempp.piecewiseLinearContinuousScalarSpace(context, grid)
 pwiseConstants.assignDofs()
 pwiseLinears.assignDofs()
 

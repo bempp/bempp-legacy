@@ -24,10 +24,10 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(PiecewiseLinearContinuousScalarSpace
 
 %pythoncode %{
 
-def piecewiseLinearContinuousScalarSpace(grid, basisFunctionType='float64'):
+def piecewiseLinearContinuousScalarSpace(context, grid):
     """Space of piecewise linear continuous scalar functions"""
     name = 'PiecewiseLinearContinuousScalarSpace'
-    return constructObjectTemplatedOnBasis(name, basisFunctionType, grid)
+    return constructObjectTemplatedOnBasis(name, context.basisFunctionType(), grid)
 
 %}
 
