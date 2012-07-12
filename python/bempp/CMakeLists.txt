@@ -30,7 +30,9 @@ swig_link_libraries(core ${PYTHON_LIBRARIES} bempp)
 ### Move __init__.py to the build directory ###################################
 
 if (NOT (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR}))
-    set(PYTHON_SOURCES "__init__.py")
+    #set(PYTHON_SOURCES "__init__.py")
+    file(GLOB_RECURSE PYTHON_SOURCES RELATIVE ${CMAKE_SOURCE_DIR}/python/bempp  ${CMAKE_SOURCE_DIR}/python/bempp/*.py)
+    message(STATUS "${PYTHON_SOURCES}")
     foreach (py_file ${PYTHON_SOURCES})
     add_custom_command(
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${py_file}
@@ -49,3 +51,8 @@ if (NOT (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR}))
 endif ()
 
 ###############################################################################
+
+install(DIRECTORY ${CMAKE_BINARY_DIR}/python/bempp DESTINATION bempp/python/site-packages FILES_MATCHING 
+	PATTERN "CMakeFiles" EXCLUDE
+	PATTERN "determineNumpyPath.py" EXCLUDE	  
+	PATTERN "*.py" PATTERN "*.so")
