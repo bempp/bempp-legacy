@@ -20,11 +20,7 @@
 
 #include "abstract_boundary_operator.hpp"
 #include "discrete_boundary_operator.hpp"
-#include "grid_function.hpp"
-// #include "boundary_operator_composition.hpp"
-#include "abstract_boundary_operator_sum.hpp"
 #include "local_assembler_construction_helper.hpp"
-#include "scaled_abstract_boundary_operator.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -43,6 +39,18 @@ AbstractBoundaryOperator(const shared_ptr<const Space<BasisFunctionType> >& doma
     m_domain(domain), m_range(range), m_dualToRange(dualToRange),
     m_label(label), m_symmetry(symmetry)
 {
+    if (!m_domain)
+        throw std::invalid_argument(
+                "AbstractBoundaryOperator::AbstractBoundaryOperator(): "
+                "domain must not be null");
+    if (!m_range)
+        throw std::invalid_argument(
+                "AbstractBoundaryOperator::AbstractBoundaryOperator(): "
+                "range must not be null");
+    if (!m_dualToRange)
+        throw std::invalid_argument(
+                "AbstractBoundaryOperator::AbstractBoundaryOperator(): "
+                "dualToRange must not be null");
 }
 
 template <typename BasisFunctionType, typename ResultType>
