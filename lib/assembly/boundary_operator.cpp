@@ -66,11 +66,8 @@ shared_ptr<const DiscreteBoundaryOperator<ResultType> >
 BoundaryOperator<BasisFunctionType, ResultType>::weakForm() const
 {
     if (!m_weakForm.get()) {
-        tbb::mutex::scoped_lock lock(m_weakFormMutex);
-        if (!m_weakForm.get()) {
-            m_weakForm = m_context->getWeakForm(*m_abstractOp);
-            assert(m_weakForm);
-        }
+        m_weakForm = m_context->getWeakForm(*m_abstractOp);
+        assert(m_weakForm);
     }
     return m_weakForm;
 }

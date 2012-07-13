@@ -30,8 +30,6 @@
 #include <boost/utility/enable_if.hpp>
 #include <string>
 
-#include <tbb/mutex.h>
-
 namespace Bempp
 {
 
@@ -75,7 +73,6 @@ private:
     shared_ptr<const AbstractBoundaryOperator<BasisFunctionType, ResultType> >
     m_abstractOp;
     mutable shared_ptr<const DiscreteBoundaryOperator<ResultType> > m_weakForm;
-    mutable tbb::mutex m_weakFormMutex;
 };
 
 template <typename BasisFunctionType, typename ResultType>
