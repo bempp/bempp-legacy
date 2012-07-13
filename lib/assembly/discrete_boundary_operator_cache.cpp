@@ -37,6 +37,12 @@ DiscreteBoundaryOperatorCache<BasisFunctionType, ResultType>::getWeakForm(
         if (shared_ptr<const DiscreteOp> cachedDiscreteOp = it->second.lock()) {
             std::cout << "Weak pointer is valid" << std::endl;
             return cachedDiscreteOp;
+        } else {
+            std::cout << "Weak pointer is invalid, reconstructing discrete operator" << std::endl;
+            shared_ptr<const DiscreteOp> discreteOp = op.assembleWeakForm(context);
+            // TODO: THIS IS NOT NOT THREAD-SAFE!!!
+            it->second = discreteOp;
+            return it->second.lock();
         }
     }
 
@@ -45,8 +51,8 @@ DiscreteBoundaryOperatorCache<BasisFunctionType, ResultType>::getWeakForm(
     // Discrete operator not found in cache, construct it...
     shared_ptr<const DiscreteOp> discreteOp = op.assembleWeakForm(context);
     // and attempt to insert it into the map
-    std::pair<typename DiscreteBoundaryOperatorMap::iterator, bool> result =
-            m_discreteOps.insert(std::make_pair(id, discreteOp));
+    std::pair<typename DiscreteBoundaryOperatorMap::iterator, bool>
+            result = m_discreteOps.insert(std::make_pair(id, discreteOp));
     // Return pointer to the discrete operator that ended up in the map.
     return result.first->second.lock();
 
