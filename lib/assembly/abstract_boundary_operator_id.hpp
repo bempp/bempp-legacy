@@ -4,6 +4,7 @@
 #include "../common/common.hpp"
 #include "../common/shared_ptr.hpp"
 
+#include <iostream>
 #include <boost/functional/hash.hpp>
 
 namespace Bempp
