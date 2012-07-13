@@ -167,41 +167,8 @@ arma::Col<ResultType> calculateProjections(
 } // namespace
 
 template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType, ResultType>
-gridFunctionFromFiberFunction(
-        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const shared_ptr<const Space<BasisFunctionType> >& space,
-        const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
-        const Fiber::Function<ResultType>& function)
+GridFunction<BasisFunctionType, ResultType>::GridFunction()
 {
-    arma::Col<ResultType> projections =
-            calculateProjections(*context, function, *dualSpace);
-    std::cout << "projections calculated" << std::endl;
-    return gridFunctionFromProjections(context, space, dualSpace, projections);
-}
-
-template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType, ResultType>
-gridFunctionFromCoefficients(
-        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const shared_ptr<const Space<BasisFunctionType> >& space,
-        const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
-        const arma::Col<ResultType>& coefficients)
-{
-    typedef GridFunction<BasisFunctionType, ResultType> GF;
-    return GF(context, space, dualSpace, coefficients, GF::COEFFICIENTS);
-}
-
-template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType, ResultType>
-gridFunctionFromProjections(
-        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const shared_ptr<const Space<BasisFunctionType> >& space,
-        const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
-        const arma::Col<ResultType>& projections)
-{
-    typedef GridFunction<BasisFunctionType, ResultType> GF;
-    return GF(context, space, dualSpace, projections, GF::PROJECTIONS);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -711,27 +678,6 @@ GridFunction<BasisFunctionType, ResultType> operator/(
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
 
 #define INSTANTIATE_FREE_FUNCTIONS(BASIS, RESULT) \
-    template GridFunction<BASIS, RESULT> \
-    gridFunctionFromFiberFunction( \
-    const shared_ptr<const Context<BASIS, RESULT> >& context, \
-    const shared_ptr<const Space<BASIS> >& space, \
-    const shared_ptr<const Space<BASIS> >& dualSpace, \
-    const Fiber::Function<RESULT>& function); \
-    \
-    template GridFunction<BASIS, RESULT> \
-    gridFunctionFromCoefficients( \
-    const shared_ptr<const Context<BASIS, RESULT> >& context, \
-    const shared_ptr<const Space<BASIS> >& space, \
-    const shared_ptr<const Space<BASIS> >& dualSpace, \
-    const arma::Col<RESULT>& coefficients); \
-    \
-    template GridFunction<BASIS, RESULT> \
-    gridFunctionFromProjections( \
-    const shared_ptr<const Context<BASIS, RESULT> >& context, \
-    const shared_ptr<const Space<BASIS> >& space, \
-    const shared_ptr<const Space<BASIS> >& dualSpace, \
-    const arma::Col<RESULT>& coefficients); \
-    \
     template GridFunction<BASIS, RESULT> operator+( \
     const GridFunction<BASIS, RESULT>& op1, \
     const GridFunction<BASIS, RESULT>& op2); \
@@ -746,34 +692,6 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
     const SCALAR& scalar, const GridFunction<BASIS, RESULT>& op); \
     template GridFunction<BASIS, RESULT> operator/( \
     const GridFunction<BASIS, RESULT>& op, const SCALAR& scalar)
-
-//#define INSTANTIATE_FREE_FUNCTIONS_FOR_REAL_BASIS(BASIS) \
-//    template GridFunction<BASIS, float> \
-//    operator*(const float scalar, const GridFunction<BASIS, float>& g2); \
-//    template GridFunction<BASIS, float> \
-//    operator*(const double scalar, const GridFunction<BASIS, float>& g2); \
-//    template GridFunction<BASIS, double> \
-//    operator*(const float scalar, const GridFunction<BASIS, double>& g2); \
-//    template GridFunction<BASIS, double> \
-//    operator*(const double scalar, const GridFunction<BASIS, double>& g2)
-
-//#define INSTANTIATE_FREE_FUNCTIONS_FOR_COMPLEX_BASIS(BASIS) \
-//    template GridFunction<BASIS, std::complex<float> >			\
-//    operator*(const float scalar, const GridFunction<BASIS, std::complex<float> >& g2); \
-//    template GridFunction<BASIS, std::complex<float> >			\
-//    operator*(const double scalar, const GridFunction<BASIS, std::complex<float> >& g2); \
-//    template GridFunction<BASIS, std::complex<float> >			\
-//    operator*(const std::complex<float> scalar, const GridFunction<BASIS, std::complex<float> >& g2); \
-//    template GridFunction<BASIS, std::complex<float> >			\
-//    operator*(const std::complex<double> scalar, const GridFunction<BASIS, std::complex<float> >& g2); \
-//    template GridFunction<BASIS, std::complex<double> >			\
-//    operator*(const float scalar, const GridFunction<BASIS, std::complex<double> >& g2); \
-//    template GridFunction<BASIS, std::complex<double> >			\
-//    operator*(const double scalar, const GridFunction<BASIS, std::complex<double> >& g2); \
-//    template GridFunction<BASIS, std::complex<double> >			\
-//    operator*(const std::complex<float> scalar, const GridFunction<BASIS, std::complex<double> >& g2); \
-//    template GridFunction<BASIS, std::complex<double> >			\
-//    operator*(const std::complex<double> scalar, const GridFunction<BASIS, std::complex<double> >& g2)
 
 #if defined(ENABLE_SINGLE_PRECISION)
 INSTANTIATE_FREE_FUNCTIONS(
