@@ -29,10 +29,18 @@
 
 #include "solver.hpp"
 
-#include "belos_solver_wrapper.hpp"
-
+#include "belos_solver_wrapper_fwd.hpp"
 #include "../common/armadillo_fwd.hpp"
+#include "../common/scalar_traits.hpp"
 #include "../common/shared_ptr.hpp"
+
+#include <boost/scoped_ptr.hpp>
+
+namespace Thyra
+{
+template <typename ValueType> class PreconditionerBase;
+template <typename ValueType> class SolveStatus;
+}
 
 namespace Bempp
 {
@@ -45,10 +53,18 @@ class DefaultIterativeSolver : public Solver<BasisFunctionType, ResultType>
 public:
     typedef typename ScalarTraits<ResultType>::RealType MagnitudeType;
 
-    DefaultIterativeSolver(const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
-                           const GridFunction<BasisFunctionType, ResultType>& rhsGridFun);
+    enum ConvergenceTestMode {
+        TEST_CONVERGENCE_IN_DUAL_TO_RANGE,
+        TEST_CONVERGENCE_IN_RANGE
+    };
 
-    void addPreconditioner(
+    DefaultIterativeSolver(
+            const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
+            const GridFunction<BasisFunctionType, ResultType>& rhsGridFun,
+            ConvergenceTestMode mode = TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
+    virtual ~DefaultIterativeSolver();
+
+    void setPreconditioner(
             const Teuchos::RCP<const Thyra::PreconditionerBase<ResultType> >& preconditioner);
     void initializeSolver(const Teuchos::RCP<Teuchos::ParameterList>& paramList);
 
@@ -62,9 +78,10 @@ public:
 
 private:
     shared_ptr<const Context<BasisFunctionType, ResultType> > m_context;
-    BelosSolverWrapper<ResultType> m_belosSolverWrapper;
+    boost::scoped_ptr<BelosSolverWrapper<ResultType> > m_belosSolverWrapper;
     shared_ptr<const Space<BasisFunctionType> > m_space;
     Teuchos::RCP<Thyra::MultiVectorBase<ResultType> > m_rhs;
+    ConvergenceTestMode m_convergenceTestMode;
 
     // as long as a GridFunction is initialised with an Armadillo array
     // rather than a Vector, this is the right format for solution storage

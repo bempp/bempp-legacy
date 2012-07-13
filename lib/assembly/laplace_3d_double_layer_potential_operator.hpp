@@ -69,6 +69,7 @@ public:
     typedef typename Base::KernelTrialIntegral KernelTrialIntegral;
 
     Laplace3dDoubleLayerPotentialOperator();
+    virtual ~Laplace3dDoubleLayerPotentialOperator();
 };
 
 } // namespace Bempp

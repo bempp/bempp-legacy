@@ -34,12 +34,17 @@ template <typename ValueType>
 RealWrapperOfComplexThyraLinearOperator<ValueType>::
 RealWrapperOfComplexThyraLinearOperator(
         const Teuchos::RCP<const ComplexLinearOp>& complexOperator) :
-    m_complexOperator(complexOperator),
-    m_domainSpace(Thyra::defaultSpmdVectorSpace<ValueType>(
-                      2 * complexOperator->domain()->dim())),
-    m_rangeSpace(Thyra::defaultSpmdVectorSpace<ValueType>(
-                     2 * complexOperator->range()->dim()))
+    m_complexOperator(complexOperator)
 {
+    if (m_complexOperator.is_null())
+        throw std::invalid_argument(
+                "RealWrapperOfComplexThyraLinearOperator::"
+                "RealWrapperOfComplexThyraLinearOperator(): "
+                "argument must not be null");
+    m_domainSpace = Thyra::defaultSpmdVectorSpace<ValueType>(
+                      2 * complexOperator->domain()->dim());
+    m_rangeSpace = Thyra::defaultSpmdVectorSpace<ValueType>(
+                     2 * complexOperator->range()->dim());
 }
 
 template <typename ValueType>
