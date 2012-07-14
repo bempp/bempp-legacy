@@ -39,14 +39,30 @@ template <typename BasisFunctionType, typename ResultType> class AbstractBoundar
 template <typename BasisFunctionType, typename ResultType> class Context;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
 
+/** \brief Operator acting on functions defined on a surface.
+ *
+ *  \note Different threads should not share BoundaryOperator objects, since
+ *  notably the weakForm() function is not thread-safe. Instead, each thread
+ *  should hold its own copy of a BoundaryOperator (note that copying
+ *  BoundaryOperators is cheap).
+ */
 template <typename BasisFunctionType, typename ResultType>
 class BoundaryOperator
 {
 public:
+    BoundaryOperator();
+
     BoundaryOperator(const shared_ptr<const Context<
                      BasisFunctionType, ResultType> >& context,
                      const shared_ptr<const AbstractBoundaryOperator<
                      BasisFunctionType, ResultType> >& abstractOp);
+
+    void initialize(const shared_ptr<const Context<
+                    BasisFunctionType, ResultType> >& context,
+                    const shared_ptr<const AbstractBoundaryOperator<
+                    BasisFunctionType, ResultType> >& abstractOp);
+    void uninitialize();
+    bool isInitialized() const;
 
     shared_ptr<const AbstractBoundaryOperator<BasisFunctionType, ResultType> >
     abstractOperator() const;

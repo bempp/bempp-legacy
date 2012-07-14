@@ -32,19 +32,50 @@ namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>::BoundaryOperator()
+{
+}
+
+template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>::BoundaryOperator(
         const shared_ptr<const Context<
         BasisFunctionType, ResultType> >& context,
         const shared_ptr<const AbstractBoundaryOperator<
-        BasisFunctionType, ResultType> >& abstractOp) :
-    m_context(context), m_abstractOp(abstractOp)
+        BasisFunctionType, ResultType> >& abstractOp)
 {
-    if (!m_context)
+    initialize(context, abstractOp);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void BoundaryOperator<BasisFunctionType, ResultType>::initialize(
+        const shared_ptr<const Context<
+        BasisFunctionType, ResultType> >& context,
+        const shared_ptr<const AbstractBoundaryOperator<
+        BasisFunctionType, ResultType> >& abstractOp)
+{
+    if (!context)
         throw std::invalid_argument("BoundaryOperator::BoundaryOperator(): "
                                     "context must not be null");
-    if (!m_abstractOp)
+    if (!abstractOp)
         throw std::invalid_argument("BoundaryOperator::BoundaryOperator(): "
                                     "abstractOp must not be null");
+    m_context = context;
+    m_abstractOp = abstractOp;
+    m_weakForm.reset();
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void BoundaryOperator<BasisFunctionType, ResultType>::uninitialize()
+{
+    m_context.reset();
+    m_abstractOp.reset();
+    m_weakForm.reset();
+}
+
+template <typename BasisFunctionType, typename ResultType>
+bool BoundaryOperator<BasisFunctionType, ResultType>::isInitialized() const
+{
+    return m_abstractOp;
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -65,6 +96,10 @@ template <typename BasisFunctionType, typename ResultType>
 shared_ptr<const DiscreteBoundaryOperator<ResultType> >
 BoundaryOperator<BasisFunctionType, ResultType>::weakForm() const
 {
+    if (!isInitialized())
+        throw std::runtime_error(
+                "BoundaryOperator::weakForm(): attempted to retrieve the "
+                "weak form of an uninitialized operator");
     if (!m_weakForm.get()) {
         m_weakForm = m_context->getWeakForm(*m_abstractOp);
         assert(m_weakForm);
@@ -76,6 +111,8 @@ template <typename BasisFunctionType, typename ResultType>
 shared_ptr<const Space<BasisFunctionType> >
 BoundaryOperator<BasisFunctionType, ResultType>::domain() const
 {
+    if (!isInitialized())
+        return shared_ptr<const Space<BasisFunctionType> >();
     return m_abstractOp->domain();
 }
 
@@ -83,6 +120,8 @@ template <typename BasisFunctionType, typename ResultType>
 shared_ptr<const Space<BasisFunctionType> >
 BoundaryOperator<BasisFunctionType, ResultType>::range() const
 {
+    if (!isInitialized())
+        return shared_ptr<const Space<BasisFunctionType> >();
     return m_abstractOp->range();
 }
 
@@ -90,6 +129,8 @@ template <typename BasisFunctionType, typename ResultType>
 shared_ptr<const Space<BasisFunctionType> >
 BoundaryOperator<BasisFunctionType, ResultType>::dualToRange() const
 {
+    if (!isInitialized())
+        return shared_ptr<const Space<BasisFunctionType> >();
     return m_abstractOp->dualToRange();
 }
 
@@ -97,6 +138,8 @@ template <typename BasisFunctionType, typename ResultType>
 std::string
 BoundaryOperator<BasisFunctionType, ResultType>::label() const
 {
+    if (!isInitialized())
+        return std::string();
     return m_abstractOp->label();
 }
 
@@ -107,11 +150,17 @@ void BoundaryOperator<BasisFunctionType, ResultType>::apply(
         GridFunction<BasisFunctionType, ResultType>& y_inout,
         ResultType alpha, ResultType beta) const
 {
+    if (!isInitialized())
+        throw std::runtime_error(
+                "BoundaryOperator::apply(): attempted to apply "
+                "an uninitialized operator");
+
     // Sanity test
     if (m_abstractOp->domain() != x_in.space() ||
             m_abstractOp->range() != y_inout.space() ||
             m_abstractOp->dualToRange() != y_inout.dualSpace())
-        throw std::runtime_error("AbstractBoundaryOperator::apply(): Spaces don't match");
+        throw std::invalid_argument("BoundaryOperator::apply(): "
+                                    "spaces don't match");
 
     // Extract coefficient vectors
     arma::Col<ResultType> xVals = x_in.coefficients();
@@ -173,8 +222,11 @@ BoundaryOperator<BasisFunctionType, ResultType> operator/(
         const BoundaryOperator<BasisFunctionType, ResultType>& op,
         const ScalarType& scalar)
 {
+    if (!op.isInitialized())
+        throw std::runtime_error("operator/(BoundaryOperator, scalar): "
+                                 "operand is uninitialized");
     if (scalar == static_cast<ScalarType>(0.))
-        throw std::runtime_error("ScaledAbstractBoundaryOperator::operator/(): "
+        throw std::runtime_error("operator/(BoundaryOperator, scalar): "
                                  "Division by zero");
     return operator*(op, static_cast<ResultType>(static_cast<ScalarType>(1.) / scalar));
 }
@@ -184,6 +236,13 @@ GridFunction<BasisFunctionType, ResultType> operator*(
         const BoundaryOperator<BasisFunctionType, ResultType>& op,
         const GridFunction<BasisFunctionType, ResultType>& fun)
 {
+    if (!op.isInitialized())
+        throw std::runtime_error("operator*(BoundaryOperator, GridFunction): "
+                                 "operand 1 is uninitialized");
+    if (!fun.isInitialized())
+        throw std::runtime_error("operator*(BoundaryOperator, GridFunction): "
+                                 "operand 2 is uninitialized");
+
     typedef GridFunction<BasisFunctionType, ResultType> GF;
 
     shared_ptr<const Space<BasisFunctionType> > space = op.range();
@@ -286,6 +345,5 @@ INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
 INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(
         std::complex<double>, std::complex<double>, std::complex<double>);
 #endif
-
 
 } // namespace Bempp
