@@ -71,6 +71,12 @@ public:
 
     enum DataType { COEFFICIENTS, PROJECTIONS };
 
+    /** \brief Constructor.
+     *
+     *  Construct an uninitialised grid function. The only way to
+     *  initialise it later is using the assigment operator. */
+    GridFunction();
+
     // TODO: clarify this description
     /** \brief Constructor.
      *
@@ -119,6 +125,9 @@ public:
                  const shared_ptr<const Space<BasisFunctionType> >& space,
                  const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
                  const Fiber::Function<ResultType>& function);
+
+    /** \brief True if the grid has been properly initialized. */
+    bool isInitialized() const;
 
     /** \brief Grid on which this function is defined. */
     const Grid& grid() const;
@@ -175,8 +184,10 @@ private:
     shared_ptr<const Context<BasisFunctionType, ResultType> > m_context;
     shared_ptr<const Space<BasisFunctionType> > m_space;
     shared_ptr<const Space<BasisFunctionType> > m_dualSpace;
-    mutable arma::Col<ResultType> m_coefficients;
-    mutable arma::Col<ResultType> m_projections;
+    mutable shared_ptr<const arma::Col<ResultType> > m_coefficients;
+    mutable shared_ptr<const arma::Col<ResultType> > m_projections;
+    // mutable arma::Col<ResultType> m_coefficients;
+    // mutable arma::Col<ResultType> m_projections;
 };
 
 // Overloaded operators
