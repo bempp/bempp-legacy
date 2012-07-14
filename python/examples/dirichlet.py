@@ -45,12 +45,11 @@ dirichletData = bempp.gridFunctionFromSurfaceNormalIndependentFunction(
 
 rhs = rhsOp * dirichletData
 
-solver = bempp.defaultIterativeSolver(lhsOp, rhs)
+solver = bempp.defaultIterativeSolver(lhsOp)
 params = bempp.defaultGmresParameterList(1e-5)
 solver.initializeSolver(params)
-solver.solve()
-
-neumannData = solver.getResult()
+solution = solver.solve(rhs)
+neumannData = solution.gridFunction()
 
 neumannData.exportToVtk(bempp.VtkWriter.VERTEX_DATA,
     "neumann_data", "neumann_data_vertex")

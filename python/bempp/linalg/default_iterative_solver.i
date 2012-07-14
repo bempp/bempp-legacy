@@ -1,5 +1,7 @@
 %{
 #include "linalg/default_iterative_solver.hpp"
+#include "linalg/blocked_solution.hpp" // temp
+#include "assembly/blocked_boundary_operator.hpp" // temp
 #include "linalg/belos_solver_wrapper.hpp"
 %}
 
@@ -18,7 +20,7 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DefaultIterativeSolver
     // add later, when we figure out how to deal with RCPs
     %ignore addPreconditioner;
 
-    %ignore getThyraSolveStatus;
+    // %ignore getThyraSolveStatus;
 }
 
 Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(double tol);
@@ -37,26 +39,19 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(DefaultIterativeSolver);
 
 %pythoncode %{
 
-def defaultIterativeSolver(boundaryOperator, gridFunction):
+def defaultIterativeSolver(boundaryOperator):
     """Construct the default linear solver.
 
     This solver lets you solve the equation A f = g for the function
     f, with A being the boundary operator passed via the boundaryOperator
-    argument and g the function represented by the gridFunction
-    argument.
+    argument and g a grid function supplied to the solve() method.
     """
     basisFunctionType = boundaryOperator.basisFunctionType()
-    if (basisFunctionType != gridFunction.basisFunctionType()):
-        raise TypeError("BasisFunctionType of boundaryOperator and "
-                        "gridFunction must be the same")
     resultType = boundaryOperator.resultType()
-    if (resultType != gridFunction.resultType()):
-        raise TypeError("ResultType of boundaryOperator and "
-                        "gridFunction must be the same")
     result = constructObjectTemplatedOnBasisAndResult(
         "DefaultIterativeSolver", basisFunctionType, resultType,
-        boundaryOperator, gridFunction)
-    result._space = boundaryOperator.domain()
+        boundaryOperator)
+    result._boundaryOperator = boundaryOperator
     return result
 
 %}

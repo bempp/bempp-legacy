@@ -153,5 +153,8 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 // Linear algebra
 %include "linalg/parameter_list.i"
 %include "linalg/solver.i"
+%include "linalg/solution_base.i"
+%include "linalg/solution.i"
+%include "linalg/blocked_solution.i"
 %include "linalg/default_iterative_solver.i"
 

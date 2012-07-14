@@ -27,9 +27,11 @@
 
 #ifdef WITH_TRILINOS
 
-#include "solver.hpp"
+// #include "solver.hpp"
 
-#include "belos_solver_wrapper_fwd.hpp"
+#include "solution.hpp"
+#include "belos_solver_wrapper_fwd.hpp" // for default parameter lists
+#include "blocked_solution.hpp"
 #include "../common/armadillo_fwd.hpp"
 #include "../common/scalar_traits.hpp"
 #include "../common/shared_ptr.hpp"
@@ -46,9 +48,11 @@ namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType> class BoundaryOperator;
+template <typename BasisFunctionType, typename ResultType> class BlockedBoundaryOperator;
+template <typename BasisFunctionType, typename ResultType> class GridFunction;
 
 template <typename BasisFunctionType, typename ResultType>
-class DefaultIterativeSolver : public Solver<BasisFunctionType, ResultType>
+class DefaultIterativeSolver // : public Solver<BasisFunctionType, ResultType>
 {
 public:
     typedef typename ScalarTraits<ResultType>::RealType MagnitudeType;
@@ -59,34 +63,26 @@ public:
     };
 
     DefaultIterativeSolver(
-            const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
-            const GridFunction<BasisFunctionType, ResultType>& rhsGridFun,
+        const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
             ConvergenceTestMode mode = TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
+    DefaultIterativeSolver(
+        const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
+        ConvergenceTestMode mode = TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
     virtual ~DefaultIterativeSolver();
 
     void setPreconditioner(
             const Teuchos::RCP<const Thyra::PreconditionerBase<ResultType> >& preconditioner);
     void initializeSolver(const Teuchos::RCP<Teuchos::ParameterList>& paramList);
 
-    virtual void solve();
-
-    virtual GridFunction<BasisFunctionType, ResultType> getResult() const;
-    virtual typename Solver<BasisFunctionType, ResultType>::EStatus getStatus() const;
-    MagnitudeType getSolveTolerance() const;
-    std::string getSolverMessage() const;
-    Thyra::SolveStatus<MagnitudeType> getThyraSolveStatus() const;
+    virtual Solution<BasisFunctionType, ResultType> solve(
+            const GridFunction<BasisFunctionType, ResultType>& rhs) const;
+    virtual BlockedSolution<BasisFunctionType, ResultType> solve(
+            const std::vector<GridFunction<BasisFunctionType, ResultType> >&
+            rhs) const;
 
 private:
-    shared_ptr<const Context<BasisFunctionType, ResultType> > m_context;
-    boost::scoped_ptr<BelosSolverWrapper<ResultType> > m_belosSolverWrapper;
-    shared_ptr<const Space<BasisFunctionType> > m_space;
-    Teuchos::RCP<Thyra::MultiVectorBase<ResultType> > m_rhs;
-    ConvergenceTestMode m_convergenceTestMode;
-
-    // as long as a GridFunction is initialised with an Armadillo array
-    // rather than a Vector, this is the right format for solution storage
-    arma::Col<ResultType> m_sol;
-    Thyra::SolveStatus<MagnitudeType> m_status;
+    struct Impl;
+    boost::scoped_ptr<Impl> m_impl;
 };
 
 } // namespace Bempp

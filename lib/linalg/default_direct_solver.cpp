@@ -53,11 +53,12 @@ template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>
 DefaultDirectSolver<BasisFunctionType, ResultType>::getResult() const
 {
-    return gridFunctionFromCoefficients(
+    return GridFunction<BasisFunctionType, ResultType>(
                 m_boundaryOperator.context(),
                 m_boundaryOperator.abstractOperator()->domain(),
                 m_boundaryOperator.abstractOperator()->domain(), // is this the right choice?
-                m_solution);
+                m_solution,
+                GridFunction<BasisFunctionType, ResultType>::COEFFICIENTS);
 }
 
 template <typename BasisFunctionType, typename ResultType>

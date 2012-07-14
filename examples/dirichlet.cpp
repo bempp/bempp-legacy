@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
     // Initialize the spaces
 
     PiecewiseLinearContinuousScalarSpace<BFT> HplusHalfSpace(*grid);
-    PiecewiseConstantScalarSpace<BFT> HminusHalfSpace(*grid);
+    PiecewiseLinearContinuousScalarSpace<BFT> HminusHalfSpace(*grid);
 
     HplusHalfSpace.assignDofs();
     HminusHalfSpace.assignDofs();
@@ -165,10 +165,10 @@ int main(int argc, char* argv[])
     std::cout << "Initialize solver" << std::endl;
 
 #ifdef WITH_TRILINOS
-    DefaultIterativeSolver<BFT, RT> solver(slpOp, rhs);
+    DefaultIterativeSolver<BFT, RT> solver(slpOp, DefaultIterativeSolver<BFT, RT>::TEST_CONVERGENCE_IN_RANGE);
     solver.initializeSolver(defaultGmresParameterList(1e-5));
-    solver.solve();
-    std::cout << solver.getSolverMessage() << std::endl;
+    Solution<BFT, RT> solution = solver.solve(rhs);
+    std::cout << solution.solverMessage() << std::endl;
 #else
     DefaultDirectSolver<BFT, RT> solver(slp, rhs);
     solver.solve();
@@ -176,7 +176,7 @@ int main(int argc, char* argv[])
 
     // Extract the solution
 
-    GridFunction<BFT, RT> solFun = solver.getResult();
+    const GridFunction<BFT, RT>& solFun = solution.gridFunction();
 
     // Write out as VTK
 

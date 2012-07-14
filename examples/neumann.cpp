@@ -158,10 +158,10 @@ int main(int argc, char* argv[])
     std::cout << "Initialize solver" << std::endl;
 
 #ifdef WITH_TRILINOS
-    DefaultIterativeSolver<BFT, RT> solver(lhsOp, rhs);
+    DefaultIterativeSolver<BFT, RT> solver(lhsOp);
     solver.initializeSolver(defaultGmresParameterList(1e-5));
-    solver.solve();
-    std::cout << solver.getSolverMessage() << std::endl;
+    Solution<BFT, RT> solution = solver.solve(rhs);
+    std::cout << solution.solverMessage() << std::endl;
 #else
     DefaultDirectSolver<BFT, RT> solver(lhsOp, rhs);
     solver.solve();
@@ -169,7 +169,7 @@ int main(int argc, char* argv[])
 
     // Extract the solution
 
-    GridFunction<BFT, RT> solFun = solver.getResult();
+    const GridFunction<BFT, RT>& solFun = solution.gridFunction();
 
     // Write out as VTK
 
