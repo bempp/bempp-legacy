@@ -33,12 +33,21 @@ namespace Bempp
 template <typename BasisFunctionType, typename ResultType>
 class Solution : public SolutionBase<BasisFunctionType, ResultType>
 {
-    typedef SolutionBase<BasisFunctionType, ResultType> Base;
 public:
+    typedef SolutionBase<BasisFunctionType, ResultType> Base;
     typedef typename Base::MagnitudeType MagnitudeType;
 
+#ifdef WITH_TRILINOS
+    /** \brief Constructor */
     Solution(const GridFunction<BasisFunctionType, ResultType>& gridFunction,
              const Thyra::SolveStatus<MagnitudeType> status);
+#endif // WITH_TRILINOS
+    /** \brief Constructor */
+    Solution(const GridFunction<BasisFunctionType, ResultType>& gridFunction,
+             typename Base::Status status,
+             MagnitudeType achievedTolerance = Base::unknownTolerance(),
+             std::string message = "");
+
     GridFunction<BasisFunctionType, ResultType>& gridFunction();
     const GridFunction<BasisFunctionType, ResultType>& gridFunction() const;
 

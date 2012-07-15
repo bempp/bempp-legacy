@@ -34,13 +34,22 @@ namespace Bempp
 template <typename BasisFunctionType, typename ResultType>
 class BlockedSolution : public SolutionBase<BasisFunctionType, ResultType>
 {
-    typedef SolutionBase<BasisFunctionType, ResultType> Base;
 public:
+    typedef SolutionBase<BasisFunctionType, ResultType> Base;
     typedef typename Base::MagnitudeType MagnitudeType;
 
+#ifdef WITH_TRILINOS
+    /** \brief Constructor */
     BlockedSolution(
             const std::vector<GridFunction<BasisFunctionType, ResultType> >& gridFunctions,
             const Thyra::SolveStatus<MagnitudeType> status);
+#endif // WITH_TRILINOS
+    /** \brief Constructor */
+    BlockedSolution(
+            const std::vector<GridFunction<BasisFunctionType, ResultType> >& gridFunctions,
+            typename Base::Status status,
+            MagnitudeType achievedTolerance = Base::unknownTolerance(),
+            std::string message = "");
 
     size_t gridFunctionCount() const;
     GridFunction<BasisFunctionType, ResultType>& gridFunction(size_t i);

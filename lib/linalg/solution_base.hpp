@@ -29,7 +29,9 @@
 // TODO: support lack of trilinos
 #ifdef WITH_TRILINOS
 #include <Thyra_SolveSupportTypes.hpp>
-#endif
+#endif // WITH_TRILINOS
+
+#include <string>
 
 namespace Bempp
 {
@@ -41,16 +43,44 @@ public:
     typedef typename ScalarTraits<ResultType>::RealType MagnitudeType;
     enum Status {CONVERGED, UNCONVERGED, UNKNOWN};
 
-    SolutionBase(const Thyra::SolveStatus<MagnitudeType> status);
+#ifdef WITH_TRILINOS
+    /** \brief Constructor */
+    explicit SolutionBase(const Thyra::SolveStatus<MagnitudeType> status);
+#endif // WITH_TRILINOS
+    /** \brief Constructor */
+    explicit SolutionBase(Status status,
+                          MagnitudeType achievedTolerance = unknownTolerance(),
+                          std::string message = "");
 
+    static MagnitudeType unknownTolerance() { return MagnitudeType(-1.); }
+
+    /** \brief Return status of the linear solve. */
     Status status() const;
+
+    /** \brief Maximum final tolerance achieved by the linear solve. 
+     *
+     *  A value of unknownTolerance() means that even an estimate of
+     *  the the final value of the tolerance is unknown.  This is the
+     *  typical value returned by direct solvers. */
     MagnitudeType achievedTolerance() const;
+
+    /** \brief Message returned by the solver. */
     std::string solverMessage() const;
 
-    Thyra::SolveStatus<MagnitudeType> thyraSolveStatus() const;
+#ifdef WITH_TRILINOS
+    /** \brief Extra status parameter returned by the solver.
+     *
+     *  \note Contents of this list are solver-dependent. */
+    Teuchos::RCP<Teuchos::ParameterList> extraParameters() const;
+#endif // WITH_TRILINOS
 
 private:
-    Thyra::SolveStatus<MagnitudeType> m_status;
+    Status m_status;
+    MagnitudeType m_achievedTolerance;
+    std::string m_message;
+#ifdef WITH_TRILINOS
+    Teuchos::RCP<Teuchos::ParameterList> m_extraParameters;
+#endif // WITH_TRILINOS
 };
 
 } // namespace Bempp

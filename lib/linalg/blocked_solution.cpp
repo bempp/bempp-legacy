@@ -24,11 +24,24 @@
 namespace Bempp
 {
 
+#ifdef WITH_TRILINOS
 template <typename BasisFunctionType, typename ResultType>
 BlockedSolution<BasisFunctionType, ResultType>::BlockedSolution(
     const std::vector<GridFunction<BasisFunctionType, ResultType> >& gridFunctions,
     const Thyra::SolveStatus<MagnitudeType> status) :
     Base(status), m_gridFunctions(gridFunctions)
+{
+}
+#endif // WITH_TRILINOS
+
+template <typename BasisFunctionType, typename ResultType>
+BlockedSolution<BasisFunctionType, ResultType>::BlockedSolution(
+        const std::vector<GridFunction<BasisFunctionType, ResultType> >& gridFunctions,
+        typename Base::Status status, 
+        MagnitudeType achievedTolerance,
+        std::string message) :
+    Base(status, achievedTolerance, message),
+    m_gridFunctions(gridFunctions)
 {
 }
 
