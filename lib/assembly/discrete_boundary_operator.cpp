@@ -21,10 +21,9 @@ arma::Mat<ValueType> DiscreteBoundaryOperator<ValueType>::asMatrix() const
     unit.fill(0.);
     for (size_t i = 0; i < nCols; ++i) {
         arma::Col<ValueType> activeCol(result.unsafe_col(i));
-        if (i > 0) {
+        if (i > 0)
             unit(i - 1) = 0.;
-            unit(i) = 1.;
-        }
+        unit(i) = 1.;        
         applyBuiltInImpl(NO_TRANSPOSE, unit, activeCol, 1., 0.);
     }
 
