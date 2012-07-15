@@ -32,7 +32,6 @@ swig_link_libraries(core ${PYTHON_LIBRARIES} bempp)
 if (NOT (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR}))
     #set(PYTHON_SOURCES "__init__.py")
     file(GLOB_RECURSE PYTHON_SOURCES RELATIVE ${CMAKE_SOURCE_DIR}/python/bempp  ${CMAKE_SOURCE_DIR}/python/bempp/*.py)
-    message(STATUS "${PYTHON_SOURCES}")
     foreach (py_file ${PYTHON_SOURCES})
     add_custom_command(
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${py_file}
