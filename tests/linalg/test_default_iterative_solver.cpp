@@ -25,45 +25,19 @@
 #include "../type_template.hpp"
 #include "../check_arrays_are_close.hpp"
 
+#include "laplace_3d_dirichlet_fixture.hpp"
+
 #include "assembly/blocked_boundary_operator.hpp"
 #include "assembly/blocked_operator_structure.hpp"
-#include "assembly/context.hpp"
-#include "assembly/identity_operator.hpp"
-#include "assembly/laplace_3d_double_layer_boundary_operator.hpp"
-#include "assembly/laplace_3d_single_layer_boundary_operator.hpp"
-#include "assembly/numerical_quadrature_strategy.hpp"
-#include "assembly/surface_normal_independent_function.hpp"
-#include "common/scalar_traits.hpp"
-#include "grid/grid_factory.hpp"
 #include "linalg/default_iterative_solver.hpp"
-#include "space/piecewise_constant_scalar_space.hpp"
-#include "space/piecewise_linear_continuous_scalar_space.hpp"
 
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/type_traits/is_complex.hpp>
 
-#include <armadillo>
-
 using namespace Bempp;
 
 // Tests
-
-template <typename ValueType_>
-class UnitFunctor
-{
-public:
-    typedef ValueType_ ValueType;
-    typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
-
-    int argumentDimension() const { return 3; }
-    int resultDimension() const { return 1; }
-
-    inline void evaluate(const arma::Col<CoordinateType>& point,
-                         arma::Col<ValueType>& result) const {
-        result(0) = 1.;
-    }
-};
 
 BOOST_AUTO_TEST_SUITE(DefaultIterativeSolver)
 
@@ -74,95 +48,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(both_convergence_testing_strategies_agree_for_dual
     typedef typename ScalarTraits<ValueType>::RealType RealType;
     typedef RealType BFT;
 
-    GridParameters params;
-    params.topology = GridParameters::TRIANGULAR;
-    std::auto_ptr<Grid> grid = GridFactory::importGmshGrid(
-                params, "../examples/meshes/sphere-152.msh");
-
-    PiecewiseLinearContinuousScalarSpace<BFT> space(*grid);
-    space.assignDofs();
-    shared_ptr<Space<BFT> > spacePtr = make_shared_from_ref(space);
-
-    AssemblyOptions assemblyOptions;
-    NumericalQuadratureStrategy<BFT, RT> quadStrategy;
-    Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);
-    shared_ptr<Context<BFT, RT> > contextPtr = make_shared_from_ref(context);
-
-    BoundaryOperator<BFT, RT> slpOp = laplace3dSingleLayerBoundaryOperator<BFT, RT>(
-                contextPtr, spacePtr, spacePtr, spacePtr);
-    BoundaryOperator<BFT, RT> dlpOp = laplace3dDoubleLayerBoundaryOperator<BFT, RT>(
-                contextPtr, spacePtr, spacePtr, spacePtr);
-    BoundaryOperator<BFT, RT> id = identityOperator<BFT, RT>(
-                contextPtr, spacePtr, spacePtr, spacePtr);
-
-    BoundaryOperator<BFT, RT> lhsOp = slpOp;
-    BoundaryOperator<BFT, RT> rhsOp = -0.5 * id + dlpOp;
-
-    GridFunction<BFT, RT> u(contextPtr, spacePtr, spacePtr,
-                surfaceNormalIndependentFunction(UnitFunctor<RT>()));
-    GridFunction<BFT, RT> rhs = rhsOp * u;
+    Laplace3dDirichletFixture<BFT, RT> fixture(
+        PIECEWISE_LINEARS, PIECEWISE_LINEARS, PIECEWISE_LINEARS, PIECEWISE_LINEARS);
 
     typedef Bempp::DefaultIterativeSolver<BFT, RT> IterSolver;
     const RealType solverTol = 1e-6;
 
     IterSolver solverDual(
-        lhsOp, IterSolver::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
+        fixture.lhsOp, IterSolver::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
     solverDual.initializeSolver(defaultGmresParameterList(solverTol));
-    Solution<BFT, RT> solutionDual = solverDual.solve(rhs);
+    Solution<BFT, RT> solutionDual = solverDual.solve(fixture.rhs);
     arma::Col<RT> solutionVectorDual = solutionDual.gridFunction().coefficients();
 
     IterSolver solverPrimal(
-        lhsOp, IterSolver::TEST_CONVERGENCE_IN_RANGE);
+        fixture.lhsOp, IterSolver::TEST_CONVERGENCE_IN_RANGE);
     solverPrimal.initializeSolver(defaultGmresParameterList(solverTol));
-    Solution<BFT, RT> solutionPrimal = solverPrimal.solve(rhs);
+    Solution<BFT, RT> solutionPrimal = solverPrimal.solve(fixture.rhs);
     arma::Col<RT> solutionVectorPrimal = solutionPrimal.gridFunction().coefficients();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
                     solutionVectorDual, solutionVectorPrimal, solverTol * 1000.));
 }
-
-template <typename BFT, typename RT>
-class LaplaceDirichletFixture
-{
-public:
-    LaplaceDirichletFixture() {
-        GridParameters params;
-        params.topology = GridParameters::TRIANGULAR;
-        grid = GridFactory::importGmshGrid(
-            params, "../examples/meshes/sphere-152.msh");
-
-        shared_ptr<Space<BFT> > pwiseConstants(
-            new Bempp::PiecewiseConstantScalarSpace<BFT>(*grid));
-        shared_ptr<Space<BFT> > pwiseLinears(
-            new PiecewiseLinearContinuousScalarSpace<BFT>(*grid));
-        pwiseConstants->assignDofs();
-        pwiseLinears->assignDofs();
-
-        AssemblyOptions assemblyOptions;
-        shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy( 
-            new NumericalQuadratureStrategy<BFT, RT>);
-        shared_ptr<Context<BFT, RT> > context(
-            new Context<BFT, RT>(quadStrategy, assemblyOptions));
-        
-        BoundaryOperator<BFT, RT> slpOp = laplace3dSingleLayerBoundaryOperator<BFT, RT>(
-            context, pwiseConstants, pwiseLinears, pwiseConstants);
-        BoundaryOperator<BFT, RT> dlpOp = laplace3dDoubleLayerBoundaryOperator<BFT, RT>(
-            context, pwiseLinears, pwiseLinears, pwiseConstants);
-        BoundaryOperator<BFT, RT> id = identityOperator<BFT, RT>(
-            context, pwiseLinears, pwiseLinears, pwiseConstants);
-        
-        lhsOp = slpOp;
-        BoundaryOperator<BFT, RT> rhsOp = -0.5 * id + dlpOp;
-        
-        GridFunction<BFT, RT> u(context, pwiseLinears, pwiseLinears,
-                                surfaceNormalIndependentFunction(UnitFunctor<RT>()));
-        rhs = rhsOp * u;
-    }
-
-    std::auto_ptr<Grid> grid;
-    BoundaryOperator<BFT, RT> lhsOp;
-    GridFunction<BFT, RT> rhs;
-};
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(boundary_operator_agrees_with_trivial_1x1_blocked_boundary_operator_for_convergence_testing_in_dual,
                               ValueType, result_types)
@@ -174,7 +80,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(boundary_operator_agrees_with_trivial_1x1_blocked_
     typedef Bempp::DefaultIterativeSolver<BFT, RT> IterSolver;
     const RealType solverTol = 1e-5;
 
-    LaplaceDirichletFixture<BFT, RT> fixture;
+    Laplace3dDirichletFixture<BFT, RT> fixture;
 
     arma::Col<RT> solutionVectorNonblocked;
 
@@ -217,7 +123,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(boundary_operator_agrees_with_diagonal_2x2_blocked
     typedef Bempp::DefaultIterativeSolver<BFT, RT> IterSolver;
     const RealType solverTol = 1e-5;
 
-    LaplaceDirichletFixture<BFT, RT> fixture;
+    Laplace3dDirichletFixture<BFT, RT> fixture;
 
     arma::Col<RT> solutionVectorNonblocked;
 
@@ -265,7 +171,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(boundary_operator_agrees_with_2x2_blocked_boundary
     typedef Bempp::DefaultIterativeSolver<BFT, RT> IterSolver;
     const RealType solverTol = 1e-5;
 
-    LaplaceDirichletFixture<BFT, RT> fixture;
+    Laplace3dDirichletFixture<BFT, RT> fixture;
 
     arma::Col<RT> solutionVectorNonblocked;
 
