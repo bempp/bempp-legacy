@@ -23,23 +23,60 @@
 
 #include "../common/common.hpp"
 
-#include "../assembly/grid_function.hpp"
+#include "solution.hpp"
+#include "blocked_solution.hpp"
+
+#include <vector>
 
 namespace Bempp
 {
+
+template <typename BasisFunctionType, typename ResultType> class BoundaryOperator;
+template <typename BasisFunctionType, typename ResultType> class BlockedBoundaryOperator;
+template <typename BasisFunctionType, typename ResultType> class GridFunction;
 
 template <typename BasisFunctionType, typename ResultType>
 class Solver
 {
 public:
-    enum EStatus {CONVERGED, UNCONVERGED, UNKNOWN};
+    enum ConvergenceTestMode {
+        TEST_CONVERGENCE_IN_DUAL_TO_RANGE,
+        TEST_CONVERGENCE_IN_RANGE
+    };
 
-    virtual ~Solver() {}
+    virtual ~Solver();
 
-    virtual void solve() = 0;
+    Solution<BasisFunctionType, ResultType> solve(
+            const GridFunction<BasisFunctionType, ResultType>& rhs) const {
+        return solveImplNonblocked(rhs); 
+    }
+    BlockedSolution<BasisFunctionType, ResultType> solve(
+            const std::vector<GridFunction<BasisFunctionType, ResultType> >&
+            rhs) const {
+        return solveImplBlocked(rhs); 
+    }
 
-    virtual GridFunction<BasisFunctionType, ResultType> getResult() const = 0;
-    virtual EStatus getStatus() const = 0;
+protected:
+    static void checkConsistency(
+        const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
+        const GridFunction<BasisFunctionType, ResultType>& rhs,
+        ConvergenceTestMode mode);
+    static void checkConsistency(
+        const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
+        const std::vector<GridFunction<BasisFunctionType, ResultType> >& rhs,
+        ConvergenceTestMode mode);
+
+    static void constructBlockedGridFunction(
+        const arma::Col<ResultType>& solution,
+        const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
+        std::vector<GridFunction<BasisFunctionType, ResultType> >& solutionFunctions);
+
+private:
+    virtual Solution<BasisFunctionType, ResultType> solveImplNonblocked(
+        const GridFunction<BasisFunctionType, ResultType>& rhs) const = 0;        
+    virtual BlockedSolution<BasisFunctionType, ResultType> solveImplBlocked(
+            const std::vector<GridFunction<BasisFunctionType, ResultType> >&
+            rhs) const = 0;    
 };
 
 } // namespace Bempp

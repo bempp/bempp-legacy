@@ -27,56 +27,43 @@
 
 #ifdef WITH_TRILINOS
 
-// #include "solver.hpp"
+#include "solver.hpp"
 
-#include "solution.hpp"
 #include "belos_solver_wrapper_fwd.hpp" // for default parameter lists
-#include "blocked_solution.hpp"
-#include "../common/armadillo_fwd.hpp"
-#include "../common/scalar_traits.hpp"
-#include "../common/shared_ptr.hpp"
-
 #include <boost/scoped_ptr.hpp>
 
 namespace Thyra
 {
 template <typename ValueType> class PreconditionerBase;
-template <typename ValueType> class SolveStatus;
-}
+} // namespace Thyra
 
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename ResultType> class BoundaryOperator;
-template <typename BasisFunctionType, typename ResultType> class BlockedBoundaryOperator;
-template <typename BasisFunctionType, typename ResultType> class GridFunction;
-
 template <typename BasisFunctionType, typename ResultType>
-class DefaultIterativeSolver // : public Solver<BasisFunctionType, ResultType>
+class DefaultIterativeSolver : public Solver<BasisFunctionType, ResultType>
 {
 public:
-    typedef typename ScalarTraits<ResultType>::RealType MagnitudeType;
-
-    enum ConvergenceTestMode {
-        TEST_CONVERGENCE_IN_DUAL_TO_RANGE,
-        TEST_CONVERGENCE_IN_RANGE
-    };
+    typedef Solver<BasisFunctionType, ResultType> Base;
 
     DefaultIterativeSolver(
-        const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
-            ConvergenceTestMode mode = TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
+            const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
+            typename Base::ConvergenceTestMode mode = 
+            Base::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
     DefaultIterativeSolver(
-        const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
-        ConvergenceTestMode mode = TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
+            const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
+            typename Base::ConvergenceTestMode mode = 
+            Base::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
     virtual ~DefaultIterativeSolver();
 
     void setPreconditioner(
             const Teuchos::RCP<const Thyra::PreconditionerBase<ResultType> >& preconditioner);
     void initializeSolver(const Teuchos::RCP<Teuchos::ParameterList>& paramList);
 
-    virtual Solution<BasisFunctionType, ResultType> solve(
+private:
+    virtual Solution<BasisFunctionType, ResultType> solveImplNonblocked(
             const GridFunction<BasisFunctionType, ResultType>& rhs) const;
-    virtual BlockedSolution<BasisFunctionType, ResultType> solve(
+    virtual BlockedSolution<BasisFunctionType, ResultType> solveImplBlocked(
             const std::vector<GridFunction<BasisFunctionType, ResultType> >&
             rhs) const;
 

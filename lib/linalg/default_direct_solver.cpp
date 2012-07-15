@@ -21,51 +21,124 @@
 #include "default_direct_solver.hpp"
 
 #include "../assembly/abstract_boundary_operator.hpp"
+#include "../assembly/blocked_boundary_operator.hpp"
 #include "../assembly/boundary_operator.hpp"
 #include "../assembly/discrete_boundary_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
+#include <boost/variant.hpp>
+
 namespace Bempp
 {
 
+template <typename BasisFunctionType, typename ResultType> 
+struct DefaultDirectSolver<BasisFunctionType, ResultType>::Impl
+{
+    Impl(const BoundaryOperator<BasisFunctionType, ResultType>& op_) :
+        op(op_)
+    {
+    }
+
+    Impl(const BlockedBoundaryOperator<BasisFunctionType, ResultType>& op_) :
+        op(op_)
+    {
+    }
+    
+    boost::variant<
+        BoundaryOperator<BasisFunctionType, ResultType>,
+        BlockedBoundaryOperator<BasisFunctionType, ResultType> > op;
+};
+
 template <typename BasisFunctionType, typename ResultType>
 DefaultDirectSolver<BasisFunctionType, ResultType>::DefaultDirectSolver(
-        const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOperator,
-        const GridFunction<BasisFunctionType, ResultType>& gridFunction) :
-    m_boundaryOperator(boundaryOperator), m_gridFunction(gridFunction),
-    m_solution(), m_status(Solver<BasisFunctionType, ResultType>::UNKNOWN)
+        const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp) :
+    m_impl(new Impl(boundaryOp))
 {
-    if (boundaryOperator.domain() != gridFunction.space())
-        throw std::runtime_error("DefaultDirectSolver::DefaultDirectSolver(): "
-                                 "spaces do not match");
 }
 
 template <typename BasisFunctionType, typename ResultType>
-void DefaultDirectSolver<BasisFunctionType, ResultType>::solve()
+DefaultDirectSolver<BasisFunctionType, ResultType>::DefaultDirectSolver(
+        const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp) :
+    m_impl(new Impl(boundaryOp))
 {
-    m_solution = arma::solve(
-                m_boundaryOperator.weakForm()->asMatrix(),
-                m_gridFunction.projections());
-    m_status = Solver<BasisFunctionType, ResultType>::CONVERGED;
 }
 
 template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType, ResultType>
-DefaultDirectSolver<BasisFunctionType, ResultType>::getResult() const
+DefaultDirectSolver<BasisFunctionType, ResultType>::~DefaultDirectSolver()
 {
-    return GridFunction<BasisFunctionType, ResultType>(
-                m_boundaryOperator.context(),
-                m_boundaryOperator.abstractOperator()->domain(),
-                m_boundaryOperator.abstractOperator()->domain(), // is this the right choice?
-                m_solution,
-                GridFunction<BasisFunctionType, ResultType>::COEFFICIENTS);
 }
 
 template <typename BasisFunctionType, typename ResultType>
-typename Solver<BasisFunctionType, ResultType>::EStatus
-DefaultDirectSolver<BasisFunctionType, ResultType>::getStatus() const
+Solution<BasisFunctionType, ResultType> 
+DefaultDirectSolver<BasisFunctionType, ResultType>::solveImplNonblocked(
+        const GridFunction<BasisFunctionType, ResultType>& rhs) const
 {
-    return m_status;
+    typedef BoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
+
+    const BoundaryOp* boundaryOp = boost::get<BoundaryOp>(&m_impl->op);
+    if (!boundaryOp)
+        throw std::logic_error(
+            "DefaultDirectSolver::solve(): for solvers constructed "
+            "from a BlockedBoundaryOperator the other solve() overload "
+            "must be used");
+    Solver<BasisFunctionType, ResultType>::checkConsistency(
+        *boundaryOp, rhs, Base::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
+
+    arma::Col<ResultType> armaSolution = arma::solve(
+                boundaryOp->weakForm()->asMatrix(),
+                rhs.projections());
+    
+    return Solution<BasisFunctionType, ResultType>(
+        GridFunction<BasisFunctionType, ResultType>(
+            boundaryOp->context(), 
+            boundaryOp->domain(), boundaryOp->domain(), // is this the right choice?
+            armaSolution, GridFunction<BasisFunctionType, ResultType>::COEFFICIENTS),
+        SolutionBase<BasisFunctionType, ResultType>::CONVERGED,
+        SolutionBase<BasisFunctionType, ResultType>::unknownTolerance(),
+        "Solver finished");
+}
+
+template <typename BasisFunctionType, typename ResultType>
+BlockedSolution<BasisFunctionType, ResultType>
+DefaultDirectSolver<BasisFunctionType, ResultType>::solveImplBlocked(
+    const std::vector<GridFunction<BasisFunctionType, ResultType> >& rhs) const
+{
+    typedef BlockedBoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
+
+    const BoundaryOp* boundaryOp = boost::get<BoundaryOp>(&m_impl->op);
+    if (!boundaryOp)
+        throw std::logic_error(
+            "DefaultDirectSolver::solve(): for solvers constructed "
+            "from a (non-blocked) BoundaryOperator the other solve() overload "
+            "must be used");
+    Solver<BasisFunctionType, ResultType>::checkConsistency(
+        *boundaryOp, rhs, Base::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
+
+    // Construct the right-hand size vector
+    arma::Col<ResultType> armaRhs(boundaryOp->totalGlobalDofCountInDualsToRanges());
+    for (size_t i = 0, start = 0; i < rhs.size(); ++i) {
+        const arma::Col<ResultType>& chunkProjections = rhs[i].projections();
+        size_t chunkSize = chunkProjections.n_rows;
+        armaRhs.rows(start, start + chunkSize - 1) = chunkProjections;
+        start += chunkSize;
+    }        
+
+    // Solve
+    arma::Col<ResultType> armaSolution = arma::solve(
+                boundaryOp->weakForm()->asMatrix(),
+                armaRhs);
+    
+    // Convert chunks of the solution vector into grid functions
+    std::vector<GridFunction<BasisFunctionType, ResultType> > solutionFunctions;
+    Solver<BasisFunctionType, ResultType>::constructBlockedGridFunction(
+        armaSolution, *boundaryOp, solutionFunctions);
+
+    // Return solution
+    return BlockedSolution<BasisFunctionType, ResultType>(
+        solutionFunctions,
+        SolutionBase<BasisFunctionType, ResultType>::CONVERGED,
+        SolutionBase<BasisFunctionType, ResultType>::unknownTolerance(),
+        "Solver finished");
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DefaultDirectSolver);
