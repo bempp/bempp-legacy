@@ -67,6 +67,7 @@ struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
     typedef typename Solver<BasisFunctionType, ResultType>::ConvergenceTestMode
     ConvergenceTestMode;
 
+    // Constructor for non-blocked operators
     Impl(const BoundaryOperator<BasisFunctionType, ResultType>& op_,
          ConvergenceTestMode mode_) :
         op(op_),
@@ -89,7 +90,7 @@ struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
             pinvId = pseudoinverse(id);
             shared_ptr<DiscreteBoundaryOperator<ResultType> > totalBoundaryOp =
                     boost::make_shared<DiscreteBoundaryOperatorComposition<ResultType> >(
-                        pinvId.weakForm(),
+                        boost::get<BoundaryOp>(pinvId).weakForm(),
                         boundaryOp.weakForm());
             solverWrapper.reset(
                         new BelosSolverWrapper<ResultType>(
@@ -102,6 +103,7 @@ struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
                     "invalid convergence test mode");
     }
 
+    // Constructor for blocked operators
     Impl(const BlockedBoundaryOperator<BasisFunctionType, ResultType>& op_,
          ConvergenceTestMode mode_) :
         op(op_),
@@ -110,12 +112,53 @@ struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
                           Teuchos::rcp<const Thyra::LinearOpBase<ResultType> >(
                               op_.weakForm())))
     {
+        typedef BlockedBoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
         typedef Solver<BasisFunctionType, ResultType> Solver_;
-        if (mode != Solver_::TEST_CONVERGENCE_IN_DUAL_TO_RANGE)
-            throw std::runtime_error(
-                "DefaultIterativeSolver::DefaultIterativeSolver(): "
-                "currently equations involving blocked operators can only "
-                "be solved with convergence tested in space dual to range");
+        const BoundaryOp& boundaryOp = boost::get<BoundaryOp>(op);
+
+        if (mode == Solver_::TEST_CONVERGENCE_IN_DUAL_TO_RANGE) {
+            solverWrapper.reset(
+                        new BelosSolverWrapper<ResultType>(
+                            Teuchos::rcp<const Thyra::LinearOpBase<ResultType> >(
+                                boundaryOp.weakForm())));
+        }
+        else if (mode == Solver_::TEST_CONVERGENCE_IN_RANGE) {
+            // Construct a block-diagonal operator composed of pseudoinverses 
+            // for appropriate spaces
+            BlockedOperatorStructure<BasisFunctionType, ResultType> pinvIdStructure;
+            size_t rowCount = boundaryOp.rowCount();
+            size_t columnCount = boundaryOp.columnCount();
+            for (size_t row = 0; row < rowCount; ++row) {
+                // Find the first non-zero block in row #row and retrieve its context
+                shared_ptr<const Context<BasisFunctionType, ResultType> > context;
+                for (int col = 0; col < columnCount; ++col)
+                    if (boundaryOp.block(row, col).context()) {
+                        context = boundaryOp.block(row, col).context();
+                        break;
+                    }
+                assert(context);
+
+                BoundaryOperator<BasisFunctionType, ResultType> id = identityOperator(
+                    context, boundaryOp.range(row), boundaryOp.range(row),
+                    boundaryOp.dualToRange(row), "I");
+                pinvIdStructure.setBlock(row, row, pseudoinverse(id));
+            }                                   
+            pinvId = BlockedBoundaryOperator<BasisFunctionType, ResultType>(
+                pinvIdStructure);
+
+            shared_ptr<DiscreteBoundaryOperator<ResultType> > totalBoundaryOp =
+                    boost::make_shared<DiscreteBoundaryOperatorComposition<ResultType> >(
+                        boost::get<BoundaryOp>(pinvId).weakForm(),
+                        boundaryOp.weakForm());
+            solverWrapper.reset(
+                        new BelosSolverWrapper<ResultType>(
+                            Teuchos::rcp<const Thyra::LinearOpBase<ResultType> >(
+                                totalBoundaryOp)));
+        }
+        else
+            throw std::invalid_argument(
+                    "DefaultIterativeSolver::DefaultIterativeSolver(): "
+                    "invalid convergence test mode");
     }
     
     boost::variant<
@@ -123,7 +166,9 @@ struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
         BlockedBoundaryOperator<BasisFunctionType, ResultType> > op;
     ConvergenceTestMode mode;
     boost::scoped_ptr<BelosSolverWrapper<ResultType> > solverWrapper;
-    BoundaryOperator<BasisFunctionType, ResultType> pinvId;
+    boost::variant<
+        BoundaryOperator<BasisFunctionType, ResultType>,
+        BlockedBoundaryOperator<BasisFunctionType, ResultType> > pinvId;
 };
 
 template <typename BasisFunctionType, typename ResultType>
@@ -187,7 +232,7 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::solveImplNonblocked(
     else {
         const size_t size = boundaryOp->range()->globalDofCount();
         rhsVector.reset(new Vector<ResultType>(size));
-        m_impl->pinvId.weakForm()->apply(
+        boost::get<BoundaryOp>(m_impl->pinvId).weakForm()->apply(
             Thyra::NOTRANS, projectionsVector, rhsVector.ptr(), 1., 0.);
     }
 
@@ -216,8 +261,9 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::solveImplBlocked(
 {
     typedef BlockedBoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
     typedef typename ScalarTraits<ResultType>::RealType MagnitudeType;
-    const BoundaryOp* boundaryOp = boost::get<BoundaryOp>(&m_impl->op);
+    typedef Thyra::MultiVectorBase<ResultType> TrilinosVector;
 
+    const BoundaryOp* boundaryOp = boost::get<BoundaryOp>(&m_impl->op);
     if (!boundaryOp)
         throw std::logic_error(
             "DefaultIterativeSolver::solve(): for solvers constructed "
@@ -226,19 +272,27 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::solveImplBlocked(
     Solver<BasisFunctionType, ResultType>::checkConsistency(
         *boundaryOp, rhs, m_impl->mode);
 
-    typedef Thyra::DefaultSpmdVector<ResultType> DenseVector;
-
     // Currently we only support convergence testing in space dual to range.
 
     // Construct the right-hand-side vector
-    arma::Col<ResultType> armaRhs(boundaryOp->totalGlobalDofCountInDualsToRanges());
+    arma::Col<ResultType> armaProjections(
+        boundaryOp->totalGlobalDofCountInDualsToRanges());
     for (size_t i = 0, start = 0; i < rhs.size(); ++i) {
         const arma::Col<ResultType>& chunkProjections = rhs[i].projections();
         size_t chunkSize = chunkProjections.n_rows;
-        armaRhs.rows(start, start + chunkSize - 1) = chunkProjections;
+        armaProjections.rows(start, start + chunkSize - 1) = chunkProjections;
         start += chunkSize;
     }        
-    Teuchos::RCP<DenseVector> rhsVector = wrapInTrilinosVector(armaRhs);
+    Vector<ResultType> projectionsVector(armaProjections);
+    Teuchos::RCP<TrilinosVector> rhsVector;
+    if (m_impl->mode == Base::TEST_CONVERGENCE_IN_DUAL_TO_RANGE)
+        rhsVector = Teuchos::rcpFromRef(projectionsVector);
+    else {
+        const size_t rhsSize = boundaryOp->totalGlobalDofCountInRanges();
+        rhsVector.reset(new Vector<ResultType>(rhsSize));
+        boost::get<BoundaryOp>(m_impl->pinvId).weakForm()->apply(
+            Thyra::NOTRANS, projectionsVector, rhsVector.ptr(), 1., 0.);
+    }
 
     // Initialize the solution vector
     size_t solutionSize = 0;
@@ -246,7 +300,7 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::solveImplBlocked(
         solutionSize += boundaryOp->domain(i)->globalDofCount();
     arma::Col<ResultType> armaSolution(solutionSize);
     armaSolution.fill(static_cast<ResultType>(0.));
-    Teuchos::RCP<DenseVector> solutionVector = wrapInTrilinosVector(armaSolution);
+    Teuchos::RCP<TrilinosVector> solutionVector = wrapInTrilinosVector(armaSolution);
 
     // Solve
     Thyra::SolveStatus<MagnitudeType> status = m_impl->solverWrapper->solve(

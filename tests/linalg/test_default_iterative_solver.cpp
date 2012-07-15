@@ -60,14 +60,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(both_convergence_testing_strategies_agree_for_dual
     Solution<BFT, RT> solutionDual = solverDual.solve(fixture.rhs);
     arma::Col<RT> solutionVectorDual = solutionDual.gridFunction().coefficients();
 
-    IterSolver solverPrimal(
+    IterSolver solverRange(
         fixture.lhsOp, IterSolver::TEST_CONVERGENCE_IN_RANGE);
-    solverPrimal.initializeSolver(defaultGmresParameterList(solverTol));
-    Solution<BFT, RT> solutionPrimal = solverPrimal.solve(fixture.rhs);
-    arma::Col<RT> solutionVectorPrimal = solutionPrimal.gridFunction().coefficients();
+    solverRange.initializeSolver(defaultGmresParameterList(solverTol));
+    Solution<BFT, RT> solutionRange = solverRange.solve(fixture.rhs);
+    arma::Col<RT> solutionVectorRange = solutionRange.gridFunction().coefficients();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
-                    solutionVectorDual, solutionVectorPrimal, solverTol * 1000.));
+                    solutionVectorDual, solutionVectorRange, solverTol * 1000.));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(boundary_operator_agrees_with_trivial_1x1_blocked_boundary_operator_for_convergence_testing_in_dual,
@@ -198,6 +198,150 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(boundary_operator_agrees_with_2x2_blocked_boundary
 
         IterSolver solver(
             lhsBlockedOp, IterSolver::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);       
+        solver.initializeSolver(defaultGmresParameterList(solverTol));
+        BlockedSolution<BFT, RT> solution = solver.solve(blockedRhs);
+        arma::Col<RT> solutionVectorBlock0 = solution.gridFunction(0).coefficients();
+        arma::Col<RT> solutionVectorBlock1 = solution.gridFunction(1).coefficients() / 2.;
+
+        BOOST_CHECK(check_arrays_are_close<ValueType>(
+                        solutionVectorNonblocked, solutionVectorBlock0, solverTol * 10));
+        BOOST_CHECK(check_arrays_are_close<ValueType>(
+                        solutionVectorNonblocked, solutionVectorBlock1, solverTol * 10));
+    }
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(boundary_operator_agrees_with_trivial_1x1_blocked_boundary_operator_for_convergence_testing_in_range,
+                              ValueType, result_types)
+{
+    typedef ValueType RT;
+    typedef typename ScalarTraits<ValueType>::RealType RealType;
+    typedef RealType BFT;
+
+    typedef Bempp::DefaultIterativeSolver<BFT, RT> IterSolver;
+    const RealType solverTol = 1e-5;
+
+    Laplace3dDirichletFixture<BFT, RT> fixture(
+        PIECEWISE_LINEARS, PIECEWISE_LINEARS, PIECEWISE_LINEARS, PIECEWISE_LINEARS);
+
+    arma::Col<RT> solutionVectorNonblocked;
+
+    // Solve using nonblocked operator
+    {
+        IterSolver solver(
+            fixture.lhsOp, IterSolver::TEST_CONVERGENCE_IN_RANGE);       
+        solver.initializeSolver(defaultGmresParameterList(solverTol));
+        Solution<BFT, RT> solution = solver.solve(fixture.rhs);
+        solutionVectorNonblocked = solution.gridFunction().coefficients();
+    }
+
+    // Solve using trivial (1 x 1) blocked operator
+    {
+        BlockedOperatorStructure<BFT, RT> structure;
+        structure.setBlock(0, 0, fixture.lhsOp);
+        
+        BlockedBoundaryOperator<BFT, RT> lhsBlockedOp(structure);
+        std::vector<GridFunction<BFT, RT> > blockedRhs(1);
+        blockedRhs[0] = fixture.rhs;
+
+        IterSolver solver(
+            lhsBlockedOp, IterSolver::TEST_CONVERGENCE_IN_RANGE);       
+        solver.initializeSolver(defaultGmresParameterList(solverTol));
+        BlockedSolution<BFT, RT> solution = solver.solve(blockedRhs);
+        arma::Col<RT> solutionVectorBlocked = solution.gridFunction(0).coefficients();
+
+        BOOST_CHECK(check_arrays_are_close<ValueType>(
+                        solutionVectorNonblocked, solutionVectorBlocked, solverTol * 10));
+    }
+}
+
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(boundary_operator_agrees_with_diagonal_2x2_blocked_boundary_operator_for_convergence_testing_in_range,
+                              ValueType, result_types)
+{
+    typedef ValueType RT;
+    typedef typename ScalarTraits<ValueType>::RealType RealType;
+    typedef RealType BFT;
+
+    typedef Bempp::DefaultIterativeSolver<BFT, RT> IterSolver;
+    const RealType solverTol = 1e-5;
+
+    Laplace3dDirichletFixture<BFT, RT> fixture(
+        PIECEWISE_LINEARS, PIECEWISE_LINEARS, PIECEWISE_LINEARS, PIECEWISE_LINEARS);
+
+    arma::Col<RT> solutionVectorNonblocked;
+
+    // Solve using nonblocked operator
+    {
+        IterSolver solver(
+            fixture.lhsOp, IterSolver::TEST_CONVERGENCE_IN_RANGE);       
+        solver.initializeSolver(defaultGmresParameterList(solverTol));
+        Solution<BFT, RT> solution = solver.solve(fixture.rhs);
+        solutionVectorNonblocked = solution.gridFunction().coefficients();
+    }
+
+    // Solve using diagonal 2x2 ([A, 0; 0, A]) blocked operator
+    {
+        BlockedOperatorStructure<BFT, RT> structure;
+        structure.setBlock(0, 0, fixture.lhsOp);
+        structure.setBlock(1, 1, fixture.lhsOp);
+        
+        BlockedBoundaryOperator<BFT, RT> lhsBlockedOp(structure);
+        std::vector<GridFunction<BFT, RT> > blockedRhs(2);
+        blockedRhs[0] = fixture.rhs;
+        blockedRhs[1] = 2. * fixture.rhs;
+
+        IterSolver solver(
+            lhsBlockedOp, IterSolver::TEST_CONVERGENCE_IN_RANGE);       
+        solver.initializeSolver(defaultGmresParameterList(solverTol));
+        BlockedSolution<BFT, RT> solution = solver.solve(blockedRhs);
+        arma::Col<RT> solutionVectorBlock0 = solution.gridFunction(0).coefficients();
+        arma::Col<RT> solutionVectorBlock1 = solution.gridFunction(1).coefficients() / 2.;
+
+        BOOST_CHECK(check_arrays_are_close<ValueType>(
+                        solutionVectorNonblocked, solutionVectorBlock0, solverTol * 10));
+        BOOST_CHECK(check_arrays_are_close<ValueType>(
+                        solutionVectorNonblocked, solutionVectorBlock1, solverTol * 10));
+    }
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(boundary_operator_agrees_with_2x2_blocked_boundary_operator_for_convergence_testing_in_range,
+                              ValueType, result_types)
+{
+    typedef ValueType RT;
+    typedef typename ScalarTraits<ValueType>::RealType RealType;
+    typedef RealType BFT;
+
+    typedef Bempp::DefaultIterativeSolver<BFT, RT> IterSolver;
+    const RealType solverTol = 1e-5;
+
+    Laplace3dDirichletFixture<BFT, RT> fixture(
+        PIECEWISE_LINEARS, PIECEWISE_LINEARS, PIECEWISE_LINEARS, PIECEWISE_LINEARS);
+
+    arma::Col<RT> solutionVectorNonblocked;
+
+    // Solve using nonblocked operator
+    {
+        IterSolver solver(
+            fixture.lhsOp, IterSolver::TEST_CONVERGENCE_IN_RANGE);       
+        solver.initializeSolver(defaultGmresParameterList(solverTol));
+        Solution<BFT, RT> solution = solver.solve(fixture.rhs);
+        solutionVectorNonblocked = solution.gridFunction().coefficients();
+    }
+
+    // Solve using 2x2 ([A, 0 * A; 0, A]) blocked operator
+    {
+        BlockedOperatorStructure<BFT, RT> structure;
+        structure.setBlock(0, 0, fixture.lhsOp);
+        structure.setBlock(0, 1, 0. * fixture.lhsOp);
+        structure.setBlock(1, 1, fixture.lhsOp);
+        
+        BlockedBoundaryOperator<BFT, RT> lhsBlockedOp(structure);
+        std::vector<GridFunction<BFT, RT> > blockedRhs(2);
+        blockedRhs[0] = fixture.rhs;
+        blockedRhs[1] = 2. * fixture.rhs;
+
+        IterSolver solver(
+            lhsBlockedOp, IterSolver::TEST_CONVERGENCE_IN_RANGE);       
         solver.initializeSolver(defaultGmresParameterList(solverTol));
         BlockedSolution<BFT, RT> solution = solver.solve(blockedRhs);
         arma::Col<RT> solutionVectorBlock0 = solution.gridFunction(0).coefficients();
