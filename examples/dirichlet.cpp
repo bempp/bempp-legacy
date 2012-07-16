@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
     // Initialize the spaces
 
     PiecewiseLinearContinuousScalarSpace<BFT> HplusHalfSpace(*grid);
-    PiecewiseLinearContinuousScalarSpace<BFT> HminusHalfSpace(*grid);
+    PiecewiseConstantScalarSpace<BFT> HminusHalfSpace(*grid);
 
     HplusHalfSpace.assignDofs();
     HminusHalfSpace.assignDofs();
@@ -165,7 +165,7 @@ int main(int argc, char* argv[])
     std::cout << "Initialize solver" << std::endl;
 
 #ifdef WITH_TRILINOS
-    DefaultIterativeSolver<BFT, RT> solver(slpOp, DefaultIterativeSolver<BFT, RT>::TEST_CONVERGENCE_IN_RANGE);
+    DefaultIterativeSolver<BFT, RT> solver(slpOp);
     solver.initializeSolver(defaultGmresParameterList(1e-5));
     Solution<BFT, RT> solution = solver.solve(rhs);
     std::cout << solution.solverMessage() << std::endl;
@@ -188,12 +188,12 @@ int main(int argc, char* argv[])
     // Uncomment the block below if you are solving the problem on a sphere and
     // you want to compare the numerical and analytical solution.
 
-    arma::Col<RT> solutionCoefficients = solFun.coefficients();
+    // arma::Col<RT> solutionCoefficients = solFun.coefficients();
     // std::cout << solutionCoefficients << std::endl;
 
-    arma::Col<RT> deviation = solutionCoefficients - static_cast<RT>(-1.);
-    // % in Armadillo -> elementwise multiplication
-    RT stdDev = sqrt(arma::accu(deviation % deviation) /
-                     static_cast<RT>(solutionCoefficients.n_rows));
-    std::cout << "Standard deviation: " << stdDev << std::endl;
+    // arma::Col<RT> deviation = solutionCoefficients - static_cast<RT>(-1.);
+    // // % in Armadillo -> elementwise multiplication
+    // RT stdDev = sqrt(arma::accu(deviation % deviation) /
+    //                  static_cast<RT>(solutionCoefficients.n_rows));
+    // std::cout << "Standard deviation: " << stdDev << std::endl;
 }
