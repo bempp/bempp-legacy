@@ -223,6 +223,9 @@ def createDefaultIterativeSolver(boundaryOperator, gridFunction):
 from core import defaultGmresParameterList
 from core import defaultCgParameterList
 
+def createAccuracyOptions():
+    "Return an AccuracyOptions object"
+    return core.AccuracyOptions()
 
 
 

@@ -43,6 +43,11 @@ namespace Bempp
     %apply const arma::Col<unsigned int>& IN_COL {
         const arma::Col<unsigned int>& nElements
     };
+
+    %pythonappend createStructuredGrid %{
+      val.topology = args[0]
+	%}
+
     static std::auto_ptr<Bempp::Grid> createStructuredGrid(
             const std::string& topology,
             const arma::Col<Bempp::ctype>& lowerLeft, 
@@ -56,6 +61,10 @@ namespace Bempp
     %clear const arma::Col<ctype>& upperRight;
     %clear const arma::Col<unsigned int>& nElements;
     %ignore createStructuredGrid;
+
+    %pythonappend importGmshGrid %{
+      val.topology = args[0]
+	%}
     
     %feature("compactdefaultargs") importGmshGrid;
     static std::auto_ptr<Bempp::Grid> importGmshGrid(

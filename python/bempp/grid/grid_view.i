@@ -26,6 +26,18 @@
     }
 }
 
+%apply arma::Mat<double>& ARGOUT_MAT {
+       arma::Mat<double>& vertices
+};
+
+%apply arma::Mat<int>&  ARGOUT_MAT {
+  arma::Mat<int>& elementCorners
+    };
+
+%apply arma::Mat<char>& ARGOUT_MAT {
+  arma::Mat<char>& auxData
+    };
+
 
 namespace Bempp 
 {
@@ -95,3 +107,7 @@ namespace Bempp
 } // namespace Bempp
 
 %include "grid/grid_view.hpp"
+
+%clear arma::Mat<double>& vertices;
+%clear arma::Mat<int>& elementCorners;
+%clear arma::Mat<char>& auxData;
