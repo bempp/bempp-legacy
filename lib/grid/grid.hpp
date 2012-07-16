@@ -22,6 +22,7 @@
 #define bempp_grid_hpp
 
 #include "../common/common.hpp"
+#include "grid_parameters.hpp"
 
 #include <memory>
 
@@ -72,6 +73,10 @@ public:
 
     /** \brief View of the leaf entities. */
     virtual std::auto_ptr<GridView> leafView() const = 0;
+
+    /** \brief Return the topology of the grid */
+
+    virtual GridParameters::Topology topology() const = 0;
 
     /** \brief Factory able to construct empty geometries of codimension 0
      compatible with this grid.

@@ -175,10 +175,9 @@ public:
                      const char* fileNamesBase, const char* filesPath = 0,
                      VtkWriter::OutputType type = VtkWriter::ASCII) const;
 
-private:
     /** \brief Evaluate function at either vertices or barycentres. */
     void evaluateAtSpecialPoints(
-            VtkWriter::DataType dataType, arma::Mat<ResultType>& result) const;
+            VtkWriter::DataType dataType, arma::Mat<ResultType>& result_) const;
 
 private:
     shared_ptr<const Context<BasisFunctionType, ResultType> > m_context;

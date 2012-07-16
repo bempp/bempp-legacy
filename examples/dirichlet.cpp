@@ -99,6 +99,8 @@ int main(int argc, char* argv[])
     }
     std::auto_ptr<Grid> grid = loadTriangularMeshFromFile(argv[1]);
 
+    //std::cout << grid->gridTopology() << std::endl;
+
     // Initialize the spaces
 
     PiecewiseLinearContinuousScalarSpace<BFT> HplusHalfSpace(*grid);

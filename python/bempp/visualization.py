@@ -29,7 +29,7 @@ except ImportError:
 def getTvtkGrid(grid):
     """Return a TVTK Object containing the grid"""
 
-    if grid.topology=="triangular":
+    if grid.topology()=="triangular":
         (points,elems,auxData) = grid.leafView().getRawElementData()
         elem_list = elems[:-1,:].T
         mesh = tvtk.PolyData()
@@ -39,17 +39,84 @@ def getTvtkGrid(grid):
         raise TypeError("Visualization of this grid topology not implemented!")
     return mesh
 
-def plotGrid(grid):
-    """Plot a grid using Tvtk"""
+def plotTvtkActors(tvtkActors):
+    """Plot a number of TVTK actors in the same plot"""
+
+    import collections
+
+    v = mlab.figure()
+    if isinstance(tvtkActors, collections.Iterable):
+        for actor in tvtkActors: v.scene.add_actor(actor) # Input is iterable
+    else:
+        v.scene.add_actor(tvtkActors)  # Input is not iteratble
+    mlab.show()
+
+
+def gridActor(grid):
+    """Return a grid actor using TVTK"""
 
     mesh = getTvtkGrid(grid)
     mapper = tvtk.DataSetMapper(input=mesh)
     actor  = tvtk.Actor(mapper=mapper)
     actor.property.representation = 'w'
     actor.property.ambient = 1
-    v = mlab.figure()
-    v.scene.add_actor(actor)
-    mlab.show()
+    return actor
+    
+
+def gridFunctionActor(gridFun,data_type='vertex_data',transformation='real'):
+    """Plot a grid function usint TVTK"""
+
+    if not data_type in ["cell_data", "vertex_data"]:
+        raise ValueError("Unknown mode specified. Valid modes are 'vertex_data' and 'cell_data'!")
+
+    if not hasattr(transformation, '__call__'):
+        if transformation=='real':
+            data_transform = lambda x:np.real(x)
+        elif transformation=='imag':
+            data_transform = lambda x:np.imag(x)
+        elif transformation=='abs':
+            data_transform = lambda x:np.abs(x)
+        else:
+            raise ValueError("Unknown value for 'transformation'. It needs to be 'real', 'imag', 'abs' or a Python Callable!")
+    else:
+        data_transform = transformation
+
+    data_transform = np.vectorize(data_transform)
+
+    mesh = getTvtkGrid(gridFun.grid())
+    if data_type=="vertex_data":
+        values = gridFun.evaluateAtSpecialPoints("vertex_data").flatten()
+        tvtk_data = mesh.point_data
+    elif data_type=="cell_data":
+        values = gridFun.evaluateAtSpecialPoints("cell_data").flatten()
+        tvtk_data = mesh.cell_data
+
+    values = data_transform(values)
+
+    tvtk_data.scalars = values
+    mapper = tvtk.DataSetMapper(input = mesh)
+    mapper.scalar_range = tvtk_data.scalars.range
+    actor = tvtk.Actor(mapper=mapper)
+    return actor
+
+def legendActor(actor):
+    """Return a legend object for the specified actor"""
+
+    scalar_bar = tvtk.ScalarBarActor()
+    scalar_bar.lookup_table = actor.mapper.lookup_table
+    return scalar_bar
+
+def plotGridFunction(*args,**kwargs):
+    """Simple grid function plotter"""
+
+    fun = gridFunctionActor(*args,**kwargs)
+    legend = legendActor(fun)
+    plotTvtkActors([fun,legend])
+    
+    
+
+    
+
     
     
     
