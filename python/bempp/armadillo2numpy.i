@@ -285,6 +285,7 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
  * below applies all of the typemaps above to the specified data type.
  */
 %arma_numpy_typemaps(signed char       , NPY_BYTE     )
+%arma_numpy_typemaps(char              , NPY_CHAR     )
 %arma_numpy_typemaps(unsigned char     , NPY_UBYTE    )
 %arma_numpy_typemaps(short             , NPY_SHORT    )
 %arma_numpy_typemaps(unsigned short    , NPY_USHORT   )
