@@ -78,6 +78,15 @@ struct AcaOptions
      *
      *  Default value: true. */
     bool globalAssemblyBeforeCompression;
+    /** \brief Recompress ACA matrix after construction?
+     *
+     *  If true, blocks of H matrices are agglomerated in an attempt to reduce
+     *  memory consumption.
+     *
+     *  Warning: this procedure is not parallelised yet, therefore it may be
+     *  slow.
+     *
+     *  Default value: false. */
     bool recompress;
     /** \brief If true, hierarchical matrix structure will be written in
      *  PostScript format at the end of the assembly procedure.

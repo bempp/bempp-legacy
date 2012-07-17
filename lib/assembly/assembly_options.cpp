@@ -35,7 +35,7 @@ AcaOptions::AcaOptions() :
     maximumBlockSize(std::numeric_limits<unsigned int>::max()),
     maximumRank(std::numeric_limits<unsigned int>::max()),
     globalAssemblyBeforeCompression(true),
-    recompress(true),
+    recompress(false),
     outputPostscript(false),
     outputFname("aca.ps"),
     scaling(1.0)

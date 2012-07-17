@@ -371,6 +371,13 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     std::cout << "ACA loop took " << (loopEnd - loopStart).seconds() << " s"
               << std::endl;
 
+    // TODO: parallelise!
+    if (acaOptions.recompress) {
+        std::cout << "About to start ACA agglomeration" << std::endl;
+        agglH(bemBlclusterTree.get(), blocks.get(),
+              acaOptions.eps, acaOptions.maximumRank);
+        std::cout << "Agglomeration finished" << std::endl;
+    }
 
     // // Dump timing data of individual chunks
     //    std::cout << "\nChunks:\n";
