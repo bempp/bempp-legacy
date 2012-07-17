@@ -36,7 +36,6 @@ namespace tbb
 inline size_t tbb_hasher(
         const boost::shared_ptr<const Bempp::AbstractBoundaryOperatorId>& id)
 {
-    std::cout << "tbb_hasher<sp<ABId> >(): " << id->hash() << std::endl;
     return id->hash();
 }
 
