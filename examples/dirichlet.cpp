@@ -146,7 +146,7 @@ int main(int argc, char* argv[])
 
     // Form the right-hand side sum
 
-    //BoundaryOperator<BFT, RT> rhsOp = -0.5 * id + dlpOp;
+    BoundaryOperator<BFT, RT> rhsOp = -0.5 * id + dlpOp;
 
     // We also want a grid function
 
@@ -160,8 +160,7 @@ int main(int argc, char* argv[])
 
     std::cout << "Assemble rhs" << std::endl;
 
-    //GridFunction<BFT, RT> rhs = rhsOp * u;
-    GridFunction<BFT, RT> rhs = u;
+    GridFunction<BFT, RT> rhs = rhsOp * u;
 
     // Initialize the solver
 
@@ -199,25 +198,6 @@ int main(int argc, char* argv[])
     // RT stdDev = sqrt(arma::accu(deviation % deviation) /
     //                  static_cast<RT>(solutionCoefficients.n_rows));
     // std::cout << "Standard deviation: " << stdDev << std::endl;
-
-    Laplace3dSingleLayerPotentialOperator<BFT, RT> slp;
-    const int evaluationPointCount = 11;
-    arma::Mat<CT> evaluationPoints(3, evaluationPointCount);
-    evaluationPoints.fill(0.);
-    for (int i = 0; i < evaluationPointCount; ++i)
-        evaluationPoints(2, i) = 2. + i / 10.;
-
-    EvaluationOptions evaluationOptions;
-    arma::Mat<RT> slpOfTrace1 =
-            slp.evaluateAtPoints(solFun, evaluationPoints,
-                                 quadStrategy, evaluationOptions);
-    std::ofstream out("slp-of-trace-1.txt");
-    out << "# z numerical_SLP exact_SLP\n";
-    for (int i = 0; i < evaluationPointCount; ++i)
-        out << std::setprecision(17)
-            << evaluationPoints(2, i) << " "
-            << slpOfTrace1(0, i) << " "
-            << 1. / evaluationPoints(2, i) <<"\n";
 
 
 }
