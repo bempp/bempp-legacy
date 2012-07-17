@@ -64,12 +64,10 @@ wrapInTrilinosVector(arma::Col<ValueType>& col)
 template <typename BasisFunctionType, typename ResultType> 
 struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
 {
-    typedef typename Solver<BasisFunctionType, ResultType>::ConvergenceTestMode
-    ConvergenceTestMode;
 
     // Constructor for non-blocked operators
     Impl(const BoundaryOperator<BasisFunctionType, ResultType>& op_,
-         ConvergenceTestMode mode_) :
+         ConvergenceTestMode::Mode mode_) :
         op(op_),
         mode(mode_)
     {
@@ -77,13 +75,13 @@ struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
         typedef Solver<BasisFunctionType, ResultType> Solver_;
         const BoundaryOp& boundaryOp = boost::get<BoundaryOp>(op);
 
-        if (mode == Solver_::TEST_CONVERGENCE_IN_DUAL_TO_RANGE) {
+        if (mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE) {
             solverWrapper.reset(
                         new BelosSolverWrapper<ResultType>(
                             Teuchos::rcp<const Thyra::LinearOpBase<ResultType> >(
                                 boundaryOp.weakForm())));
         }
-        else if (mode == Solver_::TEST_CONVERGENCE_IN_RANGE) {
+        else if (mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_RANGE) {
             BoundaryOp id = identityOperator(
                         boundaryOp.context(), boundaryOp.range(), boundaryOp.range(),
                         boundaryOp.dualToRange(), "I");
@@ -105,7 +103,7 @@ struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
 
     // Constructor for blocked operators
     Impl(const BlockedBoundaryOperator<BasisFunctionType, ResultType>& op_,
-         ConvergenceTestMode mode_) :
+         ConvergenceTestMode::Mode mode_) :
         op(op_),
         mode(mode_),
         solverWrapper(new BelosSolverWrapper<ResultType>(
@@ -116,13 +114,13 @@ struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
         typedef Solver<BasisFunctionType, ResultType> Solver_;
         const BoundaryOp& boundaryOp = boost::get<BoundaryOp>(op);
 
-        if (mode == Solver_::TEST_CONVERGENCE_IN_DUAL_TO_RANGE) {
+        if (mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE) {
             solverWrapper.reset(
                         new BelosSolverWrapper<ResultType>(
                             Teuchos::rcp<const Thyra::LinearOpBase<ResultType> >(
                                 boundaryOp.weakForm())));
         }
-        else if (mode == Solver_::TEST_CONVERGENCE_IN_RANGE) {
+        else if (mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_RANGE) {
             // Construct a block-diagonal operator composed of pseudoinverses 
             // for appropriate spaces
             BlockedOperatorStructure<BasisFunctionType, ResultType> pinvIdStructure;
@@ -164,7 +162,7 @@ struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
     boost::variant<
         BoundaryOperator<BasisFunctionType, ResultType>,
         BlockedBoundaryOperator<BasisFunctionType, ResultType> > op;
-    ConvergenceTestMode mode;
+    ConvergenceTestMode::Mode mode;
     boost::scoped_ptr<BelosSolverWrapper<ResultType> > solverWrapper;
     boost::variant<
         BoundaryOperator<BasisFunctionType, ResultType>,
@@ -174,7 +172,7 @@ struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
 template <typename BasisFunctionType, typename ResultType>
 DefaultIterativeSolver<BasisFunctionType, ResultType>::DefaultIterativeSolver(
         const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
-        typename Base::ConvergenceTestMode mode) :
+        ConvergenceTestMode::Mode mode) :
     m_impl(new Impl(boundaryOp, mode))
 {
 }
@@ -182,7 +180,7 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::DefaultIterativeSolver(
 template <typename BasisFunctionType, typename ResultType>
 DefaultIterativeSolver<BasisFunctionType, ResultType>::DefaultIterativeSolver(
         const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
-        typename Base::ConvergenceTestMode mode) :
+        ConvergenceTestMode::Mode mode) :
     m_impl(new Impl(boundaryOp, mode))
 {
 }
@@ -227,7 +225,7 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::solveImplNonblocked(
     // Construct rhs vector
     Vector<ResultType> projectionsVector(rhs.projections());
     Teuchos::RCP<TrilinosVector> rhsVector;
-    if (m_impl->mode == Base::TEST_CONVERGENCE_IN_DUAL_TO_RANGE)
+    if (m_impl->mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE)
         rhsVector = Teuchos::rcpFromRef(projectionsVector);
     else {
         const size_t size = boundaryOp->range()->globalDofCount();
@@ -285,7 +283,7 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::solveImplBlocked(
     }        
     Vector<ResultType> projectionsVector(armaProjections);
     Teuchos::RCP<TrilinosVector> rhsVector;
-    if (m_impl->mode == Base::TEST_CONVERGENCE_IN_DUAL_TO_RANGE)
+    if (m_impl->mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE)
         rhsVector = Teuchos::rcpFromRef(projectionsVector);
     else {
         const size_t rhsSize = boundaryOp->totalGlobalDofCountInRanges();

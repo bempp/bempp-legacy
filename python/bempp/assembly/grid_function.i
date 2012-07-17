@@ -44,6 +44,26 @@ gridFunctionFromPythonSurfaceNormalDependentFunctor(
 namespace Bempp
 {
 
+%typemap(in) (VtkWriter::DataType dataType)
+{
+    if (!PyString_Check($input))
+    {
+        PyErr_SetString(PyExc_TypeError, "in method '$symname', argument $argnum: expected a string"); 
+        SWIG_fail;
+    }
+    const std::string s(PyString_AsString($input));
+    if (s == "cell_data")
+        $1 = Bempp::VtkWriter::CELL_DATA;
+    else if (s == "vertex_data")
+        $1 = Bempp::VtkWriter::VERTEX_DATA;
+    else
+    {
+        PyErr_SetString(PyExc_ValueError, "in method '$symname', argument $argnum: expected one of 'ascii', 'base64', 'appendedraw' or 'appendedbase64'");        
+        SWIG_fail;
+    }
+}
+
+
 BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
 
 %extend GridFunction
@@ -69,6 +89,23 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
     %apply arma::Col<std::complex<double> >& ARGOUT_COL {
         arma::Col<std::complex<double> >& col_out
     };
+
+    %apply arma::Mat< float >& ARGOUT_MAT {
+        arma::Mat< float >& result_
+    };
+
+    %apply arma::Mat< double >& ARGOUT_MAT {
+        arma::Mat< double >& result_
+    };
+
+    %apply arma::Mat< std::complex<float> >& ARGOUT_MAT {
+        arma::Mat<std::complex<flaot> >& result_
+    };
+
+    %apply arma::Mat< std::complex<double> >& ARGOUT_MAT {
+        arma::Mat<std::complex<double> >& result_
+    };
+
 
     void coefficients(arma::Col<ResultType>& col_out)
     {
@@ -135,7 +172,13 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromPythonSur
 %clear arma::Col<std::complex<float> >& col_out;
 %clear arma::Col<std::complex<float> >& col_out;
 
-} // namespace Bempp
+%clear arma::Mat<float>& result_;
+%clear arma::Mat<double>& result_;
+%clear arma::Mat<std::complex<float> >& result_;
+%clear arma::Mat<std::complex<float> >& result_;
+
+
+} // Namespace Bempp
 
 %pythoncode %{
 

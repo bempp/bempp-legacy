@@ -35,14 +35,19 @@ template <typename BasisFunctionType, typename ResultType> class BoundaryOperato
 template <typename BasisFunctionType, typename ResultType> class BlockedBoundaryOperator;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
 
+
+
+struct ConvergenceTestMode {
+    enum Mode {
+        TEST_CONVERGENCE_IN_DUAL_TO_RANGE,
+        TEST_CONVERGENCE_IN_RANGE
+    };
+};
+
 template <typename BasisFunctionType, typename ResultType>
 class Solver
 {
 public:
-    enum ConvergenceTestMode {
-        TEST_CONVERGENCE_IN_DUAL_TO_RANGE,
-        TEST_CONVERGENCE_IN_RANGE
-    };
 
     virtual ~Solver();
 
@@ -60,11 +65,11 @@ protected:
     static void checkConsistency(
         const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
         const GridFunction<BasisFunctionType, ResultType>& rhs,
-        ConvergenceTestMode mode);
+        ConvergenceTestMode::Mode mode);
     static void checkConsistency(
         const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
         const std::vector<GridFunction<BasisFunctionType, ResultType> >& rhs,
-        ConvergenceTestMode mode);
+        ConvergenceTestMode::Mode mode);
 
     static void constructBlockedGridFunction(
         const arma::Col<ResultType>& solution,

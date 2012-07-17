@@ -82,7 +82,7 @@ DefaultDirectSolver<BasisFunctionType, ResultType>::solveImplNonblocked(
             "from a BlockedBoundaryOperator the other solve() overload "
             "must be used");
     Solver<BasisFunctionType, ResultType>::checkConsistency(
-        *boundaryOp, rhs, Base::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
+        *boundaryOp, rhs, ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
 
     arma::Col<ResultType> armaSolution = arma::solve(
                 boundaryOp->weakForm()->asMatrix(),
@@ -112,7 +112,7 @@ DefaultDirectSolver<BasisFunctionType, ResultType>::solveImplBlocked(
             "from a (non-blocked) BoundaryOperator the other solve() overload "
             "must be used");
     Solver<BasisFunctionType, ResultType>::checkConsistency(
-        *boundaryOp, rhs, Base::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
+        *boundaryOp, rhs, ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
 
     // Construct the right-hand size vector
     arma::Col<ResultType> armaRhs(boundaryOp->totalGlobalDofCountInDualsToRanges());

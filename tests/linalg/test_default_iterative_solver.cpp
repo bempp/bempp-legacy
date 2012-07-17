@@ -30,6 +30,7 @@
 #include "assembly/blocked_boundary_operator.hpp"
 #include "assembly/blocked_operator_structure.hpp"
 #include "linalg/default_iterative_solver.hpp"
+#include "linalg/solver.hpp"
 
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
@@ -55,13 +56,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(both_convergence_testing_strategies_agree_for_dual
     const RealType solverTol = 1e-6;
 
     IterSolver solverDual(
-        fixture.lhsOp, IterSolver::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
+        fixture.lhsOp, ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
     solverDual.initializeSolver(defaultGmresParameterList(solverTol));
     Solution<BFT, RT> solutionDual = solverDual.solve(fixture.rhs);
     arma::Col<RT> solutionVectorDual = solutionDual.gridFunction().coefficients();
 
     IterSolver solverRange(
-        fixture.lhsOp, IterSolver::TEST_CONVERGENCE_IN_RANGE);
+        fixture.lhsOp, ConvergenceTestMode::TEST_CONVERGENCE_IN_RANGE);
     solverRange.initializeSolver(defaultGmresParameterList(solverTol));
     Solution<BFT, RT> solutionRange = solverRange.solve(fixture.rhs);
     arma::Col<RT> solutionVectorRange = solutionRange.gridFunction().coefficients();
@@ -87,7 +88,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(boundary_operator_agrees_with_trivial_1x1_blocked_
     // Solve using nonblocked operator
     {
         IterSolver solver(
-            fixture.lhsOp, IterSolver::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);       
+            fixture.lhsOp, ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
         solver.initializeSolver(defaultGmresParameterList(solverTol));
         Solution<BFT, RT> solution = solver.solve(fixture.rhs);
         solutionVectorNonblocked = solution.gridFunction().coefficients();
@@ -103,7 +104,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(boundary_operator_agrees_with_trivial_1x1_blocked_
         blockedRhs[0] = fixture.rhs;
 
         IterSolver solver(
-            lhsBlockedOp, IterSolver::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);       
+            lhsBlockedOp, ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
         solver.initializeSolver(defaultGmresParameterList(solverTol));
         BlockedSolution<BFT, RT> solution = solver.solve(blockedRhs);
         arma::Col<RT> solutionVectorBlocked = solution.gridFunction(0).coefficients();
@@ -130,7 +131,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(boundary_operator_agrees_with_diagonal_2x2_blocked
     // Solve using nonblocked operator
     {
         IterSolver solver(
-            fixture.lhsOp, IterSolver::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);       
+            fixture.lhsOp, ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
         solver.initializeSolver(defaultGmresParameterList(solverTol));
         Solution<BFT, RT> solution = solver.solve(fixture.rhs);
         solutionVectorNonblocked = solution.gridFunction().coefficients();
@@ -148,7 +149,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(boundary_operator_agrees_with_diagonal_2x2_blocked
         blockedRhs[1] = 2. * fixture.rhs;
 
         IterSolver solver(
-            lhsBlockedOp, IterSolver::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);       
+            lhsBlockedOp, ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
         solver.initializeSolver(defaultGmresParameterList(solverTol));
         BlockedSolution<BFT, RT> solution = solver.solve(blockedRhs);
         arma::Col<RT> solutionVectorBlock0 = solution.gridFunction(0).coefficients();
@@ -178,7 +179,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(boundary_operator_agrees_with_2x2_blocked_boundary
     // Solve using nonblocked operator
     {
         IterSolver solver(
-            fixture.lhsOp, IterSolver::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);       
+            fixture.lhsOp, ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
         solver.initializeSolver(defaultGmresParameterList(solverTol));
         Solution<BFT, RT> solution = solver.solve(fixture.rhs);
         solutionVectorNonblocked = solution.gridFunction().coefficients();
@@ -197,7 +198,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(boundary_operator_agrees_with_2x2_blocked_boundary
         blockedRhs[1] = 2. * fixture.rhs;
 
         IterSolver solver(
-            lhsBlockedOp, IterSolver::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);       
+            lhsBlockedOp, ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
         solver.initializeSolver(defaultGmresParameterList(solverTol));
         BlockedSolution<BFT, RT> solution = solver.solve(blockedRhs);
         arma::Col<RT> solutionVectorBlock0 = solution.gridFunction(0).coefficients();
@@ -228,7 +229,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(boundary_operator_agrees_with_trivial_1x1_blocked_
     // Solve using nonblocked operator
     {
         IterSolver solver(
-            fixture.lhsOp, IterSolver::TEST_CONVERGENCE_IN_RANGE);       
+            fixture.lhsOp, ConvergenceTestMode::TEST_CONVERGENCE_IN_RANGE);
         solver.initializeSolver(defaultGmresParameterList(solverTol));
         Solution<BFT, RT> solution = solver.solve(fixture.rhs);
         solutionVectorNonblocked = solution.gridFunction().coefficients();
@@ -244,7 +245,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(boundary_operator_agrees_with_trivial_1x1_blocked_
         blockedRhs[0] = fixture.rhs;
 
         IterSolver solver(
-            lhsBlockedOp, IterSolver::TEST_CONVERGENCE_IN_RANGE);       
+            lhsBlockedOp, ConvergenceTestMode::TEST_CONVERGENCE_IN_RANGE);
         solver.initializeSolver(defaultGmresParameterList(solverTol));
         BlockedSolution<BFT, RT> solution = solver.solve(blockedRhs);
         arma::Col<RT> solutionVectorBlocked = solution.gridFunction(0).coefficients();
@@ -273,7 +274,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(boundary_operator_agrees_with_diagonal_2x2_blocked
     // Solve using nonblocked operator
     {
         IterSolver solver(
-            fixture.lhsOp, IterSolver::TEST_CONVERGENCE_IN_RANGE);       
+            fixture.lhsOp, ConvergenceTestMode::TEST_CONVERGENCE_IN_RANGE);
         solver.initializeSolver(defaultGmresParameterList(solverTol));
         Solution<BFT, RT> solution = solver.solve(fixture.rhs);
         solutionVectorNonblocked = solution.gridFunction().coefficients();
@@ -291,7 +292,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(boundary_operator_agrees_with_diagonal_2x2_blocked
         blockedRhs[1] = 2. * fixture.rhs;
 
         IterSolver solver(
-            lhsBlockedOp, IterSolver::TEST_CONVERGENCE_IN_RANGE);       
+            lhsBlockedOp, ConvergenceTestMode::TEST_CONVERGENCE_IN_RANGE);
         solver.initializeSolver(defaultGmresParameterList(solverTol));
         BlockedSolution<BFT, RT> solution = solver.solve(blockedRhs);
         arma::Col<RT> solutionVectorBlock0 = solution.gridFunction(0).coefficients();
@@ -322,7 +323,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(boundary_operator_agrees_with_2x2_blocked_boundary
     // Solve using nonblocked operator
     {
         IterSolver solver(
-            fixture.lhsOp, IterSolver::TEST_CONVERGENCE_IN_RANGE);       
+            fixture.lhsOp, ConvergenceTestMode::TEST_CONVERGENCE_IN_RANGE);
         solver.initializeSolver(defaultGmresParameterList(solverTol));
         Solution<BFT, RT> solution = solver.solve(fixture.rhs);
         solutionVectorNonblocked = solution.gridFunction().coefficients();
@@ -341,7 +342,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(boundary_operator_agrees_with_2x2_blocked_boundary
         blockedRhs[1] = 2. * fixture.rhs;
 
         IterSolver solver(
-            lhsBlockedOp, IterSolver::TEST_CONVERGENCE_IN_RANGE);       
+            lhsBlockedOp, ConvergenceTestMode::TEST_CONVERGENCE_IN_RANGE);
         solver.initializeSolver(defaultGmresParameterList(solverTol));
         BlockedSolution<BFT, RT> solution = solver.solve(blockedRhs);
         arma::Col<RT> solutionVectorBlock0 = solution.gridFunction(0).coefficients();

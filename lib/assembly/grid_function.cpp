@@ -453,7 +453,7 @@ void GridFunction<BasisFunctionType, ResultType>::exportToVtk(
 
 template <typename BasisFunctionType, typename ResultType>
 void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
-        VtkWriter::DataType dataType, arma::Mat<ResultType>& result) const
+        VtkWriter::DataType dataType, arma::Mat<ResultType>& result_) const
 {
     BOOST_ASSERT_MSG(m_space, "GridFunction::evaluateAtSpecialPoints() must "
                      "not be called on an uninitialised GridFunction object");
@@ -471,9 +471,9 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
     const size_t elementCount = view->entityCount(elementCodim);
     const size_t vertexCount = view->entityCount(vertexCodim);
 
-    result.set_size(codomainDimension(),
+    result_.set_size(codomainDimension(),
                     dataType == VtkWriter::CELL_DATA ? elementCount : vertexCount);
-    result.fill(0.);
+    result_.fill(0.);
 
     // Number of elements contributing to each column in result
     // (this will be greater than 1 for VERTEX_DATA)
@@ -636,7 +636,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
 
             if (dataType == VtkWriter::CELL_DATA)
                 for (int dim = 0; dim < codomainDim; ++dim)
-                    result(dim, e) = functionValues[0](     // array index
+                    result_(dim, e) = functionValues[0](     // array index
                                                        dim, // component
                                                        0,   // function index
                                                        0);  // point index
@@ -646,7 +646,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
                 for (int c = 0; c < activeCornerCount; ++c) {
                     int vertexIndex = rawGeometry.elementCornerIndices()(c, e);
                     for (int dim = 0; dim < codomainDim; ++dim)
-                        result(dim, vertexIndex) += functionValues[0](dim, 0, c);
+                        result_(dim, vertexIndex) += functionValues[0](dim, 0, c);
                     ++multiplicities[vertexIndex];
                 }
             }
@@ -656,7 +656,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
     // Take average of the vertex values obtained in each of the adjacent elements
     if (dataType == VtkWriter::VERTEX_DATA)
         for (size_t v = 0; v < vertexCount; ++v)
-            result.col(v) /= multiplicities[v];
+            result_.col(v) /= multiplicities[v];
 }
 
 template <typename BasisFunctionType, typename ResultType>
