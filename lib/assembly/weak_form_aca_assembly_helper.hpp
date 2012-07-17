@@ -70,6 +70,7 @@ public:
      *  by \p b1, \p n1, \p b2, \p n2 (in permuted ordering) in data. */
     void cmpbl(unsigned b1, unsigned n1, unsigned b2, unsigned n2,
                AhmedResultType* data) const;
+
     /** \brief Evaluate entries of a symmetric block.
      *
      * Store the upper part of the (symmetric) block defined
@@ -80,14 +81,20 @@ public:
     MagnitudeType scale(unsigned b1, unsigned n1, unsigned b2, unsigned n2) const;
 
 private:
+    /** \brief Type used to index matrices.
+     *
+     *  Equivalent to either GlobalDofIndex (if m_indexWithGlobalDofs is true)
+     *  or FlatLocalDofIndex (if m_indexWithGlobalDofs is false). */
+    typedef int DofIndex;
+
     /** Find the elements and local DOF indices that correspond
-        to the global DOF indices stored in the entries [start, start + length)
+        to the global DOF indices stored in the entries [start, start + indexCount)
         of array p2o. */
     void findLocalDofs(int start,
-                       int globalDofCount,
+                       int indexCount,
                        const std::vector<unsigned int>& p2o,
                        const Space<BasisFunctionType>& space,
-                       std::vector<GlobalDofIndex>& globalDofIndices,
+                       std::vector<DofIndex>& originalIndices,
                        std::vector<int>& elementIndices,
                        std::vector<std::vector<LocalDofIndex> >& localDofIndices,
                        std::vector<std::vector<int> >& arrayIndices) const;
@@ -102,6 +109,7 @@ private:
     const std::vector<ResultType>& m_denseTermsMultipliers;
     const std::vector<ResultType>& m_sparseTermsMultipliers;
     const AssemblyOptions& m_options;
+    bool m_indexWithGlobalDofs;
 };
 
 } // namespace Bempp

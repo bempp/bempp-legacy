@@ -19,21 +19,24 @@
 // THE SOFTWARE.
 
 #include "config_ahmed.hpp"
+#include "config_trilinos.hpp"
 
 #include "aca_global_assembler.hpp"
 
 #include "assembly_options.hpp"
 #include "index_permutation.hpp"
+#include "discrete_boundary_operator_composition.hpp"
+#include "discrete_sparse_boundary_operator.hpp"
 
+#include "../common/armadillo_fwd.hpp"
 #include "../common/auto_timer.hpp"
+#include "../common/boost_shared_array_fwd.hpp"
 #include "../common/chunk_statistics.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/local_assembler_for_operators.hpp"
 #include "../fiber/scalar_traits.hpp"
 #include "../space/space.hpp"
 
-#include "../common/armadillo_fwd.hpp"
-#include "../common/boost_shared_array_fwd.hpp"
 #include <stdexcept>
 #include <iostream>
 
@@ -166,7 +169,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
         const std::vector<LocalAssembler*>& localAssemblers,
-        const std::vector<const DiscreteLinOp*>& sparseTermsToAdd,
+        const std::vector<const DiscreteBndOp*>& sparseTermsToAdd,
         const std::vector<ResultType>& denseTermsMultipliers,
         const std::vector<ResultType>& sparseTermsMultipliers,
         const AssemblyOptions& options,
@@ -177,9 +180,20 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     typedef DiscreteAcaBoundaryOperator<ResultType> DiscreteAcaLinOp;
 
     const AcaOptions& acaOptions = options.acaOptions();
+    const bool indexWithGlobalDofs = acaOptions.globalAssemblyBeforeCompression;
 
-    const size_t testDofCount = testSpace.globalDofCount();
-    const size_t trialDofCount = trialSpace.globalDofCount();
+#ifndef WITH_TRILINOS
+    if (!indexWithGlobalDofs)
+        throw std::runtime_error("AcaGlobalAssembler::assembleDetachedWeakForm(): "
+                                 "ACA assembly with globalAssemblyBeforeCompression "
+                                 "set to false requires BEM++ to be linked with "
+                                 "Trilinos");
+#endif // WITH_TRILINOS
+
+    const size_t testDofCount = indexWithGlobalDofs ?
+                testSpace.globalDofCount() : testSpace.flatLocalDofCount();
+    const size_t trialDofCount = indexWithGlobalDofs ?
+                trialSpace.globalDofCount() : trialSpace.flatLocalDofCount();
 
     if (symmetric && testDofCount != trialDofCount)
         throw std::invalid_argument("AcaGlobalAssembler::assembleDetachedWeakForm(): "
@@ -206,8 +220,13 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         p2oTrialDofs[i] = i;
 
     std::vector<Point3D<CoordinateType> > trialDofCenters, testDofCenters;
-    trialSpace.globalDofPositions(trialDofCenters);
-    testSpace.globalDofPositions(testDofCenters);
+    if (indexWithGlobalDofs) {
+        trialSpace.globalDofPositions(trialDofCenters);
+        testSpace.globalDofPositions(testDofCenters);
+    } else {
+        trialSpace.flatLocalDofPositions(trialDofCenters);
+        testSpace.flatLocalDofPositions(testDofCenters);
+    }
 
     // Use static_cast to convert from a pointer to Point3D to a pointer to its
     // descendant AhmedDofWrapper, which does not contain any new data members,
@@ -265,8 +284,6 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 #ifndef NDEBUG
     std::cout << "Double cluster count: " << blockCount << std::endl;
 #endif
-
-    std::auto_ptr<DiscreteLinOp> result;
 
     WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>
             helper(testSpace, trialSpace, p2oTestDofs, p2oTrialDofs,
@@ -349,6 +366,11 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                       Body(helper, leafClusters, blocks, acaOptions, done,
                            leafClusterIndexQueue, symmetric, chunkStats));
     tbb::tick_count loopEnd = tbb::tick_count::now();
+    std::cout << "\n"; // the progress bar doesn't print the final \n
+
+    std::cout << "ACA loop took " << (loopEnd - loopStart).seconds() << " s"
+              << std::endl;
+
 
     // // Dump timing data of individual chunks
     //    std::cout << "\nChunks:\n";
@@ -365,8 +387,6 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     //                      << blocks[blockIndex]->islwr() << "\t"
     //                      << (blocks[blockIndex]->islwr() ? blocks[blockIndex]->rank() : 0) << "\n";
     //        }
-
-    std::cout << "\nTotal time: " << (loopEnd - loopStart).seconds() << std::endl;
 
     {
         size_t origMemory = sizeof(ResultType) * testDofCount * trialDofCount;
@@ -396,19 +416,41 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         }
     }
 
-    result = std::auto_ptr<DiscreteLinOp>(
+    std::auto_ptr<DiscreteBndOp> acaOp(
                 new DiscreteAcaLinOp(testDofCount, trialDofCount,
                                      acaOptions.maximumRank,
                                      symmetric,
                                      bemBlclusterTree, blocks,
                                      IndexPermutation(o2pTrialDofs),
                                      IndexPermutation(o2pTestDofs)));
+
+    std::auto_ptr<DiscreteBndOp> result;
+    if (indexWithGlobalDofs)
+        result = acaOp;
+    else {
+#ifdef WITH_TRILINOS
+        // without Trilinos, this code will never be reached -- an exception
+        // will be thrown earlier in this function
+        typedef DiscreteBoundaryOperatorComposition<ResultType> DiscreteBndOpComp;
+        shared_ptr<DiscreteBndOp> acaOpShared(acaOp.release());
+        shared_ptr<DiscreteBndOp> trialGlobalToLocal =
+                constructOperatorMappingGlobalToFlatLocalDofs<
+                BasisFunctionType, ResultType>(trialSpace);
+        shared_ptr<DiscreteBndOp> testLocalToGlobal =
+                constructOperatorMappingFlatLocalToGlobalDofs<
+                BasisFunctionType, ResultType>(testSpace);
+        shared_ptr<DiscreteBndOp> tmp(
+                    new DiscreteBndOpComp(acaOpShared, trialGlobalToLocal));
+        result.reset(new DiscreteBndOpComp(testLocalToGlobal, tmp));
+#endif // WITH_TRILINOS
+    }
     return result;
+
 #else // without Ahmed
     throw std::runtime_error("AcaGlobalAssembler::assembleDetachedWeakForm(): "
                              "To enable assembly in ACA mode, recompile BEM++ "
                              "with the symbol WITH_AHMED defined.");
-#endif
+#endif // WITH_AHMED
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -421,7 +463,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         bool symmetric)
 {
     std::vector<LocalAssembler*> localAssemblers(1, &localAssembler);
-    std::vector<const DiscreteLinOp*> sparseTermsToAdd;
+    std::vector<const DiscreteBndOp*> sparseTermsToAdd;
     std::vector<ResultType> denseTermsMultipliers(1, 1.0);
     std::vector<ResultType> sparseTermsMultipliers;
 

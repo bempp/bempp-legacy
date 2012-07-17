@@ -68,6 +68,16 @@ struct AcaOptions
      *
      *  Default value: UINT_MAX. */
     unsigned int maximumRank;
+    /** \brief Do global assembly before ACA?
+     *
+     *  If true, ACA is performed on the assembled operator (i.e. the matrix is
+     *  indexed with global degrees of freedom). Otherwise ACA is performed on
+     *  matrix indexed with local degrees of freedom, and the global assembly
+     *  is done by pre- and postmultiplying the H matrix with sparse matrices
+     *  mapping local DOFs to global DOFs and vice versa.
+     *
+     *  Default value: true. */
+    bool globalAssemblyBeforeCompression;
     bool recompress;
     /** \brief If true, hierarchical matrix structure will be written in
      *  PostScript format at the end of the assembly procedure.

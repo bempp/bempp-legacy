@@ -24,10 +24,13 @@
 
 #include "../common/common.hpp"
 
+#include "../common/shared_ptr.hpp"
 #include "../fiber/scalar_traits.hpp"
 
 #include <memory>
 #include <vector>
+
+class Epetra_CrsMatrix;
 
 namespace Fiber
 {
@@ -49,20 +52,20 @@ class AcaGlobalAssembler
     typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
 
 public:
-    typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
+    typedef DiscreteBoundaryOperator<ResultType> DiscreteBndOp;
     typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
 
-    static std::auto_ptr<DiscreteLinOp> assembleDetachedWeakForm(
+    static std::auto_ptr<DiscreteBndOp> assembleDetachedWeakForm(
             const Space<BasisFunctionType>& testSpace,
             const Space<BasisFunctionType>& trialSpace,
             const std::vector<LocalAssembler*>& localAssemblers,
-            const std::vector<const DiscreteLinOp*>& sparseTermsToAdd,
+            const std::vector<const DiscreteBndOp*>& sparseTermsToAdd,
             const std::vector<ResultType>& denseTermsMultipliers,
             const std::vector<ResultType>& sparseTermsMultipliers,
             const AssemblyOptions& options,
             bool symmetric);
 
-    static std::auto_ptr<DiscreteLinOp> assembleDetachedWeakForm(
+    static std::auto_ptr<DiscreteBndOp> assembleDetachedWeakForm(
             const Space<BasisFunctionType>& testSpace,
             const Space<BasisFunctionType>& trialSpace,
             LocalAssembler& localAssembler,
