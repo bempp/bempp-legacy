@@ -128,6 +128,12 @@ size_t PiecewiseConstantScalarSpace<BasisFunctionType>::globalDofCount() const
 }
 
 template <typename BasisFunctionType>
+size_t PiecewiseConstantScalarSpace<BasisFunctionType>::flatLocalDofCount() const
+{
+    return globalDofCount();
+}
+
+template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::globalDofs(
         const Entity<0>& element, std::vector<GlobalDofIndex>& dofs) const
 {
@@ -144,6 +150,17 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::global2localDofs(
     localDofs.resize(globalDofs.size());
     for (size_t i = 0; i < globalDofs.size(); ++i)
         localDofs[i] = m_global2localDofs[globalDofs[i]];
+}
+
+template <typename BasisFunctionType>
+void PiecewiseConstantScalarSpace<BasisFunctionType>::flatLocal2localDofs(
+        const std::vector<FlatLocalDofIndex>& flatLocalDofs,
+        std::vector<LocalDof>& localDofs) const
+{
+    // Use the fact that each element contains exactly one DOF
+    localDofs.resize(flatLocalDofs.size());
+    for (size_t i = 0; i < flatLocalDofs.size(); ++i)
+        localDofs[i] = LocalDof(flatLocalDofs[i], 0 /* local DOF #0 */);
 }
 
 template <typename BasisFunctionType>
@@ -177,6 +194,12 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::globalDofPositions(
     }
 }
 
+template <typename BasisFunctionType>
+void PiecewiseConstantScalarSpace<BasisFunctionType>::flatLocalDofPositions(
+        std::vector<Point3D<CoordinateType> >& positions) const
+{
+    return globalDofPositions(positions);
+}
 
 template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::dumpClusterIds(

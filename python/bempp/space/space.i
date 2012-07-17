@@ -34,9 +34,11 @@ template<typename BasisFunctionType> class Space;
 %ignore globalDofs;
 
 %ignore global2localDofs;
+%ignore flatLocal2localDofs;
 
 // this function is only for internal use
 %ignore globalDofPositions;
+%ignore flatLocalDofPositions;
 
 %ignore dumpClusterIds;
 

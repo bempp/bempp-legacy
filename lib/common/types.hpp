@@ -37,6 +37,7 @@ using Fiber::ALL_DOFS;
 typedef int ElementVariant;
 typedef int EntityIndex;
 typedef int GlobalDofIndex;
+typedef int FlatLocalDofIndex;
 typedef Fiber::LocalDofIndex LocalDofIndex;
 
 struct LocalDof

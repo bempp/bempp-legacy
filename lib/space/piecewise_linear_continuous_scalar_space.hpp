@@ -41,6 +41,7 @@ class PiecewiseLinearContinuousScalarSpace : public ScalarSpace<BasisFunctionTyp
 {
 public:
     typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
+    typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
 
     explicit PiecewiseLinearContinuousScalarSpace(Grid& grid);
     virtual ~PiecewiseLinearContinuousScalarSpace();
@@ -59,15 +60,34 @@ public:
     virtual void assignDofs();
     virtual bool dofsAssigned() const;
     virtual size_t globalDofCount() const;
+    virtual size_t flatLocalDofCount() const;
     virtual void globalDofs(const Entity<0>& element,
                             std::vector<GlobalDofIndex>& dofs) const;    
     virtual void global2localDofs(
             const std::vector<GlobalDofIndex>& globalDofs,
             std::vector<std::vector<LocalDof> >& localDofs) const;
+    virtual void flatLocal2localDofs(
+            const std::vector<FlatLocalDofIndex>& flatLocalDofs,
+            std::vector<LocalDof>& localDofs) const;
 
     virtual void globalDofPositions(std::vector<Point3D<CoordinateType> >& positions) const;
+    virtual void flatLocalDofPositions(std::vector<Point3D<CoordinateType> >& positions) const;
     virtual void dumpClusterIds(const char* fileName,
                                 const std::vector<unsigned int>& clusterIds) const;
+
+//private:
+//    virtual shared_ptr<DiscreteBoundaryOperator<CoordinateType> >
+//        global2localDofsOperatorRealImpl() const;
+//    virtual shared_ptr<DiscreteBoundaryOperator<ComplexType> >
+//        global2localDofsOperatorComplexImpl() const;
+//    virtual shared_ptr<DiscreteBoundaryOperator<CoordinateType> >
+//        local2globalDofsOperatorRealImpl() const;
+//    virtual shared_ptr<DiscreteBoundaryOperator<ComplexType> >
+//        local2globalDofsOperatorComplexImpl() const;
+
+    // void constructGlobal2localDofsMappingVectors(
+    //         std::vector<int>& rows, std::vector<int>& cols,
+    //         std::vector<double>& values) const;
 
 private:
     std::auto_ptr<GridView> m_view;
@@ -76,6 +96,8 @@ private:
     Fiber::PiecewiseLinearContinuousScalarBasis<4, BasisFunctionType> m_quadrilateralBasis;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
+    std::vector<LocalDof> m_flatLocal2localDofs;
+    size_t m_flatLocalDofCount;
 };
 
 } // namespace Bempp

@@ -22,8 +22,10 @@
 #define bempp_space_hpp
 
 #include "../common/common.hpp"
+#include "config_trilinos.hpp"
 
 #include "../common/not_implemented_error.hpp"
+#include "../common/shared_ptr.hpp"
 #include "../common/types.hpp"
 #include "../fiber/scalar_traits.hpp"
 
@@ -49,7 +51,7 @@ class Grid;
 template <int codim> class Entity;
 template <int codim> class EntityPointer;
 
-template <typename ValueType> class MassMatrixContainer;
+template <typename ValueType> class DiscreteBoundaryOperator;
 
 template <typename BasisFunctionType>
 class Space
@@ -108,9 +110,12 @@ public:
     /** \brief True if assignDofs() has been called before, false otherwise. */
     virtual bool dofsAssigned() const = 0;
 
+    /** \brief Total number of local degrees of freedom (on all elements). */
+    virtual size_t flatLocalDofCount() const = 0;
+
     /** \brief Number of global degrees of freedom.
 
-        \note Must not be called before asignDofs(). */
+        \note Must not be called before assignDofs(). */
     virtual size_t globalDofCount() const = 0;
     virtual void globalDofs(const Entity<0>& element,
                             std::vector<GlobalDofIndex>& dofs) const = 0;
@@ -118,12 +123,17 @@ public:
     virtual void global2localDofs(
             const std::vector<GlobalDofIndex>& globalDofs,
             std::vector<std::vector<LocalDof> >& localDofs) const = 0;
+    virtual void flatLocal2localDofs(
+            const std::vector<FlatLocalDofIndex>& flatLocalDofs,
+            std::vector<LocalDof>& localDofs) const = 0;
 
-    // This function is used only by the ACA assembler.
+    // These functions is used only by the ACA assembler.
     // For the moment, Point will always be 3D, independently from the
     // actual dimension of the space. Once Ahmed's bemcluster is made dimension-
     // independent, we may come up with a more elegant solution.
     virtual void globalDofPositions(
+            std::vector<Point3D<CoordinateType> >& positions) const = 0;
+    virtual void flatLocalDofPositions(
             std::vector<Point3D<CoordinateType> >& positions) const = 0;
 
     /** @}
@@ -141,6 +151,16 @@ protected:
 template <typename BasisFunctionType>
 void getAllBases(const Space<BasisFunctionType>& space,
         std::vector<const Fiber::Basis<BasisFunctionType>*>& bases);
+
+#ifdef WITH_TRILINOS
+template <typename BasisFunctionType, typename ResultType>
+shared_ptr<DiscreteBoundaryOperator<ResultType> >
+constructOperatorMappingGlobalToFlatLocalDofs(const Space<BasisFunctionType>& space);
+
+template <typename BasisFunctionType, typename ResultType>
+shared_ptr<DiscreteBoundaryOperator<ResultType> >
+constructOperatorMappingFlatLocalToGlobalDofs(const Space<BasisFunctionType>& space);
+#endif // WITH_TRILINOS
 
 } //namespace Bempp
 

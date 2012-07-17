@@ -20,6 +20,8 @@
 
 #include "piecewise_linear_continuous_scalar_space.hpp"
 
+#include "../assembly/discrete_sparse_boundary_operator.hpp"
+#include "../common/boost_make_shared_fwd.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../grid/entity.hpp"
 #include "../grid/entity_iterator.hpp"
@@ -41,7 +43,7 @@ namespace Bempp
 template <typename BasisFunctionType>
 PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
 PiecewiseLinearContinuousScalarSpace(Grid& grid) :
-     ScalarSpace<BasisFunctionType>(grid)
+    ScalarSpace<BasisFunctionType>(grid), m_flatLocalDofCount(0)
 {
     const int gridDim = grid.dim();
     if (gridDim != 1 && gridDim != 2)
@@ -156,16 +158,18 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofs()
 
     // Iterate over elements
     std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
-    int vertexCount;
+    m_flatLocalDofCount = 0;
     while (!it->finished())
     {
         const Entity<0>& element = it->entity();
         EntityIndex elementIndex = elementMapper.entityIndex(element);
 
+        int vertexCount;
         if (gridDim == 1)
             vertexCount = element.template subEntityCount<1>();
         else // gridDim == 2
             vertexCount = element.template subEntityCount<2>();
+        m_flatLocalDofCount += vertexCount;
 
         // List of global DOF indices corresponding to the local DOFs of the
         // current element
@@ -179,6 +183,14 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofs()
         }
         it->next();
     }
+
+    // Initialize the container mapping the flat local dof indices to 
+    // local dof indices
+    m_flatLocal2localDofs.clear();
+    m_flatLocal2localDofs.reserve(m_flatLocalDofCount);
+    for (size_t e = 0; e < m_local2globalDofs.size(); ++e)
+        for (size_t dof = 0; dof < m_local2globalDofs[e].size(); ++dof)
+            m_flatLocal2localDofs.push_back(LocalDof(e, dof));
 }
 
 template <typename BasisFunctionType>
@@ -192,6 +204,12 @@ template <typename BasisFunctionType>
 size_t PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::globalDofCount() const
 {
     return m_global2localDofs.size();
+}
+
+template <typename BasisFunctionType>
+size_t PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::flatLocalDofCount() const
+{
+    return m_flatLocalDofCount;
 }
 
 template <typename BasisFunctionType>
@@ -212,6 +230,96 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::global2localDofs(
     for (size_t i = 0; i < globalDofs.size(); ++i)
         localDofs[i] = m_global2localDofs[globalDofs[i]];
 }
+
+template <typename BasisFunctionType>
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::flatLocal2localDofs(
+        const std::vector<FlatLocalDofIndex>& flatLocalDofs,
+        std::vector<LocalDof>& localDofs) const
+{
+    localDofs.resize(flatLocalDofs.size());
+    for (size_t i = 0; i < flatLocalDofs.size(); ++i)
+        localDofs[i] = m_flatLocal2localDofs[flatLocalDofs[i]];
+}
+
+//template <typename BasisFunctionType>
+//shared_ptr<DiscreteBoundaryOperator<
+//typename PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::CoordinateType> >
+//PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
+//global2localDofsOperatorRealImpl() const
+//{
+//    std::vector<int> rows, cols;
+//    std::vector<double> values;
+//    constructGlobal2localDofsMappingVectors(rows, cols, values);
+//    return boost::make_shared<DiscreteSparseBoundaryOperator<CoordinateType> >(
+//                rows, cols, values);
+//}
+
+//template <typename BasisFunctionType>
+//shared_ptr<DiscreteBoundaryOperator<
+//typename PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::ComplexType> >
+//PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
+//global2localDofsOperatorComplexImpl() const
+//{
+//    std::vector<int> rows, cols;
+//    std::vector<double> values;
+//    constructGlobal2localDofsMappingVectors(rows, cols, values);
+//    return boost::make_shared<DiscreteSparseBoundaryOperator<ComplexType> >(
+//                rows, cols, values);
+//}
+
+//template <typename BasisFunctionType>
+//shared_ptr<DiscreteBoundaryOperator<
+//typename PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::CoordinateType> >
+//PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
+//local2globalDofsOperatorRealImpl() const
+//{
+//    std::vector<int> rows, cols;
+//    std::vector<double> values;
+//    constructGlobal2localDofsMappingVectors(rows, cols, values);
+//    return boost::make_shared<DiscreteSparseBoundaryOperator<CoordinateType> >(
+//                rows, cols, values, NO_SYMMETRY, TRANSPOSE);
+//}
+
+//template <typename BasisFunctionType>
+//shared_ptr<DiscreteBoundaryOperator<
+//typename PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::ComplexType> >
+//PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
+//local2globalDofsOperatorRealImpl() const
+//{
+//    std::vector<int> rows, cols;
+//    std::vector<double> values;
+//    constructGlobal2localDofsMappingVectors(rows, cols, values);
+//    return boost::make_shared<DiscreteSparseBoundaryOperator<ComplexType> >(
+//                rows, cols, values, NO_SYMMETRY, TRANSPOSE);
+//}
+
+//template <typename BasisFunctionType>
+//void
+//PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
+//constructGlobal2localDofsMappingVectors(
+//        std::vector<int>& rows, std::vector<int>& cols,
+//        std::vector<double>& values) const
+//{
+//    const size_t ldofCount = m_flatLocalDofCount;
+//    rows.clear();
+//    cols.clear();
+//    rows.reserve(ldofCount);
+//    cols.reserve(ldofCount);
+
+//    size_t flatLdofIndex = 0;
+//    for (size_t e = 0; e < m_local2globalDofs.size(); ++e) {
+//        for (size_t v = 0; v < m_local2globalDofs[e].size(); ++v) {
+//            rows.push_back(flatLdofIndex);
+//            cols.push_back(m_local2globalDofs[e][v]);
+//            ++flatLdofIndex;
+//        }
+//    }
+//    assert(rows.size() == ldofCount);
+//    assert(cols.size() == ldofCount);
+
+//    std::vector<double> tmp(ldofCount, 1.);
+//    values.swap(tmp);
+//}
 
 template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::globalDofPositions(
@@ -255,6 +363,53 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::globalDofPositions
             it->next();
         }
     }
+}
+
+template <typename BasisFunctionType>
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::flatLocalDofPositions(
+        std::vector<Point3D<CoordinateType> >& positions) const
+{
+    const int gridDim = domainDimension();
+    const int worldDim = this->m_grid.dimWorld();
+    positions.resize(m_flatLocalDofCount);
+
+    const IndexSet& indexSet = m_view->indexSet();
+    int elementCount = m_view->entityCount(0);
+
+    arma::Mat<CoordinateType> elementCenters(worldDim, elementCount);
+    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    arma::Col<CoordinateType> center;
+    while (!it->finished())
+    {
+        const Entity<0>& e = it->entity();
+        int index = indexSet.entityIndex(e);
+        e.geometry().getCenter(center);
+
+        for (int dim = 0; dim < worldDim; ++dim)
+            elementCenters(dim, index) = center(dim);
+        it->next();
+    }
+
+    size_t flatLdofIndex = 0;
+    if (gridDim == 1)
+        for (size_t e = 0; e < m_local2globalDofs.size(); ++e) {
+            for (size_t v = 0; v < m_local2globalDofs[e].size(); ++v) {
+                positions[flatLdofIndex].x = elementCenters(0, e);
+                positions[flatLdofIndex].y = elementCenters(1, e);
+                positions[flatLdofIndex].z = 0.;
+                ++flatLdofIndex;
+            }
+        }
+    else // gridDim == 2
+        for (size_t e = 0; e < m_local2globalDofs.size(); ++e) {
+            for (size_t v = 0; v < m_local2globalDofs[e].size(); ++v) {
+                positions[flatLdofIndex].x = elementCenters(0, e);
+                positions[flatLdofIndex].y = elementCenters(1, e);
+                positions[flatLdofIndex].z = elementCenters(2, e);
+                ++flatLdofIndex;
+            }
+        }
+    assert(flatLdofIndex == m_flatLocalDofCount);
 }
 
 template <typename BasisFunctionType>
