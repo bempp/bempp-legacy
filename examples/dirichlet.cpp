@@ -146,28 +146,29 @@ int main(int argc, char* argv[])
 
     // Form the right-hand side sum
 
-    BoundaryOperator<BFT, RT> rhsOp = -0.5 * id + dlpOp;
+    //BoundaryOperator<BFT, RT> rhsOp = -0.5 * id + dlpOp;
 
     // We also want a grid function
 
     GridFunction<BFT, RT> u(
                 make_shared_from_ref(context),
-                make_shared_from_ref(HplusHalfSpace),
-                make_shared_from_ref(HplusHalfSpace), // is this the right choice?
+                make_shared_from_ref(HminusHalfSpace),
+                make_shared_from_ref(HminusHalfSpace), // is this the right choice?
                 surfaceNormalIndependentFunction(MyFunctor()));
 
     // Assemble the rhs
 
     std::cout << "Assemble rhs" << std::endl;
 
-    GridFunction<BFT, RT> rhs = rhsOp * u;
+    //GridFunction<BFT, RT> rhs = rhsOp * u;
+    GridFunction<BFT, RT> rhs = u;
 
     // Initialize the solver
 
     std::cout << "Initialize solver" << std::endl;
 
 #ifdef WITH_TRILINOS
-    DefaultIterativeSolver<BFT, RT> solver(slpOp);
+    DefaultIterativeSolver<BFT, RT> solver(slpOp,ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
     solver.initializeSolver(defaultGmresParameterList(1e-5));
     Solution<BFT, RT> solution = solver.solve(rhs);
     std::cout << solution.solverMessage() << std::endl;
