@@ -39,11 +39,11 @@ template <typename BasisFunctionType, typename ResultType>
 void Solver<BasisFunctionType, ResultType>::checkConsistency(
         const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
         const GridFunction<BasisFunctionType, ResultType>& rhs,
-        ConvergenceTestMode mode)
+        ConvergenceTestMode::Mode mode)
 {
-    if ((mode == TEST_CONVERGENCE_IN_DUAL_TO_RANGE &&
+    if ((mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE &&
          rhs.dualSpace() != boundaryOp.dualToRange()) ||
-        (mode == TEST_CONVERGENCE_IN_RANGE &&
+        (mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_RANGE &&
          rhs.space() != boundaryOp.range()))
         throw std::invalid_argument(
             "Solver::checkConsistency(): spaces do not match");
@@ -53,7 +53,7 @@ template <typename BasisFunctionType, typename ResultType>
 void Solver<BasisFunctionType, ResultType>::checkConsistency(
         const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
         const std::vector<GridFunction<BasisFunctionType, ResultType> >& rhs,
-        ConvergenceTestMode mode)
+        ConvergenceTestMode::Mode mode)
 {
     const size_t columnCount = boundaryOp.columnCount();
     const size_t rowCount = boundaryOp.rowCount();
@@ -61,7 +61,7 @@ void Solver<BasisFunctionType, ResultType>::checkConsistency(
     if (rhs.size() != rowCount)
         throw std::invalid_argument(
             "Solver::checkConsistency(): incorrect number of grid functions");
-    if (mode == TEST_CONVERGENCE_IN_DUAL_TO_RANGE) {
+    if (mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE) {
         for (size_t i = 0; i < rhs.size(); ++i)
             if (rhs[i].dualSpace() != boundaryOp.dualToRange(i))
                 throw std::invalid_argument(
@@ -70,7 +70,7 @@ void Solver<BasisFunctionType, ResultType>::checkConsistency(
                     " does not match the dual to the range space of the "
                     "corresponding row of the blocked boundary operator");
     }
-    else if (mode == TEST_CONVERGENCE_IN_RANGE) {
+    else if (mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_RANGE) {
         for (size_t i = 0; i < rhs.size(); ++i)
             if (rhs[i].space() != boundaryOp.range(i))
                 throw std::invalid_argument(

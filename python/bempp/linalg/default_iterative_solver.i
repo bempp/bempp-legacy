@@ -13,10 +13,14 @@
 namespace Bempp
 {
 
+
+
 BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DefaultIterativeSolver);
 
 %extend DefaultIterativeSolver
 {
+
+
     // add later, when we figure out how to deal with RCPs
     %ignore addPreconditioner;
 }

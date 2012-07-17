@@ -48,12 +48,12 @@ public:
 
     DefaultIterativeSolver(
             const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
-            typename Base::ConvergenceTestMode mode = 
-            Base::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
+            ConvergenceTestMode::Mode mode =
+            ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
     DefaultIterativeSolver(
             const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
-            typename Base::ConvergenceTestMode mode = 
-            Base::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
+            ConvergenceTestMode::Mode mode =
+            ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
     virtual ~DefaultIterativeSolver();
 
     void setPreconditioner(
