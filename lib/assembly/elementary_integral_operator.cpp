@@ -38,8 +38,6 @@
 #include "../fiber/collection_of_basis_transformations.hpp"
 #include "../fiber/quadrature_strategy.hpp"
 #include "../fiber/local_assembler_for_operators.hpp"
-#include "../fiber/opencl_handler.hpp"
-#include "../fiber/raw_grid_geometry.hpp"
 #include "../grid/entity.hpp"
 #include "../grid/entity_iterator.hpp"
 #include "../grid/geometry_factory.hpp"
