@@ -36,53 +36,42 @@ def configureTrilinos(root,config):
     trilinos_full_dir=root+"/contrib/"+trilinos_dir
     trilinos_download_name=root+"/contrib/files/"+trilinos_fname
 
-    prefix=config.get('Main','prefix')    
-    download_trilinos=True
-    if config.has_option('Trilinos','download_trilinos'): download_trilinos=to_bool(config.get('Trilinos','download_trilinos'))
+    prefix=config.get('Main','prefix')
+    if os.path.isdir(trilinos_full_dir):
+        shutil.rmtree(trilinos_full_dir)
     
-    if download_trilinos and not os.path.isdir(trilinos_full_dir):
-        # Download Trilinos
-
-        if not os.path.isfile(trilinos_download_name):
-            print "Downloading Trilinos ..."
-            urllib.urlretrieve(trilinos_url,trilinos_download_name)
-
-        print "Extracting Trilinos"
-        extract_file(root+"/contrib/files/"+trilinos_fname,root+"/contrib/")
-        os.rename(root+"/contrib/"+trilinos_extract_dir,root+"/contrib/"+trilinos_dir)
-        shutil.copy(root+"/contrib/build_scripts/posix/trilinos_build.sh",trilinos_full_dir+"/trilinos_build.sh")
-        print "Patching ..."
-        patch=py_patch.fromfile(root+"/contrib/patch/Thyra_BelosLinearOpWithSolve_def.patch")
-        cwd=os.getcwd()
-        os.chdir(root+"/contrib/trilinos//packages/stratimikos/adapters/belos/src")
-        patch.apply()
-        os.chdir(cwd)
-        
-
-    if download_trilinos:
-        if not config.has_section("Trilinos"): config.add_section("Trilinos")
-        config.set("Trilinos",'cmake_path',prefix+"/bempp/contrib/trilinos/lib/cmake/Trilinos/")
-        
-    else:
-        if not config.has_option('Trilinos','cmake_path'):
-            raise Exception("You need to specify 'cmake_path' under the 'Trilinos' header in the configuration file")
-
     
+    # Download Trilinos
+
+    if not os.path.isfile(trilinos_download_name):
+        print "Downloading Trilinos ..."
+        urllib.urlretrieve(trilinos_url,trilinos_download_name)
+
+    print "Extracting Trilinos"
+    extract_file(root+"/contrib/files/"+trilinos_fname,root+"/contrib/")
+    os.rename(root+"/contrib/"+trilinos_extract_dir,root+"/contrib/"+trilinos_dir)
+    shutil.copy(root+"/contrib/build_scripts/posix/trilinos_build.sh",trilinos_full_dir+"/trilinos_build.sh")
+    print "Patching ..."
+    patch=py_patch.fromfile(root+"/contrib/patch/Thyra_BelosLinearOpWithSolve_def.patch")
+    cwd=os.getcwd()
+    os.chdir(root+"/contrib/trilinos//packages/stratimikos/adapters/belos/src")
+    patch.apply()
+    os.chdir(cwd)
+        
+    if not config.has_section("Trilinos"): config.add_section("Trilinos")
+    config.set("Trilinos",'cmake_path',prefix+"/bempp/contrib/trilinos/lib/cmake/Trilinos/")            
 def buildTrilinos(root,config):
 
     trilinos_full_dir=root+"/contrib/"+trilinos_dir
     trilinos_download_name=root+"/contrib/files/"+trilinos_fname
 
     prefix=config.get('Main','prefix')    
-    download_trilinos=True
     if config.has_option('Trilinos','download_trilinos'): download_trilinos=to_bool(config.get('Trilinos','download_trilinos'))
-    if download_trilinos:
-        if not os.path.isdir(prefix+"/bempp/contrib/trilinos"):
-            print "Build Trilinos"
-            cwd=os.getcwd()
-            os.chdir(trilinos_full_dir)
-            subprocess.call("sh ./trilinos_build.sh",shell=True)
-            os.chdir(cwd)
+    print "Build Trilinos"
+    cwd=os.getcwd()
+    os.chdir(trilinos_full_dir)
+    subprocess.check_call("sh ./trilinos_build.sh",shell=True)
+    os.chdir(cwd)
         
     
         

@@ -11,6 +11,8 @@ cmake \
     -D CMAKE_BUILD_TYPE:STRING=Release \
     -D CMAKE_INSTALL_PREFIX:PATH=$Main_prefix/bempp/contrib/trilinos \
     -D BUILD_SHARED_LIBS:BOOL=ON \
+    -D CMAKE_CXX_FLAGS:STRING=$Main_cxxflags \
+    -D CMAKE_C_FLAGS:STRING=$Main_cflags \
     -D TPL_TBB_LIBRARIES:STRING=$Tbb_lib \
     -D TPL_TBB_INCLUDE_DIRS:PATH=$Tbb_include_dir \
     -D TPL_LAPACK_LIBRARIES:STRING=$LAPACK_lib \

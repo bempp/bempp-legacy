@@ -21,6 +21,7 @@
 import os,urllib,shutil,subprocess,sys
 from py_modules.tools import extract_file, to_bool
 
+ahmed_fname="AHMED-1.0.tar.gz"
 
 def configureAhmed(root,config):
 
@@ -32,15 +33,32 @@ def configureAhmed(root,config):
             config.set('AHMED','enable_ahmed','ON')
     if to_bool(config.get('AHMED','enable_ahmed')):
         config.set('AHMED','enable_ahmed','ON') # Ensure that the option has the right format
-        if not (config.has_option('AHMED','lib')
-                and config.has_option('AHMED','metis_lib')
-                and config.has_option('AHMED','include_dir')): raise Exception('AHMED libraries or include not defined')
-    else:
-        config.set('AHMED','enable_ahmed','OFF')
+        prefix=config.get('Main','prefix')
+        ahmed_full_dir=root+"/contrib/ahmed"
+        if os.path.isdir(ahmed_full_dir): shutil.rmtree(ahmed_full_dir)
+        if sys.platform.startswith('darwin'):
+            config.set('AHMED','lib',prefix+"/bempp/contrib/ahmed/lib/libAHMED.dylib")
+        elif sys.platform.startswith('linux'):
+            config.set('AHMED','lib',prefix+"/bempp/contrib/ahmed/lib/libAHMED.so")
+        else:
+            raise Exception("Platform not supported")
+        config.set('AHMED','include_dir',prefix+"/bempp/contrib/ahmed/include/AHMED")
+        print "Extracting AHMED"
+        extract_file(root+"/contrib/files/"+ahmed_fname,root+"/contrib/")
+        os.rename(root+"/contrib/AHMED_1.0",root+"/contrib/ahmed")
+        shutil.copy(root+"/contrib/build_scripts/posix/ahmed_build.sh",trilinos_full_dir+"/ahmed_build.sh")
+
                  
 
 def buildAhmed(root,config):
-    pass
+
+    if to_bool(config.get('AHMED','enable_ahmed')):
+        print "Build AHMED"
+        cwd=os.getcwd()
+        os.chdir(root+"/contrib/ahmed")
+        subprocess.check_call("sh ./ahmed_build.sh",shell=True)
+        os.chdir(cwd)
+
 
         
     

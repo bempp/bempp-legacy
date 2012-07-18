@@ -39,10 +39,10 @@ def configureDune(root,config):
     prefix=config.get('Main','prefix')
     dune_dir=prefix+"/bempp/contrib/dune"
     
-    
-
-    download_dune=True
-    if not os.path.isdir(dune_dir): os.mkdir(dune_dir)
+    if os.path.isdir(dune_dir):
+        shutil.rmtree(trilinos_full_dir)
+        os.mkdir(dune_dir)
+        
     # Download files
     for i in range(3):
         if not os.path.isfile(root+"/contrib/files/"+dune_fnames[i]):
@@ -70,17 +70,18 @@ def buildDune(root,config):
     dune_install_dir=prefix+"/bempp/contrib/dune"
     cxx=config.get('Main','cxx')
     cc=config.get('Main','cc')
-    if not os.path.isdir(dune_install_dir+"/lib"):
-        print "Build Dune"
-        cwd=os.getcwd()
-        os.chdir(root+"/contrib/dune")
-        f=open('dune_opts.ops','w')
-        f.write("CONFIGURE_FLAGS=\" CXX="+cxx+" CC="+cc+" --enable-shared=yes --disable-documentation --enable-static=no --prefix="+dune_install_dir+"\"")
-        f.close()
-        subprocess.call("./dune-common/bin/dunecontrol --opts=./dune_opts.ops all",shell=True)
-        subprocess.call("./dune-common/bin/dunecontrol make install",shell=True)
-        os.remove('./dune_opts.ops')
-        os.chdir(cwd)
+    print "Build Dune"
+    cwd=os.getcwd()
+    os.chdir(root+"/contrib/dune")
+    f=open('dune_opts.ops','w')
+    cflags = config.get('Main','cflags')
+    cxxflags = config.get('Main','cxxflags')
+    f.write("CONFIGURE_FLAGS=\" CXX="+cxx+" "+cxxflags+" CC="+cc+" "+cflags+" --enable-shared=yes --disable-documentation --enable-static=no --prefix="+dune_install_dir+"\"")
+    f.close()
+    subprocess.check_call("./dune-common/bin/dunecontrol clean")
+    subprocess.check_call("./dune-common/bin/dunecontrol --opts=./dune_opts.ops all",shell=True)
+    subprocess.check_call("./dune-common/bin/dunecontrol make install",shell=True)
+    os.chdir(cwd)
 
         
     

@@ -21,11 +21,11 @@
 # This script downloads the third-party libraries required by BEM++
 
 
-options='bempp_options.cfg'
-
 import sys,os
 from py_modules.tools import writeOptions
 from ConfigParser import ConfigParser
+from optparse import OptionParser
+
 
 import py_modules.boost as boost
 import py_modules.armadillo as armadillo
@@ -73,6 +73,9 @@ def prepare(root,config):
     if not config.has_option('Main','cc'): raise Exception('cc not defined')
     if not config.has_option('Main','cxx'): raise Exception('cxx not defined')
     if not config.has_option('Main','root_dir'): config.set('Main','root_dir',root)
+    if not config.has_option('Main','architecture'): config.set('Main','architecture','x64')
+    if not config.has_option('Main','cflags'): config.set('Main','cflags',"")
+    if not config.has_option('Main','cxxflags'): config.set('Main','cxxflags',"")
 
     prefix=config.get('Main','prefix')
     if not os.path.isdir(prefix+"/bempp"):
@@ -81,16 +84,47 @@ def prepare(root,config):
     if not os.path.isdir(root+"/contrib/files"):
         os.mkdir(root+"/contrib/files")
 
+    # Add the correct architecture parameters
+    cflags = config.get('Main','cflags')
+    cxxflags = config.get('Main','cxxflags')
+
+    arch = config.get('Main','architecture')
+    if not arch in ['x64','i386']: raise Exception('Architecture not supported.')
+    
+    if sys.platform.startswith('darwin'):
+        if arch=='x64':
+            param = '-arch x86_64'
+        else:
+            param = '-arch i386'
+        config.set('Main','cflags',cflags+" "+param)
+        config.set('Main','cxxflags',cxxflags+" "+param)
+    elif sys.platform.startswith('linux'):
+       if arch=='x64':
+            param = '-m64'
+        else:
+            param = '-m32'
+        config.set('Main','cflags',cflags+" "+param)       
+        config.set('Main','cxxflags',cxxflags+" "+param)
+    else:
+        raise Exception("Platform not supported")
+    
 ###########################
 
 if __name__ == "__main__":
+ 
+    parser = OptionParser()
+    parser.add_option("-c", "--configure", action="store_true", type="string", dest="configure", default=True)
+    parser.add_option("-c", "--build", action="store_true", type="string", dest="build", default=True)
+    (options,args) = parser.parse_args()
     root=module_path()
     config=ConfigParser()
-    config.read(options)
-    prepare(root,config)
-    configureAll(root,config)
-    writeOptions(root,config)
-    buildAll(root,config)
+    config.read(args[0])
+    if options.configure:
+        prepare(root,config)
+        configureAll(root,config)
+        writeOptions(root,config)
+    if options.build:
+        buildAll(root,config)
 
 
     
