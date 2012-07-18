@@ -50,6 +50,7 @@ def module_path():
     return os.path.split(os.path.abspath(__file__))[0]
 
 def configureAll(root,config):
+    mkl.configureMkl(root,config)
     boost.configureBoost(root,config)
     dune.configureDune(root,config)
     tbb.configureTbb(root,config)
@@ -59,6 +60,7 @@ def configureAll(root,config):
     bempp.configureBempp(root,config)
 
 def buildAll(root,config):
+    mkl.buildMkl(root,config)
     boost.buildBoost(root,config)
     dune.buildDune(root,config)
     tbb.buildTbb(root,config)
@@ -73,7 +75,7 @@ def prepare(root,config):
     if not config.has_option('Main','cc'): raise Exception('cc not defined')
     if not config.has_option('Main','cxx'): raise Exception('cxx not defined')
     if not config.has_option('Main','root_dir'): config.set('Main','root_dir',root)
-    if not config.has_option('Main','architecture'): config.set('Main','architecture','x64')
+    if not config.has_option('Main','architecture'): config.set('Main','architecture','intel64')
     if not config.has_option('Main','cflags'): config.set('Main','cflags',"")
     if not config.has_option('Main','cxxflags'): config.set('Main','cxxflags',"")
 
@@ -89,10 +91,10 @@ def prepare(root,config):
     cxxflags = config.get('Main','cxxflags')
 
     arch = config.get('Main','architecture')
-    if not arch in ['x64','i386']: raise Exception('Architecture not supported.')
+    if not arch in ['intel64','i386']: raise Exception('Architecture not supported.')
     
     if sys.platform.startswith('darwin'):
-        if arch=='x64':
+        if arch=='intel64':
             param = '-arch x86_64'
         else:
             param = '-arch i386'

@@ -52,7 +52,7 @@ def configureTbb(root,config):
         tbb_lib_name="lib/libtbb.dylib"
         tbb_lib_name_debug="lib/libtbb_debug.dylib"
     elif sys.platform.startswith('linux'):
-        if struct.calcsize("P") == 8:
+        if config.get('Main','architecture')=='intel64':
             # 64 bit
             tbb_lib_name="lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21/libtbb.so"
             tbb_lib_name_debug="lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21/libtbb.so"
