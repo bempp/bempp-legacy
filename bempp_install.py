@@ -34,6 +34,7 @@ import py_modules.dune as dune
 import py_modules.trilinos as trilinos
 import py_modules.bempp as bempp
 import py_modules.ahmed as ahmed
+import py_modules.mkl as mkl
 
 ###########################
 
@@ -84,6 +85,7 @@ def prepare(root,config):
     if not os.path.isdir(prefix+"/bempp"):
         os.mkdir(prefix+"/bempp")
         os.mkdir(prefix+"/bempp/contrib")
+        os.mkdir(prefix+"/bempp/lib")
     if not os.path.isdir(root+"/contrib/files"):
         os.mkdir(root+"/contrib/files")
 
@@ -102,7 +104,7 @@ def prepare(root,config):
         config.set('Main','cflags',cflags+" "+param)
         config.set('Main','cxxflags',cxxflags+" "+param)
     elif sys.platform.startswith('linux'):
-       if arch=='x64':
+        if arch=='x64':
             param = '-m64'
         else:
             param = '-m32'
@@ -114,17 +116,17 @@ def prepare(root,config):
     # Add the correct Python options
 
     (py_exe,py_lib,py_include) = pythonInfo()
-    setDefaultConfigOption('Python','exe',py_exe)
-    setDefaultConfigOption('Python','lib',py_lib)
-    setDefaultConfigOption('Python','include',py_include)
+    setDefaultConfigOption(config,'Python','exe',py_exe)
+    setDefaultConfigOption(config,'Python','lib',py_lib)
+    setDefaultConfigOption(config,'Python','include_dir',py_include)
      
 ###########################
 
 if __name__ == "__main__":
  
     parser = OptionParser()
-    parser.add_option("-c", "--configure", action="store_true", type="string", dest="configure", default=True)
-    parser.add_option("-c", "--build", action="store_true", type="string", dest="build", default=True)
+    parser.add_option("-c", "--configure", action="store_true", dest="configure", default=False)
+    parser.add_option("-b", "--build", action="store_true", dest="build", default=False)
     (options,args) = parser.parse_args()
     root=module_path()
     config=ConfigParser()

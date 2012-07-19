@@ -63,4 +63,25 @@ def setDefaultConfigOption(config,section,option,value):
         if not config.has_section(section): config.add_section(section)
         config.set(section,option,value)
         return value
+############################
+
+def pythonInfo():
+    """Return a tuple (exe,lib,include) with the paths of the Python Interpeter, Python library and include directory"""
+
+    import sys,os
+    
+    exe = sys.executable
+    lib_no_suffix = sys.prefix+"/lib/libpython"+str(sys.version_info.major)+"."+str(sys.version_info.minor)
+    if sys.platform.startswith('darwin'):
+        lib = lib_no_suffix+".dylib"
+    elif sys.platform.startswith('linux'):
+        lib = lib_no_suffix+".so"
+    else:
+        raise Exception("Platform not supported")
+    if not os.path.isfile(lib):
+        lib = lib_no_suffix+".a"
+        if not os.path.isfile(lib):
+            raise Exception("Could not find Python library in "+sys.prefix+"/lib/")
+    include = sys.prefix+"/include"
+    return (exe,lib,include)
 

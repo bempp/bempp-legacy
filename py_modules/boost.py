@@ -46,7 +46,7 @@ def configureBoost(root,config):
 
     boost_unit_test_lib=prefix+"/bempp/contrib/boost/lib/boost-"+boost_version+"/"+unit_test_lib_name
     
-    if os.path.isdir(boost_full_dir): shutil.rmtree(trilinos_full_dir)
+    if os.path.isdir(boost_full_dir): shutil.rmtree(boost_full_dir)
 
     if not os.path.isfile(boost_download_name):
         print "Downloading Boost ..."

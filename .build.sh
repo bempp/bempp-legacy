@@ -8,6 +8,8 @@ cmake \
     -D CMAKE_C_COMPILER:STRING=$Main_cc \
     -D CMAKE_INSTALL_PREFIX:STRING=$Main_prefix \
     -D CMAKE_BUILD_TYPE:STRING=$Bempp_build_type \
+    -D CMAKE_CXX_FLAGS:STRING=$Main_cxxflags \
+    -D CMAKE_C_FLAGS:STRING=$Main_cflags \
     -D WITH_AHMED:STRING=$AHMED_enable_ahmed \
     -D BOOST_INCLUDE_DIR:STRING=$Boost_include_dir \
     -D BOOST_UNIT_TEST_LIB:STRING=$Boost_unit_test_lib \
@@ -19,6 +21,8 @@ cmake \
     -D TBB_LIBRARY_DEBUG:STRING=$Tbb_lib_debug \
     -D AHMED_INCLUDE_DIR:STRING=$AHMED_include_dir \
     -D AHMED_LIB:STRING=$AHMED_lib \
-    -D METIS_LIB:STRING=$AHMED_metis_lib \
+    -D PYTHON_EXECUTABLE:STRING=$Python_exe \
+    -D PYTHON_INCLUDE_DIR:STRING=$Python_include_dir \
+    -D PYTHON_LIBRARY:STRING=$Python_lib \
     -D TRILINOS_CMAKE_PATH:STRING=$Trilinos_cmake_path \
 $Main_root_dir

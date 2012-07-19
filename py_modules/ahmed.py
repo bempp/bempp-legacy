@@ -30,7 +30,7 @@ def configureAhmed(root,config):
         config.set('AHMED','enable_ahmed','OFF')
     else:
         if not config.has_option('AHMED','enable_ahmed'): 
-            config.set('AHMED','enable_ahmed','ON')
+            config.set('AHMED','enable_ahmed','OFF')
     if to_bool(config.get('AHMED','enable_ahmed')):
         config.set('AHMED','enable_ahmed','ON') # Ensure that the option has the right format
         prefix=config.get('Main','prefix')
@@ -46,7 +46,7 @@ def configureAhmed(root,config):
         print "Extracting AHMED"
         extract_file(root+"/contrib/files/"+ahmed_fname,root+"/contrib/")
         os.rename(root+"/contrib/AHMED_1.0",root+"/contrib/ahmed")
-        shutil.copy(root+"/contrib/build_scripts/posix/ahmed_build.sh",trilinos_full_dir+"/ahmed_build.sh")
+        shutil.copy(root+"/contrib/build_scripts/posix/ahmed_build.sh",ahmed_full_dir+"/ahmed_build.sh")
 
                  
 

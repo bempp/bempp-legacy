@@ -20,7 +20,6 @@ set(TBB_LIBRARY_DEBUG "" CACHE STRING "Full path to the TBB debug library")
 if (WITH_AHMED)
 	set(AHMED_INCLUDE_DIR "" CACHE STRING "Full path to the AHMED include directory")
 	set(AHMED_LIB "" CACHE STRING "Full path to AHMED library")
-	set(METIS_LIB "" CACHE STRING "Full path to METIS library (only requiref if AHMED is built with Metis)")
 endif ()
 
 # Dune

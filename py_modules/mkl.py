@@ -48,11 +48,13 @@ def configureMkl(root,config):
             if config.get('Main','architecture')=='intel64':
                 for f in blas_files: blas_lib = blas_lib+";"+lib_dir+"/intel64/"+f+".so"
                 for f in lapack_files: lapack_lib = lapack_lib+";"+lib_dir+"/intel64/"+f+".so"                    
-            else:
+            elif config.get('Main','architecture')=='i386':
                 for f in blas_files: blas_lib = blas_lib+";"+lib_dir+"/ia32/"+f+".so"            
                 for f in lapack_files: lapack_lib = lapack_lib+";"+lib_dir+"/ia32/"+f+".so"                    
             else:
                 raise Exception("Platform not supported")
+        if not config.has_section('BLAS'): config.add_section('BLAS')
+        if not config.has_section('LAPACK'): config.add_section('LAPACK')
         config.set('BLAS','lib',blas_lib)
         config.set('LAPACK','lib',lapack_lib)
 

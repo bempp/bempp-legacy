@@ -69,7 +69,7 @@ def configureTbb(root,config):
     
     if download_tbb and not os.path.isdir(prefix+"/bempp/contrib/tbb"):
         # Download Tbb
-        if not os.path.isfile(prefix+"/bempp/contrib/tbb"):
+        if not os.path.isfile(root+"/contrib/files/"+tbb_fname):
             print "Downloading Tbb ..."
             urllib.urlretrieve(tbb_url,root+"/contrib/files/"+tbb_fname)
 

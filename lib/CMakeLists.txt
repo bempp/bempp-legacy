@@ -47,7 +47,7 @@ set_property(
 
 # AHMED
 if (WITH_AHMED)
-    target_link_libraries (bempp ${AHMED_LIB} ${METIS_LIB})
+    target_link_libraries (bempp ${AHMED_LIB})
     include_directories(${AHMED_INCLUDE_DIR})
 endif ()
 

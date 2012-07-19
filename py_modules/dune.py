@@ -40,7 +40,7 @@ def configureDune(root,config):
     dune_dir=prefix+"/bempp/contrib/dune"
     
     if os.path.isdir(dune_dir):
-        shutil.rmtree(trilinos_full_dir)
+        shutil.rmtree(dune_dir)
         os.mkdir(dune_dir)
         
     # Download files
