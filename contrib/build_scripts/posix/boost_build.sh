@@ -1,4 +1,5 @@
 #!/usr/bin/sh
+set -e
 . ../../options.cfg
 
 # mkdir $Main_prefix/bempp/contrib/boost

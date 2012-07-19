@@ -37,6 +37,7 @@ def configureBempp(root,config):
 
     setDefaultConfigOption(config,'Bempp','build','true')
     setDefaultConfigOption(config,'Bempp','build_dir',root+'/build')
+    
 
     
 def buildBempp(root,config):

@@ -22,7 +22,7 @@
 
 
 import sys,os
-from py_modules.tools import writeOptions
+from py_modules.tools import writeOptions, setDefaultConfigOption, pythonInfo
 from ConfigParser import ConfigParser
 from optparse import OptionParser
 
@@ -79,6 +79,7 @@ def prepare(root,config):
     if not config.has_option('Main','cflags'): config.set('Main','cflags',"")
     if not config.has_option('Main','cxxflags'): config.set('Main','cxxflags',"")
 
+
     prefix=config.get('Main','prefix')
     if not os.path.isdir(prefix+"/bempp"):
         os.mkdir(prefix+"/bempp")
@@ -109,7 +110,14 @@ def prepare(root,config):
         config.set('Main','cxxflags',cxxflags+" "+param)
     else:
         raise Exception("Platform not supported")
-    
+
+    # Add the correct Python options
+
+    (py_exe,py_lib,py_include) = pythonInfo()
+    setDefaultConfigOption('Python','exe',py_exe)
+    setDefaultConfigOption('Python','lib',py_lib)
+    setDefaultConfigOption('Python','include',py_include)
+     
 ###########################
 
 if __name__ == "__main__":
