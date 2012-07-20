@@ -19,7 +19,7 @@
 #THE SOFTWARE.
 
 import os,urllib,shutil,subprocess,sys
-from py_modules.tools import extract_file, to_bool
+from py_modules import tools
 from py_modules import python_patch as py_patch
 
 
@@ -28,10 +28,11 @@ trilinos_extract_dir='trilinos-10.10.2-Source'
 trilinos_dir='trilinos'
 trilinos_url='http://trilinos.sandia.gov/download/files/trilinos-10.10.2-Source.tar.gz'
 
+def download(root,config):
+    tools.download(trilinos_fname,trilinos_url,root+"/contrib/files")
 
 
-def configureTrilinos(root,config):
-    """Download Trilinos if required"""
+def prepare(root,config):
 
     trilinos_full_dir=root+"/contrib/"+trilinos_dir
     trilinos_download_name=root+"/contrib/files/"+trilinos_fname
@@ -40,15 +41,8 @@ def configureTrilinos(root,config):
     if os.path.isdir(trilinos_full_dir):
         shutil.rmtree(trilinos_full_dir)
     
-    
-    # Download Trilinos
-
-    if not os.path.isfile(trilinos_download_name):
-        print "Downloading Trilinos ..."
-        urllib.urlretrieve(trilinos_url,trilinos_download_name)
-
     print "Extracting Trilinos"
-    extract_file(root+"/contrib/files/"+trilinos_fname,root+"/contrib/")
+    tools.extract_file(root+"/contrib/files/"+trilinos_fname,root+"/contrib/")
     os.rename(root+"/contrib/"+trilinos_extract_dir,root+"/contrib/"+trilinos_dir)
     shutil.copy(root+"/contrib/build_scripts/posix/trilinos_build.sh",trilinos_full_dir+"/trilinos_build.sh")
     print "Patching ..."
@@ -58,21 +52,34 @@ def configureTrilinos(root,config):
     patch.apply()
     os.chdir(cwd)
         
-    if not config.has_section("Trilinos"): config.add_section("Trilinos")
-    config.set("Trilinos",'cmake_path',prefix+"/bempp/contrib/trilinos/lib/cmake/Trilinos/")            
-def buildTrilinos(root,config):
+    tools.setDefaultConfigOption(config,'Trilinos','cmake_path',prefix+"/bempp/lib/cmake/Trilinos/",overwrite=True)
+
+def configure(root,config):
 
     trilinos_full_dir=root+"/contrib/"+trilinos_dir
     trilinos_download_name=root+"/contrib/files/"+trilinos_fname
 
-    prefix=config.get('Main','prefix')    
-    if config.has_option('Trilinos','download_trilinos'): download_trilinos=to_bool(config.get('Trilinos','download_trilinos'))
-    print "Build Trilinos"
+    print "Configure Trilinos"
     cwd=os.getcwd()
     os.chdir(trilinos_full_dir)
     subprocess.check_call("sh ./trilinos_build.sh",shell=True)
     os.chdir(cwd)
-        
+
+def build(root,config):
+    print "Build Trilinos"
+    cwd=os.getcwd()
+    os.chdir(trilinos_full_dir)
+    subprocess.check_call("make",shell=True)
+    os.chdir(cwd)
+
+def install(root,config):
+    print "Install Trilinos"
+    cwd=os.getcwd()
+    os.chdir(trilinos_full_dir)
+    subprocess.check_call("make install",shell=True)
+    os.chdir(cwd)
+
+    
     
         
         

@@ -60,27 +60,32 @@ def initialize(root,config):
     checkCreateDir(root+"/contrib/files")
 
 def downloadAll(root,config):
-    #armadillo.download(root,config)
-    #tbb.download(root,config)
-    #mkl.download(root,config)
-    #ahmed.download(root,config)
+    armadillo.download(root,config)
+    tbb.download(root,config)
+    mkl.download(root,config)
+    ahmed.download(root,config)
     boost.download(root,config)
+    trilinos.download(root,config)
+    dune.download(root,config)
+    
 
 def prepareAll(root,config):
-    #armadillo.prepare(root,config)
-    #tbb.prepare(root,config)
-    #mkl.prepare(root,config)
-    #ahmed.prepare(root,config)
+    armadillo.prepare(root,config)
+    tbb.prepare(root,config)
+    mkl.prepare(root,config)
+    ahmed.prepare(root,config)
     boost.prepare(root,config)
+    trilinos.prepare(root,config)
+    dune.prepare(root,config)
     
 def configureAll(root,config):
-    #mkl.configureMkl(root,config)
-    #boost.configureBoost(root,config)
-    #dune.configureDune(root,config)
-    #tbb.configureTbb(root,config)
-    #armadillo.configureArmadillo(root,config)
-    #trilinos.configureTrilinos(root,config)
-    #ahmed.configureAhmed(root,config)
+    mkl.configure(root,config)
+    boost.configure(root,config)
+    dune.configure(root,config)
+    tbb.configure(root,config)
+    armadillo.configure(root,config)
+    trilinos.configure(root,config)
+    ahmed.configure(root,config)
     #bempp.configureBempp(root,config)
     pass
 

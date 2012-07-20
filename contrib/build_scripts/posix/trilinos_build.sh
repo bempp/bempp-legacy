@@ -10,7 +10,7 @@ cmake \
     -D CMAKE_CXX_COMPILER:STRING=$Main_cxx \
     -D CMAKE_C_COMPILER:STRING=$Main_cc \
     -D CMAKE_BUILD_TYPE:STRING=Release \
-    -D CMAKE_INSTALL_PREFIX:PATH=$Main_prefix/bempp/contrib/trilinos \
+    -D CMAKE_INSTALL_PREFIX:PATH=$Main_prefix/bempp \
     -D BUILD_SHARED_LIBS:BOOL=ON \
     -D CMAKE_CXX_FLAGS:STRING=$Main_cxxflags \
     -D CMAKE_C_FLAGS:STRING=$Main_cflags \
@@ -44,5 +44,3 @@ cmake \
     -D Tpetra_INST_FLOAT:BOOL=ON \
 ..
 
-make
-make install

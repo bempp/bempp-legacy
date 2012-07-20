@@ -23,9 +23,9 @@ if (WITH_AHMED)
 endif ()
 
 # Dune
-find_library(LIB_DUNE_COMMON dunecommon ${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/lib)
-find_library(LIB_DUNE_GRID dunegrid ${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/lib)
-file(GLOB_RECURSE DUNE_HEADERS ${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/include/*.hh)
+find_library(LIB_DUNE_COMMON dunecommon ${CMAKE_INSTALL_PREFIX}/bempp/lib)
+find_library(LIB_DUNE_GRID dunegrid ${CMAKE_INSTALL_PREFIX}/bempp/lib)
+file(GLOB_RECURSE DUNE_HEADERS ${CMAKE_INSTALL_PREFIX}/bempp/include/dune/*.hh)
 
 # Trilinos
 set(TRILINOS_CMAKE_PATH "" CACHE STRING "Directory containing TrilinosConfig.cmake")
