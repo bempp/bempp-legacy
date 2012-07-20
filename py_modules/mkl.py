@@ -19,51 +19,47 @@
 #THE SOFTWARE.
 
 import os,urllib,shutil,subprocess,sys
-from py_modules.tools import extract_file, to_bool
+from py_modules import tools 
 
-import struct
+def download(root,config):
+    pass
 
-mkl_fname='mkl.tar.gz'
+def prepare(root,config):
 
-
-def configureMkl(root,config):
-
-    prefix=config.get('Main','prefix')
+    prefix = config.get('Main','prefix')
     lib_dir=prefix+"/bempp/lib"
     blas_files = ['libmkl_intel_lp64','libmkl_sequential','libmkl_core']
     lapack_files = ['libmkl_intel_lp64']
 
-    if config.has_option('Main','enable_mkl'): enable_mkl=to_bool(config.get('Main','enable_mkl'))
-
+    enable_mkl = tools.to_bool(tools.setDefaultConfigOption(config,'Mkl','enable_mkl','no'))
     if enable_mkl:
         print "Extracting Mkl"
-        extract_file(root+"/contrib/files/"+mkl_fname,prefix+"/bempp/lib/")
-
+        if not config.has_option('Mkl','file_name'):
+            raise Exception('Need to give full path of tar.gz archived file with Mkl redistributables')
+        mkl_fname=config.get('Mkl','file_name')
+        tools.extract_file(mkl_fname,prefix+"/bempp/lib/")
         blas_lib = ""
         lapack_lib = ""
         if sys.platform.startswith('darwin'):
             for f in blas_files: blas_lib = blas_lib+";"+lib_dir+"/"+f+".dylib"
             for f in lapack_files: lapack_lib = lapack_lib+";"+lib_dir+"/"+f+".dylib"                
         elif sys.platform.startswith('linux'):
-            if config.get('Main','architecture')=='intel64':
-                for f in blas_files: blas_lib = blas_lib+";"+lib_dir+"/intel64/"+f+".so"
-                for f in lapack_files: lapack_lib = lapack_lib+";"+lib_dir+"/intel64/"+f+".so"                    
-            elif config.get('Main','architecture')=='i386':
-                for f in blas_files: blas_lib = blas_lib+";"+lib_dir+"/ia32/"+f+".so"            
-                for f in lapack_files: lapack_lib = lapack_lib+";"+lib_dir+"/ia32/"+f+".so"                    
-            else:
-                raise Exception("Platform not supported")
-        if not config.has_section('BLAS'): config.add_section('BLAS')
-        if not config.has_section('LAPACK'): config.add_section('LAPACK')
-        config.set('BLAS','lib',blas_lib)
-        config.set('LAPACK','lib',lapack_lib)
+            for f in blas_files: blas_lib = blas_lib+";"+lib_dir+"/"+f+".so"
+            for f in lapack_files: lapack_lib = lapack_lib+";"+lib_dir+"/"+f+".so"                    
+        else:
+            raise Exception("Platform not supported")
+        tools.setDefaultConfigOption(config,'BLAS','lib',blas_lib[1:])
+        tools.setDefaultConfigOption(config,'LAPACK','lib',lapack_lib[1:])
 
-        
-     
-def buildMkl(root,config):
+
+def configure(root,config):
+    pass
+             
+def build(root,config):
     pass
 
-    
+def install(root,config):
+    pass
 
         
     

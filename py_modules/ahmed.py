@@ -19,20 +19,19 @@
 #THE SOFTWARE.
 
 import os,urllib,shutil,subprocess,sys
-from py_modules.tools import extract_file, to_bool
+from py_modules import tools
 
-ahmed_fname="AHMED-1.0.tar.gz"
+def download(root,config):
+    pass
 
-def configureAhmed(root,config):
+def prepare(root,config):
 
-    if not config.has_section('AHMED'):
-        config.add_section('AHMED')
-        config.set('AHMED','enable_ahmed','OFF')
-    else:
-        if not config.has_option('AHMED','enable_ahmed'): 
-            config.set('AHMED','enable_ahmed','OFF')
-    if to_bool(config.get('AHMED','enable_ahmed')):
-        config.set('AHMED','enable_ahmed','ON') # Ensure that the option has the right format
+    enable_ahmed = tools.to_bool(tools.setDefaultConfigOption(config,'AHMED','enable_ahmed','false'))
+    if enable_ahmed:
+        if not config.has_option('AHMED','file_name'):
+            raise Exception('Need to give full path of tar.gz archived file with AHMED 1.0 release')
+        ahmed_fname=config.get('AHMED','file_name')
+        config.set('AHMED','with_ahmed','ON') 
         prefix=config.get('Main','prefix')
         ahmed_full_dir=root+"/contrib/ahmed"
         if os.path.isdir(ahmed_full_dir): shutil.rmtree(ahmed_full_dir)
@@ -42,27 +41,38 @@ def configureAhmed(root,config):
             config.set('AHMED','lib',prefix+"/bempp/contrib/ahmed/lib/libAHMED.so")
         else:
             raise Exception("Platform not supported")
-        config.set('AHMED','include_dir',prefix+"/bempp/contrib/ahmed/include/AHMED")
+        config.set('AHMED','include_dir',prefix+"/bempp/include/AHMED")
         print "Extracting AHMED"
-        extract_file(root+"/contrib/files/"+ahmed_fname,root+"/contrib/")
+        tools.extract_file(ahmed_fname,root+"/contrib/")
         os.rename(root+"/contrib/AHMED_1.0",root+"/contrib/ahmed")
         shutil.copy(root+"/contrib/build_scripts/posix/ahmed_build.sh",ahmed_full_dir+"/ahmed_build.sh")
+    else:
+        config.set('AHMED','with_ahmed','OFF')
 
-                 
-
-def buildAhmed(root,config):
-
-    if to_bool(config.get('AHMED','enable_ahmed')):
-        print "Build AHMED"
+def configure(root,config):
+    if tools.to_bool(config.get('AHMED','enable_ahmed')):
+        print "Configure AHMED"
         cwd=os.getcwd()
         os.chdir(root+"/contrib/ahmed")
         subprocess.check_call("sh ./ahmed_build.sh",shell=True)
         os.chdir(cwd)
-
-
-        
     
-        
+
+def build(root,config):
+    if tools.to_bool(config.get('AHMED','enable_ahmed')):
+        print "Build AHMED"
+        cwd=os.getcwd()
+        os.chdir(root+"/contrib/ahmed/build")
+        subprocess.check_call("make",shell=True)
+        os.chdir(cwd)
+
+def install(root,config):
+    if tools.to_bool(config.get('AHMED','enable_ahmed')):
+        print "Install AHMED"
+        cwd=os.getcwd()
+        os.chdir(root+"/contrib/ahmed/build")
+        subprocess.check_call("make install",shell=True)
+        os.chdir(cwd)
         
         
             

@@ -10,7 +10,7 @@ cmake \
     -D CMAKE_BUILD_TYPE:STRING=$Bempp_build_type \
     -D CMAKE_CXX_FLAGS:STRING=$Main_cxxflags \
     -D CMAKE_C_FLAGS:STRING=$Main_cflags \
-    -D WITH_AHMED:STRING=$AHMED_enable_ahmed \
+    -D WITH_AHMED:STRING=$AHMED_with_ahmed \
     -D BOOST_INCLUDE_DIR:STRING=$Boost_include_dir \
     -D BOOST_UNIT_TEST_LIB:STRING=$Boost_unit_test_lib \
     -D BLAS_LIBRARIES:STRING=$BLAS_lib \

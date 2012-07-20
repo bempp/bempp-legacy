@@ -19,7 +19,7 @@
 #THE SOFTWARE.
 
 import os,urllib,shutil,subprocess,sys
-from py_modules.tools import extract_file, to_bool
+from py_modules import tools
 
 import struct
 
@@ -29,10 +29,9 @@ tbb_url_mac='http://threadingbuildingblocks.org/uploads/78/181/4.0%20update%203/
 tbb_url_linux='http://threadingbuildingblocks.org/uploads/78/181/4.0%20update%203/tbb40_297oss_lin.tgz'
 tbb_extract_dir='tbb40_297oss'
 tbb_dir='tbb'
+tbb_fname_short='tbb.tgz'
 
-def configureTbb(root,config):
-    """Download Tbb if required"""
-
+def download(root,config):
     tbb_full_dir=root+"/contrib/"+tbb_dir
     if sys.platform.startswith('darwin'):
         tbb_download_name=root+"/contrib/files/"+tbb_fname_mac
@@ -44,52 +43,49 @@ def configureTbb(root,config):
         tbb_fname=tbb_fname_linux
     else:
         raise Exception("Platform not supported")
+    tools.download(tbb_fname_short,tbb_url,root+"/contrib/files")
+
+def prepare(root,config):
 
     prefix=config.get('Main','prefix')
-    tbb_include_dir=prefix+"/bempp/contrib/tbb/include"
-    
+
+    print "Extracting Tbb"
+
+    if os.path.isdir(root+"/contrib/tbb"): shutil.rmtree(root+"/contrib/tbb")
+    tools.extract_file(root+"/contrib/files/"+tbb_fname_short,root+"/contrib/")
+    os.rename(root+"/contrib/"+tbb_extract_dir,root+"/contrib/tbb")
+    subprocess.check_call("cp -R "+root+"/contrib/tbb/include/* "+prefix+"/bempp/include/",shell=True)
+
+
     if sys.platform.startswith('darwin'):
-        tbb_lib_name="lib/libtbb.dylib"
-        tbb_lib_name_debug="lib/libtbb_debug.dylib"
+        libdir_orig = root+"/contrib/tbb/lib"
+        tbb_lib_name="libtbb.dylib"
+        tbb_lib_name_debug="libtbb_debug.dylib"
     elif sys.platform.startswith('linux'):
+        tbb_lib_name = "libtbb.so"
+        tbb_lib_name_debug = "libtbb_debug.dylib"
         if config.get('Main','architecture')=='intel64':
-            # 64 bit
-            tbb_lib_name="lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21/libtbb.so"
-            tbb_lib_name_debug="lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21/libtbb.so"
+            libdir_orig = root+"/contrib/tbb/lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21"
         else:
-            # presumably 32 bit
-            tbb_lib_name="lib/ia32/cc4.1.0_libc2.4_kernel2.6.16.21/libtbb.so"
-            tbb_lib_name_debug="lib/ia32/cc4.1.0_libc2.4_kernel2.6.16.21/libtbb.so"
+            libdir_orig = root+"/contrib/tbb/lib/ia32/cc4.1.0_libc2.4_kernel2.6.16.21"
     else:
         raise Exception("Platform not supported")
 
+    subprocess.check_call("cp "+libdir_orig+"/* "+prefix+"/bempp/lib/",shell=True)
 
-    download_tbb=True
-    if config.has_option('Tbb','download_tbb'): download_tbb=to_bool(config.get('Tbb','download_tbb'))
+    tools.setDefaultConfigOption(config,"Tbb",'lib',prefix+"/bempp/lib/"+tbb_lib_name,overwrite=True)
+    tools.setDefaultConfigOption(config,"Tbb","lib_debug",prefix+"/bempp/lib/"+tbb_lib_name_debug,overwrite=True)
+    tools.setDefaultConfigOption(config,"Tbb",'include_dir',prefix+"/bempp/include",overwrite=True) 
     
-    if download_tbb and not os.path.isdir(prefix+"/bempp/contrib/tbb"):
-        # Download Tbb
-        if not os.path.isfile(root+"/contrib/files/"+tbb_fname):
-            print "Downloading Tbb ..."
-            urllib.urlretrieve(tbb_url,root+"/contrib/files/"+tbb_fname)
 
-        print "Extracting Tbb"
-        extract_file(root+"/contrib/files/"+tbb_fname,prefix+"/bempp/contrib/")
-        os.rename(prefix+"/bempp/contrib/"+tbb_extract_dir,prefix+"/bempp/contrib/"+tbb_dir)
-
-    if download_tbb:
-        if not config.has_section("Tbb"): config.add_section("Tbb")
-        config.set("Tbb",'lib',prefix+"/bempp/contrib/tbb/"+tbb_lib_name)
-        config.set("Tbb","lib_debug",prefix+"/bempp/contrib/tbb/"+tbb_lib_name_debug)
-        config.set("Tbb",'include_dir',tbb_include_dir)        
-    else:
-        if not (config.has_option('Tbb','lib') and config.has_option('Tbb','lib_debug') and config.has_option('Tbb','include_dir')):
-            raise Exception("You need to specify 'lib', 'lib_debug' and 'include_dir' under the 'Tbb' header in the configuration file")
-
-     
-def buildTbb(root,config):
+def configure(root,config):
     pass
 
+def build(root,config):
+    pass
+
+def install(root,config):
+    pass
     
 
         

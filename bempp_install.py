@@ -22,7 +22,7 @@
 
 
 import sys,os
-from py_modules.tools import writeOptions, setDefaultConfigOption, pythonInfo
+from py_modules.tools import writeOptions, setDefaultConfigOption, pythonInfo, checkCreateDir
 from ConfigParser import ConfigParser
 from optparse import OptionParser
 
@@ -50,44 +50,60 @@ def module_path():
         return os.path.split(os.path.abspath(sys.executable))[0]
     return os.path.split(os.path.abspath(__file__))[0]
 
+def initialize(root,config):
+    """Create the directories"""
+
+    prefix=config.get('Main','prefix')
+    checkCreateDir(prefix+"/bempp")
+    checkCreateDir(prefix+"/bempp/lib")
+    checkCreateDir(prefix+"/bempp/include")
+    checkCreateDir(root+"/contrib/files")
+
+def downloadAll(root,config):
+    #armadillo.download(root,config)
+    #tbb.download(root,config)
+    #mkl.download(root,config)
+    #ahmed.download(root,config)
+    boost.download(root,config)
+
+def prepareAll(root,config):
+    #armadillo.prepare(root,config)
+    #tbb.prepare(root,config)
+    #mkl.prepare(root,config)
+    #ahmed.prepare(root,config)
+    boost.prepare(root,config)
+    
 def configureAll(root,config):
-    mkl.configureMkl(root,config)
-    boost.configureBoost(root,config)
-    dune.configureDune(root,config)
-    tbb.configureTbb(root,config)
-    armadillo.configureArmadillo(root,config)
-    trilinos.configureTrilinos(root,config)
-    ahmed.configureAhmed(root,config)
-    bempp.configureBempp(root,config)
+    #mkl.configureMkl(root,config)
+    #boost.configureBoost(root,config)
+    #dune.configureDune(root,config)
+    #tbb.configureTbb(root,config)
+    #armadillo.configureArmadillo(root,config)
+    #trilinos.configureTrilinos(root,config)
+    #ahmed.configureAhmed(root,config)
+    #bempp.configureBempp(root,config)
+    pass
 
 def buildAll(root,config):
-    mkl.buildMkl(root,config)
-    boost.buildBoost(root,config)
-    dune.buildDune(root,config)
-    tbb.buildTbb(root,config)
-    armadillo.buildArmadillo(root,config)
-    trilinos.buildTrilinos(root,config)
-    ahmed.buildAhmed(root,config)
-    bempp.buildBempp(root,config)
+    #mkl.buildMkl(root,config)
+    #boost.buildBoost(root,config)
+    #dune.buildDune(root,config)
+    #tbb.buildTbb(root,config)
+    #armadillo.buildArmadillo(root,config)
+    #trilinos.buildTrilinos(root,config)
+    #ahmed.buildAhmed(root,config)
+    #bempp.buildBempp(root,config)
+    pass
 
 def prepare(root,config):
     # Test whether the main options are present
     if not config.has_option('Main','prefix'): raise Exception('prefix not defined')
-    if not config.has_option('Main','cc'): raise Exception('cc not defined')
-    if not config.has_option('Main','cxx'): raise Exception('cxx not defined')
-    if not config.has_option('Main','root_dir'): config.set('Main','root_dir',root)
-    if not config.has_option('Main','architecture'): config.set('Main','architecture','intel64')
-    if not config.has_option('Main','cflags'): config.set('Main','cflags',"")
-    if not config.has_option('Main','cxxflags'): config.set('Main','cxxflags',"")
-
-
-    prefix=config.get('Main','prefix')
-    if not os.path.isdir(prefix+"/bempp"):
-        os.mkdir(prefix+"/bempp")
-        os.mkdir(prefix+"/bempp/contrib")
-        os.mkdir(prefix+"/bempp/lib")
-    if not os.path.isdir(root+"/contrib/files"):
-        os.mkdir(root+"/contrib/files")
+    setDefaultConfigOption(config,'Main','cc','gcc')
+    setDefaultConfigOption(config,'Main','cxx','g++')
+    setDefaultConfigOption(config,'Main','architecture','intel64')
+    setDefaultConfigOption(config,'Main','cflags',"")
+    setDefaultConfigOption(config,'Main','cxxflags',"")
+    setDefaultConfigOption(config,'Main','root_dir',root)
 
     # Add the correct architecture parameters
     cflags = config.get('Main','cflags')
@@ -125,13 +141,28 @@ def prepare(root,config):
 if __name__ == "__main__":
  
     parser = OptionParser()
+    parser.add_option("-i", "--initialize", action="store_true", dest="initialize", default=False)
     parser.add_option("-c", "--configure", action="store_true", dest="configure", default=False)
     parser.add_option("-b", "--build", action="store_true", dest="build", default=False)
+    parser.add_option("-d", "--download", action="store_true", dest="download", default=False)
+    parser.add_option("-p", "--prepare", action="store_true", dest="prepare", default=False)
     (options,args) = parser.parse_args()
     root=module_path()
     config=ConfigParser()
-    config.read(args[0])
+    optfile = args[0]
+    optfile_updated = optfile+".new"
+    config.read(optfile)
+    if options.initialize: initialize(root,config)
+    if options.download:
+        downloadAll(root,config)
+    if options.prepare:
+        prepareAll(root,config)
+        opt_fp = open(optfile_updated,'w')
+        config.write(opt_fp)
+        opt_fp.close()
     if options.configure:
+        config = ConfigParser()
+        config.read(optfile_updated)
         prepare(root,config)
         configureAll(root,config)
         writeOptions(root,config)

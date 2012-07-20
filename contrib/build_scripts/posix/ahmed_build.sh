@@ -8,7 +8,7 @@ cd build
 cmake \
  -D CMAKE_CXX_COMPILER:STRING:STRING=$Main_cxx \
  -D CMAKE_C_COMPILER:STRING=$Main_cc \
- -D CMAKE_INSTALL_PREFIX:PATH=$Main_prefix/bempp/contrib/ahmed \
+ -D CMAKE_INSTALL_PREFIX:PATH=$Main_prefix/bempp \
  -D CMAKE_BUILD_TYPE:STRING=Release \
  -D CMAKE_CXX_FLAGS:STRING=$Main_cxxflags \
  -D CMAKE_C_FLAGS:STRING=$Main_cflags \
@@ -16,5 +16,3 @@ cmake \
  -D LAPACK_LIBS:STRING=$LAPACK_lib \
  -D ENABLE_METIS:BOOL=OFF \
  ..
-make
-make install

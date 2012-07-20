@@ -1,3 +1,5 @@
+import os
+
 ##########################
 
 # The following function extracts the tar gz files. It is taken from
@@ -52,12 +54,12 @@ def writeOptions(root,config):
 
 ############################
 
-def setDefaultConfigOption(config,section,option,value):
+def setDefaultConfigOption(config,section,option,value, overwrite=False):
     """Enter a default option into the ConfigParser object 'config'. If option already exists returns
        the existing value, otherwise the value 'value'.
     """
 
-    if config.has_option(section,option):
+    if config.has_option(section,option) and not overwrite:
         return config.get(section,option)
     else:
         if not config.has_section(section): config.add_section(section)
@@ -85,3 +87,14 @@ def pythonInfo():
     include = sys.prefix+"/include"
     return (exe,lib,include)
 
+def download(fname,url,dir):
+    """Download a file from a url into the directory dir if the file does not already exist"""
+    import urllib
+    if not os.path.isfile(dir+"/"+fname):
+        print "Downloading "+fname+" ..."
+        urllib.urlretrieve(url,dir+"/"+fname)
+
+def checkCreateDir(dir):
+    """Create a directory if it does not yet exist"""
+    if not os.path.isdir(dir):
+        os.mkdir(dir)
