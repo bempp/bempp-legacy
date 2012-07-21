@@ -33,6 +33,11 @@ def prepare(root,config):
         ahmed_fname=config.get('AHMED','file_name')
         config.set('AHMED','with_ahmed','ON') 
         prefix=config.get('Main','prefix')
+        arch = config.get('Main','architecture')
+        if arch == 'i386':
+            config.set('AHMED','enable64','OFF')
+        else:
+            config.set('AHMED','enable64','ON')
         ahmed_full_dir=root+"/contrib/ahmed"
         if os.path.isdir(ahmed_full_dir): shutil.rmtree(ahmed_full_dir)
         if sys.platform.startswith('darwin'):
@@ -50,6 +55,7 @@ def prepare(root,config):
         config.set('AHMED','with_ahmed','OFF')
 
 def configure(root,config):
+    prefix = config.get('Main','prefix')
     if tools.to_bool(config.get('AHMED','enable_ahmed')):
         print "Configure AHMED"
         cwd=os.getcwd()
@@ -60,10 +66,11 @@ def configure(root,config):
 
 def build(root,config):
     if tools.to_bool(config.get('AHMED','enable_ahmed')):
+        njobs = tools.to_int(config.get('Main','build_jobs',1))
         print "Build AHMED"
         cwd=os.getcwd()
         os.chdir(root+"/contrib/ahmed/build")
-        subprocess.check_call("make",shell=True)
+        subprocess.check_call("make -j"+str(njobs),shell=True)
         os.chdir(cwd)
 
 def install(root,config):

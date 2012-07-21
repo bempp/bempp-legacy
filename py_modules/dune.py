@@ -60,27 +60,48 @@ def configure(root,config):
     dune_install_dir=prefix+"/bempp"
     cxx=config.get('Main','cxx')
     cc=config.get('Main','cc')
-    print "Build Dune"
-    cwd=os.getcwd()
-    os.chdir(root+"/contrib/dune")
-    f=open('dune_opts.ops','w')
     cflags = config.get('Main','cflags')
     cxxflags = config.get('Main','cxxflags')
-    f.write("CONFIGURE_FLAGS=\" CXX="+cxx+" CC="+cc+" CXXFLAGS=\""+cxxflags+"\" CFLAGS=\""+cflags+"\" --enable-shared=yes --disable-documentation --enable-static=no --prefix="+dune_install_dir+"\"")
-    f.close()
-    subprocess.check_call("./dune-common/bin/dunecontrol --opts=./dune_opts.ops all",shell=True)
+    cwd=os.getcwd()
+
+    njobs = tools.to_int(config.get('Main','build_jobs',1))
+    config_string_common = "CC="+cc+" CXX="+cxx+" CFLAGS='"+cflags+"' CXXFLAGS='"+cxxflags+"' ./configure --enable-shared=yes --disable-documentation --enable-static=no --prefix="+dune_install_dir
+    config_string_grid = config_string_common+" --with-dune-common="+root+"/contrib/dune/dune-common"
+    config_string_localfunctions = config_string_grid+" --with-dune-grid="+root+"/contrib/dune/dune-grid"
+    os.chdir(root+"/contrib/dune/dune-common")
+    subprocess.check_call(config_string_common,shell=True)
+    subprocess.check_call("make -j"+str(njobs),shell=True)
+    os.chdir(cwd)
+
+    os.chdir(root+"/contrib/dune/dune-grid")
+    subprocess.check_call(config_string_grid,shell=True)
+    subprocess.check_call("make -j"+str(njobs),shell=True)
+    os.chdir(cwd)
+
+    os.chdir(root+"/contrib/dune/dune-localfunctions")
+    subprocess.check_call(config_string_localfunctions,shell=True)
+    subprocess.check_call("make -j"+str(njobs),shell=True)
     os.chdir(cwd)
 
 def build(root,config):
-    cwd = os.getcwd()
-    os.chdir(root+"/contrib/dune")
-    subprocess.check_call("./dune-common/bin/dunecontrol make",shell=True)
-    
+    pass # Has already been built in the configure step
+
+
 def install(root,config):
-    cwd = os.getcwd()
-    ow.chdir(root+"/contrib/dune")
-    subprocess.check_call("./dune-common/bin/dunecontrol make install",shell=True)
-        
+
+    prefix=config.get('Main','prefix')
+    cwd=os.getcwd()
+
+    os.chdir(root+"/contrib/dune/dune-grid")
+    subprocess.check_call("make install",shell=True)
+    os.chdir(cwd)
+
+    os.chdir(root+"/contrib/dune/dune-localfunctions")
+    subprocess.check_call("make install",shell=True)
+    os.chdir(cwd)
+
+    os.chdir(root+"/contrib/dune/dune-foamgrid")
+    subprocess.check_call("find . -name '*.hh' | cpio -pdm "+prefix+"/bempp/include",shell=True)
     
         
         

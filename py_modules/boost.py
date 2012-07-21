@@ -73,10 +73,11 @@ def build(root,config):
 
     boost_full_dir=root+"/contrib/"+boost_dir
     prefix=config.get('Main','prefix')
+    njobs = tools.to_int(config.get('Main','build_jobs',1))
     print "Build Boost"
     cwd=os.getcwd()
-    os.chdir(boost_full_dir)
-    subprocess.check_call("make",shell=True)
+    os.chdir(boost_full_dir+"/build")
+    subprocess.check_call("make -j"+str(njobs),shell=True)
     os.chdir(cwd)
     
 def install(root,config):
@@ -85,7 +86,7 @@ def install(root,config):
     prefix=config.get('Main','prefix')
     print "Install Boost"
     cwd=os.getcwd()
-    os.chdir(boost_full_dir)
+    os.chdir(boost_full_dir+"/build")
     subprocess.check_call("make install",shell=True)
     os.chdir(cwd)
 

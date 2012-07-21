@@ -66,16 +66,21 @@ def configure(root,config):
     os.chdir(cwd)
 
 def build(root,config):
+
+    trilinos_full_dir=root+"/contrib/"+trilinos_dir
+
     print "Build Trilinos"
+    njobs = tools.to_int(config.get('Main','build_jobs',1))
     cwd=os.getcwd()
-    os.chdir(trilinos_full_dir)
-    subprocess.check_call("make",shell=True)
+    os.chdir(trilinos_full_dir+"/build")
+    subprocess.check_call("make -j"+str(njobs),shell=True)
     os.chdir(cwd)
 
 def install(root,config):
     print "Install Trilinos"
+    trilinos_full_dir=root+"/contrib/"+trilinos_dir
     cwd=os.getcwd()
-    os.chdir(trilinos_full_dir)
+    os.chdir(trilinos_full_dir+"/build")
     subprocess.check_call("make install",shell=True)
     os.chdir(cwd)
 

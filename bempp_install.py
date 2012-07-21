@@ -50,16 +50,10 @@ def module_path():
         return os.path.split(os.path.abspath(sys.executable))[0]
     return os.path.split(os.path.abspath(__file__))[0]
 
-def initialize(root,config):
-    """Create the directories"""
+def downloadAll(root,config):
 
-    prefix=config.get('Main','prefix')
-    checkCreateDir(prefix+"/bempp")
-    checkCreateDir(prefix+"/bempp/lib")
-    checkCreateDir(prefix+"/bempp/include")
     checkCreateDir(root+"/contrib/files")
 
-def downloadAll(root,config):
     armadillo.download(root,config)
     tbb.download(root,config)
     mkl.download(root,config)
@@ -70,35 +64,54 @@ def downloadAll(root,config):
     
 
 def prepareAll(root,config):
-    armadillo.prepare(root,config)
-    tbb.prepare(root,config)
+
+    prefix=config.get('Main','prefix')
+    checkCreateDir(prefix+"/bempp")
+    checkCreateDir(prefix+"/bempp/lib")
+    checkCreateDir(prefix+"/bempp/include")
+
+    #armadillo.prepare(root,config)
+    #tbb.prepare(root,config)
     mkl.prepare(root,config)
     ahmed.prepare(root,config)
-    boost.prepare(root,config)
-    trilinos.prepare(root,config)
-    dune.prepare(root,config)
+    #boost.prepare(root,config)
+    #trilinos.prepare(root,config)
+    #dune.prepare(root,config)
     
 def configureAll(root,config):
+    
     mkl.configure(root,config)
-    boost.configure(root,config)
-    dune.configure(root,config)
-    tbb.configure(root,config)
-    armadillo.configure(root,config)
-    trilinos.configure(root,config)
+    #boost.configure(root,config)
+    #dune.configure(root,config)
+    #tbb.configure(root,config)
+    #armadillo.configure(root,config)
+    #trilinos.configure(root,config)
     ahmed.configure(root,config)
-    #bempp.configureBempp(root,config)
+    #bempp.configure(root,config)
     pass
 
 def buildAll(root,config):
-    #mkl.buildMkl(root,config)
-    #boost.buildBoost(root,config)
-    #dune.buildDune(root,config)
-    #tbb.buildTbb(root,config)
-    #armadillo.buildArmadillo(root,config)
-    #trilinos.buildTrilinos(root,config)
-    #ahmed.buildAhmed(root,config)
-    #bempp.buildBempp(root,config)
+
+    mkl.build(root,config)
+    #boost.build(root,config)
+    #tbb.build(root,config)
+    #armadillo.build(root,config)
+    #trilinos.build(root,config)
+    ahmed.build(root,config)
+    #dune.build(root,config)
+    #bempp.build(root,config)
     pass
+
+def installAll(root,config):
+
+    mkl.install(root,config)
+    #dune.install(root,config)
+    #tbb.install(root,config)
+    #armadillo.install(root,config)
+    #boost.install(root,config)
+    #trilinos.install(root,config)
+    ahmed.install(root,config)
+    
 
 def prepare(root,config):
     # Test whether the main options are present
@@ -109,6 +122,7 @@ def prepare(root,config):
     setDefaultConfigOption(config,'Main','cflags',"")
     setDefaultConfigOption(config,'Main','cxxflags',"")
     setDefaultConfigOption(config,'Main','root_dir',root)
+    setDefaultConfigOption(config,'Main','build_jobs',1)
 
     # Add the correct architecture parameters
     cflags = config.get('Main','cflags')
@@ -146,18 +160,18 @@ def prepare(root,config):
 if __name__ == "__main__":
  
     parser = OptionParser()
-    parser.add_option("-i", "--initialize", action="store_true", dest="initialize", default=False)
     parser.add_option("-c", "--configure", action="store_true", dest="configure", default=False)
     parser.add_option("-b", "--build", action="store_true", dest="build", default=False)
     parser.add_option("-d", "--download", action="store_true", dest="download", default=False)
     parser.add_option("-p", "--prepare", action="store_true", dest="prepare", default=False)
+    parser.add_option("-i", "--install", action="store_true", dest="install", default=False)
     (options,args) = parser.parse_args()
     root=module_path()
     config=ConfigParser()
     optfile = args[0]
     optfile_updated = optfile+".new"
     config.read(optfile)
-    if options.initialize: initialize(root,config)
+    prepare(root,config)
     if options.download:
         downloadAll(root,config)
     if options.prepare:
@@ -165,14 +179,19 @@ if __name__ == "__main__":
         opt_fp = open(optfile_updated,'w')
         config.write(opt_fp)
         opt_fp.close()
+        writeOptions(root,config)
     if options.configure:
         config = ConfigParser()
         config.read(optfile_updated)
-        prepare(root,config)
         configureAll(root,config)
-        writeOptions(root,config)
     if options.build:
+        config = ConfigParser()
+        config.read(optfile_updated)
         buildAll(root,config)
+    if options.install:
+        config = ConfigParser()
+        config.read(optfile_updated)
+        installAll(root,config)
 
 
     

@@ -89,12 +89,20 @@ def pythonInfo():
 
 def download(fname,url,dir):
     """Download a file from a url into the directory dir if the file does not already exist"""
-    import urllib
+    from py_modules.urlgrabber import urlgrab,progress
     if not os.path.isfile(dir+"/"+fname):
-        print "Downloading "+fname+" ..."
-        urllib.urlretrieve(url,dir+"/"+fname)
+        urlgrab(url,filename=dir+"/"+fname,progress_obj=progress.TextMeter(),reget='simple')
 
 def checkCreateDir(dir):
     """Create a directory if it does not yet exist"""
     if not os.path.isdir(dir):
         os.mkdir(dir)
+################################
+def to_int(s,min_val=1):
+    """Convert string s to integer. if int(s)<min_val return min_val"""
+    i = int(s)
+    if i>min_val:
+        return i
+    else:
+        return min_val
+
