@@ -48,8 +48,8 @@ def prepare(root,config):
             for f in lapack_files: lapack_lib = lapack_lib+";"+lib_dir+"/"+f+".so"                    
         else:
             raise Exception("Platform not supported")
-        tools.setDefaultConfigOption(config,'BLAS','lib',blas_lib[1:])
-        tools.setDefaultConfigOption(config,'LAPACK','lib',lapack_lib[1:])
+        tools.setDefaultConfigOption(config,'BLAS','lib',blas_lib[1:],overwrite=True)
+        tools.setDefaultConfigOption(config,'LAPACK','lib',lapack_lib[1:],overwrite=True)
 
 
 def configure(root,config):

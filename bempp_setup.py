@@ -22,7 +22,7 @@
 
 
 import sys,os
-from py_modules.tools import writeOptions, setDefaultConfigOption, pythonInfo, checkCreateDir
+from py_modules.tools import writeOptions, setDefaultConfigOption, pythonInfo, checkCreateDir, testBlas
 from ConfigParser import ConfigParser
 from optparse import OptionParser
 
@@ -106,6 +106,11 @@ def prepare(root,config):
     setDefaultConfigOption(config,'Main','root_dir',root)
     setDefaultConfigOption(config,'Main','build_jobs',1)
 
+    # Set empty BLAS/Lapack options if none exists
+
+    setDefaultConfigOption(config,'BLAS','lib',"")
+    setDefaultConfigOption(config,'LAPACK','lib',"")
+
     # Add the correct architecture parameters
     cflags = config.get('Main','cflags')
     cxxflags = config.get('Main','cxxflags')
@@ -154,6 +159,7 @@ if __name__ == "__main__":
     if options.configure:
         downloadDependencies(root,config)
         prepareDependencies(root,config)
+        testBlas(root,config)
         opt_fp = open(optfile_generated,'w')
         config.write(opt_fp)
         opt_fp.close()

@@ -20,6 +20,7 @@
 
 import os,urllib,shutil,subprocess,sys
 from py_modules import tools
+from py_modules import python_patch as py_patch
 
 def download(root,config):
     pass
@@ -75,11 +76,19 @@ def build(root,config):
 
 def install(root,config):
     if tools.to_bool(config.get('AHMED','enable_ahmed')):
+        prefix = config.get('Main','prefix')
         print "Install AHMED"
         cwd=os.getcwd()
         os.chdir(root+"/contrib/ahmed/build")
         subprocess.check_call("make install",shell=True)
+        os.chdir(prefix+"/bempp/include/AHMED")
+        g77 = tools.to_bool(config.get('AHMED','with_g77'))
+        print "Patching AHMED for G77 calling BLAS convention"
+        patch=py_patch.fromfile(root+"/contrib/patch/ahmed_blas.patch")
+        patch.apply()
         os.chdir(cwd)
+        
+        
         
         
             

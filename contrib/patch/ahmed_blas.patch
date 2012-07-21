@@ -1,0 +1,11 @@
+--- blas.h	2012-06-11 15:50:28.000000000 +0100
++++ blas.h.new	2012-07-21 22:54:10.000000000 +0100
+@@ -12,6 +12,8 @@
+ #ifndef BLAS_H
+ #define BLAS_H
+ 
++#define G77CONVENTION
++
+ #include <assert.h>
+ #include <stdlib.h>
+ #include "cmplx.h"    // Complex arthimetic

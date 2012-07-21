@@ -52,7 +52,7 @@ if (WITH_AHMED)
 endif ()
 
 # Dune
-include_directories(${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/include)
+include_directories(${CMAKE_INSTALL_PREFIX}/bempp/include)
 target_link_libraries (bempp
 	${LIB_DUNE_COMMON}
 	${LIB_DUNE_GRID}
@@ -80,33 +80,11 @@ install(TARGETS bempp
   ARCHIVE DESTINATION bempp/lib)
 
 # Install headers
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/lib/ DESTINATION bempp/include FILES_MATCHING PATTERN "*.hpp")
-install(FILES ${COMMON_HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/bempp/include/common)
-
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/lib/ DESTINATION bempp/include/bempp FILES_MATCHING PATTERN "*.hpp")
+install(FILES ${COMMON_HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/bempp/include/bempp/common)
 
 # Create correct rpath for installation
-SET(BEMPP_RPATH "\$ORIGIN/../contrib/dune/lib;\$ORIGIN/../contrib/trilinos/lib;\$ORIGIN/../contrib/boost/lib/boost-1.49.0")
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-   # Add Tbb for Mac
-   SET(BEMPP_RPATH "${BEMPP_RPATH};\$ORIGIN/../contrib/tbb/lib")
-endif()
-if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-   # Add Tbb for Linux
-   SET(BEMPP_RPATH "${BEMPP_RPATH};\$ORIGIN/../contrib/tbb/lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21")
-endif()
-if (WITH_AHMED)
-   get_filename_component(AHMED_PATH "${AHMED_LIB}" PATH)
-   get_filename_component(METIS_PATH "${METIS_LIB}" PATH)
-   # Check if it is not a system dir
-   LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${AHMED_PATH}" isSystemDir)
-   IF("${isSystemDir}" STREQUAL "-1")
-   		       SET(BEMPP_RPATH "${BEMPP_RPATH};${AHMED_PATH}")   		          		       
-   ENDIF("${isSystemDir}" STREQUAL "-1") 
-   LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${METIS_PATH}" isSystemDir)
-   IF("${isSystemDir}" STREQUAL "-1")
-   		       SET(BEMPP_RPATH "${BEMPP_RPATH};${METIS_PATH}")   		          		       
-   ENDIF("${isSystemDir}" STREQUAL "-1")    
-endif()
+SET(BEMPP_RPATH "\$ORIGIN")
 
 # Add a target to generate API documentation with Doxygen
 find_package(Doxygen)

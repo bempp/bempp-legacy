@@ -1,6 +1,6 @@
-import os
+import os,subprocess,sys
+from subprocess import CalledProcessError
 
-##########################
 
 # The following function extracts the tar gz files. It is taken from
 # http://code.activestate.com/recipes/576714-extract-a-compressed-file/
@@ -26,7 +26,6 @@ def extract_file(path, to_directory='.'):
     finally:
         os.chdir(cwd)
 
-##########################
 # Taken from 
 # http://stackoverflow.com/questions/715417/converting-from-a-string-to-boolean-in-python
 
@@ -40,7 +39,6 @@ def to_bool(value):
     if str(value).lower() in ("off", "no",  "n", "false", "f", "0", "0.0", "", "none", "[]", "{}"): return False
     raise Exception('Invalid value for boolean conversion: ' + str(value))
 
-##########################
 def writeOptions(root,config):
     """Write out options in a format suitable for a shell script"""
    
@@ -52,7 +50,6 @@ def writeOptions(root,config):
             f.write(section+"_"+option[0]+"="+"\""+option[1]+"\""+"\n")
     f.close()
 
-############################
 
 def setDefaultConfigOption(config,section,option,value, overwrite=False):
     """Enter a default option into the ConfigParser object 'config'. If option already exists returns
@@ -65,7 +62,6 @@ def setDefaultConfigOption(config,section,option,value, overwrite=False):
         if not config.has_section(section): config.add_section(section)
         config.set(section,option,value)
         return value
-############################
 
 def pythonInfo():
     """Return a tuple (exe,lib,include) with the paths of the Python Interpeter, Python library and include directory"""
@@ -97,7 +93,7 @@ def checkCreateDir(dir):
     """Create a directory if it does not yet exist"""
     if not os.path.isdir(dir):
         os.mkdir(dir)
-################################
+
 def to_int(s,min_val=1):
     """Convert string s to integer. if int(s)<min_val return min_val"""
     i = int(s)
@@ -105,4 +101,55 @@ def to_int(s,min_val=1):
         return i
     else:
         return min_val
+
+def testBlas(root,config):
+    """Test if BLAS functions correctly and set whether G77 calling convention is needed"""
+    cwd = os.getcwd()
+    blas = config.get('BLAS','lib')
+    cxx=config.get('Main','cxx')
+    cc=config.get('Main','cc')
+    cflags = config.get('Main','cflags')
+    cxxflags = config.get('Main','cxxflags')
+    prefix = config.get('Main','prefix')
+
+    if sys.platform.startswith('darwin'):
+        ld_path = "export DYLD_LIBRARY_PATH="+prefix+"/bempp/lib:$DYLD_LIBRARY_PATH; "
+    elif sys.platform.startswith('linux'):
+        ld_path = "export LD_LIBRARY_PATH="+prefix+"/bempp/lib:$LD_LIBRARY_PATH; "
+    else:
+        raise Exception("Wrong architecture.")
+
+
+    os.mkdir(root+"/test_blas/build")
+    os.chdir(root+"/test_blas/build")
+    config_string = "CC="+cc+" CXX="+cxx+" CFLAGS='"+cflags+"' CXXFLAGS='"+cxxflags+"' cmake -D BLAS_LIBRARIES:STRING=\""+blas+"\" .."
+    subprocess.check_call(config_string,shell=True)
+    subprocess.check_call("make",shell=True)
+    try:
+        subprocess.check_call(ld_path+ "./test_blas",shell=True)
+    except:
+        os.chdir(cwd)
+        raise Exception("BLAS is not working correctly. Please check your libraries and your DYLD_LIBRARY_PATH or LD_LIBRARY_PATH settings.")
+    # Test for zdotc convention
+    g77 = False
+    try:
+        subprocess.check_call(ld_path+"./test_zdotc",shell=True)
+    except:
+        g77 = True
+    if g77:
+        try:
+            subprocess.check_call(ld_path+"./test_zdotc_g77",shell=True)
+        except:
+            os.chdir(cwd)
+            raise Exception("ZDOTC works neither in G77 nor in GFortran modus. Please check your BLAS libraries")
+        setDefaultConfigOption(config,'AHMED','with_g77','ON',overwrite=True)
+    else:
+        setDefaultConfigOption(config,'AHMED','with_g77','OFF',overwrite=True)
+    os.chdir(cwd)
+    
+        
+    
+        
+    
+    
 
