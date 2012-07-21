@@ -92,6 +92,10 @@ def install(root,config):
     prefix=config.get('Main','prefix')
     cwd=os.getcwd()
 
+    os.chdir(root+"/contrib/dune/dune-common")
+    subprocess.check_call("make install",shell=True)
+    os.chdir(cwd)
+
     os.chdir(root+"/contrib/dune/dune-grid")
     subprocess.check_call("make install",shell=True)
     os.chdir(cwd)

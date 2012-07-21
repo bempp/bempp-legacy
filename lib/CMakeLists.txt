@@ -10,7 +10,7 @@ configure_file(
         ${CMAKE_BINARY_DIR}/include/common/config_opencl.hpp)
 configure_file(
         ${CMAKE_SOURCE_DIR}/lib/common/config_alugrid.hpp.in
-        ${CMAKE_BINARY_DIR}/include/common/config_alugrid.hpp)
+        ${CMAKE_BINARY_DIR}/common/config_alugrid.hpp)
 configure_file(
         ${CMAKE_SOURCE_DIR}/lib/common/config_data_types.hpp.in
         ${CMAKE_BINARY_DIR}/include/common/config_data_types.hpp)

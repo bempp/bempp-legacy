@@ -1,6 +1,6 @@
 #!/usr/bin/sh
 set -e
-. ../../options.cfg
+. ../../.options.cfg
 
 # mkdir $Main_prefix/bempp/contrib/trilinos
 mkdir -p $Main_prefix/bempp/contrib

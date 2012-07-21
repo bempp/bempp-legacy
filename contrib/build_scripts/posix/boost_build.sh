@@ -1,6 +1,6 @@
 #!/bin/sh
 set -e
-. ../../options.cfg
+. ../../.options.cfg
 
 mkdir -p build
 

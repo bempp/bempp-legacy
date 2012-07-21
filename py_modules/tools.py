@@ -44,7 +44,7 @@ def to_bool(value):
 def writeOptions(root,config):
     """Write out options in a format suitable for a shell script"""
    
-    fname=root+"/options.cfg"
+    fname=root+"/.options.cfg"
     f=open(fname,'w')
     f.write("#This file is created automatically by bemppInstall.py\n")
     for section in config.sections():

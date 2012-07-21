@@ -27,6 +27,8 @@ from ConfigParser import ConfigParser
 from optparse import OptionParser
 
 
+
+
 import py_modules.boost as boost
 import py_modules.armadillo as armadillo
 import py_modules.tbb as tbb
@@ -35,6 +37,16 @@ import py_modules.trilinos as trilinos
 import py_modules.bempp as bempp
 import py_modules.ahmed as ahmed
 import py_modules.mkl as mkl
+
+libraries = {'tbb':tbb,
+             'mkl':mkl,
+             'armadillo':armadillo,
+             'boost':boost,
+             'dune':dune,
+             'trilinos':trilinos,
+             'ahmed':ahmed,
+                }
+
 
 ###########################
 
@@ -50,67 +62,37 @@ def module_path():
         return os.path.split(os.path.abspath(sys.executable))[0]
     return os.path.split(os.path.abspath(__file__))[0]
 
-def downloadAll(root,config):
+def downloadDependencies(root,config):
 
     checkCreateDir(root+"/contrib/files")
 
-    armadillo.download(root,config)
-    tbb.download(root,config)
-    mkl.download(root,config)
-    ahmed.download(root,config)
-    boost.download(root,config)
-    trilinos.download(root,config)
-    dune.download(root,config)
+    for dep in libraries:
+        libraries[dep].download(root,config)
     
-
-def prepareAll(root,config):
+def prepareDependencies(root,config):
 
     prefix=config.get('Main','prefix')
     checkCreateDir(prefix+"/bempp")
     checkCreateDir(prefix+"/bempp/lib")
     checkCreateDir(prefix+"/bempp/include")
 
-    #armadillo.prepare(root,config)
-    #tbb.prepare(root,config)
-    mkl.prepare(root,config)
-    ahmed.prepare(root,config)
-    #boost.prepare(root,config)
-    #trilinos.prepare(root,config)
-    #dune.prepare(root,config)
+    for dep in libraries:
+        libraries[dep].prepare(root,config)
     
-def configureAll(root,config):
+def configureDependencies(root,config):
     
-    mkl.configure(root,config)
-    #boost.configure(root,config)
-    #dune.configure(root,config)
-    #tbb.configure(root,config)
-    #armadillo.configure(root,config)
-    #trilinos.configure(root,config)
-    ahmed.configure(root,config)
-    #bempp.configure(root,config)
-    pass
+    for dep in libraries:
+        libraries[dep].configure(root,config)
 
-def buildAll(root,config):
+def buildDependencies(root,config):
 
-    mkl.build(root,config)
-    #boost.build(root,config)
-    #tbb.build(root,config)
-    #armadillo.build(root,config)
-    #trilinos.build(root,config)
-    ahmed.build(root,config)
-    #dune.build(root,config)
-    #bempp.build(root,config)
-    pass
+    for dep in libraries:
+        libraries[dep].build(root,config)
 
-def installAll(root,config):
+def installDependencies(root,config):
 
-    mkl.install(root,config)
-    #dune.install(root,config)
-    #tbb.install(root,config)
-    #armadillo.install(root,config)
-    #boost.install(root,config)
-    #trilinos.install(root,config)
-    ahmed.install(root,config)
+    for dep in libraries:
+        libraries[dep].install(root,config)
     
 
 def prepare(root,config):
@@ -161,37 +143,36 @@ if __name__ == "__main__":
  
     parser = OptionParser()
     parser.add_option("-c", "--configure", action="store_true", dest="configure", default=False)
-    parser.add_option("-b", "--build", action="store_true", dest="build", default=False)
-    parser.add_option("-d", "--download", action="store_true", dest="download", default=False)
-    parser.add_option("-p", "--prepare", action="store_true", dest="prepare", default=False)
-    parser.add_option("-i", "--install", action="store_true", dest="install", default=False)
+    parser.add_option("-i", "--install", action="store", type="string", dest="install", default=False)
     (options,args) = parser.parse_args()
     root=module_path()
     config=ConfigParser()
     optfile = args[0]
-    optfile_updated = optfile+".new"
+    optfile_generated = optfile+".generated"
     config.read(optfile)
     prepare(root,config)
-    if options.download:
-        downloadAll(root,config)
-    if options.prepare:
-        prepareAll(root,config)
-        opt_fp = open(optfile_updated,'w')
+    if options.configure:
+        downloadDependencies(root,config)
+        prepareDependencies(root,config)
+        opt_fp = open(optfile_generated,'w')
         config.write(opt_fp)
         opt_fp.close()
-        writeOptions(root,config)
-    if options.configure:
-        config = ConfigParser()
-        config.read(optfile_updated)
-        configureAll(root,config)
-    if options.build:
-        config = ConfigParser()
-        config.read(optfile_updated)
-        buildAll(root,config)
     if options.install:
         config = ConfigParser()
-        config.read(optfile_updated)
-        installAll(root,config)
+        config.read(optfile_generated)
+        writeOptions(root,config)
+        if options.install in libraries:
+            libraries[options.install].configure(root,config)
+            libraries[options.install].build(root,config)
+            libraries[options.install].install(root,config)
+        elif options.install == "all":
+            configureDependencies(root,config)
+            buildDependencies(root,config)
+            installDependencies(root,config)
+        else:
+            raise Exception("Library name not recognized.")
+        
+        
 
 
     
