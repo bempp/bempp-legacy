@@ -68,7 +68,7 @@ def configure(root,config):
 
 def build(root,config):
     if tools.to_bool(config.get('AHMED','enable_ahmed')):
-        njobs = tools.to_int(config.get('Main','build_jobs',1))
+        njobs = tools.to_int(config.get('Main','build_jobs'))
         print "Build AHMED"
         cwd=os.getcwd()
         os.chdir(root+"/contrib/ahmed/build")

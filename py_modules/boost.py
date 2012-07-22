@@ -74,7 +74,7 @@ def build(root,config):
 
     boost_full_dir=root+"/contrib/"+boost_dir
     prefix=config.get('Main','prefix')
-    njobs = tools.to_int(config.get('Main','build_jobs',1))
+    njobs = tools.to_int(config.get('Main','build_jobs'))
     print "Build Boost"
     cwd=os.getcwd()
     os.chdir(boost_full_dir+"/build")

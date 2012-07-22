@@ -44,7 +44,7 @@ libraries = {'tbb':tbb,
              'boost':boost,
              'dune':dune,
              'trilinos':trilinos,
-             'ahmed':ahmed,
+             'ahmed':ahmed
                 }
 
 
@@ -165,6 +165,7 @@ if __name__ == "__main__":
             cleanUp(root,config)
             downloadDependencies(root,config)
             prepareDependencies(root,config)
+            bempp.prepare(root,config)
             testBlas(root,config)
             testLapack(root,config)
         except Exception as e:
@@ -190,6 +191,13 @@ if __name__ == "__main__":
             configureDependencies(root,config)
             buildDependencies(root,config)
             installDependencies(root,config)
+            bempp.configure(root,config)
+            bempp.build(root,config)
+            bempp.install(root,config)
+        elif options.install == "bempp":
+            bempp.configure(root,config)
+            bempp.build(root,config)
+            bempp.install(root,config)
         else:
             raise Exception("Library name not recognized.")
         

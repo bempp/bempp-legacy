@@ -64,7 +64,7 @@ def configure(root,config):
     cxxflags = config.get('Main','cxxflags')
     cwd=os.getcwd()
 
-    njobs = tools.to_int(config.get('Main','build_jobs',1))
+    njobs = tools.to_int(config.get('Main','build_jobs'))
     config_string_common = "CC="+cc+" CXX="+cxx+" CFLAGS='"+cflags+"' CXXFLAGS='"+cxxflags+"' ./configure --enable-shared=yes --disable-documentation --enable-static=no --prefix="+dune_install_dir
     config_string_grid = config_string_common+" --with-dune-common="+root+"/contrib/dune/dune-common"
     config_string_localfunctions = config_string_grid+" --with-dune-grid="+root+"/contrib/dune/dune-grid"
@@ -106,6 +106,7 @@ def install(root,config):
 
     os.chdir(root+"/contrib/dune/dune-foamgrid")
     subprocess.check_call("find . -name '*.hh' | cpio -pdm "+prefix+"/bempp/include",shell=True)
+    os.chdir(cwd)
     
         
         

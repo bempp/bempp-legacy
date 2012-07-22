@@ -71,7 +71,7 @@ def build(root,config):
     trilinos_full_dir=root+"/contrib/"+trilinos_dir
 
     print "Build Trilinos"
-    njobs = tools.to_int(config.get('Main','build_jobs',1))
+    njobs = tools.to_int(config.get('Main','build_jobs'))
     cwd=os.getcwd()
     os.chdir(trilinos_full_dir+"/build")
     subprocess.check_call("make -j"+str(njobs),shell=True)

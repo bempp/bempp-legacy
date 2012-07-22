@@ -19,7 +19,9 @@ include_directories(${CMAKE_BINARY_DIR}/include)
 # Find all source and header files
 file(GLOB_RECURSE LIB_SOURCES *.cpp)
 file(GLOB_RECURSE LIB_HEADERS *.hpp)
-file(GLOB COMMON_HEADERS ${CMAKE_BINARY_DIR}/include/common/*.hpp)
+file(GLOB COMMON_HEADERS ${CMAKE_BINARY_DIR}/include/bempp/common/*.hpp)
+file(GLOB CL_FILES ${CMAKE_SOURCE_DIR}/lib/fiber/CL/*.cl)
+file(GLOB CL_STRING_FILES ${CMAKE_SOURCE_DIR}/lib/fiber/CL/*.str)
 
 # Headers are ignored by make, but their list is used by IDEs
 # like Qt Creator and Visual Studio to generate project file list.
@@ -75,13 +77,25 @@ include_directories(${ARMADILLO_INCLUDE_DIR})
 
 # Install library
 install(TARGETS bempp
+  EXPORT BemppLibraryDepends
   RUNTIME DESTINATION bempp/bin
   LIBRARY DESTINATION bempp/lib
   ARCHIVE DESTINATION bempp/lib)
 
+# Install CMake files for the library
+install(EXPORT BemppLibraryDepends DESTINATION bempp/lib/cmake/Bempp)
+configure_file(
+	${CMAKE_SOURCE_DIR}/cmake/BemppConfig.cmake.in
+        ${CMAKE_BINARY_DIR}/lib/cmake/Bempp/BemppConfig.cmake)
+
+
 # Install headers
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/lib/ DESTINATION bempp/include/bempp FILES_MATCHING PATTERN "*.hpp")
-install(FILES ${COMMON_HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/bempp/include/bempp/common)
+install(FILES ${COMMON_HEADERS} DESTINATION bempp/include/bempp/common)
+install(FILES ${CL_FILES} DESTINATION bempp/include/bempp/fiber/CL)
+install(FILES ${CL_STRING_FILES} DESTINATION bempp/include/bempp/fiber/CL)
+install(FILES ${CMAKE_BINARY_DIR}/lib/cmake/Bempp/BemppConfig.cmake DESTINATION bempp/lib/cmake/Bempp)
+
 
 # Create correct rpath for installation
 SET(BEMPP_RPATH "\$ORIGIN")
