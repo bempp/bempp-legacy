@@ -3,7 +3,7 @@
 
 #include "../common/common.hpp"
 
-#include "config_trilinos.hpp"
+#include "bempp/common/config_trilinos.hpp"
 
 #ifdef WITH_TRILINOS
 #include <Thyra_SolveSupportTypes.hpp>

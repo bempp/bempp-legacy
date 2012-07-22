@@ -22,7 +22,7 @@
 #define bempp_discrete_sparse_boundary_operator_hpp
 
 #include "../common/common.hpp"
-#include "config_trilinos.hpp"
+#include "bempp/common/config_trilinos.hpp"
 
 #include "discrete_boundary_operator.hpp"
 

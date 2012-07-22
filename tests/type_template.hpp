@@ -21,7 +21,7 @@
 #ifndef bempp_type_template_hpp
 #define bempp_type_template_hpp
 
-#include "../common/config_data_types.hpp"
+#include "bempp/common/config_data_types.hpp"
 
 #include <boost/mpl/list.hpp>
 #include <complex>

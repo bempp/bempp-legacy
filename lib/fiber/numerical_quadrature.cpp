@@ -20,7 +20,7 @@
 
 #include "numerical_quadrature.hpp"
 
-#include "config_data_types.hpp"
+#include "bempp/common/config_data_types.hpp"
 
 // Hyena code
 #include "quadrature/galerkinduffy.hpp"

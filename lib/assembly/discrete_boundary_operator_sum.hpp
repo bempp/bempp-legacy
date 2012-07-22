@@ -21,7 +21,7 @@
 #ifndef bempp_discrete_boundary_operator_sum_hpp
 #define bempp_discrete_boundary_operator_sum_hpp
 
-#include "config_trilinos.hpp"
+#include "bempp/common/config_trilinos.hpp"
 
 #include "../common/common.hpp"
 

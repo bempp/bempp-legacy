@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "config_data_types.hpp"
-#include "config_opencl.hpp"
+#include "bempp/common/config_data_types.hpp"
+#include "bempp/common/config_opencl.hpp"
 #include "opencl_handler.hpp"
 
 #ifdef WITH_OPENCL

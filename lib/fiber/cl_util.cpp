@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "config_opencl.hpp"
+#include "bempp/common/config_opencl.hpp"
 
 #ifdef WITH_OPENCL
 

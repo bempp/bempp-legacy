@@ -1,20 +1,20 @@
 #Configure All Option files
 configure_file(
 	${CMAKE_SOURCE_DIR}/lib/common/config_trilinos.hpp.in
-        ${CMAKE_BINARY_DIR}/include/common/config_trilinos.hpp)
+        ${CMAKE_BINARY_DIR}/include/bempp/common/config_trilinos.hpp)
 configure_file(
 	${CMAKE_SOURCE_DIR}/lib/common/config_ahmed.hpp.in
-        ${CMAKE_BINARY_DIR}/include/common/config_ahmed.hpp)
+        ${CMAKE_BINARY_DIR}/include/bempp/common/config_ahmed.hpp)
 configure_file(
 	${CMAKE_SOURCE_DIR}/lib/common/config_opencl.hpp.in
-        ${CMAKE_BINARY_DIR}/include/common/config_opencl.hpp)
+        ${CMAKE_BINARY_DIR}/include/bempp/common/config_opencl.hpp)
 configure_file(
         ${CMAKE_SOURCE_DIR}/lib/common/config_alugrid.hpp.in
-        ${CMAKE_BINARY_DIR}/common/config_alugrid.hpp)
+        ${CMAKE_BINARY_DIR}/include/bempp/common/config_alugrid.hpp)
 configure_file(
         ${CMAKE_SOURCE_DIR}/lib/common/config_data_types.hpp.in
-        ${CMAKE_BINARY_DIR}/include/common/config_data_types.hpp)
-include_directories(${CMAKE_BINARY_DIR}/include/common)
+        ${CMAKE_BINARY_DIR}/include/bempp/common/config_data_types.hpp)
+include_directories(${CMAKE_BINARY_DIR}/include)
 
 # Find all source and header files
 file(GLOB_RECURSE LIB_SOURCES *.cpp)

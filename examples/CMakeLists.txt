@@ -1,13 +1,6 @@
-include_directories(${Trilinos_INCLUDE_DIRS} ${Trilinos_TPL_INCLUDE_DIRS})
-
-# Dune
-include_directories(${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/include)
-
-
-include_directories ("${PROJECT_SOURCE_DIR}/lib")
-include_directories(${CMAKE_BINARY_DIR}/include/common)
-include_directories(${ARMADILLO_INCLUDE_DIR})
-include_directories(${BOOST_INCLUDE_DIR})
+include_directories(${CMAKE_BINARY_DIR}/include)
+include_directories(${CMAKE_INSTALL_PREFIX}/bempp/include)
+include_directories ("${CMAKE_SOURCE_DIR}/lib")
 
 add_executable(dirichlet dirichlet.cpp meshes.cpp)
 add_executable(neumann neumann.cpp meshes.cpp)

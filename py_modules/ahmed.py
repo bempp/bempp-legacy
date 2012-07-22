@@ -42,9 +42,9 @@ def prepare(root,config):
         ahmed_full_dir=root+"/contrib/ahmed"
         tools.checkDeleteDirectory(ahmed_full_dir)
         if sys.platform.startswith('darwin'):
-            config.set('AHMED','lib',prefix+"/bempp/contrib/ahmed/lib/libAHMED.dylib")
+            config.set('AHMED','lib',prefix+"/bempp/lib/libAHMED.dylib")
         elif sys.platform.startswith('linux'):
-            config.set('AHMED','lib',prefix+"/bempp/contrib/ahmed/lib/libAHMED.so")
+            config.set('AHMED','lib',prefix+"/bempp/lib/libAHMED.so")
         else:
             raise Exception("Platform not supported")
         config.set('AHMED','include_dir',prefix+"/bempp/include/AHMED")

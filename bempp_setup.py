@@ -137,10 +137,13 @@ def prepare(root,config):
 
     # Add the correct Python options
 
+    import numpy
+
     (py_exe,py_lib,py_include) = pythonInfo()
     setDefaultConfigOption(config,'Python','exe',py_exe)
     setDefaultConfigOption(config,'Python','lib',py_lib)
     setDefaultConfigOption(config,'Python','include_dir',py_include)
+    setDefaultConfigOption(config,'Python','numpy_include_dir',numpy.get_include())
      
 ###########################
 
@@ -157,6 +160,7 @@ if __name__ == "__main__":
     config.read(optfile)
     prepare(root,config)
     if options.configure:
+        checkDeleteFile(optfile_generated)
         try:
             cleanUp(root,config)
             downloadDependencies(root,config)
@@ -166,7 +170,6 @@ if __name__ == "__main__":
         except Exception as e:
             print "Configuration failed with error message: \n"+ e.message
             sys.exit(1)
-        checkDeleteFile(optfile_generated)
         opt_fp = open(optfile_generated,'w')
         config.write(opt_fp)
         opt_fp.close()

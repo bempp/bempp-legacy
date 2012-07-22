@@ -19,8 +19,8 @@
 // THE SOFTWARE.
 
 
-#include "config_ahmed.hpp"
-#include "config_trilinos.hpp"
+#include "bempp/common/config_ahmed.hpp"
+#include "bempp/common/config_trilinos.hpp"
 
 #ifdef WITH_AHMED
 #include "aca_approximate_lu_inverse.hpp"

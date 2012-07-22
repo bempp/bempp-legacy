@@ -24,6 +24,7 @@ CXXFLAGS="$Main_cxxflags" CFLAGS="$Main_cflags" cmake \
     -D AHMED_LIB:STRING=$AHMED_lib \
     -D PYTHON_EXECUTABLE:STRING=$Python_exe \
     -D PYTHON_INCLUDE_DIR:STRING=$Python_include_dir \
+    -D PYTHON_NUMPY_INCLUDE_DIR:STRING=$Python_numpy_include_dir \
     -D PYTHON_LIBRARY:STRING=$Python_lib \
     -D TRILINOS_CMAKE_PATH:STRING=$Trilinos_cmake_path \
 $Main_root_dir

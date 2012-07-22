@@ -23,7 +23,7 @@
 
 #include "../common/common.hpp"
 
-#include "config_data_types.hpp"
+#include "bempp/common/config_data_types.hpp"
 #include <complex>
 
 // Invoke an arbitrary macro for all valid basis types

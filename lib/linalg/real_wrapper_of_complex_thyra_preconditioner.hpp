@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "config_trilinos.hpp"
+#include "bempp/common/config_trilinos.hpp"
 
 #ifndef bempp_real_wrapper_of_complex_thyra_preconditioner_hpp
 #define bempp_real_wrapper_of_complex_thyra_preconditioner_hpp

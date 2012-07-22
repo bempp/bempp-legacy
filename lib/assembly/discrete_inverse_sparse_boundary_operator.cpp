@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "config_trilinos.hpp"
+#include "bempp/common/config_trilinos.hpp"
 #ifdef WITH_TRILINOS
 
 #include "discrete_inverse_sparse_boundary_operator.hpp"

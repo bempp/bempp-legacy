@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "config_trilinos.hpp"
+#include "bempp/common/config_trilinos.hpp"
 
 #include "discrete_blocked_boundary_operator.hpp"
 #include "../common/to_string.hpp"

@@ -21,7 +21,7 @@
 #ifndef bempp_solution_base_hpp
 #define bempp_solution_base_hpp
 
-#include "config_trilinos.hpp"
+#include "bempp/common/config_trilinos.hpp"
 #include "../common/common.hpp"
 
 #include "../common/scalar_traits.hpp"

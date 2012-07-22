@@ -23,7 +23,7 @@
 
 #include "../common/common.hpp"
 
-#include "config_opencl.hpp"
+#include "bempp/common/config_opencl.hpp"
 
 #include "test_kernel_trial_integrator.hpp"
 

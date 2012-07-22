@@ -21,7 +21,7 @@
 #ifndef bempp_blocked_solution_hpp
 #define bempp_blocked_solution_hpp
 
-#include "config_trilinos.hpp"
+#include "bempp/common/config_trilinos.hpp"
 
 #include "solution_base.hpp"
 

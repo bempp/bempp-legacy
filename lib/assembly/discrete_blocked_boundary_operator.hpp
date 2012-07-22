@@ -21,7 +21,7 @@
 #ifndef bempp_discrete_blocked_boundary_operator_hpp
 #define bempp_discrete_blocked_boundary_operator_hpp
 
-#include "config_trilinos.hpp"
+#include "bempp/common/config_trilinos.hpp"
 
 #include "discrete_boundary_operator.hpp"
 

@@ -23,7 +23,7 @@
 
 #include "../common/common.hpp"
 
-#include "config_trilinos.hpp"
+#include "bempp/common/config_trilinos.hpp"
 
 #include "../common/armadillo_fwd.hpp"
 

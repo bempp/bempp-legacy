@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 
-#include "config_trilinos.hpp"
+#include "bempp/common/config_trilinos.hpp"
 
 #include "identity_operator.hpp"
 

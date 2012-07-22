@@ -23,7 +23,7 @@
 
 #include "../common/common.hpp"
 
-#include "config_ahmed.hpp"
+#include "bempp/common/config_ahmed.hpp"
 
 #ifdef WITH_AHMED
 

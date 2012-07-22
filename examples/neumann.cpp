@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "config_alugrid.hpp"
-#include "config_trilinos.hpp"
+#include "bempp/common/config_alugrid.hpp"
+#include "bempp/common/config_trilinos.hpp"
 
 #include "meshes.hpp"
 

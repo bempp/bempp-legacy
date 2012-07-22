@@ -46,7 +46,7 @@ def prepare(root,config):
     else:
         raise Exception("Platform not supported")
 
-    boost_unit_test_lib=prefix+"/bempp/lib"+unit_test_lib_name
+    boost_unit_test_lib=prefix+"/bempp/lib/"+unit_test_lib_name
 
     tools.checkDeleteDirectory(boost_full_dir)
 

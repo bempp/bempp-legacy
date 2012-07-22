@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 
-#include "config_trilinos.hpp"
+#include "bempp/common/config_trilinos.hpp"
 #include "assembly_options.hpp"
 
 #include <stdexcept>

@@ -22,7 +22,7 @@
 #define bempp_space_hpp
 
 #include "../common/common.hpp"
-#include "config_trilinos.hpp"
+#include "bempp/common/config_trilinos.hpp"
 
 #include "../common/not_implemented_error.hpp"
 #include "../common/shared_ptr.hpp"

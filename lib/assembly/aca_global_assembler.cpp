@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "config_ahmed.hpp"
-#include "config_trilinos.hpp"
+#include "bempp/common/config_ahmed.hpp"
+#include "bempp/common/config_trilinos.hpp"
 
 #include "aca_global_assembler.hpp"
 

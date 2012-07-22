@@ -1,12 +1,9 @@
-include_directories(${CMAKE_BINARY_DIR}/include/common)
+include_directories(${CMAKE_BINARY_DIR}/include)
 
 add_definitions(-DBOOST_TEST_DYN_LINK)
 #find_package(Boost COMPONENTS unit_test_framework REQUIRED)
-include_directories(${PROJECT_SOURCE_DIR}/lib)
-include_directories(${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/include)
-include_directories(${ARMADILLO_INCLUDE_DIR})
-include_directories(${Trilinos_INCLUDE_DIRS} ${Trilinos_TPL_INCLUDE_DIRS})
-include_directories(${BOOST_INCLUDE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/lib)
+include_directories(${CMAKE_INSTALL_PREFIX}/bempp/include)
 
 file(GLOB_RECURSE TEST_SOURCES *.cpp)
 file(GLOB_RECURSE TEST_HEADERS *.hpp)

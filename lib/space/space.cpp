@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 #include "space.hpp"
-#include "config_trilinos.hpp"
+#include "bempp/common/config_trilinos.hpp"
 
 #include "../assembly/discrete_sparse_boundary_operator.hpp"
 
