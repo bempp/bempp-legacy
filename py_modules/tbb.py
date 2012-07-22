@@ -51,7 +51,7 @@ def prepare(root,config):
 
     print "Extracting Tbb"
 
-    if os.path.isdir(root+"/contrib/tbb"): shutil.rmtree(root+"/contrib/tbb")
+    tools.checkDeleteDirectory(root+"/contrib/tbb")
     tools.extract_file(root+"/contrib/files/"+tbb_fname_short,root+"/contrib/")
     os.rename(root+"/contrib/"+tbb_extract_dir,root+"/contrib/tbb")
     subprocess.check_call("cp -R "+root+"/contrib/tbb/include/* "+prefix+"/bempp/include/",shell=True)

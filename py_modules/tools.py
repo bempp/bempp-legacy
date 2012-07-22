@@ -1,4 +1,4 @@
-import os,subprocess,sys
+import os,subprocess,sys, shutil
 from subprocess import CalledProcessError
 
 
@@ -190,8 +190,26 @@ def testLapack(root,config):
         os.chdir(cwd)
         fnull.close()
         raise Exception("LAPACK is not working correctly. Please check your libraries and your DYLD_LIBRARY_PATH or LD_LIBRARY_PATH settings.")
+    os.chdir(cwd)
     print "LAPACK configuration successfully completed."
-        
+
+def checkDeleteDirectory(dir):
+    """Delete directory dir if it exists"""
+    if os.path.isdir(dir): shutil.rmtree(dir)
+
+def checkDeleteFile(s):
+    """Delete file given by path in string s if it does not exist"""
+    if os.path.exists(s):
+        os.remove(s)
+
+def cleanUp(root,config):
+    """Clean up so that a rerun of the installer is possible"""
+
+    prefix=config.get('Main','prefix')
+    checkDeleteDirectory(prefix+"/bempp")
+    checkDeleteDirectory(root+"/test_blas/build")
+    checkDeleteDirectory(root+"/test_lapack/build")
+
     
         
     

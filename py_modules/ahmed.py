@@ -40,7 +40,7 @@ def prepare(root,config):
         else:
             config.set('AHMED','enable64','ON')
         ahmed_full_dir=root+"/contrib/ahmed"
-        if os.path.isdir(ahmed_full_dir): shutil.rmtree(ahmed_full_dir)
+        tools.checkDeleteDirectory(ahmed_full_dir)
         if sys.platform.startswith('darwin'):
             config.set('AHMED','lib',prefix+"/bempp/contrib/ahmed/lib/libAHMED.dylib")
         elif sys.platform.startswith('linux'):
@@ -61,6 +61,7 @@ def configure(root,config):
         print "Configure AHMED"
         cwd=os.getcwd()
         os.chdir(root+"/contrib/ahmed")
+        tools.checkDeleteDirectory(root+"/contrib/ahmed/build")
         subprocess.check_call("sh ./ahmed_build.sh",shell=True)
         os.chdir(cwd)
     

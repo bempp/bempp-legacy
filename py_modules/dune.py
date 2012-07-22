@@ -42,17 +42,17 @@ def prepare(root,config):
 
     # Download files
     for i in range(3):
-        if not os.path.isdir(root+"/contrib/dune/"+dune_names[i]):
-            print "Extract "+dune_names[i]
-            tools.extract_file(root+"/contrib/files/"+dune_fnames[i],root+"/contrib/dune/")
-            os.rename(root+"/contrib/dune/"+dune_extract_names[i],root+"/contrib/dune/"+dune_names[i])
-            if i==1:
-                print "Apply patch for "+dune_names[i]
-                patch=py_patch.fromfile(root+"/contrib/patch/dune-grid.patch")
-                cwd=os.getcwd()
-                os.chdir(root+"/contrib/dune/dune-grid/dune/grid/utility")
-                patch.apply()
-                os.chdir(cwd)
+        tools.checkDeleteDirectory(root+"/contrib/dune/"+dune_names[i])
+        print "Extract "+dune_names[i]
+        tools.extract_file(root+"/contrib/files/"+dune_fnames[i],root+"/contrib/dune/")
+        os.rename(root+"/contrib/dune/"+dune_extract_names[i],root+"/contrib/dune/"+dune_names[i])
+        if i==1:
+            print "Apply patch for "+dune_names[i]
+            patch=py_patch.fromfile(root+"/contrib/patch/dune-grid.patch")
+            cwd=os.getcwd()
+            os.chdir(root+"/contrib/dune/dune-grid/dune/grid/utility")
+            patch.apply()
+            os.chdir(cwd)
 
 def configure(root,config):
     prefix=config.get('Main','prefix')

@@ -22,7 +22,7 @@
 
 
 import sys,os
-from py_modules.tools import writeOptions, setDefaultConfigOption, pythonInfo, checkCreateDir, testBlas, testLapack
+from py_modules.tools import writeOptions, setDefaultConfigOption, pythonInfo, checkCreateDir, testBlas, testLapack, cleanUp, checkDeleteFile
 from ConfigParser import ConfigParser
 from optparse import OptionParser
 
@@ -157,16 +157,27 @@ if __name__ == "__main__":
     config.read(optfile)
     prepare(root,config)
     if options.configure:
-        downloadDependencies(root,config)
-        prepareDependencies(root,config)
-        testBlas(root,config)
-        testLapack(root,config)
+        try:
+            cleanUp(root,config)
+            downloadDependencies(root,config)
+            prepareDependencies(root,config)
+            testBlas(root,config)
+            testLapack(root,config)
+        except Exception as e:
+            print "Configuration failed with error message: \n"+ e.message
+            sys.exit(1)
+        checkDeleteFile(optfile_generated)
         opt_fp = open(optfile_generated,'w')
         config.write(opt_fp)
         opt_fp.close()
+        print "Updated configuration written to "+root+"/"+optfile_generated
+        
     if options.install:
         config = ConfigParser()
-        config.read(optfile_generated)
+        if not os.path.exists(root+"/"+optfile_generated):
+            print "You must first successfully run bempp_setup.py with the configure option."
+            sys.exit(1)
+        config.read(root+"/"+optfile_generated)
         writeOptions(root,config)
         if options.install in libraries:
             libraries[options.install].configure(root,config)

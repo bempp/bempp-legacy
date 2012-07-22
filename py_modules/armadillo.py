@@ -39,6 +39,7 @@ def prepare(root,config):
     
     print "Extracting Armadillo"
     extract_dir = root+"/contrib/"+arma_extract_dir
+    tools.checkDeleteDirectory(extract_dir)
     tools.extract_file(root+"/contrib/files/"+arma_fname,root+"/contrib")
     subprocess.check_call("cp -R "+extract_dir+"/include/* "+prefix+"/bempp/include/",shell=True)
     print "Applying patches"

@@ -47,8 +47,8 @@ def prepare(root,config):
         raise Exception("Platform not supported")
 
     boost_unit_test_lib=prefix+"/bempp/lib"+unit_test_lib_name
-    
-    if os.path.isdir(boost_full_dir): shutil.rmtree(boost_full_dir)
+
+    tools.checkDeleteDirectory(boost_full_dir)
 
     print "Extracting Boost"
     tools.extract_file(root+"/contrib/files/"+boost_fname,root+"/contrib/")
@@ -65,6 +65,7 @@ def configure(root,config):
     print "Configure Boost"
     cwd=os.getcwd()
     os.chdir(boost_full_dir)
+    tools.checkDeleteDirectory(boost_full_dir+"/build")
     subprocess.check_call("sh ./boost_build.sh",shell=True)
     os.chdir(cwd)
 

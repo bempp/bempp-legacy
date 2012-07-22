@@ -38,8 +38,8 @@ def prepare(root,config):
     trilinos_download_name=root+"/contrib/files/"+trilinos_fname
 
     prefix=config.get('Main','prefix')
-    if os.path.isdir(trilinos_full_dir):
-        shutil.rmtree(trilinos_full_dir)
+
+    tools.checkDeleteDirectory(trilinos_full_dir)
     
     print "Extracting Trilinos"
     tools.extract_file(root+"/contrib/files/"+trilinos_fname,root+"/contrib/")
@@ -62,6 +62,7 @@ def configure(root,config):
     print "Configure Trilinos"
     cwd=os.getcwd()
     os.chdir(trilinos_full_dir)
+    tools.checkDeleteDirectory(trilinos_full_dir+"/build")
     subprocess.check_call("sh ./trilinos_build.sh",shell=True)
     os.chdir(cwd)
 
