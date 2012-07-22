@@ -111,6 +111,7 @@ def testBlas(root,config):
     cflags = config.get('Main','cflags')
     cxxflags = config.get('Main','cxxflags')
     prefix = config.get('Main','prefix')
+    fnull = open(os.devnull,'w')
 
     if sys.platform.startswith('darwin'):
         ld_path = "export DYLD_LIBRARY_PATH="+prefix+"/bempp/lib:$DYLD_LIBRARY_PATH; "
@@ -123,30 +124,73 @@ def testBlas(root,config):
     os.mkdir(root+"/test_blas/build")
     os.chdir(root+"/test_blas/build")
     config_string = "CC="+cc+" CXX="+cxx+" CFLAGS='"+cflags+"' CXXFLAGS='"+cxxflags+"' cmake -D BLAS_LIBRARIES:STRING=\""+blas+"\" .."
-    subprocess.check_call(config_string,shell=True)
-    subprocess.check_call("make",shell=True)
     try:
-        subprocess.check_call(ld_path+ "./test_blas",shell=True)
+        subprocess.check_call(config_string,shell=True,stdout=fnull,stderr=fnull)
+        subprocess.check_call("make",shell=True,stdout=fnull,stderr=fnull)
+    except:
+        fnull.close()
+        raise Exception("Building BLAS tests failed. Please check your compiler and BLAS library settings")
+    try:
+        subprocess.check_call(ld_path+ "./test_blas",shell=True,stdout=fnull,stderr=fnull)
     except:
         os.chdir(cwd)
+        fnull.close()
         raise Exception("BLAS is not working correctly. Please check your libraries and your DYLD_LIBRARY_PATH or LD_LIBRARY_PATH settings.")
     # Test for zdotc convention
     g77 = False
     try:
-        subprocess.check_call(ld_path+"./test_zdotc",shell=True)
+        subprocess.check_call(ld_path+"./test_zdotc",shell=True,stdout=fnull,stderr=fnull)
     except:
         g77 = True
     if g77:
         try:
-            subprocess.check_call(ld_path+"./test_zdotc_g77",shell=True)
+            subprocess.check_call(ld_path+"./test_zdotc_g77",shell=True,stdout=fnull,stderr=fnull)
         except:
             os.chdir(cwd)
+            fnull.close()
             raise Exception("ZDOTC works neither in G77 nor in GFortran modus. Please check your BLAS libraries")
         setDefaultConfigOption(config,'AHMED','with_g77','ON',overwrite=True)
     else:
         setDefaultConfigOption(config,'AHMED','with_g77','OFF',overwrite=True)
     os.chdir(cwd)
+    print "BLAS configuration successfully completed."
     
+def testLapack(root,config):
+    """Test if BLAS functions correctly and set whether G77 calling convention is needed"""
+    cwd = os.getcwd()
+    blas = config.get('BLAS','lib')
+    lapack = config.get('LAPACK','lib')
+    cxx=config.get('Main','cxx')
+    cc=config.get('Main','cc')
+    cflags = config.get('Main','cflags')
+    cxxflags = config.get('Main','cxxflags')
+    prefix = config.get('Main','prefix')
+    fnull = open(os.devnull,'w')
+
+    if sys.platform.startswith('darwin'):
+        ld_path = "export DYLD_LIBRARY_PATH="+prefix+"/bempp/lib:$DYLD_LIBRARY_PATH; "
+    elif sys.platform.startswith('linux'):
+        ld_path = "export LD_LIBRARY_PATH="+prefix+"/bempp/lib:$LD_LIBRARY_PATH; "
+    else:
+        raise Exception("Wrong architecture.")
+
+
+    os.mkdir(root+"/test_lapack/build")
+    os.chdir(root+"/test_lapack/build")
+    config_string = "CC="+cc+" CXX="+cxx+" CFLAGS='"+cflags+"' CXXFLAGS='"+cxxflags+"' cmake -D BLAS_LIBRARIES:STRING=\""+blas+"\" -D LAPACK_LIBRARIES=\""+lapack+"\" .."
+    try:
+        subprocess.check_call(config_string,shell=True,stdout=fnull,stderr=fnull)
+        subprocess.check_call("make",shell=True,stdout=fnull,stderr=fnull)
+    except:
+        fnull.close()
+        raise Exception("Building LAPACK tests failed. Please check your compiler and BLAS library settings")
+    try:
+        subprocess.check_call(ld_path+ "./test_lapack",shell=True,stdout=fnull,stderr=fnull)
+    except:
+        os.chdir(cwd)
+        fnull.close()
+        raise Exception("LAPACK is not working correctly. Please check your libraries and your DYLD_LIBRARY_PATH or LD_LIBRARY_PATH settings.")
+    print "LAPACK configuration successfully completed."
         
     
         

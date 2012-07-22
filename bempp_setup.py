@@ -22,7 +22,7 @@
 
 
 import sys,os
-from py_modules.tools import writeOptions, setDefaultConfigOption, pythonInfo, checkCreateDir, testBlas
+from py_modules.tools import writeOptions, setDefaultConfigOption, pythonInfo, checkCreateDir, testBlas, testLapack
 from ConfigParser import ConfigParser
 from optparse import OptionParser
 
@@ -160,6 +160,7 @@ if __name__ == "__main__":
         downloadDependencies(root,config)
         prepareDependencies(root,config)
         testBlas(root,config)
+        testLapack(root,config)
         opt_fp = open(optfile_generated,'w')
         config.write(opt_fp)
         opt_fp.close()
