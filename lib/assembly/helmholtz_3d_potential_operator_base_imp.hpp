@@ -30,16 +30,18 @@ namespace
 {
 
 template <typename Impl>
-typename Impl::KernelType waveNumber(const Impl& impl)
+inline typename Impl::KernelType waveNumberImpl(const Impl& impl)
 {
-    return impl.kernels.functor().waveNumber() * Impl::KernelType(0., 1.);
+    return impl.kernels.functor().waveNumber() *
+            typename Impl::KernelType(0., 1.);
 }
 
 template <typename Impl>
-void setWaveNumber(const Impl& impl, typename Impl::KernelType waveNumber)
+inline void setWaveNumberImpl(Impl& impl, typename Impl::KernelType waveNumber)
 {
-    impl.kernels.functor().setWaveNumber(waveNumber / Impl::KernelType(0., 1.));
+    impl.kernels.functor().setWaveNumber(waveNumber / typename Impl::KernelType(0., 1.));
 }
+
 
 } // namespace
 
@@ -68,7 +70,7 @@ typename Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::KernelType
 Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
 waveNumber() const
 {
-    return waveNumber(*m_impl);
+    return waveNumberImpl(*m_impl);
 }
 
 template <typename Impl, typename BasisFunctionType>
@@ -76,7 +78,7 @@ void
 Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
 setWaveNumber(KernelType waveNumber)
 {
-    setWaveNumber(*m_impl, waveNumber);
+    setWaveNumberImpl(*m_impl, waveNumber);
 }
 
 template <typename Impl, typename BasisFunctionType>

@@ -150,6 +150,10 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "assembly/helmholtz_3d_operators.i"
 %include "assembly/modified_helmholtz_3d_operators.i"
 %include "assembly/identity_operator.i"
+%include "assembly/evaluation_options.i"
+%include "assembly/potential_operator.i"
+%include "assembly/elementary_potential_operator.i"
+%include "assembly/helmholtz_3d_potential_operators.i"
 
 // Linear algebra
 %include "linalg/parameter_list.i"
