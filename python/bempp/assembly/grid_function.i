@@ -149,6 +149,9 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
     {
         return *$self / other;
     }
+
+    %feature("compactdefaultargs") exportToVtk;
+
 }
 
 %ignore gridFunctionFromFiberFunction;

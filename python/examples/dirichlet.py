@@ -51,7 +51,5 @@ solver.initializeSolver(params)
 solution = solver.solve(rhs)
 neumannData = solution.gridFunction()
 
-neumannData.exportToVtk(bempp.VtkWriter.VERTEX_DATA,
-    "neumann_data", "neumann_data_vertex")
-neumannData.exportToVtk(bempp.VtkWriter.CELL_DATA,
-    "neumann_data", "neumann_data_cell")
+neumannData.exportToVtk("vertex_data","neumann_data", "neumann_data_vertex")
+neumannData.exportToVtk("cell_data","neumann_data", "neumann_data_cell")
