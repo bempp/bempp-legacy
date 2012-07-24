@@ -126,7 +126,7 @@ def prepare(root,config):
         config.set('Main','cflags',cflags+" "+param)
         config.set('Main','cxxflags',cxxflags+" "+param)
     elif sys.platform.startswith('linux'):
-        if arch=='x64':
+        if arch=='intel64':
             param = '-m64'
         else:
             param = '-m32'
@@ -170,7 +170,8 @@ if __name__ == "__main__":
             testLapack(root,config)
         except Exception as e:
             print "Configuration failed with error message: \n"+ e.message
-            sys.exit(1)
+            #sys.exit(1)
+            raise
         opt_fp = open(optfile_generated,'w')
         config.write(opt_fp)
         opt_fp.close()

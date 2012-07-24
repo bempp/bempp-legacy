@@ -71,7 +71,7 @@ def prepare(root,config):
     else:
         raise Exception("Platform not supported")
 
-    subprocess.check_call("cp "+libdir_orig+"/* "+prefix+"/bempp/lib/",shell=True)
+    subprocess.check_call("cp -R "+libdir_orig+"/* "+prefix+"/bempp/lib/",shell=True)
 
     tools.setDefaultConfigOption(config,"Tbb",'lib',prefix+"/bempp/lib/"+tbb_lib_name,overwrite=True)
     tools.setDefaultConfigOption(config,"Tbb","lib_debug",prefix+"/bempp/lib/"+tbb_lib_name_debug,overwrite=True)
