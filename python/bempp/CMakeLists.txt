@@ -21,6 +21,8 @@ include_directories(${CMAKE_INSTALL_PREFIX}/bempp/include)
 set(CMAKE_SWIG_FLAGS "-modern")
 
 set_source_files_properties(core.i PROPERTIES CPLUSPLUS ON)
+# Use the following to debug swig
+# set_source_files_properties(core.i PROPERTIES SWIG_FLAGS "-debug-classes")
 file(GLOB_RECURSE SWIG_SOURCES *.i)
 set(SWIG_MODULE_core_EXTRA_DEPS ${SWIG_SOURCES})
 swig_add_module(core python core.i)

@@ -5,6 +5,7 @@
 %}
 
 %newobject gridFunctionFromPythonSurfaceNormalIndependentFunctor;
+%newobject gridFunctionFromPythonSurfaceNormalDependentFunctor;
 
 %inline %{
 
@@ -169,6 +170,8 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction)
 
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromPythonSurfaceNormalIndependentFunctor);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromPythonSurfaceNormalDependentFunctor);
+
 
 %clear arma::Col<float>& col_out;
 %clear arma::Col<double>& col_out;

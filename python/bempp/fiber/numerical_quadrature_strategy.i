@@ -7,8 +7,9 @@ class NumericalQuadratureStrategy :
     public QuadratureStrategy<
         BasisFunctionType, ResultType, GeometryFactory>
 {
-//public:
-//    const AccuracyOptions& accuracyOptions();
+  public:
+  const AccuracyOptions& accuracyOptions();
+  virtual ~NumericalQuadratureStrategy();
 };
 
 } // namespace Fiber

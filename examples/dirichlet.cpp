@@ -128,12 +128,12 @@ int main(int argc, char* argv[])
     Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);
 
     // We need the single layer, double layer, and the identity operator
-    BoundaryOperator<BFT, RT> slpOp = laplace3dSingleLayerBoundaryOperator<BFT, RT>(
+    BoundaryOperator<BFT, RT> slpOp = laplace3dSingleLayerBoundaryOperator<BFT, RT >(
                 make_shared_from_ref(context),
                 make_shared_from_ref(HminusHalfSpace),
                 make_shared_from_ref(HplusHalfSpace),
                 make_shared_from_ref(HminusHalfSpace));
-    BoundaryOperator<BFT, RT> dlpOp = laplace3dDoubleLayerBoundaryOperator<BFT, RT>(
+    BoundaryOperator<BFT, RT> dlpOp = laplace3dDoubleLayerBoundaryOperator<BFT, RT >(
                 make_shared_from_ref(context),
                 make_shared_from_ref(HplusHalfSpace),
                 make_shared_from_ref(HplusHalfSpace),

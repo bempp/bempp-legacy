@@ -32,6 +32,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/type_traits/is_complex.hpp>
+#include "grid/grid.hpp"
 
 using namespace Bempp;
 

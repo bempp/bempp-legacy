@@ -52,7 +52,7 @@ def createNumericalQuadratureStrategy(basisFunctionType, resultType, accuracyOpt
     resultType = core.checkType(resultType)
     if accuracyOptions is None:
         accuracyOptions = core.AccuracyOptions()
-    name = 'NumericalQuadratureStrategy'
+    name = 'createNumericalQuadratureStrategy'
     return core.constructObjectTemplatedOnBasisAndResult(
         name, basisFunctionType, resultType, accuracyOptions)
 
@@ -79,22 +79,22 @@ def createPiecewiseLinearContinuousScalarSpace(context, grid):
     return core.constructObjectTemplatedOnBasis(name, context.basisFunctionType(), grid)
 
 def createLaplace3dSingleLayerBoundaryOperator(context, domain, range, dualToRange):
-    """Return a single-layer-potential operator for the Laplace equation in 3D."""
+    """Return a single-layer-boundary operator for the Laplace equation in 3D."""
     return core._constructOperator(
     "laplace3dSingleLayerBoundaryOperator", context, domain, range, dualToRange)
 
 def createLaplace3dDoubleLayerBoundaryOperator(context, domain, range, dualToRange):
-    """Return a double-layer-potential operator for the Laplace equation in 3D."""
+    """Return a double-layer-boundary operator for the Laplace equation in 3D."""
     return core._constructOperator(
     "laplace3dDoubleLayerBoundaryOperator", context, domain, range, dualToRange)
 
 def createLaplace3dAdjointDoubleLayerBoundaryOperator(context, domain, range, dualToRange):
-    """Return an adjoint double-layer-potential operator for the Laplace equation in 3D."""
+    """Return an adjoint double-layer-boundary operator for the Laplace equation in 3D."""
     return core._constructOperator(
     "laplace3dAdjointDoubleLayerBoundaryOperator", context, domain, range, dualToRange)
 
 def createLaplace3dHypersingularBoundaryOperator(context, domain, range, dualToRange):
-    """Return a hypersingular operator for the Laplace equation in 3D."""
+    """Return a hypersingular boundary operator for the Laplace equation in 3D."""
     return core._constructOperator(
     "laplace3dHypersingularBoundaryOperator", context, domain, range, dualToRange)
 
@@ -125,6 +125,17 @@ def createHelmholtz3dHypersingularBoundaryOperator(
     return core._constructHelmholtzOperator(
         "helmholtz3dHypersingularBoundaryOperator", context,
         domain, range, dualToRange, waveNumber)
+
+def createHelmholtz3dSingleLayerPotentialOperator(context, waveNumber):
+    """Return a single-layer-potential operator for the Helmholtz equation in 3D."""
+    return core._constructHelmholtzPotentialOperator(
+        "Helmholtz3dSingleLayerPotentialOperator", context, waveNumber)
+
+def createHelmholtz3dDoubleLayerPotentialOperator(context, waveNumber):
+    """Return a double-layer-potential operator for the Helmholtz equation in 3D."""
+    return core._constructHelmholtzPotentialOperator(
+        "Helmholtz3dDoubleLayerPotentialOperator", context, waveNumber)
+
 
 def createModifiedHelmholtz3dSingleLayerBoundaryOperator(
         context, domain, range, dualToRange, waveNumber):
@@ -198,7 +209,7 @@ def gridFunctionFromSurfaceNormalIndependentFunction(
         context, space, dualSpace, function,
         argumentDimension, resultDimension)
 
-def createDefaultIterativeSolver(boundaryOperator, gridFunction):
+def createDefaultIterativeSolver(boundaryOperator):
     """Return the default iterative linear solver.
 
     This solver lets you solve the equation A f = g for the function
@@ -207,17 +218,11 @@ def createDefaultIterativeSolver(boundaryOperator, gridFunction):
     argument.
     """
     basisFunctionType = boundaryOperator.basisFunctionType()
-    if (basisFunctionType != gridFunction.basisFunctionType()):
-        raise TypeError("BasisFunctionType of boundaryOperator and "
-                        "gridFunction must be the same")
     resultType = boundaryOperator.resultType()
-    if (resultType != gridFunction.resultType()):
-        raise TypeError("ResultType of boundaryOperator and "
-                        "gridFunction must be the same")
     result = core.constructObjectTemplatedOnBasisAndResult(
         "DefaultIterativeSolver", basisFunctionType, resultType,
-        boundaryOperator, gridFunction)
-    result._space = boundaryOperator.domain()
+        boundaryOperator)
+    result._boundaryOperator = boundaryOperator
     return result
 
 from core import defaultGmresParameterList
@@ -226,6 +231,11 @@ from core import defaultCgParameterList
 def createAccuracyOptions():
     "Return an AccuracyOptions object"
     return core.AccuracyOptions()
+
+def createEvaluationOptions():
+    "Return and EvaluationOptions object"
+    return core.EvaluationOptions()
+
 
 
 

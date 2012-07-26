@@ -121,7 +121,7 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "fiber/quadrature_options.i"
 %include "fiber/accuracy_options.i"
 %include "fiber/quadrature_strategy.i"
-%include "fiber/numerical_quadrature_strategy.i"
+ //%include "fiber/numerical_quadrature_strategy.i"
 
 // Space
 %include "space/space.i"

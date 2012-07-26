@@ -1,21 +1,32 @@
+%{
+#include "grid/geometry_factory.hpp"
+#include "fiber/quadrature_strategy.hpp"
+%}
+
 namespace Fiber
 {
+BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_RESULT_AND_GEOMETRY_FACTORY(QuadratureStrategyBase);
+BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS_RESULT_AND_GEOMETRY_FACTORY(QuadratureStrategyBase);
 BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_RESULT_AND_GEOMETRY_FACTORY(QuadratureStrategy);
 BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS_RESULT_AND_GEOMETRY_FACTORY(QuadratureStrategy);
+
+ %warnfilter(520) QuadratureStrategy;
+
+ %extend QuadratureStrategyBase {
+ 
+  %ignore makeAssemblerForIntegralOperators;
+  %ignore makeAssemblerForIdentityOperators;
+  %ignore makeAssemblerForGridFunctions;
+  %ignore makeEvaluatorForIntegralOperators;
 }
 
-namespace Fiber
-{
+}
 
-template <typename BasisFunctionType, typename ResultType,
-          typename GeometryFactory>
-class QuadratureStrategy
-{
-/* public: */
-/*     virtual ~QuadratureStrategy() = 0; */
-};
 
-} // namespace Fiber
+
+#define shared_ptr boost::shared_ptr
+%include "fiber/quadrature_strategy.hpp"
+#undef shared_ptr
 
 %shared_ptr(Fiber::QuadratureStrategy<
             float, float, Bempp::GeometryFactory>);
@@ -32,6 +43,8 @@ class QuadratureStrategy
 
 namespace Fiber
 {
-BEMPP_INSTANTIATE_ANONYMOUSLY_SYMBOL_TEMPLATED_ON_BASIS_RESULT_AND_GEOMETRY_FACTORY(
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_RESULT_AND_GEOMETRY_FACTORY(
+QuadratureStrategyBase);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_RESULT_AND_GEOMETRY_FACTORY(
 QuadratureStrategy);
 }

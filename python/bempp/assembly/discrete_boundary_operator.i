@@ -38,6 +38,8 @@ DECLARE_TEMPLATE_VALUE_METHOD_AUTO_DOCSTRING(DiscreteBoundaryOperator, apply);
 
 BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator);
 
+ %warnfilter(315) DiscreteBoundaryOperator;
+
 %extend DiscreteBoundaryOperator
 {
     // this function is only for internal use

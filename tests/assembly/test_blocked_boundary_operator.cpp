@@ -28,6 +28,7 @@
 #include "assembly/laplace_3d_single_layer_boundary_operator.hpp"
 #include "assembly/numerical_quadrature_strategy.hpp"
 #include "grid/grid_factory.hpp"
+#include "grid/grid.hpp"
 #include "space/piecewise_constant_scalar_space.hpp"
 #include "space/piecewise_linear_continuous_scalar_space.hpp"
 

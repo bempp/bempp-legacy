@@ -30,6 +30,14 @@ namespace Bempp
 
 using Fiber::SurfaceNormalDependentFunction;
 
+template <typename Functor>
+inline SurfaceNormalDependentFunction<Functor> surfaceNormalDependentFunction(
+        const Functor& functor)
+{
+    return SurfaceNormalDependentFunction<Functor>(functor);
+}
+
+
 } // namespace Bempp
 
 #endif
