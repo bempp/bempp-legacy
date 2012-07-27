@@ -32,12 +32,25 @@ def prepare(root,config):
     lapack_files = ['libmkl_intel_lp64']
 
     enable_mkl = tools.to_bool(tools.setDefaultConfigOption(config,'Mkl','enable_mkl','no'))
-    if enable_mkl:
+    enthought_mkl = tools.to_bool(tools.setDefaultConfigOption(config,'Mkl','enable_enthought_mkl','no'))
+
+    
+    if enthought_mkl:
+        print "Creating symbolic links to Enthought MKL Libraries"
+        cwd = os.getcwd()
+        mkl_dir = sys.prefix+"/lib"
+        cmd_str = "ln -s "+mkl_dir+"/libmkl* ."
+        os.chdir(lib_dir)
+        subprocess.check_call(cmd_str,shell=True)
+        os.chdir(cwd)
+    elif enable_mkl:
         print "Extracting Mkl"
         if not config.has_option('Mkl','file_name'):
             raise Exception('Need to give full path of tar.gz archived file with Mkl redistributables')
         mkl_fname=config.get('Mkl','file_name')
         tools.extract_file(mkl_fname,prefix+"/bempp/lib/")
+
+    if enable_mkl or enthought_mkl:
         blas_lib = ""
         lapack_lib = ""
         if sys.platform.startswith('darwin'):
@@ -50,7 +63,7 @@ def prepare(root,config):
             raise Exception("Platform not supported")
         tools.setDefaultConfigOption(config,'BLAS','lib',blas_lib[1:],overwrite=True)
         tools.setDefaultConfigOption(config,'LAPACK','lib',lapack_lib[1:],overwrite=True)
-
+        
 
 def configure(root,config):
     pass
