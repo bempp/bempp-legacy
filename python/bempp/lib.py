@@ -232,9 +232,15 @@ def createAccuracyOptions():
     "Return an AccuracyOptions object"
     return core.AccuracyOptions()
 
+def createAcaOptions():
+    "Return an AcaOptions object"
+    return core.AcaOptions()
+
 def createEvaluationOptions():
     "Return and EvaluationOptions object"
     return core.EvaluationOptions()
+
+
 
 
 

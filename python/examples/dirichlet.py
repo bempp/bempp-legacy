@@ -7,7 +7,7 @@
 import sys
 sys.path.append("..")
 
-import bempp
+from bempp.lib import *
 import numpy as np
 
 
@@ -15,38 +15,38 @@ def evalDirichletData(point):
     return -1
 
 print "Importing grid..."
-grid = bempp.GridFactory.importGmshGrid("triangular",
+grid = createGridFactory().importGmshGrid("triangular",
                                         "../../examples/meshes/sphere-152.msh")
 
-factory = bempp.numericalQuadratureStrategy("float64", "float64")
-options = bempp.AssemblyOptions()
-options.switchToAca(bempp.AcaOptions())
+factory = createNumericalQuadratureStrategy("float64", "float64")
+options = createAssemblyOptions()
+options.switchToAca(createAcaOptions())
 
-context = bempp.context(factory, options)
+context = createContext(factory, options)
 
-pwiseConstants = bempp.piecewiseConstantScalarSpace(context, grid)
-pwiseLinears = bempp.piecewiseLinearContinuousScalarSpace(context, grid)
+pwiseConstants = createPiecewiseConstantScalarSpace(context, grid)
+pwiseLinears = createPiecewiseLinearContinuousScalarSpace(context, grid)
 pwiseConstants.assignDofs()
 pwiseLinears.assignDofs()
 
-slpOp = bempp.laplace3dSingleLayerBoundaryOperator(
+slpOp = createLaplace3dSingleLayerBoundaryOperator(
     context, pwiseConstants, pwiseLinears, pwiseConstants)
-dlpOp = bempp.laplace3dDoubleLayerBoundaryOperator(
+dlpOp = createLaplace3dDoubleLayerBoundaryOperator(
     context, pwiseLinears, pwiseLinears, pwiseConstants)
-idOp = bempp.identityOperator(
+idOp = createIdentityOperator(
     context, pwiseLinears, pwiseLinears, pwiseConstants)
 
 lhsOp = slpOp
 rhsOp = -0.5 * idOp + dlpOp
 
 print "Evaluating Dirichlet data..."
-dirichletData = bempp.gridFunctionFromSurfaceNormalIndependentFunction(
+dirichletData = gridFunctionFromSurfaceNormalIndependentFunction(
     context, pwiseLinears, pwiseLinears, evalDirichletData)
 
 rhs = rhsOp * dirichletData
 
-solver = bempp.defaultIterativeSolver(lhsOp)
-params = bempp.defaultGmresParameterList(1e-5)
+solver = createDefaultIterativeSolver(lhsOp)
+params = defaultGmresParameterList(1e-5)
 solver.initializeSolver(params)
 solution = solver.solve(rhs)
 neumannData = solution.gridFunction()
