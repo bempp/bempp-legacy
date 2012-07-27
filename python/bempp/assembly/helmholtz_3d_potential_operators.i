@@ -4,6 +4,17 @@
 #include "assembly/helmholtz_3d_double_layer_potential_operator.hpp"
 %}
 
+namespace Bempp {
+
+
+  BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dSingleLayerPotentialOperator)
+  BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dDoubleLayerPotentialOperator)
+
+  BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dSingleLayerPotentialOperator)
+  BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dDoubleLayerPotentialOperator)
+    }
+
+
 
 #define shared_ptr boost::shared_ptr
 %include "assembly/helmholtz_3d_potential_operator_base.hpp"

@@ -76,10 +76,10 @@ Helmholtz3dDoubleLayerPotentialOperator<BasisFunctionType>::
 {
 }
 
-#define INSTANTIATE_BASE(BASIS) \
+#define INSTANTIATE_BASE_HELMHOLTZ_DOUBLE_POTENTIAL(BASIS) \
     template class Helmholtz3dPotentialOperatorBase< \
     Helmholtz3dDoubleLayerPotentialOperatorImpl<BASIS>, BASIS>
-FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_BASE);
+FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_BASE_HELMHOLTZ_DOUBLE_POTENTIAL);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dDoubleLayerPotentialOperator);
 
 

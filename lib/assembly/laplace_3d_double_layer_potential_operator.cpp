@@ -74,6 +74,11 @@ Laplace3dDoubleLayerPotentialOperator<BasisFunctionType, ResultType>::
 {
 }
 
+#define INSTANTIATE_BASE_LAPLACE_DOUBLE_POTENTIAL(BASIS,RESULT)		     \
+    template class Laplace3dPotentialOperatorBase< \
+Laplace3dDoubleLayerPotentialOperatorImpl< BASIS , RESULT >, BASIS , RESULT >
+FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_BASE_LAPLACE_DOUBLE_POTENTIAL);
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dDoubleLayerPotentialOperator);
 
 } // namespace Bempp

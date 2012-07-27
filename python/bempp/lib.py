@@ -98,6 +98,16 @@ def createLaplace3dHypersingularBoundaryOperator(context, domain, range, dualToR
     return core._constructOperator(
     "laplace3dHypersingularBoundaryOperator", context, domain, range, dualToRange)
 
+def createLaplace3dSingleLayerPotentialOperator(context):
+    """Return a single-layer-potential operator for the Laplace equation in 3D."""
+    return core._constructLaplacePotentialOperator(
+        "Laplace3dSingleLayerPotentialOperator", context)
+
+def createLaplace3dDoubleLayerPotentialOperator(context):
+    """Return a double-layer-potential operator for the Laplace equation in 3D."""
+    return core._constructLaplacePotentialOperator(
+        "Laplace3dDoubleLayerPotentialOperator", context)
+
 def createHelmholtz3dSingleLayerBoundaryOperator(
         context, domain, range, dualToRange, waveNumber):
     """Return a single-layer-potential operator for the Helmholtz equation in 3D."""

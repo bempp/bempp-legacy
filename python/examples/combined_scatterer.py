@@ -41,7 +41,7 @@ context = lib.createContext(factory,options)
 # Load a grid
 
 grid_factory = lib.createGridFactory()
-grid = grid_factory.importGmshGrid("triangular","/Users/betcke/development/bempp/examples/meshes/sphere-2590.msh")
+grid = grid_factory.importGmshGrid("triangular","../../examples/meshes/sphere-2590.msh")
 
 # Create a space of piecewise constant basis functions over the grid
 # Currently assignDofs() always needs to be invoked manually to assign the degrees of freedom in the space

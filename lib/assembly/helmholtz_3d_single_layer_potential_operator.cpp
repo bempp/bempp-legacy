@@ -77,10 +77,10 @@ Helmholtz3dSingleLayerPotentialOperator<BasisFunctionType>::
 }
 
 
-#define INSTANTIATE_BASE(BASIS) \
+#define INSTANTIATE_BASE_HELMHOLTZ_SINGLE_POTENTIAL(BASIS) \
     template class Helmholtz3dPotentialOperatorBase< \
     Helmholtz3dSingleLayerPotentialOperatorImpl<BASIS>, BASIS>
-FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_BASE);
+FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_BASE_HELMHOLTZ_SINGLE_POTENTIAL);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dSingleLayerPotentialOperator);
 
 

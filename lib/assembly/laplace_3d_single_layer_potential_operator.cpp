@@ -74,6 +74,10 @@ Laplace3dSingleLayerPotentialOperator<BasisFunctionType, ResultType>::
 {
 }
 
+#define INSTANTIATE_BASE_LAPLACE_SINGLE_POTENTIAL(BASIS,RESULT)		     \
+    template class Laplace3dPotentialOperatorBase< \
+Laplace3dSingleLayerPotentialOperatorImpl< BASIS , RESULT >, BASIS , RESULT >
+FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_BASE_LAPLACE_SINGLE_POTENTIAL);
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dSingleLayerPotentialOperator);
 
