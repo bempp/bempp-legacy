@@ -155,6 +155,8 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "assembly/elementary_potential_operator.i"
 %include "assembly/helmholtz_3d_potential_operators.i"
 %include "assembly/laplace_3d_potential_operators.i"
+%include "assembly/blocked_operator_structure.i"
+%include "assembly/blocked_boundary_operator.i"
 
 // Linear algebra
 %include "linalg/parameter_list.i"

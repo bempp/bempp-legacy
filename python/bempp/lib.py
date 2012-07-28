@@ -250,7 +250,18 @@ def createEvaluationOptions():
     "Return and EvaluationOptions object"
     return core.EvaluationOptions()
 
+def createBlockOperatorStructure(context):
+    """Return an BlockedOperatorStructure object"""
+    name = 'BlockedOperatorStructure'
+    return core.constructObjectTemplatedOnBasisAndResult(
+        name, context.basisFunctionType(), context.resultType())
 
+def createBlockedBoundaryOperator(context,structure):
+    """Return a BlockedBoundaryOperator object"""
+    name = 'BlockedBoundaryOperator'
+    return core.constructObjectTemplatedOnBasisAndResult(
+        name, context.basisFunctionType(), context.resultType(),
+        structure)
 
 
 
