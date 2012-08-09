@@ -63,7 +63,7 @@ def prepare(root,config):
         tbb_lib_name_debug="libtbb_debug.dylib"
     elif sys.platform.startswith('linux'):
         tbb_lib_name = "libtbb.so"
-        tbb_lib_name_debug = "libtbb_debug.dylib"
+        tbb_lib_name_debug = "libtbb_debug.so"
         if config.get('Main','architecture')=='intel64':
             libdir_orig = root+"/contrib/tbb/lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21"
         else:
