@@ -69,7 +69,7 @@ def pythonInfo():
     import sys,os
     
     exe = sys.executable
-    lib_no_suffix = sys.prefix+"/lib/libpython"+str(sys.version_info.major)+"."+str(sys.version_info.minor)
+    lib_no_suffix = sys.prefix+"/lib/libpython"+str(sys.version_info[0])+"."+str(sys.version_info[1])
     if sys.platform.startswith('darwin'):
         lib = lib_no_suffix+".dylib"
     elif sys.platform.startswith('linux'):
