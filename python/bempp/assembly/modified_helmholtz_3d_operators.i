@@ -2,7 +2,7 @@
 #include "assembly/modified_helmholtz_3d_single_layer_boundary_operator.hpp"
 #include "assembly/modified_helmholtz_3d_double_layer_boundary_operator.hpp"
 #include "assembly/modified_helmholtz_3d_adjoint_double_layer_boundary_operator.hpp"
-// #include "assembly/modified_helmholtz_3d_hypersingular_boundary_operator.hpp"
+#include "assembly/modified_helmholtz_3d_hypersingular_boundary_operator.hpp"
 %}
 
 // TODO
@@ -13,37 +13,43 @@
 %include "assembly/modified_helmholtz_3d_single_layer_boundary_operator.hpp"
 %include "assembly/modified_helmholtz_3d_double_layer_boundary_operator.hpp"
 %include "assembly/modified_helmholtz_3d_adjoint_double_layer_boundary_operator.hpp"
-// %include "assembly/modified_helmholtz_3d_hypersingular_boundary_operator.hpp"
+%include "assembly/modified_helmholtz_3d_hypersingular_boundary_operator.hpp"
 #undef shared_ptr
 
 %define BEMPP_INSTANTIATE_MODIFIED_HELMHOLTZ_3D_BASE(BASIS, KERNEL, RESULT, PY_BASIS, PY_KERNEL, PY_RESULT)
     %template(ModifiedHelmholtz3dBoundaryOperatorBase_Single_ ## _ ## PY_BASIS ## _ ## PY_KERNEL ## _ ## PY_RESULT)
         ModifiedHelmholtz3dBoundaryOperatorBase<
-        ModifiedHelmholtz3dSingleLayerBoundaryOperatorImpl< BASIS, KERNEL, RESULT >,
+        ModifiedHelmholtz3dSingleLayerBoundaryOperatorImpl< BASIS , KERNEL , RESULT >,
         BASIS, KERNEL, RESULT >;
 
     %template(ModifiedHelmholtz3dBoundaryOperatorBase_Double_ ## _ ## PY_BASIS ## _ ## PY_KERNEL ## _ ## PY_RESULT)
         ModifiedHelmholtz3dBoundaryOperatorBase<
-        ModifiedHelmholtz3dDoubleLayerBoundaryOperatorImpl< BASIS, KERNEL, RESULT >,
+        ModifiedHelmholtz3dDoubleLayerBoundaryOperatorImpl< BASIS , KERNEL , RESULT >,
         BASIS, KERNEL, RESULT >;
 
     %template(ModifiedHelmholtz3dBoundaryOperatorBase_AdjointDouble_ ## _ ## PY_BASIS ## _ ## PY_KERNEL ## _ ## PY_RESULT)
         ModifiedHelmholtz3dBoundaryOperatorBase<
-        ModifiedHelmholtz3dAdjointDoubleLayerBoundaryOperatorImpl< BASIS, KERNEL, RESULT >,
+        ModifiedHelmholtz3dAdjointDoubleLayerBoundaryOperatorImpl< BASIS , KERNEL , RESULT >,
         BASIS, KERNEL, RESULT >;
 
-//    %template(ModifiedHelmholtz3dBoundaryOperatorBase_Hypersingular_
-//        ## _ ## PY_BASIS ## _ ## PY_KERNEL ## _ ## PY_RESULT)
-//        ModifiedHelmholtz3dBoundaryOperatorBase<
-//        ModifiedHelmholtz3dHypersingularBoundaryOperatorImpl< BASIS, KERNEL, RESULT >,
-//        BASIS, KERNEL, RESULT >;
+    %template(ModifiedHelmholtz3dBoundaryOperatorBase_Hypersingular_ ## _ ## PY_BASIS ## _ ## PY_KERNEL ## _ ## PY_RESULT)
+        ModifiedHelmholtz3dBoundaryOperatorBase<
+        ModifiedHelmholtz3dHypersingularBoundaryOperatorImpl< BASIS , KERNEL , RESULT >,
+        BASIS , KERNEL , RESULT >;
 %enddef
 
 namespace Bempp
 {
 
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
-    ModifiedHelmholtz3dSingleLayerBoundaryOperatorImpl);
+  BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
+  ModifiedHelmholtz3dSingleLayerBoundaryOperatorImpl);
+  BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
+  ModifiedHelmholtz3dDoubleLayerBoundaryOperatorImpl);
+  BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
+  ModifiedHelmholtz3dAdjointDoubleLayerBoundaryOperatorImpl);
+  BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
+  ModifiedHelmholtz3dHypersingularBoundaryOperatorImpl);
+
 BEMPP_ITERATE_OVER_BASIS_KERNEL_AND_RESULT_TYPES(BEMPP_INSTANTIATE_MODIFIED_HELMHOLTZ_3D_BASE);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
     ModifiedHelmholtz3dSingleLayerBoundaryOperator);
@@ -51,16 +57,16 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
     ModifiedHelmholtz3dDoubleLayerBoundaryOperator);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
     ModifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator);
-// BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
-//     ModifiedHelmholtz3dHypersingularBoundaryOperator);
+ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
+     ModifiedHelmholtz3dHypersingularBoundaryOperator);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
     modifiedHelmholtz3dSingleLayerBoundaryOperator);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
     modifiedHelmholtz3dDoubleLayerBoundaryOperator);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
     modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator);
-// BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
-//     modifiedHelmholtz3dHypersingularBoundaryOperator);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
+    modifiedHelmholtz3dHypersingularBoundaryOperator);
 
 } // namespace Bempp
 
@@ -119,11 +125,11 @@ def modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
         "modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator", context,
         domain, range, dualToRange, waveNumber)
 
-# def modifiedHelmholtz3dHypersingularBoundaryOperator(
-#         domain, range, dualToRange, waveNumber, resultType=None):
-#     """Construct a hypersingular operator for the modified Helmholtz equation in 3D."""
-#     return _constructModifiedHelmholtzOperator(
-#         "modifiedHelmholtz3dHypersingularBoundaryOperator", context, domain, range, dualToRange,
-#         waveNumber, resultType)
+def modifiedHelmholtz3dHypersingularBoundaryOperator(
+         domain, range, dualToRange, waveNumber):
+     """Construct a hypersingular operator for the modified Helmholtz equation in 3D."""
+     return _constructModifiedHelmholtzOperator(
+         "modifiedHelmholtz3dHypersingularBoundaryOperator", context, domain, range, dualToRange,
+         waveNumber)
 
 %}

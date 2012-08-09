@@ -169,11 +169,11 @@ def createModifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
         domain, range, dualToRange, waveNumber)
 
 def createModifiedHelmholtz3dHypersingularBoundaryOperator(
-         domain, range, dualToRange, waveNumber, resultType=None):
+         context, domain, range, dualToRange, waveNumber):
      """Return a hypersingular operator for the modified Helmholtz equation in 3D."""
      return core._constructModifiedHelmholtzOperator(
          "modifiedHelmholtz3dHypersingularBoundaryOperator", context, domain, range, dualToRange,
-         waveNumber, resultType)
+         waveNumber)
 
 
 def createIdentityOperator(context, domain, range, dualToRange):
