@@ -59,10 +59,12 @@
 namespace Bempp
 {
 
-// Body of parallel loop
+// Helper functions and classes
 
 namespace
 {
+
+// Body of parallel loop
 
 template <typename BasisFunctionType, typename ResultType>
 class DenseWeakFormAssemblerLoopBody
@@ -121,6 +123,32 @@ private:
     // mutex must be mutable because we need to lock and unlock it
     MutexType& m_mutex;
 };
+
+/** Build a list of lists of global DOF indices corresponding to the local DOFs
+ *  on each element of space.grid(). */
+template <typename BasisFunctionType>
+std::vector<std::vector<GlobalDofIndex> > gatherGlobalDofs(
+        const Space<BasisFunctionType>& space)
+{
+    // Get the grid's leaf view so that we can iterate over elements
+    std::auto_ptr<GridView> view = space.grid().leafView();
+    const int elementCount = view->entityCount(0);
+
+    // Global DOF indices corresponding to local DOFs on elements
+    std::vector<std::vector<GlobalDofIndex> > globalDofs(elementCount);
+
+    // Gather global DOF lists
+    const Mapper& mapper = view->elementMapper();
+    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    while (!it->finished()) {
+        const Entity<0>& element = it->entity();
+        const int elementIndex = mapper.entityIndex(element);
+        space.globalDofs(element, globalDofs[elementIndex]);
+        it->next();
+    }
+
+    return globalDofs;
+}
 
 } // namespace
 
@@ -234,33 +262,22 @@ assembleWeakFormInDenseMode(
     const Space<BasisFunctionType>& testSpace = *this->dualToRange();
     const Space<BasisFunctionType>& trialSpace = *this->domain();
 
-    // Get the grid's leaf view so that we can iterate over elements
-    std::auto_ptr<GridView> view = trialSpace.grid().leafView();
-    const int elementCount = view->entityCount(0);
-
     // Global DOF indices corresponding to local DOFs on elements
-    std::vector<std::vector<GlobalDofIndex> > trialGlobalDofs(elementCount);
-    std::vector<std::vector<GlobalDofIndex> > testGlobalDofs(elementCount);
-
-    // Gather global DOF lists
-    const Mapper& mapper = view->elementMapper();
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-    while (!it->finished()) {
-        const Entity<0>& element = it->entity();
-        const int elementIndex = mapper.entityIndex(element);
-        testSpace.globalDofs(element, testGlobalDofs[elementIndex]);
-        trialSpace.globalDofs(element, trialGlobalDofs[elementIndex]);
-        it->next();
-    }
+    std::vector<std::vector<GlobalDofIndex> > testGlobalDofs =
+            gatherGlobalDofs(testSpace);
+    std::vector<std::vector<GlobalDofIndex> > trialGlobalDofs =
+            gatherGlobalDofs(trialSpace);
+    const size_t testElementCount = testGlobalDofs.size();
+    const size_t trialElementCount = trialGlobalDofs.size();
 
     // Make a vector of all element indices
-    std::vector<int> testIndices(elementCount);
-    for (int i = 0; i < elementCount; ++i)
+    std::vector<int> testIndices(testElementCount);
+    for (int i = 0; i < testElementCount; ++i)
         testIndices[i] = i;
 
     // Create the operator's matrix
     arma::Mat<ResultType> result(testSpace.globalDofCount(),
-                                trialSpace.globalDofCount());
+                                 trialSpace.globalDofCount());
     result.fill(0.);
 
     typedef DenseWeakFormAssemblerLoopBody<BasisFunctionType, ResultType> Body;
@@ -276,14 +293,14 @@ assembleWeakFormInDenseMode(
             maxThreadCount = parallelOptions.maxThreadCount();
     }
     tbb::task_scheduler_init scheduler(maxThreadCount);
-    tbb::parallel_for(tbb::blocked_range<size_t>(0, elementCount),
+    tbb::parallel_for(tbb::blocked_range<size_t>(0, trialElementCount),
                       Body(testIndices, testGlobalDofs, trialGlobalDofs,
                            assembler, result, mutex));
 
     //// Old serial code (TODO: decide whether to keep it behind e.g. #ifndef PARALLEL)
     //    std::vector<arma::Mat<ValueType> > localResult;
     //    // Loop over trial elements
-    //    for (int trialIndex = 0; trialIndex < elementCount; ++trialIndex)
+    //    for (int trialIndex = 0; trialIndex < trialElementCount; ++trialIndex)
     //    {
     //        // Evaluate integrals over pairs of the current trial element and
     //        // all the test elements
@@ -291,7 +308,7 @@ assembleWeakFormInDenseMode(
     //                                         ALL_DOFS, localResult);
 
     //        // Loop over test indices
-    //        for (int testIndex = 0; testIndex < elementCount; ++testIndex)
+    //        for (int testIndex = 0; testIndex < testElementCount; ++testIndex)
     //            // Add the integrals to appropriate entries in the operator's matrix
     //            for (int trialDof = 0; trialDof < trialGlobalDofs[trialIndex].size(); ++trialDof)
     //                for (int testDof = 0; testDof < testGlobalDofs[testIndex].size(); ++testDof)
