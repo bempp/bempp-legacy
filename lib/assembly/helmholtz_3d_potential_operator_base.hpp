@@ -65,7 +65,6 @@ public:
     Helmholtz3dPotentialOperatorBase(const Helmholtz3dPotentialOperatorBase& other);
     virtual ~Helmholtz3dPotentialOperatorBase();
 
-    void setWaveNumber(KernelType waveNumber);
     KernelType waveNumber() const;
 
 private:

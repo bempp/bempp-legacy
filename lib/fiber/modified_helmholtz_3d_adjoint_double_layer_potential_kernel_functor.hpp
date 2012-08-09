@@ -63,7 +63,6 @@ public:
     }
 
     ValueType waveNumber() const { return m_waveNumber; }
-    void setWaveNumber(ValueType k) { m_waveNumber = k; }
 
     template <template <typename T> class CollectionOf2dSlicesOfNdArrays>
     void evaluate(

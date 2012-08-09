@@ -51,7 +51,6 @@ public:
     }
 
     KernelType waveNumber() const { return m_waveNumber; }
-    void setWaveNumber(KernelType k) { m_waveNumber = k; }
 
     // It is possible that this function could be generalised to
     // multiple basis transformations or kernels and that the additional

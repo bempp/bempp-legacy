@@ -37,12 +37,6 @@ inline typename Impl::KernelType waveNumberImpl(const Impl& impl)
     return impl.kernels.functor().waveNumber();
 }
 
-template <typename Impl>
-inline void setWaveNumberImpl(Impl& impl, typename Impl::KernelType waveNumber)
-{
-    impl.kernels.functor().setWaveNumber(waveNumber);
-}
-
 } // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -161,15 +155,6 @@ ModifiedHelmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType, KernelType, Res
 waveNumber() const
 {
     return waveNumberImpl(*m_impl);
-}
-
-template <typename Impl, typename BasisFunctionType,
-          typename KernelType, typename ResultType>
-void
-ModifiedHelmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType, KernelType, ResultType>::
-setWaveNumber(KernelType waveNumber)
-{
-    setWaveNumberImpl(*m_impl, waveNumber);
 }
 
 template <typename Impl, typename BasisFunctionType,

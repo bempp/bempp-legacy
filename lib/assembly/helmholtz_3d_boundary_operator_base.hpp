@@ -72,7 +72,6 @@ public:
             const Helmholtz3dBoundaryOperatorBase& other);
     virtual ~Helmholtz3dBoundaryOperatorBase();
 
-    void setWaveNumber(KernelType waveNumber);
     KernelType waveNumber() const;
 
     virtual shared_ptr<const AbstractBoundaryOperatorId> id() const;
