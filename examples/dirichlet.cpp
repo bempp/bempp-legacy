@@ -18,8 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#define private public
-
 #include "bempp/common/config_alugrid.hpp"
 #include "bempp/common/config_trilinos.hpp"
 
