@@ -126,10 +126,10 @@ def modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
         domain, range, dualToRange, waveNumber)
 
 def modifiedHelmholtz3dHypersingularBoundaryOperator(
-         domain, range, dualToRange, waveNumber):
+        context, domain, range, dualToRange, waveNumber):
      """Construct a hypersingular operator for the modified Helmholtz equation in 3D."""
      return _constructModifiedHelmholtzOperator(
-         "modifiedHelmholtz3dHypersingularBoundaryOperator", context, domain, range, dualToRange,
-         waveNumber)
+         "modifiedHelmholtz3dHypersingularBoundaryOperator", context, 
+         domain, range, dualToRange, waveNumber)
 
 %}
