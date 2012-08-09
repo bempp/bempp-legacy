@@ -36,10 +36,12 @@ associated with the vertices of the grid.
 "Clear the list of registered functions."
 %enddef
 
-%define VtkWriter_write_docstring
-"write(self, name, type = 'ascii') -> string
+%define VtkWriter_write_autodoc_docstring
+"write(self, name, type = 'ascii') -> string"
+%enddef
 
-Write output (interface might change later).
+%define VtkWriter_write_docstring
+"Write output (interface might change later).
 
 This method can be used in parallel as well as in serial programs.
 For serial runs (commSize=1) it chooses other names without the
@@ -57,10 +59,12 @@ same as a call to pwrite() with path='' and extendpath=''.
 Returns the name of the created file."
 %enddef
 
-%define VtkWriter_pwrite_docstring
-"pwrite(self, name, path, extendpath, type = 'ascii') -> string
+%define VtkWriter_pwrite_autodoc_docstring
+"pwrite(self, name, path, extendpath, type = 'ascii') -> string"
+%enddef
 
-Write output (interface might change later).
+%define VtkWriter_pwrite_docstring
+"Write output (interface might change later).
 
 `pwrite' means `path write' (i.e. write somewhere else than the current
 directory). The `p' does not mean this method has a monopoly on

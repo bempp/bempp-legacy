@@ -4,16 +4,20 @@
 "Id set."
 %enddef 
 
-%define IdSet_entityId_docstring
-"entityId(self, e) -> int
+%define IdSet_entityId_autodoc_docstring
+"entityId(self, e) -> int"
+%enddef
 
-Id of the entity e."
+%define IdSet_entityId_docstring
+"Id of the entity e."
+%enddef
+
+%define IdSet_subEntityId_autodoc_docstring
+"subEntityId(self, e, i, codimSub) -> int"
 %enddef
 
 %define IdSet_subEntityId_docstring
-"subEntityId(self, e, i, codimSub) -> int
-
-Id of i'th subentity of codimension codimSub of entity e of codimension 0."
+"Id of i'th subentity of codimension codimSub of entity e of codimension 0."
 %enddef
 
 

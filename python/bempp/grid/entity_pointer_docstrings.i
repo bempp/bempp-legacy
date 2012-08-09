@@ -23,19 +23,23 @@ world coordinates."
 "Number of subentities of codimension codimSub."
 %enddef
 
-%define EntityCodim0_subEntities_docstring
-"subEntities(self, codimSub) -> EntityIterator
+%define EntityCodim0_subEntities_autodoc_docstring
+"subEntities(self, codimSub) -> EntityIterator"
+%enddef
 
-Iterator over subentities of codimension codimSub.
+%define EntityCodim0_subEntities_docstring
+"Iterator over subentities of codimension codimSub.
 
 *Note:* codimSub must be greater than 0 and less than the dimension of
 the grid."
 %enddef
 
-%define EntityCodim0_father_docstring
-"father(self) -> Entity
+%define EntityCodim0_father_autodoc_docstring
+"father(self) -> Entity"
+%enddef
 
-Inter-level access to father entity on the next-coarser grid.
+%define EntityCodim0_father_docstring
+"Inter-level access to father entity on the next-coarser grid.
 
 The given entity resulted directly from a subdivision of its father
 entity. For macro (level-0) elements father() returns None.
@@ -60,10 +64,12 @@ method."
 In bisection or hanging node refinement this is always true."
 %enddef
 
-%define EntityCodim0_sons_docstring
-"sons(self, maxLevel) -> EntityIterator
+%define EntityCodim0_sons_autodoc_docstring
+"sons(self, maxLevel) -> EntityIterator"
+%enddef
 
-Iterator over elements that resulted from (recursive) subdivision of this element.
+%define EntityCodim0_sons_docstring
+"Iterator over elements that resulted from (recursive) subdivision of this element.
 
 *Arguments:* 
     maxlevel (int)

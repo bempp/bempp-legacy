@@ -1,3 +1,6 @@
+// Automatically specify argument lists and return types in docstrings
+%feature("autodoc", 0);
+
 %define DECLARE_CLASS_DOCSTRING(class)
 %feature("docstring", class ## _docstring) class
 %enddef
@@ -11,18 +14,18 @@
 #if auto_param_list
     %feature("autodoc", 0) class::method;
 #endif
-%feature("docstring", class ## _ ## method ## _docstring) class::method
+%feature("docstring", class ## _ ## method ## _docstring) class::method;
 %enddef
 
 %define DECLARE_TEMPLATE_CLASS_DOCSTRING(python_class, cpp_class)
-%feature("docstring", python_class ## _docstring) cpp_class
+%feature("docstring", python_class ## _docstring) cpp_class;
 %enddef
 
 %define DECLARE_TEMPLATE_METHOD_DOCSTRING(python_class, cpp_class, method, auto_param_list)
-#if auto_param_list
-    %feature("autodoc", 0) cpp_class::method;
+#if !auto_param_list
+    %feature("autodoc", python_class ## _ ## method ## _autodoc_docstring) cpp_class::method;
 #endif
-%feature("docstring", python_class ## _ ## method ## _docstring) cpp_class::method
+%feature("docstring", python_class ## _ ## method ## _docstring) cpp_class::method;
 %enddef
 
 %define DECLARE_TEMPLATE_VALUE_METHOD_AUTO_DOCSTRING(class, method)
