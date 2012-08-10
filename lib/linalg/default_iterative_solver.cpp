@@ -76,12 +76,22 @@ struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
         const BoundaryOp& boundaryOp = boost::get<BoundaryOp>(op);
 
         if (mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE) {
+            if (boundaryOp.domain()->globalDofCount() !=
+                    boundaryOp.dualToRange()->globalDofCount())
+                throw std::invalid_argument("DefaultIterativeSolver::Impl::Impl(): "
+                                            "non-square system provided");
+
             solverWrapper.reset(
                         new BelosSolverWrapper<ResultType>(
                             Teuchos::rcp<const Thyra::LinearOpBase<ResultType> >(
                                 boundaryOp.weakForm())));
         }
         else if (mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_RANGE) {
+            if (boundaryOp.domain()->globalDofCount() !=
+                    boundaryOp.range()->globalDofCount())
+                throw std::invalid_argument("DefaultIterativeSolver::Impl::Impl(): "
+                                            "non-square system provided");
+
             BoundaryOp id = identityOperator(
                         boundaryOp.context(), boundaryOp.range(), boundaryOp.range(),
                         boundaryOp.dualToRange(), "I");
@@ -115,13 +125,22 @@ struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
         const BoundaryOp& boundaryOp = boost::get<BoundaryOp>(op);
 
         if (mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE) {
+            if (boundaryOp.totalGlobalDofCountInDomains() !=
+                    boundaryOp.totalGlobalDofCountInDualsToRanges())
+                throw std::invalid_argument("DefaultIterativeSolver::Impl::Impl(): "
+                                            "non-square system provided");
             solverWrapper.reset(
                         new BelosSolverWrapper<ResultType>(
                             Teuchos::rcp<const Thyra::LinearOpBase<ResultType> >(
                                 boundaryOp.weakForm())));
         }
         else if (mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_RANGE) {
-            // Construct a block-diagonal operator composed of pseudoinverses 
+            if (boundaryOp.totalGlobalDofCountInDomains() !=
+                    boundaryOp.totalGlobalDofCountInRanges())
+                throw std::invalid_argument("DefaultIterativeSolver::Impl::Impl(): "
+                                            "non-square system provided");
+
+            // Construct a block-diagonal operator composed of pseudoinverses
             // for appropriate spaces
             BlockedOperatorStructure<BasisFunctionType, ResultType> pinvIdStructure;
             size_t rowCount = boundaryOp.rowCount();
