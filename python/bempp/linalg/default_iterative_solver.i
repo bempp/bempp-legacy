@@ -13,8 +13,6 @@
 namespace Bempp
 {
 
-
-
 BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DefaultIterativeSolver);
 
 %extend DefaultIterativeSolver
@@ -25,8 +23,10 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DefaultIterativeSolver
     %ignore addPreconditioner;
 }
 
-Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(double tol);
-Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(double tol);
+Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(
+    double tol, int maxIterationCount = 1000);
+Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(
+    double tol, int maxIterationCount = 1000);
 
 } // namespace Bempp
 

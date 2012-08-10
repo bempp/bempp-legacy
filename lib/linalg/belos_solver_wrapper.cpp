@@ -268,7 +268,7 @@ namespace
 
 template <typename MagnitudeType>
 Teuchos::RCP<Teuchos::ParameterList>
-inline defaultGmresParameterListInternal(MagnitudeType tol)
+inline defaultGmresParameterListInternal(MagnitudeType tol, int maxIterationCount)
 {
     Teuchos::RCP<Teuchos::ParameterList> paramList(
                 new Teuchos::ParameterList("DefaultParameters"));
@@ -277,12 +277,13 @@ inline defaultGmresParameterListInternal(MagnitudeType tol)
     Teuchos::ParameterList& pseudoBlockGmresList =
              solverTypesList.sublist("Pseudo Block GMRES");
     pseudoBlockGmresList.set("Convergence Tolerance", tol);
+    pseudoBlockGmresList.set("Maximum Iterations", maxIterationCount);
     return paramList;
 }
 
 template <typename MagnitudeType>
 Teuchos::RCP<Teuchos::ParameterList>
-inline defaultCgParameterListInternal(MagnitudeType tol)
+inline defaultCgParameterListInternal(MagnitudeType tol, int maxIterationCount)
 {
     Teuchos::RCP<Teuchos::ParameterList> paramList(
                 new Teuchos::ParameterList("DefaultParameters"));
@@ -291,29 +292,34 @@ inline defaultCgParameterListInternal(MagnitudeType tol)
     Teuchos::ParameterList& pseudoBlockCgList =
             solverTypesList.sublist("Pseudo Block CG");
     pseudoBlockCgList.set("Convergence Tolerance", tol);
+    pseudoBlockCgList.set("Maximum Iterations", maxIterationCount);
     return paramList;
 }
 
 } // namespace
 
-Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(double tol)
+Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(
+        double tol, int maxIterationCount)
 {
-    return defaultGmresParameterListInternal(tol);
+    return defaultGmresParameterListInternal(tol, maxIterationCount);
 }
 
-Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(float tol)
+Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(
+        float tol, int maxIterationCount)
 {
-    return defaultGmresParameterListInternal(tol);
+    return defaultGmresParameterListInternal(tol, maxIterationCount);
 }
 
-Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(double tol)
+Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(
+        double tol, int maxIterationCount)
 {
-    return defaultCgParameterListInternal(tol);
+    return defaultCgParameterListInternal(tol, maxIterationCount);
 }
 
-Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(float tol)
+Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(
+        float tol, int maxIterationCount)
 {
-    return defaultCgParameterListInternal(tol);
+    return defaultCgParameterListInternal(tol, maxIterationCount);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(BelosSolverWrapper);

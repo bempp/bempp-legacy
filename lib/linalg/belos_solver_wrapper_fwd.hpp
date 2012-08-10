@@ -13,10 +13,14 @@ namespace Bempp
 
 template <typename ValueType> class BelosSolverWrapper;
 
-Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(double tol);
-Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(double tol);
-Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(float tol);
-Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(float tol);
+Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(
+        double tol, int maxIterationCount = 1000);
+Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(
+        double tol, int maxIterationCount = 1000);
+Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(
+        float tol, int maxIterationCount = 1000);
+Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(
+        float tol, int maxIterationCount = 1000);
 
 } // namespace Bempp
 
