@@ -62,7 +62,7 @@ def prepare(root,config):
 def configure(root,config):
     boost_full_dir=root+"/contrib/"+boost_dir
     prefix=config.get('Main','prefix')
-    print "Configure Boost"
+    print "Configuring Boost"
     cwd=os.getcwd()
     os.chdir(boost_full_dir)
     tools.checkDeleteDirectory(boost_full_dir+"/build")

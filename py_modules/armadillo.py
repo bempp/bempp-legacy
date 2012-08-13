@@ -42,7 +42,7 @@ def prepare(root,config):
     tools.checkDeleteDirectory(extract_dir)
     tools.extract_file(root+"/contrib/files/"+arma_fname,root+"/contrib")
     subprocess.check_call("cp -R "+extract_dir+"/include/* "+prefix+"/bempp/include/",shell=True)
-    print "Applying patches"
+    print "Patching Armadillo"
     patch=py_patch.fromfile(root+"/contrib/patch/armadillo_config.patch")
     cwd=os.getcwd()
     os.chdir(prefix+"/bempp/include/armadillo_bits")

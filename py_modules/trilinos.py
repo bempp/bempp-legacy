@@ -59,7 +59,7 @@ def configure(root,config):
     trilinos_full_dir=root+"/contrib/"+trilinos_dir
     trilinos_download_name=root+"/contrib/files/"+trilinos_fname
 
-    print "Configure Trilinos"
+    print "Configuring Trilinos"
     cwd=os.getcwd()
     os.chdir(trilinos_full_dir)
     tools.checkDeleteDirectory(trilinos_full_dir+"/build")
