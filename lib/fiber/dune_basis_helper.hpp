@@ -27,6 +27,7 @@
 #include "_4d_array.hpp"
 
 #include "../common/armadillo_fwd.hpp"
+#include <cassert>
 #include <vector>
 
 namespace Fiber
@@ -38,9 +39,13 @@ void evaluateBasisFunctionsWithDune(
         LocalDofIndex localDofIndex,
         arma::Cube<ValueType>& result)
 {
-    typedef typename DuneBasis::Traits Traits;
-
     DuneBasis basis;
+
+    typedef typename DuneBasis::Traits Traits;
+    assert(local.n_rows == Traits::dimDomain);
+    assert(localDofIndex == ALL_DOFS ||
+           (localDofIndex > 0 && localDofIndex < basis.size()));
+
     const int functionCount = localDofIndex == ALL_DOFS ? basis.size() : 1;
     const int pointCount = local.n_cols;
 
@@ -69,9 +74,13 @@ void evaluateBasisFunctionDerivativesWithDune(
         LocalDofIndex localDofIndex,
         _4dArray<ValueType>& result)
 {
-    typedef typename DuneBasis::Traits Traits;
-
     DuneBasis basis;
+
+    typedef typename DuneBasis::Traits Traits;
+    assert(local.n_rows == Traits::dimDomain);
+    assert(localDofIndex == ALL_DOFS ||
+           (localDofIndex > 0 && localDofIndex < basis.size()));
+
     const int functionCount = localDofIndex == ALL_DOFS ? basis.size() : 1;
     const int pointCount = local.n_cols;
 
