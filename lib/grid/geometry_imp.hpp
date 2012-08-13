@@ -181,7 +181,7 @@ inline void Geometry::getData(size_t what, const arma::Mat<float>& local,
     convertMat(dataDouble.normals, data.normals);
     convertMat(dataDouble.integrationElements, data.integrationElements);
     convertCube(dataDouble.jacobiansTransposed, data.jacobiansTransposed);
-    convertCube(dataDouble.jacobiansTransposed, data.jacobiansTransposed);
+    convertCube(dataDouble.jacobianInversesTransposed, data.jacobianInversesTransposed);
 }
 
 template <typename T1, typename T2>
