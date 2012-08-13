@@ -24,8 +24,12 @@
 #include "../fiber/explicit_instantiation.hpp"
 
 #include "../fiber/modified_helmholtz_3d_single_layer_potential_kernel_functor.hpp"
-#include "../fiber/scalar_function_value_functor.hpp"
-#include "../fiber/simple_test_scalar_kernel_trial_integrand_functor.hpp"
+#include "../fiber/modified_helmholtz_3d_hypersingular_transformation_functor.hpp"
+#include "../fiber/modified_helmholtz_3d_hypersingular_integrand_functor.hpp"
+
+
+//#include "../fiber/scalar_function_value_functor.hpp"
+//#include "../fiber/simple_test_scalar_kernel_trial_integrand_functor.hpp"
 
 
 #include "../fiber/default_collection_of_kernels.hpp"
@@ -50,16 +54,16 @@ struct ModifiedHelmholtz3dHypersingularBoundaryOperatorImpl
 
     typedef Fiber::ModifiedHelmholtz3dSingleLayerPotentialKernelFunctor<KernelType>
     KernelFunctor;
-    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
+    typedef Fiber::ModifiedHelmholtz3dHypersingularTransformationFunctor<CoordinateType>
     TransformationFunctor;
-    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
+    typedef Fiber::ModifiedHelmholtz3dHypersingularIntegrandFunctor<
     BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
 
 
     explicit ModifiedHelmholtz3dHypersingularBoundaryOperatorImpl(KernelType waveNumber) :
         kernels(KernelFunctor(waveNumber)),
         transformations(TransformationFunctor()),
-        integral(IntegrandFunctor())
+        integral(IntegrandFunctor(waveNumber))
     {}
 
     Fiber::DefaultCollectionOfKernels<KernelFunctor> kernels;
