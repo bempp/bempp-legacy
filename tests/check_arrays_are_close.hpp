@@ -23,6 +23,7 @@
 
 #include "fiber/scalar_traits.hpp"
 #include "fiber/_2d_array.hpp"
+#include "fiber/_3d_array.hpp"
 #include "fiber/_4d_array.hpp"
 
 #include "common/armadillo_fwd.hpp"
@@ -133,6 +134,44 @@ check_arrays_are_close(const Fiber::_4dArray<ValueType>& left,
                                          << right(r, c, s, u) << "]";
                     }
                 }
+
+    return result;
+}
+
+template <typename ValueType>
+boost::test_tools::predicate_result
+check_arrays_are_close(const Fiber::_3dArray<ValueType>& left,
+                       const Fiber::_3dArray<ValueType>& right,
+                       typename Fiber::ScalarTraits<ValueType>::RealType tolerance)
+{
+    boost::test_tools::predicate_result result(true);
+    if (left.extent(0) != right.extent(0) ||
+            left.extent(1) != right.extent(1) ||
+            left.extent(2) != right.extent(2)) {
+        result = false;
+        result.message() << "Size mismatch [("
+                         << left.extent(0) << ", " << left.extent(1) << ", "
+                         << left.extent(2) << ") != ("
+                         << right.extent(0) << ", " << right.extent(1) << ", "
+                         << right.extent(2)  << "]";
+        return result;
+    }
+    for (size_t r = 0; r < left.extent(0); ++r)
+        for (size_t c = 0; c < left.extent(1); ++c)
+            for (size_t s = 0; s < left.extent(2); ++s) {
+                    typename Fiber::ScalarTraits<ValueType>::RealType diff =
+                            std::abs(left(r, c, s) - right(r, c, s));
+                    typename Fiber::ScalarTraits<ValueType>::RealType avg =
+                            std::abs(left(r, c, s) + right(r, c, s)) / 2.;
+                    if (diff > tolerance * (1 + avg)) {
+                        result = false;
+                        result.message() << "\n  Mismatch at position ("
+                                         << r << ", " << c << ", "
+                                         << s << ") ["
+                                         << left(r, c, s) << " != "
+                                         << right(r, c, s) << "]";
+                    }
+            }
 
     return result;
 }
