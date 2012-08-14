@@ -44,7 +44,7 @@ void evaluateBasisFunctionsWithDune(
     typedef typename DuneBasis::Traits Traits;
     assert(local.n_rows == Traits::dimDomain);
     assert(localDofIndex == ALL_DOFS ||
-           (localDofIndex > 0 && localDofIndex < basis.size()));
+           (localDofIndex >= 0 && localDofIndex < basis.size()));
 
     const int functionCount = localDofIndex == ALL_DOFS ? basis.size() : 1;
     const int pointCount = local.n_cols;
@@ -79,7 +79,7 @@ void evaluateBasisFunctionDerivativesWithDune(
     typedef typename DuneBasis::Traits Traits;
     assert(local.n_rows == Traits::dimDomain);
     assert(localDofIndex == ALL_DOFS ||
-           (localDofIndex > 0 && localDofIndex < basis.size()));
+           (localDofIndex >= 0 && localDofIndex < basis.size()));
 
     const int functionCount = localDofIndex == ALL_DOFS ? basis.size() : 1;
     const int pointCount = local.n_cols;
