@@ -58,22 +58,19 @@ template <typename BasisFunctionType, typename ResultType> class ScaledAbstractB
 /** \ingroup assembly
  *  \brief Abstract boundary operator.
  *
- *  An AbstractBoundaryOperator represents a linear mapping \f$L : X \to Y\f$ between
- *  two function spaces \f$X : S \to K^p\f$ (_domain_) and \f$Y : S \to K^q\f$ (_range_) defined on
- *  an \f$n\f$-dimensional surface \f$S\f$ embedded in an
- *  \f$(n+1)\f$-dimensional domain. \f$K\f$ denotes either the set of real or
- *  complex numbers.
+ *  An AbstractBoundaryOperator represents a linear mapping \f$L : X
+ *  \to Y\f$ between two function spaces \f$X : S \to K^p\f$
+ *  (_domain_) and \f$Y : S \to K^q\f$ (_range_) defined on an
+ *  \f$n\f$-dimensional surface \f$S\f$ embedded in an
+ *  \f$(n+1)\f$-dimensional domain. \f$K\f$ denotes either the set of
+ *  real or complex numbers.
  *
- *  The functions assembleWeakForm() and assembleDetachedWeakForm() can be used
- *  to calculate the weak form of the operator. The weak form constructed with
- *  the former function is stored internally in the AbstractBoundaryOperator object,
- *  which can subsequently be used as a typical linear operator (i.e. act on
- *  functions defined on the surface \f$S\f$, represented as GridFunction
- *  objects). The weak form constructed with the latter function is not stored
- *  in AbstractBoundaryOperator, but its ownership is passed directly to the caller.
+ *  The function assembleWeakForm() can be used to construct the weak
+ *  form of the operator.
  *
  *  \tparam BasisFunctionType
- *    Type used to represent components of the test and trial functions.
+ *    Type used to represent components of the functions from the operator's
+ *    domain, range and space dual to range.
  *  \tparam ResultType
  *    Type used to represent elements of the weak form of this operator.
  *
@@ -87,7 +84,7 @@ template <typename BasisFunctionType_, typename ResultType_>
 class AbstractBoundaryOperator
 {
 public:
-    /** \brief Type used to represent components of the test and trial functions. */
+    /** \brief Type used to represent components of functions on which the operator acts. */
     typedef BasisFunctionType_ BasisFunctionType;
     /** \brief Type used to represent elements of the operator's weak form. */
     typedef ResultType_ ResultType;
@@ -122,11 +119,6 @@ public:
                              const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
                              const std::string& label = "",
                              const Symmetry symmetry = NO_SYMMETRY);
-
-    // Default "shallow" copy constructor is used (thus the internal pointer
-    // to the weak form is shared among all copies). To make a deep copy of
-    // a AbstractBoundaryOperator, use the deepCopy() method (not yet written).
-    // AbstractBoundaryOperator(const AbstractBoundaryOperator<BasisFunctionType, ResultType>& other);
 
     /** \brief Destructor. */
     virtual ~AbstractBoundaryOperator();
@@ -179,8 +171,6 @@ public:
     virtual bool supportsRepresentation(
             AssemblyOptions::Representation repr) const = 0;
 
-    //*  \param[in] force
-    //*    If true (default), the weak form will be reassembled even if an older one already exists. If false, any existing a weak form
     /** \brief Assemble and returns the operator's weak form.
      *
      *  This function constructs a discrete linear operator representing the
