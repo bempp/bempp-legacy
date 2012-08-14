@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works, BasisFunctionType, basis_function_types)
 
     Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);
 
-    const RT waveNumber = 1.23;
+    const RT waveNumber(1.23, 0.31);
 
     BoundaryOperator<BFT, RT> slpOpConstants = Bempp::helmholtz3dSingleLayerBoundaryOperator<BFT>(
                 make_shared_from_ref(context),
