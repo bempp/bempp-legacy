@@ -6,8 +6,6 @@
 Welcome to BEM++'s documentation!
 =================================
 
-Contents:
-
 .. toctree::
    :maxdepth: 2
 
