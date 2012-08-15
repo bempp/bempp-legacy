@@ -24,9 +24,10 @@
 
 #include "../common/common.hpp"
 
+#include "function.hpp"
+
 #include "../grid/vtk_writer.hpp"
 #include "../fiber/scalar_traits.hpp"
-#include "../fiber/function.hpp"
 
 #include "../common/armadillo_fwd.hpp"
 
@@ -40,7 +41,7 @@ template <typename ValueType> class InterpolatedFunction;
 /** \brief Function defined by its values at a set of interpolation points
       and an interpolation method. */
 template <typename ValueType>
-class InterpolatedFunction : public Fiber::Function<ValueType>
+class InterpolatedFunction : public Function<ValueType>
 {
 public:
     typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;

@@ -45,8 +45,8 @@ namespace Fiber
 {
 
 template <typename ValueType> class Basis;
-template <typename ValueType> class Function;
 template <typename ResultType> class LocalAssemblerForGridFunctions;
+template <typename ValueType> class Function;
 
 } // namespace Fiber
 
@@ -59,6 +59,8 @@ class Grid;
 template <int codim> class Entity;
 template <typename BasisFunctionType> class Space;
 template <typename BasisFunctionType, typename ResultType> class Context;
+
+using Fiber::Function;
 
 /** \brief Function defined on a grid.
  *  \ingroup assembly

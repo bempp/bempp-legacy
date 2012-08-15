@@ -34,7 +34,6 @@
 #include "../fiber/basis_data.hpp"
 #include "../fiber/collection_of_basis_transformations.hpp"
 #include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/function.hpp"
 #include "../fiber/quadrature_strategy.hpp"
 #include "../fiber/local_assembler_for_grid_functions.hpp"
 #include "../fiber/opencl_handler.hpp"
@@ -121,7 +120,7 @@ shared_ptr<arma::Col<ResultType> > reallyCalculateProjections(
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<arma::Col<ResultType> > calculateProjections(
         const Context<BasisFunctionType, ResultType>& context,
-        const Fiber::Function<ResultType>& globalFunction,
+        const Function<ResultType>& globalFunction,
         const Space<BasisFunctionType>& dualSpace)
 {
     if (!dualSpace.dofsAssigned())
@@ -262,7 +261,7 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
         const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
         const shared_ptr<const Space<BasisFunctionType> >& space,
         const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
-        const Fiber::Function<ResultType>& function) :
+        const Function<ResultType>& function) :
     m_context(context), m_space(space), m_dualSpace(dualSpace),
     m_projections(calculateProjections(*context, function, *dualSpace))
 {
