@@ -25,7 +25,7 @@ import sys, os
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.todo', 'sphinx.ext.pngmath', 'sphinx.ext.mathjax']
+extensions = ['sphinx.ext.todo', 'sphinx.ext.pngmath']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -186,17 +186,17 @@ latex_elements = {
 #'papersize': 'letterpaper',
 
 # The font size ('10pt', '11pt' or '12pt').
-#'pointsize': '10pt',
+'pointsize': '11pt',
 
 # Additional stuff for the LaTeX preamble.
-#'preamble': '',
+'preamble': '\\usepackage{amsmath}\n\\usepackage{amsfonts}',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'BEM.tex', u'BEM++ Documentation',
-   u'Timo Betcke, Wojciech Śmigaj, Martin Schweiger, Joel Phillips, Simon Arridge', 'manual'),
+   u'Timo Betcke\\and Wojciech Śmigaj\\and  Martin Schweiger\\and  Joel Phillips\\and  Simon Arridge', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
