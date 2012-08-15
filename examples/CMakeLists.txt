@@ -7,11 +7,13 @@ add_executable(neumann neumann.cpp meshes.cpp)
 add_executable(dot_neumann dot_neumann.cpp meshes.cpp)
 add_executable(dot_two_layers dot_two_layers.cpp meshes.cpp)
 add_executable(helmholtz helmholtz.cpp meshes.cpp)
+add_executable(tutorial_dirichlet tutorial_dirichlet.cpp) # meshes.cpp not used
 target_link_libraries(dirichlet bempp)
 target_link_libraries(neumann bempp)
 target_link_libraries(dot_neumann bempp)
 target_link_libraries(dot_two_layers bempp)
 target_link_libraries(helmholtz bempp)
+target_link_libraries(tutorial_dirichlet bempp)
 
 if (NOT (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR}))
     file(GLOB_RECURSE EXAMPLE_MESHES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.msh *gmsh)
