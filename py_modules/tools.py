@@ -92,7 +92,7 @@ def download(fname,url,dir):
 def checkCreateDir(dir):
     """Create a directory if it does not yet exist"""
     if not os.path.isdir(dir):
-        os.mkdir(dir)
+        os.makedirs(os.path.abspath(dir))
 
 def to_int(s,min_val=1):
     """Convert string s to integer. if int(s)<min_val return min_val"""
