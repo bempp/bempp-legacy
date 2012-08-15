@@ -58,7 +58,7 @@ def prepare(root,config):
 def configure(root,config):
     prefix = config.get('Main','prefix')
     if tools.to_bool(config.get('AHMED','enable_ahmed')):
-        print "Configure AHMED"
+        print "Configuring AHMED"
         cwd=os.getcwd()
         os.chdir(root+"/contrib/ahmed")
         tools.checkDeleteDirectory(root+"/contrib/ahmed/build")
