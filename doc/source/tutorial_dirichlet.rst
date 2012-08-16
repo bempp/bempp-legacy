@@ -521,16 +521,16 @@ the way template parameters (``BasisFunctionType`` and ``ResultType``)
 are handled. Obviously, Python does not have the concept of templates,
 so the selection of these types must happen in another way than by
 specifying them in angular brackets. Internally, during compilation of
-the Python bindings each C++ class templated is instantiated for all
-the sensible combinations template parameters, and each instance is
+the Python bindings each C++ class template is instantiated for all
+the sensible combinations of template parameters, and each instance is
 wrapped by a Python class with a unique name
 (e.g. ``GridFunction_float64_complex128`` wraps ``GridFunction<double,
 std::complex<double> >``). However, it would be tedious to have to
-specify correct types each time a Python object is constructed,
+specify these types whenever a Python object is constructed,
 especially since different C++ classes take different sets of template
 parameters. For this reason, BEM++ provides helper ``create...``
-functions for constructing Python objects wrapping C++ objects. If the
-a C++ class depends on template parameters, the Python ``create...``
+functions for constructing Python objects wrapping C++ objects. If 
+a C++ class depends on template parameters, the corresponding ``create...``
 function takes a ``Context`` object as its first parameter and uses
 its basis function type and result type to determine the appropriate
 values for these parameters in the C++ template instantiation of the
@@ -563,8 +563,8 @@ The next step is to initialise the function spaces::
     pwiseConstants.assignDofs()
     pwiseLinears.assignDofs()
 
-As we mentioned before, the ``context`` parameter is used to determine
-the right basis function type for the wrapped C++ ``Space`` objects.
+As mentioned before, the ``context`` parameter is used to determine
+the right basis function type for the ``Space`` objects.
 
 The construction of boundary integral operators is essentially
 identical to the C++ version::
@@ -603,7 +603,9 @@ function incurs a slight performance penalty, but this overhead is
 normally insignificant compared to the time taken by the total
 calculation.
 
-Having constructed the left-hand-side operator and the right-hand-side grid function, we turn to solving the resulting equation, which again proceeds very similarly to the C++ version::
+Having constructed the left-hand-side operator and the right-hand-side
+grid function, we turn to solving the resulting equation, which again
+proceeds very similarly to the C++ version::
 
     solver = createDefaultIterativeSolver(lhsOp)
     solver.initializeSolver(defaultGmresParameterList(1e-5))
@@ -630,4 +632,5 @@ It remains to compare the numerical and analytical solution::
     relError = diff.L2Norm() / exactSolFun.L2Norm()
     print "Relative L^2 error:", relError
 
-TODO: describe how to plot the field on a cross-section plane using the ``visualization`` module.
+TODO: describe how to plot the field on a cross-section plane using
+the ``vis`` module.
