@@ -157,7 +157,7 @@ public:
     void getLocalCoefficients(const Entity<0>& element,
                               std::vector<ResultType>& coeffs) const;
 
-    /** Export the function to a VTK file.
+    /** \brief Export the function to a VTK file.
 
       \param[in] dataType
         Determines whether data are attaches to vertices or cells.
