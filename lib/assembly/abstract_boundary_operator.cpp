@@ -136,7 +136,7 @@ AbstractBoundaryOperator<BasisFunctionType, ResultType>::collectDataForAssembler
                                 trialRawGeometry, trialGeometryFactory);
 
     // Construct the OpenClHandler
-    Helper::makeOpenClHandler(options.parallelisationOptions().openClOptions(),
+    Helper::makeOpenClHandler(options.parallelizationOptions().openClOptions(),
                               testRawGeometry, trialRawGeometry, openClHandler);
 
     // Get pointers to test and trial bases of each element

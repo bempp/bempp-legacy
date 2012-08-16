@@ -13,7 +13,7 @@ namespace Bempp
     %ignore switchToFmm;
     %ignore switchToOpenCl;
     %ignore swtichToTbb;
-    %ignore parallelisationOptions;
+    %ignore parallelizationOptions;
   }
 }
 

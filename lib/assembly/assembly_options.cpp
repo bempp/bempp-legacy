@@ -72,12 +72,12 @@ void AssemblyOptions::switchToFmm()
 
 void AssemblyOptions::switchToOpenCl(const OpenClOptions& openClOptions)
 {
-    m_parallelisationOptions.switchToOpenCl(openClOptions);
+    m_parallelizationOptions.switchToOpenCl(openClOptions);
 }
 
 void AssemblyOptions::switchToTbb(int maxThreadCount)
 {
-    m_parallelisationOptions.switchToTbb(maxThreadCount);
+    m_parallelizationOptions.switchToTbb(maxThreadCount);
 }
 
 void AssemblyOptions::setSingularIntegralCaching(Mode mode)

@@ -144,7 +144,7 @@ shared_ptr<arma::Col<ResultType> > calculateProjections(
 
     Helper::collectGridData(dualSpace.grid(),
                             rawGeometry, geometryFactory);
-    Helper::makeOpenClHandler(options.parallelisationOptions().openClOptions(),
+    Helper::makeOpenClHandler(options.parallelizationOptions().openClOptions(),
                               rawGeometry, openClHandler);
     Helper::collectBases(dualSpace, testBases);
 
@@ -329,7 +329,7 @@ const arma::Col<ResultType>&
 GridFunction<BasisFunctionType, ResultType>::coefficients() const
 {
     BOOST_ASSERT_MSG(m_space, "GridFunction::coefficients() must not be called "
-                     "on an uninitialised GridFunction object");
+                     "on an uninitialized GridFunction object");
     // This is not thread-safe. Different threads shouldn't share
     // GridFunction instances (but copying a GridFunction is fairly
     // cheap since it only stores shared pointers).
@@ -356,7 +356,7 @@ void GridFunction<BasisFunctionType, ResultType>::setCoefficients(
         const arma::Col<ResultType>& coeffs)
 {
     BOOST_ASSERT_MSG(m_space, "GridFunction::setCoefficients() must not be called "
-                     "on an uninitialised GridFunction object");
+                     "on an uninitialized GridFunction object");
     if (coeffs.n_rows != m_space->globalDofCount())
         throw std::invalid_argument(
                 "GridFunction::setCoefficients(): dimension of the provided "
@@ -370,7 +370,7 @@ const arma::Col<ResultType>&
 GridFunction<BasisFunctionType, ResultType>::projections() const
 {
     BOOST_ASSERT_MSG(m_space, "GridFunction::projections() must not be called "
-                     "on an uninitialised GridFunction object");
+                     "on an uninitialized GridFunction object");
     // This is not thread-safe. Different threads shouldn't share
     // GridFunction instances (but copying a GridFunction is fairly
     // cheap since it only stores shared pointers).
@@ -395,7 +395,7 @@ void GridFunction<BasisFunctionType, ResultType>::setProjections(
         const arma::Col<ResultType>& projects)
 {
     BOOST_ASSERT_MSG(m_dualSpace, "GridFunction::setProjections() must not be "
-                     "called on an uninitialised GridFunction object");
+                     "called on an uninitialized GridFunction object");
     if (projects.n_rows != m_dualSpace->globalDofCount())
         throw std::invalid_argument(
                 "GridFunction::setProjections(): dimension of the provided "
@@ -411,7 +411,7 @@ GridFunction<BasisFunctionType, ResultType>::basis(
         const Entity<0>& element) const
 {
     BOOST_ASSERT_MSG(m_space, "GridFunction::basis() must not be "
-                     "called on an uninitialised GridFunction object");
+                     "called on an uninitialized GridFunction object");
     return m_space->basis(element);
 }
 
@@ -420,7 +420,7 @@ void GridFunction<BasisFunctionType, ResultType>::getLocalCoefficients(
         const Entity<0>& element, std::vector<ResultType>& coeffs) const
 {
     BOOST_ASSERT_MSG(m_space, "GridFunction::getLocalCoefficients() must not be "
-                     "called on an uninitialised GridFunction object");
+                     "called on an uninitialized GridFunction object");
     std::vector<GlobalDofIndex> gdofIndices;
     m_space->globalDofs(element, gdofIndices);
     const int gdofCount = gdofIndices.size();
@@ -438,7 +438,7 @@ void GridFunction<BasisFunctionType, ResultType>::exportToVtk(
         VtkWriter::OutputType outputType) const
 {
     BOOST_ASSERT_MSG(m_space, "GridFunction::exportToVtk() must not be "
-                     "called on an uninitialised GridFunction object");
+                     "called on an uninitialized GridFunction object");
     arma::Mat<ResultType> data;
     evaluateAtSpecialPoints(dataType, data);
 
@@ -455,7 +455,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
         VtkWriter::DataType dataType, arma::Mat<ResultType>& result_) const
 {
     BOOST_ASSERT_MSG(m_space, "GridFunction::evaluateAtSpecialPoints() must "
-                     "not be called on an uninitialised GridFunction object");
+                     "not be called on an uninitialized GridFunction object");
     if (dataType != VtkWriter::CELL_DATA && dataType != VtkWriter::VERTEX_DATA)
         throw std::invalid_argument("GridFunction::evaluateAtSpecialPoints(): "
                                     "invalid data type");

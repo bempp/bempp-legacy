@@ -25,13 +25,13 @@
 #include "../common/common.hpp"
 
 #include "../fiber/opencl_options.hpp"
-#include "../fiber/parallelisation_options.hpp"
+#include "../fiber/parallelization_options.hpp"
 
 namespace Bempp
 {
 
 using Fiber::OpenClOptions;
-using Fiber::ParallelisationOptions;
+using Fiber::ParallelizationOptions;
 
 class EvaluationOptions
 {
@@ -45,20 +45,20 @@ public:
     };
 
     /** @}
-      @name Parallelisation
+      @name Parallelization
       @{ */
 
     void switchToOpenCl(const OpenClOptions& openClOptions);
     void switchToTbb(int maxThreadCount = AUTO);
 
-    const ParallelisationOptions& parallelisationOptions() const {
-        return m_parallelisationOptions;
+    const ParallelizationOptions& parallelizationOptions() const {
+        return m_parallelizationOptions;
     }
 
     /** @} */
 
 private:
-    ParallelisationOptions m_parallelisationOptions;
+    ParallelizationOptions m_parallelizationOptions;
 };
 
 } // namespace Bempp

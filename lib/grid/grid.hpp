@@ -37,7 +37,7 @@ class IdSet;
 
 /** \brief Abstract wrapper of a grid.
 
-    Functions related to parallelisation are not wrapped yet.
+    Functions related to parallelization are not wrapped yet.
  */
 class Grid
 {

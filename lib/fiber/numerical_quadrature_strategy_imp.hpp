@@ -93,7 +93,7 @@ makeAssemblerForIntegralOperatorsImplRealKernel(
         const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
         const shared_ptr<const OpenClHandler>& openClHandler,
-        const ParallelisationOptions& parallelisationOptions,
+        const ParallelizationOptions& parallelizationOptions,
         bool cacheSingularIntegrals) const
 {
     typedef CoordinateType KernelType;
@@ -106,7 +106,7 @@ makeAssemblerForIntegralOperatorsImplRealKernel(
                     testRawGeometry, trialRawGeometry,
                     testBases, trialBases,
                     testTransformations, kernels, trialTransformations, integral,
-                    openClHandler, parallelisationOptions,
+                    openClHandler, parallelizationOptions,
                     cacheSingularIntegrals,
                     this->accuracyOptions()));
 }
@@ -212,7 +212,7 @@ makeAssemblerForIntegralOperatorsImplComplexKernel(
         const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
         const shared_ptr<const OpenClHandler>& openClHandler,
-        const ParallelisationOptions& parallelisationOptions,
+        const ParallelizationOptions& parallelizationOptions,
         bool cacheSingularIntegrals) const
 {
     typedef ResultType KernelType;
@@ -225,7 +225,7 @@ makeAssemblerForIntegralOperatorsImplComplexKernel(
                     testRawGeometry, trialRawGeometry,
                     testBases, trialBases,
                     testTransformations, kernels, trialTransformations, integral,
-                    openClHandler, parallelisationOptions,
+                    openClHandler, parallelizationOptions,
                     cacheSingularIntegrals,
                     this->accuracyOptions()));
 }

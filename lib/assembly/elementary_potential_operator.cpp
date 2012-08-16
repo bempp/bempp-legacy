@@ -144,7 +144,7 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::makeEval
     const Space<BasisFunctionType>& space = *argument.space();
     Helper::collectGridData(space.grid(),
                             rawGeometry, geometryFactory);
-    Helper::makeOpenClHandler(options.parallelisationOptions().openClOptions(),
+    Helper::makeOpenClHandler(options.parallelizationOptions().openClOptions(),
                               rawGeometry, openClHandler);
     Helper::collectBases(space, bases);
 

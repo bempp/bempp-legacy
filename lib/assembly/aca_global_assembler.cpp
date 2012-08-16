@@ -327,12 +327,12 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     leafClusters.sortAccordingToClusterSize();
     const size_t leafClusterCount = leafClusters.size();
 
-    const ParallelisationOptions& parallelOptions =
-            options.parallelisationOptions();
+    const ParallelizationOptions& parallelOptions =
+            options.parallelizationOptions();
     int maxThreadCount = 1;
-    if (parallelOptions.mode() == ParallelisationOptions::TBB)
+    if (parallelOptions.mode() == ParallelizationOptions::TBB)
     {
-        if (parallelOptions.maxThreadCount() == ParallelisationOptions::AUTO)
+        if (parallelOptions.maxThreadCount() == ParallelizationOptions::AUTO)
             maxThreadCount = tbb::task_scheduler_init::automatic;
         else
             maxThreadCount = parallelOptions.maxThreadCount();

@@ -443,7 +443,7 @@ IdentityOperator<BasisFunctionType, ResultType>::makeAssemblerImpl(
         const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
         const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
         const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
-        const ParallelisationOptions&,
+        const ParallelizationOptions&,
         bool /* cacheSingularIntegrals */) const
 {
     shared_ptr<const Fiber::CollectionOfBasisTransformations<CoordinateType> >

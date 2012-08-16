@@ -75,8 +75,8 @@ public:
 
     /** \brief Constructor.
      *
-     *  Construct an uninitialised grid function. The only way to
-     *  initialise it later is using the assigment operator. */
+     *  Construct an uninitialized grid function. The only way to
+     *  initialize it later is using the assigment operator. */
     GridFunction();
 
     // TODO: clarify this description

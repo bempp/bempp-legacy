@@ -46,7 +46,7 @@
 /** \defgroup linalg Linear algebra
  *
  *  This module contains classes related to the solution of linear algebraic
- *  equations arising from discretisations of boundary integral equations.
+ *  equations arising from discretizations of boundary integral equations.
  */
 
 /** \defgroup operators Operators

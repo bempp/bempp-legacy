@@ -201,7 +201,7 @@ makeAssemblerImpl(
         const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
         const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
         const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
-        const ParallelisationOptions& parallelisationOptions,
+        const ParallelizationOptions& parallelizationOptions,
         bool cacheSingularIntegrals) const
 {
     return quadStrategy.makeAssemblerForIntegralOperators(
@@ -212,7 +212,7 @@ makeAssemblerImpl(
                 make_shared_from_ref(kernels()),
                 make_shared_from_ref(trialTransformations()),
                 make_shared_from_ref(integral()),
-                openClHandler, parallelisationOptions, cacheSingularIntegrals);
+                openClHandler, parallelizationOptions, cacheSingularIntegrals);
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
@@ -283,11 +283,11 @@ assembleWeakFormInDenseMode(
     typedef DenseWeakFormAssemblerLoopBody<BasisFunctionType, ResultType> Body;
     typename Body::MutexType mutex;
 
-    const ParallelisationOptions& parallelOptions =
-            options.parallelisationOptions();
+    const ParallelizationOptions& parallelOptions =
+            options.parallelizationOptions();
     int maxThreadCount = 1;
-    if (parallelOptions.mode() == ParallelisationOptions::TBB) {
-        if (parallelOptions.maxThreadCount() == ParallelisationOptions::AUTO)
+    if (parallelOptions.mode() == ParallelizationOptions::TBB) {
+        if (parallelOptions.maxThreadCount() == ParallelizationOptions::AUTO)
             maxThreadCount = tbb::task_scheduler_init::automatic;
         else
             maxThreadCount = parallelOptions.maxThreadCount();

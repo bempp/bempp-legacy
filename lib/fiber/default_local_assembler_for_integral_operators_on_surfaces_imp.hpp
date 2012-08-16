@@ -97,7 +97,7 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces(
         const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> >& integral,
         const shared_ptr<const OpenClHandler>& openClHandler,
-        const ParallelisationOptions& parallelisationOptions,
+        const ParallelizationOptions& parallelizationOptions,
         bool cacheSingularIntegrals,
         const AccuracyOptions& accuracyOptions) :
     m_testGeometryFactory(testGeometryFactory),
@@ -111,7 +111,7 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces(
     m_trialTransformations(trialTransformations),
     m_integral(integral),
     m_openClHandler(openClHandler),
-    m_parallelisationOptions(parallelisationOptions),
+    m_parallelizationOptions(parallelizationOptions),
     m_accuracyOptions(accuracyOptions)
 {
     checkConsistencyOfGeometryAndBases(*testRawGeometry, *testBases);
@@ -516,8 +516,8 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
         //                            activeTrialBasis, localResult);
 
         const int maxThreadCount =
-                m_parallelisationOptions.mode() == ParallelisationOptions::TBB ?
-                    m_parallelisationOptions.maxThreadCount() : 1;
+                m_parallelizationOptions.mode() == ParallelizationOptions::TBB ?
+                    m_parallelizationOptions.maxThreadCount() : 1;
         tbb::task_scheduler_init scheduler(maxThreadCount);
         typedef SingularIntegralCalculatorLoopBody<
                 BasisFunctionType, KernelType, ResultType> Body;

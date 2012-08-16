@@ -94,7 +94,7 @@ public:
             const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
             const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
-            const ParallelisationOptions& parallelisationOptions,
+            const ParallelizationOptions& parallelizationOptions,
             bool cacheSingularIntegrals) const;
 
     /** \brief Construct a local assembler suitable for this operator using a
@@ -132,7 +132,7 @@ private:
             const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
             const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
-            const ParallelisationOptions& parallelisationOptions,
+            const ParallelizationOptions& parallelizationOptions,
             bool cacheSingularIntegrals) const = 0;
 
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType> >

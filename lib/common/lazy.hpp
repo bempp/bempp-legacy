@@ -33,7 +33,7 @@ namespace Bempp
 /** \brief Thread-safe wrapper of a lazily inititialised object.
 
   \tparam T           Type of the stored object.
-  \tparam Initialiser Type of a copy-constructible functor providing the
+  \tparam Initializer Type of a copy-constructible functor providing the
                       member function
                         std::auto_ptr<T> operator()()
                       that will be used to construct the object the first time
@@ -41,11 +41,11 @@ namespace Bempp
   \tparam Mutex       Type of the mutex to be used to lock the object during
                       initialisation.
 */
-template<typename T, typename Initialiser, typename Mutex=tbb::mutex>
+template<typename T, typename Initializer, typename Mutex=tbb::mutex>
 class Lazy
 {
 public:
-    Lazy(const Initialiser& init) :
+    Lazy(const Initializer& init) :
         m_init(init), m_value() {
     }
 
@@ -73,7 +73,7 @@ public:
     }
 
 private:
-    Initialiser m_init;
+    Initializer m_init;
     tbb::atomic<T*> m_value;
     Mutex m_mutex;
 };

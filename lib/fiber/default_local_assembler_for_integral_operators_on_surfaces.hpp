@@ -29,7 +29,7 @@
 #include "_2d_array.hpp"
 #include "element_pair_topology.hpp"
 #include "numerical_quadrature.hpp"
-#include "parallelisation_options.hpp"
+#include "parallelization_options.hpp"
 #include "shared_ptr.hpp"
 #include "test_kernel_trial_integrator.hpp"
 
@@ -71,7 +71,7 @@ public:
             const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
             const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> >& integral,
             const shared_ptr<const OpenClHandler>& openClHandler,
-            const ParallelisationOptions& parallelisationOptions,
+            const ParallelizationOptions& parallelizationOptions,
             bool cacheSingularIntegrals,
             const AccuracyOptions& accuracyOptions);
     virtual ~DefaultLocalAssemblerForIntegralOperatorsOnSurfaces();
@@ -137,7 +137,7 @@ private:
     shared_ptr<const CollectionOfBasisTransformations<CoordinateType> > m_trialTransformations;
     shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> > m_integral;
     shared_ptr<const OpenClHandler> m_openClHandler;
-    ParallelisationOptions m_parallelisationOptions;
+    ParallelizationOptions m_parallelizationOptions;
     AccuracyOptions m_accuracyOptions;
 
     IntegratorMap m_TestKernelTrialIntegrators;

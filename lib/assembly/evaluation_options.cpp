@@ -32,12 +32,12 @@ EvaluationOptions::EvaluationOptions()
 
 void EvaluationOptions::switchToOpenCl(const OpenClOptions& openClOptions)
 {
-    m_parallelisationOptions.switchToOpenCl(openClOptions);
+    m_parallelizationOptions.switchToOpenCl(openClOptions);
 }
 
 void EvaluationOptions::switchToTbb(int maxThreadCount)
 {
-    m_parallelisationOptions.switchToTbb(maxThreadCount);
+    m_parallelizationOptions.switchToTbb(maxThreadCount);
 }
 
 

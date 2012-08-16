@@ -18,34 +18,45 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "parallelisation_options.hpp"
+#ifndef fiber_parallelization_options_hpp
+#define fiber_parallelization_options_hpp
 
-#include <stdexcept>
+#include "../common/common.hpp"
+
+#include "opencl_options.hpp"
 
 namespace Fiber
 {
 
-ParallelisationOptions::ParallelisationOptions() :
-    m_mode(TBB), m_maxThreadCount(AUTO)
+class ParallelizationOptions
 {
-    m_openClOptions.useOpenCl = false;
-}
+public:
+    enum { AUTO = -1 };
+    enum Mode { TBB, OPEN_CL };
 
-void ParallelisationOptions::switchToOpenCl(const OpenClOptions& openClOptions)
-{
-    m_mode = OPEN_CL;
-    m_openClOptions = openClOptions;
-    m_openClOptions.useOpenCl = true;
-}
+    ParallelizationOptions();
 
-void ParallelisationOptions::switchToTbb(int maxThreadCount)
-{
-    m_mode = TBB;
-    m_openClOptions.useOpenCl = false;
-    if (maxThreadCount <= 0 && maxThreadCount != AUTO)
-        throw std::runtime_error("ParallelisationOptions::switchToTbb(): "
-                                 "maxThreadCount must be positive or equal to AUTO");
-    m_maxThreadCount = maxThreadCount;
-}
+    void switchToOpenCl(const OpenClOptions& openClOptions);
+    void switchToTbb(int maxThreadCount = AUTO);
+
+    Mode mode() const {
+        return m_mode;
+    }
+
+    const OpenClOptions& openClOptions() const {
+        return m_openClOptions;
+    }
+
+    int maxThreadCount() const {
+        return m_maxThreadCount;
+    }
+
+private:
+    Mode m_mode;
+    OpenClOptions m_openClOptions;
+    int m_maxThreadCount;
+};
 
 } // namespace Fiber
+
+#endif

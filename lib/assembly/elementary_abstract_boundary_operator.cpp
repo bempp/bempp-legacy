@@ -67,14 +67,14 @@ ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler
         const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
         const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
         const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
-        const ParallelisationOptions& parallelisationOptions,
+        const ParallelizationOptions& parallelizationOptions,
         bool cacheSingularIntegrals) const
 {
     return makeAssemblerImpl(quadStrategy,
                              testGeometryFactory, trialGeometryFactory,
                              testRawGeometry, trialRawGeometry,
                              testBases, trialBases, openClHandler,
-                             parallelisationOptions,
+                             parallelizationOptions,
                              cacheSingularIntegrals);
 }
 
@@ -105,7 +105,7 @@ ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler
                              testGeometryFactory, trialGeometryFactory,
                              testRawGeometry, trialRawGeometry,
                              testBases, trialBases, openClHandler,
-                             options.parallelisationOptions(),
+                             options.parallelizationOptions(),
                              cacheSingularIntegrals);
 }
 

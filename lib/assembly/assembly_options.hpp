@@ -26,7 +26,7 @@
 #include <string>
 
 #include "../fiber/opencl_options.hpp"
-#include "../fiber/parallelisation_options.hpp"
+#include "../fiber/parallelization_options.hpp"
 
 namespace Bempp
 {
@@ -107,7 +107,7 @@ struct AcaOptions
 };
 
 using Fiber::OpenClOptions;
-using Fiber::ParallelisationOptions;
+using Fiber::ParallelizationOptions;
 
 /** \ingroup assembly
  *  \brief Options determining how weak-form assembly is done.
@@ -143,14 +143,14 @@ public:
     }
 
     /** @}
-      @name Parallelisation
+      @name Parallelization
       @{ */
 
     void switchToOpenCl(const OpenClOptions& openClOptions);
     void switchToTbb(int maxThreadCount = AUTO);
 
-    const ParallelisationOptions& parallelisationOptions() const {
-        return m_parallelisationOptions;
+    const ParallelizationOptions& parallelizationOptions() const {
+        return m_parallelizationOptions;
     }
 
     /** @}
@@ -176,7 +176,7 @@ public:
 private:
     Representation m_representation;
     AcaOptions m_acaOptions;
-    ParallelisationOptions m_parallelisationOptions;
+    ParallelizationOptions m_parallelizationOptions;
     Mode m_singularIntegralCaching;
 };
 

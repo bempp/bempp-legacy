@@ -194,11 +194,11 @@ DiscreteInverseSparseBoundaryOperator(const shared_ptr<const Epetra_CrsMatrix>& 
     if (m_solver->SymbolicFactorization() != 0)
         throw std::runtime_error("DiscreteInverseSparseBoundaryOperator::"
                                  "DiscreteInverseSparseBoundaryOperator(): "
-                                 "Symbolic factorisation with Amesos failed");
+                                 "Symbolic factorization with Amesos failed");
     if (m_solver->NumericFactorization() != 0)
         throw std::runtime_error("DiscreteInverseSparseBoundaryOperator::"
                                  "DiscreteInverseSparseBoundaryOperator(): "
-                                 "Numeric factorisation with Amesos failed");
+                                 "Numeric factorization with Amesos failed");
 }
 
 template <typename ValueType>
