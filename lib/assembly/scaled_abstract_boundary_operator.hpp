@@ -46,8 +46,7 @@ public:
             ResultType weight,
             const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp);
 
-    virtual bool supportsRepresentation(
-            AssemblyOptions::Representation repr) const;
+    virtual bool isLocal() const;
 
 protected:
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >

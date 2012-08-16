@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_assembled_operator_agrees_with_dense_assemb
 
     AssemblyOptions assemblyOptionsAca;
     AcaOptions acaOptions;
-    assemblyOptionsAca.switchToAca(acaOptions);
+    assemblyOptionsAca.switchToAcaMode(acaOptions);
     shared_ptr<Context<BFT, RT> > contextAca(
         new Context<BFT, RT>(quadStrategy, assemblyOptionsAca));
 
@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_disassembled_operator_agrees_with_dense_ass
     AssemblyOptions assemblyOptionsAca;
     AcaOptions acaOptions;
     acaOptions.globalAssemblyBeforeCompression = false;
-    assemblyOptionsAca.switchToAca(acaOptions);
+    assemblyOptionsAca.switchToAcaMode(acaOptions);
     shared_ptr<Context<BFT, RT> > contextAca(
         new Context<BFT, RT>(quadStrategy, assemblyOptionsAca));
 

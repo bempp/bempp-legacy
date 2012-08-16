@@ -61,8 +61,7 @@ public:
             const BoundaryOperator<BasisFunctionType, ResultType>& term1,
             const BoundaryOperator<BasisFunctionType, ResultType>& term2);
 
-    virtual bool supportsRepresentation(
-            AssemblyOptions::Representation repr) const;
+    virtual bool isLocal() const;
 
 protected:
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >

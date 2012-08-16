@@ -44,43 +44,79 @@ AcaOptions::AcaOptions() :
 
 
 AssemblyOptions::AssemblyOptions() :
-    m_representation(DENSE),
-    m_singularIntegralCaching(AUTO)
+    m_assemblyMode(DENSE),
+    m_singularIntegralCaching(true),
+    m_sparseStorageOfMassMatrices(true)
 {
+}
+
+void AssemblyOptions::switchToDenseMode()
+{
+    m_assemblyMode = DENSE;
+}
+
+void AssemblyOptions::switchToAcaMode(const AcaOptions& acaOptions)
+{
+    m_assemblyMode = ACA;
+    m_acaOptions = acaOptions;
 }
 
 void AssemblyOptions::switchToDense()
 {
-    m_representation = DENSE;
+    switchToDenseMode();
 }
 
 void AssemblyOptions::switchToAca(const AcaOptions& acaOptions)
 {
-    m_representation = ACA;
-    m_acaOptions = acaOptions;
+    switchToAcaMode(acaOptions);
 }
 
-//void AssemblyOptions::switchToSparse()
+AssemblyOptions::Mode AssemblyOptions::assemblyMode() const {
+    return m_assemblyMode;
+}
+
+const AcaOptions& AssemblyOptions::acaOptions() const {
+    return m_acaOptions;
+}
+
+//void AssemblyOptions::switchToOpenCl(const OpenClOptions& openClOptions)
 //{
-//    m_representation = SPARSE;
+//    m_parallelizationOptions.switchToOpenCl(openClOptions);
 //}
 
-void AssemblyOptions::switchToOpenCl(const OpenClOptions& openClOptions)
+void AssemblyOptions::setMaxThreadCount(int maxThreadCount)
 {
-    m_parallelizationOptions.switchToOpenCl(openClOptions);
+    m_parallelizationOptions.setMaxThreadCount(maxThreadCount);
 }
 
 void AssemblyOptions::switchToTbb(int maxThreadCount)
 {
-    m_parallelizationOptions.switchToTbb(maxThreadCount);
+    setMaxThreadCount(maxThreadCount);
 }
 
-void AssemblyOptions::setSingularIntegralCaching(Mode mode)
+const ParallelizationOptions& AssemblyOptions::parallelizationOptions() const
 {
-    if (mode != AUTO && mode != NO && mode != YES)
-        throw std::runtime_error("AssemblyOptions::setSingularIntegralCaching(): "
-                                 "invalid mode");
-    m_singularIntegralCaching = mode;
+       return m_parallelizationOptions;
+}
+
+void AssemblyOptions::enableSingularIntegralCaching(bool value)
+{
+    m_singularIntegralCaching = value;
+}
+
+bool AssemblyOptions::isSingularIntegralCachingEnabled() const
+{
+    return m_singularIntegralCaching;
+}
+
+void AssemblyOptions::enableSparseStorageOfMassMatrices(bool value)
+{
+    m_sparseStorageOfMassMatrices = value;
+}
+
+bool AssemblyOptions::isSparseStorageOfMassMatricesEnabled() const
+{
+    return m_sparseStorageOfMassMatrices;
 }
 
 } // namespace Bempp

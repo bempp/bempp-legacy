@@ -127,7 +127,7 @@ int main(int argc, char* argv[])
     // We want to use ACA
 
     AcaOptions acaOptions; // Default parameters for ACA
-    assemblyOptions.switchToAca(acaOptions);
+    assemblyOptions.switchToAcaMode(acaOptions);
 
     // Define the standard integration factory
 

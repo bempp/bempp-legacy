@@ -115,7 +115,7 @@ int main(int argc, char* argv[])
 
     AcaOptions acaOptions; // Default parameters for ACA
     acaOptions.eps = 1e-5;
-    assemblyOptions.switchToAca(acaOptions);
+    assemblyOptions.switchToAcaMode(acaOptions);
 
     // Define the standard integration factory
 

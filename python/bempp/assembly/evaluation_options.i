@@ -1,17 +1,16 @@
 %{
 #include "assembly/evaluation_options.hpp"
-  %}
+%}
 
-namespace Bempp {
+namespace Bempp
+{
 
-  %extend EvaluationOptions {
-    
-    %ignore switchToOpenCl;
-    %feature("compactdefaultargs") switchToTbb;
-
-  }
-
+%extend EvaluationOptions
+{
+    %ignore switchToTbb;
 }
+
+} // namespace Bempp
 
 %include "assembly/evaluation_options.hpp"
 

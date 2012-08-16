@@ -125,10 +125,9 @@ AbstractBoundaryOperatorPseudoinverse(
 
 template <typename BasisFunctionType, typename ResultType>
 bool
-AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>::
-supportsRepresentation(AssemblyOptions::Representation repr) const
+AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>::isLocal() const
 {
-    return m_operator.abstractOperator()->supportsRepresentation(repr);
+    return m_operator.abstractOperator()->isLocal();
 }
 
 template <typename BasisFunctionType, typename ResultType>

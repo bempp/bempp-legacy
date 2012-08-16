@@ -77,7 +77,7 @@ public:
 
     virtual shared_ptr<const AbstractBoundaryOperatorId> id() const;
 
-    virtual bool supportsRepresentation(AssemblyOptions::Representation repr) const;
+    virtual bool isLocal() const;
 
 protected:
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >

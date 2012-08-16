@@ -42,10 +42,9 @@ ScaledAbstractBoundaryOperator(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-bool ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType>::supportsRepresentation(
-        AssemblyOptions::Representation repr) const
+bool ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType>::isLocal() const
 {
-    return m_operator.abstractOperator()->supportsRepresentation(repr);
+    return m_operator.abstractOperator()->isLocal();
 }
 
 template <typename BasisFunctionType, typename ResultType>

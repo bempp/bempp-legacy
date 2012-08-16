@@ -87,6 +87,11 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 
 // End of auto_ptr typemaps
 
+%{
+#include "common/deprecated.hpp"
+%}
+#define BEMPP_DEPRECATED
+
 // Make commonly used typedefs known to Swig
 %inline %{
     namespace Bempp
@@ -116,8 +121,8 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "grid/geometry_factory.i"
 
 // Fiber
-%include "fiber/parallelization_options.i"
 %include "fiber/opencl_options.i"
+%include "fiber/parallelization_options.i"
 %include "fiber/quadrature_options.i"
 %include "fiber/accuracy_options.i"
 %include "fiber/quadrature_strategy.i"

@@ -1,15 +1,14 @@
 %{
 #include "fiber/parallelization_options.hpp"
-  %}
+%}
 
 namespace Fiber
 {
 
-  %extend ParallelizationOptions
-  {
-    %ignore switchToOpenCl;
-    %ignore openClOptions;
-  }
+%extend ParallelizationOptions
+{
+%feature("compactdefaultargs") setMaxThreadCount;
+}
 
 }
 
