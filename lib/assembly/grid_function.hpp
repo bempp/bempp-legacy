@@ -126,7 +126,7 @@ public:
     GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
                  const shared_ptr<const Space<BasisFunctionType> >& space,
                  const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
-                 const Fiber::Function<ResultType>& function);
+                 const Function<ResultType>& function);
 
     /** \brief True if the grid has been properly initialized. */
     bool isInitialized() const;
