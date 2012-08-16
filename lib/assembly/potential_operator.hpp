@@ -68,7 +68,7 @@ public:
     /** \brief Evaluate the potential of a given moment on a prescribed grid.
      *
      * \param[in] argument
-     *   Argument of the potential (\f$\g(y)\f$ in the notation above),
+     *   Argument of the potential (\f$g(y)\f$ in the notation above),
      *   represented by a grid function.
      * \param[in] evaluationGrid
      *   Surface or volume grid at whose vertices the potential will be evaluated.

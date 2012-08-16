@@ -40,24 +40,77 @@ template <typename ValueType> class PreconditionerBase;
 namespace Bempp
 {
 
+
+/** \ingroup linalg
+  * \brief Default Interface to the Belos Iterative solver package from Trilinos.
+  *
+  * This class provides an interface to various iterative solvers available via
+  * the Stratimikos Interface to Belos of Trilinos (see <a href="http://trilinos.sandia.gov/packages/docs/r10.10/packages/stratimikos/doc/html/index.html">Stratimikos documentation</a>).
+  * Convergence can be tested either in range space or
+  * in the dual space to the range space. A standard Galerkin discretisation of the form \f$Ax=b\f$,
+  * maps into the dual space of the range of the operator. By choosing to test in the range space the equation
+  * \f$M^\dagger Ax=M^\dagger b\f$ is solved, where \f$M\f$ is the mass matrix, mapping from the range space
+  * into its dual and \f$M^\dagger\f$ is a pseudoinverse.
+  *
+  */
+
 template <typename BasisFunctionType, typename ResultType>
 class DefaultIterativeSolver : public Solver<BasisFunctionType, ResultType>
 {
 public:
     typedef Solver<BasisFunctionType, ResultType> Base;
 
+    /** \brief Constructor of the <tt>DefaultIterativeSolver</tt> class.
+      *
+      * \param[in] boundaryOp
+      *   Non-blocked boundary operator.
+      * \param[in] ConvergenceTestMode
+      *   Possible values: <tt>TEST_CONVERGENCE_IN_DUAL_TO_RANGE</tt> (default) Test convergence in dual space
+      *                    <tt>TEST_CONVERGENCE_IN_RANGE</tt> Test convergence in range space
+      *
+      */
+
     DefaultIterativeSolver(
             const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
             ConvergenceTestMode::Mode mode =
             ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
+
+    /** \brief Constructor of the <tt>DefaultIterativeSolver</tt> class.
+      *
+      * \param[in] boundaryOp
+      *   Blocked boundary operator
+      * \param[in] ConvergenceTestMode
+      *   Possible values: <tt>TEST_CONVERGENCE_IN_DUAL_TO_RANGE</tt> (default) Test convergence in dual space
+      *                    <tt>TEST_CONVERGENCE_IN_RANGE</tt> Test convergence in range space
+      *
+      */
+
     DefaultIterativeSolver(
             const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
             ConvergenceTestMode::Mode mode =
             ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
     virtual ~DefaultIterativeSolver();
 
+    /** \brief Define a preconditioner.
+      *
+      * The preconditioner is passed on to the Belos Solver.
+      *
+      * \param[in] preconditioner
+      *   More information about <tt>Thyra::PreconditionerBase</tt> can be found in the
+      *   <a href="http://trilinos.sandia.gov/packages/docs/r10.10/packages/thyra/doc/html/classThyra_1_1PreconditionerBase.html">Thyra documentation</a>.
+      *
+      */
+
     void setPreconditioner(
             const Teuchos::RCP<const Thyra::PreconditionerBase<ResultType> >& preconditioner);
+
+    /** \brief Initialize the parameters of the Belos iterative solver.
+      *
+      * \param[in] paramList
+      *   Parameter lists can be read in as xml files or defined in code. For default parameter lists
+      *   for Gmres and Cg see <tt>defaultGmresParameterList</tt> and defaultCgParameterList.
+      */
+
     void initializeSolver(const Teuchos::RCP<Teuchos::ParameterList>& paramList);
 
 private:
