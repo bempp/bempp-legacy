@@ -357,8 +357,12 @@ GridFunction<BasisFunctionType, ResultType>::context() const
 }
 
 template <typename BasisFunctionType, typename ResultType>
-int GridFunction<BasisFunctionType, ResultType>::codomainDimension() const
+int GridFunction<BasisFunctionType, ResultType>::componentCount() const
 {
+    if (!m_space)
+        throw std::runtime_error("GridFunction::componentCount() must not be called "
+                                 "on an uninitialized GridFunction object");
+
     return m_space->codomainDimension();
 }
 
@@ -532,14 +536,14 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
     const int gridDim = grid.dim();
     const int elementCodim = 0;
     const int vertexCodim = grid.dim();
-    const int codomainDim = codomainDimension();
+    const int nComponents = componentCount();
 
     std::auto_ptr<GridView> view = grid.leafView();
     const size_t elementCount = view->entityCount(elementCodim);
     const size_t vertexCount = view->entityCount(vertexCodim);
 
-    result_.set_size(codomainDimension(),
-                    dataType == VtkWriter::CELL_DATA ? elementCount : vertexCount);
+    result_.set_size(nComponents,
+                     dataType == VtkWriter::CELL_DATA ? elementCount : vertexCount);
     result_.fill(0.);
 
     // Number of elements contributing to each column in result
@@ -587,7 +591,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
     // to those needed by the kernel
     const Fiber::CollectionOfBasisTransformations<CoordinateType>& transformations =
             m_space->shapeFunctionValue();
-    assert(codomainDim == transformations.resultDimension(0));
+    assert(nComponents == transformations.resultDimension(0));
     transformations.addDependencies(basisDeps, geomDeps);
 
     // Loop over unique combinations of basis and element corner count
@@ -702,7 +706,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
             assert(functionValues[0].extent(1) == 1); // one function
 
             if (dataType == VtkWriter::CELL_DATA)
-                for (int dim = 0; dim < codomainDim; ++dim)
+                for (int dim = 0; dim < nComponents; ++dim)
                     result_(dim, e) = functionValues[0](     // array index
                                                        dim, // component
                                                        0,   // function index
@@ -712,7 +716,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
                 // corresponding to the active element's vertices
                 for (int c = 0; c < activeCornerCount; ++c) {
                     int vertexIndex = rawGeometry.elementCornerIndices()(c, e);
-                    for (int dim = 0; dim < codomainDim; ++dim)
+                    for (int dim = 0; dim < nComponents; ++dim)
                         result_(dim, vertexIndex) += functionValues[0](dim, 0, c);
                     ++multiplicities[vertexIndex];
                 }

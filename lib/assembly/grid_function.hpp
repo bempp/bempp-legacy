@@ -143,7 +143,7 @@ public:
 
     shared_ptr<const Context<BasisFunctionType, ResultType> > context() const;
 
-    int codomainDimension() const;
+    int componentCount() const;
 
     const arma::Col<ResultType>& coefficients() const;
     const arma::Col<ResultType>& projections() const;
