@@ -62,6 +62,8 @@
 namespace Bempp
 {
 
+// Internal routines
+
 namespace
 {
 
@@ -162,6 +164,42 @@ shared_ptr<arma::Col<ResultType> > calculateProjections(
                 openClHandler);
 
     return reallyCalculateProjections(dualSpace, *assembler, options);
+}
+
+template <typename T>
+inline typename ScalarTraits<T>::RealType realPart(const T& x)
+{
+    return x;
+}
+
+template <>
+inline float realPart(const std::complex<float>& x)
+{
+    return x.real();
+}
+
+template <>
+inline double realPart(const std::complex<double>& x)
+{
+    return x.real();
+}
+
+template <typename T>
+inline typename ScalarTraits<T>::RealType imagPart(const T& x)
+{
+    return 0.;
+}
+
+template <>
+inline float imagPart(const std::complex<float>& x)
+{
+    return x.imag();
+}
+
+template <>
+inline double imagPart(const std::complex<double>& x)
+{
+    return x.imag();
 }
 
 } // namespace
@@ -402,6 +440,36 @@ void GridFunction<BasisFunctionType, ResultType>::setProjections(
                 "vector does not match the number of global DOFs in the dual space");
     m_projections.reset(new arma::Col<ResultType>(projects));
     m_coefficients.reset(); // invalidate the coefficients vector
+}
+
+template <typename BasisFunctionType, typename ResultType>
+typename GridFunction<BasisFunctionType, ResultType>::MagnitudeType
+GridFunction<BasisFunctionType, ResultType>::L2Norm() const
+{
+    // The L^2 norm is given by
+    //   u^\dagger M u,
+    // where u is the coefficient vector and M the mass matrix of m_space
+
+    BOOST_ASSERT_MSG(m_space, "GridFunction::L2_Norm() must not be called "
+                     "on an uninitialized GridFunction object");
+    typedef BoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
+
+    // Get the projections vector
+    const arma::Col<ResultType>& coeffs = coefficients();
+
+    // Calculate the mass matrix
+    BoundaryOp id = identityOperator(
+        m_context, m_space, m_space, m_space, "M");
+    shared_ptr<const DiscreteBoundaryOperator<ResultType> > massMatrix =
+            id.weakForm();
+
+    arma::Col<ResultType> product(coeffs.n_rows);
+    massMatrix->apply(NO_TRANSPOSE, coeffs, product, 1., 0.);
+    ResultType result = arma::cdot(coeffs, product);
+    if (fabs(imagPart(result)) > 1000. * std::numeric_limits<MagnitudeType>::epsilon())
+        std::cout << "Warning: squared L2Norm has non-negligible imaginary part: "
+                  << imagPart(result) << std::endl;
+    return sqrt(realPart(result));
 }
 
 // Redundant, in fact -- can be obtained directly from Space

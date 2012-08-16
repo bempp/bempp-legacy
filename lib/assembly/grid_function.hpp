@@ -70,6 +70,7 @@ class GridFunction
 {
 public:
     typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
+    typedef typename Fiber::ScalarTraits<ResultType>::RealType MagnitudeType;
 
     enum DataType { COEFFICIENTS, PROJECTIONS };
 
@@ -148,6 +149,9 @@ public:
     const arma::Col<ResultType>& projections() const;
     void setCoefficients(const arma::Col<ResultType>& coeffs);
     void setProjections(const arma::Col<ResultType>& projects);
+
+    /** \brief Return the \$fL^2\f$-norm of the grid function. */
+    MagnitudeType L2Norm() const;
 
     const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
     void getLocalCoefficients(const Entity<0>& element,
