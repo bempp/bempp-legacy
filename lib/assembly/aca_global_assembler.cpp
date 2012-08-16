@@ -330,7 +330,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     const ParallelizationOptions& parallelOptions =
             options.parallelizationOptions();
     int maxThreadCount = 1;
-    if (parallelOptions.mode() == ParallelizationOptions::TBB)
+    if (!parallelOptions.isOpenClEnabled())
     {
         if (parallelOptions.maxThreadCount() == ParallelizationOptions::AUTO)
             maxThreadCount = tbb::task_scheduler_init::automatic;

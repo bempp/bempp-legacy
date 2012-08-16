@@ -26,26 +26,43 @@ namespace Fiber
 {
 
 ParallelizationOptions::ParallelizationOptions() :
-    m_mode(TBB), m_maxThreadCount(AUTO)
+    m_openClEnabled(false), m_maxThreadCount(AUTO)
 {
     m_openClOptions.useOpenCl = false;
 }
 
-void ParallelizationOptions::switchToOpenCl(const OpenClOptions& openClOptions)
+void ParallelizationOptions::enableOpenCl(const OpenClOptions& openClOptions)
 {
-    m_mode = OPEN_CL;
+    m_openClEnabled = true;
     m_openClOptions = openClOptions;
     m_openClOptions.useOpenCl = true;
 }
 
-void ParallelizationOptions::switchToTbb(int maxThreadCount)
+void ParallelizationOptions::disableOpenCl()
 {
-    m_mode = TBB;
+    m_openClEnabled = false;
     m_openClOptions.useOpenCl = false;
+}
+
+bool ParallelizationOptions::isOpenClEnabled() const
+{
+    return m_openClEnabled;
+}
+
+const OpenClOptions& ParallelizationOptions::openClOptions() const {
+    return m_openClOptions;
+}
+
+void ParallelizationOptions::setMaxThreadCount(int maxThreadCount)
+{
     if (maxThreadCount <= 0 && maxThreadCount != AUTO)
         throw std::runtime_error("ParallelizationOptions::switchToTbb(): "
                                  "maxThreadCount must be positive or equal to AUTO");
     m_maxThreadCount = maxThreadCount;
+}
+
+int ParallelizationOptions::maxThreadCount() const {
+    return m_maxThreadCount;
 }
 
 } // namespace Fiber

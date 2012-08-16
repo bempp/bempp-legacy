@@ -28,31 +28,40 @@
 namespace Fiber
 {
 
+/** \brief Parallel operation settings. */
 class ParallelizationOptions
 {
 public:
-    enum { AUTO = -1 };
-    enum Mode { TBB, OPEN_CL };
+    enum { AUTO = -1 };    
 
+    /** \brief Constructor. */
     ParallelizationOptions();
 
-    void switchToOpenCl(const OpenClOptions& openClOptions);
-    void switchToTbb(int maxThreadCount = AUTO);
+    /** \brief Enable GPU-based calculations (currently broken). */
+    void enableOpenCl(const OpenClOptions& openClOptions);
+    /** \brief Disable GPU-based calculations. */
+    void disableOpenCl();
+    /** \brief Return whether GPU-based calculations are enabled. */
+    bool isOpenClEnabled() const;
+    /** \brief Return current settings controlling operation of the GPU. */
+    const OpenClOptions& openClOptions() const;
 
-    Mode mode() const {
-        return m_mode;
-    }
+    /** \brief Set the maximum number of threads used during the assembly.
+     *
+     *  \p maxThreadCount must be a positive number or \p AUTO. In the latter
+     *  case the number of threads is determined automatically by Intel
+     *  Threading Building Blocks.*/
+    void setMaxThreadCount(int maxThreadCount = AUTO);
 
-    const OpenClOptions& openClOptions() const {
-        return m_openClOptions;
-    }
-
-    int maxThreadCount() const {
-        return m_maxThreadCount;
-    }
+    /** \brief Return the maximum number of thread used during the assembly.
+     *
+     *  The returned value can be a positive number or \p AUTO. In the latter
+     *  case the number of threads is determined automatically by
+     *  Intel Threading Building Blocks. */
+    int maxThreadCount() const;
 
 private:
-    Mode m_mode;
+    bool m_openClEnabled;
     OpenClOptions m_openClOptions;
     int m_maxThreadCount;
 };

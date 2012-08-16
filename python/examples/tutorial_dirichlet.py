@@ -30,7 +30,7 @@ grid = createGridFactory().importGmshGrid(
 
 quadStrategy = createNumericalQuadratureStrategy("float64", "float64")
 options = createAssemblyOptions()
-options.switchToAca(createAcaOptions())
+options.switchToAcaMode(createAcaOptions())
 context = createContext(quadStrategy, options)
 
 # Initialize spaces

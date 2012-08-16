@@ -146,9 +146,7 @@ AbstractBoundaryOperator<BasisFunctionType, ResultType>::collectDataForAssembler
     else
         Helper::collectBases(*m_domain, trialBases);
 
-    cacheSingularIntegrals =
-            (options.singularIntegralCaching() == AssemblyOptions::YES ||
-             (options.singularIntegralCaching() == AssemblyOptions::AUTO));
+    cacheSingularIntegrals = options.isSingularIntegralCachingEnabled();
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(AbstractBoundaryOperator);

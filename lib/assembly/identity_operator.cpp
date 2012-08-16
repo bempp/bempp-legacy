@@ -257,23 +257,13 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInternalImpl(
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
-    switch (options.operatorRepresentation())
-    {
-    case AssemblyOptions::DENSE:
-        return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
-                    assembleWeakFormInDenseMode(assembler, options).release());
-    case AssemblyOptions::ACA:
 #ifdef WITH_TRILINOS
+    if (options.isSparseStorageOfMassMatricesEnabled())
         return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
                     assembleWeakFormInSparseMode(assembler, options).release());
-#else // Fallback to dense mode. Don't know whether this should be signalled to the user.
-        return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
-                    assembleWeakFormInDenseMode(assembler, options).release());
 #endif
-    default:
-        throw std::runtime_error("IdentityOperator::assembleWeakFormImpl(): "
-                                 "invalid assembly mode");
-    }
+    return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
+                    assembleWeakFormInDenseMode(assembler, options).release());
 }
 
 template <typename BasisFunctionType, typename ResultType>

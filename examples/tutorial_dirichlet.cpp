@@ -120,7 +120,7 @@ int main()
 
     AssemblyOptions assemblyOptions;
     AcaOptions acaOptions; // Default parameters for ACA
-    assemblyOptions.switchToAca(acaOptions);
+    assemblyOptions.switchToAcaMode(acaOptions);
 
     // Create the assembly context
 

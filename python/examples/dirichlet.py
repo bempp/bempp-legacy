@@ -17,7 +17,7 @@ grid = createGridFactory().importGmshGrid("triangular",
 
 factory = createNumericalQuadratureStrategy("float64", "float64")
 options = createAssemblyOptions()
-options.switchToAca(createAcaOptions())
+options.switchToAcaMode(createAcaOptions())
 
 context = createContext(factory, options)
 

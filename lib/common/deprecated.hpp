@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2012 by the BEM++ Authors
+// Copyright (C) 2011-2012 by the Fiber Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,37 +18,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#ifndef bempp_deprecated_hpp
+#define bempp_deprecated_hpp
 
-#include "evaluation_options.hpp"
+#include "common.hpp"
 
-#include <stdexcept>
+/** \def BEMPP_DEPRECATED
+ *  \brief Macro used to mark deprecated functions or classes.
+ *
+ *  Functions and classes marked as BEMPP_DEPRECATED are liable to be removed
+ *  in future versions of the library. */
+#if defined(SWIGPYTHON) // we want to wrap deprecated features
+                        // without generating warnings
+#    define BEMPP_DEPRECATED
+#else
+#    if defined(__GNUC__)
+#        define BEMPP_DEPRECATED __attribute__ ((deprecated))
+#    elif defined(_MSC_VER)
+#        define BEMPP_DEPRECATED __declspec(deprecated)
+#    else
+#        define BEMPP_DEPRECATED
+#    endif
+#endif
 
-namespace Bempp
-{
-
-EvaluationOptions::EvaluationOptions()
-{
-}
-
-//void EvaluationOptions::switchToOpenCl(const OpenClOptions& openClOptions)
-//{
-//    m_parallelizationOptions.switchToOpenCl(openClOptions);
-//}
-
-void EvaluationOptions::setMaxThreadCount(int maxThreadCount)
-{
-    m_parallelizationOptions.setMaxThreadCount(maxThreadCount);
-}
-
-void EvaluationOptions::switchToTbb(int maxThreadCount)
-{
-    setMaxThreadCount(maxThreadCount);
-}
-
-const ParallelizationOptions& EvaluationOptions::parallelizationOptions() const
-{
-    return m_parallelizationOptions;
-}
-
-} // namespace Bempp
-
+#endif // bempp_deprecated_hpp

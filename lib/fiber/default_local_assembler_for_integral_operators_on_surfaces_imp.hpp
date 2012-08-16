@@ -515,9 +515,14 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
         // activeIntegrator.integrate(activeElementPairs, activeTestBasis,
         //                            activeTrialBasis, localResult);
 
-        const int maxThreadCount =
-                m_parallelizationOptions.mode() == ParallelizationOptions::TBB ?
-                    m_parallelizationOptions.maxThreadCount() : 1;
+        int maxThreadCount = 1;
+        if (!m_parallelizationOptions.isOpenClEnabled()) {
+            if (m_parallelizationOptions.maxThreadCount() ==
+                    ParallelizationOptions::AUTO)
+                maxThreadCount = tbb::task_scheduler_init::automatic;
+            else
+                maxThreadCount = m_parallelizationOptions.maxThreadCount();
+        }
         tbb::task_scheduler_init scheduler(maxThreadCount);
         typedef SingularIntegralCalculatorLoopBody<
                 BasisFunctionType, KernelType, ResultType> Body;

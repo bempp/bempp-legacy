@@ -232,17 +232,13 @@ assembleWeakFormInternalImpl(
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
-    switch (options.operatorRepresentation()) {
+    switch (options.assemblyMode()) {
     case AssemblyOptions::DENSE:
         return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
                     assembleWeakFormInDenseMode(assembler, options).release());
     case AssemblyOptions::ACA:
         return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
                     assembleWeakFormInAcaMode(assembler, options).release());
-    case AssemblyOptions::FMM:
-        throw std::runtime_error(
-                    "ElementaryIntegralOperator::assembleWeakFormInternalImpl(): "
-                    "assembly mode FMM is not implemented yet");
     default:
         throw std::runtime_error(
                     "ElementaryIntegralOperator::assembleWeakFormInternalImpl(): "
@@ -284,7 +280,7 @@ assembleWeakFormInDenseMode(
     const ParallelizationOptions& parallelOptions =
             options.parallelizationOptions();
     int maxThreadCount = 1;
-    if (parallelOptions.mode() == ParallelizationOptions::TBB) {
+    if (!parallelOptions.isOpenClEnabled()) {
         if (parallelOptions.maxThreadCount() == ParallelizationOptions::AUTO)
             maxThreadCount = tbb::task_scheduler_init::automatic;
         else
