@@ -142,15 +142,16 @@ will use the space of piecewise-linear scalar functions for
     S1.assignDofs();
     S0.assignDofs();
 
-The space classes are templated on the type used to represent values
-of their basis functions. It can be set to ``float``, ``double``,
-``std::complex<float>`` or ``std::complex<double>``. It is convenient
-to introduce a typedef to refer to the chosen basis function type,
-like we did in the above snippet (``BFT``). The constructors of space
-objects take a single argument -- a reference to the ``Grid`` on whose
-elements live individual basis functions. The calls to ``assignDofs()``
-initialise the spaces, performing the mapping of local to global
-degrees of freedom.
+The space classes are templated on ``BasisFunctionType``, the type
+used to represent values of their basis functions. It can be set to
+``float``, ``double``, ``std::complex<float>`` or
+``std::complex<double>``. It is convenient to introduce a typedef to
+refer to the chosen basis function type, like we did in the above
+snippet (``BFT``). The constructors of space objects take a single
+argument -- a reference to the ``Grid`` on whose elements live
+individual basis functions. The calls to ``assignDofs()`` initialise
+the spaces, performing the mapping of local to global degrees of
+freedom.
 
 We would like now to construct the necessary boundary operators.
 Before we do that, however, we need to define a ``Context`` object,
@@ -173,8 +174,8 @@ object::
     NumericalQuadratureStrategy<BFT, RT> quadStrategy;
 
 The ``NumericalQuadratureStrategy`` class takes two template
-arguments: the first is the already known basis function type, and the
-second, called *result type*, is the type used to represent the values
+arguments: the first is the already known ``BasisFunctionType``, and the
+second, ``ResultType``, is the type used to represent the values
 of the integrals. Obviously, in problems involving complex-valued
 operators, like those related to the Helmholtz equation, the result
 type needs to be chosen as ``std::complex<float>`` or
@@ -218,21 +219,21 @@ and the identity operator::
     BoundaryOperator<BFT, RT> slpOp =
             laplace3dSingleLayerBoundaryOperator<BFT, RT>(
                 make_shared_from_ref(context),
-                make_shared_from_ref(HminusHalfSpace),
-                make_shared_from_ref(HplusHalfSpace),
-                make_shared_from_ref(HminusHalfSpace));
+                make_shared_from_ref(pwiseConstants),
+                make_shared_from_ref(pwiseLinears),
+                make_shared_from_ref(pwiseConstants));
     BoundaryOperator<BFT, RT> dlpOp =
             laplace3dDoubleLayerBoundaryOperator<BFT, RT>(
                 make_shared_from_ref(context),
-                make_shared_from_ref(HplusHalfSpace),
-                make_shared_from_ref(HplusHalfSpace),
-                make_shared_from_ref(HminusHalfSpace));
-    BoundaryOperator<BFT, RT> id =
+                make_shared_from_ref(pwiseLinears),
+                make_shared_from_ref(pwiseLinears),
+                make_shared_from_ref(pwiseConstants));
+    BoundaryOperator<BFT, RT> idOp =
             identityOperator<BFT, RT>(
                 make_shared_from_ref(context),
-                make_shared_from_ref(HplusHalfSpace),
-                make_shared_from_ref(HplusHalfSpace),
-                make_shared_from_ref(HminusHalfSpace));
+                make_shared_from_ref(pwiseLinears),
+                make_shared_from_ref(pwiseLinears),
+                make_shared_from_ref(pwiseConstants));
 
 To explain this snippet, we need to give some background on the
 representation of operators in BEM++.
@@ -288,7 +289,7 @@ operators for debugging purposes.
 Forming the operator sum :math:`-\frac{1}{2} I + K` occurring on the
 right of equation :eq:`steklov` is as simple as ::
 
-    BoundaryOperator<BFT, RT> rhsOp = -0.5 * id + dlpOp;
+    BoundaryOperator<BFT, RT> rhsOp = -0.5 * idOp + dlpOp;
 
 We now need an object representing the known Dirichlet trace
 :math:`\gamma_0^{\text{ext}}`. We will first declare a functor class
@@ -393,8 +394,8 @@ In our present program, we will use
     ...
     GridFunction<BFT, RT> dirichletData(
                 make_shared_from_ref(context),
-                make_shared_from_ref(HplusHalfSpace),
-                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(pwiseLinears),
+                make_shared_from_ref(pwiseLinears),
                 surfaceNormalIndependentFunction(DirichletData()));
 
 To obtain the object representing the function standing on the
@@ -469,15 +470,164 @@ numerical solution::
 
     GridFunction<BFT, RT> exactSolFun(
                 make_shared_from_ref(context),
-                make_shared_from_ref(HminusHalfSpace),
-                make_shared_from_ref(HminusHalfSpace),
+                make_shared_from_ref(pwiseConstants),
+                make_shared_from_ref(pwiseConstants),
                 surfaceNormalIndependentFunction(ExactNeumannData()));
     GridFunction<BFT, RT> diff = solFun - exactSolFun;
-    std::cout << "Relative L^2 error: "
-              << diff.L2Norm() / exactSolFun.L2Norm() << std::endl;
+    double relativeError = diff.L2Norm() / exactSolFun.L2Norm();
+    std::cout << "Relative L^2 error: " << relativeError << std::endl;
 
 For the 644-element mesh used in the example this relative error turns
 out to be 3.6%.
 
 TODO: write the part on evaluating :math:`u` inside :math:`\Omega^{\text{c}}`.
 
+You may have remarked that BEM++ user code can be written
+largely in the language of "continuous" operators rather than their
+discretisations: at no point in the above program was it necessary to
+explicitly refer to the weak forms of the various boundary operators
+or the coefficient vectors of the grid functions. However, should such
+a need arise, these algebraic entities can be easily accessed, for
+instance with the ``BoundaryOperator::weakForm()``,
+``GridFunction::coefficients()`` and ``GridFunction::projections()``
+member functions.
+
+Implementation in Python
+------------------------
+
+Here we will present the Python version of the program developed in
+the previous section. Its structure is similar to the C++ version. A
+complete listing of the code developed in this section can be found in
+``python/examples/tutorial_dirichlet.py``.
+
+To begin with, we import the symbols defined by the BEM++ and NumPy
+Python packages::
+
+    from bempp.lib import *
+    import numpy as np
+
+We then load the computational mesh::
+
+    grid = createGridFactory().importGmshGrid(
+        "triangular", "../../examples/meshes/sphere-644.msh")
+
+Following the practice established by NumPy and SciPy, in the Python
+version of BEM++ string constants are used instead of enumeration
+types. Thus, ``"triangular"`` replaces the
+``GridParameters::TRIANGULAR`` constant used in C++.
+
+The most important difference between the Python and C++ versions is
+the way template parameters (``BasisFunctionType`` and ``ResultType``)
+are handled. Obviously, Python does not have the concept of templates,
+so the selection of these types must happen in another way than by
+specifying them in angular brackets. Internally, during compilation of
+the Python bindings each C++ class templated is instantiated for all
+the sensible combinations template parameters, and each instance is
+wrapped by a Python class with a unique name
+(e.g. ``GridFunction_float64_complex128`` wraps ``GridFunction<double,
+std::complex<double> >``). However, it would be tedious to have to
+specify correct types each time a Python object is constructed,
+especially since different C++ classes take different sets of template
+parameters. For this reason, BEM++ provides helper ``create...``
+functions for constructing Python objects wrapping C++ objects. If the
+a C++ class depends on template parameters, the Python ``create...``
+function takes a ``Context`` object as its first parameter and uses
+its basis function type and result type to determine the appropriate
+values for these parameters in the C++ template instantiation of the
+newly constructed object.
+
+This is why a ``Context`` needs to be constructed before any
+spaces, boundary operators or grid functions. We create it with the
+following code::
+
+    quadStrategy = createNumericalQuadratureStrategy("float64", "float64")
+    options = createAssemblyOptions()
+    options.switchToAca(createAcaOptions())
+    context = createContext(quadStrategy, options)
+
+The quadrature strategy constructor,
+``createNumericalQuadratureStrategy()``, is the only place where you
+need to state explicitly the basis function type and result type to be
+used in the discretisation of integral operators. Standard NumPy-like
+type names are accepted: ``"float32"``, ``"float64"``, ``"complex64"``
+and ``"complex128"``. These correspond to the C++ types ``float``,
+``double``, ``std::complex<float>`` and ``std::complex<double>``.  The
+basis function type and result type used subsequently to construct the
+``Context`` are inherited from the parameters given in the 
+``createNumericalQuadratureStrategy()`` call.
+
+The next step is to initialise the function spaces::
+
+    pwiseConstants = createPiecewiseConstantScalarSpace(context, grid)
+    pwiseLinears = createPiecewiseLinearContinuousScalarSpace(context, grid)
+    pwiseConstants.assignDofs()
+    pwiseLinears.assignDofs()
+
+As we mentioned before, the ``context`` parameter is used to determine
+the right basis function type for the wrapped C++ ``Space`` objects.
+
+The construction of boundary integral operators is essentially
+identical to the C++ version::
+
+    slpOp = createLaplace3dSingleLayerBoundaryOperator(
+        context, pwiseConstants, pwiseLinears, pwiseConstants)
+    dlpOp = createLaplace3dDoubleLayerBoundaryOperator(
+        context, pwiseLinears, pwiseLinears, pwiseConstants)
+    idOp = createIdentityOperator(
+        context, pwiseLinears, pwiseLinears, pwiseConstants)
+
+    lhsOp = slpOp
+    rhsOp = -0.5 * idOp + dlpOp
+
+To create the grid functions representing the input Dirichlet data and
+the right-hand side of :eq:`steklov`, we write::
+
+    def evalDirichletData(point):
+        x, y, z = point
+        r = np.sqrt(x**2 + y**2 + z**2)
+        return 2 * x * z / r**5 - y / r**3
+
+    dirichletData = gridFunctionFromSurfaceNormalIndependentFunction(
+        context, pwiseLinears, pwiseLinears, evalDirichletData)
+    rhs = rhsOp * dirichletData
+
+The code is much simpler than in C++. As its last parameter,
+``gridFunctionFromSurfaceNormalIndependentFunction()`` takes a
+reference to a Python function that is expected to take a single
+parameter -- a one-dimensional NumPy array ``point`` storing the
+global coordinates of a point -- and return the value of the function
+at this point. If the chosen expansion space is vector-valued, the
+return value should be a NumPy array, otherwise it can be a scalar, as
+in the above snippet. The repeated calling of a non-vectorised Python
+function incurs a slight performance penalty, but this overhead is
+normally insignificant compared to the time taken by the total
+calculation.
+
+Having constructed the left-hand-side operator and the right-hand-side grid function, we turn to solving the resulting equation, which again proceeds very similarly to the C++ version::
+
+    solver = createDefaultIterativeSolver(lhsOp)
+    solver.initializeSolver(defaultGmresParameterList(1e-5))
+
+    solution = solver.solve(rhs)
+    print solution.solverMessage()
+
+To export the solution to a VTK file, we write ::
+
+    solFun = solution.gridFunction()
+    solFun.exportToVtk("cell_data", "neumann_data", "solution")
+
+It remains to compare the numerical and analytical solution::
+
+    def evalExactNeumannData(point):
+        x, y, z = point
+        r = np.sqrt(x**2 + y**2 + z**2)
+        return -6 * x * z / r**6 + 2 * y / r**4
+
+    exactSolFun = gridFunctionFromSurfaceNormalIndependentFunction(
+        context, pwiseConstants, pwiseConstants, evalExactNeumannData)
+    diff = solFun - exactSolFun
+
+    relError = diff.L2Norm() / exactSolFun.L2Norm()
+    print "Relative L^2 error:", relError
+
+TODO: describe how to plot the field on a cross-section plane using the ``visualization`` module.
