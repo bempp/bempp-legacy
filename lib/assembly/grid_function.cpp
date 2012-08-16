@@ -332,6 +332,10 @@ bool GridFunction<BasisFunctionType, ResultType>::isInitialized() const
 template <typename BasisFunctionType, typename ResultType>
 const Grid& GridFunction<BasisFunctionType, ResultType>::grid() const
 {
+    if (!m_space)
+        throw std::runtime_error("GridFunction::grid() must not be called "
+                                 "on an uninitialized GridFunction object");
+
     return m_space->grid();
 }
 
@@ -370,8 +374,9 @@ template <typename BasisFunctionType, typename ResultType>
 const arma::Col<ResultType>& 
 GridFunction<BasisFunctionType, ResultType>::coefficients() const
 {
-    BOOST_ASSERT_MSG(m_space, "GridFunction::coefficients() must not be called "
-                     "on an uninitialized GridFunction object");
+    if (!m_space)
+        throw std::runtime_error("GridFunction::coefficients() must not be called "
+                                 "on an uninitialized GridFunction object");
     // This is not thread-safe. Different threads shouldn't share
     // GridFunction instances (but copying a GridFunction is fairly
     // cheap since it only stores shared pointers).
@@ -397,8 +402,9 @@ template <typename BasisFunctionType, typename ResultType>
 void GridFunction<BasisFunctionType, ResultType>::setCoefficients(
         const arma::Col<ResultType>& coeffs)
 {
-    BOOST_ASSERT_MSG(m_space, "GridFunction::setCoefficients() must not be called "
-                     "on an uninitialized GridFunction object");
+    if (!m_space)
+        throw std::runtime_error("GridFunction::setCoefficients() must not be called "
+                                 "on an uninitialized GridFunction object");
     if (coeffs.n_rows != m_space->globalDofCount())
         throw std::invalid_argument(
                 "GridFunction::setCoefficients(): dimension of the provided "
@@ -411,8 +417,9 @@ template <typename BasisFunctionType, typename ResultType>
 const arma::Col<ResultType>&
 GridFunction<BasisFunctionType, ResultType>::projections() const
 {
-    BOOST_ASSERT_MSG(m_space, "GridFunction::projections() must not be called "
-                     "on an uninitialized GridFunction object");
+    if (!m_dualSpace)
+        throw std::runtime_error("GridFunction::projections() must not be called "
+                                 "on an uninitialized GridFunction object");
     // This is not thread-safe. Different threads shouldn't share
     // GridFunction instances (but copying a GridFunction is fairly
     // cheap since it only stores shared pointers).
@@ -436,8 +443,9 @@ template <typename BasisFunctionType, typename ResultType>
 void GridFunction<BasisFunctionType, ResultType>::setProjections(
         const arma::Col<ResultType>& projects)
 {
-    BOOST_ASSERT_MSG(m_dualSpace, "GridFunction::setProjections() must not be "
-                     "called on an uninitialized GridFunction object");
+    if (!m_dualSpace)
+        throw std::runtime_error("GridFunction::setProjections() must not be "
+                                 "called on an uninitialized GridFunction object");
     if (projects.n_rows != m_dualSpace->globalDofCount())
         throw std::invalid_argument(
                 "GridFunction::setProjections(): dimension of the provided "
@@ -454,8 +462,9 @@ GridFunction<BasisFunctionType, ResultType>::L2Norm() const
     //   u^\dagger M u,
     // where u is the coefficient vector and M the mass matrix of m_space
 
-    BOOST_ASSERT_MSG(m_space, "GridFunction::L2_Norm() must not be called "
-                     "on an uninitialized GridFunction object");
+    if (!m_space)
+        throw std::runtime_error("GridFunction::L2_Norm() must not be called "
+                                 "on an uninitialized GridFunction object");
     typedef BoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
 
     // Get the projections vector
@@ -509,8 +518,9 @@ void GridFunction<BasisFunctionType, ResultType>::exportToVtk(
         const char* fileNamesBase, const char* filesPath,
         VtkWriter::OutputType outputType) const
 {
-    BOOST_ASSERT_MSG(m_space, "GridFunction::exportToVtk() must not be "
-                     "called on an uninitialized GridFunction object");
+    if (!m_space)
+        throw std::runtime_error("GridFunction::exportToVtk() must not be "
+                                 "called on an uninitialized GridFunction object");
     arma::Mat<ResultType> data;
     evaluateAtSpecialPoints(dataType, data);
 
@@ -526,8 +536,9 @@ template <typename BasisFunctionType, typename ResultType>
 void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
         VtkWriter::DataType dataType, arma::Mat<ResultType>& result_) const
 {
-    BOOST_ASSERT_MSG(m_space, "GridFunction::evaluateAtSpecialPoints() must "
-                     "not be called on an uninitialized GridFunction object");
+    if (!m_space)
+        throw std::runtime_error("GridFunction::evaluateAtSpecialPoints() must "
+                                 "not be called on an uninitialized GridFunction object");
     if (dataType != VtkWriter::CELL_DATA && dataType != VtkWriter::VERTEX_DATA)
         throw std::invalid_argument("GridFunction::evaluateAtSpecialPoints(): "
                                     "invalid data type");
@@ -735,7 +746,7 @@ GridFunction<BasisFunctionType, ResultType> operator+(
         const GridFunction<BasisFunctionType, ResultType>& g1,
         const GridFunction<BasisFunctionType, ResultType>& g2)
 {
-    if (g1.space() != g2.space())
+    if (g1.space() != g2.space() || g1.dualSpace() != g2.dualSpace())
         throw std::runtime_error("GridFunction::operator+(): spaces don't match");
     return GridFunction<BasisFunctionType, ResultType>(
                 g1.context(), // arbitrary choice...
@@ -750,7 +761,7 @@ GridFunction<BasisFunctionType, ResultType> operator-(
         const GridFunction<BasisFunctionType, ResultType>& g1,
         const GridFunction<BasisFunctionType, ResultType>& g2)
 {
-    if (g1.space() != g2.space())
+    if (g1.space() != g2.space() || g1.dualSpace() != g2.dualSpace())
         throw std::runtime_error("GridFunction::operator-(): spaces don't match");
     return GridFunction<BasisFunctionType, ResultType>(
                 g1.context(), // arbitrary choice...
