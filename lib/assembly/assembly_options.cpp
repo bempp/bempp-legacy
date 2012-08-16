@@ -60,11 +60,6 @@ void AssemblyOptions::switchToAca(const AcaOptions& acaOptions)
     m_acaOptions = acaOptions;
 }
 
-void AssemblyOptions::switchToFmm()
-{
-    m_representation = FMM;
-}
-
 //void AssemblyOptions::switchToSparse()
 //{
 //    m_representation = SPARSE;

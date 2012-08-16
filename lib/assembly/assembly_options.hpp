@@ -132,7 +132,6 @@ public:
 
     void switchToDense();
     void switchToAca(const AcaOptions& acaOptions);
-    void switchToFmm();
 
     Representation operatorRepresentation() const {
         return m_representation;
