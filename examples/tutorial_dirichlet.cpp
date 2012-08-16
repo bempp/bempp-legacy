@@ -106,11 +106,11 @@ int main()
 
     // Initialize the spaces
 
-    PiecewiseLinearContinuousScalarSpace<BFT> HplusHalfSpace(*grid);
-    PiecewiseConstantScalarSpace<BFT> HminusHalfSpace(*grid);
+    PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(*grid);
+    PiecewiseConstantScalarSpace<BFT> pwiseConstants(*grid);
 
-    HplusHalfSpace.assignDofs();
-    HminusHalfSpace.assignDofs();
+    pwiseLinears.assignDofs();
+    pwiseConstants.assignDofs();
 
     // Define the quadrature strategy
 
@@ -126,44 +126,40 @@ int main()
 
     Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);
 
-    // Construct individual operators. We need the single-layer potential,
-    // double-layer potential, and the identity operator
+    // Construct elementary operators
 
     BoundaryOperator<BFT, RT> slpOp =
             laplace3dSingleLayerBoundaryOperator<BFT, RT>(
                 make_shared_from_ref(context),
-                make_shared_from_ref(HminusHalfSpace),
-                make_shared_from_ref(HplusHalfSpace),
-                make_shared_from_ref(HminusHalfSpace));
+                make_shared_from_ref(pwiseConstants),
+                make_shared_from_ref(pwiseLinears),
+                make_shared_from_ref(pwiseConstants));
     BoundaryOperator<BFT, RT> dlpOp =
             laplace3dDoubleLayerBoundaryOperator<BFT, RT>(
                 make_shared_from_ref(context),
-                make_shared_from_ref(HplusHalfSpace),
-                make_shared_from_ref(HplusHalfSpace),
-                make_shared_from_ref(HminusHalfSpace));
-    BoundaryOperator<BFT, RT> id =
+                make_shared_from_ref(pwiseLinears),
+                make_shared_from_ref(pwiseLinears),
+                make_shared_from_ref(pwiseConstants));
+    BoundaryOperator<BFT, RT> idOp =
             identityOperator<BFT, RT>(
                 make_shared_from_ref(context),
-                make_shared_from_ref(HplusHalfSpace),
-                make_shared_from_ref(HplusHalfSpace),
-                make_shared_from_ref(HminusHalfSpace));
+                make_shared_from_ref(pwiseLinears),
+                make_shared_from_ref(pwiseLinears),
+                make_shared_from_ref(pwiseConstants));
 
     // Form the right-hand side sum
 
-    BoundaryOperator<BFT, RT> rhsOp = -0.5 * id + dlpOp;
+    BoundaryOperator<BFT, RT> rhsOp = -0.5 * idOp + dlpOp;
 
     // Construct the grid function representing the (input) Dirichlet data
 
     GridFunction<BFT, RT> dirichletData(
                 make_shared_from_ref(context),
-                make_shared_from_ref(HplusHalfSpace),
-                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(pwiseLinears),
+                make_shared_from_ref(pwiseLinears),
                 surfaceNormalIndependentFunction(DirichletData()));
 
-    dirichletData.exportToVtk(VtkWriter::VERTEX_DATA, "Dirichlet_data",
-                              "dirichlet_data");
-
-    // Assemble the rhs
+    // Construct the right-hand-side grid function 
 
     GridFunction<BFT, RT> rhs = rhsOp * dirichletData;
 
@@ -171,25 +167,25 @@ int main()
 
     DefaultIterativeSolver<BFT, RT> solver(slpOp);
     solver.initializeSolver(defaultGmresParameterList(1e-5));
+
+    // Solve the equation
+
     Solution<BFT, RT> solution = solver.solve(rhs);
     std::cout << solution.solverMessage() << std::endl;
 
-    // Extract the solution in the form of a grid function
+    // Extract the solution in the form of a grid function and export it in VTK format
 
     const GridFunction<BFT, RT>& solFun = solution.gridFunction();
-
-    // Write out as VTK
-
     solFun.exportToVtk(VtkWriter::CELL_DATA, "Neumann_data", "solution");
 
     // Compare the numerical and analytical solution
 
     GridFunction<BFT, RT> exactSolFun(
                 make_shared_from_ref(context),
-                make_shared_from_ref(HminusHalfSpace),
-                make_shared_from_ref(HminusHalfSpace),
+                make_shared_from_ref(pwiseConstants),
+                make_shared_from_ref(pwiseConstants),
                 surfaceNormalIndependentFunction(ExactNeumannData()));
     GridFunction<BFT, RT> diff = solFun - exactSolFun;
-    std::cout << "Relative L^2 error: "
-              << diff.L2Norm() / exactSolFun.L2Norm() << std::endl;
+    double relativeError = diff.L2Norm() / exactSolFun.L2Norm();
+    std::cout << "Relative L^2 error: " << relativeError << std::endl;
 }
