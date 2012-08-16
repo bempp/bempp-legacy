@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-# This script imports a grid in the Gmsh format and exports the z coordinate 
-# of each vertex to the file "output.vtu" in the VTK format.
-
 # Help Python find the bempp module
 import sys
 sys.path.append("..")
