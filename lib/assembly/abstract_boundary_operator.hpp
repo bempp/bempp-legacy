@@ -167,9 +167,18 @@ public:
      *  @name Assembly
      *  @{ */
 
-    /** \brief Return true if this operator supports the representation \p repr. */
-    virtual bool supportsRepresentation(
-            AssemblyOptions::Representation repr) const = 0;
+    /** \brief Return whether this operator is local.
+     *
+     *  Suppose that an operator \f$A\f$ acting on a function \f$f(x)\f$
+     *  produces another function \f$g(x)\f$. We say that \f$A\f$ is local if
+     *  the value of \f$g\f$ at any point \f$x\f$ depends only on the values of
+     *  \f$f\f$ in an infinitesimal neighbourhood of \f$x\f$.
+     *
+     *  Multiplicative and differential operators are local and discretization
+     *  of their weak forms with finite elements leads to sparse matrices.
+     *  Conversely, integral operators are in general non-local and
+     *  discretization of their weak forms leads to dense matrices. */
+    virtual bool isLocal() const = 0;
 
     /** \brief Assemble and returns the operator's weak form.
      *

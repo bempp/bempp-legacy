@@ -80,7 +80,7 @@ public:
     virtual int trialComponentCount() const;
     virtual int testComponentCount() const;
 
-    virtual bool supportsRepresentation(AssemblyOptions::Representation repr) const;
+    virtual bool isLocal() const;
 
     virtual bool isRegular() const = 0;
 

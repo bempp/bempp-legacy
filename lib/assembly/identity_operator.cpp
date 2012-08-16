@@ -235,12 +235,9 @@ IdentityOperator<BasisFunctionType, ResultType>::id() const
 }
 
 template <typename BasisFunctionType, typename ResultType>
-bool IdentityOperator<BasisFunctionType, ResultType>::supportsRepresentation(
-        AssemblyOptions::Representation repr) const
+bool IdentityOperator<BasisFunctionType, ResultType>::isLocal() const
 {
-    return (repr == AssemblyOptions::DENSE ||
-            repr == AssemblyOptions::SPARSE ||
-            repr == AssemblyOptions::ACA);
+    return true;
 }
 
 template <typename BasisFunctionType, typename ResultType>

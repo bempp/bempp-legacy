@@ -64,11 +64,10 @@ AbstractBoundaryOperatorSum(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-bool AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::supportsRepresentation(
-        AssemblyOptions::Representation repr) const
+bool AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::isLocal() const
 {
-    return (m_term1.abstractOperator()->supportsRepresentation(repr) &&
-            m_term2.abstractOperator()->supportsRepresentation(repr));
+    return (m_term1.abstractOperator()->isLocal() &&
+            m_term2.abstractOperator()->isLocal());
 }
 
 template <typename BasisFunctionType, typename ResultType>

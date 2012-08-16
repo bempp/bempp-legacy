@@ -181,11 +181,9 @@ trialComponentCount() const
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 bool
-ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-supportsRepresentation(
-        AssemblyOptions::Representation repr) const
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::isLocal() const
 {
-    return (repr == AssemblyOptions::DENSE || repr == AssemblyOptions::ACA);
+    return false;
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>

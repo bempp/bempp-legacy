@@ -63,8 +63,7 @@ public:
     explicit AbstractBoundaryOperatorPseudoinverse(
             const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp);
 
-    virtual bool supportsRepresentation(
-            AssemblyOptions::Representation repr) const;
+    virtual bool isLocal() const;
 
     virtual shared_ptr<const AbstractBoundaryOperatorId> id() const;
 

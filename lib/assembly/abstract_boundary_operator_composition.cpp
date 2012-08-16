@@ -63,11 +63,10 @@ AbstractBoundaryOperatorComposition(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-bool AbstractBoundaryOperatorComposition<BasisFunctionType, ResultType>::supportsRepresentation(
-        AssemblyOptions::Representation repr) const
+bool AbstractBoundaryOperatorComposition<BasisFunctionType, ResultType>::isLocal() const
 {
-    return (m_outer.abstractOperator()->supportsRepresentation(repr) &&
-            m_inner.abstractOperator()->supportsRepresentation(repr));
+    return (m_outer.abstractOperator()->isLocal() &&
+            m_inner.abstractOperator()->isLocal());
 }
 
 template <typename BasisFunctionType, typename ResultType>
