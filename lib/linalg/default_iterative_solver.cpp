@@ -115,10 +115,7 @@ struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
     Impl(const BlockedBoundaryOperator<BasisFunctionType, ResultType>& op_,
          ConvergenceTestMode::Mode mode_) :
         op(op_),
-        mode(mode_),
-        solverWrapper(new BelosSolverWrapper<ResultType>(
-                          Teuchos::rcp<const Thyra::LinearOpBase<ResultType> >(
-                              op_.weakForm())))
+        mode(mode_)
     {
         typedef BlockedBoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
         typedef Solver<BasisFunctionType, ResultType> Solver_;
@@ -322,7 +319,7 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::solveImplBlocked(
     // Solve
     Thyra::SolveStatus<MagnitudeType> status = m_impl->solverWrapper->solve(
         Thyra::NOTRANS, *rhsVector, solutionVector.ptr());
-    
+
     // Convert chunks of the solution vector into grid functions
     std::vector<GridFunction<BasisFunctionType, ResultType> > solutionFunctions;
     Solver<BasisFunctionType, ResultType>::constructBlockedGridFunction(
