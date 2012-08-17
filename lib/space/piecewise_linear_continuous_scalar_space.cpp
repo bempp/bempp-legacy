@@ -209,6 +209,14 @@ size_t PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::globalDofCount()
 template <typename BasisFunctionType>
 size_t PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::flatLocalDofCount() const
 {
+// This is the correct implementation. Include it once the
+// bug in FoamGrid is fixes.
+//    if (gridDim == 1)
+//        return m_view->entityCount(0) * 2;
+//    else // gridDim == 2
+//        return m_view->entityCount(GeometryType(GeometryType::cube, 2)) * 4 +
+//                m_view->entityCount(GeometryType(GeometryType::simplex, 2)) * 3;
+
     return m_flatLocalDofCount;
 }
 

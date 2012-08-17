@@ -130,7 +130,7 @@ size_t PiecewiseConstantScalarSpace<BasisFunctionType>::globalDofCount() const
 template <typename BasisFunctionType>
 size_t PiecewiseConstantScalarSpace<BasisFunctionType>::flatLocalDofCount() const
 {
-    return globalDofCount();
+    return m_view->entityCount(0);
 }
 
 template <typename BasisFunctionType>
