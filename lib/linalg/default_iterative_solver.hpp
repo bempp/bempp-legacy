@@ -64,9 +64,8 @@ public:
       *
       * \param[in] boundaryOp
       *   Non-blocked boundary operator.
-      * \param[in] ConvergenceTestMode
-      *   Possible values: <tt>TEST_CONVERGENCE_IN_DUAL_TO_RANGE</tt> (default) Test convergence in dual space
-      *                    <tt>TEST_CONVERGENCE_IN_RANGE</tt> Test convergence in range space
+      * \param[in] mode
+      *   Convergence test mode. Default: <tt>TEST_CONVERGENCE_IN_DUAL_TO_RANGE</tt>
       *
       */
 
@@ -79,9 +78,8 @@ public:
       *
       * \param[in] boundaryOp
       *   Blocked boundary operator
-      * \param[in] ConvergenceTestMode
-      *   Possible values: <tt>TEST_CONVERGENCE_IN_DUAL_TO_RANGE</tt> (default) Test convergence in dual space
-      *                    <tt>TEST_CONVERGENCE_IN_RANGE</tt> Test convergence in range space
+      * \param[in] mode
+      *   Convergence test mode. Default: <tt>TEST_CONVERGENCE_IN_DUAL_TO_RANGE</tt>
       *
       */
 
