@@ -31,7 +31,7 @@ namespace Fiber
   The <tt>evaluate*()</tt> member functions can be used to evaluate integrals
   of the form
 
-  \f[ \int_\Gamma_i dx \int_\Gamma_j dy \, I[f(x), g(y)] \f],
+  \f[ \int_{\Gamma_i} dx \int_{\Gamma_j} dy \, I[f(x), g(y)] \f],
 
   where the integrand \f$I(x, y)\f$ depends in an arbitrary way on
   the test function \f$f(x)\f$ and the trial function \f$f(y)\f$.
