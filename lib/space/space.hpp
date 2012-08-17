@@ -117,7 +117,7 @@ public:
 
         \note Must not be called before assignDofs(). */
     virtual size_t globalDofCount() const = 0;
-    virtual void globalDofs(const Entity<0>& element,
+    virtual void getGlobalDofs(const Entity<0>& element,
                             std::vector<GlobalDofIndex>& dofs) const = 0;
 
     virtual void global2localDofs(
@@ -131,9 +131,9 @@ public:
     // For the moment, Point will always be 3D, independently from the
     // actual dimension of the space. Once Ahmed's bemcluster is made dimension-
     // independent, we may come up with a more elegant solution.
-    virtual void globalDofPositions(
+    virtual void getGlobalDofPositions(
             std::vector<Point3D<CoordinateType> >& positions) const = 0;
-    virtual void flatLocalDofPositions(
+    virtual void getFlatLocalDofPositions(
             std::vector<Point3D<CoordinateType> >& positions) const = 0;
 
     /** @}

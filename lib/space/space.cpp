@@ -68,7 +68,7 @@ void constructGlobalToFlatLocalDofsMappingVectors(
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
         int index = indexSet.entityIndex(e);
-        space.globalDofs(e, gdofs[index]);
+        space.getGlobalDofs(e, gdofs[index]);
         it->next();
     }
 

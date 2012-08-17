@@ -57,7 +57,7 @@ public:
     virtual bool dofsAssigned() const;
     virtual size_t globalDofCount() const;
     virtual size_t flatLocalDofCount() const;
-    virtual void globalDofs(const Entity<0>& element,
+    virtual void getGlobalDofs(const Entity<0>& element,
                             std::vector<GlobalDofIndex>& dofs) const;    
     virtual void global2localDofs(
             const std::vector<GlobalDofIndex>& globalDofs,
@@ -65,9 +65,9 @@ public:
     virtual void flatLocal2localDofs(
             const std::vector<FlatLocalDofIndex>& globalDofs,
             std::vector<LocalDof>& localDofs) const;
-    virtual void globalDofPositions(
+    virtual void getGlobalDofPositions(
             std::vector<Point3D<CoordinateType> >& positions) const;
-    virtual void flatLocalDofPositions(
+    virtual void getFlatLocalDofPositions(
             std::vector<Point3D<CoordinateType> >& positions) const;
 
     virtual void dumpClusterIds(const char* fileName,

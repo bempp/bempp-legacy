@@ -143,7 +143,7 @@ std::vector<std::vector<GlobalDofIndex> > gatherGlobalDofs(
     while (!it->finished()) {
         const Entity<0>& element = it->entity();
         const int elementIndex = mapper.entityIndex(element);
-        space.globalDofs(element, globalDofs[elementIndex]);
+        space.getGlobalDofs(element, globalDofs[elementIndex]);
         it->next();
     }
 

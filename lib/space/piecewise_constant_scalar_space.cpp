@@ -134,7 +134,7 @@ size_t PiecewiseConstantScalarSpace<BasisFunctionType>::flatLocalDofCount() cons
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantScalarSpace<BasisFunctionType>::globalDofs(
+void PiecewiseConstantScalarSpace<BasisFunctionType>::getGlobalDofs(
         const Entity<0>& element, std::vector<GlobalDofIndex>& dofs) const
 {
     const Mapper& mapper = m_view->elementMapper();
@@ -164,7 +164,7 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::flatLocal2localDofs(
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantScalarSpace<BasisFunctionType>::globalDofPositions(
+void PiecewiseConstantScalarSpace<BasisFunctionType>::getGlobalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
     const int gridDim = domainDimension();
@@ -195,10 +195,10 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::globalDofPositions(
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantScalarSpace<BasisFunctionType>::flatLocalDofPositions(
+void PiecewiseConstantScalarSpace<BasisFunctionType>::getFlatLocalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
-    return globalDofPositions(positions);
+    return getGlobalDofPositions(positions);
 }
 
 template <typename BasisFunctionType>

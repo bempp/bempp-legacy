@@ -300,8 +300,8 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInDenseMode(
     {
         const Entity<0>& element = it->entity();
         const int elementIndex = mapper.entityIndex(element);
-        testSpace.globalDofs(element, testGdofs[elementIndex]);
-        trialSpace.globalDofs(element, trialGdofs[elementIndex]);
+        testSpace.getGlobalDofs(element, testGdofs[elementIndex]);
+        trialSpace.getGlobalDofs(element, trialGdofs[elementIndex]);
         it->next();
     }
 
@@ -368,8 +368,8 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparseMode(
     {
         const Entity<0>& element = it->entity();
         const int elementIndex = mapper.entityIndex(element);
-        testSpace.globalDofs(element, testGdofs[elementIndex]);
-        trialSpace.globalDofs(element, trialGdofs[elementIndex]);
+        testSpace.getGlobalDofs(element, testGdofs[elementIndex]);
+        trialSpace.getGlobalDofs(element, trialGdofs[elementIndex]);
         it->next();
     }
 

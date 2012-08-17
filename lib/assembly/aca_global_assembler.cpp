@@ -221,11 +221,11 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
     std::vector<Point3D<CoordinateType> > trialDofCenters, testDofCenters;
     if (indexWithGlobalDofs) {
-        trialSpace.globalDofPositions(trialDofCenters);
-        testSpace.globalDofPositions(testDofCenters);
+        trialSpace.getGlobalDofPositions(trialDofCenters);
+        testSpace.getGlobalDofPositions(testDofCenters);
     } else {
-        trialSpace.flatLocalDofPositions(trialDofCenters);
-        testSpace.flatLocalDofPositions(testDofCenters);
+        trialSpace.getFlatLocalDofPositions(trialDofCenters);
+        testSpace.getFlatLocalDofPositions(testDofCenters);
     }
 
     // Use static_cast to convert from a pointer to Point3D to a pointer to its

@@ -88,7 +88,7 @@ shared_ptr<arma::Col<ResultType> > reallyCalculateProjections(
     while (!it->finished()) {
         const Entity<0>& element = it->entity();
         const int elementIndex = mapper.entityIndex(element);
-        dualSpace.globalDofs(element, testGlobalDofs[elementIndex]);
+        dualSpace.getGlobalDofs(element, testGlobalDofs[elementIndex]);
         it->next();
     }
 
@@ -503,7 +503,7 @@ void GridFunction<BasisFunctionType, ResultType>::getLocalCoefficients(
     BOOST_ASSERT_MSG(m_space, "GridFunction::getLocalCoefficients() must not be "
                      "called on an uninitialized GridFunction object");
     std::vector<GlobalDofIndex> gdofIndices;
-    m_space->globalDofs(element, gdofIndices);
+    m_space->getGlobalDofs(element, gdofIndices);
     const int gdofCount = gdofIndices.size();
     coeffs.resize(gdofCount);
     const arma::Col<ResultType>& globalCoefficients = coefficients();
