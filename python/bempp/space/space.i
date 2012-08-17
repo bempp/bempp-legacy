@@ -31,14 +31,14 @@ template<typename BasisFunctionType> class Space;
 // to be wrapped later...
 %ignore elementVariant;
 
-%ignore globalDofs;
+%ignore getGlobalDofs;
 
 %ignore global2localDofs;
 %ignore flatLocal2localDofs;
 
 // this function is only for internal use
-%ignore globalDofPositions;
-%ignore flatLocalDofPositions;
+%ignore getGlobalDofPositions;
+%ignore getFlatLocalDofPositions;
 
 %ignore dumpClusterIds;
 
