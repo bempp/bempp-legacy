@@ -59,7 +59,7 @@ template <typename ValueType> class DiscreteBoundaryOperator;
  *
  *  \tparam BasisFunctionType
  *    Type used to represent components of functions belonging to this space.
- *    Can be one of: \c float, \c * double, <tt>std::complex<float></tt> and
+ *    Can be one of: \c float, \c double, <tt>std::complex<float></tt> and
  *    <tt>std::complex<double></tt>. */
 template <typename BasisFunctionType>
 class Space
@@ -84,8 +84,7 @@ public:
      *  The supplied grid must remain valid until the Space object is destructed.
      *
      *  \todo The grid should be passed via a shared pointer instead of via a
-     *  reference.
-     */
+     *  reference. */
     explicit Space(Grid& grid);
 
     /** \brief Destructor. */
@@ -94,20 +93,23 @@ public:
     /** @name Attributes
     @{ */
 
-    /** \brief Dimension of the grid on which functions from this space are defined. */
+    /** \brief Dimension of the grid on which functions from this space are
+     *  defined. */
     virtual int domainDimension() const = 0;
 
     /** \brief Dimension of the codomain of the functions.
-
-    In other words, number of components of the values of the functions.
-    (E.g. H1 space -> 1, H(curl) space on a 2D surface -> 2). */
+     *
+     * In other words, number of components of the values of the functions.
+     * (E.g. H1 space -> 1, H(curl) space on a 2D surface -> 2). */
     virtual int codomainDimension() const = 0;
 
-    /** \brief Reference to the grid on which the functions from this space are defined. */
+    /** \brief Reference to the grid on which the functions from this space
+     *  are defined. */
     const Grid& grid() const { return m_grid; }
 
     /** \brief Reference to the basis attached to the specified element. */
-    virtual const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const = 0;
+    virtual const Fiber::Basis<BasisFunctionType>& basis(
+            const Entity<0>& element) const = 0;
 
     /** \brief Transformation mapping basis functions to shape functions.
      *
@@ -118,11 +120,10 @@ public:
      *
      *  This transformation is the identity for spaces of scalar-valued
      *  functions, but may be more complicated for spaces of vector-valued
-     *  functions, e.g. H(curl).
+     *  functions, e.g. \f$H(\mathrm{curl})\f$.
      *
      *  \todo Perhaps change the name of this method to something more
-     *  understandable, like basisToShapeFunctionTransformation.
-     */
+     *  understandable, like basisToShapeFunctionTransformation. */
     virtual const CollectionOfBasisTransformations&
     shapeFunctionValue() const = 0;
 
@@ -168,7 +169,8 @@ public:
      *  before. */
     virtual size_t globalDofCount() const = 0;
 
-    /** \brief Map local degrees of freedom residing on an element to global degrees of freedom.
+    /** \brief Map local degrees of freedom residing on an element to global
+     *  degrees of freedom.
      *
      *  \param[in] element An element of the grid grid().
      *  \param[out] dofs   Indices of the global degrees of freedom
@@ -199,7 +201,7 @@ public:
             const std::vector<GlobalDofIndex>& globalDofs,
             std::vector<std::vector<LocalDof> >& localDofs) const = 0;
 
-    /** \brief Map indices of flat local degrees of freedom to local degrees of freedom.
+    /** \brief Map flat indices of local degrees of freedom to local degrees of freedom.
      *
      *  \param[in] flatLocalDofs
      *     Vector containing flat indices of local degrees of freedom.
@@ -221,7 +223,7 @@ public:
     /** \brief Retrieve positions of global degrees of freedom.
      *
      *  \param[out] Vector whose <em>i</em>th element contains the coordinates
-     *  of the point taken to be the ``position'' (in some sense) of
+     *  of the point taken to be the "position" (in some sense) of
      *  <em>i</em>th global degree of freedom.
      *
      *  \note This function is intended as a helper for clustering algorithms
@@ -279,7 +281,8 @@ protected:
     Grid& m_grid;
 };
 
-/** \brief Get pointers to Basis objects corresponding to all elements.
+/** \brief Get pointers to Basis objects corresponding to all elements of the grid
+ *  on which a function space is defined.
  *
  *  \param[in] space
  *    A Space object.
