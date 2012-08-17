@@ -167,6 +167,11 @@ template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::getGlobalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
+    if (!dofsAssigned())
+        throw std::runtime_error(
+                "PiecewiseConstantScalarSpace::getGlobalDofPositions(): "
+                "assignDofs() must be called before calling this function");
+
     const int gridDim = domainDimension();
     const int globalDofCount_ = globalDofCount();
     positions.resize(globalDofCount_);
@@ -174,9 +179,9 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::getGlobalDofPositions(
     const Mapper& mapper = m_view->elementMapper();
 
     if (gridDim == 1)
-        throw NotImplementedError("PiecewiseConstantScalarSpace::"
-                                  "globalDofPositions(): "
-                                  "not implemented for 2D yet.");
+        throw NotImplementedError(
+                "PiecewiseConstantScalarSpace::globalDofPositions(): "
+                "not implemented for 2D yet.");
     else {
         std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
         while (!it->finished())
@@ -198,6 +203,10 @@ template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::getFlatLocalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
+    if (!dofsAssigned())
+        throw std::runtime_error(
+                "PiecewiseConstantScalarSpace::getFlatLocalDofPositions(): "
+                "assignDofs() must be called before calling this function");
     return getGlobalDofPositions(positions);
 }
 
@@ -206,10 +215,16 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::dumpClusterIds(
         const char* fileName,
         const std::vector<unsigned int>& clusterIds) const
 {
+    if (!dofsAssigned())
+        throw std::runtime_error(
+                "PiecewiseConstantScalarSpace::dumpClusterIds(): "
+                "assignDofs() must be called before calling this function");
+
     const size_t idCount = clusterIds.size();
     if (idCount != globalDofCount())
-        throw std::invalid_argument("PiecewiseConstantScalarSpace::"
-                                    "dumpClusterIds(): incorrect dimension");
+        throw std::invalid_argument(
+                "PiecewiseConstantScalarSpace::dumpClusterIds(): "
+                "clusterIds has incorrect length");
 
     std::auto_ptr<GridView> view = this->m_grid.leafView();
     std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();

@@ -325,6 +325,11 @@ template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getGlobalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
+    if (!dofsAssigned())
+        throw std::runtime_error(
+                "PiecewiseLinearContinuousScalarSpace::getGlobalDofPositions(): "
+                "assignDofs() must be called before calling this function");
+
     const int gridDim = domainDimension();
     const int globalDofCount_ = globalDofCount();
     positions.resize(globalDofCount_);
@@ -369,6 +374,11 @@ template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getFlatLocalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
+    if (!dofsAssigned())
+        throw std::runtime_error(
+                "PiecewiseLinearContinuousScalarSpace::getFlatLocalDofPositions(): "
+                "assignDofs() must be called before calling this function");
+
     const int gridDim = domainDimension();
     const int worldDim = this->m_grid.dimWorld();
     positions.resize(m_flatLocalDofCount);
@@ -417,6 +427,11 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::dumpClusterIds(
         const char* fileName,
         const std::vector<unsigned int>& clusterIds) const
 {
+    if (!dofsAssigned())
+        throw std::runtime_error(
+                "PiecewiseLinearContinuousScalarSpace::dumpClusterIds(): "
+                "assignDofs() must be called before calling this function");
+
     const size_t idCount = clusterIds.size();
     if (idCount != globalDofCount())
         throw std::invalid_argument("PiecewiseLinearContinuousScalarSpace::"

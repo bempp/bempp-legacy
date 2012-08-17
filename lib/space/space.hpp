@@ -164,8 +164,8 @@ public:
 
     /** \brief Number of global degrees of freedom.
      *
-     *  An exception is thrown if assignDofs() has not been called prior to
-     *  calling this function. */
+     *  \note This function returns zero if assignDofs() has not been called
+     *  before. */
     virtual size_t globalDofCount() const = 0;
 
     /** \brief Map local degrees of freedom residing on an element to global degrees of freedom.
@@ -173,9 +173,12 @@ public:
      *  \param[in] element An element of the grid grid().
      *  \param[out] dofs   Indices of the global degrees of freedom
      *                     corresponding to the local degrees of freedom
-     *                     residing on \p element. */
+     *                     residing on \p element.
+     *
+     *  \note The result of calling this function if assignDofs() has not been
+     *  called before is undefined. */
     virtual void getGlobalDofs(const Entity<0>& element,
-                            std::vector<GlobalDofIndex>& dofs) const = 0;
+                               std::vector<GlobalDofIndex>& dofs) const = 0;
 
     /** \brief Map global degrees of freedom to local degrees of freedom.
      *
@@ -188,7 +191,10 @@ public:
      *     degree of freedom <tt>globalDofs[i]</tt>.
      *
      *  Note that a local degree of freedom (LocalDof) is a combination of an
-     *  EntityIndex and LocalDofIndex, as explained in its documentation. */
+     *  EntityIndex and LocalDofIndex, as explained in its documentation.
+     *
+     *  \note The result of calling this function if assignDofs() has not been
+     *  called before is undefined. */
     virtual void global2localDofs(
             const std::vector<GlobalDofIndex>& globalDofs,
             std::vector<std::vector<LocalDof> >& localDofs) const = 0;
@@ -200,7 +206,10 @@ public:
      *
      *  \param[out] localDofs
      *     Vector whose <tt>i</tt>th element is the local degree of freedom
-     *     with flat index given by <tt>flatLocalDofs[i]</tt>. */
+     *     with flat index given by <tt>flatLocalDofs[i]</tt>.
+     *
+     *  \note The result of calling this function if assignDofs() has not been
+     *  called before is undefined. */
     virtual void flatLocal2localDofs(
             const std::vector<FlatLocalDofIndex>& flatLocalDofs,
             std::vector<LocalDof>& localDofs) const = 0;
@@ -217,7 +226,10 @@ public:
      *
      *  \note This function is intended as a helper for clustering algorithms
      *  used in matrix compression algorithms such as adaptive cross
-     *  approximation. */
+     *  approximation.
+     *
+     *  \note An exception is thrown if this function is called prior to calling
+     *  assignDofs(). */
     virtual void getGlobalDofPositions(
             std::vector<Point3D<CoordinateType> >& positions) const = 0;
 
@@ -230,7 +242,10 @@ public:
      *
      *  \note This function is intended as a helper for clustering algorithms
      *  used in matrix compression algorithms such as adaptive cross
-     *  approximation. */
+     *  approximation.
+     *
+     *  \note An exception is thrown if this function is called prior to calling
+     *  assignDofs(). */
     virtual void getFlatLocalDofPositions(
             std::vector<Point3D<CoordinateType> >& positions) const = 0;
 
@@ -251,7 +266,10 @@ public:
      *  mapping the ``positions'' (see globalDofPositions()) of global degrees
      *  of freedom to the identifiers of the clusters to which these degrees of
      *  freedom have been assigned. It is intended for debugging clustering
-     *  algorithms. */
+     *  algorithms.
+     *
+     *  \note An exception is thrown if this function is called prior to calling
+     *  assignDofs(). */
     virtual void dumpClusterIds(
             const char* fileName,
             const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const = 0;
