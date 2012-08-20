@@ -64,6 +64,8 @@ ElementVariant PiecewiseConstantScalarSpace<BasisFunctionType>::elementVariant(
         const Entity<0>& element) const
 {
     GeometryType type = element.type();
+    if (type.dim() == 1)
+        return 2;
     if (type.isTriangle())
         return 3;
     else
