@@ -36,6 +36,8 @@ namespace Bempp
 
 class GridView;
 
+/** \ingroup space
+ *  \brief Space of piecewise constant scalar functions. */
 template <typename BasisFunctionType>
 class PiecewiseConstantScalarSpace : public ScalarSpace<BasisFunctionType>
 {
@@ -47,6 +49,12 @@ public:
     virtual int domainDimension() const;
     virtual int codomainDimension() const;
 
+    /** \brief Return the variant of element \p element.
+     *
+     *  Possible return values:
+     *    - 2: one-dimensional segment,
+     *    - 3: triangular element,
+     *    - 4: quadrilateral element. */
     virtual ElementVariant elementVariant(const Entity<0>& element) const;
     virtual void setElementVariant(const Entity<0>& element,
                                    ElementVariant variant);

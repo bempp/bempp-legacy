@@ -30,6 +30,8 @@
 namespace Bempp
 {
 
+/** \ingroup space
+ *  \brief Base class for spaces of scalar-valued functions. */
 template <typename BasisFunctionType>
 class ScalarSpace : public Space<BasisFunctionType>
 {
