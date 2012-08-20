@@ -18,7 +18,7 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #THE SOFTWARE.
 
-# This script downloads the third-party libraries required by BEM++
+# BEM++ setup script
 
 
 import sys,os
@@ -148,13 +148,16 @@ def prepare(root,config):
 ###########################
 
 if __name__ == "__main__":
- 
+
+    usage = "usage: %prog [options] configuration_file"
     parser = OptionParser()
-    parser.add_option("-c", "--configure", action="store_true", dest="configure", default=False)
-    parser.add_option("-i", "--install", action="store", type="string", dest="install", default=False)
+    parser.add_option("-c", "--configure", action="store_true", help="Configure the setup program")
+    parser.add_option("-i", "--install", type="string", metavar="WHAT", help="Build and install WHAT. Possible values for WHAT: all (BEM++ and its dependencies), bempp (BEM++ only)")
     (options,args) = parser.parse_args()
     root=module_path()
     config=ConfigParser()
+    if len(args) != 1:
+        parser.error("Configuration file not specified")
     optfile = args[0]
     optfile_generated = optfile+".generated"
     config.read(optfile)
