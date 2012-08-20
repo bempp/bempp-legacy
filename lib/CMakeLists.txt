@@ -14,6 +14,10 @@ configure_file(
 configure_file(
         ${CMAKE_SOURCE_DIR}/lib/common/config_data_types.hpp.in
         ${CMAKE_BINARY_DIR}/include/bempp/common/config_data_types.hpp)
+# TODO: check that at most one of WITH_MKL, WITH_GOTOBLAS and WITH_OPENBLAS is set
+configure_file(
+        ${CMAKE_SOURCE_DIR}/lib/common/config_blas_and_lapack.hpp.in
+        ${CMAKE_BINARY_DIR}/include/bempp/common/config_blas_and_lapack.hpp)
 include_directories(${CMAKE_BINARY_DIR}/include)
 
 # Find all source and header files
@@ -35,6 +39,7 @@ add_library(bempp SHARED
 
 # BLAS and LAPACK
 target_link_libraries(bempp ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+include_directories(${BLAS_INCLUDE_DIR} ${LAPACK_INCLUDE_DIR})
 
 # Boost
 include_directories(${BOOST_INCLUDE_DIR})

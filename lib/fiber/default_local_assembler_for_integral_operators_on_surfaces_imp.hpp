@@ -26,6 +26,8 @@
 #include "nonseparable_numerical_test_kernel_trial_integrator.hpp"
 #include "separable_numerical_test_kernel_trial_integrator.hpp"
 
+#include "../fiber/serial_blas_region.hpp"
+
 #include <tbb/parallel_for.h>
 #include <tbb/task_scheduler_init.h>
 
@@ -526,10 +528,13 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
         tbb::task_scheduler_init scheduler(maxThreadCount);
         typedef SingularIntegralCalculatorLoopBody<
                 BasisFunctionType, KernelType, ResultType> Body;
-        tbb::parallel_for(tbb::blocked_range<size_t>(0, activeElementPairs.size()),
-                          Body(activeIntegrator,
-                               activeElementPairs, activeTestBasis, activeTrialBasis,
-                               localResult));
+        {
+            Fiber::SerialBlasRegion region;
+            tbb::parallel_for(tbb::blocked_range<size_t>(0, activeElementPairs.size()),
+                              Body(activeIntegrator,
+                                   activeElementPairs, activeTestBasis, activeTrialBasis,
+                                   localResult));
+        }
 
         {
             ElementIndexPairIterator pairIt = elementIndexPairs.begin();

@@ -34,6 +34,7 @@
 #include "../common/chunk_statistics.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/local_assembler_for_operators.hpp"
+#include "../fiber/serial_blas_region.hpp"
 #include "../fiber/scalar_traits.hpp"
 #include "../space/space.hpp"
 
@@ -361,10 +362,13 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         leafClusterIndexQueue.push(i);
 
     std::cout << "About to start the ACA assembly loop" << std::endl;
-    tbb::tick_count loopStart = tbb::tick_count::now();
-    tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
-                      Body(helper, leafClusters, blocks, acaOptions, done,
-                           leafClusterIndexQueue, symmetric, chunkStats));
+    tbb::tick_count loopStart = tbb::tick_count::now();    
+    {
+        Fiber::SerialBlasRegion region; // if possible, ensure that BLAS is single-threaded
+        tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
+                          Body(helper, leafClusters, blocks, acaOptions, done,
+                               leafClusterIndexQueue, symmetric, chunkStats));
+    }
     tbb::tick_count loopEnd = tbb::tick_count::now();
     std::cout << "\n"; // the progress bar doesn't print the final \n
 
