@@ -27,4 +27,5 @@ CXXFLAGS="$Main_cxxflags" CFLAGS="$Main_cflags" cmake \
     -D PYTHON_NUMPY_INCLUDE_DIR:PATH=$Python_numpy_include_dir \
     -D PYTHON_LIBRARY:PATH=$Python_lib \
     -D TRILINOS_CMAKE_PATH:PATH=$Trilinos_cmake_path \
+    -D WITH_MKL:BOOL=$MKL_enable_mkl \
 $Main_root_dir

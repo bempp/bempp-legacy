@@ -52,6 +52,12 @@ def prepare(root,config):
         tools.extract_file(ahmed_fname,root+"/contrib/")
         os.rename(root+"/contrib/AHMED_1.0",root+"/contrib/ahmed")
         shutil.copy(root+"/contrib/build_scripts/posix/ahmed_build.sh",ahmed_full_dir+"/ahmed_build.sh")
+        print "Patching AHMED"
+        patch=py_patch.fromfile(root+"/contrib/patch/ahmed-no-openmp.patch")
+        cwd=os.getcwd()
+        os.chdir(root+"/contrib/ahmed")
+        patch.apply()
+        os.chdir(cwd)
     else:
         config.set('AHMED','with_ahmed','OFF')
 
