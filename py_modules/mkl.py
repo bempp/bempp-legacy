@@ -28,8 +28,6 @@ def prepare(root,config):
 
     prefix = config.get('Main','prefix')
     lib_dir = prefix+"/bempp/lib"
-    # blas_files = ['libmkl_intel_lp64','libmkl_sequential','libmkl_core']
-    # lapack_files = ['libmkl_intel_lp64']
 
     enable_mkl = tools.to_bool(tools.setDefaultConfigOption(config,'MKL',
                                                             'enable_mkl','no'))
@@ -51,14 +49,7 @@ def prepare(root,config):
             if not os.path.isfile(mkl_rt_lib):
                 raise Exception("The path from option 'mkl_rt_lib' "
                                 "in section 'MKL' is invalid")
-            iomp5_lib = config.get('MKL','iomp5_lib')
-            if not iomp5_lib:
-                raise Exceptions("Option 'iomp5_lib' in section 'MKL' "
-                                 "must not be empty")
-            if not os.path.isfile(iomp5_lib):
-                raise Exception("The path from option 'iomp5_lib' "
-                                "in section 'MKL' is invalid")
-            blas_lib = lapack_lib = mkl_rt_lib+';'+iomp5_lib
+            blas_lib = lapack_lib = mkl_rt_lib
         else:
             if mkl_source == 'redistributable':
                 mkl_tarball=config.get('MKL','mkl_tarball')
@@ -78,7 +69,7 @@ def prepare(root,config):
                 raise Exception("Option 'mkl_source' in section 'MKL' must be "
                                 "either 'installed', 'redistributable' or "
                                 "'enthought'")
-            mkl_libs = ['libmkl_rt','libiomp5']
+            mkl_libs = ['libmkl_rt']
             blas_lib = ""
             if sys.platform.startswith('darwin'):
                 for f in blas_files: blas_lib = blas_lib+";"+lib_dir+"/"+f+".dylib"
