@@ -69,12 +69,12 @@ def prepare(root,config):
                 raise Exception("Option 'mkl_source' in section 'MKL' must be "
                                 "either 'installed', 'redistributable' or "
                                 "'enthought'")
-            mkl_libs = ['libmkl_rt']
+            mkl_files = ['libmkl_rt']
             blas_lib = ""
             if sys.platform.startswith('darwin'):
-                for f in blas_files: blas_lib = blas_lib+";"+lib_dir+"/"+f+".dylib"
+                for f in mkl_files: blas_lib = blas_lib+";"+lib_dir+"/"+f+".dylib"
             elif sys.platform.startswith('linux'):
-                for f in blas_files: blas_lib = blas_lib+";"+lib_dir+"/"+f+".so"
+                for f in mkl_files: blas_lib = blas_lib+";"+lib_dir+"/"+f+".so"
             else:
                 raise Exception("Platform not supported")
             blas_lib = blas_lib[1:] # remove leading semicolon
