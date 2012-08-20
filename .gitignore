@@ -24,4 +24,4 @@ scratch
 test_blas/build
 test_lapack/build
 *.generated
-options.cfg
+.options.cfg
