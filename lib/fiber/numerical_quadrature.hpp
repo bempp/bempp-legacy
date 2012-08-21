@@ -23,7 +23,9 @@
 
 #include "../common/common.hpp"
 
-/** \file Low-level functions filling arrays of quadrature points and weights. */
+/** \file
+ *
+ *  Low-level functions filling arrays of quadrature points and weights. */
 
 #include "element_pair_topology.hpp"
 

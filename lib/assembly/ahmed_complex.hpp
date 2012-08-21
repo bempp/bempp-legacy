@@ -23,7 +23,9 @@
 
 #include "../common/common.hpp"
 
-/** \file Ahmed's complex numbers */
+/** \file
+ *
+ *  Ahmed's complex numbers */
 #include <cmplx.h>
 
 #ifndef AHMED_USES_STD_COMPLEX

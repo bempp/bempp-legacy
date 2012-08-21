@@ -70,7 +70,7 @@ public:
     /** \brief Type of the appropriate instantiation of Fiber::LocalAssemblerForOperators. */
     typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
 
-    /** \copydoc AbstractBoundaryOperator::AbstractBoundaryOperator(const Space<BasisFunctionType>&, const Space<BasisFunctionType>&) */
+    /** \copydoc AbstractBoundaryOperator::AbstractBoundaryOperator */
     ElementaryAbstractBoundaryOperator(const shared_ptr<const Space<BasisFunctionType> >& domain,
                                        const shared_ptr<const Space<BasisFunctionType> >& range,
                                        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,

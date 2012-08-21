@@ -220,7 +220,7 @@ public:
      *  recalculated on the next call to coefficients(). */
     void setProjections(const arma::Col<ResultType>& projects);
 
-    /** \brief Return the \$fL^2\f$-norm of the grid function. */
+    /** \brief Return the \f$L^2\f$-norm of the grid function. */
     MagnitudeType L2Norm() const;
 
     const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
