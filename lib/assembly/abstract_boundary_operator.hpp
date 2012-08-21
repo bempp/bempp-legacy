@@ -68,17 +68,17 @@ template <typename BasisFunctionType, typename ResultType> class ScaledAbstractB
  *  The function assembleWeakForm() can be used to construct the weak
  *  form of the operator.
  *
- *  \tparam BasisFunctionType
+ *  \tparam BasisFunctionType_
  *    Type used to represent components of the functions from the operator's
  *    domain, range and space dual to range.
- *  \tparam ResultType
+ *  \tparam ResultType_
  *    Type used to represent elements of the weak form of this operator.
  *
  *  Both template parameters can take the following values: \c float, \c
  *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
  *  Both types must have the same precision: for instance, mixing \c float with
- *  <tt>std::complex<double></tt> is not allowed. If \p BasisFunctionType is
- *  set to a complex type, then \p ResultType must be set to the same type.
+ *  <tt>std::complex<double></tt> is not allowed. If \p BasisFunctionType_ is
+ *  set to a complex type, then \p ResultType_ must be set to the same type.
  */
 template <typename BasisFunctionType_, typename ResultType_>
 class AbstractBoundaryOperator
@@ -110,6 +110,9 @@ public:
      *
      *  \param[in] label
      *    Textual label of the operator (optional, used for debugging).
+     *
+     *  \param[in] symmetry
+     *    Symmetry of the weak form of the operator.
      *
      *  The spaces \p range and \p dualToRange must be defined on
      *  the same grid.
