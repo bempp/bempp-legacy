@@ -60,6 +60,12 @@
  *  This module contains classes representing function spaces.
  */
 
+/** \defgroup identity Identity operator
+ *  \ingroup operators
+ *
+ *  This module contains the class representing the identity operator.
+ */
+
 /** \defgroup laplace_3d Laplace equation in 3D
  *  \ingroup operators
  *
