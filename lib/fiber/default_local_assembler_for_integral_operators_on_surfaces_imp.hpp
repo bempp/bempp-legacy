@@ -601,8 +601,8 @@ regularOrder(int elementIndex, ElementType elementType) const
                             (*m_testBases)[elementIndex]->order() :
                             (*m_trialBases)[elementIndex]->order());
     // Order required for exact quadrature on affine elements with a constant kernel
-    int minimumOrder = ((elementOrder + 1) + 1) / 2;
-    return options.quadratureOrder(minimumOrder);
+    int defaultAccuracyOrder = elementOrder;
+    return options.quadratureOrder(defaultAccuracyOrder);
 }
 
 template <typename BasisFunctionType, typename KernelType,
@@ -622,9 +622,8 @@ singularOrder(int elementIndex, ElementType elementType) const
     int elementOrder = (elementType == TEST ?
                             (*m_testBases)[elementIndex]->order() :
                             (*m_trialBases)[elementIndex]->order());
-    // Order required for exact quadrature on affine elements with a constant kernel
-    int minimumOrder = ((elementOrder + 1) + 1) / 2;
-    return options.quadratureOrder(minimumOrder + 3);
+    int defaultAccuracyOrder = elementOrder + 5;
+    return options.quadratureOrder(defaultAccuracyOrder);
 }
 
 template <typename BasisFunctionType, typename KernelType,

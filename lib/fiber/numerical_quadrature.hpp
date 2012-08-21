@@ -109,9 +109,19 @@ inline size_t tbb_hasher(const DoubleQuadratureDescriptor& d)
                   d.trialOrder))))));
 }
 
+/** \brief Retrieve points and weights for a quadrature over a single element.
+ *
+ *  \param[in] elementCornerCount
+ *    Number of corners of the element to be integrated on.
+ *  \param[in] accuracyOrder
+ *    Accuracy order of the quadrature, i.e. its degree of exactness.
+ *  \param[out] points
+ *    Quadrature points.
+ *  \param[out] weights
+ *    Quadrature weights. */
 template <typename ValueType>
 void fillSingleQuadraturePointsAndWeights(int elementCornerCount,
-                                          int quadratureOrder,
+                                          int accuracyOrder,
                                           arma::Mat<ValueType>& points,
                                           std::vector<ValueType>& weights);
 

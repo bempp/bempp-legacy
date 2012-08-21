@@ -32,11 +32,14 @@ namespace Fiber
 struct AccuracyOptions
 {
 public:
-    /** \brief Integration of regular functions on single elements */
+    /** \brief Options controlling integration of regular functions
+     *  on single elements */
     QuadratureOptions singleRegular;
-    /** \brief Integration of regular functions on pairs of elements */
+    /** \brief Options controlling integration of regular functions
+     *  on pairs of elements */
     QuadratureOptions doubleRegular;
-    /** \brief Integration of singular functions on pairs of elements */
+    /** \brief Options controlling integration of singular functions
+     *  on pairs of elements */
     QuadratureOptions doubleSingular;
 };
 

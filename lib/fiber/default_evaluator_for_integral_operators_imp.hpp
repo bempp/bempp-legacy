@@ -348,10 +348,9 @@ ResultType, GeometryFactory>::farFieldQuadOrder(
 {
     int elementOrder = (basis.order());
     // Order required for exact quadrature on affine elements with kernel
-    // approximated by a polynomial of order identical with that of
-    // the basis
-    int minimumOrder = ((2 * elementOrder + 1) + 1) / 2;
-    return m_quadratureOptions.quadratureOrder(minimumOrder);
+    // approximated by a polynomial of order identical with that of the basis
+    int defaultQuadratureOrder = 2 * elementOrder;
+    return m_quadratureOptions.quadratureOrder(defaultQuadratureOrder);
 }
 
 template <typename BasisFunctionType, typename KernelType,
