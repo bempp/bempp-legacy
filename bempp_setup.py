@@ -116,7 +116,9 @@ def prepare(root,config):
     cxxflags = config.get('Main','cxxflags')
 
     arch = config.get('Main','architecture')
-    if not arch in ['intel64','i386']: raise Exception('Architecture not supported.')
+    if not arch in ['ia32','ia64','intel64']:
+        raise Exception("Architecture '"+arch+"' is not supported. "
+                        "Supported architectures: ia32, ia64, intel64.")
     
     if sys.platform.startswith('darwin'):
         if arch=='intel64':
@@ -126,14 +128,14 @@ def prepare(root,config):
         config.set('Main','cflags',cflags+" "+param)
         config.set('Main','cxxflags',cxxflags+" "+param)
     elif sys.platform.startswith('linux'):
-        if arch=='intel64':
+        if arch=='intel64' or arch=='ia64':
             param = '-m64'
         else:
             param = '-m32'
         config.set('Main','cflags',cflags+" "+param)       
         config.set('Main','cxxflags',cxxflags+" "+param)
     else:
-        raise Exception("Platform not supported")
+        raise Exception("Platform '"+sys.platform+"' is not supported")
 
     # Add the correct Python options
 

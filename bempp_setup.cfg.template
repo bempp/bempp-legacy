@@ -1,7 +1,8 @@
 [Main]
 
-# Specify your system architecture. Usually either intel32 (for 32-bit
-# systems) or intel64 (for 64-bit systems). Example:
+# Specify your system architecture. Allowed values: intel64 (for
+# 64-bit systems), ia32 (for 32-bit systems), ia64 (for Intel Itanium
+# systems). Example:
 
 # architecture=intel64
 

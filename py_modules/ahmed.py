@@ -35,7 +35,7 @@ def prepare(root,config):
         config.set('AHMED','with_ahmed','ON') 
         prefix=config.get('Main','prefix')
         arch = config.get('Main','architecture')
-        if arch == 'i386':
+        if arch == 'ia32':
             config.set('AHMED','enable64','OFF')
         else:
             config.set('AHMED','enable64','ON')

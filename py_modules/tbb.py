@@ -64,10 +64,11 @@ def prepare(root,config):
     elif sys.platform.startswith('linux'):
         tbb_lib_name = "libtbb.so"
         tbb_lib_name_debug = "libtbb_debug.so"
-        if config.get('Main','architecture')=='intel64':
-            libdir_orig = root+"/contrib/tbb/lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21"
+        arch = config.get('Main','architecture')
+        if arch in ('intel64','ia32','ia64'):
+            libdir_orig = root+"/contrib/tbb/lib/"+arch+"/cc4.1.0_libc2.4_kernel2.6.16.21"
         else:
-            libdir_orig = root+"/contrib/tbb/lib/ia32/cc4.1.0_libc2.4_kernel2.6.16.21"
+            raise Exception("Unrecognized architecture: '"+arch+"'")
     else:
         raise Exception("Platform not supported")
 
