@@ -70,6 +70,15 @@ shared_ptr<DiscreteBoundaryOperator<ResultType> >
 AbstractBoundaryOperator<BasisFunctionType, ResultType>::assembleWeakForm(
         const Context<BasisFunctionType, ResultType>& context) const
 {
+    if (!m_domain->dofsAssigned())
+        throw std::runtime_error(
+                "AbstractBoundaryOperator::assembleWeakForm(): "
+                "assignDofs() has not been called on the domain space");
+    if (!m_dualToRange->dofsAssigned())
+        throw std::runtime_error(
+                "AbstractBoundaryOperator::assembleWeakForm(): "
+                "assignDofs() has not been called on the space dual to range");
+
     return this->assembleWeakFormImpl(context);
 }
 
