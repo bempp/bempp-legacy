@@ -597,16 +597,12 @@ regularOrder(int elementIndex, ElementType elementType) const
 
     const QuadratureOptions& options = m_accuracyOptions.doubleRegular;
 
-    if (options.mode == QuadratureOptions::EXACT_ORDER)
-        return options.order;
-    else {
-        // Order required for exact quadrature on affine elements with a constant kernel
-        int elementOrder = (elementType == TEST ?
-                                (*m_testBases)[elementIndex]->order() :
-                                (*m_trialBases)[elementIndex]->order());
-        int minimumOrder = ((elementOrder + 1) + 1) / 2;
-        return minimumOrder + options.orderIncrement;
-    }
+    int elementOrder = (elementType == TEST ?
+                            (*m_testBases)[elementIndex]->order() :
+                            (*m_trialBases)[elementIndex]->order());
+    // Order required for exact quadrature on affine elements with a constant kernel
+    int minimumOrder = ((elementOrder + 1) + 1) / 2;
+    return options.quadratureOrder(minimumOrder);
 }
 
 template <typename BasisFunctionType, typename KernelType,
@@ -623,16 +619,12 @@ singularOrder(int elementIndex, ElementType elementType) const
 
     const QuadratureOptions& options = m_accuracyOptions.doubleSingular;
 
-    if (options.mode == QuadratureOptions::EXACT_ORDER)
-        return options.order;
-    else {
-        // Order required for exact quadrature on affine elements with a constant kernel
-        int elementOrder = (elementType == TEST ?
-                                (*m_testBases)[elementIndex]->order() :
-                                (*m_trialBases)[elementIndex]->order());
-        int minimumOrder = ((elementOrder + 1) + 1) / 2;
-        return minimumOrder + 3 + options.orderIncrement;
-    }
+    int elementOrder = (elementType == TEST ?
+                            (*m_testBases)[elementIndex]->order() :
+                            (*m_trialBases)[elementIndex]->order());
+    // Order required for exact quadrature on affine elements with a constant kernel
+    int minimumOrder = ((elementOrder + 1) + 1) / 2;
+    return options.quadratureOrder(minimumOrder + 3);
 }
 
 template <typename BasisFunctionType, typename KernelType,

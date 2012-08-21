@@ -83,7 +83,7 @@ public:
         // Construct local assembler
 
         Fiber::AccuracyOptions options;
-        options.doubleRegular.orderIncrement = 1;
+        options.doubleRegular.setRelativeQuadratureOrder(1);
         quadStrategy = std::auto_ptr<QuadratureStrategy>(new QuadratureStrategy);
 
         AssemblyOptions assemblyOptions;

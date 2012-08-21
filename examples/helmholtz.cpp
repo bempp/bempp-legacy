@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
     // Define the standard integration factory
 
     AccuracyOptions accuracyOptions;
-    accuracyOptions.doubleRegular.orderIncrement = 1;
+    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(1);
     NumericalQuadratureStrategy<BFT, RT> quadStrategy(accuracyOptions);
 
     Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);

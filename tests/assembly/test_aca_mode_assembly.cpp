@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_assembled_operator_agrees_with_dense_assemb
     pwiseLinears->assignDofs();
 
     AccuracyOptions accuracyOptions;
-    accuracyOptions.doubleRegular.orderIncrement = 1;
+    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(1);
     shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
                 new NumericalQuadratureStrategy<BFT, RT>(accuracyOptions));
 
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_disassembled_operator_agrees_with_dense_ass
     pwiseLinears->assignDofs();
 
     AccuracyOptions accuracyOptions;
-    accuracyOptions.doubleRegular.orderIncrement = 1;
+    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(1);
     shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
                 new NumericalQuadratureStrategy<BFT, RT>(accuracyOptions));
 
