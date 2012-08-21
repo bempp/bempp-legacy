@@ -52,8 +52,8 @@ public:
      *
      *  \note Both operators must have identical dimensions, otherwise
      *  a <tt>std::invalid_argument</tt> exception is thrown. */
-    DiscreteBoundaryOperatorSum(shared_ptr<const Base>& term1,
-                              shared_ptr<const Base>& term2);
+    DiscreteBoundaryOperatorSum(const shared_ptr<const Base>& term1,
+                                const shared_ptr<const Base>& term2);
 
     virtual arma::Mat<ValueType> asMatrix() const;
 

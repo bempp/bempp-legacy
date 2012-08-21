@@ -1,6 +1,8 @@
 %{
 #include "assembly/discrete_boundary_operator.hpp"
+#include <iostream>
 #include <complex>
+#include <armadillo>
 %}
 
 // TODO
@@ -16,6 +18,8 @@
 %shared_ptr(Bempp::DiscreteBoundaryOperator<std::complex<float> >);
 %shared_ptr(Bempp::DiscreteBoundaryOperator<std::complex<double> >);
 
+
+#define shared_ptr boost::shared_ptr
 namespace Thyra
 {
 
@@ -83,17 +87,104 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator);
     %apply arma::Mat<std::complex<double> >& ARGOUT_MAT {
         arma::Mat<std::complex<double> >& mat_out
     };
+
+    %apply const arma::Mat<float>& IN_MAT {
+        const arma::Mat<float >& mat_in
+    };
+    %apply const arma::Mat<double>& IN_MAT {
+        const arma::Mat<double >& mat_in
+    };
+    %apply const arma::Mat<std::complex<float> >& IN_MAT {
+        const arma::Mat<std::complex<float> >& mat_in
+    };
+    %apply const arma::Mat<std::complex<double> >& IN_MAT {
+        const arma::Mat<std::complex<double> >& mat_in
+    };
+
+
     void asMatrix(arma::Mat<ValueType>& mat_out)
     {
         mat_out = $self->asMatrix();
     }
 
     %ignore asMatrix;
+
+    static shared_ptr<const DiscreteBoundaryOperator<ValueType> >
+    __addImpl(const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1, const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2){
+        return op1+op2;
+    }
+
+    static shared_ptr<const DiscreteBoundaryOperator<ValueType> >
+    __subImpl(const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1, const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2){
+        return op1-op2;
+    }
+
+
+    static shared_ptr<const DiscreteBoundaryOperator<ValueType> >
+    __scalarMultImpl(ValueType scalar, const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op){
+        return scalar*op;
+    }
+
+    static void
+    __matrixMultImpl(const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
+                     const arma::Mat<ValueType>& mat_in,arma::Mat<ValueType>& mat_out){
+
+        const int opRows = op->rowCount();
+        const int opCols = op->columnCount();
+        const int matCols = mat_in.n_cols;
+        const int matRows = mat_in.n_rows;
+        mat_out.zeros(opRows,matCols);
+        if (opCols!=matRows) throw std::runtime_error("__matrixMultImpl(op,mat_in,mat_out: Wrong dimensions.");
+        for (int i=0;i<matCols;i++){
+            arma::Col< ValueType > tmp1 = mat_in.unsafe_col(i);
+            arma::Col< ValueType > tmp2 = mat_out.unsafe_col(i);
+            op->apply(Bempp::NO_TRANSPOSE,tmp1,tmp2,1.0,0.0);
+        }
+        for (int i=0;i<mat_out.n_rows;i++){
+            for (int j=0;j<mat_out.n_cols;j++) std::cout << mat_out(i,j) << " ";
+            std::cout << std::endl;
+        }
+
+    }
+
+    %pythoncode {
+        def __add__(self,other):
+            return self.__addImpl(self,other)
+
+        def __sub__(self,other):
+            return self.__subImpl(self,other)
+
+        def __mul__(self,other):
+            from numbers import Number
+            import numpy as np
+            if isinstance(other,(Number,np.number)):
+                return self.__scalarMultImpl(other,self)
+            elif isinstance(other,np.ndarray):
+                if len(other.shape)==0:
+                    return self.__scalarMultImpl(other,self)
+                else:
+                    return self.__matrixMultImpl(self,other)
+            else:
+                raise ValueError("DiscreteOperators do not support multiplication with this type.")
+
+        def __div__(self,other):
+            if other==0: raise ValueError("Division by zero not allowed.")
+            return self.__mul__(1./other)
+
+        def __rmul__(self,other):
+            return self.__mul__(other)
+
+    }
+
+
+
 }
 
 } // namespace Bempp
 
 %include "assembly/discrete_boundary_operator.hpp"
+
+#undef shared_ptr
 
 namespace Thyra
 {
@@ -118,6 +209,12 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator);
 %clear arma::Mat<double>& mat_out;
 %clear arma::Mat<std::complex<float> >& mat_out;
 %clear arma::Mat<std::complex<double> >& mat_out;
+
+%clear const arma::Mat<float>& mat_in;
+%clear const arma::Mat<double>& mat_in;
+%clear const arma::Mat<std::complex<float> >& mat_in;
+%clear const arma::Mat<std::complex<double> >& mat_in;
+
 
 } // namespace Bempp
 

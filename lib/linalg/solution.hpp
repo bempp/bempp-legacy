@@ -30,6 +30,12 @@
 namespace Bempp
 {
 
+/** \ingroup linalg
+  *
+  * \brief This class holds the solution of a BEM computation together with various information
+           about the solution.
+  */
+
 template <typename BasisFunctionType, typename ResultType>
 class Solution : public SolutionBase<BasisFunctionType, ResultType>
 {
@@ -44,7 +50,7 @@ public:
 #endif // WITH_TRILINOS
     /** \brief Constructor */
     Solution(const GridFunction<BasisFunctionType, ResultType>& gridFunction,
-             typename Base::Status status,
+             SolutionStatus::Status status,
              MagnitudeType achievedTolerance = Base::unknownTolerance(),
              std::string message = "");
 

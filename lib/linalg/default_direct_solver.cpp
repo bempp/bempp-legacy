@@ -31,6 +31,8 @@
 namespace Bempp
 {
 
+/** \cond HIDDEN_INTERNAL */
+
 template <typename BasisFunctionType, typename ResultType> 
 struct DefaultDirectSolver<BasisFunctionType, ResultType>::Impl
 {
@@ -93,7 +95,7 @@ DefaultDirectSolver<BasisFunctionType, ResultType>::solveImplNonblocked(
             boundaryOp->context(), 
             boundaryOp->domain(), boundaryOp->domain(), // is this the right choice?
             armaSolution, GridFunction<BasisFunctionType, ResultType>::COEFFICIENTS),
-        SolutionBase<BasisFunctionType, ResultType>::CONVERGED,
+        SolutionStatus::CONVERGED,
         SolutionBase<BasisFunctionType, ResultType>::unknownTolerance(),
         "Solver finished");
 }
@@ -136,7 +138,7 @@ DefaultDirectSolver<BasisFunctionType, ResultType>::solveImplBlocked(
     // Return solution
     return BlockedSolution<BasisFunctionType, ResultType>(
         solutionFunctions,
-        SolutionBase<BasisFunctionType, ResultType>::CONVERGED,
+        SolutionStatus::CONVERGED,
         SolutionBase<BasisFunctionType, ResultType>::unknownTolerance(),
         "Solver finished");
 }

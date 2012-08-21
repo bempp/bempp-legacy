@@ -36,26 +36,43 @@
 namespace Bempp
 {
 
+struct SolutionStatus {
+    enum Status {
+        CONVERGED,
+        UNCONVERGED,
+        UNKNOWN};
+};
+
+/** \ingroup linalg
+  * \brief The base class for the Solution and BlockedSolution container classes.
+  *
+  * This class holds various information about the solution of a BEM computation. It derives from
+  * <a href="http://trilinos.sandia.gov/packages/docs/r10.10/packages/thyra/doc/html/structThyra_1_1SolveStatus.html">Thyra::SolveStatus</a>
+  * if Trilinos is enabled.
+  *
+  * <tt>MagnitudeType</tt> is identical to <tt>float</tt> if <tt>ResultType</tt> is <tt>float</tt> or <tt>complex<float></tt>. It is double
+  * if <tt>ResultType</tt> is <tt>double</tt> or <tt>complex<double></tt>
+  */
+
 template <typename BasisFunctionType, typename ResultType>
 class SolutionBase
 {
 public:
     typedef typename ScalarTraits<ResultType>::RealType MagnitudeType;
-    enum Status {CONVERGED, UNCONVERGED, UNKNOWN};
 
 #ifdef WITH_TRILINOS
     /** \brief Constructor */
     explicit SolutionBase(const Thyra::SolveStatus<MagnitudeType> status);
 #endif // WITH_TRILINOS
     /** \brief Constructor */
-    explicit SolutionBase(Status status,
+    explicit SolutionBase(SolutionStatus::Status status,
                           MagnitudeType achievedTolerance = unknownTolerance(),
                           std::string message = "");
 
     static MagnitudeType unknownTolerance() { return MagnitudeType(-1.); }
 
     /** \brief Return status of the linear solve. */
-    Status status() const;
+    SolutionStatus::Status status() const;
 
     /** \brief Maximum final tolerance achieved by the linear solve. 
      *
@@ -75,7 +92,7 @@ public:
 #endif // WITH_TRILINOS
 
 private:
-    Status m_status;
+    SolutionStatus::Status m_status;
     MagnitudeType m_achievedTolerance;
     std::string m_message;
 #ifdef WITH_TRILINOS

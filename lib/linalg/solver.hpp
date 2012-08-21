@@ -62,14 +62,14 @@ public:
     /** \brief Solve a standard (non-blocked) boundary integral equation.
       *
       * This function solves a boundary integral equation with given right-hand
-      * side <tt>rhs</tt> of type <tt>GridFunction</tt> and returns a new <tt>Solution<tt>
+      * side <tt>rhs</tt> of type GridFunction and returns a new Solution
       * object.
       *
       * \param[in] rhs
-      * <tt>GridFunction</tt> representing the right-hand side function of the boundary
+      *   GridFunction representing the right-hand side function of the boundary
       * integral equation.
       *
-      * \return A new <tt>Solution<tt> object, containing the solution of the boundary
+      * \return A new Solution object, containing the solution of the boundary
       * integral equation.
       *
       */
@@ -82,12 +82,12 @@ public:
     /** \brief Solve a block-operator system of boundary integral equations.
       *
       * This function solves a block system of boundary integral equations. It takes a
-      * <tt>vector</tt> of variables of type <tt>GridFunction</tt> as its input.
+      * <tt>vector</tt> of variables of type GridFunction as its input.
       *
       * \param[in] rhs
-      * <tt>vector</tt> of variables of type <tt>GridFunction</tt>
+      * <tt>vector</tt> of variables of type GridFunction
       *
-      * \return A new <tt>BlockedSolution</tt> object, containing the solution of the system of
+      * \return A new BlockedSolution object, containing the solution of the system of
       * boundary integral equation.
       *
       */

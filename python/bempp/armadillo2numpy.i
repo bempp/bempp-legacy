@@ -298,7 +298,7 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
 %arma_numpy_typemaps(float             , NPY_FLOAT    )
 %arma_numpy_typemaps(double            , NPY_DOUBLE   )
 
-%arma_numpy_typemaps(Bempp::ctype      , NPY_DOUBLE   )
+//%arma_numpy_typemaps(Bempp::ctype      , NPY_DOUBLE   )
 
 %arma_numpy_typemaps(std::complex<float>,  NPY_CFLOAT  );
 %arma_numpy_typemaps(std::complex<double>, NPY_CDOUBLE );

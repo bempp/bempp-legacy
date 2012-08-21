@@ -50,7 +50,7 @@ namespace Bempp
   * in the dual space to the range space. A standard Galerkin discretisation of the form \f$Ax=b\f$,
   * maps into the dual space of the range of the operator. By choosing to test in the range space the equation
   * \f$M^\dagger Ax=M^\dagger b\f$ is solved, where \f$M\f$ is the mass matrix, mapping from the range space
-  * into its dual and \f$M^\dagger\f$ is a pseudoinverse.
+  * into its dual and \f$M^\dagger\f$ is its pseudoinverse.
   *
   */
 
@@ -106,7 +106,7 @@ public:
       *
       * \param[in] paramList
       *   Parameter lists can be read in as xml files or defined in code. For default parameter lists
-      *   for Gmres and Cg see <tt>defaultGmresParameterList</tt> and defaultCgParameterList.
+      *   for Gmres and Cg see defaultGmresParameterList and defaultCgParameterList.
       */
 
     void initializeSolver(const Teuchos::RCP<Teuchos::ParameterList>& paramList);

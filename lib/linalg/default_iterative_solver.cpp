@@ -61,6 +61,8 @@ wrapInTrilinosVector(arma::Col<ValueType>& col)
         trilinosArray, 1 /* stride */));
 }
 
+/** \cond HIDDEN_INTERNAL */
+
 template <typename BasisFunctionType, typename ResultType> 
 struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
 {
