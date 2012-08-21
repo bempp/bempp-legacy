@@ -51,25 +51,30 @@ def prepare(root,config):
                                 "in section 'MKL' is invalid")
             blas_lib = lapack_lib = mkl_rt_lib
         else:
+            mkl_files = ['libmkl_rt']
             if mkl_source == 'redistributable':
                 mkl_tarball=config.get('MKL','mkl_tarball')
                 print 'Extracting MKL redistributables'
                 tools.extract_file(mkl_tarball,prefix+"/bempp/lib/")
             elif mkl_source == 'enthought':
-                # TODO: make this more robust, e.g. check whether this is really Enthought
-                # and whether symbolic links have been created successfully
                 print 'Creating symbolic links to Enthought MKL libraries'
-                cwd = os.getcwd()
                 mkl_dir = sys.prefix+"/lib"
-                cmd_str = "ln -s "+mkl_dir+"/libmkl_rt* libiomp5* ."
-                os.chdir(lib_dir)
-                subprocess.check_call(cmd_str,shell=True)
-                os.chdir(cwd)
+                if sys.platform.startswith('darwin'):
+                    extension = ".dylib"
+                elif sys.platform.startswith('linux'):
+                    extension = ".so"
+                else:
+                    raise Exception("Unsupported platform: '"+sys.platform+"'")
+                for f in mkl_files:
+                    path = mkl_dir+"/"+f+extension
+                    if not os.path.isfile(path):
+                        raise Exception("File '"+path+"' not found")
+                os.symlink(mkl_dir+"/libmkl_rt"+extension,
+                           lib_dir+"/libmkl_rt"+extension)
             else:
                 raise Exception("Option 'mkl_source' in section 'MKL' must be "
                                 "either 'installed', 'redistributable' or "
                                 "'enthought'")
-            mkl_files = ['libmkl_rt']
             blas_lib = ""
             if sys.platform.startswith('darwin'):
                 for f in mkl_files: blas_lib = blas_lib+";"+lib_dir+"/"+f+".dylib"
