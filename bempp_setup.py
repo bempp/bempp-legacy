@@ -18,7 +18,7 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #THE SOFTWARE.
 
-# This script downloads the third-party libraries required by BEM++
+# BEM++ setup script
 
 
 import sys,os
@@ -116,7 +116,9 @@ def prepare(root,config):
     cxxflags = config.get('Main','cxxflags')
 
     arch = config.get('Main','architecture')
-    if not arch in ['intel64','i386']: raise Exception('Architecture not supported.')
+    if not arch in ['ia32','ia64','intel64']:
+        raise Exception("Architecture '"+arch+"' is not supported. "
+                        "Supported architectures: ia32, ia64, intel64.")
     
     if sys.platform.startswith('darwin'):
         if arch=='intel64':
@@ -126,14 +128,14 @@ def prepare(root,config):
         config.set('Main','cflags',cflags+" "+param)
         config.set('Main','cxxflags',cxxflags+" "+param)
     elif sys.platform.startswith('linux'):
-        if arch=='intel64':
+        if arch=='intel64' or arch=='ia64':
             param = '-m64'
         else:
             param = '-m32'
         config.set('Main','cflags',cflags+" "+param)       
         config.set('Main','cxxflags',cxxflags+" "+param)
     else:
-        raise Exception("Platform not supported")
+        raise Exception("Platform '"+sys.platform+"' is not supported")
 
     # Add the correct Python options
 
@@ -148,13 +150,16 @@ def prepare(root,config):
 ###########################
 
 if __name__ == "__main__":
- 
+
+    usage = "usage: %prog [options] configuration_file"
     parser = OptionParser()
-    parser.add_option("-c", "--configure", action="store_true", dest="configure", default=False)
-    parser.add_option("-i", "--install", action="store", type="string", dest="install", default=False)
+    parser.add_option("-c", "--configure", action="store_true", help="Configure the setup program")
+    parser.add_option("-i", "--install", type="string", metavar="WHAT", help="Build and install WHAT. Possible values for WHAT: all (BEM++ and its dependencies), bempp (BEM++ only)")
     (options,args) = parser.parse_args()
     root=module_path()
     config=ConfigParser()
+    if len(args) != 1:
+        parser.error("Configuration file not specified")
     optfile = args[0]
     optfile_generated = optfile+".generated"
     config.read(optfile)

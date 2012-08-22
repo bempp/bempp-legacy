@@ -26,19 +26,46 @@
 namespace Fiber
 {
 
-struct QuadratureOptions
+/** \brief Options controlling the order of numerical quadrature.
+ *
+ *  This class can be used to specify the order of numerical quadrature to be
+ *  used to approximate a certain class of integrals. The order can be set
+ *  either as absolute or as relative with respect to some default value
+ *  determined by the code doing the integration. */
+class QuadratureOptions
 {
-   QuadratureOptions() : mode(ORDER_INCREMENT), orderIncrement(0),order(0) {
+public:
+    /** \brief Construct a QuadratureOptions object corresponding
+     *  to a default integration order. */
+    QuadratureOptions() : m_relative(true), m_value(0) {
     }
 
-    enum Mode {
-        ORDER_INCREMENT, EXACT_ORDER
-    } mode;
+    /** \brief Set quadrature order to \p order. */
+    void setAbsoluteQuadratureOrder(int order) {
+        m_relative = false;
+        m_value = order;
+    }
 
-    int orderIncrement;
-    int order;
+    /** \brief Set quadrature order to a default value plus \p offset. */
+    void setRelativeQuadratureOrder(int offset) {
+        m_relative = true;
+        m_value = offset;
+    }
+
+    /** \brief Get quadrature order assuming that its default value is
+     *  \p defaultOrder. */
+    int quadratureOrder(int defaultOrder) const {
+        if (m_relative)
+            return defaultOrder + m_value;
+        else
+            return m_value;
+    }
+
+private:
+    bool m_relative;
+    int m_value;
 };
 
-}
+} // namespace Fiber
 
 #endif

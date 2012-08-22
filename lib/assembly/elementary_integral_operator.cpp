@@ -37,6 +37,7 @@
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/collection_of_basis_transformations.hpp"
 #include "../fiber/quadrature_strategy.hpp"
+#include "../fiber/serial_blas_region.hpp"
 #include "../fiber/local_assembler_for_operators.hpp"
 #include "../grid/entity.hpp"
 #include "../grid/entity_iterator.hpp"
@@ -287,9 +288,12 @@ assembleWeakFormInDenseMode(
             maxThreadCount = parallelOptions.maxThreadCount();
     }
     tbb::task_scheduler_init scheduler(maxThreadCount);
-    tbb::parallel_for(tbb::blocked_range<size_t>(0, trialElementCount),
-                      Body(testIndices, testGlobalDofs, trialGlobalDofs,
-                           assembler, result, mutex));
+    {
+        Fiber::SerialBlasRegion region;
+        tbb::parallel_for(tbb::blocked_range<size_t>(0, trialElementCount),
+                          Body(testIndices, testGlobalDofs, trialGlobalDofs,
+                               assembler, result, mutex));
+    }
 
     //// Old serial code (TODO: decide whether to keep it behind e.g. #ifndef PARALLEL)
     //    std::vector<arma::Mat<ValueType> > localResult;

@@ -35,7 +35,7 @@ namespace Bempp
 template <typename BasisFunctionType>
 PiecewiseConstantScalarSpace<BasisFunctionType>::
 PiecewiseConstantScalarSpace(Grid& grid) :
-     ScalarSpace<BasisFunctionType>(grid)
+     ScalarSpace<BasisFunctionType>(grid), m_view(this->m_grid.leafView())
 {
 }
 
@@ -64,6 +64,8 @@ ElementVariant PiecewiseConstantScalarSpace<BasisFunctionType>::elementVariant(
         const Entity<0>& element) const
 {
     GeometryType type = element.type();
+    if (type.dim() == 1)
+        return 2;
     if (type.isTriangle())
         return 3;
     else
@@ -83,7 +85,6 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::setElementVariant(
 template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::assignDofs()
 {
-    m_view = this->m_grid.leafView();
     const Mapper& mapper = m_view->elementMapper();
     std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
 

@@ -191,11 +191,11 @@ public:
      *  \f$S\f$ denotes the surface on which the domain function space \f$X\f$
      *  is defined and which is represented by the grid returned by
      *  <tt>domain.grid()</tt>, \f$\phi_j\f$ is a _trial function_ from the
-     *  space \f$Y'\f$ dual to the range of the operator, \f$Y\$, and
+     *  space \f$Y'\f$ dual to the range of the operator, \f$Y\f$, and
      *  \f$\psi_k\f$ is a _test function_ from the domain space \f$X\f$.
      */
-    shared_ptr<DiscreteBoundaryOperator<ResultType> > assembleWeakForm(
-            const Context<BasisFunctionType, ResultType>& context) const;
+    shared_ptr<DiscreteBoundaryOperator<ResultType_> > assembleWeakForm(
+            const Context<BasisFunctionType_, ResultType_>& context) const;
 
 protected:
     /** @} */
@@ -208,8 +208,8 @@ protected:
             shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
             shared_ptr<GeometryFactory>& testGeometryFactory,
             shared_ptr<GeometryFactory>& trialGeometryFactory,
-            shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
-            shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+            shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType_>*> >& testBases,
+            shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType_>*> >& trialBases,
             shared_ptr<Fiber::OpenClHandler>& openClHandler,
             bool& cacheSingularIntegrals) const;
 

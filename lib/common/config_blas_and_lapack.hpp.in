@@ -18,31 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_accuracy_options_hpp
-#define fiber_accuracy_options_hpp
+#ifndef bempp_config_blas_and_lapack_hpp
+#define bempp_config_blas_and_lapack_hpp
 
-#include "../common/common.hpp"
-
-#include "quadrature_options.hpp"
-
-namespace Fiber
-{
-
-/** \brief Options controlling quadrature accuracy. */
-struct AccuracyOptions
-{
-public:
-    /** \brief Options controlling integration of regular functions
-     *  on single elements */
-    QuadratureOptions singleRegular;
-    /** \brief Options controlling integration of regular functions
-     *  on pairs of elements */
-    QuadratureOptions doubleRegular;
-    /** \brief Options controlling integration of singular functions
-     *  on pairs of elements */
-    QuadratureOptions doubleSingular;
-};
-
-} // namespace Fiber
+#cmakedefine WITH_MKL
+#cmakedefine WITH_GOTOBLAS
+#cmakedefine WITH_OPENBLAS
 
 #endif

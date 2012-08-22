@@ -18,29 +18,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_accuracy_options_hpp
-#define fiber_accuracy_options_hpp
+#ifndef bempp_serial_blas_region_hpp
+#define bempp_serial_blas_region_hpp
 
 #include "../common/common.hpp"
-
-#include "quadrature_options.hpp"
 
 namespace Fiber
 {
 
-/** \brief Options controlling quadrature accuracy. */
-struct AccuracyOptions
+/** \brief Management of the number of threads used by BLAS and LAPACK. */
+class SerialBlasRegion
 {
 public:
-    /** \brief Options controlling integration of regular functions
-     *  on single elements */
-    QuadratureOptions singleRegular;
-    /** \brief Options controlling integration of regular functions
-     *  on pairs of elements */
-    QuadratureOptions doubleRegular;
-    /** \brief Options controlling integration of singular functions
-     *  on pairs of elements */
-    QuadratureOptions doubleSingular;
+    /** \brief Make BLAS and LAPACK use only 1 thread. */
+    SerialBlasRegion();
+    /** \brief Restore the original number of threads used by BLAS and LAPACK. */
+    ~SerialBlasRegion();
+
+private:
+    int m_originalThreadCount;
 };
 
 } // namespace Fiber

@@ -1,0 +1,102 @@
+[Main]
+
+# Specify your system architecture. Allowed values: intel64 (for
+# 64-bit systems), ia32 (for 32-bit systems), ia64 (for Intel Itanium
+# systems). Example:
+
+# architecture=intel64
+
+# Specify the prefix of the installation directory.  BEM++ and its
+# dependencies will be installed in prefix/bempp. Example:
+
+# prefix=/opt
+
+# Specify how many processes to use for building. Example:
+
+# build_jobs=2
+
+[Bempp]
+
+# Specify the directory where BEM++ should be built. Example:
+
+# build_dir=/home/myname/src/bempp-build
+
+# Specify whether the installer should compile BEM++ straight after
+# installing its dependencies. Normally this should be set to 'yes';
+# set to 'no' only if you want to change some BEM++ compilation
+# options manually. Example:
+
+# build=yes
+
+[MKL]
+
+# If you want to use BLAS and LAPACK from Intel MKL, uncomment the
+# following line
+
+# enable_mkl=yes
+
+# and specify where MKL is located. There are three possibilities:
+
+# (1) If you want to use an MKL distribution already installed on your disk,
+#     uncomment the following line
+
+# mkl_source=installed
+
+#     and set the following variable to the location of
+#     libmkl_rt.so/libmkl_rt.dylib. Example:
+
+# mkl_rt_lib=/opt/intel/mkl/intel64/libmkl_rt.so
+
+# (2) If you have an archive file containing the MKL redistributables
+#     and you want to install MKL specifically for BEM++, uncomment
+#     the following line
+
+# mkl_source=redistributable
+
+#     and set the following variable to the location of the archive
+#     file. Example:
+
+# mkl_tarball=/home/myname/mkl_linux_intel64.tar.gz
+
+# (3) If you intend to use the Enthought Python Distribution (EPD) to
+#     run Python scripts employing BEM++, you are strongly recommended
+#     to use the MKL version provided with EPD. Simply uncomment the
+#     following line
+
+# mkl_source=enthought
+
+#     and run the installer of BEM++ (bempp_setup.py) with Enthought
+#     Python. The location of the MKL libraries provided by EPD will
+#     be determined automatically.
+
+[BLAS]
+
+# If you want to use another BLAS library than Intel MKL, specify its
+# location in the following variable. You may specify several paths at
+# once by separating them with semicolons. Example:
+
+# lib=/usr/lib/libblas.so
+
+[LAPACK]
+
+# If you want to use another BLAS library than Intel MKL, specify its
+# location in the following variable. You may specify several paths at
+# once by separating them with semicolons. Example:
+
+# lib=/usr/lib/liblapack.so
+
+[AHMED]
+
+# Uncomment the following line if you have downloaded the AHMED
+# library by Mario Bebendorf from
+# http://bebendorf.ins.uni-bonn.de/AHMED.html and you want to compile
+# and install it along with BEM++. This library enables BEM++ to use
+# the adaptive cross approximation algorithm to speed up calculations.
+
+# enable_ahmed=yes
+
+# If you have set enable_ahmed to yes, specify the path to the archive 
+# file with the sources of AHMED. Example:
+
+# file_name=/home/myname/AHMED-1.0.tar.gz
+

@@ -31,6 +31,18 @@ namespace Bempp
 
 using Fiber::AccuracyOptions;
 
+/** \brief Numerical quadrature strategy.
+ *
+ *  A quadrature strategy provides functions constructing local assemblers used
+ *  to discretize boundary operators and user-defined functions. A particular
+ *  quadrature strategy determines how the integrals involved in this
+ *  discretization are evaluated.
+ *
+ *  The local assemblers constructed by this class use numerical quadrature to
+ *  evaluate the necessary integrals. Singular integrals are transformed into
+ *  regular ones as described in S. Sauter, Ch. Schwab, "Boundary Element
+ *  Methods" (2010). Quadrature accuracy can be influenced by parameters given
+ *  during the construction. */
 template <typename BasisFunctionType, typename ResultType>
 class NumericalQuadratureStrategy :
         public Fiber::NumericalQuadratureStrategy<
@@ -40,10 +52,73 @@ private:
     typedef Fiber::NumericalQuadratureStrategy<
     BasisFunctionType, ResultType, GeometryFactory> Base;
 public:
-    /** \brief Construct a local assembler factory with default accuracy settings. */
+    /** \brief Construct a numerical quadrature strategy with default accuracy settings.
+     *
+     *  Calling this constructor is equivalent to calling the other constructor
+     *  with \p accuracyOptions equal to <tt>AccuracyOptions()</tt>. */
     NumericalQuadratureStrategy();
 
-    /** \brief Construct a local assembler factory with specified accuracy settings. */
+    /** \brief Construct a numerical quadrature strategy with prescribed
+     *  accuracy settings.
+     *
+     *  The quadrature order for different types of integrals is determined
+     *  in the following way:
+     *
+     *    <ul>
+     *    <li> The field <tt>accuracyOptions.doubleRegular</tt> controls the
+     *      evaluation of double integrals of the form
+     *          \f[ \int_{\Gamma} \int_{\Sigma} f(x, y) \,
+     *              d\Gamma(x) \, d\Sigma(y), \f]
+     *      where \f$\Gamma\f$ and \f$\Sigma\f$ are two disjoint elements and
+     *      \f$f(x, y)\f$ is a function regular for \f$x \in \Gamma\f$ and \f$y
+     *      \in \Sigma\f$. An integral of the above form is approximated by
+     *          \f[ \sum_{i=1}^m \sum_{j=1}^n w_i^m w_j^n \, f(x_i^m, y_j^n), \f]
+     *      where \f$x_i^m\f$ and \f$y_j^n\f$ are appropriate quadrature points
+     *      and \f$w_i^m\f$ and \f$w_j^n\f$ are the corresponding quadrature
+     *      weights. By default, these are chosen so that the order of accuracy
+     *      of the quadrature of each element is equal to the maximum degree of
+     *      the polynomials belonging to the basis attached to that element. In
+     *      other words, the quadrature rule is chosen so that a function
+     *      \f$f(x, y)\f$ being a product of two polynomials, \f$u(x)\f$ and
+     *      \f$v(y)\f$, with degrees equal to the orders of the bases attached
+     *      to elements \f$\Gamma\f$ and \f$\Sigma\f$ would be integrated
+     *      exactly. For instance, for a pair of elements endowed with linear
+     *      bases, single-point quadrature is by default used on both elements.
+     *
+     *      This default integration order may be insufficient. It can be
+     *      increased e.g. by calling
+     *      \code
+     *      accuracyOptions.doubleRegular.setRelativeQuadratureOrder(n);
+     *      \endcode
+     *      where \c n is the desired increase of the order of accuracy of the
+     *      quadrature on each element above the default value. Alternatively,
+     *      \code
+     *      accuracyOptions.doubleRegular.setAbsoluteQuadratureOrder(n);
+     *      \endcode
+     *      can be called to use a quadrature rule with order of accuracy \c n
+     *      on each element.
+     *
+     *    <li> The field <tt>accuracyOptions.doubleSingular</tt> controls the
+     *      evaluation of double integrals of the same form as above, but on
+     *      pairs of elements \f$\Gamma\f$ and \f$\Sigma\f$ sharing at least a
+     *      single point and with the function \f$f(x, y)\f$ having a
+     *      singularity at \f$x = y\f$. Such integrals are evaluated by first
+     *      applying an appropriate coordinate transformation to remove the
+     *      singularity of the integrand, as described in the book of Sauter
+     *      and Schwab cited before, and then approximating the new integral
+     *      with a tensor-product Gaussian quadrature rule with order of
+     *      accuracy in each dimension choosen by default as \f$\max(p, q) +
+     *      5\f$, where \f$p\f$ and \f$q\f$ are the orders of the bases
+     *      attached to elements \f$\Gamma\f$ and \f$\Sigma\f$.
+     *
+     *    <li> The field <tt>accuracyOptions.singleRegular</tt> controls
+     *      the evaluation of integrals over single elements
+     *          \f[ \int_{\Gamma} f(x) \, d\Gamma(x) \f]
+     *      of regular functions \f$f(x)\f$. They are evaluated using a
+     *      Gaussian quadrature rule with order of accuracy taken by default as
+     *      twice the order of the basis attached to the element \f$\Gamma\f$.
+     *    </ul>
+     */
     explicit NumericalQuadratureStrategy(
             const AccuracyOptions& accuracyOptions);
 };

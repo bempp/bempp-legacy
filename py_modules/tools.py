@@ -44,7 +44,7 @@ def writeOptions(root,config):
    
     fname=root+"/.options.cfg"
     f=open(fname,'w')
-    f.write("#This file is created automatically by bemppInstall.py\n")
+    f.write("# This file is created automatically by bempp_setup.py\n")
     for section in config.sections():
         for option in config.items(section):
             f.write(section+"_"+option[0]+"="+"\""+option[1]+"\""+"\n")

@@ -26,6 +26,8 @@
 #include "nonseparable_numerical_test_kernel_trial_integrator.hpp"
 #include "separable_numerical_test_kernel_trial_integrator.hpp"
 
+#include "../fiber/serial_blas_region.hpp"
+
 #include <tbb/parallel_for.h>
 #include <tbb/task_scheduler_init.h>
 
@@ -526,10 +528,13 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
         tbb::task_scheduler_init scheduler(maxThreadCount);
         typedef SingularIntegralCalculatorLoopBody<
                 BasisFunctionType, KernelType, ResultType> Body;
-        tbb::parallel_for(tbb::blocked_range<size_t>(0, activeElementPairs.size()),
-                          Body(activeIntegrator,
-                               activeElementPairs, activeTestBasis, activeTrialBasis,
-                               localResult));
+        {
+            Fiber::SerialBlasRegion region;
+            tbb::parallel_for(tbb::blocked_range<size_t>(0, activeElementPairs.size()),
+                              Body(activeIntegrator,
+                                   activeElementPairs, activeTestBasis, activeTrialBasis,
+                                   localResult));
+        }
 
         {
             ElementIndexPairIterator pairIt = elementIndexPairs.begin();
@@ -592,16 +597,12 @@ regularOrder(int elementIndex, ElementType elementType) const
 
     const QuadratureOptions& options = m_accuracyOptions.doubleRegular;
 
-    if (options.mode == QuadratureOptions::EXACT_ORDER)
-        return options.order;
-    else {
-        // Order required for exact quadrature on affine elements with a constant kernel
-        int elementOrder = (elementType == TEST ?
-                                (*m_testBases)[elementIndex]->order() :
-                                (*m_trialBases)[elementIndex]->order());
-        int minimumOrder = ((elementOrder + 1) + 1) / 2;
-        return minimumOrder + options.orderIncrement;
-    }
+    int elementOrder = (elementType == TEST ?
+                            (*m_testBases)[elementIndex]->order() :
+                            (*m_trialBases)[elementIndex]->order());
+    // Order required for exact quadrature on affine elements with a constant kernel
+    int defaultAccuracyOrder = elementOrder;
+    return options.quadratureOrder(defaultAccuracyOrder);
 }
 
 template <typename BasisFunctionType, typename KernelType,
@@ -618,16 +619,11 @@ singularOrder(int elementIndex, ElementType elementType) const
 
     const QuadratureOptions& options = m_accuracyOptions.doubleSingular;
 
-    if (options.mode == QuadratureOptions::EXACT_ORDER)
-        return options.order;
-    else {
-        // Order required for exact quadrature on affine elements with a constant kernel
-        int elementOrder = (elementType == TEST ?
-                                (*m_testBases)[elementIndex]->order() :
-                                (*m_trialBases)[elementIndex]->order());
-        int minimumOrder = ((elementOrder + 1) + 1) / 2;
-        return minimumOrder + 3 + options.orderIncrement;
-    }
+    int elementOrder = (elementType == TEST ?
+                            (*m_testBases)[elementIndex]->order() :
+                            (*m_trialBases)[elementIndex]->order());
+    int defaultAccuracyOrder = elementOrder + 5;
+    return options.quadratureOrder(defaultAccuracyOrder);
 }
 
 template <typename BasisFunctionType, typename KernelType,

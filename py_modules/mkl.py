@@ -27,44 +27,67 @@ def download(root,config):
 def prepare(root,config):
 
     prefix = config.get('Main','prefix')
-    lib_dir=prefix+"/bempp/lib"
-    blas_files = ['libmkl_intel_lp64','libmkl_sequential','libmkl_core']
-    lapack_files = ['libmkl_intel_lp64']
+    lib_dir = prefix+"/bempp/lib"
 
-    enable_mkl = tools.to_bool(tools.setDefaultConfigOption(config,'Mkl','enable_mkl','no'))
-    enthought_mkl = tools.to_bool(tools.setDefaultConfigOption(config,'Mkl','enable_enthought_mkl','no'))
-
-    
-    if enthought_mkl:
-        print "Creating symbolic links to Enthought MKL Libraries"
-        cwd = os.getcwd()
-        mkl_dir = sys.prefix+"/lib"
-        cmd_str = "ln -s "+mkl_dir+"/libmkl* ."
-        os.chdir(lib_dir)
-        subprocess.check_call(cmd_str,shell=True)
-        os.chdir(cwd)
-    elif enable_mkl:
-        print "Extracting Mkl"
-        if not config.has_option('Mkl','file_name'):
-            raise Exception('Need to give full path of tar.gz archived file with Mkl redistributables')
-        mkl_fname=config.get('Mkl','file_name')
-        tools.extract_file(mkl_fname,prefix+"/bempp/lib/")
-
-    if enable_mkl or enthought_mkl:
-        blas_lib = ""
-        lapack_lib = ""
-        if sys.platform.startswith('darwin'):
-            for f in blas_files: blas_lib = blas_lib+";"+lib_dir+"/"+f+".dylib"
-            for f in lapack_files: lapack_lib = lapack_lib+";"+lib_dir+"/"+f+".dylib"                
-        elif sys.platform.startswith('linux'):
-            for f in blas_files: blas_lib = blas_lib+";"+lib_dir+"/"+f+".so"
-            for f in lapack_files: lapack_lib = lapack_lib+";"+lib_dir+"/"+f+".so"                    
-        else:
-            raise Exception("Platform not supported")
-        tools.setDefaultConfigOption(config,'BLAS','lib',blas_lib[1:],overwrite=True)
-        tools.setDefaultConfigOption(config,'LAPACK','lib',lapack_lib[1:],overwrite=True)
+    enable_mkl = tools.to_bool(tools.setDefaultConfigOption(config,'MKL',
+                                                            'enable_mkl','no'))
+    if enable_mkl:
+        if config.has_option('BLAS', 'lib') and config.get('BLAS', 'lib'):
+            print ("Warning: contents of the option 'lib' in section 'BLAS' "
+                   "will be ignored, since enable_mkl is set")
+        if config.has_option('LAPACK', 'lib') and config.get('LAPACK', 'lib'):
+            print ("Warning: contents of the option 'lib' in section 'LAPACK' "
+                   "will be ignored, since enable_mkl is set")
         
-
+        # if mkl_source is not set, we'll get a sensible exception message
+        mkl_source = config.get('MKL','mkl_source').lower()
+        if mkl_source == 'installed':
+            mkl_rt_lib = config.get('MKL','mkl_rt_lib')
+            if not mkl_rt_lib:
+                raise Exceptions("Option 'mkl_rt_lib' in section 'MKL' "
+                                 "must not be empty")
+            if not os.path.isfile(mkl_rt_lib):
+                raise Exception("The path from option 'mkl_rt_lib' "
+                                "in section 'MKL' is invalid")
+            blas_lib = lapack_lib = mkl_rt_lib
+        else:
+            mkl_files = ['libmkl_rt']
+            if mkl_source == 'redistributable':
+                mkl_tarball=config.get('MKL','mkl_tarball')
+                print 'Extracting MKL redistributables'
+                tools.extract_file(mkl_tarball,prefix+"/bempp/lib/")
+            elif mkl_source == 'enthought':
+                print 'Creating symbolic links to Enthought MKL libraries'
+                mkl_dir = sys.prefix+"/lib"
+                if sys.platform.startswith('darwin'):
+                    extension = ".dylib"
+                elif sys.platform.startswith('linux'):
+                    extension = ".so"
+                else:
+                    raise Exception("Unsupported platform: '"+sys.platform+"'")
+                for f in mkl_files:
+                    path = mkl_dir+"/"+f+extension
+                    if not os.path.isfile(path):
+                        raise Exception("File '"+path+"' not found")
+                os.symlink(mkl_dir+"/libmkl_rt"+extension,
+                           lib_dir+"/libmkl_rt"+extension)
+            else:
+                raise Exception("Option 'mkl_source' in section 'MKL' must be "
+                                "either 'installed', 'redistributable' or "
+                                "'enthought'")
+            blas_lib = ""
+            if sys.platform.startswith('darwin'):
+                for f in mkl_files: blas_lib = blas_lib+";"+lib_dir+"/"+f+".dylib"
+            elif sys.platform.startswith('linux'):
+                for f in mkl_files: blas_lib = blas_lib+";"+lib_dir+"/"+f+".so"
+            else:
+                raise Exception("Platform not supported")
+            blas_lib = blas_lib[1:] # remove leading semicolon
+            lapack_lib = blas_lib
+            
+        tools.setDefaultConfigOption(config,'BLAS','lib',blas_lib,overwrite=True)
+        tools.setDefaultConfigOption(config,'LAPACK','lib',lapack_lib,overwrite=True)        
+        
 def configure(root,config):
     pass
              

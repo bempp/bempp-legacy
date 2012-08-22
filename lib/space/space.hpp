@@ -53,7 +53,8 @@ template <int codim> class EntityPointer;
 
 template <typename ValueType> class DiscreteBoundaryOperator;
 
-/** \brief Function space.
+/** \ingroup space
+ *  \brief Function space.
  *
  *  This class represents a (finite) space of functions defined on a grid.
  *

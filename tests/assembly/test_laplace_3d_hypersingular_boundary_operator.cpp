@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works, ValueType, kernel_types)
 
     AssemblyOptions assemblyOptions;
     AccuracyOptions accuracyOptions;
-    accuracyOptions.doubleRegular.orderIncrement = 5;
+    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(5);
     NumericalQuadratureStrategy<BFT, RT> quadStrategy(accuracyOptions);
 
     Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);

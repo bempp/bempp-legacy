@@ -506,7 +506,7 @@ RECURSIVE              = YES
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
 EXCLUDE                = @CMAKE_CURRENT_SOURCE_DIR@/fiber/CL/cl.hpp \
-                         @CMAKE_CURRENT_SOURCE_DIR@/fiber/CL/commontypes.h
+                         @CMAKE_CURRENT_SOURCE_DIR@/fiber/CL/commontypes.h \
                          @CMAKE_CURRENT_SOURCE_DIR@/fiber/quadrature
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 

@@ -167,7 +167,12 @@ private:
             const shared_ptr<const OpenClHandler>& openClHandler) const = 0;
 };
 
-// complex ResultType
+/** \brief Base class for quadrature strategies.
+ *
+ *  A quadrature strategy provides functions constructing local assemblers used
+ *  to discretize boundary operators and user-defined functions. A particular
+ *  quadrature strategy determines how the integrals involved in this
+ *  discretization are evaluated. */
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable = void>
 class QuadratureStrategy :
@@ -278,7 +283,15 @@ private:
             const shared_ptr<const OpenClHandler>& openClHandler) const = 0;
 };
 
-// real ResultType
+/** \brief Base class for quadrature strategies (variant with real ResultType).
+ *
+ *  A quadrature strategy provides functions constructing local assemblers used
+ *  to discretize boundary operators and user-defined functions. A particular
+ *  quadrature strategy determines how the integrals involved in this
+ *  discretization are evaluated.
+ *
+ *  This is the template specialization for real result types, therefore it
+ *  only accepts real-valued kernels and user functions. */
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 class QuadratureStrategy<BasisFunctionType, ResultType, GeometryFactory,
     typename boost::enable_if<boost::is_same<ResultType, typename ScalarTraits<ResultType>::RealType> >::type > :

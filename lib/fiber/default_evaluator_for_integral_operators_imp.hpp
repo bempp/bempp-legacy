@@ -346,17 +346,11 @@ int DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
 ResultType, GeometryFactory>::farFieldQuadOrder(
         const Basis<BasisFunctionType>& basis) const
 {
-    if (m_quadratureOptions.mode == QuadratureOptions::EXACT_ORDER)
-        return m_quadratureOptions.order;
-    else
-    {
-        // Order required for exact quadrature on affine elements with kernel
-        // approximated by a polynomial of order identical with that of
-        // the basis
-        int elementOrder = (basis.order());
-        int minimumOrder = ((2 * elementOrder + 1) + 1) / 2;
-        return minimumOrder + m_quadratureOptions.orderIncrement;
-    }
+    int elementOrder = (basis.order());
+    // Order required for exact quadrature on affine elements with kernel
+    // approximated by a polynomial of order identical with that of the basis
+    int defaultQuadratureOrder = 2 * elementOrder;
+    return m_quadratureOptions.quadratureOrder(defaultQuadratureOrder);
 }
 
 template <typename BasisFunctionType, typename KernelType,
