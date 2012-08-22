@@ -28,21 +28,39 @@
 namespace Bempp
 {
 
+/** \brief Elementary boundary integral operator with weak form whose integrand
+ *  is a regular function. */
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class ElementaryRegularIntegralOperator :
         public ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>
 {
     typedef ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType> Base;
 public:
+    /** \copydoc ElementaryIntegralOperator::BasisFunctionType */
+    typedef typename Base::BasisFunctionType BasisFunctionType;
+    /** \copydoc ElementaryIntegralOperator::KernelType */
+    typedef typename Base::KernelType KernelType;
+    /** \copydoc ElementaryIntegralOperator::ResultType */
+    typedef typename Base::ResultType ResultType;
+    /** \copydoc ElementaryIntegralOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
+    /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
+    typedef typename Base::CollectionOfBasisTransformations
+    CollectionOfBasisTransformations;
+    /** \copydoc ElementaryIntegralOperator::CollectionOfKernels */
+    typedef typename Base::CollectionOfKernels CollectionOfKernels;
+    /** \copydoc ElementaryIntegralOperator::TestKernelTrialIntegral */
+    typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
+    /** \copydoc AbstractBoundaryOperator::AbstractBoundaryOperator */
     ElementaryRegularIntegralOperator(
             const shared_ptr<const Space<BasisFunctionType> >& domain,
             const shared_ptr<const Space<BasisFunctionType> >& range,
             const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-            const std::string& label = "") :
-       Base(domain, range, dualToRange, label) {
-   }
+            const std::string& label = "",
+            const Symmetry symmetry = NO_SYMMETRY) :
+       Base(domain, range, dualToRange, label, symmetry) {
+    }
 
     virtual bool isRegular() const {
         return true;
