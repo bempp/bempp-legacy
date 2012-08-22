@@ -33,7 +33,7 @@ namespace Bempp
  *  equation in 3D.
  *
  *  \tparam Impl
- *    Type of the internal implementation pointer.
+ *    Type of the internal implementation object.
  *  \tparam BasisFunctionType
  *    Type used to represent the values of basis functions.
  *  \tparam KernelType

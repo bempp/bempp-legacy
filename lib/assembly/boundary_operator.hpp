@@ -52,7 +52,9 @@ template <typename BasisFunctionType, typename ResultType> class GridFunction;
  *  notably the weakForm() function is not thread-safe. Instead, each thread
  *  should hold its own copy of a BoundaryOperator (note that copying
  *  BoundaryOperators is cheap -- the copy constructor is shallow).
- */
+ *
+ *  See the documentation of AbstractBoundaryOperator for the decription of the
+ *  template parameters \p BasisFunctionType and \p ResultType. */
 template <typename BasisFunctionType, typename ResultType>
 class BoundaryOperator
 {

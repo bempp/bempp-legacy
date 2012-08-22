@@ -161,7 +161,8 @@ private:
     shared_ptr<const AbstractBoundaryOperatorId> m_id;
 };
 
-/** \brief Construct a BoundaryOperator object wrapping an IdentityOperator.
+/** \relates IdentityOperator
+ *  \brief Construct a BoundaryOperator object wrapping an IdentityOperator.
  *
  *  This convenience function constructs an abstract identity operator and wraps
  *  it in a BoundaryOperator object.
