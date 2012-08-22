@@ -165,22 +165,6 @@ ElementaryIntegralOperator(const shared_ptr<const Space<BasisFunctionType> >& do
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-int
-ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-testComponentCount() const
-{
-    return testTransformations().argumentDimension();
-}
-
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
-int
-ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-trialComponentCount() const
-{
-    return trialTransformations().argumentDimension();
-}
-
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
 bool
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::isLocal() const
 {

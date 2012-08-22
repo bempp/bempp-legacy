@@ -77,8 +77,6 @@ public:
                                const std::string& label = "",
                                const Symmetry = NO_SYMMETRY);
 
-    virtual int trialComponentCount() const;
-    virtual int testComponentCount() const;
 
     virtual bool isLocal() const;
 
