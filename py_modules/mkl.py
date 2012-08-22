@@ -51,7 +51,10 @@ def prepare(root,config):
                                 "in section 'MKL' is invalid")
             blas_lib = lapack_lib = mkl_rt_lib
         else:
-            mkl_files = ['libmkl_rt']
+            mkl_enthought_files = ['libmkl_rt','libmkl_core','libmkl_intel','libmkl_intel_lp64','libmkl_intel_thread',
+			 'libmkl_p4m','libmkl_p4m3','libmkl_p4p','libmkl_sequential','libmkl_vml_avx',
+			 'libmkl_vml_p4m','libmkl_vml_p4m2','libmkl_vml_p4m3','libmkl_vml_p4p','libmkl_intel_ilp64']
+	    mkl_link_files = ['libmkl_rt'] # MKL files that BEMPP links against.
             if mkl_source == 'redistributable':
                 mkl_tarball=config.get('MKL','mkl_tarball')
                 print 'Extracting MKL redistributables'
@@ -65,21 +68,21 @@ def prepare(root,config):
                     extension = ".so"
                 else:
                     raise Exception("Unsupported platform: '"+sys.platform+"'")
-                for f in mkl_files:
+                for f in mkl_enthought_files:
                     path = mkl_dir+"/"+f+extension
                     if not os.path.isfile(path):
                         raise Exception("File '"+path+"' not found")
-                os.symlink(mkl_dir+"/libmkl_rt"+extension,
-                           lib_dir+"/libmkl_rt"+extension)
+                    os.symlink(mkl_dir+"/"+f+extension,
+                           lib_dir+"/"+f+extension)
             else:
                 raise Exception("Option 'mkl_source' in section 'MKL' must be "
                                 "either 'installed', 'redistributable' or "
                                 "'enthought'")
             blas_lib = ""
             if sys.platform.startswith('darwin'):
-                for f in mkl_files: blas_lib = blas_lib+";"+lib_dir+"/"+f+".dylib"
+                for f in mkl_link_files: blas_lib = blas_lib+";"+lib_dir+"/"+f+".dylib"
             elif sys.platform.startswith('linux'):
-                for f in mkl_files: blas_lib = blas_lib+";"+lib_dir+"/"+f+".so"
+                for f in mkl_link_files: blas_lib = blas_lib+";"+lib_dir+"/"+f+".so"
             else:
                 raise Exception("Platform not supported")
             blas_lib = blas_lib[1:] # remove leading semicolon
