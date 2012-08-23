@@ -23,51 +23,104 @@
 
 #include "../common/common.hpp"
 
-#include "config_trilinos.hpp"
+#include "bempp/common/config_trilinos.hpp"
 
 #ifdef WITH_TRILINOS
 
 #include "solver.hpp"
 
-#include "belos_solver_wrapper.hpp"
+#include "belos_solver_wrapper_fwd.hpp" // for default parameter lists
+#include <boost/scoped_ptr.hpp>
 
-#include "../common/armadillo_fwd.hpp"
+namespace Thyra
+{
+template <typename ValueType> class PreconditionerBase;
+} // namespace Thyra
 
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename ResultType> class LinearOperator;
+
+/** \ingroup linalg
+  * \brief Default Interface to the Belos Iterative solver package from Trilinos.
+  *
+  * This class provides an interface to various iterative solvers available via
+  * the Stratimikos Interface to Belos of Trilinos (see <a href="http://trilinos.sandia.gov/packages/docs/r10.10/packages/stratimikos/doc/html/index.html">Stratimikos documentation</a>).
+  * Convergence can be tested either in range space or
+  * in the dual space to the range space. A standard Galerkin discretisation of the form \f$Ax=b\f$,
+  * maps into the dual space of the range of the operator. By choosing to test in the range space the equation
+  * \f$M^\dagger Ax=M^\dagger b\f$ is solved, where \f$M\f$ is the mass matrix, mapping from the range space
+  * into its dual and \f$M^\dagger\f$ is its pseudoinverse.
+  *
+  */
 
 template <typename BasisFunctionType, typename ResultType>
 class DefaultIterativeSolver : public Solver<BasisFunctionType, ResultType>
 {
 public:
-    typedef typename ScalarTraits<ResultType>::RealType MagnitudeType;
+    typedef Solver<BasisFunctionType, ResultType> Base;
 
-    DefaultIterativeSolver(const LinearOperator<BasisFunctionType, ResultType>& linOp,
-                           const GridFunction<BasisFunctionType, ResultType>& gridFun);
+    /** \brief Constructor of the <tt>DefaultIterativeSolver</tt> class.
+      *
+      * \param[in] boundaryOp
+      *   Non-blocked boundary operator.
+      * \param[in] mode
+      *   Convergence test mode. Default: <tt>TEST_CONVERGENCE_IN_DUAL_TO_RANGE</tt>
+      *
+      */
 
-    void addPreconditioner(
+    DefaultIterativeSolver(
+            const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
+            ConvergenceTestMode::Mode mode =
+            ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
+
+    /** \brief Constructor of the <tt>DefaultIterativeSolver</tt> class.
+      *
+      * \param[in] boundaryOp
+      *   Blocked boundary operator
+      * \param[in] mode
+      *   Convergence test mode. Default: <tt>TEST_CONVERGENCE_IN_DUAL_TO_RANGE</tt>
+      *
+      */
+
+    DefaultIterativeSolver(
+            const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
+            ConvergenceTestMode::Mode mode =
+            ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
+    virtual ~DefaultIterativeSolver();
+
+    /** \brief Define a preconditioner.
+      *
+      * The preconditioner is passed on to the Belos Solver.
+      *
+      * \param[in] preconditioner
+      *   More information about <tt>Thyra::PreconditionerBase</tt> can be found in the
+      *   <a href="http://trilinos.sandia.gov/packages/docs/r10.10/packages/thyra/doc/html/classThyra_1_1PreconditionerBase.html">Thyra documentation</a>.
+      *
+      */
+
+    void setPreconditioner(
             const Teuchos::RCP<const Thyra::PreconditionerBase<ResultType> >& preconditioner);
+
+    /** \brief Initialize the parameters of the Belos iterative solver.
+      *
+      * \param[in] paramList
+      *   Parameter lists can be read in as xml files or defined in code. For default parameter lists
+      *   for Gmres and Cg see defaultGmresParameterList and defaultCgParameterList.
+      */
+
     void initializeSolver(const Teuchos::RCP<Teuchos::ParameterList>& paramList);
 
-    virtual void solve();
-
-    virtual GridFunction<BasisFunctionType, ResultType> getResult() const;
-    virtual typename Solver<BasisFunctionType, ResultType>::EStatus getStatus() const;
-    MagnitudeType getSolveTolerance() const;
-    std::string getSolverMessage() const;
-    Thyra::SolveStatus<MagnitudeType> getThyraSolveStatus() const;
+private:
+    virtual Solution<BasisFunctionType, ResultType> solveImplNonblocked(
+            const GridFunction<BasisFunctionType, ResultType>& rhs) const;
+    virtual BlockedSolution<BasisFunctionType, ResultType> solveImplBlocked(
+            const std::vector<GridFunction<BasisFunctionType, ResultType> >&
+            rhs) const;
 
 private:
-    BelosSolverWrapper<ResultType> m_belosSolverWrapper;
-    const Space<BasisFunctionType>& m_space;
-    Teuchos::RCP<Thyra::MultiVectorBase<ResultType> > m_rhs;
-
-    // as long as a GridFunction is initialised with an Armadillo array
-    // rather than a Vector, this is the right format for solution storage
-    arma::Col<ResultType> m_sol;
-    Thyra::SolveStatus<MagnitudeType> m_status;
+    struct Impl;
+    boost::scoped_ptr<Impl> m_impl;
 };
 
 } // namespace Bempp

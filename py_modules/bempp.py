@@ -19,38 +19,51 @@
 #THE SOFTWARE.
 
 import os,urllib,shutil,subprocess,sys
-from py_modules.tools import extract_file, to_bool, setDefaultConfigOption
+from py_modules import tools
 from py_modules import python_patch as py_patch
 
 
+def download(root,config):
+    pass
 
+def prepare(root,config):
 
-
-def configureBempp(root,config):
-    """Prepare the build of Bempp """
-
-    debug=setDefaultConfigOption(config,'Bempp','enable_debug','false')
-    if to_bool(debug):
+    debug=tools.setDefaultConfigOption(config,'Bempp','enable_debug','false')
+    if tools.to_bool(debug):
         config.set('Bempp','build_type','Debug')
     else:
         config.set('Bempp','build_type','Release')
 
-    setDefaultConfigOption(config,'Bempp','build','true')
-    setDefaultConfigOption(config,'Bempp','build_dir',root+'/build')
+    tools.setDefaultConfigOption(config,'Bempp','build','true')
+    tools.setDefaultConfigOption(config,'Bempp','build_dir',root+'/build')
 
+def configure(root,config):
+    """Prepare the build of Bempp """
+
+    tools.checkDeleteDirectory(config.get('Bempp','build_dir'))
+    subprocess.check_call("sh ./.build.sh",shell=True)
+
+def build(root,config):
+
+    build_dir = config.get('Bempp','build_dir')
+    do_build = tools.to_bool(config.get('Bempp','build'))
+    njobs = tools.to_int(config.get('Main','build_jobs'))
+    if do_build :
+        cwd = os.getcwd()
+        os.chdir(build_dir)
+        subprocess.check_call("make -j"+str(njobs),shell=True)
+        os.chdir(cwd)
+
+def install(root,config):
     
-def buildBempp(root,config):
-
-    subprocess.call("sh .build.sh",shell=True)
-    if to_bool(config.get('Bempp','build','true')):
-        prefix=config.get('Main','prefix')
-        build_dir=config.get('Bempp','build_dir')
-        if not os.path.isdir(prefix+"/bempp/lib"):
-            print "Build Bempp"
-            subprocess.call("cd "+build_dir+"; make install",shell=True)
-
+    build_dir = config.get('Bempp','build_dir')
+    do_build = tools.to_bool(config.get('Bempp','build'))
+    if do_build :
+        cwd = os.getcwd()
+        os.chdir(build_dir)
+        subprocess.check_call("make install",shell=True)
+        os.chdir(cwd)
         
-    
         
         
         

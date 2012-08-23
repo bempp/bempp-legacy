@@ -24,7 +24,7 @@
 
 #include "../common/common.hpp"
 
-#include "config_ahmed.hpp"
+#include "bempp/common/config_ahmed.hpp"
 
 template <class T1, class T2> class bemblcluster;
 template <class T> class mblock;

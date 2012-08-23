@@ -19,7 +19,7 @@
 #THE SOFTWARE.
 
 import os,urllib,shutil,subprocess,sys
-from py_modules.tools import extract_file, to_bool
+from py_modules import tools
 from py_modules import python_patch as py_patch
 
 
@@ -30,59 +30,83 @@ dune_urls=['http://www.dune-project.org/download/2.1/dune-common-2.1.0.tar.gz',
 	   'http://www.dune-project.org/download/2.1/dune-localfunctions-2.1.0.tar.gz']
 dune_names=['dune-common','dune-grid','dune-localfunctions']
 
+def download(root,config):
 
+    for i in range(3):
+        tools.download(dune_fnames[i],dune_urls[i],root+"/contrib/files")
 
-def configureDune(root,config):
-    """Download and configure if required"""
-
+def prepare(root,config):
 
     prefix=config.get('Main','prefix')
     dune_dir=prefix+"/bempp/contrib/dune"
-    
-    
 
-    download_dune=True
-    if not os.path.isdir(dune_dir): os.mkdir(dune_dir)
     # Download files
     for i in range(3):
-        if not os.path.isfile(root+"/contrib/files/"+dune_fnames[i]):
-            print "Download "+dune_names[i]
-            urllib.urlretrieve(dune_urls[i],root+"/contrib/files/"+dune_fnames[i])
-        # Extract and patch
-    for i in range(3):
-        if not os.path.isdir(root+"/contrib/dune/"+dune_names[i]):
-            print "Extract "+dune_names[i]
-            extract_file(root+"/contrib/files/"+dune_fnames[i],root+"/contrib/dune/")
-            os.rename(root+"/contrib/dune/"+dune_extract_names[i],root+"/contrib/dune/"+dune_names[i])
-        #shutil.copytree(root+"/contrib/dune/dune-foamgrid",prefix+"/bempp/contrib/dune/dune-foamgrid")
-            if i==1:
-                print "Apply patch for "+dune_names[i]
-                patch=py_patch.fromfile(root+"/contrib/patch/dune-grid.patch")
-                cwd=os.getcwd()
-                os.chdir(root+"/contrib/dune/dune-grid/dune/grid/utility")
-                patch.apply()
-                os.chdir(cwd)
+        tools.checkDeleteDirectory(root+"/contrib/dune/"+dune_names[i])
+        print "Extracting "+dune_names[i]
+        tools.extract_file(root+"/contrib/files/"+dune_fnames[i],root+"/contrib/dune/")
+        os.rename(root+"/contrib/dune/"+dune_extract_names[i],root+"/contrib/dune/"+dune_names[i])
+        if i==1:
+            print "Patching "+dune_names[i]
+            patch=py_patch.fromfile(root+"/contrib/patch/dune-grid.patch")
+            cwd=os.getcwd()
+            os.chdir(root+"/contrib/dune/dune-grid/dune/grid/utility")
+            patch.apply()
+            os.chdir(cwd)
 
-def buildDune(root,config):
-
+def configure(root,config):
     prefix=config.get('Main','prefix')
     dune_dir=root+"/contrib/dune"
-    dune_install_dir=prefix+"/bempp/contrib/dune"
+    dune_install_dir=prefix+"/bempp"
     cxx=config.get('Main','cxx')
     cc=config.get('Main','cc')
-    if not os.path.isdir(dune_install_dir+"/lib"):
-        print "Build Dune"
-        cwd=os.getcwd()
-        os.chdir(root+"/contrib/dune")
-        f=open('dune_opts.ops','w')
-        f.write("CONFIGURE_FLAGS=\" CXX="+cxx+" CC="+cc+" --enable-shared=yes --disable-documentation --enable-static=no --prefix="+dune_install_dir+"\"")
-        f.close()
-        subprocess.call("./dune-common/bin/dunecontrol --opts=./dune_opts.ops all",shell=True)
-        subprocess.call("./dune-common/bin/dunecontrol make install",shell=True)
-        os.remove('./dune_opts.ops')
-        os.chdir(cwd)
+    cflags = config.get('Main','cflags')
+    cxxflags = config.get('Main','cxxflags')
+    cwd=os.getcwd()
 
-        
+    njobs = tools.to_int(config.get('Main','build_jobs'))
+    config_string_common = "CC="+cc+" CXX="+cxx+" CFLAGS='"+cflags+"' CXXFLAGS='"+cxxflags+"' ./configure --enable-shared=yes --disable-documentation --enable-static=no --prefix="+dune_install_dir
+    config_string_grid = config_string_common+" --with-dune-common="+root+"/contrib/dune/dune-common"
+    config_string_localfunctions = config_string_grid+" --with-dune-grid="+root+"/contrib/dune/dune-grid"
+    os.chdir(root+"/contrib/dune/dune-common")
+    subprocess.check_call(config_string_common,shell=True)
+    subprocess.check_call("make -j"+str(njobs),shell=True)
+    os.chdir(cwd)
+
+    os.chdir(root+"/contrib/dune/dune-grid")
+    subprocess.check_call(config_string_grid,shell=True)
+    subprocess.check_call("make -j"+str(njobs),shell=True)
+    os.chdir(cwd)
+
+    os.chdir(root+"/contrib/dune/dune-localfunctions")
+    subprocess.check_call(config_string_localfunctions,shell=True)
+    subprocess.check_call("make -j"+str(njobs),shell=True)
+    os.chdir(cwd)
+
+def build(root,config):
+    pass # Has already been built in the configure step
+
+
+def install(root,config):
+
+    prefix=config.get('Main','prefix')
+    cwd=os.getcwd()
+
+    os.chdir(root+"/contrib/dune/dune-common")
+    subprocess.check_call("make install",shell=True)
+    os.chdir(cwd)
+
+    os.chdir(root+"/contrib/dune/dune-grid")
+    subprocess.check_call("make install",shell=True)
+    os.chdir(cwd)
+
+    os.chdir(root+"/contrib/dune/dune-localfunctions")
+    subprocess.check_call("make install",shell=True)
+    os.chdir(cwd)
+
+    os.chdir(root+"/contrib/dune/dune-foamgrid")
+    subprocess.check_call("find . -name '*.hh' | cpio -pdm "+prefix+"/bempp/include",shell=True)
+    os.chdir(cwd)
     
         
         

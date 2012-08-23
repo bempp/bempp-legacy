@@ -228,7 +228,7 @@ public:
      *  \param[in]  local
      *    Matrix whose \f$i\f$th column contains the local coordinates of a
      *    point \f$x_i \in D\f$.
-     *  \param[out]  jacobian_t
+     *  \param[out]  normal
      *    Matrix whose \f$i\f$th column containts components of a unit vector
      *    normal to the entity at \f$x_i\f$.
      */

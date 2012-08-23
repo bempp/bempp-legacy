@@ -4,6 +4,10 @@
 "Unique label for each type of entities that can occur in grids."
 %enddef 
 
+%define GeometryType_GeometryType_autodoc_docstring
+"__init__(*args) -> GeometryType"
+%enddef
+
 %define GeometryType_GeometryType_docstring
 "Constructor.
 

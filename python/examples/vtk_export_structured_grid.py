@@ -8,11 +8,11 @@
 import sys
 sys.path.append("..")
 
-import bempp
+import bempp.lib
 import numpy as np
 
 # Create the grid, the leaf view and its index set
-grid = bempp.GridFactory.createStructuredGrid("triangular", (0, 0), (1, 1), (5, 6))
+grid = bempp.lib.createGridFactory().createStructuredGrid("triangular", (0, 0), (1, 1), (5, 6))
 view = grid.leafView()
 index_set = view.indexSet()
 

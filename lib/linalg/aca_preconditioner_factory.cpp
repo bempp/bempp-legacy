@@ -18,16 +18,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "config_trilinos.hpp"
-#include "config_ahmed.hpp"
+#include "bempp/common/config_trilinos.hpp"
+#include "bempp/common/config_ahmed.hpp"
 
 #if defined(WITH_TRILINOS) && defined(WITH_AHMED)
 
 #include "aca_preconditioner_factory.hpp"
-#include "../assembly/discrete_aca_linear_operator.hpp"
-#include "../assembly/discrete_linear_operator.hpp"
+#include "../assembly/discrete_aca_boundary_operator.hpp"
+#include "../assembly/discrete_boundary_operator.hpp"
 #include "../assembly/aca_approximate_lu_inverse.hpp"
-#include "../assembly/discrete_aca_linear_operator.hpp"
+#include "../assembly/discrete_aca_boundary_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 #include <Teuchos_RCP.hpp>
@@ -41,10 +41,10 @@ namespace Bempp
 template<typename ValueType>
 Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> >
 AcaPreconditionerFactory<ValueType>::acaOperatorToPreconditioner(
-        const DiscreteLinearOperator<ValueType>& discreteOperator, const double delta)
+        const DiscreteBoundaryOperator<ValueType>& discreteOperator, const double delta)
 {
-    const DiscreteAcaLinearOperator<ValueType>& discreteAcaOperator =
-                DiscreteAcaLinearOperator<ValueType>::castToAca(discreteOperator);
+    const DiscreteAcaBoundaryOperator<ValueType>& discreteAcaOperator =
+                DiscreteAcaBoundaryOperator<ValueType>::castToAca(discreteOperator);
 
     Teuchos::RCP<const Thyra::LinearOpBase<ValueType> > precOp(
                 new AcaApproximateLuInverse<ValueType>(discreteAcaOperator,delta));

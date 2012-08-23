@@ -1,25 +1,31 @@
 #Configure All Option files
 configure_file(
 	${CMAKE_SOURCE_DIR}/lib/common/config_trilinos.hpp.in
-        ${CMAKE_BINARY_DIR}/include/common/config_trilinos.hpp)
+        ${CMAKE_BINARY_DIR}/include/bempp/common/config_trilinos.hpp)
 configure_file(
 	${CMAKE_SOURCE_DIR}/lib/common/config_ahmed.hpp.in
-        ${CMAKE_BINARY_DIR}/include/common/config_ahmed.hpp)
+        ${CMAKE_BINARY_DIR}/include/bempp/common/config_ahmed.hpp)
 configure_file(
 	${CMAKE_SOURCE_DIR}/lib/common/config_opencl.hpp.in
-        ${CMAKE_BINARY_DIR}/include/common/config_opencl.hpp)
+        ${CMAKE_BINARY_DIR}/include/bempp/common/config_opencl.hpp)
 configure_file(
         ${CMAKE_SOURCE_DIR}/lib/common/config_alugrid.hpp.in
-        ${CMAKE_BINARY_DIR}/include/common/config_alugrid.hpp)
+        ${CMAKE_BINARY_DIR}/include/bempp/common/config_alugrid.hpp)
 configure_file(
         ${CMAKE_SOURCE_DIR}/lib/common/config_data_types.hpp.in
-        ${CMAKE_BINARY_DIR}/include/common/config_data_types.hpp)
-include_directories(${CMAKE_BINARY_DIR}/include/common)
+        ${CMAKE_BINARY_DIR}/include/bempp/common/config_data_types.hpp)
+# TODO: check that at most one of WITH_MKL, WITH_GOTOBLAS and WITH_OPENBLAS is set
+configure_file(
+        ${CMAKE_SOURCE_DIR}/lib/common/config_blas_and_lapack.hpp.in
+        ${CMAKE_BINARY_DIR}/include/bempp/common/config_blas_and_lapack.hpp)
+include_directories(${CMAKE_BINARY_DIR}/include)
 
 # Find all source and header files
 file(GLOB_RECURSE LIB_SOURCES *.cpp)
 file(GLOB_RECURSE LIB_HEADERS *.hpp)
-file(GLOB COMMON_HEADERS ${CMAKE_BINARY_DIR}/include/common/*.hpp)
+file(GLOB COMMON_HEADERS ${CMAKE_BINARY_DIR}/include/bempp/common/*.hpp)
+file(GLOB CL_FILES ${CMAKE_SOURCE_DIR}/lib/fiber/CL/*.cl)
+file(GLOB CL_STRING_FILES ${CMAKE_SOURCE_DIR}/lib/fiber/CL/*.str)
 
 # Headers are ignored by make, but their list is used by IDEs
 # like Qt Creator and Visual Studio to generate project file list.
@@ -33,6 +39,7 @@ add_library(bempp SHARED
 
 # BLAS and LAPACK
 target_link_libraries(bempp ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+include_directories(${BLAS_INCLUDE_DIR} ${LAPACK_INCLUDE_DIR})
 
 # Boost
 include_directories(${BOOST_INCLUDE_DIR})
@@ -47,12 +54,12 @@ set_property(
 
 # AHMED
 if (WITH_AHMED)
-    target_link_libraries (bempp ${AHMED_LIB} ${METIS_LIB})
+    target_link_libraries (bempp ${AHMED_LIB})
     include_directories(${AHMED_INCLUDE_DIR})
 endif ()
 
 # Dune
-include_directories(${CMAKE_INSTALL_PREFIX}/bempp/contrib/dune/include)
+include_directories(${CMAKE_INSTALL_PREFIX}/bempp/include)
 target_link_libraries (bempp
 	${LIB_DUNE_COMMON}
 	${LIB_DUNE_GRID}
@@ -75,38 +82,28 @@ include_directories(${ARMADILLO_INCLUDE_DIR})
 
 # Install library
 install(TARGETS bempp
+  EXPORT BemppLibraryDepends
   RUNTIME DESTINATION bempp/bin
   LIBRARY DESTINATION bempp/lib
   ARCHIVE DESTINATION bempp/lib)
 
+# Install CMake files for the library
+install(EXPORT BemppLibraryDepends DESTINATION bempp/lib/cmake/Bempp)
+configure_file(
+	${CMAKE_SOURCE_DIR}/cmake/BemppConfig.cmake.in
+        ${CMAKE_BINARY_DIR}/lib/cmake/Bempp/BemppConfig.cmake)
+
+
 # Install headers
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/lib/ DESTINATION bempp/include FILES_MATCHING PATTERN "*.hpp")
-install(FILES ${COMMON_HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/bempp/include/common)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/lib/ DESTINATION bempp/include/bempp FILES_MATCHING PATTERN "*.hpp")
+install(FILES ${COMMON_HEADERS} DESTINATION bempp/include/bempp/common)
+install(FILES ${CL_FILES} DESTINATION bempp/include/bempp/fiber/CL)
+install(FILES ${CL_STRING_FILES} DESTINATION bempp/include/bempp/fiber/CL)
+install(FILES ${CMAKE_BINARY_DIR}/lib/cmake/Bempp/BemppConfig.cmake DESTINATION bempp/lib/cmake/Bempp)
 
 
 # Create correct rpath for installation
-SET(BEMPP_RPATH "\$ORIGIN/../contrib/dune/lib;\$ORIGIN/../contrib/trilinos/lib;\$ORIGIN/../contrib/boost/lib/boost-1.49.0")
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-   # Add Tbb for Mac
-   SET(BEMPP_RPATH "${BEMPP_RPATH};\$ORIGIN/../contrib/tbb/lib")
-endif()
-if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-   # Add Tbb for Linux
-   SET(BEMPP_RPATH "${BEMPP_RPATH};\$ORIGIN/../contrib/tbb/lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21")
-endif()
-if (WITH_AHMED)
-   get_filename_component(AHMED_PATH "${AHMED_LIB}" PATH)
-   get_filename_component(METIS_PATH "${METIS_LIB}" PATH)
-   # Check if it is not a system dir
-   LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${AHMED_PATH}" isSystemDir)
-   IF("${isSystemDir}" STREQUAL "-1")
-   		       SET(BEMPP_RPATH "${BEMPP_RPATH};${AHMED_PATH}")   		          		       
-   ENDIF("${isSystemDir}" STREQUAL "-1") 
-   LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${METIS_PATH}" isSystemDir)
-   IF("${isSystemDir}" STREQUAL "-1")
-   		       SET(BEMPP_RPATH "${BEMPP_RPATH};${METIS_PATH}")   		          		       
-   ENDIF("${isSystemDir}" STREQUAL "-1")    
-endif()
+SET(BEMPP_RPATH "\$ORIGIN")
 
 # Add a target to generate API documentation with Doxygen
 find_package(Doxygen)
@@ -122,4 +119,10 @@ endif(DOXYGEN_FOUND)
 
 SET_TARGET_PROPERTIES(bempp
 	PROPERTIES INSTALL_RPATH "${BEMPP_RPATH}")
-	
+
+# Do not explicitly link executables using libbempp with internal
+# dependencies of BEM++ (like the Trilinos libraries, AHMED, BLAS...)
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+SET_TARGET_PROPERTIES(bempp
+	PROPERTIES LINK_INTERFACE_LIBRARIES "")
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")	

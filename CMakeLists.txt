@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 2.8)
 project(bempp)
 enable_language(Fortran) # for BLAS
 
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -DNDEBUG -O3")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -DNDEBUG -O3")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DFIBER_CHECK_ARRAY_BOUNDS")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DFIBER_CHECK_ARRAY_BOUNDS")
+
 # Module Path
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
@@ -9,9 +14,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(BemppOptions)
 include(BemppFindDependencies)
 
-#add_definitions(-DFIBER_CHECK_ARRAY_BOUNDS)
 # set(CMAKE_CXX_FLAGS "-Wall -Wnon-virtual-dtor -Wno-sign-compare")
-
 
 # Main library
 add_subdirectory(lib)
@@ -31,8 +34,6 @@ endif ()
 if (WITH_TESTS)
   add_subdirectory(tests)
 endif (WITH_TESTS)
-
-
 
 # Uninstall target
 configure_file(

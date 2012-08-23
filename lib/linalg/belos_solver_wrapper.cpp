@@ -18,13 +18,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "config_trilinos.hpp"
+#include "bempp/common/config_trilinos.hpp"
 
 #ifdef WITH_TRILINOS
 
 #include "belos_solver_wrapper.hpp"
 
 #include "real_wrapper_of_complex_thyra_linear_operator.hpp"
+#include "real_wrapper_of_complex_thyra_preconditioner.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 #include <Teuchos_ArrayRCP.hpp>
@@ -35,6 +36,7 @@
 #include <Thyra_LinearOpWithSolveFactoryHelpers.hpp>
 #include <Thyra_SolveSupportTypes.hpp>
 #include <Thyra_OperatorVectorTypes.hpp>
+#include <Thyra_PreconditionerBase.hpp>
 
 #include <boost/type_traits/is_same.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -105,12 +107,22 @@ makeOperatorWithSolve(
     Teuchos::RCP<const Thyra::LinearOpBase<RealType> > realLinOp(
                 new RealWrapperOfComplexThyraLinearOperator<RealType>(linOp));
 
+    Teuchos::RCP<Thyra::LinearOpWithSolveBase<RealType> > result;
     if (preconditioner.is_null())
         // No preconditioner
-        return Thyra::linearOpWithSolve(invertibleOpFactory, realLinOp);
-    else
-        throw std::runtime_error("makeOperatorWithSolve(): preconditioners for"
-                                 "complex-valued operators are not supported yet");
+        result = Thyra::linearOpWithSolve(invertibleOpFactory, realLinOp);
+    else {
+        // Preconditioner defined
+        result = invertibleOpFactory.createOp();
+        Teuchos::RCP<const Thyra::LinearOpSourceBase<RealType> > realLinOpSourcePtr(
+                    new Thyra::DefaultLinearOpSource<RealType>(realLinOp));
+        Teuchos::RCP<const Thyra::PreconditionerBase<RealType> > realPreconditioner(
+                    new RealWrapperOfComplexThyraPreconditioner<RealType>(preconditioner));
+        invertibleOpFactory.initializePreconditionedOp(
+                    realLinOpSourcePtr, realPreconditioner, result.get(),
+                    Thyra::SUPPORT_SOLVE_UNSPECIFIED);
+    }
+    return result;
 }
 
 // Real ValueType
@@ -217,7 +229,12 @@ BelosSolverWrapper<ValueType>::BelosSolverWrapper(
 }
 
 template <typename ValueType>
-void BelosSolverWrapper<ValueType>::addPreconditioner(
+BelosSolverWrapper<ValueType>::~BelosSolverWrapper()
+{
+}
+
+template <typename ValueType>
+void BelosSolverWrapper<ValueType>::setPreconditioner(
         const Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> >& preconditioner)
 {
     m_preconditioner = preconditioner;
@@ -246,7 +263,12 @@ BelosSolverWrapper<ValueType>::solve(
 
 // nonmember functions
 
-Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(double tol)
+namespace
+{
+
+template <typename MagnitudeType>
+Teuchos::RCP<Teuchos::ParameterList>
+inline defaultGmresParameterListInternal(MagnitudeType tol, int maxIterationCount)
 {
     Teuchos::RCP<Teuchos::ParameterList> paramList(
                 new Teuchos::ParameterList("DefaultParameters"));
@@ -255,10 +277,13 @@ Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(double tol)
     Teuchos::ParameterList& pseudoBlockGmresList =
              solverTypesList.sublist("Pseudo Block GMRES");
     pseudoBlockGmresList.set("Convergence Tolerance", tol);
+    pseudoBlockGmresList.set("Maximum Iterations", maxIterationCount);
     return paramList;
 }
 
-Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(double tol)
+template <typename MagnitudeType>
+Teuchos::RCP<Teuchos::ParameterList>
+inline defaultCgParameterListInternal(MagnitudeType tol, int maxIterationCount)
 {
     Teuchos::RCP<Teuchos::ParameterList> paramList(
                 new Teuchos::ParameterList("DefaultParameters"));
@@ -267,7 +292,34 @@ Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(double tol)
     Teuchos::ParameterList& pseudoBlockCgList =
             solverTypesList.sublist("Pseudo Block CG");
     pseudoBlockCgList.set("Convergence Tolerance", tol);
+    pseudoBlockCgList.set("Maximum Iterations", maxIterationCount);
     return paramList;
+}
+
+} // namespace
+
+Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(
+        double tol, int maxIterationCount)
+{
+    return defaultGmresParameterListInternal(tol, maxIterationCount);
+}
+
+Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(
+        float tol, int maxIterationCount)
+{
+    return defaultGmresParameterListInternal(tol, maxIterationCount);
+}
+
+Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(
+        double tol, int maxIterationCount)
+{
+    return defaultCgParameterListInternal(tol, maxIterationCount);
+}
+
+Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(
+        float tol, int maxIterationCount)
+{
+    return defaultCgParameterListInternal(tol, maxIterationCount);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(BelosSolverWrapper);

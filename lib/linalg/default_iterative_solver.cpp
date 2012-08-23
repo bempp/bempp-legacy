@@ -18,110 +18,317 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "config_trilinos.hpp"
+#include "bempp/common/config_trilinos.hpp"
 
 #ifdef WITH_TRILINOS
 
 #include "default_iterative_solver.hpp"
 
-#include "real_wrapper_of_complex_thyra_linear_operator.hpp"
-#include "../assembly/discrete_linear_operator.hpp"
-#include "../assembly/linear_operator.hpp"
+#include "belos_solver_wrapper.hpp"
+#include "solution.hpp"
+#include "blocked_solution.hpp"
+#include "../assembly/abstract_boundary_operator.hpp"
+#include "../assembly/abstract_boundary_operator_pseudoinverse.hpp"
+#include "../assembly/blocked_boundary_operator.hpp"
+#include "../assembly/boundary_operator.hpp"
+#include "../assembly/discrete_boundary_operator.hpp"
+#include "../assembly/discrete_boundary_operator_composition.hpp"
+#include "../assembly/identity_operator.hpp"
+#include "../assembly/vector.hpp"
 #include "../fiber/explicit_instantiation.hpp"
+#include "../space/space.hpp"
+
+#include <Teuchos_RCPBoostSharedPtrConversions.hpp>
+#include <Thyra_DefaultSpmdVectorSpace.hpp>
+
+#include <boost/make_shared.hpp>
+#include <boost/variant.hpp>
 
 namespace Bempp
 {
 
+template <typename ValueType>
+Teuchos::RCP<Thyra::DefaultSpmdVector<ValueType> >
+wrapInTrilinosVector(arma::Col<ValueType>& col)
+{
+    size_t size = col.n_rows;
+    Teuchos::ArrayRCP<ValueType> trilinosArray =
+            Teuchos::arcp(col.memptr(), 0 /* lowerOffset */,
+                          size, false /* doesn't own memory */);
+    typedef Thyra::DefaultSpmdVector<ValueType> TrilinosVector;
+    return Teuchos::RCP<TrilinosVector>(new TrilinosVector(
+        Thyra::defaultSpmdVectorSpace<ValueType>(size),
+        trilinosArray, 1 /* stride */));
+}
+
+/** \cond HIDDEN_INTERNAL */
+
+template <typename BasisFunctionType, typename ResultType> 
+struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
+{
+
+    // Constructor for non-blocked operators
+    Impl(const BoundaryOperator<BasisFunctionType, ResultType>& op_,
+         ConvergenceTestMode::Mode mode_) :
+        op(op_),
+        mode(mode_)
+    {
+        typedef BoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
+        typedef Solver<BasisFunctionType, ResultType> Solver_;
+        const BoundaryOp& boundaryOp = boost::get<BoundaryOp>(op);
+
+        if (mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE) {
+            if (boundaryOp.domain()->globalDofCount() !=
+                    boundaryOp.dualToRange()->globalDofCount())
+                throw std::invalid_argument("DefaultIterativeSolver::Impl::Impl(): "
+                                            "non-square system provided");
+
+            solverWrapper.reset(
+                        new BelosSolverWrapper<ResultType>(
+                            Teuchos::rcp<const Thyra::LinearOpBase<ResultType> >(
+                                boundaryOp.weakForm())));
+        }
+        else if (mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_RANGE) {
+            if (boundaryOp.domain()->globalDofCount() !=
+                    boundaryOp.range()->globalDofCount())
+                throw std::invalid_argument("DefaultIterativeSolver::Impl::Impl(): "
+                                            "non-square system provided");
+
+            BoundaryOp id = identityOperator(
+                        boundaryOp.context(), boundaryOp.range(), boundaryOp.range(),
+                        boundaryOp.dualToRange(), "I");
+            pinvId = pseudoinverse(id);
+            shared_ptr<DiscreteBoundaryOperator<ResultType> > totalBoundaryOp =
+                    boost::make_shared<DiscreteBoundaryOperatorComposition<ResultType> >(
+                        boost::get<BoundaryOp>(pinvId).weakForm(),
+                        boundaryOp.weakForm());
+            solverWrapper.reset(
+                        new BelosSolverWrapper<ResultType>(
+                            Teuchos::rcp<const Thyra::LinearOpBase<ResultType> >(
+                                totalBoundaryOp)));
+        }
+        else
+            throw std::invalid_argument(
+                    "DefaultIterativeSolver::DefaultIterativeSolver(): "
+                    "invalid convergence test mode");
+    }
+
+    // Constructor for blocked operators
+    Impl(const BlockedBoundaryOperator<BasisFunctionType, ResultType>& op_,
+         ConvergenceTestMode::Mode mode_) :
+        op(op_),
+        mode(mode_)
+    {
+        typedef BlockedBoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
+        typedef Solver<BasisFunctionType, ResultType> Solver_;
+        const BoundaryOp& boundaryOp = boost::get<BoundaryOp>(op);
+
+        if (mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE) {
+            if (boundaryOp.totalGlobalDofCountInDomains() !=
+                    boundaryOp.totalGlobalDofCountInDualsToRanges())
+                throw std::invalid_argument("DefaultIterativeSolver::Impl::Impl(): "
+                                            "non-square system provided");
+            solverWrapper.reset(
+                        new BelosSolverWrapper<ResultType>(
+                            Teuchos::rcp<const Thyra::LinearOpBase<ResultType> >(
+                                boundaryOp.weakForm())));
+        }
+        else if (mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_RANGE) {
+            if (boundaryOp.totalGlobalDofCountInDomains() !=
+                    boundaryOp.totalGlobalDofCountInRanges())
+                throw std::invalid_argument("DefaultIterativeSolver::Impl::Impl(): "
+                                            "non-square system provided");
+
+            // Construct a block-diagonal operator composed of pseudoinverses
+            // for appropriate spaces
+            BlockedOperatorStructure<BasisFunctionType, ResultType> pinvIdStructure;
+            size_t rowCount = boundaryOp.rowCount();
+            size_t columnCount = boundaryOp.columnCount();
+            for (size_t row = 0; row < rowCount; ++row) {
+                // Find the first non-zero block in row #row and retrieve its context
+                shared_ptr<const Context<BasisFunctionType, ResultType> > context;
+                for (int col = 0; col < columnCount; ++col)
+                    if (boundaryOp.block(row, col).context()) {
+                        context = boundaryOp.block(row, col).context();
+                        break;
+                    }
+                assert(context);
+
+                BoundaryOperator<BasisFunctionType, ResultType> id = identityOperator(
+                    context, boundaryOp.range(row), boundaryOp.range(row),
+                    boundaryOp.dualToRange(row), "I");
+                pinvIdStructure.setBlock(row, row, pseudoinverse(id));
+            }                                   
+            pinvId = BlockedBoundaryOperator<BasisFunctionType, ResultType>(
+                pinvIdStructure);
+
+            shared_ptr<DiscreteBoundaryOperator<ResultType> > totalBoundaryOp =
+                    boost::make_shared<DiscreteBoundaryOperatorComposition<ResultType> >(
+                        boost::get<BoundaryOp>(pinvId).weakForm(),
+                        boundaryOp.weakForm());
+            solverWrapper.reset(
+                        new BelosSolverWrapper<ResultType>(
+                            Teuchos::rcp<const Thyra::LinearOpBase<ResultType> >(
+                                totalBoundaryOp)));
+        }
+        else
+            throw std::invalid_argument(
+                    "DefaultIterativeSolver::DefaultIterativeSolver(): "
+                    "invalid convergence test mode");
+    }
+    
+    boost::variant<
+        BoundaryOperator<BasisFunctionType, ResultType>,
+        BlockedBoundaryOperator<BasisFunctionType, ResultType> > op;
+    ConvergenceTestMode::Mode mode;
+    boost::scoped_ptr<BelosSolverWrapper<ResultType> > solverWrapper;
+    boost::variant<
+        BoundaryOperator<BasisFunctionType, ResultType>,
+        BlockedBoundaryOperator<BasisFunctionType, ResultType> > pinvId;
+};
+
 template <typename BasisFunctionType, typename ResultType>
 DefaultIterativeSolver<BasisFunctionType, ResultType>::DefaultIterativeSolver(
-        const LinearOperator<BasisFunctionType, ResultType>& linOp,
-        const GridFunction<BasisFunctionType, ResultType>& gridFun) :
-    m_belosSolverWrapper(
-        Teuchos::rcpFromRef<const Thyra::LinearOpBase<ResultType> >(
-            linOp.weakForm())),
-    m_space(linOp.trialSpace()),
-    // TODO: gridFun.coefficients should return a shared pointer to Vector
-    // rather than a Vector
-    m_rhs(new Vector<ResultType>(gridFun.projections()))
+        const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
+        ConvergenceTestMode::Mode mode) :
+    m_impl(new Impl(boundaryOp, mode))
 {
-    if (&linOp.trialSpace() != &gridFun.space())
-        throw std::runtime_error("DefaultIterativeSolver::DefaultIterativeSolver(): "
-                                 "spaces do not match");
 }
 
 template <typename BasisFunctionType, typename ResultType>
-void DefaultIterativeSolver<BasisFunctionType, ResultType>::addPreconditioner(
+DefaultIterativeSolver<BasisFunctionType, ResultType>::DefaultIterativeSolver(
+        const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
+        ConvergenceTestMode::Mode mode) :
+    m_impl(new Impl(boundaryOp, mode))
+{
+}
+
+template <typename BasisFunctionType, typename ResultType>
+DefaultIterativeSolver<BasisFunctionType, ResultType>::~DefaultIterativeSolver()
+{
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void DefaultIterativeSolver<BasisFunctionType, ResultType>::setPreconditioner(
         const Teuchos::RCP<const Thyra::PreconditionerBase<ResultType> >& preconditioner)
 {
-    m_belosSolverWrapper.addPreconditioner(preconditioner);
+    m_impl->solverWrapper->setPreconditioner(preconditioner);
 }
 
 template <typename BasisFunctionType, typename ResultType>
 void DefaultIterativeSolver<BasisFunctionType, ResultType>::initializeSolver(
         const Teuchos::RCP<Teuchos::ParameterList>& paramList)
 {
-    m_belosSolverWrapper.initializeSolver(paramList);
+    m_impl->solverWrapper->initializeSolver(paramList);
 }
 
 template <typename BasisFunctionType, typename ResultType>
-void DefaultIterativeSolver<BasisFunctionType, ResultType>::solve()
+Solution<BasisFunctionType, ResultType>
+DefaultIterativeSolver<BasisFunctionType, ResultType>::solveImplNonblocked(
+        const GridFunction<BasisFunctionType, ResultType>& rhs) const
 {
-    assert(m_rhs->domain()->dim() == 1);
+    typedef BoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
+    typedef typename ScalarTraits<ResultType>::RealType MagnitudeType;
+    typedef Thyra::MultiVectorBase<ResultType> TrilinosVector;
 
-    const size_t size = m_rhs->range()->dim();
-    m_sol.set_size(size);
-    m_sol.fill(static_cast<ResultType>(0.));
+    const BoundaryOp* boundaryOp = boost::get<BoundaryOp>(&m_impl->op);
+    if (!boundaryOp)
+        throw std::logic_error(
+            "DefaultIterativeSolver::solve(): for solvers constructed "
+            "from a BlockedBoundaryOperator the other solve() overload "
+            "must be used");
+    Solver<BasisFunctionType, ResultType>::checkConsistency(
+        *boundaryOp, rhs, m_impl->mode);
 
-    typedef Thyra::DefaultSpmdVector<ResultType> DenseVector;
-    Teuchos::ArrayRCP<ResultType> solArray =
-            Teuchos::arcp(m_sol.memptr(), 0 /* lowerOffset */,
-                          size, false /* doesn't own memory */);
-    DenseVector sol(Thyra::defaultSpmdVectorSpace<ResultType>(size),
-                    solArray, 1 /* stride */);
-
-    m_status = m_belosSolverWrapper.solve(
-                Thyra::NOTRANS, *m_rhs, Teuchos::ptr(&sol));
-}
-
-template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType, ResultType>
-DefaultIterativeSolver<BasisFunctionType, ResultType>::getResult() const
-{
-    return gridFunctionFromCoefficients(m_space, m_sol);
-}
-
-template <typename BasisFunctionType, typename ResultType>
-typename Solver<BasisFunctionType, ResultType>::EStatus
-DefaultIterativeSolver<BasisFunctionType, ResultType>::getStatus() const
-{
-    switch (m_status.solveStatus) {
-    case Thyra::SOLVE_STATUS_CONVERGED:
-        return Solver<BasisFunctionType, ResultType>::CONVERGED;
-    case Thyra::SOLVE_STATUS_UNCONVERGED:
-        return Solver<BasisFunctionType, ResultType>::UNCONVERGED;
-    default:
-        return Solver<BasisFunctionType, ResultType>::UNKNOWN;
+    // Construct rhs vector
+    Vector<ResultType> projectionsVector(rhs.projections());
+    Teuchos::RCP<TrilinosVector> rhsVector;
+    if (m_impl->mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE)
+        rhsVector = Teuchos::rcpFromRef(projectionsVector);
+    else {
+        const size_t size = boundaryOp->range()->globalDofCount();
+        rhsVector.reset(new Vector<ResultType>(size));
+        boost::get<BoundaryOp>(m_impl->pinvId).weakForm()->apply(
+            Thyra::NOTRANS, projectionsVector, rhsVector.ptr(), 1., 0.);
     }
+
+    // Construct solution vector
+    arma::Col<ResultType> armaSolution(rhsVector->range()->dim());
+    armaSolution.fill(static_cast<ResultType>(0.));
+    Teuchos::RCP<TrilinosVector> solutionVector = wrapInTrilinosVector(armaSolution);
+
+    // Solve
+    Thyra::SolveStatus<MagnitudeType> status = m_impl->solverWrapper->solve(
+        Thyra::NOTRANS, *rhsVector, solutionVector.ptr());
+
+    // Construct grid function and return
+    return Solution<BasisFunctionType, ResultType>(
+        GridFunction<BasisFunctionType, ResultType>(
+            boundaryOp->context(), 
+            boundaryOp->domain(), boundaryOp->domain(), // is this the right choice?
+            armaSolution, GridFunction<BasisFunctionType, ResultType>::COEFFICIENTS),
+        status);
 }
 
 template <typename BasisFunctionType, typename ResultType>
-typename DefaultIterativeSolver<BasisFunctionType, ResultType>::MagnitudeType
-DefaultIterativeSolver<BasisFunctionType, ResultType>::getSolveTolerance() const
+BlockedSolution<BasisFunctionType, ResultType>
+DefaultIterativeSolver<BasisFunctionType, ResultType>::solveImplBlocked(
+    const std::vector<GridFunction<BasisFunctionType, ResultType> >& rhs) const
 {
-    return m_status.achievedTol;
-}
+    typedef BlockedBoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
+    typedef typename ScalarTraits<ResultType>::RealType MagnitudeType;
+    typedef Thyra::MultiVectorBase<ResultType> TrilinosVector;
 
-template <typename BasisFunctionType, typename ResultType>
-std::string DefaultIterativeSolver<BasisFunctionType, ResultType>::getSolverMessage() const
-{
-    return m_status.message;
-}
+    const BoundaryOp* boundaryOp = boost::get<BoundaryOp>(&m_impl->op);
+    if (!boundaryOp)
+        throw std::logic_error(
+            "DefaultIterativeSolver::solve(): for solvers constructed "
+            "from a (non-blocked) BoundaryOperator the other solve() overload "
+            "must be used");
+    Solver<BasisFunctionType, ResultType>::checkConsistency(
+        *boundaryOp, rhs, m_impl->mode);
 
-template <typename BasisFunctionType, typename ResultType>
-Thyra::SolveStatus<typename DefaultIterativeSolver<BasisFunctionType, ResultType>::MagnitudeType>
-DefaultIterativeSolver<BasisFunctionType, ResultType>::getThyraSolveStatus() const
-{
-    return m_status;
+    // Currently we only support convergence testing in space dual to range.
+
+    // Construct the right-hand-side vector
+    arma::Col<ResultType> armaProjections(
+        boundaryOp->totalGlobalDofCountInDualsToRanges());
+    for (size_t i = 0, start = 0; i < rhs.size(); ++i) {
+        const arma::Col<ResultType>& chunkProjections = rhs[i].projections();
+        size_t chunkSize = chunkProjections.n_rows;
+        armaProjections.rows(start, start + chunkSize - 1) = chunkProjections;
+        start += chunkSize;
+    }        
+    Vector<ResultType> projectionsVector(armaProjections);
+    Teuchos::RCP<TrilinosVector> rhsVector;
+    if (m_impl->mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE)
+        rhsVector = Teuchos::rcpFromRef(projectionsVector);
+    else {
+        const size_t rhsSize = boundaryOp->totalGlobalDofCountInRanges();
+        rhsVector.reset(new Vector<ResultType>(rhsSize));
+        boost::get<BoundaryOp>(m_impl->pinvId).weakForm()->apply(
+            Thyra::NOTRANS, projectionsVector, rhsVector.ptr(), 1., 0.);
+    }
+
+    // Initialize the solution vector
+    size_t solutionSize = 0;
+    for (size_t i = 0; i < rhs.size(); ++i)
+        solutionSize += boundaryOp->domain(i)->globalDofCount();
+    arma::Col<ResultType> armaSolution(solutionSize);
+    armaSolution.fill(static_cast<ResultType>(0.));
+    Teuchos::RCP<TrilinosVector> solutionVector = wrapInTrilinosVector(armaSolution);
+
+    // Solve
+    Thyra::SolveStatus<MagnitudeType> status = m_impl->solverWrapper->solve(
+        Thyra::NOTRANS, *rhsVector, solutionVector.ptr());
+
+    // Convert chunks of the solution vector into grid functions
+    std::vector<GridFunction<BasisFunctionType, ResultType> > solutionFunctions;
+    Solver<BasisFunctionType, ResultType>::constructBlockedGridFunction(
+        armaSolution, *boundaryOp, solutionFunctions);
+
+    // Return solution
+    return BlockedSolution<BasisFunctionType, ResultType>(solutionFunctions, status);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DefaultIterativeSolver);

@@ -5,13 +5,12 @@
 namespace Bempp
 {
 
-    %extend AssemblyOptions
-    {
-        %ignore switchToFmm;
-        %ignore switchToOpenCl;
-        %ignore switchToTbb;
-        %ignore parallelisationOptions;
-    }
+%extend AssemblyOptions
+{
+    %ignore switchToTbb;
+    %feature("compactdefaultargs") enableSingularIntegralCaching;
+    %feature("compactdefaultargs") enableSparseStorageOfMassMatrices;
+}
 
 } // namespace Bempp
 

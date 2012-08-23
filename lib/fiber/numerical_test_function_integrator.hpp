@@ -29,7 +29,7 @@ namespace Fiber
 {
 
 class OpenClHandler;
-template <typename CoordinateType> class Expression;
+template <typename CoordinateType> class CollectionOfBasisTransformations;
 template <typename ValueType> class Function;
 template <typename CoordinateType> class RawGridGeometry;
 
@@ -48,7 +48,7 @@ public:
             const std::vector<CoordinateType> quadWeights,
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const Expression<CoordinateType>& testExpression,
+            const CollectionOfBasisTransformations<CoordinateType>& testTransformations,
             const Function<UserFunctionType>& function,
             const OpenClHandler& openClHandler);
 
@@ -63,7 +63,7 @@ private:
 
     const GeometryFactory& m_geometryFactory;
     const RawGridGeometry<CoordinateType>& m_rawGeometry;
-    const Expression<CoordinateType>& m_testExpression;
+    const CollectionOfBasisTransformations<CoordinateType>& m_testTransformations;
     const Function<UserFunctionType>& m_function;
 
     const OpenClHandler& m_openClHandler;

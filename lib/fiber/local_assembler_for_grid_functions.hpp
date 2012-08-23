@@ -23,8 +23,9 @@
 
 #include "../common/common.hpp"
 
-#include "array_2d.hpp"
+#include "_2d_array.hpp"
 #include "types.hpp"
+
 #include <vector>
 #include <stdexcept>
 

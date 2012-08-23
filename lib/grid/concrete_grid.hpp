@@ -22,6 +22,7 @@
 #define bempp_concrete_grid_hpp
 
 #include "../common/common.hpp"
+#include "grid_parameters.hpp"
 
 #include "grid.hpp"
 #include "concrete_entity.hpp"
@@ -51,25 +52,27 @@ class ConcreteGrid: public Grid
 private:
     DuneGrid* m_dune_grid;
     bool m_owns_dune_grid;
+    GridParameters::Topology m_topology;
     ConcreteIdSet<DuneGrid, typename DuneGrid::Traits::GlobalIdSet> m_global_id_set;
 
 public:
     /** \brief Underlying Dune grid's type*/
     typedef DuneGrid DuneGridType;
 
-    /** \brief Wrap a new Dune grid object (deleted in the destructor). */
-    ConcreteGrid() :
-        m_dune_grid(new DuneGrid), m_owns_dune_grid(true), m_global_id_set(
-            &m_dune_grid->globalIdSet()) {
-    }
+//    /** \brief Wrap a new Dune grid object (deleted in the destructor). */
+//    ConcreteGrid() :
+//        m_dune_grid(new DuneGrid), m_owns_dune_grid(true), m_global_id_set(
+//            &m_dune_grid->globalIdSet()) {
+//    }
 
     /** \brief Wrap an existing Dune grid object.
 
      \param[in]  dune_grid  Pointer to the Dune grid to wrap.
+     \param[in]  topology   The topology of the grid
      \param[in]  own  If true, *dune_grid is deleted in this object's destructor.
      */
-    explicit ConcreteGrid(DuneGrid* dune_grid, bool own = false) :
-        m_dune_grid(dune_grid), m_owns_dune_grid(own), m_global_id_set(
+    explicit ConcreteGrid(DuneGrid* dune_grid, GridParameters::Topology topology, bool own = false) :
+        m_dune_grid(dune_grid), m_topology(topology), m_owns_dune_grid(own), m_global_id_set(
             dune_grid ? &dune_grid->globalIdSet() : 0) { // safety net
     }
 
@@ -138,6 +141,13 @@ public:
     virtual const IdSet& globalIdSet() const {
         return m_global_id_set;
     }
+
+    /** \brief Get the grid topology */
+
+    virtual GridParameters::Topology topology() const {
+        return m_topology;
+    }
+
 
     /** @} */
 

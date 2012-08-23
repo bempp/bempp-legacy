@@ -18,8 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "fiber/laplace_3d_single_layer_potential_kernel.hpp"
 #include "fiber/geometrical_data.hpp"
+#include "fiber/laplace_3d_single_layer_potential_kernel_functor.hpp"
+#include "fiber/default_collection_of_kernels.hpp"
+
 #include "../type_template.hpp"
 #include "../check_arrays_are_close.hpp"
 
@@ -32,30 +34,12 @@
 
 // Tests
 
-BOOST_AUTO_TEST_SUITE(Laplace3dSingleLayerPotentialKernel)
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(worldDimension_is_3, ValueType, kernel_types)
-{
-    Fiber::Laplace3dSingleLayerPotentialKernel<ValueType> op;
-    BOOST_CHECK_EQUAL(op.worldDimension(), 3);
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(domainDimension_is_1, ValueType, kernel_types)
-{
-    Fiber::Laplace3dSingleLayerPotentialKernel<ValueType> op;
-    BOOST_CHECK_EQUAL(op.domainDimension(), 1);
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(codomainDimension_is_1, ValueType, kernel_types)
-{
-    Fiber::Laplace3dSingleLayerPotentialKernel<ValueType> op;
-    BOOST_CHECK_EQUAL(op.domainDimension(), 1);
-}
+BOOST_AUTO_TEST_SUITE(Laplace3dSingleLayerPotentialKernelFunctor)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(addGeometricalDependencies_works,
                               ValueType, kernel_types)
 {
-    Fiber::Laplace3dSingleLayerPotentialKernel<ValueType> op;
+    Fiber::Laplace3dSingleLayerPotentialKernelFunctor<ValueType> op;
     size_t testGeomDeps = 1024, trialGeomDeps = 16; // random initial values
     op.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 
@@ -66,9 +50,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(addGeometricalDependencies_works,
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_x_axis,
                               ValueType, kernel_types)
 {
-    typedef Fiber::Laplace3dSingleLayerPotentialKernel<ValueType> Operator;
-    Operator op;
-    Fiber::GeometricalData<typename Operator::CoordinateType> testGeomData, trialGeomData;
+    typedef Fiber::Laplace3dSingleLayerPotentialKernelFunctor<ValueType> Functor;
+    typedef Fiber::DefaultCollectionOfKernels<Functor> Kernels;
+    // extra parentheses needed to deal with the "most vexing parse"
+    Kernels kernels((Functor()));
+
+    Fiber::GeometricalData<typename Functor::CoordinateType>
+            testGeomData, trialGeomData;
     const int worldDim = 3;
     const int testPointCount = 2, trialPointCount = 3;
     // Note: points lying on x axis only
@@ -82,26 +70,29 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_x_axis,
     trialGeomData.globals(0, 1) = 3.;
     trialGeomData.globals(0, 2) = 4.;
 
-    Fiber::Array4d<ValueType> result;
-    op.evaluateOnGrid(testGeomData, trialGeomData, result);
+    Fiber::CollectionOf4dArrays<ValueType> result;
+    kernels.evaluateOnGrid(testGeomData, trialGeomData, result);
 
-    Fiber::Array4d<ValueType> expected(1, testPointCount, 1, trialPointCount);
+    Fiber::_4dArray<ValueType> expected(1, 1, testPointCount, trialPointCount);
     for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
         for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
-            expected(0, testPoint, 0, trialPoint) =
+            expected(0, 0, testPoint, trialPoint) =
                     (1. / (4. * M_PI)) /
                     std::abs(testGeomData.globals(0, testPoint) -
                              trialGeomData.globals(0, trialPoint));
 
-    BOOST_CHECK(check_arrays_are_close<ValueType>(result, expected, 1e-6));
+    BOOST_CHECK(check_arrays_are_close<ValueType>(result[0], expected, 1e-6));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_y_axis,
                               ValueType, kernel_types)
 {
-    typedef Fiber::Laplace3dSingleLayerPotentialKernel<ValueType> Operator;
-    Operator op;
-    Fiber::GeometricalData<typename Operator::CoordinateType> testGeomData, trialGeomData;
+    typedef Fiber::Laplace3dSingleLayerPotentialKernelFunctor<ValueType> Functor;
+    typedef Fiber::DefaultCollectionOfKernels<Functor> Kernels;
+    Kernels kernels((Functor()));
+
+    Fiber::GeometricalData<typename Functor::CoordinateType>
+            testGeomData, trialGeomData;
     const int worldDim = 3;
     const int testPointCount = 2, trialPointCount = 3;
     // Note: points lying on y axis only
@@ -115,27 +106,28 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_y_axis,
     trialGeomData.globals(1, 1) = 3.;
     trialGeomData.globals(1, 2) = 4.;
 
-    Fiber::Array4d<ValueType> result;
-    op.evaluateOnGrid(testGeomData, trialGeomData, result);
+    Fiber::CollectionOf4dArrays<ValueType> result;
+    kernels.evaluateOnGrid(testGeomData, trialGeomData, result);
 
-    Fiber::Array4d<ValueType> expected(1, testPointCount, 1, trialPointCount);
+    Fiber::_4dArray<ValueType> expected(1, 1, testPointCount, trialPointCount);
     for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
         for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
-            expected(0, testPoint, 0, trialPoint) =
+            expected(0, 0, testPoint, trialPoint) =
                     (1. / (4. * M_PI)) /
                     std::abs(testGeomData.globals(0, testPoint) -
                              trialGeomData.globals(0, trialPoint));
 
-    BOOST_CHECK(check_arrays_are_close<ValueType>(result, expected, 1e-6));
+    BOOST_CHECK(check_arrays_are_close<ValueType>(result[0], expected, 1e-6));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_evaluateAtPointPairs,
                               ValueType, kernel_types)
 {
-    typedef Fiber::Laplace3dSingleLayerPotentialKernel<ValueType> Operator;
-    Operator op;
+    typedef Fiber::Laplace3dSingleLayerPotentialKernelFunctor<ValueType> Functor;
+    typedef Fiber::DefaultCollectionOfKernels<Functor> Kernels;
+    Kernels kernels((Functor()));
 
-    typedef Fiber::GeometricalData<typename Operator::CoordinateType> GeomData;
+    typedef Fiber::GeometricalData<typename Functor::CoordinateType> GeomData;
 
     const int worldDim = 3;
     const int testPointCount = 2, trialPointCount = 3;
@@ -153,14 +145,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_evaluateAtPointPairs,
     trialGeomDataOnGrid.globals(0, 1) = 3.;
     trialGeomDataOnGrid.globals(0, 2) = 4.;
 
-    Fiber::Array4d<ValueType> resultOnGrid;
-    op.evaluateOnGrid(testGeomDataOnGrid, trialGeomDataOnGrid, resultOnGrid);
-
-    arma::Cube<ValueType> convertedResultOnGrid(1, 1, testPointCount * trialPointCount);
+    Fiber::CollectionOf4dArrays<ValueType> resultOnGrid;
+    kernels.evaluateOnGrid(testGeomDataOnGrid, trialGeomDataOnGrid,
+                           resultOnGrid);
+    arma::Col<ValueType> convertedResultOnGrid(testPointCount * trialPointCount);
     for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
         for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
             convertedResultOnGrid(testPoint + trialPoint * testPointCount) =
-                    resultOnGrid(0, testPoint, 0, trialPoint);
+                    resultOnGrid[0](0, 0, testPoint, trialPoint);
 
     // Collect data with evaluateAtPointPairs
     GeomData testGeomDataAtPointPairs, trialGeomDataAtPointPairs;
@@ -174,12 +166,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_evaluateAtPointPairs,
                     trialGeomDataOnGrid.globals.col(trialPoint);
         }
 
-    arma::Cube<ValueType> resultAtPointPairs;
-    op.evaluateAtPointPairs(testGeomDataAtPointPairs, trialGeomDataAtPointPairs,
-                            resultAtPointPairs);
+    Fiber::CollectionOf3dArrays<ValueType> resultAtPointPairs;
+    kernels.evaluateAtPointPairs(testGeomDataAtPointPairs, trialGeomDataAtPointPairs,
+                                 resultAtPointPairs);
+    arma::Col<ValueType> convertedResultAtPointPairs(testPointCount * trialPointCount);
+    for (int point = 0; point < testPointCount * trialPointCount; ++point)
+        convertedResultAtPointPairs(point) =
+                resultAtPointPairs[0](0, 0, point);
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
-                    resultAtPointPairs, convertedResultOnGrid, 1e-6));
+                    convertedResultAtPointPairs, convertedResultOnGrid, 1e-6));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

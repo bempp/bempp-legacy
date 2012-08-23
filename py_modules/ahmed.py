@@ -19,31 +19,82 @@
 #THE SOFTWARE.
 
 import os,urllib,shutil,subprocess,sys
-from py_modules.tools import extract_file, to_bool
+from py_modules import tools
+from py_modules import python_patch as py_patch
 
-
-def configureAhmed(root,config):
-
-    if not config.has_section('AHMED'):
-        config.add_section('AHMED')
-        config.set('AHMED','enable_ahmed','OFF')
-    else:
-        if not config.has_option('AHMED','enable_ahmed'): 
-            config.set('AHMED','enable_ahmed','ON')
-    if to_bool(config.get('AHMED','enable_ahmed')):
-        config.set('AHMED','enable_ahmed','ON') # Ensure that the option has the right format
-        if not (config.has_option('AHMED','lib')
-                and config.has_option('AHMED','metis_lib')
-                and config.has_option('AHMED','include_dir')): raise Exception('AHMED libraries or include not defined')
-    else:
-        config.set('AHMED','enable_ahmed','OFF')
-                 
-
-def buildAhmed(root,config):
+def download(root,config):
     pass
 
-        
+def prepare(root,config):
+
+    enable_ahmed = tools.to_bool(tools.setDefaultConfigOption(config,'AHMED','enable_ahmed','false'))
+    if enable_ahmed:
+        if not config.has_option('AHMED','file_name'):
+            raise Exception('Need to give full path of tar.gz archived file with AHMED 1.0 release')
+        ahmed_fname=config.get('AHMED','file_name')
+        config.set('AHMED','with_ahmed','ON') 
+        prefix=config.get('Main','prefix')
+        arch = config.get('Main','architecture')
+        if arch == 'ia32':
+            config.set('AHMED','enable64','OFF')
+        else:
+            config.set('AHMED','enable64','ON')
+        ahmed_full_dir=root+"/contrib/ahmed"
+        tools.checkDeleteDirectory(ahmed_full_dir)
+        if sys.platform.startswith('darwin'):
+            config.set('AHMED','lib',prefix+"/bempp/lib/libAHMED.dylib")
+        elif sys.platform.startswith('linux'):
+            config.set('AHMED','lib',prefix+"/bempp/lib/libAHMED.so")
+        else:
+            raise Exception("Platform not supported")
+        config.set('AHMED','include_dir',prefix+"/bempp/include/AHMED")
+        print "Extracting AHMED"
+        tools.extract_file(ahmed_fname,root+"/contrib/")
+        os.rename(root+"/contrib/AHMED_1.0",root+"/contrib/ahmed")
+        shutil.copy(root+"/contrib/build_scripts/posix/ahmed_build.sh",ahmed_full_dir+"/ahmed_build.sh")
+        print "Patching AHMED"
+        patch=py_patch.fromfile(root+"/contrib/patch/ahmed-no-openmp.patch")
+        cwd=os.getcwd()
+        os.chdir(root+"/contrib/ahmed")
+        patch.apply()
+        os.chdir(cwd)
+    else:
+        config.set('AHMED','with_ahmed','OFF')
+
+def configure(root,config):
+    prefix = config.get('Main','prefix')
+    if tools.to_bool(config.get('AHMED','enable_ahmed')):
+        print "Configuring AHMED"
+        cwd=os.getcwd()
+        os.chdir(root+"/contrib/ahmed")
+        tools.checkDeleteDirectory(root+"/contrib/ahmed/build")
+        subprocess.check_call("sh ./ahmed_build.sh",shell=True)
+        os.chdir(cwd)
     
+
+def build(root,config):
+    if tools.to_bool(config.get('AHMED','enable_ahmed')):
+        njobs = tools.to_int(config.get('Main','build_jobs'))
+        print "Build AHMED"
+        cwd=os.getcwd()
+        os.chdir(root+"/contrib/ahmed/build")
+        subprocess.check_call("make -j"+str(njobs),shell=True)
+        os.chdir(cwd)
+
+def install(root,config):
+    if tools.to_bool(config.get('AHMED','enable_ahmed')):
+        prefix = config.get('Main','prefix')
+        print "Install AHMED"
+        cwd=os.getcwd()
+        os.chdir(root+"/contrib/ahmed/build")
+        subprocess.check_call("make install",shell=True)
+        os.chdir(prefix+"/bempp/include/AHMED")
+        g77 = tools.to_bool(config.get('AHMED','with_g77'))
+        print "Patching AHMED for G77 calling BLAS convention"
+        patch=py_patch.fromfile(root+"/contrib/patch/ahmed_blas.patch")
+        patch.apply()
+        os.chdir(cwd)
+        
         
         
         

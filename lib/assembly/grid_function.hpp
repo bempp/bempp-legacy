@@ -24,17 +24,18 @@
 
 #include "../common/common.hpp"
 
+#include "vector.hpp"
+
+#include "../common/armadillo_fwd.hpp"
+#include "../common/lazy.hpp"
+#include "../common/shared_ptr.hpp"
+
 #include "../grid/vtk_writer.hpp"
-#include "../fiber/local_assembler_factory.hpp"
+#include "../fiber/quadrature_strategy.hpp"
 #include "../fiber/scalar_traits.hpp"
 #include "../fiber/surface_normal_dependent_function.hpp"
 #include "../fiber/surface_normal_independent_function.hpp"
-#include "vector.hpp"
 
-#include "surface_normal_dependent_functor.hpp"
-#include "surface_normal_independent_functor.hpp"
-
-#include "../common/armadillo_fwd.hpp"
 #include <boost/mpl/set.hpp>
 #include <boost/mpl/has_key.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -44,8 +45,8 @@ namespace Fiber
 {
 
 template <typename ValueType> class Basis;
-template <typename ValueType> class Function;
 template <typename ResultType> class LocalAssemblerForGridFunctions;
+template <typename ValueType> class Function;
 
 } // namespace Fiber
 
@@ -57,57 +58,186 @@ class GeometryFactory;
 class Grid;
 template <int codim> class Entity;
 template <typename BasisFunctionType> class Space;
+template <typename BasisFunctionType, typename ResultType> class Context;
 
+using Fiber::Function;
 
-/** \brief Function defined on a grid.
- *  \ingroup assembly
- */
+/** \ingroup assembly_functions
+ *  \brief Function defined on a grid.
+ *
+ *  This class represents a function defined on a grid and expanded in a
+ *  particular function space. */
 template <typename BasisFunctionType, typename ResultType>
 class GridFunction
 {
 public:
-    typedef Fiber::LocalAssemblerFactory<BasisFunctionType, ResultType, GeometryFactory>
-    LocalAssemblerFactory;
     typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
+    typedef typename Fiber::ScalarTraits<ResultType>::RealType MagnitudeType;
+
+    enum DataType { COEFFICIENTS, PROJECTIONS };
 
     /** \brief Constructor.
      *
-     * \param[in] space        Function space to expand the grid function in.
-     * \param[in] coefficients Vector of the expansion coefficients of the grid
-     *                         function in the chosen space.
-     * \param[in] projections  Vector of the scalar products of the grid
-     *                         function and the basis functions from the chosen
-     *                         space.
+     *  Construct an uninitialized grid function. The only way to
+     *  initialize it later is using the assignment operator. */
+    GridFunction();
 
-     * \note End users should not need to call this constructor directly.
-     * Use instead one of the "non-member constructors"
-     * gridFunctionFrom...(). */
-    GridFunction(const Space<BasisFunctionType>& space,
+    /** \brief Constructor.
+     *
+     *  \param[in] context      Assembly context from which a quadrature
+     *                          strategy can be retrieved.
+     *  \param[in] space        Function space to expand the grid function in.
+     *  \param[in] dualSpace    Function space dual to \p space.
+     *  \param[in] data
+     *    If <tt>dataType == COEFFICIENTS</tt>, the vector \p data should have
+     *    length <tt>space.globalDofCount()</tt> and contain the expansion
+     *    coefficients of the grid function in the space \p space. Otherwise,
+     *    if <tt>dataType == PROJECTIONS</tt>, \p data should have length
+     *    <tt>dualSpace.globalDofCount()</tt> contain the scalar products of
+     *    the grid function and the basis functions of the space \p dualSpace.
+     *  \param[in] dataType     Interpretation of the vector
+     *                          passed via the argument \p data.
+     *
+     *  This constructor builds a grid function from either its coefficients in
+     *  a function space or from its projections on the basis functions of
+     *  another (dual) function space. If the other type of data turns out to
+     *  be needed later (for example, the projections vector if coefficients
+     *  were supplied in the constructor), it is calculated automatically. The
+     *  Context object given in the constructor is then used to determine the
+     *  strategy for evaluating any necessary integrals.
+     *
+     *  \p space and \p dualSpace must be defined on the same grid. */
+    GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+                 const shared_ptr<const Space<BasisFunctionType> >& space,
+                 const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
+                 const arma::Col<ResultType>& data,
+                 DataType dataType);
+
+    /** \brief Constructor.
+     *
+     *  \param[in] context      Assembly context from which a quadrature
+     *                          strategy can be retrieved.
+     *  \param[in] space        Function space to expand the grid function in.
+     *  \param[in] dualSpace    Function space dual to \p space.
+     *  \param[in] coefficients Vector of length <tt>space.globalDofCount()</tt>
+     *                          containing the expansion coefficients of the grid
+     *                          function in the space \p space.
+     *  \param[in] projections  Vector of length <tt>dualSpace.globalDofCount()</tt>
+     *                          containing the scalar products of the grid
+     *                          function and the basis functions of the space
+     *                          \p dualSpace.
+     *
+     *  \p space and \p dualSpace must be defined on the same grid.
+     *
+     *  \note This constructor is mainly intended for internal use in BEM++. */
+    GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+                 const shared_ptr<const Space<BasisFunctionType> >& space,
+                 const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
                  const arma::Col<ResultType>& coefficients,
                  const arma::Col<ResultType>& projections);
 
-    /** \brief Grid on which this function is defined. */
+    /** \brief Constructor.
+     *
+     *  \param[in] context      Assembly context from which a quadrature
+     *                          strategy can be retrieved.
+     *  \param[in] space        Function space to expand the grid function in.
+     *  \param[in] dualSpace    Function space dual to \p space.
+     *  \param[in] function     Function object whose values on
+     *                          <tt>space.grid()</tt> will be used to construct
+     *                          the new grid function.
+     *
+     *  This constructor builds a grid function by approximating the function
+     *  \p function in the basis of space \p space.
+     *
+     *  \p space and \p dualSpace must be defined on the same grid. */
+    GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+                 const shared_ptr<const Space<BasisFunctionType> >& space,
+                 const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
+                 const Function<ResultType>& function);
+
+    /** \brief Return whether this function has been properly initialized. */
+    bool isInitialized() const;
+
+    /** \brief Grid on which this function is defined.
+     *
+     * \note An exception is thrown if this function is called on an
+     * uninitialized GridFunction object. */
     const Grid& grid() const;
 
     /** \brief Space in which this function is expanded. */
-    const Space<BasisFunctionType>& space() const;
+    shared_ptr<const Space<BasisFunctionType> > space() const;
 
-    int codomainDimension() const;
+    /** \brief Space dual to the space in which this function is expanded. */
+    shared_ptr<const Space<BasisFunctionType> > dualSpace() const;
 
+    /** \brief Assembly context used to retrieve the strategy for evaluating
+     *  any necessary integrals. */
+    shared_ptr<const Context<BasisFunctionType, ResultType> > context() const;
+
+    /** \brief Number of components of this function.
+     *
+     * \note An exception is thrown if this function is called on an
+     * uninitialized GridFunction object. */
+    int componentCount() const;
+
+    /** \brief Vector of expansion coefficients of this function in the basis
+     *  of its primal space.
+     *
+     *  If the grid function was constructed from the vector of its projections
+     *  on the basis of its dual space, the expansion coefficients in the
+     *  primal space are calculated automatically on the first call to
+     *  coefficients() and cached internally before being returned.
+     *
+     *  An exception is thrown if this function is called on an uninitialized
+     *  GridFunction object (one constructed with the default constructor). */
     const arma::Col<ResultType>& coefficients() const;
+
+    /** \brief Vector of scalar products of this function with the basis
+     *  functions of its dual space.
+     *
+     *  If the grid function was constructed from the vector of its expansion
+     *  coefficients in its primal space, the projections on the basis
+     *  functions of its dual space are calculated automatically on the first
+     *  call to projections() and cached internally before being returned.
+     *
+     *  An exception is thrown if this function is called on an uninitialized
+     *  GridFunction object (one constructed with the default constructor). */
     const arma::Col<ResultType>& projections() const;
+
+    /** \brief Reset the expansion coefficients of this function in the basis
+     *  of its primal space.
+     *
+     *  As a side effect, any internally stored vector of the projections of
+     *  this grid function on the basis functions of its dual space is marked as
+     *  invalid and recalculated on the next call to projections(). */
     void setCoefficients(const arma::Col<ResultType>& coeffs);
+
+    /** \brief Reset the vector of scalar products of this function with the basis
+     *  functions of its dual space.
+     *
+     *  As a side effect, any internally stored vector of the coefficients of
+     *  this grid function in its primal space is marked as invalid and
+     *  recalculated on the next call to coefficients(). */
     void setProjections(const arma::Col<ResultType>& projects);
 
+    /** \brief Return the \f$L^2\f$-norm of the grid function. */
+    MagnitudeType L2Norm() const;
+
     const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
+
+    /** \brief Retrieve the expansion coefficients of this function on a single element.
+     *
+     *  \param[in] element An element belonging to the grid <tt>space.grid()</tt>.
+     *  \param[out] coeffs Vector of the expansion coefficients of this function
+     *                     corresponding to the basis functions of the primal space
+     *                     living on element \p element.
+     *
+     *  \note The results of calling this function on an uninitialized
+     *  GridFunction object are undefined. */
     void getLocalCoefficients(const Entity<0>& element,
                               std::vector<ResultType>& coeffs) const;
 
-    /** \brief Evaluate function at either vertices or barycentres. */
-    void evaluateAtSpecialPoints(
-            VtkWriter::DataType dataType, arma::Mat<ResultType>& result_) const;
-
-    /** Export the function to a VTK file.
+    /** \brief Export this function to a VTK file.
 
       \param[in] dataType
         Determines whether data are attaches to vertices or cells.
@@ -125,218 +255,73 @@ public:
 
       \param[in] type
         Output type (default: ASCII). See Dune reference manual for more
-        details. */
+        details.
+
+      \note An exception is thrown if this function is called on an
+        uninitialized GridFunction object. */
     void exportToVtk(VtkWriter::DataType dataType,
                      const char* dataLabel,
                      const char* fileNamesBase, const char* filesPath = 0,
                      VtkWriter::OutputType type = VtkWriter::ASCII) const;
 
+    /** \brief Evaluate function at either vertices or barycentres.
+     *
+     *  \note The results of calling this function on an uninitialized
+     *  GridFunction object are undefined. */
+    void evaluateAtSpecialPoints(
+            VtkWriter::DataType dataType, arma::Mat<ResultType>& result_) const;
+
 private:
-    const Space<BasisFunctionType>& m_space;
-    arma::Col<ResultType> m_coefficients;
-    arma::Col<ResultType> m_projections;
+    shared_ptr<const Context<BasisFunctionType, ResultType> > m_context;
+    shared_ptr<const Space<BasisFunctionType> > m_space;
+    shared_ptr<const Space<BasisFunctionType> > m_dualSpace;
+    mutable shared_ptr<const arma::Col<ResultType> > m_coefficients;
+    mutable shared_ptr<const arma::Col<ResultType> > m_projections;
 };
 
 // Overloaded operators
 
+/** \brief Return a grid function representing the sum of the operands.
+ *
+ *  \note The primal and dual spaces of the two operands must be identical,
+ *  otherwise an exception is thrown. */
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType> operator+(
         const GridFunction<BasisFunctionType, ResultType>& g1,
         const GridFunction<BasisFunctionType, ResultType>& g2);
 
+/** \brief Return a grid function representing the difference of the operands.
+ *
+ *  \note The primal and dual spaces of the two operands must be identical,
+ *  otherwise an exception is thrown. */
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType> operator-(
         const GridFunction<BasisFunctionType, ResultType>& g1,
         const GridFunction<BasisFunctionType, ResultType>& g2);
 
+/** \brief Return the grid function representing the function \p g multipled by \p scalar. */
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
 GridFunction<BasisFunctionType, ResultType> operator*(
-        const GridFunction<BasisFunctionType, ResultType>& g1, const ScalarType& scalar);
-
-
-
-
-template <typename BasisFunctionType>
-GridFunction<BasisFunctionType,float>
-operator*(const float scalar, const GridFunction<BasisFunctionType, float>& g2)
-{
-  return g2 * scalar;
-}
-
-template <typename BasisFunctionType>
-GridFunction<BasisFunctionType,float>
-operator*(const double scalar, const GridFunction<BasisFunctionType, float>& g2)
-{
-  return g2 * scalar;
-}
-
-
-template <typename BasisFunctionType>
-GridFunction<BasisFunctionType,double>
-operator*(const float scalar, const GridFunction<BasisFunctionType, double>& g2)
-{
-  return g2 * scalar;
-}
-
-template <typename BasisFunctionType>
-GridFunction<BasisFunctionType,double>
-operator*(const double scalar, const GridFunction<BasisFunctionType, double>& g2)
-{
-  return g2 * scalar;
-}
-
-template <typename BasisFunctionType>
-GridFunction<BasisFunctionType,std::complex<float> >
-operator*(const float scalar, const GridFunction<BasisFunctionType, std::complex<float> >& g2)
-{
-  return g2 * scalar;
-}
-
-template <typename BasisFunctionType>
-GridFunction<BasisFunctionType,std::complex<float> >
-operator*(const double scalar, const GridFunction<BasisFunctionType, std::complex<float> >& g2)
-{
-  return g2 * scalar;
-}
-
-template <typename BasisFunctionType>
-GridFunction<BasisFunctionType,std::complex<float> >
-operator*(const std::complex<float> scalar, const GridFunction<BasisFunctionType, std::complex<float> >& g2)
-{
-  return g2 * scalar;
-}
-
-template <typename BasisFunctionType>
-GridFunction<BasisFunctionType,std::complex<float> >
-operator*(const std::complex<double> scalar, const GridFunction<BasisFunctionType, std::complex<float> >& g2)
-{
-  return g2 * scalar;
-}
-
-template <typename BasisFunctionType>
-GridFunction<BasisFunctionType,std::complex<double> >
-operator*(const float scalar, const GridFunction<BasisFunctionType, std::complex<double> >& g2)
-{
-  return g2 * scalar;
-}
-
-template <typename BasisFunctionType>
-GridFunction<BasisFunctionType,std::complex<double> >
-operator*(const double scalar, const GridFunction<BasisFunctionType, std::complex<double> >& g2)
-{
-  return g2 * scalar;
-}
-
-template <typename BasisFunctionType>
-GridFunction<BasisFunctionType,std::complex<double> >
-operator*(const std::complex<float> scalar, const GridFunction<BasisFunctionType, std::complex<double> >& g2)
-{
-  return g2 * scalar;
-}
-
-template <typename BasisFunctionType>
-GridFunction<BasisFunctionType,std::complex<double> >
-operator*(const std::complex<double> scalar, const GridFunction<BasisFunctionType, std::complex<double> >& g2)
-{
-  return g2 * scalar;
-}
-
+        const GridFunction<BasisFunctionType, ResultType>& g, const ScalarType& scalar);
 
 // This type machinery is needed to disambiguate between this operator and
-// the one taking a LinearOperator and a GridFunction
-//template <typename BasisFunctionType, typename ResultType, typename ScalarType>
-//typename boost::enable_if<
-//    typename boost::mpl::has_key<
-//        boost::mpl::set<float, double, std::complex<float>, std::complex<double> >,
-//        ScalarType>,
-//    GridFunction<BasisFunctionType, ResultType> >::type
-//operator*(
-//        const ScalarType& scalar, const GridFunction<BasisFunctionType, ResultType>& g2);
+// the one taking a AbstractBoundaryOperator and a GridFunction
+/** \brief Return the grid function representing the function \p g multipled by \p scalar. */
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+typename boost::enable_if<
+    typename boost::mpl::has_key<
+        boost::mpl::set<float, double, std::complex<float>, std::complex<double> >,
+        ScalarType>,
+    GridFunction<BasisFunctionType, ResultType> >::type
+operator*(
+        const ScalarType& scalar, const GridFunction<BasisFunctionType, ResultType>& g);
 
+/** \brief Return the grid function representing the function \p g divided by \p scalar.
+ *
+ *  \note An exception is thrown if \p scalar is zero. */
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
 GridFunction<BasisFunctionType, ResultType> operator/(
         const GridFunction<BasisFunctionType, ResultType>& g1, const ScalarType& scalar);
-
-// Non-member constructors
-
-/** \brief Construct a grid function from its expansion coefficients in a function space.
- *
- * \param[in] space        Function space to expand the grid function in.
- * \param[in] coefficients Expansion coefficients of the grid
- *                         function in the chosen space. */
-template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType, ResultType>
-gridFunctionFromCoefficients(const Space<BasisFunctionType>& space,
-                             const arma::Col<ResultType>& coefficients);
-
-/** \brief Construct a grid function from its expansion coefficients in a function space.
- *
- * \param[in] space        Function space to expand the grid function in.
- * \param[in] projections  Scalar products of the grid function and the basis
- *                         functions of the chosen space. */
-template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType, ResultType>
-gridFunctionFromProjections(const Space<BasisFunctionType>& space,
-                            const arma::Col<ResultType>& projections);
-
-/** \brief Construct a grid function from a Fiber::Function object. */
-template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType, ResultType>
-gridFunctionFromFiberFunction(
-        const Space<BasisFunctionType>& space,
-        const Fiber::Function<ResultType>& function,
-        const typename GridFunction<BasisFunctionType, ResultType>::LocalAssemblerFactory& factory,
-        const AssemblyOptions& assemblyOptions);
-
-/** \brief Construct a grid function from a functor independent from surface orientation.
- *
- * \param[in] space           Function space to expand the grid function in.
- * \param[in] functor         Functor object deriving from
- *                            Bempp::SurfaceNormalIndependentFunctor
- * \param[in] factory         Factory to be used to generate the necessary local
- *                            assembler, which will be employed to evaluate
- *                            the scalar products of the grid function with the
- *                            basis functions of the chosen space.
- * \param[in] assemblyOptions Options controlling the assembly procedure.
- *
- * \returns The constructed grid function. */
-template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType, ResultType>
-gridFunctionFromSurfaceNormalIndependentFunctor(
-        const Space<BasisFunctionType>& space,
-        const SurfaceNormalIndependentFunctor<ResultType>& functor,
-        const typename GridFunction<BasisFunctionType, ResultType>::LocalAssemblerFactory& factory,
-        const AssemblyOptions& assemblyOptions)
-{
-    Fiber::SurfaceNormalIndependentFunction<SurfaceNormalIndependentFunctor<ResultType> > fiberFunction(functor);
-    return gridFunctionFromFiberFunction(
-                space, fiberFunction, factory, assemblyOptions);
-}
-
-/** \brief Construct a grid function from a functor dependent on surface orientation.
- *
- * \param[in] space           Function space to expand the grid function in.
- * \param[in] functor         Functor object deriving from
- *                            Bempp::SurfaceNormalDependentFunctor
- * \param[in] factory         Factory to be used to generate the necessary local
- *                            assembler, which will be employed to evaluate
- *                            the scalar products of the grid function with the
- *                            basis functions of the chosen space.
- * \param[in] assemblyOptions Options controlling the assembly procedure.
- *
- * \returns The constructed grid function. */
-template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType, ResultType>
-gridFunctionFromSurfaceNormalDependentFunctor(
-        const Space<BasisFunctionType>& space,
-        const SurfaceNormalDependentFunctor<ResultType>& functor,
-        const typename GridFunction<BasisFunctionType, ResultType>::LocalAssemblerFactory& factory,
-        const AssemblyOptions& assemblyOptions)
-{
-  Fiber::SurfaceNormalDependentFunction<SurfaceNormalDependentFunctor<ResultType> > fiberFunction(functor);
-    return gridFunctionFromFiberFunction(
-                space, fiberFunction, factory, assemblyOptions);
-}
 
 } // namespace Bempp
 

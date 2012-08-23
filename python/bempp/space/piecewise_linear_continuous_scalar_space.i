@@ -5,6 +5,11 @@
 // TODO
 // %include "space_docstrings.i"
 
+%shared_ptr(Bempp::PiecewiseLinearContinuousScalarSpace<float>);
+%shared_ptr(Bempp::PiecewiseLinearContinuousScalarSpace<double>);
+%shared_ptr(Bempp::PiecewiseLinearContinuousScalarSpace<std::complex<float> >);
+%shared_ptr(Bempp::PiecewiseLinearContinuousScalarSpace<std::complex<double> >);
+
 namespace Bempp
 {
 BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(PiecewiseLinearContinuousScalarSpace);
@@ -19,10 +24,10 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(PiecewiseLinearContinuousScalarSpace
 
 %pythoncode %{
 
-def piecewiseLinearContinuousScalarSpace(grid, basisFunctionType='float64'):
+def piecewiseLinearContinuousScalarSpace(context, grid):
     """Space of piecewise linear continuous scalar functions"""
     name = 'PiecewiseLinearContinuousScalarSpace'
-    return constructObjectTemplatedOnBasis(name, basisFunctionType, grid)
+    return constructObjectTemplatedOnBasis(name, context.basisFunctionType(), grid)
 
 %}
 

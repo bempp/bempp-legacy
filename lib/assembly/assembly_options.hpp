@@ -25,13 +25,15 @@
 
 #include <string>
 
+#include "../common/deprecated.hpp"
+
 #include "../fiber/opencl_options.hpp"
-#include "../fiber/parallelisation_options.hpp"
+#include "../fiber/parallelization_options.hpp"
 
 namespace Bempp
 {
 
-/** \ingroup assembly
+/** \ingroup weak_form_assembly
  *  \brief Adaptive cross approximation (ACA) parameters.
  */
 struct AcaOptions
@@ -68,6 +70,25 @@ struct AcaOptions
      *
      *  Default value: UINT_MAX. */
     unsigned int maximumRank;
+    /** \brief Do global assembly before ACA?
+     *
+     *  If true, ACA is performed on the assembled operator (i.e. the matrix is
+     *  indexed with global degrees of freedom). Otherwise ACA is performed on
+     *  matrix indexed with local degrees of freedom, and the global assembly
+     *  is done by pre- and postmultiplying the H matrix with sparse matrices
+     *  mapping local DOFs to global DOFs and vice versa.
+     *
+     *  Default value: true. */
+    bool globalAssemblyBeforeCompression;
+    /** \brief Recompress ACA matrix after construction?
+     *
+     *  If true, blocks of H matrices are agglomerated in an attempt to reduce
+     *  memory consumption.
+     *
+     *  Warning: this procedure is not parallelised yet, therefore it may be
+     *  slow.
+     *
+     *  Default value: false. */
     bool recompress;
     /** \brief If true, hierarchical matrix structure will be written in
      *  PostScript format at the end of the assembly procedure.
@@ -88,77 +109,125 @@ struct AcaOptions
 };
 
 using Fiber::OpenClOptions;
-using Fiber::ParallelisationOptions;
+using Fiber::ParallelizationOptions;
 
-/** \ingroup assembly
+/** \ingroup weak_form_assembly
  *  \brief Options determining how weak-form assembly is done.
  */
 class AssemblyOptions
 {
 public:
+    enum { AUTO = -1 };
+
     AssemblyOptions();
 
-    /** @name Operator representation
+    /** @name Assembly mode
       @{ */
 
+    /** \brief Possible assembly modes for weak forms of boundary integral operators. */
     enum Mode {
-        AUTO = -1,
-        NO = 0,
-        YES = 1
+        /** \brief Assemble dense matrices. */
+        DENSE,
+        /** \brief Assemble hierarchical matrices using adaptive cross approximation (ACA). */
+        ACA
     };
 
-    enum Representation {
-        DENSE, ACA, FMM, SPARSE
-    };
+    /** \brief Use dense-matrix representations of weak forms of boundary integral operators.
+     *
+     *  This is the default assembly mode. */
+    void switchToDenseMode();
 
-    void switchToDense();
-    void switchToAca(const AcaOptions& acaOptions);
-    void switchToFmm();
+    /** \brief Use adaptive cross approximation (ACA) to obtain hierarchical-matrix
+     *  representations of weak forms of boundary integral operators.
+     *
+     *  \param[in] acaOptions Parameters influencing the ACA algorithm. */
+    void switchToAcaMode(const AcaOptions& acaOptions);
 
-    Representation operatorRepresentation() const {
-        return m_representation;
-    }
+    /** \brief Use dense-matrix representations of weak forms of boundary integral operators.
+     *
+     *  \deprecated Use switchToDenseMode() instead. */
+    BEMPP_DEPRECATED void switchToDense();
 
-    const AcaOptions& acaOptions() const {
-        return m_acaOptions;
-    }
+    /** \brief Use adaptive cross approximation (ACA) to obtain hierarchical-matrix
+     *  representations of weak forms of boundary integral operators.
+     *
+     *  \deprecated Use switchToAcaMode() instead. */
+    BEMPP_DEPRECATED void switchToAca(const AcaOptions& acaOptions);
+
+    /** \brief Current assembly mode.
+     *
+     *  The assembly mode can be changed by calling switchToDenseMode() or
+     *  switchToAcaMode(). */
+    Mode assemblyMode() const;
+
+    /** \brief Return the current adaptive cross approximation (ACA) settings.
+     *
+     *  \note These settings are only used in the ACA assembly mode, i.e. when
+     *  assemblyMode() returns ACA. */
+    const AcaOptions& acaOptions() const;
 
     /** @}
-      @name Parallelisation
+      @name Parallelization
       @{ */
 
-    void switchToOpenCl(const OpenClOptions& openClOptions);
-    void switchToTbb(int maxThreadCount = AUTO);
+    // Temporarily removed (OpenCl support is broken).
+    // void enableOpenCl(const OpenClOptions& openClOptions);
+    // void disableOpenCl();
 
-    const ParallelisationOptions& parallelisationOptions() const {
-        return m_parallelisationOptions;
-    }
+    /** \brief Set the maximum number of threads used during the assembly.
+     *
+     *  \p maxThreadCount must be a positive number or \p AUTO. In the latter
+     *  case the number of threads is determined automatically. */
+    void setMaxThreadCount(int maxThreadCount);
+
+    /** \brief Set the maximum number of threads used during the assembly.
+     *
+     *  \deprecated Use setMaxThreadCount() instead. */
+    BEMPP_DEPRECATED void switchToTbb(int maxThreadCount = AUTO);
+
+    /** \brief Return current parallelization options. */
+    const ParallelizationOptions& parallelizationOptions() const;
 
     /** @}
-      @name Others
+      @name Miscellaneous
       @{ */
 
-    /** \brief Are singular integrals cached?
+    /** \brief Specify whether singular integrals are cached during weak-form assembly.
+     *
+     *  If <tt>value == true</tt>, singular integrals are precalculated
+     *  and stored in a cache before filling the matrix of the discretized weak
+     *  form of a singular boundary operator. Otherwise these integrals
+     *  are evaluated as needed during the assembly of the weak form.
+     *
+     *  By default, singular integral caching is enabled. */
+    void enableSingularIntegralCaching(bool value = true);
 
-      Possible settings:
-        * YES: precalculate singular integrals
-        * NO: do not precalculate singular integrals
-        * AUTO: implementation-defined
-          (currently singular integrals are cached in ACA mode only)
-      */
-    void setSingularIntegralCaching(Mode mode);
+    /** \brief Return whether singular integrals should be cached during weak-form assembly.
+     *
+     *  See enableSingularIntegralCaching() for more information. */
+    bool isSingularIntegralCachingEnabled() const;
 
-    Mode singularIntegralCaching() const {
-        return m_singularIntegralCaching;
-    }
+    /** \brief Specify whether mass matrices should be stored in sparse format.
+     *
+     *  If <tt>value == true</tt>, assembled mass matrices are stored as sparse
+     *  matrices. Otherwise they are stored as dense matrices.
+     *
+     *  By default, sparse storage of mass matrices is enabled. */
+    void enableSparseStorageOfMassMatrices(bool value = true);
+
+    /** \brief Return whether mass matrices should be stored in sparse format.
+     *
+     *  See enableSparseStorageOfMassMatrices() for more information. */
+    bool isSparseStorageOfMassMatricesEnabled() const;
 
     /** @} */
 
 private:
-    Representation m_representation;
+    Mode m_assemblyMode;
     AcaOptions m_acaOptions;
-    ParallelisationOptions m_parallelisationOptions;
-    Mode m_singularIntegralCaching;
+    ParallelizationOptions m_parallelizationOptions;
+    bool m_singularIntegralCaching;
+    bool m_sparseStorageOfMassMatrices;
 };
 
 } // namespace Bempp

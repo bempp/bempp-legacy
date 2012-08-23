@@ -1,7 +1,27 @@
 %{
 #include "grid/grid_factory.hpp"
 #include "grid/grid.hpp"
-#include "./grid/grid_parameters_converter.hpp"
+
+namespace Bempp
+{
+
+inline void makeGridParameters(GridParameters& params, const std::string& topology)
+{
+    if (topology == "linear")
+        params.topology = Bempp::GridParameters::LINEAR;
+    else if (topology == "triangular")
+        params.topology = Bempp::GridParameters::TRIANGULAR;
+    else if (topology == "quadrilateral")
+        params.topology = Bempp::GridParameters::QUADRILATERAL;
+    else if (topology == "hybrid_2d")
+        params.topology = Bempp::GridParameters::HYBRID_2D;
+    else if (topology == "tetrahedral")
+        params.topology = Bempp::GridParameters::TETRAHEDRAL;
+    else
+        throw std::runtime_error("Invalid grid topology requested");
+}
+
+} // namespace Bempp
 %}
 
 %include "grid_factory_docstrings.i"
@@ -23,6 +43,11 @@ namespace Bempp
     %apply const arma::Col<unsigned int>& IN_COL {
         const arma::Col<unsigned int>& nElements
     };
+
+  //    %pythonappend createStructuredGrid %{
+  //    val.topology = args[0]
+  //	%}
+
     static std::auto_ptr<Bempp::Grid> createStructuredGrid(
             const std::string& topology,
             const arma::Col<Bempp::ctype>& lowerLeft, 
@@ -36,6 +61,10 @@ namespace Bempp
     %clear const arma::Col<ctype>& upperRight;
     %clear const arma::Col<unsigned int>& nElements;
     %ignore createStructuredGrid;
+
+    //%pythonappend importGmshGrid %{
+    //  val.topology = args[0]
+    //	%}
     
     %feature("compactdefaultargs") importGmshGrid;
     static std::auto_ptr<Bempp::Grid> importGmshGrid(

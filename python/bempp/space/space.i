@@ -1,7 +1,12 @@
 %{
-  #include "space/space.hpp"
-  #include <complex>
+#include "space/space.hpp"
+#include <complex>
 %}
+
+%shared_ptr(Bempp::Space<float>);
+%shared_ptr(Bempp::Space<double>);
+%shared_ptr(Bempp::Space<std::complex<float> >);
+%shared_ptr(Bempp::Space<std::complex<double> >);
 
 // TODO
 // %include "space_docstrings.i"
@@ -26,12 +31,14 @@ template<typename BasisFunctionType> class Space;
 // to be wrapped later...
 %ignore elementVariant;
 
-%ignore globalDofs;
+%ignore getGlobalDofs;
 
 %ignore global2localDofs;
+%ignore flatLocal2localDofs;
 
 // this function is only for internal use
-%ignore globalDofPositions;
+%ignore getGlobalDofPositions;
+%ignore getFlatLocalDofPositions;
 
 %ignore dumpClusterIds;
 

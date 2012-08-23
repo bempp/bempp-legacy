@@ -27,6 +27,7 @@
 #include <complex>
 %}
 
+
 %include "config.i"
 
 // Import docstring macros
@@ -36,6 +37,7 @@
 %include "armadillo.i"
 %include "auto_ptr.i"
 %include "exception.i"
+%include "shared_ptr.i"
 %include "std_string.i"
 %include "std_complex.i"
 
@@ -81,10 +83,15 @@ AUTO_PTR_TYPEMAPS(Bempp::EntityIterator<3>)
 AUTO_PTR_TYPEMAPS(Bempp::Geometry)
 AUTO_PTR_TYPEMAPS(Bempp::VtkWriter)
 
-AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::DiscreteLinearOperator)
+AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::DiscreteBoundaryOperator)
 AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 
 // End of auto_ptr typemaps
+
+%{
+#include "common/deprecated.hpp"
+%}
+#define BEMPP_DEPRECATED
 
 // Make commonly used typedefs known to Swig
 %inline %{
@@ -99,8 +106,8 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 
 // Common
 %include "common/scalar_traits.i"
-
 // Grid
+%include "grid/grid_parameters.i"
 %include "grid/geometry.i"  
 %include "grid/geometry_type.i"  
 %include "grid/entity.i"  
@@ -115,12 +122,12 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "grid/geometry_factory.i"
 
 // Fiber
-%include "fiber/parallelisation_options.i"
 %include "fiber/opencl_options.i"
+%include "fiber/parallelization_options.i"
 %include "fiber/quadrature_options.i"
 %include "fiber/accuracy_options.i"
-%include "fiber/local_assembler_factory.i"
-%include "fiber/standard_local_assembler_factory_for_operators_on_surfaces.i"
+%include "fiber/quadrature_strategy.i"
+ //%include "fiber/numerical_quadrature_strategy.i"
 
 // Space
 %include "space/space.i"
@@ -131,28 +138,37 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 // Assembly
 %include "assembly/construct_operator.i" // Python code
 %include "assembly/assembly_options.i"
-%include "assembly/evaluation_options.i"
+%include "assembly/numerical_quadrature_strategy.i"
 %include "assembly/transposition_mode.i"
-%include "assembly/surface_normal_independent_functor.i"
 %include "assembly/python_surface_normal_independent_functor.i"
-%include "assembly/surface_normal_dependent_functor.i"
 %include "assembly/python_surface_normal_dependent_functor.i"
-%include "assembly/test_functor.i"
+%include "assembly/discrete_boundary_operator.i"
+%include "assembly/context.i"
 %include "assembly/grid_function.i"
-%include "assembly/linear_operator.i"
-%include "assembly/linear_operator_superposition.i"
-%include "assembly/elementary_linear_operator.i"
+%include "assembly/abstract_boundary_operator.i"
+// %include "assembly/abstract_boundary_operator_sum.i"
+// %include "assembly/scaled_abstract_boundary_operator.i"
+%include "assembly/boundary_operator.i"
+%include "assembly/elementary_abstract_boundary_operator.i"
 %include "assembly/elementary_integral_operator.i"
 %include "assembly/elementary_singular_integral_operator.i"
 %include "assembly/laplace_3d_operators.i"
 %include "assembly/helmholtz_3d_operators.i"
 %include "assembly/modified_helmholtz_3d_operators.i"
 %include "assembly/identity_operator.i"
-%include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.i"
-%include "assembly/discrete_linear_operator.i"
+%include "assembly/evaluation_options.i"
+%include "assembly/potential_operator.i"
+%include "assembly/elementary_potential_operator.i"
+%include "assembly/helmholtz_3d_potential_operators.i"
+%include "assembly/laplace_3d_potential_operators.i"
+%include "assembly/blocked_operator_structure.i"
+%include "assembly/blocked_boundary_operator.i"
 
 // Linear algebra
 %include "linalg/parameter_list.i"
+%include "linalg/solution_base.i"
+%include "linalg/solution.i"
+%include "linalg/blocked_solution.i"
 %include "linalg/solver.i"
 %include "linalg/default_iterative_solver.i"
 

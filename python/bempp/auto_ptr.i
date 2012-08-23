@@ -1,4 +1,3 @@
-#ifdef SWIGPYTHON
 %define AUTO_PTR_TYPEMAPS(TYPE...)
 %typemap (out) std::auto_ptr<TYPE > %{
     %set_output(SWIG_NewPointerObj(%as_voidptr($1.release()), 
@@ -13,18 +12,16 @@ AUTO_PTR_TYPEMAPS(TYPE<double>);
 AUTO_PTR_TYPEMAPS(TYPE<std::complex<float> >);
 AUTO_PTR_TYPEMAPS(TYPE<std::complex<double> >);
 %enddef
-#endif
+
+%define AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(TYPE)
+AUTO_PTR_TYPEMAPS(TYPE<float, float>);
+AUTO_PTR_TYPEMAPS(TYPE<float, std::complex<float> >);
+AUTO_PTR_TYPEMAPS(TYPE<std::complex<float>, std::complex<float> >);
+AUTO_PTR_TYPEMAPS(TYPE<double, double>);
+AUTO_PTR_TYPEMAPS(TYPE<double, std::complex<double> >);
+AUTO_PTR_TYPEMAPS(TYPE<std::complex<double>, std::complex<double> >);
+%enddef
 
 namespace std {
    template <class T> class auto_ptr {};
 }
-
-/* AUTO_PTR_TYPEMAPS(MyStruct) */
-
-/* %inline %{ */
-/* #include <memory> */
-/* struct MyStruct {}; */
-/* std::auto_ptr<MyStruct> factory_function() { */
-/*    return std::auto_ptr<MyStruct>(new MyStruct()); */
-/* } */
-/* %} */

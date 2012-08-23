@@ -23,8 +23,9 @@
 
 #include "../common/common.hpp"
 
-#include "array_2d.hpp"
+#include "_2d_array.hpp"
 #include "types.hpp"
+
 #include <vector>
 
 namespace Fiber
@@ -86,7 +87,7 @@ public:
     virtual void evaluateLocalWeakForms(
             const std::vector<int>& testElementIndices,
             const std::vector<int>& trialElementIndices,
-            Fiber::Array2d<arma::Mat<ResultType> >& result) = 0;
+            Fiber::_2dArray<arma::Mat<ResultType> >& result) = 0;
 
     /** \brief Assemble local weak forms.
 

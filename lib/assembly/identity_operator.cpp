@@ -19,22 +19,26 @@
 // THE SOFTWARE.
 
 
-#include "config_trilinos.hpp"
+#include "bempp/common/config_trilinos.hpp"
 
 #include "identity_operator.hpp"
 
 #include "assembly_options.hpp"
-#include "discrete_dense_linear_operator.hpp"
-#include "discrete_sparse_linear_operator.hpp"
+#include "boundary_operator.hpp"
+#include "discrete_dense_boundary_operator.hpp"
+#include "discrete_sparse_boundary_operator.hpp"
+#include "context.hpp"
 
 #include "../common/auto_timer.hpp"
 #include "../common/types.hpp"
 #include "../fiber/basis.hpp"
 #include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/local_assembler_factory.hpp"
+#include "../fiber/quadrature_strategy.hpp"
 #include "../fiber/local_assembler_for_operators.hpp"
 #include "../fiber/opencl_handler.hpp"
 #include "../fiber/raw_grid_geometry.hpp"
+#include "../fiber/scalar_function_value_functor.hpp"
+#include "../fiber/default_collection_of_basis_transformations.hpp"
 #include "../grid/entity_iterator.hpp"
 #include "../grid/geometry_factory.hpp"
 #include "../grid/grid.hpp"
@@ -139,68 +143,142 @@ inline int epetraSumIntoGlobalValues<std::complex<double> >(
 } // anonymous namespace
 #endif
 
+////////////////////////////////////////////////////////////////////////////////
+// IdentityOperatorId
+
+template <typename BasisFunctionType, typename ResultType>
+IdentityOperatorId<BasisFunctionType, ResultType>::IdentityOperatorId(
+        const IdentityOperator<BasisFunctionType, ResultType>& op) :
+    m_domain(op.domain().get()), m_range(op.range().get()),
+    m_dualToRange(op.dualToRange().get())
+{
+}
+
+template <typename BasisFunctionType, typename ResultType>
+size_t IdentityOperatorId<BasisFunctionType, ResultType>::hash() const
+{
+    typedef IdentityOperator<BasisFunctionType, ResultType>
+            OperatorType;
+    size_t result = tbb::tbb_hasher(typeid(OperatorType).name());
+    tbb_hash_combine(result, m_domain);
+    tbb_hash_combine(result, m_range);
+    tbb_hash_combine(result, m_dualToRange);
+    return result;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+bool IdentityOperatorId<BasisFunctionType, ResultType>::isEqual(
+        const AbstractBoundaryOperatorId &other) const
+{
+    // dynamic_cast won't suffice since we want to make sure both objects
+    // are of exactly the same type (dynamic_cast would succeed for a subclass)
+    if (typeid(other) == typeid(*this))
+    {
+        const IdentityOperatorId& otherCompatible =
+            static_cast<const IdentityOperatorId&>(other);
+        return (m_domain == otherCompatible.m_domain &&
+                m_range == otherCompatible.m_range &&
+                m_dualToRange == otherCompatible.m_dualToRange);
+    }
+    else
+        return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// IdentityOperator
+
+template <typename BasisFunctionType, typename ResultType>
+struct IdentityOperator<BasisFunctionType, ResultType>::Impl
+{
+    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
+    TransformationFunctor;
+
+    Impl() : transformations(TransformationFunctor())
+    {}
+
+    Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
+    transformations;
+};
+
 template <typename BasisFunctionType, typename ResultType>
 IdentityOperator<BasisFunctionType, ResultType>::IdentityOperator(
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace) :
-    ElementaryLinearOperator<BasisFunctionType, ResultType>(
-        testSpace, trialSpace)
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+        const std::string& label) :
+    Base(domain, range, dualToRange, label,
+         domain == dualToRange ? HERMITIAN : NO_SYMMETRY),
+    m_impl(new Impl),
+    m_id(boost::make_shared<IdentityOperatorId<BasisFunctionType, ResultType> >(
+             *this))
+{
+    if (&domain->grid() != &range->grid() ||
+            &range->grid() != &dualToRange->grid())
+        throw std::invalid_argument(
+                "IdentityOperator::IdentityOperator(): "
+                "all three function spaces must be defined on the same grid.");
+}
+
+template <typename BasisFunctionType, typename ResultType>
+IdentityOperator<BasisFunctionType, ResultType>::IdentityOperator(
+        const IdentityOperator& other) :
+    Base(other), m_impl(new Impl(*other.m_impl)),
+    m_id(other.m_id)
 {
 }
 
 template <typename BasisFunctionType, typename ResultType>
-bool IdentityOperator<BasisFunctionType, ResultType>::supportsRepresentation(
-        AssemblyOptions::Representation repr) const
+IdentityOperator<BasisFunctionType, ResultType>::~IdentityOperator()
 {
-    return (repr == AssemblyOptions::DENSE ||
-            repr == AssemblyOptions::SPARSE ||
-            repr == AssemblyOptions::ACA);
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteLinearOperator<ResultType> >
-IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormImpl(
-        const LocalAssemblerFactory& factory,
-        const AssemblyOptions& options,
-        Symmetry symmetry) const
+shared_ptr<const AbstractBoundaryOperatorId>
+IdentityOperator<BasisFunctionType, ResultType>::id() const
+{
+    return m_id;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+bool IdentityOperator<BasisFunctionType, ResultType>::isLocal() const
+{
+    return true;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+shared_ptr<DiscreteBoundaryOperator<ResultType> >
+IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormImpl(
+        const Context<BasisFunctionType, ResultType>& context) const
 {
     AutoTimer timer("\nAssembly took ");
-    std::auto_ptr<LocalAssembler> assembler = makeAssembler(factory, options);
-    return assembleDetachedWeakFormInternalImpl(*assembler, options, symmetry);
+    std::auto_ptr<LocalAssembler> assembler = makeAssembler(
+                context.quadStrategy(), context.assemblyOptions());
+    return assembleWeakFormInternalImpl(*assembler, context.assemblyOptions());
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteLinearOperator<ResultType> >
-IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInternalImpl(
+shared_ptr<DiscreteBoundaryOperator<ResultType> >
+IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInternalImpl(
         LocalAssembler& assembler,
-        const AssemblyOptions& options,
-        Symmetry symmetry) const
+        const AssemblyOptions& options) const
 {
-    switch (options.operatorRepresentation())
-    {
-    case AssemblyOptions::DENSE:
-        return assembleDetachedWeakFormInDenseMode(assembler, options, symmetry);
-    case AssemblyOptions::ACA:
 #ifdef WITH_TRILINOS
-        return assembleDetachedWeakFormInSparseMode(assembler, options, symmetry);
-#else // Fallback to dense mode. Don't know whether this should be signalled to the user.
-        return assembleDetachedWeakFormInDenseMode(assembler, options, symmetry);
+    if (options.isSparseStorageOfMassMatricesEnabled())
+        return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
+                    assembleWeakFormInSparseMode(assembler, options).release());
 #endif
-    default:
-        throw std::runtime_error("IdentityOperator::assembleDetachedWeakFormImpl(): "
-                                 "invalid assembly mode");
-    }
+    return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
+                    assembleWeakFormInDenseMode(assembler, options).release());
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteLinearOperator<ResultType> >
-IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInDenseMode(
-        typename IdentityOperator<BasisFunctionType, ResultType>::LocalAssembler& assembler,
-        const AssemblyOptions& options,
-        Symmetry symmetry) const
+std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
+IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInDenseMode(
+        LocalAssembler& assembler,
+        const AssemblyOptions& options) const
 {
-    const Space<BasisFunctionType>& testSpace = this->testSpace();
-    const Space<BasisFunctionType>& trialSpace = this->trialSpace();
+    const Space<BasisFunctionType>& testSpace = *this->dualToRange();
+    const Space<BasisFunctionType>& trialSpace = *this->domain();
 
     // Fill local submatrices
     std::auto_ptr<GridView> view = testSpace.grid().leafView();
@@ -227,8 +305,8 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInDense
     {
         const Entity<0>& element = it->entity();
         const int elementIndex = mapper.entityIndex(element);
-        testSpace.globalDofs(element, testGdofs[elementIndex]);
-        trialSpace.globalDofs(element, trialGdofs[elementIndex]);
+        testSpace.getGlobalDofs(element, testGdofs[elementIndex]);
+        trialSpace.getGlobalDofs(element, trialGdofs[elementIndex]);
         it->next();
     }
 
@@ -239,26 +317,25 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInDense
                 result(testGdofs[e][testIndex], trialGdofs[e][trialIndex]) +=
                         localResult[e](testIndex, trialIndex);
 
-    return std::auto_ptr<DiscreteLinearOperator<ResultType> >(
-                new DiscreteDenseLinearOperator<ResultType>(result));
+    return std::auto_ptr<DiscreteBoundaryOperator<ResultType> >(
+                new DiscreteDenseBoundaryOperator<ResultType>(result));
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteLinearOperator<ResultType> >
-IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInSparseMode(
-        typename IdentityOperator<BasisFunctionType, ResultType>::LocalAssembler& assembler,
-        const AssemblyOptions& options,
-        Symmetry symmetry) const
+std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
+IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparseMode(
+        LocalAssembler& assembler,
+        const AssemblyOptions& options) const
 {
 #ifdef WITH_TRILINOS
     if (boost::is_complex<BasisFunctionType>::value)
         throw std::runtime_error(
-                "IdentityOperator::assembleDetachedWeakFormInSparseMode(): "
+                "IdentityOperator::assembleWeakFormInSparseMode(): "
                 "sparse-mode assembly of identity operators for "
                 "complex-valued basis functions is not supported yet");
 
-    const Space<BasisFunctionType>& testSpace = this->testSpace();
-    const Space<BasisFunctionType>& trialSpace = this->trialSpace();
+    const Space<BasisFunctionType>& testSpace = *this->dualToRange();
+    const Space<BasisFunctionType>& trialSpace = *this->domain();
 
     // Fill local submatrices
     std::auto_ptr<GridView> view = testSpace.grid().leafView();
@@ -296,8 +373,8 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInSpars
     {
         const Entity<0>& element = it->entity();
         const int elementIndex = mapper.entityIndex(element);
-        testSpace.globalDofs(element, testGdofs[elementIndex]);
-        trialSpace.globalDofs(element, trialGdofs[elementIndex]);
+        testSpace.getGlobalDofs(element, testGdofs[elementIndex]);
+        trialSpace.getGlobalDofs(element, trialGdofs[elementIndex]);
         it->next();
     }
 
@@ -312,9 +389,9 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInSpars
     Epetra_SerialComm comm; // To be replaced once we begin to use MPI
     Epetra_LocalMap rowMap(testGlobalDofCount, 0 /* index_base */, comm);
     Epetra_LocalMap colMap(trialGlobalDofCount, 0 /* index_base */, comm);
-    std::auto_ptr<Epetra_FECrsMatrix> result(
-                new Epetra_FECrsMatrix(Copy, rowMap, colMap,
-                                       nonzeroEntryCountEstimates.memptr()));
+    shared_ptr<Epetra_FECrsMatrix> result = boost::make_shared<Epetra_FECrsMatrix>(
+                Copy, rowMap, colMap,
+                nonzeroEntryCountEstimates.memptr());
 
     // TODO: make each process responsible for a subset of elements
     // Find maximum number of local dofs per element
@@ -338,10 +415,10 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInSpars
 
     // Create and return a discrete operator represented by the matrix that
     // has just been calculated
-    return std::auto_ptr<DiscreteLinearOperator<ResultType> >(
-                new DiscreteSparseLinearOperator<ResultType>(result));
+    return std::auto_ptr<DiscreteBoundaryOperator<ResultType> >(
+                new DiscreteSparseBoundaryOperator<ResultType>(result));
 #else // WITH_TRILINOS
-    throw std::runtime_error("IdentityOperator::assembleDetachedWeakFormInSparseMode(): "
+    throw std::runtime_error("IdentityOperator::assembleWeakFormInSparseMode(): "
                              "To enable assembly in sparse mode, recompile BEM++ "
                              "with the symbol WITH_TRILINOS defined.");
 #endif
@@ -350,7 +427,7 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleDetachedWeakFormInSpars
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<typename IdentityOperator<BasisFunctionType, ResultType>::LocalAssembler>
 IdentityOperator<BasisFunctionType, ResultType>::makeAssemblerImpl(
-        const LocalAssemblerFactory& assemblerFactory,        
+        const QuadratureStrategy& quadStrategy,        
         const shared_ptr<const GeometryFactory>& testGeometryFactory,
         const shared_ptr<const GeometryFactory>& trialGeometryFactory,
         const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
@@ -358,23 +435,47 @@ IdentityOperator<BasisFunctionType, ResultType>::makeAssemblerImpl(
         const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
         const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
         const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
-        const ParallelisationOptions&,
+        const ParallelizationOptions&,
         bool /* cacheSingularIntegrals */) const
 {
-    shared_ptr<const Fiber::Expression<CoordinateType> > expression =
-            make_shared_from_ref(m_expression);
+    shared_ptr<const Fiber::CollectionOfBasisTransformations<CoordinateType> >
+            transformations = make_shared_from_ref(m_impl->transformations);
 
     if (testGeometryFactory.get() != trialGeometryFactory.get() ||
             testRawGeometry.get() != trialRawGeometry.get())
         throw std::invalid_argument("IdentityOperator::makeAssemblerImpl(): "
                                     "the test and trial spaces must be defined "
                                     "on the same grid");
-    return assemblerFactory.makeAssemblerForIdentityOperators(
+    return quadStrategy.makeAssemblerForIdentityOperators(
                 testGeometryFactory, testRawGeometry,
                 testBases, trialBases,
-                expression, expression,
+                transformations, transformations,
                 openClHandler);
 }
+
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
+identityOperator(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+                 const shared_ptr<const Space<BasisFunctionType> >& domain,
+                 const shared_ptr<const Space<BasisFunctionType> >& range,
+                 const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+                 const std::string& label)
+{
+    typedef IdentityOperator<BasisFunctionType, ResultType> Id;
+    return BoundaryOperator<BasisFunctionType, ResultType>(
+                context,
+                boost::make_shared<Id>(domain, range, dualToRange, label));
+}
+
+#define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT) \
+    template BoundaryOperator<BASIS, RESULT> \
+    identityOperator( \
+        const shared_ptr<const Context<BASIS, RESULT> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const std::string&)
+FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(IdentityOperator);
 

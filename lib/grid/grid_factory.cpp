@@ -73,7 +73,7 @@ std::auto_ptr<Grid> GridFactory::createStructuredGrid(
     // TODO: Support quadrilateral grids using createCubeGrid()
     apDuneGrid = Dune::BemppStructuredGridFactory<Default2dIn3dDuneGrid>::
                  createSimplexGrid(duneLowerLeft, duneUpperRight, duneNElements);
-    return std::auto_ptr<Grid>(new Default2dIn3dGrid(apDuneGrid.release(), true)); // true -> owns Dune grid
+    return std::auto_ptr<Grid>(new Default2dIn3dGrid(apDuneGrid.release(), GridParameters::TRIANGULAR, true)); // true -> owns Dune grid
 }
 
 std::auto_ptr<Grid> GridFactory::importGmshGrid(
@@ -85,14 +85,14 @@ std::auto_ptr<Grid> GridFactory::importGmshGrid(
     {
         Default2dIn3dDuneGrid* duneGrid = Dune::GmshReader<Default2dIn3dDuneGrid>
                 ::read(fileName, verbose, insertBoundarySegments);
-        return std::auto_ptr<Grid>(new Default2dIn3dGrid(duneGrid, true)); // true -> owns Dune grid
+        return std::auto_ptr<Grid>(new Default2dIn3dGrid(duneGrid, params.topology, true)); // true -> owns Dune grid
     }
 #ifdef WITH_ALUGRID
     else if (params.topology == GridParameters::TETRAHEDRAL)
     {
         Default3dIn3dDuneGrid* duneGrid = Dune::GmshReader<Default3dIn3dDuneGrid>
                 ::read(fileName, verbose, insertBoundarySegments);
-        return std::auto_ptr<Grid>(new Default3dIn3dGrid(duneGrid, true));
+        return std::auto_ptr<Grid>(new Default3dIn3dGrid(duneGrid, params.topology, true));
     }
 #endif
     else
@@ -113,7 +113,7 @@ std::auto_ptr<Grid> GridFactory::importGmshGrid(
                 ::read(fileName,
                        boundaryId2PhysicalEntity, elementIndex2PhysicalEntity,
                        verbose, insertBoundarySegments);
-        return std::auto_ptr<Grid>(new Default2dIn3dGrid(duneGrid, true)); // true -> owns Dune grid
+        return std::auto_ptr<Grid>(new Default2dIn3dGrid(duneGrid, params.topology, true)); // true -> owns Dune grid
     }
 #ifdef WITH_ALUGRID
     else if (params.topology == GridParameters::TETRAHEDRAL)
@@ -122,7 +122,7 @@ std::auto_ptr<Grid> GridFactory::importGmshGrid(
                 ::read(fileName,
                        boundaryId2PhysicalEntity, elementIndex2PhysicalEntity,
                        verbose, insertBoundarySegments);
-        return std::auto_ptr<Grid>(new Default3dIn3dGrid(duneGrid, true)); // true -> owns Dune grid
+        return std::auto_ptr<Grid>(new Default3dIn3dGrid(duneGrid, params.topology, true)); // true -> owns Dune grid
     }
 #endif
     else

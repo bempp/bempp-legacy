@@ -20,7 +20,7 @@
 
 #include "vtk_writer_helper.hpp"
 
-#include "config_data_types.hpp"
+#include "bempp/common/config_data_types.hpp"
 #include "../common/scalar_traits.hpp"
 
 #include <string>

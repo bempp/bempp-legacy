@@ -23,26 +23,32 @@ level."
 "
 %enddef 
 
-%define GridView_containsEntity_docstring
-"containsEntity(self, e) -> bool
+%define GridView_containsEntity_autodoc_docstring
+"containsEntity(self, e) -> bool"
+%enddef
 
-True if the entity e belongs to this grid view.
+%define GridView_containsEntity_docstring
+"True if the entity e belongs to this grid view.
 
 If e is not an element of the grid, then the result of containsEntity() is 
 undefined."
 %enddef 
 
-%define GridView_entities_docstring
-"entities(self, codim) -> EntityIterator
+%define GridView_entities_autodoc_docstring
+"entities(self, codim) -> EntityIterator"
+%enddef
 
-Iterator over entities of codimension codim contained in this view."
+%define GridView_entities_docstring
+"Iterator over entities of codimension codim contained in this view."
 %enddef 
 
 // TODO: handle the optional param properly 
-%define GridView_vtkWriter_docstring
-"vtkWriter(self, dm = 'conforming') -> VtkWriter
+%define GridView_vtkWriter_autodoc_docstring
+"vtkWriter(self, dm = 'conforming') -> VtkWriter"
+%enddef
 
-VtkWriter for this grid view.
+%define GridView_vtkWriter_docstring
+"VtkWriter for this grid view.
 
 *Arguments:*
     dm (string, optional)

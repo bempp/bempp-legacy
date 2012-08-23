@@ -18,13 +18,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "config_ahmed.hpp"
+#include "bempp/common/config_ahmed.hpp"
 
 #ifdef WITH_AHMED
 
 #include "weak_form_aca_assembly_helper.hpp"
 
-#include "discrete_linear_operator.hpp"
+#include "discrete_boundary_operator.hpp"
 #include "../common/multidimensional_arrays.hpp"
 #include "../fiber/types.hpp"
 #include "../fiber/explicit_instantiation.hpp"
@@ -60,8 +60,15 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::WeakFormAcaAssemblyHel
     m_assemblers(assemblers), m_sparseTermsToAdd(sparseTermsToAdd),
     m_denseTermsMultipliers(denseTermsMultipliers),
     m_sparseTermsMultipliers(sparseTermsMultipliers),
-    m_options(options)
+    m_options(options),
+    m_indexWithGlobalDofs(m_options.acaOptions().globalAssemblyBeforeCompression)
 {
+    if (!m_indexWithGlobalDofs && !m_sparseTermsToAdd.empty())
+        throw std::invalid_argument(
+                "WeakFormAcaAssemblyHelper::WeakFormAcaAssemblyHelper(): "
+                "combining sparse and dense terms with "
+                "globalAssemblyBeforeCompression set to false "
+                "is not supported at present");
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -78,9 +85,9 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
     // types have the same binary representation.
     ResultType* data = reinterpret_cast<ResultType*>(ahmedData);
 
-    // Requested global dof indices
-    std::vector<GlobalDofIndex> testGlobalDofs;
-    std::vector<GlobalDofIndex> trialGlobalDofs;
+    // Requested original matrix indices
+    std::vector<DofIndex> testOriginalIndices;
+    std::vector<DofIndex> trialOriginalIndices;
     // Necessary elements
     std::vector<int> testElementIndices;
     std::vector<int> trialElementIndices;
@@ -88,17 +95,20 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
     std::vector<std::vector<LocalDofIndex> > testLocalDofs;
     std::vector<std::vector<LocalDofIndex> > trialLocalDofs;
     // Corresponding row and column indices in the matrix to be calculated
+    // and stored in ahmedData
     std::vector<std::vector<int> > blockRows;
     std::vector<std::vector<int> > blockCols;
 
     // Fill the above arrays
     findLocalDofs(b1, n1, m_p2oTestDofs, m_testSpace,
-                  testGlobalDofs, testElementIndices, testLocalDofs, blockRows);
+                  testOriginalIndices, testElementIndices, testLocalDofs,
+                  blockRows);
     findLocalDofs(b2, n2, m_p2oTrialDofs, m_trialSpace,
-                  trialGlobalDofs, trialElementIndices, trialLocalDofs, blockCols);
+                  trialOriginalIndices, trialElementIndices, trialLocalDofs,
+                  blockCols);
 
     arma::Mat<ResultType> result(data, n1, n2, false /*copy_aux_mem*/,
-                                true /*strict*/);
+                                 true /*strict*/);
     result.fill(0.);
 
     // First, evaluate the contributions of the dense terms
@@ -188,7 +198,7 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
         // Evaluate the full local weak form for each pair of test and trial
         // elements and then select the entries that we need.
 
-        Fiber::Array2d<arma::Mat<ResultType> > localResult;
+        Fiber::_2dArray<arma::Mat<ResultType> > localResult;
         for (size_t nTerm = 0; nTerm < m_assemblers.size(); ++nTerm)
         {
             m_assemblers[nTerm]->evaluateLocalWeakForms(
@@ -214,11 +224,16 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
         }
     }
 
-    // Now, add the contributions of the sparse terms
-    for (size_t nTerm = 0; nTerm < m_sparseTermsToAdd.size(); ++nTerm)
-        m_sparseTermsToAdd[nTerm]->addBlock(
-                    testGlobalDofs, trialGlobalDofs,
-                    m_sparseTermsMultipliers[nTerm], result);
+    // Probably can be removed
+    if (m_indexWithGlobalDofs)
+        // Now, add the contributions of the sparse terms
+        for (size_t nTerm = 0; nTerm < m_sparseTermsToAdd.size(); ++nTerm)
+            m_sparseTermsToAdd[nTerm]->addBlock(
+                        // since m_indexWithGlobalDofs is set, these refer
+                        // to global DOFs
+                        testOriginalIndices, trialOriginalIndices,
+                        m_sparseTermsMultipliers[nTerm], result);
+    // else m_sparseTermsToAdd is empty (as we have verified in the constructor)
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -245,12 +260,13 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::scale(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::findLocalDofs(
+void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::
+findLocalDofs(
         int start,
-        int globalDofCount,
+        int indexCount,
         const std::vector<unsigned int>& p2o,
         const Space<BasisFunctionType>& space,
-        std::vector<GlobalDofIndex>& globalDofIndices,
+        std::vector<DofIndex>& originalIndices,
         std::vector<int>& elementIndices,
         std::vector<std::vector<LocalDofIndex> >& localDofIndices,
         std::vector<std::vector<int> >& arrayIndices) const
@@ -261,28 +277,47 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::findLocalDofs(
     using std::set;
     using std::vector;
 
-    // Convert permuted indices into the original global DOF indices
-    globalDofIndices.resize(globalDofCount);
-    for (int i = 0; i < globalDofCount; ++i)
-        globalDofIndices[i] = p2o[start + i];
-
-    // Retrieve lists of local DOFs corresponding to the global DOFs
-    vector<vector<LocalDof> > localDofs;
-    space.global2localDofs(globalDofIndices, localDofs);
+    // Convert permuted indices into original indices
+    originalIndices.resize(indexCount);
+    for (int i = 0; i < indexCount; ++i)
+        originalIndices[i] = p2o[start + i];
 
     // set of pairs (local dof index, array index)
     typedef set<pair<LocalDofIndex, int> > LocalDofSet;
     typedef map<EntityIndex, LocalDofSet> LocalDofMap;
+
     // Temporary map: entityIndex -> set(localDofIndex, arrayIndex)
     // with arrayIndex standing for the index of the row or column in the matrix
     // that needs to be returned to Ahmed.
     LocalDofMap requiredLocalDofs;
-    for (int arrayIndex = 0; arrayIndex < globalDofCount; ++arrayIndex)
+
+    // Retrieve lists of local DOFs corresponding to original indices,
+    // treated either as global DOFs (if m_indexWithGlobalDofs is true)
+    // or flat local DOFs (if m_indexWithGlobalDofs is false)
+    if (m_indexWithGlobalDofs)
     {
-        const vector<LocalDof>& currentLocalDofs = localDofs[arrayIndex];
-        for (size_t j = 0; j < currentLocalDofs.size(); ++j)
-            requiredLocalDofs[currentLocalDofs[j].entityIndex]
-                    .insert(make_pair(currentLocalDofs[j].dofIndex, arrayIndex));
+        vector<vector<LocalDof> > localDofs;
+        space.global2localDofs(originalIndices, localDofs);
+
+        for (int arrayIndex = 0; arrayIndex < indexCount; ++arrayIndex)
+        {
+            const vector<LocalDof>& currentLocalDofs = localDofs[arrayIndex];
+            for (size_t j = 0; j < currentLocalDofs.size(); ++j)
+                requiredLocalDofs[currentLocalDofs[j].entityIndex]
+                        .insert(make_pair(currentLocalDofs[j].dofIndex, arrayIndex));
+        }
+    }
+    else
+    {
+        vector<LocalDof> localDofs;
+        space.flatLocal2localDofs(originalIndices, localDofs);
+
+        for (int arrayIndex = 0; arrayIndex < indexCount; ++arrayIndex)
+        {
+            const LocalDof& currentLocalDof = localDofs[arrayIndex];
+            requiredLocalDofs[currentLocalDof.entityIndex]
+                    .insert(make_pair(currentLocalDof.dofIndex, arrayIndex));
+        }
     }
 
     // Use the temporary map requiredLocalDofs to build the three output vectors

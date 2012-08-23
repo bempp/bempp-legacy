@@ -5,11 +5,13 @@
 namespace Bempp
 {
 
-    %extend EvaluationOptions
-    {
-        %ignore switchToOpenCl;
-    }
+%extend EvaluationOptions
+{
+    %ignore switchToTbb;
+}
 
 } // namespace Bempp
 
 %include "assembly/evaluation_options.hpp"
+
+    

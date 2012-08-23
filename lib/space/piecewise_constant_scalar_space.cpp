@@ -35,7 +35,7 @@ namespace Bempp
 template <typename BasisFunctionType>
 PiecewiseConstantScalarSpace<BasisFunctionType>::
 PiecewiseConstantScalarSpace(Grid& grid) :
-     ScalarSpace<BasisFunctionType>(grid)
+     ScalarSpace<BasisFunctionType>(grid), m_view(this->m_grid.leafView())
 {
 }
 
@@ -64,6 +64,8 @@ ElementVariant PiecewiseConstantScalarSpace<BasisFunctionType>::elementVariant(
         const Entity<0>& element) const
 {
     GeometryType type = element.type();
+    if (type.dim() == 1)
+        return 2;
     if (type.isTriangle())
         return 3;
     else
@@ -83,7 +85,6 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::setElementVariant(
 template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::assignDofs()
 {
-    m_view = this->m_grid.leafView();
     const Mapper& mapper = m_view->elementMapper();
     std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
 
@@ -128,7 +129,13 @@ size_t PiecewiseConstantScalarSpace<BasisFunctionType>::globalDofCount() const
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantScalarSpace<BasisFunctionType>::globalDofs(
+size_t PiecewiseConstantScalarSpace<BasisFunctionType>::flatLocalDofCount() const
+{
+    return m_view->entityCount(0);
+}
+
+template <typename BasisFunctionType>
+void PiecewiseConstantScalarSpace<BasisFunctionType>::getGlobalDofs(
         const Entity<0>& element, std::vector<GlobalDofIndex>& dofs) const
 {
     const Mapper& mapper = m_view->elementMapper();
@@ -147,9 +154,25 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::global2localDofs(
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantScalarSpace<BasisFunctionType>::globalDofPositions(
+void PiecewiseConstantScalarSpace<BasisFunctionType>::flatLocal2localDofs(
+        const std::vector<FlatLocalDofIndex>& flatLocalDofs,
+        std::vector<LocalDof>& localDofs) const
+{
+    // Use the fact that each element contains exactly one DOF
+    localDofs.resize(flatLocalDofs.size());
+    for (size_t i = 0; i < flatLocalDofs.size(); ++i)
+        localDofs[i] = LocalDof(flatLocalDofs[i], 0 /* local DOF #0 */);
+}
+
+template <typename BasisFunctionType>
+void PiecewiseConstantScalarSpace<BasisFunctionType>::getGlobalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
+    if (!dofsAssigned())
+        throw std::runtime_error(
+                "PiecewiseConstantScalarSpace::getGlobalDofPositions(): "
+                "assignDofs() must be called before calling this function");
+
     const int gridDim = domainDimension();
     const int globalDofCount_ = globalDofCount();
     positions.resize(globalDofCount_);
@@ -157,9 +180,9 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::globalDofPositions(
     const Mapper& mapper = m_view->elementMapper();
 
     if (gridDim == 1)
-        throw NotImplementedError("PiecewiseConstantScalarSpace::"
-                                  "globalDofPositions(): "
-                                  "not implemented for 2D yet.");
+        throw NotImplementedError(
+                "PiecewiseConstantScalarSpace::globalDofPositions(): "
+                "not implemented for 2D yet.");
     else {
         std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
         while (!it->finished())
@@ -177,22 +200,38 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::globalDofPositions(
     }
 }
 
+template <typename BasisFunctionType>
+void PiecewiseConstantScalarSpace<BasisFunctionType>::getFlatLocalDofPositions(
+        std::vector<Point3D<CoordinateType> >& positions) const
+{
+    if (!dofsAssigned())
+        throw std::runtime_error(
+                "PiecewiseConstantScalarSpace::getFlatLocalDofPositions(): "
+                "assignDofs() must be called before calling this function");
+    return getGlobalDofPositions(positions);
+}
 
 template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::dumpClusterIds(
         const char* fileName,
-        const std::vector<unsigned int>& clusterIds) const
+        const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const
 {
-    const size_t idCount = clusterIds.size();
+    if (!dofsAssigned())
+        throw std::runtime_error(
+                "PiecewiseConstantScalarSpace::dumpClusterIds(): "
+                "assignDofs() must be called before calling this function");
+
+    const size_t idCount = clusterIdsOfGlobalDofs.size();
     if (idCount != globalDofCount())
-        throw std::invalid_argument("PiecewiseConstantScalarSpace::"
-                                    "dumpClusterIds(): incorrect dimension");
+        throw std::invalid_argument(
+                "PiecewiseConstantScalarSpace::dumpClusterIds(): "
+                "clusterIds has incorrect length");
 
     std::auto_ptr<GridView> view = this->m_grid.leafView();
     std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
     arma::Row<double> data(idCount);
     for (size_t i = 0; i < idCount; ++i)
-        data(i) = clusterIds[i];
+        data(i) = clusterIdsOfGlobalDofs[i];
     vtkWriter->addCellData(data, "ids");
     vtkWriter->write(fileName);
 }

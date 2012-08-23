@@ -21,33 +21,46 @@
 #ifndef bempp_default_direct_solver_hpp
 #define bempp_default_direct_solver_hpp
 
-#include "../common/common.hpp"
-
-
 #include "solver.hpp"
+
+#include <boost/scoped_ptr.hpp>
 
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename ResultType> class LinearOperator;
+/** \ingroup linalg
+  * \brief Default Interface to the solution of boundary integral equations using a dense LU decomposition.
+  *
+  * This class provides an interface to the direct solution of boundary integral equations using standard LU.
+  * It is implemented via a call to the <a href="http://arma.sourceforge.net">Armadillo</a> dense solver, which
+  * is an interface to the corresponding Lapack routines.
+  *
+  */
 
 template <typename BasisFunctionType, typename ResultType>
 class DefaultDirectSolver : public Solver<BasisFunctionType, ResultType>
 {
 public:
-    DefaultDirectSolver(const LinearOperator<BasisFunctionType, ResultType>& linOp,
-                        const GridFunction<BasisFunctionType, ResultType>& gridFun);
+    typedef Solver<BasisFunctionType, ResultType> Base;
 
-    virtual void solve();
-
-    virtual GridFunction<BasisFunctionType, ResultType> getResult() const;
-    virtual typename Solver<BasisFunctionType, ResultType>::EStatus getStatus() const;
+    /** \brief Construct a solver for a non-blocked boundary operator. */
+    DefaultDirectSolver(
+            const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp);
+    /** \brief Construct a solver for a blocked boundary operator. */
+    DefaultDirectSolver(
+            const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp);
+    ~DefaultDirectSolver();
 
 private:
-    const LinearOperator<BasisFunctionType, ResultType>& m_linearOperator;
-    const GridFunction<BasisFunctionType, ResultType>& m_gridFunction;
-    arma::Col<ResultType> m_solution;
-    typename Solver<BasisFunctionType, ResultType>::EStatus m_status;
+    virtual Solution<BasisFunctionType, ResultType> solveImplNonblocked(
+            const GridFunction<BasisFunctionType, ResultType>& rhs) const;
+    virtual BlockedSolution<BasisFunctionType, ResultType> solveImplBlocked(
+            const std::vector<GridFunction<BasisFunctionType, ResultType> >&
+            rhs) const;
+
+private:
+    struct Impl;
+    boost::scoped_ptr<Impl> m_impl;
 };
 
 } // namespace Bempp

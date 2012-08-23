@@ -23,13 +23,13 @@
 
 #include "../common/common.hpp"
 
-#include "config_trilinos.hpp"
+#include "bempp/common/config_trilinos.hpp"
 
 #ifdef WITH_TRILINOS
 
 #include "Teuchos_RCP.hpp"
 #include "Thyra_PreconditionerBase.hpp"
-#include "../assembly/discrete_linear_operator.hpp"
+#include "../assembly/discrete_boundary_operator.hpp"
 
 namespace Bempp
 {
@@ -40,7 +40,7 @@ class AcaPreconditionerFactory
 public:
     static Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> >
     acaOperatorToPreconditioner
-    (const DiscreteLinearOperator<ValueType>& discreteOperator, const double delta=0.1);
+    (const DiscreteBoundaryOperator<ValueType>& discreteOperator, const double delta=0.1);
 };
 
 } // namespace Bempp

@@ -1,3 +1,4 @@
+
 // Copyright (C) 2011-2012 by the BEM++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,6 +26,8 @@
 
 #include "../common/armadillo_fwd.hpp"
 
+#include <cassert>
+
 namespace Fiber
 {
 
@@ -37,6 +40,8 @@ enum GeometricalDataType
     JACOBIAN_INVERSES_TRANSPOSED = 0x0010
 };
 
+template <typename CoordinateType> class ConstGeometricalDataSlice;
+
 template <typename CoordinateType>
 struct GeometricalData
 {
@@ -45,6 +50,58 @@ struct GeometricalData
     arma::Cube<CoordinateType> jacobiansTransposed;
     arma::Cube<CoordinateType> jacobianInversesTransposed;
     arma::Mat<CoordinateType> normals;
+
+    // For the time being, I (somewhat dangerously) assume that
+    // integrationElements or globals or normals are always used
+    int pointCount() const {
+        int result = std::max(std::max(globals.n_cols, normals.n_cols),
+                                       integrationElements.n_cols);
+        assert(result > 0);
+        return result;
+    }
+
+    int dimWorld() const {
+        int result = std::max(globals.n_rows, normals.n_rows);
+        assert(result > 0);
+        return result;
+    }
+
+    ConstGeometricalDataSlice<CoordinateType> const_slice(int point) const {
+        return ConstGeometricalDataSlice<CoordinateType>(*this, point);
+    }
+};
+
+template <typename CoordinateType>
+class ConstGeometricalDataSlice
+{
+public:
+    ConstGeometricalDataSlice(const GeometricalData<CoordinateType>& geomData,
+                              int point) :
+        m_geomData(geomData), m_point(point) {}
+
+    CoordinateType global(int dim) const {
+        return m_geomData.globals(dim, m_point);
+    }
+    CoordinateType integrationElement() const {
+        return m_geomData.integrationElements(m_point);
+    }
+    CoordinateType jacobianTransposed(int row, int col) const {
+        return m_geomData.jacobiansTransposed(row, col, m_point);
+    }
+    CoordinateType jacobianInverseTransposed(int row, int col) const {
+        return m_geomData.jacobianInversesTransposed(row, col, m_point);
+    }
+    CoordinateType normal(int dim) const {
+        return m_geomData.normals(dim, m_point);
+    }
+
+    int dimWorld() const {
+        return m_geomData.dimWorld();
+    }
+
+private:
+    const GeometricalData<CoordinateType>& m_geomData;
+    int m_point;
 };
 
 } // namespace Fiber

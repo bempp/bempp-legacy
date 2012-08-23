@@ -20,6 +20,8 @@
 
 #include "piecewise_linear_continuous_scalar_space.hpp"
 
+#include "../assembly/discrete_sparse_boundary_operator.hpp"
+#include "../common/boost_make_shared_fwd.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../grid/entity.hpp"
 #include "../grid/entity_iterator.hpp"
@@ -41,7 +43,7 @@ namespace Bempp
 template <typename BasisFunctionType>
 PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
 PiecewiseLinearContinuousScalarSpace(Grid& grid) :
-     ScalarSpace<BasisFunctionType>(grid)
+    ScalarSpace<BasisFunctionType>(grid), m_flatLocalDofCount(0)
 {
     const int gridDim = grid.dim();
     if (gridDim != 1 && gridDim != 2)
@@ -156,16 +158,18 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofs()
 
     // Iterate over elements
     std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
-    int vertexCount;
+    m_flatLocalDofCount = 0;
     while (!it->finished())
     {
         const Entity<0>& element = it->entity();
         EntityIndex elementIndex = elementMapper.entityIndex(element);
 
+        int vertexCount;
         if (gridDim == 1)
             vertexCount = element.template subEntityCount<1>();
         else // gridDim == 2
             vertexCount = element.template subEntityCount<2>();
+        m_flatLocalDofCount += vertexCount;
 
         // List of global DOF indices corresponding to the local DOFs of the
         // current element
@@ -179,6 +183,14 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofs()
         }
         it->next();
     }
+
+    // Initialize the container mapping the flat local dof indices to 
+    // local dof indices
+    m_flatLocal2localDofs.clear();
+    m_flatLocal2localDofs.reserve(m_flatLocalDofCount);
+    for (size_t e = 0; e < m_local2globalDofs.size(); ++e)
+        for (size_t dof = 0; dof < m_local2globalDofs[e].size(); ++dof)
+            m_flatLocal2localDofs.push_back(LocalDof(e, dof));
 }
 
 template <typename BasisFunctionType>
@@ -195,7 +207,21 @@ size_t PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::globalDofCount()
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::globalDofs(
+size_t PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::flatLocalDofCount() const
+{
+// This is the correct implementation. Include it once the
+// bug in FoamGrid is fixes.
+//    if (gridDim == 1)
+//        return m_view->entityCount(0) * 2;
+//    else // gridDim == 2
+//        return m_view->entityCount(GeometryType(GeometryType::cube, 2)) * 4 +
+//                m_view->entityCount(GeometryType(GeometryType::simplex, 2)) * 3;
+
+    return m_flatLocalDofCount;
+}
+
+template <typename BasisFunctionType>
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getGlobalDofs(
         const Entity<0>& element, std::vector<GlobalDofIndex>& dofs) const
 {
     const Mapper& mapper = m_view->elementMapper();
@@ -214,9 +240,24 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::global2localDofs(
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::globalDofPositions(
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::flatLocal2localDofs(
+        const std::vector<FlatLocalDofIndex>& flatLocalDofs,
+        std::vector<LocalDof>& localDofs) const
+{
+    localDofs.resize(flatLocalDofs.size());
+    for (size_t i = 0; i < flatLocalDofs.size(); ++i)
+        localDofs[i] = m_flatLocal2localDofs[flatLocalDofs[i]];
+}
+
+template <typename BasisFunctionType>
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getGlobalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
+    if (!dofsAssigned())
+        throw std::runtime_error(
+                "PiecewiseLinearContinuousScalarSpace::getGlobalDofPositions(): "
+                "assignDofs() must be called before calling this function");
+
     const int gridDim = domainDimension();
     const int globalDofCount_ = globalDofCount();
     positions.resize(globalDofCount_);
@@ -258,11 +299,68 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::globalDofPositions
 }
 
 template <typename BasisFunctionType>
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getFlatLocalDofPositions(
+        std::vector<Point3D<CoordinateType> >& positions) const
+{
+    if (!dofsAssigned())
+        throw std::runtime_error(
+                "PiecewiseLinearContinuousScalarSpace::getFlatLocalDofPositions(): "
+                "assignDofs() must be called before calling this function");
+
+    const int gridDim = domainDimension();
+    const int worldDim = this->m_grid.dimWorld();
+    positions.resize(m_flatLocalDofCount);
+
+    const IndexSet& indexSet = m_view->indexSet();
+    int elementCount = m_view->entityCount(0);
+
+    arma::Mat<CoordinateType> elementCenters(worldDim, elementCount);
+    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    arma::Col<CoordinateType> center;
+    while (!it->finished())
+    {
+        const Entity<0>& e = it->entity();
+        int index = indexSet.entityIndex(e);
+        e.geometry().getCenter(center);
+
+        for (int dim = 0; dim < worldDim; ++dim)
+            elementCenters(dim, index) = center(dim);
+        it->next();
+    }
+
+    size_t flatLdofIndex = 0;
+    if (gridDim == 1)
+        for (size_t e = 0; e < m_local2globalDofs.size(); ++e) {
+            for (size_t v = 0; v < m_local2globalDofs[e].size(); ++v) {
+                positions[flatLdofIndex].x = elementCenters(0, e);
+                positions[flatLdofIndex].y = elementCenters(1, e);
+                positions[flatLdofIndex].z = 0.;
+                ++flatLdofIndex;
+            }
+        }
+    else // gridDim == 2
+        for (size_t e = 0; e < m_local2globalDofs.size(); ++e) {
+            for (size_t v = 0; v < m_local2globalDofs[e].size(); ++v) {
+                positions[flatLdofIndex].x = elementCenters(0, e);
+                positions[flatLdofIndex].y = elementCenters(1, e);
+                positions[flatLdofIndex].z = elementCenters(2, e);
+                ++flatLdofIndex;
+            }
+        }
+    assert(flatLdofIndex == m_flatLocalDofCount);
+}
+
+template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::dumpClusterIds(
         const char* fileName,
-        const std::vector<unsigned int>& clusterIds) const
+        const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const
 {
-    const size_t idCount = clusterIds.size();
+    if (!dofsAssigned())
+        throw std::runtime_error(
+                "PiecewiseLinearContinuousScalarSpace::dumpClusterIds(): "
+                "assignDofs() must be called before calling this function");
+
+    const size_t idCount = clusterIdsOfGlobalDofs.size();
     if (idCount != globalDofCount())
         throw std::invalid_argument("PiecewiseLinearContinuousScalarSpace::"
                                     "dumpClusterIds(): incorrect dimension");
@@ -271,7 +369,7 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::dumpClusterIds(
     std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
     arma::Row<double> data(idCount);
     for (size_t i = 0; i < idCount; ++i)
-        data(i) = clusterIds[i];
+        data(i) = clusterIdsOfGlobalDofs[i];
     vtkWriter->addVertexData(data, "ids");
     vtkWriter->write(fileName);
 }

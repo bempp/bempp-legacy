@@ -18,22 +18,28 @@
 Levels are numbered 0 ... maxLevel() with 0 the coarsest level."
 %enddef 
 
-%define Grid_boundarySegmentCount_docstring
-"boundarySegmentCount(self) -> int
+%define Grid_boundarySegmentCount_autodoc_docstring
+"boundarySegmentCount(self) -> int"
+%enddef
 
-Number of boundary segments within the macro (level-0) grid."
+%define Grid_boundarySegmentCount_docstring
+"Number of boundary segments within the macro (level-0) grid."
 %enddef 
+
+%define Grid_levelView_autodoc_docstring
+"levelView(self, level) -> GridView"
+%enddef
 
 %define Grid_levelView_docstring
-"levelView(self, level) -> GridView
-
-View of the entities on grid level `level'."
+"View of the entities on grid level `level'."
 %enddef 
 
-%define Grid_leafView_docstring
-"leafView(self) -> GridView
+%define Grid_leafView_autodoc_docstring
+"leafView(self) -> GridView"
+%enddef
 
-View of the leaf entities."
+%define Grid_leafView_docstring
+"View of the leaf entities."
 %enddef 
 
 %define Grid_globalIdSet_docstring
@@ -48,10 +54,12 @@ preAdapt(), adapt() and postAdapt(). The state after refineGlobally()
 is comparable to the state after postAdapt()."
 %enddef 
 
-%define Grid_mark_docstring
-"mark(self, refCount, e) -> bool
+%define Grid_mark_autodoc_docstring
+"mark(self, refCount, e) -> bool"
+%enddef
 
-Mark an entity to be refined/coarsened in a subsequent adapt().
+%define Grid_mark_docstring
+"Mark an entity to be refined/coarsened in a subsequent adapt().
 
 *Arguments:*
     refCount (int)
@@ -63,10 +71,12 @@ Mark an entity to be refined/coarsened in a subsequent adapt().
 Returns True if e was marked, False otherwise."
 %enddef 
 
-%define Grid_getMark_docstring
-"getMark(self, e) -> int
+%define Grid_getMark_autodoc_docstring
+"getMark(self, e) -> int"
+%enddef
 
-Adaptation mark for entity e of codimension 0."
+%define Grid_getMark_docstring
+"Adaptation mark for entity e of codimension 0."
 %enddef 
 
 %define Grid_preAdapt_docstring

@@ -6,12 +6,10 @@
 Welcome to BEM++'s documentation!
 =================================
 
-Contents:
-
 .. toctree::
    :maxdepth: 2
 
-   intro
+   .. intro
    tutorial
 
 Indices and tables

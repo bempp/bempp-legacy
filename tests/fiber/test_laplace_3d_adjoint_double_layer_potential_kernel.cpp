@@ -18,9 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "fiber/laplace_3d_double_layer_potential_kernel.hpp"
-#include "fiber/laplace_3d_adjoint_double_layer_potential_kernel.hpp"
 #include "fiber/geometrical_data.hpp"
+#include "fiber/laplace_3d_adjoint_double_layer_potential_kernel_functor.hpp"
+#include "fiber/laplace_3d_double_layer_potential_kernel_functor.hpp"
+#include "fiber/default_collection_of_kernels.hpp"
+
 #include "../type_template.hpp"
 #include "../check_arrays_are_close.hpp"
 
@@ -35,28 +37,10 @@
 
 BOOST_AUTO_TEST_SUITE(Laplace3dAdjointDoubleLayerPotentialKernel)
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(worldDimension_is_3, ValueType, kernel_types)
-{
-    Fiber::Laplace3dAdjointDoubleLayerPotentialKernel<ValueType> op;
-    BOOST_CHECK_EQUAL(op.worldDimension(), 3);
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(domainDimension_is_1, ValueType, kernel_types)
-{
-    Fiber::Laplace3dAdjointDoubleLayerPotentialKernel<ValueType> op;
-    BOOST_CHECK_EQUAL(op.domainDimension(), 1);
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(codomainDimension_is_1, ValueType, kernel_types)
-{
-    Fiber::Laplace3dAdjointDoubleLayerPotentialKernel<ValueType> op;
-    BOOST_CHECK_EQUAL(op.domainDimension(), 1);
-}
-
 BOOST_AUTO_TEST_CASE_TEMPLATE(addGeometricalDependencies_works,
                               ValueType, kernel_types)
 {
-    Fiber::Laplace3dAdjointDoubleLayerPotentialKernel<ValueType> op;
+    Fiber::Laplace3dAdjointDoubleLayerPotentialKernelFunctor<ValueType> op;
     size_t testGeomDeps = 1024, trialGeomDeps = 16; // random initial values
     op.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 
@@ -70,9 +54,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_double_layer_potential,
 {
     // Check that DLP(x, y) = ADLP(y, x)
 
-    typedef Fiber::Laplace3dAdjointDoubleLayerPotentialKernel<ValueType> ADLPOperator;
-    ADLPOperator adlpOp;
-    Fiber::GeometricalData<typename ADLPOperator::CoordinateType> testGeomData, trialGeomData;
+    typedef Fiber::Laplace3dAdjointDoubleLayerPotentialKernelFunctor<ValueType> ADLPFunctor;
+    typedef Fiber::DefaultCollectionOfKernels<ADLPFunctor> ADLPKernels;
+    ADLPKernels adlpKernels((ADLPFunctor()));
+
+    Fiber::GeometricalData<typename ADLPFunctor::CoordinateType> testGeomData, trialGeomData;
     const int worldDim = 3;
     const int testPointCount = 2, trialPointCount = 3;
     testGeomData.globals.set_size(worldDim, testPointCount);
@@ -90,27 +76,29 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_double_layer_potential,
     trialGeomData.globals(0, 1) = 3.;
     trialGeomData.globals(0, 2) = 4.;
 
-    Fiber::Array4d<ValueType> adlpResult;
-    adlpOp.evaluateOnGrid(testGeomData, trialGeomData, adlpResult);
+    Fiber::CollectionOf4dArrays<ValueType> adlpResults;
+    adlpKernels.evaluateOnGrid(testGeomData, trialGeomData, adlpResults);
+    Fiber::_4dArray<ValueType>& adlpResult = adlpResults[0];
 
-    typedef Fiber::Laplace3dDoubleLayerPotentialKernel<ValueType> DLPOperator;
-    DLPOperator dlpOp;
+    typedef Fiber::Laplace3dDoubleLayerPotentialKernelFunctor<ValueType> DLPFunctor;
+    typedef Fiber::DefaultCollectionOfKernels<DLPFunctor> DLPKernels;
+    DLPKernels dlpKernels((DLPFunctor()));
     std::swap(testGeomData, trialGeomData);
 
-    Fiber::Array4d<ValueType> dlpResult;
-    dlpOp.evaluateOnGrid(testGeomData, trialGeomData, dlpResult);
+    Fiber::CollectionOf4dArrays<ValueType> dlpResults;
+    dlpKernels.evaluateOnGrid(testGeomData, trialGeomData, dlpResults);
+    Fiber::_4dArray<ValueType>& dlpResult = dlpResults[0];
 
     // swap test and trial point indexing
-    Fiber::Array4d<ValueType> reorderedDlpResult(dlpResult.extent(2),
-                                                 dlpResult.extent(3),
-                                                 dlpResult.extent(0),
-                                                 dlpResult.extent(1));
+    Fiber::_4dArray<ValueType> reorderedDlpResult(dlpResult.extent(1),
+                                                  dlpResult.extent(0),
+                                                  dlpResult.extent(3),
+                                                  dlpResult.extent(2));
     for (size_t i0 = 0; i0 < dlpResult.extent(0); ++i0)
         for (size_t i1 = 0; i1 < dlpResult.extent(1); ++i1)
             for (size_t i2 = 0; i2 < dlpResult.extent(2); ++i2)
                 for (size_t i3 = 0; i3 < dlpResult.extent(3); ++i3)
-                    reorderedDlpResult(i2, i3, i0, i1) =
-                            dlpResult(i0, i1, i2, i3);
+                    reorderedDlpResult(i1, i0, i3, i2) = dlpResult(i0, i1, i2, i3);
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(adlpResult, reorderedDlpResult, 1e-6));
 }
@@ -118,10 +106,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_double_layer_potential,
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_evaluateAtPointPairs,
                               ValueType, kernel_types)
 {
-    typedef Fiber::Laplace3dAdjointDoubleLayerPotentialKernel<ValueType> Operator;
-    Operator op;
+    typedef Fiber::Laplace3dAdjointDoubleLayerPotentialKernelFunctor<ValueType> Functor;
+    typedef Fiber::DefaultCollectionOfKernels<Functor> Kernels;
+    Kernels kernels((Functor()));
 
-    typedef Fiber::GeometricalData<typename Operator::CoordinateType> GeomData;
+    typedef Fiber::GeometricalData<typename Functor::CoordinateType> GeomData;
 
     const int worldDim = 3;
     const int testPointCount = 2, trialPointCount = 3;
@@ -144,14 +133,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_evaluateAtPointPairs,
     trialGeomDataOnGrid.globals(0, 1) = 3.;
     trialGeomDataOnGrid.globals(0, 2) = 4.;
 
-    Fiber::Array4d<ValueType> resultOnGrid;
-    op.evaluateOnGrid(testGeomDataOnGrid, trialGeomDataOnGrid, resultOnGrid);
+    Fiber::CollectionOf4dArrays<ValueType> resultOnGrid;
+    kernels.evaluateOnGrid(testGeomDataOnGrid, trialGeomDataOnGrid, resultOnGrid);
 
-    arma::Cube<ValueType> convertedResultOnGrid(1, 1, testPointCount * trialPointCount);
+    arma::Col<ValueType> convertedResultOnGrid(testPointCount * trialPointCount);
     for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
         for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
             convertedResultOnGrid(testPoint + trialPoint * testPointCount) =
-                    resultOnGrid(0, testPoint, 0, trialPoint);
+                    resultOnGrid[0](0, 0, testPoint, trialPoint);
 
     // Collect data with evaluateAtPointPairs
     GeomData testGeomDataAtPointPairs, trialGeomDataAtPointPairs;
@@ -168,12 +157,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_evaluateAtPointPairs,
                     trialGeomDataOnGrid.globals.col(trialPoint);
         }
 
-    arma::Cube<ValueType> resultAtPointPairs;
-    op.evaluateAtPointPairs(testGeomDataAtPointPairs, trialGeomDataAtPointPairs,
-                            resultAtPointPairs);
+    Fiber::CollectionOf3dArrays<ValueType> resultAtPointPairs;
+    kernels.evaluateAtPointPairs(testGeomDataAtPointPairs, trialGeomDataAtPointPairs,
+                                 resultAtPointPairs);
+    arma::Col<ValueType> convertedResultAtPointPairs(testPointCount * trialPointCount);
+    for (int point = 0; point < testPointCount * trialPointCount; ++point)
+        convertedResultAtPointPairs(point) =
+                resultAtPointPairs[0](0, 0, point);
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
-                    resultAtPointPairs, convertedResultOnGrid, 1e-6));
+                    convertedResultAtPointPairs, convertedResultOnGrid, 1e-6));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

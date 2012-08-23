@@ -4,10 +4,12 @@
 "Index set."
 %enddef 
 
-%define IndexSet_entityIndex_docstring
-"entityIndex(self, e) -> int
+%define IndexSet_entityIndex_autodoc_docstring
+"entityIndex(self, e) -> int"
+%enddef
 
-Index of the entity e.
+%define IndexSet_entityIndex_docstring
+"Index of the entity e.
 
 The result of calling this method with an entity that is not in the
 index set is undefined.
@@ -15,10 +17,12 @@ index set is undefined.
 Returns an integer in the range 0 ... (max number of entities in set - 1)."
 %enddef
 
-%define IndexSet_subEntityIndex_docstring
-"subEntityIndex(self, e, i, codimSub) -> int
+%define IndexSet_subEntityIndex_autodoc_docstring
+"subEntityIndex(self, e, i, codimSub) -> int"
+%enddef
 
-Index of i'th subentity of codimension codimSub of entity e of codimension 0."
+%define IndexSet_subEntityIndex_docstring
+"Index of i'th subentity of codimension codimSub of entity e of codimension 0."
 %enddef
 
 

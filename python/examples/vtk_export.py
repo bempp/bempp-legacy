@@ -7,12 +7,12 @@
 import sys
 sys.path.append("..")
 
-import bempp
+import bempp.lib
 import numpy as np
 
 # Create the grid, the leaf view and its index set
 print "Importing grid..."
-grid = bempp.GridFactory.importGmshGrid("triangular", "../../examples/meshes/head.gmsh")
+grid = bempp.lib.createGridFactory().importGmshGrid("triangular", "../../examples/meshes/head.gmsh")
 view = grid.leafView()
 index_set = view.indexSet()
 

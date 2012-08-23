@@ -30,16 +30,25 @@ EvaluationOptions::EvaluationOptions()
 {
 }
 
-void EvaluationOptions::switchToOpenCl(const OpenClOptions& openClOptions)
+//void EvaluationOptions::switchToOpenCl(const OpenClOptions& openClOptions)
+//{
+//    m_parallelizationOptions.switchToOpenCl(openClOptions);
+//}
+
+void EvaluationOptions::setMaxThreadCount(int maxThreadCount)
 {
-    m_parallelisationOptions.switchToOpenCl(openClOptions);
+    m_parallelizationOptions.setMaxThreadCount(maxThreadCount);
 }
 
 void EvaluationOptions::switchToTbb(int maxThreadCount)
 {
-    m_parallelisationOptions.switchToTbb(maxThreadCount);
+    setMaxThreadCount(maxThreadCount);
 }
 
+const ParallelizationOptions& EvaluationOptions::parallelizationOptions() const
+{
+    return m_parallelizationOptions;
+}
 
 } // namespace Bempp
 

@@ -1,9 +1,3 @@
-%{
-#include "assembly/surface_normal_independent_functor.hpp"
-#include <armadillo>
-%}
-
-
 %typemap(in) PyObject *pyfunc {
     if (!PyCallable_Check($input)) {
         PyErr_SetString(PyExc_TypeError, "Callable object expected!");
@@ -12,25 +6,29 @@
     $1 = $input;
 }
 
-%define BEMPP_DECLARE_PYTHON_SURFACE_NORMAL_INDEPENDENT_FUNCTOR( TYPE , NPY_NAME , NPY_TYPE )
 %inline %{
 
-namespace Bempp{
-class PythonSurfaceNormalIndependentFunctor_## NPY_NAME :
-    public SurfaceNormalIndependentFunctor< TYPE >
+namespace Bempp
+{
+
+template <typename ValueType_>
+class PythonSurfaceNormalIndependentFunctor
 {
 public:
-    PythonSurfaceNormalIndependentFunctor_## NPY_NAME(
-    PyObject *pyFunc,int argumentDimension, int resultDimension) :
+    typedef ValueType_ ValueType;
+    typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+
+    PythonSurfaceNormalIndependentFunctor(
+        PyObject *pyFunc, int argumentDimension, int resultDimension) :
             m_pyFunc(pyFunc),
             m_argumentDimension(argumentDimension),
             m_resultDimension(resultDimension) {
         if (!PyCallable_Check(pyFunc))
             PyErr_SetString(PyExc_TypeError, "Python object is not callable");
-        Py_INCREF(m_pyFunc); // Increase shared pointer
+        Py_INCREF(m_pyFunc); // Increase shared pointer reference count
     }
 
-    ~PythonSurfaceNormalIndependentFunctor_##NPY_NAME(){
+    ~PythonSurfaceNormalIndependentFunctor() {
         Py_DECREF(m_pyFunc);
     }
 
@@ -42,15 +40,19 @@ public:
         return m_resultDimension;
     }
 
-    void evaluate(const arma::Col<CoordinateType>& point, arma::Col<ValueType>& result_) const
+    void evaluate(const arma::Col<CoordinateType>& point,
+                  arma::Col<ValueType>& result_) const
     {
+        const int coordinateNumpyType = PythonScalarTraits<CoordinateType>::numpyType;
+        const int valueNumpyType = PythonScalarTraits<ValueType>::numpyType;
+
         // Create the input array
         npy_intp dims1[1];
         dims1[0] = point.n_rows;
-        PyObject* pyPoint = PyArray_ZEROS(1, dims1, NPY_TYPE, NPY_FORTRAN);
+        PyObject* pyPoint = PyArray_ZEROS(1, dims1, coordinateNumpyType, NPY_FORTRAN);
         if (!pyPoint)
             throw std::runtime_error("Point array creation failed");
-        TYPE* pdata=(TYPE*)array_data(pyPoint);
+        CoordinateType* pdata = (CoordinateType*) array_data(pyPoint);
         for (size_t i = 0; i < dims1[0]; i++)
             pdata[i] = point(i);
 
@@ -60,7 +62,7 @@ public:
             Py_XDECREF(pyPoint);
             throw std::runtime_error("Callable did not execute successfully");
         }
-        PyObject* pyReturnValArray = PyArray_FROM_OT(pyReturnVal, NPY_TYPE);
+        PyObject* pyReturnValArray = PyArray_FROM_OT(pyReturnVal, valueNumpyType);
         if (!pyReturnValArray) {
             Py_XDECREF(pyPoint);
             Py_XDECREF(pyReturnVal);
@@ -69,7 +71,7 @@ public:
         int is_new_object;
         PyArrayObject* pyReturnValArrayCont =
             obj_to_array_contiguous_allow_conversion(
-                pyReturnValArray, NPY_TYPE, &is_new_object);
+                pyReturnValArray, valueNumpyType, &is_new_object);
 
         // Check size of array
         int asize;
@@ -98,7 +100,7 @@ public:
         }
 
         // Copy data back
-        TYPE* data = (TYPE*) array_data(pyReturnValArrayCont);
+        ValueType* data = (ValueType*) array_data(pyReturnValArrayCont);
         for (size_t i = 0; i < m_resultDimension; i++)
             result_(i) = data[i];
 
@@ -120,21 +122,9 @@ private:
 
 %}
 
-%enddef
+namespace Bempp
+{
 
-BEMPP_DECLARE_PYTHON_SURFACE_NORMAL_INDEPENDENT_FUNCTOR(float, float32, NPY_FLOAT)
-BEMPP_DECLARE_PYTHON_SURFACE_NORMAL_INDEPENDENT_FUNCTOR(double, float64, NPY_DOUBLE)
-BEMPP_DECLARE_PYTHON_SURFACE_NORMAL_INDEPENDENT_FUNCTOR(std::complex<float>, complex64, NPY_CFLOAT)
-BEMPP_DECLARE_PYTHON_SURFACE_NORMAL_INDEPENDENT_FUNCTOR(std::complex<double>, complex128, NPY_CDOUBLE)
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_VALUE(PythonSurfaceNormalIndependentFunctor);
 
-%pythoncode %{
-
-def surfaceNormalIndependentFunctor(fun, valueType='float64',
-        argumentDimension=3, resultDimension=1):
-    valueType = checkType(valueType)
-    return constructObjectTemplatedOnValue(
-        "PythonSurfaceNormalIndependentFunctor",
-        valueType, fun, argumentDimension, resultDimension)
-
-%}
-
+} // namespace Bempp

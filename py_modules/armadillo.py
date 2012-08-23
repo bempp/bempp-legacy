@@ -19,7 +19,7 @@
 #THE SOFTWARE.
 
 import os,urllib,shutil,subprocess,sys
-from py_modules.tools import extract_file, to_bool
+from py_modules import tools
 from py_modules import python_patch as py_patch
 
 
@@ -28,45 +28,37 @@ arma_url='http://sourceforge.net/projects/arma/files/armadillo-3.2.0.tar.gz'
 arma_extract_dir='armadillo-3.2.0'
 arma_dir='armadillo'
 
-def configureArmadillo(root,config):
-    """Download Armadillo if required"""
 
+def download(root,config):
+    """Download Armadillo"""
+    tools.download(arma_fname,arma_url,root+"/contrib/files")
 
+def prepare(root,config):
     prefix=config.get('Main','prefix')
-    arma_include_dir=prefix+"/bempp/contrib/armadillo/include"
+    arma_include_dir=prefix+"/bempp/include"
     
+    print "Extracting Armadillo"
+    extract_dir = root+"/contrib/"+arma_extract_dir
+    tools.checkDeleteDirectory(extract_dir)
+    tools.extract_file(root+"/contrib/files/"+arma_fname,root+"/contrib")
+    subprocess.check_call("cp -R "+extract_dir+"/include/* "+prefix+"/bempp/include/",shell=True)
+    print "Patching Armadillo"
+    patch=py_patch.fromfile(root+"/contrib/patch/armadillo_config.patch")
+    cwd=os.getcwd()
+    os.chdir(prefix+"/bempp/include/armadillo_bits")
+    patch.apply()
+    os.chdir(cwd)
 
-    download_arma=True
-    if config.has_option('Armadillo','download_armadillo'): download_arma=to_bool(config.get('Armadillo','download_armadillo'))
-    
-    if download_arma and not os.path.isdir(prefix+"/bempp/contrib/armadillo"):
-        # Download Armadillo
-        if not os.path.isfile(root+"/contrib/files/"+arma_fname):
-            print "Downloading Armadillo ..."
-            urllib.urlretrieve(arma_url,root+"/contrib/files/"+arma_fname)
+    tools.setDefaultConfigOption(config,"Armadillo","include_dir",prefix+"/bempp/include",overwrite=True)
 
-        print "Extracting Armadillo"
-        extract_file(root+"/contrib/files/"+arma_fname,prefix+"/bempp/contrib/")
-        os.rename(prefix+"/bempp/contrib/"+arma_extract_dir,prefix+"/bempp/contrib/"+arma_dir)
-        print "Applying patches"
-        patch=py_patch.fromfile(root+"/contrib/patch/armadillo_config.patch")
-        cwd=os.getcwd()
-        os.chdir(prefix+"/bempp/contrib/armadillo/include/armadillo_bits")
-        patch.apply()
-        os.chdir(cwd)
-        
-
-    if download_arma:
-        if not config.has_section("Armadillo"): config.add_section("Armadillo")
-        config.set("Armadillo",'include_dir',prefix+"/bempp/contrib/armadillo/include")
-    else:
-        if not config.has_option('Armadillo','include_dir'):
-            raise Exception("You need to specify 'include_dir' under the 'Armadillo' header in the configuration file")
-
-     
-def buildArmadillo(root,config):
+def configure(root,config):
     pass
-    
+     
+def build(root,config):
+    pass
+
+def install(root,config):
+    pass
 
         
     

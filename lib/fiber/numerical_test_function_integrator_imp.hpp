@@ -24,8 +24,8 @@
 
 #include "basis.hpp"
 #include "basis_data.hpp"
+#include "collection_of_basis_transformations.hpp"
 #include "conjugate.hpp"
-#include "expression.hpp"
 #include "function.hpp"
 #include "geometrical_data.hpp"
 #include "opencl_handler.hpp"
@@ -47,14 +47,14 @@ NumericalTestFunctionIntegrator(
         const std::vector<CoordinateType> quadWeights,
         const GeometryFactory& geometryFactory,
         const RawGridGeometry<CoordinateType>& rawGeometry,
-        const Expression<CoordinateType>& testExpression,
+        const CollectionOfBasisTransformations<CoordinateType>& testTransformations,
         const Function<UserFunctionType>& function,
         const OpenClHandler& openClHandler) :
     m_localQuadPoints(localQuadPoints),
     m_quadWeights(quadWeights),
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
-    m_testExpression(testExpression),
+    m_testTransformations(testTransformations),
     m_function(function),
     m_openClHandler(openClHandler)
 {
@@ -62,6 +62,13 @@ NumericalTestFunctionIntegrator(
         throw std::invalid_argument("NumericalTestTrialIntegrator::"
                                     "NumericalTestTrialIntegrator(): "
                                     "numbers of points and weights do not match");
+
+    if (testTransformations.transformationCount() != 1)
+        throw std::invalid_argument("NumericalTestTrialIntegrator::"
+                                    "NumericalTestTrialIntegrator(): "
+                                    "test transformation collection "
+                                    "must contain exactly one element");
+
 }
 
 template <typename BasisFunctionType, typename UserFunctionType,
@@ -82,7 +89,7 @@ integrate(
     // elementCount != 0, set elements of result to 0.
 
     // Evaluate constants
-    const int componentCount = m_testExpression.codomainDimension();
+    const int componentCount = m_testTransformations.resultDimension(0);
     const int testDofCount = testBasis.size();
 
     if (m_function.codomainDimension() != componentCount)
@@ -96,13 +103,13 @@ integrate(
     size_t testBasisDeps = 0;
     size_t geomDeps = INTEGRATION_ELEMENTS;
 
-    m_testExpression.addDependencies(testBasisDeps, geomDeps);
+    m_testTransformations.addDependencies(testBasisDeps, geomDeps);
     m_function.addGeometricalDependencies(geomDeps);
 
     typedef typename GeometryFactory::Geometry Geometry;
     std::auto_ptr<Geometry> geometry(m_geometryFactory.make());
 
-    arma::Cube<BasisFunctionType> testValues;
+    Fiber::CollectionOf3dArrays<BasisFunctionType> testValues;
     arma::Mat<UserFunctionType> functionValues;
 
     result.set_size(testDofCount, elementCount);
@@ -114,7 +121,7 @@ integrate(
     {
         m_rawGeometry.setupGeometry(elementIndices[e], *geometry);
         geometry->getData(geomDeps, m_localQuadPoints, geomData);
-        m_testExpression.evaluate(testBasisData, geomData, testValues);
+        m_testTransformations.evaluate(testBasisData, geomData, testValues);
         m_function.evaluate(geomData, functionValues);
 
         for (int testDof = 0; testDof < testDofCount; ++testDof)
@@ -124,7 +131,7 @@ integrate(
                 for (int dim = 0; dim < componentCount; ++dim)
                     sum +=  m_quadWeights[point] *
                             geomData.integrationElements(point) *
-                            conjugate(testValues(dim, testDof, point)) *
+                            conjugate(testValues[0](dim, testDof, point)) *
                             functionValues(dim, point);
             result(testDof, e) = sum;
         }

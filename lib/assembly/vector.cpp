@@ -31,8 +31,7 @@ namespace Bempp
 {
 
 template <typename ValueType>
-Vector<ValueType>::Vector(
-        const arma::Col<ValueType>& vec)
+Vector<ValueType>::Vector(const arma::Col<ValueType>& vec)
 {
 #ifdef WITH_TRILINOS
     const size_t size = vec.n_rows;
@@ -43,6 +42,18 @@ Vector<ValueType>::Vector(
                      data, 1 /* stride */);
 #else
     m_vec = vec;
+#endif
+}
+
+template <typename ValueType>
+Vector<ValueType>::Vector(size_t n)
+{
+#ifdef WITH_TRILINOS
+    Teuchos::ArrayRCP<ValueType> data(n);
+    this->initialize(Thyra::defaultSpmdVectorSpace<ValueType>(n),
+                     data, 1 /* stride */);
+#else
+    m_vec.set_size(n);
 #endif
 }
 

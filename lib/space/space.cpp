@@ -19,11 +19,11 @@
 // THE SOFTWARE.
 
 #include "space.hpp"
+#include "bempp/common/config_trilinos.hpp"
 
-#include "mass_matrix_container.hpp"
-#include "mass_matrix_container_initialiser.hpp"
+#include "../assembly/discrete_sparse_boundary_operator.hpp"
 
-#include "../assembly/discrete_linear_operator.hpp"
+#include "../common/boost_make_shared_fwd.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -33,19 +33,104 @@
 #include "../grid/grid_view.hpp"
 #include "../grid/mapper.hpp"
 
-#include <boost/type_traits/is_same.hpp>
-#include <boost/static_assert.hpp>
+//#include <boost/type_traits/is_same.hpp>
+//#include <boost/static_assert.hpp>
+
+#ifdef WITH_TRILINOS
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_LocalMap.h>
+#include <Epetra_SerialComm.h>
+#endif
 
 namespace Bempp
 {
 
+namespace
+{
+
+#ifdef WITH_TRILINOS
+template <typename BasisFunctionType>
+void constructGlobalToFlatLocalDofsMappingVectors(
+        const Space<BasisFunctionType>& space,
+        std::vector<int>& rows, std::vector<int>& cols,
+        std::vector<double>& values)
+{
+    const int ldofCount = space.flatLocalDofCount();
+
+    const Grid& grid = space.grid();
+    std::auto_ptr<GridView> view = grid.leafView();
+    const IndexSet& indexSet = view->indexSet();
+    const size_t elementCount = view->entityCount(0);
+
+    std::vector<std::vector<GlobalDofIndex> > gdofs;
+    gdofs.resize(elementCount);
+    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    while (!it->finished()) {
+        const Entity<0>& e = it->entity();
+        int index = indexSet.entityIndex(e);
+        space.getGlobalDofs(e, gdofs[index]);
+        it->next();
+    }
+
+    rows.clear();
+    cols.clear();
+    rows.reserve(ldofCount);
+    cols.reserve(ldofCount);
+
+    size_t flatLdofIndex = 0;
+    for (size_t e = 0; e < gdofs.size(); ++e) {
+        for (size_t v = 0; v < gdofs[e].size(); ++v) {
+            rows.push_back(flatLdofIndex);
+            cols.push_back(gdofs[e][v]);
+            ++flatLdofIndex;
+        }
+    }
+    assert(rows.size() == ldofCount);
+    assert(cols.size() == ldofCount);
+
+    std::vector<double> tmp(ldofCount, 1.);
+    values.swap(tmp);
+}
+
+template <typename BasisFunctionType>
+shared_ptr<Epetra_CrsMatrix>
+constructGlobalToFlatLocalDofsMappingEpetraMatrix(
+        const Space<BasisFunctionType>& space)
+{
+    std::vector<int> rows, cols;
+    std::vector<double> values;
+    constructGlobalToFlatLocalDofsMappingVectors(space, rows, cols, values);
+
+    assert(rows.size() == cols.size());
+    assert(cols.size() == values.size());
+    const size_t entryCount = rows.size();
+
+    const size_t rowCount = space.flatLocalDofCount();
+    const size_t columnCount = space.globalDofCount();
+
+    Epetra_SerialComm comm; // To be replaced once we begin to use MPI
+    Epetra_LocalMap rowMap(rowCount, 0 /* index_base */, comm);
+    Epetra_LocalMap columnMap(columnCount, 0 /* index_base */, comm);
+    shared_ptr<Epetra_CrsMatrix> result = boost::make_shared<Epetra_CrsMatrix>(
+                Copy, rowMap, columnMap, 1 /* entries per row */);
+
+    for (size_t i = 0; i < entryCount; ++i) {
+        int errorCode = result->InsertGlobalValues(
+                    rows[i], 1 /* number of inserted entries */,
+                    &values[i], &cols[i]);
+        assert(errorCode == 0);
+    }
+    result->FillComplete(columnMap, rowMap);
+
+    return result;
+}
+#endif // WITH_TRILINOS
+
+} // namespace
+
 template <typename BasisFunctionType>
 Space<BasisFunctionType>::Space(Grid& grid) :
-    m_grid(grid),
-    m_bftMassMatrixContainer(
-        MassMatrixContainerInitialiser<BasisFunctionType, BasisFunctionType>(*this)),
-    m_ctMassMatrixContainer(
-        MassMatrixContainerInitialiser<BasisFunctionType, ComplexType>(*this))
+    m_grid(grid)
 {
 }
 
@@ -55,92 +140,13 @@ Space<BasisFunctionType>::~Space()
 }
 
 template <typename BasisFunctionType>
-template <typename ResultType>
-typename boost::enable_if_c<
-boost::is_same<ResultType, BasisFunctionType>::value ||
-boost::is_same<ResultType,
-typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>::value
->::type
-Space<BasisFunctionType>::applyMassMatrix(
-        const arma::Col<ResultType>& argument,
-        arma::Col<ResultType>& result) const
-{
-    // The compile-time type test ensures that reinterpret_cast is a no-op
-    result.set_size(argument.n_rows);
-    if (boost::is_same<ResultType, BasisFunctionType>::value)
-        applyMassMatrixBasisFunctionType(
-                    reinterpret_cast<const arma::Col<BasisFunctionType>&>(argument),
-                    reinterpret_cast<arma::Col<BasisFunctionType>&>(result));
-    else
-        applyMassMatrixComplexType(
-                    reinterpret_cast<const arma::Col<ComplexType>&>(argument),
-                    reinterpret_cast<arma::Col<ComplexType>&>(result));
-}
-
-template <typename BasisFunctionType>
-void Space<BasisFunctionType>::applyMassMatrixBasisFunctionType(
-        const arma::Col<BasisFunctionType>& argument,
-        arma::Col<BasisFunctionType>& result) const
-{
-    m_bftMassMatrixContainer.get().massMatrix->apply(
-                NO_TRANSPOSE, argument, result, 1., 0.);
-}
-
-template <typename BasisFunctionType>
-void Space<BasisFunctionType>::applyMassMatrixComplexType(
-        const arma::Col<ComplexType>& argument,
-        arma::Col<ComplexType>& result) const
-{
-    m_ctMassMatrixContainer.get().massMatrix->apply(
-                NO_TRANSPOSE, argument, result, 1., 0.);
-}
-
-template <typename BasisFunctionType>
-template <typename ResultType>
-typename boost::enable_if_c<
-boost::is_same<ResultType, BasisFunctionType>::value ||
-boost::is_same<ResultType,
-typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>::value
->::type
-Space<BasisFunctionType>::applyInverseMassMatrix(
-        const arma::Col<ResultType>& argument,
-        arma::Col<ResultType>& result) const
-{
-    // The compile-time type test ensures that reinterpret_cast is a no-op
-    result.set_size(argument.n_rows);
-    if (boost::is_same<ResultType, BasisFunctionType>::value)
-        applyInverseMassMatrixBasisFunctionType(
-                    reinterpret_cast<const arma::Col<BasisFunctionType>&>(argument),
-                    reinterpret_cast<arma::Col<BasisFunctionType>&>(result));
-    else
-        applyInverseMassMatrixComplexType(
-                    reinterpret_cast<const arma::Col<ComplexType>&>(argument),
-                    reinterpret_cast<arma::Col<ComplexType>&>(result));
-}
-
-template <typename BasisFunctionType>
-void Space<BasisFunctionType>::applyInverseMassMatrixBasisFunctionType(
-        const arma::Col<BasisFunctionType>& argument,
-        arma::Col<BasisFunctionType>& result) const
-{
-    m_bftMassMatrixContainer.get().inverseMassMatrix->apply(
-                NO_TRANSPOSE, argument, result, 1., 0.);
-}
-
-template <typename BasisFunctionType>
-void Space<BasisFunctionType>::applyInverseMassMatrixComplexType(
-        const arma::Col<ComplexType>& argument,
-        arma::Col<ComplexType>& result) const
-{
-    m_ctMassMatrixContainer.get().inverseMassMatrix->apply(
-                NO_TRANSPOSE, argument, result, 1., 0.);
-}
-
-/** \brief Get pointers to Basis objects corresponding to all elements. */
-template <typename BasisFunctionType>
 void getAllBases(const Space<BasisFunctionType>& space,
         std::vector<const Fiber::Basis<BasisFunctionType>*>& bases)
 {
+    if (!space.dofsAssigned())
+        throw std::runtime_error("getAllBases(): space.assignDofs() must be "
+                                 "called before calling this function");
+
     std::auto_ptr<GridView> view = space.grid().leafView();
     const Mapper& mapper = view->elementMapper();
     const int elementCount = view->entityCount(0);
@@ -155,55 +161,44 @@ void getAllBases(const Space<BasisFunctionType>& space,
     }
 }
 
-#define INSTANTIATE(TYPE) \
+#ifdef WITH_TRILINOS
+template <typename BasisFunctionType, typename ResultType>
+shared_ptr<DiscreteBoundaryOperator<ResultType> >
+constructOperatorMappingGlobalToFlatLocalDofs(const Space<BasisFunctionType>& space)
+{
+    shared_ptr<Epetra_CrsMatrix> mat =
+            constructGlobalToFlatLocalDofsMappingEpetraMatrix(space);
+    return boost::make_shared<DiscreteSparseBoundaryOperator<ResultType> >(
+                mat);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+shared_ptr<DiscreteBoundaryOperator<ResultType> >
+constructOperatorMappingFlatLocalToGlobalDofs(const Space<BasisFunctionType>& space)
+{
+    shared_ptr<Epetra_CrsMatrix> mat =
+            constructGlobalToFlatLocalDofsMappingEpetraMatrix(space);
+    return boost::make_shared<DiscreteSparseBoundaryOperator<ResultType> >(
+                mat, NO_SYMMETRY, TRANSPOSE);
+}
+#endif // WITH_TRILINOS
+
+#define INSTANTIATE_getAllBases(BASIS) \
     template \
-    void getAllBases(const Space<TYPE>& space, \
-                std::vector<const Fiber::Basis<TYPE>*>& bases)
+    void getAllBases(const Space<BASIS>& space, \
+                std::vector<const Fiber::Basis<BASIS>*>& bases)
 
-#define INSTANTIATE_MEMBERS(BASIS, RESULT) \
-    template void \
-    Space<BASIS>::applyMassMatrix( \
-            const arma::Col<RESULT>& argument, \
-            arma::Col<RESULT>& result) const; \
-    template void \
-    Space<BASIS>::applyInverseMassMatrix( \
-        const arma::Col<RESULT>& argument, \
-        arma::Col<RESULT>& result) const
-
-#ifdef ENABLE_SINGLE_PRECISION
-INSTANTIATE(float);
-#  ifdef ENABLE_COMPLEX_BASIS_FUNCTIONS
-INSTANTIATE(std::complex<float>);
-#  endif
-#endif
-
-#ifdef ENABLE_SINGLE_PRECISION
-INSTANTIATE_MEMBERS(float, float);
-#  if defined(ENABLE_COMPLEX_KERNELS) || defined(ENABLE_COMPLEX_BASIS_FUNCTIONS)
-INSTANTIATE_MEMBERS(float, std::complex<float>);
-#  endif
-#  ifdef ENABLE_COMPLEX_BASIS_FUNCTIONS
-INSTANTIATE_MEMBERS(std::complex<float>, std::complex<float>);
-#  endif
-#endif
-
-#ifdef ENABLE_DOUBLE_PRECISION
-INSTANTIATE(double);
-#  ifdef ENABLE_COMPLEX_BASIS_FUNCTIONS
-INSTANTIATE(std::complex<double>);
-#  endif
-#endif
-
-#ifdef ENABLE_DOUBLE_PRECISION
-INSTANTIATE_MEMBERS(double, double);
-#  if defined(ENABLE_COMPLEX_KERNELS) || defined(ENABLE_COMPLEX_BASIS_FUNCTIONS)
-INSTANTIATE_MEMBERS(double, std::complex<double>);
-#  endif
-#  ifdef ENABLE_COMPLEX_BASIS_FUNCTIONS
-INSTANTIATE_MEMBERS(std::complex<double>, std::complex<double>);
-#  endif
-#endif
+#define INSTANTIATE_constructOperators(BASIS, RESULT) \
+    template \
+    shared_ptr<DiscreteBoundaryOperator<RESULT> > \
+            constructOperatorMappingGlobalToFlatLocalDofs(const Space<BASIS>& space); \
+    template \
+    shared_ptr<DiscreteBoundaryOperator<RESULT> > \
+            constructOperatorMappingFlatLocalToGlobalDofs(const Space<BASIS>& space)
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Space);
+
+FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_getAllBases);
+FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_constructOperators);
 
 } // namespace Bempp

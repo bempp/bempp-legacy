@@ -7,10 +7,12 @@ This class provides static member functions to construct grids on the
 fly and to import grids from existing files."
 %enddef 
 
-%define GridFactory_createStructuredGrid_docstring
-"createStructuredGrid(topology, lowerLeft, upperRight, nElements) -> Grid
+%define GridFactory_createStructuredGrid_autodoc_docstring
+"createStructuredGrid(topology, lowerLeft, upperRight, nElements) -> Grid"
+%enddef
 
-Construct a regular structured grid.
+%define GridFactory_createStructuredGrid_docstring
+"Construct a regular structured grid.
 
 *Arguments:*
     topology (string)
@@ -38,11 +40,13 @@ Each side of the cube parallel to the nth coordinate axis is subdivided into nEl
 *Note:* Currently only grids with triangular topology are supported."
 %enddef 
 
-%define GridFactory_importGmshGrid_docstring
+%define GridFactory_importGmshGrid_autodoc_docstring
 "importGmshGrid(topology, fileName, verbose = True, 
-    insertBoundarySegments = False) -> Grid
+    insertBoundarySegments = False) -> Grid"
+%enddef
 
-Import grid from a file in Gmsh format.
+%define GridFactory_importGmshGrid_docstring
+"Import grid from a file in Gmsh format.
 
 *Arguments:*
     topology (string)

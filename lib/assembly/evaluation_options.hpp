@@ -24,41 +24,47 @@
 
 #include "../common/common.hpp"
 
+#include "../common/deprecated.hpp"
 #include "../fiber/opencl_options.hpp"
-#include "../fiber/parallelisation_options.hpp"
+#include "../fiber/parallelization_options.hpp"
 
 namespace Bempp
 {
 
 using Fiber::OpenClOptions;
-using Fiber::ParallelisationOptions;
+using Fiber::ParallelizationOptions;
 
+/** \ingroup potential_operators
+ *  \brief Options controlling evaluation of potentials.
+ */
 class EvaluationOptions
 {
 public:
+    /** \brief Constructor. */
     EvaluationOptions();
 
-    enum Mode {
-        AUTO = -1,
-        NO = 0,
-        YES = 1
-    };
+    enum { AUTO = -1 };
 
-    /** @}
-      @name Parallelisation
-      @{ */
+    // Temporarily removed (OpenCl support is broken).
+    // void enableOpenCl(const OpenClOptions& openClOptions);
+    // void disableOpenCl();
 
-    void switchToOpenCl(const OpenClOptions& openClOptions);
-    void switchToTbb(int maxThreadCount = AUTO);
+    /** \brief Set the maximum number of threads used during evaluation of potentials.
+     *
+     *  \p maxThreadCount must be a positive number or \p AUTO. In the latter
+     *  case the number of threads is determined automatically. */
+    void setMaxThreadCount(int maxThreadCount);
 
-    const ParallelisationOptions& parallelisationOptions() const {
-        return m_parallelisationOptions;
-    }
+    /** \brief Set the maximum number of threads used during evaluation of potentials.
+     *
+     *  \deprecated Use setMaxThreadCount() instead. */
+    BEMPP_DEPRECATED void switchToTbb(int maxThreadCount = AUTO);
 
-    /** @} */
+    /** \brief Return current parallelization options. */
+    const ParallelizationOptions& parallelizationOptions() const;
 
 private:
-    ParallelisationOptions m_parallelisationOptions;
+    ParallelizationOptions m_parallelizationOptions;
 };
 
 } // namespace Bempp

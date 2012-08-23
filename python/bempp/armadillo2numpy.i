@@ -285,6 +285,7 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
  * below applies all of the typemaps above to the specified data type.
  */
 %arma_numpy_typemaps(signed char       , NPY_BYTE     )
+%arma_numpy_typemaps(char              , NPY_CHAR     )
 %arma_numpy_typemaps(unsigned char     , NPY_UBYTE    )
 %arma_numpy_typemaps(short             , NPY_SHORT    )
 %arma_numpy_typemaps(unsigned short    , NPY_USHORT   )
@@ -297,7 +298,7 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
 %arma_numpy_typemaps(float             , NPY_FLOAT    )
 %arma_numpy_typemaps(double            , NPY_DOUBLE   )
 
-%arma_numpy_typemaps(Bempp::ctype      , NPY_DOUBLE   )
+//%arma_numpy_typemaps(Bempp::ctype      , NPY_DOUBLE   )
 
 %arma_numpy_typemaps(std::complex<float>,  NPY_CFLOAT  );
 %arma_numpy_typemaps(std::complex<double>, NPY_CDOUBLE );

@@ -24,26 +24,33 @@
 #include "../common/common.hpp"
 
 #include "space.hpp"
-#include "../fiber/scalar_function_value.hpp"
+
+#include <boost/scoped_ptr.hpp>
 
 namespace Bempp
 {
 
+/** \ingroup space
+ *  \brief Base class for spaces of scalar-valued functions. */
 template <typename BasisFunctionType>
 class ScalarSpace : public Space<BasisFunctionType>
 {
+    typedef Space<BasisFunctionType> Base;
 public:
-    typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
+    typedef typename Base::CoordinateType CoordinateType;
+    typedef typename Base::CollectionOfBasisTransformations
+    CollectionOfBasisTransformations;
 
-    explicit ScalarSpace(Grid& grid) : Space<BasisFunctionType>(grid) {
-    }
+    explicit ScalarSpace(Grid& grid);
+    ScalarSpace(const ScalarSpace& other);
+    virtual ~ScalarSpace();
 
-    virtual const Fiber::Expression<CoordinateType>& shapeFunctionValueExpression() const {
-        return m_shapeFunctionValueExpression;
-    }
+    virtual const CollectionOfBasisTransformations&
+    shapeFunctionValue() const;
 
 private:
-    Fiber::ScalarFunctionValue<CoordinateType> m_shapeFunctionValueExpression;
+    struct Impl;
+    boost::scoped_ptr<Impl> m_impl;
 };
 
 } // namespace Bempp

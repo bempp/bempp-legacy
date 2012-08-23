@@ -36,6 +36,8 @@ namespace Bempp
 
 class GridView;
 
+/** \ingroup space
+ *  \brief Space of piecewise constant scalar functions. */
 template <typename BasisFunctionType>
 class PiecewiseConstantScalarSpace : public ScalarSpace<BasisFunctionType>
 {
@@ -47,6 +49,12 @@ public:
     virtual int domainDimension() const;
     virtual int codomainDimension() const;
 
+    /** \brief Return the variant of element \p element.
+     *
+     *  Possible return values:
+     *    - 2: one-dimensional segment,
+     *    - 3: triangular element,
+     *    - 4: quadrilateral element. */
     virtual ElementVariant elementVariant(const Entity<0>& element) const;
     virtual void setElementVariant(const Entity<0>& element,
                                    ElementVariant variant);
@@ -56,16 +64,23 @@ public:
     virtual void assignDofs();
     virtual bool dofsAssigned() const;
     virtual size_t globalDofCount() const;
-    virtual void globalDofs(const Entity<0>& element,
+    virtual size_t flatLocalDofCount() const;
+    virtual void getGlobalDofs(const Entity<0>& element,
                             std::vector<GlobalDofIndex>& dofs) const;    
     virtual void global2localDofs(
             const std::vector<GlobalDofIndex>& globalDofs,
             std::vector<std::vector<LocalDof> >& localDofs) const;
-    virtual void globalDofPositions(
+    virtual void flatLocal2localDofs(
+            const std::vector<FlatLocalDofIndex>& globalDofs,
+            std::vector<LocalDof>& localDofs) const;
+    virtual void getGlobalDofPositions(
+            std::vector<Point3D<CoordinateType> >& positions) const;
+    virtual void getFlatLocalDofPositions(
             std::vector<Point3D<CoordinateType> >& positions) const;
 
-    virtual void dumpClusterIds(const char* fileName,
-                                const std::vector<unsigned int>& clusterIds) const;
+    virtual void dumpClusterIds(
+            const char* fileName,
+            const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const;
 
 private:
     std::auto_ptr<GridView> m_view;

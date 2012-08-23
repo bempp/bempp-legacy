@@ -18,25 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "config_alugrid.hpp"
-#include "config_trilinos.hpp"
+#include "bempp/common/config_alugrid.hpp"
+#include "bempp/common/config_trilinos.hpp"
 
 #include "meshes.hpp"
 
 #include "assembly/assembly_options.hpp"
-#include "assembly/discrete_linear_operator.hpp"
+#include "assembly/context.hpp"
+#include "assembly/discrete_boundary_operator.hpp"
 #include "assembly/evaluation_options.hpp"
 #include "assembly/grid_function.hpp"
-#include "assembly/interpolated_function.hpp"
-#include "assembly/linear_operator_superposition.hpp"
-#include "assembly/standard_local_assembler_factory_for_operators_on_surfaces.hpp"
+#include "assembly/abstract_boundary_operator_sum.hpp"
+#include "assembly/numerical_quadrature_strategy.hpp"
+#include "assembly/surface_normal_independent_function.hpp"
 
 #include "assembly/identity_operator.hpp"
-#include "assembly/laplace_3d_single_layer_potential.hpp"
-#include "assembly/laplace_3d_double_layer_potential.hpp"
-#include "assembly/surface_normal_independent_function.hpp"
-#include "assembly/surface_normal_independent_functor.hpp"
-#include "assembly/test_functor.hpp"
+#include "assembly/laplace_3d_single_layer_boundary_operator.hpp"
+#include "assembly/laplace_3d_double_layer_boundary_operator.hpp"
 
 #include "common/scalar_traits.hpp"
 
@@ -62,13 +60,18 @@ using namespace Bempp;
 typedef double BFT; // basis function type
 typedef double RT; // result type (type used to represent discrete operators)
 
-class MyFunctor : public Bempp::SurfaceNormalIndependentFunctor<RT>
+class MyFunctor
 {
 public:
-    // Number of components of the function's argument
-    int argumentDimension() const {return 3;}
+    // Type of the function's values (e.g. float or std::complex<double>)
+    typedef RT ValueType;
+    // Type of coordinates (must be the "real part" of ValueType)
+    typedef ScalarTraits<RT>::RealType CoordinateType;
 
-    int resultDimension() const {return 1;}
+    // Number of components of the function's argument
+    int argumentDimension() const { return 3; }
+
+    int resultDimension() const { return 1; }
 
     // Evaluate the function at the point "point" and store result in
     // the array "result"
@@ -105,34 +108,44 @@ int main(int argc, char* argv[])
     // We want to use ACA
 
     AcaOptions acaOptions; // Default parameters for ACA
-    assemblyOptions.switchToAca(acaOptions);
+    assemblyOptions.switchToAcaMode(acaOptions);
 
     // Define the standard integration factory
 
-    StandardLocalAssemblerFactoryForOperatorsOnSurfaces<BFT, RT> factory;
+    NumericalQuadratureStrategy<BFT, RT> quadStrategy;
+
+    Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);
 
     // We need the single layer, double layer, and the identity operator
+    BoundaryOperator<BFT, RT> slpOp = laplace3dSingleLayerBoundaryOperator<BFT, RT>(
+                make_shared_from_ref(context),
+                make_shared_from_ref(HminusHalfSpace),
+                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(HminusHalfSpace));
+    BoundaryOperator<BFT, RT> dlpOp = laplace3dDoubleLayerBoundaryOperator<BFT, RT>(
+                make_shared_from_ref(context),
+                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(HminusHalfSpace));
+    BoundaryOperator<BFT, RT> id = identityOperator<BFT, RT>(
+                make_shared_from_ref(context),
+                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(HplusHalfSpace),
+                make_shared_from_ref(HminusHalfSpace));
 
-    Laplace3dSingleLayerPotential<BFT, RT> rhsOp(HplusHalfSpace, HminusHalfSpace);
-    Laplace3dDoubleLayerPotential<BFT, RT> dlp(HplusHalfSpace, HplusHalfSpace);
-    IdentityOperator<BFT, RT> id(HplusHalfSpace, HplusHalfSpace);
+    // Define the operators standing on the left- and right-hand side
 
-    // Form the left-hand side sum
+    BoundaryOperator<BFT, RT> lhsOp = -0.5 * id + dlpOp;
+    BoundaryOperator<BFT, RT>& rhsOp = slpOp;
 
-    LinearOperatorSuperposition<BFT, RT> lhsOp = -0.5 * id + dlp;
-
-    // Assemble the Operators
-
-    rhsOp.assembleWeakForm(factory, assemblyOptions);
-    lhsOp.assembleWeakForm(factory, assemblyOptions);
 
     // We also want a grid function
 
-    MyFunctor myFun;
-    testFunctor(myFun);
-
-    GridFunction<BFT, RT> u = gridFunctionFromSurfaceNormalIndependentFunctor(
-                HminusHalfSpace, myFun, factory, assemblyOptions);
+    GridFunction<BFT, RT> u(
+                make_shared_from_ref(context),
+                make_shared_from_ref(HminusHalfSpace),
+                make_shared_from_ref(HminusHalfSpace), // is this the right choice?
+                surfaceNormalIndependentFunction(MyFunctor()));
 
     // Assemble the rhs
 
@@ -145,10 +158,10 @@ int main(int argc, char* argv[])
     std::cout << "Initialize solver" << std::endl;
 
 #ifdef WITH_TRILINOS
-    DefaultIterativeSolver<BFT, RT> solver(lhsOp, rhs);
+    DefaultIterativeSolver<BFT, RT> solver(lhsOp);
     solver.initializeSolver(defaultGmresParameterList(1e-5));
-    solver.solve();
-    std::cout << solver.getSolverMessage() << std::endl;
+    Solution<BFT, RT> solution = solver.solve(rhs);
+    std::cout << solution.solverMessage() << std::endl;
 #else
     DefaultDirectSolver<BFT, RT> solver(lhsOp, rhs);
     solver.solve();
@@ -156,7 +169,7 @@ int main(int argc, char* argv[])
 
     // Extract the solution
 
-    GridFunction<BFT, RT> solFun = solver.getResult();
+    const GridFunction<BFT, RT>& solFun = solution.gridFunction();
 
     // Write out as VTK
 

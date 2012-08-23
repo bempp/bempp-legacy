@@ -23,7 +23,7 @@
 
 #include "../common/common.hpp"
 
-#include "config_alugrid.hpp"
+#include "bempp/common/config_alugrid.hpp"
 
 #include <memory>
 #include <stack> // fix a bug in foamgrid -- this header is not included where it should be

@@ -19,7 +19,7 @@
 #THE SOFTWARE.
 
 import os,urllib,shutil,subprocess,sys
-from py_modules.tools import extract_file, to_bool
+from py_modules import tools
 
 
 boost_fname='boost_1_49.tar.gz'
@@ -28,14 +28,16 @@ boost_extract_dir='boost-cmake'
 boost_dir='boost'
 boost_version="1.49.0"
 
-def configureBoost(root,config):
-    """Download Boost if required"""
+def download(root,config):
+    boost_download_name=root+"/contrib/files/"+boost_fname
+    tools.download(boost_fname,boost_url,root+"/contrib/files")
 
+def prepare(root,config):
     boost_full_dir=root+"/contrib/"+boost_dir
     boost_download_name=root+"/contrib/files/"+boost_fname
 
     prefix=config.get('Main','prefix')
-    boost_include_dir=prefix+"/bempp/contrib/boost/include/boost-"+boost_version
+    boost_include_dir=prefix+"/bempp/include"
     
     if sys.platform.startswith('darwin'):
         unit_test_lib_name="libboost_unit_test_framework-mt.dylib"
@@ -44,48 +46,50 @@ def configureBoost(root,config):
     else:
         raise Exception("Platform not supported")
 
-    boost_unit_test_lib=prefix+"/bempp/contrib/boost/lib/boost-"+boost_version+"/"+unit_test_lib_name
+    boost_unit_test_lib=prefix+"/bempp/lib/"+unit_test_lib_name
 
-    download_boost=True
-    if config.has_option('Boost','download_boost'): download_boost=to_bool(config.get('Boost','download_boost'))
-    
-    if download_boost and not os.path.isdir(boost_full_dir):
-        # Download boost
+    tools.checkDeleteDirectory(boost_full_dir)
 
-        if not os.path.isfile(boost_download_name):
-            print "Downloading Boost ..."
-            urllib.urlretrieve(boost_url,boost_download_name)
+    print "Extracting Boost"
+    tools.extract_file(root+"/contrib/files/"+boost_fname,root+"/contrib/")
+    os.rename(root+"/contrib/"+boost_extract_dir,boost_full_dir)
+    shutil.copy(root+"/contrib/build_scripts/posix/boost_build.sh",boost_full_dir+"/boost_build.sh")
 
-        print "Extracting Boost"
-        extract_file(root+"/contrib/files/"+boost_fname,root+"/contrib/")
-        os.rename(root+"/contrib/"+boost_extract_dir,boost_full_dir)
-        shutil.copy(root+"/contrib/build_scripts/posix/boost_build.sh",boost_full_dir+"/boost_build.sh")
+    tools.setDefaultConfigOption(config,"Boost","unit_test_lib",boost_unit_test_lib,overwrite=True)
+    tools.setDefaultConfigOption(config,"Boost","include_dir",boost_include_dir,overwrite=True)
 
-    if download_boost:
-        if not config.has_section("Boost"): config.add_section("Boost")
-        config.set("Boost",'unit_test_lib',boost_unit_test_lib)
-        config.set("Boost",'include_dir',boost_include_dir)
+
+def configure(root,config):
+    boost_full_dir=root+"/contrib/"+boost_dir
+    prefix=config.get('Main','prefix')
+    print "Configuring Boost"
+    cwd=os.getcwd()
+    os.chdir(boost_full_dir)
+    tools.checkDeleteDirectory(boost_full_dir+"/build")
+    subprocess.check_call("sh ./boost_build.sh",shell=True)
+    os.chdir(cwd)
+
         
-    else:
-        if not (config.has_option('Boost','unit_test_lib') and config.has_option('Boost','include_dir')):
-            raise Exception("You need to specify 'unit_test_lib' and 'include_dir' under the 'Boost' header in the configuration file")
-
-def buildBoost(root,config):
-
-    download_boost=True
-    if config.has_option('Boost','download_boost'): download_boost=to_bool(config.get('Boost','download_boost'))
+def build(root,config):
 
     boost_full_dir=root+"/contrib/"+boost_dir
-
     prefix=config.get('Main','prefix')
-
-    if download_boost and not os.path.isdir(prefix+"/bempp/contrib/boost"):
-            print "Build Boost"
-            cwd=os.getcwd()
-            os.chdir(boost_full_dir)
-            subprocess.call("sh ./boost_build.sh",shell=True)
-            os.chdir(cwd)
+    njobs = tools.to_int(config.get('Main','build_jobs'))
+    print "Build Boost"
+    cwd=os.getcwd()
+    os.chdir(boost_full_dir+"/build")
+    subprocess.check_call("make -j"+str(njobs),shell=True)
+    os.chdir(cwd)
     
+def install(root,config):
+
+    boost_full_dir=root+"/contrib/"+boost_dir
+    prefix=config.get('Main','prefix')
+    print "Install Boost"
+    cwd=os.getcwd()
+    os.chdir(boost_full_dir+"/build")
+    subprocess.check_call("make install",shell=True)
+    os.chdir(cwd)
 
         
     

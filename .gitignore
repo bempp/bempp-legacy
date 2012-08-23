@@ -4,9 +4,11 @@
 .project
 *.DS_Store
 /nbproject/private/
+/contrib/armadillo*
 /contrib/dune/
 /contrib/boost/
 /contrib/files/
+/contrib/tbb
 /contrib/trilinos/
 /contrib/dune-common/dune/common/.deps/
 /contrib/dune-common/lib/.deps/
@@ -16,3 +18,10 @@
 /contrib/dune-common/lib/.libs/
 /doc/build*
 *.pyc
+options.cfg
+CMakeLists.txt.user
+scratch
+test_blas/build
+test_lapack/build
+*.generated
+.options.cfg

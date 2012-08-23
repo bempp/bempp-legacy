@@ -29,6 +29,10 @@
 namespace Bempp
 {
 
+/** \ingroup weak_form_assembly_internal
+ *  \brief Permutation of indices.
+ *
+ *  This class is used in ACA-mode assembly. */
 class IndexPermutation
 {
 public:

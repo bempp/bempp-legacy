@@ -36,11 +36,14 @@ namespace Bempp
 
 class GridView;
 
+/** \ingroup space
+ *  \brief Space of continuous, piecewise linear scalar functions. */
 template <typename BasisFunctionType>
 class PiecewiseLinearContinuousScalarSpace : public ScalarSpace<BasisFunctionType>
 {
 public:
     typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
+    typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
 
     explicit PiecewiseLinearContinuousScalarSpace(Grid& grid);
     virtual ~PiecewiseLinearContinuousScalarSpace();
@@ -48,8 +51,12 @@ public:
     virtual int domainDimension() const;
     virtual int codomainDimension() const;
 
-    // Element variants: 2 (linear element), 3 (triangular element),
-    // 4 (quadrilateral element)
+    /** \brief Return the variant of element \p element.
+     *
+     *  Possible return values:
+     *    - 2: one-dimensional segment,
+     *    - 3: triangular element,
+     *    - 4: quadrilateral element. */
     virtual ElementVariant elementVariant(const Entity<0>& element) const;
     virtual void setElementVariant(const Entity<0>& element,
                                    ElementVariant variant);
@@ -59,15 +66,35 @@ public:
     virtual void assignDofs();
     virtual bool dofsAssigned() const;
     virtual size_t globalDofCount() const;
-    virtual void globalDofs(const Entity<0>& element,
+    virtual size_t flatLocalDofCount() const;
+    virtual void getGlobalDofs(const Entity<0>& element,
                             std::vector<GlobalDofIndex>& dofs) const;    
     virtual void global2localDofs(
             const std::vector<GlobalDofIndex>& globalDofs,
             std::vector<std::vector<LocalDof> >& localDofs) const;
+    virtual void flatLocal2localDofs(
+            const std::vector<FlatLocalDofIndex>& flatLocalDofs,
+            std::vector<LocalDof>& localDofs) const;
 
-    virtual void globalDofPositions(std::vector<Point3D<CoordinateType> >& positions) const;
-    virtual void dumpClusterIds(const char* fileName,
-                                const std::vector<unsigned int>& clusterIds) const;
+    virtual void getGlobalDofPositions(std::vector<Point3D<CoordinateType> >& positions) const;
+    virtual void getFlatLocalDofPositions(std::vector<Point3D<CoordinateType> >& positions) const;
+    virtual void dumpClusterIds(
+            const char* fileName,
+            const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const;
+
+//private:
+//    virtual shared_ptr<DiscreteBoundaryOperator<CoordinateType> >
+//        global2localDofsOperatorRealImpl() const;
+//    virtual shared_ptr<DiscreteBoundaryOperator<ComplexType> >
+//        global2localDofsOperatorComplexImpl() const;
+//    virtual shared_ptr<DiscreteBoundaryOperator<CoordinateType> >
+//        local2globalDofsOperatorRealImpl() const;
+//    virtual shared_ptr<DiscreteBoundaryOperator<ComplexType> >
+//        local2globalDofsOperatorComplexImpl() const;
+
+    // void constructGlobal2localDofsMappingVectors(
+    //         std::vector<int>& rows, std::vector<int>& cols,
+    //         std::vector<double>& values) const;
 
 private:
     std::auto_ptr<GridView> m_view;
@@ -76,6 +103,8 @@ private:
     Fiber::PiecewiseLinearContinuousScalarBasis<4, BasisFunctionType> m_quadrilateralBasis;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
+    std::vector<LocalDof> m_flatLocal2localDofs;
+    size_t m_flatLocalDofCount;
 };
 
 } // namespace Bempp

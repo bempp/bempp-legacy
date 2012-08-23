@@ -20,7 +20,7 @@
 
 #include "numerical_quadrature.hpp"
 
-#include "config_data_types.hpp"
+#include "bempp/common/config_data_types.hpp"
 
 // Hyena code
 #include "quadrature/galerkinduffy.hpp"
@@ -41,6 +41,12 @@ inline void reallyFillPointsAndWeightsRegular(
         std::vector<ValueType>& weights)
 {
     const int elementDim = 2;
+    if (SHAPE == QUADRANGLE)
+        // QuadratureRule<QUADRANGLE, GAUSS> expects to be given the number of
+        // integration points in each dimension, unlike
+        // QuadratureRule<TRIANGLE, GAUSS>, which expects the exactness degree.
+        order = (order + 1 + 1) / 2;
+    order = std::max(order, 1); // Hyena does not accept order == 0 for triangles
     const QuadratureRule<SHAPE, GAUSS>& rule(order);
     const int pointCount = rule.getNumPoints();
     points.set_size(elementDim, pointCount);
@@ -194,7 +200,9 @@ inline void reallyFillPointsAndWeightsSingular(
     const int elementDim = 2;
     // Is there a more efficient way?
     const int order = std::max(desc.testOrder, desc.trialOrder);
-    const QuadratureRule<QUADRANGLE, GAUSS> rule(order); // quadrangle regardless of SHAPE
+    const int numPointsIn1d = (order + 1 + 1) / 2;
+    // quadrangle regardless of SHAPE
+    const QuadratureRule<QUADRANGLE, GAUSS> rule(numPointsIn1d);
     const GalerkinDuffyExpression<SHAPE, SINGULARITY> transform(rule);
     const int pointCount = rule.getNumPoints();
     const int regionCount = transform.getNumRegions();
@@ -273,16 +281,16 @@ inline void reallyFillPointsAndWeightsSingular(
 
 template <typename ValueType>
 void fillSingleQuadraturePointsAndWeights(int elementCornerCount,
-                                          int quadratureOrder,
+                                          int accuracyOrder,
                                           arma::Mat<ValueType>& points,
                                           std::vector<ValueType>& weights)
 {
     if (elementCornerCount == 3)
         reallyFillPointsAndWeightsRegular<TRIANGLE>(
-                    quadratureOrder, points, weights);
+                    accuracyOrder, points, weights);
     else if (elementCornerCount == 4)
         return reallyFillPointsAndWeightsRegular<QUADRANGLE>(
-                    quadratureOrder, points, weights);
+                    accuracyOrder, points, weights);
     else
         throw std::invalid_argument("fillSingleQuadraturePointsAndWeights(): "
                                     "elementCornerCount must be either 3 or 4");
@@ -336,7 +344,7 @@ void fillDoubleSingularQuadraturePointsAndWeights(
 template
 void fillSingleQuadraturePointsAndWeights<float>(
         int elementCornerCount,
-        int quadratureOrder,
+        int accuracyOrder,
         arma::Mat<float>& points,
         std::vector<float>& weights);
 template
@@ -350,7 +358,7 @@ void fillDoubleSingularQuadraturePointsAndWeights<float>(
 template
 void fillSingleQuadraturePointsAndWeights<double>(
         int elementCornerCount,
-        int quadratureOrder,
+        int accuracyOrder,
         arma::Mat<double>& points,
         std::vector<double>& weights);
 template

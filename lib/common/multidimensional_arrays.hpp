@@ -21,8 +21,8 @@
 #ifndef bempp_multidimensional_arrays_hpp
 #define bempp_multidimensional_arrays_hpp
 
-#include "../fiber/array_2d.hpp"
-#include "../fiber/array_3d.hpp"
-#include "../fiber/array_4d.hpp"
+#include "../fiber/_2d_array.hpp"
+#include "../fiber/_3d_array.hpp"
+#include "../fiber/_4d_array.hpp"
 
 #endif
