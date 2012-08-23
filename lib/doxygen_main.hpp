@@ -51,8 +51,8 @@
 
 /** \defgroup operators Operators
  *
- *  This module contains classes implementing particular boundary integral
- *  operators.
+ *  This module contains classes implementing particular boundary operators and
+ *  potential operators.
  */
 
 /** \defgroup space Space
@@ -69,8 +69,8 @@
 /** \defgroup laplace_3d Laplace equation in 3D
  *  \ingroup operators
  *
- *  This module contains classes implementing kernels and operators related to the
- *  Laplace equation in 3D,
+ *  This module contains classes implementing kernels, boundary operators and
+ *  potential operators related to the Laplace equation in 3D,
  *  \f[
  *      \biggl(\frac{\partial^2}{\partial x^2} +
  *      \frac{\partial^2}{\partial y^2} +
@@ -82,8 +82,8 @@
 /** \defgroup helmholtz_3d Helmholtz equation in 3D
  *  \ingroup operators
  *
- *  This module contains classes implementing operators related to the
- *  Helmholtz equation in 3D,
+ *  This module contains classes implementing kernels, boundary operators and
+ *  potential operators related to the Helmholtz equation in 3D,
  *  \f[
  *      \biggl(\frac{\partial^2}{\partial x^2} +
  *      \frac{\partial^2}{\partial y^2} +
@@ -101,8 +101,8 @@
 /** \defgroup modified_helmholtz_3d Modified Helmholtz equation in 3D
  *  \ingroup operators
  *
- *  This module contains classes implementing kernels and operators related to the
- *  modified Helmholtz equation in 3D,
+ *  This module contains classes implementing kernels, boundary operators and
+ *  potential operators related to the modified Helmholtz equation in 3D,
  *  \f[
  *      \biggl(\frac{\partial^2}{\partial x^2} +
  *      \frac{\partial^2}{\partial y^2} +
