@@ -60,10 +60,10 @@ template <typename BasisFunctionType, typename ResultType> class ScaledAbstractB
  *
  *  An AbstractBoundaryOperator represents a linear mapping \f$L : X
  *  \to Y\f$ between two function spaces \f$X : S \to K^p\f$
- *  (_domain_) and \f$Y : S \to K^q\f$ (_range_) defined on an
- *  \f$n\f$-dimensional surface \f$S\f$ embedded in an
+ *  (_domain_) and \f$Y : T \to K^q\f$ (_range_) defined on
+ *  \f$n\f$-dimensional surfaces \f$S\f$ and \f$T\f$ embedded in an
  *  \f$(n+1)\f$-dimensional domain. \f$K\f$ denotes either the set of
- *  real or complex numbers.
+ *  real or complex numbers. The surfaces \f$S\f$ and \f$T\f$ may be equal.
  *
  *  The function assembleWeakForm() can be used to construct the weak
  *  form of the operator.
@@ -194,9 +194,9 @@ public:
      *  where \f$L\f$ is the linear operator represented by this object,
      *  \f$S\f$ denotes the surface on which the domain function space \f$X\f$
      *  is defined and which is represented by the grid returned by
-     *  <tt>domain.grid()</tt>, \f$\phi_j\f$ is a _trial function_ from the
+     *  <tt>domain.grid()</tt>, \f$\phi_j\f$ is a _test function_ from the
      *  space \f$Y'\f$ dual to the range of the operator, \f$Y\f$, and
-     *  \f$\psi_k\f$ is a _test function_ from the domain space \f$X\f$.
+     *  \f$\psi_k\f$ is a _trial function_ from the domain space \f$X\f$.
      */
     shared_ptr<DiscreteBoundaryOperator<ResultType_> > assembleWeakForm(
             const Context<BasisFunctionType_, ResultType_>& context) const;
@@ -226,11 +226,13 @@ protected:
     /** @} */
 
 private:
+    /** \cond PRIVATE */
     shared_ptr<const Space<BasisFunctionType> > m_domain;
     shared_ptr<const Space<BasisFunctionType> > m_range;
     shared_ptr<const Space<BasisFunctionType> > m_dualToRange;
     std::string m_label;
     Symmetry m_symmetry;
+    /** \endcond */
 };
 
 } // namespace Bempp
