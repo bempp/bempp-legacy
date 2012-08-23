@@ -56,12 +56,19 @@ template <typename ValueType> class DiscreteBoundaryOperator;
 /** \ingroup space
  *  \brief Function space.
  *
- *  This class represents a (finite) space of functions defined on a grid.
+ *  This class represents a space of functions defined on a grid. The space is
+ *  spanned by a finite number of scalar- or vector-valued basis functions. The
+ *  template parameter \p BasisFunctionType is the type of the values of (the
+ *  components of) these basis functions, and can be set to \c float,
+ *  \c double, <tt>std::complex<float></tt> or <tt>std::complex<double></tt>.
  *
- *  \tparam BasisFunctionType
- *    Type used to represent components of functions belonging to this space.
- *    Can be one of: \c float, \c double, <tt>std::complex<float></tt> and
- *    <tt>std::complex<double></tt>. */
+ *  The basis functions of a space, also known as global degrees of freedom
+ *  (DOFs), can have support extending over multiple elements of the grid. They
+ *  are, however, composed of one or more *local* basis functions (local
+ *  degrees of freedom), each of which resides on a single element. The mapping
+ *  of local to global degrees of freedom is triggered by calling the function
+ *  assignDofs(). Many other member functions of Space may only be invoked after
+ *  assignDofs() has beeen called. */
 template <typename BasisFunctionType>
 class Space
 {
