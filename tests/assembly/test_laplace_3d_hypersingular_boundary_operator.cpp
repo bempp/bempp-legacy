@@ -77,7 +77,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works, ValueType, kernel_types)
 
     AssemblyOptions assemblyOptions;
     AccuracyOptions accuracyOptions;
-    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(5);
+    // By making quadrature orders absolute, we ensure that the same quadrature
+    // points will be chosen for linear and constant basis functions. Since
+    // in all integrals to be evaluated the transformed basis functions are constant,
+    // (the only remaining thing is the Green's function), this will make the test
+    // insensitive to quadrature inaccuracies.
+    accuracyOptions.doubleRegular.setAbsoluteQuadratureOrder(5);
+    accuracyOptions.doubleSingular.setAbsoluteQuadratureOrder(5);
     NumericalQuadratureStrategy<BFT, RT> quadStrategy(accuracyOptions);
 
     Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);
