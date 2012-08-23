@@ -231,6 +231,10 @@ assembleWeakFormInternalImpl(
     }
 }
 
+// UNDOCUMENTED PRIVATE METHODS
+
+/** \cond PRIVATE */
+
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
@@ -319,6 +323,8 @@ assembleWeakFormInAcaMode(
                 testSpace, trialSpace, assembler, options,
                 this->symmetry() & SYMMETRIC);
 }
+
+/** \endcond */
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(ElementaryIntegralOperator);
 

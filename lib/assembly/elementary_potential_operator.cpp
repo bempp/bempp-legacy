@@ -122,6 +122,10 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::evaluate
     return result;
 }
 
+// UNDOCUMENTED PRIVATE METHODS
+
+/** \cond PRIVATE */
+
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<typename ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::Evaluator>
 ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::makeEvaluator(
@@ -173,6 +177,8 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::makeEval
                 localCoefficients,
                 openClHandler);
 }
+
+/** \endcond */
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(ElementaryPotentialOperator);
 
