@@ -68,25 +68,26 @@ template <typename BasisFunctionType, typename ResultType> class ScaledAbstractB
  *  The function assembleWeakForm() can be used to construct the weak
  *  form of the operator.
  *
- *  \tparam BasisFunctionType
- *    Type used to represent components of the functions from the operator's
- *    domain, range and space dual to range.
- *  \tparam ResultType
- *    Type used to represent elements of the weak form of this operator.
+ *  \tparam BasisFunctionType_
+ *    Type of the values of the (components of the) basis functions into
+ *    which functions acted upon by the operator are expanded.
+ *  \tparam ResultType_
+ *    Type used to represent elements of the weak form of the operator.
  *
  *  Both template parameters can take the following values: \c float, \c
  *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
  *  Both types must have the same precision: for instance, mixing \c float with
- *  <tt>std::complex<double></tt> is not allowed. If \p BasisFunctionType is
- *  set to a complex type, then \p ResultType must be set to the same type.
+ *  <tt>std::complex<double></tt> is not allowed. If \p BasisFunctionType_ is
+ *  set to a complex type, then \p ResultType_ must be set to the same type.
  */
 template <typename BasisFunctionType_, typename ResultType_>
 class AbstractBoundaryOperator
 {
 public:
-    /** \brief Type used to represent components of functions on which the operator acts. */
+    /** \brief Type of the values of the (components of the) basis functions into
+     *  which functions acted upon by the operator are expanded. */
     typedef BasisFunctionType_ BasisFunctionType;
-    /** \brief Type used to represent elements of the operator's weak form. */
+    /** \brief Type used to represent elements of the weak form of the operator. */
     typedef ResultType_ ResultType;
     /** \brief Type used to represent coordinates. */
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
@@ -101,29 +102,29 @@ public:
      *
      *  \param[in] domain
      *    Function space being the domain of the operator.
-     *
      *  \param[in] range
      *    Function space being the range of the operator.
-     *
      *  \param[in] dualToRange
      *    Function space dual to the the range of the operator.
-     *
      *  \param[in] label
      *    Textual label of the operator (optional, used for debugging).
+     *  \param[in] symmetry
+     *    Symmetry of the weak form of the operator.
      *
-     *  The spaces \p range and \p dualToRange must be defined on
-     *  the same grid.
-     */
-    AbstractBoundaryOperator(const shared_ptr<const Space<BasisFunctionType> >& domain,
-                             const shared_ptr<const Space<BasisFunctionType> >& range,
-                             const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-                             const std::string& label = "",
-                             const Symmetry symmetry = NO_SYMMETRY);
+     *  None of the shared pointers may be null and the spaces \p range and \p
+     *  dualToRange must be defined on the same grid, otherwise an exception is
+     *  thrown. */
+    AbstractBoundaryOperator(
+            const shared_ptr<const Space<BasisFunctionType> >& domain,
+            const shared_ptr<const Space<BasisFunctionType> >& range,
+            const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+            const std::string& label = "",
+            const Symmetry symmetry = NO_SYMMETRY);
 
     /** \brief Destructor. */
     virtual ~AbstractBoundaryOperator();
 
-    /** \brief Identifier.
+    /** \brief Return the identifier of this operator.
      *
      *  If the weak form of this operator is cacheable, return a shared pointer
      *  to a valid instance of a subclass of AbstractBoundaryOperatorId that
@@ -141,17 +142,20 @@ public:
 
     /** \brief Domain.
      *
-     *  Return a reference to the function space being the domain of the operator. */
+     *  Return a shared pointer to the function space being the domain of
+     *  this operator. */
     shared_ptr<const Space<BasisFunctionType> > domain() const;
 
     /** \brief Range.
      *
-     *  Return a reference to the function space being the range of the operator. */
+     *  Return a shared pointer to the function space being the range of
+     *  this operator. */
     shared_ptr<const Space<BasisFunctionType> > range() const;
 
     /** \brief Dual to range.
      *
-     *  Return a reference to the function space dual to the range of the operator. */
+     *  Return a shared pointer to the function space dual to the range of
+     *  this operator. */
     shared_ptr<const Space<BasisFunctionType> > dualToRange() const;
 
     /** @}
@@ -180,7 +184,7 @@ public:
      *  discretization of their weak forms leads to dense matrices. */
     virtual bool isLocal() const = 0;
 
-    /** \brief Assemble and returns the operator's weak form.
+    /** \brief Assemble and return the operator's weak form.
      *
      *  This function constructs a discrete linear operator representing the
      *  matrix \f$L_{jk}\f$ with entries of the form
@@ -198,7 +202,6 @@ public:
             const Context<BasisFunctionType_, ResultType_>& context) const;
 
 protected:
-    /** @} */
 
     /** \brief Given an AssemblyOptions object, construct objects necessary for
      *  subsequent local assembler construction. */
@@ -213,14 +216,14 @@ protected:
             shared_ptr<Fiber::OpenClHandler>& openClHandler,
             bool& cacheSingularIntegrals) const;
 
-    // Probably can be made public
-    /** \brief Implementation of the weak-form assembly.
+    /** \brief Assemble and return the operator's weak form.
      *
-     *  Construct a discrete linear operator representing the matrix \f$L_{jk}\f$
-     *  described in assembleWeakForm() and return a shared pointer to it.
-     */
+     *  This virtual function is invoked by assembleWeakForm() to do the actual
+     *  work. */
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType> >
     assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) const = 0;
+
+    /** @} */
 
 private:
     shared_ptr<const Space<BasisFunctionType> > m_domain;

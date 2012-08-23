@@ -30,19 +30,20 @@ template <typename BasisFunctionType, typename ResultType>
 struct Laplace3dSingleLayerPotentialOperatorImpl;
 
 /** \ingroup laplace_3d
- *  \brief Single-layer-potential for the Laplace equation in 3D.
+ *  \brief Single-layer potential operator for the Laplace equation in 3D.
  *
- *  \tparam BasisFunctionType
- *    Type used to represent the values of basis functions.
- *  \tparam ResultType
- *    Type used to represent values of the potential.
+ *  \tparam BasisFunctionType_
+ *    Type of the values of the basis functions into
+ *    which functions acted upon by the operator are expanded.
+ *  \tparam ResultType_
+ *    Type of the values of the potential.
  *
  *  Both template parameters can take the following values: \c float, \c
  *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
  *  Both types must have the same precision: for instance, mixing \c float with
- *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType
- *  is by default set to \p BasisFunctionType. You should override that only if
- *  you set \p BasisFunctionType to a real type, but you want the values of the
+ *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType_
+ *  is by default set to \p BasisFunctionType_. You should override that only if
+ *  you set \p BasisFunctionType_ to a real type, but you want the values of the
  *  potential to be stored as complex numbers.
  *
  *  \see laplace_3d */
@@ -59,16 +60,25 @@ class Laplace3dSingleLayerPotentialOperator :
     ResultType_>
     Base;
 public:
+    /** \copydoc Laplace3dPotentialOperatorBase::BasisFunctionType */
     typedef typename Base::BasisFunctionType BasisFunctionType;
+    /** \copydoc Laplace3dPotentialOperatorBase::KernelType */
     typedef typename Base::KernelType KernelType;
+    /** \copydoc Laplace3dPotentialOperatorBase::ResultType */
     typedef typename Base::ResultType ResultType;
+    /** \copydoc Laplace3dPotentialOperatorBase::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
+    /** \copydoc Laplace3dPotentialOperatorBase::CollectionOfBasisTransformations */
     typedef typename Base::CollectionOfBasisTransformations
     CollectionOfBasisTransformations;
+    /** \copydoc Laplace3dPotentialOperatorBase::CollectionOfKernels */
     typedef typename Base::CollectionOfKernels CollectionOfKernels;
+    /** \copydoc Laplace3dPotentialOperatorBase::KernelTrialIntegral */
     typedef typename Base::KernelTrialIntegral KernelTrialIntegral;
 
+    /** \copydoc Laplace3dPotentialOperatorBase::Laplace3dPotentialOperatorBase */
     Laplace3dSingleLayerPotentialOperator();
+    /** \copydoc Laplace3dPotentialOperatorBase::~Laplace3dPotentialOperatorBase */
     virtual ~Laplace3dSingleLayerPotentialOperator();
 };
 

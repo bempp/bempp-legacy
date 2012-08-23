@@ -212,6 +212,11 @@ IdentityOperator<BasisFunctionType, ResultType>::IdentityOperator(
     m_id(boost::make_shared<IdentityOperatorId<BasisFunctionType, ResultType> >(
              *this))
 {
+    if (&domain->grid() != &range->grid() ||
+            &range->grid() != &dualToRange->grid())
+        throw std::invalid_argument(
+                "IdentityOperator::IdentityOperator(): "
+                "all three function spaces must be defined on the same grid.");
 }
 
 template <typename BasisFunctionType, typename ResultType>

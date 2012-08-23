@@ -71,12 +71,14 @@ public:
     typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
 
     /** \copydoc AbstractBoundaryOperator::AbstractBoundaryOperator */
-    ElementaryAbstractBoundaryOperator(const shared_ptr<const Space<BasisFunctionType> >& domain,
-                                       const shared_ptr<const Space<BasisFunctionType> >& range,
-                                       const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-                                       const std::string& label = "",
-                                       Symmetry symmetry = NO_SYMMETRY);
+    ElementaryAbstractBoundaryOperator(
+            const shared_ptr<const Space<BasisFunctionType> >& domain,
+            const shared_ptr<const Space<BasisFunctionType> >& range,
+            const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+            const std::string& label = "",
+            Symmetry symmetry = NO_SYMMETRY);
 
+    /** \brief Destructor. */
     ~ElementaryAbstractBoundaryOperator();
 
     /** \brief Construct a local assembler suitable for this operator.
@@ -115,14 +117,17 @@ public:
      *
      *  This function is intended for internal use of the library. End users
      *  should not need to call it directly. They should use
-     *  AbstractBoundaryOperator::assembleDetachedWeakForm() instead.
-     */
+     *  AbstractBoundaryOperator::assembleDetachedWeakForm() instead. */
     shared_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInternal(
             LocalAssembler& assembler,
             const AssemblyOptions& options) const;
 
 private:
+    /** \brief Construct a local assembler suitable for this operator.
+     *
+     *  This virtual function is invoked by both overloads of makeAssembler()
+     *  to do the actual work. */
     virtual std::auto_ptr<LocalAssembler> makeAssemblerImpl(
             const QuadratureStrategy& quadStrategy,
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
@@ -135,6 +140,10 @@ private:
             const ParallelizationOptions& parallelizationOptions,
             bool cacheSingularIntegrals) const = 0;
 
+    /** \brief Assemble the operator's weak form using a specified local assembler.
+     *
+     *  This virtual function is invoked by assembleWeakFormInternal()
+     *  to do the actual work. */
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType> >
     assembleWeakFormInternalImpl(
             LocalAssembler& assembler,

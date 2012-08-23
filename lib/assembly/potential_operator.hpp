@@ -38,66 +38,118 @@ class Grid;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
 template <typename ResultType> class InterpolatedFunction;
 
-/** \brief PotentialOperator.
+/** \brief Potential operator.
  *
- * This class provides the interface for evaluation of a potential \f$k(x)\f$
- * defined by the formula
+ *  This class represents a linear operator that, acting on a function \f$g\f$
+ *  defined on a surface \f$\Gamma\f$ embedded in a space \f$\Omega\f$ of
+ *  dimension higher by one, produces a *potential* defined at any point of
+ *  \f$\Omega\f$ lying outside \f$\Gamma\f$. The function \f$g\f$ is called the
+ *  *charge distribution*.
  *
- * \f[ k(x) = \int_\Gamma K(x, y) \, g(y) \, \mathrm{d}\Gamma, \f]
+ *  The functions evaluateOnGrid() and evaluateAtPoints() can be used to
+ *  evaluate the potential produced by a given charge distribution, represented
+ *  with a GridFunction object, at specified points in \f$\Omega \setminus \Gamma\f$.
  *
- * where the integration goes over a surface \f$\Gamma\f$ and the point \f$x\f$
- * does not lie on \f$\Gamma\f$.
+ *  \tparam BasisFunctionType_
+ *    Type of the values of the (components of the) basis functions into
+ *    which functions acted upon by the operator are expanded.
+ *  \tparam ResultType_
+ *    Type of the values of the (components of the) potential.
+ *
+ *  Both template parameters can take the following values: \c float, \c
+ *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
+ *  Both types must have the same precision: for instance, mixing \c float with
+ *  <tt>std::complex<double></tt> is not allowed. If \p BasisFunctionType_ is
+ *  set to a complex type, then \p ResultType_ must be set to the same type.
  */
 template <typename BasisFunctionType_, typename ResultType_>
 class PotentialOperator
 {
 public:
-    /** \copydoc AbstractBoundaryOperator::BasisFunctionType */
+    /** \brief Type of the values of the (components of the) basis functions
+     * into which functions acted upon by the operator are expanded. */
     typedef BasisFunctionType_ BasisFunctionType;
-    /** \copydoc AbstractBoundaryOperator::ResultType */
+    /** \brief Type of the values of the (components of the) potential. */
     typedef ResultType_ ResultType;
-    /** \copydoc AbstractBoundaryOperator::CoordinateType */
+    /** \brief Type used to represent coordinates. */
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
-    /** \copydoc AbstractBoundaryOperator::QuadratureStrategy. */
+    /** \brief Type of the appropriate instantiation of
+     *  Fiber::QuadratureStrategy. */
     typedef Fiber::QuadratureStrategy<BasisFunctionType, ResultType, GeometryFactory>
     QuadratureStrategy;
 
     /** \brief Destructor */
     virtual ~PotentialOperator() {}
 
-    /** \brief Evaluate the potential of a given moment on a prescribed grid.
+    /** \brief Evaluate the potential of a given charge distribution on a
+     *  prescribed grid.
      *
      * \param[in] argument
-     *   Argument of the potential (\f$g(y)\f$ in the notation above),
-     *   represented by a grid function.
+     *   Argument of the potential operator (\f$\psi(y)\f$ in the notation
+     *   above), represented by a grid function.
      * \param[in] evaluationGrid
-     *   Surface or volume grid at whose vertices the potential will be evaluated.
+     *   Grid at whose vertices the potential will be evaluated. The grid may
+     *   have arbitrary dimension, but must be embedded in a world of the same
+     *   dimension as <tt>argument.grid()</tt>.
      * \param[in] quadStrategy
-     *   Factory that will be used to generate appropriate evaluator objects.
+     *   A #QuadratureStrategy object controlling how the integrals will be
+     *   evaluated.
      * \param[in] options
-     *   Options.
+     *   Evaluation options.
      *
      * \returns The potential represented by a function interpolated on the
      * vertices of \p evaluationGrid.
      *
      * \note This function is not designed to yield accurate values of the
-     * potential on the surface containing the charge distribution, i.e.
-     * <tt>argument.grid()</tt>. Hence values of the potential at any vertices
-     * of \p evaluationGrid that coincide with <tt>argument.grid()</tt> can be
-     * badly wrong.
-     */
+     * potential on the surface \f$\Gamma\f$ containing the charge
+     * distribution, i.e. <tt>argument.grid()</tt>, even if the potential has a
+     * unique extension from \f$\Omega \setminus \Gamma\f$ to \f$\Gamma\f$.
+     * Hence values of the potential at any vertices of \p evaluationGrid that
+     * coincide with \f$\Gamma\f$ can be badly wrong.
+     *
+     * The current implementation does not yet take special measures to prevent
+     * loss of accuracy *near* \f$\Gamma\f$, either. If in doubt, increase the
+     * quadrature accuracy. */
     virtual std::auto_ptr<InterpolatedFunction<ResultType> > evaluateOnGrid(
             const GridFunction<BasisFunctionType, ResultType>& argument,
             const Grid& evaluationGrid,
-            const Fiber::QuadratureStrategy<
-            BasisFunctionType, ResultType, GeometryFactory>& quadStrategy,
+            const QuadratureStrategy& quadStrategy,
             const EvaluationOptions& options) const = 0;
 
+    /** \brief Evaluate the potential of a given charge distribution at
+     *  prescribed points.
+     *
+     * \param[in] argument
+     *   Argument of the potential operator (\f$\psi(y)\f$ in the notation above),
+     *   represented by a grid function.
+     * \param[in] evaluationPoints
+     *   2D array whose (i, j)th element is the ith coordinate of the jth point
+     *   at which the potential should be evaluated. The first dimension of this
+     *   array should be equal to <tt>argument.grid().dimWorld()</tt>.
+     * \param[in] quadStrategy
+     *   A #QuadratureStrategy object controlling how the integrals will be
+     *   evaluated.
+     * \param[in] options
+     *   Evaluation options.
+     *
+     * \returns A 2D array whose (i, j)th element is the ith component of the
+     * potential at the jth point.
+     *
+     * \note This function is not designed to yield accurate values of the
+     * potential on the surface \f$\Gamma\f$ containing the charge
+     * distribution, i.e. <tt>argument.grid()</tt>, even if the potential has a
+     * unique extension from \f$\Omega \setminus \Gamma\f$ to \f$\Gamma\f$.
+     * Hence values of the potential at any points belonging to \f$\Gamma\f$
+     * can be badly wrong.
+     *
+     * The current implementation does not yet take special measures to prevent
+     * loss of accuracy *near* \f$\Gamma\f$, either. Users are advised to
+     * increase the quadrature accuracy for points lying in the vicinity of
+     * \f$\Gamma\f$. */
     virtual arma::Mat<ResultType> evaluateAtPoints(
             const GridFunction<BasisFunctionType, ResultType>& argument,
             const arma::Mat<CoordinateType>& evaluationPoints,
-            const Fiber::QuadratureStrategy<
-            BasisFunctionType, ResultType, GeometryFactory>& quadStrategy,
+            const QuadratureStrategy& quadStrategy,
             const EvaluationOptions& options) const = 0;
 };
 

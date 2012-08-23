@@ -31,19 +31,20 @@ template <typename BasisFunctionType, typename ResultType>
 struct Laplace3dDoubleLayerBoundaryOperatorImpl;
 
 /** \ingroup laplace_3d
- *  \brief Double-layer-potential operator for the Laplace equation in 3D.
+ *  \brief Double-layer-potential boundary operator for the Laplace equation in 3D.
  *
- *  \tparam BasisFunctionType
- *    Type used to represent the values of basis functions.
- *  \tparam ResultType
- *    Type used to represent entries in the discrete form of the operator.
+ *  \tparam BasisFunctionType_
+ *    Type of the values of the basis functions into
+ *    which functions acted upon by the operator are expanded.
+ *  \tparam ResultType_
+ *    Type used to represent elements of the weak form form of the operator.
  *
  *  Both template parameters can take the following values: \c float, \c
  *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
  *  Both types must have the same precision: for instance, mixing \c float with
- *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType
- *  is by default set to \p BasisFunctionType. You should override that only if
- *  you set \p BasisFunctionType to a real type, but you want the entries of
+ *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType_
+ *  is by default set to \p BasisFunctionType_. You should override that only if
+ *  you set \p BasisFunctionType_ to a real type, but you want the entries of
  *  the operator's weak form to be stored as complex numbers.
  *
  *  \see laplace_3d */
@@ -60,15 +61,23 @@ class Laplace3dDoubleLayerBoundaryOperator :
     ResultType_>
     Base;
 public:
+    /** \copydoc ElementaryIntegralOperator::BasisFunctionType */
     typedef typename Base::BasisFunctionType BasisFunctionType;
+    /** \copydoc ElementaryIntegralOperator::KernelType */
     typedef typename Base::KernelType KernelType;
+    /** \copydoc ElementaryIntegralOperator::ResultType */
     typedef typename Base::ResultType ResultType;
+    /** \copydoc ElementaryIntegralOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
+    /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
     typedef typename Base::CollectionOfBasisTransformations
     CollectionOfBasisTransformations;
+    /** \copydoc ElementaryIntegralOperator::CollectionOfKernels */
     typedef typename Base::CollectionOfKernels CollectionOfKernels;
+    /** \copydoc ElementaryIntegralOperator::TestKernelTrialIntegral */
     typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
+    /** \copydoc Laplace3dBoundaryOperatorBase::Laplace3dBoundaryOperatorBase */
     Laplace3dDoubleLayerBoundaryOperator(
             const shared_ptr<const Space<BasisFunctionType> >& domain,
             const shared_ptr<const Space<BasisFunctionType> >& range,
@@ -76,6 +85,29 @@ public:
             const std::string& label = "");
 };
 
+/** \relates Laplace3dDoubleLayerBoundaryOperator
+ *  \brief Construct a BoundaryOperator object wrapping a
+ *  Laplace3dDoubleLayerBoundaryOperator.
+ *
+ *  This is a convenience function that creates a
+ *  Laplace3dDoubleLayerBoundaryOperator, immediately wraps it in a
+ *  BoundaryOperator and returns the latter object.
+ *
+ *  \param[in] context
+ *    A Context object that will be used to build the weak form of the
+ *    boundary operator when necessary.
+ *  \param[in] domain
+ *    Function space being the domain of the boundary operator.
+ *  \param[in] range
+ *    Function space being the range of the boundary operator.
+ *  \param[in] dualToRange
+ *    Function space dual to the the range of the boundary operator.
+ *  \param[in] label
+ *    Textual label of the operator (optional, used for debugging).
+ *
+ *  None of the shared pointers may be null and the spaces \p range and \p
+ *  dualToRange must be defined on the same grid, otherwise an exception is
+ *  thrown. */
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 laplace3dDoubleLayerBoundaryOperator(

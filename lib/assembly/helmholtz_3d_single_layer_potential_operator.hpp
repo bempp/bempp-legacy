@@ -30,11 +30,12 @@ template <typename BasisFunctionType>
 struct Helmholtz3dSingleLayerPotentialOperatorImpl;
 
 /** \ingroup helmholtz_3d
- *  \brief Single-layer-potential for the Helmholtz equation in 3D.
+ *  \brief Single-layer potential operator for the Helmholtz equation in 3D.
  *
- *  \tparam BasisFunctionType
- *    Type used to represent the values of basis functions. It can take the
- *    following values: \c float, \c double, <tt>std::complex<float></tt> and
+ *  \tparam BasisFunctionType_
+ *    Type of the values of the basis functions into which functions acted upon
+ *    by the operator are expanded. It can take the following values: \c float,
+ *    \c double, <tt>std::complex<float></tt> and
  *    <tt>std::complex<double></tt>.
  *
  *  \see helmholtz_3d */
@@ -49,22 +50,25 @@ class Helmholtz3dSingleLayerPotentialOperator :
     BasisFunctionType_>
     Base;
 public:
+    /** \copydoc Helmholtz3dPotentialOperatorBase::BasisFunctionType */
     typedef typename Base::BasisFunctionType BasisFunctionType;
+    /** \copydoc Helmholtz3dPotentialOperatorBase::KernelType */
     typedef typename Base::KernelType KernelType;
+    /** \copydoc Helmholtz3dPotentialOperatorBase::ResultType */
     typedef typename Base::ResultType ResultType;
+    /** \copydoc Helmholtz3dPotentialOperatorBase::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
+    /** \copydoc Helmholtz3dPotentialOperatorBase::CollectionOfBasisTransformations */
     typedef typename Base::CollectionOfBasisTransformations
     CollectionOfBasisTransformations;
+    /** \copydoc Helmholtz3dPotentialOperatorBase::CollectionOfKernels */
     typedef typename Base::CollectionOfKernels CollectionOfKernels;
+    /** \copydoc Helmholtz3dPotentialOperatorBase::KernelTrialIntegral */
     typedef typename Base::KernelTrialIntegral KernelTrialIntegral;
 
-    /** \brief Construct the potential.
-     *
-     * \param waveNumber Wave number.
-     *
-     * See \ref helmholtz_3d for the definition of the wave number. */
+    /** \copydoc Helmholtz3dPotentialOperatorBase::Helmholtz3dPotentialOperatorBase */
     Helmholtz3dSingleLayerPotentialOperator(KernelType waveNumber);
-
+    /** \copydoc Helmholtz3dPotentialOperatorBase::~Helmholtz3dPotentialOperatorBase */
     virtual ~Helmholtz3dSingleLayerPotentialOperator();
 };
 

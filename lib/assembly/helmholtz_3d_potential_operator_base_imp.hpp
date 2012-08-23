@@ -59,6 +59,14 @@ Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
 }
 
 template <typename Impl, typename BasisFunctionType>
+Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>&
+Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
+operator=(const Helmholtz3dPotentialOperatorBase& rhs)
+{
+    m_impl.reset(new Impl(*rhs.m_impl));
+}
+
+template <typename Impl, typename BasisFunctionType>
 typename Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::KernelType
 Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
 waveNumber() const

@@ -32,18 +32,19 @@ namespace Bempp
  *  \brief Base class for boundary operators for the Laplace equation in 3D.
  *
  *  \tparam Impl
- *    Type of the internal implementation pointer.
- *  \tparam BasisFunctionType
- *    Type used to represent the values of basis functions.
- *  \tparam ResultType
- *    Type used to represent entries in the discrete form of the operator.
+ *    Type of the internal implementation object.
+ *  \tparam BasisFunctionType_
+ *    Type of the values of the basis functions into
+ *    which functions acted upon by the operator are expanded.
+ *  \tparam ResultType_
+ *    Type used to represent elements of the weak form form of the operator.
  *
  *  The latter two template parameters can take the following values: \c float, \c
  *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
  *  Both types must have the same precision: for instance, mixing \c float with
- *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType
- *  is by default set to \p BasisFunctionType. You should override that only if
- *  you set \p BasisFunctionType to a real type, but you want the entries of
+ *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType_
+ *  is by default set to \p BasisFunctionType_. You should override that only if
+ *  you set \p BasisFunctionType_ to a real type, but you want the entries of
  *  the operator's weak form to be stored as complex numbers.
  *
  *  \see laplace_3d */
@@ -61,15 +62,37 @@ class Laplace3dBoundaryOperatorBase :
     ResultType_>
     Base;
 public:
+    /** \brief Type of the values of the basis functions into which functions
+     *  acted upon by the operator are expanded. */
     typedef typename Base::BasisFunctionType BasisFunctionType;
+    /** \brief Type of the values of kernel functions. */
     typedef typename Base::KernelType KernelType;
+    /** \copydoc ElementaryIntegralOperator::ResultType */
     typedef typename Base::ResultType ResultType;
+    /** \copydoc ElementaryIntegralOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
+    /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
     typedef typename Base::CollectionOfBasisTransformations
     CollectionOfBasisTransformations;
+    /** \copydoc ElementaryIntegralOperator::CollectionOfKernels */
     typedef typename Base::CollectionOfKernels CollectionOfKernels;
+    /** \copydoc ElementaryIntegralOperator::TestKernelTrialIntegral */
     typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
+    /** \brief Constructor.
+     *
+     *  \param[in] domain
+     *    Function space being the domain of the operator.
+     *  \param[in] range
+     *    Function space being the range of the operator.
+     *  \param[in] dualToRange
+     *    Function space dual to the the range of the operator.
+     *  \param[in] label
+     *    Textual label of the operator (optional, used for debugging).
+     *
+     *  None of the shared pointers may be null and the spaces \p range and \p
+     *  dualToRange must be defined on the same grid, otherwise an exception is
+     *  thrown. */
     Laplace3dBoundaryOperatorBase(
             const shared_ptr<const Space<BasisFunctionType> >& domain,
             const shared_ptr<const Space<BasisFunctionType> >& range,
@@ -79,6 +102,13 @@ public:
             const Laplace3dBoundaryOperatorBase& other);
     virtual ~Laplace3dBoundaryOperatorBase();
 
+    /** \brief Return the identifier of this operator.
+     *
+     *  Two boundary operators related to the Laplace equation are treated as
+     *  identical, and hence having the same weak form, if they have the same
+     *  C++ type (e.g.
+     *  <tt>Laplace3dDoubleLayerBoundaryOperator<double, double></tt>),
+     *  domain space, range space and space dual to range. */
     virtual shared_ptr<const AbstractBoundaryOperatorId> id() const;
 
 private:
@@ -90,8 +120,10 @@ private:
     virtual const TestKernelTrialIntegral& integral() const;
 
 private:
+    /** \cond PRIVATE */
     boost::scoped_ptr<Impl> m_impl;
     shared_ptr<AbstractBoundaryOperatorId> m_id;
+    /** \endcond */
 };
 
 } // namespace Bempp
