@@ -57,9 +57,10 @@ template <typename BasisFunctionType, typename ResultType> class WeakFormAcaAsse
  *  weak form is
  *  \f[
  *    \langle \phi, \mathcal A \psi \rangle \equiv
- *    \int_S \int_S F[\phi(x), \psi(y)] \, dS(x) \, dS(y),
+ *    \int_\Gamma \int_\Gamma F[\phi(x), \psi(y)] \, d\Gamma(x) \, d\Gamma(y),
  *  \f]
- *  where the integrand \f$F[\phi(x), \psi(y)]\f$ is an arbitrary bilinear (or
+ *  where \f$\Gamma\f$ is a surface embedded in a space of dimension higher by
+ *  one and the integrand \f$F[\phi(x), \psi(y)]\f$ is an arbitrary bilinear (or
  *  sesquilinear) form of the *test function* \f$\phi\f$ belonging to the space
  *  dual to the range of \f$\mathcal A\f$ and the *trial function* \f$\psi\f$
  *  belonging to the domain of \f$\mathcal A\f$. In the simplest and most
@@ -71,16 +72,17 @@ template <typename BasisFunctionType, typename ResultType> class WeakFormAcaAsse
  *  conjugation. For more complex operators, \f$F\f$ might involve some
  *  transformations of the test and trial functions (e.g. their surface
  *  divergence or curl), the kernel function might be a tensor, or \f$F\f$
- *  might consist of several terms. The exact form of \f$F\f$ for a given
- *  operator is determined by implementing the virtual functions integral(),
- *  kernels(), testTransformations() and trialTransformations().
+ *  might consist of several terms. The exact form of \f$F\f$ for a particular
+ *  boundary operator is determined by the implementation of the virtual
+ *  functions integral(), kernels(), testTransformations() and
+ *  trialTransformations().
  *
  *  \tparam BasisFunctionType_
- *    Type used to represent components of the functions from the operator's
- *    domain, range and space dual to range.
+ *    Type of the values of the (components of the) basis functions into
+ *    which functions acted upon by the operator are expanded.
  *  \tparam KernelType_
- *    Type used to represent components of kernel functions occurring in the
- *    integrand of the operator.
+ *    Type of the values of the (components of the) kernel functions occurring
+ *    in the integrand of the operator.
  *  \tparam ResultType_
  *    Type used to represent elements of the weak form of the operator.
  *
@@ -106,7 +108,7 @@ public:
     typedef typename Base::QuadratureStrategy QuadratureStrategy;
     /** \copydoc ElementaryAbstractBoundaryOperator::LocalAssembler */
     typedef typename Base::LocalAssembler LocalAssembler;
-    /** \brief Type used to represent components of kernel functions. */
+    /** \brief Type of the values of the (components of the) kernel functions. */
     typedef KernelType_ KernelType;
     /** \brief Type of the appropriate instantiation of Fiber::CollectionOfBasisTransformations. */
     typedef Fiber::CollectionOfBasisTransformations<CoordinateType>
@@ -155,10 +157,10 @@ private:
     /** \brief Return an object representing the integral that is the weak form
      *  of this operator.
      *
-     *  Subclasses of TestKernelTrialIntegral implement functions that evaluate
-     *  the integral using the data provided by a CollectionOfKernels
+     *  Subclasses of #TestKernelTrialIntegral implement functions that evaluate
+     *  the integral using the data provided by a #CollectionOfKernels
      *  representing the kernel functions occurring in the integrand and a pair
-     *  of CollectionOfBasisTransformations objects representing the test and
+     *  of #CollectionOfBasisTransformations objects representing the test and
      *  trial basis function transformations occurring in the integrand. */
     virtual const TestKernelTrialIntegral& integral() const = 0;
 

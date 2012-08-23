@@ -31,29 +31,29 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType>
 struct ModifiedHelmholtz3dHypersingularBoundaryOperatorImpl;
 
 /** \ingroup modfied_helmholtz_3d
- *  \brief HypersingularBoundary operator for the modified Helmholtz equation in 3D.
+ *  \brief Hypersingular boundary operator for the modified Helmholtz equation in 3D.
  *
- *  \tparam BasisFunctionType
- *    Type used to represent the values of basis functions. It can take the
- *    following values: \c float, \c double, <tt>std::complex<float></tt> and
- *    <tt>std::complex<double></tt>.
- *  \tparam KernelType
- *    Type used to represent the values of the kernel.
- *  \tparam ResultType
- *    Type used to represent entries in the discrete form of the operator.
+ *  \tparam BasisFunctionType_
+ *    Type of the values of the basis functions into
+ *    which functions acted upon by the operator are expanded.
+ *  \tparam KernelType_
+ *    Type of the values of the kernel functions occurring
+ *    in the integrand of the operator.
+ *  \tparam ResultType_
+ *    Type used to represent elements of the weak form form of the operator.
  *
- *  All three template parameters can take the following values: \c float, \c
- *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>. All
- *  types must have the same precision: for instance, mixing \c float with
- *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType
- *  is by default set to "larger" of \p BasisFunctionType and \p KernelType,
- *  e.g. for \p BasisFunctionType = \c double and \p KernelType =
- *  <tt>std::complex<double></tt> it is set to <tt>std::complex<double></tt>.
- *  You should override that only if you set both \p BasisFunctionType and \p
- *  KernelType to a real type, but you want the entries of the operator's weak
- *  form to be stored as complex numbers.
+ *  The latter three template parameters can take the following values: \c
+ *  float, \c double, <tt>std::complex<float></tt> and
+ *  <tt>std::complex<double></tt>. All types must have the same precision: for
+ *  instance, mixing \c float with <tt>std::complex<double></tt> is not
+ *  allowed. The parameter \p ResultType_ is by default set to "larger" of \p
+ *  BasisFunctionType_ and \p KernelType_, e.g. for \p BasisFunctionType_ = \c
+ *  double and \p KernelType_ = <tt>std::complex<double></tt> it is set to
+ *  <tt>std::complex<double></tt>. You should override that only if you set
+ *  both \p BasisFunctionType_ and \p KernelType_ to a real type, but you want
+ *  the entries of the operator's weak form to be stored as complex numbers.
  *
- *  Note that setting \p KernelType to a real type implies that the wave number
+ *  Note that setting \p KernelType_ to a real type implies that the wave number
  *  must also be chosen purely real.
  *
  *  \see modified_helmholtz_3d */
@@ -68,22 +68,23 @@ class ModifiedHelmholtz3dHypersingularBoundaryOperator :
       ModifiedHelmholtz3dHypersingularBoundaryOperatorImpl<BasisFunctionType_, KernelType_, ResultType_>,
       BasisFunctionType_, KernelType_, ResultType_> Base;
 public:
+    /** \copydoc ElementaryIntegralOperator::BasisFunctionType */
     typedef typename Base::BasisFunctionType BasisFunctionType;
+    /** \copydoc ElementaryIntegralOperator::KernelType */
     typedef typename Base::KernelType KernelType;
+    /** \copydoc ElementaryIntegralOperator::ResultType */
     typedef typename Base::ResultType ResultType;
+    /** \copydoc ElementaryIntegralOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
+    /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
     typedef typename Base::CollectionOfBasisTransformations
     CollectionOfBasisTransformations;
+    /** \copydoc ElementaryIntegralOperator::CollectionOfKernels */
     typedef typename Base::CollectionOfKernels CollectionOfKernels;
+    /** \copydoc ElementaryIntegralOperator::TestKernelTrialIntegral */
     typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
-    /** \brief Construct the operator.
-     *
-     * \param testSpace Test function space.
-     * \param trialSpace Trial function space.
-     * \param waveNumber Wave number.
-     *
-     * See \ref helmholtz_3d for the definition of the wave number. */
+    /** \copydoc ModifiedHelmholtz3dBoundaryOperatorBase::ModifiedHelmholtz3dBoundaryOperatorBase */
     ModifiedHelmholtz3dHypersingularBoundaryOperator(
             const shared_ptr<const Space<BasisFunctionType> >& domain,
             const shared_ptr<const Space<BasisFunctionType> >& range,
@@ -92,6 +93,31 @@ public:
             const std::string& label = "");
 };
 
+/** \relates ModifiedHelmholtz3dHypersingularBoundaryOperator
+ *  \brief Construct a BoundaryOperator object wrapping a
+ *  ModifiedHelmholtz3dHypersingularBoundaryOperator.
+ *
+ *  This is a convenience function that creates a
+ *  ModifiedHelmholtz3dHypersingularBoundaryOperator, immediately wraps it in a
+ *  BoundaryOperator and returns the latter object.
+ *
+ *  \param[in] context
+ *    A Context object that will be used to build the weak form of the
+ *    boundary operator when necessary.
+ *  \param[in] domain
+ *    Function space being the domain of the boundary operator.
+ *  \param[in] range
+ *    Function space being the range of the boundary operator.
+ *  \param[in] dualToRange
+ *    Function space dual to the the range of the boundary operator.
+ *  \param[in] waveNumber
+ *    Wave number. See \ref modified_helmholtz_3d for its definition.
+ *  \param[in] label
+ *    Textual label of the operator (optional, used for debugging).
+ *
+ *  None of the shared pointers may be null and the spaces \p range and \p
+ *  dualToRange must be defined on the same grid, otherwise an exception is
+ *  thrown. */
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 modifiedHelmholtz3dHypersingularBoundaryOperator(

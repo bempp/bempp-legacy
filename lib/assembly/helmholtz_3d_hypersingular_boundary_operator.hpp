@@ -31,11 +31,12 @@ template <typename BasisFunctionType>
 struct Helmholtz3dHypersingularBoundaryOperatorImpl;
 
 /** \ingroup helmholtz_3d
- *  \brief HypersingularBoundary operator for the Helmholtz equation in 3D.
+ *  \brief Hypersingular boundary operator for the Helmholtz equation in 3D.
  *
  *  \tparam BasisFunctionType
- *    Type used to represent the values of basis functions. It can take the
- *    following values: \c float, \c double, <tt>std::complex<float></tt> and
+ *    Type of the values of the basis functions into which functions acted upon
+ *    by the operator are expanded. It can take the following values: \c float,
+ *    \c double, <tt>std::complex<float></tt> and
  *    <tt>std::complex<double></tt>.
  *
  *  \see helmholtz_3d */
@@ -49,22 +50,23 @@ class Helmholtz3dHypersingularBoundaryOperator :
     Helmholtz3dHypersingularBoundaryOperatorImpl<BasisFunctionType_>,
     BasisFunctionType_> Base;
 public:
+    /** \copydoc ElementaryIntegralOperator::BasisFunctionType */
     typedef typename Base::BasisFunctionType BasisFunctionType;
+    /** \copydoc ElementaryIntegralOperator::KernelType */
     typedef typename Base::KernelType KernelType;
+    /** \copydoc ElementaryIntegralOperator::ResultType */
     typedef typename Base::ResultType ResultType;
+    /** \copydoc ElementaryIntegralOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
+    /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
     typedef typename Base::CollectionOfBasisTransformations
     CollectionOfBasisTransformations;
+    /** \copydoc ElementaryIntegralOperator::CollectionOfKernels */
     typedef typename Base::CollectionOfKernels CollectionOfKernels;
+    /** \copydoc ElementaryIntegralOperator::TestKernelTrialIntegral */
     typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
-    /** \brief Construct the operator.
-     *
-     * \param testSpace Test function space.
-     * \param trialSpace Trial function space.
-     * \param waveNumber Wave number.
-     *
-     * See \ref helmholtz_3d for the definition of the wave number. */
+    /** \copydoc Helmholtz3dBoundaryOperatorBase::Helmholtz3dBoundaryOperatorBase */
     Helmholtz3dHypersingularBoundaryOperator(
             const shared_ptr<const Space<BasisFunctionType> >& domain,
             const shared_ptr<const Space<BasisFunctionType> >& range,
@@ -73,6 +75,31 @@ public:
             const std::string& label = "");
 };
 
+/** \relates Helmholtz3dHypersingularBoundaryOperator
+ *  \brief Construct a BoundaryOperator object wrapping a
+ *  Helmholtz3dHypersingularBoundaryOperator.
+ *
+ *  This is a convenience function that creates a
+ *  Helmholtz3dHypersingularBoundaryOperator, immediately wraps it in a
+ *  BoundaryOperator and returns the latter object.
+ *
+ *  \param[in] context
+ *    A Context object that will be used to build the weak form of the
+ *    boundary operator when necessary.
+ *  \param[in] domain
+ *    Function space being the domain of the boundary operator.
+ *  \param[in] range
+ *    Function space being the range of the boundary operator.
+ *  \param[in] dualToRange
+ *    Function space dual to the the range of the boundary operator.
+ *  \param[in] waveNumber
+ *    Wave number. See \ref helmholtz_3d for its definition.
+ *  \param[in] label
+ *    Textual label of the operator (optional, used for debugging).
+ *
+ *  None of the shared pointers may be null and the spaces \p range and \p
+ *  dualToRange must be defined on the same grid, otherwise an exception is
+ *  thrown. */
 template <typename BasisFunctionType>
 BoundaryOperator<BasisFunctionType,
 typename Helmholtz3dHypersingularBoundaryOperator<BasisFunctionType>::ResultType>

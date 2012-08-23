@@ -69,8 +69,8 @@ template <typename BasisFunctionType, typename ResultType> class ScaledAbstractB
  *  form of the operator.
  *
  *  \tparam BasisFunctionType_
- *    Type used to represent components of the functions from the operator's
- *    domain, range and space dual to range.
+ *    Type of the values of the (components of the) basis functions into
+ *    which functions acted upon by the operator are expanded.
  *  \tparam ResultType_
  *    Type used to represent elements of the weak form of the operator.
  *
@@ -84,9 +84,10 @@ template <typename BasisFunctionType_, typename ResultType_>
 class AbstractBoundaryOperator
 {
 public:
-    /** \brief Type used to represent components of functions on which the operator acts. */
+    /** \brief Type of the values of the (components of the) basis functions into
+     *  which functions acted upon by the operator are expanded. */
     typedef BasisFunctionType_ BasisFunctionType;
-    /** \brief Type used to represent elements of the operator's weak form. */
+    /** \brief Type used to represent elements of the weak form of the operator. */
     typedef ResultType_ ResultType;
     /** \brief Type used to represent coordinates. */
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
@@ -101,16 +102,12 @@ public:
      *
      *  \param[in] domain
      *    Function space being the domain of the operator.
-     *
      *  \param[in] range
      *    Function space being the range of the operator.
-     *
      *  \param[in] dualToRange
      *    Function space dual to the the range of the operator.
-     *
      *  \param[in] label
      *    Textual label of the operator (optional, used for debugging).
-     *
      *  \param[in] symmetry
      *    Symmetry of the weak form of the operator.
      *
@@ -127,7 +124,7 @@ public:
     /** \brief Destructor. */
     virtual ~AbstractBoundaryOperator();
 
-    /** \brief Identifier.
+    /** \brief Return the identifier of this operator.
      *
      *  If the weak form of this operator is cacheable, return a shared pointer
      *  to a valid instance of a subclass of AbstractBoundaryOperatorId that
@@ -145,17 +142,20 @@ public:
 
     /** \brief Domain.
      *
-     *  Return a reference to the function space being the domain of the operator. */
+     *  Return a shared pointer to the function space being the domain of
+     *  this operator. */
     shared_ptr<const Space<BasisFunctionType> > domain() const;
 
     /** \brief Range.
      *
-     *  Return a reference to the function space being the range of the operator. */
+     *  Return a shared pointer to the function space being the range of
+     *  this operator. */
     shared_ptr<const Space<BasisFunctionType> > range() const;
 
     /** \brief Dual to range.
      *
-     *  Return a reference to the function space dual to the range of the operator. */
+     *  Return a shared pointer to the function space dual to the range of
+     *  this operator. */
     shared_ptr<const Space<BasisFunctionType> > dualToRange() const;
 
     /** @}

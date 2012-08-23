@@ -28,7 +28,8 @@
 namespace Bempp
 {
 
-/** \brief Elementary boundary integral operator with weak form whose integrand
+/** \ingroup assembly
+ *  \brief Elementary boundary integral operator with weak form whose integrand
  *  is a regular function. */
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class ElementaryRegularIntegralOperator :

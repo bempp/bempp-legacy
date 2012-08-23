@@ -34,8 +34,9 @@ namespace Bempp
  *  \tparam Impl
  *    Type of the internal implementation object.
  *  \tparam BasisFunctionType
- *    Type used to represent the values of basis functions. It can take the
- *    following values: \c float, \c double, <tt>std::complex<float></tt> and
+ *    Type of the values of the basis functions into which functions acted upon
+ *    by the operator are expanded. It can take the following values: \c float,
+ *    \c double, <tt>std::complex<float></tt> and
  *    <tt>std::complex<double></tt>.
  *
  *  \see helmholtz_3d
@@ -53,27 +54,63 @@ class Helmholtz3dBoundaryOperatorBase :
     typename ScalarTraits<BasisFunctionType_>::ComplexType>
     Base;
 public:
+    /** \brief Type of the values of the basis functions into which functions
+     *  acted upon by the operator are expanded. */
     typedef typename Base::BasisFunctionType BasisFunctionType;
+    /** \brief Type of the values of kernel functions. */
     typedef typename Base::KernelType KernelType;
+    /** \copydoc ElementaryIntegralOperator::ResultType */
     typedef typename Base::ResultType ResultType;
+    /** \copydoc ElementaryIntegralOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
+    /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
     typedef typename Base::CollectionOfBasisTransformations
     CollectionOfBasisTransformations;
+    /** \copydoc ElementaryIntegralOperator::CollectionOfKernels */
     typedef typename Base::CollectionOfKernels CollectionOfKernels;
+    /** \copydoc ElementaryIntegralOperator::TestKernelTrialIntegral */
     typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
+    /** \brief Constructor.
+     *
+     *  \param[in] domain
+     *    Function space being the domain of the operator.
+     *  \param[in] range
+     *    Function space being the range of the operator.
+     *  \param[in] dualToRange
+     *    Function space dual to the the range of the operator.
+     *  \param[in] waveNumber
+     *    Wave number. See \ref helmholtz_3d for its definition.
+     *  \param[in] label
+     *    Textual label of the operator (optional, used for debugging).
+     *
+     *  None of the shared pointers may be null and the spaces \p range and \p
+     *  dualToRange must be defined on the same grid, otherwise an exception is
+     *  thrown. */
     Helmholtz3dBoundaryOperatorBase(
             const shared_ptr<const Space<BasisFunctionType> >& domain,
             const shared_ptr<const Space<BasisFunctionType> >& range,
             const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
             KernelType waveNumber,
             const std::string& label = "");
+
+    /** \brief Copy constructor. */
     Helmholtz3dBoundaryOperatorBase(
             const Helmholtz3dBoundaryOperatorBase& other);
+
+    /** \brief Destructor. */
     virtual ~Helmholtz3dBoundaryOperatorBase();
 
+    /** \brief Return the wave number set previously in the constructor. */
     KernelType waveNumber() const;
 
+    /** \brief Return the identifier of this operator.
+     *
+     *  Two boundary operators related to the Helmholtz equation are treated as
+     *  identical, and hence having the same weak form, if they have the same
+     *  C++ type (e.g.
+     *  <tt>Helmholtz3dDoubleLayerBoundaryOperator<double></tt>), domain space,
+     *  range space, space dual to range and wave number. */
     virtual shared_ptr<const AbstractBoundaryOperatorId> id() const;
 
 private:
@@ -85,8 +122,10 @@ private:
     virtual const TestKernelTrialIntegral& integral() const;
 
 private:
+    /** \cond PRIVATE */
     boost::scoped_ptr<Impl> m_impl;
     shared_ptr<AbstractBoundaryOperatorId> m_id;
+    /** \endcond */
 };
 
 } // namespace Bempp
