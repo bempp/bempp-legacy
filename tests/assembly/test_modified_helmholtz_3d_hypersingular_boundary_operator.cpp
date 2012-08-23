@@ -79,7 +79,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works_for_complex_kernel, BasisFunctionType, basis
 
     AssemblyOptions assemblyOptions;
     AccuracyOptions accuracyOptions;
-    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(5);
+    accuracyOptions.doubleRegular.setAbsoluteQuadratureOrder(5);
+    accuracyOptions.doubleSingular.setAbsoluteQuadratureOrder(5);
     NumericalQuadratureStrategy<BFT, RT> quadStrategy(accuracyOptions);
 
     Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);
@@ -187,7 +188,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works_for_real_kernel, BasisFunctionType, basis_fu
 
     AssemblyOptions assemblyOptions;
     AccuracyOptions accuracyOptions;
-    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(5);
+    accuracyOptions.doubleRegular.setAbsoluteQuadratureOrder(5);
+    accuracyOptions.doubleSingular.setAbsoluteQuadratureOrder(5);
     NumericalQuadratureStrategy<BFT, RT> quadStrategy(accuracyOptions);
 
     Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);
