@@ -40,15 +40,16 @@ namespace Bempp
 /** \ingroup discrete_boundary_operators
  *  \brief Discrete boundary operator.
  *
- *  This class represents a discretised linear operator, i.e. a matrix
+ *  This class represents a discretised boundary operator, i.e. a matrix
  *  \f$\mathsf{L}\f$ with entries
  *  \f[ \mathsf{L}_{mn} \equiv \int_S \phi^*_m(x) \,[L\, \psi_n](x)\,
  *      \mathrm{d}S(x), \f]
- *  where \f$L\f$ is a linear operator acting on functions defined on a surface
- *  \f$S\f$, \f$\{\phi_m\}_{m=1}^{M}\f$ is a basis of the test function space and
- *  \f$\{\psi_n\}_{n=1}^{N}\f$ is a basis of the trial function space.
- *  The way the matrix is stored can be arbitrary. Concrete subclasses of
- *  this class implement specific storage methods.
+ *  where \f$L\f$ is a boundary operator \f$S\f$, \f$\{\phi_m\}_{m=1}^{M}\f$
+ *  are the basis functions spanning the *test space* and defined on a surface
+ *  \f$S\f$, whereas \f$\{\psi_n\}_{n=1}^{N}\f$ are basis functions the is a
+ *  basis of the trial function space. The way the matrix is stored can be
+ *  arbitrary. Concrete subclasses of this class implement specific storage
+ *  methods.
  *
  *  If BEM++ is compiled with Trilinos, this class is derived from
  *  <tt>Thyra::LinearOpDefaultBase<ValueType></tt> and hence inherits all
