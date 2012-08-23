@@ -37,7 +37,7 @@ Solution<BasisFunctionType, ResultType>::Solution(
 template <typename BasisFunctionType, typename ResultType>
 Solution<BasisFunctionType, ResultType>::Solution(
         const GridFunction<BasisFunctionType, ResultType>& gridFunction,
-        typename Base::Status status, 
+        SolutionStatus::Status status,
         MagnitudeType achievedTolerance,
         std::string message) :
     Base(status, achievedTolerance, message),

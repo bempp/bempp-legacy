@@ -31,6 +31,12 @@
 namespace Bempp
 {
 
+/** \ingroup linalg
+  * \brief This class holds the solution of a block operator system
+           together with various information about the solution.
+  *
+  */
+
 template <typename BasisFunctionType, typename ResultType>
 class BlockedSolution : public SolutionBase<BasisFunctionType, ResultType>
 {
@@ -47,7 +53,7 @@ public:
     /** \brief Constructor */
     BlockedSolution(
             const std::vector<GridFunction<BasisFunctionType, ResultType> >& gridFunctions,
-            typename Base::Status status,
+            SolutionStatus::Status status,
             MagnitudeType achievedTolerance = Base::unknownTolerance(),
             std::string message = "");
 

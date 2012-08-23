@@ -37,7 +37,7 @@ BlockedSolution<BasisFunctionType, ResultType>::BlockedSolution(
 template <typename BasisFunctionType, typename ResultType>
 BlockedSolution<BasisFunctionType, ResultType>::BlockedSolution(
         const std::vector<GridFunction<BasisFunctionType, ResultType> >& gridFunctions,
-        typename Base::Status status, 
+        SolutionStatus::Status status,
         MagnitudeType achievedTolerance,
         std::string message) :
     Base(status, achievedTolerance, message),

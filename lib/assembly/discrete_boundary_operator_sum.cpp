@@ -28,8 +28,8 @@ namespace Bempp
 
 template <typename ValueType>
 DiscreteBoundaryOperatorSum<ValueType>::
-DiscreteBoundaryOperatorSum(shared_ptr<const Base> &term1,
-                          shared_ptr<const Base> &term2) :
+DiscreteBoundaryOperatorSum(const shared_ptr<const Base> &term1,
+                            const shared_ptr<const Base> &term2) :
     m_term1(term1), m_term2(term2)
 {
     if (!m_term1 || !m_term2)

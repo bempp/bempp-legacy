@@ -36,18 +36,18 @@ SolutionBase<BasisFunctionType, ResultType>::SolutionBase(
 {
     switch (status.solveStatus) {
     case Thyra::SOLVE_STATUS_CONVERGED:
-        m_status = CONVERGED; break;
+        m_status = SolutionStatus::CONVERGED; break;
     case Thyra::SOLVE_STATUS_UNCONVERGED:
-        m_status = UNCONVERGED; break;
+        m_status = SolutionStatus::UNCONVERGED; break;
     default:
-        m_status = UNKNOWN;
+        m_status = SolutionStatus::UNKNOWN;
     }
 }
 #endif // WITH_TRILINOS
 
 template <typename BasisFunctionType, typename ResultType>
 SolutionBase<BasisFunctionType, ResultType>::SolutionBase(
-        Status status, MagnitudeType achievedTolerance, std::string message) :
+        SolutionStatus::Status status, MagnitudeType achievedTolerance, std::string message) :
     m_status(status), 
     m_achievedTolerance(achievedTolerance),
     m_message(message)
@@ -55,7 +55,7 @@ SolutionBase<BasisFunctionType, ResultType>::SolutionBase(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-typename SolutionBase<BasisFunctionType, ResultType>::Status
+SolutionStatus::Status
 SolutionBase<BasisFunctionType, ResultType>::status() const
 {
     return m_status;

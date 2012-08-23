@@ -24,6 +24,7 @@
 #define bempp_discrete_boundary_operator_hpp
 
 #include "../common/common.hpp"
+#include "../common/shared_ptr.hpp"
 
 #include "transposition_mode.hpp"
 
@@ -202,6 +203,98 @@ private:
 // *
 // *  This overload is available only if the library was compiled using Trilinos.
 // */
+
+/** \brief Return a DiscreteBoundaryOperator representing the sum of the operands.
+ *
+ */
+template <typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator+(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1,
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2);
+
+/** \brief Return a BoundaryOperator representing the difference of the operands.
+ *
+ */
+template <typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator-(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1,
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2);
+
+template <typename ValueType, typename ScalarType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator*(
+        ScalarType scalar,
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op);
+
+template <typename ValueType, typename ScalarType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator*(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
+        ScalarType scalar);
+
+template <typename ValueType, typename ScalarType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator/(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
+        ScalarType scalar);
+
+
+
+
+//// This type machinery is needed to disambiguate between this operator and
+//// the one taking a BoundaryOperator and a GridFunction
+///** \brief Return a BoundaryOperator representing the operator \p op multiplied
+// * by \p scalar.
+// *
+// * \todo Throw an exception if \p op is uninitialized. */
+//template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+//typename boost::enable_if<
+//    typename boost::mpl::has_key<
+//        boost::mpl::set<float, double, std::complex<float>, std::complex<double> >,
+//        ScalarType>,
+//    BoundaryOperator<BasisFunctionType, ResultType> >::type
+//operator*(
+//        const BoundaryOperator<BasisFunctionType, ResultType>& op,
+//        const ScalarType& scalar);
+
+///** \brief Return a BoundaryOperator representing the operator \p op multiplied
+// * by \p scalar.
+// *
+// * \todo Throw an exception if \p op is uninitialized. */
+//template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+//BoundaryOperator<BasisFunctionType, ResultType> operator*(
+//        const ScalarType& scalar,
+//        const BoundaryOperator<BasisFunctionType, ResultType>& op);
+
+///** \brief Return a BoundaryOperator representing the operator \p op divided
+// * by \p scalar.
+// *
+// * \note \p scalar must not be zero. */
+//template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+//BoundaryOperator<BasisFunctionType, ResultType> operator/(
+//        const BoundaryOperator<BasisFunctionType, ResultType>& op,
+//        const ScalarType& scalar);
+
+///** \brief Act on a GridFunction.
+// *
+// *  This function returns the GridFunction obtained by acting with the operator
+// *  \p op on the grid function \p fun. It is equivalent to calling
+// *  \code
+// *  op.apply(NO_TRANSPOSE, fun, result, 1., 0.);
+// *  return result;
+// *  \endcode
+// *  on GridFunction \p result with space and dual space compatible with
+// *  the range and dual to range of \p op. */
+//template <typename BasisFunctionType, typename ResultType>
+//GridFunction<BasisFunctionType, ResultType> operator*(
+//        const BoundaryOperator<BasisFunctionType, ResultType>& op,
+//        const GridFunction<BasisFunctionType, ResultType>& fun);
+
+//// TODO: make this return an operator composition.
+////template <typename BasisFunctionType, typename ResultType>
+////BoundaryOperatorComposition<BasisFunctionType, ResultType> operator*(
+////        const BoundaryOperator<BasisFunctionType, ResultType>& op1,
+////        const BoundaryOperator<BasisFunctionType, ResultType>& op2);
+
+
+
 
 } // namespace Bempp
 

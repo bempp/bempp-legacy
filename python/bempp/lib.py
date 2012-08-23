@@ -219,7 +219,7 @@ def gridFunctionFromSurfaceNormalIndependentFunction(
         context, space, dualSpace, function,
         argumentDimension, resultDimension)
 
-def createDefaultIterativeSolver(boundaryOperator):
+def createDefaultIterativeSolver(boundaryOperator,test_convergence="test_convergence_in_dual_to_range"):
     """Return the default iterative linear solver.
 
     This solver lets you solve the equation A f = g for the function
@@ -231,7 +231,7 @@ def createDefaultIterativeSolver(boundaryOperator):
     resultType = boundaryOperator.resultType()
     result = core.constructObjectTemplatedOnBasisAndResult(
         "DefaultIterativeSolver", basisFunctionType, resultType,
-        boundaryOperator)
+        boundaryOperator,test_convergence)
     result._boundaryOperator = boundaryOperator
     return result
 

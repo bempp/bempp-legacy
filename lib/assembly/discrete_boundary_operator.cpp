@@ -1,4 +1,7 @@
 #include "discrete_boundary_operator.hpp"
+#include "discrete_boundary_operator_sum.hpp"
+#include "scaled_discrete_boundary_operator.hpp"
+#include "../common/shared_ptr.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -80,6 +83,107 @@ void DiscreteBoundaryOperator<ValueType>::applyImpl(
 }
 #endif
 
+template <typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator+(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1,
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2){
+    return shared_ptr<const DiscreteBoundaryOperator<ValueType> >(
+                new DiscreteBoundaryOperatorSum<ValueType>(op1,op2));
+}
+
+template <typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator-(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1,
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2){
+    return shared_ptr<const DiscreteBoundaryOperator<ValueType> >(
+                new DiscreteBoundaryOperatorSum<ValueType>(op1,static_cast<ValueType>(-1.)*op2));
+}
+
+
+template <typename ValueType, typename ScalarType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator*(
+        ScalarType scalar,
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op){
+    return  shared_ptr<const DiscreteBoundaryOperator<ValueType> >(
+                new ScaledDiscreteBoundaryOperator<ValueType>(static_cast<ValueType>(scalar),op));
+}
+
+template <typename ValueType, typename ScalarType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator*(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
+        ScalarType scalar){
+    return shared_ptr<const DiscreteBoundaryOperator<ValueType> >(
+                new ScaledDiscreteBoundaryOperator<ValueType>(static_cast<ValueType>(scalar),op));
+}
+
+template <typename ValueType, typename ScalarType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator/(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
+        ScalarType scalar){
+    if (scalar == static_cast<ScalarType>(0.))
+        throw std::runtime_error("operator/(DiscreteBoundaryOperator, scalar): "
+                                     "Division by zero");
+    return shared_ptr<const DiscreteBoundaryOperator<ValueType> >(
+                new ScaledDiscreteBoundaryOperator<ValueType>(
+                    static_cast<ValueType>(static_cast<ScalarType>(1.)/scalar),op));
+}
+
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteBoundaryOperator);
+
+#define INSTANTIATE_FREE_FUNCTIONS(VALUE) \
+    template shared_ptr<const DiscreteBoundaryOperator< VALUE > > operator+( \
+    const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op1, \
+    const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op2); \
+    template shared_ptr<const DiscreteBoundaryOperator< VALUE > > operator-( \
+    const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op1, \
+    const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op2);
+#define INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR( VALUE , SCALAR ) \
+    template shared_ptr<const DiscreteBoundaryOperator< VALUE > > operator*( \
+            SCALAR scalar, \
+            const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op); \
+    template shared_ptr<const DiscreteBoundaryOperator< VALUE > > operator*( \
+             const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op,\
+             SCALAR scalar); \
+    template shared_ptr<const DiscreteBoundaryOperator< VALUE > > operator/( \
+            const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op, \
+            SCALAR scalar);
+
+//    template BoundaryOperator<BASIS, RESULT> operator*( \
+//    const BoundaryOperator<BASIS, RESULT>& op, const SCALAR& scalar); \
+//    template BoundaryOperator<BASIS, RESULT> operator*( \
+//    const SCALAR& scalar, const BoundaryOperator<BASIS, RESULT>& op); \
+//    template BoundaryOperator<BASIS, RESULT> operator/( \
+//    const BoundaryOperator<BASIS, RESULT>& op, const SCALAR& scalar)
+
+#if defined(ENABLE_SINGLE_PRECISION)
+INSTANTIATE_FREE_FUNCTIONS(float);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(float, float );
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(float, double);
+#endif
+
+#if defined(ENABLE_SINGLE_PRECISION) && (defined(ENABLE_COMPLEX_KERNELS) || defined(ENABLE_COMPLEX_BASIS_FUNCTIONS))
+INSTANTIATE_FREE_FUNCTIONS(std::complex<float>);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(std::complex<float>, float);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(std::complex<float>, double);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(std::complex<float>, std::complex<float>);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(std::complex<float>, std::complex<double>);
+#endif
+
+#if defined(ENABLE_DOUBLE_PRECISION)
+INSTANTIATE_FREE_FUNCTIONS(double);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(double, float);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(double, double);
+#endif
+
+#if defined(ENABLE_DOUBLE_PRECISION) && (defined(ENABLE_COMPLEX_KERNELS) || defined(ENABLE_COMPLEX_BASIS_FUNCTIONS))
+INSTANTIATE_FREE_FUNCTIONS(std::complex<double>);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(std::complex<double>, float);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(std::complex<double>, double);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(std::complex<double>, std::complex<float>);
+INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(std::complex<double>, std::complex<double>);
+#endif
+
+
 
 } // namespace Bempp
