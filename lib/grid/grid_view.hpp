@@ -106,8 +106,10 @@ public:
         corner of jth codim-0 entity, or -1 if this entity has less than
         i-1 corners.
 
-      \note For isoparametric elements we will likely need to add a third
-        parameter to contain "arbitrary" auxiliary data.
+      \param[out] auxData
+        Auxiliary data, to be used in future to describe the geometry of
+        curvilinear elements. Currently this argument is always set to an empty
+        matrix.
       */
     void getRawElementData(arma::Mat<double>& vertices,
                            arma::Mat<int>& elementCorners,

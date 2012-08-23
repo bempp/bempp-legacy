@@ -230,9 +230,10 @@ public:
     // independent, we may come up with a more elegant solution.
     /** \brief Retrieve positions of global degrees of freedom.
      *
-     *  \param[out] Vector whose <em>i</em>th element contains the coordinates
-     *  of the point taken to be the "position" (in some sense) of
-     *  <em>i</em>th global degree of freedom.
+     *  \param[out] positions
+     *    Vector whose <em>i</em>th element contains the coordinates
+     *    of the point taken to be the "position" (in some sense) of
+     *    <em>i</em>th global degree of freedom.
      *
      *  \note This function is intended as a helper for clustering algorithms
      *  used in matrix compression algorithms such as adaptive cross
@@ -246,9 +247,10 @@ public:
     /** \brief Retrieve positions of local degrees of freedom ordered by their
      *  flat index.
      *
-     *  \param[out] Vector whose <em>i</em>th element contains the coordinates
-     *  of the point taken to be the ``position'' (in some sense) of
-     *  the local degree of freedom with flat index <em>i</em>.
+     *  \param[out] positions
+     *    Vector whose <em>i</em>th element contains the coordinates
+     *    of the point taken to be the ``position'' (in some sense) of
+     *    the local degree of freedom with flat index <em>i</em>.
      *
      *  \note This function is intended as a helper for clustering algorithms
      *  used in matrix compression algorithms such as adaptive cross
@@ -268,7 +270,7 @@ public:
      *
      *  \param[in] fileName
      *    Name of the VTK file to be created (without extension).
-     *  \param[in] clusterIds
+     *  \param[in] clusterIdsOfGlobalDofs
      *    Vector whose <em>i</em>th element contains the identifier of the
      *    cluster to which <em>i</em>th global degree has been assigned.
      *

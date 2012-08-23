@@ -214,14 +214,14 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::getFlatLocalDofPositions(
 template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::dumpClusterIds(
         const char* fileName,
-        const std::vector<unsigned int>& clusterIds) const
+        const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const
 {
     if (!dofsAssigned())
         throw std::runtime_error(
                 "PiecewiseConstantScalarSpace::dumpClusterIds(): "
                 "assignDofs() must be called before calling this function");
 
-    const size_t idCount = clusterIds.size();
+    const size_t idCount = clusterIdsOfGlobalDofs.size();
     if (idCount != globalDofCount())
         throw std::invalid_argument(
                 "PiecewiseConstantScalarSpace::dumpClusterIds(): "
@@ -231,7 +231,7 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::dumpClusterIds(
     std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
     arma::Row<double> data(idCount);
     for (size_t i = 0; i < idCount; ++i)
-        data(i) = clusterIds[i];
+        data(i) = clusterIdsOfGlobalDofs[i];
     vtkWriter->addCellData(data, "ids");
     vtkWriter->write(fileName);
 }

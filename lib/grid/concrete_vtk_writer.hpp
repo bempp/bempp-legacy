@@ -42,16 +42,20 @@ class ConcreteVtkWriter : public VtkWriter
     Dune::VTKWriter<DuneGridView> m_dune_vtk_writer;
     const DuneGridView* m_dune_gv;
 
-    friend std::auto_ptr<VtkWriter> ConcreteGridView<DuneGridView>::vtkWriter(Dune::VTK::DataMode dm) const;
+    friend std::auto_ptr<VtkWriter> ConcreteGridView<DuneGridView>::vtkWriter(
+            Dune::VTK::DataMode dm) const;
 
     /** \brief Construct a VtkWriter working on a specific \p DuneGridView.
      *
-     *  \param gv The grid view the grid functions live on. (E.g. a \p LevelGridView.)
+     *  \param dune_gv The grid view the grid functions live on.
+     *    (E.g. a \p LevelGridView.)
      *  \param dm The data mode.
      *
-     *  \internal This constructor can only be called by the factory method ConcreteGridView::vtkWriter().
+     *  \internal This constructor can only be called by the factory method
+     *  ConcreteGridView::vtkWriter().
      */
-    explicit ConcreteVtkWriter(const DuneGridView &dune_gv, Dune::VTK::DataMode dm=Dune::VTK::conforming) :
+    explicit ConcreteVtkWriter(const DuneGridView &dune_gv,
+                               Dune::VTK::DataMode dm=Dune::VTK::conforming) :
         m_dune_vtk_writer(dune_gv, dm), m_dune_gv(&dune_gv) {
     }
 
@@ -65,7 +69,9 @@ public:
         return m_dune_vtk_writer.write(name, duneVtkOutputType(type));
     }
 
-    virtual std::string pwrite(const std::string& name, const std::string& path, const std::string& extendpath,
+    virtual std::string pwrite(const std::string& name,
+                               const std::string& path,
+                               const std::string& extendpath,
                                OutputType type = ASCII) {
         return m_dune_vtk_writer.pwrite(name, path, extendpath,
                                         duneVtkOutputType(type));

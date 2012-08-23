@@ -78,8 +78,9 @@ public:
 
     virtual void getGlobalDofPositions(std::vector<Point3D<CoordinateType> >& positions) const;
     virtual void getFlatLocalDofPositions(std::vector<Point3D<CoordinateType> >& positions) const;
-    virtual void dumpClusterIds(const char* fileName,
-                                const std::vector<unsigned int>& clusterIds) const;
+    virtual void dumpClusterIds(
+            const char* fileName,
+            const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const;
 
 //private:
 //    virtual shared_ptr<DiscreteBoundaryOperator<CoordinateType> >

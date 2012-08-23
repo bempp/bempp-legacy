@@ -353,14 +353,14 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getFlatLocalDofPos
 template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::dumpClusterIds(
         const char* fileName,
-        const std::vector<unsigned int>& clusterIds) const
+        const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const
 {
     if (!dofsAssigned())
         throw std::runtime_error(
                 "PiecewiseLinearContinuousScalarSpace::dumpClusterIds(): "
                 "assignDofs() must be called before calling this function");
 
-    const size_t idCount = clusterIds.size();
+    const size_t idCount = clusterIdsOfGlobalDofs.size();
     if (idCount != globalDofCount())
         throw std::invalid_argument("PiecewiseLinearContinuousScalarSpace::"
                                     "dumpClusterIds(): incorrect dimension");
@@ -369,7 +369,7 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::dumpClusterIds(
     std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
     arma::Row<double> data(idCount);
     for (size_t i = 0; i < idCount; ++i)
-        data(i) = clusterIds[i];
+        data(i) = clusterIdsOfGlobalDofs[i];
     vtkWriter->addVertexData(data, "ids");
     vtkWriter->write(fileName);
 }

@@ -140,7 +140,7 @@ public:
     /** \brief Use adaptive cross approximation (ACA) to obtain hierarchical-matrix
      *  representations of weak forms of boundary integral operators.
      *
-     *  \param[in] Parameters influencing the ACA algorithm. */
+     *  \param[in] acaOptions Parameters influencing the ACA algorithm. */
     void switchToAcaMode(const AcaOptions& acaOptions);
 
     /** \brief Use dense-matrix representations of weak forms of boundary integral operators.
