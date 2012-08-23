@@ -51,7 +51,7 @@ AbstractBoundaryOperator(const shared_ptr<const Space<BasisFunctionType> >& doma
         throw std::invalid_argument(
                 "AbstractBoundaryOperator::AbstractBoundaryOperator(): "
                 "dualToRange must not be null");
-    if (&m_range->grid() != m_dualToRange->grid())
+    if (&m_range->grid() != &m_dualToRange->grid())
         throw std::invalid_argument(
                 "AbstractBoundaryOperator::AbstractBoundaryOperator(): "
                 "range and dualToRange must be defined on the same grid");
