@@ -29,13 +29,14 @@ namespace Bempp
 {
 
 /** \ingroup helmholtz_3d
- *  \brief Base class for boundary operators for the Helmholtz equation in 3D.
+ *  \brief Base class for potential operators for the Helmholtz equation in 3D.
  *
  *  \tparam Impl
  *    Type of the internal implementation object.
- *  \tparam BasisFunctionType
- *    Type used to represent the values of basis functions. It can take the
- *    following values: \c float, \c double, <tt>std::complex<float></tt> and
+ *  \tparam BasisFunctionType_
+ *    Type of the values of the basis functions into which functions acted upon
+ *    by the operator are expanded. It can take the following values: \c float,
+ *    \c double, <tt>std::complex<float></tt> and
  *    <tt>std::complex<double></tt>.
  *
  *  \see helmholtz_3d */
@@ -52,19 +53,37 @@ class Helmholtz3dPotentialOperatorBase :
     typename ScalarTraits<BasisFunctionType_>::ComplexType>
     Base;
 public:
+    /** \brief Type of the values of the basis functions into which functions
+     *  acted upon by the operator are expanded. */
     typedef typename Base::BasisFunctionType BasisFunctionType;
+    /** \brief Type of the values of kernel functions. */
     typedef typename Base::KernelType KernelType;
+    /** \brief Type of the values of the potential. */
     typedef typename Base::ResultType ResultType;
+    /** \copydoc ElementaryPotentialOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
+    /** \copydoc ElementaryPotentialOperator::CollectionOfBasisTransformations */
     typedef typename Base::CollectionOfBasisTransformations
     CollectionOfBasisTransformations;
+    /** \copydoc ElementaryPotentialOperator::CollectionOfKernels */
     typedef typename Base::CollectionOfKernels CollectionOfKernels;
+    /** \copydoc ElementaryPotentialOperator::KernelTrialIntegral */
     typedef typename Base::KernelTrialIntegral KernelTrialIntegral;
 
+    /** \brief Constructor.
+     *
+     *  \param[in] waveNumber
+     *    Wave number. See \ref helmholtz_3d for its definition. */
     Helmholtz3dPotentialOperatorBase(KernelType waveNumber);
+    /** \brief Copy constructor. */
     Helmholtz3dPotentialOperatorBase(const Helmholtz3dPotentialOperatorBase& other);
+    /** \brief Destructor. */
     virtual ~Helmholtz3dPotentialOperatorBase();
+    /** \brief Assignment operator. */
+    Helmholtz3dPotentialOperatorBase& operator=(
+            const Helmholtz3dPotentialOperatorBase& rhs);
 
+    /** \brief Return the wave number set previously in the constructor. */
     KernelType waveNumber() const;
 
 private:
@@ -74,7 +93,9 @@ private:
     virtual const KernelTrialIntegral& integral() const;
 
 private:
+    /** \cond PRIVATE */
     boost::scoped_ptr<Impl> m_impl;
+    /** \endcond */
 };
 
 } // namespace Bempp

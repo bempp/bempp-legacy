@@ -29,21 +29,23 @@ namespace Bempp
 {
 
 /** \ingroup laplace_3d
- *  \brief Base class for potentials related to the Laplace equation in 3D.
+ *  \brief Base class for potential operators related to the Laplace equation in
+ *  3D.
  *
  *  \tparam Impl
  *    Type of the internal implementation object.
- *  \tparam BasisFunctionType
- *    Type used to represent the values of basis functions.
- *  \tparam ResultType
- *    Type used to represent entries in the discrete form of the operator.
+ *  \tparam BasisFunctionType_
+ *    Type of the values of the basis functions into
+ *    which functions acted upon by the operator are expanded.
+ *  \tparam ResultType_
+ *    Type of the values of the potential.
  *
- *  The latter two template parameters can take the following values: \c float, \c
- *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
+ *  The latter two template parameters can take the following values: \c float,
+ *  \c double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
  *  Both types must have the same precision: for instance, mixing \c float with
- *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType
- *  is by default set to \p BasisFunctionType. You should override that only if
- *  you set \p BasisFunctionType to a real type, but you want the potential
+ *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType_
+ *  is by default set to \p BasisFunctionType_. You should override that only if
+ *  you set \p BasisFunctionType_ to a real type, but you want the potential
  *  values to be stored as complex numbers.
  *
  *  \see laplace_3d */
@@ -61,17 +63,28 @@ class Laplace3dPotentialOperatorBase :
     ResultType_>
     Base;
 public:
+    /** \brief Type of the values of the basis functions into
+     *  which functions acted upon by the operator are expanded. */
     typedef typename Base::BasisFunctionType BasisFunctionType;
+    /** \brief Type of the values of kernel functions. */
     typedef typename Base::KernelType KernelType;
+    /** \brief Type of the values of the potential. */
     typedef typename Base::ResultType ResultType;
+    /** \copydoc ElementaryPotentialOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
+    /** \copydoc ElementaryPotentialOperator::CollectionOfBasisTransformations */
     typedef typename Base::CollectionOfBasisTransformations
     CollectionOfBasisTransformations;
+    /** \copydoc ElementaryPotentialOperator::CollectionOfKernels */
     typedef typename Base::CollectionOfKernels CollectionOfKernels;
+    /** \copydoc ElementaryPotentialOperator::KernelTrialIntegral */
     typedef typename Base::KernelTrialIntegral KernelTrialIntegral;
 
+    /** \brief Constructor. */
     Laplace3dPotentialOperatorBase();
+    /** \brief Copy constructor. */
     Laplace3dPotentialOperatorBase(const Laplace3dPotentialOperatorBase& other);
+    /** \brief Destructor. */
     virtual ~Laplace3dPotentialOperatorBase();
 
 private:
@@ -81,7 +94,9 @@ private:
     virtual const KernelTrialIntegral& integral() const;
 
 private:
+    /** \cond PRIVATE */
     boost::scoped_ptr<Impl> m_impl;
+    /** \endcond */
 };
 
 } // namespace Bempp
