@@ -26,7 +26,6 @@ public:
     virtual bool isEqual(const AbstractBoundaryOperatorId& other) const = 0;
 
     bool operator==(const AbstractBoundaryOperatorId& other) const {
-        std::cout << "operator==(): " << isEqual(other) << std::endl;
         return isEqual(other);
     }
 

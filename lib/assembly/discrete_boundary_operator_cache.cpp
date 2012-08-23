@@ -17,14 +17,14 @@ DiscreteBoundaryOperatorCache<BasisFunctionType, ResultType>::getWeakForm(
         const Context<BasisFunctionType, ResultType>& context,
         const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op) const
 {
-    std::cout << "Weak form of operator of type " << typeid(op).name()
-              << " requested from cache" << std::endl;
+    // std::cout << "Weak form of operator of type " << typeid(op).name()
+    //           << " requested from cache" << std::endl;
     typedef DiscreteBoundaryOperator<ResultType> DiscreteOp;
 
     shared_ptr<const AbstractBoundaryOperatorId> id = op.id();
 
     if (!id) { // operator is not cacheable
-        std::cout << "Noncacheable discrete operator requested" << std::endl;
+        // std::cout << "Noncacheable discrete operator requested" << std::endl;
         return op.assembleWeakForm(context);
     }
 
@@ -32,13 +32,13 @@ DiscreteBoundaryOperatorCache<BasisFunctionType, ResultType>::getWeakForm(
     typename DiscreteBoundaryOperatorMap::const_iterator it =
             m_discreteOps.find(id);
     if (it != m_discreteOps.end()) {
-        std::cout << "Weak pointer to discrete operator found in cache" << std::endl;
+        // std::cout << "Weak pointer to discrete operator found in cache" << std::endl;
         // Check if the weak pointer still refers to an existing object
         if (shared_ptr<const DiscreteOp> cachedDiscreteOp = it->second.lock()) {
-            std::cout << "Weak pointer is valid" << std::endl;
+            // std::cout << "Weak pointer is valid" << std::endl;
             return cachedDiscreteOp;
         } else {
-            std::cout << "Weak pointer is invalid, reconstructing discrete operator" << std::endl;
+            // std::cout << "Weak pointer is invalid, reconstructing discrete operator" << std::endl;
             shared_ptr<const DiscreteOp> discreteOp = op.assembleWeakForm(context);
             // TODO: THIS IS NOT NOT THREAD-SAFE!!!
             it->second = discreteOp;
@@ -46,8 +46,8 @@ DiscreteBoundaryOperatorCache<BasisFunctionType, ResultType>::getWeakForm(
         }
     }
 
-    std::cout << "Discrete operator not found in cache -- constructing from scratch"
-              << std::endl;
+    // std::cout << "Discrete operator not found in cache -- constructing from scratch"
+    //           << std::endl;
     // Discrete operator not found in cache, construct it...
     shared_ptr<const DiscreteOp> discreteOp = op.assembleWeakForm(context);
     // and attempt to insert it into the map
