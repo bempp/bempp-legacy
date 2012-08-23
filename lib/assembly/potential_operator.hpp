@@ -38,7 +38,8 @@ class Grid;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
 template <typename ResultType> class InterpolatedFunction;
 
-/** \brief Potential operator.
+/** \ingroup potential_operators
+ *  \brief Potential operator.
  *
  *  This class represents a linear operator that, acting on a function \f$g\f$
  *  defined on a surface \f$\Gamma\f$ embedded in a space \f$\Omega\f$ of

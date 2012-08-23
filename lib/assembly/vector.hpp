@@ -33,11 +33,12 @@
 
 namespace Bempp {
 
-/** \brief Encapsulation of a vector.
-
-  If BEM++ is compiled with Trilinos, Vector is implemented by means of
-  Thyra::DefaultSpmdVector; otherwise an Armadillo-based fallback
-  implementation is used. */
+/** \ingroup discrete_boundary_operators
+ *  \brief Encapsulation of a vector.
+ *
+ *  If BEM++ is compiled with Trilinos, Vector is implemented by means of
+ *  Thyra::DefaultSpmdVector; otherwise an Armadillo-based fallback
+ *  implementation is used. */
 template <typename ValueType>
 class Vector
 #ifdef WITH_TRILINOS
@@ -48,16 +49,16 @@ public:
     /** \brief Construct a Vector from an Armadillo vector. */
     explicit Vector(const arma::Col<ValueType>& vec);
 
-    /** \brief Construct an uninitialsed vector of length \p n. */
+    /** \brief Construct an uninitialized vector of length \p n. */
     explicit Vector(size_t n);
 
     /** \brief Vector length. */
     size_t size() const;
 
-    /** \brief Write a textual representation of the source term to standard output. */
+    /** \brief Write a textual representation of the vector to standard output. */
     void dump() const;
 
-    /** \brief Vector representation of the source term. */
+    /** \brief Convert the Vector object into an Armadillo vector. */
     arma::Col<ValueType> asArmadilloVector() const;
 
 private:

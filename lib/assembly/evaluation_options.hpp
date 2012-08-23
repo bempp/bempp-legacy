@@ -34,7 +34,9 @@ namespace Bempp
 using Fiber::OpenClOptions;
 using Fiber::ParallelizationOptions;
 
-/** \brief Options controlling evaluation of potentials. */
+/** \ingroup potential_operators
+ *  \brief Options controlling evaluation of potentials.
+ */
 class EvaluationOptions
 {
 public:

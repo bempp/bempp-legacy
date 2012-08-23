@@ -36,9 +36,10 @@
 namespace Bempp
 {
 
-/** \ingroup assembly
- *  \brief Superposition of discrete linear operators stored separately.
- */
+/** \ingroup composite_discrete_boundary_operators
+ *  \brief Scaled discrete boundary operator.
+ *
+ *  This class represents a discrete boundary operator multiplied by a scalar. */
 template <typename ValueType>
 class ScaledDiscreteBoundaryOperator :
         public DiscreteBoundaryOperator<ValueType>
@@ -46,6 +47,11 @@ class ScaledDiscreteBoundaryOperator :
 public:
     typedef DiscreteBoundaryOperator<ValueType> Base;
 
+    /** \brief Constructor.
+     *
+     *  Construct the discrete boundary operator \f$\alpha L\f$, where
+     *  \f$\alpha\f$ is the scalar \p multiplier and \f$L\f$ is the operator
+     *  represented by \p op. */
     ScaledDiscreteBoundaryOperator(ValueType multiplier,
                                    const shared_ptr<const Base>& op);
 

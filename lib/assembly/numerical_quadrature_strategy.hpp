@@ -31,7 +31,8 @@ namespace Bempp
 
 using Fiber::AccuracyOptions;
 
-/** \brief Numerical quadrature strategy.
+/** \ingroup weak_form_assembly
+ *  \brief Numerical quadrature strategy.
  *
  *  A quadrature strategy provides functions constructing local assemblers used
  *  to discretize boundary operators and user-defined functions. A particular

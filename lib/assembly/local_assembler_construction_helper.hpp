@@ -38,6 +38,9 @@
 namespace Bempp
 {
 
+/** \ingroup weak_form_assembly_internal
+ *  \brief Utility functions used during weak-form assembly.
+ */
 struct LocalAssemblerConstructionHelper
 {
     template <typename CoordinateType>

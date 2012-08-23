@@ -35,7 +35,7 @@
 namespace Bempp
 {
 
-/** \ingroup assembly
+/** \ingroup discrete_boundary_operators
  *  \brief Discrete boundary operator composed of multiple blocks stored separately.
  */
 template <typename ValueType>

@@ -39,7 +39,8 @@ template <typename BasisFunctionType, typename ResultType> class AbstractBoundar
 template <typename BasisFunctionType, typename ResultType> class Context;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
 
-/** \brief Operator acting on functions defined on a surface.
+/** \ingroup boundary_operators
+ *  \brief Operator acting on functions defined on a surface.
  *
  *  A BoundaryOperator is a lightweight wrapper of a pair of shared pointers to
  *  an AbstractBoundaryOperator and a DiscreteBoundaryOperator representing the

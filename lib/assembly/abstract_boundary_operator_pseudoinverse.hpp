@@ -45,6 +45,9 @@ private:
     shared_ptr<const AbstractBoundaryOperatorId> m_operatorToInvertId;
 };
 
+/** \ingroup composite_boundary_operators
+ *  \brief Inverse or pseudoinverse of an abstract boundary operator.
+ */
 template <typename BasisFunctionType_, typename ResultType_>
 class AbstractBoundaryOperatorPseudoinverse :
         public AbstractBoundaryOperator<BasisFunctionType_, ResultType_>

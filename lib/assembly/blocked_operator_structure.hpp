@@ -30,6 +30,9 @@
 namespace Bempp
 {
 
+/** \ingroup boundary_operators
+ *  \brief Helper class used in construction of blocked boundary operators.
+ */
 template <typename BasisFunctionType, typename ResultType>
 class BlockedOperatorStructure
 {

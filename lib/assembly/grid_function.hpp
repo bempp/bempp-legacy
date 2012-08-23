@@ -62,8 +62,8 @@ template <typename BasisFunctionType, typename ResultType> class Context;
 
 using Fiber::Function;
 
-/** \brief Function defined on a grid.
- *  \ingroup assembly
+/** \ingroup assembly_functions
+ *  \brief Function defined on a grid.
  *
  *  This class represents a function defined on a grid and expanded in a
  *  particular function space. */

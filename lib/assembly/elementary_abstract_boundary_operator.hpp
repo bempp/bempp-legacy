@@ -44,7 +44,7 @@ class OpenClHandler;
 namespace Bempp
 {
 
-/** \ingroup assembly
+/** \ingroup abstract_boundary_operators
  *  \brief Linear operator whose weak form can be constructed with a single assembler.
  *
  *  The distinction between elementary and "non-elementary" linear operators is

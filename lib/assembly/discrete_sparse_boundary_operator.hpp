@@ -39,7 +39,7 @@ class Epetra_CrsMatrix;
 namespace Bempp
 {
 
-/** \ingroup assembly
+/** \ingroup discrete_boundary_operators
  *  \brief Discrete linear operator stored as a sparse matrix.
  */
 template <typename ValueType>

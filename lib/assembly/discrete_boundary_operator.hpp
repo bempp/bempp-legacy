@@ -37,8 +37,8 @@
 namespace Bempp
 {
 
-/** \ingroup assembly
- *  \brief Discrete linear operator.
+/** \ingroup discrete_boundary_operators
+ *  \brief Discrete boundary operator.
  *
  *  This class represents a discretised linear operator, i.e. a matrix
  *  \f$\mathsf{L}\f$ with entries

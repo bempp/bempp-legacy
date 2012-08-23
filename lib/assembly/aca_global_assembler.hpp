@@ -46,6 +46,9 @@ class AssemblyOptions;
 template <typename ValueType> class DiscreteBoundaryOperator;
 template <typename BasisFunctionType> class Space;
 
+/** \ingroup weak_form_assembly_internal
+ *  \brief ACA-mode assembler.
+ */
 template <typename BasisFunctionType, typename ResultType>
 class AcaGlobalAssembler
 {

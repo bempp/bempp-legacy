@@ -25,6 +25,9 @@ struct CompareSharedPtrsToConstAbstractBoundaryOperatorIds
     }
 };
 
+/** \ingroup discrete_boundary_operators
+ *  \brief Cache of discrete boundary operators.
+ */
 template <typename BasisFunctionType, typename ResultType>
 class DiscreteBoundaryOperatorCache
 {

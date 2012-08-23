@@ -30,6 +30,14 @@ namespace Bempp
 
 using Fiber::SurfaceNormalIndependentFunction;
 
+/** \ingroup assembly_functions
+ *  \brief Construct a SurfaceNormalIndependentFunction object from a given functor.
+ *
+ *  This helper function takes an instance \p functor of a class \p Functor
+ *  providing an interface described in the documentation of
+ *  SurfaceNormalIndependentFunction and uses it to construct a
+ *  SurfaceNormalIndependentFunction object. The latter can subsequently be
+ *  passed into a constructor of the GridFunction class. */
 template <typename Functor>
 inline SurfaceNormalIndependentFunction<Functor> surfaceNormalIndependentFunction(
         const Functor& functor)

@@ -27,6 +27,10 @@
 namespace Bempp
 {
 
+/** \ingroup composite_boundary_operators
+ *  \brief Scaled abstract boundary operator.
+ *
+ *  This class represents an abstract boundary operator multiplied by a scalar. */
 template <typename BasisFunctionType_, typename ResultType_>
 class ScaledAbstractBoundaryOperator :
         public AbstractBoundaryOperator<BasisFunctionType_, ResultType_>
@@ -42,6 +46,11 @@ public:
     /** \copydoc AbstractBoundaryOperator::QuadratureStrategy */
     typedef typename Base::QuadratureStrategy QuadratureStrategy;
 
+    /** \brief Constructor.
+     *
+     *  Construct the boundary operator \f$\alpha L\f$, where
+     *  \f$\alpha\f$ is the scalar \p weight and \f$L\f$ is the operator
+     *  represented by \p boundaryOp. */
     ScaledAbstractBoundaryOperator(
             ResultType weight,
             const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp);

@@ -38,10 +38,10 @@ template <typename ResultType> class LocalAssemblerForOperators;
 namespace Bempp
 {
 
-/** \brief Composition of linear operators.
+/** \ingroup composite_boundary_operators
+ *  \brief Composition of two abstract boundary operators.
  *
- *  \ingroup assembly
- */
+ *  This class represents a composition (product) of two boundary operators. */
 template <typename BasisFunctionType_, typename ResultType_>
 class AbstractBoundaryOperatorComposition :
         public AbstractBoundaryOperator<BasisFunctionType_, ResultType_>
@@ -59,6 +59,21 @@ public:
     typedef typename Fiber::LocalAssemblerForOperators<ResultType>
     LocalAssembler;
 
+    /** \brief Constructor.
+     *
+     *  Construct an operator representing the product \f$M \equiv L_1 L_2 : X
+     *  \to Z\f$ of two boundary operators \f$L_1 : Y \to Z\f$ and \f$L_2 : X
+     *  \to Y\f$.
+     *
+     *  \param[in] outer Operator \f$L_1\f$.
+     *  \param[in] inner Operator \f$L_2\f$.
+     *
+     *  \note Both operators must be initialized and the range space of the
+     *  operator \p inner must be identical with the domain space of the
+     *  operator \p outer, otherwise an exception is thrown.
+     *
+     *  \todo Add a parameter setting the symmetry of the composite operator.
+     */
     AbstractBoundaryOperatorComposition(
             const BoundaryOperator<BasisFunctionType, ResultType>& outer,
             const BoundaryOperator<BasisFunctionType, ResultType>& inner);

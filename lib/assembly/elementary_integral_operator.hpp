@@ -50,7 +50,7 @@ template <typename BasisFunctionType, typename ResultType> class GridFunction;
 template <typename ValueType> class InterpolatedFunction;
 template <typename BasisFunctionType, typename ResultType> class WeakFormAcaAssemblyHelper;
 
-/** \ingroup assembly
+/** \ingroup abstract_boundary_operators
  *  \brief Elementary integral boundary operator.
  *
  *  This class represents an integral boundary operator \f$\mathcal A\f$ whose

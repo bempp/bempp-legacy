@@ -42,7 +42,7 @@ class Epetra_CrsMatrix;
 namespace Bempp
 {
 
-/** \ingroup assembly
+/** \ingroup discrete_boundary_operators
  *  \brief Discrete linear operator being an inverse of a sparse matrix.
  */
 template <typename ValueType>

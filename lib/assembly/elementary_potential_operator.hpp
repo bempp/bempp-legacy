@@ -37,7 +37,8 @@ template <typename ResultType> class EvaluatorForIntegralOperators;
 namespace Bempp
 {
 
-/** \brief Elementary potential operator.
+/** \ingroup potential_operators
+ *  \brief Elementary potential operator.
  *
  *  This class provides the interface for evaluation of a potential \f$k(x)\f$
  *  defined by the formula

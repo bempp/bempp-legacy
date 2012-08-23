@@ -43,7 +43,7 @@ namespace Bempp {
 
 template <typename ValueType> class AcaApproximateLuInverse;
 
-/** \ingroup assembly
+/** \ingroup discrete_boundary_operators
  *  \brief Discrete linear operator stored as a hierarchical (compressed) matrix.
  */
 template <typename ValueType>

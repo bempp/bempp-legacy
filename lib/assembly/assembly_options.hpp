@@ -33,7 +33,7 @@
 namespace Bempp
 {
 
-/** \ingroup assembly
+/** \ingroup weak_form_assembly
  *  \brief Adaptive cross approximation (ACA) parameters.
  */
 struct AcaOptions
@@ -111,7 +111,7 @@ struct AcaOptions
 using Fiber::OpenClOptions;
 using Fiber::ParallelizationOptions;
 
-/** \ingroup assembly
+/** \ingroup weak_form_assembly
  *  \brief Options determining how weak-form assembly is done.
  */
 class AssemblyOptions

@@ -36,10 +36,10 @@ template <typename ResultType> class LocalAssemblerForOperators;
 namespace Bempp
 {
 
-/** \brief Sum of linear operators.
+/** \ingroup composite_boundary_operators
+ *  \brief Sum of two abstract boundary operators.
  *
- *  \ingroup assembly
- */
+ *  This class represents a sum of two boundary operators. */
 template <typename BasisFunctionType_, typename ResultType_>
 class AbstractBoundaryOperatorSum :
         public AbstractBoundaryOperator<BasisFunctionType_, ResultType_>

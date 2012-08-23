@@ -55,7 +55,7 @@ template <typename BasisFunctionType, typename ResultType> class ElementaryAbstr
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
 template <typename BasisFunctionType, typename ResultType> class ScaledAbstractBoundaryOperator;
 
-/** \ingroup assembly
+/** \ingroup abstract_boundary_operators
  *  \brief Abstract boundary operator.
  *
  *  An AbstractBoundaryOperator represents a linear mapping \f$L : X

@@ -34,6 +34,9 @@ class blcluster;
 namespace Bempp
 {
 
+/** \ingroup weak_form_assembly_internal
+ *  \brief Encapsulation of an array of pointers to AHMED's blcluster objects.
+ */
 class AhmedLeafClusterArray
 {
 public:

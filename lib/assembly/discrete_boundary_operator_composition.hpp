@@ -36,7 +36,7 @@
 namespace Bempp
 {
 
-/** \ingroup assembly
+/** \ingroup composite_discrete_boundary_operators
  *  \brief Composition of discrete linear operators stored separately.
  */
 template <typename ValueType>

@@ -38,8 +38,10 @@ class Grid;
 
 template <typename ValueType> class InterpolatedFunction;
 
-/** \brief Function defined by its values at a set of interpolation points
-      and an interpolation method. */
+/** \ingroup assembly_functions
+ *  \brief Function defined by its values at a set of interpolation points
+ *    and an interpolation method.
+ */
 template <typename ValueType>
 class InterpolatedFunction : public Function<ValueType>
 {

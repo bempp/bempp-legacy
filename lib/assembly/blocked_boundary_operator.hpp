@@ -37,6 +37,9 @@ template <typename ResultType> class DiscreteBoundaryOperator;
 template <typename BasisFunctionType, typename ResultType> class BoundaryOperator;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
 
+/** \ingroup boundary_operators
+ *  \brief Boundary operator consisting of multiple blocks.
+ */
 template <typename BasisFunctionType, typename ResultType>
 class BlockedBoundaryOperator
 {

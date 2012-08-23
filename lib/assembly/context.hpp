@@ -14,7 +14,8 @@ class GeometryFactory;
 template <typename ValueType> class DiscreteBoundaryOperator;
 template <typename BasisFunctionType, typename ResultType> class AbstractBoundaryOperator;
 
-/** \brief Assembly context.
+/** \ingroup weak_form_assembly
+ *  \brief Assembly context.
  *
  *  This class manages the assembly of weak forms and evaluation of potentials.
  * 

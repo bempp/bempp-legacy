@@ -26,6 +26,9 @@
 namespace Bempp
 {
 
+/** \ingroup weak_form_assembly
+ *  \brief Set of constants describing the symmetry of an operator.
+ */
 enum Symmetry
 {
     NO_SYMMETRY = 0x0000,

@@ -35,7 +35,7 @@
 namespace Bempp
 {
 
-/** \ingroup assembly
+/** \ingroup discrete_boundary_operators
  *  \brief Discrete linear operator stored as a dense matrix.
  */
 template <typename ValueType>

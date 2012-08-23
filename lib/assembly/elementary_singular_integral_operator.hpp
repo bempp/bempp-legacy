@@ -28,7 +28,7 @@
 namespace Bempp
 {
 
-/** \ingroup assembly
+/** \ingroup abstract_boundary_operators
  *  \brief Elementary boundary integral operator with weak form whose integrand
  *  has a singularity at origin. */
 template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>

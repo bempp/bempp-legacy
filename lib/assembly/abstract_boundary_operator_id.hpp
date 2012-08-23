@@ -10,6 +10,13 @@
 namespace Bempp
 {
 
+/** \ingroup abstract_boundary_operators
+ *  \brief Base class for identifiers of an abstract boundary operator.
+ *
+ *  See AbstractBoundaryOperator::id() and Context::getWeakForm() for more
+ *  information about the use of boundary-operator identifiers for caching
+ *  weak forms.
+ */
 class AbstractBoundaryOperatorId
 {
 public:

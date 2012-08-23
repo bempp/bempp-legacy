@@ -41,6 +41,9 @@ namespace Bempp
 template <typename ValueType>
 class DiscreteAcaBoundaryOperator;
 
+/** \ingroup composite_discrete_operators
+ *  \brief Approximate LU decomposition of a H-matrix
+ */
 template <typename ValueType>
 class AcaApproximateLuInverse : public DiscreteBoundaryOperator<ValueType>
 {
