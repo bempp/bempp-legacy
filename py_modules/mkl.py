@@ -51,9 +51,6 @@ def prepare(root,config):
                                 "in section 'MKL' is invalid")
             blas_lib = lapack_lib = mkl_rt_lib
         else:
-            mkl_enthought_files = ['libmkl_rt','libmkl_core','libmkl_intel','libmkl_intel_lp64','libmkl_intel_thread',
-			 'libmkl_p4m','libmkl_p4m3','libmkl_p4p','libmkl_sequential','libmkl_vml_avx',
-			 'libmkl_vml_p4m','libmkl_vml_p4m2','libmkl_vml_p4m3','libmkl_vml_p4p','libmkl_intel_ilp64']
 	    mkl_link_files = ['libmkl_rt'] # MKL files that BEMPP links against.
             if mkl_source == 'redistributable':
                 mkl_tarball=config.get('MKL','mkl_tarball')
@@ -68,12 +65,7 @@ def prepare(root,config):
                     extension = ".so"
                 else:
                     raise Exception("Unsupported platform: '"+sys.platform+"'")
-                for f in mkl_enthought_files:
-                    path = mkl_dir+"/"+f+extension
-                    if not os.path.isfile(path):
-                        raise Exception("File '"+path+"' not found")
-                    os.symlink(mkl_dir+"/"+f+extension,
-                           lib_dir+"/"+f+extension)
+                subprocess.check_call("ln -s "+mkl_dir+"/libmkl* "+lib_dir+"/",shell=True)
             else:
                 raise Exception("Option 'mkl_source' in section 'MKL' must be "
                                 "either 'installed', 'redistributable' or "
