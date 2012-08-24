@@ -37,6 +37,7 @@ import py_modules.trilinos as trilinos
 import py_modules.bempp as bempp
 import py_modules.ahmed as ahmed
 import py_modules.mkl as mkl
+import py_modules.tools as tools
 
 libraries = {'tbb':tbb,
              'mkl':mkl,
@@ -181,6 +182,17 @@ if __name__ == "__main__":
         config.write(opt_fp)
         opt_fp.close()
         print "Updated configuration written to "+root+"/"+optfile_generated
+        enable_mkl = tools.to_bool(config.get('MKL','enable_mkl'))
+        if not enable_mkl:
+            print ("----------------------------------------------------------\n"
+                   "You configured BEM++ to use another BLAS and LAPACK\n"
+                   "libraries than Intel MKL. For optimum performance, ensure\n"
+                   "that your BLAS and LAPACK libraries are configured to work\n"
+                   "in single-threaded mode, as otherwise threads spawned by\n"
+                   "BLAS and LAPACK will compete for resources with those\n"
+                   "spawned by BEM++. For instance, if you are using\n"
+                   "GotoBLAS, set the environmental variable GOTO_NUM_THREADS\n"
+                   "to '1' before running any programs using BEM++.\n")
         
     if options.install:
         config = ConfigParser()

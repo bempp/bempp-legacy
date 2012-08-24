@@ -42,10 +42,12 @@
 
 # mkl_source=installed
 
-#     and set the following variable to the location of
-#     libmkl_rt.so/libmkl_rt.dylib. Example:
+#     and specify the directories containing the MKL libraries (in
+#     particular libmkl_core and libiomp5) in the following
+#     variable. You may specify several directories at once by
+#     separating them with semicolons. Example:
 
-# mkl_rt_lib=/opt/intel/mkl/intel64/libmkl_rt.so
+# mkl_dirs=/opt/intel/mkl/lib/intel64;/opt/intel/lib/intel64
 
 # (2) If you have an archive file containing the MKL redistributables
 #     and you want to install MKL specifically for BEM++, uncomment
