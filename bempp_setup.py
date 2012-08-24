@@ -46,7 +46,8 @@ libraries = {'tbb':tbb,
              'dune':dune,
              'trilinos':trilinos,
              'ahmed':ahmed
-                }
+            }
+library_names = sorted(libraries.keys())
 
 
 ###########################
@@ -67,7 +68,7 @@ def downloadDependencies(root,config):
 
     checkCreateDir(root+"/contrib/files")
 
-    for dep in libraries:
+    for dep in library_names:
         libraries[dep].download(root,config)
     
 def prepareDependencies(root,config):
@@ -77,22 +78,22 @@ def prepareDependencies(root,config):
     checkCreateDir(prefix+"/bempp/lib")
     checkCreateDir(prefix+"/bempp/include")
 
-    for dep in libraries:
+    for dep in library_names:
         libraries[dep].prepare(root,config)
     
 def configureDependencies(root,config):
     
-    for dep in libraries:
+    for dep in library_names:
         libraries[dep].configure(root,config)
 
 def buildDependencies(root,config):
 
-    for dep in libraries:
+    for dep in library_names:
         libraries[dep].build(root,config)
 
 def installDependencies(root,config):
 
-    for dep in libraries:
+    for dep in library_names:
         libraries[dep].install(root,config)
     
 
@@ -154,8 +155,12 @@ if __name__ == "__main__":
 
     usage = "usage: %prog [options] configuration_file"
     parser = OptionParser()
-    parser.add_option("-c", "--configure", action="store_true", help="Configure the setup program")
-    parser.add_option("-i", "--install", type="string", metavar="WHAT", help="Build and install WHAT. Possible values for WHAT: all (BEM++ and its dependencies), bempp (BEM++ only)")
+    parser.add_option("-c", "--configure", action="store_true",
+                      help="Configure the setup program")
+    parser.add_option("-i", "--install", type="string", metavar="WHAT",
+                      help="Build and install WHAT. Possible values for WHAT: "
+                      "all (BEM++ and its dependencies), bempp (BEM++ only), " +
+                      ", ".join(library_names) + " (particular BEM++ dependencies)")
     (options,args) = parser.parse_args()
     root=module_path()
     config=ConfigParser()
@@ -201,7 +206,7 @@ if __name__ == "__main__":
             sys.exit(1)
         config.read(root+"/"+optfile_generated)
         writeOptions(root,config)
-        if options.install in libraries:
+        if options.install in library_names:
             libraries[options.install].configure(root,config)
             libraries[options.install].build(root,config)
             libraries[options.install].install(root,config)
