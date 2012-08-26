@@ -116,7 +116,11 @@ void reallyApplyBuiltInImpl<std::complex<float> >(
         const std::complex<float> beta)
 {
     // Do the y_inout *= beta part
-    y_inout *= beta;
+    const std::complex<float> zero(0.f, 0.f);
+    if (beta == zero) 
+        y_inout.fill(zero);
+    else
+        y_inout *= beta;
 
     // Separate the real and imaginary components and store them in
     // double-precision vectors
@@ -158,7 +162,11 @@ void reallyApplyBuiltInImpl<std::complex<double> >(
         const std::complex<double> beta)
 {
     // Do the y_inout *= beta part
-    y_inout *= beta;
+    const std::complex<double> zero(0., 0.);
+    if (beta == zero) 
+        y_inout.fill(zero);
+    else
+        y_inout *= beta;
 
     // Separate the real and imaginary components
     arma::Col<double> x_real(arma::real(x_in));
