@@ -24,6 +24,7 @@
 
 #include "../type_template.hpp"
 #include "../check_arrays_are_close.hpp"
+#include "../random_arrays.hpp"
 
 #include "assembly/discrete_dense_boundary_operator.hpp"
 #include "common/scalar_traits.hpp"
@@ -40,29 +41,6 @@
 #include <Thyra_DefaultPreconditioner.hpp>
 
 #include <armadillo>
-
-// Real ValueType
-template <typename ValueType>
-typename boost::disable_if<
-boost::is_complex<ValueType>,
-arma::Mat<ValueType>
->::type
-generateRandomMatrix(int rowCount, int colCount)
-{
-    return arma::randu<arma::Mat<ValueType> >(rowCount, colCount);
-}
-
-template <typename ValueType>
-typename boost::enable_if<
-boost::is_complex<ValueType>,
-arma::Mat<ValueType>
->::type
-generateRandomMatrix(int rowCount, int colCount)
-{
-    return arma::randu<arma::Mat<ValueType> >(rowCount, colCount) +
-            ValueType(0, 1) *
-            arma::randu<arma::Mat<ValueType> >(rowCount, colCount);
-}
 
 // Tests
 
@@ -95,7 +73,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(solve_works_for_single_rhs, ValueType, result_type
     typedef Bempp::BelosSolverWrapper<ValueType> Solver;
     Solver solver(Teuchos::rcpFromRef<const Thyra::LinearOpBase<ValueType> >(op));
     typedef typename Bempp::ScalarTraits<ValueType>::RealType MagnitudeType;
-    const MagnitudeType tol = std::numeric_limits<MagnitudeType>::epsilon() * 100.;
+    const MagnitudeType tol = std::numeric_limits<MagnitudeType>::epsilon() * 1000.;
     solver.initializeSolver(Bempp::defaultGmresParameterList(tol));
 
     Thyra::SolveStatus<typename Solver::MagnitudeType > status =
@@ -119,13 +97,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(solve_with_trivial_right_preconditioner_works_for_
     arma::Mat<ValueType> mat = generateRandomMatrix<ValueType>(size, size);
     Bempp::DiscreteDenseBoundaryOperator<ValueType> op(mat);
 
-    arma::Mat<ValueType> precMat;
-    precMat.eye(size, size);
-    Bempp::DiscreteDenseBoundaryOperator<ValueType> precOp(precMat);
-
     arma::Col<ValueType> rhs = generateRandomMatrix<ValueType>(size, 1);
     arma::Col<ValueType> sol(size);
     sol.fill(static_cast<ValueType>(0.));
+
+    arma::Mat<ValueType> precMat;
+    precMat.eye(size, size);
+    Bempp::DiscreteDenseBoundaryOperator<ValueType> precOp(precMat);
 
     typedef Thyra::DefaultSpmdVector<ValueType> DenseVector;
     Teuchos::ArrayRCP<ValueType> rhsArray =
@@ -196,7 +174,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(solve_with_scaled_trivial_right_preconditioner_wor
     typedef Bempp::BelosSolverWrapper<ValueType> Solver;
     Solver solver(Teuchos::rcpFromRef<const Thyra::LinearOpBase<ValueType> >(op));
     typedef typename Bempp::ScalarTraits<ValueType>::RealType MagnitudeType;
-    const MagnitudeType tol = std::numeric_limits<MagnitudeType>::epsilon() * 100.;
+    const MagnitudeType tol = std::numeric_limits<MagnitudeType>::epsilon() * 1000.;
     solver.setPreconditioner(prec);
     solver.initializeSolver(Bempp::defaultGmresParameterList(tol));
 
@@ -247,7 +225,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(solve_with_trivial_left_preconditioner_works_for_s
     typedef Bempp::BelosSolverWrapper<ValueType> Solver;
     Solver solver(Teuchos::rcpFromRef<const Thyra::LinearOpBase<ValueType> >(op));
     typedef typename Bempp::ScalarTraits<ValueType>::RealType MagnitudeType;
-    const MagnitudeType tol = std::numeric_limits<MagnitudeType>::epsilon() * 100.;
+    const MagnitudeType tol = std::numeric_limits<MagnitudeType>::epsilon() * 1000.;
     solver.setPreconditioner(prec);
     solver.initializeSolver(Bempp::defaultGmresParameterList(tol));
 
@@ -298,7 +276,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(solve_with_scaled_trivial_left_preconditioner_work
     typedef Bempp::BelosSolverWrapper<ValueType> Solver;
     Solver solver(Teuchos::rcpFromRef<const Thyra::LinearOpBase<ValueType> >(op));
     typedef typename Bempp::ScalarTraits<ValueType>::RealType MagnitudeType;
-    const MagnitudeType tol = std::numeric_limits<MagnitudeType>::epsilon() * 100.;
+    const MagnitudeType tol = std::numeric_limits<MagnitudeType>::epsilon() * 1000.;
     solver.setPreconditioner(prec);
     solver.initializeSolver(Bempp::defaultGmresParameterList(tol));
 
