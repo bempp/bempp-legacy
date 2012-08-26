@@ -32,11 +32,15 @@ typedef boost::mpl::list<float, double, std::complex<float>, std::complex<double
 numeric_types;
 typedef boost::mpl::list<float, double>
 real_numeric_types;
+typedef boost::mpl::list<std::complex<float>, std::complex<double> >
+complex_numeric_types;
 #  else
 typedef boost::mpl::list<float, std::complex<float> >
 numeric_types;
 typedef boost::mpl::list<float>
 real_numeric_types;
+typedef boost::mpl::list<std::complex<float> >
+complex_numeric_types;
 #  endif
 #else
 #  ifdef ENABLE_DOUBLE_PRECISION
@@ -44,11 +48,15 @@ typedef boost::mpl::list<double, std::complex<double> >
 numeric_types;
 typedef boost::mpl::list<double>
 real_numeric_types;
+typedef boost::mpl::list<std::complex<double> >
+complex_numeric_types;
 #  else
 typedef boost::mpl::list<>
 numeric_types;
 typedef boost::mpl::list<>
 real_numeric_types;
+typedef boost::mpl::list<>
+complex_numeric_types;
 #  endif
 #endif
 
@@ -66,8 +74,10 @@ typedef real_numeric_types kernel_types;
 
 #if defined(ENABLE_COMPLEX_KERNELS) || defined(ENABLE_COMPLEX_BASIS_FUNCTIONS)
 typedef numeric_types result_types;
+typedef complex_numeric_types complex_result_types;
 #else
 typedef real_numeric_types result_types;
+typedef boost::mpl::list<> complex_result_types;
 #endif
 
 #endif
