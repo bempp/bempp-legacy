@@ -54,14 +54,16 @@ def prepare(root,config):
             patch.apply()
             os.chdir(cwd)
 
+    tools.setCompilerOptions(config,'Dune')
+
 def configure(root,config):
     prefix=config.get('Main','prefix')
     dune_dir=root+"/contrib/dune"
     dune_install_dir=prefix+"/bempp"
-    cxx=config.get('Main','cxx')
-    cc=config.get('Main','cc')
-    cflags = config.get('Main','cflags')
-    cxxflags = config.get('Main','cxxflags')
+    cxx=config.get('Dune','cxx')
+    cc=config.get('Dune','cc')
+    cflags = config.get('Dune','cflags')
+    cxxflags = config.get('Dune','cxxflags')
     cwd=os.getcwd()
 
     njobs = tools.to_int(config.get('Main','build_jobs'))

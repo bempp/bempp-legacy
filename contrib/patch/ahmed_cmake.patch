@@ -1,0 +1,47 @@
+--- ./CMakeLists.txt	2012-08-27 23:23:06.000000000 +0100
++++ ./CMakeLists.txt.new	2012-08-27 23:22:56.000000000 +0100
+@@ -26,44 +26,6 @@
+ set(BUILD_SHARED_LIBS "ON" CACHE BOOL "Build shared/static libraries")
+ 
+ ############################################################################
+-### compiler flags
+-
+-# OpenMP
+-find_package(OpenMP REQUIRED)
+-if(NOT OPENMP_FOUND)
+-   message(WARNING "Could not find working OpenMP. Please set manually.")
+-else()
+-   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+-endif()
+-
+-if(CMAKE_BUILD_TYPE STREQUAL "Release")
+-   if(NOT ENABLE_64BIT)
+-      execute_process(COMMAND ${CMAKE_SOURCE_DIR}/cmake/compilerflags
+-                              -32 --comp ${CMAKE_C_COMPILER}
+-                      OUTPUT_VARIABLE OPT_FLAGS_)
+-   else()
+-      execute_process(COMMAND ${CMAKE_SOURCE_DIR}/cmake/compilerflags
+-                              -64 --comp ${CMAKE_C_COMPILER}      
+-                      OUTPUT_VARIABLE OPT_FLAGS_)
+-   endif()
+-else()
+-   if(NOT ENABLE_64BIT)
+-      execute_process(COMMAND ${CMAKE_SOURCE_DIR}/cmake/compilerflags
+-                              --opt -32 --comp ${CMAKE_C_COMPILER}
+-                      OUTPUT_VARIABLE OPT_FLAGS_)
+-   else()
+-      execute_process(COMMAND ${CMAKE_SOURCE_DIR}/cmake/compilerflags
+-                              --opt -64 --comp ${CMAKE_C_COMPILER}      
+-                      OUTPUT_VARIABLE OPT_FLAGS_)
+-  endif()
+-endif()
+-string(REGEX REPLACE "\n" "" OPT_FLAGS "${OPT_FLAGS_}")
+-message(STATUS "OPT_FLAGS " ${OPT_FLAGS})
+-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OPT_FLAGS}")
+-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPT_FLAGS}")
+-
+-############################################################################
+ ### external libraries
+ 
+ ### METIS

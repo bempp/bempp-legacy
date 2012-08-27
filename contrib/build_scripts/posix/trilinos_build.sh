@@ -2,25 +2,23 @@
 set -e
 . ../../.options.cfg
 
-# mkdir $Main_prefix/bempp/contrib/trilinos
-mkdir -p $Main_prefix/bempp/contrib
 mkdir -p build
 cd build
-CXXFLAGS="$Main_cxxflags" CFLAGS="$Main_cflags" cmake \
-    -D CMAKE_CXX_COMPILER:STRING=$Main_cxx \
-    -D CMAKE_C_COMPILER:STRING=$Main_cc \
+CXXFLAGS="$Trilinos_cxxflags" CFLAGS="$Trilinos_cflags" cmake \
+    -D CMAKE_CXX_COMPILER:STRING="$Trilinos_cxx" \
+    -D CMAKE_C_COMPILER:STRING="$Trilinos_cc" \
     -D CMAKE_BUILD_TYPE:STRING=Release \
-    -D CMAKE_INSTALL_PREFIX:PATH=$Main_prefix/bempp \
+    -D CMAKE_INSTALL_PREFIX:PATH="$Main_prefix/bempp" \
     -D BUILD_SHARED_LIBS:BOOL=ON \
-    -D TPL_TBB_LIBRARIES:STRING=$Tbb_lib \
-    -D TPL_TBB_INCLUDE_DIRS:PATH=$Tbb_include_dir \
-    -D TPL_LAPACK_LIBRARIES:STRING=$LAPACK_lib \
-    -D TPL_BLAS_LIBRARIES:STRING=$BLAS_lib \
+    -D TPL_TBB_LIBRARIES:STRING="$Tbb_lib" \
+    -D TPL_TBB_INCLUDE_DIRS:PATH="$Tbb_include_dir" \
+    -D TPL_LAPACK_LIBRARIES:STRING="$LAPACK_lib" \
+    -D TPL_BLAS_LIBRARIES:STRING="$BLAS_lib" \
     -D TPL_ENABLE_BLAS:BOOL=ON \
     -D TPL_ENABLE_LAPACK:BOOL=ON \
     -D TPL_ENABLE_TBB:BOOL=ON \
     -D TPL_ENABLE_Boost:BOOL=ON \
-    -D TPL_Boost_INCLUDE_DIRS:STRING=$Boost_include_dir \
+    -D TPL_Boost_INCLUDE_DIRS:STRING="$Boost_include_dir" \
     -D Trilinos_ENABLE_Amesos:BOOL=ON \
     -D Trilinos_ENABLE_Belos:BOOL=ON \
     -D Trilinos_ENABLE_Epetra:BOOL=ON \

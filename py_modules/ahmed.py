@@ -53,13 +53,15 @@ def prepare(root,config):
         os.rename(root+"/contrib/AHMED_1.0",root+"/contrib/ahmed")
         shutil.copy(root+"/contrib/build_scripts/posix/ahmed_build.sh",ahmed_full_dir+"/ahmed_build.sh")
         print "Patching AHMED"
-        patch=py_patch.fromfile(root+"/contrib/patch/ahmed-no-openmp.patch")
+        patch=py_patch.fromfile(root+"/contrib/patch/ahmed_cmake.patch")
         cwd=os.getcwd()
         os.chdir(root+"/contrib/ahmed")
         patch.apply()
         os.chdir(cwd)
+        tools.setCompilerOptions(config,'AHMED')
     else:
         config.set('AHMED','with_ahmed','OFF')
+    
 
 def configure(root,config):
     prefix = config.get('Main','prefix')

@@ -1,19 +1,39 @@
 [Main]
 
 # Specify your system architecture. Allowed values: intel64 (for
-# 64-bit systems), ia32 (for 32-bit systems), ia64 (for Intel Itanium
-# systems). Example:
+# 64-bit systems), ia32 (for 32-bit systems), Example:
 
 # architecture=intel64
 
 # Specify the prefix of the installation directory.  BEM++ and its
 # dependencies will be installed in prefix/bempp. Example:
 
-# prefix=/opt
+prefix=~/
 
 # Specify how many processes to use for building. Example:
 
 # build_jobs=2
+
+# The following options control the compilers and compiler flags.
+# You can override the options for specific libraries by setting
+# these options within the corresponding section.
+
+
+# C Compiler
+# cc = gcc
+
+# C++ Compiler
+# cxx = g++
+
+# C Compiler flags
+# cflags = 
+
+# C++ Compiler flags
+#  cxxflags = 
+
+# Optimization flags
+# optflags = -O3 -march=native (Default on Linux)
+# optflags = -O3 -march=core2 (Default on Mac)
 
 [Bempp]
 
@@ -101,4 +121,15 @@
 # file with the sources of AHMED. Example:
 
 # file_name=/home/myname/AHMED-1.0.tar.gz
+
+# Use this section to override compiler settings for AHMED
+
+[Boost]
+# Use this section to override compiler settings for Boost
+
+[Dune]
+# Use this section to override compiler settings for Dune
+
+[Trilinos]
+# Use this section to override compiler settings for Trilinos
 

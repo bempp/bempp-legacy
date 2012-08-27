@@ -58,6 +58,7 @@ def prepare(root,config):
     tools.setDefaultConfigOption(config,"Boost","unit_test_lib",boost_unit_test_lib,overwrite=True)
     tools.setDefaultConfigOption(config,"Boost","include_dir",boost_include_dir,overwrite=True)
 
+    tools.setCompilerOptions(config,'Boost')
 
 def configure(root,config):
     boost_full_dir=root+"/contrib/"+boost_dir
