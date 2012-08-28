@@ -44,7 +44,7 @@ namespace Bempp {
 template <typename ValueType> class AcaApproximateLuInverse;
 
 /** \ingroup discrete_boundary_operators
- *  \brief Discrete linear operator stored as a hierarchical (compressed) matrix.
+ *  \brief Discrete linear operator stored as a H-matrix.
  */
 template <typename ValueType>
 class DiscreteAcaBoundaryOperator :
@@ -58,6 +58,7 @@ public:
     typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
     typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
 
+    /** \brief Constructor. */
     DiscreteAcaBoundaryOperator(
             unsigned int rowCount, unsigned int columnCount,
             int maximumRank,
@@ -77,8 +78,17 @@ public:
                           const ValueType alpha,
                           arma::Mat<ValueType>& block) const;
 
-    void makeAllMblocksDense(); // for debugging
+    /** \brief Uncompress all blocks of the H-matrix and store them as dense
+     *  matrices.
+     *
+     *  Sometimes useful for debugging. */
+    void makeAllMblocksDense();
 
+    /** \brief Downcast a reference to a DiscreteBoundaryOperator object to
+     *  DiscreteAcaBoundaryOperator.
+     *
+     *  If the object referenced by \p discreteOperator is not in fact a
+     *  DiscreteAcaBoundaryOperator, a std::bad_cast exception is thrown. */
     static const DiscreteAcaBoundaryOperator<ValueType>& castToAca(
             const DiscreteBoundaryOperator<ValueType>& discreteOperator);
 
@@ -99,6 +109,7 @@ private:
                                   const ValueType beta) const;
 
 private:
+    /** \cond PRIVATE */
 #ifdef WITH_TRILINOS
     Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_domainSpace;
     Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_rangeSpace;
@@ -114,6 +125,7 @@ private:
 
     IndexPermutation m_domainPermutation;
     IndexPermutation m_rangePermutation;
+    /** \endcond */
 };
 
 

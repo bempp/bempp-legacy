@@ -43,17 +43,6 @@ DiscreteBoundaryOperatorComposition(const shared_ptr<const Base> &outer,
     // TODO: perhaps test for compatibility of Thyra spaces
 }
 
-// This is (a) slower than the default implementation unless m_inner and m_outer
-// are dense, (b) misleading in case there is a bug in the implementation of
-// applyBuiltInImpl()
-
-//template <typename ValueType>
-//arma::Mat<ValueType>
-//DiscreteBoundaryOperatorComposition<ValueType>::asMatrix() const
-//{
-//    return m_outer->asMatrix() * m_inner->asMatrix();
-//}
-
 template <typename ValueType>
 unsigned int
 DiscreteBoundaryOperatorComposition<ValueType>::rowCount() const

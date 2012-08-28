@@ -61,10 +61,6 @@ public:
 
     virtual ~AcaApproximateLuInverse();
 
-    virtual void dump() const;
-
-    virtual arma::Mat<ValueType> asMatrix() const;
-
     virtual unsigned int rowCount() const;
     virtual unsigned int columnCount() const;
 
@@ -96,6 +92,7 @@ private:
                                   const ValueType beta) const;
 
 private:
+    /** \cond PRIVATE */
     typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
     typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
@@ -114,6 +111,7 @@ private:
 
     IndexPermutation m_domainPermutation;
     IndexPermutation m_rangePermutation;
+    /** \endcond */
 };
 
 } // namespace Bempp

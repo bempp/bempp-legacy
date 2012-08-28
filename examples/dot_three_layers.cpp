@@ -157,8 +157,8 @@ int main(int argc, char* argv[])
 {
     // Physical parameters, general
     const BFT c0 = 0.3;      // speed of light in vacuum [mm/ps]
-    BFT refind = 1.4; // refractive index
-    BFT alpha = A_Keijzer(refind); // boundary term
+    BFT refind = 1.0; // refractive index
+    BFT alpha = 1.0; //A_Keijzer(refind); // boundary term
     BFT c = c0/refind;       // speed of light in medium [mm/ps]
     BFT freq = 100*1e6; // modulation frequency [Hz]
     BFT omega = 2.0*M_PI * freq*1e-12; // modulation frequency [cycles/ps]
@@ -170,22 +170,31 @@ int main(int argc, char* argv[])
     RT waveNumber1 = sqrt (RT(mua1/kappa1, omega/(c*kappa1))); // outer region
 
     // Physical parameters, inner region
-    BFT mua2 = 0.02; // absorption coefficient
-    BFT mus2 = 0.5;  // scattering coefficient
+    BFT mua2 = 0.01; // absorption coefficient
+    BFT mus2 = 1.0;  // scattering coefficient
     BFT kappa2 = 1.0/(3.0*(mua2+mus2));   // diffusion coefficient
     RT waveNumber2 = sqrt (RT(mua2/kappa2, omega/(c*kappa2))); // outer region
+
+    // Physical parameters, inner region
+    BFT mua3 = 0.01; // absorption coefficient
+    BFT mus3 = 1.0;  // scattering coefficient
+    BFT kappa3 = 1.0/(3.0*(mua3+mus3));   // diffusion coefficient
+    RT waveNumber3 = sqrt (RT(mua3/kappa3, omega/(c*kappa3))); // outer region
 
     // Create sphere meshes on the fly
     std::auto_ptr<Grid> grid1 = CreateSphere(25.0, 1.0);
     std::auto_ptr<Grid> grid2 = CreateSphere(15.0, 1.0);
+    std::auto_ptr<Grid> grid3 = CreateSphere(10.0, 1.0);
 
     // Initialize the spaces
 
     PiecewiseLinearContinuousScalarSpace<BFT> HplusHalfSpace1(*grid1);
     PiecewiseLinearContinuousScalarSpace<BFT> HplusHalfSpace2(*grid2);
+    PiecewiseLinearContinuousScalarSpace<BFT> HplusHalfSpace3(*grid3);
 
     HplusHalfSpace1.assignDofs();
     HplusHalfSpace2.assignDofs();
+    HplusHalfSpace3.assignDofs();
 
     // Define some default options.
 
@@ -265,6 +274,50 @@ int main(int argc, char* argv[])
                 SHARED(context), SHARED(HplusHalfSpace1),
                 SHARED(HplusHalfSpace2), SHARED(HplusHalfSpace2), waveNumber1);
 
+    // mesh2 x mesh3
+    BoundaryOperator<BFT, RT> slp23 =
+            modifiedHelmholtz3dSingleLayerBoundaryOperator<BFT, RT, RT>(
+                SHARED(context), SHARED(HplusHalfSpace3),
+                SHARED(HplusHalfSpace2), SHARED(HplusHalfSpace2), waveNumber2);
+    BoundaryOperator<BFT, RT> dlp23 =
+            modifiedHelmholtz3dDoubleLayerBoundaryOperator<BFT, RT, RT>(
+                SHARED(context), SHARED(HplusHalfSpace3),
+                SHARED(HplusHalfSpace2), SHARED(HplusHalfSpace2), waveNumber2);
+
+    // mesh3 x mesh2
+    BoundaryOperator<BFT, RT> slp32 =
+            modifiedHelmholtz3dSingleLayerBoundaryOperator<BFT, RT, RT>(
+                SHARED(context), SHARED(HplusHalfSpace2),
+                SHARED(HplusHalfSpace3), SHARED(HplusHalfSpace3), waveNumber2);
+    BoundaryOperator<BFT, RT> dlp32 =
+            modifiedHelmholtz3dDoubleLayerBoundaryOperator<BFT, RT, RT>(
+                SHARED(context), SHARED(HplusHalfSpace2),
+                SHARED(HplusHalfSpace3), SHARED(HplusHalfSpace3), waveNumber2);
+
+    // mesh3 x mesh3, wavenumber 2
+    BoundaryOperator<BFT, RT> slp33_w2 =
+            modifiedHelmholtz3dSingleLayerBoundaryOperator<BFT, RT, RT>(
+                SHARED(context), SHARED(HplusHalfSpace3),
+                SHARED(HplusHalfSpace3), SHARED(HplusHalfSpace3), waveNumber2);
+    BoundaryOperator<BFT, RT> dlp33_w2 =
+            modifiedHelmholtz3dDoubleLayerBoundaryOperator<BFT, RT, RT>(
+                SHARED(context), SHARED(HplusHalfSpace3),
+                SHARED(HplusHalfSpace3), SHARED(HplusHalfSpace3), waveNumber2);
+
+    // mesh3 x mesh3, wavenumber 3
+    BoundaryOperator<BFT, RT> slp33_w3 =
+            modifiedHelmholtz3dSingleLayerBoundaryOperator<BFT, RT, RT>(
+                SHARED(context), SHARED(HplusHalfSpace3),
+                SHARED(HplusHalfSpace3), SHARED(HplusHalfSpace3), waveNumber3);
+    BoundaryOperator<BFT, RT> dlp33_w3 =
+            modifiedHelmholtz3dDoubleLayerBoundaryOperator<BFT, RT, RT>(
+                SHARED(context), SHARED(HplusHalfSpace3),
+                SHARED(HplusHalfSpace3), SHARED(HplusHalfSpace3), waveNumber3);
+    BoundaryOperator<BFT, RT> id33 =
+            identityOperator<BFT, RT>(
+                SHARED(context), SHARED(HplusHalfSpace3),
+                SHARED(HplusHalfSpace3), SHARED(HplusHalfSpace3));
+
     BFT scale = 1.0/(2.0*alpha*kappa1);
     BoundaryOperator<BFT, RT> lhs_k11 = 0.5*id11 + dlp11 + scale*slp11;
     BoundaryOperator<BFT, RT> lhs_k12 = -1.0*dlp12; // sign flipped to accommodate normal direction
@@ -272,9 +325,16 @@ int main(int argc, char* argv[])
     BoundaryOperator<BFT, RT> lhs_k21 = dlp21 + scale*slp21;
     BoundaryOperator<BFT, RT> lhs_k22 = 0.5*id22 - dlp22_w1; // sign flipped to accommodate normal direction
     BoundaryOperator<BFT, RT> lhs_k23 = -(1.0/kappa1)*slp22_w1;
-    // BoundaryOperator<BFT, RT> lhs_k31 -- empty
     BoundaryOperator<BFT, RT> lhs_k32 = 0.5*id22 + dlp22_w2;
-    BoundaryOperator<BFT, RT> lhs_k33 = (1.0/kappa2) * slp22_w2;
+    BoundaryOperator<BFT, RT> lhs_k33 = (1.0/kappa2)*slp22_w2;
+    BoundaryOperator<BFT, RT> lhs_k34 = -1.0*dlp23;
+    BoundaryOperator<BFT, RT> lhs_k35 = -(1.0/kappa2)*slp23;
+    BoundaryOperator<BFT, RT> lhs_k42 = dlp32;
+    BoundaryOperator<BFT, RT> lhs_k43 = (1.0/kappa2)*slp32;
+    BoundaryOperator<BFT, RT> lhs_k44 = 0.5*id33 - dlp33_w2;
+    BoundaryOperator<BFT, RT> lhs_k45 = -(1.0/kappa2)*slp33_w2;
+    BoundaryOperator<BFT, RT> lhs_k54 = 0.5*id33 + dlp33_w3;
+    BoundaryOperator<BFT, RT> lhs_k55 = (1.0/kappa3)*slp33_w3;
 
     BlockedOperatorStructure<BFT, RT> structure;
     structure.setBlock(0, 0, lhs_k11);
@@ -283,9 +343,16 @@ int main(int argc, char* argv[])
     structure.setBlock(1, 0, lhs_k21);
     structure.setBlock(1, 1, lhs_k22);
     structure.setBlock(1, 2, lhs_k23);
-    // structure.setBlock(2, 0, ...); -- empty
     structure.setBlock(2, 1, lhs_k32);
     structure.setBlock(2, 2, lhs_k33);
+    structure.setBlock(2, 3, lhs_k34);
+    structure.setBlock(2, 4, lhs_k35);
+    structure.setBlock(3, 1, lhs_k42);
+    structure.setBlock(3, 2, lhs_k43);
+    structure.setBlock(3, 3, lhs_k44);
+    structure.setBlock(3, 4, lhs_k45);
+    structure.setBlock(4, 3, lhs_k54);
+    structure.setBlock(4, 4, lhs_k55);
     BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
 
     // Grid functions for the RHS
@@ -295,21 +362,26 @@ int main(int argc, char* argv[])
     BoundaryOperator<BFT, RT> rhs1 = scale*slp11;
     BoundaryOperator<BFT, RT> rhs2 = scale*slp21;
 
-    std::vector<GridFunction<BFT, RT> > blockedRhs(3);
+    std::vector<GridFunction<BFT, RT> > blockedRhs(5);
     blockedRhs[0] = rhs1 * GridFunction<BFT, RT>(
                 SHARED(context),
                 SHARED(HplusHalfSpace1), SHARED(HplusHalfSpace1),
-                //surfaceNormalIndependentFunction(NullFunctor()));
                 surfaceNormalIndependentFunction(MyFunctor(waveNumber1)));
     blockedRhs[1] = rhs2 * GridFunction<BFT, RT>(
                 SHARED(context),
                 SHARED(HplusHalfSpace1), SHARED(HplusHalfSpace1),
-                //surfaceNormalIndependentFunction(NullFunctor()));
                 surfaceNormalIndependentFunction(MyFunctor(waveNumber1)));
     blockedRhs[2] = GridFunction<BFT, RT>(
                 SHARED(context),
                 SHARED(HplusHalfSpace2), SHARED(HplusHalfSpace2),
-                //surfaceNormalIndependentFunction(MyFunctor(waveNumber2)));
+                surfaceNormalIndependentFunction(NullFunctor()));
+    blockedRhs[3] = GridFunction<BFT, RT>(
+                SHARED(context),
+                SHARED(HplusHalfSpace3), SHARED(HplusHalfSpace3),
+                surfaceNormalIndependentFunction(NullFunctor()));
+    blockedRhs[4] = GridFunction<BFT, RT>(
+                SHARED(context),
+                SHARED(HplusHalfSpace3), SHARED(HplusHalfSpace3),
                 surfaceNormalIndependentFunction(NullFunctor()));
 
     // Initialize the solver
@@ -326,12 +398,18 @@ int main(int argc, char* argv[])
     arma::Col<RT> solutionVectorBlock1 = solution.gridFunction(0).coefficients();
     arma::Col<RT> solutionVectorBlock2 = solution.gridFunction(1).coefficients();
     arma::Col<RT> solutionVectorBlock3 = solution.gridFunction(2).coefficients();
+    arma::Col<RT> solutionVectorBlock4 = solution.gridFunction(3).coefficients();
+    arma::Col<RT> solutionVectorBlock5 = solution.gridFunction(4).coefficients();
 
     arma::diskio::save_raw_ascii(solutionVectorBlock1, "sol1.txt");
     arma::diskio::save_raw_ascii(solutionVectorBlock2, "sol2.txt");
     arma::diskio::save_raw_ascii(solutionVectorBlock3, "sol3.txt");
+    arma::diskio::save_raw_ascii(solutionVectorBlock4, "sol4.txt");
+    arma::diskio::save_raw_ascii(solutionVectorBlock5, "sol5.txt");
 
     solution.gridFunction(0).exportToVtk(VtkWriter::VERTEX_DATA, "gf1", "gf1");
     solution.gridFunction(1).exportToVtk(VtkWriter::VERTEX_DATA, "gf2", "gf2");
     solution.gridFunction(2).exportToVtk(VtkWriter::VERTEX_DATA, "gf3", "gf3");
+    solution.gridFunction(3).exportToVtk(VtkWriter::VERTEX_DATA, "gf4", "gf4");
+    solution.gridFunction(4).exportToVtk(VtkWriter::VERTEX_DATA, "gf5", "gf5");
 }

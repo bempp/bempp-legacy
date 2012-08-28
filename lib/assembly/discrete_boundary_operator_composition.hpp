@@ -37,7 +37,7 @@ namespace Bempp
 {
 
 /** \ingroup composite_discrete_boundary_operators
- *  \brief Composition of discrete linear operators stored separately.
+ *  \brief Composition (product) of discrete linear operators stored separately.
  */
 template <typename ValueType>
 class DiscreteBoundaryOperatorComposition : public DiscreteBoundaryOperator<ValueType>
@@ -47,15 +47,14 @@ public:
 
     /** \brief Constructor.
      *
-     *  Construct a discrete operator representing the sum of the operators
-     *  \p outer and \p inner.
+     *  Construct a discrete operator representing the product of the operators
+     *  \p outer and \p inner (in this order).
      *
-     *  \note Both operators must have identical dimensions, otherwise
+     *  \note The operators must be non-null and have compatible dimensions
+     *  (<tt>outer->columnCount() == inner->rowCount()</tt>), otherwise
      *  a <tt>std::invalid_argument</tt> exception is thrown. */
     DiscreteBoundaryOperatorComposition(const shared_ptr<const Base>& outer,
                                         const shared_ptr<const Base>& inner);
-
-//    virtual arma::Mat<ValueType> asMatrix() const;
 
     virtual unsigned int rowCount() const;
     virtual unsigned int columnCount() const;
@@ -81,7 +80,9 @@ private:
                                   const ValueType alpha,
                                   const ValueType beta) const;
 private:
+    /** \cond PRIVATE */
     shared_ptr<const Base> m_outer, m_inner;
+    /** \endcond */
 };
 
 } // namespace Bempp

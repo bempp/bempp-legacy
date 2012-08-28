@@ -40,7 +40,7 @@ namespace Bempp
 {
 
 /** \ingroup discrete_boundary_operators
- *  \brief Discrete linear operator stored as a sparse matrix.
+ *  \brief Discrete boundary operator stored as a sparse matrix.
  */
 template <typename ValueType>
 class DiscreteSparseBoundaryOperator :
@@ -48,9 +48,20 @@ class DiscreteSparseBoundaryOperator :
 {
 #ifdef WITH_TRILINOS
 public:
+    /** \brief Constructor.
+     *
+     *  \param[in] mat
+     *    Sparse matrix that will be represented by the newly
+     *    constructed operator. Must not be null.
+     *  \param[in] symmetry
+     *    Symmetry of the matrix. May be any combination of flags defined
+     *    in the Symmetry enumeration type.
+     *  \param[in] trans
+     *    If different from NO_TRANSPOSE, the discrete operator will represent
+     *    a transposed and/or complex-conjugated matrix \p mat. */
     DiscreteSparseBoundaryOperator(const shared_ptr<const Epetra_CrsMatrix>& mat,
-                                 Symmetry symmetry = NO_SYMMETRY,
-                                 TranspositionMode trans = NO_TRANSPOSE);
+                                   Symmetry symmetry = NO_SYMMETRY,
+                                   TranspositionMode trans = NO_TRANSPOSE);
 #else
     // This class cannot be used without Trilinos
 private:
@@ -71,8 +82,21 @@ public:
                           arma::Mat<ValueType>& block) const;
 
 #ifdef WITH_TRILINOS
+    /** \brief Return a shared pointer to the sparse matrix stored within
+     *  this operator.
+     *
+     *  \note The discrete operator represents the matrix returned by this
+     *  function *and possibly transposed and/or complex-conjugated*, depending on
+     *  the value returned by transpositionMode(). */
     shared_ptr<const Epetra_CrsMatrix> epetraMatrix() const;
 #endif
+
+    /** \brief Return the active sparse matrix transformation.
+     *
+     *  Indicates whether this operator represents the unmodified sparse matrix
+     *  passed in the constructor or its transformation (transposition and/or
+     *  conjugation). */
+    TranspositionMode transpositionMode() const;
 
 #ifdef WITH_TRILINOS
 public:
@@ -92,6 +116,7 @@ private:
     bool isTransposed() const;
 
 private:
+    /** \cond PRIVATE */
 #ifdef WITH_TRILINOS
     shared_ptr<const Epetra_CrsMatrix> m_mat;
     Symmetry m_symmetry;
@@ -99,6 +124,7 @@ private:
     Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_domainSpace;
     Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_rangeSpace;
 #endif
+    /** \endcond */
 };
 
 } // namespace Bempp

@@ -318,6 +318,13 @@ DiscreteSparseBoundaryOperator<ValueType>::epetraMatrix() const
 }
 
 template <typename ValueType>
+TranspositionMode
+DiscreteSparseBoundaryOperator<ValueType>::transpositionMode() const
+{
+    return m_trans;
+}
+
+template <typename ValueType>
 Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> >
 DiscreteSparseBoundaryOperator<ValueType>::domain() const
 {
