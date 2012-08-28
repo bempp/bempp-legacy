@@ -68,6 +68,7 @@ def module_path():
 
 def downloadDependencies(root,config):
 
+    print "Downloading dependencies"
     checkCreateDir(root+"/contrib/files")
 
     for dep in library_names:
