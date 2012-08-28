@@ -82,6 +82,12 @@ public:
                           arma::Mat<ValueType>& block) const;
 
 #ifdef WITH_TRILINOS
+    /** \brief Return a shared pointer to the sparse matrix stored within
+     *  this operator.
+     *
+     *  \note The discrete operator represents the matrix returned by this
+     *  function *and possibly transposed and/or complex-conjugated*, depending on
+     *  the value returned by transpositionMode(). */
     shared_ptr<const Epetra_CrsMatrix> epetraMatrix() const;
 #endif
 
