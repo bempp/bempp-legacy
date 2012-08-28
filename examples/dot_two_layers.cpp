@@ -44,6 +44,8 @@
 #include "space/piecewise_linear_continuous_scalar_space.hpp"
 #include "space/piecewise_constant_scalar_space.hpp"
 
+#include <sys/wait.h>
+
 using namespace Bempp;
 
 typedef double BFT; // basis function type
@@ -100,6 +102,7 @@ public:
         }
         dst = sqrt(dst);
         result(0) = exp (-m_waveNumber*dst);
+	result(0) = 1;
     }
 
 private:
@@ -112,46 +115,77 @@ inline shared_ptr<T> SHARED(T& t)
     return make_shared_from_ref(t);
 }
 
+double A_Keijzer (double n)
+{
+    double th = asin(1.0/n);
+    double costh = fabs(cos(th));
+    double R0 = ((n-1.0)*(n-1.0)) / ((n+1.0)*(n+1.0));
+    return (2.0/(1.0-R0) - 1.0 + costh*costh*costh) / (1.0 - costh*costh);
+}
+
+std::auto_ptr<Grid> CreateSphere (double rad, double elsize)
+{
+    // Create a sphere mesh of radius rad and mean element size elsize
+    // Calls external gmsh executable which must be on the path
+
+    const char *gmesh_def_name = "meshes/sphere.txt";
+    const char *gmesh_geo_name = "meshes/sphere.geo";
+    const char *gmesh_msh_name = "meshes/sphere.msh";
+    char cbuf[512];
+
+    std::ifstream ifs(gmesh_def_name);
+    std::ofstream ofs(gmesh_geo_name);
+    ofs << "rad = " << rad << ";\n";
+    ofs << "lc = " << elsize << ";\n";
+    while (ifs.getline (cbuf, 512))
+        ofs << cbuf << std::endl;
+    ofs.close();
+
+    pid_t pID = vfork();
+    if (pID == 0) {
+        execlp ("gmsh", "gmsh", "-2", "meshes/sphere.geo", NULL);
+    }
+    int gmshExitStatus;
+    waitpid (pID, &gmshExitStatus, 0);
+    std::auto_ptr<Grid> grid = loadTriangularMeshFromFile(gmesh_msh_name);
+    remove (gmesh_geo_name);
+    remove (gmesh_msh_name);
+    return grid;
+}
+
 int main(int argc, char* argv[])
 {
     // Physical parameters, general
     const BFT c0 = 0.3;      // speed of light in vacuum [mm/ps]
-    BFT refind = 1.0; // refractive index
+    BFT refind = 1.4; // refractive index
+    BFT alpha = A_Keijzer(refind); // boundary term
     BFT c = c0/refind;       // speed of light in medium [mm/ps]
     BFT freq = 100*1e6; // modulation frequency [Hz]
     BFT omega = 2.0*M_PI * freq*1e-12; // modulation frequency [cycles/ps]
 
     // Physical parameters, outer region
     BFT mua1 = 0.01; // absorption coefficient
-    BFT mus1 = 1.0;  // diffusion coefficient
+    BFT mus1 = 1.0;  // scattering coefficient
     BFT kappa1 = 1.0/(3.0*(mua1+mus1));   // diffusion coefficient
     RT waveNumber1 = sqrt (RT(mua1/kappa1, omega/(c*kappa1))); // outer region
 
     // Physical parameters, inner region
-    BFT mua2 = 0.01; // absorption coefficient
-    BFT mus2 = 1;  // diffusion coefficient
+    BFT mua2 = 0.02; // absorption coefficient
+    BFT mus2 = 0.5;  // scattering coefficient
     BFT kappa2 = 1.0/(3.0*(mua2+mus2));   // diffusion coefficient
     RT waveNumber2 = sqrt (RT(mua2/kappa2, omega/(c*kappa2))); // outer region
 
-    // Load meshes
-
-    const char *meshfile1 = "meshes/sphere-41440_r25.msh";
-    const char *meshfile2 = "meshes/sphere-41440_rx.msh";
-
-    std::auto_ptr<Grid> grid1 = loadTriangularMeshFromFile(meshfile1);
-    std::auto_ptr<Grid> grid2 = loadTriangularMeshFromFile(meshfile2);
+    // Create sphere meshes on the fly
+    std::auto_ptr<Grid> grid1 = CreateSphere(25.0, 1.0);
+    std::auto_ptr<Grid> grid2 = CreateSphere(15.0, 1.0);
 
     // Initialize the spaces
 
     PiecewiseLinearContinuousScalarSpace<BFT> HplusHalfSpace1(*grid1);
-    PiecewiseConstantScalarSpace<BFT> HminusHalfSpace1(*grid1);
     PiecewiseLinearContinuousScalarSpace<BFT> HplusHalfSpace2(*grid2);
-    PiecewiseConstantScalarSpace<BFT> HminusHalfSpace2(*grid2);
 
     HplusHalfSpace1.assignDofs();
-    HminusHalfSpace1.assignDofs();
     HplusHalfSpace2.assignDofs();
-    HminusHalfSpace2.assignDofs();
 
     // Define some default options.
 
@@ -160,13 +194,14 @@ int main(int argc, char* argv[])
     // We want to use ACA
 
     AcaOptions acaOptions; // Default parameters for ACA
-    acaOptions.eps = 1e-4;
+    acaOptions.eps = 1e-5;
     assemblyOptions.switchToAcaMode(acaOptions);
 
     // Define the standard integration factory
 
     AccuracyOptions accuracyOptions;
-    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(1);
+    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
+    accuracyOptions.singleRegular.setRelativeQuadratureOrder(1);
     NumericalQuadratureStrategy<BFT, RT> quadStrategy(accuracyOptions);
     Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);
 
@@ -230,14 +265,15 @@ int main(int argc, char* argv[])
                 SHARED(context), SHARED(HplusHalfSpace1),
                 SHARED(HplusHalfSpace2), SHARED(HplusHalfSpace2), waveNumber1);
 
-    BoundaryOperator<BFT, RT> lhs_k11 = 0.5 * id11 + dlp11 + (1.0/(2.0*kappa1)) * slp11;
-    BoundaryOperator<BFT, RT> lhs_k12 = -1.0 * dlp12;
-    BoundaryOperator<BFT, RT> lhs_k13 = -(1.0/kappa1) * slp12;
-    BoundaryOperator<BFT, RT> lhs_k21 = -1.0*dlp21 + (1.0/(2.0*kappa1)) * slp21;
-    BoundaryOperator<BFT, RT> lhs_k22 = 0.5 * id22 - dlp22_w1;
-    BoundaryOperator<BFT, RT> lhs_k23 = -(1.0/kappa1) * slp22_w1;
+    BFT scale = 1.0/(2.0*alpha*kappa1);
+    BoundaryOperator<BFT, RT> lhs_k11 = 0.5*id11 + dlp11 + scale*slp11;
+    BoundaryOperator<BFT, RT> lhs_k12 = -1.0*dlp12; // sign flipped to accommodate normal direction
+    BoundaryOperator<BFT, RT> lhs_k13 = -(1.0/kappa1)*slp12;
+    BoundaryOperator<BFT, RT> lhs_k21 = dlp21 + scale*slp21;
+    BoundaryOperator<BFT, RT> lhs_k22 = 0.5*id22 - dlp22_w1; // sign flipped to accommodate normal direction
+    BoundaryOperator<BFT, RT> lhs_k23 = -(1.0/kappa1)*slp22_w1;
     // BoundaryOperator<BFT, RT> lhs_k31 -- empty
-    BoundaryOperator<BFT, RT> lhs_k32 = 0.5 * id22 + dlp22_w2;
+    BoundaryOperator<BFT, RT> lhs_k32 = 0.5*id22 + dlp22_w2;
     BoundaryOperator<BFT, RT> lhs_k33 = (1.0/kappa2) * slp22_w2;
 
     BlockedOperatorStructure<BFT, RT> structure;
@@ -256,19 +292,25 @@ int main(int argc, char* argv[])
 
     // TODO: remove the necessity of creating "dummy" functions
     // corresponding to zero blocks.
+    BoundaryOperator<BFT, RT> rhs1 = scale*slp11;
+    BoundaryOperator<BFT, RT> rhs2 = scale*slp21;
+
     std::vector<GridFunction<BFT, RT> > blockedRhs(3);
-    blockedRhs[0] = GridFunction<BFT, RT>(
+    blockedRhs[0] = rhs1 * GridFunction<BFT, RT>(
                 SHARED(context),
                 SHARED(HplusHalfSpace1), SHARED(HplusHalfSpace1),
-                surfaceNormalIndependentFunction(NullFunctor()));
-    blockedRhs[1] = GridFunction<BFT, RT>(
+                //surfaceNormalIndependentFunction(NullFunctor()));
+                surfaceNormalIndependentFunction(MyFunctor(waveNumber1)));
+    blockedRhs[1] = rhs2 * GridFunction<BFT, RT>(
                 SHARED(context),
-                SHARED(HplusHalfSpace2), SHARED(HplusHalfSpace2),
-                surfaceNormalIndependentFunction(NullFunctor()));
+                SHARED(HplusHalfSpace1), SHARED(HplusHalfSpace1),
+                //surfaceNormalIndependentFunction(NullFunctor()));
+                surfaceNormalIndependentFunction(MyFunctor(waveNumber1)));
     blockedRhs[2] = GridFunction<BFT, RT>(
                 SHARED(context),
                 SHARED(HplusHalfSpace2), SHARED(HplusHalfSpace2),
-                surfaceNormalIndependentFunction(MyFunctor(waveNumber2)));
+                //surfaceNormalIndependentFunction(MyFunctor(waveNumber2)));
+                surfaceNormalIndependentFunction(NullFunctor()));
 
     // Initialize the solver
 

@@ -16,7 +16,7 @@ target_link_libraries(helmholtz bempp)
 target_link_libraries(tutorial_dirichlet bempp)
 
 if (NOT (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR}))
-    file(GLOB_RECURSE EXAMPLE_MESHES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.msh *gmsh)
+    file(GLOB_RECURSE EXAMPLE_MESHES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.msh *gmsh sphere.txt)
     file(GLOB_RECURSE TRILINOS_XMLS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.xml)
     foreach (f ${EXAMPLE_MESHES} ${TRILINOS_XMLS})
         add_custom_command(
