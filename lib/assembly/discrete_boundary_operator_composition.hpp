@@ -56,8 +56,6 @@ public:
     DiscreteBoundaryOperatorComposition(const shared_ptr<const Base>& outer,
                                         const shared_ptr<const Base>& inner);
 
-//    virtual arma::Mat<ValueType> asMatrix() const;
-
     virtual unsigned int rowCount() const;
     virtual unsigned int columnCount() const;
 

@@ -149,13 +149,6 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteBoundaryOperator);
             const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op, \
             SCALAR scalar);
 
-//    template BoundaryOperator<BASIS, RESULT> operator*( \
-//    const BoundaryOperator<BASIS, RESULT>& op, const SCALAR& scalar); \
-//    template BoundaryOperator<BASIS, RESULT> operator*( \
-//    const SCALAR& scalar, const BoundaryOperator<BASIS, RESULT>& op); \
-//    template BoundaryOperator<BASIS, RESULT> operator/( \
-//    const BoundaryOperator<BASIS, RESULT>& op, const SCALAR& scalar)
-
 #if defined(ENABLE_SINGLE_PRECISION)
 INSTANTIATE_FREE_FUNCTIONS(float);
 INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(float, float );
