@@ -85,6 +85,13 @@ public:
     shared_ptr<const Epetra_CrsMatrix> epetraMatrix() const;
 #endif
 
+    /** \brief Return the active sparse matrix transformation.
+     *
+     *  Indicates whether this operator represents the unmodified sparse matrix
+     *  passed in the constructor or its transformation (transposition and/or
+     *  conjugation). */
+    TranspositionMode transpositionMode() const;
+
 #ifdef WITH_TRILINOS
 public:
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
