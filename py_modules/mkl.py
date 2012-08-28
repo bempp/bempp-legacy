@@ -123,6 +123,14 @@ def get_mkl_dirs_and_libs_redistributable(config, lib_dir, extension):
 # Find MKL library files and create symbolic links to them
 # in the lib_dir directory
 def create_symlinks(lib_dir, extension, mkl_dirs, mkl_libs):
+    # First, remove any old symlinks to known MKL libraries
+    # from the prefix directory
+    for path in glob.glob(os.path.join(lib_dir,"libmkl")+"*"+extension):
+        os.unlink(path)
+    path = os.path.join(lib_dir,"libiomp5"+extension)
+    if os.path.exists(path):
+        os.unlink(path)
+        
     # Create symlinks to all libs listed in mkl_libs
     for l in mkl_libs:
         if l.startswith("-l"):
@@ -138,7 +146,11 @@ def create_symlinks(lib_dir, extension, mkl_dirs, mkl_libs):
         else:
             raise Exception("'"+l+"' is neither a file nor "
                             "a linker '-l' option")
-        os.symlink(path,os.path.join(lib_dir,fname))
+        new_path = os.path.join(lib_dir,fname)
+        if os.path.exists(new_path):
+            os.unlink(new_path) # maybe it's a leftover symlink from a previous
+                                # run, with a nonstandard name
+        os.symlink(path,new_path)
     # Symlink to all other libmkl* files found in mkl_dirs
     for d in mkl_dirs:
         for path in glob.glob(os.path.join(d,"libmkl")+"*"+extension):
