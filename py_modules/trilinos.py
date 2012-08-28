@@ -54,6 +54,8 @@ def prepare(root,config):
         
     tools.setDefaultConfigOption(config,'Trilinos','cmake_path',prefix+"/bempp/lib/cmake/Trilinos/",overwrite=True)
 
+    tools.setCompilerOptions(config,'Trilinos')
+
 def configure(root,config):
 
     trilinos_full_dir=root+"/contrib/"+trilinos_dir

@@ -210,8 +210,21 @@ def cleanUp(root,config):
     checkDeleteDirectory(root+"/test_blas/build")
     checkDeleteDirectory(root+"/test_lapack/build")
 
-    
-        
+def setCompilerOptions(config,section):
+    """Update the compiler Options in 'section' with those from 'Main'"""
+
+    setDefaultConfigOption(config,section,'cc',config.get('Main','cc'))
+    setDefaultConfigOption(config,section,'cxx',config.get('Main','cxx'))
+    setDefaultConfigOption(config,section,'optflags',config.get('Main','optflags'))
+    setDefaultConfigOption(config,section,'cflags',config.get('Main','cflags'))
+    setDefaultConfigOption(config,section,'cxxflags',config.get('Main','cxxflags'))
+
+    optflags = config.get(section,'optflags')
+    cflags = config.get(section,'cflags')
+    cxxflags = config.get(section,'cxxflags')
+
+    config.set(section,'cflags',cflags + " " + optflags)
+    config.set(section,'cxxflags',cxxflags + " " + optflags) 
     
     
 

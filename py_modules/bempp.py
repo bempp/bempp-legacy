@@ -37,6 +37,8 @@ def prepare(root,config):
     tools.setDefaultConfigOption(config,'Bempp','build','true')
     tools.setDefaultConfigOption(config,'Bempp','build_dir',root+'/build')
 
+    tools.setCompilerOptions(config,'Bempp')
+
 def configure(root,config):
     """Prepare the build of Bempp """
 

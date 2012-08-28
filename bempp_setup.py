@@ -129,6 +129,7 @@ def prepare(root,config):
             param = '-arch i386'
         config.set('Main','cflags',cflags+" "+param)
         config.set('Main','cxxflags',cxxflags+" "+param)
+        setDefaultConfigOption(config,'Main','optflags','-O3 -march=core2')
     elif sys.platform.startswith('linux'):
         if arch=='intel64' or arch=='ia64':
             param = '-m64'
@@ -136,6 +137,7 @@ def prepare(root,config):
             param = '-m32'
         config.set('Main','cflags',cflags+" "+param)       
         config.set('Main','cxxflags',cxxflags+" "+param)
+        setDefaultConfigOption(config,'Main','optflags','-O3 -march=native')
     else:
         raise Exception("Platform '"+sys.platform+"' is not supported")
 
