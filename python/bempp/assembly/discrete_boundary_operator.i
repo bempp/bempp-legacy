@@ -41,6 +41,7 @@ namespace Bempp
 DECLARE_TEMPLATE_VALUE_METHOD_AUTO_DOCSTRING(DiscreteBoundaryOperator, apply);
 
 BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator);
+BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
 
  %warnfilter(315) DiscreteBoundaryOperator;
 
@@ -139,10 +140,6 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator);
             arma::Col< ValueType > tmp1 = mat_in.unsafe_col(i);
             arma::Col< ValueType > tmp2 = mat_out.unsafe_col(i);
             op->apply(Bempp::NO_TRANSPOSE,tmp1,tmp2,1.0,0.0);
-        }
-        for (int i=0;i<mat_out.n_rows;i++){
-            for (int j=0;j<mat_out.n_cols;j++) std::cout << mat_out(i,j) << " ";
-            std::cout << std::endl;
         }
 
     }
