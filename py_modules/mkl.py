@@ -52,6 +52,7 @@ def parse_ldd_output(output):
             fname = m.group(1)
             m_fname = re_fname.match(fname)
             if m_fname:
+                # can't do better than this since the full path is unknown...
                 mkl_libs.append("-l"+re_fname.group(1))
                 print "Warning: NumPy MKL dependency '"+fname+"' not found"
             continue
@@ -155,11 +156,15 @@ def create_symlinks(lib_dir, extension, mkl_dirs, mkl_libs):
                 os.symlink(path,new_path)
             break
 
-def get_linker_args(lib_dir, mkl_libs):
+def get_linker_args(lib_dir, extension, mkl_dirs, mkl_libs):
     linker_args = []
     for l in mkl_libs:
         if l.startswith("-l"):
-            linker_args.append(l)
+            path = os.path.join(lib_dir,"lib"+l[2:]+extension)
+            if os.path.isfile(path):
+                linker_args.append(path)
+            else:
+                linker_args.append(l)
         else:
             path = os.path.join(lib_dir,os.path.basename(l))
             linker_args.append(path)
@@ -216,7 +221,7 @@ def prepare(root,config):
                             "either 'installed', 'redistributable' or "
                             "'like_numpy'")
         
-        mkl_linker_args = get_linker_args(lib_dir, mkl_libs)
+        mkl_linker_args = get_linker_args(lib_dir,extension,mkl_dirs,mkl_libs)
         blas_libs = ";".join(mkl_linker_args)+";-lpthread"
         lapack_libs = blas_libs
 
