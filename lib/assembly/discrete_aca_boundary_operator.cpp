@@ -151,7 +151,8 @@ const DiscreteAcaBoundaryOperator<ValueType>&
 DiscreteAcaBoundaryOperator<ValueType>::castToAca(
         const DiscreteBoundaryOperator<ValueType>& discreteOperator)
 {
-    return dynamic_cast<const DiscreteAcaBoundaryOperator<ValueType>&>(discreteOperator);
+    return dynamic_cast<const DiscreteAcaBoundaryOperator<ValueType>&>(
+                discreteOperator);
 }
 
 #ifdef WITH_TRILINOS
