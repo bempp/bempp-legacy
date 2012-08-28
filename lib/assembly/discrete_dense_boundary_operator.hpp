@@ -36,13 +36,15 @@ namespace Bempp
 {
 
 /** \ingroup discrete_boundary_operators
- *  \brief Discrete linear operator stored as a dense matrix.
- */
+ *  \brief Discrete boundary operator stored as a dense matrix. */
 template <typename ValueType>
 class DiscreteDenseBoundaryOperator :
         public DiscreteBoundaryOperator<ValueType>
 {
 public:
+    /** \brief Constructor.
+     *
+     *  Construct a discrete boundary operator represented by the matrix \p mat. */
     DiscreteDenseBoundaryOperator(const arma::Mat<ValueType>& mat);
 
     virtual void dump() const;
@@ -74,11 +76,13 @@ private:
                                   const ValueType beta) const;
 
 private:
+    /** \cond PRIVATE */
     arma::Mat<ValueType> m_mat;
 #ifdef WITH_TRILINOS
     Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_domainSpace;
     Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_rangeSpace;
 #endif
+    /** \endcond */
 };
 
 } // namespace Bempp

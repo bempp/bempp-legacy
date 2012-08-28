@@ -43,13 +43,21 @@ namespace Bempp
 {
 
 /** \ingroup discrete_boundary_operators
- *  \brief Discrete linear operator being an inverse of a sparse matrix.
+ *  \brief Discrete boundary operator stored as an inverse of a sparse matrix.
  */
 template <typename ValueType>
 class DiscreteInverseSparseBoundaryOperator :
         public DiscreteBoundaryOperator<ValueType>
 {
 public:
+    /** Constructor.
+     *
+     *  \param[in] mat
+     *    Sparse matrix whose inverse will be represented by the newly
+     *    constructed operator. Must not be null.
+     *  \param[in] symmetry
+     *    Symmetry of the matrix. May be any combination of flags defined
+     *    in the Symmetry enumeration type. */
     DiscreteInverseSparseBoundaryOperator(
             const shared_ptr<const Epetra_CrsMatrix>& mat,
             Symmetry symmetry = NO_SYMMETRY);
@@ -77,11 +85,13 @@ private:
                                   const ValueType beta) const;
 
 private:
+    /** \cond PRIVATE */
     shared_ptr<const Epetra_CrsMatrix> m_mat;
     std::auto_ptr<Epetra_LinearProblem> m_problem;
     Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_space;
     Symmetry m_symmetry;
     std::auto_ptr<Amesos_BaseSolver> m_solver;
+    /** \endcond */
 };
 
 } // namespace Bempp

@@ -32,13 +32,22 @@ template <typename BasisFunctionType, typename ResultType>
 class DiscreteBoundaryOperatorCache
 {
 public:
+    /** \brief Constructor. */
     DiscreteBoundaryOperatorCache() {}
 
+    /** \brief Return the weak form of the operator \p op.
+     *
+     *  This function first checks whether the weak form of \p op is already
+     *  stored in the DiscreteBoundaryOperatorCache object. If it is, it is
+     *  returned. Otherwise the weak form is assembled from scratch, possible
+     *  stored in cache (if the operator \p op is cacheable) and returned to
+     *  the caller. */
     shared_ptr<const DiscreteBoundaryOperator<ResultType> >
     getWeakForm(const Context<BasisFunctionType, ResultType>& context,
                 const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op) const;
 
 private:
+    /** \cond PRIVATE */
     typedef tbb::concurrent_unordered_map<shared_ptr<const AbstractBoundaryOperatorId>,
     boost::weak_ptr<const DiscreteBoundaryOperator<ResultType> >,
     tbb::tbb_hash<shared_ptr<const AbstractBoundaryOperatorId> >,
@@ -46,6 +55,7 @@ private:
     DiscreteBoundaryOperatorMap;
 
     mutable DiscreteBoundaryOperatorMap m_discreteOps;
+    /** \endcond */
 };
 
 } // namespace Bempp
