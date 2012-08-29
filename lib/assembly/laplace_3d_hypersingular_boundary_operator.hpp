@@ -83,7 +83,8 @@ public:
             const shared_ptr<const Space<BasisFunctionType> >& domain,
             const shared_ptr<const Space<BasisFunctionType> >& range,
             const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-            const std::string& label = "");
+            const std::string& label = "",
+            Symmetry symmetry = NO_SYMMETRY);
 };
 
 /** \relates Laplace3dHypersingularBoundaryOperator
@@ -116,7 +117,8 @@ laplace3dHypersingularBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const std::string& label = "");
+        const std::string& label = "",
+        Symmetry symmetry = NO_SYMMETRY);
 
 } // namespace Bempp
 

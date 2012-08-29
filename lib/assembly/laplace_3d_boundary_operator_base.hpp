@@ -97,7 +97,8 @@ public:
             const shared_ptr<const Space<BasisFunctionType> >& domain,
             const shared_ptr<const Space<BasisFunctionType> >& range,
             const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-            const std::string& label = "");
+            const std::string& label = "",
+            Symmetry symmetry = NO_SYMMETRY);
     Laplace3dBoundaryOperatorBase(
             const Laplace3dBoundaryOperatorBase& other);
     virtual ~Laplace3dBoundaryOperatorBase();
