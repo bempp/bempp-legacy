@@ -23,7 +23,7 @@
 
 #if defined(WITH_TRILINOS) && defined(WITH_AHMED)
 
-#include "aca_preconditioner_factory.hpp"
+#include "preconditioner_factory.hpp"
 #include "../assembly/discrete_aca_boundary_operator.hpp"
 #include "../assembly/discrete_boundary_operator.hpp"
 #include "../assembly/aca_approximate_lu_inverse.hpp"
@@ -40,7 +40,7 @@ namespace Bempp
 
 template<typename ValueType>
 Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> >
-AcaPreconditionerFactory<ValueType>::acaOperatorToPreconditioner(
+PreconditionerFactory<ValueType>::acaOperatorToPreconditioner(
         const DiscreteBoundaryOperator<ValueType>& discreteOperator, const double delta)
 {
     const DiscreteAcaBoundaryOperator<ValueType>& discreteAcaOperator =
@@ -56,7 +56,7 @@ AcaPreconditionerFactory<ValueType>::acaOperatorToPreconditioner(
     return preconditioner;
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(AcaPreconditionerFactory);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(PreconditionerFactory);
 
 } // namespace Bempp
 

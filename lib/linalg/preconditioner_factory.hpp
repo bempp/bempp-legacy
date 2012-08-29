@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_aca_preconditioner_factory_hpp
-#define	bempp_aca_preconditioner_factory_hpp
+#ifndef bempp_preconditioner_factory_hpp
+#define	bempp_preconditioner_factory_hpp
 
 #include "../common/common.hpp"
 
@@ -35,7 +35,7 @@ namespace Bempp
 {
 
 template<typename ValueType>
-class AcaPreconditionerFactory
+class PreconditionerFactory
 {
 public:
     static Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> >

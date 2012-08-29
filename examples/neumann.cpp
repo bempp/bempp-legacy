@@ -43,7 +43,7 @@
 #include "grid/grid_factory.hpp"
 #include "grid/grid.hpp"
 
-#include "linalg/aca_preconditioner_factory.hpp"
+#include "linalg/preconditioner_factory.hpp"
 #include "linalg/default_iterative_solver.hpp"
 #include "linalg/default_direct_solver.hpp"
 

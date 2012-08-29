@@ -1,5 +1,5 @@
 // Automatically specify argument lists and return types in docstrings
-%feature("autodoc", 0);
+//%feature("autodoc", 0);
 
 %define DECLARE_CLASS_DOCSTRING(class)
 %feature("docstring", class ## _docstring) class

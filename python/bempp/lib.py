@@ -263,6 +263,9 @@ def createBlockedBoundaryOperator(context,structure):
         name, context.basisFunctionType(), context.resultType(),
         structure)
 
-
+def createAcaApproximateLuInverse(operator,delta):
+    """Return an AcaApproximateLuInverse Object"""
+    name = 'createAcaApproximateLuInverse'
+    return core.constructObjectTemplatedOnValue(name,operator.valueType(),operator,delta)
 
 
