@@ -41,6 +41,8 @@
 #include <stdexcept>
 #include <iostream>
 
+#include <boost/type_traits/is_complex.hpp>
+
 #include <tbb/atomic.h>
 #include <tbb/parallel_for.h>
 #include <tbb/task_scheduler_init.h>
@@ -78,13 +80,13 @@ public:
             const AcaOptions& options,
             tbb::atomic<size_t>& done,
             LeafClusterIndexQueue& leafClusterIndexQueue,
-            bool symmetric,
+            bool hermitian,
             std::vector<ChunkStatistics>& stats) :
         m_helper(helper),
         m_leafClusters(leafClusters), m_blocks(blocks),
         m_options(options), m_done(done),
         m_leafClusterIndexQueue(leafClusterIndexQueue),
-        m_symmetric(symmetric),
+        m_hermitian(hermitian),
         m_stats(stats)
     {
     }
@@ -107,7 +109,7 @@ public:
 
             AhmedBemBlcluster* cluster =
                     dynamic_cast<AhmedBemBlcluster*>(m_leafClusters[leafClusterIndex]);
-            if (m_symmetric)
+            if (m_hermitian)
 #ifdef AHMED_PRERELEASE
                 apprx_sym(m_helper, m_blocks[cluster->getidx()],
                           cluster, m_options.eps, m_options.maximumRank);
@@ -135,7 +137,7 @@ private:
     const AcaOptions& m_options;
     tbb::atomic<size_t>& m_done;
     LeafClusterIndexQueue& m_leafClusterIndexQueue;
-    bool m_symmetric;
+    bool m_hermitian;
     std::vector<ChunkStatistics>& m_stats;
 };
 
@@ -174,7 +176,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         const std::vector<ResultType>& denseTermsMultipliers,
         const std::vector<ResultType>& sparseTermsMultipliers,
         const AssemblyOptions& options,
-        bool symmetric)
+        bool hermitian)
 {
 #ifdef WITH_AHMED
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
@@ -196,9 +198,9 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     const size_t trialDofCount = indexWithGlobalDofs ?
                 trialSpace.globalDofCount() : trialSpace.flatLocalDofCount();
 
-    if (symmetric && testDofCount != trialDofCount)
+    if (hermitian && testDofCount != trialDofCount)
         throw std::invalid_argument("AcaGlobalAssembler::assembleDetachedWeakForm(): "
-                                    "you cannot generate a symmetric weak form "
+                                    "you cannot generate a Hermitian weak form "
                                     "using test and trial spaces with different "
                                     "numbers of DOFs");
 
@@ -273,7 +275,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     std::auto_ptr<AhmedBemBlcluster> bemBlclusterTree(
                 new AhmedBemBlcluster(0, 0, testDofCount, trialDofCount));
     unsigned int blockCount = 0;
-    if (symmetric)
+    if (hermitian)
         bemBlclusterTree->subdivide_sym(&testClusterTree,
                                         acaOptions.eta * acaOptions.eta,
                                         blockCount);
@@ -367,7 +369,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         Fiber::SerialBlasRegion region; // if possible, ensure that BLAS is single-threaded
         tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
                           Body(helper, leafClusters, blocks, acaOptions, done,
-                               leafClusterIndexQueue, symmetric, chunkStats));
+                               leafClusterIndexQueue, hermitian, chunkStats));
     }
     tbb::tick_count loopEnd = tbb::tick_count::now();
     std::cout << "\n"; // the progress bar doesn't print the final \n
@@ -410,7 +412,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         if (acaOptions.outputPostscript) {
             std::cout << "Writing matrix partition ..." << std::flush;
             std::ofstream os(acaOptions.outputFname.c_str());
-            if (symmetric)
+            if (hermitian)
 #ifdef AHMED_PRERELEASE
                 psoutputHSym(os, bemBlclusterTree.get(), testDofCount, blocks.get());
 #else
@@ -427,10 +429,16 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         }
     }
 
+    unsigned int symmetry = NO_SYMMETRY;
+    if (hermitian) {
+        symmetry |= HERMITIAN;
+        if (boost::is_complex<ResultType>())
+            symmetry |= SYMMETRIC;
+    }
     std::auto_ptr<DiscreteBndOp> acaOp(
                 new DiscreteAcaLinOp(testDofCount, trialDofCount,
                                      acaOptions.maximumRank,
-                                     symmetric,
+                                     Symmetry(symmetry),
                                      bemBlclusterTree, blocks,
                                      IndexPermutation(o2pTrialDofs),
                                      IndexPermutation(o2pTestDofs)));
@@ -471,7 +479,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         const Space<BasisFunctionType>& trialSpace,
         LocalAssembler& localAssembler,
         const AssemblyOptions& options,
-        bool symmetric)
+        bool hermitian)
 {
     std::vector<LocalAssembler*> localAssemblers(1, &localAssembler);
     std::vector<const DiscreteBndOp*> sparseTermsToAdd;
@@ -482,7 +490,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                             sparseTermsToAdd,
                             denseTermsMultipliers,
                             sparseTermsMultipliers,
-                            options, symmetric);
+                            options, hermitian);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(AcaGlobalAssembler);

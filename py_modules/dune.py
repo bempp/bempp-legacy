@@ -23,11 +23,15 @@ from py_modules import tools
 from py_modules import python_patch as py_patch
 
 
-dune_fnames=['dune-common-2.1.0.tar.gz','dune-grid-2.1.0.tar.gz','dune-localfunctions-2.1.0.tar.gz']
-dune_extract_names=['dune-common-2.1.0','dune-grid-2.1.0','dune-localfunctions-2.1.0']
-dune_urls=['http://www.dune-project.org/download/2.1/dune-common-2.1.0.tar.gz',
-	   'http://www.dune-project.org/download/2.1/dune-grid-2.1.0.tar.gz',
-	   'http://www.dune-project.org/download/2.1/dune-localfunctions-2.1.0.tar.gz']
+dune_fnames=['dune-common-2.1.1.tar.gz',
+             'dune-grid-2.1.1.tar.gz',
+             'dune-localfunctions-2.1.1.tar.gz']
+dune_extract_names=['dune-common-2.1.1',
+                    'dune-grid-2.1.1',
+                    'dune-localfunctions-2.1.1']
+dune_urls=['http://www.dune-project.org/download/2.1/dune-common-2.1.1.tar.gz',
+	   'http://www.dune-project.org/download/2.1/dune-grid-2.1.1.tar.gz',
+	   'http://www.dune-project.org/download/2.1/dune-localfunctions-2.1.1.tar.gz']
 dune_names=['dune-common','dune-grid','dune-localfunctions']
 
 def download(root,config):

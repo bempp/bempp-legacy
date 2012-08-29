@@ -202,6 +202,12 @@ DiscreteInverseSparseBoundaryOperator(const shared_ptr<const Epetra_CrsMatrix>& 
 }
 
 template <typename ValueType>
+DiscreteInverseSparseBoundaryOperator<ValueType>::
+~DiscreteInverseSparseBoundaryOperator()
+{
+}
+
+template <typename ValueType>
 unsigned int DiscreteInverseSparseBoundaryOperator<ValueType>::rowCount() const
 {
     return m_space->dim();
