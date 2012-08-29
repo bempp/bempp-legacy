@@ -43,7 +43,7 @@ def parse_ldd_output(output):
     # (don't know what to do with this form)
     # re4 = re.compile(r"\s*(/.+) => \(.+\)")
 
-    re_fname = re.compile(r"lib(mkl.*|iomp.*)\.(so|dylib)(\..*)?")
+    re_fname = re.compile(r"lib(mkl.*|iomp.*)\.(so|dylib)(\.[^ ]*)?")
     mkl_dirs = []
     mkl_libs = []
     for l in output.splitlines():
@@ -75,6 +75,41 @@ def parse_ldd_output(output):
                 mkl_dirs.append(os.path.dirname(path))
     return mkl_dirs,mkl_libs        
 
+def parse_otool_output(output):
+    """Search otool output for MKL dependencies.
+
+    Return (mkl_dirs, mkl_libs)."""
+    
+    # like "@rpath/libmkl_intel.dylib (compatibility version 0.0.0, current version 0.0.0)"
+    re1 = re.compile(r"\s*@rpath/(.+) \(.+\)")
+    # like "/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 111.0.0)"
+    re2 = re.compile(r"\s*(.+) \(.+\)")
+
+    re_fname = re.compile(r"lib(mkl.*|iomp.*)\.(so|dylib)(\.[^ ]*)?")
+    # we assume for now that @rpath == <sys.prefix>/lib
+    sys_lib_dir = os.path.join(sys.prefix, "lib")
+    mkl_dirs = []
+    mkl_libs = []
+    for l in output.splitlines():
+        m = re1.match(l)
+        if m:
+            fname = m.group(1)
+            m_fname = re_fname.match(fname)
+            if m_fname:
+                # we assume that @rpath is equal to sys.prefix
+                mkl_libs.append(os.path.join(sys_lib_dir,m.group(1)))
+                mkl_dirs.append(sys_lib_dir)
+            continue
+        m = re2.match(l)
+        if m:
+            path = m.group(1)
+            fname = os.path.basename(path)
+            m_fname = re_fname.match(fname)
+            if m_fname:
+                mkl_libs.append(path)
+                mkl_dirs.append(os.path.dirname(path))
+    return mkl_dirs,mkl_libs
+
 def get_mkl_dirs_and_libs_like_numpy(config, lib_dir, extension):
     try:
         import numpy
@@ -84,7 +119,7 @@ def get_mkl_dirs_and_libs_like_numpy(config, lib_dir, extension):
     numpy_path = numpy.__file__ # path to numpy/__init__.pyc
     numpy_dir = os.path.dirname(numpy_path)
     lapack_lite_path = os.path.join(numpy_dir,
-                                    "linalg/lapack_lite"+extension)
+                                    "linalg/lapack_lite.so")
     if not os.path.isfile(lapack_lite_path):
         raise Exception("MKL autodetection failed: '"+lapack_lite_path+
                         "' is not a file. Specify MKL location manually")
