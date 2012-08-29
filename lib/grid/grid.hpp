@@ -25,6 +25,7 @@
 #include "grid_parameters.hpp"
 
 #include <memory>
+#include <cstddef> // size_t
 
 namespace Bempp
 {

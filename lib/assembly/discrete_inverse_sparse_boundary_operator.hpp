@@ -61,6 +61,7 @@ public:
     DiscreteInverseSparseBoundaryOperator(
             const shared_ptr<const Epetra_CrsMatrix>& mat,
             Symmetry symmetry = NO_SYMMETRY);
+    ~DiscreteInverseSparseBoundaryOperator();
 
     virtual unsigned int rowCount() const;
     virtual unsigned int columnCount() const;

@@ -119,10 +119,3 @@ endif(DOXYGEN_FOUND)
 
 SET_TARGET_PROPERTIES(bempp
 	PROPERTIES INSTALL_RPATH "${BEMPP_RPATH}")
-
-# Do not explicitly link executables using libbempp with internal
-# dependencies of BEM++ (like the Trilinos libraries, AHMED, BLAS...)
-if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-SET_TARGET_PROPERTIES(bempp
-	PROPERTIES LINK_INTERFACE_LIBRARIES "")
-endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")	

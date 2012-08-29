@@ -23,10 +23,10 @@ from py_modules import tools
 from py_modules import python_patch as py_patch
 
 
-trilinos_fname='trilinos-10.10.2-Source.tar.gz'
-trilinos_extract_dir='trilinos-10.10.2-Source'
+trilinos_fname='trilinos-10.12.2-Source.tar.gz'
+trilinos_extract_dir='trilinos-10.12.2-Source'
 trilinos_dir='trilinos'
-trilinos_url='http://trilinos.sandia.gov/download/files/trilinos-10.10.2-Source.tar.gz'
+trilinos_url='http://trilinos.sandia.gov/download/files/trilinos-10.12.2-Source.tar.gz'
 
 def download(root,config):
     tools.download(trilinos_fname,trilinos_url,root+"/contrib/files")
