@@ -43,7 +43,7 @@ DiscreteAcaBoundaryOperator<ValueType>::
 DiscreteAcaBoundaryOperator(
         unsigned int rowCount, unsigned int columnCount,
         int maximumRank,
-        bool symmetric,
+        Symmetry symmetry,
         std::auto_ptr<AhmedBemBlcluster> blockCluster,
         boost::shared_array<AhmedMblock*> blocks,
         const IndexPermutation& domainPermutation,
@@ -55,7 +55,7 @@ DiscreteAcaBoundaryOperator(
     m_rowCount(rowCount), m_columnCount(columnCount),
 #endif
     m_maximumRank(maximumRank),
-    m_symmetric(symmetric),
+    m_symmetry(symmetry),
     m_blockCluster(blockCluster), m_blocks(blocks),
     m_domainPermutation(domainPermutation),
     m_rangePermutation(rangePermutation)
@@ -80,7 +80,7 @@ asMatrix() const
         if (col > 0)
             unit(col - 1) = 0.;
         unit(col) = 1.;
-        if (m_symmetric)
+        if (m_symmetry & HERMITIAN)
 #ifdef AHMED_PRERELEASE
             multaHSymvec
 #else
@@ -212,7 +212,7 @@ applyBuiltInImpl(const TranspositionMode trans,
     // functions, which don't respect const-correctness
     arma::Col<ValueType> permutedResult;
     m_rangePermutation.permuteVector(y_inout, permutedResult);
-    if (m_symmetric)
+    if (m_symmetry & HERMITIAN)
 #ifdef AHMED_PRERELEASE
             multaHSymvec
 #else
