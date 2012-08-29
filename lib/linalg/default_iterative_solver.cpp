@@ -210,9 +210,9 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::~DefaultIterativeSolver()
 
 template <typename BasisFunctionType, typename ResultType>
 void DefaultIterativeSolver<BasisFunctionType, ResultType>::setPreconditioner(
-        const Teuchos::RCP<const Thyra::PreconditionerBase<ResultType> >& preconditioner)
+        const Preconditioner<ResultType>& preconditioner)
 {
-    m_impl->solverWrapper->setPreconditioner(preconditioner);
+    m_impl->solverWrapper->setPreconditioner(preconditioner.get());
 }
 
 template <typename BasisFunctionType, typename ResultType>
