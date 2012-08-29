@@ -23,12 +23,16 @@
 #ifdef WITH_AHMED
 
 #include "discrete_aca_boundary_operator.hpp"
+
 #include "ahmed_aux.hpp"
-#include "../common/not_implemented_error.hpp"
+#include "aca_approximate_lu_inverse.hpp"
+
+#include "../common/complex_aux.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <boost/smart_ptr/shared_ptr.hpp>
 
 #ifdef WITH_TRILINOS
 #include <Thyra_DetachedSpmdVectorView.hpp>
@@ -37,6 +41,27 @@
 
 namespace Bempp
 {
+
+namespace
+{
+
+bool areEqual(const blcluster* op1, const blcluster* op2)
+{
+    if (!op1 || !op2)
+        return (!op1 && !op2);
+    if (op1->getnrs() != op2->getnrs() || op1->getncs() != op2->getncs())
+        return false;
+    if (op1->isleaf())
+        return (op1->getb1() == op2->getb1() && op1->getb2() == op2->getb2() &&
+                op1->getn1() == op2->getn1() && op1->getn2() == op2->getn2());
+    for (unsigned int rs = 0; rs < op1->getnrs(); ++rs)
+        for (unsigned int cs = 0; cs < op1->getncs(); ++cs)
+            if (!areEqual(op1->getson(rs, cs), op2->getson(rs, cs)))
+                return false;
+    return true;
+}
+
+} // namespace
 
 template <typename ValueType>
 DiscreteAcaBoundaryOperator<ValueType>::
@@ -155,6 +180,16 @@ DiscreteAcaBoundaryOperator<ValueType>::castToAca(
                 discreteOperator);
 }
 
+template <typename ValueType>
+shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >
+DiscreteAcaBoundaryOperator<ValueType>::castToAca(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >&
+        discreteOperator)
+{
+    return boost::dynamic_pointer_cast<const DiscreteAcaBoundaryOperator<ValueType> >(
+                discreteOperator);
+}
+
 #ifdef WITH_TRILINOS
 template <typename ValueType>
 Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> >
@@ -248,7 +283,156 @@ makeAllMblocksDense()
 #endif
 }
 
+// Global routines
+
+template <typename ValueType>
+shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > acaOperatorSum(
+        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op1,
+        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op2,
+        double eps, int maximumRank)
+{
+    if (!op1 || !op2)
+        throw std::invalid_argument("acaOperatorSum(): "
+                                    "both operands must be non-null");
+    if (!areEqual(op1->m_blockCluster.get(), op2->m_blockCluster.get()))
+        throw std::invalid_argument("acaOperatorSum(): block cluster trees of "
+                                    "both operands must be identical");
+    if (op1->m_domainPermutation != op2->m_domainPermutation ||
+            op1->m_rangePermutation != op2->m_rangePermutation)
+        throw std::invalid_argument("acaOperatorSum(): domain and range "
+                                    "index permutations of "
+                                    "both operands must be identical");
+
+    typedef typename DiscreteAcaBoundaryOperator<ValueType>::AhmedBemBlcluster
+            AhmedBemBlcluster;
+    typedef typename DiscreteAcaBoundaryOperator<ValueType>::AhmedMblock
+            AhmedMblock;
+
+    std::auto_ptr<AhmedBemBlcluster> sumBlockCluster(
+                new AhmedBemBlcluster(op1->m_blockCluster.get()));
+    boost::shared_array<AhmedMblock*> sumBlocks =
+            allocateAhmedMblockArray<ValueType>(sumBlockCluster.get());
+    copyH(sumBlockCluster.get(), op1->m_blocks.get(), sumBlocks.get());
+    addGeHGeH(sumBlockCluster.get(), sumBlocks.get(), op2->m_blocks.get(),
+              eps, maximumRank);
+    shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > result(
+                new DiscreteAcaBoundaryOperator<ValueType> (
+                    op1->rowCount(), op1->columnCount(), maximumRank,
+                    Symmetry(op1->m_symmetry & op2->m_symmetry),
+                    sumBlockCluster, sumBlocks,
+                    op1->m_domainPermutation, op2->m_rangePermutation));
+    return result;
+}
+
+template <typename ValueType>
+shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > scaledAcaOperator(
+        const ValueType& multiplier,
+        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op)
+{
+    if (!op)
+        throw std::invalid_argument("scaledAcaOperator(): "
+                                    "operand must not be null");
+
+    typedef typename DiscreteAcaBoundaryOperator<ValueType>::AhmedBemBlcluster
+            AhmedBemBlcluster;
+    typedef typename DiscreteAcaBoundaryOperator<ValueType>::AhmedMblock
+            AhmedMblock;
+
+    typedef typename AhmedTypeTraits<ValueType>::Type AhmedValueType;
+    const AhmedValueType ahmedMultiplier = ahmedCast(multiplier);
+
+    std::auto_ptr<AhmedBemBlcluster> scaledBlockCluster(
+                new AhmedBemBlcluster(op->m_blockCluster.get()));
+    boost::shared_array<AhmedMblock*> scaledBlocks =
+            allocateAhmedMblockArray<ValueType>(scaledBlockCluster.get());
+    copyH(scaledBlockCluster.get(), op->m_blocks.get(), scaledBlocks.get());
+
+    const size_t blockCount = scaledBlockCluster->nleaves();
+    for (size_t b = 0; b < blockCount; ++b) {
+        AhmedMblock* block = scaledBlocks[b];
+        typename AhmedTypeTraits<ValueType>::Type* data = block->getdata();
+        if (block->isLrM()) // low-rank
+            for (size_t i = 0; i < block->getn1() * block->rank(); ++i)
+                data[i] *= ahmedMultiplier;
+        else if (!block->isLtM()) // dense, but not lower-triangular
+            for (size_t i = 0; i < block->nvals(); ++i)
+                data[i] *= ahmedMultiplier;
+        else { // lower-triangular
+            // diagonal entries have special meaning and should not be rescaled
+            size_t size = block->getn1();
+            assert(block->getn2() == size);
+            for (size_t c = 0; c < size; ++c)
+                for (size_t r = 1; r < size; ++r)
+                    data[c * size + r] *= ahmedMultiplier;
+        }
+    }
+
+    unsigned int scaledSymmetry = op->m_symmetry;
+    if (imagPart(multiplier) != 0.)
+        scaledSymmetry &= ~HERMITIAN;
+    shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > result(
+                new DiscreteAcaBoundaryOperator<ValueType> (
+                    op->rowCount(), op->columnCount(), op->m_maximumRank,
+                    Symmetry(scaledSymmetry),
+                    scaledBlockCluster, scaledBlocks,
+                    op->m_domainPermutation, op->m_rangePermutation));
+    return result;
+}
+
+template <typename ValueType>
+shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > scaledAcaOperator(
+        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op,
+        const ValueType& multiplier)
+{
+    return scaledAcaOperator(multiplier, op);
+}
+
+template <typename ValueType>
+shared_ptr<AcaApproximateLuInverse<ValueType> > acaOperatorInverse(
+        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op,
+        double delta)
+{
+    shared_ptr<AcaApproximateLuInverse<ValueType> > result(
+                new AcaApproximateLuInverse<ValueType>(*op, delta));
+    return result;
+}
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteAcaBoundaryOperator);
+
+#define INSTANTIATE_FREE_FUNCTIONS(RESULT) \
+    template shared_ptr<DiscreteAcaBoundaryOperator<RESULT> > \
+        acaOperatorSum( \
+            const shared_ptr<const DiscreteAcaBoundaryOperator<RESULT> >& op1, \
+            const shared_ptr<const DiscreteAcaBoundaryOperator<RESULT> >& op2, \
+            double eps, int maximumRank); \
+    template shared_ptr<DiscreteAcaBoundaryOperator<RESULT> > \
+        scaledAcaOperator( \
+            const RESULT& multiplier, \
+            const shared_ptr<const DiscreteAcaBoundaryOperator<RESULT> >& op); \
+    template shared_ptr<DiscreteAcaBoundaryOperator<RESULT> > \
+        scaledAcaOperator( \
+            const shared_ptr<const DiscreteAcaBoundaryOperator<RESULT> >& op, \
+            const RESULT& multiplier); \
+    template shared_ptr<AcaApproximateLuInverse<RESULT> > \
+        acaOperatorInverse( \
+            const shared_ptr<const DiscreteAcaBoundaryOperator<RESULT> >& op, \
+            double delta)
+
+#if defined(ENABLE_SINGLE_PRECISION)
+INSTANTIATE_FREE_FUNCTIONS(float);
+#endif
+
+#if defined(ENABLE_SINGLE_PRECISION) && (defined(ENABLE_COMPLEX_BASIS_FUNCTIONS) || defined(ENABLE_COMPLEX_KERNELS))
+INSTANTIATE_FREE_FUNCTIONS(std::complex<float>);
+#endif
+
+#if defined(ENABLE_DOUBLE_PRECISION)
+INSTANTIATE_FREE_FUNCTIONS(double);
+#endif
+
+#if defined(ENABLE_DOUBLE_PRECISION) && (defined(ENABLE_COMPLEX_BASIS_FUNCTIONS) || defined(ENABLE_COMPLEX_KERNELS))
+INSTANTIATE_FREE_FUNCTIONS(std::complex<double>);
+#endif
 
 } // namespace Bempp
 

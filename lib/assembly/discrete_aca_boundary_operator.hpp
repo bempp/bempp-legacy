@@ -28,8 +28,8 @@
 #include "discrete_boundary_operator.hpp"
 #include "ahmed_aux_fwd.hpp"
 #include "index_permutation.hpp"
+#include "symmetry.hpp"
 #include "../fiber/scalar_traits.hpp"
-#include "../common/not_implemented_error.hpp"
 
 #include <iostream>
 #include "../common/boost_shared_array_fwd.hpp"
@@ -39,9 +39,74 @@
 #include <Thyra_SpmdVectorSpaceBase_decl.hpp>
 #endif
 
-namespace Bempp {
+namespace Bempp
+{
+
+// Forward declarations
 
 template <typename ValueType> class AcaApproximateLuInverse;
+template <typename ValueType> class DiscreteAcaBoundaryOperator;
+
+// Global functions
+
+/** \brief Add two discrete boundary operators stored as H-matrices.
+ *
+ *  \param[in] op1 First operand.
+ *  \param[in] op2 Second operand.
+ *  \param[in] eps ??? \todo look into M. Bebendorf's book.
+ *  \param[in] maximumRank Maximum rank of blocks that should be considered
+ *    low-rank in the H-matrix to be constructed.
+ *
+ *  \return A shared pointer to a newly allocated discrete boundary operator
+ *  representing the sum of the operands \p op1 and \p op2 stored as a single
+ *  H-matrix. */
+template <typename ValueType>
+shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > acaOperatorSum(
+        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op1,
+        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op2,
+        double eps, int maximumRank);
+
+/** \brief Multiply the H-matrix representation of a discrete boundary operator
+ *  by a scalar and wrap the result in a new discrete boundary operator.
+ *
+ *  \param[in] multiplier Scalar multiplier.
+ *  \param[in] op Discrete boundary operator to be multiplied.
+ *
+ *  \return A shared pointer to a newly allocated discrete boundary operator
+ *  representing the operand \p op multiplied by \p multiplier and stored as
+ *  a H-matrix. */
+template <typename ValueType>
+shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > scaledAcaOperator(
+        const ValueType& multiplier,
+        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op);
+
+/** \overload */
+template <typename ValueType>
+shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > scaledAcaOperator(
+        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op,
+        const ValueType& multiplier);
+
+//template <typename ValueType>
+//shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > acaOperatorComposition(
+//        ValueType multiplier,
+//        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op1,
+//        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op2,
+//        double eps, int maximumRank);
+
+/** \brief Invert a discrete boundary operator stored as a H-matrix.
+ *
+ *  \param[in] op Discrete boundary operator to be inverted.
+ *  \param[in] delta Approximation accuracy of the inverse.
+ *
+ *  \return A shared pointer to a newly allocated discrete boundary operator
+ *  representing the (approximate) inverse of \p op and stored as
+ *  an (approximate) LU decomposition of \p. */
+template <typename ValueType>
+shared_ptr<AcaApproximateLuInverse<ValueType> > acaOperatorInverse(
+        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op,
+        double delta);
+
+// class DiscreteAcaBoundaryOperator
 
 /** \ingroup discrete_boundary_operators
  *  \brief Discrete linear operator stored as a H-matrix.
@@ -51,6 +116,18 @@ class DiscreteAcaBoundaryOperator :
         public DiscreteBoundaryOperator<ValueType>
 {
     friend class AcaApproximateLuInverse<ValueType>;
+    friend shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > acaOperatorSum<>(
+            const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op1,
+            const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op2,
+            double eps, int maximumRank);
+
+    friend shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > scaledAcaOperator<>(
+            const ValueType& multiplier,
+            const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op);
+
+    friend shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > scaledAcaOperator<>(
+            const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op,
+            const ValueType& multiplier);
 
 public:
     typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
@@ -92,6 +169,15 @@ public:
     static const DiscreteAcaBoundaryOperator<ValueType>& castToAca(
             const DiscreteBoundaryOperator<ValueType>& discreteOperator);
 
+    /** \brief Downcast a shared pointer to a DiscreteBoundaryOperator object to
+     *  a shared pointer to a DiscreteAcaBoundaryOperator.
+     *
+     *  If the object referenced by \p discreteOperator is not in fact a
+     *  DiscreteAcaBoundaryOperator, a std::bad_cast exception is thrown. */
+    static shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> > castToAca(
+            const shared_ptr<const DiscreteBoundaryOperator<ValueType> >&
+            discreteOperator);
+
 #ifdef WITH_TRILINOS
 public:
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
@@ -127,7 +213,6 @@ private:
     IndexPermutation m_rangePermutation;
     /** \endcond */
 };
-
 
 } // namespace Bempp
 
