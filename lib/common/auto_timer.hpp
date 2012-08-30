@@ -36,14 +36,19 @@ public:
     /** \brief Constructor.
 
       \param[in] text Message to be printed on destruction. */
-    AutoTimer(const char* text = 0) :
+    explicit AutoTimer(const char* text = 0) :
+        m_text(text), m_start(tbb::tick_count::now())
+    {}
+
+    /** \overload */
+    explicit AutoTimer(const std::string& text = std::string()) :
         m_text(text), m_start(tbb::tick_count::now())
     {}
 
     ~AutoTimer()
     {
         tbb::tick_count end = tbb::tick_count::now();
-        std::cout << m_text << (end - m_start).seconds() << "s" << std::endl;
+        std::cout << m_text << (end - m_start).seconds() << " s" << std::endl;
     }
 
 private:
