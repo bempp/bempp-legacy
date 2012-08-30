@@ -22,13 +22,24 @@
 #include "discrete_boundary_operator.hpp"
 #include "local_assembler_construction_helper.hpp"
 
+#include "../common/to_string.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 #include <boost/type_traits/is_complex.hpp>
 #include <stdexcept>
+#include <tbb/atomic.h>
 
 namespace Bempp
 {
+
+namespace
+{
+    // Used to generate unique labels of anonymous operators. Automatically
+    // set to zero at program startup.
+    // Cannot be declared static in AbstractBoundaryOperator, since it must be
+    // shared across different template instantiations.
+    tbb::atomic<int> s_anonymousOperatorCounter;
+}
 
 template <typename BasisFunctionType, typename ResultType>
 AbstractBoundaryOperator<BasisFunctionType, ResultType>::
@@ -56,6 +67,11 @@ AbstractBoundaryOperator(const shared_ptr<const Space<BasisFunctionType> >& doma
         throw std::invalid_argument(
                 "AbstractBoundaryOperator::AbstractBoundaryOperator(): "
                 "range and dualToRange must be defined on the same grid");
+
+    if (m_label.empty()) {
+        int i = ++s_anonymousOperatorCounter;
+        m_label = "Op" + toString(i);
+    }
 
     if (m_symmetry & AUTO_SYMMETRY)
         m_symmetry = NO_SYMMETRY;
