@@ -1,0 +1,20 @@
+--- Include/H.h.orig	2012-08-29 14:11:33.000000000 +0100
++++ Include/H.h	2012-08-29 14:12:06.000000000 +0100
+@@ -516,7 +516,7 @@
+ extern void addGeHGeM(blcluster*, mblock<float>**, float*, unsigned,
+ 		      double, unsigned, contBasis<float>* haar=NULL);
+ extern void addGeHGeH(blcluster* bl, mblock<float>** A, mblock<float>** B,
+-		      float eps, unsigned rankmax, contBasis<float>* haar=NULL);
++		      double eps, unsigned rankmax, contBasis<float>* haar=NULL);
+ extern void addHeHLrM(blcluster*, mblock<float>**, double, unsigned, unsigned,
+ 		      float*, unsigned, float*, unsigned, 
+ 		      contBasis<float>* haar=NULL);
+@@ -797,7 +797,7 @@
+ extern void addGeHGeM(blcluster*, mblock<scomp>**, scomp*, unsigned,
+ 		      double, unsigned, contBasis<scomp>* haar=NULL);
+ extern void addGeHGeH(blcluster* bl, mblock<scomp>** A, mblock<scomp>** B,
+-		      scomp eps, unsigned rankmax, contBasis<scomp>* haar=NULL);
++		      double eps, unsigned rankmax, contBasis<scomp>* haar=NULL);
+ extern void addHeHLrM(blcluster*, mblock<scomp>**, double, unsigned, unsigned,
+ 		      scomp*, unsigned, scomp*, unsigned, 
+ 		      contBasis<scomp>* haar=NULL);

@@ -53,10 +53,13 @@ def prepare(root,config):
         os.rename(root+"/contrib/AHMED_1.0",root+"/contrib/ahmed")
         shutil.copy(root+"/contrib/build_scripts/posix/ahmed_build.sh",ahmed_full_dir+"/ahmed_build.sh")
         print "Patching AHMED"
-        patch=py_patch.fromfile(root+"/contrib/patch/ahmed_cmake.patch")
+        patches=[py_patch.fromfile(root+"/contrib/patch/"+s)
+                 for s in ("ahmed_cmake.patch",
+                           "ahmed_addGeHGeH_single_precision.patch")]
         cwd=os.getcwd()
         os.chdir(root+"/contrib/ahmed")
-        patch.apply()
+        for patch in patches:
+            patch.apply()
         os.chdir(cwd)
         tools.setCompilerOptions(config,'AHMED')
     else:
