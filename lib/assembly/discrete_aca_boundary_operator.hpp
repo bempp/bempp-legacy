@@ -51,6 +51,9 @@ template <typename ValueType> class DiscreteAcaBoundaryOperator;
 
 /** \brief Add two discrete boundary operators stored as H-matrices.
  *
+ *  A std::bad_cast exception is thrown if the input operators can not be
+ *  cast to DiscreteAcaBoundaryOperator.
+ *
  *  \param[in] op1 First operand.
  *  \param[in] op2 Second operand.
  *  \param[in] eps ??? \todo look into M. Bebendorf's book.
@@ -61,13 +64,16 @@ template <typename ValueType> class DiscreteAcaBoundaryOperator;
  *  representing the sum of the operands \p op1 and \p op2 stored as a single
  *  H-matrix. */
 template <typename ValueType>
-shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > acaOperatorSum(
-        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op1,
-        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op2,
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > acaOperatorSum(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1,
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2,
         double eps, int maximumRank);
 
 /** \brief Multiply the H-matrix representation of a discrete boundary operator
  *  by a scalar and wrap the result in a new discrete boundary operator.
+ *
+ *  A std::bad_cast exception is thrown if the input operator can not be cast
+ *  to DiscreteAcaBoundaryOperator
  *
  *  \param[in] multiplier Scalar multiplier.
  *  \param[in] op Discrete boundary operator to be multiplied.
@@ -76,14 +82,14 @@ shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > acaOperatorSum(
  *  representing the operand \p op multiplied by \p multiplier and stored as
  *  a H-matrix. */
 template <typename ValueType>
-shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > scaledAcaOperator(
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > scaledAcaOperator(
         const ValueType& multiplier,
-        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op);
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op);
 
 /** \overload */
 template <typename ValueType>
-shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > scaledAcaOperator(
-        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op,
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > scaledAcaOperator(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
         const ValueType& multiplier);
 
 //template <typename ValueType>
@@ -93,17 +99,17 @@ shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > scaledAcaOperator(
 //        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op2,
 //        double eps, int maximumRank);
 
-/** \brief Invert a discrete boundary operator stored as a H-matrix.
+/** \brief LU Inverse of a discrete boundary operator stored as a H-matrix.
  *
- *  \param[in] op Discrete boundary operator to be inverted.
+ *  \param[in] op Discrete boundary operator for which to compute the LU Inverse.
  *  \param[in] delta Approximation accuracy of the inverse.
  *
  *  \return A shared pointer to a newly allocated discrete boundary operator
- *  representing the (approximate) inverse of \p op and stored as
+ *  representing the (approximate) LU inverse of \p op and stored as
  *  an (approximate) LU decomposition of \p. */
 template <typename ValueType>
-shared_ptr<AcaApproximateLuInverse<ValueType> > acaOperatorInverse(
-        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op,
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > acaOperatorApproximateLuInverse(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
         double delta);
 
 // class DiscreteAcaBoundaryOperator
@@ -116,17 +122,17 @@ class DiscreteAcaBoundaryOperator :
         public DiscreteBoundaryOperator<ValueType>
 {
     friend class AcaApproximateLuInverse<ValueType>;
-    friend shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > acaOperatorSum<>(
-            const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op1,
-            const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op2,
+    friend shared_ptr<const DiscreteBoundaryOperator<ValueType> > acaOperatorSum<>(
+            const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1,
+            const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2,
             double eps, int maximumRank);
 
-    friend shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > scaledAcaOperator<>(
+    friend shared_ptr<const DiscreteBoundaryOperator<ValueType> > scaledAcaOperator<>(
             const ValueType& multiplier,
-            const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op);
+            const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op);
 
-    friend shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > scaledAcaOperator<>(
-            const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op,
+    friend shared_ptr<const DiscreteBoundaryOperator<ValueType> > scaledAcaOperator<>(
+            const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
             const ValueType& multiplier);
 
 public:

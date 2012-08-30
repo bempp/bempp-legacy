@@ -163,7 +163,7 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "assembly/laplace_3d_potential_operators.i"
 %include "assembly/blocked_operator_structure.i"
 %include "assembly/blocked_boundary_operator.i"
-%include "assembly/aca_approximate_lu_inverse.i"
+%include "assembly/discrete_aca_boundary_operator.i"
 
 
 // Linear algebra

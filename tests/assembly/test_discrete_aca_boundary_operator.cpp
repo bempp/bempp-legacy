@@ -240,8 +240,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(acaOperatorSum_works_correctly_for_nonsymmetric_op
 
     const double eps = 1e-4;
     shared_ptr<const DiscreteBoundaryOperator<RT> > acaSum =
-            acaOperatorSum(Bempp::DiscreteAcaBoundaryOperator<RT>::castToAca(dop),
-                           Bempp::DiscreteAcaBoundaryOperator<RT>::castToAca(dop2),
+            acaOperatorSum(dop,
+                           dop2,
                            eps, UINT_MAX);
 
     BOOST_CHECK(check_arrays_are_close<RT>(acaSum->asMatrix(), expected,
@@ -284,8 +284,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(acaOperatorSum_works_correctly_for_real_hermitian_
 
     const double eps = 1e-4;
     shared_ptr<const DiscreteBoundaryOperator<RT> > acaSum =
-            acaOperatorSum(Bempp::DiscreteAcaBoundaryOperator<RT>::castToAca(dop),
-                           Bempp::DiscreteAcaBoundaryOperator<RT>::castToAca(dop2),
+            acaOperatorSum(dop,
+                           dop2,
                            eps, UINT_MAX);
 
     BOOST_CHECK(check_arrays_are_close<RT>(acaSum->asMatrix(), expected,
@@ -325,7 +325,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(scaledAcaOperator_works_correctly_for_nonsymmetric
     arma::Mat<RT> expected = waveNumber * dop->asMatrix();
 
     shared_ptr<const DiscreteBoundaryOperator<RT> > scaled =
-            scaledAcaOperator(Bempp::DiscreteAcaBoundaryOperator<RT>::castToAca(dop),
+            scaledAcaOperator(dop,
                               waveNumber);
 
     BOOST_CHECK(check_arrays_are_close<RT>(scaled->asMatrix(), expected,
@@ -362,7 +362,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(scaledAcaOperator_works_correctly_for_real_hermiti
     arma::Mat<RT> expected = multiplier * dop->asMatrix();
 
     shared_ptr<const DiscreteBoundaryOperator<RT> > scaled =
-            scaledAcaOperator(Bempp::DiscreteAcaBoundaryOperator<RT>::castToAca(dop),
+            scaledAcaOperator(dop,
                               multiplier);
 
     BOOST_CHECK(check_arrays_are_close<RT>(scaled->asMatrix(), expected,

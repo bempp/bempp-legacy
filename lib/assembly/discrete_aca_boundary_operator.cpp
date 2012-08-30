@@ -23,6 +23,7 @@
 #ifdef WITH_AHMED
 
 #include "discrete_aca_boundary_operator.hpp"
+#include "../common/shared_ptr.hpp"
 
 #include "ahmed_aux.hpp"
 #include "aca_approximate_lu_inverse.hpp"
@@ -186,8 +187,11 @@ DiscreteAcaBoundaryOperator<ValueType>::castToAca(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >&
         discreteOperator)
 {
-    return boost::dynamic_pointer_cast<const DiscreteAcaBoundaryOperator<ValueType> >(
+    shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> > result =
+        boost::dynamic_pointer_cast<const DiscreteAcaBoundaryOperator<ValueType> >(
                 discreteOperator);
+    if (result.get()==0 && (discreteOperator.get()!=0)) throw std::bad_cast();
+    return result;
 }
 
 #ifdef WITH_TRILINOS
@@ -286,19 +290,23 @@ makeAllMblocksDense()
 // Global routines
 
 template <typename ValueType>
-shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > acaOperatorSum(
-        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op1,
-        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op2,
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > acaOperatorSum(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1,
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2,
         double eps, int maximumRank)
 {
     if (!op1 || !op2)
         throw std::invalid_argument("acaOperatorSum(): "
                                     "both operands must be non-null");
-    if (!areEqual(op1->m_blockCluster.get(), op2->m_blockCluster.get()))
+    shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> > acaOp1 =
+            DiscreteAcaBoundaryOperator<ValueType>::castToAca(op1);
+    shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> > acaOp2 =
+            DiscreteAcaBoundaryOperator<ValueType>::castToAca(op2);
+    if (!areEqual(acaOp1->m_blockCluster.get(), acaOp2->m_blockCluster.get()))
         throw std::invalid_argument("acaOperatorSum(): block cluster trees of "
                                     "both operands must be identical");
-    if (op1->m_domainPermutation != op2->m_domainPermutation ||
-            op1->m_rangePermutation != op2->m_rangePermutation)
+    if (acaOp1->m_domainPermutation != acaOp2->m_domainPermutation ||
+            acaOp1->m_rangePermutation != acaOp2->m_rangePermutation)
         throw std::invalid_argument("acaOperatorSum(): domain and range "
                                     "index permutations of "
                                     "both operands must be identical");
@@ -309,25 +317,25 @@ shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > acaOperatorSum(
             AhmedMblock;
 
     std::auto_ptr<AhmedBemBlcluster> sumBlockCluster(
-                new AhmedBemBlcluster(op1->m_blockCluster.get()));
+                new AhmedBemBlcluster(acaOp1->m_blockCluster.get()));
     boost::shared_array<AhmedMblock*> sumBlocks =
             allocateAhmedMblockArray<ValueType>(sumBlockCluster.get());
-    copyH(sumBlockCluster.get(), op1->m_blocks.get(), sumBlocks.get());
-    addGeHGeH(sumBlockCluster.get(), sumBlocks.get(), op2->m_blocks.get(),
+    copyH(sumBlockCluster.get(), acaOp1->m_blocks.get(), sumBlocks.get());
+    addGeHGeH(sumBlockCluster.get(), sumBlocks.get(), acaOp2->m_blocks.get(),
               eps, maximumRank);
-    shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > result(
+    shared_ptr<const DiscreteBoundaryOperator<ValueType> > result(
                 new DiscreteAcaBoundaryOperator<ValueType> (
-                    op1->rowCount(), op1->columnCount(), maximumRank,
-                    Symmetry(op1->m_symmetry & op2->m_symmetry),
+                    acaOp1->rowCount(), acaOp1->columnCount(), maximumRank,
+                    Symmetry(acaOp1->m_symmetry & acaOp2->m_symmetry),
                     sumBlockCluster, sumBlocks,
-                    op1->m_domainPermutation, op2->m_rangePermutation));
+                    acaOp1->m_domainPermutation, acaOp2->m_rangePermutation));
     return result;
 }
 
 template <typename ValueType>
-shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > scaledAcaOperator(
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > scaledAcaOperator(
         const ValueType& multiplier,
-        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op)
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op)
 {
     if (!op)
         throw std::invalid_argument("scaledAcaOperator(): "
@@ -341,11 +349,13 @@ shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > scaledAcaOperator(
     typedef typename AhmedTypeTraits<ValueType>::Type AhmedValueType;
     const AhmedValueType ahmedMultiplier = ahmedCast(multiplier);
 
+    shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> > acaOp =
+            DiscreteAcaBoundaryOperator<ValueType>::castToAca(op);
     std::auto_ptr<AhmedBemBlcluster> scaledBlockCluster(
-                new AhmedBemBlcluster(op->m_blockCluster.get()));
+                new AhmedBemBlcluster(acaOp->m_blockCluster.get()));
     boost::shared_array<AhmedMblock*> scaledBlocks =
             allocateAhmedMblockArray<ValueType>(scaledBlockCluster.get());
-    copyH(scaledBlockCluster.get(), op->m_blocks.get(), scaledBlocks.get());
+    copyH(scaledBlockCluster.get(), acaOp->m_blocks.get(), scaledBlocks.get());
 
     const size_t blockCount = scaledBlockCluster->nleaves();
     for (size_t b = 0; b < blockCount; ++b) {
@@ -367,55 +377,57 @@ shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > scaledAcaOperator(
         }
     }
 
-    unsigned int scaledSymmetry = op->m_symmetry;
+    unsigned int scaledSymmetry = acaOp->m_symmetry;
     if (imagPart(multiplier) != 0.)
         scaledSymmetry &= ~HERMITIAN;
-    shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > result(
+    shared_ptr<const DiscreteBoundaryOperator<ValueType> > result(
                 new DiscreteAcaBoundaryOperator<ValueType> (
-                    op->rowCount(), op->columnCount(), op->m_maximumRank,
+                    acaOp->rowCount(), acaOp->columnCount(), acaOp->m_maximumRank,
                     Symmetry(scaledSymmetry),
                     scaledBlockCluster, scaledBlocks,
-                    op->m_domainPermutation, op->m_rangePermutation));
+                    acaOp->m_domainPermutation, acaOp->m_rangePermutation));
     return result;
 }
 
 template <typename ValueType>
-shared_ptr<DiscreteAcaBoundaryOperator<ValueType> > scaledAcaOperator(
-        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op,
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > scaledAcaOperator(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
         const ValueType& multiplier)
 {
     return scaledAcaOperator(multiplier, op);
 }
 
 template <typename ValueType>
-shared_ptr<AcaApproximateLuInverse<ValueType> > acaOperatorInverse(
-        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op,
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > acaOperatorApproximateLuInverse(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
         double delta)
 {
-    shared_ptr<AcaApproximateLuInverse<ValueType> > result(
-                new AcaApproximateLuInverse<ValueType>(*op, delta));
+    shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> > acaOp =
+            DiscreteAcaBoundaryOperator<ValueType>::castToAca(op);
+    shared_ptr<const DiscreteBoundaryOperator<ValueType> > result(
+                new AcaApproximateLuInverse<ValueType>(*acaOp, delta));
     return result;
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteAcaBoundaryOperator);
 
 #define INSTANTIATE_FREE_FUNCTIONS(RESULT) \
-    template shared_ptr<DiscreteAcaBoundaryOperator<RESULT> > \
+    template shared_ptr<const DiscreteBoundaryOperator<RESULT> > \
         acaOperatorSum( \
-            const shared_ptr<const DiscreteAcaBoundaryOperator<RESULT> >& op1, \
-            const shared_ptr<const DiscreteAcaBoundaryOperator<RESULT> >& op2, \
+            const shared_ptr<const DiscreteBoundaryOperator<RESULT> >& op1, \
+            const shared_ptr<const DiscreteBoundaryOperator<RESULT> >& op2, \
             double eps, int maximumRank); \
-    template shared_ptr<DiscreteAcaBoundaryOperator<RESULT> > \
+    template shared_ptr<const DiscreteBoundaryOperator<RESULT> > \
         scaledAcaOperator( \
             const RESULT& multiplier, \
-            const shared_ptr<const DiscreteAcaBoundaryOperator<RESULT> >& op); \
-    template shared_ptr<DiscreteAcaBoundaryOperator<RESULT> > \
+            const shared_ptr<const DiscreteBoundaryOperator<RESULT> >& op); \
+    template shared_ptr<const DiscreteBoundaryOperator<RESULT> > \
         scaledAcaOperator( \
-            const shared_ptr<const DiscreteAcaBoundaryOperator<RESULT> >& op, \
+            const shared_ptr<const DiscreteBoundaryOperator<RESULT> >& op, \
             const RESULT& multiplier); \
-    template shared_ptr<AcaApproximateLuInverse<RESULT> > \
-        acaOperatorInverse( \
-            const shared_ptr<const DiscreteAcaBoundaryOperator<RESULT> >& op, \
+    template shared_ptr<const DiscreteBoundaryOperator<RESULT> > \
+        acaOperatorApproximateLuInverse( \
+            const shared_ptr<const DiscreteBoundaryOperator<RESULT> >& op, \
             double delta)
 
 #if defined(ENABLE_SINGLE_PRECISION)
