@@ -8,7 +8,7 @@
 # Specify the prefix of the installation directory.  BEM++ and its
 # dependencies will be installed in prefix/bempp. Example:
 
-prefix=~/
+prefix=/home/myname/
 
 # Specify how many processes to use for building. Example:
 

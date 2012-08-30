@@ -19,7 +19,7 @@
 #THE SOFTWARE.
 
 import glob,os,re,shutil,subprocess,sys,urllib
-from py_modules import tools 
+from py_modules import tools
 
 def find_file_in_dirs(fname, dirs):
     for d in dirs:
@@ -32,7 +32,7 @@ def parse_ldd_output(output):
     """Search ldd output for MKL dependencies.
 
     Return (mkl_dirs, mkl_libs)."""
-    
+
     # like libvtkWidgets.so.pv3.12 => not found
     re1 = re.compile(r"\s*(.+) => not found")
     # like "libz.so.1 => /usr/lib/libz.so.1 (0xb7d60000)"
@@ -73,13 +73,13 @@ def parse_ldd_output(output):
             if m_fname:
                 mkl_libs.append(path)
                 mkl_dirs.append(os.path.dirname(path))
-    return mkl_dirs,mkl_libs        
+    return mkl_dirs,mkl_libs
 
 def parse_otool_output(output):
     """Search otool output for MKL dependencies.
 
     Return (mkl_dirs, mkl_libs)."""
-    
+
     # like "@rpath/libmkl_intel.dylib (compatibility version 0.0.0, current version 0.0.0)"
     re1 = re.compile(r"\s*@rpath/(.+) \(.+\)")
     # like "/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 111.0.0)"
@@ -165,7 +165,7 @@ def create_symlinks(lib_dir, extension, mkl_dirs, mkl_libs):
     path = os.path.join(lib_dir,"libiomp5"+extension)
     if os.path.exists(path):
         os.unlink(path)
-        
+
     # Create symlinks to all libs listed in mkl_libs
     for l in mkl_libs:
         if l.startswith("-l"):
@@ -199,7 +199,7 @@ def create_symlinks(lib_dir, extension, mkl_dirs, mkl_libs):
         path = os.path.join(d,fname)
         if os.path.exists(path):
             new_path = os.path.join(lib_dir,fname)
-            if not os.path.exists(path):
+            if not os.path.exists(new_path):
                 os.symlink(path,new_path)
             break
 
@@ -216,7 +216,7 @@ def get_linker_args(lib_dir, extension, mkl_dirs, mkl_libs):
             path = os.path.join(lib_dir,os.path.basename(l))
             linker_args.append(path)
     return linker_args
-        
+
 def download(root,config):
     pass
 
@@ -267,7 +267,7 @@ def prepare(root,config):
             raise Exception("Option 'mkl_source' in section 'MKL' must be "
                             "either 'installed', 'redistributable' or "
                             "'like_numpy'")
-        
+
         mkl_linker_args = get_linker_args(lib_dir,extension,mkl_dirs,mkl_libs)
         blas_libs = ";".join(mkl_linker_args)+";-lpthread"
         lapack_libs = blas_libs
@@ -297,21 +297,21 @@ def prepare(root,config):
             new_setting = ";".join(new_paths)
             tools.setDefaultConfigOption(config,section,'lib',
                                          new_setting,overwrite=True)
-        
+
 def configure(root,config):
     pass
-             
+
 def build(root,config):
     pass
 
 def install(root,config):
     pass
 
-        
-    
-        
-        
-        
-            
 
-        
+
+
+
+
+
+
+
