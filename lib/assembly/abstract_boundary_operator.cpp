@@ -24,6 +24,7 @@
 
 #include "../fiber/explicit_instantiation.hpp"
 
+#include <boost/type_traits/is_complex.hpp>
 #include <stdexcept>
 
 namespace Bempp
@@ -35,7 +36,7 @@ AbstractBoundaryOperator(const shared_ptr<const Space<BasisFunctionType> >& doma
                          const shared_ptr<const Space<BasisFunctionType> >& range,
                          const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
                          const std::string& label,
-                         const Symmetry symmetry) :
+                         int symmetry) :
     m_domain(domain), m_range(range), m_dualToRange(dualToRange),
     m_label(label), m_symmetry(symmetry)
 {
@@ -55,6 +56,13 @@ AbstractBoundaryOperator(const shared_ptr<const Space<BasisFunctionType> >& doma
         throw std::invalid_argument(
                 "AbstractBoundaryOperator::AbstractBoundaryOperator(): "
                 "range and dualToRange must be defined on the same grid");
+
+    if (m_symmetry & AUTO_SYMMETRY)
+        m_symmetry = NO_SYMMETRY;
+    // For real operators Hermitian and symmetric are equivalent
+    if (!boost::is_complex<ResultType>() &&
+            (m_symmetry & (SYMMETRIC | HERMITIAN)))
+        m_symmetry |= SYMMETRIC | HERMITIAN;
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -115,7 +123,7 @@ AbstractBoundaryOperator<BasisFunctionType, ResultType>::label() const
 }
 
 template <typename BasisFunctionType, typename ResultType>
-Symmetry
+int
 AbstractBoundaryOperator<BasisFunctionType, ResultType>::symmetry() const
 {
     return m_symmetry;

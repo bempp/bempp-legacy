@@ -104,7 +104,7 @@ Laplace3dBoundaryOperatorBase(
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         const std::string& label,
-        Symmetry symmetry) :
+        int symmetry) :
     Base(domain, range, dualToRange, label, symmetry), m_impl(new Impl),
     m_id(boost::make_shared<Laplace3dBoundaryOperatorId<BasisFunctionType> >(
              *this))

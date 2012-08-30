@@ -79,8 +79,9 @@ ModifiedHelmholtz3dHypersingularBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         KernelType waveNumber,
-        const std::string& label) :
-    Base(domain, range, dualToRange, waveNumber, label)
+        const std::string& label,
+        int symmetry) :
+    Base(domain, range, dualToRange, waveNumber, label, symmetry)
 {
 }
 
@@ -92,11 +93,13 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         KernelType waveNumber,
-        const std::string& label)
+        const std::string& label,
+        int symmetry)
 {
     typedef ModifiedHelmholtz3dHypersingularBoundaryOperator<BasisFunctionType,KernelType,ResultType> Op;
     return BoundaryOperator<BasisFunctionType, ResultType>(
-                context, boost::make_shared<Op>(domain, range, dualToRange, waveNumber, label));
+                context, boost::make_shared<Op>(domain, range, dualToRange,
+                                                waveNumber, label, symmetry));
 }
 
 
@@ -108,7 +111,7 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
        const shared_ptr<const Space<BASIS> >&, \
        const shared_ptr<const Space<BASIS> >&, \
        KERNEL, \
-       const std::string&)
+       const std::string&, int)
 FIBER_ITERATE_OVER_BASIS_KERNEL_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 #define INSTANTIATE_BASE(BASIS, KERNEL, RESULT) \

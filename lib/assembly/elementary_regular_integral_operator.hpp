@@ -58,8 +58,8 @@ public:
             const shared_ptr<const Space<BasisFunctionType> >& domain,
             const shared_ptr<const Space<BasisFunctionType> >& range,
             const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-            const std::string& label = "",
-            const Symmetry symmetry = NO_SYMMETRY) :
+            const std::string& label,
+            int symmetry) :
        Base(domain, range, dualToRange, label, symmetry) {
     }
 

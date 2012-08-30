@@ -71,8 +71,9 @@ Helmholtz3dAdjointDoubleLayerBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         KernelType waveNumber,
-        const std::string& label) :
-    Base(domain, range, dualToRange, waveNumber, label)
+        const std::string& label,
+        int symmetry) :
+    Base(domain, range, dualToRange, waveNumber, label, symmetry)
 {
 }
 
@@ -86,12 +87,14 @@ helmholtz3dAdjointDoubleLayerBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         typename Helmholtz3dAdjointDoubleLayerBoundaryOperator<BasisFunctionType>::KernelType waveNumber,
-        const std::string& label)
+        const std::string& label,
+        int symmetry)
 {
     typedef typename Helmholtz3dAdjointDoubleLayerBoundaryOperator<BasisFunctionType>::ResultType ResultType;
     typedef Helmholtz3dAdjointDoubleLayerBoundaryOperator<BasisFunctionType> Op;
     return BoundaryOperator<BasisFunctionType, ResultType>(
-                context, boost::make_shared<Op>(domain, range, dualToRange, waveNumber, label));
+                context, boost::make_shared<Op>(domain, range, dualToRange,
+                                                waveNumber, label, symmetry));
 }
 
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS) \
@@ -102,7 +105,7 @@ helmholtz3dAdjointDoubleLayerBoundaryOperator(
        const shared_ptr<const Space<BASIS> >&, \
        const shared_ptr<const Space<BASIS> >&, \
        Helmholtz3dAdjointDoubleLayerBoundaryOperator<BASIS>::KernelType, \
-       const std::string&)
+       const std::string&, int)
 FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 #define INSTANTIATE_BASE(BASIS) \

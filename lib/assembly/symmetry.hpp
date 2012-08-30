@@ -33,7 +33,8 @@ enum Symmetry
 {
     NO_SYMMETRY = 0x0000,
     SYMMETRIC = 0x0001,
-    HERMITIAN = 0x0002
+    HERMITIAN = 0x0002,
+    AUTO_SYMMETRY = 0x8000
 };
 
 } // namespace Bempp

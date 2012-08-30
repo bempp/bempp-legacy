@@ -71,7 +71,7 @@ Laplace3dSingleLayerBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         const std::string& label,
-        Symmetry symmetry) :
+        int symmetry) :
     Base(domain, range, dualToRange, label, symmetry)
 {
 }
@@ -84,7 +84,7 @@ laplace3dSingleLayerBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         const std::string& label,
-        Symmetry symmetry)
+        int symmetry)
 {
    typedef Laplace3dSingleLayerBoundaryOperator<BasisFunctionType, ResultType> Op;
    return BoundaryOperator<BasisFunctionType, ResultType>(
@@ -99,8 +99,7 @@ laplace3dSingleLayerBoundaryOperator(
        const shared_ptr<const Space<BASIS> >&, \
        const shared_ptr<const Space<BASIS> >&, \
        const shared_ptr<const Space<BASIS> >&, \
-       const std::string&, \
-       Symmetry)
+       const std::string&, int)
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 #define INSTANTIATE_BASE(BASIS, RESULT) \
