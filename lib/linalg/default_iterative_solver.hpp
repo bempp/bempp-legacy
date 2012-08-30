@@ -22,6 +22,7 @@
 #define bempp_default_iterative_solver_hpp
 
 #include "../common/common.hpp"
+#include "preconditioner.hpp"
 
 #include "bempp/common/config_trilinos.hpp"
 
@@ -94,13 +95,11 @@ public:
       * The preconditioner is passed on to the Belos Solver.
       *
       * \param[in] preconditioner
-      *   More information about <tt>Thyra::PreconditionerBase</tt> can be found in the
-      *   <a href="http://trilinos.sandia.gov/packages/docs/r10.10/packages/thyra/doc/html/classThyra_1_1PreconditionerBase.html">Thyra documentation</a>.
       *
       */
 
     void setPreconditioner(
-            const Teuchos::RCP<const Thyra::PreconditionerBase<ResultType> >& preconditioner);
+            const Preconditioner<ResultType>& preconditioner);
 
     /** \brief Initialize the parameters of the Belos iterative solver.
       *

@@ -8,7 +8,7 @@
 # Specify the prefix of the installation directory.  BEM++ and its
 # dependencies will be installed in prefix/bempp. Example:
 
-prefix=~/
+prefix=/home/myname/
 
 # Specify how many processes to use for building. Example:
 
@@ -55,41 +55,61 @@ prefix=~/
 
 # enable_mkl=yes
 
-# and specify where MKL is located. There are three possibilities:
+# and specify where the MKL libraries can be found. 
+
+# If the NumPy package in your Python distribution is linked against
+# MKL (for example, you use Enthought Python), uncomment the following
+# line to have the BEM++ installer use the same MKL libraries as
+# NumPy.
+
+# source=like_numpy
+
+# Otherwise, specify manually the location of MKL. You have two options:
 
 # (1) If you want to use an MKL distribution already installed on your disk,
 #     uncomment the following line
 
-# mkl_source=installed
+# source=installed
 
-#     and specify the directories containing the MKL libraries (in
-#     particular libmkl_core and libiomp5) in the following
-#     variable. You may specify several directories at once by
-#     separating them with semicolons. Example:
+#     and specify the directories containing the MKL libraries (such
+#     as libmkl_core and libiomp5) in the following variable. You may
+#     specify several directories at once by separating them with
+#     semicolons. Example:
 
-# mkl_dirs=/opt/intel/mkl/lib/intel64;/opt/intel/lib/intel64
+# dir=/opt/intel/mkl/lib/intel64;/opt/intel/lib/intel64
+
+#     You can also customize the list of MKL libraries to link against
+#     by editing the following variable. The default setting below
+#     (-lmkl_rt) should work for MKL 10.3 or newer. In case of
+#     problems use the Intel MKL Link Line Advisor
+#     (http://software.intel.com/en-us/articles/intel-mkl-link-line-advisor)
+#     to find the setting appropriate for your configuration. You may
+#     specify several libraries at once by separating them with
+#     semicolons.
+
+# lib=-lmkl_rt
 
 # (2) If you have an archive file containing the MKL redistributables
 #     and you want to install MKL specifically for BEM++, uncomment
 #     the following line
 
-# mkl_source=redistributable
+# source=redistributable
 
 #     and set the following variable to the location of the archive
 #     file. Example:
 
-# mkl_tarball=/home/myname/mkl_linux_intel64.tar.gz
+# tarball=/home/myname/mkl_linux_intel64.tar.gz
 
-# (3) If you intend to use the Enthought Python Distribution (EPD) to
-#     run Python scripts employing BEM++, you are strongly recommended
-#     to use the MKL version provided with EPD. Simply uncomment the
-#     following line
+#     You can also customize the list of MKL libraries to link against
+#     by editing the following variable. The default setting below
+#     (-lmkl_rt) should work for MKL 10.3 or newer. In case of
+#     problems use the Intel MKL Link Line Advisor
+#     (http://software.intel.com/en-us/articles/intel-mkl-link-line-advisor)
+#     to find the setting appropriate for your configuration. You may
+#     specify several libraries at once by separating them with
+#     semicolons.
 
-# mkl_source=enthought
-
-#     and run the installer of BEM++ (bempp_setup.py) with Enthought
-#     Python. The location of the MKL libraries provided by EPD will
-#     be determined automatically.
+# lib=-lmkl_rt
 
 [BLAS]
 

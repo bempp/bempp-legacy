@@ -48,6 +48,8 @@ libraries = {'tbb':tbb,
              'ahmed':ahmed
             }
 library_names = sorted(libraries.keys())
+# temporary -- for testing quickly the mkl setup
+library_names = ['mkl'] + library_names[:-3] + library_names[-2:]
 
 
 ###########################
@@ -66,6 +68,7 @@ def module_path():
 
 def downloadDependencies(root,config):
 
+    print "Downloading dependencies"
     checkCreateDir(root+"/contrib/files")
 
     for dep in library_names:
@@ -112,8 +115,10 @@ def prepare(root,config):
     setDefaultConfigOption(config,'Main','root_dir',root)
     setDefaultConfigOption(config,'Main','build_jobs',1)
 
-    # Set empty BLAS/Lapack options if none exists
+    # Set default MKL/libs option
+    setDefaultConfigOption(config,'MKL','lib',"-lmkl_rt")
 
+    # Set empty BLAS/Lapack options if none exist
     setDefaultConfigOption(config,'BLAS','lib',"")
     setDefaultConfigOption(config,'LAPACK','lib',"")
 

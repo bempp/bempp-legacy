@@ -41,9 +41,9 @@ namespace Bempp
  *  This class represents a linear operator whose matrix
  *  \f[ L =
  *      \begin{bmatrix}
- *        L_{11} & L_{12} & \dots  & L_{1n}
- *        L_{21} & L_{22} & \dots  & L_{2n}
- *        \vdots & \vdots & \ddots & \vdots
+ *        L_{11} & L_{12} & \dots  & L_{1n} \\
+ *        L_{21} & L_{22} & \dots  & L_{2n} \\
+ *        \vdots & \vdots & \ddots & \vdots \\
  *        L_{m1} & L_{m2} & \dots  & L_{mn}
  *      \end{bmatrix}
  *  \f]

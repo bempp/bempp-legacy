@@ -208,7 +208,7 @@ def gridFunctionFromSurfaceNormalDependentFunction(
         argumentDimension=3, resultDimension=1):
     return __gridFunctionFromFunctor(
         "SurfaceNormalDependentFunctor",
-        context, space, dualSpace, function, 
+        context, space, dualSpace, function,
         argumentDimension, resultDimension)
 
 def gridFunctionFromSurfaceNormalIndependentFunction(
@@ -268,4 +268,14 @@ def createAcaApproximateLuInverse(operator,delta):
     name = 'createAcaApproximateLuInverse'
     return core.constructObjectTemplatedOnValue(name,operator.valueType(),operator,delta)
 
+def acaDiscreteOperatorToPreconditioner(operator,delta=1E-2):
+    """Return an ACA Preconditioner"""
+    name = 'acaDiscreteOperatorToPreconditioner'
+    return core.constructObjectTemplatedOnValue(name,operator.valueType(),operator,delta)
 
+def acaBlockDiagonalPreconditioner(operators,deltas):
+    """Return a block diagonal ACA Preconditioner"""
+    name = 'acaBlockDiagonalPreconditioner'
+    if len(operators)==0: raise TypeError("acaBlockDiagonalPreconditioner:Array 'operators' must not be empty.")
+    typeName = operators[0].valueType()
+    return core.constructObjectTemplatedOnValue(name,typeName,operators,deltas)
