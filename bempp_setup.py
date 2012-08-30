@@ -74,6 +74,10 @@ def downloadDependencies(root,config):
 def prepareDependencies(root,config):
 
     prefix=config.get('Main','prefix')
+    # Replace ~ with /home/username
+    prefix=os.path.expanduser(prefix)
+    tools.setDefaultConfigOption(config,'Main','prefix',prefix,overwrite=True)
+    
     checkCreateDir(prefix+"/bempp")
     checkCreateDir(prefix+"/bempp/lib")
     checkCreateDir(prefix+"/bempp/include")

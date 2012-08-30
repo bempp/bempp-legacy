@@ -6,7 +6,8 @@ from subprocess import CalledProcessError
 # http://code.activestate.com/recipes/576714-extract-a-compressed-file/
 
 def extract_file(path, to_directory='.'):
-    import tarfile,zipfile,os
+    import tarfile,zipfile
+    path = os.path.expanduser(path)
     if path.endswith('.zip'):
         opener, mode = zipfile.ZipFile, 'r'
     elif path.endswith('.tar.gz') or path.endswith('.tgz'):
