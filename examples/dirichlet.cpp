@@ -130,17 +130,20 @@ int main(int argc, char* argv[])
                 make_shared_from_ref(context),
                 make_shared_from_ref(HminusHalfSpace),
                 make_shared_from_ref(HplusHalfSpace),
-                make_shared_from_ref(HminusHalfSpace));
+                make_shared_from_ref(HminusHalfSpace),
+                "SLP");
     BoundaryOperator<BFT, RT> dlpOp = laplace3dDoubleLayerBoundaryOperator<BFT, RT >(
                 make_shared_from_ref(context),
                 make_shared_from_ref(HplusHalfSpace),
                 make_shared_from_ref(HplusHalfSpace),
-                make_shared_from_ref(HminusHalfSpace));
+                make_shared_from_ref(HminusHalfSpace),
+                "DLP");
     BoundaryOperator<BFT, RT> id = identityOperator<BFT, RT>(
                 make_shared_from_ref(context),
                 make_shared_from_ref(HplusHalfSpace),
                 make_shared_from_ref(HplusHalfSpace),
-                make_shared_from_ref(HminusHalfSpace));
+                make_shared_from_ref(HminusHalfSpace),
+                "I");
 
     // Form the right-hand side sum
 
