@@ -82,7 +82,8 @@ public:
             const shared_ptr<const Space<BasisFunctionType> >& domain,
             const shared_ptr<const Space<BasisFunctionType> >& range,
             const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-            const std::string& label = "");
+            const std::string& label = "",
+            int symmetry = NO_SYMMETRY);
 };
 
 /** \relates Laplace3dAdjointDoubleLayerBoundaryOperator
@@ -103,7 +104,11 @@ public:
  *  \param[in] dualToRange
  *    Function space dual to the the range of the boundary operator.
  *  \param[in] label
- *    Textual label of the operator (optional, used for debugging).
+ *    Textual label of the operator. If empty, a unique label is generated
+ *    automatically.
+ *  \param[in] symmetry
+ *    Symmetry of the weak form of the operator. Can be any combination of the
+ *    flags defined in the enumeration type Symmetry.
  *
  *  None of the shared pointers may be null and the spaces \p range and \p
  *  dualToRange must be defined on the same grid, otherwise an exception is
@@ -115,7 +120,8 @@ laplace3dAdjointDoubleLayerBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const std::string& label = "");
+        const std::string& label = "",
+        int symmetry = NO_SYMMETRY);
 
 } // namespace Bempp
 

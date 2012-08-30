@@ -205,9 +205,16 @@ IdentityOperator<BasisFunctionType, ResultType>::IdentityOperator(
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const std::string& label) :
+        const std::string& label,
+        int symmetry) :
     Base(domain, range, dualToRange, label,
-         domain == dualToRange ? HERMITIAN : NO_SYMMETRY),
+         (symmetry & AUTO_SYMMETRY ?
+              (domain == dualToRange ?
+                   (boost::is_complex<BasisFunctionType>() ?
+                        HERMITIAN :
+                        SYMMETRIC | HERMITIAN) :
+                   NO_SYMMETRY) :
+              symmetry)),
     m_impl(new Impl),
     m_id(boost::make_shared<IdentityOperatorId<BasisFunctionType, ResultType> >(
              *this))
@@ -250,7 +257,8 @@ shared_ptr<DiscreteBoundaryOperator<ResultType> >
 IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormImpl(
         const Context<BasisFunctionType, ResultType>& context) const
 {
-    AutoTimer timer("\nAssembly took ");
+    std::cout << "Assembling operator '" << this->label() << "'" << std::endl;
+    AutoTimer timer("Assembly of operator '" + this->label() + "' took ");
     std::auto_ptr<LocalAssembler> assembler = makeAssembler(
                 context.quadStrategy(), context.assemblyOptions());
     return assembleWeakFormInternalImpl(*assembler, context.assemblyOptions());
@@ -459,12 +467,14 @@ identityOperator(const shared_ptr<const Context<BasisFunctionType, ResultType> >
                  const shared_ptr<const Space<BasisFunctionType> >& domain,
                  const shared_ptr<const Space<BasisFunctionType> >& range,
                  const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-                 const std::string& label)
+                 const std::string& label,
+                 int symmetry)
 {
     typedef IdentityOperator<BasisFunctionType, ResultType> Id;
     return BoundaryOperator<BasisFunctionType, ResultType>(
                 context,
-                boost::make_shared<Id>(domain, range, dualToRange, label));
+                boost::make_shared<Id>(domain, range, dualToRange,
+                                       label, symmetry));
 }
 
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT) \
@@ -474,7 +484,8 @@ identityOperator(const shared_ptr<const Context<BasisFunctionType, ResultType> >
         const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \
-        const std::string&)
+        const std::string&, \
+        int)
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(IdentityOperator);

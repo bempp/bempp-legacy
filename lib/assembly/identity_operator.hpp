@@ -99,17 +99,22 @@ public:
      *  \param[in] dualToRange
      *    Function space dual to the the range of the operator.
      *  \param[in] label
-     *    Textual label of the operator (optional, used for debugging).
+     *    Textual label of the operator. If empty, a unique label is generated
+     *    automatically.
+     *  \param[in] symmetry
+     *    Symmetry of the weak form of the operator. Can be any combination of
+     *    the flags defined in the enumeration type Symmetry.
+     *    If set to AUTO_SYMMETRY (default), the symmetry is determined
+     *    automatically by checking whether its domain and space dual to its
+     *    range are equal. If so, the operator is marked as Hermitian,
+     *    and if the basis functions are real-valued, also as symmetric.
      *
-     *  All the three spaces must be defined on the same grid.
-     *
-     *  The symmetry of the weak form of the operator is determined
-     *  automatically by checking whether its domain and space dual to its
-     *  range are equal. If so, the operator is marked as Hermitian. */
+     *  All the three spaces must be defined on the same grid. */
     IdentityOperator(const shared_ptr<const Space<BasisFunctionType> >& domain,
                      const shared_ptr<const Space<BasisFunctionType> >& range,
                      const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-                     const std::string& label = "");
+                     const std::string& label = "",
+                     int symmetry = AUTO_SYMMETRY);
     IdentityOperator(const IdentityOperator& other);
     virtual ~IdentityOperator();
 
@@ -177,14 +182,22 @@ private:
  *  \param[in] dualToRange
  *    Function space dual to the the range of the identity operator.
  *  \param[in] label
- *    Textual label of the identity operator (optional, used for debugging). */
+ *    Textual label of the identity operator (optional, used for debugging).
+ *  \param[in] symmetry
+ *    Symmetry of the weak form of the operator. Can be any combination of
+ *    the flags defined in the enumeration type Symmetry.
+ *    If set to AUTO_SYMMETRY (default), the symmetry is determined
+ *    automatically by checking whether its domain and space dual to its
+ *    range are equal. If so, the operator is marked as Hermitian.
+ */
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 identityOperator(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
                  const shared_ptr<const Space<BasisFunctionType> >& domain,
                  const shared_ptr<const Space<BasisFunctionType> >& range,
                  const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-                 const std::string& label = "");
+                 const std::string& label = "",
+                 int symmetry = AUTO_SYMMETRY);
 
 } // namespace Bempp
 

@@ -79,26 +79,14 @@ public:
     /** \copydoc ElementaryIntegralOperator::TestKernelTrialIntegral */
     typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
-    /** \brief Constructor.
-     *
-     *  \param[in] domain
-     *    Function space being the domain of the operator.
-     *  \param[in] range
-     *    Function space being the range of the operator.
-     *  \param[in] dualToRange
-     *    Function space dual to the the range of the operator.
-     *  \param[in] label
-     *    Textual label of the operator (optional, used for debugging).
-     *
-     *  None of the shared pointers may be null and the spaces \p range and \p
-     *  dualToRange must be defined on the same grid, otherwise an exception is
-     *  thrown. */
+    /** \copydoc AbstractBoundaryOperator::AbstractBoundaryOperator */
     Laplace3dBoundaryOperatorBase(
             const shared_ptr<const Space<BasisFunctionType> >& domain,
             const shared_ptr<const Space<BasisFunctionType> >& range,
             const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
             const std::string& label = "",
-            Symmetry symmetry = NO_SYMMETRY);
+            int symmetry = NO_SYMMETRY);
+    /** \brief Copy constructor. */
     Laplace3dBoundaryOperatorBase(
             const Laplace3dBoundaryOperatorBase& other);
     virtual ~Laplace3dBoundaryOperatorBase();

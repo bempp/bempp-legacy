@@ -32,9 +32,14 @@ template <typename BasisFunctionType, typename ResultType>
 AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::
 AbstractBoundaryOperatorSum(
         const BoundaryOperator<BasisFunctionType, ResultType>& term1,
-        const BoundaryOperator<BasisFunctionType, ResultType>& term2) :
+        const BoundaryOperator<BasisFunctionType, ResultType>& term2,
+        int symmetry) :
     Base(term1.domain(), term1.range(), term1.dualToRange(),
-         "(" + term1.label() + " + " + term2.label() + ")"),
+         "(" + term1.label() + ") + (" + term2.label() + ")",
+         symmetry & AUTO_SYMMETRY ?
+             (term1.abstractOperator()->symmetry() &
+              term2.abstractOperator()->symmetry()) :
+             symmetry),
     m_term1(term1), m_term2(term2)
 {
     assert(m_term1.abstractOperator());

@@ -35,7 +35,7 @@ ElementaryAbstractBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         const std::string& label,
-        Symmetry symmetry) :
+        int symmetry) :
     Base(domain, range, dualToRange, label, symmetry)
 {
 }

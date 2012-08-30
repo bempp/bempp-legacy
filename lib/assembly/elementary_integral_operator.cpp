@@ -159,7 +159,7 @@ ElementaryIntegralOperator(const shared_ptr<const Space<BasisFunctionType> >& do
                            const shared_ptr<const Space<BasisFunctionType> >& range,
                            const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
                            const std::string& label,
-                           Symmetry symmetry) :
+                           int symmetry) :
     Base(domain, range, dualToRange, label, symmetry)
 {
 }
@@ -204,7 +204,10 @@ ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 assembleWeakFormImpl(
         const Context<BasisFunctionType, ResultType>& context) const
 {
-    AutoTimer timer("\nAssembly took ");
+    std::cout << "Assembling the weak form of operator '"
+              << this->label() << "'" << std::endl;
+    AutoTimer timer("Assembly of the weak form of operator '" +
+                    this->label() + "' took ");
     std::auto_ptr<LocalAssembler> assembler =
             makeAssembler(context.quadStrategy(), context.assemblyOptions());
     return assembleWeakFormInternalImpl(*assembler, context.assemblyOptions());
