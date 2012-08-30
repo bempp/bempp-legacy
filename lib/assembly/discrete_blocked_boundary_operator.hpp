@@ -85,7 +85,7 @@ public:
                                                               double eps=1E-4,
                                                               int maximumRank=50) const{
         throw std::runtime_error("DiscreteBlockedBoundaryOperator::asDiscreteAcaBoundaryOperator:"
-                                 "not implemented for DiscreteBoundaryOperator.");
+                                 "not implemented.");
     }
 
 

@@ -68,7 +68,7 @@ public:
                                                               double eps=1E-4,
                                                               int maximumRank=50) const{
         throw std::runtime_error("DiscreteBoundaryOperatorComposition::asDiscreteAcaBoundaryOperator:"
-                                 "not implemented for DiscreteBoundaryOperator.");
+                                 "not implemented.");
     }
 
 #ifdef WITH_TRILINOS
