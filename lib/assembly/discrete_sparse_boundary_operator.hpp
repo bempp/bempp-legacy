@@ -81,6 +81,14 @@ public:
                           const ValueType alpha,
                           arma::Mat<ValueType>& block) const;
 
+    inline shared_ptr<const DiscreteBoundaryOperator<ValueType> > asDiscreteAcaBoundaryOperator(
+                                                              double eps=1E-4,
+                                                              int maximumRank=50) const {
+        throw std::runtime_error("DiscreteSparseBoundaryOperator::asDiscreteAcaBoundaryOperator:"
+                                 " not implemented.");
+    }
+
+
 #ifdef WITH_TRILINOS
     /** \brief Return a shared pointer to the sparse matrix stored within
      *  this operator.

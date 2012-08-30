@@ -8,6 +8,11 @@
 // TODO
 // %include "discrete_boundary_operator_docstrings.i"
 
+%shared_ptr(boost::enable_shared_from_this<Bempp::DiscreteBoundaryOperator<float> >)
+%shared_ptr(boost::enable_shared_from_this<Bempp::DiscreteBoundaryOperator<double> >)
+%shared_ptr(boost::enable_shared_from_this<Bempp::DiscreteBoundaryOperator<std::complex<float> > >)
+%shared_ptr(boost::enable_shared_from_this<Bempp::DiscreteBoundaryOperator<std::complex<double> > >)
+
 %shared_ptr(Thyra::LinearOpDefaultBase<float>);
 %shared_ptr(Thyra::LinearOpDefaultBase<double>);
 %shared_ptr(Thyra::LinearOpDefaultBase<std::complex<float> >);
@@ -33,6 +38,29 @@ public:
 };
 
 } // namespace Thyra
+
+namespace boost
+{
+
+template <typename T> class enable_shared_from_this;
+
+template <typename T>
+class enable_shared_from_this
+{
+public:
+    virtual ~enable_shared_from_this() = 0;
+};
+}
+
+namespace boost
+{
+%template(enable_shared_from_this_discrete_boundary_operator_float32) enable_shared_from_this<Bempp::DiscreteBoundaryOperator<float> >;
+%template(enable_shared_from_this_discrete_boundary_operator_float64) enable_shared_from_this<Bempp::DiscreteBoundaryOperator<double> >;
+%template(enable_shared_from_this_discrete_boundary_operator_complex64) enable_shared_from_this<Bempp::DiscreteBoundaryOperator<std::complex<float> > >;
+%template(enable_shared_from_this_discrete_boundary_operator_complex128) enable_shared_from_this<Bempp::DiscreteBoundaryOperator<std::complex<double> > >;
+
+}
+
 
 
 namespace Bempp

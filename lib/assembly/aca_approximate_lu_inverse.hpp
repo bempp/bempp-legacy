@@ -69,6 +69,14 @@ public:
                           const ValueType alpha,
                           arma::Mat<ValueType>& block) const;
 
+    inline shared_ptr<const DiscreteBoundaryOperator<ValueType> > asDiscreteAcaBoundaryOperator(
+                                                              double eps=1E-4,
+                                                              int maximumRank=50) const {
+        throw std::runtime_error("AcaApproximateLuInverse::asDiscreteAcaBoundaryOperator:"
+                                 " not implemented.");
+    }
+
+
 #ifdef WITH_TRILINOS
 public:
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
@@ -90,6 +98,8 @@ private:
                                   arma::Col<ValueType>& y_inout,
                                   const ValueType alpha,
                                   const ValueType beta) const;
+
+
 
 private:
     /** \cond PRIVATE */

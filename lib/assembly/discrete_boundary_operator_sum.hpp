@@ -65,6 +65,11 @@ public:
                           const ValueType alpha,
                           arma::Mat<ValueType>& block) const;
 
+    shared_ptr<const DiscreteBoundaryOperator<ValueType> > asDiscreteAcaBoundaryOperator(
+                                                              double eps=1E-4,
+                                                              int maximumRank=50) const;
+
+
 #ifdef WITH_TRILINOS
 public:
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;

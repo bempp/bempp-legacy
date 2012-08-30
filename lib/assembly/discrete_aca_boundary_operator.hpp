@@ -161,6 +161,13 @@ public:
                           const ValueType alpha,
                           arma::Mat<ValueType>& block) const;
 
+    inline shared_ptr<const DiscreteBoundaryOperator<ValueType> > asDiscreteAcaBoundaryOperator(
+                                                              double eps=1E-4,
+                                                              int maximumRank=50) const{
+        return this->shared_from_this(); // this-> needed for template name resolution.
+    }
+
+
     /** \brief Uncompress all blocks of the H-matrix and store them as dense
      *  matrices.
      *

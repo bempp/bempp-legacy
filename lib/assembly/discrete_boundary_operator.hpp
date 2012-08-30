@@ -27,6 +27,8 @@
 #include "../common/shared_ptr.hpp"
 
 #include "transposition_mode.hpp"
+#include "boost/enable_shared_from_this.hpp"
+
 
 #include "../common/armadillo_fwd.hpp"
 
@@ -65,9 +67,9 @@ namespace Bempp
  *    double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
  */
 template <typename ValueType>
-class DiscreteBoundaryOperator
+class DiscreteBoundaryOperator : public boost::enable_shared_from_this<DiscreteBoundaryOperator<ValueType> >
 #ifdef WITH_TRILINOS
-        : public Thyra::LinearOpDefaultBase<ValueType>
+        , public Thyra::LinearOpDefaultBase<ValueType>
 #endif
 {
 public:
@@ -150,6 +152,24 @@ public:
 
         applyBuiltInImpl(trans, x_in, y_inout, alpha, beta);
     }
+
+    /** \brief Return a representation that can be casted to a DiscreteAcaBoundaryOperator
+      *
+      * The conversion only succeeds if all members if the DiscreteOperator itself can be
+      * cast to a DiscreteAcaBoundaryOperator or if it is a linear combination of
+      * DiscreteOperators that can be cast to type DiscreteAcaBoundaryOperator.
+      * Operator compositions are not yet supported by this function.
+      *
+      * \param[in] eps
+      * Accuracy tolerance for H-Matrix addition.
+      * \param[in] maximumRank
+      * maximum rank of blocks to be considered low rank in the case of H-Matrix addition.
+      * \returns A pointer to a DiscreteBoundaryOperator object, which is castable to
+      * DiscreteAcaBoundaryOperator.
+      */
+    virtual shared_ptr<const DiscreteBoundaryOperator<ValueType> > asDiscreteAcaBoundaryOperator(
+                                                              double eps=1E-4,
+                                                              int maximumRank=50) const =0;
 
     /** \brief Write a textual representation of the operator to standard output.
      *

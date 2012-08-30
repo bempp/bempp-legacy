@@ -75,6 +75,14 @@ public:
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > range() const;
 
+    inline shared_ptr<const DiscreteBoundaryOperator<ValueType> > asDiscreteAcaBoundaryOperator(
+                                                              double eps=1E-4,
+                                                              int maximumRank=50) const {
+        throw std::runtime_error("DiscreteInverseSparseBoundaryOperator::asDiscreteAcaBoundaryOperator:"
+                                 " not implemented.");
+    }
+
+
 protected:
     virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
 
