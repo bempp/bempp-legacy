@@ -24,6 +24,11 @@ if (WITH_AHMED)
     set(AHMED_LIB "" CACHE PATH "Full path to AHMED library")
 endif ()
 
+# CUDA support
+if (WITH_CUDA)
+   FIND_PACKAGE(CUDA)
+endif ()
+
 # Dune
 find_library(LIB_DUNE_COMMON dunecommon ${CMAKE_INSTALL_PREFIX}/bempp/lib)
 find_library(LIB_DUNE_GRID dunegrid ${CMAKE_INSTALL_PREFIX}/bempp/lib)

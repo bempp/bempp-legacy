@@ -157,8 +157,8 @@ int main(int argc, char* argv[])
 {
     // Physical parameters, general
     const BFT c0 = 0.3;      // speed of light in vacuum [mm/ps]
-    BFT refind = 1.0; // refractive index
-    BFT alpha = 1.0; //A_Keijzer(refind); // boundary term
+    BFT refind = 1.4; // refractive index
+    BFT alpha = A_Keijzer(refind); // boundary term
     BFT c = c0/refind;       // speed of light in medium [mm/ps]
     BFT freq = 100*1e6; // modulation frequency [Hz]
     BFT omega = 2.0*M_PI * freq*1e-12; // modulation frequency [cycles/ps]
@@ -170,14 +170,14 @@ int main(int argc, char* argv[])
     RT waveNumber1 = sqrt (RT(mua1/kappa1, omega/(c*kappa1))); // outer region
 
     // Physical parameters, inner region
-    BFT mua2 = 0.01; // absorption coefficient
-    BFT mus2 = 1.0;  // scattering coefficient
+    BFT mua2 = 0.02; // absorption coefficient
+    BFT mus2 = 0.5;  // scattering coefficient
     BFT kappa2 = 1.0/(3.0*(mua2+mus2));   // diffusion coefficient
     RT waveNumber2 = sqrt (RT(mua2/kappa2, omega/(c*kappa2))); // outer region
 
     // Physical parameters, inner region
-    BFT mua3 = 0.01; // absorption coefficient
-    BFT mus3 = 1.0;  // scattering coefficient
+    BFT mua3 = 0.005; // absorption coefficient
+    BFT mus3 = 2.0;  // scattering coefficient
     BFT kappa3 = 1.0/(3.0*(mua3+mus3));   // diffusion coefficient
     RT waveNumber3 = sqrt (RT(mua3/kappa3, omega/(c*kappa3))); // outer region
 

@@ -29,11 +29,21 @@ file(GLOB CL_STRING_FILES ${CMAKE_SOURCE_DIR}/lib/fiber/CL/*.str)
 
 # Headers are ignored by make, but their list is used by IDEs
 # like Qt Creator and Visual Studio to generate project file list.
-add_library(bempp SHARED 
+if (WITH_CUDA)
+   file(GLOB_RECURSE CUDA_SOURCES *.cu)
+   cuda_add_library(bempp SHARED 
+	${LIB_SOURCES}
+	${CUDA_SOURCES} 
+	${LIB_HEADERS}
+	${DUNE_HEADERS}
+	)
+else ()
+     add_library(bempp SHARED 
 	${LIB_SOURCES} 
 	${LIB_HEADERS}
 	${DUNE_HEADERS}
 	)
+endif ()
 
 # Add includes and target links
 
@@ -51,6 +61,11 @@ set_property(
    TARGET bempp
    PROPERTY COMPILE_DEFINITIONS_DEBUG TBB_USE_DEBUG=1
    )
+
+# CUDA
+if (WITH_CUDA)
+   include(FindCUDA)
+endif ()
 
 # AHMED
 if (WITH_AHMED)
