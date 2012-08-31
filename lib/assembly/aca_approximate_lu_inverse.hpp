@@ -61,10 +61,6 @@ public:
 
     virtual ~AcaApproximateLuInverse();
 
-    virtual void dump() const;
-
-    virtual arma::Mat<ValueType> asMatrix() const;
-
     virtual unsigned int rowCount() const;
     virtual unsigned int columnCount() const;
 
@@ -72,6 +68,14 @@ public:
                           const std::vector<int>& cols,
                           const ValueType alpha,
                           arma::Mat<ValueType>& block) const;
+
+    inline shared_ptr<const DiscreteBoundaryOperator<ValueType> > asDiscreteAcaBoundaryOperator(
+                                                              double eps=1E-4,
+                                                              int maximumRank=50) const {
+        throw std::runtime_error("AcaApproximateLuInverse::asDiscreteAcaBoundaryOperator:"
+                                 " not implemented.");
+    }
+
 
 #ifdef WITH_TRILINOS
 public:
@@ -95,7 +99,10 @@ private:
                                   const ValueType alpha,
                                   const ValueType beta) const;
 
+
+
 private:
+    /** \cond PRIVATE */
     typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
     typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
@@ -114,6 +121,7 @@ private:
 
     IndexPermutation m_domainPermutation;
     IndexPermutation m_rangePermutation;
+    /** \endcond */
 };
 
 } // namespace Bempp

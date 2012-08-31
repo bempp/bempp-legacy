@@ -50,8 +50,8 @@ public:
      *  Construct a discrete operator representing the sum of the operators
      *  \p term1 and \p term2.
      *
-     *  \note Both operators must have identical dimensions, otherwise
-     *  a <tt>std::invalid_argument</tt> exception is thrown. */
+     *  \note Both operators must be non-null and have identical dimensions,
+     *  otherwise a <tt>std::invalid_argument</tt> exception is thrown. */
     DiscreteBoundaryOperatorSum(const shared_ptr<const Base>& term1,
                                 const shared_ptr<const Base>& term2);
 
@@ -64,6 +64,11 @@ public:
                           const std::vector<int>& cols,
                           const ValueType alpha,
                           arma::Mat<ValueType>& block) const;
+
+    shared_ptr<const DiscreteBoundaryOperator<ValueType> > asDiscreteAcaBoundaryOperator(
+                                                              double eps=1E-4,
+                                                              int maximumRank=50) const;
+
 
 #ifdef WITH_TRILINOS
 public:
@@ -81,7 +86,9 @@ private:
                                   const ValueType alpha,
                                   const ValueType beta) const;
 private:
+    /** \cond PRIVATE */
     shared_ptr<const Base> m_term1, m_term2;
+    /** \endcond */
 };
 
 } // namespace Bempp

@@ -40,6 +40,19 @@ public:
         m_permutedIndices(permutedIndices) {
     }
 
+    bool operator==(const IndexPermutation& other) const {
+        if (m_permutedIndices.size() != other.m_permutedIndices.size())
+            return false;
+        for (size_t i = 0; i < m_permutedIndices.size(); ++i)
+            if (m_permutedIndices[i] != other.m_permutedIndices[i])
+                return false;
+        return true;
+    }
+
+    bool operator!=(const IndexPermutation& other) const {
+        return !operator==(other);
+    }
+
     /** \brief Convert a vector from original to permuted ordering. */
     template <typename ValueType>
     void permuteVector(const arma::Col<ValueType>& original,

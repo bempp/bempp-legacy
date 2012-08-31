@@ -28,6 +28,7 @@
 #endif
 
 #include <boost/shared_ptr.hpp>
+#include <boost/pointer_cast.hpp>
 
 #ifdef __INTEL_COMPILER
 #pragma warning(default:858)
@@ -37,6 +38,7 @@ namespace Fiber
 {
 
 using boost::shared_ptr;
+using boost::dynamic_pointer_cast;
 
 struct null_deleter
 {

@@ -6,13 +6,14 @@
 
 namespace Bempp {
 
+  %warnfilter(362) Helmholtz3dPotentialOperatorBase::operator=;
 
   BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dSingleLayerPotentialOperator)
   BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dDoubleLayerPotentialOperator)
 
   BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dSingleLayerPotentialOperator)
   BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dDoubleLayerPotentialOperator)
-    }
+}
 
 
 

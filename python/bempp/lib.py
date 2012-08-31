@@ -208,7 +208,7 @@ def gridFunctionFromSurfaceNormalDependentFunction(
         argumentDimension=3, resultDimension=1):
     return __gridFunctionFromFunctor(
         "SurfaceNormalDependentFunctor",
-        context, space, dualSpace, function, 
+        context, space, dualSpace, function,
         argumentDimension, resultDimension)
 
 def gridFunctionFromSurfaceNormalIndependentFunction(
@@ -263,6 +263,38 @@ def createBlockedBoundaryOperator(context,structure):
         name, context.basisFunctionType(), context.resultType(),
         structure)
 
+def createAcaApproximateLuInverse(operator,delta):
+    """Return an AcaApproximateLuInverse Object"""
+    name = 'createAcaApproximateLuInverse'
+    return core.constructObjectTemplatedOnValue(name,operator.valueType(),operator,delta)
 
+def acaDiscreteOperatorToPreconditioner(operator,delta=1E-2):
+    """Return an ACA Preconditioner"""
+    name = 'acaDiscreteOperatorToPreconditioner'
+    return core.constructObjectTemplatedOnValue(name,operator.valueType(),operator,delta)
+
+def acaBlockDiagonalPreconditioner(operators,deltas):
+    """Return a block diagonal ACA Preconditioner"""
+    name = 'acaBlockDiagonalPreconditioner'
+    if len(operators)==0: raise TypeError("acaBlockDiagonalPreconditioner:Array 'operators' must not be empty.")
+    typeName = operators[0].valueType()
+    return core.constructObjectTemplatedOnValue(name,typeName,operators,deltas)
+
+def acaOperatorApproximateLuInverse(operator,delta):
+    """Return the LU Approximate inverse of a DiscreteAcaOperator if it represents an H-Matrix"""
+    name = 'acaOperatorApproximateLuInverse'
+    return core.constructObjectTemplatedOnValue(name,operator.valueType(),operator,delta)
+
+def scaledAcaOperator(operator,multiplier):
+    """Scale an H-Matrix by the factor given in multiplier"""
+    name = 'scaledAcaOperator'
+    return core.constructObjectTemplatedOnValue(name,operator.valueType(),operator,multiplier)
+
+def acaOperatorSum(op1,op2,eps,maximumRank):
+    """Add two H-Matrices"""
+    name = 'acaOperatorSum'
+    if (op1.valueType() != op2.valueType()):
+        raise TypeError("acaOperatorSum: ValueTypes of 'op1' and 'op2' do not match.")
+    return core.constructObjectTemplatedOnValue(name,op1.valueType(),op1,op2,eps,maximumRank)
 
 

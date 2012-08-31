@@ -82,7 +82,11 @@ public:
      *  \param[in] waveNumber
      *    Wave number. See \ref helmholtz_3d for its definition.
      *  \param[in] label
-     *    Textual label of the operator (optional, used for debugging).
+     *    Textual label of the operator. If empty, a unique label is generated
+     *    automatically.
+     *  \param[in] symmetry
+     *    Symmetry of the weak form of the operator. Can be any combination of the
+     *    flags defined in the enumeration type Symmetry.
      *
      *  None of the shared pointers may be null and the spaces \p range and \p
      *  dualToRange must be defined on the same grid, otherwise an exception is
@@ -92,7 +96,8 @@ public:
             const shared_ptr<const Space<BasisFunctionType> >& range,
             const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
             KernelType waveNumber,
-            const std::string& label = "");
+            const std::string& label = "",
+            int symmetry = NO_SYMMETRY);
 
     /** \brief Copy constructor. */
     Helmholtz3dBoundaryOperatorBase(

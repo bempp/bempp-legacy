@@ -70,23 +70,26 @@ Laplace3dSingleLayerBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const std::string& label) :
-    Base(domain, range, dualToRange, label)
+        const std::string& label,
+        int symmetry) :
+    Base(domain, range, dualToRange, label, symmetry)
 {
 }
 
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 laplace3dSingleLayerBoundaryOperator(
-       const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-       const shared_ptr<const Space<BasisFunctionType> >& domain,
-       const shared_ptr<const Space<BasisFunctionType> >& range,
-       const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-       const std::string& label)
+        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+        const std::string& label,
+        int symmetry)
 {
    typedef Laplace3dSingleLayerBoundaryOperator<BasisFunctionType, ResultType> Op;
    return BoundaryOperator<BasisFunctionType, ResultType>(
-               context, boost::make_shared<Op>(domain, range, dualToRange, label));
+               context, boost::make_shared<Op>(domain, range, dualToRange,
+                                               label, symmetry));
 }
 
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT) \
@@ -96,7 +99,7 @@ laplace3dSingleLayerBoundaryOperator(
        const shared_ptr<const Space<BASIS> >&, \
        const shared_ptr<const Space<BASIS> >&, \
        const shared_ptr<const Space<BASIS> >&, \
-       const std::string&)
+       const std::string&, int)
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 #define INSTANTIATE_BASE(BASIS, RESULT) \

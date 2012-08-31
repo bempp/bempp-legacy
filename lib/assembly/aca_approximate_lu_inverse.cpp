@@ -97,21 +97,6 @@ AcaApproximateLuInverse<ValueType>::~AcaApproximateLuInverse()
 }
 
 template <typename ValueType>
-void AcaApproximateLuInverse<ValueType>::dump() const
-{
-    throw std::runtime_error("AcaApproximateLuInverse::dump(): "
-                             "not implemented");
-}
-
-template <typename ValueType>
-arma::Mat<ValueType> AcaApproximateLuInverse<ValueType>::asMatrix() const
-{
-    // doesn't make sense for this operator
-    throw std::runtime_error("AcaApproximateLuInverse::asMatrix(): "
-                             "not implemented");
-}
-
-template <typename ValueType>
 unsigned int AcaApproximateLuInverse<ValueType>::rowCount() const
 {
 #ifdef WITH_TRILINOS

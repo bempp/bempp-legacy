@@ -37,7 +37,17 @@ namespace Bempp
 
 /** \ingroup discrete_boundary_operators
  *  \brief Discrete boundary operator composed of multiple blocks stored separately.
- */
+ *
+ *  This class represents a linear operator whose matrix
+ *  \f[ L =
+ *      \begin{bmatrix}
+ *        L_{11} & L_{12} & \dots  & L_{1n} \\
+ *        L_{21} & L_{22} & \dots  & L_{2n} \\
+ *        \vdots & \vdots & \ddots & \vdots \\
+ *        L_{m1} & L_{m2} & \dots  & L_{mn}
+ *      \end{bmatrix}
+ *  \f]
+ *  is composed of \f$m \times n\f$ discrete boundary operators \f$L_{ij}\f$. */
 template <typename ValueType>
 class DiscreteBlockedBoundaryOperator : public DiscreteBoundaryOperator<ValueType>
 {
@@ -46,7 +56,18 @@ public:
 
     /** \brief Constructor.
      *
-     *   */
+     *  \param[in] blocks
+     *    2D array of shared pointers to the discrete boundary operators
+     *    \f$L_{ij}\f$ making up the newly constructed blocked operator. A null
+     *    shared pointer is equivalent to a discrete boundary operator with
+     *    zero matrix.
+     *  \param[in] rowCounts
+     *    Vector whose <em>i</em>th element is the number of rows of the matrix
+     *    of each operator in <em>i</em>th row of the array \p blocks.
+     *  \param[in] columnCounts
+     *    Vector whose <em>i</em>th element is the number of columns of the
+     *    matrix of each operator in <em>i</em>th column of the array \p blocks.
+     */
     DiscreteBlockedBoundaryOperator(
             const Fiber::_2dArray<shared_ptr<const Base> >& blocks,
             const std::vector<size_t>& rowCounts,
@@ -59,6 +80,14 @@ public:
                           const std::vector<int>& cols,
                           const ValueType alpha,
                           arma::Mat<ValueType>& block) const;
+
+    inline shared_ptr<const DiscreteBoundaryOperator<ValueType> > asDiscreteAcaBoundaryOperator(
+                                                              double eps=1E-4,
+                                                              int maximumRank=50) const{
+        throw std::runtime_error("DiscreteBlockedBoundaryOperator::asDiscreteAcaBoundaryOperator:"
+                                 "not implemented.");
+    }
+
 
 #ifdef WITH_TRILINOS
 public:
@@ -76,6 +105,7 @@ private:
                                   const ValueType alpha,
                                   const ValueType beta) const;
 private:
+    /** \cond PRIVATE */
     Fiber::_2dArray<shared_ptr<const Base> > m_blocks;
     std::vector<size_t> m_rowCounts;
     std::vector<size_t> m_columnCounts;
@@ -83,6 +113,7 @@ private:
     Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > m_domainSpace;
     Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > m_rangeSpace;
 #endif
+    /** \endcond */
 };
 
 } // namespace Bempp

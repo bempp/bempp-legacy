@@ -13,7 +13,7 @@ also work. However, Python visualization depends on Mayavi being available.
 
 To build the library the following steps are necessary:
 
-1.) Copy the file bempp_setup.cfg.template into another file (i.e. my_config.cfg)
+1.) Copy the file bempp_setup.cfg.template into another file (e.g. my_config.cfg)
 and adapt the configuration variables. 
 
 2.) Update the installation directory and other options as needed. You may wish to at least change
@@ -26,7 +26,7 @@ the following options:
       "file_name" in the AHMED section to the location of the AHMED installer file. You can download the
       file from http://bebendorf.ins.uni-bonn.de/AHMED.html.
 
-3.) Run the commnad
+3.) Run the command
 
     python bempp_setup.py -c my_config.cfg
 
@@ -48,7 +48,7 @@ the following options:
     examples have been built and written to "<build_dir>/examples" after a succesful installation.
 
 6.) If you have doxygen you can generate a class documentation by going into <build_dir> and run make doc
-    to generate the html class documentation, which is then available under <build_dir>/doc/html/index.html
+    to generate the html class documentation, which is then available under <build_dir>/doc/html/index.html. You are advised to use a recent version of Doxygen (e.g. 1.8.2), since older versions do not always parse C++ templates properly.
 
 The library is not yet officially released. We are still working on the documentation and smaller
 issues with the code. If you want to try it and run into problems please let us now.

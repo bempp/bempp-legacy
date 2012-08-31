@@ -23,20 +23,38 @@
 #include "context.hpp"
 #include "scaled_discrete_boundary_operator.hpp"
 
+#include "../common/complex_aux.hpp"
 #include "../common/to_string.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 namespace Bempp
 {
 
+namespace {
+
+template <typename ResultType>
+int autoSymmetry(int origSymmetry, ResultType weight)
+{
+    if (origSymmetry & HERMITIAN)
+        if (imagPart(weight) != 0.)
+            return origSymmetry & ~HERMITIAN;
+    return origSymmetry;
+}
+
+} // namespace Bempp
+
 template <typename BasisFunctionType, typename ResultType>
 ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType>::
 ScaledAbstractBoundaryOperator(
         ResultType weight,
-        const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp) :
+        const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
+        int symmetry) :
     Base(boundaryOp.domain(),
          boundaryOp.range(), boundaryOp.dualToRange(),
-         "(" + toString(weight) + " * " + boundaryOp.label() + ")"),
+         "" + toString(weight) + " * (" + boundaryOp.label() + ")",
+         symmetry & AUTO_SYMMETRY ?
+             autoSymmetry(boundaryOp.abstractOperator()->symmetry(), weight) :
+             symmetry),
     m_weight(weight), m_operator(boundaryOp)
 {
 }

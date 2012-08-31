@@ -67,6 +67,10 @@ public:
      *
      *  \param[in] outer Operator \f$L_1\f$.
      *  \param[in] inner Operator \f$L_2\f$.
+     *  \param[in] symmetry
+     *    (Optional) Symmetry of the weak form of the composite operator.
+     *    Can be any combination of the flags defined in the enumeration type
+     *    Symmetry.
      *
      *  \note Both operators must be initialized and the range space of the
      *  operator \p inner must be identical with the domain space of the
@@ -76,7 +80,8 @@ public:
      */
     AbstractBoundaryOperatorComposition(
             const BoundaryOperator<BasisFunctionType, ResultType>& outer,
-            const BoundaryOperator<BasisFunctionType, ResultType>& inner);
+            const BoundaryOperator<BasisFunctionType, ResultType>& inner,
+            int symmetry = NO_SYMMETRY);
 
     virtual bool isLocal() const;
 

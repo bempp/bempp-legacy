@@ -25,12 +25,15 @@
 #include "create_regular_grid.hpp"
 
 #include "assembly/assembly_options.hpp"
+#include "assembly/discrete_aca_boundary_operator.hpp"
 #include "assembly/discrete_boundary_operator.hpp"
 #include "assembly/boundary_operator.hpp"
 #include "assembly/context.hpp"
 #include "assembly/identity_operator.hpp"
 #include "assembly/numerical_quadrature_strategy.hpp"
 
+#include "assembly/laplace_3d_single_layer_boundary_operator.hpp"
+#include "assembly/laplace_3d_hypersingular_boundary_operator.hpp"
 #include "assembly/modified_helmholtz_3d_single_layer_boundary_operator.hpp"
 
 #include "grid/grid.hpp"
@@ -196,6 +199,173 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
     
     BOOST_CHECK(check_arrays_are_close<RT>(y, expected, 
+                                           10. * std::numeric_limits<CT>::epsilon()));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(acaOperatorSum_works_correctly_for_nonsymmetric_operators, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    std::auto_ptr<Grid> grid = createRegularTriangularGrid(10, 3);
+
+    shared_ptr<Space<BFT> > pwiseConstants(
+        new PiecewiseConstantScalarSpace<BFT>(*grid));
+    shared_ptr<Space<BFT> > pwiseLinears(
+        new PiecewiseLinearContinuousScalarSpace<BFT>(*grid));
+    pwiseConstants->assignDofs();
+    pwiseLinears->assignDofs();
+
+    AssemblyOptions assemblyOptions;
+    assemblyOptions.switchToAcaMode(AcaOptions());
+    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
+        new NumericalQuadratureStrategy<BFT, RT>);
+    shared_ptr<Context<BFT, RT> > context(
+        new Context<BFT, RT>(quadStrategy, assemblyOptions));
+
+    const RT waveNumber = initWaveNumber<RT>();
+
+    BoundaryOperator<BFT, RT> op =
+            modifiedHelmholtz3dSingleLayerBoundaryOperator<BFT, RT, RT>(
+        context, pwiseConstants, pwiseConstants, pwiseLinears, waveNumber);
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = op.weakForm();
+
+    BoundaryOperator<BFT, RT> op2 =
+            laplace3dSingleLayerBoundaryOperator<BFT, RT>(
+                context, pwiseConstants, pwiseConstants, pwiseLinears);
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop2 = op2.weakForm();
+
+    arma::Mat<RT> expected = dop->asMatrix() + dop2->asMatrix();
+
+    const double eps = 1e-4;
+    shared_ptr<const DiscreteBoundaryOperator<RT> > acaSum =
+            acaOperatorSum(dop,
+                           dop2,
+                           eps, UINT_MAX);
+
+    BOOST_CHECK(check_arrays_are_close<RT>(acaSum->asMatrix(), expected,
+                                           eps));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(acaOperatorSum_works_correctly_for_real_hermitian_operators,
+                              ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    std::auto_ptr<Grid> grid = createRegularTriangularGrid(10, 3);
+
+    shared_ptr<Space<BFT> > pwiseLinears(
+        new PiecewiseLinearContinuousScalarSpace<BFT>(*grid));
+    pwiseLinears->assignDofs();
+
+    AssemblyOptions assemblyOptions;
+    assemblyOptions.switchToAcaMode(AcaOptions());
+    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
+        new NumericalQuadratureStrategy<BFT, RT>);
+    shared_ptr<Context<BFT, RT> > context(
+        new Context<BFT, RT>(quadStrategy, assemblyOptions));
+
+    BoundaryOperator<BFT, RT> op =
+            laplace3dSingleLayerBoundaryOperator<BFT, RT>(
+                context, pwiseLinears, pwiseLinears, pwiseLinears, "SLP",
+                Symmetry(SYMMETRIC | HERMITIAN));
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = op.weakForm();
+
+    BoundaryOperator<BFT, RT> op2 =
+            laplace3dHypersingularBoundaryOperator<BFT, RT>(
+                context, pwiseLinears, pwiseLinears, pwiseLinears, "Hyp",
+                Symmetry(SYMMETRIC | HERMITIAN));
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop2 = op2.weakForm();
+
+    arma::Mat<RT> expected = dop->asMatrix() + dop2->asMatrix();
+
+    const double eps = 1e-4;
+    shared_ptr<const DiscreteBoundaryOperator<RT> > acaSum =
+            acaOperatorSum(dop,
+                           dop2,
+                           eps, UINT_MAX);
+
+    BOOST_CHECK(check_arrays_are_close<RT>(acaSum->asMatrix(), expected,
+                                           eps));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(scaledAcaOperator_works_correctly_for_nonsymmetric_operators,
+                              ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    std::auto_ptr<Grid> grid = createRegularTriangularGrid(10, 3);
+
+    shared_ptr<Space<BFT> > pwiseConstants(
+        new PiecewiseConstantScalarSpace<BFT>(*grid));
+    shared_ptr<Space<BFT> > pwiseLinears(
+        new PiecewiseLinearContinuousScalarSpace<BFT>(*grid));
+    pwiseConstants->assignDofs();
+    pwiseLinears->assignDofs();
+
+    AssemblyOptions assemblyOptions;
+    assemblyOptions.switchToAcaMode(AcaOptions());
+    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
+        new NumericalQuadratureStrategy<BFT, RT>);
+    shared_ptr<Context<BFT, RT> > context(
+        new Context<BFT, RT>(quadStrategy, assemblyOptions));
+
+    const RT waveNumber = initWaveNumber<RT>();
+
+    BoundaryOperator<BFT, RT> op =
+            modifiedHelmholtz3dSingleLayerBoundaryOperator<BFT, RT, RT>(
+        context, pwiseConstants, pwiseConstants, pwiseLinears, waveNumber);
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = op.weakForm();
+
+    arma::Mat<RT> expected = waveNumber * dop->asMatrix();
+
+    shared_ptr<const DiscreteBoundaryOperator<RT> > scaled =
+            scaledAcaOperator(dop,
+                              waveNumber);
+
+    BOOST_CHECK(check_arrays_are_close<RT>(scaled->asMatrix(), expected,
+                                           10. * std::numeric_limits<CT>::epsilon()));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(scaledAcaOperator_works_correctly_for_real_hermitian_operators,
+                              ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    std::auto_ptr<Grid> grid = createRegularTriangularGrid(10, 3);
+
+    shared_ptr<Space<BFT> > pwiseLinears(
+        new PiecewiseLinearContinuousScalarSpace<BFT>(*grid));
+    pwiseLinears->assignDofs();
+
+    AssemblyOptions assemblyOptions;
+    assemblyOptions.switchToAcaMode(AcaOptions());
+    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
+        new NumericalQuadratureStrategy<BFT, RT>);
+    shared_ptr<Context<BFT, RT> > context(
+        new Context<BFT, RT>(quadStrategy, assemblyOptions));
+
+    BoundaryOperator<BFT, RT> op =
+            laplace3dSingleLayerBoundaryOperator<BFT, RT>(
+                context, pwiseLinears, pwiseLinears, pwiseLinears, "SLP",
+                Symmetry(SYMMETRIC | HERMITIAN));
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = op.weakForm();
+
+    const RT multiplier = 5.25;
+    arma::Mat<RT> expected = multiplier * dop->asMatrix();
+
+    shared_ptr<const DiscreteBoundaryOperator<RT> > scaled =
+            scaledAcaOperator(dop,
+                              multiplier);
+
+    BOOST_CHECK(check_arrays_are_close<RT>(scaled->asMatrix(), expected,
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
 

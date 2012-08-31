@@ -46,7 +46,7 @@
 #include "grid/grid_factory.hpp"
 #include "grid/grid.hpp"
 
-#include "linalg/aca_preconditioner_factory.hpp"
+#include "linalg/preconditioner.hpp"
 #include "linalg/default_iterative_solver.hpp"
 #include "linalg/default_direct_solver.hpp"
 
@@ -130,17 +130,20 @@ int main(int argc, char* argv[])
                 make_shared_from_ref(context),
                 make_shared_from_ref(HminusHalfSpace),
                 make_shared_from_ref(HplusHalfSpace),
-                make_shared_from_ref(HminusHalfSpace));
+                make_shared_from_ref(HminusHalfSpace),
+                "SLP");
     BoundaryOperator<BFT, RT> dlpOp = laplace3dDoubleLayerBoundaryOperator<BFT, RT >(
                 make_shared_from_ref(context),
                 make_shared_from_ref(HplusHalfSpace),
                 make_shared_from_ref(HplusHalfSpace),
-                make_shared_from_ref(HminusHalfSpace));
+                make_shared_from_ref(HminusHalfSpace),
+                "DLP");
     BoundaryOperator<BFT, RT> id = identityOperator<BFT, RT>(
                 make_shared_from_ref(context),
                 make_shared_from_ref(HplusHalfSpace),
                 make_shared_from_ref(HplusHalfSpace),
-                make_shared_from_ref(HminusHalfSpace));
+                make_shared_from_ref(HminusHalfSpace),
+                "I");
 
     // Form the right-hand side sum
 

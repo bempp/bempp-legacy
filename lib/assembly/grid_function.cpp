@@ -29,6 +29,7 @@
 #include "local_assembler_construction_helper.hpp"
 
 #include "../common/stl_io.hpp"
+#include "../common/complex_aux.hpp"
 #include "../fiber/collection_of_3d_arrays.hpp"
 #include "../fiber/basis.hpp"
 #include "../fiber/basis_data.hpp"
@@ -164,42 +165,6 @@ shared_ptr<arma::Col<ResultType> > calculateProjections(
                 openClHandler);
 
     return reallyCalculateProjections(dualSpace, *assembler, options);
-}
-
-template <typename T>
-inline typename ScalarTraits<T>::RealType realPart(const T& x)
-{
-    return x;
-}
-
-template <>
-inline float realPart(const std::complex<float>& x)
-{
-    return x.real();
-}
-
-template <>
-inline double realPart(const std::complex<double>& x)
-{
-    return x.real();
-}
-
-template <typename T>
-inline typename ScalarTraits<T>::RealType imagPart(const T& x)
-{
-    return 0.;
-}
-
-template <>
-inline float imagPart(const std::complex<float>& x)
-{
-    return x.imag();
-}
-
-template <>
-inline double imagPart(const std::complex<double>& x)
-{
-    return x.imag();
 }
 
 } // namespace
@@ -385,7 +350,7 @@ GridFunction<BasisFunctionType, ResultType>::coefficients() const
         assert(m_projections);
         // Calculate the (pseudo)inverse mass matrix
         BoundaryOp id = identityOperator(
-            m_context, m_space, m_space, m_dualSpace, "I");
+            m_context, m_space, m_space, m_dualSpace);
         BoundaryOp pinvId = pseudoinverse(id);
         
         shared_ptr<arma::Col<ResultType> > newCoefficients( 
@@ -427,7 +392,7 @@ GridFunction<BasisFunctionType, ResultType>::projections() const
     if (!m_projections) {
         // Calculate the mass matrix
         BoundaryOp id = identityOperator(
-            m_context, m_space, m_space, m_dualSpace, "I");
+            m_context, m_space, m_space, m_dualSpace);
         
         shared_ptr<arma::Col<ResultType> > newProjections( 
             new arma::Col<ResultType>(m_dualSpace->globalDofCount()));
@@ -471,8 +436,7 @@ GridFunction<BasisFunctionType, ResultType>::L2Norm() const
     const arma::Col<ResultType>& coeffs = coefficients();
 
     // Calculate the mass matrix
-    BoundaryOp id = identityOperator(
-        m_context, m_space, m_space, m_space, "M");
+    BoundaryOp id = identityOperator(m_context, m_space, m_space, m_space);
     shared_ptr<const DiscreteBoundaryOperator<ResultType> > massMatrix =
             id.weakForm();
 

@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
 project(test_blas)
-enable_language(Fortran) # for BLAS
 
 # BLAS
 set(BLAS_LIBRARIES "" CACHE STRING "Semicolon-separated list of full paths to BLAS libs")

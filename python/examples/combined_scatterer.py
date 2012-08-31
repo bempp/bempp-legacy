@@ -1,5 +1,9 @@
 # Scattering from a sphere using a combined direct formulation
 
+# Help Python find the bempp module
+import sys
+sys.path.append("..")
+
 # Import numpy and library modules
 
 import numpy as np 

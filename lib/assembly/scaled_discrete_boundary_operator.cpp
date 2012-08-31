@@ -1,4 +1,5 @@
 #include "scaled_discrete_boundary_operator.hpp"
+#include "discrete_aca_boundary_operator.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -43,6 +44,17 @@ void ScaledDiscreteBoundaryOperator<ValueType>::addBlock(
 {
     m_operator->addBlock(rows, cols, m_multiplier * alpha, block);
 }
+
+template<typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> >
+ScaledDiscreteBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
+                                                          double eps,
+                                                          int maximumRank) const{
+    shared_ptr<const DiscreteBoundaryOperator<ValueType> > acaOp =
+            m_operator->asDiscreteAcaBoundaryOperator(eps,maximumRank);
+    return scaledAcaOperator(acaOp,m_multiplier);
+}
+
 
 #ifdef WITH_TRILINOS
 template <typename ValueType>

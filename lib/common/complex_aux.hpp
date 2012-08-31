@@ -18,34 +18,50 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_aca_preconditioner_factory_hpp
-#define	bempp_aca_preconditioner_factory_hpp
+#ifndef bempp_complex_aux_hpp
+#define bempp_complex_aux_hpp
 
-#include "../common/common.hpp"
-
-#include "bempp/common/config_trilinos.hpp"
-
-#ifdef WITH_TRILINOS
-
-#include "Teuchos_RCP.hpp"
-#include "Thyra_PreconditionerBase.hpp"
-#include "../assembly/discrete_boundary_operator.hpp"
+#include "scalar_traits.hpp"
 
 namespace Bempp
 {
 
-template<typename ValueType>
-class AcaPreconditionerFactory
+template <typename T>
+inline typename ScalarTraits<T>::RealType realPart(const T& x)
 {
-public:
-    static Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> >
-    acaOperatorToPreconditioner
-    (const DiscreteBoundaryOperator<ValueType>& discreteOperator, const double delta=0.1);
-};
+    return x;
+}
+
+template <>
+inline float realPart(const std::complex<float>& x)
+{
+    return x.real();
+}
+
+template <>
+inline double realPart(const std::complex<double>& x)
+{
+    return x.real();
+}
+
+template <typename T>
+inline typename ScalarTraits<T>::RealType imagPart(const T& x)
+{
+    return 0.;
+}
+
+template <>
+inline float imagPart(const std::complex<float>& x)
+{
+    return x.imag();
+}
+
+template <>
+inline double imagPart(const std::complex<double>& x)
+{
+    return x.imag();
+}
 
 } // namespace Bempp
 
-#endif /* WITH_TRILINOS */
-
 #endif
-

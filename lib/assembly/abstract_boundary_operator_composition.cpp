@@ -44,9 +44,11 @@ template <typename BasisFunctionType, typename ResultType>
 AbstractBoundaryOperatorComposition<BasisFunctionType, ResultType>::
 AbstractBoundaryOperatorComposition(
         const BoundaryOperator<BasisFunctionType, ResultType>& outer,
-        const BoundaryOperator<BasisFunctionType, ResultType>& inner) :
+        const BoundaryOperator<BasisFunctionType, ResultType>& inner,
+        int symmetry) :
     Base(outer.domain(), outer.range(), outer.dualToRange(),
-         "(" + outer.label() + " * " + inner.label() + ")"),
+         "(" + outer.label() + ") * (" + inner.label() + ")",
+         symmetry),
     m_outer(outer), m_inner(inner)
 {
     assert(m_outer.abstractOperator());
@@ -86,8 +88,7 @@ assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) cons
                 // will go out of scope at the end of this function anyway.
                 // All we need is a weak form.
                 make_shared_from_ref(context),
-                m_inner.range(), m_inner.range(), m_inner.dualToRange(),
-                "I");
+                m_inner.range(), m_inner.range(), m_inner.dualToRange());
     BoundaryOp pinvId = pseudoinverse(id);
 
     shared_ptr<const DiscreteLinOp> temp =

@@ -8,6 +8,11 @@
 // TODO
 // %include "discrete_boundary_operator_docstrings.i"
 
+%shared_ptr(boost::enable_shared_from_this<Bempp::DiscreteBoundaryOperator<float> >)
+%shared_ptr(boost::enable_shared_from_this<Bempp::DiscreteBoundaryOperator<double> >)
+%shared_ptr(boost::enable_shared_from_this<Bempp::DiscreteBoundaryOperator<std::complex<float> > >)
+%shared_ptr(boost::enable_shared_from_this<Bempp::DiscreteBoundaryOperator<std::complex<double> > >)
+
 %shared_ptr(Thyra::LinearOpDefaultBase<float>);
 %shared_ptr(Thyra::LinearOpDefaultBase<double>);
 %shared_ptr(Thyra::LinearOpDefaultBase<std::complex<float> >);
@@ -34,6 +39,29 @@ public:
 
 } // namespace Thyra
 
+namespace boost
+{
+
+template <typename T> class enable_shared_from_this;
+
+template <typename T>
+class enable_shared_from_this
+{
+public:
+    virtual ~enable_shared_from_this() = 0;
+};
+}
+
+namespace boost
+{
+%template(enable_shared_from_this_discrete_boundary_operator_float32) enable_shared_from_this<Bempp::DiscreteBoundaryOperator<float> >;
+%template(enable_shared_from_this_discrete_boundary_operator_float64) enable_shared_from_this<Bempp::DiscreteBoundaryOperator<double> >;
+%template(enable_shared_from_this_discrete_boundary_operator_complex64) enable_shared_from_this<Bempp::DiscreteBoundaryOperator<std::complex<float> > >;
+%template(enable_shared_from_this_discrete_boundary_operator_complex128) enable_shared_from_this<Bempp::DiscreteBoundaryOperator<std::complex<double> > >;
+
+}
+
+
 
 namespace Bempp
 {
@@ -41,6 +69,7 @@ namespace Bempp
 DECLARE_TEMPLATE_VALUE_METHOD_AUTO_DOCSTRING(DiscreteBoundaryOperator, apply);
 
 BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator);
+BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
 
  %warnfilter(315) DiscreteBoundaryOperator;
 
@@ -139,10 +168,6 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator);
             arma::Col< ValueType > tmp1 = mat_in.unsafe_col(i);
             arma::Col< ValueType > tmp2 = mat_out.unsafe_col(i);
             op->apply(Bempp::NO_TRANSPOSE,tmp1,tmp2,1.0,0.0);
-        }
-        for (int i=0;i<mat_out.n_rows;i++){
-            for (int j=0;j<mat_out.n_cols;j++) std::cout << mat_out(i,j) << " ";
-            std::cout << std::endl;
         }
 
     }

@@ -121,8 +121,10 @@ Helmholtz3dBoundaryOperatorBase(
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         KernelType waveNumber,
-        const std::string& label) :
-    Base(domain, range, dualToRange, label), m_impl(new Impl(waveNumber)),
+        const std::string& label,
+        int symmetry) :
+    Base(domain, range, dualToRange, label, symmetry),
+    m_impl(new Impl(waveNumber)),
     m_id(boost::make_shared<Helmholtz3dBoundaryOperatorId<BasisFunctionType> >(
              *this))
 {

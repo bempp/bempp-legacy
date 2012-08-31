@@ -96,7 +96,7 @@ struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
 
             BoundaryOp id = identityOperator(
                         boundaryOp.context(), boundaryOp.range(), boundaryOp.range(),
-                        boundaryOp.dualToRange(), "I");
+                        boundaryOp.dualToRange());
             pinvId = pseudoinverse(id);
             shared_ptr<DiscreteBoundaryOperator<ResultType> > totalBoundaryOp =
                     boost::make_shared<DiscreteBoundaryOperatorComposition<ResultType> >(
@@ -156,7 +156,7 @@ struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
 
                 BoundaryOperator<BasisFunctionType, ResultType> id = identityOperator(
                     context, boundaryOp.range(row), boundaryOp.range(row),
-                    boundaryOp.dualToRange(row), "I");
+                    boundaryOp.dualToRange(row));
                 pinvIdStructure.setBlock(row, row, pseudoinverse(id));
             }                                   
             pinvId = BlockedBoundaryOperator<BasisFunctionType, ResultType>(
@@ -210,9 +210,9 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::~DefaultIterativeSolver()
 
 template <typename BasisFunctionType, typename ResultType>
 void DefaultIterativeSolver<BasisFunctionType, ResultType>::setPreconditioner(
-        const Teuchos::RCP<const Thyra::PreconditionerBase<ResultType> >& preconditioner)
+        const Preconditioner<ResultType>& preconditioner)
 {
-    m_impl->solverWrapper->setPreconditioner(preconditioner);
+    m_impl->solverWrapper->setPreconditioner(preconditioner.get());
 }
 
 template <typename BasisFunctionType, typename ResultType>

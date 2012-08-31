@@ -50,10 +50,16 @@ public:
      *
      *  Construct the boundary operator \f$\alpha L\f$, where
      *  \f$\alpha\f$ is the scalar \p weight and \f$L\f$ is the operator
-     *  represented by \p boundaryOp. */
+     *  represented by \p boundaryOp.
+     *
+     *  By default the symmetry of the weak form of the resulting operator is
+     *  determined automatically. It can be set manually via the parameter \p
+     *  symmetry, which can be any combination of the flags defined in the
+     *  enumeration type Symmetry. */
     ScaledAbstractBoundaryOperator(
             ResultType weight,
-            const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp);
+            const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
+            int symmetry = AUTO_SYMMETRY);
 
     virtual bool isLocal() const;
 

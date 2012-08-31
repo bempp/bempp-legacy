@@ -1,6 +1,9 @@
 include_directories(${PROJECT_SOURCE_DIR}/lib)
 
 find_package(SWIG REQUIRED)
+if (SWIG_VERSION VERSION_LESS 2.0.4)
+    message(FATAL_ERROR "Swig version 2.0.4 is required to compile BEM++ Python wrappers")
+endif ()
 include(${SWIG_USE_FILE})
 
 # The following are set by the installer script
