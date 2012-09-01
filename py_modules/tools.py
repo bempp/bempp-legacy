@@ -81,7 +81,8 @@ def pythonInfo():
         lib = lib_no_suffix+".a"
         if not os.path.isfile(lib):
             raise Exception("Could not find Python library in "+sys.prefix+"/lib/")
-    include = sys.prefix+"/include/python"+str(sys.version_info.major)+"."+str(sys.version_info.minor)
+    include = (sys.prefix+"/include/python"+
+               str(sys.version_info[0])+"."+str(sys.version_info[1]))
     return (exe,lib,include)
 
 def download(fname,url,dir):
