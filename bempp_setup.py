@@ -190,7 +190,7 @@ if __name__ == "__main__":
             bempp.prepare(root,config)
             testBlas(root,config)
             testLapack(root,config)
-        except Exception as e:
+        except Exception, e:
             print "Configuration failed with error message: \n"+ e.message
             #sys.exit(1)
             raise
