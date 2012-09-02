@@ -5,6 +5,13 @@
     MACRO(std::complex<double> )
 %enddef // BEMPP_ITERATE_OVER_TYPES
 
+%define BEMPP_ITERATE_OVER_RESULT_TYPES(MACRO)
+    MACRO(float)
+    MACRO(double)
+    MACRO(std::complex<float> )
+    MACRO(std::complex<double> )
+%enddef // BEMPP_ITERATE_OVER_TYPES
+
 %define BEMPP_ITERATE_OVER_BASIS_TYPES(MACRO)
     MACRO(float, float32)
     MACRO(double, float64)

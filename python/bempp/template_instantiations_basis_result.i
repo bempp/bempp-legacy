@@ -60,3 +60,11 @@
     }
 %enddef // BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS_AND_RESULT
 
+%define BEMPP_DECLARE_SHARED_PTR_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(CLASS)
+    %shared_ptr(CLASS<float, float>);
+    %shared_ptr(CLASS<float, std::complex<float> >);
+    %shared_ptr(CLASS<std::complex<float>, std::complex<float> >);
+    %shared_ptr(CLASS<double, double>);
+    %shared_ptr(CLASS<double, std::complex<double> >)
+    %shared_ptr(CLASS<std::complex<double>, std::complex<double> >)
+%enddef            

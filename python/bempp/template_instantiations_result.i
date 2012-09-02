@@ -39,3 +39,9 @@ template <typename ResultType> class CLASS;
     }
 %enddef // BEMPP_EXTEND_CLASS_TEMPLATED_ON_RESULT
 
+%define BEMPP_DECLARE_SHARED_PTR_CLASS_TEMPLATED_ON_RESULT(CLASS)
+    %shared_ptr(CLASS<float>);
+    %shared_ptr(CLASS<double>);
+    %shared_ptr(CLASS<std::complex<float> >);
+    %shared_ptr(CLASS<std::complex<double> >)
+%enddef            
