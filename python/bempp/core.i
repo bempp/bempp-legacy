@@ -136,6 +136,8 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "space/piecewise_linear_continuous_scalar_space.i"
 
 // Assembly
+%include "assembly/docstrings.i"
+
 %include "assembly/construct_operator.i" // Python code
 %include "assembly/assembly_options.i"
 %include "assembly/numerical_quadrature_strategy.i"
