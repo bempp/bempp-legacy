@@ -56,14 +56,15 @@ template <typename BasisFunctionType, typename ResultType> class GridFunction;
 template <typename BasisFunctionType, typename ResultType> class ScaledAbstractBoundaryOperator;
 
 /** \ingroup abstract_boundary_operators
- *  \brief Abstract boundary operator.
+ *  \brief Abstract (non-discretized) boundary operator.
  *
  *  An AbstractBoundaryOperator represents a linear mapping \f$L : X
  *  \to Y\f$ between two function spaces \f$X : S \to K^p\f$
- *  (_domain_) and \f$Y : T \to K^q\f$ (_range_) defined on
+ *  (_domain_) and \f$Y : T \to Q^q\f$ (_range_) defined on
  *  \f$n\f$-dimensional surfaces \f$S\f$ and \f$T\f$ embedded in an
- *  \f$(n+1)\f$-dimensional domain. \f$K\f$ denotes either the set of
- *  real or complex numbers. The surfaces \f$S\f$ and \f$T\f$ may be equal.
+ *  \f$(n+1)\f$-dimensional domain. Each of the symbols \f$K\f$ and
+ *  \f$Q\f$ can stand either for the set of real or complex numbers.
+ *  The surfaces \f$S\f$ and \f$T\f$ may be equal.
  *
  *  The function assembleWeakForm() can be used to construct the weak
  *  form of the operator.
