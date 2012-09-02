@@ -1,11 +1,13 @@
 %{
 #include "assembly/abstract_boundary_operator.hpp"
-#include "assembly/abstract_boundary_operator_sum.hpp"
 #include <complex>
 %}
 
 // TODO
 // %include "abstract_boundary_operator_docstrings.i"
+
+BEMPP_DECLARE_SHARED_PTR_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(
+    Bempp::AbstractBoundaryOperator);
 
 namespace Bempp
 {
