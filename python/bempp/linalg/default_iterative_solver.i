@@ -7,17 +7,12 @@
 #include "bempp/common/config_trilinos.hpp"
 #include "assembly/boundary_operator.hpp"
 #include "linalg/solver.hpp"
-
-
 %}
 
 // TODO
 // %include "default_iterative_solver_docstrings.i"
 
 #ifdef WITH_TRILINOS
-
-
-
 
 namespace Bempp
 {
@@ -34,39 +29,6 @@ Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(
 #define shared_ptr boost::shared_ptr
 %include "linalg/default_iterative_solver.hpp"
 #undef shared_ptr
-
-//namespace Bempp {
-
-//    template <typename BasisFunctionType, typename ResultType>
-//    class DefaultIterativeSolver : public Solver<BasisFunctionType, ResultType>
-//    {
-//    public:
-
-//        DefaultIterativeSolver(
-//                const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
-//                ConvergenceTestMode::Mode mode=ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
-
-//        DefaultIterativeSolver(
-//                const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
-//                ConvergenceTestMode::Mode mode=ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
-
-//        virtual ~DefaultIterativeSolver();
-
-//        void setPreconditioner(
-//                const Teuchos::RCP<const Thyra::PreconditionerBase<ResultType> >& preconditioner);
-
-//        void initializeSolver(const Teuchos::RCP<Teuchos::ParameterList>& paramList);
-
-//    };
-
-
-
-//}
-
-
-
-
-
 
 namespace Bempp
 {

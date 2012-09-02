@@ -190,7 +190,8 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
                 else:
                     return self.__matrixMultImpl(self,other)
             else:
-                raise ValueError("DiscreteOperators do not support multiplication with this type.")
+                raise ValueError("Discrete boundary operators do not support "
+                                 "multiplication with this type.")
 
         def __div__(self,other):
             if other==0: raise ValueError("Division by zero not allowed.")
