@@ -1,5 +1,5 @@
 // Automatically specify argument lists and return types in docstrings
-//%feature("autodoc", 0);
+%feature("autodoc", 0);
 
 %define DECLARE_CLASS_DOCSTRING(class)
 %feature("docstring", class ## _docstring) class
@@ -33,4 +33,56 @@
 %feature("autodoc", 2) class<double>::method;
 %feature("autodoc", 2) class<std::complex<float> >::method;
 %feature("autodoc", 2) class<std::complex<double> >::method;
+%enddef
+
+%define BEMPP_DECLARE_DOCSTRING_FOR_CLASS_TEMPLATED_ON_BASIS(class)
+%feature("docstring", class ## _docstring(float32)) 
+         Bempp:: ## class ## < float >;
+%feature("docstring", class ## _docstring(complex64))
+         Bempp:: ## class ## < std::complex<float> >;
+%feature("docstring", class ## _docstring(float64))
+         Bempp:: ## class ## < double >;
+%feature("docstring", class ## _docstring(complex128))
+         Bempp:: ## class ## < std::complex<double> >;
+%enddef
+
+%define BEMPP_DECLARE_DOCSTRING_FOR_METHOD_OF_CLASS_TEMPLATED_ON_BASIS(class, method)
+%feature("docstring", class ## _ ## method ## _docstring(float32)) 
+         Bempp:: class < float > :: method;
+%feature("docstring", class ## _ ## method ## _docstring(complex64))
+         Bempp:: class < std::complex<float> > :: method;
+%feature("docstring", class ## _ ## method ## _docstring(float64))
+         Bempp:: class < double > :: method;
+%feature("docstring", class ## _ ## method ## _docstring(complex128))
+         Bempp:: class < std::complex<double> > :: method;
+%enddef
+
+%define BEMPP_DECLARE_DOCSTRING_FOR_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(class)
+%feature("docstring", class ## _docstring(float32, float32)) 
+         Bempp:: ## class ## < float, float >;
+%feature("docstring", class ## _docstring(float32, complex64))
+         Bempp:: ## class ## < float, std::complex<float> >;
+%feature("docstring", class ## _docstring(complex64, complex64))
+         Bempp:: ## class ## < std::complex<float>, std::complex<float> >;
+%feature("docstring", class ## _docstring(float64, float64))
+         Bempp:: ## class ## < double, double >;
+%feature("docstring", class ## _docstring(float64, complex128))
+         Bempp:: ## class ## < double, std::complex<double> >;
+%feature("docstring", class ## _docstring(complex128, complex128))
+         Bempp:: ## class ## < std::complex<double>, std::complex<double> >;
+%enddef
+
+%define BEMPP_DECLARE_DOCSTRING_FOR_METHOD_OF_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(class, method)
+%feature("docstring", class ## _ ## method ## _docstring(float32, float32)) 
+         Bempp:: class < float, float > :: method;
+%feature("docstring", class ## _ ## method ## _docstring(float32, complex64))
+         Bempp:: class < float, std::complex<float> > :: method;
+%feature("docstring", class ## _ ## method ## _docstring(complex64, complex64))
+         Bempp:: class < std::complex<float>, std::complex<float> > :: method;
+%feature("docstring", class ## _ ## method ## _docstring(float64, float64))
+         Bempp:: class < double, double > :: method;
+%feature("docstring", class ## _ ## method ## _docstring(float64, complex128))
+         Bempp:: class < double, std::complex<double> > :: method;
+%feature("docstring", class ## _ ## method ## _docstring(complex128, complex128))
+         Bempp:: class < std::complex<double>, std::complex<double> > :: method;
 %enddef
