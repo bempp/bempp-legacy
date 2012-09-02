@@ -16,7 +16,7 @@ import sys, os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../../../build-debug/python'))
+sys.path.insert(0, '@CMAKE_BINARY_DIR@/python')
 
 # -- General configuration -----------------------------------------------------
 
@@ -246,6 +246,8 @@ texinfo_documents = [
 
 autodoc_default_flags = ['members', 'show-inheritance']
 
+# autodoc_docstring_signature = False
+
 def maybe_skip_member(app, what, name, obj, skip, options):
     if (what == "module" and
         (name.endswith("_float32") or
@@ -267,13 +269,13 @@ def maybe_skip_member(app, what, name, obj, skip, options):
 #     print lines
 #     print
 
-def on_source_read(app, docname, source):
-    print docname
-    print source
+# def on_source_read(app, docname, source):
+#     print docname
+#     print source
 
 def setup(app):
     app.connect("autodoc-skip-member", maybe_skip_member)
     # app.connect("autodoc-process-docstring", on_autodoc_process_docstring)
-    app.connect("source-read", on_source_read)
+    # app.connect("source-read", on_source_read)
 
     

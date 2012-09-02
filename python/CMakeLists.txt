@@ -1,3 +1,4 @@
+add_subdirectory(doc)
 add_subdirectory(bempp)
 add_subdirectory(examples)
 
