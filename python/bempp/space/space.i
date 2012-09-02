@@ -23,7 +23,7 @@ template<typename BasisFunctionType> class Space;
 %ignore basis;
 
 // this function is only for internal use
-%ignore shapeFunctionValueExpression;
+%ignore shapeFunctionValue;
 
 // to be wrapped later...
 %ignore setElementVariant;
@@ -41,11 +41,6 @@ template<typename BasisFunctionType> class Space;
 %ignore getFlatLocalDofPositions;
 
 %ignore dumpClusterIds;
-
-%ignore applyMassMatrix;
-
-%ignore applyInverseMassMatrix;
-
 }
 
 BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS(Space);
