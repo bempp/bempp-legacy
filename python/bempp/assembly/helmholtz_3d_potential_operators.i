@@ -1,54 +1,43 @@
 %{
-#include "assembly/helmholtz_3d_potential_operator_base.hpp"
 #include "assembly/helmholtz_3d_single_layer_potential_operator.hpp"
 #include "assembly/helmholtz_3d_double_layer_potential_operator.hpp"
 %}
 
-namespace Bempp {
+// Swig isn't able to parse the
+// Helmholtz3d...PotentialOperator<BasisFunctionType>::KernelType
+// type -- replace it with the explicit 
+// ScalarTraits<BasisFunctionType>::ComplexType.
 
-  %warnfilter(362) Helmholtz3dPotentialOperatorBase::operator=;
-
-  BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dSingleLayerPotentialOperator)
-  BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dDoubleLayerPotentialOperator)
-
-  BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dSingleLayerPotentialOperator)
-  BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dDoubleLayerPotentialOperator)
-}
-
-
-
-#define shared_ptr boost::shared_ptr
-%include "assembly/helmholtz_3d_potential_operator_base.hpp"
-%include "assembly/helmholtz_3d_single_layer_potential_operator.hpp"
-%include "assembly/helmholtz_3d_double_layer_potential_operator.hpp"
-#undef shared_ptr
-
-%define BEMPP_INSTANTIATE_HELMHOLTZ_POTENTIAL_3D_BASE(BASIS, PY_BASIS)
-    %template(Helmholtz3dPotentialOperatorBase_Single_ ## _ ## PY_BASIS)
-        Helmholtz3dPotentialOperatorBase<
-        Helmholtz3dSingleLayerPotentialOperatorImpl< BASIS >, BASIS >;
-
-    %template(Helmholtz3dPotentialOperatorBase_Double_ ## _ ## PY_BASIS)
-        Helmholtz3dPotentialOperatorBase<
-        Helmholtz3dDoubleLayerPotentialOperatorImpl< BASIS >, BASIS >;
-%enddef
-
+%inline %{
 namespace Bempp
 {
 
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(
-    Helmholtz3dSingleLayerPotentialOperatorImpl);
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(
-    Helmholtz3dDoubleLayerPotentialOperatorImpl);
-BEMPP_ITERATE_OVER_BASIS_TYPES(BEMPP_INSTANTIATE_HELMHOLTZ_POTENTIAL_3D_BASE);
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(
-    Helmholtz3dSingleLayerPotentialOperator);
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(
-    Helmholtz3dDoubleLayerPotentialOperator);
+template <typename BasisFunctionType>
+    boost::shared_ptr<PotentialOperator<
+        BasisFunctionType,
+        typename Bempp::ScalarTraits<BasisFunctionType>::ComplexType> 
+    >
+helmholtz3dSingleLayerPotentialOperator(
+    typename Bempp::ScalarTraits<BasisFunctionType>::ComplexType waveNumber)
+{
+    typedef Bempp::Helmholtz3dSingleLayerPotentialOperator<BasisFunctionType> Type;
+    return boost::shared_ptr<Type>(new Type(waveNumber));
+}
 
-
+template <typename BasisFunctionType>
+    boost::shared_ptr<PotentialOperator<
+        BasisFunctionType,
+        typename Bempp::ScalarTraits<BasisFunctionType>::ComplexType> 
+    >
+helmholtz3dDoubleLayerPotentialOperator(
+    typename Bempp::ScalarTraits<BasisFunctionType>::ComplexType waveNumber)
+{
+    typedef Bempp::Helmholtz3dDoubleLayerPotentialOperator<BasisFunctionType> Type;
+    return boost::shared_ptr<Type>(new Type(waveNumber));
+}
 
 } // namespace Bempp
+%}
 
 %pythoncode %{
 
@@ -59,5 +48,10 @@ def _constructHelmholtzPotentialOperator(className, context, waveNumber):
         className, basisFunctionType, waveNumber)
     result._context = context
     return result
+namespace Bempp
+{
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(helmholtz3dSingleLayerPotentialOperator);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(helmholtz3dDoubleLayerPotentialOperator);
+}
 
 	  %}

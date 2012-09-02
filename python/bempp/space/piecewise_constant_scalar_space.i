@@ -1,25 +1,25 @@
 %{
-  #include "space/piecewise_constant_scalar_space.hpp"
+#include "space/piecewise_constant_scalar_space.hpp"
 %}
 
-// TODO
-// %include "space_docstrings.i"
-
-%shared_ptr(Bempp::PiecewiseConstantScalarSpace<float>);
-%shared_ptr(Bempp::PiecewiseConstantScalarSpace<double>);
-%shared_ptr(Bempp::PiecewiseConstantScalarSpace<std::complex<float> >);
-%shared_ptr(Bempp::PiecewiseConstantScalarSpace<std::complex<double> >);
-
+%inline %{
 namespace Bempp
 {
-BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS(PiecewiseConstantScalarSpace);
+
+template <typename BasisFunctionType>
+boost::shared_ptr<Space<BasisFunctionType> >
+piecewiseConstantScalarSpace(Grid& grid)
+{
+    typedef PiecewiseConstantScalarSpace<BasisFunctionType> Type;
+    return boost::shared_ptr<Type>(new Type(grid));
 }
 
-%include "space/piecewise_constant_scalar_space.hpp"
+} // namespace Bempp
+%}
 
 namespace Bempp
 {
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(PiecewiseConstantScalarSpace);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(piecewiseConstantScalarSpace);
 }
 
 %pythoncode %{

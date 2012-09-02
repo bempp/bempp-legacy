@@ -6,9 +6,6 @@
 #include "assembly/laplace_3d_hypersingular_boundary_operator.hpp"
 %}
 
-// TODO
-// %include "laplace_3d_operators_docstrings.i"
-
 #define shared_ptr boost::shared_ptr
 %include "assembly/laplace_3d_boundary_operator_base.hpp"
 %include "assembly/laplace_3d_single_layer_boundary_operator.hpp"
@@ -17,38 +14,9 @@
 %include "assembly/laplace_3d_hypersingular_boundary_operator.hpp"
 #undef shared_ptr
 
-%define BEMPP_INSTANTIATE_LAPLACE_3D_BASE(BASIS, RESULT, PY_BASIS, PY_RESULT)
-    %template(Laplace3dBoundaryOperatorBase_Single_ ## _ ## PY_BASIS ## _ ## PY_RESULT)
-        Laplace3dBoundaryOperatorBase<
-        Laplace3dSingleLayerBoundaryOperatorImpl< BASIS, RESULT >, BASIS, RESULT >;
-
-    %template(Laplace3dBoundaryOperatorBase_Double_ ## _ ## PY_BASIS ## _ ## PY_RESULT)
-        Laplace3dBoundaryOperatorBase<
-        Laplace3dDoubleLayerBoundaryOperatorImpl< BASIS, RESULT >, BASIS, RESULT >;
-
-    %template(Laplace3dBoundaryOperatorBase_AdjointDouble_ ## _ ## PY_BASIS ## _ ## PY_RESULT)
-        Laplace3dBoundaryOperatorBase<
-        Laplace3dAdjointDoubleLayerBoundaryOperatorImpl< BASIS, RESULT >, BASIS, RESULT >;
-
-    %template(Laplace3dBoundaryOperatorBase_Hypersingular_ ## _ ## PY_BASIS ## _ ## PY_RESULT)
-        Laplace3dBoundaryOperatorBase<
-        Laplace3dHypersingularBoundaryOperatorImpl< BASIS, RESULT >, BASIS, RESULT >;
-%enddef
-
 namespace Bempp
 {
 
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
-    Laplace3dSingleLayerBoundaryOperatorImpl);
-BEMPP_ITERATE_OVER_BASIS_AND_RESULT_TYPES(BEMPP_INSTANTIATE_LAPLACE_3D_BASE);
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
-    Laplace3dSingleLayerBoundaryOperator);
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
-    Laplace3dDoubleLayerBoundaryOperator);
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
-    Laplace3dAdjointDoubleLayerBoundaryOperator);
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
-    Laplace3dHypersingularBoundaryOperator);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
     laplace3dSingleLayerBoundaryOperator);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
