@@ -35,23 +35,4 @@ namespace Bempp
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(DefaultIterativeSolver);
 } // namespace Bempp
 
-%pythoncode %{
-
-def defaultIterativeSolver(boundaryOperator,test_convergence):
-    """Construct the default linear solver.
-
-    This solver lets you solve the equation A f = g for the function
-    f, with A being the boundary operator passed via the boundaryOperator
-    argument and g a grid function supplied to the solve() method.
-    """
-    basisFunctionType = boundaryOperator.basisFunctionType()
-    resultType = boundaryOperator.resultType()
-    result = constructObjectTemplatedOnBasisAndResult(
-        "DefaultIterativeSolver", basisFunctionType, resultType,
-        boundaryOperator,test_convergence)
-    result._boundaryOperator = boundaryOperator
-    return result
-
-%}
-
 #endif

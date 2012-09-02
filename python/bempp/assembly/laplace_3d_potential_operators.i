@@ -31,14 +31,3 @@ namespace Bempp
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(laplace3dSingleLayerPotentialOperator);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(laplace3dDoubleLayerPotentialOperator);
 }
-%pythoncode %{
-
-def _constructLaplacePotentialOperator(className, context):
-    basisFunctionType = context.basisFunctionType()
-    resultType = context.resultType()
-    result = constructObjectTemplatedOnBasisAndResult(
-        className, basisFunctionType, resultType )
-    result._context = context
-    return result
-
-	  %}

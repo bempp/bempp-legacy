@@ -31,14 +31,3 @@ namespace Bempp
 {
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(Context);
 }
-
-%pythoncode %{
-
-def context(factory, assemblyOptions):
-    """Operator assembly context"""
-    name = 'Context'
-    return constructObjectTemplatedOnBasisAndResult(
-        name, factory.basisFunctionType(), factory.resultType(),
-        factory, assemblyOptions)
-
-%}

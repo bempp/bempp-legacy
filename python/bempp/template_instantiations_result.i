@@ -39,16 +39,3 @@ template <typename ResultType> class CLASS;
     }
 %enddef // BEMPP_EXTEND_CLASS_TEMPLATED_ON_RESULT
 
-%pythoncode 
-%{
-
-def constructObjectTemplatedOnResult(className, resultType,
-                                     *args, **kwargs):
-    fullName = className + "_" + resultType
-    try:
-        class_ = globals()[fullName]
-    except KeyError:
-        raise TypeError("Class " + fullName + " does not exist.")
-    return class_(*args, **kwargs)
-
-%}

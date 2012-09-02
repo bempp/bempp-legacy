@@ -22,12 +22,3 @@ namespace Bempp
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(piecewiseLinearContinuousScalarSpace);
 }
 
-%pythoncode %{
-
-def piecewiseLinearContinuousScalarSpace(context, grid):
-    """Space of piecewise linear continuous scalar functions"""
-    name = 'PiecewiseLinearContinuousScalarSpace'
-    return constructObjectTemplatedOnBasis(name, context.basisFunctionType(), grid)
-
-%}
-

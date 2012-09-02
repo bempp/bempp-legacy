@@ -44,13 +44,5 @@ template <typename ValueType> class CLASS;
 %pythoncode 
 %{
 
-def constructObjectTemplatedOnValue(className, valueType,
-                                    *args, **kwargs):
-    fullName = className + "_" + valueType
-    try:
-        class_ = globals()[fullName]
-    except KeyError:
-        raise TypeError("Class " + fullName + " does not exist.")
-    return class_(*args, **kwargs)
 
 %}

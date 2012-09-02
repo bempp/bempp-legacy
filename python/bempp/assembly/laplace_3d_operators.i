@@ -28,27 +28,3 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
 
 } // namespace Bempp
 
-%pythoncode %{
-
-def laplace3dSingleLayerBoundaryOperator(context, domain, range, dualToRange):
-    """Construct a single-layer-potential operator for the Laplace equation in 3D."""
-    return _constructOperator(
-    "laplace3dSingleLayerBoundaryOperator", context, domain, range, dualToRange)
-
-def laplace3dDoubleLayerBoundaryOperator(context, domain, range, dualToRange):
-    """Construct a double-layer-potential operator for the Laplace equation in 3D."""
-    return _constructOperator(
-    "laplace3dDoubleLayerBoundaryOperator", context, domain, range, dualToRange)
-
-def laplace3dAdjointDoubleLayerBoundaryOperator(context, domain, range, dualToRange):
-    """Construct an adjoint double-layer-potential operator for the Laplace equation in 3D."""
-    return _constructOperator(
-    "laplace3dAdjointDoubleLayerBoundaryOperator", context, domain, range, dualToRange)
-
-def laplace3dHypersingularBoundaryOperator(context, domain, range, dualToRange):
-    """Construct a hypersingular operator for the Laplace equation in 3D."""
-    return _constructOperator(
-    "laplace3dHypersingularBoundaryOperator", context, domain, range, dualToRange)
-
-%}
-

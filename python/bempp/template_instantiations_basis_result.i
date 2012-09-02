@@ -60,31 +60,3 @@
     }
 %enddef // BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS_AND_RESULT
 
-%pythoncode %{
-
-def constructObjectTemplatedOnBasisAndResult(className,
-                                             basisFunctionType, resultType,
-                                             *args, **kwargs):
-    if basisFunctionType is None:
-        if resultType is None:
-            basisFunctionType = "float64"
-            resultType = "float64"
-        else:
-            if resultType in ("float64", "complex128"):
-                basisFunctionType = "float64"
-            else:
-                basisFunctionType = "float32"
-    else:
-        if resultType is None:
-            resultType = basisFunctionType
-
-    fullName = (className + "_" +
-                checkType(basisFunctionType) + "_" +
-                checkType(resultType))
-    try:
-        class_ = globals()[fullName]
-    except KeyError:
-        raise TypeError("Class " + fullName + " does not exist.")
-    return class_(*args, **kwargs)
-
-%}

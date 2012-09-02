@@ -38,14 +38,3 @@
     }
 %enddef // BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS
 
-%pythoncode %{
-
-def constructObjectTemplatedOnBasis(className, basisFunctionType, *args, **kwargs):
-    fullName = className + "_" + checkType(basisFunctionType)
-    try:
-        class_ = globals()[fullName]
-    except KeyError:
-        raise TypeError("Class " + fullName + " does not exist.")
-    return class_(*args, **kwargs)
-
-%}

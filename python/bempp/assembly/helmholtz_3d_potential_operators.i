@@ -39,19 +39,9 @@ helmholtz3dDoubleLayerPotentialOperator(
 } // namespace Bempp
 %}
 
-%pythoncode %{
-
-def _constructHelmholtzPotentialOperator(className, context, waveNumber):
-    basisFunctionType = context.basisFunctionType()
-    resultType = context.resultType()
-    result = constructObjectTemplatedOnBasis(
-        className, basisFunctionType, waveNumber)
-    result._context = context
-    return result
 namespace Bempp
 {
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(helmholtz3dSingleLayerPotentialOperator);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(helmholtz3dDoubleLayerPotentialOperator);
 }
 
-	  %}
