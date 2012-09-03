@@ -93,6 +93,8 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %}
 #define BEMPP_DEPRECATED
 
+%feature("autodoc", 0);
+
 // Make commonly used typedefs known to Swig
 %inline %{
     namespace Bempp
@@ -121,6 +123,8 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "grid/grid_factory.i"
 %include "grid/geometry_factory.i"
 
+%feature("autodoc", 2);
+
 // Fiber
 %include "fiber/opencl_options.i"
 %include "fiber/parallelization_options.i"
@@ -136,7 +140,7 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "space/piecewise_linear_continuous_scalar_space.i"
 
 // Assembly
-%include "assembly/docstrings.i"
+// %include "assembly/docstrings.i"
 
 %include "assembly/construct_operator.i" // Python code
 %include "assembly/assembly_options.i"
