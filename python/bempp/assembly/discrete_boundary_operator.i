@@ -50,16 +50,13 @@ class enable_shared_from_this
 public:
     virtual ~enable_shared_from_this() = 0;
 };
-}
 
-namespace boost
-{
 %template(enable_shared_from_this_discrete_boundary_operator_float32) enable_shared_from_this<Bempp::DiscreteBoundaryOperator<float> >;
 %template(enable_shared_from_this_discrete_boundary_operator_float64) enable_shared_from_this<Bempp::DiscreteBoundaryOperator<double> >;
 %template(enable_shared_from_this_discrete_boundary_operator_complex64) enable_shared_from_this<Bempp::DiscreteBoundaryOperator<std::complex<float> > >;
 %template(enable_shared_from_this_discrete_boundary_operator_complex128) enable_shared_from_this<Bempp::DiscreteBoundaryOperator<std::complex<double> > >;
 
-}
+} // namespace boost
 
 
 
@@ -71,7 +68,8 @@ DECLARE_TEMPLATE_VALUE_METHOD_AUTO_DOCSTRING(DiscreteBoundaryOperator, apply);
 BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator);
 BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
 
- %warnfilter(315) DiscreteBoundaryOperator;
+// Nothing known about 'Thyra::LinearOpDefaultBase< ... >::apply
+%warnfilter(315) DiscreteBoundaryOperator;
 
 %extend DiscreteBoundaryOperator
 {

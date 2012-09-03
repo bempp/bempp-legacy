@@ -57,7 +57,7 @@
 // Setup a handler for C++ exceptions
 %exception {
     try {
-        $action 
+        $action
     }
     catch (const Dune::Exception& e) {
         SWIG_exception(SWIG_RuntimeError, e.what().c_str());
@@ -108,16 +108,16 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "common/scalar_traits.i"
 // Grid
 %include "grid/grid_parameters.i"
-%include "grid/geometry.i"  
-%include "grid/geometry_type.i"  
-%include "grid/entity.i"  
-%include "grid/entity_pointer.i"  
-%include "grid/entity_iterator.i"  
-%include "grid/grid.i"  
+%include "grid/geometry.i"
+%include "grid/geometry_type.i"
+%include "grid/entity.i"
+%include "grid/entity_pointer.i"
+%include "grid/entity_iterator.i"
+%include "grid/grid.i"
 %include "grid/id_set.i"
-%include "grid/grid_view.i"  
+%include "grid/grid_view.i"
 %include "grid/index_set.i"
-%include "grid/vtk_writer.i" 
+%include "grid/vtk_writer.i"
 %include "grid/grid_factory.i"
 %include "grid/geometry_factory.i"
 
