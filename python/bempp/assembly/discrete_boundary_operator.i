@@ -167,8 +167,9 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
             arma::Col< ValueType > tmp2 = mat_out.unsafe_col(i);
             op->apply(Bempp::NO_TRANSPOSE,tmp1,tmp2,1.0,0.0);
         }
-
     }
+
+    %feature("compactdefaultargs") asDiscreteAcaBoundaryOperator;
 
     %pythoncode {
         def __add__(self,other):
