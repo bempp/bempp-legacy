@@ -258,9 +258,14 @@ def maybe_skip_member(app, what, name, obj, skip, options):
          name.endswith("_float64_complex128") or
          name.endswith("_float32_complex64_complex64") or
          name.endswith("_complex64_complex64_complex64") or
-         name.endswith("_float64_complex128_complex128"))):
+         name.endswith("_float64_complex128_complex128") or
+         name == "SwigPyIterator" or
+         name.startswith("vector_GridFunction")
+         )):
         return True
-    if name.startswith("__") and name.endswith("__"):
+    # if name.startswith("__") and name.endswith("__"):
+    #     return True
+    if name.startswith("_") or "___" in name:
         return True
     return False
 
@@ -278,4 +283,4 @@ def setup(app):
     # app.connect("autodoc-process-docstring", on_autodoc_process_docstring)
     # app.connect("source-read", on_source_read)
 
-    
+
