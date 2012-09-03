@@ -112,27 +112,49 @@ def createGridFactory():
     return core.GridFactory
 
 def createNumericalQuadratureStrategy(basisFunctionType, resultType, accuracyOptions=None):
-    """Construct a NumericalQuadratureStrategy object.
+    """
+    Create and return a NumericalQuadratureStrategy object.
 
-    *Arguments:*
+    A quadrature strategy provides functions constructing local assemblers used
+    to discretize boundary operators and user-defined functions. A particular
+    quadrature strategy determines how the integrals involved in this
+    discretization are evaluated.
+
+    The local assemblers constructed by this class use numerical quadrature to
+    evaluate the necessary integrals. Singular integrals are transformed into
+    regular ones as described in S. Sauter, Ch. Schwab, "Boundary Element
+    Methods" (2010). Quadrature accuracy can be influenced by the
+    'accuracyOptions' parameter.
+
+    *Arguments*
         basisFunctionType (string)
-            Type used to represent values of basis functions.
+            Type used to represent the values of the (components of the) basis
+            functions into which arguments of operators discretized with this
+            strategy will be expanded.
 
         resultType (string)
-            Type used to represent values of boundary-element integrals.
+            Type used to represent the values of integrals.
 
         accuracyOptions (AccuracyOptions)
-            Determines quadrature order. If set to None, default quadrature orders
-            are used.
+            Determines quadrature orders used to approximate different types of
+            integrals. If set to None, default quadrature orders are used.
 
-        The following combinations of basisFunctionType and resultType are allowed:
+    The following combinations of basisFunctionType and resultType are allowed:
 
-            basisFunctionType     resultType
-            --------------------------------
-            "float32"             "float32" or "complex64"
-            "float64"             "float64" or "complex128"
-            "complex64"           "complex64"
-            "complex128"          "complex128"
+    =================     =========================
+    basisFunctionType     resultType
+    =================     =========================
+    "float32"             "float32" or "complex64"
+    "float64"             "float64" or "complex128"
+    "complex64"           "complex64"
+    "complex128"          "complex128"
+    =================     =========================
+
+    Typically, you should choose basisFunctionType = "float64" and resultType =
+    "float64" for calculations with real-valued operators (such as those related
+    to the Laplace equation) or basisFunctionType = "float64" and resultType =
+    "complex128" for calculations with complex-valued operators (such as those
+    related to the Helmlholtz equation).
     """
     basisFunctionType = checkType(basisFunctionType)
     resultType = checkType(resultType)
@@ -142,23 +164,77 @@ def createNumericalQuadratureStrategy(basisFunctionType, resultType, accuracyOpt
     return _constructObjectTemplatedOnBasisAndResult(
         name, basisFunctionType, resultType, accuracyOptions)
 
-def createAssemblyOptions(*args,**kwargs):
-    """Return an AssemblyOptions object"""
-    return core.AssemblyOptions(*args,**kwargs)
+def createAssemblyOptions():
+    """Create and return an AssemblyOptions object with default settings."""
+    return core.AssemblyOptions()
 
 def createContext(factory, assemblyOptions):
-    """Return an operator assembly context"""
+    """
+    Create and return a Context object.
+
+    A Context determines the mechanics of the assembly of weak forms and the
+    evaluation of potentials.
+
+    *Arguments*
+        quadStrategy (QuadratureStrategy)
+            Quadrature strategy to be used for the calculation of integrals
+            occurring e.g. in the weak forms of boundary operators or in the
+            definition of potential operators.
+
+        assemblyOptions (AssemblyOptions)
+            Further options influencing the weak-form assembly process.
+
+    *Returns* a newly constructed Context_BasisFunctionType_ResultType object,
+    with BasisFunctionType and ResultType determined automatically from the
+    quadStrategy argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
     name = 'Context'
     return _constructObjectTemplatedOnBasisAndResult(
         name, factory.basisFunctionType(), factory.resultType(),
         factory, assemblyOptions)
 
 def createPiecewiseConstantScalarSpace(context, grid):
-    """Return a space of piecewise constant scalar functions"""
+    """
+    Create and return a space of scalar functions defined on a grid and
+    constant on each element of this grid.
+
+    *Arguments*
+        context (Context)
+            A Context object that will determine the type used to represent the
+            values of the basis functions of the newly constructed space.
+        grid (Grid)
+            Grid on which the functions from the newly constructed space will be
+            defined.
+
+    *Returns* a newly constructed Space_BasisFunctionType object, with
+    BasisFunctionType determined automatically from the context argument and
+    equal to either float32, float64, complex64 or complex128.
+    """
     name = 'piecewiseConstantScalarSpace'
     return _constructObjectTemplatedOnBasis(name, context.basisFunctionType(), grid)
 
-def _constructOperator(className, context, domain, range, dualToRange):
+def createPiecewiseLinearContinuousScalarSpace(context, grid):
+    """
+    Create and return a space of globally continuous scalar functions defined
+    on a grid and linear on each element of this grid.
+
+    *Arguments*
+        context (Context)
+            A Context object that will determine the type used to represent the
+            values of the basis functions of the newly constructed space.
+        grid (Grid)
+            Grid on which the functions from the newly constructed space will be
+            defined.
+
+    *Returns* a newly constructed Space_BasisFunctionType object, with
+    BasisFunctionType determined automatically from the context argument and
+    equal to either float32, float64, complex64 or complex128.
+    """
+    name = 'piecewiseLinearContinuousScalarSpace'
+    return _constructObjectTemplatedOnBasis(name, context.basisFunctionType(), grid)
+
+def _constructOperator(className, context, domain, range, dualToRange, label=None):
     # determine basis function type
     basisFunctionType = domain.basisFunctionType()
     if (basisFunctionType != range.basisFunctionType() or
@@ -168,39 +244,135 @@ def _constructOperator(className, context, domain, range, dualToRange):
     # determine result type
     resultType = context.resultType()
 
-    result = _constructObjectTemplatedOnBasisAndResult(
-        className, basisFunctionType, resultType,
-        context, domain, range, dualToRange)
+    if label:
+        result = _constructObjectTemplatedOnBasisAndResult(
+            className, basisFunctionType, resultType,
+            context, domain, range, dualToRange, label)
+    else:
+        result = _constructObjectTemplatedOnBasisAndResult(
+            className, basisFunctionType, resultType,
+            context, domain, range, dualToRange)
     result._context = context
     result._domain = domain
     result._range = range
     result._dualToRange = dualToRange
     return result
 
-def createPiecewiseLinearContinuousScalarSpace(context, grid):
-    """Return space of piecewise linear continuous scalar functions"""
-    name = 'piecewiseLinearContinuousScalarSpace'
-    return _constructObjectTemplatedOnBasis(name, context.basisFunctionType(), grid)
+# determine the type used to represent the values of the basis functions into
+# which functions acted upon by the operator will be expanded, and the type used
+# to represent the values of the functions produced by this operator.
 
-def createLaplace3dSingleLayerBoundaryOperator(context, domain, range, dualToRange):
-    """Return a single-layer-boundary operator for the Laplace equation in 3D."""
-    return _constructOperator(
-    "laplace3dSingleLayerBoundaryOperator", context, domain, range, dualToRange)
+def createLaplace3dSingleLayerBoundaryOperator(
+        context, domain, range, dualToRange, label=None):
+    """
+    Create and return a single-layer-potential boundary operator for the
+    Laplace equation in 3D.
 
-def createLaplace3dDoubleLayerBoundaryOperator(context, domain, range, dualToRange):
-    """Return a double-layer-boundary operator for the Laplace equation in 3D."""
-    return _constructOperator(
-    "laplace3dDoubleLayerBoundaryOperator", context, domain, range, dualToRange)
+    *Arguments*
+        context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+        domain (Space)
+            Function space to be taken as the domain of the operator.
+        range (Space)
+            Function space to be taken as the range of the operator.
+        dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+        label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
 
-def createLaplace3dAdjointDoubleLayerBoundaryOperator(context, domain, range, dualToRange):
-    """Return an adjoint double-layer-boundary operator for the Laplace equation in 3D."""
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
     return _constructOperator(
-    "laplace3dAdjointDoubleLayerBoundaryOperator", context, domain, range, dualToRange)
+    "laplace3dSingleLayerBoundaryOperator", context, domain, range, dualToRange, label)
 
-def createLaplace3dHypersingularBoundaryOperator(context, domain, range, dualToRange):
-    """Return a hypersingular boundary operator for the Laplace equation in 3D."""
+def createLaplace3dDoubleLayerBoundaryOperator(
+        context, domain, range, dualToRange, label=None):
+    """
+    Create and return a double-layer-potential boundary operator for the
+    Laplace equation in 3D.
+
+    *Arguments*
+        context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+        domain (Space)
+            Function space to be taken as the domain of the operator.
+        range (Space)
+            Function space to be taken as the range of the operator.
+        dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+        label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
     return _constructOperator(
-    "laplace3dHypersingularBoundaryOperator", context, domain, range, dualToRange)
+    "laplace3dDoubleLayerBoundaryOperator", context, domain, range, dualToRange, label)
+
+def createLaplace3dAdjointDoubleLayerBoundaryOperator(
+        context, domain, range, dualToRange, label=None):
+    """
+    Create and return an adjoint double-layer-potential boundary operator for
+    the Laplace equation in 3D.
+
+    *Arguments*
+        context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+        domain (Space)
+            Function space to be taken as the domain of the operator.
+        range (Space)
+            Function space to be taken as the range of the operator.
+        dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+        label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
+    return _constructOperator(
+    "laplace3dAdjointDoubleLayerBoundaryOperator", context, domain, range, dualToRange, label)
+
+def createLaplace3dHypersingularBoundaryOperator(
+        context, domain, range, dualToRange, label=None):
+    """
+    Create and return a hypersingular boundary operator for the
+    Laplace equation in 3D.
+
+    *Arguments*
+        context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+        domain (Space)
+            Function space to be taken as the domain of the operator.
+        range (Space)
+            Function space to be taken as the range of the operator.
+        dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+        label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
+    return _constructOperator(
+    "laplace3dHypersingularBoundaryOperator", context, domain, range, dualToRange, label)
 
 def _constructLaplacePotentialOperator(className, context):
     basisFunctionType = context.basisFunctionType()
@@ -211,24 +383,69 @@ def _constructLaplacePotentialOperator(className, context):
     return result
 
 def createLaplace3dSingleLayerPotentialOperator(context):
-    """Return a single-layer-potential operator for the Laplace equation in 3D."""
+    """
+    Create and return a single-layer potential operator for the Laplace
+    equation in 3D.
+
+    *Arguments*
+        context (Context)
+            A Context object used to control the evaluation of integrals
+            occurring in the definition of the potential operator.
+
+    *Returns* a newly constructed PotentialOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+
+    Note about BEM++ terminology: a *potential operator* acts on functions
+    defined on a surface S and produces functions defined at any point of the
+    space surrounding S, but not necessarily on S itself. In contrast, a
+    *boundary operator* acts on on functions defined on a surface S and produces
+    functions defined on the same surface S.
+    """
     return _constructLaplacePotentialOperator(
         "Laplace3dSingleLayerPotentialOperator", context)
 
 def createLaplace3dDoubleLayerPotentialOperator(context):
-    """Return a double-layer-potential operator for the Laplace equation in 3D."""
+    """
+    Create and return a double-layer potential operator for the Laplace
+    equation in 3D.
+
+    *Arguments*
+        context (Context)
+            A Context object used to control the evaluation of integrals
+            occurring in the definition of the potential operator.
+
+    *Returns* a newly constructed PotentialOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+
+    Note about BEM++ terminology: a *potential operator* acts on functions
+    defined on a surface S and produces functions defined at any point of the
+    space surrounding S, but not necessarily on S itself. In contrast, a
+    *boundary operator* acts on on functions defined on a surface S and produces
+    functions defined on the same surface S.
+    """
     return _constructLaplacePotentialOperator(
         "Laplace3dDoubleLayerPotentialOperator", context)
 
-def _constructHelmholtzOperator(className, context, domain, range, dualToRange, waveNumber):
+def _constructHelmholtzOperator(
+        className, context, domain, range, dualToRange, waveNumber, label=None):
     basisFunctionType = context.basisFunctionType()
     if (basisFunctionType != domain.basisFunctionType() or
             basisFunctionType != range.basisFunctionType() or
             basisFunctionType != dualToRange.basisFunctionType()):
         raise TypeError("BasisFunctionType of context and all spaces must be the same")
     resultType = context.resultType()
-    result = _constructObjectTemplatedOnBasis(
-        className, basisFunctionType, context, domain, range, dualToRange, waveNumber)
+    if label:
+        result = _constructObjectTemplatedOnBasis(
+            className, basisFunctionType, context, domain, range, dualToRange,
+            waveNumber, label)
+    else:
+        result = _constructObjectTemplatedOnBasis(
+            className, basisFunctionType, context, domain, range, dualToRange,
+            waveNumber)
     result._context = context
     result._domain = domain
     result._range = range
@@ -236,32 +453,132 @@ def _constructHelmholtzOperator(className, context, domain, range, dualToRange, 
     return result
 
 def createHelmholtz3dSingleLayerBoundaryOperator(
-        context, domain, range, dualToRange, waveNumber):
-    """Return a single-layer-potential operator for the Helmholtz equation in 3D."""
+        context, domain, range, dualToRange, waveNumber, label=None):
+    """
+    Create and return a single-layer-potential boundary operator for
+    the Helmholtz equation in 3D.
+
+    *Arguments*
+        context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+        domain (Space)
+            Function space to be taken as the domain of the operator.
+        range (Space)
+            Function space to be taken as the range of the operator.
+        dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+        waveNumber (float or complex)
+            Wave number, i.e. the number k in the Helmholtz equation
+                nabla^2 u + k^2 u = 0.
+        label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
     return _constructHelmholtzOperator(
         "helmholtz3dSingleLayerBoundaryOperator", context,
-        domain, range, dualToRange, waveNumber)
+        domain, range, dualToRange, waveNumber, label)
 
 def createHelmholtz3dDoubleLayerBoundaryOperator(
-        context, domain, range, dualToRange, waveNumber):
-    """Return a double-layer-potential operator for the Helmholtz equation in 3D."""
+        context, domain, range, dualToRange, waveNumber, label=None):
+    """
+    Create and return a double-layer-potential boundary operator for
+    the Helmholtz equation in 3D.
+
+    *Arguments*
+        context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+        domain (Space)
+            Function space to be taken as the domain of the operator.
+        range (Space)
+            Function space to be taken as the range of the operator.
+        dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+        waveNumber (float or complex)
+            Wave number, i.e. the number k in the Helmholtz equation
+                nabla^2 u + k^2 u = 0.
+        label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
     return _constructHelmholtzOperator(
         "helmholtz3dDoubleLayerBoundaryOperator", context,
-        domain, range, dualToRange, waveNumber)
+        domain, range, dualToRange, waveNumber, label)
 
 def createHelmholtz3dAdjointDoubleLayerBoundaryOperator(
-        context, domain, range, dualToRange, waveNumber):
-    """Return an adjoint double-layer-potential operator for the Helmholtz equation in 3D."""
+        context, domain, range, dualToRange, waveNumber, label=None):
+    """
+    Create and return an adjoint double-layer-potential boundary operator for
+    the Helmholtz equation in 3D.
+
+    *Arguments*
+        context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+        domain (Space)
+            Function space to be taken as the domain of the operator.
+        range (Space)
+            Function space to be taken as the range of the operator.
+        dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+        waveNumber (float or complex)
+            Wave number, i.e. the number k in the Helmholtz equation
+                nabla^2 u + k^2 u = 0.
+        label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
     return _constructHelmholtzOperator(
         "helmholtz3dAdjointDoubleLayerBoundaryOperator", context,
-        domain, range, dualToRange, waveNumber)
+        domain, range, dualToRange, waveNumber, label)
 
 def createHelmholtz3dHypersingularBoundaryOperator(
-        context, domain, range, dualToRange, waveNumber):
-    """Return a hypersingular operator for the Helmholtz equation in 3D."""
+        context, domain, range, dualToRange, waveNumber, label=None):
+    """
+    Create and return a hypersingular boundary operator for
+    the Helmholtz equation in 3D.
+
+    *Arguments*
+        context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+        domain (Space)
+            Function space to be taken as the domain of the operator.
+        range (Space)
+            Function space to be taken as the range of the operator.
+        dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+        waveNumber (float or complex)
+            Wave number, i.e. the number k in the Helmholtz equation
+                nabla^2 u + k^2 u = 0.
+        label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
     return _constructHelmholtzOperator(
         "helmholtz3dHypersingularBoundaryOperator", context,
-        domain, range, dualToRange, waveNumber)
+        domain, range, dualToRange, waveNumber, label)
 
 def _constructHelmholtzPotentialOperator(className, context, waveNumber):
     basisFunctionType = context.basisFunctionType()
@@ -272,17 +589,61 @@ def _constructHelmholtzPotentialOperator(className, context, waveNumber):
     return result
 
 def createHelmholtz3dSingleLayerPotentialOperator(context, waveNumber):
-    """Return a single-layer-potential operator for the Helmholtz equation in 3D."""
+    """
+    Create and return a single-layer potential operator for the Helmholtz
+    equation in 3D.
+
+    *Arguments*
+        context (Context)
+            A Context object used to control the evaluation of integrals
+            occurring in the definition of the potential operator.
+        waveNumber (float or complex)
+            Wave number, i.e. the number k in the Helmholtz equation
+                nabla^2 u + k^2 u = 0.
+
+    *Returns* a newly constructed PotentialOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+
+    Note about BEM++ terminology: a *potential operator* acts on functions
+    defined on a surface S and produces functions defined at any point of the
+    space surrounding S, but not necessarily on S itself. In contrast, a
+    *boundary operator* acts on on functions defined on a surface S and produces
+    functions defined on the same surface S.
+    """
     return _constructHelmholtzPotentialOperator(
         "helmholtz3dSingleLayerPotentialOperator", context, waveNumber)
 
 def createHelmholtz3dDoubleLayerPotentialOperator(context, waveNumber):
-    """Return a double-layer-potential operator for the Helmholtz equation in 3D."""
+    """
+    Create and return a double-layer potential operator for the Helmholtz
+    equation in 3D.
+
+    *Arguments*
+        context (Context)
+            A Context object used to control the evaluation of integrals
+            occurring in the definition of the potential operator.
+        waveNumber (float or complex)
+            Wave number, i.e. the number k in the Helmholtz equation
+                nabla^2 u + k^2 u = 0.
+
+    *Returns* a newly constructed PotentialOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+
+    Note about BEM++ terminology: a *potential operator* acts on functions
+    defined on a surface S and produces functions defined at any point of the
+    space surrounding S, but not necessarily on S itself. In contrast, a
+    *boundary operator* acts on on functions defined on a surface S and produces
+    functions defined on the same surface S.
+    """
     return _constructHelmholtzPotentialOperator(
         "helmholtz3dDoubleLayerPotentialOperator", context, waveNumber)
 
 def _constructModifiedHelmholtzOperator(className, context,
-                                        domain, range, dualToRange, waveNumber):
+                                        domain, range, dualToRange, waveNumber, label=None):
     basisFunctionType = context.basisFunctionType()
     if (basisFunctionType != domain.basisFunctionType() or
             basisFunctionType != range.basisFunctionType() or
@@ -304,9 +665,14 @@ def _constructModifiedHelmholtzOperator(className, context,
             kernelType = "float64"
 
     # construct object
-    result = _constructObjectTemplatedOnBasisKernelAndResult(
-        className, basisFunctionType, kernelType, resultType,
-        context, domain, range, dualToRange, waveNumber)
+    if label:
+        result = _constructObjectTemplatedOnBasisKernelAndResult(
+            className, basisFunctionType, kernelType, resultType,
+            context, domain, range, dualToRange, waveNumber, label)
+    else:
+        result = _constructObjectTemplatedOnBasisKernelAndResult(
+            className, basisFunctionType, kernelType, resultType,
+            context, domain, range, dualToRange, waveNumber)
     result._context = context
     result._domain = domain
     result._range = range
@@ -314,38 +680,177 @@ def _constructModifiedHelmholtzOperator(className, context,
     return result
 
 def createModifiedHelmholtz3dSingleLayerBoundaryOperator(
-        context, domain, range, dualToRange, waveNumber):
-    """Return a single-layer-potential operator for the modified Helmholtz equation in 3D."""
+        context, domain, range, dualToRange, waveNumber, label=None):
+    """
+    Create and return a single-layer-potential boundary operator for
+    the modified Helmholtz equation in 3D.
+
+    *Arguments*
+        context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+        domain (Space)
+            Function space to be taken as the domain of the operator.
+        range (Space)
+            Function space to be taken as the range of the operator.
+        dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+        waveNumber (float or complex)
+            Wave number, i.e. the number k in the modified Helmholtz equation
+                nabla^2 u - k^2 u = 0.
+            Only real wave numbers are allowed if context.resultType() is a real
+            type (float32 or float64).
+        label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
     return _constructModifiedHelmholtzOperator(
         "modifiedHelmholtz3dSingleLayerBoundaryOperator", context,
         domain, range, dualToRange, waveNumber)
 
 def createModifiedHelmholtz3dDoubleLayerBoundaryOperator(
-        context, domain, range, dualToRange, waveNumber):
-    """Return a double-layer-potential operator for the modified Helmholtz equation in 3D."""
+        context, domain, range, dualToRange, waveNumber, label=None):
+    """
+    Create and return a double-layer-potential boundary operator for
+    the modified Helmholtz equation in 3D.
+
+    *Arguments*
+        context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+        domain (Space)
+            Function space to be taken as the domain of the operator.
+        range (Space)
+            Function space to be taken as the range of the operator.
+        dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+        waveNumber (float or complex)
+            Wave number, i.e. the number k in the modified Helmholtz equation
+                nabla^2 u - k^2 u = 0.
+            Only real wave numbers are allowed if context.resultType() is a real
+            type (float32 or float64).
+        label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
     return _constructModifiedHelmholtzOperator(
         "modifiedHelmholtz3dDoubleLayerBoundaryOperator", context,
-        domain, range, dualToRange, waveNumber)
+        domain, range, dualToRange, waveNumber, label)
 
 def createModifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
-        context, domain, range, dualToRange, waveNumber):
-    """Return an adjoint double-layer-potential operator for the modified Helmholtz equation in 3D."""
+        context, domain, range, dualToRange, waveNumber, label=None):
+    """
+    Create and return an adjoint double-layer-potential boundary operator for
+    the modified Helmholtz equation in 3D.
+
+    *Arguments*
+        context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+        domain (Space)
+            Function space to be taken as the domain of the operator.
+        range (Space)
+            Function space to be taken as the range of the operator.
+        dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+        waveNumber (float or complex)
+            Wave number, i.e. the number k in the modified Helmholtz equation
+                nabla^2 u - k^2 u = 0.
+            Only real wave numbers are allowed if context.resultType() is a real
+            type (float32 or float64).
+        label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
     return _constructModifiedHelmholtzOperator(
         "modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator", context,
-        domain, range, dualToRange, waveNumber)
+        domain, range, dualToRange, waveNumber, label)
 
 def createModifiedHelmholtz3dHypersingularBoundaryOperator(
-         context, domain, range, dualToRange, waveNumber):
-     """Return a hypersingular operator for the modified Helmholtz equation in 3D."""
-     return _constructModifiedHelmholtzOperator(
+         context, domain, range, dualToRange, waveNumber, label=None):
+    """
+    Create and return a hypersingular boundary operator for the modified
+    Helmholtz equation in 3D.
+
+    *Arguments*
+        context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+        domain (Space)
+            Function space to be taken as the domain of the operator.
+        range (Space)
+            Function space to be taken as the range of the operator.
+        dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+        waveNumber (float or complex)
+            Wave number, i.e. the number k in the modified Helmholtz equation
+                nabla^2 u - k^2 u = 0.
+            Only real wave numbers are allowed if context.resultType() is a real
+            type (float32 or float64).
+        label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
+    return _constructModifiedHelmholtzOperator(
          "modifiedHelmholtz3dHypersingularBoundaryOperator", context, domain, range, dualToRange,
-         waveNumber)
+         waveNumber, label)
 
+def createIdentityOperator(context, domain, range, dualToRange, label=None):
+    """
+    Create and return a (generalized) identity operator.
 
-def createIdentityOperator(context, domain, range, dualToRange):
-    """Return an identity operator."""
+    Let X and Y be two function spaces defined on the same grid and represented
+    by Space objects supplied in the arguments 'domain' and 'range'. If X is a
+    superset of Y (in the mathematical sense), the object returned by this
+    function represents the orthogonal projection operator from X to Y. If X is
+    a subset of Y, the returned object represents the inclusion operator from X
+    to Y. If X is equal to Y, the returned object represents the standard
+    identity operator.
+
+    *Arguments*
+        context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+        domain (Space)
+            Function space to be taken as the domain of the operator.
+        range (Space)
+            Function space to be taken as the range of the operator.
+        dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+        label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+
+    All the three spaces ('domain', 'range' and 'dualToRange') must be defined
+    on the same grid.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
     return _constructOperator(
-        "identityOperator", context, domain, range, dualToRange)
+        "identityOperator", context, domain, range, dualToRange, label)
 
 def __gridFunctionFromFunctor(
         functorType,
@@ -386,18 +891,41 @@ def gridFunctionFromSurfaceNormalIndependentFunction(
         argumentDimension, resultDimension)
 
 def createDefaultIterativeSolver(boundaryOperator,
-                                 test_convergence="test_convergence_in_dual_to_range"):
-    """Return the default iterative linear solver.
+                                 convergenceTestMode="test_convergence_in_dual_to_range"):
+    """Create and return a DefaultIterativeSolver object.
 
-    This solver lets you solve the equation A f = g for the function
-    f, with A being the boundary operator passed via the boundaryOperator
-    argument and g a grid function supplied to the solve() method.
+    The DefaultIterativeSolver class acts as an interface to Belos, the
+    iterative solver package from Trilinos. It lets you solve the equation A f =
+    g for the function f, with A being a boundary operator and g a grid
+    function.
+
+    *Arguments*
+        boundaryOperator (BoundaryOperator or BlockedBoundaryOperator)
+            The boundary operator A standing on the left-hand-side of the
+            equation to be solved.
+        convergenceTestMode (string)
+            Convergence test mode. Can be either
+            "test_convergence_in_dual_to_range" (default) or
+            "test_convergence_in_range". See below.
+
+    Convergence can be tested either in the range space of the operator A or in
+    the space dual to the range. A standard Galerkin discretisation of the form
+    Ax = b maps into the space dual to the range of the operator. If you choose
+    to test in the range space, the equation pinv(M)Ax = pinv(M)b is solved,
+    where M is the mass matrix mapping from the range space into its dual and
+    pinv(M) is its pseudoinverse.
+
+    *Returns* a newly constructed
+    DefaultIterativeSolver_BasisFunctionType_ResultType object, with
+    BasisFunctionType and ResultType determined automatically from the
+    boundaryOperator argument and equal to either float32, float64, complex64 or
+    complex128.
     """
     basisFunctionType = boundaryOperator.basisFunctionType()
     resultType = boundaryOperator.resultType()
     result = _constructObjectTemplatedOnBasisAndResult(
         "DefaultIterativeSolver", basisFunctionType, resultType,
-        boundaryOperator,test_convergence)
+        boundaryOperator, convergenceTestMode)
     result._boundaryOperator = boundaryOperator
     return result
 
@@ -405,64 +933,212 @@ from core import defaultGmresParameterList
 from core import defaultCgParameterList
 
 def createAccuracyOptions():
-    "Return an AccuracyOptions object"
+    """Create and return an AccuracyOptions object with default settings."""
     return core.AccuracyOptions()
 
 def createAcaOptions():
-    "Return an AcaOptions object"
+    """Create and return an AcaOptions object with default settings."""
     return core.AcaOptions()
 
 def createEvaluationOptions():
-    "Return and EvaluationOptions object"
+    """Create and return an EvaluationOptions object with default settings."""
     return core.EvaluationOptions()
 
-def createBlockOperatorStructure(context):
-    """Return an BlockedOperatorStructure object"""
+def createBlockedOperatorStructure(context):
+    """
+    Create and return a BlockedOperatorStructure object.
+
+    BlockedOperatorStructure is a helper class used in construction of blocked
+    boundary operators. It represents a matrix of boundary operators. To
+    construct a blocked boundary operator, store individual boundary operators
+    in appropriate rows and columns of a BlockedOperatorStructure object,
+    repeatedly calling its setBlock() method, and pass this object to the
+    createBlockedBoundaryOperator() function for validation.
+
+    *Arguments*
+        context (Context)
+            A Context object. The values returned by
+            context.basisFunctionType() and context.resultType() will
+            determine the precise type of the newly constructed
+            BlockedOperatorStructure object.
+
+    *Returns* a newly constructed
+    BlockedOperatorStructure_BasisFunctionType_ResultType object, with
+    BasisFunctionType and ResultType determined automatically from the 'context'
+    argument and equal to either float32, float64, complex64 or complex128.
+    """
     name = 'BlockedOperatorStructure'
     return _constructObjectTemplatedOnBasisAndResult(
         name, context.basisFunctionType(), context.resultType())
 
+def createBlockOperatorStructure(context):
+    """
+    Deprecated. Superseded by createBlockedOperatorStructure().
+    """
+    print ("createBlockOperatorStructure(): DEPRECATED. Please use the"
+           "createBlockedOperatorStructure() function instead.")
+    return createBlockedOperatorStructure(context)
+
 def createBlockedBoundaryOperator(context,structure):
-    """Return a BlockedBoundaryOperator object"""
+    """
+    Create and return a BlockedBoundaryOperator object.
+
+    A blocked boundary operator is an operator that consists of several blocks
+    arranged in a matrix, each of which is an "elementary" boundary operator
+    represented by a BoundaryOperator object.
+
+    *Arguments*
+        structure (BlockedOperatorStructure)
+            A BlockedOperatorStructure object determining the boundary operators
+            to be put in specific blocks of the newly constructed blocked
+            boundary operator.
+
+    All the boundary operators from a single column of 'structure' must have the
+    same domain, and all the operators from a single row of 'structure' must have
+    the same range and space dual to range. No row and no column of 'structure'
+    must be completely empty (contain only uninitialized BoundaryOperator
+    objects). If these conditions are not satisfied, an exception is thrown.
+
+    *Returns* a newly constructed
+    BlockedBoundaryOperator_BasisFunctionType_ResultType object, with
+    BasisFunctionType and ResultType determined automatically from the
+    'structure' argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
     name = 'BlockedBoundaryOperator'
     return _constructObjectTemplatedOnBasisAndResult(
-        name, context.basisFunctionType(), context.resultType(),
-        structure)
+        name, context.basisFunctionType(), context.resultType(), structure)
 
-def createAcaApproximateLuInverse(operator,delta):
-    """Return an AcaApproximateLuInverse Object"""
-    name = 'createAcaApproximateLuInverse'
-    return _constructObjectTemplatedOnValue(name,operator.valueType(),operator,delta)
+def createAcaPreconditioner(operator, delta=1E-2):
+    """
+    Create and return an ACA preconditioner.
 
-def acaDiscreteOperatorToPreconditioner(operator,delta=1E-2):
-    """Return an ACA Preconditioner"""
+    *Arguments*
+        operator (DiscreteBoundaryOperator)
+            A discrete boundary operator stored in the form of an H-matrix.
+        delta (float)
+            Approximation accuracy.
+
+    *Returns* a Preconditioner_ValueType object representing an
+    approximate inverse of the operator supplied in the 'operator' argument,
+    stored in the form of an approximate H-matrix LU decomposition. ValueType is
+    set to operator.valueType().
+    """
     name = 'acaDiscreteOperatorToPreconditioner'
-    return _constructObjectTemplatedOnValue(name,operator.valueType(),operator,delta)
+    return _constructObjectTemplatedOnValue(
+        name, operator.valueType(), operator, delta)
 
-def acaBlockDiagonalPreconditioner(operators,deltas):
-    """Return a block diagonal ACA Preconditioner"""
+def acaDiscreteOperatorToPreconditioner(operator, delta=1E-2):
+    """
+    Deprecated. Superseded by createAcaPreconditioner().
+    """
+    print ("acaDiscreteOperatorToPreconditioner(): DEPRECATED: "
+           "use createAcaPreconditioner() instead.")
+    return createAcaPreconditioner(operator, delta)
+
+def createBlockDiagonalAcaPreconditioner(operators, deltas):
+    """
+    Create and return a block-diagonal ACA preconditioner.
+
+    *Arguments*
+        operators (list of DiscreteBoundaryOperators)
+            A list of discrete boundary operators stored in the form of
+            H-matrices.
+        delta (list of floats)
+            A list of numbers to be taken as the approximation accuracies of
+            successive operators.
+
+    The lists 'operators' and 'deltas' must have equal length and must not be
+    empty, otherwise an exception will be thrown.
+
+    *Returns* a Preconditioner_ValueType object representing a block-diagonal
+    preconditioners whose locks are the approximate inverses of the operators
+    supplied in the 'operators' argument, stored in the form of approximate
+    H-matrix LU decompositions. ValueType is set to operator.valueType().
+    """
     name = 'acaBlockDiagonalPreconditioner'
-    if len(operators)==0:
-        raise TypeError("acaBlockDiagonalPreconditioner(): "
-                        "Array 'operators' must not be empty.")
     typeName = operators[0].valueType()
-    return _constructObjectTemplatedOnValue(name,typeName,operators,deltas)
+    return _constructObjectTemplatedOnValue(name, typeName, operators, deltas)
 
-def acaOperatorApproximateLuInverse(operator,delta):
-    """Return the LU Approximate inverse of a DiscreteAcaOperator if it represents an H-Matrix"""
+def acaBlockDiagonalPreconditioner(operators, deltas):
+    print ("acaBlockDiagonalPreconditioner(): DEPRECATED: "
+           "use createBlockDiagonalAcaPreconditioner() instead.")
+    return createBlockDiagonalAcaPreconditioner(operators, deltas)
+
+def acaOperatorApproximateLuInverse(operator, delta):
+    """
+    Create and return a discrete boundary operator representing an approximate
+    inverse of an H-matrix.
+
+    *Arguments*
+        operator (DiscreteBoundaryOperator)
+            A discrete boundary operator stored in the form of an H-matrix.
+        delta (float)
+            Approximation accuracy.
+
+    *Returns* a DiscreteBoundaryOperator_ValueType object representing an
+    approximate inverse of the operator supplied in the 'operator' argument,
+    stored in the form of an approximate H-matrix LU decomposition. ValueType is
+    set to operator.valueType().
+    """
+    # name = 'createAcaApproximateLuInverse'
     name = 'acaOperatorApproximateLuInverse'
-    return _constructObjectTemplatedOnValue(name,operator.valueType(),operator,delta)
+    return _constructObjectTemplatedOnValue(
+        name, operator.valueType(), operator, delta)
 
-def scaledAcaOperator(operator,multiplier):
-    """Scale an H-Matrix by the factor given in multiplier"""
+def createAcaApproximateLuInverse(operator, delta):
+    """
+    Deprecated. Superseded by acaOperatorApproximateLuInverse().
+    """
+    print ("createAcaApproximateLuInverse(): DEPRECATED: "
+           "use acaOperatorApproximateLuInverse() instead.")
+    return acaOperatorApproximateLuInverse(operator, delta)
+
+def scaledAcaOperator(operator, multiplier):
+    """
+    Multiply a discrete boundary operator stored as an H-matrix by a scalar.
+
+    *Arguments*
+        operator (DiscreteBoundaryOperator)
+            A discrete boundary operator stored in the form of an H-matrix.
+        multiplier (float or complex, depending on operator.valueType())
+            Scalar with which the supplied operator should be multiplied.
+
+    *Returns* a newly constructed DiscreteBoundaryOperator_ValueType object
+    storing an H-matrix equal to the H-matrix stored in 'operator' and
+    multiplied by 'multiplier'. ValueType is set to operator.valueType().
+    """
     name = 'scaledAcaOperator'
-    return _constructObjectTemplatedOnValue(name,operator.valueType(),operator,multiplier)
+    return _constructObjectTemplatedOnValue(
+        name, operator.valueType(), operator, multiplier)
 
-def acaOperatorSum(op1,op2,eps,maximumRank):
-    """Add two H-Matrices"""
+def acaOperatorSum(op1, op2, eps, maximumRank):
+    """
+    Create and return a discrete boundary operator representing an approximate
+    sum of two discrete boundary operators stored as H-matrices.
+
+    *Arguments*
+        op1 (DiscreteBoundaryOperator)
+            First operand; a discrete boundary operator stored in the form of an
+            H-matrix.
+        op2 (DiscreteBoundaryOperator)
+            Second operand; a discrete boundary operator stored in the form of an
+            H-matrix.
+        eps (float)
+            Approximation accuracy. (TODO: explain better)
+        maximumRank (int)
+            Maximum rank of blocks that should be considered low-rank in the
+            H-matrix to be constructed.
+
+    *Returns* a newly constructed DiscreteBoundaryOperator_ValueType object
+    storing an H-matrix approximately equal to sum of the H-matrices stored in
+    the two operands. ValueType is set to op1.valueType() (which must be equal
+    to op2.valueType()).
+    """
     name = 'acaOperatorSum'
     if (op1.valueType() != op2.valueType()):
         raise TypeError("acaOperatorSum: ValueTypes of 'op1' and 'op2' do not match.")
-    return _constructObjectTemplatedOnValue(name,op1.valueType(),op1,op2,eps,maximumRank)
+    return _constructObjectTemplatedOnValue(
+        name, op1.valueType(), op1, op2, eps, maximumRank)
 
 
