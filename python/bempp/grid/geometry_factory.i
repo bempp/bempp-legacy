@@ -1,12 +1,12 @@
 %{
 #include "grid/geometry_factory.hpp"
-
-  %}
+%}
 
 namespace Bempp
 {
-  class Geometry;
+    class Geometry;
+    class GeometryFactory;
 }
 
-%include "grid/geometry_factory.hpp"
+// %include "grid/geometry_factory.hpp"
 
