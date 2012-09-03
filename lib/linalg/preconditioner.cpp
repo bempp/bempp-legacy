@@ -74,11 +74,15 @@ template<typename ValueType>
 Preconditioner<ValueType>
 acaBlockDiagonalPreconditioner(
         const std::vector<typename Preconditioner<ValueType>::DiscreteBoundaryOperatorPtr>& opVector,
-        const std::vector<typename Preconditioner<ValueType>::MagnitudeType>& deltas){
+        const std::vector<typename Preconditioner<ValueType>::MagnitudeType>& deltas)
+{
     size_t n = opVector.size();
-    if (n!= deltas.size())
-        throw std::runtime_error("PreconditionerFactory::acaBlockDiagonalPreconditioner: "
+    if (n != deltas.size())
+        throw std::runtime_error("acaBlockDiagonalPreconditioner: "
                                  "Input arrays must have same length");
+    if (n == 0)
+        throw std::runtime_error("acaBlockDiagonalPreconditioner: "
+                                 "Input arrays must not be empty");
 
     Fiber::_2dArray<typename Preconditioner<ValueType>::DiscreteBoundaryOperatorPtr> opStructure(n,n);
     std::vector<size_t> rowCounts;
