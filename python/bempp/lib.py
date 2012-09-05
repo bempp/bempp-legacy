@@ -126,16 +126,16 @@ def createNumericalQuadratureStrategy(basisFunctionType, resultType, accuracyOpt
     Methods" (2010). Quadrature accuracy can be influenced by the
     'accuracyOptions' parameter.
 
-    *Arguments*
-        basisFunctionType (string)
+    *Parameters:*
+       - basisFunctionType (string)
             Type used to represent the values of the (components of the) basis
             functions into which arguments of operators discretized with this
             strategy will be expanded.
 
-        resultType (string)
+       - resultType (string)
             Type used to represent the values of integrals.
 
-        accuracyOptions (AccuracyOptions)
+       - accuracyOptions (AccuracyOptions)
             Determines quadrature orders used to approximate different types of
             integrals. If set to None, default quadrature orders are used.
 
@@ -175,13 +175,13 @@ def createContext(factory, assemblyOptions):
     A Context determines the mechanics of the assembly of weak forms and the
     evaluation of potentials.
 
-    *Arguments*
-        quadStrategy (QuadratureStrategy)
+    *Parameters:*
+       - quadStrategy (QuadratureStrategy)
             Quadrature strategy to be used for the calculation of integrals
             occurring e.g. in the weak forms of boundary operators or in the
             definition of potential operators.
 
-        assemblyOptions (AssemblyOptions)
+       - assemblyOptions (AssemblyOptions)
             Further options influencing the weak-form assembly process.
 
     *Returns* a newly constructed Context_BasisFunctionType_ResultType object,
@@ -199,11 +199,11 @@ def createPiecewiseConstantScalarSpace(context, grid):
     Create and return a space of scalar functions defined on a grid and
     constant on each element of this grid.
 
-    *Arguments*
-        context (Context)
+    *Parameters:*
+       - context (Context)
             A Context object that will determine the type used to represent the
             values of the basis functions of the newly constructed space.
-        grid (Grid)
+       - grid (Grid)
             Grid on which the functions from the newly constructed space will be
             defined.
 
@@ -219,11 +219,11 @@ def createPiecewiseLinearContinuousScalarSpace(context, grid):
     Create and return a space of globally continuous scalar functions defined
     on a grid and linear on each element of this grid.
 
-    *Arguments*
-        context (Context)
+    *Parameters:*
+       - context (Context)
             A Context object that will determine the type used to represent the
             values of the basis functions of the newly constructed space.
-        grid (Grid)
+       - grid (Grid)
             Grid on which the functions from the newly constructed space will be
             defined.
 
@@ -268,17 +268,17 @@ def createLaplace3dSingleLayerBoundaryOperator(
     Create and return a single-layer-potential boundary operator for the
     Laplace equation in 3D.
 
-    *Arguments*
-        context (Context)
+    *Parameters:*
+       - context (Context)
             A Context object to control the assembly of the weak form of the
             newly constructed operator.
-        domain (Space)
+       - domain (Space)
             Function space to be taken as the domain of the operator.
-        range (Space)
+       - range (Space)
             Function space to be taken as the range of the operator.
-        dualToRange (Space)
+       - dualToRange (Space)
             Function space to be taken as the dual to the range of the operator.
-        label (string)
+       - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
 
@@ -296,17 +296,17 @@ def createLaplace3dDoubleLayerBoundaryOperator(
     Create and return a double-layer-potential boundary operator for the
     Laplace equation in 3D.
 
-    *Arguments*
-        context (Context)
+    *Parameters:*
+       - context (Context)
             A Context object to control the assembly of the weak form of the
             newly constructed operator.
-        domain (Space)
+       - domain (Space)
             Function space to be taken as the domain of the operator.
-        range (Space)
+       - range (Space)
             Function space to be taken as the range of the operator.
-        dualToRange (Space)
+       - dualToRange (Space)
             Function space to be taken as the dual to the range of the operator.
-        label (string)
+       - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
 
@@ -324,17 +324,17 @@ def createLaplace3dAdjointDoubleLayerBoundaryOperator(
     Create and return an adjoint double-layer-potential boundary operator for
     the Laplace equation in 3D.
 
-    *Arguments*
-        context (Context)
+    *Parameters:*
+       - context (Context)
             A Context object to control the assembly of the weak form of the
             newly constructed operator.
-        domain (Space)
+       - domain (Space)
             Function space to be taken as the domain of the operator.
-        range (Space)
+       - range (Space)
             Function space to be taken as the range of the operator.
-        dualToRange (Space)
+       - dualToRange (Space)
             Function space to be taken as the dual to the range of the operator.
-        label (string)
+       - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
 
@@ -352,17 +352,17 @@ def createLaplace3dHypersingularBoundaryOperator(
     Create and return a hypersingular boundary operator for the
     Laplace equation in 3D.
 
-    *Arguments*
-        context (Context)
+    *Parameters:*
+       - context (Context)
             A Context object to control the assembly of the weak form of the
             newly constructed operator.
-        domain (Space)
+       - domain (Space)
             Function space to be taken as the domain of the operator.
-        range (Space)
+       - range (Space)
             Function space to be taken as the range of the operator.
-        dualToRange (Space)
+       - dualToRange (Space)
             Function space to be taken as the dual to the range of the operator.
-        label (string)
+       - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
 
@@ -387,8 +387,8 @@ def createLaplace3dSingleLayerPotentialOperator(context):
     Create and return a single-layer potential operator for the Laplace
     equation in 3D.
 
-    *Arguments*
-        context (Context)
+    *Parameters:*
+       - context (Context)
             A Context object used to control the evaluation of integrals
             occurring in the definition of the potential operator.
 
@@ -411,8 +411,8 @@ def createLaplace3dDoubleLayerPotentialOperator(context):
     Create and return a double-layer potential operator for the Laplace
     equation in 3D.
 
-    *Arguments*
-        context (Context)
+    *Parameters:*
+       - context (Context)
             A Context object used to control the evaluation of integrals
             occurring in the definition of the potential operator.
 
@@ -458,20 +458,20 @@ def createHelmholtz3dSingleLayerBoundaryOperator(
     Create and return a single-layer-potential boundary operator for
     the Helmholtz equation in 3D.
 
-    *Arguments*
-        context (Context)
+    *Parameters:*
+       - context (Context)
             A Context object to control the assembly of the weak form of the
             newly constructed operator.
-        domain (Space)
+       - domain (Space)
             Function space to be taken as the domain of the operator.
-        range (Space)
+       - range (Space)
             Function space to be taken as the range of the operator.
-        dualToRange (Space)
+       - dualToRange (Space)
             Function space to be taken as the dual to the range of the operator.
-        waveNumber (float or complex)
+       - waveNumber (float or complex)
             Wave number, i.e. the number k in the Helmholtz equation
                 nabla^2 u + k^2 u = 0.
-        label (string)
+       - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
 
@@ -490,20 +490,20 @@ def createHelmholtz3dDoubleLayerBoundaryOperator(
     Create and return a double-layer-potential boundary operator for
     the Helmholtz equation in 3D.
 
-    *Arguments*
-        context (Context)
+    *Parameters:*
+       - context (Context)
             A Context object to control the assembly of the weak form of the
             newly constructed operator.
-        domain (Space)
+       - domain (Space)
             Function space to be taken as the domain of the operator.
-        range (Space)
+       - range (Space)
             Function space to be taken as the range of the operator.
-        dualToRange (Space)
+       - dualToRange (Space)
             Function space to be taken as the dual to the range of the operator.
-        waveNumber (float or complex)
+       - waveNumber (float or complex)
             Wave number, i.e. the number k in the Helmholtz equation
                 nabla^2 u + k^2 u = 0.
-        label (string)
+       - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
 
@@ -522,20 +522,20 @@ def createHelmholtz3dAdjointDoubleLayerBoundaryOperator(
     Create and return an adjoint double-layer-potential boundary operator for
     the Helmholtz equation in 3D.
 
-    *Arguments*
-        context (Context)
+    *Parameters:*
+       - context (Context)
             A Context object to control the assembly of the weak form of the
             newly constructed operator.
-        domain (Space)
+       - domain (Space)
             Function space to be taken as the domain of the operator.
-        range (Space)
+       - range (Space)
             Function space to be taken as the range of the operator.
-        dualToRange (Space)
+       - dualToRange (Space)
             Function space to be taken as the dual to the range of the operator.
-        waveNumber (float or complex)
+       - waveNumber (float or complex)
             Wave number, i.e. the number k in the Helmholtz equation
                 nabla^2 u + k^2 u = 0.
-        label (string)
+       - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
 
@@ -554,20 +554,20 @@ def createHelmholtz3dHypersingularBoundaryOperator(
     Create and return a hypersingular boundary operator for
     the Helmholtz equation in 3D.
 
-    *Arguments*
-        context (Context)
+    *Parameters:*
+       - context (Context)
             A Context object to control the assembly of the weak form of the
             newly constructed operator.
-        domain (Space)
+       - domain (Space)
             Function space to be taken as the domain of the operator.
-        range (Space)
+       - range (Space)
             Function space to be taken as the range of the operator.
-        dualToRange (Space)
+       - dualToRange (Space)
             Function space to be taken as the dual to the range of the operator.
-        waveNumber (float or complex)
+       - waveNumber (float or complex)
             Wave number, i.e. the number k in the Helmholtz equation
                 nabla^2 u + k^2 u = 0.
-        label (string)
+       - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
 
@@ -593,11 +593,11 @@ def createHelmholtz3dSingleLayerPotentialOperator(context, waveNumber):
     Create and return a single-layer potential operator for the Helmholtz
     equation in 3D.
 
-    *Arguments*
-        context (Context)
+    *Parameters:*
+       - context (Context)
             A Context object used to control the evaluation of integrals
             occurring in the definition of the potential operator.
-        waveNumber (float or complex)
+       - waveNumber (float or complex)
             Wave number, i.e. the number k in the Helmholtz equation
                 nabla^2 u + k^2 u = 0.
 
@@ -620,11 +620,11 @@ def createHelmholtz3dDoubleLayerPotentialOperator(context, waveNumber):
     Create and return a double-layer potential operator for the Helmholtz
     equation in 3D.
 
-    *Arguments*
-        context (Context)
+    *Parameters:*
+       - context (Context)
             A Context object used to control the evaluation of integrals
             occurring in the definition of the potential operator.
-        waveNumber (float or complex)
+       - waveNumber (float or complex)
             Wave number, i.e. the number k in the Helmholtz equation
                 nabla^2 u + k^2 u = 0.
 
@@ -685,22 +685,22 @@ def createModifiedHelmholtz3dSingleLayerBoundaryOperator(
     Create and return a single-layer-potential boundary operator for
     the modified Helmholtz equation in 3D.
 
-    *Arguments*
-        context (Context)
+    *Parameters:*
+       - context (Context)
             A Context object to control the assembly of the weak form of the
             newly constructed operator.
-        domain (Space)
+       - domain (Space)
             Function space to be taken as the domain of the operator.
-        range (Space)
+       - range (Space)
             Function space to be taken as the range of the operator.
-        dualToRange (Space)
+       - dualToRange (Space)
             Function space to be taken as the dual to the range of the operator.
-        waveNumber (float or complex)
+       - waveNumber (float or complex)
             Wave number, i.e. the number k in the modified Helmholtz equation
                 nabla^2 u - k^2 u = 0.
             Only real wave numbers are allowed if context.resultType() is a real
             type (float32 or float64).
-        label (string)
+       - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
 
@@ -719,22 +719,22 @@ def createModifiedHelmholtz3dDoubleLayerBoundaryOperator(
     Create and return a double-layer-potential boundary operator for
     the modified Helmholtz equation in 3D.
 
-    *Arguments*
-        context (Context)
+    *Parameters:*
+       - context (Context)
             A Context object to control the assembly of the weak form of the
             newly constructed operator.
-        domain (Space)
+       - domain (Space)
             Function space to be taken as the domain of the operator.
-        range (Space)
+       - range (Space)
             Function space to be taken as the range of the operator.
-        dualToRange (Space)
+       - dualToRange (Space)
             Function space to be taken as the dual to the range of the operator.
-        waveNumber (float or complex)
+       - waveNumber (float or complex)
             Wave number, i.e. the number k in the modified Helmholtz equation
                 nabla^2 u - k^2 u = 0.
             Only real wave numbers are allowed if context.resultType() is a real
             type (float32 or float64).
-        label (string)
+       - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
 
@@ -753,22 +753,22 @@ def createModifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
     Create and return an adjoint double-layer-potential boundary operator for
     the modified Helmholtz equation in 3D.
 
-    *Arguments*
-        context (Context)
+    *Parameters:*
+       - context (Context)
             A Context object to control the assembly of the weak form of the
             newly constructed operator.
-        domain (Space)
+       - domain (Space)
             Function space to be taken as the domain of the operator.
-        range (Space)
+       - range (Space)
             Function space to be taken as the range of the operator.
-        dualToRange (Space)
+       - dualToRange (Space)
             Function space to be taken as the dual to the range of the operator.
-        waveNumber (float or complex)
+       - waveNumber (float or complex)
             Wave number, i.e. the number k in the modified Helmholtz equation
                 nabla^2 u - k^2 u = 0.
             Only real wave numbers are allowed if context.resultType() is a real
             type (float32 or float64).
-        label (string)
+       - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
 
@@ -787,22 +787,22 @@ def createModifiedHelmholtz3dHypersingularBoundaryOperator(
     Create and return a hypersingular boundary operator for the modified
     Helmholtz equation in 3D.
 
-    *Arguments*
-        context (Context)
+    *Parameters:*
+       - context (Context)
             A Context object to control the assembly of the weak form of the
             newly constructed operator.
-        domain (Space)
+       - domain (Space)
             Function space to be taken as the domain of the operator.
-        range (Space)
+       - range (Space)
             Function space to be taken as the range of the operator.
-        dualToRange (Space)
+       - dualToRange (Space)
             Function space to be taken as the dual to the range of the operator.
-        waveNumber (float or complex)
+       - waveNumber (float or complex)
             Wave number, i.e. the number k in the modified Helmholtz equation
                 nabla^2 u - k^2 u = 0.
             Only real wave numbers are allowed if context.resultType() is a real
             type (float32 or float64).
-        label (string)
+       - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
 
@@ -827,17 +827,17 @@ def createIdentityOperator(context, domain, range, dualToRange, label=None):
     to Y. If X is equal to Y, the returned object represents the standard
     identity operator.
 
-    *Arguments*
-        context (Context)
+    *Parameters:*
+       - context (Context)
             A Context object to control the assembly of the weak form of the
             newly constructed operator.
-        domain (Space)
+       - domain (Space)
             Function space to be taken as the domain of the operator.
-        range (Space)
+       - range (Space)
             Function space to be taken as the range of the operator.
-        dualToRange (Space)
+       - dualToRange (Space)
             Function space to be taken as the dual to the range of the operator.
-        label (string)
+       - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
 
@@ -899,11 +899,11 @@ def createDefaultIterativeSolver(boundaryOperator,
     g for the function f, with A being a boundary operator and g a grid
     function.
 
-    *Arguments*
-        boundaryOperator (BoundaryOperator or BlockedBoundaryOperator)
+    *Parameters:*
+       - boundaryOperator (BoundaryOperator or BlockedBoundaryOperator)
             The boundary operator A standing on the left-hand-side of the
             equation to be solved.
-        convergenceTestMode (string)
+       - convergenceTestMode (string)
             Convergence test mode. Can be either
             "test_convergence_in_dual_to_range" (default) or
             "test_convergence_in_range". See below.
@@ -955,8 +955,8 @@ def createBlockedOperatorStructure(context):
     repeatedly calling its setBlock() method, and pass this object to the
     createBlockedBoundaryOperator() function for validation.
 
-    *Arguments*
-        context (Context)
+    *Parameters:*
+       - context (Context)
             A Context object. The values returned by
             context.basisFunctionType() and context.resultType() will
             determine the precise type of the newly constructed
@@ -987,8 +987,8 @@ def createBlockedBoundaryOperator(context,structure):
     arranged in a matrix, each of which is an "elementary" boundary operator
     represented by a BoundaryOperator object.
 
-    *Arguments*
-        structure (BlockedOperatorStructure)
+    *Parameters:*
+       - structure (BlockedOperatorStructure)
             A BlockedOperatorStructure object determining the boundary operators
             to be put in specific blocks of the newly constructed blocked
             boundary operator.
@@ -1013,10 +1013,10 @@ def createAcaPreconditioner(operator, delta=1E-2):
     """
     Create and return an ACA preconditioner.
 
-    *Arguments*
-        operator (DiscreteBoundaryOperator)
+    *Parameters:*
+       - operator (DiscreteBoundaryOperator)
             A discrete boundary operator stored in the form of an H-matrix.
-        delta (float)
+       - delta (float)
             Approximation accuracy.
 
     *Returns* a Preconditioner_ValueType object representing an
@@ -1040,11 +1040,11 @@ def createBlockDiagonalAcaPreconditioner(operators, deltas):
     """
     Create and return a block-diagonal ACA preconditioner.
 
-    *Arguments*
-        operators (list of DiscreteBoundaryOperators)
+    *Parameters:*
+       - operators (list of DiscreteBoundaryOperators)
             A list of discrete boundary operators stored in the form of
             H-matrices.
-        delta (list of floats)
+       - delta (list of floats)
             A list of numbers to be taken as the approximation accuracies of
             successive operators.
 
@@ -1070,10 +1070,10 @@ def acaOperatorApproximateLuInverse(operator, delta):
     Create and return a discrete boundary operator representing an approximate
     inverse of an H-matrix.
 
-    *Arguments*
-        operator (DiscreteBoundaryOperator)
+    *Parameters:*
+       - operator (DiscreteBoundaryOperator)
             A discrete boundary operator stored in the form of an H-matrix.
-        delta (float)
+       - delta (float)
             Approximation accuracy.
 
     *Returns* a DiscreteBoundaryOperator_ValueType object representing an
@@ -1098,10 +1098,10 @@ def scaledAcaOperator(operator, multiplier):
     """
     Multiply a discrete boundary operator stored as an H-matrix by a scalar.
 
-    *Arguments*
-        operator (DiscreteBoundaryOperator)
+    *Parameters:*
+       - operator (DiscreteBoundaryOperator)
             A discrete boundary operator stored in the form of an H-matrix.
-        multiplier (float or complex, depending on operator.valueType())
+       - multiplier (float or complex, depending on operator.valueType())
             Scalar with which the supplied operator should be multiplied.
 
     *Returns* a newly constructed DiscreteBoundaryOperator_ValueType object
@@ -1117,16 +1117,16 @@ def acaOperatorSum(op1, op2, eps, maximumRank):
     Create and return a discrete boundary operator representing an approximate
     sum of two discrete boundary operators stored as H-matrices.
 
-    *Arguments*
-        op1 (DiscreteBoundaryOperator)
+    *Parameters:*
+       - op1 (DiscreteBoundaryOperator)
             First operand; a discrete boundary operator stored in the form of an
             H-matrix.
-        op2 (DiscreteBoundaryOperator)
+       - op2 (DiscreteBoundaryOperator)
             Second operand; a discrete boundary operator stored in the form of an
             H-matrix.
-        eps (float)
+       - eps (float)
             Approximation accuracy. (TODO: explain better)
-        maximumRank (int)
+       - maximumRank (int)
             Maximum rank of blocks that should be considered low-rank in the
             H-matrix to be constructed.
 
