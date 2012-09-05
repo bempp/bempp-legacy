@@ -29,28 +29,28 @@ from optparse import OptionParser
 
 
 
-import py_modules.boost as boost
-import py_modules.armadillo as armadillo
-import py_modules.tbb as tbb
-import py_modules.dune as dune
-import py_modules.trilinos as trilinos
-import py_modules.bempp as bempp
 import py_modules.ahmed as ahmed
+import py_modules.armadillo as armadillo
+import py_modules.bempp as bempp
+import py_modules.boost as boost
+import py_modules.dune as dune
 import py_modules.mkl as mkl
+import py_modules.swig as swig
+import py_modules.tbb as tbb
 import py_modules.tools as tools
+import py_modules.trilinos as trilinos
 
-libraries = {'tbb':tbb,
-             'mkl':mkl,
+libraries = {'ahmed':ahmed,
              'armadillo':armadillo,
              'boost':boost,
              'dune':dune,
+             'mkl':mkl,
+             'swig':swig,
+             'tbb':tbb,
              'trilinos':trilinos,
-             'ahmed':ahmed
             }
 library_names = sorted(libraries.keys())
-# temporary -- for testing quickly the mkl setup
-library_names = ['mkl'] + library_names[:-3] + library_names[-2:]
-
+library_names = sorted(library_names, key=lambda n: -1 if n == 'mkl' or n == 'swig' else 1)
 
 ###########################
 

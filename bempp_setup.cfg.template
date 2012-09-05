@@ -150,6 +150,9 @@ prefix=/home/myname/
 [Dune]
 # Use this section to override compiler settings for Dune
 
+[Swig]
+# Use this section to override compiler settings for Swig
+
 [Trilinos]
 # Use this section to override compiler settings for Trilinos
 
