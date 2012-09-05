@@ -1,7 +1,29 @@
-import fileinput, re, sys
+import errno, fileinput, os, re, sys
 
 # should be the path to core.py
 core_fname = sys.argv[1]
+if not os.path.isfile(core_fname):
+    raise IOError(errno.ENOENT, "'" + core_fname + "' is not a file")
+
+# Constants
+
+pythonType = {
+    "float": "float32",
+    "double": "float64",
+    "std::complex< float >": "complex64",
+    "std::complex< double >": "complex128"
+    }
+
+magnitudeType = {
+    "float": "float",
+    "double": "double",
+    "std::complex< float >": "float",
+    "std::complex< double >": "double"
+    }
+
+print "Postprocessing docstrings..."
+
+# First postprocess the signatures...
 
 reSingleType = re.compile(
     r"-> boost::shared_ptr< (?:Bempp|Fiber)::(\w+)< "
@@ -14,6 +36,10 @@ reDoubleType = re.compile(
     "(float|double|std::complex< float >|std::complex< double >)"
     "(?:,Bempp::GeometryFactory,void)?"
     " > (?:const )?>")
+reComplexType = re.compile(
+    r"(?:Bempp|Fiber)::(\w+)< "
+    "(float|double|std::complex< float >|std::complex< double >)"
+    " >::ComplexType")
 reComplicatedSpace = re.compile(
     r"-> boost::shared_ptr< Bempp::(Space)< Bempp::AbstractBoundaryOperator< "
     "(float|double|std::complex< float >|std::complex< double >)"
@@ -46,23 +72,11 @@ reAutoPtr = re.compile(
 #     "(float|double|std::complex< float >|std::complex< double >)"
 #     ",Bempp::GeometryFactory,void"
 #     " > (?:const )?>")
-pythonType = {
-    "float": "float32",
-    "double": "float64",
-    "std::complex< float >": "complex64",
-    "std::complex< double >": "complex128"
-    }
-
-magnitudeType = {
-    "float": "float",
-    "double": "double",
-    "std::complex< float >": "float",
-    "std::complex< double >": "double"
-    }
 
 for l in fileinput.input(core_fname, inplace=1):
     orig_l = l
     l = reMagnitudeOrCoordinateType.sub("-> float", l)
+    l = reComplexType.sub(r"\2", l)
     m = reSingleType.search(l)
     if m:
         type_ = m.group(2)
@@ -103,8 +117,8 @@ for l in fileinput.input(core_fname, inplace=1):
     l = l.replace("-> IndexSet::IndexType", "-> int")
     print l, # Write the line into the output file
 
+# And now postprocess the parameter lists
 
-# Remove the useless 'self' parameter from the Parameters list
 f = open(core_fname, "r")
 text = f.read()
 f.close()
@@ -262,8 +276,9 @@ reParametersWithSelfOnly = re.compile(
     r"^ *Parameters:\n *self: .*\n\n", re.MULTILINE)
 reParametersBeginningWithSelf = re.compile(
     r"^( *Parameters:\n) *self: .*\n", re.MULTILINE)
+
 text = reParametersWithSelfOnly.sub("", text)
-text = reParametersBeginningWithSelf.sub("\1", text)
+text = reParametersBeginningWithSelf.sub(r"\1", text)
 text = reParameters.sub(replaceParameters, text)
 
 f = open(core_fname, "w")
