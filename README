@@ -1,57 +1,74 @@
-BEMPP is a novel open source HPC boundary element library. Coding 
-started in October 2011.
+BEMPP is a novel open source HPC boundary element library. Coding started in
+October 2011.
 
-If you want to compile the code please be aware that
-we do not yet guarantee that every commit will compile.
+If you want to compile the code please be aware that we do not yet guarantee
+that every commit will compile.
 
-The library has been tested under RedHat Enterprise 5,6 compatible systems, and 
+The library has been tested under RedHat Enterprise 5,6 compatible systems and
 Mac OS 10.7.
 
-To build the library you need current versions of cmake (2.8 or better) and swig (2.0 or better).
-For the Python Interface we mostly test with Enthought Python. But other distributions will
-also work. However, Python visualization depends on Mayavi being available.
+To build the library you need current versions of cmake (2.8 or better) and swig
+(2.0.4 or better; 2.0.7 is strongly recommended).  For the Python Interface we
+mostly test with Enthought Python. But other distributions will also
+work. However, Python visualization depends on Mayavi being available.
 
 To build the library the following steps are necessary:
 
-1.) Copy the file bempp_setup.cfg.template into another file (e.g. my_config.cfg)
-and adapt the configuration variables. 
+1. Copy the file bempp_setup.cfg.template into another file
+   (e.g. bempp_setup.cfg) and adapt the configuration variables.
 
-2.) Update the installation directory and other options as needed. You may wish to at least change
-the following options:
+   You may wish to change at least the following options:
 
-    - Location of BLAS and Lapack. You can either use MKL or manually specify BLAS and Lapack libraries.
-      If you use Enthought Python you can specify that the library uses the MKL libraries delivered
-      with the Python distribution (highly recommended).
-    - Enable AHMED for H-Matrix support. You need to specify "enable_ahmed=yes" and point the option
-      "file_name" in the AHMED section to the location of the AHMED installer file. You can download the
-      file from http://bebendorf.ins.uni-bonn.de/AHMED.html.
+   - Location of BLAS and Lapack.  You can either use MKL or manually specify
+     BLAS and Lapack libraries.  If you intend to use the Python wrappers of
+     BEM++, we recommend linking BEM++ with the same BLAS and Lapack as the
+     NumPy package.  If your NumPy is linked with MKL (this is the case in
+     Enthought Python, in particular), you can tell the BEM++ installer to
+     detect the location of the MKL libraries automatically.
 
-3.) Run the command
+   - Enable AHMED for H-Matrix support. You need to specify "enable_ahmed=yes"
+     and point the option "file_name" in the AHMED section to the location of
+     the AHMED installer file. You can download the file from
+     http://bebendorf.ins.uni-bonn.de/AHMED.html.
 
-    python bempp_setup.py -c my_config.cfg
+2. Run the command
 
-    This downloads all dependencies, generates a config file with automatically detected options and
-    sets up the installation directory. Note that you need to have write access to the installation
-    directory.
+   python bempp_setup.py -c my_config.cfg
 
-4.) Run the command
+   This downloads all dependencies, generates a config file with automatically
+   detected options and sets up the installation directory. Note that you need
+   to have write access to the installation directory.
 
-    python bempp_setup.py -i all my_config.cfg
+3. Run the command
 
-    This installs the complete library.
+   python bempp_setup.py -i all my_config.cfg
 
-    The library will be availabe at <prefix>/bempp/lib and the python module at <prefix>/bempp/python.
-    Note that the generation of the Python module takes a very long time. Therefore, the installer 
-    may seem to hang for a few minutes without doing anything.
+   This builds all the dependencies and installs them, and subsequently
+   proceeds to building and installing BEM++ itself.
 
-5.) Have a look at the examples in the source directory under "examples" and "python/examples". The C++
-    examples have been built and written to "<build_dir>/examples" after a succesful installation.
+   The library will be installed into <prefix>/bempp/lib and the python module
+   at <prefix>/bempp/python, where <prefix> is the directory specified in the
+   configuration file.  Note that the generation of the Python module takes
+   rather a long time. Therefore, the installer may seem to hang for a few
+   minutes without doing anything.
 
-6.) If you have doxygen you can generate a class documentation by going into <build_dir> and run make doc
-    to generate the html class documentation, which is then available under <build_dir>/doc/html/index.html. You are advised to use a recent version of Doxygen (e.g. 1.8.2), since older versions do not always parse C++ templates properly.
+4. Have a look at the examples in the source directory under "examples" and
+   "python/examples". The C++ examples have been built and written to
+   "<build_dir>/examples" after a successful installation.
 
-The library is not yet officially released. We are still working on the documentation and smaller
-issues with the code. If you want to try it and run into problems please let us now.
+5. If you have Doxygen installed, you can generate documentation of the C++ API
+   of BEM++ by going into <build_dir> and typing "make doc". The documentation
+   is generated in the <build_dir>/doc/html directory. You are advised to use a
+   recent version of Doxygen (e.g. 1.8.2), since older versions do not always
+   parse C++ templates properly.
+
+6. If you have Sphinx installed, you can generate documentation of the Python
+   API of BEM++ by going into <build_dir> and typing "make python_doc". The
+   documentation is generated in the <build_dir>/python/doc/html directory.
+
+The library is not yet officially released. We are still working on the
+documentation and smaller issues with the code. If you want to try it and run
+into problems please let us now.
 
 The BEM++ Team
 
