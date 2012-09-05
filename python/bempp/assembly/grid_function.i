@@ -45,11 +45,15 @@ gridFunctionFromPythonSurfaceNormalDependentFunctor(
 namespace Bempp
 {
 
+%typemap(typecheck) VtkWriter::DataType
+{
+    $1 = PyString_Check($input);
+}
 %typemap(in) (VtkWriter::DataType dataType)
 {
     if (!PyString_Check($input))
     {
-        PyErr_SetString(PyExc_TypeError, "in method '$symname', argument $argnum: expected a string"); 
+        PyErr_SetString(PyExc_TypeError, "in method '$symname', argument $argnum: expected a string");
         SWIG_fail;
     }
     const std::string s(PyString_AsString($input));
@@ -59,7 +63,9 @@ namespace Bempp
         $1 = Bempp::VtkWriter::VERTEX_DATA;
     else
     {
-        PyErr_SetString(PyExc_ValueError, "in method '$symname', argument $argnum: expected one of 'ascii', 'base64', 'appendedraw' or 'appendedbase64'");        
+        PyErr_SetString(PyExc_ValueError,
+                        "in method '$symname', argument $argnum: "
+                        "expected either 'cell_data' or 'vertex_data'");
         SWIG_fail;
     }
 }

@@ -26,7 +26,9 @@ namespace Bempp {
 {
     if (!PyString_Check($input))
     {
-        PyErr_SetString(PyExc_TypeError, "in method '$symname', argument $argnum: expected a string");
+        PyErr_SetString(PyExc_TypeError,
+                        "in method '$symname', argument $argnum: "
+                        "expected a string");
         SWIG_fail;
     }
     const std::string s(PyString_AsString($input));
@@ -36,7 +38,10 @@ namespace Bempp {
         $1 = Bempp::ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE;
     else
     {
-        PyErr_SetString(PyExc_ValueError, "in method '$symname', argument $argnum: expected one of 'test_convergence_in_range' or 'test_convergence_in_dual_to_range'.");
+        PyErr_SetString(PyExc_ValueError,
+                        "in method '$symname', argument $argnum: "
+                        "expected one of 'test_convergence_in_range' or "
+                        "'test_convergence_in_dual_to_range'.");
         SWIG_fail;
     }
 }

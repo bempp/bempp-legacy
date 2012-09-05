@@ -8,11 +8,15 @@ namespace Bempp
 {
 
 // Handle the enum VtkWriter::OutputType like a string
+%typemap(typecheck) VtkWriter::OutputType
+{
+    $1 = PyString_Check($input);
+}
 %typemap(in) VtkWriter::OutputType
 {
     if (!PyString_Check($input))
     {
-        PyErr_SetString(PyExc_TypeError, "in method '$symname', argument $argnum: expected a string"); 
+        PyErr_SetString(PyExc_TypeError, "in method '$symname', argument $argnum: expected a string");
         SWIG_fail;
     }
     const std::string s(PyString_AsString($input));
@@ -26,18 +30,21 @@ namespace Bempp
         $1 = Bempp::VtkWriter::APPENDED_BASE_64;
     else
     {
-        PyErr_SetString(PyExc_ValueError, "in method '$symname', argument $argnum: expected one of 'ascii', 'base64', 'appendedraw' or 'appendedbase64'");        
+        PyErr_SetString(PyExc_ValueError,
+                        "in method '$symname', argument $argnum: "
+                        "expected one of 'ascii', 'base64', 'appendedraw' or "
+                        "'appendedbase64'");
         SWIG_fail;
     }
 }
-    
+
 %apply const arma::Mat<double>& IN_MAT_OUT_WRAPPERS {
     const arma::Mat<double>& data
-}; 
+};
 
-%extend VtkWriter 
+%extend VtkWriter
 {
-    // Store references to the Numpy and Armadillo array objects 
+    // Store references to the Numpy and Armadillo array objects
     // holding data to be exported to the VTK file
     %pythonappend addCellData %{
         try:
@@ -51,7 +58,7 @@ namespace Bempp
         val = None
     %}
 
-    // Store references to the Numpy and Armadillo array objects 
+    // Store references to the Numpy and Armadillo array objects
     // holding data to be exported to the VTK file
     %pythonappend addVertexData %{
         try:
@@ -65,7 +72,7 @@ namespace Bempp
         val = None
     %}
 
-    // No references to Numpy or Armadillo array objects 
+    // No references to Numpy or Armadillo array objects
     // need to be stored any longer
     %pythonappend clear %{
         self._python_data = None

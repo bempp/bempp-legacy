@@ -146,6 +146,7 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "assembly/assembly_options.i"
 %include "assembly/numerical_quadrature_strategy.i"
 %include "assembly/transposition_mode.i"
+%include "assembly/symmetry.i"
 %include "assembly/python_surface_normal_independent_functor.i"
 %include "assembly/python_surface_normal_dependent_functor.i"
 %include "assembly/discrete_boundary_operator.i"
