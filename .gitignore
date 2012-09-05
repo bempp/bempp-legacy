@@ -4,12 +4,14 @@
 .project
 *.DS_Store
 /nbproject/private/
+/contrib/ahmed/
 /contrib/armadillo*
 /contrib/dune/
 /contrib/boost/
 /contrib/files/
-/contrib/tbb
+/contrib/tbb/
 /contrib/trilinos/
+/contrib/swig/
 /contrib/dune-common/dune/common/.deps/
 /contrib/dune-common/lib/.deps/
 /contrib/dune-common/dune/common/test/.deps/
