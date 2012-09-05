@@ -35,7 +35,12 @@ def prepare(root,config):
         config.set('Bempp','build_type','Release')
 
     tools.setDefaultConfigOption(config,'Bempp','build','true')
+
     tools.setDefaultConfigOption(config,'Bempp','build_dir',root+'/build')
+    build_dir = config.get('Bempp','build_dir')
+    # Replace ~ with /home/username
+    build_dir = os.path.expanduser(build_dir)
+    config.set('Bempp','build_dir',build_dir)
 
     tools.setCompilerOptions(config,'Bempp')
 
