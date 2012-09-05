@@ -4,11 +4,11 @@
 # interface of BEM++. In particular, it makes the docs generic
 # with respect to BasisFunctionType and ResultType.
 
-import glob, os, re, shutil, sys
+import errno, glob, os, re, shutil, sys
 
 html_dir = sys.argv[1]
 if not os.path.isdir(html_dir):
-    raise IOError("'" + html_dir + "' is not a directory")
+    raise IOError(errno.ENOENT, "'" + html_dir + "' is not a directory")
 paths = glob.glob(os.path.join(html_dir, "*.html"))
 
 print "Postprocessing Python documentation..."
