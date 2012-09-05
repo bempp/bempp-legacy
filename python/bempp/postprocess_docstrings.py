@@ -101,6 +101,8 @@ for l in fileinput.input(core_fname, inplace=1):
         l = reAutoPtr.sub(replacement, l)
     l = l.replace("-> Bempp::", "-> ")
     l = l.replace("-> IndexSet::IndexType", "-> int")
+    print l, # Write the line into the output file
+
 
 # Remove the useless 'self' parameter from the Parameters list
 f = open(core_fname, "r")
