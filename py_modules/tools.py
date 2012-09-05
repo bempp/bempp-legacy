@@ -1,4 +1,4 @@
-import os,subprocess,sys, shutil
+import errno,os,subprocess,sys, shutil
 from subprocess import CalledProcessError
 
 
@@ -14,12 +14,12 @@ def extract_file(path, to_directory='.'):
         opener, mode = tarfile.open, 'r:gz'
     elif path.endswith('.tar.bz2') or path.endswith('.tbz'):
         opener, mode = tarfile.open, 'r:bz2'
-    else: 
+    else:
         raise ValueError, "Could not extract `%s` as no appropriate extractor is found" % path
-    
+
     cwd = os.getcwd()
     os.chdir(to_directory)
-    
+
     try:
         file = opener(path, mode)
         try: file.extractall()
@@ -27,7 +27,7 @@ def extract_file(path, to_directory='.'):
     finally:
         os.chdir(cwd)
 
-# Taken from 
+# Taken from
 # http://stackoverflow.com/questions/715417/converting-from-a-string-to-boolean-in-python
 
 def to_bool(value):
@@ -42,7 +42,7 @@ def to_bool(value):
 
 def writeOptions(root,config):
     """Write out options in a format suitable for a shell script"""
-   
+
     fname=root+"/.options.cfg"
     f=open(fname,'w')
     f.write("# This file is created automatically by bempp_setup.py\n")
@@ -68,7 +68,7 @@ def pythonInfo():
     """Return a tuple (exe,lib,include) with the paths of the Python Interpeter, Python library and include directory"""
 
     import sys,os
-    
+
     exe = sys.executable
     lib_no_suffix = sys.prefix+"/lib/libpython"+str(sys.version_info[0])+"."+str(sys.version_info[1])
     if sys.platform.startswith('darwin'):
@@ -127,17 +127,24 @@ def testBlas(root,config):
     os.chdir(root+"/test_blas/build")
     config_string = "CC="+cc+" CXX="+cxx+" CFLAGS='"+cflags+"' CXXFLAGS='"+cxxflags+"' cmake -D BLAS_LIBRARIES:STRING=\""+blas+"\" .."
     try:
-        subprocess.check_call(config_string,shell=True,stdout=fnull,stderr=fnull)
-        subprocess.check_call("make",shell=True,stdout=fnull,stderr=fnull)
-    except:
+        subprocess.check_output(config_string,shell=True,stderr=subprocess.STDOUT)
+        subprocess.check_output("make",stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError, ex:
         fnull.close()
-        raise Exception("Building BLAS tests failed. Please check your compiler and BLAS library settings")
+        raise Exception("Building BLAS tests failed with the following output:\n" +
+                        ex.output +
+                        "Please check your compiler and BLAS library settings.")
     try:
-        subprocess.check_call(ld_path+ "./test_blas",shell=True,stdout=fnull,stderr=fnull)
-    except:
+        subprocess.check_output(ld_path+"./test_blas",shell=True,
+                                stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError, ex:
         os.chdir(cwd)
         fnull.close()
-        raise Exception("BLAS is not working correctly. Please check your libraries and your DYLD_LIBRARY_PATH or LD_LIBRARY_PATH settings.")
+        raise Exception("BLAS test failed with the following output:\n" +
+                        ex.output +
+                        "Please check your libraries and your DYLD_LIBRARY_PATH "
+                        "or LD_LIBRARY_PATH settings.")
+
     # Test for zdotc convention
     g77 = False
     try:
@@ -146,17 +153,19 @@ def testBlas(root,config):
         g77 = True
     if g77:
         try:
-            subprocess.check_call(ld_path+"./test_zdotc_g77",shell=True,stdout=fnull,stderr=fnull)
+            subprocess.check_call(ld_path+"./test_zdotc_g77",shell=True,
+            stdout=fnull,stderr=fnull)
         except:
             os.chdir(cwd)
             fnull.close()
-            raise Exception("ZDOTC works neither in G77 nor in GFortran modus. Please check your BLAS libraries")
+            raise Exception("ZDOTC works neither in G77 nor in GFortran modus. "
+                            "Please check your BLAS libraries")
         setDefaultConfigOption(config,'AHMED','with_g77','ON',overwrite=True)
     else:
         setDefaultConfigOption(config,'AHMED','with_g77','OFF',overwrite=True)
     os.chdir(cwd)
     print "BLAS configuration successfully completed."
-    
+
 def testLapack(root,config):
     """Test if BLAS functions correctly and set whether G77 calling convention is needed"""
     cwd = os.getcwd()
@@ -176,23 +185,30 @@ def testLapack(root,config):
     else:
         raise Exception("Wrong architecture.")
 
-
     os.mkdir(root+"/test_lapack/build")
     os.chdir(root+"/test_lapack/build")
     config_string = "CC="+cc+" CXX="+cxx+" CFLAGS='"+cflags+"' CXXFLAGS='"+cxxflags+"' cmake -D BLAS_LIBRARIES:STRING=\""+blas+"\" -D LAPACK_LIBRARIES=\""+lapack+"\" .."
     try:
-        subprocess.check_call(config_string,shell=True,stdout=fnull,stderr=fnull)
-        subprocess.check_call("make",shell=True,stdout=fnull,stderr=fnull)
-    except:
+        subprocess.check_output(config_string,shell=True,stderr=subprocess.STDOUT)
+        subprocess.check_output("make",shell=True,stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError, ex:
         fnull.close()
-        raise Exception("Building LAPACK tests failed. Please check your compiler and BLAS library settings")
+        raise Exception("Building LAPACK tests failed with the following output:\n" +
+                        ex.output +
+                        "\nPlease check your compiler as well as BLAS and Lapack "
+                        "library settings.\n")
     try:
-        subprocess.check_call(ld_path+ "./test_lapack",shell=True,stdout=fnull,stderr=fnull)
-    except:
+        subprocess.check_output(ld_path+ "./test_lapack",shell=True,
+                                stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError, ex:
         os.chdir(cwd)
         fnull.close()
-        raise Exception("LAPACK is not working correctly. Please check your libraries and your DYLD_LIBRARY_PATH or LD_LIBRARY_PATH settings.")
+        raise Exception("LAPACK test failed with the following output:\n" +
+                        ex.output +
+                        "Please check your libraries and your DYLD_LIBRARY_PATH "
+                        "or LD_LIBRARY_PATH settings.")
     os.chdir(cwd)
+    fnull.close()
     print "LAPACK configuration successfully completed."
 
 def checkDeleteDirectory(dir):
@@ -226,7 +242,4 @@ def setCompilerOptions(config,section):
     cxxflags = config.get(section,'cxxflags')
 
     config.set(section,'cflags',cflags + " " + optflags)
-    config.set(section,'cxxflags',cxxflags + " " + optflags) 
-    
-    
-
+    config.set(section,'cxxflags',cxxflags + " " + optflags)
