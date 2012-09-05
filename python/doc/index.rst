@@ -11,9 +11,10 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: bempp.core
+   bempp_core
+   bempp_lib
+   bempp_visualization
 
-.. automodule:: bempp.lib
 
 Indices and tables
 ==================

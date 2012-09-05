@@ -2,7 +2,10 @@ include_directories(${PROJECT_SOURCE_DIR}/lib)
 
 find_package(SWIG REQUIRED)
 if (SWIG_VERSION VERSION_LESS 2.0.4)
-    message(FATAL_ERROR "Swig version 2.0.4 is required to compile BEM++ Python wrappers")
+    message(FATAL_ERROR "Swig version 2.0.4 or higher is required to compile BEM++ Python wrappers")
+endif ()
+if (SWIG_VERSION VERSION_LESS 2.0.7)
+    message(WARNING "Swig version 2.0.7 or higher is strongly recommended to compile BEM++ Python wrappers; older versions may produce incorrect docstrings")
 endif ()
 include(${SWIG_USE_FILE})
 
@@ -31,6 +34,17 @@ set(SWIG_MODULE_core_EXTRA_DEPS ${SWIG_SOURCES})
 swig_add_module(core python core.i)
 swig_link_libraries(core ${PYTHON_LIBRARY} bempp)
 
+# Postprocess docstrings
+add_custom_command(
+    TARGET ${SWIG_MODULE_core_REAL_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} copy -E
+            ${CMAKE_CURRENT_BINARY_DIR}/core.py
+            ${CMAKE_CURRENT_BINARY_DIR}/core.py.orig
+    COMMAND ${PYTHON_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/postprocess_docstrings.py
+            ${CMAKE_CURRENT_BINARY_DIR}/core.py)
+
 ### Move __init__.py to the build directory ###################################
 
 if (NOT (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR}))
@@ -55,7 +69,7 @@ endif ()
 
 ###############################################################################
 
-install(DIRECTORY ${CMAKE_BINARY_DIR}/python/bempp DESTINATION bempp/python FILES_MATCHING 
+install(DIRECTORY ${CMAKE_BINARY_DIR}/python/bempp DESTINATION bempp/python FILES_MATCHING
 	PATTERN "CMakeFiles" EXCLUDE
-	PATTERN "determineNumpyPath.py" EXCLUDE	  
+	PATTERN "determineNumpyPath.py" EXCLUDE
 	PATTERN "*.py" PATTERN "*.so")
