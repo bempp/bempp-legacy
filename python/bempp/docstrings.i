@@ -6,13 +6,15 @@
 %enddef
 
 // class -> class name
-// method -> method name 
-// auto_param_list -> if true, the parameter list and result's type will be 
-// generated automatically, otherwise it should be provided explicitly 
+// method -> method name
+// auto_param_list -> if true, the parameter list and result's type will be
+// generated automatically, otherwise it should be provided explicitly
 // in the docstring
 %define DECLARE_METHOD_DOCSTRING(class, method, auto_param_list)
 #if auto_param_list
     %feature("autodoc", 0) class::method;
+#else
+    %feature("autodoc", class ## _ ## method ## _autodoc_docstring) class::method;
 #endif
 %feature("docstring", class ## _ ## method ## _docstring) class::method;
 %enddef
@@ -36,7 +38,7 @@
 %enddef
 
 %define BEMPP_DECLARE_DOCSTRING_FOR_CLASS_TEMPLATED_ON_BASIS(class)
-%feature("docstring", class ## _docstring(float32)) 
+%feature("docstring", class ## _docstring(float32))
          Bempp:: ## class ## < float >;
 %feature("docstring", class ## _docstring(complex64))
          Bempp:: ## class ## < std::complex<float> >;
@@ -47,7 +49,7 @@
 %enddef
 
 %define BEMPP_DECLARE_DOCSTRING_FOR_METHOD_OF_CLASS_TEMPLATED_ON_BASIS(class, method)
-%feature("docstring", class ## _ ## method ## _docstring(float32)) 
+%feature("docstring", class ## _ ## method ## _docstring(float32))
          Bempp:: class < float > :: method;
 %feature("docstring", class ## _ ## method ## _docstring(complex64))
          Bempp:: class < std::complex<float> > :: method;
@@ -58,7 +60,7 @@
 %enddef
 
 %define BEMPP_DECLARE_DOCSTRING_FOR_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(class)
-%feature("docstring", class ## _docstring(float32, float32)) 
+%feature("docstring", class ## _docstring(float32, float32))
          Bempp:: ## class ## < float, float >;
 %feature("docstring", class ## _docstring(float32, complex64))
          Bempp:: ## class ## < float, std::complex<float> >;
@@ -73,7 +75,7 @@
 %enddef
 
 %define BEMPP_DECLARE_DOCSTRING_FOR_METHOD_OF_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(class, method)
-%feature("docstring", class ## _ ## method ## _docstring(float32, float32)) 
+%feature("docstring", class ## _ ## method ## _docstring(float32, float32))
          Bempp:: class < float, float > :: method;
 %feature("docstring", class ## _ ## method ## _docstring(float32, complex64))
          Bempp:: class < float, std::complex<float> > :: method;

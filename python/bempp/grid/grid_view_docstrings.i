@@ -6,22 +6,22 @@
 This class provides a means to access a specific subset of entities,
 for example the leaf entities or the entities on a certain refinement
 level."
-%enddef 
+%enddef
 
 %define GridView_indexSet_docstring
 "The index set."
-%enddef 
+%enddef
 
 %define GridView_entityCount_docstring
 "Number of entities with certain characteristics.
 
-*Arguments:*
-    codim (int)
+*Parameters:*
+   - codim (int)
         codimension
-    type (GeometryType)
+   - type (GeometryType)
         geometry type
 "
-%enddef 
+%enddef
 
 %define GridView_containsEntity_autodoc_docstring
 "containsEntity(self, e) -> bool"
@@ -30,9 +30,9 @@ level."
 %define GridView_containsEntity_docstring
 "True if the entity e belongs to this grid view.
 
-If e is not an element of the grid, then the result of containsEntity() is 
+If e is not an element of the grid, then the result of containsEntity() is
 undefined."
-%enddef 
+%enddef
 
 %define GridView_entities_autodoc_docstring
 "entities(self, codim) -> EntityIterator"
@@ -40,9 +40,9 @@ undefined."
 
 %define GridView_entities_docstring
 "Iterator over entities of codimension codim contained in this view."
-%enddef 
+%enddef
 
-// TODO: handle the optional param properly 
+// TODO: handle the optional param properly
 %define GridView_vtkWriter_autodoc_docstring
 "vtkWriter(self, dm = 'conforming') -> VtkWriter"
 %enddef
@@ -50,13 +50,13 @@ undefined."
 %define GridView_vtkWriter_docstring
 "VtkWriter for this grid view.
 
-*Arguments:*
-    dm (string, optional)
-        data mode, `conforming' (default) or `nonconforming'
+*Parameters:*
+   - dm (string, optional)
+        data mode, 'conforming' (default) or 'nonconforming'
 
-See the documentation of Dune::VTK::DataMode for more information about the 
+See the documentation of Dune::VTK::DataMode for more information about the
 implications of the choice of data mode."
-%enddef 
+%enddef
 
 // Declarations ----------------------------------------------------------------
 

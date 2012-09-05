@@ -2,7 +2,7 @@
 
 %define Geometry_docstring
 "Geometry of an entity."
-%enddef 
+%enddef
 
 %define Geometry_type_docstring
 "Type of the reference element."
@@ -16,11 +16,11 @@
 "Number of corners of the reference element."
 %enddef
 
-%define Geometry_corners_autodoc_docstring
+%define Geometry_getCorners_autodoc_docstring
 "corners(self) -> ndarray"
 %enddef
 
-%define Geometry_corners_docstring
+%define Geometry_getCorners_docstring
 "Positions of the geometry corners.
 
 Returns a 2D array whose ith column contains the coordinates of
@@ -35,8 +35,8 @@ of the generic reference element."
 %define Geometry_local2global_docstring
 "Convert local (logical) to global (physical) coordinates.
 
-*Arguments:*
-    local (ndarray)
+*Parameters:*
+   - local (ndarray)
         2D array whose ith column contains the local coordinates of a point x_i
 
 Returns a 2D array whose ith column contains the global coordinates of x_i."
@@ -49,24 +49,24 @@ Returns a 2D array whose ith column contains the global coordinates of x_i."
 %define Geometry_global2local_docstring
 "Convert global (physical) to local (logical) coordinates.
 
-*Arguments:*
-    global (ndarray)
+*Parameters:*
+   - global (ndarray)
         2D array whose ith column contains the global coordinates of a point x_i.
-      
+
 Returns a 2D whose ith column contains the local coordinates of x_i."
 %enddef
 
-%define Geometry_integrationElements_autodoc_docstring
+%define Geometry_getIntegrationElements_autodoc_docstring
 "integrationElement(self, local) -> ndarray"
 %enddef
 
-%define Geometry_integrationElements_docstring
+%define Geometry_getIntegrationElements_docstring
 "The factor mu appearing in the integral transformation formula.
 
 See the documentation of the C++ interface for the definition of mu.
 
-*Arguments:*
-    local (ndarray)
+*Parameters:*
+   - local (ndarray)
         2D array whose ith column contains the local coordinates of a point x_i.
 
 Returns a vector whose ith entry contains the integration element mu(x_i)."
@@ -80,11 +80,11 @@ Returns a vector whose ith entry contains the integration element mu(x_i)."
 "Volume of geometry."
 %enddef
 
-%define Geometry_center_autodoc_docstring
+%define Geometry_getCenter_autodoc_docstring
 "center(self) -> ndarray"
 %enddef
 
-%define Geometry_center_docstring
+%define Geometry_getCenter_docstring
 "Center of geometry.
 
 Note that this method is still subject to a change of name and
@@ -100,36 +100,36 @@ properly.
 Returns a vector containing the coordinates of the center of geometry."
 %enddef
 
-%define Geometry_jacobiansTransposed_autodoc_docstring
+%define Geometry_getJacobiansTransposed_autodoc_docstring
 "jacobiansTransposed(self, local) -> ndarray"
 %enddef
 
-%define Geometry_jacobiansTransposed_docstring
+%define Geometry_getJacobiansTransposed_docstring
 "Transposed Jacobian matrices.
 
 See the documentation of the C++ interface for the definition of the
 Jacobian matrix.
 
-*Arguments:*
-    local (ndarray)
+*Parameters:*
+   - local (ndarray)
         2D array whose ith column contains the local coordinates of a point x_i.
 
 Returns a 3D array whose ith slice (i.e. ...(:,:,i)) contains the
 transposed Jacobian matrix at x_i."
 %enddef
 
-%define Geometry_jacobianInversesTransposed_autodoc_docstring
+%define Geometry_getJacobianInversesTransposed_autodoc_docstring
 "jacobianInversesTransposed(self, local) -> ndarray"
 %enddef
 
-%define Geometry_jacobianInversesTransposed_docstring
+%define Geometry_getJacobianInversesTransposed_docstring
 "Inverses of the transposed Jacobian matrices.
 
 See the documentation of the C++ interface for the definition of the
 Jacobian matrix.
 
-*Arguments:*
-    local (ndarray)
+*Parameters:*
+   - local (ndarray)
         2D array whose ith column contains the local coordinates of a point x_i.
 
 Returns a 3D array whose ith slice (i.e. ...(:,:,i)) contains the
@@ -150,13 +150,13 @@ DECLARE_CLASS_DOCSTRING (Geometry);
 DECLARE_METHOD_DOCSTRING(Geometry, type, 1);
 DECLARE_METHOD_DOCSTRING(Geometry, affine, 1);
 DECLARE_METHOD_DOCSTRING(Geometry, cornerCount, 1);
-DECLARE_METHOD_DOCSTRING(Geometry, corners, 0);
+DECLARE_METHOD_DOCSTRING(Geometry, getCorners, 0);
 DECLARE_METHOD_DOCSTRING(Geometry, local2global, 0);
 DECLARE_METHOD_DOCSTRING(Geometry, global2local, 0);
-DECLARE_METHOD_DOCSTRING(Geometry, integrationElements, 0);
+DECLARE_METHOD_DOCSTRING(Geometry, getIntegrationElements, 0);
 DECLARE_METHOD_DOCSTRING(Geometry, volume, 0);
-DECLARE_METHOD_DOCSTRING(Geometry, center, 0);
-DECLARE_METHOD_DOCSTRING(Geometry, jacobiansTransposed, 0);
-DECLARE_METHOD_DOCSTRING(Geometry, jacobianInversesTransposed, 0);
+DECLARE_METHOD_DOCSTRING(Geometry, getCenter, 0);
+DECLARE_METHOD_DOCSTRING(Geometry, getJacobiansTransposed, 0);
+DECLARE_METHOD_DOCSTRING(Geometry, getJacobianInversesTransposed, 0);
 
 } // namespace Bempp

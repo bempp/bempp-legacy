@@ -2,7 +2,7 @@
 
 %define GeometryType_docstring
 "Unique label for each type of entities that can occur in grids."
-%enddef 
+%enddef
 
 %define GeometryType_GeometryType_autodoc_docstring
 "__init__(*args) -> GeometryType"
@@ -13,113 +13,115 @@
 
 *Variants:*
     __init__(self) -> GeometryType
-        Construct the geometry type `none'.
+        Construct the geometry type 'none'.
 
     __init__(self, dim) -> GeometryType
         Construct a vertex or segment.
-        Arguments:
-            dim (int)
+
+        *Parameters:*:
+           - dim (int)
                 Dimension, must be either 0 (vertex) or 1 (segment).
 
     __init__(self, basicType, dim) -> GeometryType
         Construct a general geometry type.
-        Arguments:
-            basicType (string)
-                Basic geometry type, one of `simplex', `cube', `pyramid', 
-                `prism', `extended' or `none'.
-            dim (int)
+
+        *Parameters:*
+           - basicType (string)
+                Basic geometry type, one of 'simplex', 'cube', 'pyramid',
+                'prism', 'extended' or 'none'.
+           - dim (int)
                 Dimension.
-      
+
 "
 %enddef
 
 %define GeometryType_makeVertex_docstring
 "Make a vertex"
-%enddef 
+%enddef
 
 %define GeometryType_makeLine_docstring
 "Make a line segment"
-%enddef 
+%enddef
 
 %define GeometryType_makeTriangle_docstring
 "Make a triangle"
-%enddef 
+%enddef
 
 %define GeometryType_makeQuadrilateral_docstring
 "Make a quadrilateral"
-%enddef 
+%enddef
 
 %define GeometryType_makeTetrahedron_docstring
 "Make a tetrahedron"
-%enddef 
+%enddef
 
 %define GeometryType_makePyramid_docstring
 "Make a pyramid"
-%enddef 
+%enddef
 
 %define GeometryType_makePrism_docstring
 "Make a prism"
-%enddef 
+%enddef
 
 %define GeometryType_makeHexahedron_docstring
 "Make a hexahedron"
-%enddef 
+%enddef
 
 %define GeometryType_makeSimplex_docstring
 "Make a simplex of dimension dim."
-%enddef 
+%enddef
 
 %define GeometryType_makeCube_docstring
 "Make a hypercube of dimension dim."
-%enddef 
+%enddef
 
 %define GeometryType_makeNone_docstring
 "Make a singular of dimension dim."
-%enddef 
+%enddef
 
 %define GeometryType_isVertex_docstring
 "Return true if entity is a vertex"
-%enddef 
+%enddef
 
 %define GeometryType_isLine_docstring
 "Return true if entity is a line segment"
-%enddef 
+%enddef
 
 %define GeometryType_isTriangle_docstring
 "Return true if entity is a triangle"
-%enddef 
+%enddef
 
 %define GeometryType_isQuadrilateral_docstring
 "Return true if entity is a quadrilateral."
-%enddef 
+%enddef
 
 %define GeometryType_isTetrahedron_docstring
 "Return true if entity is a tetrahedron."
-%enddef 
+%enddef
 
 %define GeometryType_isPyramid_docstring
 "Return true if entity is a pyramid."
-%enddef 
+%enddef
 
 %define GeometryType_isPrism_docstring
 "Return true if entity is a prism."
-%enddef 
+%enddef
 
 %define GeometryType_isHexahedron_docstring
 "Return true if entity is a hexahedron."
-%enddef 
+%enddef
 
 %define GeometryType_isSimplex_docstring
 "Return true if entity is a simplex of any dimension."
-%enddef 
+%enddef
 
 %define GeometryType_isCube_docstring
 "Return true if entity is a cube of any dimension"
-%enddef 
+%enddef
 
 %define GeometryType_isNone_docstring
 "Return true if entity is a singular of any dimension"
-%enddef 
+%enddef
 
 %define GeometryType_dim_docstring
 "Return dimension of the type."

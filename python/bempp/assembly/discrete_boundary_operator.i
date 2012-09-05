@@ -63,7 +63,7 @@ public:
 namespace Bempp
 {
 
-DECLARE_TEMPLATE_VALUE_METHOD_AUTO_DOCSTRING(DiscreteBoundaryOperator, apply);
+/* DECLARE_TEMPLATE_VALUE_METHOD_AUTO_DOCSTRING(DiscreteBoundaryOperator, apply); */
 
 BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator);
 BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
@@ -154,7 +154,8 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
 
     static void
     __matrixMultImpl(const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
-                     const arma::Mat<ValueType>& mat_in,arma::Mat<ValueType>& mat_out){
+                     const arma::Mat<ValueType>& mat_in,
+                     arma::Mat<ValueType>& mat_out){
 
         const int opRows = op->rowCount();
         const int opCols = op->columnCount();

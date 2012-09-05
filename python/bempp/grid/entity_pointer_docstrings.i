@@ -2,7 +2,7 @@
 
 %define EntityCodim0_docstring
 "Entity of codimension 0."
-%enddef 
+%enddef
 
 %define EntityCodim0_level_docstring
 "Entity level."
@@ -11,7 +11,7 @@
 %define EntityCodim0_geometry_docstring
 "Geometry of this entity.
 
-This object gives, among other things, the map from a reference element to 
+This object gives, among other things, the map from a reference element to
 world coordinates."
 %enddef
 
@@ -71,8 +71,8 @@ In bisection or hanging node refinement this is always true."
 %define EntityCodim0_sons_docstring
 "Iterator over elements that resulted from (recursive) subdivision of this element.
 
-*Arguments:* 
-    maxlevel (int)
+*Parameters:*
+   - maxlevel (int)
         Iterator does not stop at elements with level greater than maxLevel.
 
 *Note:* If the partitionType of the Entity is GhostEntity, it is not guaranteed
@@ -83,7 +83,7 @@ be available, though."
 %define EntityCodim0_isNew_docstring
 "True if the entity has been created during the last call to adapt()."
 %enddef
- 
+
 %define EntityCodim0_mightVanish_docstring
 "True if the entity might disappear during the next call to adapt().
 
@@ -94,7 +94,7 @@ adaptation."
 
 %define EntityCodim1_docstring
 "Entity of codimension 1."
-%enddef 
+%enddef
 
 #define EntityCodim1_level_docstring EntityCodim0_level_docstring
 #define EntityCodim1_geometry_docstring EntityCodim0_geometry_docstring
@@ -102,7 +102,7 @@ adaptation."
 
 %define EntityCodim2_docstring
 "Entity of codimension 2."
-%enddef 
+%enddef
 
 #define EntityCodim2_level_docstring EntityCodim0_level_docstring
 #define EntityCodim2_geometry_docstring EntityCodim0_geometry_docstring
@@ -110,7 +110,7 @@ adaptation."
 
 %define EntityCodim3_docstring
 "Entity of codimension 3."
-%enddef 
+%enddef
 
 #define EntityCodim3_level_docstring EntityCodim0_level_docstring
 #define EntityCodim3_geometry_docstring EntityCodim0_geometry_docstring

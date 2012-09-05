@@ -4,10 +4,11 @@
 
 %include "id_set_docstrings.i"
 
-namespace Bempp 
+namespace Bempp
 {
 
 %extend IdSet {
+
     IdSet::IdType entityId(const EntityPointer<0>& ep) const {
         return $self->entityId(ep.entity());
     }
@@ -22,11 +23,11 @@ namespace Bempp
 
     IdSet::IdType entityId(const EntityPointer<3>& ep) const {
         return $self->entityId(ep.entity());
-    }    
+    }
 
     IdSet::IdType subEntityId(const EntityPointer<0>& ep, int i, unsigned int codimSub) const {
         return $self->subEntityId(ep.entity(), i, codimSub);
-    }    
+    }
 
     %ignore entityId;
     %ignore subEntityId;

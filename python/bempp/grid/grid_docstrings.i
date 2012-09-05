@@ -2,21 +2,21 @@
 
 %define Grid_docstring
 "Grid."
-%enddef 
+%enddef
 
 %define Grid_dim_docstring
 "Dimension of the grid."
-%enddef 
+%enddef
 
 %define Grid_dimWorld_docstring
 "Dimension of the space containing the grid."
-%enddef 
+%enddef
 
 %define Grid_maxLevel_docstring
 "Maximum level defined in this grid.
 
 Levels are numbered 0 ... maxLevel() with 0 the coarsest level."
-%enddef 
+%enddef
 
 %define Grid_boundarySegmentCount_autodoc_docstring
 "boundarySegmentCount(self) -> int"
@@ -24,15 +24,15 @@ Levels are numbered 0 ... maxLevel() with 0 the coarsest level."
 
 %define Grid_boundarySegmentCount_docstring
 "Number of boundary segments within the macro (level-0) grid."
-%enddef 
+%enddef
 
 %define Grid_levelView_autodoc_docstring
 "levelView(self, level) -> GridView"
 %enddef
 
 %define Grid_levelView_docstring
-"View of the entities on grid level `level'."
-%enddef 
+"View of the entities on grid level 'level'."
+%enddef
 
 %define Grid_leafView_autodoc_docstring
 "leafView(self) -> GridView"
@@ -40,11 +40,11 @@ Levels are numbered 0 ... maxLevel() with 0 the coarsest level."
 
 %define Grid_leafView_docstring
 "View of the leaf entities."
-%enddef 
+%enddef
 
 %define Grid_globalIdSet_docstring
 "Grid's global id set."
-%enddef 
+%enddef
 
 %define Grid_refineGlobally_docstring
 "Refine the grid refCount times using the default refinement rule.
@@ -52,7 +52,7 @@ Levels are numbered 0 ... maxLevel() with 0 the coarsest level."
 This behaves like marking all elements for refinement and then calling
 preAdapt(), adapt() and postAdapt(). The state after refineGlobally()
 is comparable to the state after postAdapt()."
-%enddef 
+%enddef
 
 %define Grid_mark_autodoc_docstring
 "mark(self, refCount, e) -> bool"
@@ -61,15 +61,15 @@ is comparable to the state after postAdapt()."
 %define Grid_mark_docstring
 "Mark an entity to be refined/coarsened in a subsequent adapt().
 
-*Arguments:*
-    refCount (int)
+*Parameters:*
+   - refCount (int)
         Number of subdivisions that should be applied. Negative value
         means coarsening.
-    e (Entity)
+   - e (Entity)
         Entity of codimension 0 that should be marked.
 
 Returns True if e was marked, False otherwise."
-%enddef 
+%enddef
 
 %define Grid_getMark_autodoc_docstring
 "getMark(self, e) -> int"
@@ -77,7 +77,7 @@ Returns True if e was marked, False otherwise."
 
 %define Grid_getMark_docstring
 "Adaptation mark for entity e of codimension 0."
-%enddef 
+%enddef
 
 %define Grid_preAdapt_docstring
 "To be called after marking entities, but before calling adapt().
@@ -86,7 +86,7 @@ This sets the mightVanish flags of the elements for the next adapt() call.
 
 Returns True if an entity may be coarsened during a subsequent
 adapt(), False otherwise."
-%enddef 
+%enddef
 
 %define Grid_adapt_docstring
 "Refine all positive marked leaf entities, coarsen all negative marked
@@ -101,7 +101,7 @@ The complete adaptation process works as follows:
    - call adapt()
    - if adapt() returned true: possibly interpolate the (saved) solution
    - call postAdapt()."
-%enddef 
+%enddef
 
 %define Grid_postAdapt_docstring
 "To be called when the grid has been adapted and information left over
@@ -109,7 +109,7 @@ by the adaptation has been processed.
 
 This removes the isNew flags of the elements from the last adapt()
 call."
-%enddef 
+%enddef
 
 // Declarations ----------------------------------------------------------------
 
