@@ -278,7 +278,8 @@ def on_autodoc_process_signature(
     if what == "class":
         return ("()", None)
     else:
-        signature = signature.replace("type=ASCII", "type='ascii'")
+        if signature:
+            signature = signature.replace("type=ASCII", "type='ascii'")
         return (signature, return_annotation)
 
 def setup(app):
