@@ -6,6 +6,18 @@
 #include "assembly/helmholtz_3d_hypersingular_boundary_operator.hpp"
 %}
 
+namespace Bempp
+{
+%feature("compactdefaultargs")
+    helmholtz3dSingleLayerBoundaryOperator;
+%feature("compactdefaultargs")
+    helmholtz3dDoubleLayerBoundaryOperator;
+%feature("compactdefaultargs")
+    helmholtz3dAdjointDoubleLayerBoundaryOperator;
+%feature("compactdefaultargs")
+    helmholtz3dHypersingularBoundaryOperator;
+} // namespace Bempp
+
 // Redeclared because SWIG doesn't parse correctly ...::KernelType.
 // So we replace it with the explicit
 // typename ScalarTraits<BasisFunctionType>::ComplexType

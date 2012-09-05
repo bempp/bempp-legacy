@@ -5,6 +5,18 @@
 #include "assembly/modified_helmholtz_3d_hypersingular_boundary_operator.hpp"
 %}
 
+namespace Bempp
+{
+%feature("compactdefaultargs")
+    modifiedHelmholtz3dSingleLayerBoundaryOperator;
+%feature("compactdefaultargs")
+    modifiedHelmholtz3dDoubleLayerBoundaryOperator;
+%feature("compactdefaultargs")
+    modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator;
+%feature("compactdefaultargs")
+    modifiedHelmholtz3dHypersingularBoundaryOperator;
+} // namespace Bempp
+
 #define shared_ptr boost::shared_ptr
 %include "assembly/modified_helmholtz_3d_single_layer_boundary_operator.hpp"
 %include "assembly/modified_helmholtz_3d_double_layer_boundary_operator.hpp"

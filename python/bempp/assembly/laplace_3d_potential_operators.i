@@ -3,6 +3,14 @@
 #include "assembly/laplace_3d_double_layer_potential_operator.hpp"
 %}
 
+namespace Bempp
+{
+%feature("compactdefaultargs")
+    laplace3dSingleLayerPotentialOperator;
+%feature("compactdefaultargs")
+    laplace3dDoubleLayerPotentialOperator;
+} // namespace Bempp
+
 %inline %{
 namespace Bempp
 {
