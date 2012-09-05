@@ -2,6 +2,11 @@
 #include "assembly/identity_operator.hpp"
 %}
 
+namespace Bempp
+{
+%feature("compactdefaultargs") identityOperator;
+}
+
 #define shared_ptr boost::shared_ptr
 %include "assembly/identity_operator.hpp"
 #undef shared_ptr
