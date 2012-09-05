@@ -26,6 +26,7 @@ CXXFLAGS="$Bempp_cxxflags" CFLAGS="$Bempp_cflags" cmake \
     -D PYTHON_INCLUDE_DIR:PATH="$Python_include_dir" \
     -D PYTHON_NUMPY_INCLUDE_DIR:PATH="$Python_numpy_include_dir" \
     -D PYTHON_LIBRARY:PATH="$Python_lib" \
+    -D SWIG_EXECUTABLE:PATH="$Swig_exe" \
     -D TRILINOS_CMAKE_PATH:PATH="$Trilinos_cmake_path" \
     -D WITH_MKL:BOOL="$MKL_enable_mkl" \
 "$Main_root_dir"
