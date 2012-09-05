@@ -191,9 +191,9 @@ if __name__ == "__main__":
             testBlas(root,config)
             testLapack(root,config)
         except Exception, e:
-            print "Configuration failed with error message: \n"+ e.message
-            #sys.exit(1)
-            raise
+            print "Configuration failed with error message: \n"+ str(e)
+            sys.exit(1)
+            # raise
         opt_fp = open(optfile_generated,'w')
         config.write(opt_fp)
         opt_fp.close()
