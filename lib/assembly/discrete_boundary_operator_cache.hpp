@@ -3,27 +3,14 @@
 
 #include "../common/common.hpp"
 #include "../common/shared_ptr.hpp"
-
-#include "abstract_boundary_operator_id.hpp"
-
-#include <boost/weak_ptr.hpp>
-#include <tbb/concurrent_unordered_map.h>
+#include <boost/scoped_ptr.hpp>
 
 namespace Bempp
 {
 
-class AbstractBoundaryOperatorId;
 template <typename ResultType> class DiscreteBoundaryOperator;
 template <typename BasisFunctionType, typename ResultType> class AbstractBoundaryOperator;
 template <typename BasisFunctionType, typename ResultType> class Context;
-
-struct CompareSharedPtrsToConstAbstractBoundaryOperatorIds
-{
-    bool operator()(const shared_ptr<const Bempp::AbstractBoundaryOperatorId>& a,
-                    const shared_ptr<const Bempp::AbstractBoundaryOperatorId>& b) const {
-        return *a == *b;
-    }
-};
 
 /** \ingroup discrete_boundary_operators
  *  \brief Cache of discrete boundary operators.
@@ -33,7 +20,10 @@ class DiscreteBoundaryOperatorCache
 {
 public:
     /** \brief Constructor. */
-    DiscreteBoundaryOperatorCache() {}
+    DiscreteBoundaryOperatorCache();
+
+    /** \brief Destructor. */
+    ~DiscreteBoundaryOperatorCache();
 
     /** \brief Return the weak form of the operator \p op.
      *
@@ -48,13 +38,8 @@ public:
 
 private:
     /** \cond PRIVATE */
-    typedef tbb::concurrent_unordered_map<shared_ptr<const AbstractBoundaryOperatorId>,
-    boost::weak_ptr<const DiscreteBoundaryOperator<ResultType> >,
-    tbb::tbb_hash<shared_ptr<const AbstractBoundaryOperatorId> >,
-    CompareSharedPtrsToConstAbstractBoundaryOperatorIds >
-    DiscreteBoundaryOperatorMap;
-
-    mutable DiscreteBoundaryOperatorMap m_discreteOps;
+    struct Impl;
+    boost::scoped_ptr<Impl> m_impl;
     /** \endcond */
 };
 
