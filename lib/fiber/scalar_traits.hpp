@@ -28,6 +28,14 @@
 namespace Fiber
 {
 
+/** \ingroup Fiber
+ *  \brief Traits of scalar types.
+ *
+ *  This struct is specialized for the scalar types \c float, \c double,
+ *  <tt>std::complex<float></tt> and <tt>std::complex<double></tt>. Each
+ *  specialization <tt>ScalarTraits<T></tt> provides the typedefs \c RealType
+ *  (denoting the real type of the same precision as \c T) and \c ComplexType
+ *  (denoting the complex type of the same precision as \c T). */
 template <typename T>
 struct ScalarTraits
 {

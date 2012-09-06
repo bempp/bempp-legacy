@@ -41,6 +41,9 @@ template <typename ValueType> class InterpolatedFunction;
 /** \ingroup assembly_functions
  *  \brief Function defined by its values at a set of interpolation points
  *    and an interpolation method.
+ *
+ *  Currently the evaluate() method is not implemented. However, VTK-file export
+ *  (exportToVtk()) works.
  */
 template <typename ValueType>
 class InterpolatedFunction : public Function<ValueType>

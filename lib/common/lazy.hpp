@@ -30,7 +30,8 @@
 namespace Bempp
 {
 
-/** \brief Thread-safe wrapper of a lazily inititialised object.
+/** \ingroup common
+ *  \brief Thread-safe wrapper of a lazily inititialised object.
 
   \tparam T           Type of the stored object.
   \tparam Initializer Type of a copy-constructible functor providing the

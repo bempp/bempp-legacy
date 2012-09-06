@@ -29,7 +29,8 @@
 namespace Bempp
 {
 
-/** \brief Timer that on destruction outputs the time elapsed since construction. */
+/** \ingroup common
+ *  \brief Timer that on destruction outputs the time elapsed since construction. */
 class AutoTimer
 {
 public:
@@ -45,6 +46,7 @@ public:
         m_text(text), m_start(tbb::tick_count::now())
     {}
 
+    /** \brief Destructor. Print the previously specified message. */
     ~AutoTimer()
     {
         tbb::tick_count end = tbb::tick_count::now();

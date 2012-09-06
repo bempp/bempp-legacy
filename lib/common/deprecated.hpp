@@ -23,7 +23,8 @@
 
 #include "common.hpp"
 
-/** \def BEMPP_DEPRECATED
+/** \ingroup common
+ *  \def BEMPP_DEPRECATED
  *  \brief Macro used to mark deprecated functions or classes.
  *
  *  Functions and classes marked as BEMPP_DEPRECATED are liable to be removed

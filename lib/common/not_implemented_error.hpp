@@ -27,6 +27,8 @@
 namespace Bempp
 {
 
+/** \ingroup common
+ *  \brief Exception thrown on attempt of accessing an unimplemented feature. */
 class NotImplementedError : public std::exception
 {
 public:

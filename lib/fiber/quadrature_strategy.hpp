@@ -167,7 +167,8 @@ private:
             const shared_ptr<const OpenClHandler>& openClHandler) const = 0;
 };
 
-/** \brief Base class for quadrature strategies.
+/** \ingroup fiber
+ *  \brief Base class for quadrature strategies.
  *
  *  A quadrature strategy provides functions constructing local assemblers used
  *  to discretize boundary operators and user-defined functions. A particular
