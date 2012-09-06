@@ -1,4 +1,4 @@
-Date: 27.04.2012
+Date: 27.04.2012. Updated: 6.09.2012
 Author: Wojtek
 
 On the support for complex-valued operators and basis functions.
@@ -15,7 +15,7 @@ determine which explicit template instantiations take place during compilation.
 
 Specific template classes depend on different sets of parameters. In particular:
 
-* The LinearOperator template class depends on two parameters: BasisFunctionType
+* The BoundaryOperator template class depends on two parameters: BasisFunctionType
 (type representing individual components of the functions making up the test and
 trial spaces used to discretise the operator) and ResultType (type of the
 elements of the discretised operator's matrix).
@@ -44,14 +44,14 @@ guaranteed to be a real type.
 Some issues for further consideration:
 
 1. At present, objects with different ResultType cannot be used together (e.g.
-arithmetic operations between LinearOperators with different ResultType are not
+arithmetic operations between BoundaryOperators with different ResultType are not
 defined; similarly, a linear operator cannot act on a GridFunction with a
 different ResultType). This means in particular that integral operators with
 complex-valued kernels (and hence a complex ResultType) need to be used in
 combination with identity operators with complex ResultType. I don't think this
 is a serious problem.
 
-2. The explicit dependence of high-level classes such as LinearOperator and
+2. The explicit dependence of high-level classes such as BoundaryOperator and
 GridFunction on BasisFunctionType is somewhat unsatisfactory, since this type
 reveals itself in their public interface only very weakly (via the
 Space<BasisFunctionType> type of arguments passed into their constructors). We
@@ -63,11 +63,7 @@ need to manually overload all virtual functions taking an object parametrised by
 BasisFunctionType, such as a Space or a Basis). In my opinion, it isn't worth
 the effort.
 
-3. At present, the iterative solver only supports real-valued operators.
-According to Timo, this is because of the limitations of the Stratimikos
-interface to the solver from Belos and we need to interface Belos directly.
-
-4. Template parameter names could perhaps be chosen more judiciously. In
+3. Template parameter names could perhaps be chosen more judiciously. In
 particular, ResultType is a bit too vague. BasisFunctionValueType would probably
-also be more clear than BasisFunctionType, but it is rather long and unwieldy. 
+also be more clear than BasisFunctionType, but it is rather long and unwieldy.
 Ideas are welcome!
