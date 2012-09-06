@@ -112,6 +112,15 @@ DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:<prefix>/bempp/lib`` before running
 The file ``doc/CMakeLists.txt.example`` contains an example ``CMakeLists`` file
 that can be used to build a program employing BEM++ with CMake.
 
+To use the Python interface to BEM++, simply put ::
+
+import sys
+sys.path.append("<prefix>/bempp/python")
+import bempp.lib as blib
+
+at the beginning of your Python script (replacing ``<prefix>`` with the path to
+the BEM++ installation directory).
+
 Final note
 ==========
 
