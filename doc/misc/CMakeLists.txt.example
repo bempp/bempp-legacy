@@ -1,0 +1,13 @@
+cmake_minimum_required(VERSION 2.8)
+
+# Set this variable to the "prefix" directory specified during installation of BEM++
+set(BEMPP_PREFIX "" CACHE PATH "Installation directory of BEM++ and its dependencies")
+
+include_directories(${BEMPP_PREFIX}/bempp/include)
+include_directories(${BEMPP_PREFIX}/bempp/include/bempp)
+
+find_library(BEMPP_LIBRARY bempp PATHS ${BEMPP_PREFIX}/bempp/lib)
+find_library(TEUCHOS_LIBRARY teuchos PATHS ${BEMPP_PREFIX}/bempp/lib)
+
+add_executable(tutorial_dirichlet tutorial_dirichlet.cpp)
+target_link_libraries(tutorial_dirichlet ${BEMPP_LIBRARY} ${TEUCHOS_LIBRARY})
