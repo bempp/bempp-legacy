@@ -149,7 +149,8 @@ makeEvaluatorForIntegralOperatorsImplRealKernel(
         const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const KernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
         const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
-        const shared_ptr<const OpenClHandler>& openClHandler) const
+        const shared_ptr<const OpenClHandler>& openClHandler,
+        const ParallelizationOptions& parallelizationOptions) const
 {
     typedef CoordinateType KernelType;
     typedef DefaultEvaluatorForIntegralOperators<
@@ -162,6 +163,7 @@ makeEvaluatorForIntegralOperatorsImplRealKernel(
                     kernels, trialTransformations, integral,
                     argumentLocalCoefficients,
                     openClHandler,
+                    parallelizationOptions,
                     this->accuracyOptions().singleRegular));
 }
 
@@ -268,7 +270,8 @@ makeEvaluatorForIntegralOperatorsImplComplexKernel(
         const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const KernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
         const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
-        const shared_ptr<const OpenClHandler>& openClHandler) const
+        const shared_ptr<const OpenClHandler>& openClHandler,
+        const ParallelizationOptions& parallelizationOptions) const
 {
     typedef ResultType KernelType;
     typedef DefaultEvaluatorForIntegralOperators<
@@ -281,6 +284,7 @@ makeEvaluatorForIntegralOperatorsImplComplexKernel(
                     kernels, trialTransformations, integral,
                     argumentLocalCoefficients,
                     openClHandler,
+                    parallelizationOptions,
                     this->accuracyOptions().singleRegular));
 }
 

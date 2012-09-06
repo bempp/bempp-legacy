@@ -175,7 +175,8 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::makeEval
                 make_shared_from_ref(trialTransformations()),
                 make_shared_from_ref(integral()),
                 localCoefficients,
-                openClHandler);
+                openClHandler,
+                options.parallelizationOptions());
 }
 
 /** \endcond */

@@ -26,6 +26,8 @@
 #include "evaluator_for_integral_operators.hpp"
 
 #include "collection_of_2d_arrays.hpp"
+#include "parallelization_options.hpp"
+#include "quadrature_options.hpp"
 
 #include "../common/armadillo_fwd.hpp"
 #include <vector>
@@ -61,6 +63,7 @@ public:
             const shared_ptr<const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> >& integral,
             const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
             const shared_ptr<const OpenClHandler>& openClHandler,
+            const ParallelizationOptions& parallelizationOptions,
             const QuadratureOptions& quadratureOptions);
 
     virtual void evaluate(Region region,
@@ -87,7 +90,8 @@ private:
     const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> > m_trialTransformations;
     const shared_ptr<const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> > m_integral;
     const shared_ptr<const std::vector<std::vector<ResultType> > > m_argumentLocalCoefficients;
-    const shared_ptr<const Fiber::OpenClHandler> m_openClHandler;
+    const shared_ptr<const OpenClHandler> m_openClHandler;
+    const ParallelizationOptions m_parallelizationOptions;
     const QuadratureOptions m_quadratureOptions;
 
     Fiber::GeometricalData<CoordinateType> m_nearFieldTrialGeomData;

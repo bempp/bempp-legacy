@@ -94,7 +94,8 @@ private:
             const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
             const shared_ptr<const KernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
             const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
-            const shared_ptr<const OpenClHandler>& openClHandler) const;
+            const shared_ptr<const OpenClHandler>& openClHandler,
+            const ParallelizationOptions& parallelizationOptions) const;
 
 public:
     const AccuracyOptions& accuracyOptions() const;
@@ -157,7 +158,8 @@ private:
             const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
             const shared_ptr<const KernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
             const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
-            const shared_ptr<const OpenClHandler>& openClHandler) const;
+            const shared_ptr<const OpenClHandler>& openClHandler,
+            const ParallelizationOptions& parallelizationOptions) const;
 };
 
 // RealResultType

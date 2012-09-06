@@ -34,9 +34,74 @@
 #include "numerical_quadrature.hpp"
 #include "opencl_handler.hpp"
 #include "raw_grid_geometry.hpp"
+#include "serial_blas_region.hpp"
+
+#include <tbb/parallel_for.h>
+#include <tbb/task_scheduler_init.h>
 
 namespace Fiber
 {
+
+namespace
+{
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+class EvaluationLoopBody
+{
+public:
+    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+
+    EvaluationLoopBody(
+            size_t chunkSize,
+            const arma::Mat<CoordinateType>& points,
+            const GeometricalData<CoordinateType>& trialGeomData,
+            const CollectionOf2dArrays<ResultType>& weightedTrialTransfValues,
+            const CollectionOfKernels<KernelType>& kernels,
+            const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& integral,
+            arma::Mat<ResultType>& result) :
+        m_chunkSize(chunkSize),
+        m_points(points), m_trialGeomData(trialGeomData),
+        m_weightedTrialTransfValues(weightedTrialTransfValues),
+        m_kernels(kernels), m_integral(integral), m_result(result),
+        m_pointCount(result.n_cols), m_outputComponentCount(result.n_rows)
+    {
+        std::cout << m_pointCount << std::endl;
+        std::cout << m_outputComponentCount << std::endl;
+    }
+
+    void operator() (const tbb::blocked_range<size_t>& r) const {
+        CollectionOf4dArrays<KernelType> kernelValues;
+        GeometricalData<CoordinateType> evalPointGeomData;
+        for (size_t i = r.begin(); i < r.end(); ++i)
+        {
+            size_t start = m_chunkSize * i;
+            size_t end = std::min(start + m_chunkSize, m_pointCount);
+            std::cout << start << ", " << end << std::endl;
+            evalPointGeomData.globals = m_points.cols(start, end - 1 /* inclusive */);
+            m_kernels.evaluateOnGrid(evalPointGeomData, m_trialGeomData, kernelValues);
+            // View into the current chunk of the "result" array
+            _2dArray<ResultType> resultChunk(m_outputComponentCount, end - start,
+                                             m_result.colptr(start));
+            m_integral.evaluate(m_trialGeomData,
+                                 kernelValues,
+                                 m_weightedTrialTransfValues,
+                                 resultChunk);
+        }
+    }
+
+private:
+    size_t m_chunkSize;
+    const arma::Mat<CoordinateType>& m_points;
+    const GeometricalData<CoordinateType>& m_trialGeomData;
+    const CollectionOf2dArrays<ResultType>& m_weightedTrialTransfValues;
+    const CollectionOfKernels<KernelType>& m_kernels;
+    const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& m_integral;
+    arma::Mat<ResultType>& m_result;
+    size_t m_pointCount;
+    size_t m_outputComponentCount;
+};
+
+} // namespace
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
@@ -50,12 +115,15 @@ ResultType, GeometryFactory>::DefaultEvaluatorForIntegralOperators(
         const shared_ptr<const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> >& integral,
         const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
         const shared_ptr<const OpenClHandler >& openClHandler,
+        const ParallelizationOptions& parallelizationOptions,
         const QuadratureOptions& quadratureOptions) :
     m_geometryFactory(geometryFactory), m_rawGeometry(rawGeometry),
     m_trialBases(trialBases), m_kernels(kernels),
     m_trialTransformations(trialTransformations), m_integral(integral),
     m_argumentLocalCoefficients(argumentLocalCoefficients),
-    m_openClHandler(openClHandler), m_quadratureOptions(quadratureOptions)
+    m_openClHandler(openClHandler),
+    m_parallelizationOptions(parallelizationOptions),
+    m_quadratureOptions(quadratureOptions)
 {
     const size_t elementCount = rawGeometry->elementCount();
     if (!rawGeometry->auxData().is_empty() &&
@@ -102,21 +170,43 @@ ResultType, GeometryFactory>::evaluate(
     // Do things in chunks of 96 points -- in order to avoid creating
     // too large arrays of kernel values
     const size_t chunkSize = 96;
-    CollectionOf4dArrays<KernelType> kernelValues;
-    GeometricalData<CoordinateType> evalPointGeomData;
-    for (size_t start = 0; start < pointCount; start += chunkSize)
-    {
-        size_t end = std::min(start + chunkSize, pointCount);
-        evalPointGeomData.globals = points.cols(start, end - 1 /* inclusive */);
-        m_kernels->evaluateOnGrid(evalPointGeomData, trialGeomData, kernelValues);
-        // View into the current chunk of the "result" array
-        _2dArray<ResultType> resultChunk(outputComponentCount, end - start,
-                                         result.colptr(start));
-        m_integral->evaluate(trialGeomData,
-                             kernelValues,
-                             weightedTrialTransfValues,
-                             resultChunk);
+    const size_t chunkCount = (pointCount + chunkSize - 1) / chunkSize;
+
+    int maxThreadCount = 1;
+    if (!m_parallelizationOptions.isOpenClEnabled()) {
+        if (m_parallelizationOptions.maxThreadCount() ==
+                ParallelizationOptions::AUTO)
+            maxThreadCount = tbb::task_scheduler_init::automatic;
+        else
+            maxThreadCount = m_parallelizationOptions.maxThreadCount();
     }
+    tbb::task_scheduler_init scheduler(maxThreadCount);
+    typedef EvaluationLoopBody<
+            BasisFunctionType, KernelType, ResultType> Body;
+    {
+        Fiber::SerialBlasRegion region;
+        tbb::parallel_for(tbb::blocked_range<size_t>(0, chunkCount),
+                          Body(chunkSize,
+                               points, trialGeomData, weightedTrialTransfValues,
+                               *m_kernels, *m_integral, result));
+    }
+
+//    // Old serial version
+//    CollectionOf4dArrays<KernelType> kernelValues;
+//    GeometricalData<CoordinateType> evalPointGeomData;
+//    for (size_t start = 0; start < pointCount; start += chunkSize)
+//    {
+//        size_t end = std::min(start + chunkSize, pointCount);
+//        evalPointGeomData.globals = points.cols(start, end - 1 /* inclusive */);
+//        m_kernels->evaluateOnGrid(evalPointGeomData, trialGeomData, kernelValues);
+//        // View into the current chunk of the "result" array
+//        _2dArray<ResultType> resultChunk(outputComponentCount, end - start,
+//                                         result.colptr(start));
+//        m_integral->evaluate(trialGeomData,
+//                             kernelValues,
+//                             weightedTrialTransfValues,
+//                             resultChunk);
+//    }
 }
 
 template <typename BasisFunctionType, typename KernelType,

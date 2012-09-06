@@ -25,8 +25,7 @@
 
 #include "nonseparable_numerical_test_kernel_trial_integrator.hpp"
 #include "separable_numerical_test_kernel_trial_integrator.hpp"
-
-#include "../fiber/serial_blas_region.hpp"
+#include "serial_blas_region.hpp"
 
 #include <tbb/parallel_for.h>
 #include <tbb/task_scheduler_init.h>

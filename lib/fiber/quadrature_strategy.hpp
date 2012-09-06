@@ -122,11 +122,13 @@ public:
             const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
             const shared_ptr<const KernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
             const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
-            const shared_ptr<const OpenClHandler>& openClHandler) const {
+            const shared_ptr<const OpenClHandler>& openClHandler,
+            const ParallelizationOptions& parallelizationOptions) const {
         return this->makeEvaluatorForIntegralOperatorsImplRealKernel(
                     geometryFactory, rawGeometry, trialBases,
-                    kernels, trialTransformations, integral, argumentLocalCoefficients,
-                    openClHandler);
+                    kernels, trialTransformations, integral,
+                    argumentLocalCoefficients,
+                    openClHandler, parallelizationOptions);
     }
 
 private:
@@ -164,7 +166,8 @@ private:
             const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
             const shared_ptr<const KernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
             const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
-            const shared_ptr<const OpenClHandler>& openClHandler) const = 0;
+            const shared_ptr<const OpenClHandler>& openClHandler,
+            const ParallelizationOptions& parallelizationOptions) const = 0;
 };
 
 /** \ingroup fiber
@@ -239,11 +242,13 @@ public:
             const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
             const shared_ptr<const KernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
             const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
-            const shared_ptr<const OpenClHandler>& openClHandler) const {
+            const shared_ptr<const OpenClHandler>& openClHandler,
+            const ParallelizationOptions& parallelizationOptions) const {
         return this->makeEvaluatorForIntegralOperatorsImplComplexKernel(
                     geometryFactory, rawGeometry, trialBases,
-                    kernel, trialTransformations, integral, argumentLocalCoefficients,
-                    openClHandler);
+                    kernel, trialTransformations, integral,
+                    argumentLocalCoefficients,
+                    openClHandler, parallelizationOptions);
     }
 
 private:
@@ -281,7 +286,8 @@ private:
             const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
             const shared_ptr<const KernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
             const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
-            const shared_ptr<const OpenClHandler>& openClHandler) const = 0;
+            const shared_ptr<const OpenClHandler>& openClHandler,
+            const ParallelizationOptions& parallelizationOptions) const = 0;
 };
 
 /** \brief Base class for quadrature strategies (variant with real ResultType).
