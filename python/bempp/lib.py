@@ -890,9 +890,11 @@ def gridFunctionFromSurfaceNormalIndependentFunction(
         context, space, dualSpace, function,
         argumentDimension, resultDimension)
 
-def createDefaultIterativeSolver(boundaryOperator,
-                                 convergenceTestMode="test_convergence_in_dual_to_range"):
-    """Create and return a DefaultIterativeSolver object.
+def createDefaultIterativeSolver(
+        boundaryOperator,
+        convergenceTestMode="test_convergence_in_dual_to_range"):
+    """
+    Create and return a DefaultIterativeSolver object.
 
     The DefaultIterativeSolver class acts as an interface to Belos, the
     iterative solver package from Trilinos. It lets you solve the equation A f =
