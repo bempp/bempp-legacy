@@ -155,11 +155,11 @@ lhsOp = blib.createBlockedBoundaryOperator(context,structure)
 rhs1 = scale*slp11
 rhs2 = scale*slp21
 
-boundaryData1 = rhs1 * blib.gridFunctionFromSurfaceNormalIndependentFunction(
+boundaryData1 = rhs1 * blib.createGridFunction(
     context, sphere1_plc, sphere1_plc, evalBoundaryData)
-boundaryData2 = rhs2 * blib.gridFunctionFromSurfaceNormalIndependentFunction(
+boundaryData2 = rhs2 * blib.createGridFunction(
     context, sphere1_plc, sphere1_plc, evalBoundaryData)
-boundaryData3 = blib.gridFunctionFromSurfaceNormalIndependentFunction(
+boundaryData3 = blib.createGridFunction(
     context, sphere2_plc, sphere2_plc, evalNullData)
 
 rhs = [boundaryData1, boundaryData2, boundaryData3]

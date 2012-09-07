@@ -874,9 +874,74 @@ def __gridFunctionFromFunctor(
     result._dualSpace = dualSpace
     return result
 
+def createGridFunction(
+        context, space, dualSpace, function,
+        surfaceNormalDependent=False):
+    """
+    Create and return a GridFunction object with values determined by a Python
+    function.
+
+    *Parameters:*
+       - context (Context)
+            Assembly context from which a quadrature strategy can be retrieved.
+       - space (Space)
+            Function space to expand the grid function in.
+       - dualSpace (Space)
+            Function space dual to 'space'.
+       - function (a Python callable object)
+            Function object whose values on 'space.grid()' will be used to
+            construct the new grid function. If 'surfaceNormalDependent' is set
+            to False (default), 'function' will be passed a single argument
+            containing a 1D array of the coordinates of a point lying on the
+            grid 'space.grid()'. If 'surfaceNormalDependent' is set to True, the
+            function will be passed one more argument, a 1D array containing the
+            components of the unit vector normal to 'space.grid()' at the point
+            given in the first argument. In both cases 'function' should return
+            its value at the given point, in the form of a scalar or a 1D array
+            with dimension equal to 'space.codomainDimension()'.
+       - surfaceNormalDependent (bool)
+            Indicates whether the grid function depends on the unit vector
+            normal to the grid or not.
+
+    The spaces 'space' and 'dualSpace' must be defined on the same grid and
+    have the same codomain dimension. Usually both parameters can be set to the
+    same Space object.
+
+    Example scalar-valued function defined in a 3D space that can be passed to
+    'createGridFunction' with 'surfaceNormalDependent = False'::
+
+        def fun1(point, normal):
+            x, y, z = point
+            r = np.sqrt(x**2 + y**2 + z**2)
+            return 2 * x * z / r**5 - y / r**3
+
+    Example scalar-valued function defined in a 3D space that can be passed to
+    'createGridFunction' with 'surfaceNormalDependent = True'::
+
+        import math
+        def fun2(point, normal):
+            x, y, z = point
+            nx, ny, nz = normal
+            k = 5
+            return math.exp(1j * k * x) * (nx - 1)
+    """
+    if surfaceNormalDependent:
+        className = "SurfaceNormalDependentFunctor"
+    else:
+        className = "SurfaceNormalIndependentFunctor"
+    return __gridFunctionFromFunctor(
+        className, context, space, dualSpace, function,
+        argumentDimension=space.domainDimension(),
+        resultDimension=space.codomainDimension())
+
 def gridFunctionFromSurfaceNormalDependentFunction(
         context, space, dualSpace, function,
         argumentDimension=3, resultDimension=1):
+    """
+    Deprecated. Superseded by createGridFunction().
+    """
+    print ("gridFunctionFromSurfaceNormalDependentFunction(): DEPRECATED. "
+           "Please use the createGridFunction() function instead.")
     return __gridFunctionFromFunctor(
         "SurfaceNormalDependentFunctor",
         context, space, dualSpace, function,
@@ -885,6 +950,11 @@ def gridFunctionFromSurfaceNormalDependentFunction(
 def gridFunctionFromSurfaceNormalIndependentFunction(
         context, space, dualSpace, function,
         argumentDimension=3, resultDimension=1):
+    """
+    Deprecated. Superseded by createGridFunction().
+    """
+    print ("gridFunctionFromSurfaceNormalDependentFunction(): DEPRECATED. "
+           "Please use the createGridFunction() function instead.")
     return __gridFunctionFromFunctor(
         "SurfaceNormalIndependentFunctor",
         context, space, dualSpace, function,

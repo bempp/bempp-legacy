@@ -56,10 +56,10 @@ rhsOp = -0.5 * idOp + dlpOp
 
 # Construct the grid function representing the (input) Dirichlet data
 
-dirichletData = gridFunctionFromSurfaceNormalIndependentFunction(
+dirichletData = createGridFunction(
     context, pwiseLinears, pwiseLinears, evalDirichletData)
 
-# Construct the right-hand-side grid function 
+# Construct the right-hand-side grid function
 
 rhs = rhsOp * dirichletData
 
@@ -80,7 +80,7 @@ solFun.exportToVtk("cell_data", "neumann_data", "solution")
 
 # Compare the numerical and analytical solution
 
-exactSolFun = gridFunctionFromSurfaceNormalIndependentFunction(
+exactSolFun = createGridFunction(
     context, pwiseConstants, pwiseConstants, evalExactNeumannData)
 diff = solFun - exactSolFun
 

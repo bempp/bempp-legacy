@@ -6,13 +6,13 @@ sys.path.append("..")
 
 # Import numpy and library modules
 
-import numpy as np 
+import numpy as np
 from bempp import lib
 from bempp import visualization as vis
 
 # Define the wavenumber
 
-k=6 
+k=6
 
 # The rhs of the combined formulation
 
@@ -29,7 +29,7 @@ accuracy_options.doubleSingular.orderIncrement=1 # 1 order higher than default a
 
 # The default factory for numerical quadrature
 # "float64" is the basis function type and "complex128" is the result type"
- 
+
 factory = lib.createNumericalQuadratureStrategy("float64", "complex128",accuracy_options)
 
 # We want ACA assembly
@@ -65,12 +65,13 @@ id    = lib.createIdentityOperator(context, pwiseConstants, pwiseConstants, pwis
 
 lhsOp = id+2*adlpOp-2j*k*slpOp
 
-# We now initialize the grid function that represents the right-hand side.
-# In the combined formulation the rhs also needs the normal. Hence, we take the function that
-# turns a Python callable into a SurfaceNormalDependent grid function.
-# The spaces are the domain space and the test space (in this case they are identical).
+# We now initialize the grid function that represents the right-hand
+# side.  In the combined formulation the rhs also needs the
+# normal. Hence, we take the function that turns a Python callable
+# into a surface-normal-dependent grid function.  The spaces are the
+# domain space and the test space (in this case they are identical).
 
-fun = lib.gridFunctionFromSurfaceNormalDependentFunction(context, pwiseConstants, pwiseConstants, gridfundata)
+fun = lib.createGridFunction(context, pwiseConstants, pwiseConstants, gridfundata, surfaceNormalDependent=True)
 
 
 # We now use GMRES to solve the problem
@@ -91,7 +92,7 @@ solution = solver.solve(fun)
 print solution.solverMessage() # Trilinos solver summary message
 
 # Now extract the solution. It is the normal derivative of the total field.
- 
+
 solfun = solution.gridFunction()
 
 
@@ -121,9 +122,9 @@ dims = (200,200)
 def transformation(point,val):
     return np.real(np.exp(1j*k*point[:,0])-val)
 
-# We now plot the solution. The colorRange limits the color scale. 
+# We now plot the solution. The colorRange limits the color scale.
 
 vis.plotThreePlanes(potential,solfun,limits,dims,transformation=transformation,
                     colorRange=(-1,1))
 
- 
+

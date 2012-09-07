@@ -37,7 +37,7 @@ lhsOp = slpOp
 rhsOp = -0.5 * idOp + dlpOp
 
 print "Evaluating Dirichlet data..."
-dirichletData = gridFunctionFromSurfaceNormalIndependentFunction(
+dirichletData = createGridFunction(
     context, pwiseLinears, pwiseLinears, evalDirichletData)
 
 rhs = rhsOp * dirichletData
