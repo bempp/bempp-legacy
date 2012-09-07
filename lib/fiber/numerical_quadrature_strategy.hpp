@@ -162,6 +162,7 @@ private:
             const ParallelizationOptions& parallelizationOptions) const;
 };
 
+/** \cond ENABLE_IFS */
 // RealResultType
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 class NumericalQuadratureStrategy<
@@ -184,6 +185,7 @@ public:
     explicit NumericalQuadratureStrategy(
             const AccuracyOptions& accuracyOptions);
 };
+/** \endcond */
 
 } // namespace Fiber
 

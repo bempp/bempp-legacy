@@ -293,15 +293,7 @@ private:
             const ParallelizationOptions& parallelizationOptions) const = 0;
 };
 
-/** \brief Base class for quadrature strategies (variant with real ResultType).
- *
- *  A quadrature strategy provides functions constructing local assemblers used
- *  to discretize boundary operators and user-defined functions. A particular
- *  quadrature strategy determines how the integrals involved in this
- *  discretization are evaluated.
- *
- *  This is the template specialization for real result types, therefore it
- *  only accepts real-valued kernels and user functions. */
+/** \cond ENABLE_IFS */
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 class QuadratureStrategy<BasisFunctionType, ResultType, GeometryFactory,
     typename boost::enable_if<boost::is_same<ResultType, typename ScalarTraits<ResultType>::RealType> >::type > :
@@ -311,6 +303,7 @@ class QuadratureStrategy<BasisFunctionType, ResultType, GeometryFactory,
 public:
     typedef typename Base::CoordinateType CoordinateType;
 };
+/** \endcond  */
 
 } // namespace Fiber
 
