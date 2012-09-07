@@ -55,13 +55,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
 
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
-    std::auto_ptr<Grid> grid = GridFactory::importGmshGrid(
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
         params, "../examples/meshes/cube-12-reoriented.msh");
 
     shared_ptr<Space<BFT> > pwiseConstants(
-        new PiecewiseConstantScalarSpace<BFT>(*grid));
+        new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
-        new PiecewiseLinearContinuousScalarSpace<BFT>(*grid));
+        new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
     pwiseConstants->assignDofs();
     pwiseLinears->assignDofs();
 
@@ -99,15 +99,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
 
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
-    std::auto_ptr<Grid> grid0 = GridFactory::importGmshGrid(
+    shared_ptr<Grid> grid0 = GridFactory::importGmshGrid(
         params, "../examples/meshes/cube-12-reoriented.msh");
-    std::auto_ptr<Grid> grid1 = GridFactory::importGmshGrid(
+    shared_ptr<Grid> grid1 = GridFactory::importGmshGrid(
         params, "../examples/meshes/cube-12-reoriented-shifted-on-x-by-2.msh");
 
-    shared_ptr<Space<BFT> > pc0(new PiecewiseConstantScalarSpace<BFT>(*grid0));
-    shared_ptr<Space<BFT> > pl0(new PiecewiseLinearContinuousScalarSpace<BFT>(*grid0));
-    shared_ptr<Space<BFT> > pc1(new PiecewiseConstantScalarSpace<BFT>(*grid1));
-    shared_ptr<Space<BFT> > pl1(new PiecewiseLinearContinuousScalarSpace<BFT>(*grid1));
+    shared_ptr<Space<BFT> > pc0(new PiecewiseConstantScalarSpace<BFT>(grid0));
+    shared_ptr<Space<BFT> > pl0(new PiecewiseLinearContinuousScalarSpace<BFT>(grid0));
+    shared_ptr<Space<BFT> > pc1(new PiecewiseConstantScalarSpace<BFT>(grid1));
+    shared_ptr<Space<BFT> > pl1(new PiecewiseLinearContinuousScalarSpace<BFT>(grid1));
     pc0->assignDofs();
     pl0->assignDofs();
     pc1->assignDofs();
@@ -152,19 +152,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
 
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
-    std::auto_ptr<Grid> grid0 = GridFactory::importGmshGrid(
+    shared_ptr<Grid> grid0 = GridFactory::importGmshGrid(
         params, "../examples/meshes/cube-12-reoriented.msh");
-    std::auto_ptr<Grid> grid1 = GridFactory::importGmshGrid(
+    shared_ptr<Grid> grid1 = GridFactory::importGmshGrid(
         params, "../examples/meshes/cube-12-reoriented-shifted-on-x-by-2.msh");
-    std::auto_ptr<Grid> grid2 = GridFactory::importGmshGrid(
+    shared_ptr<Grid> grid2 = GridFactory::importGmshGrid(
         params, "../examples/meshes/cube-12-reoriented-shifted-on-x-by-4.msh");
 
-    shared_ptr<Space<BFT> > pc0(new PiecewiseConstantScalarSpace<BFT>(*grid0));
-    shared_ptr<Space<BFT> > pl0(new PiecewiseLinearContinuousScalarSpace<BFT>(*grid0));
-    shared_ptr<Space<BFT> > pc1(new PiecewiseConstantScalarSpace<BFT>(*grid1));
-    shared_ptr<Space<BFT> > pl1(new PiecewiseLinearContinuousScalarSpace<BFT>(*grid1));
-    shared_ptr<Space<BFT> > pc2(new PiecewiseConstantScalarSpace<BFT>(*grid2));
-    shared_ptr<Space<BFT> > pl2(new PiecewiseLinearContinuousScalarSpace<BFT>(*grid2));
+    shared_ptr<Space<BFT> > pc0(new PiecewiseConstantScalarSpace<BFT>(grid0));
+    shared_ptr<Space<BFT> > pl0(new PiecewiseLinearContinuousScalarSpace<BFT>(grid0));
+    shared_ptr<Space<BFT> > pc1(new PiecewiseConstantScalarSpace<BFT>(grid1));
+    shared_ptr<Space<BFT> > pl1(new PiecewiseLinearContinuousScalarSpace<BFT>(grid1));
+    shared_ptr<Space<BFT> > pc2(new PiecewiseConstantScalarSpace<BFT>(grid2));
+    shared_ptr<Space<BFT> > pl2(new PiecewiseLinearContinuousScalarSpace<BFT>(grid2));
     pc0->assignDofs();
     pl0->assignDofs();
     pc1->assignDofs();

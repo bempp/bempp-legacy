@@ -34,15 +34,15 @@ namespace Bempp
 
 template <typename BasisFunctionType>
 PiecewiseConstantScalarSpace<BasisFunctionType>::
-PiecewiseConstantScalarSpace(Grid& grid) :
-     ScalarSpace<BasisFunctionType>(grid), m_view(this->m_grid.leafView())
+PiecewiseConstantScalarSpace(const shared_ptr<Grid>& grid) :
+     ScalarSpace<BasisFunctionType>(grid), m_view(grid->leafView())
 {
 }
 
 template <typename BasisFunctionType>
 int PiecewiseConstantScalarSpace<BasisFunctionType>::domainDimension() const
 {
-    return this->m_grid.dim();
+    return this->grid()->dim();
 }
 
 template <typename BasisFunctionType>
@@ -227,7 +227,7 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::dumpClusterIds(
                 "PiecewiseConstantScalarSpace::dumpClusterIds(): "
                 "clusterIds has incorrect length");
 
-    std::auto_ptr<GridView> view = this->m_grid.leafView();
+    std::auto_ptr<GridView> view = this->grid()->leafView();
     std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
     arma::Row<double> data(idCount);
     for (size_t i = 0; i < idCount; ++i)

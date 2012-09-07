@@ -65,7 +65,7 @@ struct Laplace3dDirichletFixture
         SpaceType range = PIECEWISE_LINEARS,
         SpaceType dualToRange = PIECEWISE_CONSTANTS);
 
-    std::auto_ptr<Grid> grid;
+    shared_ptr<Grid> grid;
     BoundaryOperator<BFT, RT> lhsOp;
     GridFunction<BFT, RT> rhs;
 };

@@ -37,7 +37,7 @@ typedef ConcreteGrid<Default2dIn3dDuneGrid> Default2dIn3dGrid;
 typedef ConcreteGrid<Default3dIn3dDuneGrid> Default3dIn3dGrid;
 #endif
 
-std::auto_ptr<Grid> GridFactory::createStructuredGrid(
+shared_ptr<Grid> GridFactory::createStructuredGrid(
     const GridParameters& params, const arma::Col<double>& lowerLeft,
     const arma::Col<double>& upperRight, const arma::Col<unsigned int> &nElements)
 {
@@ -73,10 +73,12 @@ std::auto_ptr<Grid> GridFactory::createStructuredGrid(
     // TODO: Support quadrilateral grids using createCubeGrid()
     apDuneGrid = Dune::BemppStructuredGridFactory<Default2dIn3dDuneGrid>::
                  createSimplexGrid(duneLowerLeft, duneUpperRight, duneNElements);
-    return std::auto_ptr<Grid>(new Default2dIn3dGrid(apDuneGrid.release(), GridParameters::TRIANGULAR, true)); // true -> owns Dune grid
+    return shared_ptr<Grid>(new Default2dIn3dGrid(apDuneGrid.release(),
+                                                  GridParameters::TRIANGULAR,
+                                                  true)); // true -> owns Dune grid
 }
 
-std::auto_ptr<Grid> GridFactory::importGmshGrid(
+shared_ptr<Grid> GridFactory::importGmshGrid(
     const GridParameters& params, const std::string& fileName,
     bool verbose, bool insertBoundarySegments)
 {
@@ -85,14 +87,16 @@ std::auto_ptr<Grid> GridFactory::importGmshGrid(
     {
         Default2dIn3dDuneGrid* duneGrid = Dune::GmshReader<Default2dIn3dDuneGrid>
                 ::read(fileName, verbose, insertBoundarySegments);
-        return std::auto_ptr<Grid>(new Default2dIn3dGrid(duneGrid, params.topology, true)); // true -> owns Dune grid
+        return shared_ptr<Grid>(new Default2dIn3dGrid(duneGrid, params.topology,
+                                                      true)); // true -> owns Dune grid
     }
 #ifdef WITH_ALUGRID
     else if (params.topology == GridParameters::TETRAHEDRAL)
     {
         Default3dIn3dDuneGrid* duneGrid = Dune::GmshReader<Default3dIn3dDuneGrid>
                 ::read(fileName, verbose, insertBoundarySegments);
-        return std::auto_ptr<Grid>(new Default3dIn3dGrid(duneGrid, params.topology, true));
+        return shared_ptr<Grid>(new Default3dIn3dGrid(duneGrid, params.topology,
+                                                      true));
     }
 #endif
     else
@@ -100,7 +104,7 @@ std::auto_ptr<Grid> GridFactory::importGmshGrid(
                                     "unsupported grid topology");
 }
 
-std::auto_ptr<Grid> GridFactory::importGmshGrid(
+shared_ptr<Grid> GridFactory::importGmshGrid(
     const GridParameters& params, const std::string& fileName,
     std::vector<int>& boundaryId2PhysicalEntity,
     std::vector<int>& elementIndex2PhysicalEntity,
@@ -113,7 +117,8 @@ std::auto_ptr<Grid> GridFactory::importGmshGrid(
                 ::read(fileName,
                        boundaryId2PhysicalEntity, elementIndex2PhysicalEntity,
                        verbose, insertBoundarySegments);
-        return std::auto_ptr<Grid>(new Default2dIn3dGrid(duneGrid, params.topology, true)); // true -> owns Dune grid
+        return shared_ptr<Grid>(new Default2dIn3dGrid(duneGrid, params.topology,
+                                                         true)); // true -> owns Dune grid
     }
 #ifdef WITH_ALUGRID
     else if (params.topology == GridParameters::TETRAHEDRAL)
@@ -122,7 +127,8 @@ std::auto_ptr<Grid> GridFactory::importGmshGrid(
                 ::read(fileName,
                        boundaryId2PhysicalEntity, elementIndex2PhysicalEntity,
                        verbose, insertBoundarySegments);
-        return std::auto_ptr<Grid>(new Default3dIn3dGrid(duneGrid, params.topology, true)); // true -> owns Dune grid
+        return shared_ptr<Grid>(new Default3dIn3dGrid(duneGrid, params.topology,
+                                                      true)); // true -> owns Dune grid
     }
 #endif
     else

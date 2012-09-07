@@ -69,11 +69,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works_for_complex_kernel, BasisFunctionType, basis
 
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
-    std::auto_ptr<Grid> grid = GridFactory::importGmshGrid(
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
                 params, std::string("../examples/meshes/two_disjoint_triangles.msh"));
 
-    PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(*grid);
-    PiecewiseConstantScalarSpace<BFT> pwiseConstants(*grid);
+    PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(grid);
+    PiecewiseConstantScalarSpace<BFT> pwiseConstants(grid);
     pwiseLinears.assignDofs();
     pwiseConstants.assignDofs();
 
@@ -178,11 +178,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works_for_real_kernel, BasisFunctionType, basis_fu
 
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
-    std::auto_ptr<Grid> grid = GridFactory::importGmshGrid(
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
                 params, std::string("../examples/meshes/two_disjoint_triangles.msh"));
 
-    PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(*grid);
-    PiecewiseConstantScalarSpace<BFT> pwiseConstants(*grid);
+    PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(grid);
+    PiecewiseConstantScalarSpace<BFT> pwiseConstants(grid);
     pwiseLinears.assignDofs();
     pwiseConstants.assignDofs();
 

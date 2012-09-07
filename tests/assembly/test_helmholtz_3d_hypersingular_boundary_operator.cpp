@@ -67,11 +67,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works, BasisFunctionType, basis_function_types)
     typedef typename Fiber::ScalarTraits<BFT>::RealType CT;
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
-    std::auto_ptr<Grid> grid = GridFactory::importGmshGrid(
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
                 params, std::string("../examples/meshes/two_disjoint_triangles.msh"));
 
-    PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(*grid);
-    PiecewiseConstantScalarSpace<BFT> pwiseConstants(*grid);
+    PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(grid);
+    PiecewiseConstantScalarSpace<BFT> pwiseConstants(grid);
     pwiseLinears.assignDofs();
     pwiseConstants.assignDofs();
 

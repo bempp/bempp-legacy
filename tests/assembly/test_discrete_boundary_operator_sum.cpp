@@ -71,9 +71,9 @@ struct DiscreteBoundaryOperatorSumFixture
         grid = createRegularTriangularGrid();
 
         shared_ptr<Space<BFT> > pwiseConstants(
-            new PiecewiseConstantScalarSpace<BFT>(*grid));
+            new PiecewiseConstantScalarSpace<BFT>(grid));
         shared_ptr<Space<BFT> > pwiseLinears(
-            new PiecewiseLinearContinuousScalarSpace<BFT>(*grid));
+            new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
         pwiseConstants->assignDofs();
         pwiseLinears->assignDofs();
 
@@ -94,7 +94,7 @@ struct DiscreteBoundaryOperatorSumFixture
         op = slp + id;
     }
 
-    std::auto_ptr<Grid> grid;
+    shared_ptr<Grid> grid;
     BoundaryOperator<BFT, RT> op;
 };
 

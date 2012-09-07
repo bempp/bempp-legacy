@@ -42,15 +42,15 @@ namespace Bempp
 
 template <typename BasisFunctionType>
 PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
-PiecewiseLinearContinuousScalarSpace(Grid& grid) :
+PiecewiseLinearContinuousScalarSpace(const shared_ptr<Grid>& grid) :
     ScalarSpace<BasisFunctionType>(grid), m_flatLocalDofCount(0)
 {
-    const int gridDim = grid.dim();
+    const int gridDim = grid->dim();
     if (gridDim != 1 && gridDim != 2)
         throw std::invalid_argument("PiecewiseLinearContinuousScalarSpace::"
                                     "PiecewiseLinearContinuousScalarSpace(): "
                                     "only 1- and 2-dimensional grids are supported");
-    m_view = this->m_grid.leafView();
+    m_view = grid->leafView();
 }
 
 template <typename BasisFunctionType>
@@ -62,7 +62,7 @@ PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
 template <typename BasisFunctionType>
 int PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::domainDimension() const
 {
-    return this->m_grid.dim();
+    return this->grid()->dim();
 }
 
 template <typename BasisFunctionType>
@@ -127,7 +127,7 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofs()
 
     // Global DOF numbers will be identical with vertex indices.
     // Thus, the will be as many global DOFs as there are vertices.
-    int globalDofCount_ = m_view->entityCount(this->m_grid.dim());
+    int globalDofCount_ = m_view->entityCount(this->grid()->dim());
     int elementCount = m_view->entityCount(0);
 
 //    // DEBUG
@@ -308,7 +308,7 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getFlatLocalDofPos
                 "assignDofs() must be called before calling this function");
 
     const int gridDim = domainDimension();
-    const int worldDim = this->m_grid.dimWorld();
+    const int worldDim = this->grid()->dimWorld();
     positions.resize(m_flatLocalDofCount);
 
     const IndexSet& indexSet = m_view->indexSet();
@@ -365,7 +365,7 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::dumpClusterIds(
         throw std::invalid_argument("PiecewiseLinearContinuousScalarSpace::"
                                     "dumpClusterIds(): incorrect dimension");
 
-    std::auto_ptr<GridView> view = this->m_grid.leafView();
+    std::auto_ptr<GridView> view = this->grid()->leafView();
     std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
     arma::Row<double> data(idCount);
     for (size_t i = 0; i < idCount; ++i)

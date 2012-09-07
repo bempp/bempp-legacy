@@ -46,7 +46,7 @@ class PiecewiseConstantScalarSpace : public ScalarSpace<BasisFunctionType>
 public:
     typedef typename ScalarSpace<BasisFunctionType>::CoordinateType CoordinateType;
 
-    explicit PiecewiseConstantScalarSpace(Grid& grid);
+    explicit PiecewiseConstantScalarSpace(const shared_ptr<Grid>& grid);
 
     virtual int domainDimension() const;
     virtual int codomainDimension() const;

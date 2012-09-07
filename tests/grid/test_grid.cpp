@@ -28,7 +28,7 @@
 
 // Fixture member definitions
 
-std::auto_ptr<Bempp::Grid> SimpleTriangularGridManager::createGrid()
+Bempp::shared_ptr<Bempp::Grid> SimpleTriangularGridManager::createGrid()
 {
     Bempp::GridParameters params;
     params.topology = Bempp::GridParameters::TRIANGULAR;
@@ -46,19 +46,22 @@ std::auto_ptr<Bempp::Grid> SimpleTriangularGridManager::createGrid()
     return Bempp::GridFactory::createStructuredGrid(params, lowerLeft, upperRight, nElements);
 }
 
-std::auto_ptr<SimpleTriangularGridManager::DuneGrid> SimpleTriangularGridManager::createDuneGrid()
+Bempp::shared_ptr<SimpleTriangularGridManager::DuneGrid>
+SimpleTriangularGridManager::createDuneGrid()
 {
     const int dimGrid = 2;
-    Dune::FieldVector<SimpleTriangularGridManager::DuneGrid::ctype,dimGrid> duneLowerLeft;
+    Dune::FieldVector<DuneGrid::ctype,dimGrid> duneLowerLeft;
     duneLowerLeft[0] = duneLowerLeft[1] = 0;
-    Dune::FieldVector<SimpleTriangularGridManager::DuneGrid::ctype,dimGrid> duneUpperRight;
+    Dune::FieldVector<DuneGrid::ctype,dimGrid> duneUpperRight;
     duneUpperRight[0] = duneUpperRight[1] = 1;
     Dune::array<int,dimGrid> duneNElements;
     duneNElements[0] = N_ELEMENTS_X;
     duneNElements[1] = N_ELEMENTS_Y;
 
-    return Dune::BemppStructuredGridFactory<SimpleTriangularGridManager::DuneGrid>::
-           createSimplexGrid(duneLowerLeft, duneUpperRight, duneNElements);
+    std::auto_ptr<DuneGrid> grid =
+            Dune::BemppStructuredGridFactory<DuneGrid>::
+            createSimplexGrid(duneLowerLeft, duneUpperRight, duneNElements);
+    return Bempp::shared_ptr<DuneGrid>(grid.release());
 }
 
 // Tests

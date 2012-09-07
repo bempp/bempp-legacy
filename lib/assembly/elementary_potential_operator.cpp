@@ -146,15 +146,15 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::makeEval
     shared_ptr<BasisPtrVector> bases;
 
     const Space<BasisFunctionType>& space = *argument.space();
-    Helper::collectGridData(space.grid(),
+    shared_ptr<const Grid> grid = space.grid();
+    Helper::collectGridData(*grid,
                             rawGeometry, geometryFactory);
     Helper::makeOpenClHandler(options.parallelizationOptions().openClOptions(),
                               rawGeometry, openClHandler);
     Helper::collectBases(space, bases);
 
     // In addition, get coefficients of argument's expansion in each element
-    const Grid& grid = space.grid();
-    std::auto_ptr<GridView> view = grid.leafView();
+    std::auto_ptr<GridView> view = grid->leafView();
     const int elementCount = view->entityCount(0);
 
     shared_ptr<CoefficientsVector> localCoefficients =

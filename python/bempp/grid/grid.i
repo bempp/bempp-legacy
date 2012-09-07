@@ -7,6 +7,8 @@
 
 %include "grid_docstrings.i"
 
+%shared_ptr(Bempp::Grid);
+
 namespace Bempp
 {
 

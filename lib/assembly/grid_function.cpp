@@ -77,7 +77,7 @@ shared_ptr<arma::Col<ResultType> > reallyCalculateProjections(
     // TODO: parallelise using TBB (the parameter options will then start be used)
 
     // Get the grid's leaf view so that we can iterate over elements
-    std::auto_ptr<GridView> view = dualSpace.grid().leafView();
+    std::auto_ptr<GridView> view = dualSpace.grid()->leafView();
     const size_t elementCount = view->entityCount(0);
 
     // Global DOF indices corresponding to local DOFs on elements
@@ -145,7 +145,7 @@ shared_ptr<arma::Col<ResultType> > calculateProjections(
     shared_ptr<Fiber::OpenClHandler> openClHandler;
     shared_ptr<BasisPtrVector> testBases;
 
-    Helper::collectGridData(dualSpace.grid(),
+    Helper::collectGridData(*dualSpace.grid(),
                             rawGeometry, geometryFactory);
     Helper::makeOpenClHandler(options.parallelizationOptions().openClOptions(),
                               rawGeometry, openClHandler);
@@ -192,7 +192,7 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
     if (!dualSpace)
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): dualSpace must not be null");
-    if (&space->grid() != &dualSpace->grid())
+    if (space->grid() != dualSpace->grid())
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): "
                 "space and dualSpace must be defined on the same grid");
@@ -238,7 +238,7 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
     if (!dualSpace)
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): dualSpace must not be null");
-    if (&space->grid() != &dualSpace->grid())
+    if (space->grid() != dualSpace->grid())
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): "
                 "space and dualSpace must be defined on the same grid");
@@ -277,7 +277,7 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
     if (!dualSpace)
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): dualSpace must not be null");
-    if (&space->grid() != &dualSpace->grid())
+    if (space->grid() != dualSpace->grid())
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): "
                 "space and dualSpace must be defined on the same grid");
@@ -295,7 +295,7 @@ bool GridFunction<BasisFunctionType, ResultType>::isInitialized() const
 }
 
 template <typename BasisFunctionType, typename ResultType>
-const Grid& GridFunction<BasisFunctionType, ResultType>::grid() const
+shared_ptr<const Grid> GridFunction<BasisFunctionType, ResultType>::grid() const
 {
     if (!m_space)
         throw std::runtime_error("GridFunction::grid() must not be called "
@@ -488,7 +488,7 @@ void GridFunction<BasisFunctionType, ResultType>::exportToVtk(
     arma::Mat<ResultType> data;
     evaluateAtSpecialPoints(dataType, data);
 
-    std::auto_ptr<GridView> view = m_space->grid().leafView();
+    std::auto_ptr<GridView> view = m_space->grid()->leafView();
     std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
 
     exportSingleDataSetToVtk(*vtkWriter, data, dataType, dataLabel,
@@ -507,13 +507,13 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
         throw std::invalid_argument("GridFunction::evaluateAtSpecialPoints(): "
                                     "invalid data type");
 
-    const Grid& grid = m_space->grid();
-    const int gridDim = grid.dim();
+    shared_ptr<const Grid> grid = m_space->grid();
+    const int gridDim = grid->dim();
     const int elementCodim = 0;
-    const int vertexCodim = grid.dim();
+    const int vertexCodim = gridDim;
     const int nComponents = componentCount();
 
-    std::auto_ptr<GridView> view = grid.leafView();
+    std::auto_ptr<GridView> view = grid->leafView();
     const size_t elementCount = view->entityCount(elementCodim);
     const size_t vertexCount = view->entityCount(vertexCodim);
 
@@ -527,14 +527,14 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
     std::fill(multiplicities.begin(), multiplicities.end(), 0);
 
     // Gather geometric data
-    Fiber::RawGridGeometry<CoordinateType> rawGeometry(grid.dim(), grid.dimWorld());
+    Fiber::RawGridGeometry<CoordinateType> rawGeometry(gridDim, grid->dimWorld());
     view->getRawElementData(
                 rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
                 rawGeometry.auxData());
 
     // Make geometry factory
     std::auto_ptr<GeometryFactory> geometryFactory =
-            grid.elementGeometryFactory();
+            grid->elementGeometryFactory();
     std::auto_ptr<typename GeometryFactory::Geometry> geometry(
                 geometryFactory->make());
     Fiber::GeometricalData<CoordinateType> geomData;

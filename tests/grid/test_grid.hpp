@@ -23,6 +23,7 @@
 
 #include "grid/dune.hpp"
 #include "grid/grid.hpp"
+#include "common/shared_ptr.hpp"
 
 /** Fixture class for Bempp::Grid tests */
 class SimpleTriangularGridManager
@@ -45,12 +46,12 @@ public:
     // No destructor is needed since auto_ptrs release memory automatically
 
 private:
-    std::auto_ptr<Bempp::Grid> createGrid();
-    std::auto_ptr<DuneGrid> createDuneGrid();
+    Bempp::shared_ptr<Bempp::Grid> createGrid();
+    Bempp::shared_ptr<DuneGrid> createDuneGrid();
 
 public:
-    std::auto_ptr<Bempp::Grid> bemppGrid;
-    std::auto_ptr<DuneGrid> duneGrid;
+    Bempp::shared_ptr<Bempp::Grid> bemppGrid;
+    Bempp::shared_ptr<DuneGrid> duneGrid;
 };
 
 #endif

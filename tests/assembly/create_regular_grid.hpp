@@ -21,9 +21,14 @@
 #ifndef bempp_create_regular_grid_hpp
 #define bempp_create_regular_grid_hpp
 
-#include "grid/grid.hpp"
+#include "common/shared_ptr.hpp"
 
-std::auto_ptr<Bempp::Grid> createRegularTriangularGrid(
+namespace Bempp
+{
+    class Grid;
+}
+
+Bempp::shared_ptr<Bempp::Grid> createRegularTriangularGrid(
     int nElementsX = 3, int nElementsY = 4);
 
 #endif

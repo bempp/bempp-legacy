@@ -27,9 +27,9 @@ Laplace3dDirichletFixture<BFT, RT>::Laplace3dDirichletFixture(
         params, "../examples/meshes/cube-12-reoriented.msh");
 
     shared_ptr<Space<BFT> > pwiseConstants(
-        new PiecewiseConstantScalarSpace<BFT>(*grid));
+        new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
-        new PiecewiseLinearContinuousScalarSpace<BFT>(*grid));
+        new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
     pwiseConstants->assignDofs();
     pwiseLinears->assignDofs();
 
