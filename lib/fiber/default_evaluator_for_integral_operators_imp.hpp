@@ -65,8 +65,6 @@ public:
         m_kernels(kernels), m_integral(integral), m_result(result),
         m_pointCount(result.n_cols), m_outputComponentCount(result.n_rows)
     {
-        std::cout << m_pointCount << std::endl;
-        std::cout << m_outputComponentCount << std::endl;
     }
 
     void operator() (const tbb::blocked_range<size_t>& r) const {
@@ -76,7 +74,6 @@ public:
         {
             size_t start = m_chunkSize * i;
             size_t end = std::min(start + m_chunkSize, m_pointCount);
-            std::cout << start << ", " << end << std::endl;
             evalPointGeomData.globals = m_points.cols(start, end - 1 /* inclusive */);
             m_kernels.evaluateOnGrid(evalPointGeomData, m_trialGeomData, kernelValues);
             // View into the current chunk of the "result" array
