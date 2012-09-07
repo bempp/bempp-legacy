@@ -13,11 +13,11 @@ conditions on the surface of the sphere, :math:`\Gamma \equiv \partial
 \Omega`, and decay to zero at infinity. Mathematically, this problem
 can be written as
 
-.. math:: 
+.. math::
 
     \Delta u = 0 \quad \text{in} \quad \Omega^{\text{c}},
-    \qquad \gamma_0^{\text{ext}}u = g, 
-    \qquad \lvert u(x) \rvert = \mathcal O(\lvert x \rvert^{-1}) 
+    \qquad \gamma_0^{\text{ext}}u = g,
+    \qquad \lvert u(x) \rvert = \mathcal O(\lvert x \rvert^{-1})
     \quad \text{as} \quad \lvert x \rvert \to \infty,
 
 where :math:`\Omega^{\text{c}} \equiv \mathbb{R}^3 \setminus \Omega`
@@ -29,7 +29,7 @@ representation formula, the value of :math:`u` at any point in
 Dirichlet and Neumann traces on :math:`\Gamma`,
 :math:`\gamma_0^{\text{ext}}` and :math:`\gamma_1^{\text{ext}}`:
 
-.. math::     
+.. math::
     u(x) = -\hat V \gamma_1^{\text{ext}} + \hat K
     \gamma_0^{\text{ext}}
     \qquad \forall x \in \Omega^{\text{c}},
@@ -48,16 +48,16 @@ equation in an exterior domain with smooth boundary are linked by the
 following relation:
 
 .. math::
-    V \gamma_1^{\text{ext}} u = 
+    V \gamma_1^{\text{ext}} u =
     \bigg({-\frac{1}{2}} I + K\bigg) \gamma_0^{\text{ext}} u.
     :label: steklov
-    
-Here, 
+
+Here,
 
 .. math::
 
     V:H^{-\frac{1}{2}}(\Gamma) \rightarrow H^{\frac{1}{2}}(\Gamma)
-    
+
     K:H^{\frac{1}{2}}(\Gamma) \rightarrow H^{\frac{1}{2}}(\Gamma)
 
 are the single- and double-layer-potential *boundary operators*
@@ -77,27 +77,27 @@ H^{\frac{1}{2}}(\Gamma)` with bases :math:`\{\phi^0_i\}_{i=1}^{n_0}`
 and :math:`\{\phi^1_i\}_{i=1}^{n_1}`, respectively. We expand the
 known Dirichlet data in the basis of :math:`S^0`,
 
-.. math:: 
+.. math::
 
     \gamma_0^{\text{ext}}u = g = \sum_i g_i \phi^0_i,
 
-and we seek in :math:`S^1` such an approximation to the Neumann data, 
+and we seek in :math:`S^1` such an approximation to the Neumann data,
 
-.. math:: 
+.. math::
 
     \gamma_1^{\text{ext}}u \approx b = \sum_i b_i \phi^1_i,
 
 that :eq:`steklov` is satisfied weakly, i.e.
 
-.. math:: 
-    
-    \sum_i g_i (V \phi^0_i, \phi^0_j) = 
+.. math::
+
+    \sum_i g_i (V \phi^0_i, \phi^0_j) =
     \sum_i b_i \bigg(\bigg(-\frac{1}{2} I + K\bigg)\phi^1_i,
-    \phi^0_j\bigg) 
-    \qquad \forall j. 
+    \phi^0_j\bigg)
+    \qquad \forall j.
 
 Note that the :math:`H^{-\frac{1}{2}}(\Gamma)`-ellipticity of
-:math:`V` means that the problem is well-posed.  
+:math:`V` means that the problem is well-posed.
 
 We will now present the C++ and Python versions of a program using
 BEM++ to solve :eq:`steklov` for the Neumann trace and, subsequently,
@@ -118,12 +118,12 @@ We begin by loading a triangular mesh approximating the surface
     ...
 
     using namespace Bempp;
-   
+
     const char* meshFile = "meshes/sphere-644.msh";
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     std::auto_ptr<Grid> grid = GridFactory::importGmshGrid(params, meshFile);
-   
+
 Now we can define the approximation spaces.  For this example, we
 will use the space of piecewise-linear scalar functions for
 :math:`S^1` and the space of piecewice-constant scalar functions for
@@ -131,14 +131,14 @@ will use the space of piecewise-linear scalar functions for
 
     #include "space/piecewise_linear_continuous_scalar_space.hpp"
     #include "space/piecewise_constant_scalar_space.hpp"
-   
+
     typedef BFT double;
 
     ...
-   
+
     PiecewiseLinearContinuousScalarSpace<BFT> S0(*grid);
     PiecewiseConstantScalarSpace<BFT> S1(*grid);
-   
+
     S1.assignDofs();
     S0.assignDofs();
 
@@ -330,8 +330,8 @@ vector elements are indexed from zero and can be accessed with the
 overloaded function call operator. The Dirichlet data we have taken
 correspond to the function
 
-.. math:: 
-    u_{\text{exact}} = \frac{2xz}{r^5} - \frac{y}{r^3}, 
+.. math::
+    u_{\text{exact}} = \frac{2xz}{r^5} - \frac{y}{r^3},
     \qquad \text{where} \qquad r \equiv \sqrt{x^2 + y^2 + z^2},
     :label: exact-solution
 
@@ -529,7 +529,7 @@ std::complex<double> >``). However, it would be tedious to have to
 specify these types whenever a Python object is constructed,
 especially since different C++ classes take different sets of template
 parameters. For this reason, BEM++ provides helper ``create...``
-functions for constructing Python objects wrapping C++ objects. If 
+functions for constructing Python objects wrapping C++ objects. If
 a C++ class depends on template parameters, the corresponding ``create...``
 function takes a ``Context`` object as its first parameter and uses
 its basis function type and result type to determine the appropriate
@@ -553,7 +553,7 @@ type names are accepted: ``"float32"``, ``"float64"``, ``"complex64"``
 and ``"complex128"``. These correspond to the C++ types ``float``,
 ``double``, ``std::complex<float>`` and ``std::complex<double>``.  The
 basis function type and result type used subsequently to construct the
-``Context`` are inherited from the parameters given in the 
+``Context`` are inherited from the parameters given in the
 ``createNumericalQuadratureStrategy()`` call.
 
 The next step is to initialise the function spaces::
@@ -587,21 +587,21 @@ the right-hand side of :eq:`steklov`, we write::
         r = np.sqrt(x**2 + y**2 + z**2)
         return 2 * x * z / r**5 - y / r**3
 
-    dirichletData = gridFunctionFromSurfaceNormalIndependentFunction(
+    dirichletData = createGridFunction(
         context, pwiseLinears, pwiseLinears, evalDirichletData)
     rhs = rhsOp * dirichletData
 
 The code is much simpler than in C++. As its last parameter,
-``gridFunctionFromSurfaceNormalIndependentFunction()`` takes a
-reference to a Python function that is expected to take a single
-parameter -- a one-dimensional NumPy array ``point`` storing the
-global coordinates of a point -- and return the value of the function
-at this point. If the chosen expansion space is vector-valued, the
-return value should be a NumPy array, otherwise it can be a scalar, as
-in the above snippet. The repeated calling of a non-vectorised Python
-function incurs a slight performance penalty, but this overhead is
-normally insignificant compared to the time taken by the total
-calculation.
+``createGridFunction()`` takes a reference to a Python function that
+is expected to take a single parameter -- a one-dimensional NumPy
+array ``point`` storing the global coordinates of a point -- and
+return the value of the function at this point. (One can also create
+grid functions dependent on the orientation of the surface normal). If
+the chosen expansion space is vector-valued, the return value should
+be a NumPy array, otherwise it can be a scalar, as in the above
+snippet. The repeated calling of a non-vectorised Python function
+incurs a slight performance penalty, but this overhead is normally
+insignificant compared to the time taken by the total calculation.
 
 Having constructed the left-hand-side operator and the right-hand-side
 grid function, we turn to solving the resulting equation, which again
@@ -625,7 +625,7 @@ It remains to compare the numerical and analytical solution::
         r = np.sqrt(x**2 + y**2 + z**2)
         return -6 * x * z / r**6 + 2 * y / r**4
 
-    exactSolFun = gridFunctionFromSurfaceNormalIndependentFunction(
+    exactSolFun = createGridFunction(
         context, pwiseConstants, pwiseConstants, evalExactNeumannData)
     diff = solFun - exactSolFun
 
@@ -633,4 +633,4 @@ It remains to compare the numerical and analytical solution::
     print "Relative L^2 error:", relError
 
 TODO: describe how to plot the field on a cross-section plane using
-the ``vis`` module.
+the ``visualization`` module.
