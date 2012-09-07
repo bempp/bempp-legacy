@@ -37,21 +37,24 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 template <typename ValueType> class Basis;
 template <typename ValueType> class BasisData;
 template <typename CoordinateType> class CollectionOfBasisTransformations;
 template <typename CoordinateType> class GeometricalData;
+/** \endcond */
 
-}
+} // namespace Fiber
 
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 class Grid;
 template <int codim> class Entity;
 template <int codim> class EntityPointer;
-
 template <typename ValueType> class DiscreteBoundaryOperator;
+/** \endcond */
 
 /** \ingroup space
  *  \brief Function space.

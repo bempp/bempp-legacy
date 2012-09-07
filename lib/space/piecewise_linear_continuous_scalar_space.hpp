@@ -34,7 +34,9 @@
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 class GridView;
+/** \endcond */
 
 /** \ingroup space
  *  \brief Space of continuous, piecewise linear scalar functions. */
