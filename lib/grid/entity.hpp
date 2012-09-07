@@ -34,10 +34,11 @@
 namespace Bempp
 {
 
-// Forward declarations
+/** \cond FORWARD_DECL */
 class Geometry;
 template<int codim> class EntityPointer;
 template<int codim> class EntityIterator;
+/** \endcond */
 
 /** \brief Abstract wrapper of an entity of codimension \p codim. */
 template<int codim>

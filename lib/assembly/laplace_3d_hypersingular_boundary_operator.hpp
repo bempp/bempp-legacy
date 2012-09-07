@@ -27,8 +27,10 @@
 namespace Bempp
 {
 
+/** \cond PRIVATE */
 template <typename BasisFunctionType, typename ResultType>
 struct Laplace3dHypersingularBoundaryOperatorImpl;
+/** \endcond */
 
 /** \ingroup laplace_3d
  *  \brief Hypersingular boundary operator for the Laplace equation in 3D.

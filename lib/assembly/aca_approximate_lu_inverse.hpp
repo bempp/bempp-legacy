@@ -38,8 +38,9 @@
 namespace Bempp
 {
 
-template <typename ValueType>
-class DiscreteAcaBoundaryOperator;
+/** \cond FORWARD_DECL */
+template <typename ValueType> class DiscreteAcaBoundaryOperator;
+/** \endcond */
 
 /** \ingroup composite_discrete_operators
  *  \brief Approximate LU decomposition of a H-matrix

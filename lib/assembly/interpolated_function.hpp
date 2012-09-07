@@ -34,9 +34,11 @@
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 class Grid;
 
 template <typename ValueType> class InterpolatedFunction;
+/** \endcond */
 
 /** \ingroup assembly_functions
  *  \brief Function defined by its values at a set of interpolation points

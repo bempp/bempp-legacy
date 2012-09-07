@@ -33,11 +33,13 @@
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 template <typename BasisFunctionType> class Space;
 template <typename ResultType> class DiscreteBoundaryOperator;
 template <typename BasisFunctionType, typename ResultType> class AbstractBoundaryOperator;
 template <typename BasisFunctionType, typename ResultType> class Context;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
+/** \endcond */
 
 /** \ingroup boundary_operators
  *  \brief Operator acting on functions defined on a surface.

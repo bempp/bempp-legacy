@@ -31,9 +31,11 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 template <typename T> class CollectionOf3dArrays;
 template <typename T> class CollectionOf4dArrays;
 template <typename CoordinateType> class GeometricalData;
+/** \endcond */
 
 /** \brief Evaluation of double integrals depending on test functions,
  *  kernels and trial functions. */

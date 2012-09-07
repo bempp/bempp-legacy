@@ -34,10 +34,12 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 template <typename ResultType> class LocalAssemblerForOperators;
 template <typename CoordinateType> class RawGridGeometry;
 template <typename ValueType> class Basis;
 class OpenClHandler;
+/** \endcond */
 
 } // namespace Fiber
 

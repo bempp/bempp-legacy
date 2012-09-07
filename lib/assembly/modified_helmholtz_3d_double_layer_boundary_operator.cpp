@@ -36,6 +36,7 @@
 namespace Bempp
 {
 
+/** \cond PRIVATE */
 template <typename BasisFunctionType, typename KernelType_, typename ResultType>
 struct ModifiedHelmholtz3dDoubleLayerBoundaryOperatorImpl
 {
@@ -64,6 +65,7 @@ struct ModifiedHelmholtz3dDoubleLayerBoundaryOperatorImpl
     transformations;
     Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor> integral;
 };
+/** \endcond */
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 ModifiedHelmholtz3dDoubleLayerBoundaryOperator<BasisFunctionType, KernelType, ResultType>::

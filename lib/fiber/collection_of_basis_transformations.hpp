@@ -28,9 +28,11 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 template <typename T> class CollectionOf3dArrays;
 template <typename ValueType> class BasisData;
 template <typename CoordinateType> class GeometricalData;
+/** \endcond */
 
 template <typename CoordinateType_>
 class CollectionOfBasisTransformations

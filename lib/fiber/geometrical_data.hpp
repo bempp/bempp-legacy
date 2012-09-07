@@ -40,7 +40,9 @@ enum GeometricalDataType
     JACOBIAN_INVERSES_TRANSPOSED = 0x0010
 };
 
+/** \cond FORWARD_DECL */
 template <typename CoordinateType> class ConstGeometricalDataSlice;
+/** \endcond */
 
 template <typename CoordinateType>
 struct GeometricalData

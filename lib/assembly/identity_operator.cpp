@@ -187,6 +187,7 @@ bool IdentityOperatorId<BasisFunctionType, ResultType>::isEqual(
 ////////////////////////////////////////////////////////////////////////////////
 // IdentityOperator
 
+/** \cond PRIVATE */
 template <typename BasisFunctionType, typename ResultType>
 struct IdentityOperator<BasisFunctionType, ResultType>::Impl
 {
@@ -199,6 +200,7 @@ struct IdentityOperator<BasisFunctionType, ResultType>::Impl
     Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
     transformations;
 };
+/** \endcond */
 
 template <typename BasisFunctionType, typename ResultType>
 IdentityOperator<BasisFunctionType, ResultType>::IdentityOperator(

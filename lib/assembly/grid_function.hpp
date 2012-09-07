@@ -44,21 +44,25 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 template <typename ValueType> class Basis;
 template <typename ResultType> class LocalAssemblerForGridFunctions;
 template <typename ValueType> class Function;
+/** \endcond */
 
 } // namespace Fiber
 
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 class AssemblyOptions;
 class GeometryFactory;
 class Grid;
 template <int codim> class Entity;
 template <typename BasisFunctionType> class Space;
 template <typename BasisFunctionType, typename ResultType> class Context;
+/** \cond endcond */
 
 using Fiber::Function;
 

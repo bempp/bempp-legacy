@@ -28,10 +28,12 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 template <typename T> class _2dArray;
 template <typename T> class CollectionOf2dArrays;
 template <typename T> class CollectionOf4dArrays;
 template <typename CoordinateType> class GeometricalData;
+/** \endcond */
 
 template <typename BasisFunctionType_, typename KernelType_,
           typename ResultType_>

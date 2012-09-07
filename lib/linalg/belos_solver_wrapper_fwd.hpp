@@ -11,7 +11,9 @@
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 template <typename ValueType> class BelosSolverWrapper;
+/** \endcond */
 
 Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(
         double tol, int maxIterationCount = 1000);

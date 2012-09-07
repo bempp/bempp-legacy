@@ -10,9 +10,11 @@
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 class GeometryFactory;
 template <typename ValueType> class DiscreteBoundaryOperator;
 template <typename BasisFunctionType, typename ResultType> class AbstractBoundaryOperator;
+/** \endcond */
 
 /** \ingroup weak_form_assembly
  *  \brief Assembly context.

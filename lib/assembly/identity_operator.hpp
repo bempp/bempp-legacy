@@ -32,15 +32,19 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 template <typename ResultType> class LocalAssemblerForOperators;
+/** \endcond */
 
 } // namespace Fiber
 
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 template <typename BasisFunctionType, typename ResultType> class BoundaryOperator;
 template <typename BasisFunctionType, typename ResultType> class IdentityOperator;
+/** \endcond */
 
 template <typename BasisFunctionType, typename ResultType>
 class IdentityOperatorId : public AbstractBoundaryOperatorId

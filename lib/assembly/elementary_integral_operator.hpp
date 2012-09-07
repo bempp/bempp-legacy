@@ -34,21 +34,25 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 template <typename CoordinateType> class CollectionOfBasisTransformations;
 template <typename KernelType> class CollectionOfKernels;
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class TestKernelTrialIntegral;
 template <typename ResultType> class LocalAssemblerForOperators;
+/** \endcond */
 
 } // namespace Fiber
 
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 class EvaluationOptions;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
 template <typename ValueType> class InterpolatedFunction;
 template <typename BasisFunctionType, typename ResultType> class WeakFormAcaAssemblyHelper;
+/** \endcond */
 
 /** \ingroup abstract_boundary_operators
  *  \brief Elementary integral boundary operator.

@@ -35,9 +35,12 @@
 
 #include <Teuchos_RCP.hpp>
 #include <Thyra_SpmdVectorSpaceBase_decl.hpp>
+
+/** \cond FORWARD_DECL */
 class Amesos_BaseSolver;
 class Epetra_LinearProblem;
 class Epetra_CrsMatrix;
+/** \endcond */
 
 namespace Bempp
 {

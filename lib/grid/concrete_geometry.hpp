@@ -40,9 +40,9 @@
 namespace Bempp
 {
 
-/** \brief Wrapper of a Dune geometry of type \p DuneGeometry */
-
+/** \cond FORWARD_DECL */
 template <typename DuneGeometry> class ConcreteGeometryFactory;
+/** \endcond */
 
 // Internal helper function for setting up geometries manually (independently
 // from the grid).
@@ -66,6 +66,7 @@ void setupDuneGeometry<Default2dIn3dDuneGrid::Codim<0>::Geometry>(
     duneGeometry.setup(type, corners);
 }
 
+/** \brief Wrapper of a Dune geometry of type \p DuneGeometry */
 template <typename DuneGeometry>
 class ConcreteGeometry : public Geometry
 {

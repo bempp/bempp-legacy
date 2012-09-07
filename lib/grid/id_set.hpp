@@ -28,8 +28,9 @@
 namespace Bempp
 {
 
-// Forward declarations
+/** \cond FORWARD_DECL */
 template<int codim> class Entity;
+/** \endcond */
 
 /** \brief Abstract wrapper of an id set. */
 class IdSet

@@ -33,7 +33,9 @@
 #ifdef WITH_TRILINOS
 #include <Teuchos_RCP.hpp>
 #include <Thyra_SpmdVectorSpaceBase_decl.hpp>
+/** \cond FORWARD_DECL */
 class Epetra_CrsMatrix;
+/** \endcond */
 #endif
 
 namespace Bempp

@@ -34,6 +34,7 @@
 namespace Bempp
 {
 
+/** \cond PRIVATE */
 template <typename BasisFunctionType>
 struct Helmholtz3dSingleLayerPotentialOperatorImpl
 {
@@ -62,6 +63,7 @@ struct Helmholtz3dSingleLayerPotentialOperatorImpl
     transformations;
     Fiber::DefaultKernelTrialIntegral<IntegrandFunctor> integral;
 };
+/** \endcond */
 
 template <typename BasisFunctionType>
 Helmholtz3dSingleLayerPotentialOperator<BasisFunctionType>::

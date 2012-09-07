@@ -27,12 +27,14 @@
 
 namespace Fiber {
 
+/** \cond FORWARD_DECL */
 template <typename T> class _4dSliceOf4dArray;
 template <typename T> class _2dSliceOf4dArray;
 template <typename T> class _1dSliceOf4dArray;
 template <typename T> class Const4dSliceOf4dArray;
 template <typename T> class Const2dSliceOf4dArray;
 template <typename T> class Const1dSliceOf4dArray;
+/** \endcond */
 
 /** \brief Simple implementation of a 4D Fortran-ordered array.
 

@@ -39,6 +39,7 @@
 namespace Bempp
 {
 
+/** \cond PRIVATE */
 template <typename BasisFunctionType>
 struct Helmholtz3dHypersingularBoundaryOperatorImpl
 {
@@ -66,6 +67,7 @@ struct Helmholtz3dHypersingularBoundaryOperatorImpl
     transformations;
     Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor> integral;
 };
+/** \endcond */
 
 template <typename BasisFunctionType>
 Helmholtz3dHypersingularBoundaryOperator<BasisFunctionType>::

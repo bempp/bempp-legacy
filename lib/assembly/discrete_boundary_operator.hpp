@@ -29,7 +29,6 @@
 #include "transposition_mode.hpp"
 #include "boost/enable_shared_from_this.hpp"
 
-
 #include "../common/armadillo_fwd.hpp"
 
 #ifdef WITH_TRILINOS

@@ -30,12 +30,14 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 class OpenClHandler;
 template <typename CoordinateType> class CollectionOfBasisTransformations;
 template <typename ValueType> class CollectionOfKernels;
 template <typename CoordinateType> class RawGridGeometry;
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class TestKernelTrialIntegral;
+/** \endcond */
 
 /** \brief Integration over pairs of elements on tensor-product point grids. */
 template <typename BasisFunctionType, typename KernelType,

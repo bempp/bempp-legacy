@@ -8,9 +8,11 @@
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 template <typename ResultType> class DiscreteBoundaryOperator;
 template <typename BasisFunctionType, typename ResultType> class AbstractBoundaryOperator;
 template <typename BasisFunctionType, typename ResultType> class Context;
+/** \endcond */
 
 /** \ingroup discrete_boundary_operators
  *  \brief Cache of discrete boundary operators.

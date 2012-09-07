@@ -31,7 +31,9 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 template <typename ValueType> struct BasisData;
+/** \endcond */
 
 template <typename ValueType>
 class Basis

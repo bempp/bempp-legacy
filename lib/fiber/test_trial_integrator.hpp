@@ -31,7 +31,9 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 template <typename ValueType> class Basis;
+/** \endcond */
 
 /** \brief Integration of products of test and trial functions over elements. */
 template <typename BasisFunctionType, typename ResultType>

@@ -34,13 +34,14 @@
 namespace Bempp
 {
 
-// Forward declarations
+/** \cond FORWARD_DECL */
 template<int codim> class Entity;
 template<int codim> class EntityCache;
 class IndexSet;
 class Mapper;
 class ReverseElementMapper;
 class VtkWriter;
+/** \endcond */
 
 /** \brief Abstract wrapper of a grid view */
 class GridView

@@ -44,8 +44,10 @@ namespace Bempp
 
 // Forward declarations
 
+/** \cond FORWARD_DECL */
 template <typename ValueType> class AcaApproximateLuInverse;
 template <typename ValueType> class DiscreteAcaBoundaryOperator;
+/** \endcond */
 
 // Global functions
 

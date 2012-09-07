@@ -27,8 +27,10 @@
 namespace Bempp
 {
 
+/** \cond PRIVATE */
 template <typename BasisFunctionType>
 struct Helmholtz3dAdjointDoubleLayerBoundaryOperatorImpl;
+/** \endcond */
 
 /** \ingroup helmholtz_3d
  *  \brief Adjoint double-layer-potential boundary operator for the Helmholtz equation in 3D.

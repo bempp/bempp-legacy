@@ -26,14 +26,18 @@
 
 #include "bempp/common/config_ahmed.hpp"
 
+/** \cond FORWARD_DECL */
 template <class T1, class T2> class bemblcluster;
 template <class T> class mblock;
 class blcluster;
+/** \endcond */
 
 namespace std
 {
 
+/** \cond FORWARD_DECL */
 template <typename _Tp> class complex;
+/** \endcond */
 
 } // namespace std
 
@@ -49,8 +53,10 @@ typedef comp<double> dcomp;
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 template <typename CoordinateType> struct AhmedDofWrapper;
 template <typename T> class ExtendedBemCluster;
+/** \endcond */
 
 // Casts.
 

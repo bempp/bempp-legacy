@@ -27,8 +27,10 @@
 namespace Bempp
 {
 
+/** \cond PRIVATE */
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 struct ModifiedHelmholtz3dSingleLayerBoundaryOperatorImpl;
+/** \endcond */
 
 /** \ingroup modified_helmholtz_3d
  *  \brief Single-layer-potential boundary operator for the modified Helmholtz

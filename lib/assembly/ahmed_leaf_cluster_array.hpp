@@ -29,7 +29,9 @@
 
 #include "../common/boost_scoped_array_fwd.hpp"
 
+/** \cond FORWARD_DECL */
 class blcluster;
+/** \endcond */
 
 namespace Bempp
 {

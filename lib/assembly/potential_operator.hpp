@@ -32,11 +32,13 @@
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 class EvaluationOptions;
 class GeometryFactory;
 class Grid;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
 template <typename ResultType> class InterpolatedFunction;
+/** \endcond */
 
 /** \ingroup potential_operators
  *  \brief Potential operator.

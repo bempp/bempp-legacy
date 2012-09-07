@@ -35,16 +35,20 @@ class Epetra_CrsMatrix;
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 template <typename ResultType> class LocalAssemblerForOperators;
+/** \endcond */
 
 } // namespace Fiber
 
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 class AssemblyOptions;
 template <typename ValueType> class DiscreteBoundaryOperator;
 template <typename BasisFunctionType> class Space;
+/** \endcond */
 
 /** \ingroup weak_form_assembly_internal
  *  \brief ACA-mode assembler.

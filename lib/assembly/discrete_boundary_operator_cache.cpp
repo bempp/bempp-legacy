@@ -26,6 +26,7 @@ struct CompareSharedPtrsToConstAbstractBoundaryOperatorIds
 
 } // namespace
 
+/** \cond PRIVATE */
 template <typename BasisFunctionType, typename ResultType>
 struct DiscreteBoundaryOperatorCache<BasisFunctionType, ResultType>::Impl
 {
@@ -37,6 +38,7 @@ struct DiscreteBoundaryOperatorCache<BasisFunctionType, ResultType>::Impl
 
     mutable DiscreteBoundaryOperatorMap discreteOps;
 };
+/** \endcond */
 
 template <typename BasisFunctionType, typename ResultType>
 DiscreteBoundaryOperatorCache<BasisFunctionType, ResultType>::

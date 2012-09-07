@@ -26,11 +26,13 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 template <typename CoordinateType> class CollectionOfBasisTransformations;
 template <typename KernelType> class CollectionOfKernels;
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class KernelTrialIntegral;
 template <typename ResultType> class EvaluatorForIntegralOperators;
+/** \endcond */
 
 } // namespace Bempp
 

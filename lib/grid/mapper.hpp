@@ -26,7 +26,9 @@
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 template <int codim> class Entity;
+/** \endcond */
 
 /** \brief Abstract mapper class.
 

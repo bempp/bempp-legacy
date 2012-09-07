@@ -31,11 +31,9 @@ namespace Bempp
 {
 
 /** \ingroup linalg
-  *
-  * \brief This class holds the solution of a BEM computation together with various information
-           about the solution.
-  */
-
+ *  \brief This class holds the solution of a BEM computation together with
+ *  various associated information.
+ */
 template <typename BasisFunctionType, typename ResultType>
 class Solution : public SolutionBase<BasisFunctionType, ResultType>
 {

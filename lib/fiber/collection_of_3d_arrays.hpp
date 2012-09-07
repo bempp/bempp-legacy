@@ -28,10 +28,12 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 template <typename T> class CollectionOf2dSlicesOf3dArrays;
 template <typename T> class CollectionOf1dSlicesOf3dArrays;
 template <typename T> class CollectionOf2dSlicesOfConst3dArrays;
 template <typename T> class CollectionOf1dSlicesOfConst3dArrays;
+/** \endcond */
 
 template <typename T>
 class CollectionOf3dArrays

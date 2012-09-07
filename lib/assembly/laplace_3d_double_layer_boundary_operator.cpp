@@ -36,6 +36,7 @@
 namespace Bempp
 {
 
+/** \cond PRIVATE */
 template <typename BasisFunctionType, typename ResultType>
 struct Laplace3dDoubleLayerBoundaryOperatorImpl
 {
@@ -62,6 +63,7 @@ struct Laplace3dDoubleLayerBoundaryOperatorImpl
     transformations;
     Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor> integral;
 };
+/** \endcond */
 
 template <typename BasisFunctionType, typename ResultType>
 Laplace3dDoubleLayerBoundaryOperator<BasisFunctionType, ResultType>::

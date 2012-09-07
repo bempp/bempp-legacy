@@ -31,7 +31,9 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 template <typename ResultType> class LocalAssemblerForOperators;
+/** \endcond */
 
 } // namespace Fiber
 

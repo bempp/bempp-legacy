@@ -30,9 +30,11 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 template <typename T> class CollectionOf3dArrays;
 template <typename T> class CollectionOf4dArrays;
 template <typename CoordinateType> class GeometricalData;
+/** \endcond */
 
 template <typename ValueType_>
 class CollectionOfKernels

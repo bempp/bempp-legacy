@@ -33,7 +33,9 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 template <typename ValueType> class Basis;
+/** \endcond */
 
 /** \brief Integration over pairs of elements. */
 template <typename BasisFunctionType, typename KernelType, typename ResultType>

@@ -31,11 +31,11 @@
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 template <typename BasisFunctionType, typename ResultType> class BoundaryOperator;
 template <typename BasisFunctionType, typename ResultType> class BlockedBoundaryOperator;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
-
-
+/** \endcond */
 
 struct ConvergenceTestMode {
     enum Mode {

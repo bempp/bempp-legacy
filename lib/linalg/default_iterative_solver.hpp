@@ -35,7 +35,9 @@
 
 namespace Thyra
 {
+/** \cond FORWARD_DECL */
 template <typename ValueType> class PreconditionerBase;
+/** \endcond */
 } // namespace Thyra
 
 namespace Bempp

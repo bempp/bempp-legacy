@@ -29,8 +29,9 @@
 namespace Bempp
 {
 
-// Forward declarations
+/** \cond FORWARD_DECL */
 template<int codim> class Entity;
+/** \endcond */
 
 /** \brief Abstract base class for iterators over entities.
 

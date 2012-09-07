@@ -41,7 +41,9 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 class OpenClHandler;
+/** \endcond */
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 class DefaultLocalAssemblerForIdentityOperatorOnSurface :

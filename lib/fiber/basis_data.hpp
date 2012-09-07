@@ -35,7 +35,9 @@ enum BasisDataType
     DERIVATIVES = 0x0002
 };
 
+/** \cond FORWARD_DECL */
 template <typename ValueType> class ConstBasisDataSlice;
+/** \endcond */
 
 template <typename ValueType>
 struct BasisData

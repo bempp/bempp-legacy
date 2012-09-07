@@ -30,7 +30,9 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 template <typename CoordinateType> class GeometricalData;
+/** \endcond */
 
 /** \brief Function to be used as a source term. */
 template <typename ValueType>

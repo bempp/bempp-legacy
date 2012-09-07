@@ -28,8 +28,10 @@
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 template <typename ResultType> class DiscreteDenseBoundaryOperator;
 template <typename ResultType> class DiscreteSparseBoundaryOperator;
+/** \endcond */
 
 template <typename BasisFunctionType, typename ResultType>
 class AbstractBoundaryOperatorPseudoinverseId : public AbstractBoundaryOperatorId

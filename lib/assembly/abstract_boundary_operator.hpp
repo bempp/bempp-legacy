@@ -38,13 +38,16 @@
 namespace arma
 {
 
+/** \cond FORWARD_DECL */
 template <typename eT> class Mat;
+/** \endcond */
 
 }
 
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 class AbstractBoundaryOperatorId;
 class Grid;
 class GeometryFactory;
@@ -54,6 +57,7 @@ template <typename BasisFunctionType, typename ResultType> class Context;
 template <typename BasisFunctionType, typename ResultType> class ElementaryAbstractBoundaryOperator;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
 template <typename BasisFunctionType, typename ResultType> class ScaledAbstractBoundaryOperator;
+/** \endcond */
 
 /** \ingroup abstract_boundary_operators
  *  \brief Abstract (non-discretized) boundary operator.

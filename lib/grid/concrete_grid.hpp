@@ -35,9 +35,10 @@
 namespace Bempp
 {
 
-// Forward declarations
+/** \cond FORWARD_DECL */
 template<int codim> class Entity;
 class GridView;
+/** \endcond */
 
 /**
  \brief Wrapper of a Dune surface grid of type \p DuneGrid.

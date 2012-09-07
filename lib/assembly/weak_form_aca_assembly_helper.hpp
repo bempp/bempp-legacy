@@ -33,16 +33,20 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 template <typename ResultType> class LocalAssemblerForOperators;
+/** \endcond */
 
 } // namespace Fiber
 
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 class AssemblyOptions;
 template <typename ResultType> class DiscreteBoundaryOperator;
 template <typename BasisFunctionType> class Space;
+/** \endcond */
 
 /** \ingroup weak_form_assembly_internal
  *  \brief Class whose methods are called by Ahmed during assembly in the ACA mode.

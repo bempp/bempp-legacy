@@ -30,8 +30,9 @@
 namespace Bempp
 {
 
-// Forward declarations
+/** \cond FORWARD_DECL */
 class Grid;
+/** \endcond */
 
 /** \brief %Grid factory.
 

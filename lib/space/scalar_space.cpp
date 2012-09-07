@@ -26,6 +26,7 @@
 namespace Bempp
 {
 
+/** \cond PRIVATE */
 template <typename BasisFunctionType>
 struct ScalarSpace<BasisFunctionType>::Impl
 {
@@ -38,6 +39,7 @@ struct ScalarSpace<BasisFunctionType>::Impl
     Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
     transformations;
 };
+/** \endcond */
 
 template <typename BasisFunctionType>
 ScalarSpace<BasisFunctionType>::ScalarSpace(Grid& grid) :

@@ -29,11 +29,10 @@
 namespace Bempp
 {
 
+/** \cond PRIVATE */
 template <typename BasisFunctionType, typename ResultType>
 struct Laplace3dSingleLayerBoundaryOperatorImpl;
-
-template <typename BasisFunctionType, typename ResultType>
-class Laplace3dSingleLayerBoundaryOperator;
+/** \endcond */
 
 /** \ingroup laplace_3d
  *  \brief Single-layer-potential boundary operator for the Laplace equation in 3D.

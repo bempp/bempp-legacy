@@ -26,8 +26,10 @@
 namespace Bempp
 {
 
+/** \cond PRIVATE */
 template <typename BasisFunctionType, typename ResultType>
 struct Laplace3dDoubleLayerPotentialOperatorImpl;
+/** \endcond */
 
 /** \ingroup laplace_3d
  *  \brief Double-layer potential operator for the Laplace equation in 3D.

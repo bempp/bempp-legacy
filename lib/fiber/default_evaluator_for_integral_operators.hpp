@@ -35,6 +35,7 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 struct QuadratureOptions;
 template <typename ValueType> class Basis;
 template <typename CoordinateType> class CollectionOfBasisTransformations;
@@ -43,6 +44,7 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class KernelTrialIntegral;
 template <typename CoordinateType> class RawGridGeometry;
 class OpenClHandler;
+/** \endcond */
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>

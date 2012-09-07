@@ -32,10 +32,12 @@
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 template <typename BasisFunctionType> class Space;
 template <typename ResultType> class DiscreteBoundaryOperator;
 template <typename BasisFunctionType, typename ResultType> class BoundaryOperator;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
+/** \endcond */
 
 /** \ingroup boundary_operators
  *  \brief Boundary operator consisting of multiple blocks arranged in a matrix.

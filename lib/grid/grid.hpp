@@ -30,11 +30,12 @@
 namespace Bempp
 {
 
-// Forward declarations
+/** \cond FORWARD_DECL */
 template<int codim> class Entity;
 class GeometryFactory;
 class GridView;
 class IdSet;
+/** \endcond */
 
 /** \brief Abstract wrapper of a grid.
 

@@ -27,8 +27,10 @@
 namespace Bempp
 {
 
+/** \cond PRIVATE */
 template <typename BasisFunctionType>
 struct Helmholtz3dHypersingularBoundaryOperatorImpl;
+/** \endcond */
 
 /** \ingroup helmholtz_3d
  *  \brief Hypersingular boundary operator for the Helmholtz equation in 3D.

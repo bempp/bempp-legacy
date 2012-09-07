@@ -28,8 +28,10 @@
 
 namespace Thyra
 {
+/** \cond FORWARD_DECL */
 template <typename ValueType> class PreconditionerBase;
 template <typename ValueType> class LinearOpWithSolveBase;
+/** \endcond */
 }
 
 namespace Bempp

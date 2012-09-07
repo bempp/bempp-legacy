@@ -44,12 +44,14 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 class OpenClHandler;
 template <typename CoordinateType> class CollectionOfBasisTransformations;
 template <typename ValueType> class CollectionOfKernels;
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class TestKernelTrialIntegral;
 template <typename CoordinateType> class RawGridGeometry;
+/** \endcond */
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>

@@ -28,10 +28,12 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 template <typename T> class _2dSliceOf3dArray;
 template <typename T> class _1dSliceOf3dArray;
 template <typename T> class Const2dSliceOf3dArray;
 template <typename T> class Const1dSliceOf3dArray;
+/** \endcond */
 
 /** \brief Simple implementation of a 3D Fortran-ordered array.
 

@@ -25,8 +25,9 @@
 namespace Bempp
 {
 
-// Forward declarations
+/** \cond FORWARD_DECL */
 template<int codim> class Entity;
+/** \endcond */
 
 /**
  \brief Abstract base class for an object providing read-only access to an

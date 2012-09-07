@@ -33,6 +33,8 @@
 
 namespace Fiber
 {
+
+/** \cond FORWARD_DECL */
 class ParallelizationOptions;
 class OpenClHandler;
 
@@ -49,6 +51,7 @@ template <typename CoordinateType> class RawGridGeometry;
 template <typename ResultType> class LocalAssemblerForOperators;
 template <typename ResultType> class LocalAssemblerForGridFunctions;
 template <typename ResultType> class EvaluatorForIntegralOperators;
+/** \endcond */
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory>

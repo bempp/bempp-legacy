@@ -32,7 +32,9 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 template <typename CoordinateType> struct GeometricalData;
+/** \endcond */
 
 } // namespace Fiber
 
