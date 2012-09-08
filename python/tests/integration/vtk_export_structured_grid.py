@@ -6,7 +6,7 @@
 
 # Help Python find the bempp module
 import sys
-sys.path.append("..")
+sys.path.append("../..")
 
 import bempp.lib
 import numpy as np

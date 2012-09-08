@@ -3,7 +3,7 @@
 
 # Import the bempp module
 import sys
-sys.path.append("..")
+sys.path.append("../..")
 import bempp
 import numpy as np
 
