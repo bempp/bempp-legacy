@@ -21,6 +21,7 @@
 #ifndef bempp_meshes_hpp
 #define bempp_meshes_hpp
 
+#include "common/shared_ptr.hpp"
 #include <memory>
 
 namespace Bempp
@@ -28,7 +29,7 @@ namespace Bempp
     class Grid;
 } // namespace Bempp
 
-std::auto_ptr<Bempp::Grid> loadTriangularMeshFromFile(const char* fileName);
+Bempp::shared_ptr<Bempp::Grid> loadTriangularMeshFromFile(const char* fileName);
 
 void dumpElementList(const Bempp::Grid* grid);
 

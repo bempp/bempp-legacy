@@ -106,12 +106,12 @@ int main()
     const char* meshFile = "meshes/sphere-644.msh";
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
-    std::auto_ptr<Grid> grid = GridFactory::importGmshGrid(params, meshFile);
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(params, meshFile);
 
     // Initialize the spaces
 
-    PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(*grid);
-    PiecewiseConstantScalarSpace<BFT> pwiseConstants(*grid);
+    PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(grid);
+    PiecewiseConstantScalarSpace<BFT> pwiseConstants(grid);
 
     pwiseLinears.assignDofs();
     pwiseConstants.assignDofs();

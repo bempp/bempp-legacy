@@ -71,9 +71,9 @@ struct DiscreteAcaBoundaryOperatorFixture
         grid = createRegularTriangularGrid();
 
         shared_ptr<Space<BFT> > pwiseConstants(
-            new PiecewiseConstantScalarSpace<BFT>(*grid));
+            new PiecewiseConstantScalarSpace<BFT>(grid));
         shared_ptr<Space<BFT> > pwiseLinears(
-            new PiecewiseLinearContinuousScalarSpace<BFT>(*grid));
+            new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
         pwiseConstants->assignDofs();
         pwiseLinears->assignDofs();
 
@@ -90,7 +90,7 @@ struct DiscreteAcaBoundaryOperatorFixture
             context, pwiseConstants, pwiseConstants, pwiseLinears, waveNumber);
     }
 
-    std::auto_ptr<Grid> grid;
+    shared_ptr<Grid> grid;
     BoundaryOperator<BFT, RT> op;
 };
 
@@ -208,12 +208,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(acaOperatorSum_works_correctly_for_nonsymmetric_op
     typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
-    std::auto_ptr<Grid> grid = createRegularTriangularGrid(10, 3);
+    shared_ptr<Grid> grid = createRegularTriangularGrid(10, 3);
 
     shared_ptr<Space<BFT> > pwiseConstants(
-        new PiecewiseConstantScalarSpace<BFT>(*grid));
+        new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
-        new PiecewiseLinearContinuousScalarSpace<BFT>(*grid));
+        new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
     pwiseConstants->assignDofs();
     pwiseLinears->assignDofs();
 
@@ -255,10 +255,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(acaOperatorSum_works_correctly_for_real_hermitian_
     typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
-    std::auto_ptr<Grid> grid = createRegularTriangularGrid(10, 3);
+    shared_ptr<Grid> grid = createRegularTriangularGrid(10, 3);
 
     shared_ptr<Space<BFT> > pwiseLinears(
-        new PiecewiseLinearContinuousScalarSpace<BFT>(*grid));
+        new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
     pwiseLinears->assignDofs();
 
     AssemblyOptions assemblyOptions;
@@ -299,12 +299,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(scaledAcaOperator_works_correctly_for_nonsymmetric
     typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
-    std::auto_ptr<Grid> grid = createRegularTriangularGrid(10, 3);
+    shared_ptr<Grid> grid = createRegularTriangularGrid(10, 3);
 
     shared_ptr<Space<BFT> > pwiseConstants(
-        new PiecewiseConstantScalarSpace<BFT>(*grid));
+        new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
-        new PiecewiseLinearContinuousScalarSpace<BFT>(*grid));
+        new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
     pwiseConstants->assignDofs();
     pwiseLinears->assignDofs();
 
@@ -339,10 +339,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(scaledAcaOperator_works_correctly_for_real_hermiti
     typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
-    std::auto_ptr<Grid> grid = createRegularTriangularGrid(10, 3);
+    shared_ptr<Grid> grid = createRegularTriangularGrid(10, 3);
 
     shared_ptr<Space<BFT> > pwiseLinears(
-        new PiecewiseLinearContinuousScalarSpace<BFT>(*grid));
+        new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
     pwiseLinears->assignDofs();
 
     AssemblyOptions assemblyOptions;

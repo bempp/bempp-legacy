@@ -57,8 +57,7 @@ void constructGlobalToFlatLocalDofsMappingVectors(
 {
     const int ldofCount = space.flatLocalDofCount();
 
-    const Grid& grid = space.grid();
-    std::auto_ptr<GridView> view = grid.leafView();
+    std::auto_ptr<GridView> view = space.grid()->leafView();
     const IndexSet& indexSet = view->indexSet();
     const size_t elementCount = view->entityCount(0);
 
@@ -129,7 +128,7 @@ constructGlobalToFlatLocalDofsMappingEpetraMatrix(
 } // namespace
 
 template <typename BasisFunctionType>
-Space<BasisFunctionType>::Space(Grid& grid) :
+Space<BasisFunctionType>::Space(const shared_ptr<Grid>& grid) :
     m_grid(grid)
 {
 }
@@ -147,7 +146,7 @@ void getAllBases(const Space<BasisFunctionType>& space,
         throw std::runtime_error("getAllBases(): space.assignDofs() must be "
                                  "called before calling this function");
 
-    std::auto_ptr<GridView> view = space.grid().leafView();
+    std::auto_ptr<GridView> view = space.grid()->leafView();
     const Mapper& mapper = view->elementMapper();
     const int elementCount = view->entityCount(0);
 

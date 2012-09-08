@@ -49,13 +49,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_assembled_operator_agrees_with_dense_assemb
 
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
-    std::auto_ptr<Grid> grid = GridFactory::importGmshGrid(
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
         params, "../examples/meshes/sphere-614.msh");
 
     shared_ptr<Space<BFT> > pwiseConstants(
-        new PiecewiseConstantScalarSpace<BFT>(*grid));
+        new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
-        new PiecewiseLinearContinuousScalarSpace<BFT>(*grid));
+        new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
     pwiseConstants->assignDofs();
     pwiseLinears->assignDofs();
 
@@ -97,13 +97,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_disassembled_operator_agrees_with_dense_ass
 
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
-    std::auto_ptr<Grid> grid = GridFactory::importGmshGrid(
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
         params, "../examples/meshes/sphere-614.msh");
 
     shared_ptr<Space<BFT> > pwiseConstants(
-        new PiecewiseConstantScalarSpace<BFT>(*grid));
+        new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
-        new PiecewiseLinearContinuousScalarSpace<BFT>(*grid));
+        new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
     pwiseConstants->assignDofs();
     pwiseLinears->assignDofs();
 

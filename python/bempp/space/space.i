@@ -47,7 +47,9 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS(Space);
 
 } // namespace Bempp
 
+#define shared_ptr boost::shared_ptr
 %include "space/space.hpp"
+#undef shared_ptr
 
 namespace Bempp
 {

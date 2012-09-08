@@ -34,7 +34,9 @@
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 class GridView;
+/** \endcond */
 
 /** \ingroup space
  *  \brief Space of continuous, piecewise linear scalar functions. */
@@ -45,7 +47,7 @@ public:
     typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
     typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
 
-    explicit PiecewiseLinearContinuousScalarSpace(Grid& grid);
+    explicit PiecewiseLinearContinuousScalarSpace(const shared_ptr<Grid>& grid);
     virtual ~PiecewiseLinearContinuousScalarSpace();
 
     virtual int domainDimension() const;

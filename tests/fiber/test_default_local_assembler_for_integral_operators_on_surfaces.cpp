@@ -63,14 +63,14 @@ public:
             bool cacheSingularIntegrals)
     {
         // Create a Bempp grid
-        grid = createGrid();
+        shared_ptr<Grid> grid = createGrid();
 
         // These important thing is that the domain and dualToRange spaces are
         // different
         piecewiseConstantSpace = std::auto_ptr<PiecewiseConstantSpace>(
-                    new PiecewiseConstantSpace(*grid));
+                    new PiecewiseConstantSpace(grid));
         piecewiseLinearSpace = std::auto_ptr<PiecewiseLinearSpace>(
-                    new PiecewiseLinearSpace(*grid));
+                    new PiecewiseLinearSpace(grid));
         piecewiseConstantSpace->assignDofs();
         piecewiseLinearSpace->assignDofs();
 
@@ -92,9 +92,9 @@ public:
     }
 
 private:
-    std::auto_ptr<Bempp::Grid> createGrid() {
-        Bempp::GridParameters params;
-        params.topology = Bempp::GridParameters::TRIANGULAR;
+    shared_ptr<Grid> createGrid() {
+        GridParameters params;
+        params.topology = GridParameters::TRIANGULAR;
 
         const int dimGrid = 2;
         typedef double ctype;
@@ -106,12 +106,11 @@ private:
         nElements(0) = N_ELEMENTS_X;
         nElements(1) = N_ELEMENTS_Y;
 
-        return Bempp::GridFactory::createStructuredGrid(
+        return GridFactory::createStructuredGrid(
                     params, lowerLeft, upperRight, nElements);
     }
 
 public:
-    std::auto_ptr<Bempp::Grid> grid;
     std::auto_ptr<PiecewiseConstantSpace> piecewiseConstantSpace;
     std::auto_ptr<PiecewiseLinearSpace> piecewiseLinearSpace;
     std::auto_ptr<Operator> op;

@@ -125,7 +125,7 @@ double A_Keijzer (double n)
     return (2.0/(1.0-R0) - 1.0 + costh*costh*costh) / (1.0 - costh*costh);
 }
 
-std::auto_ptr<Grid> CreateSphere (double rad, double elsize)
+shared_ptr<Grid> CreateSphere (double rad, double elsize)
 {
     // Create a sphere mesh of radius rad and mean element size elsize
     // Calls external gmsh executable which must be on the path
@@ -149,7 +149,7 @@ std::auto_ptr<Grid> CreateSphere (double rad, double elsize)
     }
     int gmshExitStatus;
     waitpid (pID, &gmshExitStatus, 0);
-    std::auto_ptr<Grid> grid = loadTriangularMeshFromFile(gmesh_msh_name);
+    shared_ptr<Grid> grid = loadTriangularMeshFromFile(gmesh_msh_name);
     remove (gmesh_geo_name);
     remove (gmesh_msh_name);
     return grid;
@@ -184,15 +184,15 @@ int main(int argc, char* argv[])
     RT waveNumber3 = sqrt (RT(mua3/kappa3, omega/(c*kappa3))); // outer region
 
     // Create sphere meshes on the fly
-    std::auto_ptr<Grid> grid1 = CreateSphere(25.0, 1.0);
-    std::auto_ptr<Grid> grid2 = CreateSphere(15.0, 1.0);
-    std::auto_ptr<Grid> grid3 = CreateSphere(10.0, 1.0);
+    shared_ptr<Grid> grid1 = CreateSphere(25.0, 1.0);
+    shared_ptr<Grid> grid2 = CreateSphere(15.0, 1.0);
+    shared_ptr<Grid> grid3 = CreateSphere(10.0, 1.0);
 
     // Initialize the spaces
 
-    PiecewiseLinearContinuousScalarSpace<BFT> HplusHalfSpace1(*grid1);
-    PiecewiseLinearContinuousScalarSpace<BFT> HplusHalfSpace2(*grid2);
-    PiecewiseLinearContinuousScalarSpace<BFT> HplusHalfSpace3(*grid3);
+    PiecewiseLinearContinuousScalarSpace<BFT> HplusHalfSpace1(grid1);
+    PiecewiseLinearContinuousScalarSpace<BFT> HplusHalfSpace2(grid2);
+    PiecewiseLinearContinuousScalarSpace<BFT> HplusHalfSpace3(grid3);
 
     HplusHalfSpace1.assignDofs();
     HplusHalfSpace2.assignDofs();

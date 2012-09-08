@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works,
 
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
-    std::auto_ptr<Grid> grid = GridFactory::importGmshGrid(
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
                 params, std::string("../examples/meshes/simple_mesh_2_elements.msh"));
     std::auto_ptr<GridView> view = grid->leafView();
     std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();

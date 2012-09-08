@@ -22,7 +22,7 @@
 #include "grid/grid_factory.hpp"
 #include "grid/structured_grid_factory.hpp"
 
-std::auto_ptr<Bempp::Grid> createRegularTriangularGrid(
+Bempp::shared_ptr<Bempp::Grid> createRegularTriangularGrid(
     int nElementsX, int nElementsY)
 {
     Bempp::GridParameters params;

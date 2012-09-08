@@ -72,4 +72,5 @@ endif ()
 install(DIRECTORY ${CMAKE_BINARY_DIR}/python/bempp DESTINATION bempp/python FILES_MATCHING
 	PATTERN "CMakeFiles" EXCLUDE
 	PATTERN "determineNumpyPath.py" EXCLUDE
+        PATTERN "postprocess_docstrings.py" EXCLUDE
 	PATTERN "*.py" PATTERN "*.so")

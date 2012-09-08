@@ -32,7 +32,7 @@
 
 using namespace Bempp;
 
-std::auto_ptr<Grid>
+shared_ptr<Grid>
 loadTriangularMeshFromFile(const char* fileName)
 {
     // Import the grid

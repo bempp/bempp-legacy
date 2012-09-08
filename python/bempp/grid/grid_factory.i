@@ -24,7 +24,9 @@ inline void makeGridParameters(GridParameters& params, const std::string& topolo
 } // namespace Bempp
 %}
 
+#define shared_ptr boost::shared_ptr
 %include "grid_factory_docstrings.i"
+#undef shared_ptr
 
 namespace Bempp 
 {
@@ -48,7 +50,7 @@ namespace Bempp
   //    val.topology = args[0]
   //	%}
 
-    static std::auto_ptr<Bempp::Grid> createStructuredGrid(
+    static boost::shared_ptr<Bempp::Grid> createStructuredGrid(
             const std::string& topology,
             const arma::Col<Bempp::ctype>& lowerLeft, 
             const arma::Col<Bempp::ctype>& upperRight,
@@ -67,7 +69,7 @@ namespace Bempp
     //	%}
     
     %feature("compactdefaultargs") importGmshGrid;
-    static std::auto_ptr<Bempp::Grid> importGmshGrid(
+    static boost::shared_ptr<Bempp::Grid> importGmshGrid(
             const std::string& topology, const std::string& fileName, 
             bool verbose=true, bool insertBoundarySegments=false) {
         Bempp::GridParameters params;

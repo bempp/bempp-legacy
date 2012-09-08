@@ -110,12 +110,12 @@ int main(int argc, char* argv[])
                      "Usage: " << argv[0] << " <mesh_file>" << std::endl;
         return 1;
     }
-    std::auto_ptr<Grid> grid = loadTriangularMeshFromFile(argv[1]);
+    shared_ptr<Grid> grid = loadTriangularMeshFromFile(argv[1]);
 
     // Initialize the spaces
 
-    PiecewiseLinearContinuousScalarSpace<BFT> HplusHalfSpace(*grid);
-    PiecewiseConstantScalarSpace<BFT> HminusHalfSpace(*grid);
+    PiecewiseLinearContinuousScalarSpace<BFT> HplusHalfSpace(grid);
+    PiecewiseConstantScalarSpace<BFT> HminusHalfSpace(grid);
 
     HplusHalfSpace.assignDofs();
     HminusHalfSpace.assignDofs();

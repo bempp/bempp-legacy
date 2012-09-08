@@ -37,21 +37,24 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 template <typename ValueType> class Basis;
 template <typename ValueType> class BasisData;
 template <typename CoordinateType> class CollectionOfBasisTransformations;
 template <typename CoordinateType> class GeometricalData;
+/** \endcond */
 
-}
+} // namespace Fiber
 
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 class Grid;
 template <int codim> class Entity;
 template <int codim> class EntityPointer;
-
 template <typename ValueType> class DiscreteBoundaryOperator;
+/** \endcond */
 
 /** \ingroup space
  *  \brief Function space.
@@ -87,13 +90,9 @@ public:
     // be made via Space rather than via Grid.
     /** \brief Constructor.
      *
-     *  \param[in] grid Grid on which functions from this space should be defined.
-     *
-     *  The supplied grid must remain valid until the Space object is destructed.
-     *
-     *  \todo The grid should be passed via a shared pointer instead of via a
-     *  reference. */
-    explicit Space(Grid& grid);
+     *  \param[in] grid Grid on which functions from this space should be
+     *  defined. */
+    explicit Space(const shared_ptr<Grid>& grid);
 
     /** \brief Destructor. */
     virtual ~Space();
@@ -111,9 +110,9 @@ public:
      * (E.g. H1 space -> 1, H(curl) space on a 2D surface -> 2). */
     virtual int codomainDimension() const = 0;
 
-    /** \brief Reference to the grid on which the functions from this space
+    /** \brief Shared pointer to the grid on which the functions from this space
      *  are defined. */
-    const Grid& grid() const { return m_grid; }
+    shared_ptr<const Grid> grid() const { return m_grid; }
 
     /** \brief Reference to the basis attached to the specified element. */
     virtual const Fiber::Basis<BasisFunctionType>& basis(
@@ -287,8 +286,10 @@ public:
             const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const = 0;
     /** @} */
 
-protected:
-    Grid& m_grid;
+private:
+    /** \cond PRIVATE */
+    shared_ptr<Grid> m_grid;
+    /** \endcond */
 };
 
 /** \brief Get pointers to Basis objects corresponding to all elements of the grid

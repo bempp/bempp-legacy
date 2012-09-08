@@ -132,7 +132,7 @@ std::vector<std::vector<GlobalDofIndex> > gatherGlobalDofs(
         const Space<BasisFunctionType>& space)
 {
     // Get the grid's leaf view so that we can iterate over elements
-    std::auto_ptr<GridView> view = space.grid().leafView();
+    std::auto_ptr<GridView> view = space.grid()->leafView();
     const int elementCount = view->entityCount(0);
 
     // Global DOF indices corresponding to local DOFs on elements

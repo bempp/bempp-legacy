@@ -58,9 +58,9 @@ struct DiscreteSparseBoundaryOperatorFixture
         grid = createRegularTriangularGrid();
 
         shared_ptr<Space<BFT> > pwiseConstants(
-            new PiecewiseConstantScalarSpace<BFT>(*grid));
+            new PiecewiseConstantScalarSpace<BFT>(grid));
         shared_ptr<Space<BFT> > pwiseLinears(
-            new PiecewiseLinearContinuousScalarSpace<BFT>(*grid));
+            new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
         pwiseConstants->assignDofs();
         pwiseLinears->assignDofs();
 
@@ -74,7 +74,7 @@ struct DiscreteSparseBoundaryOperatorFixture
             context, pwiseConstants, pwiseConstants, pwiseLinears);
     }
 
-    std::auto_ptr<Grid> grid;
+    shared_ptr<Grid> grid;
     BoundaryOperator<BFT, RT> op;
 };
 

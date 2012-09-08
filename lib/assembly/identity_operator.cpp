@@ -221,8 +221,8 @@ IdentityOperator<BasisFunctionType, ResultType>::IdentityOperator(
     m_id(boost::make_shared<IdentityOperatorId<BasisFunctionType, ResultType> >(
              *this))
 {
-    if (&domain->grid() != &range->grid() ||
-            &range->grid() != &dualToRange->grid())
+    if (domain->grid() != range->grid() ||
+            range->grid() != dualToRange->grid())
         throw std::invalid_argument(
                 "IdentityOperator::IdentityOperator(): "
                 "all three function spaces must be defined on the same grid.");
@@ -291,7 +291,7 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInDenseMode(
     const Space<BasisFunctionType>& trialSpace = *this->domain();
 
     // Fill local submatrices
-    std::auto_ptr<GridView> view = testSpace.grid().leafView();
+    std::auto_ptr<GridView> view = testSpace.grid()->leafView();
     const size_t elementCount = view->entityCount(0);
     std::vector<int> elementIndices(elementCount);
     for (size_t i = 0; i < elementCount; ++i)
@@ -348,7 +348,7 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparseMode(
     const Space<BasisFunctionType>& trialSpace = *this->domain();
 
     // Fill local submatrices
-    std::auto_ptr<GridView> view = testSpace.grid().leafView();
+    std::auto_ptr<GridView> view = testSpace.grid()->leafView();
     const size_t elementCount = view->entityCount(0);
     std::vector<int> elementIndices(elementCount);
     for (size_t i = 0; i < elementCount; ++i)

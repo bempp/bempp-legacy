@@ -62,7 +62,7 @@ struct DiscreteInverseSparseBoundaryOperatorFixture
         grid = createRegularTriangularGrid();
 
         shared_ptr<Space<BFT> > pwiseLinears(
-            new PiecewiseLinearContinuousScalarSpace<BFT>(*grid));
+            new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
         pwiseLinears->assignDofs();
 
         AssemblyOptions assemblyOptions;
@@ -76,7 +76,7 @@ struct DiscreteInverseSparseBoundaryOperatorFixture
         op = pseudoinverse(id);
     }
 
-    std::auto_ptr<Grid> grid;
+    shared_ptr<Grid> grid;
     BoundaryOperator<BFT, RT> op;
 };
 

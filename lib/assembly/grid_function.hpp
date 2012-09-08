@@ -166,7 +166,7 @@ public:
      *
      * \note An exception is thrown if this function is called on an
      * uninitialized GridFunction object. */
-    const Grid& grid() const;
+    shared_ptr<const Grid> grid() const;
 
     /** \brief Space in which this function is expanded. */
     shared_ptr<const Space<BasisFunctionType> > space() const;

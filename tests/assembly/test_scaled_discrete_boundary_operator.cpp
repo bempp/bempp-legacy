@@ -102,12 +102,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     nElements(0) = 2;
     nElements(1) = 3;
 
-    std::auto_ptr<Grid> grid = 
+    shared_ptr<Grid> grid = 
         Bempp::GridFactory::createStructuredGrid(
             params, lowerLeft, upperRight, nElements);
 
-    PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(*grid);
-    PiecewiseConstantScalarSpace<BFT> pwiseConstants(*grid);
+    PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(grid);
+    PiecewiseConstantScalarSpace<BFT> pwiseConstants(grid);
     pwiseLinears.assignDofs();
     pwiseConstants.assignDofs();
 
