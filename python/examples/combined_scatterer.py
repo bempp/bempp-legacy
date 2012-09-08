@@ -21,10 +21,10 @@ def gridfundata(point,normal):
 
 
 # Set accuracy options
+accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2)
+accuracyOptions.doubleSingular.setRelativeQuadratureOrder(1)
 
 accuracy_options = lib.createAccuracyOptions()
-accuracy_options.doubleRegular.orderIncrement=2 # 2 orders higher than default accuracy for regular integrals
-accuracy_options.doubleSingular.orderIncrement=1 # 1 order higher than default accuracy for singular integrals
 
 
 # The default factory for numerical quadrature
