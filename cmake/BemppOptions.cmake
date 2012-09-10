@@ -1,5 +1,6 @@
 # Options (can be modified by user)
 option(WITH_TESTS "Compile unit tests (can be run with 'make test')" ON)
+option(WITH_INTEGRATION_TESTS "Compile integration tests" OFF)
 option(WITH_AHMED "Link to the AHMED library to enable ACA mode assembly)" OFF)
 option(WITH_OPENCL "Add OpenCL support for Fiber module" OFF)
 option(WITH_CUDA "Add CUDA support for Fiber module" OFF)

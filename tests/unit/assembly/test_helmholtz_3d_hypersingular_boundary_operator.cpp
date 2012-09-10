@@ -25,8 +25,8 @@
 #include "assembly/discrete_boundary_operator.hpp"
 #include "assembly/boundary_operator.hpp"
 #include "assembly/context.hpp"
-#include "assembly/modified_helmholtz_3d_single_layer_boundary_operator.hpp"
-#include "assembly/modified_helmholtz_3d_hypersingular_boundary_operator.hpp"
+#include "assembly/helmholtz_3d_single_layer_boundary_operator.hpp"
+#include "assembly/helmholtz_3d_hypersingular_boundary_operator.hpp"
 #include "assembly/numerical_quadrature_strategy.hpp"
 
 #include "common/boost_make_shared_fwd.hpp"
@@ -58,19 +58,17 @@
 
 using namespace Bempp;
 
-BOOST_AUTO_TEST_SUITE(ModifiedHelmholtz3dHypersingularBoundaryOperator)
+BOOST_AUTO_TEST_SUITE(Helmholtz3dHypersingularBoundaryOperator)
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(works_for_complex_kernel, BasisFunctionType, basis_function_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(works, BasisFunctionType, basis_function_types)
 {
     typedef BasisFunctionType BFT;
     typedef typename Fiber::ScalarTraits<BFT>::ComplexType RT;
-    typedef typename Fiber::ScalarTraits<BFT>::ComplexType KT;
     typedef typename Fiber::ScalarTraits<BFT>::RealType CT;
-
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-                params, std::string("../examples/meshes/two_disjoint_triangles.msh"));
+                params, std::string("../../examples/meshes/two_disjoint_triangles.msh"));
 
     PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(grid);
     PiecewiseConstantScalarSpace<BFT> pwiseConstants(grid);
@@ -85,24 +83,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works_for_complex_kernel, BasisFunctionType, basis
 
     Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);
 
-    const KT waveNumber(1.23, 0.31);
+    const RT waveNumber(1.23, 0.31);
 
-    BoundaryOperator<BFT, RT> slpOpConstants =
-            Bempp::modifiedHelmholtz3dSingleLayerBoundaryOperator<BFT, KT, RT>(
+    BoundaryOperator<BFT, RT> slpOpConstants = Bempp::helmholtz3dSingleLayerBoundaryOperator<BFT>(
                 make_shared_from_ref(context),
                 make_shared_from_ref(pwiseConstants),
                 make_shared_from_ref(pwiseConstants),
                 make_shared_from_ref(pwiseConstants),
                 waveNumber);
-    BoundaryOperator<BFT, RT> slpOpLinears =
-            modifiedHelmholtz3dSingleLayerBoundaryOperator<BFT, KT, RT>(
+    BoundaryOperator<BFT, RT> slpOpLinears = helmholtz3dSingleLayerBoundaryOperator<BFT>(
                 make_shared_from_ref(context),
                 make_shared_from_ref(pwiseLinears),
                 make_shared_from_ref(pwiseLinears),
                 make_shared_from_ref(pwiseLinears),
                 waveNumber);
-    BoundaryOperator<BFT, RT> hypOp =
-            modifiedHelmholtz3dHypersingularBoundaryOperator<BFT, KT, RT>(
+    BoundaryOperator<BFT, RT> hypOp = helmholtz3dHypersingularBoundaryOperator<BFT>(
                 make_shared_from_ref(context),
                 make_shared_from_ref(pwiseLinears),
                 make_shared_from_ref(pwiseLinears),
@@ -161,116 +156,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works_for_complex_kernel, BasisFunctionType, basis
                         valueMultiplier += geomData[testElement].normals(dim, 0) * 
                             geomData[trialElement].normals(dim, 0);
                     expectedHypMat(3 * testElement + r, 3 * trialElement + c) =
-                            curlMultiplier * slpMatConstants(testElement, trialElement) +
-                            waveNumber * waveNumber * valueMultiplier *
-                            slpMatLinears(3 * testElement + r, 3 * trialElement + c);
-                }
-
-    BOOST_CHECK(check_arrays_are_close<RT>(expectedHypMat, hypMat, 1e-6));
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(works_for_real_kernel, BasisFunctionType, basis_function_types)
-{
-    typedef BasisFunctionType BFT;
-    typedef BasisFunctionType RT;
-    typedef typename Fiber::ScalarTraits<BFT>::RealType KT;
-    typedef typename Fiber::ScalarTraits<BFT>::RealType CT;
-
-    GridParameters params;
-    params.topology = GridParameters::TRIANGULAR;
-    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-                params, std::string("../examples/meshes/two_disjoint_triangles.msh"));
-
-    PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(grid);
-    PiecewiseConstantScalarSpace<BFT> pwiseConstants(grid);
-    pwiseLinears.assignDofs();
-    pwiseConstants.assignDofs();
-
-    AssemblyOptions assemblyOptions;
-    AccuracyOptions accuracyOptions;
-    accuracyOptions.doubleRegular.setAbsoluteQuadratureOrder(5);
-    accuracyOptions.doubleSingular.setAbsoluteQuadratureOrder(5);
-    NumericalQuadratureStrategy<BFT, RT> quadStrategy(accuracyOptions);
-
-    Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);
-
-    const KT waveNumber = 1.23;
-
-    BoundaryOperator<BFT, RT> slpOpConstants =
-            Bempp::modifiedHelmholtz3dSingleLayerBoundaryOperator<BFT, KT, RT>(
-                make_shared_from_ref(context),
-                make_shared_from_ref(pwiseConstants),
-                make_shared_from_ref(pwiseConstants),
-                make_shared_from_ref(pwiseConstants),
-                waveNumber);
-    BoundaryOperator<BFT, RT> slpOpLinears =
-            modifiedHelmholtz3dSingleLayerBoundaryOperator<BFT, KT, RT>(
-                make_shared_from_ref(context),
-                make_shared_from_ref(pwiseLinears),
-                make_shared_from_ref(pwiseLinears),
-                make_shared_from_ref(pwiseLinears),
-                waveNumber);
-    BoundaryOperator<BFT, RT> hypOp =
-            modifiedHelmholtz3dHypersingularBoundaryOperator<BFT, KT, RT>(
-                make_shared_from_ref(context),
-                make_shared_from_ref(pwiseLinears),
-                make_shared_from_ref(pwiseLinears),
-                make_shared_from_ref(pwiseLinears),
-                waveNumber);
-
-    // Get the matrix repr. of the hypersingular operator
-    arma::Mat<RT> hypMat = hypOp.weakForm()->asMatrix();
-
-    // Construct the expected hypersingular operator matrix. For this, we need:
-
-    // * the surface curls of all basis functions (which are constant)
-    typedef Fiber::SurfaceCurl3dElementaryFunctor<CT> ElementaryFunctor;
-    typedef Fiber::ElementaryBasisTransformationFunctorWrapper<ElementaryFunctor> Functor;
-    Functor functor;
-    size_t basisDeps = 0, geomDeps = 0;
-    functor.addDependencies(basisDeps, geomDeps);
-
-    arma::Mat<CT> points(2, 1);
-    points.fill(0.);
-
-    typedef Fiber::PiecewiseLinearContinuousScalarBasis<3, BFT> Basis;
-    Basis basis;
-    Fiber::BasisData<BFT> basisData;
-    basis.evaluate(basisDeps, points, Fiber::ALL_DOFS, basisData);
-
-    Fiber::GeometricalData<CT> geomData[2];
-    std::auto_ptr<GridView> view = grid->leafView();
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-    it->entity().geometry().getData(geomDeps, points, geomData[0]);
-    it->next();
-    it->entity().geometry().getData(geomDeps, points, geomData[1]);
-
-    Fiber::DefaultCollectionOfBasisTransformations<Functor> transformations(functor);
-
-    Fiber::CollectionOf3dArrays<BFT> surfaceCurl[2];
-    transformations.evaluate(basisData, geomData[0], surfaceCurl[0]);
-    transformations.evaluate(basisData, geomData[1], surfaceCurl[1]);
-
-    // * the single-layer potential matrix for constant basis functions
-    arma::Mat<RT> slpMatConstants = slpOpConstants.weakForm()->asMatrix();
-    // * the single-layer potential matrix for linear basis functions
-    arma::Mat<RT> slpMatLinears = slpOpLinears.weakForm()->asMatrix();
-
-    arma::Mat<RT> expectedHypMat(6, 6);
-    for (size_t testElement = 0; testElement < 2; ++testElement)
-        for (size_t trialElement = 0; trialElement < 2; ++trialElement)
-            for (size_t r = 0; r < 3; ++r)
-                for (size_t c = 0; c < 3; ++c) {
-                    RT curlMultiplier = 0.;
-                    for (size_t dim = 0; dim < 3; ++dim)
-                        curlMultiplier += surfaceCurl[testElement][0](dim, r, 0) *
-                                surfaceCurl[trialElement][0](dim, c, 0);
-                    RT valueMultiplier = 0.;
-                    for (size_t dim = 0; dim < 3; ++dim)
-                        valueMultiplier += geomData[testElement].normals(dim, 0) *
-                            geomData[trialElement].normals(dim, 0);
-                    expectedHypMat(3 * testElement + r, 3 * trialElement + c) =
-                            curlMultiplier * slpMatConstants(testElement, trialElement) +
+                            curlMultiplier * slpMatConstants(testElement, trialElement) -
                             waveNumber * waveNumber * valueMultiplier *
                             slpMatLinears(3 * testElement + r, 3 * trialElement + c);
                 }
