@@ -1052,7 +1052,7 @@ def createBlockOperatorStructure(context):
            "createBlockedOperatorStructure() function instead.")
     return createBlockedOperatorStructure(context)
 
-def createBlockedBoundaryOperator(context,structure):
+def createBlockedBoundaryOperator(context, structure):
     """
     Create and return a BlockedBoundaryOperator object.
 
@@ -1061,10 +1061,12 @@ def createBlockedBoundaryOperator(context,structure):
     represented by a BoundaryOperator object.
 
     *Parameters:*
-       - structure (BlockedOperatorStructure)
-            A BlockedOperatorStructure object determining the boundary operators
-            to be put in specific blocks of the newly constructed blocked
-            boundary operator.
+       - structure (BlockedOperatorStructure or nested list)
+
+            An object determining the boundary operators to be put in specific
+            blocks of the newly constructed blocked boundary operator. Can be
+            either a BlockedBoundaryOperator object or simply a nested (2D)
+            list. In the latter case, empty blocks can be marked with None.
 
     All the boundary operators from a single column of 'structure' must have the
     same domain, and all the operators from a single row of 'structure' must have
@@ -1077,10 +1079,47 @@ def createBlockedBoundaryOperator(context,structure):
     BasisFunctionType and ResultType determined automatically from the
     'structure' argument and equal to either float32, float64, complex64 or
     complex128.
+
+    *Example:*
+
+    Assume that A, B and C are boundary operators. We want to create
+    the blocked operator
+
+            [A B]
+        Z = [C 0],
+
+    where 0 is an empty block.
+
+    Variant 1::
+        from bempp import lib
+        context = lib.createContext(...)
+        structure = lib.createBlockedOperatorStructure(context)
+        structure.setBlock(0, 0, A)
+        structure.setBlock(0, 1, B)
+        structure.setBlock(1, 0, C)
+        Z = lib.createBlockedBoundaryOperator(context, structure)
+
+    Variant 2::
+        from bempp import lib
+        context = lib.createContext(...)
+        Z = lib.createBlockedBoundaryOperator(context, [[A, B], [C, None]])
     """
+    structureClass = getattr(
+        core, "BlockedOperatorStructure_" + context.basisFunctionType() +
+        "_" + context.resultType())
+    if isinstance(structure, structureClass):
+        print "real structure"
+        boStructure = structure
+    else:
+        boStructure = createBlockedOperatorStructure(context)
+        for i in range(len(structure)):
+            for j in range(len(structure[i])):
+                block = structure[i][j]
+                if block:
+                    boStructure.setBlock(i, j, block)
     name = 'BlockedBoundaryOperator'
     return _constructObjectTemplatedOnBasisAndResult(
-        name, context.basisFunctionType(), context.resultType(), structure)
+        name, context.basisFunctionType(), context.resultType(), boStructure)
 
 def createAcaPreconditioner(operator, delta=1E-2):
     """
