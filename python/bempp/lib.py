@@ -20,6 +20,7 @@
 
 
 import bempp.core as core
+import numpy
 
 def checkType(dtype):
     dtypes={'float':'float64',
@@ -1213,4 +1214,10 @@ def acaOperatorSum(op1, op2, eps, maximumRank):
     return _constructObjectTemplatedOnValue(
         name, op1.valueType(), op1, op2, eps, maximumRank)
 
-
+def areInside(grid, points):
+    """Determine whether points lie inside a grid (assumed to be closed)."""
+    if points.shape[0] != grid.dimWorld():
+        raise ValueError("insideClosedGrid(): the number of columns "
+                         "in the array 'points' must match the number of "
+                         "dimensions of the world in which 'grid' is embedded")
+    return numpy.array(core.areInside(grid, points))

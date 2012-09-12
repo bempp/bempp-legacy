@@ -24,8 +24,10 @@
 #include "../common/common.hpp"
 #include "grid_parameters.hpp"
 
-#include <memory>
+#include <armadillo>
 #include <cstddef> // size_t
+#include <memory>
+#include <vector>
 
 namespace Bempp
 {
@@ -95,6 +97,27 @@ public:
     /** \brief Reference to the grid's global id set. */
     virtual const IdSet& globalIdSet() const = 0;
 };
+
+/** \brief Check whether points are inside or outside a closed grid.
+ *
+ *  \param[in] grid A grid representing a closed 2D surface embedded in a 3D
+ *    space.
+ *  \param[in] points A 2D array of dimensions (3, \c n) whose (\c i, \c j)th
+ *    element is the \c i'th coordinate of \c j'th point.
+ *
+ *  \returns A vector of length \c n whose \c j'th element is \c true if the
+ *    \c j'th point lies inside \c grid, \c false otherwise.
+ *
+ *  \note The results produced by this function are undefined if the grid
+ *    does not represent a *closed* surface.
+ *
+ *  \note This function has only been tested for triangular grids.
+ *
+ *  \note The implementation assumes that no grid vertices are separated by less
+ *    than 1e-9.
+ */
+std::vector<bool> areInside(const Grid& grid, const arma::Mat<double>& points);
+std::vector<bool> areInside(const Grid& grid, const arma::Mat<float>& points);
 
 } // namespace Bempp
 
