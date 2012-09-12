@@ -119,16 +119,16 @@ def plotGrid(grid):
     plotTvtkActors(grid_actor)
 
 def plotThreePlanes(potential, gridfun, limits, dimensions, origin=(0,0,0), colorRange=None,
-                    transformation='real', evalOps=None, context=None, quadStrategy=None):
+                    transformation='real', evalOps=None):
     """Simple three planes plot for a potential applied to a gridfun"""
 
     (points1,vals1) = py_ext.evaluatePotentialOnPlane(potential,gridfun,limits,dimensions,plane="xy",origin=origin,
-                                                      evalOps=evalOps,context=context,quadStrategy=quadStrategy)
+                                                      evalOps=evalOps)
     (points2,vals2) = py_ext.evaluatePotentialOnPlane(potential,gridfun,limits,dimensions,plane="xz",origin=origin,
-                                                      evalOps=evalOps,context=context,quadStrategy=quadStrategy)
+                                                      evalOps=evalOps)
     (points3,vals3) = py_ext.evaluatePotentialOnPlane(potential,gridfun,limits,dimensions,plane="yz",origin=origin,
-                                                      evalOps=evalOps,context=context,quadStrategy=quadStrategy)
-    
+                                                      evalOps=evalOps)
+
     if not hasattr(transformation, '__call__'):
         if transformation=='real':
             data_transform = lambda point,val:np.real(val)
@@ -183,17 +183,3 @@ def plotThreePlanes(potential, gridfun, limits, dimensions, origin=(0,0,0), colo
     legend = legendActor(actor1)
 
     plotTvtkActors([actor1,actor2,actor3,gActor,legend])
-    
-    
-    
-
-    
-    
-    
-    
-
-    
-        
-        
-
-    

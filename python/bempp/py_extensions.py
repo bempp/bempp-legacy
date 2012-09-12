@@ -22,7 +22,7 @@ import numpy as np
 from bempp import lib
 
 def evaluatePotentialOnPlane(potential, gridfun, limits, dimensions, plane="xy",
-                             origin=[0,0,0], evalOps=None, context=None, quadStrategy=None):
+                             origin=[0,0,0], evalOps=None):
     """evaluatePotentialOnPlane(potential, gridfun, limits, dimensions, plane="xy",
                                 evalOps=None, quadStrategy=None)
 
@@ -41,15 +41,15 @@ def evaluatePotentialOnPlane(potential, gridfun, limits, dimensions, plane="xy",
        origin       : origin of the plane (default: [0,0,0])
        evalOps      : Optional EvaluationOptions object. Use default options
                       if none is given.
-       quadStrategy : QuadratureStrategy Object. By default use same as for potential.
 
        Returns:
        --------
        points     : Array [p_1,p_2,,,] of points in 3d space.
        values     : Array [v_1,v_2,..] of values v_i of the potential at points p_i.
     """
- 
-    if not plane in ["xy","xz","yz"]: raise TypeError("'plane' must by either 'xy', 'xz', or 'yz'")
+
+    if not plane in ["xy","xz","yz"]:
+        raise ValueError("'plane' must by either 'xy', 'xz', or 'yz'")
 
     xmin, xmax, ymin, ymax = limits
     x, y = np.mgrid[xmin:xmax:dimensions[0]*1j,
@@ -66,9 +66,8 @@ def evaluatePotentialOnPlane(potential, gridfun, limits, dimensions, plane="xy",
     elif plane=="yz":
         points = np.array([np.zeros(dims[0]*dims[1],dtype='d')+origin[0],points_2d[0]+origin[1],points_2d[1]+origin[2]])
 
-    if evalOps is None: evalOps = lib.createEvaluationOptions()
-    if quadStrategy is None: quadStrategy = potential._context.quadStrategy()
-
-    values = potential.evaluateAtPoints(gridfun, points, quadStrategy, evalOps)
+    if evalOps is None:
+        evalOps = lib.createEvaluationOptions()
+    values = potential.evaluateAtPoints(gridfun, points, evalOps)
 
     return (points.T, values.ravel())

@@ -25,7 +25,7 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(PotentialOperator);
 
     %ignore evaluateOnGrid;
 
-    void evaluateAtPoints(
+    void _evaluateAtPoints(
         arma::Mat<ResultType>& result_,
         const GridFunction<BasisFunctionType_, ResultType_>& argument,
         const arma::Mat<CoordinateType>& evaluationPoints,
@@ -38,6 +38,12 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(PotentialOperator);
 
     %ignore evaluateAtPoints;
 
+    %pythoncode {
+        def evaluateAtPoints(self, argument, evaluationPoints,
+                             evaluationOptions=EvaluationOptions()):
+            return self._evaluateAtPoints(argument, evaluationPoints,
+                                          self._context.quadStrategy(), evaluationOptions)
+    }
 }
 
 BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(PotentialOperator);
