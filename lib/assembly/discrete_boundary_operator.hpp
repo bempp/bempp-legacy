@@ -229,6 +229,19 @@ private:
                                   const ValueType beta) const = 0;
 };
 
+/** \brief Unary plus: return a copy of the argument. */
+template <typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator+(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op);
+
+/** \brief Return a shared pointer to a DiscreteBoundaryOperator representing
+ *  the operand multiplied by -1.
+ *
+ *  An exception is thrown if \p op is null. */
+template <typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator-(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op);
+
 /** \brief Return a shared pointer to a DiscreteBoundaryOperator representing
  *  the sum of the operands.
  *

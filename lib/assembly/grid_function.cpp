@@ -707,6 +707,20 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
 
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType> operator+(
+        const GridFunction<BasisFunctionType, ResultType>& g)
+{
+    return g;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType> operator-(
+        const GridFunction<BasisFunctionType, ResultType>& g)
+{
+    return static_cast<ResultType>(-1.) * g;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType> operator+(
         const GridFunction<BasisFunctionType, ResultType>& g1,
         const GridFunction<BasisFunctionType, ResultType>& g2)
 {
@@ -772,9 +786,12 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
 
 #define INSTANTIATE_FREE_FUNCTIONS(BASIS, RESULT) \
     template GridFunction<BASIS, RESULT> operator+( \
+    const GridFunction<BASIS, RESULT>& op); \
+    template GridFunction<BASIS, RESULT> operator-( \
+    const GridFunction<BASIS, RESULT>& op); \
+    template GridFunction<BASIS, RESULT> operator+( \
     const GridFunction<BASIS, RESULT>& op1, \
     const GridFunction<BASIS, RESULT>& op2); \
-    \
     template GridFunction<BASIS, RESULT> operator-( \
     const GridFunction<BASIS, RESULT>& op1, \
     const GridFunction<BASIS, RESULT>& op2)

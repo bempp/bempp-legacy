@@ -176,10 +176,30 @@ void BoundaryOperator<BasisFunctionType, ResultType>::apply(
 
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType> operator+(
+        const BoundaryOperator<BasisFunctionType, ResultType>& op)
+{
+    return op;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType> operator-(
+        const BoundaryOperator<BasisFunctionType, ResultType>& op)
+{
+    if (!op.isInitialized())
+        throw std::invalid_argument("operator-(): operand is uninitialized");
+    return static_cast<ResultType>(-1.) * op;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType> operator+(
         const BoundaryOperator<BasisFunctionType, ResultType>& op1,
         const BoundaryOperator<BasisFunctionType, ResultType>& op2)
 {
     typedef AbstractBoundaryOperatorSum<BasisFunctionType, ResultType> Sum;
+    if (!op1.isInitialized())
+        throw std::invalid_argument("operator+(): operand 1 is uninitialized");
+    if (!op2.isInitialized())
+        throw std::invalid_argument("operator+(): operand 2 is uninitialized");
     return BoundaryOperator<BasisFunctionType, ResultType>(
                 op1.context(),
                 boost::make_shared<Sum>(op1, op2));
@@ -190,6 +210,10 @@ BoundaryOperator<BasisFunctionType, ResultType> operator-(
         const BoundaryOperator<BasisFunctionType, ResultType>& op1,
         const BoundaryOperator<BasisFunctionType, ResultType>& op2)
 {
+    if (!op1.isInitialized())
+        throw std::invalid_argument("operator-(): operand 1 is uninitialized");
+    if (!op2.isInitialized())
+        throw std::invalid_argument("operator-(): operand 2 is uninitialized");
     return op1 + (static_cast<ResultType>(-1.) * op2);
 }
 
@@ -204,6 +228,9 @@ operator*(
         const ScalarType& scalar)
 {
     typedef ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType> ScaledOp;
+    if (!op.isInitialized())
+        throw std::invalid_argument("operator*(): "
+                                    "boundary operator is uninitialized");
     return BoundaryOperator<BasisFunctionType, ResultType>(
                 op.context(),
                 boost::make_shared<ScaledOp>(static_cast<ResultType>(scalar), op));
@@ -260,8 +287,9 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(BoundaryOperator);
 
 #define INSTANTIATE_FREE_FUNCTIONS(BASIS, RESULT) \
     template BoundaryOperator<BASIS, RESULT> operator+( \
-    const BoundaryOperator<BASIS, RESULT>& op1, \
-    const BoundaryOperator<BASIS, RESULT>& op2); \
+    const BoundaryOperator<BASIS, RESULT>& op); \
+    template BoundaryOperator<BASIS, RESULT> operator-( \
+    const BoundaryOperator<BASIS, RESULT>& op); \
     template BoundaryOperator<BASIS, RESULT> operator-( \
     const BoundaryOperator<BASIS, RESULT>& op1, \
     const BoundaryOperator<BASIS, RESULT>& op2); \
