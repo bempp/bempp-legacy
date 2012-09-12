@@ -259,7 +259,7 @@ shared_ptr<DiscreteBoundaryOperator<ResultType> >
 IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormImpl(
         const Context<BasisFunctionType, ResultType>& context) const
 {
-    std::cout << "Assembling operator '" << this->label() << "'" << std::endl;
+    std::cout << "Assembling operator '" << this->label() << "'..." << std::endl;
     AutoTimer timer("Assembly of operator '" + this->label() + "' took ");
     std::auto_ptr<LocalAssembler> assembler = makeAssembler(
                 context.quadStrategy(), context.assemblyOptions());

@@ -451,7 +451,7 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
 {
-    std::cout << "Precalculating local weak forms" << std::endl;
+    std::cout << "Precalculating singular integrals..." << std::endl;
     typedef Fiber::Basis<BasisFunctionType> Basis;
 
     const int elementPairCount = elementIndexPairs.size();
@@ -544,7 +544,7 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
                     m_cache[*pairIt] = localResult.slice(i++);
         }
     }
-    std::cout << "Precalculating local weak forms finished" << std::endl;
+    std::cout << "Precalculation of singular integrals finished" << std::endl;
 }
 
 template <typename BasisFunctionType, typename KernelType,
