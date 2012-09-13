@@ -43,9 +43,6 @@ BlockedBoundaryOperator<BasisFunctionType, ResultType>::BlockedBoundaryOperator(
     const size_t rowCount = structure.rowCount();
     const size_t columnCount = structure.columnCount();
 
-    std::cout << "rowCount " << rowCount << "\n";
-    std::cout << "columnCount " << columnCount << "\n";
-
     m_domains.resize(columnCount);
     m_ranges.resize(rowCount);
     m_dualsToRanges.resize(rowCount);
