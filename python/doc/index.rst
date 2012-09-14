@@ -6,6 +6,8 @@
 Welcome to BEM++'s documentation!
 =================================
 
+This is the documentation of the Python interface to BEM++.
+
 Contents:
 
 .. toctree::

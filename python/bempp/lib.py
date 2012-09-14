@@ -1083,7 +1083,7 @@ def createBlockedBoundaryOperator(context, structure):
     *Example:*
 
     Assume that A, B and C are boundary operators. We want to create
-    the blocked operator
+    the blocked operator ::
 
             [A B]
         Z = [C 0],
@@ -1091,6 +1091,7 @@ def createBlockedBoundaryOperator(context, structure):
     where 0 is an empty block.
 
     Variant 1::
+
         from bempp import lib
         context = lib.createContext(...)
         structure = lib.createBlockedOperatorStructure(context)
@@ -1100,6 +1101,7 @@ def createBlockedBoundaryOperator(context, structure):
         Z = lib.createBlockedBoundaryOperator(context, structure)
 
     Variant 2::
+
         from bempp import lib
         context = lib.createContext(...)
         Z = lib.createBlockedBoundaryOperator(context, [[A, B], [C, None]])
@@ -1173,6 +1175,7 @@ def createBlockDiagonalAcaPreconditioner(operators, deltas):
     return _constructObjectTemplatedOnValue(name, typeName, operators, deltas)
 
 def acaBlockDiagonalPreconditioner(operators, deltas):
+    """Deprecated. Use createBlockDiagonalAcaPreconditioner instead."""
     print ("acaBlockDiagonalPreconditioner(): DEPRECATED: "
            "use createBlockDiagonalAcaPreconditioner() instead.")
     return createBlockDiagonalAcaPreconditioner(operators, deltas)
