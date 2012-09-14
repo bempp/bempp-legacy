@@ -10,6 +10,12 @@ that every commit will compile.
 The library has been tested under Scientific Linux 6.1, Ubuntu 12.04,
 OpenSUSE 12.1 and Mac OS 10.7.
 
+Obtaining the code
+==================
+
+The code is available from https://github.com/bempp/bempp. To check it
+out, use ``git clone git://github.com/bempp/bempp.git``.
+
 Installation
 ============
 
@@ -98,7 +104,7 @@ the runtime path of your executable. On a Mac, you should add
 ``<prefix>/bempp/lib`` to the ``DYLD_LIBRARY_PATH`` environment variable before
 running your program.
 
-An schematic GCC invocation for compiling and linking a program ``my_program``
+A schematic GCC invocation for compiling and linking a program ``my_program``
 with BEM++ on Linux looks as follows::
 
 g++ -I <prefix>/bempp/include -I <prefix>/bempp/include/bempp my_program.cpp
@@ -125,8 +131,10 @@ Final note
 ==========
 
 The library is not yet officially released. We are still working on the
-documentation and smaller issues with the code. If you want to try it and run
-into problems please let us know.
+documentation and smaller issues with the code. The library is in an alpha
+state: the interfaces are not stable yet and might change in a
+backward-incompatible way. If you want to try BEM++ and run into problems, please
+let us know.
 
 The BEM++ Team
 
