@@ -19,6 +19,16 @@ class Symmetry;
 {
     %ignore BoundaryOperator;
 
+    BoundaryOperator<BasisFunctionType, ResultType> __pos__()
+    {
+        return +(*$self);
+    }
+
+    BoundaryOperator<BasisFunctionType, ResultType> __neg__()
+    {
+        return -(*$self);
+    }
+
     BoundaryOperator<BasisFunctionType, ResultType> __add__(
         const BoundaryOperator<BasisFunctionType, ResultType>& other)
     {

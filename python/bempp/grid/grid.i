@@ -9,6 +9,12 @@
 
 %shared_ptr(Bempp::Grid);
 
+%include "std_vector.i"
+namespace std
+{
+%template(vector_bool) vector<bool>;
+}
+
 namespace Bempp
 {
 
@@ -30,6 +36,18 @@ namespace Bempp
     %ignore elementGeometryFactory;
 }
 
+%apply const arma::Mat<float>& IN_MAT {
+    const arma::Mat<float >& points
+};
+%apply const arma::Mat<double>& IN_MAT {
+    const arma::Mat<double >& points
+};
+
+%ignore areInside(const Grid& grid, const arma::Mat<float>& points);
+
 } // namespace Bempp
 
 %include "grid/grid.hpp"
+
+%clear arma::Mat<float>& points;
+%clear arma::Mat<double>& points;

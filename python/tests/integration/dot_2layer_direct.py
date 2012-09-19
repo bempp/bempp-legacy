@@ -91,8 +91,10 @@ os.remove(s2_msh_name)
 # Create Context
 
 accuracy_options = blib.createAccuracyOptions()
-accuracy_options.doubleRegular.orderIncrement=2 # 2 orders higher than default accuracy for regular integrals
-accuracy_options.doubleSingular.orderIncrement=1 # 1 order higher than default accuracy for singular integrals
+# 1 orders higher than default accuracy for regular integrals
+accuracy_options.doubleRegular.setRelativeQuadratureOrder(1)
+# 0 orders higher than default accuracy for regular integrals
+accuracy_options.doubleSingular.setRelativeQuadratureOrder(0)
 strategy = blib.createNumericalQuadratureStrategy("float64", "complex128", accuracy_options)
 options = blib.createAssemblyOptions()
 aca_options = blib.createAcaOptions()
@@ -165,7 +167,7 @@ boundaryData3 = blib.createGridFunction(
 rhs = [boundaryData1, boundaryData2, boundaryData3]
 
 solver = blib.createDefaultIterativeSolver(lhsOp)
-params = blib.defaultGmresParameterList(1e-10)
+params = blib.defaultGmresParameterList(1e-8)
 solver.initializeSolver(params)
 solution = solver.solve(rhs)
 u0 = solution.gridFunction(0)

@@ -174,7 +174,19 @@ private:
     mutable shared_ptr<const DiscreteBoundaryOperator<ResultType> > m_weakForm;
 };
 
-/** \brief Return a BoundaryOperator representing the sum of the operands. 
+/** \brief Return a BoundaryOperator identical to the operand. */
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType> operator+(
+        const BoundaryOperator<BasisFunctionType, ResultType>& op);
+
+/** \brief Return a BoundaryOperator equal to the operand multiplied by -1.
+ *
+ * \todo Throw an exception if either of the operands is uninitialized. */
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType> operator-(
+        const BoundaryOperator<BasisFunctionType, ResultType>& op);
+
+/** \brief Return a BoundaryOperator representing the sum of the operands.
  *
  * \todo Throw an exception if either of the operands is uninitialized. */
 template <typename BasisFunctionType, typename ResultType>

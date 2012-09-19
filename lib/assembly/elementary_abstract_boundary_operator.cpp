@@ -93,13 +93,13 @@ ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler
     shared_ptr<BasisPtrVector> testBases, trialBases;
     bool cacheSingularIntegrals;
 
-    std::cout << "Collecting data for assembler construction" << std::endl;
+    std::cout << "Collecting data for assembler construction..." << std::endl;
     collectDataForAssemblerConstruction(options,
                                         testRawGeometry, trialRawGeometry,
                                         testGeometryFactory, trialGeometryFactory,
                                         testBases, trialBases,
                                         openClHandler, cacheSingularIntegrals);
-    std::cout << "Collection finished." << std::endl;
+    std::cout << "Data collection finished." << std::endl;
 
     return makeAssemblerImpl(quadStrategy,
                              testGeometryFactory, trialGeometryFactory,

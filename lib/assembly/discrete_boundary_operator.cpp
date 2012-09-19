@@ -85,8 +85,23 @@ void DiscreteBoundaryOperator<ValueType>::applyImpl(
 
 template <typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator+(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op)
+{
+    return op;
+}
+
+template <typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator-(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op)
+{
+    return static_cast<ValueType>(-1.) * op;
+}
+
+template <typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator+(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1,
-        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2){
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2)
+{
     return shared_ptr<const DiscreteBoundaryOperator<ValueType> >(
                 new DiscreteBoundaryOperatorSum<ValueType>(op1,op2));
 }
@@ -94,7 +109,8 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator+(
 template <typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator-(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1,
-        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2){
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2)
+{
     return shared_ptr<const DiscreteBoundaryOperator<ValueType> >(
                 new DiscreteBoundaryOperatorSum<ValueType>(op1,static_cast<ValueType>(-1.)*op2));
 }
@@ -103,7 +119,8 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator-(
 template <typename ValueType, typename ScalarType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator*(
         ScalarType scalar,
-        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op){
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op)
+{
     return  shared_ptr<const DiscreteBoundaryOperator<ValueType> >(
                 new ScaledDiscreteBoundaryOperator<ValueType>(static_cast<ValueType>(scalar),op));
 }
@@ -111,7 +128,8 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator*(
 template <typename ValueType, typename ScalarType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator*(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
-        ScalarType scalar){
+        ScalarType scalar)
+{
     return shared_ptr<const DiscreteBoundaryOperator<ValueType> >(
                 new ScaledDiscreteBoundaryOperator<ValueType>(static_cast<ValueType>(scalar),op));
 }
@@ -119,7 +137,8 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator*(
 template <typename ValueType, typename ScalarType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator/(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
-        ScalarType scalar){
+        ScalarType scalar)
+{
     if (scalar == static_cast<ScalarType>(0.))
         throw std::runtime_error("operator/(DiscreteBoundaryOperator, scalar): "
                                      "Division by zero");
@@ -133,21 +152,25 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteBoundaryOperator);
 
 #define INSTANTIATE_FREE_FUNCTIONS(VALUE) \
     template shared_ptr<const DiscreteBoundaryOperator< VALUE > > operator+( \
-    const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op1, \
-    const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op2); \
+        const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op); \
     template shared_ptr<const DiscreteBoundaryOperator< VALUE > > operator-( \
-    const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op1, \
-    const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op2);
+        const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op); \
+    template shared_ptr<const DiscreteBoundaryOperator< VALUE > > operator+( \
+        const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op1, \
+        const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op2); \
+    template shared_ptr<const DiscreteBoundaryOperator< VALUE > > operator-( \
+        const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op1, \
+        const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op2);
 #define INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR( VALUE , SCALAR ) \
     template shared_ptr<const DiscreteBoundaryOperator< VALUE > > operator*( \
-            SCALAR scalar, \
-            const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op); \
+        SCALAR scalar, \
+        const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op); \
     template shared_ptr<const DiscreteBoundaryOperator< VALUE > > operator*( \
-             const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op,\
-             SCALAR scalar); \
+        const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op,\
+        SCALAR scalar); \
     template shared_ptr<const DiscreteBoundaryOperator< VALUE > > operator/( \
-            const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op, \
-            SCALAR scalar);
+        const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op, \
+        SCALAR scalar);
 
 #if defined(ENABLE_SINGLE_PRECISION)
 INSTANTIATE_FREE_FUNCTIONS(float);

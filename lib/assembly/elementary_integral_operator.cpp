@@ -205,7 +205,7 @@ assembleWeakFormImpl(
         const Context<BasisFunctionType, ResultType>& context) const
 {
     std::cout << "Assembling the weak form of operator '"
-              << this->label() << "'" << std::endl;
+              << this->label() << "'..." << std::endl;
     AutoTimer timer("Assembly of the weak form of operator '" +
                     this->label() + "' took ");
     std::auto_ptr<LocalAssembler> assembler =

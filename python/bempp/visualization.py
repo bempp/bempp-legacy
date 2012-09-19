@@ -98,6 +98,45 @@ def gridFunctionActor(gridFun,data_type='vertex_data',transformation='real'):
     actor = tvtk.Actor(mapper=mapper)
     return actor
 
+def scalarDataOnRegularGridActor(
+        points, data, dimensions,
+        colorRange=None,transformation='real'):
+    """Return a TVTK actor representing a plot of a function interpolated on a regular grid."""
+
+    if points.shape[0] != 3 or points.ndim != 2:
+        raise ValueError("incorrect shape")
+    data = data.squeeze()
+    if data.ndim != 1:
+        raise ValueError("incorrect shape")
+
+    if not hasattr(transformation, '__call__'):
+        if transformation=='real':
+            data_transform = lambda point,val:np.real(val)
+        elif transformation=='imag':
+            data_transform = lambda point,val:np.imag(val)
+        elif transformation=='abs':
+            data_transform = lambda point,val:np.abs(val)
+        else:
+            raise ValueError("Unknown value for 'transformation'. It needs to be 'real', 'imag', 'abs' or a Python Callable!")
+    else:
+        data_transform = transformation
+
+    data = data_transform(points,data)
+    dims = dimensions
+
+    if colorRange is None:
+        minVal = np.min(data)
+        maxVal = np.max(data)
+        colorRange = (minVal, maxVal)
+
+    g = tvtk.StructuredGrid(dimensions=(dims[1], dims[0], 1), points=points.T)
+    g.point_data.scalars = data
+
+    # Create actors
+    mapper = tvtk.DataSetMapper(input=g)
+    mapper.scalar_range = colorRange
+    return tvtk.Actor(mapper=mapper)
+
 def legendActor(actor):
     """Return a legend object for the specified actor"""
 
@@ -119,16 +158,16 @@ def plotGrid(grid):
     plotTvtkActors(grid_actor)
 
 def plotThreePlanes(potential, gridfun, limits, dimensions, origin=(0,0,0), colorRange=None,
-                    transformation='real', evalOps=None, context=None, quadStrategy=None):
+                    transformation='real', evalOps=None):
     """Simple three planes plot for a potential applied to a gridfun"""
 
     (points1,vals1) = py_ext.evaluatePotentialOnPlane(potential,gridfun,limits,dimensions,plane="xy",origin=origin,
-                                                      evalOps=evalOps,context=context,quadStrategy=quadStrategy)
+                                                      evalOps=evalOps)
     (points2,vals2) = py_ext.evaluatePotentialOnPlane(potential,gridfun,limits,dimensions,plane="xz",origin=origin,
-                                                      evalOps=evalOps,context=context,quadStrategy=quadStrategy)
+                                                      evalOps=evalOps)
     (points3,vals3) = py_ext.evaluatePotentialOnPlane(potential,gridfun,limits,dimensions,plane="yz",origin=origin,
-                                                      evalOps=evalOps,context=context,quadStrategy=quadStrategy)
-    
+                                                      evalOps=evalOps)
+
     if not hasattr(transformation, '__call__'):
         if transformation=='real':
             data_transform = lambda point,val:np.real(val)
@@ -183,17 +222,3 @@ def plotThreePlanes(potential, gridfun, limits, dimensions, origin=(0,0,0), colo
     legend = legendActor(actor1)
 
     plotTvtkActors([actor1,actor2,actor3,gActor,legend])
-    
-    
-    
-
-    
-    
-    
-    
-
-    
-        
-        
-
-    

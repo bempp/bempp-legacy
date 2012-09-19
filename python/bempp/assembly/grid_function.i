@@ -127,6 +127,16 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
     %ignore coefficients;
     %ignore projections;
 
+    GridFunction<BasisFunctionType, ResultType> __pos__()
+    {
+        return +(*$self);
+    }
+
+    GridFunction<BasisFunctionType, ResultType> __neg__()
+    {
+        return -(*$self);
+    }
+
     GridFunction<BasisFunctionType, ResultType> __add__(
         const GridFunction<BasisFunctionType, ResultType>& other)
     {
