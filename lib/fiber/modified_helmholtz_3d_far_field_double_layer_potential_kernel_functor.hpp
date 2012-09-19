@@ -80,7 +80,7 @@ public:
             x_ny += testGeomData.global(coordIndex) *
                     trialGeomData.normal(coordIndex);
         result[0](0, 0) = static_cast<ValueType>(1.0 / (4.0 * M_PI)) *
-                m_waveNumber * x_y * exp(m_waveNumber * x_y);
+                m_waveNumber * x_ny * exp(m_waveNumber * x_y);
     }
 
 private:
