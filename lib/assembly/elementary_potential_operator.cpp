@@ -47,6 +47,13 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::evaluate
         const QuadratureStrategy& quadStrategy,
         const EvaluationOptions& options) const
 {
+    if (evaluationGrid.dimWorld() != argument.grid()->dimWorld())
+        throw std::invalid_argument(
+                "ElementaryPotentialOperator::evaluateOnGrid(): "
+                "the evaluation grid and the surface on which the grid "
+                "function 'argument' is defined must be embedded in a space "
+                "of the same dimension");
+
     std::auto_ptr<Evaluator> evaluator =
             makeEvaluator(argument, quadStrategy, options);
 
@@ -110,6 +117,13 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::evaluate
         const QuadratureStrategy& quadStrategy,
         const EvaluationOptions& options) const
 {
+    if (evaluationPoints.n_rows != argument.grid()->dimWorld())
+        throw std::invalid_argument(
+                "ElementaryPotentialOperator::evaluateOnGrid(): "
+                "the number of coordinates of each evaluation point must be "
+                "equal to the dimension of the space containing the surface "
+                "on which the grid function 'argument' is defined");
+
     std::auto_ptr<Evaluator> evaluator =
             makeEvaluator(argument, quadStrategy, options);
 
