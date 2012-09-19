@@ -36,7 +36,7 @@ NumericalQuadratureStrategy() :
 template <typename BasisFunctionType, typename ResultType>
 NumericalQuadratureStrategy<BasisFunctionType, ResultType>::
 NumericalQuadratureStrategy(
-        const AccuracyOptions& accuracyOptions) :
+        const AccuracyOptionsEx& accuracyOptions) :
     Base(accuracyOptions)
 {
 }

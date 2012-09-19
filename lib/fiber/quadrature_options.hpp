@@ -28,31 +28,37 @@ namespace Fiber
 
 /** \brief Options controlling the order of numerical quadrature.
  *
- *  This class can be used to specify the order of numerical quadrature to be
- *  used to approximate a certain class of integrals. The order can be set
- *  either as absolute or as relative with respect to some default value
- *  determined by the code doing the integration. */
+ *  This class can be used to specify the required order of accuracy of a
+ *  numerical quadrature rule used to approximate a certain class of integrals.
+ *  The order can be set either as absolute or as relative with respect to some
+ *  default value determined by the code doing the integration. */
 class QuadratureOptions
 {
 public:
     /** \brief Construct a QuadratureOptions object corresponding
-     *  to a default integration order. */
+     *  to a default accuracy order. */
     QuadratureOptions() : m_relative(true), m_value(0) {
     }
 
-    /** \brief Set quadrature order to \p order. */
+    /** \brief Construct a QuadratureOptions object corresponding
+     *  to a specific accuracy order. */
+    QuadratureOptions(int order, bool relative) :
+        m_relative(relative), m_value(order) {
+    }
+
+    /** \brief Set quadrature accuracy order to \p order. */
     void setAbsoluteQuadratureOrder(int order) {
         m_relative = false;
         m_value = order;
     }
 
-    /** \brief Set quadrature order to a default value plus \p offset. */
+    /** \brief Set quadrature accuracy order to a default value plus \p offset. */
     void setRelativeQuadratureOrder(int offset) {
         m_relative = true;
         m_value = offset;
     }
 
-    /** \brief Get quadrature order assuming that its default value is
+    /** \brief Get quadrature accuracy order assuming that its default value is
      *  \p defaultOrder. */
     int quadratureOrder(int defaultOrder) const {
         if (m_relative)

@@ -46,7 +46,7 @@ template <typename BasisFunctionType, typename ResultType,
 NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 NumericalQuadratureStrategyBase(
-        const AccuracyOptions& accuracyOptions) :
+        const AccuracyOptionsEx& accuracyOptions) :
     m_accuracyOptions(accuracyOptions)
 {
 }
@@ -164,12 +164,12 @@ makeEvaluatorForIntegralOperatorsImplRealKernel(
                     argumentLocalCoefficients,
                     openClHandler,
                     parallelizationOptions,
-                    this->accuracyOptions().singleRegular));
+                    this->accuracyOptions().singleRegular()));
 }
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-const AccuracyOptions&
+const AccuracyOptionsEx&
 NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 accuracyOptions() const
@@ -192,7 +192,7 @@ template <typename BasisFunctionType, typename ResultType,
 NumericalQuadratureStrategy<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 NumericalQuadratureStrategy(
-        const AccuracyOptions& accuracyOptions) :
+        const AccuracyOptionsEx& accuracyOptions) :
     Base(accuracyOptions)
 {
 }
@@ -285,7 +285,7 @@ makeEvaluatorForIntegralOperatorsImplComplexKernel(
                     argumentLocalCoefficients,
                     openClHandler,
                     parallelizationOptions,
-                    this->accuracyOptions().singleRegular));
+                    this->accuracyOptions().singleRegular()));
 }
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
@@ -306,7 +306,7 @@ NumericalQuadratureStrategy<
         boost::is_same<ResultType,
         typename ScalarTraits<ResultType>::RealType> >::type>::
 NumericalQuadratureStrategy(
-        const AccuracyOptions& accuracyOptions) :
+        const AccuracyOptionsEx& accuracyOptions) :
     Base(accuracyOptions)
 {
 }

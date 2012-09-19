@@ -100,7 +100,7 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces(
         const shared_ptr<const OpenClHandler>& openClHandler,
         const ParallelizationOptions& parallelizationOptions,
         bool cacheSingularIntegrals,
-        const AccuracyOptions& accuracyOptions) :
+        const AccuracyOptionsEx& accuracyOptions) :
     m_testGeometryFactory(testGeometryFactory),
     m_trialGeometryFactory(trialGeometryFactory),
     m_testRawGeometry(testRawGeometry),
@@ -118,6 +118,7 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces(
     checkConsistencyOfGeometryAndBases(*testRawGeometry, *testBases);
     checkConsistencyOfGeometryAndBases(*trialRawGeometry, *trialBases);
 
+    precalculateElementSizesAndCenters();
     if (cacheSingularIntegrals)
         cacheSingularLocalWeakForms();
 }
@@ -549,6 +550,48 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
+void
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+KernelType, ResultType, GeometryFactory>::
+precalculateElementSizesAndCenters()
+{
+    precalculateElementSizesAndCentersForSingleGrid(
+                *m_testRawGeometry,
+                m_testElementSizesSquared, m_testElementCenters);
+    if (testAndTrialGridsAreIdentical()) {
+        m_trialElementSizesSquared = m_testElementSizesSquared;
+        m_trialElementCenters = m_testElementCenters;
+    }
+    else
+        precalculateElementSizesAndCentersForSingleGrid(
+                    *m_trialRawGeometry,
+                    m_trialElementSizesSquared, m_trialElementCenters);
+}
+
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+void
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+KernelType, ResultType, GeometryFactory>::
+precalculateElementSizesAndCentersForSingleGrid(
+        const RawGridGeometry<CoordinateType>& rawGeometry,
+        std::vector<CoordinateType>& elementSizesSquared,
+        arma::Mat<CoordinateType>& elementCenters)
+{
+    const size_t elementCount = rawGeometry.elementCount();
+    const int worldDim = rawGeometry.worldDimension();
+
+    elementSizesSquared.resize(elementCount);
+    for (int e = 0; e < elementCount; ++e)
+        elementSizesSquared[e] = elementSizeSquared(e, rawGeometry);
+
+    elementCenters.set_size(worldDim, elementCount);
+    for (int e = 0; e < elementCount; ++e)
+        elementCenters.col(e) = elementCenter(e, rawGeometry);
+}
+
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
 const TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>&
 DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
@@ -572,8 +615,10 @@ selectIntegrator(int testElementIndex, int trialElementIndex)
     }
 
     if (desc.topology.type == ElementPairTopology::Disjoint) {
-        desc.testOrder = regularOrder(testElementIndex, TEST);
-        desc.trialOrder = regularOrder(trialElementIndex, TRIAL);
+//        desc.testOrder = regularOrder(testElementIndex, TEST);
+//        desc.trialOrder = regularOrder(trialElementIndex, TRIAL);
+        getRegularOrders(testElementIndex, trialElementIndex,
+                         desc.testOrder, desc.trialOrder);
     } else { // singular integral
         desc.testOrder = singularOrder(testElementIndex, TEST);
         desc.trialOrder = singularOrder(trialElementIndex, TRIAL);
@@ -589,19 +634,134 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 regularOrder(int elementIndex, ElementType elementType) const
 {
+//    // TODO:
+//    // 1. Check the size of elements and the distance between them
+//    //    and estimate the variability of the kernel
+//    // 2. Take into account the fact that elements might be isoparametric.
+
+//    const QuadratureOptions& options = m_accuracyOptions.doubleRegular();
+
+//    int elementOrder = (elementType == TEST ?
+//                            (*m_testBases)[elementIndex]->order() :
+//                            (*m_trialBases)[elementIndex]->order());
+//    // Order required for exact quadrature on affine elements with a constant kernel
+//    int defaultAccuracyOrder = elementOrder;
+//    return options.quadratureOrder(defaultAccuracyOrder);
+}
+
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+void
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+KernelType, ResultType, GeometryFactory>::
+getRegularOrders(int testElementIndex, int trialElementIndex,
+                 int& testQuadOrder, int& trialQuadOrder) const
+{
     // TODO:
     // 1. Check the size of elements and the distance between them
     //    and estimate the variability of the kernel
     // 2. Take into account the fact that elements might be isoparametric.
 
-    const QuadratureOptions& options = m_accuracyOptions.doubleRegular;
-
-    int elementOrder = (elementType == TEST ?
-                            (*m_testBases)[elementIndex]->order() :
-                            (*m_trialBases)[elementIndex]->order());
     // Order required for exact quadrature on affine elements with a constant kernel
-    int defaultAccuracyOrder = elementOrder;
-    return options.quadratureOrder(defaultAccuracyOrder);
+    int testBasisOrder = (*m_testBases)[testElementIndex]->order();
+    int trialBasisOrder = (*m_trialBases)[trialElementIndex]->order();
+    testQuadOrder = testBasisOrder;
+    trialQuadOrder = trialBasisOrder;
+
+    CoordinateType testElementSizeSquared =
+            m_testElementSizesSquared[testElementIndex];
+    CoordinateType trialElementSizeSquared =
+            m_trialElementSizesSquared[trialElementIndex];
+    CoordinateType distanceSquared =
+            elementDistanceSquared(testElementIndex, trialElementIndex);
+    CoordinateType normalisedDistanceSquared =
+            distanceSquared / std::max(testElementSizeSquared,
+                                       trialElementSizeSquared);
+
+    const QuadratureOptions& options =
+            m_accuracyOptions.doubleRegular(sqrt(normalisedDistanceSquared));
+    testQuadOrder = options.quadratureOrder(testQuadOrder);
+    trialQuadOrder = options.quadratureOrder(trialQuadOrder);
+}
+
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+inline
+typename DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::CoordinateType
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::elementSizeSquared(
+        int elementIndex, const RawGridGeometry<CoordinateType>& rawGeometry) const
+{
+    // This implementation could be optimised
+    CoordinateType maxEdgeLengthSquared = 0.;
+    const arma::Mat<int>& cornerIndices = rawGeometry.elementCornerIndices();
+    const arma::Mat<CoordinateType>& vertices = rawGeometry.vertices();
+    arma::Col<CoordinateType> edge;
+    if (cornerIndices(cornerIndices.n_rows - 1, elementIndex) == -1) {
+        // Triangular element
+        const int cornerCount = 3;
+        for (int i = 0; i < cornerCount; ++i) {
+            edge = vertices.col(cornerIndices((i + 1) % cornerCount, elementIndex)) -
+                    vertices.col(cornerIndices(i, elementIndex));
+            CoordinateType edgeLengthSquared = arma::dot(edge, edge);
+            maxEdgeLengthSquared = std::max(maxEdgeLengthSquared, edgeLengthSquared);
+        }
+    } else {
+        // Quadrilateral element. We assume it is convex.
+        edge = vertices.col(cornerIndices(2, elementIndex)) -
+                vertices.col(cornerIndices(0, elementIndex));
+        maxEdgeLengthSquared = arma::dot(edge, edge);
+        edge = vertices.col(cornerIndices(3, elementIndex)) -
+                vertices.col(cornerIndices(1, elementIndex));
+        CoordinateType edgeLengthSquared = arma::dot(edge, edge);
+        maxEdgeLengthSquared = std::max(maxEdgeLengthSquared, edgeLengthSquared);
+    }
+    return maxEdgeLengthSquared;
+}
+
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+inline
+arma::Col<typename DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::CoordinateType>
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::elementCenter(
+        int elementIndex, const RawGridGeometry<CoordinateType>& rawGeometry) const
+{
+    const arma::Mat<int>& cornerIndices = rawGeometry.elementCornerIndices();
+    const arma::Mat<CoordinateType>& vertices = rawGeometry.vertices();
+    const int maxCornerCount = cornerIndices.n_rows;
+    // each element has at least one corner
+    arma::Col<CoordinateType> center(vertices.col(cornerIndices(0, elementIndex)));
+    int i = 1;
+    for (; i < maxCornerCount; ++i) {
+        int cornerIndex = cornerIndices(i, elementIndex);
+        if (cornerIndex == -1)
+            break;
+        center += vertices.col(cornerIndex);
+    }
+    // now i contains the number of corners of the specified element
+    center /= i;
+    return center;
+}
+
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+inline
+typename DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::CoordinateType
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::elementDistanceSquared(
+        int testElementIndex, int trialElementIndex) const
+{
+//    arma::Col<CoordinateType> diff =
+//            elementCenter(trialElementIndex, *m_trialRawGeometry) -
+//            elementCenter(testElementIndex, *m_testRawGeometry);
+    arma::Col<CoordinateType> diff =
+            m_trialElementCenters.col(trialElementIndex) -
+            m_testElementCenters.col(testElementIndex);
+    return arma::dot(diff, diff);
 }
 
 template <typename BasisFunctionType, typename KernelType,
@@ -616,7 +776,7 @@ singularOrder(int elementIndex, ElementType elementType) const
     //    (Sauter-Schwab-transformed) kernel
     // 2. Take into account the fact that elements might be isoparametric.
 
-    const QuadratureOptions& options = m_accuracyOptions.doubleSingular;
+    const QuadratureOptions& options = m_accuracyOptions.doubleSingular();
 
     int elementOrder = (elementType == TEST ?
                             (*m_testBases)[elementIndex]->order() :

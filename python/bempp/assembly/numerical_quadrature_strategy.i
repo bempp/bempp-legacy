@@ -10,6 +10,14 @@ namespace Bempp
 
 boost::shared_ptr<Fiber::QuadratureStrategy< BASIS , RESULT , GeometryFactory> >
 numericalQuadratureStrategy_## PY_BASIS ## _ ## PY_RESULT(
+    const Fiber::AccuracyOptionsEx& accuracyOptions)
+{
+    return boost::shared_ptr<Fiber::QuadratureStrategy< BASIS , RESULT , GeometryFactory> >(
+       new NumericalQuadratureStrategy< BASIS , RESULT >(accuracyOptions));
+}
+
+boost::shared_ptr<Fiber::QuadratureStrategy< BASIS , RESULT , GeometryFactory> >
+numericalQuadratureStrategy_## PY_BASIS ## _ ## PY_RESULT(
     const Fiber::AccuracyOptions& accuracyOptions)
 {
     return boost::shared_ptr<Fiber::QuadratureStrategy< BASIS , RESULT , GeometryFactory> >(

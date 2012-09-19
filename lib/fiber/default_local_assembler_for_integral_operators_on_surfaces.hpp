@@ -75,7 +75,7 @@ public:
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions,
             bool cacheSingularIntegrals,
-            const AccuracyOptions& accuracyOptions);
+            const AccuracyOptionsEx& accuracyOptions);
     virtual ~DefaultLocalAssemblerForIntegralOperatorsOnSurfaces();
 
 public:
@@ -123,6 +123,22 @@ private:
 
     const Integrator& getIntegrator(const DoubleQuadratureDescriptor& index);
 
+    void getRegularOrders(int testElementIndex, int trialElementIndex,
+                     int& testQuadOrder, int& trialQuadOrder) const;
+
+    CoordinateType elementSizeSquared(
+            int elementIndex, const RawGridGeometry<CoordinateType>& rawGeometry) const;
+    arma::Col<CoordinateType> elementCenter(
+            int elementIndex, const RawGridGeometry<CoordinateType>& rawGeometry) const;
+    CoordinateType elementDistanceSquared(
+            int testElementIndex, int trialElementIndex) const;
+
+    void precalculateElementSizesAndCenters();
+    void precalculateElementSizesAndCentersForSingleGrid(
+            const RawGridGeometry<CoordinateType>& rawGeometry,
+            std::vector<CoordinateType>& elementSizesSquared,
+            arma::Mat<CoordinateType>& elementCenters);
+
 private:
     typedef tbb::concurrent_unordered_map<DoubleQuadratureDescriptor,
     Integrator*> IntegratorMap;
@@ -140,10 +156,14 @@ private:
     shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> > m_integral;
     shared_ptr<const OpenClHandler> m_openClHandler;
     ParallelizationOptions m_parallelizationOptions;
-    AccuracyOptions m_accuracyOptions;
+    AccuracyOptionsEx m_accuracyOptions;
 
     IntegratorMap m_TestKernelTrialIntegrators;
     Cache m_cache;
+    std::vector<CoordinateType> m_testElementSizesSquared;
+    std::vector<CoordinateType> m_trialElementSizesSquared;
+    arma::Mat<CoordinateType> m_testElementCenters;
+    arma::Mat<CoordinateType> m_trialElementCenters;
 };
 
 } // namespace Fiber

@@ -1008,6 +1008,10 @@ def createAccuracyOptions():
     """Create and return an AccuracyOptions object with default settings."""
     return core.AccuracyOptions()
 
+def createAccuracyOptionsEx():
+    """Create and return an AccuracyOptionsEx object with default settings."""
+    return core.AccuracyOptionsEx()
+
 def createAcaOptions():
     """Create and return an AcaOptions object with default settings."""
     return core.AcaOptions()

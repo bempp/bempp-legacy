@@ -46,7 +46,7 @@ public:
 
     /** \brief Construct a local assembler factory with specified accuracy settings. */
     explicit NumericalQuadratureStrategyBase(
-            const AccuracyOptions& accuracyOptions);
+            const AccuracyOptionsEx& accuracyOptions);
 
 public:
     virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
@@ -98,10 +98,10 @@ private:
             const ParallelizationOptions& parallelizationOptions) const;
 
 public:
-    const AccuracyOptions& accuracyOptions() const;
+    const AccuracyOptionsEx& accuracyOptions() const;
 
 private:
-    AccuracyOptions m_accuracyOptions;
+    AccuracyOptionsEx m_accuracyOptions;
 };
 
 // Complex ResultType
@@ -121,7 +121,7 @@ public:
 
     /** \brief Construct a local assembler factory with specified accuracy settings. */
     explicit NumericalQuadratureStrategy(
-            const AccuracyOptions& accuracyOptions);
+            const AccuracyOptionsEx& accuracyOptions);
 
 private:
     virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
@@ -183,7 +183,7 @@ public:
 
     /** \brief Construct a local assembler factory with specified accuracy settings. */
     explicit NumericalQuadratureStrategy(
-            const AccuracyOptions& accuracyOptions);
+            const AccuracyOptionsEx& accuracyOptions);
 };
 /** \endcond */
 
