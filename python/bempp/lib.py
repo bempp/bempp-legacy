@@ -643,6 +643,64 @@ def createHelmholtz3dDoubleLayerPotentialOperator(context, waveNumber):
     return _constructHelmholtzPotentialOperator(
         "helmholtz3dDoubleLayerPotentialOperator", context, waveNumber)
 
+def createHelmholtz3dFarFieldSingleLayerPotentialOperator(context, waveNumber):
+    """
+    Create and return a potential operator used to calculate part of the far-field
+    pattern for a radiating solution of the Helmholtz equation in 3D.
+
+    See the C++ documentation for mathematical background.
+
+    *Parameters:*
+       - context (Context)
+            A Context object used to control the evaluation of integrals
+            occurring in the definition of the potential operator.
+       - waveNumber (float or complex)
+            Wave number, i.e. the number k in the Helmholtz equation
+                nabla^2 u + k^2 u = 0.
+
+    *Returns* a newly constructed PotentialOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+
+    Note about BEM++ terminology: a *potential operator* acts on functions
+    defined on a surface S and produces functions defined at any point of the
+    space surrounding S, but not necessarily on S itself. In contrast, a
+    *boundary operator* acts on on functions defined on a surface S and produces
+    functions defined on the same surface S.
+    """
+    return _constructHelmholtzPotentialOperator(
+        "helmholtz3dFarFieldSingleLayerPotentialOperator", context, waveNumber)
+
+def createHelmholtz3dFarFieldDoubleLayerPotentialOperator(context, waveNumber):
+    """
+    Create and return a potential operator used to calculate part of the far-field
+    pattern for a radiating solution of the Helmholtz equation in 3D.
+
+    See the C++ documentation for mathematical background.
+
+    *Parameters:*
+       - context (Context)
+            A Context object used to control the evaluation of integrals
+            occurring in the definition of the potential operator.
+       - waveNumber (float or complex)
+            Wave number, i.e. the number k in the Helmholtz equation
+                nabla^2 u + k^2 u = 0.
+
+    *Returns* a newly constructed PotentialOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+
+    Note about BEM++ terminology: a *potential operator* acts on functions
+    defined on a surface S and produces functions defined at any point of the
+    space surrounding S, but not necessarily on S itself. In contrast, a
+    *boundary operator* acts on on functions defined on a surface S and produces
+    functions defined on the same surface S.
+    """
+    return _constructHelmholtzPotentialOperator(
+        "helmholtz3dFarFieldDoubleLayerPotentialOperator", context, waveNumber)
+
 def _constructModifiedHelmholtzOperator(className, context,
                                         domain, range, dualToRange, waveNumber, label=None):
     basisFunctionType = context.basisFunctionType()
