@@ -83,6 +83,13 @@ DiscreteBlockedBoundaryOperator<ValueType>::columnCount() const
 }
 
 template <typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> >
+DiscreteBlockedBoundaryOperator<ValueType>::getComponent(int row, int col) const{
+    return m_blocks(row,col);
+}
+
+
+template <typename ValueType>
 void DiscreteBlockedBoundaryOperator<ValueType>::addBlock(
         const std::vector<int>& rows,
         const std::vector<int>& cols,
@@ -93,6 +100,26 @@ void DiscreteBlockedBoundaryOperator<ValueType>::addBlock(
                 "DiscreteBlockedBoundaryOperator::DiscreteBlockedBoundaryOperator(): "
                 "addBlock: not implemented yet");
 }
+
+template <typename ValueType>
+shared_ptr<const DiscreteBlockedBoundaryOperator<ValueType> >
+DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBlockedBoundaryOperator(
+                                                            double eps,
+                                                            int maximumRank) const{
+    size_t nrows = m_blocks.extent(0);
+    size_t ncols = m_blocks.extent(1);
+    Fiber::_2dArray<shared_ptr<const Base> > acaBlocks(nrows,ncols);
+    for (size_t i=0;i<nrows;i++){
+        for (size_t j=0;j<ncols;j++){
+            if (m_blocks(i,j).get()!=0) acaBlocks(i,j)=
+                    m_blocks(i,j)->asDiscreteAcaBoundaryOperator(eps,maximumRank);
+        }
+    }
+    return shared_ptr<const DiscreteBlockedBoundaryOperator<ValueType> >(
+                new DiscreteBlockedBoundaryOperator(acaBlocks,m_rowCounts,m_columnCounts));
+
+}
+
 
 #ifdef WITH_TRILINOS
 template <typename ValueType>

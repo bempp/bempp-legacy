@@ -76,6 +76,9 @@ public:
     virtual unsigned int rowCount() const;
     virtual unsigned int columnCount() const;
 
+    /** \brief return the block component at position (i,j) in the block operator matrix. */
+    virtual shared_ptr<const DiscreteBoundaryOperator<ValueType> > getComponent(int row, int col) const;
+
     virtual void addBlock(const std::vector<int>& rows,
                           const std::vector<int>& cols,
                           const ValueType alpha,
@@ -87,6 +90,23 @@ public:
         throw std::runtime_error("DiscreteBlockedBoundaryOperator::asDiscreteAcaBoundaryOperator:"
                                  "not implemented.");
     }
+
+
+    /** \brief Return a new DiscreteBlockedBoundaryOperator, in which every component is castable to
+      *  a DiscreteAcaBoundaryOperator.
+      * This routine calls the DiscreteBoundaryOperator::asDiscreteAcaBoundaryOperator function for
+      * each block component, which may throw a std::bad_cast if conversion of a block fails.
+      *
+      * \param[in] eps
+      * Accuracy tolerance for H-Matrix addition.
+      * \param[in] maximumRank
+      * maximum rank of blocks to be considered low rank in the case of H-Matrix addition.
+      * \returns A pointer to a DiscreteBlockedBoundaryOperator object, where every component is castable to
+      * DiscreteAcaBoundaryOperator.
+      */
+    shared_ptr<const DiscreteBlockedBoundaryOperator<ValueType> > asDiscreteAcaBlockedBoundaryOperator(
+                                                                double eps=1E-4,
+                                                                int maximumRank=50) const;
 
 
 #ifdef WITH_TRILINOS
