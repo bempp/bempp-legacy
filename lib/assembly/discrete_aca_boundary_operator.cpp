@@ -216,8 +216,8 @@ bool
 DiscreteAcaBoundaryOperator<ValueType>::
 opSupportedImpl(Thyra::EOpTransp M_trans) const
 {
-    // TODO: implement remaining variants (transpose & conjugate transpose)
-    return (M_trans == Thyra::NOTRANS);
+    // TODO: implement remaining variants (transpose & conjugate)
+    return (M_trans == Thyra::NOTRANS || M_trans == Thyra::CONJTRANS);
 }
 #endif // WITH_TRILINOS
 
@@ -230,11 +230,24 @@ applyBuiltInImpl(const TranspositionMode trans,
                  const ValueType alpha,
                  const ValueType beta) const
 {
+#ifdef AHMED_PRERELEASE
     if (trans != NO_TRANSPOSE)
         throw std::runtime_error(
                 "DiscreteAcaBoundaryOperator::applyBuiltInImpl(): "
                 "transposition modes other than NO_TRANSPOSE are not supported");
-    if (columnCount() != x_in.n_rows || rowCount() != y_inout.n_rows)
+#else
+    if (trans != NO_TRANSPOSE && trans != CONJUGATE_TRANSPOSE)
+        throw std::runtime_error(
+                "DiscreteAcaBoundaryOperator::applyBuiltInImpl(): "
+                "transposition modes other than NO_TRANSPOSE and "
+                "CONJUGATE_TRANSPOSE are not supported");
+#endif
+    bool transposed = trans == CONJUGATE_TRANSPOSE;
+
+    if ((!transposed && (columnCount() != x_in.n_rows ||
+                         rowCount() != y_inout.n_rows)) ||
+            (transposed && (rowCount() != x_in.n_rows ||
+                            columnCount() != y_inout.n_rows)))
         throw std::invalid_argument(
                 "DiscreteAcaBoundaryOperator::applyBuiltInImpl(): "
                 "incorrect vector length");
@@ -245,31 +258,49 @@ applyBuiltInImpl(const TranspositionMode trans,
         y_inout *= beta;
 
     arma::Col<ValueType> permutedArgument;
-    m_domainPermutation.permuteVector(x_in, permutedArgument);
+    if (!transposed)
+        m_domainPermutation.permuteVector(x_in, permutedArgument);
+    else
+        m_rangePermutation.permuteVector(x_in, permutedArgument);
 
-    // const_cast because Ahmed internally calls BLAS
-    // functions, which don't respect const-correctness
     arma::Col<ValueType> permutedResult;
-    m_rangePermutation.permuteVector(y_inout, permutedResult);
-    if (m_symmetry & HERMITIAN)
+    if (!transposed)
+        m_rangePermutation.permuteVector(y_inout, permutedResult);
+    else
+        m_domainPermutation.permuteVector(y_inout, permutedResult);
+
+    if (m_symmetry & HERMITIAN) {
 #ifdef AHMED_PRERELEASE
-            multaHSymvec
-#else
-            mltaHeHVec
-#endif
-                (ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
+        multaHSymvec(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
                      ahmedCast(permutedArgument.memptr()),
                      ahmedCast(permutedResult.memptr()));
-    else
-#ifdef AHMED_PRERELEASE
-            multaHvec
 #else
-            mltaGeHVec
+        // NO_TRANSPOSE and CONJUGATE_TRANSPOSE are equivalent
+        mltaHeHVec(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
+                   ahmedCast(permutedArgument.memptr()),
+                   ahmedCast(permutedResult.memptr()));
 #endif
-                (ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
+    }
+    else {
+#ifdef AHMED_PRERELEASE
+        multaHvec(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
                   ahmedCast(permutedArgument.memptr()),
                   ahmedCast(permutedResult.memptr()));
-    m_rangePermutation.unpermuteVector(permutedResult, y_inout);
+#else
+        if (trans == NO_TRANSPOSE)
+            mltaGeHVec(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
+                       ahmedCast(permutedArgument.memptr()),
+                       ahmedCast(permutedResult.memptr()));
+        else // trans == CONJUGATE_TRANSPOSE
+            mltaGeHhVec(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
+                        ahmedCast(permutedArgument.memptr()),
+                        ahmedCast(permutedResult.memptr()));
+#endif
+    }
+    if (!transposed)
+        m_rangePermutation.unpermuteVector(permutedResult, y_inout);
+    else
+        m_domainPermutation.unpermuteVector(permutedResult, y_inout);
 }
 
 template <typename ValueType>
