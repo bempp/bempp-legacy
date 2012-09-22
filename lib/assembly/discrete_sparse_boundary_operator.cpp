@@ -31,7 +31,6 @@
 #include <Epetra_Vector.h>
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_SerialComm.h>
-#include <Thyra_DetachedSpmdVectorView.hpp>
 #include <Thyra_SpmdVectorSpaceDefaultBase.hpp>
 
 namespace Bempp

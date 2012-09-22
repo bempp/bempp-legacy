@@ -36,7 +36,6 @@
 #include <boost/smart_ptr/shared_ptr.hpp>
 
 #ifdef WITH_TRILINOS
-#include <Thyra_DetachedSpmdVectorView.hpp>
 #include <Thyra_SpmdVectorSpaceDefaultBase.hpp>
 #endif
 
