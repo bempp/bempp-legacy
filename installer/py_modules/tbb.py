@@ -32,33 +32,36 @@ tbb_dir='tbb'
 tbb_fname_short='tbb.tgz'
 
 def download(root,config):
-    tbb_full_dir=root+"/contrib/"+tbb_dir
+    dep_build_dir=config.get('Main','dependency_build_dir')
+    dep_download_dir=config.get('Main','dependency_download_dir')
+    tbb_full_dir=dep_build_dir+"/"+tbb_dir
     if sys.platform.startswith('darwin'):
-        tbb_download_name=root+"/contrib/files/"+tbb_fname_mac
+        tbb_download_name=dep_download_dir+"/"+tbb_fname_mac
         tbb_url=tbb_url_mac
         tbb_fname=tbb_fname_mac
     elif sys.platform.startswith('linux'):
-        tbb_download_name=root+"/contrib/files/"+tbb_fname_linux
+        tbb_download_name=dep_download_dir+"/"+tbb_fname_linux
         tbb_url=tbb_url_linux
         tbb_fname=tbb_fname_linux
     else:
         raise Exception("Platform not supported")
-    tools.download(tbb_fname_short,tbb_url,root+"/contrib/files")
+    tools.download(tbb_fname_short,tbb_url,dep_download_dir)
 
 def prepare(root,config):
-
+    dep_build_dir=config.get('Main','dependency_build_dir')
+    dep_download_dir=config.get('Main','dependency_download_dir')
     prefix=config.get('Main','prefix')
 
     print "Extracting Tbb"
 
-    tools.checkDeleteDirectory(root+"/contrib/tbb")
-    tools.extract_file(root+"/contrib/files/"+tbb_fname_short,root+"/contrib/")
-    os.rename(root+"/contrib/"+tbb_extract_dir,root+"/contrib/tbb")
-    subprocess.check_call("cp -R "+root+"/contrib/tbb/include/* "+prefix+"/bempp/include/",shell=True)
-
+    tools.checkDeleteDirectory(dep_build_dir+"/tbb")
+    tools.extract_file(dep_download_dir+"/"+tbb_fname_short,dep_build_dir)
+    os.rename(dep_build_dir+"/"+tbb_extract_dir,dep_build_dir+"/tbb")
+    subprocess.check_call("cp -R "+dep_build_dir+"/tbb/include/* "+
+                          prefix+"/bempp/include/",shell=True)
 
     if sys.platform.startswith('darwin'):
-        libdir_orig = root+"/contrib/tbb/lib"
+        libdir_orig = dep_build_dir+"/tbb/lib"
         tbb_lib_name="libtbb.dylib"
         tbb_lib_name_debug="libtbb_debug.dylib"
     elif sys.platform.startswith('linux'):
@@ -66,7 +69,8 @@ def prepare(root,config):
         tbb_lib_name_debug = "libtbb_debug.so"
         arch = config.get('Main','architecture')
         if arch in ('intel64','ia32','ia64'):
-            libdir_orig = root+"/contrib/tbb/lib/"+arch+"/cc4.1.0_libc2.4_kernel2.6.16.21"
+            libdir_orig = (dep_build_dir+"/tbb/lib/"+arch+
+                           "/cc4.1.0_libc2.4_kernel2.6.16.21")
         else:
             raise Exception("Unrecognized architecture: '"+arch+"'")
     else:
@@ -76,8 +80,7 @@ def prepare(root,config):
 
     tools.setDefaultConfigOption(config,"Tbb",'lib',prefix+"/bempp/lib/"+tbb_lib_name,overwrite=True)
     tools.setDefaultConfigOption(config,"Tbb","lib_debug",prefix+"/bempp/lib/"+tbb_lib_name_debug,overwrite=True)
-    tools.setDefaultConfigOption(config,"Tbb",'include_dir',prefix+"/bempp/include",overwrite=True) 
-    
+    tools.setDefaultConfigOption(config,"Tbb",'include_dir',prefix+"/bempp/include",overwrite=True)
 
 def configure(root,config):
     pass
@@ -87,13 +90,3 @@ def build(root,config):
 
 def install(root,config):
     pass
-    
-
-        
-    
-        
-        
-        
-            
-
-        

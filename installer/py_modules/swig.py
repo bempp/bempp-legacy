@@ -28,49 +28,57 @@ swig_extract_dir='swig-2.0.8'
 swig_dir='swig'
 
 def download(root,config):
-    swig_download_name=root+"/contrib/files/"+swig_fname
-    tools.download(swig_fname,swig_url,root+"/contrib/files")
+    dep_download_dir=config.get('Main','dependency_download_dir')
+    swig_download_name=dep_download_dir+"/"+swig_fname
+    tools.download(swig_fname,swig_url,dep_download_dir)
 
 def prepare(root,config):
-    swig_full_dir=root+"/contrib/"+swig_dir
-    swig_download_name=root+"/contrib/files/"+swig_fname
-
+    dep_build_dir=config.get('Main','dependency_build_dir')
+    dep_download_dir=config.get('Main','dependency_download_dir')
     prefix=config.get('Main','prefix')
+
+    swig_full_dir=dep_build_dir+"/"+swig_dir
+    swig_download_name=dep_download_dir+"/"+swig_fname
+
     swig_executable=prefix+"/bempp/bin/swig"
 
     tools.checkDeleteDirectory(swig_full_dir)
 
     print "Extracting Swig"
-    tools.extract_file(root+"/contrib/files/"+swig_fname,root+"/contrib/")
-    os.rename(root+"/contrib/"+swig_extract_dir,swig_full_dir)
+    tools.extract_file(dep_download_dir+"/"+swig_fname,dep_build_dir)
+    os.rename(dep_build_dir+"/"+swig_extract_dir,swig_full_dir)
 
     tools.setDefaultConfigOption(config,"Swig","exe",swig_executable,
                                  overwrite=True)
     tools.setCompilerOptions(config,'Swig')
 
 def configure(root,config):
-    swig_full_dir=root+"/contrib/"+swig_dir
+    dep_build_dir=config.get('Main','dependency_build_dir')
+    swig_full_dir=dep_build_dir+"/"+swig_dir
     prefix=config.get('Main','prefix')
     swig_prefix=prefix+"/bempp"
     print "Configuring Swig"
     cwd=os.getcwd()
     os.chdir(swig_full_dir)
     tools.checkDeleteDirectory(swig_full_dir+"/build")
-    subprocess.check_call(["./configure", "--prefix="+swig_prefix, "--without-pcre"])
+    subprocess.check_call(["./configure", "--prefix="+swig_prefix,
+                           "--without-pcre"])
     os.chdir(cwd)
 
 def build(root,config):
-    swig_full_dir=root+"/contrib/"+swig_dir
+    dep_build_dir=config.get('Main','dependency_build_dir')
+    swig_full_dir=dep_build_dir+"/"+swig_dir
     njobs = tools.to_int(config.get('Main','build_jobs'))
-    print "Build Swig"
+    print "Building Swig"
     cwd=os.getcwd()
     os.chdir(swig_full_dir)
     subprocess.check_call(["make", "-j"+str(njobs)])
     os.chdir(cwd)
 
 def install(root,config):
-    swig_full_dir=root+"/contrib/"+swig_dir
-    print "Install Swig"
+    dep_build_dir=config.get('Main','dependency_build_dir')
+    swig_full_dir=dep_build_dir+"/"+swig_dir
+    print "Installing Swig"
     cwd=os.getcwd()
     os.chdir(swig_full_dir)
     subprocess.check_call(["make", "install"])

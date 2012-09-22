@@ -29,37 +29,40 @@ trilinos_dir='trilinos'
 trilinos_url='http://trilinos.sandia.gov/download/files/trilinos-10.12.2-Source.tar.gz'
 
 def download(root,config):
-    tools.download(trilinos_fname,trilinos_url,root+"/contrib/files")
-
+    dep_download_dir=config.get('Main','dependency_download_dir')
+    tools.download(trilinos_fname,trilinos_url,dep_download_dir)
 
 def prepare(root,config):
+    dep_build_dir=config.get('Main','dependency_build_dir')
+    dep_download_dir=config.get('Main','dependency_download_dir')
 
-    trilinos_full_dir=root+"/contrib/"+trilinos_dir
-    trilinos_download_name=root+"/contrib/files/"+trilinos_fname
+    trilinos_full_dir=dep_build_dir+"/"+trilinos_dir
+    trilinos_download_name=dep_download_dir+"/"+trilinos_fname
 
     prefix=config.get('Main','prefix')
 
     tools.checkDeleteDirectory(trilinos_full_dir)
-    
+
     print "Extracting Trilinos"
-    tools.extract_file(root+"/contrib/files/"+trilinos_fname,root+"/contrib/")
-    os.rename(root+"/contrib/"+trilinos_extract_dir,root+"/contrib/"+trilinos_dir)
-    shutil.copy(root+"/contrib/build_scripts/posix/trilinos_build.sh",trilinos_full_dir+"/trilinos_build.sh")
+    tools.extract_file(dep_download_dir+"/"+trilinos_fname,dep_build_dir)
+    os.rename(dep_build_dir+"/"+trilinos_extract_dir,
+              dep_build_dir+"/"+trilinos_dir)
+    shutil.copy(root+"/installer/build_scripts/posix/trilinos_build.sh",
+                trilinos_full_dir+"/trilinos_build.sh")
     print "Patching ..."
-    patch=py_patch.fromfile(root+"/contrib/patch/Thyra_BelosLinearOpWithSolve_def.patch")
+    patch=py_patch.fromfile(root+"/installer/patches/Thyra_BelosLinearOpWithSolve_def.patch")
     cwd=os.getcwd()
-    os.chdir(root+"/contrib/trilinos//packages/stratimikos/adapters/belos/src")
+    os.chdir(dep_build_dir+"/trilinos/packages/stratimikos/adapters/belos/src")
     patch.apply()
     os.chdir(cwd)
-        
+
     tools.setDefaultConfigOption(config,'Trilinos','cmake_path',prefix+"/bempp/lib/cmake/Trilinos/",overwrite=True)
 
     tools.setCompilerOptions(config,'Trilinos')
 
 def configure(root,config):
-
-    trilinos_full_dir=root+"/contrib/"+trilinos_dir
-    trilinos_download_name=root+"/contrib/files/"+trilinos_fname
+    dep_build_dir=config.get('Main','dependency_build_dir')
+    trilinos_full_dir=dep_build_dir+"/"+trilinos_dir
 
     print "Configuring Trilinos"
     cwd=os.getcwd()
@@ -69,8 +72,8 @@ def configure(root,config):
     os.chdir(cwd)
 
 def build(root,config):
-
-    trilinos_full_dir=root+"/contrib/"+trilinos_dir
+    dep_build_dir=config.get('Main','dependency_build_dir')
+    trilinos_full_dir=dep_build_dir+"/"+trilinos_dir
 
     print "Build Trilinos"
     njobs = tools.to_int(config.get('Main','build_jobs'))
@@ -80,18 +83,10 @@ def build(root,config):
     os.chdir(cwd)
 
 def install(root,config):
+    dep_build_dir=config.get('Main','dependency_build_dir')
+    trilinos_full_dir=dep_build_dir+"/"+trilinos_dir
     print "Install Trilinos"
-    trilinos_full_dir=root+"/contrib/"+trilinos_dir
     cwd=os.getcwd()
     os.chdir(trilinos_full_dir+"/build")
     subprocess.check_call("make install",shell=True)
     os.chdir(cwd)
-
-    
-    
-        
-        
-        
-            
-
-        

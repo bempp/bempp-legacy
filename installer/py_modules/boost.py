@@ -29,16 +29,18 @@ boost_dir='boost'
 boost_version="1.49.0"
 
 def download(root,config):
-    boost_download_name=root+"/contrib/files/"+boost_fname
-    tools.download(boost_fname,boost_url,root+"/contrib/files")
+    dep_download_dir=config.get('Main','dependency_download_dir')
+    tools.download(boost_fname,boost_url,dep_download_dir)
 
 def prepare(root,config):
-    boost_full_dir=root+"/contrib/"+boost_dir
-    boost_download_name=root+"/contrib/files/"+boost_fname
+    dep_build_dir=config.get('Main','dependency_build_dir')
+    boost_full_dir=dep_build_dir+"/"+boost_dir
+    dep_download_dir=config.get('Main','dependency_download_dir')
+    boost_download_name=dep_download_dir+"/"+boost_fname
 
     prefix=config.get('Main','prefix')
     boost_include_dir=prefix+"/bempp/include"
-    
+
     if sys.platform.startswith('darwin'):
         unit_test_lib_name="libboost_unit_test_framework-mt.dylib"
     elif sys.platform.startswith('linux'):
@@ -51,18 +53,21 @@ def prepare(root,config):
     tools.checkDeleteDirectory(boost_full_dir)
 
     print "Extracting Boost"
-    tools.extract_file(root+"/contrib/files/"+boost_fname,root+"/contrib/")
-    os.rename(root+"/contrib/"+boost_extract_dir,boost_full_dir)
-    shutil.copy(root+"/contrib/build_scripts/posix/boost_build.sh",boost_full_dir+"/boost_build.sh")
+    tools.extract_file(boost_download_name,dep_build_dir)
+    os.rename(dep_build_dir+"/"+boost_extract_dir,boost_full_dir)
+    shutil.copy(root+"/installer/build_scripts/posix/boost_build.sh",
+                boost_full_dir+"/boost_build.sh")
 
-    tools.setDefaultConfigOption(config,"Boost","unit_test_lib",boost_unit_test_lib,overwrite=True)
-    tools.setDefaultConfigOption(config,"Boost","include_dir",boost_include_dir,overwrite=True)
+    tools.setDefaultConfigOption(config,"Boost","unit_test_lib",
+                                 boost_unit_test_lib,overwrite=True)
+    tools.setDefaultConfigOption(config,"Boost","include_dir",
+                                 boost_include_dir,overwrite=True)
 
     tools.setCompilerOptions(config,'Boost')
 
 def configure(root,config):
-    boost_full_dir=root+"/contrib/"+boost_dir
-    prefix=config.get('Main','prefix')
+    dep_build_dir=config.get('Main','dependency_build_dir')
+    boost_full_dir=dep_build_dir+"/"+boost_dir
     print "Configuring Boost"
     cwd=os.getcwd()
     os.chdir(boost_full_dir)
@@ -70,21 +75,20 @@ def configure(root,config):
     subprocess.check_call("sh ./boost_build.sh",shell=True)
     os.chdir(cwd)
 
-        
-def build(root,config):
 
-    boost_full_dir=root+"/contrib/"+boost_dir
-    prefix=config.get('Main','prefix')
-    njobs = tools.to_int(config.get('Main','build_jobs'))
+def build(root,config):
+    dep_build_dir=config.get('Main','dependency_build_dir')
+    boost_full_dir=dep_build_dir+"/"+boost_dir
+    njobs=tools.to_int(config.get('Main','build_jobs'))
     print "Build Boost"
     cwd=os.getcwd()
     os.chdir(boost_full_dir+"/build")
     subprocess.check_call("make -j"+str(njobs),shell=True)
     os.chdir(cwd)
-    
-def install(root,config):
 
-    boost_full_dir=root+"/contrib/"+boost_dir
+def install(root,config):
+    dep_build_dir=config.get('Main','dependency_build_dir')
+    boost_full_dir=dep_build_dir+"/"+boost_dir
     prefix=config.get('Main','prefix')
     print "Install Boost"
     cwd=os.getcwd()
@@ -92,11 +96,11 @@ def install(root,config):
     subprocess.check_call("make install",shell=True)
     os.chdir(cwd)
 
-        
-    
-        
-        
-        
-            
 
-        
+
+
+
+
+
+
+

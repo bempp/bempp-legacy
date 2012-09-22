@@ -32,14 +32,15 @@ def prepare(root,config):
         if not config.has_option('AHMED','file_name'):
             raise Exception('Need to give full path of tar.gz archived file with AHMED 1.0 release')
         ahmed_fname=config.get('AHMED','file_name')
-        config.set('AHMED','with_ahmed','ON') 
+        config.set('AHMED','with_ahmed','ON')
         prefix=config.get('Main','prefix')
+        dep_build_dir = config.get('Main','dependency_build_dir')
         arch = config.get('Main','architecture')
         if arch == 'ia32':
             config.set('AHMED','enable64','OFF')
         else:
             config.set('AHMED','enable64','ON')
-        ahmed_full_dir=root+"/contrib/ahmed"
+        ahmed_full_dir=dep_build_dir+"/ahmed"
         tools.checkDeleteDirectory(ahmed_full_dir)
         if sys.platform.startswith('darwin'):
             config.set('AHMED','lib',prefix+"/bempp/lib/libAHMED.dylib")
@@ -49,61 +50,63 @@ def prepare(root,config):
             raise Exception("Platform not supported")
         config.set('AHMED','include_dir',prefix+"/bempp/include/AHMED")
         print "Extracting AHMED"
-        tools.extract_file(ahmed_fname,root+"/contrib/")
-        os.rename(root+"/contrib/AHMED_1.0",root+"/contrib/ahmed")
-        shutil.copy(root+"/contrib/build_scripts/posix/ahmed_build.sh",ahmed_full_dir+"/ahmed_build.sh")
+        tools.extract_file(ahmed_fname,dep_build_dir)
+        os.rename(dep_build_dir+"/AHMED_1.0",ahmed_full_dir)
+        shutil.copy(root+"/installer/build_scripts/posix/ahmed_build.sh",ahmed_full_dir+"/ahmed_build.sh")
         print "Patching AHMED"
-        patches=[py_patch.fromfile(root+"/contrib/patch/"+s)
+        patches=[py_patch.fromfile(root+"/installer/patches/"+s)
                  for s in ("ahmed_cmake.patch",
                            "ahmed_addGeHGeH_single_precision.patch")]
         cwd=os.getcwd()
-        os.chdir(root+"/contrib/ahmed")
+        os.chdir(ahmed_full_dir)
         for patch in patches:
             patch.apply()
         os.chdir(cwd)
         tools.setCompilerOptions(config,'AHMED')
     else:
         config.set('AHMED','with_ahmed','OFF')
-    
+
 
 def configure(root,config):
-    prefix = config.get('Main','prefix')
     if tools.to_bool(config.get('AHMED','enable_ahmed')):
+        dep_build_dir = config.get('Main','dependency_build_dir')
         print "Configuring AHMED"
         cwd=os.getcwd()
-        os.chdir(root+"/contrib/ahmed")
-        tools.checkDeleteDirectory(root+"/contrib/ahmed/build")
+        os.chdir(dep_build_dir+"/ahmed")
+        tools.checkDeleteDirectory(dep_build_dir+"/ahmed/build")
         subprocess.check_call("sh ./ahmed_build.sh",shell=True)
         os.chdir(cwd)
-    
+
 
 def build(root,config):
     if tools.to_bool(config.get('AHMED','enable_ahmed')):
+        dep_build_dir = config.get('Main','dependency_build_dir')
         njobs = tools.to_int(config.get('Main','build_jobs'))
-        print "Build AHMED"
+        print "Building AHMED"
         cwd=os.getcwd()
-        os.chdir(root+"/contrib/ahmed/build")
+        os.chdir(dep_build_dir+"/ahmed/build")
         subprocess.check_call("make -j"+str(njobs),shell=True)
         os.chdir(cwd)
 
 def install(root,config):
     if tools.to_bool(config.get('AHMED','enable_ahmed')):
+        dep_build_dir = config.get('Main','dependency_build_dir')
         prefix = config.get('Main','prefix')
-        print "Install AHMED"
+        print "Installing AHMED"
         cwd=os.getcwd()
-        os.chdir(root+"/contrib/ahmed/build")
+        os.chdir(dep_build_dir+"/ahmed/build")
         subprocess.check_call("make install",shell=True)
         g77 = tools.to_bool(config.get('AHMED','with_g77'))
         if g77:
             os.chdir(prefix+"/bempp/include/AHMED")
             print "Patching AHMED for G77 calling BLAS convention"
-            patch=py_patch.fromfile(root+"/contrib/patch/ahmed_blas.patch")
+            patch=py_patch.fromfile(root+"/installer/patches/ahmed_blas.patch")
             patch.apply()
         os.chdir(cwd)
-        
-        
-        
-        
-            
 
-        
+
+
+
+
+
+

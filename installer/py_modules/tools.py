@@ -43,13 +43,16 @@ def to_bool(value):
 def writeOptions(root,config):
     """Write out options in a format suitable for a shell script"""
 
-    fname=root+"/.options.cfg"
-    f=open(fname,'w')
+    fname=".options.cfg"
+    full_path=root+"/"+fname
+    f=open(full_path,'w')
     f.write("# This file is created automatically by bempp_setup.py\n")
     for section in config.sections():
         for option in config.items(section):
             f.write(section+"_"+option[0]+"="+"\""+option[1]+"\""+"\n")
     f.close()
+    build_dir=config.get('Main','build_dir')
+    shutil.copyfile(full_path,build_dir+"/"+fname)
 
 
 def setDefaultConfigOption(config,section,option,value, overwrite=False):

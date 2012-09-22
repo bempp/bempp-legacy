@@ -31,40 +31,45 @@ arma_dir='armadillo'
 
 def download(root,config):
     """Download Armadillo"""
-    tools.download(arma_fname,arma_url,root+"/contrib/files")
+    dep_download_dir=config.get('Main','dependency_download_dir')
+    tools.download(arma_fname,arma_url,dep_download_dir)
 
 def prepare(root,config):
     prefix=config.get('Main','prefix')
+    dep_build_dir = config.get('Main','dependency_build_dir')
+    dep_download_dir=config.get('Main','dependency_download_dir')
     arma_include_dir=prefix+"/bempp/include"
-    
+
     print "Extracting Armadillo"
-    extract_dir = root+"/contrib/"+arma_extract_dir
+    extract_dir = dep_build_dir+"/"+arma_extract_dir
     tools.checkDeleteDirectory(extract_dir)
-    tools.extract_file(root+"/contrib/files/"+arma_fname,root+"/contrib")
-    subprocess.check_call("cp -R "+extract_dir+"/include/* "+prefix+"/bempp/include/",shell=True)
+    tools.extract_file(dep_download_dir+"/"+arma_fname,dep_build_dir)
+    subprocess.check_call("cp -R "+extract_dir+"/include/* "+
+                          prefix+"/bempp/include/",shell=True)
     print "Patching Armadillo"
-    patch=py_patch.fromfile(root+"/contrib/patch/armadillo_config.patch")
+    patch=py_patch.fromfile(root+"/installer/patches/armadillo_config.patch")
     cwd=os.getcwd()
     os.chdir(prefix+"/bempp/include/armadillo_bits")
     patch.apply()
     os.chdir(cwd)
 
-    tools.setDefaultConfigOption(config,"Armadillo","include_dir",prefix+"/bempp/include",overwrite=True)
+    tools.setDefaultConfigOption(config,"Armadillo","include_dir",
+                                 prefix+"/bempp/include",overwrite=True)
 
 def configure(root,config):
     pass
-     
+
 def build(root,config):
     pass
 
 def install(root,config):
     pass
 
-        
-    
-        
-        
-        
-            
 
-        
+
+
+
+
+
+
+

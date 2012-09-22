@@ -22,6 +22,8 @@
 
 
 import sys,os
+sys.path.append("installer")
+
 from py_modules.tools import writeOptions, setDefaultConfigOption, pythonInfo, checkCreateDir, testBlas, testLapack, cleanUp, checkDeleteFile
 from ConfigParser import ConfigParser
 from optparse import OptionParser
@@ -69,27 +71,33 @@ def module_path():
 def downloadDependencies(root,config):
 
     print "Downloading dependencies"
-    checkCreateDir(root+"/contrib/files")
+    dep_download_dir=config.get('Main','dependency_download_dir')
+    checkCreateDir(dep_download_dir)
 
     for dep in library_names:
         libraries[dep].download(root,config)
-    
+
 def prepareDependencies(root,config):
 
     prefix=config.get('Main','prefix')
     # Replace ~ with /home/username
     prefix=os.path.expanduser(prefix)
     tools.setDefaultConfigOption(config,'Main','prefix',prefix,overwrite=True)
-    
+
+    dep_build_dir=config.get('Main','dependency_build_dir')
+    checkCreateDir(dep_build_dir)
+    bempp_build_dir=config.get('Bempp','build_dir')
+    checkCreateDir(bempp_build_dir)
+
     checkCreateDir(prefix+"/bempp")
     checkCreateDir(prefix+"/bempp/lib")
     checkCreateDir(prefix+"/bempp/include")
 
     for dep in library_names:
         libraries[dep].prepare(root,config)
-    
+
 def configureDependencies(root,config):
-    
+
     for dep in library_names:
         libraries[dep].configure(root,config)
 
@@ -102,7 +110,7 @@ def installDependencies(root,config):
 
     for dep in library_names:
         libraries[dep].install(root,config)
-    
+
 
 def prepare(root,config):
     # Test whether the main options are present
@@ -114,6 +122,17 @@ def prepare(root,config):
     setDefaultConfigOption(config,'Main','cxxflags',"")
     setDefaultConfigOption(config,'Main','root_dir',root)
     setDefaultConfigOption(config,'Main','build_jobs',1)
+
+    # Retrieve build directory
+    setDefaultConfigOption(config,'Main','build_dir',root+'/build')
+    build_dir = config.get('Main','build_dir')
+    # Replace ~ with /home/username
+    build_dir = os.path.expanduser(build_dir)
+    # Set build directories for BEM++ and its dependencies
+    config.set('Bempp','build_dir',build_dir+'/bempp')
+    config.set('Main','dependency_build_dir',build_dir+'/contrib')
+    # Set
+    config.set('Main','dependency_download_dir',root+'/installer/files')
 
     # Set default MKL/libs option
     setDefaultConfigOption(config,'MKL','lib',"-lmkl_rt")
@@ -130,7 +149,7 @@ def prepare(root,config):
     if not arch in ['ia32','ia64','intel64']:
         raise Exception("Architecture '"+arch+"' is not supported. "
                         "Supported architectures: ia32, ia64, intel64.")
-    
+
     if sys.platform.startswith('darwin'):
         if arch=='intel64':
             param = '-arch x86_64'
@@ -144,7 +163,7 @@ def prepare(root,config):
             param = '-m64'
         else:
             param = '-m32'
-        config.set('Main','cflags',cflags+" "+param)       
+        config.set('Main','cflags',cflags+" "+param)
         config.set('Main','cxxflags',cxxflags+" "+param)
         setDefaultConfigOption(config,'Main','optflags','-O3 -march=native')
     else:
@@ -159,7 +178,7 @@ def prepare(root,config):
     setDefaultConfigOption(config,'Python','lib',py_lib)
     setDefaultConfigOption(config,'Python','include_dir',py_include)
     setDefaultConfigOption(config,'Python','numpy_include_dir',numpy.get_include())
-     
+
 ###########################
 
 if __name__ == "__main__":
@@ -209,7 +228,7 @@ if __name__ == "__main__":
                    "spawned by BEM++. For instance, if you are using\n"
                    "GotoBLAS, set the environmental variable GOTO_NUM_THREADS\n"
                    "to '1' before running any programs using BEM++.\n")
-        
+
     if options.install:
         config = ConfigParser()
         if not os.path.exists(root+"/"+optfile_generated):
@@ -234,8 +253,8 @@ if __name__ == "__main__":
             bempp.install(root,config)
         else:
             raise Exception("Library name not recognized.")
-        
-        
 
 
-    
+
+
+

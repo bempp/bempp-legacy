@@ -5,6 +5,12 @@
 
 # architecture=intel64
 
+# By default BEM++ and its dependencies will be built in the
+# subdirectory "build" of the BEM++ source directory. You can override
+# this by setting the option below. Example:
+
+# build_dir=/home/myname/src/bempp-build
+
 # Specify the prefix of the installation directory.  BEM++ and its
 # dependencies will be installed in prefix/bempp. Example:
 
@@ -18,7 +24,6 @@ prefix=/home/myname/
 # You can override the options for specific libraries by setting
 # these options within the corresponding section.
 
-
 # C Compiler
 # cc = gcc
 
@@ -26,20 +31,16 @@ prefix=/home/myname/
 # cxx = g++
 
 # C Compiler flags
-# cflags = 
+# cflags =
 
 # C++ Compiler flags
-#  cxxflags = 
+#  cxxflags =
 
 # Optimization flags
 # optflags = -O3 -march=native (Default on Linux)
 # optflags = -O3 -march=core2 (Default on Mac)
 
 [Bempp]
-
-# Specify the directory where BEM++ should be built. Example:
-
-# build_dir=/home/myname/src/bempp-build
 
 # Specify whether the installer should compile BEM++ straight after
 # installing its dependencies. Normally this should be set to 'yes';
@@ -55,7 +56,7 @@ prefix=/home/myname/
 
 # enable_mkl=yes
 
-# and specify where the MKL libraries can be found. 
+# and specify where the MKL libraries can be found.
 
 # If the NumPy package in your Python distribution is linked against
 # MKL (for example, you use Enthought Python), uncomment the following
@@ -137,7 +138,7 @@ prefix=/home/myname/
 
 # enable_ahmed=yes
 
-# If you have set enable_ahmed to yes, specify the path to the archive 
+# If you have set enable_ahmed to yes, specify the path to the archive
 # file with the sources of AHMED. Example:
 
 # file_name=/home/myname/AHMED-1.0.tar.gz
