@@ -24,17 +24,12 @@
 
 #include "../common/common.hpp"
 
-#include "vector.hpp"
-
 #include "../common/armadillo_fwd.hpp"
-#include "../common/lazy.hpp"
 #include "../common/shared_ptr.hpp"
 
 #include "../grid/vtk_writer.hpp"
 #include "../fiber/quadrature_strategy.hpp"
 #include "../fiber/scalar_traits.hpp"
-#include "../fiber/surface_normal_dependent_function.hpp"
-#include "../fiber/surface_normal_independent_function.hpp"
 
 #include <boost/mpl/set.hpp>
 #include <boost/mpl/has_key.hpp>
