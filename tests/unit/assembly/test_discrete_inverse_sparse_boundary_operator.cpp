@@ -66,7 +66,8 @@ struct DiscreteInverseSparseBoundaryOperatorFixture
         pwiseLinears->assignDofs();
 
         AssemblyOptions assemblyOptions;
-        shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy( 
+        assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
+        shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
             new NumericalQuadratureStrategy<BFT, RT>);
         shared_ptr<Context<BFT, RT> > context(
             new Context<BFT, RT>(quadStrategy, assemblyOptions));

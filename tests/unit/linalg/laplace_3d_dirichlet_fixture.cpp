@@ -24,7 +24,8 @@ Laplace3dDirichletFixture<BFT, RT>::Laplace3dDirichletFixture(
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/cube-12-reoriented.msh");
+                params, "../../examples/meshes/cube-12-reoriented.msh",
+                false /* verbose */);
 
     shared_ptr<Space<BFT> > pwiseConstants(
         new PiecewiseConstantScalarSpace<BFT>(grid));
@@ -34,7 +35,8 @@ Laplace3dDirichletFixture<BFT, RT>::Laplace3dDirichletFixture(
     pwiseLinears->assignDofs();
 
     AssemblyOptions assemblyOptions;
-    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy( 
+    assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
+    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
         new NumericalQuadratureStrategy<BFT, RT>);
     shared_ptr<Context<BFT, RT> > context(
         new Context<BFT, RT>(quadStrategy, assemblyOptions));
