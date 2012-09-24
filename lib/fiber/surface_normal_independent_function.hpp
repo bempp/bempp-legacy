@@ -88,8 +88,9 @@ public:
 
 #ifndef NDEBUG
         if ((int)points.n_rows != worldDimension())
-            throw std::invalid_argument("OrdinaryScalarFunction::evaluate(): "
-                                        "incompatible world dimension");
+            throw std::invalid_argument(
+                    "SurfaceNormalIndependentFunction::evaluate(): "
+                    "incompatible world dimension");
 #endif
 
         const size_t pointCount = points.n_cols;
