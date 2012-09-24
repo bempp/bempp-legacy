@@ -1,6 +1,7 @@
 #include "scaled_discrete_boundary_operator.hpp"
 #include "discrete_aca_boundary_operator.hpp"
 
+#include "../common/complex_aux.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 namespace Bempp
@@ -87,8 +88,11 @@ void ScaledDiscreteBoundaryOperator<ValueType>::applyBuiltInImpl(
         const ValueType alpha,
         const ValueType beta) const
 {
+    ValueType multiplier = m_multiplier;
+    if (trans == CONJUGATE || trans == CONJUGATE_TRANSPOSE)
+        multiplier = conj(multiplier);
     m_operator->apply(trans, x_in, y_inout,
-                      m_multiplier * alpha, beta);
+                      multiplier * alpha, beta);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(ScaledDiscreteBoundaryOperator);
