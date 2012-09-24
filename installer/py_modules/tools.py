@@ -116,6 +116,7 @@ def testBlas(root,config):
     cflags = config.get('Main','cflags')
     cxxflags = config.get('Main','cxxflags')
     prefix = config.get('Main','prefix')
+    cmake_exe = config.get('CMake','exe')
     fnull = open(os.devnull,'w')
 
     if sys.platform.startswith('darwin'):
@@ -128,7 +129,7 @@ def testBlas(root,config):
 
     os.mkdir(root+"/test_blas/build")
     os.chdir(root+"/test_blas/build")
-    config_string = "CC="+cc+" CXX="+cxx+" CFLAGS='"+cflags+"' CXXFLAGS='"+cxxflags+"' cmake -D BLAS_LIBRARIES:STRING=\""+blas+"\" .."
+    config_string = "CC="+cc+" CXX="+cxx+" CFLAGS='"+cflags+"' CXXFLAGS='"+cxxflags+"' "+cmake_exe+" -D BLAS_LIBRARIES:STRING=\""+blas+"\" .."
     try:
         subprocess.check_output(config_string,shell=True,stderr=subprocess.STDOUT)
         subprocess.check_output("make",stderr=subprocess.STDOUT)
@@ -178,6 +179,7 @@ def testLapack(root,config):
     cc=config.get('Main','cc')
     cflags = config.get('Main','cflags')
     cxxflags = config.get('Main','cxxflags')
+    cmake_exe = config.get('CMake','exe')
     prefix = config.get('Main','prefix')
     fnull = open(os.devnull,'w')
 
@@ -190,7 +192,7 @@ def testLapack(root,config):
 
     os.mkdir(root+"/test_lapack/build")
     os.chdir(root+"/test_lapack/build")
-    config_string = "CC="+cc+" CXX="+cxx+" CFLAGS='"+cflags+"' CXXFLAGS='"+cxxflags+"' cmake -D BLAS_LIBRARIES:STRING=\""+blas+"\" -D LAPACK_LIBRARIES=\""+lapack+"\" .."
+    config_string = "CC="+cc+" CXX="+cxx+" CFLAGS='"+cflags+"' CXXFLAGS='"+cxxflags+"' "+cmake_exe+" -D BLAS_LIBRARIES:STRING=\""+blas+"\" -D LAPACK_LIBRARIES=\""+lapack+"\" .."
     try:
         subprocess.check_output(config_string,shell=True,stderr=subprocess.STDOUT)
         subprocess.check_output("make",shell=True,stderr=subprocess.STDOUT)

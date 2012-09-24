@@ -6,7 +6,7 @@ mkdir -p build
 
 cd build
 
-CXXFLAGS="$Boost_cxxflags" CFLAGS="$Boost_cflags" cmake \
+CXXFLAGS="$Boost_cxxflags" CFLAGS="$Boost_cflags" "$CMake_exe" \
  -D CMAKE_CXX_COMPILER:STRING:STRING="$Boost_cxx" \
  -D CMAKE_C_COMPILER:STRING="$Boost_cc" \
  -D CMAKE_INSTALL_PREFIX:PATH="$Main_prefix/bempp" \

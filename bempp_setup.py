@@ -36,6 +36,7 @@ import py_modules.armadillo as armadillo
 import py_modules.bempp as bempp
 import py_modules.boost as boost
 import py_modules.dune as dune
+import py_modules.cmake as cmake
 import py_modules.mkl as mkl
 import py_modules.swig as swig
 import py_modules.tbb as tbb
@@ -75,13 +76,9 @@ def downloadDependencies(root,config):
     for dep in library_names:
         libraries[dep].download(root,config)
 
-def prepareDependencies(root,config):
+def bootstrap(root,config):
 
-    prefix=config.get('Main','prefix')
-    # Replace ~ with /home/username
-    prefix=os.path.expanduser(prefix)
-    tools.setDefaultConfigOption(config,'Main','prefix',prefix,overwrite=True)
-
+    cleanUp(root,config)
     dep_build_dir=config.get('Main','dependency_build_dir')
     checkCreateDir(dep_build_dir)
     dep_download_dir=config.get('Main','dependency_download_dir')
@@ -92,6 +89,18 @@ def prepareDependencies(root,config):
     checkCreateDir(prefix+"/bempp")
     checkCreateDir(prefix+"/bempp/lib")
     checkCreateDir(prefix+"/bempp/include")
+
+    cmake.download(root,config)
+
+    downloadDependencies(root,config)
+
+    cmake.prepare(root,config)
+    cmake.configure(root,config)
+    cmake.build(root,config)
+    cmake.install(root,config)
+
+def prepareDependencies(root,config):
+
 
     for dep in library_names:
         libraries[dep].prepare(root,config)
@@ -122,6 +131,7 @@ def prepare(root,config):
     setDefaultConfigOption(config,'Main','cxxflags',"")
     setDefaultConfigOption(config,'Main','root_dir',root)
     setDefaultConfigOption(config,'Main','build_jobs',1)
+
 
     # Retrieve build directory
     setDefaultConfigOption(config,'Main','build_dir',root+'/build')
@@ -179,12 +189,20 @@ def prepare(root,config):
     setDefaultConfigOption(config,'Python','include_dir',py_include)
     setDefaultConfigOption(config,'Python','numpy_include_dir',numpy.get_include())
 
+    # Add the CMake configuration
+
+    prefix = config.get('Main','prefix')
+    setDefaultConfigOption(config,"CMake","exe",prefix+"/bempp/bin/cmake",overwrite=True)
+
+
 ###########################
 
 if __name__ == "__main__":
 
     usage = "usage: %prog [options] configuration_file"
     parser = OptionParser()
+    parser.add_option("-b","--bootstrap", action="store_true",
+                      help="Download dependencies and prepare directories")
     parser.add_option("-c", "--configure", action="store_true",
                       help="Configure the setup program")
     parser.add_option("-i", "--install", type="string", metavar="WHAT",
@@ -199,12 +217,15 @@ if __name__ == "__main__":
     optfile = args[0]
     optfile_generated = optfile+".generated"
     config.read(optfile)
+    prefix=config.get('Main','prefix')
+    # Replace ~ with /home/username
+    prefix=os.path.expanduser(prefix)
+    tools.setDefaultConfigOption(config,'Main','prefix',prefix,overwrite=True)
     prepare(root,config)
+    if options.bootstrap: bootstrap(root,config)
     if options.configure:
         checkDeleteFile(optfile_generated)
         try:
-            cleanUp(root,config)
-            downloadDependencies(root,config)
             prepareDependencies(root,config)
             bempp.prepare(root,config)
             testBlas(root,config)
