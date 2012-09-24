@@ -137,7 +137,7 @@ void DiscreteDenseBoundaryOperator<ValueType>::applyBuiltInImpl(
         break;
     default:
         throw std::invalid_argument(
-                "AcaApproximateLuInverse::applyBuiltInImpl(): "
+                "DiscreteDenseBoundaryOperator::applyBuiltInImpl(): "
                 "invalid transposition mode");
     }
 }
