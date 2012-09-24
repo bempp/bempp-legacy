@@ -29,6 +29,7 @@
 
 #include "../fiber/opencl_options.hpp"
 #include "../fiber/parallelization_options.hpp"
+#include "../fiber/verbosity_level.hpp"
 
 namespace Bempp
 {
@@ -110,6 +111,7 @@ struct AcaOptions
 
 using Fiber::OpenClOptions;
 using Fiber::ParallelizationOptions;
+using Fiber::VerbosityLevel;
 
 /** \ingroup weak_form_assembly
  *  \brief Options determining how weak-form assembly is done.
@@ -189,6 +191,19 @@ public:
     const ParallelizationOptions& parallelizationOptions() const;
 
     /** @}
+      @name Verbosity
+      */
+
+    /** \brief Set the verbosity level.
+     *
+     *  This setting determines the amount of information printed out by
+     *  functions from BEM++. */
+    void setVerbosityLevel(VerbosityLevel::Level level);
+
+    /** \brief Return the verbosity level. */
+    VerbosityLevel::Level verbosityLevel() const;
+
+    /** @}
       @name Miscellaneous
       @{ */
 
@@ -223,11 +238,14 @@ public:
     /** @} */
 
 private:
+    /** \cond */
     Mode m_assemblyMode;
     AcaOptions m_acaOptions;
     ParallelizationOptions m_parallelizationOptions;
+    VerbosityLevel::Level m_verbosityLevel;
     bool m_singularIntegralCaching;
     bool m_sparseStorageOfMassMatrices;
+    /** \endcond */
 };
 
 } // namespace Bempp

@@ -147,6 +147,7 @@ private:
             const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
             const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions,
+            VerbosityLevel::Level verbosityLevel,
             bool cacheSingularIntegrals) const;
 
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >

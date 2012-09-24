@@ -74,6 +74,7 @@ private:
             const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions,
+            VerbosityLevel::Level verbosityLevel,
             bool cacheSingularIntegrals) const;
 
     virtual std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >
@@ -138,6 +139,7 @@ private:
             const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions,
+            VerbosityLevel::Level verbosityLevel,
             bool cacheSingularIntegrals) const;
 
     virtual std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >

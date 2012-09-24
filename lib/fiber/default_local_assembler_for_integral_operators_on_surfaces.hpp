@@ -25,13 +25,14 @@
 
 #include "local_assembler_for_operators.hpp"
 
-#include "accuracy_options.hpp"
 #include "_2d_array.hpp"
+#include "accuracy_options.hpp"
 #include "element_pair_topology.hpp"
 #include "numerical_quadrature.hpp"
 #include "parallelization_options.hpp"
 #include "shared_ptr.hpp"
 #include "test_kernel_trial_integrator.hpp"
+#include "verbosity_level.hpp"
 
 #include <boost/static_assert.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
@@ -74,6 +75,7 @@ public:
             const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> >& integral,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions,
+            VerbosityLevel::Level verbosityLevel,
             bool cacheSingularIntegrals,
             const AccuracyOptionsEx& accuracyOptions);
     virtual ~DefaultLocalAssemblerForIntegralOperatorsOnSurfaces();
@@ -144,6 +146,7 @@ private:
     Integrator*> IntegratorMap;
 
 private:
+    /** \cond */
     shared_ptr<const GeometryFactory> m_testGeometryFactory;
     shared_ptr<const GeometryFactory> m_trialGeometryFactory;
     shared_ptr<const RawGridGeometry<CoordinateType> > m_testRawGeometry;
@@ -156,6 +159,7 @@ private:
     shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> > m_integral;
     shared_ptr<const OpenClHandler> m_openClHandler;
     ParallelizationOptions m_parallelizationOptions;
+    VerbosityLevel::Level m_verbosityLevel;
     AccuracyOptionsEx m_accuracyOptions;
 
     IntegratorMap m_TestKernelTrialIntegrators;

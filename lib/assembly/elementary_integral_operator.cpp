@@ -56,6 +56,7 @@
 #include <tbb/parallel_for.h>
 #include <tbb/spin_mutex.h>
 #include <tbb/task_scheduler_init.h>
+#include <tbb/tick_count.h>
 
 namespace Bempp
 {
@@ -185,6 +186,7 @@ makeAssemblerImpl(
         const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
         const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
         const ParallelizationOptions& parallelizationOptions,
+        VerbosityLevel::Level verbosityLevel,
         bool cacheSingularIntegrals) const
 {
     return quadStrategy.makeAssemblerForIntegralOperators(
@@ -195,7 +197,8 @@ makeAssemblerImpl(
                 make_shared_from_ref(kernels()),
                 make_shared_from_ref(trialTransformations()),
                 make_shared_from_ref(integral()),
-                openClHandler, parallelizationOptions, cacheSingularIntegrals);
+                openClHandler, parallelizationOptions, verbosityLevel,
+                cacheSingularIntegrals);
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
@@ -204,13 +207,23 @@ ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 assembleWeakFormImpl(
         const Context<BasisFunctionType, ResultType>& context) const
 {
-    std::cout << "Assembling the weak form of operator '"
-              << this->label() << "'..." << std::endl;
-    AutoTimer timer("Assembly of the weak form of operator '" +
-                    this->label() + "' took ");
+    bool verbose = (context.assemblyOptions().verbosityLevel() >=
+                    VerbosityLevel::DEFAULT);
+    if (verbose)
+        std::cout << "Assembling the weak form of operator '"
+                  << this->label() << "'..." << std::endl;
+
+    tbb::tick_count start = tbb::tick_count::now();
     std::auto_ptr<LocalAssembler> assembler =
             makeAssembler(context.quadStrategy(), context.assemblyOptions());
-    return assembleWeakFormInternalImpl(*assembler, context.assemblyOptions());
+    shared_ptr<DiscreteBoundaryOperator<ResultType> > result =
+            assembleWeakFormInternalImpl(*assembler, context.assemblyOptions());
+    tbb::tick_count end = tbb::tick_count::now();
+
+    if (verbose)
+        std::cout << "Assembly of the weak form of operator '" << this->label()
+                  << "' took " << (end - start).seconds() << " s" << std::endl;
+    return result;
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>

@@ -99,6 +99,7 @@ public:
             const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
             const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions,
+            VerbosityLevel::Level verbosityLevel,
             bool cacheSingularIntegrals) const;
 
     /** \brief Construct a local assembler suitable for this operator using a
@@ -140,6 +141,7 @@ private:
             const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
             const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions,
+            VerbosityLevel::Level verbosityLevel,
             bool cacheSingularIntegrals) const = 0;
 
     /** \brief Assemble the operator's weak form using a specified local assembler.

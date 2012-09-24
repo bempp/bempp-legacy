@@ -39,12 +39,14 @@ AcaOptions::AcaOptions() :
     outputPostscript(false),
     outputFname("aca.ps"),
     scaling(1.0)
-{}
+{
+}
 
 
 
 AssemblyOptions::AssemblyOptions() :
     m_assemblyMode(DENSE),
+    m_verbosityLevel(VerbosityLevel::DEFAULT),
     m_singularIntegralCaching(true),
     m_sparseStorageOfMassMatrices(true)
 {
@@ -97,6 +99,16 @@ void AssemblyOptions::switchToTbb(int maxThreadCount)
 const ParallelizationOptions& AssemblyOptions::parallelizationOptions() const
 {
        return m_parallelizationOptions;
+}
+
+void AssemblyOptions::setVerbosityLevel(VerbosityLevel::Level level)
+{
+    m_verbosityLevel = level;
+}
+
+VerbosityLevel::Level AssemblyOptions::verbosityLevel() const
+{
+    return m_verbosityLevel;
 }
 
 void AssemblyOptions::enableSingularIntegralCaching(bool value)

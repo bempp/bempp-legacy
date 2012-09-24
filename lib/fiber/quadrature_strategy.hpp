@@ -25,6 +25,7 @@
 
 #include "scalar_traits.hpp"
 #include "shared_ptr.hpp"
+#include "verbosity_level.hpp"
 
 #include "../common/armadillo_fwd.hpp"
 #include <boost/type_traits/is_same.hpp>
@@ -78,6 +79,7 @@ public:
             const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions,
+            VerbosityLevel::Level verbosityLevel,
             bool cacheSingularIntegrals) const {
         return this->makeAssemblerForIntegralOperatorsImplRealKernel(
                     testGeometryFactory, trialGeometryFactory,
@@ -85,7 +87,8 @@ public:
                     testBases, trialBases,
                     testTransformations, kernels, trialTransformations, integral,
                     openClHandler,
-                    parallelizationOptions, cacheSingularIntegrals);
+                    parallelizationOptions, verbosityLevel,
+                    cacheSingularIntegrals);
     }
 
     /** \brief Allocate a Galerkin-mode local assembler for the identity operator. */
@@ -149,6 +152,7 @@ private:
             const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions,
+            VerbosityLevel::Level verbosityLevel,
             bool cacheSingularIntegrals) const = 0;
 
     virtual std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >
@@ -209,6 +213,7 @@ public:
             const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions,
+            VerbosityLevel::Level verbosityLevel,
             bool cacheSingularIntegrals) const {
         return this->makeAssemblerForIntegralOperatorsImplComplexKernel(
                     testGeometryFactory, trialGeometryFactory,
@@ -216,7 +221,8 @@ public:
                     testBases, trialBases,
                     testTransformations, kernels, trialTransformations, integral,
                     openClHandler,
-                    parallelizationOptions, cacheSingularIntegrals);
+                    parallelizationOptions, verbosityLevel,
+                    cacheSingularIntegrals);
     }
 
     /** \brief Allocate a local assembler for calculations of the projections
@@ -269,6 +275,7 @@ private:
             const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions,
+            VerbosityLevel::Level verbosityLevel,
             bool cacheSingularIntegrals) const = 0;
 
     virtual std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >

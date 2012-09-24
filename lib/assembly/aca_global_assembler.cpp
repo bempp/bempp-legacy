@@ -79,12 +79,13 @@ public:
             boost::shared_array<AhmedMblock*> blocks,
             const AcaOptions& options,
             tbb::atomic<size_t>& done,
+            bool verbose,
             LeafClusterIndexQueue& leafClusterIndexQueue,
             bool hermitian,
             std::vector<ChunkStatistics>& stats) :
         m_helper(helper),
         m_leafClusters(leafClusters), m_blocks(blocks),
-        m_options(options), m_done(done),
+        m_options(options), m_done(done), m_verbose(verbose),
         m_leafClusterIndexQueue(leafClusterIndexQueue),
         m_hermitian(hermitian),
         m_stats(stats)
@@ -124,8 +125,9 @@ public:
             m_stats[leafClusterIndex].endTime = tbb::tick_count::now();
             // TODO: recompress
             const int HASH_COUNT = 20;
-            progressbar(std::cout, TEXT, (++m_done) - 1,
-                        m_leafClusters.size(), HASH_COUNT, true);
+            if (m_verbose)
+                progressbar(std::cout, TEXT, (++m_done) - 1,
+                            m_leafClusters.size(), HASH_COUNT, true);
         }
 
     }
@@ -136,6 +138,7 @@ private:
     boost::shared_array<AhmedMblock*> m_blocks;
     const AcaOptions& m_options;
     tbb::atomic<size_t>& m_done;
+    bool m_verbose;
     LeafClusterIndexQueue& m_leafClusterIndexQueue;
     bool m_hermitian;
     std::vector<ChunkStatistics>& m_stats;
@@ -184,6 +187,10 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
     const AcaOptions& acaOptions = options.acaOptions();
     const bool indexWithGlobalDofs = acaOptions.globalAssemblyBeforeCompression;
+    const bool verbosityDefault =
+            (options.verbosityLevel() >= VerbosityLevel::DEFAULT);
+    const bool verbosityHigh =
+            (options.verbosityLevel() >= VerbosityLevel::HIGH);
 
 #ifndef WITH_TRILINOS
     if (!indexWithGlobalDofs)
@@ -204,9 +211,6 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                                     "using test and trial spaces with different "
                                     "numbers of DOFs");
 
-#ifndef NDEBUG
-    std::cout << "Generating cluster trees... " << std::endl;
-#endif
     // o2p: map of original indices to permuted indices
     // p2o: map of permuted indices to original indices
     std::vector<unsigned int> o2pTestDofs(testDofCount);
@@ -263,13 +267,12 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     // getClusterIds(trialClusterTree, p2oTrialDofs, trialClusterIds);
     // trialSpace.dumpClusterIds("trialClusterIds", trialClusterIds);
 
-#ifndef NDEBUG
-    std::cout << "Test cluster count: " << testClusterTree.getncl()
-              << "\nTrial cluster count: " << trialClusterTree.getncl()
-              << std::endl;
+    if (verbosityHigh)
+        std::cout << "Test cluster count: " << testClusterTree.getncl()
+                  << "\nTrial cluster count: " << trialClusterTree.getncl()
+                  << std::endl;
     //    std::cout << "o2pTest:\n" << o2pTestDofs << std::endl;
     //    std::cout << "p2oTest:\n" << p2oTestDofs << std::endl;
-#endif
 
     typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
     std::auto_ptr<AhmedBemBlcluster> bemBlclusterTree(
@@ -284,9 +287,8 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                                     acaOptions.eta * acaOptions.eta,
                                     blockCount);
 
-#ifndef NDEBUG
-    std::cout << "Double cluster count: " << blockCount << std::endl;
-#endif
+    if (verbosityHigh)
+        std::cout << "Double cluster count: " << blockCount << std::endl;
 
     WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>
             helper(testSpace, trialSpace, p2oTestDofs, p2oTrialDofs,
@@ -363,26 +365,31 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     for (size_t i = 0; i < leafClusterCount; ++i)
         leafClusterIndexQueue.push(i);
 
-    std::cout << "About to start the ACA assembly loop" << std::endl;
+    if (verbosityDefault)
+        std::cout << "About to start the ACA assembly loop" << std::endl;
     tbb::tick_count loopStart = tbb::tick_count::now();    
     {
         Fiber::SerialBlasRegion region; // if possible, ensure that BLAS is single-threaded
         tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
                           Body(helper, leafClusters, blocks, acaOptions, done,
+                               verbosityDefault,
                                leafClusterIndexQueue, hermitian, chunkStats));
     }
     tbb::tick_count loopEnd = tbb::tick_count::now();
-    std::cout << "\n"; // the progress bar doesn't print the final \n
-
-    std::cout << "ACA loop took " << (loopEnd - loopStart).seconds() << " s"
-              << std::endl;
+    if (verbosityDefault) {
+        std::cout << "\n"; // the progress bar doesn't print the final \n
+        std::cout << "ACA loop took " << (loopEnd - loopStart).seconds() << " s"
+                  << std::endl;
+    }
 
     // TODO: parallelise!
     if (acaOptions.recompress) {
-        std::cout << "About to start ACA agglomeration" << std::endl;
+        if (verbosityDefault)
+            std::cout << "About to start ACA agglomeration" << std::endl;
         agglH(bemBlclusterTree.get(), blocks.get(),
               acaOptions.eps, acaOptions.maximumRank);
-        std::cout << "Agglomeration finished" << std::endl;
+        if (verbosityDefault)
+            std::cout << "Agglomeration finished" << std::endl;
     }
 
     // // Dump timing data of individual chunks
@@ -404,13 +411,18 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     {
         size_t origMemory = sizeof(ResultType) * testDofCount * trialDofCount;
         size_t ahmedMemory = sizeH(bemBlclusterTree.get(), blocks.get());
-        std::cout << "\nNeeded storage: " << ahmedMemory / 1024. / 1024. << " MB.\n"
-                  << "Without approximation: " << origMemory / 1024. / 1024. << " MB.\n"
-                  << "Compressed to " << (100. * ahmedMemory) / origMemory << "%.\n"
-                  << std::endl;
+        if (verbosityDefault)
+            std::cout << "\nNeeded storage: "
+                      << ahmedMemory / 1024. / 1024. << " MB.\n"
+                      << "Without approximation: "
+                      << origMemory / 1024. / 1024. << " MB.\n"
+                      << "Compressed to "
+                      << (100. * ahmedMemory) / origMemory << "%.\n"
+                      << std::endl;
 
         if (acaOptions.outputPostscript) {
-            std::cout << "Writing matrix partition ..." << std::flush;
+            if (verbosityDefault)
+                std::cout << "Writing matrix partition ..." << std::flush;
             std::ofstream os(acaOptions.outputFname.c_str());
             if (hermitian)
 #ifdef AHMED_PRERELEASE
@@ -425,7 +437,8 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                 psoutputGeH(os, bemBlclusterTree.get(), testDofCount, blocks.get());
 #endif
             os.close();
-            std::cout << " done." << std::endl;
+            if (verbosityDefault)
+                std::cout << " done." << std::endl;
         }
     }
 
