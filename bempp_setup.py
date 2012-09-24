@@ -71,8 +71,6 @@ def module_path():
 def downloadDependencies(root,config):
 
     print "Downloading dependencies"
-    dep_download_dir=config.get('Main','dependency_download_dir')
-    checkCreateDir(dep_download_dir)
 
     for dep in library_names:
         libraries[dep].download(root,config)
@@ -86,6 +84,8 @@ def prepareDependencies(root,config):
 
     dep_build_dir=config.get('Main','dependency_build_dir')
     checkCreateDir(dep_build_dir)
+    dep_download_dir=config.get('Main','dependency_download_dir')
+    checkCreateDir(dep_download_dir)
     bempp_build_dir=config.get('Bempp','build_dir')
     checkCreateDir(bempp_build_dir)
 
