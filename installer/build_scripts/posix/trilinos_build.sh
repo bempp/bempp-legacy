@@ -4,7 +4,7 @@ set -e
 
 mkdir -p build
 cd build
-CXXFLAGS="$Trilinos_cxxflags" CFLAGS="$Trilinos_cflags" cmake \
+CXXFLAGS="$Trilinos_cxxflags" CFLAGS="$Trilinos_cflags" "$CMake_exe" \
     -D CMAKE_CXX_COMPILER:STRING="$Trilinos_cxx" \
     -D CMAKE_C_COMPILER:STRING="$Trilinos_cc" \
     -D CMAKE_BUILD_TYPE:STRING=Release \

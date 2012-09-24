@@ -6,7 +6,7 @@ export DYLD_LIBRARY_PATH="$Main_prefix/bempp/lib:$DYLD_LIBRARY_PATH"
 
 mkdir "$Bempp_build_dir"
 cd $Bempp_build_dir
-CXXFLAGS="$Bempp_cxxflags" CFLAGS="$Bempp_cflags" cmake \
+CXXFLAGS="$Bempp_cxxflags" CFLAGS="$Bempp_cflags" "$CMake_exe" \
     -D CMAKE_CXX_COMPILER:STRING="$Bempp_cxx" \
     -D CMAKE_C_COMPILER:STRING="$Bempp_cc" \
     -D CMAKE_INSTALL_PREFIX:PATH="$Main_prefix" \
