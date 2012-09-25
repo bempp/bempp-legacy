@@ -46,7 +46,7 @@ AbstractBoundaryOperatorComposition(
         const BoundaryOperator<BasisFunctionType, ResultType>& outer,
         const BoundaryOperator<BasisFunctionType, ResultType>& inner,
         int symmetry) :
-    Base(outer.domain(), outer.range(), outer.dualToRange(),
+    Base(inner.domain(), outer.range(), outer.dualToRange(),
          "(" + outer.label() + ") * (" + inner.label() + ")",
          symmetry),
     m_outer(outer), m_inner(inner)
