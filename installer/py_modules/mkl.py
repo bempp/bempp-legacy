@@ -124,10 +124,10 @@ def get_mkl_dirs_and_libs_like_numpy(config, lib_dir, extension):
         raise Exception("MKL autodetection failed: '"+lapack_lite_path+
                         "' is not a file. Specify MKL location manually")
     if sys.platform.startswith('darwin'):
-        otool_output = subprocess.check_output(['otool','-L',lapack_lite_path])
+        otool_output = tools.check_output(['otool','-L',lapack_lite_path])
         mkl_dirs,mkl_libs = parse_otool_output(otool_output)
     else: # 'linux' -- we've checked that its 'darwin' or 'linux' before
-        ldd_output = subprocess.check_output(['ldd',lapack_lite_path])
+        ldd_output = tools.check_output(['ldd',lapack_lite_path])
         mkl_dirs,mkl_libs = parse_ldd_output(ldd_output)
     return mkl_dirs,mkl_libs
 

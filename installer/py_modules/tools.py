@@ -1,6 +1,42 @@
 import errno,os,subprocess,sys, shutil
-from subprocess import CalledProcessError
 
+try:
+    from subprocess import check_output
+except ImportError:
+    # Backported from Python 2.7
+    def check_output(*popenargs, **kwargs):
+        r"""Run command with arguments and return its output as a byte string.
+
+        If the exit code was non-zero it raises a CalledProcessError.  The
+        CalledProcessError object will have the return code in the returncode
+        attribute and output in the output attribute.
+
+        The arguments are the same as for the Popen constructor.  Example:
+
+        >>> check_output(["ls", "-l", "/dev/null"])
+        'crw-rw-rw- 1 root root 1, 3 Oct 18  2007 /dev/null\n'
+
+        The stdout argument is not allowed as it is used internally.
+        To capture standard error in the result, use stderr=STDOUT.
+
+        >>> check_output(["/bin/sh", "-c",
+        ...               "ls -l non_existent_file ; exit 0"],
+        ...              stderr=STDOUT)
+        'ls: non_existent_file: No such file or directory\n'
+        """
+        if 'stdout' in kwargs:
+            raise ValueError('stdout argument not allowed, it will be overridden.')
+        process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, **kwargs)
+        output, unused_err = process.communicate()
+        retcode = process.poll()
+        if retcode:
+            cmd = kwargs.get("args")
+            if cmd is None:
+                cmd = popenargs[0]
+            ex = subprocess.CalledProcessError(retcode, cmd)
+            ex.output = output
+            raise ex
+        return output
 
 # The following function extracts the tar gz files. It is taken from
 # http://code.activestate.com/recipes/576714-extract-a-compressed-file/
@@ -131,16 +167,16 @@ def testBlas(root,config):
     os.chdir(root+"/test_blas/build")
     config_string = "CC="+cc+" CXX="+cxx+" CFLAGS='"+cflags+"' CXXFLAGS='"+cxxflags+"' "+cmake_exe+" -D BLAS_LIBRARIES:STRING=\""+blas+"\" .."
     try:
-        subprocess.check_output(config_string,shell=True,stderr=subprocess.STDOUT)
-        subprocess.check_output("make",stderr=subprocess.STDOUT)
+        check_output(config_string,shell=True,stderr=subprocess.STDOUT)
+        check_output("make",stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError, ex:
         fnull.close()
         raise Exception("Building BLAS tests failed with the following output:\n" +
                         ex.output +
                         "Please check your compiler and BLAS library settings.")
     try:
-        subprocess.check_output(ld_path+"./test_blas",shell=True,
-                                stderr=subprocess.STDOUT)
+        check_output(ld_path+"./test_blas",shell=True,
+                     stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError, ex:
         os.chdir(cwd)
         fnull.close()
@@ -194,8 +230,8 @@ def testLapack(root,config):
     os.chdir(root+"/test_lapack/build")
     config_string = "CC="+cc+" CXX="+cxx+" CFLAGS='"+cflags+"' CXXFLAGS='"+cxxflags+"' "+cmake_exe+" -D BLAS_LIBRARIES:STRING=\""+blas+"\" -D LAPACK_LIBRARIES=\""+lapack+"\" .."
     try:
-        subprocess.check_output(config_string,shell=True,stderr=subprocess.STDOUT)
-        subprocess.check_output("make",shell=True,stderr=subprocess.STDOUT)
+        check_output(config_string,shell=True,stderr=subprocess.STDOUT)
+        check_output("make",shell=True,stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError, ex:
         fnull.close()
         raise Exception("Building LAPACK tests failed with the following output:\n" +
@@ -203,8 +239,8 @@ def testLapack(root,config):
                         "\nPlease check your compiler as well as BLAS and Lapack "
                         "library settings.\n")
     try:
-        subprocess.check_output(ld_path+ "./test_lapack",shell=True,
-                                stderr=subprocess.STDOUT)
+        check_output(ld_path+ "./test_lapack",shell=True,
+                     stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError, ex:
         os.chdir(cwd)
         fnull.close()
