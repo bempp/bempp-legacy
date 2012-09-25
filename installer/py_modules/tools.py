@@ -104,22 +104,28 @@ def setDefaultConfigOption(config,section,option,value, overwrite=False):
         return value
 
 def pythonInfo():
-    """Return a tuple (exe,lib,include) with the paths of the Python Interpeter, Python library and include directory"""
+    """Return a tuple (exe,lib,include) with the paths of the Python Interpreter, Python library and include directory"""
 
     import sys,os
 
     exe = sys.executable
-    lib_no_suffix = sys.prefix+"/lib/libpython"+str(sys.version_info[0])+"."+str(sys.version_info[1])
-    if sys.platform.startswith('darwin'):
-        lib = lib_no_suffix+".dylib"
-    elif sys.platform.startswith('linux'):
-        lib = lib_no_suffix+".so"
-    else:
-        raise Exception("Platform not supported")
-    if not os.path.isfile(lib):
+    for directory in (sys.prefix+"/lib/", sys.prefix+"/lib64/"):
+        lib_no_suffix = directory+"libpython"+str(sys.version_info[0])+"."+str(sys.version_info[1])
+        if sys.platform.startswith('darwin'):
+            lib = lib_no_suffix+".dylib"
+        elif sys.platform.startswith('linux'):
+            lib = lib_no_suffix+".so"
+        else:
+            raise Exception("Platform not supported")
+        if os.path.isfile(lib):
+            break
         lib = lib_no_suffix+".a"
-        if not os.path.isfile(lib):
-            raise Exception("Could not find Python library in "+sys.prefix+"/lib/")
+        if os.path.isfile(lib):
+            break
+        lib = None
+    if not lib:
+        raise Exception("Could not find Python library in '"+sys.prefix+"/lib' "
+                        "or '"+sys.prefix+"/lib64'")
     include = (sys.prefix+"/include/python"+
                str(sys.version_info[0])+"."+str(sys.version_info[1]))
     return (exe,lib,include)
