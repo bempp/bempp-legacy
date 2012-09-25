@@ -160,7 +160,8 @@ discreteBlockDiagonalPreconditioner(
     Fiber::_2dArray<typename Preconditioner<ValueType>::DiscreteBoundaryOperatorPtr> opStructure(n,n);
     std::vector<size_t> rowCounts(n);
     std::vector<size_t> columnCounts(n);
-    for (size_t i=0;i++;i<n){
+    for (size_t i = 0; i < n; ++i)
+    {
         opStructure(i,i)= opVector[i];
         rowCounts[i]=opVector[i]->rowCount();
         columnCounts[i]=opVector[i]->columnCount();
