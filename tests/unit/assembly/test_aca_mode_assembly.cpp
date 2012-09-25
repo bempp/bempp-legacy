@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_assembled_operator_agrees_with_dense_assemb
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-614.msh");
+        params, "../../examples/meshes/sphere-614.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > pwiseConstants(
         new PiecewiseConstantScalarSpace<BFT>(grid));
@@ -65,6 +65,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_assembled_operator_agrees_with_dense_assemb
                 new NumericalQuadratureStrategy<BFT, RT>(accuracyOptions));
 
     AssemblyOptions assemblyOptionsDense;
+    assemblyOptionsDense.setVerbosityLevel(VerbosityLevel::LOW);
     shared_ptr<Context<BFT, RT> > contextDense(
         new Context<BFT, RT>(quadStrategy, assemblyOptionsDense));
 
@@ -74,6 +75,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_assembled_operator_agrees_with_dense_assemb
     arma::Mat<RT> weakFormDense = opDense.weakForm()->asMatrix();
 
     AssemblyOptions assemblyOptionsAca;
+    assemblyOptionsAca.setVerbosityLevel(VerbosityLevel::LOW);
     AcaOptions acaOptions;
     assemblyOptionsAca.switchToAcaMode(acaOptions);
     shared_ptr<Context<BFT, RT> > contextAca(
@@ -98,7 +100,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_disassembled_operator_agrees_with_dense_ass
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-614.msh");
+        params, "../../examples/meshes/sphere-614.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > pwiseConstants(
         new PiecewiseConstantScalarSpace<BFT>(grid));
@@ -113,6 +115,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_disassembled_operator_agrees_with_dense_ass
                 new NumericalQuadratureStrategy<BFT, RT>(accuracyOptions));
 
     AssemblyOptions assemblyOptionsDense;
+    assemblyOptionsDense.setVerbosityLevel(VerbosityLevel::LOW);
     shared_ptr<Context<BFT, RT> > contextDense(
         new Context<BFT, RT>(quadStrategy, assemblyOptionsDense));
 
@@ -122,6 +125,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_disassembled_operator_agrees_with_dense_ass
     arma::Mat<RT> weakFormDense = opDense.weakForm()->asMatrix();
 
     AssemblyOptions assemblyOptionsAca;
+    assemblyOptionsAca.setVerbosityLevel(VerbosityLevel::LOW);
     AcaOptions acaOptions;
     acaOptions.globalAssemblyBeforeCompression = false;
     assemblyOptionsAca.switchToAcaMode(acaOptions);

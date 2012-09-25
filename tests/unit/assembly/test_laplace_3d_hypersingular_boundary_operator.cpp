@@ -68,7 +68,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works, ValueType, kernel_types)
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-                params, std::string("../../examples/meshes/two_disjoint_triangles.msh"));
+                params, "../../examples/meshes/two_disjoint_triangles.msh",
+                false /* verbose */);
 
     PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(grid);
     PiecewiseConstantScalarSpace<BFT> pwiseConstants(grid);
@@ -76,6 +77,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works, ValueType, kernel_types)
     pwiseConstants.assignDofs();
 
     AssemblyOptions assemblyOptions;
+    assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
     AccuracyOptions accuracyOptions;
     // By making quadrature orders absolute, we ensure that the same quadrature
     // points will be chosen for linear and constant basis functions. Since

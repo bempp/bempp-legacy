@@ -99,6 +99,7 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces(
         const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> >& integral,
         const shared_ptr<const OpenClHandler>& openClHandler,
         const ParallelizationOptions& parallelizationOptions,
+        VerbosityLevel::Level verbosityLevel,
         bool cacheSingularIntegrals,
         const AccuracyOptionsEx& accuracyOptions) :
     m_testGeometryFactory(testGeometryFactory),
@@ -113,6 +114,7 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces(
     m_integral(integral),
     m_openClHandler(openClHandler),
     m_parallelizationOptions(parallelizationOptions),
+    m_verbosityLevel(verbosityLevel),
     m_accuracyOptions(accuracyOptions)
 {
     checkConsistencyOfGeometryAndBases(*testRawGeometry, *testBases);
@@ -452,7 +454,8 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
 {
-    std::cout << "Precalculating singular integrals..." << std::endl;
+    if (m_verbosityLevel >= VerbosityLevel::DEFAULT)
+        std::cout << "Precalculating singular integrals..." << std::endl;
     typedef Fiber::Basis<BasisFunctionType> Basis;
 
     const int elementPairCount = elementIndexPairs.size();
@@ -545,7 +548,8 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
                     m_cache[*pairIt] = localResult.slice(i++);
         }
     }
-    std::cout << "Precalculation of singular integrals finished" << std::endl;
+    if (m_verbosityLevel >= VerbosityLevel::DEFAULT)
+        std::cout << "Precalculation of singular integrals finished" << std::endl;
 }
 
 template <typename BasisFunctionType, typename KernelType,

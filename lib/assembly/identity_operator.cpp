@@ -259,11 +259,23 @@ shared_ptr<DiscreteBoundaryOperator<ResultType> >
 IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormImpl(
         const Context<BasisFunctionType, ResultType>& context) const
 {
-    std::cout << "Assembling operator '" << this->label() << "'..." << std::endl;
-    AutoTimer timer("Assembly of operator '" + this->label() + "' took ");
+    bool verbose = (context.assemblyOptions().verbosityLevel() >=
+                    VerbosityLevel::DEFAULT);
+    if (verbose)
+        std::cout << "Assembling the weak form of operator '"
+                  << this->label() << "'..." << std::endl;
+
+    tbb::tick_count start = tbb::tick_count::now();
     std::auto_ptr<LocalAssembler> assembler = makeAssembler(
                 context.quadStrategy(), context.assemblyOptions());
-    return assembleWeakFormInternalImpl(*assembler, context.assemblyOptions());
+    shared_ptr<DiscreteBoundaryOperator<ResultType> > result =
+            assembleWeakFormInternalImpl(*assembler, context.assemblyOptions());
+    tbb::tick_count end = tbb::tick_count::now();
+
+    if (verbose)
+        std::cout << "Assembly of the weak form of operator '" << this->label()
+                  << "' took " << (end - start).seconds() << " s" << std::endl;
+    return result;
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -446,6 +458,7 @@ IdentityOperator<BasisFunctionType, ResultType>::makeAssemblerImpl(
         const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
         const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
         const ParallelizationOptions&,
+        VerbosityLevel::Level /* verbosityLevel*/,
         bool /* cacheSingularIntegrals */) const
 {
     shared_ptr<const Fiber::CollectionOfBasisTransformations<CoordinateType> >

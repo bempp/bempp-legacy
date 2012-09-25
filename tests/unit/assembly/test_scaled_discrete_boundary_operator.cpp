@@ -112,6 +112,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     pwiseConstants.assignDofs();
 
     AssemblyOptions assemblyOptions;
+    assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
     NumericalQuadratureStrategy<BFT, RT> quadStrategy;
 
     Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);

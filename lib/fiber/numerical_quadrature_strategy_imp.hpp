@@ -94,6 +94,7 @@ makeAssemblerForIntegralOperatorsImplRealKernel(
         const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
         const shared_ptr<const OpenClHandler>& openClHandler,
         const ParallelizationOptions& parallelizationOptions,
+        VerbosityLevel::Level verbosityLevel,
         bool cacheSingularIntegrals) const
 {
     typedef CoordinateType KernelType;
@@ -107,6 +108,7 @@ makeAssemblerForIntegralOperatorsImplRealKernel(
                     testBases, trialBases,
                     testTransformations, kernels, trialTransformations, integral,
                     openClHandler, parallelizationOptions,
+                    verbosityLevel,
                     cacheSingularIntegrals,
                     this->accuracyOptions()));
 }
@@ -215,6 +217,7 @@ makeAssemblerForIntegralOperatorsImplComplexKernel(
         const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
         const shared_ptr<const OpenClHandler>& openClHandler,
         const ParallelizationOptions& parallelizationOptions,
+        VerbosityLevel::Level verbosityLevel,
         bool cacheSingularIntegrals) const
 {
     typedef ResultType KernelType;
@@ -228,6 +231,7 @@ makeAssemblerForIntegralOperatorsImplComplexKernel(
                     testBases, trialBases,
                     testTransformations, kernels, trialTransformations, integral,
                     openClHandler, parallelizationOptions,
+                    verbosityLevel,
                     cacheSingularIntegrals,
                     this->accuracyOptions()));
 }

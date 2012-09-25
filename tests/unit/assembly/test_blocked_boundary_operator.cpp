@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/cube-12-reoriented.msh");
+        params, "../../examples/meshes/cube-12-reoriented.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > pwiseConstants(
         new PiecewiseConstantScalarSpace<BFT>(grid));
@@ -66,6 +66,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
     pwiseLinears->assignDofs();
 
     AssemblyOptions assemblyOptions;
+    assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
     shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy( 
         new NumericalQuadratureStrategy<BFT, RT>);
     shared_ptr<Context<BFT, RT> > context(
@@ -100,9 +101,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid0 = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/cube-12-reoriented.msh");
+                params, "../../examples/meshes/cube-12-reoriented.msh",
+                false /* verbose */);
     shared_ptr<Grid> grid1 = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/cube-12-reoriented-shifted-on-x-by-2.msh");
+                params, "../../examples/meshes/cube-12-reoriented-shifted-on-x-by-2.msh",
+                false /* verbose */);
 
     shared_ptr<Space<BFT> > pc0(new PiecewiseConstantScalarSpace<BFT>(grid0));
     shared_ptr<Space<BFT> > pl0(new PiecewiseLinearContinuousScalarSpace<BFT>(grid0));
@@ -114,7 +117,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
     pl1->assignDofs();
 
     AssemblyOptions assemblyOptions;
-    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy( 
+    assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
+    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
         new NumericalQuadratureStrategy<BFT, RT>);
     shared_ptr<Context<BFT, RT> > context(
         new Context<BFT, RT>(quadStrategy, assemblyOptions));
@@ -153,11 +157,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid0 = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/cube-12-reoriented.msh");
+                params, "../../examples/meshes/cube-12-reoriented.msh",
+                false /* verbose */);
     shared_ptr<Grid> grid1 = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/cube-12-reoriented-shifted-on-x-by-2.msh");
+                params, "../../examples/meshes/cube-12-reoriented-shifted-on-x-by-2.msh",
+                false /* verbose */);
     shared_ptr<Grid> grid2 = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/cube-12-reoriented-shifted-on-x-by-4.msh");
+                params, "../../examples/meshes/cube-12-reoriented-shifted-on-x-by-4.msh",
+                false /* verbose */);
 
     shared_ptr<Space<BFT> > pc0(new PiecewiseConstantScalarSpace<BFT>(grid0));
     shared_ptr<Space<BFT> > pl0(new PiecewiseLinearContinuousScalarSpace<BFT>(grid0));
@@ -173,7 +180,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
     pl2->assignDofs();
 
     AssemblyOptions assemblyOptions;
-    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy( 
+    assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
+    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
         new NumericalQuadratureStrategy<BFT, RT>);
     shared_ptr<Context<BFT, RT> > context(
         new Context<BFT, RT>(quadStrategy, assemblyOptions));

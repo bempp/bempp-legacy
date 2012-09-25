@@ -68,6 +68,7 @@ ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler
         const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
         const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
         const ParallelizationOptions& parallelizationOptions,
+        VerbosityLevel::Level verbosityLevel,
         bool cacheSingularIntegrals) const
 {
     return makeAssemblerImpl(quadStrategy,
@@ -75,6 +76,7 @@ ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler
                              testRawGeometry, trialRawGeometry,
                              testBases, trialBases, openClHandler,
                              parallelizationOptions,
+                             verbosityLevel,
                              cacheSingularIntegrals);
 }
 
@@ -87,25 +89,31 @@ ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler
     typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
     typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
 
+    const bool verbose = (options.verbosityLevel() >= VerbosityLevel::DEFAULT);
+
     shared_ptr<RawGridGeometry> testRawGeometry, trialRawGeometry;
     shared_ptr<GeometryFactory> testGeometryFactory, trialGeometryFactory;
     shared_ptr<Fiber::OpenClHandler> openClHandler;
     shared_ptr<BasisPtrVector> testBases, trialBases;
     bool cacheSingularIntegrals;
 
-    std::cout << "Collecting data for assembler construction..." << std::endl;
+
+    if (verbose)
+        std::cout << "Collecting data for assembler construction..." << std::endl;
     collectDataForAssemblerConstruction(options,
                                         testRawGeometry, trialRawGeometry,
                                         testGeometryFactory, trialGeometryFactory,
                                         testBases, trialBases,
                                         openClHandler, cacheSingularIntegrals);
-    std::cout << "Data collection finished." << std::endl;
+    if (verbose)
+        std::cout << "Data collection finished." << std::endl;
 
     return makeAssemblerImpl(quadStrategy,
                              testGeometryFactory, trialGeometryFactory,
                              testRawGeometry, trialRawGeometry,
                              testBases, trialBases, openClHandler,
                              options.parallelizationOptions(),
+                             options.verbosityLevel(),
                              cacheSingularIntegrals);
 }
 

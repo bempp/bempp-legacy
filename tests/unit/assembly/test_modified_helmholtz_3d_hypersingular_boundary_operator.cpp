@@ -70,7 +70,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works_for_complex_kernel, BasisFunctionType, basis
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-                params, std::string("../../examples/meshes/two_disjoint_triangles.msh"));
+                params, "../../examples/meshes/two_disjoint_triangles.msh",
+                false /* verbose */);
 
     PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(grid);
     PiecewiseConstantScalarSpace<BFT> pwiseConstants(grid);
@@ -78,6 +79,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works_for_complex_kernel, BasisFunctionType, basis
     pwiseConstants.assignDofs();
 
     AssemblyOptions assemblyOptions;
+    assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
     AccuracyOptions accuracyOptions;
     accuracyOptions.doubleRegular.setAbsoluteQuadratureOrder(5);
     accuracyOptions.doubleSingular.setAbsoluteQuadratureOrder(5);
@@ -179,7 +181,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works_for_real_kernel, BasisFunctionType, basis_fu
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-                params, std::string("../../examples/meshes/two_disjoint_triangles.msh"));
+                params, "../../examples/meshes/two_disjoint_triangles.msh",
+                false /* verbose */);
 
     PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(grid);
     PiecewiseConstantScalarSpace<BFT> pwiseConstants(grid);
@@ -187,6 +190,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works_for_real_kernel, BasisFunctionType, basis_fu
     pwiseConstants.assignDofs();
 
     AssemblyOptions assemblyOptions;
+    assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
     AccuracyOptions accuracyOptions;
     accuracyOptions.doubleRegular.setAbsoluteQuadratureOrder(5);
     accuracyOptions.doubleSingular.setAbsoluteQuadratureOrder(5);

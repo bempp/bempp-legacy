@@ -116,11 +116,6 @@ void DiscreteDenseBoundaryOperator<ValueType>::applyBuiltInImpl(
         const ValueType alpha,
         const ValueType beta) const
 {
-    if (columnCount() != x_in.n_rows || rowCount() != y_inout.n_rows)
-        throw std::invalid_argument(
-                "DiscreteDenseBoundaryOperator::applyBuiltInImpl(): "
-                "incorrect vector length");
-
     if (beta == static_cast<ValueType>(0.))
         y_inout.fill(static_cast<ValueType>(0.));
     else
@@ -142,7 +137,7 @@ void DiscreteDenseBoundaryOperator<ValueType>::applyBuiltInImpl(
         break;
     default:
         throw std::invalid_argument(
-                "AcaApproximateLuInverse::applyBuiltInImpl(): "
+                "DiscreteDenseBoundaryOperator::applyBuiltInImpl(): "
                 "invalid transposition mode");
     }
 }

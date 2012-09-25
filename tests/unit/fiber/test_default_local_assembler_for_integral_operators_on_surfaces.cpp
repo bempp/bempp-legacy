@@ -87,6 +87,7 @@ public:
         quadStrategy = std::auto_ptr<QuadratureStrategy>(new QuadratureStrategy);
 
         AssemblyOptions assemblyOptions;
+        assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
         assemblyOptions.enableSingularIntegralCaching(cacheSingularIntegrals);
         assembler = op->makeAssembler(*quadStrategy, assemblyOptions);
     }

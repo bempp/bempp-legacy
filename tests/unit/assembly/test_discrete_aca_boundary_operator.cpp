@@ -78,6 +78,7 @@ struct DiscreteAcaBoundaryOperatorFixture
         pwiseLinears->assignDofs();
 
         AssemblyOptions assemblyOptions;
+        assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
         assemblyOptions.switchToAcaMode(AcaOptions());
         shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy( 
             new NumericalQuadratureStrategy<BFT, RT>);
@@ -270,6 +271,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(acaOperatorSum_works_correctly_for_nonsymmetric_op
     pwiseLinears->assignDofs();
 
     AssemblyOptions assemblyOptions;
+    assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
     assemblyOptions.switchToAcaMode(AcaOptions());
     shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
         new NumericalQuadratureStrategy<BFT, RT>);
@@ -314,6 +316,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(acaOperatorSum_works_correctly_for_real_hermitian_
     pwiseLinears->assignDofs();
 
     AssemblyOptions assemblyOptions;
+    assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
     assemblyOptions.switchToAcaMode(AcaOptions());
     shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
         new NumericalQuadratureStrategy<BFT, RT>);
@@ -361,6 +364,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(scaledAcaOperator_works_correctly_for_nonsymmetric
     pwiseLinears->assignDofs();
 
     AssemblyOptions assemblyOptions;
+    assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
     assemblyOptions.switchToAcaMode(AcaOptions());
     shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
         new NumericalQuadratureStrategy<BFT, RT>);
@@ -398,6 +402,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(scaledAcaOperator_works_correctly_for_real_hermiti
     pwiseLinears->assignDofs();
 
     AssemblyOptions assemblyOptions;
+    assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
     assemblyOptions.switchToAcaMode(AcaOptions());
     shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
         new NumericalQuadratureStrategy<BFT, RT>);

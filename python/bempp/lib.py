@@ -990,7 +990,7 @@ def createGridFunction(
         className = "SurfaceNormalIndependentFunctor"
     return __gridFunctionFromFunctor(
         className, context, space, dualSpace, function,
-        argumentDimension=space.domainDimension(),
+        argumentDimension=space.grid().dimWorld(),
         resultDimension=space.codomainDimension())
 
 def gridFunctionFromSurfaceNormalDependentFunction(
