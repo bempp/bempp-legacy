@@ -310,6 +310,21 @@ void DiscreteSparseBoundaryOperator<ValueType>::addBlock(
 }
 
 template <typename ValueType>
+shared_ptr<const DiscreteSparseBoundaryOperator<ValueType> >
+DiscreteSparseBoundaryOperator<ValueType>::castToSparse(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >&
+        discreteOperator)
+{
+    shared_ptr<const DiscreteSparseBoundaryOperator<ValueType> > result =
+        boost::dynamic_pointer_cast<const DiscreteSparseBoundaryOperator<ValueType> >(
+                discreteOperator);
+    if (result.get()==0 && (discreteOperator.get()!=0)) throw std::bad_cast();
+    return result;
+
+}
+
+
+template <typename ValueType>
 shared_ptr<const Epetra_CrsMatrix>
 DiscreteSparseBoundaryOperator<ValueType>::epetraMatrix() const
 {

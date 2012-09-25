@@ -1318,6 +1318,34 @@ def acaOperatorSum(op1, op2, eps, maximumRank):
     return _constructObjectTemplatedOnValue(
         name, op1.valueType(), op1, op2, eps, maximumRank)
 
+def discreteSparseInverse(op):
+    """
+    Return a discrete Operator object that evaluates the inverse of op applied to a
+    vector by constructing the LU decomposition. For this operation op must represent
+    a sparse matrix operator.
+    *Parameters:*
+       - op (DiscreteBoundaryOperator)
+           A discrete boundary operator stored as sparse matrix
+
+    *Returns* a newly constructed DiscreteBoundaryOperator_ValueType object which stores
+    the LU decomposition of op and evaluates the inverse of op applied to a vector.
+    """
+    name = 'discreteSparseInverse'
+    return _constructObjectTemplatedOnValue(
+        name, op.valueType(), op)
+
+def discreteBlockDiagonalPreconditioner(opArray):
+    """
+    Create a block diagonal preconditioner from a vector of operators
+    *Paramters:*
+       - opArray (vector of type DiscreteBoundaryOperator)
+           A vector of DiscreteBoundaryOperator objects op1,op2,...,opn
+
+    *Returns* a block diagonal preconditioner P=diag(op1,op2,...,opn).
+    """
+    name = 'discreteBlockDiagonalPreconditioner'
+    return _constructObjectTemplatedOnValue(name, opArray[0].valueType(),opArray)
+
 def areInside(grid, points):
     """Determine whether points lie inside a grid (assumed to be closed)."""
     if points.shape[0] != grid.dimWorld():

@@ -22,6 +22,7 @@
 #ifdef WITH_TRILINOS
 
 #include "discrete_inverse_sparse_boundary_operator.hpp"
+#include "discrete_sparse_boundary_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 #include <iostream>
@@ -56,6 +57,7 @@ void solveWithAmesos<double>(Epetra_LinearProblem& problem,
                              arma::Mat<double>& armaSolution,
                              const arma::Mat<double>& armaRhs)
 {
+
     const size_t rowCount = armaRhs.n_rows;
     assert(rowCount == armaSolution.n_rows);
     const size_t rhsCount = armaRhs.n_cols;
@@ -169,6 +171,7 @@ DiscreteInverseSparseBoundaryOperator(const shared_ptr<const Epetra_CrsMatrix>& 
     m_space(Thyra::defaultSpmdVectorSpace<ValueType>(mat->NumGlobalRows())),
     m_symmetry(symmetry)
 {
+
     if (m_mat->NumGlobalRows() != m_mat->NumGlobalCols())
         throw std::invalid_argument("DiscreteInverseSparseBoundaryOperator::"
                                     "DiscreteInverseSparseBoundaryOperator(): "
@@ -181,12 +184,13 @@ DiscreteInverseSparseBoundaryOperator(const shared_ptr<const Epetra_CrsMatrix>& 
         m_problem->AssertSymmetric();
 
     Amesos amesosFactory;
-    const char* solverName = "Amesos_Klu";
+     const char* solverName = "Amesos_Klu";
     if (!amesosFactory.Query(solverName))
         throw std::runtime_error("DiscreteInverseSparseBoundaryOperator::"
                                  "DiscreteInverseSparseBoundaryOperator(): "
                                  "Amesos_Klu solver not available");
     m_solver.reset(amesosFactory.Create("Amesos_Klu", *m_problem));
+
     if (!m_solver.get())
         throw std::runtime_error("DiscreteInverseSparseBoundaryOperator::"
                                  "DiscreteInverseSparseBoundaryOperator(): "
@@ -199,6 +203,7 @@ DiscreteInverseSparseBoundaryOperator(const shared_ptr<const Epetra_CrsMatrix>& 
         throw std::runtime_error("DiscreteInverseSparseBoundaryOperator::"
                                  "DiscreteInverseSparseBoundaryOperator(): "
                                  "Numeric factorization with Amesos failed");
+
 }
 
 template <typename ValueType>
@@ -280,7 +285,30 @@ void DiscreteInverseSparseBoundaryOperator<ValueType>::applyBuiltInImpl(
     }
 }
 
+template <typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> >
+discreteSparseInverse(const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& discreteOp)
+{
+    shared_ptr<const DiscreteSparseBoundaryOperator<ValueType> > sparseOp=
+            DiscreteSparseBoundaryOperator<ValueType>::castToSparse(discreteOp);
+
+    shared_ptr<const DiscreteBoundaryOperator<ValueType> >
+            op(new DiscreteInverseSparseBoundaryOperator<ValueType>(
+                   sparseOp->epetraMatrix(),
+                   sparseOp->symmetryMode()
+                   ));
+    return op;
+
+}
+
+#define INSTANTIATE_FREE_FUNCTIONS( VALUE ) \
+    template shared_ptr<const DiscreteBoundaryOperator< VALUE > > \
+    discreteSparseInverse(const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& discreteOp);
+
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteInverseSparseBoundaryOperator);
+FIBER_ITERATE_OVER_VALUE_TYPES(INSTANTIATE_FREE_FUNCTIONS);
+
 
 } // namespace Bempp
 

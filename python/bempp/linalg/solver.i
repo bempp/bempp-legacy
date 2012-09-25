@@ -2,7 +2,7 @@
 #include "linalg/solver.hpp"
 %}
 
-%include "std_vector.i"
+
 namespace std
 {
 %template(vector_GridFunction_float32_float32)

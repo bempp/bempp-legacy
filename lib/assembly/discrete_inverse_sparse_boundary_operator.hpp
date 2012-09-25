@@ -106,6 +106,10 @@ private:
     /** \endcond */
 };
 
+template <typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> >
+discreteSparseInverse(const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& discreteOp);
+
 } // namespace Bempp
 
 #endif // WITH_TRILINOS

@@ -90,6 +90,15 @@ public:
                                  " not implemented.");
     }
 
+    /** \brief Downcast a shared pointer to a DiscreteBoundaryOperator object to
+     *  a shared pointer to a DiscreteSparseBoundaryOperator.
+     *
+     *  If the object referenced by \p discreteOperator is not in fact a
+     *  DiscreteSparseBoundaryOperator, a std::bad_cast exception is thrown. */
+    static shared_ptr<const DiscreteSparseBoundaryOperator<ValueType> > castToSparse(
+            const shared_ptr<const DiscreteBoundaryOperator<ValueType> >&
+            discreteOperator);
+
 
 #ifdef WITH_TRILINOS
     /** \brief Return a shared pointer to the sparse matrix stored within
@@ -107,6 +116,11 @@ public:
      *  passed in the constructor or its transformation (transposition and/or
      *  conjugation). */
     TranspositionMode transpositionMode() const;
+
+    /** \brief Return the symmetry type of the sparse matrix */
+    inline Symmetry symmetryMode() const{
+        return m_symmetry;
+    }
 
 #ifdef WITH_TRILINOS
 public:

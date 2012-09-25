@@ -62,6 +62,17 @@ private:
     TeuchosPreconditionerPtr m_precPtr;
 };
 
+/** \brief Create a preconditioner from a discrete operator.
+  */
+template<typename ValueType>
+Preconditioner<ValueType>
+discreteOperatorToPreconditioner(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& discreteOperator);
+
+template<typename ValueType>
+Preconditioner<ValueType>
+sparseOperatorToPreconditioner(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& discreteOperator);
 
 /** \brief Create a preconditioner from a DiscreteBoundaryOperator that
  *  represents a H-Matrix.
@@ -108,6 +119,12 @@ Preconditioner<ValueType>
 acaBlockDiagonalPreconditioner(
         const std::vector<typename Preconditioner<ValueType>::DiscreteBoundaryOperatorPtr>& opVector,
         const std::vector<typename Preconditioner<ValueType>::MagnitudeType>& deltas);
+
+template<typename ValueType>
+Preconditioner<ValueType>
+discreteBlockDiagonalPreconditioner(
+        const std::vector<shared_ptr<const DiscreteBoundaryOperator<ValueType> > >& opVector);
+
 
 } // namespace Bempp
 
