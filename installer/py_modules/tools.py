@@ -169,7 +169,7 @@ def testBlas(root,config):
         raise Exception("Wrong architecture.")
 
 
-    os.mkdir(root+"/test_blas/build")
+    checkCreateDir(root+"/test_blas/build")
     os.chdir(root+"/test_blas/build")
     config_string = "CC="+cc+" CXX="+cxx+" CFLAGS='"+cflags+"' CXXFLAGS='"+cxxflags+"' "+cmake_exe+" -D BLAS_LIBRARIES:STRING=\""+blas+"\" .."
     try:
@@ -232,7 +232,7 @@ def testLapack(root,config):
     else:
         raise Exception("Wrong architecture.")
 
-    os.mkdir(root+"/test_lapack/build")
+    checkCreateDir(root+"/test_lapack/build")
     os.chdir(root+"/test_lapack/build")
     config_string = "CC="+cc+" CXX="+cxx+" CFLAGS='"+cflags+"' CXXFLAGS='"+cxxflags+"' "+cmake_exe+" -D BLAS_LIBRARIES:STRING=\""+blas+"\" -D LAPACK_LIBRARIES=\""+lapack+"\" .."
     try:
