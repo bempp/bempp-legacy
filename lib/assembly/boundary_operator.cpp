@@ -21,6 +21,7 @@
 #include "boundary_operator.hpp"
 
 #include "abstract_boundary_operator_sum.hpp"
+#include "abstract_boundary_operator_composition.hpp"
 #include "discrete_boundary_operator.hpp"
 #include "context.hpp"
 #include "grid_function.hpp"
@@ -283,6 +284,22 @@ GridFunction<BasisFunctionType, ResultType> operator*(
     return result;
 }
 
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType> operator*(
+        const BoundaryOperator<BasisFunctionType, ResultType>& op1,
+        const BoundaryOperator<BasisFunctionType, ResultType>& op2)
+{
+    typedef AbstractBoundaryOperatorComposition<BasisFunctionType, ResultType>
+            Composition;
+    if (!op1.isInitialized())
+        throw std::invalid_argument("operator*(): operand 1 is uninitialized");
+    if (!op2.isInitialized())
+        throw std::invalid_argument("operator*(): operand 2 is uninitialized");
+    return BoundaryOperator<BasisFunctionType, ResultType>(
+                op1.context(),
+                boost::make_shared<Composition>(op1, op2));
+}
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(BoundaryOperator);
 
 #define INSTANTIATE_FREE_FUNCTIONS(BASIS, RESULT) \
@@ -295,7 +312,10 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(BoundaryOperator);
     const BoundaryOperator<BASIS, RESULT>& op2); \
     template GridFunction<BASIS, RESULT> operator*( \
     const BoundaryOperator<BASIS, RESULT>& op, \
-    const GridFunction<BASIS, RESULT>& fun)
+    const GridFunction<BASIS, RESULT>& fun); \
+    template BoundaryOperator<BASIS, RESULT> operator*( \
+    const BoundaryOperator<BASIS, RESULT>& op, \
+    const BoundaryOperator<BASIS, RESULT>& fun)
 #define INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(BASIS, RESULT, SCALAR) \
     template BoundaryOperator<BASIS, RESULT> operator*( \
     const BoundaryOperator<BASIS, RESULT>& op, const SCALAR& scalar); \

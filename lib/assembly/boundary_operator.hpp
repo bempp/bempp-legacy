@@ -251,11 +251,14 @@ GridFunction<BasisFunctionType, ResultType> operator*(
         const BoundaryOperator<BasisFunctionType, ResultType>& op,
         const GridFunction<BasisFunctionType, ResultType>& fun);
 
-// TODO: make this return an operator composition.
-//template <typename BasisFunctionType, typename ResultType>
-//BoundaryOperatorComposition<BasisFunctionType, ResultType> operator*(
-//        const BoundaryOperator<BasisFunctionType, ResultType>& op1,
-//        const BoundaryOperator<BasisFunctionType, ResultType>& op2);
+/** \brief Return a BoundaryOperator representing the product of the operands
+ *  (<tt>op1 * op2</tt>).
+ *
+ *  An exception is thrown if any of the operands is uninitialized. */
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType> operator*(
+        const BoundaryOperator<BasisFunctionType, ResultType>& op1,
+        const BoundaryOperator<BasisFunctionType, ResultType>& op2);
 
 } // namespace Bempp
 
