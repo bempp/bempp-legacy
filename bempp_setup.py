@@ -130,7 +130,7 @@ def prepare(root,config):
     setDefaultConfigOption(config,'Main','cflags',"")
     setDefaultConfigOption(config,'Main','cxxflags',"")
     setDefaultConfigOption(config,'Main','root_dir',root)
-    setDefaultConfigOption(config,'Main','build_jobs',1)
+    setDefaultConfigOption(config,'Main','build_jobs',"1")
 
 
     # Retrieve build directory
