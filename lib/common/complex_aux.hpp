@@ -62,6 +62,24 @@ inline double imagPart(const std::complex<double>& x)
     return x.imag();
 }
 
+template <typename T>
+inline T conj(const T& x)
+{
+    return x;
+}
+
+template <>
+inline std::complex<float> conj(const std::complex<float>& x)
+{
+    return std::conj(x);
+}
+
+template <>
+inline std::complex<double> conj(const std::complex<double>& x)
+{
+    return std::conj(x);
+}
+
 } // namespace Bempp
 
 #endif
