@@ -93,6 +93,9 @@ namespace Bempp
         parentGrid = property(parentGrid, None, None, "Parent grid")
     %}
 
+    %ignore elementMapper;
+    %ignore reverseElementMapper;
+
     %pythonappend indexSet %{
         val._parentGridView = self
     %}
