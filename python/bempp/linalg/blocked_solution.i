@@ -12,6 +12,13 @@ namespace Bempp
 
 BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(BlockedSolution);
 
+%extend BlockedSolution
+{
+%pythonappend gridFunction %{
+    val._parentSolution = self
+%}
+}
+
 } // namespace Bempp
 
 #define shared_ptr boost::shared_ptr
