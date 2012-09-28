@@ -28,8 +28,8 @@
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename ResultType>
-AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::
+template <typename BasisFunctionType_, typename ResultType_>
+AbstractBoundaryOperatorSum<BasisFunctionType_, ResultType_>::
 AbstractBoundaryOperatorSum(
         const BoundaryOperator<BasisFunctionType, ResultType>& term1,
         const BoundaryOperator<BasisFunctionType, ResultType>& term2,
@@ -75,9 +75,9 @@ bool AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::isLocal() const
             m_term2.abstractOperator()->isLocal());
 }
 
-template <typename BasisFunctionType, typename ResultType>
-shared_ptr<DiscreteBoundaryOperator<ResultType> >
-AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::
+template <typename BasisFunctionType_, typename ResultType_>
+shared_ptr<DiscreteBoundaryOperator<ResultType_> >
+AbstractBoundaryOperatorSum<BasisFunctionType_, ResultType_>::
 assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) const
 {
     typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
