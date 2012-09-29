@@ -63,14 +63,14 @@ To build the library, do the following:
 
 3. Run the command ::
 
-   python bempp_setup.py -c my_config.cfg
+   python bempp_setup.py -c bempp_config.cfg
 
    This extracts all BEM++ dependencies, patches their sources where
    necessary and generates a config file with automatically detected options.
 
 4. Run the command ::
 
-   python bempp_setup.py -i all my_config.cfg
+   python bempp_setup.py -i all bempp_config.cfg
 
    This builds all the dependencies and installs them, and subsequently
    proceeds to building and installing BEM++ itself.
