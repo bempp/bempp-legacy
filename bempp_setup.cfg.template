@@ -157,3 +157,12 @@ prefix=/home/myname/
 [Trilinos]
 # Use this section to override compiler settings for Trilinos
 
+[Python]
+
+# You do not normally need to edit this section. However, if the BEM++
+# installer cannot find your Python include directory (the directory
+# containing Python.h) or runtime library (libpython), you can specify
+# their locations explicitly here. Examples:
+
+# include_dir=/usr/include/python2.7
+# lib=/usr/lib/libpython2.7.so

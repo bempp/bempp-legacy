@@ -183,7 +183,8 @@ def prepare(root,config):
 
     import numpy
 
-    (py_exe,py_lib,py_include) = pythonInfo()
+    (py_exe,py_lib,py_include) = pythonInfo(config)
+    print (py_exe,py_lib,py_include)
     setDefaultConfigOption(config,'Python','exe',py_exe)
     setDefaultConfigOption(config,'Python','lib',py_lib)
     setDefaultConfigOption(config,'Python','include_dir',py_include)

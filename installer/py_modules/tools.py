@@ -103,31 +103,65 @@ def setDefaultConfigOption(config,section,option,value, overwrite=False):
         config.set(section,option,value)
         return value
 
-def pythonInfo():
-    """Return a tuple (exe,lib,include) with the paths of the Python Interpreter, Python library and include directory"""
+def pythonInfo(config):
+    """Return a tuple (exe,lib,include) with the paths of the Python
+    interpreter, runtime library and include directory"""
 
     import sys,os
 
     exe = sys.executable
-    for directory in (sys.prefix+"/lib/", sys.prefix+"/lib64/"):
-        lib_no_suffix = directory+"libpython"+str(sys.version_info[0])+"."+str(sys.version_info[1])
+
+    if config.has_option("Python","lib"):
+        lib = config.get("Python","lib")
+        if not os.path.isfile(lib):
+            raise Exception("File '"+lib+"', given as the location of the "
+                            "Python runtime library in your configuration "
+                            "file, does not exist. Please fix this setting.")
+    else: # find the location of Python lib manually
+        fname_base = "libpython"+str(sys.version_info[0])+"."+str(sys.version_info[1])
         if sys.platform.startswith('darwin'):
-            lib = lib_no_suffix+".dylib"
+            extensions = [".dylib"]
         elif sys.platform.startswith('linux'):
-            lib = lib_no_suffix+".so"
+            extensions = [".so"]
         else:
             raise Exception("Platform not supported")
-        if os.path.isfile(lib):
-            break
-        lib = lib_no_suffix+".a"
-        if os.path.isfile(lib):
-            break
+        extensions.append(".a")
+        suffixes = [""] + ["."+str(i) for i in range(10)]
+        dirs = [sys.prefix+"/lib/", sys.prefix+"/lib64/"]
+
         lib = None
-    if not lib:
-        raise Exception("Could not find Python library in '"+sys.prefix+"/lib' "
-                        "or '"+sys.prefix+"/lib64'")
-    include = (sys.prefix+"/include/python"+
-               str(sys.version_info[0])+"."+str(sys.version_info[1]))
+        for ext in extensions:
+            if lib: break
+            for suffix in suffixes:
+                if lib: break
+                for directory in dirs:
+                    if lib: break
+                    path = directory+fname_base+ext+suffix
+                    if os.path.isfile(path):
+                        lib = path
+        if not lib:
+            raise Exception("Could not find the Python runtime library in either '"+
+                            sys.prefix+"/lib' or '"+sys.prefix+"/lib64'. "
+                            "Specify its location manually by setting the 'lib' "
+                            "option in the 'Python' section of your configuration "
+                            "file.")
+
+    if config.has_option("Python","include_dir"):
+        include = config.get("Python","include_dir")
+        if not os.path.isfile(os.path.join(include, "Python.h")):
+            raise Exception("Directory '"+include+"', given as the Python "
+                            "include directory in your configuration "
+                            "file, does not contain the 'Python.h' file. "
+                            "Please specify the correct include directory.")
+    else:
+        include = (sys.prefix+"/include/python"+
+                   str(sys.version_info[0])+"."+str(sys.version_info[1]))
+        if not os.path.isfile(os.path.join(include, "Python.h")):
+            raise Exception("File 'Python.h' does not exist in the expected Python "
+                            "include directory '"+include+"'. Specify the Python "
+                            "include directory manually by setting the 'include' "
+                            "option in the 'Python' section of your configuration "
+                            "file.")
     return (exe,lib,include)
 
 def download(fname,url,dir):
