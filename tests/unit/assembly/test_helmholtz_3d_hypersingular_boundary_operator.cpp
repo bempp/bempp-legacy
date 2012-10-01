@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works, BasisFunctionType, basis_function_types)
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-                params, "../../examples/meshes/two_disjoint_triangles.msh",
+                params, "meshes/two_disjoint_triangles.msh",
                 false /* verbose */);
 
     PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(grid);
@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works, BasisFunctionType, basis_function_types)
                                 surfaceCurl[trialElement][0](dim, c, 0);
                     RT valueMultiplier = 0.;
                     for (size_t dim = 0; dim < 3; ++dim)
-                        valueMultiplier += geomData[testElement].normals(dim, 0) * 
+                        valueMultiplier += geomData[testElement].normals(dim, 0) *
                             geomData[trialElement].normals(dim, 0);
                     expectedHypMat(3 * testElement + r, 3 * trialElement + c) =
                             curlMultiplier * slpMatConstants(testElement, trialElement) -

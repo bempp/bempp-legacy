@@ -11,7 +11,7 @@ install(TARGETS tutorial_dirichlet RUNTIME DESTINATION bempp/examples)
 
 # Meshes
 file(GLOB_RECURSE EXAMPLE_MESHES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    *.msh *.gmsh sphere.txt)
+    *.msh sphere.txt)
 if (NOT (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR}))
     foreach (f ${EXAMPLE_MESHES})
         configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${f}

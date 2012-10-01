@@ -24,7 +24,7 @@ Laplace3dDirichletFixture<BFT, RT>::Laplace3dDirichletFixture(
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     grid = GridFactory::importGmshGrid(
-                params, "../../examples/meshes/cube-12-reoriented.msh",
+                params, "meshes/cube-12-reoriented.msh",
                 false /* verbose */);
 
     shared_ptr<Space<BFT> > pwiseConstants(

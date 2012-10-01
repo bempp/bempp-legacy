@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/cube-12-reoriented.msh", false /* verbose */);
+        params, "meshes/cube-12-reoriented.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > pwiseConstants(
         new PiecewiseConstantScalarSpace<BFT>(grid));
@@ -67,11 +67,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
 
     AssemblyOptions assemblyOptions;
     assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
-    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy( 
+    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
         new NumericalQuadratureStrategy<BFT, RT>);
     shared_ptr<Context<BFT, RT> > context(
         new Context<BFT, RT>(quadStrategy, assemblyOptions));
-        
+
     BoundaryOperator<BFT, RT> op00 = laplace3dSingleLayerBoundaryOperator<BFT, RT>(
         context, pwiseLinears, pwiseLinears, pwiseConstants);
 
@@ -101,10 +101,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid0 = GridFactory::importGmshGrid(
-                params, "../../examples/meshes/cube-12-reoriented.msh",
+                params, "meshes/cube-12-reoriented.msh",
                 false /* verbose */);
     shared_ptr<Grid> grid1 = GridFactory::importGmshGrid(
-                params, "../../examples/meshes/cube-12-reoriented-shifted-on-x-by-2.msh",
+                params, "meshes/cube-12-reoriented-shifted-on-x-by-2.msh",
                 false /* verbose */);
 
     shared_ptr<Space<BFT> > pc0(new PiecewiseConstantScalarSpace<BFT>(grid0));
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
         new NumericalQuadratureStrategy<BFT, RT>);
     shared_ptr<Context<BFT, RT> > context(
         new Context<BFT, RT>(quadStrategy, assemblyOptions));
-        
+
     BoundaryOperator<BFT, RT> op00 = laplace3dSingleLayerBoundaryOperator<BFT, RT>(
         context, pl0, pl0, pc0);
     BoundaryOperator<BFT, RT> op10 = laplace3dSingleLayerBoundaryOperator<BFT, RT>(
@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
     structure.setBlock(0, 0, op00);
     structure.setBlock(1, 0, op10);
     Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
-    
+
     arma::Mat<RT> mat00 = op00.weakForm()->asMatrix();
     arma::Mat<RT> mat10 = op10.weakForm()->asMatrix();
     arma::Mat<RT> nonblockedWeakForm = arma::join_cols(mat00, mat10);
@@ -157,13 +157,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid0 = GridFactory::importGmshGrid(
-                params, "../../examples/meshes/cube-12-reoriented.msh",
+                params, "meshes/cube-12-reoriented.msh",
                 false /* verbose */);
     shared_ptr<Grid> grid1 = GridFactory::importGmshGrid(
-                params, "../../examples/meshes/cube-12-reoriented-shifted-on-x-by-2.msh",
+                params, "meshes/cube-12-reoriented-shifted-on-x-by-2.msh",
                 false /* verbose */);
     shared_ptr<Grid> grid2 = GridFactory::importGmshGrid(
-                params, "../../examples/meshes/cube-12-reoriented-shifted-on-x-by-4.msh",
+                params, "meshes/cube-12-reoriented-shifted-on-x-by-4.msh",
                 false /* verbose */);
 
     shared_ptr<Space<BFT> > pc0(new PiecewiseConstantScalarSpace<BFT>(grid0));
@@ -185,7 +185,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
         new NumericalQuadratureStrategy<BFT, RT>);
     shared_ptr<Context<BFT, RT> > context(
         new Context<BFT, RT>(quadStrategy, assemblyOptions));
-        
+
     BoundaryOperator<BFT, RT> op00 = laplace3dSingleLayerBoundaryOperator<BFT, RT>(
         context, pl0, pl0, pc0);
     BoundaryOperator<BFT, RT> op01 = laplace3dSingleLayerBoundaryOperator<BFT, RT>(
@@ -207,14 +207,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
     structure.setBlock(1, 1, op11);
     structure.setBlock(1, 2, op12);
     Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
-    
+
     arma::Mat<RT> mat00 = op00.weakForm()->asMatrix();
     arma::Mat<RT> mat01 = op01.weakForm()->asMatrix();
     arma::Mat<RT> mat02 = op02.weakForm()->asMatrix();
     arma::Mat<RT> mat10 = op10.weakForm()->asMatrix();
     arma::Mat<RT> mat11 = op11.weakForm()->asMatrix();
     arma::Mat<RT> mat12 = op12.weakForm()->asMatrix();
-    arma::Mat<RT> nonblockedWeakForm = 
+    arma::Mat<RT> nonblockedWeakForm =
         arma::join_rows(arma::join_rows(arma::join_cols(mat00, mat10),
                                         arma::join_cols(mat01, mat11)),
                         arma::join_cols(mat02, mat12));

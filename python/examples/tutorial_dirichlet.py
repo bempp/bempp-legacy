@@ -24,7 +24,7 @@ def evalExactNeumannData(point):
 # Load mesh
 
 grid = createGridFactory().importGmshGrid(
-    "triangular", "../../examples/meshes/sphere-644.msh")
+    "triangular", "../../examples/meshes/sphere-h-0.2.msh")
 
 # Create assembly context
 

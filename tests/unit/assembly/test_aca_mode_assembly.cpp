@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_assembled_operator_agrees_with_dense_assemb
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-614.msh", false /* verbose */);
+        params, "../../examples/meshes/sphere-h-0.2.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > pwiseConstants(
         new PiecewiseConstantScalarSpace<BFT>(grid));
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_disassembled_operator_agrees_with_dense_ass
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-614.msh", false /* verbose */);
+        params, "../../examples/meshes/sphere-h-0.2.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > pwiseConstants(
         new PiecewiseConstantScalarSpace<BFT>(grid));

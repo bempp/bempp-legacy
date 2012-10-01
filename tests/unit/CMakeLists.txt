@@ -17,3 +17,14 @@ add_custom_target(test
   ${CMAKE_CURRENT_BINARY_DIR}/run_tests
   COMMENT "Run unit tests" VERBATIM
   )
+
+# Meshes
+file(GLOB_RECURSE TEST_MESHES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    *.msh)
+if (NOT (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR}))
+    foreach (f ${TEST_MESHES})
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${f}
+                       ${CMAKE_CURRENT_BINARY_DIR}/${f}
+                       COPYONLY)
+    endforeach ()
+endif ()

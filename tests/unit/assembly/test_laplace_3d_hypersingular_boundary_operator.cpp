@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works, ValueType, kernel_types)
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-                params, "../../examples/meshes/two_disjoint_triangles.msh",
+                params, "meshes/two_disjoint_triangles.msh",
                 false /* verbose */);
 
     PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(grid);

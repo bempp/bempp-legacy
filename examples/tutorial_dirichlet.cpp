@@ -103,7 +103,7 @@ int main()
 
     // Load mesh
 
-    const char* meshFile = "meshes/sphere-644.msh";
+    const char* meshFile = "meshes/sphere-h-0.2.msh";
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(params, meshFile);

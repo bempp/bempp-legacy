@@ -35,7 +35,7 @@ context = lib.createContext(quadStrategy, options)
 # Import mesh
 
 grid = lib.createGridFactory().importGmshGrid(
-    "triangular", "../../examples/meshes/sphere-2590.msh")
+    "triangular", "../../examples/meshes/sphere-h-0.1.msh")
 
 # Create a function space
 
