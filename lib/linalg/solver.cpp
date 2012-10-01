@@ -84,6 +84,69 @@ void Solver<BasisFunctionType, ResultType>::checkConsistency(
 }
 
 template <typename BasisFunctionType, typename ResultType>
+std::vector<GridFunction<BasisFunctionType, ResultType> >
+Solver<BasisFunctionType, ResultType>::canonicalizeBlockedRhs(
+        const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
+        const std::vector<GridFunction<BasisFunctionType, ResultType> >& rhs,
+        ConvergenceTestMode::Mode mode)
+{
+    typedef GridFunction<BasisFunctionType, ResultType> GF;
+
+    const size_t functionCount = boundaryOp.rowCount();
+    if (rhs.size() != functionCount)
+        throw std::invalid_argument("Solver::canonicalizeBlockedRhs(): "
+                                    "rhs has incorrect length");
+
+    bool testInDualToRange;
+    switch (mode) {
+    case ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE:
+        testInDualToRange = true;
+        break;
+    case ConvergenceTestMode::TEST_CONVERGENCE_IN_RANGE:
+        testInDualToRange = false;
+        break;
+    default:
+        throw std::invalid_argument("Invalid convergence testing mode.");
+    }
+
+    std::vector<GF> result(functionCount);
+    for (size_t i = 0; i < functionCount; ++i)
+        if (rhs[i].isInitialized()) {
+            if (testInDualToRange && rhs[i].dualSpace() != boundaryOp.dualToRange(i))
+                throw std::invalid_argument(
+                        "Solver::canonicalizeBlockedRhs(): dual space of "
+                        "grid function #" + toString(i) +
+                        " does not match the space dual to the range of the "
+                        "corresponding row of the blocked boundary operator");
+            else if (!testInDualToRange && rhs[i].space() != boundaryOp.range(i))
+                throw std::invalid_argument(
+                        "Solver::canonicalizeBlockedRhs(): space of "
+                        "grid function #" + toString(i) +
+                        " does not match the range space of the "
+                        "corresponding row of the blocked boundary operator");
+            result[i] = rhs[i];
+        } else { // not initialized
+            arma::Col<ResultType> projections(
+                            boundaryOp.dualToRange(i)->globalDofCount());
+            projections.fill(0.);
+            // find an initialized operator in row i
+            for (size_t j = 0; j < boundaryOp.columnCount(); ++j) {
+                const BoundaryOperator<BasisFunctionType, ResultType>& block =
+                        boundaryOp.block(i, j);
+                // We rely on the BoundaryOperator's constructor checking
+                // that there is a nonempty block in each row
+                if (block.isInitialized()) {
+                    result[i] = GF(block.context(), block.range(),
+                                block.dualToRange(),
+                                projections, GF::PROJECTIONS);
+                    break;
+                }
+            }
+        }
+    return result;
+}
+
+template <typename BasisFunctionType, typename ResultType>
 void Solver<BasisFunctionType, ResultType>::constructBlockedGridFunction(
         const arma::Col<ResultType>& solution,
         const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,

@@ -107,6 +107,11 @@ protected:
         const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
         const std::vector<GridFunction<BasisFunctionType, ResultType> >& rhs,
         ConvergenceTestMode::Mode mode);
+    static std::vector<GridFunction<BasisFunctionType, ResultType> >
+        canonicalizeBlockedRhs(
+            const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
+            const std::vector<GridFunction<BasisFunctionType, ResultType> >& rhs,
+            ConvergenceTestMode::Mode mode);
 
     static void constructBlockedGridFunction(
         const arma::Col<ResultType>& solution,

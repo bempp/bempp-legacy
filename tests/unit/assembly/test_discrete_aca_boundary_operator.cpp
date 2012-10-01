@@ -68,7 +68,7 @@ struct DiscreteAcaBoundaryOperatorFixture
 {
     DiscreteAcaBoundaryOperatorFixture()
     {
-        grid = createRegularTriangularGrid();
+        grid = createRegularTriangularGrid(4, 7);
 
         shared_ptr<Space<BFT> > pwiseConstants(
             new PiecewiseConstantScalarSpace<BFT>(grid));
@@ -79,7 +79,9 @@ struct DiscreteAcaBoundaryOperatorFixture
 
         AssemblyOptions assemblyOptions;
         assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
-        assemblyOptions.switchToAcaMode(AcaOptions());
+        AcaOptions acaOptions;
+        acaOptions.minimumBlockSize = 2;
+        assemblyOptions.switchToAcaMode(acaOptions);
         shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy( 
             new NumericalQuadratureStrategy<BFT, RT>);
         shared_ptr<Context<BFT, RT> > context(
@@ -89,6 +91,35 @@ struct DiscreteAcaBoundaryOperatorFixture
         
         op = modifiedHelmholtz3dSingleLayerBoundaryOperator<BFT, RT, RT>(
             context, pwiseConstants, pwiseConstants, pwiseLinears, waveNumber);
+    }
+
+    shared_ptr<Grid> grid;
+    BoundaryOperator<BFT, RT> op;
+};
+
+template <typename BFT, typename RT>
+struct DiscreteHermitianAcaBoundaryOperatorFixture
+{
+    DiscreteHermitianAcaBoundaryOperatorFixture()
+    {
+        grid = createRegularTriangularGrid(4, 7);
+
+        shared_ptr<Space<BFT> > pwiseConstants(
+            new PiecewiseConstantScalarSpace<BFT>(grid));
+        pwiseConstants->assignDofs();
+
+        AssemblyOptions assemblyOptions;
+        assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
+        AcaOptions acaOptions;
+        acaOptions.minimumBlockSize = 2;
+        assemblyOptions.switchToAcaMode(acaOptions);
+        shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
+            new NumericalQuadratureStrategy<BFT, RT>);
+        shared_ptr<Context<BFT, RT> > context(
+            new Context<BFT, RT>(quadStrategy, assemblyOptions));
+
+        op = laplace3dSingleLayerBoundaryOperator<BFT, RT>(
+            context, pwiseConstants, pwiseConstants, pwiseConstants, "SLP", HERMITIAN);
     }
 
     shared_ptr<Grid> grid;
@@ -255,6 +286,57 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2_and_beta_equal_to_3_and_real_symmetric_operator, ResultType, result_types)
+{
+    std::srand(1);
+
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    DiscreteHermitianAcaBoundaryOperatorFixture<BFT, RT> fixture;
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
+
+    RT alpha = static_cast<RT>(2.);
+    RT beta = static_cast<RT>(3.);
+
+    arma::Col<RT> x = generateRandomVector<RT>(dop->rowCount());
+    arma::Col<RT> y = generateRandomVector<RT>(dop->columnCount());
+
+    arma::Col<RT> expected = alpha * dop->asMatrix() * x + beta * y;
+
+    dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
+
+    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
+                                           10. * std::numeric_limits<CT>::epsilon()));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2_and_beta_equal_to_3_and_conjugate_transpose_and_real_symmetric_operator, ResultType, result_types)
+{
+    std::srand(1);
+
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    DiscreteHermitianAcaBoundaryOperatorFixture<BFT, RT> fixture;
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
+
+    RT alpha = static_cast<RT>(2.);
+    RT beta = static_cast<RT>(3.);
+
+    arma::Col<RT> x = generateRandomVector<RT>(dop->rowCount());
+    arma::Col<RT> y = generateRandomVector<RT>(dop->columnCount());
+
+    // .t() gives conjugate transpose for complex matrices
+    arma::Col<RT> expected = alpha * dop->asMatrix().t() * x + beta * y;
+
+    dop->apply(CONJUGATE_TRANSPOSE, x, y, alpha, beta);
+
+    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
+                                           10. * std::numeric_limits<CT>::epsilon()));
+}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE(acaOperatorSum_works_correctly_for_nonsymmetric_operators, ResultType, result_types)
 {
     typedef ResultType RT;
@@ -326,13 +408,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(acaOperatorSum_works_correctly_for_real_hermitian_
     BoundaryOperator<BFT, RT> op =
             laplace3dSingleLayerBoundaryOperator<BFT, RT>(
                 context, pwiseLinears, pwiseLinears, pwiseLinears, "SLP",
-                Symmetry(SYMMETRIC | HERMITIAN));
+                SYMMETRIC | HERMITIAN);
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = op.weakForm();
 
     BoundaryOperator<BFT, RT> op2 =
             laplace3dHypersingularBoundaryOperator<BFT, RT>(
                 context, pwiseLinears, pwiseLinears, pwiseLinears, "Hyp",
-                Symmetry(SYMMETRIC | HERMITIAN));
+                SYMMETRIC | HERMITIAN);
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop2 = op2.weakForm();
 
     arma::Mat<RT> expected = dop->asMatrix() + dop2->asMatrix();
@@ -412,7 +494,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(scaledAcaOperator_works_correctly_for_real_hermiti
     BoundaryOperator<BFT, RT> op =
             laplace3dSingleLayerBoundaryOperator<BFT, RT>(
                 context, pwiseLinears, pwiseLinears, pwiseLinears, "SLP",
-                Symmetry(SYMMETRIC | HERMITIAN));
+                SYMMETRIC | HERMITIAN);
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = op.weakForm();
 
     const RT multiplier = 5.25;

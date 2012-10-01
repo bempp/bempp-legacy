@@ -454,7 +454,8 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                                      Symmetry(symmetry),
                                      bemBlclusterTree, blocks,
                                      IndexPermutation(o2pTrialDofs),
-                                     IndexPermutation(o2pTestDofs)));
+                                     IndexPermutation(o2pTestDofs),
+                                     parallelOptions));
 
     std::auto_ptr<DiscreteBndOp> result;
     if (indexWithGlobalDofs)

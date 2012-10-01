@@ -28,6 +28,7 @@
 
 #include "common/armadillo_fwd.hpp"
 #include <complex>
+#include <iomanip>
 #include <boost/test/unit_test.hpp>
 
 template <typename ValueType>
@@ -36,6 +37,9 @@ check_arrays_are_close(const arma::Mat<ValueType>& left,
                        const arma::Mat<ValueType>& right,
                        typename Fiber::ScalarTraits<ValueType>::RealType tolerance)
 {
+    typedef typename Fiber::ScalarTraits<ValueType>::RealType RealType;
+    const int digits10 = std::numeric_limits<RealType>::digits10;
+
     boost::test_tools::predicate_result result(true);
     if (left.n_rows != right.n_rows || left.n_cols != right.n_cols) {
         result = false;
@@ -46,13 +50,12 @@ check_arrays_are_close(const arma::Mat<ValueType>& left,
     }
     for (size_t r = 0; r < left.n_rows; ++r)
         for (size_t c = 0; c < left.n_cols; ++c) {
-            typename Fiber::ScalarTraits<ValueType>::RealType diff =
-                    std::abs(left(r, c) - right(r, c));
-            typename Fiber::ScalarTraits<ValueType>::RealType avg =
-                    std::abs(left(r, c) + right(r, c)) / 2.;
+            RealType diff = std::abs(left(r, c) - right(r, c));
+            RealType avg = std::abs(left(r, c) + right(r, c)) / 2.;
             if (diff > tolerance * (1 + avg)) {
                 result = false;
-                result.message() << "\n  Mismatch at position ("
+                result.message() << std::setprecision(digits10)
+                                 << "\n  Mismatch at position ("
                                  << r << ", " << c << ") ["
                                  << left(r, c) << " != " << right(r, c) << "]";
             }
@@ -67,6 +70,9 @@ check_arrays_are_close(const arma::Cube<ValueType>& left,
                        const arma::Cube<ValueType>& right,
                        typename Fiber::ScalarTraits<ValueType>::RealType tolerance)
 {
+    typedef typename Fiber::ScalarTraits<ValueType>::RealType RealType;
+    const int digits10 = std::numeric_limits<RealType>::digits10;
+
     boost::test_tools::predicate_result result(true);
     if (left.n_rows != right.n_rows ||
             left.n_cols != right.n_cols ||
@@ -82,13 +88,12 @@ check_arrays_are_close(const arma::Cube<ValueType>& left,
     for (size_t r = 0; r < left.n_rows; ++r)
         for (size_t c = 0; c < left.n_cols; ++c)
             for (size_t s = 0; s < left.n_slices; ++s) {
-                typename Fiber::ScalarTraits<ValueType>::RealType diff =
-                        std::abs(left(r, c, s) - right(r, c, s));
-                typename Fiber::ScalarTraits<ValueType>::RealType avg =
-                        std::abs(left(r, c, s) + right(r, c, s)) / 2.;
+                RealType diff = std::abs(left(r, c, s) - right(r, c, s));
+                RealType avg = std::abs(left(r, c, s) + right(r, c, s)) / 2.;
                 if (diff > tolerance * (1 + avg)) {
                     result = false;
-                    result.message() << "\n  Mismatch at position ("
+                    result.message() << std::setprecision(digits10)
+                                     << "\n  Mismatch at position ("
                                      << r << ", " << c << ", " << s << ") ["
                                      << left(r, c, s) << " != "
                                      << right(r, c, s) << "]";
@@ -104,6 +109,9 @@ check_arrays_are_close(const Fiber::_4dArray<ValueType>& left,
                        const Fiber::_4dArray<ValueType>& right,
                        typename Fiber::ScalarTraits<ValueType>::RealType tolerance)
 {
+    typedef typename Fiber::ScalarTraits<ValueType>::RealType RealType;
+    const int digits10 = std::numeric_limits<RealType>::digits10;
+
     boost::test_tools::predicate_result result(true);
     if (left.extent(0) != right.extent(0) ||
             left.extent(1) != right.extent(1) ||
@@ -121,13 +129,14 @@ check_arrays_are_close(const Fiber::_4dArray<ValueType>& left,
         for (size_t c = 0; c < left.extent(1); ++c)
             for (size_t s = 0; s < left.extent(2); ++s)
                 for (size_t u = 0; u < left.extent(3); ++u) {
-                    typename Fiber::ScalarTraits<ValueType>::RealType diff =
+                    RealType diff =
                             std::abs(left(r, c, s, u) - right(r, c, s, u));
-                    typename Fiber::ScalarTraits<ValueType>::RealType avg =
+                    RealType avg =
                             std::abs(left(r, c, s, u) + right(r, c, s, u)) / 2.;
                     if (diff > tolerance * (1 + avg)) {
                         result = false;
-                        result.message() << "\n  Mismatch at position ("
+                        result.message() << std::setprecision(digits10)
+                                         << "\n  Mismatch at position ("
                                          << r << ", " << c << ", "
                                          << s << ", " << u << ") ["
                                          << left(r, c, s, u) << " != "
@@ -144,6 +153,9 @@ check_arrays_are_close(const Fiber::_3dArray<ValueType>& left,
                        const Fiber::_3dArray<ValueType>& right,
                        typename Fiber::ScalarTraits<ValueType>::RealType tolerance)
 {
+    typedef typename Fiber::ScalarTraits<ValueType>::RealType RealType;
+    const int digits10 = std::numeric_limits<RealType>::digits10;
+
     boost::test_tools::predicate_result result(true);
     if (left.extent(0) != right.extent(0) ||
             left.extent(1) != right.extent(1) ||
@@ -159,13 +171,12 @@ check_arrays_are_close(const Fiber::_3dArray<ValueType>& left,
     for (size_t r = 0; r < left.extent(0); ++r)
         for (size_t c = 0; c < left.extent(1); ++c)
             for (size_t s = 0; s < left.extent(2); ++s) {
-                    typename Fiber::ScalarTraits<ValueType>::RealType diff =
-                            std::abs(left(r, c, s) - right(r, c, s));
-                    typename Fiber::ScalarTraits<ValueType>::RealType avg =
-                            std::abs(left(r, c, s) + right(r, c, s)) / 2.;
+                    RealType diff = std::abs(left(r, c, s) - right(r, c, s));
+                    RealType avg = std::abs(left(r, c, s) + right(r, c, s)) / 2.;
                     if (diff > tolerance * (1 + avg)) {
                         result = false;
-                        result.message() << "\n  Mismatch at position ("
+                        result.message() << std::setprecision(digits10)
+                                         << "\n  Mismatch at position ("
                                          << r << ", " << c << ", "
                                          << s << ") ["
                                          << left(r, c, s) << " != "
@@ -182,6 +193,9 @@ check_arrays_are_close(const Fiber::_2dArray<arma::Mat<ValueType> >& leftArrays,
                        const Fiber::_2dArray<arma::Mat<ValueType> >& rightArrays,
                        typename Fiber::ScalarTraits<ValueType>::RealType tolerance)
 {
+    typedef typename Fiber::ScalarTraits<ValueType>::RealType RealType;
+    const int digits10 = std::numeric_limits<RealType>::digits10;
+
     boost::test_tools::predicate_result result(true);
     if (leftArrays.extent(0) != rightArrays.extent(0) ||
             leftArrays.extent(1) != rightArrays.extent(1)) {
@@ -208,13 +222,12 @@ check_arrays_are_close(const Fiber::_2dArray<arma::Mat<ValueType> >& leftArrays,
             }
             for (size_t r = 0; r < left.n_rows; ++r)
                 for (size_t c = 0; c < left.n_cols; ++c) {
-                    typename Fiber::ScalarTraits<ValueType>::RealType diff =
-                            std::abs(left(r, c) - right(r, c));
-                    typename Fiber::ScalarTraits<ValueType>::RealType avg =
-                            std::abs(left(r, c) + right(r, c)) / 2.;
+                    RealType diff = std::abs(left(r, c) - right(r, c));
+                    RealType avg = std::abs(left(r, c) + right(r, c)) / 2.;
                     if (diff > tolerance * (1 + avg)) {
                         result = false;
-                        result.message() << "\n  Mismatch in matrix ("
+                        result.message() << std::setprecision(digits10)
+                                         << "\n  Mismatch in matrix ("
                                          << ra << ", " << ca << ") at position ("
                                          << r << ", " << c << ") ["
                                          << left(r, c) << " != " << right(r, c) << "]";
@@ -231,6 +244,9 @@ check_arrays_are_close(const std::vector<arma::Mat<ValueType> >& leftArrays,
                        const std::vector<arma::Mat<ValueType> >& rightArrays,
                        typename Fiber::ScalarTraits<ValueType>::RealType tolerance)
 {
+    typedef typename Fiber::ScalarTraits<ValueType>::RealType RealType;
+    const int digits10 = std::numeric_limits<RealType>::digits10;
+
     boost::test_tools::predicate_result result(true);
     if (leftArrays.size() != rightArrays.size()) {
         result = false;
@@ -253,13 +269,12 @@ check_arrays_are_close(const std::vector<arma::Mat<ValueType> >& leftArrays,
         }
         for (size_t r = 0; r < left.n_rows; ++r)
             for (size_t c = 0; c < left.n_cols; ++c) {
-                typename Fiber::ScalarTraits<ValueType>::RealType diff =
-                        std::abs(left(r, c) - right(r, c));
-                typename Fiber::ScalarTraits<ValueType>::RealType avg =
-                        std::abs(left(r, c) + right(r, c)) / 2.;
+                RealType diff = std::abs(left(r, c) - right(r, c));
+                RealType avg = std::abs(left(r, c) + right(r, c)) / 2.;
                 if (diff > tolerance * (1 + avg)) {
                     result = false;
-                    result.message() << "\n  Mismatch in matrix ("
+                    result.message() << std::setprecision(digits10)
+                                     << "\n  Mismatch in matrix ("
                                      << ra << ") at position ("
                                      << r << ", " << c << ") ["
                                      << left(r, c) << " != " << right(r, c) << "]";

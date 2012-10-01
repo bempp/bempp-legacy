@@ -27,6 +27,7 @@
 
 #include "discrete_boundary_operator.hpp"
 #include "ahmed_aux_fwd.hpp"
+#include "assembly_options.hpp" // actually only ParallelizationOptions are needed
 #include "index_permutation.hpp"
 #include "symmetry.hpp"
 #include "../fiber/scalar_traits.hpp"
@@ -143,7 +144,14 @@ public:
     typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
     typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
 
-    /** \brief Constructor. */
+    /** \brief Constructor.
+     *
+     *  \param[in] parallelizationOptions Options determining the maximum
+     *  number of threads used in the apply() routine for the H-matrix-vector
+     *  product.
+     *
+     *  \note Currently the apply() routine is only parallelized for
+     *  non-Hermitian H-matrices. */
     DiscreteAcaBoundaryOperator(
             unsigned int rowCount, unsigned int columnCount,
             int maximumRank,
@@ -151,7 +159,8 @@ public:
             std::auto_ptr<AhmedBemBlcluster> blockCluster,
             boost::shared_array<AhmedMblock*> blocks,
             const IndexPermutation& domainPermutation,
-            const IndexPermutation& rangePermutation);
+            const IndexPermutation& rangePermutation,
+            const ParallelizationOptions& parallelizationOptions);
 
     virtual arma::Mat<ValueType> asMatrix() const;
 
@@ -226,6 +235,7 @@ private:
 
     IndexPermutation m_domainPermutation;
     IndexPermutation m_rangePermutation;
+    ParallelizationOptions m_parallelizationOptions;
     /** \endcond */
 };
 

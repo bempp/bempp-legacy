@@ -28,12 +28,19 @@
 #include "ahmed_aux.hpp"
 #include "aca_approximate_lu_inverse.hpp"
 
+#include "../common/chunk_statistics.hpp"
 #include "../common/complex_aux.hpp"
 #include "../fiber/explicit_instantiation.hpp"
+#include "../fiber/serial_blas_region.hpp"
 
 #include <fstream>
 #include <iostream>
 #include <boost/smart_ptr/shared_ptr.hpp>
+
+#include <tbb/blocked_range.h>
+#include <tbb/concurrent_queue.h>
+#include <tbb/parallel_reduce.h>
+#include <tbb/task_scheduler_init.h>
 
 #ifdef WITH_TRILINOS
 #include <Thyra_SpmdVectorSpaceDefaultBase.hpp>
@@ -44,6 +51,87 @@ namespace Bempp
 
 namespace
 {
+
+template <typename ValueType>
+class MblockMultiplicationLoopBody
+{
+    typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
+public:
+    typedef tbb::concurrent_queue<size_t> LeafClusterIndexQueue;
+
+    MblockMultiplicationLoopBody(
+            bool conjugateTranspose,
+            ValueType multiplier,
+            arma::Col<ValueType>& x,
+            arma::Col<ValueType>& y,
+            AhmedLeafClusterArray& leafClusters,
+            boost::shared_array<AhmedMblock*> blocks,
+            LeafClusterIndexQueue& leafClusterIndexQueue,
+            std::vector<ChunkStatistics>& stats) :
+        m_conjugateTranspose(conjugateTranspose),
+        m_multiplier(multiplier), m_x(x), m_local_y(y),
+        m_leafClusters(leafClusters), m_blocks(blocks),
+        m_leafClusterIndexQueue(leafClusterIndexQueue),
+        m_stats(stats)
+    {
+        // m_local_y.fill(static_cast<ValueType>(0.));
+    }
+
+    MblockMultiplicationLoopBody(MblockMultiplicationLoopBody& other, tbb::split) :
+        m_conjugateTranspose(other.m_conjugateTranspose),
+        m_multiplier(other.m_multiplier),
+        m_x(other.m_x), m_local_y(other.m_local_y.n_rows),
+        m_leafClusters(other.m_leafClusters), m_blocks(other.m_blocks),
+        m_leafClusterIndexQueue(other.m_leafClusterIndexQueue),
+        m_stats(other.m_stats)
+    {
+        m_local_y.fill(static_cast<ValueType>(0.));
+    }
+
+    template <typename Range>
+    void operator() (const Range& r) {
+        for (typename Range::const_iterator i = r.begin(); i != r.end(); ++i) {
+            size_t leafClusterIndex = -1;
+            if (!m_leafClusterIndexQueue.try_pop(leafClusterIndex)) {
+                std::cerr << "MblockMultiplicationLoopBody::operator(): "
+                             "Warning: try_pop failed; this shouldn't happen!"
+                          << std::endl;
+                continue;
+            }
+            m_stats[leafClusterIndex].valid = true;
+            m_stats[leafClusterIndex].chunkStart = r.begin();
+            m_stats[leafClusterIndex].chunkSize = r.size();
+            m_stats[leafClusterIndex].startTime = tbb::tick_count::now();
+
+            blcluster* cluster = m_leafClusters[leafClusterIndex];
+            if (m_conjugateTranspose)
+                m_blocks[cluster->getidx()]->mltahVec(ahmedCast(m_multiplier),
+                                                      ahmedCast(&m_x(cluster->getb2())),
+                                                      ahmedCast(&m_local_y(cluster->getb1())));
+            else
+                m_blocks[cluster->getidx()]->mltaVec(ahmedCast(m_multiplier),
+                                                     ahmedCast(&m_x(cluster->getb2())),
+                                                     ahmedCast(&m_local_y(cluster->getb1())));
+            m_stats[leafClusterIndex].endTime = tbb::tick_count::now();
+        }
+    }
+
+    void join(const MblockMultiplicationLoopBody& other) {
+        m_local_y += other.m_local_y;
+    }
+
+private:
+    bool m_conjugateTranspose;
+    ValueType m_multiplier;
+    arma::Col<ValueType>& m_x;
+public:
+    arma::Col<ValueType> m_local_y;
+private:
+    AhmedLeafClusterArray& m_leafClusters;
+    boost::shared_array<AhmedMblock*> m_blocks;
+    LeafClusterIndexQueue& m_leafClusterIndexQueue;
+    std::vector<ChunkStatistics>& m_stats;
+};
 
 bool areEqual(const blcluster* op1, const blcluster* op2)
 {
@@ -72,7 +160,8 @@ DiscreteAcaBoundaryOperator(
         std::auto_ptr<AhmedBemBlcluster> blockCluster,
         boost::shared_array<AhmedMblock*> blocks,
         const IndexPermutation& domainPermutation,
-        const IndexPermutation& rangePermutation) :
+        const IndexPermutation& rangePermutation,
+        const ParallelizationOptions& parallelizationOptions) :
 #ifdef WITH_TRILINOS
     m_domainSpace(Thyra::defaultSpmdVectorSpace<ValueType>(columnCount)),
     m_rangeSpace(Thyra::defaultSpmdVectorSpace<ValueType>(rowCount)),
@@ -83,7 +172,8 @@ DiscreteAcaBoundaryOperator(
     m_symmetry(symmetry),
     m_blockCluster(blockCluster), m_blocks(blocks),
     m_domainPermutation(domainPermutation),
-    m_rangePermutation(rangePermutation)
+    m_rangePermutation(rangePermutation),
+    m_parallelizationOptions(parallelizationOptions)
 {
 }
 
@@ -286,14 +376,48 @@ applyBuiltInImpl(const TranspositionMode trans,
                   ahmedCast(permutedArgument.memptr()),
                   ahmedCast(permutedResult.memptr()));
 #else
-        if (trans == NO_TRANSPOSE)
-            mltaGeHVec(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
-                       ahmedCast(permutedArgument.memptr()),
-                       ahmedCast(permutedResult.memptr()));
-        else // trans == CONJUGATE_TRANSPOSE
-            mltaGeHhVec(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
-                        ahmedCast(permutedArgument.memptr()),
-                        ahmedCast(permutedResult.memptr()));
+//        if (trans == NO_TRANSPOSE)
+//            mltaGeHVec(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
+//                       ahmedCast(permutedArgument.memptr()),
+//                       ahmedCast(permutedResult.memptr()));
+//        else // trans == CONJUGATE_TRANSPOSE
+//            mltaGeHhVec(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
+//                        ahmedCast(permutedArgument.memptr()),
+//                        ahmedCast(permutedResult.memptr()));
+
+        AhmedLeafClusterArray leafClusters(m_blockCluster.get());
+        leafClusters.sortAccordingToClusterSize();
+        const size_t leafClusterCount = leafClusters.size();
+
+        int maxThreadCount = 1;
+        if (!m_parallelizationOptions.isOpenClEnabled()) {
+            if (m_parallelizationOptions.maxThreadCount() ==
+                    ParallelizationOptions::AUTO)
+                maxThreadCount = tbb::task_scheduler_init::automatic;
+            else
+                maxThreadCount = m_parallelizationOptions.maxThreadCount();
+        }
+        tbb::task_scheduler_init scheduler(maxThreadCount);
+
+        std::vector<ChunkStatistics> chunkStats(leafClusterCount);
+
+        typedef MblockMultiplicationLoopBody<ValueType> Body;
+        typename Body::LeafClusterIndexQueue leafClusterIndexQueue;
+        for (size_t i = 0; i < leafClusterCount; ++i)
+            leafClusterIndexQueue.push(i);
+
+        // std::cout << "----------------------------\nperm Arg\n" << permutedArgument;
+        // std::cout << "perm Res\n" << permutedResult;
+        Body body(trans == CONJUGATE_TRANSPOSE,
+                  alpha, permutedArgument, permutedResult,
+                  leafClusters, m_blocks,
+                  leafClusterIndexQueue, chunkStats);
+        {
+            Fiber::SerialBlasRegion region;
+            tbb::parallel_reduce(tbb::blocked_range<size_t>(0, leafClusterCount),
+                                 body);
+        }
+        permutedResult = body.m_local_y;
 #endif
     }
     if (!transposed)
@@ -358,7 +482,8 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > acaOperatorSum(
                     acaOp1->rowCount(), acaOp1->columnCount(), maximumRank,
                     Symmetry(acaOp1->m_symmetry & acaOp2->m_symmetry),
                     sumBlockCluster, sumBlocks,
-                    acaOp1->m_domainPermutation, acaOp2->m_rangePermutation));
+                    acaOp1->m_domainPermutation, acaOp2->m_rangePermutation,
+                    acaOp1->m_parallelizationOptions));
     return result;
 }
 
@@ -415,7 +540,8 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > scaledAcaOperator(
                     acaOp->rowCount(), acaOp->columnCount(), acaOp->m_maximumRank,
                     Symmetry(scaledSymmetry),
                     scaledBlockCluster, scaledBlocks,
-                    acaOp->m_domainPermutation, acaOp->m_rangePermutation));
+                    acaOp->m_domainPermutation, acaOp->m_rangePermutation,
+                    acaOp->m_parallelizationOptions));
     return result;
 }
 

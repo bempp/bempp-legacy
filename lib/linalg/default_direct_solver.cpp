@@ -113,13 +113,19 @@ DefaultDirectSolver<BasisFunctionType, ResultType>::solveImplBlocked(
             "DefaultDirectSolver::solve(): for solvers constructed "
             "from a (non-blocked) BoundaryOperator the other solve() overload "
             "must be used");
+    std::vector<GridFunction<BasisFunctionType, ResultType> > canonicalRhs =
+            Solver<BasisFunctionType, ResultType>::canonicalizeBlockedRhs(
+                *boundaryOp, rhs,
+                ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
+    // Shouldn't be needed, but better safe than sorry...
     Solver<BasisFunctionType, ResultType>::checkConsistency(
-        *boundaryOp, rhs, ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
+                *boundaryOp, canonicalRhs,
+                ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
 
     // Construct the right-hand size vector
     arma::Col<ResultType> armaRhs(boundaryOp->totalGlobalDofCountInDualsToRanges());
-    for (size_t i = 0, start = 0; i < rhs.size(); ++i) {
-        const arma::Col<ResultType>& chunkProjections = rhs[i].projections();
+    for (size_t i = 0, start = 0; i < canonicalRhs.size(); ++i) {
+        const arma::Col<ResultType>& chunkProjections = canonicalRhs[i].projections();
         size_t chunkSize = chunkProjections.n_rows;
         armaRhs.rows(start, start + chunkSize - 1) = chunkProjections;
         start += chunkSize;
