@@ -83,5 +83,6 @@ typedef complex_numeric_types complex_result_types;
 typedef real_numeric_types result_types;
 typedef boost::mpl::list<> complex_result_types;
 #endif
+typedef real_numeric_types real_result_types;
 
 #endif
