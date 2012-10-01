@@ -285,20 +285,26 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::solveImplBlocked(
             "DefaultIterativeSolver::solve(): for solvers constructed "
             "from a (non-blocked) BoundaryOperator the other solve() overload "
             "must be used");
-    Solver<BasisFunctionType, ResultType>::checkConsistency(
+    std::vector<GridFunction<BasisFunctionType, ResultType> > canonicalRhs =
+            Solver<BasisFunctionType, ResultType>::canonicalizeBlockedRhs(
         *boundaryOp, rhs, m_impl->mode);
+    // Shouldn't be needed, but better safe than sorry...
+    Solver<BasisFunctionType, ResultType>::checkConsistency(
+                *boundaryOp, canonicalRhs, m_impl->mode);
 
     // Currently we only support convergence testing in space dual to range.
 
     // Construct the right-hand-side vector
     arma::Col<ResultType> armaProjections(
         boundaryOp->totalGlobalDofCountInDualsToRanges());
-    for (size_t i = 0, start = 0; i < rhs.size(); ++i) {
-        const arma::Col<ResultType>& chunkProjections = rhs[i].projections();
+    for (size_t i = 0, start = 0; i < canonicalRhs.size(); ++i) {
+        const arma::Col<ResultType>& chunkProjections =
+                canonicalRhs[i].projections();
         size_t chunkSize = chunkProjections.n_rows;
         armaProjections.rows(start, start + chunkSize - 1) = chunkProjections;
         start += chunkSize;
     }        
+
     Vector<ResultType> projectionsVector(armaProjections);
     Teuchos::RCP<TrilinosVector> rhsVector;
     if (m_impl->mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE)
@@ -312,7 +318,7 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::solveImplBlocked(
 
     // Initialize the solution vector
     size_t solutionSize = 0;
-    for (size_t i = 0; i < rhs.size(); ++i)
+    for (size_t i = 0; i < canonicalRhs.size(); ++i)
         solutionSize += boundaryOp->domain(i)->globalDofCount();
     arma::Col<ResultType> armaSolution(solutionSize);
     armaSolution.fill(static_cast<ResultType>(0.));

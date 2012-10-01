@@ -55,6 +55,30 @@ namespace Bempp
 {
 BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Solver);
 BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Solver);
+
+// Convert any empty elements in the supplied list to uninitialized
+// GridFunctions
+%define BEMPP_EXTEND_SOLVER(BASIS, RESULT, PYBASIS, PYRESULT)
+    %extend Solver< BASIS, RESULT >
+    {
+        %pythonprepend solve %{
+            try:
+                newargs = ([],)
+                for a in args[0]:
+                    if a:
+                        newargs[0].append(a)
+                    else:
+                        newargs[0].append(globals()[
+                            "uninitializedGridFunction_"+
+                            self.basisFunctionType()+"_"+self.resultType()]())
+                args = newargs
+            except: # keep the list of arguments unchanged
+                pass
+        %}
+    }
+%enddef
+BEMPP_ITERATE_OVER_BASIS_AND_RESULT_TYPES(BEMPP_EXTEND_SOLVER)
+
 }
 
 #define shared_ptr boost::shared_ptr

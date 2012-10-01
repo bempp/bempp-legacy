@@ -14,6 +14,13 @@ namespace Bempp
 
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>*
+uninitializedGridFunction()
+{
+    return new GridFunction<BasisFunctionType, ResultType>;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>*
 gridFunctionFromPythonSurfaceNormalIndependentFunctor(
     const boost::shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
     const boost::shared_ptr<const Space<BasisFunctionType> >& space,
@@ -185,6 +192,7 @@ namespace Bempp
 BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction)
 
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(uninitializedGridFunction);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromPythonSurfaceNormalIndependentFunctor);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromPythonSurfaceNormalDependentFunctor);
 
