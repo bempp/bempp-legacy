@@ -17,7 +17,7 @@ from bempp import lib
 # Create a quadrature strategy
 
 accuracyOptions = lib.createAccuracyOptions()
-accuracyOptions.doubleRegular.setRelativeQuadratureOrder(3)
+accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2)
 quadStrategy = lib.createNumericalQuadratureStrategy(
     "float64", "complex128", accuracyOptions)
 
@@ -52,34 +52,29 @@ kExt = 5.
 # Create boundary operators
 
 slpOpInt = lib.createHelmholtz3dSingleLayerBoundaryOperator(
-    context, pconsts, pconsts, pconsts, kInt)
+    context, pconsts, pconsts, pconsts, kInt, "SLP_int")
 slpOpExt = lib.createHelmholtz3dSingleLayerBoundaryOperator(
-    context, pconsts, pconsts, pconsts, kExt)
+    context, pconsts, pconsts, pconsts, kExt, "SLP_ext")
 dlpOpInt = lib.createHelmholtz3dDoubleLayerBoundaryOperator(
-    context, pconsts, pconsts, pconsts, kInt)
+    context, pconsts, pconsts, pconsts, kInt, "DLP_int")
 dlpOpExt = lib.createHelmholtz3dDoubleLayerBoundaryOperator(
-    context, pconsts, pconsts, pconsts, kExt)
+    context, pconsts, pconsts, pconsts, kExt, "DLP_ext")
 idOp = lib.createIdentityOperator(
-    context, pconsts, pconsts, pconsts)
+    context, pconsts, pconsts, pconsts, "Id")
 
 # Create blocks of the operator on the lhs of the equation...
 
-lhsOp00 =  0.5 * idOp + dlpOpInt
-lhsOp01 = -rhoInt / rhoExt * slpOpInt
-lhsOp10 =  0.5 * idOp - dlpOpExt
-lhsOp11 =  slpOpExt
+lhsOp00 =  0.5 * idOp - dlpOpExt
+lhsOp01 =  slpOpExt
+lhsOp10 =  0.5 * idOp + dlpOpInt
+lhsOp11 = -rhoInt / rhoExt * slpOpInt
 
 # ... and combine them into a blocked operator
 
 lhsOp = lib.createBlockedBoundaryOperator(
     context, [[lhsOp00, lhsOp01], [lhsOp10, lhsOp11]])
 
-# Create blocks of the operator on the rhs of the equation
-
-rhsOp00 = -0.5 * idOp - dlpOpInt
-rhsOp01 =  rhoInt / rhoExt * slpOpInt
-
-# Create a grid function representing the Dirichlet tract of the incident wave
+# Create a grid function representing the Dirichlet trace of the incident wave
 
 def uIncData(point):
     x, y, z = point
@@ -101,9 +96,7 @@ uIncDeriv = lib.createGridFunction(context, pconsts, pconsts, uIncDerivData,
 
 # Create elements of the right hand side of the equation
 
-rhs0 = rhsOp00 * uInc + rhsOp01 * uIncDeriv
-rhs1 = 0. * uInc
-rhs = [rhs0, rhs1]
+rhs = [uInc, None]
 
 # PART 4: Discretize and solve the equations ###################################
 
@@ -121,16 +114,16 @@ print solution.solverMessage()
 # PART 5: Extract the solution #################################################
 
 # Extract the solution components (Dirichlet and Neumann traces of the
-# scattered field)
+# total field)
 
-uSc = solution.gridFunction(0)
-uScDeriv = solution.gridFunction(1)
+uExt = solution.gridFunction(0)
+uExtDeriv = solution.gridFunction(1)
 
-# Combine them with the incident wave to yield the traces of the total field
-# on the inner and outer side of the scatterer's surface
+# Combine them with the incident wave to yield the traces of the scattered field
+# (uSc) and the field transmitted into the object (uInt)
 
-uExt = uSc + uInc
-uExtDeriv = uScDeriv + uIncDeriv
+uSc = uExt - uInc
+uScDeriv = uExtDeriv - uIncDeriv
 
 uInt = uExt
 uIntDeriv = rhoInt / rhoExt * uExtDeriv
@@ -179,8 +172,8 @@ from bempp import visualization as vis
 uActor = vis.scalarDataOnRegularGridActor(
         points, vals, (nPointsX, nPointsY), transformation="abs")
 legendActor = vis.legendActor(uActor)
-gActor = vis.gridActor(grid)
-vis.plotTvtkActors([uActor,gActor,legendActor])
+gridActor = vis.gridActor(grid)
+vis.plotTvtkActors([uActor, gridActor, legendActor])
 
 # Export the results into a VTK file
 
