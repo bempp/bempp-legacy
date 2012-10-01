@@ -49,20 +49,28 @@ To build the library, do the following:
    - Enable AHMED for H-Matrix support. You need to uncomment
      ``enable_ahmed=yes`` and set the option ``file_name`` in the AHMED section
      to the location of the AHMED installer file. You can download the file from
-     ``http://bebendorf.ins.uni-bonn.de/AHMED.html.
+     ``http://bebendorf.ins.uni-bonn.de/AHMED.html``.
 
 2. Run the command ::
 
-   python bempp_setup.py -c my_config.cfg
+   python bempp_setup.py -b bempp_setup.cfg
 
-   This downloads all dependencies (currently Armadillo, Boost, Dune, Swig, TBB
-   and Trilinos), generates a config file with automatically detected options
-   and sets up the installation directory. Note that you need to have write
-   access to the installation directory. The list of dependencies is
+   This bootstrap phase downloads the BEM++ build system (CMake) and
+   all BEM++ dependencies (currently Armadillo, Boost, Dune, Swig, TBB
+   and Trilinos), creates the necessary directories and compiles and
+   installs CMake into the BEM++ installation directory. Note that you
+   need to have write access to the installation directory.
 
 3. Run the command ::
 
-   python bempp_setup.py -i all my_config.cfg
+   python bempp_setup.py -c bempp_config.cfg
+
+   This extracts all BEM++ dependencies, patches their sources where
+   necessary and generates a config file with automatically detected options.
+
+4. Run the command ::
+
+   python bempp_setup.py -i all bempp_config.cfg
 
    This builds all the dependencies and installs them, and subsequently
    proceeds to building and installing BEM++ itself.
@@ -73,13 +81,13 @@ To build the library, do the following:
    module takes rather a long time. Therefore, the installer may seem to hang
    for a few minutes without doing anything.
 
-4. If you have Doxygen installed, you can generate documentation of the C++ API
+5. If you have Doxygen installed, you can generate documentation of the C++ API
    of BEM++ by going into ``<build_dir>`` and typing ``make doc``. The
    documentation is generated in the ``<build_dir>/doc/html`` directory. You are
    advised to use a recent version of Doxygen (e.g. 1.8.2), since older versions
    do not always parse C++ templates properly.
 
-5. If you have Sphinx installed, you can generate documentation of the Python
+6. If you have Sphinx installed, you can generate documentation of the Python
    API of BEM++ by going into ``<build_dir>`` and typing ``make
    python_doc``. The documentation is generated in the
    ``<build_dir>/python/doc/html`` directory.
