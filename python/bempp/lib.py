@@ -1185,62 +1185,7 @@ def createBlockedBoundaryOperator(context, structure):
     return _constructObjectTemplatedOnBasisAndResult(
         name, context.basisFunctionType(), context.resultType(), boStructure)
 
-def createAcaPreconditioner(operator, delta=1E-2):
-    """
-    Create and return an ACA preconditioner.
 
-    *Parameters:*
-       - operator (DiscreteBoundaryOperator)
-            A discrete boundary operator stored in the form of an H-matrix.
-       - delta (float)
-            Approximation accuracy.
-
-    *Returns* a Preconditioner_ValueType object representing an
-    approximate inverse of the operator supplied in the 'operator' argument,
-    stored in the form of an approximate H-matrix LU decomposition. ValueType is
-    set to operator.valueType().
-    """
-    name = 'acaDiscreteOperatorToPreconditioner'
-    return _constructObjectTemplatedOnValue(
-        name, operator.valueType(), operator, delta)
-
-def acaDiscreteOperatorToPreconditioner(operator, delta=1E-2):
-    """
-    Deprecated. Superseded by createAcaPreconditioner().
-    """
-    print ("acaDiscreteOperatorToPreconditioner(): DEPRECATED: "
-           "use createAcaPreconditioner() instead.")
-    return createAcaPreconditioner(operator, delta)
-
-def createBlockDiagonalAcaPreconditioner(operators, deltas):
-    """
-    Create and return a block-diagonal ACA preconditioner.
-
-    *Parameters:*
-       - operators (list of DiscreteBoundaryOperators)
-            A list of discrete boundary operators stored in the form of
-            H-matrices.
-       - delta (list of floats)
-            A list of numbers to be taken as the approximation accuracies of
-            successive operators.
-
-    The lists 'operators' and 'deltas' must have equal length and must not be
-    empty, otherwise an exception will be thrown.
-
-    *Returns* a Preconditioner_ValueType object representing a block-diagonal
-    preconditioners whose locks are the approximate inverses of the operators
-    supplied in the 'operators' argument, stored in the form of approximate
-    H-matrix LU decompositions. ValueType is set to operator.valueType().
-    """
-    name = 'acaBlockDiagonalPreconditioner'
-    typeName = operators[0].valueType()
-    return _constructObjectTemplatedOnValue(name, typeName, operators, deltas)
-
-def acaBlockDiagonalPreconditioner(operators, deltas):
-    """Deprecated. Use createBlockDiagonalAcaPreconditioner instead."""
-    print ("acaBlockDiagonalPreconditioner(): DEPRECATED: "
-           "use createBlockDiagonalAcaPreconditioner() instead.")
-    return createBlockDiagonalAcaPreconditioner(operators, deltas)
 
 def acaOperatorApproximateLuInverse(operator, delta):
     """
@@ -1333,6 +1278,21 @@ def discreteSparseInverse(op):
     name = 'discreteSparseInverse'
     return _constructObjectTemplatedOnValue(
         name, op.valueType(), op)
+
+
+def discreteOperatorToPreconditioner(op):
+    """
+    Create a preconditioner from a discrete boundary operator
+    *Paramters:*
+       - op (DiscreteBoundaryOperator)
+           A discrete operator, which acts as preconditioner, e.g. an ACA
+           approximate LU decomposition or a sparse inverse.
+
+    *Returns* a preconditioner.
+    """
+    name = 'discreteOperatorToPreconditioner'
+    return _constructObjectTemplatedOnValue(name, op.valueType(),op)
+
 
 def discreteBlockDiagonalPreconditioner(opArray):
     """

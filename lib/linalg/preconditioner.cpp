@@ -70,81 +70,81 @@ discreteOperatorToPreconditioner(
 
 }
 
-template<typename ValueType>
-Preconditioner<ValueType>
-sparseOperatorToPreconditioner(
-        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& discreteOperator){
+//template<typename ValueType>
+//Preconditioner<ValueType>
+//sparseOperatorToPreconditioner(
+//        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& discreteOperator){
+//
+//    shared_ptr<const DiscreteSparseBoundaryOperator<ValueType> > sparseOp=
+//            DiscreteSparseBoundaryOperator<ValueType>::castToSparse(discreteOperator);
+//
+//    shared_ptr<const DiscreteBoundaryOperator<ValueType> >
+//            op(new DiscreteInverseSparseBoundaryOperator<ValueType>(
+//                   sparseOp->epetraMatrix(),
+//                   sparseOp->symmetryMode()
+//                   ));
+//    return discreteOperatorToPreconditioner(op);
+//
+//}
 
-    shared_ptr<const DiscreteSparseBoundaryOperator<ValueType> > sparseOp=
-            DiscreteSparseBoundaryOperator<ValueType>::castToSparse(discreteOperator);
 
-    shared_ptr<const DiscreteBoundaryOperator<ValueType> >
-            op(new DiscreteInverseSparseBoundaryOperator<ValueType>(
-                   sparseOp->epetraMatrix(),
-                   sparseOp->symmetryMode()
-                   ));
-    return discreteOperatorToPreconditioner(op);
+//template<typename ValueType>
+//Preconditioner<ValueType>
+//acaDiscreteOperatorToPreconditioner(
+//        const DiscreteBoundaryOperator<ValueType>& discreteOperator,
+//        typename Preconditioner<ValueType>::MagnitudeType delta)
+//{
+//    const DiscreteAcaBoundaryOperator<ValueType>& discreteAcaOperator =
+//                DiscreteAcaBoundaryOperator<ValueType>::castToAca(discreteOperator);
+//
+//    Teuchos::RCP<const Thyra::LinearOpBase<ValueType> > op(
+//                new AcaApproximateLuInverse<ValueType>(discreteAcaOperator,delta));
+//
+//    typename Preconditioner<ValueType>::TeuchosPreconditionerPtr precOp =
+//            Teuchos::rcp_static_cast<const Thyra::PreconditionerBase<ValueType> >(
+//                Thyra::unspecifiedPrec(op));
+//
+//    return Preconditioner<ValueType>(precOp);
+//}
 
-}
-
-
-template<typename ValueType>
-Preconditioner<ValueType>
-acaDiscreteOperatorToPreconditioner(
-        const DiscreteBoundaryOperator<ValueType>& discreteOperator,
-        typename Preconditioner<ValueType>::MagnitudeType delta)
-{
-    const DiscreteAcaBoundaryOperator<ValueType>& discreteAcaOperator =
-                DiscreteAcaBoundaryOperator<ValueType>::castToAca(discreteOperator);
-
-    Teuchos::RCP<const Thyra::LinearOpBase<ValueType> > op(
-                new AcaApproximateLuInverse<ValueType>(discreteAcaOperator,delta));
-
-    typename Preconditioner<ValueType>::TeuchosPreconditionerPtr precOp =
-            Teuchos::rcp_static_cast<const Thyra::PreconditionerBase<ValueType> >(
-                Thyra::unspecifiedPrec(op));
-
-    return Preconditioner<ValueType>(precOp);
-}
-
-template<typename ValueType>
-Preconditioner<ValueType>
-acaBlockDiagonalPreconditioner(
-        const std::vector<typename Preconditioner<ValueType>::DiscreteBoundaryOperatorPtr>& opVector,
-        const std::vector<typename Preconditioner<ValueType>::MagnitudeType>& deltas)
-{
-    size_t n = opVector.size();
-    if (n != deltas.size())
-        throw std::runtime_error("acaBlockDiagonalPreconditioner: "
-                                 "Input arrays must have same length");
-    if (n == 0)
-        throw std::runtime_error("acaBlockDiagonalPreconditioner: "
-                                 "Input arrays must not be empty");
-
-    Fiber::_2dArray<typename Preconditioner<ValueType>::DiscreteBoundaryOperatorPtr> opStructure(n,n);
-    std::vector<size_t> rowCounts;
-    std::vector<size_t> columnCounts;
-    for (size_t i=0;i++;i<n){
-        opStructure(i,i)= typename Preconditioner<ValueType>::DiscreteBoundaryOperatorPtr(
-                    new AcaApproximateLuInverse<ValueType>(
-                        DiscreteAcaBoundaryOperator<ValueType>::castToAca(*(opVector[i]))
-                        ,deltas[i]));
-        rowCounts[i]=opVector[i]->rowCount();
-        columnCounts[i]=opVector[i]->columnCount();
-    }
-
-    Teuchos::RCP<const Thyra::LinearOpBase<ValueType> > op
-            (new DiscreteBlockedBoundaryOperator<ValueType>(
-                                            opStructure,
-                                            rowCounts,
-                                            columnCounts));
-
-    typename Preconditioner<ValueType>::TeuchosPreconditionerPtr precOp =
-            Teuchos::rcp_static_cast<const Thyra::PreconditionerBase<ValueType> >(
-                Thyra::unspecifiedPrec(op));
-    return Preconditioner<ValueType>(precOp);
-
-}
+//template<typename ValueType>
+//Preconditioner<ValueType>
+//acaBlockDiagonalPreconditioner(
+//        const std::vector<typename Preconditioner<ValueType>::DiscreteBoundaryOperatorPtr>& opVector,
+//        const std::vector<typename Preconditioner<ValueType>::MagnitudeType>& deltas)
+//{
+//    size_t n = opVector.size();
+//    if (n != deltas.size())
+//        throw std::runtime_error("acaBlockDiagonalPreconditioner: "
+//                                 "Input arrays must have same length");
+//    if (n == 0)
+//        throw std::runtime_error("acaBlockDiagonalPreconditioner: "
+//                                 "Input arrays must not be empty");
+//
+//    Fiber::_2dArray<typename Preconditioner<ValueType>::DiscreteBoundaryOperatorPtr> opStructure(n,n);
+//    std::vector<size_t> rowCounts;
+//    std::vector<size_t> columnCounts;
+//    for (size_t i=0;i++;i<n){
+//        opStructure(i,i)= typename Preconditioner<ValueType>::DiscreteBoundaryOperatorPtr(
+//                    new AcaApproximateLuInverse<ValueType>(
+//                        DiscreteAcaBoundaryOperator<ValueType>::castToAca(*(opVector[i]))
+//                        ,deltas[i]));
+//        rowCounts[i]=opVector[i]->rowCount();
+//        columnCounts[i]=opVector[i]->columnCount();
+//    }
+//
+//    Teuchos::RCP<const Thyra::LinearOpBase<ValueType> > op
+//            (new DiscreteBlockedBoundaryOperator<ValueType>(
+//                                            opStructure,
+//                                            rowCounts,
+//                                            columnCounts));
+//
+//    typename Preconditioner<ValueType>::TeuchosPreconditionerPtr precOp =
+//            Teuchos::rcp_static_cast<const Thyra::PreconditionerBase<ValueType> >(
+//                Thyra::unspecifiedPrec(op));
+//    return Preconditioner<ValueType>(precOp);
+//
+//}
 
 template<typename ValueType>
 Preconditioner<ValueType>
@@ -186,16 +186,16 @@ discreteBlockDiagonalPreconditioner(
     template Preconditioner< VALUE > \
     discreteOperatorToPreconditioner(const shared_ptr<const DiscreteBoundaryOperator< VALUE > > &discreteOperator); \
     template Preconditioner< VALUE > \
-    sparseOperatorToPreconditioner(const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& discreteOperator); \
-    template Preconditioner< VALUE > \
-    acaDiscreteOperatorToPreconditioner(const DiscreteBoundaryOperator< VALUE >& discreteOperator, \
-                                        Preconditioner< VALUE >::MagnitudeType delta=1E-2); \
-    template Preconditioner< VALUE > \
-    acaBlockDiagonalPreconditioner(const std::vector<Preconditioner< VALUE >::DiscreteBoundaryOperatorPtr>& opVector, \
-                                   const std::vector<Preconditioner< VALUE >::MagnitudeType>& deltas); \
-    template Preconditioner< VALUE > \
     discreteBlockDiagonalPreconditioner( \
             const std::vector<shared_ptr<const DiscreteBoundaryOperator< VALUE > > >& opVector);
+//    template Preconditioner< VALUE > \
+//    sparseOperatorToPreconditioner(const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& discreteOperator); \
+//    template Preconditioner< VALUE > \
+//    acaDiscreteOperatorToPreconditioner(const DiscreteBoundaryOperator< VALUE >& discreteOperator, \
+//                                        Preconditioner< VALUE >::MagnitudeType delta=1E-2); \
+//    template Preconditioner< VALUE > \
+//    acaBlockDiagonalPreconditioner(const std::vector<Preconditioner< VALUE >::DiscreteBoundaryOperatorPtr>& opVector, \
+//                                   const std::vector<Preconditioner< VALUE >::MagnitudeType>& deltas); \
 
 
 
