@@ -193,8 +193,10 @@ private:
  *    the flags defined in the enumeration type Symmetry.
  *    If set to AUTO_SYMMETRY (default), the symmetry is determined
  *    automatically by checking whether its domain and space dual to its
- *    range are equal. If so, the operator is marked as Hermitian.
- */
+ *    range are equal. If so, the operator is marked as Hermitian,
+ *    and if the basis functions are real-valued, also as symmetric.
+ *
+ *  All the three spaces must be defined on the same grid. */
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 identityOperator(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
