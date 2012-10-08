@@ -166,9 +166,8 @@ public:
       * \returns A pointer to a DiscreteBoundaryOperator object, which is castable to
       * DiscreteAcaBoundaryOperator.
       */
-    virtual shared_ptr<const DiscreteBoundaryOperator<ValueType> > asDiscreteAcaBoundaryOperator(
-                                                              double eps=1E-4,
-                                                              int maximumRank=50) const =0;
+    virtual shared_ptr<const DiscreteBoundaryOperator>
+    asDiscreteAcaBoundaryOperator(double eps=1E-4, int maximumRank=50) const = 0;
 
     /** \brief Write a textual representation of the operator to standard output.
      *
