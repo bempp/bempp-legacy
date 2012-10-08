@@ -84,11 +84,6 @@ public:
                           const ValueType alpha,
                           arma::Mat<ValueType>& block) const;
 
-#ifdef WITH_AHMED
-    virtual shared_ptr<const DiscreteBoundaryOperator>
-    asDiscreteAcaBoundaryOperator(double eps=1E-4, int maximumRank=50) const;
-#endif
-
     /** \brief Return a new DiscreteBlockedBoundaryOperator, in which every
       * component is castable to a DiscreteAcaBoundaryOperator.
       *
