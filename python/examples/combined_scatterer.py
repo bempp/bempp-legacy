@@ -48,12 +48,8 @@ grid = grid_factory.importGmshGrid(
     "triangular", "../../examples/meshes/sphere-h-0.1.msh")
 
 # Create a space of piecewise constant basis functions over the grid.
-# Currently assignDofs() always needs to be invoked manually
-# to assign the degrees of freedom in the space.
 
 pwiseConstants = lib.createPiecewiseConstantScalarSpace(context, grid)
-pwiseConstants.assignDofs()
-
 
 # We now initialize the boundary operators.
 # A boundary operator always takes three space arguments: a domain space,
