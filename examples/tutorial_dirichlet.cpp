@@ -115,7 +115,11 @@ int main()
 
     // Define the quadrature strategy
 
-    NumericalQuadratureStrategy<BFT, RT> quadStrategy;
+    AccuracyOptions accuracyOptions;
+    // Increase by 2 the order of quadrature rule used to approximate
+    // integrals of regular functions on pairs on elements
+    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
+    NumericalQuadratureStrategy<BFT, RT> quadStrategy(accuracyOptions);
 
     // Specify the assembly method. We want to use ACA
 

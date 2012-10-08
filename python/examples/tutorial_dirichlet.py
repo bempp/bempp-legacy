@@ -26,12 +26,20 @@ def evalExactNeumannData(point):
 grid = createGridFactory().importGmshGrid(
     "triangular", "../../examples/meshes/sphere-h-0.2.msh")
 
+# Create quadrature strategy
+
+accuracyOptions = createAccuracyOptions()
+# Increase by 2 the order of quadrature rule used to approximate
+# integrals of regular functions on pairs on elements
+accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2)
+quadStrategy = createNumericalQuadratureStrategy(
+    "float64", "float64", accuracyOptions)
+
 # Create assembly context
 
-quadStrategy = createNumericalQuadratureStrategy("float64", "float64")
-options = createAssemblyOptions()
-options.switchToAcaMode(createAcaOptions())
-context = createContext(quadStrategy, options)
+assemblyOptions = createAssemblyOptions()
+assemblyOptions.switchToAcaMode(createAcaOptions())
+context = createContext(quadStrategy, assemblyOptions)
 
 # Initialize spaces
 
