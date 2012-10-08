@@ -108,8 +108,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
 
     PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(grid);
     PiecewiseConstantScalarSpace<BFT> pwiseConstants(grid);
-    pwiseLinears.assignDofs();
-    pwiseConstants.assignDofs();
 
     AssemblyOptions assemblyOptions;
     assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);

@@ -74,8 +74,6 @@ struct DiscreteAcaBoundaryOperatorFixture
             new PiecewiseConstantScalarSpace<BFT>(grid));
         shared_ptr<Space<BFT> > pwiseLinears(
             new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-        pwiseConstants->assignDofs();
-        pwiseLinears->assignDofs();
 
         AssemblyOptions assemblyOptions;
         assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
@@ -106,7 +104,6 @@ struct DiscreteHermitianAcaBoundaryOperatorFixture
 
         shared_ptr<Space<BFT> > pwiseConstants(
             new PiecewiseConstantScalarSpace<BFT>(grid));
-        pwiseConstants->assignDofs();
 
         AssemblyOptions assemblyOptions;
         assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
@@ -349,8 +346,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(acaOperatorSum_works_correctly_for_nonsymmetric_op
         new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
         new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    pwiseConstants->assignDofs();
-    pwiseLinears->assignDofs();
 
     AssemblyOptions assemblyOptions;
     assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
@@ -395,7 +390,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(acaOperatorSum_works_correctly_for_real_hermitian_
 
     shared_ptr<Space<BFT> > pwiseLinears(
         new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    pwiseLinears->assignDofs();
 
     AssemblyOptions assemblyOptions;
     assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
@@ -442,8 +436,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(scaledAcaOperator_works_correctly_for_nonsymmetric
         new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
         new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    pwiseConstants->assignDofs();
-    pwiseLinears->assignDofs();
 
     AssemblyOptions assemblyOptions;
     assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
@@ -481,7 +473,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(scaledAcaOperator_works_correctly_for_real_hermiti
 
     shared_ptr<Space<BFT> > pwiseLinears(
         new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    pwiseLinears->assignDofs();
 
     AssemblyOptions assemblyOptions;
     assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);

@@ -73,8 +73,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works, ValueType, kernel_types)
 
     PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(grid);
     PiecewiseConstantScalarSpace<BFT> pwiseConstants(grid);
-    pwiseLinears.assignDofs();
-    pwiseConstants.assignDofs();
 
     AssemblyOptions assemblyOptions;
     assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);

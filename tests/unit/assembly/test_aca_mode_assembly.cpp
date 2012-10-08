@@ -56,8 +56,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_assembled_operator_agrees_with_dense_assemb
         new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
         new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    pwiseConstants->assignDofs();
-    pwiseLinears->assignDofs();
 
     AccuracyOptions accuracyOptions;
     accuracyOptions.doubleRegular.setRelativeQuadratureOrder(1);
@@ -106,8 +104,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_disassembled_operator_agrees_with_dense_ass
         new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
         new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    pwiseConstants->assignDofs();
-    pwiseLinears->assignDofs();
 
     AccuracyOptions accuracyOptions;
     accuracyOptions.doubleRegular.setRelativeQuadratureOrder(1);

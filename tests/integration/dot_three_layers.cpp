@@ -195,10 +195,6 @@ int main(int argc, char* argv[])
     PiecewiseLinearContinuousScalarSpace<BFT> HplusHalfSpace2(grid2);
     PiecewiseLinearContinuousScalarSpace<BFT> HplusHalfSpace3(grid3);
 
-    HplusHalfSpace1.assignDofs();
-    HplusHalfSpace2.assignDofs();
-    HplusHalfSpace3.assignDofs();
-
     // Define some default options.
 
     AssemblyOptions assemblyOptions;

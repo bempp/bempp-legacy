@@ -126,12 +126,6 @@ shared_ptr<arma::Col<ResultType> > calculateProjections(
         const Function<ResultType>& globalFunction,
         const Space<BasisFunctionType>& dualSpace)
 {
-    if (!dualSpace.dofsAssigned())
-        throw std::runtime_error(
-                "GridFunction::calculateProjections(): "
-                "degrees of freedom of the provided dual space must be assigned "
-                "before calling calculateProjections()");
-
     const AssemblyOptions& options = context.assemblyOptions();
 
     // Prepare local assembler
@@ -196,11 +190,6 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): "
                 "space and dualSpace must be defined on the same grid");
-    if (!space->dofsAssigned() || !dualSpace->dofsAssigned())
-        throw std::runtime_error(
-                "GridFunction::GridFunction(): "
-                "degrees of freedom of the provided spaces must be assigned "
-                "beforehand");
     if (dataType == COEFFICIENTS) {
         if (data.n_rows != space->globalDofCount())
             throw std::invalid_argument(
@@ -242,11 +231,6 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): "
                 "space and dualSpace must be defined on the same grid");
-    if (!space->dofsAssigned() || !dualSpace->dofsAssigned())
-        throw std::runtime_error(
-                "GridFunction::GridFunction(): "
-                "degrees of freedom of the provided spaces must be assigned "
-                "beforehand");
     if (coefficients.n_rows != space->globalDofCount())
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): "
@@ -281,11 +265,6 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): "
                 "space and dualSpace must be defined on the same grid");
-    if (!space->dofsAssigned() || !dualSpace->dofsAssigned())
-        throw std::runtime_error(
-                "GridFunction::GridFunction(): "
-                "degrees of freedom of the provided spaces must be assigned "
-                "beforehand");
 }
 
 template <typename BasisFunctionType, typename ResultType>

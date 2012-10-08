@@ -40,7 +40,6 @@ grid = lib.createGridFactory().importGmshGrid(
 # Create a function space
 
 pconsts = lib.createPiecewiseConstantScalarSpace(context, grid)
-pconsts.assignDofs()
 
 # Define material and wave parameters
 

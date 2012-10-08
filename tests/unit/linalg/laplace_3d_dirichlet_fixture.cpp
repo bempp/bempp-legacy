@@ -31,8 +31,6 @@ Laplace3dDirichletFixture<BFT, RT>::Laplace3dDirichletFixture(
         new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
         new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    pwiseConstants->assignDofs();
-    pwiseLinears->assignDofs();
 
     AssemblyOptions assemblyOptions;
     assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);

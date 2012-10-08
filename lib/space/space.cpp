@@ -139,13 +139,20 @@ Space<BasisFunctionType>::~Space()
 }
 
 template <typename BasisFunctionType>
+void Space<BasisFunctionType>::assignDofs()
+{
+}
+
+template <typename BasisFunctionType>
+bool Space<BasisFunctionType>::dofsAssigned() const
+{
+    return true;
+}
+
+template <typename BasisFunctionType>
 void getAllBases(const Space<BasisFunctionType>& space,
         std::vector<const Fiber::Basis<BasisFunctionType>*>& bases)
 {
-    if (!space.dofsAssigned())
-        throw std::runtime_error("getAllBases(): space.assignDofs() must be "
-                                 "called before calling this function");
-
     std::auto_ptr<GridView> view = space.grid()->leafView();
     const Mapper& mapper = view->elementMapper();
     const int elementCount = view->entityCount(0);

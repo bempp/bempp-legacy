@@ -37,8 +37,6 @@ context = createContext(quadStrategy, options)
 
 pwiseConstants = createPiecewiseConstantScalarSpace(context, grid)
 pwiseLinears = createPiecewiseLinearContinuousScalarSpace(context, grid)
-pwiseConstants.assignDofs()
-pwiseLinears.assignDofs()
 
 # Construct elementary operators
 

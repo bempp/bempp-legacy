@@ -51,6 +51,7 @@ PiecewiseLinearContinuousScalarSpace(const shared_ptr<Grid>& grid) :
                                     "PiecewiseLinearContinuousScalarSpace(): "
                                     "only 1- and 2-dimensional grids are supported");
     m_view = grid->leafView();
+    assignDofsImpl();
 }
 
 template <typename BasisFunctionType>
@@ -118,7 +119,7 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::setElementVariant(
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofs()
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
 {
     const int gridDim = domainDimension();
 
@@ -194,13 +195,6 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofs()
 }
 
 template <typename BasisFunctionType>
-bool PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::dofsAssigned() const
-{
-    const int gridDim = domainDimension();
-    return globalDofCount() == m_view->entityCount(gridDim);
-}
-
-template <typename BasisFunctionType>
 size_t PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::globalDofCount() const
 {
     return m_global2localDofs.size();
@@ -253,11 +247,6 @@ template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getGlobalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
-    if (!dofsAssigned())
-        throw std::runtime_error(
-                "PiecewiseLinearContinuousScalarSpace::getGlobalDofPositions(): "
-                "assignDofs() must be called before calling this function");
-
     const int gridDim = domainDimension();
     const int globalDofCount_ = globalDofCount();
     positions.resize(globalDofCount_);
@@ -302,11 +291,6 @@ template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getFlatLocalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
-    if (!dofsAssigned())
-        throw std::runtime_error(
-                "PiecewiseLinearContinuousScalarSpace::getFlatLocalDofPositions(): "
-                "assignDofs() must be called before calling this function");
-
     const int gridDim = domainDimension();
     const int worldDim = this->grid()->dimWorld();
     positions.resize(m_flatLocalDofCount);
@@ -355,11 +339,6 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::dumpClusterIds(
         const char* fileName,
         const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const
 {
-    if (!dofsAssigned())
-        throw std::runtime_error(
-                "PiecewiseLinearContinuousScalarSpace::dumpClusterIds(): "
-                "assignDofs() must be called before calling this function");
-
     const size_t idCount = clusterIdsOfGlobalDofs.size();
     if (idCount != globalDofCount())
         throw std::invalid_argument("PiecewiseLinearContinuousScalarSpace::"

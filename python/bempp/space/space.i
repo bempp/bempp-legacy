@@ -43,6 +43,18 @@ template<typename BasisFunctionType> class Space;
 %ignore dumpClusterIds;
 }
 
+%define BEMPP_EXTEND_SPACE(BASIS, PYBASIS)
+    %extend Space< BASIS >
+    {
+        %pythonprepend assignDofs %{
+            print ("HINT: It is not necessary to call Space.assignDofs() any more.\n"
+                   "DOFs are now automatically assigned as soon as a space object is "
+                   "constructed.")
+        %}
+    }
+%enddef
+BEMPP_ITERATE_OVER_BASIS_TYPES(BEMPP_EXTEND_SPACE);
+
 BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS(Space);
 
 } // namespace Bempp

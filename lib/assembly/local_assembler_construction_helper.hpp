@@ -65,12 +65,6 @@ struct LocalAssemblerConstructionHelper
             const Space<BasisFunctionType>& space,
             shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType>*> >& bases) {
         typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
-
-        if (!space.dofsAssigned())
-            throw std::runtime_error(
-                    "LocalAssemblerConstructionHelper::collectBases(): "
-                    "degrees of freedom must be assigned "
-                    "before calling this function");
         bases = boost::make_shared<BasisPtrVector>();
         getAllBases(space, *bases);
     }

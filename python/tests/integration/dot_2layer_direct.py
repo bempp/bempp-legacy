@@ -108,8 +108,6 @@ context = blib.createContext(strategy, options)
 sphere1_plc = blib.createPiecewiseLinearContinuousScalarSpace(context,sphere1)
 sphere2_plc = blib.createPiecewiseLinearContinuousScalarSpace(context,sphere2)
 
-sphere1_plc.assignDofs()
-sphere2_plc.assignDofs()
 
 # Now create the operators
 slp11 = blib.createModifiedHelmholtz3dSingleLayerBoundaryOperator(context,sphere1_plc,sphere1_plc,sphere1_plc,w1)

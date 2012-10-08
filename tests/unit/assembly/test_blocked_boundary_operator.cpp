@@ -62,8 +62,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
         new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
         new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    pwiseConstants->assignDofs();
-    pwiseLinears->assignDofs();
 
     AssemblyOptions assemblyOptions;
     assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
@@ -111,10 +109,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
     shared_ptr<Space<BFT> > pl0(new PiecewiseLinearContinuousScalarSpace<BFT>(grid0));
     shared_ptr<Space<BFT> > pc1(new PiecewiseConstantScalarSpace<BFT>(grid1));
     shared_ptr<Space<BFT> > pl1(new PiecewiseLinearContinuousScalarSpace<BFT>(grid1));
-    pc0->assignDofs();
-    pl0->assignDofs();
-    pc1->assignDofs();
-    pl1->assignDofs();
 
     AssemblyOptions assemblyOptions;
     assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
@@ -172,12 +166,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
     shared_ptr<Space<BFT> > pl1(new PiecewiseLinearContinuousScalarSpace<BFT>(grid1));
     shared_ptr<Space<BFT> > pc2(new PiecewiseConstantScalarSpace<BFT>(grid2));
     shared_ptr<Space<BFT> > pl2(new PiecewiseLinearContinuousScalarSpace<BFT>(grid2));
-    pc0->assignDofs();
-    pl0->assignDofs();
-    pc1->assignDofs();
-    pl1->assignDofs();
-    pc2->assignDofs();
-    pl2->assignDofs();
 
     AssemblyOptions assemblyOptions;
     assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);

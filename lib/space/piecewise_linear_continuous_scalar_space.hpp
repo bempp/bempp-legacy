@@ -65,8 +65,6 @@ public:
 
     virtual const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
 
-    virtual void assignDofs();
-    virtual bool dofsAssigned() const;
     virtual size_t globalDofCount() const;
     virtual size_t flatLocalDofCount() const;
     virtual void getGlobalDofs(const Entity<0>& element,
@@ -84,19 +82,8 @@ public:
             const char* fileName,
             const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const;
 
-//private:
-//    virtual shared_ptr<DiscreteBoundaryOperator<CoordinateType> >
-//        global2localDofsOperatorRealImpl() const;
-//    virtual shared_ptr<DiscreteBoundaryOperator<ComplexType> >
-//        global2localDofsOperatorComplexImpl() const;
-//    virtual shared_ptr<DiscreteBoundaryOperator<CoordinateType> >
-//        local2globalDofsOperatorRealImpl() const;
-//    virtual shared_ptr<DiscreteBoundaryOperator<ComplexType> >
-//        local2globalDofsOperatorComplexImpl() const;
-
-    // void constructGlobal2localDofsMappingVectors(
-    //         std::vector<int>& rows, std::vector<int>& cols,
-    //         std::vector<double>& values) const;
+private:
+    void assignDofsImpl();
 
 private:
     std::auto_ptr<GridView> m_view;

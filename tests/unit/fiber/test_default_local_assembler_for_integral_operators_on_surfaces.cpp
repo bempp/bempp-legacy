@@ -71,8 +71,6 @@ public:
                     new PiecewiseConstantSpace(grid));
         piecewiseLinearSpace = std::auto_ptr<PiecewiseLinearSpace>(
                     new PiecewiseLinearSpace(grid));
-        piecewiseConstantSpace->assignDofs();
-        piecewiseLinearSpace->assignDofs();
 
         op = std::auto_ptr<Operator>(new Operator(
                                          make_shared_from_ref(*piecewiseConstantSpace),

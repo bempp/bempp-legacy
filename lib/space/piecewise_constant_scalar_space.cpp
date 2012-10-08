@@ -20,6 +20,7 @@
 
 #include "piecewise_constant_scalar_space.hpp"
 
+#include "../common/not_implemented_error.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../grid/entity.hpp"
 #include "../grid/entity_iterator.hpp"
@@ -37,6 +38,7 @@ PiecewiseConstantScalarSpace<BasisFunctionType>::
 PiecewiseConstantScalarSpace(const shared_ptr<Grid>& grid) :
      ScalarSpace<BasisFunctionType>(grid), m_view(grid->leafView())
 {
+    assignDofsImpl();
 }
 
 template <typename BasisFunctionType>
@@ -83,7 +85,7 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::setElementVariant(
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantScalarSpace<BasisFunctionType>::assignDofs()
+void PiecewiseConstantScalarSpace<BasisFunctionType>::assignDofsImpl()
 {
     const Mapper& mapper = m_view->elementMapper();
     std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
@@ -114,12 +116,6 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::assignDofs()
         it->next();
     }
     assert(globalDofCount_ == elementCount);
-}
-
-template <typename BasisFunctionType>
-bool PiecewiseConstantScalarSpace<BasisFunctionType>::dofsAssigned() const
-{
-    return globalDofCount() == m_view->entityCount(0);
 }
 
 template <typename BasisFunctionType>
@@ -168,11 +164,6 @@ template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::getGlobalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
-    if (!dofsAssigned())
-        throw std::runtime_error(
-                "PiecewiseConstantScalarSpace::getGlobalDofPositions(): "
-                "assignDofs() must be called before calling this function");
-
     const int gridDim = domainDimension();
     const int globalDofCount_ = globalDofCount();
     positions.resize(globalDofCount_);
@@ -204,10 +195,6 @@ template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::getFlatLocalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
-    if (!dofsAssigned())
-        throw std::runtime_error(
-                "PiecewiseConstantScalarSpace::getFlatLocalDofPositions(): "
-                "assignDofs() must be called before calling this function");
     return getGlobalDofPositions(positions);
 }
 
@@ -216,11 +203,6 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::dumpClusterIds(
         const char* fileName,
         const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const
 {
-    if (!dofsAssigned())
-        throw std::runtime_error(
-                "PiecewiseConstantScalarSpace::dumpClusterIds(): "
-                "assignDofs() must be called before calling this function");
-
     const size_t idCount = clusterIdsOfGlobalDofs.size();
     if (idCount != globalDofCount())
         throw std::invalid_argument(

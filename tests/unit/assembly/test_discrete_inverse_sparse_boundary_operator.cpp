@@ -63,7 +63,6 @@ struct DiscreteInverseSparseBoundaryOperatorFixture
 
         shared_ptr<Space<BFT> > pwiseLinears(
             new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-        pwiseLinears->assignDofs();
 
         AssemblyOptions assemblyOptions;
         assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);

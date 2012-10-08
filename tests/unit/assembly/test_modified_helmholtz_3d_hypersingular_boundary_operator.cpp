@@ -75,8 +75,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works_for_complex_kernel, BasisFunctionType, basis
 
     PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(grid);
     PiecewiseConstantScalarSpace<BFT> pwiseConstants(grid);
-    pwiseLinears.assignDofs();
-    pwiseConstants.assignDofs();
 
     AssemblyOptions assemblyOptions;
     assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
@@ -186,8 +184,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works_for_real_kernel, BasisFunctionType, basis_fu
 
     PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(grid);
     PiecewiseConstantScalarSpace<BFT> pwiseConstants(grid);
-    pwiseLinears.assignDofs();
-    pwiseConstants.assignDofs();
 
     AssemblyOptions assemblyOptions;
     assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);

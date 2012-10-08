@@ -113,9 +113,6 @@ int main()
     PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(grid);
     PiecewiseConstantScalarSpace<BFT> pwiseConstants(grid);
 
-    pwiseLinears.assignDofs();
-    pwiseConstants.assignDofs();
-
     // Define the quadrature strategy
 
     NumericalQuadratureStrategy<BFT, RT> quadStrategy;
