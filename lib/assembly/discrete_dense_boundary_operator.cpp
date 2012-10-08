@@ -84,6 +84,16 @@ void DiscreteDenseBoundaryOperator<ValueType>::addBlock(
             block(row, col) += alpha*m_mat(rows[row], cols[col]);
 }
 
+template <typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> >
+DiscreteDenseBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
+        double eps, int maximumRank) const
+{
+    throw std::runtime_error("DiscreteDenseBoundaryOperator::"
+                             "asDiscreteAcaBoundaryOperator(): "
+                             "not implemented.");
+}
+
 #ifdef WITH_TRILINOS
 template <typename ValueType>
 Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> >

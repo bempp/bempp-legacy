@@ -59,12 +59,8 @@ public:
                           const ValueType alpha,
                           arma::Mat<ValueType>& block) const;
 
-    inline shared_ptr<const DiscreteBoundaryOperator<ValueType> > asDiscreteAcaBoundaryOperator(
-                                                              double eps=1E-4,
-                                                              int maximumRank=50) const {
-        throw std::runtime_error("DiscreteDenseBoundaryOperator::asDiscreteAcaBoundaryOperator:"
-                                 " not implemented.");
-    }
+    virtual shared_ptr<const DiscreteBoundaryOperator<ValueType> >
+    asDiscreteAcaBoundaryOperator(double eps = 1E-4, int maximumRank = 50) const;
 
 #ifdef WITH_TRILINOS
 public:
