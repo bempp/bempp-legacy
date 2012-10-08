@@ -51,7 +51,6 @@ namespace Bempp
 class EvaluationOptions;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
 template <typename ValueType> class InterpolatedFunction;
-template <typename BasisFunctionType, typename ResultType> class WeakFormAcaAssemblyHelper;
 /** \endcond */
 
 /** \ingroup abstract_boundary_operators

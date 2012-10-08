@@ -29,7 +29,6 @@
 #include "discrete_sparse_boundary_operator.hpp"
 #include "context.hpp"
 
-#include "../common/auto_timer.hpp"
 #include "../common/types.hpp"
 #include "../fiber/basis.hpp"
 #include "../fiber/explicit_instantiation.hpp"
@@ -48,6 +47,9 @@
 
 #include "../common/boost_make_shared_fwd.hpp"
 #include <boost/type_traits/is_complex.hpp>
+
+#include <tbb/tick_count.h>
+
 #include <stdexcept>
 #include <vector>
 
