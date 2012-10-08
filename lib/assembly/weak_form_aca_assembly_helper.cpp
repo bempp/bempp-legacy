@@ -69,6 +69,16 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::WeakFormAcaAssemblyHel
                 "combining sparse and dense terms with "
                 "globalAssemblyBeforeCompression set to false "
                 "is not supported at present");
+    for (size_t i = 0; i < assemblers.size(); ++i)
+        if (!assemblers[i])
+            throw std::invalid_argument(
+                    "WeakFormAcaAssemblyHelper::WeakFormAcaAssemblyHelper(): "
+                    "no elements of the 'assemblers' vector may be null");
+    for (size_t i = 0; i < sparseTermsToAdd.size(); ++i)
+        if (!sparseTermsToAdd[i])
+            throw std::invalid_argument(
+                    "WeakFormAcaAssemblyHelper::WeakFormAcaAssemblyHelper(): "
+                    "no elements of the 'sparseTermsToAdd' vector may be null");
 }
 
 template <typename BasisFunctionType, typename ResultType>
