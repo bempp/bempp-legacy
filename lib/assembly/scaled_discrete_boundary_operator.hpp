@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "bempp/common/config_ahmed.hpp"
 #include "bempp/common/config_trilinos.hpp"
 
 #ifndef bempp_scaled_discrete_boundary_operator_hpp
@@ -65,10 +66,10 @@ public:
                           const ValueType alpha,
                           arma::Mat<ValueType>& block) const;
 
-    shared_ptr<const DiscreteBoundaryOperator<ValueType> > asDiscreteAcaBoundaryOperator(
-                                                              double eps=1E-4,
-                                                              int maximumRank=50) const;
-
+#ifdef WITH_AHMED
+    shared_ptr<const DiscreteBoundaryOperator<ValueType> >
+    asDiscreteAcaBoundaryOperator(double eps=1E-4, int maximumRank=50) const;
+#endif
 
 #ifdef WITH_TRILINOS
 public:

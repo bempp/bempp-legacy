@@ -262,6 +262,14 @@ addBlock(const std::vector<int>& rows,
 }
 
 template <typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> >
+DiscreteAcaBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
+        double eps, int maximumRank) const
+{
+    return this->shared_from_this(); // this-> needed for template name resolution.
+}
+
+template <typename ValueType>
 const DiscreteAcaBoundaryOperator<ValueType>&
 DiscreteAcaBoundaryOperator<ValueType>::castToAca(
         const DiscreteBoundaryOperator<ValueType>& discreteOperator)

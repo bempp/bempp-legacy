@@ -19,6 +19,7 @@
 // THE SOFTWARE.
 
 #include "bempp/common/config_trilinos.hpp"
+#include "bempp/common/config_ahmed.hpp"
 
 #include "discrete_blocked_boundary_operator.hpp"
 #include "../common/to_string.hpp"
@@ -104,22 +105,29 @@ void DiscreteBlockedBoundaryOperator<ValueType>::addBlock(
 template <typename ValueType>
 shared_ptr<const DiscreteBlockedBoundaryOperator<ValueType> >
 DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBlockedBoundaryOperator(
-                                                            double eps,
-                                                            int maximumRank) const{
+        double eps, int maximumRank) const
+{
+#ifdef WITH_AHMED
     size_t nrows = m_blocks.extent(0);
     size_t ncols = m_blocks.extent(1);
-    Fiber::_2dArray<shared_ptr<const Base> > acaBlocks(nrows,ncols);
-    for (size_t i=0;i<nrows;i++){
-        for (size_t j=0;j<ncols;j++){
-            if (m_blocks(i,j).get()!=0) acaBlocks(i,j)=
-                    m_blocks(i,j)->asDiscreteAcaBoundaryOperator(eps,maximumRank);
+    Fiber::_2dArray<shared_ptr<const Base> > acaBlocks(nrows, ncols);
+    for (size_t i = 0; i < nrows; i++){
+        for (size_t j = 0; j < ncols; j++){
+            if (m_blocks(i, j).get() != 0)
+                acaBlocks(i, j) =
+                    m_blocks(i, j)->asDiscreteAcaBoundaryOperator(eps, maximumRank);
         }
     }
     return shared_ptr<const DiscreteBlockedBoundaryOperator<ValueType> >(
-                new DiscreteBlockedBoundaryOperator(acaBlocks,m_rowCounts,m_columnCounts));
-
+                new DiscreteBlockedBoundaryOperator(
+                    acaBlocks, m_rowCounts, m_columnCounts));
+#else
+    throw std::runtime_error("DiscreteBlockedBoundaryOperator::"
+                             "asDiscreteAcaBlockedBoundaryOperator(): "
+                             "ACA operators are not supported because BEM++ "
+                             "has been compiled without AHMED.");
+#endif
 }
-
 
 #ifdef WITH_TRILINOS
 template <typename ValueType>

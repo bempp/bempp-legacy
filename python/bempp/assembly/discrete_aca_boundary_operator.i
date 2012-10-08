@@ -1,3 +1,5 @@
+#ifdef WITH_AHMED
+
 %{
 #include "assembly/discrete_aca_boundary_operator.hpp"
 #include "fiber/scalar_traits.hpp"
@@ -26,3 +28,5 @@ namespace Bempp
 %enddef
 
 BEMPP_ITERATE_OVER_BASIS_TYPES(BEMPP_ACA_FREE_FUNCTIONS)
+
+#endif // WITH_AHMED

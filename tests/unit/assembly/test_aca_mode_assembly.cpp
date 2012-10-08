@@ -18,6 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "bempp/common/config_ahmed.hpp"
+
+#ifdef WITH_AHMED
+
 #include "../type_template.hpp"
 #include "../check_arrays_are_close.hpp"
 
@@ -139,4 +143,4 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_disassembled_operator_agrees_with_dense_ass
 
 BOOST_AUTO_TEST_SUITE_END()
 
-
+#endif // WITH_AHMED

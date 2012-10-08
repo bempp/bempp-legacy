@@ -46,16 +46,17 @@ void ScaledDiscreteBoundaryOperator<ValueType>::addBlock(
     m_operator->addBlock(rows, cols, m_multiplier * alpha, block);
 }
 
+#ifdef WITH_AHMED
 template<typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> >
 ScaledDiscreteBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
-                                                          double eps,
-                                                          int maximumRank) const{
+        double eps, int maximumRank) const
+{
     shared_ptr<const DiscreteBoundaryOperator<ValueType> > acaOp =
-            m_operator->asDiscreteAcaBoundaryOperator(eps,maximumRank);
-    return scaledAcaOperator(acaOp,m_multiplier);
+            m_operator->asDiscreteAcaBoundaryOperator(eps, maximumRank);
+    return scaledAcaOperator(acaOp, m_multiplier);
 }
-
+#endif // WITH_AHMED
 
 #ifdef WITH_TRILINOS
 template <typename ValueType>

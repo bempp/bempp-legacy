@@ -19,6 +19,9 @@
 // THE SOFTWARE.
 
 #include "bempp/common/config_trilinos.hpp"
+#include "bempp/common/config_ahmed.hpp"
+
+#ifdef WITH_AHMED
 
 #ifndef bempp_discrete_aca_boundary_operator_hpp
 #define bempp_discrete_aca_boundary_operator_hpp
@@ -172,12 +175,8 @@ public:
                           const ValueType alpha,
                           arma::Mat<ValueType>& block) const;
 
-    inline shared_ptr<const DiscreteBoundaryOperator<ValueType> > asDiscreteAcaBoundaryOperator(
-                                                              double eps=1E-4,
-                                                              int maximumRank=50) const{
-        return this->shared_from_this(); // this-> needed for template name resolution.
-    }
-
+    virtual shared_ptr<const DiscreteBoundaryOperator<ValueType> >
+    asDiscreteAcaBoundaryOperator(double eps=1E-4, int maximumRank=50) const;
 
     /** \brief Uncompress all blocks of the H-matrix and store them as dense
      *  matrices.
@@ -240,5 +239,7 @@ private:
 };
 
 } // namespace Bempp
+
+#endif // WITH_AHMED
 
 #endif

@@ -84,30 +84,33 @@ public:
                           const ValueType alpha,
                           arma::Mat<ValueType>& block) const;
 
-    inline shared_ptr<const DiscreteBoundaryOperator<ValueType> > asDiscreteAcaBoundaryOperator(
-                                                              double eps=1E-4,
-                                                              int maximumRank=50) const{
-        throw std::runtime_error("DiscreteBlockedBoundaryOperator::asDiscreteAcaBoundaryOperator:"
-                                 "not implemented.");
-    }
+#ifdef WITH_AHMED
+    virtual shared_ptr<const DiscreteBoundaryOperator>
+    asDiscreteAcaBoundaryOperator(double eps=1E-4, int maximumRank=50) const;
+#endif
 
-
-    /** \brief Return a new DiscreteBlockedBoundaryOperator, in which every component is castable to
-      *  a DiscreteAcaBoundaryOperator.
-      * This routine calls the DiscreteBoundaryOperator::asDiscreteAcaBoundaryOperator function for
-      * each block component, which may throw a std::bad_cast if conversion of a block fails.
+    /** \brief Return a new DiscreteBlockedBoundaryOperator, in which every
+      * component is castable to a DiscreteAcaBoundaryOperator.
+      *
+      * This routine calls the
+      * DiscreteBoundaryOperator::asDiscreteAcaBoundaryOperator() function for
+      * each block component, which may throw a std::bad_cast exception if
+      * conversion of a block fails.
       *
       * \param[in] eps
-      * Accuracy tolerance for H-Matrix addition.
+      *   Accuracy tolerance for H-Matrix addition.
       * \param[in] maximumRank
-      * maximum rank of blocks to be considered low rank in the case of H-Matrix addition.
-      * \returns A pointer to a DiscreteBlockedBoundaryOperator object, where every component is castable to
-      * DiscreteAcaBoundaryOperator.
+      *   Maximum rank of blocks to be considered low rank in the case of
+      *   H-Matrix addition.
+      *
+      * \returns A pointer to a DiscreteBlockedBoundaryOperator object, where
+      *   every component is castable to DiscreteAcaBoundaryOperator.
+      *
+      * \note This function throws an exception if BEM++ has been compiled
+      *  without AHMED.
       */
-    shared_ptr<const DiscreteBlockedBoundaryOperator<ValueType> > asDiscreteAcaBlockedBoundaryOperator(
-                                                                double eps=1E-4,
-                                                                int maximumRank=50) const;
-
+    shared_ptr<const DiscreteBlockedBoundaryOperator<ValueType> >
+    asDiscreteAcaBlockedBoundaryOperator(double eps=1E-4, int maximumRank=50) const;
 
 #ifdef WITH_TRILINOS
 public:

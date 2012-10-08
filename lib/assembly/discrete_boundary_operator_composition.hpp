@@ -64,13 +64,6 @@ public:
                           const ValueType alpha,
                           arma::Mat<ValueType>& block) const;
 
-    inline shared_ptr<const DiscreteBoundaryOperator<ValueType> > asDiscreteAcaBoundaryOperator(
-                                                              double eps=1E-4,
-                                                              int maximumRank=50) const{
-        throw std::runtime_error("DiscreteBoundaryOperatorComposition::asDiscreteAcaBoundaryOperator:"
-                                 "not implemented.");
-    }
-
 #ifdef WITH_TRILINOS
 public:
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;

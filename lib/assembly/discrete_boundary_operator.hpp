@@ -152,22 +152,28 @@ public:
         applyBuiltInImpl(trans, x_in, y_inout, alpha, beta);
     }
 
-    /** \brief Return a representation that can be casted to a DiscreteAcaBoundaryOperator
-      *
-      * The conversion only succeeds if all members if the DiscreteOperator itself can be
-      * cast to a DiscreteAcaBoundaryOperator or if it is a linear combination of
-      * DiscreteOperators that can be cast to type DiscreteAcaBoundaryOperator.
-      * Operator compositions are not yet supported by this function.
-      *
-      * \param[in] eps
-      * Accuracy tolerance for H-Matrix addition.
-      * \param[in] maximumRank
-      * maximum rank of blocks to be considered low rank in the case of H-Matrix addition.
-      * \returns A pointer to a DiscreteBoundaryOperator object, which is castable to
-      * DiscreteAcaBoundaryOperator.
-      */
+    /** \brief Return a representation that can be casted to a
+     *  DiscreteAcaBoundaryOperator
+     *
+     *  The conversion only succeeds if all members if the DiscreteOperator
+     *  itself can be cast to a DiscreteAcaBoundaryOperator or if it is a
+     *  linear combination of DiscreteOperators that can be cast to type
+     *  DiscreteAcaBoundaryOperator. Operator compositions are not yet
+     *  supported by this function.
+     *
+     *  \param[in] eps
+     *    Accuracy tolerance for H-Matrix addition.
+     *  \param[in] maximumRank
+     *    Maximum rank of blocks to be considered low rank in the case of H-Matrix addition.
+     *
+     *  \returns A pointer to a DiscreteBoundaryOperator object castable to
+     *  DiscreteAcaBoundaryOperator.
+     *
+     *  \note This function throws an exception if BEM++ has been compiled
+     *  without AHMED.
+     */
     virtual shared_ptr<const DiscreteBoundaryOperator>
-    asDiscreteAcaBoundaryOperator(double eps=1E-4, int maximumRank=50) const = 0;
+    asDiscreteAcaBoundaryOperator(double eps=1E-4, int maximumRank=50) const;
 
     /** \brief Write a textual representation of the operator to standard output.
      *

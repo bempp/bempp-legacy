@@ -1211,83 +1211,82 @@ def createBlockedBoundaryOperator(context, structure):
     return _constructObjectTemplatedOnBasisAndResult(
         name, context.basisFunctionType(), context.resultType(), boStructure)
 
+if core._withAhmed:
+    def acaOperatorApproximateLuInverse(operator, delta):
+        """
+        Create and return a discrete boundary operator representing an approximate
+        inverse of an H-matrix.
 
+        *Parameters:*
+           - operator (DiscreteBoundaryOperator)
+                A discrete boundary operator stored in the form of an H-matrix.
+           - delta (float)
+                Approximation accuracy.
 
-def acaOperatorApproximateLuInverse(operator, delta):
-    """
-    Create and return a discrete boundary operator representing an approximate
-    inverse of an H-matrix.
+        *Returns* a DiscreteBoundaryOperator_ValueType object representing an
+        approximate inverse of the operator supplied in the 'operator' argument,
+        stored in the form of an approximate H-matrix LU decomposition. ValueType is
+        set to operator.valueType().
+        """
+        # name = 'createAcaApproximateLuInverse'
+        name = 'acaOperatorApproximateLuInverse'
+        return _constructObjectTemplatedOnValue(
+            name, operator.valueType(), operator, delta)
 
-    *Parameters:*
-       - operator (DiscreteBoundaryOperator)
-            A discrete boundary operator stored in the form of an H-matrix.
-       - delta (float)
-            Approximation accuracy.
+    def createAcaApproximateLuInverse(operator, delta):
+        """
+        Deprecated. Superseded by acaOperatorApproximateLuInverse().
+        """
+        print ("createAcaApproximateLuInverse(): DEPRECATED: "
+               "use acaOperatorApproximateLuInverse() instead.")
+        return acaOperatorApproximateLuInverse(operator, delta)
 
-    *Returns* a DiscreteBoundaryOperator_ValueType object representing an
-    approximate inverse of the operator supplied in the 'operator' argument,
-    stored in the form of an approximate H-matrix LU decomposition. ValueType is
-    set to operator.valueType().
-    """
-    # name = 'createAcaApproximateLuInverse'
-    name = 'acaOperatorApproximateLuInverse'
-    return _constructObjectTemplatedOnValue(
-        name, operator.valueType(), operator, delta)
+    def scaledAcaOperator(operator, multiplier):
+        """
+        Multiply a discrete boundary operator stored as an H-matrix by a scalar.
 
-def createAcaApproximateLuInverse(operator, delta):
-    """
-    Deprecated. Superseded by acaOperatorApproximateLuInverse().
-    """
-    print ("createAcaApproximateLuInverse(): DEPRECATED: "
-           "use acaOperatorApproximateLuInverse() instead.")
-    return acaOperatorApproximateLuInverse(operator, delta)
+        *Parameters:*
+           - operator (DiscreteBoundaryOperator)
+                A discrete boundary operator stored in the form of an H-matrix.
+           - multiplier (float or complex, depending on operator.valueType())
+                Scalar with which the supplied operator should be multiplied.
 
-def scaledAcaOperator(operator, multiplier):
-    """
-    Multiply a discrete boundary operator stored as an H-matrix by a scalar.
+        *Returns* a newly constructed DiscreteBoundaryOperator_ValueType object
+        storing an H-matrix equal to the H-matrix stored in 'operator' and
+        multiplied by 'multiplier'. ValueType is set to operator.valueType().
+        """
+        name = 'scaledAcaOperator'
+        return _constructObjectTemplatedOnValue(
+            name, operator.valueType(), operator, multiplier)
 
-    *Parameters:*
-       - operator (DiscreteBoundaryOperator)
-            A discrete boundary operator stored in the form of an H-matrix.
-       - multiplier (float or complex, depending on operator.valueType())
-            Scalar with which the supplied operator should be multiplied.
+    def acaOperatorSum(op1, op2, eps, maximumRank):
+        """
+        Create and return a discrete boundary operator representing an approximate
+        sum of two discrete boundary operators stored as H-matrices.
 
-    *Returns* a newly constructed DiscreteBoundaryOperator_ValueType object
-    storing an H-matrix equal to the H-matrix stored in 'operator' and
-    multiplied by 'multiplier'. ValueType is set to operator.valueType().
-    """
-    name = 'scaledAcaOperator'
-    return _constructObjectTemplatedOnValue(
-        name, operator.valueType(), operator, multiplier)
+        *Parameters:*
+           - op1 (DiscreteBoundaryOperator)
+                First operand; a discrete boundary operator stored in the form of an
+                H-matrix.
+           - op2 (DiscreteBoundaryOperator)
+                Second operand; a discrete boundary operator stored in the form of an
+                H-matrix.
+           - eps (float)
+                Approximation accuracy. (TODO: explain better)
+           - maximumRank (int)
+                Maximum rank of blocks that should be considered low-rank in the
+                H-matrix to be constructed.
 
-def acaOperatorSum(op1, op2, eps, maximumRank):
-    """
-    Create and return a discrete boundary operator representing an approximate
-    sum of two discrete boundary operators stored as H-matrices.
-
-    *Parameters:*
-       - op1 (DiscreteBoundaryOperator)
-            First operand; a discrete boundary operator stored in the form of an
-            H-matrix.
-       - op2 (DiscreteBoundaryOperator)
-            Second operand; a discrete boundary operator stored in the form of an
-            H-matrix.
-       - eps (float)
-            Approximation accuracy. (TODO: explain better)
-       - maximumRank (int)
-            Maximum rank of blocks that should be considered low-rank in the
-            H-matrix to be constructed.
-
-    *Returns* a newly constructed DiscreteBoundaryOperator_ValueType object
-    storing an H-matrix approximately equal to sum of the H-matrices stored in
-    the two operands. ValueType is set to op1.valueType() (which must be equal
-    to op2.valueType()).
-    """
-    name = 'acaOperatorSum'
-    if (op1.valueType() != op2.valueType()):
-        raise TypeError("acaOperatorSum: ValueTypes of 'op1' and 'op2' do not match.")
-    return _constructObjectTemplatedOnValue(
-        name, op1.valueType(), op1, op2, eps, maximumRank)
+        *Returns* a newly constructed DiscreteBoundaryOperator_ValueType object
+        storing an H-matrix approximately equal to sum of the H-matrices stored in
+        the two operands. ValueType is set to op1.valueType() (which must be equal
+        to op2.valueType()).
+        """
+        name = 'acaOperatorSum'
+        if (op1.valueType() != op2.valueType()):
+            raise TypeError("acaOperatorSum: ValueTypes of 'op1' and 'op2' do not match.")
+        return _constructObjectTemplatedOnValue(
+            name, op1.valueType(), op1, op2, eps, maximumRank)
 
 def discreteSparseInverse(op):
     """

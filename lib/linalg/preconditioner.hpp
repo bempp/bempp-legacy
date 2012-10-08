@@ -22,7 +22,6 @@
 #define	bempp_preconditioner_factory_hpp
 
 #include "../common/common.hpp"
-#include <vector>
 
 #include "bempp/common/config_trilinos.hpp"
 
@@ -35,6 +34,8 @@
 #include "../assembly/boundary_operator.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../fiber/scalar_traits.hpp"
+
+#include <vector>
 
 namespace Bempp
 {

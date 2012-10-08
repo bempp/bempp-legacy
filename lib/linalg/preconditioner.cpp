@@ -21,20 +21,19 @@
 #include "bempp/common/config_trilinos.hpp"
 #include "bempp/common/config_ahmed.hpp"
 
-#if defined(WITH_TRILINOS) && defined(WITH_AHMED)
+#if defined(WITH_TRILINOS)
 
 #include "preconditioner.hpp"
-#include "../assembly/discrete_aca_boundary_operator.hpp"
-#include "../assembly/discrete_boundary_operator.hpp"
-#include "../assembly/aca_approximate_lu_inverse.hpp"
-#include "../assembly/discrete_aca_boundary_operator.hpp"
-#include "../assembly/aca_approximate_lu_inverse.hpp"
-#include "../assembly/discrete_sparse_boundary_operator.hpp"
-#include "../assembly/discrete_inverse_sparse_boundary_operator.hpp"
-#include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/_2d_array.hpp"
-#include "../fiber/scalar_traits.hpp"
+
+//#include "../assembly/aca_approximate_lu_inverse.hpp"
+//#include "../assembly/discrete_aca_boundary_operator.hpp"
 #include "../assembly/discrete_blocked_boundary_operator.hpp"
+#include "../assembly/discrete_boundary_operator.hpp"
+//#include "../assembly/discrete_inverse_sparse_boundary_operator.hpp"
+//#include "../assembly/discrete_sparse_boundary_operator.hpp"
+#include "../fiber/_2d_array.hpp"
+#include "../fiber/explicit_instantiation.hpp"
+#include "../fiber/scalar_traits.hpp"
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_RCPBoostSharedPtrConversions.hpp>
@@ -47,11 +46,14 @@ namespace Bempp
 
 template<typename ValueType>
 Preconditioner<ValueType>::Preconditioner(TeuchosPreconditionerPtr precPtr):
-    m_precPtr(precPtr){
+    m_precPtr(precPtr)
+{
 }
 
 template<typename ValueType>
-Preconditioner<ValueType>::~Preconditioner(){}
+Preconditioner<ValueType>::~Preconditioner()
+{
+}
 
 template<typename ValueType>
 Preconditioner<ValueType>
@@ -177,10 +179,7 @@ discreteBlockDiagonalPreconditioner(
             Teuchos::rcp_static_cast<const Thyra::PreconditionerBase<ValueType> >(
                 Thyra::unspecifiedPrec(op));
     return Preconditioner<ValueType>(precOp);
-
-
 }
-
 
 #define INSTANTIATE_FREE_FUNCTIONS( VALUE ) \
     template Preconditioner< VALUE > \
@@ -207,4 +206,4 @@ FIBER_ITERATE_OVER_VALUE_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 
 } // namespace Bempp
 
-#endif // WITH_TRILINOS && WITH_AHMED
+#endif // WITH_TRILINOS

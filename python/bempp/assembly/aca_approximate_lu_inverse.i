@@ -1,3 +1,5 @@
+#ifdef WITH_AHMED
+
 %{
 #include "assembly/aca_approximate_lu_inverse.hpp"
 #include "assembly/discrete_aca_boundary_operator.hpp"
@@ -23,3 +25,4 @@
 %enddef
 BEMPP_ITERATE_OVER_BASIS_TYPES(NUMERICAL_ACA_LU_APPROXIMATE_INVERSE)
 
+#endif // WITH_AHMED

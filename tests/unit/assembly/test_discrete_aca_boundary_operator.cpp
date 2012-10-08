@@ -18,6 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "bempp/common/config_ahmed.hpp"
+
+#ifdef WITH_AHMED
+
 #include "../check_arrays_are_close.hpp"
 #include "../type_template.hpp"
 #include "../random_arrays.hpp"
@@ -500,3 +504,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(scaledAcaOperator_works_correctly_for_real_hermiti
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+#endif // WITH_AHMED

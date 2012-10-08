@@ -1,5 +1,4 @@
 %{
-#include "bempp/common/config_trilinos.hpp"
 #include "linalg/default_iterative_solver.hpp"
 #include "linalg/blocked_solution.hpp" // temp
 #include "linalg/belos_solver_wrapper.hpp"

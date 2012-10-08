@@ -79,18 +79,19 @@ void DiscreteBoundaryOperatorSum<ValueType>::addBlock(
     m_term2->addBlock(rows, cols, alpha, block);
 }
 
+#ifdef WITH_AHMED
 template<typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> >
 DiscreteBoundaryOperatorSum<ValueType>::asDiscreteAcaBoundaryOperator(
-                                                          double eps,
-                                                          int maximumRank) const{
+        double eps, int maximumRank) const
+{
     shared_ptr<const DiscreteBoundaryOperator<ValueType> > acaOp1 =
-            m_term1->asDiscreteAcaBoundaryOperator(eps,maximumRank);
+            m_term1->asDiscreteAcaBoundaryOperator(eps, maximumRank);
     shared_ptr<const DiscreteBoundaryOperator<ValueType> > acaOp2 =
-            m_term2->asDiscreteAcaBoundaryOperator(eps,maximumRank);
-    return acaOperatorSum(acaOp1,acaOp2,eps,maximumRank);
+            m_term2->asDiscreteAcaBoundaryOperator(eps, maximumRank);
+    return acaOperatorSum(acaOp1, acaOp2, eps, maximumRank);
 }
-
+#endif // WITH_AHMED
 
 #ifdef WITH_TRILINOS
 template <typename ValueType>

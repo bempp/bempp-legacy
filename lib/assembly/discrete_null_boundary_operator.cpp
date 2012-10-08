@@ -87,16 +87,6 @@ void DiscreteNullBoundaryOperator<ValueType>::addBlock(
     // don't do anything
 }
 
-template <typename ValueType>
-shared_ptr<const DiscreteBoundaryOperator<ValueType> >
-DiscreteNullBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
-        double eps, int maximumRank) const
-{
-    throw std::runtime_error("DiscreteNullBoundaryOperator::"
-                             "asDiscreteAcaBoundaryOperator(): "
-                             "not implemented.");
-}
-
 #ifdef WITH_TRILINOS
 template <typename ValueType>
 Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> >
