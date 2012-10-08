@@ -911,6 +911,32 @@ def createIdentityOperator(context, domain, range, dualToRange, label=None):
     return _constructOperator(
         "identityOperator", context, domain, range, dualToRange, label)
 
+def createNullOperator(context, domain, range, dualToRange, label=None):
+    """
+    Create and return a null (zero-valued) operator.
+
+    *Parameters:*
+       - context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+       - domain (Space)
+            Function space to be taken as the domain of the operator.
+       - range (Space)
+            Function space to be taken as the range of the operator.
+       - dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+       - label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
+    return _constructOperator(
+        "nullOperator", context, domain, range, dualToRange, label)
+
 def __gridFunctionFromFunctor(
         functorType,
         context, space, dualSpace, function,
