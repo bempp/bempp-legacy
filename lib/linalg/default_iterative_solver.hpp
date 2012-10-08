@@ -22,8 +22,6 @@
 #define bempp_default_iterative_solver_hpp
 
 #include "../common/common.hpp"
-#include "preconditioner.hpp"
-
 #include "bempp/common/config_trilinos.hpp"
 
 #ifdef WITH_TRILINOS
@@ -31,6 +29,10 @@
 #include "solver.hpp"
 
 #include "belos_solver_wrapper_fwd.hpp" // for default parameter lists
+#include "preconditioner.hpp"
+
+#include "../common/deprecated.hpp"
+
 #include <boost/scoped_ptr.hpp>
 
 namespace Thyra
@@ -45,18 +47,19 @@ namespace Bempp
 
 
 /** \ingroup linalg
-  * \brief Default Interface to the Belos Iterative solver package from Trilinos.
+  * \brief Default interface to the Belos Iterative solver package from Trilinos.
   *
   * This class provides an interface to various iterative solvers available via
-  * the Stratimikos Interface to Belos of Trilinos (see <a href="http://trilinos.sandia.gov/packages/docs/r10.10/packages/stratimikos/doc/html/index.html">Stratimikos documentation</a>).
-  * Convergence can be tested either in range space or
-  * in the dual space to the range space. A standard Galerkin discretisation of the form \f$Ax=b\f$,
-  * maps into the dual space of the range of the operator. By choosing to test in the range space the equation
-  * \f$M^\dagger Ax=M^\dagger b\f$ is solved, where \f$M\f$ is the mass matrix, mapping from the range space
-  * into its dual and \f$M^\dagger\f$ is its pseudoinverse.
+  * the Stratimikos interface to the Belos solver family from Trilinos (see <a
+  * href="http://trilinos.sandia.gov/packages/docs/r10.10/packages/stratimikos/doc/html/index.html">Stratimikos
+  * documentation</a>). Convergence can be tested either in range space or in
+  * the dual space to the range space. A standard Galerkin discretisation of
+  * the form \f$Ax=b\f$, maps into the dual space of the range of the operator.
+  * By choosing to test in the range space the equation \f$M^\dagger
+  * Ax=M^\dagger b\f$ is solved, where \f$M\f$ is the mass matrix, mapping from
+  * the range space into its dual and \f$M^\dagger\f$ is its pseudoinverse.
   *
   */
-
 template <typename BasisFunctionType, typename ResultType>
 class DefaultIterativeSolver : public Solver<BasisFunctionType, ResultType>
 {
@@ -68,10 +71,9 @@ public:
       * \param[in] boundaryOp
       *   Non-blocked boundary operator.
       * \param[in] mode
-      *   Convergence test mode. Default: <tt>TEST_CONVERGENCE_IN_DUAL_TO_RANGE</tt>
+      *   Convergence test mode. Default: <tt>TEST_CONVERGENCE_IN_DUAL_TO_RANGE</tt>.
       *
       */
-
     DefaultIterativeSolver(
             const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
             ConvergenceTestMode::Mode mode =
@@ -80,37 +82,52 @@ public:
     /** \brief Constructor of the <tt>DefaultIterativeSolver</tt> class.
       *
       * \param[in] boundaryOp
-      *   Blocked boundary operator
+      *   Blocked boundary operator.
       * \param[in] mode
-      *   Convergence test mode. Default: <tt>TEST_CONVERGENCE_IN_DUAL_TO_RANGE</tt>
+      *   Convergence test mode. Default: <tt>TEST_CONVERGENCE_IN_DUAL_TO_RANGE</tt>.
       *
       */
-
     DefaultIterativeSolver(
             const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
             ConvergenceTestMode::Mode mode =
             ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
+
     virtual ~DefaultIterativeSolver();
 
     /** \brief Define a preconditioner.
       *
-      * The preconditioner is passed on to the Belos Solver.
+      * The preconditioner is passed on to the Belos solver.
       *
       * \param[in] preconditioner
       *
+      * \note This function has no effect if it is called after initializeSolver().
+      *
+      * \deprecated Please pass the preconditioner as an argument of
+      *   initializeSolver().
       */
-
-    void setPreconditioner(
+    BEMPP_DEPRECATED void setPreconditioner(
             const Preconditioner<ResultType>& preconditioner);
 
-    /** \brief Initialize the parameters of the Belos iterative solver.
+    /** \brief Initialize a Belos iterative solver.
       *
       * \param[in] paramList
-      *   Parameter lists can be read in as xml files or defined in code. For default parameter lists
-      *   for Gmres and Cg see defaultGmresParameterList and defaultCgParameterList.
+      *   Parameter lists can be read in from XML files or defined in code. Use
+      *   defaultGmresParameterList() and defaultCgParameterList() to construct
+      *   default parameter lists for the GMRES and CG solvers.
       */
-
     void initializeSolver(const Teuchos::RCP<Teuchos::ParameterList>& paramList);
+
+    /** \brief Initialize a preconditioned Belos iterative solver.
+      *
+      * \param[in] paramList
+      *   Parameter lists can be read in from XML files or defined in code. Use
+      *   defaultGmresParameterList() and defaultCgParameterList() to construct
+      *   default parameter lists for the GMRES and CG solvers.
+      * \param[in] preconditioner
+      *   Preconditioner to be used by the solver.
+      */
+    void initializeSolver(const Teuchos::RCP<Teuchos::ParameterList>& paramList,
+                          const Preconditioner<ResultType>& preconditioner);
 
 private:
     virtual Solution<BasisFunctionType, ResultType> solveImplNonblocked(

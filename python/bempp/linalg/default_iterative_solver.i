@@ -15,6 +15,18 @@ namespace Bempp
 
 BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DefaultIterativeSolver);
 
+%define BEMPP_EXTEND_DEFAULT_ITERATIVE_SOLVER(BASIS, RESULT, PYBASIS, PYRESULT)
+    %extend DefaultIterativeSolver< BASIS, RESULT >
+    {
+        %pythonprepend setPreconditioner %{
+            print ("DefaultIterativeSolver.setPreconditioner() is deprecated. "
+                   "Pass the preconditioner directly to the initializeSolver() "
+                   "method.")
+        %}
+    }
+%enddef
+BEMPP_ITERATE_OVER_BASIS_AND_RESULT_TYPES(BEMPP_EXTEND_DEFAULT_ITERATIVE_SOLVER);
+
 Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(
     double tol, int maxIterationCount = 1000);
 Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(

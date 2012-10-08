@@ -223,6 +223,15 @@ void DefaultIterativeSolver<BasisFunctionType, ResultType>::initializeSolver(
 }
 
 template <typename BasisFunctionType, typename ResultType>
+void DefaultIterativeSolver<BasisFunctionType, ResultType>::initializeSolver(
+        const Teuchos::RCP<Teuchos::ParameterList>& paramList,
+        const Preconditioner<ResultType>& preconditioner)
+{
+    m_impl->solverWrapper->setPreconditioner(preconditioner.get());
+    m_impl->solverWrapper->initializeSolver(paramList);
+}
+
+template <typename BasisFunctionType, typename ResultType>
 Solution<BasisFunctionType, ResultType>
 DefaultIterativeSolver<BasisFunctionType, ResultType>::solveImplNonblocked(
         const GridFunction<BasisFunctionType, ResultType>& rhs) const
