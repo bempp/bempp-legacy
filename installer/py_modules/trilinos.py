@@ -49,10 +49,13 @@ def prepare(root,config):
               dep_build_dir+"/"+trilinos_dir)
     shutil.copy(root+"/installer/build_scripts/posix/trilinos_build.sh",
                 trilinos_full_dir+"/trilinos_build.sh")
-    print "Patching ..."
-    patch=py_patch.fromfile(root+"/installer/patches/Thyra_BelosLinearOpWithSolve_def.patch")
+    print "Patching Trilinos"
     cwd=os.getcwd()
     os.chdir(dep_build_dir+"/trilinos/packages/stratimikos/adapters/belos/src")
+    patch=py_patch.fromfile(root+"/installer/patches/Thyra_BelosLinearOpWithSolve_def.patch")
+    patch.apply()
+    os.chdir(dep_build_dir+"/trilinos/packages/thyra/core/src/support/nonlinear/model_evaluator/client_support")
+    patch=py_patch.fromfile(root+"/installer/patches/thyra_static_initialization_order.patch")
     patch.apply()
     os.chdir(cwd)
 
