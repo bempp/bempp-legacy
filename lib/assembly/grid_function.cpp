@@ -610,9 +610,9 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
 
         Fiber::BasisData<ResultType> functionData;
         if (basisDeps & Fiber::VALUES)
-            functionData.values.set_size(basisData.values.n_rows,
+            functionData.values.set_size(basisData.values.extent(0),
                                          1, // just one function
-                                         basisData.values.n_slices);
+                                         basisData.values.extent(2));
         if (basisDeps & Fiber::DERIVATIVES)
             functionData.derivatives.set_size(basisData.derivatives.extent(0),
                                               basisData.derivatives.extent(1),
@@ -632,10 +632,11 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
             // Calculate the function's values and/or derivatives
             // at the requested points in the current element
             if (basisDeps & Fiber::VALUES) {
-                functionData.values.fill(0.);
-                for (size_t point = 0; point < basisData.values.n_slices; ++point)
-                    for (size_t dim = 0; dim < basisData.values.n_rows; ++dim)
-                        for (size_t fun = 0; fun < basisData.values.n_cols; ++fun)
+                std::fill(functionData.values.begin(),
+                          functionData.values.end(), 0.);
+                for (size_t point = 0; point < basisData.values.extent(2); ++point)
+                    for (size_t dim = 0; dim < basisData.values.extent(0); ++dim)
+                        for (size_t fun = 0; fun < basisData.values.extent(1); ++fun)
                             functionData.values(dim, 0, point) +=
                                     basisData.values(dim, fun, point) *
                                     activeLocalCoefficients[fun];

@@ -44,21 +44,21 @@ struct BasisData
 {
     // values(i,k,l) = (f_k)_i(x_l) ->
     // ith component of kth basis function at lth point
-    arma::Cube<ValueType> values;
+    _3dArray<ValueType> values;
     // derivatives(i,j,k,l) = (d_j (f_k)_i)(x_l) ->
     // derivative in direction j of ith component of kth basis function at lth point
     _4dArray<ValueType> derivatives;
 
     int componentCount() const {
-        return std::max<int>(values.n_rows, derivatives.extent(0));
+        return std::max<int>(values.extent(0), derivatives.extent(0));
     }
 
     int functionCount() const {
-        return std::max<int>(values.n_cols, derivatives.extent(2));
+        return std::max<int>(values.extent(1), derivatives.extent(2));
     }
 
     int pointCount() const {
-        return std::max<int>(values.n_slices, derivatives.extent(3));
+        return std::max<int>(values.extent(2), derivatives.extent(3));
     }
 
     ConstBasisDataSlice<ValueType> const_slice(int function, int point) const {

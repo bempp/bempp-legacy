@@ -37,7 +37,7 @@ template <typename CoordinateType, typename ValueType, typename DuneBasis>
 void evaluateBasisFunctionsWithDune(
         const arma::Mat<CoordinateType>& local,
         LocalDofIndex localDofIndex,
-        arma::Cube<ValueType>& result)
+        _3dArray<ValueType>& result)
 {
     DuneBasis basis;
 

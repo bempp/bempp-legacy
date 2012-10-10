@@ -293,9 +293,9 @@ ResultType, GeometryFactory>::calcTrialData(
 
         BasisData<ResultType> argumentData;
         if (basisDeps & VALUES)
-            argumentData.values.set_size(basisData.values.n_rows,
+            argumentData.values.set_size(basisData.values.extent(0),
                                          1, // just one function
-                                         basisData.values.n_slices);
+                                         basisData.values.extent(2));
         if (basisDeps & DERIVATIVES)
             argumentData.derivatives.set_size(basisData.derivatives.extent(0),
                                               basisData.derivatives.extent(1),
@@ -317,10 +317,11 @@ ResultType, GeometryFactory>::calcTrialData(
             // at quadrature points in the current element
             if (basisDeps & VALUES)
             {
-                argumentData.values.fill(0.);
-                for (size_t point = 0; point < basisData.values.n_slices; ++point)
-                    for (size_t dim = 0; dim < basisData.values.n_rows; ++dim)
-                        for (size_t fun = 0; fun < basisData.values.n_cols; ++fun)
+                std::fill(argumentData.values.begin(),
+                          argumentData.values.end(), 0.);
+                for (size_t point = 0; point < basisData.values.extent(2); ++point)
+                    for (size_t dim = 0; dim < basisData.values.extent(0); ++dim)
+                        for (size_t fun = 0; fun < basisData.values.extent(1); ++fun)
                             argumentData.values(dim, 0, point) +=
                                     basisData.values(dim, fun, point) *
                                     localCoefficients[fun];

@@ -61,7 +61,7 @@ public:
         if (what & VALUES)
         {
             data.values.set_size(componentCount, functionCount, pointCount);
-            data.values.fill(1.);
+            std::fill(data.values.begin(), data.values.end(), 1.);
         }
         if (what & DERIVATIVES)
         {

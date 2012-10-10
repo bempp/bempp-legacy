@@ -62,10 +62,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs,
     Fiber::BasisData<ValueType> data;
     basis.evaluate(Fiber::VALUES, points, Fiber::ALL_DOFS, data);
 
-    arma::Cube<ValueType> expected(1, // component count
-                                   vertexCount,
-                                   pointCount);
-    expected.fill(0.);
+    Fiber::_3dArray<ValueType> expected(1, // component count
+                                        vertexCount,
+                                        pointCount);
+    std::fill(expected.begin(), expected.end(), 0.);
     expected(0, 0, 0) = 1.;
     expected(0, 1, 1) = 1.;
     expected(0, 2, 2) = 1.;
@@ -89,10 +89,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_second_dof,
     Fiber::BasisData<ValueType> data;
     basis.evaluate(Fiber::VALUES, points, dofIndex, data);
 
-    arma::Cube<ValueType> expected(1, // component count
-                                   1, // number of DOFs
-                                   pointCount);
-    expected.fill(0.);
+    Fiber::_3dArray<ValueType> expected(1, // component count
+                                        1, // number of DOFs
+                                        pointCount);
+    std::fill(expected.begin(), expected.end(), 0.);
     expected(0, 0, 1) = 1.;
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(data.values, expected, 1e-10));
@@ -114,9 +114,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_all_dofs,
     basis.evaluate(Fiber::DERIVATIVES, points, Fiber::ALL_DOFS, data);
 
     Fiber::_4dArray<ValueType> expected(1, // component count
-                                       elementDim,
-                                       vertexCount,
-                                       pointCount);
+                                        elementDim,
+                                        vertexCount,
+                                        pointCount);
     std::fill(expected.begin(), expected.end(), 0.);
     expected(0, 0, 0, 0) = -1.;
     expected(0, 1, 0, 0) = -1.;
@@ -150,10 +150,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_and_derivatives_works_for_all_dofs
     basis.evaluate(Fiber::VALUES | Fiber::DERIVATIVES, points, Fiber::ALL_DOFS, data);
 
     {
-        arma::Cube<ValueType> expected(1, // component count
-                                       vertexCount,
-                                       pointCount);
-        expected.fill(0.);
+        Fiber::_3dArray<ValueType> expected(1, // component count
+                                            vertexCount,
+                                            pointCount);
+        std::fill(expected.begin(), expected.end(), 0.);
         expected(0, 0, 0) = 1.;
         expected(0, 1, 1) = 1.;
         expected(0, 2, 2) = 1.;
@@ -162,9 +162,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_and_derivatives_works_for_all_dofs
     }
     {
         Fiber::_4dArray<ValueType> expected(1, // component count
-                                           elementDim,
-                                           vertexCount,
-                                           pointCount);
+                                            elementDim,
+                                            vertexCount,
+                                            pointCount);
         std::fill(expected.begin(), expected.end(), 0.);
         expected(0, 0, 0, 0) = -1.;
         expected(0, 1, 0, 0) = -1.;
@@ -215,10 +215,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs,
     Fiber::BasisData<ValueType> data;
     basis.evaluate(Fiber::VALUES, points, Fiber::ALL_DOFS, data);
 
-    arma::Cube<ValueType> expected(1, // component count
-                                   vertexCount,
-                                   pointCount);
-    expected.fill(0.);
+    Fiber::_3dArray<ValueType> expected(1, // component count
+                                        vertexCount,
+                                        pointCount);
+    std::fill(expected.begin(), expected.end(), 0.);
     expected(0, 0, 0) = 1.;
     expected(0, 1, 1) = 1.;
     expected(0, 2, 2) = 1.;
@@ -245,10 +245,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_second_dof,
     Fiber::BasisData<ValueType> data;
     basis.evaluate(Fiber::VALUES, points, dofIndex, data);
 
-    arma::Cube<ValueType> expected(1, // component count
-                                   1, // number of DOFs
-                                   pointCount);
-    expected.fill(0.);
+    Fiber::_3dArray<ValueType> expected(1, // component count
+                                        1, // number of DOFs
+                                        pointCount);
+    std::fill(expected.begin(), expected.end(), 0.);
     expected(0, 0, 1) = 1.;
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(data.values, expected, 1e-10));
@@ -273,9 +273,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_all_dofs,
     basis.evaluate(Fiber::DERIVATIVES, points, Fiber::ALL_DOFS, data);
 
     Fiber::_4dArray<ValueType> expected(1, // component count
-                                       elementDim,
-                                       vertexCount,
-                                       pointCount);
+                                        elementDim,
+                                        vertexCount,
+                                        pointCount);
     std::fill(expected.begin(), expected.end(), 0.);
     for (int point = 0; point < pointCount; ++point) {
         expected(0, 0, 0, point) = -(1. - points(1, point));
@@ -309,10 +309,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_and_derivatives_works_for_all_dofs
     basis.evaluate(Fiber::VALUES | Fiber::DERIVATIVES, points, Fiber::ALL_DOFS, data);
 
     {
-        arma::Cube<ValueType> expected(1, // component count
-                                       vertexCount,
-                                       pointCount);
-        expected.fill(0.);
+        Fiber::_3dArray<ValueType> expected(1, // component count
+                                            vertexCount,
+                                            pointCount);
+        std::fill(expected.begin(), expected.end(), 0.);
         expected(0, 0, 0) = 1.;
         expected(0, 1, 1) = 1.;
         expected(0, 2, 2) = 1.;
@@ -322,9 +322,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_and_derivatives_works_for_all_dofs
     }
     {
         Fiber::_4dArray<ValueType> expected(1, // component count
-                                           elementDim,
-                                           vertexCount,
-                                           pointCount);
+                                            elementDim,
+                                            vertexCount,
+                                            pointCount);
         std::fill(expected.begin(), expected.end(), 0.);
         for (int point = 0; point < pointCount; ++point) {
             expected(0, 0, 0, point) = -(1. - points(1, point));
