@@ -95,11 +95,16 @@ integrate(
         const Basis<BasisFunctionType>& basisA,
         const Basis<BasisFunctionType>& basisB,
         LocalDofIndex localDofIndexB,
-        arma::Cube<ResultType>& result) const
+        const std::vector<arma::Mat<ResultType>*>& result) const
 {
     const int pointCount = m_quadWeights.size();
     const int elementACount = elementIndicesA.size();
 
+    if (result.size() != elementIndicesA.size())
+        throw std::invalid_argument(
+  	    "NonseparableNumericalTestKernelTrialIntegrator::integrate(): "
+	    "arrays 'result' and 'elementIndicesA' must have the same number "
+	    "of elements");
     if (pointCount == 0 || elementACount == 0)
         return;
     // TODO: in the (pathological) case that pointCount == 0 but
@@ -145,7 +150,10 @@ integrate(
     CollectionOf3dArrays<BasisFunctionType> testValues, trialValues;
     CollectionOf3dArrays<KernelType> kernelValues;
 
-    result.set_size(testDofCount, trialDofCount, elementACount);
+    for (size_t i = 0; i < result.size(); ++i) {
+        assert(result[i]);
+        result[i]->set_size(testDofCount, trialDofCount);
+    }
 
     rawGeometryB->setupGeometry(elementIndexB, *geometryB);
     if (callVariant == TEST_TRIAL)
@@ -182,7 +190,7 @@ integrate(
         m_integral.evaluateWithNontensorQuadratureRule(
                     testGeomData, trialGeomData, testValues, trialValues,
                     kernelValues, m_quadWeights,
-                    result.slice(indexA));
+                    *result[indexA]);
     }
 }
 
@@ -195,11 +203,16 @@ integrate(
         const std::vector<ElementIndexPair>& elementIndexPairs,
         const Basis<BasisFunctionType>& testBasis,
         const Basis<BasisFunctionType>& trialBasis,
-        arma::Cube<ResultType>& result) const
+        const std::vector<arma::Mat<ResultType>*>& result) const
 {
     const int pointCount = m_quadWeights.size();
     const int geometryPairCount = elementIndexPairs.size();
 
+    if (result.size() != elementIndexPairs.size())
+        throw std::invalid_argument(
+  	    "NonseparableNumericalTestKernelTrialIntegrator::integrate(): "
+	    "arrays 'result' and 'elementIndicesA' must have the same number "
+	    "of elements");
     if (pointCount == 0 || geometryPairCount == 0)
         return;
     // TODO: in the (pathological) case that pointCount == 0 but
@@ -226,7 +239,10 @@ integrate(
     CollectionOf3dArrays<BasisFunctionType> testValues, trialValues;
     CollectionOf3dArrays<KernelType> kernelValues;
 
-    result.set_size(testDofCount, trialDofCount, geometryPairCount);
+    for (size_t i = 0; i < result.size(); ++i) {
+        assert(result[i]);
+        result[i]->set_size(testDofCount, trialDofCount);
+    }
 
     testBasis.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS, testBasisData);
     trialBasis.evaluate(trialBasisDeps, m_localTrialQuadPoints, ALL_DOFS, trialBasisData);
@@ -245,7 +261,7 @@ integrate(
         m_integral.evaluateWithNontensorQuadratureRule(
                     testGeomData, trialGeomData, testValues, trialValues,
                     kernelValues, m_quadWeights,
-                    result.slice(pairIndex));
+                    *result[pairIndex]);
     }
 }
 

@@ -54,13 +54,13 @@ public:
             const Basis<BasisFunctionType>& basisA,
             const Basis<BasisFunctionType>& basisB,
             LocalDofIndex localDofIndexB,
-            arma::Cube<ResultType>& result) const = 0;
+            const std::vector<arma::Mat<ResultType>*>& result) const = 0;
 
     virtual void integrate(
             const std::vector<ElementIndexPair>& elementIndexPairs,
             const Basis<BasisFunctionType>& testBasis,
             const Basis<BasisFunctionType>& trialBasis,
-            arma::Cube<ResultType>& result) const = 0;
+            const std::vector<arma::Mat<ResultType>*>& result) const = 0;
 };
 
 } // namespace Fiber

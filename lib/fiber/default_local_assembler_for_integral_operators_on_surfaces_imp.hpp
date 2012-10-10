@@ -48,7 +48,7 @@ public:
             const std::vector<ElementIndexPair>& activeElementPairs,
             const Basis<BasisFunctionType>& activeTestBasis,
             const Basis<BasisFunctionType>& activeTrialBasis,
-            arma::Cube<ResultType>& localResult) :
+            const std::vector<arma::Mat<ResultType>*>& localResult) :
         m_activeIntegrator(activeIntegrator),
         m_activeElementPairs(activeElementPairs),
         m_activeTestBasis(activeTestBasis),
@@ -62,12 +62,9 @@ public:
         std::vector<ElementIndexPair> localActiveElementPairs(
                     &m_activeElementPairs[r.begin()],
                     &m_activeElementPairs[r.end()]);
-        arma::Cube<ResultType> localLocalResult(
-                    &m_localResult(0, 0, r.begin()),
-                    m_localResult.n_rows,
-                    m_localResult.n_cols,
-                    r.size(),
-                    false /* copy_aux_mem */);
+        std::vector<arma::Mat<ResultType>*> localLocalResult(
+                    &m_localResult[r.begin()],
+                    &m_localResult[r.end()]);
         m_activeIntegrator.integrate(localActiveElementPairs, m_activeTestBasis,
                                      m_activeTrialBasis, localLocalResult);
     }
@@ -77,7 +74,7 @@ private:
     const std::vector<ElementIndexPair>& m_activeElementPairs;
     const Basis<BasisFunctionType>& m_activeTestBasis;
     const Basis<BasisFunctionType>& m_activeTrialBasis;
-    arma::Cube<ResultType>& m_localResult;
+    const std::vector<arma::Mat<ResultType>*>& m_localResult;
 };
 
 } // namespace
@@ -252,6 +249,8 @@ evaluateLocalWeakForms(
 
     std::vector<int> activeElementIndicesA;
     activeElementIndicesA.reserve(elementACount);
+    std::vector<arma::Mat<ResultType>*> activeLocalResults;
+    activeLocalResults.reserve(elementACount);
 
     // Now loop over unique quadrature variants
     for (typename QuadVariantSet::const_iterator it = uniqueQuadVariants.begin();
@@ -265,23 +264,25 @@ evaluateLocalWeakForms(
         // Find all the test elements for which quadrature should proceed
         // according to the current quadrature variant
         activeElementIndicesA.clear();
+        activeLocalResults.clear();
         for (int indexA = 0; indexA < elementACount; ++indexA)
-            if (quadVariants[indexA] == activeQuadVariant)
+  	    if (quadVariants[indexA] == activeQuadVariant) {
                 activeElementIndicesA.push_back(elementIndicesA[indexA]);
+		activeLocalResults.push_back(&result[indexA]);
+	    }
 
         // Integrate!
-        arma::Cube<ResultType> localResult;
         activeIntegrator.integrate(callVariant,
                                    activeElementIndicesA, elementIndexB,
                                    activeBasisA, basisB, localDofIndexB,
-                                   localResult);
+                                   activeLocalResults);
 
-        // Distribute the just calculated integrals into the result array
-        // that will be returned to caller
-        int i = 0;
-        for (int indexA = 0; indexA < elementACount; ++indexA)
-            if (quadVariants[indexA] == activeQuadVariant)
-                result[indexA] = localResult.slice(i++);
+        // // Distribute the just calculated integrals into the result array
+        // // that will be returned to caller
+        // int i = 0;
+        // for (int indexA = 0; indexA < elementACount; ++indexA)
+        //     if (quadVariants[indexA] == activeQuadVariant)
+        //         result[indexA] = localResult.slice(i++);
     }
 }
 
@@ -336,7 +337,9 @@ evaluateLocalWeakForms(
     QuadVariantSet uniqueQuadVariants(quadVariants.begin(), quadVariants.end());
 
     std::vector<ElementIndexPair> activeElementPairs;
+    std::vector<arma::Mat<ResultType>*> activeLocalResults;
     activeElementPairs.reserve(testElementCount * trialElementCount);
+    activeLocalResults.reserve(testElementCount * trialElementCount);
 
     // Now loop over unique quadrature variants
     for (typename QuadVariantSet::const_iterator it = uniqueQuadVariants.begin();
@@ -351,25 +354,27 @@ evaluateLocalWeakForms(
         // Find all the element pairs for which quadrature should proceed
         // according to the current quadrature variant
         activeElementPairs.clear();
+        activeLocalResults.clear();
         for (int trialIndex = 0; trialIndex < trialElementCount; ++trialIndex)
             for (int testIndex = 0; testIndex < testElementCount; ++testIndex)
-                if (quadVariants(testIndex, trialIndex) == activeQuadVariant)
+  	        if (quadVariants(testIndex, trialIndex) == activeQuadVariant) {
                     activeElementPairs.push_back(
                                 ElementIndexPair(testElementIndices[testIndex],
                                                  trialElementIndices[trialIndex]));
+                    activeLocalResults.push_back(&result(testIndex, trialIndex));
+                }
 
         // Integrate!
-        arma::Cube<ResultType> localResult;
         activeIntegrator.integrate(activeElementPairs, activeTestBasis,
-                                   activeTrialBasis, localResult);
+                                   activeTrialBasis, activeLocalResults);
 
-        // Distribute the just calculated integrals into the result array
-        // that will be returned to caller
-        int i = 0;
-        for (int trialIndex = 0; trialIndex < trialElementCount; ++trialIndex)
-            for (int testIndex = 0; testIndex < testElementCount; ++testIndex)
-                if (quadVariants(testIndex, trialIndex) == activeQuadVariant)
-                    result(testIndex, trialIndex) = localResult.slice(i++);
+        // // Distribute the just calculated integrals into the result array
+        // // that will be returned to caller
+        // int i = 0;
+        // for (int trialIndex = 0; trialIndex < trialElementCount; ++trialIndex)
+        //     for (int testIndex = 0; testIndex < testElementCount; ++testIndex)
+        //         if (quadVariants(testIndex, trialIndex) == activeQuadVariant)
+        //             result(testIndex, trialIndex) = localResult.slice(i++);
     }
 }
 
@@ -491,7 +496,9 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
     QuadVariantSet uniqueQuadVariants(quadVariants.begin(), quadVariants.end());
 
     std::vector<ElementIndexPair> activeElementPairs;
+    std::vector<arma::Mat<ResultType>*> activeLocalResults;
     activeElementPairs.reserve(elementPairCount);
+    activeLocalResults.reserve(elementPairCount);
 
     // Now loop over unique quadrature variants
     for (typename QuadVariantSet::const_iterator it = uniqueQuadVariants.begin();
@@ -504,18 +511,18 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
         // Find all the element pairs for which quadrature should proceed
         // according to the current quadrature variant
         activeElementPairs.clear();
+        activeLocalResults.clear();
         {
             ElementIndexPairIterator pairIt = elementIndexPairs.begin();
             QuadVariantIterator qvIt = quadVariants.begin();
             for (; pairIt != elementIndexPairs.end(); ++pairIt, ++qvIt)
-                if (*qvIt == activeQuadVariant)
+                if (*qvIt == activeQuadVariant) {
                     activeElementPairs.push_back(*pairIt);
+                    activeLocalResults.push_back(&m_cache[*pairIt]);
+                }
         }
 
         // Integrate!
-        arma::Cube<ResultType> localResult(activeTestBasis.size(),
-                                          activeTrialBasis.size(),
-                                          activeElementPairs.size());
         // Old serial version
         // activeIntegrator.integrate(activeElementPairs, activeTestBasis,
         //                            activeTrialBasis, localResult);
@@ -536,17 +543,17 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
             tbb::parallel_for(tbb::blocked_range<size_t>(0, activeElementPairs.size()),
                               Body(activeIntegrator,
                                    activeElementPairs, activeTestBasis, activeTrialBasis,
-                                   localResult));
+                                   activeLocalResults));
         }
 
-        {
-            ElementIndexPairIterator pairIt = elementIndexPairs.begin();
-            QuadVariantIterator qvIt = quadVariants.begin();
-            int i = 0;
-            for (; pairIt != elementIndexPairs.end(); ++pairIt, ++qvIt)
-                if (*qvIt == activeQuadVariant)
-                    m_cache[*pairIt] = localResult.slice(i++);
-        }
+        // {
+        //     ElementIndexPairIterator pairIt = elementIndexPairs.begin();
+        //     QuadVariantIterator qvIt = quadVariants.begin();
+        //     int i = 0;
+        //     for (; pairIt != elementIndexPairs.end(); ++pairIt, ++qvIt)
+        //         if (*qvIt == activeQuadVariant)
+        //             m_cache[*pairIt] = localResult.slice(i++);
+        // }
     }
     if (m_verbosityLevel >= VerbosityLevel::DEFAULT)
         std::cout << "Precalculation of singular integrals finished" << std::endl;

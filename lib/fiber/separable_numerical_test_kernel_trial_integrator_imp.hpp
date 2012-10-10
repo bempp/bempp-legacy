@@ -127,7 +127,7 @@ integrate(
         const Basis<BasisFunctionType>& basisA,
         const Basis<BasisFunctionType>& basisB,
         LocalDofIndex localDofIndexB,
-        arma::Cube<ResultType>& result) const
+        const std::vector<arma::Mat<ResultType>*>& result) const
 {
     if (m_openClHandler.UseOpenCl())
     {
@@ -152,12 +152,17 @@ integrateCpu(
         const Basis<BasisFunctionType>& basisA,
         const Basis<BasisFunctionType>& basisB,
         LocalDofIndex localDofIndexB,
-        arma::Cube<ResultType>& result) const
+        const std::vector<arma::Mat<ResultType>*>& result) const
 {
     const int testPointCount = m_localTestQuadPoints.n_cols;
     const int trialPointCount = m_localTrialQuadPoints.n_cols;
     const int elementACount = elementIndicesA.size();
 
+    if (result.size() != elementIndicesA.size())
+        throw std::invalid_argument(
+  	    "NonseparableNumericalTestKernelTrialIntegrator::integrate(): "
+	    "arrays 'result' and 'elementIndicesA' must have the same number "
+	    "of elements");
     if (testPointCount == 0 || trialPointCount == 0 || elementACount == 0)
         return;
     // TODO: in the (pathological) case that pointCount == 0 but
@@ -202,7 +207,10 @@ integrateCpu(
     CollectionOf3dArrays<BasisFunctionType> testValues, trialValues;
     CollectionOf4dArrays<KernelType> kernelValues;
 
-    result.set_size(testDofCount, trialDofCount, elementACount);
+    for (size_t i = 0; i < result.size(); ++i) {
+        assert(result[i]);
+        result[i]->set_size(testDofCount, trialDofCount);
+    }
 
     rawGeometryB->setupGeometry(elementIndexB, *geometryB);
     if (callVariant == TEST_TRIAL)
@@ -239,7 +247,7 @@ integrateCpu(
         m_integral.evaluateWithTensorQuadratureRule(
                     testGeomData, trialGeomData, testValues, trialValues,
                     kernelValues, m_testQuadWeights, m_trialQuadWeights,
-                    result.slice(indexA));
+                    *result[indexA]);
     }
 }
 
@@ -255,7 +263,7 @@ integrateCl(
         const Basis<BasisFunctionType>& basisA,
         const Basis<BasisFunctionType>& basisB,
         LocalDofIndex localDofIndexB,
-        arma::Cube<ResultType>& result) const
+        const std::vector<arma::Mat<ResultType>*>& result) const
 {
 //#ifdef WITH_OPENCL
 //  // DEBUG: test latency
@@ -579,11 +587,10 @@ template <typename BasisFunctionType, typename KernelType,
 void
 SeparableNumericalTestKernelTrialIntegrator<
 BasisFunctionType, KernelType, ResultType, GeometryFactory>::
-integrate(
-            const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<BasisFunctionType>& testBasis,
-            const Basis<BasisFunctionType>& trialBasis,
-            arma::Cube<ResultType>& result) const
+integrate(const std::vector<ElementIndexPair>& elementIndexPairs,
+	  const Basis<BasisFunctionType>& testBasis,
+	  const Basis<BasisFunctionType>& trialBasis,
+	  const std::vector<arma::Mat<ResultType>*>& result) const
 {
     if (m_openClHandler.UseOpenCl())
     {
@@ -604,12 +611,17 @@ integrateCpu(
             const std::vector<ElementIndexPair>& elementIndexPairs,
             const Basis<BasisFunctionType>& testBasis,
             const Basis<BasisFunctionType>& trialBasis,
-            arma::Cube<ResultType>& result) const
+            const std::vector<arma::Mat<ResultType>*>& result) const
 {
     const int testPointCount = m_localTestQuadPoints.n_cols;
     const int trialPointCount = m_localTrialQuadPoints.n_cols;
     const int geometryPairCount = elementIndexPairs.size();
 
+    if (result.size() != elementIndexPairs.size())
+        throw std::invalid_argument(
+  	    "NonseparableNumericalTestKernelTrialIntegrator::integrate(): "
+	    "arrays 'result' and 'elementIndicesA' must have the same number "
+	    "of elements");
     if (testPointCount == 0 || trialPointCount == 0 || geometryPairCount == 0)
         return;
     // TODO: in the (pathological) case that pointCount == 0 but
@@ -638,7 +650,10 @@ integrateCpu(
     CollectionOf3dArrays<BasisFunctionType> testValues, trialValues;
     CollectionOf4dArrays<KernelType> kernelValues;
 
-    result.set_size(testDofCount, trialDofCount, geometryPairCount);
+    for (size_t i = 0; i < result.size(); ++i) {
+        assert(result[i]);
+        result[i]->set_size(testDofCount, trialDofCount);
+    }
 
     testBasis.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS, testBasisData);
     trialBasis.evaluate(trialBasisDeps, m_localTrialQuadPoints, ALL_DOFS, trialBasisData);
@@ -657,7 +672,7 @@ integrateCpu(
         m_integral.evaluateWithTensorQuadratureRule(
                     testGeomData, trialGeomData, testValues, trialValues,
                     kernelValues, m_testQuadWeights, m_trialQuadWeights,
-                    result.slice(pairIndex));
+                    *result[pairIndex]);
     }
 }
 
@@ -670,7 +685,7 @@ integrateCl(
             const std::vector<ElementIndexPair>& elementIndexPairs,
             const Basis<BasisFunctionType>& testBasis,
             const Basis<BasisFunctionType>& trialBasis,
-            arma::Cube<ResultType>& result) const
+            const std::vector<arma::Mat<ResultType>*>& result) const
 {
 //#ifdef WITH_OPENCL
 //    const int testPointCount = m_localTestQuadPoints.n_cols;

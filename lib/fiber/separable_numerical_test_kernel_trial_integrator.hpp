@@ -74,13 +74,13 @@ public:
             const Basis<BasisFunctionType>& basisA,
             const Basis<BasisFunctionType>& basisB,
             LocalDofIndex localDofIndexB,
-            arma::Cube<ResultType>& result) const;
+            const std::vector<arma::Mat<ResultType>*>& result) const;
 
     virtual void integrate(
             const std::vector<ElementIndexPair>& elementIndexPairs,
             const Basis<BasisFunctionType>& testBasis,
             const Basis<BasisFunctionType>& trialBasis,
-            arma::Cube<ResultType>& result) const;
+            const std::vector<arma::Mat<ResultType>*>& result) const;
 
 private:
     void integrateCpu(
@@ -90,7 +90,7 @@ private:
             const Basis<BasisFunctionType>& basisA,
             const Basis<BasisFunctionType>& basisB,
             LocalDofIndex localDofIndexB,
-            arma::Cube<ResultType>& result) const;
+            const std::vector<arma::Mat<ResultType>*>& result) const;
 
     void integrateCl(
 	    CallVariant callVariant,
@@ -99,19 +99,19 @@ private:
         const Basis<BasisFunctionType>& basisA,
         const Basis<BasisFunctionType>& basisB,
 	    LocalDofIndex localDofIndexB,
-        arma::Cube<ResultType>& result) const;
+        const std::vector<arma::Mat<ResultType>*>& result) const;
 
     void integrateCpu(
             const std::vector<ElementIndexPair>& elementIndexPairs,
             const Basis<BasisFunctionType>& testBasis,
             const Basis<BasisFunctionType>& trialBasis,
-            arma::Cube<ResultType>& result) const;
+            const std::vector<arma::Mat<ResultType>*>& result) const;
 
     void integrateCl(
             const std::vector<ElementIndexPair>& elementIndexPairs,
             const Basis<BasisFunctionType>& testBasis,
             const Basis<BasisFunctionType>& trialBasis,
-            arma::Cube<ResultType>& result) const;
+            const std::vector<arma::Mat<ResultType>*>& result) const;
 
     /**
      * \brief Returns an OpenCL code snippet containing the clIntegrate
