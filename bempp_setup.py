@@ -21,7 +21,7 @@
 # BEM++ setup script
 
 
-import sys,os
+import os, sys, traceback
 sys.path.append("installer")
 
 from py_modules.tools import writeOptions, setDefaultConfigOption, pythonInfo, checkCreateDir, testBlas, testLapack, cleanUp, checkDeleteFile
@@ -184,7 +184,6 @@ def prepare(root,config):
     import numpy
 
     (py_exe,py_lib,py_include) = pythonInfo(config)
-    print (py_exe,py_lib,py_include)
     setDefaultConfigOption(config,'Python','exe',py_exe)
     setDefaultConfigOption(config,'Python','lib',py_lib)
     setDefaultConfigOption(config,'Python','include_dir',py_include)
@@ -217,66 +216,80 @@ if __name__ == "__main__":
         parser.error("Configuration file not specified")
     optfile = args[0]
     optfile_generated = optfile+".generated"
-    config.read(optfile)
-    prefix=config.get('Main','prefix')
-    # Replace ~ with /home/username
-    prefix=os.path.expanduser(prefix)
-    tools.setDefaultConfigOption(config,'Main','prefix',prefix,overwrite=True)
-    prepare(root,config)
-    if options.bootstrap: bootstrap(root,config)
-    if options.configure:
-        checkDeleteFile(optfile_generated)
-        try:
+    try:
+        optfileobj = open(optfile)
+        config.readfp(optfileobj)
+        optfileobj.close()
+        prefix=config.get('Main','prefix')
+        # Replace ~ with /home/username
+        prefix=os.path.expanduser(prefix)
+        tools.setDefaultConfigOption(config,'Main','prefix',prefix,
+                                     overwrite=True)
+    except Exception, e:
+        print ("Parsing of configuration file '" + optfile +
+               "' failed with error message:\n" + str(e))
+        sys.exit(1)
+    try:
+        prepare(root,config)
+        if options.bootstrap:
+            bootstrap(root,config)
+        if options.configure:
+            checkDeleteFile(optfile_generated)
             prepareDependencies(root,config)
             bempp.prepare(root,config)
             testBlas(root,config)
             testLapack(root,config)
-        except Exception, e:
-            print "Configuration failed with error message: \n"+ str(e)
-            sys.exit(1)
-            # raise
-        opt_fp = open(optfile_generated,'w')
-        config.write(opt_fp)
-        opt_fp.close()
-        print "Updated configuration written to "+root+"/"+optfile_generated
-        enable_mkl = tools.to_bool(config.get('MKL','enable_mkl'))
-        if not enable_mkl:
-            print ("----------------------------------------------------------\n"
-                   "You configured BEM++ to use another BLAS and LAPACK\n"
-                   "libraries than Intel MKL. For optimum performance, ensure\n"
-                   "that your BLAS and LAPACK libraries are configured to work\n"
-                   "in single-threaded mode, as otherwise threads spawned by\n"
-                   "BLAS and LAPACK will compete for resources with those\n"
-                   "spawned by BEM++. For instance, if you are using\n"
-                   "GotoBLAS, set the environmental variable GOTO_NUM_THREADS\n"
-                   "to '1' before running any programs using BEM++.\n")
+            opt_fp = open(optfile_generated,'w')
+            config.write(opt_fp)
+            opt_fp.close()
+            print "Updated configuration written to "+root+"/"+optfile_generated
+            enable_mkl = tools.to_bool(config.get('MKL','enable_mkl'))
+            if not enable_mkl:
+                print ("----------------------------------------------------------\n"
+                       "You configured BEM++ to use another BLAS and LAPACK\n"
+                       "libraries than Intel MKL. For optimum performance, ensure\n"
+                       "that your BLAS and LAPACK libraries are configured to work\n"
+                       "in single-threaded mode, as otherwise threads spawned by\n"
+                       "BLAS and LAPACK will compete for resources with those\n"
+                       "spawned by BEM++. For instance, if you are using\n"
+                       "GotoBLAS, set the environmental variable GOTO_NUM_THREADS\n"
+                       "to '1' before running any programs using BEM++.\n")
 
-    if options.install:
-        config = ConfigParser()
-        if not os.path.exists(root+"/"+optfile_generated):
-            print "You must first successfully run bempp_setup.py with the configure option."
-            sys.exit(1)
-        config.read(root+"/"+optfile_generated)
-        writeOptions(root,config)
-        if options.install in library_names:
-            libraries[options.install].configure(root,config)
-            libraries[options.install].build(root,config)
-            libraries[options.install].install(root,config)
-        elif options.install == "all":
-            configureDependencies(root,config)
-            buildDependencies(root,config)
-            installDependencies(root,config)
-            bempp.configure(root,config)
-            bempp.build(root,config)
-            bempp.install(root,config)
-        elif options.install == "bempp":
-            bempp.configure(root,config)
-            bempp.build(root,config)
-            bempp.install(root,config)
-        else:
-            raise Exception("Library name not recognized.")
-
-
-
-
-
+        if options.install:
+            config = ConfigParser()
+            if not os.path.exists(root+"/"+optfile_generated):
+                print "You must first successfully run bempp_setup.py with the configure option."
+                sys.exit(1)
+            config.read(root+"/"+optfile_generated)
+            writeOptions(root,config)
+            if options.install in library_names:
+                libraries[options.install].configure(root,config)
+                libraries[options.install].build(root,config)
+                libraries[options.install].install(root,config)
+            elif options.install == "all":
+                configureDependencies(root,config)
+                buildDependencies(root,config)
+                installDependencies(root,config)
+                bempp.configure(root,config)
+                bempp.build(root,config)
+                bempp.install(root,config)
+            elif options.install == "bempp":
+                bempp.configure(root,config)
+                bempp.build(root,config)
+                bempp.install(root,config)
+            else:
+                raise Exception("Library name not recognized.")
+    except Exception, e:
+        print "=" * 78, "\nBEM++ INSTALLATION FAILED WITH ERROR MESSAGE: \n"+ str(e)
+        try:
+            error_log = open(root+"/bempp_setup.err", "w")
+            error_log.write(traceback.format_exc())
+            error_log.close()
+            print ("-" * 78 + "\n"
+                   "Note: A stack trace of the BEM++ installer, providing detailed "
+                   "information\non where the problem occured, has been written "
+                   "to the file 'bempp_setup.err'.\nPlease include this "
+                   "file if you report the problem to BEM++ developers.")
+        except:
+           pass
+        sys.exit(1)
