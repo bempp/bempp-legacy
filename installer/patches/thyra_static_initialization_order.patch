@@ -1,0 +1,18 @@
+--- Thyra_DirectionalFiniteDiffCalculator_decl.hpp.orig	2012-10-09 13:39:02.000000000 +0100
++++ Thyra_DirectionalFiniteDiffCalculator_decl.hpp	2012-10-09 13:20:23.000000000 +0100
+@@ -262,13 +262,13 @@
+   static const std::string FDMethod_default;
+ 
+   static const std::string FDStepSelectType_name;
+-  static const RCP<Teuchos::StringToIntegralParameterEntryValidator<EFDStepSelectType> >
+-  fdStepSelectTypeValidator;
+   static const std::string FDStepSelectType_default;
+ 
+   static const std::string FDStepLength_name;
+   static const double FDStepLength_default;
+ 
++  static const RCP<Teuchos::StringToIntegralParameterEntryValidator<EFDStepSelectType> >
++  fdStepSelectTypeValidator;
+ };
+ 
+ 

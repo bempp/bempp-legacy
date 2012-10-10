@@ -32,6 +32,7 @@ def prepare(root,config):
         if not config.has_option('AHMED','file_name'):
             raise Exception('Need to give full path of tar.gz archived file with AHMED 1.0 release')
         ahmed_fname=config.get('AHMED','file_name')
+        ahmed_fname=os.path.expanduser(ahmed_fname)
         config.set('AHMED','with_ahmed','ON')
         prefix=config.get('Main','prefix')
         dep_build_dir = config.get('Main','dependency_build_dir')
@@ -49,6 +50,8 @@ def prepare(root,config):
         else:
             raise Exception("Platform not supported")
         config.set('AHMED','include_dir',prefix+"/bempp/include/AHMED")
+        if not os.path.isfile(ahmed_fname):
+            raise Exception("File '"+ahmed_fname+"' does not exist")
         print "Extracting AHMED"
         tools.extract_file(ahmed_fname,dep_build_dir)
         os.rename(dep_build_dir+"/AHMED_1.0",ahmed_full_dir)
