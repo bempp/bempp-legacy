@@ -269,7 +269,7 @@ def prepare(root,config):
                             "'like_numpy'")
 
         mkl_linker_args = get_linker_args(lib_dir,extension,mkl_dirs,mkl_libs)
-        blas_libs = ";".join(mkl_linker_args)+";-lpthread"
+        blas_libs = ";-lpthread;".join(mkl_linker_args)+";-lpthread"
         lapack_libs = blas_libs
 
         tools.setDefaultConfigOption(config,'BLAS','lib',blas_libs,
