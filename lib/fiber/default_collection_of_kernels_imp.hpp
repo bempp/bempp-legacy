@@ -61,8 +61,8 @@ void DefaultCollectionOfKernels<Functor>::evaluateAtPointPairs(
                            result.slice(p).self());
 }
 
-template <typename ValueType>
-void DefaultCollectionOfKernels<ValueType>::evaluateOnGrid(
+template <typename Functor>
+void DefaultCollectionOfKernels<Functor>::evaluateOnGrid(
         const GeometricalData<CoordinateType>& testGeomData,
         const GeometricalData<CoordinateType>& trialGeomData,
         CollectionOf4dArrays<ValueType>& result) const
@@ -77,6 +77,7 @@ void DefaultCollectionOfKernels<ValueType>::evaluateOnGrid(
                            testPointCount,
                            trialPointCount);
 
+#pragma ivdep
     for (size_t trialIndex = 0; trialIndex < trialPointCount; ++trialIndex)
         for (size_t testIndex = 0; testIndex < testPointCount; ++testIndex)
             m_functor.evaluate(testGeomData.const_slice(testIndex),
@@ -84,9 +85,9 @@ void DefaultCollectionOfKernels<ValueType>::evaluateOnGrid(
                                result.slice(testIndex, trialIndex).self());
 }
 
-template <typename ValueType>
+template <typename Functor>
 std::pair<const char*, int>
-DefaultCollectionOfKernels<ValueType>::evaluateClCode() const {
+DefaultCollectionOfKernels<Functor>::evaluateClCode() const {
     throw std::runtime_error("DefaultCollectionOfKernels::evaluateClCode(): "
                              "not implemented yet");
 }
