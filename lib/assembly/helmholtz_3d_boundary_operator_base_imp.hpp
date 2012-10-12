@@ -24,21 +24,11 @@
 #include "helmholtz_3d_boundary_operator_base.hpp"
 #include "abstract_boundary_operator_id.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
+#include "../common/complex_aux.hpp"
+#include "../grid/max_distance.hpp"
 
 namespace Bempp
 {
-
-namespace
-{
-
-template <typename Impl>
-inline typename Impl::KernelType waveNumberImpl(const Impl& impl)
-{
-    return impl.kernels.functor().waveNumber() *
-            typename Impl::KernelType(0., 1.);
-}
-
-} // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // Helmholtz3dBoundaryOperatorId
@@ -60,6 +50,8 @@ private:
     const Space<BasisFunctionType>* m_range;
     const Space<BasisFunctionType>* m_dualToRange;
     typename ScalarTraits<BasisFunctionType>::ComplexType m_waveNumber;
+    int m_interpPtsPerWavelength;
+    typename Fiber::ScalarTraits<BasisFunctionType>::RealType m_maxDistance;
 };
 
 template <typename BasisFunctionType>
@@ -69,7 +61,9 @@ Helmholtz3dBoundaryOperatorId<BasisFunctionType>::Helmholtz3dBoundaryOperatorId(
     m_typeInfo(typeid(op)),
     m_domain(op.domain().get()), m_range(op.range().get()),
     m_dualToRange(op.dualToRange().get()),
-    m_waveNumber(op.waveNumber())
+    m_waveNumber(op.waveNumber()),
+    m_interpPtsPerWavelength(op.m_impl->interpPtsPerWavelength),
+    m_maxDistance(op.m_impl->maxDistance)
 {
 }
 
@@ -80,7 +74,10 @@ size_t Helmholtz3dBoundaryOperatorId<BasisFunctionType>::hash() const
     tbb_hash_combine(result, m_domain);
     tbb_hash_combine(result, m_range);
     tbb_hash_combine(result, m_dualToRange);
-    tbb_hash_combine(result, std::abs(m_waveNumber));
+    tbb_hash_combine(result, realPart(m_waveNumber));
+    tbb_hash_combine(result, imagPart(m_waveNumber));
+    tbb_hash_combine(result, m_interpPtsPerWavelength);
+    tbb_hash_combine(result, m_maxDistance);
     return result;
 }
 
@@ -88,8 +85,9 @@ template <typename BasisFunctionType>
 void Helmholtz3dBoundaryOperatorId<BasisFunctionType>::dump() const
 {
     std::cout << m_typeInfo.name() << ", " << m_domain << ", "
-              << m_range << ", " << m_dualToRange 
-              << ", " << m_waveNumber << std::endl;
+              << m_range << ", " << m_dualToRange << ", "
+              << m_waveNumber << ", " << m_interpPtsPerWavelength << ", "
+              << m_maxDistance << std::endl;
 }
 
 template <typename BasisFunctionType>
@@ -105,7 +103,9 @@ bool Helmholtz3dBoundaryOperatorId<BasisFunctionType>::isEqual(
                 m_domain == otherCompatible.m_domain &&
                 m_range == otherCompatible.m_range &&
                 m_dualToRange == otherCompatible.m_dualToRange &&
-                m_waveNumber == otherCompatible.m_waveNumber);
+                m_waveNumber == otherCompatible.m_waveNumber &&
+                m_interpPtsPerWavelength == otherCompatible.m_interpPtsPerWavelength &&
+                m_maxDistance == otherCompatible.m_maxDistance);
     }
     else
         return false;
@@ -116,15 +116,23 @@ bool Helmholtz3dBoundaryOperatorId<BasisFunctionType>::isEqual(
 
 template <typename Impl, typename BasisFunctionType>
 Helmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType>::
-Helmholtz3dBoundaryOperatorBase(       
+Helmholtz3dBoundaryOperatorBase(
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         KernelType waveNumber,
         const std::string& label,
-        int symmetry) :
+        int symmetry,
+        bool useInterpolation,
+        int interpPtsPerWavelength) :
     Base(domain, range, dualToRange, label, symmetry),
-    m_impl(new Impl(waveNumber)),
+    // The constructor of Base has made sure that domain and dualToRange
+    // are valid pointers
+    m_impl(useInterpolation ?
+               new Impl(waveNumber,
+                        1.1 * maxDistance(*domain->grid(), *dualToRange->grid()),
+                        interpPtsPerWavelength) :
+               new Impl(waveNumber)),
     m_id(boost::make_shared<Helmholtz3dBoundaryOperatorId<BasisFunctionType> >(
              *this))
 {
@@ -149,8 +157,24 @@ typename Helmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType>::KernelType
 Helmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType>::
 waveNumber() const
 {
-    return waveNumberImpl(*m_impl);
+    return m_impl->waveNumber;
 }
+
+//template <typename Impl, typename BasisFunctionType>
+//bool
+//Helmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType>::
+//interpolationUsed() const
+//{
+//    return m_impl->interpPtsPerWavelength > 0;
+//}
+
+//template <typename Impl, typename BasisFunctionType>
+//int
+//Helmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType>::
+//interpolationPointsPerWavelength() const
+//{
+//    return m_impl->interpPtsPerWavelength;
+//}
 
 template <typename Impl, typename BasisFunctionType>
 shared_ptr<const AbstractBoundaryOperatorId>
@@ -165,7 +189,7 @@ CollectionOfKernels&
 Helmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType>::
 kernels() const
 {
-    return m_impl->kernels;
+    return *m_impl->kernels;
 }
 
 template <typename Impl, typename BasisFunctionType>

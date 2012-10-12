@@ -28,6 +28,10 @@
 namespace Bempp
 {
 
+const int DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY = 500;
+
+template <typename BasisFunctionType> class Helmholtz3dBoundaryOperatorId;
+
 /** \ingroup helmholtz_3d
  *  \brief Base class for boundary operators for the Helmholtz equation in 3D.
  *
@@ -53,6 +57,9 @@ class Helmholtz3dBoundaryOperatorBase :
     typename ScalarTraits<BasisFunctionType_>::ComplexType,
     typename ScalarTraits<BasisFunctionType_>::ComplexType>
     Base;
+
+    friend class Helmholtz3dBoundaryOperatorId<BasisFunctionType_>;
+
 public:
     /** \brief Type of the values of the basis functions into which functions
      *  acted upon by the operator are expanded. */
@@ -87,6 +94,18 @@ public:
      *  \param[in] symmetry
      *    Symmetry of the weak form of the operator. Can be any combination of the
      *    flags defined in the enumeration type Symmetry.
+     *  \param[in] useInterpolation
+     *    If set to \p true, the exponential factor occurring in the kernel will
+     *    be evaluated by piecewise-cubic interpolation of values calculated in
+     *    advance. This normally speeds up calculations. If set to \p false,
+     *    standard exponential function will be used.
+     *  \param[in] interPtsPerWavelength
+     *    If \p useInterpolation is set to true, this parameter determines the
+     *    number of points per "effective wavelength" (defined as
+     *    \f$2\pi/|k|\f$, where \f$k\f$ = \p waveNumber) used to construct the
+     *    interpolation grid. The default value ensures that the interpolated
+     *    values are accurate to about 6 significant digits in single precision
+     *    and 8 significant digits in double precision.
      *
      *  None of the shared pointers may be null and the spaces \p range and \p
      *  dualToRange must be defined on the same grid, otherwise an exception is
@@ -97,7 +116,9 @@ public:
             const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
             KernelType waveNumber,
             const std::string& label = "",
-            int symmetry = NO_SYMMETRY);
+            int symmetry = NO_SYMMETRY,
+            bool useInterpolation = false,
+            int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
 
     /** \brief Copy constructor. */
     Helmholtz3dBoundaryOperatorBase(
@@ -108,6 +129,19 @@ public:
 
     /** \brief Return the wave number set previously in the constructor. */
     KernelType waveNumber() const;
+
+//    /** \brief Return true if the kernel is evaluated by interpolating precalculated values,
+//     *  false otherwise. */
+//    bool interpolationUsed() const;
+
+//    /** \brief Return the number of points per "effective wavelength" used to
+//     *  construct the interpolation grid.
+//     *
+//     *  The "effective wavelength" is defined as \f$2\pi/|k|\f$, where
+//     *  \f$k\f$ = waveNumber().
+//     *
+//     *  This function returns 0 if interpolation is not used in kernel evaluation. */
+//    int interpolationPointsPerWavelength() const;
 
     /** \brief Return the identifier of this operator.
      *

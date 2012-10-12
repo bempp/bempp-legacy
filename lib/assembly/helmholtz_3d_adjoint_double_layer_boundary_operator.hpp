@@ -75,7 +75,9 @@ public:
             const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
             KernelType waveNumber,
             const std::string& label = "",
-            int symmetry = NO_SYMMETRY);
+            int symmetry = NO_SYMMETRY,
+            bool useInterpolation = false,
+            int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
 };
 
 /** \relates Helmholtz3dAdjointDoubleLayerBoundaryOperator
@@ -83,7 +85,7 @@ public:
  *  Helmholtz3dAdjointDoubleLayerBoundaryOperator.
  *
  *  This is a convenience function that creates a
- *  Helmholtz3dHypersingularBoundaryOperator, immediately wraps it in a
+ *  Helmholtz3dAdjointDoubleLayerBoundaryOperator, immediately wraps it in a
  *  BoundaryOperator and returns the latter object.
  *
  *  \param[in] context
@@ -103,6 +105,18 @@ public:
  *  \param[in] symmetry
  *    Symmetry of the weak form of the operator. Can be any combination of the
  *    flags defined in the enumeration type Symmetry.
+ *  \param[in] useInterpolation
+ *    If set to \p true, the exponential factor occurring in the kernel will
+ *    be evaluated by piecewise-cubic interpolation of values calculated in
+ *    advance. This normally speeds up calculations. If set to \p false,
+ *    standard exponential function will be used.
+ *  \param[in] interPtsPerWavelength
+ *    If \p useInterpolation is set to true, this parameter determines the
+ *    number of points per "effective wavelength" (defined as
+ *    \f$2\pi/|k|\f$, where \f$k\f$ = \p waveNumber) used to construct the
+ *    interpolation grid. The default value ensures that the interpolated
+ *    values are accurate to about 6 significant digits in single precision
+ *    and 8 significant digits in double precision.
  *
  *  None of the shared pointers may be null and the spaces \p range and \p
  *  dualToRange must be defined on the same grid, otherwise an exception is
@@ -118,7 +132,9 @@ helmholtz3dAdjointDoubleLayerBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         typename Helmholtz3dAdjointDoubleLayerBoundaryOperator<BasisFunctionType>::KernelType waveNumber,
         const std::string& label = "",
-        int symmetry = NO_SYMMETRY);
+        int symmetry = NO_SYMMETRY,
+        bool useInterpolation = false,
+        int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
 
 } // namespace Bempp
 
