@@ -40,8 +40,6 @@
 #include <Thyra_DefaultSpmdVector.hpp>
 #include <Thyra_DefaultPreconditioner.hpp>
 
-#include <armadillo>
-
 // Tests
 
 BOOST_AUTO_TEST_SUITE(BelosSolverWrapper)
