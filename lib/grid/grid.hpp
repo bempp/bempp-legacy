@@ -24,7 +24,7 @@
 #include "../common/common.hpp"
 #include "grid_parameters.hpp"
 
-#include <armadillo>
+#include "../common/armadillo_fwd.hpp"
 #include <cstddef> // size_t
 #include <memory>
 #include <vector>
@@ -96,6 +96,12 @@ public:
 
     /** \brief Reference to the grid's global id set. */
     virtual const IdSet& globalIdSet() const = 0;
+
+    void getBoundingBox(arma::Col<double>& lowerBound,
+                        arma::Col<double>& upperBound) const;
+
+private:
+    mutable arma::Col<double> m_lowerBound, m_upperBound;
 };
 
 /** \brief Check whether points are inside or outside a closed grid.
