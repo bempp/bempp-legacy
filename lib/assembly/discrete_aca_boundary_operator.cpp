@@ -106,8 +106,8 @@ public:
             blcluster* cluster = m_leafClusters[leafClusterIndex];
             if (m_conjugateTranspose)
                 m_blocks[cluster->getidx()]->mltahVec(ahmedCast(m_multiplier),
-                                                      ahmedCast(&m_x(cluster->getb2())),
-                                                      ahmedCast(&m_local_y(cluster->getb1())));
+                                                      ahmedCast(&m_x(cluster->getb1())),
+                                                      ahmedCast(&m_local_y(cluster->getb2())));
             else
                 m_blocks[cluster->getidx()]->mltaVec(ahmedCast(m_multiplier),
                                                      ahmedCast(&m_x(cluster->getb2())),
