@@ -1286,7 +1286,7 @@ def createBlockOperatorStructure(context):
     """
     Deprecated. Superseded by createBlockedOperatorStructure().
     """
-    print ("createBlockOperatorStructure(): DEPRECATED. Please use the"
+    print ("createBlockOperatorStructure(): DEPRECATED. Please use the "
            "createBlockedOperatorStructure() function instead.")
     return createBlockedOperatorStructure(context)
 
