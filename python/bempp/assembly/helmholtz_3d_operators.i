@@ -39,7 +39,9 @@ helmholtz3dSingleLayerBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         typename ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
         const std::string& label = "",
-        int symmetry = NO_SYMMETRY);
+        int symmetry = NO_SYMMETRY,
+        bool useInterpolation = false,
+        int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
 template <typename BasisFunctionType>
 BoundaryOperator<BasisFunctionType,
 typename ScalarTraits<BasisFunctionType>::ComplexType>
@@ -51,7 +53,9 @@ helmholtz3dDoubleLayerBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         typename ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
         const std::string& label = "",
-        int symmetry = NO_SYMMETRY);
+        int symmetry = NO_SYMMETRY,
+        bool useInterpolation = false,
+        int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
 template <typename BasisFunctionType>
 BoundaryOperator<BasisFunctionType,
 typename ScalarTraits<BasisFunctionType>::ComplexType>
@@ -63,7 +67,9 @@ helmholtz3dAdjointDoubleLayerBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         typename ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
         const std::string& label = "",
-        int symmetry = NO_SYMMETRY);
+        int symmetry = NO_SYMMETRY,
+        bool useInterpolation = false,
+        int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
 template <typename BasisFunctionType>
 BoundaryOperator<BasisFunctionType,
 typename ScalarTraits<BasisFunctionType>::ComplexType>
@@ -75,7 +81,9 @@ helmholtz3dHypersingularBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         typename ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
         const std::string& label = "",
-        int symmetry = NO_SYMMETRY);
+        int symmetry = NO_SYMMETRY,
+        bool useInterpolation = false,
+        int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
 
 %feature("compactdefaultargs") helmholtz3dSingleLayerBoundaryOperator;
 
