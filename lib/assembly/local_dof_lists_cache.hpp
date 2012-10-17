@@ -34,6 +34,10 @@ namespace Bempp
 
 template <typename BasisFunctionType> class Space;
 
+/** \ingroup weak_form_assembly_internal
+ *
+ *  \brief Data used by WeakFormAssemblyHelper to convert between
+ *  H-matrix indices, global and local degrees of freedom. */
 struct LocalDofLists
 {
     /** \brief Type used to index matrices.
@@ -45,10 +49,11 @@ struct LocalDofLists
     std::vector<int> elementIndices;
     std::vector<std::vector<LocalDofIndex> > localDofIndices;
     std::vector<std::vector<int> > arrayIndices;
-
-//    ~LocalDofLists() { std::cout << "DELETING LISTS" << std::endl; }
 };
 
+/** \ingroup weak_form_assembly_internal
+ *
+ *  \brief Cache of LocalDofLists objects. */
 template <typename BasisFunctionType>
 class LocalDofListsCache
 {
@@ -57,8 +62,8 @@ public:
                        const std::vector<unsigned int>& p2o,
                        bool indexWithGlobalDofs);
 
-    ~LocalDofListsCache();
-
+    /** \brief Return the LocalDofLists object describing the DOFs corresponding to
+     *  AHMED matrix indices [start, start + indexCount). */
     shared_ptr<const LocalDofLists> get(int start, int indexCount);
 
 private:
@@ -69,22 +74,22 @@ private:
                        std::vector<std::vector<LocalDofIndex> >& localDofIndices,
                        std::vector<std::vector<int> >& arrayIndices) const;
 
-    void findLocalDofs(
-            int index,
-            std::vector<LocalDofLists::DofIndex>& originalIndices,
-            std::vector<int>& elementIndices,
-            std::vector<std::vector<LocalDofIndex> >& localDofIndices,
-            std::vector<std::vector<int> >& arrayIndices) const;
+    void findLocalDofs(int index,
+                       std::vector<LocalDofLists::DofIndex>& originalIndices,
+                       std::vector<int>& elementIndices,
+                       std::vector<std::vector<LocalDofIndex> >& localDofIndices,
+                       std::vector<std::vector<int> >& arrayIndices) const;
 
 private:
+    /** \cond PRIVATE */
     const Space<BasisFunctionType>& m_space;
     const std::vector<unsigned int>& m_p2o;
     bool m_indexWithGlobalDofs;
 
-//    typedef tbb::concurrent_unordered_map<std::pair<int, int>, LocalDofLists*>
-    typedef tbb::concurrent_unordered_map<std::pair<int, int>, shared_ptr<LocalDofLists> >
-    LocalDofListsMap;
+    typedef tbb::concurrent_unordered_map<std::pair<int, int>,
+    shared_ptr<LocalDofLists> > LocalDofListsMap;
     LocalDofListsMap m_map;
+    /** \endcond */
 };
 
 } // namespace Bempp

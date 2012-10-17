@@ -41,16 +41,6 @@ LocalDofListsCache<BasisFunctionType>::LocalDofListsCache(
 }
 
 template <typename BasisFunctionType>
-LocalDofListsCache<BasisFunctionType>::~LocalDofListsCache()
-{
-//    std::cout << "DELETING CACHE" << std::endl;
-//    for (typename LocalDofListsMap::const_iterator it = m_map.begin();
-//         it != m_map.end(); ++it)
-//        delete it->second;
-//    m_map.clear();
-}
-
-template <typename BasisFunctionType>
 shared_ptr<const LocalDofLists> LocalDofListsCache<BasisFunctionType>::get(
         int start, int indexCount)
 {
@@ -76,17 +66,8 @@ shared_ptr<const LocalDofLists> LocalDofListsCache<BasisFunctionType>::get(
     // Attempt to insert the newly created DOF list into the map
     std::pair<typename LocalDofListsMap::iterator, bool> result =
             m_map.insert(std::make_pair(key, newLists));
-//    if (result.second)
-//        // Insertion succeeded. The newly created DOF list will be deleted in
-//        // our own destructor.
-//        std::cout << "Succeeded, count = " << newLists.use_count() << std::endl;
-//    else
-//        // Insertion failed -- another thread was faster. The newly
-//        // created DOF list will be deleted on exit from this function.
-//        std::cout << "Failed, count = " << newLists.use_count() << std::endl;
 
     // Return pointer to the DOF list that ended up in the map.
-//    return *result.first->second;
     return result.first->second;
 }
 
@@ -100,8 +81,6 @@ findLocalDofs(
         std::vector<std::vector<LocalDofIndex> >& localDofIndices,
         std::vector<std::vector<int> >& arrayIndices) const
 {
-    // GPTLstart("findLocalDofs");
-
     using std::make_pair;
     using std::map;
     using std::pair;
@@ -177,7 +156,6 @@ findLocalDofs(
             arrayIndices[e].push_back(setIt->second);
         }
     }
-    // GPTLstop("findLocalDofs");
 }
 
 template <typename BasisFunctionType>
@@ -189,8 +167,6 @@ findLocalDofs(
         std::vector<std::vector<LocalDofIndex> >& localDofIndices,
         std::vector<std::vector<int> >& arrayIndices) const
 {
-    // GPTLstart("findLocalDofs");
-
     using std::make_pair;
     using std::map;
     using std::pair;
