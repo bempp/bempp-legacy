@@ -51,13 +51,17 @@ public:
         const int n = int(fpn);
         assert(n >= 0 && n < m_n);
         assert(t >= 0 && t <= 1);
-        const CoordinateType one = 1., two = 2., three = 3.;
-        const CoordinateType tm1 = t - one;
-        // std::cout << x << n << " " << t << " " << m_interval << " " << m_values[n] << " " << m_derivatives[n] << " " << "\n";
-        return (m_values[n] * (one + two * t) * tm1 * tm1 +
-                m_interval * m_derivatives[n] * t * tm1 * tm1 +
-                m_values[n+1] * t * t * (three - two * t) +
-                m_interval * m_derivatives[n+1] * t * t * tm1);
+        // Adapted from the chfev routine from SLATEC
+        const ValueType f_1 = m_values[n];
+        const ValueType f_2 = m_values[n+1];
+        const ValueType d_1 = m_derivatives[n] * m_interval;
+        const ValueType d_2 = m_derivatives[n+1] * m_interval;
+        const ValueType Delta = f_2 - f_1;
+        const ValueType Delta_1 = d_1 - Delta;
+        const ValueType Delta_2 = d_2 - Delta;
+        const ValueType c_2 = -(Delta_1 + Delta_1 + Delta_2);
+        const ValueType c_3 = Delta_1 + Delta_2;
+        return f_1 + t * (d_1 + t * (c_2 + t * c_3));
     }
 
 private:
