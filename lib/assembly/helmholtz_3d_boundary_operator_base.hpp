@@ -23,12 +23,12 @@
 
 #include "elementary_singular_integral_operator.hpp"
 
+#include "helmholtz_3d_operators_common.hpp"
+
 #include <boost/scoped_ptr.hpp>
 
 namespace Bempp
 {
-
-const int DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY = 5000;
 
 template <typename BasisFunctionType> class Helmholtz3dBoundaryOperatorId;
 

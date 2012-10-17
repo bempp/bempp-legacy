@@ -6,6 +6,8 @@
 #include "assembly/helmholtz_3d_hypersingular_boundary_operator.hpp"
 %}
 
+%include "assembly/helmholtz_3d_operators_common.hpp"
+
 namespace Bempp
 {
 %feature("compactdefaultargs")
