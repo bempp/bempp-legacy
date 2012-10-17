@@ -38,8 +38,9 @@
 #include <boost/tuple/tuple_comparison.hpp>
 #include <tbb/concurrent_unordered_map.h>
 #include <cstring>
-#include <map>
+#include <climits>
 #include <set>
+#include <utility>
 #include <vector>
 
 namespace Fiber
@@ -98,10 +99,40 @@ public:
             std::vector<arma::Mat<ResultType> >& result);
 
 private:
+    /** \cond PRIVATE */
     typedef TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType> Integrator;
     typedef typename Integrator::ElementIndexPair ElementIndexPair;
-    typedef std::set<ElementIndexPair> ElementIndexPairSet;
-    typedef std::map<ElementIndexPair, arma::Mat<ResultType> > Cache;
+
+    /** \brief Alternative comparison functor for pairs.
+     *
+     *  This functor can be used to sort pairs according to the second member
+     *  and then, in case of equality, according to the first member. */
+    template <typename T1, typename T2>
+    struct alternative_less {
+        bool operator() (const std::pair<T1, T2>& a, const std::pair<T1, T2>& b) const {
+            return a.second < b.second
+                || (!(b.second < a.second) && a.first < b.first);
+        }
+    };
+
+    /** \brief Comparison functor for element-index pairs.
+     *
+     *  This functor sorts element index pairs first after the trial element
+     *  index (second member) and then, in case of equality, after the test
+     *  element index (first member) */
+    typedef alternative_less<
+        typename ElementIndexPair::first_type,
+        typename ElementIndexPair::second_type> ElementIndexPairCompare;
+
+    /** \brief Set of element index pairs.
+     *
+     *  The alternative sorting (first after the trial element index) is used
+     *  because profiling has shown that evaluateLocalWeakForms is called more
+     *  often in the TEST_TRIAL mode (with a single trial element index) than
+     *  in the TRIAL_TEST mode. Therefore the singular integral cache is
+     *  indexed with trial element index, and this sorting mode makes it easier
+     *  to construct such cache. */
+    typedef std::set<ElementIndexPair, ElementIndexPairCompare> ElementIndexPairSet;
 
     void checkConsistencyOfGeometryAndBases(
             const RawGridGeometry<CoordinateType>& rawGeometry,
@@ -142,11 +173,6 @@ private:
             arma::Mat<CoordinateType>& elementCenters);
 
 private:
-    typedef tbb::concurrent_unordered_map<DoubleQuadratureDescriptor,
-    Integrator*> IntegratorMap;
-
-private:
-    /** \cond */
     shared_ptr<const GeometryFactory> m_testGeometryFactory;
     shared_ptr<const GeometryFactory> m_trialGeometryFactory;
     shared_ptr<const RawGridGeometry<CoordinateType> > m_testRawGeometry;
@@ -162,12 +188,30 @@ private:
     VerbosityLevel::Level m_verbosityLevel;
     AccuracyOptionsEx m_accuracyOptions;
 
+    typedef tbb::concurrent_unordered_map<DoubleQuadratureDescriptor,
+    Integrator*> IntegratorMap;
     IntegratorMap m_TestKernelTrialIntegrators;
+
+    enum { INVALID_INDEX = INT_MAX };
+    typedef _2dArray<std::pair<int, arma::Mat<ResultType> > > Cache;
+    /** \brief Singular integral cache.
+     *
+     *  This cache stores the preevaluated local weak forms expressed by
+     *  singular integrals. A particular item it stored in r'th row and c'th
+     *  column stores, in its second member, the local weak form calculated for
+     *  the test element with index it.first and the trial element with index
+     *  c. In each column, the items are sorted after increasing test element
+     *  index. At the end of each column there can be unused items with test
+     *  element index set to INVALID_INDEX (= INT_MAX, so that the sorting is
+     *  preserved). */
     Cache m_cache;
     std::vector<CoordinateType> m_testElementSizesSquared;
     std::vector<CoordinateType> m_trialElementSizesSquared;
     arma::Mat<CoordinateType> m_testElementCenters;
     arma::Mat<CoordinateType> m_trialElementCenters;
+
+    // tbb::atomic<size_t> m_foundInCache;
+    /** \endcond */
 };
 
 } // namespace Fiber
