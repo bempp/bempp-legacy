@@ -36,7 +36,7 @@ template <typename BasisFunctionType> class Space;
 
 /** \ingroup weak_form_assembly_internal
  *
- *  \brief Data used by WeakFormAssemblyHelper to convert between
+ *  \brief Data used by WeakFormAcaAssemblyHelper to convert between
  *  H-matrix indices, global and local degrees of freedom. */
 struct LocalDofLists
 {
