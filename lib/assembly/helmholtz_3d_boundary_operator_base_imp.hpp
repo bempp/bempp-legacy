@@ -160,22 +160,6 @@ waveNumber() const
     return m_impl->waveNumber;
 }
 
-//template <typename Impl, typename BasisFunctionType>
-//bool
-//Helmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType>::
-//interpolationUsed() const
-//{
-//    return m_impl->interpPtsPerWavelength > 0;
-//}
-
-//template <typename Impl, typename BasisFunctionType>
-//int
-//Helmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType>::
-//interpolationPointsPerWavelength() const
-//{
-//    return m_impl->interpPtsPerWavelength;
-//}
-
 template <typename Impl, typename BasisFunctionType>
 shared_ptr<const AbstractBoundaryOperatorId>
 Helmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType>::id() const
