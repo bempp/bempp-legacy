@@ -19,8 +19,8 @@
 // THE SOFTWARE.
 
 #include "fiber/geometrical_data.hpp"
-#include "fiber/modified_helmholtz_3d_double_layer_potential_kernel_functor.hpp"
-#include "fiber/modified_helmholtz_3d_double_layer_potential_kernel_interpolated_functor.hpp"
+#include "fiber/modified_helmholtz_3d_adjoint_double_layer_potential_kernel_functor.hpp"
+#include "fiber/modified_helmholtz_3d_adjoint_double_layer_potential_kernel_interpolated_functor.hpp"
 #include "fiber/default_collection_of_kernels.hpp"
 #include "assembly/helmholtz_3d_boundary_operator_base.hpp"
 
@@ -37,14 +37,14 @@
 
 // Tests
 
-BOOST_AUTO_TEST_SUITE(ModifiedHelmholtz3dDoubleLayerPotentialKernelInterpolatedFunctor)
+BOOST_AUTO_TEST_SUITE(ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelInterpolatedFunctor)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_real_wave_number,
                               ValueType, kernel_types)
 {
-    typedef Fiber::ModifiedHelmholtz3dDoubleLayerPotentialKernelFunctor<ValueType>
+    typedef Fiber::ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelFunctor<ValueType>
             NoninterpolatedFunctor;
-    typedef Fiber::ModifiedHelmholtz3dDoubleLayerPotentialKernelInterpolatedFunctor<ValueType>
+    typedef Fiber::ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelInterpolatedFunctor<ValueType>
             InterpolatedFunctor;
     typedef Fiber::DefaultCollectionOfKernels<NoninterpolatedFunctor>
             NoninterpolatedKernels;
@@ -74,11 +74,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_real_wave_number,
     trialGeomData.globals.cols(1, 10) *= 0.01; // to test well the area near origin
     trialGeomData.globals.cols(11, 20) *= 0.1;
 
-    trialGeomData.normals.set_size(worldDim, trialPointCount);
-    trialGeomData.normals.fill(0.);
-    trialGeomData.normals.row(0).fill(0.5);
-    trialGeomData.normals.row(1).fill(0.5);
-    trialGeomData.normals.row(2).fill(1. / sqrt(2.)); // just to make them nonzero and nonequal
+    testGeomData.normals.set_size(worldDim, testPointCount);
+    testGeomData.normals.fill(0.);
+    testGeomData.normals.row(0).fill(0.5);
+    testGeomData.normals.row(1).fill(0.5);
+    testGeomData.normals.row(2).fill(1. / sqrt(2.)); // just to make them nonzero and nonequal
 
     Fiber::CollectionOf4dArrays<ValueType> noninterpResult, interpResult;
     noninterpKernels.evaluateOnGrid(testGeomData, trialGeomData, noninterpResult);
@@ -92,9 +92,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_real_wave_number,
 BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_negative_real_wave_number,
                               ValueType, kernel_types)
 {
-    typedef Fiber::ModifiedHelmholtz3dDoubleLayerPotentialKernelFunctor<ValueType>
+    typedef Fiber::ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelFunctor<ValueType>
             NoninterpolatedFunctor;
-    typedef Fiber::ModifiedHelmholtz3dDoubleLayerPotentialKernelInterpolatedFunctor<ValueType>
+    typedef Fiber::ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelInterpolatedFunctor<ValueType>
             InterpolatedFunctor;
     typedef Fiber::DefaultCollectionOfKernels<NoninterpolatedFunctor>
             NoninterpolatedKernels;
@@ -124,11 +124,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_negative_real_wave
     trialGeomData.globals.cols(1, 10) *= 0.01; // to test well the area near origin
     trialGeomData.globals.cols(11, 20) *= 0.1;
 
-    trialGeomData.normals.set_size(worldDim, trialPointCount);
-    trialGeomData.normals.fill(0.);
-    trialGeomData.normals.row(0).fill(0.5);
-    trialGeomData.normals.row(1).fill(0.5);
-    trialGeomData.normals.row(2).fill(1. / sqrt(2.)); // just to make them nonzero and nonequal
+    testGeomData.normals.set_size(worldDim, testPointCount);
+    testGeomData.normals.fill(0.);
+    testGeomData.normals.row(0).fill(0.5);
+    testGeomData.normals.row(1).fill(0.5);
+    testGeomData.normals.row(2).fill(1. / sqrt(2.)); // just to make them nonzero and nonequal
 
     Fiber::CollectionOf4dArrays<ValueType> noninterpResult, interpResult;
     noninterpKernels.evaluateOnGrid(testGeomData, trialGeomData, noninterpResult);
@@ -142,9 +142,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_negative_real_wave
 BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_negative_imag_wave_number,
                               ValueType, complex_kernel_types)
 {
-    typedef Fiber::ModifiedHelmholtz3dDoubleLayerPotentialKernelFunctor<ValueType>
+    typedef Fiber::ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelFunctor<ValueType>
             NoninterpolatedFunctor;
-    typedef Fiber::ModifiedHelmholtz3dDoubleLayerPotentialKernelInterpolatedFunctor<ValueType>
+    typedef Fiber::ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelInterpolatedFunctor<ValueType>
             InterpolatedFunctor;
     typedef Fiber::DefaultCollectionOfKernels<NoninterpolatedFunctor>
             NoninterpolatedKernels;
@@ -174,11 +174,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_negative_imag_wave
     trialGeomData.globals.cols(1, 10) *= 0.01; // to test well the area near origin
     trialGeomData.globals.cols(11, 20) *= 0.1;
 
-    trialGeomData.normals.set_size(worldDim, trialPointCount);
-    trialGeomData.normals.fill(0.);
-    trialGeomData.normals.row(0).fill(0.5);
-    trialGeomData.normals.row(1).fill(0.5);
-    trialGeomData.normals.row(2).fill(1. / sqrt(2.)); // just to make them nonzero and nonequal
+    testGeomData.normals.set_size(worldDim, testPointCount);
+    testGeomData.normals.fill(0.);
+    testGeomData.normals.row(0).fill(0.5);
+    testGeomData.normals.row(1).fill(0.5);
+    testGeomData.normals.row(2).fill(1. / sqrt(2.)); // just to make them nonzero and nonequal
 
     Fiber::CollectionOf4dArrays<ValueType> noninterpResult, interpResult;
     noninterpKernels.evaluateOnGrid(testGeomData, trialGeomData, noninterpResult);
@@ -192,9 +192,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_negative_imag_wave
 BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_imag_wave_number,
                               ValueType, complex_kernel_types)
 {
-    typedef Fiber::ModifiedHelmholtz3dDoubleLayerPotentialKernelFunctor<ValueType>
+    typedef Fiber::ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelFunctor<ValueType>
             NoninterpolatedFunctor;
-    typedef Fiber::ModifiedHelmholtz3dDoubleLayerPotentialKernelInterpolatedFunctor<ValueType>
+    typedef Fiber::ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelInterpolatedFunctor<ValueType>
             InterpolatedFunctor;
     typedef Fiber::DefaultCollectionOfKernels<NoninterpolatedFunctor>
             NoninterpolatedKernels;
@@ -224,11 +224,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_imag_wave_number,
     trialGeomData.globals.cols(1, 10) *= 0.01; // to test well the area near origin
     trialGeomData.globals.cols(11, 20) *= 0.1;
 
-    trialGeomData.normals.set_size(worldDim, trialPointCount);
-    trialGeomData.normals.fill(0.);
-    trialGeomData.normals.row(0).fill(0.5);
-    trialGeomData.normals.row(1).fill(0.5);
-    trialGeomData.normals.row(2).fill(1. / sqrt(2.)); // just to make them nonzero and nonequal
+    testGeomData.normals.set_size(worldDim, testPointCount);
+    testGeomData.normals.fill(0.);
+    testGeomData.normals.row(0).fill(0.5);
+    testGeomData.normals.row(1).fill(0.5);
+    testGeomData.normals.row(2).fill(1. / sqrt(2.)); // just to make them nonzero and nonequal
 
     Fiber::CollectionOf4dArrays<ValueType> noninterpResult, interpResult;
     noninterpKernels.evaluateOnGrid(testGeomData, trialGeomData, noninterpResult);
@@ -242,9 +242,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_imag_wave_number,
 BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_complex_wave_number,
                               ValueType, complex_kernel_types)
 {
-    typedef Fiber::ModifiedHelmholtz3dDoubleLayerPotentialKernelFunctor<ValueType>
+    typedef Fiber::ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelFunctor<ValueType>
             NoninterpolatedFunctor;
-    typedef Fiber::ModifiedHelmholtz3dDoubleLayerPotentialKernelInterpolatedFunctor<ValueType>
+    typedef Fiber::ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelInterpolatedFunctor<ValueType>
             InterpolatedFunctor;
     typedef Fiber::DefaultCollectionOfKernels<NoninterpolatedFunctor>
             NoninterpolatedKernels;
@@ -274,11 +274,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_complex_wave_numbe
     trialGeomData.globals.cols(1, 10) *= 0.01; // to test well the area near origin
     trialGeomData.globals.cols(11, 20) *= 0.1;
 
-    trialGeomData.normals.set_size(worldDim, trialPointCount);
-    trialGeomData.normals.fill(0.);
-    trialGeomData.normals.row(0).fill(0.5);
-    trialGeomData.normals.row(1).fill(0.5);
-    trialGeomData.normals.row(2).fill(1. / sqrt(2.)); // just to make them nonzero and nonequal
+    testGeomData.normals.set_size(worldDim, testPointCount);
+    testGeomData.normals.fill(0.);
+    testGeomData.normals.row(0).fill(0.5);
+    testGeomData.normals.row(1).fill(0.5);
+    testGeomData.normals.row(2).fill(1. / sqrt(2.)); // just to make them nonzero and nonequal
 
     Fiber::CollectionOf4dArrays<ValueType> noninterpResult, interpResult;
     noninterpKernels.evaluateOnGrid(testGeomData, trialGeomData, noninterpResult);
