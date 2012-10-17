@@ -169,7 +169,7 @@ lhs_k45 = -(1.0/kappa2)*slp33_w2
 lhs_k54 = 0.5*id33 + dlp33_w3
 lhs_k55 = (1.0/kappa3)*slp33_w3
 
-structure = blib.createBlockOperatorStructure(context)
+structure = blib.createBlockedOperatorStructure(context)
 structure.setBlock(0, 0, lhs_k11);
 structure.setBlock(0, 1, lhs_k12);
 structure.setBlock(0, 2, lhs_k13);
