@@ -7,6 +7,23 @@
 %newobject gridFunctionFromPythonSurfaceNormalIndependentFunctor;
 %newobject gridFunctionFromPythonSurfaceNormalDependentFunctor;
 
+namespace Bempp {
+
+    %apply const arma::Col<float>& IN_COL {
+        const arma::Col<float>& data
+        };
+    %apply const arma::Col<double>& IN_COL {
+        const arma::Col<double>& data
+        };
+    %apply const arma::Col<std::complex<float> >& IN_COL {
+        const arma::Col<std::complex<float> >& data
+        };
+    %apply const arma::Col<std::complex<double> >& IN_COL {
+        const arma::Col<std::complex<double> >& data
+        };
+
+}
+
 %inline %{
 
 namespace Bempp
@@ -44,6 +61,20 @@ gridFunctionFromPythonSurfaceNormalDependentFunctor(
         context, space, dualSpace,
         surfaceNormalDependentFunction(functor));
 }
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>*
+gridFunctionFromCoefficients(
+    const boost::shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+    const boost::shared_ptr<const Space<BasisFunctionType> >& space,
+    const boost::shared_ptr<const Space<BasisFunctionType> >& dualSpace,
+    const arma::Col<ResultType>& data)
+{
+    return new GridFunction<BasisFunctionType, ResultType>(
+        context, space, dualSpace, data, 
+        GridFunction<BasisFunctionType, ResultType>::COEFFICIENTS);
+}
+
 
 } // namespace Bempp
 
@@ -195,6 +226,8 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(uninitializedGridFunction);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromPythonSurfaceNormalIndependentFunctor);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromPythonSurfaceNormalDependentFunctor);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromCoefficients);
+
 
 
 %clear arma::Col<float>& col_out;
@@ -206,6 +239,11 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromPythonSur
 %clear arma::Mat<double>& result_;
 %clear arma::Mat<std::complex<float> >& result_;
 %clear arma::Mat<std::complex<float> >& result_;
+
+%clear arma::Mat<float>& data;
+%clear arma::Mat<double>& data;
+%clear arma::Mat<std::complex<float> >& data;
+%clear arma::Mat<std::complex<float> >& data;
 
 
 } // Namespace Bempp

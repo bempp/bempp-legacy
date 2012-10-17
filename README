@@ -21,7 +21,8 @@ Installation
 
 To build the library you need a current version of cmake (2.8 or newer) and
 Python 2 (2.6 or newer). The Python interface has mostly been tested with
-Enthought Python, but other distributions will also work. However, Python
+Enthought Python, but other distributions will also work (however, see below
+for important remarks about BLAS and LAPACK). Note that Python
 visualization depends on Mayavi being available. The remaining dependencies of
 the library (currently Armadillo, Boost, Dune, Swig, Intel TBB and Trilinos) are
 automatically downloaded and compiled by the installer. You need at least 2.5 GB
@@ -42,9 +43,21 @@ To build the library, do the following:
      Enthought Python, in particular), you can tell the BEM++ installer to
      detect the location of the MKL libraries automatically.
 
-     Note for Ubuntu users: in Ubuntu 12.04, we have observed problems with
-     linking with MKL 10.3.1, the version bundled with Enthought Python.
-     Newer versions of MKL (specifically 10.3.7) work correctly.
+     **Warning**: Many Linux distributions come with versions of BLAS and LAPACK
+     built with the gfortran compiler.  Unfortunately, with its default
+     compilation settings, gfortran produces non-threadsafe versions of some
+     LAPACK routines (more information can be found at
+     http://icl.cs.utk.edu/lapack-forum/viewtopic.php?f=2&t=1930). Linked
+     against such versions of LAPACK and used in multithreaded mode, BEM++ will
+     produce incorrect (random) results. Therefore you are strongly advised to
+     either use LAPACK from Intel MKL, which is free from this bug, or to
+     compile LAPACK yourself, including ``-fmax-stack-var-size=66560`` in the
+     list of gfortran compilation options.
+
+     **Take-home message:** If you do not feel comfortable with compiling LAPACK
+     and NumPy on your own, we strongly recommend to use Enthought Python to
+     install BEM++ and to uncomment the lines ``enable_mkl=yes`` and
+     ``source=like_numpy`` in the ``MKL`` section of the configuration file.
 
    - Enable AHMED for H-Matrix support. You need to uncomment
      ``enable_ahmed=yes`` and set the option ``file_name`` in the AHMED section

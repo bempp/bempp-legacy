@@ -23,11 +23,12 @@
 
 #include "../common/common.hpp"
 
+#include "ahmed_aux_fwd.hpp"
+#include "../common/armadillo_fwd.hpp"
+#include "../common/shared_ptr.hpp"
 #include "../common/types.hpp"
 #include "../fiber/scalar_traits.hpp"
-#include "ahmed_aux_fwd.hpp"
 
-#include "../common/armadillo_fwd.hpp"
 #include <vector>
 
 namespace Fiber
@@ -45,6 +46,7 @@ namespace Bempp
 /** \cond FORWARD_DECL */
 class AssemblyOptions;
 template <typename ResultType> class DiscreteBoundaryOperator;
+template <typename BasisFunctionType> class LocalDofListsCache;
 template <typename BasisFunctionType> class Space;
 /** \endcond */
 
@@ -87,23 +89,23 @@ public:
     MagnitudeType scale(unsigned b1, unsigned n1, unsigned b2, unsigned n2) const;
 
 private:
-    /** \brief Type used to index matrices.
-     *
-     *  Equivalent to either GlobalDofIndex (if m_indexWithGlobalDofs is true)
-     *  or FlatLocalDofIndex (if m_indexWithGlobalDofs is false). */
-    typedef int DofIndex;
+//    /** \brief Type used to index matrices.
+//     *
+//     *  Equivalent to either GlobalDofIndex (if m_indexWithGlobalDofs is true)
+//     *  or FlatLocalDofIndex (if m_indexWithGlobalDofs is false). */
+//    typedef int DofIndex;
 
-    /** Find the elements and local DOF indices that correspond
-        to the global DOF indices stored in the entries [start, start + indexCount)
-        of array p2o. */
-    void findLocalDofs(int start,
-                       int indexCount,
-                       const std::vector<unsigned int>& p2o,
-                       const Space<BasisFunctionType>& space,
-                       std::vector<DofIndex>& originalIndices,
-                       std::vector<int>& elementIndices,
-                       std::vector<std::vector<LocalDofIndex> >& localDofIndices,
-                       std::vector<std::vector<int> >& arrayIndices) const;
+//    /** Find the elements and local DOF indices that correspond
+//        to the global DOF indices stored in the entries [start, start + indexCount)
+//        of array p2o. */
+//    void findLocalDofs(int start,
+//                       int indexCount,
+//                       const std::vector<unsigned int>& p2o,
+//                       const Space<BasisFunctionType>& space,
+//                       std::vector<DofIndex>& originalIndices,
+//                       std::vector<int>& elementIndices,
+//                       std::vector<std::vector<LocalDofIndex> >& localDofIndices,
+//                       std::vector<std::vector<int> >& arrayIndices) const;
 
 private:
     const Space<BasisFunctionType>& m_testSpace;
@@ -116,6 +118,9 @@ private:
     const std::vector<ResultType>& m_sparseTermsMultipliers;
     const AssemblyOptions& m_options;
     bool m_indexWithGlobalDofs;
+
+    shared_ptr<LocalDofListsCache<BasisFunctionType> >
+    m_testDofListsCache, m_trialDofListsCache;
 };
 
 } // namespace Bempp

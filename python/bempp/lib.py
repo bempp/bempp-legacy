@@ -960,11 +960,11 @@ def __gridFunctionFromFunctor(
     return result
 
 def createGridFunction(
-        context, space, dualSpace, function,
-        surfaceNormalDependent=False):
+        context, space, dualSpace, 
+        function=None, surfaceNormalDependent=False, coefficients=None):
     """
     Create and return a GridFunction object with values determined by a Python
-    function.
+    function or by an input vector of coefficients.
 
     *Parameters:*
        - context (Context)
@@ -973,6 +973,9 @@ def createGridFunction(
             Function space to expand the grid function in.
        - dualSpace (Space)
             Function space dual to 'space'.
+       - coefficients (Vector)
+            An explicit vector of function values on the degrees of freedom
+            associated with the space. 
        - function (a Python callable object)
             Function object whose values on 'space.grid()' will be used to
             construct the new grid function. If 'surfaceNormalDependent' is set
@@ -1010,6 +1013,16 @@ def createGridFunction(
             k = 5
             return math.exp(1j * k * x) * (nx - 1)
     """
+    if coefficients is None and function is None:
+        raise TypeError("createGridFunction: One of 'coefficients' or 'function' must be supplied.")
+    elif coefficients is not None and function is not None:
+        raise TypeError("createGridFunction: Only one of 'coefficeints' or 'function' can be supplied.")
+    
+    if coefficients is not None:
+        return _constructObjectTemplatedOnBasisAndResult("gridFunctionFromCoefficients",context.basisFunctionType(),
+                                                         context.resultType(),context,space,dualSpace,coefficients)
+        
+    
     if surfaceNormalDependent:
         className = "SurfaceNormalDependentFunctor"
     else:
