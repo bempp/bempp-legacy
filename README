@@ -4,8 +4,7 @@ Introduction
 BEM++ is a novel open-source HPC boundary-element library. Its development
 started in October 2011.
 
-If you want to compile the code please be aware that we do not yet guarantee
-that every commit will compile.
+1.0 is the first official version of the library. It was released on XX October 2012.
 
 The library has been tested under Scientific Linux 6.1, Ubuntu 12.04,
 OpenSUSE 12.1 and Mac OS 10.7.
@@ -13,21 +12,30 @@ OpenSUSE 12.1 and Mac OS 10.7.
 Obtaining the code
 ==================
 
-The code is available from https://github.com/bempp/bempp. To check it
-out, use ``git clone git://github.com/bempp/bempp.git``.
+The code is available from https://github.com/bempp/bempp.
+
+To download the code, you need to have the Git version control system
+(http://git-scm.com) installed. To get the (stable) version 1.0 of the library,
+execute ``git clone -b release_1.0 git://github.com/bempp/bempp.git`` from the
+command line in an empty directory. To download the current development version,
+execute ``git clone git://github.com/bempp/bempp.git`` instead.
+
+Bugfixes to the stable version of BEM++ will be committed to the release_1.0
+branch. You can obtain the latest bugfixes by executing ``git pull`` in the
+directory to which you downloaded the code.
 
 Installation
 ============
 
-To build the library you need a current version of cmake (2.8 or newer) and
-Python 2 (2.6 or newer). The Python interface has mostly been tested with
-Enthought Python, but other distributions will also work (however, see below
-for important remarks about BLAS and LAPACK). Note that Python
-visualization depends on Mayavi being available. The remaining dependencies of
-the library (currently Armadillo, Boost, Dune, Swig, Intel TBB and Trilinos) are
-automatically downloaded and compiled by the installer. You need at least 2.5 GB
-of free space to build the library and all its dependencies; however, most of
-this space can be recovered after a successful installation.
+To build the library you need a recent version of Python 2 (2.6 or newer). The
+Python interface has mostly been tested with Enthought Python, but other
+distributions will also work (however, see below for important remarks about
+BLAS and LAPACK). Note that Python visualization depends on Mayavi being
+available. The remaining dependencies of the library (currently CMake,
+Armadillo, Boost, Dune, Swig, Intel TBB and Trilinos) are automatically
+downloaded and compiled by the installer. You need at least 2.5 GB of free space
+to build the library and all its dependencies; however, most of this space can
+be recovered after a successful installation.
 
 To build the library, do the following:
 
@@ -148,14 +156,11 @@ import bempp.lib as blib
 at the beginning of your Python script (replacing ``<prefix>`` with the path to
 the BEM++ installation directory).
 
-Final note
-==========
+Contact
+=======
 
-The library is not yet officially released. We are still working on the
-documentation and smaller issues with the code. The library is in an alpha
-state: the interfaces are not stable yet and might change in a
-backward-incompatible way. If you want to try BEM++ and run into problems, please
-let us know.
+If you run into problems with installation or usage of BEM++, please let us know
+by opening an issue at https://github.com/bempp/bempp/issues.
 
 The BEM++ Team
 
