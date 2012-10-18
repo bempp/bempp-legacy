@@ -79,7 +79,8 @@ solver.initializeSolver(defaultGmresParameterList(1e-5))
 solution = solver.solve(rhs)
 print solution.solverMessage()
 
-# Extract the solution in the form of a grid function and export it in VTK format
+# Extract the solution in the form of a grid function and export it
+# in VTK format
 
 solFun = solution.gridFunction()
 solFun.exportToVtk("cell_data", "neumann_data", "solution")
@@ -93,3 +94,39 @@ diff = solFun - exactSolFun
 relError = diff.L2Norm() / exactSolFun.L2Norm()
 print "Relative L^2 error:", relError
 
+# Prepare to evaluate the solution on an annulus outside the sphere
+
+# Create potential operators
+
+slPotOp = createLaplace3dSingleLayerPotentialOperator(context)
+dlPotOp = createLaplace3dSingleLayerPotentialOperator(context)
+
+# Define points at which the solution should be evaluated
+
+rCount = 51;
+thetaCount = 361;
+r, theta, z = np.mgrid[1:2:rCount*1j, 0:2*np.pi:thetaCount*1j, 0:0:1j]
+x = r * np.cos(theta)
+y = r * np.sin(theta)
+# put the x, y and z coordinates in successive rows of a matrix
+evaluationPoints = np.vstack((x.ravel(), y.ravel(), z.ravel()))
+
+# Use the Green's representation formula to evaluate the solution
+
+evaluationOptions = createEvaluationOptions()
+field = (-slPotOp.evaluateAtPoints(solFun, evaluationPoints,
+                                   evaluationOptions) +
+          dlPotOp.evaluateAtPoints(dirichletData, evaluationPoints,
+                                   evaluationOptions))
+
+# Plot data
+
+from bempp import visualization as vis
+annulusActor = vis.scalarDataOnRegularGridActor(
+    evaluationPoints, field, (rCount, thetaCount))
+sphereActor = vis.gridFunctionActor(dirichletData)
+# make colour scales on the sphere and the annulus equal
+sphereActor.mapper.scalar_range = [-1.3, 1.3]
+annulusActor.mapper.scalar_range = [-1.3, 1.3]
+legendActor = vis.legendActor(sphereActor)
+vis.plotTvtkActors([annulusActor, sphereActor, legendActor])
