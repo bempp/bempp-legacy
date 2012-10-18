@@ -27,6 +27,8 @@ started in October 2011.
 
 - H-matrix-based preconditioners (via AHMED).
 
+- Easy creation of operators composed of several logical blocks.
+
 - Interfaces to iterative linear solvers from Trilinos.
 
 - Evaluation of potentials in space (away from the discretized surface).
