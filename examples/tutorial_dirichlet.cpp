@@ -21,6 +21,7 @@
 #include "assembly/assembly_options.hpp"
 #include "assembly/boundary_operator.hpp"
 #include "assembly/context.hpp"
+#include "assembly/evaluation_options.hpp"
 #include "assembly/grid_function.hpp"
 #include "assembly/numerical_quadrature_strategy.hpp"
 #include "assembly/surface_normal_independent_function.hpp"
@@ -28,6 +29,8 @@
 #include "assembly/identity_operator.hpp"
 #include "assembly/laplace_3d_single_layer_boundary_operator.hpp"
 #include "assembly/laplace_3d_double_layer_boundary_operator.hpp"
+#include "assembly/laplace_3d_single_layer_potential_operator.hpp"
+#include "assembly/laplace_3d_double_layer_potential_operator.hpp"
 
 #include "common/boost_make_shared_fwd.hpp"
 
@@ -40,6 +43,7 @@
 #include "space/piecewise_constant_scalar_space.hpp"
 
 #include <iostream>
+#include <fstream>
 
 typedef double BFT; // basis function type
 typedef double RT; // result type (type used to represent discrete operators)
@@ -164,7 +168,7 @@ int main()
                 make_shared_from_ref(pwiseLinears),
                 surfaceNormalIndependentFunction(DirichletData()));
 
-    // Construct the right-hand-side grid function 
+    // Construct the right-hand-side grid function
 
     GridFunction<BFT, RT> rhs = rhsOp * dirichletData;
 
@@ -178,12 +182,13 @@ int main()
     Solution<BFT, RT> solution = solver.solve(rhs);
     std::cout << solution.solverMessage() << std::endl;
 
-    // Extract the solution in the form of a grid function and export it in VTK format
+    // Extract the solution in the form of a grid function
+    // and export it in VTK format
 
     const GridFunction<BFT, RT>& solFun = solution.gridFunction();
     solFun.exportToVtk(VtkWriter::CELL_DATA, "Neumann_data", "solution");
 
-    // Compare the numerical and analytical solution
+    // Compare the numerical and analytical solution on the grid
 
     GridFunction<BFT, RT> exactSolFun(
                 make_shared_from_ref(context),
@@ -193,4 +198,51 @@ int main()
     GridFunction<BFT, RT> diff = solFun - exactSolFun;
     double relativeError = diff.L2Norm() / exactSolFun.L2Norm();
     std::cout << "Relative L^2 error: " << relativeError << std::endl;
+
+    // Prepare to evaluate the solution on an annulus outside the sphere
+
+    // Create potential operators
+
+    Laplace3dSingleLayerPotentialOperator<BFT, RT> slPotOp;
+    Laplace3dDoubleLayerPotentialOperator<BFT, RT> dlPotOp;
+
+    // Construct the array 'evaluationPoints' containing the coordinates
+    // of points where the solution should be evaluated
+
+    const int rCount = 51;
+    const int thetaCount = 361;
+    const CT minTheta = 0., maxTheta = 2. * M_PI;
+    const CT minR = 1., maxR = 2.;
+    const int dimWorld = 3;
+    arma::Mat<CT> evaluationPoints(dimWorld, rCount * thetaCount);
+    for (int iTheta = 0; iTheta < thetaCount; ++iTheta) {
+        CT theta = minTheta + (maxTheta - minTheta) *
+            iTheta / (thetaCount - 1);
+        for (int iR = 0; iR < rCount; ++iR) {
+            CT r = minR + (maxR - minR) * iR / (rCount - 1);
+            evaluationPoints(0, iR + iTheta * rCount) = r * cos(theta); // x
+            evaluationPoints(1, iR + iTheta * rCount) = r * sin(theta); // y
+            evaluationPoints(2, iR + iTheta * rCount) = 0.;             // z
+        }
+    }
+
+    // Use the Green's representation formula to evaluate the solution
+
+    EvaluationOptions evaluationOptions;
+
+    arma::Mat<RT> field =
+        -slPotOp.evaluateAtPoints(solFun, evaluationPoints,
+                                  quadStrategy, evaluationOptions) +
+         dlPotOp.evaluateAtPoints(dirichletData, evaluationPoints,
+                                  quadStrategy, evaluationOptions);
+
+    // Export the solution into text file
+
+    std::ofstream out("solution.txt");
+    out << "# x y z u\n";
+    for (int i = 0; i < rCount * thetaCount; ++i)
+        out << evaluationPoints(0, i) << ' '
+            << evaluationPoints(1, i) << ' '
+            << evaluationPoints(2, i) << ' '
+            << field(0, i) << '\n';
 }
