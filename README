@@ -144,8 +144,8 @@ On a Mac, you would omit ``-Wl,-rpath,<prefix>/bempp/lib``, but type ``export
 DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:<prefix>/bempp/lib`` before running
 ``my_program``.
 
-The file ``doc/CMakeLists.txt.example`` contains an example ``CMakeLists`` file
-that can be used to build a program employing BEM++ with CMake.
+The file ``doc/misc/CMakeLists.txt.example`` contains an example ``CMakeLists``
+file that can be used to build a program employing BEM++ with CMake.
 
 To use the Python interface to BEM++, simply put ::
 
