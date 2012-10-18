@@ -405,7 +405,7 @@ def createLaplace3dSingleLayerPotentialOperator(context):
     functions defined on the same surface S.
     """
     return _constructLaplacePotentialOperator(
-        "Laplace3dSingleLayerPotentialOperator", context)
+        "laplace3dSingleLayerPotentialOperator", context)
 
 def createLaplace3dDoubleLayerPotentialOperator(context):
     """
@@ -429,7 +429,7 @@ def createLaplace3dDoubleLayerPotentialOperator(context):
     functions defined on the same surface S.
     """
     return _constructLaplacePotentialOperator(
-        "Laplace3dDoubleLayerPotentialOperator", context)
+        "laplace3dDoubleLayerPotentialOperator", context)
 
 def _constructHelmholtzOperator(
         className, context, domain, range, dualToRange, waveNumber,
