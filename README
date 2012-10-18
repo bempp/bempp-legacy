@@ -7,6 +7,36 @@ started in October 2011.
 If you want to compile the code please be aware that we do not yet guarantee
 that every commit will compile.
 
+- Galerkin discretization of all standard boundary integral operators
+  (single-layer potential, double-layer potential, adjoint double-layer
+  potential, hypersingular operator) for Laplace, Helmholtz and modified
+  Helmholtz problems in three dimensions.
+
+- Numerical evaluation of boundary-element integrals (singular integrals dealt
+  with using Sauter-Schwab quadrature rules).
+
+- Triangular surface mesh handling. Import of meshes in Gmsh format.
+
+- Piecewise constant and continuous piecewise linear basis functions.
+
+- Dense-matrix representation of boundary integral operators supported natively.
+
+- Assembly of H-matrix representations of boundary integral operators via
+  adaptive cross approximation (ACA) supported thanks to an interface to
+  M. Bebendorf’s AHMED library.
+
+- H-matrix-based preconditioners (via AHMED).
+
+- Interfaces to iterative linear solvers from Trilinos.
+
+- Evaluation of potentials in space (away from the discretized surface).
+
+- Export of solutions in VTK format.
+
+- Parallel operation on shared-memory CPU architectures.
+
+- C++ and Python interfaces.
+
 The library has been tested under Scientific Linux 6.1, Ubuntu 12.04,
 OpenSUSE 12.1 and Mac OS 10.7.
 
