@@ -83,7 +83,8 @@ def configure(root,config):
                             "' ./configure --disable-documentation "
                             "--enable-shared=yes --enable-static=no "
                             "--disable-gxx0xcheck "
-                            "--prefix="+dune_install_dir)
+                            "--prefix='"+dune_install_dir+"' "
+                            "--libdir='"+dune_install_dir+"/lib'")
     config_string_grid = (config_string_common+
                           " --with-dune-common="+dune_dir+"/dune-common")
     config_string_localfunctions = (config_string_grid+
