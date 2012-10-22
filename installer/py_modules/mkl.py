@@ -254,6 +254,14 @@ def prepare(root,config):
         if mkl_source == "like_numpy":
             mkl_dirs,mkl_libs = get_mkl_dirs_and_libs_like_numpy(
                 config,lib_dir,extension)
+            if not mkl_libs:
+                raise Exception(
+                    "Your NumPy package does not seem to be linked to MKL. "
+                    "Are you sure\nyou are using the correct version of Python? "
+                    "If so, set the 'source'\noption in the 'MKL' section of "
+                    "your configuration file to 'installed'\nand use the "
+                    "options 'dir' and 'lib' to specify manually the location "
+                    "of your\nMKL libraries.")
             create_symlinks(lib_dir,extension,mkl_dirs,mkl_libs)
         elif mkl_source == 'installed':
             mkl_dirs,mkl_libs = get_mkl_dirs_and_libs_installed(
