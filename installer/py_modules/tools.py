@@ -80,16 +80,14 @@ def writeOptions(root,config):
     """Write out options in a format suitable for a shell script"""
 
     fname=".options.cfg"
-    full_path=root+"/"+fname
+    root_build_dir=config.get('Main','build_dir')
+    full_path=root_build_dir+"/"+fname
     f=open(full_path,'w')
     f.write("# This file is created automatically by bempp_setup.py\n")
     for section in config.sections():
         for option in config.items(section):
             f.write(section+"_"+option[0]+"="+"\""+option[1]+"\""+"\n")
     f.close()
-    build_dir=config.get('Main','build_dir')
-    shutil.copyfile(full_path,build_dir+"/"+fname)
-
 
 def setDefaultConfigOption(config,section,option,value, overwrite=False):
     """Enter a default option into the ConfigParser object 'config'. If option already exists returns

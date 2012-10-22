@@ -1,5 +1,9 @@
 #!/bin/sh
-. ./.options.cfg
+
+# Usage: .build.sh <path-to-options.cfg>
+
+set -e
+. $1
 
 export LD_LIBRARY_PATH="$Main_prefix/bempp/lib:$LD_LIBRARY_PATH"
 export DYLD_LIBRARY_PATH="$Main_prefix/bempp/lib:$DYLD_LIBRARY_PATH"

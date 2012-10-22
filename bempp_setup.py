@@ -139,6 +139,7 @@ def prepare(root,config):
     # Replace ~ with /home/username
     build_dir = os.path.expanduser(build_dir)
     # Set build directories for BEM++ and its dependencies
+    config.set('Main','build_dir',build_dir)
     config.set('Bempp','build_dir',build_dir+'/bempp')
     config.set('Main','dependency_build_dir',build_dir+'/contrib')
     # Set
