@@ -191,109 +191,109 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(solve_with_scaled_trivial_right_preconditioner_wor
     BOOST_CHECK(check_arrays_are_close<ValueType>(sol, armaSol, tol * 10));
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(solve_with_trivial_left_preconditioner_works_for_single_rhs,
-                              ValueType, result_types)
-{
-    std::srand(1);
+// BOOST_AUTO_TEST_CASE_TEMPLATE(solve_with_trivial_left_preconditioner_works_for_single_rhs,
+//                               ValueType, result_types)
+// {
+//     std::srand(1);
 
-    const int size = 50;
-    arma::Mat<ValueType> mat = arma::eye<arma::Mat<ValueType> >(size, size) +
-        0.1 * generateRandomMatrix<ValueType>(size, size);
-    Bempp::DiscreteDenseBoundaryOperator<ValueType> op(mat);
+//     const int size = 50;
+//     arma::Mat<ValueType> mat = arma::eye<arma::Mat<ValueType> >(size, size) +
+//         0.1 * generateRandomMatrix<ValueType>(size, size);
+//     Bempp::DiscreteDenseBoundaryOperator<ValueType> op(mat);
 
-    arma::Mat<ValueType> precMat;
-    precMat.eye(size, size);
-    Bempp::DiscreteDenseBoundaryOperator<ValueType> precOp(precMat);
+//     arma::Mat<ValueType> precMat;
+//     precMat.eye(size, size);
+//     Bempp::DiscreteDenseBoundaryOperator<ValueType> precOp(precMat);
 
-    arma::Col<ValueType> rhs = generateRandomMatrix<ValueType>(size, 1);
-    arma::Col<ValueType> sol(size);
-    sol.fill(static_cast<ValueType>(0.));
+//     arma::Col<ValueType> rhs = generateRandomMatrix<ValueType>(size, 1);
+//     arma::Col<ValueType> sol(size);
+//     sol.fill(static_cast<ValueType>(0.));
 
-    typedef Thyra::DefaultSpmdVector<ValueType> DenseVector;
-    Teuchos::ArrayRCP<ValueType> rhsArray =
-            Teuchos::arcp(rhs.memptr(), 0 /* lowerOffset */,
-                          size, false /* doesn't own memory */);
-    DenseVector rhsVector(Thyra::defaultSpmdVectorSpace<ValueType>(size),
-                    rhsArray, 1 /* stride */);
-    Teuchos::ArrayRCP<ValueType> solArray =
-            Teuchos::arcp(sol.memptr(), 0 /* lowerOffset */,
-                          size, false /* doesn't own memory */);
-    DenseVector solVector(Thyra::defaultSpmdVectorSpace<ValueType>(size),
-                    solArray, 1 /* stride */);
+//     typedef Thyra::DefaultSpmdVector<ValueType> DenseVector;
+//     Teuchos::ArrayRCP<ValueType> rhsArray =
+//             Teuchos::arcp(rhs.memptr(), 0 /* lowerOffset */,
+//                           size, false /* doesn't own memory */);
+//     DenseVector rhsVector(Thyra::defaultSpmdVectorSpace<ValueType>(size),
+//                     rhsArray, 1 /* stride */);
+//     Teuchos::ArrayRCP<ValueType> solArray =
+//             Teuchos::arcp(sol.memptr(), 0 /* lowerOffset */,
+//                           size, false /* doesn't own memory */);
+//     DenseVector solVector(Thyra::defaultSpmdVectorSpace<ValueType>(size),
+//                     solArray, 1 /* stride */);
 
-    Teuchos::RCP<const Thyra::DefaultPreconditioner<ValueType> > prec =
-            Thyra::leftPrec(Teuchos::rcpFromRef<const Thyra::LinearOpBase<ValueType> >(precOp));
+//     Teuchos::RCP<const Thyra::DefaultPreconditioner<ValueType> > prec =
+//             Thyra::leftPrec(Teuchos::rcpFromRef<const Thyra::LinearOpBase<ValueType> >(precOp));
 
-    typedef Bempp::BelosSolverWrapper<ValueType> Solver;
-    Solver solver(Teuchos::rcpFromRef<const Thyra::LinearOpBase<ValueType> >(op));
-    typedef typename Bempp::ScalarTraits<ValueType>::RealType MagnitudeType;
-    const MagnitudeType tol = std::numeric_limits<MagnitudeType>::epsilon() * 1000.;
-    solver.setPreconditioner(prec);
-    solver.initializeSolver(Bempp::defaultGmresParameterList(tol));
+//     typedef Bempp::BelosSolverWrapper<ValueType> Solver;
+//     Solver solver(Teuchos::rcpFromRef<const Thyra::LinearOpBase<ValueType> >(op));
+//     typedef typename Bempp::ScalarTraits<ValueType>::RealType MagnitudeType;
+//     const MagnitudeType tol = std::numeric_limits<MagnitudeType>::epsilon() * 1000.;
+//     solver.setPreconditioner(prec);
+//     solver.initializeSolver(Bempp::defaultGmresParameterList(tol));
 
-    Thyra::SolveStatus<typename Solver::MagnitudeType > status =
-            solver.solve(Thyra::NOTRANS, rhsVector,
-                         Teuchos::ptr<Thyra::MultiVectorBase<ValueType> >(&solVector));
-    BOOST_CHECK_EQUAL(status.solveStatus, Thyra::SOLVE_STATUS_CONVERGED);
+//     Thyra::SolveStatus<typename Solver::MagnitudeType > status =
+//             solver.solve(Thyra::NOTRANS, rhsVector,
+//                          Teuchos::ptr<Thyra::MultiVectorBase<ValueType> >(&solVector));
+//     BOOST_CHECK_EQUAL(status.solveStatus, Thyra::SOLVE_STATUS_CONVERGED);
 
-    // Solve system with armadillo
+//     // Solve system with armadillo
 
-    arma::Col<ValueType> armaSol = arma::solve(mat, rhs);
+//     arma::Col<ValueType> armaSol = arma::solve(mat, rhs);
 
-    BOOST_CHECK(check_arrays_are_close<ValueType>(sol, armaSol, tol * 10));
-}
+//     BOOST_CHECK(check_arrays_are_close<ValueType>(sol, armaSol, tol * 10));
+// }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(solve_with_scaled_trivial_left_preconditioner_works_for_single_rhs,
-                              ValueType, result_types)
-{
-    std::srand(1);
+// BOOST_AUTO_TEST_CASE_TEMPLATE(solve_with_scaled_trivial_left_preconditioner_works_for_single_rhs,
+//                               ValueType, result_types)
+// {
+//     std::srand(1);
 
-    const int size = 50;
-    arma::Mat<ValueType> mat = arma::eye<arma::Mat<ValueType> >(size, size) +
-        0.1 * generateRandomMatrix<ValueType>(size, size);
-    Bempp::DiscreteDenseBoundaryOperator<ValueType> op(mat);
+//     const int size = 50;
+//     arma::Mat<ValueType> mat = arma::eye<arma::Mat<ValueType> >(size, size) +
+//         0.1 * generateRandomMatrix<ValueType>(size, size);
+//     Bempp::DiscreteDenseBoundaryOperator<ValueType> op(mat);
 
-    arma::Mat<ValueType> precMat;
-    precMat.eye(size, size);
-    Bempp::DiscreteDenseBoundaryOperator<ValueType> precOp(1e-16 * precMat);
+//     arma::Mat<ValueType> precMat;
+//     precMat.eye(size, size);
+//     Bempp::DiscreteDenseBoundaryOperator<ValueType> precOp(1e-16 * precMat);
 
-    arma::Col<ValueType> rhs = generateRandomMatrix<ValueType>(size, 1);
-    arma::Col<ValueType> sol(size);
-    sol.fill(static_cast<ValueType>(0.));
+//     arma::Col<ValueType> rhs = generateRandomMatrix<ValueType>(size, 1);
+//     arma::Col<ValueType> sol(size);
+//     sol.fill(static_cast<ValueType>(0.));
 
-    typedef Thyra::DefaultSpmdVector<ValueType> DenseVector;
-    Teuchos::ArrayRCP<ValueType> rhsArray =
-            Teuchos::arcp(rhs.memptr(), 0 /* lowerOffset */,
-                          size, false /* doesn't own memory */);
-    DenseVector rhsVector(Thyra::defaultSpmdVectorSpace<ValueType>(size),
-                    rhsArray, 1 /* stride */);
-    Teuchos::ArrayRCP<ValueType> solArray =
-            Teuchos::arcp(sol.memptr(), 0 /* lowerOffset */,
-                          size, false /* doesn't own memory */);
-    DenseVector solVector(Thyra::defaultSpmdVectorSpace<ValueType>(size),
-                    solArray, 1 /* stride */);
+//     typedef Thyra::DefaultSpmdVector<ValueType> DenseVector;
+//     Teuchos::ArrayRCP<ValueType> rhsArray =
+//             Teuchos::arcp(rhs.memptr(), 0 /* lowerOffset */,
+//                           size, false /* doesn't own memory */);
+//     DenseVector rhsVector(Thyra::defaultSpmdVectorSpace<ValueType>(size),
+//                     rhsArray, 1 /* stride */);
+//     Teuchos::ArrayRCP<ValueType> solArray =
+//             Teuchos::arcp(sol.memptr(), 0 /* lowerOffset */,
+//                           size, false /* doesn't own memory */);
+//     DenseVector solVector(Thyra::defaultSpmdVectorSpace<ValueType>(size),
+//                     solArray, 1 /* stride */);
 
-    Teuchos::RCP<const Thyra::DefaultPreconditioner<ValueType> > prec =
-            Thyra::leftPrec(Teuchos::rcpFromRef<const Thyra::LinearOpBase<ValueType> >(precOp));
+//     Teuchos::RCP<const Thyra::DefaultPreconditioner<ValueType> > prec =
+//             Thyra::leftPrec(Teuchos::rcpFromRef<const Thyra::LinearOpBase<ValueType> >(precOp));
 
-    typedef Bempp::BelosSolverWrapper<ValueType> Solver;
-    Solver solver(Teuchos::rcpFromRef<const Thyra::LinearOpBase<ValueType> >(op));
-    typedef typename Bempp::ScalarTraits<ValueType>::RealType MagnitudeType;
-    const MagnitudeType tol = std::numeric_limits<MagnitudeType>::epsilon() * 1000.;
-    solver.setPreconditioner(prec);
-    solver.initializeSolver(Bempp::defaultGmresParameterList(tol));
+//     typedef Bempp::BelosSolverWrapper<ValueType> Solver;
+//     Solver solver(Teuchos::rcpFromRef<const Thyra::LinearOpBase<ValueType> >(op));
+//     typedef typename Bempp::ScalarTraits<ValueType>::RealType MagnitudeType;
+//     const MagnitudeType tol = std::numeric_limits<MagnitudeType>::epsilon() * 1000.;
+//     solver.setPreconditioner(prec);
+//     solver.initializeSolver(Bempp::defaultGmresParameterList(tol));
 
-    Thyra::SolveStatus<typename Solver::MagnitudeType > status =
-            solver.solve(Thyra::NOTRANS, rhsVector,
-                         Teuchos::ptr<Thyra::MultiVectorBase<ValueType> >(&solVector));
-    BOOST_CHECK_EQUAL(status.solveStatus, Thyra::SOLVE_STATUS_CONVERGED);
+//     Thyra::SolveStatus<typename Solver::MagnitudeType > status =
+//             solver.solve(Thyra::NOTRANS, rhsVector,
+//                          Teuchos::ptr<Thyra::MultiVectorBase<ValueType> >(&solVector));
+//     BOOST_CHECK_EQUAL(status.solveStatus, Thyra::SOLVE_STATUS_CONVERGED);
 
-    // Solve system with armadillo
+//     // Solve system with armadillo
 
-    arma::Col<ValueType> armaSol = arma::solve(mat, rhs);
+//     arma::Col<ValueType> armaSol = arma::solve(mat, rhs);
 
-    BOOST_CHECK(check_arrays_are_close<ValueType>(sol, armaSol, tol * 10));
-}
+//     BOOST_CHECK(check_arrays_are_close<ValueType>(sol, armaSol, tol * 10));
+// }
 
 BOOST_AUTO_TEST_SUITE_END()
 
