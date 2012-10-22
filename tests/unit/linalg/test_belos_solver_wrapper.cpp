@@ -49,7 +49,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(solve_works_for_single_rhs, ValueType, result_type
     std::srand(1);
 
     const int size = 50;
-    arma::Mat<ValueType> mat = generateRandomMatrix<ValueType>(size, size);
+    arma::Mat<ValueType> mat = arma::eye<arma::Mat<ValueType> >(size, size) +
+        0.1 * generateRandomMatrix<ValueType>(size, size);
     Bempp::DiscreteDenseBoundaryOperator<ValueType> op(mat);
 
     arma::Col<ValueType> rhs = generateRandomMatrix<ValueType>(size, 1);
@@ -92,7 +93,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(solve_with_trivial_right_preconditioner_works_for_
     std::srand(1);
 
     const int size = 50;
-    arma::Mat<ValueType> mat = generateRandomMatrix<ValueType>(size, size);
+    arma::Mat<ValueType> mat = arma::eye<arma::Mat<ValueType> >(size, size) +
+        0.1 * generateRandomMatrix<ValueType>(size, size);
     Bempp::DiscreteDenseBoundaryOperator<ValueType> op(mat);
 
     arma::Col<ValueType> rhs = generateRandomMatrix<ValueType>(size, 1);
@@ -143,7 +145,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(solve_with_scaled_trivial_right_preconditioner_wor
     std::srand(1);
 
     const int size = 50;
-    arma::Mat<ValueType> mat = generateRandomMatrix<ValueType>(size, size);
+    arma::Mat<ValueType> mat = arma::eye<arma::Mat<ValueType> >(size, size) +
+        0.1 * generateRandomMatrix<ValueType>(size, size);
     Bempp::DiscreteDenseBoundaryOperator<ValueType> op(mat);
 
     arma::Mat<ValueType> precMat;
@@ -194,7 +197,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(solve_with_trivial_left_preconditioner_works_for_s
     std::srand(1);
 
     const int size = 50;
-    arma::Mat<ValueType> mat = generateRandomMatrix<ValueType>(size, size);
+    arma::Mat<ValueType> mat = arma::eye<arma::Mat<ValueType> >(size, size) +
+        0.1 * generateRandomMatrix<ValueType>(size, size);
     Bempp::DiscreteDenseBoundaryOperator<ValueType> op(mat);
 
     arma::Mat<ValueType> precMat;
@@ -245,7 +249,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(solve_with_scaled_trivial_left_preconditioner_work
     std::srand(1);
 
     const int size = 50;
-    arma::Mat<ValueType> mat = generateRandomMatrix<ValueType>(size, size);
+    arma::Mat<ValueType> mat = arma::eye<arma::Mat<ValueType> >(size, size) +
+        0.1 * generateRandomMatrix<ValueType>(size, size);
     Bempp::DiscreteDenseBoundaryOperator<ValueType> op(mat);
 
     arma::Mat<ValueType> precMat;
@@ -289,6 +294,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(solve_with_scaled_trivial_left_preconditioner_work
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(sol, armaSol, tol * 10));
 }
+
 BOOST_AUTO_TEST_SUITE_END()
 
 #endif
