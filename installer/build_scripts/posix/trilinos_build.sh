@@ -33,6 +33,7 @@ CXXFLAGS="$Trilinos_cxxflags" CFLAGS="$Trilinos_cflags" "$CMake_exe" \
     -D Trilinos_ENABLE_ThyraTpetraAdapters:BOOL=ON \
     -D Trilinos_ENABLE_Tpetra:BOOL=ON \
     -D Trilinos_ENABLE_Fortran:BOOL=OFF \
+    -D Trilinos_ENABLE_ALL_OPTIONAL_PACKAGES:BOOL=OFF \
     -D RTOp_ENABLE_EXPLICIT_INSTANTIATION:BOOL=ON \
     -D Stratimikos_ENABLE_EXPLICIT_INSTANTIATION:BOOL=ON \
     -D Thyra_ENABLE_EXPLICIT_INSTANTIATION:BOOL=ON \
