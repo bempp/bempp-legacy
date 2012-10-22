@@ -27,10 +27,10 @@ cmake_url='http://www.cmake.org/files/v2.8/cmake-2.8.9.tar.gz'
 cmake_extract_dir='cmake-2.8.9'
 cmake_dir='cmake'
 
-def download(root,config):
+def download(root,config,force=False):
     dep_download_dir=config.get('Main','dependency_download_dir')
     cmake_download_name=dep_download_dir+"/"+cmake_fname
-    tools.download(cmake_fname,cmake_url,dep_download_dir)
+    tools.download(cmake_fname,cmake_url,dep_download_dir,force)
 
 def prepare(root,config):
     dep_build_dir=config.get('Main','dependency_build_dir')
@@ -45,7 +45,12 @@ def prepare(root,config):
     tools.checkDeleteDirectory(cmake_full_dir)
 
     print "Extracting CMake"
-    tools.extract_file(dep_download_dir+"/"+cmake_fname,dep_build_dir)
+    try:
+        tools.extract_file(dep_download_dir+"/"+cmake_fname,dep_build_dir)
+    except IOError:
+        # Possibly a corrupted/truncated file. Try to download once again
+        download(root,config,force=True)
+        tools.extract_file(dep_download_dir+"/"+cmake_fname,dep_build_dir)
     os.rename(dep_build_dir+"/"+cmake_extract_dir,cmake_full_dir)
 
 

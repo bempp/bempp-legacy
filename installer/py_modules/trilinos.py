@@ -28,9 +28,9 @@ trilinos_extract_dir='trilinos-10.12.2-Source'
 trilinos_dir='trilinos'
 trilinos_url='http://trilinos.sandia.gov/download/files/trilinos-10.12.2-Source.tar.gz'
 
-def download(root,config):
+def download(root,config,force=True):
     dep_download_dir=config.get('Main','dependency_download_dir')
-    tools.download(trilinos_fname,trilinos_url,dep_download_dir)
+    tools.download(trilinos_fname,trilinos_url,dep_download_dir,force)
 
 def prepare(root,config):
     dep_build_dir=config.get('Main','dependency_build_dir')
@@ -44,7 +44,12 @@ def prepare(root,config):
     tools.checkDeleteDirectory(trilinos_full_dir)
 
     print "Extracting Trilinos"
-    tools.extract_file(dep_download_dir+"/"+trilinos_fname,dep_build_dir)
+    try:
+        tools.extract_file(dep_download_dir+"/"+trilinos_fname,dep_build_dir)
+    except IOError:
+        # Possibly a corrupted/truncated file. Try to download once again
+        download(root,config,force=True)
+        tools.extract_file(dep_download_dir+"/"+trilinos_fname,dep_build_dir)
     os.rename(dep_build_dir+"/"+trilinos_extract_dir,
               dep_build_dir+"/"+trilinos_dir)
     shutil.copy(root+"/installer/build_scripts/posix/trilinos_build.sh",

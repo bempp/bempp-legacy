@@ -162,11 +162,15 @@ def pythonInfo(config):
                             "file.")
     return (exe,lib,include)
 
-def download(fname,url,dir):
-    """Download a file from a url into the directory dir if the file does not already exist"""
+def download(fname,url,dir,force=False):
+    """Download a file from a url into the directory dir
+    if the file does not already exist or force is True"""
     from py_modules.urlgrabber import urlgrab,progress
-    if not os.path.isfile(dir+"/"+fname):
-        urlgrab(url,filename=dir+"/"+fname,progress_obj=progress.TextMeter(),reget='simple')
+    path = dir+"/"+fname
+    if force:
+        checkDeleteFile(path)
+    if not os.path.isfile(path):
+        urlgrab(url,filename=path,progress_obj=progress.TextMeter(),reget='simple')
 
 def checkCreateDir(dir):
     """Create a directory if it does not yet exist"""

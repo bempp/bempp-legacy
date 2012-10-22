@@ -27,10 +27,10 @@ swig_url='http://prdownloads.sourceforge.net/swig/swig-2.0.8.tar.gz'
 swig_extract_dir='swig-2.0.8'
 swig_dir='swig'
 
-def download(root,config):
+def download(root,config,force=False):
     dep_download_dir=config.get('Main','dependency_download_dir')
     swig_download_name=dep_download_dir+"/"+swig_fname
-    tools.download(swig_fname,swig_url,dep_download_dir)
+    tools.download(swig_fname,swig_url,dep_download_dir,force)
 
 def prepare(root,config):
     dep_build_dir=config.get('Main','dependency_build_dir')
@@ -45,7 +45,12 @@ def prepare(root,config):
     tools.checkDeleteDirectory(swig_full_dir)
 
     print "Extracting Swig"
-    tools.extract_file(dep_download_dir+"/"+swig_fname,dep_build_dir)
+    try:
+        tools.extract_file(dep_download_dir+"/"+swig_fname,dep_build_dir)
+    except IOError:
+        # Possibly a corrupted/truncated file. Try to download once again
+        download(root,config,force=True)
+        tools.extract_file(dep_download_dir+"/"+swig_fname,dep_build_dir)
     os.rename(dep_build_dir+"/"+swig_extract_dir,swig_full_dir)
 
     tools.setDefaultConfigOption(config,"Swig","exe",swig_executable,
