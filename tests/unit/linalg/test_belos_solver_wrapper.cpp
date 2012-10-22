@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(solve_with_scaled_trivial_right_preconditioner_wor
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(sol, armaSol, tol * 10));
 }
-// /home2/wojtek/Projects/BEM/bempp-work/bempp/build-dependencies-release/bempp/contrib/trilinos/lib/cmake/Trilinos/
+
 BOOST_AUTO_TEST_CASE_TEMPLATE(solve_with_trivial_left_preconditioner_works_for_single_rhs,
                               ValueType, result_types)
 {
