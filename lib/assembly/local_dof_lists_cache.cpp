@@ -23,7 +23,6 @@
 #include "../fiber/explicit_instantiation.hpp"
 #include "../space/space.hpp"
 
-#include <auto_ptr.h>
 #include <map>
 #include <set>
 #include <utility>
