@@ -32,7 +32,9 @@
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 template <typename BasisFunctionType> class Space;
+/** \endcond */
 
 /** \ingroup weak_form_assembly_internal
  *

@@ -30,7 +30,9 @@
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 template <typename BasisFunctionType> class Helmholtz3dBoundaryOperatorId;
+/** \endcond */
 
 /** \ingroup helmholtz_3d
  *  \brief Base class for boundary operators for the Helmholtz equation in 3D.
