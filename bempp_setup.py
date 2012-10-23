@@ -20,7 +20,6 @@
 
 # BEM++ setup script
 
-
 import os, sys, traceback
 sys.path.append("installer")
 
