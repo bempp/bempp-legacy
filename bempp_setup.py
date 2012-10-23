@@ -24,7 +24,7 @@
 import os, sys, traceback
 sys.path.append("installer")
 
-from py_modules.tools import writeOptions, setDefaultConfigOption, pythonInfo, checkCreateDir, testBlas, testLapack, cleanUp, checkDeleteFile
+from py_modules.tools import writeOptions, setDefaultConfigOption, pythonInfo, checkCreateDir, testBlas, testLapack, cleanUp, checkDeleteFile, checkInstallUpdates
 from ConfigParser import ConfigParser
 from optparse import OptionParser
 
@@ -206,6 +206,7 @@ if __name__ == "__main__":
                       help="Download dependencies and prepare directories")
     parser.add_option("-c", "--configure", action="store_true",
                       help="Configure the setup program")
+    parser.add_option("-u","--update", action="store_true",help="Automatically update BEM++")
     parser.add_option("-i", "--install", type="string", metavar="WHAT",
                       help="Build and install WHAT. Possible values for WHAT: "
                       "all (BEM++ and its dependencies), bempp (BEM++ only), " +
@@ -232,6 +233,14 @@ if __name__ == "__main__":
         sys.exit(1)
     try:
         prepare(root,config)
+        if options.update:
+            config = ConfigParser()
+            if not os.path.exists(optfile_generated):
+                print ("You must first successfully run bempp_setup.py "
+                       "with the --configure (-c) option.")
+                sys.exit(1)
+            config.read(optfile_generated)
+            checkInstallUpdates(config)
         if options.bootstrap:
             bootstrap(root,config)
         if options.configure:

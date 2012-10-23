@@ -1,7 +1,7 @@
 import errno,os,subprocess,sys, shutil
 
 try:
-    from subprocess import check_output
+    from subprocess import check_output, check_call
 except ImportError:
     # Backported from Python 2.7
     def check_output(*popenargs, **kwargs):
@@ -326,3 +326,74 @@ def setCompilerOptions(config,section):
 
     config.set(section,'cflags',cflags + " " + optflags)
     config.set(section,'cxxflags',cxxflags + " " + optflags)
+
+def getOptionFromOptsFile(option):
+    "Get a specific option from .options.cfg"
+
+    optfile = file('.options.cfg')
+    for line in optfile:
+        if line.startswith(option):
+            return line.split('=')[1].strip('\n"')
+    raise Exception("Could not find the specified option in .options.cfg")
+
+def checkInstallUpdates(config):
+    """Check for updates and install them"""
+
+    try:
+        check_output("git fetch origin",shell=True,stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError, ex:
+        raise Exception("Checking remote git repository failed with error message\n" +
+                        ex.output + "\n" +
+                        "Please check whether git is in your path and your internet connection works.")
+
+    try:
+        output = check_output("git log head..origin/release_1.0 --oneline",shell=True,stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError, ex:
+        raise Exception("Git failed with error message\n"+
+                        ex.output)
+    if not output:
+        print "No updates available"
+        return
+
+    build_dir = config.get("Bempp","build_dir")
+    build_jobs = config.get("Bempp","build_jobs")
+    cmake_exe = config.get("CMake","exe")
+    cwd = os.getcwd()
+    os.chdir(build_dir+"/bempp/python")
+    try:
+        output = check_output(["make","clean"],shell=True,stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError, ex:
+        os.chdir(cwd)
+        raise Exception("make clean failed with output\n"+
+                        ex.output)
+    os.chdir(build_dir+"/bempp")
+    try:
+        output = check_output(["cmake","."],shell=True,stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError, ex:
+        os.chdir(cwd)
+        raise Exception("cmake failed with error message\n"+
+                        ex.output)
+    try:
+        output = check_output(["make","-j"+build_jobs,"install"],shell=True,stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError, ex:
+        os.chdir(cwd)
+        raise Exception("make failed with error message\n"+
+                        ex.output)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
