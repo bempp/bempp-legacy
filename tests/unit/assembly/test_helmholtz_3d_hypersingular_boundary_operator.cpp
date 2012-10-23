@@ -164,4 +164,57 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works, BasisFunctionType, basis_function_types)
     BOOST_CHECK(check_arrays_are_close<RT>(expectedHypMat, hypMat, 1e-6));
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE(interpolated_matches_noniterpolated,
+                              BasisFunctionType, basis_function_types)
+{
+    typedef BasisFunctionType BFT;
+    typedef typename Fiber::ScalarTraits<BFT>::ComplexType RT;
+    typedef typename Fiber::ScalarTraits<BFT>::RealType CT;
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+                params, "meshes/cube-12-reoriented.msh",
+                false /* verbose */);
+
+    PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(grid);
+
+    AssemblyOptions assemblyOptions;
+    assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
+    AccuracyOptions accuracyOptions;
+    accuracyOptions.doubleRegular.setAbsoluteQuadratureOrder(5);
+    accuracyOptions.doubleSingular.setAbsoluteQuadratureOrder(5);
+    NumericalQuadratureStrategy<BFT, RT> quadStrategy(accuracyOptions);
+
+    Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);
+
+    const RT waveNumber(3.23, 0.31);
+
+    BoundaryOperator<BFT, RT> opNoninterpolated =
+            helmholtz3dHypersingularBoundaryOperator<BFT>(
+                make_shared_from_ref(context),
+                make_shared_from_ref(pwiseLinears),
+                make_shared_from_ref(pwiseLinears),
+                make_shared_from_ref(pwiseLinears),
+                waveNumber,
+                "", NO_SYMMETRY,
+                false);
+    BoundaryOperator<BFT, RT> opInterpolated =
+            helmholtz3dHypersingularBoundaryOperator<BFT>(
+                make_shared_from_ref(context),
+                make_shared_from_ref(pwiseLinears),
+                make_shared_from_ref(pwiseLinears),
+                make_shared_from_ref(pwiseLinears),
+                waveNumber,
+                "", NO_SYMMETRY,
+                true);
+
+    // Get the matrix repr. of the hypersingular operator
+    arma::Mat<RT> matNoninterpolated = opNoninterpolated.weakForm()->asMatrix();
+    arma::Mat<RT> matInterpolated = opInterpolated.weakForm()->asMatrix();
+
+    const CT eps = std::numeric_limits<CT>::epsilon();
+    BOOST_CHECK(check_arrays_are_close<RT>(
+                    matNoninterpolated, matInterpolated, 100 * eps));
+}
+
 BOOST_AUTO_TEST_SUITE_END()

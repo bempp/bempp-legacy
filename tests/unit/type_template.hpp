@@ -62,14 +62,18 @@ complex_numeric_types;
 
 #ifdef ENABLE_COMPLEX_BASIS_FUNCTIONS
 typedef numeric_types basis_function_types;
+typedef complex_numeric_types complex_basis_function_types;
 #else
 typedef real_numeric_types basis_function_types;
+typedef boost::mpl::list<> complex_basis_function_types;
 #endif
 
 #ifdef ENABLE_COMPLEX_KERNELS
 typedef numeric_types kernel_types;
+typedef complex_numeric_types complex_kernel_types;
 #else
 typedef real_numeric_types kernel_types;
+typedef boost::mpl::list<> complex_kernel_types;
 #endif
 
 #if defined(ENABLE_COMPLEX_KERNELS) || defined(ENABLE_COMPLEX_BASIS_FUNCTIONS)

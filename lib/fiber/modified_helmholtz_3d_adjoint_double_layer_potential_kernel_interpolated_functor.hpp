@@ -18,12 +18,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_modified_helmholtz_3d_single_layer_potential_kernel_functor_hpp
-#define fiber_modified_helmholtz_3d_single_layer_potential_kernel_functor_hpp
+#ifndef fiber_modified_helmholtz_3d_adjoint_double_layer_potential_interpolated_kernel_functor_hpp
+#define fiber_modified_helmholtz_3d_adjoint_double_layer_potential_interpolated_kernel_functor_hpp
 
 #include "../common/common.hpp"
 
 #include "geometrical_data.hpp"
+#include "hermite_interpolator.hpp"
+#include "initialize_interpolator_for_modified_helmholtz_3d_kernels.hpp"
 #include "scalar_traits.hpp"
 
 namespace Fiber
@@ -31,7 +33,7 @@ namespace Fiber
 
 /** \ingroup modified_helmholtz_3d
  *  \ingroup fiber
- *  \brief Single-layer-potential kernel functor for the modified Helmholtz
+ *  \brief Adjoint double-layer-potential kernel functor for the modified Helmholtz
  *  equation in 3D.
  *
  *  Uses interpolation to speed up kernel evaluation.
@@ -45,22 +47,27 @@ namespace Fiber
  */
 
 template <typename ValueType_>
-class ModifiedHelmholtz3dSingleLayerPotentialKernelFunctor
+class ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelInterpolatedFunctor
 {
 public:
     typedef ValueType_ ValueType;
     typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
-    ModifiedHelmholtz3dSingleLayerPotentialKernelFunctor(ValueType waveNumber) :
+    ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelInterpolatedFunctor(
+            ValueType waveNumber,
+            CoordinateType maxDist, int interpPtsPerWavelength) :
         m_waveNumber(waveNumber)
-    {}
+    {
+        initializeInterpolatorForModifiedHelmholtz3dKernels(
+                    waveNumber, maxDist, interpPtsPerWavelength, m_interpolator);
+    }
 
     int kernelCount() const { return 1; }
     int kernelRowCount(int /* kernelIndex */) const { return 1; }
     int kernelColCount(int /* kernelIndex */) const { return 1; }
 
     void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const {
-        testGeomDeps |= GLOBALS;
+        testGeomDeps |= GLOBALS | NORMALS;
         trialGeomDeps |= GLOBALS;
     }
 
@@ -73,20 +80,26 @@ public:
             CollectionOf2dSlicesOfNdArrays<ValueType>& result) const {
         const int coordCount = 3;
 
-        CoordinateType sum = 0;
+        CoordinateType numeratorSum = 0., distSq = 0.;
         for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex)
         {
             CoordinateType diff = testGeomData.global(coordIndex) -
                     trialGeomData.global(coordIndex);
-            sum += diff * diff;
+            distSq += diff * diff;
+            numeratorSum += diff * testGeomData.normal(coordIndex);
         }
-        CoordinateType distance = sqrt(sum);
-        result[0](0, 0) = static_cast<ValueType>(1.0 / (4.0*M_PI)) / distance *
-                exp(-m_waveNumber * distance);
+        CoordinateType dist = sqrt(distSq);
+        ValueType v = m_interpolator.evaluate(dist);
+        result[0](0, 0) = numeratorSum /
+                (static_cast<CoordinateType>(-4.0 * M_PI) * distSq * dist) *
+                (m_waveNumber * dist + static_cast<CoordinateType>(1.0)) * v;
     }
 
 private:
+    /** \cond PRIVATE */
     ValueType m_waveNumber;
+    HermiteInterpolator<ValueType> m_interpolator;
+    /** \endcond */
 };
 
 } // namespace Fiber

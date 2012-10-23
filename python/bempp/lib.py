@@ -405,7 +405,7 @@ def createLaplace3dSingleLayerPotentialOperator(context):
     functions defined on the same surface S.
     """
     return _constructLaplacePotentialOperator(
-        "Laplace3dSingleLayerPotentialOperator", context)
+        "laplace3dSingleLayerPotentialOperator", context)
 
 def createLaplace3dDoubleLayerPotentialOperator(context):
     """
@@ -429,24 +429,24 @@ def createLaplace3dDoubleLayerPotentialOperator(context):
     functions defined on the same surface S.
     """
     return _constructLaplacePotentialOperator(
-        "Laplace3dDoubleLayerPotentialOperator", context)
+        "laplace3dDoubleLayerPotentialOperator", context)
 
 def _constructHelmholtzOperator(
-        className, context, domain, range, dualToRange, waveNumber, label=None):
+        className, context, domain, range, dualToRange, waveNumber,
+        label, useInterpolation, interpPtsPerWavelength):
     basisFunctionType = context.basisFunctionType()
     if (basisFunctionType != domain.basisFunctionType() or
             basisFunctionType != range.basisFunctionType() or
             basisFunctionType != dualToRange.basisFunctionType()):
-        raise TypeError("BasisFunctionType of context and all spaces must be the same")
+        raise TypeError("BasisFunctionType of context and all spaces "
+                        "must be the same")
     resultType = context.resultType()
-    if label:
-        result = _constructObjectTemplatedOnBasis(
-            className, basisFunctionType, context, domain, range, dualToRange,
-            waveNumber, label)
-    else:
-        result = _constructObjectTemplatedOnBasis(
-            className, basisFunctionType, context, domain, range, dualToRange,
-            waveNumber)
+    if not label:
+        label = ""
+    symmetry = 0
+    result = _constructObjectTemplatedOnBasis(
+        className, basisFunctionType, context, domain, range, dualToRange,
+        waveNumber, label, symmetry, useInterpolation, interpPtsPerWavelength)
     result._context = context
     result._domain = domain
     result._range = range
@@ -454,7 +454,8 @@ def _constructHelmholtzOperator(
     return result
 
 def createHelmholtz3dSingleLayerBoundaryOperator(
-        context, domain, range, dualToRange, waveNumber, label=None):
+        context, domain, range, dualToRange, waveNumber, label=None,
+        useInterpolation=False, interpPtsPerWavelength=5000):
     """
     Create and return a single-layer-potential boundary operator for
     the Helmholtz equation in 3D.
@@ -475,6 +476,21 @@ def createHelmholtz3dSingleLayerBoundaryOperator(
        - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
+       - useInterpolation (bool)
+            If set to False (default), the standard exp() function will be used
+            to evaluate the exponential factor occurring in the kernel. If set
+            to True, the exponential factor will be evaluated by piecewise-cubic
+            interpolation of values calculated in advance on a regular
+            grid. This normally speeds up calculations, but might result in a
+            loss of accuracy. This is an experimental feature: use it at your
+            own risk.
+       - interpPtsPerWavelength (int)
+            If useInterpolation is set to True, this parameter determines the
+            number of points per "effective wavelength" (defined as 2 pi /
+            |waveNumber|) used to construct the interpolation grid. The default
+            value (5000) is normally enough to reduce the relative or absolute
+            error, *whichever is smaller*, below 100 * machine precision.  If
+            useInterpolation is set to False, this parameter is ignored.
 
     *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
     object, with BasisFunctionType and ResultType determined automatically from
@@ -483,10 +499,12 @@ def createHelmholtz3dSingleLayerBoundaryOperator(
     """
     return _constructHelmholtzOperator(
         "helmholtz3dSingleLayerBoundaryOperator", context,
-        domain, range, dualToRange, waveNumber, label)
+        domain, range, dualToRange, waveNumber,
+        label, useInterpolation, interpPtsPerWavelength)
 
 def createHelmholtz3dDoubleLayerBoundaryOperator(
-        context, domain, range, dualToRange, waveNumber, label=None):
+        context, domain, range, dualToRange, waveNumber, label=None,
+        useInterpolation=False, interpPtsPerWavelength=5000):
     """
     Create and return a double-layer-potential boundary operator for
     the Helmholtz equation in 3D.
@@ -507,6 +525,21 @@ def createHelmholtz3dDoubleLayerBoundaryOperator(
        - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
+       - useInterpolation (bool)
+            If set to False (default), the standard exp() function will be used
+            to evaluate the exponential factor occurring in the kernel. If set
+            to True, the exponential factor will be evaluated by piecewise-cubic
+            interpolation of values calculated in advance on a regular
+            grid. This normally speeds up calculations, but might result in a
+            loss of accuracy. This is an experimental feature: use it at your
+            own risk.
+       - interpPtsPerWavelength (int)
+            If useInterpolation is set to True, this parameter determines the
+            number of points per "effective wavelength" (defined as 2 pi /
+            |waveNumber|) used to construct the interpolation grid. The default
+            value (5000) is normally enough to reduce the relative or absolute
+            error, *whichever is smaller*, below 100 * machine precision.  If
+            useInterpolation is set to False, this parameter is ignored.
 
     *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
     object, with BasisFunctionType and ResultType determined automatically from
@@ -515,10 +548,12 @@ def createHelmholtz3dDoubleLayerBoundaryOperator(
     """
     return _constructHelmholtzOperator(
         "helmholtz3dDoubleLayerBoundaryOperator", context,
-        domain, range, dualToRange, waveNumber, label)
+        domain, range, dualToRange, waveNumber,
+        label, useInterpolation, interpPtsPerWavelength)
 
 def createHelmholtz3dAdjointDoubleLayerBoundaryOperator(
-        context, domain, range, dualToRange, waveNumber, label=None):
+        context, domain, range, dualToRange, waveNumber, label=None,
+        useInterpolation=False, interpPtsPerWavelength=5000):
     """
     Create and return an adjoint double-layer-potential boundary operator for
     the Helmholtz equation in 3D.
@@ -539,6 +574,21 @@ def createHelmholtz3dAdjointDoubleLayerBoundaryOperator(
        - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
+       - useInterpolation (bool)
+            If set to False (default), the standard exp() function will be used
+            to evaluate the exponential factor occurring in the kernel. If set
+            to True, the exponential factor will be evaluated by piecewise-cubic
+            interpolation of values calculated in advance on a regular
+            grid. This normally speeds up calculations, but might result in a
+            loss of accuracy. This is an experimental feature: use it at your
+            own risk.
+       - interpPtsPerWavelength (int)
+            If useInterpolation is set to True, this parameter determines the
+            number of points per "effective wavelength" (defined as 2 pi /
+            |waveNumber|) used to construct the interpolation grid. The default
+            value (5000) is normally enough to reduce the relative or absolute
+            error, *whichever is smaller*, below 100 * machine precision.  If
+            useInterpolation is set to False, this parameter is ignored.
 
     *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
     object, with BasisFunctionType and ResultType determined automatically from
@@ -547,10 +597,12 @@ def createHelmholtz3dAdjointDoubleLayerBoundaryOperator(
     """
     return _constructHelmholtzOperator(
         "helmholtz3dAdjointDoubleLayerBoundaryOperator", context,
-        domain, range, dualToRange, waveNumber, label)
+        domain, range, dualToRange, waveNumber,
+        label, useInterpolation, interpPtsPerWavelength)
 
 def createHelmholtz3dHypersingularBoundaryOperator(
-        context, domain, range, dualToRange, waveNumber, label=None):
+        context, domain, range, dualToRange, waveNumber, label=None,
+        useInterpolation=False, interpPtsPerWavelength=5000):
     """
     Create and return a hypersingular boundary operator for
     the Helmholtz equation in 3D.
@@ -571,6 +623,21 @@ def createHelmholtz3dHypersingularBoundaryOperator(
        - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
+       - useInterpolation (bool)
+            If set to False (default), the standard exp() function will be used
+            to evaluate the exponential factor occurring in the kernel. If set
+            to True, the exponential factor will be evaluated by piecewise-cubic
+            interpolation of values calculated in advance on a regular
+            grid. This normally speeds up calculations, but might result in a
+            loss of accuracy. This is an experimental feature: use it at your
+            own risk.
+       - interpPtsPerWavelength (int)
+            If useInterpolation is set to True, this parameter determines the
+            number of points per "effective wavelength" (defined as 2 pi /
+            |waveNumber|) used to construct the interpolation grid. The default
+            value (5000) is normally enough to reduce the relative or absolute
+            error, *whichever is smaller*, below 100 * machine precision.  If
+            useInterpolation is set to False, this parameter is ignored.
 
     *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
     object, with BasisFunctionType and ResultType determined automatically from
@@ -579,7 +646,8 @@ def createHelmholtz3dHypersingularBoundaryOperator(
     """
     return _constructHelmholtzOperator(
         "helmholtz3dHypersingularBoundaryOperator", context,
-        domain, range, dualToRange, waveNumber, label)
+        domain, range, dualToRange, waveNumber,
+        label, useInterpolation, interpPtsPerWavelength)
 
 def _constructHelmholtzPotentialOperator(className, context, waveNumber):
     basisFunctionType = context.basisFunctionType()
@@ -701,8 +769,10 @@ def createHelmholtz3dFarFieldDoubleLayerPotentialOperator(context, waveNumber):
     return _constructHelmholtzPotentialOperator(
         "helmholtz3dFarFieldDoubleLayerPotentialOperator", context, waveNumber)
 
-def _constructModifiedHelmholtzOperator(className, context,
-                                        domain, range, dualToRange, waveNumber, label=None):
+def _constructModifiedHelmholtzOperator(
+        className, context,
+        domain, range, dualToRange, waveNumber,
+        label, useInterpolation, interpPtsPerWavelength):
     basisFunctionType = context.basisFunctionType()
     if (basisFunctionType != domain.basisFunctionType() or
             basisFunctionType != range.basisFunctionType() or
@@ -724,14 +794,13 @@ def _constructModifiedHelmholtzOperator(className, context,
             kernelType = "float64"
 
     # construct object
-    if label:
-        result = _constructObjectTemplatedOnBasisKernelAndResult(
-            className, basisFunctionType, kernelType, resultType,
-            context, domain, range, dualToRange, waveNumber, label)
-    else:
-        result = _constructObjectTemplatedOnBasisKernelAndResult(
-            className, basisFunctionType, kernelType, resultType,
-            context, domain, range, dualToRange, waveNumber)
+    if not label:
+        label = ""
+    symmetry = 0
+    result = _constructObjectTemplatedOnBasisKernelAndResult(
+        className, basisFunctionType, kernelType, resultType,
+        context, domain, range, dualToRange, waveNumber, label,
+        symmetry, useInterpolation, interpPtsPerWavelength)
     result._context = context
     result._domain = domain
     result._range = range
@@ -739,7 +808,8 @@ def _constructModifiedHelmholtzOperator(className, context,
     return result
 
 def createModifiedHelmholtz3dSingleLayerBoundaryOperator(
-        context, domain, range, dualToRange, waveNumber, label=None):
+        context, domain, range, dualToRange, waveNumber,
+        label=None, useInterpolation=False, interpPtsPerWavelength=5000):
     """
     Create and return a single-layer-potential boundary operator for
     the modified Helmholtz equation in 3D.
@@ -762,6 +832,21 @@ def createModifiedHelmholtz3dSingleLayerBoundaryOperator(
        - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
+       - useInterpolation (bool)
+            If set to False (default), the standard exp() function will be used
+            to evaluate the exponential factor occurring in the kernel. If set
+            to True, the exponential factor will be evaluated by piecewise-cubic
+            interpolation of values calculated in advance on a regular
+            grid. This normally speeds up calculations, but might result in a
+            loss of accuracy. This is an experimental feature: use it at your
+            own risk.
+       - interpPtsPerWavelength (int)
+            If useInterpolation is set to True, this parameter determines the
+            number of points per "effective wavelength" (defined as 2 pi /
+            |waveNumber|) used to construct the interpolation grid. The default
+            value (5000) is normally enough to reduce the relative or absolute
+            error, *whichever is smaller*, below 100 * machine precision.  If
+            useInterpolation is set to False, this parameter is ignored.
 
     *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
     object, with BasisFunctionType and ResultType determined automatically from
@@ -770,10 +855,12 @@ def createModifiedHelmholtz3dSingleLayerBoundaryOperator(
     """
     return _constructModifiedHelmholtzOperator(
         "modifiedHelmholtz3dSingleLayerBoundaryOperator", context,
-        domain, range, dualToRange, waveNumber)
+        domain, range, dualToRange, waveNumber,
+        label, useInterpolation, interpPtsPerWavelength)
 
 def createModifiedHelmholtz3dDoubleLayerBoundaryOperator(
-        context, domain, range, dualToRange, waveNumber, label=None):
+        context, domain, range, dualToRange, waveNumber,
+        label=None, useInterpolation=False, interpPtsPerWavelength=5000):
     """
     Create and return a double-layer-potential boundary operator for
     the modified Helmholtz equation in 3D.
@@ -796,6 +883,21 @@ def createModifiedHelmholtz3dDoubleLayerBoundaryOperator(
        - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
+       - useInterpolation (bool)
+            If set to False (default), the standard exp() function will be used
+            to evaluate the exponential factor occurring in the kernel. If set
+            to True, the exponential factor will be evaluated by piecewise-cubic
+            interpolation of values calculated in advance on a regular
+            grid. This normally speeds up calculations, but might result in a
+            loss of accuracy. This is an experimental feature: use it at your
+            own risk.
+       - interpPtsPerWavelength (int)
+            If useInterpolation is set to True, this parameter determines the
+            number of points per "effective wavelength" (defined as 2 pi /
+            |waveNumber|) used to construct the interpolation grid. The default
+            value (5000) is normally enough to reduce the relative or absolute
+            error, *whichever is smaller*, below 100 * machine precision.  If
+            useInterpolation is set to False, this parameter is ignored.
 
     *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
     object, with BasisFunctionType and ResultType determined automatically from
@@ -804,10 +906,12 @@ def createModifiedHelmholtz3dDoubleLayerBoundaryOperator(
     """
     return _constructModifiedHelmholtzOperator(
         "modifiedHelmholtz3dDoubleLayerBoundaryOperator", context,
-        domain, range, dualToRange, waveNumber, label)
+        domain, range, dualToRange, waveNumber,
+        label, useInterpolation, interpPtsPerWavelength)
 
 def createModifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
-        context, domain, range, dualToRange, waveNumber, label=None):
+        context, domain, range, dualToRange, waveNumber,
+        label=None, useInterpolation=False, interpPtsPerWavelength=5000):
     """
     Create and return an adjoint double-layer-potential boundary operator for
     the modified Helmholtz equation in 3D.
@@ -830,6 +934,21 @@ def createModifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
        - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
+       - useInterpolation (bool)
+            If set to False (default), the standard exp() function will be used
+            to evaluate the exponential factor occurring in the kernel. If set
+            to True, the exponential factor will be evaluated by piecewise-cubic
+            interpolation of values calculated in advance on a regular
+            grid. This normally speeds up calculations, but might result in a
+            loss of accuracy. This is an experimental feature: use it at your
+            own risk.
+       - interpPtsPerWavelength (int)
+            If useInterpolation is set to True, this parameter determines the
+            number of points per "effective wavelength" (defined as 2 pi /
+            |waveNumber|) used to construct the interpolation grid. The default
+            value (5000) is normally enough to reduce the relative or absolute
+            error, *whichever is smaller*, below 100 * machine precision.  If
+            useInterpolation is set to False, this parameter is ignored.
 
     *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
     object, with BasisFunctionType and ResultType determined automatically from
@@ -838,10 +957,12 @@ def createModifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
     """
     return _constructModifiedHelmholtzOperator(
         "modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator", context,
-        domain, range, dualToRange, waveNumber, label)
+        domain, range, dualToRange, waveNumber,
+        label, useInterpolation, interpPtsPerWavelength)
 
 def createModifiedHelmholtz3dHypersingularBoundaryOperator(
-         context, domain, range, dualToRange, waveNumber, label=None):
+         context, domain, range, dualToRange, waveNumber,
+         label=None, useInterpolation=False, interpPtsPerWavelength=5000):
     """
     Create and return a hypersingular boundary operator for the modified
     Helmholtz equation in 3D.
@@ -864,6 +985,21 @@ def createModifiedHelmholtz3dHypersingularBoundaryOperator(
        - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
+       - useInterpolation (bool)
+            If set to False (default), the standard exp() function will be used
+            to evaluate the exponential factor occurring in the kernel. If set
+            to True, the exponential factor will be evaluated by piecewise-cubic
+            interpolation of values calculated in advance on a regular
+            grid. This normally speeds up calculations, but might result in a
+            loss of accuracy. This is an experimental feature: use it at your
+            own risk.
+       - interpPtsPerWavelength (int)
+            If useInterpolation is set to True, this parameter determines the
+            number of points per "effective wavelength" (defined as 2 pi /
+            |waveNumber|) used to construct the interpolation grid. The default
+            value (5000) is normally enough to reduce the relative or absolute
+            error, *whichever is smaller*, below 100 * machine precision.  If
+            useInterpolation is set to False, this parameter is ignored.
 
     *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
     object, with BasisFunctionType and ResultType determined automatically from
@@ -871,8 +1007,9 @@ def createModifiedHelmholtz3dHypersingularBoundaryOperator(
     complex128.
     """
     return _constructModifiedHelmholtzOperator(
-         "modifiedHelmholtz3dHypersingularBoundaryOperator", context, domain, range, dualToRange,
-         waveNumber, label)
+        "modifiedHelmholtz3dHypersingularBoundaryOperator", context,
+        domain, range, dualToRange, waveNumber,
+        label, useInterpolation, interpPtsPerWavelength)
 
 def createIdentityOperator(context, domain, range, dualToRange, label=None):
     """
@@ -960,7 +1097,7 @@ def __gridFunctionFromFunctor(
     return result
 
 def createGridFunction(
-        context, space, dualSpace, 
+        context, space, dualSpace,
         function=None, surfaceNormalDependent=False, coefficients=None):
     """
     Create and return a GridFunction object with values determined by a Python
@@ -975,7 +1112,7 @@ def createGridFunction(
             Function space dual to 'space'.
        - coefficients (Vector)
             An explicit vector of function values on the degrees of freedom
-            associated with the space. 
+            associated with the space.
        - function (a Python callable object)
             Function object whose values on 'space.grid()' will be used to
             construct the new grid function. If 'surfaceNormalDependent' is set
@@ -1017,12 +1154,12 @@ def createGridFunction(
         raise TypeError("createGridFunction: One of 'coefficients' or 'function' must be supplied.")
     elif coefficients is not None and function is not None:
         raise TypeError("createGridFunction: Only one of 'coefficeints' or 'function' can be supplied.")
-    
+
     if coefficients is not None:
         return _constructObjectTemplatedOnBasisAndResult("gridFunctionFromCoefficients",context.basisFunctionType(),
                                                          context.resultType(),context,space,dualSpace,coefficients)
-        
-    
+
+
     if surfaceNormalDependent:
         className = "SurfaceNormalDependentFunctor"
     else:
@@ -1149,7 +1286,7 @@ def createBlockOperatorStructure(context):
     """
     Deprecated. Superseded by createBlockedOperatorStructure().
     """
-    print ("createBlockOperatorStructure(): DEPRECATED. Please use the"
+    print ("createBlockOperatorStructure(): DEPRECATED. Please use the "
            "createBlockedOperatorStructure() function instead.")
     return createBlockedOperatorStructure(context)
 

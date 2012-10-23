@@ -30,6 +30,8 @@
 #include <tbb/parallel_for.h>
 #include <tbb/task_scheduler_init.h>
 
+#include "../common/auto_timer.hpp"
+
 namespace Fiber
 {
 
@@ -216,19 +218,36 @@ evaluateLocalWeakForms(
     const QuadVariant CACHED(0, 0);
     std::vector<QuadVariant> quadVariants(elementACount);
     for (int i = 0; i < elementACount; ++i) {
-        typename Cache::const_iterator it = m_cache.find(
-                    callVariant == TEST_TRIAL ?
-                        ElementIndexPair(elementIndicesA[i], elementIndexB) :
-                        ElementIndexPair(elementIndexB, elementIndicesA[i]));
-        if (it != m_cache.end()) { // Matrix found in cache
+        // Try to find matrix in cache
+        const arma::Mat<ResultType>* cachedLocalWeakForm = 0;
+        if (callVariant == TEST_TRIAL) {
+            const int testElementIndex = elementIndicesA[i];
+            const int trialElementIndex = elementIndexB;
+            for (size_t n = 0; n < m_cache.extent(0); ++n)
+                if (m_cache(n, trialElementIndex).first == testElementIndex) {
+                    cachedLocalWeakForm = &m_cache(n, trialElementIndex).second;
+                    break;
+                }
+        }
+        else {
+            const int testElementIndex = elementIndexB;
+            const int trialElementIndex = elementIndicesA[i];
+            for (size_t n = 0; n < m_cache.extent(0); ++n)
+                if (m_cache(n, trialElementIndex).first == testElementIndex) {
+                    cachedLocalWeakForm = &m_cache(n, trialElementIndex).second;
+                    break;
+                }
+        }
+
+        if (cachedLocalWeakForm) { // Matrix found in cache
             quadVariants[i] = CACHED;
             if (localDofIndexB == ALL_DOFS)
-                result[i] = it->second;
+                result[i] = *cachedLocalWeakForm;
             else {
                 if (callVariant == TEST_TRIAL)
-                    result[i] = it->second.col(localDofIndexB);
+                    result[i] = cachedLocalWeakForm->col(localDofIndexB);
                 else
-                    result[i] = it->second.row(localDofIndexB);
+                    result[i] = cachedLocalWeakForm->row(localDofIndexB);
             }
         } else {
             const Integrator* integrator =
@@ -312,12 +331,17 @@ evaluateLocalWeakForms(
         for (int testIndex = 0; testIndex < testElementCount; ++testIndex) {
             const int activeTestElementIndex = testElementIndices[testIndex];
             const int activeTrialElementIndex = trialElementIndices[trialIndex];
-            typename Cache::const_iterator it = m_cache.find(
-                        ElementIndexPair(activeTestElementIndex,
-                                         activeTrialElementIndex));
-            if (it != m_cache.end()) { // Matrix found in cache
+            // Try to find matrix in cache
+            const arma::Mat<ResultType>* cachedLocalWeakForm = 0;
+            for (size_t n = 0; n < m_cache.extent(0); ++n)
+                if (m_cache(n, activeTrialElementIndex).first == activeTestElementIndex) {
+                    cachedLocalWeakForm = &m_cache(n, activeTrialElementIndex).second;
+                    break;
+                }
+
+            if (cachedLocalWeakForm) { // Matrix found in cache
                 quadVariants(testIndex, trialIndex) = CACHED;
-                result(testIndex, trialIndex) = it->second;
+                result(testIndex, trialIndex) = *cachedLocalWeakForm;
             } else {
                 const Integrator* integrator =
                         &selectIntegrator(activeTestElementIndex,
@@ -459,15 +483,41 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
 {
+    if (elementIndexPairs.empty())
+        return;
+
     if (m_verbosityLevel >= VerbosityLevel::DEFAULT)
         std::cout << "Precalculating singular integrals..." << std::endl;
-    typedef Fiber::Basis<BasisFunctionType> Basis;
 
-    const int elementPairCount = elementIndexPairs.size();
+    // Get the maximum number of neighbours a trial element can have.
+    // This will be used to allocate a cache of correct size.
+    // This loops assumes that elementIndexPairs are sorted after the trial
+    // element index first.
+    size_t maxNeighbourCount = 0;
+    for (typename ElementIndexPairSet::const_iterator it = elementIndexPairs.begin();
+         it != elementIndexPairs.end(); /* nothing */) {
+        int curTrialElementIndex = it->second;
+        size_t neighbourCount = 1;
+        for (++it;
+             it != elementIndexPairs.end() && it->second == curTrialElementIndex;
+             ++it) {
+            ++neighbourCount;
+        }
+        maxNeighbourCount = std::max(maxNeighbourCount, neighbourCount);
+    }
+
+    // Allocate cache and initialize all test element indices to INVALID_INDEX
+    size_t trialElementCount = m_trialRawGeometry->elementCount();
+    m_cache.set_size(maxNeighbourCount, trialElementCount);
+    for (size_t trialIndex = 0; trialIndex < trialElementCount; ++trialIndex)
+        for (size_t nborIndex = 0; nborIndex < maxNeighbourCount; ++nborIndex)
+            m_cache(nborIndex, trialIndex).first = INVALID_INDEX;
 
     // Find cached matrices; select integrators to calculate non-cached ones
+    typedef Fiber::Basis<BasisFunctionType> Basis;
     typedef boost::tuples::tuple<const Integrator*, const Basis*, const Basis*>
             QuadVariant;
+    const int elementPairCount = elementIndexPairs.size();
     std::vector<QuadVariant> quadVariants(elementPairCount);
 
     typedef typename ElementIndexPairSet::const_iterator
@@ -499,6 +549,7 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
     std::vector<arma::Mat<ResultType>*> activeLocalResults;
     activeElementPairs.reserve(elementPairCount);
     activeLocalResults.reserve(elementPairCount);
+    // m_cache.rehash(int(elementIndexPairs.size() / m_cache.max_load_factor() + 1));
 
     // Now loop over unique quadrature variants
     for (typename QuadVariantSet::const_iterator it = uniqueQuadVariants.begin();
@@ -515,11 +566,23 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
         {
             ElementIndexPairIterator pairIt = elementIndexPairs.begin();
             QuadVariantIterator qvIt = quadVariants.begin();
-            for (; pairIt != elementIndexPairs.end(); ++pairIt, ++qvIt)
+            size_t neighbourIndex = 0; // Cache row index
+            size_t curTrialElementIndex = pairIt->second; // Cache column index
+            for (; pairIt != elementIndexPairs.end(); ++pairIt, ++qvIt) {
+                if (pairIt->second != curTrialElementIndex) {
+                    // Go to the next column of cache
+                    curTrialElementIndex = pairIt->second;
+                    neighbourIndex = 0;
+                }
                 if (*qvIt == activeQuadVariant) {
                     activeElementPairs.push_back(*pairIt);
-                    activeLocalResults.push_back(&m_cache[*pairIt]);
+                    m_cache(neighbourIndex, curTrialElementIndex).first = pairIt->first;
+                    activeLocalResults.push_back(
+                        &m_cache(neighbourIndex, curTrialElementIndex).second);
                 }
+                // Increment cache row index
+                ++neighbourIndex;
+            }
         }
 
         // Integrate!
@@ -545,15 +608,6 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
                                    activeElementPairs, activeTestBasis, activeTrialBasis,
                                    activeLocalResults));
         }
-
-        // {
-        //     ElementIndexPairIterator pairIt = elementIndexPairs.begin();
-        //     QuadVariantIterator qvIt = quadVariants.begin();
-        //     int i = 0;
-        //     for (; pairIt != elementIndexPairs.end(); ++pairIt, ++qvIt)
-        //         if (*qvIt == activeQuadVariant)
-        //             m_cache[*pairIt] = localResult.slice(i++);
-        // }
     }
     if (m_verbosityLevel >= VerbosityLevel::DEFAULT)
         std::cout << "Precalculation of singular integrals finished" << std::endl;

@@ -18,12 +18,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_modified_helmholtz_3d_single_layer_potential_kernel_functor_hpp
-#define fiber_modified_helmholtz_3d_single_layer_potential_kernel_functor_hpp
+#ifndef fiber_modified_helmholtz_3d_single_layer_potential_kernel_interpolated_functor_hpp
+#define fiber_modified_helmholtz_3d_single_layer_potential_kernel_interpolated_functor_hpp
 
 #include "../common/common.hpp"
 
 #include "geometrical_data.hpp"
+#include "hermite_interpolator.hpp"
+#include "initialize_interpolator_for_modified_helmholtz_3d_kernels.hpp"
 #include "scalar_traits.hpp"
 
 namespace Fiber
@@ -34,8 +36,6 @@ namespace Fiber
  *  \brief Single-layer-potential kernel functor for the modified Helmholtz
  *  equation in 3D.
  *
- *  Uses interpolation to speed up kernel evaluation.
- *
  *  \tparam ValueType Type used to represent the values of the kernel. It can
  *  be one of: \c float, \c double, <tt>std::complex<float></tt> and
  *  <tt>std::complex<double></tt>. Note that setting \p ValueType to a real
@@ -45,15 +45,20 @@ namespace Fiber
  */
 
 template <typename ValueType_>
-class ModifiedHelmholtz3dSingleLayerPotentialKernelFunctor
+class ModifiedHelmholtz3dSingleLayerPotentialKernelInterpolatedFunctor
 {
 public:
     typedef ValueType_ ValueType;
     typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
-    ModifiedHelmholtz3dSingleLayerPotentialKernelFunctor(ValueType waveNumber) :
+    ModifiedHelmholtz3dSingleLayerPotentialKernelInterpolatedFunctor(
+            ValueType waveNumber,
+            CoordinateType maxDist, int interpPtsPerWavelength) :
         m_waveNumber(waveNumber)
-    {}
+    {
+        initializeInterpolatorForModifiedHelmholtz3dKernels(
+                    waveNumber, maxDist, interpPtsPerWavelength, m_interpolator);
+    }
 
     int kernelCount() const { return 1; }
     int kernelRowCount(int /* kernelIndex */) const { return 1; }
@@ -81,12 +86,16 @@ public:
             sum += diff * diff;
         }
         CoordinateType distance = sqrt(sum);
-        result[0](0, 0) = static_cast<ValueType>(1.0 / (4.0*M_PI)) / distance *
-                exp(-m_waveNumber * distance);
+        ValueType v = m_interpolator.evaluate(distance);
+        result[0](0, 0) =
+                static_cast<CoordinateType>(1.0 / (4.0*M_PI)) / distance * v;
     }
 
 private:
+    /** \cond PRIVATE */
     ValueType m_waveNumber;
+    HermiteInterpolator<ValueType> m_interpolator;
+    /** \endcond */
 };
 
 } // namespace Fiber

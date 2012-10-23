@@ -57,6 +57,28 @@ bool isNew(const arma::Col<double>& intersection,
 
 } // namespace
 
+void Grid::getBoundingBox(arma::Col<double>& lowerBound,
+                          arma::Col<double>& upperBound) const
+{
+    // In this simple implementation we assume that all elements are flat.
+    if (m_lowerBound.n_rows == dimWorld() &&
+            m_upperBound.n_rows == dimWorld()) {
+        lowerBound = m_lowerBound;
+        upperBound = m_upperBound;
+        return;
+    }
+
+    std::auto_ptr<GridView> view = leafView();
+
+    arma::Mat<double> vertices;
+    arma::Mat<int> elementCorners; // unused
+    arma::Mat<char> auxData; // unused
+    view->getRawElementData(vertices, elementCorners, auxData);
+
+    m_lowerBound = lowerBound = arma::min(vertices, 1); // 1 -> min. value in each row
+    m_upperBound = upperBound = arma::max(vertices, 1); // 1 -> max. value in each row
+}
+
 std::vector<bool> areInside(const Grid& grid, const arma::Mat<double>& points)
 {
     if (grid.dim() != 2 || grid.dimWorld() != 3)

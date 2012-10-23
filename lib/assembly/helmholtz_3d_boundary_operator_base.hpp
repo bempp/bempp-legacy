@@ -23,10 +23,14 @@
 
 #include "elementary_singular_integral_operator.hpp"
 
+#include "helmholtz_3d_operators_common.hpp"
+
 #include <boost/scoped_ptr.hpp>
 
 namespace Bempp
 {
+
+template <typename BasisFunctionType> class Helmholtz3dBoundaryOperatorId;
 
 /** \ingroup helmholtz_3d
  *  \brief Base class for boundary operators for the Helmholtz equation in 3D.
@@ -53,6 +57,9 @@ class Helmholtz3dBoundaryOperatorBase :
     typename ScalarTraits<BasisFunctionType_>::ComplexType,
     typename ScalarTraits<BasisFunctionType_>::ComplexType>
     Base;
+
+    friend class Helmholtz3dBoundaryOperatorId<BasisFunctionType_>;
+
 public:
     /** \brief Type of the values of the basis functions into which functions
      *  acted upon by the operator are expanded. */
@@ -87,6 +94,20 @@ public:
      *  \param[in] symmetry
      *    Symmetry of the weak form of the operator. Can be any combination of the
      *    flags defined in the enumeration type Symmetry.
+     *  \param[in] useInterpolation
+     *    If set to \p false (default), the standard exp() function will be used to
+     *    evaluate the exponential factor occurring in the kernel. If set to \p
+     *    true, the exponential factor will be evaluated by piecewise-cubic
+     *    interpolation of values calculated in advance on a regular grid. This
+     *    normally speeds up calculations, but might result in a loss of accuracy.
+     *    This is an experimental feature: use it at your own risk.
+     *  \param[in] interPtsPerWavelength
+     *    If \p useInterpolation is set to \p true, this parameter determines the
+     *    number of points per "effective wavelength" (defined as \f$2\pi/|k|\f$,
+     *    where \f$k\f$ = \p waveNumber) used to construct the interpolation grid.
+     *    The default value (5000) is normally enough to reduce the relative or
+     *    absolute error, *whichever is smaller*, below 100 * machine precision. If
+     *    \p useInterpolation is set to \p false, this parameter is ignored.
      *
      *  None of the shared pointers may be null and the spaces \p range and \p
      *  dualToRange must be defined on the same grid, otherwise an exception is
@@ -97,7 +118,9 @@ public:
             const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
             KernelType waveNumber,
             const std::string& label = "",
-            int symmetry = NO_SYMMETRY);
+            int symmetry = NO_SYMMETRY,
+            bool useInterpolation = false,
+            int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
 
     /** \brief Copy constructor. */
     Helmholtz3dBoundaryOperatorBase(
