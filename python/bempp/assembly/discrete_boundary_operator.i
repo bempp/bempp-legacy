@@ -170,6 +170,27 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
         }
     }
 
+    static void
+    __matrixHMultImpl(const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
+                     const arma::Mat<ValueType>& mat_in,
+                     arma::Mat<ValueType>& mat_out){
+
+        const int opRows = op->rowCount();
+        const int opCols = op->columnCount();
+        const int matCols = mat_in.n_cols;
+        const int matRows = mat_in.n_rows;
+        mat_out.zeros(opCols,matCols);
+        if (opRows!=matRows) throw std::runtime_error("__matrixHMultImpl(op,mat_in,mat_out: Wrong dimensions.");
+        for (int i=0;i<matCols;i++){
+            arma::Col< ValueType > tmp1 = mat_in.unsafe_col(i);
+            arma::Col< ValueType > tmp2 = mat_out.unsafe_col(i);
+            op->apply(Bempp::CONJUGATE_TRANSPOSE,tmp1,tmp2,1.0,0.0);
+        }
+    }
+
+
+
+
     %feature("compactdefaultargs") asDiscreteAcaBoundaryOperator;
 
     %pythoncode {
@@ -198,8 +219,51 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
             return self.__mul__(1./other)
 
         def __rmul__(self,other):
-            return self.__mul__(other)
+            from numbers import Number
+            import numpy as np
+            if isinstance(other,(Number,np.number)):
+                return self.__scalarMultImpl(other,self)
+            elif isinstance(other,np.ndarray):
+                if len(other.shape)==0:
+                    return self.__scalarMultImpl(other,self)
+                else:
+                	raise ValueError("Discrete boundary operators do not support "
+                                 	"multiplication with this type.")
+            else:
+                raise ValueError("Discrete boundary operators do not support "
+                                 "multiplication with this type.")
 
+        def matvec(self,other):
+            sn = len(other.shape)
+            if sn == 1:
+               data = other.reshape(other.shape[0],1)
+            else:
+               data = other
+            res = self.__matrixMultImpl(self,data)
+            if sn == 1:
+               return res.reshape(self.rowCount())
+            else:
+               return res
+			
+        def rmatvec(self,other):
+            sn = len(other.shape)
+            if sn == 1:
+               data = other.reshape(other.shape[0],1)
+            else:
+               data = other
+            res = self.__matrixHMultImpl(self,data)
+            if sn == 1:
+               return res.reshape(self.columnCount())
+            else:
+               return res
+
+        def matmat(self,other):
+            return self.__matrixMultImpl(self,other)
+	            
+
+        @property
+        def shape(self):
+            return (self.rowCount(),self.columnCount())
     }
 
 
