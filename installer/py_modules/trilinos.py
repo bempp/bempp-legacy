@@ -28,7 +28,7 @@ trilinos_extract_dir='trilinos-10.12.2-Source'
 trilinos_dir='trilinos'
 trilinos_url='http://trilinos.sandia.gov/download/files/trilinos-10.12.2-Source.tar.gz'
 
-def download(root,config,force=True):
+def download(root,config,force=False):
     dep_download_dir=config.get('Main','dependency_download_dir')
     tools.download(trilinos_fname,trilinos_url,dep_download_dir,force)
 
