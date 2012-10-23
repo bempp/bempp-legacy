@@ -102,8 +102,8 @@ public:
       *
       * \note This function has no effect if it is called after initializeSolver().
       *
-      * \deprecated Please pass the preconditioner as an argument of
-      *   initializeSolver().
+      * \deprecated Do not use this function in new code. Instead, pass the
+      *   preconditioner to initializeSolver().
       */
     BEMPP_DEPRECATED void setPreconditioner(
             const Preconditioner<ResultType>& preconditioner);

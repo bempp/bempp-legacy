@@ -118,7 +118,7 @@ public:
      *    interpolation of values calculated in advance on a regular grid. This
      *    normally speeds up calculations, but might result in a loss of accuracy.
      *    This is an experimental feature: use it at your own risk.
-     *  \param[in] interPtsPerWavelength
+     *  \param[in] interpPtsPerWavelength
      *    If \p useInterpolation is set to \p true, this parameter determines the
      *    number of points per "effective wavelength" (defined as \f$2\pi/|k|\f$,
      *    where \f$k\f$ = \p waveNumber) used to construct the interpolation grid.
