@@ -110,7 +110,7 @@ replacement_cpp_VT = r"\1&lt;<i>ValueType</i>&gt;"
 
 
 re_python_BFT_and_RT = re.compile(
-    r'(?<!id="bempp\.core\.)(?<!#bempp\.core\.)' +
+    r'(?<!id="bempp\.core\.)(?<!#bempp\.core\.)(?<!DONT_REPLACE)' +
     "(" + "|".join(entities_templated_on_BFT_and_RT) + ")" +
     "_complex128_complex128"
     )
@@ -174,6 +174,7 @@ for path in paths:
                         "std::complex&lt;(double)&gt;,Bempp::GeometryFactory)&gt;",
                         "Fiber::QuadratureStrategyBase&lt;<i>BasisFunctionType</i>,"
                         "<i>ResultType</i>,Bempp::GeometryFactory)&gt;")
+    text = text.replace("DONT_REPLACE", "")
 
     shutil.copy2(path, path + ".orig")
     f = open(path, "w")

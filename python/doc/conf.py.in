@@ -258,7 +258,7 @@ def on_autodoc_skip_member(app, what, name, obj, skip, options):
          name.endswith("_complex64_complex64_complex64") or
          name.endswith("_float64_complex128_complex128") or
          name == "SwigPyIterator" or
-         name.startswith("vector_GridFunction") or
+         name.startswith("vector_") or
          name.startswith("GridFactory_") or
          name.startswith("LinearOpDefaultBase_") or
          name.startswith("PythonSurfaceNormalDependentFunctor") or
