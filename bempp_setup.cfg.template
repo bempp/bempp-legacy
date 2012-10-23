@@ -1,7 +1,7 @@
 # This file controls the build settings for BEM++.
 # You need to at least do the following.
 
-# Specify the architecture, build_dir and prefix in the [Main]
+# Specify the architecture and prefix in the [Main]
 # section.
 
 # Choose a BLAS and Lapack library. Enable either MKL (recommended)
@@ -24,7 +24,7 @@ architecture=intel64
 # subdirectory "build" of the BEM++ source directory. You can override
 # this by setting the option below. Example:
 
-build_dir=/home/myname/src/bempp-build
+# build_dir=/home/myname/src/bempp-build
 
 # Specify the prefix of the installation directory.  BEM++ and its
 # dependencies will be installed in prefix/bempp. Example:
