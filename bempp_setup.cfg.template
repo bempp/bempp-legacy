@@ -1,24 +1,43 @@
+# This file controls the build settings for BEM++.
+# You need to at least do the following.
+
+# Specify the architecture, build_dir and prefix in the [Main]
+# section.
+
+# Choose a BLAS and Lapack library. Enable either MKL (recommended)
+# or choose a BLAS and Lapack library manually. Please see the 
+# README for recommended options.
+
+# It is highly recommended to download and enable AHMED in the [AHMED]
+# section. This enables the H-Matrix algebra for the library and 
+# allows to solve significantly larger problems than with a standard
+# dense matrix BEM.
+
 [Main]
 
 # Specify your system architecture. Allowed values: intel64 (for
 # 64-bit systems), ia32 (for 32-bit systems), Example:
 
-# architecture=intel64
+architecture=intel64
 
 # By default BEM++ and its dependencies will be built in the
 # subdirectory "build" of the BEM++ source directory. You can override
 # this by setting the option below. Example:
 
-# build_dir=/home/myname/src/bempp-build
+build_dir=/home/myname/src/bempp-build
 
 # Specify the prefix of the installation directory.  BEM++ and its
 # dependencies will be installed in prefix/bempp. Example:
 
 prefix=/home/myname/
 
-# Specify how many processes to use for building. Example:
+# It is highly recommended to adapt the number of build_jobs to the 
+# number of underlying cpu cores. A good rule of thumb is to choose
+# build_jobs = 1.5*(number of cores), e.g. for a dual core system
+# choose build_jobs=3. This significantly speeds up the compilation
+# process.
 
-# build_jobs=2
+build_jobs=2
 
 # The following options control the compilers and compiler flags.
 # You can override the options for specific libraries by setting
