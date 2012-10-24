@@ -24,12 +24,12 @@ architecture=intel64
 # subdirectory "build" of the BEM++ source directory. You can override
 # this by setting the option below. Example:
 
-# build_dir=/home/myname/src/bempp-build
+# build_dir=~/src/bempp-build
 
 # Specify the prefix of the installation directory.  BEM++ and its
 # dependencies will be installed in prefix/bempp. Example:
 
-prefix=/home/myname/
+prefix=~
 
 # It is highly recommended to adapt the number of threads used to 
 # build the library to the number of underlying CPU cores. A good rule 
@@ -136,7 +136,7 @@ build_jobs=2
 # If you have set enable_ahmed to yes, specify the path to the archive
 # file with the sources of AHMED. Example:
 
-# file_name=/home/myname/AHMED-1.0.tar.gz
+# file_name=~/Downloads/AHMED-1.0.tar.gz
 
 # Use this section to override compiler settings for AHMED
 
