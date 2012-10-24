@@ -84,50 +84,26 @@ build_jobs=2
 
 # source=like_numpy
 
-# Otherwise, specify manually the location of MKL. You have two options:
-
-# (1) If you want to use an MKL distribution already installed on your disk,
-#     uncomment the following line
+# Otherwise, you need to specify manually the location of MKL on your disk.
+# Uncomment the following line
 
 # source=installed
 
-#     and specify the directories containing the MKL libraries (such
-#     as libmkl_core and libiomp5) in the following variable. You may
-#     specify several directories at once by separating them with
-#     semicolons. Example:
+# and specify the directories containing the MKL libraries (such
+# as libmkl_core and libiomp5) in the following variable. You may
+# specify several directories at once by separating them with
+# semicolons. Example:
 
 # dir=/opt/intel/mkl/lib/intel64;/opt/intel/lib/intel64
 
-#     You can also customize the list of MKL libraries to link against
-#     by editing the following variable. The default setting below
-#     (-lmkl_rt) should work for MKL 10.3 or newer. In case of
-#     problems use the Intel MKL Link Line Advisor
-#     (http://software.intel.com/en-us/articles/intel-mkl-link-line-advisor)
-#     to find the setting appropriate for your configuration. You may
-#     specify several libraries at once by separating them with
-#     semicolons.
-
-# lib=-lmkl_rt
-
-# (2) If you have an archive file containing the MKL redistributables
-#     and you want to install MKL specifically for BEM++, uncomment
-#     the following line
-
-# source=redistributable
-
-#     and set the following variable to the location of the archive
-#     file. Example:
-
-# tarball=/home/myname/mkl_linux_intel64.tar.gz
-
-#     You can also customize the list of MKL libraries to link against
-#     by editing the following variable. The default setting below
-#     (-lmkl_rt) should work for MKL 10.3 or newer. In case of
-#     problems use the Intel MKL Link Line Advisor
-#     (http://software.intel.com/en-us/articles/intel-mkl-link-line-advisor)
-#     to find the setting appropriate for your configuration. You may
-#     specify several libraries at once by separating them with
-#     semicolons.
+# You can also customize the list of MKL libraries to link against
+# by editing the following variable. The default setting below
+# (-lmkl_rt) should work for MKL 10.3 or newer. In case of
+# problems use the Intel MKL Link Line Advisor
+# (http://software.intel.com/en-us/articles/intel-mkl-link-line-advisor)
+# to find the setting appropriate for your configuration. You may
+# specify several libraries at once by separating them with
+# semicolons.
 
 # lib=-lmkl_rt
 
