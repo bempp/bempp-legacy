@@ -1,6 +1,5 @@
 import errno,os,subprocess,sys, shutil
 
-
 try:
     from subprocess import check_output, check_call
 except ImportError:
