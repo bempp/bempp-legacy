@@ -239,7 +239,7 @@ if __name__ == "__main__":
                        "with the --configure (-c) option.")
                 sys.exit(1)
             config.read(optfile_generated)
-            checkInstallUpdates(config)
+            checkInstallUpdates(root,config)
         if options.bootstrap:
             bootstrap(root,config)
         if options.configure:
