@@ -360,7 +360,7 @@ def checkInstallUpdates(root,config):
                         "Please check whether git is in your path and your internet connection works.")
 
     try:
-        output = check_output("git log head..origin/"+branch+" --oneline",shell=True,stderr=subprocess.STDOUT)
+        output = check_output("git log +"branch+"..origin/"+branch+" --oneline",shell=True,stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError, ex:
         raise Exception("Git failed with error message\n"+
                         ex.output)
