@@ -31,11 +31,11 @@ architecture=intel64
 
 prefix=/home/myname/
 
-# It is highly recommended to adapt the number of build_jobs to the 
-# number of underlying cpu cores. A good rule of thumb is to choose
-# build_jobs = 1.5*(number of cores), e.g. for a dual core system
-# choose build_jobs=3. This significantly speeds up the compilation
-# process.
+# It is highly recommended to adapt the number of threads used to 
+# build the library to the number of underlying CPU cores. A good rule 
+# of thumb is to choose build_jobs = 1.5*(number of cores), e.g. for 
+# a dual-core system choose build_jobs=3. This significantly speeds 
+# up the compilation process.
 
 build_jobs=2
 
