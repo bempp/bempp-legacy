@@ -403,7 +403,7 @@ typename GridFunction<BasisFunctionType, ResultType>::MagnitudeType
 GridFunction<BasisFunctionType, ResultType>::L2Norm() const
 {
     // The L^2 norm is given by
-    //   u^\dagger M u,
+    //   sqrt(u^\dagger M u),
     // where u is the coefficient vector and M the mass matrix of m_space
 
     if (!m_space)
@@ -411,7 +411,7 @@ GridFunction<BasisFunctionType, ResultType>::L2Norm() const
                                  "on an uninitialized GridFunction object");
     typedef BoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
 
-    // Get the projections vector
+    // Get the vector of coefficients
     const arma::Col<ResultType>& coeffs = coefficients();
 
     // Calculate the mass matrix
