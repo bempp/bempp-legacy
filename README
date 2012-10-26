@@ -53,10 +53,6 @@ execute ``git clone -b release_1.0 git://github.com/bempp/bempp.git`` from the
 command line in an empty directory. To download the current development version,
 execute ``git clone git://github.com/bempp/bempp.git`` instead.
 
-Bugfixes to the stable version of BEM++ will be committed to the release_1.0
-branch. You can obtain the latest bugfixes by executing ``git pull`` in the
-directory to which you downloaded the code.
-
 Installation
 ============
 
@@ -175,6 +171,17 @@ To build the library, do the following:
    API of BEM++ by going into ``<build_dir>`` and typing ``make
    python_doc``. The documentation is generated in the
    ``<build_dir>/python/doc/html`` directory.
+
+Updates
+=======
+
+Bugfixes to the stable version of BEM++ will be committed to the release_1.0
+git branch. You can obtain the latest bugfixes by executing ::
+
+   python bempp_setup.py -u all bempp_setup.cfg
+
+in BEM++ source directory. This will check whether any updates are available,
+and if yes, download them, recompile and install the library.
 
 Usage
 =====
