@@ -26,13 +26,20 @@ entities_templated_on_VT = [
     "acaBlockDiagonalPreconditioner",
     "acaOperatorApproximateLuInverse",
     "acaOperatorSum",
-    "scaledAcaOperator"
+    "scaledAcaOperator",
+    "discreteSparseInverse",
+    "enable_shared_from_this_discrete_boundary_operator",
+    "LinearOpDefaultBase"
     ]
 entities_templated_on_RT = [
     "helmholtz3dAdjointDoubleLayerBoundaryOperator",
     "helmholtz3dDoubleLayerBoundaryOperator",
     "helmholtz3dHypersingularBoundaryOperator",
     "helmholtz3dSingleLayerBoundaryOperator",
+    "helmholtz3dDoubleLayerPotentialOperator",
+    "helmholtz3dSingleLayerPotentialOperator",
+    "helmholtz3dFarFieldDoubleLayerPotentialOperator",
+    "helmholtz3dFarFieldSingleLayerPotentialOperator",
     ]
 entities_templated_on_BFT_and_RT = [
     "AbstractBoundaryOperator",
@@ -50,11 +57,15 @@ entities_templated_on_BFT_and_RT = [
     "Solution",
     "Solver",
     "identityOperator",
+    "nullOperator",
     "laplace3dAdjointDoubleLayerBoundaryOperator",
     "laplace3dDoubleLayerBoundaryOperator",
     "laplace3dHypersingularBoundaryOperator",
     "laplace3dSingleLayerBoundaryOperator",
-    "numericalQuadratureStrategy"
+    "numericalQuadratureStrategy",
+    "gridFunctionFromCoefficients",
+    "gridFunctionFromPythonSurfaceNormalDependentFunctor",
+    "gridFunctionFromPythonSurfaceNormalIndependentFunctor"
     ]
 entities_templated_on_BFT_KT_and_RT = [
     "modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator",
@@ -151,6 +162,12 @@ for path in paths:
     text = f.read()
     f.close()
 
+    text = re_python_BFT_KT_and_RT.sub(replacement_python_BFT_KT_and_RT, text)
+    text = re_cpp_BFT_KT_and_RT.sub(replacement_cpp_BFT_KT_and_RT, text)
+
+    text = re_python_BFT_and_RT.sub(replacement_python_BFT_and_RT, text)
+    text = re_cpp_BFT_and_RT.sub(replacement_cpp_BFT_and_RT, text)
+
     text = re_python_BFT.sub(replacement_python_BFT, text)
     text = re_cpp_BFT.sub(replacement_cpp_BFT, text)
 
@@ -159,12 +176,6 @@ for path in paths:
 
     text = re_python_VT.sub(replacement_python_VT, text)
     text = re_cpp_VT.sub(replacement_cpp_VT, text)
-
-    text = re_python_BFT_KT_and_RT.sub(replacement_python_BFT_KT_and_RT, text)
-    text = re_cpp_BFT_KT_and_RT.sub(replacement_cpp_BFT_KT_and_RT, text)
-
-    text = re_python_BFT_and_RT.sub(replacement_python_BFT_and_RT, text)
-    text = re_cpp_BFT_and_RT.sub(replacement_cpp_BFT_and_RT, text)
 
     text = text.replace("Fiber::QuadratureStrategy&lt;(std::complex&lt;(double)&gt;,"
                         "std::complex&lt;(double)&gt;,Bempp::GeometryFactory)&gt;",
