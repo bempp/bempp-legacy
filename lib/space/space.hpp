@@ -90,7 +90,7 @@ public:
      *
      *  \param[in] grid Grid on which functions from this space should be
      *  defined. */
-    explicit Space(const shared_ptr<Grid>& grid);
+    explicit Space(const shared_ptr<const Grid>& grid);
 
     /** \brief Destructor. */
     virtual ~Space();
@@ -274,7 +274,7 @@ public:
 
 private:
     /** \cond PRIVATE */
-    shared_ptr<Grid> m_grid;
+    shared_ptr<const Grid> m_grid;
     /** \endcond */
 };
 

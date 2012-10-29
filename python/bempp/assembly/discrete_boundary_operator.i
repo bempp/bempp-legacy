@@ -162,7 +162,8 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
         const int matCols = mat_in.n_cols;
         const int matRows = mat_in.n_rows;
         mat_out.zeros(opRows,matCols);
-        if (opCols!=matRows) throw std::runtime_error("__matrixMultImpl(op,mat_in,mat_out: Wrong dimensions.");
+        if (opCols!=matRows)
+            throw std::invalid_argument("__matrixMultImpl(): Wrong dimensions.");
         for (int i=0;i<matCols;i++){
             arma::Col< ValueType > tmp1 = mat_in.unsafe_col(i);
             arma::Col< ValueType > tmp2 = mat_out.unsafe_col(i);
@@ -180,7 +181,8 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
         const int matCols = mat_in.n_cols;
         const int matRows = mat_in.n_rows;
         mat_out.zeros(opCols,matCols);
-        if (opRows!=matRows) throw std::runtime_error("__matrixHMultImpl(op,mat_in,mat_out: Wrong dimensions.");
+        if (opRows!=matRows)
+            throw std::invalid_argument("__matrixHMultImpl(): Wrong dimensions.");
         for (int i=0;i<matCols;i++){
             arma::Col< ValueType > tmp1 = mat_in.unsafe_col(i);
             arma::Col< ValueType > tmp2 = mat_out.unsafe_col(i);
@@ -233,7 +235,14 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
                 raise ValueError("Discrete boundary operators do not support "
                                  "multiplication with this type.")
 
-        def matvec(self,other):
+        def matvec(self, other):
+            """
+            Multiply this operator with 'other' and return the result.
+
+            *Parameters:*
+               - other (1D or 2D ndarray)
+                    Vector or matrix that should be multiplied with this operator.
+            """
             sn = len(other.shape)
             if sn == 1:
                data = other.reshape(other.shape[0],1)
@@ -244,8 +253,17 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
                return res.reshape(self.rowCount())
             else:
                return res
-			
-        def rmatvec(self,other):
+
+        def rmatvec(self, other):
+            """
+            Multiply the conjugate transpose of this operator with 'other'
+            and return the result.
+
+            *Parameters:*
+               - other (1D or 2D ndarray)
+                    Vector or matrix that should be multiplied with the
+                    conjugate transpose of this operator.
+            """
             sn = len(other.shape)
             if sn == 1:
                data = other.reshape(other.shape[0],1)
@@ -257,9 +275,16 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
             else:
                return res
 
-        def matmat(self,other):
+        def matmat(self, other):
+            """
+            Multiply this operator with the matrix 'other' and return the result.
+
+            *Parameters:*
+               - other (2D ndarray)
+                    Matrix that should be multiplied with this operator.
+            """
             return self.__matrixMultImpl(self,other)
-	            
+
 
         @property
         def shape(self):

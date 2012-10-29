@@ -4,8 +4,8 @@ Introduction
 BEM++ is a novel open-source HPC boundary-element library. Its development
 started in October 2011.
 
-1.0 is the first official version of the library. It was released on XX October
-2012. This version includes the following features:
+1.0 is the first official version of the library, released on 29 October 2012.
+This version includes the following features:
 
 - Galerkin discretization of all standard boundary integral operators
   (single-layer potential, double-layer potential, adjoint double-layer
@@ -52,10 +52,6 @@ To download the code, you need to have the Git version control system
 execute ``git clone -b release_1.0 git://github.com/bempp/bempp.git`` from the
 command line in an empty directory. To download the current development version,
 execute ``git clone git://github.com/bempp/bempp.git`` instead.
-
-Bugfixes to the stable version of BEM++ will be committed to the release_1.0
-branch. You can obtain the latest bugfixes by executing ``git pull`` in the
-directory to which you downloaded the code.
 
 Installation
 ============
@@ -175,6 +171,17 @@ To build the library, do the following:
    API of BEM++ by going into ``<build_dir>`` and typing ``make
    python_doc``. The documentation is generated in the
    ``<build_dir>/python/doc/html`` directory.
+
+Updates
+=======
+
+Bugfixes to the stable version of BEM++ will be committed to the release_1.0
+git branch. You can obtain the latest bugfixes by executing ::
+
+   python bempp_setup.py -u all bempp_setup.cfg
+
+in BEM++ source directory. This will check whether any updates are available,
+and if yes, download them, recompile and install the library.
 
 Usage
 =====

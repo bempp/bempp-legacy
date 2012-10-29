@@ -42,7 +42,7 @@ struct ScalarSpace<BasisFunctionType>::Impl
 /** \endcond */
 
 template <typename BasisFunctionType>
-ScalarSpace<BasisFunctionType>::ScalarSpace(const shared_ptr<Grid>& grid) :
+ScalarSpace<BasisFunctionType>::ScalarSpace(const shared_ptr<const Grid>& grid) :
     Base(grid), m_impl(new Impl)
 {
 }

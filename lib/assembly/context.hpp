@@ -20,7 +20,7 @@ template <typename BasisFunctionType, typename ResultType> class AbstractBoundar
  *  \brief Assembly context.
  *
  *  This class manages the assembly of weak forms and evaluation of potentials.
- * 
+ *
  *  An assembly context consists of a quadrature strategy, which determines
  *  the way integrals are calculated, and assembly options, which control
  *  higher-level aspects of weak-form assembly, e.g. the use or not of
@@ -48,7 +48,7 @@ public:
      *
      *  \param[in] assemblyOptions
      *    Further options influencing the weak-form assembly process. */
-    Context(const shared_ptr<QuadratureStrategy>& quadStrategy,
+    Context(const shared_ptr<const QuadratureStrategy>& quadStrategy,
             const AssemblyOptions& assemblyOptions);
 
     /** \brief Return the weak form of the specified abstract operator.
@@ -83,12 +83,12 @@ public:
 
     /** \brief Return a reference to the QuadratureStrategy object
      *  passed when constructing the Context. */
-    const QuadratureStrategy& quadStrategy() const {
-        return *m_quadStrategy;
+    shared_ptr<const QuadratureStrategy> quadStrategy() const {
+        return m_quadStrategy;
     }
 
 private:
-    shared_ptr<QuadratureStrategy> m_quadStrategy;
+    shared_ptr<const QuadratureStrategy> m_quadStrategy;
     AssemblyOptions m_assemblyOptions;
 
     mutable DiscreteBoundaryOperatorCache<BasisFunctionType, ResultType> m_cache;

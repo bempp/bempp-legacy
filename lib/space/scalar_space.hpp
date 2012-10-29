@@ -41,7 +41,7 @@ public:
     typedef typename Base::CollectionOfBasisTransformations
     CollectionOfBasisTransformations;
 
-    explicit ScalarSpace(const shared_ptr<Grid>& grid);
+    explicit ScalarSpace(const shared_ptr<const Grid>& grid);
     ScalarSpace(const ScalarSpace& other);
     virtual ~ScalarSpace();
 

@@ -42,7 +42,7 @@ namespace Bempp
 
 template <typename BasisFunctionType>
 PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
-PiecewiseLinearContinuousScalarSpace(const shared_ptr<Grid>& grid) :
+PiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid) :
     ScalarSpace<BasisFunctionType>(grid), m_flatLocalDofCount(0)
 {
     const int gridDim = grid->dim();

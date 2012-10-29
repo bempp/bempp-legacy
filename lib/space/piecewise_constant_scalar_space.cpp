@@ -35,7 +35,7 @@ namespace Bempp
 
 template <typename BasisFunctionType>
 PiecewiseConstantScalarSpace<BasisFunctionType>::
-PiecewiseConstantScalarSpace(const shared_ptr<Grid>& grid) :
+PiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid) :
      ScalarSpace<BasisFunctionType>(grid), m_view(grid->leafView())
 {
     assignDofsImpl();
