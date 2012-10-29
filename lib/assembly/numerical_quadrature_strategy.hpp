@@ -88,7 +88,7 @@ public:
      *      bases, single-point quadrature is by default used on both elements.
      *
      *      This default integration order is often insufficient. It can be
-     *      increased by calling one ofthe overloads of the
+     *      increased by calling one of the overloads of the
      *      AccuracyOptionsEx::setDoubleRegular() function on the object passed
      *      subsequently to this constructor via the \p accuracyOptions
      *      parameter. The quadrature rule can be made dependent on the
@@ -116,12 +116,11 @@ public:
      *      twice the order of the basis attached to the element \f$\Gamma\f$.
      *      This order of accuracy can be customized by calling the
      *      AccuracyOptionsEx::setSingleRegular() function.
-     *    </ul>
+     *    </ol>
      *
-     *  \note For backward compatibility reasons, an object of type
-     *  AccuracyOptions can be passed into this constructor instead of an
-     *  AccuracyOptionsEx object. The use of the AccuracyOptions class is
-     *  deprecated.
+     *  \note For backward compatibility reasons, this constructor also accepts
+     *  objects of type AccuracyOptions (which are implicitly converted to
+     *  AccuracyOptionsEx).
      */
     explicit NumericalQuadratureStrategy(
             const AccuracyOptionsEx& accuracyOptions);
