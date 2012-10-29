@@ -187,6 +187,8 @@ struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
         BlockedBoundaryOperator<BasisFunctionType, ResultType> > pinvId;
 };
 
+/** \endcond */
+
 template <typename BasisFunctionType, typename ResultType>
 DefaultIterativeSolver<BasisFunctionType, ResultType>::DefaultIterativeSolver(
         const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
