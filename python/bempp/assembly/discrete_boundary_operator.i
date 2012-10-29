@@ -264,6 +264,11 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
         @property
         def shape(self):
             return (self.rowCount(),self.columnCount())
+
+        @property
+        def dtype(self):
+            import numpy
+            return numpy.dtype(self.valueType())
     }
 
 
