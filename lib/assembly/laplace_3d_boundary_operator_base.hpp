@@ -90,6 +90,8 @@ public:
     Laplace3dBoundaryOperatorBase(
             const Laplace3dBoundaryOperatorBase& other);
     virtual ~Laplace3dBoundaryOperatorBase();
+    Laplace3dBoundaryOperatorBase& operator=(
+            const Laplace3dBoundaryOperatorBase& rhs);
 
     /** \brief Return the identifier of this operator.
      *

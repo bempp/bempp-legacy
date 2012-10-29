@@ -63,7 +63,10 @@ Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>&
 Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
 operator=(const Helmholtz3dPotentialOperatorBase& rhs)
 {
-    m_impl.reset(new Impl(*rhs.m_impl));
+    if (this != &rhs) {
+        Base::operator=(rhs);
+        m_impl.reset(new Impl(*rhs.m_impl));
+    }
 }
 
 template <typename Impl, typename BasisFunctionType>

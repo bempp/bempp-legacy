@@ -145,6 +145,10 @@ public:
     /** \brief Destructor. */
     virtual ~ModifiedHelmholtz3dBoundaryOperatorBase();
 
+    /** \brief Assignment operator. */
+    ModifiedHelmholtz3dBoundaryOperatorBase& operator=(
+            const ModifiedHelmholtz3dBoundaryOperatorBase& rhs);
+
     /** \brief Return the wave number set previously in the constructor. */
     KernelType waveNumber() const;
 

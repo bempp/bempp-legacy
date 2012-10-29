@@ -16,6 +16,10 @@ namespace Bempp
     laplace3dAdjointDoubleLayerBoundaryOperator;
 %feature("compactdefaultargs")
     laplace3dHypersingularBoundaryOperator;
+
+// Do not emit warnings about ignored assignment operators.
+%warnfilter(362) Laplace3dBoundaryOperatorBase::operator=;
+
 } // namespace Bempp
 
 #define shared_ptr boost::shared_ptr

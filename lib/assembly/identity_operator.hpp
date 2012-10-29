@@ -121,6 +121,7 @@ public:
                      int symmetry = AUTO_SYMMETRY);
     IdentityOperator(const IdentityOperator& other);
     virtual ~IdentityOperator();
+    IdentityOperator& operator=(const IdentityOperator& rhs);
 
     /** \brief Return the identifier of this operator.
      *

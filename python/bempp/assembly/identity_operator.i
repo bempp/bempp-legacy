@@ -5,6 +5,9 @@
 namespace Bempp
 {
 %feature("compactdefaultargs") identityOperator;
+
+// Do not emit warnings about ignored assignment operators.
+%warnfilter(362) IdentityOperator::operator=;
 }
 
 #define shared_ptr boost::shared_ptr

@@ -86,6 +86,9 @@ public:
     Laplace3dPotentialOperatorBase(const Laplace3dPotentialOperatorBase& other);
     /** \brief Destructor. */
     virtual ~Laplace3dPotentialOperatorBase();
+    /** \brief Assignment operator. */
+    Laplace3dPotentialOperatorBase& operator=(
+            const Laplace3dPotentialOperatorBase& rhs);
 
 private:
     virtual const CollectionOfKernels& kernels() const;

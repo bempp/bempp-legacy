@@ -42,8 +42,11 @@ public:
     CollectionOfBasisTransformations;
 
     explicit ScalarSpace(const shared_ptr<const Grid>& grid);
+    /** \brief Copy constructor. */
     ScalarSpace(const ScalarSpace& other);
     virtual ~ScalarSpace();
+    /** \brief Assignment operator. */
+    ScalarSpace& operator=(const ScalarSpace& other);
 
     virtual const CollectionOfBasisTransformations&
     shapeFunctionValue() const;

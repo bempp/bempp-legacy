@@ -244,6 +244,18 @@ IdentityOperator<BasisFunctionType, ResultType>::~IdentityOperator()
 }
 
 template <typename BasisFunctionType, typename ResultType>
+IdentityOperator<BasisFunctionType, ResultType>&
+IdentityOperator<BasisFunctionType, ResultType>::
+operator=(const IdentityOperator& rhs)
+{
+    if (this != &rhs) {
+        Base::operator=(rhs);
+        m_impl.reset(new Impl(*rhs.m_impl));
+        m_id = rhs.m_id;
+    }
+}
+
+template <typename BasisFunctionType, typename ResultType>
 shared_ptr<const AbstractBoundaryOperatorId>
 IdentityOperator<BasisFunctionType, ResultType>::id() const
 {

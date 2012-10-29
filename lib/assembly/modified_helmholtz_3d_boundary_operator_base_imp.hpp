@@ -161,6 +161,19 @@ ModifiedHelmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType, KernelType, Res
 
 template <typename Impl, typename BasisFunctionType,
           typename KernelType, typename ResultType>
+ModifiedHelmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType, KernelType, ResultType>&
+ModifiedHelmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType, KernelType, ResultType>::
+operator=(const ModifiedHelmholtz3dBoundaryOperatorBase& rhs)
+{
+    if (this != &rhs) {
+        Base::operator=(rhs);
+        m_impl.reset(new Impl(*rhs.m_impl));
+        m_id = rhs.m_id;
+    }
+}
+
+template <typename Impl, typename BasisFunctionType,
+          typename KernelType, typename ResultType>
 typename ModifiedHelmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType, KernelType, ResultType>::KernelType
 ModifiedHelmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType, KernelType, ResultType>::
 waveNumber() const

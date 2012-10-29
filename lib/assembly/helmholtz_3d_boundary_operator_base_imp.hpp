@@ -153,6 +153,18 @@ Helmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType>::
 }
 
 template <typename Impl, typename BasisFunctionType>
+Helmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType>&
+Helmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType>::
+operator=(const Helmholtz3dBoundaryOperatorBase& rhs)
+{
+    if (this != &rhs) {
+        Base::operator=(rhs);
+        m_impl.reset(new Impl(*rhs.m_impl));
+        m_id = rhs.m_id;
+    }
+}
+
+template <typename Impl, typename BasisFunctionType>
 typename Helmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType>::KernelType
 Helmholtz3dBoundaryOperatorBase<Impl, BasisFunctionType>::
 waveNumber() const

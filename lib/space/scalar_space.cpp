@@ -60,6 +60,17 @@ ScalarSpace<BasisFunctionType>::~ScalarSpace()
 }
 
 template <typename BasisFunctionType>
+ScalarSpace<BasisFunctionType>&
+ScalarSpace<BasisFunctionType>::
+operator=(const ScalarSpace& rhs)
+{
+    if (this != &rhs) {
+        Base::operator=(rhs);
+        m_impl.reset(new Impl(*rhs.m_impl));
+    }
+}
+
+template <typename BasisFunctionType>
 const typename ScalarSpace<BasisFunctionType>::CollectionOfBasisTransformations&
 ScalarSpace<BasisFunctionType>::shapeFunctionValue() const
 {
