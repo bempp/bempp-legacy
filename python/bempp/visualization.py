@@ -28,7 +28,7 @@ except ImportError:
     print "You need to have Enthought tvtk and mayavi installed for this module to work!"
 
 def getTvtkGrid(grid):
-    """Return a TVTK Object containing the grid"""
+    """Return a TVTK object containing the grid"""
 
     if grid.topology()=="triangular":
         (points,elems,auxData) = grid.leafView().getRawElementData()
@@ -41,7 +41,7 @@ def getTvtkGrid(grid):
     return mesh
 
 def plotTvtkActors(tvtkActors):
-    """Plot a number of TVTK actors in the same plot"""
+    """Plot a number of TVTK actors in the same plot."""
 
     import collections
 
@@ -54,7 +54,13 @@ def plotTvtkActors(tvtkActors):
 
 
 def gridActor(grid):
-    """Return a grid actor using TVTK"""
+    """
+    Return a TVTK actor representing a grid.
+
+    *Parameters:*
+       - grid (Grid)
+            A BEM++ grid object.
+    """
 
     mesh = getTvtkGrid(grid)
     mapper = tvtk.DataSetMapper(input=mesh)
@@ -62,12 +68,22 @@ def gridActor(grid):
     actor.property.representation = 'w'
     actor.property.ambient = 1
     return actor
-    
 
-def gridFunctionActor(gridFun,data_type='vertex_data',transformation='real'):
-    """Plot a grid function usint TVTK"""
+def gridFunctionActor(gridFun,dataType='vertex_data',transformation='real'):
+    """
+    Return a TVTK actor representing a grid function.
 
-    if not data_type in ["cell_data", "vertex_data"]:
+    *Parameters:*
+       - gridFun (gridFunction).
+            The grid function to be plotted.
+       - dataType ('vertex_data' or 'cell_data')
+            Determines whether the plot should be constructed from the function
+            values at element vertices or at element centres.
+       - transformation ('real', 'imag', 'abs' or a callable object)
+            Determines how the function is transformed before plotting.
+    """
+
+    if not dataType in ["cell_data", "vertex_data"]:
         raise ValueError("Unknown mode specified. Valid modes are 'vertex_data' and 'cell_data'!")
 
     if not hasattr(transformation, '__call__'):
@@ -78,15 +94,15 @@ def gridFunctionActor(gridFun,data_type='vertex_data',transformation='real'):
         elif transformation=='abs':
             data_transform = lambda x:np.abs(x)
         else:
-            raise ValueError("Unknown value for 'transformation'. It needs to be 'real', 'imag', 'abs' or a Python Callable!")
+            raise ValueError("Unknown value for 'transformation'. It needs to be 'real', 'imag', 'abs' or a Python callable!")
     else:
         data_transform = transformation
 
     mesh = getTvtkGrid(gridFun.grid())
-    if data_type=="vertex_data":
+    if dataType=="vertex_data":
         values = gridFun.evaluateAtSpecialPoints("vertex_data").flatten()
         tvtk_data = mesh.point_data
-    elif data_type=="cell_data":
+    elif dataType=="cell_data":
         values = gridFun.evaluateAtSpecialPoints("cell_data").flatten()
         tvtk_data = mesh.cell_data
 
@@ -101,7 +117,10 @@ def gridFunctionActor(gridFun,data_type='vertex_data',transformation='real'):
 def scalarDataOnRegularGridActor(
         points, data, dimensions,
         colorRange=None,transformation='real'):
-    """Return a TVTK actor representing a plot of a function interpolated on a regular grid."""
+    """
+    Return a TVTK actor representing the plot of a function interpolated on
+    a regular grid.
+    """
 
     if points.shape[0] != 3 or points.ndim != 2:
         raise ValueError("incorrect shape")
@@ -138,21 +157,29 @@ def scalarDataOnRegularGridActor(
     return tvtk.Actor(mapper=mapper)
 
 def legendActor(actor):
-    """Return a legend object for the specified actor"""
+    """Return a TVTK actor representing the legend of another actor."""
 
     scalar_bar = tvtk.ScalarBarActor()
     scalar_bar.lookup_table = actor.mapper.lookup_table
     return scalar_bar
 
-def plotGridFunction(*args,**kwargs):
-    """Simple grid function plotter"""
+def plotgridFunction(*args,**kwargs):
+    """
+    Plot a grid function.
+
+    This function takes the same parameters as gridFunctionActor().
+    """
 
     fun = gridFunctionActor(*args,**kwargs)
     legend = legendActor(fun)
     plotTvtkActors([fun,legend])
     
 def plotGrid(grid):
-    """Simple grid plotter"""
+    """
+    Plot a grid.
+
+    This function takes the same parameters as gridActor().
+    """
 
     grid_actor = gridActor(grid)
     plotTvtkActors(grid_actor)
