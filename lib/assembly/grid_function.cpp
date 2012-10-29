@@ -151,7 +151,7 @@ shared_ptr<arma::Col<ResultType> > calculateProjections(
 
     typedef Fiber::LocalAssemblerForGridFunctions<ResultType> LocalAssembler;
     std::auto_ptr<LocalAssembler> assembler =
-            context.quadStrategy().makeAssemblerForGridFunctions(
+            context.quadStrategy()->makeAssemblerForGridFunctions(
                 geometryFactory, rawGeometry,
                 testBases,
                 make_shared_from_ref(testTransformations),

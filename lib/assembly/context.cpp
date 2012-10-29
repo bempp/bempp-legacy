@@ -28,7 +28,7 @@ namespace Bempp
 
 template <typename BasisFunctionType, typename ResultType>
 Context<BasisFunctionType, ResultType>::Context(
-        const shared_ptr<QuadratureStrategy>& quadStrategy,
+        const shared_ptr<const QuadratureStrategy>& quadStrategy,
         const AssemblyOptions& assemblyOptions) :
     m_quadStrategy(quadStrategy),
     m_assemblyOptions(assemblyOptions)
