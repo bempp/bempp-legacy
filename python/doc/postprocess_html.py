@@ -160,11 +160,11 @@ for path in paths:
     text = re_python_VT.sub(replacement_python_VT, text)
     text = re_cpp_VT.sub(replacement_cpp_VT, text)
 
-    text = re_python_BFT_and_RT.sub(replacement_python_BFT_and_RT, text)
-    text = re_cpp_BFT_and_RT.sub(replacement_cpp_BFT_and_RT, text)
-
     text = re_python_BFT_KT_and_RT.sub(replacement_python_BFT_KT_and_RT, text)
     text = re_cpp_BFT_KT_and_RT.sub(replacement_cpp_BFT_KT_and_RT, text)
+
+    text = re_python_BFT_and_RT.sub(replacement_python_BFT_and_RT, text)
+    text = re_cpp_BFT_and_RT.sub(replacement_cpp_BFT_and_RT, text)
 
     text = text.replace("Fiber::QuadratureStrategy&lt;(std::complex&lt;(double)&gt;,"
                         "std::complex&lt;(double)&gt;,Bempp::GeometryFactory)&gt;",
