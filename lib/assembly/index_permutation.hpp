@@ -53,6 +53,10 @@ public:
         return !operator==(other);
     }
 
+    std::vector<unsigned int> permutedIndices() const {
+        return m_permutedIndices;
+    }
+
     /** \brief Convert a vector from original to permuted ordering. */
     template <typename ValueType>
     void permuteVector(const arma::Col<ValueType>& original,
