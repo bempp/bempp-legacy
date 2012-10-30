@@ -155,25 +155,27 @@ template <typename ValueType>
 DiscreteAcaBoundaryOperator<ValueType>::
 DiscreteAcaBoundaryOperator(
         unsigned int rowCount, unsigned int columnCount,
-        int maximumRank,
-        Symmetry symmetry,
-        std::auto_ptr<AhmedBemBlcluster> blockCluster,
-        boost::shared_array<AhmedMblock*> blocks,
-        const IndexPermutation& domainPermutation,
-        const IndexPermutation& rangePermutation,
-        const ParallelizationOptions& parallelizationOptions) :
+        int maximumRank_,
+        int symmetry_,
+        std::auto_ptr<AhmedBemBlcluster> blockCluster_,
+        AhmedMblockArray blocks_,
+        const IndexPermutation& domainPermutation_,
+        const IndexPermutation& rangePermutation_,
+        const ParallelizationOptions& parallelizationOptions_,
+        const std::vector<AhmedConstMblockArray>& sharedBlocks_) :
 #ifdef WITH_TRILINOS
     m_domainSpace(Thyra::defaultSpmdVectorSpace<ValueType>(columnCount)),
     m_rangeSpace(Thyra::defaultSpmdVectorSpace<ValueType>(rowCount)),
 #else
     m_rowCount(rowCount), m_columnCount(columnCount),
 #endif
-    m_maximumRank(maximumRank),
-    m_symmetry(symmetry),
-    m_blockCluster(blockCluster), m_blocks(blocks),
-    m_domainPermutation(domainPermutation),
-    m_rangePermutation(rangePermutation),
-    m_parallelizationOptions(parallelizationOptions)
+    m_maximumRank(maximumRank_),
+    m_symmetry(symmetry_),
+    m_blockCluster(blockCluster_), m_blocks(blocks_),
+    m_domainPermutation(domainPermutation_),
+    m_rangePermutation(rangePermutation_),
+    m_parallelizationOptions(parallelizationOptions_),
+    m_sharedBlocks(sharedBlocks_)
 {
 }
 
@@ -447,6 +449,69 @@ makeAllMblocksDense()
         if (m_blocks[i]->isLrM())
             m_blocks[i]->convLrM_toGeM();
 #endif
+}
+
+template <typename ValueType>
+int
+DiscreteAcaBoundaryOperator<ValueType>::maximumRank() const
+{
+    return m_maximumRank;
+}
+
+template <typename ValueType>
+int
+DiscreteAcaBoundaryOperator<ValueType>::symmetry() const
+{
+    return m_symmetry;
+}
+
+template <typename ValueType>
+const typename DiscreteAcaBoundaryOperator<ValueType>::AhmedBemBlcluster*
+DiscreteAcaBoundaryOperator<ValueType>::blockCluster() const
+{
+    return m_blockCluster.get();
+}
+
+template <typename ValueType>
+typename DiscreteAcaBoundaryOperator<ValueType>::AhmedMblockArray
+DiscreteAcaBoundaryOperator<ValueType>::blocks() const
+{
+    return m_blocks;
+}
+
+template <typename ValueType>
+size_t
+DiscreteAcaBoundaryOperator<ValueType>::blockCount() const
+{
+    return m_blockCluster->nleaves();
+}
+
+template <typename ValueType>
+const IndexPermutation&
+DiscreteAcaBoundaryOperator<ValueType>::domainPermutation() const
+{
+    return m_domainPermutation;
+}
+
+template <typename ValueType>
+const IndexPermutation&
+DiscreteAcaBoundaryOperator<ValueType>::rangePermutation() const
+{
+    return m_rangePermutation;
+}
+
+template <typename ValueType>
+const ParallelizationOptions&
+DiscreteAcaBoundaryOperator<ValueType>::parallelizationOptions() const
+{
+    return m_parallelizationOptions;
+}
+
+template <typename ValueType>
+std::vector<typename DiscreteAcaBoundaryOperator<ValueType>::AhmedConstMblockArray >
+DiscreteAcaBoundaryOperator<ValueType>::sharedBlocks() const
+{
+    return m_sharedBlocks;
 }
 
 // Global routines

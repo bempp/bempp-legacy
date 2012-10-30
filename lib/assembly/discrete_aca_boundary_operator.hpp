@@ -146,24 +146,38 @@ public:
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
     typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
     typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
+    typedef boost::shared_array<AhmedMblock*> AhmedMblockArray;
+    // Unfortunately currently shared_array<T> cannot be converted to
+    // shared_array<const T>. So we can't write
+    //     typedef boost::shared_array<const AhmedMblock*> AhmedConstMblockArray;
+    // and need to use this instead:
+    typedef boost::shared_array<AhmedMblock*> AhmedConstMblockArray;
 
     /** \brief Constructor.
      *
-     *  \param[in] parallelizationOptions Options determining the maximum
-     *  number of threads used in the apply() routine for the H-matrix-vector
-     *  product.
+     *  \param[in] parallelizationOptions_
+     *    Options determining the maximum number of threads used in
+     *    the apply() routine for the H-matrix-vector product.
+     *
+     *  \param[in] sharedBlocks_
+     *    Vector of arrays of mblocks on which this operator implicitly
+     *    depends and which therefore must stay alive for the lifetime
+     *    of this operator. Useful for constructing ACA operators that
+     *    combine mblocks of several other operators.
      *
      *  \note Currently the apply() routine is only parallelized for
      *  non-Hermitian H-matrices. */
     DiscreteAcaBoundaryOperator(
             unsigned int rowCount, unsigned int columnCount,
             int maximumRank,
-            Symmetry symmetry,
-            std::auto_ptr<AhmedBemBlcluster> blockCluster,
-            boost::shared_array<AhmedMblock*> blocks,
-            const IndexPermutation& domainPermutation,
-            const IndexPermutation& rangePermutation,
-            const ParallelizationOptions& parallelizationOptions);
+            int symmetry,
+            std::auto_ptr<AhmedBemBlcluster> blockCluster_,
+            AhmedMblockArray blocks_,
+            const IndexPermutation& domainPermutation_,
+            const IndexPermutation& rangePermutation_,
+            const ParallelizationOptions& parallelizationOptions_,
+            const std::vector<AhmedConstMblockArray>& sharedBlocks_ =
+                std::vector<AhmedConstMblockArray>());
 
     virtual arma::Mat<ValueType> asMatrix() const;
 
@@ -201,6 +215,40 @@ public:
             const shared_ptr<const DiscreteBoundaryOperator<ValueType> >&
             discreteOperator);
 
+    /** \brief Return an upper bound for the rank of low-rank mblocks. */
+    int maximumRank() const;
+
+    /** \brief Return a flag describing the symmetry of this operator. */
+    int symmetry() const;
+
+    /** \brief Return the block cluster. */
+    const AhmedBemBlcluster* blockCluster() const;
+
+    /** \brief Return the mblocks making up the H-matrix represented by this
+     *  operator.
+     *
+     *  \note This function returns a shared array of pointers to
+     *  *non-constant* blocks. However, you must not modify it! This is just
+     *  a workaround for AHMED's lack of const-correctness. */
+    AhmedMblockArray blocks() const;
+
+    /** \brief Return the number of mblocks making up this operator. */
+    size_t blockCount() const;
+
+    /** \brief Return the domain index permutation. */
+    const IndexPermutation& domainPermutation() const;
+
+    /** \brief Return the range index permutation. */
+    const IndexPermutation& rangePermutation() const;
+
+    /** \brief Return the parallelization options used in the matrix-vector
+     *  multiply. */
+    const ParallelizationOptions& parallelizationOptions() const;
+
+    /** \brief Return the vector of mblock arrays that this operator implicitly
+     *  depends on. */
+    std::vector<AhmedConstMblockArray> sharedBlocks() const;
+
 #ifdef WITH_TRILINOS
 public:
     virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
@@ -227,14 +275,15 @@ private:
     unsigned int m_columnCount;
 #endif
     int m_maximumRank; // used by the approximate-LU preconditioner
-    Symmetry m_symmetry;
+    int m_symmetry;
 
     std::auto_ptr<AhmedBemBlcluster> m_blockCluster;
-    boost::shared_array<AhmedMblock*> m_blocks;
+    AhmedMblockArray m_blocks;
 
     IndexPermutation m_domainPermutation;
     IndexPermutation m_rangePermutation;
     ParallelizationOptions m_parallelizationOptions;
+    std::vector<AhmedConstMblockArray> m_sharedBlocks;
     /** \endcond */
 };
 
