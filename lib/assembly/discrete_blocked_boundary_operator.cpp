@@ -165,17 +165,20 @@ applyBuiltInImpl(const TranspositionMode trans,
                  const ValueType beta) const
 {
     bool transpose = (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE);
-    for (int row = 0, y_start = 0; row < m_rowCounts.size(); ++row) {
-        size_t y_chunk_size = m_rowCounts[row];
+    size_t y_count = transpose ? m_columnCounts.size() : m_rowCounts.size();
+    size_t x_count = transpose ? m_rowCounts.size() : m_columnCounts.size();
+
+    for (int yi = 0, y_start = 0; yi < y_count; ++yi) {
+        size_t y_chunk_size = transpose ? m_columnCounts[yi] : m_rowCounts[yi];
         arma::Col<ValueType> y_chunk(&y_inout[y_start], y_chunk_size,
                                      false /* copy_aux_mem */);
-        for (int col = 0, x_start = 0; col < m_columnCounts.size(); ++col) {
-            size_t x_chunk_size = m_columnCounts[col];
+        for (int xi = 0, x_start = 0; xi < x_count; ++xi) {
+	    size_t x_chunk_size = transpose ? m_rowCounts[xi] : m_columnCounts[xi];
             shared_ptr<const Base> op =
-                    transpose ? m_blocks(col, row) : m_blocks(row, col);
+                    transpose ? m_blocks(xi, yi) : m_blocks(yi, xi);
 //            arma::Col<ValueType> x_chunk(&x_in[colStart], m_columnCounts[col],
 //                                         false /* copy_aux_mem */);
-            if (col == 0) {
+            if (xi == 0) {
                 // This branch ensures that the "y += beta * y" part is done
                 if (op)
 //                    op->apply(trans, x_chunk, y_chunk, alpha, beta);

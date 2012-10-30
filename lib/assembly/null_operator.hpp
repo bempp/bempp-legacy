@@ -27,7 +27,6 @@
 #include "elementary_abstract_boundary_operator.hpp"
 
 #include "abstract_boundary_operator_id.hpp"
-#include <boost/scoped_ptr.hpp>
 
 namespace Fiber
 {

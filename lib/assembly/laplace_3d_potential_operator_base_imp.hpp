@@ -48,6 +48,15 @@ Laplace3dPotentialOperatorBase<Impl, BasisFunctionType, ResultType>::
 }
 
 template <typename Impl, typename BasisFunctionType, typename ResultType>
+Laplace3dPotentialOperatorBase<Impl, BasisFunctionType, ResultType>&
+Laplace3dPotentialOperatorBase<Impl, BasisFunctionType, ResultType>::
+operator=(const Laplace3dPotentialOperatorBase& rhs)
+{
+    if (this != &rhs)
+        m_impl.reset(new Impl(*rhs.m_impl));
+}
+
+template <typename Impl, typename BasisFunctionType, typename ResultType>
 const typename Laplace3dPotentialOperatorBase<Impl, BasisFunctionType, ResultType>::
 CollectionOfKernels&
 Laplace3dPotentialOperatorBase<Impl, BasisFunctionType, ResultType>::

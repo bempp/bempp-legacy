@@ -42,7 +42,10 @@ def configure(root,config):
     """Prepare the build of Bempp """
 
     tools.checkDeleteDirectory(config.get('Bempp','build_dir'))
-    subprocess.check_call("sh ./.build.sh",shell=True)
+    root_build_dir = config.get('Main','build_dir')
+    options_cfg_path = root_build_dir + "/.options.cfg"
+    subprocess.check_call("sh ./.build.sh '" + options_cfg_path + "'",
+                          shell=True)
 
 def build(root,config):
 

@@ -47,7 +47,7 @@ public:
     typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
     typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
 
-    explicit PiecewiseLinearContinuousScalarSpace(const shared_ptr<Grid>& grid);
+    explicit PiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid);
     virtual ~PiecewiseLinearContinuousScalarSpace();
 
     virtual int domainDimension() const;

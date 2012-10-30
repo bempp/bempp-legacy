@@ -200,7 +200,7 @@ public:
      *  This function constructs a discrete linear operator representing the
      *  matrix \f$L_{jk}\f$ with entries of the form
      *
-     *  \f[L_{jk} = \int_S \phi_j L \psi_k,\f]
+     *  \f[L_{jk} = \int_S \phi_j L \psi_k \, dS,\f]
      *
      *  where \f$L\f$ is the linear operator represented by this object,
      *  \f$S\f$ denotes the surface on which the domain function space \f$X\f$

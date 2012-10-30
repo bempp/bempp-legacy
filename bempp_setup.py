@@ -20,11 +20,10 @@
 
 # BEM++ setup script
 
-
 import os, sys, traceback
 sys.path.append("installer")
 
-from py_modules.tools import writeOptions, setDefaultConfigOption, pythonInfo, checkCreateDir, testBlas, testLapack, cleanUp, checkDeleteFile
+from py_modules.tools import writeOptions, setDefaultConfigOption, pythonInfo, checkCreateDir, testBlas, testLapack, cleanUp, checkDeleteFile, checkInstallUpdates
 from ConfigParser import ConfigParser
 from optparse import OptionParser
 
@@ -139,6 +138,7 @@ def prepare(root,config):
     # Replace ~ with /home/username
     build_dir = os.path.expanduser(build_dir)
     # Set build directories for BEM++ and its dependencies
+    config.set('Main','build_dir',build_dir)
     config.set('Bempp','build_dir',build_dir+'/bempp')
     config.set('Main','dependency_build_dir',build_dir+'/contrib')
     # Set
@@ -205,6 +205,7 @@ if __name__ == "__main__":
                       help="Download dependencies and prepare directories")
     parser.add_option("-c", "--configure", action="store_true",
                       help="Configure the setup program")
+    parser.add_option("-u","--update", action="store_true",help="Automatically update BEM++")
     parser.add_option("-i", "--install", type="string", metavar="WHAT",
                       help="Build and install WHAT. Possible values for WHAT: "
                       "all (BEM++ and its dependencies), bempp (BEM++ only), " +
@@ -215,7 +216,7 @@ if __name__ == "__main__":
     if len(args) != 1:
         parser.error("Configuration file not specified")
     optfile = args[0]
-    optfile_generated = optfile+".generated"
+    optfile_generated = root+"/"+os.path.basename(optfile)+".generated"
     try:
         optfileobj = open(optfile)
         config.readfp(optfileobj)
@@ -231,6 +232,14 @@ if __name__ == "__main__":
         sys.exit(1)
     try:
         prepare(root,config)
+        if options.update:
+            config = ConfigParser()
+            if not os.path.exists(optfile_generated):
+                print ("You must first successfully run bempp_setup.py "
+                       "with the --configure (-c) option.")
+                sys.exit(1)
+            config.read(optfile_generated)
+            checkInstallUpdates(root,config)
         if options.bootstrap:
             bootstrap(root,config)
         if options.configure:
@@ -242,7 +251,7 @@ if __name__ == "__main__":
             opt_fp = open(optfile_generated,'w')
             config.write(opt_fp)
             opt_fp.close()
-            print "Updated configuration written to "+root+"/"+optfile_generated
+            print "Updated configuration written to '"+optfile_generated+"'"
             enable_mkl = tools.to_bool(config.get('MKL','enable_mkl'))
             if not enable_mkl:
                 print ("----------------------------------------------------------\n"
@@ -257,10 +266,11 @@ if __name__ == "__main__":
 
         if options.install:
             config = ConfigParser()
-            if not os.path.exists(root+"/"+optfile_generated):
-                print "You must first successfully run bempp_setup.py with the configure option."
+            if not os.path.exists(optfile_generated):
+                print ("You must first successfully run bempp_setup.py "
+                       "with the --configure (-c) option.")
                 sys.exit(1)
-            config.read(root+"/"+optfile_generated)
+            config.read(optfile_generated)
             writeOptions(root,config)
             if options.install in library_names:
                 libraries[options.install].configure(root,config)

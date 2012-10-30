@@ -30,7 +30,9 @@
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 template <typename BasisFunctionType> class Helmholtz3dBoundaryOperatorId;
+/** \endcond */
 
 /** \ingroup helmholtz_3d
  *  \brief Base class for boundary operators for the Helmholtz equation in 3D.
@@ -101,7 +103,7 @@ public:
      *    interpolation of values calculated in advance on a regular grid. This
      *    normally speeds up calculations, but might result in a loss of accuracy.
      *    This is an experimental feature: use it at your own risk.
-     *  \param[in] interPtsPerWavelength
+     *  \param[in] interpPtsPerWavelength
      *    If \p useInterpolation is set to \p true, this parameter determines the
      *    number of points per "effective wavelength" (defined as \f$2\pi/|k|\f$,
      *    where \f$k\f$ = \p waveNumber) used to construct the interpolation grid.
@@ -128,6 +130,10 @@ public:
 
     /** \brief Destructor. */
     virtual ~Helmholtz3dBoundaryOperatorBase();
+
+    /** \brief Assignment operator. */
+    Helmholtz3dBoundaryOperatorBase& operator=(
+            const Helmholtz3dBoundaryOperatorBase& rhs);
 
     /** \brief Return the wave number set previously in the constructor. */
     KernelType waveNumber() const;

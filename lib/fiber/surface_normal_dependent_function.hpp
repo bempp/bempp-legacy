@@ -29,12 +29,13 @@
 namespace Fiber
 {
 
-/** \brief Function to be used as a source term, depending on global
-  coordinates and on the surface normal.
+/** \brief %Function defined via a user-supplied functor,
+    depending on global coordinates and on the surface normal.
 
-  The template parameter \p Functor should be a class with the following
+  The template parameter \p Functor should be a class implementing the following
   interface:
 
+  \code
   class Functor
   {
   public:
@@ -56,7 +57,8 @@ namespace Fiber
                     const arma::Col<CoordinateType>& normal,
                     arma::Col<ValueType>& result) const;
   };
-  */
+  \endcode
+*/
 template <typename Functor>
 class SurfaceNormalDependentFunction : public Function<typename Functor::ValueType>
 {

@@ -29,12 +29,13 @@
 namespace Fiber
 {
 
-/** \brief Function defined via a user-supplied functor, depending only on
+/** \brief %Function defined via a user-supplied functor, depending only on
     global coordinates.
 
   The template parameter \p Functor should be a class with the following
   interface:
 
+  \code
   class Functor
   {
   public:
@@ -56,6 +57,7 @@ namespace Fiber
       void evaluate(const arma::Col<CoordinateType>& point,
                     arma::Col<ValueType>& result) const;
   };
+  \endcode
   */
 template <typename Functor>
 class SurfaceNormalIndependentFunction :

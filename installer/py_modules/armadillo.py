@@ -29,10 +29,10 @@ arma_extract_dir='armadillo-3.2.0'
 arma_dir='armadillo'
 
 
-def download(root,config):
+def download(root,config,force=False):
     """Download Armadillo"""
     dep_download_dir=config.get('Main','dependency_download_dir')
-    tools.download(arma_fname,arma_url,dep_download_dir)
+    tools.download(arma_fname,arma_url,dep_download_dir,force)
 
 def prepare(root,config):
     prefix=config.get('Main','prefix')
@@ -43,7 +43,12 @@ def prepare(root,config):
     print "Extracting Armadillo"
     extract_dir = dep_build_dir+"/"+arma_extract_dir
     tools.checkDeleteDirectory(extract_dir)
-    tools.extract_file(dep_download_dir+"/"+arma_fname,dep_build_dir)
+    try:
+        tools.extract_file(dep_download_dir+"/"+arma_fname,dep_build_dir)
+    except IOError:
+        # Possibly a corrupted/truncated file. Try to download once again
+        download(root,config,force=True)
+        tools.extract_file(dep_download_dir+"/"+arma_fname,dep_build_dir)
     subprocess.check_call("cp -R "+extract_dir+"/include/* "+
                           prefix+"/bempp/include/",shell=True)
     print "Patching Armadillo"

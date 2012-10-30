@@ -51,6 +51,8 @@ struct DefaultDirectSolver<BasisFunctionType, ResultType>::Impl
         BlockedBoundaryOperator<BasisFunctionType, ResultType> > op;
 };
 
+/** \endcond */
+
 template <typename BasisFunctionType, typename ResultType>
 DefaultDirectSolver<BasisFunctionType, ResultType>::DefaultDirectSolver(
         const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp) :

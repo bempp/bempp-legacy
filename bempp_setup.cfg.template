@@ -1,24 +1,43 @@
+# This file controls the build settings for BEM++.
+# You need to at least do the following.
+
+# Specify the architecture and prefix in the [Main]
+# section.
+
+# Choose a BLAS and Lapack library. Enable either MKL (recommended)
+# or choose a BLAS and Lapack library manually. Please see the 
+# README for recommended options.
+
+# It is highly recommended to download and enable AHMED in the [AHMED]
+# section. This enables the H-Matrix algebra for the library and 
+# allows to solve significantly larger problems than with a standard
+# dense matrix BEM.
+
 [Main]
 
 # Specify your system architecture. Allowed values: intel64 (for
 # 64-bit systems), ia32 (for 32-bit systems), Example:
 
-# architecture=intel64
+architecture=intel64
 
 # By default BEM++ and its dependencies will be built in the
 # subdirectory "build" of the BEM++ source directory. You can override
 # this by setting the option below. Example:
 
-# build_dir=/home/myname/src/bempp-build
+# build_dir=~/src/bempp-build
 
 # Specify the prefix of the installation directory.  BEM++ and its
 # dependencies will be installed in prefix/bempp. Example:
 
-prefix=/home/myname/
+prefix=~
 
-# Specify how many processes to use for building. Example:
+# It is highly recommended to adapt the number of threads used to 
+# build the library to the number of underlying CPU cores. A good rule 
+# of thumb is to choose build_jobs = 1.5*(number of cores), e.g. for 
+# a dual-core system choose build_jobs=3. This significantly speeds 
+# up the compilation process.
 
-# build_jobs=2
+build_jobs=2
 
 # The following options control the compilers and compiler flags.
 # You can override the options for specific libraries by setting
@@ -65,50 +84,26 @@ prefix=/home/myname/
 
 # source=like_numpy
 
-# Otherwise, specify manually the location of MKL. You have two options:
-
-# (1) If you want to use an MKL distribution already installed on your disk,
-#     uncomment the following line
+# Otherwise, you need to specify manually the location of MKL on your disk.
+# Uncomment the following line
 
 # source=installed
 
-#     and specify the directories containing the MKL libraries (such
-#     as libmkl_core and libiomp5) in the following variable. You may
-#     specify several directories at once by separating them with
-#     semicolons. Example:
+# and specify the directories containing the MKL libraries (such
+# as libmkl_core and libiomp5) in the following variable. You may
+# specify several directories at once by separating them with
+# semicolons. Example:
 
 # dir=/opt/intel/mkl/lib/intel64;/opt/intel/lib/intel64
 
-#     You can also customize the list of MKL libraries to link against
-#     by editing the following variable. The default setting below
-#     (-lmkl_rt) should work for MKL 10.3 or newer. In case of
-#     problems use the Intel MKL Link Line Advisor
-#     (http://software.intel.com/en-us/articles/intel-mkl-link-line-advisor)
-#     to find the setting appropriate for your configuration. You may
-#     specify several libraries at once by separating them with
-#     semicolons.
-
-# lib=-lmkl_rt
-
-# (2) If you have an archive file containing the MKL redistributables
-#     and you want to install MKL specifically for BEM++, uncomment
-#     the following line
-
-# source=redistributable
-
-#     and set the following variable to the location of the archive
-#     file. Example:
-
-# tarball=/home/myname/mkl_linux_intel64.tar.gz
-
-#     You can also customize the list of MKL libraries to link against
-#     by editing the following variable. The default setting below
-#     (-lmkl_rt) should work for MKL 10.3 or newer. In case of
-#     problems use the Intel MKL Link Line Advisor
-#     (http://software.intel.com/en-us/articles/intel-mkl-link-line-advisor)
-#     to find the setting appropriate for your configuration. You may
-#     specify several libraries at once by separating them with
-#     semicolons.
+# You can also customize the list of MKL libraries to link against
+# by editing the following variable. The default setting below
+# (-lmkl_rt) should work for MKL 10.3 or newer. In case of
+# problems use the Intel MKL Link Line Advisor
+# (http://software.intel.com/en-us/articles/intel-mkl-link-line-advisor)
+# to find the setting appropriate for your configuration. You may
+# specify several libraries at once by separating them with
+# semicolons.
 
 # lib=-lmkl_rt
 
@@ -141,7 +136,7 @@ prefix=/home/myname/
 # If you have set enable_ahmed to yes, specify the path to the archive
 # file with the sources of AHMED. Example:
 
-# file_name=/home/myname/AHMED-1.0.tar.gz
+# file_name=~/Downloads/AHMED-1.0.tar.gz
 
 # Use this section to override compiler settings for AHMED
 

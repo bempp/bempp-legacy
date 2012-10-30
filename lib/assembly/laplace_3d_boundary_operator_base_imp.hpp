@@ -126,6 +126,18 @@ Laplace3dBoundaryOperatorBase<Impl, BasisFunctionType, ResultType>::
 }
 
 template <typename Impl, typename BasisFunctionType, typename ResultType>
+Laplace3dBoundaryOperatorBase<Impl, BasisFunctionType, ResultType>&
+Laplace3dBoundaryOperatorBase<Impl, BasisFunctionType, ResultType>::
+operator=(const Laplace3dBoundaryOperatorBase& rhs)
+{
+    if (this != &rhs) {
+        Base::operator=(rhs);
+        m_impl.reset(new Impl(*rhs.m_impl));
+        m_id = rhs.m_id;
+    }
+}
+
+template <typename Impl, typename BasisFunctionType, typename ResultType>
 shared_ptr<const AbstractBoundaryOperatorId>
 Laplace3dBoundaryOperatorBase<Impl, BasisFunctionType, ResultType>::id() const
 {

@@ -1,7 +1,7 @@
 import errno,os,subprocess,sys, shutil
 
 try:
-    from subprocess import check_output
+    from subprocess import check_output, check_call
 except ImportError:
     # Backported from Python 2.7
     def check_output(*popenargs, **kwargs):
@@ -80,16 +80,14 @@ def writeOptions(root,config):
     """Write out options in a format suitable for a shell script"""
 
     fname=".options.cfg"
-    full_path=root+"/"+fname
+    root_build_dir=config.get('Main','build_dir')
+    full_path=root_build_dir+"/"+fname
     f=open(full_path,'w')
     f.write("# This file is created automatically by bempp_setup.py\n")
     for section in config.sections():
         for option in config.items(section):
             f.write(section+"_"+option[0]+"="+"\""+option[1]+"\""+"\n")
     f.close()
-    build_dir=config.get('Main','build_dir')
-    shutil.copyfile(full_path,build_dir+"/"+fname)
-
 
 def setDefaultConfigOption(config,section,option,value, overwrite=False):
     """Enter a default option into the ConfigParser object 'config'. If option already exists returns
@@ -164,11 +162,15 @@ def pythonInfo(config):
                             "file.")
     return (exe,lib,include)
 
-def download(fname,url,dir):
-    """Download a file from a url into the directory dir if the file does not already exist"""
+def download(fname,url,dir,force=False):
+    """Download a file from a url into the directory dir
+    if the file does not already exist or force is True"""
     from py_modules.urlgrabber import urlgrab,progress
-    if not os.path.isfile(dir+"/"+fname):
-        urlgrab(url,filename=dir+"/"+fname,progress_obj=progress.TextMeter(),reget='simple')
+    path = dir+"/"+fname
+    if force:
+        checkDeleteFile(path)
+    if not os.path.isfile(path):
+        urlgrab(url,filename=path,progress_obj=progress.TextMeter(),reget='simple')
 
 def checkCreateDir(dir):
     """Create a directory if it does not yet exist"""
@@ -324,3 +326,95 @@ def setCompilerOptions(config,section):
 
     config.set(section,'cflags',cflags + " " + optflags)
     config.set(section,'cxxflags',cxxflags + " " + optflags)
+
+def getOptionFromOptsFile(option):
+    "Get a specific option from .options.cfg"
+
+    optfile = file('.options.cfg')
+    for line in optfile:
+        if line.startswith(option):
+            return line.split('=')[1].strip('\n"')
+    raise Exception("Could not find the specified option in .options.cfg")
+
+def getVersion(root):
+    """Get BEM++ Version information"""
+
+    f = open(root+"/VERSION")
+    version_strings = f.readline().rstrip().split(".")
+    version_major = int(version_strings[0])
+    version_minor = int(version_strings[1])
+    version_patch = int(version_strings[2])
+    return (version_major,version_minor,version_patch)
+
+def checkInstallUpdates(root,config):
+    """Check for updates and install them"""
+
+
+    (major,minor,patch) = getVersion(root)
+    branch = "release_"+str(major)+"."+str(minor)
+    try:
+        check_output("git fetch origin",shell=True,stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError, ex:
+        raise Exception("Checking remote git repository failed with error message\n" +
+                        ex.output + "\n" +
+                        "Please check whether git is in your path and your internet connection works.")
+
+    try:
+        output = check_output("git log "+branch+"..origin/"+branch+" --oneline",shell=True,stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError, ex:
+        raise Exception("Git failed with error message\n"+
+                        ex.output)
+    if not output:
+        print "No updates available"
+        return
+
+    try:
+        output = check_output("git merge origin/"+branch,shell=True,stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError, ex:
+        raise Exception("Git failed with error message\n"+
+                        ex.output)
+
+
+    build_dir = config.get("Main","build_dir")
+    build_jobs = config.get("Main","build_jobs")
+    cmake_exe = config.get("CMake","exe")
+    cwd = os.getcwd()
+    os.chdir(build_dir+"/bempp/python")
+    try:
+        print "Running 'clean' on the Python interface modules"
+        output = check_call("make clean",shell=True)
+    except subprocess.CalledProcessError, ex:
+        os.chdir(cwd)
+        raise Exception("make clean failed with output\n"+
+                        ex.output)
+    os.chdir(build_dir+"/bempp")
+    try:
+        print "Running 'cmake' to reconfigure"
+        check_call("cmake .",shell=True)
+    except subprocess.CalledProcessError, ex:
+        os.chdir(cwd)
+        raise Exception("cmake failed\n")
+    try:
+        print "Running 'make install' to install the updates"
+        check_call("make -j"+build_jobs +" install",shell=True)
+    except subprocess.CalledProcessError, ex:
+        os.chdir(cwd)
+        raise Exception("make failed\n")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

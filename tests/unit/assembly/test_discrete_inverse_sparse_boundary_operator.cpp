@@ -70,19 +70,40 @@ struct DiscreteInverseSparseBoundaryOperatorFixture
             new NumericalQuadratureStrategy<BFT, RT>);
         shared_ptr<Context<BFT, RT> > context(
             new Context<BFT, RT>(quadStrategy, assemblyOptions));
-        
-        BoundaryOperator<BFT, RT> id = identityOperator<BFT, RT>(
+
+        idOp = identityOperator<BFT, RT>(
             context, pwiseLinears, pwiseLinears, pwiseLinears);
-        op = pseudoinverse(id);
+        op = pseudoinverse(idOp);
     }
 
     shared_ptr<Grid> grid;
     BoundaryOperator<BFT, RT> op;
+    BoundaryOperator<BFT, RT> idOp;
 };
 
 } // namespace
 
 BOOST_AUTO_TEST_SUITE(DiscreteInverseSparseBoundaryOperator)
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(pseudoinverse_is_inverse_for_square_matrix, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    DiscreteInverseSparseBoundaryOperatorFixture<BFT, RT> fixture;
+    arma::Mat<RT> mat = fixture.idOp.weakForm()->asMatrix();
+    arma::Mat<RT> invMat = fixture.op.weakForm()->asMatrix();
+
+    arma::Mat<RT> productFwd = mat * invMat;
+    arma::Mat<RT> productBwd = invMat * mat;
+    arma::Mat<RT> expected = arma::eye<arma::Mat<RT> > (mat.n_rows, mat.n_cols);
+
+    BOOST_CHECK(check_arrays_are_close<RT>(productFwd, expected,
+                                           100. * std::numeric_limits<CT>::epsilon()));
+    BOOST_CHECK(check_arrays_are_close<RT>(productBwd, expected,
+                                           100. * std::numeric_limits<CT>::epsilon()));
+}
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2_and_beta_equal_to_0_and_y_initialized_to_nans, ResultType, result_types)
 {

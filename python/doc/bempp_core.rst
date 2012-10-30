@@ -19,7 +19,7 @@ concrete representatives:
 - ``BoundaryOperator_complex64_complex64``,
 - ``BoundaryOperator_float64_float64``,
 - ``BoundaryOperator_float64_complex128`` and
-- ``BoundaryOperator_complex128_complex128``.
+- ``DONT_REPLACEBoundaryOperator_complex128_complex128``.
 
 Here, ``float32`` and ``float64`` stand for single- and
 double-precision floating-point numbers, whereas ``complex64`` and

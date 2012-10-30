@@ -34,10 +34,10 @@ dune_urls=['http://www.dune-project.org/download/2.1/dune-common-2.1.1.tar.gz',
 	   'http://www.dune-project.org/download/2.1/dune-localfunctions-2.1.1.tar.gz']
 dune_names=['dune-common','dune-grid','dune-localfunctions']
 
-def download(root,config):
+def download(root,config,force=False):
     dep_download_dir=config.get('Main','dependency_download_dir')
     for i in range(3):
-        tools.download(dune_fnames[i],dune_urls[i],dep_download_dir)
+        tools.download(dune_fnames[i],dune_urls[i],dep_download_dir,force)
 
 def prepare(root,config):
     dep_build_dir=config.get('Main','dependency_build_dir')
@@ -48,8 +48,14 @@ def prepare(root,config):
     for i in range(3):
         tools.checkDeleteDirectory(dep_build_dir+"/dune/"+dune_names[i])
         print "Extracting "+dune_names[i]
-        tools.extract_file(dep_download_dir+"/"+dune_fnames[i],
-                           dep_build_dir+"/dune/")
+        try:
+            tools.extract_file(dep_download_dir+"/"+dune_fnames[i],
+                               dep_build_dir+"/dune/")
+        except IOError:
+            # Possibly a corrupted/truncated file. Try to download once again
+            download(root,config,force=True)
+            tools.extract_file(dep_download_dir+"/"+dune_fnames[i],
+                               dep_build_dir+"/dune/")
         os.rename(dep_build_dir+"/dune/"+dune_extract_names[i],
                   dep_build_dir+"/dune/"+dune_names[i])
         if i==1:
@@ -83,7 +89,8 @@ def configure(root,config):
                             "' ./configure --disable-documentation "
                             "--enable-shared=yes --enable-static=no "
                             "--disable-gxx0xcheck "
-                            "--prefix="+dune_install_dir)
+                            "--prefix='"+dune_install_dir+"' "
+                            "--libdir='"+dune_install_dir+"/lib'")
     config_string_grid = (config_string_common+
                           " --with-dune-common="+dune_dir+"/dune-common")
     config_string_localfunctions = (config_string_grid+

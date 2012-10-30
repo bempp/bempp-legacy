@@ -244,6 +244,18 @@ IdentityOperator<BasisFunctionType, ResultType>::~IdentityOperator()
 }
 
 template <typename BasisFunctionType, typename ResultType>
+IdentityOperator<BasisFunctionType, ResultType>&
+IdentityOperator<BasisFunctionType, ResultType>::
+operator=(const IdentityOperator& rhs)
+{
+    if (this != &rhs) {
+        Base::operator=(rhs);
+        m_impl.reset(new Impl(*rhs.m_impl));
+        m_id = rhs.m_id;
+    }
+}
+
+template <typename BasisFunctionType, typename ResultType>
 shared_ptr<const AbstractBoundaryOperatorId>
 IdentityOperator<BasisFunctionType, ResultType>::id() const
 {
@@ -269,7 +281,7 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormImpl(
 
     tbb::tick_count start = tbb::tick_count::now();
     std::auto_ptr<LocalAssembler> assembler = makeAssembler(
-                context.quadStrategy(), context.assemblyOptions());
+                *context.quadStrategy(), context.assemblyOptions());
     shared_ptr<DiscreteBoundaryOperator<ResultType> > result =
             assembleWeakFormInternalImpl(*assembler, context.assemblyOptions());
     tbb::tick_count end = tbb::tick_count::now();

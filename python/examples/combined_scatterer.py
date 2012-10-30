@@ -114,8 +114,8 @@ potential = lib.createHelmholtz3dSingleLayerPotentialOperator(context, k)
 # We will create a three-plane view. For this we need to define the extents of
 # the planes and the number of grid points in each dimension.
 
-limits = (-5, 5, -5, 5)
-dims = (200, 200)
+limits = (-5, 5)
+dims = 200
 
 # The total field is evaluated as u = u_{inc} - S u_{n}, where u_{inc} is the
 # incident field and u_{n} the computed normal derivative stored in solfun.

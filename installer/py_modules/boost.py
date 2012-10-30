@@ -28,9 +28,9 @@ boost_extract_dir='boost-cmake'
 boost_dir='boost'
 boost_version="1.49.0"
 
-def download(root,config):
+def download(root,config,force=False):
     dep_download_dir=config.get('Main','dependency_download_dir')
-    tools.download(boost_fname,boost_url,dep_download_dir)
+    tools.download(boost_fname,boost_url,dep_download_dir,force)
 
 def prepare(root,config):
     dep_build_dir=config.get('Main','dependency_build_dir')
@@ -53,7 +53,12 @@ def prepare(root,config):
     tools.checkDeleteDirectory(boost_full_dir)
 
     print "Extracting Boost"
-    tools.extract_file(boost_download_name,dep_build_dir)
+    try:
+        tools.extract_file(boost_download_name,dep_build_dir)
+    except IOError:
+        # Possibly a corrupted/truncated file. Try to download once again
+        download(root,config,force=True)
+        tools.extract_file(boost_download_name,dep_build_dir)
     os.rename(dep_build_dir+"/"+boost_extract_dir,boost_full_dir)
     shutil.copy(root+"/installer/build_scripts/posix/boost_build.sh",
                 boost_full_dir+"/boost_build.sh")

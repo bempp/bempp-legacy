@@ -31,7 +31,7 @@ tbb_extract_dir='tbb40_297oss'
 tbb_dir='tbb'
 tbb_fname_short='tbb.tgz'
 
-def download(root,config):
+def download(root,config,force=False):
     dep_build_dir=config.get('Main','dependency_build_dir')
     dep_download_dir=config.get('Main','dependency_download_dir')
     tbb_full_dir=dep_build_dir+"/"+tbb_dir
@@ -45,7 +45,7 @@ def download(root,config):
         tbb_fname=tbb_fname_linux
     else:
         raise Exception("Platform not supported")
-    tools.download(tbb_fname_short,tbb_url,dep_download_dir)
+    tools.download(tbb_fname_short,tbb_url,dep_download_dir,force)
 
 def prepare(root,config):
     dep_build_dir=config.get('Main','dependency_build_dir')
@@ -55,7 +55,12 @@ def prepare(root,config):
     print "Extracting Tbb"
 
     tools.checkDeleteDirectory(dep_build_dir+"/tbb")
-    tools.extract_file(dep_download_dir+"/"+tbb_fname_short,dep_build_dir)
+    try:
+        tools.extract_file(dep_download_dir+"/"+tbb_fname_short,dep_build_dir)
+    except IOError:
+        # Possibly a corrupted/truncated file. Try to download once again
+        download(root,config,force=True)
+        tools.extract_file(dep_download_dir+"/"+tbb_fname_short,dep_build_dir)
     os.rename(dep_build_dir+"/"+tbb_extract_dir,dep_build_dir+"/tbb")
     subprocess.check_call("cp -R "+dep_build_dir+"/tbb/include/* "+
                           prefix+"/bempp/include/",shell=True)

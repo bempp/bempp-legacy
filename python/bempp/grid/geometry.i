@@ -92,25 +92,19 @@ public:
     %clear arma::Mat<ctype>& c;
 
     %apply const arma::Mat<ctype>& IN_MAT { const arma::Mat<ctype>& local };
-    %apply arma::Mat<ctype>& ARGOUT_MAT { arma::Mat<ctype>& global_ };
-    virtual void local2global(const arma::Mat<ctype>& local,
-                            arma::Mat<ctype>& global_) const = 0;
-    %clear const arma::Mat<ctype>& local;
-    %clear arma::Mat<ctype>& global_;
-
     %apply const arma::Mat<ctype>& IN_MAT { const arma::Mat<ctype>& global_ };
-    %apply arma::Mat<ctype>& ARGOUT_MAT { arma::Mat<ctype>& local };
-    virtual void global2local(const arma::Mat<ctype>& global_,
-                            arma::Mat<ctype>& local) const = 0;
-    %clear const arma::Mat<ctype>& global_;
-    %clear arma::Mat<ctype>& local;
+    %apply arma::Mat<ctype>& ARGOUT_MAT { arma::Mat<ctype>& outLocal };
+    %apply arma::Mat<ctype>& ARGOUT_MAT { arma::Mat<ctype>& outGlobal };
 
-    %apply const arma::Mat<ctype>& IN_MAT { const arma::Mat<ctype>& local };
-    %apply arma::Row<ctype>& ARGOUT_ROW { arma::Row<ctype>& int_element };
+    virtual void local2global(const arma::Mat<ctype>& local,
+                            arma::Mat<ctype>& outGlobal) const = 0;
+    virtual void global2local(const arma::Mat<ctype>& global_,
+                            arma::Mat<ctype>& outLocal) const = 0;
+
+    %apply arma::Row<ctype>& ARGOUT_ROW { arma::Row<ctype>& outIntElement };
     virtual void getIntegrationElements(const arma::Mat<ctype>& local,
-                                    arma::Row<ctype>& int_element) const = 0;
-    %clear const arma::Mat<ctype>& local;
-    %clear arma::Row<ctype>& int_element;
+                                    arma::Row<ctype>& outIntElement) const = 0;
+    %clear arma::Row<ctype>& outIntElement;
 
     virtual ctype volume() const = 0;
 
@@ -118,19 +112,21 @@ public:
     virtual void getCenter(arma::Col<ctype>& c) const = 0;
     %clear arma::Col<ctype>& c;
 
-    %apply const arma::Mat<ctype>& IN_MAT { const arma::Mat<ctype>& local };
-    %apply arma::Cube<ctype>& ARGOUT_CUBE { arma::Cube<ctype>& jacobian_t };
+    %apply arma::Cube<ctype>& ARGOUT_CUBE { arma::Cube<ctype>& outJacobianT };
     virtual void getJacobiansTransposed(const arma::Mat<ctype>& local,
-                                    arma::Cube<ctype>& jacobian_t) const = 0;
-    %clear const arma::Mat<ctype>& local;
+                                    arma::Cube<ctype>& outJacobianT) const = 0;
     %clear arma::Cube<ctype>& jacobian_t;
 
     %apply const arma::Mat<ctype>& IN_MAT { const arma::Mat<ctype>& local };
-    %apply arma::Cube<ctype>& ARGOUT_CUBE { arma::Cube<ctype>& jacobian_inv_t };
+    %apply arma::Cube<ctype>& ARGOUT_CUBE { arma::Cube<ctype>& outJacobianInvT };
     virtual void getJacobianInversesTransposed(const arma::Mat<ctype>& local,
-                                        arma::Cube<ctype>& jacobian_inv_t) const = 0;
+                                        arma::Cube<ctype>& outJacobianInvT) const = 0;
+    %clear arma::Cube<ctype>& outJacobianInvT;
+
     %clear const arma::Mat<ctype>& local;
-    %clear arma::Cube<ctype>& jacobian_inv_t;
+    %clear const arma::Mat<ctype>& global_;
+    %clear arma::Mat<ctype>& outLocal;
+    %clear arma::Mat<ctype>& outGlobal;
 };
 
 } // namespace Bempp

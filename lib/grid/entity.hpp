@@ -141,11 +141,6 @@ public:
 
      The given entity resulted directly from a subdivision of its father
      entity. For macro (level-0) elements a null auto_ptr is returned.
-
-     \note If the partitionType of the Entity is GhostEntity,
-     it is not guaranteed that this method is working
-     or implemented in general.
-     For some grids it might be available, though.
      */
     virtual std::auto_ptr<EntityPointer<0> > father() const = 0;
 
@@ -168,11 +163,6 @@ public:
 
      \param[in] maxlevel Iterator does not stop at elements with level greater than \p maxlevel.
      \return Iterator to the first son (level is not greater than \p maxlevel)
-
-     \note If the partitionType of the Entity is GhostEntity,
-     it is not guaranteed that this method is working
-     or implemented in general.
-     For some grids it might be available, though.
      */
     virtual std::auto_ptr<EntityIterator<0> > sonIterator(int maxlevel) const = 0;
 

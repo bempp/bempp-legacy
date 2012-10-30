@@ -136,7 +136,7 @@ def createNumericalQuadratureStrategy(basisFunctionType, resultType, accuracyOpt
        - resultType (string)
             Type used to represent the values of integrals.
 
-       - accuracyOptions (AccuracyOptions)
+       - accuracyOptions (AccuracyOptions or AccuracyOptionsEx)
             Determines quadrature orders used to approximate different types of
             integrals. If set to None, default quadrature orders are used.
 
@@ -487,10 +487,11 @@ def createHelmholtz3dSingleLayerBoundaryOperator(
        - interpPtsPerWavelength (int)
             If useInterpolation is set to True, this parameter determines the
             number of points per "effective wavelength" (defined as 2 pi /
-            |waveNumber|) used to construct the interpolation grid. The default
-            value (5000) is normally enough to reduce the relative or absolute
-            error, *whichever is smaller*, below 100 * machine precision.  If
-            useInterpolation is set to False, this parameter is ignored.
+            abs(waveNumber)) used to construct the interpolation grid. The
+            default value (5000) is normally enough to reduce the relative or
+            absolute error, *whichever is smaller*, below 100 * machine
+            precision. If useInterpolation is set to False, this parameter is
+            ignored.
 
     *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
     object, with BasisFunctionType and ResultType determined automatically from
@@ -536,10 +537,11 @@ def createHelmholtz3dDoubleLayerBoundaryOperator(
        - interpPtsPerWavelength (int)
             If useInterpolation is set to True, this parameter determines the
             number of points per "effective wavelength" (defined as 2 pi /
-            |waveNumber|) used to construct the interpolation grid. The default
-            value (5000) is normally enough to reduce the relative or absolute
-            error, *whichever is smaller*, below 100 * machine precision.  If
-            useInterpolation is set to False, this parameter is ignored.
+            abs(waveNumber)) used to construct the interpolation grid. The
+            default value (5000) is normally enough to reduce the relative or
+            absolute error, *whichever is smaller*, below 100 * machine
+            precision. If useInterpolation is set to False, this parameter is
+            ignored.
 
     *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
     object, with BasisFunctionType and ResultType determined automatically from
@@ -585,10 +587,11 @@ def createHelmholtz3dAdjointDoubleLayerBoundaryOperator(
        - interpPtsPerWavelength (int)
             If useInterpolation is set to True, this parameter determines the
             number of points per "effective wavelength" (defined as 2 pi /
-            |waveNumber|) used to construct the interpolation grid. The default
-            value (5000) is normally enough to reduce the relative or absolute
-            error, *whichever is smaller*, below 100 * machine precision.  If
-            useInterpolation is set to False, this parameter is ignored.
+            abs(waveNumber)) used to construct the interpolation grid. The
+            default value (5000) is normally enough to reduce the relative or
+            absolute error, *whichever is smaller*, below 100 * machine
+            precision. If useInterpolation is set to False, this parameter is
+            ignored.
 
     *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
     object, with BasisFunctionType and ResultType determined automatically from
@@ -634,10 +637,11 @@ def createHelmholtz3dHypersingularBoundaryOperator(
        - interpPtsPerWavelength (int)
             If useInterpolation is set to True, this parameter determines the
             number of points per "effective wavelength" (defined as 2 pi /
-            |waveNumber|) used to construct the interpolation grid. The default
-            value (5000) is normally enough to reduce the relative or absolute
-            error, *whichever is smaller*, below 100 * machine precision.  If
-            useInterpolation is set to False, this parameter is ignored.
+            abs(waveNumber)) used to construct the interpolation grid. The
+            default value (5000) is normally enough to reduce the relative or
+            absolute error, *whichever is smaller*, below 100 * machine
+            precision. If useInterpolation is set to False, this parameter is
+            ignored.
 
     *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
     object, with BasisFunctionType and ResultType determined automatically from
@@ -843,10 +847,11 @@ def createModifiedHelmholtz3dSingleLayerBoundaryOperator(
        - interpPtsPerWavelength (int)
             If useInterpolation is set to True, this parameter determines the
             number of points per "effective wavelength" (defined as 2 pi /
-            |waveNumber|) used to construct the interpolation grid. The default
-            value (5000) is normally enough to reduce the relative or absolute
-            error, *whichever is smaller*, below 100 * machine precision.  If
-            useInterpolation is set to False, this parameter is ignored.
+            abs(waveNumber)) used to construct the interpolation grid. The
+            default value (5000) is normally enough to reduce the relative or
+            absolute error, *whichever is smaller*, below 100 * machine
+            precision. If useInterpolation is set to False, this parameter is
+            ignored.
 
     *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
     object, with BasisFunctionType and ResultType determined automatically from
@@ -894,10 +899,11 @@ def createModifiedHelmholtz3dDoubleLayerBoundaryOperator(
        - interpPtsPerWavelength (int)
             If useInterpolation is set to True, this parameter determines the
             number of points per "effective wavelength" (defined as 2 pi /
-            |waveNumber|) used to construct the interpolation grid. The default
-            value (5000) is normally enough to reduce the relative or absolute
-            error, *whichever is smaller*, below 100 * machine precision.  If
-            useInterpolation is set to False, this parameter is ignored.
+            abs(waveNumber)) used to construct the interpolation grid. The
+            default value (5000) is normally enough to reduce the relative or
+            absolute error, *whichever is smaller*, below 100 * machine
+            precision. If useInterpolation is set to False, this parameter is
+            ignored.
 
     *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
     object, with BasisFunctionType and ResultType determined automatically from
@@ -945,10 +951,11 @@ def createModifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
        - interpPtsPerWavelength (int)
             If useInterpolation is set to True, this parameter determines the
             number of points per "effective wavelength" (defined as 2 pi /
-            |waveNumber|) used to construct the interpolation grid. The default
-            value (5000) is normally enough to reduce the relative or absolute
-            error, *whichever is smaller*, below 100 * machine precision.  If
-            useInterpolation is set to False, this parameter is ignored.
+            abs(waveNumber)) used to construct the interpolation grid. The
+            default value (5000) is normally enough to reduce the relative or
+            absolute error, *whichever is smaller*, below 100 * machine
+            precision. If useInterpolation is set to False, this parameter is
+            ignored.
 
     *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
     object, with BasisFunctionType and ResultType determined automatically from
@@ -996,10 +1003,11 @@ def createModifiedHelmholtz3dHypersingularBoundaryOperator(
        - interpPtsPerWavelength (int)
             If useInterpolation is set to True, this parameter determines the
             number of points per "effective wavelength" (defined as 2 pi /
-            |waveNumber|) used to construct the interpolation grid. The default
-            value (5000) is normally enough to reduce the relative or absolute
-            error, *whichever is smaller*, below 100 * machine precision.  If
-            useInterpolation is set to False, this parameter is ignored.
+            abs(waveNumber)) used to construct the interpolation grid. The
+            default value (5000) is normally enough to reduce the relative or
+            absolute error, *whichever is smaller*, below 100 * machine
+            precision. If useInterpolation is set to False, this parameter is
+            ignored.
 
     *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
     object, with BasisFunctionType and ResultType determined automatically from
@@ -1443,6 +1451,7 @@ def discreteSparseInverse(op):
     Return a discrete Operator object that evaluates the inverse of op applied to a
     vector by constructing the LU decomposition. For this operation op must represent
     a sparse matrix operator.
+
     *Parameters:*
        - op (DiscreteBoundaryOperator)
            A discrete boundary operator stored as sparse matrix
@@ -1457,8 +1466,9 @@ def discreteSparseInverse(op):
 
 def discreteOperatorToPreconditioner(op):
     """
-    Create a preconditioner from a discrete boundary operator
-    *Paramters:*
+    Create a preconditioner from a discrete boundary operator.
+
+    *Parameters:*
        - op (DiscreteBoundaryOperator)
            A discrete operator, which acts as preconditioner, e.g. an ACA
            approximate LU decomposition or a sparse inverse.
@@ -1466,20 +1476,21 @@ def discreteOperatorToPreconditioner(op):
     *Returns* a preconditioner.
     """
     name = 'discreteOperatorToPreconditioner'
-    return _constructObjectTemplatedOnValue(name, op.valueType(),op)
+    return _constructObjectTemplatedOnValue(name, op.valueType(), op)
 
 
 def discreteBlockDiagonalPreconditioner(opArray):
     """
-    Create a block diagonal preconditioner from a vector of operators
-    *Paramters:*
-       - opArray (vector of type DiscreteBoundaryOperator)
-           A vector of DiscreteBoundaryOperator objects op1,op2,...,opn
+    Create a block diagonal preconditioner from a list of operators.
 
-    *Returns* a block diagonal preconditioner P=diag(op1,op2,...,opn).
+    *Parameters:*
+       - opArray (list of DiscreteBoundaryOperator objects)
+           A list of DiscreteBoundaryOperator objects op1, op2, ..., opn.
+
+    *Returns* a block diagonal preconditioner P = diag(op1, op2, ..., opn).
     """
     name = 'discreteBlockDiagonalPreconditioner'
-    return _constructObjectTemplatedOnValue(name, opArray[0].valueType(),opArray)
+    return _constructObjectTemplatedOnValue(name, opArray[0].valueType(), opArray)
 
 def areInside(grid, points):
     """Determine whether points lie inside a grid (assumed to be closed)."""

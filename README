@@ -4,8 +4,40 @@ Introduction
 BEM++ is a novel open-source HPC boundary-element library. Its development
 started in October 2011.
 
-If you want to compile the code please be aware that we do not yet guarantee
-that every commit will compile.
+1.0 is the first official version of the library, released on 29 October 2012.
+This version includes the following features:
+
+- Galerkin discretization of all standard boundary integral operators
+  (single-layer potential, double-layer potential, adjoint double-layer
+  potential, hypersingular operator) for Laplace, Helmholtz and modified
+  Helmholtz problems in three dimensions.
+
+- Numerical evaluation of boundary-element integrals (singular integrals dealt
+  with using Sauter-Schwab quadrature rules).
+
+- Triangular surface mesh handling. Import of meshes in Gmsh format.
+
+- Piecewise constant and continuous piecewise linear basis functions.
+
+- Dense-matrix representation of boundary integral operators supported natively.
+
+- Assembly of H-matrix representations of boundary integral operators via
+  adaptive cross approximation (ACA) supported thanks to an interface to
+  M. Bebendorf’s AHMED library.
+
+- H-matrix-based preconditioners (via AHMED).
+
+- Easy creation of operators composed of several logical blocks.
+
+- Interfaces to iterative linear solvers from Trilinos.
+
+- Evaluation of potentials in space (away from the discretized surface).
+
+- Export of solutions in VTK format.
+
+- Parallel operation on shared-memory CPU architectures.
+
+- C++ and Python interfaces.
 
 - Galerkin discretization of all standard boundary integral operators
   (single-layer potential, double-layer potential, adjoint double-layer
@@ -45,8 +77,13 @@ OpenSUSE 12.1 and Mac OS 10.7.
 Obtaining the code
 ==================
 
-The code is available from https://github.com/bempp/bempp. To check it
-out, use ``git clone git://github.com/bempp/bempp.git``.
+The code is available from https://github.com/bempp/bempp.
+
+To download the code, you need to have the Git version control system
+(http://git-scm.com) installed. To get the (stable) version 1.0 of the library,
+execute ``git clone -b release_1.0 git://github.com/bempp/bempp.git`` from the
+command line in an empty directory. To download the current development version,
+execute ``git clone git://github.com/bempp/bempp.git`` instead.
 
 Installation
 ============
@@ -138,14 +175,14 @@ To build the library, do the following:
 
 3. Run the command ::
 
-   python bempp_setup.py -c bempp_config.cfg
+   python bempp_setup.py -c bempp_setup.cfg
 
    This extracts all BEM++ dependencies, patches their sources where
    necessary and generates a config file with automatically detected options.
 
 4. Run the command ::
 
-   python bempp_setup.py -i all bempp_config.cfg
+   python bempp_setup.py -i all bempp_setup.cfg
 
    This builds all the dependencies and installs them, and subsequently
    proceeds to building and installing BEM++ itself.
@@ -166,6 +203,17 @@ To build the library, do the following:
    API of BEM++ by going into ``<build_dir>`` and typing ``make
    python_doc``. The documentation is generated in the
    ``<build_dir>/python/doc/html`` directory.
+
+Updates
+=======
+
+Bugfixes to the stable version of BEM++ will be committed to the release_1.0
+git branch. You can obtain the latest bugfixes by executing ::
+
+   python bempp_setup.py -u all bempp_setup.cfg
+
+in BEM++ source directory. This will check whether any updates are available,
+and if yes, download them, recompile and install the library.
 
 Usage
 =====
@@ -210,13 +258,10 @@ import bempp.lib as blib
 at the beginning of your Python script (replacing ``<prefix>`` with the path to
 the BEM++ installation directory).
 
-Final note
-==========
+Contact
+=======
 
-The library is not yet officially released. We are still working on the
-documentation and smaller issues with the code. The library is in an alpha
-state: the interfaces are not stable yet and might change in a
-backward-incompatible way. If you want to try BEM++ and run into problems, please
-let us know.
+If you run into problems with installation or usage of BEM++, please let us know
+by opening an issue at https://github.com/bempp/bempp/issues.
 
 The BEM++ Team

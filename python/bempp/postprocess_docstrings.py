@@ -25,6 +25,8 @@ print "Postprocessing docstrings..."
 
 # First postprocess the signatures...
 
+reSimpleType = re.compile(
+    r"-> boost::shared_ptr< (?:Bempp|Fiber)::(\w+) (?:const )?>")
 reSingleType = re.compile(
     r"-> boost::shared_ptr< (?:Bempp|Fiber)::(\w+)< "
     "(float|double|std::complex< float >|std::complex< double >)"
@@ -77,6 +79,10 @@ for l in fileinput.input(core_fname, inplace=1):
     orig_l = l
     l = reMagnitudeOrCoordinateType.sub("-> float", l)
     l = reComplexType.sub(r"\2", l)
+    m = reSimpleType.search(l)
+    if m:
+        replacement = r"-> \1"
+        l = reSimpleType.sub(replacement, l)
     m = reSingleType.search(l)
     if m:
         type_ = m.group(2)

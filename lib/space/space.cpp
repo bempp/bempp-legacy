@@ -128,7 +128,7 @@ constructGlobalToFlatLocalDofsMappingEpetraMatrix(
 } // namespace
 
 template <typename BasisFunctionType>
-Space<BasisFunctionType>::Space(const shared_ptr<Grid>& grid) :
+Space<BasisFunctionType>::Space(const shared_ptr<const Grid>& grid) :
     m_grid(grid)
 {
 }

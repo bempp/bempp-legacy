@@ -42,11 +42,7 @@ the grid."
 "Inter-level access to father entity on the next-coarser grid.
 
 The given entity resulted directly from a subdivision of its father
-entity. For macro (level-0) elements father() returns None.
-
-*Note:* If the partitionType of the Entity is GhostEntity, it is not guaranteed
-that this method is working or implemented in general. For some grids it might
-be available, though."
+entity. For macro (level-0) elements father() returns None."
 %enddef
 
 %define EntityCodim0_hasFather_docstring
@@ -73,11 +69,7 @@ In bisection or hanging node refinement this is always true."
 
 *Parameters:*
    - maxlevel (int)
-        Iterator does not stop at elements with level greater than maxLevel.
-
-*Note:* If the partitionType of the Entity is GhostEntity, it is not guaranteed
-that this method is working or implemented in general. For some grids it might
-be available, though."
+        Iterator does not stop at elements with level greater than maxLevel."
 %enddef
 
 %define EntityCodim0_isNew_docstring
