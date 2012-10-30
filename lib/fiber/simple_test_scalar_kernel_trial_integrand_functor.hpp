@@ -27,6 +27,7 @@
 #include "collection_of_3d_arrays.hpp"
 #include "geometrical_data.hpp"
 #include "conjugate.hpp"
+#include "scalar_traits.hpp"
 
 namespace Fiber
 {
