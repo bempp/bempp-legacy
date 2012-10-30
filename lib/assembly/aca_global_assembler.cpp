@@ -239,20 +239,20 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     // descendant AhmedDofWrapper, which does not contain any new data members,
     // but just one additional method (the two structs should therefore be
     // binary compatible)
-    const AhmedDofType* ahmedTrialDofCenters =
+    AhmedDofType* ahmedTrialDofCenters =
             static_cast<AhmedDofType*>(&trialDofCenters[0]);
-    const AhmedDofType* ahmedTestDofCenters =
+    AhmedDofType* ahmedTestDofCenters =
             static_cast<AhmedDofType*>(&testDofCenters[0]);
 
     // NOTE: Ahmed uses names "op_perm" and "po_perm", which
     // correspond to BEM++'s "p2o" and "o2p", NOT the other way round.
-    ExtendedBemCluster<const AhmedDofType> testClusterTree(
+    ExtendedBemCluster<AhmedDofType> testClusterTree(
                 ahmedTestDofCenters, &p2oTestDofs[0],
                 0, testDofCount, acaOptions.maximumBlockSize);
     testClusterTree.createClusterTree(
                 acaOptions.minimumBlockSize,
                 &p2oTestDofs[0], &o2pTestDofs[0]);
-    ExtendedBemCluster<const AhmedDofType> trialClusterTree(
+    ExtendedBemCluster<AhmedDofType> trialClusterTree(
                 ahmedTrialDofCenters, &p2oTrialDofs[0],
                 0, trialDofCount, acaOptions.maximumBlockSize);
     trialClusterTree.createClusterTree(
@@ -276,7 +276,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
     typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
     std::auto_ptr<AhmedBemBlcluster> bemBlclusterTree(
-                new AhmedBemBlcluster(0, 0, testDofCount, trialDofCount));
+                new AhmedBemBlcluster(&testClusterTree, &trialClusterTree));
     unsigned int blockCount = 0;
     if (hermitian)
         bemBlclusterTree->subdivide_sym(&testClusterTree,
