@@ -22,6 +22,9 @@
 #include "bempp/common/config_ahmed.hpp"
 
 #include "discrete_blocked_boundary_operator.hpp"
+
+#include "discrete_aca_boundary_operator.hpp"
+#include "ahmed_aux.hpp"
 #include "../common/to_string.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -33,6 +36,59 @@
 namespace Bempp
 {
 
+namespace
+{
+
+template <typename ValueType>
+void copySonsAdjustingIndices(
+        const typename DiscreteAcaBoundaryOperator<ValueType>::
+            AhmedBemBlcluster* source,
+        typename DiscreteAcaBoundaryOperator<ValueType>::
+            AhmedBemBlcluster* dest,
+        size_t rowOffset,
+        size_t columnOffset,
+        size_t indexOffset)
+{
+    typedef typename DiscreteAcaBoundaryOperator<ValueType>::
+            AhmedBemBlcluster AhmedBemBlcluster;
+
+    unsigned int sonCount = source->getns();
+    if (sonCount > 0) {
+        // how I miss auto_array...
+        std::vector<blcluster*> destSons(sonCount, 0);
+        try {
+            for (unsigned int row = 0, i = 0; row < source->getnrs(); ++row)
+                for (unsigned int col = 0; col < source->getncs(); ++col, ++i) {
+                    if (const AhmedBemBlcluster* sourceSon =
+                            dynamic_cast<const AhmedBemBlcluster*>(
+                                source->getson(row, col))) {
+                        std::auto_ptr<AhmedBemBlcluster> destSon(
+                                    new AhmedBemBlcluster(
+                                        rowOffset + sourceSon->getb1(),
+                                        columnOffset + sourceSon->getb2(),
+                                        sourceSon->getn1(),
+                                        sourceSon->getn2()));
+                        copySonsAdjustingIndices<ValueType>(
+                                    sourceSon, destSon.get(),
+                                    rowOffset, columnOffset, indexOffset);
+                        destSons[i] = destSon.release();
+                    }
+                }
+            dest->setsons(source->getnrs(), source->getncs(), &destSons[0]);
+        }
+        catch (...) {
+            for (unsigned int i = 0; i < sonCount; ++i)
+                delete destSons[i];
+        }
+    } else {
+        dest->setidx(indexOffset + source->getidx());
+        dest->setadm(dest->isadm());
+        dest->setsep(dest->issep());
+    }
+}
+
+} // namespace
+
 template <typename ValueType>
 DiscreteBlockedBoundaryOperator<ValueType>::
 DiscreteBlockedBoundaryOperator(
@@ -40,7 +96,7 @@ DiscreteBlockedBoundaryOperator(
         const std::vector<size_t>& rowCounts,
         const std::vector<size_t>& columnCounts) :
     m_blocks(blocks), m_rowCounts(rowCounts), m_columnCounts(columnCounts)
-{    
+{
     if (rowCounts.size() != blocks.extent(0))
         throw std::invalid_argument(
                 "DiscreteBlockedBoundaryOperator::DiscreteBlockedBoundaryOperator(): "
@@ -121,9 +177,213 @@ DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBlockedBoundaryOperator
     return shared_ptr<const DiscreteBlockedBoundaryOperator<ValueType> >(
                 new DiscreteBlockedBoundaryOperator(
                     acaBlocks, m_rowCounts, m_columnCounts));
-#else
+#else // WITH_AHMED
     throw std::runtime_error("DiscreteBlockedBoundaryOperator::"
                              "asDiscreteAcaBlockedBoundaryOperator(): "
+                             "ACA operators are not supported because BEM++ "
+                             "has been compiled without AHMED.");
+#endif
+}
+
+template <typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> >
+DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
+        double eps, int maximumRank) const
+{
+#ifdef WITH_AHMED
+    // Get block counts
+    const size_t blockRowCount = m_blocks.extent(0);
+    const size_t blockColCount = m_blocks.extent(1);
+
+    // Convert blocks into ACA operators
+    typedef DiscreteAcaBoundaryOperator<ValueType> AcaOp;
+    typedef typename AcaOp::AhmedBemBlcluster AhmedBemBlcluster;
+    typedef typename AcaOp::AhmedMblock AhmedMblock;
+    typedef typename AcaOp::AhmedMblockArray AhmedMblockArray;
+    typedef typename AcaOp::AhmedConstMblockArray AhmedConstMblockArray;
+
+    Fiber::_2dArray<shared_ptr<const AcaOp> > acaBlocks(blockRowCount,
+                                                        blockColCount);
+    for (size_t col = 0; col < blockColCount; ++col)
+        for (size_t row = 0; row < blockRowCount; ++row)
+            if (m_blocks(row, col))
+                acaBlocks(row, col) = boost::shared_dynamic_cast<const AcaOp>(
+                            m_blocks(row, col)->asDiscreteAcaBoundaryOperator(
+                                eps, maximumRank));
+            else
+                throw std::runtime_error("DiscreteBlockedBoundaryOperator::"
+                                         "asDiscreteAcaBoundaryOperator(): "
+                                         "operators with empty blocks are not "
+                                         "supported yet");
+
+    // Collect shared pointers to all mblock arrays (they must be stored
+    // in the newly created operator so that the mblocks don't get deleted
+    // prematurely). Also calculate mblock offsets.
+    std::vector<AhmedConstMblockArray> sharedMblocks;
+    Fiber::_2dArray<size_t> indexOffsets(blockRowCount, blockColCount);
+    std::fill(indexOffsets.begin(), indexOffsets.end(), 0);
+    size_t totalMblockCount = 0;
+    for (size_t col = 0; col < blockColCount; ++col)
+        for (size_t row = 0; row < blockRowCount; ++row)
+            if (acaBlocks(row, col)) {
+                sharedMblocks.push_back(acaBlocks(row, col)->blocks());
+                sharedMblocks.insert(sharedMblocks.end(),
+                                     acaBlocks(row, col)->sharedBlocks().begin(),
+                                     acaBlocks(row, col)->sharedBlocks().end());
+                indexOffsets(row, col) = totalMblockCount;
+                totalMblockCount += acaBlocks(row, col)->blockCount();
+            }
+
+    // Create a shared array of pointers to all mblocks. Note: the array owns
+    // only pointers, not mblocks themselves.
+    AhmedMblockArray mblocks(new AhmedMblock*[totalMblockCount]);
+    for (size_t col = 0, offset = 0; col < blockColCount; ++col)
+        for (size_t row = 0; row < blockRowCount; ++row)
+            if (acaBlocks(row, col)) {
+                size_t localMblockCount = acaBlocks(row, col)->blockCount();
+                std::copy(&acaBlocks(row, col)->blocks()[0],
+                          &acaBlocks(row, col)->blocks()[localMblockCount],
+                          &mblocks[offset]);
+                offset += localMblockCount;
+            }
+
+    // Get row and column offsets and total number of rows and columns
+    std::vector<size_t> rowOffsets(blockRowCount, 0);
+    for (size_t i = 1; i < blockRowCount; ++i)
+        rowOffsets[i] = rowOffsets[i - 1] + m_rowCounts[i - 1];
+    const size_t totalRowCount = rowOffsets.back() + m_rowCounts.back();
+    std::vector<size_t> colOffsets(blockColCount, 0);
+    for (size_t i = 1; i < blockColCount; ++i)
+        colOffsets[i] = colOffsets[i - 1] + m_columnCounts[i - 1];
+    const size_t totalColCount = colOffsets.back() + m_columnCounts.back();
+
+    // Recursively copy block cluster trees, adjusting indices
+    // This vector stores a row-major array (as expected by AHMED)
+    std::vector<blcluster*> roots(blockRowCount * blockColCount, 0);
+    try {
+        for (size_t row = 0, i = 0; row < blockRowCount; ++row)
+            for (size_t col = 0; col < blockColCount; ++col, ++i)
+                if (acaBlocks(row, col)) {
+                    std::auto_ptr<AhmedBemBlcluster> root(
+                                new AhmedBemBlcluster(
+                                    rowOffsets[row], colOffsets[col],
+                                    m_rowCounts[row], m_columnCounts[col]));
+                    copySonsAdjustingIndices<ValueType>(
+                                acaBlocks(row, col)->blockCluster(),
+                                root.get(),
+                                rowOffsets[row],
+                                colOffsets[col],
+                                indexOffsets(row, col));
+                    roots[i] = root.release();
+                }
+    }
+    catch (...) {
+        for (size_t i = 0; i < roots.size(); ++i)
+            delete roots[i];
+        throw; // rethrow exception
+    }
+
+    // Create the root node of the combined cluster tree and set its sons
+    // (TODO: see what happens if any sons are NULL)
+    std::auto_ptr<AhmedBemBlcluster> mblockCluster(
+                new AhmedBemBlcluster(0, 0, totalRowCount, totalColCount));
+    mblockCluster->setsons(blockRowCount, blockColCount, &roots[0]);
+
+    // Create the domain permutation array
+    std::vector<unsigned int> o2pDomain;
+    o2pDomain.reserve(totalRowCount);
+    for (size_t col = 0; col < blockColCount; ++col) {
+        int chosenRow = -1;
+        for (size_t row = 0; row < blockRowCount; ++row)
+            if (acaBlocks(row, col)) {
+                if (chosenRow < 0)
+                    chosenRow = row;
+                else { // ensure that all permutations are compatible
+                    if (acaBlocks(chosenRow, col)->domainPermutation() !=
+                            acaBlocks(row, col)->domainPermutation())
+                        throw std::runtime_error(
+                                "DiscreteBlockedBoundaryOperator::"
+                                "asDiscreteAcaBoundaryOperator(): "
+                                "Domain index permutations of blocks (" +
+                                toString(chosenRow) + ", " + toString(col) +
+                                ") and (" +
+                                toString(row) + ", " + toString(col) +
+                                ") are not equal");
+                }
+            }
+        std::vector<unsigned int> local_o2p =
+                acaBlocks(chosenRow, col)->domainPermutation().permutedIndices();
+        for (size_t i = 0; i < local_o2p.size(); ++i)
+            o2pDomain.push_back(local_o2p[i] + colOffsets[col]);
+    }
+    assert(o2pDomain.size() == totalColCount);
+
+    // Create the domain permutation array
+    std::vector<unsigned int> o2pRange;
+    o2pRange.reserve(totalColCount);
+    for (size_t row = 0; row < blockRowCount; ++row) {
+        int chosenCol = -1;
+        for (size_t col = 0; col < blockColCount; ++col)
+            if (acaBlocks(row, col)) {
+                if (chosenCol < 0)
+                    chosenCol = col;
+                else { // ensure that all permutations are compatible
+                    if (acaBlocks(row, chosenCol)->rangePermutation() !=
+                            acaBlocks(row, col)->rangePermutation())
+                        throw std::runtime_error(
+                                "DiscreteBlockedBoundaryOperator::"
+                                "asDiscreteAcaBoundaryOperator(): "
+                                "Range index permutations of blocks (" +
+                                toString(row) + ", " + toString(chosenCol) +
+                                ") and (" +
+                                toString(row) + ", " + toString(col) +
+                                ") are not equal");
+                }
+            }
+        std::vector<unsigned int> local_o2p =
+                acaBlocks(row, chosenCol)->rangePermutation().permutedIndices();
+        for (size_t i = 0; i < local_o2p.size(); ++i)
+            o2pRange.push_back(local_o2p[i] + rowOffsets[row]);
+    }
+    assert(o2pRange.size() == totalRowCount);
+
+    // Calculate the overall maximum rank
+    int overallMaximumRank = 0;
+    for (size_t col = 0; col < blockColCount; ++col)
+        for (size_t row = 0; row < blockRowCount; ++row)
+            if (acaBlocks(row, col))
+                overallMaximumRank = std::max(overallMaximumRank,
+                                       acaBlocks(row, col)->maximumRank());
+
+    // Check symmetry
+    for (size_t col = 0; col < blockColCount; ++col)
+        for (size_t row = 0; row < blockRowCount; ++row)
+            if (acaBlocks(row, col) && acaBlocks(row, col)->symmetry() != 0)
+                throw std::runtime_error("DiscreteBlockedBoundaryOperator::"
+                                         "asDiscreteAcaBoundaryOperator(): "
+                                         "Joining of symmetric ACA operators "
+                                         "is not supported yet");
+
+    // Get some parallelization options
+    Fiber::ParallelizationOptions parallelOptions;
+    for (size_t col = 0; col < blockColCount; ++col)
+        for (size_t row = 0; row < blockRowCount; ++row)
+            if (acaBlocks(row, col)) {
+                parallelOptions = acaBlocks(row, col)->parallelizationOptions();
+            }
+
+    shared_ptr<const DiscreteBoundaryOperator<ValueType> > result(
+                new AcaOp(
+                    totalRowCount, totalColCount, overallMaximumRank,
+                    0 /* symmetry */,
+                    mblockCluster, mblocks,
+                    o2pDomain, o2pRange,
+                    parallelOptions, sharedMblocks));
+    return result;
+
+#else // WITH_AHMED
+    throw std::runtime_error("DiscreteBoundaryOperator::"
+                             "asDiscreteAcaBoundaryOperator(): "
                              "ACA operators are not supported because BEM++ "
                              "has been compiled without AHMED.");
 #endif
