@@ -12,6 +12,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 # Macros needed
 include(BemppOptions)
 include(BemppFindDependencies)
+include(BemppG77ConventionPatch)
 
 # set(CMAKE_CXX_FLAGS "-Wall -Wnon-virtual-dtor -Wno-sign-compare")
 
