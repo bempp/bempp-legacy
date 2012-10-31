@@ -26,6 +26,7 @@ CXXFLAGS="$Bempp_cxxflags" CFLAGS="$Bempp_cflags" "$CMake_exe" \
     -D TBB_LIBRARY_DEBUG:PATH="$Tbb_lib_debug" \
     -D AHMED_INCLUDE_DIR:PATH="$AHMED_include_dir" \
     -D AHMED_LIB:PATH="$AHMED_lib" \
+    -D AHMED_G77CONVENTION:PATH="$AHMED_with_g77" \
     -D PYTHON_EXECUTABLE:PATH="$Python_exe" \
     -D PYTHON_INCLUDE_DIR:PATH="$Python_include_dir" \
     -D PYTHON_NUMPY_INCLUDE_DIR:PATH="$Python_numpy_include_dir" \
