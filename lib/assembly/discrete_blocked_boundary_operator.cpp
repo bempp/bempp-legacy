@@ -411,10 +411,6 @@ DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
     size_t totalMblockCount = 0;
     collectMblocks(acaBlocks, m_rowCounts, m_columnCounts,
                    allSharedMblocks, mblocks, indexOffsets, totalMblockCount);
-    for (size_t row = 0, i = 0; row < blockRowCount; ++row)
-        for (size_t col = 0; col < blockColCount; ++col, ++i)
-            std::cout << row << ", " << col << ": "
-                      << indexOffsets(row, col) << "\n";
 
     // Get row and column offsets and total number of rows and columns
     std::vector<size_t> rowOffsets(blockRowCount, 0);
