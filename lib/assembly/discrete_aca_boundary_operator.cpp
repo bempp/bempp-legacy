@@ -49,6 +49,21 @@
 namespace Bempp
 {
 
+void dumpblcluster(const blcluster* bl, const std::string& indent)
+{
+    std::cout << indent << bl << " " << bl->getb1() << " " << bl->getb2() << " "
+              << bl->getn1() << " " << bl->getn2() << "\n";
+    std::string sonIndent = indent + "  ";
+    for (int r = 0; r < bl->getnrs(); ++r)
+        for (int c = 0; c < bl->getncs(); ++c) {
+            blcluster* son = bl->getson(r, c);
+            if (son)
+                dumpblcluster(son, sonIndent);
+            else
+                std::cout << sonIndent << "0\n";
+        }
+}
+
 namespace
 {
 

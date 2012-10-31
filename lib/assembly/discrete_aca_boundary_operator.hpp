@@ -46,6 +46,8 @@
 namespace Bempp
 {
 
+void dumpblcluster(const blcluster* bl, const std::string& indent);
+
 // Forward declarations
 
 /** \cond FORWARD_DECL */
