@@ -41,10 +41,8 @@ namespace
 
 template <typename ValueType>
 void copySonsAdjustingIndices(
-        const typename DiscreteAcaBoundaryOperator<ValueType>::
-            AhmedBemBlcluster* source,
-        typename DiscreteAcaBoundaryOperator<ValueType>::
-            AhmedBemBlcluster* dest,
+        const blcluster* source,
+        blcluster* dest,
         size_t rowOffset,
         size_t columnOffset,
         size_t indexOffset)
@@ -59,26 +57,34 @@ void copySonsAdjustingIndices(
         try {
             for (unsigned int row = 0, i = 0; row < source->getnrs(); ++row)
                 for (unsigned int col = 0; col < source->getncs(); ++col, ++i) {
-                    if (const AhmedBemBlcluster* sourceSon =
-                            dynamic_cast<const AhmedBemBlcluster*>(
-                                source->getson(row, col))) {
-                        std::auto_ptr<AhmedBemBlcluster> destSon(
-                                    new AhmedBemBlcluster(
-                                        rowOffset + sourceSon->getb1(),
-                                        columnOffset + sourceSon->getb2(),
-                                        sourceSon->getn1(),
-                                        sourceSon->getn2()));
-                        copySonsAdjustingIndices<ValueType>(
-                                    sourceSon, destSon.get(),
-                                    rowOffset, columnOffset, indexOffset);
-                        destSons[i] = destSon.release();
-                    }
+                    const blcluster* sourceSon = source->getson(row, col);
+                    if (!sourceSon)
+                        continue;
+                    std::auto_ptr<blcluster> destSon;
+                    if (const AhmedBemBlcluster* bemSourceSon =
+                        dynamic_cast<const AhmedBemBlcluster*>(sourceSon))
+                        destSon.reset(new AhmedBemBlcluster(
+                                          rowOffset + sourceSon->getb1(),
+                                          columnOffset + sourceSon->getb2(),
+                                          sourceSon->getn1(),
+                                          sourceSon->getn2()));
+                    else
+                        destSon.reset(new blcluster(
+                                          rowOffset + sourceSon->getb1(),
+                                          columnOffset + sourceSon->getb2(),
+                                          sourceSon->getn1(),
+                                          sourceSon->getn2()));
+                    copySonsAdjustingIndices<ValueType>(
+                        sourceSon, destSon.get(),
+                        rowOffset, columnOffset, indexOffset);
+                    destSons[i] = destSon.release();
                 }
             dest->setsons(source->getnrs(), source->getncs(), &destSons[0]);
         }
         catch (...) {
             for (unsigned int i = 0; i < sonCount; ++i)
                 delete destSons[i];
+            throw; // rethrow
         }
     } else {
         dest->setidx(indexOffset + source->getidx());
