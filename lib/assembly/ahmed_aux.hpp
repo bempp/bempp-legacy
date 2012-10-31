@@ -141,17 +141,21 @@ private:
 
 template <typename ValueType>
 boost::shared_array<mblock<typename AhmedTypeTraits<ValueType>::Type>*>
-allocateAhmedMblockArray(
-        const blcluster* cluster)
+allocateAhmedMblockArray(size_t blockCount)
 {
     typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
     AhmedMblock** blocks = 0;
-    const size_t blockCount = cluster->nleaves();
     allocmbls(blockCount, blocks);
     return boost::shared_array<AhmedMblock*>(
                 blocks, AhmedMblockArrayDeleter(blockCount));
 }
 
+template <typename ValueType>
+boost::shared_array<mblock<typename AhmedTypeTraits<ValueType>::Type>*>
+allocateAhmedMblockArray(const blcluster* cluster)
+{
+    return allocateAhmedMblockArray<ValueType>(cluster->nleaves());
+}
 
 } // namespace Bempp
 
