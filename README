@@ -4,8 +4,18 @@ Introduction
 BEM++ is a novel open-source HPC boundary-element library. Its development
 started in October 2011.
 
-1.0 is the first official version of the library, released on 29 October 2012.
-This version includes the following features:
+History
+=======
+
+1.0.1 (1 November 2012)
+-----------------------
+
+A maintenance release correcting a few bugs in the AHMED interface.
+
+1.0 (29 October 2012)
+---------------------
+
+The first official version of the library, including the following features:
 
 - Galerkin discretization of all standard boundary integral operators
   (single-layer potential, double-layer potential, adjoint double-layer
@@ -39,9 +49,6 @@ This version includes the following features:
 
 - C++ and Python interfaces.
 
-The library has been tested under Scientific Linux 6.1, Ubuntu 12.04,
-OpenSUSE 12.1 and Mac OS 10.7.
-
 Obtaining the code
 ==================
 
@@ -73,6 +80,9 @@ To build and install the library, you need
 
 - (optional) the Python Mayavi module, if you want to use the visualization
   features from the Python interface to BEM++.
+
+The library has been tested under Scientific Linux 6.1, Ubuntu 12.04,
+OpenSUSE 12.1 and Mac OS 10.7.
 
 The build system used to compile BEM++ (CMake) and the remaining dependencies of
 the library (currently Armadillo, Boost, Dune, Intel TBB, Swig and Trilinos)
