@@ -1,7 +1,7 @@
 import errno,os,subprocess,sys, shutil
 
 try:
-    from subprocess import check_output, check_call
+    from subprocess import check_output
 except ImportError:
     # Backported from Python 2.7
     def check_output(*popenargs, **kwargs):
@@ -37,6 +37,8 @@ except ImportError:
             ex.output = output
             raise ex
         return output
+
+from subprocess import check_call
 
 # The following function extracts the tar gz files. It is taken from
 # http://code.activestate.com/recipes/576714-extract-a-compressed-file/
