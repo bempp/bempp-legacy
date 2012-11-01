@@ -23,7 +23,7 @@
 import os, sys, traceback
 sys.path.append("installer")
 
-from py_modules.tools import writeOptions, setDefaultConfigOption, pythonInfo, checkCreateDir, testBlas, testLapack, cleanUp, checkDeleteFile, checkInstallUpdates
+from py_modules.tools import writeOptions, setDefaultConfigOption, pythonInfo, checkCreateDir, testBlas, testLapack, cleanUp, checkDeleteFile, checkInstallUpdates, installUpdates
 from ConfigParser import ConfigParser
 from optparse import OptionParser
 
@@ -206,6 +206,7 @@ if __name__ == "__main__":
     parser.add_option("-c", "--configure", action="store_true",
                       help="Configure the setup program")
     parser.add_option("-u","--update", action="store_true",help="Automatically update BEM++")
+    parser.add_option("","--resume-update", action="store_true",help="Resume update process after changing the source tree")
     parser.add_option("-i", "--install", type="string", metavar="WHAT",
                       help="Build and install WHAT. Possible values for WHAT: "
                       "all (BEM++ and its dependencies), bempp (BEM++ only), " +
@@ -232,6 +233,14 @@ if __name__ == "__main__":
         sys.exit(1)
     try:
         prepare(root,config)
+        if options.resume_update: # must be the first if!
+            config = ConfigParser()
+            if not os.path.exists(optfile_generated):
+                print ("You must first successfully run bempp_setup.py "
+                       "with the --configure (-c) option.")
+                sys.exit(1)
+            config.read(optfile_generated)
+            installUpdates(root,config)
         if options.update:
             config = ConfigParser()
             if not os.path.exists(optfile_generated):
