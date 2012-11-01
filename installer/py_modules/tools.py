@@ -374,7 +374,8 @@ def checkInstallUpdates(root,config):
         output = check_output("git merge origin/"+branch,shell=True,stderr=subprocess.STDOUT)
         # Restart the installer with the "--resume-update" option.
         # This will make it call the installUpdates() function
-        args = sys.argv + ["--resume-update"]
+        args = [sys.executable] + sys.argv + ["--resume-update"]
+        print "args:", args
         os.execv(args[0], args) # does not return
     except subprocess.CalledProcessError, ex:
         raise Exception("Git failed with error message\n"+
