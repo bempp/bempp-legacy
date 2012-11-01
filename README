@@ -49,38 +49,6 @@ The first official version of the library, including the following features:
 
 - C++ and Python interfaces.
 
-- Galerkin discretization of all standard boundary integral operators
-  (single-layer potential, double-layer potential, adjoint double-layer
-  potential, hypersingular operator) for Laplace, Helmholtz and modified
-  Helmholtz problems in three dimensions.
-
-- Numerical evaluation of boundary-element integrals (singular integrals dealt
-  with using Sauter-Schwab quadrature rules).
-
-- Triangular surface mesh handling. Import of meshes in Gmsh format.
-
-- Piecewise constant and continuous piecewise linear basis functions.
-
-- Dense-matrix representation of boundary integral operators supported natively.
-
-- Assembly of H-matrix representations of boundary integral operators via
-  adaptive cross approximation (ACA) supported thanks to an interface to
-  M. Bebendorf’s AHMED library.
-
-- H-matrix-based preconditioners (via AHMED).
-
-- Easy creation of operators composed of several logical blocks.
-
-- Interfaces to iterative linear solvers from Trilinos.
-
-- Evaluation of potentials in space (away from the discretized surface).
-
-- Export of solutions in VTK format.
-
-- Parallel operation on shared-memory CPU architectures.
-
-- C++ and Python interfaces.
-
 Obtaining the code
 ==================
 
