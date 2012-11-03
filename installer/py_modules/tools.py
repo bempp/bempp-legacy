@@ -375,7 +375,6 @@ def checkInstallUpdates(root,config):
         # Restart the installer with the "--resume-update" option.
         # This will make it call the installUpdates() function
         args = [sys.executable] + sys.argv + ["--resume-update"]
-        print "args:", args
         os.execv(args[0], args) # does not return
     except subprocess.CalledProcessError, ex:
         raise Exception("Git failed with error message\n"+
