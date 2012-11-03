@@ -233,7 +233,10 @@ if __name__ == "__main__":
         sys.exit(1)
     try:
         prepare(root,config)
-        if options.resume_update: # must be the first if!
+        if options.resume_update:
+            # Must be the first "if": the intention is that if this option
+            # is present, the update procedure is resumed and all other work
+            # modes are ignored.
             config = ConfigParser()
             if not os.path.exists(optfile_generated):
                 print ("You must first successfully run bempp_setup.py "
@@ -241,6 +244,7 @@ if __name__ == "__main__":
                 sys.exit(1)
             config.read(optfile_generated)
             installUpdates(root,config)
+            sys.exit(0) # don't do anything else
         if options.update:
             config = ConfigParser()
             if not os.path.exists(optfile_generated):
