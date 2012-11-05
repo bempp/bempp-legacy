@@ -82,7 +82,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
     arma::Mat<RT> blockedWeakForm = blockedOp.weakForm()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
-                    nonblockedWeakForm, blockedWeakForm, 1e-13));
+                    nonblockedWeakForm, blockedWeakForm,
+                    10. * std::numeric_limits<RealType>::epsilon()));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_form_for_2x1_operator,
@@ -134,7 +135,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
     arma::Mat<RT> blockedWeakForm = blockedOp.weakForm()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
-                    nonblockedWeakForm, blockedWeakForm, 1e-13));
+                    nonblockedWeakForm, blockedWeakForm,
+                    10. * std::numeric_limits<RealType>::epsilon()));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_form_for_2x3_operator,
@@ -210,7 +212,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
     arma::Mat<RT> blockedWeakForm = blockedOp.weakForm()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
-                    nonblockedWeakForm, blockedWeakForm, 1e-13));
+                    nonblockedWeakForm, blockedWeakForm,
+                    10. * std::numeric_limits<RealType>::epsilon()));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_form_for_2x3_operator_with_empty_blocks,
@@ -283,7 +286,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
     arma::Mat<RT> blockedWeakForm = blockedOp.weakForm()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
-                    nonblockedWeakForm, blockedWeakForm, 1e-13));
+                    nonblockedWeakForm, blockedWeakForm,
+                    10. * std::numeric_limits<RealType>::epsilon()));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(asDiscreteAcaBoundaryOperator_produces_correct_weak_form_for_1x1_operator,
@@ -329,7 +333,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(asDiscreteAcaBoundaryOperator_produces_correct_wea
             blockedOp.weakForm()->asDiscreteAcaBoundaryOperator()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
-                    nonblockedWeakForm, acaBlockedWeakForm, 1e-13));
+                    nonblockedWeakForm, acaBlockedWeakForm,
+                    10. * std::numeric_limits<RealType>::epsilon()));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(asDiscreteAcaBoundaryOperator_produces_correct_weak_form_for_2x1_operator,
@@ -385,7 +390,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(asDiscreteAcaBoundaryOperator_produces_correct_wea
             blockedOp.weakForm()->asDiscreteAcaBoundaryOperator()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
-                    nonblockedWeakForm, acaBlockedWeakForm, 1e-13));
+                    nonblockedWeakForm, acaBlockedWeakForm,
+                    10. * std::numeric_limits<RealType>::epsilon()));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(asDiscreteAcaBoundaryOperator_produces_correct_weak_form_for_2x3_operator,
@@ -465,7 +471,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(asDiscreteAcaBoundaryOperator_produces_correct_wea
             blockedOp.weakForm()->asDiscreteAcaBoundaryOperator()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
-                    nonblockedWeakForm, acaBlockedWeakForm, 1e-13));
+                    nonblockedWeakForm, acaBlockedWeakForm,
+                    10. * std::numeric_limits<RealType>::epsilon()));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(asDiscreteAcaBoundaryOperator_produces_correct_weak_form_for_2x3_operator_with_empty_blocks,
@@ -542,7 +549,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(asDiscreteAcaBoundaryOperator_produces_correct_wea
             blockedOp.weakForm()->asDiscreteAcaBoundaryOperator()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
-                    nonblockedWeakForm, acaBlockedWeakForm, 1e-13));
+                    nonblockedWeakForm, acaBlockedWeakForm,
+                    10. * std::numeric_limits<RealType>::epsilon()));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(asDiscreteAcaBoundaryOperator_produces_correct_weak_form_for_2x1_operator_containing_sparse_block,
