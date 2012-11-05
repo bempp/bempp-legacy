@@ -63,7 +63,7 @@ public:
      *    in the Symmetry enumeration type. */
     DiscreteInverseSparseBoundaryOperator(
             const shared_ptr<const Epetra_CrsMatrix>& mat,
-            Symmetry symmetry = NO_SYMMETRY);
+            int symmetry = NO_SYMMETRY);
     ~DiscreteInverseSparseBoundaryOperator();
 
     virtual unsigned int rowCount() const;
@@ -93,7 +93,7 @@ private:
     shared_ptr<const Epetra_CrsMatrix> m_mat;
     std::auto_ptr<Epetra_LinearProblem> m_problem;
     Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_space;
-    Symmetry m_symmetry;
+    int m_symmetry;
     std::auto_ptr<Amesos_BaseSolver> m_solver;
     /** \endcond */
 };
