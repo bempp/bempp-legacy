@@ -120,6 +120,16 @@ public:
         return m_maximumBlockSize;
     }
 
+    void clearDofPointers() {
+        this->dofs = 0;
+        for (int i = 0; i < this->getns(); ++i) {
+            cluster* son = this->getson(i);
+            if (ExtendedBemCluster* exbemson =
+                    dynamic_cast<ExtendedBemCluster*>(son))
+                exbemson->clearDofPointers();
+            }
+    }
+
 private:
     unsigned int m_maximumBlockSize;
 };
