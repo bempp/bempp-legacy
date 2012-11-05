@@ -456,7 +456,7 @@ DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
 
     // Create the root node of the combined cluster tree and set its sons
     // (TODO: see what happens if any sons are NULL)
-    std::auto_ptr<AhmedBemBlcluster> mblockCluster(
+    shared_ptr<AhmedBemBlcluster> mblockCluster(
                 new AhmedBemBlcluster(0, 0, totalRowCount, totalColCount));
     mblockCluster->setsons(blockRowCount, blockColCount, &roots[0]);
 
