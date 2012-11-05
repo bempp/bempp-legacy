@@ -34,7 +34,6 @@
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/local_assembler_for_operators.hpp"
 #include "../grid/grid_view.hpp"
-#include "../grid/reverse_element_mapper.hpp"
 #include "../space/space.hpp"
 
 #include "ahmed_complex.hpp"
