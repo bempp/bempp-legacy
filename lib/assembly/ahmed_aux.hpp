@@ -27,6 +27,7 @@
 #include "ahmed_aux_fwd.hpp"
 
 #include "ahmed_leaf_cluster_array.hpp"
+#include "ahmed_mblock_array_deleter.hpp"
 #include "../common/types.hpp"
 
 #include "../common/boost_scoped_array_fwd.hpp"
@@ -121,22 +122,6 @@ public:
 
 private:
     unsigned int m_maximumBlockSize;
-};
-
-class AhmedMblockArrayDeleter
-{
-public:
-    AhmedMblockArrayDeleter(size_t arraySize) :
-        m_arraySize(arraySize) {
-    }
-
-    template <typename ValueType>
-    void operator() (mblock<ValueType>** blocks) const {
-        freembls(m_arraySize, blocks);
-    }
-
-private:
-    size_t m_arraySize;
 };
 
 template <typename ValueType>
