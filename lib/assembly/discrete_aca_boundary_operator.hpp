@@ -194,7 +194,7 @@ public:
             unsigned int rowCount, unsigned int columnCount,
             int maximumRankUsedInAssembly,
             int symmetry,
-            std::auto_ptr<AhmedBemBlcluster> blockCluster_,
+            std::auto_ptr<const AhmedBemBlcluster> blockCluster_,
             AhmedMblockArray blocks_,
             const IndexPermutation& domainPermutation_,
             const IndexPermutation& rangePermutation_,
@@ -238,7 +238,7 @@ public:
             unsigned int rowCount, unsigned int columnCount,
             int maximumRank,
             int symmetry,
-            const shared_ptr<AhmedBemBlcluster>& blockCluster_,
+            const shared_ptr<const AhmedBemBlcluster>& blockCluster_,
             const AhmedMblockArray& blocks_,
             const IndexPermutation& domainPermutation_,
             const IndexPermutation& rangePermutation_,
@@ -289,7 +289,7 @@ public:
     int symmetry() const;
 
     /** \brief Return the block cluster. */
-    const AhmedBemBlcluster* blockCluster() const;
+    shared_ptr<const AhmedBemBlcluster> blockCluster() const;
 
     /** \brief Return the mblocks making up the H-matrix represented by this
      *  operator.
@@ -344,7 +344,7 @@ private:
     int m_maximumRank; // used by the approximate-LU preconditioner
     int m_symmetry;
 
-    shared_ptr<AhmedBemBlcluster> m_blockCluster;
+    shared_ptr<const AhmedBemBlcluster> m_blockCluster;
     AhmedMblockArray m_blocks;
 
     IndexPermutation m_domainPermutation;

@@ -435,7 +435,7 @@ DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
                                     m_rowCounts[row], m_columnCounts[col]));
                     if (acaBlocks(row, col))
                         copySonsAdjustingIndices<ValueType>(
-                                    acaBlocks(row, col)->blockCluster(),
+                                    acaBlocks(row, col)->blockCluster().get(),
                                     root.get(),
                                     rowOffsets[row],
                                     colOffsets[col],
