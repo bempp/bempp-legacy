@@ -87,6 +87,11 @@ public:
         return m_quadStrategy;
     }
 
+    /** \brief Print information about operators currently stored in cache.
+     *
+     *  Can be used for debugging. */
+    void printCachedOperatorStatistics() const;
+
 private:
     shared_ptr<const QuadratureStrategy> m_quadStrategy;
     AssemblyOptions m_assemblyOptions;

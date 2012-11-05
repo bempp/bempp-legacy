@@ -4,6 +4,7 @@
 #include "../common/common.hpp"
 #include "../common/shared_ptr.hpp"
 #include <boost/scoped_ptr.hpp>
+#include <vector>
 
 namespace Bempp
 {
@@ -37,6 +38,12 @@ public:
     shared_ptr<const DiscreteBoundaryOperator<ResultType> >
     getWeakForm(const Context<BasisFunctionType, ResultType>& context,
                 const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op) const;
+
+    /** \brief Return list of discrete operators currently stored in cache.
+     *
+     *  Can be used for debugging. */
+    std::vector<shared_ptr<const DiscreteBoundaryOperator<ResultType> > >
+    aliveOperators() const;
 
 private:
     /** \cond PRIVATE */

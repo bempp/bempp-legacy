@@ -103,6 +103,25 @@ DiscreteBoundaryOperatorCache<BasisFunctionType, ResultType>::getWeakForm(
     // discreteOp) will be destructed now, as discreteOp goes out of scope.)
 }
 
+template <typename BasisFunctionType, typename ResultType>
+std::vector<shared_ptr<const DiscreteBoundaryOperator<ResultType> > >
+DiscreteBoundaryOperatorCache<BasisFunctionType, ResultType>::
+aliveOperators() const
+{
+    typedef DiscreteBoundaryOperator<ResultType> DiscreteOp;
+    std::vector<shared_ptr<const DiscreteOp> > result;
+    typedef typename Impl::DiscreteBoundaryOperatorMap::const_iterator
+            const_iterator;
+    for (const_iterator it = m_impl->discreteOps.begin();
+         it != m_impl->discreteOps.begin(); ++it) {
+        if (shared_ptr<const DiscreteOp> cachedDiscreteOp = it->second.lock()) {
+            // std::cout << "Weak pointer is valid" << std::endl;
+            result.push_back(cachedDiscreteOp);
+        }
+    }
+    return result;
+}
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DiscreteBoundaryOperatorCache);
 
 } // namespace Bempp
