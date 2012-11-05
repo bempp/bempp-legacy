@@ -186,6 +186,34 @@ DiscreteAcaBoundaryOperator(
 #endif
     m_maximumRank(maximumRank_),
     m_symmetry(symmetry_),
+    m_blockCluster(blockCluster_.release()), m_blocks(blocks_),
+    m_domainPermutation(domainPermutation_),
+    m_rangePermutation(rangePermutation_),
+    m_parallelizationOptions(parallelizationOptions_),
+    m_sharedBlocks(sharedBlocks_)
+{
+}
+
+template <typename ValueType>
+DiscreteAcaBoundaryOperator<ValueType>::
+DiscreteAcaBoundaryOperator(
+        unsigned int rowCount, unsigned int columnCount,
+        int maximumRank_,
+        int symmetry_,
+        const shared_ptr<AhmedBemBlcluster>& blockCluster_,
+        const AhmedMblockArray& blocks_,
+        const IndexPermutation& domainPermutation_,
+        const IndexPermutation& rangePermutation_,
+        const ParallelizationOptions& parallelizationOptions_,
+        const std::vector<AhmedConstMblockArray>& sharedBlocks_) :
+#ifdef WITH_TRILINOS
+    m_domainSpace(Thyra::defaultSpmdVectorSpace<ValueType>(columnCount)),
+    m_rangeSpace(Thyra::defaultSpmdVectorSpace<ValueType>(rowCount)),
+#else
+    m_rowCount(rowCount), m_columnCount(columnCount),
+#endif
+    m_maximumRank(maximumRank_),
+    m_symmetry(symmetry_),
     m_blockCluster(blockCluster_), m_blocks(blocks_),
     m_domainPermutation(domainPermutation_),
     m_rangePermutation(rangePermutation_),
