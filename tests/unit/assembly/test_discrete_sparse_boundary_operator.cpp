@@ -53,9 +53,10 @@ namespace
 template <typename BFT, typename RT> 
 struct DiscreteSparseBoundaryOperatorFixture
 {
-    DiscreteSparseBoundaryOperatorFixture()
+    DiscreteSparseBoundaryOperatorFixture(
+            bool acaMode = false, int nElementsX = 3, int nElementsY = 4)
     {
-        grid = createRegularTriangularGrid();
+        grid = createRegularTriangularGrid(nElementsX, nElementsY);
 
         shared_ptr<Space<BFT> > pwiseConstants(
             new PiecewiseConstantScalarSpace<BFT>(grid));
@@ -64,6 +65,11 @@ struct DiscreteSparseBoundaryOperatorFixture
 
         AssemblyOptions assemblyOptions;
         assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
+        if (acaMode) {
+            AcaOptions acaOptions;
+            acaOptions.minimumBlockSize = 2;
+            assemblyOptions.switchToAcaMode(acaOptions);
+        }
         shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
             new NumericalQuadratureStrategy<BFT, RT>);
         shared_ptr<Context<BFT, RT> > context(
@@ -182,6 +188,30 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
     
     BOOST_CHECK(check_arrays_are_close<RT>(y, expected, 
+                                           10. * std::numeric_limits<CT>::epsilon()));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(asDiscreteAcaBoundaryOperator_works_correctly, ResultType, result_types)
+{
+    std::srand(1);
+
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    DiscreteSparseBoundaryOperatorFixture<BFT, RT> fixture(
+                true /* acaMode */, 6, 8);
+    shared_ptr<const DiscreteBoundaryOperator<RT> > sparseOp = fixture.op.weakForm();
+    arma::Mat<RT> sparseMat = sparseOp->asMatrix();
+
+    shared_ptr<const DiscreteBoundaryOperator<RT> > acaOp =
+            sparseOp->asDiscreteAcaBoundaryOperator();
+    arma::Mat<RT> acaMat = acaOp->asMatrix();
+
+//    std::cout << "sparse:\n" << sparseMat;
+//    std::cout << "aca:\n" << acaMat;
+
+    BOOST_CHECK(check_arrays_are_close<RT>(acaMat, sparseMat,
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
 

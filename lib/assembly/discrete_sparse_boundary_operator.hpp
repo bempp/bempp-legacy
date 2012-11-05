@@ -22,13 +22,18 @@
 #define bempp_discrete_sparse_boundary_operator_hpp
 
 #include "../common/common.hpp"
+#include "bempp/common/config_ahmed.hpp"
 #include "bempp/common/config_trilinos.hpp"
 
 #include "discrete_boundary_operator.hpp"
 
+#include "ahmed_aux_fwd.hpp"
 #include "symmetry.hpp"
 #include "transposition_mode.hpp"
+
 #include "../common/shared_ptr.hpp"
+#include "../common/boost_shared_array_fwd.hpp"
+#include "../fiber/scalar_traits.hpp"
 
 #ifdef WITH_TRILINOS
 #include <Teuchos_RCP.hpp>
@@ -40,6 +45,9 @@ class Epetra_CrsMatrix;
 
 namespace Bempp
 {
+/** \cond FORWARD_DECL */
+class IndexPermutation;
+/** \endcond */
 
 /** \ingroup discrete_boundary_operators
  *  \brief Discrete boundary operator stored as a sparse matrix.
@@ -48,6 +56,11 @@ template <typename ValueType>
 class DiscreteSparseBoundaryOperator :
         public DiscreteBoundaryOperator<ValueType>
 {
+    typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
+    typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
+    typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
+    typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
+
 #ifdef WITH_TRILINOS
 public:
     /** \brief Constructor.
@@ -61,9 +74,16 @@ public:
      *  \param[in] trans
      *    If different from NO_TRANSPOSE, the discrete operator will represent
      *    a transposed and/or complex-conjugated matrix \p mat. */
-    DiscreteSparseBoundaryOperator(const shared_ptr<const Epetra_CrsMatrix>& mat,
-                                   Symmetry symmetry = NO_SYMMETRY,
-                                   TranspositionMode trans = NO_TRANSPOSE);
+    DiscreteSparseBoundaryOperator(
+            const shared_ptr<const Epetra_CrsMatrix>& mat,
+            int symmetry = NO_SYMMETRY,
+            TranspositionMode trans = NO_TRANSPOSE,
+            const shared_ptr<AhmedBemBlcluster>& blockCluster =
+            shared_ptr<AhmedBemBlcluster>(),
+            const shared_ptr<IndexPermutation>& domainPermutation =
+            shared_ptr<IndexPermutation>(),
+            const shared_ptr<IndexPermutation>& rangePermutation =
+            shared_ptr<IndexPermutation>());
 #else
     // This class cannot be used without Trilinos
 private:
@@ -82,6 +102,11 @@ public:
                           const std::vector<int>& cols,
                           const ValueType alpha,
                           arma::Mat<ValueType>& block) const;
+
+#ifdef WITH_AHMED
+    virtual shared_ptr<const DiscreteBoundaryOperator<ValueType> >
+    asDiscreteAcaBoundaryOperator(double eps=1E-4, int maximumRank=50) const;
+#endif
 
     /** \brief Downcast a shared pointer to a DiscreteBoundaryOperator object to
      *  a shared pointer to a DiscreteSparseBoundaryOperator.
@@ -110,7 +135,7 @@ public:
     TranspositionMode transpositionMode() const;
 
     /** \brief Return the symmetry type of the sparse matrix */
-    inline Symmetry symmetryMode() const{
+    inline int symmetryMode() const{
         return m_symmetry;
     }
 
@@ -124,6 +149,7 @@ protected:
 #endif
 
 private:
+    /** \cond PRIVATE */
     virtual void applyBuiltInImpl(const TranspositionMode trans,
                                   const arma::Col<ValueType>& x_in,
                                   arma::Col<ValueType>& y_inout,
@@ -131,12 +157,25 @@ private:
                                   const ValueType beta) const;
     bool isTransposed() const;
 
+    void constructAhmedMatrix(
+            int* rowOffsets, int* colIndices, double* values,
+            std::vector<unsigned int>& domain_o2p,
+            std::vector<unsigned int>& range_p2o,
+            double eps,
+            AhmedBemBlcluster* blockCluster,
+            boost::shared_array<AhmedMblock*>& mblocks,
+            int& maximumRank) const;
+    /** \endcond */
+
 private:
     /** \cond PRIVATE */
 #ifdef WITH_TRILINOS
     shared_ptr<const Epetra_CrsMatrix> m_mat;
-    Symmetry m_symmetry;
+    int m_symmetry;
     TranspositionMode m_trans;
+    shared_ptr<AhmedBemBlcluster> m_blockCluster;
+    // o2p
+    shared_ptr<IndexPermutation> m_domainPermutation, m_rangePermutation;
     Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_domainSpace;
     Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_rangeSpace;
 #endif

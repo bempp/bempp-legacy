@@ -19,12 +19,15 @@
 // THE SOFTWARE.
 
 
+#include "bempp/common/config_ahmed.hpp"
 #include "bempp/common/config_trilinos.hpp"
 
 #include "identity_operator.hpp"
 
+#include "ahmed_aux.hpp"
 #include "assembly_options.hpp"
 #include "boundary_operator.hpp"
+#include "cluster_construction_helper.hpp"
 #include "discrete_dense_boundary_operator.hpp"
 #include "discrete_sparse_boundary_operator.hpp"
 #include "context.hpp"
@@ -54,9 +57,22 @@
 #include <vector>
 
 #ifdef WITH_TRILINOS
+// This is a workaround of the problem of the abs() function being declared
+// both in Epetra and in AHMED. It relies of the implementation detail (!) that
+// in Epetra the declaration of abs is put between #ifndef __IBMCPP__ ...
+// #endif. So it may well break in future versions of Trilinos. The ideal
+// solution would be for AHMED to use namespaces.
+#ifndef __IBMCPP__
+#define __IBMCPP__
 #include <Epetra_FECrsMatrix.h>
 #include <Epetra_LocalMap.h>
 #include <Epetra_SerialComm.h>
+#undef __IBMCPP__
+#else
+#include <Epetra_FECrsMatrix.h>
+#include <Epetra_LocalMap.h>
+#include <Epetra_SerialComm.h>
+#endif
 #endif // WITH_TRILINOS
 
 namespace Bempp
@@ -449,10 +465,45 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparseMode(
                     *result, testGdofs[e], trialGdofs[e], localResult[e]);
     result->GlobalAssemble();
 
+    // If assembly mode is equal to ACA and we have AHMED,
+    // construct the block cluster tree. Otherwise leave it uninitialized.
+    typedef ClusterConstructionHelper<BasisFunctionType> CCH;
+    typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
+    typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
+    typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
+
+    shared_ptr<AhmedBemBlcluster> blockCluster;
+    shared_ptr<IndexPermutation> test_o2pPermutation, test_p2oPermutation;
+    shared_ptr<IndexPermutation> trial_o2pPermutation, trial_p2oPermutation;
+#ifdef WITH_AHMED
+    if (options.assemblyMode() == AssemblyOptions::ACA) {
+        const AcaOptions& acaOptions = options.acaOptions();
+        bool indexWithGlobalDofs = acaOptions.globalAssemblyBeforeCompression;
+
+        typedef ClusterConstructionHelper<BasisFunctionType> CCH;
+        shared_ptr<AhmedBemCluster> testClusterTree;
+        CCH::constructBemCluster(testSpace, indexWithGlobalDofs, acaOptions,
+                                 testClusterTree,
+                                 test_o2pPermutation, test_p2oPermutation);
+        // TODO: construct a hermitian H-matrix if possible
+        shared_ptr<AhmedBemCluster> trialClusterTree;
+        CCH::constructBemCluster(trialSpace, indexWithGlobalDofs, acaOptions,
+                                 trialClusterTree,
+                                 trial_o2pPermutation, trial_p2oPermutation);
+        unsigned int blockCount = 0;
+        blockCluster.reset(CCH::constructBemBlockCluster(
+                               acaOptions, false /* hermitian */,
+                               *testClusterTree, *trialClusterTree, blockCount)
+                           .release());
+    }
+#endif
+
     // Create and return a discrete operator represented by the matrix that
     // has just been calculated
     return std::auto_ptr<DiscreteBoundaryOperator<ResultType> >(
-                new DiscreteSparseBoundaryOperator<ResultType>(result));
+        new DiscreteSparseBoundaryOperator<ResultType>(
+                    result, this->symmetry(), NO_TRANSPOSE,
+                    blockCluster, trial_o2pPermutation, test_o2pPermutation));
 #else // WITH_TRILINOS
     throw std::runtime_error("IdentityOperator::assembleWeakFormInSparseMode(): "
                              "To enable assembly in sparse mode, recompile BEM++ "
@@ -463,7 +514,7 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparseMode(
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<typename IdentityOperator<BasisFunctionType, ResultType>::LocalAssembler>
 IdentityOperator<BasisFunctionType, ResultType>::makeAssemblerImpl(
-        const QuadratureStrategy& quadStrategy,        
+        const QuadratureStrategy& quadStrategy,
         const shared_ptr<const GeometryFactory>& testGeometryFactory,
         const shared_ptr<const GeometryFactory>& trialGeometryFactory,
         const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,

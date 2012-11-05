@@ -25,6 +25,7 @@
 #include "assembly/blocked_operator_structure.hpp"
 #include "assembly/context.hpp"
 #include "assembly/discrete_boundary_operator.hpp"
+#include "assembly/identity_operator.hpp"
 #include "assembly/laplace_3d_single_layer_boundary_operator.hpp"
 #include "assembly/numerical_quadrature_strategy.hpp"
 #include "grid/grid_factory.hpp"
@@ -544,4 +545,55 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(asDiscreteAcaBoundaryOperator_produces_correct_wea
                     nonblockedWeakForm, acaBlockedWeakForm, 1e-13));
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE(asDiscreteAcaBoundaryOperator_produces_correct_weak_form_for_2x1_operator_containing_sparse_block,
+                              ValueType, result_types)
+{
+    // space  | PL0
+    // -------+---
+    // PC0    |  V
+    // PL1    |  I
+
+    typedef ValueType RT;
+    typedef typename ScalarTraits<ValueType>::RealType RealType;
+    typedef RealType BFT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid0 = GridFactory::importGmshGrid(
+                params, "meshes/cube-12-reoriented.msh",
+                false /* verbose */);
+
+    shared_ptr<Space<BFT> > pc0(new PiecewiseConstantScalarSpace<BFT>(grid0));
+    shared_ptr<Space<BFT> > pl0(new PiecewiseLinearContinuousScalarSpace<BFT>(grid0));
+
+    AssemblyOptions assemblyOptions;
+    AcaOptions acaOptions;
+    acaOptions.minimumBlockSize = 2;
+    assemblyOptions.switchToAcaMode(acaOptions);
+    assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
+    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
+        new NumericalQuadratureStrategy<BFT, RT>);
+    shared_ptr<Context<BFT, RT> > context(
+        new Context<BFT, RT>(quadStrategy, assemblyOptions));
+
+    BoundaryOperator<BFT, RT> op00 = laplace3dSingleLayerBoundaryOperator<BFT, RT>(
+        context, pl0, pl0, pc0);
+    BoundaryOperator<BFT, RT> op10 = identityOperator<BFT, RT>(
+        context, pl0, pc0, pl0);
+
+    BlockedOperatorStructure<BFT, RT> structure;
+    structure.setBlock(0, 0, op00);
+    structure.setBlock(1, 0, op10);
+    Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
+
+    arma::Mat<RT> mat00 = op00.weakForm()->asMatrix();
+    arma::Mat<RT> mat10 = op10.weakForm()->asMatrix();
+    arma::Mat<RT> nonblockedWeakForm = arma::join_cols(mat00, mat10);
+    arma::Mat<RT> acaBlockedWeakForm =
+            blockedOp.weakForm()->asDiscreteAcaBoundaryOperator()->asMatrix();
+
+    BOOST_CHECK(check_arrays_are_close<ValueType>(
+                    nonblockedWeakForm, acaBlockedWeakForm,
+                    10. * std::numeric_limits<RealType>::epsilon()));
+}
 BOOST_AUTO_TEST_SUITE_END()

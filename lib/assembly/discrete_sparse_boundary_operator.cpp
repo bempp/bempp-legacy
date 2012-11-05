@@ -19,10 +19,17 @@
 // THE SOFTWARE.
 
 #include "bempp/common/config_trilinos.hpp"
+#include "bempp/common/config_ahmed.hpp"
 #ifdef WITH_TRILINOS
 
 #include "discrete_sparse_boundary_operator.hpp"
+#include "ahmed_mblock_array_deleter.hpp"
+#include "discrete_aca_boundary_operator.hpp"
+#include "index_permutation.hpp"
+
+#include "../common/boost_shared_array_fwd.hpp"
 #include "../fiber/explicit_instantiation.hpp"
+#include "../fiber/parallelization_options.hpp"
 
 #include <iostream>
 #include <stdexcept>
@@ -116,7 +123,7 @@ void reallyApplyBuiltInImpl<std::complex<float> >(
 {
     // Do the y_inout *= beta part
     const std::complex<float> zero(0.f, 0.f);
-    if (beta == zero) 
+    if (beta == zero)
         y_inout.fill(zero);
     else
         y_inout *= beta;
@@ -162,7 +169,7 @@ void reallyApplyBuiltInImpl<std::complex<double> >(
 {
     // Do the y_inout *= beta part
     const std::complex<double> zero(0., 0.);
-    if (beta == zero) 
+    if (beta == zero)
         y_inout.fill(zero);
     else
         y_inout *= beta;
@@ -193,9 +200,16 @@ void reallyApplyBuiltInImpl<std::complex<double> >(
 
 template <typename ValueType>
 DiscreteSparseBoundaryOperator<ValueType>::
-DiscreteSparseBoundaryOperator(const shared_ptr<const Epetra_CrsMatrix>& mat,
-                             Symmetry symmetry, TranspositionMode trans) :
-    m_mat(mat), m_symmetry(symmetry), m_trans(trans)
+DiscreteSparseBoundaryOperator(
+        const shared_ptr<const Epetra_CrsMatrix>& mat,
+        int symmetry, TranspositionMode trans,
+        const shared_ptr<AhmedBemBlcluster>& blockCluster,
+        const shared_ptr<IndexPermutation>& domainPermutation,
+        const shared_ptr<IndexPermutation>& rangePermutation) :
+    m_mat(mat), m_symmetry(symmetry), m_trans(trans),
+    m_blockCluster(blockCluster),
+    m_domainPermutation(domainPermutation),
+    m_rangePermutation(rangePermutation)
 {
     m_domainSpace = Thyra::defaultSpmdVectorSpace<ValueType>(
                 isTransposed() ? m_mat->NumGlobalRows() : m_mat->NumGlobalCols());
@@ -309,6 +323,59 @@ void DiscreteSparseBoundaryOperator<ValueType>::addBlock(
     }
 }
 
+#ifdef WITH_AHMED
+template<typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> >
+DiscreteSparseBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
+        double eps, int maximumRank) const
+{
+    // Note: the maximumRank parameter is ignored in this implementation.
+
+    if (!m_blockCluster || !m_domainPermutation || !m_rangePermutation)
+        throw std::runtime_error("DiscreteSparseBoundaryOperator::"
+                                 "asDiscreteAcaBoundaryOperator(): "
+                                 "data required for conversion to ACA operator "
+                                 "were not provided in the constructor");
+    if (isTransposed())
+        throw std::runtime_error("DiscreteSparseBoundaryOperator::"
+                                 "asDiscreteAcaBoundaryOperator(): "
+                                 "transposed operators are not supported yet");
+
+    int* rowOffsets = 0;
+    int* colIndices = 0;
+    double* values = 0;
+    m_mat->ExtractCrsDataPointers(rowOffsets, colIndices, values);
+
+    std::vector<unsigned int> domain_o2p =
+            m_domainPermutation->permutedIndices();
+    std::vector<unsigned int> range_o2p = m_rangePermutation->permutedIndices();
+    std::vector<unsigned int> range_p2o(range_o2p.size());
+    for (size_t o = 0; o < range_o2p.size(); ++o) {
+        assert(range_o2p[o] < range_o2p.size());
+        range_p2o[range_o2p[o]] = o;
+    }
+
+    boost::shared_array<AhmedMblock*> mblocks;
+    int trueMaximumRank = 0;
+    constructAhmedMatrix(rowOffsets, colIndices, values,
+                         domain_o2p, range_p2o, eps,
+                         m_blockCluster.get(),
+                         mblocks, trueMaximumRank);
+
+    // Gather remaining data necessary to create the combined ACA operator
+    const int symmetry = 0;
+    Fiber::ParallelizationOptions parallelOptions; // default options
+
+    shared_ptr<const DiscreteBoundaryOperator<ValueType> > result(
+                new DiscreteAcaBoundaryOperator<ValueType>(
+                    rowCount(), columnCount(), trueMaximumRank, symmetry,
+                    m_blockCluster, mblocks,
+                    *m_domainPermutation, *m_rangePermutation,
+                    parallelOptions));
+    return result;
+}
+#endif // WITH_AHMED
+
 template <typename ValueType>
 shared_ptr<const DiscreteSparseBoundaryOperator<ValueType> >
 DiscreteSparseBoundaryOperator<ValueType>::castToSparse(
@@ -322,7 +389,6 @@ DiscreteSparseBoundaryOperator<ValueType>::castToSparse(
     return result;
 
 }
-
 
 template <typename ValueType>
 shared_ptr<const Epetra_CrsMatrix>
@@ -373,7 +439,7 @@ void DiscreteSparseBoundaryOperator<ValueType>::applyBuiltInImpl(
         arma::Col<ValueType>& y_inout,
         const ValueType alpha,
         const ValueType beta) const
-{    
+{
     TranspositionMode realTrans = trans;
     bool transposed = isTransposed();
     if (transposed)
