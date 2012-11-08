@@ -24,6 +24,7 @@
 #include "../common/common.hpp"
 
 #include "_2d_array.hpp"
+#include "scalar_traits.hpp"
 #include "types.hpp"
 
 #include <vector>
@@ -47,6 +48,8 @@ template <typename ResultType>
 class LocalAssemblerForOperators
 {
 public:
+    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+
     virtual ~LocalAssemblerForOperators() {}
 
 //    /** \brief Number of dimensions over which integration takes place. */
@@ -67,13 +70,19 @@ public:
     for \p elementA in \p elementsA.
 
     Unless \p localDofIndexB is set to \p ALL_DOFS, only entries corresponding
-    to the (\p localDofIndexB)th local DOF on \p elementB are calculated. */
+    to the (\p localDofIndexB)th local DOF on \p elementB are calculated.
+
+    If \p nominalDistance is nonnegative, it is taken as the distance between
+    all element pairs for the purposes of selecting the quadrature method.
+    Otherwise the interelement distance is calculated separately for each
+    element pair. */
     virtual void evaluateLocalWeakForms(
             CallVariant callVariant,
             const std::vector<int>& elementIndicesA,
             int elementIndexB,
             LocalDofIndex localDofIndexB,
-            std::vector<arma::Mat<ResultType> >& result) = 0;
+            std::vector<arma::Mat<ResultType> >& result,
+            CoordinateType nominalDistance = -1.) = 0;
 
     /** \brief Assemble local weak forms.
 
@@ -83,11 +92,17 @@ public:
     trialElement in \p trialElementIndices.
 
     This function should be used primarily for small blocks of elements lying
-    close to each other. */
+    close to each other.
+
+    If \p nominalDistance is nonnegative, it is taken as the distance between
+    all element pairs for the purposes of selecting the quadrature method.
+    Otherwise the interelement distance is calculated separately for each
+    element pair. */
     virtual void evaluateLocalWeakForms(
             const std::vector<int>& testElementIndices,
             const std::vector<int>& trialElementIndices,
-            Fiber::_2dArray<arma::Mat<ResultType> >& result) = 0;
+            Fiber::_2dArray<arma::Mat<ResultType> >& result,
+            CoordinateType nominalDistance = -1.) = 0;
 
     /** \brief Assemble local weak forms.
 

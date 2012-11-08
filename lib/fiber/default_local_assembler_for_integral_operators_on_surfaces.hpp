@@ -87,12 +87,14 @@ public:
             const std::vector<int>& elementIndicesA,
             int elementIndexB,
             LocalDofIndex localDofIndexB,
-            std::vector<arma::Mat<ResultType> >& result);
+            std::vector<arma::Mat<ResultType> >& result,
+            CoordinateType nominalDistance = -1.);
 
     virtual void evaluateLocalWeakForms(
             const std::vector<int>& testElementIndices,
             const std::vector<int>& trialElementIndices,
-            Fiber::_2dArray<arma::Mat<ResultType> >& result);
+            Fiber::_2dArray<arma::Mat<ResultType> >& result,
+            CoordinateType nominalDistance = -1.);
 
     virtual void evaluateLocalWeakForms(
             const std::vector<int>& elementIndices,
@@ -145,7 +147,8 @@ private:
     void cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs);
 
     const Integrator& selectIntegrator(
-            int testElementIndex, int trialElementIndex);
+            int testElementIndex, int trialElementIndex,
+            CoordinateType nominalDistance = -1.);
 
     enum ElementType {
         TEST, TRIAL
@@ -157,7 +160,8 @@ private:
     const Integrator& getIntegrator(const DoubleQuadratureDescriptor& index);
 
     void getRegularOrders(int testElementIndex, int trialElementIndex,
-                     int& testQuadOrder, int& trialQuadOrder) const;
+                          int& testQuadOrder, int& trialQuadOrder,
+                          CoordinateType nominalDistance) const;
 
     CoordinateType elementSizeSquared(
             int elementIndex, const RawGridGeometry<CoordinateType>& rawGeometry) const;
@@ -170,7 +174,8 @@ private:
     void precalculateElementSizesAndCentersForSingleGrid(
             const RawGridGeometry<CoordinateType>& rawGeometry,
             std::vector<CoordinateType>& elementSizesSquared,
-            arma::Mat<CoordinateType>& elementCenters);
+            arma::Mat<CoordinateType>& elementCenters,
+            CoordinateType& averageElementSize) const;
 
 private:
     shared_ptr<const GeometryFactory> m_testGeometryFactory;
@@ -209,6 +214,7 @@ private:
     std::vector<CoordinateType> m_trialElementSizesSquared;
     arma::Mat<CoordinateType> m_testElementCenters;
     arma::Mat<CoordinateType> m_trialElementCenters;
+    CoordinateType m_averageElementSize;
 
     // tbb::atomic<size_t> m_foundInCache;
     /** \endcond */
