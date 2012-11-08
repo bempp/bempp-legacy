@@ -40,6 +40,15 @@ LocalDofListsCache<BasisFunctionType>::LocalDofListsCache(
 }
 
 template <typename BasisFunctionType>
+LocalDofListsCache<BasisFunctionType>::~LocalDofListsCache()
+{
+    for (typename LocalDofListsMap::const_iterator it = m_map.begin();
+         it != m_map.end(); ++it)
+        delete it->second;
+    m_map.clear();
+}
+
+template <typename BasisFunctionType>
 shared_ptr<const LocalDofLists> LocalDofListsCache<BasisFunctionType>::get(
         int start, int indexCount)
 {
@@ -53,11 +62,11 @@ shared_ptr<const LocalDofLists> LocalDofListsCache<BasisFunctionType>::get(
     std::pair<int, int> key(start, indexCount);
     typename LocalDofListsMap::const_iterator it = m_map.find(key);
     if (it != m_map.end()) {
-        return it->second;
+        return make_shared_from_ref(*it->second);
     }
 
     // The relevant local DOF list doesn't exist yet and must be created.
-    shared_ptr<LocalDofLists> newLists(new LocalDofLists);
+    LocalDofLists* newLists = new LocalDofLists;
     findLocalDofs(start, indexCount,
                   newLists->originalIndices, newLists->elementIndices,
                   newLists->localDofIndices, newLists->arrayIndices);
@@ -65,9 +74,17 @@ shared_ptr<const LocalDofLists> LocalDofListsCache<BasisFunctionType>::get(
     // Attempt to insert the newly created DOF list into the map
     std::pair<typename LocalDofListsMap::iterator, bool> result =
             m_map.insert(std::make_pair(key, newLists));
+    if (result.second)
+        // Insertion succeeded. The newly created DOF list will be deleted in
+        // our own destructor
+        ;
+    else
+        // Insertion failed -- another thread was faster. Delete the newly
+        // created DOF list.
+        delete newLists;
 
     // Return pointer to the DOF list that ended up in the map.
-    return result.first->second;
+    return make_shared_from_ref(*result.first->second);
 }
 
 template <typename BasisFunctionType>
