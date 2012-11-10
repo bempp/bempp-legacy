@@ -100,7 +100,7 @@ ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler
 
     if (verbose)
         std::cout << "Collecting data for assembler construction..." << std::endl;
-    collectDataForAssemblerConstruction(options,
+       this->collectDataForAssemblerConstruction(options,
                                         testRawGeometry, trialRawGeometry,
                                         testGeometryFactory, trialGeometryFactory,
                                         testBases, trialBases,

@@ -68,31 +68,6 @@ inline void reallyFillPointsAndWeightsRegular(
 
 // Singular integration
 
-template <ELEMENT_SHAPE SHAPE, typename ValueType>
-inline void remapPointsSharedVertex(
-        int sharedVertex, arma::Mat<ValueType>& points)
-{
-    // compile-time dispatch; circumvent the rule that no specialisation
-    // of member template functions is possible
-    BOOST_STATIC_ASSERT(SHAPE == TRIANGLE || SHAPE == QUADRANGLE);
-    if (SHAPE == TRIANGLE)
-        remapPointsSharedVertexTriangle(sharedVertex, points);
-    else
-        remapPointsSharedVertexQuadrilateral(sharedVertex, points);
-}
-
-template <ELEMENT_SHAPE SHAPE, typename ValueType>
-inline void remapPointsSharedEdge(
-        int sharedVertex0, int sharedVertex1, arma::Mat<ValueType>& points)
-{
-    // compile-time dispatch; circumvent the rule that no specialisation
-    // of member template functions is possible
-    BOOST_STATIC_ASSERT(SHAPE == TRIANGLE || SHAPE == QUADRANGLE);
-    if (SHAPE == TRIANGLE)
-        remapPointsSharedEdgeTriangle(sharedVertex0, sharedVertex1, points);
-    else
-        remapPointsSharedEdgeQuadrilateral(sharedVertex0, sharedVertex1, points);
-}
 
 template <typename ValueType>
 inline void remapPointsSharedVertexTriangle(
@@ -189,6 +164,33 @@ inline void remapPointsSharedEdgeQuadrilateral(
     throw std::runtime_error("remapPointsSharedEdgeQuadrilateral(): "
                              "not implemented yet");
 }
+
+template <ELEMENT_SHAPE SHAPE, typename ValueType>
+inline void remapPointsSharedVertex(
+        int sharedVertex, arma::Mat<ValueType>& points)
+{
+    // compile-time dispatch; circumvent the rule that no specialisation
+    // of member template functions is possible
+    BOOST_STATIC_ASSERT(SHAPE == TRIANGLE || SHAPE == QUADRANGLE);
+    if (SHAPE == TRIANGLE)
+        remapPointsSharedVertexTriangle(sharedVertex, points);
+    else
+        remapPointsSharedVertexQuadrilateral(sharedVertex, points);
+}
+
+template <ELEMENT_SHAPE SHAPE, typename ValueType>
+inline void remapPointsSharedEdge(
+        int sharedVertex0, int sharedVertex1, arma::Mat<ValueType>& points)
+{
+    // compile-time dispatch; circumvent the rule that no specialisation
+    // of member template functions is possible
+    BOOST_STATIC_ASSERT(SHAPE == TRIANGLE || SHAPE == QUADRANGLE);
+    if (SHAPE == TRIANGLE)
+        remapPointsSharedEdgeTriangle(sharedVertex0, sharedVertex1, points);
+    else
+        remapPointsSharedEdgeQuadrilateral(sharedVertex0, sharedVertex1, points);
+}
+
 
 template<ELEMENT_SHAPE SHAPE, SING_INT SINGULARITY, typename ValueType>
 inline void reallyFillPointsAndWeightsSingular(
