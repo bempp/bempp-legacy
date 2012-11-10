@@ -280,7 +280,7 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormImpl(
                   << this->label() << "'..." << std::endl;
 
     tbb::tick_count start = tbb::tick_count::now();
-    std::auto_ptr<LocalAssembler> assembler = makeAssembler(
+    std::auto_ptr<LocalAssembler> assembler =this->makeAssembler(
                 *context.quadStrategy(), context.assemblyOptions());
     shared_ptr<DiscreteBoundaryOperator<ResultType> > result =
             assembleWeakFormInternalImpl(*assembler, context.assemblyOptions());
