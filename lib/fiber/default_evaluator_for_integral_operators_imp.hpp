@@ -273,11 +273,21 @@ ResultType, GeometryFactory>::calcTrialData(
         int order = quadOrder(activeBasis, region);
 
         // Find out the element type
-        int elementCornerCount = -1;
+        int elementCornerCount = 0;
         for (int e = 0; e < elementCount; ++e)
             if ((*m_trialBases)[e] == &activeBasis)
             {
-                elementCornerCount = m_rawGeometry->elementCornerCount(e);
+                // elementCornerCount = m_rawGeometry->elementCornerCount(e);
+                // This implementation prevents a segmentation fault on Macs
+                // when compiled with llvm in 64-bit mode with -O2 or -O3
+                const arma::Mat<int>& elementCornerIndices =
+                    m_rawGeometry->elementCornerIndices();
+                for (size_t i = 0; i < elementCornerIndices.n_rows; ++i)
+                    if (elementCornerIndices(i, e) >= 0)
+                        elementCornerCount = i + 1;
+                    else
+                        break;
+
                 break;
             }
 
