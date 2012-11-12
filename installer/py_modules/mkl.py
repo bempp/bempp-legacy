@@ -148,7 +148,7 @@ def get_mkl_dirs_and_libs_installed(config, lib_dir, extension):
 
 def get_mkl_dirs_and_libs_redistributable(config, lib_dir, extension):
     mkl_tarball = config.get('MKL','tarball')
-    mkl_tarball = os.path.expanduser(mkl_tarball)
+    mkl_tarball = tools.normalizePath(config,mkl_tarball)
     print 'Extracting MKL redistributables'
     tools.extract_file(mkl_tarball,lib_dir)
     mkl_dirs = [lib_dir]

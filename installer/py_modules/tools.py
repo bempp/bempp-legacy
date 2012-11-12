@@ -45,7 +45,7 @@ from subprocess import check_call
 
 def extract_file(path, to_directory='.'):
     import tarfile,zipfile
-    path = os.path.expanduser(path)
+    assert(os.path.isabs(path))
     if path.endswith('.zip'):
         opener, mode = zipfile.ZipFile, 'r'
     elif path.endswith('.tar.gz') or path.endswith('.tgz'):
@@ -337,6 +337,11 @@ def getOptionFromOptsFile(option):
         if line.startswith(option):
             return line.split('=')[1].strip('\n"')
     raise Exception("Could not find the specified option in .options.cfg")
+
+def normalizePath(config,path):
+    optfile = config.get('Main','optfile') # assumed to be already normalized
+    optdir = os.path.dirname(optfile)
+    return os.path.abspath(os.path.join(optdir, os.path.expanduser(path)))
 
 def getVersion(root):
     """Get BEM++ Version information"""
