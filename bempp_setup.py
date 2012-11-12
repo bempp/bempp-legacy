@@ -23,7 +23,7 @@
 import os, sys, traceback
 sys.path.append("installer")
 
-from py_modules.tools import writeOptions, setDefaultConfigOption, pythonInfo, checkCreateDir, testBlas, testLapack, cleanUp, checkDeleteFile, checkInstallUpdates, installUpdates
+from py_modules.tools import writeOptions, setDefaultConfigOption, pythonInfo, checkCreateDir, testBlas, testLapack, cleanUp, checkDeleteFile, checkInstallUpdates, installUpdates, normalizePath
 from ConfigParser import ConfigParser
 from optparse import OptionParser
 
@@ -131,12 +131,12 @@ def prepare(root,config):
     setDefaultConfigOption(config,'Main','root_dir',root)
     setDefaultConfigOption(config,'Main','build_jobs',"1")
 
+    # Retrieve path to configuration file
+    optfile = config.get('Main','optfile')
 
     # Retrieve build directory
     setDefaultConfigOption(config,'Main','build_dir',root+'/build')
-    build_dir = config.get('Main','build_dir')
-    # Replace ~ with /home/username
-    build_dir = os.path.expanduser(build_dir)
+    build_dir = normalizePath(config, config.get('Main','build_dir'))
     # Set build directories for BEM++ and its dependencies
     config.set('Main','build_dir',build_dir)
     config.set('Bempp','build_dir',build_dir+'/bempp')
@@ -222,9 +222,10 @@ if __name__ == "__main__":
         optfileobj = open(optfile)
         config.readfp(optfileobj)
         optfileobj.close()
-        prefix=config.get('Main','prefix')
-        # Replace ~ with /home/username
-        prefix=os.path.expanduser(prefix)
+        optfile_full = os.path.abspath(os.path.expanduser(optfile))
+        tools.setDefaultConfigOption(config,'Main','optfile',
+                                     optfile_full,overwrite=True)
+        prefix = normalizePath(config, config.get('Main','prefix'))
         tools.setDefaultConfigOption(config,'Main','prefix',prefix,
                                      overwrite=True)
     except Exception, e:
