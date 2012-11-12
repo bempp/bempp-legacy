@@ -63,6 +63,7 @@ public:
     LocalDofListsCache(const Space<BasisFunctionType>& space,
                        const std::vector<unsigned int>& p2o,
                        bool indexWithGlobalDofs);
+    ~LocalDofListsCache();
 
     /** \brief Return the LocalDofLists object describing the DOFs corresponding to
      *  AHMED matrix indices [start, start + indexCount). */
@@ -89,7 +90,7 @@ private:
     bool m_indexWithGlobalDofs;
 
     typedef tbb::concurrent_unordered_map<std::pair<int, int>,
-    shared_ptr<LocalDofLists> > LocalDofListsMap;
+    const LocalDofLists*> LocalDofListsMap;
     LocalDofListsMap m_map;
     /** \endcond */
 };

@@ -31,6 +31,7 @@
 #include "../assembly/abstract_boundary_operator_pseudoinverse.hpp"
 #include "../assembly/blocked_boundary_operator.hpp"
 #include "../assembly/boundary_operator.hpp"
+#include "../assembly/context.hpp"
 #include "../assembly/discrete_boundary_operator.hpp"
 #include "../assembly/discrete_boundary_operator_composition.hpp"
 #include "../assembly/identity_operator.hpp"
@@ -43,6 +44,8 @@
 
 #include <boost/make_shared.hpp>
 #include <boost/variant.hpp>
+
+#include <tbb/task_scheduler_init.h>
 
 namespace Bempp
 {
@@ -63,7 +66,7 @@ wrapInTrilinosVector(arma::Col<ValueType>& col)
 
 /** \cond HIDDEN_INTERNAL */
 
-template <typename BasisFunctionType, typename ResultType> 
+template <typename BasisFunctionType, typename ResultType>
 struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
 {
 
@@ -76,6 +79,9 @@ struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
         typedef BoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
         typedef Solver<BasisFunctionType, ResultType> Solver_;
         const BoundaryOp& boundaryOp = boost::get<BoundaryOp>(op);
+        if (!boundaryOp.isInitialized())
+            throw std::invalid_argument("DefaultIterativeSolver::Impl::Impl(): "
+                                        "boundary operator must be initialized");
 
         if (mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE) {
             if (boundaryOp.domain()->globalDofCount() !=
@@ -158,7 +164,7 @@ struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
                     context, boundaryOp.range(row), boundaryOp.range(row),
                     boundaryOp.dualToRange(row));
                 pinvIdStructure.setBlock(row, row, pseudoinverse(id));
-            }                                   
+            }
             pinvId = BlockedBoundaryOperator<BasisFunctionType, ResultType>(
                 pinvIdStructure);
 
@@ -176,7 +182,7 @@ struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
                     "DefaultIterativeSolver::DefaultIterativeSolver(): "
                     "invalid convergence test mode");
     }
-    
+
     boost::variant<
         BoundaryOperator<BasisFunctionType, ResultType>,
         BlockedBoundaryOperator<BasisFunctionType, ResultType> > op;
@@ -268,14 +274,32 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::solveImplNonblocked(
     armaSolution.fill(static_cast<ResultType>(0.));
     Teuchos::RCP<TrilinosVector> solutionVector = wrapInTrilinosVector(armaSolution);
 
+    // Get number of threads
+    Fiber::ParallelizationOptions parallelOptions =
+        boundaryOp->context()->assemblyOptions().parallelizationOptions();
+    int maxThreadCount = 1;
+    if (!parallelOptions.isOpenClEnabled()) {
+        if (parallelOptions.maxThreadCount() ==
+            ParallelizationOptions::AUTO)
+            maxThreadCount = tbb::task_scheduler_init::automatic;
+        else
+            maxThreadCount = parallelOptions.maxThreadCount();
+    }
+
     // Solve
-    Thyra::SolveStatus<MagnitudeType> status = m_impl->solverWrapper->solve(
-        Thyra::NOTRANS, *rhsVector, solutionVector.ptr());
+    Thyra::SolveStatus<MagnitudeType> status;
+    {
+        // Initialize TBB threads here (to prevent their construction and
+        // destruction on every matrix-vector multiplication)
+        tbb::task_scheduler_init scheduler(maxThreadCount);
+        status = m_impl->solverWrapper->solve(
+            Thyra::NOTRANS, *rhsVector, solutionVector.ptr());
+    }
 
     // Construct grid function and return
     return Solution<BasisFunctionType, ResultType>(
         GridFunction<BasisFunctionType, ResultType>(
-            boundaryOp->context(), 
+            boundaryOp->context(),
             boundaryOp->domain(), boundaryOp->domain(), // is this the right choice?
             armaSolution, GridFunction<BasisFunctionType, ResultType>::COEFFICIENTS),
         status);
@@ -314,7 +338,7 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::solveImplBlocked(
         size_t chunkSize = chunkProjections.n_rows;
         armaProjections.rows(start, start + chunkSize - 1) = chunkProjections;
         start += chunkSize;
-    }        
+    }
 
     Vector<ResultType> projectionsVector(armaProjections);
     Teuchos::RCP<TrilinosVector> rhsVector;
@@ -335,9 +359,37 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::solveImplBlocked(
     armaSolution.fill(static_cast<ResultType>(0.));
     Teuchos::RCP<TrilinosVector> solutionVector = wrapInTrilinosVector(armaSolution);
 
+    // Get context of the first non-empty operator
+    size_t rowCount = boundaryOp->rowCount();
+    shared_ptr<const Context<BasisFunctionType, ResultType> > context;
+    for (size_t row = 0; row < rowCount; ++row)
+        if (boundaryOp->block(row, 0).context()) {
+            context = boundaryOp->block(row, 0).context();
+            break;
+        }
+    assert(context);
+
+    // Get number of threads
+    Fiber::ParallelizationOptions parallelOptions =
+        context->assemblyOptions().parallelizationOptions();
+    int maxThreadCount = 1;
+    if (!parallelOptions.isOpenClEnabled()) {
+        if (parallelOptions.maxThreadCount() ==
+            ParallelizationOptions::AUTO)
+            maxThreadCount = tbb::task_scheduler_init::automatic;
+        else
+            maxThreadCount = parallelOptions.maxThreadCount();
+    }
+
     // Solve
-    Thyra::SolveStatus<MagnitudeType> status = m_impl->solverWrapper->solve(
-        Thyra::NOTRANS, *rhsVector, solutionVector.ptr());
+    Thyra::SolveStatus<MagnitudeType> status;
+    {
+        // Initialize TBB threads here (to prevent their construction and
+        // destruction on every matrix-vector multiplication)
+        tbb::task_scheduler_init scheduler(maxThreadCount);
+        status = m_impl->solverWrapper->solve(
+            Thyra::NOTRANS, *rhsVector, solutionVector.ptr());
+    }
 
     // Convert chunks of the solution vector into grid functions
     std::vector<GridFunction<BasisFunctionType, ResultType> > solutionFunctions;
