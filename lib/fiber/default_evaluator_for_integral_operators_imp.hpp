@@ -55,13 +55,14 @@ public:
             size_t chunkSize,
             const arma::Mat<CoordinateType>& points,
             const GeometricalData<CoordinateType>& trialGeomData,
-            const CollectionOf2dArrays<ResultType>& weightedTrialTransfValues,
+            const CollectionOf2dArrays<ResultType>& trialTransfValues,
+            const std::vector<CoordinateType>& weights,
             const CollectionOfKernels<KernelType>& kernels,
             const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& integral,
             arma::Mat<ResultType>& result) :
         m_chunkSize(chunkSize),
         m_points(points), m_trialGeomData(trialGeomData),
-        m_weightedTrialTransfValues(weightedTrialTransfValues),
+        m_trialTransfValues(trialTransfValues), m_weights(weights),
         m_kernels(kernels), m_integral(integral), m_result(result),
         m_pointCount(result.n_cols), m_outputComponentCount(result.n_rows)
     {
@@ -80,9 +81,10 @@ public:
             _2dArray<ResultType> resultChunk(m_outputComponentCount, end - start,
                                              m_result.colptr(start));
             m_integral.evaluate(m_trialGeomData,
-                                 kernelValues,
-                                 m_weightedTrialTransfValues,
-                                 resultChunk);
+                                kernelValues,
+                                m_trialTransfValues,
+                                m_weights,
+                                resultChunk);
         }
     }
 
@@ -90,7 +92,8 @@ private:
     size_t m_chunkSize;
     const arma::Mat<CoordinateType>& m_points;
     const GeometricalData<CoordinateType>& m_trialGeomData;
-    const CollectionOf2dArrays<ResultType>& m_weightedTrialTransfValues;
+    const CollectionOf2dArrays<ResultType>& m_trialTransfValues;
+    const std::vector<CoordinateType>& m_weights;
     const CollectionOfKernels<KernelType>& m_kernels;
     const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& m_integral;
     arma::Mat<ResultType>& m_result;
@@ -159,10 +162,14 @@ ResultType, GeometryFactory>::evaluate(
             (region == EvaluatorForIntegralOperators<ResultType>::NEAR_FIELD) ?
                 m_nearFieldTrialGeomData :
                 m_farFieldTrialGeomData;
-    const CollectionOf2dArrays<ResultType>& weightedTrialTransfValues =
+    const CollectionOf2dArrays<ResultType>& trialTransfValues =
             (region == EvaluatorForIntegralOperators<ResultType>::NEAR_FIELD) ?
-                m_nearFieldWeightedTrialTransfValues :
-                m_farFieldWeightedTrialTransfValues;
+                m_nearFieldTrialTransfValues :
+                m_farFieldTrialTransfValues;
+    const std::vector<CoordinateType>& weights =
+            (region == EvaluatorForIntegralOperators<ResultType>::NEAR_FIELD) ?
+                m_nearFieldWeights :
+                m_farFieldWeights;
 
     // Do things in chunks of 96 points -- in order to avoid creating
     // too large arrays of kernel values
@@ -184,7 +191,7 @@ ResultType, GeometryFactory>::evaluate(
         Fiber::SerialBlasRegion region;
         tbb::parallel_for(tbb::blocked_range<size_t>(0, chunkCount),
                           Body(chunkSize,
-                               points, trialGeomData, weightedTrialTransfValues,
+                               points, trialGeomData, trialTransfValues, weights,
                                *m_kernels, *m_integral, result));
     }
 
@@ -221,11 +228,11 @@ ResultType, GeometryFactory>::cacheTrialData()
 
     calcTrialData(EvaluatorForIntegralOperators<ResultType>::FAR_FIELD,
                   trialGeomDeps, m_farFieldTrialGeomData,
-                  m_farFieldWeightedTrialTransfValues);
+                  m_farFieldTrialTransfValues, m_farFieldWeights);
     // near field currently not used
     calcTrialData(EvaluatorForIntegralOperators<ResultType>::NEAR_FIELD,
                   trialGeomDeps, m_nearFieldTrialGeomData,
-                  m_nearFieldWeightedTrialTransfValues);
+                  m_nearFieldTrialTransfValues, m_nearFieldWeights);
 }
 
 template <typename BasisFunctionType, typename KernelType,
@@ -235,7 +242,8 @@ ResultType, GeometryFactory>::calcTrialData(
         Region region,
         int kernelTrialGeomDeps,
         GeometricalData<CoordinateType>& trialGeomData,
-        CollectionOf2dArrays<ResultType>& weightedTrialTransfValues) const
+        CollectionOf2dArrays<ResultType>& trialTransfValues,
+        std::vector<CoordinateType>& weights) const
 {
     const int elementCount = m_rawGeometry->elementCount();
     const int worldDim = m_rawGeometry->worldDimension();
@@ -262,7 +270,8 @@ ResultType, GeometryFactory>::calcTrialData(
     // Initialise temporary (per-element) data containers
     std::vector<GeometricalData<CoordinateType> > geomDataPerElement(elementCount);
     std::vector<CollectionOf2dArrays<ResultType> >
-            weightedTrialTransfValuesPerElement(elementCount);
+            trialTransfValuesPerElement(elementCount);
+    std::vector<std::vector<CoordinateType> > weightsPerElement(elementCount);
 
     int quadPointCount = 0; // Quadrature point counter
 
@@ -347,20 +356,40 @@ ResultType, GeometryFactory>::calcTrialData(
             m_trialTransformations->evaluate(argumentData, geomDataPerElement[e],
                                              trialValues);
 
-            weightedTrialTransfValuesPerElement[e].set_size(transformationCount);
+//            weightedTrialTransfValuesPerElement[e].set_size(transformationCount);
+//            for (int transf = 0; transf < transformationCount; ++transf)
+//            {
+//                const size_t dimCount = trialValues[transf].extent(0);
+//                const size_t quadPointCount = trialValues[transf].extent(2);
+//                weightedTrialTransfValuesPerElement[e][transf].set_size(
+//                            dimCount, quadPointCount);
+//                for (size_t point = 0; point < quadPointCount; ++point)
+//                    for (size_t dim = 0; dim < dimCount; ++dim)
+//                        weightedTrialTransfValuesPerElement[e][transf](dim, point) =
+//                                trialValues[transf](dim, 0, point) *
+//                                geomDataPerElement[e].integrationElements(point) *
+//                                quadWeights[point];
+//            } // end of loop over transformations
+
+            const size_t localQuadPointCount = quadWeights.size();
+
+            trialTransfValuesPerElement[e].set_size(transformationCount);
             for (int transf = 0; transf < transformationCount; ++transf)
             {
                 const size_t dimCount = trialValues[transf].extent(0);
-                const size_t quadPointCount = trialValues[transf].extent(2);
-                weightedTrialTransfValuesPerElement[e][transf].set_size(
-                            dimCount, quadPointCount);
-                for (size_t point = 0; point < quadPointCount; ++point)
+                assert(trialValues[transf].extent(2) == localQuadPointCount);
+                trialTransfValuesPerElement[e][transf].set_size(
+                            dimCount, localQuadPointCount);
+                for (size_t point = 0; point < localQuadPointCount; ++point)
                     for (size_t dim = 0; dim < dimCount; ++dim)
-                        weightedTrialTransfValuesPerElement[e][transf](dim, point) =
-                                trialValues[transf](dim, 0, point) *
-                                geomDataPerElement[e].integrationElements(point) *
-                                quadWeights[point];
+                        trialTransfValuesPerElement[e][transf](dim, point) =
+                                trialValues[transf](dim, 0, point);
             } // end of loop over transformations
+
+            weightsPerElement[e].resize(localQuadPointCount);
+            for (size_t point = 0; point < localQuadPointCount; ++point)
+                weightsPerElement[e][point] = quadWeights[point] *
+                        geomDataPerElement[e].integrationElements(point);
 
             quadPointCount += quadWeights.size();
         } // end of loop over elements
@@ -383,16 +412,21 @@ ResultType, GeometryFactory>::calcTrialData(
         trialGeomData.jacobiansTransposed.set_size(gridDim, worldDim, quadPointCount);
     if (kernelTrialGeomDeps & JACOBIAN_INVERSES_TRANSPOSED)
         trialGeomData.jacobianInversesTransposed.set_size(worldDim, gridDim, quadPointCount);
-    weightedTrialTransfValues.set_size(transformationCount);
+//    weightedTrialTransfValues.set_size(transformationCount);
+//    for (int transf = 0; transf < transformationCount; ++transf)
+//        weightedTrialTransfValues[transf].set_size(
+//                    m_trialTransformations->resultDimension(transf), quadPointCount);
+    trialTransfValues.set_size(transformationCount);
     for (int transf = 0; transf < transformationCount; ++transf)
-        weightedTrialTransfValues[transf].set_size(
+        trialTransfValues[transf].set_size(
                     m_trialTransformations->resultDimension(transf), quadPointCount);
+    weights.resize(quadPointCount);
 
     for (int e = 0, startCol = 0;
          e < elementCount;
-         startCol += weightedTrialTransfValuesPerElement[e][0].extent(1), ++e)
+         startCol += trialTransfValuesPerElement[e][0].extent(1), ++e)
     {
-        int endCol = startCol + weightedTrialTransfValuesPerElement[e][0].extent(1) - 1;
+        int endCol = startCol + trialTransfValuesPerElement[e][0].extent(1) - 1;
         if (kernelTrialGeomDeps & GLOBALS)
             trialGeomData.globals.cols(startCol, endCol) =
                     geomDataPerElement[e].globals;
@@ -409,10 +443,12 @@ ResultType, GeometryFactory>::calcTrialData(
             trialGeomData.jacobianInversesTransposed.slices(startCol, endCol) =
                     geomDataPerElement[e].jacobianInversesTransposed;
         for (int transf = 0; transf < transformationCount; ++transf)
-            for (size_t point = 0; point < weightedTrialTransfValuesPerElement[e][transf].extent(1); ++point)
-                for (size_t dim = 0; dim < weightedTrialTransfValuesPerElement[e][transf].extent(0); ++dim)
-                    weightedTrialTransfValues[transf](dim, startCol + point) =
-                            weightedTrialTransfValuesPerElement[e][transf](dim, point);
+            for (size_t point = 0; point < trialTransfValuesPerElement[e][transf].extent(1); ++point)
+                for (size_t dim = 0; dim < trialTransfValuesPerElement[e][transf].extent(0); ++dim)
+                    trialTransfValues[transf](dim, startCol + point) =
+                            trialTransfValuesPerElement[e][transf](dim, point);
+        for (size_t point = 0; point < trialTransfValuesPerElement[e][0].extent(1); ++point)
+                weights[startCol + point] = weightsPerElement[e][point];
     }
 }
 

@@ -68,7 +68,8 @@ template <typename IntegrandFunctor>
 void DefaultKernelTrialIntegral<IntegrandFunctor>::evaluate(
         const GeometricalData<CoordinateType>& trialGeomData,
         const CollectionOf4dArrays<KernelType>& kernels,
-        const CollectionOf2dArrays<ResultType>& weightedTrialTransformations,
+        const CollectionOf2dArrays<ResultType>& trialTransformations,
+        const std::vector<CoordinateType>& weights,
         _2dArray<ResultType>& result) const
 {
     const size_t evalPointCount = kernels[0].extent(2);
@@ -79,10 +80,11 @@ void DefaultKernelTrialIntegral<IntegrandFunctor>::evaluate(
         assert(kernels[i].extent(2) == evalPointCount);
         assert(kernels[i].extent(3) == quadPointCount);
     }
-    for (size_t i = 0; i < weightedTrialTransformations.size(); ++i) {
-        assert((int)weightedTrialTransformations[i].extent(0) == resultComponentCount);
-        assert(weightedTrialTransformations[i].extent(1) == quadPointCount);
+    for (size_t i = 0; i < trialTransformations.size(); ++i) {
+        assert((int)trialTransformations[i].extent(0) == resultComponentCount);
+        assert(trialTransformations[i].extent(1) == quadPointCount);
     }
+    assert(weights.size() == quadPointCount);
 
     result.set_size(resultComponentCount, evalPointCount);
     std::fill(result.begin(), result.end(), 0.);
@@ -93,7 +95,8 @@ void DefaultKernelTrialIntegral<IntegrandFunctor>::evaluate(
                 result(dim, evalPoint) += m_functor.evaluate(
                             trialGeomData.const_slice(quadPoint),
                             kernels.const_slice(evalPoint, quadPoint),
-                            weightedTrialTransformations.const_slice(quadPoint));
+                            trialTransformations.const_slice(quadPoint)) *
+                        weights[quadPoint];
 }
 
 } // namespace Fiber

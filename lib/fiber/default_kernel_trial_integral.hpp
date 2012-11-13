@@ -56,6 +56,7 @@ public:
             const GeometricalData<CoordinateType>& trialGeomData,
             const CollectionOf4dArrays<KernelType>& kernels,
             const CollectionOf2dArrays<ResultType>& weightedTrialTransformations,
+            const std::vector<CoordinateType>& weights,
             _2dArray<ResultType>& result) const;
 
 private:
