@@ -555,6 +555,16 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
     activeLocalResults.reserve(elementPairCount);
     // m_cache.rehash(int(elementIndexPairs.size() / m_cache.max_load_factor() + 1));
 
+    int maxThreadCount = 1;
+    if (!m_parallelizationOptions.isOpenClEnabled()) {
+        if (m_parallelizationOptions.maxThreadCount() ==
+            ParallelizationOptions::AUTO)
+            maxThreadCount = tbb::task_scheduler_init::automatic;
+        else
+            maxThreadCount = m_parallelizationOptions.maxThreadCount();
+    }
+    tbb::task_scheduler_init scheduler(maxThreadCount);
+
     // Now loop over unique quadrature variants
     for (typename QuadVariantSet::const_iterator it = uniqueQuadVariants.begin();
          it != uniqueQuadVariants.end(); ++it) {
@@ -594,15 +604,6 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
         // activeIntegrator.integrate(activeElementPairs, activeTestBasis,
         //                            activeTrialBasis, localResult);
 
-        int maxThreadCount = 1;
-        if (!m_parallelizationOptions.isOpenClEnabled()) {
-            if (m_parallelizationOptions.maxThreadCount() ==
-                    ParallelizationOptions::AUTO)
-                maxThreadCount = tbb::task_scheduler_init::automatic;
-            else
-                maxThreadCount = m_parallelizationOptions.maxThreadCount();
-        }
-        tbb::task_scheduler_init scheduler(maxThreadCount);
         typedef SingularIntegralCalculatorLoopBody<
                 BasisFunctionType, KernelType, ResultType> Body;
         {

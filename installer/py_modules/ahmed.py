@@ -32,7 +32,7 @@ def prepare(root,config):
         if not config.has_option('AHMED','file_name'):
             raise Exception('Need to give full path of tar.gz archived file with AHMED 1.0 release')
         ahmed_fname=config.get('AHMED','file_name')
-        ahmed_fname=os.path.expanduser(ahmed_fname)
+        ahmed_fname=tools.normalizePath(config,ahmed_fname)
         config.set('AHMED','with_ahmed','ON')
         prefix=config.get('Main','prefix')
         dep_build_dir = config.get('Main','dependency_build_dir')
