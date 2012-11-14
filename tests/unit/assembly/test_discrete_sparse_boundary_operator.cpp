@@ -191,6 +191,56 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2_and_beta_equal_to_3_and_transpose, ResultType, result_types)
+{
+    std::srand(1);
+
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    DiscreteSparseBoundaryOperatorFixture<BFT, RT> fixture;
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
+
+    RT alpha = static_cast<RT>(2.);
+    RT beta = static_cast<RT>(3.);
+
+    arma::Col<RT> x = generateRandomVector<RT>(dop->rowCount());
+    arma::Col<RT> y = generateRandomVector<RT>(dop->columnCount());
+
+    arma::Col<RT> expected = alpha * dop->asMatrix().st() * x + beta * y;
+
+    dop->apply(TRANSPOSE, x, y, alpha, beta);
+
+    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
+                                           10. * std::numeric_limits<CT>::epsilon()));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2_plus_3j_and_beta_equal_to_4_minus_5j_and_transpose, ResultType, complex_result_types)
+{
+    std::srand(1);
+
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    DiscreteSparseBoundaryOperatorFixture<BFT, RT> fixture;
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
+
+    RT alpha = static_cast<RT>(2., 3.);
+    RT beta = static_cast<RT>(4., -5.);
+
+    arma::Col<RT> x = generateRandomVector<RT>(dop->rowCount());
+    arma::Col<RT> y = generateRandomVector<RT>(dop->columnCount());
+
+    arma::Col<RT> expected = alpha * dop->asMatrix().st() * x + beta * y;
+
+    dop->apply(TRANSPOSE, x, y, alpha, beta);
+
+    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
+                                           10. * std::numeric_limits<CT>::epsilon()));
+}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE(asDiscreteAcaBoundaryOperator_works_correctly, ResultType, result_types)
 {
     std::srand(1);
