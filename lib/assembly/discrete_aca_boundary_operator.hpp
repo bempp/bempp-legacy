@@ -157,10 +157,75 @@ public:
 
     /** \brief Constructor.
      *
+     *  \param[in] rowCount
+     *    Number of rows.
+     *  \param[in] columnCount
+     *    Number of columns.
+     *  \param[in] maximumRankUsedInAssembly
+     *    The limit on block rank used during assembly of the H-matrix.
+     *    This is used in particular when generating the approximate H-matrix
+     *    LU.
+     *  \param[in] symmetry
+     *    H-matrix symmetry. Can be any combination of the flags defined in the
+     *    Symmetry enumeration type.
+     *  \param[in] blockCluster_
+     *    Block cluster defining the structure of the H-matrix.
+     *  \param[in] blocks_
+     *    Array containing the H-matrix blocks.
+     *  \param[in] domainPermutation_
+     *    Mapping from original to permuted column indices.
+     *  \param[in] rangePermutation_
+     *    Mapping from original to permuted row indices.
      *  \param[in] parallelizationOptions_
      *    Options determining the maximum number of threads used in
      *    the apply() routine for the H-matrix-vector product.
+     *  \param[in] sharedBlocks_
+     *    Vector of arrays of mblocks on which this operator implicitly
+     *    depends and which therefore must stay alive for the lifetime
+     *    of this operator. Useful for constructing ACA operators that
+     *    combine mblocks of several other operators.
      *
+     *  \note Currently the apply() routine is only parallelized for
+     *  non-Hermitian H-matrices.
+     *
+     *  \deprecated This constructor is deprecated. Use the constructor
+     *  accepting the block cluster as a shared pointer instead. */
+    DiscreteAcaBoundaryOperator(
+            unsigned int rowCount, unsigned int columnCount,
+            int maximumRankUsedInAssembly,
+            int symmetry,
+            std::auto_ptr<const AhmedBemBlcluster> blockCluster_,
+            AhmedMblockArray blocks_,
+            const IndexPermutation& domainPermutation_,
+            const IndexPermutation& rangePermutation_,
+            const ParallelizationOptions& parallelizationOptions_,
+            const std::vector<AhmedConstMblockArray>& sharedBlocks_ =
+                std::vector<AhmedConstMblockArray>()) BEMPP_DEPRECATED;
+
+    /** \brief Constructor.
+     *
+     *  \param[in] rowCount
+     *    Number of rows.
+     *  \param[in] columnCount
+     *    Number of columns.
+     *  \param[in] maximumRankUsedInAssembly
+     *    The limit on block rank used during assembly of the H-matrix.
+     *    This is used in particular when generating the approximate H-matrix
+     *    LU.
+     *  \param[in] symmetry
+     *    H-matrix symmetry. Can be any combination of the flags defined in the
+     *    Symmetry enumeration type.
+     *  \param[in] blockCluster_
+     *    Block cluster defining the structure of the H-matrix.
+     *  \param[in] blocks_
+     *    Array containing the H-matrix blocks.
+     *  \param[in] domainPermutation_
+     *    Mapping from original to permuted column indices.
+     *  \param[in] rangePermutation_
+     *    Mapping from original to permuted row indices.
+     *  \param[in] parallelizationOptions_
+     *    Options determining the maximum number of threads used in
+     *    the apply() routine for the H-matrix-vector product.
      *  \param[in] sharedBlocks_
      *    Vector of arrays of mblocks on which this operator implicitly
      *    depends and which therefore must stay alive for the lifetime
@@ -173,8 +238,8 @@ public:
             unsigned int rowCount, unsigned int columnCount,
             int maximumRank,
             int symmetry,
-            std::auto_ptr<AhmedBemBlcluster> blockCluster_,
-            AhmedMblockArray blocks_,
+            const shared_ptr<const AhmedBemBlcluster>& blockCluster_,
+            const AhmedMblockArray& blocks_,
             const IndexPermutation& domainPermutation_,
             const IndexPermutation& rangePermutation_,
             const ParallelizationOptions& parallelizationOptions_,
@@ -224,7 +289,7 @@ public:
     int symmetry() const;
 
     /** \brief Return the block cluster. */
-    const AhmedBemBlcluster* blockCluster() const;
+    shared_ptr<const AhmedBemBlcluster> blockCluster() const;
 
     /** \brief Return the mblocks making up the H-matrix represented by this
      *  operator.
@@ -279,7 +344,7 @@ private:
     int m_maximumRank; // used by the approximate-LU preconditioner
     int m_symmetry;
 
-    std::auto_ptr<AhmedBemBlcluster> m_blockCluster;
+    shared_ptr<const AhmedBemBlcluster> m_blockCluster;
     AhmedMblockArray m_blocks;
 
     IndexPermutation m_domainPermutation;

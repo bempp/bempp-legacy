@@ -435,7 +435,7 @@ DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
                                     m_rowCounts[row], m_columnCounts[col]));
                     if (acaBlocks(row, col))
                         copySonsAdjustingIndices<ValueType>(
-                                    acaBlocks(row, col)->blockCluster(),
+                                    acaBlocks(row, col)->blockCluster().get(),
                                     root.get(),
                                     rowOffsets[row],
                                     colOffsets[col],
@@ -456,7 +456,7 @@ DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
 
     // Create the root node of the combined cluster tree and set its sons
     // (TODO: see what happens if any sons are NULL)
-    std::auto_ptr<AhmedBemBlcluster> mblockCluster(
+    shared_ptr<AhmedBemBlcluster> mblockCluster(
                 new AhmedBemBlcluster(0, 0, totalRowCount, totalColCount));
     mblockCluster->setsons(blockRowCount, blockColCount, &roots[0]);
 

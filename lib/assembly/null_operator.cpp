@@ -29,6 +29,7 @@
 
 #include "../common/boost_make_shared_fwd.hpp"
 #include "../fiber/explicit_instantiation.hpp"
+#include "../fiber/local_assembler_for_operators.hpp"
 
 #include <stdexcept>
 
@@ -143,7 +144,7 @@ NullOperator<BasisFunctionType, ResultType>::reallyAssembleWeakForm() const
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<typename NullOperator<BasisFunctionType, ResultType>::LocalAssembler>
 NullOperator<BasisFunctionType, ResultType>::makeAssemblerImpl(
-        const QuadratureStrategy& quadStrategy,        
+        const QuadratureStrategy& quadStrategy,
         const shared_ptr<const GeometryFactory>& testGeometryFactory,
         const shared_ptr<const GeometryFactory>& trialGeometryFactory,
         const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,

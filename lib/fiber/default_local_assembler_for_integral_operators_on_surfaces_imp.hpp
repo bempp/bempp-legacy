@@ -195,7 +195,8 @@ evaluateLocalWeakForms(
         const std::vector<int>& elementIndicesA,
         int elementIndexB,
         LocalDofIndex localDofIndexB,
-        std::vector<arma::Mat<ResultType> >& result)
+        std::vector<arma::Mat<ResultType> >& result,
+        CoordinateType nominalDistance)
 {
     typedef Basis<BasisFunctionType> Basis;
 
@@ -252,8 +253,10 @@ evaluateLocalWeakForms(
         } else {
             const Integrator* integrator =
                     callVariant == TEST_TRIAL ?
-                        &selectIntegrator(elementIndicesA[i], elementIndexB) :
-                        &selectIntegrator(elementIndexB, elementIndicesA[i]);
+                        &selectIntegrator(elementIndicesA[i], elementIndexB,
+                                          nominalDistance) :
+                        &selectIntegrator(elementIndexB, elementIndicesA[i],
+                                          nominalDistance);
             quadVariants[i] = QuadVariant(integrator, basesA[i]);
         }
     }
@@ -313,7 +316,8 @@ KernelType, ResultType, GeometryFactory>::
 evaluateLocalWeakForms(
         const std::vector<int>& testElementIndices,
         const std::vector<int>& trialElementIndices,
-        Fiber::_2dArray<arma::Mat<ResultType> >& result)
+        Fiber::_2dArray<arma::Mat<ResultType> >& result,
+        CoordinateType nominalDistance)
 {
     typedef Fiber::Basis<BasisFunctionType> Basis;
 
@@ -345,7 +349,7 @@ evaluateLocalWeakForms(
             } else {
                 const Integrator* integrator =
                         &selectIntegrator(activeTestElementIndex,
-                                          activeTrialElementIndex);
+                                          activeTrialElementIndex, nominalDistance);
                 quadVariants(testIndex, trialIndex) = QuadVariant(
                             integrator, (*m_testBases)[activeTestElementIndex],
                             (*m_trialBases)[activeTrialElementIndex]);
@@ -551,6 +555,16 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
     activeLocalResults.reserve(elementPairCount);
     // m_cache.rehash(int(elementIndexPairs.size() / m_cache.max_load_factor() + 1));
 
+    int maxThreadCount = 1;
+    if (!m_parallelizationOptions.isOpenClEnabled()) {
+        if (m_parallelizationOptions.maxThreadCount() ==
+            ParallelizationOptions::AUTO)
+            maxThreadCount = tbb::task_scheduler_init::automatic;
+        else
+            maxThreadCount = m_parallelizationOptions.maxThreadCount();
+    }
+    tbb::task_scheduler_init scheduler(maxThreadCount);
+
     // Now loop over unique quadrature variants
     for (typename QuadVariantSet::const_iterator it = uniqueQuadVariants.begin();
          it != uniqueQuadVariants.end(); ++it) {
@@ -590,15 +604,6 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
         // activeIntegrator.integrate(activeElementPairs, activeTestBasis,
         //                            activeTrialBasis, localResult);
 
-        int maxThreadCount = 1;
-        if (!m_parallelizationOptions.isOpenClEnabled()) {
-            if (m_parallelizationOptions.maxThreadCount() ==
-                    ParallelizationOptions::AUTO)
-                maxThreadCount = tbb::task_scheduler_init::automatic;
-            else
-                maxThreadCount = m_parallelizationOptions.maxThreadCount();
-        }
-        tbb::task_scheduler_init scheduler(maxThreadCount);
         typedef SingularIntegralCalculatorLoopBody<
                 BasisFunctionType, KernelType, ResultType> Body;
         {
@@ -620,17 +625,25 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 precalculateElementSizesAndCenters()
 {
+    CoordinateType averageTestElementSize;
     precalculateElementSizesAndCentersForSingleGrid(
                 *m_testRawGeometry,
-                m_testElementSizesSquared, m_testElementCenters);
+                m_testElementSizesSquared, m_testElementCenters,
+                averageTestElementSize);
     if (testAndTrialGridsAreIdentical()) {
         m_trialElementSizesSquared = m_testElementSizesSquared;
         m_trialElementCenters = m_testElementCenters;
+        m_averageElementSize = averageTestElementSize;
     }
-    else
+    else {
+        CoordinateType averageTrialElementSize;
         precalculateElementSizesAndCentersForSingleGrid(
                     *m_trialRawGeometry,
-                    m_trialElementSizesSquared, m_trialElementCenters);
+                    m_trialElementSizesSquared, m_trialElementCenters,
+                    averageTrialElementSize);
+        m_averageElementSize =
+                (averageTestElementSize + averageTrialElementSize) / 2.;
+    }
 }
 
 template <typename BasisFunctionType, typename KernelType,
@@ -641,14 +654,20 @@ KernelType, ResultType, GeometryFactory>::
 precalculateElementSizesAndCentersForSingleGrid(
         const RawGridGeometry<CoordinateType>& rawGeometry,
         std::vector<CoordinateType>& elementSizesSquared,
-        arma::Mat<CoordinateType>& elementCenters)
+        arma::Mat<CoordinateType>& elementCenters,
+        CoordinateType& averageElementSize) const
 {
     const size_t elementCount = rawGeometry.elementCount();
     const int worldDim = rawGeometry.worldDimension();
 
+    averageElementSize = 0.; // We will store here temporarily
+                             // the sum of element sizes
     elementSizesSquared.resize(elementCount);
-    for (int e = 0; e < elementCount; ++e)
+    for (int e = 0; e < elementCount; ++e) {
         elementSizesSquared[e] = elementSizeSquared(e, rawGeometry);
+        averageElementSize += sqrt(elementSizesSquared[e]);
+    }
+    averageElementSize /= elementCount;
 
     elementCenters.set_size(worldDim, elementCount);
     for (int e = 0; e < elementCount; ++e)
@@ -660,7 +679,8 @@ template <typename BasisFunctionType, typename KernelType,
 const TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>&
 DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
-selectIntegrator(int testElementIndex, int trialElementIndex)
+selectIntegrator(int testElementIndex, int trialElementIndex,
+                 CoordinateType nominalDistance)
 {
     DoubleQuadratureDescriptor desc;
 
@@ -683,7 +703,8 @@ selectIntegrator(int testElementIndex, int trialElementIndex)
 //        desc.testOrder = regularOrder(testElementIndex, TEST);
 //        desc.trialOrder = regularOrder(trialElementIndex, TRIAL);
         getRegularOrders(testElementIndex, trialElementIndex,
-                         desc.testOrder, desc.trialOrder);
+                         desc.testOrder, desc.trialOrder,
+                         nominalDistance);
     } else { // singular integral
         desc.testOrder = singularOrder(testElementIndex, TEST);
         desc.trialOrder = singularOrder(trialElementIndex, TRIAL);
@@ -720,7 +741,8 @@ void
 DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 getRegularOrders(int testElementIndex, int trialElementIndex,
-                 int& testQuadOrder, int& trialQuadOrder) const
+                 int& testQuadOrder, int& trialQuadOrder,
+                 CoordinateType nominalDistance) const
 {
     // TODO:
     // 1. Check the size of elements and the distance between them
@@ -733,18 +755,23 @@ getRegularOrders(int testElementIndex, int trialElementIndex,
     testQuadOrder = testBasisOrder;
     trialQuadOrder = trialBasisOrder;
 
-    CoordinateType testElementSizeSquared =
-            m_testElementSizesSquared[testElementIndex];
-    CoordinateType trialElementSizeSquared =
-            m_trialElementSizesSquared[trialElementIndex];
-    CoordinateType distanceSquared =
-            elementDistanceSquared(testElementIndex, trialElementIndex);
-    CoordinateType normalisedDistanceSquared =
-            distanceSquared / std::max(testElementSizeSquared,
-                                       trialElementSizeSquared);
+    CoordinateType normalisedDistance;
+    if (nominalDistance < 0.) {
+        CoordinateType testElementSizeSquared =
+                m_testElementSizesSquared[testElementIndex];
+        CoordinateType trialElementSizeSquared =
+                m_trialElementSizesSquared[trialElementIndex];
+        CoordinateType distanceSquared =
+                elementDistanceSquared(testElementIndex, trialElementIndex);
+        CoordinateType normalisedDistanceSquared =
+                distanceSquared / std::max(testElementSizeSquared,
+                                           trialElementSizeSquared);
+        normalisedDistance = sqrt(normalisedDistanceSquared);
+    } else
+        normalisedDistance = nominalDistance / m_averageElementSize;
 
     const QuadratureOptions& options =
-            m_accuracyOptions.doubleRegular(sqrt(normalisedDistanceSquared));
+            m_accuracyOptions.doubleRegular(normalisedDistance);
     testQuadOrder = options.quadratureOrder(testQuadOrder);
     trialQuadOrder = options.quadratureOrder(trialQuadOrder);
 }

@@ -53,7 +53,9 @@ AcaApproximateLuInverse<ValueType>::AcaApproximateLuInverse(
     m_domainPermutation(fwdOp.m_rangePermutation),
     m_rangePermutation(fwdOp.m_domainPermutation)
 {
-    bool result = genLUprecond(fwdOp.m_blockCluster.get(), fwdOp.m_blocks.get(),
+    const blcluster* fwdBlockCluster = fwdOp.m_blockCluster.get();
+    bool result = genLUprecond(const_cast<blcluster*>(fwdBlockCluster),
+                               fwdOp.m_blocks.get(),
                                delta, fwdOp.m_maximumRank,
                                m_blockCluster, m_blocksL, m_blocksU, true);
     if (!result)

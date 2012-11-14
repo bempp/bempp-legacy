@@ -55,7 +55,8 @@ public:
     virtual void evaluate(
             const GeometricalData<CoordinateType>& trialGeomData,
             const CollectionOf4dArrays<KernelType>& kernels,
-            const CollectionOf2dArrays<ResultType>& weightedTrialTransformations,
+            const CollectionOf2dArrays<ResultType>& trialTransformations,
+            const std::vector<CoordinateType>& weights,
             _2dArray<ResultType>& result) const = 0;
 };
 
