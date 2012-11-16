@@ -25,9 +25,9 @@ import struct
 
 tbb_fname_mac='tbb40_297oss_mac.tgz'
 tbb_fname_linux='tbb40_297oss_lin.tgz'
-tbb_url_mac='http://threadingbuildingblocks.org/uploads/78/181/4.0%20update%203/tbb40_297oss_mac.tgz'
-tbb_url_linux='http://threadingbuildingblocks.org/uploads/78/181/4.0%20update%203/tbb40_297oss_lin.tgz'
-tbb_extract_dir='tbb40_297oss'
+tbb_url_mac='http://threadingbuildingblocks.org/sites/default/files/software_releases/mac/tbb40_20120613oss_mac.tgz'
+tbb_url_linux='http://threadingbuildingblocks.org/sites/default/files/software_releases/linux/tbb40_20120613oss_lin_0.tgz'
+tbb_extract_dir='tbb40_20120613oss'
 tbb_dir='tbb'
 tbb_fname_short='tbb.tgz'
 
