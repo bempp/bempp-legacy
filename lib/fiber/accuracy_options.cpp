@@ -80,7 +80,7 @@ void AccuracyOptionsEx::setSingleRegular(
 const QuadratureOptions& AccuracyOptionsEx::doubleRegular(
         double relativeDistance) const
 {
-    for (int i = m_doubleRegular.size() - 1; i >= 0; --i)
+    for (int i = 0; i < m_doubleRegular.size(); ++i)
         if (relativeDistance <= m_doubleRegular[i].first)
             return m_doubleRegular[i].second;
     // should never happen
