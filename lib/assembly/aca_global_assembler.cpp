@@ -233,13 +233,15 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                                  trialClusterTree,
                                  trial_o2pPermutation, trial_p2oPermutation);
 
-    // // Export VTK plots showing the disctribution of leaf cluster ids
-    // std::vector<unsigned int> testClusterIds;
-    // getClusterIds(testClusterTree, p2oTestDofs, testClusterIds);
-    // testSpace.dumpClusterIds("testClusterIds", testClusterIds);
-    // std::vector<unsigned int> trialClusterIds;
-    // getClusterIds(trialClusterTree, p2oTrialDofs, trialClusterIds);
-    // trialSpace.dumpClusterIds("trialClusterIds", trialClusterIds);
+//    // Export VTK plots showing the disctribution of leaf cluster ids
+//    std::vector<unsigned int> testClusterIds;
+//    getClusterIds(*testClusterTree, test_p2oPermutation->permutedIndices(), testClusterIds);
+//    testSpace.dumpClusterIds("testClusterIds", testClusterIds,
+//                             indexWithGlobalDofs ? GLOBAL_DOFS : FLAT_LOCAL_DOFS);
+//    std::vector<unsigned int> trialClusterIds;
+//    getClusterIds(*trialClusterTree, trial_p2oPermutation->permutedIndices(), trialClusterIds);
+//    trialSpace.dumpClusterIds("trialClusterIds", trialClusterIds,
+//                              indexWithGlobalDofs ? GLOBAL_DOFS : FLAT_LOCAL_DOFS);
 
     if (verbosityHigh)
         std::cout << "Test cluster count: " << testClusterTree->getncl()
@@ -419,7 +421,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         if (boost::is_complex<ResultType>())
             symmetry |= SYMMETRIC;
     }
-    std::auto_ptr<DiscreteBndOp> acaOp(
+    std::auto_ptr<DiscreteAcaLinOp> acaOp(
                 new DiscreteAcaLinOp(testDofCount, trialDofCount,
                                      acaOptions.maximumRank,
                                      Symmetry(symmetry),
@@ -436,7 +438,10 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         // without Trilinos, this code will never be reached -- an exception
         // will be thrown earlier in this function
         typedef DiscreteBoundaryOperatorComposition<ResultType> DiscreteBndOpComp;
+        // acaOp->dumpMblockData();
         shared_ptr<DiscreteBndOp> acaOpShared(acaOp.release());
+        arma::Mat<ResultType> acaMat = acaOpShared->asMatrix();
+        arma::diskio::save_raw_ascii(acaMat, "aca.txt");
         shared_ptr<DiscreteBndOp> trialGlobalToLocal =
                 constructOperatorMappingGlobalToFlatLocalDofs<
                 BasisFunctionType, ResultType>(trialSpace);
