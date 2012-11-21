@@ -150,6 +150,22 @@ bool Space<BasisFunctionType>::dofsAssigned() const
 }
 
 template <typename BasisFunctionType>
+void Space<BasisFunctionType>::dumpClusterIdsEx(
+            const char* fileName,
+            const std::vector<unsigned int>& clusterIdsOfGlobalDofs,
+            DofType dofType) const
+{
+    if (dofType == GLOBAL_DOFS)
+        return dumpClusterIds(fileName, clusterIdsOfGlobalDofs);
+    else if (dofType == FLAT_LOCAL_DOFS)
+        throw std::runtime_error("Space::dumpClusterIdsEx(): "
+                                 "dumping of flat local DOF not supported");
+    else
+        throw std::invalid_argument("Space::dumpClusterIdsEx(): "
+                                    "invalid DOF type");
+}
+
+template <typename BasisFunctionType>
 void getAllBases(const Space<BasisFunctionType>& space,
         std::vector<const Fiber::Basis<BasisFunctionType>*>& bases)
 {

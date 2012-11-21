@@ -201,10 +201,23 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::getFlatLocalDofPositions(
 template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::dumpClusterIds(
         const char* fileName,
-        const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const
+        const std::vector<unsigned int>& clusterIdsOfDofs) const
 {
+    dumpClusterIdsEx(fileName, clusterIdsOfDofs, GLOBAL_DOFS);
+}
+
+template <typename BasisFunctionType>
+void PiecewiseConstantScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
+        const char* fileName,
+        const std::vector<unsigned int>& clusterIdsOfGlobalDofs,
+        DofType dofType) const
+{
+    if (dofType != GLOBAL_DOFS && dofType != FLAT_LOCAL_DOFS)
+        throw std::invalid_argument("PiecewiseConstantScalarSpace::"
+                                    "dumpClusterIds(): invalid DOF type");
     const size_t idCount = clusterIdsOfGlobalDofs.size();
-    if (idCount != globalDofCount())
+    if ((dofType == GLOBAL_DOFS && idCount != globalDofCount()) ||
+            (dofType == FLAT_LOCAL_DOFS && idCount != flatLocalDofCount()))
         throw std::invalid_argument(
                 "PiecewiseConstantScalarSpace::dumpClusterIds(): "
                 "clusterIds has incorrect length");

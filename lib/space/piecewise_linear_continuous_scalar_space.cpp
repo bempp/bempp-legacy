@@ -185,7 +185,7 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
         it->next();
     }
 
-    // Initialize the container mapping the flat local dof indices to 
+    // Initialize the container mapping the flat local dof indices to
     // local dof indices
     m_flatLocal2localDofs.clear();
     m_flatLocal2localDofs.reserve(m_flatLocalDofCount);
@@ -337,20 +337,57 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getFlatLocalDofPos
 template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::dumpClusterIds(
         const char* fileName,
-        const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const
+        const std::vector<unsigned int>& clusterIdsOfDofs) const
 {
-    const size_t idCount = clusterIdsOfGlobalDofs.size();
-    if (idCount != globalDofCount())
+    dumpClusterIdsEx(fileName, clusterIdsOfDofs, GLOBAL_DOFS);
+}
+
+template <typename BasisFunctionType>
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
+        const char* fileName,
+        const std::vector<unsigned int>& clusterIdsOfDofs,
+        DofType dofType) const
+{
+    if (dofType != GLOBAL_DOFS && dofType != FLAT_LOCAL_DOFS)
+        throw std::invalid_argument("PiecewiseLinearContinuousScalarSpace::"
+                                    "dumpClusterIds(): invalid DOF type");
+    const size_t idCount = clusterIdsOfDofs.size();
+    if ((dofType == GLOBAL_DOFS && idCount != globalDofCount()) ||
+            (dofType == FLAT_LOCAL_DOFS && idCount != flatLocalDofCount()))
         throw std::invalid_argument("PiecewiseLinearContinuousScalarSpace::"
                                     "dumpClusterIds(): incorrect dimension");
 
     std::auto_ptr<GridView> view = this->grid()->leafView();
     std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
-    arma::Row<double> data(idCount);
-    for (size_t i = 0; i < idCount; ++i)
-        data(i) = clusterIdsOfGlobalDofs[i];
-    vtkWriter->addVertexData(data, "ids");
-    vtkWriter->write(fileName);
+    if (dofType == GLOBAL_DOFS) {
+        arma::Row<double> data(idCount);
+        for (size_t i = 0; i < idCount; ++i)
+            data(i) = clusterIdsOfDofs[i];
+        vtkWriter->addVertexData(data, "ids");
+        vtkWriter->write(fileName);
+    } else {
+        arma::Mat<double> data(idCount, globalDofCount());
+        data.fill(0.);
+        size_t row = 0;
+        for (size_t id = 0; id < idCount; ++id) {
+            bool exists = false;
+            for (size_t fldof = 0; fldof < idCount; ++fldof) {
+                if (clusterIdsOfDofs[fldof] == id) {
+                    LocalDof ldof = m_flatLocal2localDofs[fldof];
+                    GlobalDofIndex gdof = m_local2globalDofs[ldof.entityIndex][ldof.dofIndex];
+                    data(row, gdof) = 1;
+                    exists = true;
+                }
+            }
+            if (!exists)
+                data.shed_row(row); // very inefficient, of course
+            else
+                ++row;
+        }
+        std::cout << "about to write" <<std::endl;
+        vtkWriter->addVertexData(data, "ids");
+        vtkWriter->write(fileName);
+    }
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(PiecewiseLinearContinuousScalarSpace);

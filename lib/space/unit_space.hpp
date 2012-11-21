@@ -81,6 +81,10 @@ public:
     virtual void dumpClusterIds(
             const char* fileName,
             const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const;
+    virtual void dumpClusterIdsEx(
+            const char* fileName,
+            const std::vector<unsigned int>& clusterIdsOfGlobalDofs,
+            DofType dofType) const;
 
 private:
     void assignDofsImpl();
