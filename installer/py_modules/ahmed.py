@@ -59,7 +59,9 @@ def prepare(root,config):
         print "Patching AHMED"
         patches=[py_patch.fromfile(root+"/installer/patches/"+s)
                  for s in ("ahmed_cmake.patch",
-                           "ahmed_addGeHGeH_single_precision.patch")]
+                           "ahmed_addGeHGeH_single_precision.patch",
+                           "ahmed_pass_clusters_to_aca_matgen_apprx.h.patch",
+                           "ahmed_pass_clusters_to_aca_matgen_ACA.h.patch")]
         cwd=os.getcwd()
         os.chdir(ahmed_full_dir)
         for patch in patches:
