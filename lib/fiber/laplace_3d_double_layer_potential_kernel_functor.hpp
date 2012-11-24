@@ -73,8 +73,8 @@ public:
             numeratorSum += diff * trialGeomData.normal(coordIndex);
         }
         CoordinateType distance = sqrt(distanceSq);
-        result[0](0, 0) = -numeratorSum / (static_cast<CoordinateType>(4. * M_PI) *
-                                           distance * distanceSq);
+        result[0](0, 0) = -numeratorSum /
+                (static_cast<CoordinateType>(4. * M_PI) * distance * distanceSq);
     }
 };
 

@@ -81,7 +81,8 @@ public:
             sum += diff * diff;
         }
         CoordinateType distance = sqrt(sum);
-        result[0](0, 0) = static_cast<ValueType>(1.0 / (4.0*M_PI)) / distance *
+        result[0](0, 0) =
+                static_cast<CoordinateType>(1.0 / (4.0 * M_PI)) / distance *
                 exp(-m_waveNumber * distance);
     }
 

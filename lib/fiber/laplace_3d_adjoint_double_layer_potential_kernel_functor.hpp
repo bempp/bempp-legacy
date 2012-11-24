@@ -65,17 +65,17 @@ public:
         assert(testGeomData.dimWorld() == coordCount);
         assert(result.size() == 1);
 
-        CoordinateType numeratorSum = 0., denominatorSum = 0.;
+        CoordinateType numeratorSum = 0., distanceSq = 0.;
         for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex)
         {
             CoordinateType diff = testGeomData.global(coordIndex) -
                     trialGeomData.global(coordIndex);
-            denominatorSum += diff * diff;
+            distanceSq += diff * diff;
             numeratorSum += diff * testGeomData.normal(coordIndex);
         }
-        CoordinateType distance = sqrt(denominatorSum);
-        result[0](0, 0) = -numeratorSum / (static_cast<ValueType>(4. * M_PI) *
-                                           distance * distance * distance);
+        CoordinateType distance = sqrt(distanceSq);
+        result[0](0, 0) = -numeratorSum /
+            (static_cast<CoordinateType>(4. * M_PI) * distanceSq * distance);
     }
 };
 
