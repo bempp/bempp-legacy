@@ -1369,6 +1369,16 @@ def createBlockedBoundaryOperator(context, structure):
     return _constructObjectTemplatedOnBasisAndResult(
         name, context.basisFunctionType(), context.resultType(), boStructure)
 
+def adjoint(op):
+    """
+    Return the adjoint of a BoundaryOperator.
+
+    *Note* The BoundaryOperator must act on real-valued basis functions,
+    otherwise an exception is thrown.
+    """
+    return _constructObjectTemplatedOnBasisAndResult(
+        "adjoint", op.basisFunctionType(), op.resultType(), op)
+
 if core._withAhmed:
     def acaOperatorApproximateLuInverse(operator, delta):
         """
