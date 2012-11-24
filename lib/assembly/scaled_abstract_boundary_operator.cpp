@@ -41,7 +41,7 @@ int autoSymmetry(int origSymmetry, ResultType weight)
     return origSymmetry;
 }
 
-} // namespace Bempp
+} // namespace
 
 template <typename BasisFunctionType, typename ResultType>
 ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType>::
