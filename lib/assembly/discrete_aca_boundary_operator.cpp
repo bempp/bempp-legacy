@@ -75,7 +75,7 @@ public:
     typedef tbb::concurrent_queue<size_t> LeafClusterIndexQueue;
 
     MblockMultiplicationLoopBody(
-            bool conjugateTranspose,
+            TranspositionMode trans,
             ValueType multiplier,
             arma::Col<ValueType>& x,
             arma::Col<ValueType>& y,
@@ -83,17 +83,22 @@ public:
             boost::shared_array<AhmedMblock*> blocks,
             LeafClusterIndexQueue& leafClusterIndexQueue,
             std::vector<ChunkStatistics>& stats) :
-        m_conjugateTranspose(conjugateTranspose),
+        m_trans(trans),
         m_multiplier(multiplier), m_x(x), m_local_y(y),
         m_leafClusters(leafClusters), m_blocks(blocks),
         m_leafClusterIndexQueue(leafClusterIndexQueue),
         m_stats(stats)
     {
+        if (trans != NO_TRANSPOSE && trans != TRANSPOSE &&
+            trans != CONJUGATE_TRANSPOSE)
+            throw std::invalid_argument(
+                "MblockMultiplicationLoopBody::MblockMultiplicationLoopBody(): "
+                "unsupported transposition mode");
         // m_local_y.fill(static_cast<ValueType>(0.));
     }
 
     MblockMultiplicationLoopBody(MblockMultiplicationLoopBody& other, tbb::split) :
-        m_conjugateTranspose(other.m_conjugateTranspose),
+        m_trans(other.m_trans),
         m_multiplier(other.m_multiplier),
         m_x(other.m_x), m_local_y(other.m_local_y.n_rows),
         m_leafClusters(other.m_leafClusters), m_blocks(other.m_blocks),
@@ -119,14 +124,21 @@ public:
             m_stats[leafClusterIndex].startTime = tbb::tick_count::now();
 
             blcluster* cluster = m_leafClusters[leafClusterIndex];
-            if (m_conjugateTranspose)
-                m_blocks[cluster->getidx()]->mltahVec(ahmedCast(m_multiplier),
-                                                      ahmedCast(&m_x(cluster->getb1())),
-                                                      ahmedCast(&m_local_y(cluster->getb2())));
-            else
-                m_blocks[cluster->getidx()]->mltaVec(ahmedCast(m_multiplier),
-                                                     ahmedCast(&m_x(cluster->getb2())),
-                                                     ahmedCast(&m_local_y(cluster->getb1())));
+            if (m_trans == NO_TRANSPOSE)
+                m_blocks[cluster->getidx()]->mltaVec(
+                    ahmedCast(m_multiplier),
+                    ahmedCast(&m_x(cluster->getb2())),
+                    ahmedCast(&m_local_y(cluster->getb1())));
+            else if (m_trans == TRANSPOSE)
+                m_blocks[cluster->getidx()]->mltatVec(
+                    ahmedCast(m_multiplier),
+                    ahmedCast(&m_x(cluster->getb1())),
+                    ahmedCast(&m_local_y(cluster->getb2())));
+            else // m_trans == CONJUGATE_TRANSPOSE)
+                m_blocks[cluster->getidx()]->mltahVec(
+                    ahmedCast(m_multiplier),
+                    ahmedCast(&m_x(cluster->getb1())),
+                    ahmedCast(&m_local_y(cluster->getb2())));
             m_stats[leafClusterIndex].endTime = tbb::tick_count::now();
         }
     }
@@ -136,7 +148,7 @@ public:
     }
 
 private:
-    bool m_conjugateTranspose;
+    TranspositionMode m_trans;
     ValueType m_multiplier;
     arma::Col<ValueType>& m_x;
 public:
@@ -380,13 +392,13 @@ applyBuiltInImpl(const TranspositionMode trans,
                 "DiscreteAcaBoundaryOperator::applyBuiltInImpl(): "
                 "transposition modes other than NO_TRANSPOSE are not supported");
 #else
-    if (trans != NO_TRANSPOSE && trans != CONJUGATE_TRANSPOSE)
+    if (trans != NO_TRANSPOSE && trans != TRANSPOSE && trans != CONJUGATE_TRANSPOSE)
         throw std::runtime_error(
                 "DiscreteAcaBoundaryOperator::applyBuiltInImpl(): "
                 "transposition modes other than NO_TRANSPOSE and "
                 "CONJUGATE_TRANSPOSE are not supported");
 #endif
-    bool transposed = trans == CONJUGATE_TRANSPOSE;
+    bool transposed = (trans & TRANSPOSE);
 
     const blcluster* blockCluster = m_blockCluster.get();
     blcluster* nonconstBlockCluster = const_cast<blcluster*>(blockCluster);
@@ -423,9 +435,21 @@ applyBuiltInImpl(const TranspositionMode trans,
                      ahmedCast(permutedResult.memptr()));
 #else
         // NO_TRANSPOSE and CONJUGATE_TRANSPOSE are equivalent
-        mltaHeHVec(ahmedCast(alpha), nonconstBlockCluster, m_blocks.get(),
-                   ahmedCast(permutedArgument.memptr()),
-                   ahmedCast(permutedResult.memptr()));
+        if (trans == NO_TRANSPOSE || trans == CONJUGATE_TRANSPOSE)
+            mltaHeHVec(ahmedCast(alpha), nonconstBlockCluster, m_blocks.get(),
+                       ahmedCast(permutedArgument.memptr()),
+                       ahmedCast(permutedResult.memptr()));
+        else { // trans == TRANSPOSE
+            // alpha A^T x + beta y = (alpha^* A^H x^* + beta^* y^*)^*
+            // = (alpha^* A x^* + beta^* y^*)^*
+            permutedArgument = arma::conj(permutedArgument);
+            permutedResult = arma::conj(permutedResult);
+            ValueType alphaConj = conj(alpha);
+            mltaHeHVec(ahmedCast(alphaConj), nonconstBlockCluster, m_blocks.get(),
+                       ahmedCast(permutedArgument.memptr()),
+                       ahmedCast(permutedResult.memptr()));
+            permutedResult = arma::conj(permutedResult);
+        }
 #endif
     }
     else {
@@ -466,7 +490,7 @@ applyBuiltInImpl(const TranspositionMode trans,
 
         // std::cout << "----------------------------\nperm Arg\n" << permutedArgument;
         // std::cout << "perm Res\n" << permutedResult;
-        Body body(trans == CONJUGATE_TRANSPOSE,
+        Body body(trans,
                   alpha, permutedArgument, permutedResult,
                   leafClusters, m_blocks,
                   leafClusterIndexQueue, chunkStats);
