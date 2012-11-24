@@ -81,8 +81,8 @@ public:
         }
         CoordinateType distance = sqrt(denominatorSum);
         result[0](0, 0) = -numeratorSum /
-                (static_cast<ValueType>(4.0 * M_PI) * denominatorSum) *
-                (m_waveNumber + static_cast<ValueType>(1.0) / distance) *
+                (static_cast<CoordinateType>(4.0 * M_PI) * denominatorSum) *
+                (m_waveNumber + static_cast<CoordinateType>(1.0) / distance) *
                 exp(-m_waveNumber * distance);
     }
 
