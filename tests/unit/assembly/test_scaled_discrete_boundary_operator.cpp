@@ -49,7 +49,7 @@
 
 using namespace Bempp;
 
-namespace 
+namespace
 {
 
 template <typename T>
@@ -81,7 +81,7 @@ std::complex<double> initMultiplier()
 
 } // namespace
 
-BOOST_AUTO_TEST_SUITE(DiscreteDenseBoundaryOperator)
+BOOST_AUTO_TEST_SUITE(ScaledDiscreteDenseBoundaryOperator)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2_and_beta_equal_to_0_and_y_initialized_to_nans, ResultType, result_types)
 {
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     nElements(0) = 2;
     nElements(1) = 3;
 
-    shared_ptr<Grid> grid = 
+    shared_ptr<Grid> grid =
         Bempp::GridFactory::createStructuredGrid(
             params, lowerLeft, upperRight, nElements);
 
@@ -139,9 +139,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     arma::Col<RT> expected = alpha * dop->asMatrix() * x;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
-    
+
     BOOST_CHECK(y.is_finite());
-    BOOST_CHECK(check_arrays_are_close<RT>(y, expected, 
+    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
 
