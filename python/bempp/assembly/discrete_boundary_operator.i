@@ -8,10 +8,10 @@
 // TODO
 // %include "discrete_boundary_operator_docstrings.i"
 
-%shared_ptr(boost::enable_shared_from_this<Bempp::DiscreteBoundaryOperator<float> >)
-%shared_ptr(boost::enable_shared_from_this<Bempp::DiscreteBoundaryOperator<double> >)
-%shared_ptr(boost::enable_shared_from_this<Bempp::DiscreteBoundaryOperator<std::complex<float> > >)
-%shared_ptr(boost::enable_shared_from_this<Bempp::DiscreteBoundaryOperator<std::complex<double> > >)
+%shared_ptr(boost::enable_shared_from_this<Bempp::DiscreteBoundaryOperator<float> >);
+%shared_ptr(boost::enable_shared_from_this<Bempp::DiscreteBoundaryOperator<double> >);
+%shared_ptr(boost::enable_shared_from_this<Bempp::DiscreteBoundaryOperator<std::complex<float> > >);
+%shared_ptr(boost::enable_shared_from_this<Bempp::DiscreteBoundaryOperator<std::complex<double> > >);
 
 %shared_ptr(Thyra::LinearOpDefaultBase<float>);
 %shared_ptr(Thyra::LinearOpDefaultBase<double>);
