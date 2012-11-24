@@ -39,7 +39,7 @@
 %include "armadillo.i"
 %include "auto_ptr.i"
 %include "exception.i"
-%include "shared_ptr.i"
+%include "bempp_shared_ptr.i"
 %include "std_string.i"
 %include "std_complex.i"
 
