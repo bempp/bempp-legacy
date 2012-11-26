@@ -372,8 +372,9 @@ bool
 DiscreteAcaBoundaryOperator<ValueType>::
 opSupportedImpl(Thyra::EOpTransp M_trans) const
 {
-    // TODO: implement remaining variants (transpose & conjugate)
-    return (M_trans == Thyra::NOTRANS || M_trans == Thyra::CONJTRANS);
+    // TODO: implement remaining variant (conjugate)
+    return (M_trans == Thyra::NOTRANS || M_trans == Thyra::TRANS ||
+            M_trans == Thyra::CONJTRANS);
 }
 #endif // WITH_TRILINOS
 
