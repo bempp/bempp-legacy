@@ -38,12 +38,13 @@ AdjointAbstractBoundaryOperator<BasisFunctionType, ResultType>::
 AdjointAbstractBoundaryOperator(
         const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
         int symmetry) :
-    Base(boundaryOp.range(), boundaryOp.domain(),
+    Base(boundaryOp.dualToRange(),
          boundaryOp.domain() == boundaryOp.range() ?
              boundaryOp.dualToRange() :
              // assume that domain == dualToRange, we'll verify it
              // in the body of the constructor
              boundaryOp.range(),
+         boundaryOp.domain(),
          "adj(" + boundaryOp.label() + ")",
          symmetry & AUTO_SYMMETRY ?
              boundaryOp.abstractOperator()->symmetry() :

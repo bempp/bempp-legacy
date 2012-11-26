@@ -82,6 +82,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(adjoint_dlp_agrees_with_adlp, ResultType, complex_
         make_shared_from_ref(pwiseConstants),
         waveNumber);
     BoundaryOperator<BFT, RT> op = adjoint(dlp);
+    BOOST_CHECK_EQUAL(op.domain().get(), &pwiseConstants); // -> dualToRange
+    BOOST_CHECK_EQUAL(op.range().get(), &pwiseConstants);  // -> dualToDomain
+    BOOST_CHECK_EQUAL(op.dualToRange().get(), &pwiseLinears); // -> domain
 
     BoundaryOperator<BFT, RT> adlp =
         helmholtz3dAdjointDoubleLayerBoundaryOperator<BFT>(
