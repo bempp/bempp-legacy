@@ -63,7 +63,7 @@ void BoundaryOperator<BasisFunctionType, ResultType>::initialize(
                                     "abstractOp must not be null");
     m_context = context;
     m_abstractOp = abstractOp;
-    m_weakForm.reset();
+    m_weakFormContainer.reset(new ConstWeakFormContainer);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -71,7 +71,7 @@ void BoundaryOperator<BasisFunctionType, ResultType>::uninitialize()
 {
     m_context.reset();
     m_abstractOp.reset();
-    m_weakForm.reset();
+    m_weakFormContainer.reset();
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -102,11 +102,16 @@ BoundaryOperator<BasisFunctionType, ResultType>::weakForm() const
         throw std::runtime_error(
                 "BoundaryOperator::weakForm(): attempted to retrieve the "
                 "weak form of an uninitialized operator");
-    if (!m_weakForm.get()) {
-        m_weakForm = m_context->getWeakForm(*m_abstractOp);
-        assert(m_weakForm);
+    assert(m_weakFormContainer); // contains a shared_ptr to DiscreteOp
+                                 // (which may be null, though)
+    if (!*m_weakFormContainer) {
+        typedef DiscreteBoundaryOperator<ResultType> DiscreteOp;
+        shared_ptr<const DiscreteOp> discreteOp =
+            m_abstractOp->assembleWeakForm(*m_context);
+        assert(discreteOp);
+        *m_weakFormContainer = discreteOp;
     }
-    return m_weakForm;
+    return *m_weakFormContainer;
 }
 
 template <typename BasisFunctionType, typename ResultType>

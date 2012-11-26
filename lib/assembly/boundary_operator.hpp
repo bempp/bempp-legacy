@@ -171,7 +171,9 @@ private:
     shared_ptr<const Context<BasisFunctionType, ResultType> > m_context;
     shared_ptr<const AbstractBoundaryOperator<BasisFunctionType, ResultType> >
     m_abstractOp;
-    mutable shared_ptr<const DiscreteBoundaryOperator<ResultType> > m_weakForm;
+    typedef shared_ptr<const DiscreteBoundaryOperator<ResultType> >
+        ConstWeakFormContainer;
+    mutable shared_ptr<ConstWeakFormContainer> m_weakFormContainer;
 };
 
 /** \brief Return a BoundaryOperator identical to the operand. */
