@@ -23,10 +23,10 @@
 
 #include "../fiber/explicit_instantiation.hpp"
 
-#include "../fiber/modified_helmholtz_3d_single_layer_potential_kernel_functor.hpp"
-#include "../fiber/modified_helmholtz_3d_single_layer_potential_kernel_interpolated_functor.hpp"
+#include "../fiber/modified_helmholtz_3d_hypersingular_kernel_functor.hpp"
+#include "../fiber/modified_helmholtz_3d_hypersingular_kernel_interpolated_functor.hpp"
 #include "../fiber/modified_helmholtz_3d_hypersingular_transformation_functor.hpp"
-#include "../fiber/modified_helmholtz_3d_hypersingular_integrand_functor.hpp"
+#include "../fiber/modified_helmholtz_3d_hypersingular_integrand_functor_2.hpp"
 
 #include "../fiber/default_collection_of_kernels.hpp"
 #include "../fiber/default_collection_of_basis_transformations.hpp"
@@ -46,13 +46,13 @@ struct ModifiedHelmholtz3dHypersingularBoundaryOperatorImpl
     typedef ModifiedHelmholtz3dBoundaryOperatorBase<This, BasisFunctionType, KernelType, ResultType> BoundaryOperatorBase;
     typedef typename BoundaryOperatorBase::CoordinateType CoordinateType;
 
-    typedef Fiber::ModifiedHelmholtz3dSingleLayerPotentialKernelFunctor<KernelType>
+    typedef Fiber::ModifiedHelmholtz3dHypersingularKernelFunctor<KernelType>
     NoninterpolatedKernelFunctor;
-    typedef Fiber::ModifiedHelmholtz3dSingleLayerPotentialKernelInterpolatedFunctor<KernelType>
+    typedef Fiber::ModifiedHelmholtz3dHypersingularKernelInterpolatedFunctor<KernelType>
     InterpolatedKernelFunctor;
     typedef Fiber::ModifiedHelmholtz3dHypersingularTransformationFunctor<CoordinateType>
     TransformationFunctor;
-    typedef Fiber::ModifiedHelmholtz3dHypersingularIntegrandFunctor<
+    typedef Fiber::ModifiedHelmholtz3dHypersingularIntegrandFunctor2<
     BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
 
     explicit ModifiedHelmholtz3dHypersingularBoundaryOperatorImpl(
@@ -63,7 +63,7 @@ struct ModifiedHelmholtz3dHypersingularBoundaryOperatorImpl
         kernels(new Fiber::DefaultCollectionOfKernels<NoninterpolatedKernelFunctor>(
                     NoninterpolatedKernelFunctor(waveNumber_))),
         transformations(TransformationFunctor()),
-        integral(IntegrandFunctor(waveNumber_))
+        integral(IntegrandFunctor())
     {}
 
     ModifiedHelmholtz3dHypersingularBoundaryOperatorImpl(
@@ -78,7 +78,7 @@ struct ModifiedHelmholtz3dHypersingularBoundaryOperatorImpl
                                                         maxDistance_,
                                                         interpPtsPerWavelength_))),
         transformations(TransformationFunctor()),
-        integral(IntegrandFunctor(waveNumber_))
+        integral(IntegrandFunctor())
     {}
 
     KernelType waveNumber;

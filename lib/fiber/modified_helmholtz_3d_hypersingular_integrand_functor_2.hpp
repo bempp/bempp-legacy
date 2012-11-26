@@ -18,29 +18,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_modified_helmholtz_3d_hypersingular_integrand_functor_hpp
-#define fiber_modified_helmholtz_3d_hypersingular_integrand_functor_hpp
+#ifndef fiber_modified_helmholtz_3d_hypersingular_integrand_functor_2_hpp
+#define fiber_modified_helmholtz_3d_hypersingular_integrand_functor_2_hpp
 
 #include "../common/common.hpp"
-#include "../common/deprecated.hpp"
 
+#include <cassert>
 #include "collection_of_3d_arrays.hpp"
 #include "geometrical_data.hpp"
 #include "conjugate.hpp"
-#include "geometrical_data.hpp"
-
-#include <cassert>
 
 namespace Fiber
 {
 
-/** \brief .
-
- *  \deprecated This class is deprecated and superseded by
- *  ModifiedHelmholtz3dHypersingularIntegrandFunctor2. */
 template <typename BasisFunctionType_, typename KernelType_,
           typename ResultType_>
-class BEMPP_DEPRECATED ModifiedHelmholtz3dHypersingularIntegrandFunctor
+class ModifiedHelmholtz3dHypersingularIntegrandFunctor2
 {
 public:
     typedef BasisFunctionType_ BasisFunctionType;
@@ -48,22 +41,13 @@ public:
     typedef ResultType_ ResultType;
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    ModifiedHelmholtz3dHypersingularIntegrandFunctor(KernelType waveNumber) :
-        m_waveNumber(waveNumber)
-    {}
-
     void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const {
         testGeomDeps |= NORMALS;
         trialGeomDeps |= NORMALS;
     }
 
-    KernelType waveNumber() const { return m_waveNumber; }
-
-    // It is possible that this function could be generalised to
-    // multiple basis transformations or kernels and that the additional
-    // loops could be optimised away by the compiler.
     template <template <typename T> class CollectionOf2dSlicesOfConstNdArrays>
-    ResultType BEMPP_DEPRECATED evaluate(
+    ResultType evaluate(
             const ConstGeometricalDataSlice<CoordinateType>& testGeomData,
             const ConstGeometricalDataSlice<CoordinateType>& trialGeomData,
             const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>& testTransfValues,
@@ -71,10 +55,12 @@ public:
             const CollectionOf2dSlicesOfConstNdArrays<KernelType>& kernelValues) const {
         const int dimWorld = 3;
 
-        // Assert that there is at least one scalar-valued kernel
-        assert(kernelValues.size() >= 1);
+        // Assert that there are at least two scalar-valued kernels
+        assert(kernelValues.size() >= 2);
         assert(kernelValues[0].extent(0) == 1);
         assert(kernelValues[0].extent(1) == 1);
+        assert(kernelValues[1].extent(0) == 1);
+        assert(kernelValues[1].extent(1) == 1);
 
         // Assert that there are at least two test and trial transformations
         // (function value and surface curl) of correct dimensions
@@ -89,22 +75,21 @@ public:
         assert((int)testSurfaceCurls.extent(0) == dimWorld);
         assert((int)trialSurfaceCurls.extent(0) == dimWorld);
 
-        // K(x, y) [kappa^2 u*(x) v(y) n(x) . n(y) + curl u*(x) . curl v(y)]
+        // Let K_0(x, y) = K(x, y) and K_1(x, y) = kappa^2 K(x, y).
+        // Return
+        // K_0(x, y) curl u*(x) . curl v(y) + K_1(x, y) u*(x) v(y) n(x) . n(y)
 
-        ResultType result = 0.;
+        ResultType term_0 = 0.;
         for (int dim = 0; dim < dimWorld; ++dim)
-            result += testGeomData.normal(dim) * trialGeomData.normal(dim);
-        result *= m_waveNumber * m_waveNumber *
+            term_0 += conjugate(testSurfaceCurls(dim)) * trialSurfaceCurls(dim);
+        term_0 *= kernelValues[0](0, 0);
+        ResultType term_1 = 0.;
+        for (int dim = 0; dim < dimWorld; ++dim)
+            term_1 += testGeomData.normal(dim) * trialGeomData.normal(dim);
+        term_1 *= kernelValues[1](0, 0) *
                 conjugate(testValues(0)) * trialValues(0);
-        for (int dim = 0; dim < dimWorld; ++dim)
-            result += conjugate(testSurfaceCurls(dim)) *
-                    trialSurfaceCurls(dim);
-        result *= kernelValues[0](0, 0);
-        return result;
+        return term_0 + term_1;
     }
-
-private:
-    KernelType m_waveNumber;
 };
 
 } // namespace Fiber
