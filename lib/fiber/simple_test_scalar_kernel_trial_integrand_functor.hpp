@@ -56,15 +56,15 @@ public:
             const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>& testValues,
             const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>& trialValues,
             const CollectionOf2dSlicesOfConstNdArrays<KernelType>& kernelValues) const {
-        // Assert that there is only a single scalar-valued kernel
-        assert(kernelValues.size() == 1);
+        // Assert that there is at least one scalar-valued kernel
+        assert(kernelValues.size() >= 1);
         assert(kernelValues[0].extent(0) == 1);
         assert(kernelValues[0].extent(1) == 1);
 
-        // Assert that there is only a single test and trial transformation
-        // and that their dimensions agree
-        assert(testValues.size() == 1);
-        assert(trialValues.size() == 1);
+        // Assert that there is at least one test and trial transformation
+        // and that the dimensions of the first pair agree
+        assert(testValues.size() >= 1);
+        assert(trialValues.size() >= 1);
         assert(testValues[0].extent(0) == trialValues[0].extent(0));
 
         const int transformationDim = testValues[0].extent(0);
