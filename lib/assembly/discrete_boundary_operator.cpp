@@ -21,8 +21,11 @@
 #include "bempp/common/config_ahmed.hpp"
 
 #include "discrete_boundary_operator.hpp"
+
+#include "complexified_discrete_boundary_operator.hpp"
 #include "discrete_boundary_operator_sum.hpp"
 #include "scaled_discrete_boundary_operator.hpp"
+#include "transposed_discrete_boundary_operator.hpp"
 #include "../common/shared_ptr.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
@@ -188,6 +191,50 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator/(
                     static_cast<ValueType>(static_cast<ScalarType>(1.)/scalar),op));
 }
 
+template <typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > transpose(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op)
+{
+    return shared_ptr<const DiscreteBoundaryOperator<ValueType> >(
+        new TransposedDiscreteBoundaryOperator<ValueType>(
+            TRANSPOSE, op));
+}
+
+template <typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > conjugate(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op)
+{
+    return shared_ptr<const DiscreteBoundaryOperator<ValueType> >(
+        new TransposedDiscreteBoundaryOperator<ValueType>(
+            CONJUGATE, op));
+}
+
+template <typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > conjugateTranspose(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op)
+{
+    return shared_ptr<const DiscreteBoundaryOperator<ValueType> >(
+        new TransposedDiscreteBoundaryOperator<ValueType>(
+            CONJUGATE_TRANSPOSE, op));
+}
+
+template <typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > transpose(
+        TranspositionMode trans,
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op)
+{
+    return shared_ptr<const DiscreteBoundaryOperator<ValueType> >(
+        new TransposedDiscreteBoundaryOperator<ValueType>(
+            trans, op));
+}
+
+template <typename RealType>
+shared_ptr<const DiscreteBoundaryOperator<std::complex<RealType> > > complexify(
+        const shared_ptr<const DiscreteBoundaryOperator<RealType> >& op)
+{
+    return shared_ptr<const DiscreteBoundaryOperator<std::complex<RealType> > >(
+        new ComplexifiedDiscreteBoundaryOperator<RealType>(op));
+}
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteBoundaryOperator);
 
@@ -201,7 +248,17 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteBoundaryOperator);
         const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op2); \
     template shared_ptr<const DiscreteBoundaryOperator< VALUE > > operator-( \
         const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op1, \
-        const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op2);
+        const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op2); \
+    template shared_ptr<const DiscreteBoundaryOperator< VALUE > > transpose( \
+        const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op); \
+    template shared_ptr<const DiscreteBoundaryOperator< VALUE > > conjugate( \
+        const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op); \
+    template shared_ptr<const DiscreteBoundaryOperator< VALUE > > conjugateTranspose( \
+        const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op); \
+    template shared_ptr<const DiscreteBoundaryOperator< VALUE > > transpose( \
+        TranspositionMode trans, \
+        const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op);
+
 #define INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR( VALUE , SCALAR ) \
     template shared_ptr<const DiscreteBoundaryOperator< VALUE > > operator*( \
         SCALAR scalar, \
@@ -213,10 +270,15 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteBoundaryOperator);
         const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op, \
         SCALAR scalar);
 
+#define INSTANTIATE_FREE_FUNCTIONS_REAL_ONLY(VALUE) \
+    template shared_ptr<const DiscreteBoundaryOperator< std::complex<VALUE> > > complexify( \
+        const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op);
+
 #if defined(ENABLE_SINGLE_PRECISION)
 INSTANTIATE_FREE_FUNCTIONS(float);
 INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(float, float );
 INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(float, double);
+INSTANTIATE_FREE_FUNCTIONS_REAL_ONLY(float);
 #endif
 
 #if defined(ENABLE_SINGLE_PRECISION) && (defined(ENABLE_COMPLEX_KERNELS) || defined(ENABLE_COMPLEX_BASIS_FUNCTIONS))
@@ -231,6 +293,7 @@ INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(std::complex<float>, std::complex<double>
 INSTANTIATE_FREE_FUNCTIONS(double);
 INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(double, float);
 INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(double, double);
+INSTANTIATE_FREE_FUNCTIONS_REAL_ONLY(double);
 #endif
 
 #if defined(ENABLE_DOUBLE_PRECISION) && (defined(ENABLE_COMPLEX_KERNELS) || defined(ENABLE_COMPLEX_BASIS_FUNCTIONS))
@@ -240,7 +303,5 @@ INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(std::complex<double>, double);
 INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(std::complex<double>, std::complex<float>);
 INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(std::complex<double>, std::complex<double>);
 #endif
-
-
 
 } // namespace Bempp

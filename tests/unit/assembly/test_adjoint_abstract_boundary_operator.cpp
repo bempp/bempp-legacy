@@ -25,10 +25,9 @@
 #include "assembly/discrete_boundary_operator.hpp"
 #include "assembly/boundary_operator.hpp"
 #include "assembly/context.hpp"
-#include "assembly/identity_operator.hpp"
+#include "assembly/helmholtz_3d_adjoint_double_layer_boundary_operator.hpp"
+#include "assembly/helmholtz_3d_double_layer_boundary_operator.hpp"
 #include "assembly/numerical_quadrature_strategy.hpp"
-
-#include "assembly/modified_helmholtz_3d_single_layer_boundary_operator.hpp"
 
 #include "common/boost_make_shared_fwd.hpp"
 
@@ -49,41 +48,9 @@
 
 using namespace Bempp;
 
-namespace
-{
+BOOST_AUTO_TEST_SUITE(AdjointAbstractBoundaryOperator)
 
-template <typename T>
-T initMultiplier();
-
-template <>
-float initMultiplier()
-{
-    return 1.2f;
-}
-
-template <>
-double initMultiplier()
-{
-    return 1.2;
-}
-
-template <>
-std::complex<float> initMultiplier()
-{
-    return std::complex<float>(1.2f, 0.7f);
-}
-
-template <>
-std::complex<double> initMultiplier()
-{
-    return std::complex<double>(1.2, 0.7);
-}
-
-} // namespace
-
-BOOST_AUTO_TEST_SUITE(ScaledDiscreteDenseBoundaryOperator)
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2_and_beta_equal_to_0_and_y_initialized_to_nans, ResultType, result_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(adjoint_dlp_agrees_with_adlp, ResultType, complex_result_types)
 {
     typedef ResultType RT;
     typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
@@ -91,58 +58,49 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
 
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
-
-    const int dimGrid = 2;
-    typedef double ctype;
-    arma::Col<double> lowerLeft(dimGrid);
-    arma::Col<double> upperRight(dimGrid);
-    arma::Col<unsigned int> nElements(dimGrid);
-    lowerLeft.fill(0);
-    upperRight.fill(1);
-    nElements(0) = 2;
-    nElements(1) = 3;
-
-    shared_ptr<Grid> grid =
-        Bempp::GridFactory::createStructuredGrid(
-            params, lowerLeft, upperRight, nElements);
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+                params, "meshes/cube-12-reoriented.msh",
+                false /* verbose */);
 
     PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(grid);
     PiecewiseConstantScalarSpace<BFT> pwiseConstants(grid);
 
     AssemblyOptions assemblyOptions;
     assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
-    NumericalQuadratureStrategy<BFT, RT> quadStrategy;
+    AccuracyOptions accuracyOptions;
+    accuracyOptions.doubleSingular.setRelativeQuadratureOrder(4);
+    NumericalQuadratureStrategy<BFT, RT> quadStrategy(accuracyOptions);
 
     Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);
 
-    const RT multiplier = initMultiplier<RT>();
+    const ResultType waveNumber = 2.;
+    BoundaryOperator<BFT, RT> dlp =
+        helmholtz3dDoubleLayerBoundaryOperator<BFT>(
+        make_shared_from_ref(context),
+        make_shared_from_ref(pwiseLinears),
+        make_shared_from_ref(pwiseLinears),
+        make_shared_from_ref(pwiseConstants),
+        waveNumber);
+    BoundaryOperator<BFT, RT> op = adjoint(dlp);
+    BOOST_CHECK_EQUAL(op.domain().get(), &pwiseConstants); // -> dualToRange
+    BOOST_CHECK_EQUAL(op.range().get(), &pwiseConstants);  // -> dualToDomain
+    BOOST_CHECK_EQUAL(op.dualToRange().get(), &pwiseLinears); // -> domain
 
-    BoundaryOperator<BFT, RT> id =
-        identityOperator<BFT, RT>(
+    BoundaryOperator<BFT, RT> adlp =
+        helmholtz3dAdjointDoubleLayerBoundaryOperator<BFT>(
         make_shared_from_ref(context),
         make_shared_from_ref(pwiseConstants),
         make_shared_from_ref(pwiseConstants),
-        make_shared_from_ref(pwiseLinears));
+        make_shared_from_ref(pwiseLinears),
+        waveNumber);
 
-    BoundaryOperator<BFT, RT> op = multiplier * id;
+    arma::Mat<RT> matOp = op.weakForm()->asMatrix();
+    arma::Mat<RT> expected = adlp.weakForm()->asMatrix();
 
-    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = op.weakForm();
-
-    RT alpha = static_cast<RT>(2.);
-    RT beta = static_cast<RT>(0.);
-
-    arma::Col<RT> x(dop->columnCount());
-    x.fill(1.);
-    arma::Col<RT> y(dop->rowCount());
-    y.fill(std::numeric_limits<CT>::quiet_NaN());
-
-    arma::Col<RT> expected = alpha * dop->asMatrix() * x;
-
-    dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
-
-    BOOST_CHECK(y.is_finite());
-    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
-                                           10. * std::numeric_limits<CT>::epsilon()));
+    // we won't get full-precision agreement because singular quadrature rules
+    // are not symmetric
+    CT tol = 10e-6;
+    BOOST_CHECK(check_arrays_are_close<RT>(matOp, expected, tol));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

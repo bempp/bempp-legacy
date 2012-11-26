@@ -89,7 +89,7 @@ public:
      *    Shared pointer to a Context object that will be used
      *    to build the weak form of \p abstractOp when necessary.
      *  \param[in] abstractOp
-     *    Shared pointer to an AbstractBoundaryOperator that will be 
+     *    Shared pointer to an AbstractBoundaryOperator that will be
      *    encapsulated in this BoundaryOperator.
      *
      *  An exception is thrown if either of these pointers is NULL.
@@ -121,7 +121,7 @@ public:
     shared_ptr<const Context<BasisFunctionType, ResultType> > context() const;
 
     /** \brief Return a shared pointer to the weak form of the encapsulated
-     *  abstract boundary operator. 
+     *  abstract boundary operator.
      *
      *  An exception is thrown if this function is called on an uninitialized
      *  BoundaryOperator. */
@@ -154,7 +154,7 @@ public:
     /** \brief Act on a GridFunction.
      *
      *  This function sets \p y_inout to <tt>alpha * A * x_in + beta *
-     *  y_inout</tt>, where \c A is the operator represented by this object. 
+     *  y_inout</tt>, where \c A is the operator represented by this object.
      *
      *  The space of \p x_in must be identical with the domain of the
      *  encapsulated abstract boundary operator, whereas the space of \p y_inout
@@ -194,7 +194,7 @@ BoundaryOperator<BasisFunctionType, ResultType> operator+(
         const BoundaryOperator<BasisFunctionType, ResultType>& op1,
         const BoundaryOperator<BasisFunctionType, ResultType>& op2);
 
-/** \brief Return a BoundaryOperator representing the difference of the operands. 
+/** \brief Return a BoundaryOperator representing the difference of the operands.
  *
  * \todo Throw an exception if either of the operands is uninitialized. */
 template <typename BasisFunctionType, typename ResultType>
@@ -240,7 +240,7 @@ BoundaryOperator<BasisFunctionType, ResultType> operator/(
  *
  *  This function returns the GridFunction obtained by acting with the operator
  *  \p op on the grid function \p fun. It is equivalent to calling
- *  \code 
+ *  \code
  *  op.apply(NO_TRANSPOSE, fun, result, 1., 0.);
  *  return result;
  *  \endcode
@@ -259,6 +259,18 @@ template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType> operator*(
         const BoundaryOperator<BasisFunctionType, ResultType>& op1,
         const BoundaryOperator<BasisFunctionType, ResultType>& op2);
+
+/** \brief Return the adjoint of a BoundaryOperator.
+ *
+ *  An exception is thrown if the operand is uninitialized.
+ *
+ *  \see AdjointAbstractBoundaryOperator for the definition of the
+ *  adjoint operator in BEM++. Note that this operator is only defined
+ *  for real BasisFunctionType.
+ */
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType> adjoint(
+        const BoundaryOperator<BasisFunctionType, ResultType>& op);
 
 } // namespace Bempp
 

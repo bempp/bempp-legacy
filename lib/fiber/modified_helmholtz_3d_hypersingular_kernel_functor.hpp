@@ -18,21 +18,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_modified_helmholtz_3d_adjoint_double_layer_potential_kernel_functor_hpp
-#define fiber_modified_helmholtz_3d_adjoint_double_layer_potential_kernel_functor_hpp
+#ifndef fiber_modified_helmholtz_3d_hypersingular_kernel_functor_hpp
+#define fiber_modified_helmholtz_3d_hypersingular_kernel_functor_hpp
 
 #include "../common/common.hpp"
 
 #include "geometrical_data.hpp"
 #include "scalar_traits.hpp"
 
+#include "modified_helmholtz_3d_single_layer_potential_kernel_functor.hpp"
+
 namespace Fiber
 {
 
 /** \ingroup modified_helmholtz_3d
  *  \ingroup fiber
- *  \brief Adjoint double-layer-potential kernel functor for the modified Helmholtz
+ *  \brief Hypersingular kernel collection functor for the modified Helmholtz
  *  equation in 3D.
+ *
+ *  The functor evaluates two kernels: the single-layer potential kernel
+ *  the single-layer potential kernel multiplied by m_waveNumber**2.
  *
  *  \tparam ValueType Type used to represent the values of the kernel. It can
  *  be one of: \c float, \c double, <tt>std::complex<float></tt> and
@@ -43,51 +48,40 @@ namespace Fiber
  */
 
 template <typename ValueType_>
-class ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelFunctor
+class ModifiedHelmholtz3dHypersingularKernelFunctor
 {
 public:
     typedef ValueType_ ValueType;
     typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
-    ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelFunctor(ValueType waveNumber) :
-        m_waveNumber(waveNumber)
+    explicit ModifiedHelmholtz3dHypersingularKernelFunctor(
+            ValueType waveNumber) :
+        m_slpKernel(waveNumber)
     {}
 
-    int kernelCount() const { return 1; }
+    int kernelCount() const { return 2; }
     int kernelRowCount(int /* kernelIndex */) const { return 1; }
     int kernelColCount(int /* kernelIndex */) const { return 1; }
 
     void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const {
-        testGeomDeps |= GLOBALS | NORMALS;
-        trialGeomDeps |= GLOBALS;
+        m_slpKernel.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
     }
 
-    ValueType waveNumber() const { return m_waveNumber; }
+    ValueType waveNumber() const { return m_slpKernel.waveNumber(); }
 
     template <template <typename T> class CollectionOf2dSlicesOfNdArrays>
     void evaluate(
             const ConstGeometricalDataSlice<CoordinateType>& testGeomData,
             const ConstGeometricalDataSlice<CoordinateType>& trialGeomData,
             CollectionOf2dSlicesOfNdArrays<ValueType>& result) const {
-        const int coordCount = 3;
-
-        CoordinateType numeratorSum = 0., denominatorSum = 0.;
-        for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex)
-        {
-            CoordinateType diff = testGeomData.global(coordIndex) -
-                    trialGeomData.global(coordIndex);
-            denominatorSum += diff * diff;
-            numeratorSum += diff * testGeomData.normal(coordIndex);
-        }
-        CoordinateType distance = sqrt(denominatorSum);
-        result[0](0, 0) = -numeratorSum /
-                (static_cast<CoordinateType>(4.0 * M_PI) * denominatorSum) *
-                (m_waveNumber + static_cast<CoordinateType>(1.0) / distance) *
-                exp(-m_waveNumber * distance);
+        // This will put the value of the SLP kernel in result[0](0, 0)
+        m_slpKernel.evaluate(testGeomData, trialGeomData, result);
+        result[1](0, 0) = result[0](0, 0) *
+            m_slpKernel.waveNumber() * m_slpKernel.waveNumber();
     }
 
 private:
-    ValueType m_waveNumber;
+    ModifiedHelmholtz3dSingleLayerPotentialKernelFunctor<ValueType> m_slpKernel;
 };
 
 } // namespace Fiber

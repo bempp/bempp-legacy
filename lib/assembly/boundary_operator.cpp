@@ -22,6 +22,7 @@
 
 #include "abstract_boundary_operator_sum.hpp"
 #include "abstract_boundary_operator_composition.hpp"
+#include "adjoint_abstract_boundary_operator.hpp"
 #include "discrete_boundary_operator.hpp"
 #include "context.hpp"
 #include "grid_function.hpp"
@@ -300,6 +301,16 @@ BoundaryOperator<BasisFunctionType, ResultType> operator*(
                 boost::make_shared<Composition>(op1, op2));
 }
 
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType> adjoint(
+        const BoundaryOperator<BasisFunctionType, ResultType>& op)
+{
+    typedef AdjointAbstractBoundaryOperator<BasisFunctionType, ResultType>
+        Adjoint;
+    return BoundaryOperator<BasisFunctionType, ResultType>(
+                op.context(), boost::make_shared<Adjoint>(op));
+}
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(BoundaryOperator);
 
 #define INSTANTIATE_FREE_FUNCTIONS(BASIS, RESULT) \
@@ -315,7 +326,9 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(BoundaryOperator);
     const GridFunction<BASIS, RESULT>& fun); \
     template BoundaryOperator<BASIS, RESULT> operator*( \
     const BoundaryOperator<BASIS, RESULT>& op, \
-    const BoundaryOperator<BASIS, RESULT>& fun)
+    const BoundaryOperator<BASIS, RESULT>& fun); \
+    template BoundaryOperator<BASIS, RESULT> adjoint( \
+    const BoundaryOperator<BASIS, RESULT>& op)
 #define INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(BASIS, RESULT, SCALAR) \
     template BoundaryOperator<BASIS, RESULT> operator*( \
     const BoundaryOperator<BASIS, RESULT>& op, const SCALAR& scalar); \

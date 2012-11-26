@@ -292,6 +292,27 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator/(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
         ScalarType scalar);
 
+template <typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > transpose(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op);
+
+template <typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > conjugate(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op);
+
+template <typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > conjugateTranspose(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op);
+
+template <typename ValueType>
+shared_ptr<const DiscreteBoundaryOperator<ValueType> > transpose(
+        TranspositionMode trans,
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op);
+
+template <typename RealType>
+shared_ptr<const DiscreteBoundaryOperator<std::complex<RealType> > > complexify(
+        const shared_ptr<const DiscreteBoundaryOperator<RealType> >& op);
+
 } // namespace Bempp
 
 #endif

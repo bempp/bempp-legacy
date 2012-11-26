@@ -56,18 +56,18 @@
 
 using namespace Bempp;
 
-namespace 
+namespace
 {
 
 template <typename T> T initWaveNumber();
 template <> float initWaveNumber() { return 1.2f; }
 template <> double initWaveNumber(){ return 1.2; }
-template <> std::complex<float> initWaveNumber() 
+template <> std::complex<float> initWaveNumber()
 { return std::complex<float>(1.2f, 0.7f); }
 template <> std::complex<double> initWaveNumber()
 { return std::complex<double>(1.2, 0.7); }
 
-template <typename BFT, typename RT> 
+template <typename BFT, typename RT>
 struct DiscreteAcaBoundaryOperatorFixture
 {
     DiscreteAcaBoundaryOperatorFixture()
@@ -84,13 +84,13 @@ struct DiscreteAcaBoundaryOperatorFixture
         AcaOptions acaOptions;
         acaOptions.minimumBlockSize = 2;
         assemblyOptions.switchToAcaMode(acaOptions);
-        shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy( 
+        shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
             new NumericalQuadratureStrategy<BFT, RT>);
         shared_ptr<Context<BFT, RT> > context(
             new Context<BFT, RT>(quadStrategy, assemblyOptions));
-        
+
         const RT waveNumber = initWaveNumber<RT>();
-        
+
         op = modifiedHelmholtz3dSingleLayerBoundaryOperator<BFT, RT, RT>(
             context, pwiseConstants, pwiseConstants, pwiseLinears, waveNumber);
     }
@@ -152,9 +152,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     arma::Col<RT> expected = alpha * dop->asMatrix() * x;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
-    
+
     BOOST_CHECK(y.is_finite());
-    BOOST_CHECK(check_arrays_are_close<RT>(y, expected, 
+    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
 
@@ -179,9 +179,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     arma::Col<RT> expected = alpha * dop->asMatrix() * x;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
-    
+
     BOOST_CHECK(y.is_finite());
-    BOOST_CHECK(check_arrays_are_close<RT>(y, expected, 
+    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
 
@@ -205,8 +205,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     arma::Col<RT> expected = alpha * dop->asMatrix() * x + beta * y;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
-    
-    BOOST_CHECK(check_arrays_are_close<RT>(y, expected, 
+
+    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
 
@@ -230,8 +230,58 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     arma::Col<RT> expected = alpha * dop->asMatrix() * x + beta * y;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
-    
-    BOOST_CHECK(check_arrays_are_close<RT>(y, expected, 
+
+    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
+                                           10. * std::numeric_limits<CT>::epsilon()));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2_and_beta_equal_to_3_and_transpose, ResultType, result_types)
+{
+    std::srand(1);
+
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    DiscreteAcaBoundaryOperatorFixture<BFT, RT> fixture;
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
+
+    RT alpha = static_cast<RT>(2.);
+    RT beta = static_cast<RT>(3.);
+
+    arma::Col<RT> x = generateRandomVector<RT>(dop->rowCount());
+    arma::Col<RT> y = generateRandomVector<RT>(dop->columnCount());
+
+    arma::Col<RT> expected = alpha * dop->asMatrix().st() * x + beta * y;
+
+    dop->apply(TRANSPOSE, x, y, alpha, beta);
+
+    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
+                                           10. * std::numeric_limits<CT>::epsilon()));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2_plus_3j_and_beta_equal_to_4_minus_5j_and_transpose, ResultType, complex_result_types)
+{
+    std::srand(1);
+
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    DiscreteAcaBoundaryOperatorFixture<BFT, RT> fixture;
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
+
+    RT alpha = static_cast<RT>(2., 3.);
+    RT beta = static_cast<RT>(4., -5.);
+
+    arma::Col<RT> x = generateRandomVector<RT>(dop->rowCount());
+    arma::Col<RT> y = generateRandomVector<RT>(dop->columnCount());
+
+    arma::Col<RT> expected = alpha * dop->asMatrix().st() * x + beta * y;
+
+    dop->apply(TRANSPOSE, x, y, alpha, beta);
+
+    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
 
@@ -307,6 +357,32 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     arma::Col<RT> expected = alpha * dop->asMatrix() * x + beta * y;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
+
+    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
+                                           10. * std::numeric_limits<CT>::epsilon()));
+}
+
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2_and_beta_equal_to_3_and_transpose_and_real_symmetric_operator, ResultType, result_types)
+{
+    std::srand(1);
+
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    DiscreteHermitianAcaBoundaryOperatorFixture<BFT, RT> fixture;
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
+
+    RT alpha = static_cast<RT>(2.);
+    RT beta = static_cast<RT>(3.);
+
+    arma::Col<RT> x = generateRandomVector<RT>(dop->rowCount());
+    arma::Col<RT> y = generateRandomVector<RT>(dop->columnCount());
+
+    arma::Col<RT> expected = alpha * dop->asMatrix().st() * x + beta * y;
+
+    dop->apply(TRANSPOSE, x, y, alpha, beta);
 
     BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
                                            10. * std::numeric_limits<CT>::epsilon()));
