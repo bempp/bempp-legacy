@@ -76,11 +76,72 @@ public:
 
     enum DataType { COEFFICIENTS, PROJECTIONS };
 
+    // Recommended constructors
+
     /** \brief Constructor.
      *
      *  Construct an uninitialized grid function. The only way to
      *  initialize it later is using the assignment operator. */
     GridFunction();
+
+    /** Constructor.
+     *
+     *  \param[in] context      Assembly context from which a quadrature
+     *                          strategy can be retrieved.
+     *  \param[in] space        Function space to expand the grid function in.
+     *  \param[in] coefficients
+     *    Vector of length <tt>space.globalDofCount()</tt> containing the expansion
+     *    coefficients of the grid function in the space \p space.
+     *
+     *  This constructor builds a grid function from its coefficients in a
+     *  function space.
+     */
+    GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+                 const shared_ptr<const Space<BasisFunctionType> >& space,
+                 const arma::Col<ResultType>& coefficients);
+
+    /** Constructor.
+     *
+     *  \param[in] context      Assembly context from which a quadrature
+     *                          strategy can be retrieved.
+     *  \param[in] space        Function space to expand the grid function in.
+     *  \param[in] dualSpace    Function space dual to \p space.
+     *  \param[in] projections
+     *    Vector of length <tt>dualSpace.globalDofCount()</tt> containing the
+     *    scalar products of the grid function and the basis functions of the
+     *    space \p dualSpace.
+     *
+     *  This constructor builds a grid function expanded in the basis of the
+     *  space \p space from the projections of this function on the basis
+     *  functions of another space \p dualSpace. Both spaces must be defined on
+     *  the same grid. */
+    GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+                 const shared_ptr<const Space<BasisFunctionType> >& space,
+                 const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
+                 const arma::Col<ResultType>& projections);
+
+    /** \brief Constructor.
+     *
+     *  \param[in] context      Assembly context from which a quadrature
+     *                          strategy can be retrieved.
+     *  \param[in] space        Function space to expand the grid function in.
+     *  \param[in] dualSpace    Function space dual to \p space.
+     *  \param[in] function     Function object whose values on
+     *                          <tt>space.grid()</tt> will be used to construct
+     *                          the new grid function.
+     *
+     *  This constructor builds a grid function by approximating the function
+     *  \p function in the basis of space \p space.
+     *
+     *  \p space and \p dualSpace must be defined on the same grid.
+     *
+     *  \todo Explain the role of \p dualSpace. */
+    GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+                 const shared_ptr<const Space<BasisFunctionType> >& space,
+                 const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
+                 const Function<ResultType>& function);
+
+    // Deprecated constructors
 
     /** \brief Constructor.
      *
@@ -106,7 +167,10 @@ public:
      *  Context object given in the constructor is then used to determine the
      *  strategy for evaluating any necessary integrals.
      *
-     *  \p space and \p dualSpace must be defined on the same grid. */
+     *  \p space and \p dualSpace must be defined on the same grid.
+     *
+     *  \deprecated This constructor is deprecated. In new code, use one of
+     *  the other constructors. */
     BEMPP_DEPRECATED
     GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
                  const shared_ptr<const Space<BasisFunctionType> >& space,
@@ -130,7 +194,8 @@ public:
      *
      *  \p space and \p dualSpace must be defined on the same grid.
      *
-     *  \note This constructor is mainly intended for internal use in BEM++. */
+     *  \deprecated This constructor is deprecated. In new code, use one of
+     *  the other constructors. */
     BEMPP_DEPRECATED
     GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
                  const shared_ptr<const Space<BasisFunctionType> >& space,
@@ -138,33 +203,7 @@ public:
                  const arma::Col<ResultType>& coefficients,
                  const arma::Col<ResultType>& projections);
 
-    GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-                 const shared_ptr<const Space<BasisFunctionType> >& space,
-                 const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
-                 const arma::Col<ResultType>& projections);
-
-    GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-                 const shared_ptr<const Space<BasisFunctionType> >& space,
-                 const arma::Col<ResultType>& coefficients);
-
-    /** \brief Constructor.
-     *
-     *  \param[in] context      Assembly context from which a quadrature
-     *                          strategy can be retrieved.
-     *  \param[in] space        Function space to expand the grid function in.
-     *  \param[in] dualSpace    Function space dual to \p space.
-     *  \param[in] function     Function object whose values on
-     *                          <tt>space.grid()</tt> will be used to construct
-     *                          the new grid function.
-     *
-     *  This constructor builds a grid function by approximating the function
-     *  \p function in the basis of space \p space.
-     *
-     *  \p space and \p dualSpace must be defined on the same grid. */
-    GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-                 const shared_ptr<const Space<BasisFunctionType> >& space,
-                 const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
-                 const Function<ResultType>& function);
+    // Member functions
 
     /** \brief Return whether this function has been properly initialized. */
     bool isInitialized() const;
@@ -178,7 +217,12 @@ public:
     /** \brief Space in which this function is expanded. */
     shared_ptr<const Space<BasisFunctionType> > space() const;
 
-    /** \brief Space dual to the space in which this function is expanded. */
+    /** \brief Space dual to the space in which this function is expanded.
+     *
+     *  \deprecated This function is provided only for backward compatibility
+     *  reasons. It returns the shared pointer to the dual space of the
+     *  GridFunction, if one was supplied during the construction of the
+     *  latter, or a null pointer otherwise. */
     shared_ptr<const Space<BasisFunctionType> > dualSpace() const;
 
     /** \brief Assembly context used to retrieve the strategy for evaluating
@@ -192,30 +236,34 @@ public:
     int componentCount() const;
 
     /** \brief Vector of expansion coefficients of this function in the basis
-     *  of its primal space.
-     *
-     *  If the grid function was constructed from the vector of its projections
-     *  on the basis of its dual space, the expansion coefficients in the
-     *  primal space are calculated automatically on the first call to
-     *  coefficients() and cached internally before being returned.
+     *  of its expansion space.
      *
      *  An exception is thrown if this function is called on an uninitialized
      *  GridFunction object (one constructed with the default constructor). */
     const arma::Col<ResultType>& coefficients() const;
 
     /** \brief Vector of scalar products of this function with the basis
+     *  functions of \p dualSpace.
+     *
+     *  \p dualSpace must be defined on the same grid as the space in which the
+     *  GridFunction is expanded.
+     *
+     *  An exception is thrown if this function is called on an uninitialized
+     *  GridFunction object (one constructed with the default constructor). */
+    arma::Col<ResultType> projections(
+            const Space<BasisFunctionType>& dualSpace_) const;
+
+    /** \brief Vector of scalar products of this function with the basis
      *  functions of its dual space.
      *
-     *  If the grid function was constructed from the vector of its expansion
-     *  coefficients in its primal space, the projections on the basis
-     *  functions of its dual space are calculated automatically on the first
-     *  call to projections() and cached internally before being returned.
+     *  \deprecated This function is provided only for backward compatibility
+     *  purposes. It works only if the dual space was specified during the
+     *  construction of the GridFunction. In new code the other overload of
+     *  projections() should be used.
      *
      *  An exception is thrown if this function is called on an uninitialized
      *  GridFunction object (one constructed with the default constructor). */
     BEMPP_DEPRECATED arma::Col<ResultType> projections() const;
-    arma::Col<ResultType> projections(
-            const Space<BasisFunctionType>& dualSpace_) const;
 
     /** \brief Reset the expansion coefficients of this function in the basis
      *  of its primal space.
@@ -225,16 +273,23 @@ public:
      *  invalid and recalculated on the next call to projections(). */
     void setCoefficients(const arma::Col<ResultType>& coeffs);
 
-    /** \brief Reset the vector of scalar products of this function with the basis
-     *  functions of its dual space.
+    /** \brief Reinitialize the function by specifying the vector of its scalar
+     *  products with the basis functions of \p dualSpace.
      *
-     *  As a side effect, any internally stored vector of the coefficients of
-     *  this grid function in its primal space is marked as invalid and
-     *  recalculated on the next call to coefficients(). */
-    BEMPP_DEPRECATED void setProjections(const arma::Col<ResultType>& projects);
+     *  \p dualSpace must be defined on the same grid as the space in which the
+     *  GridFunction is expanded. */
     void setProjections(
             const Space<BasisFunctionType>& dualSpace_,
             const arma::Col<ResultType>& projects);
+
+    /** \brief Reset the vector of scalar products of this function with the
+     *  basis functions of its dual space.
+     *
+     *  \deprecated This function is provided only for backward compatibility
+     *  purposes. It works only if the dual space was specified during the
+     *  construction of the GridFunction. In new code the other overload of
+     *  setProjections() should be used. */
+    BEMPP_DEPRECATED void setProjections(const arma::Col<ResultType>& projects);
 
     /** \brief Return the \f$L^2\f$-norm of the grid function. */
     MagnitudeType L2Norm() const;
