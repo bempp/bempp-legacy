@@ -227,6 +227,26 @@ def createPiecewiseLinearContinuousScalarSpace(context, grid):
     return _constructObjectTemplatedOnBasis(
         core, name, context.basisFunctionType(), grid)
 
+def createUnitSpace(context, grid):
+    """
+    Create and return a space consisting of the single function equal to 1
+    on all elements of the grid.
+
+    *Parameters:*
+       - context (Context)
+            A Context object that will determine the type used to represent the
+            values of the basis functions of the newly constructed space.
+       - grid (Grid)
+            Grid on which the function from the newly constructed space will be
+            defined.
+
+    *Returns* a newly constructed Space_BasisFunctionType object, with
+    BasisFunctionType determined automatically from the context argument and
+    equal to either float32, float64, complex64 or complex128.
+    """
+    return _constructObjectTemplatedOnBasis(
+        core, 'unitSpace', context.basisFunctionType(), grid)
+
 def _constructOperator(className, context, domain, range, dualToRange, label=None):
     # determine basis function type
     basisFunctionType = domain.basisFunctionType()
