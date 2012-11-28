@@ -25,6 +25,7 @@
 #include "../common/common.hpp"
 
 #include "../common/armadillo_fwd.hpp"
+#include "../common/deprecated.hpp"
 #include "../common/shared_ptr.hpp"
 
 #include "../grid/vtk_writer.hpp"
@@ -106,6 +107,7 @@ public:
      *  strategy for evaluating any necessary integrals.
      *
      *  \p space and \p dualSpace must be defined on the same grid. */
+    BEMPP_DEPRECATED
     GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
                  const shared_ptr<const Space<BasisFunctionType> >& space,
                  const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
@@ -129,11 +131,21 @@ public:
      *  \p space and \p dualSpace must be defined on the same grid.
      *
      *  \note This constructor is mainly intended for internal use in BEM++. */
+    BEMPP_DEPRECATED
     GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
                  const shared_ptr<const Space<BasisFunctionType> >& space,
                  const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
                  const arma::Col<ResultType>& coefficients,
                  const arma::Col<ResultType>& projections);
+
+    GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+                 const shared_ptr<const Space<BasisFunctionType> >& space,
+                 const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
+                 const arma::Col<ResultType>& projections);
+
+    GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+                 const shared_ptr<const Space<BasisFunctionType> >& space,
+                 const arma::Col<ResultType>& coefficients);
 
     /** \brief Constructor.
      *
@@ -201,7 +213,9 @@ public:
      *
      *  An exception is thrown if this function is called on an uninitialized
      *  GridFunction object (one constructed with the default constructor). */
-    const arma::Col<ResultType>& projections() const;
+    BEMPP_DEPRECATED arma::Col<ResultType> projections() const;
+    arma::Col<ResultType> projections(
+            const Space<BasisFunctionType>& dualSpace_) const;
 
     /** \brief Reset the expansion coefficients of this function in the basis
      *  of its primal space.
@@ -217,7 +231,10 @@ public:
      *  As a side effect, any internally stored vector of the coefficients of
      *  this grid function in its primal space is marked as invalid and
      *  recalculated on the next call to coefficients(). */
-    void setProjections(const arma::Col<ResultType>& projects);
+    BEMPP_DEPRECATED void setProjections(const arma::Col<ResultType>& projects);
+    void setProjections(
+            const Space<BasisFunctionType>& dualSpace_,
+            const arma::Col<ResultType>& projects);
 
     /** \brief Return the \f$L^2\f$-norm of the grid function. */
     MagnitudeType L2Norm() const;
@@ -271,11 +288,22 @@ public:
             VtkWriter::DataType dataType, arma::Mat<ResultType>& result_) const;
 
 private:
+    void initializeFromCoefficients(
+            const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+            const shared_ptr<const Space<BasisFunctionType> >& space,
+            const arma::Col<ResultType>& coefficients);
+    void initializeFromProjections(
+            const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+            const shared_ptr<const Space<BasisFunctionType> >& space,
+            const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
+            const arma::Col<ResultType>& projections);
+
+private:
     shared_ptr<const Context<BasisFunctionType, ResultType> > m_context;
     shared_ptr<const Space<BasisFunctionType> > m_space;
     shared_ptr<const Space<BasisFunctionType> > m_dualSpace;
     mutable shared_ptr<const arma::Col<ResultType> > m_coefficients;
-    mutable shared_ptr<const arma::Col<ResultType> > m_projections;
+    // mutable shared_ptr<const arma::Col<ResultType> > m_projections;
 };
 
 // Overloaded operators

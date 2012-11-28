@@ -71,7 +71,7 @@ gridFunctionFromCoefficients(
     const arma::Col<ResultType>& data)
 {
     return new GridFunction<BasisFunctionType, ResultType>(
-        context, space, dualSpace, data, 
+        context, space, dualSpace, data,
         GridFunction<BasisFunctionType, ResultType>::COEFFICIENTS);
 }
 
@@ -160,6 +160,12 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
     void projections(arma::Col<ResultType>& col_out)
     {
         col_out = $self->projections();
+    }
+
+    void projections(const Space<BasisFunctionType>& dualSpace,
+                     arma::Col<ResultType>& col_out)
+    {
+        col_out = $self->projections(dualSpace);
     }
 
     %ignore coefficients;
