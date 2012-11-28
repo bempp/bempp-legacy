@@ -90,13 +90,11 @@ DefaultDirectSolver<BasisFunctionType, ResultType>::solveImplNonblocked(
 
     arma::Col<ResultType> armaSolution = arma::solve(
                 boundaryOp->weakForm()->asMatrix(),
-                rhs.projections());
+                rhs.projections(*boundaryOp->dualToRange()));
     
     return Solution<BasisFunctionType, ResultType>(
         GridFunction<BasisFunctionType, ResultType>(
-            boundaryOp->context(), 
-            boundaryOp->domain(), boundaryOp->domain(), // is this the right choice?
-            armaSolution, GridFunction<BasisFunctionType, ResultType>::COEFFICIENTS),
+            boundaryOp->context(), boundaryOp->domain(), armaSolution),
         SolutionStatus::CONVERGED,
         SolutionBase<BasisFunctionType, ResultType>::unknownTolerance(),
         "Solver finished");
@@ -127,7 +125,8 @@ DefaultDirectSolver<BasisFunctionType, ResultType>::solveImplBlocked(
     // Construct the right-hand size vector
     arma::Col<ResultType> armaRhs(boundaryOp->totalGlobalDofCountInDualsToRanges());
     for (size_t i = 0, start = 0; i < canonicalRhs.size(); ++i) {
-        const arma::Col<ResultType>& chunkProjections = canonicalRhs[i].projections();
+        const arma::Col<ResultType>& chunkProjections =
+                canonicalRhs[i].projections(*boundaryOp->dualToRange(i));
         size_t chunkSize = chunkProjections.n_rows;
         armaRhs.rows(start, start + chunkSize - 1) = chunkProjections;
         start += chunkSize;

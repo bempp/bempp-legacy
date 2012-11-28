@@ -28,8 +28,9 @@
 #include "identity_operator.hpp"
 #include "local_assembler_construction_helper.hpp"
 
-#include "../common/stl_io.hpp"
 #include "../common/complex_aux.hpp"
+#include "../common/deprecated.hpp"
+#include "../common/stl_io.hpp"
 #include "../fiber/collection_of_3d_arrays.hpp"
 #include "../fiber/basis.hpp"
 #include "../fiber/basis_data.hpp"
@@ -801,48 +802,6 @@ GridFunction<BasisFunctionType, ResultType> operator-(
     return static_cast<ResultType>(-1.) * g;
 }
 
-template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType, ResultType> operator+(
-        const GridFunction<BasisFunctionType, ResultType>& g1,
-        const GridFunction<BasisFunctionType, ResultType>& g2)
-{
-    if (g1.space() != g2.space() || g1.dualSpace() != g2.dualSpace())
-        throw std::runtime_error("GridFunction::operator+(): spaces don't match");
-    return GridFunction<BasisFunctionType, ResultType>(
-                g1.context(), // arbitrary choice...
-                g1.space(),
-                g1.dualSpace(),
-                g1.coefficients() + g2.coefficients(),
-                GridFunction<BasisFunctionType, ResultType>::COEFFICIENTS);
-}
-
-template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType, ResultType> operator-(
-        const GridFunction<BasisFunctionType, ResultType>& g1,
-        const GridFunction<BasisFunctionType, ResultType>& g2)
-{
-    if (g1.space() != g2.space() || g1.dualSpace() != g2.dualSpace())
-        throw std::runtime_error("GridFunction::operator-(): spaces don't match");
-    return GridFunction<BasisFunctionType, ResultType>(
-                g1.context(), // arbitrary choice...
-                g1.space(),
-                g1.dualSpace(),
-                g1.coefficients() - g2.coefficients(),
-                GridFunction<BasisFunctionType, ResultType>::COEFFICIENTS);
-}
-
-template <typename BasisFunctionType, typename ResultType, typename ScalarType>
-GridFunction<BasisFunctionType, ResultType> operator*(
-        const GridFunction<BasisFunctionType, ResultType>& g1, const ScalarType& scalar)
-{
-    return GridFunction<BasisFunctionType, ResultType>(
-                g1.context(),
-                g1.space(),
-                g1.dualSpace(),
-                static_cast<ResultType>(scalar) * g1.coefficients(),
-                GridFunction<BasisFunctionType, ResultType>::COEFFICIENTS);
-}
-
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
 typename boost::enable_if<
     typename boost::mpl::has_key<
@@ -863,6 +822,62 @@ GridFunction<BasisFunctionType, ResultType> operator/(
         throw std::runtime_error("GridFunction::operator/(): Divide by zero");
     return (static_cast<ScalarType>(1.) / scalar) * g1;
 }
+
+BEMPP_GCC_DIAG_OFF(deprecated-declarations);
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType> operator+(
+        const GridFunction<BasisFunctionType, ResultType>& g1,
+        const GridFunction<BasisFunctionType, ResultType>& g2)
+{
+    if (g1.space() != g2.space())
+        throw std::runtime_error("GridFunction::operator+(): spaces don't match");
+    // For the sake of old-style code (with dualSpace stored in the GridFunction),
+    // we try to provide a sensible dual space to the composite GridFunction.
+    shared_ptr<const Space<BasisFunctionType> > dualSpace = g1.dualSpace();
+    if (!dualSpace)
+        dualSpace = g2.dualSpace();
+    return GridFunction<BasisFunctionType, ResultType>(
+                g1.context(), // arbitrary choice...
+                g1.space(),
+                dualSpace,
+                g1.coefficients() + g2.coefficients(),
+                GridFunction<BasisFunctionType, ResultType>::COEFFICIENTS);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType> operator-(
+        const GridFunction<BasisFunctionType, ResultType>& g1,
+        const GridFunction<BasisFunctionType, ResultType>& g2)
+{
+    if (g1.space() != g2.space())
+        throw std::runtime_error("GridFunction::operator-(): spaces don't match");
+    // For the sake of old-style code (with dualSpace stored in the GridFunction),
+    // we try to provide a sensible dual space to the composite GridFunction.
+    shared_ptr<const Space<BasisFunctionType> > dualSpace = g1.dualSpace();
+    if (!dualSpace)
+        dualSpace = g2.dualSpace();
+    return GridFunction<BasisFunctionType, ResultType>(
+                g1.context(), // arbitrary choice...
+                g1.space(),
+                dualSpace,
+                g1.coefficients() - g2.coefficients(),
+                GridFunction<BasisFunctionType, ResultType>::COEFFICIENTS);
+}
+
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+GridFunction<BasisFunctionType, ResultType> operator*(
+        const GridFunction<BasisFunctionType, ResultType>& g1, const ScalarType& scalar)
+{
+    return GridFunction<BasisFunctionType, ResultType>(
+                g1.context(),
+                g1.space(),
+                g1.dualSpace(),
+                static_cast<ResultType>(scalar) * g1.coefficients(),
+                GridFunction<BasisFunctionType, ResultType>::COEFFICIENTS);
+}
+
+BEMPP_GCC_DIAG_ON(deprecated-declarations);
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
 
