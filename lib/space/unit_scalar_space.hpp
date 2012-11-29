@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_unit_space_hpp
-#define bempp_unit_space_hpp
+#ifndef bempp_unit_scalar_space_hpp
+#define bempp_unit_scalar_space_hpp
 
 #include "../common/common.hpp"
 
@@ -41,12 +41,12 @@ class GridView;
 /** \ingroup space
  *  \brief Space consisting of a single scalar function equal to 1 everywhere. */
 template <typename BasisFunctionType>
-class UnitSpace : public ScalarSpace<BasisFunctionType>
+class UnitScalarSpace : public ScalarSpace<BasisFunctionType>
 {
 public:
     typedef typename ScalarSpace<BasisFunctionType>::CoordinateType CoordinateType;
 
-    explicit UnitSpace(const shared_ptr<const Grid>& grid);
+    explicit UnitScalarSpace(const shared_ptr<const Grid>& grid);
 
     virtual int domainDimension() const;
     virtual int codomainDimension() const;

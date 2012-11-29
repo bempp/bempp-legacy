@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "unit_space.hpp"
+#include "unit_scalar_space.hpp"
 
 #include "../common/not_implemented_error.hpp"
 #include "../fiber/explicit_instantiation.hpp"
@@ -34,35 +34,35 @@ namespace Bempp
 {
 
 template <typename BasisFunctionType>
-UnitSpace<BasisFunctionType>::
-UnitSpace(const shared_ptr<const Grid>& grid) :
+UnitScalarSpace<BasisFunctionType>::
+UnitScalarSpace(const shared_ptr<const Grid>& grid) :
      ScalarSpace<BasisFunctionType>(grid), m_view(grid->leafView())
 {
     assignDofsImpl();
 }
 
 template <typename BasisFunctionType>
-int UnitSpace<BasisFunctionType>::domainDimension() const
+int UnitScalarSpace<BasisFunctionType>::domainDimension() const
 {
     return this->grid()->dim();
 }
 
 template <typename BasisFunctionType>
-int UnitSpace<BasisFunctionType>::codomainDimension() const
+int UnitScalarSpace<BasisFunctionType>::codomainDimension() const
 {
     return 1;
 }
 
 template <typename BasisFunctionType>
 const Fiber::Basis<BasisFunctionType>&
-UnitSpace<BasisFunctionType>::basis(
+UnitScalarSpace<BasisFunctionType>::basis(
         const Entity<0>& element) const
 {
     return m_basis;
 }
 
 template <typename BasisFunctionType>
-ElementVariant UnitSpace<BasisFunctionType>::elementVariant(
+ElementVariant UnitScalarSpace<BasisFunctionType>::elementVariant(
         const Entity<0>& element) const
 {
     GeometryType type = element.type();
@@ -75,17 +75,17 @@ ElementVariant UnitSpace<BasisFunctionType>::elementVariant(
 }
 
 template <typename BasisFunctionType>
-void UnitSpace<BasisFunctionType>::setElementVariant(
+void UnitScalarSpace<BasisFunctionType>::setElementVariant(
         const Entity<0>& element, ElementVariant variant)
 {
     if (variant != elementVariant(element))
         // for this space, the element variants are unmodifiable,
-        throw std::runtime_error("UnitSpace::"
+        throw std::runtime_error("UnitScalarSpace::"
                                  "setElementVariant(): invalid variant");
 }
 
 template <typename BasisFunctionType>
-void UnitSpace<BasisFunctionType>::assignDofsImpl()
+void UnitScalarSpace<BasisFunctionType>::assignDofsImpl()
 {
     const Mapper& mapper = m_view->elementMapper();
     std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
@@ -116,19 +116,19 @@ void UnitSpace<BasisFunctionType>::assignDofsImpl()
 }
 
 template <typename BasisFunctionType>
-size_t UnitSpace<BasisFunctionType>::globalDofCount() const
+size_t UnitScalarSpace<BasisFunctionType>::globalDofCount() const
 {
     return m_global2localDofs.size();
 }
 
 template <typename BasisFunctionType>
-size_t UnitSpace<BasisFunctionType>::flatLocalDofCount() const
+size_t UnitScalarSpace<BasisFunctionType>::flatLocalDofCount() const
 {
     return m_view->entityCount(0);
 }
 
 template <typename BasisFunctionType>
-void UnitSpace<BasisFunctionType>::getGlobalDofs(
+void UnitScalarSpace<BasisFunctionType>::getGlobalDofs(
         const Entity<0>& element, std::vector<GlobalDofIndex>& dofs) const
 {
     const Mapper& mapper = m_view->elementMapper();
@@ -137,7 +137,7 @@ void UnitSpace<BasisFunctionType>::getGlobalDofs(
 }
 
 template <typename BasisFunctionType>
-void UnitSpace<BasisFunctionType>::global2localDofs(
+void UnitScalarSpace<BasisFunctionType>::global2localDofs(
         const std::vector<GlobalDofIndex>& globalDofs,
         std::vector<std::vector<LocalDof> >& localDofs) const
 {
@@ -147,7 +147,7 @@ void UnitSpace<BasisFunctionType>::global2localDofs(
 }
 
 template <typename BasisFunctionType>
-void UnitSpace<BasisFunctionType>::flatLocal2localDofs(
+void UnitScalarSpace<BasisFunctionType>::flatLocal2localDofs(
         const std::vector<FlatLocalDofIndex>& flatLocalDofs,
         std::vector<LocalDof>& localDofs) const
 {
@@ -158,7 +158,7 @@ void UnitSpace<BasisFunctionType>::flatLocal2localDofs(
 }
 
 template <typename BasisFunctionType>
-void UnitSpace<BasisFunctionType>::getGlobalDofPositions(
+void UnitScalarSpace<BasisFunctionType>::getGlobalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
     const int gridDim = domainDimension();
@@ -172,7 +172,7 @@ void UnitSpace<BasisFunctionType>::getGlobalDofPositions(
 
     if (gridDim == 1)
         throw NotImplementedError(
-                "UnitSpace::globalDofPositions(): "
+                "UnitScalarSpace::globalDofPositions(): "
                 "not implemented for 2D yet.");
     else {
         std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
@@ -196,14 +196,14 @@ void UnitSpace<BasisFunctionType>::getGlobalDofPositions(
 }
 
 template <typename BasisFunctionType>
-void UnitSpace<BasisFunctionType>::getFlatLocalDofPositions(
+void UnitScalarSpace<BasisFunctionType>::getFlatLocalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
     return getGlobalDofPositions(positions);
 }
 
 template <typename BasisFunctionType>
-void UnitSpace<BasisFunctionType>::dumpClusterIds(
+void UnitScalarSpace<BasisFunctionType>::dumpClusterIds(
         const char* fileName,
         const std::vector<unsigned int>& clusterIdsOfDofs) const
 {
@@ -211,7 +211,7 @@ void UnitSpace<BasisFunctionType>::dumpClusterIds(
 }
 
 template <typename BasisFunctionType>
-void UnitSpace<BasisFunctionType>::dumpClusterIdsEx(
+void UnitScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
         const char* fileName,
         const std::vector<unsigned int>& clusterIdsOfGlobalDofs,
         DofType dofType) const
@@ -223,7 +223,7 @@ void UnitSpace<BasisFunctionType>::dumpClusterIdsEx(
     if ((dofType == GLOBAL_DOFS && idCount != globalDofCount()) ||
             (dofType == FLAT_LOCAL_DOFS && idCount != flatLocalDofCount()))
         throw std::invalid_argument(
-                "UnitSpace::dumpClusterIds(): "
+                "UnitScalarSpace::dumpClusterIds(): "
                 "clusterIds has incorrect length");
 
     std::auto_ptr<GridView> view = this->grid()->leafView();
@@ -235,6 +235,6 @@ void UnitSpace<BasisFunctionType>::dumpClusterIdsEx(
     vtkWriter->write(fileName);
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(UnitSpace);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(UnitScalarSpace);
 
 } // namespace Bempp

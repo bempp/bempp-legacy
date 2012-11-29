@@ -1,5 +1,5 @@
 %{
-#include "space/unit_space.hpp"
+#include "space/unit_scalar_space.hpp"
 %}
 
 %inline %{
@@ -8,9 +8,9 @@ namespace Bempp
 
 template <typename BasisFunctionType>
 boost::shared_ptr<Space<BasisFunctionType> >
-unitSpace(const boost::shared_ptr<const Grid>& grid)
+unitScalarSpace(const boost::shared_ptr<const Grid>& grid)
 {
-    typedef UnitSpace<BasisFunctionType> Type;
+    typedef UnitScalarSpace<BasisFunctionType> Type;
     return boost::shared_ptr<Type>(new Type(grid));
 }
 
@@ -19,6 +19,6 @@ unitSpace(const boost::shared_ptr<const Grid>& grid)
 
 namespace Bempp
 {
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(unitSpace);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS(unitScalarSpace);
 }
 

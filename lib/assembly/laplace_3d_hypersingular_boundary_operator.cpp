@@ -35,7 +35,7 @@
 #include "../fiber/default_collection_of_basis_transformations.hpp"
 #include "../fiber/default_test_kernel_trial_integral.hpp"
 
-#include "../space/unit_space.hpp"
+#include "../space/unit_scalar_space.hpp"
 
 namespace Bempp
 {
@@ -122,7 +122,7 @@ laplace3dModifiedHypersingularBoundaryOperator(
                 new Context<BasisFunctionType, ResultType>(context->quadStrategy(),
                                                            idAssemblyOptions));
     shared_ptr<Space<BasisFunctionType> > unitSpace(
-                new UnitSpace<BasisFunctionType>(domain->grid()));
+                new UnitScalarSpace<BasisFunctionType>(domain->grid()));
     BoundaryOperator<BasisFunctionType, ResultType> domainProjection =
             identityOperator<BasisFunctionType, ResultType>(
                 idContext, domain, unitSpace, unitSpace, "DtU");
@@ -133,10 +133,6 @@ laplace3dModifiedHypersingularBoundaryOperator(
     BoundaryOperator<BasisFunctionType, ResultType> ii =
             identityOperator<BasisFunctionType, ResultType>(
                 idContext, domain, range, dualToRange, "UtR");
-    // std::cout << "sum\n"<<arma::sum(ii.weakForm()->asMatrix(), 0);
-    // std::cout <<"domainProjection:\n" << domainProjection.weakForm()->asMatrix() << std::endl;
-    // std::cout <<"rangeProjection:\n" << rangeProjection.weakForm()->asMatrix() << std::endl;
-    // std::cout <<arma::sum(rangeProjection.weakForm()->asMatrix()) << std::endl;
     return hypOp + alpha * rangeProjection * domainProjection;
 }
 
