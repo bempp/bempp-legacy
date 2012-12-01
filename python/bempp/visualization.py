@@ -163,7 +163,7 @@ def legendActor(actor):
     scalar_bar.lookup_table = actor.mapper.lookup_table
     return scalar_bar
 
-def plotgridFunction(*args,**kwargs):
+def plotGridFunction(*args,**kwargs):
     """
     Plot a grid function.
 
@@ -173,7 +173,8 @@ def plotgridFunction(*args,**kwargs):
     fun = gridFunctionActor(*args,**kwargs)
     legend = legendActor(fun)
     plotTvtkActors([fun,legend])
-    
+plotgridFunction = plotGridFunction # old name with a typo
+
 def plotGrid(grid):
     """
     Plot a grid.
