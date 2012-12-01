@@ -1217,12 +1217,12 @@ def createGridFunction(
     Example scalar-valued function defined in a 3D space that can be passed to
     'createGridFunction' with 'surfaceNormalDependent = True'::
 
-        import math
+        import cmath
         def fun2(point, normal):
             x, y, z = point
             nx, ny, nz = normal
             k = 5
-            return math.exp(1j * k * x) * (nx - 1)
+            return cmath.exp(1j * k * x) * (nx - 1)
     """
     if coefficients is None and function is None:
         raise TypeError("createGridFunction: One of 'coefficients' or 'function' must be supplied.")
@@ -1268,6 +1268,70 @@ def gridFunctionFromSurfaceNormalIndependentFunction(
         "SurfaceNormalIndependentFunctor",
         context, space, dualSpace, function,
         argumentDimension, resultDimension)
+
+def estimateL2Error(
+        gridFunction, exactFunction, quadStrategy, evaluationOptions,
+        surfaceNormalDependent=False):
+    """
+    Calculate the L^2-norm of the difference between a grid function and a function
+    defined as a Python callable.
+
+    *Parameters:*
+       - gridFunction (GridFunction)
+            A grid function.
+       - exactFunction (a Python callable object)
+            A Python callable object whose values on 'gridFunction.grid()' will
+            be compared against those of the grid function. If
+            'surfaceNormalDependent' is set to False (default), 'exactFunction'
+            will be passed a single argument containing a 1D array of the
+            coordinates of a point lying on the grid 'gridFunction.grid()'. If
+            'surfaceNormalDependent' is set to True, the function will be passed
+            one more argument, a 1D array containing the components of the unit
+            vector normal to 'gridFunction.grid()' at the point given in the
+            first argument. In both cases 'exactFunction' should return its
+            value at the given point, in the form of a scalar or a 1D array with
+            dimension equal to 'space.codomainDimension()'.
+       - quadStrategy (QuadratureStrategy)
+            Quadrature stategy to be used to evaluate integrals involved in the
+            L^2-norm.
+       - evaluationOptions (EvaluationOptions)
+            Additional options controlling function evaluation.
+       - surfaceNormalDependent (bool)
+            Indicates whether 'exactFunction' depends on the unit vector
+            normal to the grid or not.
+
+    *Returns* a tuple (absError, relError), where absError is the L^2-norm of
+    the difference between 'gridFunction' and 'exactFunction' and relError is
+    equal to absError divided by the L^2-norm of 'exactFunction'
+
+    See the documentation of createGridFunction() for example definitions of
+    Python functions that can be passed to the 'exactFunction' argument.
+    """
+    basisFunctionType = checkType(gridFunction.basisFunctionType())
+    resultType = checkType(gridFunction.resultType())
+    if (basisFunctionType != quadStrategy.basisFunctionType() or
+            resultType != quadStrategy.resultType()):
+        raise TypeError("BasisFunctionType and ResultType of gridFunction "
+                        "and exactFunction must be the same")
+    if surfaceNormalDependent:
+        dependent = "Dependent"
+    else:
+        dependent = "Independent"
+    functor = _constructObjectTemplatedOnValue(
+        core, "PythonSurfaceNormal%sFunctor" % dependent,
+        resultType, exactFunction,
+        gridFunction.space().grid().dimWorld(), # argument dimension
+        gridFunction.space().codomainDimension() # result dimension
+        )
+    absError = _constructObjectTemplatedOnBasisAndResult(
+        core, "L2NormOfDifferenceFromPythonSurfaceNormal%sFunctor" % dependent,
+        basisFunctionType, resultType,
+        gridFunction, functor, quadStrategy, evaluationOptions)
+    exactFunctionL2Norm = _constructObjectTemplatedOnBasisAndResult(
+        core, "L2NormOfDifferenceFromPythonSurfaceNormal%sFunctor" % dependent,
+        basisFunctionType, resultType,
+        0 * gridFunction, functor, quadStrategy, evaluationOptions)
+    return absError, absError / exactFunctionL2Norm
 
 def createDefaultIterativeSolver(
         boundaryOperator,
