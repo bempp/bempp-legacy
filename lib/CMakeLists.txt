@@ -31,15 +31,15 @@ file(GLOB CL_STRING_FILES ${CMAKE_SOURCE_DIR}/lib/fiber/CL/*.str)
 # like Qt Creator and Visual Studio to generate project file list.
 if (WITH_CUDA)
    file(GLOB_RECURSE CUDA_SOURCES *.cu)
-   cuda_add_library(bempp SHARED 
+   cuda_add_library(bempp SHARED
 	${LIB_SOURCES}
-	${CUDA_SOURCES} 
+	${CUDA_SOURCES}
 	${LIB_HEADERS}
 	${DUNE_HEADERS}
 	)
 else ()
-     add_library(bempp SHARED 
-	${LIB_SOURCES} 
+     add_library(bempp SHARED
+	${LIB_SOURCES}
 	${LIB_HEADERS}
 	${DUNE_HEADERS}
 	)
@@ -102,12 +102,20 @@ install(TARGETS bempp
   LIBRARY DESTINATION bempp/lib
   ARCHIVE DESTINATION bempp/lib)
 
+# Get output name of the library
+find_library(BEMPP_LIBRARY bempp PATHS ${CMAKE_INSTALL_PREFIX}/bempp/lib)
+find_library(BEMPP_TEUCHOS_LIBRARY teuchos PATHS ${CMAKE_INSTALL_PREFIX}/bempp/lib)
+
 # Install CMake files for the library
 install(EXPORT BemppLibraryDepends DESTINATION bempp/lib/cmake/Bempp)
 configure_file(
 	${CMAKE_SOURCE_DIR}/cmake/BemppConfig.cmake.in
-        ${CMAKE_BINARY_DIR}/lib/cmake/Bempp/BemppConfig.cmake)
-
+        ${CMAKE_BINARY_DIR}/lib/cmake/Bempp/BemppConfig.cmake
+        @ONLY)
+configure_file(
+	${CMAKE_SOURCE_DIR}/cmake/BemppConfigLocation.in
+        ${CMAKE_BINARY_DIR}/lib/cmake/Bempp/BemppConfigLocation
+        @ONLY)
 
 # Install headers
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/lib/ DESTINATION bempp/include/bempp FILES_MATCHING PATTERN "*.hpp")
@@ -115,7 +123,7 @@ install(FILES ${COMMON_HEADERS} DESTINATION bempp/include/bempp/common)
 install(FILES ${CL_FILES} DESTINATION bempp/include/bempp/fiber/CL)
 install(FILES ${CL_STRING_FILES} DESTINATION bempp/include/bempp/fiber/CL)
 install(FILES ${CMAKE_BINARY_DIR}/lib/cmake/Bempp/BemppConfig.cmake DESTINATION bempp/lib/cmake/Bempp)
-
+install(FILES ${CMAKE_BINARY_DIR}/lib/cmake/Bempp/BemppConfigLocation DESTINATION $ENV{HOME}/.cmake/packages/Bempp)
 
 # Create correct rpath for installation
 SET(BEMPP_RPATH "\$ORIGIN")
