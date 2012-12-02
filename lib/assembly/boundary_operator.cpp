@@ -164,21 +164,23 @@ void BoundaryOperator<BasisFunctionType, ResultType>::apply(
 
     // Sanity test
     if (m_abstractOp->domain() != x_in.space() ||
-            m_abstractOp->range() != y_inout.space() ||
-            m_abstractOp->dualToRange() != y_inout.dualSpace())
+            m_abstractOp->range() != y_inout.space())
         throw std::invalid_argument("BoundaryOperator::apply(): "
                                     "spaces don't match");
 
+    shared_ptr<const Space<BasisFunctionType> > dualToRange =
+            m_abstractOp->dualToRange();
+
     // Extract coefficient vectors
     arma::Col<ResultType> xVals = x_in.coefficients();
-    arma::Col<ResultType> yVals = y_inout.projections();
+    arma::Col<ResultType> yVals = y_inout.projections(*dualToRange);
 
     // Apply operator and assign the result to y_inout's projections
     weakForm()->apply(trans, xVals, yVals, alpha, beta);
     // TODO: make interfaces to the Trilinos and fallback
     // DiscreteBoundaryOperator::apply() compatible.
     // Perhaps by declaring an asPtrToBaseVector method in Vector...
-    y_inout.setProjections(yVals);
+    y_inout.setProjections(*dualToRange, yVals);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -285,7 +287,7 @@ GridFunction<BasisFunctionType, ResultType> operator*(
     coefficients.fill(0.);
     arma::Col<ResultType> projections(dualSpace->globalDofCount());
     projections.fill(0.);
-    GF result(op.context(), space, dualSpace, projections, GF::PROJECTIONS);
+    GF result(op.context(), space, dualSpace, projections);
     op.apply(NO_TRANSPOSE, fun, result, 1., 0.);
     return result;
 }

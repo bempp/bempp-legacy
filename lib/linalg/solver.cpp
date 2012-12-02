@@ -137,8 +137,8 @@ Solver<BasisFunctionType, ResultType>::canonicalizeBlockedRhs(
                 // that there is a nonempty block in each row
                 if (block.isInitialized()) {
                     result[i] = GF(block.context(), block.range(),
-                                block.dualToRange(),
-                                projections, GF::PROJECTIONS);
+                                   block.dualToRange(),
+                                   projections);
                     break;
                 }
             }
@@ -171,9 +171,8 @@ void Solver<BasisFunctionType, ResultType>::constructBlockedGridFunction(
         solutionFunctions[i] = 
             GridFunction<BasisFunctionType, ResultType>(
                 context, 
-                boundaryOp.domain(i), boundaryOp.domain(i), // is this the right choice?
-                solution.rows(start, start + chunkSize - 1),
-                GridFunction<BasisFunctionType, ResultType>::COEFFICIENTS);
+                boundaryOp.domain(i),
+                solution.rows(start, start + chunkSize - 1));
         start += chunkSize;
     }
 }
