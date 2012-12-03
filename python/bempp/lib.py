@@ -447,56 +447,6 @@ def createLaplace3dDoubleLayerPotentialOperator(context):
     return _constructLaplacePotentialOperator(
         "laplace3dDoubleLayerPotentialOperator", context)
 
-def constructBoundaryOperator(
-        module, callableName, context, domain, range, dualToRange, *args):
-    """
-    Construct a boundary operator object of a given class with correct
-    BasisFunctionType and ResultType.
-
-    This function checks that the 'context' and the three spaces have a common
-    BasisFunctionType and ResultType and calls the function
-    callableName_BasisFunctionType_ResultType from module 'module' to construct
-    a boundary operator.
-
-    *Parameters:*
-       - module
-            The module containing the family of callable objects callableName*.
-       - callableName (string)
-            Name of the Python callable that should be called to construct
-            the operator (without basis function type and result type).
-            Example: "laplace3dSingleLayerBoundaryOperator".
-       - context (Context)
-            A Context object to control the assembly of the weak form of the
-            newly constructed operator.
-       - domain (Space)
-            Function space to be taken as the domain of the operator.
-       - range (Space)
-            Function space to be taken as the range of the operator.
-       - dualToRange (Space)
-            Function space to be taken as the dual to the range of the operator.
-       - args
-            Additional arguments to be passed to the callable.
-    """
-    # determine basis function type
-    basisFunctionType = context.basisFunctionType()
-    if (basisFunctionType != domain.basisFunctionType() or
-            basisFunctionType != range.basisFunctionType() or
-            basisFunctionType != dualToRange.basisFunctionType()):
-        raise TypeError("BasisFunctionType of context and all spaces "
-                        "must be the same")
-
-    # determine result type
-    resultType = context.resultType()
-
-    result = _constructObjectTemplatedOnBasis(
-        module, callableName, basisFunctionType,
-        *((context, domain, range, dualToRange) + args))
-    result._context = context
-    result._domain = domain
-    result._range = range
-    result._dualToRange = dualToRange
-    return result
-
 def _constructHelmholtzOperator(
         className, context, domain, range, dualToRange, waveNumber,
         label, useInterpolation, interpPtsPerWavelength):
