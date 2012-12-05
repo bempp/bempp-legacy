@@ -25,7 +25,12 @@
 
 #include <stdexcept>
 
-namespace Fiber {
+#ifndef NDEBUG
+#define FIBER_CHECK_ARRAY_BOUNDS
+#endif
+
+namespace Fiber
+{
 
 /** \cond FORWARD_DECL */
 template <typename T> class _4dSliceOf4dArray;
