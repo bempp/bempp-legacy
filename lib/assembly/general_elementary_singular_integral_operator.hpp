@@ -64,9 +64,7 @@ public:
             const KernelFunctor& kernelFunctor,
             const TestTransformationsFunctor& testTransformationsFunctor,
             const TrialTransformationsFunctor& trialTransformationsFunctor,
-            const IntegrandFunctor& integrandFunctor,
-            const shared_ptr<const AbstractBoundaryOperatorId>& id =
-            shared_ptr<const AbstractBoundaryOperatorId>());
+            const IntegrandFunctor& integrandFunctor);
 
     virtual const CollectionOfKernels& kernels() const
     { return *m_kernels; }
@@ -76,8 +74,6 @@ public:
     { return *m_trialTransformations; }
     virtual const TestKernelTrialIntegral& integral() const
     { return *m_integral; }
-    shared_ptr<const AbstractBoundaryOperatorId> id() const
-    { return m_id; }
 
 private:
     /** \cond PRIVATE */
@@ -85,7 +81,6 @@ private:
     shared_ptr<CollectionOfBasisTransformations> m_testTransformations;
     shared_ptr<CollectionOfBasisTransformations> m_trialTransformations;
     shared_ptr<TestKernelTrialIntegral> m_integral;
-    shared_ptr<const AbstractBoundaryOperatorId> m_id;
     /** \endcond */
 };
 

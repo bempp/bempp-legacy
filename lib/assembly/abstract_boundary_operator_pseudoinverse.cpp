@@ -46,53 +46,6 @@ namespace Bempp
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-// AbstractBoundaryOperatorPseudoinverseId
-
-template <typename BasisFunctionType, typename ResultType>
-AbstractBoundaryOperatorPseudoinverseId<BasisFunctionType, ResultType>::
-AbstractBoundaryOperatorPseudoinverseId(
-        const BoundaryOperator<BasisFunctionType, ResultType>& operatorToInvert) :
-    m_operatorToInvertId(operatorToInvert.abstractOperator()->id())
-{
-}
-
-template <typename BasisFunctionType, typename ResultType>
-size_t AbstractBoundaryOperatorPseudoinverseId<BasisFunctionType, ResultType>::
-hash() const
-{
-    typedef AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>
-            OperatorType;
-    size_t result = tbb::tbb_hasher(typeid(OperatorType).name());
-    tbb_hash_combine(result, m_operatorToInvertId->hash());
-    return result;
-}
-
-template <typename BasisFunctionType, typename ResultType>
-void AbstractBoundaryOperatorPseudoinverseId<BasisFunctionType, ResultType>::
-dump() const
-{
-    typedef AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>
-            OperatorType;
-    std::cout << typeid(OperatorType).name() << " ";
-    m_operatorToInvertId->dump();
-}
-
-template <typename BasisFunctionType, typename ResultType>
-bool AbstractBoundaryOperatorPseudoinverseId<BasisFunctionType, ResultType>::
-isEqual(const AbstractBoundaryOperatorId &other) const
-{
-    // dynamic_cast won't suffice since we want to make sure both objects
-    // are of exactly the same type (dynamic_cast would succeed for a subclass)
-    if (typeid(other) == typeid(*this)) {
-        const AbstractBoundaryOperatorPseudoinverseId& otherCompatible =
-            static_cast<const AbstractBoundaryOperatorPseudoinverseId&>(other);
-        return (*m_operatorToInvertId == *(otherCompatible.m_operatorToInvertId));
-    }
-    else
-        return false;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // AbstractBoundaryOperatorPseudoinverse
 
 template <typename BasisFunctionType, typename ResultType>
@@ -253,6 +206,57 @@ pseudoinverse(const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp)
                 boundaryOp.context(),
                 boost::make_shared<Pinv>(boundaryOp));
 }
+
+BEMPP_GCC_DIAG_OFF(deprecated-declarations);
+
+////////////////////////////////////////////////////////////////////////////////
+// AbstractBoundaryOperatorPseudoinverseId
+
+template <typename BasisFunctionType, typename ResultType>
+AbstractBoundaryOperatorPseudoinverseId<BasisFunctionType, ResultType>::
+AbstractBoundaryOperatorPseudoinverseId(
+        const BoundaryOperator<BasisFunctionType, ResultType>& operatorToInvert) :
+    m_operatorToInvertId(operatorToInvert.abstractOperator()->id())
+{
+}
+
+template <typename BasisFunctionType, typename ResultType>
+size_t AbstractBoundaryOperatorPseudoinverseId<BasisFunctionType, ResultType>::
+hash() const
+{
+    typedef AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>
+            OperatorType;
+    size_t result = tbb::tbb_hasher(typeid(OperatorType).name());
+    tbb_hash_combine(result, m_operatorToInvertId->hash());
+    return result;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void AbstractBoundaryOperatorPseudoinverseId<BasisFunctionType, ResultType>::
+dump() const
+{
+    typedef AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>
+            OperatorType;
+    std::cout << typeid(OperatorType).name() << " ";
+    m_operatorToInvertId->dump();
+}
+
+template <typename BasisFunctionType, typename ResultType>
+bool AbstractBoundaryOperatorPseudoinverseId<BasisFunctionType, ResultType>::
+isEqual(const AbstractBoundaryOperatorId &other) const
+{
+    // dynamic_cast won't suffice since we want to make sure both objects
+    // are of exactly the same type (dynamic_cast would succeed for a subclass)
+    if (typeid(other) == typeid(*this)) {
+        const AbstractBoundaryOperatorPseudoinverseId& otherCompatible =
+            static_cast<const AbstractBoundaryOperatorPseudoinverseId&>(other);
+        return (*m_operatorToInvertId == *(otherCompatible.m_operatorToInvertId));
+    }
+    else
+        return false;
+}
+
+BEMPP_GCC_DIAG_ON(deprecated-declarations);
 
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT) \
     template BoundaryOperator<BASIS, RESULT> \

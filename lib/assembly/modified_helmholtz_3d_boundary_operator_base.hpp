@@ -158,8 +158,11 @@ public:
      *  treated as identical, and hence having the same weak form, if they have
      *  the same C++ type (e.g.
      *  <tt>Helmholtz3dDoubleLayerBoundaryOperator<double, double, double></tt>),
-     *  domain space, range space, space dual to range and wave number. */
-    virtual shared_ptr<const AbstractBoundaryOperatorId> id() const;
+     *  domain space, range space, space dual to range and wave number.
+     *
+     *  \deprecated This function is deprecated and will be removed in a future
+     *  version of BEM++. */
+    BEMPP_DEPRECATED virtual shared_ptr<const AbstractBoundaryOperatorId> id() const;
 
 private:
     virtual const CollectionOfKernels& kernels() const;

@@ -46,7 +46,7 @@ template <typename BasisFunctionType, typename ResultType> class NullOperator;
 /** \endcond */
 
 template <typename BasisFunctionType, typename ResultType>
-class NullOperatorId : public AbstractBoundaryOperatorId
+class BEMPP_DEPRECATED NullOperatorId : public AbstractBoundaryOperatorId
 {
 public:
     NullOperatorId(const NullOperator<BasisFunctionType, ResultType>& op);
@@ -116,8 +116,11 @@ public:
     /** \brief Return the identifier of this operator.
      *
      *  Null operators are treated as equivalent if they have the same domain,
-     *  range and dual to range. */
-    virtual shared_ptr<const AbstractBoundaryOperatorId> id() const;
+     *  range and dual to range.
+     *
+     *  \deprecated This function is deprecated and will be removed in a future
+     *  version of BEM++. */
+    BEMPP_DEPRECATED virtual shared_ptr<const AbstractBoundaryOperatorId> id() const;
 
     /** \brief Return true. */
     virtual bool isLocal() const;

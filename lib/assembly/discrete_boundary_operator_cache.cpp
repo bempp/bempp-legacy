@@ -10,6 +10,9 @@
 #include <tbb/concurrent_unordered_map.h>
 #include <utility>
 
+// This whole class is deprecated and uses deprecated mechanisms.
+BEMPP_GCC_DIAG_OFF(deprecated-declarations);
+
 namespace Bempp
 {
 

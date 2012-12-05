@@ -19,6 +19,8 @@
 // THE SOFTWARE.
 
 #include "context.hpp"
+
+#include "abstract_boundary_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 #include <boost/make_shared.hpp>
@@ -40,13 +42,11 @@ Context<BasisFunctionType, ResultType>::Context(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-void Context<BasisFunctionType, ResultType>::printCachedOperatorStatistics() const
+shared_ptr<const DiscreteBoundaryOperator<ResultType> >
+Context<BasisFunctionType, ResultType>::getWeakForm(
+        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op) const
 {
-    std::vector<shared_ptr<const DiscreteBoundaryOperator<ResultType> > >
-            cachedOperators = m_cache.aliveOperators();
-    std::cout << cachedOperators.size() << " cached operators:\n";
-    for (size_t i = 0; i < cachedOperators.size(); ++i)
-        std::cout << i << " " << typeid(cachedOperators[i]).name() << std::endl;
+    return op.assembleWeakForm(*this);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Context);

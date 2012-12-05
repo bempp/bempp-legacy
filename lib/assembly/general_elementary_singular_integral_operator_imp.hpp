@@ -46,8 +46,7 @@ GeneralElementarySingularIntegralOperator(
         const KernelFunctor& kernelFunctor,
         const TestTransformationsFunctor& testTransformationsFunctor,
         const TrialTransformationsFunctor& trialTransformationsFunctor,
-        const IntegrandFunctor& integrandFunctor,
-        const shared_ptr<const AbstractBoundaryOperatorId>& id) :
+        const IntegrandFunctor& integrandFunctor) :
     Base(domain, range, dualToRange, label, symmetry),
     m_kernels(
         new Fiber::DefaultCollectionOfKernels<KernelFunctor>(kernelFunctor)),
@@ -59,8 +58,7 @@ GeneralElementarySingularIntegralOperator(
             trialTransformationsFunctor)),
     m_integral(
         new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
-            integrandFunctor)),
-    m_id(id)
+            integrandFunctor))
 {
 }
 
