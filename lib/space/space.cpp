@@ -33,9 +33,6 @@
 #include "../grid/grid_view.hpp"
 #include "../grid/mapper.hpp"
 
-//#include <boost/type_traits/is_same.hpp>
-//#include <boost/static_assert.hpp>
-
 #ifdef WITH_TRILINOS
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_LocalMap.h>

@@ -62,50 +62,6 @@ GeneralElementarySingularIntegralOperator(
 {
 }
 
-//template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
-//const typename GeneralElementarySingularIntegralOperator<
-//    BasisFunctionType_, KernelType_, ResultType_>::CollectionOfKernels&
-//GeneralElementarySingularIntegralOperator<
-//BasisFunctionType_, KernelType_, ResultType_>::kernels() const
-//{
-//    return *m_kernels;
-//}
-
-//template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
-//const typename GeneralElementarySingularIntegralOperator<
-//    BasisFunctionType_, KernelType_, ResultType_>::CollectionOfBasisTransformations&
-//GeneralElementarySingularIntegralOperator<
-//BasisFunctionType_, KernelType_, ResultType_>::testTransformations() const
-//{
-//    return *m_testTransformations;
-//}
-
-//template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
-//const typename GeneralElementarySingularIntegralOperator<
-//    BasisFunctionType_, KernelType_, ResultType_>::CollectionOfBasisTransformations&
-//GeneralElementarySingularIntegralOperator<
-//BasisFunctionType_, KernelType_, ResultType_>::trialTransformations() const
-//{
-//    return *m_trialTransformations;
-//}
-
-//template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
-//const typename GeneralElementarySingularIntegralOperator<
-//    BasisFunctionType_, KernelType_, ResultType_>::TestKernelTrialIntegral&
-//GeneralElementarySingularIntegralOperator<
-//BasisFunctionType_, KernelType_, ResultType_>::integral() const
-//{
-//    return *m_integral;
-//}
-
-//template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
-//shared_ptr<const AbstractBoundaryOperatorId>
-//GeneralElementarySingularIntegralOperator<
-//BasisFunctionType_, KernelType_, ResultType_>::id() const
-//{
-//    return m_id;
-//}
-
 } // namespace Bempp
 
 #endif
