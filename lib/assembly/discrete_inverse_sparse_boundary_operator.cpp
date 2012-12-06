@@ -164,8 +164,9 @@ void solveWithAmesos<std::complex<double> >(
 
 template <typename ValueType>
 DiscreteInverseSparseBoundaryOperator<ValueType>::
-DiscreteInverseSparseBoundaryOperator(const shared_ptr<const Epetra_CrsMatrix>& mat,
-                                    Symmetry symmetry) :
+DiscreteInverseSparseBoundaryOperator(
+        const shared_ptr<const Epetra_CrsMatrix>& mat,
+        int symmetry) :
     m_mat(mat),
     m_problem(new Epetra_LinearProblem),
     m_space(Thyra::defaultSpmdVectorSpace<ValueType>(mat->NumGlobalRows())),

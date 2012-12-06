@@ -39,7 +39,7 @@
 %include "armadillo.i"
 %include "auto_ptr.i"
 %include "exception.i"
-%include "shared_ptr.i"
+%include "bempp_shared_ptr.i"
 %include "std_string.i"
 %include "std_complex.i"
 
@@ -134,18 +134,14 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "fiber/accuracy_options.i"
 %include "fiber/quadrature_strategy.i"
 %include "fiber/verbosity_level.i"
- //%include "fiber/numerical_quadrature_strategy.i"
 
 // Space
 %include "space/space.i"
-// %include "space/scalar_space.i"
 %include "space/piecewise_constant_scalar_space.i"
 %include "space/piecewise_linear_continuous_scalar_space.i"
+%include "space/unit_scalar_space.i"
 
 // Assembly
-// %include "assembly/docstrings.i"
-
-%include "assembly/construct_operator.i" // Python code
 %include "assembly/assembly_options.i"
 %include "assembly/numerical_quadrature_strategy.i"
 %include "assembly/transposition_mode.i"
@@ -155,19 +151,16 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "assembly/discrete_boundary_operator.i"
 %include "assembly/context.i"
 %include "assembly/grid_function.i"
+%include "assembly/evaluation_options.i"
+%include "assembly/l2_norm.i"
 %include "assembly/abstract_boundary_operator.i"
 %include "assembly/boundary_operator.i"
-// %include "assembly/elementary_abstract_boundary_operator.i"
-// %include "assembly/elementary_integral_operator.i"
-// %include "assembly/elementary_singular_integral_operator.i"
 %include "assembly/laplace_3d_operators.i"
 %include "assembly/helmholtz_3d_operators.i"
 %include "assembly/modified_helmholtz_3d_operators.i"
 %include "assembly/identity_operator.i"
 %include "assembly/null_operator.i"
-%include "assembly/evaluation_options.i"
 %include "assembly/potential_operator.i"
-// %include "assembly/elementary_potential_operator.i"
 %include "assembly/helmholtz_3d_potential_operators.i"
 %include "assembly/laplace_3d_potential_operators.i"
 %include "assembly/blocked_operator_structure.i"

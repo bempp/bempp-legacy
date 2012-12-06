@@ -48,11 +48,13 @@ template<typename ValueType>
 class Preconditioner
 {
 public:
-    typedef Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > TeuchosPreconditionerPtr;
-    typedef shared_ptr<const DiscreteBoundaryOperator<ValueType > > DiscreteBoundaryOperatorPtr;
+    typedef Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> >
+        TeuchosPreconditionerPtr;
+    typedef shared_ptr<const DiscreteBoundaryOperator<ValueType> >
+        DiscreteBoundaryOperatorPtr;
     typedef typename Fiber::ScalarTraits<ValueType>::RealType MagnitudeType;
 
-    Preconditioner(TeuchosPreconditionerPtr precPtr);
+    explicit Preconditioner(TeuchosPreconditionerPtr precPtr);
 
     virtual ~Preconditioner();
 
@@ -68,64 +70,14 @@ private:
 template<typename ValueType>
 Preconditioner<ValueType>
 discreteOperatorToPreconditioner(
-        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& discreteOperator);
-
-//template<typename ValueType>
-//Preconditioner<ValueType>
-//sparseOperatorToPreconditioner(
-//        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& discreteOperator);
-//
-///** \brief Create a preconditioner from a DiscreteBoundaryOperator that
-// *  represents a H-Matrix.
-// *
-// *  Let \f$A\f$ be an H-Matrix. This method computes the H-Matrix LU
-// *  factorization \f$A\approx LU\f$ and returns a DiscreteBoundaryOperator
-// *  object, which for a given vector \f$y\f$ performs the operation
-// *  \f$U^{-1}L^{-1}y\f$.
-// *
-// *  \param[in] discreteOperator
-// *    A DiscreteBoundaryOperator object, which represents an ACA discretized
-// *    boundary operator. Only operators that can be * cast to
-// *    DiscreteAcaBoundaryOperator are allowed.
-// *
-// *  \param[in] delta
-// *    The accuracy of the approximate H-Matrix LU factorization. A smaller
-// *    value means better accuracy, but takes longer to compute (default:
-// *    delta=0.01).
-// */
-//template<typename ValueType>
-//Preconditioner<ValueType>
-//acaDiscreteOperatorToPreconditioner(
-//        const DiscreteBoundaryOperator<ValueType>& discreteOperator,
-//        typename Preconditioner<ValueType>::MagnitudeType delta=1E-2);
-//
-///** \brief Create a block diagonal preconditioner whose blocks are H-Matrix LU
-// *  decompositions.
-// *
-// *  Given operators \f$A_1,\dots,A_N\f$, this method creates a block diagonal
-// *  preconditioning operator whose block diagonal entries are solves with the
-// *  H-Matrix LU decompositions of \f$A_1,\dots,A_N\f$.
-// *
-// *  \param[in] opVector
-// *
-// *     A vector of pointers to DiscreteBoundaryOperator objects, all of which
-// *     must be castable to DiscreteAcaBoundaryOperator.
-// *
-// *  \param[in] deltas
-// *     A vector with tolerances for the H-Matrix LU decomposition of each
-// *     operator.
-// */
-//template<typename ValueType>
-//Preconditioner<ValueType>
-//acaBlockDiagonalPreconditioner(
-//        const std::vector<typename Preconditioner<ValueType>::DiscreteBoundaryOperatorPtr>& opVector,
-//        const std::vector<typename Preconditioner<ValueType>::MagnitudeType>& deltas);
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >&
+            discreteOperator);
 
 template<typename ValueType>
 Preconditioner<ValueType>
 discreteBlockDiagonalPreconditioner(
-        const std::vector<shared_ptr<const DiscreteBoundaryOperator<ValueType> > >& opVector);
-
+        const std::vector<shared_ptr<
+            const DiscreteBoundaryOperator<ValueType> > >& opVector);
 
 } // namespace Bempp
 

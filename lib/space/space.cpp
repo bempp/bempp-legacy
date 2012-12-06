@@ -33,9 +33,6 @@
 #include "../grid/grid_view.hpp"
 #include "../grid/mapper.hpp"
 
-//#include <boost/type_traits/is_same.hpp>
-//#include <boost/static_assert.hpp>
-
 #ifdef WITH_TRILINOS
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_LocalMap.h>
@@ -188,6 +185,26 @@ constructOperatorMappingFlatLocalToGlobalDofs(const Space<BasisFunctionType>& sp
                 mat, NO_SYMMETRY, TRANSPOSE);
 }
 #endif // WITH_TRILINOS
+
+BEMPP_GCC_DIAG_OFF(deprecated-declarations);
+
+template <typename BasisFunctionType>
+void Space<BasisFunctionType>::dumpClusterIdsEx(
+            const char* fileName,
+            const std::vector<unsigned int>& clusterIdsOfGlobalDofs,
+            DofType dofType) const
+{
+    if (dofType == GLOBAL_DOFS)
+        return dumpClusterIds(fileName, clusterIdsOfGlobalDofs);
+    else if (dofType == FLAT_LOCAL_DOFS)
+        throw std::runtime_error("Space::dumpClusterIdsEx(): "
+                                 "dumping of flat local DOF not supported");
+    else
+        throw std::invalid_argument("Space::dumpClusterIdsEx(): "
+                                    "invalid DOF type");
+}
+
+BEMPP_GCC_DIAG_ON(deprecated-declarations);
 
 #define INSTANTIATE_getAllBases(BASIS) \
     template \

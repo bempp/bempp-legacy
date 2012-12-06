@@ -25,6 +25,10 @@
 
 #include <stdexcept>
 
+#ifndef NDEBUG
+#define FIBER_CHECK_ARRAY_BOUNDS
+#endif
+
 namespace Fiber
 {
 

@@ -54,6 +54,11 @@ template <int codim> class EntityPointer;
 template <typename ValueType> class DiscreteBoundaryOperator;
 /** \endcond */
 
+enum DofType
+{
+    GLOBAL_DOFS, FLAT_LOCAL_DOFS
+};
+
 /** \ingroup space
  *  \brief Function space.
  *
@@ -253,23 +258,53 @@ public:
         @name Debugging
         @} */
 
-    /** \brief Write a VTK file showing the distribution of global degrees of
-     *  freedom into clusters.
+    /** \brief Write a VTK file showing the distribution of global or
+     *  flat local degrees of freedom into clusters.
      *
      *  \param[in] fileName
      *    Name of the VTK file to be created (without extension).
      *  \param[in] clusterIdsOfGlobalDofs
      *    Vector whose <em>i</em>th element contains the identifier of the
-     *    cluster to which <em>i</em>th global degree has been assigned.
+     *    cluster to which <em>i</em>th global degree of freedom has been assigned.
      *
      *  This function generates a VTK file containing a single data series
-     *  mapping the ``positions'' (see globalDofPositions()) of global degrees
+     *  mapping the ``positions'' (see getGlobalDofPositions()) of global degrees
      *  of freedom to the identifiers of the clusters to which these degrees of
      *  freedom have been assigned. It is intended for debugging clustering
-     *  algorithms. */
-    virtual void dumpClusterIds(
+     *  algorithms.
+     *
+     *  \deprecated This function is deprecated. Use dumpClusterIdEx()
+     *  instead, which supports dumping of cluster identifiers of flat
+     *  local degrees of freedom in addition to the global ones.
+     */
+    BEMPP_DEPRECATED virtual void dumpClusterIds(
             const char* fileName,
             const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const = 0;
+
+    /** \brief Write a VTK file showing the distribution of global or
+     *  flat local degrees of freedom into clusters.
+     *
+     *  \param[in] fileName
+     *    Name of the VTK file to be created (without extension).
+     *  \param[in] clusterIdsOfGlobalDofs
+     *    Vector whose <em>i</em>th element contains the identifier of the
+     *    cluster to which <em>i</em>th degree of freedom has been assigned.
+     *  \param[in] dofType
+     *    Type of degrees of freedom (GLOBAL_DOFS or FLAT_LOCAL_DOFS).
+     *
+     *  This function generates a VTK file containing a single data
+     *  series mapping the ``positions'' (see getGlobalDofPositions()
+     *  and getFlatLocalDofPositions()) of the chosen type of degrees
+     *  of freedom to the identifiers of the clusters to which these
+     *  degrees of freedom have been assigned. It is intended for
+     *  debugging clustering algorithms.
+     *
+     *  This function supersedes dumpClusterIds().
+     */
+    virtual void dumpClusterIdsEx(
+            const char* fileName,
+            const std::vector<unsigned int>& clusterIdsOfGlobalDofs,
+            DofType dofType) const;
     /** @} */
 
 private:

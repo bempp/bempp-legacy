@@ -27,6 +27,7 @@
 #include "ahmed_aux_fwd.hpp"
 
 #include "ahmed_leaf_cluster_array.hpp"
+#include "ahmed_mblock_array_deleter.hpp"
 #include "../common/types.hpp"
 
 #include "../common/boost_scoped_array_fwd.hpp"
@@ -119,39 +120,37 @@ public:
         return m_maximumBlockSize;
     }
 
+    void clearDofPointers() {
+        this->dofs = 0;
+        for (int i = 0; i < this->getns(); ++i) {
+            cluster* son = this->getson(i);
+            if (ExtendedBemCluster* exbemson =
+                    dynamic_cast<ExtendedBemCluster*>(son))
+                exbemson->clearDofPointers();
+            }
+    }
+
 private:
     unsigned int m_maximumBlockSize;
 };
 
-class AhmedMblockArrayDeleter
-{
-public:
-    AhmedMblockArrayDeleter(size_t arraySize) :
-        m_arraySize(arraySize) {
-    }
-
-    template <typename ValueType>
-    void operator() (mblock<ValueType>** blocks) const {
-        freembls(m_arraySize, blocks);
-    }
-
-private:
-    size_t m_arraySize;
-};
-
 template <typename ValueType>
 boost::shared_array<mblock<typename AhmedTypeTraits<ValueType>::Type>*>
-allocateAhmedMblockArray(
-        const blcluster* cluster)
+allocateAhmedMblockArray(size_t blockCount)
 {
     typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
     AhmedMblock** blocks = 0;
-    const size_t blockCount = cluster->nleaves();
     allocmbls(blockCount, blocks);
     return boost::shared_array<AhmedMblock*>(
                 blocks, AhmedMblockArrayDeleter(blockCount));
 }
 
+template <typename ValueType>
+boost::shared_array<mblock<typename AhmedTypeTraits<ValueType>::Type>*>
+allocateAhmedMblockArray(const blcluster* cluster)
+{
+    return allocateAhmedMblockArray<ValueType>(cluster->nleaves());
+}
 
 } // namespace Bempp
 

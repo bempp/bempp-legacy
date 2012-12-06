@@ -8,68 +8,32 @@
 // TODO
 // %include "discrete_boundary_operator_docstrings.i"
 
-%shared_ptr(boost::enable_shared_from_this<Bempp::DiscreteBoundaryOperator<float> >)
-%shared_ptr(boost::enable_shared_from_this<Bempp::DiscreteBoundaryOperator<double> >)
-%shared_ptr(boost::enable_shared_from_this<Bempp::DiscreteBoundaryOperator<std::complex<float> > >)
-%shared_ptr(boost::enable_shared_from_this<Bempp::DiscreteBoundaryOperator<std::complex<double> > >)
-
-%shared_ptr(Thyra::LinearOpDefaultBase<float>);
-%shared_ptr(Thyra::LinearOpDefaultBase<double>);
-%shared_ptr(Thyra::LinearOpDefaultBase<std::complex<float> >);
-%shared_ptr(Thyra::LinearOpDefaultBase<std::complex<double> >);
+// For DiscreteBoundaryOperator, ignore the following warnings:
+//   Nothing known about base class 'Thyra::LinearOpDefaultBase< ... >'
+//   Nothing known about base class 'boost::enable_shared_from_this<
+//     Bempp::DiscreteBoundaryOperator< ... > >'
+//   Nothing known about 'Thyra::LinearOpDefaultBase< ... >::apply
+// Reason: we don't need to create wrappers for these base classes,
+// and providing their dummy definitions for SWIG
+// leads to compilation errors for external modules using "%import bempp.swg"
+// (because when %import is used, %{ ... %} blocks are ignored, so the
+// wrapper code does not have the necessary includes).
+%warnfilter(315,401) DiscreteBoundaryOperator< float >;
+%warnfilter(315,401) DiscreteBoundaryOperator< double >;
+%warnfilter(315,401) DiscreteBoundaryOperator< std::complex<float> >;
+%warnfilter(315,401) DiscreteBoundaryOperator< std::complex<double> >;
 
 %shared_ptr(Bempp::DiscreteBoundaryOperator<float>);
 %shared_ptr(Bempp::DiscreteBoundaryOperator<double>);
 %shared_ptr(Bempp::DiscreteBoundaryOperator<std::complex<float> >);
 %shared_ptr(Bempp::DiscreteBoundaryOperator<std::complex<double> >);
 
-
 #define shared_ptr boost::shared_ptr
-namespace Thyra
-{
-
-BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_VALUE(LinearOpDefaultBase);
-
-template <typename ValueType>
-class LinearOpDefaultBase
-{
-public:
-    virtual ~LinearOpDefaultBase() = 0; // prevent instantiation
-};
-
-} // namespace Thyra
-
-namespace boost
-{
-
-template <typename T> class enable_shared_from_this;
-
-template <typename T>
-class enable_shared_from_this
-{
-public:
-    virtual ~enable_shared_from_this() = 0;
-};
-
-%template(enable_shared_from_this_discrete_boundary_operator_float32) enable_shared_from_this<Bempp::DiscreteBoundaryOperator<float> >;
-%template(enable_shared_from_this_discrete_boundary_operator_float64) enable_shared_from_this<Bempp::DiscreteBoundaryOperator<double> >;
-%template(enable_shared_from_this_discrete_boundary_operator_complex64) enable_shared_from_this<Bempp::DiscreteBoundaryOperator<std::complex<float> > >;
-%template(enable_shared_from_this_discrete_boundary_operator_complex128) enable_shared_from_this<Bempp::DiscreteBoundaryOperator<std::complex<double> > >;
-
-} // namespace boost
-
-
-
 namespace Bempp
 {
 
-/* DECLARE_TEMPLATE_VALUE_METHOD_AUTO_DOCSTRING(DiscreteBoundaryOperator, apply); */
-
 BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator);
 BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
-
-// Nothing known about 'Thyra::LinearOpDefaultBase< ... >::apply
-%warnfilter(315) DiscreteBoundaryOperator;
 
 %extend DiscreteBoundaryOperator
 {
@@ -190,9 +154,6 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
         }
     }
 
-
-
-
     %feature("compactdefaultargs") asDiscreteAcaBoundaryOperator;
 
     %pythoncode {
@@ -296,20 +257,13 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
             return numpy.dtype(self.valueType())
     }
 
-
-
-}
+} // %extend DiscreteBoundaryOperator
 
 } // namespace Bempp
 
 %include "assembly/discrete_boundary_operator.hpp"
 
 #undef shared_ptr
-
-namespace Thyra
-{
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_VALUE(LinearOpDefaultBase);
-}
 
 namespace Bempp
 {
@@ -334,7 +288,6 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator);
 %clear const arma::Mat<double>& mat_in;
 %clear const arma::Mat<std::complex<float> >& mat_in;
 %clear const arma::Mat<std::complex<double> >& mat_in;
-
 
 } // namespace Bempp
 

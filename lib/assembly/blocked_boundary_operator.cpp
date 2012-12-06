@@ -245,7 +245,7 @@ void BlockedBoundaryOperator<BasisFunctionType, ResultType>::apply(
 
     // TODO: allow uninitialized grid functions
     for (size_t row = 0; row < rowCount; ++row)
-        if (x_in[row].dualSpace() != m_dualsToRanges[row])
+        if (y_inout[row].space() != m_ranges[row])
         throw std::runtime_error("BlockedBoundaryOperator::apply(): "
                                  "grid function y_inout[" + toString(row) +
                                  "] is incompatible with this operator");
@@ -268,7 +268,8 @@ void BlockedBoundaryOperator<BasisFunctionType, ResultType>::apply(
         ySize += m_dualsToRanges[row]->globalDofCount();
     arma::Col<ResultType> yVals(ySize);
     for (size_t row = 0, start = 0; row < rowCount; ++row) {
-        const arma::Col<ResultType>& chunk = y_inout[row].projections();
+        arma::Col<ResultType> chunk =
+                y_inout[row].projections(*m_dualsToRanges[row]);
         size_t chunkSize = chunk.n_rows;
         yVals.rows(start, start + chunkSize - 1) = chunk;
         start += chunkSize;
@@ -279,8 +280,9 @@ void BlockedBoundaryOperator<BasisFunctionType, ResultType>::apply(
 
     // Assign the result to the grid functions from y_inout
     for (size_t row = 0, start = 0; row < rowCount; ++row) {
-        size_t chunkSize = y_inout[row].projections().n_rows;
-        y_inout[row].setProjections(yVals.rows(start, start + chunkSize - 1));
+        size_t chunkSize = m_dualsToRanges[row]->globalDofCount();
+        y_inout[row].setProjections(*m_dualsToRanges[row],
+                                    yVals.rows(start, start + chunkSize - 1));
         start += chunkSize;
     }
 }

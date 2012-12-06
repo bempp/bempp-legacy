@@ -31,6 +31,8 @@ namespace Bempp
 ////////////////////////////////////////////////////////////////////////////////
 // Laplace3dBoundaryOperatorId
 
+/** \deprecated This class is deprecated and will be removed in a future
+ *  version of BEM++. */
 template <typename BasisFunctionType>
 class Laplace3dBoundaryOperatorId : public AbstractBoundaryOperatorId
 {

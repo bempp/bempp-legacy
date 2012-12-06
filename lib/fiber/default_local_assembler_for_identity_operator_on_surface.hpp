@@ -66,12 +66,14 @@ public:
         const std::vector<int>& elementIndicesA,
         int elementIndexB,
         LocalDofIndex localDofIndexB,
-        std::vector<arma::Mat<ResultType> >& result);
+        std::vector<arma::Mat<ResultType> >& result,
+        CoordinateType nominalDistance = -1.);
 
     virtual void evaluateLocalWeakForms(
         const std::vector<int>& testElementIndices,
         const std::vector<int>& trialElementIndices,
-        Fiber::_2dArray<arma::Mat<ResultType> >& result);
+        Fiber::_2dArray<arma::Mat<ResultType> >& result,
+        CoordinateType nominalDistance = -1.);
 
     virtual void evaluateLocalWeakForms(
         const std::vector<int>& elementIndices,

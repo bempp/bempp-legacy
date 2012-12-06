@@ -19,9 +19,12 @@
 // THE SOFTWARE.
 
 #include "context.hpp"
+
+#include "abstract_boundary_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 #include <boost/make_shared.hpp>
+#include <iostream>
 
 namespace Bempp
 {
@@ -36,6 +39,14 @@ Context<BasisFunctionType, ResultType>::Context(
     if (quadStrategy.get() == 0)
         throw std::invalid_argument("Context::Context(): "
                                     "quadStrategy must not be null");
+}
+
+template <typename BasisFunctionType, typename ResultType>
+shared_ptr<const DiscreteBoundaryOperator<ResultType> >
+Context<BasisFunctionType, ResultType>::getWeakForm(
+        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op) const
+{
+    return op.assembleWeakForm(*this);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Context);

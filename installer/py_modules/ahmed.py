@@ -32,7 +32,7 @@ def prepare(root,config):
         if not config.has_option('AHMED','file_name'):
             raise Exception('Need to give full path of tar.gz archived file with AHMED 1.0 release')
         ahmed_fname=config.get('AHMED','file_name')
-        ahmed_fname=os.path.expanduser(ahmed_fname)
+        ahmed_fname=tools.normalizePath(config,ahmed_fname)
         config.set('AHMED','with_ahmed','ON')
         prefix=config.get('Main','prefix')
         dep_build_dir = config.get('Main','dependency_build_dir')
@@ -59,7 +59,9 @@ def prepare(root,config):
         print "Patching AHMED"
         patches=[py_patch.fromfile(root+"/installer/patches/"+s)
                  for s in ("ahmed_cmake.patch",
-                           "ahmed_addGeHGeH_single_precision.patch")]
+                           "ahmed_addGeHGeH_single_precision.patch",
+                           "ahmed_pass_clusters_to_aca_matgen_apprx.h.patch",
+                           "ahmed_pass_clusters_to_aca_matgen_ACA.h.patch")]
         cwd=os.getcwd()
         os.chdir(ahmed_full_dir)
         for patch in patches:

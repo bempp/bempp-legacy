@@ -33,8 +33,11 @@ namespace Bempp
 ////////////////////////////////////////////////////////////////////////////////
 // ModifiedHelmholtz3dBoundaryOperatorId
 
+/** \deprecated This class is deprecated and will be removed in a future
+ *  version of BEM++. */
 template <typename BasisFunctionType>
-class ModifiedHelmholtz3dBoundaryOperatorId : public AbstractBoundaryOperatorId
+class ModifiedHelmholtz3dBoundaryOperatorId :
+        public AbstractBoundaryOperatorId
 {
 public:
     template <typename Impl, typename KernelType, typename ResultType>

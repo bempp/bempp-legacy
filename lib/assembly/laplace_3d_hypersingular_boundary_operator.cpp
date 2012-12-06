@@ -20,6 +20,10 @@
 
 #include "laplace_3d_hypersingular_boundary_operator.hpp"
 #include "laplace_3d_boundary_operator_base_imp.hpp"
+#include "discrete_boundary_operator.hpp"
+
+#include "context.hpp"
+#include "identity_operator.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -30,6 +34,8 @@
 #include "../fiber/default_collection_of_kernels.hpp"
 #include "../fiber/default_collection_of_basis_transformations.hpp"
 #include "../fiber/default_test_kernel_trial_integral.hpp"
+
+#include "../space/unit_scalar_space.hpp"
 
 namespace Bempp
 {
@@ -85,25 +91,71 @@ laplace3dHypersingularBoundaryOperator(
         const std::string& label,
         int symmetry)
 {
-   typedef Laplace3dHypersingularBoundaryOperator<BasisFunctionType, ResultType> Op;
-   return BoundaryOperator<BasisFunctionType, ResultType>(
-               context, boost::make_shared<Op>(domain, range, dualToRange,
-                                               label, symmetry));
+    typedef Laplace3dHypersingularBoundaryOperator<BasisFunctionType, ResultType> Op;
+    return BoundaryOperator<BasisFunctionType, ResultType>(
+                context, boost::make_shared<Op>(domain, range, dualToRange,
+                                                label, symmetry));
+}
+
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
+laplace3dModifiedHypersingularBoundaryOperator(
+        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+        ResultType alpha,
+        const std::string& label,
+        int symmetry)
+{
+    if (domain->grid() != range->grid())
+        throw std::invalid_argument(
+                "laplace3dModifiedHypersingularBoundaryOperator(): "
+                "domain and range must be defined on the same grid");
+    BoundaryOperator<BasisFunctionType, ResultType> hypOp =
+            laplace3dHypersingularBoundaryOperator(
+                context, domain, range, dualToRange, label, symmetry);
+
+    AssemblyOptions idAssemblyOptions = context->assemblyOptions();
+    idAssemblyOptions.enableSparseStorageOfMassMatrices(false);
+    shared_ptr<Context<BasisFunctionType, ResultType> > idContext(
+                new Context<BasisFunctionType, ResultType>(context->quadStrategy(),
+                                                           idAssemblyOptions));
+    shared_ptr<Space<BasisFunctionType> > unitSpace(
+                new UnitScalarSpace<BasisFunctionType>(domain->grid()));
+    BoundaryOperator<BasisFunctionType, ResultType> domainProjection =
+            identityOperator<BasisFunctionType, ResultType>(
+                idContext, domain, unitSpace, unitSpace, "DtU");
+    BoundaryOperator<BasisFunctionType, ResultType> rangeProjection =
+            identityOperator<BasisFunctionType, ResultType>(
+                idContext, unitSpace, range, dualToRange, "UtR");
+
+    BoundaryOperator<BasisFunctionType, ResultType> ii =
+            identityOperator<BasisFunctionType, ResultType>(
+                idContext, domain, range, dualToRange, "UtR");
+    return hypOp + alpha * rangeProjection * domainProjection;
 }
 
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT) \
-   template BoundaryOperator<BASIS, RESULT> \
-   laplace3dHypersingularBoundaryOperator( \
-       const shared_ptr<const Context<BASIS, RESULT> >&, \
-       const shared_ptr<const Space<BASIS> >&, \
-       const shared_ptr<const Space<BASIS> >&, \
-       const shared_ptr<const Space<BASIS> >&, \
-       const std::string&, int)
+    template BoundaryOperator<BASIS, RESULT> \
+    laplace3dHypersingularBoundaryOperator( \
+    const shared_ptr<const Context<BASIS, RESULT> >&, \
+    const shared_ptr<const Space<BASIS> >&, \
+    const shared_ptr<const Space<BASIS> >&, \
+    const shared_ptr<const Space<BASIS> >&, \
+    const std::string&, int); \
+    template BoundaryOperator<BASIS, RESULT> \
+    laplace3dModifiedHypersingularBoundaryOperator( \
+    const shared_ptr<const Context<BASIS, RESULT> >&, \
+    const shared_ptr<const Space<BASIS> >&, \
+    const shared_ptr<const Space<BASIS> >&, \
+    const shared_ptr<const Space<BASIS> >&, \
+    RESULT, const std::string&, int)
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 #define INSTANTIATE_BASE(BASIS, RESULT) \
     template class Laplace3dBoundaryOperatorBase< \
-        Laplace3dHypersingularBoundaryOperatorImpl<BASIS, RESULT>, BASIS, RESULT>
+    Laplace3dHypersingularBoundaryOperatorImpl<BASIS, RESULT>, BASIS, RESULT>
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_BASE);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dHypersingularBoundaryOperator);
 

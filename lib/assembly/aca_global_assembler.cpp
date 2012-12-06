@@ -24,6 +24,7 @@
 #include "aca_global_assembler.hpp"
 
 #include "assembly_options.hpp"
+#include "cluster_construction_helper.hpp"
 #include "index_permutation.hpp"
 #include "discrete_boundary_operator_composition.hpp"
 #include "discrete_sparse_boundary_operator.hpp"
@@ -183,6 +184,8 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 {
 #ifdef WITH_AHMED
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
+    typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
+    typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
     typedef DiscreteAcaBoundaryOperator<ResultType> DiscreteAcaLinOp;
 
     const AcaOptions& acaOptions = options.acaOptions();
@@ -213,87 +216,55 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
     // o2p: map of original indices to permuted indices
     // p2o: map of permuted indices to original indices
-    std::vector<unsigned int> o2pTestDofs(testDofCount);
-    std::vector<unsigned int> p2oTestDofs(testDofCount);
-    std::vector<unsigned int> o2pTrialDofs(trialDofCount);
-    std::vector<unsigned int> p2oTrialDofs(trialDofCount);
-    for (size_t i = 0; i < testDofCount; ++i)
-        o2pTestDofs[i] = i;
-    for (size_t i = 0; i < testDofCount; ++i)
-        p2oTestDofs[i] = i;
-    for (size_t i = 0; i < trialDofCount; ++i)
-        o2pTrialDofs[i] = i;
-    for (size_t i = 0; i < trialDofCount; ++i)
-        p2oTrialDofs[i] = i;
+    typedef ClusterConstructionHelper<BasisFunctionType> CCH;
+    shared_ptr<AhmedBemCluster> testClusterTree;
+    shared_ptr<IndexPermutation> test_o2pPermutation, test_p2oPermutation;
+    CCH::constructBemCluster(testSpace, indexWithGlobalDofs, acaOptions,
+                             testClusterTree,
+                             test_o2pPermutation, test_p2oPermutation);
+    shared_ptr<AhmedBemCluster> trialClusterTree;
+    shared_ptr<IndexPermutation> trial_o2pPermutation, trial_p2oPermutation;
+    if (hermitian) {
+        trialClusterTree = testClusterTree;
+        trial_o2pPermutation = test_o2pPermutation;
+        trial_p2oPermutation = test_p2oPermutation;
+    } else
+        CCH::constructBemCluster(trialSpace, indexWithGlobalDofs, acaOptions,
+                                 trialClusterTree,
+                                 trial_o2pPermutation, trial_p2oPermutation);
 
-    std::vector<Point3D<CoordinateType> > trialDofCenters, testDofCenters;
-    if (indexWithGlobalDofs) {
-        trialSpace.getGlobalDofPositions(trialDofCenters);
-        testSpace.getGlobalDofPositions(testDofCenters);
-    } else {
-        trialSpace.getFlatLocalDofPositions(trialDofCenters);
-        testSpace.getFlatLocalDofPositions(testDofCenters);
-    }
-
-    // Use static_cast to convert from a pointer to Point3D to a pointer to its
-    // descendant AhmedDofWrapper, which does not contain any new data members,
-    // but just one additional method (the two structs should therefore be
-    // binary compatible)
-    AhmedDofType* ahmedTrialDofCenters =
-            static_cast<AhmedDofType*>(&trialDofCenters[0]);
-    AhmedDofType* ahmedTestDofCenters =
-            static_cast<AhmedDofType*>(&testDofCenters[0]);
-
-    // NOTE: Ahmed uses names "op_perm" and "po_perm", which
-    // correspond to BEM++'s "p2o" and "o2p", NOT the other way round.
-    ExtendedBemCluster<AhmedDofType> testClusterTree(
-                ahmedTestDofCenters, &p2oTestDofs[0],
-                0, testDofCount, acaOptions.maximumBlockSize);
-    testClusterTree.createClusterTree(
-                acaOptions.minimumBlockSize,
-                &p2oTestDofs[0], &o2pTestDofs[0]);
-    ExtendedBemCluster<AhmedDofType> trialClusterTree(
-                ahmedTrialDofCenters, &p2oTrialDofs[0],
-                0, trialDofCount, acaOptions.maximumBlockSize);
-    trialClusterTree.createClusterTree(
-                acaOptions.minimumBlockSize,
-                &p2oTrialDofs[0], &o2pTrialDofs[0]);
-
-    // // Export VTK plots showing the disctribution of leaf cluster ids
-    // std::vector<unsigned int> testClusterIds;
-    // getClusterIds(testClusterTree, p2oTestDofs, testClusterIds);
-    // testSpace.dumpClusterIds("testClusterIds", testClusterIds);
-    // std::vector<unsigned int> trialClusterIds;
-    // getClusterIds(trialClusterTree, p2oTrialDofs, trialClusterIds);
-    // trialSpace.dumpClusterIds("trialClusterIds", trialClusterIds);
+//    // Export VTK plots showing the disctribution of leaf cluster ids
+//    std::vector<unsigned int> testClusterIds;
+//    getClusterIds(*testClusterTree, test_p2oPermutation->permutedIndices(), testClusterIds);
+//    testSpace.dumpClusterIds("testClusterIds", testClusterIds,
+//                             indexWithGlobalDofs ? GLOBAL_DOFS : FLAT_LOCAL_DOFS);
+//    std::vector<unsigned int> trialClusterIds;
+//    getClusterIds(*trialClusterTree, trial_p2oPermutation->permutedIndices(), trialClusterIds);
+//    trialSpace.dumpClusterIds("trialClusterIds", trialClusterIds,
+//                              indexWithGlobalDofs ? GLOBAL_DOFS : FLAT_LOCAL_DOFS);
 
     if (verbosityHigh)
-        std::cout << "Test cluster count: " << testClusterTree.getncl()
-                  << "\nTrial cluster count: " << trialClusterTree.getncl()
+        std::cout << "Test cluster count: " << testClusterTree->getncl()
+                  << "\nTrial cluster count: " << trialClusterTree->getncl()
                   << std::endl;
-    //    std::cout << "o2pTest:\n" << o2pTestDofs << std::endl;
-    //    std::cout << "p2oTest:\n" << p2oTestDofs << std::endl;
 
-    typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
-    std::auto_ptr<AhmedBemBlcluster> bemBlclusterTree(
-                new AhmedBemBlcluster(&testClusterTree, &trialClusterTree));
     unsigned int blockCount = 0;
-    if (hermitian)
-        bemBlclusterTree->subdivide_sym(&testClusterTree,
-                                        acaOptions.eta * acaOptions.eta,
-                                        blockCount);
-    else
-        bemBlclusterTree->subdivide(&testClusterTree, &trialClusterTree,
-                                    acaOptions.eta * acaOptions.eta,
-                                    blockCount);
+    shared_ptr<AhmedBemBlcluster> bemBlclusterTree(
+                CCH::constructBemBlockCluster(acaOptions, hermitian,
+                                              *testClusterTree, *trialClusterTree,
+                                              blockCount).release());
 
     if (verbosityHigh)
-        std::cout << "Double cluster count: " << blockCount << std::endl;
+        std::cout << "Mblock count: " << blockCount << std::endl;
 
+    std::vector<unsigned int> p2oTestDofs =
+        test_p2oPermutation->permutedIndices();
+    std::vector<unsigned int> p2oTrialDofs =
+        trial_p2oPermutation->permutedIndices();
     WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>
-            helper(testSpace, trialSpace, p2oTestDofs, p2oTrialDofs,
-                   localAssemblers, sparseTermsToAdd,
-                   denseTermsMultipliers, sparseTermsMultipliers, options);
+        helper(testSpace, trialSpace, p2oTestDofs, p2oTrialDofs,
+               localAssemblers, sparseTermsToAdd,
+               denseTermsMultipliers, sparseTermsMultipliers, options);
 
     typedef mblock<typename AhmedTypeTraits<ResultType>::Type> AhmedMblock;
     boost::shared_array<AhmedMblock*> blocks =
@@ -367,7 +338,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
     if (verbosityDefault)
         std::cout << "About to start the ACA assembly loop" << std::endl;
-    tbb::tick_count loopStart = tbb::tick_count::now();    
+    tbb::tick_count loopStart = tbb::tick_count::now();
     {
         Fiber::SerialBlasRegion region; // if possible, ensure that BLAS is single-threaded
         tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
@@ -411,6 +382,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     {
         size_t origMemory = sizeof(ResultType) * testDofCount * trialDofCount;
         size_t ahmedMemory = sizeH(bemBlclusterTree.get(), blocks.get());
+        int maximumRank = Hmax_rank(bemBlclusterTree.get(), blocks.get());
         if (verbosityDefault)
             std::cout << "\nNeeded storage: "
                       << ahmedMemory / 1024. / 1024. << " MB.\n"
@@ -418,6 +390,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                       << origMemory / 1024. / 1024. << " MB.\n"
                       << "Compressed to "
                       << (100. * ahmedMemory) / origMemory << "%.\n"
+                      << "Maximum rank: " << maximumRank << ".\n"
                       << std::endl;
 
         if (acaOptions.outputPostscript) {
@@ -448,13 +421,13 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         if (boost::is_complex<ResultType>())
             symmetry |= SYMMETRIC;
     }
-    std::auto_ptr<DiscreteBndOp> acaOp(
+    std::auto_ptr<DiscreteAcaLinOp> acaOp(
                 new DiscreteAcaLinOp(testDofCount, trialDofCount,
                                      acaOptions.maximumRank,
                                      Symmetry(symmetry),
                                      bemBlclusterTree, blocks,
-                                     IndexPermutation(o2pTrialDofs),
-                                     IndexPermutation(o2pTestDofs),
+                                     *trial_o2pPermutation,
+                                     *test_o2pPermutation,
                                      parallelOptions));
 
     std::auto_ptr<DiscreteBndOp> result;
@@ -465,7 +438,10 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         // without Trilinos, this code will never be reached -- an exception
         // will be thrown earlier in this function
         typedef DiscreteBoundaryOperatorComposition<ResultType> DiscreteBndOpComp;
+        // acaOp->dumpMblockData();
         shared_ptr<DiscreteBndOp> acaOpShared(acaOp.release());
+        arma::Mat<ResultType> acaMat = acaOpShared->asMatrix();
+        arma::diskio::save_raw_ascii(acaMat, "aca.txt");
         shared_ptr<DiscreteBndOp> trialGlobalToLocal =
                 constructOperatorMappingGlobalToFlatLocalDofs<
                 BasisFunctionType, ResultType>(trialSpace);

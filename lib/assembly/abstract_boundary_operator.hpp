@@ -26,6 +26,7 @@
 #include "assembly_options.hpp"
 #include "symmetry.hpp"
 
+#include "../common/deprecated.hpp"
 #include "../common/scalar_traits.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../fiber/quadrature_strategy.hpp"
@@ -140,8 +141,12 @@ public:
      *
      *  If the weak form of this operator is not cacheable, return a null shared
      *  pointer. This is the default implementation.
+     *
+     *  \deprecated This method is deprecated and will be removed in a future
+     *  version of BEM++. Boundary operator identifiers are no longer used
+     *  by the discrete weak-form caching mechanism.
      */
-    virtual shared_ptr<const AbstractBoundaryOperatorId> id() const;
+    virtual BEMPP_DEPRECATED shared_ptr<const AbstractBoundaryOperatorId> id() const;
 
     /** @}
      *  @name Spaces

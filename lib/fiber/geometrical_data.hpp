@@ -101,6 +101,25 @@ public:
         return m_geomData.dimWorld();
     }
 
+    // Inefficient, but safe
+    GeometricalData<CoordinateType> asGeometricalData() const {
+        GeometricalData<CoordinateType> result;
+        if (!m_geomData.globals.is_empty())
+            result.globals = m_geomData.globals.col(m_point);
+        if (!m_geomData.integrationElements.is_empty())
+            result.integrationElements =
+                    m_geomData.integrationElements(m_point);
+        if (!m_geomData.jacobiansTransposed.is_empty())
+            result.jacobiansTransposed =
+                    m_geomData.jacobiansTransposed.slices(m_point, m_point);
+        if (!m_geomData.jacobianInversesTransposed.is_empty())
+            result.jacobianInversesTransposed =
+                    m_geomData.jacobianInversesTransposed.slices(m_point, m_point);
+        if (!m_geomData.normals.is_empty())
+            result.normals = m_geomData.normals.col(m_point);
+        return result;
+    }
+
 private:
     const GeometricalData<CoordinateType>& m_geomData;
     int m_point;

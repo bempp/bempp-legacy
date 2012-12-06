@@ -11,7 +11,7 @@
 // TODO
 // %include "space_docstrings.i"
 
-namespace Bempp 
+namespace Bempp
 {
 
 template<typename BasisFunctionType> class Space;
@@ -41,6 +41,7 @@ template<typename BasisFunctionType> class Space;
 %ignore getFlatLocalDofPositions;
 
 %ignore dumpClusterIds;
+%ignore dumpClusterIdsEx;
 }
 
 %define BEMPP_EXTEND_SPACE(BASIS, PYBASIS)

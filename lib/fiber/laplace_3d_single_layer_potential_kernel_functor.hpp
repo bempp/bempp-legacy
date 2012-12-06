@@ -71,7 +71,8 @@ public:
                     trialGeomData.global(coordIndex);
             sum += diff * diff;
         }
-        result[0](0, 0) = static_cast<ValueType>(1. / (4. * M_PI)) / sqrt(sum);
+        result[0](0, 0) = static_cast<CoordinateType>(1. / (4. * M_PI)) /
+                sqrt(sum);
     }
 };
 

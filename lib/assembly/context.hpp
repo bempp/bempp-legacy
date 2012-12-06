@@ -25,12 +25,7 @@ template <typename BasisFunctionType, typename ResultType> class AbstractBoundar
  *  the way integrals are calculated, and assembly options, which control
  *  higher-level aspects of weak-form assembly, e.g. the use or not of
  *  acceleration algorithms such as ACA and the level of parallelism.
- *
- *  A call to the Context::getWeakForm() function returns the weak form of the
- *  abstract boundary operator passed in the argument to this function,
- *  assembled using the settings from the given Context. The Context may
- *  store the weak form in an internal cache; see the documentation of
- *  getWeakForm() for more details. */
+ */
 template <typename BasisFunctionType, typename ResultType>
 class Context
 {
@@ -51,29 +46,22 @@ public:
     Context(const shared_ptr<const QuadratureStrategy>& quadStrategy,
             const AssemblyOptions& assemblyOptions);
 
-    /** \brief Return the weak form of the specified abstract operator.
+    /** \brief Return the discrete weak form of the specified abstract operator.
      *
      *  This function returns returns the weak form of the specified abstract
      *  boundary operator, calculated in accordance with the settings
      *  specified during the construction of the Context.
      *
-     *  An important design principle in BEM++ is that abstract boundary
-     *  operators are immutable after construction. The same is true for
-     *  Context objects. Therefore, a Context stores newly calculated weak
-     *  forms in an internal cache, unless a given abstract boundary operator
-     *  does not provide a valid unique identifier (see
-     *  AbstractBoundaryOperator::id()). As long as the weak form remains in
-     *  cache, subsequent calls to Context::getWeakForm() with the same
-     *  abstract boundary operator will not recalculate the weak form, but
-     *  return the cached instance. It should, however, be noted that the cache
-     *  does not maintain a persistent relationship with weak forms: it stores
-     *  them as weak rather than shared pointers. Therefore, a weak form is
-     *  deallocated as soon as the last reference to it *apart from that
-     *  residing in the cache* goes out of scope. */
+     *  \deprecated This function is deprecated and will be removed in a future
+     *  version of BEM++. To get the discrete weak form of an
+     *  AbstractBoundaryOperator, use its <tt>assembleWeakForm()</tt> method.
+     *  Alternatively, call the <tt>weakForm()</tt> method of a
+     *  BoundaryOperator object wrapping the AbstractBoundaryOperator in
+     *  question. */
+    BEMPP_DEPRECATED
     shared_ptr<const DiscreteBoundaryOperator<ResultType> >
-    getWeakForm(const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op) const {
-        return m_cache.getWeakForm(*this, op);
-    }
+    getWeakForm(const AbstractBoundaryOperator<
+                BasisFunctionType, ResultType>& op) const;
 
     /** \brief Return a reference to a copy of the AssemblyOptions object
      *  passed when constructing the Context. */
@@ -90,8 +78,6 @@ public:
 private:
     shared_ptr<const QuadratureStrategy> m_quadStrategy;
     AssemblyOptions m_assemblyOptions;
-
-    mutable DiscreteBoundaryOperatorCache<BasisFunctionType, ResultType> m_cache;
 };
 
 } // namespace Bempp

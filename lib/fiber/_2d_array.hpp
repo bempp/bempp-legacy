@@ -25,7 +25,12 @@
 
 #include <stdexcept>
 
-namespace Fiber {
+#ifndef NDEBUG
+#define FIBER_CHECK_ARRAY_BOUNDS
+#endif
+
+namespace Fiber
+{
 
 /** \brief Simple implementation of a 2D Fortran-ordered array.
 

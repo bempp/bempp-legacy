@@ -78,7 +78,8 @@ private:
             Region region,
             int kernelTrialGeomDeps,
             GeometricalData<CoordinateType>& trialGeomData,
-            CollectionOf2dArrays<ResultType>& weightedTrialExprValues) const;
+            CollectionOf2dArrays<ResultType>& trialExprValues,
+            std::vector<CoordinateType>& weights) const;
 
     int quadOrder(const Fiber::Basis<BasisFunctionType>& basis, Region region) const;
     int farFieldQuadOrder(const Fiber::Basis<BasisFunctionType>& basis) const;
@@ -98,8 +99,10 @@ private:
 
     Fiber::GeometricalData<CoordinateType> m_nearFieldTrialGeomData;
     Fiber::GeometricalData<CoordinateType> m_farFieldTrialGeomData;
-    CollectionOf2dArrays<ResultType> m_nearFieldWeightedTrialTransfValues;
-    CollectionOf2dArrays<ResultType> m_farFieldWeightedTrialTransfValues;
+    CollectionOf2dArrays<ResultType> m_nearFieldTrialTransfValues;
+    CollectionOf2dArrays<ResultType> m_farFieldTrialTransfValues;
+    std::vector<CoordinateType> m_nearFieldWeights;
+    std::vector<CoordinateType> m_farFieldWeights;
 };
 
 } // namespace Fiber

@@ -36,8 +36,82 @@
 namespace Bempp
 {
 
+// Functions used in
+// DiscreteBlockBoundaryOperator::asDiscreteAcaBoundaryOperator().
 namespace
 {
+
+template <typename ValueType>
+void collectMblocks(
+        const Fiber::_2dArray<shared_ptr<
+            const DiscreteAcaBoundaryOperator<ValueType> > >& acaBlocks,
+        const std::vector<size_t>& rowCounts,
+        const std::vector<size_t>& columnCounts,
+        std::vector<typename DiscreteAcaBoundaryOperator<ValueType>::
+            AhmedConstMblockArray>& allSharedMblocks,
+        typename DiscreteAcaBoundaryOperator<ValueType>::AhmedMblockArray& mblocks,
+        Fiber::_2dArray<size_t>& indexOffsets,
+        size_t& totalMblockCount)
+{
+    typedef DiscreteAcaBoundaryOperator<ValueType> AcaOp;
+    typedef typename AcaOp::AhmedMblock AhmedMblock;
+    typedef typename AcaOp::AhmedMblockArray AhmedMblockArray;
+    typedef typename AcaOp::AhmedConstMblockArray AhmedConstMblockArray;
+
+    const size_t blockRowCount = acaBlocks.extent(0);
+    const size_t blockColCount = acaBlocks.extent(1);
+
+    // Put:
+    // - into explSharedMblocks: arrays of mblocks making up the H-matrix
+    //   of each block (including the single-element mblock arrays created for
+    //   each empty block)
+    // - into allSharedMblocks: the above plus the arrays of mblocks on which
+    //   the non-empty blocks depend implicitly
+    // - into mblockCounts: numbers of mblocks making up the H-matrix of each
+    //   block
+    // - into indexOffsets: numbers by which the indices of the mblocks making
+    //   up the H-matrix of each block should be offset
+    // - into totalMblockCount: the total size of all arrays from
+    //   explSharedBlocks
+
+    Fiber::_2dArray<AhmedConstMblockArray> explSharedMblocks(
+                blockRowCount, blockColCount);
+    Fiber::_2dArray<size_t> mblockCounts(blockRowCount, blockColCount);
+    indexOffsets.set_size(blockRowCount, blockColCount);
+    std::fill(indexOffsets.begin(), indexOffsets.end(), 0);
+    totalMblockCount = 0;
+    for (size_t col = 0; col < blockColCount; ++col)
+        for (size_t row = 0; row < blockRowCount; ++row) {
+            if (acaBlocks(row, col)) {
+                const AcaOp& activeOp = *acaBlocks(row, col);
+                explSharedMblocks(row, col) = activeOp.blocks();
+                allSharedMblocks.insert(allSharedMblocks.end(),
+                                        activeOp.sharedBlocks().begin(),
+                                        activeOp.sharedBlocks().end());
+                mblockCounts(row, col) = activeOp.blockCount();
+            } else {
+                // Allocate a single empty block
+                AhmedMblockArray dummyBlocks =
+                        allocateAhmedMblockArray<ValueType>(1);
+                dummyBlocks[0] =
+                        new AhmedMblock(rowCounts[row], columnCounts[col]);
+                explSharedMblocks(row, col) = dummyBlocks;
+                mblockCounts(row, col) = 1;
+            }
+            allSharedMblocks.push_back(explSharedMblocks(row, col));
+            indexOffsets(row, col) = totalMblockCount;
+            totalMblockCount += mblockCounts(row, col);
+        }
+
+    // Create a shared array of pointers to all mblocks. Note: the array owns
+    // only pointers, not mblocks themselves.
+    mblocks.reset(new AhmedMblock*[totalMblockCount]);
+    for (size_t col = 0; col < blockColCount; ++col)
+        for (size_t row = 0; row < blockRowCount; ++row)
+            std::copy(&explSharedMblocks(row, col)[0],
+                      &explSharedMblocks(row, col)[mblockCounts(row, col)],
+                      &mblocks[indexOffsets(row, col)]);
+}
 
 template <typename ValueType>
 void copySonsAdjustingIndices(
@@ -91,6 +165,120 @@ void copySonsAdjustingIndices(
         dest->setadm(dest->isadm());
         dest->setsep(dest->issep());
     }
+}
+
+template <typename ValueType>
+int overallMaximumRank(
+        const Fiber::_2dArray<shared_ptr<
+            const DiscreteAcaBoundaryOperator<ValueType> > >& acaBlocks)
+{
+    int result = 0;
+    for (size_t col = 0; col < acaBlocks.extent(1); ++col)
+        for (size_t row = 0; row < acaBlocks.extent(0); ++row)
+            if (acaBlocks(row, col))
+                result = std::max(result, acaBlocks(row, col)->maximumRank());
+    return result;
+}
+
+template <typename ValueType>
+int overallSymmetry(
+        const Fiber::_2dArray<shared_ptr<
+            const DiscreteAcaBoundaryOperator<ValueType> > >& acaBlocks)
+{
+    for (size_t col = 0; col < acaBlocks.extent(1); ++col)
+        for (size_t row = 0; row < acaBlocks.extent(0); ++row)
+            if (acaBlocks(row, col) && acaBlocks(row, col)->symmetry() != 0)
+                throw std::runtime_error("DiscreteBlockedBoundaryOperator::"
+                                         "asDiscreteAcaBoundaryOperator(): "
+                                         "Joining of symmetric ACA operators "
+                                         "is not supported yet");
+    return 0;
+}
+
+template <typename ValueType>
+Fiber::ParallelizationOptions overallParallelizationOptions(
+        const Fiber::_2dArray<shared_ptr<
+            const DiscreteAcaBoundaryOperator<ValueType> > >& acaBlocks)
+{
+    for (size_t col = 0; col < acaBlocks.extent(1); ++col)
+        for (size_t row = 0; row < acaBlocks.extent(0); ++row)
+            if (acaBlocks(row, col))
+                return acaBlocks(row, col)->parallelizationOptions();
+    return Fiber::ParallelizationOptions(); // actually should never get here
+}
+
+template <typename ValueType>
+std::vector<unsigned int> overall_o2pDomain(
+        const Fiber::_2dArray<shared_ptr<
+            const DiscreteAcaBoundaryOperator<ValueType> > >& acaBlocks,
+        const std::vector<size_t>& colOffsets,
+        size_t size)
+{
+    std::vector<unsigned int> o2pDomain;
+    o2pDomain.reserve(size);
+    for (size_t col = 0; col < acaBlocks.extent(1); ++col) {
+        int chosenRow = -1;
+        for (size_t row = 0; row < acaBlocks.extent(0); ++row)
+            if (acaBlocks(row, col)) {
+                if (chosenRow < 0)
+                    chosenRow = row;
+                else { // ensure that all permutations are compatible
+                    if (acaBlocks(chosenRow, col)->domainPermutation() !=
+                            acaBlocks(row, col)->domainPermutation())
+                        throw std::runtime_error(
+                                "DiscreteBlockedBoundaryOperator::"
+                                "asDiscreteAcaBoundaryOperator(): "
+                                "Domain index permutations of blocks (" +
+                                toString(chosenRow) + ", " + toString(col) +
+                                ") and (" +
+                                toString(row) + ", " + toString(col) +
+                                ") are not equal");
+                }
+            }
+        std::vector<unsigned int> local_o2p =
+                acaBlocks(chosenRow, col)->domainPermutation().permutedIndices();
+        for (size_t i = 0; i < local_o2p.size(); ++i)
+            o2pDomain.push_back(local_o2p[i] + colOffsets[col]);
+    }
+    assert(o2pDomain.size() == size);
+    return o2pDomain;
+}
+
+template <typename ValueType>
+std::vector<unsigned int> overall_o2pRange(
+        const Fiber::_2dArray<shared_ptr<
+            const DiscreteAcaBoundaryOperator<ValueType> > >& acaBlocks,
+        const std::vector<size_t>& rowOffsets,
+        size_t size)
+{
+    std::vector<unsigned int> o2pRange;
+    o2pRange.reserve(size);
+    for (size_t row = 0; row < acaBlocks.extent(0); ++row) {
+        int chosenCol = -1;
+        for (size_t col = 0; col < acaBlocks.extent(1); ++col)
+            if (acaBlocks(row, col)) {
+                if (chosenCol < 0)
+         chosenCol = col;
+                else { // ensure that all permutations are compatible
+                    if (acaBlocks(row, chosenCol)->rangePermutation() !=
+                            acaBlocks(row, col)->rangePermutation())
+                        throw std::runtime_error(
+                                "DiscreteBlockedBoundaryOperator::"
+                                "asDiscreteAcaBoundaryOperator(): "
+                                "Range index permutations of blocks (" +
+                                toString(row) + ", " + toString(chosenCol) +
+                                ") and (" +
+                                toString(row) + ", " + toString(col) +
+                                ") are not equal");
+                }
+            }
+        std::vector<unsigned int> local_o2p =
+                acaBlocks(row, chosenCol)->rangePermutation().permutedIndices();
+        for (size_t i = 0; i < local_o2p.size(); ++i)
+            o2pRange.push_back(local_o2p[i] + rowOffsets[row]);
+    }
+    assert(o2pRange.size() == size);
+    return o2pRange;
 }
 
 } // namespace
@@ -201,13 +389,13 @@ DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
     const size_t blockRowCount = m_blocks.extent(0);
     const size_t blockColCount = m_blocks.extent(1);
 
-    // Convert blocks into ACA operators
     typedef DiscreteAcaBoundaryOperator<ValueType> AcaOp;
     typedef typename AcaOp::AhmedBemBlcluster AhmedBemBlcluster;
     typedef typename AcaOp::AhmedMblock AhmedMblock;
     typedef typename AcaOp::AhmedMblockArray AhmedMblockArray;
     typedef typename AcaOp::AhmedConstMblockArray AhmedConstMblockArray;
 
+    // Convert blocks into ACA operators
     Fiber::_2dArray<shared_ptr<const AcaOp> > acaBlocks(blockRowCount,
                                                         blockColCount);
     for (size_t col = 0; col < blockColCount; ++col)
@@ -216,42 +404,13 @@ DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
                 acaBlocks(row, col) = boost::shared_dynamic_cast<const AcaOp>(
                             m_blocks(row, col)->asDiscreteAcaBoundaryOperator(
                                 eps, maximumRank));
-            else
-                throw std::runtime_error("DiscreteBlockedBoundaryOperator::"
-                                         "asDiscreteAcaBoundaryOperator(): "
-                                         "operators with empty blocks are not "
-                                         "supported yet");
 
-    // Collect shared pointers to all mblock arrays (they must be stored
-    // in the newly created operator so that the mblocks don't get deleted
-    // prematurely). Also calculate mblock offsets.
-    std::vector<AhmedConstMblockArray> sharedMblocks;
+    std::vector<AhmedConstMblockArray> allSharedMblocks;
+    AhmedMblockArray mblocks;
     Fiber::_2dArray<size_t> indexOffsets(blockRowCount, blockColCount);
-    std::fill(indexOffsets.begin(), indexOffsets.end(), 0);
     size_t totalMblockCount = 0;
-    for (size_t col = 0; col < blockColCount; ++col)
-        for (size_t row = 0; row < blockRowCount; ++row)
-            if (acaBlocks(row, col)) {
-                sharedMblocks.push_back(acaBlocks(row, col)->blocks());
-                sharedMblocks.insert(sharedMblocks.end(),
-                                     acaBlocks(row, col)->sharedBlocks().begin(),
-                                     acaBlocks(row, col)->sharedBlocks().end());
-                indexOffsets(row, col) = totalMblockCount;
-                totalMblockCount += acaBlocks(row, col)->blockCount();
-            }
-
-    // Create a shared array of pointers to all mblocks. Note: the array owns
-    // only pointers, not mblocks themselves.
-    AhmedMblockArray mblocks(new AhmedMblock*[totalMblockCount]);
-    for (size_t col = 0, offset = 0; col < blockColCount; ++col)
-        for (size_t row = 0; row < blockRowCount; ++row)
-            if (acaBlocks(row, col)) {
-                size_t localMblockCount = acaBlocks(row, col)->blockCount();
-                std::copy(&acaBlocks(row, col)->blocks()[0],
-                          &acaBlocks(row, col)->blocks()[localMblockCount],
-                          &mblocks[offset]);
-                offset += localMblockCount;
-            }
+    collectMblocks(acaBlocks, m_rowCounts, m_columnCounts,
+                   allSharedMblocks, mblocks, indexOffsets, totalMblockCount);
 
     // Get row and column offsets and total number of rows and columns
     std::vector<size_t> rowOffsets(blockRowCount, 0);
@@ -264,22 +423,28 @@ DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
     const size_t totalColCount = colOffsets.back() + m_columnCounts.back();
 
     // Recursively copy block cluster trees, adjusting indices
+
     // This vector stores a row-major array (as expected by AHMED)
     std::vector<blcluster*> roots(blockRowCount * blockColCount, 0);
     try {
         for (size_t row = 0, i = 0; row < blockRowCount; ++row)
-            for (size_t col = 0; col < blockColCount; ++col, ++i)
-                if (acaBlocks(row, col)) {
+            for (size_t col = 0; col < blockColCount; ++col, ++i) {
                     std::auto_ptr<AhmedBemBlcluster> root(
                                 new AhmedBemBlcluster(
                                     rowOffsets[row], colOffsets[col],
                                     m_rowCounts[row], m_columnCounts[col]));
-                    copySonsAdjustingIndices<ValueType>(
-                                acaBlocks(row, col)->blockCluster(),
-                                root.get(),
-                                rowOffsets[row],
-                                colOffsets[col],
-                                indexOffsets(row, col));
+                    if (acaBlocks(row, col))
+                        copySonsAdjustingIndices<ValueType>(
+                                    acaBlocks(row, col)->blockCluster().get(),
+                                    root.get(),
+                                    rowOffsets[row],
+                                    colOffsets[col],
+                                    indexOffsets(row, col));
+                    else {
+                        root->setidx(indexOffsets(row, col));
+                        root->setadm(true); // unsure about it
+                        root->setsep(true); // unsure about it
+                    }
                     roots[i] = root.release();
                 }
     }
@@ -291,100 +456,29 @@ DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
 
     // Create the root node of the combined cluster tree and set its sons
     // (TODO: see what happens if any sons are NULL)
-    std::auto_ptr<AhmedBemBlcluster> mblockCluster(
+    shared_ptr<AhmedBemBlcluster> mblockCluster(
                 new AhmedBemBlcluster(0, 0, totalRowCount, totalColCount));
     mblockCluster->setsons(blockRowCount, blockColCount, &roots[0]);
 
-    // Create the domain permutation array
-    std::vector<unsigned int> o2pDomain;
-    o2pDomain.reserve(totalRowCount);
-    for (size_t col = 0; col < blockColCount; ++col) {
-        int chosenRow = -1;
-        for (size_t row = 0; row < blockRowCount; ++row)
-            if (acaBlocks(row, col)) {
-                if (chosenRow < 0)
-                    chosenRow = row;
-                else { // ensure that all permutations are compatible
-                    if (acaBlocks(chosenRow, col)->domainPermutation() !=
-                            acaBlocks(row, col)->domainPermutation())
-                        throw std::runtime_error(
-                                "DiscreteBlockedBoundaryOperator::"
-                                "asDiscreteAcaBoundaryOperator(): "
-                                "Domain index permutations of blocks (" +
-                                toString(chosenRow) + ", " + toString(col) +
-                                ") and (" +
-                                toString(row) + ", " + toString(col) +
-                                ") are not equal");
-                }
-            }
-        std::vector<unsigned int> local_o2p =
-                acaBlocks(chosenRow, col)->domainPermutation().permutedIndices();
-        for (size_t i = 0; i < local_o2p.size(); ++i)
-            o2pDomain.push_back(local_o2p[i] + colOffsets[col]);
-    }
-    assert(o2pDomain.size() == totalColCount);
+    // Create the domain and range permutation arrays
+    std::vector<unsigned int> o2pDomain =
+            overall_o2pDomain(acaBlocks, colOffsets, totalColCount);
+    std::vector<unsigned int> o2pRange =
+            overall_o2pRange(acaBlocks, rowOffsets, totalRowCount);
 
-    // Create the domain permutation array
-    std::vector<unsigned int> o2pRange;
-    o2pRange.reserve(totalColCount);
-    for (size_t row = 0; row < blockRowCount; ++row) {
-        int chosenCol = -1;
-        for (size_t col = 0; col < blockColCount; ++col)
-            if (acaBlocks(row, col)) {
-                if (chosenCol < 0)
-                    chosenCol = col;
-                else { // ensure that all permutations are compatible
-                    if (acaBlocks(row, chosenCol)->rangePermutation() !=
-                            acaBlocks(row, col)->rangePermutation())
-                        throw std::runtime_error(
-                                "DiscreteBlockedBoundaryOperator::"
-                                "asDiscreteAcaBoundaryOperator(): "
-                                "Range index permutations of blocks (" +
-                                toString(row) + ", " + toString(chosenCol) +
-                                ") and (" +
-                                toString(row) + ", " + toString(col) +
-                                ") are not equal");
-                }
-            }
-        std::vector<unsigned int> local_o2p =
-                acaBlocks(row, chosenCol)->rangePermutation().permutedIndices();
-        for (size_t i = 0; i < local_o2p.size(); ++i)
-            o2pRange.push_back(local_o2p[i] + rowOffsets[row]);
-    }
-    assert(o2pRange.size() == totalRowCount);
-
-    // Calculate the overall maximum rank
-    int overallMaximumRank = 0;
-    for (size_t col = 0; col < blockColCount; ++col)
-        for (size_t row = 0; row < blockRowCount; ++row)
-            if (acaBlocks(row, col))
-                overallMaximumRank = std::max(overallMaximumRank,
-                                       acaBlocks(row, col)->maximumRank());
-
-    // Check symmetry
-    for (size_t col = 0; col < blockColCount; ++col)
-        for (size_t row = 0; row < blockRowCount; ++row)
-            if (acaBlocks(row, col) && acaBlocks(row, col)->symmetry() != 0)
-                throw std::runtime_error("DiscreteBlockedBoundaryOperator::"
-                                         "asDiscreteAcaBoundaryOperator(): "
-                                         "Joining of symmetric ACA operators "
-                                         "is not supported yet");
-
-    // Get some parallelization options
-    Fiber::ParallelizationOptions parallelOptions;
-    for (size_t col = 0; col < blockColCount; ++col)
-        for (size_t row = 0; row < blockRowCount; ++row)
-            if (acaBlocks(row, col)) {
-                parallelOptions = acaBlocks(row, col)->parallelizationOptions();
-            }
+    // Gather remaining data necessary to create the combined ACA operator
+    const int overallMaximumRank_ = overallMaximumRank(acaBlocks);
+    const int symmetry = overallSymmetry(acaBlocks);
+    const Fiber::ParallelizationOptions parallelOptions =
+            overallParallelizationOptions(acaBlocks);
 
     shared_ptr<const DiscreteBoundaryOperator<ValueType> > result(
                 new AcaOp(
-                    totalRowCount, totalColCount, overallMaximumRank,
-                    0 /* symmetry */,
+                    totalRowCount, totalColCount, overallMaximumRank_,
+                    symmetry,
                     mblockCluster, mblocks,
                     o2pDomain, o2pRange,
-                    parallelOptions, sharedMblocks));
+                    parallelOptions, allSharedMblocks));
     return result;
 
 #else // WITH_AHMED

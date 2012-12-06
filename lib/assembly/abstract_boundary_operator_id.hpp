@@ -2,6 +2,7 @@
 #define bempp_abstract_boundary_operator_id_hpp
 
 #include "../common/common.hpp"
+#include "../common/deprecated.hpp"
 #include "../common/shared_ptr.hpp"
 
 #include <iostream>
@@ -13,9 +14,9 @@ namespace Bempp
 /** \ingroup abstract_boundary_operators
  *  \brief Base class for identifiers of an abstract boundary operator.
  *
- *  See AbstractBoundaryOperator::id() and Context::getWeakForm() for more
- *  information about the use of boundary-operator identifiers for caching
- *  weak forms.
+ *  \deprecated This class is deprecated and will be removed in a
+ *  future version of BEM++. Boundary operator identifiers are no longer used
+ *  by the discrete weak-form caching mechanism.
  */
 class AbstractBoundaryOperatorId
 {
@@ -23,7 +24,8 @@ public:
     virtual ~AbstractBoundaryOperatorId() {}
     virtual size_t hash() const = 0;
     virtual void dump() const {}
-    virtual bool isEqual(const AbstractBoundaryOperatorId& other) const = 0;
+    virtual bool isEqual(
+            const AbstractBoundaryOperatorId& other) const = 0;
 
     bool operator==(const AbstractBoundaryOperatorId& other) const {
         return isEqual(other);

@@ -36,6 +36,8 @@ namespace Fiber
  *  \brief Single-layer-potential kernel functor for the modified Helmholtz
  *  equation in 3D.
  *
+ *  Uses interpolation to speed up kernel evaluation.
+ *
  *  \tparam ValueType Type used to represent the values of the kernel. It can
  *  be one of: \c float, \c double, <tt>std::complex<float></tt> and
  *  <tt>std::complex<double></tt>. Note that setting \p ValueType to a real

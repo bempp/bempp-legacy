@@ -58,14 +58,14 @@ public:
             const CollectionOf2dSlicesOfConst4dArrays<KernelType>& kernelValues,
             const CollectionOf1dSlicesOfConst2dArrays<ResultType>&
             weightedTransformedTrialValues) const {
-        // Assert that there is only a single scalar-valued kernel
-        assert(kernelValues.size() == 1);
+        // Assert that there is at least one scalar-valued kernel
+        assert(kernelValues.size() >= 1);
         assert(kernelValues[0].extent(0) == 1);
         assert(kernelValues[0].extent(1) == 1);
 
-        // Assert that there is only a single weighted trial transformation
-        // and that it is scalar
-        assert(weightedTransformedTrialValues.size() == 1);
+        // Assert that there is at least one scalar weighted trial
+        // transformation
+        assert(weightedTransformedTrialValues.size() >= 1);
 #ifndef NDEBUG
         const int transformationDim = weightedTransformedTrialValues[0].extent(0);
         assert(transformationDim == 1);

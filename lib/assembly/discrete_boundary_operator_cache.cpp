@@ -10,6 +10,9 @@
 #include <tbb/concurrent_unordered_map.h>
 #include <utility>
 
+// This whole class is deprecated and uses deprecated mechanisms.
+BEMPP_GCC_DIAG_OFF(deprecated-declarations);
+
 namespace Bempp
 {
 
@@ -101,6 +104,25 @@ DiscreteBoundaryOperatorCache<BasisFunctionType, ResultType>::getWeakForm(
     // (Note: if another thread was faster in trying to insert a discrete
     // operator into the map, the operator we constructed (pointed by
     // discreteOp) will be destructed now, as discreteOp goes out of scope.)
+}
+
+template <typename BasisFunctionType, typename ResultType>
+std::vector<shared_ptr<const DiscreteBoundaryOperator<ResultType> > >
+DiscreteBoundaryOperatorCache<BasisFunctionType, ResultType>::
+aliveOperators() const
+{
+    typedef DiscreteBoundaryOperator<ResultType> DiscreteOp;
+    std::vector<shared_ptr<const DiscreteOp> > result;
+    typedef typename Impl::DiscreteBoundaryOperatorMap::const_iterator
+            const_iterator;
+    for (const_iterator it = m_impl->discreteOps.begin();
+         it != m_impl->discreteOps.begin(); ++it) {
+        if (shared_ptr<const DiscreteOp> cachedDiscreteOp = it->second.lock()) {
+            // std::cout << "Weak pointer is valid" << std::endl;
+            result.push_back(cachedDiscreteOp);
+        }
+    }
+    return result;
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DiscreteBoundaryOperatorCache);

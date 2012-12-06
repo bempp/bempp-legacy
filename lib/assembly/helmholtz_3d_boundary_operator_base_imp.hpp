@@ -33,6 +33,8 @@ namespace Bempp
 ////////////////////////////////////////////////////////////////////////////////
 // Helmholtz3dBoundaryOperatorId
 
+/** \deprecated This class is deprecated and will be removed in a future
+ *  version of BEM++. */
 template <typename BasisFunctionType>
 class Helmholtz3dBoundaryOperatorId : public AbstractBoundaryOperatorId
 {

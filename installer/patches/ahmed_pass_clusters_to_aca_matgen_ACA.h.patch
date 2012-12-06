@@ -1,0 +1,162 @@
+--- Include/ACA.h.orig	2012-11-06 22:26:09.000000000 +0000
++++ Include/ACA.h	2012-11-17 14:59:28.000000000 +0000
+@@ -46,7 +46,8 @@
+ template<class T, class MATGEN_T> static
+ bool ACA_row_step(MATGEN_T& MatGen, unsigned b1, unsigned n1, unsigned b2, unsigned n2,
+ 		  unsigned& klast, unsigned& i0, unsigned k, unsigned& no, int* Z, int* S,
+-		  T* U, T* V, typename num_traits<T>::abs_type& nrmlsk2, typename num_traits<T>::abs_type scale)
++		  T* U, T* V, typename num_traits<T>::abs_type& nrmlsk2, typename num_traits<T>::abs_type scale,
++                  const cluster* c1, const cluster* c2)
+ {
+   typedef typename num_traits<T>::abs_type abs_T;
+   unsigned l, j0;
+@@ -55,7 +56,7 @@
+ 
+   // find next non-zero row, start with i0
+   do {
+-    MatGen.cmpbl(b1+i0, 1, b2, n2, pv);
++    MatGen.cmpbl(b1+i0, 1, b2, n2, pv, c1, c2);
+     blas::conj(n2, pv);
+ 
+     // subtract previously generated outer products from this row
+@@ -99,7 +100,7 @@
+     }
+   }
+ 
+-  MatGen.cmpbl(b1, n1, b2+j0, 1, pu);
++  MatGen.cmpbl(b1, n1, b2+j0, 1, pu, c1, c2);
+ 
+   for (l=0; l<k; ++l) {
+     const T d = nconj(V[l*n2 + j0]);
+@@ -134,7 +135,8 @@
+ template<class T, class MATGEN_T> static
+ bool ACA_col_step(MATGEN_T& MatGen, unsigned b1, unsigned n1, unsigned b2, unsigned n2,
+ 		  unsigned& j0, unsigned k, unsigned& no, int* Z, int* S, T* U, T* V,
+-		  typename num_traits<T>::abs_type& nrmlsk2, typename num_traits<T>::abs_type scale)
++		  typename num_traits<T>::abs_type& nrmlsk2, typename num_traits<T>::abs_type scale,
++                  const cluster* c1, const cluster* c2)
+ {
+   typedef typename num_traits<T>::abs_type abs_T;
+   abs_T nrmu2, nrmv2, absmax;
+@@ -143,7 +145,7 @@
+ 
+   // find next non-zero row, start with j0
+   do {
+-    MatGen.cmpbl(b1, n1, b2+j0, 1, pu);
++    MatGen.cmpbl(b1, n1, b2+j0, 1, pu, c1, c2);
+ 
+     for (l=0; l<k; ++l) {
+       const T d = nconj(V[l*n2+j0]);
+@@ -180,7 +182,7 @@
+     }
+   }
+ 
+-  MatGen.cmpbl(b1+i0, 1, b2, n2, pv);
++  MatGen.cmpbl(b1+i0, 1, b2, n2, pv, c1, c2);
+   blas::conj(n2, pv);
+ 
+   for (l=0; l<k; ++l) {
+@@ -216,7 +218,8 @@
+ 
+ template<class T, class MATGEN_T>
+ bool ACA(MATGEN_T& MatGen, unsigned b1, unsigned n1, unsigned b2, unsigned n2,
+-         double eps, unsigned kmax, unsigned i0, unsigned& k, T* &U, T* &V)
++         double eps, unsigned kmax, unsigned i0, unsigned& k, T* &U, T* &V,
++         const cluster* c1, const cluster* c2)
+ {
+   typedef typename num_traits<T>::abs_type abs_T;
+   unsigned l, no = 0, j0, inext, klast;
+@@ -245,7 +248,7 @@
+     // compute a cross
+     inext = i0;
+     ok = ACA_row_step(MatGen, b1, n1, b2, n2, klast, inext, k, no, Z, S,
+-                      U, V, nrmlsk2, scale);
++                      U, V, nrmlsk2, scale, c1, c2);
+ 
+     // std::cout << "no=" << no << ", n1=" << n1 << ", k=" << k << std::endl;
+     if (!ok) { // in last step no non-zero row could be found
+@@ -323,7 +326,8 @@
+     if (kmin>=keps) goto SUCC;   // if all were succ., stop iteration
+ 
+     // else: use j0 as new pivot
+-    ok = ACA_col_step(MatGen, b1, n1, b2, n2, j0, k, no, Z, S, U, V, nrmlsk2, scale);
++    ok = ACA_col_step(MatGen, b1, n1, b2, n2, j0, k, no, Z, S, U, V, nrmlsk2, scale,
++                      c1, c2);
+ 
+     if (!ok) {
+       nrmlsk2 = 0.0;
+@@ -356,7 +360,8 @@
+ 
+ template<class T, class MATGEN_T>
+ bool ACAn(MATGEN_T& MatGen, unsigned b1, unsigned n1, unsigned b2, unsigned n2,
+-	  double eps, unsigned kmax, unsigned i0, unsigned& k, T* &U, T* &V)
++	  double eps, unsigned kmax, unsigned i0, unsigned& k, T* &U, T* &V,
++          const cluster* c1, const cluster* c2)
+ {
+   typedef typename num_traits<T>::abs_type abs_T;
+   unsigned l, no = 0, j0, inext;
+@@ -403,7 +408,7 @@
+ 
+       unsigned klast;
+       ok = ACA_row_step(MatGen, b1, n1, b2, n2, klast, inext, k, no, Z, S,
+-			U, V, nrmlsk2, scale);
++			U, V, nrmlsk2, scale, c1, c2);
+ 
+       if (!ok) goto NSUCC;        // in last step no non-zero row could be found
+ 
+@@ -481,7 +486,7 @@
+       unsigned jnext = j0;
+       k_old = k;
+       ok = ACA_col_step(MatGen, b1, n1, b2, n2, jnext, k, no, Z, S,
+-			U, V, nrmlsk2, scale);
++			U, V, nrmlsk2, scale, c1, c2);
+ 
+       if (!ok) goto NSUCC;     // in last step no non-zero row could be found
+ 
+@@ -578,7 +583,8 @@
+ template<class T, class MATGEN_T> static
+ bool ACAr_step(MATGEN_T& MatGen, unsigned b1, unsigned n1, unsigned b2, unsigned n2,
+ 	       unsigned& i0, unsigned k, unsigned& no, int* Z, T* U, T* V,
+-	       typename num_traits<T>::abs_type& nrmlsk2, typename num_traits<T>::abs_type scale)
++	       typename num_traits<T>::abs_type& nrmlsk2, typename num_traits<T>::abs_type scale,
++               const cluster* c1, const cluster* c2)
+ {
+   typedef typename num_traits<T>::abs_type abs_T;
+   unsigned l, j0;
+@@ -587,7 +593,7 @@
+ 
+   // find next non-zero row, start with i0
+   do {
+-    MatGen.cmpbl(b1+i0, 1, b2, n2, pv);
++    MatGen.cmpbl(b1+i0, 1, b2, n2, pv, c1, c2);
+     blas::conj(n2, pv);
+ 
+     // subtract previously generated outer products from this row
+@@ -626,7 +632,7 @@
+     nrmv2 += abs2(e);
+   }
+ 
+-  MatGen.cmpbl(b1, n1, b2+j0, 1, pu);
++  MatGen.cmpbl(b1, n1, b2+j0, 1, pu, c1, c2);
+ 
+   for (l=0; l<k; ++l) {
+     const T d = nconj(V[l*n2 + j0]);
+@@ -656,7 +662,8 @@
+ 
+ template<class T, class MATGEN_T>
+ bool ACAr(MATGEN_T& MatGen, unsigned b1, unsigned n1, unsigned b2, unsigned n2,
+-          double eps, unsigned kmax, unsigned i0, unsigned& k, T* &U, T* &V)
++          double eps, unsigned kmax, unsigned i0, unsigned& k, T* &U, T* &V,
++          const cluster* c1, const cluster* c2)
+ {
+   typedef typename num_traits<T>::abs_type abs_T;
+   unsigned l, no = 0;
+@@ -681,7 +688,7 @@
+ 
+     // compute a cross
+     ok = ACAr_step(MatGen, b1, n1, b2, n2, i0, k, no, Z,
+-                   U, V, nrmlsk2, scale);
++                   U, V, nrmlsk2, scale, c1, c2);
+ 
+     //    std::cout << "Norm last cross " << sqrt(nrmlsk2) << ", ok=" << (int) ok << std::endl;
+     //    std::cout << "no=" << no << ", n1=" << n1 << ", k=" << k << std::endl;

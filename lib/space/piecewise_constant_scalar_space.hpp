@@ -66,7 +66,7 @@ public:
     virtual size_t globalDofCount() const;
     virtual size_t flatLocalDofCount() const;
     virtual void getGlobalDofs(const Entity<0>& element,
-                            std::vector<GlobalDofIndex>& dofs) const;    
+                            std::vector<GlobalDofIndex>& dofs) const;
     virtual void global2localDofs(
             const std::vector<GlobalDofIndex>& globalDofs,
             std::vector<std::vector<LocalDof> >& localDofs) const;
@@ -81,6 +81,10 @@ public:
     virtual void dumpClusterIds(
             const char* fileName,
             const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const;
+    virtual void dumpClusterIdsEx(
+            const char* fileName,
+            const std::vector<unsigned int>& clusterIdsOfGlobalDofs,
+            DofType dofType) const;
 
 private:
     void assignDofsImpl();

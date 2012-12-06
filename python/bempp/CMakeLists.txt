@@ -9,17 +9,10 @@ if (SWIG_VERSION VERSION_LESS 2.0.7)
 endif ()
 include(${SWIG_USE_FILE})
 
-# The following are set by the installer script
-
-#find_package(PythonLibs)
-#find_package(PythonInterp)
-#find_package(Numpy)
-
-
 include_directories(${PYTHON_INCLUDE_DIR})
 include_directories(${PYTHON_NUMPY_INCLUDE_DIR})
 
-include_directories("${CMAKE_SOURCE_DIR}/lib")
+include_directories(${CMAKE_SOURCE_DIR}/lib)
 include_directories(${CMAKE_BINARY_DIR}/include)
 include_directories(${CMAKE_INSTALL_PREFIX}/bempp/include)
 
@@ -74,3 +67,7 @@ install(DIRECTORY ${CMAKE_BINARY_DIR}/python/bempp DESTINATION bempp/python FILE
 	PATTERN "determineNumpyPath.py" EXCLUDE
         PATTERN "postprocess_docstrings.py" EXCLUDE
 	PATTERN "*.py" PATTERN "*.so")
+
+# install SWIG source files. Don't delete the trailing slash in directory name!
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/python/bempp/ DESTINATION bempp/include/bempp/swig
+        FILES_MATCHING PATTERN "*.i" PATTERN "*.swg")

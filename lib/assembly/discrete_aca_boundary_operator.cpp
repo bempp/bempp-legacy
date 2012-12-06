@@ -75,7 +75,7 @@ public:
     typedef tbb::concurrent_queue<size_t> LeafClusterIndexQueue;
 
     MblockMultiplicationLoopBody(
-            bool conjugateTranspose,
+            TranspositionMode trans,
             ValueType multiplier,
             arma::Col<ValueType>& x,
             arma::Col<ValueType>& y,
@@ -83,17 +83,22 @@ public:
             boost::shared_array<AhmedMblock*> blocks,
             LeafClusterIndexQueue& leafClusterIndexQueue,
             std::vector<ChunkStatistics>& stats) :
-        m_conjugateTranspose(conjugateTranspose),
+        m_trans(trans),
         m_multiplier(multiplier), m_x(x), m_local_y(y),
         m_leafClusters(leafClusters), m_blocks(blocks),
         m_leafClusterIndexQueue(leafClusterIndexQueue),
         m_stats(stats)
     {
+        if (trans != NO_TRANSPOSE && trans != TRANSPOSE &&
+            trans != CONJUGATE_TRANSPOSE)
+            throw std::invalid_argument(
+                "MblockMultiplicationLoopBody::MblockMultiplicationLoopBody(): "
+                "unsupported transposition mode");
         // m_local_y.fill(static_cast<ValueType>(0.));
     }
 
     MblockMultiplicationLoopBody(MblockMultiplicationLoopBody& other, tbb::split) :
-        m_conjugateTranspose(other.m_conjugateTranspose),
+        m_trans(other.m_trans),
         m_multiplier(other.m_multiplier),
         m_x(other.m_x), m_local_y(other.m_local_y.n_rows),
         m_leafClusters(other.m_leafClusters), m_blocks(other.m_blocks),
@@ -119,14 +124,21 @@ public:
             m_stats[leafClusterIndex].startTime = tbb::tick_count::now();
 
             blcluster* cluster = m_leafClusters[leafClusterIndex];
-            if (m_conjugateTranspose)
-                m_blocks[cluster->getidx()]->mltahVec(ahmedCast(m_multiplier),
-                                                      ahmedCast(&m_x(cluster->getb1())),
-                                                      ahmedCast(&m_local_y(cluster->getb2())));
-            else
-                m_blocks[cluster->getidx()]->mltaVec(ahmedCast(m_multiplier),
-                                                     ahmedCast(&m_x(cluster->getb2())),
-                                                     ahmedCast(&m_local_y(cluster->getb1())));
+            if (m_trans == NO_TRANSPOSE)
+                m_blocks[cluster->getidx()]->mltaVec(
+                    ahmedCast(m_multiplier),
+                    ahmedCast(&m_x(cluster->getb2())),
+                    ahmedCast(&m_local_y(cluster->getb1())));
+            else if (m_trans == TRANSPOSE)
+                m_blocks[cluster->getidx()]->mltatVec(
+                    ahmedCast(m_multiplier),
+                    ahmedCast(&m_x(cluster->getb1())),
+                    ahmedCast(&m_local_y(cluster->getb2())));
+            else // m_trans == CONJUGATE_TRANSPOSE)
+                m_blocks[cluster->getidx()]->mltahVec(
+                    ahmedCast(m_multiplier),
+                    ahmedCast(&m_x(cluster->getb1())),
+                    ahmedCast(&m_local_y(cluster->getb2())));
             m_stats[leafClusterIndex].endTime = tbb::tick_count::now();
         }
     }
@@ -136,7 +148,7 @@ public:
     }
 
 private:
-    bool m_conjugateTranspose;
+    TranspositionMode m_trans;
     ValueType m_multiplier;
     arma::Col<ValueType>& m_x;
 public:
@@ -172,8 +184,36 @@ DiscreteAcaBoundaryOperator(
         unsigned int rowCount, unsigned int columnCount,
         int maximumRank_,
         int symmetry_,
-        std::auto_ptr<AhmedBemBlcluster> blockCluster_,
+        std::auto_ptr<const AhmedBemBlcluster> blockCluster_,
         AhmedMblockArray blocks_,
+        const IndexPermutation& domainPermutation_,
+        const IndexPermutation& rangePermutation_,
+        const ParallelizationOptions& parallelizationOptions_,
+        const std::vector<AhmedConstMblockArray>& sharedBlocks_) :
+#ifdef WITH_TRILINOS
+    m_domainSpace(Thyra::defaultSpmdVectorSpace<ValueType>(columnCount)),
+    m_rangeSpace(Thyra::defaultSpmdVectorSpace<ValueType>(rowCount)),
+#else
+    m_rowCount(rowCount), m_columnCount(columnCount),
+#endif
+    m_maximumRank(maximumRank_),
+    m_symmetry(symmetry_),
+    m_blockCluster(blockCluster_.release()), m_blocks(blocks_),
+    m_domainPermutation(domainPermutation_),
+    m_rangePermutation(rangePermutation_),
+    m_parallelizationOptions(parallelizationOptions_),
+    m_sharedBlocks(sharedBlocks_)
+{
+}
+
+template <typename ValueType>
+DiscreteAcaBoundaryOperator<ValueType>::
+DiscreteAcaBoundaryOperator(
+        unsigned int rowCount, unsigned int columnCount,
+        int maximumRank_,
+        int symmetry_,
+        const shared_ptr<const AhmedBemBlcluster>& blockCluster_,
+        const AhmedMblockArray& blocks_,
         const IndexPermutation& domainPermutation_,
         const IndexPermutation& rangePermutation_,
         const ParallelizationOptions& parallelizationOptions_,
@@ -201,6 +241,8 @@ asMatrix() const
 {
     const unsigned int nRows = rowCount();
     const unsigned int nCols = columnCount();
+    const blcluster* blockCluster = m_blockCluster.get();
+    blcluster* nonconstBlockCluster = const_cast<blcluster*>(blockCluster);
 
     arma::Mat<ValueType> permutedOutput(nRows, nCols );
     permutedOutput.fill(0.);
@@ -218,7 +260,7 @@ asMatrix() const
 #else
             mltaHeHVec
 #endif
-                (1., m_blockCluster.get(), m_blocks.get(),
+                (1., nonconstBlockCluster, m_blocks.get(),
                       ahmedCast(unit.memptr()),
                       ahmedCast(permutedOutput.colptr(col)));
         else
@@ -227,7 +269,7 @@ asMatrix() const
 #else
             mltaGeHVec
 #endif
-                (1., m_blockCluster.get(), m_blocks.get(),
+                (1., nonconstBlockCluster, m_blocks.get(),
                       ahmedCast(unit.memptr()),
                       ahmedCast(permutedOutput.colptr(col)));
     }
@@ -330,8 +372,9 @@ bool
 DiscreteAcaBoundaryOperator<ValueType>::
 opSupportedImpl(Thyra::EOpTransp M_trans) const
 {
-    // TODO: implement remaining variants (transpose & conjugate)
-    return (M_trans == Thyra::NOTRANS || M_trans == Thyra::CONJTRANS);
+    // TODO: implement remaining variant (conjugate)
+    return (M_trans == Thyra::NOTRANS || M_trans == Thyra::TRANS ||
+            M_trans == Thyra::CONJTRANS);
 }
 #endif // WITH_TRILINOS
 
@@ -350,13 +393,16 @@ applyBuiltInImpl(const TranspositionMode trans,
                 "DiscreteAcaBoundaryOperator::applyBuiltInImpl(): "
                 "transposition modes other than NO_TRANSPOSE are not supported");
 #else
-    if (trans != NO_TRANSPOSE && trans != CONJUGATE_TRANSPOSE)
+    if (trans != NO_TRANSPOSE && trans != TRANSPOSE && trans != CONJUGATE_TRANSPOSE)
         throw std::runtime_error(
                 "DiscreteAcaBoundaryOperator::applyBuiltInImpl(): "
                 "transposition modes other than NO_TRANSPOSE and "
                 "CONJUGATE_TRANSPOSE are not supported");
 #endif
-    bool transposed = trans == CONJUGATE_TRANSPOSE;
+    bool transposed = (trans & TRANSPOSE);
+
+    const blcluster* blockCluster = m_blockCluster.get();
+    blcluster* nonconstBlockCluster = const_cast<blcluster*>(blockCluster);
 
     if ((!transposed && (columnCount() != x_in.n_rows ||
                          rowCount() != y_inout.n_rows)) ||
@@ -385,32 +431,44 @@ applyBuiltInImpl(const TranspositionMode trans,
 
     if (m_symmetry & HERMITIAN) {
 #ifdef AHMED_PRERELEASE
-        multaHSymvec(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
+        multaHSymvec(ahmedCast(alpha), nonconstBlockCluster, m_blocks.get(),
                      ahmedCast(permutedArgument.memptr()),
                      ahmedCast(permutedResult.memptr()));
 #else
         // NO_TRANSPOSE and CONJUGATE_TRANSPOSE are equivalent
-        mltaHeHVec(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
-                   ahmedCast(permutedArgument.memptr()),
-                   ahmedCast(permutedResult.memptr()));
+        if (trans == NO_TRANSPOSE || trans == CONJUGATE_TRANSPOSE)
+            mltaHeHVec(ahmedCast(alpha), nonconstBlockCluster, m_blocks.get(),
+                       ahmedCast(permutedArgument.memptr()),
+                       ahmedCast(permutedResult.memptr()));
+        else { // trans == TRANSPOSE
+            // alpha A^T x + beta y = (alpha^* A^H x^* + beta^* y^*)^*
+            // = (alpha^* A x^* + beta^* y^*)^*
+            permutedArgument = arma::conj(permutedArgument);
+            permutedResult = arma::conj(permutedResult);
+            ValueType alphaConj = conj(alpha);
+            mltaHeHVec(ahmedCast(alphaConj), nonconstBlockCluster, m_blocks.get(),
+                       ahmedCast(permutedArgument.memptr()),
+                       ahmedCast(permutedResult.memptr()));
+            permutedResult = arma::conj(permutedResult);
+        }
 #endif
     }
     else {
 #ifdef AHMED_PRERELEASE
-        multaHvec(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
+        multaHvec(ahmedCast(alpha), nonconstBlockCluster, m_blocks.get(),
                   ahmedCast(permutedArgument.memptr()),
                   ahmedCast(permutedResult.memptr()));
 #else
 //        if (trans == NO_TRANSPOSE)
-//            mltaGeHVec(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
+//            mltaGeHVec(ahmedCast(alpha), nonconstBlockCluster, m_blocks.get(),
 //                       ahmedCast(permutedArgument.memptr()),
 //                       ahmedCast(permutedResult.memptr()));
 //        else // trans == CONJUGATE_TRANSPOSE
-//            mltaGeHhVec(ahmedCast(alpha), m_blockCluster.get(), m_blocks.get(),
+//            mltaGeHhVec(ahmedCast(alpha), nonconstBlockCluster, m_blocks.get(),
 //                        ahmedCast(permutedArgument.memptr()),
 //                        ahmedCast(permutedResult.memptr()));
 
-        AhmedLeafClusterArray leafClusters(m_blockCluster.get());
+        AhmedLeafClusterArray leafClusters(nonconstBlockCluster);
         leafClusters.sortAccordingToClusterSize();
         const size_t leafClusterCount = leafClusters.size();
 
@@ -433,7 +491,7 @@ applyBuiltInImpl(const TranspositionMode trans,
 
         // std::cout << "----------------------------\nperm Arg\n" << permutedArgument;
         // std::cout << "perm Res\n" << permutedResult;
-        Body body(trans == CONJUGATE_TRANSPOSE,
+        Body body(trans,
                   alpha, permutedArgument, permutedResult,
                   leafClusters, m_blocks,
                   leafClusterIndexQueue, chunkStats);
@@ -481,10 +539,10 @@ DiscreteAcaBoundaryOperator<ValueType>::symmetry() const
 }
 
 template <typename ValueType>
-const typename DiscreteAcaBoundaryOperator<ValueType>::AhmedBemBlcluster*
+shared_ptr<const typename DiscreteAcaBoundaryOperator<ValueType>::AhmedBemBlcluster>
 DiscreteAcaBoundaryOperator<ValueType>::blockCluster() const
 {
-    return m_blockCluster.get();
+    return m_blockCluster;
 }
 
 template <typename ValueType>
@@ -544,7 +602,7 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > acaOperatorSum(
             DiscreteAcaBoundaryOperator<ValueType>::castToAca(op1);
     shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> > acaOp2 =
             DiscreteAcaBoundaryOperator<ValueType>::castToAca(op2);
-    if (!areEqual(acaOp1->m_blockCluster.get(), acaOp2->m_blockCluster.get()))
+    if (!areEqual(acaOp1->blockCluster().get(), acaOp2->blockCluster().get()))
         throw std::invalid_argument("acaOperatorSum(): block cluster trees of "
                                     "both operands must be identical");
     if (acaOp1->m_domainPermutation != acaOp2->m_domainPermutation ||
@@ -558,12 +616,15 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > acaOperatorSum(
     typedef typename DiscreteAcaBoundaryOperator<ValueType>::AhmedMblock
             AhmedMblock;
 
-    std::auto_ptr<AhmedBemBlcluster> sumBlockCluster(
-                new AhmedBemBlcluster(acaOp1->m_blockCluster.get()));
+    shared_ptr<const AhmedBemBlcluster> sumBlockCluster = acaOp1->blockCluster();
+    blcluster* nonConstSumBlockCluster =
+            const_cast<blcluster*>( // AHMED is not const-correct
+                static_cast<const blcluster*>( // safe -- upcast
+                                        sumBlockCluster.get()));
     boost::shared_array<AhmedMblock*> sumBlocks =
             allocateAhmedMblockArray<ValueType>(sumBlockCluster.get());
-    copyH(sumBlockCluster.get(), acaOp1->m_blocks.get(), sumBlocks.get());
-    addGeHGeH(sumBlockCluster.get(), sumBlocks.get(), acaOp2->m_blocks.get(),
+    copyH(nonConstSumBlockCluster, acaOp1->m_blocks.get(), sumBlocks.get());
+    addGeHGeH(nonConstSumBlockCluster, sumBlocks.get(), acaOp2->m_blocks.get(),
               eps, maximumRank);
     shared_ptr<const DiscreteBoundaryOperator<ValueType> > result(
                 new DiscreteAcaBoundaryOperator<ValueType> (
@@ -594,11 +655,14 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > scaledAcaOperator(
 
     shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> > acaOp =
             DiscreteAcaBoundaryOperator<ValueType>::castToAca(op);
-    std::auto_ptr<AhmedBemBlcluster> scaledBlockCluster(
-                new AhmedBemBlcluster(acaOp->m_blockCluster.get()));
+    shared_ptr<const AhmedBemBlcluster> scaledBlockCluster = acaOp->blockCluster();
+    blcluster* nonConstScaledBlockCluster =
+            const_cast<blcluster*>( // AHMED is not const-correct
+                static_cast<const blcluster*>( // safe -- upcast
+                                        scaledBlockCluster.get()));
     boost::shared_array<AhmedMblock*> scaledBlocks =
             allocateAhmedMblockArray<ValueType>(scaledBlockCluster.get());
-    copyH(scaledBlockCluster.get(), acaOp->m_blocks.get(), scaledBlocks.get());
+    copyH(nonConstScaledBlockCluster, acaOp->m_blocks.get(), scaledBlocks.get());
 
     const size_t blockCount = scaledBlockCluster->nleaves();
     for (size_t b = 0; b < blockCount; ++b) {

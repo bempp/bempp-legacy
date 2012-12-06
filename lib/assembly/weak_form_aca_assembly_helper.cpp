@@ -34,9 +34,9 @@
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/local_assembler_for_operators.hpp"
 #include "../grid/grid_view.hpp"
-#include "../grid/reverse_element_mapper.hpp"
 #include "../space/space.hpp"
 
+#include "ahmed_aux.hpp"
 #include "ahmed_complex.hpp"
 
 #include <map>
@@ -100,10 +100,35 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::WeakFormAcaAssemblyHel
 template <typename BasisFunctionType, typename ResultType>
 void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
         unsigned b1, unsigned n1, unsigned b2, unsigned n2,
-        AhmedResultType* ahmedData) const
+        AhmedResultType* ahmedData,
+        const cluster* c1, const cluster* c2) const
 {
 //    std::cout << "\nRequested block: (" << b1 << ", " << n1 << "; "
 //              << b2 << ", " << n2 << ")" << std::endl;
+
+    typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+    typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
+    typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
+
+    AhmedBemCluster* cluster1 =
+        const_cast<AhmedBemCluster*>(// AHMED is not const-correct
+            dynamic_cast<const AhmedBemCluster*>(c1));
+    AhmedBemCluster* cluster2 =
+        const_cast<AhmedBemCluster*>(// AHMED is not const-correct
+            dynamic_cast<const AhmedBemCluster*>(c2));
+    // Lower bound on the minimum distance between elements from the two clusters
+    CoordinateType minDist = -1.; // negative, read: unknown
+    if (cluster1 && cluster2) {
+        // both getdiam2() and dist2() are effectively const, but not declared so
+        // in AHMED
+        const double diam1 = sqrt(cluster1->getdiam2());
+        const double diam2 = sqrt(cluster2->getdiam2());
+        const double dist = sqrt(cluster1->dist2(cluster2));
+        minDist = std::max(0., dist - (diam1 + diam2) / 2.);
+    }
+    // else
+        // std::cout << "Warning: clusters not available" << std::endl;
+    // std::cout << "minDist: " << minDist << std::endl;
 
     // This is a non-op for real types. For complex types, it converts a pointer
     // to Ahmed's scomp (resp. dcomp) to a pointer to std::complex<float>
@@ -168,7 +193,7 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
                     m_assemblers[nTerm]->evaluateLocalWeakForms(
                                 Fiber::TEST_TRIAL, testElementIndices,
                                 activeTrialElementIndex, activeTrialLocalDof,
-                                localResult);
+                                localResult, minDist);
                     for (size_t nTestElem = 0;
                          nTestElem < testElementIndices.size();
                          ++nTestElem)
@@ -207,7 +232,7 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
                     m_assemblers[nTerm]->evaluateLocalWeakForms(
                                 Fiber::TRIAL_TEST, trialElementIndices,
                                 activeTestElementIndex, activeTestLocalDof,
-                                localResult);
+                                localResult, minDist);
                     for (size_t nTrialElem = 0;
                          nTrialElem < trialElementIndices.size();
                          ++nTrialElem)
@@ -232,7 +257,8 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
         for (size_t nTerm = 0; nTerm < m_assemblers.size(); ++nTerm)
         {
             m_assemblers[nTerm]->evaluateLocalWeakForms(
-                        testElementIndices, trialElementIndices, localResult);
+                    testElementIndices, trialElementIndices, localResult,
+                    minDist);
             for (size_t nTrialElem = 0;
                  nTrialElem < trialElementIndices.size();
                  ++nTrialElem)
@@ -268,11 +294,12 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
 
 template <typename BasisFunctionType, typename ResultType>
 void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpblsym(
-        unsigned b1, unsigned n1, AhmedResultType* ahmedData) const
+        unsigned b1, unsigned n1, AhmedResultType* ahmedData,
+        const cluster* c1) const
 {
     // Calculate results as usual (without taking symmetry into account)
     arma::Mat<ResultType> block(n1, n1);
-    cmpbl(b1, n1, b1, n1, ahmedCast(block.memptr()));
+    cmpbl(b1, n1, b1, n1, ahmedCast(block.memptr()), c1, c1);
 
     // and now store the upper part of the matrix in the memory block
     // provided by Ahmed

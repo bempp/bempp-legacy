@@ -34,7 +34,8 @@ template <typename ResultType> class DiscreteSparseBoundaryOperator;
 /** \endcond */
 
 template <typename BasisFunctionType, typename ResultType>
-class AbstractBoundaryOperatorPseudoinverseId : public AbstractBoundaryOperatorId
+class BEMPP_DEPRECATED AbstractBoundaryOperatorPseudoinverseId :
+        public AbstractBoundaryOperatorId
 {
 public:
     explicit AbstractBoundaryOperatorPseudoinverseId(
@@ -70,9 +71,7 @@ public:
 
     virtual bool isLocal() const;
 
-    virtual shared_ptr<const AbstractBoundaryOperatorId> id() const;
-
-    // TODO: implement id() (will consist of typeid(*this) and m_operator.abo()->id().
+    BEMPP_DEPRECATED virtual shared_ptr<const AbstractBoundaryOperatorId> id() const;
 
 protected:
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >

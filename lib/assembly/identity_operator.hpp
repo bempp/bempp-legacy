@@ -47,7 +47,7 @@ template <typename BasisFunctionType, typename ResultType> class IdentityOperato
 /** \endcond */
 
 template <typename BasisFunctionType, typename ResultType>
-class IdentityOperatorId : public AbstractBoundaryOperatorId
+class BEMPP_DEPRECATED IdentityOperatorId : public AbstractBoundaryOperatorId
 {
 public:
     IdentityOperatorId(const IdentityOperator<BasisFunctionType, ResultType>& op);
@@ -126,8 +126,12 @@ public:
     /** \brief Return the identifier of this operator.
      *
      *  Identity operators are treated as equivalent if they have the same domain,
-     *  range and dual to range. */
-    virtual shared_ptr<const AbstractBoundaryOperatorId> id() const;
+     *  range and dual to range.
+     *
+     *  \deprecated This function is deprecated and will be removed in a future
+     *  version of BEM++.
+     */
+    BEMPP_DEPRECATED virtual shared_ptr<const AbstractBoundaryOperatorId> id() const;
 
     /** \brief Return true. */
     virtual bool isLocal() const;

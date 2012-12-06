@@ -34,8 +34,6 @@ namespace Fiber
  *  \brief Single-layer-potential kernel functor for the modified Helmholtz
  *  equation in 3D.
  *
- *  Uses interpolation to speed up kernel evaluation.
- *
  *  \tparam ValueType Type used to represent the values of the kernel. It can
  *  be one of: \c float, \c double, <tt>std::complex<float></tt> and
  *  <tt>std::complex<double></tt>. Note that setting \p ValueType to a real
@@ -81,7 +79,8 @@ public:
             sum += diff * diff;
         }
         CoordinateType distance = sqrt(sum);
-        result[0](0, 0) = static_cast<ValueType>(1.0 / (4.0*M_PI)) / distance *
+        result[0](0, 0) =
+                static_cast<CoordinateType>(1.0 / (4.0 * M_PI)) / distance *
                 exp(-m_waveNumber * distance);
     }
 

@@ -46,64 +46,54 @@ def promoteTypeToComplex(dtype):
     else:
         raise ValueError('Data type does not exist.')
 
-def _constructObjectTemplatedOnBasis(className, basisFunctionType, *args, **kwargs):
+def _constructObjectTemplatedOnBasis(module, className, basisFunctionType,
+                                     *args, **kwargs):
     fullName = className + "_" + checkType(basisFunctionType)
     try:
-        class_ = getattr(core, fullName)
+        class_ = getattr(module, fullName)
     except KeyError:
         raise TypeError("Class " + fullName + " does not exist.")
     return class_(*args, **kwargs)
 
-def _constructObjectTemplatedOnResult(className, resultType, *args, **kwargs):
+def _constructObjectTemplatedOnResult(module, className, resultType,
+                                      *args, **kwargs):
     fullName = className + "_" + checkType(resultType)
     try:
-        class_ = getattr(core, fullName)
+        class_ = getattr(module, fullName)
     except KeyError:
         raise TypeError("Class " + fullName + " does not exist.")
     return class_(*args, **kwargs)
 
-def _constructObjectTemplatedOnValue(className, valueType,
-                                    *args, **kwargs):
+def _constructObjectTemplatedOnValue(module, className, valueType,
+                                     *args, **kwargs):
     fullName = className + "_" + checkType(valueType)
     try:
-        class_ = getattr(core, fullName)
+        class_ = getattr(module, fullName)
     except KeyError:
         raise TypeError("Class " + fullName + " does not exist.")
     return class_(*args, **kwargs)
 
-def _constructObjectTemplatedOnBasisAndResult(className,
+def _constructObjectTemplatedOnBasisAndResult(module, className,
                                               basisFunctionType, resultType,
                                               *args, **kwargs):
-    # if basisFunctionType is None:
-    #     if resultType is None:
-    #         basisFunctionType = "float64"
-    #         resultType = "float64"
-    #     else:
-    #         if resultType in ("float64", "complex128"):
-    #             basisFunctionType = "float64"
-    #         else:
-    #             basisFunctionType = "float32"
-    # else:
-    #     if resultType is None:
-    #         resultType = basisFunctionType
-
     fullName = (className + "_" +
                 checkType(basisFunctionType) + "_" +
                 checkType(resultType))
     try:
-        class_ = getattr(core, fullName)
+        class_ = getattr(module, fullName)
     except KeyError:
         raise TypeError("Class " + fullName + " does not exist.")
     return class_(*args, **kwargs)
 
 def _constructObjectTemplatedOnBasisKernelAndResult(
-        className, basisFunctionType, kernelType, resultType, *args, **kwargs):
+        module, className, basisFunctionType, kernelType, resultType,
+        *args, **kwargs):
     fullName = (className + "_" +
                 checkType(basisFunctionType) + "_" +
                 checkType(kernelType) + "_" +
                 checkType(resultType))
     try:
-        class_ = getattr(core, fullName)
+        class_ = getattr(module, fullName)
     except KeyError:
         raise TypeError("Class " + fullName + " does not exist.")
     return class_(*args, **kwargs)
@@ -163,7 +153,7 @@ def createNumericalQuadratureStrategy(basisFunctionType, resultType, accuracyOpt
         accuracyOptions = core.AccuracyOptions()
     name = 'numericalQuadratureStrategy'
     return _constructObjectTemplatedOnBasisAndResult(
-        name, basisFunctionType, resultType, accuracyOptions)
+        core, name, basisFunctionType, resultType, accuracyOptions)
 
 def createAssemblyOptions():
     """Create and return an AssemblyOptions object with default settings."""
@@ -192,7 +182,7 @@ def createContext(factory, assemblyOptions):
     """
     name = 'Context'
     return _constructObjectTemplatedOnBasisAndResult(
-        name, factory.basisFunctionType(), factory.resultType(),
+        core, name, factory.basisFunctionType(), factory.resultType(),
         factory, assemblyOptions)
 
 def createPiecewiseConstantScalarSpace(context, grid):
@@ -213,7 +203,8 @@ def createPiecewiseConstantScalarSpace(context, grid):
     equal to either float32, float64, complex64 or complex128.
     """
     name = 'piecewiseConstantScalarSpace'
-    return _constructObjectTemplatedOnBasis(name, context.basisFunctionType(), grid)
+    return _constructObjectTemplatedOnBasis(
+        core, name, context.basisFunctionType(), grid)
 
 def createPiecewiseLinearContinuousScalarSpace(context, grid):
     """
@@ -233,7 +224,28 @@ def createPiecewiseLinearContinuousScalarSpace(context, grid):
     equal to either float32, float64, complex64 or complex128.
     """
     name = 'piecewiseLinearContinuousScalarSpace'
-    return _constructObjectTemplatedOnBasis(name, context.basisFunctionType(), grid)
+    return _constructObjectTemplatedOnBasis(
+        core, name, context.basisFunctionType(), grid)
+
+def createUnitScalarSpace(context, grid):
+    """
+    Create and return a space consisting of the single function equal to 1
+    on all elements of the grid.
+
+    *Parameters:*
+       - context (Context)
+            A Context object that will determine the type used to represent the
+            values of the basis functions of the newly constructed space.
+       - grid (Grid)
+            Grid on which the function from the newly constructed space will be
+            defined.
+
+    *Returns* a newly constructed Space_BasisFunctionType object, with
+    BasisFunctionType determined automatically from the context argument and
+    equal to either float32, float64, complex64 or complex128.
+    """
+    return _constructObjectTemplatedOnBasis(
+        core, 'unitScalarSpace', context.basisFunctionType(), grid)
 
 def _constructOperator(className, context, domain, range, dualToRange, label=None):
     # determine basis function type
@@ -247,11 +259,11 @@ def _constructOperator(className, context, domain, range, dualToRange, label=Non
 
     if label:
         result = _constructObjectTemplatedOnBasisAndResult(
-            className, basisFunctionType, resultType,
+            core, className, basisFunctionType, resultType,
             context, domain, range, dualToRange, label)
     else:
         result = _constructObjectTemplatedOnBasisAndResult(
-            className, basisFunctionType, resultType,
+            core, className, basisFunctionType, resultType,
             context, domain, range, dualToRange)
     result._context = context
     result._domain = domain
@@ -289,7 +301,8 @@ def createLaplace3dSingleLayerBoundaryOperator(
     complex128.
     """
     return _constructOperator(
-    "laplace3dSingleLayerBoundaryOperator", context, domain, range, dualToRange, label)
+        "laplace3dSingleLayerBoundaryOperator",
+        context, domain, range, dualToRange, label)
 
 def createLaplace3dDoubleLayerBoundaryOperator(
         context, domain, range, dualToRange, label=None):
@@ -317,7 +330,8 @@ def createLaplace3dDoubleLayerBoundaryOperator(
     complex128.
     """
     return _constructOperator(
-    "laplace3dDoubleLayerBoundaryOperator", context, domain, range, dualToRange, label)
+        "laplace3dDoubleLayerBoundaryOperator",
+        context, domain, range, dualToRange, label)
 
 def createLaplace3dAdjointDoubleLayerBoundaryOperator(
         context, domain, range, dualToRange, label=None):
@@ -345,7 +359,8 @@ def createLaplace3dAdjointDoubleLayerBoundaryOperator(
     complex128.
     """
     return _constructOperator(
-    "laplace3dAdjointDoubleLayerBoundaryOperator", context, domain, range, dualToRange, label)
+        "laplace3dAdjointDoubleLayerBoundaryOperator",
+        context, domain, range, dualToRange, label)
 
 def createLaplace3dHypersingularBoundaryOperator(
         context, domain, range, dualToRange, label=None):
@@ -373,13 +388,14 @@ def createLaplace3dHypersingularBoundaryOperator(
     complex128.
     """
     return _constructOperator(
-    "laplace3dHypersingularBoundaryOperator", context, domain, range, dualToRange, label)
+        "laplace3dHypersingularBoundaryOperator",
+        context, domain, range, dualToRange, label)
 
 def _constructLaplacePotentialOperator(className, context):
     basisFunctionType = context.basisFunctionType()
     resultType = context.resultType()
     result = _constructObjectTemplatedOnBasisAndResult(
-        className, basisFunctionType, resultType)
+        core, className, basisFunctionType, resultType)
     result._context = context
     return result
 
@@ -445,7 +461,7 @@ def _constructHelmholtzOperator(
         label = ""
     symmetry = 0
     result = _constructObjectTemplatedOnBasis(
-        className, basisFunctionType, context, domain, range, dualToRange,
+        core, className, basisFunctionType, context, domain, range, dualToRange,
         waveNumber, label, symmetry, useInterpolation, interpPtsPerWavelength)
     result._context = context
     result._domain = domain
@@ -657,7 +673,7 @@ def _constructHelmholtzPotentialOperator(className, context, waveNumber):
     basisFunctionType = context.basisFunctionType()
     resultType = context.resultType()
     result = _constructObjectTemplatedOnBasis(
-        className, basisFunctionType, waveNumber)
+        core, className, basisFunctionType, waveNumber)
     result._context = context
     return result
 
@@ -802,7 +818,7 @@ def _constructModifiedHelmholtzOperator(
         label = ""
     symmetry = 0
     result = _constructObjectTemplatedOnBasisKernelAndResult(
-        className, basisFunctionType, kernelType, resultType,
+        core, className, basisFunctionType, kernelType, resultType,
         context, domain, range, dualToRange, waveNumber, label,
         symmetry, useInterpolation, interpPtsPerWavelength)
     result._context = context
@@ -1093,10 +1109,10 @@ def __gridFunctionFromFunctor(
         raise TypeError("BasisFunctionType of context, space and dualSpace must be the same")
 
     functor = _constructObjectTemplatedOnValue(
-        "Python" + functorType,
+        core, "Python" + functorType,
         resultType, function, argumentDimension, resultDimension)
     result = _constructObjectTemplatedOnBasisAndResult(
-        "gridFunctionFromPython" + functorType,
+        core, "gridFunctionFromPython" + functorType,
         basisFunctionType, resultType,
         context, space, dualSpace, functor)
     result._context = context
@@ -1154,12 +1170,12 @@ def createGridFunction(
     Example scalar-valued function defined in a 3D space that can be passed to
     'createGridFunction' with 'surfaceNormalDependent = True'::
 
-        import math
+        import cmath
         def fun2(point, normal):
             x, y, z = point
             nx, ny, nz = normal
             k = 5
-            return math.exp(1j * k * x) * (nx - 1)
+            return cmath.exp(1j * k * x) * (nx - 1)
     """
 
     params = [function,coefficients,projections]
@@ -1209,6 +1225,70 @@ def gridFunctionFromSurfaceNormalIndependentFunction(
         context, space, dualSpace, function,
         argumentDimension, resultDimension)
 
+def estimateL2Error(
+        gridFunction, exactFunction, quadStrategy, evaluationOptions,
+        surfaceNormalDependent=False):
+    """
+    Calculate the L^2-norm of the difference between a grid function and a function
+    defined as a Python callable.
+
+    *Parameters:*
+       - gridFunction (GridFunction)
+            A grid function.
+       - exactFunction (a Python callable object)
+            A Python callable object whose values on 'gridFunction.grid()' will
+            be compared against those of the grid function. If
+            'surfaceNormalDependent' is set to False (default), 'exactFunction'
+            will be passed a single argument containing a 1D array of the
+            coordinates of a point lying on the grid 'gridFunction.grid()'. If
+            'surfaceNormalDependent' is set to True, the function will be passed
+            one more argument, a 1D array containing the components of the unit
+            vector normal to 'gridFunction.grid()' at the point given in the
+            first argument. In both cases 'exactFunction' should return its
+            value at the given point, in the form of a scalar or a 1D array with
+            dimension equal to 'space.codomainDimension()'.
+       - quadStrategy (QuadratureStrategy)
+            Quadrature stategy to be used to evaluate integrals involved in the
+            L^2-norm.
+       - evaluationOptions (EvaluationOptions)
+            Additional options controlling function evaluation.
+       - surfaceNormalDependent (bool)
+            Indicates whether 'exactFunction' depends on the unit vector
+            normal to the grid or not.
+
+    *Returns* a tuple (absError, relError), where absError is the L^2-norm of
+    the difference between 'gridFunction' and 'exactFunction' and relError is
+    equal to absError divided by the L^2-norm of 'exactFunction'
+
+    See the documentation of createGridFunction() for example definitions of
+    Python functions that can be passed to the 'exactFunction' argument.
+    """
+    basisFunctionType = checkType(gridFunction.basisFunctionType())
+    resultType = checkType(gridFunction.resultType())
+    if (basisFunctionType != quadStrategy.basisFunctionType() or
+            resultType != quadStrategy.resultType()):
+        raise TypeError("BasisFunctionType and ResultType of gridFunction "
+                        "and exactFunction must be the same")
+    if surfaceNormalDependent:
+        dependent = "Dependent"
+    else:
+        dependent = "Independent"
+    functor = _constructObjectTemplatedOnValue(
+        core, "PythonSurfaceNormal%sFunctor" % dependent,
+        resultType, exactFunction,
+        gridFunction.space().grid().dimWorld(), # argument dimension
+        gridFunction.space().codomainDimension() # result dimension
+        )
+    absError = _constructObjectTemplatedOnBasisAndResult(
+        core, "L2NormOfDifferenceFromPythonSurfaceNormal%sFunctor" % dependent,
+        basisFunctionType, resultType,
+        gridFunction, functor, quadStrategy, evaluationOptions)
+    exactFunctionL2Norm = _constructObjectTemplatedOnBasisAndResult(
+        core, "L2NormOfDifferenceFromPythonSurfaceNormal%sFunctor" % dependent,
+        basisFunctionType, resultType,
+        0 * gridFunction, functor, quadStrategy, evaluationOptions)
+    return absError, absError / exactFunctionL2Norm
+
 def createDefaultIterativeSolver(
         boundaryOperator,
         convergenceTestMode="test_convergence_in_dual_to_range"):
@@ -1245,7 +1325,7 @@ def createDefaultIterativeSolver(
     basisFunctionType = boundaryOperator.basisFunctionType()
     resultType = boundaryOperator.resultType()
     result = _constructObjectTemplatedOnBasisAndResult(
-        "DefaultIterativeSolver", basisFunctionType, resultType,
+        core, "DefaultIterativeSolver", basisFunctionType, resultType,
         boundaryOperator, convergenceTestMode)
     result._boundaryOperator = boundaryOperator
     return result
@@ -1294,7 +1374,7 @@ def createBlockedOperatorStructure(context):
     """
     name = 'BlockedOperatorStructure'
     return _constructObjectTemplatedOnBasisAndResult(
-        name, context.basisFunctionType(), context.resultType())
+        core, name, context.basisFunctionType(), context.resultType())
 
 def createBlockOperatorStructure(context):
     """
@@ -1373,7 +1453,17 @@ def createBlockedBoundaryOperator(context, structure):
                     boStructure.setBlock(i, j, block)
     name = 'BlockedBoundaryOperator'
     return _constructObjectTemplatedOnBasisAndResult(
-        name, context.basisFunctionType(), context.resultType(), boStructure)
+        core, name, context.basisFunctionType(), context.resultType(), boStructure)
+
+def adjoint(op):
+    """
+    Return the adjoint of a BoundaryOperator.
+
+    *Note* The BoundaryOperator must act on real-valued basis functions,
+    otherwise an exception is thrown.
+    """
+    return _constructObjectTemplatedOnBasisAndResult(
+        core, "adjoint", op.basisFunctionType(), op.resultType(), op)
 
 if core._withAhmed:
     def acaOperatorApproximateLuInverse(operator, delta):
@@ -1395,7 +1485,7 @@ if core._withAhmed:
         # name = 'createAcaApproximateLuInverse'
         name = 'acaOperatorApproximateLuInverse'
         return _constructObjectTemplatedOnValue(
-            name, operator.valueType(), operator, delta)
+            core, name, operator.valueType(), operator, delta)
 
     def createAcaApproximateLuInverse(operator, delta):
         """
@@ -1421,7 +1511,7 @@ if core._withAhmed:
         """
         name = 'scaledAcaOperator'
         return _constructObjectTemplatedOnValue(
-            name, operator.valueType(), operator, multiplier)
+            core, name, operator.valueType(), operator, multiplier)
 
     def acaOperatorSum(op1, op2, eps, maximumRank):
         """
@@ -1450,7 +1540,7 @@ if core._withAhmed:
         if (op1.valueType() != op2.valueType()):
             raise TypeError("acaOperatorSum: ValueTypes of 'op1' and 'op2' do not match.")
         return _constructObjectTemplatedOnValue(
-            name, op1.valueType(), op1, op2, eps, maximumRank)
+            core, name, op1.valueType(), op1, op2, eps, maximumRank)
 
 def discreteSparseInverse(op):
     """
@@ -1466,8 +1556,7 @@ def discreteSparseInverse(op):
     the LU decomposition of op and evaluates the inverse of op applied to a vector.
     """
     name = 'discreteSparseInverse'
-    return _constructObjectTemplatedOnValue(
-        name, op.valueType(), op)
+    return _constructObjectTemplatedOnValue(core, name, op.valueType(), op)
 
 
 def discreteOperatorToPreconditioner(op):
@@ -1482,7 +1571,7 @@ def discreteOperatorToPreconditioner(op):
     *Returns* a preconditioner.
     """
     name = 'discreteOperatorToPreconditioner'
-    return _constructObjectTemplatedOnValue(name, op.valueType(), op)
+    return _constructObjectTemplatedOnValue(core, name, op.valueType(), op)
 
 
 def discreteBlockDiagonalPreconditioner(opArray):
@@ -1496,7 +1585,8 @@ def discreteBlockDiagonalPreconditioner(opArray):
     *Returns* a block diagonal preconditioner P = diag(op1, op2, ..., opn).
     """
     name = 'discreteBlockDiagonalPreconditioner'
-    return _constructObjectTemplatedOnValue(name, opArray[0].valueType(), opArray)
+    return _constructObjectTemplatedOnValue(
+        core, name, opArray[0].valueType(), opArray)
 
 def areInside(grid, points):
     """Determine whether points lie inside a grid (assumed to be closed)."""

@@ -22,6 +22,7 @@
 
 #include "abstract_boundary_operator_sum.hpp"
 #include "abstract_boundary_operator_composition.hpp"
+#include "adjoint_abstract_boundary_operator.hpp"
 #include "discrete_boundary_operator.hpp"
 #include "context.hpp"
 #include "grid_function.hpp"
@@ -62,7 +63,7 @@ void BoundaryOperator<BasisFunctionType, ResultType>::initialize(
                                     "abstractOp must not be null");
     m_context = context;
     m_abstractOp = abstractOp;
-    m_weakForm.reset();
+    m_weakFormContainer.reset(new ConstWeakFormContainer);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -70,7 +71,7 @@ void BoundaryOperator<BasisFunctionType, ResultType>::uninitialize()
 {
     m_context.reset();
     m_abstractOp.reset();
-    m_weakForm.reset();
+    m_weakFormContainer.reset();
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -101,11 +102,16 @@ BoundaryOperator<BasisFunctionType, ResultType>::weakForm() const
         throw std::runtime_error(
                 "BoundaryOperator::weakForm(): attempted to retrieve the "
                 "weak form of an uninitialized operator");
-    if (!m_weakForm.get()) {
-        m_weakForm = m_context->getWeakForm(*m_abstractOp);
-        assert(m_weakForm);
+    assert(m_weakFormContainer); // contains a shared_ptr to DiscreteOp
+                                 // (which may be null, though)
+    if (!*m_weakFormContainer) {
+        typedef DiscreteBoundaryOperator<ResultType> DiscreteOp;
+        shared_ptr<const DiscreteOp> discreteOp =
+            m_abstractOp->assembleWeakForm(*m_context);
+        assert(discreteOp);
+        *m_weakFormContainer = discreteOp;
     }
-    return m_weakForm;
+    return *m_weakFormContainer;
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -158,21 +164,23 @@ void BoundaryOperator<BasisFunctionType, ResultType>::apply(
 
     // Sanity test
     if (m_abstractOp->domain() != x_in.space() ||
-            m_abstractOp->range() != y_inout.space() ||
-            m_abstractOp->dualToRange() != y_inout.dualSpace())
+            m_abstractOp->range() != y_inout.space())
         throw std::invalid_argument("BoundaryOperator::apply(): "
                                     "spaces don't match");
 
+    shared_ptr<const Space<BasisFunctionType> > dualToRange =
+            m_abstractOp->dualToRange();
+
     // Extract coefficient vectors
     arma::Col<ResultType> xVals = x_in.coefficients();
-    arma::Col<ResultType> yVals = y_inout.projections();
+    arma::Col<ResultType> yVals = y_inout.projections(*dualToRange);
 
     // Apply operator and assign the result to y_inout's projections
     weakForm()->apply(trans, xVals, yVals, alpha, beta);
     // TODO: make interfaces to the Trilinos and fallback
     // DiscreteBoundaryOperator::apply() compatible.
     // Perhaps by declaring an asPtrToBaseVector method in Vector...
-    y_inout.setProjections(yVals);
+    y_inout.setProjections(*dualToRange, yVals);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -279,7 +287,7 @@ GridFunction<BasisFunctionType, ResultType> operator*(
     coefficients.fill(0.);
     arma::Col<ResultType> projections(dualSpace->globalDofCount());
     projections.fill(0.);
-    GF result(op.context(), space, dualSpace, projections, GF::PROJECTIONS);
+    GF result(op.context(), space, dualSpace, projections);
     op.apply(NO_TRANSPOSE, fun, result, 1., 0.);
     return result;
 }
@@ -300,6 +308,16 @@ BoundaryOperator<BasisFunctionType, ResultType> operator*(
                 boost::make_shared<Composition>(op1, op2));
 }
 
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType> adjoint(
+        const BoundaryOperator<BasisFunctionType, ResultType>& op)
+{
+    typedef AdjointAbstractBoundaryOperator<BasisFunctionType, ResultType>
+        Adjoint;
+    return BoundaryOperator<BasisFunctionType, ResultType>(
+                op.context(), boost::make_shared<Adjoint>(op));
+}
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(BoundaryOperator);
 
 #define INSTANTIATE_FREE_FUNCTIONS(BASIS, RESULT) \
@@ -315,7 +333,9 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(BoundaryOperator);
     const GridFunction<BASIS, RESULT>& fun); \
     template BoundaryOperator<BASIS, RESULT> operator*( \
     const BoundaryOperator<BASIS, RESULT>& op, \
-    const BoundaryOperator<BASIS, RESULT>& fun)
+    const BoundaryOperator<BASIS, RESULT>& fun); \
+    template BoundaryOperator<BASIS, RESULT> adjoint( \
+    const BoundaryOperator<BASIS, RESULT>& op)
 #define INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(BASIS, RESULT, SCALAR) \
     template BoundaryOperator<BASIS, RESULT> operator*( \
     const BoundaryOperator<BASIS, RESULT>& op, const SCALAR& scalar); \
