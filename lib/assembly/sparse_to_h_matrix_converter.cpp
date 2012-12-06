@@ -22,16 +22,10 @@
 #include "bempp/common/config_ahmed.hpp"
 #if defined(WITH_TRILINOS) && defined(WITH_AHMED)
 
-#include "discrete_sparse_boundary_operator.hpp"
-
-#include "../fiber/explicit_instantiation.hpp"
+#include "sparse_to_h_matrix_converter.hpp"
 
 #include "ahmed_aux.hpp"
-
-// The implementation of DiscreteSparseBoundaryOperator::constructAhmedMatrix()
-// is put in this separate CPP file to avoid having to include AHMED's and
-// Epetra's headers in the same module, because it leads to errors caused by
-// conflicting declarations of abs().
+#include "../fiber/explicit_instantiation.hpp"
 
 namespace
 {
@@ -122,16 +116,15 @@ struct MblockArrayConverter<Type, Type>
     }
 };
 
-template<typename ValueType>
-void
-DiscreteSparseBoundaryOperator<ValueType>::constructAhmedMatrix(
+template <typename ValueType>
+void SparseToHMatrixConverter<ValueType>::constructHMatrix(
         int* rowOffsets, int* colIndices, double* values,
         std::vector<unsigned int>& domain_o2p,
         std::vector<unsigned int>& range_p2o,
         double eps,
-        AhmedBemBlcluster* blockCluster,
+        bemblcluster<AhmedDofType, AhmedDofType>* blockCluster,
         boost::shared_array<AhmedMblock*>& mblocks,
-        int& maximumRank) const
+        int& maximumRank)
 {
     typedef mblock<AhmedTypeTraits<double>::Type> AhmedDoubleMblock;
     AhmedDoubleMblock** rawDoubleMblocks = 0;
@@ -148,8 +141,8 @@ DiscreteSparseBoundaryOperator<ValueType>::constructAhmedMatrix(
     maximumRank = Hmax_rank(blockCluster, mblocks.get());
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteSparseBoundaryOperator);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(SparseToHMatrixConverter);
 
 } // namespace Bempp
 
-#endif // WITH_TRILINOS && WITH_AHMED
+#endif // WITH_AHMED && WITH_TRILINOS
