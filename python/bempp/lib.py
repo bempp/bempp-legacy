@@ -136,7 +136,7 @@ def createNumericalQuadratureStrategy(basisFunctionType, resultType, accuracyOpt
        - resultType (string)
             Type used to represent the values of integrals.
 
-       - accuracyOptions (AccuracyOptions or AccuracyOptionsEx)
+       - accuracyOptions (AccuracyOptions)
             Determines quadrature orders used to approximate different types of
             integrals. If set to None, default quadrature orders are used.
 
@@ -1106,10 +1106,10 @@ def __gridFunctionFromFunctor(
 
 def createGridFunction(
         context, space, dualSpace,
-        function=None, surfaceNormalDependent=False, coefficients=None):
+        function=None, surfaceNormalDependent=False, coefficients=None, projections=None):
     """
     Create and return a GridFunction object with values determined by a Python
-    function or by an input vector of coefficients.
+    function or by an input vector of coefficients or projections.
 
     *Parameters:*
        - context (Context)
@@ -1121,6 +1121,9 @@ def createGridFunction(
        - coefficients (Vector)
             An explicit vector of function values on the degrees of freedom
             associated with the space.
+       - projections (Vector)
+            An explicit vector of projection values, must match the number of
+            degrees of freedom of 'dualSpace'.
        - function (a Python callable object)
             Function object whose values on 'space.grid()' will be used to
             construct the new grid function. If 'surfaceNormalDependent' is set
@@ -1158,15 +1161,18 @@ def createGridFunction(
             k = 5
             return math.exp(1j * k * x) * (nx - 1)
     """
-    if coefficients is None and function is None:
-        raise TypeError("createGridFunction: One of 'coefficients' or 'function' must be supplied.")
-    elif coefficients is not None and function is not None:
-        raise TypeError("createGridFunction: Only one of 'coefficeints' or 'function' can be supplied.")
+
+    params = [function,coefficients,projections]
+    params_active = sum([0 if p is None else 1 for p in params])
+    if params_active != 1 :
+        raise TypeError("createGridFunction: Exactly one of 'function', 'coefficients' or 'projections' must be supplied.")
 
     if coefficients is not None:
         return _constructObjectTemplatedOnBasisAndResult("gridFunctionFromCoefficients",context.basisFunctionType(),
                                                          context.resultType(),context,space,dualSpace,coefficients)
-
+    if projections is not None:
+        return _constructObjectTemplatedOnBasisAndResult("gridFunctionFromProjections",context.basisFunctionType(),
+                                                         context.resultType(),context,space,dualSpace,projections)
 
     if surfaceNormalDependent:
         className = "SurfaceNormalDependentFunctor"

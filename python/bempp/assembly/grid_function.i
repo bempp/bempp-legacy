@@ -75,6 +75,19 @@ gridFunctionFromCoefficients(
         GridFunction<BasisFunctionType, ResultType>::COEFFICIENTS);
 }
 
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>*
+gridFunctionFromProjections(
+    const boost::shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+    const boost::shared_ptr<const Space<BasisFunctionType> >& space,
+    const boost::shared_ptr<const Space<BasisFunctionType> >& dualSpace,
+    const arma::Col<ResultType>& data)
+{
+    return new GridFunction<BasisFunctionType, ResultType>(
+        context, space, dualSpace, data, 
+        GridFunction<BasisFunctionType, ResultType>::PROJECTIONS);
+}
+
 
 } // namespace Bempp
 
@@ -227,6 +240,7 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(uninitializedGridFunction
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromPythonSurfaceNormalIndependentFunctor);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromPythonSurfaceNormalDependentFunctor);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromCoefficients);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromProjections);
 
 
 
