@@ -168,6 +168,19 @@ void copySonsAdjustingIndices(
 }
 
 template <typename ValueType>
+double overallEps(
+        const Fiber::_2dArray<shared_ptr<
+            const DiscreteAcaBoundaryOperator<ValueType> > >& acaBlocks)
+{
+    double result = 0.;
+    for (size_t col = 0; col < acaBlocks.extent(1); ++col)
+        for (size_t row = 0; row < acaBlocks.extent(0); ++row)
+            if (acaBlocks(row, col))
+                result = std::min(result, acaBlocks(row, col)->eps());
+    return result;
+}
+
+template <typename ValueType>
 int overallMaximumRank(
         const Fiber::_2dArray<shared_ptr<
             const DiscreteAcaBoundaryOperator<ValueType> > >& acaBlocks)
@@ -467,6 +480,7 @@ DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
             overall_o2pRange(acaBlocks, rowOffsets, totalRowCount);
 
     // Gather remaining data necessary to create the combined ACA operator
+    const double overallEps_ = overallEps(acaBlocks);
     const int overallMaximumRank_ = overallMaximumRank(acaBlocks);
     const int symmetry = overallSymmetry(acaBlocks);
     const Fiber::ParallelizationOptions parallelOptions =
@@ -474,7 +488,8 @@ DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
 
     shared_ptr<const DiscreteBoundaryOperator<ValueType> > result(
                 new AcaOp(
-                    totalRowCount, totalColCount, overallMaximumRank_,
+                    totalRowCount, totalColCount,
+                    overallEps_, overallMaximumRank_,
                     symmetry,
                     mblockCluster, mblocks,
                     o2pDomain, o2pRange,

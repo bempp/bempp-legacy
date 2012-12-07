@@ -329,6 +329,9 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> >
 DiscreteSparseBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
         double eps, int maximumRank) const
 {
+    if (eps < 0)
+        eps = 1e-4; // probably isn't really used
+
     // Note: the maximumRank parameter is ignored in this implementation.
 
     if (!m_blockCluster || !m_domainPermutation || !m_rangePermutation)
@@ -368,7 +371,7 @@ DiscreteSparseBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
 
     shared_ptr<const DiscreteBoundaryOperator<ValueType> > result(
                 new DiscreteAcaBoundaryOperator<ValueType>(
-                    rowCount(), columnCount(), trueMaximumRank, symmetry,
+                    rowCount(), columnCount(), eps, trueMaximumRank, symmetry,
                     m_blockCluster, mblocks,
                     *m_domainPermutation, *m_rangePermutation,
                     parallelOptions));

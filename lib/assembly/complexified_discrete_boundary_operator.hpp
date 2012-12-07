@@ -65,9 +65,8 @@ public:
                           const ValueType alpha,
                           arma::Mat<ValueType>& block) const;
 
-    shared_ptr<const DiscreteBoundaryOperator<ValueType> > asDiscreteAcaBoundaryOperator(
-            double eps=1E-4,
-            int maximumRank=50) const;
+    shared_ptr<const DiscreteBoundaryOperator<ValueType> >
+    asDiscreteAcaBoundaryOperator(double eps=-1, int maximumRank=-1) const;
 
 
 #ifdef WITH_TRILINOS

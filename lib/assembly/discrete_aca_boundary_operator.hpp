@@ -161,6 +161,54 @@ public:
      *    Number of rows.
      *  \param[in] columnCount
      *    Number of columns.
+     *  \param[in] epsUsedInAssembly
+     *    The epsilon parameter used during assembly of the H-matrix.
+     *  \param[in] maximumRankUsedInAssembly
+     *    The limit on block rank used during assembly of the H-matrix.
+     *    This is used in particular when generating the approximate H-matrix
+     *    LU.
+     *  \param[in] symmetry
+     *    H-matrix symmetry. Can be any combination of the flags defined in the
+     *    Symmetry enumeration type.
+     *  \param[in] blockCluster_
+     *    Block cluster defining the structure of the H-matrix.
+     *  \param[in] blocks_
+     *    Array containing the H-matrix blocks.
+     *  \param[in] domainPermutation_
+     *    Mapping from original to permuted column indices.
+     *  \param[in] rangePermutation_
+     *    Mapping from original to permuted row indices.
+     *  \param[in] parallelizationOptions_
+     *    Options determining the maximum number of threads used in
+     *    the apply() routine for the H-matrix-vector product.
+     *  \param[in] sharedBlocks_
+     *    Vector of arrays of mblocks on which this operator implicitly
+     *    depends and which therefore must stay alive for the lifetime
+     *    of this operator. Useful for constructing ACA operators that
+     *    combine mblocks of several other operators.
+     *
+     *  \note Currently the apply() routine is only parallelized for
+     *  non-Hermitian H-matrices.
+     */
+    DiscreteAcaBoundaryOperator(
+            unsigned int rowCount, unsigned int columnCount,
+            double epsUsedInAssembly,
+            int maximumRankUsedInAssembly,
+            int symmetry,
+            const shared_ptr<const AhmedBemBlcluster>& blockCluster_,
+            const AhmedMblockArray& blocks_,
+            const IndexPermutation& domainPermutation_,
+            const IndexPermutation& rangePermutation_,
+            const ParallelizationOptions& parallelizationOptions_,
+            const std::vector<AhmedConstMblockArray>& sharedBlocks_ =
+                std::vector<AhmedConstMblockArray>());
+
+    /** \brief Constructor.
+     *
+     *  \param[in] rowCount
+     *    Number of rows.
+     *  \param[in] columnCount
+     *    Number of columns.
      *  \param[in] maximumRankUsedInAssembly
      *    The limit on block rank used during assembly of the H-matrix.
      *    This is used in particular when generating the approximate H-matrix
@@ -188,8 +236,8 @@ public:
      *  \note Currently the apply() routine is only parallelized for
      *  non-Hermitian H-matrices.
      *
-     *  \deprecated This constructor is deprecated. Use the constructor
-     *  accepting the block cluster as a shared pointer instead. */
+     *  \deprecated This constructor is deprecated. Use the non-deprecated
+     *  constructor. */
     DiscreteAcaBoundaryOperator(
             unsigned int rowCount, unsigned int columnCount,
             int maximumRankUsedInAssembly,
@@ -233,10 +281,15 @@ public:
      *    combine mblocks of several other operators.
      *
      *  \note Currently the apply() routine is only parallelized for
-     *  non-Hermitian H-matrices. */
+     *  non-Hermitian H-matrices.
+     *
+     *  \deprecated This constructor is deprecated. Use the non-deprecated
+     *  constructor.
+     */
+    BEMPP_DEPRECATED
     DiscreteAcaBoundaryOperator(
             unsigned int rowCount, unsigned int columnCount,
-            int maximumRank,
+            int maximumRankUsedInAssembly,
             int symmetry,
             const shared_ptr<const AhmedBemBlcluster>& blockCluster_,
             const AhmedMblockArray& blocks_,
@@ -257,7 +310,7 @@ public:
                           arma::Mat<ValueType>& block) const;
 
     virtual shared_ptr<const DiscreteBoundaryOperator<ValueType> >
-    asDiscreteAcaBoundaryOperator(double eps=1E-4, int maximumRank=50) const;
+    asDiscreteAcaBoundaryOperator(double eps=-1, int maximumRank=-1) const;
 
     /** \brief Uncompress all blocks of the H-matrix and store them as dense
      *  matrices.
@@ -282,8 +335,16 @@ public:
             const shared_ptr<const DiscreteBoundaryOperator<ValueType> >&
             discreteOperator);
 
-    /** \brief Return an upper bound for the rank of low-rank mblocks. */
+    /** \brief Return the upper bound for the rank of low-rank mblocks
+     *  specified during H-matrix construction. */
     int maximumRank() const;
+
+    /** \brief Return the value of the epsilon parameter specified during
+     *  H-matrix construction. */
+    double eps() const;
+
+    /** \brief Return the actual maximum rank of low-rank mblocks. */
+    int actualMaximumRank() const;
 
     /** \brief Return a flag describing the symmetry of this operator. */
     int symmetry() const;
@@ -341,6 +402,7 @@ private:
     unsigned int m_rowCount;
     unsigned int m_columnCount;
 #endif
+    double m_eps;
     int m_maximumRank; // used by the approximate-LU preconditioner
     int m_symmetry;
 

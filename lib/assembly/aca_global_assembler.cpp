@@ -423,6 +423,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     }
     std::auto_ptr<DiscreteAcaLinOp> acaOp(
                 new DiscreteAcaLinOp(testDofCount, trialDofCount,
+                                     acaOptions.eps,
                                      acaOptions.maximumRank,
                                      Symmetry(symmetry),
                                      bemBlclusterTree, blocks,

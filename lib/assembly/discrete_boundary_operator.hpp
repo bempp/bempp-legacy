@@ -162,9 +162,18 @@ public:
      *  supported by this function.
      *
      *  \param[in] eps
-     *    Accuracy tolerance for H-Matrix addition.
+
+     *    The \f$epsilon\f$ parameter controlling the accuracy of H-matrix
+     *    addition in case this operation is needed to construct the H-matrix
+     *    representation of the operator. If \p eps is negative (default), it
+     *    is set to the smaller of the values of $\epsilon$ specified during
+     *    the creation of the two H-matrices to be added.
+
      *  \param[in] maximumRank
-     *    Maximum rank of blocks to be considered low rank in the case of H-Matrix addition.
+     *    Maximum rank of blocks to be considered low rank when adding two
+     *    H-Matrices. If \p maximumRank is negative, it is set to the larger of
+     *    the maximum ranks specified during the creation of the two H-matrices
+     *    to be added.
      *
      *  \returns A pointer to a DiscreteBoundaryOperator object castable to
      *  DiscreteAcaBoundaryOperator.
@@ -173,7 +182,7 @@ public:
      *  without AHMED.
      */
     virtual shared_ptr<const DiscreteBoundaryOperator>
-    asDiscreteAcaBoundaryOperator(double eps=1E-4, int maximumRank=50) const;
+    asDiscreteAcaBoundaryOperator(double eps=-1, int maximumRank=-1) const;
 
     /** \brief Write a textual representation of the operator to standard output.
      *

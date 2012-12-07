@@ -182,6 +182,44 @@ template <typename ValueType>
 DiscreteAcaBoundaryOperator<ValueType>::
 DiscreteAcaBoundaryOperator(
         unsigned int rowCount, unsigned int columnCount,
+        double eps_,
+        int maximumRank_,
+        int symmetry_,
+        const shared_ptr<const AhmedBemBlcluster>& blockCluster_,
+        const AhmedMblockArray& blocks_,
+        const IndexPermutation& domainPermutation_,
+        const IndexPermutation& rangePermutation_,
+        const ParallelizationOptions& parallelizationOptions_,
+        const std::vector<AhmedConstMblockArray>& sharedBlocks_) :
+#ifdef WITH_TRILINOS
+    m_domainSpace(Thyra::defaultSpmdVectorSpace<ValueType>(columnCount)),
+    m_rangeSpace(Thyra::defaultSpmdVectorSpace<ValueType>(rowCount)),
+#else
+    m_rowCount(rowCount), m_columnCount(columnCount),
+#endif
+    m_eps(eps_),
+    m_maximumRank(maximumRank_),
+    m_symmetry(symmetry_),
+    m_blockCluster(blockCluster_), m_blocks(blocks_),
+    m_domainPermutation(domainPermutation_),
+    m_rangePermutation(rangePermutation_),
+    m_parallelizationOptions(parallelizationOptions_),
+    m_sharedBlocks(sharedBlocks_)
+{
+    if (eps_ <= 0 || eps_ > 1)
+        std::cout << "DiscreteAcaBoundaryOperator::DiscreteAcaBoundaryOperator(): "
+                     "warning: suspicious value of eps ("
+                  << eps_ << ")" << std::endl;
+    if (maximumRank_ < 0)
+        std::cout << "DiscreteAcaBoundaryOperator::DiscreteAcaBoundaryOperator(): "
+                     "warning: suspicious value of maximumRank ("
+                  << maximumRank_ << ")" << std::endl;
+}
+
+template <typename ValueType>
+DiscreteAcaBoundaryOperator<ValueType>::
+DiscreteAcaBoundaryOperator(
+        unsigned int rowCount, unsigned int columnCount,
         int maximumRank_,
         int symmetry_,
         std::auto_ptr<const AhmedBemBlcluster> blockCluster_,
@@ -196,6 +234,7 @@ DiscreteAcaBoundaryOperator(
 #else
     m_rowCount(rowCount), m_columnCount(columnCount),
 #endif
+    m_eps(1e-4), // just a guess...
     m_maximumRank(maximumRank_),
     m_symmetry(symmetry_),
     m_blockCluster(blockCluster_.release()), m_blocks(blocks_),
@@ -224,6 +263,7 @@ DiscreteAcaBoundaryOperator(
 #else
     m_rowCount(rowCount), m_columnCount(columnCount),
 #endif
+    m_eps(1e-4), // just a guess...
     m_maximumRank(maximumRank_),
     m_symmetry(symmetry_),
     m_blockCluster(blockCluster_), m_blocks(blocks_),
@@ -525,10 +565,26 @@ makeAllMblocksDense()
 }
 
 template <typename ValueType>
+double
+DiscreteAcaBoundaryOperator<ValueType>::eps() const
+{
+    return m_eps;
+}
+
+template <typename ValueType>
 int
 DiscreteAcaBoundaryOperator<ValueType>::maximumRank() const
 {
     return m_maximumRank;
+}
+
+template <typename ValueType>
+int
+DiscreteAcaBoundaryOperator<ValueType>::actualMaximumRank() const
+{
+    // const_cast because Ahmed is not const-correct
+    return Hmax_rank(const_cast<AhmedBemBlcluster*>(m_blockCluster.get()),
+                     m_blocks.get());
 }
 
 template <typename ValueType>
@@ -598,6 +654,10 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > acaOperatorSum(
     if (!op1 || !op2)
         throw std::invalid_argument("acaOperatorSum(): "
                                     "both operands must be non-null");
+    if (eps <= 0)
+        throw std::invalid_argument("acaOperatorSum(): eps must be positive");
+    if (maximumRank < 1)
+        maximumRank = 1;
     shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> > acaOp1 =
             DiscreteAcaBoundaryOperator<ValueType>::castToAca(op1);
     shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> > acaOp2 =
@@ -628,7 +688,8 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > acaOperatorSum(
               eps, maximumRank);
     shared_ptr<const DiscreteBoundaryOperator<ValueType> > result(
                 new DiscreteAcaBoundaryOperator<ValueType> (
-                    acaOp1->rowCount(), acaOp1->columnCount(), maximumRank,
+                    acaOp1->rowCount(), acaOp1->columnCount(), eps,
+                    maximumRank,
                     Symmetry(acaOp1->m_symmetry & acaOp2->m_symmetry),
                     sumBlockCluster, sumBlocks,
                     acaOp1->m_domainPermutation, acaOp2->m_rangePermutation,
@@ -689,7 +750,8 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > scaledAcaOperator(
         scaledSymmetry &= ~HERMITIAN;
     shared_ptr<const DiscreteBoundaryOperator<ValueType> > result(
                 new DiscreteAcaBoundaryOperator<ValueType> (
-                    acaOp->rowCount(), acaOp->columnCount(), acaOp->m_maximumRank,
+                    acaOp->rowCount(), acaOp->columnCount(),
+                    acaOp->eps(), acaOp->maximumRank(),
                     Symmetry(scaledSymmetry),
                     scaledBlockCluster, scaledBlocks,
                     acaOp->m_domainPermutation, acaOp->m_rangePermutation,

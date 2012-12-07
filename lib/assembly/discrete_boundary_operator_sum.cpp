@@ -85,11 +85,21 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> >
 DiscreteBoundaryOperatorSum<ValueType>::asDiscreteAcaBoundaryOperator(
         double eps, int maximumRank) const
 {
-    shared_ptr<const DiscreteBoundaryOperator<ValueType> > acaOp1 =
-            m_term1->asDiscreteAcaBoundaryOperator(eps, maximumRank);
-    shared_ptr<const DiscreteBoundaryOperator<ValueType> > acaOp2 =
-            m_term2->asDiscreteAcaBoundaryOperator(eps, maximumRank);
-    return acaOperatorSum(acaOp1, acaOp2, eps, maximumRank);
+    typedef DiscreteAcaBoundaryOperator<ValueType> DiscreteAcaOp;
+    shared_ptr<const DiscreteAcaOp> acaOp1 =
+            boost::dynamic_pointer_cast<const DiscreteAcaOp>(
+                m_term1->asDiscreteAcaBoundaryOperator(eps, maximumRank));
+    shared_ptr<const DiscreteAcaOp> acaOp2 =
+            boost::dynamic_pointer_cast<const DiscreteAcaOp>(
+                m_term2->asDiscreteAcaBoundaryOperator(eps, maximumRank));
+
+    if (maximumRank < 0)
+        maximumRank = std::max(acaOp1->maximumRank(),
+                               acaOp2->maximumRank());
+    if (eps < 0)
+        eps = std::min(acaOp1->eps(), acaOp2->eps());
+
+    return acaOperatorSum<ValueType>(acaOp1, acaOp2, eps, maximumRank);
 }
 #endif // WITH_AHMED
 
