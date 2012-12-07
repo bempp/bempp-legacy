@@ -56,6 +56,6 @@ struct SparseToHMatrixConverter
 
 } // namespace Bempp
 
-#endif WITH_AHMED
+#endif // WITH_AHMED
 
 #endif
