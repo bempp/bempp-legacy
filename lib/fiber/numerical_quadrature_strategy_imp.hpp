@@ -135,7 +135,7 @@ makeAssemblerForGridFunctionsImplRealUserFunction(
                     geometryFactory, rawGeometry,
                     testBases,
                     testTransformations, function,
-                    openClHandler));
+                    openClHandler, this->accuracyOptions().singleRegular()));
 }
 
 template <typename BasisFunctionType, typename ResultType,
@@ -258,7 +258,8 @@ makeAssemblerForGridFunctionsImplComplexUserFunction(
                     geometryFactory, rawGeometry,
                     testBases,
                     testTransformations, function,
-                    openClHandler));
+                    openClHandler,
+                    this->accuracyOptions().singleRegular()));
 }
 
 template <typename BasisFunctionType, typename ResultType,

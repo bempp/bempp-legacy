@@ -41,13 +41,15 @@ DefaultLocalAssemblerForGridFunctionsOnSurfaces(
         const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
         const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
         const shared_ptr<const Function<UserFunctionType> >& function,
-        const shared_ptr<const OpenClHandler>& openClHandler) :
+        const shared_ptr<const OpenClHandler>& openClHandler,
+        const QuadratureOptions& quadratureOptions) :
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
     m_testBases(testBases),
     m_testTransformations(testTransformations),
     m_function(function),
-    m_openClHandler(openClHandler)
+    m_openClHandler(openClHandler),
+    m_quadratureOptions(quadratureOptions)
 {
     if (rawGeometry->vertices().n_rows != 3)
         throw std::invalid_argument(
@@ -172,8 +174,10 @@ selectIntegrator(int elementIndex)
     desc.vertexCount = m_rawGeometry->elementCornerCount(elementIndex);
 
     // Determine integrand's order and required quadrature order
-    desc.order = (*m_testBases)[elementIndex]->order() +
-            orderIncrement(elementIndex);
+//    desc.order = (*m_testBases)[elementIndex]->order() +
+//            orderIncrement(elementIndex);
+    const int defaultOrder = 2 * (*m_testBases)[elementIndex]->order() + 1;
+    desc.order = m_quadratureOptions.quadratureOrder(defaultOrder);
 
     return getIntegrator(desc);
 }

@@ -24,6 +24,7 @@
 #include "../common/common.hpp"
 
 #include "local_assembler_for_grid_functions.hpp"
+#include "quadrature_options.hpp"
 #include "test_function_integrator.hpp"
 #include "scalar_traits.hpp"
 
@@ -55,7 +56,8 @@ public:
             const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
             const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
             const shared_ptr<const Function<UserFunctionType> >& function,
-            const shared_ptr<const OpenClHandler>& openClHandler);
+            const shared_ptr<const OpenClHandler>& openClHandler,
+            const QuadratureOptions& quadratureOptions = QuadratureOptions());
     virtual ~DefaultLocalAssemblerForGridFunctionsOnSurfaces();
 
 public:
@@ -83,6 +85,7 @@ private:
     shared_ptr<const CollectionOfBasisTransformations<CoordinateType> > m_testTransformations;
     shared_ptr<const Function<UserFunctionType> > m_function;
     shared_ptr<const OpenClHandler> m_openClHandler;
+    QuadratureOptions m_quadratureOptions;
 
     IntegratorMap m_testFunctionIntegrators;
 };
