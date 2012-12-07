@@ -99,8 +99,10 @@ public:
 
     /** \brief Convert local (logical) to global (physical) coordinates.
 
-      \param[in] local Matrix whose \f$i\f$th column contains the local coordinates of a point \f$x_i \in D\f$.
-      \param[out] global Matrix whose \f$i\f$th column contains the global coordinates of \f$x_i\f$, i.e. \f$g(x_i)\f$.
+      \param[in] local Matrix whose \f$i\f$th column contains the
+        local coordinates of a point \f$x_i \in D\f$.
+      \param[out] global Matrix whose \f$i\f$th column contains the
+        global coordinates of \f$x_i\f$, i.e. \f$g(x_i)\f$.
     */
     void local2global(const arma::Mat<double>& local,
                       arma::Mat<double>& global) const;
@@ -110,8 +112,10 @@ public:
 
     /** \brief Convert global (physical) to local (logical) coordinates.
 
-      \param[in] global Matrix whose \f$i\f$th column contains the global coordinates of a point \f$x_i \in W\f$.
-      \param[out] local Matrix whose \f$i\f$th column contains the local coordinates of \f$x_i\f$, i.e. \f$g^{-1}(x_i)\f$.
+      \param[in] global Matrix whose \f$i\f$th column contains the
+         global coordinates of a point \f$x_i \in W\f$.
+      \param[out] local Matrix whose \f$i\f$th column contains the
+         local coordinates of \f$x_i\f$, i.e. \f$g^{-1}(x_i)\f$.
 
       \fixme This is going to be tricky to implement for dimGrid < dimWorld.
       Maybe the docstring should say that we convert some sort of *projection*
@@ -140,8 +144,10 @@ public:
       The integration element \f$\mu(x)\f$ for any \f$x\in D\f$ is then defined as
       \f[ \mu(x) = \sqrt{|\det J_g^T(x)J_g(x)|}.\f]
 
-      \param[in]   local       Matrix whose \f$i\f$th column contains the local coordinates of a point \f$x_i \in D\f$.
-      \param[out]  int_element  Row vector whose \f$i\f$th entry contains the integration element \f$\mu(x_i)\f$.
+      \param[in]   local       Matrix whose \f$i\f$th column contains the local
+         coordinates of a point \f$x_i \in D\f$.
+      \param[out]  int_element  Row vector whose \f$i\f$th entry contains
+         the integration element \f$\mu(x_i)\f$.
 
       \note Each implementation computes the integration element with optimal
       efficiency. For example in an equidistant structured mesh it may be as
@@ -180,7 +186,8 @@ public:
      *  getIntegrationElements().
      *
      *  \param[in]  local
-     *    Matrix whose \f$i\f$th column contains the local coordinates of a point \f$x_i \in D\f$.
+     *    Matrix whose \f$i\f$th column contains the local coordinates of a point
+     *    \f$x_i \in D\f$.
      *  \param[out]  jacobian_t
      *    3D array whose \f$i\f$th slice (i.e. jacobian_t(:,:,i)) contains the
      *    transposed Jacobian matrix at \f$x_i\f$, i.e. \f$J_g^T(x_i)\f$.
@@ -199,10 +206,12 @@ public:
      *  getIntegrationElements().
      *
      *  \param[in]  local
-     *    Matrix whose \f$i\f$th column contains the local coordinates of a point \f$x_i \in D\f$.
+     *    Matrix whose \f$i\f$th column contains the local coordinates of a
+     *    point \f$x_i \in D\f$.
      *  \param[out]  jacobian_inv_t
-     *    3D array whose \f$i\f$th slice (i.e. jacobian_inv_t(:,:,i)) contains the
-     *    inverse of the transposed Jacobian matrix at \f$x_i\f$, i.e. \f$J_g^{-T}(x_i)\f$.
+     *    3D array whose \f$i\f$th slice (i.e. jacobian_inv_t(:,:,i)) contains
+     *    the inverse of the transposed Jacobian matrix at \f$x_i\f$, i.e.
+     *    \f$J_g^{-T}(x_i)\f$.
      *
      *  The use of this function is to compute the gradient of some function
      *  \f$f : W \to \textbf{R}\f$ at some position \f$y=g(x)\f$, where
@@ -210,8 +219,8 @@ public:
      *  When we set \f$\hat{f}(x) = f(g(x))\f$ and apply the chain rule we obtain
      *  \f[\nabla f(g(x)) = J_g^{-T}(x) \nabla \hat{f}(x).\f]
      *
-     *  \note In the non-symmetric case \f$\textrm{cdim} \neq \textrm{mydim}\f$, the
-     *        pseudoinverse of \f$J_g^T(x)\f$ is returned.
+     *  \note In the non-symmetric case \f$\textrm{cdim} \neq \textrm{mydim}\f$,
+     *        the pseudoinverse of \f$J_g^T(x)\f$ is returned.
      *        This means that it is inverse for all tangential vectors in
      *        \f$g(x)\f$ while mapping all normal vectors to zero.
      */
