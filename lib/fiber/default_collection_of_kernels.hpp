@@ -26,28 +26,53 @@
 namespace Fiber
 {
 
-/*
-template <typename ValueType_>
-class KernelFunctor
-{
-public:
-    typedef ValueType_ ValueType;
-    typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+/** \brief Default implementation of a collection of kernels.
 
-    int kernelCount() const;
-    int kernelRowCount(int kernelIndex) const;
-    int kernelColCount(int kernelIndex) const;
+    This class implements the interface defined by CollectionOfKernels using
+    a functor object to evaluate the kernels at specific point pairs.
 
-    void addGeometricalDependencies(int& testGeomDeps, int& trialGeomDeps) const;
+    \tparam Functor
+      Type of the functor that will be passed to the constructor and used to
+      evaluate a number of kernels at individual point pairs.
 
-    template <template <typename T> class CollectionOf2dSlicesOfNdArrays>
-    void evaluate(
-            const ConstGeometricDataSlice<CoordinateType>& testGeomData,
-            const ConstGeometricDataSlice<CoordinateType>& trialGeomData,
-            CollectionOf2dSlicesOfNdArrays<ValueType>& result) const;
-};
-*/
+    The Functor class should provide the following interface:
 
+    \code
+    class KernelCollectionFunctor
+    {
+    public:
+        typedef ... ValueType; // can be float, double, std::complex<float>
+                               // or std::complex<double>
+        typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+
+        // Return the number of kernels in the collection
+        int kernelCount() const;
+        // Return the number of rows in the tensor being the value of i'th kernel
+        int kernelRowCount(int i) const;
+        // Return the number of columns in the tensor being the value of i'th kernel
+        int kernelColCount(int i) const;
+
+        // Specify types of geometrical data required by the kernels (see
+        // documentation of CollectionOfKernels::addGeometricalDependencies
+        // for details)
+        void addGeometricalDependencies(size_t& testGeomDeps,
+                                        size_t& trialGeomDeps) const;
+
+        // Evaluate the kernels at the pair of points whose geometrical data
+        // are provided in the testGeomData and trialGeomData arguments. The
+        // (j, k)th element of the tensor being the value of i'th kernel should
+        // be written to result[i](j, k).
+        template <template <typename T> class CollectionOf2dSlicesOfNdArrays>
+        void evaluate(
+                const ConstGeometricalDataSlice<CoordinateType>& testGeomData,
+                const ConstGeometricalDataSlice<CoordinateType>& trialGeomData,
+                CollectionOf2dSlicesOfNdArrays<ValueType>& result) const;
+    };
+    \endcode
+
+    See the Laplace3dSingleLayerPotentialKernelFunctor class for an example
+    implementation of a (simple) kernel collection functor.
+ */
 template <typename Functor>
 class DefaultCollectionOfKernels :
         public CollectionOfKernels<typename Functor::ValueType>

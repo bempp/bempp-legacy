@@ -26,18 +26,20 @@
 namespace Fiber
 {
 
-/** \brief Standard implementation of the TestKernelTrialIntegral interface.
+/** \brief Default implementation of the TestKernelTrialIntegral interface.
 
-  The <tt>evaluate*()</tt> member functions can be used to evaluate integrals
+  This class implements the interface defined by TestKernelTrialIntegral
+  using a functor object to evaluate the integrand \f$I(x, y)\f$ of an integral
   of the form
+  \f[ \int_\Gamma \int_\Sigma I(x, y)\, d\Gamma(x)\, d\Sigma(y),
+  where \f$\Gamma\f$ is a test element and \f$\Sigma\f$ a trial element,
+  at individual pairs \f$(x, y\f$\f$) of test and trial points.
 
-  \f[ \int_{\Gamma_i} dx \int_{\Gamma_j} dy \, I[f(x), g(y)] \f],
+  \tparam Functor
+    Type of the functor that will be passed to the constructor and used to
+    evaluate th integrand at individual point pairs.
 
-  where the integrand \f$I(x, y)\f$ depends in an arbitrary way on
-  the test function \f$f(x)\f$ and the trial function \f$f(y)\f$.
-
-  This class template takes a single template parameter, \p IntegrandFunctor, which
-  should stand for a type providing the following interface:
+  The functor should provide the following interface:
 
   \code{.cpp}
 class IntegrandFunctor
@@ -50,19 +52,21 @@ public:
 
     void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const;
 
+    template <template <typename T> class CollectionOf2dSlicesOfConstNdArrays>
     ResultType evaluate(
-            const GeometricalDataSlice<CoordinateType>& testGeomData,
-            const GeometricalDataSlice<CoordinateType>& trialGeomData,
-            const Slice1dCollection<BasisFunctionType>& testTransformations,
-            const Slice1dCollection<BasisFunctionType>& trialTransformations,
-            const Slice2dCollection<KernelType>& kernels) const;
+            const ConstGeometricalDataSlice<CoordinateType>& testGeomData,
+            const ConstGeometricalDataSlice<CoordinateType>& trialGeomData,
+            const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>& testValues,
+            const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>& trialValues,
+            const CollectionOf2dSlicesOfConstNdArrays<KernelType>& kernelValues) const;
 };
   \endcode
 
   The addGeometricalDependencies() method should specify any geometrical data
-  on which the integral depends explicitly (not through the kernels or basis function
-  transformations). For example, if the integrand depends on the vectors normal
-  to the surface at test and trial points, the function could have the form
+  on which the integrand depends explicitly (not through kernels or basis
+  function transformations). For example, if the integrand depends on the
+  vectors normal to the surface at test and trial points, the function should
+  have the form
 
   \code{.cpp}
 void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const
@@ -76,16 +80,18 @@ void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) con
   weights! -- at a single (test point, trial point) pair. It is supplied with the
   following parameters:
 
-  \param[in] testGeomData  Geometric data at a single test point.
-  \param[in] trialGeomData Geometric data at a single trial point.
-  \param[in] testTransformations
-    Values of a collection of transformations of a single test function at the test point.
-  \param[in] trialTransformations
+  \param[in] testGeomData
+    Geometric data of a point located on the test element.
+  \param[in] trialGeomData
+    Geometric data of a point located on the trial element.
+  \param[in] testValues
+    Values of a collection of transformations of a test basis function at the
+    test point. The number <tt>testValues[i](j)</tt> is the <em>j</em> component value of the <em>i</em>th
+    transformation of the TO BE CONTINUED
+  \param[in] trialValues
     Values of a collection of transformations of a single trial function at the trial point.
   \param[in] kernels
     Values of a collection of kernels at the (test point, trial point) pair.
-
-  \todo Perhaps implement IntegrandFunctor using the curiously recurring template pattern.
  */
 template <typename IntegrandFunctor>
 class DefaultTestKernelTrialIntegral :

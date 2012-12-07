@@ -26,26 +26,52 @@
 namespace Fiber
 {
 
-/*
-template <typename CoordinateType_>
-class BasisFunctionTransformationFunctor
-{
-public:
-    typedef CoordinateType_ CoordinateType;
+/** \brief Default implementation of a collection of basis function transformations.
 
-    int transformationCount() const;
-    int transformationDim(int transformationIndex) const;
+    This class implements the interface defined by
+    CollectionOfBasisTransformations using a functor object to evaluate the
+    transformations at specific points.
 
-    void addDependencies(int& basisDeps, int& geomDeps) const;
+    \tparam Functor
+      Type of the functor that will be passed to the constructor and used to
+      evaluate a number of basis function transformations at individual points.
 
-    template <typename ValueType>
-    void evaluate(
-            const ConstBasisDataSlice<ValueType>& basisData,
-            const ConstGeometricalDataSlice<CoordinateType>& geomData,
-            Array3dNonconstSlice1dCollection<ValueType>& result) const;
-};
-*/
+    The Functor class should provide the following interface:
 
+    \code
+    class TransformationCollectionFunctor
+    {
+    public:
+        typedef ... CoordinateType; // should be either float or double
+
+        // Return the number of transformations in the collection
+        int transformationCount() const;
+        // Return the dimension of vectors being the values of basis functions
+        // to be transformed
+        int argumentDimension() const;
+        // Return the dimension of vectors produced by i'th transformation
+        int resultDimension(int i) const;
+
+        // Specify types of data required by the transformations (see the
+        // documentation of CollectionOfBasisTransformations::addDependencies()
+        // for details)
+        void addDependencies(size_t& basisDeps, size_t& geomDeps) const;
+
+        // Evaluate the transformation of a basis function whose values and/or
+        // derivatives are provided in the basisData argument, at the point
+        // whose geometrical data are provided in the geomData argument. The
+        // j'th component of the vector being the value of i'th transformation
+        // of the basis function should be written to result[i](j).
+        // This function should accept ValueType equal to either
+        // CoordinateType or std::complex<CoordinateType>
+        template <typename ValueType>
+        void evaluate(
+                const ConstBasisDataSlice<ValueType>& basisData,
+                const ConstGeometricalDataSlice<CoordinateType>& geomData,
+                CollectionOf1dSlicesOf3dArrays<ValueType>& result) const;
+    };
+   \endcode
+ */
 template <typename Functor>
 class DefaultCollectionOfBasisTransformations :
         public CollectionOfBasisTransformations<typename Functor::CoordinateType>
