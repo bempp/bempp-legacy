@@ -49,7 +49,7 @@ public:
     typedef ValueType_ ValueType;
     typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
-    ModifiedHelmholtz3dSingleLayerPotentialKernelFunctor(ValueType waveNumber) :
+    explicit ModifiedHelmholtz3dSingleLayerPotentialKernelFunctor(ValueType waveNumber) :
         m_waveNumber(waveNumber)
     {}
 

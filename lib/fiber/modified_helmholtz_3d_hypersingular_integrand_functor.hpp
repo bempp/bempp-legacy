@@ -48,7 +48,8 @@ public:
     typedef ResultType_ ResultType;
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    ModifiedHelmholtz3dHypersingularIntegrandFunctor(KernelType waveNumber) :
+    explicit ModifiedHelmholtz3dHypersingularIntegrandFunctor(
+            KernelType waveNumber) :
         m_waveNumber(waveNumber)
     {}
 
