@@ -29,7 +29,6 @@
 #include "shared_ptr.hpp"
 
 #include "../common/armadillo_fwd.hpp"
-#include <boost/static_assert.hpp>
 #include "../common/boost_ptr_map_fwd.hpp"
 #include <cstring>
 #include <iostream>
