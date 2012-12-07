@@ -23,9 +23,11 @@
 #ifdef WITH_TRILINOS
 
 #include "discrete_sparse_boundary_operator.hpp"
+
 #include "ahmed_mblock_array_deleter.hpp"
 #include "discrete_aca_boundary_operator.hpp"
 #include "index_permutation.hpp"
+#include "sparse_to_h_matrix_converter.hpp"
 
 #include "../common/boost_shared_array_fwd.hpp"
 #include "../fiber/explicit_instantiation.hpp"
@@ -360,10 +362,11 @@ DiscreteSparseBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
 
     boost::shared_array<AhmedMblock*> mblocks;
     int trueMaximumRank = 0;
-    constructAhmedMatrix(rowOffsets, colIndices, values,
-                         domain_o2p, range_p2o, eps,
-                         m_blockCluster.get(),
-                         mblocks, trueMaximumRank);
+    SparseToHMatrixConverter<ValueType>::constructHMatrix(
+        rowOffsets, colIndices, values,
+        domain_o2p, range_p2o, eps,
+        m_blockCluster.get(),
+        mblocks, trueMaximumRank);
 
     // Gather remaining data necessary to create the combined ACA operator
     const int symmetry = 0;

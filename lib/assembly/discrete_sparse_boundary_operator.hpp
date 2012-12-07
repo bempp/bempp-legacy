@@ -157,14 +157,14 @@ private:
                                   const ValueType beta) const;
     bool isTransposed() const;
 
-    void constructAhmedMatrix(
-            int* rowOffsets, int* colIndices, double* values,
-            std::vector<unsigned int>& domain_o2p,
-            std::vector<unsigned int>& range_p2o,
-            double eps,
-            AhmedBemBlcluster* blockCluster,
-            boost::shared_array<AhmedMblock*>& mblocks,
-            int& maximumRank) const;
+    // void constructAhmedMatrix(
+    //         int* rowOffsets, int* colIndices, double* values,
+    //         std::vector<unsigned int>& domain_o2p,
+    //         std::vector<unsigned int>& range_p2o,
+    //         double eps,
+    //         AhmedBemBlcluster* blockCluster,
+    //         boost::shared_array<AhmedMblock*>& mblocks,
+    //         int& maximumRank) const;
     /** \endcond */
 
 private:
