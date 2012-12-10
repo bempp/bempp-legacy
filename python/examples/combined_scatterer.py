@@ -19,8 +19,9 @@ k = 6
 def rhsData(point, normal):
     return 2j * k * np.exp(1j * k * point[0]) * (normal[0] - 1)
 
-# Set accuracy options. For regular integrals, use quadrature of 2 orders higher
-# than default, and for singular integrals, 1 order higher than default.
+# Set accuracy options. For regular integrals on pairs on elements,
+# use quadrature of 2 orders higher than default, and for singular
+# integrals, 1 order higher than default.
 
 accuracyOptions = lib.createAccuracyOptions()
 accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2)
