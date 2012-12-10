@@ -32,6 +32,9 @@ accuracyOptions = createAccuracyOptions()
 # Increase by 2 the order of quadrature rule used to approximate
 # integrals of regular functions on pairs on elements
 accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2)
+# Increase by 2 the order of quadrature rule used to approximate
+# integrals of regular functions on single elements
+accuracyOptions.singleRegular.setRelativeQuadratureOrder(2)
 quadStrategy = createNumericalQuadratureStrategy(
     "float64", "float64", accuracyOptions)
 
@@ -87,11 +90,9 @@ solFun.exportToVtk("cell_data", "neumann_data", "solution")
 
 # Compare the numerical and analytical solution
 
-exactSolFun = createGridFunction(
-    context, pwiseConstants, pwiseConstants, evalExactNeumannData)
-diff = solFun - exactSolFun
-
-relError = diff.L2Norm() / exactSolFun.L2Norm()
+evalOptions = createEvaluationOptions()
+absError, relError = estimateL2Error(solFun, evalExactNeumannData,
+                                     quadStrategy, evalOptions)
 print "Relative L^2 error:", relError
 
 # Prepare to evaluate the solution on an annulus outside the sphere
