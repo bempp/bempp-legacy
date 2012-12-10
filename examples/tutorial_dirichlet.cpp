@@ -23,6 +23,7 @@
 #include "assembly/context.hpp"
 #include "assembly/evaluation_options.hpp"
 #include "assembly/grid_function.hpp"
+#include "assembly/l2_norm.hpp"
 #include "assembly/numerical_quadrature_strategy.hpp"
 #include "assembly/surface_normal_independent_function.hpp"
 
@@ -123,6 +124,9 @@ int main()
     // Increase by 2 the order of quadrature rule used to approximate
     // integrals of regular functions on pairs on elements
     accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
+    // Increase by 2 the order of quadrature rule used to approximate
+    // integrals of regular functions on single elements
+    accuracyOptions.singleRegular.setRelativeQuadratureOrder(2);
     NumericalQuadratureStrategy<BFT, RT> quadStrategy(accuracyOptions);
 
     // Specify the assembly method. We want to use ACA
@@ -190,14 +194,20 @@ int main()
 
     // Compare the numerical and analytical solution on the grid
 
-    GridFunction<BFT, RT> exactSolFun(
-                make_shared_from_ref(context),
-                make_shared_from_ref(pwiseConstants),
-                make_shared_from_ref(pwiseConstants),
-                surfaceNormalIndependentFunction(ExactNeumannData()));
-    GridFunction<BFT, RT> diff = solFun - exactSolFun;
-    double relativeError = diff.L2Norm() / exactSolFun.L2Norm();
+    // GridFunction<BFT, RT> exactSolFun(
+    //             make_shared_from_ref(context),
+    //             make_shared_from_ref(pwiseConstants),
+    //             make_shared_from_ref(pwiseConstants),
+    //             surfaceNormalIndependentFunction(ExactNeumannData()));
+    CT absoluteError, relativeError;
+    estimateL2Error(
+                solFun, surfaceNormalIndependentFunction(ExactNeumannData()),
+                quadStrategy, absoluteError, relativeError);
     std::cout << "Relative L^2 error: " << relativeError << std::endl;
+
+    // GridFunction<BFT, RT> diff = solFun - exactSolFun;
+    // double relativeError = diff.L2Norm() / exactSolFun.L2Norm();
+    // std::cout << "Relative L^2 error: " << relativeError << std::endl;
 
     // Prepare to evaluate the solution on an annulus outside the sphere
 
