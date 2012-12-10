@@ -126,7 +126,7 @@ def createNumericalQuadratureStrategy(basisFunctionType, resultType, accuracyOpt
        - resultType (string)
             Type used to represent the values of integrals.
 
-       - accuracyOptions (AccuracyOptions)
+       - accuracyOptions (AccuracyOptions or AccuracyOptionsEx)
             Determines quadrature orders used to approximate different types of
             integrals. If set to None, default quadrature orders are used.
 
