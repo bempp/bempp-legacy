@@ -1162,7 +1162,7 @@ def createGridFunction(
     Example scalar-valued function defined in a 3D space that can be passed to
     'createGridFunction' with 'surfaceNormalDependent = False'::
 
-        def fun1(point, normal):
+        def fun1(point):
             x, y, z = point
             r = np.sqrt(x**2 + y**2 + z**2)
             return 2 * x * z / r**5 - y / r**3
