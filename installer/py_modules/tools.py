@@ -403,7 +403,7 @@ def installUpdates(root,config):
     os.chdir(build_dir+"/bempp")
     try:
         print "Running 'cmake' to reconfigure"
-        check_call("cmake .",shell=True)
+        check_call(cmake_exe + " .",shell=True)
     except subprocess.CalledProcessError, ex:
         os.chdir(cwd)
         raise Exception("cmake failed\n")
