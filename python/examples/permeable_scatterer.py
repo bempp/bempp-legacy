@@ -18,6 +18,7 @@ from bempp import lib
 
 accuracyOptions = lib.createAccuracyOptions()
 accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2)
+accuracyOptions.singleRegular.setRelativeQuadratureOrder(2)
 quadStrategy = lib.createNumericalQuadratureStrategy(
     "float64", "complex128", accuracyOptions)
 
