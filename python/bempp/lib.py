@@ -1184,11 +1184,13 @@ def createGridFunction(
         raise TypeError("createGridFunction: Exactly one of 'function', 'coefficients' or 'projections' must be supplied.")
 
     if coefficients is not None:
-        return _constructObjectTemplatedOnBasisAndResult("gridFunctionFromCoefficients",context.basisFunctionType(),
-                                                         context.resultType(),context,space,dualSpace,coefficients)
+        return _constructObjectTemplatedOnBasisAndResult(
+            core, "gridFunctionFromCoefficients", context.basisFunctionType(),
+            context.resultType(), context, space, dualSpace, coefficients)
     if projections is not None:
-        return _constructObjectTemplatedOnBasisAndResult("gridFunctionFromProjections",context.basisFunctionType(),
-                                                         context.resultType(),context,space,dualSpace,projections)
+        return _constructObjectTemplatedOnBasisAndResult(
+            core, "gridFunctionFromProjections", context.basisFunctionType(),
+            context.resultType(), context, space, dualSpace, projections)
 
     if surfaceNormalDependent:
         className = "SurfaceNormalDependentFunctor"
