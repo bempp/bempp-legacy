@@ -42,13 +42,16 @@ exportSingleDataSetToVtk(
     // TODO: figure out how to avoid this copy
     const arma::Mat<RealType> dataReal(arma::real(data));
     const arma::Mat<RealType> dataImag(arma::imag(data));
+    const arma::Mat<RealType> dataAbs(arma::abs(data));
 
     if (dataType == VtkWriter::CELL_DATA) {
         vtkWriter.addCellData(dataReal, dataLabel + std::string(".r"));
         vtkWriter.addCellData(dataImag, dataLabel + std::string(".i"));
+        vtkWriter.addCellData(dataAbs, dataLabel + std::string(".abs"));
     } else { // VERTEX_DATA
         vtkWriter.addVertexData(dataReal, dataLabel + std::string(".r"));
         vtkWriter.addVertexData(dataImag, dataLabel + std::string(".i"));
+        vtkWriter.addVertexData(dataAbs, dataLabel + std::string(".abs"));
     }
     if (filesPath)
         vtkWriter.pwrite(fileNamesBase, filesPath, ".", outputType);
