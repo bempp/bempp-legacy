@@ -220,6 +220,38 @@ typename ScalarTraits<BasisFunctionType>::RealType L2NormOfDifference(
     return sqrt(realPart(result));
 }
 
+template <typename BasisFunctionType, typename ResultType>
+void estimateL2Error(
+        const GridFunction<BasisFunctionType, ResultType>& gridFunction,
+        const Fiber::Function<ResultType>& refFunction,
+        const Fiber::QuadratureStrategy<
+            BasisFunctionType, ResultType, GeometryFactory>& quadStrategy,
+        const EvaluationOptions& options,
+        typename ScalarTraits<BasisFunctionType>::RealType& absError,
+        typename ScalarTraits<BasisFunctionType>::RealType& relError)
+{
+    typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType
+        MagnitudeType;
+    absError = L2NormOfDifference(gridFunction, refFunction,
+                                                quadStrategy, options);
+    MagnitudeType refNorm = L2NormOfDifference(0. *gridFunction, refFunction,
+                                               quadStrategy, options);
+    relError = absError / refNorm;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void estimateL2Error(
+        const GridFunction<BasisFunctionType, ResultType>& gridFunction,
+        const Fiber::Function<ResultType>& refFunction,
+        const Fiber::QuadratureStrategy<
+            BasisFunctionType, ResultType, GeometryFactory>& quadStrategy,
+        typename ScalarTraits<BasisFunctionType>::RealType& absError,
+        typename ScalarTraits<BasisFunctionType>::RealType& relError)
+{
+    estimateL2Error(gridFunction, refFunction, quadStrategy,
+                    EvaluationOptions(), absError, relError);
+}
+
 #define INSTANTIATE_FUNCTION(BASIS, RESULT) \
     template \
     ScalarTraits<BASIS>::RealType L2NormOfDifference( \
@@ -227,7 +259,24 @@ typename ScalarTraits<BasisFunctionType>::RealType L2NormOfDifference(
             const Fiber::Function<RESULT>& refFunction, \
             const Fiber::QuadratureStrategy< \
                 BASIS, RESULT, GeometryFactory>& quadStrategy, \
-            const EvaluationOptions& options)
+            const EvaluationOptions& options); \
+    template \
+    void estimateL2Error( \
+            const GridFunction<BASIS, RESULT>& gridFunction, \
+            const Fiber::Function<RESULT>& refFunction, \
+            const Fiber::QuadratureStrategy< \
+                BASIS, RESULT, GeometryFactory>& quadStrategy, \
+            const EvaluationOptions& options, \
+            ScalarTraits<BASIS>::RealType& absError, \
+            ScalarTraits<BASIS>::RealType& relError); \
+    template \
+    void estimateL2Error( \
+            const GridFunction<BASIS, RESULT>& gridFunction, \
+            const Fiber::Function<RESULT>& refFunction, \
+            const Fiber::QuadratureStrategy< \
+                BASIS, RESULT, GeometryFactory>& quadStrategy, \
+            ScalarTraits<BASIS>::RealType& absError, \
+            ScalarTraits<BASIS>::RealType& relError)
 
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_FUNCTION);
 
