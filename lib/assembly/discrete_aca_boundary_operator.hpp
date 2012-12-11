@@ -107,14 +107,14 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > scaledAcaOperator(
 //        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op2,
 //        double eps, int maximumRank);
 
-/** \brief LU Inverse of a discrete boundary operator stored as a H-matrix.
+/** \brief LU inverse of a discrete boundary operator stored as a H-matrix.
  *
- *  \param[in] op Discrete boundary operator for which to compute the LU Inverse.
+ *  \param[in] op Discrete boundary operator for which to compute the LU inverse.
  *  \param[in] delta Approximation accuracy of the inverse.
  *
  *  \return A shared pointer to a newly allocated discrete boundary operator
  *  representing the (approximate) LU inverse of \p op and stored as
- *  an (approximate) LU decomposition of \p. */
+ *  an (approximate) LU decomposition of \p op. */
 template <typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> > acaOperatorApproximateLuInverse(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,

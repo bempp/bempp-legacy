@@ -35,7 +35,7 @@ namespace Fiber
 {
 
 /** \brief .
-
+ *
  *  \deprecated This class is deprecated and superseded by
  *  ModifiedHelmholtz3dHypersingularIntegrandFunctor2. */
 template <typename BasisFunctionType_, typename KernelType_,

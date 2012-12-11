@@ -107,11 +107,11 @@ public:
     /** \brief Constructor.
      *
      *  \param[in] domain
-     *    Function space being the domain of the operator.
+     *    %Function space being the domain of the operator.
      *  \param[in] range
-     *    Function space being the range of the operator.
+     *    %Function space being the range of the operator.
      *  \param[in] dualToRange
-     *    Function space dual to the the range of the operator.
+     *    %Function space dual to the the range of the operator.
      *  \param[in] label
      *    Textual label of the operator. If empty, a unique label is generated
      *    automatically.
