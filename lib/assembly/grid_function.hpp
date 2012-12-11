@@ -295,7 +295,12 @@ public:
      *  setProjections() should be used. */
     BEMPP_DEPRECATED void setProjections(const arma::Col<ResultType>& projects);
 
-    /** \brief Return the \f$L^2\f$-norm of the grid function. */
+    /** \brief Return the \f$L^2\f$-norm of the grid function.
+     *
+     *  \note For better accuracy, prefer to use L2NormOfDifference() or
+     *  estimateL2Error() to calculate the norm of the difference between a grid
+     *  function and a function defined by an analytical expression.
+     */
     MagnitudeType L2Norm() const;
 
     const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;

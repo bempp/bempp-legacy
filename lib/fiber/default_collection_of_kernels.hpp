@@ -26,7 +26,8 @@
 namespace Fiber
 {
 
-/** \brief Default implementation of a collection of kernels.
+/** \ingroup weak_form_elements
+ *  \brief Default implementation of a collection of kernels.
 
     This class implements the interface defined by CollectionOfKernels using
     a functor object to evaluate the kernels at specific point pairs.

@@ -37,7 +37,8 @@ template <typename T> class CollectionOf4dArrays;
 template <typename CoordinateType> class GeometricalData;
 /** \endcond */
 
-/** \brief An integral representing the weak form of an integral operator.
+/** \ingroup weak_form_elements
+ *  \brief An integral representing the weak form of an integral operator.
  *
  *  This class represents the integral
  *
@@ -47,7 +48,7 @@ template <typename CoordinateType> class GeometricalData;
  *  where the integrand \f$f(x, y)\f$ may depend on any number of kernels, test
  *  and trial basis function transformations, and on any geometrical data
  *  related to the points \f$x\f$ and \f$y\f$ (e.g. their global coordinates or
- *  the unit vector normal to \f$\Gamma\f$ and \f$Sigma\f$ at these points).
+ *  the unit vector normal to \f$\Gamma\f$ and \f$\Sigma\f$ at these points).
  *
  *  \tparam BasisFunctionType_
  *    Type of the values of the (components of the) basis functions occurring
@@ -102,8 +103,9 @@ public:
         because a weak form contains the double-layer-potential boundary
         operator, which requires the normal to the trial element. It is not
         necessary, either, to ever add the flag INTEGRATION_ELEMENTS as
-        integration elements (see ... for the definition) are automatically
-        included in the list of geometrical data required by integrals.
+        integration elements (see Bempp::Geometry::getIntegrationElements() for
+        their definition) are automatically included in the list of geometrical
+        data required by integrals.
      */
     virtual void addGeometricalDependencies(
             size_t& testGeomDeps, size_t& trialGeomDeps) const = 0;
@@ -115,7 +117,7 @@ public:
      *  \f[ \int_\Gamma \int_\Sigma I(x, y)\, d\Gamma(x)\, d\Sigma(y) =
      *      \int_{\hat\Gamma} \int_{\hat\Sigma} I(x(\hat x), y(\hat y)) \,
      *      \mu(\hat x) \, \nu(\hat y) \,
-     *      d\hat\Gamma(\hat x)\, d\hat\Sigma(\hat y) \approx
+     *      d\hat\Gamma(\hat x)\, d\hat\Sigma(\hat y) \approx1
      *      \sum_{p=1}^P \sum_{q=1}^Q w_p w_q \, I(x(\hat x_p), y(\hat y_q)) \,
      *      \mu(\hat x_p) \, \nu(\hat y_q), \f]
      *  where \f$\Gamma\f$ and \f$\Sigma\f$ are the test and trial elements,

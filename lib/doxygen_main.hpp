@@ -101,6 +101,27 @@
  *  local (element-by-element) assembly.
  */
 
+/** \defgroup quadrature Quadrature
+ *  \ingroup fiber
+ *
+ *  This submodule contains classes responsible for evaluation of integrals.
+ */
+
+/** \defgroup weak_form_elements Weak-form elements
+ *  \ingroup fiber
+ *
+ *  This submodule defines interfaces of constituent elements of weak forms of
+ *  integral operators. It also contains default implementations of these
+ *  interfaces.
+ */
+
+/** \defgroup functors
+ *  \ingroup fiber
+ *
+ *  This submodule contains functor classes evaluating elements of the weak
+ *  forms of specific operators at single points or pairs of points.
+ */
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /** \defgroup linalg Linear algebra

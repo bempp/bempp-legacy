@@ -26,7 +26,8 @@
 namespace Fiber
 {
 
-/** \brief Default implementation of the TestKernelTrialIntegral interface.
+/** \ingroup weak_form_elements
+ *  \brief Default implementation of the TestKernelTrialIntegral interface.
 
   This class implements the interface defined by TestKernelTrialIntegral
   using a functor object to evaluate the integrand \f$I(x, y)\f$ of an integral

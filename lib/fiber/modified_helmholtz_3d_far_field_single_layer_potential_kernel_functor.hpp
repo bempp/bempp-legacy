@@ -30,7 +30,7 @@ namespace Fiber
 {
 
 /** \ingroup modified_helmholtz_3d
- *  \ingroup fiber
+ *  \ingroup functors
  *  \brief Kernel functor used to calculate part of the far-field pattern of a
  *  radiating solution of the modified Helmholtz equation in 3D.
  *

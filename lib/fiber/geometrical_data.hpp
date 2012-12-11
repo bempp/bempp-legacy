@@ -30,6 +30,7 @@
 namespace Fiber
 {
 
+/** \brief Types of geometrical data. */
 enum GeometricalDataType
 {
     GLOBALS = 0x0001,

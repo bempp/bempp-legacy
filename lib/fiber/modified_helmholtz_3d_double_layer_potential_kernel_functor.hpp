@@ -30,7 +30,7 @@ namespace Fiber
 {
 
 /** \ingroup modified_helmholtz_3d
- *  \ingroup fiber
+ *  \ingroup functors
  *  \brief Double-layer-potential kernel functor for the modified Helmholtz
  *  equation in 3D.
  *

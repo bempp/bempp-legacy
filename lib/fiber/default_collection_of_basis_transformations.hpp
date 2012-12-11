@@ -26,7 +26,8 @@
 namespace Fiber
 {
 
-/** \brief Default implementation of a collection of basis function transformations.
+/** \ingroup weak_form_elements
+ *  \brief Default implementation of a collection of basis function transformations.
 
     This class implements the interface defined by
     CollectionOfBasisTransformations using a functor object to evaluate the

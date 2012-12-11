@@ -74,6 +74,8 @@ public:
 
 // Note: in C++11 we'll be able to make a "template typedef", or more precisely
 // a using declaration, instead of this spurious inheritance
+/** \ingroup functors
+ *  \brief Functor calculating the surface curl of a scalar field in 3D. */
 template <typename CoordinateType_>
 class SurfaceCurl3dFunctor :
         public ElementaryBasisTransformationFunctorWrapper<

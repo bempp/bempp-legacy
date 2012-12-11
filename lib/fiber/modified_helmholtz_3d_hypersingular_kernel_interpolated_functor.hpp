@@ -32,7 +32,7 @@ namespace Fiber
 {
 
 /** \ingroup modified_helmholtz_3d
- *  \ingroup fiber
+ *  \ingroup functors
  *  \brief Hypersingular kernel collection functor for the modified Helmholtz
  *  equation in 3D.
  *
