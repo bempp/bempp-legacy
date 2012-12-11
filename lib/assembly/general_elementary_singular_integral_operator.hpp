@@ -26,6 +26,35 @@
 namespace Bempp
 {
 
+/** \ingroup abstract_boundary_operators
+ *  \brief Standard implementation of an elementary singular integral operator.
+ *
+ *  This class provides an implementation of the interface defined by
+ *  ElementarySingularIntegralOperator that is sufficient for most purposes. The
+ *  constructor takes four functor objects representing the four elements of the
+ *  operator's weak form (collection of kernels, collections of test and trial
+ *  basis function transformations, and the weak form integrand). These functors
+ *  are used to construct instances of appropriate instantiations of
+ *  DefaultCollectionOfKernels, DefaultCollectionOfBasisTransformations and
+ *  DefaultTestKernelTrialIntegral. These objects are stored as private member
+ *  variables and are returned by the implementations of the virtual methods
+ *  kernels(), testTransformations(), trialTransformations() and integral().
+ *
+ *  \tparam BasisFunctionType_
+ *    Type of the values of the (components of the) basis functions into
+ *    which functions acted upon by the operator are expanded.
+ *  \tparam KernelType_
+ *    Type of the values of the (components of the) kernel functions occurring
+ *    in the integrand of the operator.
+ *  \tparam ResultType_
+ *    Type used to represent elements of the weak form of the operator.
+ *
+ *  All three template parameters can take the following values: \c float, \c
+ *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>. All
+ *  types must have the same precision: for instance, mixing \c float with
+ *  <tt>std::complex<double></tt> is not allowed. If either \p
+ *  BasisFunctionType_ or \p KernelType_ is a complex type, then \p ResultType_
+ *  must be set to the same type. */
 template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
 class GeneralElementarySingularIntegralOperator :
         public ElementarySingularIntegralOperator<
@@ -51,6 +80,50 @@ public:
     /** \copydoc ElementaryIntegralOperator::TestKernelTrialIntegral */
     typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
+    /** \brief Constructor
+
+     *  \param[in] domain
+     *    %Function space being the domain of the operator.
+     *  \param[in] range
+     *    %Function space being the range of the operator.
+     *  \param[in] dualToRange
+     *    %Function space dual to the the range of the operator.
+     *  \param[in] label
+     *    Textual label of the operator. If empty, a unique label is generated
+     *    automatically.
+     *  \param[in] symmetry
+     *    Symmetry of the weak form of the operator. Can be any combination of
+     *    the flags defined in the enumeration type Symmetry.
+     *  \param[in] kernelFunctor
+     *    A functor object to be used to evaluate the collection of kernels of
+     *    this operator at a single pair of points. The KernelFunctor class
+     *    must provide the interface defined in the documentation of
+     *    DefaultCollectionOfKernels.
+     *  \param[in] testTransformations
+     *    A functor object to be used to evaluate the collection of test basis
+     *    function transformations at a single point. The
+     *    TestTransformationsFunctor class must provide the interface defined in
+     *    the documentation of DefaultCollectionOfBasisTransformations.
+     *  \param[in] trialTransformations
+     *    A functor object to be used to evaluate the collection of trial basis
+     *    function transformations at a single point. The
+     *    TrialTransformationsFunctor class must provide the interface defined
+     *    in the documentation of DefaultCollectionOfBasisTransformations.
+     *  \param[in] integrandFunctor
+     *    A functor object to be used to evaluate the integrand of the weak form
+     *    at a single pair of points. The IntegrandFunctor class must provide
+     *    the interface defined in the documentation of
+     *    DefaultTestKernelTrialIntegral.
+     *
+     *  None of the shared pointers may be null and the spaces \p range and \p
+     *  dualToRange must be defined on the same grid, otherwise an exception is
+     *  thrown.
+     *
+     *  The implementation of this constructor is contained in
+     *  general_elementary_singular_integral_operator_imp.hpp. This
+     *  header must be included in any file creating a new
+     *  GeneralElementarySingularIntegralOperator object.
+     */
     template <typename KernelFunctor,
               typename TestTransformationsFunctor,
               typename TrialTransformationsFunctor,
