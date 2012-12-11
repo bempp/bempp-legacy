@@ -172,7 +172,7 @@ double overallEps(
         const Fiber::_2dArray<shared_ptr<
             const DiscreteAcaBoundaryOperator<ValueType> > >& acaBlocks)
 {
-    double result = 0.;
+    double result = std::numeric_limits<double>::max();
     for (size_t col = 0; col < acaBlocks.extent(1); ++col)
         for (size_t row = 0; row < acaBlocks.extent(0); ++row)
             if (acaBlocks(row, col))
