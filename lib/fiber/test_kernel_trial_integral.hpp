@@ -41,7 +41,7 @@ template <typename CoordinateType> class GeometricalData;
  *
  *  This class represents the integral
  *
- *  \[ \int_\Gamma \int_\Sigma I(x, y)\, d\Gamma(x)\, d\Sigma(y), \]
+ *  \f[ \int_\Gamma \int_\Sigma I(x, y)\, d\Gamma(x)\, d\Sigma(y), \f]
  *
  *  defined on a pair of test and trial elements \f$(\Gamma, \Sigma)\f$,
  *  where the integrand \f$f(x, y)\f$ may depend on any number of kernels, test

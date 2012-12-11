@@ -58,7 +58,7 @@ class Grid;
 template <int codim> class Entity;
 template <typename BasisFunctionType> class Space;
 template <typename BasisFunctionType, typename ResultType> class Context;
-/** \cond endcond */
+/** \endcond */
 
 using Fiber::Function;
 
@@ -90,7 +90,7 @@ public:
      *                          strategy can be retrieved.
      *  \param[in] space        Function space to expand the grid function in.
      *  \param[in] coefficients
-     *    Vector of length <tt>space.globalDofCount()</tt> containing the expansion
+     *    %Vector of length <tt>space.globalDofCount()</tt> containing the expansion
      *    coefficients of the grid function in the space \p space.
      *
      *  This constructor builds a grid function from its coefficients in a
@@ -107,7 +107,7 @@ public:
      *  \param[in] space        Function space to expand the grid function in.
      *  \param[in] dualSpace    Function space dual to \p space.
      *  \param[in] projections
-     *    Vector of length <tt>dualSpace.globalDofCount()</tt> containing the
+     *    %Vector of length <tt>dualSpace.globalDofCount()</tt> containing the
      *    scalar products of the grid function and the basis functions of the
      *    space \p dualSpace.
      *
@@ -130,12 +130,16 @@ public:
      *                          <tt>space.grid()</tt> will be used to construct
      *                          the new grid function.
      *
-     *  This constructor builds a grid function by approximating the function
-     *  \p function in the basis of space \p space.
-     *
-     *  \p space and \p dualSpace must be defined on the same grid.
-     *
-     *  \todo Explain the role of \p dualSpace. */
+     *  This constructor builds a grid function belonging to the space
+     *  \p space and approximating the function \f$f\f$ defined by the
+     *  object \p function. The approximate coefficients \f$\{f_i\}\f$
+     *  of \p function in the basis \f$\{\phi_i\}\f$ of \p space are
+     *  determined by solving the equation
+     *  \f[ \sum_j \langle \psi_i, \phi_j \rangle f_i =
+     *      \langle \psi_i, f \rangle \f]
+     *  in the least-squares sense, with \f$\{\psi_i\}\f$ denoting the
+     *  set of basis functions of \p dualSpace. The two spaces must be
+     *  defined on the same grid. */
     GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
                  const shared_ptr<const Space<BasisFunctionType> >& space,
                  const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
@@ -184,10 +188,10 @@ public:
      *                          strategy can be retrieved.
      *  \param[in] space        Function space to expand the grid function in.
      *  \param[in] dualSpace    Function space dual to \p space.
-     *  \param[in] coefficients Vector of length <tt>space.globalDofCount()</tt>
+     *  \param[in] coefficients %Vector of length <tt>space.globalDofCount()</tt>
      *                          containing the expansion coefficients of the grid
      *                          function in the space \p space.
-     *  \param[in] projections  Vector of length <tt>dualSpace.globalDofCount()</tt>
+     *  \param[in] projections  %Vector of length <tt>dualSpace.globalDofCount()</tt>
      *                          containing the scalar products of the grid
      *                          function and the basis functions of the space
      *                          \p dualSpace.
@@ -235,14 +239,14 @@ public:
      * uninitialized GridFunction object. */
     int componentCount() const;
 
-    /** \brief Vector of expansion coefficients of this function in the basis
+    /** \brief %Vector of expansion coefficients of this function in the basis
      *  of its expansion space.
      *
      *  An exception is thrown if this function is called on an uninitialized
      *  GridFunction object (one constructed with the default constructor). */
     const arma::Col<ResultType>& coefficients() const;
 
-    /** \brief Vector of scalar products of this function with the basis
+    /** \brief %Vector of scalar products of this function with the basis
      *  functions of \p dualSpace.
      *
      *  \p dualSpace must be defined on the same grid as the space in which the
@@ -253,7 +257,7 @@ public:
     arma::Col<ResultType> projections(
             const Space<BasisFunctionType>& dualSpace_) const;
 
-    /** \brief Vector of scalar products of this function with the basis
+    /** \brief %Vector of scalar products of this function with the basis
      *  functions of its dual space.
      *
      *  \deprecated This function is provided only for backward compatibility
@@ -299,7 +303,7 @@ public:
     /** \brief Retrieve the expansion coefficients of this function on a single element.
      *
      *  \param[in] element An element belonging to the grid <tt>space.grid()</tt>.
-     *  \param[out] coeffs Vector of the expansion coefficients of this function
+     *  \param[out] coeffs %Vector of the expansion coefficients of this function
      *                     corresponding to the basis functions of the primal space
      *                     living on element \p element.
      *

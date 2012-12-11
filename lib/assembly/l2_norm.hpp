@@ -10,16 +10,20 @@
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
 template <typename ValueType> class Function;
+/** \endcond */
 
 } // namespace Fiber
 
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
 class EvaluationOptions;
 class GeometryFactory;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
+/** \endcond */
 
 /** \brief Calculate the \f$L^2\f$-norm of the difference between a
  *  GridFunction and a Function.

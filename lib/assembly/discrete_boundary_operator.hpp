@@ -89,7 +89,7 @@ public:
      *
      *  where \c L is the linear operator represented by this object.
      *
-     *  \param[in] trans
+     *  \param[in] M_trans
      *    Determines whether what is applied is the "bare" operator, its
      *    transpose, conjugate or conjugate transpose.
      *  \param[in] x_in
@@ -162,13 +162,11 @@ public:
      *  supported by this function.
      *
      *  \param[in] eps
-
-     *    The \f$epsilon\f$ parameter controlling the accuracy of H-matrix
+     *    The \f$\epsilon\f$ parameter controlling the accuracy of H-matrix
      *    addition in case this operation is needed to construct the H-matrix
      *    representation of the operator. If \p eps is negative (default), it
-     *    is set to the smaller of the values of $\epsilon$ specified during
+     *    is set to the smaller of the values of \f$\epsilon\f$ specified during
      *    the creation of the two H-matrices to be added.
-
      *  \param[in] maximumRank
      *    Maximum rank of blocks to be considered low rank when adding two
      *    H-Matrices. If \p maximumRank is negative, it is set to the larger of
