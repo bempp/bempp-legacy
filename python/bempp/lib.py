@@ -1121,7 +1121,7 @@ def __gridFunctionFromFunctor(
     return result
 
 def createGridFunction(
-        context, space, dualSpace,
+        context, space, dualSpace=None,
         function=None, surfaceNormalDependent=False, coefficients=None, projections=None):
     """
     Create and return a GridFunction object with values determined by a Python
@@ -1135,11 +1135,11 @@ def createGridFunction(
        - dualSpace (Space)
             Function space dual to 'space'.
        - coefficients (Vector)
-            An explicit vector of function values on the degrees of freedom
-            associated with the space.
+            A vector of the coefficients of the function in the basis of space
+            'space'.
        - projections (Vector)
-            An explicit vector of projection values, must match the number of
-            degrees of freedom of 'dualSpace'.
+            A vector of projections of the function on the basis of space
+            'dualSpace'.
        - function (a Python callable object)
             Function object whose values on 'space.grid()' will be used to
             construct the new grid function. If 'surfaceNormalDependent' is set
@@ -1155,9 +1155,25 @@ def createGridFunction(
             Indicates whether the grid function depends on the unit vector
             normal to the grid or not.
 
-    The spaces 'space' and 'dualSpace' must be defined on the same grid and
-    have the same codomain dimension. Usually both parameters can be set to the
-    same Space object.
+    If both the 'space' and 'dualSpace' are given, they must be defined on the
+    same grid and have the same codomain dimension.
+
+    This function can be called with three different sets of parameters.
+
+    Variant 1: construction of a grid function from a Python function::
+
+        createGridFunction(context, space, dualSpace, function,
+                           surfaceNormalDependent)
+
+    Variant 2: construction of a grid function from the vector of its
+    coefficients in the basis of the space 'space'::
+
+        createGridFunction(context, space, coefficients=coefficients)
+
+    Variant 3: construction of a grid function from the vector of its
+    projections on the basis functions of the space 'dualSpace'::
+
+        createGridFunction(context, space, dualSpace, projections=projections)
 
     Example scalar-valued function defined in a 3D space that can be passed to
     'createGridFunction' with 'surfaceNormalDependent = False'::
@@ -1181,7 +1197,16 @@ def createGridFunction(
     params = [function,coefficients,projections]
     params_active = sum([0 if p is None else 1 for p in params])
     if params_active != 1 :
-        raise TypeError("createGridFunction: Exactly one of 'function', 'coefficients' or 'projections' must be supplied.")
+        raise ValueError("createGridFunction(): Exactly one of 'function', "
+                         "'coefficients' or 'projections' must be supplied")
+    if function is not None and dualSpace is None:
+        raise ValueError("createGridFunction(): You must set the dualSpace "
+                         "parameter to a valid Space object when constructing "
+                         "a grid function from a Python function")
+    if projections is not None and dualSpace is None:
+        raise ValueError("createGridFunction(): You must set the dualSpace "
+                         "parameter to a valid Space object when constructing "
+                         "a grid function from a vector of projections")
 
     if coefficients is not None:
         return _constructObjectTemplatedOnBasisAndResult(
