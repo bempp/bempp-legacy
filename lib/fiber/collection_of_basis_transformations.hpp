@@ -34,7 +34,8 @@ template <typename ValueType> class BasisData;
 template <typename CoordinateType> class GeometricalData;
 /** \endcond */
 
-/** \brief Collection of kernels.
+/** \ingroup weak_form_elements
+ *  \brief Collection of basis function transformations.
  *
  *  This class represents a collection of one or more basis function
  *  transformations. A basis function transformation is a function mapping a

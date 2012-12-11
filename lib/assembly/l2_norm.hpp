@@ -34,6 +34,10 @@ template <typename BasisFunctionType, typename ResultType> class GridFunction;
  *  The quadrature strategy \p quadStrategy is used to evaluate any
  *  necessary integrals; the \p options object controls the level of
  *  parallelism.
+ *
+ *  \note If you use the numerical quadrature strategy, you may need to increase
+ *  the quadrature order for regular integrals on single elements by at least 2
+ *  to ensure that this function produces results with sufficient accuracy.
  */
 template <typename BasisFunctionType, typename ResultType>
 typename ScalarTraits<BasisFunctionType>::RealType L2NormOfDifference(
@@ -53,7 +57,12 @@ typename ScalarTraits<BasisFunctionType>::RealType L2NormOfDifference(
  *  The quadrature strategy \p quadStrategy is used to evaluate any
  *  necessary integrals; the \p options object controls the level of
  *  parallelism. The results are returned in the output arguments \p
- *  absError and \p relError. */
+ *  absError and \p relError.
+ *
+ *  \note If you use the numerical quadrature strategy, you may need to increase
+ *  the quadrature order for regular integrals on single elements by at least 2
+ *  to ensure that this function produces results with sufficient accuracy.
+ */
 template <typename BasisFunctionType, typename ResultType>
 void estimateL2Error(
         const GridFunction<BasisFunctionType, ResultType>& gridFunction,

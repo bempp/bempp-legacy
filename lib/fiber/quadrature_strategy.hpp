@@ -177,7 +177,7 @@ private:
             const ParallelizationOptions& parallelizationOptions) const = 0;
 };
 
-/** \ingroup fiber
+/** \ingroup quadrature
  *  \brief Base class for quadrature strategies.
  *
  *  A quadrature strategy provides functions constructing local assemblers used

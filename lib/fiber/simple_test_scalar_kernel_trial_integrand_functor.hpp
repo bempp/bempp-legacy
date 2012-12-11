@@ -32,6 +32,13 @@
 namespace Fiber
 {
 
+/** \ingroup functors
+ *  \brief Functor evaluating the integrand of the simplest boundary integral operator.
+ *
+ *  This functor evaluates the integrand having the form of the product of a
+ *  single test basis function transformation, a single kernel and a single
+ *  trial basis function transformation.
+ */
 template <typename BasisFunctionType_, typename KernelType_,
           typename ResultType_>
 class SimpleTestScalarKernelTrialIntegrandFunctor

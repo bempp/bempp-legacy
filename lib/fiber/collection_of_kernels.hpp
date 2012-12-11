@@ -36,7 +36,8 @@ template <typename T> class CollectionOf4dArrays;
 template <typename CoordinateType> class GeometricalData;
 /** \endcond */
 
-/** \brief Collection of kernels.
+/** \ingroup weak_form_elements
+ *  \brief Collection of kernels.
  *
  *  This class represents a collection of one or more integral operator
  *  *kernels*. A kernel is a function mapping a pair of points \f$(x, y)\f$

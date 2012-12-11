@@ -30,7 +30,7 @@ namespace Fiber
 {
 
 /** \ingroup laplace_3d
- *  \ingroup fiber
+ *  \ingroup functors
  *  \brief Adjoint double-layer-potential kernel functor for the Laplace equation in 3D.
  *
  *  \tparam ValueType Type used to represent the values of the kernel. It can
