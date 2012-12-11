@@ -45,7 +45,7 @@ namespace Bempp
  *  operator for Laplace and Helmholtz equation as defined in standard
  *  texts. Hence, for example, the discrete weak forms of the
  *  operators B and C in the code snippet below are numerically
- *  identical:
+ *  identical (at least to within quadrature accuracy):
  *  \code
     BoundaryOperator<BFT, RT> A =
         helmholtz3dDoubleLayerBoundaryOperator<BFT>(
