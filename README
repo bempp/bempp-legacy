@@ -59,8 +59,8 @@ New features:
   GridFunction objects (previously it was only used during potential
   evaluation).
 
-This version maintains source-level (but not binary-level) compatibility with
-versions 1.0.x.
+This version maintains source-level (but not binary-level) backward
+compatibility with versions 1.0.x.
 
 1.0.2 (12 November 2012)
 ------------------------
