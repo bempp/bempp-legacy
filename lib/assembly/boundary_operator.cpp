@@ -318,6 +318,32 @@ BoundaryOperator<BasisFunctionType, ResultType> adjoint(
                 op.context(), boost::make_shared<Adjoint>(op));
 }
 
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>& throwIfUninitialized(
+        BoundaryOperator<BasisFunctionType, ResultType>& op,
+        std::string message)
+{
+    if (op.isInitialized())
+        return op;
+    else
+        if (message.empty())
+            message = "Detected an uninitialized BoundaryOperator object";
+    throw std::invalid_argument(message);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+const BoundaryOperator<BasisFunctionType, ResultType>& throwIfUninitialized(
+        const BoundaryOperator<BasisFunctionType, ResultType>& op,
+        std::string message)
+{
+    if (op.isInitialized())
+        return op;
+    else
+        if (message.empty())
+            message = "Detected an uninitialized BoundaryOperator object";
+    throw std::invalid_argument(message);
+}
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(BoundaryOperator);
 
 #define INSTANTIATE_FREE_FUNCTIONS(BASIS, RESULT) \
@@ -335,7 +361,11 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(BoundaryOperator);
     const BoundaryOperator<BASIS, RESULT>& op, \
     const BoundaryOperator<BASIS, RESULT>& fun); \
     template BoundaryOperator<BASIS, RESULT> adjoint( \
-    const BoundaryOperator<BASIS, RESULT>& op)
+    const BoundaryOperator<BASIS, RESULT>& op); \
+    template BoundaryOperator<BASIS, RESULT>& throwIfUninitialized( \
+            BoundaryOperator<BASIS, RESULT>& op, std::string message); \
+    template const BoundaryOperator<BASIS, RESULT>& throwIfUninitialized( \
+            const BoundaryOperator<BASIS, RESULT>& op, std::string message)
 #define INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(BASIS, RESULT, SCALAR) \
     template BoundaryOperator<BASIS, RESULT> operator*( \
     const BoundaryOperator<BASIS, RESULT>& op, const SCALAR& scalar); \

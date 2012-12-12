@@ -168,12 +168,14 @@ public:
                ResultType alpha, ResultType beta) const;
 
 private:
+    /** \cond PRIVATE */
     shared_ptr<const Context<BasisFunctionType, ResultType> > m_context;
     shared_ptr<const AbstractBoundaryOperator<BasisFunctionType, ResultType> >
     m_abstractOp;
     typedef shared_ptr<const DiscreteBoundaryOperator<ResultType> >
         ConstWeakFormContainer;
     mutable shared_ptr<ConstWeakFormContainer> m_weakFormContainer;
+    /** \endcond */
 };
 
 /** \brief Return a BoundaryOperator identical to the operand. */
@@ -273,6 +275,25 @@ BoundaryOperator<BasisFunctionType, ResultType> operator*(
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType> adjoint(
         const BoundaryOperator<BasisFunctionType, ResultType>& op);
+
+/** \brief Check whether a BoundaryOperator object is initialized.
+ *
+ *  This function checks whether the BoundaryOperator \p op is initialized. If
+ *  so, it returns a reference to \p op, otherwise it throws a
+ *  <tt>std::invalid_argument</tt> exception with message \p message (or a
+ *  default message if \p message is left empty). */
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>& throwIfUninitialized(
+        BoundaryOperator<BasisFunctionType, ResultType>& op,
+        std::string message = "");
+
+/** \brief Check whether a BoundaryOperator object is initialized.
+ *
+ *  \overload */
+template <typename BasisFunctionType, typename ResultType>
+const BoundaryOperator<BasisFunctionType, ResultType>& throwIfUninitialized(
+        const BoundaryOperator<BasisFunctionType, ResultType>& op,
+        std::string message = "");
 
 } // namespace Bempp
 
