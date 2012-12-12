@@ -53,7 +53,13 @@ ScaledAbstractBoundaryOperator(
          boundaryOp.range(), boundaryOp.dualToRange(),
          "" + toString(weight) + " * (" + boundaryOp.label() + ")",
          symmetry & AUTO_SYMMETRY ?
-             autoSymmetry(boundaryOp.abstractOperator()->symmetry(), weight) :
+             autoSymmetry(
+                 throwIfUninitialized(boundaryOp,
+                                      "ScaledAbstractBoundaryOperator::"
+                                      "ScaledAbstractBoundaryOperator(): "
+                                      "the boundary operator to be scaled must "
+                                      "be initialized"
+                                      ).abstractOperator()->symmetry(), weight) :
              symmetry),
     m_weight(weight), m_operator(boundaryOp)
 {

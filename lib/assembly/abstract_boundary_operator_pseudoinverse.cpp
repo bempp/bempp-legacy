@@ -60,7 +60,12 @@ AbstractBoundaryOperatorPseudoinverse(
              // in the body of the constructor
              operatorToInvert.range(),
          "pinv(" + operatorToInvert.label() + ")",
-         operatorToInvert.abstractOperator()->symmetry()),
+         throwIfUninitialized(operatorToInvert,
+                              "AbstractBoundaryOperatorPseudoinverse::"
+                              "AbstractBoundaryOperatorPseudoinverse(): "
+                              "the boundary operator to be inverted must be "
+                              "initialized"
+                              ).abstractOperator()->symmetry()),
     m_operator(operatorToInvert),
     m_id(boost::make_shared<AbstractBoundaryOperatorPseudoinverseId<
          BasisFunctionType, ResultType> >(
