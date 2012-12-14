@@ -26,7 +26,4 @@
 // Uncomment if AHMED was compiled with STD_CMPLX defined
 #define AHMED_USES_STD_COMPLEX
 
-// Uncomment if you have a legacy version of AHMED (older than 1.0)
-// #define AHMED_PRERELEASE
-
 #endif

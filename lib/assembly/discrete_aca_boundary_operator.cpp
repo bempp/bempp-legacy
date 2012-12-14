@@ -295,23 +295,13 @@ asMatrix() const
             unit(col - 1) = 0.;
         unit(col) = 1.;
         if (m_symmetry & HERMITIAN)
-#ifdef AHMED_PRERELEASE
-            multaHSymvec
-#else
-            mltaHeHVec
-#endif
-                (1., nonconstBlockCluster, m_blocks.get(),
-                      ahmedCast(unit.memptr()),
-                      ahmedCast(permutedOutput.colptr(col)));
+            mltaHeHVec(1., nonconstBlockCluster, m_blocks.get(),
+                       ahmedCast(unit.memptr()),
+                       ahmedCast(permutedOutput.colptr(col)));
         else
-#ifdef AHMED_PRERELEASE
-            multaHvec
-#else
-            mltaGeHVec
-#endif
-                (1., nonconstBlockCluster, m_blocks.get(),
-                      ahmedCast(unit.memptr()),
-                      ahmedCast(permutedOutput.colptr(col)));
+            mltaGeHVec(1., nonconstBlockCluster, m_blocks.get(),
+                       ahmedCast(unit.memptr()),
+                       ahmedCast(permutedOutput.colptr(col)));
     }
 
     arma::Mat<ValueType> output(nRows, nCols );
@@ -427,18 +417,11 @@ applyBuiltInImpl(const TranspositionMode trans,
                  const ValueType alpha,
                  const ValueType beta) const
 {
-#ifdef AHMED_PRERELEASE
-    if (trans != NO_TRANSPOSE)
-        throw std::runtime_error(
-                "DiscreteAcaBoundaryOperator::applyBuiltInImpl(): "
-                "transposition modes other than NO_TRANSPOSE are not supported");
-#else
     if (trans != NO_TRANSPOSE && trans != TRANSPOSE && trans != CONJUGATE_TRANSPOSE)
         throw std::runtime_error(
                 "DiscreteAcaBoundaryOperator::applyBuiltInImpl(): "
                 "transposition modes other than NO_TRANSPOSE and "
                 "CONJUGATE_TRANSPOSE are not supported");
-#endif
     bool transposed = (trans & TRANSPOSE);
 
     const blcluster* blockCluster = m_blockCluster.get();
@@ -470,11 +453,6 @@ applyBuiltInImpl(const TranspositionMode trans,
         m_domainPermutation.permuteVector(y_inout, permutedResult);
 
     if (m_symmetry & HERMITIAN) {
-#ifdef AHMED_PRERELEASE
-        multaHSymvec(ahmedCast(alpha), nonconstBlockCluster, m_blocks.get(),
-                     ahmedCast(permutedArgument.memptr()),
-                     ahmedCast(permutedResult.memptr()));
-#else
         // NO_TRANSPOSE and CONJUGATE_TRANSPOSE are equivalent
         if (trans == NO_TRANSPOSE || trans == CONJUGATE_TRANSPOSE)
             mltaHeHVec(ahmedCast(alpha), nonconstBlockCluster, m_blocks.get(),
@@ -491,14 +469,8 @@ applyBuiltInImpl(const TranspositionMode trans,
                        ahmedCast(permutedResult.memptr()));
             permutedResult = arma::conj(permutedResult);
         }
-#endif
     }
     else {
-#ifdef AHMED_PRERELEASE
-        multaHvec(ahmedCast(alpha), nonconstBlockCluster, m_blocks.get(),
-                  ahmedCast(permutedArgument.memptr()),
-                  ahmedCast(permutedResult.memptr()));
-#else
 //        if (trans == NO_TRANSPOSE)
 //            mltaGeHVec(ahmedCast(alpha), nonconstBlockCluster, m_blocks.get(),
 //                       ahmedCast(permutedArgument.memptr()),
@@ -541,7 +513,6 @@ applyBuiltInImpl(const TranspositionMode trans,
                                  body);
         }
         permutedResult = body.m_local_y;
-#endif
     }
     if (!transposed)
         m_rangePermutation.unpermuteVector(permutedResult, y_inout);
@@ -555,13 +526,8 @@ DiscreteAcaBoundaryOperator<ValueType>::
 makeAllMblocksDense()
 {
     for (unsigned int i = 0; i < m_blockCluster->nleaves(); ++i)
-#ifdef AHMED_PRERELEASE
-        if (m_blocks[i]->islwr())
-            m_blocks[i]->conv_lwr_to_dns();
-#else
         if (m_blocks[i]->isLrM())
             m_blocks[i]->convLrM_toGeM();
-#endif
 }
 
 template <typename ValueType>
