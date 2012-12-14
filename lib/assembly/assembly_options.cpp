@@ -48,7 +48,8 @@ AssemblyOptions::AssemblyOptions() :
     m_assemblyMode(DENSE),
     m_verbosityLevel(VerbosityLevel::DEFAULT),
     m_singularIntegralCaching(true),
-    m_sparseStorageOfMassMatrices(true)
+    m_sparseStorageOfMassMatrices(true),
+    m_jointAssembly(false)
 {
 }
 
@@ -129,6 +130,16 @@ void AssemblyOptions::enableSparseStorageOfMassMatrices(bool value)
 bool AssemblyOptions::isSparseStorageOfMassMatricesEnabled() const
 {
     return m_sparseStorageOfMassMatrices;
+}
+
+void AssemblyOptions::enableJointAssembly(bool value)
+{
+    m_jointAssembly = value;
+}
+
+bool AssemblyOptions::isJointAssemblyEnabled() const
+{
+    return m_jointAssembly;
 }
 
 } // namespace Bempp

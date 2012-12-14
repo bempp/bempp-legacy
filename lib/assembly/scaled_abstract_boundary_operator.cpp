@@ -46,39 +46,46 @@ int autoSymmetry(int origSymmetry, ResultType weight)
 template <typename BasisFunctionType, typename ResultType>
 ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType>::
 ScaledAbstractBoundaryOperator(
-        ResultType weight,
-        const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
+        ResultType multiplier_,
+        const BoundaryOperator<BasisFunctionType, ResultType>& multiplicand_,
         int symmetry) :
-    Base(boundaryOp.domain(),
-         boundaryOp.range(), boundaryOp.dualToRange(),
-         "" + toString(weight) + " * (" + boundaryOp.label() + ")",
+    Base(multiplicand_.domain(),
+         multiplicand_.range(), multiplicand_.dualToRange(),
+         "" + toString(multiplier_) + " * (" + multiplicand_.label() + ")",
          symmetry & AUTO_SYMMETRY ?
              autoSymmetry(
-                 throwIfUninitialized(boundaryOp,
+                 throwIfUninitialized(multiplicand_,
                                       "ScaledAbstractBoundaryOperator::"
                                       "ScaledAbstractBoundaryOperator(): "
                                       "the boundary operator to be scaled must "
                                       "be initialized"
-                                      ).abstractOperator()->symmetry(), weight) :
+                                      ).abstractOperator()->symmetry(), multiplier_) :
              symmetry),
-    m_weight(weight), m_operator(boundaryOp)
+    m_multiplier(multiplier_), m_multiplicand(multiplicand_)
 {
 }
 
 template <typename BasisFunctionType, typename ResultType>
 bool ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType>::isLocal() const
 {
-    return m_operator.abstractOperator()->isLocal();
+    return m_multiplicand.abstractOperator()->isLocal();
 }
 
-template <typename BasisFunctionType, typename ResultType>
-shared_ptr<DiscreteBoundaryOperator<ResultType> >
-ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType>::
-assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) const
+
+template <typename BasisFunctionType_, typename ResultType_>
+ResultType_
+ScaledAbstractBoundaryOperator<BasisFunctionType_, ResultType_>::
+multiplier() const
 {
-    return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
-                new ScaledDiscreteBoundaryOperator<ResultType>(
-                    m_weight, m_operator.weakForm()));
+    return m_multiplier;
+}
+
+template <typename BasisFunctionType_, typename ResultType_>
+BoundaryOperator<BasisFunctionType_, ResultType_>
+ScaledAbstractBoundaryOperator<BasisFunctionType_, ResultType_>::
+multiplicand() const
+{
+    return m_multiplicand;
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(ScaledAbstractBoundaryOperator);

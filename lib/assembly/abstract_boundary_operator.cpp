@@ -149,8 +149,27 @@ AbstractBoundaryOperator<BasisFunctionType, ResultType>::collectDataForAssembler
         shared_ptr<Fiber::OpenClHandler>& openClHandler,
         bool& cacheSingularIntegrals) const
 {
-    typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
-    typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
+    collectOptionsIndependentDataForAssemblerConstruction(
+                testRawGeometry, trialRawGeometry,
+                testGeometryFactory, trialGeometryFactory,
+                testBases, trialBases);
+    collectOptionsDependentDataForAssemblerConstruction(
+                options,
+                testRawGeometry, trialRawGeometry,
+                openClHandler, cacheSingularIntegrals);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void
+AbstractBoundaryOperator<BasisFunctionType, ResultType>::
+collectOptionsIndependentDataForAssemblerConstruction(
+        shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
+        shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
+        shared_ptr<GeometryFactory>& testGeometryFactory,
+        shared_ptr<GeometryFactory>& trialGeometryFactory,
+        shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
+        shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases) const
+{
     typedef LocalAssemblerConstructionHelper Helper;
 
     // Collect grid data
@@ -163,17 +182,28 @@ AbstractBoundaryOperator<BasisFunctionType, ResultType>::collectDataForAssembler
         Helper::collectGridData(*m_domain->grid(),
                                 trialRawGeometry, trialGeometryFactory);
 
-    // Construct the OpenClHandler
-    Helper::makeOpenClHandler(options.parallelizationOptions().openClOptions(),
-                              testRawGeometry, trialRawGeometry, openClHandler);
-
     // Get pointers to test and trial bases of each element
     Helper::collectBases(*m_dualToRange, testBases);
     if (m_dualToRange == m_domain)
         trialBases = testBases;
     else
         Helper::collectBases(*m_domain, trialBases);
+}
 
+template <typename BasisFunctionType, typename ResultType>
+void
+AbstractBoundaryOperator<BasisFunctionType, ResultType>::
+collectOptionsDependentDataForAssemblerConstruction(
+        const AssemblyOptions& options,
+        const shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
+        const shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
+        shared_ptr<Fiber::OpenClHandler>& openClHandler,
+        bool& cacheSingularIntegrals) const
+{
+    typedef LocalAssemblerConstructionHelper Helper;
+
+    Helper::makeOpenClHandler(options.parallelizationOptions().openClOptions(),
+                              testRawGeometry, trialRawGeometry, openClHandler);
     cacheSingularIntegrals = options.isSingularIntegralCachingEnabled();
 }
 

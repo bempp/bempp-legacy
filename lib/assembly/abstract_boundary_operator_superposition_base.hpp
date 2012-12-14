@@ -18,12 +18,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_abstract_boundary_operator_sum_hpp
-#define bempp_abstract_boundary_operator_sum_hpp
+#ifndef bempp_abstract_boundary_operator_superposition_base_hpp
+#define bempp_abstract_boundary_operator_superposition_base_hpp
 
 #include "../common/common.hpp"
 
-#include "abstract_boundary_operator_superposition_base.hpp"
+#include "abstract_boundary_operator.hpp"
 #include "boundary_operator.hpp"
 
 namespace Fiber
@@ -39,16 +39,16 @@ namespace Bempp
 {
 
 /** \ingroup composite_boundary_operators
- *  \brief Sum of two abstract boundary operators.
+ *  \brief Base class for abstract boundary operator superpositions.
  *
- *  This class represents a sum of two boundary operators. */
+ *  This class serves as a base class for AbstractBoundaryOperatorSum
+ *  and ScaledAbstractBoundaryOperator. It is able to assemble both separated
+ *  and joint versions of superpositions of operators. */
 template <typename BasisFunctionType_, typename ResultType_>
-class AbstractBoundaryOperatorSum :
-        public AbstractBoundaryOperatorSuperpositionBase<
-            BasisFunctionType_, ResultType_>
+class AbstractBoundaryOperatorSuperpositionBase :
+        public AbstractBoundaryOperator<BasisFunctionType_, ResultType_>
 {
-    typedef AbstractBoundaryOperatorSuperpositionBase<
-        BasisFunctionType_, ResultType_> Base;
+    typedef AbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
 public:
     /** \copydoc AbstractBoundaryOperator::BasisFunctionType */
     typedef typename Base::BasisFunctionType BasisFunctionType;
@@ -58,38 +58,34 @@ public:
     typedef typename Base::CoordinateType CoordinateType;
     /** \copydoc AbstractBoundaryOperator::QuadratureStrategy */
     typedef typename Base::QuadratureStrategy QuadratureStrategy;
-    /** \copydoc AbstractBoundaryOperatorSuperpositionBase::LocalAssembler */
-    typedef typename Base::LocalAssembler LocalAssembler;
+    /** \brief Type of the appropriate instantiation of Fiber::LocalAssemblerForOperators. */
+    typedef typename Fiber::LocalAssemblerForOperators<ResultType>
+    LocalAssembler;
 
-    /** \brief Constructor.
-     *
-     *  Construct an operator representing the sum \f$M \equiv L_1 + L_2\f$
-     *  of two boundary operators \f$L_1 : X \to Y\f$ and \f$L_2 : X
-     *  \to Y\f$.
-     *
-     *  \param[in] term1 Operator \f$L_1\f$.
-     *  \param[in] term2 Operator \f$L_2\f$.
-     *  \param[in] symmetry
-     *    (Optional) Symmetry of the weak form of the composite operator.
-     *    By default is taken as the logical product of the symmetries of the
-     *    two operands. Can be set to any combination of the flags defined in
-     *    the enumeration type Symmetry.
-     *
-     *  \note Both terms must be initialized and their domains, ranges and
-     *  spaces dual to ranges must be identical, otherwise an exception is
-     *  thrown. */
-    AbstractBoundaryOperatorSum(
-            const BoundaryOperator<BasisFunctionType, ResultType>& term1,
-            const BoundaryOperator<BasisFunctionType, ResultType>& term2,
-            int symmetry = AUTO_SYMMETRY);
+    /** \copydoc AbstractBoundaryOperator::AbstractBoundaryOperator */
+    AbstractBoundaryOperatorSuperpositionBase(
+            const shared_ptr<const Space<BasisFunctionType> >& domain,
+            const shared_ptr<const Space<BasisFunctionType> >& range,
+            const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+            const std::string& label,
+            int symmetry);
 
-    virtual bool isLocal() const;
-
-    BoundaryOperator<BasisFunctionType_, ResultType_> term1() const;
-    BoundaryOperator<BasisFunctionType_, ResultType_> term2() const;
+protected:
+    virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
+    assembleWeakFormImpl(
+            const Context<BasisFunctionType, ResultType>& context) const;
 
 private:
-    BoundaryOperator<BasisFunctionType, ResultType> m_term1, m_term2;
+    shared_ptr<DiscreteBoundaryOperator<ResultType_> >
+    assembleJointOperatorWeakFormInDenseMode(
+            std::vector<BoundaryOperator<BasisFunctionType, ResultType> >& ops,
+            std::vector<ResultType>& opWeights,
+            bool verbose) const;
+    shared_ptr<DiscreteBoundaryOperator<ResultType_> >
+    assembleJointOperatorWeakFormInAcaMode(
+            const Context<BasisFunctionType, ResultType>& context,
+            std::vector<BoundaryOperator<BasisFunctionType, ResultType> >& ops,
+            std::vector<ResultType>& opWeights) const;
 };
 
 } //namespace Bempp

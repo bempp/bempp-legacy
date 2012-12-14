@@ -75,18 +75,18 @@ bool AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::isLocal() const
             m_term2.abstractOperator()->isLocal());
 }
 
-template <typename BasisFunctionType_, typename ResultType_>
-shared_ptr<DiscreteBoundaryOperator<ResultType_> >
-AbstractBoundaryOperatorSum<BasisFunctionType_, ResultType_>::
-assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) const
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
+AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::term1() const
 {
-    typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
+    return m_term1;
+}
 
-    shared_ptr<const DiscreteLinOp> discreteTerm1 = m_term1.weakForm();
-    shared_ptr<const DiscreteLinOp> discreteTerm2 = m_term2.weakForm();
-
-    return shared_ptr<DiscreteLinOp>(new DiscreteBoundaryOperatorSum<ResultType>(
-                                         discreteTerm1, discreteTerm2));
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
+AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::term2() const
+{
+    return m_term2;
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(AbstractBoundaryOperatorSum);

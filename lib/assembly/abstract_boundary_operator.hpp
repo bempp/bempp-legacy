@@ -227,8 +227,31 @@ protected:
             shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
             shared_ptr<GeometryFactory>& testGeometryFactory,
             shared_ptr<GeometryFactory>& trialGeometryFactory,
-            shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType_>*> >& testBases,
-            shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType_>*> >& trialBases,
+            shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType_>*> >&
+                testBases,
+            shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType_>*> >&
+                trialBases,
+            shared_ptr<Fiber::OpenClHandler>& openClHandler,
+            bool& cacheSingularIntegrals) const;
+
+    /** \brief Construct those objects necessary for subsequent local
+     *  assembler construction that are independent from assembly options. */
+    void collectOptionsIndependentDataForAssemblerConstruction(
+            shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
+            shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
+            shared_ptr<GeometryFactory>& testGeometryFactory,
+            shared_ptr<GeometryFactory>& trialGeometryFactory,
+            shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType_>*> >&
+                testBases,
+            shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType_>*> >&
+                trialBases) const;
+
+    /** \brief Construct those objects necessary for
+     *  subsequent local assembler construction that depend on assembly options. */
+    void collectOptionsDependentDataForAssemblerConstruction(
+            const AssemblyOptions& options,
+            const shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
+            const shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
             shared_ptr<Fiber::OpenClHandler>& openClHandler,
             bool& cacheSingularIntegrals) const;
 

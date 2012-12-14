@@ -235,6 +235,22 @@ public:
      *  See enableSparseStorageOfMassMatrices() for more information. */
     bool isSparseStorageOfMassMatricesEnabled() const;
 
+    /** \brief Enable or disable joint assembly of integral-operator superpositions.
+     *
+     *  If <tt>value == true</tt>, the discrete weak forms of superpositions of
+     *  elementary integral operators, such as 5. * SLP + 2. * DLP, will
+     *  assembled together (for example, in a single run of ACA) and stored as a
+     *  single H-matrix or dense matrix. By default joint assembly is disabled,
+     *  which means that the discrete weak form of each elementary operator is
+     *  stored separately. */
+    void enableJointAssembly(bool value = true);
+
+    /** \brief Return whether joint assembly of integral-operator superpositions
+     *  is enabled
+     *
+     * See enableJointAssembly() for more information. */
+    bool isJointAssemblyEnabled() const;
+
     /** @} */
 
 private:
@@ -245,6 +261,7 @@ private:
     VerbosityLevel::Level m_verbosityLevel;
     bool m_singularIntegralCaching;
     bool m_sparseStorageOfMassMatrices;
+    bool m_jointAssembly;
     /** \endcond */
 };
 
