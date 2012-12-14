@@ -60,13 +60,17 @@ namespace Bempp
  *  If Trilinos is not available during compilation, a simple fallback interface
  *  is provided.
  *
+ *  \note The lifetime of DiscreteBoundaryOperator objects must managed by
+ *  shared pointers.
+ *
  *  \tparam ValueType
  *    Type used to represent entries of the operator matrix.
  *    It can take the following values: \c float, \c
  *    double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
  */
 template <typename ValueType>
-class DiscreteBoundaryOperator : public boost::enable_shared_from_this<DiscreteBoundaryOperator<ValueType> >
+class DiscreteBoundaryOperator :
+        public boost::enable_shared_from_this<DiscreteBoundaryOperator<ValueType> >
 #ifdef WITH_TRILINOS
         , public Thyra::LinearOpDefaultBase<ValueType>
 #endif
