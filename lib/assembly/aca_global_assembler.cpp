@@ -426,10 +426,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         // without Trilinos, this code will never be reached -- an exception
         // will be thrown earlier in this function
         typedef DiscreteBoundaryOperatorComposition<ResultType> DiscreteBndOpComp;
-        // acaOp->dumpMblockData();
         shared_ptr<DiscreteBndOp> acaOpShared(acaOp.release());
-        arma::Mat<ResultType> acaMat = acaOpShared->asMatrix();
-        arma::diskio::save_raw_ascii(acaMat, "aca.txt");
         shared_ptr<DiscreteBndOp> trialGlobalToLocal =
                 constructOperatorMappingGlobalToFlatLocalDofs<
                 BasisFunctionType, ResultType>(trialSpace);
