@@ -58,7 +58,7 @@ struct ClusterConstructionHelper
     static std::auto_ptr<AhmedBemBlcluster>
     constructBemBlockCluster(
         const AcaOptions& acaOptions,
-        bool hermitian,
+        bool symmetric,
         /* input parameter (effectively const */
         AhmedBemCluster& testCluster,
         /* input parameter (effectively const */

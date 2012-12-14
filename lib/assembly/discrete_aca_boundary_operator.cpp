@@ -36,6 +36,7 @@
 #include <fstream>
 #include <iostream>
 #include <boost/smart_ptr/shared_ptr.hpp>
+#include <boost/type_traits/is_complex.hpp>
 
 #include <tbb/blocked_range.h>
 #include <tbb/concurrent_queue.h>
@@ -176,6 +177,47 @@ bool areEqual(const blcluster* op1, const blcluster* op2)
     return true;
 }
 
+inline void mltaSyHVec(double d, blcluster* bl, mblock<double>** A, double* x,
+                       double* y)
+{
+    mltaHeHVec(d, bl, A, x, y);
+}
+
+inline void mltaSyHVec(float d, blcluster* bl, mblock<float>** A, float* x,
+                       float* y)
+{
+    mltaHeHVec(d, bl, A, x, y);
+}
+
+inline void mltaSyHVec(scomp d, blcluster* bl, mblock<scomp>** A, scomp* x,
+                       scomp* y)
+{
+    throw std::runtime_error("mltaSyHVec(): the overload of this function for "
+                             "complex single-precision numbers does not exist "
+                             "in AHMED");
+}
+
+// For real types, SyHh = SyH
+inline void mltaSyHhVec(double d, blcluster* bl, mblock<double>** A, double* x,
+                        double* y)
+{
+    mltaSyHVec(d, bl, A, x, y);
+}
+
+inline void mltaSyHhVec(float d, blcluster* bl, mblock<float>** A, float* x,
+                        float* y)
+{
+    mltaSyHVec(d, bl, A, x, y);
+}
+
+inline void mltaSyHhVec(scomp d, blcluster* bl, mblock<scomp>** A, scomp* x,
+                        scomp* y)
+{
+    throw std::runtime_error("mltaSyHhVec(): the overload of this function for "
+                             "complex single-precision numbers does not exist "
+                             "in AHMED");
+}
+
 } // namespace
 
 template <typename ValueType>
@@ -294,7 +336,11 @@ asMatrix() const
         if (col > 0)
             unit(col - 1) = 0.;
         unit(col) = 1.;
-        if (m_symmetry & HERMITIAN)
+        if (m_symmetry & SYMMETRIC)
+            mltaSyHVec(static_cast<ValueType>(1.), nonconstBlockCluster, m_blocks.get(),
+                       ahmedCast(unit.memptr()),
+                       ahmedCast(permutedOutput.colptr(col)));
+        else if (m_symmetry & HERMITIAN)
             mltaHeHVec(1., nonconstBlockCluster, m_blocks.get(),
                        ahmedCast(unit.memptr()),
                        ahmedCast(permutedOutput.colptr(col)));
@@ -420,7 +466,7 @@ applyBuiltInImpl(const TranspositionMode trans,
     if (trans != NO_TRANSPOSE && trans != TRANSPOSE && trans != CONJUGATE_TRANSPOSE)
         throw std::runtime_error(
                 "DiscreteAcaBoundaryOperator::applyBuiltInImpl(): "
-                "transposition modes other than NO_TRANSPOSE and "
+                "transposition modes other than NO_TRANSPOSE, TRANSPOSE and "
                 "CONJUGATE_TRANSPOSE are not supported");
     bool transposed = (trans & TRANSPOSE);
 
@@ -452,7 +498,18 @@ applyBuiltInImpl(const TranspositionMode trans,
     else
         m_domainPermutation.permuteVector(y_inout, permutedResult);
 
-    if (m_symmetry & HERMITIAN) {
+    if (m_symmetry & SYMMETRIC) {
+        // TODO: parallelise
+        if (trans == NO_TRANSPOSE || trans == TRANSPOSE)
+            mltaSyHVec(ahmedCast(alpha), nonconstBlockCluster, m_blocks.get(),
+                       ahmedCast(permutedArgument.memptr()),
+                       ahmedCast(permutedResult.memptr()));
+        else // trans == CONJUGATE_TRANSPOSE
+            mltaSyHhVec(ahmedCast(alpha), nonconstBlockCluster, m_blocks.get(),
+                       ahmedCast(permutedArgument.memptr()),
+                       ahmedCast(permutedResult.memptr()));
+    }
+    else if (m_symmetry & HERMITIAN) {
         // NO_TRANSPOSE and CONJUGATE_TRANSPOSE are equivalent
         if (trans == NO_TRANSPOSE || trans == CONJUGATE_TRANSPOSE)
             mltaHeHVec(ahmedCast(alpha), nonconstBlockCluster, m_blocks.get(),
@@ -628,6 +685,10 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > acaOperatorSum(
             DiscreteAcaBoundaryOperator<ValueType>::castToAca(op1);
     shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> > acaOp2 =
             DiscreteAcaBoundaryOperator<ValueType>::castToAca(op2);
+    std::cout << acaOp1->symmetry() << " " << acaOp2->symmetry() << std::endl;
+    if (acaOp1->symmetry() != acaOp2->symmetry())
+        throw std::runtime_error("acaOperatorSum(): addition of two H-matrices "
+                                 "of different symmetry is not supported yet");
     if (!areEqual(acaOp1->blockCluster().get(), acaOp2->blockCluster().get()))
         throw std::invalid_argument("acaOperatorSum(): block cluster trees of "
                                     "both operands must be identical");
@@ -656,7 +717,7 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > acaOperatorSum(
                 new DiscreteAcaBoundaryOperator<ValueType> (
                     acaOp1->rowCount(), acaOp1->columnCount(), eps,
                     maximumRank,
-                    Symmetry(acaOp1->m_symmetry & acaOp2->m_symmetry),
+                    acaOp1->m_symmetry & acaOp2->m_symmetry,
                     sumBlockCluster, sumBlocks,
                     acaOp1->m_domainPermutation, acaOp2->m_rangePermutation,
                     acaOp1->m_parallelizationOptions));
@@ -682,6 +743,13 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > scaledAcaOperator(
 
     shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> > acaOp =
             DiscreteAcaBoundaryOperator<ValueType>::castToAca(op);
+    const int symmetry = acaOp->symmetry();
+    if (imagPart(multiplier) != 0. &&
+            symmetry & HERMITIAN && !(symmetry & SYMMETRIC))
+        throw std::runtime_error(
+                "scaledAcaOperator(): multiplication of non-symmetric Hermitian"
+                "matrices by scalars with non-zero imaginary part is not "
+                "supported yet");
     shared_ptr<const AhmedBemBlcluster> scaledBlockCluster = acaOp->blockCluster();
     blcluster* nonConstScaledBlockCluster =
             const_cast<blcluster*>( // AHMED is not const-correct
@@ -689,7 +757,7 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > scaledAcaOperator(
                                         scaledBlockCluster.get()));
     boost::shared_array<AhmedMblock*> scaledBlocks =
             allocateAhmedMblockArray<ValueType>(scaledBlockCluster.get());
-    copyH(nonConstScaledBlockCluster, acaOp->m_blocks.get(), scaledBlocks.get());
+    copyH(nonConstScaledBlockCluster, acaOp->blocks().get(), scaledBlocks.get());
 
     const size_t blockCount = scaledBlockCluster->nleaves();
     for (size_t b = 0; b < blockCount; ++b) {
@@ -698,30 +766,34 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > scaledAcaOperator(
         if (block->isLrM()) // low-rank
             for (size_t i = 0; i < block->getn1() * block->rank(); ++i)
                 data[i] *= ahmedMultiplier;
-        else if (!block->isLtM()) // dense, but not lower-triangular
-            for (size_t i = 0; i < block->nvals(); ++i)
-                data[i] *= ahmedMultiplier;
-        else { // lower-triangular
-            // diagonal entries have special meaning and should not be rescaled
-            size_t size = block->getn1();
-            assert(block->getn2() == size);
-            for (size_t c = 0; c < size; ++c)
-                for (size_t r = 1; r < size; ++r)
-                    data[c * size + r] *= ahmedMultiplier;
+        else {
+             // we don't support complex Hermitian blocks yet
+            assert(!(block->isHeM() && boost::is_complex<ValueType>()));
+            if (!block->isLtM()) // dense, but not lower-triangular
+                for (size_t i = 0; i < block->nvals(); ++i)
+                    data[i] *= ahmedMultiplier;
+            else { // lower-triangular
+                // diagonal entries have special meaning and should not be rescaled
+                size_t size = block->getn1();
+                assert(block->getn2() == size);
+                for (size_t c = 0; c < size; ++c)
+                    for (size_t r = 1; r < size; ++r)
+                        data[c * size + r] *= ahmedMultiplier;
+            }
         }
     }
 
-    unsigned int scaledSymmetry = acaOp->m_symmetry;
+    int scaledSymmetry = symmetry;
     if (imagPart(multiplier) != 0.)
         scaledSymmetry &= ~HERMITIAN;
     shared_ptr<const DiscreteBoundaryOperator<ValueType> > result(
                 new DiscreteAcaBoundaryOperator<ValueType> (
                     acaOp->rowCount(), acaOp->columnCount(),
                     acaOp->eps(), acaOp->maximumRank(),
-                    Symmetry(scaledSymmetry),
+                    scaledSymmetry,
                     scaledBlockCluster, scaledBlocks,
-                    acaOp->m_domainPermutation, acaOp->m_rangePermutation,
-                    acaOp->m_parallelizationOptions));
+                    acaOp->domainPermutation(), acaOp->rangePermutation(),
+                    acaOp->parallelizationOptions()));
     return result;
 }
 

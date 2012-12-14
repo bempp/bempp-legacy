@@ -37,7 +37,10 @@
 #include "assembly/numerical_quadrature_strategy.hpp"
 
 #include "assembly/laplace_3d_single_layer_boundary_operator.hpp"
+#include "assembly/laplace_3d_double_layer_boundary_operator.hpp"
 #include "assembly/laplace_3d_hypersingular_boundary_operator.hpp"
+#include "assembly/helmholtz_3d_single_layer_boundary_operator.hpp"
+#include "assembly/helmholtz_3d_hypersingular_boundary_operator.hpp"
 #include "assembly/modified_helmholtz_3d_single_layer_boundary_operator.hpp"
 
 #include "grid/grid.hpp"
@@ -84,8 +87,12 @@ struct DiscreteAcaBoundaryOperatorFixture
         AcaOptions acaOptions;
         acaOptions.minimumBlockSize = 2;
         assemblyOptions.switchToAcaMode(acaOptions);
+        AccuracyOptions accuracyOptions;
+        accuracyOptions.doubleRegular.setRelativeQuadratureOrder(4);
+        accuracyOptions.doubleSingular.setRelativeQuadratureOrder(4);
         shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
-            new NumericalQuadratureStrategy<BFT, RT>);
+                    new NumericalQuadratureStrategy<BFT, RT>(accuracyOptions));
+
         shared_ptr<Context<BFT, RT> > context(
             new Context<BFT, RT>(quadStrategy, assemblyOptions));
 
@@ -100,9 +107,9 @@ struct DiscreteAcaBoundaryOperatorFixture
 };
 
 template <typename BFT, typename RT>
-struct DiscreteHermitianAcaBoundaryOperatorFixture
+struct DiscreteRealSymmetricAcaBoundaryOperatorFixture
 {
-    DiscreteHermitianAcaBoundaryOperatorFixture()
+    DiscreteRealSymmetricAcaBoundaryOperatorFixture()
     {
         grid = createRegularTriangularGrid(4, 7);
 
@@ -114,13 +121,51 @@ struct DiscreteHermitianAcaBoundaryOperatorFixture
         AcaOptions acaOptions;
         acaOptions.minimumBlockSize = 2;
         assemblyOptions.switchToAcaMode(acaOptions);
+        AccuracyOptions accuracyOptions;
+        accuracyOptions.doubleRegular.setRelativeQuadratureOrder(4);
+        accuracyOptions.doubleSingular.setRelativeQuadratureOrder(4);
         shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
-            new NumericalQuadratureStrategy<BFT, RT>);
+                    new NumericalQuadratureStrategy<BFT, RT>(accuracyOptions));
+
         shared_ptr<Context<BFT, RT> > context(
             new Context<BFT, RT>(quadStrategy, assemblyOptions));
 
         op = laplace3dSingleLayerBoundaryOperator<BFT, RT>(
-            context, pwiseConstants, pwiseConstants, pwiseConstants, "SLP", HERMITIAN);
+            context, pwiseConstants, pwiseConstants, pwiseConstants, "SLP",
+                    SYMMETRIC | HERMITIAN);
+    }
+
+    shared_ptr<Grid> grid;
+    BoundaryOperator<BFT, RT> op;
+};
+
+template <typename BFT, typename RT>
+struct DiscreteComplexSymmetricAcaBoundaryOperatorFixture
+{
+    DiscreteComplexSymmetricAcaBoundaryOperatorFixture()
+    {
+        grid = createRegularTriangularGrid(4, 7);
+
+        shared_ptr<Space<BFT> > pwiseConstants(
+            new PiecewiseConstantScalarSpace<BFT>(grid));
+
+        AssemblyOptions assemblyOptions;
+        assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
+        AcaOptions acaOptions;
+        acaOptions.minimumBlockSize = 2;
+        assemblyOptions.switchToAcaMode(acaOptions);
+        AccuracyOptions accuracyOptions;
+        accuracyOptions.doubleRegular.setRelativeQuadratureOrder(4);
+        accuracyOptions.doubleSingular.setRelativeQuadratureOrder(4);
+        shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
+                    new NumericalQuadratureStrategy<BFT, RT>(accuracyOptions));
+        shared_ptr<Context<BFT, RT> > context(
+            new Context<BFT, RT>(quadStrategy, assemblyOptions));
+
+        RT waveNumber = 1.;
+        op = helmholtz3dSingleLayerBoundaryOperator<BFT>(
+            context, pwiseConstants, pwiseConstants, pwiseConstants,
+                    waveNumber, "SLP", SYMMETRIC);
     }
 
     shared_ptr<Grid> grid;
@@ -339,13 +384,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2_and_beta_equal_to_3_and_real_symmetric_operator, ResultType, result_types)
 {
+    if (boost::is_same<ResultType, std::complex<float> >())
+        return; // this type is not supported because of a deficiency in AHMED
+
     std::srand(1);
 
     typedef ResultType RT;
     typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
-    DiscreteHermitianAcaBoundaryOperatorFixture<BFT, RT> fixture;
+    DiscreteRealSymmetricAcaBoundaryOperatorFixture<BFT, RT> fixture;
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
 
     RT alpha = static_cast<RT>(2.);
@@ -362,16 +410,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
 
-
 BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2_and_beta_equal_to_3_and_transpose_and_real_symmetric_operator, ResultType, result_types)
 {
+    if (boost::is_same<ResultType, std::complex<float> >())
+        return; // this type is not supported because of a deficiency in AHMED
+
     std::srand(1);
 
     typedef ResultType RT;
     typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
-    DiscreteHermitianAcaBoundaryOperatorFixture<BFT, RT> fixture;
+    DiscreteRealSymmetricAcaBoundaryOperatorFixture<BFT, RT> fixture;
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
 
     RT alpha = static_cast<RT>(2.);
@@ -390,13 +440,105 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2_and_beta_equal_to_3_and_conjugate_transpose_and_real_symmetric_operator, ResultType, result_types)
 {
+    if (boost::is_same<ResultType, std::complex<float> >())
+        return; // this type is not supported because of a deficiency in AHMED
+
     std::srand(1);
 
     typedef ResultType RT;
     typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
-    DiscreteHermitianAcaBoundaryOperatorFixture<BFT, RT> fixture;
+    DiscreteRealSymmetricAcaBoundaryOperatorFixture<BFT, RT> fixture;
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
+
+    RT alpha = static_cast<RT>(2.);
+    RT beta = static_cast<RT>(3.);
+
+    arma::Col<RT> x = generateRandomVector<RT>(dop->rowCount());
+    arma::Col<RT> y = generateRandomVector<RT>(dop->columnCount());
+
+    // .t() gives conjugate transpose for complex matrices
+    arma::Col<RT> expected = alpha * dop->asMatrix().t() * x + beta * y;
+
+    dop->apply(CONJUGATE_TRANSPOSE, x, y, alpha, beta);
+
+    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
+                                           10. * std::numeric_limits<CT>::epsilon()));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2_and_beta_equal_to_3_and_complex_symmetric_operator,
+                              ResultType, complex_result_types)
+{
+    if (boost::is_same<ResultType, std::complex<float> >())
+        return; // this type is not supported because of a deficiency in AHMED
+
+    std::srand(1);
+
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    DiscreteComplexSymmetricAcaBoundaryOperatorFixture<BFT, RT> fixture;
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
+
+    RT alpha = static_cast<RT>(2.);
+    RT beta = static_cast<RT>(3.);
+
+    arma::Col<RT> x = generateRandomVector<RT>(dop->rowCount());
+    arma::Col<RT> y = generateRandomVector<RT>(dop->columnCount());
+
+    arma::Col<RT> expected = alpha * dop->asMatrix() * x + beta * y;
+
+    dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
+
+    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
+                                           10. * std::numeric_limits<CT>::epsilon()));
+}
+
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2_and_beta_equal_to_3_and_transpose_and_complex_symmetric_operator,
+                              ResultType, complex_result_types)
+{
+    if (boost::is_same<ResultType, std::complex<float> >())
+        return; // this type is not supported because of a deficiency in AHMED
+
+    std::srand(1);
+
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    DiscreteComplexSymmetricAcaBoundaryOperatorFixture<BFT, RT> fixture;
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
+
+    RT alpha = static_cast<RT>(2.);
+    RT beta = static_cast<RT>(3.);
+
+    arma::Col<RT> x = generateRandomVector<RT>(dop->rowCount());
+    arma::Col<RT> y = generateRandomVector<RT>(dop->columnCount());
+
+    arma::Col<RT> expected = alpha * dop->asMatrix().st() * x + beta * y;
+
+    dop->apply(TRANSPOSE, x, y, alpha, beta);
+
+    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
+                                           10. * std::numeric_limits<CT>::epsilon()));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2_and_beta_equal_to_3_and_conjugate_transpose_and_complex_symmetric_operator,
+                              ResultType, complex_result_types)
+{
+    if (boost::is_same<ResultType, std::complex<float> >())
+        return; // this type is not supported because of a deficiency in AHMED
+
+    std::srand(1);
+
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    DiscreteComplexSymmetricAcaBoundaryOperatorFixture<BFT, RT> fixture;
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
 
     RT alpha = static_cast<RT>(2.);
@@ -459,9 +601,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(acaOperatorSum_works_correctly_for_nonsymmetric_op
                                            eps));
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(acaOperatorSum_works_correctly_for_real_hermitian_operators,
+BOOST_AUTO_TEST_CASE_TEMPLATE(acaOperatorSum_works_correctly_for_real_symmetric_operators,
                               ResultType, result_types)
 {
+    if (boost::is_same<ResultType, std::complex<float> >())
+        return; // this type is not supported because of a deficiency in AHMED
+
     typedef ResultType RT;
     typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
@@ -503,9 +648,108 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(acaOperatorSum_works_correctly_for_real_hermitian_
                                            eps));
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE(acaOperatorSum_works_correctly_for_complex_symmetric_operators,
+                              ResultType, complex_result_types)
+{
+    if (boost::is_same<ResultType, std::complex<float> >())
+        return; // this type is not supported because of a deficiency in AHMED
+
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    shared_ptr<Grid> grid = createRegularTriangularGrid(10, 3);
+
+    shared_ptr<Space<BFT> > pwiseLinears(
+        new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
+
+    AssemblyOptions assemblyOptions;
+    assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
+    assemblyOptions.switchToAcaMode(AcaOptions());
+    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
+        new NumericalQuadratureStrategy<BFT, RT>);
+    shared_ptr<Context<BFT, RT> > context(
+        new Context<BFT, RT>(quadStrategy, assemblyOptions));
+
+    RT waveNumber = 1.;
+    BoundaryOperator<BFT, RT> op =
+            helmholtz3dSingleLayerBoundaryOperator<BFT>(
+                context, pwiseLinears, pwiseLinears, pwiseLinears, waveNumber,
+                "SLP", SYMMETRIC);
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = op.weakForm();
+
+    // Note: here it is crucial that the wavenumber is real; otherwise
+    // the hypersingular operator wouldn't be symmetric.
+    BoundaryOperator<BFT, RT> op2 =
+            helmholtz3dHypersingularBoundaryOperator<BFT>(
+                context, pwiseLinears, pwiseLinears, pwiseLinears, waveNumber,
+                "Hyp", SYMMETRIC);
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop2 = op2.weakForm();
+
+    arma::Mat<RT> expected = dop->asMatrix() + dop2->asMatrix();
+
+    const double eps = 1e-4;
+    shared_ptr<const DiscreteBoundaryOperator<RT> > acaSum =
+            acaOperatorSum(dop,
+                           dop2,
+                           eps, UINT_MAX);
+
+    BOOST_CHECK(check_arrays_are_close<RT>(acaSum->asMatrix(), expected,
+                                           eps));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(acaOperatorSum_works_correctly_for_sum_of_real_symmetric_and_nonsymmetric_operators,
+                              ResultType, complex_result_types)
+{
+    if (boost::is_same<ResultType, std::complex<float> >())
+        return; // this type is not supported because of a deficiency in AHMED
+
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    shared_ptr<Grid> grid = createRegularTriangularGrid(10, 3);
+
+    shared_ptr<Space<BFT> > pwiseLinears(
+        new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
+
+    AssemblyOptions assemblyOptions;
+    assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
+    assemblyOptions.switchToAcaMode(AcaOptions());
+    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
+        new NumericalQuadratureStrategy<BFT, RT>);
+    shared_ptr<Context<BFT, RT> > context(
+        new Context<BFT, RT>(quadStrategy, assemblyOptions));
+
+    BoundaryOperator<BFT, RT> op =
+            laplace3dSingleLayerBoundaryOperator<BFT, RT>(
+                context, pwiseLinears, pwiseLinears, pwiseLinears, "SLP",
+                SYMMETRIC | HERMITIAN);
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = op.weakForm();
+
+    BoundaryOperator<BFT, RT> op2 =
+            laplace3dDoubleLayerBoundaryOperator<BFT, RT>(
+                context, pwiseLinears, pwiseLinears, pwiseLinears, "DLP");
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop2 = op2.weakForm();
+
+    arma::Mat<RT> expected = dop->asMatrix() + dop2->asMatrix();
+
+    const double eps = 1e-4;
+    shared_ptr<const DiscreteBoundaryOperator<RT> > acaSum =
+            acaOperatorSum(dop,
+                           dop2,
+                           eps, UINT_MAX);
+
+    BOOST_CHECK(check_arrays_are_close<RT>(acaSum->asMatrix(), expected,
+                                           eps));
+}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE(scaledAcaOperator_works_correctly_for_nonsymmetric_operators,
                               ResultType, result_types)
 {
+    if (boost::is_same<ResultType, std::complex<float> >())
+        return; // this type is not supported because of a deficiency in AHMED
+
     typedef ResultType RT;
     typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
@@ -542,9 +786,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(scaledAcaOperator_works_correctly_for_nonsymmetric
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(scaledAcaOperator_works_correctly_for_real_hermitian_operators,
+BOOST_AUTO_TEST_CASE_TEMPLATE(scaledAcaOperator_works_correctly_for_real_symmetric_operators,
                               ResultType, result_types)
 {
+    if (boost::is_same<ResultType, std::complex<float> >())
+        return; // this type is not supported because of a deficiency in AHMED
+
     typedef ResultType RT;
     typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
@@ -569,6 +816,88 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(scaledAcaOperator_works_correctly_for_real_hermiti
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = op.weakForm();
 
     const RT multiplier = 5.25;
+    arma::Mat<RT> expected = multiplier * dop->asMatrix();
+
+    shared_ptr<const DiscreteBoundaryOperator<RT> > scaled =
+            scaledAcaOperator(dop,
+                              multiplier);
+
+    BOOST_CHECK(check_arrays_are_close<RT>(scaled->asMatrix(), expected,
+                                           10. * std::numeric_limits<CT>::epsilon()));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(scaledAcaOperator_works_correctly_for_complex_symmetric_operators_and_real_scalar,
+                              ResultType, complex_result_types)
+{
+    if (boost::is_same<ResultType, std::complex<float> >())
+        return; // this type is not supported because of a deficiency in AHMED
+
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    shared_ptr<Grid> grid = createRegularTriangularGrid(10, 3);
+
+    shared_ptr<Space<BFT> > pwiseLinears(
+        new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
+
+    AssemblyOptions assemblyOptions;
+    assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
+    assemblyOptions.switchToAcaMode(AcaOptions());
+    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
+        new NumericalQuadratureStrategy<BFT, RT>);
+    shared_ptr<Context<BFT, RT> > context(
+        new Context<BFT, RT>(quadStrategy, assemblyOptions));
+
+    RT waveNumber = 1.;
+    BoundaryOperator<BFT, RT> op =
+            helmholtz3dSingleLayerBoundaryOperator<BFT>(
+                context, pwiseLinears, pwiseLinears, pwiseLinears, waveNumber,
+                "SLP", SYMMETRIC);
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = op.weakForm();
+
+    const RT multiplier = 5.25;
+    arma::Mat<RT> expected = multiplier * dop->asMatrix();
+
+    shared_ptr<const DiscreteBoundaryOperator<RT> > scaled =
+            scaledAcaOperator(dop,
+                              multiplier);
+
+    BOOST_CHECK(check_arrays_are_close<RT>(scaled->asMatrix(), expected,
+                                           10. * std::numeric_limits<CT>::epsilon()));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(scaledAcaOperator_works_correctly_for_complex_symmetric_operators_and_complex_scalar,
+                              ResultType, complex_result_types)
+{
+    if (boost::is_same<ResultType, std::complex<float> >())
+        return; // this type is not supported because of a deficiency in AHMED
+
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    shared_ptr<Grid> grid = createRegularTriangularGrid(10, 3);
+
+    shared_ptr<Space<BFT> > pwiseLinears(
+        new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
+
+    AssemblyOptions assemblyOptions;
+    assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
+    assemblyOptions.switchToAcaMode(AcaOptions());
+    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
+        new NumericalQuadratureStrategy<BFT, RT>);
+    shared_ptr<Context<BFT, RT> > context(
+        new Context<BFT, RT>(quadStrategy, assemblyOptions));
+
+    RT waveNumber = 1.;
+    BoundaryOperator<BFT, RT> op =
+            helmholtz3dSingleLayerBoundaryOperator<BFT>(
+                context, pwiseLinears, pwiseLinears, pwiseLinears, waveNumber,
+                "SLP", SYMMETRIC);
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = op.weakForm();
+
+    const RT multiplier(5.25, 4.);
     arma::Mat<RT> expected = multiplier * dop->asMatrix();
 
     shared_ptr<const DiscreteBoundaryOperator<RT> > scaled =

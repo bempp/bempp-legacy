@@ -98,7 +98,7 @@ std::auto_ptr<typename ClusterConstructionHelper<
                   BasisFunctionType>::AhmedBemBlcluster>
 ClusterConstructionHelper<BasisFunctionType>::constructBemBlockCluster(
         const AcaOptions& acaOptions,
-        bool hermitian,
+        bool symmetric,
         /* input parameter (effectively const */
         AhmedBemCluster& testCluster,
         /* input parameter (effectively const */
@@ -110,7 +110,7 @@ ClusterConstructionHelper<BasisFunctionType>::constructBemBlockCluster(
     std::auto_ptr<AhmedBemBlcluster> blockCluster(
                 new AhmedBemBlcluster(&testCluster, &trialCluster));
     blockCount = 0;
-    if (hermitian)
+    if (symmetric)
         blockCluster->subdivide_sym(&testCluster,
                                     acaOptions.eta * acaOptions.eta,
                                     blockCount);

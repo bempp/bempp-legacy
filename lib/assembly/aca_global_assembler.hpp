@@ -70,14 +70,15 @@ public:
             const std::vector<ResultType>& denseTermsMultipliers,
             const std::vector<ResultType>& sparseTermsMultipliers,
             const AssemblyOptions& options,
-            bool symmetric);
+            int symmetry);
 
     static std::auto_ptr<DiscreteBndOp> assembleDetachedWeakForm(
             const Space<BasisFunctionType>& testSpace,
             const Space<BasisFunctionType>& trialSpace,
             LocalAssembler& localAssembler,
             const AssemblyOptions& options,
-            bool symmetric);
+            int symmetry); // used to be "bool symmetric"; fortunately "true"
+                           // is converted to 1 == SYMMETRIC
 };
 
 } // namespace Bempp

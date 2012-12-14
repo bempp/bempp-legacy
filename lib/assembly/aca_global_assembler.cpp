@@ -82,13 +82,13 @@ public:
             tbb::atomic<size_t>& done,
             bool verbose,
             LeafClusterIndexQueue& leafClusterIndexQueue,
-            bool hermitian,
+            bool symmetric,
             std::vector<ChunkStatistics>& stats) :
         m_helper(helper),
         m_leafClusters(leafClusters), m_blocks(blocks),
         m_options(options), m_done(done), m_verbose(verbose),
         m_leafClusterIndexQueue(leafClusterIndexQueue),
-        m_hermitian(hermitian),
+        m_symmetric(symmetric),
         m_stats(stats)
     {
     }
@@ -111,7 +111,7 @@ public:
 
             AhmedBemBlcluster* cluster =
                     dynamic_cast<AhmedBemBlcluster*>(m_leafClusters[leafClusterIndex]);
-            if (m_hermitian)
+            if (m_symmetric)
                 apprx_sym(m_helper, m_blocks[cluster->getidx()],
                           cluster, m_options.eps, m_options.maximumRank,
                           true /* complex_sym */);
@@ -136,7 +136,7 @@ private:
     tbb::atomic<size_t>& m_done;
     bool m_verbose;
     LeafClusterIndexQueue& m_leafClusterIndexQueue;
-    bool m_hermitian;
+    bool m_symmetric;
     std::vector<ChunkStatistics>& m_stats;
 };
 
@@ -175,7 +175,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         const std::vector<ResultType>& denseTermsMultipliers,
         const std::vector<ResultType>& sparseTermsMultipliers,
         const AssemblyOptions& options,
-        bool hermitian)
+        int symmetry)
 {
 #ifdef WITH_AHMED
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
@@ -185,10 +185,24 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
     const AcaOptions& acaOptions = options.acaOptions();
     const bool indexWithGlobalDofs = acaOptions.globalAssemblyBeforeCompression;
-    const bool verbosityDefault =
+    const bool verbosityAtLeastDefault =
             (options.verbosityLevel() >= VerbosityLevel::DEFAULT);
-    const bool verbosityHigh =
+    const bool verbosityAtLeastHigh =
             (options.verbosityLevel() >= VerbosityLevel::HIGH);
+
+    // Currently we don't support Hermitian ACA operators. This is because we
+    // don't have the means to really test them -- we would need complex-valued
+    // basis functions for that. (Assembly of such a matrix would be very easy
+    // -- just change complex_sym from true to false in the call to apprx_sym()
+    // in AcaWeakFormAssemblerLoopBody::operator() -- but operations on
+    // symmetric/Hermitian matrices are not always trivial and we do need to be
+    // able to test them properly.)
+    bool symmetric = symmetry & SYMMETRIC;
+    if (symmetry & HERMITIAN && !(symmetry & SYMMETRIC) &&
+            verbosityAtLeastDefault)
+        std::cout << "Warning: assembly of non-symmetric Hermitian H-matrices "
+                     "is not supported yet. A general H-matrix will be assembled"
+                  << std::endl;
 
 #ifndef WITH_TRILINOS
     if (!indexWithGlobalDofs)
@@ -203,9 +217,9 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     const size_t trialDofCount = indexWithGlobalDofs ?
                 trialSpace.globalDofCount() : trialSpace.flatLocalDofCount();
 
-    if (hermitian && testDofCount != trialDofCount)
+    if (symmetric && testDofCount != trialDofCount)
         throw std::invalid_argument("AcaGlobalAssembler::assembleDetachedWeakForm(): "
-                                    "you cannot generate a Hermitian weak form "
+                                    "you cannot generate a symmetric weak form "
                                     "using test and trial spaces with different "
                                     "numbers of DOFs");
 
@@ -219,7 +233,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                              test_o2pPermutation, test_p2oPermutation);
     shared_ptr<AhmedBemCluster> trialClusterTree;
     shared_ptr<IndexPermutation> trial_o2pPermutation, trial_p2oPermutation;
-    if (hermitian) {
+    if (symmetric || &testSpace == &trialSpace) {
         trialClusterTree = testClusterTree;
         trial_o2pPermutation = test_o2pPermutation;
         trial_p2oPermutation = test_p2oPermutation;
@@ -238,18 +252,18 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 //    trialSpace.dumpClusterIds("trialClusterIds", trialClusterIds,
 //                              indexWithGlobalDofs ? GLOBAL_DOFS : FLAT_LOCAL_DOFS);
 
-    if (verbosityHigh)
+    if (verbosityAtLeastHigh)
         std::cout << "Test cluster count: " << testClusterTree->getncl()
                   << "\nTrial cluster count: " << trialClusterTree->getncl()
                   << std::endl;
 
     unsigned int blockCount = 0;
     shared_ptr<AhmedBemBlcluster> bemBlclusterTree(
-                CCH::constructBemBlockCluster(acaOptions, hermitian,
+                CCH::constructBemBlockCluster(acaOptions, symmetric,
                                               *testClusterTree, *trialClusterTree,
                                               blockCount).release());
 
-    if (verbosityHigh)
+    if (verbosityAtLeastHigh)
         std::cout << "Mblock count: " << blockCount << std::endl;
 
     std::vector<unsigned int> p2oTestDofs =
@@ -331,18 +345,18 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     for (size_t i = 0; i < leafClusterCount; ++i)
         leafClusterIndexQueue.push(i);
 
-    if (verbosityDefault)
+    if (verbosityAtLeastDefault)
         std::cout << "About to start the ACA assembly loop" << std::endl;
     tbb::tick_count loopStart = tbb::tick_count::now();
     {
         Fiber::SerialBlasRegion region; // if possible, ensure that BLAS is single-threaded
         tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
                           Body(helper, leafClusters, blocks, acaOptions, done,
-                               verbosityDefault,
-                               leafClusterIndexQueue, hermitian, chunkStats));
+                               verbosityAtLeastDefault,
+                               leafClusterIndexQueue, symmetric, chunkStats));
     }
     tbb::tick_count loopEnd = tbb::tick_count::now();
-    if (verbosityDefault) {
+    if (verbosityAtLeastDefault) {
         std::cout << "\n"; // the progress bar doesn't print the final \n
         std::cout << "ACA loop took " << (loopEnd - loopStart).seconds() << " s"
                   << std::endl;
@@ -350,11 +364,11 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
     // TODO: parallelise!
     if (acaOptions.recompress) {
-        if (verbosityDefault)
+        if (verbosityAtLeastDefault)
             std::cout << "About to start ACA agglomeration" << std::endl;
         agglH(bemBlclusterTree.get(), blocks.get(),
               acaOptions.eps, acaOptions.maximumRank);
-        if (verbosityDefault)
+        if (verbosityAtLeastDefault)
             std::cout << "Agglomeration finished" << std::endl;
     }
 
@@ -378,7 +392,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         size_t origMemory = sizeof(ResultType) * testDofCount * trialDofCount;
         size_t ahmedMemory = sizeH(bemBlclusterTree.get(), blocks.get());
         int maximumRank = Hmax_rank(bemBlclusterTree.get(), blocks.get());
-        if (verbosityDefault)
+        if (verbosityAtLeastDefault)
             std::cout << "\nNeeded storage: "
                       << ahmedMemory / 1024. / 1024. << " MB.\n"
                       << "Without approximation: "
@@ -389,30 +403,30 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                       << std::endl;
 
         if (acaOptions.outputPostscript) {
-            if (verbosityDefault)
+            if (verbosityAtLeastDefault)
                 std::cout << "Writing matrix partition ..." << std::flush;
             std::ofstream os(acaOptions.outputFname.c_str());
-            if (hermitian)
+            if (symmetric) // seems valid also for Hermitian matrices
                 psoutputHeH(os, bemBlclusterTree.get(), testDofCount, blocks.get());
             else
                 psoutputGeH(os, bemBlclusterTree.get(), testDofCount, blocks.get());
             os.close();
-            if (verbosityDefault)
+            if (verbosityAtLeastDefault)
                 std::cout << " done." << std::endl;
         }
     }
 
-    unsigned int symmetry = NO_SYMMETRY;
-    if (hermitian) {
-        symmetry |= HERMITIAN;
-        if (boost::is_complex<ResultType>())
-            symmetry |= SYMMETRIC;
+    int outSymmetry = NO_SYMMETRY;
+    if (symmetric) {
+        outSymmetry = SYMMETRIC;
+        if (!boost::is_complex<ResultType>())
+            outSymmetry |= HERMITIAN;
     }
     std::auto_ptr<DiscreteAcaLinOp> acaOp(
                 new DiscreteAcaLinOp(testDofCount, trialDofCount,
                                      acaOptions.eps,
                                      acaOptions.maximumRank,
-                                     Symmetry(symmetry),
+                                     outSymmetry,
                                      bemBlclusterTree, blocks,
                                      *trial_o2pPermutation,
                                      *test_o2pPermutation,
@@ -454,7 +468,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         const Space<BasisFunctionType>& trialSpace,
         LocalAssembler& localAssembler,
         const AssemblyOptions& options,
-        bool hermitian)
+        int symmetry)
 {
     std::vector<LocalAssembler*> localAssemblers(1, &localAssembler);
     std::vector<const DiscreteBndOp*> sparseTermsToAdd;
@@ -465,7 +479,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                             sparseTermsToAdd,
                             denseTermsMultipliers,
                             sparseTermsMultipliers,
-                            options, hermitian);
+                            options, symmetry);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(AcaGlobalAssembler);
