@@ -45,7 +45,7 @@ public:
     /** \brief Constructor.
      *
      *  Construct a discrete boundary operator represented by the matrix \p mat. */
-    DiscreteDenseBoundaryOperator(const arma::Mat<ValueType>& mat);
+    explicit DiscreteDenseBoundaryOperator(const arma::Mat<ValueType>& mat);
 
     virtual void dump() const;
 
