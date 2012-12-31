@@ -209,7 +209,12 @@ public:
      *  EntityIndex and LocalDofIndex, as explained in its documentation. */
     virtual void global2localDofs(
             const std::vector<GlobalDofIndex>& globalDofs,
-            std::vector<std::vector<LocalDof> >& localDofs) const = 0;
+            std::vector<std::vector<LocalDof> >& localDofs) const;
+
+    virtual void global2localDofs(
+            const std::vector<GlobalDofIndex>& globalDofs,
+            std::vector<std::vector<LocalDof> >& localDofs,
+            std::vector<std::vector<BasisFunctionType> >& localDofWeights) const;
 
     /** \brief Map flat indices of local degrees of freedom to local degrees of freedom.
      *

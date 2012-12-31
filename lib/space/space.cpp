@@ -147,6 +147,30 @@ bool Space<BasisFunctionType>::dofsAssigned() const
 }
 
 template <typename BasisFunctionType>
+void Space<BasisFunctionType>::global2localDofs(
+            const std::vector<GlobalDofIndex>& globalDofs,
+            std::vector<std::vector<LocalDof> >& localDofs) const
+{
+    throw std::runtime_error("Space::global2localDofs(): the variant of this function "
+                             "with two arguments is deprecated and not "
+                             "implemented in new Space subclasses. Use the "
+                             "three-argument variant instead");
+}
+
+template <typename BasisFunctionType>
+void Space<BasisFunctionType>::global2localDofs(
+            const std::vector<GlobalDofIndex>& globalDofs,
+            std::vector<std::vector<LocalDof> >& localDofs,
+            std::vector<std::vector<BasisFunctionType> >& localDofWeights) const
+{
+    global2localDofs(globalDofs, localDofs);
+    localDofWeights.resize(localDofs.size());
+    for (size_t igdof = 0; igdof < localDofs.size(); ++igdof)
+        localDofWeights[igdof].resize(localDofs[igdof].size(),
+                                      static_cast<BasisFunctionType>(1.));
+}
+
+template <typename BasisFunctionType>
 void getAllBases(const Space<BasisFunctionType>& space,
         std::vector<const Fiber::Basis<BasisFunctionType>*>& bases)
 {
