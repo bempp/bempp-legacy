@@ -350,6 +350,9 @@ public:
      *  GridFunction object are undefined. */
     void evaluateAtSpecialPoints(
             VtkWriter::DataType dataType, arma::Mat<ResultType>& result_) const;
+    void evaluateAtSpecialPoints(
+            VtkWriter::DataType dataType,
+            arma::Mat<CoordinateType>& points, arma::Mat<ResultType>& values) const;
 
 private:
     void initializeFromCoefficients(

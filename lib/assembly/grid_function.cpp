@@ -552,6 +552,15 @@ template <typename BasisFunctionType, typename ResultType>
 void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
         VtkWriter::DataType dataType, arma::Mat<ResultType>& result_) const
 {
+    arma::Mat<CoordinateType> points;
+    evaluateAtSpecialPoints(dataType, points, result_);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
+        VtkWriter::DataType dataType, arma::Mat<CoordinateType>& points,
+        arma::Mat<ResultType>& values) const
+{
     if (!m_space)
         throw std::runtime_error("GridFunction::evaluateAtSpecialPoints() must "
                                  "not be called on an uninitialized GridFunction object");
@@ -561,6 +570,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
 
     shared_ptr<const Grid> grid = m_space->grid();
     const int gridDim = grid->dim();
+    const int worldDim = grid->dimWorld();
     const int elementCodim = 0;
     const int vertexCodim = gridDim;
     const int nComponents = componentCount();
@@ -569,9 +579,10 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
     const size_t elementCount = view->entityCount(elementCodim);
     const size_t vertexCount = view->entityCount(vertexCodim);
 
-    result_.set_size(nComponents,
+    values.set_size(nComponents,
                      dataType == VtkWriter::CELL_DATA ? elementCount : vertexCount);
-    result_.fill(0.);
+    values.fill(0.);
+    points.set_size(worldDim, values.n_cols);
 
     // Number of elements contributing to each column in result
     // (this will be greater than 1 for VERTEX_DATA)
@@ -613,7 +624,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
                 basesAndCornerCounts.begin(), basesAndCornerCounts.end());
 
     // Find out which basis data need to be calculated
-    size_t basisDeps = 0, geomDeps = 0;
+    size_t basisDeps = 0, geomDeps = Fiber::GLOBALS;
     // Find out which geometrical data need to be calculated, in addition
     // to those needed by the kernel
     const Fiber::CollectionOfBasisTransformations<CoordinateType>& transformations =
@@ -733,20 +744,28 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
             transformations.evaluate(functionData, geomData, functionValues);
             assert(functionValues[0].extent(1) == 1); // one function
 
-            if (dataType == VtkWriter::CELL_DATA)
+            if (dataType == VtkWriter::CELL_DATA) {
                 for (int dim = 0; dim < nComponents; ++dim)
-                    result_(dim, e) = functionValues[0](     // array index
+                    values(dim, e) = functionValues[0](     // array index
                                                        dim, // component
                                                        0,   // function index
                                                        0);  // point index
+                for (int dim = 0; dim < worldDim; ++dim)
+                    points(dim, e) = geomData.globals(dim, 0);
+            }
             else { // VERTEX_DATA
                 // Add the calculated values to the columns of the result array
                 // corresponding to the active element's vertices
                 for (int c = 0; c < activeCornerCount; ++c) {
                     int vertexIndex = rawGeometry.elementCornerIndices()(c, e);
                     for (int dim = 0; dim < nComponents; ++dim)
-                        result_(dim, vertexIndex) += functionValues[0](dim, 0, c);
+                        values(dim, vertexIndex) += functionValues[0](dim, 0, c);
                     ++multiplicities[vertexIndex];
+                }
+                for (int c = 0; c < activeCornerCount; ++c) {
+                    int vertexIndex = rawGeometry.elementCornerIndices()(c, e);
+                    for (int dim = 0; dim < worldDim; ++dim)
+                        points(dim, vertexIndex) = geomData.globals(dim, c);
                 }
             }
         } // end of loop over elements
@@ -755,7 +774,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
     // Take average of the vertex values obtained in each of the adjacent elements
     if (dataType == VtkWriter::VERTEX_DATA)
         for (size_t v = 0; v < vertexCount; ++v)
-            result_.col(v) /= multiplicities[v];
+            values.col(v) /= multiplicities[v];
 }
 
 template <typename BasisFunctionType, typename ResultType>
