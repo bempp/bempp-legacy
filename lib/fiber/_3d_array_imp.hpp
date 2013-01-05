@@ -152,7 +152,7 @@ inline typename _3dArray<T>::const_iterator _3dArray<T>::end() const
 template <typename T>
 inline void _3dArray<T>::check_dimension(size_t dimension) const
 {
-    if (dimension < 0 || 2 < dimension)
+    if (2 < dimension)
         throw std::invalid_argument("Invalid dimension");
 }
 
@@ -166,9 +166,9 @@ inline void _3dArray<T>::check_extents(size_t extent0, size_t extent1, size_t ex
 template <typename T>
 inline void _3dArray<T>::check_indices(size_t index0, size_t index1, size_t index2) const
 {
-    if (index0 < 0 || m_extents[0] <= index0 ||
-        index1 < 0 || m_extents[1] <= index1 ||
-        index2 < 0 || m_extents[2] <= index2)
+    if (m_extents[0] <= index0 ||
+        m_extents[1] <= index1 ||
+        m_extents[2] <= index2)
         throw std::out_of_range("Invalid index");
 }
 #endif // FIBER_CHECK_ARRAY_BOUNDS
@@ -204,7 +204,7 @@ inline size_t _2dSliceOf3dArray<T>::extent(size_t dimension) const {
 template <typename T>
 inline void _2dSliceOf3dArray<T>::check_dimension(size_t dimension) const {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
-    if (dimension < 0 || 1 < dimension)
+    if (1 < dimension)
         throw std::invalid_argument("Invalid dimension");
 #endif
 }
@@ -231,7 +231,7 @@ inline size_t _2dSliceOfConst3dArray<T>::extent(size_t dimension) const {
 template <typename T>
 inline void _2dSliceOfConst3dArray<T>::check_dimension(size_t dimension) const {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
-    if (dimension < 0 || 1 < dimension)
+    if (1 < dimension)
         throw std::invalid_argument("Invalid dimension");
 #endif
 }
@@ -268,7 +268,7 @@ inline size_t _1dSliceOf3dArray<T>::extent(size_t dimension) const {
 template <typename T>
 inline void _1dSliceOf3dArray<T>::check_dimension(size_t dimension) const {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
-    if (dimension < 0 || 0 < dimension)
+    if (0 < dimension)
         throw std::invalid_argument("Invalid dimension");
 #endif
 }
@@ -295,7 +295,7 @@ inline size_t _1dSliceOfConst3dArray<T>::extent(size_t dimension) const {
 template <typename T>
 inline void _1dSliceOfConst3dArray<T>::check_dimension(size_t dimension) const {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
-    if (dimension < 0 || 0 < dimension)
+    if (0 < dimension)
         throw std::invalid_argument("Invalid dimension");
 #endif
 }

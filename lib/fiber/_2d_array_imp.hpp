@@ -165,7 +165,7 @@ inline typename _2dArray<T>::const_iterator _2dArray<T>::end() const
 template <typename T>
 inline void _2dArray<T>::check_dimension(size_t dimension) const
 {
-    if (dimension < 0 || 1 < dimension)
+    if (1 < dimension)
         throw std::invalid_argument("Invalid dimension");
 }
 
@@ -179,8 +179,8 @@ inline void _2dArray<T>::check_extents(size_t extent0, size_t extent1) const
 template <typename T>
 inline void _2dArray<T>::check_indices(size_t index0, size_t index1) const
 {
-    if (index0 < 0 || m_extents[0] <= index0 ||
-        index1 < 0 || m_extents[1] <= index1)
+    if (m_extents[0] <= index0 ||
+        m_extents[1] <= index1)
         throw std::out_of_range("Invalid index");
 }
 #endif // FIBER_CHECK_ARRAY_BOUNDS
@@ -217,7 +217,7 @@ inline size_t _1dSliceOf2dArray<T>::extent(size_t dimension) const {
 template <typename T>
 inline void _1dSliceOf2dArray<T>::check_dimension(size_t dimension) const {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
-    if (dimension < 0 || 0 < dimension)
+    if (0 < dimension)
         throw std::invalid_argument("Invalid dimension");
 #endif
 }
@@ -244,7 +244,7 @@ inline size_t _1dSliceOfConst2dArray<T>::extent(size_t dimension) const {
 template <typename T>
 inline void _1dSliceOfConst2dArray<T>::check_dimension(size_t dimension) const {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
-    if (dimension < 0 || 0 < dimension)
+    if (0 < dimension)
         throw std::invalid_argument("Invalid dimension");
 #endif
 }

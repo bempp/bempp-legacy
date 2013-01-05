@@ -159,7 +159,7 @@ inline typename _4dArray<T>::const_iterator _4dArray<T>::end() const
 template <typename T>
 inline void _4dArray<T>::check_dimension(size_t dimension) const
 {
-    if (dimension < 0 || 3 < dimension)
+    if (3 < dimension)
         throw std::invalid_argument("Invalid dimension");
 }
 
@@ -173,10 +173,10 @@ inline void _4dArray<T>::check_extents(size_t extent0, size_t extent1, size_t ex
 template <typename T>
 inline void _4dArray<T>::check_indices(size_t index0, size_t index1, size_t index2, size_t index3) const
 {
-    if (index0 < 0 || m_extents[0] <= index0 ||
-        index1 < 0 || m_extents[1] <= index1 ||
-        index2 < 0 || m_extents[2] <= index2 ||
-        index3 < 0 || m_extents[3] <= index3)
+    if (m_extents[0] <= index0 ||
+        m_extents[1] <= index1 ||
+        m_extents[2] <= index2 ||
+        m_extents[3] <= index3)
         throw std::out_of_range("Invalid index");
 }
 #endif // FIBER_CHECK_ARRAY_BOUNDS
@@ -212,7 +212,7 @@ inline size_t _3dSliceOf4dArray<T>::extent(size_t dimension) const {
 template <typename T>
 inline void _3dSliceOf4dArray<T>::check_dimension(size_t dimension) const {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
-    if (dimension < 0 || 2 < dimension)
+    if (2 < dimension)
         throw std::invalid_argument("Invalid dimension");
 #endif
 }
@@ -239,7 +239,7 @@ inline size_t _3dSliceOfConst4dArray<T>::extent(size_t dimension) const {
 template <typename T>
 inline void _3dSliceOfConst4dArray<T>::check_dimension(size_t dimension) const {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
-    if (dimension < 0 || 2 < dimension)
+    if (2 < dimension)
         throw std::invalid_argument("Invalid dimension");
 #endif
 }
@@ -275,7 +275,7 @@ inline size_t _2dSliceOf4dArray<T>::extent(size_t dimension) const {
 template <typename T>
 inline void _2dSliceOf4dArray<T>::check_dimension(size_t dimension) const {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
-    if (dimension < 0 || 1 < dimension)
+    if (1 < dimension)
         throw std::invalid_argument("Invalid dimension");
 #endif
 }
@@ -302,7 +302,7 @@ inline size_t _2dSliceOfConst4dArray<T>::extent(size_t dimension) const {
 template <typename T>
 inline void _2dSliceOfConst4dArray<T>::check_dimension(size_t dimension) const {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
-    if (dimension < 0 || 1 < dimension)
+    if (1 < dimension)
         throw std::invalid_argument("Invalid dimension");
 #endif
 }
@@ -339,7 +339,7 @@ inline size_t _1dSliceOf4dArray<T>::extent(size_t dimension) const {
 template <typename T>
 inline void _1dSliceOf4dArray<T>::check_dimension(size_t dimension) const {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
-    if (dimension < 0 || 0 < dimension)
+    if (0 < dimension)
         throw std::invalid_argument("Invalid dimension");
 #endif
 }
@@ -366,7 +366,7 @@ inline size_t _1dSliceOfConst4dArray<T>::extent(size_t dimension) const {
 template <typename T>
 inline void _1dSliceOfConst4dArray<T>::check_dimension(size_t dimension) const {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
-    if (dimension < 0 || 0 < dimension)
+    if (0 < dimension)
         throw std::invalid_argument("Invalid dimension");
 #endif
 }
