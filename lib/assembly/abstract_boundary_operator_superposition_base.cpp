@@ -373,7 +373,7 @@ assembleJointOperatorWeakFormInAcaMode(
 
         if (verbose)
             std::cout << "Collecting data for assembler construction..." << std::endl;
-        collectOptionsIndependentDataForAssemblerConstruction(
+        this->collectOptionsIndependentDataForAssemblerConstruction(
                     testRawGeometry, trialRawGeometry,
                     testGeometryFactory, trialGeometryFactory,
                     testBases, trialBases);
@@ -397,7 +397,7 @@ assembleJointOperatorWeakFormInAcaMode(
                     nonlocalOps[i].context()->assemblyOptions();
             shared_ptr<Fiber::OpenClHandler> openClHandler;
             bool cacheSingularIntegrals;
-            collectOptionsDependentDataForAssemblerConstruction(
+            this->collectOptionsDependentDataForAssemblerConstruction(
                         options, testRawGeometry, trialRawGeometry,
                         openClHandler, cacheSingularIntegrals);
 
