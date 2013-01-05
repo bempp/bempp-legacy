@@ -152,6 +152,8 @@ void PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::assignDofs
     // (Re)initialise DOF maps
     m_local2globalDofs.clear();
     m_local2globalDofs.resize(elementCount);
+    m_local2globalDofWeights.clear();
+    m_local2globalDofWeights.resize(elementCount);
     m_global2localDofs.clear();
     m_global2localDofs.resize(globalDofCount_);
     m_global2localDofWeights.clear();
@@ -178,7 +180,11 @@ void PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::assignDofs
         // List of global DOF indices corresponding to the local DOFs of the
         // current element
         std::vector<GlobalDofIndex>& globalDofs = m_local2globalDofs[elementIndex];
+        // List of weights of the local DOFs residing on the current element
+        std::vector<BasisFunctionType>& globalDofWeights =
+            m_local2globalDofWeights[elementIndex];
         globalDofs.resize(edgeCount);
+        globalDofWeights.resize(edgeCount);
         for (int i = 0; i < edgeCount; ++i)
         {
             GlobalDofIndex globalDofIndex =
@@ -200,10 +206,11 @@ void PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::assignDofs
                 throw std::runtime_error(
                     "PiecewiseLinearNormallyContinuousVectorSpace::"
                     "assignDofsImpl(): support for quadrilaterals not in place yet");
+            BasisFunctionType weight = vertex1Index < vertex2Index ? 1. : -1.;
             globalDofs[i] = globalDofIndex;
+            globalDofWeights[i] = weight;
             m_global2localDofs[globalDofIndex].push_back(LocalDof(elementIndex, i));
-            m_global2localDofWeights[globalDofIndex].push_back(
-                vertex1Index < vertex2Index ? 1. : -1.);
+            m_global2localDofWeights[globalDofIndex].push_back(weight);
         }
         it->next();
     }
@@ -231,11 +238,14 @@ size_t PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::flatLoca
 
 template <typename BasisFunctionType>
 void PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::getGlobalDofs(
-        const Entity<0>& element, std::vector<GlobalDofIndex>& dofs) const
+        const Entity<0>& element,
+        std::vector<GlobalDofIndex>& dofs,
+        std::vector<BasisFunctionType>& dofWeights) const
 {
     const Mapper& mapper = m_view->elementMapper();
     EntityIndex index = mapper.entityIndex(element);
     dofs = m_local2globalDofs[index];
+    dofWeights = m_local2globalDofWeights[index];
 }
 
 template <typename BasisFunctionType>

@@ -75,7 +75,8 @@ public:
     virtual size_t globalDofCount() const;
     virtual size_t flatLocalDofCount() const;
     virtual void getGlobalDofs(const Entity<0>& element,
-                               std::vector<GlobalDofIndex>& dofs) const;
+                               std::vector<GlobalDofIndex>& dofs,
+                               std::vector<BasisFunctionType>& dofWeights) const;
     virtual void global2localDofs(
             const std::vector<GlobalDofIndex>& globalDofs,
             std::vector<std::vector<LocalDof> >& localDofs,
@@ -105,6 +106,7 @@ private:
     std::auto_ptr<GridView> m_view;
     Fiber::RaviartThomasOrder1Basis<3, BasisFunctionType> m_triangleBasis;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
+    std::vector<std::vector<BasisFunctionType> > m_local2globalDofWeights;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
     std::vector<std::vector<BasisFunctionType> > m_global2localDofWeights;
     std::vector<LocalDof> m_flatLocal2localDofs;
