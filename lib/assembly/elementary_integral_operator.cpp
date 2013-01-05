@@ -50,6 +50,7 @@
 #include "../common/armadillo_fwd.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
 #include "../common/boost_ptr_vector_fwd.hpp"
+#include "../common/complex_aux.hpp"
 #include <stdexcept>
 #include <iostream>
 
@@ -78,10 +79,14 @@ public:
             const std::vector<int>& testIndices,
             const std::vector<std::vector<GlobalDofIndex> >& testGlobalDofs,
             const std::vector<std::vector<GlobalDofIndex> >& trialGlobalDofs,
+            const std::vector<std::vector<BasisFunctionType> >& testLocalDofWeights,
+            const std::vector<std::vector<BasisFunctionType> >& trialLocalDofWeights,
             Fiber::LocalAssemblerForOperators<ResultType>& assembler,
             arma::Mat<ResultType>& result, MutexType& mutex) :
         m_testIndices(testIndices),
         m_testGlobalDofs(testGlobalDofs), m_trialGlobalDofs(trialGlobalDofs),
+        m_testLocalDofWeights(testLocalDofWeights),
+        m_trialLocalDofWeights(trialLocalDofWeights),
         m_assembler(assembler), m_result(result), m_mutex(mutex) {
     }
 
@@ -103,10 +108,15 @@ public:
                     const int testDofCount = m_testGlobalDofs[testIndex].size();
                     // Add the integrals to appropriate entries in the operator's matrix
                     for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
-                        for (int testDof = 0; testDof < testDofCount; ++testDof)
+                        for (int testDof = 0; testDof < testDofCount; ++testDof) {
+                            assert(std::abs(m_testLocalDofWeights[testIndex][testDof]) > 0.);
+                            assert(std::abs(m_trialLocalDofWeights[trialIndex][trialDof]) > 0.);
                             m_result(m_testGlobalDofs[testIndex][testDof],
                                      m_trialGlobalDofs[trialIndex][trialDof]) +=
+                                    conj(m_testLocalDofWeights[testIndex][testDof]) *
+                                    m_trialLocalDofWeights[trialIndex][trialDof] *
                                     localResult[testIndex](testDof, trialDof);
+                        }
                 }
             }
         }
@@ -116,6 +126,8 @@ private:
     const std::vector<int>& m_testIndices;
     const std::vector<std::vector<GlobalDofIndex> >& m_testGlobalDofs;
     const std::vector<std::vector<GlobalDofIndex> >& m_trialGlobalDofs;
+    const std::vector<std::vector<BasisFunctionType> >& m_testLocalDofWeights;
+    const std::vector<std::vector<BasisFunctionType> >& m_trialLocalDofWeights;
     // mutable OK because Assembler is thread-safe. (Alternative to "mutable" here:
     // make assembler's internal integrator map mutable)
     typename Fiber::LocalAssemblerForOperators<ResultType>& m_assembler;
@@ -129,15 +141,21 @@ private:
 /** Build a list of lists of global DOF indices corresponding to the local DOFs
  *  on each element of space.grid(). */
 template <typename BasisFunctionType>
-std::vector<std::vector<GlobalDofIndex> > gatherGlobalDofs(
-        const Space<BasisFunctionType>& space)
+void gatherGlobalDofs(
+    const Space<BasisFunctionType>& space,
+    std::vector<std::vector<GlobalDofIndex> >& globalDofs,
+    std::vector<std::vector<BasisFunctionType> >& localDofWeights)
 {
     // Get the grid's leaf view so that we can iterate over elements
     std::auto_ptr<GridView> view = space.grid()->leafView();
     const int elementCount = view->entityCount(0);
 
     // Global DOF indices corresponding to local DOFs on elements
-    std::vector<std::vector<GlobalDofIndex> > globalDofs(elementCount);
+    globalDofs.clear();
+    globalDofs.resize(elementCount);
+    // Weights of the local DOFs on elements
+    localDofWeights.clear();
+    localDofWeights.resize(elementCount);
 
     // Gather global DOF lists
     const Mapper& mapper = view->elementMapper();
@@ -145,11 +163,10 @@ std::vector<std::vector<GlobalDofIndex> > gatherGlobalDofs(
     while (!it->finished()) {
         const Entity<0>& element = it->entity();
         const int elementIndex = mapper.entityIndex(element);
-        space.getGlobalDofs(element, globalDofs[elementIndex]);
+        space.getGlobalDofs(element, globalDofs[elementIndex],
+                            localDofWeights[elementIndex]);
         it->next();
     }
-
-    return globalDofs;
 }
 
 } // namespace
@@ -262,10 +279,15 @@ assembleWeakFormInDenseMode(
     const Space<BasisFunctionType>& trialSpace = *this->domain();
 
     // Global DOF indices corresponding to local DOFs on elements
-    std::vector<std::vector<GlobalDofIndex> > testGlobalDofs =
-            gatherGlobalDofs(testSpace);
-    std::vector<std::vector<GlobalDofIndex> > trialGlobalDofs =
-            gatherGlobalDofs(trialSpace);
+    std::vector<std::vector<GlobalDofIndex> > testGlobalDofs, trialGlobalDofs;
+    std::vector<std::vector<BasisFunctionType> > testLocalDofWeights,
+        trialLocalDofWeights;
+    gatherGlobalDofs(testSpace, testGlobalDofs, testLocalDofWeights);
+    if (&testSpace == &trialSpace) {
+        trialGlobalDofs = testGlobalDofs;
+        trialLocalDofWeights = testLocalDofWeights;
+    } else
+        gatherGlobalDofs(trialSpace, trialGlobalDofs, trialLocalDofWeights);
     const size_t testElementCount = testGlobalDofs.size();
     const size_t trialElementCount = trialGlobalDofs.size();
 
@@ -296,6 +318,7 @@ assembleWeakFormInDenseMode(
         Fiber::SerialBlasRegion region;
         tbb::parallel_for(tbb::blocked_range<size_t>(0, trialElementCount),
                           Body(testIndices, testGlobalDofs, trialGlobalDofs,
+                               testLocalDofWeights, trialLocalDofWeights,
                                assembler, result, mutex));
     }
 

@@ -30,7 +30,6 @@
 
 #include "../common/complex_aux.hpp"
 #include "../common/deprecated.hpp"
-#include "../common/stl_io.hpp"
 #include "../fiber/collection_of_3d_arrays.hpp"
 #include "../fiber/basis.hpp"
 #include "../fiber/basis_data.hpp"
@@ -83,6 +82,7 @@ shared_ptr<arma::Col<ResultType> > reallyCalculateProjections(
 
     // Global DOF indices corresponding to local DOFs on elements
     std::vector<std::vector<GlobalDofIndex> > testGlobalDofs(elementCount);
+    std::vector<std::vector<BasisFunctionType> > testLocalDofWeights(elementCount);
 
     // Gather global DOF lists
     const Mapper& mapper = view->elementMapper();
@@ -90,7 +90,8 @@ shared_ptr<arma::Col<ResultType> > reallyCalculateProjections(
     while (!it->finished()) {
         const Entity<0>& element = it->entity();
         const int elementIndex = mapper.entityIndex(element);
-        dualSpace.getGlobalDofs(element, testGlobalDofs[elementIndex]);
+        dualSpace.getGlobalDofs(element, testGlobalDofs[elementIndex],
+            testLocalDofWeights[elementIndex]);
         it->next();
     }
 
@@ -113,6 +114,7 @@ shared_ptr<arma::Col<ResultType> > reallyCalculateProjections(
         // Add the integrals to appropriate entries in the global weak form
         for (size_t testDof = 0; testDof < testGlobalDofs[testIndex].size(); ++testDof)
             (*result)(testGlobalDofs[testIndex][testDof]) +=
+                    conj(testLocalDofWeights[testIndex][testDof]) *
                     localResult[testIndex](testDof);
 
     // Return the vector of projections <phi_i, f>
@@ -359,7 +361,7 @@ int GridFunction<BasisFunctionType, ResultType>::componentCount() const
 }
 
 template <typename BasisFunctionType, typename ResultType>
-const arma::Col<ResultType>& 
+const arma::Col<ResultType>&
 GridFunction<BasisFunctionType, ResultType>::coefficients() const
 {
     if (!m_space)
@@ -516,12 +518,13 @@ void GridFunction<BasisFunctionType, ResultType>::getLocalCoefficients(
     BOOST_ASSERT_MSG(m_space, "GridFunction::getLocalCoefficients() must not be "
                      "called on an uninitialized GridFunction object");
     std::vector<GlobalDofIndex> gdofIndices;
-    m_space->getGlobalDofs(element, gdofIndices);
+    std::vector<BasisFunctionType> ldofWeights;
+    m_space->getGlobalDofs(element, gdofIndices, ldofWeights);
     const int gdofCount = gdofIndices.size();
     coeffs.resize(gdofCount);
     const arma::Col<ResultType>& globalCoefficients = coefficients();
     for (int i = 0; i < gdofCount; ++i)
-        coeffs[i] = globalCoefficients(gdofIndices[i]);
+        coeffs[i] = globalCoefficients(gdofIndices[i]) * ldofWeights[i];
 }
 
 template <typename BasisFunctionType, typename ResultType>

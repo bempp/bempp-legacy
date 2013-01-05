@@ -193,7 +193,11 @@ public:
      *                     corresponding to the local degrees of freedom
      *                     residing on \p element. */
     virtual void getGlobalDofs(const Entity<0>& element,
-                               std::vector<GlobalDofIndex>& dofs) const = 0;
+                               std::vector<GlobalDofIndex>& dofs) const;
+
+    virtual void getGlobalDofs(const Entity<0>& element,
+                               std::vector<GlobalDofIndex>& dofs,
+                               std::vector<BasisFunctionType>& localDofWeights) const;
 
     /** \brief Map global degrees of freedom to local degrees of freedom.
      *

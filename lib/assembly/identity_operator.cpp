@@ -78,11 +78,11 @@
 namespace Bempp
 {
 
-#ifdef WITH_TRILINOS
-// Internal helper functions for Epetra
 namespace
 {
 
+#ifdef WITH_TRILINOS
+// Internal helper functions for Epetra
 template <typename ValueType>
 int epetraSumIntoGlobalValues(Epetra_FECrsMatrix& matrix,
                               const std::vector<int>& rowIndices,
@@ -157,9 +157,52 @@ inline int epetraSumIntoGlobalValues<std::complex<double> >(
     return epetraSumIntoGlobalValues<double>(
                 matrix, rowIndices, colIndices, doubleValues);
 }
+#endif
+
+/** Build a list of lists of global DOF indices corresponding to the local DOFs
+ *  on each element of space.grid(). */
+template <typename BasisFunctionType>
+void gatherGlobalDofs(
+    const Space<BasisFunctionType>& testSpace,
+    const Space<BasisFunctionType>& trialSpace,
+    std::vector<std::vector<GlobalDofIndex> >& testGlobalDofs,
+    std::vector<std::vector<GlobalDofIndex> >& trialGlobalDofs,
+    std::vector<std::vector<BasisFunctionType> >& testLocalDofWeights,
+    std::vector<std::vector<BasisFunctionType> >& trialLocalDofWeights)
+{
+    // We use the fact that test and trial space are required to be defined
+    // on the same grid
+
+    // Get the grid's leaf view so that we can iterate over elements
+    std::auto_ptr<GridView> view = testSpace.grid()->leafView();
+    const int elementCount = view->entityCount(0);
+
+    // Global DOF indices corresponding to local DOFs on elements
+    testGlobalDofs.clear();
+    testGlobalDofs.resize(elementCount);
+    trialGlobalDofs.clear();
+    trialGlobalDofs.resize(elementCount);
+    // Weights of the local DOFs on elements
+    testLocalDofWeights.clear();
+    testLocalDofWeights.resize(elementCount);
+    trialLocalDofWeights.clear();
+    trialLocalDofWeights.resize(elementCount);
+
+    // Gather global DOF lists
+    const Mapper& mapper = view->elementMapper();
+    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    while (!it->finished()) {
+        const Entity<0>& element = it->entity();
+        const int elementIndex = mapper.entityIndex(element);
+        testSpace.getGlobalDofs(element, testGlobalDofs[elementIndex],
+                                testLocalDofWeights[elementIndex]);
+        trialSpace.getGlobalDofs(element, trialGlobalDofs[elementIndex],
+                                 trialLocalDofWeights[elementIndex]);
+        it->next();
+    }
+}
 
 } // anonymous namespace
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // IdentityOperatorId
@@ -347,26 +390,20 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInDenseMode(
     result.fill(0.);
 
     // Retrieve global DOFs corresponding to local DOFs on all elements
-    std::vector<std::vector<GlobalDofIndex> > trialGdofs(elementCount);
     std::vector<std::vector<GlobalDofIndex> > testGdofs(elementCount);
-
-    // Gather global DOF lists
-    const Mapper& mapper = view->elementMapper();
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-    while (!it->finished())
-    {
-        const Entity<0>& element = it->entity();
-        const int elementIndex = mapper.entityIndex(element);
-        testSpace.getGlobalDofs(element, testGdofs[elementIndex]);
-        trialSpace.getGlobalDofs(element, trialGdofs[elementIndex]);
-        it->next();
-    }
+    std::vector<std::vector<GlobalDofIndex> > trialGdofs(elementCount);
+    std::vector<std::vector<BasisFunctionType> > testLdofWeights(elementCount);
+    std::vector<std::vector<BasisFunctionType> > trialLdofWeights(elementCount);
+    gatherGlobalDofs(testSpace, trialSpace, testGdofs, trialGdofs,
+                     testLdofWeights, trialLdofWeights);
 
     // Distribute local matrices into the global matrix
     for (size_t e = 0; e < elementCount; ++e)
         for (size_t trialIndex = 0; trialIndex < trialGdofs[e].size(); ++trialIndex)
             for (size_t testIndex = 0; testIndex < testGdofs[e].size(); ++testIndex)
                 result(testGdofs[e][testIndex], trialGdofs[e][trialIndex]) +=
+                        conj(testLdofWeights[e][testIndex]) *
+                        trialLdofWeights[e][trialIndex] *
                         localResult[e](testIndex, trialIndex);
 
     return std::auto_ptr<DiscreteBoundaryOperator<ResultType> >(
@@ -398,6 +435,22 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparseMode(
     std::vector<arma::Mat<ResultType> > localResult;
     assembler.evaluateLocalWeakForms(elementIndices, localResult);
 
+    // Global DOF indices corresponding to local DOFs on elements
+    std::vector<std::vector<GlobalDofIndex> > testGdofs(elementCount);
+    std::vector<std::vector<GlobalDofIndex> > trialGdofs(elementCount);
+    std::vector<std::vector<BasisFunctionType> > testLdofWeights(elementCount);
+    std::vector<std::vector<BasisFunctionType> > trialLdofWeights(elementCount);
+    gatherGlobalDofs(testSpace, trialSpace, testGdofs, trialGdofs,
+                     testLdofWeights, trialLdofWeights);
+
+    // Multiply matrix entries by DOF weights
+    for (size_t e = 0; e < elementCount; ++e)
+        for (size_t trialDof = 0; trialDof < trialGdofs[e].size(); ++trialDof)
+            for (size_t testDof = 0; testDof < testGdofs[e].size(); ++testDof)
+                localResult[e](testDof, trialDof) *=
+                    conj(testLdofWeights[e][testDof]) *
+                    trialLdofWeights[e][trialDof];
+
     // Estimate number of entries in each row
 
     //    This will be useful when we begin to use MPI
@@ -413,22 +466,6 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparseMode(
     const int trialGlobalDofCount = trialSpace.globalDofCount();
     arma::Col<int> nonzeroEntryCountEstimates(testGlobalDofCount);
     nonzeroEntryCountEstimates.fill(0);
-
-    // Global DOF indices corresponding to local DOFs on elements
-    std::vector<std::vector<GlobalDofIndex> > trialGdofs(elementCount);
-    std::vector<std::vector<GlobalDofIndex> > testGdofs(elementCount);
-
-    // Fill above lists
-    const Mapper& mapper = view->elementMapper();
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-    while (!it->finished())
-    {
-        const Entity<0>& element = it->entity();
-        const int elementIndex = mapper.entityIndex(element);
-        testSpace.getGlobalDofs(element, testGdofs[elementIndex]);
-        trialSpace.getGlobalDofs(element, trialGdofs[elementIndex]);
-        it->next();
-    }
 
     // Upper estimate for the number of global trial DOFs coupled to a given
     // global test DOF: sum of the local trial DOF counts for each element that
@@ -462,7 +499,7 @@ IdentityOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparseMode(
     // Add contributions from individual elements
     for (size_t e = 0; e < elementCount; ++e)
         epetraSumIntoGlobalValues(
-                    *result, testGdofs[e], trialGdofs[e], localResult[e]);
+            *result, testGdofs[e], trialGdofs[e], localResult[e]);
     result->GlobalAssemble();
 
     // If assembly mode is equal to ACA and we have AHMED,
@@ -527,7 +564,10 @@ IdentityOperator<BasisFunctionType, ResultType>::makeAssemblerImpl(
         bool /* cacheSingularIntegrals */) const
 {
     shared_ptr<const Fiber::CollectionOfBasisTransformations<CoordinateType> >
-            transformations = make_shared_from_ref(m_impl->transformations);
+        testTransformations = make_shared_from_ref(
+            this->dualToRange()->shapeFunctionValue()),
+        trialTransformations = make_shared_from_ref(
+            this->domain()->shapeFunctionValue());
 
     if (testGeometryFactory.get() != trialGeometryFactory.get() ||
             testRawGeometry.get() != trialRawGeometry.get())
@@ -537,7 +577,7 @@ IdentityOperator<BasisFunctionType, ResultType>::makeAssemblerImpl(
     return quadStrategy.makeAssemblerForIdentityOperators(
                 testGeometryFactory, testRawGeometry,
                 testBases, trialBases,
-                transformations, transformations,
+                testTransformations, trialTransformations,
                 openClHandler);
 }
 

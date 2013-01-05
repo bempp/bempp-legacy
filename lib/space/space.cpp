@@ -147,6 +147,27 @@ bool Space<BasisFunctionType>::dofsAssigned() const
 }
 
 template <typename BasisFunctionType>
+void Space<BasisFunctionType>::getGlobalDofs(
+    const Entity<0>& element,
+    std::vector<GlobalDofIndex>& dofs) const
+{
+    throw std::runtime_error("Space::getGlobalDofs(): the variant of this function "
+                             "with two arguments is deprecated and not "
+                             "implemented in new Space subclasses. Use the "
+                             "three-argument variant instead");
+}
+
+template <typename BasisFunctionType>
+void Space<BasisFunctionType>::getGlobalDofs(
+    const Entity<0>& element,
+    std::vector<GlobalDofIndex>& dofs,
+    std::vector<BasisFunctionType>& localDofWeights) const
+{
+    getGlobalDofs(element, dofs);
+    localDofWeights.resize(dofs.size(), 1.);
+}
+
+template <typename BasisFunctionType>
 void Space<BasisFunctionType>::global2localDofs(
             const std::vector<GlobalDofIndex>& globalDofs,
             std::vector<std::vector<LocalDof> >& localDofs) const

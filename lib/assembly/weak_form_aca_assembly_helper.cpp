@@ -137,13 +137,16 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
     ResultType* data = reinterpret_cast<ResultType*>(ahmedData);
 
     // Convert AHMED matrix indices into DOF indices
-    shared_ptr<const LocalDofLists> testDofLists = m_testDofListsCache->get(b1, n1);
-    shared_ptr<const LocalDofLists> trialDofLists = m_trialDofListsCache->get(b2, n2);
+    shared_ptr<const LocalDofLists<BasisFunctionType> > testDofLists =
+            m_testDofListsCache->get(b1, n1);
+    shared_ptr<const LocalDofLists<BasisFunctionType> > trialDofLists =
+            m_trialDofListsCache->get(b2, n2);
 
     // Requested original matrix indices
-    const std::vector<LocalDofLists::DofIndex>& testOriginalIndices =
+    typedef typename LocalDofLists<BasisFunctionType>::DofIndex DofIndex;
+    const std::vector<DofIndex>& testOriginalIndices =
             testDofLists->originalIndices;
-    const std::vector<LocalDofLists::DofIndex>& trialOriginalIndices =
+    const std::vector<DofIndex>& trialOriginalIndices =
             trialDofLists->originalIndices;
     // Necessary elements
     const std::vector<int>& testElementIndices =
@@ -155,6 +158,18 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
             testDofLists->localDofIndices;
     const std::vector<std::vector<LocalDofIndex> >& trialLocalDofs =
             trialDofLists->localDofIndices;
+    // Weights of local dofs in each element
+    const std::vector<std::vector<BasisFunctionType> >& testLocalDofWeights =
+            testDofLists->localDofWeights;
+    const std::vector<std::vector<BasisFunctionType> >& trialLocalDofWeights =
+            trialDofLists->localDofWeights;
+    for (size_t i = 0; i < testLocalDofWeights.size(); ++i)
+        for (size_t j = 0; j < testLocalDofWeights[i].size(); ++j)
+            assert(std::abs(testLocalDofWeights[i][j]) > 0.);
+    for (size_t i = 0; i < trialLocalDofWeights.size(); ++i)
+        for (size_t j = 0; j < trialLocalDofWeights[i].size(); ++j)
+            assert(std::abs(trialLocalDofWeights[i][j]) > 0.);
+
     // Corresponding row and column indices in the matrix to be calculated
     // and stored in ahmedData
     const std::vector<std::vector<int> >& blockRows =
@@ -188,6 +203,8 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
             {
                 LocalDofIndex activeTrialLocalDof =
                         trialLocalDofs[nTrialElem][nTrialDof];
+                BasisFunctionType activeTrialLocalDofWeight =
+                        trialLocalDofWeights[nTrialElem][nTrialDof];
                 for (size_t nTerm = 0; nTerm < m_assemblers.size(); ++nTerm)
                 {
                     m_assemblers[nTerm]->evaluateLocalWeakForms(
@@ -202,6 +219,8 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
                              ++nTestDof)
                             result(blockRows[nTestElem][nTestDof], 0) +=
                                     m_denseTermsMultipliers[nTerm] *
+                                    conj(testLocalDofWeights[nTestElem][nTestDof]) *
+                                    activeTrialLocalDofWeight *
                                     localResult[nTestElem](testLocalDofs[nTestElem][nTestDof]);
                 }
             }
@@ -227,6 +246,8 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
             {
                 LocalDofIndex activeTestLocalDof =
                         testLocalDofs[nTestElem][nTestDof];
+                BasisFunctionType activeTestLocalDofWeight =
+                        testLocalDofWeights[nTestElem][nTestDof];
                 for (size_t nTerm = 0; nTerm < m_assemblers.size(); ++nTerm)
                 {
                     m_assemblers[nTerm]->evaluateLocalWeakForms(
@@ -241,6 +262,8 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
                              ++nTrialDof)
                             result(0, blockCols[nTrialElem][nTrialDof]) +=
                                     m_denseTermsMultipliers[nTerm] *
+                                    conj(activeTestLocalDofWeight) *
+                                    trialLocalDofWeights[nTrialElem][nTrialDof] *
                                     localResult[nTrialElem](trialLocalDofs[nTrialElem][nTrialDof]);
                 }
             }
@@ -274,6 +297,8 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
                             result(blockRows[nTestElem][nTestDof],
                                    blockCols[nTrialElem][nTrialDof]) +=
                                     m_denseTermsMultipliers[nTerm] *
+                                    conj(testLocalDofWeights[nTestElem][nTestDof]) *
+                                    trialLocalDofWeights[nTrialElem][nTrialDof] *
                                     localResult(nTestElem, nTrialElem)
                                     (testLocalDofs[nTestElem][nTestDof],
                                      trialLocalDofs[nTrialElem][nTrialDof]);

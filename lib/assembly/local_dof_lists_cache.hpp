@@ -40,6 +40,7 @@ template <typename BasisFunctionType> class Space;
  *
  *  \brief Data used by WeakFormAcaAssemblyHelper to convert between
  *  H-matrix indices, global and local degrees of freedom. */
+template <typename BasisFunctionType>
 struct LocalDofLists
 {
     /** \brief Type used to index matrices.
@@ -50,6 +51,7 @@ struct LocalDofLists
     std::vector<DofIndex> originalIndices;
     std::vector<int> elementIndices;
     std::vector<std::vector<LocalDofIndex> > localDofIndices;
+    std::vector<std::vector<BasisFunctionType> > localDofWeights;
     std::vector<std::vector<int> > arrayIndices;
 };
 
@@ -67,21 +69,26 @@ public:
 
     /** \brief Return the LocalDofLists object describing the DOFs corresponding to
      *  AHMED matrix indices [start, start + indexCount). */
-    shared_ptr<const LocalDofLists> get(int start, int indexCount);
+    shared_ptr<const LocalDofLists<BasisFunctionType> > get(
+        int start, int indexCount);
 
 private:
-    void findLocalDofs(int start,
-                       int indexCount,
-                       std::vector<LocalDofLists::DofIndex>& originalIndices,
-                       std::vector<int>& elementIndices,
-                       std::vector<std::vector<LocalDofIndex> >& localDofIndices,
-                       std::vector<std::vector<int> >& arrayIndices) const;
+    void findLocalDofs(
+        int start,
+        int indexCount,
+        std::vector<typename LocalDofLists<BasisFunctionType>::DofIndex>& originalIndices,
+        std::vector<int>& elementIndices,
+        std::vector<std::vector<LocalDofIndex> >& localDofIndices,
+        std::vector<std::vector<BasisFunctionType> >& localDofWeights,
+        std::vector<std::vector<int> >& arrayIndices) const;
 
-    void findLocalDofs(int index,
-                       std::vector<LocalDofLists::DofIndex>& originalIndices,
-                       std::vector<int>& elementIndices,
-                       std::vector<std::vector<LocalDofIndex> >& localDofIndices,
-                       std::vector<std::vector<int> >& arrayIndices) const;
+    void findLocalDofs(
+        int index,
+        std::vector<typename LocalDofLists<BasisFunctionType>::DofIndex>& originalIndices,
+        std::vector<int>& elementIndices,
+        std::vector<std::vector<LocalDofIndex> >& localDofIndices,
+        std::vector<std::vector<BasisFunctionType> >& localDofWeights,
+        std::vector<std::vector<int> >& arrayIndices) const;
 
 private:
     /** \cond PRIVATE */
@@ -90,7 +97,7 @@ private:
     bool m_indexWithGlobalDofs;
 
     typedef tbb::concurrent_unordered_map<std::pair<int, int>,
-    const LocalDofLists*> LocalDofListsMap;
+        const LocalDofLists<BasisFunctionType>*> LocalDofListsMap;
     LocalDofListsMap m_map;
     /** \endcond */
 };

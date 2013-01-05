@@ -49,13 +49,15 @@ LocalDofListsCache<BasisFunctionType>::~LocalDofListsCache()
 }
 
 template <typename BasisFunctionType>
-shared_ptr<const LocalDofLists> LocalDofListsCache<BasisFunctionType>::get(
-        int start, int indexCount)
+shared_ptr<const LocalDofLists<BasisFunctionType> >
+LocalDofListsCache<BasisFunctionType>::get(int start, int indexCount)
 {
     if (indexCount == 1) {
-        shared_ptr<LocalDofLists> result(new LocalDofLists);
+        shared_ptr<LocalDofLists<BasisFunctionType> > result(
+            new LocalDofLists<BasisFunctionType>);
         findLocalDofs(start, result->originalIndices, result->elementIndices,
-                      result->localDofIndices, result->arrayIndices);
+                      result->localDofIndices, result->localDofWeights,
+                      result->arrayIndices);
         return result;
     }
 
@@ -66,10 +68,11 @@ shared_ptr<const LocalDofLists> LocalDofListsCache<BasisFunctionType>::get(
     }
 
     // The relevant local DOF list doesn't exist yet and must be created.
-    LocalDofLists* newLists = new LocalDofLists;
+    LocalDofLists<BasisFunctionType>* newLists = new LocalDofLists<BasisFunctionType>;
     findLocalDofs(start, indexCount,
                   newLists->originalIndices, newLists->elementIndices,
-                  newLists->localDofIndices, newLists->arrayIndices);
+                  newLists->localDofIndices, newLists->localDofWeights,
+                  newLists->arrayIndices);
 
     // Attempt to insert the newly created DOF list into the map
     std::pair<typename LocalDofListsMap::iterator, bool> result =
@@ -92,9 +95,10 @@ void LocalDofListsCache<BasisFunctionType>::
 findLocalDofs(
         int start,
         int indexCount,
-        std::vector<LocalDofLists::DofIndex>& originalIndices,
+        std::vector<typename LocalDofLists<BasisFunctionType>::DofIndex>& originalIndices,
         std::vector<int>& elementIndices,
         std::vector<std::vector<LocalDofIndex> >& localDofIndices,
+        std::vector<std::vector<BasisFunctionType> >& localDofWeights,
         std::vector<std::vector<int> >& arrayIndices) const
 {
     using std::make_pair;
@@ -108,9 +112,9 @@ findLocalDofs(
     for (int i = 0; i < indexCount; ++i)
         originalIndices[i] = m_p2o[start + i];
 
-    // set of pairs (local dof index, array index)
-    typedef std::set<pair<LocalDofIndex, int> > LocalDofSet;
-    typedef std::map<EntityIndex, LocalDofSet> LocalDofMap;
+    // map of pairs (local dof index, array index) to local dof weights
+    typedef std::map<pair<LocalDofIndex, int>, BasisFunctionType> LocalDofWeightMap;
+    typedef std::map<EntityIndex, LocalDofWeightMap> LocalDofMap;
 
     // Temporary map: entityIndex -> set(localDofIndex, arrayIndex)
     // with arrayIndex standing for the index of the row or column in the matrix
@@ -123,14 +127,18 @@ findLocalDofs(
     if (m_indexWithGlobalDofs)
     {
         vector<vector<LocalDof> > localDofs;
-        m_space.global2localDofs(originalIndices, localDofs);
+        vector<vector<BasisFunctionType> > localDofWeights;
+        m_space.global2localDofs(originalIndices, localDofs, localDofWeights);
 
         for (int arrayIndex = 0; arrayIndex < indexCount; ++arrayIndex)
         {
             const vector<LocalDof>& currentLocalDofs = localDofs[arrayIndex];
+            const vector<BasisFunctionType>& currentLocalDofWeights =
+                localDofWeights[arrayIndex];
             for (size_t j = 0; j < currentLocalDofs.size(); ++j)
                 requiredLocalDofs[currentLocalDofs[j].entityIndex]
-                        .insert(make_pair(currentLocalDofs[j].dofIndex, arrayIndex));
+                    [make_pair(currentLocalDofs[j].dofIndex, arrayIndex)] =
+                    currentLocalDofWeights[j];
         }
     }
     else
@@ -142,7 +150,7 @@ findLocalDofs(
         {
             const LocalDof& currentLocalDof = localDofs[arrayIndex];
             requiredLocalDofs[currentLocalDof.entityIndex]
-                    .insert(make_pair(currentLocalDof.dofIndex, arrayIndex));
+                [make_pair(currentLocalDof.dofIndex, arrayIndex)] = 1.;
         }
     }
 
@@ -154,22 +162,25 @@ findLocalDofs(
     elementIndices.resize(elementCount);
     localDofIndices.clear();
     localDofIndices.resize(elementCount);
+    localDofWeights.clear();
+    localDofWeights.resize(elementCount);
     arrayIndices.clear();
     arrayIndices.resize(elementCount);
 
     // const ReverseElementMapper& mapper = m_view.reverseElementMapper();
 
     int e = 0;
-    for (LocalDofMap::const_iterator mapIt = requiredLocalDofs.begin();
+    for (typename LocalDofMap::const_iterator mapIt = requiredLocalDofs.begin();
          mapIt != requiredLocalDofs.end(); ++mapIt, ++e)
     {
         elementIndices[e] = mapIt->first;
 //        elements[e] = &mapper.entityPointer(mapIt->first);
-        for (LocalDofSet::const_iterator setIt = mapIt->second.begin();
-             setIt != mapIt->second.end(); ++setIt)
+        for (typename LocalDofWeightMap::const_iterator wmapIt = mapIt->second.begin();
+             wmapIt != mapIt->second.end(); ++wmapIt)
         {
-            localDofIndices[e].push_back(setIt->first);
-            arrayIndices[e].push_back(setIt->second);
+            localDofIndices[e].push_back(wmapIt->first.first);
+            localDofWeights[e].push_back(wmapIt->second);
+            arrayIndices[e].push_back(wmapIt->first.second);
         }
     }
 }
@@ -178,9 +189,10 @@ template <typename BasisFunctionType>
 void LocalDofListsCache<BasisFunctionType>::
 findLocalDofs(
         int index,
-        std::vector<LocalDofLists::DofIndex>& originalIndices,
+        std::vector<typename LocalDofLists<BasisFunctionType>::DofIndex>& originalIndices,
         std::vector<int>& elementIndices,
         std::vector<std::vector<LocalDofIndex> >& localDofIndices,
+        std::vector<std::vector<BasisFunctionType> >& localDofWeights,
         std::vector<std::vector<int> >& arrayIndices) const
 {
     using std::make_pair;
@@ -201,19 +213,25 @@ findLocalDofs(
     // treated either as global DOFs (if m_indexWithGlobalDofs is true)
     // or flat local DOFs (if m_indexWithGlobalDofs is false)
     if (m_indexWithGlobalDofs) {
-        vector<vector<LocalDof> > localDofs;
-        m_space.global2localDofs(originalIndices, localDofs);
+        // raw -- means arrays as returned by global2localDofs; the data need to be
+        // subsequently rearranged
+        vector<vector<LocalDof> > rawLocalDofs;
+        vector<vector<BasisFunctionType> > rawLocalDofWeights;
+        m_space.global2localDofs(originalIndices, rawLocalDofs, rawLocalDofWeights);
 
         // Here we assume that no global DOF contains more than one local DOF
         // from a particular element
-        const vector<LocalDof>& currentLocalDofs = localDofs[0];
+        const vector<LocalDof>& currentLocalDofs = rawLocalDofs[0];
+        const vector<BasisFunctionType>& currentLocalDofWeights = rawLocalDofWeights[0];
         size_t cnt = currentLocalDofs.size();
         elementIndices.resize(cnt);
         localDofIndices.resize(cnt, std::vector<LocalDofIndex>(1));
+        localDofWeights.resize(cnt, std::vector<BasisFunctionType>(1));
         arrayIndices.resize(cnt, std::vector<int>(1));
         for (size_t j = 0; j < cnt; ++j) {
             elementIndices[j] = currentLocalDofs[j].entityIndex;
             localDofIndices[j][0] = currentLocalDofs[j].dofIndex;
+            localDofWeights[j][0] = currentLocalDofWeights[j];
             arrayIndices[j][0] = 0;
         }
     } else {
@@ -223,11 +241,13 @@ findLocalDofs(
         size_t cnt = localDofs.size();
         elementIndices.resize(cnt);
         localDofIndices.resize(cnt, std::vector<LocalDofIndex>(1));
+        localDofWeights.resize(cnt, std::vector<BasisFunctionType>(1));
         arrayIndices.resize(cnt, std::vector<int>(1));
 
         for (size_t j = 0; j < cnt; ++j) {
             elementIndices[j] = localDofs[0].entityIndex;
             localDofIndices[j][0] = localDofs[0].dofIndex;
+            localDofWeights[j][0] = 1.;
             arrayIndices[j][0] = 0;
         }
     }
