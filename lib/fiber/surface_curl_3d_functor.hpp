@@ -39,7 +39,7 @@ class SurfaceCurl3dElementaryFunctor
 public:
     typedef CoordinateType_ CoordinateType;
 
-    int argumentDimension() const { return 1.; }
+    int argumentDimension() const { return 1; }
     int resultDimension() const { return 3; }
 
     void addDependencies(size_t& basisDeps, size_t& geomDeps) const {
