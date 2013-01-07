@@ -24,7 +24,9 @@
 #include "discrete_blocked_boundary_operator.hpp"
 
 #include "discrete_aca_boundary_operator.hpp"
+#ifdef WITH_AHMED
 #include "ahmed_aux.hpp"
+#endif
 #include "../common/to_string.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -41,6 +43,7 @@ namespace Bempp
 namespace
 {
 
+#ifdef WITH_AHMED
 template <typename ValueType>
 void collectMblocks(
         const Fiber::_2dArray<shared_ptr<
@@ -293,6 +296,7 @@ std::vector<unsigned int> overall_o2pRange(
     assert(o2pRange.size() == size);
     return o2pRange;
 }
+#endif // WITH_AHMED
 
 } // namespace
 

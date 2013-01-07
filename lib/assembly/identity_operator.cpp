@@ -24,7 +24,10 @@
 
 #include "identity_operator.hpp"
 
+#ifdef WITH_AHMED
 #include "ahmed_aux.hpp"
+#endif
+
 #include "assembly_options.hpp"
 #include "boundary_operator.hpp"
 #include "cluster_construction_helper.hpp"

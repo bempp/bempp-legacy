@@ -20,6 +20,7 @@
 
 #include "bempp/common/config_ahmed.hpp"
 
+#ifdef WITH_AHMED
 #include "cluster_construction_helper.hpp"
 
 #include "ahmed_aux.hpp"
@@ -130,3 +131,5 @@ ClusterConstructionHelper<BasisFunctionType>::constructBemBlockCluster(
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(ClusterConstructionHelper);
 
 } // namespace Bempp
+
+#endif // WITH_AHMED
