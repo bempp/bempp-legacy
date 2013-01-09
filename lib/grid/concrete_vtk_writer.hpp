@@ -23,6 +23,8 @@
 
 #include "../common/common.hpp"
 
+#include "p0_vector_vtk_function.hpp"
+#include "p1_vector_vtk_function.hpp"
 #include "vtk_writer.hpp"
 
 #include "../common/armadillo_fwd.hpp"
@@ -97,7 +99,12 @@ private:
         if ((int)data.n_cols != m_dune_gv->size(0 /* cell codim */))
             throw std::logic_error("VtkWriter::addCellData(): number of columns "
                                    "of 'data' different from the number of cells");
-        m_dune_vtk_writer.addCellData(data, name, ncomp);
+
+        typedef P0VectorVTKFunction<DuneGridView, arma::Mat<ValueType> > Function;
+        typedef Dune::shared_ptr<Dune::VTKFunction<typename DuneGridView::Grid> >
+                VTKFunctionPtr;
+        VTKFunctionPtr p(new Function(*m_dune_gv, data, name, ncomp));
+        m_dune_vtk_writer.addCellData(p);
     }
 
     virtual void addVertexDataDoubleImpl(const arma::Mat<double>& data,
@@ -116,10 +123,18 @@ private:
         const size_t ncomp = data.n_rows;
         if (ncomp < 1)
             return; // empty matrix
-        if ((int)data.n_cols != m_dune_gv->size(DuneGridView::dimension /* vertex codim */))
+        if ((int)data.n_cols !=
+                m_dune_gv->size(DuneGridView::dimension /* vertex codim */))
             throw std::logic_error("VtkWriter::addVertexData(): number of columns "
                                    "of 'data' different from the number of vertices");
-        m_dune_vtk_writer.addVertexData(data, name, ncomp);
+
+        typedef P1VectorVTKFunction<DuneGridView, arma::Mat<ValueType> > Function;
+        typedef Dune::shared_ptr<Dune::VTKFunction<typename DuneGridView::Grid> >
+                VTKFunctionPtr;
+        VTKFunctionPtr p(new Function(*m_dune_gv, data, name, ncomp));
+        m_dune_vtk_writer.addVertexData(p);
+
+        // m_dune_vtk_writer.addVertexData(data, name, ncomp);
     }
 
     Dune::VTK::OutputType duneVtkOutputType(OutputType type) const
