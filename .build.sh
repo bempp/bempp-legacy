@@ -1,5 +1,5 @@
 #!/bin/sh
-
+#
 # Usage: .build.sh <path-to-options.cfg>
 
 set -e
