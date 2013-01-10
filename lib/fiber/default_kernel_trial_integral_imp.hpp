@@ -81,7 +81,6 @@ void DefaultKernelTrialIntegral<IntegrandFunctor>::evaluate(
         assert(kernels[i].extent(3) == quadPointCount);
     }
     for (size_t i = 0; i < trialTransformations.size(); ++i) {
-        assert((int)trialTransformations[i].extent(0) == resultComponentCount);
         assert(trialTransformations[i].extent(1) == quadPointCount);
     }
     assert(weights.size() == quadPointCount);
