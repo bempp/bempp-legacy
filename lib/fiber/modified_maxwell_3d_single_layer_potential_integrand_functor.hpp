@@ -23,10 +23,11 @@
 
 #include "../common/common.hpp"
 
-#include <cassert>
 #include "collection_of_3d_arrays.hpp"
 #include "geometrical_data.hpp"
 #include "conjugate.hpp"
+
+#include <cassert>
 
 namespace Fiber
 {
@@ -77,7 +78,7 @@ public:
 
         // Let K_0(x, y) = K(x, y) and K_1(x, y) = K(x, y) / kappa^2.
         // Return
-        // K_0(x, y) u*(x) . v(y) - K_1(x, y) div u*(x) div v(y)
+        // K_0(x, y) u*(x) . v(y) + K_1(x, y) div u*(x) div v(y)
 
         ResultType term_0 = 0.;
         for (int dim = 0; dim < dimWorld; ++dim)
@@ -85,7 +86,7 @@ public:
         term_0 *= kernelValues[0](0, 0);
         ResultType term_1 = conjugate(testSurfaceDivs(0)) * trialSurfaceDivs(0) *
             kernelValues[1](0, 0);
-        return term_0 - term_1;
+        return term_0 + term_1;
     }
 };
 
