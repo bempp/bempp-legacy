@@ -77,8 +77,10 @@ public:
             CollectionOf2dSlicesOfNdArrays<ValueType>& result) const {
         // This will put the value of the SLP kernel in result[0](0, 0)
         m_slpKernel.evaluate(testGeomData, trialGeomData, result);
-        result[1](0, 0) = result[0](0, 0) /
-            (m_slpKernel.waveNumber() * m_slpKernel.waveNumber());
+        // result[1](0, 0) = result[0](0, 0) /
+        //     (m_slpKernel.waveNumber() * m_slpKernel.waveNumber());
+        result[1](0, 0) = result[0](0, 0) / m_slpKernel.waveNumber();
+        result[0](0, 0) *= m_slpKernel.waveNumber();
     }
 
 private:

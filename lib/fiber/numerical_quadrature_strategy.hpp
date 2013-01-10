@@ -59,6 +59,17 @@ public:
             const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
             const shared_ptr<const OpenClHandler>& openClHandler) const;
 
+    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+    makeAssemblerForLocalOperators(
+            const shared_ptr<const GeometryFactory>& geometryFactory,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
+            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+            const shared_ptr<const TestTrialIntegral<BasisFunctionType, ResultType> >& integral,
+            const shared_ptr<const OpenClHandler>& openClHandler) const;
+
 private:
     virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
     makeAssemblerForIntegralOperatorsImplRealKernel(

@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_default_default_kernel_trial_integral_imp_hpp
-#define fiber_default_default_kernel_trial_integral_imp_hpp
+#ifndef fiber_default_kernel_trial_integral_imp_hpp
+#define fiber_default_kernel_trial_integral_imp_hpp
 
 #include "default_kernel_trial_integral.hpp"
 

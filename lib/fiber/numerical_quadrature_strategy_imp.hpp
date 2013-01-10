@@ -23,10 +23,13 @@
 
 #include "numerical_quadrature_strategy.hpp"
 
-#include "default_local_assembler_for_identity_operator_on_surface.hpp"
+#include "default_local_assembler_for_local_operators_on_surfaces.hpp"
 #include "default_local_assembler_for_integral_operators_on_surfaces.hpp"
 #include "default_local_assembler_for_grid_functions_on_surfaces.hpp"
 #include "default_evaluator_for_integral_operators.hpp"
+
+#include "default_test_trial_integral_imp.hpp"
+#include "simple_test_trial_integrand_functor.hpp"
 
 #include <stdexcept>
 
@@ -65,14 +68,41 @@ makeAssemblerForIdentityOperators(
         const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const OpenClHandler>& openClHandler) const
 {
-    typedef DefaultLocalAssemblerForIdentityOperatorOnSurface<
+    typedef Fiber::SimpleTestTrialIntegrandFunctor<BasisFunctionType, ResultType>
+            IntegrandFunctor;
+    shared_ptr<TestTrialIntegral<BasisFunctionType, ResultType> > integral(
+                new Fiber::DefaultTestTrialIntegral<IntegrandFunctor>(
+                    IntegrandFunctor()));
+    return makeAssemblerForLocalOperators(
+                geometryFactory, rawGeometry,
+                testBases, trialBases,
+                testTransformations, trialTransformations, integral,
+                openClHandler);
+}
+
+template <typename BasisFunctionType, typename ResultType,
+          typename GeometryFactory, typename Enable>
+std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+NumericalQuadratureStrategyBase<
+BasisFunctionType, ResultType, GeometryFactory, Enable>::
+makeAssemblerForLocalOperators(
+        const shared_ptr<const GeometryFactory>& geometryFactory,
+        const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
+        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const TestTrialIntegral<BasisFunctionType, ResultType> >& integral,
+        const shared_ptr<const OpenClHandler>& openClHandler) const
+{
+    typedef DefaultLocalAssemblerForLocalOperatorsOnSurfaces<
             BasisFunctionType, ResultType, GeometryFactory>
-            LocalAssemblerForIdentityOperator_;
+            LocalAssemblerForLocalOperators_;
     return std::auto_ptr<LocalAssemblerForOperators<ResultType> >(
-                new LocalAssemblerForIdentityOperator_(
+                new LocalAssemblerForLocalOperators_(
                     geometryFactory, rawGeometry,
                     testBases, trialBases,
-                    testTransformations, trialTransformations,
+                    testTransformations, trialTransformations, integral,
                     openClHandler));
 }
 

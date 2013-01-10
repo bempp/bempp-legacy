@@ -32,6 +32,7 @@ namespace Fiber
 class OpenClHandler;
 template <typename CoordinateType> class CollectionOfBasisTransformations;
 template <typename CoordinateType> class RawGridGeometry;
+template <typename BasisFunctionType, typename ResultType> class TestTrialIntegral;
 /** \endcond */
 
 /** \brief Integration over pairs of elements on tensor-product point grids. */
@@ -50,6 +51,7 @@ public:
             const RawGridGeometry<CoordinateType>& rawGeometry,
             const CollectionOfBasisTransformations<CoordinateType>& testTransformations,
             const CollectionOfBasisTransformations<CoordinateType>& trialTransformations,
+            const TestTrialIntegral<BasisFunctionType, ResultType>& integral,
             const OpenClHandler& openClHandler);
 
     virtual void integrate(
@@ -66,6 +68,7 @@ private:
     const RawGridGeometry<CoordinateType>& m_rawGeometry;
     const CollectionOfBasisTransformations<CoordinateType>& m_testTransformations;
     const CollectionOfBasisTransformations<CoordinateType>& m_trialTransformations;
+    const TestTrialIntegral<BasisFunctionType, ResultType>& m_integral;
 
     const OpenClHandler& m_openClHandler;
 };

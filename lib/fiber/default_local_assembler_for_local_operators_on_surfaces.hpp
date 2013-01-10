@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_default_local_assembler_for_identity_operator_on_surface_hpp
-#define fiber_default_local_assembler_for_identity_operator_on_surface_hpp
+#ifndef fiber_default_local_assembler_for_local_operators_on_surfaces_hpp
+#define fiber_default_local_assembler_for_local_operators_on_surfaces_hpp
 
 #include "../common/common.hpp"
 
@@ -45,19 +45,20 @@ class OpenClHandler;
 /** \endcond */
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
-class DefaultLocalAssemblerForIdentityOperatorOnSurface :
+class DefaultLocalAssemblerForLocalOperatorsOnSurfaces :
     public LocalAssemblerForOperators<ResultType>
 {
 public:
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    DefaultLocalAssemblerForIdentityOperatorOnSurface(
+    DefaultLocalAssemblerForLocalOperatorsOnSurfaces(
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
         const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
         const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
         const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
         const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const TestTrialIntegral<BasisFunctionType, ResultType> >& integral,
         const shared_ptr<const OpenClHandler>& openClHandler);
 
     virtual void evaluateLocalWeakForms(
@@ -99,6 +100,7 @@ private:
     shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_trialBases;
     shared_ptr<const CollectionOfBasisTransformations<CoordinateType> > m_testTransformations;
     shared_ptr<const CollectionOfBasisTransformations<CoordinateType> > m_trialTransformations;
+    shared_ptr<const TestTrialIntegral<BasisFunctionType, ResultType> > m_integral;
     shared_ptr<const OpenClHandler> m_openClHandler;
 
     IntegratorMap m_testTrialIntegrators;
@@ -106,6 +108,6 @@ private:
 
 } // namespace Fiber
 
-#include "default_local_assembler_for_identity_operator_on_surface_imp.hpp"
+#include "default_local_assembler_for_local_operators_on_surfaces_imp.hpp"
 
 #endif

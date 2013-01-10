@@ -23,7 +23,7 @@
 
 #include "../common/common.hpp"
 
-#include "elementary_local_operator.hpp"
+#include "elementary_abstract_boundary_operator.hpp"
 
 #include "abstract_boundary_operator_id.hpp"
 #include <boost/scoped_ptr.hpp>
@@ -78,25 +78,20 @@ private:
  */
 template <typename BasisFunctionType_, typename ResultType_>
 class IdentityOperator :
-        public ElementaryLocalOperator<BasisFunctionType_, ResultType_>
+        public ElementaryAbstractBoundaryOperator<BasisFunctionType_, ResultType_>
 {
-    typedef ElementaryLocalOperator<BasisFunctionType_, ResultType_> Base;
+    typedef ElementaryAbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
 public:
-    /** \copydoc ElementaryLocalOperator::BasisFunctionType */
+    /** \copydoc ElementaryAbstractBoundaryOperator::BasisFunctionType */
     typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc ElementaryLocalOperator::ResultType */
+    /** \copydoc ElementaryAbstractBoundaryOperator::ResultType */
     typedef typename Base::ResultType ResultType;
-    /** \copydoc ElementaryLocalOperator::CoordinateType */
+    /** \copydoc ElementaryAbstractBoundaryOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc ElementaryLocalOperator::QuadratureStrategy */
+    /** \copydoc ElementaryAbstractBoundaryOperator::QuadratureStrategy */
     typedef typename Base::QuadratureStrategy QuadratureStrategy;
-    /** \copydoc ElementaryLocalOperator::LocalAssembler */
+    /** \copydoc ElementaryAbstractBoundaryOperator::LocalAssembler */
     typedef typename Base::LocalAssembler LocalAssembler;
-    /** \copydoc ElementaryLocalOperator::CollectionOfBasisTransformations */
-    typedef typename Base::CollectionOfBasisTransformations
-    CollectionOfBasisTransformations;
-    /** \copydoc ElementaryLocalOperator::TestTrialIntegral */
-    typedef typename Base::TestTrialIntegral TestTrialIntegral;
 
     /** \brief Constructor.
      *
@@ -123,7 +118,9 @@ public:
                      const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
                      const std::string& label = "",
                      int symmetry = AUTO_SYMMETRY);
+    IdentityOperator(const IdentityOperator& other);
     virtual ~IdentityOperator();
+    IdentityOperator& operator=(const IdentityOperator& rhs);
 
     /** \brief Return the identifier of this operator.
      *
@@ -135,17 +132,46 @@ public:
      */
     BEMPP_DEPRECATED virtual shared_ptr<const AbstractBoundaryOperatorId> id() const;
 
+    /** \brief Return true. */
+    virtual bool isLocal() const;
+
+protected:
+    virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
+    assembleWeakFormImpl(
+            const Context<BasisFunctionType, ResultType>& context) const;
+
 private:
-    virtual const CollectionOfBasisTransformations&
-    testTransformations() const;
+    virtual std::auto_ptr<LocalAssembler> makeAssemblerImpl(
+            const QuadratureStrategy& quadStrategy,
+            const shared_ptr<const GeometryFactory>& testGeometryFactory,
+            const shared_ptr<const GeometryFactory>& trialGeometryFactory,
+            const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
+            const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
+            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
+            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
+            const ParallelizationOptions& parallelizationOptions,
+            VerbosityLevel::Level verbosityLevel,
+            bool cacheSingularIntegrals) const;
 
-    virtual const CollectionOfBasisTransformations&
-    trialTransformations() const;
+    virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
+    assembleWeakFormInternalImpl(
+            LocalAssembler& assembler,
+            const AssemblyOptions& options) const;
 
-    virtual const TestTrialIntegral& integral() const;
+    std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
+    assembleWeakFormInDenseMode(
+            LocalAssembler& assembler,
+            const AssemblyOptions& options) const;
+
+    std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
+    assembleWeakFormInSparseMode(
+            LocalAssembler& assembler,
+            const AssemblyOptions& options) const;
 
 private:
-    shared_ptr<TestTrialIntegral> m_integral;
+    struct Impl;
+    boost::scoped_ptr<Impl> m_impl;
     shared_ptr<const AbstractBoundaryOperatorId> m_id;
 };
 

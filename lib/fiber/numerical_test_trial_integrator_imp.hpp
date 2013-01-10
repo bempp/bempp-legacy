@@ -46,6 +46,7 @@ NumericalTestTrialIntegrator(
         const RawGridGeometry<CoordinateType>& rawGeometry,
         const CollectionOfBasisTransformations<CoordinateType>& testTransformations,
         const CollectionOfBasisTransformations<CoordinateType>& trialTransformations,
+        const TestTrialIntegral<BasisFunctionType, ResultType>& integral,
         const OpenClHandler& openClHandler) :
     m_localQuadPoints(localQuadPoints),
     m_quadWeights(quadWeights),
@@ -53,6 +54,7 @@ NumericalTestTrialIntegrator(
     m_rawGeometry(rawGeometry),
     m_testTransformations(testTransformations),
     m_trialTransformations(trialTransformations),
+    m_integral(integral),
     m_openClHandler(openClHandler)
 {
     if (localQuadPoints.n_cols != quadWeights.size())
@@ -101,10 +103,11 @@ void NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory
     GeometricalData<CoordinateType> geomData;
 
     size_t testBasisDeps = 0, trialBasisDeps = 0;
-    size_t geomDeps = INTEGRATION_ELEMENTS;
+    size_t geomDeps = 0; // INTEGRATION_ELEMENTS;
 
     m_testTransformations.addDependencies(testBasisDeps, geomDeps);
     m_trialTransformations.addDependencies(trialBasisDeps, geomDeps);
+    m_integral.addGeometricalDependencies(geomDeps);
 
     typedef typename GeometryFactory::Geometry Geometry;
     std::auto_ptr<Geometry> geometry(m_geometryFactory.make());
@@ -124,18 +127,21 @@ void NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory
         m_testTransformations.evaluate(testBasisData, geomData, testValues);
         m_trialTransformations.evaluate(trialBasisData, geomData, trialValues);
 
-        for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
-            for (int testDof = 0; testDof < testDofCount; ++testDof)
-            {
-                ResultType sum = 0.;
-                for (size_t point = 0; point < pointCount; ++point)
-                    for (int dim = 0; dim < componentCount; ++dim)
-                        sum +=  m_quadWeights[point] *
-                                geomData.integrationElements(point) *
-                                conjugate(testValues[0](dim, testDof, point)) *
-                                trialValues[0](dim, trialDof, point);
-                result(testDof, trialDof, e) = sum;
-            }
+        m_integral.evaluate(geomData, testValues, trialValues,
+                m_quadWeights, result.slice(e));
+
+        // for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
+        //     for (int testDof = 0; testDof < testDofCount; ++testDof)
+        //     {
+        //         ResultType sum = 0.;
+        //         for (size_t point = 0; point < pointCount; ++point)
+        //             for (int dim = 0; dim < componentCount; ++dim)
+        //                 sum +=  m_quadWeights[point] *
+        //                         geomData.integrationElements(point) *
+        //                         conjugate(testValues[0](dim, testDof, point)) *
+        //                         trialValues[0](dim, trialDof, point);
+        //         result(testDof, trialDof, e) = sum;
+        //     }
     }
 }
 
