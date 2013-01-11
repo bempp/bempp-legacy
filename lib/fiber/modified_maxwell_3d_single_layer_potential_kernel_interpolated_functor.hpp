@@ -37,8 +37,8 @@ namespace Fiber
  *  equations in 3D.
  *
  *  The functor evaluates two kernels, equal to the single-layer potential
- *  kernel of the modified Helmholtz equation divided and multiplied by
- *  (-m_waveNumber), respectively.
+ *  kernel of the modified Helmholtz equation multiplied and divided by
+ *  m_waveNumber, respectively.
  *
  *  \tparam ValueType Type used to represent the values of the kernel. It can
  *  be one of: \c float, \c double, <tt>std::complex<float></tt> and
@@ -77,8 +77,8 @@ public:
             CollectionOf2dSlicesOfNdArrays<ValueType>& result) const {
         // This will put the value of the SLP kernel in result[0](0, 0)
         m_slpKernel.evaluate(testGeomData, trialGeomData, result);
-        result[1](0, 0) = result[0](0, 0) / (-m_slpKernel.waveNumber());
-        result[0](0, 0) *= (-m_slpKernel.waveNumber());
+        result[1](0, 0) = result[0](0, 0) / m_slpKernel.waveNumber();
+        result[0](0, 0) *= m_slpKernel.waveNumber();
     }
 
 private:
