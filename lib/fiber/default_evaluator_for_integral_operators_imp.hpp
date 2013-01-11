@@ -338,6 +338,7 @@ ResultType, GeometryFactory>::calcTrialData(
             {
                 std::fill(argumentData.values.begin(),
                           argumentData.values.end(), 0.);
+                assert(localCoefficients.size() == basisData.values.extent(1));
                 for (size_t point = 0; point < basisData.values.extent(2); ++point)
                     for (size_t dim = 0; dim < basisData.values.extent(0); ++dim)
                         for (size_t fun = 0; fun < basisData.values.extent(1); ++fun)
@@ -349,6 +350,7 @@ ResultType, GeometryFactory>::calcTrialData(
             {
                 std::fill(argumentData.derivatives.begin(),
                           argumentData.derivatives.end(), 0.);
+                assert(localCoefficients.size() == basisData.derivatives.extent(2));
                 for (size_t point = 0; point < basisData.derivatives.extent(3); ++point)
                     for (size_t dim = 0; dim < basisData.derivatives.extent(1); ++dim)
                         for (size_t comp = 0; comp < basisData.derivatives.extent(0); ++comp)
