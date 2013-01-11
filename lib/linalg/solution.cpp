@@ -24,6 +24,12 @@
 namespace Bempp
 {
 
+template <typename BasisFunctionType, typename ResultType>
+Solution<BasisFunctionType, ResultType>::Solution() :
+    Base(SolutionStatus::UNKNOWN)
+{
+}
+
 #ifdef WITH_TRILINOS
 template <typename BasisFunctionType, typename ResultType>
 Solution<BasisFunctionType, ResultType>::Solution(

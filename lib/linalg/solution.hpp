@@ -41,6 +41,9 @@ public:
     typedef SolutionBase<BasisFunctionType, ResultType> Base;
     typedef typename Base::MagnitudeType MagnitudeType;
 
+    /** \brief Construct an uninitialized solution. */
+    Solution();
+
 #ifdef WITH_TRILINOS
     /** \brief Constructor */
     Solution(const GridFunction<BasisFunctionType, ResultType>& gridFunction,
