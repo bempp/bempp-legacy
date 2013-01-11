@@ -20,41 +20,14 @@
 
 #include "identity_operator.hpp"
 
-#include "ahmed_aux.hpp"
-#include "assembly_options.hpp"
 #include "boundary_operator.hpp"
-#include "cluster_construction_helper.hpp"
-#include "discrete_dense_boundary_operator.hpp"
-#include "discrete_sparse_boundary_operator.hpp"
-#include "context.hpp"
-
-#include "../common/types.hpp"
-#include "../fiber/basis.hpp"
-#include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/quadrature_strategy.hpp"
-#include "../fiber/local_assembler_for_operators.hpp"
-#include "../fiber/opencl_handler.hpp"
-#include "../fiber/raw_grid_geometry.hpp"
-#include "../fiber/scalar_function_value_functor.hpp"
-#include "../fiber/default_collection_of_basis_transformations.hpp"
-
-#include "../fiber/default_test_trial_integral_imp.hpp"
-#include "../fiber/simple_test_trial_integrand_functor.hpp"
-
-#include "../grid/entity_iterator.hpp"
-#include "../grid/geometry_factory.hpp"
-#include "../grid/grid.hpp"
-#include "../grid/grid_view.hpp"
-#include "../grid/mapper.hpp"
-#include "../space/space.hpp"
 
 #include "../common/boost_make_shared_fwd.hpp"
+#include "../fiber/default_test_trial_integral_imp.hpp"
+#include "../fiber/explicit_instantiation.hpp"
+#include "../fiber/simple_test_trial_integrand_functor.hpp"
+
 #include <boost/type_traits/is_complex.hpp>
-
-#include <tbb/tick_count.h>
-
-#include <stdexcept>
-#include <vector>
 
 namespace Bempp
 {
