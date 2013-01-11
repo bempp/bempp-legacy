@@ -43,8 +43,7 @@ public:
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
     void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const {
-        testGeomDeps |= NORMALS;
-        trialGeomDeps |= NORMALS;
+        // Do nothing
     }
 
     template <template <typename T> class CollectionOf2dSlicesOfConstNdArrays>
