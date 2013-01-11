@@ -18,27 +18,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_modified_maxwell_3d_single_layer_potential_kernel_interpolated_functor_hpp
-#define fiber_modified_maxwell_3d_single_layer_potential_kernel_interpolated_functor_hpp
+#ifndef fiber_modified_maxwell_3d_double_layer_potential_kernel_functor_hpp
+#define fiber_modified_maxwell_3d_double_layer_potential_kernel_functor_hpp
 
 #include "../common/common.hpp"
 
 #include "geometrical_data.hpp"
 #include "scalar_traits.hpp"
 
-#include "modified_helmholtz_3d_single_layer_potential_kernel_interpolated_functor.hpp"
+#include "modified_helmholtz_3d_single_layer_potential_kernel_functor.hpp"
 
 namespace Fiber
 {
 
 /** \ingroup modified_maxwell_3d
  *  \ingroup functors
- *  \brief Kernel collection functor for the SLP of the modified Maxwell
+ *  \brief Kernel collection functor for the DLP of the modified Maxwell
  *  equations in 3D.
  *
- *  The functor evaluates two kernels, equal to the single-layer potential
- *  kernel of the modified Helmholtz equation divided and multiplied by
- *  (-m_waveNumber), respectively.
+ *  The functor evaluates the gradient of the Green's function
+ *  kernel of the modified Helmholtz equation with respect to the test coordinate.
  *
  *  \tparam ValueType Type used to represent the values of the kernel. It can
  *  be one of: \c float, \c double, <tt>std::complex<float></tt> and
@@ -47,44 +46,58 @@ namespace Fiber
  *
  *  \see modified_maxwell_3d
  */
+
 template <typename ValueType_>
-class ModifiedMaxwell3dSingleLayerPotentialKernelInterpolatedFunctor
+class ModifiedMaxwell3dDoubleLayerPotentialKernelFunctor
 {
 public:
     typedef ValueType_ ValueType;
     typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
-    ModifiedMaxwell3dSingleLayerPotentialKernelInterpolatedFunctor(
-            ValueType waveNumber,
-            CoordinateType maxDist, int interpPtsPerWavelength) :
-        m_slpKernel(waveNumber, maxDist, interpPtsPerWavelength)
+    explicit ModifiedMaxwell3dDoubleLayerPotentialKernelFunctor(
+            ValueType waveNumber) :
+        m_waveNumber(waveNumber)
     {}
 
-    int kernelCount() const { return 2; }
-    int kernelRowCount(int /* kernelIndex */) const { return 1; }
+    int kernelCount() const { return 1; }
+    int kernelRowCount(int /* kernelIndex */) const { return 3; }
     int kernelColCount(int /* kernelIndex */) const { return 1; }
 
     void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const {
-        m_slpKernel.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
+        testGeomDeps |= GLOBALS;
+        trialGeomDeps |= GLOBALS;
     }
 
-    ValueType waveNumber() const { return m_slpKernel.waveNumber(); }
+    ValueType waveNumber() const { return m_waveNumber; }
 
     template <template <typename T> class CollectionOf2dSlicesOfNdArrays>
     void evaluate(
             const ConstGeometricalDataSlice<CoordinateType>& testGeomData,
             const ConstGeometricalDataSlice<CoordinateType>& trialGeomData,
             CollectionOf2dSlicesOfNdArrays<ValueType>& result) const {
-        // This will put the value of the SLP kernel in result[0](0, 0)
-        m_slpKernel.evaluate(testGeomData, trialGeomData, result);
-        result[1](0, 0) = result[0](0, 0) / (-m_slpKernel.waveNumber());
-        result[0](0, 0) *= (-m_slpKernel.waveNumber());
+        const int coordCount = 3;
+
+        CoordinateType distanceSq = 0;
+        for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex) {
+            CoordinateType diff = testGeomData.global(coordIndex) -
+                    trialGeomData.global(coordIndex);
+            distanceSq += diff * diff;
+        }
+        const CoordinateType distance = sqrt(distanceSq);
+        const ValueType commonFactor =
+            static_cast<CoordinateType>(-1. / (4. * M_PI)) *
+            (static_cast<CoordinateType>(1.) + m_waveNumber * distance) /
+            (distance * distanceSq) *
+            exp(-m_waveNumber * distance);
+        for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex)
+            result[0](coordIndex, 0) = commonFactor *
+                (testGeomData.global(coordIndex) -
+                 trialGeomData.global(coordIndex));
     }
 
 private:
     /** \cond PRIVATE */
-    ModifiedHelmholtz3dSingleLayerPotentialKernelInterpolatedFunctor<ValueType>
-        m_slpKernel;
+    ValueType m_waveNumber;
     /** \endcond */
 };
 

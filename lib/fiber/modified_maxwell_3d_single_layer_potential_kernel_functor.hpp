@@ -36,9 +36,9 @@ namespace Fiber
  *  \brief Kernel collection functor for the SLP of the modified Maxwell
  *  equations in 3D.
  *
- *  The functor evaluates two kernels: the single-layer potential
- *  kernel of the modified Helmholtz equation and the single-layer
- *  potential kernel divided by m_waveNumber**2.
+ *  The functor evaluates two kernels, equal to the single-layer potential
+ *  kernel of the modified Helmholtz equation divided and multiplied by
+ *  (-m_waveNumber), respectively.
  *
  *  \tparam ValueType Type used to represent the values of the kernel. It can
  *  be one of: \c float, \c double, <tt>std::complex<float></tt> and
@@ -47,7 +47,6 @@ namespace Fiber
  *
  *  \see modified_maxwell_3d
  */
-
 template <typename ValueType_>
 class ModifiedMaxwell3dSingleLayerPotentialKernelFunctor
 {
@@ -77,10 +76,8 @@ public:
             CollectionOf2dSlicesOfNdArrays<ValueType>& result) const {
         // This will put the value of the SLP kernel in result[0](0, 0)
         m_slpKernel.evaluate(testGeomData, trialGeomData, result);
-        // result[1](0, 0) = result[0](0, 0) /
-        //     (m_slpKernel.waveNumber() * m_slpKernel.waveNumber());
-        result[1](0, 0) = result[0](0, 0) / m_slpKernel.waveNumber();
-        result[0](0, 0) *= m_slpKernel.waveNumber();
+        result[1](0, 0) = result[0](0, 0) / (-m_slpKernel.waveNumber());
+        result[0](0, 0) *= (-m_slpKernel.waveNumber());
     }
 
 private:
