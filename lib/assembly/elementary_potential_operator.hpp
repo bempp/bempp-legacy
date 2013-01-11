@@ -61,7 +61,7 @@ namespace Bempp
  *  its surface divergence or curl), the kernel function might be a tensor, or
  *  \f$F\f$ might consist of several terms. The form of \f$F\f$ for a particular
  *  potential operator is determined by the implementation of the virtual
- *  functions integral(), kernels() and chargeTransformations().
+ *  functions integral(), kernels() and trialTransformations().
  *
  *  \tparam BasisFunctionType_
  *    Type of the values of the (components of the) basis functions into
