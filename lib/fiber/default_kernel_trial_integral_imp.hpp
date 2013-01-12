@@ -43,11 +43,12 @@ public:
 
     void addGeometricalDependencies(int& trialGeomDeps) const;
 
-    ResultType evaluate(
+    void evaluate(
             const ConstGeometricalDataSlice<CoordinateType>& trialGeomData,
             const CollectionOf2dSlicesOfConst4dArrays<KernelType>& kernels,
             const CollectionOf1dSlicesOfConst2dArrays<BasisFunctionType>&
-            weightedTrialTransformations) const;
+            weightedTrialTransformations,
+            std::vector<ResultType>& value) const;
 };
 */
 
@@ -88,14 +89,18 @@ void DefaultKernelTrialIntegral<IntegrandFunctor>::evaluate(
     result.set_size(resultComponentCount, evalPointCount);
     std::fill(result.begin(), result.end(), 0.);
 
+    std::vector<ResultType> value(resultComponentCount);
+
     for (size_t evalPoint = 0; evalPoint < evalPointCount; ++evalPoint)
-        for (int dim = 0; dim < resultComponentCount; ++dim)
-            for (size_t quadPoint = 0; quadPoint < quadPointCount; ++quadPoint)
-                result(dim, evalPoint) += m_functor.evaluate(
-                            trialGeomData.const_slice(quadPoint),
-                            kernels.const_slice(evalPoint, quadPoint),
-                            trialTransformations.const_slice(quadPoint)) *
-                        weights[quadPoint];
+        for (size_t quadPoint = 0; quadPoint < quadPointCount; ++quadPoint) {
+            m_functor.evaluate(
+                        trialGeomData.const_slice(quadPoint),
+                        kernels.const_slice(evalPoint, quadPoint),
+                        trialTransformations.const_slice(quadPoint),
+                        value);
+            for (int dim = 0; dim < resultComponentCount; ++dim)
+                result(dim, evalPoint) += value[dim] * weights[quadPoint];
+        }
 }
 
 } // namespace Fiber

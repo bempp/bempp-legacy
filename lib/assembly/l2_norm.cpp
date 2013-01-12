@@ -89,11 +89,12 @@ public:
         return 1;
     }
 
-    ResultType evaluate(
+    void evaluate(
             const Fiber::ConstGeometricalDataSlice<CoordinateType>& /* trialGeomData */,
             const Fiber::CollectionOf2dSlicesOfConst4dArrays<KernelType>& kernelValues,
             const Fiber::CollectionOf1dSlicesOfConst2dArrays<ResultType>&
-            trialValues) const {
+            trialValues,
+            std::vector<ResultType>& result) const {
         // Assert that there is only a single kernel with a single column
         assert(kernelValues.size() == 1);
         assert(kernelValues[0].extent(1) == 1);
@@ -106,13 +107,15 @@ public:
         assert(trialValues[0].extent(0) == componentCount);
 #endif
 
+        // Assert that the result has only one element
+        assert(result.size() == 1);
+
         // (t - k)* . (t - k)
-        ResultType result = 0.;
+        result[0] = 0.;
         for (size_t i = 0; i < componentCount; ++i) {
-            result += conj(trialValues[0](i) - kernelValues[0](i, 0)) *
+            result[0] += conj(trialValues[0](i) - kernelValues[0](i, 0)) *
                 (trialValues[0](i) - kernelValues[0](i, 0));
         }
-        return result;
     }
 };
 

@@ -53,11 +53,12 @@ public:
     // It is possible that this function could be generalised to
     // multiple basis transformations or kernels and that the additional
     // loops could be optimised away by the compiler.
-    ResultType evaluate(
+    void evaluate(
             const ConstGeometricalDataSlice<CoordinateType>& /* trialGeomData */,
             const CollectionOf2dSlicesOfConst4dArrays<KernelType>& kernelValues,
             const CollectionOf1dSlicesOfConst2dArrays<ResultType>&
-            weightedTransformedTrialValues) const {
+            weightedTransformedTrialValues,
+            std::vector<ResultType>& value) const {
         // Assert that there is at least one scalar-valued kernel
         assert(kernelValues.size() >= 1);
         assert(kernelValues[0].extent(0) == 1);
@@ -70,8 +71,9 @@ public:
         const int transformationDim = weightedTransformedTrialValues[0].extent(0);
         assert(transformationDim == 1);
 #endif
+        assert(value.size() == 1);
 
-        return weightedTransformedTrialValues[0](0) * kernelValues[0](0, 0);
+        value[0] = weightedTransformedTrialValues[0](0) * kernelValues[0](0, 0);
     }
 };
 
