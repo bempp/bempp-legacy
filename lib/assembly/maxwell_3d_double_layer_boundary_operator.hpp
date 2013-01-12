@@ -30,7 +30,12 @@
 namespace Bempp
 {
 
-/** \brief Construct a double-layer boundary operator for Maxwell equations in 3D.
+/** \ingroup maxwell_3d
+ *  \brief Construct a double-layer boundary operator for Maxwell equations in 3D.
+ *
+ *  This function constructs a BoundaryOperator object representing
+ *  the double-layer boundary operator \f$\boldsymbol C\f$ for the
+ *  Maxwell equations in 3D, as defined in \ref maxwell_3d.
  *
  *  \param[in] context
  *    A Context object that will be used to build the weak form of the
@@ -66,7 +71,10 @@ namespace Bempp
  *
  *  None of the shared pointers may be null and the spaces \p range and \p
  *  dualToRange must be defined on the same grid, otherwise an exception is
- *  thrown. */
+ *  thrown.
+ *
+ *  \see Maxwell3dDoubleLayerPotentialOperator()
+ */
 template <typename BasisFunctionType>
 BoundaryOperator<BasisFunctionType,
     typename ScalarTraits<BasisFunctionType>::ComplexType>

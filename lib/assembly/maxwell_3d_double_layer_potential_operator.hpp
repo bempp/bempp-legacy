@@ -34,13 +34,17 @@ struct Maxwell3dDoubleLayerPotentialOperatorImpl;
 /** \ingroup maxwell_3d
  *  \brief Double-layer potential operator for the Maxwell equations in 3D.
  *
+ *  This class represents the double-layer potential operator
+ *  \f$\boldsymbol \Psi_{\mathrm{DL}}\f$ for the Maxwell equations in
+ *  3D, as defined in \ref maxwell_3d.
+ *
  *  \tparam BasisFunctionType_
  *    Type of the values of the basis functions into which functions acted upon
  *    by the operator are expanded. It can take the following values: \c float,
  *    \c double, <tt>std::complex<float></tt> and
  *    <tt>std::complex<double></tt>.
  *
- *  \see maxwell_3d */
+ *  \see maxwell3dDoubleLayerBoundaryOperator(). */
 template <typename BasisFunctionType_>
 class Maxwell3dDoubleLayerPotentialOperator :
         public Helmholtz3dPotentialOperatorBase<

@@ -202,6 +202,169 @@
  *  \ref helmholtz_3d "standard Helmholtz equation".
  */
 
+/** \defgroup maxwell_3d Maxwell equations in 3D
+    \ingroup operators
+
+    This submodule contains classes relevant to the implementation of boundary
+    operators and potential operators related to the time-harmonic Maxwell
+    equations in 3D. Inside a region with a uniform scalar permittivity and
+    permeability, these equations can be reduced to the form
+
+    \f[
+        \boldsymbol\nabla \times \boldsymbol\nabla \times
+        \boldsymbol u - k^2 \boldsymbol u = 0,
+    \f]
+
+    where \f$\boldsymbol u\f$ stands either for the electric or the magnetic
+    field and the number \f$k \neq 0\f$ is referred to as the <em>wave
+    number</em>.
+
+    The treatment of Maxwell equations in BEM++ closely follows that of A. Buffa
+    and R. Hiptmair, "Galerkin Boundary Element Methods for Electromagnetic
+    Scattering", in "Computational Methods in Wave Propagation", M. Ainsworth,
+    ed., Springer, New York 2003, pp. 85-126. In the following we cite the
+    principal definitions relevant to the implementation of BEM in the Maxwell
+    case.
+
+    The starting point is the Stratton-Chu theorem (Theorem 6 in Buffa and
+    Hiptmair), which plays a part analogous to the Green's representation
+    theorem for the Laplace equation. It states that any solution \f$u\f$ of the
+    Maxwell equations in a bounded domain \f$\Omega\f$ with boundary
+    \f$\Gamma\f$ has the representation
+
+    \f[ \boldsymbol u =
+    \boldsymbol \Psi_{\mathrm{SL}}(\gamma_{\mathrm{N,int}}\boldsymbol u) +
+    \boldsymbol \Psi_{\mathrm{DL}}(\gamma_{\mathrm{D,int}}\boldsymbol u).
+    \f]
+
+    (all the symbols will be defined shortly). Furthermore, any solution \f$u\f$
+    that satisfies the Maxwell equations in a domain \f$\Omega^{\mathrm c}\f$
+    extending to infinity and meets the Silver-Mueller radiation conditions at
+    infinity has the representation
+
+    \f[ \boldsymbol u =
+    -\boldsymbol \Psi_{\mathrm{SL}}(\gamma_{\mathrm{N,ext}}\boldsymbol u) -
+    \boldsymbol \Psi_{\mathrm{DL}}(\gamma_{\mathrm{D,ext}}\boldsymbol u).
+    \f]
+
+    The action of the <em>single-layer potential operator</em> is defined by
+
+    \f[
+    (\boldsymbol \Psi_{\mathrm{SL}} \boldsymbol v)(\boldsymbol x) \equiv
+    \mathrm i k \int_{\Gamma} G(\boldsymbol x, \boldsymbol y)
+    \boldsymbol v(\boldsymbol y) \mathrm\Gamma(\boldsymbol y) -
+    \frac{1}{\mathrm i k}
+    \boldsymbol\nabla_{\boldsymbol x}
+    \int_{\Gamma} G(\boldsymbol x, \boldsymbol y)
+    (\boldsymbol \nabla_\Gamma \cdot \boldsymbol v)(\boldsymbol y)
+    \mathrm\Gamma(\boldsymbol y),
+    \f]
+
+    where
+
+    \f[
+    G(\boldsymbol x, \boldsymbol y) \equiv
+    \frac{\exp(\mathrm i k \lvert \boldsymbol x - \boldsymbol y \rvert)}
+    {4\pi \lvert \boldsymbol x - \boldsymbol y \rvert}
+    \f]
+
+    is the Green's function of the Helmholtz equation. The action of the
+    <em>double-layer potential operator</em>, in turn, is defined by
+    \f[
+    (\Psi_{\mathrm{DL}} \boldsymbol v)(\boldsymbol x) \equiv
+    \boldsymbol\nabla_{\boldsymbol x} \times
+    \int_{\Gamma} G(\boldsymbol x, \boldsymbol y)
+    \boldsymbol v(\boldsymbol y) \mathrm\Gamma(\boldsymbol y).
+    \f]
+
+    The <em>interior Dirichlet trace</em> \f$\gamma_{\mathrm{D,int}}\boldsymbol
+    u\f$ at a point \f$\boldsymbol x \in \Gamma\f$ is defined as
+
+    \f[(\gamma_{\mathrm{D,int}}\boldsymbol u)(\boldsymbol x) \equiv
+    \boldsymbol u\rvert_{\Gamma,\mathrm{int}}(\boldsymbol x) \times
+    \boldsymbol n(\boldsymbol x),\f]
+
+    where \f$\boldsymbol n\f$
+    is the outward unit vector normal to \f$\Gamma\f$ at \f$\boldsymbol x\f$ and
+    \f$\boldsymbol u\rvert_{\Gamma,\mathrm{int}}(\boldsymbol x)\f$
+    is the limit of \f$\boldsymbol u(\boldsymbol y)\f$ as
+    \f$\boldsymbol y\f$ approaches \f$\boldsymbol x\f$
+    from within \f$\Omega\f$.
+    The <em>interior Neumann trace</em> \f$\gamma_{\mathrm{N,int}}\boldsymbol
+    u\f$ at \f$\boldsymbol x \in \Gamma\f$ is defined as
+
+    \f[(\gamma_{\mathrm{N,int}}\boldsymbol u)(\boldsymbol x) \equiv
+    \frac{1}{\mathrm i k}
+    (\boldsymbol \nabla \times \boldsymbol u)\rvert_{\Gamma,\mathrm{int}}
+    (\boldsymbol x) \times
+    \boldsymbol n(\boldsymbol x).\f]
+
+    Note that compared to Buffa and Hiptmair, we include an additional
+    \f$\mathrm i\f$ factor in the denominator of the Neumann trace, as this
+    makes both the Neumann trace and the potential operators real-valued in the
+    special case of \f$k\f$ purely imaginary (and \f$\boldsymbol u\f$ purely
+    real).
+
+    The <em>exterior</em> Dirichlet and Neumann traces are defined analogously,
+    with the relevant quantities assumed to approach the point \f$\boldsymbol
+    x\f$ from within the complement of \f$\Omega\f$.
+
+    The <em>single-layer boundary operator</em>
+    \f$\boldsymbol S\f$ is defined as the average of the interior and exterior
+    Dirichlet traces of the single-layer potential operator:
+
+    \f[
+    \boldsymbol S =
+    \frac12
+    (\gamma_{\mathrm{D,int}} \boldsymbol \Psi_{\mathrm{SL}} +
+    \gamma_{\mathrm{D,ext}} \boldsymbol \Psi_{\mathrm{SL}}).
+    \f]
+
+    The <em>double-layer boundary operator</em> \f$\boldsymbol C\f$ is defined,
+    analogously, as the average of the interior and exterior Dirichlet traces of
+    the double-layer potential operator.
+
+    To exploit the symmetry between the electric and magnetic field in Maxwell
+    equations, it is advantageous to use the following antisymmetric
+    pseudo-inner product in the Galerkin discretisation of the above boundary
+    operators:
+
+    \f[
+    \langle \boldsymbol u, \boldsymbol v \rangle_{\boldsymbol\tau,\Gamma} \equiv
+    \int_\Gamma \boldsymbol u^* \cdot (\boldsymbol v \times \boldsymbol n)
+    \mathrm d\Gamma,
+    \f]
+
+    where \f$*\f$ denotes complex conjugation. The weak forms of the single- and
+    double-layer boundary operators with respect to this pseudo-inner product
+    are given by
+
+    \f[
+    \langle \boldsymbol u,
+    \boldsymbol S \boldsymbol v\rangle_{\boldsymbol\tau,\Gamma} =
+    \int_\Gamma \int_\Gamma
+    G(\boldsymbol x, \boldsymbol y)
+    \biggl[-\mathrm i k
+    \boldsymbol u^*(\boldsymbol x) \cdot \boldsymbol v(\boldsymbol y)
+    -\frac{1}{\mathrm i k}
+    (\boldsymbol \nabla_\Gamma \cdot \boldsymbol u^*)(\boldsymbol x)
+    (\boldsymbol \nabla_\Gamma \cdot \boldsymbol v)(\boldsymbol y)
+    \biggr]
+    \mathrm{d}\Gamma(\boldsymbol x)\,\mathrm{d}\Gamma(\boldsymbol y)
+    \f]
+
+    and
+
+    \f[
+    \langle \boldsymbol u,
+    \boldsymbol C \boldsymbol v\rangle_{\boldsymbol\tau,\Gamma} =
+    \int_\Gamma \int_\Gamma
+    \boldsymbol\nabla_{\boldsymbol x}G(\boldsymbol x, \boldsymbol y) \cdot
+    [\boldsymbol u^*(\boldsymbol x) \times \boldsymbol v(\boldsymbol y)]
+    \mathrm{d}\Gamma(\boldsymbol x)\,\mathrm{d}\Gamma(\boldsymbol y).
+    \f]
+ */
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /** \defgroup space Space
