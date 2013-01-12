@@ -18,25 +18,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "maxwell_identity_operator.hpp"
+#include "maxwell_3d_identity_operator.hpp"
 
 #include "boundary_operator.hpp"
 
 #include "../common/boost_make_shared_fwd.hpp"
 #include "../fiber/default_test_trial_integral_imp.hpp"
 #include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/maxwell_test_trial_integrand_functor.hpp"
+#include "../fiber/maxwell_3d_test_trial_integrand_functor.hpp"
 
 #include <boost/type_traits/is_complex.hpp>
 
 namespace Bempp
 {
 
-////////////////////////////////////////////////////////////////////////////////
-// MaxwellIdentityOperator
-
 template <typename BasisFunctionType, typename ResultType>
-MaxwellIdentityOperator<BasisFunctionType, ResultType>::MaxwellIdentityOperator(
+Maxwell3dIdentityOperator<BasisFunctionType, ResultType>::Maxwell3dIdentityOperator(
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
@@ -44,48 +41,48 @@ MaxwellIdentityOperator<BasisFunctionType, ResultType>::MaxwellIdentityOperator(
         int symmetry) :
     Base(domain, range, dualToRange, label, symmetry)
 {
-    typedef Fiber::MaxwellTestTrialIntegrandFunctor<
+    typedef Fiber::Maxwell3dTestTrialIntegrandFunctor<
             BasisFunctionType, ResultType> IntegrandFunctor;
     typedef Fiber::DefaultTestTrialIntegral<IntegrandFunctor> Integral;
     m_integral.reset(new Integral((IntegrandFunctor())));
 }
 
 template <typename BasisFunctionType, typename ResultType>
-MaxwellIdentityOperator<BasisFunctionType, ResultType>::~MaxwellIdentityOperator()
+Maxwell3dIdentityOperator<BasisFunctionType, ResultType>::~Maxwell3dIdentityOperator()
 {
 }
 
 template <typename BasisFunctionType, typename ResultType>
-const typename MaxwellIdentityOperator<BasisFunctionType, ResultType>::CollectionOfBasisTransformations&
-MaxwellIdentityOperator<BasisFunctionType, ResultType>::testTransformations() const
+const typename Maxwell3dIdentityOperator<BasisFunctionType, ResultType>::CollectionOfBasisTransformations&
+Maxwell3dIdentityOperator<BasisFunctionType, ResultType>::testTransformations() const
 {
     return this->dualToRange()->shapeFunctionValue();
 }
 
 template <typename BasisFunctionType, typename ResultType>
-const typename MaxwellIdentityOperator<BasisFunctionType, ResultType>::CollectionOfBasisTransformations&
-MaxwellIdentityOperator<BasisFunctionType, ResultType>::trialTransformations() const
+const typename Maxwell3dIdentityOperator<BasisFunctionType, ResultType>::CollectionOfBasisTransformations&
+Maxwell3dIdentityOperator<BasisFunctionType, ResultType>::trialTransformations() const
 {
     return this->domain()->shapeFunctionValue();
 }
 
 template <typename BasisFunctionType, typename ResultType>
-const typename MaxwellIdentityOperator<BasisFunctionType, ResultType>::TestTrialIntegral&
-MaxwellIdentityOperator<BasisFunctionType, ResultType>::integral() const
+const typename Maxwell3dIdentityOperator<BasisFunctionType, ResultType>::TestTrialIntegral&
+Maxwell3dIdentityOperator<BasisFunctionType, ResultType>::integral() const
 {
     return *m_integral;
 }
 
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
-maxwellIdentityOperator(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+maxwell3dIdentityOperator(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
                  const shared_ptr<const Space<BasisFunctionType> >& domain,
                  const shared_ptr<const Space<BasisFunctionType> >& range,
                  const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
                  const std::string& label,
                  int symmetry)
 {
-    typedef MaxwellIdentityOperator<BasisFunctionType, ResultType> Id;
+    typedef Maxwell3dIdentityOperator<BasisFunctionType, ResultType> Id;
     return BoundaryOperator<BasisFunctionType, ResultType>(
                 context,
                 boost::make_shared<Id>(domain, range, dualToRange,
@@ -94,7 +91,7 @@ maxwellIdentityOperator(const shared_ptr<const Context<BasisFunctionType, Result
 
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT) \
     template BoundaryOperator<BASIS, RESULT> \
-    maxwellIdentityOperator( \
+    maxwell3dIdentityOperator( \
         const shared_ptr<const Context<BASIS, RESULT> >&, \
         const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \
@@ -103,6 +100,6 @@ maxwellIdentityOperator(const shared_ptr<const Context<BasisFunctionType, Result
         int)
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(MaxwellIdentityOperator);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Maxwell3dIdentityOperator);
 
 } // namespace Bempp

@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_maxwell_identity_operator_hpp
-#define bempp_maxwell_identity_operator_hpp
+#ifndef bempp_maxwell_3d_identity_operator_hpp
+#define bempp_maxwell_3d_identity_operator_hpp
 
 #include "../common/common.hpp"
 
@@ -41,23 +41,35 @@ namespace Bempp
 template <typename BasisFunctionType, typename ResultType> class BoundaryOperator;
 /** \endcond */
 
-/** \ingroup identity
- *  \brief "Identity operator" for Maxwell equations.
- *
- *  This class represents the operator \f$I\f$ whose weak form is
- *
- *  \f[  \langle \vec u, I \vec v \rangle =
- *       \int_\Gamma \vec u^*(x) \cdot (\vec u \times \vec n) \,
- *       \mathrm{d}\Gamma. \]
- *
- *  See AbstractBoundaryOperator for the documentation of the template
- *  parameters.
- *
- *  Use the maxwellIdentityOperator() function to create a BoundaryOperator
- *  object wrapping a Maxwell identity operator.
+/** \ingroup maxwell_3d
+    \brief "Identity operator" for Maxwell equations in 3D.
+
+    This class represents an operator \f$I_{\mathrm{M}}\f$ whose weak form (under
+    the standard inner product) is
+
+    \f[
+    \langle \boldsymbol u, I_{\mathrm{M}} \boldsymbol v \rangle =
+    \int_\Gamma \boldsymbol u^*(\boldsymbol x) \cdot
+    [\boldsymbol v(\boldsymbol x) \times \boldsymbol n\boldsymbol x)] \,
+    \mathrm{d}\Gamma(\boldsymbol x),
+    \]
+
+    where \f$\boldsymbol n(\boldsymbol x)\f$ is the outward unit
+    vector normal to the surface \f$\Gamma\f$ at the point
+    \f$\boldsymbol x\f$. This weak form corresponds to the weak form
+    of the standard identity operator under the antisymmetric
+    pseudo-inner product \f$\langle \cdot,
+    \cdot\rangle_{\boldsymbol\tau, \Gamma}\f$ defined in \ref
+    maxwell_3d.
+
+    See AbstractBoundaryOperator for the documentation of the template
+    parameters.
+
+    Use the maxwell3dIdentityOperator() function to create a BoundaryOperator
+    object wrapping a Maxwell identity operator.
  */
 template <typename BasisFunctionType_, typename ResultType_>
-class MaxwellIdentityOperator :
+class Maxwell3dIdentityOperator :
         public ElementaryLocalOperator<BasisFunctionType_, ResultType_>
 {
     typedef ElementaryLocalOperator<BasisFunctionType_, ResultType_> Base;
@@ -94,12 +106,12 @@ public:
      *    the flags defined in the enumeration type Symmetry.
      *
      *  All the three spaces must be defined on the same grid. */
-    MaxwellIdentityOperator(const shared_ptr<const Space<BasisFunctionType> >& domain,
+    Maxwell3dIdentityOperator(const shared_ptr<const Space<BasisFunctionType> >& domain,
                      const shared_ptr<const Space<BasisFunctionType> >& range,
                      const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
                      const std::string& label = "",
                      int symmetry = NO_SYMMETRY);
-    virtual ~MaxwellIdentityOperator();
+    virtual ~Maxwell3dIdentityOperator();
 
 private:
     virtual const CollectionOfBasisTransformations&
@@ -114,8 +126,8 @@ private:
     shared_ptr<TestTrialIntegral> m_integral;
 };
 
-/** \relates MaxwellIdentityOperator
- *  \brief Construct a BoundaryOperator object wrapping a MaxwellIdentityOperator.
+/** \relates Maxwell3dIdentityOperator
+ *  \brief Construct a BoundaryOperator object wrapping a Maxwell3dIdentityOperator.
  *
  *  This convenience function constructs an abstract Maxwell identity operator
  *  and wraps it in a BoundaryOperator object.
@@ -138,7 +150,7 @@ private:
  *  All the three spaces must be defined on the same grid. */
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
-maxwellIdentityOperator(
+maxwell3dIdentityOperator(
         const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,

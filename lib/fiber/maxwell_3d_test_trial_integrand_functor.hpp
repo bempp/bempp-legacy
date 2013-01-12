@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_maxwell_test_trial_integrand_functor_hpp
-#define fiber_maxwell_test_trial_integrand_functor_hpp
+#ifndef fiber_maxwell_3d_test_trial_integrand_functor_hpp
+#define fiber_maxwell_3d_test_trial_integrand_functor_hpp
 
 #include "../common/common.hpp"
 
@@ -32,13 +32,12 @@
 namespace Fiber
 {
 
-/** \ingroup functors
- *  \brief .
+/** \brief Functor evaluating the integrand of the identity operator under the pseudo-inner product relevant to Maxwell equations in 3d.
  *
- *  .
+ *  \see maxwell_3d
  */
 template <typename BasisFunctionType_, typename ResultType_>
-class MaxwellTestTrialIntegrandFunctor
+class Maxwell3dTestTrialIntegrandFunctor
 {
 public:
     typedef BasisFunctionType_ BasisFunctionType;
