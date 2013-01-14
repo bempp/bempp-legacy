@@ -50,23 +50,22 @@ template <typename BasisFunctionType, typename ResultType> class BoundaryOperato
     \f[
     \langle \boldsymbol u, I_{\mathrm{M}} \boldsymbol v \rangle =
     \int_\Gamma \boldsymbol u^*(\boldsymbol x) \cdot
-    [\boldsymbol v(\boldsymbol x) \times \boldsymbol n\boldsymbol x)] \,
+    [\boldsymbol v(\boldsymbol x) \times \boldsymbol n(\boldsymbol x)] \,
     \mathrm{d}\Gamma(\boldsymbol x),
-    \]
+    \f]
 
-    where \f$\boldsymbol n(\boldsymbol x)\f$ is the outward unit
-    vector normal to the surface \f$\Gamma\f$ at the point
-    \f$\boldsymbol x\f$. This weak form corresponds to the weak form
-    of the standard identity operator under the antisymmetric
-    pseudo-inner product \f$\langle \cdot,
-    \cdot\rangle_{\boldsymbol\tau, \Gamma}\f$ defined in \ref
+    where \f$\boldsymbol n(\boldsymbol x)\f$ is the outward unit vector normal
+    to the surface \f$\Gamma\f$ at the point \f$\boldsymbol x\f$. Thus, the
+    weak form of this operator is identical to the weak form of the standard
+    identity operator under the antisymmetric pseudo-inner product \f$\langle
+    \cdot, \cdot\rangle_{\boldsymbol\tau, \Gamma}\f$ defined in \ref
     maxwell_3d.
 
     See AbstractBoundaryOperator for the documentation of the template
     parameters.
 
     Use the maxwell3dIdentityOperator() function to create a BoundaryOperator
-    object wrapping a Maxwell identity operator.
+    object wrapping a Maxwell3dIdentityOperator object.
  */
 template <typename BasisFunctionType_, typename ResultType_>
 class Maxwell3dIdentityOperator :
@@ -123,7 +122,9 @@ private:
     virtual const TestTrialIntegral& integral() const;
 
 private:
+    /** \cond PRIVATE */
     shared_ptr<TestTrialIntegral> m_integral;
+    /** \endcond */
 };
 
 /** \relates Maxwell3dIdentityOperator

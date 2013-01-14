@@ -363,6 +363,10 @@
     [\boldsymbol u^*(\boldsymbol x) \times \boldsymbol v(\boldsymbol y)]
     \mathrm{d}\Gamma(\boldsymbol x)\,\mathrm{d}\Gamma(\boldsymbol y).
     \f]
+
+    \note The Maxwell3dIdentityOperator class represents the identity operator
+    whose weak form is defined by means of the pseudo-inner product defined
+    above.
  */
 
 ////////////////////////////////////////////////////////////////////////////////
