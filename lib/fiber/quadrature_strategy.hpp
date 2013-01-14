@@ -93,7 +93,11 @@ public:
                     cacheSingularIntegrals);
     }
 
-    /** \brief Allocate a Galerkin-mode local assembler for the identity operator. */
+    /** \brief Allocate a Galerkin-mode local assembler for the identity operator.
+     *
+     *  \deprecated This method is deprecated. Use the more general
+     *  makeAssemblerForLocalOperators() method, passing an appropriate
+     *  TestTrialIntegral object. */
     virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
     makeAssemblerForIdentityOperators(
             const shared_ptr<const GeometryFactory>& geometryFactory,
