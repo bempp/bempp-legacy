@@ -12,9 +12,10 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS_RESULT_AND_GEOMETRY_FACTORY(QuadratureStra
 
  %warnfilter(520) QuadratureStrategy;
 
-%extend QuadratureStrategyBase { 
+%extend QuadratureStrategyBase {
 %ignore makeAssemblerForIntegralOperators;
 %ignore makeAssemblerForIdentityOperators;
+%ignore makeAssemblerForLocalOperators;
 %ignore makeAssemblerForGridFunctions;
 %ignore makeEvaluatorForIntegralOperators;
 }
