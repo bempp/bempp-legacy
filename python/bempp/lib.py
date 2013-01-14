@@ -247,6 +247,27 @@ def createUnitScalarSpace(context, grid):
     return _constructObjectTemplatedOnBasis(
         core, 'unitScalarSpace', context.basisFunctionType(), grid)
 
+def createPiecewiseLinearNormallyContinuousVectorSpace(context, grid):
+    """
+    Create and return a space of piecewise linear vector functions with normal
+    components continuous on boundaries between elements.
+
+    *Parameters:*
+       - context (Context)
+            A Context object that will determine the type used to represent the
+            values of the basis functions of the newly constructed space.
+       - grid (Grid)
+            Grid on which the functions from the newly constructed space will be
+            defined.
+
+    *Returns* a newly constructed Space_BasisFunctionType object, with
+    BasisFunctionType determined automatically from the context argument and
+    equal to either float32, float64, complex64 or complex128.
+    """
+    name = 'piecewiseLinearNormallyContinuousVectorSpace'
+    return _constructObjectTemplatedOnBasis(
+        core, name, context.basisFunctionType(), grid)
+
 def _constructOperator(className, context, domain, range, dualToRange, label=None):
     # determine basis function type
     basisFunctionType = domain.basisFunctionType()
@@ -1035,6 +1056,160 @@ def createModifiedHelmholtz3dHypersingularBoundaryOperator(
         domain, range, dualToRange, waveNumber,
         label, useInterpolation, interpPtsPerWavelength)
 
+_constructMaxwellOperator = _constructHelmholtzOperator
+
+def createMaxwell3dSingleLayerBoundaryOperator(
+        context, domain, range, dualToRange, waveNumber, label=None,
+        useInterpolation=False, interpPtsPerWavelength=5000):
+    """
+    Create and return a single-layer-potential boundary operator for
+    the Maxwell equation in 3D.
+
+    *Parameters:*
+       - context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+       - domain (Space)
+            Function space to be taken as the domain of the operator.
+       - range (Space)
+            Function space to be taken as the range of the operator.
+       - dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+       - waveNumber (float or complex)
+            Wave number, i.e. the number k in the Maxwell equation.
+       - label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+       - useInterpolation (bool)
+            If set to False (default), the standard exp() function will be used
+            to evaluate the exponential factor occurring in the kernel. If set
+            to True, the exponential factor will be evaluated by piecewise-cubic
+            interpolation of values calculated in advance on a regular
+            grid. This normally speeds up calculations, but might result in a
+            loss of accuracy. This is an experimental feature: use it at your
+            own risk.
+       - interpPtsPerWavelength (int)
+            If useInterpolation is set to True, this parameter determines the
+            number of points per "effective wavelength" (defined as 2 pi /
+            abs(waveNumber)) used to construct the interpolation grid. The
+            default value (5000) is normally enough to reduce the relative or
+            absolute error, *whichever is smaller*, below 100 * machine
+            precision. If useInterpolation is set to False, this parameter is
+            ignored.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
+    return _constructMaxwellOperator(
+        "maxwell3dSingleLayerBoundaryOperator", context,
+        domain, range, dualToRange, waveNumber,
+        label, useInterpolation, interpPtsPerWavelength)
+
+def createMaxwell3dDoubleLayerBoundaryOperator(
+        context, domain, range, dualToRange, waveNumber, label=None,
+        useInterpolation=False, interpPtsPerWavelength=5000):
+    """
+    Create and return a double-layer-potential boundary operator for
+    the Maxwell equation in 3D.
+
+    *Parameters:*
+       - context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+       - domain (Space)
+            Function space to be taken as the domain of the operator.
+       - range (Space)
+            Function space to be taken as the range of the operator.
+       - dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+       - waveNumber (float or complex)
+            Wave number.
+       - label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+       - useInterpolation (bool)
+            If set to False (default), the standard exp() function will be used
+            to evaluate the exponential factor occurring in the kernel. If set
+            to True, the exponential factor will be evaluated by piecewise-cubic
+            interpolation of values calculated in advance on a regular
+            grid. This normally speeds up calculations, but might result in a
+            loss of accuracy. This is an experimental feature: use it at your
+            own risk.
+       - interpPtsPerWavelength (int)
+            If useInterpolation is set to True, this parameter determines the
+            number of points per "effective wavelength" (defined as 2 pi /
+            abs(waveNumber)) used to construct the interpolation grid. The
+            default value (5000) is normally enough to reduce the relative or
+            absolute error, *whichever is smaller*, below 100 * machine
+            precision. If useInterpolation is set to False, this parameter is
+            ignored.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
+    return _constructMaxwellOperator(
+        "maxwell3dDoubleLayerBoundaryOperator", context,
+        domain, range, dualToRange, waveNumber,
+        label, useInterpolation, interpPtsPerWavelength)
+
+_constructMaxwellPotentialOperator = _constructHelmholtzPotentialOperator
+
+def createMaxwell3dSingleLayerPotentialOperator(context, waveNumber):
+    """
+    Create and return a single-layer potential operator for the Maxwell
+    equation in 3D.
+
+    *Parameters:*
+       - context (Context)
+            A Context object used to control the evaluation of integrals
+            occurring in the definition of the potential operator.
+       - waveNumber (float or complex)
+            Wave number.
+
+    *Returns* a newly constructed PotentialOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+
+    Note about BEM++ terminology: a *potential operator* acts on functions
+    defined on a surface S and produces functions defined at any point of the
+    space surrounding S, but not necessarily on S itself. In contrast, a
+    *boundary operator* acts on on functions defined on a surface S and produces
+    functions defined on the same surface S.
+    """
+    return _constructMaxwellPotentialOperator(
+        "maxwell3dSingleLayerPotentialOperator", context, waveNumber)
+
+def createMaxwell3dDoubleLayerPotentialOperator(context, waveNumber):
+    """
+    Create and return a double-layer potential operator for the Maxwell
+    equation in 3D.
+
+    *Parameters:*
+       - context (Context)
+            A Context object used to control the evaluation of integrals
+            occurring in the definition of the potential operator.
+       - waveNumber (float or complex)
+            Wave number.
+
+    *Returns* a newly constructed PotentialOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+
+    Note about BEM++ terminology: a *potential operator* acts on functions
+    defined on a surface S and produces functions defined at any point of the
+    space surrounding S, but not necessarily on S itself. In contrast, a
+    *boundary operator* acts on on functions defined on a surface S and produces
+    functions defined on the same surface S.
+    """
+    return _constructMaxwellPotentialOperator(
+        "maxwell3dDoubleLayerPotentialOperator", context, waveNumber)
+
 def createIdentityOperator(context, domain, range, dualToRange, label=None):
     """
     Create and return a (generalized) identity operator.
@@ -1071,6 +1246,44 @@ def createIdentityOperator(context, domain, range, dualToRange, label=None):
     """
     return _constructOperator(
         "identityOperator", context, domain, range, dualToRange, label)
+
+def createMaxwell3dIdentityOperator(context, domain, range, dualToRange,
+                                    label=None):
+    """
+    Create and return an identity operator with weak form defined under an
+    antisymmetric pseudo-inner product.
+
+    This class represents an operator I_M whose weak form (under the standard
+    inner product) is
+
+    <u, I_M v> = \int_S u^* . (v \times n) dS,
+
+    where n is the outward unit vector normal to the surface S at a given point.
+
+    *Parameters:*
+       - context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+       - domain (Space)
+            Function space to be taken as the domain of the operator.
+       - range (Space)
+            Function space to be taken as the range of the operator.
+       - dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+       - label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+
+    All the three spaces ('domain', 'range' and 'dualToRange') must be defined
+    on the same grid.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
+    return _constructOperator(
+        "maxwell3dIdentityOperator", context, domain, range, dualToRange, label)
 
 def createNullOperator(context, domain, range, dualToRange, label=None):
     """
