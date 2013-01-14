@@ -206,6 +206,10 @@ public:
                           const std::vector<int>& accuracyOrders,
                           bool relativeToDefault = true);
 
+    /** \brief Return the options controlling integration of singular functions
+     *  on pairs of elements. */
+    const QuadratureOptions& doubleSingular() const;
+
     /** \brief Set the options controlling integration of singular functions
      *  on pairs of elements.
      *
@@ -214,10 +218,6 @@ public:
      *  integrals of singular functions on pairs of elements. Otherwise,
      *  \p accuracyOrder denotes the desired *increase* of the order of accuracy
      *  above the default level. */
-    const QuadratureOptions& doubleSingular() const;
-
-    /** \brief Return the options controlling integration of singular functions
-     *  on pairs of elements. */
     void setDoubleSingular(int accuracyOrder, bool relativeToDefault = true);
 
 private:
