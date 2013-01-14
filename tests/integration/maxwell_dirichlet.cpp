@@ -120,7 +120,7 @@ public:
         CT r = sqrt(x * x + y * y + z * z);
         const RT I(0., 1.);
         CT kr = k * r;
-        RT h1kr = (-I - k * r) * exp(I * k * r) / (kr * kr);
+        RT h1kr = (-I - kr) * exp(I * kr) / (kr * kr);
         RT scale = h1kr / r;
         field(0) = -y * scale;
         field(1) = x * scale;
@@ -146,7 +146,7 @@ public:
         CT r = sqrt(x * x + y * y + z * z);
         const RT I(0., 1.);
         CT kr = k * r;
-        RT h1kr = (-I - k * r) * exp(I * k * r) / (kr * kr);
+        RT h1kr = (-I - kr) * exp(I * kr) / (kr * kr);
         RT h1kr_deriv =
                 (1. + I - I * kr) * (1. + I + kr) * exp(I * kr) / (kr * kr * r);
         RT xy_factor = (h1kr - r * h1kr_deriv) / (r * r * r);
