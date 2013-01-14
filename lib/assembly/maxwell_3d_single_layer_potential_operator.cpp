@@ -24,7 +24,7 @@
 #include "../fiber/explicit_instantiation.hpp"
 
 #include "../fiber/modified_maxwell_3d_single_layer_potential_operator_kernel_functor.hpp"
-#include "../fiber/modified_maxwell_3d_single_layer_potential_transformation_functor.hpp"
+#include "../fiber/modified_maxwell_3d_single_layer_operators_transformation_functor.hpp"
 #include "../fiber/modified_maxwell_3d_single_layer_potential_operator_integrand_functor.hpp"
 
 #include "../fiber/default_collection_of_kernels.hpp"
@@ -47,7 +47,7 @@ struct Maxwell3dSingleLayerPotentialOperatorImpl
 
     typedef Fiber::ModifiedMaxwell3dSingleLayerPotentialOperatorKernelFunctor<KernelType>
     KernelFunctor;
-    typedef Fiber::ModifiedMaxwell3dSingleLayerPotentialTransformationFunctor<CoordinateType>
+    typedef Fiber::ModifiedMaxwell3dSingleLayerOperatorsTransformationFunctor<CoordinateType>
     TransformationFunctor;
     typedef Fiber::ModifiedMaxwell3dSingleLayerPotentialOperatorIntegrandFunctor<
     BasisFunctionType, KernelType, ResultType> IntegrandFunctor;

@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_modified_maxwell_3d_single_layer_potential_integrand_functor_hpp
-#define fiber_modified_maxwell_3d_single_layer_potential_integrand_functor_hpp
+#ifndef fiber_modified_maxwell_3d_double_layer_boundary_operator_integrand_functor_hpp
+#define fiber_modified_maxwell_3d_double_layer_boundary_operator_integrand_functor_hpp
 
 #include "../common/common.hpp"
 
@@ -34,7 +34,7 @@ namespace Fiber
 
 template <typename BasisFunctionType_, typename KernelType_,
           typename ResultType_>
-class ModifiedMaxwell3dSingleLayerPotentialIntegrandFunctor
+class ModifiedMaxwell3dDoubleLayerBoundaryOperatorIntegrandFunctor
 {
 public:
     typedef BasisFunctionType_ BasisFunctionType;
@@ -55,37 +55,26 @@ public:
             const CollectionOf2dSlicesOfConstNdArrays<KernelType>& kernelValues) const {
         const int dimWorld = 3;
 
-        // Assert that there are at least two scalar-valued kernels
-        assert(kernelValues.size() >= 2);
-        assert(kernelValues[0].extent(0) == 1);
+        // Assert that there are is at least one vector-valued kernel
+        assert(kernelValues.size() >= 1);
+        assert(kernelValues[0].extent(0) == 3);
         assert(kernelValues[0].extent(1) == 1);
-        assert(kernelValues[1].extent(0) == 1);
-        assert(kernelValues[1].extent(1) == 1);
 
-        // Assert that there are at least two test and trial transformations
-        // (function value and surface div) of correct dimensions
-        assert(testTransfValues.size() >= 2);
-        assert(trialTransfValues.size() >= 2);
+        // Assert that there is at least one test and trial transformation
+        // of correct dimensions
+        assert(testTransfValues.size() >= 1);
+        assert(trialTransfValues.size() >= 1);
         _1dSliceOfConst3dArray<BasisFunctionType> testValues = testTransfValues[0];
         _1dSliceOfConst3dArray<BasisFunctionType> trialValues = trialTransfValues[0];
-        _1dSliceOfConst3dArray<BasisFunctionType> testSurfaceDivs = testTransfValues[1];
-        _1dSliceOfConst3dArray<BasisFunctionType> trialSurfaceDivs = trialTransfValues[1];
-        assert(testValues.extent(0) == 3);
-        assert(trialValues.extent(0) == 3);
-        assert(testSurfaceDivs.extent(0) == 1);
-        assert(trialSurfaceDivs.extent(0) == 1);
+        assert(testValues.extent(0) == dimWorld);
+        assert(trialValues.extent(0) == dimWorld);
 
-        // Let K_0(x, y) = K(x, y) and K_1(x, y) = K(x, y) / kappa^2.
-        // Return
-        // K_0(x, y) u*(x) . v(y) + K_1(x, y) div u*(x) div v(y)
-
-        ResultType term_0 = 0.;
-        for (int dim = 0; dim < dimWorld; ++dim)
-            term_0 += conjugate(testValues(dim)) * trialValues(dim);
-        term_0 *= kernelValues[0](0, 0);
-        ResultType term_1 = conjugate(testSurfaceDivs(0)) * trialSurfaceDivs(0) *
-            kernelValues[1](0, 0);
-        return term_0 + term_1;
+        return kernelValues[0](0, 0) * (conjugate(testValues(1)) * trialValues(2) -
+                                        conjugate(testValues(2)) * trialValues(1)) +
+            kernelValues[0](1, 0) * (conjugate(testValues(2)) * trialValues(0) -
+                                     conjugate(testValues(0)) * trialValues(2)) +
+            kernelValues[0](2, 0) * (conjugate(testValues(0)) * trialValues(1) -
+                                     conjugate(testValues(1)) * trialValues(0));
     }
 };
 

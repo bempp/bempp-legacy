@@ -26,10 +26,10 @@
 
 #include "../fiber/explicit_instantiation.hpp"
 
-#include "../fiber/modified_maxwell_3d_single_layer_potential_kernel_functor.hpp"
-#include "../fiber/modified_maxwell_3d_single_layer_potential_kernel_interpolated_functor.hpp"
-#include "../fiber/modified_maxwell_3d_single_layer_potential_transformation_functor.hpp"
-#include "../fiber/modified_maxwell_3d_single_layer_potential_integrand_functor.hpp"
+#include "../fiber/modified_maxwell_3d_single_layer_boundary_operator_kernel_functor.hpp"
+#include "../fiber/modified_maxwell_3d_single_layer_boundary_operator_kernel_interpolated_functor.hpp"
+#include "../fiber/modified_maxwell_3d_single_layer_operators_transformation_functor.hpp"
+#include "../fiber/modified_maxwell_3d_single_layer_boundary_operator_integrand_functor.hpp"
 
 #include "../fiber/default_collection_of_kernels.hpp"
 #include "../fiber/default_collection_of_basis_transformations.hpp"
@@ -59,13 +59,13 @@ maxwell3dSingleLayerBoundaryOperator(
     typedef typename ScalarTraits<BasisFunctionType>::ComplexType ResultType;
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
-    typedef Fiber::ModifiedMaxwell3dSingleLayerPotentialKernelFunctor<KernelType>
+    typedef Fiber::ModifiedMaxwell3dSingleLayerBoundaryOperatorKernelFunctor<KernelType>
         KernelFunctor;
-    typedef Fiber::ModifiedMaxwell3dSingleLayerPotentialKernelInterpolatedFunctor<KernelType>
+    typedef Fiber::ModifiedMaxwell3dSingleLayerBoundaryOperatorKernelInterpolatedFunctor<KernelType>
         KernelInterpolatedFunctor;
-    typedef Fiber::ModifiedMaxwell3dSingleLayerPotentialTransformationFunctor<CoordinateType>
+    typedef Fiber::ModifiedMaxwell3dSingleLayerOperatorsTransformationFunctor<CoordinateType>
         TransformationFunctor;
-    typedef Fiber::ModifiedMaxwell3dSingleLayerPotentialIntegrandFunctor<
+    typedef Fiber::ModifiedMaxwell3dSingleLayerBoundaryOperatorIntegrandFunctor<
         BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
 
     typedef GeneralElementarySingularIntegralOperator<

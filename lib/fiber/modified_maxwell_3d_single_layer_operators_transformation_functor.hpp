@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_modified_maxwell_3d_single_layer_potential_transformation_functor_hpp
-#define fiber_modified_maxwell_3d_single_layer_potential_transformation_functor_hpp
+#ifndef fiber_modified_maxwell_3d_single_layer_operators_transformation_functor_hpp
+#define fiber_modified_maxwell_3d_single_layer_operators_transformation_functor_hpp
 
 #include "../common/common.hpp"
 
@@ -38,7 +38,7 @@ namespace Fiber
  *  * shape-function value
  *  * shape-function surface div. */
 template <typename CoordinateType_>
-class ModifiedMaxwell3dSingleLayerPotentialTransformationFunctor :
+class ModifiedMaxwell3dSingleLayerOperatorsTransformationFunctor :
         public ElementaryBasisTransformationFunctorPairWrapper<
         HdivFunctionValueElementaryFunctor<CoordinateType_>,
         SurfaceDiv3dElementaryFunctor<CoordinateType_> >

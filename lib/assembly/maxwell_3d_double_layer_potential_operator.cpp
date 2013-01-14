@@ -23,7 +23,7 @@
 
 #include "../fiber/explicit_instantiation.hpp"
 
-#include "../fiber/modified_maxwell_3d_double_layer_potential_kernel_functor.hpp"
+#include "../fiber/modified_maxwell_3d_double_layer_operators_kernel_functor.hpp"
 #include "../fiber/modified_maxwell_3d_double_layer_potential_operator_integrand_functor.hpp"
 #include "../fiber/hdiv_function_value_functor.hpp"
 
@@ -45,7 +45,7 @@ struct Maxwell3dDoubleLayerPotentialOperatorImpl
     typedef typename PotentialOperatorBase::ResultType ResultType;
     typedef typename PotentialOperatorBase::CoordinateType CoordinateType;
 
-    typedef Fiber::ModifiedMaxwell3dDoubleLayerPotentialKernelFunctor<KernelType>
+    typedef Fiber::ModifiedMaxwell3dDoubleLayerOperatorsKernelFunctor<KernelType>
     KernelFunctor;
     typedef Fiber::HdivFunctionValueFunctor<CoordinateType>
     TransformationFunctor;

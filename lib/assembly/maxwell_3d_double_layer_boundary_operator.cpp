@@ -26,9 +26,9 @@
 
 #include "../fiber/explicit_instantiation.hpp"
 
-#include "../fiber/modified_maxwell_3d_double_layer_potential_kernel_functor.hpp"
-#include "../fiber/modified_maxwell_3d_double_layer_potential_kernel_interpolated_functor.hpp"
-#include "../fiber/modified_maxwell_3d_double_layer_potential_integrand_functor.hpp"
+#include "../fiber/modified_maxwell_3d_double_layer_operators_kernel_functor.hpp"
+#include "../fiber/modified_maxwell_3d_double_layer_operators_kernel_interpolated_functor.hpp"
+#include "../fiber/modified_maxwell_3d_double_layer_boundary_operator_integrand_functor.hpp"
 #include "../fiber/hdiv_function_value_functor.hpp"
 
 #include "../fiber/default_collection_of_kernels.hpp"
@@ -59,13 +59,13 @@ maxwell3dDoubleLayerBoundaryOperator(
     typedef typename ScalarTraits<BasisFunctionType>::ComplexType ResultType;
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
-    typedef Fiber::ModifiedMaxwell3dDoubleLayerPotentialKernelFunctor<KernelType>
+    typedef Fiber::ModifiedMaxwell3dDoubleLayerOperatorsKernelFunctor<KernelType>
         KernelFunctor;
-    typedef Fiber::ModifiedMaxwell3dDoubleLayerPotentialKernelInterpolatedFunctor<KernelType>
+    typedef Fiber::ModifiedMaxwell3dDoubleLayerOperatorsKernelInterpolatedFunctor<KernelType>
         KernelInterpolatedFunctor;
     typedef Fiber::HdivFunctionValueFunctor<CoordinateType>
         TransformationFunctor;
-    typedef Fiber::ModifiedMaxwell3dDoubleLayerPotentialIntegrandFunctor<
+    typedef Fiber::ModifiedMaxwell3dDoubleLayerBoundaryOperatorIntegrandFunctor<
         BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
 
     typedef GeneralElementarySingularIntegralOperator<
