@@ -99,12 +99,12 @@ public:
      *    this operator at a single pair of points. The KernelFunctor class
      *    must provide the interface defined in the documentation of
      *    DefaultCollectionOfKernels.
-     *  \param[in] testTransformations
+     *  \param[in] testTransformationsFunctor
      *    A functor object to be used to evaluate the collection of test basis
      *    function transformations at a single point. The
      *    TestTransformationsFunctor class must provide the interface defined in
      *    the documentation of DefaultCollectionOfBasisTransformations.
-     *  \param[in] trialTransformations
+     *  \param[in] trialTransformationsFunctor
      *    A functor object to be used to evaluate the collection of trial basis
      *    function transformations at a single point. The
      *    TrialTransformationsFunctor class must provide the interface defined
