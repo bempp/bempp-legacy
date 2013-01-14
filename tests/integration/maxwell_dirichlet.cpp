@@ -188,7 +188,7 @@ int main(int argc, char* argv[])
     // Process command-line args
 
     if (argc < 7 || argc % 2 != 1) {
-        std::cout << "Solve a scattering problem for a PEC sphere.\n"
+        std::cout << "Solve a Maxwell Dirichlet problem in an exterior domain.\n"
                   << "Usage: " << argv[0]
                   << " <mesh_file> <n_threads> <aca_eps> <solver_tol>"
                   << " <singular_order_increment>"
