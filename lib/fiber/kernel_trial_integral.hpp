@@ -52,6 +52,8 @@ public:
 
     virtual void addGeometricalDependencies(size_t& trialGeomDeps) const = 0;
 
+    // Note: 'weights' are assumed to be the products of "raw" quadrature
+    // weights and integration elements.
     virtual void evaluate(
             const GeometricalData<CoordinateType>& trialGeomData,
             const CollectionOf4dArrays<KernelType>& kernels,
