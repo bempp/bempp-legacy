@@ -364,9 +364,31 @@
     \mathrm{d}\Gamma(\boldsymbol x)\,\mathrm{d}\Gamma(\boldsymbol y).
     \f]
 
-    \note The Maxwell3dIdentityOperator class represents the identity operator
-    whose weak form is defined by means of the pseudo-inner product defined
-    above.
+    Solution of particular Maxwell problems relies on the following boundary
+    integral equations imposed on \f$\Gamma\f$:
+
+    \f{align*}{
+    \biggl(-\frac12 \boldsymbol I + \boldsymbol C_{\mathrm{int}}\biggr)
+    \gamma_{\mathrm{D,int}}\boldsymbol u +
+    \boldsymbol S_{\mathrm{int}} \gamma_{\mathrm{N,int}}\boldsymbol u &= 0 \\
+    -\boldsymbol S_{\mathrm{int}} \gamma_{\mathrm{D,int}}\boldsymbol u +
+    \biggl(-\frac12 \boldsymbol I + \boldsymbol C_{\mathrm{int}}\biggr)
+    \gamma_{\mathrm{N,int}}\boldsymbol u &= 0 \\
+    \biggl(\frac12 \boldsymbol I + \boldsymbol C_{\mathrm{ext}}\biggr)
+    \gamma_{\mathrm{D,ext}}\boldsymbol u +
+    \boldsymbol S_{\mathrm{ext}} \gamma_{\mathrm{N,ext}}\boldsymbol u &= 0 \\
+    -\boldsymbol S_{\mathrm{ext}} \gamma_{\mathrm{D,ext}}\boldsymbol u +
+    \biggl(\frac12 \boldsymbol I + \boldsymbol C_{\mathrm{ext}}\biggr)
+    \gamma_{\mathrm{N,ext}}\boldsymbol u &= 0.
+    \f}
+
+    Here, the symbol \f$\boldsymbol I\f$ denotes the identity operator. It is
+    crucial to remember that the weak forms of \f$\boldsymbol S\f$ and
+    \f$\boldsymbol C\f$ are defined with respect to the pseudo-inner product
+    rather than the standard sesquilinear inner product. Thus, in practical
+    implementation an operator whose weak form represents the identity operator
+    under the pseudo-inner product is indispensable. Such an operator is
+    provided by the Maxwell3dIdentityOperator class.
  */
 
 ////////////////////////////////////////////////////////////////////////////////
