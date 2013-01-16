@@ -165,3 +165,27 @@ field = (-slPotOp.evaluateAtPoints(neumannData, evaluationPoints,
 exactField = evalExactSolution(np.array([3, 2, 1]))
 print "field:", field.ravel()
 print "exact field:", exactField
+
+# Plot far-field pattern
+
+# Create the necessary potential operators
+
+slFfPot = createMaxwell3dFarFieldSingleLayerPotentialOperator(context, k)
+dlFfPot = createMaxwell3dFarFieldDoubleLayerPotentialOperator(context, k)
+
+# Define a set of points on the unit sphere and evaluate the potentials
+
+theta = np.linspace(0, np.pi, 181)
+points = np.vstack([np.sin(theta), np.zeros_like(theta), np.cos(theta)])
+
+farFieldPattern = (- slFfPot.evaluateAtPoints(neumannData, points, evalOptions)
+                   - dlFfPot.evaluateAtPoints(dirichletData, points, evalOptions))
+
+# Display the graph
+
+import pylab
+pylab.plot(theta,
+           np.sqrt(farFieldPattern[0].real**2 + farFieldPattern[0].imag**2 +
+                   farFieldPattern[1].real**2 + farFieldPattern[1].imag**2 +
+                   farFieldPattern[2].real**2 + farFieldPattern[2].imag**2))
+pylab.show()
