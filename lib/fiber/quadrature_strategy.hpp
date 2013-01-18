@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_integration_manager_factory_hpp
-#define fiber_integration_manager_factory_hpp
+#ifndef fiber_quadrature_strategy_hpp
+#define fiber_quadrature_strategy_hpp
 
 #include "../common/common.hpp"
 
