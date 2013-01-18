@@ -23,6 +23,7 @@
 
 #include "../common/common.hpp"
 
+#include "../common/armadillo_fwd.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../fiber/scalar_traits.hpp"
 #include "ahmed_aux_fwd.hpp"
@@ -50,6 +51,13 @@ struct ClusterConstructionHelper
     static void constructBemCluster(
         const Space<BasisFunctionType>& space,
         bool indexWithGlobalDofs,
+        const AcaOptions& acaOptions,
+        shared_ptr<AhmedBemCluster>& cluster,
+        shared_ptr<IndexPermutation>& o2p,
+        shared_ptr<IndexPermutation>& p2o);
+
+    static void constructBemCluster(
+        const arma::Mat<CoordinateType>& points,
         const AcaOptions& acaOptions,
         shared_ptr<AhmedBemCluster>& cluster,
         shared_ptr<IndexPermutation>& o2p,

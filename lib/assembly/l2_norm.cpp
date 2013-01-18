@@ -89,11 +89,11 @@ public:
         return 1;
     }
 
+    template <typename CollectionOf1dSlicesOfConstNdArrays>
     void evaluate(
             const Fiber::ConstGeometricalDataSlice<CoordinateType>& /* trialGeomData */,
             const Fiber::CollectionOf2dSlicesOfConst4dArrays<KernelType>& kernelValues,
-            const Fiber::CollectionOf1dSlicesOfConst2dArrays<ResultType>&
-            trialValues,
+            const CollectionOf1dSlicesOfConstNdArrays& trialValues,
             std::vector<ResultType>& result) const {
         // Assert that there is only a single kernel with a single column
         assert(kernelValues.size() == 1);

@@ -24,6 +24,7 @@
 #include "../common/common.hpp"
 
 #include "local_assembler_for_grid_functions.hpp"
+#include "numerical_quadrature.hpp"
 #include "quadrature_options.hpp"
 #include "test_function_integrator.hpp"
 #include "scalar_traits.hpp"

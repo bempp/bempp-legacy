@@ -700,8 +700,6 @@ selectIntegrator(int testElementIndex, int trialElementIndex,
     }
 
     if (desc.topology.type == ElementPairTopology::Disjoint) {
-//        desc.testOrder = regularOrder(testElementIndex, TEST);
-//        desc.trialOrder = regularOrder(trialElementIndex, TRIAL);
         getRegularOrders(testElementIndex, trialElementIndex,
                          desc.testOrder, desc.trialOrder,
                          nominalDistance);
@@ -711,28 +709,6 @@ selectIntegrator(int testElementIndex, int trialElementIndex,
     }
 
     return getIntegrator(desc);
-}
-
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType, typename GeometryFactory>
-int
-DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
-KernelType, ResultType, GeometryFactory>::
-regularOrder(int elementIndex, ElementType elementType) const
-{
-//    // TODO:
-//    // 1. Check the size of elements and the distance between them
-//    //    and estimate the variability of the kernel
-//    // 2. Take into account the fact that elements might be isoparametric.
-
-//    const QuadratureOptions& options = m_accuracyOptions.doubleRegular();
-
-//    int elementOrder = (elementType == TEST ?
-//                            (*m_testBases)[elementIndex]->order() :
-//                            (*m_trialBases)[elementIndex]->order());
-//    // Order required for exact quadrature on affine elements with a constant kernel
-//    int defaultAccuracyOrder = elementOrder;
-//    return options.quadratureOrder(defaultAccuracyOrder);
 }
 
 template <typename BasisFunctionType, typename KernelType,
@@ -774,6 +750,27 @@ getRegularOrders(int testElementIndex, int trialElementIndex,
             m_accuracyOptions.doubleRegular(normalisedDistance);
     testQuadOrder = options.quadratureOrder(testQuadOrder);
     trialQuadOrder = options.quadratureOrder(trialQuadOrder);
+}
+
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+int
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+KernelType, ResultType, GeometryFactory>::
+singularOrder(int elementIndex, ElementType elementType) const
+{
+    // TODO:
+    // 1. Check the size of elements and estimate the variability of the
+    //    (Sauter-Schwab-transformed) kernel
+    // 2. Take into account the fact that elements might be isoparametric.
+
+    const QuadratureOptions& options = m_accuracyOptions.doubleSingular();
+
+    int elementOrder = (elementType == TEST ?
+                            (*m_testBases)[elementIndex]->order() :
+                            (*m_trialBases)[elementIndex]->order());
+    int defaultAccuracyOrder = elementOrder + 5;
+    return options.quadratureOrder(defaultAccuracyOrder);
 }
 
 template <typename BasisFunctionType, typename KernelType,
@@ -854,27 +851,6 @@ BasisFunctionType, KernelType, ResultType, GeometryFactory>::elementDistanceSqua
             m_trialElementCenters.col(trialElementIndex) -
             m_testElementCenters.col(testElementIndex);
     return arma::dot(diff, diff);
-}
-
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType, typename GeometryFactory>
-int
-DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
-KernelType, ResultType, GeometryFactory>::
-singularOrder(int elementIndex, ElementType elementType) const
-{
-    // TODO:
-    // 1. Check the size of elements and estimate the variability of the
-    //    (Sauter-Schwab-transformed) kernel
-    // 2. Take into account the fact that elements might be isoparametric.
-
-    const QuadratureOptions& options = m_accuracyOptions.doubleSingular();
-
-    int elementOrder = (elementType == TEST ?
-                            (*m_testBases)[elementIndex]->order() :
-                            (*m_trialBases)[elementIndex]->order());
-    int defaultAccuracyOrder = elementOrder + 5;
-    return options.quadratureOrder(defaultAccuracyOrder);
 }
 
 template <typename BasisFunctionType, typename KernelType,

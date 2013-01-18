@@ -71,6 +71,9 @@ public:
     CollectionOf1dSlicesOf2dArrays(CollectionOf2dArrays<T>& collection,
                                    size_t index1);
 
+    typedef _1dSliceOfConst2dArray<T> ConstSlice;
+    typedef _1dSliceOf2dArray<T> Slice;
+
     /** \brief Returns a reference to self.
 
       Useful to make a temporary CollectionOf1dSlicesOf2dArrays<T> an rvalue
@@ -97,6 +100,8 @@ class CollectionOf1dSlicesOfConst2dArrays
 public:
     CollectionOf1dSlicesOfConst2dArrays(
             const CollectionOf2dArrays<T>& collection, size_t index1);
+
+    typedef _1dSliceOfConst2dArray<T> ConstSlice;
 
     _1dSliceOfConst2dArray<T> operator[](size_t index) const;
 

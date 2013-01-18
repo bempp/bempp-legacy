@@ -109,6 +109,19 @@ private:
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions) const;
 
+    virtual std::auto_ptr<LocalAssemblerForPotentialOperators<ResultType> >
+    makeAssemblerForPotentialOperatorsImplRealKernel(
+            const arma::Mat<CoordinateType>& evaluationPoints,
+            const shared_ptr<const GeometryFactory>& geometryFactory,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const CollectionOfKernels<CoordinateType> >& kernels,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+            const shared_ptr<const KernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
+            const shared_ptr<const OpenClHandler>& openClHandler,
+            const ParallelizationOptions& parallelizationOptions,
+            VerbosityLevel::Level verbosityLevel) const;
+
 public:
     const AccuracyOptionsEx& accuracyOptions() const;
 
@@ -173,6 +186,19 @@ private:
             const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions) const;
+
+    virtual std::auto_ptr<LocalAssemblerForPotentialOperators<ResultType> >
+    makeAssemblerForPotentialOperatorsImplComplexKernel(
+            const arma::Mat<CoordinateType>& evaluationPoints,
+            const shared_ptr<const GeometryFactory>& geometryFactory,
+            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const CollectionOfKernels<ResultType> >& kernels,
+            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+            const shared_ptr<const KernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
+            const shared_ptr<const OpenClHandler>& openClHandler,
+            const ParallelizationOptions& parallelizationOptions,
+            VerbosityLevel::Level verbosityLevel) const;
 };
 
 /** \cond ENABLE_IFS */

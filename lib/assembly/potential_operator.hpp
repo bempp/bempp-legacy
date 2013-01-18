@@ -34,10 +34,15 @@ namespace Bempp
 
 /** \cond FORWARD_DECL */
 class EvaluationOptions;
+class AssemblyOptions;
 class GeometryFactory;
 class Grid;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
 template <typename ResultType> class InterpolatedFunction;
+template <typename BasisFunctionType> class Space;
+template <typename BasisFunctionType, typename ResultType>
+class PrecalculatedPotentialOperator;
+
 /** \endcond */
 
 /** \ingroup potential_operators
@@ -154,6 +159,17 @@ public:
             const arma::Mat<CoordinateType>& evaluationPoints,
             const QuadratureStrategy& quadStrategy,
             const EvaluationOptions& options) const = 0;
+
+    virtual void
+    precalculateOperatorAtPoints(
+            const Space<BasisFunctionType>& space,
+            const arma::Mat<CoordinateType>& evaluationPoints,
+            const QuadratureStrategy& quadStrategy,
+            const AssemblyOptions& options) = 0;
+
+    virtual arma::Mat<ResultType_>
+    applyPrecalculatedOperator(
+            const GridFunction<BasisFunctionType, ResultType>& argument) const = 0;
 };
 
 } // namespace Bempp

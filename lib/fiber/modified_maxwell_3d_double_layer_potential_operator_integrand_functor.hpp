@@ -52,11 +52,12 @@ public:
         return 3;
     }
 
+    template <template<typename T> class CollectionOf1dSlicesOfConstNdArrays,
+              typename TrialValueType>
     void evaluate(
             const ConstGeometricalDataSlice<CoordinateType>& /* trialGeomData */,
             const CollectionOf2dSlicesOfConst4dArrays<KernelType>& kernelValues,
-            const CollectionOf1dSlicesOfConst2dArrays<ResultType>&
-            weightedTransformedTrialValues,
+            const CollectionOf1dSlicesOfConstNdArrays<TrialValueType>& trialValues,
             std::vector<ResultType>& result) const {
         const int dimWorld = 3;
 
@@ -67,20 +68,18 @@ public:
 
         // Assert that there are is at least one trial transformations
         // (function value)
-        assert(weightedTransformedTrialValues.size() >= 1);
-        _1dSliceOfConst2dArray<ResultType> trialValues =
-                weightedTransformedTrialValues[0];
-        assert(trialValues.extent(0) == 3);
+        assert(trialValues.size() >= 1);
+        assert(trialValues[0].extent(0) == 3);
 
         // Assert that the result vector is three-dimensional
         assert(result.size() == dimWorld);
 
-        result[0] = kernelValues[0](1, 0) * trialValues(2) -
-                    kernelValues[0](2, 0) * trialValues(1);
-        result[1] = kernelValues[0](2, 0) * trialValues(0) -
-                    kernelValues[0](0, 0) * trialValues(2);
-        result[2] = kernelValues[0](0, 0) * trialValues(1) -
-                    kernelValues[0](1, 0) * trialValues(0);
+        result[0] = kernelValues[0](1, 0) * trialValues[0](2) -
+                    kernelValues[0](2, 0) * trialValues[0](1);
+        result[1] = kernelValues[0](2, 0) * trialValues[0](0) -
+                    kernelValues[0](0, 0) * trialValues[0](2);
+        result[2] = kernelValues[0](0, 0) * trialValues[0](1) -
+                    kernelValues[0](1, 0) * trialValues[0](0);
     }
 };
 

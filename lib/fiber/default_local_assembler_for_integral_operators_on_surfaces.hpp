@@ -154,14 +154,12 @@ private:
         TEST, TRIAL
     };
 
-    int regularOrder(int elementIndex, ElementType elementType) const;
-    int singularOrder(int elementIndex, ElementType elementType) const;
-
     const Integrator& getIntegrator(const DoubleQuadratureDescriptor& index);
 
     void getRegularOrders(int testElementIndex, int trialElementIndex,
                           int& testQuadOrder, int& trialQuadOrder,
                           CoordinateType nominalDistance) const;
+    int singularOrder(int elementIndex, ElementType elementType) const;
 
     CoordinateType elementSizeSquared(
             int elementIndex, const RawGridGeometry<CoordinateType>& rawGeometry) const;

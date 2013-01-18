@@ -33,6 +33,7 @@ inline _3dArray<T>::_3dArray()
     m_extents[2] = 0;
     m_storage = 0;
     m_owns = false;
+    m_strict = false;
 }
 
 template <typename T>
@@ -46,10 +47,12 @@ inline _3dArray<T>::_3dArray(size_t extent0, size_t extent1, size_t extent2)
     m_extents[2] = extent2;
     m_storage = new T[extent0 * extent1 * extent2];
     m_owns = true;
+    m_strict = false;
 }
 
 template <typename T>
-inline _3dArray<T>::_3dArray(size_t extent0, size_t extent1, size_t extent2, T* data)
+inline _3dArray<T>::_3dArray(size_t extent0, size_t extent1, size_t extent2,
+                             T* data, bool strict)
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_extents(extent0, extent1, extent2);
@@ -59,6 +62,7 @@ inline _3dArray<T>::_3dArray(size_t extent0, size_t extent1, size_t extent2, T* 
     m_extents[2] = extent2;
     m_storage = data;
     m_owns = false;
+    m_strict = strict;
 }
 
 template <typename T>
@@ -114,6 +118,10 @@ inline void _3dArray<T>::set_size(size_t extent0, size_t extent1, size_t extent2
         m_extents[2] = extent2;
     }
     else {
+        if (m_strict)
+            throw std::runtime_error("_3dArray::set_size(): Changing the total "
+                                     "number of elements stored in an array "
+                                     "created in the strict mode is not allowed");
         if (m_owns)
             delete[] m_storage;
         m_extents[0] = extent0;

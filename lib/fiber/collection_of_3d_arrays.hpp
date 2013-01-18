@@ -76,6 +76,9 @@ class CollectionOf2dSlicesOf3dArrays
 public:
     CollectionOf2dSlicesOf3dArrays(CollectionOf3dArrays<T>& collection, size_t index2);
 
+    typedef _2dSliceOfConst3dArray<T> ConstSlice;
+    typedef _2dSliceOf3dArray<T> Slice;
+
     /** \brief Returns a reference to self.
 
       Useful to make a temporary CollectionOf2dSlicesOf3dArrays<T> an rvalue
@@ -103,6 +106,8 @@ public:
     CollectionOf2dSlicesOfConst3dArrays(
             const CollectionOf3dArrays<T>& collection, size_t index2);
 
+    typedef _2dSliceOfConst3dArray<T> ConstSlice;
+
     _2dSliceOfConst3dArray<T> operator[](size_t index) const;
 
     size_t size() const;
@@ -118,6 +123,9 @@ class CollectionOf1dSlicesOf3dArrays
 public:
     CollectionOf1dSlicesOf3dArrays(CollectionOf3dArrays<T>& collection,
                                    size_t index1, size_t index2);
+
+    typedef _1dSliceOfConst3dArray<T> ConstSlice;
+    typedef _1dSliceOf3dArray<T> Slice;
 
     /** \brief Returns a reference to self.
 
@@ -145,6 +153,8 @@ class CollectionOf1dSlicesOfConst3dArrays
 public:
     CollectionOf1dSlicesOfConst3dArrays(
             const CollectionOf3dArrays<T>& collection, size_t index1, size_t index2);
+
+    typedef _1dSliceOfConst3dArray<T> ConstSlice;
 
     _1dSliceOfConst3dArray<T> operator[](size_t index) const;
 
