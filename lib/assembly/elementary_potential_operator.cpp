@@ -119,7 +119,7 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::evaluate
 {
     if (evaluationPoints.n_rows != argument.grid()->dimWorld())
         throw std::invalid_argument(
-                "ElementaryPotentialOperator::evaluateOnGrid(): "
+                "ElementaryPotentialOperator::evaluateAtPoints(): "
                 "the number of coordinates of each evaluation point must be "
                 "equal to the dimension of the space containing the surface "
                 "on which the grid function 'argument' is defined");
