@@ -65,6 +65,13 @@ def prepare(root,config):
             os.chdir(dep_build_dir+"/dune/dune-grid/dune/grid/utility")
             patch.apply()
             os.chdir(cwd)
+        elif i==2:
+            print "Patching "+dune_names[i]
+            patch=py_patch.fromfile(root+"/installer/patches/dune-localfunctions_raviartthomas.patch")
+            cwd=os.getcwd()
+            os.chdir(dep_build_dir+"/dune/dune-localfunctions/dune/localfunctions/raviartthomas/raviartthomas02d")
+            patch.apply()
+            os.chdir(cwd)
     # Copy over dune-foamgrid
     tools.checkDeleteDirectory(dep_build_dir+"/dune/dune-foamgrid")
     shutil.copytree(root+"/contrib/dune/dune-foamgrid",
