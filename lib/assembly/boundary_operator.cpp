@@ -351,6 +351,9 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(BoundaryOperator);
     const BoundaryOperator<BASIS, RESULT>& op); \
     template BoundaryOperator<BASIS, RESULT> operator-( \
     const BoundaryOperator<BASIS, RESULT>& op); \
+    template BoundaryOperator<BASIS, RESULT> operator+( \
+    const BoundaryOperator<BASIS, RESULT>& op1, \
+    const BoundaryOperator<BASIS, RESULT>& op2); \
     template BoundaryOperator<BASIS, RESULT> operator-( \
     const BoundaryOperator<BASIS, RESULT>& op1, \
     const BoundaryOperator<BASIS, RESULT>& op2); \
