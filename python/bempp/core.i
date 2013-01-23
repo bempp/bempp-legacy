@@ -163,6 +163,7 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "assembly/identity_operator.i"
 %include "assembly/null_operator.i"
 %include "assembly/potential_operator.i"
+%include "assembly/assembled_potential_operator.i"
 %include "assembly/laplace_3d_potential_operators.i"
 %include "assembly/helmholtz_3d_potential_operators.i"
 %include "assembly/maxwell_3d_potential_operators.i"
