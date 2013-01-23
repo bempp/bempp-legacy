@@ -62,6 +62,36 @@ AssembledPotentialOperator(
             "of space_");
 }
 
+
+template <typename BasisFunctionType, typename ResultType>
+shared_ptr<const Space<BasisFunctionType> >
+AssembledPotentialOperator<BasisFunctionType, ResultType>::space() const
+{
+    return m_space;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+shared_ptr<const arma::Mat<typename
+AssembledPotentialOperator<BasisFunctionType, ResultType>::CoordinateType> >
+AssembledPotentialOperator<BasisFunctionType, ResultType>::evaluationPoints() const
+{
+    return m_evaluationPoints;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+shared_ptr<const DiscreteBoundaryOperator<ResultType> >
+AssembledPotentialOperator<BasisFunctionType, ResultType>::discreteOperator() const
+{
+    return m_op;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+int
+AssembledPotentialOperator<BasisFunctionType, ResultType>::componentCount() const
+{
+    return m_componentCount;
+}
+
 template <typename BasisFunctionType, typename ResultType>
 arma::Mat<ResultType>
 AssembledPotentialOperator<BasisFunctionType, ResultType>::apply(
