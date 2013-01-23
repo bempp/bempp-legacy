@@ -24,7 +24,7 @@
 
 #include "potential_operator_aca_assembly_helper.hpp"
 
-#include "assembly_options.hpp"
+#include "evaluation_options.hpp"
 #include "discrete_boundary_operator.hpp"
 #include "local_dof_lists_cache.hpp"
 #include "component_lists_cache.hpp"
@@ -59,7 +59,7 @@ PotentialOperatorAcaAssemblyHelper(
         const std::vector<unsigned int>& p2oTrialDofs,
         const std::vector<LocalAssembler*>& assemblers,
         const std::vector<ResultType>& termMultipliers,
-        const AssemblyOptions& options) :
+        const EvaluationOptions& options) :
     m_points(points), m_trialSpace(trialSpace),
     m_p2oPoints(p2oPoints), m_p2oTrialDofs(p2oTrialDofs),
     m_assemblers(assemblers),

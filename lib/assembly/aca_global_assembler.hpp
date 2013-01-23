@@ -48,6 +48,7 @@ namespace Bempp
 
 /** \cond FORWARD_DECL */
 class AssemblyOptions;
+class EvaluationOptions;
 template <typename ValueType> class DiscreteBoundaryOperator;
 template <typename BasisFunctionType> class Space;
 /** \endcond */
@@ -91,13 +92,13 @@ public:
             const Space<BasisFunctionType>& trialSpace,
             const std::vector<LocalAssemblerForPotentialOperators*>& localAssemblers,
             const std::vector<ResultType>& termMultipliers,
-            const AssemblyOptions& options);
+            const EvaluationOptions& options);
 
     static std::auto_ptr<DiscreteBndOp> assemblePotentialOperator(
             const arma::Mat<CoordinateType>& points,
             const Space<BasisFunctionType>& trialSpace,
             LocalAssemblerForPotentialOperators& localAssembler,
-            const AssemblyOptions& options);
+            const EvaluationOptions& options);
 };
 
 } // namespace Bempp

@@ -48,7 +48,7 @@ namespace Bempp
 {
 
 /** \cond FORWARD_DECL */
-class AssemblyOptions;
+class EvaluationOptions;
 class ComponentListsCache;
 template <typename ResultType> class DiscreteBoundaryOperator;
 template <typename BasisFunctionType> class LocalDofListsCache;
@@ -75,7 +75,7 @@ public:
             const std::vector<unsigned int>& p2oTrialDofs,
             const std::vector<LocalAssembler*>& assemblers,
             const std::vector<ResultType>& termMultipliers,
-            const AssemblyOptions& options);
+            const EvaluationOptions& options);
 
     /** \brief Evaluate entries of a general block.
      *
@@ -103,7 +103,7 @@ private:
     const std::vector<unsigned int>& m_p2oTrialDofs;
     const std::vector<LocalAssembler*>& m_assemblers;
     const std::vector<ResultType>& m_termMultipliers;
-    const AssemblyOptions& m_options;
+    const EvaluationOptions& m_options;
     bool m_indexWithGlobalDofs; // redundant (stored also in m_options),
                                 // but often needed
     unsigned int m_componentCount;

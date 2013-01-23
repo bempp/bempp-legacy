@@ -157,7 +157,7 @@ assemble(
         const shared_ptr<const Space<BasisFunctionType> >& space,
         const shared_ptr<const arma::Mat<CoordinateType> >& evaluationPoints,
         const QuadratureStrategy& quadStrategy,
-        const AssemblyOptions& options) const
+        const EvaluationOptions &options) const
 {
     if (!space)
         throw std::invalid_argument(
@@ -182,24 +182,6 @@ assemble(
     return AssembledPotentialOperator<BasisFunctionType, ResultType>(
         space, evaluationPoints, discreteOperator, componentCount());
 }
-
-// template <typename BasisFunctionType, typename KernelType, typename ResultType>
-// arma::Mat<ResultType>
-// ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
-// applyPrecalculatedOperator(
-//         const GridFunction<BasisFunctionType, ResultType>& argument) const
-// {
-//     arma::Mat<ResultType> result(m_precalculatedOperator->rowCount(), 1);
-//     arma::Col<ResultType> colResult = result.unsafe_col(0);
-//     const arma::Col<ResultType>& coeffs = argument.coefficients();
-//     //std::cout << "Precalculated op\n" << m_precalculatedOperator->asMatrix();
-//     m_precalculatedOperator->apply(NO_TRANSPOSE, coeffs, colResult, 1., 0.);
-//     //std::cout << "colResult\n" << colResult;
-//     int componentCount = integral().resultDimension();
-//     assert(result.n_rows % componentCount == 0);
-//     result.reshape(componentCount, result.n_rows / componentCount);
-//     return result;
-// }
 
 // UNDOCUMENTED PRIVATE METHODS
 
@@ -266,7 +248,7 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::makeAsse
         const Space<BasisFunctionType>& space,
         const arma::Mat<CoordinateType>& evaluationPoints,
         const QuadratureStrategy& quadStrategy,
-        const AssemblyOptions& options) const
+        const EvaluationOptions& options) const
 {
     // Collect the standard set of data necessary for construction of
     // assemblers
@@ -307,14 +289,14 @@ assembleOperator(
         const Space<BasisFunctionType>& space,
         const arma::Mat<CoordinateType>& evaluationPoints,
         LocalAssembler& assembler,
-        const AssemblyOptions& options) const
+        const EvaluationOptions& options) const
 {
-    switch (options.assemblyMode()) {
-    case AssemblyOptions::DENSE:
+    switch (options.evaluationMode()) {
+    case EvaluationOptions::DENSE:
         return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
                     assembleOperatorInDenseMode(space, evaluationPoints,
                                                 assembler, options).release());
-    case AssemblyOptions::ACA:
+    case EvaluationOptions::ACA:
         return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
                     assembleOperatorInAcaMode(space, evaluationPoints,
                                               assembler, options).release());
@@ -332,7 +314,7 @@ assembleOperatorInDenseMode(
         const Space<BasisFunctionType>& space,
         const arma::Mat<CoordinateType>& evaluationPoints,
         LocalAssembler& assembler,
-        const AssemblyOptions& options) const
+        const EvaluationOptions& options) const
 {
     return std::auto_ptr<DiscreteBoundaryOperator<ResultType> >();
 //    const Space<BasisFunctionType>& testSpace = *this->dualToRange();
@@ -415,7 +397,7 @@ assembleOperatorInAcaMode(
         const Space<BasisFunctionType>& space,
         const arma::Mat<CoordinateType>& evaluationPoints,
         LocalAssembler& assembler,
-        const AssemblyOptions& options) const
+        const EvaluationOptions& options) const
 {
     return AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
                 evaluationPoints, space, assembler, options);

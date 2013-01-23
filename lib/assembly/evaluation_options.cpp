@@ -18,16 +18,34 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #include "evaluation_options.hpp"
-
-#include <stdexcept>
 
 namespace Bempp
 {
 
-EvaluationOptions::EvaluationOptions()
+EvaluationOptions::EvaluationOptions() :
+    m_evaluationMode(DENSE),
+    m_verbosityLevel(VerbosityLevel::DEFAULT)
 {
+}
+
+void EvaluationOptions::switchToDenseMode()
+{
+    m_evaluationMode = DENSE;
+}
+
+void EvaluationOptions::switchToAcaMode(const AcaOptions& acaOptions)
+{
+    m_evaluationMode = ACA;
+    m_acaOptions = acaOptions;
+}
+
+EvaluationOptions::Mode EvaluationOptions::evaluationMode() const {
+    return m_evaluationMode;
+}
+
+const AcaOptions& EvaluationOptions::acaOptions() const {
+    return m_acaOptions;
 }
 
 //void EvaluationOptions::switchToOpenCl(const OpenClOptions& openClOptions)
@@ -48,6 +66,16 @@ void EvaluationOptions::switchToTbb(int maxThreadCount)
 const ParallelizationOptions& EvaluationOptions::parallelizationOptions() const
 {
     return m_parallelizationOptions;
+}
+
+void EvaluationOptions::setVerbosityLevel(VerbosityLevel::Level level)
+{
+    m_verbosityLevel = level;
+}
+
+VerbosityLevel::Level EvaluationOptions::verbosityLevel() const
+{
+    return m_verbosityLevel;
 }
 
 } // namespace Bempp

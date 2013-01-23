@@ -25,6 +25,7 @@
 
 #include "assembly_options.hpp"
 #include "cluster_construction_helper.hpp"
+#include "evaluation_options.hpp"
 #include "index_permutation.hpp"
 #include "discrete_boundary_operator_composition.hpp"
 #include "discrete_sparse_boundary_operator.hpp"
@@ -497,7 +498,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
         const Space<BasisFunctionType>& trialSpace,
         const std::vector<LocalAssemblerForPotentialOperators*>& localAssemblers,
         const std::vector<ResultType>& termMultipliers,
-        const AssemblyOptions& options)
+        const EvaluationOptions& options)
 {
     const int symmetric = false;
 
@@ -722,7 +723,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
         const arma::Mat<CoordinateType>& points,
         const Space<BasisFunctionType>& trialSpace,
         LocalAssemblerForPotentialOperators& localAssembler,
-        const AssemblyOptions& options)
+        const EvaluationOptions& options)
 {
     std::vector<LocalAssemblerForPotentialOperators*> localAssemblers(
                 1, &localAssembler);

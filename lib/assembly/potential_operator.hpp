@@ -35,7 +35,7 @@ namespace Bempp
 
 /** \cond FORWARD_DECL */
 class EvaluationOptions;
-class AssemblyOptions;
+class EvaluationOptions;
 class GeometryFactory;
 class Grid;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
@@ -190,18 +190,7 @@ public:
             const shared_ptr<const Space<BasisFunctionType> >& space,
             const shared_ptr<const arma::Mat<CoordinateType> >& evaluationPoints,
             const QuadratureStrategy& quadStrategy,
-            const AssemblyOptions& options) const = 0;
-
-    // virtual void
-    // precalculateOperatorAtPoints(
-    //         const Space<BasisFunctionType>& space,
-    //         const arma::Mat<CoordinateType>& evaluationPoints,
-    //         const QuadratureStrategy& quadStrategy,
-    //         const AssemblyOptions& options) = 0;
-
-    // virtual arma::Mat<ResultType_>
-    // applyPrecalculatedOperator(
-    //         const GridFunction<BasisFunctionType, ResultType>& argument) const = 0;
+            const EvaluationOptions& options) const = 0;
 
     virtual int componentCount() const = 0;
 };

@@ -136,7 +136,7 @@ public:
             const shared_ptr<const Space<BasisFunctionType> >& space,
             const shared_ptr<const arma::Mat<CoordinateType> >& evaluationPoints,
             const QuadratureStrategy& quadStrategy,
-            const AssemblyOptions& options) const;
+            const EvaluationOptions& options) const;
 
     virtual int componentCount() const;
 
@@ -168,27 +168,27 @@ private:
             const Space<BasisFunctionType>& space,
             const arma::Mat<CoordinateType>& evaluationPoints,
             const QuadratureStrategy& quadStrategy,
-            const AssemblyOptions& options) const;
+            const EvaluationOptions& options) const;
 
     shared_ptr<DiscreteBoundaryOperator<ResultType_> > assembleOperator(
             const Space<BasisFunctionType>& space,
             const arma::Mat<CoordinateType>& evaluationPoints,
             LocalAssembler& assembler,
-            const AssemblyOptions& options) const;
+            const EvaluationOptions& options) const;
 
     std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleOperatorInDenseMode(
             const Space<BasisFunctionType>& space,
             const arma::Mat<CoordinateType>& evaluationPoints,
             LocalAssembler& assembler,
-            const AssemblyOptions& options) const;
+            const EvaluationOptions& options) const;
 
     std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleOperatorInAcaMode(
             const Space<BasisFunctionType>& space,
             const arma::Mat<CoordinateType>& evaluationPoints,
             LocalAssembler& assembler,
-            const AssemblyOptions& options) const;
+            const EvaluationOptions& options) const;
     /** \endcond */
 };
 

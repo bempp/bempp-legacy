@@ -26,7 +26,6 @@
 #include "aca_options.hpp"
 
 #include "../common/deprecated.hpp"
-
 #include "../fiber/opencl_options.hpp"
 #include "../fiber/parallelization_options.hpp"
 #include "../fiber/verbosity_level.hpp"
