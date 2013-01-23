@@ -68,9 +68,6 @@ evaluateOnGrid(
                 "function 'argument' is defined must be embedded in a space "
                 "of the same dimension");
 
-    std::auto_ptr<Evaluator> evaluator =
-            makeEvaluator(argument, quadStrategy, options);
-
     // Get coordinates of interpolation points, i.e. the evaluationGrid's vertices
 
     std::auto_ptr<GridView> evalView = evaluationGrid.leafView();
@@ -106,18 +103,8 @@ evaluateOnGrid(
         }
     }
 
-    // right now we don't bother about far and near field
-    // (this might depend on evaluation options)
-
     arma::Mat<ResultType> result;
-    evaluator->evaluate(Evaluator::FAR_FIELD, evalPoints, result);
-
-    //    std::cout << "Interpolation results:\n";
-    //    for (int point = 0; point < evalPointCount; ++point)
-    //        std::cout << evalPoints(0, point) << "\t"
-    //                  << evalPoints(1, point) << "\t"
-    //                  << evalPoints(2, point) << "\t"
-    //                  << result(0, point) << "\n";
+    result = evaluateAtPoints(argument, evalPoints, quadStrategy, options);
 
     return std::auto_ptr<InterpolatedFunction<ResultType> >(
                 new InterpolatedFunction<ResultType>(evaluationGrid, result));
@@ -138,16 +125,24 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::evaluate
                 "equal to the dimension of the space containing the surface "
                 "on which the grid function 'argument' is defined");
 
-    std::auto_ptr<Evaluator> evaluator =
-            makeEvaluator(argument, quadStrategy, options);
+    if (options.evaluationMode() == EvaluationOptions::DENSE) {
+        std::auto_ptr<Evaluator> evaluator =
+                makeEvaluator(argument, quadStrategy, options);
 
-    // right now we don't bother about far and near field
-    // (this might depend on evaluation options)
-
-    arma::Mat<ResultType> result;
-    evaluator->evaluate(Evaluator::FAR_FIELD, evaluationPoints, result);
-
-    return result;
+        // right now we don't bother about far and near field
+        // (this might depend on evaluation options)
+        arma::Mat<ResultType> result;
+        evaluator->evaluate(Evaluator::FAR_FIELD, evaluationPoints, result);
+        return result;
+    } else if (options.evaluationMode() == EvaluationOptions::ACA) {
+        AssembledPotentialOperator<BasisFunctionType, ResultType> assembledOp =
+                assemble(argument.space(),
+                         make_shared_from_ref(evaluationPoints),
+                         quadStrategy, options);
+        return assembledOp.apply(argument);
+    } else
+        throw std::invalid_argument("ElementaryPotentialOperator::evaluateAtPoints(): "
+                                    "Invalid evaluation mode");
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
