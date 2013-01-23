@@ -415,7 +415,8 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
             if (symmetric) // seems valid also for Hermitian matrices
                 psoutputHeH(os, bemBlclusterTree.get(), testDofCount, blocks.get());
             else
-                psoutputGeH(os, bemBlclusterTree.get(), testDofCount, blocks.get());
+                psoutputGeH(os, bemBlclusterTree.get(),
+                            std::max(testDofCount, trialDofCount), blocks.get());
             os.close();
             if (verbosityAtLeastDefault)
                 std::cout << " done." << std::endl;
