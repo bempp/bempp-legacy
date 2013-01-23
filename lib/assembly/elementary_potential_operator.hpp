@@ -131,17 +131,14 @@ public:
             const QuadratureStrategy& quadStrategy,
             const EvaluationOptions& options) const;
 
-    virtual void
-    precalculateOperatorAtPoints(
-            const Space<BasisFunctionType>& space,
-            const arma::Mat<CoordinateType>& evaluationPoints,
+    virtual AssembledPotentialOperator<BasisFunctionType_, ResultType_>
+    assemble(
+            const shared_ptr<const Space<BasisFunctionType> >& space,
+            const shared_ptr<const arma::Mat<CoordinateType> >& evaluationPoints,
             const QuadratureStrategy& quadStrategy,
-            const AssemblyOptions& options);
+            const AssemblyOptions& options) const;
 
     virtual int componentCount() const;
-    virtual arma::Mat<ResultType_>
-    applyPrecalculatedOperator(
-            const GridFunction<BasisFunctionType, ResultType>& argument) const;
 
 private:
     /** \brief Return the collection of kernel functions occurring in the
@@ -192,9 +189,6 @@ private:
             const arma::Mat<CoordinateType>& evaluationPoints,
             LocalAssembler& assembler,
             const AssemblyOptions& options) const;
-
-    shared_ptr<const DiscreteBoundaryOperator<ResultType> >
-    m_precalculatedOperator;
     /** \endcond */
 };
 

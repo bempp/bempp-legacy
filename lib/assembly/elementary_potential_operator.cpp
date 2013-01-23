@@ -21,12 +21,12 @@
 #include "elementary_potential_operator.hpp"
 
 #include "aca_global_assembler.hpp"
+#include "assembled_potential_operator.hpp"
 #include "evaluation_options.hpp"
 #include "grid_function.hpp"
 #include "interpolated_function.hpp"
 #include "local_assembler_construction_helper.hpp"
 #include "discrete_null_boundary_operator.hpp"
-#include "precalculated_potential_operator.hpp"
 
 #include "../common/shared_ptr.hpp"
 
@@ -54,7 +54,8 @@ componentCount() const
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<InterpolatedFunction<ResultType> >
-ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::evaluateOnGrid(
+ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
+evaluateOnGrid(
         const GridFunction<BasisFunctionType, ResultType>& argument,
         const Grid& evaluationGrid,
         const QuadratureStrategy& quadStrategy,
@@ -150,49 +151,55 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::evaluate
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-//PrecalculatedPotentialOperator<BasisFunctionType, ResultType>
-void
+AssembledPotentialOperator<BasisFunctionType, ResultType>
 ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
-precalculateOperatorAtPoints(
-        const Space<BasisFunctionType>& space,
-        const arma::Mat<CoordinateType>& evaluationPoints,
+assemble(
+        const shared_ptr<const Space<BasisFunctionType> >& space,
+        const shared_ptr<const arma::Mat<CoordinateType> >& evaluationPoints,
         const QuadratureStrategy& quadStrategy,
-        const AssemblyOptions& options)
+        const AssemblyOptions& options) const
 {
-    if (evaluationPoints.n_rows != space.grid()->dimWorld())
+    if (!space)
         throw std::invalid_argument(
-                "ElementaryPotentialOperator::precalculateOperatorAtPoints(): "
+                "ElementaryPotentialOperator::assemble(): "
+                "the shared pointer 'space' must not be null");
+    if (!evaluationPoints)
+        throw std::invalid_argument(
+                "ElementaryPotentialOperator::assemble(): "
+                "the shared pointer 'evaluationPoints' must not be null");
+    if (evaluationPoints->n_rows != space->grid()->dimWorld())
+        throw std::invalid_argument(
+                "ElementaryPotentialOperator::assemble(): "
                 "the number of coordinates of each evaluation point must be "
                 "equal to the dimension of the space containing the surface "
                 "on which the function space 'space' is defined");
 
     std::auto_ptr<LocalAssembler> assembler =
-            makeAssembler(space, evaluationPoints, quadStrategy, options);
-    m_precalculatedOperator = assembleOperator(space, evaluationPoints,
-                                               *assembler, options);
-
-    //    shared_ptr<DiscreteBoundaryOperator<ResultType> > dop(
-//                new DiscreteNullBoundaryOperator<ResultType>(5, 5));
-//    return PrecalculatedPotentialOperator<BasisFunctionType, ResultType>(dop);
+            makeAssembler(*space, *evaluationPoints, quadStrategy, options);
+    shared_ptr<DiscreteBoundaryOperator<ResultType> > discreteOperator =
+        assembleOperator(*space, *evaluationPoints /*TODO*/,
+                         *assembler, options);
+    return AssembledPotentialOperator<BasisFunctionType, ResultType>(
+        space, evaluationPoints, discreteOperator, componentCount());
 }
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
-arma::Mat<ResultType>
-ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
-applyPrecalculatedOperator(
-        const GridFunction<BasisFunctionType, ResultType>& argument) const
-{
-    arma::Mat<ResultType> result(m_precalculatedOperator->rowCount(), 1);
-    arma::Col<ResultType> colResult = result.unsafe_col(0);
-    const arma::Col<ResultType>& coeffs = argument.coefficients();
-    //std::cout << "Precalculated op\n" << m_precalculatedOperator->asMatrix();
-    m_precalculatedOperator->apply(NO_TRANSPOSE, coeffs, colResult, 1., 0.);
-    //std::cout << "colResult\n" << colResult;
-    int componentCount = integral().resultDimension();
-    assert(result.n_rows % componentCount == 0);
-    result.reshape(componentCount, result.n_rows / componentCount);
-    return result;
-}
+// template <typename BasisFunctionType, typename KernelType, typename ResultType>
+// arma::Mat<ResultType>
+// ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
+// applyPrecalculatedOperator(
+//         const GridFunction<BasisFunctionType, ResultType>& argument) const
+// {
+//     arma::Mat<ResultType> result(m_precalculatedOperator->rowCount(), 1);
+//     arma::Col<ResultType> colResult = result.unsafe_col(0);
+//     const arma::Col<ResultType>& coeffs = argument.coefficients();
+//     //std::cout << "Precalculated op\n" << m_precalculatedOperator->asMatrix();
+//     m_precalculatedOperator->apply(NO_TRANSPOSE, coeffs, colResult, 1., 0.);
+//     //std::cout << "colResult\n" << colResult;
+//     int componentCount = integral().resultDimension();
+//     assert(result.n_rows % componentCount == 0);
+//     result.reshape(componentCount, result.n_rows / componentCount);
+//     return result;
+// }
 
 // UNDOCUMENTED PRIVATE METHODS
 
