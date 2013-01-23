@@ -43,6 +43,15 @@
 
 namespace Bempp
 {
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+int
+ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
+componentCount() const
+{
+    return integral().resultDimension();
+}
+
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<InterpolatedFunction<ResultType> >
 ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::evaluateOnGrid(

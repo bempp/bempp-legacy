@@ -138,6 +138,7 @@ public:
             const QuadratureStrategy& quadStrategy,
             const AssemblyOptions& options);
 
+    virtual int componentCount() const;
     virtual arma::Mat<ResultType_>
     applyPrecalculatedOperator(
             const GridFunction<BasisFunctionType, ResultType>& argument) const;
