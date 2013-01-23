@@ -57,8 +57,9 @@ template <typename ValueType> class DiscreteBoundaryOperator;
  *  where the integration goes over a surface \f$\Gamma\f$ and the integrand
  *  \f$F\f$ depends on the coordinates of a point \f$x\f$ lying outside
  *  \f$\Gamma\f$ and a surface charge distribution \f$\psi(y)\f$ does not lie on
- *  \f$\Gamma\f$. In the simplest and most common case,
- *  \f$F[x, \psi(y)]\f$ is just
+ *  \f$\Gamma\f$. The function \f$F[x, \psi(y)]\f$ is assumed to be linear in
+ *  \f$psi(y)\f$. In the simplest and most common case, \f$F[x, \psi(y)]\f$
+ *  is just
  *  \f[
  *    F[x, \psi(y)] = K(x, y) \psi(y),
  *  \f]
