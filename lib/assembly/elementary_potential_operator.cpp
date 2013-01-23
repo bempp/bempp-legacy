@@ -112,7 +112,8 @@ evaluateOnGrid(
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 arma::Mat<ResultType>
-ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::evaluateAtPoints(
+ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
+evaluateAtPoints(
         const GridFunction<BasisFunctionType, ResultType>& argument,
         const arma::Mat<CoordinateType>& evaluationPoints,
         const QuadratureStrategy& quadStrategy,
@@ -141,8 +142,9 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::evaluate
                          quadStrategy, options);
         return assembledOp.apply(argument);
     } else
-        throw std::invalid_argument("ElementaryPotentialOperator::evaluateAtPoints(): "
-                                    "Invalid evaluation mode");
+        throw std::invalid_argument(
+                "ElementaryPotentialOperator::evaluateAtPoints(): "
+                "Invalid evaluation mode");
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
@@ -185,7 +187,8 @@ assemble(
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<typename ElementaryPotentialOperator<
 BasisFunctionType, KernelType, ResultType>::Evaluator>
-ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::makeEvaluator(
+ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
+makeEvaluator(
         const GridFunction<BasisFunctionType, ResultType>& argument,
         const QuadratureStrategy& quadStrategy,
         const EvaluationOptions& options) const
@@ -239,7 +242,8 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::makeEval
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<typename ElementaryPotentialOperator<
 BasisFunctionType, KernelType, ResultType>::LocalAssembler>
-ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::makeAssembler(
+ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
+makeAssembler(
         const Space<BasisFunctionType>& space,
         const arma::Mat<CoordinateType>& evaluationPoints,
         const QuadratureStrategy& quadStrategy,
@@ -264,7 +268,7 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::makeAsse
                               rawGeometry, openClHandler);
     Helper::collectBases(space, bases);
 
-    // Now create the evaluator
+    // Now create the assembler
     return quadStrategy.makeAssemblerForPotentialOperators(
                 evaluationPoints,
                 geometryFactory, rawGeometry,
@@ -311,7 +315,8 @@ assembleOperatorInDenseMode(
         LocalAssembler& assembler,
         const EvaluationOptions& options) const
 {
-    return std::auto_ptr<DiscreteBoundaryOperator<ResultType> >();
+    throw std::runtime_error("ElementaryPotentialOperator::"
+                             "assembleOperatorInDenseMode(): not implemented yet");
 //    const Space<BasisFunctionType>& testSpace = *this->dualToRange();
 //    const Space<BasisFunctionType>& trialSpace = *this->domain();
 
