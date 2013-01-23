@@ -35,6 +35,7 @@
 #include "../common/chunk_statistics.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/local_assembler_for_operators.hpp"
+#include "../fiber/local_assembler_for_potential_operators.hpp"
 #include "../fiber/serial_blas_region.hpp"
 #include "../fiber/scalar_traits.hpp"
 #include "../space/space.hpp"
@@ -514,24 +515,30 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
 
 #ifndef WITH_TRILINOS
     if (!indexWithGlobalDofs)
-        throw std::runtime_error("AcaGlobalAssembler::assembleDetachedWeakForm(): "
+        throw std::runtime_error("AcaGlobalAssembler::assemblePotentialOperator(): "
                                  "ACA assembly with globalAssemblyBeforeCompression "
                                  "set to false requires BEM++ to be linked with "
                                  "Trilinos");
 #endif // WITH_TRILINOS
 
+    if (localAssemblers.empty())
+        throw std::runtime_error("AcaGlobalAssembler::assemblePotentialOperator(): "
+                                 "the 'localAssemblers' vector must not be empty");
+
     const size_t pointCount = points.n_cols;
+    const int componentCount = localAssemblers[0]->resultDimension();
+    const size_t testDofCount = pointCount * componentCount;
     const size_t trialDofCount = indexWithGlobalDofs ?
                 trialSpace.globalDofCount() : trialSpace.flatLocalDofCount();
 
     // o2p: map of original indices to permuted indices
     // p2o: map of permuted indices to original indices
     typedef ClusterConstructionHelper<BasisFunctionType> CCH;
-    shared_ptr<AhmedBemCluster> pointClusterTree;
-    shared_ptr<IndexPermutation> point_o2pPermutation, point_p2oPermutation;
-    CCH::constructBemCluster(points, acaOptions,
-                             pointClusterTree,
-                             point_o2pPermutation, point_p2oPermutation);
+    shared_ptr<AhmedBemCluster> componentClusterTree;
+    shared_ptr<IndexPermutation> component_o2pPermutation, component_p2oPermutation;
+    CCH::constructBemCluster(points, componentCount, acaOptions,
+                             componentClusterTree,
+                             component_o2pPermutation, component_p2oPermutation);
     shared_ptr<AhmedBemCluster> trialClusterTree;
     shared_ptr<IndexPermutation> trial_o2pPermutation, trial_p2oPermutation;
     CCH::constructBemCluster(trialSpace, indexWithGlobalDofs, acaOptions,
@@ -549,21 +556,21 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
 //                              indexWithGlobalDofs ? GLOBAL_DOFS : FLAT_LOCAL_DOFS);
 
     if (verbosityAtLeastHigh)
-        std::cout << "Test cluster count: " << pointClusterTree->getncl()
+        std::cout << "Test cluster count: " << componentClusterTree->getncl()
                   << "\nTrial cluster count: " << trialClusterTree->getncl()
                   << std::endl;
 
     unsigned int blockCount = 0;
     shared_ptr<AhmedBemBlcluster> bemBlclusterTree(
                 CCH::constructBemBlockCluster(acaOptions, false /* symmetric */,
-                                              *pointClusterTree, *trialClusterTree,
+                                              *componentClusterTree, *trialClusterTree,
                                               blockCount).release());
 
     if (verbosityAtLeastHigh)
         std::cout << "Mblock count: " << blockCount << std::endl;
 
     std::vector<unsigned int> p2oPoints =
-        point_p2oPermutation->permutedIndices();
+        component_p2oPermutation->permutedIndices();
     std::vector<unsigned int> p2oTrialDofs =
         trial_p2oPermutation->permutedIndices();
     typedef PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>
@@ -647,7 +654,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
     //        }
 
     {
-        size_t origMemory = sizeof(ResultType) * pointCount * trialDofCount;
+        size_t origMemory = sizeof(ResultType) * testDofCount * trialDofCount;
         size_t ahmedMemory = sizeH(bemBlclusterTree.get(), blocks.get());
         int maximumRank = Hmax_rank(bemBlclusterTree.get(), blocks.get());
         if (verbosityAtLeastDefault)
@@ -664,10 +671,8 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
             if (verbosityAtLeastDefault)
                 std::cout << "Writing matrix partition ..." << std::flush;
             std::ofstream os(acaOptions.outputFname.c_str());
-            if (symmetric) // seems valid also for Hermitian matrices
-                psoutputHeH(os, bemBlclusterTree.get(), pointCount, blocks.get());
-            else
-                psoutputGeH(os, bemBlclusterTree.get(), pointCount, blocks.get());
+            psoutputGeH(os, bemBlclusterTree.get(),
+                        std::max(testDofCount, trialDofCount), blocks.get());
             os.close();
             if (verbosityAtLeastDefault)
                 std::cout << " done." << std::endl;
@@ -675,13 +680,13 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
     }
 
     std::auto_ptr<DiscreteAcaLinOp> acaOp(
-                new DiscreteAcaLinOp(pointCount, trialDofCount,
+                new DiscreteAcaLinOp(testDofCount, trialDofCount,
                                      acaOptions.eps,
                                      acaOptions.maximumRank,
                                      NO_SYMMETRY,
                                      bemBlclusterTree, blocks,
                                      *trial_o2pPermutation, // domain
-                                     *point_o2pPermutation, // range
+                                     *component_o2pPermutation, // range
                                      parallelOptions));
 
     // to here

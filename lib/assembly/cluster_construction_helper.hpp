@@ -36,6 +36,7 @@ namespace Bempp
 /** \cond FORWARD_DECL */
 template <typename BasisFunctionType> class Space;
 template <typename CoordinateType> struct AhmedDofWrapper;
+template <typename CoordinateType> struct Point3D;
 class AcaOptions;
 class IndexPermutation;
 /** \endcond */
@@ -58,6 +59,7 @@ struct ClusterConstructionHelper
 
     static void constructBemCluster(
         const arma::Mat<CoordinateType>& points,
+        int componentCount,
         const AcaOptions& acaOptions,
         shared_ptr<AhmedBemCluster>& cluster,
         shared_ptr<IndexPermutation>& o2p,
@@ -73,6 +75,12 @@ struct ClusterConstructionHelper
         AhmedBemCluster& trialCluster,
         /* output parameter */
         unsigned int& blockCount);
+
+    static void
+    getComponentDofPositions(
+            const arma::Mat<CoordinateType>& points,
+            int componentCount,
+            std::vector<Point3D<CoordinateType> >& positions);
 };
 
 } // namespace Bempp

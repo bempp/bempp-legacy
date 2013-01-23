@@ -96,6 +96,7 @@ void ClusterConstructionHelper<BasisFunctionType>::constructBemCluster(
 template <typename BasisFunctionType>
 void ClusterConstructionHelper<BasisFunctionType>::constructBemCluster(
         const arma::Mat<CoordinateType>& points,
+        int componentCount,
         const AcaOptions& acaOptions,
         shared_ptr<AhmedBemCluster>& cluster,
         shared_ptr<IndexPermutation>& o2p,
@@ -103,26 +104,17 @@ void ClusterConstructionHelper<BasisFunctionType>::constructBemCluster(
 {
 #ifdef WITH_AHMED
     const size_t pointCount = points.n_cols;
-    const int dim = points.n_rows;
-    if (dim > 3)
-        throw std::invalid_argument(
-                "ClusterConstructionHelper::constructBemCluster(): "
-                "points from the array 'points' must have at most 3 coordinates");
+    const size_t dofCount = pointCount * componentCount;
 
-    std::vector<unsigned int> o2pPoints(pointCount);
-    std::vector<unsigned int> p2oPoints(pointCount);
-    for (size_t i = 0; i < pointCount; ++i)
-        o2pPoints[i] = i;
-    for (size_t i = 0; i < pointCount; ++i)
-        p2oPoints[i] = i;
+    std::vector<unsigned int> o2pDofs(dofCount);
+    std::vector<unsigned int> p2oDofs(dofCount);
+    for (size_t i = 0; i < dofCount; ++i)
+        o2pDofs[i] = i;
+    for (size_t i = 0; i < dofCount; ++i)
+        p2oDofs[i] = i;
 
     std::vector<Point3D<CoordinateType> > dofCenters;
-    dofCenters.resize(pointCount);
-    for (size_t p = 0; p < pointCount; ++p) {
-        dofCenters[p].x = (dim >= 1) ? points(0, p) : 0.;
-        dofCenters[p].y = (dim >= 2) ? points(1, p) : 0.;
-        dofCenters[p].z = (dim >= 3) ? points(2, p) : 0.;
-    }
+    getComponentDofPositions(points, componentCount, dofCenters);
 
     // Use static_cast to convert from a pointer to Point3D to a pointer to its
     // descendant AhmedDofWrapper, which does not contain any new data members,
@@ -134,11 +126,11 @@ void ClusterConstructionHelper<BasisFunctionType>::constructBemCluster(
     // NOTE: Ahmed uses names "op_perm" and "po_perm", which
     // correspond to BEM++'s "p2o" and "o2p", NOT the other way round.
     cluster = boost::make_shared<AhmedBemCluster>(
-                ahmedDofCenters, &p2oPoints[0],
-                0, pointCount, acaOptions.maximumBlockSize);
+                ahmedDofCenters, &p2oDofs[0],
+                0, dofCount, acaOptions.maximumBlockSize);
     cluster->createClusterTree(
-        acaOptions.minimumBlockSize,
-        &p2oPoints[0], &o2pPoints[0]);
+        acaOptions.minimumBlockSize, &p2oDofs[0], &o2pDofs[0]);
+
     // cluster_pca stores a pointer to the first element of the array
     // dofCenters, but it is only used during construction of the
     // cluster tree. Now that the is done, we can deallocate
@@ -146,8 +138,8 @@ void ClusterConstructionHelper<BasisFunctionType>::constructBemCluster(
     // array stored in the cluster tree, to detect any attempts to
     // access it more easily.
     cluster->clearDofPointers();
-    o2p = boost::make_shared<IndexPermutation>(o2pPoints);
-    p2o = boost::make_shared<IndexPermutation>(p2oPoints);
+    o2p = boost::make_shared<IndexPermutation>(o2pDofs);
+    p2o = boost::make_shared<IndexPermutation>(p2oDofs);
     // as far as I understand, cluster_pca doesn't store references to
     // p2oDofs or o2pDofs, so these arrays can now be safely deallocated.
 #else // without Ahmed
@@ -190,6 +182,30 @@ ClusterConstructionHelper<BasisFunctionType>::constructBemBlockCluster(
                              "AHMED not available. Recompile BEM++ "
                              "with the symbol WITH_AHMED defined.");
 #endif // WITH_AHMED
+}
+
+
+template <typename BasisFunctionType>
+void
+ClusterConstructionHelper<BasisFunctionType>::getComponentDofPositions(
+        const arma::Mat<CoordinateType>& points,
+        int componentCount,
+        std::vector<Point3D<CoordinateType> >& positions)
+{
+    const size_t pointCount = points.n_cols;
+    const int dim = points.n_rows;
+    if (dim > 3)
+        throw std::invalid_argument(
+                "ClusterConstructionHelper::getComponentDofPositions(): "
+                "points from the array 'points' must have at most 3 coordinates");
+
+    positions.resize(pointCount * componentCount);
+    for (size_t p = 0; p < pointCount; ++p)
+        for (size_t c = 0; c < componentCount; ++c) {
+            positions[p * componentCount + c].x = (dim >= 1) ? points(0, p) : 0.;
+            positions[p * componentCount + c].y = (dim >= 2) ? points(1, p) : 0.;
+            positions[p * componentCount + c].z = (dim >= 3) ? points(2, p) : 0.;
+        }
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(ClusterConstructionHelper);
