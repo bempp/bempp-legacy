@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_raviart_thomas_order_1_basis_hpp
-#define fiber_raviart_thomas_order_1_basis_hpp
+#ifndef fiber_raviart_thomas_order_0_basis_hpp
+#define fiber_raviart_thomas_order_0_basis_hpp
 
 #include "../common/common.hpp"
 
@@ -35,13 +35,13 @@ namespace Fiber
 {
 
 template <int elementVertexCount, typename CoordinateType, typename ValueType>
-struct RaviartThomasOrder1BasisTraits
+struct RaviartThomasOrder0BasisTraits
 {
 };
 
 // Triangle
 template <typename CoordinateType, typename ValueType>
-struct RaviartThomasOrder1BasisTraits<3, CoordinateType, ValueType>
+struct RaviartThomasOrder0BasisTraits<3, CoordinateType, ValueType>
 {
 public:
     typedef Dune::RT02DLocalBasis<CoordinateType, ValueType> DuneBasis;
@@ -49,20 +49,20 @@ public:
 
 // // Quadrilateral
 // template <typename CoordinateType, typename ValueType>
-// struct RaviartThomasOrder1BasisTraits<4, CoordinateType, ValueType>
+// struct RaviartThomasOrder0BasisTraits<4, CoordinateType, ValueType>
 // {
 // public:
 //     typedef Dune::Q1LocalBasis<CoordinateType, ValueType, 2> DuneBasis;
 // };
 
 template <int elementVertexCount, typename ValueType>
-class RaviartThomasOrder1Basis : public Basis<ValueType>
+class RaviartThomasOrder0Basis : public Basis<ValueType>
 {
 public:
     typedef typename Basis<ValueType>::CoordinateType CoordinateType;
 
 private:
-    typedef typename RaviartThomasOrder1BasisTraits
+    typedef typename RaviartThomasOrder0BasisTraits
     <elementVertexCount, CoordinateType, ValueType>::DuneBasis DuneBasis;
 
 public:
@@ -81,7 +81,7 @@ public:
                           BasisData<ValueType>& data) const {
         if (localDofIndex != ALL_DOFS &&
                 (localDofIndex < 0 || size() <= localDofIndex))
-            throw std::invalid_argument("RaviartThomasOrder1Basis::"
+            throw std::invalid_argument("RaviartThomasOrder0Basis::"
                                         "evaluate(): Invalid localDofIndex");
 
         if (what & VALUES)

@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "piecewise_linear_normally_continuous_vector_space.hpp"
+#include "raviart_thomas_0_vector_space.hpp"
 
 #include "../assembly/discrete_sparse_boundary_operator.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
@@ -41,7 +41,7 @@ namespace Bempp
 
 /** \cond PRIVATE */
 template <typename BasisFunctionType>
-struct PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::Impl
+struct RaviartThomas0VectorSpace<BasisFunctionType>::Impl
 {
     typedef Fiber::HdivFunctionValueFunctor<CoordinateType>
     TransformationFunctor;
@@ -55,47 +55,47 @@ struct PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::Impl
 /** \endcond */
 
 template <typename BasisFunctionType>
-PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::
-PiecewiseLinearNormallyContinuousVectorSpace(const shared_ptr<const Grid>& grid) :
+RaviartThomas0VectorSpace<BasisFunctionType>::
+RaviartThomas0VectorSpace(const shared_ptr<const Grid>& grid) :
     Base(grid), m_impl(new Impl), m_flatLocalDofCount(0)
 {
     if (grid->dim() != 2)
-        throw std::invalid_argument("PiecewiseLinearNormallyContinuousVectorSpace::"
-                                    "PiecewiseLinearNormallyContinuousVectorSpace(): "
+        throw std::invalid_argument("RaviartThomas0VectorSpace::"
+                                    "RaviartThomas0VectorSpace(): "
                                     "grid must be 2-dimensional");
     m_view = grid->leafView();
     assignDofsImpl();
 }
 
 template <typename BasisFunctionType>
-PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::
-~PiecewiseLinearNormallyContinuousVectorSpace()
+RaviartThomas0VectorSpace<BasisFunctionType>::
+~RaviartThomas0VectorSpace()
 {
 }
 
 template <typename BasisFunctionType>
-const typename PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::
+const typename RaviartThomas0VectorSpace<BasisFunctionType>::
 CollectionOfBasisTransformations&
-PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::shapeFunctionValue() const
+RaviartThomas0VectorSpace<BasisFunctionType>::shapeFunctionValue() const
 {
     return m_impl->transformations;
 }
 
 template <typename BasisFunctionType>
-int PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::domainDimension() const
+int RaviartThomas0VectorSpace<BasisFunctionType>::domainDimension() const
 {
     return 2;
 }
 
 template <typename BasisFunctionType>
-int PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::codomainDimension() const
+int RaviartThomas0VectorSpace<BasisFunctionType>::codomainDimension() const
 {
     return 3;
 }
 
 template <typename BasisFunctionType>
 const Fiber::Basis<BasisFunctionType>&
-PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::basis(
+RaviartThomas0VectorSpace<BasisFunctionType>::basis(
         const Entity<0>& element) const
 {
     switch (elementVariant(element))
@@ -103,16 +103,16 @@ PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::basis(
     case 3:
         return m_triangleBasis;
     case 4:
-        throw std::logic_error("PiecewiseLinearNormallyContinuousVectorSpace::basis(): "
+        throw std::logic_error("RaviartThomas0VectorSpace::basis(): "
                                "quadrilateral elements are not supported yet");
     default:
-        throw std::logic_error("PiecewiseLinearNormallyContinuousVectorSpace::basis(): "
+        throw std::logic_error("RaviartThomas0VectorSpace::basis(): "
                                "invalid element variant, this shouldn't happen!");
     }
 }
 
 template <typename BasisFunctionType>
-ElementVariant PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::elementVariant(
+ElementVariant RaviartThomas0VectorSpace<BasisFunctionType>::elementVariant(
         const Entity<0>& element) const
 {
     GeometryType type = element.type();
@@ -121,23 +121,23 @@ ElementVariant PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::
     else if (type.isQuadrilateral())
         return 4;
     else
-        throw std::runtime_error("PiecewiseLinearNormallyContinuousVectorSpace::"
+        throw std::runtime_error("RaviartThomas0VectorSpace::"
                                  "elementVariant(): invalid geometry type, "
                                  "this shouldn't happen!");
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::setElementVariant(
+void RaviartThomas0VectorSpace<BasisFunctionType>::setElementVariant(
         const Entity<0>& element, ElementVariant variant)
 {
     if (variant != elementVariant(element))
         // for this space, the element variants are unmodifiable,
-        throw std::runtime_error("PiecewiseLinearNormallyContinuousVectorSpace::"
+        throw std::runtime_error("RaviartThomas0VectorSpace::"
                                  "setElementVariant(): invalid variant");
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::assignDofsImpl()
+void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
 {
     const int gridDim = domainDimension();
 
@@ -204,7 +204,7 @@ void PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::assignDofs
                 }
             } else // edgeCount == 4
                 throw std::runtime_error(
-                    "PiecewiseLinearNormallyContinuousVectorSpace::"
+                    "RaviartThomas0VectorSpace::"
                     "assignDofsImpl(): support for quadrilaterals not in place yet");
             BasisFunctionType weight = vertex1Index < vertex2Index ? 1. : -1.;
             globalDofs[i] = globalDofIndex;
@@ -225,19 +225,19 @@ void PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::assignDofs
 }
 
 template <typename BasisFunctionType>
-size_t PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::globalDofCount() const
+size_t RaviartThomas0VectorSpace<BasisFunctionType>::globalDofCount() const
 {
     return m_global2localDofs.size();
 }
 
 template <typename BasisFunctionType>
-size_t PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::flatLocalDofCount() const
+size_t RaviartThomas0VectorSpace<BasisFunctionType>::flatLocalDofCount() const
 {
     return m_flatLocalDofCount;
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::getGlobalDofs(
+void RaviartThomas0VectorSpace<BasisFunctionType>::getGlobalDofs(
         const Entity<0>& element,
         std::vector<GlobalDofIndex>& dofs,
         std::vector<BasisFunctionType>& dofWeights) const
@@ -249,7 +249,7 @@ void PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::getGlobalD
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::global2localDofs(
+void RaviartThomas0VectorSpace<BasisFunctionType>::global2localDofs(
         const std::vector<GlobalDofIndex>& globalDofs,
         std::vector<std::vector<LocalDof> >& localDofs,
         std::vector<std::vector<BasisFunctionType> >& localDofWeights) const
@@ -263,7 +263,7 @@ void PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::global2loc
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::flatLocal2localDofs(
+void RaviartThomas0VectorSpace<BasisFunctionType>::flatLocal2localDofs(
         const std::vector<FlatLocalDofIndex>& flatLocalDofs,
         std::vector<LocalDof>& localDofs) const
 {
@@ -273,7 +273,7 @@ void PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::flatLocal2
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::getGlobalDofPositions(
+void RaviartThomas0VectorSpace<BasisFunctionType>::getGlobalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
     const int gridDim = domainDimension();
@@ -298,7 +298,7 @@ void PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::getGlobalD
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::getFlatLocalDofPositions(
+void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
     const int gridDim = domainDimension();
@@ -334,7 +334,7 @@ void PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::getFlatLoc
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::dumpClusterIds(
+void RaviartThomas0VectorSpace<BasisFunctionType>::dumpClusterIds(
         const char* fileName,
         const std::vector<unsigned int>& clusterIdsOfDofs) const
 {
@@ -342,15 +342,15 @@ void PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::dumpCluste
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearNormallyContinuousVectorSpace<BasisFunctionType>::dumpClusterIdsEx(
+void RaviartThomas0VectorSpace<BasisFunctionType>::dumpClusterIdsEx(
         const char* fileName,
         const std::vector<unsigned int>& clusterIdsOfDofs,
         DofType dofType) const
 {
-    throw std::runtime_error("PiecewiseLinearNormallyContinuousVectorSpace::"
+    throw std::runtime_error("RaviartThomas0VectorSpace::"
                              "dumpClusterIdsEx(): Not implemented yet");
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(PiecewiseLinearNormallyContinuousVectorSpace);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(RaviartThomas0VectorSpace);
 
 } // namespace Bempp

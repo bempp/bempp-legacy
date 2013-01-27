@@ -18,15 +18,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_piecewise_linear_normally_continuous_vector_space_hpp
-#define bempp_piecewise_linear_normally_continuous_vector_space_hpp
+#ifndef bempp_raviart_thomas_0_vector_space_hpp
+#define bempp_raviart_thomas_0_vector_space_hpp
 
 #include "../common/common.hpp"
 
 #include "space.hpp"
 #include "../grid/grid_view.hpp"
 #include "../common/types.hpp"
-#include "../fiber/raviart_thomas_order_1_basis.hpp"
+#include "../fiber/raviart_thomas_order_0_basis.hpp"
 
 #include <boost/scoped_ptr.hpp>
 #include <map>
@@ -42,7 +42,7 @@ class GridView;
 /** \ingroup space
  *  \brief Space of continuous, piecewise linear scalar functions. */
 template <typename BasisFunctionType>
-class PiecewiseLinearNormallyContinuousVectorSpace : public Space<BasisFunctionType>
+class RaviartThomas0VectorSpace : public Space<BasisFunctionType>
 {
     typedef Space<BasisFunctionType> Base;
 public:
@@ -51,9 +51,9 @@ public:
     typedef typename Base::CollectionOfBasisTransformations
     CollectionOfBasisTransformations;
 
-    explicit PiecewiseLinearNormallyContinuousVectorSpace(
+    explicit RaviartThomas0VectorSpace(
         const shared_ptr<const Grid>& grid);
-    virtual ~PiecewiseLinearNormallyContinuousVectorSpace();
+    virtual ~RaviartThomas0VectorSpace();
 
     virtual const CollectionOfBasisTransformations& shapeFunctionValue() const;
 
@@ -104,7 +104,7 @@ private:
     struct Impl;
     boost::scoped_ptr<Impl> m_impl;
     std::auto_ptr<GridView> m_view;
-    Fiber::RaviartThomasOrder1Basis<3, BasisFunctionType> m_triangleBasis;
+    Fiber::RaviartThomasOrder0Basis<3, BasisFunctionType> m_triangleBasis;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<BasisFunctionType> > m_local2globalDofWeights;
     std::vector<std::vector<LocalDof> > m_global2localDofs;

@@ -247,9 +247,9 @@ def createUnitScalarSpace(context, grid):
     return _constructObjectTemplatedOnBasis(
         core, 'unitScalarSpace', context.basisFunctionType(), grid)
 
-def createPiecewiseLinearNormallyContinuousVectorSpace(context, grid):
+def createRaviartThomas0VectorSpace(context, grid):
     """
-    Create and return a space of piecewise linear vector functions with normal
+    Create and return a space of lowest order Raviart-Thomas vector functions with normal
     components continuous on boundaries between elements.
 
     *Parameters:*
@@ -264,7 +264,7 @@ def createPiecewiseLinearNormallyContinuousVectorSpace(context, grid):
     BasisFunctionType determined automatically from the context argument and
     equal to either float32, float64, complex64 or complex128.
     """
-    name = 'piecewiseLinearNormallyContinuousVectorSpace'
+    name = 'raviartThomas0VectorSpace'
     return _constructObjectTemplatedOnBasis(
         core, name, context.basisFunctionType(), grid)
 

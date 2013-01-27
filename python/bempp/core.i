@@ -139,7 +139,7 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "space/space.i"
 %include "space/piecewise_constant_scalar_space.i"
 %include "space/piecewise_linear_continuous_scalar_space.i"
-%include "space/piecewise_linear_normally_continuous_vector_space.i"
+%include "space/raviart_thomas_0_vector_space.i"
 %include "space/unit_scalar_space.i"
 
 // Assembly

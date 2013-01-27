@@ -68,7 +68,7 @@ context = createContext(quadStrategy, assemblyOptions)
 
 # Initialize spaces
 
-space = createPiecewiseLinearNormallyContinuousVectorSpace(context, grid)
+space = createRaviartThomas0VectorSpace(context, grid)
 
 # Construct elementary operators
 
