@@ -27,6 +27,7 @@
 
 #include "_2d_array.hpp"
 #include "accuracy_options.hpp"
+#include "default_local_assembler_for_operators_on_surfaces_utilities.hpp"
 #include "element_pair_topology.hpp"
 #include "numerical_quadrature.hpp"
 #include "parallelization_options.hpp"
@@ -104,6 +105,8 @@ private:
     /** \cond PRIVATE */
     typedef TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType> Integrator;
     typedef typename Integrator::ElementIndexPair ElementIndexPair;
+    typedef DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
+    BasisFunctionType> Utilities;
 
     /** \brief Alternative comparison functor for pairs.
      *
@@ -136,10 +139,6 @@ private:
      *  to construct such cache. */
     typedef std::set<ElementIndexPair, ElementIndexPairCompare> ElementIndexPairSet;
 
-    void checkConsistencyOfGeometryAndBases(
-            const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<BasisFunctionType>*>& bases) const;
-
     bool testAndTrialGridsAreIdentical() const;
 
     void cacheSingularLocalWeakForms();
@@ -161,19 +160,10 @@ private:
                           CoordinateType nominalDistance) const;
     int singularOrder(int elementIndex, ElementType elementType) const;
 
-    CoordinateType elementSizeSquared(
-            int elementIndex, const RawGridGeometry<CoordinateType>& rawGeometry) const;
-    arma::Col<CoordinateType> elementCenter(
-            int elementIndex, const RawGridGeometry<CoordinateType>& rawGeometry) const;
     CoordinateType elementDistanceSquared(
             int testElementIndex, int trialElementIndex) const;
 
     void precalculateElementSizesAndCenters();
-    void precalculateElementSizesAndCentersForSingleGrid(
-            const RawGridGeometry<CoordinateType>& rawGeometry,
-            std::vector<CoordinateType>& elementSizesSquared,
-            arma::Mat<CoordinateType>& elementCenters,
-            CoordinateType& averageElementSize) const;
 
 private:
     shared_ptr<const GeometryFactory> m_testGeometryFactory;
@@ -193,7 +183,7 @@ private:
 
     typedef tbb::concurrent_unordered_map<DoubleQuadratureDescriptor,
     Integrator*> IntegratorMap;
-    IntegratorMap m_TestKernelTrialIntegrators;
+    IntegratorMap m_testKernelTrialIntegrators;
 
     enum { INVALID_INDEX = INT_MAX };
     typedef _2dArray<std::pair<int, arma::Mat<ResultType> > > Cache;

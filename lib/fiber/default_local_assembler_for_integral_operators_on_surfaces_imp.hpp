@@ -116,8 +116,8 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces(
     m_verbosityLevel(verbosityLevel),
     m_accuracyOptions(accuracyOptions)
 {
-    checkConsistencyOfGeometryAndBases(*testRawGeometry, *testBases);
-    checkConsistencyOfGeometryAndBases(*trialRawGeometry, *trialBases);
+    Utilities::checkConsistencyOfGeometryAndBases(*testRawGeometry, *testBases);
+    Utilities::checkConsistencyOfGeometryAndBases(*trialRawGeometry, *trialBases);
 
     precalculateElementSizesAndCenters();
     if (cacheSingularIntegrals)
@@ -133,46 +133,10 @@ KernelType, ResultType, GeometryFactory>::
     // Note: obviously the destructor is assumed to be called only after
     // all threads have ceased using the assembler!
 
-    for (typename IntegratorMap::const_iterator it = m_TestKernelTrialIntegrators.begin();
-         it != m_TestKernelTrialIntegrators.end(); ++it)
+    for (typename IntegratorMap::const_iterator it = m_testKernelTrialIntegrators.begin();
+         it != m_testKernelTrialIntegrators.end(); ++it)
         delete it->second;
-    m_TestKernelTrialIntegrators.clear();
-}
-
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType, typename GeometryFactory>
-void
-DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
-KernelType, ResultType, GeometryFactory>::
-checkConsistencyOfGeometryAndBases(
-        const RawGridGeometry<CoordinateType>& rawGeometry,
-        const std::vector<const Basis<BasisFunctionType>*>& bases) const
-{
-    if (rawGeometry.vertices().n_rows != 3)
-        throw std::invalid_argument(
-            "DefaultLocalAssemblerForIntegralOperatorsOnSurfaces::"
-            "checkConsistencyOfGeometryAndBases(): "
-            "vertex coordinates must be three-dimensional");
-    const size_t elementCount = rawGeometry.elementCornerIndices().n_cols;
-    if (rawGeometry.elementCornerIndices().n_rows < 3 ||
-            4 < rawGeometry.elementCornerIndices().n_rows)
-        throw std::invalid_argument(
-            "DefaultLocalAssemblerForIntegralOperatorsOnSurfaces::"
-            "checkConsistencyOfGeometryAndBases(): "
-            "Elements must have either 3 or 4 corners");
-    if (!rawGeometry.auxData().is_empty() &&
-            rawGeometry.auxData().n_cols != elementCount)
-        throw std::invalid_argument(
-            "DefaultLocalAssemblerForIntegralOperatorsOnSurfaces::"
-            "checkConsistencyOfGeometryAndBases(): "
-            "number of columns of auxData must match that of "
-            "elementCornerIndices");
-    if (bases.size() != elementCount)
-        throw std::invalid_argument(
-            "DefaultLocalAssemblerForIntegralOperatorsOnSurfaces::"
-            "checkConsistencyOfGeometryAndBases(): "
-            "size of bases must match the number of columns of "
-            "elementCornerIndices");
+    m_testKernelTrialIntegrators.clear();
 }
 
 template <typename BasisFunctionType, typename KernelType,
@@ -626,7 +590,7 @@ KernelType, ResultType, GeometryFactory>::
 precalculateElementSizesAndCenters()
 {
     CoordinateType averageTestElementSize;
-    precalculateElementSizesAndCentersForSingleGrid(
+    Utilities::precalculateElementSizesAndCentersForSingleGrid(
                 *m_testRawGeometry,
                 m_testElementSizesSquared, m_testElementCenters,
                 averageTestElementSize);
@@ -637,41 +601,13 @@ precalculateElementSizesAndCenters()
     }
     else {
         CoordinateType averageTrialElementSize;
-        precalculateElementSizesAndCentersForSingleGrid(
+        Utilities::precalculateElementSizesAndCentersForSingleGrid(
                     *m_trialRawGeometry,
                     m_trialElementSizesSquared, m_trialElementCenters,
                     averageTrialElementSize);
         m_averageElementSize =
                 (averageTestElementSize + averageTrialElementSize) / 2.;
     }
-}
-
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType, typename GeometryFactory>
-void
-DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
-KernelType, ResultType, GeometryFactory>::
-precalculateElementSizesAndCentersForSingleGrid(
-        const RawGridGeometry<CoordinateType>& rawGeometry,
-        std::vector<CoordinateType>& elementSizesSquared,
-        arma::Mat<CoordinateType>& elementCenters,
-        CoordinateType& averageElementSize) const
-{
-    const size_t elementCount = rawGeometry.elementCount();
-    const int worldDim = rawGeometry.worldDimension();
-
-    averageElementSize = 0.; // We will store here temporarily
-                             // the sum of element sizes
-    elementSizesSquared.resize(elementCount);
-    for (int e = 0; e < elementCount; ++e) {
-        elementSizesSquared[e] = elementSizeSquared(e, rawGeometry);
-        averageElementSize += sqrt(elementSizesSquared[e]);
-    }
-    averageElementSize /= elementCount;
-
-    elementCenters.set_size(worldDim, elementCount);
-    for (int e = 0; e < elementCount; ++e)
-        elementCenters.col(e) = elementCenter(e, rawGeometry);
 }
 
 template <typename BasisFunctionType, typename KernelType,
@@ -779,74 +715,9 @@ inline
 typename DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
 BasisFunctionType, KernelType, ResultType, GeometryFactory>::CoordinateType
 DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
-BasisFunctionType, KernelType, ResultType, GeometryFactory>::elementSizeSquared(
-        int elementIndex, const RawGridGeometry<CoordinateType>& rawGeometry) const
-{
-    // This implementation could be optimised
-    CoordinateType maxEdgeLengthSquared = 0.;
-    const arma::Mat<int>& cornerIndices = rawGeometry.elementCornerIndices();
-    const arma::Mat<CoordinateType>& vertices = rawGeometry.vertices();
-    arma::Col<CoordinateType> edge;
-    if (cornerIndices(cornerIndices.n_rows - 1, elementIndex) == -1) {
-        // Triangular element
-        const int cornerCount = 3;
-        for (int i = 0; i < cornerCount; ++i) {
-            edge = vertices.col(cornerIndices((i + 1) % cornerCount, elementIndex)) -
-                    vertices.col(cornerIndices(i, elementIndex));
-            CoordinateType edgeLengthSquared = arma::dot(edge, edge);
-            maxEdgeLengthSquared = std::max(maxEdgeLengthSquared, edgeLengthSquared);
-        }
-    } else {
-        // Quadrilateral element. We assume it is convex.
-        edge = vertices.col(cornerIndices(2, elementIndex)) -
-                vertices.col(cornerIndices(0, elementIndex));
-        maxEdgeLengthSquared = arma::dot(edge, edge);
-        edge = vertices.col(cornerIndices(3, elementIndex)) -
-                vertices.col(cornerIndices(1, elementIndex));
-        CoordinateType edgeLengthSquared = arma::dot(edge, edge);
-        maxEdgeLengthSquared = std::max(maxEdgeLengthSquared, edgeLengthSquared);
-    }
-    return maxEdgeLengthSquared;
-}
-
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType, typename GeometryFactory>
-inline
-arma::Col<typename DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
-BasisFunctionType, KernelType, ResultType, GeometryFactory>::CoordinateType>
-DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
-BasisFunctionType, KernelType, ResultType, GeometryFactory>::elementCenter(
-        int elementIndex, const RawGridGeometry<CoordinateType>& rawGeometry) const
-{
-    const arma::Mat<int>& cornerIndices = rawGeometry.elementCornerIndices();
-    const arma::Mat<CoordinateType>& vertices = rawGeometry.vertices();
-    const int maxCornerCount = cornerIndices.n_rows;
-    // each element has at least one corner
-    arma::Col<CoordinateType> center(vertices.col(cornerIndices(0, elementIndex)));
-    int i = 1;
-    for (; i < maxCornerCount; ++i) {
-        int cornerIndex = cornerIndices(i, elementIndex);
-        if (cornerIndex == -1)
-            break;
-        center += vertices.col(cornerIndex);
-    }
-    // now i contains the number of corners of the specified element
-    center /= i;
-    return center;
-}
-
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType, typename GeometryFactory>
-inline
-typename DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
-BasisFunctionType, KernelType, ResultType, GeometryFactory>::CoordinateType
-DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
 BasisFunctionType, KernelType, ResultType, GeometryFactory>::elementDistanceSquared(
         int testElementIndex, int trialElementIndex) const
 {
-//    arma::Col<CoordinateType> diff =
-//            elementCenter(trialElementIndex, *m_trialRawGeometry) -
-//            elementCenter(testElementIndex, *m_testRawGeometry);
     arma::Col<CoordinateType> diff =
             m_trialElementCenters.col(trialElementIndex) -
             m_testElementCenters.col(testElementIndex);
@@ -860,10 +731,10 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 getIntegrator(const DoubleQuadratureDescriptor& desc)
 {
-    typename IntegratorMap::const_iterator it = m_TestKernelTrialIntegrators.find(desc);
+    typename IntegratorMap::const_iterator it = m_testKernelTrialIntegrators.find(desc);
     // Note: as far as I understand TBB's docs, .end() keeps pointing to the
     // same element even if another thread inserts a new element into the map
-    if (it != m_TestKernelTrialIntegrators.end()) {
+    if (it != m_testKernelTrialIntegrators.end()) {
         //std::cout << "getIntegrator(: " << desc << "): integrator found" << std::endl;
         return *it->second;
     }
@@ -911,7 +782,7 @@ getIntegrator(const DoubleQuadratureDescriptor& desc)
 
     // Attempt to insert the newly created integrator into the map
     std::pair<typename IntegratorMap::iterator, bool> result =
-            m_TestKernelTrialIntegrators.insert(std::make_pair(desc, integrator));
+            m_testKernelTrialIntegrators.insert(std::make_pair(desc, integrator));
     if (result.second)
         // Insertion succeeded. The newly created integrator will be deleted in
         // our own destructor

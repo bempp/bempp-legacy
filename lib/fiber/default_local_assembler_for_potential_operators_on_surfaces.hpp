@@ -27,6 +27,7 @@
 
 #include "_2d_array.hpp"
 #include "accuracy_options.hpp"
+#include "default_local_assembler_for_operators_on_surfaces_utilities.hpp"
 #include "element_pair_topology.hpp"
 #include "numerical_quadrature.hpp"
 #include "parallelization_options.hpp"
@@ -102,10 +103,8 @@ private:
     /** \cond PRIVATE */
     typedef KernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>
     Integrator;
-
-    void checkConsistencyOfGeometryAndBases(
-            const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<BasisFunctionType>*>& bases) const;
+    typedef DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
+    BasisFunctionType> Utilities;
 
     const Integrator& selectIntegrator(
             int testElementIndex, int trialElementIndex,
@@ -116,19 +115,10 @@ private:
 
     const Integrator& getIntegrator(const SingleQuadratureDescriptor& index);
 
-    CoordinateType elementSizeSquared(
-            int elementIndex, const RawGridGeometry<CoordinateType>& rawGeometry) const;
-    arma::Col<CoordinateType> elementCenter(
-            int elementIndex, const RawGridGeometry<CoordinateType>& rawGeometry) const;
     CoordinateType pointElementDistanceSquared(
             int pointIndex, int trialElementIndex) const;
 
     void precalculateElementSizesAndCenters();
-    void precalculateElementSizesAndCentersForSingleGrid(
-            const RawGridGeometry<CoordinateType>& rawGeometry,
-            std::vector<CoordinateType>& elementSizesSquared,
-            arma::Mat<CoordinateType>& elementCenters,
-            CoordinateType& averageElementSize) const;
 
 private:
     arma::Mat<CoordinateType> m_points;
