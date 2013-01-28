@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     
     BOOST_CHECK(y.is_finite());
     BOOST_CHECK(check_arrays_are_close<RT>(y, expected, 
-                                           10. * std::numeric_limits<CT>::epsilon()));
+                                           100. * std::numeric_limits<CT>::epsilon()));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2_plus_3j_and_beta_equal_to_0_and_y_initialized_to_nans, ResultType, complex_result_types)
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     
     BOOST_CHECK(y.is_finite());
     BOOST_CHECK(check_arrays_are_close<RT>(y, expected, 
-                                           10. * std::numeric_limits<CT>::epsilon()));
+                                           100. * std::numeric_limits<CT>::epsilon()));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2_and_beta_equal_to_3, ResultType, result_types)
@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
     
     BOOST_CHECK(check_arrays_are_close<RT>(y, expected, 
-                                           10. * std::numeric_limits<CT>::epsilon()));
+                                           100. * std::numeric_limits<CT>::epsilon()));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2_plus_3j_and_beta_equal_to_4_minus_5j, ResultType, complex_result_types)
@@ -206,7 +206,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
     
     BOOST_CHECK(check_arrays_are_close<RT>(y, expected, 
-                                           10. * std::numeric_limits<CT>::epsilon()));
+                                           100. * std::numeric_limits<CT>::epsilon()));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
