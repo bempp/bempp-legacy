@@ -685,7 +685,6 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > acaOperatorSum(
             DiscreteAcaBoundaryOperator<ValueType>::castToAca(op1);
     shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> > acaOp2 =
             DiscreteAcaBoundaryOperator<ValueType>::castToAca(op2);
-    std::cout << acaOp1->symmetry() << " " << acaOp2->symmetry() << std::endl;
     if (acaOp1->symmetry() != acaOp2->symmetry())
         throw std::runtime_error("acaOperatorSum(): addition of two H-matrices "
                                  "of different symmetry is not supported yet");

@@ -451,20 +451,18 @@ struct TestInAcaMode
         shared_ptr<Context<BFT, RT> > contextRef(
                     new Context<BFT, RT>(quadStrategy, assemblyOptionsRef));
 
-        std::cout << "Assembling ref op.\n";
         BoundaryOperator<BFT, RT> opRef = createOperator(
                     contextRef, pwiseLinears, pwiseLinears, pwiseConstants);
         arma::Mat<RT> weakFormRef = opRef.weakForm()->asMatrix();
 
         AssemblyOptions assemblyOptionsTest;
-        //assemblyOptionsTest.setVerbosityLevel(VerbosityLevel::LOW);
+        assemblyOptionsTest.setVerbosityLevel(VerbosityLevel::LOW);
         assemblyOptionsTest.enableJointAssembly();
         assemblyOptionsTest.switchToAcaMode(acaOptions);
         assemblyOptionsTest.setMaxThreadCount(1);
         shared_ptr<Context<BFT, RT> > contextTest(
                     new Context<BFT, RT>(quadStrategy, assemblyOptionsTest));
 
-        std::cout << "Assembling test op.\n";
         BoundaryOperator<BFT, RT> opTest = createOperator(
                     contextTest, pwiseLinears, pwiseLinears, pwiseConstants);
         arma::Mat<RT> weakFormTest = opTest.weakForm()->asMatrix();
