@@ -18,7 +18,7 @@ int main()
 
   for (unsigned int i = 0; i < N; ++i) {
       a[i] = dcomp(i, i / 10.);
-      b[i] = a[i] / 2.;
+      b[i] = dcomp(i / 3., i);
   }
 
   dcomp exact_result(0., 0.);
@@ -27,7 +27,7 @@ int main()
 
   dcomp result(0., 0.);
   zdotc_(&result, &N, a, &ONE, b, &ONE);
-  if (std::abs(result - exact_result) < 1e-13) {
+  if (std::abs(result - exact_result) < 1e-13 * std::abs(exact_result)) {
       std::cout << "SUCCESS" << std::endl;
       return 0;
   } else {
