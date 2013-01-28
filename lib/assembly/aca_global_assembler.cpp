@@ -34,6 +34,7 @@
 #include "../common/auto_timer.hpp"
 #include "../common/boost_shared_array_fwd.hpp"
 #include "../common/chunk_statistics.hpp"
+#include "../common/to_string.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/local_assembler_for_operators.hpp"
 #include "../fiber/local_assembler_for_potential_operators.hpp"
@@ -58,6 +59,10 @@
 #include "weak_form_aca_assembly_helper.hpp"
 #include "potential_operator_aca_assembly_helper.hpp"
 #endif
+
+// #define DUMP_DENSE_BLOCKS // if defined, contents and DOF lists of blocks
+                             // stored as dense matrices will be printed to the
+                             // screen
 
 namespace Bempp
 {
@@ -165,6 +170,235 @@ void getClusterIds(const cluster& clusterTree,
     unsigned int id = 0;
     reallyGetClusterIds(clusterTree, p2oDofs, clusterIds, id);
 }
+
+template <typename ValueType>
+void dumpDenseBlocks(
+        typename DiscreteAcaBoundaryOperator<ValueType>::AhmedBemBlcluster* clusterTree,
+        typename DiscreteAcaBoundaryOperator<ValueType>::AhmedMblockArray& blocks,
+        const std::vector<unsigned int>& p2oRows,
+        const std::vector<unsigned int>& p2oCols,
+        const std::vector<Point3D<typename Fiber::ScalarTraits<ValueType>::RealType> >& rowDofs,
+        const std::vector<Point3D<typename Fiber::ScalarTraits<ValueType>::RealType> >& colDofs)
+{
+    if (!clusterTree)
+        return;
+    typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
+    typedef DiscreteAcaBoundaryOperator<ValueType> AcaOp;
+    typedef typename AcaOp::AhmedDofType AhmedDofType;
+    typedef typename AcaOp::AhmedMblock AhmedMblock;
+    typedef bemcluster<AhmedDofType> Cluster;
+    if (clusterTree->isleaf()) {
+        unsigned int idx = clusterTree->getidx();
+        std::cout << "LEAF; idx = " << idx << std::endl;
+        if (clusterTree->isGeM(blocks.get())) {
+            std::cout << "Dense block; " << clusterTree->getb1()
+                      << " " << clusterTree->getb2()
+                      << " " << clusterTree->getn1()
+                      << " " << clusterTree->getn2() << "\n";
+            if (clusterTree->getn1() < 500 || clusterTree->getn2() < 500)
+                return;
+            Cluster* clRow = clusterTree->getcl1();
+            assert(clRow);
+            std::cout << "Row icm: "
+                      << clRow->geticom() - clusterTree->getb1() << std::endl;
+            for (unsigned int nDof = clRow->getnbeg();
+                 nDof < clRow->getnend(); ++nDof) {
+                assert(nDof < p2oRows.size());
+                assert(p2oRows[nDof] < rowDofs.size());
+                const Point3D<CoordinateType> dofPos = rowDofs[p2oRows[nDof]];
+                std::cout << "  Row dof #" << p2oRows[nDof] << "at "
+                          << dofPos.x << ", " << dofPos.y << ", "
+                          << dofPos.z << "\n";
+            }
+            Cluster* clCol = clusterTree->getcl2();
+            assert(clCol);
+            std::cout << "Column icm: "
+                      << clCol->geticom() - clusterTree->getb2() << std::endl;
+            for (unsigned int nDof = clCol->getnbeg();
+                 nDof < clCol->getnend(); ++nDof) {
+                assert(nDof < p2oCols.size());
+                assert(p2oCols[nDof] < colDofs.size());
+                const Point3D<CoordinateType> dofPos = colDofs[p2oCols[nDof]];
+                std::cout << "  Col dof #" << p2oCols[nDof] << " at "
+                          << dofPos.x << ", " << dofPos.y << ", "
+                          << dofPos.z << "\n";
+            }
+            AhmedMblock* block = blocks[idx];
+            arma::Mat<ValueType> ablock(clusterTree->getn1(),
+                                        clusterTree->getn2());
+            for (size_t i = 0; i < block->nvals(); ++i)
+                ablock[i] = block->getdata()[i];
+            arma::diskio::save_raw_ascii(
+                        ablock, "block-" + toString(idx) + ".txt");
+        }
+    }
+    else
+        for (unsigned int nRowSon = 0; nRowSon < clusterTree->getnrs(); ++nRowSon)
+            for (unsigned int nColSon = 0; nColSon < clusterTree->getncs(); ++nColSon)
+            dumpDenseBlocks<ValueType>(
+                        dynamic_cast<typename AcaOp::AhmedBemBlcluster*>(
+                            clusterTree->getson(nRowSon, nColSon)),
+                        blocks,
+                        p2oRows, p2oCols, rowDofs, colDofs);
+}
+
+template <typename AcaAssemblyHelper,
+          typename BasisFunctionType, typename ResultType>
+std::auto_ptr<DiscreteAcaBoundaryOperator<ResultType> >
+assembleAcaOperator(
+        AcaAssemblyHelper& helper,
+        const shared_ptr<typename DiscreteAcaBoundaryOperator<ResultType>::
+            AhmedBemBlcluster>& bemBlclusterTree,
+        const ParallelizationOptions& parallelOptions,
+        const AcaOptions& acaOptions,
+        bool verbosityAtLeastDefault,
+        bool symmetric,
+        const shared_ptr<IndexPermutation>& test_o2pPermutation,
+        const shared_ptr<IndexPermutation>& trial_o2pPermutation
+#ifdef DUMP_DENSE_BLOCKS
+        ,
+        const shared_ptr<IndexPermutation>& test_p2oPermutation,
+        const shared_ptr<IndexPermutation>& trial_p2oPermutation,
+        const std::vector<Point3D<
+            typename Fiber::ScalarTraits<ResultType>::RealType> >& testDofCenters,
+        const std::vector<Point3D<
+            typename Fiber::ScalarTraits<ResultType>::RealType> >& trialDofCenters
+#endif // DUMP_DENSE_BLOCKS
+        )
+{
+    typedef mblock<typename AhmedTypeTraits<ResultType>::Type> AhmedMblock;
+    boost::shared_array<AhmedMblock*> blocks =
+            allocateAhmedMblockArray<ResultType>(bemBlclusterTree.get());
+
+    const size_t testDofCount = test_o2pPermutation->size();
+    const size_t trialDofCount = trial_o2pPermutation->size();
+
+    AhmedLeafClusterArray leafClusters(bemBlclusterTree.get());
+    leafClusters.sortAccordingToClusterSize();
+    const size_t leafClusterCount = leafClusters.size();
+
+    int maxThreadCount = 1;
+    if (!parallelOptions.isOpenClEnabled())
+    {
+        if (parallelOptions.maxThreadCount() == ParallelizationOptions::AUTO)
+            maxThreadCount = tbb::task_scheduler_init::automatic;
+        else
+            maxThreadCount = parallelOptions.maxThreadCount();
+    }
+    tbb::task_scheduler_init scheduler(maxThreadCount);
+    tbb::atomic<size_t> done;
+    done = 0;
+
+    std::vector<ChunkStatistics> chunkStats(leafClusterCount);
+
+    typedef AcaAssemblerLoopBody<
+            BasisFunctionType, ResultType, AcaAssemblyHelper> Body;
+    typename Body::LeafClusterIndexQueue leafClusterIndexQueue;
+    for (size_t i = 0; i < leafClusterCount; ++i)
+        leafClusterIndexQueue.push(i);
+
+    if (verbosityAtLeastDefault)
+        std::cout << "About to start the ACA assembly loop" << std::endl;
+    tbb::tick_count loopStart = tbb::tick_count::now();
+    {
+        Fiber::SerialBlasRegion region; // if possible, ensure that BLAS is single-threaded
+        tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
+                          Body(helper, leafClusters, blocks, acaOptions, done,
+                               verbosityAtLeastDefault,
+                               leafClusterIndexQueue, symmetric, chunkStats));
+    }
+    tbb::tick_count loopEnd = tbb::tick_count::now();
+    if (verbosityAtLeastDefault) {
+        std::cout << "\n"; // the progress bar doesn't print the final \n
+        std::cout << "ACA loop took " << (loopEnd - loopStart).seconds() << " s"
+                  << std::endl;
+    }
+
+    // TODO: parallelise!
+    if (acaOptions.recompress) {
+        if (verbosityAtLeastDefault)
+            std::cout << "About to start ACA agglomeration" << std::endl;
+        agglH(bemBlclusterTree.get(), blocks.get(),
+              acaOptions.eps, acaOptions.maximumRank);
+        if (verbosityAtLeastDefault)
+            std::cout << "Agglomeration finished" << std::endl;
+    }
+
+#ifdef DUMP_DENSE_BLOCKS
+    dumpDenseBlocks<ResultType>(bemBlclusterTree.get(), blocks,
+                                test_p2oPermutation->permutedIndices(),
+                                trial_p2oPermutation->permutedIndices(),
+                                testDofCenters, trialDofCenters);
+#endif // DUMP_DENSE_BLOCKS
+
+    //    dumpAhmedMblockArray<ResultType>(blocks, blockCount);
+
+    // // Dump timing data of individual chunks
+    //    std::cout << "\nChunks:\n";
+    //    for (int i = 0; i < leafClusterCount; ++i)
+    //        if (chunkStats[i].valid) {
+    //            int blockIndex = leafClusters[i]->getidx();
+    //            std::cout << chunkStats[i].chunkStart << "\t"
+    //                      << chunkStats[i].chunkSize << "\t"
+    //                      << (chunkStats[i].startTime - loopStart).seconds() << "\t"
+    //                      << (chunkStats[i].endTime - loopStart).seconds() << "\t"
+    //                      << (chunkStats[i].endTime - chunkStats[i].startTime).seconds() << "\t"
+    //                      << blocks[blockIndex]->getn1() << "\t"
+    //                      << blocks[blockIndex]->getn2() << "\t"
+    //                      << blocks[blockIndex]->islwr() << "\t"
+    //                      << (blocks[blockIndex]->islwr() ? blocks[blockIndex]->rank() : 0) << "\n";
+    //        }
+
+    {
+        size_t origMemory = sizeof(ResultType) * testDofCount * trialDofCount;
+        size_t ahmedMemory = sizeH(bemBlclusterTree.get(), blocks.get());
+        int maximumRank = Hmax_rank(bemBlclusterTree.get(), blocks.get());
+        if (verbosityAtLeastDefault)
+            std::cout << "\nNeeded storage: "
+                      << ahmedMemory / 1024. / 1024. << " MB.\n"
+                      << "Without approximation: "
+                      << origMemory / 1024. / 1024. << " MB.\n"
+                      << "Compressed to "
+                      << (100. * ahmedMemory) / origMemory << "%.\n"
+                      << "Maximum rank: " << maximumRank << ".\n"
+                      << std::endl;
+
+        if (acaOptions.outputPostscript) {
+            if (verbosityAtLeastDefault)
+                std::cout << "Writing matrix partition ..." << std::flush;
+            std::ofstream os(acaOptions.outputFname.c_str());
+            if (symmetric)
+                // psoutputHeH() seems to work also for symmetric matrices
+                psoutputHeH(os, bemBlclusterTree.get(),
+                            trialDofCount, blocks.get());
+            else
+                psoutputGeH(os, bemBlclusterTree.get(),
+                            std::max(testDofCount, trialDofCount), blocks.get());
+            os.close();
+            if (verbosityAtLeastDefault)
+                std::cout << " done." << std::endl;
+        }
+    }
+
+    int outSymmetry = NO_SYMMETRY;
+    if (symmetric) {
+        outSymmetry = SYMMETRIC;
+        if (!boost::is_complex<ResultType>())
+            outSymmetry |= HERMITIAN;
+    }
+    typedef DiscreteAcaBoundaryOperator<ResultType> DiscreteAcaLinOp;
+    std::auto_ptr<DiscreteAcaLinOp> acaOp(
+                new DiscreteAcaLinOp(testDofCount, trialDofCount,
+                                     acaOptions.eps,
+                                     acaOptions.maximumRank,
+                                     outSymmetry,
+                                     bemBlclusterTree, blocks,
+                                     *trial_o2pPermutation, // domain
+                                     *test_o2pPermutation, // range
+                                     parallelOptions));
+    return acaOp;
+}
+
 #endif
 
 } // namespace
@@ -274,171 +508,38 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         test_p2oPermutation->permutedIndices();
     std::vector<unsigned int> p2oTrialDofs =
         trial_p2oPermutation->permutedIndices();
+    assert(p2oTestDofs.size() == testDofCount);
+    assert(p2oTrialDofs.size() == trialDofCount);
+
+#ifdef DUMP_DENSE_BLOCKS
+    std::vector<Point3D<CoordinateType> > testDofCenters, trialDofCenters;
+    testSpace.getGlobalDofPositions(testDofCenters);
+    trialSpace.getGlobalDofPositions(trialDofCenters);
+#endif // DUMP_DENSE_BLOCKS
+
     typedef WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>
             AcaAssemblyHelper;
+    // TODO: It might be better (more efficient and elegant)
+    // to pass p2oPermutation than p2oDofs.
+    // Also, it might be more logical to rename IndexPermutation to IndexMapping
+    // and permute/unpermute to map/unmap.
     AcaAssemblyHelper helper(
                 testSpace, trialSpace, p2oTestDofs, p2oTrialDofs,
                 localAssemblers, sparseTermsToAdd,
                 denseTermMultipliers, sparseTermMultipliers, options);
 
-    typedef mblock<typename AhmedTypeTraits<ResultType>::Type> AhmedMblock;
-    boost::shared_array<AhmedMblock*> blocks =
-            allocateAhmedMblockArray<ResultType>(bemBlclusterTree.get());
-
-    // matgen_sqntl(helper, AhmedBemBlclusterTree.get(), AhmedBemBlclusterTree.get(),
-    //              acaOptions.recompress, acaOptions.eps,
-    //              acaOptions.maximumRank, blocks.get());
-
-    // matgen_omp(helper, blockCount, AhmedBemBlclusterTree.get(),
-    //            acaOptions.eps, acaOptions.maximumRank, blocks.get());
-
-    // // Dump mblocks
-    // const int mblockCount = AhmedBemBlclusterTree->nleaves();
-    // for (int i = 0; i < mblockCount; ++i)
-    //     if (blocks[i]->isdns())
-    //     {
-    //         char  buffer[1024];
-    //         sprintf(buffer, "mblock-dns-%d-%d.txt",
-    //                 blocks[i]->getn1(), blocks[i]->getn2());
-    //         arma::Col<ResultType> block((ResultType*)blocks[i]->getdata(),
-    //                                     blocks[i]->nvals());
-    //         arma::diskio::save_raw_ascii(block, buffer);
-    //     }
-    //     else
-    //     {
-    //         char buffer[1024];
-    //         sprintf(buffer, "mblock-lwr-%d-%d.txt",
-    //                 blocks[i]->getn1(), blocks[i]->getn2());
-    //         arma::Col<ResultType> block((ResultType*)blocks[i]->getdata(),
-    //                                     blocks[i]->nvals());
-    //         arma::diskio::save_raw_ascii(block, buffer);
-    //     }
-
-    AhmedLeafClusterArray leafClusters(bemBlclusterTree.get());
-    leafClusters.sortAccordingToClusterSize();
-    const size_t leafClusterCount = leafClusters.size();
-
-    const ParallelizationOptions& parallelOptions =
-            options.parallelizationOptions();
-    int maxThreadCount = 1;
-    if (!parallelOptions.isOpenClEnabled())
-    {
-        if (parallelOptions.maxThreadCount() == ParallelizationOptions::AUTO)
-            maxThreadCount = tbb::task_scheduler_init::automatic;
-        else
-            maxThreadCount = parallelOptions.maxThreadCount();
-    }
-    tbb::task_scheduler_init scheduler(maxThreadCount);
-    tbb::atomic<size_t> done;
-    done = 0;
-
-    std::vector<ChunkStatistics> chunkStats(leafClusterCount);
-
-    //    typedef AcaWeakFormAssemblerLoopBody<BasisFunctionType, ResultType> Body;
-    //    // std::cout << "Loop start" << std::endl;
-    //    tbb::tick_count loopStart = tbb::tick_count::now();
-    // //    tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
-    // //                      Body(helper, leafClusters, blocks, acaOptions, done
-    // //                           , chunkStats));
-    //    tbb::parallel_for(ScatteredRange(0, leafClusterCount),
-    //                      Body(helper, leafClusters, blocks, acaOptions, done
-    //                           , chunkStats));
-    //    tbb::tick_count loopEnd = tbb::tick_count::now();
-    //    // std::cout << "Loop end" << std::endl;
-
-    typedef AcaAssemblerLoopBody<
-            BasisFunctionType, ResultType, AcaAssemblyHelper> Body;
-    typename Body::LeafClusterIndexQueue leafClusterIndexQueue;
-    for (size_t i = 0; i < leafClusterCount; ++i)
-        leafClusterIndexQueue.push(i);
-
-    if (verbosityAtLeastDefault)
-        std::cout << "About to start the ACA assembly loop" << std::endl;
-    tbb::tick_count loopStart = tbb::tick_count::now();
-    {
-        Fiber::SerialBlasRegion region; // if possible, ensure that BLAS is single-threaded
-        tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
-                          Body(helper, leafClusters, blocks, acaOptions, done,
-                               verbosityAtLeastDefault,
-                               leafClusterIndexQueue, symmetric, chunkStats));
-    }
-    tbb::tick_count loopEnd = tbb::tick_count::now();
-    if (verbosityAtLeastDefault) {
-        std::cout << "\n"; // the progress bar doesn't print the final \n
-        std::cout << "ACA loop took " << (loopEnd - loopStart).seconds() << " s"
-                  << std::endl;
-    }
-
-    // TODO: parallelise!
-    if (acaOptions.recompress) {
-        if (verbosityAtLeastDefault)
-            std::cout << "About to start ACA agglomeration" << std::endl;
-        agglH(bemBlclusterTree.get(), blocks.get(),
-              acaOptions.eps, acaOptions.maximumRank);
-        if (verbosityAtLeastDefault)
-            std::cout << "Agglomeration finished" << std::endl;
-    }
-
-    // // Dump timing data of individual chunks
-    //    std::cout << "\nChunks:\n";
-    //    for (int i = 0; i < leafClusterCount; ++i)
-    //        if (chunkStats[i].valid) {
-    //            int blockIndex = leafClusters[i]->getidx();
-    //            std::cout << chunkStats[i].chunkStart << "\t"
-    //                      << chunkStats[i].chunkSize << "\t"
-    //                      << (chunkStats[i].startTime - loopStart).seconds() << "\t"
-    //                      << (chunkStats[i].endTime - loopStart).seconds() << "\t"
-    //                      << (chunkStats[i].endTime - chunkStats[i].startTime).seconds() << "\t"
-    //                      << blocks[blockIndex]->getn1() << "\t"
-    //                      << blocks[blockIndex]->getn2() << "\t"
-    //                      << blocks[blockIndex]->islwr() << "\t"
-    //                      << (blocks[blockIndex]->islwr() ? blocks[blockIndex]->rank() : 0) << "\n";
-    //        }
-
-    {
-        size_t origMemory = sizeof(ResultType) * testDofCount * trialDofCount;
-        size_t ahmedMemory = sizeH(bemBlclusterTree.get(), blocks.get());
-        int maximumRank = Hmax_rank(bemBlclusterTree.get(), blocks.get());
-        if (verbosityAtLeastDefault)
-            std::cout << "\nNeeded storage: "
-                      << ahmedMemory / 1024. / 1024. << " MB.\n"
-                      << "Without approximation: "
-                      << origMemory / 1024. / 1024. << " MB.\n"
-                      << "Compressed to "
-                      << (100. * ahmedMemory) / origMemory << "%.\n"
-                      << "Maximum rank: " << maximumRank << ".\n"
-                      << std::endl;
-
-        if (acaOptions.outputPostscript) {
-            if (verbosityAtLeastDefault)
-                std::cout << "Writing matrix partition ..." << std::flush;
-            std::ofstream os(acaOptions.outputFname.c_str());
-            if (symmetric) // seems valid also for Hermitian matrices
-                psoutputHeH(os, bemBlclusterTree.get(), testDofCount, blocks.get());
-            else
-                psoutputGeH(os, bemBlclusterTree.get(),
-                            std::max(testDofCount, trialDofCount), blocks.get());
-            os.close();
-            if (verbosityAtLeastDefault)
-                std::cout << " done." << std::endl;
-        }
-    }
-
-    int outSymmetry = NO_SYMMETRY;
-    if (symmetric) {
-        outSymmetry = SYMMETRIC;
-        if (!boost::is_complex<ResultType>())
-            outSymmetry |= HERMITIAN;
-    }
-    std::auto_ptr<DiscreteAcaLinOp> acaOp(
-                new DiscreteAcaLinOp(testDofCount, trialDofCount,
-                                     acaOptions.eps,
-                                     acaOptions.maximumRank,
-                                     outSymmetry,
-                                     bemBlclusterTree, blocks,
-                                     *trial_o2pPermutation,
-                                     *test_o2pPermutation,
-                                     parallelOptions));
+    std::auto_ptr<DiscreteAcaBoundaryOperator<ResultType> > acaOp =
+    assembleAcaOperator<AcaAssemblyHelper, BasisFunctionType, ResultType>(
+                helper, bemBlclusterTree,
+                options.parallelizationOptions(), options.acaOptions(),
+                verbosityAtLeastDefault, symmetric,
+                test_o2pPermutation, trial_o2pPermutation
+#ifdef DUMP_DENSE_BLOCKS
+                ,
+                test_p2oPermutation, trial_p2oPermutation,
+                testDofCenters, trialDofCenters
+#endif // DUMP_DENSE_BLOCKS
+                );
 
     std::auto_ptr<DiscreteBndOp> result;
     if (indexWithGlobalDofs)
@@ -536,43 +637,40 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
     // o2p: map of original indices to permuted indices
     // p2o: map of permuted indices to original indices
     typedef ClusterConstructionHelper<BasisFunctionType> CCH;
-    shared_ptr<AhmedBemCluster> componentClusterTree;
-    shared_ptr<IndexPermutation> component_o2pPermutation, component_p2oPermutation;
+    shared_ptr<AhmedBemCluster> testClusterTree;
+    shared_ptr<IndexPermutation> test_o2pPermutation, test_p2oPermutation;
     CCH::constructBemCluster(points, componentCount, acaOptions,
-                             componentClusterTree,
-                             component_o2pPermutation, component_p2oPermutation);
+                             testClusterTree,
+                             test_o2pPermutation, test_p2oPermutation);
     shared_ptr<AhmedBemCluster> trialClusterTree;
     shared_ptr<IndexPermutation> trial_o2pPermutation, trial_p2oPermutation;
     CCH::constructBemCluster(trialSpace, indexWithGlobalDofs, acaOptions,
                              trialClusterTree,
                              trial_o2pPermutation, trial_p2oPermutation);
 
-//    // Export VTK plots showing the disctribution of leaf cluster ids
-//    std::vector<unsigned int> testClusterIds;
-//    getClusterIds(*testClusterTree, test_p2oPermutation->permutedIndices(), testClusterIds);
-//    testSpace.dumpClusterIds("testClusterIds", testClusterIds,
-//                             indexWithGlobalDofs ? GLOBAL_DOFS : FLAT_LOCAL_DOFS);
-//    std::vector<unsigned int> trialClusterIds;
-//    getClusterIds(*trialClusterTree, trial_p2oPermutation->permutedIndices(), trialClusterIds);
-//    trialSpace.dumpClusterIds("trialClusterIds", trialClusterIds,
-//                              indexWithGlobalDofs ? GLOBAL_DOFS : FLAT_LOCAL_DOFS);
+    // Print the distribution of cluster ids
+#ifdef DUMP_DENSE_BLOCKS
+    std::vector<Point3D<CoordinateType> > testDofCenters, trialDofCenters;
+    CCH::getComponentDofPositions(points, componentCount, testDofCenters);
+    trialSpace.getGlobalDofPositions(trialDofCenters);
+#endif // DUMP_DENSE_BLOCKS
 
     if (verbosityAtLeastHigh)
-        std::cout << "Test cluster count: " << componentClusterTree->getncl()
+        std::cout << "Test cluster count: " << testClusterTree->getncl()
                   << "\nTrial cluster count: " << trialClusterTree->getncl()
                   << std::endl;
 
     unsigned int blockCount = 0;
     shared_ptr<AhmedBemBlcluster> bemBlclusterTree(
                 CCH::constructBemBlockCluster(acaOptions, false /* symmetric */,
-                                              *componentClusterTree, *trialClusterTree,
+                                              *testClusterTree, *trialClusterTree,
                                               blockCount).release());
 
     if (verbosityAtLeastHigh)
         std::cout << "Mblock count: " << blockCount << std::endl;
 
     std::vector<unsigned int> p2oPoints =
-        component_p2oPermutation->permutedIndices();
+        test_p2oPermutation->permutedIndices();
     std::vector<unsigned int> p2oTrialDofs =
         trial_p2oPermutation->permutedIndices();
     typedef PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>
@@ -580,118 +678,18 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
     AcaAssemblyHelper helper(points, trialSpace, p2oPoints, p2oTrialDofs,
                              localAssemblers, termMultipliers, options);
 
-    // From here: canditate for extraction into separate function
-
-    typedef mblock<typename AhmedTypeTraits<ResultType>::Type> AhmedMblock;
-    boost::shared_array<AhmedMblock*> blocks =
-            allocateAhmedMblockArray<ResultType>(bemBlclusterTree.get());
-
-    AhmedLeafClusterArray leafClusters(bemBlclusterTree.get());
-    leafClusters.sortAccordingToClusterSize();
-    const size_t leafClusterCount = leafClusters.size();
-
-    const ParallelizationOptions& parallelOptions =
-            options.parallelizationOptions();
-    int maxThreadCount = 1;
-    if (!parallelOptions.isOpenClEnabled())
-    {
-        if (parallelOptions.maxThreadCount() == ParallelizationOptions::AUTO)
-            maxThreadCount = tbb::task_scheduler_init::automatic;
-        else
-            maxThreadCount = parallelOptions.maxThreadCount();
-    }
-    tbb::task_scheduler_init scheduler(maxThreadCount);
-    tbb::atomic<size_t> done;
-    done = 0;
-
-    std::vector<ChunkStatistics> chunkStats(leafClusterCount);
-
-    typedef AcaAssemblerLoopBody<
-            BasisFunctionType, ResultType, AcaAssemblyHelper> Body;
-    typename Body::LeafClusterIndexQueue leafClusterIndexQueue;
-    for (size_t i = 0; i < leafClusterCount; ++i)
-        leafClusterIndexQueue.push(i);
-
-    if (verbosityAtLeastDefault)
-        std::cout << "About to start the ACA assembly loop" << std::endl;
-    tbb::tick_count loopStart = tbb::tick_count::now();
-    {
-        Fiber::SerialBlasRegion region; // if possible, ensure that BLAS is single-threaded
-        tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
-                          Body(helper, leafClusters, blocks, acaOptions, done,
-                               verbosityAtLeastDefault,
-                               leafClusterIndexQueue, symmetric, chunkStats));
-    }
-    tbb::tick_count loopEnd = tbb::tick_count::now();
-    if (verbosityAtLeastDefault) {
-        std::cout << "\n"; // the progress bar doesn't print the final \n
-        std::cout << "ACA loop took " << (loopEnd - loopStart).seconds() << " s"
-                  << std::endl;
-    }
-
-    // TODO: parallelise!
-    if (acaOptions.recompress) {
-        if (verbosityAtLeastDefault)
-            std::cout << "About to start ACA agglomeration" << std::endl;
-        agglH(bemBlclusterTree.get(), blocks.get(),
-              acaOptions.eps, acaOptions.maximumRank);
-        if (verbosityAtLeastDefault)
-            std::cout << "Agglomeration finished" << std::endl;
-    }
-
-    // // Dump timing data of individual chunks
-    //    std::cout << "\nChunks:\n";
-    //    for (int i = 0; i < leafClusterCount; ++i)
-    //        if (chunkStats[i].valid) {
-    //            int blockIndex = leafClusters[i]->getidx();
-    //            std::cout << chunkStats[i].chunkStart << "\t"
-    //                      << chunkStats[i].chunkSize << "\t"
-    //                      << (chunkStats[i].startTime - loopStart).seconds() << "\t"
-    //                      << (chunkStats[i].endTime - loopStart).seconds() << "\t"
-    //                      << (chunkStats[i].endTime - chunkStats[i].startTime).seconds() << "\t"
-    //                      << blocks[blockIndex]->getn1() << "\t"
-    //                      << blocks[blockIndex]->getn2() << "\t"
-    //                      << blocks[blockIndex]->islwr() << "\t"
-    //                      << (blocks[blockIndex]->islwr() ? blocks[blockIndex]->rank() : 0) << "\n";
-    //        }
-
-    {
-        size_t origMemory = sizeof(ResultType) * testDofCount * trialDofCount;
-        size_t ahmedMemory = sizeH(bemBlclusterTree.get(), blocks.get());
-        int maximumRank = Hmax_rank(bemBlclusterTree.get(), blocks.get());
-        if (verbosityAtLeastDefault)
-            std::cout << "\nNeeded storage: "
-                      << ahmedMemory / 1024. / 1024. << " MB.\n"
-                      << "Without approximation: "
-                      << origMemory / 1024. / 1024. << " MB.\n"
-                      << "Compressed to "
-                      << (100. * ahmedMemory) / origMemory << "%.\n"
-                      << "Maximum rank: " << maximumRank << ".\n"
-                      << std::endl;
-
-        if (acaOptions.outputPostscript) {
-            if (verbosityAtLeastDefault)
-                std::cout << "Writing matrix partition ..." << std::flush;
-            std::ofstream os(acaOptions.outputFname.c_str());
-            psoutputGeH(os, bemBlclusterTree.get(),
-                        std::max(testDofCount, trialDofCount), blocks.get());
-            os.close();
-            if (verbosityAtLeastDefault)
-                std::cout << " done." << std::endl;
-        }
-    }
-
-    std::auto_ptr<DiscreteAcaLinOp> acaOp(
-                new DiscreteAcaLinOp(testDofCount, trialDofCount,
-                                     acaOptions.eps,
-                                     acaOptions.maximumRank,
-                                     NO_SYMMETRY,
-                                     bemBlclusterTree, blocks,
-                                     *trial_o2pPermutation, // domain
-                                     *component_o2pPermutation, // range
-                                     parallelOptions));
-
-    // to here
+    std::auto_ptr<DiscreteAcaBoundaryOperator<ResultType> > acaOp =
+    assembleAcaOperator<AcaAssemblyHelper, BasisFunctionType, ResultType>(
+                helper, bemBlclusterTree,
+                options.parallelizationOptions(), options.acaOptions(),
+                verbosityAtLeastDefault, symmetric,
+                test_o2pPermutation, trial_o2pPermutation
+#ifdef DUMP_DENSE_BLOCKS
+                ,
+                test_p2oPermutation, trial_p2oPermutation,
+                testDofCenters, trialDofCenters
+#endif // DUMP_DENSE_BLOCKS
+                );
 
     std::auto_ptr<DiscreteBndOp> result;
     if (indexWithGlobalDofs)
