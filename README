@@ -10,7 +10,7 @@ History
 1.1.2 (28 January 2013)
 ----------------------
 
-A maintenance release improving the detection of G77 linking convention on
+A maintenance release improving the detection of the G77 linking convention on
 32-bit systems.
 
 1.1.1 (7 January 2013)
