@@ -26,7 +26,7 @@
 #include "space.hpp"
 #include "../grid/grid_view.hpp"
 #include "../common/types.hpp"
-#include "../fiber/raviart_thomas_order_0_basis.hpp"
+#include "../fiber/raviart_thomas_0_basis.hpp"
 
 #include <boost/scoped_ptr.hpp>
 #include <map>
@@ -104,7 +104,7 @@ private:
     struct Impl;
     boost::scoped_ptr<Impl> m_impl;
     std::auto_ptr<GridView> m_view;
-    Fiber::RaviartThomasOrder0Basis<3, BasisFunctionType> m_triangleBasis;
+    Fiber::RaviartThomas0Basis<3, BasisFunctionType> m_triangleBasis;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<BasisFunctionType> > m_local2globalDofWeights;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
