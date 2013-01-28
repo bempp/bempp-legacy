@@ -7,6 +7,12 @@ started in October 2011.
 History
 =======
 
+1.1.2 (28 January 2013)
+----------------------
+
+A maintenance release improving the detection of G77 linking convention on
+32-bit systems.
+
 1.1.1 (7 January 2013)
 ----------------------
 
