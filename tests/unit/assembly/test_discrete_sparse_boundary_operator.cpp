@@ -31,6 +31,8 @@
 #include "assembly/identity_operator.hpp"
 #include "assembly/numerical_quadrature_strategy.hpp"
 
+#include "bempp/common/config_ahmed.hpp"
+
 #include "grid/grid.hpp"
 
 #include "space/piecewise_linear_continuous_scalar_space.hpp"
@@ -241,6 +243,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
 
+#ifdef WITH_AHMED
 BOOST_AUTO_TEST_CASE_TEMPLATE(asDiscreteAcaBoundaryOperator_works_correctly, ResultType, result_types)
 {
     std::srand(1);
@@ -258,11 +261,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(asDiscreteAcaBoundaryOperator_works_correctly, Res
             sparseOp->asDiscreteAcaBoundaryOperator();
     arma::Mat<RT> acaMat = acaOp->asMatrix();
 
-//    std::cout << "sparse:\n" << sparseMat;
-//    std::cout << "aca:\n" << acaMat;
-
     BOOST_CHECK(check_arrays_are_close<RT>(acaMat, sparseMat,
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
+#endif // WITH_AHMED
 
 BOOST_AUTO_TEST_SUITE_END()

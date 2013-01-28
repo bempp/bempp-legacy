@@ -21,6 +21,7 @@
 #include "../type_template.hpp"
 #include "../check_arrays_are_close.hpp"
 
+#include "bempp/common/config_ahmed.hpp"
 #include "assembly/blocked_boundary_operator.hpp"
 #include "assembly/blocked_operator_structure.hpp"
 #include "assembly/context.hpp"
@@ -289,6 +290,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blocked_boundary_operator_produces_correct_weak_fo
                     nonblockedWeakForm, blockedWeakForm,
                     10. * std::numeric_limits<RealType>::epsilon()));
 }
+
+#ifdef WITH_AHMED
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(asDiscreteAcaBoundaryOperator_produces_correct_weak_form_for_1x1_operator,
                               ValueType, result_types)
@@ -604,4 +607,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(asDiscreteAcaBoundaryOperator_produces_correct_wea
                     nonblockedWeakForm, acaBlockedWeakForm,
                     10. * std::numeric_limits<RealType>::epsilon()));
 }
+
+#endif // WITH_AHMED
 BOOST_AUTO_TEST_SUITE_END()

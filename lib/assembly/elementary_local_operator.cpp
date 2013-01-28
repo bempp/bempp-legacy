@@ -23,7 +23,10 @@
 
 #include "elementary_local_operator.hpp"
 
+#ifdef WITH_AHMED
 #include "ahmed_aux.hpp"
+#endif
+
 #include "assembly_options.hpp"
 #include "boundary_operator.hpp"
 #include "cluster_construction_helper.hpp"
@@ -32,6 +35,7 @@
 #include "context.hpp"
 
 #include "../common/types.hpp"
+#include "../common/complex_aux.hpp"
 #include "../fiber/basis.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/quadrature_strategy.hpp"
