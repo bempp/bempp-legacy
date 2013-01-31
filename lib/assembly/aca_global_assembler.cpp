@@ -43,6 +43,7 @@
 #include "../space/space.hpp"
 
 #include <stdexcept>
+#include <fstream>
 #include <iostream>
 
 #include <boost/type_traits/is_complex.hpp>
@@ -195,8 +196,8 @@ void dumpDenseBlocks(
                       << " " << clusterTree->getb2()
                       << " " << clusterTree->getn1()
                       << " " << clusterTree->getn2() << "\n";
-            if (clusterTree->getn1() < 500 || clusterTree->getn2() < 500)
-                return;
+            // if (clusterTree->getn1() < 500 || clusterTree->getn2() < 500)
+            //     return;
             Cluster* clRow = clusterTree->getcl1();
             assert(clRow);
             std::cout << "Row icm: "
@@ -206,7 +207,7 @@ void dumpDenseBlocks(
                 assert(nDof < p2oRows.size());
                 assert(p2oRows[nDof] < rowDofs.size());
                 const Point3D<CoordinateType> dofPos = rowDofs[p2oRows[nDof]];
-                std::cout << "  Row dof #" << p2oRows[nDof] << "at "
+                std::cout << "  Row dof #" << p2oRows[nDof] << " at "
                           << dofPos.x << ", " << dofPos.y << ", "
                           << dofPos.z << "\n";
             }
@@ -228,8 +229,9 @@ void dumpDenseBlocks(
                                         clusterTree->getn2());
             for (size_t i = 0; i < block->nvals(); ++i)
                 ablock[i] = block->getdata()[i];
-            arma::diskio::save_raw_ascii(
-                        ablock, "block-" + toString(idx) + ".txt");
+            std::ofstream out(("block-" + toString(idx) + ".txt").c_str());
+            out.precision(17);
+            arma::diskio::save_raw_ascii(ablock, out);
         }
     }
     else
