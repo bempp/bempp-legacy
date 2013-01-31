@@ -63,6 +63,7 @@ DefaultLocalAssemblerForPotentialOperatorsOnSurfaces(
     m_accuracyOptions(accuracyOptions)
 {
     Utilities::checkConsistencyOfGeometryAndBases(*rawGeometry, *trialBases);
+    precalculateElementSizesAndCenters();
 }
 
 template <typename BasisFunctionType, typename KernelType,
