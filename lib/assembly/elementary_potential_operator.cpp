@@ -20,15 +20,19 @@
 
 #include "elementary_potential_operator.hpp"
 
+#include "aca_global_assembler.hpp"
+#include "assembled_potential_operator.hpp"
 #include "evaluation_options.hpp"
 #include "grid_function.hpp"
 #include "interpolated_function.hpp"
 #include "local_assembler_construction_helper.hpp"
+#include "discrete_null_boundary_operator.hpp"
 
 #include "../common/shared_ptr.hpp"
 
 #include "../fiber/evaluator_for_integral_operators.hpp"
 #include "../fiber/explicit_instantiation.hpp"
+#include "../fiber/kernel_trial_integral.hpp"
 
 #include "../grid/entity.hpp"
 #include "../grid/entity_iterator.hpp"
@@ -39,9 +43,19 @@
 
 namespace Bempp
 {
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+int
+ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
+componentCount() const
+{
+    return integral().resultDimension();
+}
+
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<InterpolatedFunction<ResultType> >
-ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::evaluateOnGrid(
+ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
+evaluateOnGrid(
         const GridFunction<BasisFunctionType, ResultType>& argument,
         const Grid& evaluationGrid,
         const QuadratureStrategy& quadStrategy,
@@ -53,9 +67,6 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::evaluate
                 "the evaluation grid and the surface on which the grid "
                 "function 'argument' is defined must be embedded in a space "
                 "of the same dimension");
-
-    std::auto_ptr<Evaluator> evaluator =
-            makeEvaluator(argument, quadStrategy, options);
 
     // Get coordinates of interpolation points, i.e. the evaluationGrid's vertices
 
@@ -92,18 +103,8 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::evaluate
         }
     }
 
-    // right now we don't bother about far and near field
-    // (this might depend on evaluation options)
-
     arma::Mat<ResultType> result;
-    evaluator->evaluate(Evaluator::FAR_FIELD, evalPoints, result);
-
-    //    std::cout << "Interpolation results:\n";
-    //    for (int point = 0; point < evalPointCount; ++point)
-    //        std::cout << evalPoints(0, point) << "\t"
-    //                  << evalPoints(1, point) << "\t"
-    //                  << evalPoints(2, point) << "\t"
-    //                  << result(0, point) << "\n";
+    result = evaluateAtPoints(argument, evalPoints, quadStrategy, options);
 
     return std::auto_ptr<InterpolatedFunction<ResultType> >(
                 new InterpolatedFunction<ResultType>(evaluationGrid, result));
@@ -111,7 +112,8 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::evaluate
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 arma::Mat<ResultType>
-ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::evaluateAtPoints(
+ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
+evaluateAtPoints(
         const GridFunction<BasisFunctionType, ResultType>& argument,
         const arma::Mat<CoordinateType>& evaluationPoints,
         const QuadratureStrategy& quadStrategy,
@@ -119,21 +121,63 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::evaluate
 {
     if (evaluationPoints.n_rows != argument.grid()->dimWorld())
         throw std::invalid_argument(
-                "ElementaryPotentialOperator::evaluateOnGrid(): "
+                "ElementaryPotentialOperator::evaluateAtPoints(): "
                 "the number of coordinates of each evaluation point must be "
                 "equal to the dimension of the space containing the surface "
                 "on which the grid function 'argument' is defined");
 
-    std::auto_ptr<Evaluator> evaluator =
-            makeEvaluator(argument, quadStrategy, options);
+    if (options.evaluationMode() == EvaluationOptions::DENSE) {
+        std::auto_ptr<Evaluator> evaluator =
+                makeEvaluator(argument, quadStrategy, options);
 
-    // right now we don't bother about far and near field
-    // (this might depend on evaluation options)
+        // right now we don't bother about far and near field
+        // (this might depend on evaluation options)
+        arma::Mat<ResultType> result;
+        evaluator->evaluate(Evaluator::FAR_FIELD, evaluationPoints, result);
+        return result;
+    } else if (options.evaluationMode() == EvaluationOptions::ACA) {
+        AssembledPotentialOperator<BasisFunctionType, ResultType> assembledOp =
+                assemble(argument.space(),
+                         make_shared_from_ref(evaluationPoints),
+                         quadStrategy, options);
+        return assembledOp.apply(argument);
+    } else
+        throw std::invalid_argument(
+                "ElementaryPotentialOperator::evaluateAtPoints(): "
+                "Invalid evaluation mode");
+}
 
-    arma::Mat<ResultType> result;
-    evaluator->evaluate(Evaluator::FAR_FIELD, evaluationPoints, result);
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+AssembledPotentialOperator<BasisFunctionType, ResultType>
+ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
+assemble(
+        const shared_ptr<const Space<BasisFunctionType> >& space,
+        const shared_ptr<const arma::Mat<CoordinateType> >& evaluationPoints,
+        const QuadratureStrategy& quadStrategy,
+        const EvaluationOptions &options) const
+{
+    if (!space)
+        throw std::invalid_argument(
+                "ElementaryPotentialOperator::assemble(): "
+                "the shared pointer 'space' must not be null");
+    if (!evaluationPoints)
+        throw std::invalid_argument(
+                "ElementaryPotentialOperator::assemble(): "
+                "the shared pointer 'evaluationPoints' must not be null");
+    if (evaluationPoints->n_rows != space->grid()->dimWorld())
+        throw std::invalid_argument(
+                "ElementaryPotentialOperator::assemble(): "
+                "the number of coordinates of each evaluation point must be "
+                "equal to the dimension of the space containing the surface "
+                "on which the function space 'space' is defined");
 
-    return result;
+    std::auto_ptr<LocalAssembler> assembler =
+            makeAssembler(*space, *evaluationPoints, quadStrategy, options);
+    shared_ptr<DiscreteBoundaryOperator<ResultType> > discreteOperator =
+        assembleOperator(*space, *evaluationPoints /*TODO*/,
+                         *assembler, options);
+    return AssembledPotentialOperator<BasisFunctionType, ResultType>(
+        space, evaluationPoints, discreteOperator, componentCount());
 }
 
 // UNDOCUMENTED PRIVATE METHODS
@@ -141,8 +185,10 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::evaluate
 /** \cond PRIVATE */
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-std::auto_ptr<typename ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::Evaluator>
-ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::makeEvaluator(
+std::auto_ptr<typename ElementaryPotentialOperator<
+BasisFunctionType, KernelType, ResultType>::Evaluator>
+ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
+makeEvaluator(
         const GridFunction<BasisFunctionType, ResultType>& argument,
         const QuadratureStrategy& quadStrategy,
         const EvaluationOptions& options) const
@@ -191,6 +237,170 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::makeEval
                 localCoefficients,
                 openClHandler,
                 options.parallelizationOptions());
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+std::auto_ptr<typename ElementaryPotentialOperator<
+BasisFunctionType, KernelType, ResultType>::LocalAssembler>
+ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
+makeAssembler(
+        const Space<BasisFunctionType>& space,
+        const arma::Mat<CoordinateType>& evaluationPoints,
+        const QuadratureStrategy& quadStrategy,
+        const EvaluationOptions& options) const
+{
+    // Collect the standard set of data necessary for construction of
+    // assemblers
+    typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
+    typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
+    typedef std::vector<std::vector<ResultType> > CoefficientsVector;
+    typedef LocalAssemblerConstructionHelper Helper;
+
+    shared_ptr<RawGridGeometry> rawGeometry;
+    shared_ptr<GeometryFactory> geometryFactory;
+    shared_ptr<Fiber::OpenClHandler> openClHandler;
+    shared_ptr<BasisPtrVector> bases;
+
+    shared_ptr<const Grid> grid = space.grid();
+    Helper::collectGridData(*grid,
+                            rawGeometry, geometryFactory);
+    Helper::makeOpenClHandler(options.parallelizationOptions().openClOptions(),
+                              rawGeometry, openClHandler);
+    Helper::collectBases(space, bases);
+
+    // Now create the assembler
+    return quadStrategy.makeAssemblerForPotentialOperators(
+                evaluationPoints,
+                geometryFactory, rawGeometry,
+                bases,
+                make_shared_from_ref(kernels()),
+                make_shared_from_ref(trialTransformations()),
+                make_shared_from_ref(integral()),
+                openClHandler,
+                options.parallelizationOptions(),
+                options.verbosityLevel());
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+shared_ptr<DiscreteBoundaryOperator<ResultType> >
+ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
+assembleOperator(
+        const Space<BasisFunctionType>& space,
+        const arma::Mat<CoordinateType>& evaluationPoints,
+        LocalAssembler& assembler,
+        const EvaluationOptions& options) const
+{
+    switch (options.evaluationMode()) {
+    case EvaluationOptions::DENSE:
+        return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
+                    assembleOperatorInDenseMode(space, evaluationPoints,
+                                                assembler, options).release());
+    case EvaluationOptions::ACA:
+        return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
+                    assembleOperatorInAcaMode(space, evaluationPoints,
+                                              assembler, options).release());
+    default:
+        throw std::runtime_error(
+                    "ElementaryPotentialOperator::assembleWeakFormInternalImpl(): "
+                    "invalid assembly mode");
+    }
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
+ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
+assembleOperatorInDenseMode(
+        const Space<BasisFunctionType>& space,
+        const arma::Mat<CoordinateType>& evaluationPoints,
+        LocalAssembler& assembler,
+        const EvaluationOptions& options) const
+{
+    throw std::runtime_error("ElementaryPotentialOperator::"
+                             "assembleOperatorInDenseMode(): not implemented yet");
+//    const Space<BasisFunctionType>& testSpace = *this->dualToRange();
+//    const Space<BasisFunctionType>& trialSpace = *this->domain();
+
+//    // Global DOF indices corresponding to local DOFs on elements
+//    std::vector<std::vector<GlobalDofIndex> > testGlobalDofs, trialGlobalDofs;
+//    std::vector<std::vector<BasisFunctionType> > testLocalDofWeights,
+//        trialLocalDofWeights;
+//    gatherGlobalDofs(testSpace, testGlobalDofs, testLocalDofWeights);
+//    if (&testSpace == &trialSpace) {
+//        trialGlobalDofs = testGlobalDofs;
+//        trialLocalDofWeights = testLocalDofWeights;
+//    } else
+//        gatherGlobalDofs(trialSpace, trialGlobalDofs, trialLocalDofWeights);
+//    const size_t testElementCount = testGlobalDofs.size();
+//    const size_t trialElementCount = trialGlobalDofs.size();
+
+//    // Make a vector of all element indices
+//    std::vector<int> testIndices(testElementCount);
+//    for (int i = 0; i < testElementCount; ++i)
+//        testIndices[i] = i;
+
+//    // Create the operator's matrix
+//    arma::Mat<ResultType> result(testSpace.globalDofCount(),
+//                                 trialSpace.globalDofCount());
+//    result.fill(0.);
+
+//    typedef DenseWeakFormAssemblerLoopBody<BasisFunctionType, ResultType> Body;
+//    typename Body::MutexType mutex;
+
+//    const ParallelizationOptions& parallelOptions =
+//            options.parallelizationOptions();
+//    int maxThreadCount = 1;
+//    if (!parallelOptions.isOpenClEnabled()) {
+//        if (parallelOptions.maxThreadCount() == ParallelizationOptions::AUTO)
+//            maxThreadCount = tbb::task_scheduler_init::automatic;
+//        else
+//            maxThreadCount = parallelOptions.maxThreadCount();
+//    }
+//    tbb::task_scheduler_init scheduler(maxThreadCount);
+//    {
+//        Fiber::SerialBlasRegion region;
+//        tbb::parallel_for(tbb::blocked_range<size_t>(0, trialElementCount),
+//                          Body(testIndices, testGlobalDofs, trialGlobalDofs,
+//                               testLocalDofWeights, trialLocalDofWeights,
+//                               assembler, result, mutex));
+//    }
+
+//    //// Old serial code (TODO: decide whether to keep it behind e.g. #ifndef PARALLEL)
+//    //    std::vector<arma::Mat<ValueType> > localResult;
+//    //    // Loop over trial elements
+//    //    for (int trialIndex = 0; trialIndex < trialElementCount; ++trialIndex)
+//    //    {
+//    //        // Evaluate integrals over pairs of the current trial element and
+//    //        // all the test elements
+//    //        assembler.evaluateLocalWeakForms(TEST_TRIAL, testIndices, trialIndex,
+//    //                                         ALL_DOFS, localResult);
+
+//    //        // Loop over test indices
+//    //        for (int testIndex = 0; testIndex < testElementCount; ++testIndex)
+//    //            // Add the integrals to appropriate entries in the operator's matrix
+//    //            for (int trialDof = 0; trialDof < trialGlobalDofs[trialIndex].size(); ++trialDof)
+//    //                for (int testDof = 0; testDof < testGlobalDofs[testIndex].size(); ++testDof)
+//    //                result(testGlobalDofs[testIndex][testDof],
+//    //                       trialGlobalDofs[trialIndex][trialDof]) +=
+//    //                        localResult[testIndex](testDof, trialDof);
+//    //    }
+
+//    // Create and return a discrete operator represented by the matrix that
+//    // has just been calculated
+//    return std::auto_ptr<DiscreteBoundaryOperator<ResultType> >(
+//                new DiscreteDenseBoundaryOperator<ResultType>(result));
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
+ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
+assembleOperatorInAcaMode(
+        const Space<BasisFunctionType>& space,
+        const arma::Mat<CoordinateType>& evaluationPoints,
+        LocalAssembler& assembler,
+        const EvaluationOptions& options) const
+{
+    return AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
+                evaluationPoints, space, assembler, options);
 }
 
 /** \endcond */

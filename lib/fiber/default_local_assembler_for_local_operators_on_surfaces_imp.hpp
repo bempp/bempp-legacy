@@ -49,42 +49,8 @@ DefaultLocalAssemblerForLocalOperatorsOnSurfaces(
     m_integral(integral),
     m_openClHandler(openClHandler)
 {
-    checkConsistencyOfGeometryAndBases(*rawGeometry, *testBases);
-    checkConsistencyOfGeometryAndBases(*rawGeometry, *trialBases);
-}
-
-template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
-void
-DefaultLocalAssemblerForLocalOperatorsOnSurfaces<BasisFunctionType, ResultType, GeometryFactory>::
-checkConsistencyOfGeometryAndBases(
-        const RawGridGeometry<CoordinateType>& rawGeometry,
-        const std::vector<const Basis<BasisFunctionType>*>& bases) const
-{
-    if (rawGeometry.vertices().n_rows != 3)
-        throw std::invalid_argument(
-            "DefaultLocalAssemblerForLocalOperatorsOnSurfaces::"
-            "checkConsistencyOfGeometryAndBases(): "
-            "vertex coordinates must be three-dimensional");
-    const size_t elementCount = rawGeometry.elementCornerIndices().n_cols;
-    if (rawGeometry.elementCornerIndices().n_rows < 3 ||
-            4 < rawGeometry.elementCornerIndices().n_rows)
-        throw std::invalid_argument(
-            "DefaultLocalAssemblerForLocalOperatorsOnSurfaces::"
-            "checkConsistencyOfGeometryAndBases(): "
-            "Elements must have either 3 or 4 corners");
-    if (!rawGeometry.auxData().is_empty() &&
-            rawGeometry.auxData().n_cols != elementCount)
-        throw std::invalid_argument(
-            "DefaultLocalAssemblerForLocalOperatorsOnSurfaces::"
-            "checkConsistencyOfGeometryAndBases(): "
-            "number of columns of auxData must match that of "
-            "elementCornerIndices");
-    if (bases.size() != elementCount)
-        throw std::invalid_argument(
-            "DefaultLocalAssemblerForLocalOperatorsOnSurfaces::"
-            "checkConsistencyOfGeometryAndBases(): "
-            "size of bases must match the number of columns of "
-            "elementCornerIndices");
+    Utilities::checkConsistencyOfGeometryAndBases(*rawGeometry, *testBases);
+    Utilities::checkConsistencyOfGeometryAndBases(*rawGeometry, *trialBases);
 }
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>

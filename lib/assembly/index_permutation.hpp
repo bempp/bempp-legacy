@@ -84,6 +84,11 @@ public:
         return m_permutedIndices[index];
     }
 
+    /** \brief Return length of the vector of indices. */
+    size_t size() const {
+        return m_permutedIndices.size();
+    }
+
 private:
     const std::vector<unsigned int> m_permutedIndices;
 };

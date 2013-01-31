@@ -30,7 +30,9 @@ namespace Fiber
 
 /** \cond FORWARD_DECL */
 template <typename T> class _2dArray;
+template <typename T> class _3dArray;
 template <typename T> class CollectionOf2dArrays;
+template <typename T> class CollectionOf3dArrays;
 template <typename T> class CollectionOf4dArrays;
 template <typename CoordinateType> class GeometricalData;
 /** \endcond */
@@ -60,6 +62,13 @@ public:
             const CollectionOf2dArrays<ResultType>& trialTransformations,
             const std::vector<CoordinateType>& weights,
             _2dArray<ResultType>& result) const = 0;
+
+    virtual void evaluateWithPureWeights(
+            const GeometricalData<CoordinateType>& trialGeomData,
+            const CollectionOf4dArrays<KernelType>& kernels,
+            const CollectionOf3dArrays<BasisFunctionType>& trialTransformations,
+            const std::vector<CoordinateType>& weights,
+            _3dArray<ResultType>& result) const = 0;
 };
 
 } // namespace Fiber

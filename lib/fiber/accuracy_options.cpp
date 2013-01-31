@@ -22,6 +22,7 @@
 
 #include <stdexcept>
 #include <algorithm>
+#include <iostream>
 
 namespace Fiber
 {
@@ -51,13 +52,16 @@ struct Equal
 
 AccuracyOptionsEx::AccuracyOptionsEx()
 {
+    m_singleRegular.push_back(std::make_pair(std::numeric_limits<double>::infinity(),
+                                             QuadratureOptions()));
     m_doubleRegular.push_back(std::make_pair(std::numeric_limits<double>::infinity(),
                                              QuadratureOptions()));
 }
 
 AccuracyOptionsEx::AccuracyOptionsEx(const AccuracyOptions& oldStyleOpts)
 {
-    m_singleRegular = oldStyleOpts.singleRegular;
+    m_singleRegular.push_back(std::make_pair(std::numeric_limits<double>::infinity(),
+                                             oldStyleOpts.singleRegular));
     m_doubleRegular.push_back(std::make_pair(std::numeric_limits<double>::infinity(),
                                              oldStyleOpts.doubleRegular));
     m_doubleSingular = oldStyleOpts.doubleSingular;
@@ -65,16 +69,134 @@ AccuracyOptionsEx::AccuracyOptionsEx(const AccuracyOptions& oldStyleOpts)
 
 const QuadratureOptions& AccuracyOptionsEx::singleRegular() const
 {
-    return m_singleRegular;
+    return m_singleRegular.back().second;
+}
+
+const QuadratureOptions& AccuracyOptionsEx::singleRegular(
+        double relativeDistance) const
+{
+    for (int i = 0; i < m_singleRegular.size(); ++i)
+        if (relativeDistance <= m_singleRegular[i].first)
+            return m_singleRegular[i].second;
+    // should never happen
+    throw std::runtime_error("AccuracyOptions::singleRegular(): "
+                             "internal error");
 }
 
 void AccuracyOptionsEx::setSingleRegular(
         int accuracyOrder, bool relativeToDefault)
 {
-    if (relativeToDefault)
-        m_singleRegular.setRelativeQuadratureOrder(accuracyOrder);
-    else
-        m_singleRegular.setAbsoluteQuadratureOrder(accuracyOrder);
+    m_singleRegular.clear();
+    m_singleRegular.push_back(
+                std::make_pair(std::numeric_limits<double>::infinity(),
+                               QuadratureOptions(accuracyOrder, relativeToDefault)));
+}
+
+void AccuracyOptionsEx::setSingleRegular(
+        double maxNormalizedDistance1, int accuracyOrder1,
+        int accuracyOrder2, bool relativeToDefault)
+{
+    m_singleRegular.clear();
+    m_singleRegular.push_back(
+                std::make_pair(maxNormalizedDistance1,
+                               QuadratureOptions(accuracyOrder1, relativeToDefault)));
+    m_singleRegular.push_back(
+                std::make_pair(std::numeric_limits<double>::infinity(),
+                               QuadratureOptions(accuracyOrder2, relativeToDefault)));
+    std::sort(m_singleRegular.begin(), m_singleRegular.end(), LessOrEqual());
+    std::unique(m_singleRegular.begin(), m_singleRegular.end(), Equal());
+}
+
+void AccuracyOptionsEx::setSingleRegular(
+        double maxNormalizedDistance1, int accuracyOrder1,
+        double maxNormalizedDistance2, int accuracyOrder2,
+        int accuracyOrder3, bool relativeToDefault)
+{
+    m_singleRegular.clear();
+    m_singleRegular.push_back(
+                std::make_pair(maxNormalizedDistance1,
+                               QuadratureOptions(accuracyOrder1, relativeToDefault)));
+    m_singleRegular.push_back(
+                std::make_pair(maxNormalizedDistance2,
+                               QuadratureOptions(accuracyOrder2, relativeToDefault)));
+    m_singleRegular.push_back(
+                std::make_pair(std::numeric_limits<double>::infinity(),
+                               QuadratureOptions(accuracyOrder3, relativeToDefault)));
+    std::sort(m_singleRegular.begin(), m_singleRegular.end(), LessOrEqual());
+    std::unique(m_singleRegular.begin(), m_singleRegular.end(), Equal());
+}
+
+void AccuracyOptionsEx::setSingleRegular(
+        double maxNormalizedDistance1, int accuracyOrder1,
+        double maxNormalizedDistance2, int accuracyOrder2,
+        double maxNormalizedDistance3, int accuracyOrder3,
+        int accuracyOrder4, bool relativeToDefault)
+{
+    m_singleRegular.clear();
+    m_singleRegular.push_back(
+                std::make_pair(maxNormalizedDistance1,
+                               QuadratureOptions(accuracyOrder1, relativeToDefault)));
+    m_singleRegular.push_back(
+                std::make_pair(maxNormalizedDistance2,
+                               QuadratureOptions(accuracyOrder2, relativeToDefault)));
+    m_singleRegular.push_back(
+                std::make_pair(maxNormalizedDistance3,
+                               QuadratureOptions(accuracyOrder3, relativeToDefault)));
+    m_singleRegular.push_back(
+                std::make_pair(std::numeric_limits<double>::infinity(),
+                               QuadratureOptions(accuracyOrder4, relativeToDefault)));
+    std::sort(m_singleRegular.begin(), m_singleRegular.end(), LessOrEqual());
+    std::unique(m_singleRegular.begin(), m_singleRegular.end(), Equal());
+}
+
+void AccuracyOptionsEx::setSingleRegular(
+        double maxNormalizedDistance1, int accuracyOrder1,
+        double maxNormalizedDistance2, int accuracyOrder2,
+        double maxNormalizedDistance3, int accuracyOrder3,
+        double maxNormalizedDistance4, int accuracyOrder4,
+        int accuracyOrder5, bool relativeToDefault)
+{
+    m_singleRegular.clear();
+    m_singleRegular.push_back(
+                std::make_pair(maxNormalizedDistance1,
+                               QuadratureOptions(accuracyOrder1, relativeToDefault)));
+    m_singleRegular.push_back(
+                std::make_pair(maxNormalizedDistance2,
+                               QuadratureOptions(accuracyOrder2, relativeToDefault)));
+    m_singleRegular.push_back(
+                std::make_pair(maxNormalizedDistance3,
+                               QuadratureOptions(accuracyOrder3, relativeToDefault)));
+    m_singleRegular.push_back(
+                std::make_pair(maxNormalizedDistance4,
+                               QuadratureOptions(accuracyOrder4, relativeToDefault)));
+    m_singleRegular.push_back(
+                std::make_pair(std::numeric_limits<double>::infinity(),
+                               QuadratureOptions(accuracyOrder5, relativeToDefault)));
+    std::sort(m_singleRegular.begin(), m_singleRegular.end(), LessOrEqual());
+    std::unique(m_singleRegular.begin(), m_singleRegular.end(), Equal());
+}
+
+void AccuracyOptionsEx::setSingleRegular(
+        const std::vector<double>& maxNormalizedDistances,
+        const std::vector<int>& accuracyOrders,
+        bool relativeToDefault)
+{
+    if (maxNormalizedDistances.size() != accuracyOrders.size() - 1)
+        throw std::invalid_argument("AccuracyOptionsEx::setSingleRegular(): "
+                                    "maxNormalizedDistances must have one "
+                                    "element less than accuracyOrders");
+    m_singleRegular.clear();
+    for (size_t i = 0; i < maxNormalizedDistances.size(); ++i)
+        m_singleRegular.push_back(
+                    std::make_pair(maxNormalizedDistances[i],
+                                   QuadratureOptions(accuracyOrders[i],
+                                                     relativeToDefault)));
+    m_singleRegular.push_back(
+                std::make_pair(std::numeric_limits<double>::infinity(),
+                               QuadratureOptions(accuracyOrders.back(),
+                                                 relativeToDefault)));
+    std::sort(m_singleRegular.begin(), m_singleRegular.end(), LessOrEqual());
+    std::unique(m_singleRegular.begin(), m_singleRegular.end(), Equal());
 }
 
 const QuadratureOptions& AccuracyOptionsEx::doubleRegular(

@@ -23,6 +23,8 @@
 
 #include "potential_operator.hpp"
 
+#include "../common/shared_ptr.hpp"
+
 namespace Fiber
 {
 
@@ -32,12 +34,17 @@ template <typename KernelType> class CollectionOfKernels;
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class KernelTrialIntegral;
 template <typename ResultType> class EvaluatorForIntegralOperators;
+template <typename ResultType> class LocalAssemblerForPotentialOperators;
 /** \endcond */
 
 } // namespace Bempp
 
 namespace Bempp
 {
+
+/** \cond FORWARD_DECL */
+template <typename ValueType> class DiscreteBoundaryOperator;
+/** \endcond */
 
 /** \ingroup potential_operators
  *  \brief Elementary potential operator.
@@ -50,8 +57,9 @@ namespace Bempp
  *  where the integration goes over a surface \f$\Gamma\f$ and the integrand
  *  \f$F\f$ depends on the coordinates of a point \f$x\f$ lying outside
  *  \f$\Gamma\f$ and a surface charge distribution \f$\psi(y)\f$ does not lie on
- *  \f$\Gamma\f$. In the simplest and most common case,
- *  \f$F[x, \psi(y)]\f$ is just
+ *  \f$\Gamma\f$. The function \f$F[x, \psi(y)]\f$ is assumed to be linear in
+ *  \f$psi(y)\f$. In the simplest and most common case, \f$F[x, \psi(y)]\f$
+ *  is just
  *  \f[
  *    F[x, \psi(y)] = K(x, y) \psi(y),
  *  \f]
@@ -94,14 +102,21 @@ public:
     typedef typename Base::CoordinateType CoordinateType;
     /** \copydoc PotentialOperator::QuadratureStrategy */
     typedef typename Base::QuadratureStrategy QuadratureStrategy;
-    /** \brief Type of the appropriate instantiation of Fiber::EvaluatorForIntegralOperators. */
+    /** \brief Type of the appropriate instantiation of
+     *  Fiber::EvaluatorForIntegralOperators. */
     typedef Fiber::EvaluatorForIntegralOperators<ResultType> Evaluator;
-    /** \brief Type of the appropriate instantiation of Fiber::CollectionOfBasisTransformations. */
+    /** \brief Type of the appropriate instantiation of
+     *  Fiber::LocalAssemblerForPotentialOperators. */
+    typedef Fiber::LocalAssemblerForPotentialOperators<ResultType> LocalAssembler;
+    /** \brief Type of the appropriate instantiation of
+     *  Fiber::CollectionOfBasisTransformations. */
     typedef Fiber::CollectionOfBasisTransformations<CoordinateType>
     CollectionOfBasisTransformations;
-    /** \brief Type of the appropriate instantiation of Fiber::CollectionOfKernels. */
+    /** \brief Type of the appropriate instantiation of
+     *  Fiber::CollectionOfKernels. */
     typedef Fiber::CollectionOfKernels<KernelType> CollectionOfKernels;
-    /** \brief Type of the appropriate instantiation of Fiber::KernelTrialIntegral. */
+    /** \brief Type of the appropriate instantiation of
+     *  Fiber::KernelTrialIntegral. */
     typedef Fiber::KernelTrialIntegral<BasisFunctionType, KernelType, ResultType>
     KernelTrialIntegral;
 
@@ -117,15 +132,16 @@ public:
             const QuadratureStrategy& quadStrategy,
             const EvaluationOptions& options) const;
 
-private:
-    /** \cond PRIVATE */
-    std::auto_ptr<Evaluator>
-    makeEvaluator(
-            const GridFunction<BasisFunctionType, ResultType>& argument,
+    virtual AssembledPotentialOperator<BasisFunctionType_, ResultType_>
+    assemble(
+            const shared_ptr<const Space<BasisFunctionType> >& space,
+            const shared_ptr<const arma::Mat<CoordinateType> >& evaluationPoints,
             const QuadratureStrategy& quadStrategy,
             const EvaluationOptions& options) const;
-    /** \endcond */
 
+    virtual int componentCount() const;
+
+private:
     /** \brief Return the collection of kernel functions occurring in the
      *  integrand of this operator. */
     virtual const CollectionOfKernels& kernels() const = 0;
@@ -142,6 +158,39 @@ private:
      *  #CollectionOfBasisTransformations representing the charge-distribution
      *  transformations occurring in the integrand. */
     virtual const KernelTrialIntegral& integral() const = 0;
+
+    /** \cond PRIVATE */
+    std::auto_ptr<Evaluator> makeEvaluator(
+            const GridFunction<BasisFunctionType, ResultType>& argument,
+            const QuadratureStrategy& quadStrategy,
+            const EvaluationOptions& options) const;
+
+    std::auto_ptr<LocalAssembler> makeAssembler(
+            const Space<BasisFunctionType>& space,
+            const arma::Mat<CoordinateType>& evaluationPoints,
+            const QuadratureStrategy& quadStrategy,
+            const EvaluationOptions& options) const;
+
+    shared_ptr<DiscreteBoundaryOperator<ResultType_> > assembleOperator(
+            const Space<BasisFunctionType>& space,
+            const arma::Mat<CoordinateType>& evaluationPoints,
+            LocalAssembler& assembler,
+            const EvaluationOptions& options) const;
+
+    std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
+    assembleOperatorInDenseMode(
+            const Space<BasisFunctionType>& space,
+            const arma::Mat<CoordinateType>& evaluationPoints,
+            LocalAssembler& assembler,
+            const EvaluationOptions& options) const;
+
+    std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
+    assembleOperatorInAcaMode(
+            const Space<BasisFunctionType>& space,
+            const arma::Mat<CoordinateType>& evaluationPoints,
+            LocalAssembler& assembler,
+            const EvaluationOptions& options) const;
+    /** \endcond */
 };
 
 } // namespace Bempp

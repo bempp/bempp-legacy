@@ -24,6 +24,7 @@
 
 #include "../common/common.hpp"
 
+#include "../common/armadillo_fwd.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../fiber/scalar_traits.hpp"
 
@@ -37,6 +38,7 @@ namespace Fiber
 
 /** \cond FORWARD_DECL */
 template <typename ResultType> class LocalAssemblerForOperators;
+template <typename ResultType> class LocalAssemblerForPotentialOperators;
 /** \endcond */
 
 } // namespace Fiber
@@ -46,6 +48,7 @@ namespace Bempp
 
 /** \cond FORWARD_DECL */
 class AssemblyOptions;
+class EvaluationOptions;
 template <typename ValueType> class DiscreteBoundaryOperator;
 template <typename BasisFunctionType> class Space;
 /** \endcond */
@@ -60,25 +63,42 @@ class AcaGlobalAssembler
 
 public:
     typedef DiscreteBoundaryOperator<ResultType> DiscreteBndOp;
-    typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
+    typedef Fiber::LocalAssemblerForOperators<ResultType>
+    LocalAssemblerForBoundaryOperators;
+    typedef LocalAssemblerForBoundaryOperators LocalAssembler; // deprecated
+    typedef Fiber::LocalAssemblerForPotentialOperators<ResultType>
+    LocalAssemblerForPotentialOperators;
 
     static std::auto_ptr<DiscreteBndOp> assembleDetachedWeakForm(
             const Space<BasisFunctionType>& testSpace,
             const Space<BasisFunctionType>& trialSpace,
-            const std::vector<LocalAssembler*>& localAssemblers,
+            const std::vector<LocalAssemblerForBoundaryOperators*>& localAssemblers,
             const std::vector<const DiscreteBndOp*>& sparseTermsToAdd,
-            const std::vector<ResultType>& denseTermsMultipliers,
-            const std::vector<ResultType>& sparseTermsMultipliers,
+            const std::vector<ResultType>& denseTermMultipliers,
+            const std::vector<ResultType>& sparseTermMultipliers,
             const AssemblyOptions& options,
             int symmetry);
 
     static std::auto_ptr<DiscreteBndOp> assembleDetachedWeakForm(
             const Space<BasisFunctionType>& testSpace,
             const Space<BasisFunctionType>& trialSpace,
-            LocalAssembler& localAssembler,
+            LocalAssemblerForBoundaryOperators& localAssembler,
             const AssemblyOptions& options,
             int symmetry); // used to be "bool symmetric"; fortunately "true"
                            // is converted to 1 == SYMMETRIC
+
+    static std::auto_ptr<DiscreteBndOp> assemblePotentialOperator(
+            const arma::Mat<CoordinateType>& points,
+            const Space<BasisFunctionType>& trialSpace,
+            const std::vector<LocalAssemblerForPotentialOperators*>& localAssemblers,
+            const std::vector<ResultType>& termMultipliers,
+            const EvaluationOptions& options);
+
+    static std::auto_ptr<DiscreteBndOp> assemblePotentialOperator(
+            const arma::Mat<CoordinateType>& points,
+            const Space<BasisFunctionType>& trialSpace,
+            LocalAssemblerForPotentialOperators& localAssembler,
+            const EvaluationOptions& options);
 };
 
 } // namespace Bempp

@@ -49,7 +49,8 @@ class _3dArray
 public:
     _3dArray();
     _3dArray(size_t extent0, size_t extent1, size_t extent2);
-    _3dArray(size_t extent0, size_t extent1, size_t extent2, T* data);
+    _3dArray(size_t extent0, size_t extent1, size_t extent2, T* data,
+             bool strict = false);
 
     ~_3dArray();
 
@@ -89,6 +90,7 @@ private:
 private:
     size_t m_extents[3];
     bool m_owns;
+    bool m_strict;
     T* m_storage;
 };
 

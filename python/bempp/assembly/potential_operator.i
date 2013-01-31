@@ -5,16 +5,21 @@
 BEMPP_DECLARE_SHARED_PTR_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(
     Bempp::PotentialOperator);
 
-namespace Bempp 
+namespace Bempp
 {
 
 BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(PotentialOperator);
 
+#define shared_ptr boost::shared_ptr
 %extend PotentialOperator
 {
 
     %apply const arma::Mat<float>& IN_MAT { const arma::Mat<float>& evaluationPoints };
     %apply const arma::Mat<double>& IN_MAT { const arma::Mat<double>& evaluationPoints };
+    %apply const shared_ptr<const arma::Mat<float> >& IN_SP_MAT {
+        const shared_ptr<const arma::Mat<float> >& evaluationPoints };
+    %apply const shared_ptr<const arma::Mat<double> >& IN_SP_MAT {
+        const shared_ptr<const arma::Mat<double> >& evaluationPoints };
 
     %apply arma::Mat<float>& ARGOUT_MAT { arma::Mat<float>& result_ };
     %apply arma::Mat<double>& ARGOUT_MAT { arma::Mat<double>& result_ };
@@ -31,7 +36,7 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(PotentialOperator);
         const arma::Mat<CoordinateType>& evaluationPoints,
         const Fiber::QuadratureStrategy<
         BasisFunctionType_, ResultType_, GeometryFactory>& quadStrategy,
-        const EvaluationOptions& options) 
+        const EvaluationOptions& options)
     {
         result_ = $self->evaluateAtPoints(argument, evaluationPoints, quadStrategy, options);
     }
@@ -45,10 +50,11 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(PotentialOperator);
                                           self._context.quadStrategy(), evaluationOptions)
     }
 }
+#undef
 
 BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(PotentialOperator);
 
-} // namespace Bempp 
+} // namespace Bempp
 
 #define shared_ptr boost::shared_ptr
 %include "assembly/potential_operator.hpp"

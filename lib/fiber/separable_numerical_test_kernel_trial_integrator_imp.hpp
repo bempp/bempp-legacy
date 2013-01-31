@@ -83,11 +83,11 @@ SeparableNumericalTestKernelTrialIntegrator(
     if (localTestQuadPoints.n_cols != testQuadWeights.size())
         throw std::invalid_argument("SeparableNumericalTestKernelTrialIntegrator::"
                                     "SeparableNumericalTestKernelTrialIntegrator(): "
-                                    "numbers of test points and weight do not match");
+                                    "numbers of test points and weights do not match");
     if (localTrialQuadPoints.n_cols != trialQuadWeights.size())
         throw std::invalid_argument("SeparableNumericalTestKernelTrialIntegrator::"
                                     "SeparableNumericalTestKernelTrialIntegrator(): "
-                                    "numbers of trial points and weight do not match");
+                                    "numbers of trial points and weights do not match");
 
 #ifdef WITH_OPENCL
     if (openClHandler.UseOpenCl()) {
@@ -160,7 +160,7 @@ integrateCpu(
 
     if (result.size() != elementIndicesA.size())
         throw std::invalid_argument(
-  	    "NonseparableNumericalTestKernelTrialIntegrator::integrate(): "
+        "SeparableNumericalTestKernelTrialIntegrator::integrate(): "
 	    "arrays 'result' and 'elementIndicesA' must have the same number "
 	    "of elements");
     if (testPointCount == 0 || trialPointCount == 0 || elementACount == 0)

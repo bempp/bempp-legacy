@@ -59,6 +59,13 @@ public:
             const std::vector<CoordinateType>& weights,
             _2dArray<ResultType>& result) const;
 
+    virtual void evaluateWithPureWeights(
+            const GeometricalData<CoordinateType>& trialGeomData,
+            const CollectionOf4dArrays<KernelType>& kernels,
+            const CollectionOf3dArrays<BasisFunctionType>& trialTransformations,
+            const std::vector<CoordinateType>& weights,
+            _3dArray<ResultType>& result) const;
+
 private:
     IntegrandFunctor m_functor;
 };

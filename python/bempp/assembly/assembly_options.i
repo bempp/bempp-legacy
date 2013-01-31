@@ -25,4 +25,5 @@ namespace Bempp
 
 } // namespace Bempp
 
+%include "assembly/aca_options.hpp"
 %include "assembly/assembly_options.hpp"

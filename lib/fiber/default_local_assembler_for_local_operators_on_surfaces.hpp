@@ -24,6 +24,8 @@
 #include "../common/common.hpp"
 
 #include "local_assembler_for_operators.hpp"
+
+#include "default_local_assembler_for_operators_on_surfaces_utilities.hpp"
 #include "numerical_quadrature.hpp"
 #include "numerical_test_trial_integrator.hpp"
 #include "shared_ptr.hpp"
@@ -80,18 +82,18 @@ public:
         std::vector<arma::Mat<ResultType> >& result);
 
 private:
-    void checkConsistencyOfGeometryAndBases(
-            const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<BasisFunctionType>*>& bases) const;
-
+    /** \cond PRIVATE */
     const TestTrialIntegrator<BasisFunctionType, ResultType>&
     selectIntegrator(int elementIndex);
 
     const TestTrialIntegrator<BasisFunctionType, ResultType>& getIntegrator(
         const SingleQuadratureDescriptor& desc);
+
 private:
     typedef boost::ptr_map<SingleQuadratureDescriptor,
             TestTrialIntegrator<BasisFunctionType, ResultType> > IntegratorMap;
+    typedef DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
+            BasisFunctionType> Utilities;
 
 private:
     shared_ptr<const GeometryFactory> m_geometryFactory;
@@ -104,6 +106,7 @@ private:
     shared_ptr<const OpenClHandler> m_openClHandler;
 
     IntegratorMap m_testTrialIntegrators;
+    /** \endcond */
 };
 
 } // namespace Fiber

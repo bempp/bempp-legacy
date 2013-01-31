@@ -23,9 +23,10 @@
 
 #include "numerical_quadrature_strategy.hpp"
 
-#include "default_local_assembler_for_local_operators_on_surfaces.hpp"
-#include "default_local_assembler_for_integral_operators_on_surfaces.hpp"
 #include "default_local_assembler_for_grid_functions_on_surfaces.hpp"
+#include "default_local_assembler_for_integral_operators_on_surfaces.hpp"
+#include "default_local_assembler_for_local_operators_on_surfaces.hpp"
+#include "default_local_assembler_for_potential_operators_on_surfaces.hpp"
 #include "default_evaluator_for_integral_operators.hpp"
 
 #include "default_test_trial_integral_imp.hpp"
@@ -201,6 +202,38 @@ makeEvaluatorForIntegralOperatorsImplRealKernel(
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
+std::auto_ptr<LocalAssemblerForPotentialOperators<ResultType> >
+NumericalQuadratureStrategyBase<
+BasisFunctionType, ResultType, GeometryFactory, Enable>::
+makeAssemblerForPotentialOperatorsImplRealKernel(
+        const arma::Mat<CoordinateType>& evaluationPoints,
+        const shared_ptr<const GeometryFactory>& geometryFactory,
+        const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+        const shared_ptr<const CollectionOfKernels<CoordinateType> >& kernels,
+        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const KernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
+        const shared_ptr<const OpenClHandler>& openClHandler,
+        const ParallelizationOptions& parallelizationOptions,
+        VerbosityLevel::Level verbosityLevel) const
+{
+    typedef CoordinateType KernelType;
+    typedef DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<
+            BasisFunctionType, KernelType, ResultType, GeometryFactory>
+            LocalAssemblerForPotentialOperators_;
+    return std::auto_ptr<LocalAssemblerForPotentialOperators<ResultType> >(
+                new LocalAssemblerForPotentialOperators_(
+                    evaluationPoints,
+                    geometryFactory, rawGeometry,
+                    trialBases,
+                    kernels, trialTransformations, integral,
+                    parallelizationOptions,
+                    verbosityLevel,
+                    this->accuracyOptions()));
+}
+
+template <typename BasisFunctionType, typename ResultType,
+          typename GeometryFactory, typename Enable>
 const AccuracyOptionsEx&
 NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
@@ -321,6 +354,38 @@ makeEvaluatorForIntegralOperatorsImplComplexKernel(
                     openClHandler,
                     parallelizationOptions,
                     this->accuracyOptions().singleRegular()));
+}
+
+template <typename BasisFunctionType, typename ResultType,
+          typename GeometryFactory, typename Enable>
+std::auto_ptr<LocalAssemblerForPotentialOperators<ResultType> >
+NumericalQuadratureStrategy<
+BasisFunctionType, ResultType, GeometryFactory, Enable>::
+makeAssemblerForPotentialOperatorsImplComplexKernel(
+        const arma::Mat<CoordinateType>& evaluationPoints,
+        const shared_ptr<const GeometryFactory>& geometryFactory,
+        const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+        const shared_ptr<const CollectionOfKernels<ResultType> >& kernels,
+        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const KernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
+        const shared_ptr<const OpenClHandler>& openClHandler,
+        const ParallelizationOptions& parallelizationOptions,
+        VerbosityLevel::Level verbosityLevel) const
+{
+    typedef ResultType KernelType;
+    typedef DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<
+            BasisFunctionType, KernelType, ResultType, GeometryFactory>
+            LocalAssemblerForPotentialOperators_;
+    return std::auto_ptr<LocalAssemblerForPotentialOperators<ResultType> >(
+                new LocalAssemblerForPotentialOperators_(
+                    evaluationPoints,
+                    geometryFactory, rawGeometry,
+                    trialBases,
+                    kernels, trialTransformations, integral,
+                    parallelizationOptions,
+                    verbosityLevel,
+                    this->accuracyOptions()));
 }
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>

@@ -18,31 +18,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
-#include "bempp/common/config_trilinos.hpp"
 #include "assembly_options.hpp"
 
 #include <stdexcept>
-#include <limits>
 
 namespace Bempp
 {
-
-AcaOptions::AcaOptions() :
-    eps(1E-4),
-    eta(1.2),
-    minimumBlockSize(16),
-    maximumBlockSize(std::numeric_limits<int>::max()),
-    maximumRank(std::numeric_limits<int>::max()),
-    globalAssemblyBeforeCompression(true),
-    recompress(false),
-    outputPostscript(false),
-    outputFname("aca.ps"),
-    scaling(1.0)
-{
-}
-
-
 
 AssemblyOptions::AssemblyOptions() :
     m_assemblyMode(DENSE),

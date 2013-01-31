@@ -23,6 +23,7 @@
 
 #include "../common/common.hpp"
 
+#include "../common/armadillo_fwd.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../fiber/scalar_traits.hpp"
 #include "ahmed_aux_fwd.hpp"
@@ -35,6 +36,7 @@ namespace Bempp
 /** \cond FORWARD_DECL */
 template <typename BasisFunctionType> class Space;
 template <typename CoordinateType> struct AhmedDofWrapper;
+template <typename CoordinateType> struct Point3D;
 class AcaOptions;
 class IndexPermutation;
 /** \endcond */
@@ -55,6 +57,14 @@ struct ClusterConstructionHelper
         shared_ptr<IndexPermutation>& o2p,
         shared_ptr<IndexPermutation>& p2o);
 
+    static void constructBemCluster(
+        const arma::Mat<CoordinateType>& points,
+        int componentCount,
+        const AcaOptions& acaOptions,
+        shared_ptr<AhmedBemCluster>& cluster,
+        shared_ptr<IndexPermutation>& o2p,
+        shared_ptr<IndexPermutation>& p2o);
+
     static std::auto_ptr<AhmedBemBlcluster>
     constructBemBlockCluster(
         const AcaOptions& acaOptions,
@@ -65,6 +75,12 @@ struct ClusterConstructionHelper
         AhmedBemCluster& trialCluster,
         /* output parameter */
         unsigned int& blockCount);
+
+    static void
+    getComponentDofPositions(
+            const arma::Mat<CoordinateType>& points,
+            int componentCount,
+            std::vector<Point3D<CoordinateType> >& positions);
 };
 
 } // namespace Bempp
