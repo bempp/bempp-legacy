@@ -419,7 +419,7 @@ KernelType, ResultType, GeometryFactory>::order(
         normalisedDistance = nominalDistance / m_averageElementSize;
 
     const QuadratureOptions& options =
-            m_accuracyOptions.singleRegular(); // (normalisedDistance); // TODO
+            m_accuracyOptions.singleRegular(normalisedDistance);
     return options.quadratureOrder(defaultQuadOrder);
 }
 
