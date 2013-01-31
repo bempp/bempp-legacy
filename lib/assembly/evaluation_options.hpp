@@ -107,6 +107,12 @@ public:
      *  given by a particular charge distribution is then calculated by
      *  left-multiplying the vector of its expansion coefficients by the above
      *  hierarchical matrix.
+     *
+     *  \note Our (BEM++ developers') numerical experiments indicate that to
+     *  maximize the efficiency of potential evaluation, the acaOptions.eta
+     *  parameter should be chosen much smaller than the default 1.2 (which is
+     *  adequate for the ACA of discrete weak forms). For potential evaluation,
+     *  eta = 0.4 seems to work well.
      */
     void switchToAcaMode(const AcaOptions& acaOptions);
 
