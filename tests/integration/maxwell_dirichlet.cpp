@@ -66,7 +66,7 @@
 #include "linalg/default_iterative_solver.hpp"
 #include "linalg/default_direct_solver.hpp"
 
-#include "space/piecewise_linear_normally_continuous_vector_space.hpp"
+#include "space/raviart_thomas_0_vector_space.hpp"
 
 #include <cmath>
 #include <iostream>
@@ -231,7 +231,7 @@ int main(int argc, char* argv[])
 
     // Initialize the space
 
-    PiecewiseLinearNormallyContinuousVectorSpace<BFT> HdivSpace(grid);
+    RaviartThomas0VectorSpace<BFT> HdivSpace(grid);
 
     // Set assembly mode and options
 
