@@ -91,9 +91,11 @@ def findGmsh(fpath=None):
 
 def sphere(radius=1,origin=(0,0,0),h=0.1,grid=True,msh_file=False):
     """
-    Return a tuple (sphere,fname), where sphere contains a BEM++ grid object if 'grid=True'
-    and fname contains the corresponding Gmsh file if 'msh_file=True'. If any of grid or
-    msh_file is false the corresponding return value is set to None.
+    Return a shpere grid.
+
+    If 'grid=True' and 'msh_file=False' a Bempp grid object is returned. If 'grid=False' and 'msh_file=True'
+    a string to a .msh file containing a sphere mesh is returned. If both are true a tuple (sphere,fname) 
+    is returned.
 
     *Parameters:*
        - radius (real number)
@@ -170,13 +172,22 @@ def sphere(radius=1,origin=(0,0,0),h=0.1,grid=True,msh_file=False):
         os.remove(msh_name)
         msh_name = None
     os.remove(geo_name)
-    return (sphere,msh_name)
+    if grid and not msh_name:
+        return sphere
+    elif msh_file and not grid:
+        return msh_name
+    elif msh_file and grid:
+        return (sphere,msh_file)
+    else:
+        return None
 
 def cube(length=1,origin=(0,0,0),h=0.1,grid=True,msh_file=False):
     """
-    Return a tuple (cube,fname), where cube contains a BEM++ grid object if 'grid=True'
-    and fname contains the corresponding Gmsh file if 'msh_file=True'. If any of grid or
-    msh_file is false the corresponding return value is set to None.
+    Return a shpere grid.
+
+    If 'grid=True' and 'msh_file=False' a Bempp grid object is returned. If 'grid=False' and 'msh_file=True'
+    a string to a .msh file containing a cube mesh is returned. If both are true a tuple (cube,fname) 
+    is returned.
 
     *Parameters:*
        - length (real number)
@@ -256,4 +267,11 @@ def cube(length=1,origin=(0,0,0),h=0.1,grid=True,msh_file=False):
         os.remove(msh_name)
         msh_name = None
     os.remove(geo_name)
-    return (cube,msh_name)
+    if grid and not msh_name:
+        return cube
+    elif msh_file and not grid:
+        return msh_name
+    elif msh_file and grid:
+        return (cube,msh_file)
+    else:
+        return None
