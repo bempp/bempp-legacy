@@ -24,8 +24,17 @@ import bempp.py_extensions as py_ext
 try:
     from tvtk.api import tvtk
     from mayavi import mlab
+
+    from traits.api import HasTraits, on_trait_change, Enum, Instance, List, Str, Bool, CBool, CFloat
+    from traitsui.api import View, Item, SetEditor, Group
+    from traitsui.wx.check_list_editor import SimpleEditor
+    from tvtk.pyface.scene_editor import SceneEditor
+    from mayavi.tools.mlab_scene_model import MlabSceneModel
+    from mayavi.core.ui.mayavi_scene import MayaviScene
+    from mayavi.sources.api import VTKDataSource
+
 except ImportError:
-    print "You need to have Enthought tvtk and mayavi installed for this module to work!"
+    print "You need to have Enthought tvtk, mayavi and traits installed for this module to work!"
 
 def getTvtkGrid(grid):
     """Return a TVTK object containing the grid"""
@@ -40,150 +49,251 @@ def getTvtkGrid(grid):
         raise TypeError("Visualization of this grid topology not implemented!")
     return mesh
 
-def plotTvtkActors(tvtkActors):
-    """Plot a number of TVTK actors in the same plot."""
+class _VectorVisualization(HasTraits):
 
-    import collections
+    real_imag = Enum('Real Part of Vector Field','Imaginary Part of Vector Field')
+    legend = Enum('Scalar Legend','Vector Legend')
+    point_cell = Enum('Point Data','Cell Data')
+    scene = Instance(MlabSceneModel, ())
+    enable_surface = Bool(True)
+    enable_vectors = Bool(False)
+    enable_scalars = Bool(True)
+    enable_grid    = Bool(False)
+    vector_scale_size = CFloat(0.1)
 
-    v = mlab.figure()
-    if isinstance(tvtkActors, collections.Iterable):
-        for actor in tvtkActors: v.scene.add_actor(actor) # Input is iterable
-    else:
-        v.scene.add_actor(tvtkActors)  # Input is not iteratble
-    mlab.show()
+    def __init__(self,g):
+        HasTraits.__init__(self)
+        self.src = VTKDataSource(data=g)
 
-
-def gridActor(grid):
-    """
-    Return a TVTK actor representing a grid.
-
-    *Parameters:*
-       - grid (Grid)
-            A BEM++ grid object.
-    """
-
-    mesh = getTvtkGrid(grid)
-    mapper = tvtk.DataSetMapper(input=mesh)
-    actor  = tvtk.Actor(mapper=mapper)
-    actor.property.representation = 'w'
-    actor.property.ambient = 1
-    return actor
-
-def gridFunctionActor(gridFun,dataType='vertex_data',transformation='real'):
-    """
-    Return a TVTK actor representing a grid function.
-
-    *Parameters:*
-       - gridFun (gridFunction).
-            The grid function to be plotted.
-       - dataType ('vertex_data' or 'cell_data')
-            Determines whether the plot should be constructed from the function
-            values at element vertices or at element centres.
-       - transformation ('real', 'imag', 'abs' or a callable object)
-            Determines how the function is transformed before plotting.
-    """
-
-    if not dataType in ["cell_data", "vertex_data"]:
-        raise ValueError("Unknown mode specified. Valid modes are 'vertex_data' and 'cell_data'!")
-
-    if not hasattr(transformation, '__call__'):
-        if transformation=='real':
-            data_transform = lambda x:np.real(x)
-        elif transformation=='imag':
-            data_transform = lambda x:np.imag(x)
-        elif transformation=='abs':
-            data_transform = lambda x:np.abs(x)
+    @on_trait_change('scene.activated')
+    def create_plot(self):
+        from mayavi.modules.api import Surface, Vectors
+        self.surface = Surface()
+        self.surface1 = Surface()
+        self.surface1.actor.property.representation = 'wireframe'
+        self.surface1.actor.actor.visibility = self.enable_grid
+        self.surface.actor.actor.visibility=self.enable_surface
+        self.vectors = Vectors()
+        self.engine = self.scene.engine
+        self.engine.add_source(self.src)
+        self.engine.add_module(self.surface, obj=self.src)
+        self.engine.add_module(self.surface1, obj=self.src)
+        self.engine.add_module(self.vectors, obj=self.src)
+        self.module_manager = self.engine.scenes[0].children[0].children[0]
+        self.module_manager.vector_lut_manager.show_legend = True
+        self.vectors.actor.actor.visibility=self.enable_vectors
+        self.surface.actor.actor.visibility=self.enable_surface
+        if self.legend == "Scalar Legend":
+            self.module_manager.vector_lut_manager.show_legend = False
+            self.module_manager.scalar_lut_manager.show_legend = True
         else:
-            raise ValueError("Unknown value for 'transformation'. It needs to be 'real', 'imag', 'abs' or a Python callable!")
-    else:
-        data_transform = transformation
-
-    mesh = getTvtkGrid(gridFun.grid())
-    if dataType=="vertex_data":
-        values = gridFun.evaluateAtSpecialPoints("vertex_data").flatten()
-        tvtk_data = mesh.point_data
-    elif dataType=="cell_data":
-        values = gridFun.evaluateAtSpecialPoints("cell_data").flatten()
-        tvtk_data = mesh.cell_data
-
-    values = data_transform(values)
-
-    tvtk_data.scalars = values
-    mapper = tvtk.DataSetMapper(input = mesh)
-    mapper.scalar_range = tvtk_data.scalars.range
-    actor = tvtk.Actor(mapper=mapper)
-    return actor
-
-def scalarDataOnRegularGridActor(
-        points, data, dimensions,
-        colorRange=None,transformation='real'):
-    """
-    Return a TVTK actor representing the plot of a function interpolated on
-    a regular grid.
-    """
-
-    if points.shape[0] != 3 or points.ndim != 2:
-        raise ValueError("incorrect shape")
-    data = data.squeeze()
-    if data.ndim != 1:
-        raise ValueError("incorrect shape")
-
-    if not hasattr(transformation, '__call__'):
-        if transformation=='real':
-            data_transform = lambda point,val:np.real(val)
-        elif transformation=='imag':
-            data_transform = lambda point,val:np.imag(val)
-        elif transformation=='abs':
-            data_transform = lambda point,val:np.abs(val)
+            self.module_manager.vector_lut_manager.show_legend = True
+            self.module_manager.scalar_lut_manager.show_legend = False
+        if self.point_cell == "Point Data":
+            self.module_manager.lut_data_mode = 'point data'
         else:
-            raise ValueError("Unknown value for 'transformation'. It needs to be 'real', 'imag', 'abs' or a Python Callable!")
+            self.module_manager.lut_data_mode = 'cell data'
+        self.vectors.glyph.glyph.scale_factor = self.vector_scale_size
+        self.src.point_scalars_name = 'abs^2'
+        self.src.cell_scalars_name = 'abs^2'
+
+
+    @on_trait_change('real_imag')
+    def update_real_imag(self):
+        if self.real_imag=="Real Part of Vector Field":
+            self.src.point_vectors_name = 'real'
+            self.src.cell_vectors_name = 'real'
+        else:
+            self.src.point_vectors_name = 'imag'
+            self.src.cell_vectors_name = 'imag'
+
+
+    @on_trait_change('enable_grid')
+    def update_grid(self):
+        self.surface1.actor.actor.visibility = self.enable_grid
+
+    @on_trait_change('point_cell')
+    def update_point_cell(self):
+        if self.point_cell == "Point Data":
+            self.module_manager.lut_data_mode = 'point data'
+        else:
+            self.module_manager.lut_data_mode = 'cell data'
+
+
+    @on_trait_change('enable_surface')
+    def update_surface(self):
+        self.surface.actor.actor.visibility=self.enable_surface
+
+    @on_trait_change('enable_vectors')
+    def update_vectors(self):
+        self.vectors.actor.actor.visibility=self.enable_vectors
+        if self.enable_vectors:
+            self.legend = "Vector Legend"
+        else:
+            self.legend = "Scalar Legend"
+
+    @on_trait_change('legend')
+    def update_legend(self):
+        if self.legend == "Scalar Legend":
+            self.module_manager.vector_lut_manager.show_legend = False
+            self.module_manager.scalar_lut_manager.show_legend = True
+        else:
+            self.enable_vectors = True
+            self.module_manager.vector_lut_manager.show_legend = True
+            self.module_manager.scalar_lut_manager.show_legend = False
+
+    @on_trait_change('vector_scale_size')
+    def update_vector_scale_size(self):
+        if self.vector_scale_size>0:
+            self.vectors.glyph.glyph.scale_factor = self.vector_scale_size
+
+
+    view = View(Item(name='scene', editor=SceneEditor(scene_class=MayaviScene),
+                     height=500, width=500, show_label=False),
+                Group(
+                    Item(name="real_imag",style='custom',show_label=False),
+                    Item(name="legend",style='custom',show_label=False),
+                Group(Item(name="point_cell",show_label=False),
+                      Item(name="vector_scale_size",label="Vector Scale"),
+                Group(
+                    Item(name="enable_surface",label="Display scalar density"),
+                    Item(name="enable_vectors",label="Enable vectors"),
+                    Item(name='enable_grid',label="Show grid"),orientation="horizontal")
+),
+                orientation="vertical"),
+                resizable=True,title="Grid Function Viewer")
+
+
+class _ScalarVisualization(HasTraits):
+
+    real_imag = Enum('Real Part','Imaginary Part', 'Square Density')
+    enable_legend = Bool(True)
+    point_cell = Enum('Point Data','Cell Data')
+    scene = Instance(MlabSceneModel, ())
+    enable_surface = Bool(True)
+    enable_scalars = Bool(True)
+    enable_grid    = Bool(False)
+
+    def __init__(self,g):
+        HasTraits.__init__(self)
+        self.src = VTKDataSource(data=g)
+
+    @on_trait_change('scene.activated')
+    def create_plot(self):
+        from mayavi.modules.api import Surface, Vectors
+        self.surface = Surface()
+        self.surface1 = Surface()
+        self.surface1.actor.property.representation = 'wireframe'
+        self.surface1.actor.actor.visibility = self.enable_grid
+        self.surface.actor.actor.visibility=self.enable_surface
+        self.engine = self.scene.engine
+        self.engine.add_source(self.src)
+        self.engine.add_module(self.surface, obj=self.src)
+        self.engine.add_module(self.surface1, obj=self.src)
+        self.module_manager = self.engine.scenes[0].children[0].children[0]
+        self.surface.actor.actor.visibility=self.enable_surface
+        self.module_manager.scalar_lut_manager.show_legend = self.enable_legend
+        if self.point_cell == "Point Data":
+            self.module_manager.lut_data_mode = 'point data'
+        else:
+            self.module_manager.lut_data_mode = 'cell data'
+
+
+    @on_trait_change('real_imag')
+    def update_real_imag(self):
+        if self.real_imag=="Real Part":
+            self.src.point_scalars_name = 'real'
+            self.src.cell_scalars_name = 'real'
+        elif self.real_imag=="Imaginary Part":
+            self.src.point_scalars_name = 'imag'
+            self.src.cell_scalars_name = 'imag'
+        else:
+            self.src.point_scalars_name = 'abs^2'
+            self.src.cell_scalars_name = 'abs^2'
+
+
+    @on_trait_change('enable_grid')
+    def update_grid(self):
+        self.surface1.actor.actor.visibility = self.enable_grid
+
+    @on_trait_change('point_cell')
+    def update_point_cell(self):
+        if self.point_cell == "Point Data":
+            self.module_manager.lut_data_mode = 'point data'
+        else:
+            self.module_manager.lut_data_mode = 'cell data'
+
+
+    @on_trait_change('enable_surface')
+    def update_surface(self):
+        self.surface.actor.actor.visibility=self.enable_surface
+
+    @on_trait_change('enable_legend')
+    def update_legend(self):
+        self.module_manager.scalar_lut_manager.show_legend = self.enable_legend
+
+
+    view = View(Item(name='scene', editor=SceneEditor(scene_class=MayaviScene),
+                     height=500, width=500, show_label=False),
+                Group(
+                    Item(name="real_imag",style='custom',show_label=False),
+                Group(Item(name="point_cell",show_label=False),
+                Group(
+                    Item(name="enable_surface",label="Display scalar density"),
+                    Item(name='enable_grid',label="Show grid"),
+                    Item(name="enable_legend", label = "Show legend" ),
+                    orientation="horizontal")
+),
+                orientation="vertical"),
+                resizable=True,title="Grid Function Viewer")
+
+def plotGridFunction(g):
+    """Visualize a Grid Function. Returns a Traits object that contains the visualization."""
+
+
+    tvtkObj = getTvtkGrid(g.grid())
+    point_data = g.evaluateAtSpecialPoints("vertex_data")
+    cell_data = g.evaluateAtSpecialPoints("cell_data")
+
+    tvtkObj.cell_data.add_array(np.real(cell_data.T))
+    tvtkObj.cell_data.add_array(np.imag(cell_data.T))
+    tvtkObj.cell_data.add_array(np.sum(abs(cell_data)**2,axis=0))
+    tvtkObj.cell_data.get_abstract_array(0).name = 'real'
+    tvtkObj.cell_data.get_abstract_array(1).name = 'imag'
+    tvtkObj.cell_data.get_abstract_array(2).name = 'abs^2'
+
+    tvtkObj.point_data.add_array(np.real(point_data.T))
+    tvtkObj.point_data.add_array(np.imag(point_data.T))
+    tvtkObj.point_data.add_array(np.sum(abs(point_data)**2,axis=0))
+    tvtkObj.point_data.get_abstract_array(0).name = 'real'
+    tvtkObj.point_data.get_abstract_array(1).name = 'imag'
+    tvtkObj.point_data.get_abstract_array(2).name = 'abs^2'
+
+    if g.componentCount()==3:
+        tvtkObj.cell_data.set_active_scalars('abs^2')
+        tvtkObj.point_data.set_active_scalars('abs^2')
+        tvtkObj.cell_data.set_active_vectors('real')
+        tvtkObj.point_data.set_active_vectors('imag')
+        v = _VectorVisualization(tvtkObj)
+
+    elif g.componentCount()==1:
+        tvtkObj.cell_data.set_active_scalars('real')
+        tvtkObj.point_data.set_active_scalars('real')
+        v =  _ScalarVisualization(tvtkObj)
     else:
-        data_transform = transformation
+        raise Exception("plotGridFunction: Only GridFunctions with componentCount 1 or 3 are supported.")
 
-    data = data_transform(points,data)
-    dims = dimensions
+    v.configure_traits()
+    return v
 
-    if colorRange is None:
-        minVal = np.min(data)
-        maxVal = np.max(data)
-        colorRange = (minVal, maxVal)
-
-    g = tvtk.StructuredGrid(dimensions=(dims[1], dims[0], 1), points=points.T)
-    g.point_data.scalars = data
-
-    # Create actors
-    mapper = tvtk.DataSetMapper(input=g)
-    mapper.scalar_range = colorRange
-    return tvtk.Actor(mapper=mapper)
-
-def legendActor(actor):
-    """Return a TVTK actor representing the legend of another actor."""
-
-    scalar_bar = tvtk.ScalarBarActor()
-    scalar_bar.lookup_table = actor.mapper.lookup_table
-    return scalar_bar
-
-def plotGridFunction(*args,**kwargs):
-    """
-    Plot a grid function.
-
-    This function takes the same parameters as gridFunctionActor().
-    """
-
-    fun = gridFunctionActor(*args,**kwargs)
-    legend = legendActor(fun)
-    plotTvtkActors([fun,legend])
-plotgridFunction = plotGridFunction # old name with a typo
 
 def plotGrid(grid):
     """
     Plot a grid.
-
-    This function takes the same parameters as gridActor().
     """
 
-    grid_actor = gridActor(grid)
-    plotTvtkActors(grid_actor)
+    gridTvtkData = getTvtkGrid(grid)
+    mlab.pipeline.surface(gridTvtkData,representation='wireframe')
 
 def plotThreePlanes(potentialOp, gridFun, limits, dimensions,
                     colorRange=None, transformation='real', evalOps=None):
@@ -282,7 +392,7 @@ def plotThreePlanes(potentialOp, gridFun, limits, dimensions,
     actor2 = tvtk.Actor(mapper=mapper2)
 
     mapper3 = tvtk.DataSetMapper(input=g3)
-    mapper3.scalar_range = colorRange 
+    mapper3.scalar_range = colorRange
     actor3 = tvtk.Actor(mapper=mapper3)
 
     gActor = gridActor(gridFun.grid())
