@@ -226,6 +226,14 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
 
     %feature("compactdefaultargs") exportToVtk;
 
+    %pythoncode %{
+      def plot(self):
+          "Visualize the GridFunction."
+
+          from visualization import plotGridFunction
+          plotGridFunction(self)
+	    %}
+
 }
 
 %ignore gridFunctionFromFiberFunction;

@@ -32,6 +32,15 @@ namespace Bempp
         val._parentGrid = self
     %}
 
+    %pythoncode %{
+      def plot(self):
+          "Visualize the Grid."
+
+          from visualization import plotGrid
+          plotGrid(self)
+        %}
+
+
     // this function is only for internal use
     %ignore elementGeometryFactory;
 }
