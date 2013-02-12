@@ -48,7 +48,6 @@ if (NOT (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR}))
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${py_file}
 	COMMAND ${CMAKE_COMMAND} copy -E ${CMAKE_CURRENT_SOURCE_DIR}/${py_file} ${CMAKE_CURRENT_BINARY_DIR}/${py_file}
 	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${py_file}
-	# TODO: remove the project's root directory from the printed path.
 	COMMENT "Copying file ${CMAKE_CURRENT_SOURCE_DIR}/${py_file}"
 	VERBATIM
     )

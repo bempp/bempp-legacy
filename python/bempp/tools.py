@@ -70,4 +70,57 @@ def evaluatePotentialOnPlane(potential, gridfun, limits, dimensions, plane="xy",
         evalOps = lib.createEvaluationOptions()
     values = potential.evaluateAtPoints(gridfun, points, evalOps)
 
-    return (points.T, values.ravel())
+    return (points, values)
+
+class RealOperator(object):
+    """RealOperator(operator)
+
+       Convert a complex operator into a real operator of twice the dimension
+
+       Parameters:
+       -----------
+       operator    : A Python object that supports that provides a 'matvec'
+                     method and a 'dtype' attribute.
+
+    """
+
+
+
+    def __init__(self,operator):
+        
+        self.operator = operator
+        self.operator_shape = operator.shape
+        self.shape = (2*self.operator_shape[0],2*self.operator_shape[1])
+        if operator.dtype==np.dtype('complex128'):
+            self.dtype = np.dtype('float64')
+        elif operator.dtype==np.dtype('complex64'):
+            self.dtype = np.dtype('float32')
+        elif operator.dtype==np.dtype('float64'):
+            self.dtype = np.dtype('float64')
+        elif operator.dtype==np.dtype('float32'):
+            self.dtype = np.dtype('float32')
+        else:
+            raise Exception('RealOperator.__init__: Datatype of operator not supported.')
+
+
+    def matvec(self,x):
+
+        if len(x.shape) == 1:
+            if x.shape[0] != self.shape[1]:
+                raise Exception("RealOperator.matvec: wrong dimension.")
+        elif len(x.shape) == 2:
+            if x.shape[1] != 1 or x.shape[0] != self.shape[1]:
+                raise Exception("RealOperator.matvec: wrong dimension.")
+
+        res = self.operator.matvec(x[:self.operator_shape[1]]+1j*x[self.operator_shape[1]:])
+        
+        if len(res.shape)==1:
+            return np.hstack([np.real(res),np.imag(res)])
+        else:
+            return np.vstack([np.real(res),np.imag(res)])
+
+
+
+
+            
+        
