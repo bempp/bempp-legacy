@@ -1,0 +1,12 @@
+--- apprx.h.generic_aca	2013-02-13 17:10:00.000000000 +0000
++++ apprx.h.check_error	2013-02-13 17:10:41.000000000 +0000
+@@ -59,7 +59,8 @@
+     }
+     os.close();
+     // check whether it can be approximated using SVD
+-    double* S = new double[MIN(n1, n2)];
++    typedef typename num_traits<T>::abs_type abs_T;
++    abs_T* S = new abs_T[MIN(n1, n2)];
+     unsigned nwk = 5*(n1+n2);
+     T* wk = new T[nwk];
+     blas::svals(n1, n2, B, S, nwk, wk);

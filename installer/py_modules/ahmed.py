@@ -61,7 +61,11 @@ def prepare(root,config):
                  for s in ("ahmed_cmake.patch",
                            "ahmed_addGeHGeH_single_precision.patch",
                            "ahmed_pass_clusters_to_aca_matgen_apprx.h.patch",
-                           "ahmed_pass_clusters_to_aca_matgen_ACA.h.patch")]
+                           "ahmed_generic_aca_apprx.h.patch",
+                           "ahmed_check_error_apprx.h.patch",
+                           "ahmed_pass_clusters_to_aca_matgen_ACA.h.patch",
+                           "ahmed_frobenius_norm_ACA.h.patch",
+                           "ahmed_zero_pu_pv_ACA.h.patch")]
         cwd=os.getcwd()
         os.chdir(ahmed_full_dir)
         for patch in patches:
