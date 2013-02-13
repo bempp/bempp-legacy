@@ -1,5 +1,5 @@
---- bemcluster.h	2013-02-13 17:16:37.000000000 +0000
-+++ bemcluster.h.permuted	2013-02-13 17:16:27.000000000 +0000
+--- Include/bemcluster.h	2013-02-13 17:16:37.000000000 +0000
++++ Include/bemcluster.h.permuted	2013-02-13 17:16:27.000000000 +0000
 @@ -25,25 +25,26 @@
    bemcluster(T* dofs, unsigned* op_perm, unsigned k, unsigned l) : cluster3d_pca<T>(dofs, op_perm, k, l)
    {

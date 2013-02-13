@@ -1,5 +1,5 @@
---- apprx.h.w-matgen-patch	2013-02-13 16:59:29.000000000 +0000
-+++ apprx.h.generic_aca	2013-02-13 17:10:00.000000000 +0000
+--- Include/apprx.h.w-matgen-patch	2013-02-13 16:59:29.000000000 +0000
++++ Include/apprx.h	2013-02-13 17:10:00.000000000 +0000
 @@ -135,7 +135,11 @@
  
  // matrix generation procedure for unsymmetric matrices

@@ -1,5 +1,5 @@
---- ACA.h.frobenius-norm	2013-02-13 16:50:31.000000000 +0000
-+++ ACA.h.zero-pu-pv	2013-02-13 16:48:46.000000000 +0000
+--- Include/ACA.h.frobenius-norm	2013-02-13 16:50:31.000000000 +0000
++++ Include/ACA.h	2013-02-13 16:48:46.000000000 +0000
 @@ -97,7 +97,8 @@
        const T e = (pv[l] *= sca);
        nrmv2 += abs2(e);
@@ -42,5 +42,5 @@
 +    } else
 +      pv[l] = 0.;
      nrmv2 += eabs*eabs;
- 
+     
      // find new pivot imax
