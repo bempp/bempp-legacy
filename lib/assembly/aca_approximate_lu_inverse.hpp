@@ -30,10 +30,13 @@
 #include "ahmed_aux_fwd.hpp"
 #include "index_permutation.hpp"
 #include "../fiber/scalar_traits.hpp"
+#include "../fiber/verbosity_level.hpp"
 
 #ifdef WITH_TRILINOS
 #include <Thyra_SpmdVectorSpaceBase_decl.hpp>
 #endif
+
+using Fiber::VerbosityLevel;
 
 namespace Bempp
 {
@@ -58,7 +61,8 @@ public:
                       delta = 0.1). */
     AcaApproximateLuInverse(
             const DiscreteAcaBoundaryOperator<ValueType>& fwdOp,
-            MagnitudeType delta);
+            MagnitudeType delta,
+            VerbosityLevel::Level verbosityLevel = VerbosityLevel::DEFAULT);
 
     virtual ~AcaApproximateLuInverse();
 

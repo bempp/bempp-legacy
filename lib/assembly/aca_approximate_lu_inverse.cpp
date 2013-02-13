@@ -29,11 +29,14 @@
 #include "discrete_aca_boundary_operator.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
+#include "../fiber/serial_blas_region.hpp"
 
 #ifdef WITH_TRILINOS
 #include <Thyra_DetachedSpmdVectorView.hpp>
 #include <Thyra_SpmdVectorSpaceDefaultBase.hpp>
 #endif
+
+#include <tbb/tick_count.h>
 
 namespace Bempp
 {
@@ -41,7 +44,8 @@ namespace Bempp
 template <typename ValueType>
 AcaApproximateLuInverse<ValueType>::AcaApproximateLuInverse(
         const DiscreteAcaBoundaryOperator<ValueType>& fwdOp,
-        MagnitudeType delta) :
+        MagnitudeType delta,
+        VerbosityLevel::Level verbosityLevel) :
     // All range-domain swaps intended!
 #ifdef WITH_TRILINOS
     m_domainSpace(fwdOp.m_rangeSpace),
@@ -53,21 +57,48 @@ AcaApproximateLuInverse<ValueType>::AcaApproximateLuInverse(
     m_domainPermutation(fwdOp.m_rangePermutation),
     m_rangePermutation(fwdOp.m_domainPermutation)
 {
+    const bool verbosityAtLeastDefault =
+            (verbosityLevel >= VerbosityLevel::DEFAULT);
+    if (verbosityAtLeastDefault)
+        std::cout << "Starting H-LU decomposition..." << std::endl;
+    tbb::tick_count start = tbb::tick_count::now();
     const blcluster* fwdBlockCluster = fwdOp.m_blockCluster.get();
     bool result = genLUprecond(const_cast<blcluster*>(fwdBlockCluster),
                                fwdOp.m_blocks.get(),
                                delta, fwdOp.m_maximumRank,
                                m_blockCluster, m_blocksL, m_blocksU, true);
+    tbb::tick_count end = tbb::tick_count::now();
     if (!result)
         throw std::runtime_error(
                 "AcaApproximateLuInverse::AcaApproximateLuInverse(): "
                 "Approximate LU factorisation failed");
+
+    if (verbosityAtLeastDefault) {
+        std::cout << "H-LU decomposition took " << (end - start).seconds()
+                  << " s" << std::endl;
+        size_t origMemory = sizeof(ValueType) *
+                m_domainSpace->dim() * m_rangeSpace->dim();
+        size_t ahmedMemory = sizeH(m_blockCluster, m_blocksL, 'L') +
+                sizeH(m_blockCluster, m_blocksU, 'U');
+        int maximumRankL = Hmax_rank(m_blockCluster, m_blocksL, 'L');
+        int maximumRankU = Hmax_rank(m_blockCluster, m_blocksU, 'U');
+        std::cout << "\nNeeded storage: "
+                  << ahmedMemory / 1024. / 1024. << " MB.\n"
+                  << "Without approximation: "
+                  << origMemory / 1024. / 1024. << " MB.\n"
+                  << "Compressed to "
+                  << (100. * ahmedMemory) / origMemory << "%.\n"
+                  << "Maximum rank: "
+                  << std::max(maximumRankL, maximumRankU) << ".\n"
+                  << std::endl;
+    }
 }
 
 template <>
 AcaApproximateLuInverse<std::complex<float> >::AcaApproximateLuInverse(
         const DiscreteAcaBoundaryOperator<std::complex<float> >& fwdOp,
-        MagnitudeType delta) :
+        MagnitudeType delta,
+        VerbosityLevel::Level verbosityLevel) :
     // All range-domain swaps intended!
 #ifdef WITH_TRILINOS
     m_domainSpace(fwdOp.m_rangeSpace),
