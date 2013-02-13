@@ -226,7 +226,7 @@ void dumpDenseBlocks(
     if (clusterTree->isleaf()) {
         unsigned int idx = clusterTree->getidx();
         std::cout << "LEAF; idx = " << idx << std::endl;
-        if (clusterTree->isGeM(blocks.get())) {
+        if (clusterTree->isGeM(blocks.get()) && clusterTree->isadm()) {
             std::cout << "Dense block; " << clusterTree->getb1()
                       << " " << clusterTree->getb2()
                       << " " << clusterTree->getn1()
