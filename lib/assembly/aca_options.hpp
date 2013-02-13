@@ -101,6 +101,9 @@ struct AcaOptions
      *
      *  Usually does not need to be changed. Default value: 1. */
     double scaling;
+    /** \brief Choice of ACA variant.
+     * */
+    bool useAhmedAca;
 };
 
 } // namespace Bempp

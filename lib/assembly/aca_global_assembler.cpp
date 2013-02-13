@@ -67,9 +67,10 @@
 #endif
 
 #include "discrete_aca_boundary_operator.hpp"
+#include "modified_aca.hpp"
+#include "potential_operator_aca_assembly_helper.hpp"
 #include "scattered_range.hpp"
 #include "weak_form_aca_assembly_helper.hpp"
-#include "potential_operator_aca_assembly_helper.hpp"
 #endif
 
 // #define DUMP_DENSE_BLOCKS // if defined, contents and DOF lists of blocks
@@ -136,9 +137,15 @@ public:
                 apprx_sym(m_helper, m_blocks[cluster->getidx()],
                           cluster, m_options.eps, m_options.maximumRank,
                           true /* complex_sym */);
-            else
-                apprx_unsym(m_helper, m_blocks[cluster->getidx()],
-                            cluster, m_options.eps, m_options.maximumRank);
+            else {
+                if (m_options.useAhmedAca)
+                    apprx_unsym(m_helper, m_blocks[cluster->getidx()],
+                                cluster, m_options.eps, m_options.maximumRank);
+                else
+                    apprx_unsym_shooting(
+                                m_helper, m_blocks[cluster->getidx()],
+                                cluster, m_options.eps, m_options.maximumRank);
+            }
             m_stats[leafClusterIndex].endTime = tbb::tick_count::now();
             // TODO: recompress
             const int HASH_COUNT = 20;
