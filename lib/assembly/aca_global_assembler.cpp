@@ -55,6 +55,17 @@
 
 #ifdef WITH_AHMED
 #include "ahmed_aux.hpp"
+
+#ifdef __INTEL_COMPILER
+#pragma warning(disable:381)
+#endif
+
+#include <apprx.h>
+
+#ifdef __INTEL_COMPILER
+#pragma warning(default:381)
+#endif
+
 #include "discrete_aca_boundary_operator.hpp"
 #include "scattered_range.hpp"
 #include "weak_form_aca_assembly_helper.hpp"
