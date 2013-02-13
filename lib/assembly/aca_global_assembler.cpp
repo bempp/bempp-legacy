@@ -172,6 +172,30 @@ void getClusterIds(const cluster& clusterTree,
     reallyGetClusterIds(clusterTree, p2oDofs, clusterIds, id);
 }
 
+template <typename T>
+void save_arma_matrix(const arma::Mat<T>& a, const std::string& fname)
+{
+    std::ofstream out;
+    out.precision(17);
+    out.open(fname.c_str());
+    arma::diskio::save_raw_ascii(a, out);
+    out.close();
+}
+template <typename T>
+void save_arma_matrix(const arma::Mat<std::complex<T> >& a, const std::string& fname)
+{
+    std::ofstream out;
+    out.precision(17);
+    out.open((fname + "-real.txt").c_str());
+    arma::Mat<T> component = arma::real(a);
+    arma::diskio::save_raw_ascii(component, out);
+    out.close();
+    out.open((fname + "-imag.txt").c_str());
+    component = arma::imag(a);
+    arma::diskio::save_raw_ascii(component, out);
+    out.close();
+}
+
 template <typename ValueType>
 void dumpDenseBlocks(
         typename DiscreteAcaBoundaryOperator<ValueType>::AhmedBemBlcluster* clusterTree,
@@ -200,6 +224,10 @@ void dumpDenseBlocks(
             //     return;
             Cluster* clRow = clusterTree->getcl1();
             assert(clRow);
+            std::cout << "Row center of mass: ("
+                      << clRow->getcom(0) << ", "
+                      << clRow->getcom(1) << ", "
+                      << clRow->getcom(2) << ")\n";
             std::cout << "Row icm: "
                       << clRow->geticom() - clusterTree->getb1() << std::endl;
             for (unsigned int nDof = clRow->getnbeg();
@@ -213,6 +241,10 @@ void dumpDenseBlocks(
             }
             Cluster* clCol = clusterTree->getcl2();
             assert(clCol);
+            std::cout << "Col center of mass: ("
+                      << clCol->getcom(0) << ", "
+                      << clCol->getcom(1) << ", "
+                      << clCol->getcom(2) << ")\n";
             std::cout << "Column icm: "
                       << clCol->geticom() - clusterTree->getb2() << std::endl;
             for (unsigned int nDof = clCol->getnbeg();
@@ -229,9 +261,7 @@ void dumpDenseBlocks(
                                         clusterTree->getn2());
             for (size_t i = 0; i < block->nvals(); ++i)
                 ablock[i] = block->getdata()[i];
-            std::ofstream out(("block-" + toString(idx) + ".txt").c_str());
-            out.precision(17);
-            arma::diskio::save_raw_ascii(ablock, out);
+            save_arma_matrix(ablock, "block-" + toString(idx) + ".txt");
         }
     }
     else
@@ -515,8 +545,13 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
 #ifdef DUMP_DENSE_BLOCKS
     std::vector<Point3D<CoordinateType> > testDofCenters, trialDofCenters;
-    testSpace.getGlobalDofPositions(testDofCenters);
-    trialSpace.getGlobalDofPositions(trialDofCenters);
+    if (indexWithGlobalDofs) {
+        testSpace.getGlobalDofPositions(testDofCenters);
+        trialSpace.getGlobalDofPositions(trialDofCenters);
+    } else {
+        testSpace.getFlatLocalDofPositions(testDofCenters);
+        trialSpace.getFlatLocalDofPositions(trialDofCenters);
+    }
 #endif // DUMP_DENSE_BLOCKS
 
     typedef WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>
@@ -654,7 +689,10 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
 #ifdef DUMP_DENSE_BLOCKS
     std::vector<Point3D<CoordinateType> > testDofCenters, trialDofCenters;
     CCH::getComponentDofPositions(points, componentCount, testDofCenters);
-    trialSpace.getGlobalDofPositions(trialDofCenters);
+    if (indexWithGlobalDofs)
+        trialSpace.getGlobalDofPositions(trialDofCenters);
+    else
+        trialSpace.getFlatLocalDofPositions(trialDofCenters);
 #endif // DUMP_DENSE_BLOCKS
 
     if (verbosityAtLeastHigh)
