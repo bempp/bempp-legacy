@@ -23,7 +23,7 @@
 import os, sys, traceback
 sys.path.append("installer")
 
-from py_modules.tools import writeOptions, setDefaultConfigOption, pythonInfo, checkCreateDir, testBlas, testLapack, cleanUp, checkDeleteFile, checkInstallUpdates, installUpdates, normalizePath
+from py_modules.tools import writeOptions, setDefaultConfigOption, pythonInfo, checkCreateDir, testBlas, testLapack, cleanUp, checkDeleteFile, checkInstallUpdates, installUpdates, normalizePath, to_bool
 from ConfigParser import ConfigParser
 from optparse import OptionParser
 
@@ -104,19 +104,12 @@ def prepareDependencies(root,config):
     for dep in library_names:
         libraries[dep].prepare(root,config)
 
-def configureDependencies(root,config):
-
-    for dep in library_names:
-        libraries[dep].configure(root,config)
-
-def buildDependencies(root,config):
-
-    for dep in library_names:
-        libraries[dep].build(root,config)
 
 def installDependencies(root,config):
 
     for dep in library_names:
+        libraries[dep].configure(root,config)
+        libraries[dep].build(root,config)
         libraries[dep].install(root,config)
 
 
@@ -126,6 +119,8 @@ def prepare(root,config):
     setDefaultConfigOption(config,'Main','cc','gcc')
     setDefaultConfigOption(config,'Main','cxx','g++')
     setDefaultConfigOption(config,'Main','architecture','intel64')
+    setDefaultConfigOption(config,'Main','flags',"")
+    setDefaultConfigOption(config,'Main','libs',"")
     setDefaultConfigOption(config,'Main','cflags',"")
     setDefaultConfigOption(config,'Main','cxxflags',"")
     setDefaultConfigOption(config,'Main','root_dir',root)
@@ -146,6 +141,15 @@ def prepare(root,config):
 
     # Set default MKL/libs option
     setDefaultConfigOption(config,'MKL','lib',"-lmkl_rt")
+
+    # Set default MPI options
+
+    enable_mpi = to_bool(setDefaultConfigOption(config,'Main','enable_mpi','false'))
+    if enable_mpi:
+        config.set('Main','with_mpi','ON')
+    else:
+        config.set('Main','with_mpi','OFF')
+
 
     # Set empty BLAS/Lapack options if none exist
     setDefaultConfigOption(config,'BLAS','lib',"")
@@ -291,8 +295,6 @@ if __name__ == "__main__":
                 libraries[options.install].build(root,config)
                 libraries[options.install].install(root,config)
             elif options.install == "all":
-                configureDependencies(root,config)
-                buildDependencies(root,config)
                 installDependencies(root,config)
                 bempp.configure(root,config)
                 bempp.build(root,config)

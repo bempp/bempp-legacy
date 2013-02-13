@@ -18,6 +18,7 @@ CXXFLAGS="$Trilinos_cxxflags" CFLAGS="$Trilinos_cflags" "$CMake_exe" \
     -D TPL_ENABLE_LAPACK:BOOL=ON \
     -D TPL_ENABLE_TBB:BOOL=ON \
     -D TPL_ENABLE_Boost:BOOL=ON \
+    -D TPL_ENABLE_MPI:BOOL="$Main_with_mpi" \
     -D TPL_Boost_INCLUDE_DIRS:STRING="$Boost_include_dir" \
     -D Trilinos_ENABLE_Amesos:BOOL=ON \
     -D Trilinos_ENABLE_Belos:BOOL=ON \
@@ -32,6 +33,8 @@ CXXFLAGS="$Trilinos_cxxflags" CFLAGS="$Trilinos_cflags" "$CMake_exe" \
     -D Trilinos_ENABLE_ThyraEpetraExtAdapters:BOOL=ON \
     -D Trilinos_ENABLE_ThyraTpetraAdapters:BOOL=ON \
     -D Trilinos_ENABLE_Tpetra:BOOL=ON \
+    -D Trilinos_ENABLE_PyTrilinos:BOOL=ON \
+    -D Trilinos_ENABLE_AztecOO:BOOL=ON\
     -D Trilinos_ENABLE_Fortran:BOOL=OFF \
     -D Trilinos_ENABLE_ALL_OPTIONAL_PACKAGES:BOOL=OFF \
     -D RTOp_ENABLE_EXPLICIT_INSTANTIATION:BOOL=ON \
@@ -39,5 +42,10 @@ CXXFLAGS="$Trilinos_cxxflags" CFLAGS="$Trilinos_cflags" "$CMake_exe" \
     -D Thyra_ENABLE_EXPLICIT_INSTANTIATION:BOOL=ON \
     -D Tpetra_INST_COMPLEX_FLOAT:BOOL=ON \
     -D Tpetra_INST_FLOAT:BOOL=ON \
+    -D PYTHON_INCLUDE_DIR:STRING="$Python_include_dir" \
+    -D PYTHON_LIBRARY:STRING="$Python_lib" \
+    -D PYTHON_EXECUTABLE:STRING="$Python_exe" \
+    -D SWIG_EXECUTABLE:STRING="$Swig_exe" \
+    -D PyTrilinos_INSTALL_DIR:STRING="$Main_prefix/bempp/python/PyTrilinos" \
 ..
 

@@ -1,0 +1,11 @@
+--- ./FindPythonInterp.cmake	2013-02-13 11:20:26.327587753 +0000
++++ ./FindPythonInterp.cmake.new	2013-02-13 10:26:36.268562383 +0000
+@@ -115,7 +115,7 @@
+       ERROR_STRIP_TRAILING_WHITESPACE
+       )
+     SEPARATE_ARGUMENTS(PythonInterp_VERSION)
+-    LIST(GET PythonInterp_VERSION -1 PythonInterp_VERSION)
++    LIST(GET PythonInterp_VERSION 1 PythonInterp_VERSION)
+     IF(${PythonInterp_VERSION} VERSION_LESS ${PythonInterp_FIND_VERSION})
+       MESSAGE(WARNING
+         "Python version ${PythonInterp_VERSION}"

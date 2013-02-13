@@ -62,6 +62,9 @@ def prepare(root,config):
     os.chdir(dep_build_dir+"/trilinos/packages/thyra/core/src/support/nonlinear/model_evaluator/client_support")
     patch=py_patch.fromfile(root+"/installer/patches/thyra_static_initialization_order.patch")
     patch.apply()
+    os.chdir(dep_build_dir+"/trilinos/cmake/tribits/modules")
+    patch=py_patch.fromfile(root+"/installer/patches/trilinos_find_python_interp.patch")
+    patch.apply()
     os.chdir(cwd)
 
     tools.setDefaultConfigOption(config,'Trilinos','cmake_path',prefix+"/bempp/lib/cmake/Trilinos/",overwrite=True)

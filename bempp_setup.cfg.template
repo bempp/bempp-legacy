@@ -59,6 +59,10 @@ build_jobs=2
 # optflags = -O3 -march=native (Default on Linux)
 # optflags = -O3 -march=core2 (Default on Mac)
 
+# Uncomment to enable MPI in supported packages.
+# You need to change the standard compilers to their corresponding MPI versions as well.
+# enable_mpi = true
+
 [Bempp]
 
 # Specify whether the installer should compile BEM++ straight after
