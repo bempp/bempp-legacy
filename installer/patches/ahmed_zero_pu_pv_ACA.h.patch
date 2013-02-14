@@ -10,18 +10,6 @@
    }
  
    MatGen.cmpbl(b1, n1, b2+j0, 1, pu, c1, c2);
-@@ -116,7 +117,10 @@
-   absmax = nrmu2 = 0.0;                 // compute norm of u_{k+1}, new i0
-   for (l=0; l<n1; ++l) {
-     const abs_T eabs = abs(pu[l] *= dsca);
--    if (Z[l]>=0 && eabs > 1e-8*scale*sqrtpiv) ++Z[l];
-+    if (Z[l]>=0) {
-+      if (eabs > 1e-8*scale*sqrtpiv) ++Z[l];
-+    } else
-+      pu[l] = 0.;
-     nrmu2 += eabs*eabs;
- 
-     // find new pivot i0
 @@ -179,7 +183,8 @@
        const T e = (pu[l] *= sca);
        nrmu2 += abs2(e);
@@ -32,15 +20,3 @@
    }
  
    MatGen.cmpbl(b1+i0, 1, b2, n2, pv, c1, c2);
-@@ -199,7 +204,10 @@
-   for (l=0; l<n2; ++l) {
- 
-     const abs_T eabs = abs(pv[l] *= dsca);
--    if (S[l]>=0 && eabs > 1e-8*scale*sqrtpiv) ++S[l];
-+    if (S[l]>=0) {
-+      if (eabs > 1e-8*scale*sqrtpiv) ++S[l];
-+    } else
-+      pv[l] = 0.;
-     nrmv2 += eabs*eabs;
-     
-     // find new pivot imax
