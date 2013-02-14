@@ -163,7 +163,17 @@ def sphere(radius=1,origin=(0,0,0),h=0.1,grid=True,msh_file=False):
     f.write(sphere_stub)
     f.close()
 
-    subprocess.check_call(gmsh_command+" -2 "+geo_name,shell=True)
+    fnull = open(os.devnull,'w')
+    cmd = gmsh_command+" -2 "+geo_name
+    try:
+        print "Generating Gmsh grid..."
+        subprocess.check_call(cmd,shell=True,stdout=fnull,stderr=fnull)
+    except:
+        print "The following command failed: "+cmd
+        fnull.close()
+        raise
+    fnull.close()
+        
     sphere = None
     if grid:
         from bempp.lib import createGridFactory
@@ -258,7 +268,18 @@ def cube(length=1,origin=(0,0,0),h=0.1,grid=True,msh_file=False):
     f.write(cube_stub)
     f.close()
 
-    subprocess.check_call(gmsh_command+" -2 "+geo_name,shell=True)
+    fnull = open(os.devnull,'w')
+
+    cmd = gmsh_command+" -2 "+geo_name
+    try:
+        print "Generating Gmsh grid..."
+        subprocess.check_call(cmd,shell=True,stdout=fnull,stderr=fnull)
+    except:
+        print "The following command failed: "+cmd
+        fnull.close()
+        raise
+    fnull.close()
+
     cube = None
     if grid:
         from bempp.lib import createGridFactory

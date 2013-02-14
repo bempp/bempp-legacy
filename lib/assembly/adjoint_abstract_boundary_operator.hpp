@@ -86,6 +86,18 @@ public:
             const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
             int symmetry = AUTO_SYMMETRY);
 
+    /** \brief Constructor.
+     *
+     * This constructor allows to explicitly specify the range space.
+     * This is useful if the standard heuristic to detect this space fails.
+     * An example is a boundary operator, where the domain and range live on
+     * different grids. */
+    AdjointAbstractBoundaryOperator(
+            const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
+	    const shared_ptr<const Space<BasisFunctionType> >& range,
+            int symmetry = AUTO_SYMMETRY);
+
+
     virtual bool isLocal() const;
 
 protected:

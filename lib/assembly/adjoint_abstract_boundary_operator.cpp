@@ -66,6 +66,28 @@ AdjointAbstractBoundaryOperator(
 }
 
 template <typename BasisFunctionType, typename ResultType>
+AdjointAbstractBoundaryOperator<BasisFunctionType, ResultType>::
+AdjointAbstractBoundaryOperator(
+        const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
+	const shared_ptr<const Space<BasisFunctionType> >& range,
+        int symmetry) :
+    Base(boundaryOp.dualToRange(),
+	 range,
+         boundaryOp.domain(),
+         "adj(" + boundaryOp.label() + ")",
+         symmetry & AUTO_SYMMETRY ?
+             boundaryOp.abstractOperator()->symmetry() :
+             symmetry),
+    m_operator(boundaryOp)
+{
+    if (boost::is_complex<BasisFunctionType>())
+        throw std::logic_error(
+            "AdjointAbstractBoundaryOperator(): Taking the adjoint of operators "
+            "acting on complex-valued basis functions is not supported");
+}
+
+
+template <typename BasisFunctionType, typename ResultType>
 bool AdjointAbstractBoundaryOperator<BasisFunctionType, ResultType>::isLocal() const
 {
     return m_operator.abstractOperator()->isLocal();

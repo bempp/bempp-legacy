@@ -266,7 +266,9 @@ BoundaryOperator<BasisFunctionType, ResultType> operator*(
 
 /** \brief Return the adjoint of a BoundaryOperator.
  *
- *  An exception is thrown if the operand is uninitialized.
+ *  An exception is thrown if the operand is uninitialized. This
+ *  method tries to figure out the range space using a simple
+ *  heuristic.
  *
  *  \see AdjointAbstractBoundaryOperator for the definition of the
  *  adjoint operator in BEM++. Note that this operator is only defined
@@ -275,6 +277,21 @@ BoundaryOperator<BasisFunctionType, ResultType> operator*(
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType> adjoint(
         const BoundaryOperator<BasisFunctionType, ResultType>& op);
+
+/** \brief Return the adjoint of a BoundaryOperator.
+ *
+ *  An exception is thrown if the operand is uninitialized. The
+ *  range space needs to be given explicitly.
+ *
+ *  \see AdjointAbstractBoundaryOperator for the definition of the
+ *  adjoint operator in BEM++. Note that this operator is only defined
+ *  for real BasisFunctionType.
+ */
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType> adjoint(
+	const BoundaryOperator<BasisFunctionType, ResultType>& op,
+        const shared_ptr<const Space<BasisFunctionType> >& range);
+
 
 /** \brief Check whether a BoundaryOperator object is initialized.
  *

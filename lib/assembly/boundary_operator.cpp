@@ -319,6 +319,18 @@ BoundaryOperator<BasisFunctionType, ResultType> adjoint(
 }
 
 template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType> adjoint(
+	const BoundaryOperator<BasisFunctionType, ResultType>& op,
+        const shared_ptr<const Space<BasisFunctionType> >& range)
+{
+    typedef AdjointAbstractBoundaryOperator<BasisFunctionType, ResultType>
+        Adjoint;
+    return BoundaryOperator<BasisFunctionType, ResultType>(
+	         op.context(), boost::make_shared<Adjoint>(op,range));
+}
+
+
+template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>& throwIfUninitialized(
         BoundaryOperator<BasisFunctionType, ResultType>& op,
         std::string message)
@@ -365,6 +377,9 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(BoundaryOperator);
     const BoundaryOperator<BASIS, RESULT>& fun); \
     template BoundaryOperator<BASIS, RESULT> adjoint( \
     const BoundaryOperator<BASIS, RESULT>& op); \
+    template BoundaryOperator<BASIS, RESULT> adjoint( \
+    const BoundaryOperator<BASIS, RESULT>& op, \
+    const shared_ptr<const Space< BASIS > >& range); \
     template BoundaryOperator<BASIS, RESULT>& throwIfUninitialized( \
             BoundaryOperator<BASIS, RESULT>& op, std::string message); \
     template const BoundaryOperator<BASIS, RESULT>& throwIfUninitialized( \
