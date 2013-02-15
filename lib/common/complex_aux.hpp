@@ -23,7 +23,7 @@
 
 #include "scalar_traits.hpp"
 
-namespace Bempp
+namespace Fiber
 {
 
 template <typename T>
@@ -80,6 +80,13 @@ inline std::complex<double> conj(const std::complex<double>& x)
     return std::conj(x);
 }
 
+} // namespace Fiber
+
+namespace Bempp
+{
+using Fiber::realPart;
+using Fiber::imagPart;
+using Fiber::conj;
 } // namespace Bempp
 
 #endif
