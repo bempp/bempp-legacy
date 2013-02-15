@@ -203,6 +203,7 @@ findLocalDofs(
 
     // Convert permuted indices into original indices
     originalIndices.resize(1);
+    assert(index >= 0 && index < m_p2o.size());
     originalIndices[0] = m_p2o[index];
 
     // set of pairs (local dof index, array index)

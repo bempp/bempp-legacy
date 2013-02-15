@@ -269,7 +269,7 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
             }
         }
     }
-    else // a "fat" block
+    else if (n1 <= 32 && n2 <= 32) // a "fat" block
     {
         // The whole block or its submatrix needed. This means that we are
         // likely to need all or almost all local DOFs from most elements.
@@ -302,6 +302,46 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
                                     localResult(nTestElem, nTrialElem)
                                     (testLocalDofs[nTestElem][nTestDof],
                                      trialLocalDofs[nTrialElem][nTrialDof]);
+        }
+    }
+    else
+    {
+        std::vector<arma::Mat<ResultType> > localResult;
+        for (size_t nTestElem = 0;
+             nTestElem < testElementIndices.size();
+             ++nTestElem)
+        {
+            const int activeTestElementIndex = testElementIndices[nTestElem];
+            // The body of this loop will very probably only run once (single
+            // local DOF per test element)
+            for (size_t nTestDof = 0;
+                 nTestDof < testLocalDofs[nTestElem].size();
+                 ++nTestDof)
+            {
+                LocalDofIndex activeTestLocalDof =
+                        testLocalDofs[nTestElem][nTestDof];
+                BasisFunctionType activeTestLocalDofWeight =
+                        testLocalDofWeights[nTestElem][nTestDof];
+                for (size_t nTerm = 0; nTerm < m_assemblers.size(); ++nTerm)
+                {
+                    m_assemblers[nTerm]->evaluateLocalWeakForms(
+                                Fiber::TRIAL_TEST, trialElementIndices,
+                                activeTestElementIndex, activeTestLocalDof,
+                                localResult, minDist);
+                    for (size_t nTrialElem = 0;
+                         nTrialElem < trialElementIndices.size();
+                         ++nTrialElem)
+                        for (size_t nTrialDof = 0;
+                             nTrialDof < trialLocalDofs[nTrialElem].size();
+                             ++nTrialDof)
+                            result(blockRows[nTestElem][nTestDof],
+                                   blockCols[nTrialElem][nTrialDof]) +=
+                                    m_denseTermsMultipliers[nTerm] *
+                                    conj(activeTestLocalDofWeight) *
+                                    trialLocalDofWeights[nTrialElem][nTrialDof] *
+                                    localResult[nTrialElem](trialLocalDofs[nTrialElem][nTrialDof]);
+                }
+            }
         }
     }
 

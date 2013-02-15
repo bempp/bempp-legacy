@@ -34,7 +34,8 @@ AcaOptions::AcaOptions() :
     recompress(false),
     outputPostscript(false),
     outputFname("aca.ps"),
-    scaling(1.0)
+    scaling(1.0),
+    useAhmedAca(false)
 {
 }
 
