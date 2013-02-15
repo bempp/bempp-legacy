@@ -97,6 +97,8 @@ public:
             CoordinateType nominalDistance = -1.) = 0;
 
     virtual int resultDimension() const = 0;
+
+    virtual CoordinateType estimateRelativeScale(CoordinateType minDist) const = 0;
 };
 
 } // namespace Fiber

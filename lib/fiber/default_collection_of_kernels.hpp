@@ -110,6 +110,8 @@ public:
 
     virtual std::pair<const char*, int> evaluateClCode() const;
 
+    virtual CoordinateType estimateRelativeScale(CoordinateType distance) const;
+
 private:
     Functor m_functor;
 };

@@ -99,6 +99,11 @@ bool ACAs(MATGEN_T& MatGen, unsigned b1, unsigned n1, unsigned b2, unsigned n2,
     k = 0;
     unsigned next_pivot = i0;
 
+    abs_T relscale = MatGen.relativeScale(b1, n1, b2, n2, c1, c2);
+    std::cout << "relscale: " << relscale << std::endl;
+    if (relscale < 1e-2 * eps) // 1e-14) // possibly it would suffice "< eps"
+        return true;
+
     do {
         bool ok;
         abs_T nrmlsk2; // product of squared norms of new columns of U and V

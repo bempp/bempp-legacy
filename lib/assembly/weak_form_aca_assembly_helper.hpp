@@ -63,6 +63,7 @@ class WeakFormAcaAssemblyHelper
 public:
     typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
     typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
+    typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
     typedef typename Fiber::ScalarTraits<ResultType>::RealType MagnitudeType;
     typedef typename AhmedTypeTraits<ResultType>::Type AhmedResultType;
 
@@ -91,27 +92,17 @@ public:
     void cmpblsym(unsigned b1, unsigned n1, AhmedResultType* data,
                   const cluster* c1 = 0) const;
 
-    /** \brief Expected size of the entries in this block. */
+    /** \brief Expected magnitude of the entries in this block. */
     MagnitudeType scale(unsigned b1, unsigned n1, unsigned b2, unsigned n2) const;
 
-private:
-//    /** \brief Type used to index matrices.
-//     *
-//     *  Equivalent to either GlobalDofIndex (if m_indexWithGlobalDofs is true)
-//     *  or FlatLocalDofIndex (if m_indexWithGlobalDofs is false). */
-//    typedef int DofIndex;
+    /** \brief Expected magnitude of the entries in this block relative to that
+     *  of the maximum entry expected in the whole matrix. */
+    MagnitudeType relativeScale(unsigned b1, unsigned n1, unsigned b2, unsigned n2,
+                                const cluster* c1 = 0, const cluster* c2 = 0) const;
 
-//    /** Find the elements and local DOF indices that correspond
-//        to the global DOF indices stored in the entries [start, start + indexCount)
-//        of array p2o. */
-//    void findLocalDofs(int start,
-//                       int indexCount,
-//                       const std::vector<unsigned int>& p2o,
-//                       const Space<BasisFunctionType>& space,
-//                       std::vector<DofIndex>& originalIndices,
-//                       std::vector<int>& elementIndices,
-//                       std::vector<std::vector<LocalDofIndex> >& localDofIndices,
-//                       std::vector<std::vector<int> >& arrayIndices) const;
+private:
+    MagnitudeType estimateMinimumDistance(
+            const cluster* c1, const cluster* c2) const;
 
 private:
     const Space<BasisFunctionType>& m_testSpace;

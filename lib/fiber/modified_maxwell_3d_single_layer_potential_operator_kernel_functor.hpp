@@ -22,6 +22,7 @@
 #define fiber_modified_maxwell_3d_single_layer_potential_operator_kernel_functor_hpp
 
 #include "../common/common.hpp"
+#include "../common/complex_aux.hpp"
 
 #include "geometrical_data.hpp"
 #include "scalar_traits.hpp"
@@ -96,6 +97,10 @@ public:
             result[1](coordIndex, 0) = commonFactor *
                 (testGeomData.global(coordIndex) -
                  trialGeomData.global(coordIndex));
+    }
+
+    CoordinateType estimateRelativeScale(CoordinateType distance) const {
+        return exp(-realPart(m_waveNumber) * distance);
     }
 
 private:

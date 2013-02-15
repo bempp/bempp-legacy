@@ -81,6 +81,8 @@ public:
         const std::vector<int>& elementIndices,
         std::vector<arma::Mat<ResultType> >& result);
 
+    virtual CoordinateType estimateRelativeScale(CoordinateType minDist) const;
+
 private:
     /** \cond PRIVATE */
     const TestTrialIntegrator<BasisFunctionType, ResultType>&

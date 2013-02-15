@@ -150,6 +150,17 @@ evaluateLocalWeakForms(
     }
 }
 
+template <typename BasisFunctionType,
+          typename ResultType, typename GeometryFactory>
+typename DefaultLocalAssemblerForLocalOperatorsOnSurfaces<BasisFunctionType,
+    ResultType, GeometryFactory>::CoordinateType
+DefaultLocalAssemblerForLocalOperatorsOnSurfaces<BasisFunctionType,
+    ResultType, GeometryFactory>::
+estimateRelativeScale(CoordinateType minDist) const
+{
+    return 1.;
+}
+
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 const TestTrialIntegrator<BasisFunctionType, ResultType>&
 DefaultLocalAssemblerForLocalOperatorsOnSurfaces<BasisFunctionType, ResultType, GeometryFactory>::

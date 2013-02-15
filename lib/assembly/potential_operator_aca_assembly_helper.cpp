@@ -99,6 +99,36 @@ PotentialOperatorAcaAssemblyHelper(
 }
 
 template <typename BasisFunctionType, typename ResultType>
+typename PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::MagnitudeType
+PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::estimateMinimumDistance(
+        const cluster* c1, const cluster* c2) const
+{
+    typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+    typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
+    typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
+
+    AhmedBemCluster* cluster1 =
+        const_cast<AhmedBemCluster*>(// AHMED is not const-correct
+            dynamic_cast<const AhmedBemCluster*>(c1));
+    AhmedBemCluster* cluster2 =
+        const_cast<AhmedBemCluster*>(// AHMED is not const-correct
+            dynamic_cast<const AhmedBemCluster*>(c2));
+    // Lower bound on the minimum distance between elements from the two clusters
+    CoordinateType minDist = -1.; // negative, read: unknown
+    if (cluster1 && cluster2) {
+        // both getdiam2() and dist2() are effectively const, but not declared so
+        // in AHMED
+        const double diam1 = sqrt(cluster1->getdiam2());
+        const double diam2 = sqrt(cluster2->getdiam2());
+        const double dist = sqrt(cluster1->dist2(cluster2));
+        minDist = std::max(0., dist - (diam1 + diam2) / 2.);
+    }
+    // else
+        // std::cout << "Warning: clusters not available" << std::endl;
+    return minDist;
+}
+
+template <typename BasisFunctionType, typename ResultType>
 void PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
         unsigned b1, unsigned n1, unsigned b2, unsigned n2,
         AhmedResultType* ahmedData,
@@ -300,24 +330,19 @@ PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::scale(
     return m_options.acaOptions().scaling;
 }
 
-//template <typename BasisFunctionType, typename ResultType>
-//std::vector<int>
-//PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::
-//findPointIndices(int start, int indexCount,
-//                 std::vector<int>& necessaryPointIndices,
-//                 std::vector<int>& pointIndices,
-//                 std::vector<int>& componentIndices) const
-//{
-//    pointIndices.resize(indexCount);
-//    componentIndices.resize(indexCount);
-//    for (int i = 0; i < indexCount; ++i) {
-//        pointIndices[i] = m_p2oPoints[start + i] / m_componentCount;
-//        componentIndices[i] = m_p2oPoints[start + i] % m_componentCount;
-//    }
-//    necessaryPointIndices = pointIndices;
-//    std::sort(necessaryPointIndices.begin(), necessaryPointIndices.end());
-//    std::unique(necessaryPointIndices);
-//}
+template <typename BasisFunctionType, typename ResultType>
+typename PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::MagnitudeType
+PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::relativeScale(
+        unsigned b1, unsigned n1, unsigned b2, unsigned n2,
+        const cluster* c1, const cluster* c2) const
+{
+    const CoordinateType minDist = estimateMinimumDistance(c1, c2);
+    MagnitudeType result = 0.;
+    for (size_t nTerm = 0; nTerm < m_assemblers.size(); ++nTerm)
+        result = std::max(result,
+                          m_assemblers[nTerm]->estimateRelativeScale(minDist));
+    return result;
+}
 
 // Explicit instantiations
 
