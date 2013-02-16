@@ -1,0 +1,45 @@
+--- apprx.h.check_error	2013-02-13 17:10:41.000000000 +0000
++++ apprx.h.debug-messages	2013-02-13 17:13:05.000000000 +0000
+@@ -28,7 +28,8 @@
+ void check_error(MATGEN_T& MatGen, bemblcluster<T1,T2>* bl, double eps,
+ 		 mblock<T>* mbl, unsigned i0)
+ {
+-  std::cout << "checking ACA error ... " << std::flush;
++  std::cout << "checking ACA error for block " << bl->getidx() << "... "
++            << std::flush;
+   unsigned n1 = bl->getn1(), n2 = bl->getn2();
+   T *A = new T[n1*n2];
+   mbl->convLrM_toGeM(A, n1);
+@@ -47,10 +48,13 @@
+   if ((dnrm>0.0 && sqrt(dmax/dnrm)>20*eps) || (dnrm==0.0 && dmax>eps)) {
+     double maxerr = sqrt(dmax/dnrm);
+     std::cout << "eps=" << eps << ", maxerr=" << maxerr << std::endl;
++    std::cout << bl->getidx() << " -> FAILED" << std::endl;
+ 
+     if (ACA_error_max<maxerr) ACA_error_max = maxerr;
+     /*
+-    std::ofstream os("out.dat");
++    char fname[256];
++    sprintf(fname, "out-%d.dat", bl->getidx());
++    std::ofstream os(fname);
+     os << n1 << ' ' << n2 << ' ' << i0 << std::endl;
+     os.precision(16);
+     for (unsigned i=0; i<n1; ++i) {
+@@ -149,6 +153,8 @@
+   unsigned maxk = n1*n2/(n1+n2)+4;
+   if (maxk>rankmax) maxk = rankmax;
+ 
++  // std::cout << "Approximating block #" << bl->getidx() << std::endl;
++
+   mbl = new mblock<T>(n1, n2);
+   assert(mbl!=NULL);
+ 
+@@ -159,6 +165,8 @@
+     T *U, *V;
+ 
+     unsigned i0 = bl->getcl1()->geticom() - b1;
++    // std::cout << "i0: " << i0 << std::endl;
++
+     succ = aca_routine(MatGen, b1, n1, b2, n2, eps, maxk, i0, k, U, V,
+                        bl->getcl1(), bl->getcl2());
+ 

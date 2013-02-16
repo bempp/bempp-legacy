@@ -61,6 +61,8 @@ public:
     /** \brief Sort cluster list, putting biggest clusters first. */
     void sortAccordingToClusterSize();
 
+    void startWithClusterOfIndex(size_t index);
+
 private:
     boost::scoped_array<blcluster*> m_leafClusters;
     size_t m_size;

@@ -29,11 +29,14 @@
 #include "discrete_aca_boundary_operator.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
+#include "../fiber/serial_blas_region.hpp"
 
 #ifdef WITH_TRILINOS
 #include <Thyra_DetachedSpmdVectorView.hpp>
 #include <Thyra_SpmdVectorSpaceDefaultBase.hpp>
 #endif
+
+#include <tbb/tick_count.h>
 
 namespace Bempp
 {
@@ -41,7 +44,8 @@ namespace Bempp
 template <typename ValueType>
 AcaApproximateLuInverse<ValueType>::AcaApproximateLuInverse(
         const DiscreteAcaBoundaryOperator<ValueType>& fwdOp,
-        MagnitudeType delta) :
+        MagnitudeType delta,
+        VerbosityLevel::Level verbosityLevel) :
     // All range-domain swaps intended!
 #ifdef WITH_TRILINOS
     m_domainSpace(fwdOp.m_rangeSpace),
@@ -53,21 +57,48 @@ AcaApproximateLuInverse<ValueType>::AcaApproximateLuInverse(
     m_domainPermutation(fwdOp.m_rangePermutation),
     m_rangePermutation(fwdOp.m_domainPermutation)
 {
+    const bool verbosityAtLeastDefault =
+            (verbosityLevel >= VerbosityLevel::DEFAULT);
+    if (verbosityAtLeastDefault)
+        std::cout << "Starting H-LU decomposition..." << std::endl;
+    tbb::tick_count start = tbb::tick_count::now();
     const blcluster* fwdBlockCluster = fwdOp.m_blockCluster.get();
     bool result = genLUprecond(const_cast<blcluster*>(fwdBlockCluster),
                                fwdOp.m_blocks.get(),
                                delta, fwdOp.m_maximumRank,
                                m_blockCluster, m_blocksL, m_blocksU, true);
+    tbb::tick_count end = tbb::tick_count::now();
     if (!result)
         throw std::runtime_error(
                 "AcaApproximateLuInverse::AcaApproximateLuInverse(): "
                 "Approximate LU factorisation failed");
+
+    if (verbosityAtLeastDefault) {
+        std::cout << "H-LU decomposition took " << (end - start).seconds()
+                  << " s" << std::endl;
+        size_t origMemory = sizeof(ValueType) *
+                m_domainSpace->dim() * m_rangeSpace->dim();
+        size_t ahmedMemory = sizeH(m_blockCluster, m_blocksL, 'L') +
+                sizeH(m_blockCluster, m_blocksU, 'U');
+        int maximumRankL = Hmax_rank(m_blockCluster, m_blocksL, 'L');
+        int maximumRankU = Hmax_rank(m_blockCluster, m_blocksU, 'U');
+        std::cout << "\nNeeded storage: "
+                  << ahmedMemory / 1024. / 1024. << " MB.\n"
+                  << "Without approximation: "
+                  << origMemory / 1024. / 1024. << " MB.\n"
+                  << "Compressed to "
+                  << (100. * ahmedMemory) / origMemory << "%.\n"
+                  << "Maximum rank: "
+                  << std::max(maximumRankL, maximumRankU) << ".\n"
+                  << std::endl;
+    }
 }
 
 template <>
 AcaApproximateLuInverse<std::complex<float> >::AcaApproximateLuInverse(
         const DiscreteAcaBoundaryOperator<std::complex<float> >& fwdOp,
-        MagnitudeType delta) :
+        MagnitudeType delta,
+        VerbosityLevel::Level verbosityLevel) :
     // All range-domain swaps intended!
 #ifdef WITH_TRILINOS
     m_domainSpace(fwdOp.m_rangeSpace),
@@ -150,49 +181,6 @@ bool AcaApproximateLuInverse<ValueType>::opSupportedImpl(
     // TODO: implement remaining variants (transpose & conjugate transpose)
     return (M_trans == Thyra::NOTRANS);
 }
-
-template <typename ValueType>
-void AcaApproximateLuInverse<ValueType>::applyImpl(
-        const Thyra::EOpTransp M_trans,
-        const Thyra::MultiVectorBase<ValueType>& X_in,
-        const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType> >& Y_inout,
-        const ValueType alpha,
-        const ValueType beta) const
-{
-    typedef Thyra::Ordinal Ordinal;
-
-    // Note: the name is VERY misleading: these asserts don't disappear in
-    // release runs, and in case of failure throw exceptions rather than
-    // abort.
-    TEUCHOS_ASSERT(this->opSupported(M_trans));
-    TEUCHOS_ASSERT(X_in.range()->isCompatible(*this->domain()));
-    TEUCHOS_ASSERT(Y_inout->range()->isCompatible(*this->range()));
-    TEUCHOS_ASSERT(Y_inout->domain()->isCompatible(*X_in.domain()));
-
-    const Ordinal colCount = X_in.domain()->dim();
-
-    // Loop over the input columns
-
-    for (Ordinal col = 0; col < colCount; ++col) {
-        // Get access the the elements of column col
-        Thyra::ConstDetachedSpmdVectorView<ValueType> xVec(X_in.col(col));
-        Thyra::DetachedSpmdVectorView<ValueType> yVec(Y_inout->col(col));
-        const Teuchos::ArrayRCP<const ValueType> xArray(xVec.sv().values());
-        const Teuchos::ArrayRCP<ValueType> yArray(yVec.sv().values());
-
-        // const_cast because it's more natural to have
-        // a const arma::Col<ValueType> array than
-        // an arma::Col<const ValueType> one.
-        const arma::Col<ValueType> xCol(
-                    const_cast<ValueType*>(xArray.get()), xArray.size(),
-                    false /* copy_aux_mem */);
-        arma::Col<ValueType> yCol(yArray.get(), yArray.size(), false);
-
-        applyBuiltInImpl(static_cast<TranspositionMode>(M_trans),
-                         xCol, yCol, alpha, beta);
-    }
-}
-
 #endif // WITH_TRILINOS
 
 template <typename ValueType>

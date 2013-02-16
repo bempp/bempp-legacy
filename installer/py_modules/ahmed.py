@@ -57,15 +57,18 @@ def prepare(root,config):
         os.rename(dep_build_dir+"/AHMED_1.0",ahmed_full_dir)
         shutil.copy(root+"/installer/build_scripts/posix/ahmed_build.sh",ahmed_full_dir+"/ahmed_build.sh")
         print "Patching AHMED"
-        patches=[py_patch.fromfile(root+"/installer/patches/"+s)
-                 for s in ("ahmed_cmake.patch",
-                           "ahmed_addGeHGeH_single_precision.patch",
-                           "ahmed_pass_clusters_to_aca_matgen_apprx.h.patch",
-                           "ahmed_pass_clusters_to_aca_matgen_ACA.h.patch")]
         cwd=os.getcwd()
         os.chdir(ahmed_full_dir)
-        for patch in patches:
-            patch.apply()
+        for s in ("ahmed_cmake.patch",
+                  "ahmed_addGeHGeH_single_precision.patch",
+                  "ahmed_pass_clusters_to_aca_matgen_apprx.h.patch",
+                  "ahmed_generic_aca_apprx.h.patch",
+                  "ahmed_check_error_apprx.h.patch",
+                  "ahmed_pass_clusters_to_aca_matgen_ACA.h.patch",
+                  "ahmed_frobenius_norm_ACA.h.patch",
+                  "ahmed_zero_pu_pv_ACA.h.patch",
+                  "ahmed_permuted_indices_bemcluster.h.patch"):
+            py_patch.fromfile(root+"/installer/patches/"+s).apply()
         os.chdir(cwd)
         tools.setCompilerOptions(config,'AHMED')
     else:

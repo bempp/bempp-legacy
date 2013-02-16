@@ -101,7 +101,7 @@
        ok = ACA_row_step(MatGen, b1, n1, b2, n2, klast, inext, k, no, Z, S,
 -			U, V, nrmlsk2, scale);
 +			U, V, nrmlsk2, scale, c1, c2);
- 
+       
        if (!ok) goto NSUCC;        // in last step no non-zero row could be found
  
 @@ -481,7 +486,7 @@
@@ -110,7 +110,7 @@
        ok = ACA_col_step(MatGen, b1, n1, b2, n2, jnext, k, no, Z, S,
 -			U, V, nrmlsk2, scale);
 +			U, V, nrmlsk2, scale, c1, c2);
- 
+       
        if (!ok) goto NSUCC;     // in last step no non-zero row could be found
  
 @@ -578,7 +583,8 @@

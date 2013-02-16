@@ -101,6 +101,21 @@ struct AcaOptions
      *
      *  Usually does not need to be changed. Default value: 1. */
     double scaling;
+    /** \brief Choice of ACA variant.
+     *
+     *  If true, the default implementation of the ACA algorithm from the AHMED
+     *  library will be used.
+     *
+     *  If false, an alternative formulation of ACA will be used. This
+     *  formulation appears to be more successful in the approximation of
+     *  operators whose matrices contain empty blocks (like the double-layer
+     *  boundary operator for the Laplace equation) and in general it tries
+     *  harder to find a low-rank approximation of a block before falling back
+     *  to a dense representation.
+     *
+     *  Default value: false.
+     */
+    bool useAhmedAca;
 };
 
 } // namespace Bempp

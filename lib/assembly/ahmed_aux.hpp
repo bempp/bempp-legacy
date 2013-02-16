@@ -45,7 +45,6 @@
 
 #include "ahmed_complex.hpp"
 
-#include <apprx.h>
 #include <bemblcluster.h>
 #include <bllist.h>
 // #include <matgen_sqntl.h>
@@ -61,6 +60,18 @@ bool multaHvec_omp(double d, blcluster* bl, mblock<double>** A, double* x,
 #undef SQR
 #undef MIN
 #undef MAX
+
+template <typename T>
+T MIN(T x, T y)
+{
+    return std::min(x, y);
+}
+
+template <typename T>
+T MAX(T x, T y)
+{
+    return std::max(x, y);
+}
 
 #ifdef __INTEL_COMPILER
 #pragma warning(default:381)
