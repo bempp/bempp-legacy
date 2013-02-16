@@ -19,7 +19,7 @@
 # THE SOFTWARE.
 
 import numpy as np
-import bempp.py_extensions as py_ext
+from bempp import tools
 
 try:
     from tvtk.api import tvtk
@@ -338,7 +338,7 @@ def plotThreePlanes(potentialOp, gridFun, limits, dimensions,
     origin = ((lims[0] + lims[1]) / 2.,
               (lims[2] + lims[3]) / 2.,
               (lims[4] + lims[5]) / 2.)
-    (points1,vals1) = py_ext.evaluatePotentialOnPlane(
+    (points1,vals1) = tools.evaluatePotentialOnPlane(
         potentialOp,gridFun,lims[:4],dims[:2],plane="xy",origin=origin,
         evalOps=evalOps)
     (points2,vals2) = py_ext.evaluatePotentialOnPlane(

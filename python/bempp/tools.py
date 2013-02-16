@@ -88,9 +88,9 @@ class RealOperator(object):
 
     def __init__(self,operator):
         
-        self.operator = operator
-        self.operator_shape = operator.shape
-        self.shape = (2*self.operator_shape[0],2*self.operator_shape[1])
+        self.__operator = operator
+        self.__operator_shape = operator.shape
+        self.shape = (2*self.__operator_shape[0],2*self.__operator_shape[1])
         if operator.dtype==np.dtype('complex128'):
             self.dtype = np.dtype('float64')
         elif operator.dtype==np.dtype('complex64'):
@@ -102,6 +102,9 @@ class RealOperator(object):
         else:
             raise Exception('RealOperator.__init__: Datatype of operator not supported.')
 
+    @property
+    def operator(self):
+        return self.__operator
 
     def matvec(self,x):
 
@@ -112,15 +115,20 @@ class RealOperator(object):
             if x.shape[1] != 1 or x.shape[0] != self.shape[1]:
                 raise Exception("RealOperator.matvec: wrong dimension.")
 
-        res = self.operator.matvec(x[:self.operator_shape[1]]+1j*x[self.operator_shape[1]:])
+        res = self.__operator.matvec(x[:self.__operator_shape[1]]+1j*x[self.__operator_shape[1]:])
         
         if len(res.shape)==1:
             return np.hstack([np.real(res),np.imag(res)])
         else:
             return np.vstack([np.real(res),np.imag(res)])
 
+    def matmat(self,x):
 
+        if x.shape[0] != self.shape[1]:
+            raise Exception("RealOperator.matmat: wrong dimension")
 
+        res = self.__operator.matmat(x[:self.__operator_shape[1]]+1j*x[self.__operator_shape[1]:])
+        return np.vstack([np.real(res),np.imag(res)])
 
             
         
