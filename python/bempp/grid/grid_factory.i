@@ -71,7 +71,7 @@ namespace Bempp
     %feature("compactdefaultargs") importGmshGrid;
     static boost::shared_ptr<Bempp::Grid> importGmshGrid(
             const std::string& topology, const std::string& fileName, 
-            bool verbose=true, bool insertBoundarySegments=false) {
+            bool verbose=false, bool insertBoundarySegments=false) {
         Bempp::GridParameters params;
         makeGridParameters(params, topology);
         return Bempp::GridFactory::importGmshGrid(params, fileName, verbose, insertBoundarySegments);

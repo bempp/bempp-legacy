@@ -85,7 +85,7 @@ public:
     */
     static shared_ptr<Grid> importGmshGrid(const GridParameters& params,
             const std::string& fileName,
-            bool verbose=true, bool insertBoundarySegments=false);
+            bool verbose=false, bool insertBoundarySegments=false);
 
     /** \brief Import grid from a file in Gmsh format.
 
