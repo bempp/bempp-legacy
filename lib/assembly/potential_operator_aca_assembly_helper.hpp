@@ -93,7 +93,8 @@ public:
                   const cluster* c1 = 0) const;
 
     /** \brief Expected size of the entries in this block. */
-    MagnitudeType scale(unsigned b1, unsigned n1, unsigned b2, unsigned n2) const;
+    MagnitudeType scale(unsigned b1, unsigned n1, unsigned b2, unsigned n2,
+                        const cluster* c1 = 0, const cluster* c2 = 0) const;
 
     /** \brief Expected magnitude of the entries in this block relative to that
      *  of the maximum entry expected in the whole matrix. */

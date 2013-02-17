@@ -385,9 +385,32 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpblsym(
 template <typename BasisFunctionType, typename ResultType>
 typename WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::MagnitudeType
 WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::scale(
-        unsigned b1, unsigned n1, unsigned b2, unsigned n2) const
+        unsigned b1, unsigned n1, unsigned b2, unsigned n2,
+        const cluster* c1, const cluster* c2) const
 {
-    return m_options.acaOptions().scaling;
+//    return m_options.acaOptions().scaling;
+    typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+    typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
+    typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
+
+    AhmedBemCluster* cluster1 =
+        const_cast<AhmedBemCluster*>(// AHMED is not const-correct
+            dynamic_cast<const AhmedBemCluster*>(c1));
+    AhmedBemCluster* cluster2 =
+        const_cast<AhmedBemCluster*>(// AHMED is not const-correct
+            dynamic_cast<const AhmedBemCluster*>(c2));
+    if (cluster1 && cluster2) {
+        // both getdiam2() and dist2() are effectively const, but not declared so
+        // in AHMED
+        const CoordinateType dist = sqrt(cluster1->dist2(cluster2));
+        MagnitudeType result = 0.;
+        for (size_t nTerm = 0; nTerm < m_assemblers.size(); ++nTerm)
+            result = std::max(result,
+                              m_assemblers[nTerm]->estimateRelativeScale(dist));
+        return result;
+    }
+    else
+        return m_options.acaOptions().scaling;
 }
 
 template <typename BasisFunctionType, typename ResultType>

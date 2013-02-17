@@ -69,7 +69,7 @@ bool ACAs(MATGEN_T& MatGen, unsigned b1, unsigned n1, unsigned b2, unsigned n2,
     unsigned klast;  // unused
     const unsigned maxit = std::min(n1, n2);
 
-    abs_T scale = MatGen.scale(b1, n1, b2, n2); // set initial scale
+    abs_T scale = MatGen.scale(b1, n1, b2, n2, c1, c2); // set initial scale
 
     U = new T[(kmax+1)*n1]; // these arrays are expected to be
     V = new T[(kmax+1)*n2]; // deallocated by the caller
