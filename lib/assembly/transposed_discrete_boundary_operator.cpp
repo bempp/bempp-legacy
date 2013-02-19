@@ -69,17 +69,6 @@ void TransposedDiscreteBoundaryOperator<ValueType>::addBlock(
     m_operator->addBlock(cols, rows, alpha, block);
 }
 
-template<typename ValueType>
-shared_ptr<const DiscreteBoundaryOperator<ValueType> >
-TransposedDiscreteBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
-        double eps,
-        int maximumRank) const
-{
-    throw std::runtime_error("TransposedDiscreteBoundaryOperator::"
-                             "asDiscreteAcaBoundaryOperator(): "
-                             "not implemented yet");
-}
-
 #ifdef WITH_TRILINOS
 template <typename ValueType>
 Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> >
