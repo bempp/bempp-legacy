@@ -32,6 +32,8 @@
 #include <Teuchos_RCP.hpp>
 #endif // WITH_TRILINOS
 
+class blcluster;
+
 namespace Bempp
 {
 
@@ -108,7 +110,8 @@ public:
     asDiscreteAcaBlockedBoundaryOperator(double eps=-1, int maximumRank=-1) const;
 
     virtual shared_ptr<const DiscreteBoundaryOperator<ValueType> >
-    asDiscreteAcaBoundaryOperator(double eps=-1, int maximumRank=-1) const;
+    asDiscreteAcaBoundaryOperator(double eps=-1, int maximumRank=-1,
+                                  bool interleave=false) const;
 
 #ifdef WITH_TRILINOS
 public:
@@ -125,6 +128,15 @@ private:
                                   arma::Col<ValueType>& y_inout,
                                   const ValueType alpha,
                                   const ValueType beta) const;
+
+    void mergeHMatrices(
+        unsigned currentLevel,
+        const std::vector<Fiber::_2dArray<unsigned> >& rowSonSizes,
+        const std::vector<Fiber::_2dArray<unsigned> >& colSonSizes,
+        const Fiber::_2dArray<const blcluster*> clusters,
+        const Fiber::_2dArray<size_t> indexOffsets,
+        blcluster* result) const;
+
 private:
     /** \cond PRIVATE */
     Fiber::_2dArray<shared_ptr<const Base> > m_blocks;
