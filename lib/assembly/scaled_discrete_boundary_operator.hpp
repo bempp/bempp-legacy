@@ -68,7 +68,8 @@ public:
 
 #ifdef WITH_AHMED
     shared_ptr<const DiscreteBoundaryOperator<ValueType> >
-    asDiscreteAcaBoundaryOperator(double eps=1E-4, int maximumRank=50) const;
+    asDiscreteAcaBoundaryOperator(double eps=-1, int maximumRank=-1,
+                                  bool interleave=false) const;
 #endif
 
 #ifdef WITH_TRILINOS

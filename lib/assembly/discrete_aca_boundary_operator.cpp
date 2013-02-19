@@ -399,7 +399,7 @@ addBlock(const std::vector<int>& rows,
 template <typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> >
 DiscreteAcaBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
-        double eps, int maximumRank) const
+        double eps, int maximumRank, bool interleave) const
 {
     return this->shared_from_this(); // this-> needed for template name resolution.
 }

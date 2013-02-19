@@ -61,7 +61,7 @@ arma::Mat<ValueType> DiscreteBoundaryOperator<ValueType>::asMatrix() const
 template <typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> >
 DiscreteBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
-        double eps, int maximumRank) const
+        double eps, int maximumRank, bool interleave) const
 {
 #ifdef WITH_AHMED
     throw std::runtime_error("DiscreteBoundaryOperator::"

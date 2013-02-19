@@ -310,7 +310,8 @@ public:
                           arma::Mat<ValueType>& block) const;
 
     virtual shared_ptr<const DiscreteBoundaryOperator<ValueType> >
-    asDiscreteAcaBoundaryOperator(double eps=-1, int maximumRank=-1) const;
+    asDiscreteAcaBoundaryOperator(double eps=-1, int maximumRank=-1,
+                                  bool interleave=false) const;
 
     /** \brief Uncompress all blocks of the H-matrix and store them as dense
      *  matrices.

@@ -329,7 +329,7 @@ void DiscreteSparseBoundaryOperator<ValueType>::addBlock(
 template<typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> >
 DiscreteSparseBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
-        double eps, int maximumRank) const
+    double eps, int maximumRank, bool interleave) const
 {
     if (eps < 0)
         eps = 1e-4; // probably isn't really used

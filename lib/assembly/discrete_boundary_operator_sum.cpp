@@ -83,15 +83,15 @@ void DiscreteBoundaryOperatorSum<ValueType>::addBlock(
 template<typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> >
 DiscreteBoundaryOperatorSum<ValueType>::asDiscreteAcaBoundaryOperator(
-        double eps, int maximumRank) const
+        double eps, int maximumRank, bool interleave) const
 {
     typedef DiscreteAcaBoundaryOperator<ValueType> DiscreteAcaOp;
     shared_ptr<const DiscreteAcaOp> acaOp1 =
             boost::dynamic_pointer_cast<const DiscreteAcaOp>(
-                m_term1->asDiscreteAcaBoundaryOperator(eps, maximumRank));
+                m_term1->asDiscreteAcaBoundaryOperator(eps, maximumRank, interleave));
     shared_ptr<const DiscreteAcaOp> acaOp2 =
             boost::dynamic_pointer_cast<const DiscreteAcaOp>(
-                m_term2->asDiscreteAcaBoundaryOperator(eps, maximumRank));
+                m_term2->asDiscreteAcaBoundaryOperator(eps, maximumRank, interleave));
 
     if (maximumRank < 0)
         maximumRank = std::max(acaOp1->maximumRank(),
