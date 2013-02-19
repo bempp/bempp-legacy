@@ -57,6 +57,13 @@ public:
         return m_permutedIndices;
     }
 
+    std::vector<unsigned int> unpermutedIndices() const {
+        std::vector<unsigned int> result(m_permutedIndices.size());
+        for (unsigned int o = 0; o < m_permutedIndices.size(); ++o)
+            result[m_permutedIndices[o]] = o;
+        return result;
+    }
+
     /** \brief Convert a vector from original to permuted ordering. */
     template <typename ValueType>
     void permuteVector(const arma::Col<ValueType>& original,
