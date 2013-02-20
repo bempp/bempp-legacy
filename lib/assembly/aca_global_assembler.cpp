@@ -400,7 +400,6 @@ assembleAcaOperator(
     //        }
 
     if (verbosityAtLeastDefault) {
-    {
         size_t origMemory = sizeof(ResultType) * testDofCount * trialDofCount;
         size_t ahmedMemory = sizeH(bemBlclusterTree.get(), blocks.get());
         int maximumRank = Hmax_rank(bemBlclusterTree.get(), blocks.get());
