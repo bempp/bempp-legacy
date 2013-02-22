@@ -128,11 +128,11 @@ bool ACAs(MATGEN_T& MatGen, unsigned b1, unsigned n1, unsigned b2, unsigned n2,
         for (unsigned l=0; l<k; ++l)
             sum += blas::scpr(n1, U+l*n1, U+k*n1) * blas::scpr(n2, V+k*n2, V+l*n2);
         nrms2 += 2. * Re(sum) + nrmlsk2;
-        // std::cout << "nrmlsk2: " << nrmlsk2 << ", nrms2: " << nrms2 << std::endl;
 
         bool stpcrit = (nrmlsk2 < eps * eps * nrms2);
         // adjust scale (estimated entry size of the next remainder)
         scale = sqrt(nrmlsk2/(n1*n2));
+        // std::cout << "nrmlsk2: " << nrmlsk2 << ", nrms2: " << nrms2 << ", scale = " << scale << std::endl;
 
         // update U & V norms
         for (unsigned l = 0; l < n1; ++l)
