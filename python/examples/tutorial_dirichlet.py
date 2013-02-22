@@ -100,7 +100,7 @@ print "Relative L^2 error:", relError
 # Create potential operators
 
 slPotOp = createLaplace3dSingleLayerPotentialOperator(context)
-dlPotOp = createLaplace3dSingleLayerPotentialOperator(context)
+dlPotOp = createLaplace3dDoubleLayerPotentialOperator(context)
 
 # Define points at which the solution should be evaluated
 
