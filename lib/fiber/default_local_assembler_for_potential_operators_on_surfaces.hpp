@@ -99,6 +99,8 @@ public:
 
     virtual int resultDimension() const;
 
+    virtual CoordinateType estimateRelativeScale(CoordinateType minDist) const;
+
 private:
     /** \cond PRIVATE */
     typedef KernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>

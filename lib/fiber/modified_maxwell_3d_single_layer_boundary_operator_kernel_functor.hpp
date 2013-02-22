@@ -22,6 +22,7 @@
 #define fiber_modified_maxwell_3d_single_layer_boundary_operator_kernel_functor_hpp
 
 #include "../common/common.hpp"
+#include "../common/complex_aux.hpp"
 
 #include "geometrical_data.hpp"
 #include "scalar_traits.hpp"
@@ -78,6 +79,10 @@ public:
         m_slpKernel.evaluate(testGeomData, trialGeomData, result);
         result[1](0, 0) = result[0](0, 0) / m_slpKernel.waveNumber();
         result[0](0, 0) *= m_slpKernel.waveNumber();
+    }
+
+    CoordinateType estimateRelativeScale(CoordinateType distance) const {
+        return exp(-realPart(m_slpKernel.waveNumber()) * distance);
     }
 
 private:

@@ -399,35 +399,34 @@ assembleAcaOperator(
     //                      << (blocks[blockIndex]->islwr() ? blocks[blockIndex]->rank() : 0) << "\n";
     //        }
 
-    {
+    if (verbosityAtLeastDefault) {
         size_t origMemory = sizeof(ResultType) * testDofCount * trialDofCount;
         size_t ahmedMemory = sizeH(bemBlclusterTree.get(), blocks.get());
         int maximumRank = Hmax_rank(bemBlclusterTree.get(), blocks.get());
-        if (verbosityAtLeastDefault)
-            std::cout << "\nNeeded storage: "
-                      << ahmedMemory / 1024. / 1024. << " MB.\n"
-                      << "Without approximation: "
-                      << origMemory / 1024. / 1024. << " MB.\n"
-                      << "Compressed to "
-                      << (100. * ahmedMemory) / origMemory << "%.\n"
-                      << "Maximum rank: " << maximumRank << ".\n"
-                      << std::endl;
+        std::cout << "\nNeeded storage: "
+                  << ahmedMemory / 1024. / 1024. << " MB.\n"
+                  << "Without approximation: "
+                  << origMemory / 1024. / 1024. << " MB.\n"
+                  << "Compressed to "
+                  << (100. * ahmedMemory) / origMemory << "%.\n"
+                  << "Maximum rank: " << maximumRank << ".\n"
+                  << std::endl;
+    }
 
-        if (acaOptions.outputPostscript) {
-            if (verbosityAtLeastDefault)
-                std::cout << "Writing matrix partition ..." << std::flush;
-            std::ofstream os(acaOptions.outputFname.c_str());
-            if (symmetric)
-                // psoutputHeH() seems to work also for symmetric matrices
-                psoutputHeH(os, bemBlclusterTree.get(),
-                            trialDofCount, blocks.get());
-            else
-                psoutputGeH(os, bemBlclusterTree.get(),
-                            std::max(testDofCount, trialDofCount), blocks.get());
-            os.close();
-            if (verbosityAtLeastDefault)
-                std::cout << " done." << std::endl;
-        }
+    if (acaOptions.outputPostscript) {
+        if (verbosityAtLeastDefault)
+            std::cout << "Writing matrix partition ..." << std::flush;
+        std::ofstream os(acaOptions.outputFname.c_str());
+        if (symmetric)
+            // psoutputHeH() seems to work also for symmetric matrices
+            psoutputHeH(os, bemBlclusterTree.get(),
+                        trialDofCount, blocks.get());
+        else
+            psoutputGeH(os, bemBlclusterTree.get(),
+                        std::max(testDofCount, trialDofCount), blocks.get());
+        os.close();
+        if (verbosityAtLeastDefault)
+            std::cout << " done." << std::endl;
     }
 
     int outSymmetry = NO_SYMMETRY;

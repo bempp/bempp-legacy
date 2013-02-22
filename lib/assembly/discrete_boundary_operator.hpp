@@ -184,7 +184,8 @@ public:
      *  without AHMED.
      */
     virtual shared_ptr<const DiscreteBoundaryOperator>
-    asDiscreteAcaBoundaryOperator(double eps=-1, int maximumRank=-1) const;
+    asDiscreteAcaBoundaryOperator(double eps=-1, int maximumRank=-1,
+                                  bool interleave=false) const;
 
     /** \brief Write a textual representation of the operator to standard output.
      *

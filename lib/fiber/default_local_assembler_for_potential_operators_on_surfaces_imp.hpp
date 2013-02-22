@@ -294,7 +294,6 @@ evaluateLocalContributions(
     }
 }
 
-
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
 int
@@ -302,6 +301,17 @@ DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::resultDimension() const
 {
     return m_integral->resultDimension();
+}
+
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+typename DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<BasisFunctionType,
+    KernelType, ResultType, GeometryFactory>::CoordinateType
+DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<BasisFunctionType,
+    KernelType, ResultType, GeometryFactory>::
+estimateRelativeScale(CoordinateType minDist) const
+{
+    return m_kernels->estimateRelativeScale(minDist);
 }
 
 template <typename BasisFunctionType, typename KernelType,

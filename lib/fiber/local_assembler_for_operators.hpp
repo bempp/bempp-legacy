@@ -115,7 +115,7 @@ public:
             const std::vector<int>& elementIndices,
             std::vector<arma::Mat<ResultType> >& result) = 0;
 
-    // TODO: evaluateLocalOperator or something similar
+    virtual CoordinateType estimateRelativeScale(CoordinateType minDist) const = 0;
 };
 
 } // namespace Fiber

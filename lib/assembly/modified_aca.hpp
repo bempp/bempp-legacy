@@ -69,7 +69,7 @@ bool ACAs(MATGEN_T& MatGen, unsigned b1, unsigned n1, unsigned b2, unsigned n2,
     unsigned klast;  // unused
     const unsigned maxit = std::min(n1, n2);
 
-    abs_T scale = MatGen.scale(b1, n1, b2, n2); // set initial scale
+    abs_T scale = MatGen.scale(b1, n1, b2, n2, c1, c2); // set initial scale
 
     U = new T[(kmax+1)*n1]; // these arrays are expected to be
     V = new T[(kmax+1)*n2]; // deallocated by the caller
@@ -99,6 +99,16 @@ bool ACAs(MATGEN_T& MatGen, unsigned b1, unsigned n1, unsigned b2, unsigned n2,
     k = 0;
     unsigned next_pivot = i0;
 
+    // The relativeScale() function is expected to return an estimate of the
+    // magnitude of the largest element in the block, relative to the magnitude
+    // of the largest element in the whole matrix.
+    // If the result is deemed small enough relative to eps, the block is taken to
+    // be zero and its elements are not evaluate.
+    // This can be useful in the approximation of strongly decaying kernels.
+    abs_T relscale = MatGen.relativeScale(b1, n1, b2, n2, c1, c2);
+    if (relscale < 1e-2 * eps)
+        return true;
+
     do {
         bool ok;
         abs_T nrmlsk2; // product of squared norms of new columns of U and V
@@ -123,11 +133,11 @@ bool ACAs(MATGEN_T& MatGen, unsigned b1, unsigned n1, unsigned b2, unsigned n2,
         for (unsigned l=0; l<k; ++l)
             sum += blas::scpr(n1, U+l*n1, U+k*n1) * blas::scpr(n2, V+k*n2, V+l*n2);
         nrms2 += 2. * Re(sum) + nrmlsk2;
-        // std::cout << "nrmlsk2: " << nrmlsk2 << ", nrms2: " << nrms2 << std::endl;
 
         bool stpcrit = (nrmlsk2 < eps * eps * nrms2);
         // adjust scale (estimated entry size of the next remainder)
         scale = sqrt(nrmlsk2/(n1*n2));
+        // std::cout << "nrmlsk2: " << nrmlsk2 << ", nrms2: " << nrms2 << ", scale = " << scale << std::endl;
 
         // update U & V norms
         for (unsigned l = 0; l < n1; ++l)

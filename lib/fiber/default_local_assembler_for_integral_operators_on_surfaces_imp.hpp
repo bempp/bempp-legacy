@@ -387,6 +387,17 @@ evaluateLocalWeakForms(
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
+typename DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+    KernelType, ResultType, GeometryFactory>::CoordinateType
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+    KernelType, ResultType, GeometryFactory>::
+estimateRelativeScale(CoordinateType minDist) const
+{
+    return m_kernels->estimateRelativeScale(minDist);
+}
+
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
 void
 DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::

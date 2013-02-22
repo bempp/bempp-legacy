@@ -148,6 +148,8 @@ public:
         throw std::runtime_error("CollectionOfKernels::evaluateClCode(): "
                                  "not implemented");
     }
+
+    virtual CoordinateType estimateRelativeScale(CoordinateType distance) const = 0;
 };
 
 } // namespace Fiber

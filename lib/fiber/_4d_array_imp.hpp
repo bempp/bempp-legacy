@@ -37,15 +37,7 @@ inline _4dArray<T>::_4dArray()
 template <typename T>
 inline _4dArray<T>::_4dArray(size_t extent0, size_t extent1, size_t extent2, size_t extent3)
 {
-#ifdef FIBER_CHECK_ARRAY_BOUNDS
-    check_extents(extent0, extent1, extent2, extent3);
-#endif
-    m_extents[0] = extent0;
-    m_extents[1] = extent1;
-    m_extents[2] = extent2;
-    m_extents[3] = extent3;
-    m_storage = new T[extent0 * extent1 * extent2 * extent3];
-    m_owns = true;
+    init_memory(extent0, extent1, extent2, extent3);
 }
 
 template <typename T>
@@ -63,10 +55,52 @@ inline _4dArray<T>::_4dArray(size_t extent0, size_t extent1, size_t extent2, siz
 }
 
 template <typename T>
+inline _4dArray<T>::_4dArray(const _4dArray& other)
+{
+    init_memory(other.m_extents[0], other.m_extents[1],
+                other.m_extents[2], other.m_extents[3]);
+    std::copy(other.begin(), other.end(), m_storage);
+}
+
+template <typename T>
+inline _4dArray<T>& _4dArray<T>::operator=(const _4dArray& rhs)
+{
+    if (&rhs != this) {
+        set_size(rhs.m_extents[0], rhs.m_extents[1], 
+                 rhs.m_extents[2], rhs.m_extents[3]);
+        std::copy(rhs.begin(), rhs.end(), m_storage);
+    }
+    return *this;
+}
+
+template <typename T>
 inline _4dArray<T>::~_4dArray()
+{
+    free_memory();
+}
+
+template <typename T>
+inline void _4dArray<T>::init_memory(size_t extent0, size_t extent1, 
+                                     size_t extent2, size_t extent3)
+{
+#ifdef FIBER_CHECK_ARRAY_BOUNDS
+    check_extents(extent0, extent1, extent2, extent3);
+#endif
+    m_storage = new T[extent0 * extent1 * extent2 * extent3];
+    m_owns = true;
+    m_extents[0] = extent0;
+    m_extents[1] = extent1;
+    m_extents[2] = extent2;
+    m_extents[3] = extent3;
+}
+
+template <typename T>
+inline void _4dArray<T>::free_memory()
 {
     if (m_owns && m_storage)
         delete[] m_storage;
+    m_owns = false;
+    m_storage = 0;
 }
 
 template <typename T>

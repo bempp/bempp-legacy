@@ -50,10 +50,11 @@ void ScaledDiscreteBoundaryOperator<ValueType>::addBlock(
 template<typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> >
 ScaledDiscreteBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
-        double eps, int maximumRank) const
+        double eps, int maximumRank, bool interleave) const
 {
     shared_ptr<const DiscreteBoundaryOperator<ValueType> > acaOp =
-            m_operator->asDiscreteAcaBoundaryOperator(eps, maximumRank);
+            m_operator->asDiscreteAcaBoundaryOperator(eps, maximumRank,
+                                                      interleave);
     return scaledAcaOperator(acaOp, m_multiplier);
 }
 #endif // WITH_AHMED

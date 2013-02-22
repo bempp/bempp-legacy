@@ -61,17 +61,6 @@ void ComplexifiedDiscreteBoundaryOperator<RealType>::addBlock(
                              "not implemented yet");
 }
 
-template<typename RealType>
-shared_ptr<const DiscreteBoundaryOperator<std::complex<RealType> > >
-ComplexifiedDiscreteBoundaryOperator<RealType>::asDiscreteAcaBoundaryOperator(
-        double eps,
-        int maximumRank) const
-{
-    throw std::runtime_error("ComplexifiedDiscreteBoundaryOperator::"
-                             "asDiscreteAcaBoundaryOperator(): "
-                             "not implemented yet");
-}
-
 #ifdef WITH_TRILINOS
 template <typename RealType>
 Teuchos::RCP<const Thyra::VectorSpaceBase<std::complex<RealType> > >

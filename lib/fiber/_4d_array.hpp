@@ -52,6 +52,8 @@ public:
     _4dArray();
     _4dArray(size_t extent0, size_t extent1, size_t extent2, size_t extent3);
     _4dArray(size_t extent0, size_t extent1, size_t extent2, size_t extent3, T* data);
+    _4dArray(const _4dArray& rhs);
+    _4dArray& operator=(const _4dArray& rhs);
 
     ~_4dArray();
 
@@ -70,16 +72,15 @@ public:
     const_iterator end() const;
 
 private:
+    void init_memory(size_t extent0, size_t extent1, 
+                            size_t extent2, size_t extent3);
+    void free_memory();
+
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     void check_dimension(size_t dimension) const;
     void check_extents(size_t extent0, size_t extent1, size_t extent2, size_t extent3) const;
     void check_indices(size_t index0, size_t index1, size_t index2, size_t index3) const;
 #endif
-
-private:
-    // Disable copy constructor and assignment operator
-    _4dArray(const _4dArray& rhs);
-    _4dArray& operator=(const _4dArray& rhs);
 
 private:
     size_t m_extents[4];
