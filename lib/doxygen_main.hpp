@@ -300,10 +300,10 @@
     \boldsymbol n(\boldsymbol x).\f]
 
     Note that compared to Buffa and Hiptmair, we include an additional
-    \f$\mathrm i\f$ factor in the denominator of the Neumann trace, as this
-    makes both the Neumann trace and the potential operators real-valued in the
-    special case of \f$k\f$ purely imaginary (and \f$\boldsymbol u\f$ purely
-    real).
+    \f$\mathrm i\f$ factor in the denominator of the Neumann trace and in the
+    numerator of the single-layer potential operator, as this makes both
+    quantities real-valued in the special case of \f$k\f$ purely imaginary (and
+    \f$\boldsymbol u\f$ purely real).
 
     The <em>exterior</em> Dirichlet and Neumann traces are defined analogously,
     with the relevant quantities assumed to approach the point \f$\boldsymbol
