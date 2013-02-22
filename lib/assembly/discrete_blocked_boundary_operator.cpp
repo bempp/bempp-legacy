@@ -824,8 +824,6 @@ DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
     std::vector<unsigned int> o2pRange =
         overall_o2p(RANGE_SPACE, acaBlocks, deepestRowSonSizes);
 
-    std::cout << "o2pDomain:\n"; dump(o2pDomain);
-    std::cout << "o2pRange:\n"; dump(o2pRange);
 
     // Gather remaining data necessary to create the combined ACA operator
     const double overallEps_ = overallEps(acaBlocks);
