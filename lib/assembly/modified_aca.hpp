@@ -99,9 +99,14 @@ bool ACAs(MATGEN_T& MatGen, unsigned b1, unsigned n1, unsigned b2, unsigned n2,
     k = 0;
     unsigned next_pivot = i0;
 
+    // The relativeScale() function is expected to return an estimate of the
+    // magnitude of the largest element in the block, relative to the magnitude
+    // of the largest element in the whole matrix.
+    // If the result is deemed small enough relative to eps, the block is taken to
+    // be zero and its elements are not evaluate.
+    // This can be useful in the approximation of strongly decaying kernels.
     abs_T relscale = MatGen.relativeScale(b1, n1, b2, n2, c1, c2);
-    // std::cout << "relscale: " << relscale << std::endl;
-    if (relscale < 1e-2 * eps) // 1e-14) // possibly it would suffice "< eps"
+    if (relscale < 1e-2 * eps)
         return true;
 
     do {

@@ -96,8 +96,8 @@ public:
     MagnitudeType scale(unsigned b1, unsigned n1, unsigned b2, unsigned n2,
                         const cluster* c1 = 0, const cluster* c2 = 0) const;
 
-    /** \brief Expected magnitude of the entries in this block relative to that
-     *  of the maximum entry expected in the whole matrix. */
+    /** \brief Expected magnitude of the largest entry in this block relative to that
+     *  of the largest entry in the whole matrix. */
     MagnitudeType relativeScale(unsigned b1, unsigned n1, unsigned b2, unsigned n2,
                                 const cluster* c1 = 0, const cluster* c2 = 0) const;
 
