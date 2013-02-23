@@ -88,14 +88,88 @@ def findGmsh(fpath=None):
         raise Exception("findGmsh: Could not find Gmsh. Try to set bempp.shapes.gmsh_exe directly to an existing executable.")
     return gmsh_exe
 
+def __generate_grid_from_string(geo_string,grid=True,msh_file=False,parallel=True):
+    """Helper routine that implements the grid generation
+    """
 
-def sphere(radius=1,origin=(0,0,0),h=0.1,grid=True,msh_file=False):
+    import os
+    import subprocess
+
+    def msh_from_string(geo_string):
+        gmsh_command = findGmsh(gmsh_exe)
+        f,geo_name,msh_name = getGmshFile()
+        f.write(geo_string)
+        f.close()
+
+        fnull = open(os.devnull,'w')
+        cmd = gmsh_command+" -2 "+geo_name
+        try:
+            print "Generating Gmsh grid..."
+            subprocess.check_call(cmd,shell=True,stdout=fnull,stderr=fnull)
+        except:
+            print "The following command failed: "+cmd
+            fnull.close()
+            raise
+        os.remove(geo_name)
+        fnull.close()
+        return msh_name
+        
+    if parallel:
+        from PyTrilinos.Epetra import PyComm
+        comm = PyComm()
+        my_rank = comm.MyPID()
+    else:
+        my_rank = 0
+        
+
+    if parallel:
+        if my_rank == 0:
+            rank0_msh_name = msh_from_string(geo_string)
+            nchar = np.array(len(rank0_msh_name),dtype='int')
+            comm.Broadcast(nchar,0)
+            msh_name_array=np.array(rank0_msh_name)
+            comm.Broadcast(msh_name_array,0)
+        else:
+            nchar=np.array([0],dtype='int')
+            comm.Broadcast(nchar,0)
+            msh_name_array=''
+            msh_name_array=np.array(msh_name_array.zfill(nchar))
+            comm.Broadcast(msh_name_array,0)
+        msh_name = msh_name_array.item()
+    else:
+        msh_name = msh_from_string(geo_string)
+        
+    grid_obj = None
+    if grid:
+        from bempp.lib import createGridFactory
+        grid_obj = createGridFactory().importGmshGrid("triangular",msh_name)
+        comm.Barrier()
+    if not msh_file:
+        if parallel:
+            if my_rank==0:
+                os.remove(msh_name)
+            msh_name = None
+        else:
+            os.remove(msh_name)
+            msh_name = None            
+    if grid and not msh_name:
+        return grid_obj
+    elif msh_file and not grid:
+        return msh_name
+    elif msh_file and grid:
+        return (grid_obj,msh_file)
+    else:
+        return None
+
+
+def sphere(radius=1,origin=(0,0,0),h=0.1,grid=True,msh_file=False,parallel=True):
     """
     Return a shpere grid.
 
     If 'grid=True' and 'msh_file=False' a Bempp grid object is returned. If 'grid=False' and 'msh_file=True'
     a string to a .msh file containing a sphere mesh is returned. If both are true a tuple (sphere,fname) 
-    is returned.
+    is returned. If this function is run in an MPI context it guarantees that each process returns the same
+    grid. Note that all processes need to have access to the same filesystem.
 
     *Parameters:*
        - radius (real number)
@@ -109,6 +183,9 @@ def sphere(radius=1,origin=(0,0,0),h=0.1,grid=True,msh_file=False):
        - msh_file (True/False)
             If true return the Gmsh .msh file.
             This file is deleted if msh_file=False.
+       - parallel (True/False)
+            Run the function as parallelized MPI routine so that
+            all processes return the same grid
     """
     import subprocess,os
 
@@ -152,52 +229,24 @@ def sphere(radius=1,origin=(0,0,0),h=0.1,grid=True,msh_file=False):
     Volume(30) = {29};
     Mesh.Algorithm = 6;
     """
-    gmsh_command = findGmsh(gmsh_exe)
-    f,geo_name,msh_name = getGmshFile()
-    f.write("rad = "+str(radius)+";\n"+
+
+    sphere_geometry = ("rad = "+str(radius)+";\n"+
             "orig0 = "+str(origin[0])+";\n"+
             "orig1 = "+str(origin[1])+";\n"+
             "orig2 = "+str(origin[2])+";\n"+
-            "cl = "+str(h)+";\n"
-            )
-    f.write(sphere_stub)
-    f.close()
+            "cl = "+str(h)+";\n"+sphere_stub)
 
-    fnull = open(os.devnull,'w')
-    cmd = gmsh_command+" -2 "+geo_name
-    try:
-        print "Generating Gmsh grid..."
-        subprocess.check_call(cmd,shell=True,stdout=fnull,stderr=fnull)
-    except:
-        print "The following command failed: "+cmd
-        fnull.close()
-        raise
-    fnull.close()
+    return __generate_grid_from_string(sphere_geometry,grid,msh_file,parallel)
+
         
-    sphere = None
-    if grid:
-        from bempp.lib import createGridFactory
-        sphere = createGridFactory().importGmshGrid("triangular",msh_name)
-    if not msh_file:
-        os.remove(msh_name)
-        msh_name = None
-    os.remove(geo_name)
-    if grid and not msh_name:
-        return sphere
-    elif msh_file and not grid:
-        return msh_name
-    elif msh_file and grid:
-        return (sphere,msh_file)
-    else:
-        return None
-
 def cube(length=1,origin=(0,0,0),h=0.1,grid=True,msh_file=False):
     """
     Return a shpere grid.
 
     If 'grid=True' and 'msh_file=False' a Bempp grid object is returned. If 'grid=False' and 'msh_file=True'
     a string to a .msh file containing a cube mesh is returned. If both are true a tuple (cube,fname) 
-    is returned.
+    is returned. If this function is run in an MPI context it guarantees that each process returns the same
+    grid. Note that all processes need to have access to the same filesystem.
 
     *Parameters:*
        - length (real number)
@@ -211,6 +260,10 @@ def cube(length=1,origin=(0,0,0),h=0.1,grid=True,msh_file=False):
        - msh_file (True/False)
             If true return the Gmsh .msh file.
             This file is deleted if msh_file=False.
+       - parallel (True/False)
+            Run the function as parallelized MPI routine so that
+            all processes return the same grid
+
     """
     import subprocess,os
 
@@ -257,42 +310,11 @@ def cube(length=1,origin=(0,0,0),h=0.1,grid=True,msh_file=False):
 
     Mesh.Algorithm = 6;
     """
-    gmsh_command = findGmsh(gmsh_exe)
-    f,geo_name,msh_name = getGmshFile()
-    f.write("l = "+str(length)+";\n"+
+
+    cube_geometry = ("l = "+str(length)+";\n"+
             "orig0 = "+str(origin[0])+";\n"+
             "orig1 = "+str(origin[1])+";\n"+
             "orig2 = "+str(origin[2])+";\n"+
-            "cl = "+str(h)+";\n"
-            )
-    f.write(cube_stub)
-    f.close()
+            "cl = "+str(h)+";\n"+cube_stub)
 
-    fnull = open(os.devnull,'w')
-
-    cmd = gmsh_command+" -2 "+geo_name
-    try:
-        print "Generating Gmsh grid..."
-        subprocess.check_call(cmd,shell=True,stdout=fnull,stderr=fnull)
-    except:
-        print "The following command failed: "+cmd
-        fnull.close()
-        raise
-    fnull.close()
-
-    cube = None
-    if grid:
-        from bempp.lib import createGridFactory
-        cube = createGridFactory().importGmshGrid("triangular",msh_name)
-    if not msh_file:
-        os.remove(msh_name)
-        msh_name = None
-    os.remove(geo_name)
-    if grid and not msh_name:
-        return cube
-    elif msh_file and not grid:
-        return msh_name
-    elif msh_file and grid:
-        return (cube,msh_file)
-    else:
-        return None
+    return __generate_grid_from_string(cube_geometry,grid,msh_file,parallel)
