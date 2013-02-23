@@ -36,12 +36,6 @@
 #include <Thyra_SpmdVectorSpaceDefaultBase.hpp>
 #endif // WITH_TRILINOS
 
-#ifdef NDEBUG
-#define PR(x)
-#else
-#define PR(x) std::cout << #x ": " << x << std::endl
-#endif
-
 namespace Bempp
 {
 
@@ -263,15 +257,12 @@ void getDomain_p2os(
         const Fiber::_2dArray<shared_ptr<
             const DiscreteAcaBoundaryOperator<ValueType> > >& acaBlocks,
         std::vector<std::vector<unsigned> >& p2os,
-        //std::vector<size_t>& blockOffsets
         size_t& totalColCount)
 {
     const size_t rowBlockCount = acaBlocks.extent(0);
     const size_t colBlockCount = acaBlocks.extent(1);
     p2os.clear();
     p2os.reserve(colBlockCount);
-    // blockOffsets.clear();
-    // blockOffsets.reserve(colBlockCount);
     totalColCount = 0;
     for (size_t cb = 0; cb < colBlockCount; ++cb) {
         int chosenRow = -1;
@@ -300,7 +291,6 @@ void getDomain_p2os(
         const size_t localSize = p2os.back().size();
         for (size_t i = 0; i < localSize; ++i)
             p2os.back()[i] += totalColCount;
-        // blockOffsets.push_back(totalColCount);
         totalColCount += localSize;
     }
 }
@@ -370,7 +360,7 @@ void getUniformSonSizes(
                 anyBlocksAreNull = true;
 
     if (anyBlocksAreNull) {
-        std::cout << "Null block" << std::endl;
+        // std::cout << "Null block" << std::endl;
         return;
     }
 
@@ -386,15 +376,8 @@ void getUniformSonSizes(
         size_t colParentCount = parentClusters.extent(3);
         rowSonCount = parentClusters(0, 0, 0, 0)->getnrs();
         colSonCount = parentClusters(0, 0, 0, 0)->getncs();
-        std::cout << "next it" << std::endl;
-        PR(rowBlockCount);
-        PR(colBlockCount);
-        PR(rowSonCount);
-        PR(colSonCount);
-        PR(rowParentCount);
-        PR(colParentCount);
         if (rowSonCount * colSonCount < 2) {
-            std::cout << "Leaf node" << std::endl;
+            // std::cout << "Leaf node" << std::endl;
             return;
         }
 
@@ -404,7 +387,7 @@ void getUniformSonSizes(
                     for (size_t rp = 0; rp < rowParentCount; ++rp)
                         if (parentClusters(rb, rp, cb, cp)->getnrs() != rowSonCount ||
                             parentClusters(rb, rp, cb, cp)->getncs() != colSonCount) {
-                            std::cout << "Mismatch in number of sons" << std::endl;
+                            // std::cout << "Mismatch in number of sons" << std::endl;
                             return;
                         }
         Fiber::_2dArray<unsigned> newRowSonSizes(
@@ -428,14 +411,14 @@ void getUniformSonSizes(
                                     newColSonSizes(cb, C) = son->getn2();
                                 else
                                     if (newColSonSizes(cb, C) != son->getn2()) {
-                                        std::cout << "Mismatch in column son sizes" << std::endl;
+                                        // std::cout << "Mismatch in column son sizes" << std::endl;
                                         return;
                                     }
                                 if (cp == 0 && cs == 0)
                                     newRowSonSizes(rb, R) = son->getn1();
                                 else
                                     if (newRowSonSizes(rb, R) != son->getn1()) {
-                                        std::cout << "Mismatch in row son sizes" << std::endl;
+                                        // std::cout << "Mismatch in row son sizes" << std::endl;
                                         return;
                                     }
                                 newClusters(rb, R, cb, C) = son;
@@ -620,7 +603,6 @@ DiscreteBlockedBoundaryOperator<ValueType>::mergeHMatrices(
         const Fiber::_2dArray<size_t> indexOffsets,
         blcluster* result) const
 {
-    std::cout << "mergeHMatrices" << std::endl;
     typedef DiscreteAcaBoundaryOperator<ValueType> AcaOp;
     typedef typename AcaOp::AhmedBemBlcluster AhmedBemBlcluster;
 
@@ -629,8 +611,8 @@ DiscreteBlockedBoundaryOperator<ValueType>::mergeHMatrices(
     assert(rowSonSizes.size() == colSonSizes.size());
     const size_t uniformLevelCount = rowSonSizes.size();
     if (currentLevel < uniformLevelCount) {
-        std::cout << "currentLevel = " << currentLevel << " < " << uniformLevelCount
-                  << std::endl;
+        // std::cout << "currentLevel = " << currentLevel << " < " << uniformLevelCount
+        //           << std::endl;
 
         size_t rowSonCount = clusters(0, 0)->getnrs();
         size_t colSonCount = clusters(0, 0)->getncs();
@@ -671,8 +653,8 @@ DiscreteBlockedBoundaryOperator<ValueType>::mergeHMatrices(
             throw; // rethrow exception
         }
     } else if (currentLevel == uniformLevelCount) {
-        std::cout << "currentLevel = " << currentLevel << " == " << uniformLevelCount
-                  << std::endl;
+        // std::cout << "currentLevel = " << currentLevel << " == " << uniformLevelCount
+        //           << std::endl;
         // Get number of elementary rows and columns in all rows and columns of blocks
         std::vector<size_t> blockRowCount(rowBlockCount);
         std::vector<size_t> blockColCount(colBlockCount);
@@ -775,14 +757,14 @@ DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
     std::vector<Fiber::_2dArray<unsigned> > rowSonSizes, colSonSizes;
     if (interleave) {
         getUniformSonSizes(acaBlocks, rowSonSizes, colSonSizes);
-        for (size_t i = 0; i < rowSonSizes.size(); ++i) {
-            std::cout << "Row son sizes, level " << i << ":\n";
-            dump(rowSonSizes[i]);
-        }
-        for (size_t i = 0; i < colSonSizes.size(); ++i) {
-            std::cout << "Col son sizes, level " << i << ":\n";
-            dump(colSonSizes[i]);
-        }
+        // for (size_t i = 0; i < rowSonSizes.size(); ++i) {
+        //     std::cout << "Row son sizes, level " << i << ":\n";
+        //     dump(rowSonSizes[i]);
+        // }
+        // for (size_t i = 0; i < colSonSizes.size(); ++i) {
+        //     std::cout << "Col son sizes, level " << i << ":\n";
+        //     dump(colSonSizes[i]);
+        // }
     }
 
     std::vector<AhmedConstMblockArray> allSharedMblocks;
@@ -817,13 +799,12 @@ DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
             deepestColSonSizes(col, 0) = m_columnCounts[col];
     } else
         deepestColSonSizes = colSonSizes.back();
-    std::cout << "deepestRowSonSizes:\n"; dump(deepestRowSonSizes);
-    std::cout << "deepestColSonSizes:\n"; dump(deepestColSonSizes);
+    // std::cout << "deepestRowSonSizes:\n"; dump(deepestRowSonSizes);
+    // std::cout << "deepestColSonSizes:\n"; dump(deepestColSonSizes);
     std::vector<unsigned int> o2pDomain =
         overall_o2p(DOMAIN_SPACE, acaBlocks, deepestColSonSizes);
     std::vector<unsigned int> o2pRange =
         overall_o2p(RANGE_SPACE, acaBlocks, deepestRowSonSizes);
-
 
     // Gather remaining data necessary to create the combined ACA operator
     const double overallEps_ = overallEps(acaBlocks);
@@ -832,10 +813,10 @@ DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
     const Fiber::ParallelizationOptions parallelOptions =
             overallParallelizationOptions(acaBlocks);
 
-    std::ofstream os("aca-block.ps");
-    psoutputGeH(os, rootCluster.get(),
-                std::max(totalRowCount, totalColCount), mblocks.get());
-    os.close();
+    // std::ofstream os("aca-block.ps");
+    // psoutputGeH(os, rootCluster.get(),
+    //             std::max(totalRowCount, totalColCount), mblocks.get());
+    // os.close();
 
     shared_ptr<const DiscreteBoundaryOperator<ValueType> > result(
                 new AcaOp(
