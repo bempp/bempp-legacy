@@ -360,6 +360,8 @@ PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::relativeScale
         const cluster* c1, const cluster* c2) const
 {
     const CoordinateType minDist = estimateMinimumDistance(c1, c2);
+    if (minDist < 0)
+        return 1.;
     MagnitudeType result = 0.;
     for (size_t nTerm = 0; nTerm < m_assemblers.size(); ++nTerm)
         result = std::max(result,
