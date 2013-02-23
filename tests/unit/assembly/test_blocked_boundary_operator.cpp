@@ -1007,7 +1007,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(asDiscreteAcaBoundaryOperator_produces_correct_wea
                 params, "meshes/sphere-ico-1.msh",
                 false /* verbose */);
     shared_ptr<Grid> grid1 = GridFactory::importGmshGrid(
-                params, "meshes/sphere-ico-1.msh",
+                params, "meshes/sphere-ico-1-shifted-by-3.msh",
                 false /* verbose */);
 
     shared_ptr<Space<BFT> > pc0(new PiecewiseConstantScalarSpace<BFT>(grid0));
@@ -1066,10 +1066,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(asDiscreteAcaBoundaryOperator_produces_correct_wea
                 params, "meshes/sphere-ico-1.msh",
                 false /* verbose */);
     shared_ptr<Grid> grid1 = GridFactory::importGmshGrid(
-                params, "meshes/sphere-ico-1.msh",
+                params, "meshes/sphere-ico-1-shifted-by-3.msh",
                 false /* verbose */);
     shared_ptr<Grid> grid2 = GridFactory::importGmshGrid(
-                params, "meshes/sphere-ico-1.msh",
+                params, "meshes/sphere-ico-1-shifted-by-6.msh",
                 false /* verbose */);
 
     shared_ptr<Space<BFT> > pc0(new PiecewiseConstantScalarSpace<BFT>(grid0));
@@ -1149,10 +1149,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(asDiscreteAcaBoundaryOperator_produces_correct_wea
                 params, "meshes/sphere-ico-1.msh",
                 false /* verbose */);
     shared_ptr<Grid> grid1 = GridFactory::importGmshGrid(
-                params, "meshes/sphere-ico-1.msh",
+                params, "meshes/sphere-ico-1-shifted-by-3.msh",
                 false /* verbose */);
     shared_ptr<Grid> grid2 = GridFactory::importGmshGrid(
-                params, "meshes/sphere-ico-1.msh",
+                params, "meshes/sphere-ico-1-shifted-by-6.msh",
                 false /* verbose */);
 
     shared_ptr<Space<BFT> > pc0(new PiecewiseConstantScalarSpace<BFT>(grid0));
@@ -1287,7 +1287,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(asDiscreteAcaBoundaryOperator_produces_correct_wea
                 params, "meshes/sphere-ico-2.msh",
                 false /* verbose */);
     shared_ptr<Grid> grid1 = GridFactory::importGmshGrid(
-                params, "meshes/sphere-ico-2.msh",
+                params, "meshes/sphere-ico-2-shifted-by-3.msh",
                 false /* verbose */);
 
     shared_ptr<Space<BFT> > pc0(new PiecewiseConstantScalarSpace<BFT>(grid0));
@@ -1345,10 +1345,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(asDiscreteAcaBoundaryOperator_produces_correct_wea
                 params, "meshes/sphere-ico-2.msh",
                 false /* verbose */);
     shared_ptr<Grid> grid1 = GridFactory::importGmshGrid(
-                params, "meshes/sphere-ico-2.msh",
+                params, "meshes/sphere-ico-2-shifted-by-3.msh",
                 false /* verbose */);
     shared_ptr<Grid> grid2 = GridFactory::importGmshGrid(
-                params, "meshes/sphere-ico-2.msh",
+                params, "meshes/sphere-ico-2-shifted-by-6.msh",
                 false /* verbose */);
 
     shared_ptr<Space<BFT> > pc0(new PiecewiseConstantScalarSpace<BFT>(grid0));
@@ -1427,10 +1427,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(asDiscreteAcaBoundaryOperator_produces_correct_wea
                 params, "meshes/sphere-ico-2.msh",
                 false /* verbose */);
     shared_ptr<Grid> grid1 = GridFactory::importGmshGrid(
-                params, "meshes/sphere-ico-2.msh",
+                params, "meshes/sphere-ico-2-shifted-by-3.msh",
                 false /* verbose */);
     shared_ptr<Grid> grid2 = GridFactory::importGmshGrid(
-                params, "meshes/sphere-ico-2.msh",
+                params, "meshes/sphere-ico-2-shifted-by-6.msh",
                 false /* verbose */);
 
     shared_ptr<Space<BFT> > pc0(new PiecewiseConstantScalarSpace<BFT>(grid0));
