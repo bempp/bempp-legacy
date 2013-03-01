@@ -471,6 +471,26 @@ std::vector<unsigned int> overall_o2p(
         o2p[p2o[i]] = i;
     return o2p;
 }
+
+void checkConsistency(const blcluster* b)
+{
+    if (b->getnrs() == 0 || b->getncs() == 0)
+        return;
+    unsigned b1 = b->getb1();
+    for (unsigned r = 0; r < b->getnrs(); ++r) {
+        unsigned b2 = b->getb2();
+        for (unsigned c = 0; c < b->getncs(); ++c) {
+            assert(b->getson(r, c));
+            assert(b->getson(r, c)->getb1() == b1);
+            assert(b->getson(r, c)->getb2() == b2);
+            checkConsistency(b->getson(r, c));
+            b2 += b->getson(r, c)->getn2();
+        }
+        assert(b2 == b->getb2() + b->getn2());
+        b1 += b->getson(r, 0)->getn1();
+    }
+    assert(b1 == b->getb1() + b->getn1());
+}
 #endif // WITH_AHMED
 
 } // namespace
@@ -571,26 +591,7 @@ DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBlockedBoundaryOperator
 #endif
 }
 
-void checkConsistency(const blcluster* b)
-{
-    if (b->getnrs() == 0 || b->getncs() == 0)
-        return;
-    unsigned b1 = b->getb1();
-    for (unsigned r = 0; r < b->getnrs(); ++r) {
-        unsigned b2 = b->getb2();
-        for (unsigned c = 0; c < b->getncs(); ++c) {
-            assert(b->getson(r, c));
-            assert(b->getson(r, c)->getb1() == b1);
-            assert(b->getson(r, c)->getb2() == b2);
-            checkConsistency(b->getson(r, c));
-            b2 += b->getson(r, c)->getn2();
-        }
-        assert(b2 == b->getb2() + b->getn2());
-        b1 += b->getson(r, 0)->getn1();
-    }
-    assert(b1 == b->getb1() + b->getn1());
-}
-
+#ifdef WITH_AHMED
 // clusters is an array of block clusters lying in the same position in the trees
 // of all the H matrices to be merged
 template <typename ValueType>
@@ -717,6 +718,7 @@ DiscreteBlockedBoundaryOperator<ValueType>::mergeHMatrices(
     } else
         throw std::invalid_argument("mergeHMatrices(): invalid level");
 }
+#endif
 
 template <typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> >
