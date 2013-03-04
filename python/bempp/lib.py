@@ -1893,20 +1893,20 @@ def discreteDenseBoundaryOperator(mat):
 
 def discreteSparseInverse(op):
     """
-    Return a discrete Operator object that evaluates the inverse of op applied to a
-    vector by constructing the LU decomposition. For this operation op must represent
-    a sparse matrix operator.
+    Return a discrete operator object that evaluates the inverse of op applied
+    to a vector by constructing the LU decomposition. For this operation op must
+    represent a sparse matrix operator.
 
     *Parameters:*
        - op (DiscreteBoundaryOperator)
            A discrete boundary operator stored as sparse matrix
 
-    *Returns* a newly constructed DiscreteBoundaryOperator_ValueType object which stores
-    the LU decomposition of op and evaluates the inverse of op applied to a vector.
+    *Returns* a newly constructed DiscreteBoundaryOperator_ValueType object
+    which stores the LU decomposition of op and evaluates the inverse of op
+    applied to a vector.
     """
     name = 'discreteSparseInverse'
     return _constructObjectTemplatedOnValue(core, name, op.valueType(), op)
-
 
 def discreteOperatorToPreconditioner(op):
     """
@@ -1921,7 +1921,6 @@ def discreteOperatorToPreconditioner(op):
     """
     name = 'discreteOperatorToPreconditioner'
     return _constructObjectTemplatedOnValue(core, name, op.valueType(), op)
-
 
 def discreteBlockDiagonalPreconditioner(opArray):
     """
