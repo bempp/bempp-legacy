@@ -27,6 +27,8 @@
 
 #include "discrete_boundary_operator.hpp"
 
+#include "../common/shared_ptr.hpp"
+
 #ifdef WITH_TRILINOS
 #include <Teuchos_RCP.hpp>
 #include <Thyra_SpmdVectorSpaceBase_decl.hpp>
@@ -84,6 +86,13 @@ private:
 #endif
     /** \endcond */
 };
+
+/** \brief
+ *  Return a shared pointer to newly constructed DiscreteDenseBoundaryOperator
+ *  wrapping a specified matrix. */
+template <typename ValueType>
+shared_ptr<DiscreteDenseBoundaryOperator<ValueType> > discreteDenseBoundaryOperator(
+        const arma::Mat<ValueType>& mat);
 
 } // namespace Bempp
 

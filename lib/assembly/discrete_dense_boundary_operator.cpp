@@ -21,6 +21,7 @@
 #include "bempp/common/config_trilinos.hpp"
 
 #include "discrete_dense_boundary_operator.hpp"
+#include "../common/boost_make_shared_fwd.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 #include <iostream>
@@ -141,6 +142,20 @@ void DiscreteDenseBoundaryOperator<ValueType>::applyBuiltInImpl(
                 "invalid transposition mode");
     }
 }
+
+template <typename ValueType>
+shared_ptr<DiscreteDenseBoundaryOperator<ValueType> > discreteDenseBoundaryOperator(
+        const arma::Mat<ValueType>& mat)
+{
+    typedef DiscreteDenseBoundaryOperator<ValueType> Op;
+    return boost::make_shared<Op>(mat);
+}
+
+#define INSTANTIATE_NONMEMBER_CONSTRUCTOR(VALUE) \
+    template shared_ptr<DiscreteDenseBoundaryOperator<VALUE> > \
+    discreteDenseBoundaryOperator( \
+        const arma::Mat<VALUE>&)
+FIBER_ITERATE_OVER_VALUE_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteDenseBoundaryOperator);
 

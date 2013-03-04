@@ -1875,6 +1875,22 @@ if core._withAhmed:
         return _constructObjectTemplatedOnValue(
             core, name, op1.valueType(), op1, op2, eps, maximumRank)
 
+def discreteDenseBoundaryOperator(mat):
+    """
+    Return a discrete operator object stored as a dense matrix mat.
+
+    *Parameters:*
+       - mat
+           A two-dimensional array to be wrapped by the discrete operator.
+
+    *Returns* a newly constructed DiscreteBoundaryOperator_ValueType object
+    wrapping the matrix mat.
+    """
+    name = 'discreteDenseBoundaryOperator'
+    mat = numpy.asanyarray(mat)
+    dtype = numpy.promote_types(numpy.float32, mat.dtype).name
+    return _constructObjectTemplatedOnValue(core, name, dtype, mat)
+
 def discreteSparseInverse(op):
     """
     Return a discrete Operator object that evaluates the inverse of op applied to a
