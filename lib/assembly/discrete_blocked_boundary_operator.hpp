@@ -21,6 +21,7 @@
 #ifndef bempp_discrete_blocked_boundary_operator_hpp
 #define bempp_discrete_blocked_boundary_operator_hpp
 
+#include "bempp/common/config_ahmed.hpp"
 #include "bempp/common/config_trilinos.hpp"
 
 #include "discrete_boundary_operator.hpp"
@@ -129,6 +130,7 @@ private:
                                   const ValueType alpha,
                                   const ValueType beta) const;
 
+#ifdef WITH_AHMED
     void mergeHMatrices(
         unsigned currentLevel,
         const std::vector<Fiber::_2dArray<unsigned> >& rowSonSizes,
@@ -136,6 +138,7 @@ private:
         const Fiber::_2dArray<const blcluster*> clusters,
         const Fiber::_2dArray<size_t> indexOffsets,
         blcluster* result) const;
+#endif // WITH_AHMED
 
 private:
     /** \cond PRIVATE */
