@@ -1247,6 +1247,43 @@ def createIdentityOperator(context, domain, range, dualToRange, label=None):
     return _constructOperator(
         "identityOperator", context, domain, range, dualToRange, label)
 
+def createLaplaceBeltrami3dOperator(
+        context, domain, range, dualToRange, label=None):
+    """
+    Create and return a Laplace-Beltrami operator in 3D.
+
+    The weak form of this operator is
+
+        int_S (grad_S phi^* . grad_S psi) dS
+
+    where grad_S is the surface gradient operator, ^* denotes complex
+    conjugation, and phi and psi are the test and trial functions, respectively.
+
+    *Parameters:*
+       - context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+       - domain (Space)
+            Function space to be taken as the domain of the operator.
+       - range (Space)
+            Function space to be taken as the range of the operator.
+       - dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+       - label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+
+    All the three spaces ('domain', 'range' and 'dualToRange') must be defined
+    on the same grid.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
+    return _constructOperator(
+        "laplaceBeltrami3dOperator", context, domain, range, dualToRange, label)
+
 def createMaxwell3dFarFieldSingleLayerPotentialOperator(context, waveNumber):
     """
     Create and return a potential operator used to calculate part of the

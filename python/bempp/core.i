@@ -162,6 +162,7 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "assembly/maxwell_3d_operators.i"
 %include "assembly/identity_operator.i"
 %include "assembly/null_operator.i"
+%include "assembly/laplace_beltrami_3d_operator.i"
 %include "assembly/potential_operator.i"
 %include "assembly/assembled_potential_operator.i"
 %include "assembly/laplace_3d_potential_operators.i"
