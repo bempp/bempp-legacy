@@ -197,4 +197,118 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
 
+// Apply acting on a matrix
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_matrix_input_and_alpha_equal_to_2_and_beta_equal_to_0_and_y_initialized_to_nans, ResultType, result_types)
+{
+    std::srand(1);
+
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    DiscreteDenseBoundaryOperatorFixture<BFT, RT> fixture;
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
+
+    RT alpha = static_cast<RT>(2.);
+    RT beta = static_cast<RT>(0.);
+
+    const int rhsCount = 3;
+
+    arma::Mat<RT> x = generateRandomMatrix<RT>(dop->columnCount(), rhsCount);
+    arma::Mat<RT> y(dop->rowCount(), rhsCount);
+    y.fill(std::numeric_limits<CT>::quiet_NaN());
+
+    arma::Mat<RT> expected = alpha * dop->asMatrix() * x;
+
+    dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
+
+    BOOST_CHECK(y.is_finite());
+    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
+                                           10. * std::numeric_limits<CT>::epsilon()));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_matrix_input_and_alpha_equal_to_2_plus_3j_and_beta_equal_to_0_and_y_initialized_to_nans, ResultType, complex_result_types)
+{
+    std::srand(1);
+
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    DiscreteDenseBoundaryOperatorFixture<BFT, RT> fixture;
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
+
+    RT alpha = static_cast<RT>(2., 3.);
+    RT beta = static_cast<RT>(0.);
+
+    const int rhsCount = 3;
+
+    arma::Mat<RT> x = generateRandomMatrix<RT>(dop->columnCount(), rhsCount);
+    arma::Mat<RT> y(dop->rowCount(), rhsCount);
+    y.fill(std::numeric_limits<CT>::quiet_NaN());
+
+    arma::Mat<RT> expected = alpha * dop->asMatrix() * x;
+
+    dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
+
+    BOOST_CHECK(y.is_finite());
+    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
+                                           10. * std::numeric_limits<CT>::epsilon()));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_matrix_input_and_alpha_equal_to_2_and_beta_equal_to_3, ResultType, result_types)
+{
+    std::srand(1);
+
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    DiscreteDenseBoundaryOperatorFixture<BFT, RT> fixture;
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
+
+    RT alpha = static_cast<RT>(2.);
+    RT beta = static_cast<RT>(3.);
+
+    const int rhsCount = 3;
+
+    arma::Mat<RT> x = generateRandomMatrix<RT>(dop->columnCount(), rhsCount);
+    arma::Mat<RT> y = generateRandomMatrix<RT>(dop->rowCount(), rhsCount);
+
+    arma::Mat<RT> expected = alpha * dop->asMatrix() * x + beta * y;
+
+    dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
+
+    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
+                                           10. * std::numeric_limits<CT>::epsilon()));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_matrix_input_and_alpha_equal_to_2_plus_3j_and_beta_equal_to_4_minus_5j, ResultType, complex_result_types)
+{
+    std::srand(1);
+
+    typedef ResultType RT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+
+    DiscreteDenseBoundaryOperatorFixture<BFT, RT> fixture;
+    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
+
+    RT alpha = static_cast<RT>(2., 3.);
+    RT beta = static_cast<RT>(4., -5.);
+
+    const int rhsCount = 3;
+
+    arma::Mat<RT> x = generateRandomMatrix<RT>(dop->columnCount(), rhsCount);
+    arma::Mat<RT> y = generateRandomMatrix<RT>(dop->rowCount(), rhsCount);
+
+    arma::Mat<RT> expected = alpha * dop->asMatrix() * x + beta * y;
+
+    dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
+
+    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
+                                           10. * std::numeric_limits<CT>::epsilon()));
+}
+
 BOOST_AUTO_TEST_SUITE_END()
