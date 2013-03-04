@@ -340,6 +340,35 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
   $1 = &arma_array;
 }
 
+/* Typemap suite for (DATA_TYPE* INPLACE_ARRAY1, DIM_TYPE DIM1, DIM_TYPE DIM2)
+ */
+%typecheck(SWIG_TYPECHECK_DOUBLE_ARRAY,
+           fragment="NumPy_Macros")
+  (arma::Mat< DATA_TYPE >& INPLACE_MAT)
+{
+  $1 = is_array($input) && PyArray_EquivTypenums(array_type($input),
+                                                 DATA_TYPECODE);
+}
+%typemap(in,
+         fragment="NumPy_Fragments")
+  (arma::Mat< DATA_TYPE >& INPLACE_MAT)
+  (PyArrayObject* array=NULL, arma::Mat< DATA_TYPE > arma_array)
+{
+  array = obj_to_array_no_conversion($input, DATA_TYPECODE);
+  if (!array || !require_dimensions(array, 2) || !require_contiguous(array)
+      || !require_native(array)) SWIG_fail;
+  // Use placement new to reinitialise the Armadillo array using the
+  // "advanced" constructor taking a pointer to existing data. This is needed
+  // because SWIG initialises variables with the default constructor.
+  // (Another way would be to allocate a new Mat object on the heap),
+  arma_array.~Mat< DATA_TYPE >();
+  new (&arma_array) arma::Mat< DATA_TYPE >((DATA_TYPE*) array_data(array),
+                                           array_size(array, 0),
+                                           array_size(array, 1),
+                                           false); // don't copy data
+  $1 = &arma_array;
+}
+
 %enddef    /* %arma_numpy_typemaps() macro */
 /* *************************************************************** */
 

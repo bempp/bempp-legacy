@@ -59,6 +59,34 @@ arma::Mat<ValueType> DiscreteBoundaryOperator<ValueType>::asMatrix() const
 }
 
 template <typename ValueType>
+void
+DiscreteBoundaryOperator<ValueType>::apply(
+        const TranspositionMode trans,
+        const arma::Mat<ValueType>& x_in,
+        arma::Mat<ValueType>& y_inout,
+        const ValueType alpha,
+        const ValueType beta) const
+{
+    bool transposed = (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE);
+    if (x_in.n_rows != (transposed ? rowCount() : columnCount()))
+        throw std::invalid_argument("DiscreteBoundaryOperator::apply(): "
+                                    "vector x_in has invalid length");
+    if (y_inout.n_rows != (transposed ? columnCount() : rowCount()))
+        throw std::invalid_argument("DiscreteBoundaryOperator::apply(): "
+                                    "vector y_inout has invalid length");
+    if (x_in.n_cols != y_inout.n_cols)
+        throw std::invalid_argument("DiscreteBoundaryOperator::apply(): "
+                                    "vectors x_in and y_inout must have "
+                                    "the same number of columns");
+
+    for (size_t i = 0; i < x_in.n_cols; ++i) {
+        const arma::Col<ValueType> x_in_col = x_in.unsafe_col(i);
+        arma::Col<ValueType> y_inout_col = y_inout.unsafe_col(i);
+        applyBuiltInImpl(trans, x_in_col, y_inout_col, alpha, beta);
+    }
+}
+
+template <typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> >
 DiscreteBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
         double eps, int maximumRank, bool interleave) const

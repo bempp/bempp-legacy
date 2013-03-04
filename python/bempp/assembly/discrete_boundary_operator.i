@@ -40,30 +40,30 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
     // this function is only for internal use
     %ignore addBlock;
 
-    %apply const arma::Col<float>& IN_COL {
-        const arma::Col<float>& x_in
+    %apply const arma::Mat<float>& IN_MAT {
+        const arma::Mat<float>& x_in
     };
-    %apply const arma::Col<double>& IN_COL {
-        const arma::Col<double>& x_in
+    %apply const arma::Mat<double>& IN_MAT {
+        const arma::Mat<double>& x_in
     };
-    %apply const arma::Col<std::complex<float> >& IN_COL {
-        const arma::Col<std::complex<float> >& x_in
+    %apply const arma::Mat<std::complex<float> >& IN_MAT {
+        const arma::Mat<std::complex<float> >& x_in
     };
-    %apply const arma::Col<std::complex<double> >& IN_COL {
-        const arma::Col<std::complex<double> >& x_in
+    %apply const arma::Mat<std::complex<double> >& IN_MAT {
+        const arma::Mat<std::complex<double> >& x_in
     };
 
-    %apply arma::Col<float>& INPLACE_COL {
-        arma::Col<float>& y_inout
+    %apply arma::Mat<float>& INPLACE_MAT {
+        arma::Mat<float>& y_inout
     };
-    %apply arma::Col<double>& INPLACE_COL {
-        arma::Col<double>& y_inout
+    %apply arma::Mat<double>& INPLACE_MAT {
+        arma::Mat<double>& y_inout
     };
-    %apply arma::Col<std::complex<float> >& INPLACE_COL {
-        arma::Col<std::complex<float> >& y_inout
+    %apply arma::Mat<std::complex<float> >& INPLACE_MAT {
+        arma::Mat<std::complex<float> >& y_inout
     };
-    %apply arma::Col<std::complex<double> >& INPLACE_COL {
-        arma::Col<std::complex<double> >& y_inout
+    %apply arma::Mat<std::complex<double> >& INPLACE_MAT {
+        arma::Mat<std::complex<double> >& y_inout
     };
 
     %apply arma::Mat<float>& ARGOUT_MAT {
@@ -269,15 +269,15 @@ namespace Bempp
 {
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator);
 
-%clear const arma::Col<float>& x_in;
-%clear const arma::Col<double>& x_in;
-%clear const arma::Col<std::complex<float> >& x_in;
-%clear const arma::Col<std::complex<double> >& x_in;
+%clear const arma::Mat<float>& x_in;
+%clear const arma::Mat<double>& x_in;
+%clear const arma::Mat<std::complex<float> >& x_in;
+%clear const arma::Mat<std::complex<double> >& x_in;
 
-%clear arma::Col<float>& y_inout;
-%clear arma::Col<double>& y_inout;
-%clear arma::Col<std::complex<float> >& y_inout;
-%clear arma::Col<std::complex<double> >& y_inout;
+%clear arma::Mat<float>& y_inout;
+%clear arma::Mat<double>& y_inout;
+%clear arma::Mat<std::complex<float> >& y_inout;
+%clear arma::Mat<std::complex<double> >& y_inout;
 
 %clear arma::Mat<float>& mat_out;
 %clear arma::Mat<double>& mat_out;
