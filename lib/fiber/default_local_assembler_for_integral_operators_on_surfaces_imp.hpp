@@ -462,6 +462,8 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
 {
+    tbb::tick_count start = tbb::tick_count::now();
+
     if (elementIndexPairs.empty())
         return;
 
@@ -589,8 +591,10 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
                                    activeLocalResults));
         }
     }
+    tbb::tick_count end = tbb::tick_count::now();
     if (m_verbosityLevel >= VerbosityLevel::DEFAULT)
-        std::cout << "Precalculation of singular integrals finished" << std::endl;
+        std::cout << "Precalculation of singular integrals took "
+                  << (end - start).seconds() << " s" << std::endl;
 }
 
 template <typename BasisFunctionType, typename KernelType,
