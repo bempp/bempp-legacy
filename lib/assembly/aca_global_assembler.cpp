@@ -400,8 +400,6 @@ assembleAcaOperator(
     //        }
 
     if (verbosityAtLeastDefault) {
-        std::cout << "ACA finished. Total pivot count: " << total_pivot_count
-                  << "\n              Max error: " << ACA_error_max << std::endl;
         size_t totalEntryCount = testDofCount * trialDofCount;
         size_t origMemory = sizeof(ResultType) * totalEntryCount;
         size_t ahmedMemory = sizeH(bemBlclusterTree.get(), blocks.get());
