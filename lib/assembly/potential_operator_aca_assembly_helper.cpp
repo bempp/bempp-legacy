@@ -96,6 +96,7 @@ PotentialOperatorAcaAssemblyHelper(
                     "of components");
     m_componentListsCache.reset(
                 new ComponentListsCache(m_p2oPoints, m_componentCount));
+    resetAccessedEntryCount();
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -132,10 +133,12 @@ template <typename BasisFunctionType, typename ResultType>
 void PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
         unsigned b1, unsigned n1, unsigned b2, unsigned n2,
         AhmedResultType* ahmedData,
-        const cluster* c1, const cluster* c2) const
+        const cluster* c1, const cluster* c2, bool countAccessedEntries) const
 {
 //    std::cout << "\nRequested block: (" << b1 << ", " << n1 << "; "
 //              << b2 << ", " << n2 << ")" << std::endl;
+    if (countAccessedEntries)
+        m_accessedEntryCount += n1 * n2;
 
     typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
@@ -309,8 +312,11 @@ void PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
 template <typename BasisFunctionType, typename ResultType>
 void PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpblsym(
         unsigned b1, unsigned n1, AhmedResultType* ahmedData,
-        const cluster* c1) const
+        const cluster* c1, bool countAccessedEntries) const
 {
+    if (countAccessedEntries)
+        m_accessedEntryCount += n1 * n1;
+
     // Calculate results as usual (without taking symmetry into account)
     arma::Mat<ResultType> block(n1, n1);
     cmpbl(b1, n1, b1, n1, ahmedCast(block.memptr()), c1, c1);
@@ -367,6 +373,22 @@ PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::relativeScale
         result = std::max(result,
                           m_assemblers[nTerm]->estimateRelativeScale(minDist));
     return result;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+size_t
+PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::
+accessedEntryCount() const
+{
+    return m_accessedEntryCount;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void
+PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::
+resetAccessedEntryCount()
+{
+    m_accessedEntryCount = 0;
 }
 
 // Explicit instantiations

@@ -400,9 +400,14 @@ assembleAcaOperator(
     //        }
 
     if (verbosityAtLeastDefault) {
-        size_t origMemory = sizeof(ResultType) * testDofCount * trialDofCount;
+        std::cout << "ACA finished. Total pivot count: " << total_pivot_count
+                  << "\n              Max error: " << ACA_error_max << std::endl;
+        size_t totalEntryCount = testDofCount * trialDofCount;
+        size_t origMemory = sizeof(ResultType) * totalEntryCount;
         size_t ahmedMemory = sizeH(bemBlclusterTree.get(), blocks.get());
         int maximumRank = Hmax_rank(bemBlclusterTree.get(), blocks.get());
+        size_t accessedEntryCount = helper.accessedEntryCount();
+        double accessedFraction = double(accessedEntryCount) / totalEntryCount;
         std::cout << "\nNeeded storage: "
                   << ahmedMemory / 1024. / 1024. << " MB.\n"
                   << "Without approximation: "
@@ -410,6 +415,8 @@ assembleAcaOperator(
                   << "Compressed to "
                   << (100. * ahmedMemory) / origMemory << "%.\n"
                   << "Maximum rank: " << maximumRank << ".\n"
+                  << "Accessed "
+                  << 100. * accessedFraction << "% matrix entries.\n"
                   << std::endl;
     }
 

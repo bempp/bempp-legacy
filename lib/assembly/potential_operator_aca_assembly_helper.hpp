@@ -29,6 +29,7 @@
 #include "../common/types.hpp"
 #include "../fiber/scalar_traits.hpp"
 
+#include <tbb/atomic.h>
 #include <vector>
 
 /** \cond FORWARD_DECL */
@@ -83,14 +84,16 @@ public:
      *  by \p b1, \p n1, \p b2, \p n2 (in permuted ordering) in data. */
     void cmpbl(unsigned b1, unsigned n1, unsigned b2, unsigned n2,
                AhmedResultType* data,
-               const cluster* c1 = 0, const cluster* c2 = 0) const;
+               const cluster* c1 = 0, const cluster* c2 = 0,
+               bool countAccessedEntries = true) const;
 
     /** \brief Evaluate entries of a symmetric block.
      *
      * Store the upper part of the (symmetric) block defined
      * by \p b1, \p n1, \p b1, \p n1 (in permuted ordering) columnwise in \p data. */
     void cmpblsym(unsigned b1, unsigned n1, AhmedResultType* data,
-                  const cluster* c1 = 0) const;
+                  const cluster* c1 = 0,
+                  bool countAccessedEntries = true) const;
 
     /** \brief Expected size of the entries in this block. */
     MagnitudeType scale(unsigned b1, unsigned n1, unsigned b2, unsigned n2,
@@ -100,6 +103,14 @@ public:
      *  of the largest entry in the whole matrix. */
     MagnitudeType relativeScale(unsigned b1, unsigned n1, unsigned b2, unsigned n2,
                                 const cluster* c1 = 0, const cluster* c2 = 0) const;
+
+    /** \brief Return the number of entries in the matrix that have been
+     *  accessed so far. */
+    size_t accessedEntryCount() const;
+
+    /** \brief Reset the number of entries in the matrix that have been
+     *  accessed so far. */
+    void resetAccessedEntryCount();
 
 private:
     MagnitudeType estimateMinimumDistance(
@@ -121,6 +132,8 @@ private:
     shared_ptr<ComponentListsCache> m_componentListsCache;
     shared_ptr<LocalDofListsCache<BasisFunctionType> >
     m_trialDofListsCache;
+
+    mutable tbb::atomic<size_t> m_accessedEntryCount;
     /** \endcond */
 };
 

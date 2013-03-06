@@ -95,6 +95,7 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::WeakFormAcaAssemblyHel
             throw std::invalid_argument(
                     "WeakFormAcaAssemblyHelper::WeakFormAcaAssemblyHelper(): "
                     "no elements of the 'sparseTermsToAdd' vector may be null");
+    resetAccessedEntryCount();
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -131,10 +132,12 @@ template <typename BasisFunctionType, typename ResultType>
 void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
         unsigned b1, unsigned n1, unsigned b2, unsigned n2,
         AhmedResultType* ahmedData,
-        const cluster* c1, const cluster* c2) const
+        const cluster* c1, const cluster* c2, bool countAccessedEntries) const
 {
-//    std::cout << "\nRequested block: (" << b1 << ", " << n1 << "; "
-//              << b2 << ", " << n2 << ")" << std::endl;
+    //    std::cout << "\nRequested block: (" << b1 << ", " << n1 << "; "
+    //              << b2 << ", " << n2 << ")" << std::endl;
+    if (countAccessedEntries)
+        m_accessedEntryCount += n1 * n2;
 
     // if negative, it means: unknown
     const CoordinateType minDist = estimateMinimumDistance(c1, c2);
@@ -369,8 +372,11 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
 template <typename BasisFunctionType, typename ResultType>
 void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpblsym(
         unsigned b1, unsigned n1, AhmedResultType* ahmedData,
-        const cluster* c1) const
+        const cluster* c1, bool countAccessedEntries) const
 {
+    if (countAccessedEntries)
+        m_accessedEntryCount += n1 * n1;
+
     // Calculate results as usual (without taking symmetry into account)
     arma::Mat<ResultType> block(n1, n1);
     cmpbl(b1, n1, b1, n1, ahmedCast(block.memptr()), c1, c1);
@@ -388,7 +394,6 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::scale(
         unsigned b1, unsigned n1, unsigned b2, unsigned n2,
         const cluster* c1, const cluster* c2) const
 {
-//    return m_options.acaOptions().scaling;
     typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
     typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
@@ -427,6 +432,22 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::relativeScale(
         result = std::max(result,
                           m_assemblers[nTerm]->estimateRelativeScale(minDist));
     return result;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+size_t
+WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::
+accessedEntryCount() const
+{
+    return m_accessedEntryCount;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void
+WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::
+resetAccessedEntryCount()
+{
+    m_accessedEntryCount = 0;
 }
 
 // Explicit instantiations
