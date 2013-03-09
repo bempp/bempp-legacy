@@ -82,12 +82,11 @@ bool ACAs(MATGEN_T& MatGen, unsigned b1, unsigned n1, unsigned b2, unsigned n2,
     for (unsigned l=0; l<n2; ++l)
         S[l] = 0;
 
-    // squared norms of rows of U
-    boost::scoped_array<abs_T> norm2_U(new abs_T[n1]);
-    blas::setzero(n1, norm2_U.get());
-    // squared norms of rows of V
-    boost::scoped_array<abs_T> norm2_V(new abs_T[n2]);
-    blas::setzero(n2, norm2_V.get());
+    boost::scoped_array<T> orig_row(new T[n2]);
+    boost::scoped_array<T> orig_col(new T[n1]);
+
+    boost::scoped_array<abs_T> orig_row_norm2(new abs_T[n2]);
+    boost::scoped_array<abs_T> orig_col_norm2(new abs_T[n1]);
 
     abs_T nrms2 = 0.; // squared Frobenius norm of U V^H
 
@@ -105,9 +104,9 @@ bool ACAs(MATGEN_T& MatGen, unsigned b1, unsigned n1, unsigned b2, unsigned n2,
     // If the result is deemed small enough relative to eps, the block is taken to
     // be zero and its elements are not evaluate.
     // This can be useful in the approximation of strongly decaying kernels.
-    abs_T relscale = MatGen.relativeScale(b1, n1, b2, n2, c1, c2);
-    if (relscale < 1e-2 * eps)
-        return true;
+    // abs_T relscale = MatGen.relativeScale(b1, n1, b2, n2, c1, c2);
+    // if (relscale < 1e-2 * eps)
+    //     return true;
 
     do {
         bool ok;
@@ -116,11 +115,13 @@ bool ACAs(MATGEN_T& MatGen, unsigned b1, unsigned n1, unsigned b2, unsigned n2,
         if (mode == ROW)
             ok = ACA_row_step(
                         MatGen, b1, n1, b2, n2, klast, next_pivot, k, no,
-                        Z.get(), S.get(), U, V, nrmlsk2, scale, c1, c2);
+                        Z.get(), S.get(), U, V, nrmlsk2, scale, c1, c2,
+                        true, orig_row.get(), orig_col.get());
         else
             ok = ACA_col_step(
                         MatGen, b1, n1, b2, n2, next_pivot, k, no,
-                        Z.get(), S.get(), U, V, nrmlsk2, scale, c1, c2);
+                        Z.get(), S.get(), U, V, nrmlsk2, scale, c1, c2,
+                        true, orig_row.get(), orig_col.get());
         if (!ok) // in last step no non-zero row/column could be found
             return true;
 
@@ -139,12 +140,6 @@ bool ACAs(MATGEN_T& MatGen, unsigned b1, unsigned n1, unsigned b2, unsigned n2,
         scale = sqrt(nrmlsk2/(n1*n2));
         // std::cout << "nrmlsk2: " << nrmlsk2 << ", nrms2: " << nrms2 << ", scale = " << scale << std::endl;
 
-        // update U & V norms
-        for (unsigned l = 0; l < n1; ++l)
-            norm2_U[l] += abs2(U[k*n1 + l]);
-        for (unsigned l = 0; l < n2; ++l)
-            norm2_V[l] += abs2(V[k*n2 + l]);
-
         ++k;
 
         if (stpcrit) {
@@ -154,14 +149,14 @@ bool ACAs(MATGEN_T& MatGen, unsigned b1, unsigned n1, unsigned b2, unsigned n2,
                 if (mode == ROW) {
                     // select column pivot
                     bool found = select_pivot_with_min_norm2(
-                                n2, norm2_V.get(), S.get(), next_pivot);
+                                n2, orig_row_norm2.get(), S.get(), next_pivot);
                     if (!found) // no nonapproximated column could be found
                         return true;
                     mode = COL;
                 } else {
                     // select row pivot
                     bool found = select_pivot_with_min_norm2(
-                                n1, norm2_U.get(), Z.get(), next_pivot);
+                                n1, orig_col_norm2.get(), Z.get(), next_pivot);
                     if (!found) // no nonapproximated row could be found
                         return true;
                     mode = ROW;
@@ -169,17 +164,21 @@ bool ACAs(MATGEN_T& MatGen, unsigned b1, unsigned n1, unsigned b2, unsigned n2,
                 stage = SECOND_SHOT;
             } else {
                 assert(stage == NORMAL);
+                for (unsigned i = 0; i < n2; ++i)
+                    orig_row_norm2[i] = abs2(orig_row[i]);
+                for (unsigned i = 0; i < n1; ++i)
+                    orig_col_norm2[i] = abs2(orig_col[i]);
                 if (mode == ROW) {
                     // select row pivot
                     bool found = select_pivot_with_min_norm2(
-                                n1, norm2_U.get(), Z.get(), next_pivot);
+                                n1, orig_col_norm2.get(), Z.get(), next_pivot);
                     if (!found) // no nonapproximated row could be found
                         return true;
                 }
                 else {
                     // select column pivot
                     bool found = select_pivot_with_min_norm2(
-                                n2, norm2_V.get(), S.get(), next_pivot);
+                                n2, orig_row_norm2.get(), S.get(), next_pivot);
                     if (!found) // no nonapproximated column could be found
                         return true;
                 }
