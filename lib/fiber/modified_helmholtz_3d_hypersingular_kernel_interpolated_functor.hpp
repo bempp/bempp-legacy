@@ -83,6 +83,10 @@ public:
             m_slpKernel.waveNumber() * m_slpKernel.waveNumber();
     }
 
+    CoordinateType estimateRelativeScale(CoordinateType distance) const {
+        return m_slpKernel.estimateRelativeScale(distance);
+    }
+
 private:
     /** \cond PRIVATE */
     ModifiedHelmholtz3dSingleLayerPotentialKernelInterpolatedFunctor<ValueType>

@@ -68,6 +68,15 @@ namespace Fiber
                 const ConstGeometricalDataSlice<CoordinateType>& testGeomData,
                 const ConstGeometricalDataSlice<CoordinateType>& trialGeomData,
                 CollectionOf2dSlicesOfNdArrays<ValueType>& result) const;
+
+        // (Optional)
+        // Return an estimate of the magnitude of the kernel at test and trial
+        // points lying in a given distance from each other. This estimate does
+        // not need to be accurate; in practice, it is only useful to give it at
+        // all for exponentially decaying kernels.  If this function is not
+        // defined, the kernel behaves as if its estimated magnitude was 1
+        // everywhere.
+        CoordinateType estimateRelativeScale(CoordinateType distance) const;
     };
     \endcode
 
