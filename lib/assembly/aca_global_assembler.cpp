@@ -400,6 +400,9 @@ assembleAcaOperator(
     //        }
 
     if (verbosityAtLeastDefault) {
+#ifdef CHECK_ACA_ERROR // a define from include/AHMED/apprx.h
+        std::cout << "ACA finished. Max error: " << ACA_error_max << std::endl;
+#endif
         size_t totalEntryCount = testDofCount * trialDofCount;
         size_t origMemory = sizeof(ResultType) * totalEntryCount;
         size_t ahmedMemory = sizeH(bemBlclusterTree.get(), blocks.get());
