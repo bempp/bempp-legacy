@@ -67,6 +67,7 @@ def prepare(root,config):
                   "ahmed_pass_clusters_to_aca_matgen_ACA.h.patch",
                   "ahmed_frobenius_norm_ACA.h.patch",
                   "ahmed_zero_pu_pv_ACA.h.patch",
+                  "ahmed_retry_if_zero_and_orig_cross_ACA.h.patch",
                   "ahmed_permuted_indices_bemcluster.h.patch"):
             py_patch.fromfile(root+"/installer/patches/"+s).apply()
         os.chdir(cwd)
