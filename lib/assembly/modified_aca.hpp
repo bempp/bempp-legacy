@@ -109,38 +109,44 @@ bool ACAs(MATGEN_T& MatGen, unsigned b1, unsigned n1, unsigned b2, unsigned n2,
     //     return true;
 
     do {
-        bool ok;
+        ACA_status status;
         abs_T nrmlsk2; // product of squared norms of new columns of U and V
+        bool retry_if_zero = (stage == NORMAL); // don't retry if shooting
         // compute a cross
         if (mode == ROW)
-            ok = ACA_row_step(
+            status = ACA_row_step(
                         MatGen, b1, n1, b2, n2, klast, next_pivot, k, no,
                         Z.get(), S.get(), U, V, nrmlsk2, scale, c1, c2,
-                        true, orig_row.get(), orig_col.get());
+                        retry_if_zero, orig_row.get(), orig_col.get());
         else
-            ok = ACA_col_step(
+            status = ACA_col_step(
                         MatGen, b1, n1, b2, n2, next_pivot, k, no,
                         Z.get(), S.get(), U, V, nrmlsk2, scale, c1, c2,
-                        true, orig_row.get(), orig_col.get());
-        if (!ok) // in last step no non-zero row/column could be found
+                        retry_if_zero, orig_row.get(), orig_col.get());
+        // std::cout << "status = " << status << std::endl;
+
+        bool stpcrit = false;
+        if (status == ACA_STATUS_SUCCESS) {
+            // check stopping criterion
+            T sum = 0.;                            // update nrms2
+            for (unsigned l=0; l<k; ++l)
+                sum += blas::scpr(n1, U+l*n1, U+k*n1) * blas::scpr(n2, V+k*n2, V+l*n2);
+            nrms2 += 2. * Re(sum) + nrmlsk2;
+
+            stpcrit = (nrmlsk2 < eps * eps * nrms2);
+            // adjust scale (estimated entry size of the next remainder)
+            scale = sqrt(nrmlsk2/(n1*n2));
+            // std::cout << "nrmlsk2: " << nrmlsk2 << ", nrms2: " << nrms2 << ", scale = " << scale
+            //           << std::endl;
+
+            ++k;
+        } else if (status == ACA_STATUS_EARLY_EXIT)
+            stpcrit = true;
+        else {
+            // in the last step no non-zero row/column could be found
+            assert(status == ACA_STATUS_REMAINDER_IS_ZERO);
             return true;
-
-        // else: step was successful
-
-        // ------------------------------------------------------------------------
-        // check stopping criterion
-
-        T sum = 0.;                            // update nrms2
-        for (unsigned l=0; l<k; ++l)
-            sum += blas::scpr(n1, U+l*n1, U+k*n1) * blas::scpr(n2, V+k*n2, V+l*n2);
-        nrms2 += 2. * Re(sum) + nrmlsk2;
-
-        bool stpcrit = (nrmlsk2 < eps * eps * nrms2);
-        // adjust scale (estimated entry size of the next remainder)
-        scale = sqrt(nrmlsk2/(n1*n2));
-        // std::cout << "nrmlsk2: " << nrmlsk2 << ", nrms2: " << nrms2 << ", scale = " << scale << std::endl;
-
-        ++k;
+        }
 
         if (stpcrit) {
             if (stage == SECOND_SHOT)
