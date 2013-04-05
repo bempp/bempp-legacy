@@ -263,6 +263,15 @@ public:
     virtual void getFlatLocalDofPositions(
             std::vector<Point3D<CoordinateType> >& positions) const = 0;
 
+    virtual void getGlobalDofNormals(
+            std::vector<Point3D<CoordinateType> >& normals) const {
+        throw std::runtime_error("getGlobalDofNormals(): not implemented");
+    }
+    virtual void getFlatLocalDofNormals(
+            std::vector<Point3D<CoordinateType> >& normals) const {
+        throw std::runtime_error("getFlatLocalDofNormals(): not implemented");
+    }
+
     /** @}
         @name Debugging
         @} */

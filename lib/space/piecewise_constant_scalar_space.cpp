@@ -199,6 +199,46 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::getFlatLocalDofPositions(
 }
 
 template <typename BasisFunctionType>
+void PiecewiseConstantScalarSpace<BasisFunctionType>::getGlobalDofNormals(
+        std::vector<Point3D<CoordinateType> >& normals) const
+{
+    const int gridDim = domainDimension();
+    const int globalDofCount_ = globalDofCount();
+    normals.resize(globalDofCount_);
+
+    const Mapper& mapper = m_view->elementMapper();
+
+    arma::Col<CoordinateType> center(gridDim);
+    center.fill(0.5);
+    arma::Col<CoordinateType> normal;
+    if (gridDim == 1)
+        throw NotImplementedError(
+                "PiecewiseConstantScalarSpace::globalDofPositions(): "
+                "not implemented for 2D yet.");
+    else {
+        std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+        while (!it->finished())
+        {
+            const Entity<0>& e = it->entity();
+            int index = mapper.entityIndex(e);
+            e.geometry().getNormals(center, normal);
+
+            normals[index].x = normal(0);
+            normals[index].y = normal(1);
+            normals[index].z = normal(2);
+            it->next();
+        }
+    }
+}
+
+template <typename BasisFunctionType>
+void PiecewiseConstantScalarSpace<BasisFunctionType>::getFlatLocalDofNormals(
+        std::vector<Point3D<CoordinateType> >& normals) const
+{
+    return getGlobalDofNormals(normals);
+}
+
+template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::dumpClusterIds(
         const char* fileName,
         const std::vector<unsigned int>& clusterIdsOfDofs) const

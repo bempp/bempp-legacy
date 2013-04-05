@@ -39,6 +39,8 @@ template<typename BasisFunctionType> class Space;
 // this function is only for internal use
 %ignore getGlobalDofPositions;
 %ignore getFlatLocalDofPositions;
+%ignore getGlobalDofNormals;
+%ignore getFlatLocalDofNormals;
 
 %ignore dumpClusterIds;
 %ignore dumpClusterIdsEx;
