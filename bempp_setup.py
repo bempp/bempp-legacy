@@ -144,11 +144,22 @@ def prepare(root,config):
 
     # Set default MPI options
 
-    enable_mpi = to_bool(setDefaultConfigOption(config,'Main','enable_mpi','false'))
+    setDefaultConfigOption(config,'MPI','enable_mpi','false')
+    setDefaultConfigOption(config,'MPI','mpi_cxx_libs','')
+    setDefaultConfigOption(config,'MPI','mpi_include_dir','')
+    enable_mpi = to_bool(config.get('MPI','enable_mpi'))
+
     if enable_mpi:
+	mpi_include_dir = config.get('MPI','mpi_include_dir')
+	cflags = config.get('Main','cflags')
+	cxxflags = config.get('Main','cxxflags')
         config.set('Main','with_mpi','ON')
+	config.set('Main','cflags',cflags+" -I"+mpi_include_dir)
+	config.set('Main','cxxflags',cxxflags+" -I"+mpi_include_dir)
     else:
-        config.set('Main','with_mpi','OFF')
+        config.set('MPI','with_mpi','OFF')
+
+ 
 
 
     # Set empty BLAS/Lapack options if none exist

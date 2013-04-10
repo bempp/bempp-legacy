@@ -239,7 +239,7 @@ def sphere(radius=1,origin=(0,0,0),h=0.1,grid=True,msh_file=False,parallel=True)
     return __generate_grid_from_string(sphere_geometry,grid,msh_file,parallel)
 
         
-def cube(length=1,origin=(0,0,0),h=0.1,grid=True,msh_file=False):
+def cube(length=1,origin=(0,0,0),h=0.1,grid=True,msh_file=False,parallel=True):
     """
     Return a shpere grid.
 

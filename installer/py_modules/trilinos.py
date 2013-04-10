@@ -70,6 +70,7 @@ def prepare(root,config):
     tools.setDefaultConfigOption(config,'Trilinos','cmake_path',prefix+"/bempp/lib/cmake/Trilinos/",overwrite=True)
 
     tools.setCompilerOptions(config,'Trilinos')
+   
 
 def configure(root,config):
     dep_build_dir=config.get('Main','dependency_build_dir')
