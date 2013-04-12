@@ -105,8 +105,8 @@ constructGlobalToFlatLocalDofsMappingEpetraMatrix(
     const size_t columnCount = space.globalDofCount();
 
     Epetra_SerialComm comm; // To be replaced once we begin to use MPI
-    Epetra_LocalMap rowMap(rowCount, 0 /* index_base */, comm);
-    Epetra_LocalMap columnMap(columnCount, 0 /* index_base */, comm);
+    Epetra_LocalMap rowMap( (int) rowCount, 0 /* index_base */, comm);
+    Epetra_LocalMap columnMap( (int) columnCount, 0 /* index_base */, comm);
     shared_ptr<Epetra_CrsMatrix> result = boost::make_shared<Epetra_CrsMatrix>(
                 Copy, rowMap, columnMap, 1 /* entries per row */);
 
