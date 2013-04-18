@@ -35,7 +35,8 @@ AcaOptions::AcaOptions() :
     outputPostscript(false),
     outputFname("aca.ps"),
     scaling(1.0),
-    useAhmedAca(false)
+    useAhmedAca(false),
+    firstClusterIndex(-1)
 {
 }
 

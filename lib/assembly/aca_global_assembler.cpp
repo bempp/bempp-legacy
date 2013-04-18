@@ -221,7 +221,8 @@ void dumpDenseBlocks(
         const std::vector<unsigned int>& p2oRows,
         const std::vector<unsigned int>& p2oCols,
         const std::vector<Point3D<typename Fiber::ScalarTraits<ValueType>::RealType> >& rowDofs,
-        const std::vector<Point3D<typename Fiber::ScalarTraits<ValueType>::RealType> >& colDofs)
+        const std::vector<Point3D<typename Fiber::ScalarTraits<ValueType>::RealType> >& colDofs,
+        int singleClusterIndex = -1)
 {
     if (!clusterTree)
         return;
@@ -232,8 +233,9 @@ void dumpDenseBlocks(
     typedef bemcluster<AhmedDofType> Cluster;
     if (clusterTree->isleaf()) {
         unsigned int idx = clusterTree->getidx();
-        std::cout << "LEAF; idx = " << idx << std::endl;
-        if (clusterTree->isGeM(blocks.get()) && clusterTree->isadm()) {
+        if ((singleClusterIndex < 0 &&
+             clusterTree->isGeM(blocks.get()) && clusterTree->isadm()) ||
+                idx == singleClusterIndex) {
             std::cout << "Dense block; " << clusterTree->getb1()
                       << " " << clusterTree->getb2()
                       << " " << clusterTree->getn1()
@@ -274,12 +276,12 @@ void dumpDenseBlocks(
                           << dofPos.x << ", " << dofPos.y << ", "
                           << dofPos.z << "\n";
             }
-            AhmedMblock* block = blocks[idx];
-            arma::Mat<ValueType> ablock(clusterTree->getn1(),
-                                        clusterTree->getn2());
-            for (size_t i = 0; i < block->nvals(); ++i)
-                ablock[i] = block->getdata()[i];
-            save_arma_matrix(ablock, "block-" + toString(idx) + ".txt");
+//            AhmedMblock* block = blocks[idx];
+//            arma::Mat<ValueType> ablock(clusterTree->getn1(),
+//                                        clusterTree->getn2());
+//            for (size_t i = 0; i < block->nvals(); ++i)
+//                ablock[i] = block->getdata()[i];
+//            save_arma_matrix(ablock, "block-" + toString(idx) + ".txt");
         }
     }
     else
@@ -289,7 +291,8 @@ void dumpDenseBlocks(
                         dynamic_cast<typename AcaOp::AhmedBemBlcluster*>(
                             clusterTree->getson(nRowSon, nColSon)),
                         blocks,
-                        p2oRows, p2oCols, rowDofs, colDofs);
+                        p2oRows, p2oCols, rowDofs, colDofs,
+                        singleClusterIndex);
 }
 
 template <typename AcaAssemblyHelper,
@@ -325,6 +328,8 @@ assembleAcaOperator(
 
     AhmedLeafClusterArray leafClusters(bemBlclusterTree.get());
     leafClusters.sortAccordingToClusterSize();
+    if (acaOptions.firstClusterIndex >= 0)
+        leafClusters.startWithClusterOfIndex(acaOptions.firstClusterIndex);
     const size_t leafClusterCount = leafClusters.size();
 
     int maxThreadCount = 1;
@@ -338,6 +343,15 @@ assembleAcaOperator(
     tbb::task_scheduler_init scheduler(maxThreadCount);
     tbb::atomic<size_t> done;
     done = 0;
+
+#ifdef DUMP_DENSE_BLOCKS
+    if (acaOptions.firstClusterIndex >= 0)
+        dumpDenseBlocks<ResultType>(bemBlclusterTree.get(), blocks,
+                                    test_p2oPermutation->permutedIndices(),
+                                    trial_p2oPermutation->permutedIndices(),
+                                    testDofCenters, trialDofCenters,
+                                    acaOptions.firstClusterIndex);
+#endif
 
     std::vector<ChunkStatistics> chunkStats(leafClusterCount);
 
@@ -373,13 +387,6 @@ assembleAcaOperator(
         if (verbosityAtLeastDefault)
             std::cout << "Agglomeration finished" << std::endl;
     }
-
-#ifdef DUMP_DENSE_BLOCKS
-    dumpDenseBlocks<ResultType>(bemBlclusterTree.get(), blocks,
-                                test_p2oPermutation->permutedIndices(),
-                                trial_p2oPermutation->permutedIndices(),
-                                testDofCenters, trialDofCenters);
-#endif // DUMP_DENSE_BLOCKS
 
     //    dumpAhmedMblockArray<ResultType>(blocks, blockCount);
 
