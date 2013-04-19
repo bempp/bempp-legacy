@@ -25,6 +25,8 @@
 
 #include "test_kernel_trial_integrator.hpp"
 
+#include <tbb/enumerable_thread_specific.h>
+
 namespace Fiber
 {
 
@@ -93,6 +95,10 @@ private:
     const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& m_integral;
 
     const OpenClHandler& m_openClHandler;
+    // thread-local static data for integrate() -- allocation and deallocation of GeometricalData
+    // is very time-consuming due to the presence of arma::Cube objects.
+    mutable tbb::enumerable_thread_specific<GeometricalData<CoordinateType> > 
+    m_testGeomData, m_trialGeomData;
 };
 
 } // namespace Fiber

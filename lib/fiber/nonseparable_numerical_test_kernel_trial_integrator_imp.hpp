@@ -118,7 +118,8 @@ integrate(
     const int trialDofCount = callVariant == TEST_TRIAL ? dofCountB : dofCountA;
 
     BasisData<BasisFunctionType> testBasisData, trialBasisData;
-    GeometricalData<CoordinateType> testGeomData, trialGeomData;
+    GeometricalData<CoordinateType>& testGeomData = m_testGeomData.local();
+    GeometricalData<CoordinateType>& trialGeomData = m_trialGeomData.local();
 
     size_t testBasisDeps = 0, trialBasisDeps = 0;
     size_t testGeomDeps = 0, trialGeomDeps = 0;
@@ -222,7 +223,8 @@ integrate(
     const int trialDofCount = trialBasis.size();
 
     BasisData<BasisFunctionType> testBasisData, trialBasisData;
-    GeometricalData<CoordinateType> testGeomData, trialGeomData;
+    GeometricalData<CoordinateType>& testGeomData = m_testGeomData.local();
+    GeometricalData<CoordinateType>& trialGeomData = m_trialGeomData.local();
 
     size_t testBasisDeps = 0, trialBasisDeps = 0;
     size_t testGeomDeps = 0, trialGeomDeps = 0;
