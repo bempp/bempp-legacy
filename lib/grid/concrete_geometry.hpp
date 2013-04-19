@@ -401,7 +401,9 @@ private:
             double sum = 0.;
             for (int dim = 0; dim < cdim; ++dim)
                 sum += normals(dim, i) * normals(dim, i);
-            normals.col(i) /= sqrt(sum);
+            double invLength = 1. / sqrt(sum);
+            for (size_t j = 0; j < cdim; ++j)
+                normals(j, i) *= invLength;
         }
     }
 };
