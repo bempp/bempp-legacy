@@ -24,6 +24,7 @@
 #include "../common/common.hpp"
 
 #include "../common/armadillo_fwd.hpp"
+#include "_3d_array.hpp"
 
 #include <cassert>
 
@@ -49,8 +50,8 @@ struct GeometricalData
 {
     arma::Mat<CoordinateType> globals;
     arma::Row<CoordinateType> integrationElements;
-    arma::Cube<CoordinateType> jacobiansTransposed;
-    arma::Cube<CoordinateType> jacobianInversesTransposed;
+    Fiber::_3dArray<CoordinateType> jacobiansTransposed;
+    Fiber::_3dArray<CoordinateType> jacobianInversesTransposed;
     arma::Mat<CoordinateType> normals;
 
     // For the time being, I (somewhat dangerously) assume that
@@ -109,12 +110,20 @@ public:
         if (!m_geomData.integrationElements.is_empty())
             result.integrationElements =
                     m_geomData.integrationElements(m_point);
-        if (!m_geomData.jacobiansTransposed.is_empty())
-            result.jacobiansTransposed =
-                    m_geomData.jacobiansTransposed.slices(m_point, m_point);
-        if (!m_geomData.jacobianInversesTransposed.is_empty())
-            result.jacobianInversesTransposed =
-                    m_geomData.jacobianInversesTransposed.slices(m_point, m_point);
+        if (!m_geomData.jacobiansTransposed.is_empty()) {
+            result.jacobiansTransposed.set_size(
+                1, 1, m_geomData.jacobiansTransposed.extent(2));
+            for (size_t i = 0; i < result.jacobiansTransposed.extent(2); ++i)
+                result.jacobiansTransposed(0, 0, i) =
+                    m_geomData.jacobiansTransposed(m_point, m_point, i);
+        }
+        if (!m_geomData.jacobianInversesTransposed.is_empty()) {
+            result.jacobianInversesTransposed.set_size(
+                1, 1, m_geomData.jacobianInversesTransposed.extent(2));
+            for (size_t i = 0; i < result.jacobianInversesTransposed.extent(2); ++i)
+                result.jacobianInversesTransposed(0, 0, i) =
+                    m_geomData.jacobianInversesTransposed(m_point, m_point, i);
+        }
         if (!m_geomData.normals.is_empty())
             result.normals = m_geomData.normals.col(m_point);
         return result;

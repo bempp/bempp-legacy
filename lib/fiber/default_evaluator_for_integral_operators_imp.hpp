@@ -448,12 +448,30 @@ ResultType, GeometryFactory>::calcTrialData(
         if (kernelTrialGeomDeps & NORMALS)
             trialGeomData.normals.cols(startCol, endCol) =
                     geomDataPerElement[e].normals;
-        if (kernelTrialGeomDeps & JACOBIANS_TRANSPOSED)
-            trialGeomData.jacobiansTransposed.slices(startCol, endCol) =
-                    geomDataPerElement[e].jacobiansTransposed;
-        if (kernelTrialGeomDeps & JACOBIAN_INVERSES_TRANSPOSED)
-            trialGeomData.jacobianInversesTransposed.slices(startCol, endCol) =
-                    geomDataPerElement[e].jacobianInversesTransposed;
+        if (kernelTrialGeomDeps & JACOBIANS_TRANSPOSED) {
+            const size_t m =
+                trialGeomData.jacobiansTransposed.extent(0);
+            const size_t n =
+                trialGeomData.jacobiansTransposed.extent(1);
+            for (int col = startCol; col <= endCol; ++col)
+                for (int c = 0; c < n; ++c)
+                    for (int r = 0; r < n; ++r)
+                        trialGeomData.jacobiansTransposed(r, c, col) =
+                            geomDataPerElement[e].jacobiansTransposed(
+                                r, c, col - startCol);
+        }
+        if (kernelTrialGeomDeps & JACOBIAN_INVERSES_TRANSPOSED) {
+            const size_t m =
+                trialGeomData.jacobianInversesTransposed.extent(0);
+            const size_t n =
+                trialGeomData.jacobianInversesTransposed.extent(1);
+            for (int col = startCol; col <= endCol; ++col)
+                for (int c = 0; c < n; ++c)
+                    for (int r = 0; r < n; ++r)
+                        trialGeomData.jacobianInversesTransposed(r, c, col) =
+                            geomDataPerElement[e].jacobianInversesTransposed(
+                                r, c, col - startCol);
+        }
         for (int transf = 0; transf < transformationCount; ++transf)
             for (size_t point = 0; point < trialTransfValuesPerElement[e][transf].extent(1); ++point)
                 for (size_t dim = 0; dim < trialTransfValuesPerElement[e][transf].extent(0); ++dim)

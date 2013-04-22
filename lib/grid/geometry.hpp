@@ -28,6 +28,7 @@
 #include <dune/common/fvector.hh>
 #include <dune/common/fmatrix.hh>
 #include "../common/armadillo_fwd.hpp"
+#include "../fiber/_3d_array.hpp"
 
 namespace Fiber
 {
@@ -199,6 +200,14 @@ public:
     void getJacobiansTransposed(
             const arma::Mat<float>& local,
             arma::Cube<float>& jacobian_t) const;
+    /** \overload */
+    void getJacobiansTransposed(
+            const arma::Mat<double>& local,
+            Fiber::_3dArray<double>& jacobian_t) const;
+    /** \overload */
+    void getJacobiansTransposed(
+            const arma::Mat<float>& local,
+            Fiber::_3dArray<float>& jacobian_t) const;
 
     /** \brief Get inverses of transposed Jacobian matrices at specified points.
      *
@@ -231,6 +240,14 @@ public:
     void getJacobianInversesTransposed(
             const arma::Mat<float>& local,
             arma::Cube<float>& jacobian_inv_t) const;
+    /** \overload */
+    void getJacobianInversesTransposed(
+            const arma::Mat<double>& local,
+            Fiber::_3dArray<double>& jacobian_inv_t) const;
+    /** \overload */
+    void getJacobianInversesTransposed(
+            const arma::Mat<float>& local,
+            Fiber::_3dArray<float>& jacobian_inv_t) const;
 
     /** \brief Get unit vectors normal to the entity at specified points.
      *
@@ -273,10 +290,10 @@ private:
     virtual void getCenterImpl(arma::Col<double>& c) const = 0;
     virtual void getJacobiansTransposedImpl(
             const arma::Mat<double>& local,
-            arma::Cube<double>& jacobian_t) const = 0;
+            Fiber::_3dArray<double>& jacobian_t) const = 0;
     virtual void getJacobianInversesTransposedImpl(
             const arma::Mat<double>& local,
-            arma::Cube<double>& jacobian_inv_t) const = 0;
+            Fiber::_3dArray<double>& jacobian_inv_t) const = 0;
     virtual void getNormalsImpl(
             const arma::Mat<double>& local,
             arma::Mat<double>& normal) const = 0;
@@ -289,6 +306,10 @@ private:
     void convertMat(const arma::Mat<T1>& in, arma::Mat<T2>& out) const;
     template <typename T1, typename T2>
     void convertCube(const arma::Cube<T1>& in, arma::Cube<T2>& out) const;
+    template <typename T1, typename T2>
+    void convertCube(const Fiber::_3dArray<T1>& in, Fiber::_3dArray<T2>& out) const;
+    template <typename T1, typename T2>
+    void convertCube(const Fiber::_3dArray<T1>& in, arma::Cube<T2>& out) const;
 };
 
 } // namespace Bempp

@@ -273,7 +273,7 @@ public:
     }
 
     virtual void getJacobiansTransposedImpl(const arma::Mat<double>& local,
-                                            arma::Cube<double>& jacobian_t) const {
+                                            Fiber::_3dArray<double>& jacobian_t) const {
         const int mdim = DuneGeometry::mydimension;
         const int cdim = DuneGeometry::coorddimension;
 #ifndef NDEBUG
@@ -303,7 +303,7 @@ public:
 
     virtual void getJacobianInversesTransposedImpl(
             const arma::Mat<double>& local,
-            arma::Cube<double>& jacobian_inv_t) const {
+            Fiber::_3dArray<double>& jacobian_inv_t) const {
         const int mdim = DuneGeometry::mydimension;
         const int cdim = DuneGeometry::coorddimension;
 #ifndef NDEBUG
@@ -333,7 +333,7 @@ public:
 
     virtual void getNormalsImpl(const arma::Mat<double>& local,
                                 arma::Mat<double>& normal) const {
-        arma::Cube<double> jacobian_t;
+        Fiber::_3dArray<double> jacobian_t;
         getJacobiansTransposed(local, jacobian_t);
         calculateNormals(jacobian_t, normal);
     }
@@ -360,7 +360,7 @@ public:
     }
 
 private:
-    void calculateNormals(const arma::Cube<double>& jt,
+    void calculateNormals(const Fiber::_3dArray<double>& jt,
                           arma::Mat<double>& normals) const {
         const int mdim = DuneGeometry::mydimension;
         const int cdim = DuneGeometry::coorddimension;
@@ -370,7 +370,7 @@ private:
                                    "normal vectors are defined only for "
                                    "entities of dimension (worldDimension - 1)");
 
-        const size_t pointCount = jt.n_slices;
+        const size_t pointCount = jt.extent(2); //jt.n_slices;
         normals.set_size(cdim, pointCount);
 
         // First calculate normal vectors of arbitrary length

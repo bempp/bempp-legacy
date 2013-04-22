@@ -26,6 +26,8 @@
 #include "geometry.hpp" // keep IDEs happy
 #include "../fiber/geometrical_data.hpp"
 
+#include <algorithm>
+
 namespace Bempp
 {
 
@@ -117,7 +119,14 @@ inline void Geometry::getJacobiansTransposed(
         const arma::Mat<double>& local,
         arma::Cube<double>& jacobian_t) const
 {
-    getJacobiansTransposedImpl(local, jacobian_t);
+    const size_t n = local.n_cols;
+    const size_t mdim = dim();
+    const size_t cdim = dimWorld();
+    jacobian_t.set_size(mdim, cdim, n);
+    Fiber::_3dArray<double> fiber_jacobian_t(
+        mdim, cdim, n, jacobian_t.memptr(),
+        true /* strict */);
+    getJacobiansTransposedImpl(local, fiber_jacobian_t);
 }
 
 inline void Geometry::getJacobiansTransposed(
@@ -125,7 +134,25 @@ inline void Geometry::getJacobiansTransposed(
         arma::Cube<float>& jacobian_t) const
 {
     arma::Mat<double> localDouble;
-    arma::Cube<double> jacobian_tDouble;
+    Fiber::_3dArray<double> jacobian_tDouble;
+    convertMat(local, localDouble);
+    getJacobiansTransposedImpl(localDouble, jacobian_tDouble);
+    convertCube(jacobian_tDouble, jacobian_t);
+}
+
+inline void Geometry::getJacobiansTransposed(
+        const arma::Mat<double>& local,
+        Fiber::_3dArray<double>& jacobian_t) const
+{
+    getJacobiansTransposedImpl(local, jacobian_t);
+}
+
+inline void Geometry::getJacobiansTransposed(
+        const arma::Mat<float>& local,
+        Fiber::_3dArray<float>& jacobian_t) const
+{
+    arma::Mat<double> localDouble;
+    Fiber::_3dArray<double> jacobian_tDouble;
     convertMat(local, localDouble);
     getJacobiansTransposedImpl(localDouble, jacobian_tDouble);
     convertCube(jacobian_tDouble, jacobian_t);
@@ -135,7 +162,14 @@ inline void Geometry::getJacobianInversesTransposed(
         const arma::Mat<double>& local,
         arma::Cube<double>& jacobian_inv_t) const
 {
-    getJacobianInversesTransposedImpl(local, jacobian_inv_t);
+    const size_t n = local.n_cols;
+    const size_t mdim = dim();
+    const size_t cdim = dimWorld();
+    jacobian_inv_t.set_size(cdim, mdim, n);
+    Fiber::_3dArray<double> fiber_jacobian_inv_t(
+        cdim, mdim, n, jacobian_inv_t.memptr(),
+        true /* strict */);
+    getJacobianInversesTransposed(local, fiber_jacobian_inv_t);
 }
 
 inline void Geometry::getJacobianInversesTransposed(
@@ -143,7 +177,25 @@ inline void Geometry::getJacobianInversesTransposed(
         arma::Cube<float>& jacobian_inv_t) const
 {
     arma::Mat<double> localDouble;
-    arma::Cube<double> jacobian_inv_tDouble;
+    Fiber::_3dArray<double> jacobian_inv_tDouble;
+    convertMat(local, localDouble);
+    getJacobianInversesTransposed(localDouble, jacobian_inv_tDouble);
+    convertCube(jacobian_inv_tDouble, jacobian_inv_t);
+}
+
+inline void Geometry::getJacobianInversesTransposed(
+        const arma::Mat<double>& local,
+        Fiber::_3dArray<double>& jacobian_inv_t) const
+{
+    getJacobianInversesTransposedImpl(local, jacobian_inv_t);
+}
+
+inline void Geometry::getJacobianInversesTransposed(
+        const arma::Mat<float>& local,
+        Fiber::_3dArray<float>& jacobian_inv_t) const
+{
+    arma::Mat<double> localDouble;
+    Fiber::_3dArray<double> jacobian_inv_tDouble;
     convertMat(local, localDouble);
     getJacobianInversesTransposedImpl(localDouble, jacobian_inv_tDouble);
     convertCube(jacobian_inv_tDouble, jacobian_inv_t);
@@ -198,6 +250,20 @@ void Geometry::convertCube(const arma::Cube<T1>& in, arma::Cube<T2>& out) const
     out.set_size(in.n_rows, in.n_cols, in.n_slices);
     for (size_t elem = 0; elem < in.n_elem; ++elem)
         out[elem] = in[elem];
+}
+
+template <typename T1, typename T2>
+void Geometry::convertCube(const Fiber::_3dArray<T1>& in, Fiber::_3dArray<T2>& out) const
+{
+    out.set_size(in.extent(0), in.extent(1), in.extent(2));
+    std::copy(in.begin(), in.end(), out.begin());
+}
+
+template <typename T1, typename T2>
+void Geometry::convertCube(const Fiber::_3dArray<T1>& in, arma::Cube<T2>& out) const
+{
+    out.set_size(in.extent(0), in.extent(1), in.extent(2));
+    std::copy(in.begin(), in.end(), out.begin());
 }
 
 } // namespace Bempp
