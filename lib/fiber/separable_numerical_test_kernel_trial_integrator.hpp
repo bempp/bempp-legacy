@@ -27,6 +27,8 @@
 
 #include "test_kernel_trial_integrator.hpp"
 
+#include <tbb/enumerable_thread_specific.h>
+
 namespace Fiber
 {
 
@@ -53,8 +55,8 @@ public:
     SeparableNumericalTestKernelTrialIntegrator(
             const arma::Mat<CoordinateType>& localTestQuadPoints,
             const arma::Mat<CoordinateType>& localTrialQuadPoints,
-            const std::vector<CoordinateType> testQuadWeights,
-            const std::vector<CoordinateType> trialQuadWeights,
+            const std::vector<CoordinateType>& testQuadWeights,
+            const std::vector<CoordinateType>& trialQuadWeights,
             const GeometryFactory& testGeometryFactory,
             const GeometryFactory& trialGeometryFactory,
             const RawGridGeometry<CoordinateType>& testRawGeometry,
@@ -63,7 +65,8 @@ public:
             const CollectionOfKernels<KernelType>& kernels,
             const CollectionOfBasisTransformations<CoordinateType>& trialTransformations,
             const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& integral,
-            const OpenClHandler& openClHandler);
+            const OpenClHandler& openClHandler,
+            bool cacheGeometricalData = true);
 
     virtual ~SeparableNumericalTestKernelTrialIntegrator ();
 
@@ -113,6 +116,14 @@ private:
             const Basis<BasisFunctionType>& trialBasis,
             const std::vector<arma::Mat<ResultType>*>& result) const;
 
+    void precalculateGeometricalData();
+    void precalculateGeometricalDataOnSingleGrid(
+            const arma::Mat<CoordinateType>& localQuadPoints,
+            const GeometryFactory& geometryFactory,
+            const RawGridGeometry<CoordinateType>& rawGeometry,
+            size_t geomDeps,
+            std::vector<GeometricalData<CoordinateType> >& geomData);
+
     /**
      * \brief Returns an OpenCL code snippet containing the clIntegrate
      *   kernel function for integrating a single row or column
@@ -135,6 +146,13 @@ private:
     const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& m_integral;
 
     const OpenClHandler& m_openClHandler;
+    bool m_cacheGeometricalData;
+
+    std::vector<GeometricalData<CoordinateType> > m_cachedTestGeomData;
+    std::vector<GeometricalData<CoordinateType> > m_cachedTrialGeomData;
+    mutable tbb::enumerable_thread_specific<GeometricalData<CoordinateType> >
+    m_testGeomData, m_trialGeomData;
+
 
 #ifdef WITH_OPENCL
     cl::Buffer *clTestQuadPoints;

@@ -55,8 +55,8 @@ BasisFunctionType, KernelType, ResultType, GeometryFactory>::
 SeparableNumericalTestKernelTrialIntegrator(
         const arma::Mat<CoordinateType>& localTestQuadPoints,
         const arma::Mat<CoordinateType>& localTrialQuadPoints,
-        const std::vector<CoordinateType> testQuadWeights,
-        const std::vector<CoordinateType> trialQuadWeights,
+        const std::vector<CoordinateType>& testQuadWeights,
+        const std::vector<CoordinateType>& trialQuadWeights,
         const GeometryFactory& testGeometryFactory,
         const GeometryFactory& trialGeometryFactory,
         const RawGridGeometry<CoordinateType>& testRawGeometry,
@@ -65,7 +65,8 @@ SeparableNumericalTestKernelTrialIntegrator(
         const CollectionOfKernels<KernelType>& kernels,
         const CollectionOfBasisTransformations<CoordinateType>& trialTransformations,
         const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& integral,
-        const OpenClHandler& openClHandler) :
+        const OpenClHandler& openClHandler,
+        bool cacheGeometricalData) :
     m_localTestQuadPoints(localTestQuadPoints),
     m_localTrialQuadPoints(localTrialQuadPoints),
     m_testQuadWeights(testQuadWeights),
@@ -78,7 +79,8 @@ SeparableNumericalTestKernelTrialIntegrator(
     m_kernels(kernels),
     m_trialTransformations(trialTransformations),
     m_integral(integral),
-    m_openClHandler(openClHandler)
+    m_openClHandler(openClHandler),
+    m_cacheGeometricalData(cacheGeometricalData)
 {
     if (localTestQuadPoints.n_cols != testQuadWeights.size())
         throw std::invalid_argument("SeparableNumericalTestKernelTrialIntegrator::"
@@ -98,6 +100,9 @@ SeparableNumericalTestKernelTrialIntegrator(
 	clTrialQuadWeights = openClHandler.pushVector<CoordinateType> (trialQuadWeights);
     }
 #endif
+
+    if (cacheGeometricalData)
+        precalculateGeometricalData();
 }
 
 template <typename BasisFunctionType, typename KernelType,
@@ -114,6 +119,49 @@ BasisFunctionType, KernelType, ResultType, GeometryFactory>::
 	delete clTrialQuadWeights;
     }
 #endif
+}
+
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+void SeparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
+precalculateGeometricalData()
+{
+    size_t testBasisDeps = 0, trialBasisDeps = 0; // ignored in this function
+    size_t testGeomDeps = 0, trialGeomDeps = 0;
+
+    m_testTransformations.addDependencies(testBasisDeps, testGeomDeps);
+    m_trialTransformations.addDependencies(trialBasisDeps, trialGeomDeps);
+    m_kernels.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
+    m_integral.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
+
+    precalculateGeometricalDataOnSingleGrid(
+        m_localTestQuadPoints, m_testGeometryFactory,
+        m_testRawGeometry, testGeomDeps, m_cachedTestGeomData);
+    precalculateGeometricalDataOnSingleGrid(
+        m_localTrialQuadPoints, m_trialGeometryFactory,
+        m_trialRawGeometry, trialGeomDeps, m_cachedTrialGeomData);
+}
+
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+void SeparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
+precalculateGeometricalDataOnSingleGrid(
+        const arma::Mat<CoordinateType>& localQuadPoints,
+        const GeometryFactory& geometryFactory,
+        const RawGridGeometry<CoordinateType>& rawGeometry,
+        size_t geomDeps,
+        std::vector<GeometricalData<CoordinateType> >& geomData)
+{
+    geomData.resize(rawGeometry.elementCount());
+
+    typedef typename GeometryFactory::Geometry Geometry;
+    std::auto_ptr<Geometry> geometry = geometryFactory.make();
+    for (size_t e = 0; e < rawGeometry.elementCount(); ++e) {
+        rawGeometry.setupGeometry(e, *geometry);
+        geometry->getData(geomDeps, localQuadPoints, geomData[e]);
+    }
 }
 
 template <typename BasisFunctionType, typename KernelType,
@@ -176,7 +224,10 @@ integrateCpu(
     const int trialDofCount = callVariant == TEST_TRIAL ? dofCountB : dofCountA;
 
     BasisData<BasisFunctionType> testBasisData, trialBasisData;
-    GeometricalData<CoordinateType> testGeomData, trialGeomData;
+    GeometricalData<CoordinateType>* testGeomData = &m_testGeomData.local();
+    GeometricalData<CoordinateType>* trialGeomData = &m_trialGeomData.local();
+    const GeometricalData<CoordinateType>* constTestGeomData = testGeomData;
+    const GeometricalData<CoordinateType>* constTrialGeomData = trialGeomData;
 
     size_t testBasisDeps = 0, trialBasisDeps = 0;
     size_t testGeomDeps = 0, trialGeomDeps = 0;
@@ -189,19 +240,21 @@ integrateCpu(
     typedef typename GeometryFactory::Geometry Geometry;
     std::auto_ptr<Geometry> geometryA, geometryB;
     const RawGridGeometry<CoordinateType> *rawGeometryA = 0, *rawGeometryB = 0;
-    if (callVariant == TEST_TRIAL)
-    {
-        geometryA = m_testGeometryFactory.make();
-        geometryB = m_trialGeometryFactory.make();
-        rawGeometryA = &m_testRawGeometry;
-        rawGeometryB = &m_trialRawGeometry;
-    }
-    else
-    {
-        geometryA = m_trialGeometryFactory.make();
-        geometryB = m_testGeometryFactory.make();
-        rawGeometryA = &m_trialRawGeometry;
-        rawGeometryB = &m_testRawGeometry;
+    if (!m_cacheGeometricalData) {
+        if (callVariant == TEST_TRIAL)
+        {
+            geometryA = m_testGeometryFactory.make();
+            geometryB = m_trialGeometryFactory.make();
+            rawGeometryA = &m_testRawGeometry;
+            rawGeometryB = &m_trialRawGeometry;
+        }
+        else
+        {
+            geometryA = m_trialGeometryFactory.make();
+            geometryB = m_testGeometryFactory.make();
+            rawGeometryA = &m_trialRawGeometry;
+            rawGeometryB = &m_testRawGeometry;
+        }
     }
 
     CollectionOf3dArrays<BasisFunctionType> testValues, trialValues;
@@ -212,40 +265,54 @@ integrateCpu(
         result[i]->set_size(testDofCount, trialDofCount);
     }
 
-    rawGeometryB->setupGeometry(elementIndexB, *geometryB);
+    if (!m_cacheGeometricalData)
+        rawGeometryB->setupGeometry(elementIndexB, *geometryB);
     if (callVariant == TEST_TRIAL)
     {
         basisA.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS, testBasisData);
         basisB.evaluate(trialBasisDeps, m_localTrialQuadPoints, localDofIndexB, trialBasisData);
-        geometryB->getData(trialGeomDeps, m_localTrialQuadPoints, trialGeomData);
-        m_trialTransformations.evaluate(trialBasisData, trialGeomData, trialValues);
+        if (m_cacheGeometricalData)
+            constTrialGeomData = &m_cachedTrialGeomData[elementIndexB];
+        else
+            geometryB->getData(trialGeomDeps, m_localTrialQuadPoints, *trialGeomData);
+        m_trialTransformations.evaluate(trialBasisData, *constTrialGeomData, trialValues);
     }
     else
     {
         basisA.evaluate(trialBasisDeps, m_localTrialQuadPoints, ALL_DOFS, trialBasisData);
         basisB.evaluate(testBasisDeps, m_localTestQuadPoints, localDofIndexB, testBasisData);
-        geometryB->getData(testGeomDeps, m_localTestQuadPoints, testGeomData);
-        m_testTransformations.evaluate(testBasisData, testGeomData, testValues);
+        if (m_cacheGeometricalData)
+            constTestGeomData = &m_cachedTestGeomData[elementIndexB];
+        else
+            geometryB->getData(testGeomDeps, m_localTestQuadPoints, *testGeomData);
+        m_testTransformations.evaluate(testBasisData, *constTestGeomData, testValues);
     }
 
     // Iterate over the elements
     for (int indexA = 0; indexA < elementACount; ++indexA)
     {
-        rawGeometryA->setupGeometry(elementIndicesA[indexA], *geometryA);
+        if (!m_cacheGeometricalData)
+            rawGeometryA->setupGeometry(elementIndicesA[indexA], *geometryA);
         if (callVariant == TEST_TRIAL)
         {
-            geometryA->getData(testGeomDeps, m_localTestQuadPoints, testGeomData);
-            m_testTransformations.evaluate(testBasisData, testGeomData, testValues);
+            if (m_cacheGeometricalData)
+                constTestGeomData = &m_cachedTestGeomData[elementIndicesA[indexA]];
+            else
+                geometryA->getData(testGeomDeps, m_localTestQuadPoints, *testGeomData);
+            m_testTransformations.evaluate(testBasisData, *constTestGeomData, testValues);
         }
         else
         {
-            geometryA->getData(trialGeomDeps, m_localTrialQuadPoints, trialGeomData);
-            m_trialTransformations.evaluate(trialBasisData, trialGeomData, trialValues);
+            if (m_cacheGeometricalData)
+                constTrialGeomData = &m_cachedTrialGeomData[elementIndicesA[indexA]];
+            else
+                geometryA->getData(trialGeomDeps, m_localTrialQuadPoints, *trialGeomData);
+            m_trialTransformations.evaluate(trialBasisData, *constTrialGeomData, trialValues);
         }
 
-        m_kernels.evaluateOnGrid(testGeomData, trialGeomData, kernelValues);
+        m_kernels.evaluateOnGrid(*constTestGeomData, *constTrialGeomData, kernelValues);
         m_integral.evaluateWithTensorQuadratureRule(
-                    testGeomData, trialGeomData, testValues, trialValues,
+                    *constTestGeomData, *constTrialGeomData, testValues, trialValues,
                     kernelValues, m_testQuadWeights, m_trialQuadWeights,
                     *result[indexA]);
     }
@@ -633,7 +700,10 @@ integrateCpu(
     const int trialDofCount = trialBasis.size();
 
     BasisData<BasisFunctionType> testBasisData, trialBasisData;
-    GeometricalData<CoordinateType> testGeomData, trialGeomData;
+    GeometricalData<CoordinateType>* testGeomData = &m_testGeomData.local();
+    GeometricalData<CoordinateType>* trialGeomData = &m_trialGeomData.local();
+    const GeometricalData<CoordinateType>* constTestGeomData = testGeomData;
+    const GeometricalData<CoordinateType>* constTrialGeomData = trialGeomData;
 
     size_t testBasisDeps = 0, trialBasisDeps = 0;
     size_t testGeomDeps = 0, trialGeomDeps = 0;
@@ -644,8 +714,12 @@ integrateCpu(
     m_integral.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 
     typedef typename GeometryFactory::Geometry Geometry;
-    std::auto_ptr<Geometry> testGeometry(m_testGeometryFactory.make());
-    std::auto_ptr<Geometry> trialGeometry(m_trialGeometryFactory.make());
+    std::auto_ptr<Geometry> testGeometry;
+    std::auto_ptr<Geometry> trialGeometry;
+    if (!m_cacheGeometricalData) {
+        testGeometry = m_testGeometryFactory.make();
+        trialGeometry = m_trialGeometryFactory.make();
+    }
 
     CollectionOf3dArrays<BasisFunctionType> testValues, trialValues;
     CollectionOf4dArrays<KernelType> kernelValues;
@@ -661,16 +735,21 @@ integrateCpu(
     // Iterate over the elements
     for (int pairIndex = 0; pairIndex < geometryPairCount; ++pairIndex)
     {
-        m_testRawGeometry.setupGeometry(elementIndexPairs[pairIndex].first, *testGeometry);
-        m_trialRawGeometry.setupGeometry(elementIndexPairs[pairIndex].second, *trialGeometry);
-        testGeometry->getData(testGeomDeps, m_localTestQuadPoints, testGeomData);
-        trialGeometry->getData(trialGeomDeps, m_localTrialQuadPoints, trialGeomData);
-        m_testTransformations.evaluate(testBasisData, testGeomData, testValues);
-        m_trialTransformations.evaluate(trialBasisData, trialGeomData, trialValues);
+        if (m_cacheGeometricalData) {
+            constTestGeomData  = &m_cachedTestGeomData[elementIndexPairs[pairIndex].first];
+            constTrialGeomData = &m_cachedTrialGeomData[elementIndexPairs[pairIndex].second];
+        } else {
+            m_testRawGeometry.setupGeometry(elementIndexPairs[pairIndex].first, *testGeometry);
+            m_trialRawGeometry.setupGeometry(elementIndexPairs[pairIndex].second, *trialGeometry);
+            testGeometry->getData(testGeomDeps, m_localTestQuadPoints, *testGeomData);
+            trialGeometry->getData(trialGeomDeps, m_localTrialQuadPoints, *trialGeomData);
+        }
+        m_testTransformations.evaluate(testBasisData, *constTestGeomData, testValues);
+        m_trialTransformations.evaluate(trialBasisData, *constTrialGeomData, trialValues);
 
-        m_kernels.evaluateOnGrid(testGeomData, trialGeomData, kernelValues);
+        m_kernels.evaluateOnGrid(*constTestGeomData, *constTrialGeomData, kernelValues);
         m_integral.evaluateWithTensorQuadratureRule(
-                    testGeomData, trialGeomData, testValues, trialValues,
+                    *constTestGeomData, *constTrialGeomData, testValues, trialValues,
                     kernelValues, m_testQuadWeights, m_trialQuadWeights,
                     *result[pairIndex]);
     }
