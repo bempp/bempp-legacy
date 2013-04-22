@@ -39,20 +39,11 @@ inline _3dArray<T>::_3dArray()
 template <typename T>
 inline _3dArray<T>::_3dArray(size_t extent0, size_t extent1, size_t extent2)
 {
-#ifdef FIBER_CHECK_ARRAY_BOUNDS
-    check_extents(extent0, extent1, extent2);
-#endif
-    m_extents[0] = extent0;
-    m_extents[1] = extent1;
-    m_extents[2] = extent2;
-    m_storage = new T[extent0 * extent1 * extent2];
-    m_owns = true;
-    m_strict = false;
+    init_memory(extent0, extent1, extent2);
 }
 
 template <typename T>
-inline _3dArray<T>::_3dArray(size_t extent0, size_t extent1, size_t extent2,
-                             T* data, bool strict)
+inline _3dArray<T>::_3dArray(size_t extent0, size_t extent1, size_t extent2, T* data, bool strict)
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     check_extents(extent0, extent1, extent2);
@@ -66,10 +57,49 @@ inline _3dArray<T>::_3dArray(size_t extent0, size_t extent1, size_t extent2,
 }
 
 template <typename T>
+inline _3dArray<T>::_3dArray(const _3dArray& other)
+{
+    init_memory(other.m_extents[0], other.m_extents[1], other.m_extents[2]);
+    std::copy(other.begin(), other.end(), m_storage);
+}
+
+template <typename T>
+inline _3dArray<T>& _3dArray<T>::operator=(const _3dArray& rhs)
+{
+    if (&rhs != this) {
+        set_size(rhs.m_extents[0], rhs.m_extents[1], rhs.m_extents[2]);
+        std::copy(rhs.begin(), rhs.end(), m_storage);
+    }
+    return *this;
+}
+
+template <typename T>
 inline _3dArray<T>::~_3dArray()
+{
+    free_memory();
+}
+
+template <typename T>
+inline void _3dArray<T>::init_memory(size_t extent0, size_t extent1, size_t extent2)
+{
+#ifdef FIBER_CHECK_ARRAY_BOUNDS
+    check_extents(extent0, extent1, extent2);
+#endif
+    m_storage = new T[extent0 * extent1 * extent2];
+    m_owns = true;
+    m_strict = false;
+    m_extents[0] = extent0;
+    m_extents[1] = extent1;
+    m_extents[2] = extent2;
+}
+
+template <typename T>
+inline void _3dArray<T>::free_memory()
 {
     if (m_owns && m_storage)
         delete[] m_storage;
+    m_owns = false;
+    m_storage = 0;
 }
 
 template <typename T>

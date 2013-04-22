@@ -51,6 +51,8 @@ public:
     _3dArray(size_t extent0, size_t extent1, size_t extent2);
     _3dArray(size_t extent0, size_t extent1, size_t extent2, T* data,
              bool strict = false);
+    _3dArray(const _3dArray& other);
+    _3dArray& operator=(const _3dArray& rhs);
 
     ~_3dArray();
 
@@ -76,16 +78,14 @@ public:
     const_iterator end() const;
 
 private:
+    void init_memory(size_t extent0, size_t extent1, size_t extent2);
+    void free_memory();
+
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     void check_dimension(size_t dimension) const;
     void check_extents(size_t extent0, size_t extent1, size_t extent2) const;
     void check_indices(size_t index0, size_t index1, size_t index2) const;
 #endif
-
-private:
-    // Disable copy constructor and assignment operator
-    _3dArray(const _3dArray& rhs);
-    _3dArray& operator=(const _3dArray& rhs);
 
 private:
     size_t m_extents[3];
