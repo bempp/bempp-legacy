@@ -68,6 +68,7 @@ public:
 
     size_t extent(size_t dimension) const;
     void set_size(size_t extent0, size_t extent1, size_t extent2);
+    bool is_empty() const;
 
     typedef T* iterator;
     typedef const T* const_iterator;

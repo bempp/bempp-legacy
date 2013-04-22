@@ -163,6 +163,12 @@ inline void _3dArray<T>::set_size(size_t extent0, size_t extent1, size_t extent2
 }
 
 template <typename T>
+inline bool _3dArray<T>::is_empty() const
+{
+    return m_extents[0] * m_extents[1] * m_extents[2] != 0;
+}
+
+template <typename T>
 inline typename _3dArray<T>::iterator _3dArray<T>::begin()
 {
     return m_storage;
