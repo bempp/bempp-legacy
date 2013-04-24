@@ -79,6 +79,8 @@ public:
     /** \copydoc ElementaryIntegralOperator::TestKernelTrialIntegral */
     typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
+    typedef typename Base::GramOperator GramOperator;
+
     /** \copydoc Laplace3dBoundaryOperatorBase::Laplace3dBoundaryOperatorBase */
 
     Laplace3dHypersingularBoundaryOperator(
@@ -87,6 +89,15 @@ public:
             const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
             const std::string& label = "",
             int symmetry = NO_SYMMETRY);
+
+private:
+    virtual shared_ptr<const GramOperator> testGramOperator(
+            const shared_ptr<const Space<BasisFunctionType> >& space,
+            const shared_ptr<const Space<BasisFunctionType> >& dualSpace) const;
+
+    virtual shared_ptr<const GramOperator> trialGramOperator(
+            const shared_ptr<const Space<BasisFunctionType> >& space,
+            const shared_ptr<const Space<BasisFunctionType> >& dualSpace) const;
 };
 
 /** \relates Laplace3dHypersingularBoundaryOperator
@@ -123,6 +134,32 @@ laplace3dHypersingularBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+        const std::string& label = "",
+        int symmetry = NO_SYMMETRY);
+
+/** \relates Laplace3dAdjointDoubleLayerBoundaryOperator
+ *  \brief Construct a "synthetic" representation of the hypersingular
+ *  boundary operator associated with the Laplace equation in 3D.
+ *
+ *  This function creates a hypersingular Laplace boundary operator \f$\mathcal A\f$
+ *  whose weak form is stored as
+ *
+ *  \[
+ *     A = \sum_{\alpha=1}^3 P_\alpha A_{\textrm{d}} Q_\alpha,
+ *  \]
+ *
+ *  \todo Finish documentation. In the meantime, see the documentation of
+ *  laplace3dSyntheticSingleLayerBoundaryOperator and
+ *  SyntheticIntegralOperator. */
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
+laplace3dSyntheticHypersingularBoundaryOperator(
+        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+        const shared_ptr<const Space<BasisFunctionType> >& internalDomain,
+        const shared_ptr<const Space<BasisFunctionType> >& internalDualToRange,
         const std::string& label = "",
         int symmetry = NO_SYMMETRY);
 
