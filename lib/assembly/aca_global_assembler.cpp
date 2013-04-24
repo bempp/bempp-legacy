@@ -473,7 +473,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         const std::vector<const DiscreteBndOp*>& sparseTermsToAdd,
         const std::vector<ResultType>& denseTermMultipliers,
         const std::vector<ResultType>& sparseTermMultipliers,
-        const AssemblyOptions& options,
+        const Context<BasisFunctionType, ResultType>& context,
         int symmetry)
 {
 #ifdef WITH_AHMED
@@ -482,6 +482,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
     typedef DiscreteAcaBoundaryOperator<ResultType> DiscreteAcaLinOp;
 
+    const AssemblyOptions& options = context.assemblyOptions();
     const AcaOptions& acaOptions = options.acaOptions();
     const bool indexWithGlobalDofs = acaOptions.globalAssemblyBeforeCompression;
     const bool verbosityAtLeastDefault =
@@ -642,7 +643,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
         LocalAssemblerForBoundaryOperators& localAssembler,
-        const AssemblyOptions& options,
+        const Context<BasisFunctionType, ResultType>& context,
         int symmetry)
 {
     std::vector<LocalAssemblerForBoundaryOperators*> localAssemblers(
@@ -655,7 +656,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                             sparseTermsToAdd,
                             denseTermsMultipliers,
                             sparseTermsMultipliers,
-                            options, symmetry);
+                                    context, symmetry);
 }
 
 template <typename BasisFunctionType, typename ResultType>
