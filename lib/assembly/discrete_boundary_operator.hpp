@@ -35,6 +35,10 @@
 #include <Thyra_LinearOpDefaultBase_decl.hpp>
 #endif
 
+#include <boost/mpl/set.hpp>
+#include <boost/mpl/has_key.hpp>
+#include <boost/utility/enable_if.hpp>
+
 namespace Bempp
 {
 
@@ -254,7 +258,7 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator-(
  *
  *  An exception is thrown if either \p op1 or \p op2 is null. */
 template <typename ValueType>
-shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator+(
+shared_ptr<DiscreteBoundaryOperator<ValueType> > operator+(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1,
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2);
 
@@ -263,7 +267,7 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator+(
  *
  *  An exception is thrown if either \p op1 or \p op2 is null. */
 template <typename ValueType>
-shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator-(
+shared_ptr<DiscreteBoundaryOperator<ValueType> > operator-(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1,
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2);
 
@@ -272,7 +276,12 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator-(
  *
  *  An exception is thrown if \p op is null. */
 template <typename ValueType, typename ScalarType>
-shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator*(
+typename boost::enable_if<
+    typename boost::mpl::has_key<
+        boost::mpl::set<float, double, std::complex<float>, std::complex<double> >,
+        ScalarType>,
+    shared_ptr<DiscreteBoundaryOperator<ValueType> > >::type
+operator*(
         ScalarType scalar,
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op);
 
@@ -281,39 +290,67 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator*(
  *
  *  An exception is thrown if \p op is null. */
 template <typename ValueType, typename ScalarType>
-shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator*(
+typename boost::enable_if<
+    typename boost::mpl::has_key<
+        boost::mpl::set<float, double, std::complex<float>, std::complex<double> >,
+        ScalarType>,
+    shared_ptr<DiscreteBoundaryOperator<ValueType> > >::type
+operator*(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
         ScalarType scalar);
+
+/** \brief Return a shared pointer to a DiscreteBoundaryOperator representing
+ *  a composition of operators, <tt>(*op1) * (*op2)</tt>.
+ *
+ *  An exception is thrown if \p op1 or \p op2 is null. */
+template <typename ValueType>
+shared_ptr<DiscreteBoundaryOperator<ValueType> > operator*(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1,
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2);
+
+/** \brief Return a shared pointer to a DiscreteBoundaryOperator representing
+ *  a composition of operators, <tt>(*op1) * (*op2)</tt>.
+ *
+ *  An exception is thrown if \p op1 or \p op2 is null. */
+template <typename ValueType>
+shared_ptr<DiscreteBoundaryOperator<ValueType> > mul(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1,
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2);
 
 /** \brief Return a shared pointer to a DiscreteBoundaryOperator representing
  *  the operator <tt>*op</tt> divided by \p scalar.
  *
  *  An exception is thrown if \p op is null. */
 template <typename ValueType, typename ScalarType>
-shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator/(
+shared_ptr<DiscreteBoundaryOperator<ValueType> > operator/(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
         ScalarType scalar);
 
 template <typename ValueType>
-shared_ptr<const DiscreteBoundaryOperator<ValueType> > transpose(
+shared_ptr<DiscreteBoundaryOperator<ValueType> > transpose(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op);
 
 template <typename ValueType>
-shared_ptr<const DiscreteBoundaryOperator<ValueType> > conjugate(
+shared_ptr<DiscreteBoundaryOperator<ValueType> > conjugate(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op);
 
 template <typename ValueType>
-shared_ptr<const DiscreteBoundaryOperator<ValueType> > conjugateTranspose(
+shared_ptr<DiscreteBoundaryOperator<ValueType> > conjugateTranspose(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op);
 
 template <typename ValueType>
-shared_ptr<const DiscreteBoundaryOperator<ValueType> > transpose(
+shared_ptr<DiscreteBoundaryOperator<ValueType> > transpose(
         TranspositionMode trans,
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op);
 
 template <typename RealType>
-shared_ptr<const DiscreteBoundaryOperator<std::complex<RealType> > > complexify(
+shared_ptr<DiscreteBoundaryOperator<std::complex<RealType> > > complexify(
         const shared_ptr<const DiscreteBoundaryOperator<RealType> >& op);
+
+template <typename ValueType>
+shared_ptr<DiscreteBoundaryOperator<ValueType> > sum(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1,
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2);
 
 } // namespace Bempp
 

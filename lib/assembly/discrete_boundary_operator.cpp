@@ -24,6 +24,7 @@
 
 #include "complexified_discrete_boundary_operator.hpp"
 #include "discrete_boundary_operator_sum.hpp"
+#include "discrete_boundary_operator_composition.hpp"
 #include "scaled_discrete_boundary_operator.hpp"
 #include "transposed_discrete_boundary_operator.hpp"
 #include "../common/shared_ptr.hpp"
@@ -170,97 +171,138 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator-(
 }
 
 template <typename ValueType>
-shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator+(
+shared_ptr<DiscreteBoundaryOperator<ValueType> > operator+(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1,
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2)
 {
-    return shared_ptr<const DiscreteBoundaryOperator<ValueType> >(
-                new DiscreteBoundaryOperatorSum<ValueType>(op1,op2));
+    return shared_ptr<DiscreteBoundaryOperator<ValueType> >(
+                new DiscreteBoundaryOperatorSum<ValueType>(op1, op2));
 }
 
 template <typename ValueType>
-shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator-(
+shared_ptr<DiscreteBoundaryOperator<ValueType> > sum(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1,
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2)
 {
-    return shared_ptr<const DiscreteBoundaryOperator<ValueType> >(
-                new DiscreteBoundaryOperatorSum<ValueType>(op1,static_cast<ValueType>(-1.)*op2));
+    return shared_ptr<DiscreteBoundaryOperator<ValueType> >(
+                new DiscreteBoundaryOperatorSum<ValueType>(op1, op2));
 }
 
+template <typename ValueType>
+shared_ptr<DiscreteBoundaryOperator<ValueType> > operator-(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1,
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2)
+{
+    return shared_ptr<DiscreteBoundaryOperator<ValueType> >(
+                new DiscreteBoundaryOperatorSum<ValueType>(
+                    op1, static_cast<ValueType>(-1.) * op2));
+}
 
 template <typename ValueType, typename ScalarType>
-shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator*(
+typename boost::enable_if<
+    typename boost::mpl::has_key<
+        boost::mpl::set<float, double, std::complex<float>, std::complex<double> >,
+        ScalarType>,
+    shared_ptr<DiscreteBoundaryOperator<ValueType> > >::type
+operator*(
         ScalarType scalar,
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op)
 {
-    return  shared_ptr<const DiscreteBoundaryOperator<ValueType> >(
-                new ScaledDiscreteBoundaryOperator<ValueType>(static_cast<ValueType>(scalar),op));
+    return shared_ptr<DiscreteBoundaryOperator<ValueType> >(
+                new ScaledDiscreteBoundaryOperator<ValueType>(
+                    static_cast<ValueType>(scalar), op));
 }
 
 template <typename ValueType, typename ScalarType>
-shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator*(
+typename boost::enable_if<
+    typename boost::mpl::has_key<
+        boost::mpl::set<float, double, std::complex<float>, std::complex<double> >,
+        ScalarType>,
+    shared_ptr<DiscreteBoundaryOperator<ValueType> > >::type
+operator*(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
         ScalarType scalar)
 {
-    return shared_ptr<const DiscreteBoundaryOperator<ValueType> >(
-                new ScaledDiscreteBoundaryOperator<ValueType>(static_cast<ValueType>(scalar),op));
+    return shared_ptr<DiscreteBoundaryOperator<ValueType> >(
+                new ScaledDiscreteBoundaryOperator<ValueType>(
+                    static_cast<ValueType>(scalar), op));
+}
+
+template <typename ValueType>
+shared_ptr<DiscreteBoundaryOperator<ValueType> > operator*(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1,
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2)
+{
+    return shared_ptr<DiscreteBoundaryOperator<ValueType> >(
+                new DiscreteBoundaryOperatorComposition<ValueType>(
+                    op1, op2));
+}
+
+template <typename ValueType>
+shared_ptr<DiscreteBoundaryOperator<ValueType> > mul(
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1,
+        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2)
+{
+    return shared_ptr<DiscreteBoundaryOperator<ValueType> >(
+                new DiscreteBoundaryOperatorComposition<ValueType>(
+                    op1, op2));
 }
 
 template <typename ValueType, typename ScalarType>
-shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator/(
+shared_ptr<DiscreteBoundaryOperator<ValueType> > operator/(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
         ScalarType scalar)
 {
     if (scalar == static_cast<ScalarType>(0.))
         throw std::runtime_error("operator/(DiscreteBoundaryOperator, scalar): "
                                      "Division by zero");
-    return shared_ptr<const DiscreteBoundaryOperator<ValueType> >(
+    return shared_ptr<DiscreteBoundaryOperator<ValueType> >(
                 new ScaledDiscreteBoundaryOperator<ValueType>(
                     static_cast<ValueType>(static_cast<ScalarType>(1.)/scalar),op));
 }
 
 template <typename ValueType>
-shared_ptr<const DiscreteBoundaryOperator<ValueType> > transpose(
+shared_ptr<DiscreteBoundaryOperator<ValueType> > transpose(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op)
 {
-    return shared_ptr<const DiscreteBoundaryOperator<ValueType> >(
+    return shared_ptr<DiscreteBoundaryOperator<ValueType> >(
         new TransposedDiscreteBoundaryOperator<ValueType>(
             TRANSPOSE, op));
 }
 
 template <typename ValueType>
-shared_ptr<const DiscreteBoundaryOperator<ValueType> > conjugate(
+shared_ptr<DiscreteBoundaryOperator<ValueType> > conjugate(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op)
 {
-    return shared_ptr<const DiscreteBoundaryOperator<ValueType> >(
+    return shared_ptr<DiscreteBoundaryOperator<ValueType> >(
         new TransposedDiscreteBoundaryOperator<ValueType>(
             CONJUGATE, op));
 }
 
 template <typename ValueType>
-shared_ptr<const DiscreteBoundaryOperator<ValueType> > conjugateTranspose(
+shared_ptr<DiscreteBoundaryOperator<ValueType> > conjugateTranspose(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op)
 {
-    return shared_ptr<const DiscreteBoundaryOperator<ValueType> >(
+    return shared_ptr<DiscreteBoundaryOperator<ValueType> >(
         new TransposedDiscreteBoundaryOperator<ValueType>(
             CONJUGATE_TRANSPOSE, op));
 }
 
 template <typename ValueType>
-shared_ptr<const DiscreteBoundaryOperator<ValueType> > transpose(
+shared_ptr<DiscreteBoundaryOperator<ValueType> > transpose(
         TranspositionMode trans,
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op)
 {
-    return shared_ptr<const DiscreteBoundaryOperator<ValueType> >(
+    return shared_ptr<DiscreteBoundaryOperator<ValueType> >(
         new TransposedDiscreteBoundaryOperator<ValueType>(
             trans, op));
 }
 
 template <typename RealType>
-shared_ptr<const DiscreteBoundaryOperator<std::complex<RealType> > > complexify(
+shared_ptr<DiscreteBoundaryOperator<std::complex<RealType> > > complexify(
         const shared_ptr<const DiscreteBoundaryOperator<RealType> >& op)
 {
-    return shared_ptr<const DiscreteBoundaryOperator<std::complex<RealType> > >(
+    return shared_ptr<DiscreteBoundaryOperator<std::complex<RealType> > >(
         new ComplexifiedDiscreteBoundaryOperator<RealType>(op));
 }
 
@@ -271,35 +313,44 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteBoundaryOperator);
         const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op); \
     template shared_ptr<const DiscreteBoundaryOperator< VALUE > > operator-( \
         const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op); \
-    template shared_ptr<const DiscreteBoundaryOperator< VALUE > > operator+( \
+    template shared_ptr<DiscreteBoundaryOperator< VALUE > > operator+( \
         const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op1, \
         const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op2); \
-    template shared_ptr<const DiscreteBoundaryOperator< VALUE > > operator-( \
+    template shared_ptr<DiscreteBoundaryOperator< VALUE > > sum( \
         const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op1, \
         const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op2); \
-    template shared_ptr<const DiscreteBoundaryOperator< VALUE > > transpose( \
+    template shared_ptr<DiscreteBoundaryOperator< VALUE > > operator-( \
+        const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op1, \
+        const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op2); \
+    template shared_ptr<DiscreteBoundaryOperator< VALUE > > operator*( \
+        const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op1, \
+        const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op2); \
+    template shared_ptr<DiscreteBoundaryOperator< VALUE > > mul( \
+        const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op1, \
+        const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op2); \
+    template shared_ptr<DiscreteBoundaryOperator< VALUE > > transpose( \
         const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op); \
-    template shared_ptr<const DiscreteBoundaryOperator< VALUE > > conjugate( \
+    template shared_ptr<DiscreteBoundaryOperator< VALUE > > conjugate( \
         const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op); \
-    template shared_ptr<const DiscreteBoundaryOperator< VALUE > > conjugateTranspose( \
+    template shared_ptr<DiscreteBoundaryOperator< VALUE > > conjugateTranspose( \
         const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op); \
-    template shared_ptr<const DiscreteBoundaryOperator< VALUE > > transpose( \
+    template shared_ptr<DiscreteBoundaryOperator< VALUE > > transpose( \
         TranspositionMode trans, \
         const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op);
 
 #define INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR( VALUE , SCALAR ) \
-    template shared_ptr<const DiscreteBoundaryOperator< VALUE > > operator*( \
+    template shared_ptr<DiscreteBoundaryOperator< VALUE > > operator*( \
         SCALAR scalar, \
         const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op); \
-    template shared_ptr<const DiscreteBoundaryOperator< VALUE > > operator*( \
+    template shared_ptr<DiscreteBoundaryOperator< VALUE > > operator*( \
         const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op,\
         SCALAR scalar); \
-    template shared_ptr<const DiscreteBoundaryOperator< VALUE > > operator/( \
+    template shared_ptr<DiscreteBoundaryOperator< VALUE > > operator/( \
         const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op, \
         SCALAR scalar);
 
 #define INSTANTIATE_FREE_FUNCTIONS_REAL_ONLY(VALUE) \
-    template shared_ptr<const DiscreteBoundaryOperator< std::complex<VALUE> > > complexify( \
+    template shared_ptr<DiscreteBoundaryOperator< std::complex<VALUE> > > complexify( \
         const shared_ptr<const DiscreteBoundaryOperator< VALUE > >& op);
 
 #if defined(ENABLE_SINGLE_PRECISION)
