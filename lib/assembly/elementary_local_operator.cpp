@@ -247,7 +247,7 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormImpl(
     std::auto_ptr<LocalAssembler> assembler =this->makeAssembler(
                 *context.quadStrategy(), context.assemblyOptions());
     shared_ptr<DiscreteBoundaryOperator<ResultType> > result =
-            assembleWeakFormInternalImpl(*assembler, context.assemblyOptions());
+            assembleWeakFormInternalImpl2(*assembler, context);
     tbb::tick_count end = tbb::tick_count::now();
 
     if (verbose)
@@ -258,17 +258,19 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormImpl(
 
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteBoundaryOperator<ResultType> >
-ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormInternalImpl(
+ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormInternalImpl2(
         LocalAssembler& assembler,
-        const AssemblyOptions& options) const
+        const Context<BasisFunctionType, ResultType>& context) const
 {
 #ifdef WITH_TRILINOS
-    if (options.isSparseStorageOfMassMatricesEnabled())
+    if (context.assemblyOptions().isSparseStorageOfMassMatricesEnabled())
         return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
-                    assembleWeakFormInSparseMode(assembler, options).release());
+            assembleWeakFormInSparseMode(assembler, context.assemblyOptions())
+            .release());
 #endif
     return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
-                    assembleWeakFormInDenseMode(assembler, options).release());
+        assembleWeakFormInDenseMode(assembler, context.assemblyOptions())
+        .release());
 }
 
 template <typename BasisFunctionType, typename ResultType>

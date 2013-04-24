@@ -424,7 +424,7 @@ assembleJointOperatorWeakFormInAcaMode(
         std::vector<const DiscreteOp*> stlSparseDiscreteTerms; // empty; unused
         std::vector<ResultType> sparseTermMultipliers; // empty; unused
 
-        // Assemble local terms in ACA mode
+        // Assemble nonlocal terms in ACA mode
         nonlocalPart.reset(
                     AcaGlobalAssembler<BasisFunctionType, ResultType>::
                     assembleDetachedWeakForm(
@@ -433,9 +433,9 @@ assembleJointOperatorWeakFormInAcaMode(
                         stlSparseDiscreteTerms,
                         nonlocalOpWeights,
                         sparseTermMultipliers,
-                        context.assemblyOptions(), // We're using here the
-                                                   // options (esp. ACA options)
-                                                   // of the superposition operator
+                        context, // We're using here the
+                                 // options (esp. ACA options)
+                                 // of the superposition operator
                         false /* no symmetry, for the moment */).release());
         tbb::tick_count end = tbb::tick_count::now();
         if (verbose)

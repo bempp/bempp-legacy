@@ -145,9 +145,9 @@ private:
             bool cacheSingularIntegrals) const;
 
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
-    assembleWeakFormInternalImpl(
+    assembleWeakFormInternalImpl2(
             LocalAssembler& assembler,
-            const AssemblyOptions& options) const;
+            const Context<BasisFunctionType, ResultType>& options) const;
 
     shared_ptr<DiscreteBoundaryOperator<ResultType_> >
     reallyAssembleWeakForm() const;
