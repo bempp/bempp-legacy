@@ -42,6 +42,21 @@ UnitScalarSpace(const shared_ptr<const Grid>& grid) :
 }
 
 template <typename BasisFunctionType>
+const Space<BasisFunctionType>&
+UnitScalarSpace<BasisFunctionType>::discontinuousSpace() const
+{
+    throw std::runtime_error("UnitScalarSpace::discontinuousSpace(): "
+                             "not implemented yet");
+}
+
+template <typename BasisFunctionType>
+bool
+UnitScalarSpace<BasisFunctionType>::isDiscontinuous() const
+{
+    return false;
+}
+
+template <typename BasisFunctionType>
 int UnitScalarSpace<BasisFunctionType>::domainDimension() const
 {
     return this->grid()->dim();

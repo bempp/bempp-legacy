@@ -48,6 +48,9 @@ public:
 
     explicit PiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid);
 
+    virtual const Space<BasisFunctionType>& discontinuousSpace() const;
+    virtual bool isDiscontinuous() const;
+
     virtual int domainDimension() const;
     virtual int codomainDimension() const;
 

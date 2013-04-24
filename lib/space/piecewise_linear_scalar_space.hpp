@@ -18,18 +18,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_unit_scalar_space_hpp
-#define bempp_unit_scalar_space_hpp
+#ifndef bempp_piecewise_linear_scalar_space_hpp
+#define bempp_piecewise_linear_scalar_space_hpp
 
 #include "../common/common.hpp"
 
 #include "../grid/grid_view.hpp"
 #include "scalar_space.hpp"
 #include "../common/types.hpp"
-#include "../fiber/piecewise_constant_scalar_basis.hpp"
+#include "../fiber/piecewise_linear_continuous_scalar_basis.hpp"
 
 #include <map>
 #include <memory>
+#include <tbb/mutex.h>
 
 namespace Bempp
 {
@@ -39,20 +40,19 @@ class GridView;
 /** \endcond */
 
 /** \ingroup space
- *  \brief Space consisting of a single scalar function equal to 1 everywhere. */
+ *  \brief Space of continuous, piecewise linear scalar functions. */
 template <typename BasisFunctionType>
-class UnitScalarSpace : public ScalarSpace<BasisFunctionType>
+class PiecewiseLinearScalarSpace : public ScalarSpace<BasisFunctionType>
 {
 public:
-    typedef typename ScalarSpace<BasisFunctionType>::CoordinateType CoordinateType;
+    typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
+    typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
 
-    explicit UnitScalarSpace(const shared_ptr<const Grid>& grid);
+    explicit PiecewiseLinearScalarSpace(const shared_ptr<const Grid>& grid);
+    virtual ~PiecewiseLinearScalarSpace();
 
     virtual int domainDimension() const;
     virtual int codomainDimension() const;
-
-    virtual const Space<BasisFunctionType>& discontinuousSpace() const;
-    virtual bool isDiscontinuous() const;
 
     /** \brief Return the variant of element \p element.
      *
@@ -66,37 +66,12 @@ public:
 
     virtual const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
 
-    virtual size_t globalDofCount() const;
-    virtual size_t flatLocalDofCount() const;
-    virtual void getGlobalDofs(const Entity<0>& element,
-                            std::vector<GlobalDofIndex>& dofs) const;
-    virtual void global2localDofs(
-            const std::vector<GlobalDofIndex>& globalDofs,
-            std::vector<std::vector<LocalDof> >& localDofs) const;
-    virtual void flatLocal2localDofs(
-            const std::vector<FlatLocalDofIndex>& globalDofs,
-            std::vector<LocalDof>& localDofs) const;
-    virtual void getGlobalDofPositions(
-            std::vector<Point3D<CoordinateType> >& positions) const;
-    virtual void getFlatLocalDofPositions(
-            std::vector<Point3D<CoordinateType> >& positions) const;
-
-    virtual void dumpClusterIds(
-            const char* fileName,
-            const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const;
-    virtual void dumpClusterIdsEx(
-            const char* fileName,
-            const std::vector<unsigned int>& clusterIdsOfGlobalDofs,
-            DofType dofType) const;
-
 private:
-    void assignDofsImpl();
-
-private:
-    std::auto_ptr<GridView> m_view;
-    Fiber::PiecewiseConstantScalarBasis<BasisFunctionType> m_basis;
-    std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
-    std::vector<std::vector<LocalDof> > m_global2localDofs;
+    /** \cond PRIVATE */
+    Fiber::PiecewiseLinearContinuousScalarBasis<2, BasisFunctionType> m_lineBasis;
+    Fiber::PiecewiseLinearContinuousScalarBasis<3, BasisFunctionType> m_triangleBasis;
+    Fiber::PiecewiseLinearContinuousScalarBasis<4, BasisFunctionType> m_quadrilateralBasis;
+    /** \endcond */
 };
 
 } // namespace Bempp
