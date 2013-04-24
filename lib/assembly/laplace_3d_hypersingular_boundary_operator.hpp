@@ -79,8 +79,6 @@ public:
     /** \copydoc ElementaryIntegralOperator::TestKernelTrialIntegral */
     typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
-    typedef typename Base::GramOperator GramOperator;
-
     /** \copydoc Laplace3dBoundaryOperatorBase::Laplace3dBoundaryOperatorBase */
 
     Laplace3dHypersingularBoundaryOperator(
@@ -89,15 +87,6 @@ public:
             const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
             const std::string& label = "",
             int symmetry = NO_SYMMETRY);
-
-private:
-    virtual shared_ptr<const GramOperator> testGramOperator(
-            const shared_ptr<const Space<BasisFunctionType> >& space,
-            const shared_ptr<const Space<BasisFunctionType> >& dualSpace) const;
-
-    virtual shared_ptr<const GramOperator> trialGramOperator(
-            const shared_ptr<const Space<BasisFunctionType> >& space,
-            const shared_ptr<const Space<BasisFunctionType> >& dualSpace) const;
 };
 
 /** \relates Laplace3dHypersingularBoundaryOperator

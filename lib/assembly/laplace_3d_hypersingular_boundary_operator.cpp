@@ -26,7 +26,6 @@
 #include "general_elementary_local_operator_imp.hpp"
 #include "identity_operator.hpp"
 #include "laplace_3d_single_layer_boundary_operator.hpp"
-#include "surface_curl_3d_first_component_gram_operator.hpp"
 #include "synthetic_integral_operator.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
@@ -87,28 +86,6 @@ Laplace3dHypersingularBoundaryOperator(
         int symmetry) :
     Base(domain, range, dualToRange, label, symmetry)
 {
-}
-
-template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const typename Laplace3dHypersingularBoundaryOperator<BasisFunctionType, ResultType>::GramOperator>
-Laplace3dHypersingularBoundaryOperator<BasisFunctionType, ResultType>::
-testGramOperator(
-        const shared_ptr<const Space<BasisFunctionType> >& space,
-        const shared_ptr<const Space<BasisFunctionType> >& dualSpace) const
-{
-    typedef SurfaceCurl3dFirstComponentGramOperator<BasisFunctionType, ResultType> Op;
-    return boost::make_shared<Op>(space, dualSpace, space);
-}
-
-template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const typename Laplace3dHypersingularBoundaryOperator<BasisFunctionType, ResultType>::GramOperator>
-Laplace3dHypersingularBoundaryOperator<BasisFunctionType, ResultType>::
-trialGramOperator(
-        const shared_ptr<const Space<BasisFunctionType> >& space,
-        const shared_ptr<const Space<BasisFunctionType> >& dualSpace) const
-{
-    typedef SurfaceCurl3dFirstComponentGramOperator<BasisFunctionType, ResultType> Op;
-    return boost::make_shared<Op>(space, dualSpace, space);
 }
 
 template <typename BasisFunctionType, typename ResultType>
