@@ -79,8 +79,6 @@ public:
     /** \copydoc ElementaryIntegralOperator::TestKernelTrialIntegral */
     typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
-    typedef typename Base::GramOperator GramOperator;
-
     /** \copydoc Laplace3dBoundaryOperatorBase::Laplace3dBoundaryOperatorBase */
 
     Laplace3dHypersingularBoundaryOperator(

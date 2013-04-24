@@ -26,7 +26,6 @@
 #include "general_elementary_local_operator_imp.hpp"
 #include "identity_operator.hpp"
 #include "laplace_3d_single_layer_boundary_operator.hpp"
-#include "surface_curl_3d_first_component_gram_operator.hpp"
 #include "synthetic_integral_operator.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
