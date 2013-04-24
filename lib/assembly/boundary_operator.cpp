@@ -34,7 +34,8 @@ namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType>::BoundaryOperator()
+BoundaryOperator<BasisFunctionType, ResultType>::BoundaryOperator() :
+    m_holdWeakForm(true)
 {
 }
 
@@ -43,7 +44,8 @@ BoundaryOperator<BasisFunctionType, ResultType>::BoundaryOperator(
         const shared_ptr<const Context<
         BasisFunctionType, ResultType> >& context,
         const shared_ptr<const AbstractBoundaryOperator<
-        BasisFunctionType, ResultType> >& abstractOp)
+        BasisFunctionType, ResultType> >& abstractOp) :
+    m_holdWeakForm(true)
 {
     initialize(context, abstractOp);
 }
@@ -64,6 +66,7 @@ void BoundaryOperator<BasisFunctionType, ResultType>::initialize(
     m_context = context;
     m_abstractOp = abstractOp;
     m_weakFormContainer.reset(new ConstWeakFormContainer);
+    m_weakWeakFormContainer.reset(new WeakConstWeakFormContainer);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -72,6 +75,7 @@ void BoundaryOperator<BasisFunctionType, ResultType>::uninitialize()
     m_context.reset();
     m_abstractOp.reset();
     m_weakFormContainer.reset();
+    m_weakWeakFormContainer.reset();
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -104,14 +108,18 @@ BoundaryOperator<BasisFunctionType, ResultType>::weakForm() const
                 "weak form of an uninitialized operator");
     assert(m_weakFormContainer); // contains a shared_ptr to DiscreteOp
                                  // (which may be null, though)
-    if (!*m_weakFormContainer) {
-        typedef DiscreteBoundaryOperator<ResultType> DiscreteOp;
-        shared_ptr<const DiscreteOp> discreteOp =
-            m_abstractOp->assembleWeakForm(*m_context);
+    assert(m_weakWeakFormContainer); // contains a weak_ptr to DiscreteOp
+                                 // (which may be null, though)
+    typedef DiscreteBoundaryOperator<ResultType> DiscreteOp;
+    shared_ptr<const DiscreteOp> discreteOp = m_weakWeakFormContainer->lock();
+    if (!discreteOp) {
+        discreteOp = m_abstractOp->assembleWeakForm(*m_context);
         assert(discreteOp);
-        *m_weakFormContainer = discreteOp;
+        *m_weakWeakFormContainer = discreteOp;
+        if (m_holdWeakForm)
+            *m_weakFormContainer = discreteOp;
     }
-    return *m_weakFormContainer;
+    return discreteOp;
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -148,6 +156,25 @@ BoundaryOperator<BasisFunctionType, ResultType>::label() const
     if (!isInitialized())
         return std::string();
     return m_abstractOp->label();
+}
+
+template <typename BasisFunctionType, typename ResultType>
+bool
+BoundaryOperator<BasisFunctionType, ResultType>::isWeakFormHeld() const
+{
+    return m_holdWeakForm;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void
+BoundaryOperator<BasisFunctionType, ResultType>::holdWeakForm(bool value)
+{
+    if (value)
+        *m_weakFormContainer = m_weakWeakFormContainer->lock();
+    else {
+        m_weakFormContainer->reset();
+    }
+    m_holdWeakForm = value;
 }
 
 template <typename BasisFunctionType, typename ResultType>

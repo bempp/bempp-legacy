@@ -28,6 +28,7 @@
 #include <boost/mpl/set.hpp>
 #include <boost/mpl/has_key.hpp>
 #include <boost/utility/enable_if.hpp>
+#include <boost/weak_ptr.hpp>
 #include <string>
 
 namespace Bempp
@@ -151,6 +152,29 @@ public:
     /** \brief Return the label of this BoundaryOperator. */
     std::string label() const;
 
+    /** \brief Return true if the BoundaryOperator should prevent its weak form
+     *  from being destroyed.
+     *
+     *  If isWeakFormHeld() returns true, the BoundaryOperator stores a
+     *  "strong" shared pointer to its discrete weak form once it is assembled
+     *  for the first time, so that the weak form is held in memory at least as
+     *  long as the BoundaryOperator object is in scope and its uninitialize()
+     *  member function is not called.
+     *
+     *  Otherwise only a weak pointer to the weak form is stored; thus, the
+     *  weak form remains in memory only as long as a shared pointer to it is
+     *  held somewhere else in the program.
+     *
+     *  By default, isWeakFormHeld() returns true; call holdWeakForm(false) to
+     *  change it. */
+    bool isWeakFormHeld() const;
+
+    /** \brief Specify whether the BoundaryOperator should prevent its weak form
+     *  from being destroyed.
+     *
+     *  See isWeakFormHeld() for more information. */
+    void holdWeakForm(bool value);
+
     /** \brief Act on a GridFunction.
      *
      *  This function sets \p y_inout to <tt>alpha * A * x_in + beta *
@@ -172,9 +196,13 @@ private:
     shared_ptr<const Context<BasisFunctionType, ResultType> > m_context;
     shared_ptr<const AbstractBoundaryOperator<BasisFunctionType, ResultType> >
     m_abstractOp;
+    bool m_holdWeakForm;
     typedef shared_ptr<const DiscreteBoundaryOperator<ResultType> >
         ConstWeakFormContainer;
     mutable shared_ptr<ConstWeakFormContainer> m_weakFormContainer;
+    typedef boost::weak_ptr<const DiscreteBoundaryOperator<ResultType> >
+        WeakConstWeakFormContainer;
+    mutable shared_ptr<WeakConstWeakFormContainer> m_weakWeakFormContainer;
     /** \endcond */
 };
 
