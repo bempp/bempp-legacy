@@ -23,8 +23,8 @@ shared_ptr<Epetra_CrsMatrix> sparseCholesky(const Epetra_CrsMatrix& mat)
     mat.ExtractCrsDataPointers(rowOffsets, colIndices, values);
 
     Epetra_SerialComm comm;
-    Epetra_LocalMap rowMap(size, 0 /* index_base */, comm);
-    Epetra_LocalMap columnMap(size, 0 /* index_base */, comm);
+    Epetra_LocalMap rowMap(static_cast<int>(size), 0 /* index_base */, comm);
+    Epetra_LocalMap columnMap(static_cast<int>(size), 0 /* index_base */, comm);
     shared_ptr<Epetra_CrsMatrix> result = boost::make_shared<Epetra_CrsMatrix>(
                 Copy, rowMap, columnMap, mat.GlobalMaxNumEntries());
 
