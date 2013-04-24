@@ -125,6 +125,25 @@ laplace3dDoubleLayerBoundaryOperator(
         const std::string& label = "",
         int symmetry = NO_SYMMETRY);
 
+/** \relates Laplace3dDoubleLayerBoundaryOperator
+ *  \brief Construct a "synthetic" representation of the double-layer boundary
+ *  operator associated with the Laplace equation in 3D.
+ *
+ *  \todo Write documentation. In the meantime, see the documentation of
+ *  laplace3dSyntheticSingleLayerBoundaryOperator and
+ *  SyntheticIntegralOperator. */
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
+laplace3dSyntheticDoubleLayerBoundaryOperator(
+        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+        const shared_ptr<const Space<BasisFunctionType> >& internalDomain,
+        const shared_ptr<const Space<BasisFunctionType> >& internalDualToRange,
+        const std::string& label = "",
+        int symmetry = NO_SYMMETRY);
+
 } // namespace Bempp
 
 #endif
