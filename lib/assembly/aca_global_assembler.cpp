@@ -25,6 +25,7 @@
 
 #include "assembly_options.hpp"
 #include "cluster_construction_helper.hpp"
+#include "context.hpp"
 #include "evaluation_options.hpp"
 #include "index_permutation.hpp"
 #include "discrete_boundary_operator_composition.hpp"
