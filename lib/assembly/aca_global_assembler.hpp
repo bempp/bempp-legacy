@@ -51,6 +51,7 @@ class AssemblyOptions;
 class EvaluationOptions;
 template <typename ValueType> class DiscreteBoundaryOperator;
 template <typename BasisFunctionType> class Space;
+template <typename BasisFunctionType, typename ResultType> class Context;
 /** \endcond */
 
 /** \ingroup weak_form_assembly_internal
@@ -76,14 +77,14 @@ public:
             const std::vector<const DiscreteBndOp*>& sparseTermsToAdd,
             const std::vector<ResultType>& denseTermMultipliers,
             const std::vector<ResultType>& sparseTermMultipliers,
-            const AssemblyOptions& options,
+            const Context<BasisFunctionType, ResultType>& context,
             int symmetry);
 
     static std::auto_ptr<DiscreteBndOp> assembleDetachedWeakForm(
             const Space<BasisFunctionType>& testSpace,
             const Space<BasisFunctionType>& trialSpace,
             LocalAssemblerForBoundaryOperators& localAssembler,
-            const AssemblyOptions& options,
+            const Context<BasisFunctionType, ResultType>& context,
             int symmetry); // used to be "bool symmetric"; fortunately "true"
                            // is converted to 1 == SYMMETRIC
 

@@ -335,6 +335,109 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getFlatLocalDofPos
 }
 
 template <typename BasisFunctionType>
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getGlobalDofNormals(
+        std::vector<Point3D<CoordinateType> >& normals) const
+{
+    const int gridDim = domainDimension();
+    const int globalDofCount_ = globalDofCount();
+    const int worldDim = this->grid()->dimWorld();
+    normals.resize(globalDofCount_);
+
+    const IndexSet& indexSet = m_view->indexSet();
+    int elementCount = m_view->entityCount(0);
+
+    arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
+    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    arma::Col<CoordinateType> center(gridDim);
+    center.fill(0.5);
+    arma::Col<CoordinateType> normal;
+    while (!it->finished())
+    {
+        const Entity<0>& e = it->entity();
+        int index = indexSet.entityIndex(e);
+        e.geometry().getNormals(center, normal);
+
+        for (int dim = 0; dim < worldDim; ++dim)
+            elementNormals(dim, index) = normal(dim);
+        it->next();
+    }
+
+    if (gridDim == 1)
+        for (size_t g = 0; g < globalDofCount_; ++g) {
+            normals[g].x = 0.;
+            normals[g].y = 0.;
+            for (size_t l = 0; l < m_global2localDofs[g].size(); ++l) {
+                normals[g].x += elementNormals(0, m_global2localDofs[g][l].entityIndex);
+                normals[g].y += elementNormals(1, m_global2localDofs[g][l].entityIndex);
+            }
+            normals[g].x /= m_global2localDofs[g].size();
+            normals[g].y /= m_global2localDofs[g].size();
+        }
+    else // gridDim == 2
+        for (size_t g = 0; g < globalDofCount_; ++g) {
+            normals[g].x = 0.;
+            normals[g].y = 0.;
+            for (size_t l = 0; l < m_global2localDofs[g].size(); ++l) {
+                normals[g].x += elementNormals(0, m_global2localDofs[g][l].entityIndex);
+                normals[g].y += elementNormals(1, m_global2localDofs[g][l].entityIndex);
+                normals[g].z += elementNormals(2, m_global2localDofs[g][l].entityIndex);
+            }
+            normals[g].x /= m_global2localDofs[g].size();
+            normals[g].y /= m_global2localDofs[g].size();
+            normals[g].z /= m_global2localDofs[g].size();
+        }
+}
+
+template <typename BasisFunctionType>
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getFlatLocalDofNormals(
+        std::vector<Point3D<CoordinateType> >& normals) const
+{
+    const int gridDim = domainDimension();
+    const int worldDim = this->grid()->dimWorld();
+    normals.resize(m_flatLocalDofCount);
+
+    const IndexSet& indexSet = m_view->indexSet();
+    int elementCount = m_view->entityCount(0);
+
+    arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
+    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    arma::Col<CoordinateType> center(gridDim);
+    center.fill(0.5);
+    arma::Col<CoordinateType> normal;
+    while (!it->finished())
+    {
+        const Entity<0>& e = it->entity();
+        int index = indexSet.entityIndex(e);
+        e.geometry().getNormals(center, normal);
+
+        for (int dim = 0; dim < worldDim; ++dim)
+            elementNormals(dim, index) = normal(dim);
+        it->next();
+    }
+
+    size_t flatLdofIndex = 0;
+    if (gridDim == 1)
+        for (size_t e = 0; e < m_local2globalDofs.size(); ++e) {
+            for (size_t v = 0; v < m_local2globalDofs[e].size(); ++v) {
+                normals[flatLdofIndex].x = elementNormals(0, e);
+                normals[flatLdofIndex].y = elementNormals(1, e);
+                normals[flatLdofIndex].z = 0.;
+                ++flatLdofIndex;
+            }
+        }
+    else // gridDim == 2
+        for (size_t e = 0; e < m_local2globalDofs.size(); ++e) {
+            for (size_t v = 0; v < m_local2globalDofs[e].size(); ++v) {
+                normals[flatLdofIndex].x = elementNormals(0, e);
+                normals[flatLdofIndex].y = elementNormals(1, e);
+                normals[flatLdofIndex].z = elementNormals(2, e);
+                ++flatLdofIndex;
+            }
+        }
+    assert(flatLdofIndex == m_flatLocalDofCount);
+}
+
+template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::dumpClusterIds(
         const char* fileName,
         const std::vector<unsigned int>& clusterIdsOfDofs) const

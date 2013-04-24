@@ -78,6 +78,10 @@ public:
 
     virtual void getGlobalDofPositions(std::vector<Point3D<CoordinateType> >& positions) const;
     virtual void getFlatLocalDofPositions(std::vector<Point3D<CoordinateType> >& positions) const;
+
+    virtual void getGlobalDofNormals(std::vector<Point3D<CoordinateType> >& normals) const;
+    virtual void getFlatLocalDofNormals(std::vector<Point3D<CoordinateType> >& normals) const;
+
     virtual void dumpClusterIds(
             const char* fileName,
             const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const;

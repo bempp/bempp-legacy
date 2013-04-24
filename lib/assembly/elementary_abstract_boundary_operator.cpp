@@ -20,7 +20,9 @@
 
 #include "elementary_abstract_boundary_operator.hpp"
 
-#include "discrete_boundary_operator.hpp"
+#include "context.hpp"
+#include "discrete_sparse_boundary_operator.hpp"
+#include "numerical_quadrature_strategy.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/local_assembler_for_operators.hpp"
@@ -54,6 +56,31 @@ assembleWeakFormInternal(
         const AssemblyOptions& options) const
 {
     return assembleWeakFormInternalImpl(assembler, options);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+shared_ptr<DiscreteBoundaryOperator<ResultType> >
+ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::
+assembleWeakFormInternal(
+        LocalAssembler& assembler,
+        const Context<BasisFunctionType, ResultType>& context) const
+{
+    return assembleWeakFormInternalImpl2(assembler, context);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+shared_ptr<DiscreteBoundaryOperator<ResultType> >
+ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::
+assembleWeakFormInternalImpl(
+        LocalAssembler& assembler,
+        const AssemblyOptions& options) const
+{
+    std::cout << "Warning: the variant of assembleWeakFormInternalImpl() with an AssemblyOptions object passed as the second argument is deprecated and will be removed in a future version of BEM++. Use the other variant, accepting a Context object as the second argument." << std::endl;
+    // possibly use more conservative accuracy options
+    NumericalQuadratureStrategy<BasisFunctionType, ResultType> quadStrategy; // fallback
+    Context<BasisFunctionType, ResultType> context(
+        make_shared_from_ref(quadStrategy), options);
+    assembleWeakFormInternalImpl2(assembler, context);
 }
 
 template <typename BasisFunctionType, typename ResultType>

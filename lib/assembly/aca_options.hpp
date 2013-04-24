@@ -116,6 +116,16 @@ struct AcaOptions
      *  Default value: false.
      */
     bool useAhmedAca;
+
+    /** \brief Index of the first block cluster to be approximated using ACA.
+     *
+     *  This parameter is included to facilitate debugging of ACA algorithms. If
+     *  it is set to a nonnegative value, ACA will process block cluster with
+     *  index \p firstClusterIndex first.
+     *
+     *  Default value: -1 (meaning that this parameter is ignored).
+     */
+    int firstClusterIndex;
 };
 
 } // namespace Bempp

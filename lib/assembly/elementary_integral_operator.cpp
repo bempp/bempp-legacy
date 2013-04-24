@@ -222,7 +222,7 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType>
 shared_ptr<DiscreteBoundaryOperator<ResultType> >
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 assembleWeakFormImpl(
-        const Context<BasisFunctionType, ResultType>& context) const
+    const Context<BasisFunctionType, ResultType>& context) const
 {
     bool verbose = (context.assemblyOptions().verbosityLevel() >=
                     VerbosityLevel::DEFAULT);
@@ -232,9 +232,9 @@ assembleWeakFormImpl(
 
     tbb::tick_count start = tbb::tick_count::now();
     std::auto_ptr<LocalAssembler> assembler =
-            this->makeAssembler(*context.quadStrategy(), context.assemblyOptions());
+        this->makeAssembler(*context.quadStrategy(), context.assemblyOptions());
     shared_ptr<DiscreteBoundaryOperator<ResultType> > result =
-            assembleWeakFormInternalImpl(*assembler, context.assemblyOptions());
+        assembleWeakFormInternalImpl2(*assembler, context);
     tbb::tick_count end = tbb::tick_count::now();
 
     if (verbose)
@@ -246,17 +246,17 @@ assembleWeakFormImpl(
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 shared_ptr<DiscreteBoundaryOperator<ResultType> >
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-assembleWeakFormInternalImpl(
+assembleWeakFormInternalImpl2(
         LocalAssembler& assembler,
-        const AssemblyOptions& options) const
+        const Context<BasisFunctionType, ResultType>& context) const
 {
-    switch (options.assemblyMode()) {
+    switch (context.assemblyOptions().assemblyMode()) {
     case AssemblyOptions::DENSE:
         return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
-                    assembleWeakFormInDenseMode(assembler, options).release());
+                    assembleWeakFormInDenseMode(assembler, context.assemblyOptions()).release());
     case AssemblyOptions::ACA:
         return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
-                    assembleWeakFormInAcaMode(assembler, options).release());
+                    assembleWeakFormInAcaMode(assembler, context).release());
     default:
         throw std::runtime_error(
                     "ElementaryIntegralOperator::assembleWeakFormInternalImpl(): "
@@ -353,14 +353,14 @@ std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 assembleWeakFormInAcaMode(
         LocalAssembler& assembler,
-        const AssemblyOptions& options) const
+        const Context<BasisFunctionType, ResultType>& context) const
 {
     const Space<BasisFunctionType>& testSpace = *this->dualToRange();
     const Space<BasisFunctionType>& trialSpace = *this->domain();
 
     return AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
-                testSpace, trialSpace, assembler, options,
-                this->symmetry() & SYMMETRIC);
+                testSpace, trialSpace, assembler, 
+                context, this->symmetry() & SYMMETRIC);
 }
 
 /** \endcond */

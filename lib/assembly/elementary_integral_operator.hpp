@@ -181,9 +181,9 @@ private:
             bool cacheSingularIntegrals) const;
 
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
-    assembleWeakFormInternalImpl(
+    assembleWeakFormInternalImpl2(
             LocalAssembler& assembler,
-            const AssemblyOptions& options) const;
+            const Context<BasisFunctionType, ResultType>& context) const;
 
     /** \cond PRIVATE */
 
@@ -194,7 +194,7 @@ private:
     std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInAcaMode(
             LocalAssembler& assembler,
-            const AssemblyOptions& options) const;
+            const Context<BasisFunctionType, ResultType>& context) const;
 
     /** \endcond */
 };
