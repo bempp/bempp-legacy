@@ -90,28 +90,6 @@ Laplace3dHypersingularBoundaryOperator(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const typename Laplace3dHypersingularBoundaryOperator<BasisFunctionType, ResultType>::GramOperator>
-Laplace3dHypersingularBoundaryOperator<BasisFunctionType, ResultType>::
-testGramOperator(
-        const shared_ptr<const Space<BasisFunctionType> >& space,
-        const shared_ptr<const Space<BasisFunctionType> >& dualSpace) const
-{
-    typedef SurfaceCurl3dFirstComponentGramOperator<BasisFunctionType, ResultType> Op;
-    return boost::make_shared<Op>(space, dualSpace, space);
-}
-
-template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const typename Laplace3dHypersingularBoundaryOperator<BasisFunctionType, ResultType>::GramOperator>
-Laplace3dHypersingularBoundaryOperator<BasisFunctionType, ResultType>::
-trialGramOperator(
-        const shared_ptr<const Space<BasisFunctionType> >& space,
-        const shared_ptr<const Space<BasisFunctionType> >& dualSpace) const
-{
-    typedef SurfaceCurl3dFirstComponentGramOperator<BasisFunctionType, ResultType> Op;
-    return boost::make_shared<Op>(space, dualSpace, space);
-}
-
-template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 laplace3dHypersingularBoundaryOperator(
         const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
