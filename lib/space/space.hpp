@@ -103,6 +103,12 @@ public:
     /** @name Attributes
     @{ */
 
+    /** \todo DOCUMENT ME */
+    virtual const Space<BasisFunctionType>& discontinuousSpace() const = 0;
+
+    /** \todo DOCUMENT ME */
+    virtual bool isDiscontinuous() const = 0;
+
     /** \brief Dimension of the grid on which functions from this space are
      *  defined. */
     virtual int domainDimension() const = 0;

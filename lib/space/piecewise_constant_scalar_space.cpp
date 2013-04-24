@@ -42,6 +42,20 @@ PiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid) :
 }
 
 template <typename BasisFunctionType>
+const Space<BasisFunctionType>&
+PiecewiseConstantScalarSpace<BasisFunctionType>::discontinuousSpace() const
+{
+    return *this;
+}
+
+template <typename BasisFunctionType>
+bool
+PiecewiseConstantScalarSpace<BasisFunctionType>::isDiscontinuous() const
+{
+    return true;
+}
+
+template <typename BasisFunctionType>
 int PiecewiseConstantScalarSpace<BasisFunctionType>::domainDimension() const
 {
     return this->grid()->dim();

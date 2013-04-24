@@ -55,8 +55,10 @@ public:
         const shared_ptr<const Grid>& grid);
     virtual ~RaviartThomas0VectorSpace();
 
-    virtual const CollectionOfBasisTransformations& shapeFunctionValue() const;
+    virtual const Space<BasisFunctionType>& discontinuousSpace() const;
+    virtual bool isDiscontinuous() const;
 
+    virtual const CollectionOfBasisTransformations& shapeFunctionValue() const;
 
     virtual int domainDimension() const;
     virtual int codomainDimension() const;

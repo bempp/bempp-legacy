@@ -20,6 +20,8 @@
 
 #include "piecewise_linear_continuous_scalar_space.hpp"
 
+#include "piecewise_linear_discontinuous_scalar_space.hpp"
+
 #include "../assembly/discrete_sparse_boundary_operator.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
 #include "../fiber/explicit_instantiation.hpp"
@@ -31,9 +33,6 @@
 #include "../grid/mapper.hpp"
 #include "../grid/vtk_writer.hpp"
 
-#include <dune/localfunctions/lagrange/p1/p1localbasis.hh>
-#include <dune/localfunctions/lagrange/q1/q1localbasis.hh>
-
 #include <stdexcept>
 #include <iostream>
 
@@ -43,7 +42,7 @@ namespace Bempp
 template <typename BasisFunctionType>
 PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
 PiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid) :
-    ScalarSpace<BasisFunctionType>(grid), m_flatLocalDofCount(0)
+    PiecewiseLinearScalarSpace<BasisFunctionType>(grid), m_flatLocalDofCount(0)
 {
     const int gridDim = grid->dim();
     if (gridDim != 1 && gridDim != 2)
@@ -52,76 +51,41 @@ PiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid) :
                                     "only 1- and 2-dimensional grids are supported");
     m_view = grid->leafView();
     assignDofsImpl();
+    m_discontinuousSpace = 0;
 }
 
 template <typename BasisFunctionType>
 PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
 ~PiecewiseLinearContinuousScalarSpace()
 {
+    delete m_discontinuousSpace;
 }
 
 template <typename BasisFunctionType>
-int PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::domainDimension() const
+const Space<BasisFunctionType>&
+PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::discontinuousSpace() const
 {
-    return this->grid()->dim();
-}
-
-template <typename BasisFunctionType>
-int PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::codomainDimension() const
-{
-    return 1;
-}
-
-template <typename BasisFunctionType>
-const Fiber::Basis<BasisFunctionType>&
-PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::basis(
-        const Entity<0>& element) const
-{
-    switch (elementVariant(element))
-    {
-    case 3:
-        return m_triangleBasis;
-    case 4:
-        return m_quadrilateralBasis;
-    case 2:
-        return m_lineBasis;
-    default:
-        throw std::logic_error("PiecewiseLinearContinuousScalarSpace::basis(): "
-                               "invalid element variant, this shouldn't happen!");
+    if (!m_discontinuousSpace) {
+        tbb::mutex::scoped_lock lock(m_discontinuousSpaceMutex);
+        typedef PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>
+                DiscontinuousSpace;
+        if (!m_discontinuousSpace)
+            m_discontinuousSpace = new DiscontinuousSpace(this->grid());
     }
+    return *m_discontinuousSpace;
 }
 
 template <typename BasisFunctionType>
-ElementVariant PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::elementVariant(
-        const Entity<0>& element) const
+bool
+PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::isDiscontinuous() const
 {
-    GeometryType type = element.type();
-    if (type.isLine())
-        return 2;
-    else if (type.isTriangle())
-        return 3;
-    else if (type.isQuadrilateral())
-        return 4;
-    else
-        throw std::runtime_error("PiecewiseLinearContinuousScalarSpace::"
-                                 "elementVariant(): invalid geometry type, "
-                                 "this shouldn't happen!");
-}
-
-template <typename BasisFunctionType>
-void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::setElementVariant(
-        const Entity<0>& element, ElementVariant variant)
-{
-    if (variant != elementVariant(element))
-        // for this space, the element variants are unmodifiable,
-        throw std::runtime_error("PiecewiseLinearContinuousScalarSpace::"
-                                 "setElementVariant(): invalid variant");
+    return false;
 }
 
 template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
 {
-    const int gridDim = domainDimension();
+    const int gridDim = this->domainDimension();
 
     const Mapper& elementMapper = m_view->elementMapper();
     const IndexSet& indexSet = m_view->indexSet();
@@ -247,7 +211,7 @@ template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getGlobalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
-    const int gridDim = domainDimension();
+    const int gridDim = this->domainDimension();
     const int globalDofCount_ = globalDofCount();
     positions.resize(globalDofCount_);
 
@@ -291,7 +255,7 @@ template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getFlatLocalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
-    const int gridDim = domainDimension();
+    const int gridDim = this->domainDimension();
     const int worldDim = this->grid()->dimWorld();
     positions.resize(m_flatLocalDofCount);
 
@@ -338,7 +302,7 @@ template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getGlobalDofNormals(
         std::vector<Point3D<CoordinateType> >& normals) const
 {
-    const int gridDim = domainDimension();
+    const int gridDim = this->domainDimension();
     const int globalDofCount_ = globalDofCount();
     const int worldDim = this->grid()->dimWorld();
     normals.resize(globalDofCount_);
@@ -392,7 +356,7 @@ template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getFlatLocalDofNormals(
         std::vector<Point3D<CoordinateType> >& normals) const
 {
-    const int gridDim = domainDimension();
+    const int gridDim = this->domainDimension();
     const int worldDim = this->grid()->dimWorld();
     normals.resize(m_flatLocalDofCount);
 

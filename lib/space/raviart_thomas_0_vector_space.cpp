@@ -74,6 +74,21 @@ RaviartThomas0VectorSpace<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
+const Space<BasisFunctionType>&
+RaviartThomas0VectorSpace<BasisFunctionType>::discontinuousSpace() const
+{
+    throw std::runtime_error("RaviartThomas0VectorSpace::discontinuousSpace(): "
+                             "not implemented yet");
+}
+
+template <typename BasisFunctionType>
+bool
+RaviartThomas0VectorSpace<BasisFunctionType>::isDiscontinuous() const
+{
+    return false;
+}
+
+template <typename BasisFunctionType>
 const typename RaviartThomas0VectorSpace<BasisFunctionType>::
 CollectionOfBasisTransformations&
 RaviartThomas0VectorSpace<BasisFunctionType>::shapeFunctionValue() const
