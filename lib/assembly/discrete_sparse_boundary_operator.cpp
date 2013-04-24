@@ -73,8 +73,8 @@ void reallyApplyBuiltInImpl<double>(const Epetra_CrsMatrix& mat,
         assert(mat.NumGlobalRows() == static_cast<int>(y_inout.n_rows));
     }
 
-    Epetra_Map map_x(x_in.n_rows, 0, Epetra_SerialComm());
-    Epetra_Map map_y(y_inout.n_rows, 0, Epetra_SerialComm());
+    Epetra_Map map_x((int) x_in.n_rows, 0, Epetra_SerialComm());
+    Epetra_Map map_y((int) y_inout.n_rows, 0, Epetra_SerialComm());
 
     Epetra_Vector vec_x(View, map_x, const_cast<double*>(x_in.memptr()));
     // vec_temp will store the result of matrix * x_in

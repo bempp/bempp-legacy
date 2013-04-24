@@ -156,6 +156,22 @@ build_jobs=2
 [Trilinos]
 # Use this section to override compiler settings for Trilinos
 
+
+[MPI]
+
+# Enable MPI support and specify the MPI include directory and MPI 
+# libraries here. If you use MPI compier wrappers (e.g. mpicxxx and mpicc)
+# you just have to uncomment enable_mpi = true to enable MPI support. If
+# compiler wrappers are not used then additionally the mpi include directory
+# and mpi libraries need to be specified. The given example configuration is
+# for OpenMPI.
+
+# enable_mpi = true
+# mpi_cxx_libs = -L/usr/local/openmpi/lib -lmpi_cxx -lmpi
+# mpi_include_dir = /usr/local/openmpi/include
+
+
+
 [Python]
 
 # You do not normally need to edit this section. However, if the BEM++

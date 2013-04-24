@@ -82,7 +82,7 @@ public:
     }
 
     CoordinateType estimateRelativeScale(CoordinateType distance) const {
-        return exp(-realPart(m_slpKernel.waveNumber()) * distance);
+        return m_slpKernel.estimateRelativeScale(distance);
     }
 
 private:

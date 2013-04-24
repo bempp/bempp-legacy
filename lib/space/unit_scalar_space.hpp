@@ -51,6 +51,9 @@ public:
     virtual int domainDimension() const;
     virtual int codomainDimension() const;
 
+    virtual const Space<BasisFunctionType>& discontinuousSpace() const;
+    virtual bool isDiscontinuous() const;
+
     /** \brief Return the variant of element \p element.
      *
      *  Possible return values:

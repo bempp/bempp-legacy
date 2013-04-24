@@ -21,6 +21,8 @@
 #include "laplace_3d_single_layer_boundary_operator.hpp"
 #include "laplace_3d_boundary_operator_base_imp.hpp"
 
+#include "synthetic_scalar_integral_operator_builder.hpp"
+
 #include "../fiber/explicit_instantiation.hpp"
 
 #include "../fiber/laplace_3d_single_layer_potential_kernel_functor.hpp"
@@ -94,14 +96,46 @@ laplace3dSingleLayerBoundaryOperator(
                                                label, symmetry));
 }
 
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
+laplace3dSyntheticSingleLayerBoundaryOperator(
+        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+        const shared_ptr<const Space<BasisFunctionType> >& internalDomain,
+        const shared_ptr<const Space<BasisFunctionType> >& internalDualToRange,
+        const std::string& label = "",
+        int symmetry = NO_SYMMETRY)
+{
+    BoundaryOperator<BasisFunctionType, ResultType> internalOp =
+            laplace3dSingleLayerBoundaryOperator(
+                context, internalDomain, range /* or whatever */,
+                internalDualToRange,
+                "(" + label + ")_internal", symmetry);
+    return makeSyntheticScalarIntegralOperator(
+                internalOp, domain, range, dualToRange,
+                internalDomain, internalDualToRange,
+                label, NO_SYMMETRY);
+}
+
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT) \
-   template BoundaryOperator<BASIS, RESULT> \
-   laplace3dSingleLayerBoundaryOperator( \
-       const shared_ptr<const Context<BASIS, RESULT> >&, \
-       const shared_ptr<const Space<BASIS> >&, \
-       const shared_ptr<const Space<BASIS> >&, \
-       const shared_ptr<const Space<BASIS> >&, \
-       const std::string&, int)
+    template BoundaryOperator<BASIS, RESULT> \
+    laplace3dSingleLayerBoundaryOperator( \
+        const shared_ptr<const Context<BASIS, RESULT> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const std::string&, int); \
+    template BoundaryOperator<BASIS, RESULT> \
+    laplace3dSyntheticSingleLayerBoundaryOperator( \
+        const shared_ptr<const Context<BASIS, RESULT> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const std::string&, int)
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 #define INSTANTIATE_BASE(BASIS, RESULT) \

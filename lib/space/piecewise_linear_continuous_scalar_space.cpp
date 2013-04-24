@@ -20,6 +20,8 @@
 
 #include "piecewise_linear_continuous_scalar_space.hpp"
 
+#include "piecewise_linear_discontinuous_scalar_space.hpp"
+
 #include "../assembly/discrete_sparse_boundary_operator.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
 #include "../fiber/explicit_instantiation.hpp"
@@ -31,9 +33,6 @@
 #include "../grid/mapper.hpp"
 #include "../grid/vtk_writer.hpp"
 
-#include <dune/localfunctions/lagrange/p1/p1localbasis.hh>
-#include <dune/localfunctions/lagrange/q1/q1localbasis.hh>
-
 #include <stdexcept>
 #include <iostream>
 
@@ -43,7 +42,7 @@ namespace Bempp
 template <typename BasisFunctionType>
 PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
 PiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid) :
-    ScalarSpace<BasisFunctionType>(grid), m_flatLocalDofCount(0)
+    PiecewiseLinearScalarSpace<BasisFunctionType>(grid), m_flatLocalDofCount(0)
 {
     const int gridDim = grid->dim();
     if (gridDim != 1 && gridDim != 2)
@@ -52,76 +51,41 @@ PiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid) :
                                     "only 1- and 2-dimensional grids are supported");
     m_view = grid->leafView();
     assignDofsImpl();
+    m_discontinuousSpace = 0;
 }
 
 template <typename BasisFunctionType>
 PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
 ~PiecewiseLinearContinuousScalarSpace()
 {
+    delete m_discontinuousSpace;
 }
 
 template <typename BasisFunctionType>
-int PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::domainDimension() const
+const Space<BasisFunctionType>&
+PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::discontinuousSpace() const
 {
-    return this->grid()->dim();
-}
-
-template <typename BasisFunctionType>
-int PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::codomainDimension() const
-{
-    return 1;
-}
-
-template <typename BasisFunctionType>
-const Fiber::Basis<BasisFunctionType>&
-PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::basis(
-        const Entity<0>& element) const
-{
-    switch (elementVariant(element))
-    {
-    case 3:
-        return m_triangleBasis;
-    case 4:
-        return m_quadrilateralBasis;
-    case 2:
-        return m_lineBasis;
-    default:
-        throw std::logic_error("PiecewiseLinearContinuousScalarSpace::basis(): "
-                               "invalid element variant, this shouldn't happen!");
+    if (!m_discontinuousSpace) {
+        tbb::mutex::scoped_lock lock(m_discontinuousSpaceMutex);
+        typedef PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>
+                DiscontinuousSpace;
+        if (!m_discontinuousSpace)
+            m_discontinuousSpace = new DiscontinuousSpace(this->grid());
     }
+    return *m_discontinuousSpace;
 }
 
 template <typename BasisFunctionType>
-ElementVariant PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::elementVariant(
-        const Entity<0>& element) const
+bool
+PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::isDiscontinuous() const
 {
-    GeometryType type = element.type();
-    if (type.isLine())
-        return 2;
-    else if (type.isTriangle())
-        return 3;
-    else if (type.isQuadrilateral())
-        return 4;
-    else
-        throw std::runtime_error("PiecewiseLinearContinuousScalarSpace::"
-                                 "elementVariant(): invalid geometry type, "
-                                 "this shouldn't happen!");
-}
-
-template <typename BasisFunctionType>
-void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::setElementVariant(
-        const Entity<0>& element, ElementVariant variant)
-{
-    if (variant != elementVariant(element))
-        // for this space, the element variants are unmodifiable,
-        throw std::runtime_error("PiecewiseLinearContinuousScalarSpace::"
-                                 "setElementVariant(): invalid variant");
+    return false;
 }
 
 template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
 {
-    const int gridDim = domainDimension();
+    const int gridDim = this->domainDimension();
 
     const Mapper& elementMapper = m_view->elementMapper();
     const IndexSet& indexSet = m_view->indexSet();
@@ -247,7 +211,7 @@ template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getGlobalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
-    const int gridDim = domainDimension();
+    const int gridDim = this->domainDimension();
     const int globalDofCount_ = globalDofCount();
     positions.resize(globalDofCount_);
 
@@ -291,7 +255,7 @@ template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getFlatLocalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
-    const int gridDim = domainDimension();
+    const int gridDim = this->domainDimension();
     const int worldDim = this->grid()->dimWorld();
     positions.resize(m_flatLocalDofCount);
 
@@ -328,6 +292,109 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getFlatLocalDofPos
                 positions[flatLdofIndex].x = elementCenters(0, e);
                 positions[flatLdofIndex].y = elementCenters(1, e);
                 positions[flatLdofIndex].z = elementCenters(2, e);
+                ++flatLdofIndex;
+            }
+        }
+    assert(flatLdofIndex == m_flatLocalDofCount);
+}
+
+template <typename BasisFunctionType>
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getGlobalDofNormals(
+        std::vector<Point3D<CoordinateType> >& normals) const
+{
+    const int gridDim = this->domainDimension();
+    const int globalDofCount_ = globalDofCount();
+    const int worldDim = this->grid()->dimWorld();
+    normals.resize(globalDofCount_);
+
+    const IndexSet& indexSet = m_view->indexSet();
+    int elementCount = m_view->entityCount(0);
+
+    arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
+    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    arma::Col<CoordinateType> center(gridDim);
+    center.fill(0.5);
+    arma::Col<CoordinateType> normal;
+    while (!it->finished())
+    {
+        const Entity<0>& e = it->entity();
+        int index = indexSet.entityIndex(e);
+        e.geometry().getNormals(center, normal);
+
+        for (int dim = 0; dim < worldDim; ++dim)
+            elementNormals(dim, index) = normal(dim);
+        it->next();
+    }
+
+    if (gridDim == 1)
+        for (size_t g = 0; g < globalDofCount_; ++g) {
+            normals[g].x = 0.;
+            normals[g].y = 0.;
+            for (size_t l = 0; l < m_global2localDofs[g].size(); ++l) {
+                normals[g].x += elementNormals(0, m_global2localDofs[g][l].entityIndex);
+                normals[g].y += elementNormals(1, m_global2localDofs[g][l].entityIndex);
+            }
+            normals[g].x /= m_global2localDofs[g].size();
+            normals[g].y /= m_global2localDofs[g].size();
+        }
+    else // gridDim == 2
+        for (size_t g = 0; g < globalDofCount_; ++g) {
+            normals[g].x = 0.;
+            normals[g].y = 0.;
+            for (size_t l = 0; l < m_global2localDofs[g].size(); ++l) {
+                normals[g].x += elementNormals(0, m_global2localDofs[g][l].entityIndex);
+                normals[g].y += elementNormals(1, m_global2localDofs[g][l].entityIndex);
+                normals[g].z += elementNormals(2, m_global2localDofs[g][l].entityIndex);
+            }
+            normals[g].x /= m_global2localDofs[g].size();
+            normals[g].y /= m_global2localDofs[g].size();
+            normals[g].z /= m_global2localDofs[g].size();
+        }
+}
+
+template <typename BasisFunctionType>
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getFlatLocalDofNormals(
+        std::vector<Point3D<CoordinateType> >& normals) const
+{
+    const int gridDim = this->domainDimension();
+    const int worldDim = this->grid()->dimWorld();
+    normals.resize(m_flatLocalDofCount);
+
+    const IndexSet& indexSet = m_view->indexSet();
+    int elementCount = m_view->entityCount(0);
+
+    arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
+    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    arma::Col<CoordinateType> center(gridDim);
+    center.fill(0.5);
+    arma::Col<CoordinateType> normal;
+    while (!it->finished())
+    {
+        const Entity<0>& e = it->entity();
+        int index = indexSet.entityIndex(e);
+        e.geometry().getNormals(center, normal);
+
+        for (int dim = 0; dim < worldDim; ++dim)
+            elementNormals(dim, index) = normal(dim);
+        it->next();
+    }
+
+    size_t flatLdofIndex = 0;
+    if (gridDim == 1)
+        for (size_t e = 0; e < m_local2globalDofs.size(); ++e) {
+            for (size_t v = 0; v < m_local2globalDofs[e].size(); ++v) {
+                normals[flatLdofIndex].x = elementNormals(0, e);
+                normals[flatLdofIndex].y = elementNormals(1, e);
+                normals[flatLdofIndex].z = 0.;
+                ++flatLdofIndex;
+            }
+        }
+    else // gridDim == 2
+        for (size_t e = 0; e < m_local2globalDofs.size(); ++e) {
+            for (size_t v = 0; v < m_local2globalDofs[e].size(); ++v) {
+                normals[flatLdofIndex].x = elementNormals(0, e);
+                normals[flatLdofIndex].y = elementNormals(1, e);
+                normals[flatLdofIndex].z = elementNormals(2, e);
                 ++flatLdofIndex;
             }
         }

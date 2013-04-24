@@ -7,6 +7,7 @@ cd build
 CXXFLAGS="$Trilinos_cxxflags" CFLAGS="$Trilinos_cflags" "$CMake_exe" \
     -D CMAKE_CXX_COMPILER:STRING="$Trilinos_cxx" \
     -D CMAKE_C_COMPILER:STRING="$Trilinos_cc" \
+    -D CMAKE_SHARED_LINKER_FLAGS:STRING="$MPI_mpi_cxx_libs" \
     -D CMAKE_BUILD_TYPE:STRING=Release \
     -D CMAKE_INSTALL_PREFIX:PATH="$Main_prefix/bempp" \
     -D BUILD_SHARED_LIBS:BOOL=ON \
@@ -21,6 +22,7 @@ CXXFLAGS="$Trilinos_cxxflags" CFLAGS="$Trilinos_cflags" "$CMake_exe" \
     -D TPL_ENABLE_MPI:BOOL="$Main_with_mpi" \
     -D TPL_Boost_INCLUDE_DIRS:STRING="$Boost_include_dir" \
     -D Trilinos_ENABLE_Amesos:BOOL=ON \
+    -D Trilinos_ENABLE_Anasazi:BOOL=ON \
     -D Trilinos_ENABLE_Belos:BOOL=ON \
     -D Trilinos_ENABLE_Epetra:BOOL=ON \
     -D Trilinos_ENABLE_EpetraExt:BOOL=ON \

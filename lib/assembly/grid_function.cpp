@@ -547,7 +547,6 @@ void GridFunction<BasisFunctionType, ResultType>::exportToVtk(
                              fileNamesBase, filesPath, outputType);
 }
 
-
 template <typename BasisFunctionType, typename ResultType>
 void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
         VtkWriter::DataType dataType, arma::Mat<ResultType>& result_) const
@@ -609,12 +608,15 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
     BasisAndCornerCountVector basesAndCornerCounts(elementCount);
     std::vector<std::vector<ResultType> > localCoefficients(elementCount);
     {
+        const Mapper& mapper = view->elementMapper();
         std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
         for (size_t e = 0; e < elementCount; ++e) {
             const Entity<0>& element = it->entity();
-            basesAndCornerCounts[e] = BasisAndCornerCount(
-                        &m_space->basis(element), rawGeometry.elementCornerCount(e));
-            getLocalCoefficients(element, localCoefficients[e]);
+            const int elementIndex = mapper.entityIndex(element);
+            basesAndCornerCounts[elementIndex] = BasisAndCornerCount(
+                        &m_space->basis(element),
+                        rawGeometry.elementCornerCount(elementIndex));
+            getLocalCoefficients(element, localCoefficients[elementIndex]);
             it->next();
         }
     }

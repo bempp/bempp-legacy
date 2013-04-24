@@ -21,10 +21,15 @@
 #include "laplace_3d_double_layer_boundary_operator.hpp"
 #include "laplace_3d_boundary_operator_base_imp.hpp"
 
+//#include "general_elementary_local_operator_imp.hpp"
+//#include "synthetic_integral_operator.hpp"
+#include "synthetic_scalar_integral_operator_builder.hpp"
+
 #include "../fiber/explicit_instantiation.hpp"
 
 #include "../fiber/laplace_3d_double_layer_potential_kernel_functor.hpp"
 #include "../fiber/scalar_function_value_functor.hpp"
+//#include "../fiber/simple_test_trial_integrand_functor.hpp"
 #include "../fiber/simple_test_scalar_kernel_trial_integrand_functor.hpp"
 
 #include "../fiber/default_collection_of_kernels.hpp"
@@ -93,10 +98,42 @@ laplace3dDoubleLayerBoundaryOperator(
                                                 label, symmetry));
 }
 
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
+laplace3dSyntheticDoubleLayerBoundaryOperator(
+        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+        const shared_ptr<const Space<BasisFunctionType> >& internalDomain,
+        const shared_ptr<const Space<BasisFunctionType> >& internalDualToRange,
+        const std::string& label = "",
+        int symmetry = NO_SYMMETRY)
+{
+    BoundaryOperator<BasisFunctionType, ResultType> internalOp =
+            laplace3dDoubleLayerBoundaryOperator(
+                context, internalDomain, range /* or whatever */,
+                internalDualToRange,
+                "(" + label + ")_internal", symmetry);
+    return makeSyntheticScalarIntegralOperator(
+                internalOp, domain, range, dualToRange,
+                internalDomain, internalDualToRange,
+                label, NO_SYMMETRY);
+}
+
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT) \
     template BoundaryOperator<BASIS, RESULT> \
     laplace3dDoubleLayerBoundaryOperator( \
         const shared_ptr<const Context<BASIS, RESULT> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const std::string&, int); \
+    template BoundaryOperator<BASIS, RESULT> \
+    laplace3dSyntheticDoubleLayerBoundaryOperator( \
+        const shared_ptr<const Context<BASIS, RESULT> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \

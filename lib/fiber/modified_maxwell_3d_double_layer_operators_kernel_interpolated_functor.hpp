@@ -98,6 +98,10 @@ public:
                  trialGeomData.global(coordIndex));
     }
 
+    CoordinateType estimateRelativeScale(CoordinateType distance) const {
+        return exp(-realPart(m_waveNumber) * distance);
+    }
+
 private:
     /** \cond PRIVATE */
     ValueType m_waveNumber;

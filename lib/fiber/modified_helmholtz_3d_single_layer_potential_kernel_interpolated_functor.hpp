@@ -28,6 +28,8 @@
 #include "initialize_interpolator_for_modified_helmholtz_3d_kernels.hpp"
 #include "scalar_traits.hpp"
 
+#include "../common/complex_aux.hpp"
+
 namespace Fiber
 {
 
@@ -91,6 +93,11 @@ public:
         ValueType v = m_interpolator.evaluate(distance);
         result[0](0, 0) =
                 static_cast<CoordinateType>(1.0 / (4.0*M_PI)) / distance * v;
+    }
+
+    CoordinateType estimateRelativeScale(CoordinateType distance) const {
+        // This function is called rarely, invoking exp() here does little harm.
+        return exp(-realPart(m_waveNumber) * distance);
     }
 
 private:

@@ -37,97 +37,20 @@ template <typename ResultType> class LocalAssemblerForOperators;
 namespace Bempp
 {
 
-/** \cond FORWARD_DECL */
-template <typename BasisFunctionType, typename ResultType> class BoundaryOperator;
-/** \endcond */
-
-/** \ingroup maxwell_3d
-    \brief Laplace-Beltrami operator in 3D.
-
-    This class represents the Laplace-Beltrami operator \f$L\f$ in 3D,
-    whose weak form is
-
-    \f[
-    \langle \boldsymbol u, L \boldsymbol v \rangle =
-    \int_\Gamma \boldsymbol \nabla_\Gamma u^*(\boldsymbol x) \cdot
-    \boldsymbol \nabla_\Gamma v(\boldsymbol x)  \,
-    \mathrm{d}\Gamma(\boldsymbol x),
-    \f]
-
-    where \f$\boldsymbol \nabla_\Gamma\f$ is the surface gradient operator.
-
-    See AbstractBoundaryOperator for the documentation of the template
-    parameters.
-
-    Use the laplaceBeltrami3dOperator() function to create a BoundaryOperator
-    object wrapping a LaplaceBeltrami3dOperator object.
- */
-template <typename BasisFunctionType_, typename ResultType_>
-class LaplaceBeltrami3dOperator :
-        public ElementaryLocalOperator<BasisFunctionType_, ResultType_>
-{
-    typedef ElementaryLocalOperator<BasisFunctionType_, ResultType_> Base;
-public:
-    /** \copydoc ElementaryLocalOperator::BasisFunctionType */
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc ElementaryLocalOperator::ResultType */
-    typedef typename Base::ResultType ResultType;
-    /** \copydoc ElementaryLocalOperator::CoordinateType */
-    typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc ElementaryLocalOperator::QuadratureStrategy */
-    typedef typename Base::QuadratureStrategy QuadratureStrategy;
-    /** \copydoc ElementaryLocalOperator::LocalAssembler */
-    typedef typename Base::LocalAssembler LocalAssembler;
-    /** \copydoc ElementaryLocalOperator::CollectionOfBasisTransformations */
-    typedef typename Base::CollectionOfBasisTransformations
-    CollectionOfBasisTransformations;
-    /** \copydoc ElementaryLocalOperator::TestTrialIntegral */
-    typedef typename Base::TestTrialIntegral TestTrialIntegral;
-
-    /** \brief Constructor.
-     *
-     *  \param[in] domain
-     *    Function space being the domain of the operator.
-     *  \param[in] range
-     *    Function space being the range of the operator.
-     *  \param[in] dualToRange
-     *    Function space dual to the the range of the operator.
-     *  \param[in] label
-     *    Textual label of the operator. If empty, a unique label is generated
-     *    automatically.
-     *  \param[in] symmetry
-     *    Symmetry of the weak form of the operator. Can be any combination of
-     *    the flags defined in the enumeration type Symmetry.
-     *
-     *  All the three spaces must be defined on the same grid. */
-    LaplaceBeltrami3dOperator(const shared_ptr<const Space<BasisFunctionType> >& domain,
-                     const shared_ptr<const Space<BasisFunctionType> >& range,
-                     const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-                     const std::string& label = "",
-                     int symmetry = NO_SYMMETRY);
-    virtual ~LaplaceBeltrami3dOperator();
-
-private:
-    virtual const CollectionOfBasisTransformations&
-    testTransformations() const;
-
-    virtual const CollectionOfBasisTransformations&
-    trialTransformations() const;
-
-    virtual const TestTrialIntegral& integral() const;
-
-private:
-    /** \cond PRIVATE */
-    shared_ptr<CollectionOfBasisTransformations> m_surfaceGrad;
-    shared_ptr<TestTrialIntegral> m_integral;
-    /** \endcond */
-};
-
 /** \relates LaplaceBeltrami3dOperator
- *  \brief Construct a BoundaryOperator object wrapping a LaplaceBeltrami3dOperator.
+ *  \brief Construct a BoundaryOperator object representing a Laplace-Beltrami
+ *  operator in 3D.
  *
- *  This convenience function constructs an abstract Laplace-Beltrami operator
- *  and wraps it in a BoundaryOperator object.
+ *  The weak form of the Laplace-Beltrami operator \f$L\f$ in 3D is
+ *
+ *  \f[
+ *  \langle \boldsymbol u, L \boldsymbol v \rangle =
+ *  \int_\Gamma \boldsymbol \nabla_\Gamma u^*(\boldsymbol x) \cdot
+ *  \boldsymbol \nabla_\Gamma v(\boldsymbol x)  \,
+ *  \mathrm{d}\Gamma(\boldsymbol x),
+ *  \f]
+ *
+ *  where \f$\boldsymbol \nabla_\Gamma\f$ is the surface gradient operator.
  *
  *  \param[in] context
  *    A Context object that will be used to build the weak form of the
@@ -144,7 +67,9 @@ private:
  *    Symmetry of the weak form of the operator. Can be any combination of
  *    the flags defined in the enumeration type Symmetry.
  *
- *  All the three spaces must be defined on the same grid. */
+ *  All the three spaces must be defined on the same grid. See
+ *  AbstractBoundaryOperator for the documentation of the template parameters.
+ */
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 laplaceBeltrami3dOperator(

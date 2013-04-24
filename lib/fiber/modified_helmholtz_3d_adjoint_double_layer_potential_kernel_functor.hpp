@@ -26,6 +26,8 @@
 #include "geometrical_data.hpp"
 #include "scalar_traits.hpp"
 
+#include "../common/complex_aux.hpp"
+
 namespace Fiber
 {
 
@@ -85,6 +87,10 @@ public:
                 (static_cast<CoordinateType>(4.0 * M_PI) * denominatorSum) *
                 (m_waveNumber + static_cast<CoordinateType>(1.0) / distance) *
                 exp(-m_waveNumber * distance);
+    }
+
+    CoordinateType estimateRelativeScale(CoordinateType distance) const {
+        return exp(-realPart(m_waveNumber) * distance);
     }
 
 private:

@@ -126,6 +126,11 @@ public:
             LocalAssembler& assembler,
             const AssemblyOptions& options) const;
 
+    shared_ptr<DiscreteBoundaryOperator<ResultType_> >
+    assembleWeakFormInternal(
+            LocalAssembler& assembler,
+            const Context<BasisFunctionType, ResultType>& context) const;
+
 private:
     /** \brief Construct a local assembler suitable for this operator.
      *
@@ -148,10 +153,15 @@ private:
      *
      *  This virtual function is invoked by assembleWeakFormInternal()
      *  to do the actual work. */
-    virtual shared_ptr<DiscreteBoundaryOperator<ResultType> >
+    virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInternalImpl(
             LocalAssembler& assembler,
-            const AssemblyOptions& options) const = 0;
+            const AssemblyOptions& options) const;
+
+    virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
+    assembleWeakFormInternalImpl2(
+            LocalAssembler& assembler,
+            const Context<BasisFunctionType_, ResultType_>& options) const = 0;
 };
 
 } // namespace Bempp

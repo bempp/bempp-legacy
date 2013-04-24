@@ -61,17 +61,6 @@ NumericalTestTrialIntegrator(
         throw std::invalid_argument("NumericalTestTrialIntegrator::"
                                     "NumericalTestTrialIntegrator(): "
                                     "numbers of points and weights do not match");
-    if (testTransformations.transformationCount() != 1 ||
-            trialTransformations.transformationCount() != 1)
-        throw std::invalid_argument("NumericalTestTrialIntegrator::"
-                                    "NumericalTestTrialIntegrator(): "
-                                    "test and trial transformation collections "
-                                    "must contain one element each");
-    if (testTransformations.resultDimension(0) != trialTransformations.resultDimension(0))
-        throw std::invalid_argument("NumericalTestTrialIntegrator::"
-                                    "NumericalTestTrialIntegrator(): "
-                                    "test and trial transformations "
-                                    "must return vectors of the same dimension");
 }
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>

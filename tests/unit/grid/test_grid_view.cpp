@@ -23,6 +23,8 @@
 #include "grid/entity.hpp"
 #include "grid/entity_iterator.hpp"
 #include "grid/geometry.hpp"
+#include "grid/grid_factory.hpp"
+#include "grid/index_set.hpp"
 
 #include <boost/test/unit_test.hpp>
 #include <boost/version.hpp>
@@ -137,6 +139,47 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_second_entity_agrees_with_Dune_
     }
 
     BOOST_CHECK_EQUAL(elementCenter, duneElementCenter);
+}
+
+// In the following two tests we check whether on incrementing an entity iterator
+// we get entities with consecutively increasing indices. In a few places
+// in BEM++ we implicitly rely on this behaviour.
+
+BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_order_agrees_with_index_set_for_regular_grid,
+                                  T, list_0_to_2)
+{
+    const int codim = T::value;
+    std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
+    const IndexSet& indexSet = bemppGridView->indexSet();
+    IndexSet::IndexType i = 0;
+    while (!it->finished()) {
+        const Entity<codim>& e = it->entity();
+        BOOST_CHECK_EQUAL(indexSet.entityIndex(e), i);
+        it->next();
+        ++i;
+    }
+}
+
+BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_order_agrees_with_index_set_for_gmsh_grid,
+                                  T, list_0_to_2)
+{
+    // In this test we don't use the fixture class.
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.2.msh", false /* verbose */);
+    std::auto_ptr<GridView> view = grid->levelView(0);
+    const int codim = T::value;
+    std::auto_ptr<EntityIterator<codim> > it = view->entityIterator<codim>();
+    const IndexSet& indexSet = view->indexSet();
+    IndexSet::IndexType i = 0;
+    while (!it->finished()) {
+        const Entity<codim>& e = it->entity();
+        BOOST_CHECK_EQUAL(indexSet.entityIndex(e), i);
+        it->next();
+        ++i;
+    }
 }
 
 // containsEntity()
@@ -284,6 +327,46 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_second_entity_agrees_with_Dune_
     BOOST_CHECK_EQUAL(elementCenter, duneElementCenter);
 }
 
+// In the following two tests we check whether on incrementing an entity iterator
+// we get entities with consecutively increasing indices. In a few places
+// in BEM++ we implicitly rely on this behaviour.
+
+BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_order_agrees_with_index_set,
+                                  T, list_0_to_2)
+{
+    const int codim = T::value;
+    std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
+    const IndexSet& indexSet = bemppGridView->indexSet();
+    IndexSet::IndexType i = 0;
+    while (!it->finished()) {
+        const Entity<codim>& e = it->entity();
+        BOOST_CHECK_EQUAL(indexSet.entityIndex(e), i);
+        it->next();
+        ++i;
+    }
+}
+
+BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_order_agrees_with_index_set_for_gmsh_grid,
+                                  T, list_0_to_2)
+{
+    // In this test we don't use the fixture class.
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.2.msh", false /* verbose */);
+    std::auto_ptr<GridView> view = grid->leafView();
+    const int codim = T::value;
+    std::auto_ptr<EntityIterator<codim> > it = view->entityIterator<codim>();
+    const IndexSet& indexSet = view->indexSet();
+    IndexSet::IndexType i = 0;
+    while (!it->finished()) {
+        const Entity<codim>& e = it->entity();
+        BOOST_CHECK_EQUAL(indexSet.entityIndex(e), i);
+        it->next();
+        ++i;
+    }
+}
 // containsEntity()
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(containsEntity_returns_true_for_second_entity_of_codim,
@@ -297,14 +380,3 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(containsEntity_returns_true_for_second_entity_
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-
-
-// IdSet: entityId should return the same value for dune and bempp for e.g. third entity with various codims. It should throw for codim 3.
-// IndexSet: the same thing.
-
-// Iterator: should iterate the same number of times.
-// On start should return the same entity as Dune's (e.g. test by comparing centres)
-// After a fixed number of iterations should also return the same entity.
-// What should it do for an empty grid? (throw some exception probably...)
-// StructuredGridFactory should return a grid with the correct number of elements.
-// Geometry should return correct values of jacobians etc. for both one and multiple requested points.

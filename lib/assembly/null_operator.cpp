@@ -123,9 +123,9 @@ NullOperator<BasisFunctionType, ResultType>::assembleWeakFormImpl(
 
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteBoundaryOperator<ResultType> >
-NullOperator<BasisFunctionType, ResultType>::assembleWeakFormInternalImpl(
+NullOperator<BasisFunctionType, ResultType>::assembleWeakFormInternalImpl2(
         LocalAssembler& assembler,
-        const AssemblyOptions& options) const
+        const Context<BasisFunctionType, ResultType>& context) const
 {
     return reallyAssembleWeakForm();
 }

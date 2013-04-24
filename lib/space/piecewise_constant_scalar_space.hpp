@@ -48,6 +48,9 @@ public:
 
     explicit PiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid);
 
+    virtual const Space<BasisFunctionType>& discontinuousSpace() const;
+    virtual bool isDiscontinuous() const;
+
     virtual int domainDimension() const;
     virtual int codomainDimension() const;
 
@@ -77,6 +80,11 @@ public:
             std::vector<Point3D<CoordinateType> >& positions) const;
     virtual void getFlatLocalDofPositions(
             std::vector<Point3D<CoordinateType> >& positions) const;
+
+    virtual void getGlobalDofNormals(
+            std::vector<Point3D<CoordinateType> >& normals) const;
+    virtual void getFlatLocalDofNormals(
+            std::vector<Point3D<CoordinateType> >& normals) const;
 
     virtual void dumpClusterIds(
             const char* fileName,

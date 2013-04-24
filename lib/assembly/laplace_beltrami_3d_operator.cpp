@@ -21,6 +21,7 @@
 #include "laplace_beltrami_3d_operator.hpp"
 
 #include "boundary_operator.hpp"
+#include "general_elementary_local_operator_imp.hpp"
 
 #include "../common/boost_make_shared_fwd.hpp"
 #include "../fiber/default_collection_of_basis_transformations.hpp"
@@ -35,76 +36,42 @@ namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType>
-LaplaceBeltrami3dOperator<BasisFunctionType, ResultType>::LaplaceBeltrami3dOperator(
+BoundaryOperator<BasisFunctionType, ResultType>
+laplaceBeltrami3dOperator(
+        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         const std::string& label,
-        int symmetry) :
-    Base(domain, range, dualToRange, label, symmetry)
+        int symmetry)
 {
     if (domain->codomainDimension() != 1)
         throw std::invalid_argument(
-                "LaplaceBeltrami3dOperator::LaplaceBeltrami3dOperator(): "
+                "laplaceBeltrami3dOperator2(): "
                 "domain must consist of scalar-valued functions");
     if (range->codomainDimension() != 1)
         throw std::invalid_argument(
-                "LaplaceBeltrami3dOperator::LaplaceBeltrami3dOperator(): "
+                "laplaceBeltrami3dOperator2(): "
                 "range must consist of scalar-valued functions");
     if (dualToRange->codomainDimension() != 1)
         throw std::invalid_argument(
-                "LaplaceBeltrami3dOperator::LaplaceBeltrami3dOperator(): "
+                "laplaceBeltrami3dOperator2(): "
                 "space dual to range must consist of scalar-valued functions");
 
+    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+
+    typedef Fiber::SurfaceGrad3dFunctor<CoordinateType>
+            TransformationFunctor;
     typedef Fiber::SimpleTestTrialIntegrandFunctor<
             BasisFunctionType, ResultType> IntegrandFunctor;
-    typedef Fiber::DefaultTestTrialIntegral<IntegrandFunctor> Integral;
-    typedef Fiber::SurfaceGrad3dFunctor<CoordinateType> TransformationFunctor;
-    typedef Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor> Transformation;
-    m_surfaceGrad.reset(new Transformation((TransformationFunctor())));
-    m_integral.reset(new Integral((IntegrandFunctor())));
-}
 
-template <typename BasisFunctionType, typename ResultType>
-LaplaceBeltrami3dOperator<BasisFunctionType, ResultType>::~LaplaceBeltrami3dOperator()
-{
-}
-
-template <typename BasisFunctionType, typename ResultType>
-const typename LaplaceBeltrami3dOperator<BasisFunctionType, ResultType>::CollectionOfBasisTransformations&
-LaplaceBeltrami3dOperator<BasisFunctionType, ResultType>::testTransformations() const
-{
-    return *m_surfaceGrad;
-}
-
-template <typename BasisFunctionType, typename ResultType>
-const typename LaplaceBeltrami3dOperator<BasisFunctionType, ResultType>::CollectionOfBasisTransformations&
-LaplaceBeltrami3dOperator<BasisFunctionType, ResultType>::trialTransformations() const
-{
-    return *m_surfaceGrad;
-}
-
-template <typename BasisFunctionType, typename ResultType>
-const typename LaplaceBeltrami3dOperator<BasisFunctionType, ResultType>::TestTrialIntegral&
-LaplaceBeltrami3dOperator<BasisFunctionType, ResultType>::integral() const
-{
-    return *m_integral;
-}
-
-template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType>
-laplaceBeltrami3dOperator(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-                 const shared_ptr<const Space<BasisFunctionType> >& domain,
-                 const shared_ptr<const Space<BasisFunctionType> >& range,
-                 const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-                 const std::string& label,
-                 int symmetry)
-{
-    typedef LaplaceBeltrami3dOperator<BasisFunctionType, ResultType> Id;
+    typedef GeneralElementaryLocalOperator<BasisFunctionType, ResultType> Op;
     return BoundaryOperator<BasisFunctionType, ResultType>(
-                context,
-                boost::make_shared<Id>(domain, range, dualToRange,
-                                       label, symmetry));
+                context, boost::make_shared<Op>(
+                    domain, range, dualToRange, label, symmetry,
+                    TransformationFunctor(),
+                    TransformationFunctor(),
+                    IntegrandFunctor()));
 }
 
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT) \
@@ -117,7 +84,5 @@ laplaceBeltrami3dOperator(const shared_ptr<const Context<BasisFunctionType, Resu
         const std::string&, \
         int)
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
-
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(LaplaceBeltrami3dOperator);
 
 } // namespace Bempp

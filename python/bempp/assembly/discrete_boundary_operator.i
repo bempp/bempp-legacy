@@ -246,7 +246,35 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
             """
             return self.__matrixMultImpl(self,other)
 
+        def asPyTrilinosOperator(self,label="",pid=0):
+            """
+            Return a representation as Trilinos Epetra Operator.
 
+            *Parameters:*
+               - label (String)
+                    Specify a label for the operator
+               - pid (Int)
+                    Process Id, on which the operator lives (not yet supported)
+            """
+            import trilinos
+
+            return trilinos.PyTrilinosOperator(self,label=label,pid=pid)
+
+        def asPyTrilinosInverseOperator(self,label="",pid=0):
+            """
+            Return a representation as Trilinos Epetra Inverse Operator.
+
+            *Parameters:*
+               - label (String)
+                    Specify a label for the operator
+               - pid (Int)
+                    Process Id, on which the operator lives (not yet supported)
+            """
+            import trilinos
+
+            return trilinos.PyTrilinosInverseOperator(self,label=label,pid=pid)
+
+           
         @property
         def shape(self):
             return (self.rowCount(),self.columnCount())

@@ -63,7 +63,7 @@ void solveWithAmesos<double>(Epetra_LinearProblem& problem,
     const size_t rhsCount = armaRhs.n_cols;
     assert(rhsCount == armaSolution.n_cols);
 
-    Epetra_Map map(rowCount, 0 /* base index */, Epetra_SerialComm());
+    Epetra_Map map((int) rowCount, 0 /* base index */, Epetra_SerialComm());
     Epetra_MultiVector solution(View, map, armaSolution.memptr(),
                                 rowCount, rhsCount);
     Epetra_MultiVector rhs(View, map, const_cast<double*>(armaRhs.memptr()),

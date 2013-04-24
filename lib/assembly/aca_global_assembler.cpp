@@ -25,6 +25,7 @@
 
 #include "assembly_options.hpp"
 #include "cluster_construction_helper.hpp"
+#include "context.hpp"
 #include "evaluation_options.hpp"
 #include "index_permutation.hpp"
 #include "discrete_boundary_operator_composition.hpp"
@@ -221,7 +222,8 @@ void dumpDenseBlocks(
         const std::vector<unsigned int>& p2oRows,
         const std::vector<unsigned int>& p2oCols,
         const std::vector<Point3D<typename Fiber::ScalarTraits<ValueType>::RealType> >& rowDofs,
-        const std::vector<Point3D<typename Fiber::ScalarTraits<ValueType>::RealType> >& colDofs)
+        const std::vector<Point3D<typename Fiber::ScalarTraits<ValueType>::RealType> >& colDofs,
+        int singleClusterIndex = -1)
 {
     if (!clusterTree)
         return;
@@ -232,8 +234,9 @@ void dumpDenseBlocks(
     typedef bemcluster<AhmedDofType> Cluster;
     if (clusterTree->isleaf()) {
         unsigned int idx = clusterTree->getidx();
-        std::cout << "LEAF; idx = " << idx << std::endl;
-        if (clusterTree->isGeM(blocks.get()) && clusterTree->isadm()) {
+        if ((singleClusterIndex < 0 &&
+             clusterTree->isGeM(blocks.get()) && clusterTree->isadm()) ||
+                idx == singleClusterIndex) {
             std::cout << "Dense block; " << clusterTree->getb1()
                       << " " << clusterTree->getb2()
                       << " " << clusterTree->getn1()
@@ -274,12 +277,12 @@ void dumpDenseBlocks(
                           << dofPos.x << ", " << dofPos.y << ", "
                           << dofPos.z << "\n";
             }
-            AhmedMblock* block = blocks[idx];
-            arma::Mat<ValueType> ablock(clusterTree->getn1(),
-                                        clusterTree->getn2());
-            for (size_t i = 0; i < block->nvals(); ++i)
-                ablock[i] = block->getdata()[i];
-            save_arma_matrix(ablock, "block-" + toString(idx) + ".txt");
+//            AhmedMblock* block = blocks[idx];
+//            arma::Mat<ValueType> ablock(clusterTree->getn1(),
+//                                        clusterTree->getn2());
+//            for (size_t i = 0; i < block->nvals(); ++i)
+//                ablock[i] = block->getdata()[i];
+//            save_arma_matrix(ablock, "block-" + toString(idx) + ".txt");
         }
     }
     else
@@ -289,7 +292,8 @@ void dumpDenseBlocks(
                         dynamic_cast<typename AcaOp::AhmedBemBlcluster*>(
                             clusterTree->getson(nRowSon, nColSon)),
                         blocks,
-                        p2oRows, p2oCols, rowDofs, colDofs);
+                        p2oRows, p2oCols, rowDofs, colDofs,
+                        singleClusterIndex);
 }
 
 template <typename AcaAssemblyHelper,
@@ -325,6 +329,8 @@ assembleAcaOperator(
 
     AhmedLeafClusterArray leafClusters(bemBlclusterTree.get());
     leafClusters.sortAccordingToClusterSize();
+    if (acaOptions.firstClusterIndex >= 0)
+        leafClusters.startWithClusterOfIndex(acaOptions.firstClusterIndex);
     const size_t leafClusterCount = leafClusters.size();
 
     int maxThreadCount = 1;
@@ -338,6 +344,15 @@ assembleAcaOperator(
     tbb::task_scheduler_init scheduler(maxThreadCount);
     tbb::atomic<size_t> done;
     done = 0;
+
+#ifdef DUMP_DENSE_BLOCKS
+    if (acaOptions.firstClusterIndex >= 0)
+        dumpDenseBlocks<ResultType>(bemBlclusterTree.get(), blocks,
+                                    test_p2oPermutation->permutedIndices(),
+                                    trial_p2oPermutation->permutedIndices(),
+                                    testDofCenters, trialDofCenters,
+                                    acaOptions.firstClusterIndex);
+#endif
 
     std::vector<ChunkStatistics> chunkStats(leafClusterCount);
 
@@ -374,13 +389,6 @@ assembleAcaOperator(
             std::cout << "Agglomeration finished" << std::endl;
     }
 
-#ifdef DUMP_DENSE_BLOCKS
-    dumpDenseBlocks<ResultType>(bemBlclusterTree.get(), blocks,
-                                test_p2oPermutation->permutedIndices(),
-                                trial_p2oPermutation->permutedIndices(),
-                                testDofCenters, trialDofCenters);
-#endif // DUMP_DENSE_BLOCKS
-
     //    dumpAhmedMblockArray<ResultType>(blocks, blockCount);
 
     // // Dump timing data of individual chunks
@@ -400,6 +408,9 @@ assembleAcaOperator(
     //        }
 
     if (verbosityAtLeastDefault) {
+#ifdef CHECK_ACA_ERROR // a define from include/AHMED/apprx.h
+        std::cout << "ACA finished. Max error: " << ACA_error_max << std::endl;
+#endif
         size_t totalEntryCount = testDofCount * trialDofCount;
         size_t origMemory = sizeof(ResultType) * totalEntryCount;
         size_t ahmedMemory = sizeH(bemBlclusterTree.get(), blocks.get());
@@ -466,7 +477,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         const std::vector<const DiscreteBndOp*>& sparseTermsToAdd,
         const std::vector<ResultType>& denseTermMultipliers,
         const std::vector<ResultType>& sparseTermMultipliers,
-        const AssemblyOptions& options,
+        const Context<BasisFunctionType, ResultType>& context,
         int symmetry)
 {
 #ifdef WITH_AHMED
@@ -475,6 +486,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
     typedef DiscreteAcaBoundaryOperator<ResultType> DiscreteAcaLinOp;
 
+    const AssemblyOptions& options = context.assemblyOptions();
     const AcaOptions& acaOptions = options.acaOptions();
     const bool indexWithGlobalDofs = acaOptions.globalAssemblyBeforeCompression;
     const bool verbosityAtLeastDefault =
@@ -635,7 +647,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
         LocalAssemblerForBoundaryOperators& localAssembler,
-        const AssemblyOptions& options,
+        const Context<BasisFunctionType, ResultType>& context,
         int symmetry)
 {
     std::vector<LocalAssemblerForBoundaryOperators*> localAssemblers(
@@ -648,7 +660,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                             sparseTermsToAdd,
                             denseTermsMultipliers,
                             sparseTermsMultipliers,
-                            options, symmetry);
+                                    context, symmetry);
 }
 
 template <typename BasisFunctionType, typename ResultType>
