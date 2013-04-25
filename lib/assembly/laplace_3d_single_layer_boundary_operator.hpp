@@ -132,19 +132,19 @@ laplace3dSingleLayerBoundaryOperator(
  *  \brief Construct a "synthetic" representation of the single-layer boundary
  *  operator associated with the Laplace equation in 3D.
  *
- *  This function creates a single-layer Laplace boundary operator \f$\mathcal A\f$
- *  whose weak form is stored as the product
+ *  This function creates a single-layer Laplace boundary operator \f$\mathcal
+ *  A\f$ whose weak form is stored as the product
  *
  *  \[
  *     A = P A_{\textrm{d}} Q,
  *  \]
  *
  *  where \f$A_{\textrm{d}}\f$ is the weak form of \f$\mathcal A\f$ discretised
- *  with the <em>discontinuous</em> test and trial function spaces passed in
- *  the parameters \p internalTestSpace and \p internalTrialSpace, \f$Q\f$ is the
+ *  with the <em>discontinuous</em> test and trial function spaces passed in the
+ *  parameters \p internalTestSpace and \p internalTrialSpace, \f$Q\f$ is the
  *  sparse matrix mapping the degrees of freedom of \p domain to those of \p
- *  internalTrialSpace, and \f$P\f$ the matrix mapping the degrees of freedom
- *  of \p internalTestSpace to \p dualToRange.
+ *  internalTrialSpace, and \f$P\f$ the matrix mapping the degrees of freedom of
+ *  \p internalTestSpace to \p dualToRange.
  *
  *  See the documentation of SyntheticIntegralOperator for a longer explanation
  *  of the concept of a synthetic operator.
@@ -158,12 +158,12 @@ laplace3dSingleLayerBoundaryOperator(
  *    Function space being the range of the boundary operator.
  *  \param[in] dualToRange
  *    Function space dual to the the range of the boundary operator.
- *  \param[in] internalTestSpace
- *    Test function space used in the discretisation of \f$\mathcal A\f$ to
- *    \f$A_{\textrm{d}}\f$. It must be a discontinuous space, with basis
- *    functions extending over single elements only.
  *  \param[in] internalTrialSpace
  *    Trial function space used in the discretisation of \f$\mathcal A\f$ to
+ *    \f$A_{\textrm{d}}\f$. It must be a discontinuous space, with basis
+ *    functions extending over single elements only.
+ *  \param[in] internalTestSpace
+ *    Test function space used in the discretisation of \f$\mathcal A\f$ to
  *    \f$A_{\textrm{d}}\f$. It must be a discontinuous space, with basis
  *    functions extending over single elements only.
  *  \param[in] label
@@ -180,7 +180,7 @@ laplace3dSingleLayerBoundaryOperator(
  *
  *  If <tt>internalTrialSpace == domain</tt> or <tt>internalTestSpace ==
  *  dualToRange</tt>, \f$P\f$ or \f$Q\f$ becomes an identity matrix and is
- *  omitted. */
+ *  not physically created. */
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 laplace3dSyntheticSingleLayerBoundaryOperator(
