@@ -87,15 +87,13 @@ struct AhmedDofWrapper : public Point3D<CoordinateType>
 {
     CoordinateType getcenter(int dim) const
     {
-        switch  (dim)
-        {
-        case 0: return this->x;
-        case 1: return this->y;
-        case 2: return this->z;
-        default:
-            throw std::invalid_argument("AhmedDofWrapper::getcenter(): "
-                                        "invalid dimension index");
-        }
+        assert(dim >= 0 && dim <= 2);
+        if (dim == 0)
+            return this->x;
+        else if (dim == 1)
+            return this->y;
+        else
+            return this->z;
     }
 };
 
