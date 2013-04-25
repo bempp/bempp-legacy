@@ -38,6 +38,7 @@
 #include <boost/static_assert.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 #include <tbb/concurrent_unordered_map.h>
+#include <tbb/mutex.h>
 #include <cstring>
 #include <climits>
 #include <set>
@@ -186,6 +187,7 @@ private:
     typedef tbb::concurrent_unordered_map<DoubleQuadratureDescriptor,
     Integrator*> IntegratorMap;
     IntegratorMap m_testKernelTrialIntegrators;
+    mutable tbb::mutex m_integratorCreationMutex;
 
     enum { INVALID_INDEX = INT_MAX };
     typedef _2dArray<std::pair<int, arma::Mat<ResultType> > > Cache;

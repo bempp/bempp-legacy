@@ -746,74 +746,77 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 getIntegrator(const DoubleQuadratureDescriptor& desc)
 {
-    typename IntegratorMap::const_iterator it = m_testKernelTrialIntegrators.find(desc);
+    typename IntegratorMap::iterator it = m_testKernelTrialIntegrators.find(desc);
     // Note: as far as I understand TBB's docs, .end() keeps pointing to the
     // same element even if another thread inserts a new element into the map
-    if (it != m_testKernelTrialIntegrators.end()) {
-        //std::cout << "getIntegrator(: " << desc << "): integrator found" << std::endl;
-        return *it->second;
+    if (it == m_testKernelTrialIntegrators.end()) {
+        tbb::mutex::scoped_lock lock(m_integratorCreationMutex);
+        it = m_testKernelTrialIntegrators.find(desc);
+        if (it == m_testKernelTrialIntegrators.end()) {
+            // std::cout << "getIntegrator(" << desc
+            //           << "): creating an integrator" << std::endl;
+            // Integrator doesn't exist yet and must be created.
+            Integrator* integrator = 0;
+            const ElementPairTopology& topology = desc.topology;
+            if (topology.type == ElementPairTopology::Disjoint) {
+                // Create a tensor rule
+                arma::Mat<CoordinateType> testPoints, trialPoints;
+                std::vector<CoordinateType> testWeights, trialWeights;
+
+                fillSingleQuadraturePointsAndWeights(topology.testVertexCount,
+                                                     desc.testOrder,
+                                                     testPoints, testWeights);
+                fillSingleQuadraturePointsAndWeights(topology.trialVertexCount,
+                                                     desc.trialOrder,
+                                                     trialPoints, trialWeights);
+                typedef SeparableNumericalTestKernelTrialIntegrator<BasisFunctionType,
+                        KernelType, ResultType, GeometryFactory> ConcreteIntegrator;
+                integrator = new ConcreteIntegrator(
+                            testPoints, trialPoints, testWeights, trialWeights,
+                            *m_testGeometryFactory, *m_trialGeometryFactory,
+                            *m_testRawGeometry, *m_trialRawGeometry,
+                            *m_testTransformations, *m_kernels, *m_trialTransformations,
+                            *m_integral,
+                            *m_openClHandler);
+            } else {
+                arma::Mat<CoordinateType> testPoints, trialPoints;
+                std::vector<CoordinateType> weights;
+
+                fillDoubleSingularQuadraturePointsAndWeights(
+                            desc, testPoints, trialPoints, weights);
+                typedef NonseparableNumericalTestKernelTrialIntegrator<BasisFunctionType,
+                        KernelType, ResultType, GeometryFactory> ConcreteIntegrator;
+                integrator = new ConcreteIntegrator(
+                            testPoints, trialPoints, weights,
+                            *m_testGeometryFactory, *m_trialGeometryFactory,
+                            *m_testRawGeometry, *m_trialRawGeometry,
+                            *m_testTransformations, *m_kernels, *m_trialTransformations,
+                            *m_integral,
+                            *m_openClHandler);
+            }
+
+            // Attempt to insert the newly created integrator into the map
+            std::pair<typename IntegratorMap::iterator, bool> result =
+                    m_testKernelTrialIntegrators.insert(std::make_pair(desc, integrator));
+            if (result.second)
+                // Insertion succeeded. The newly created integrator will be deleted in
+                // our own destructor
+                ;
+            else
+                // Insertion failed -- another thread was faster. Delete the newly
+                // created integrator.
+                delete integrator;
+
+            //    if (result.second)
+            //        std::cout << "getIntegrator(: " << desc << "): insertion succeeded" << std::endl;
+            //    else
+            //        std::cout << "getIntegrator(: " << desc << "): insertion failed" << std::endl;
+
+            // Return pointer to the integrator that ended up in the map.
+            it = result.first;
+        }
     }
-    //std::cout << "getIntegrator(: " << desc << "): integrator not found" << std::endl;
-
-    // Integrator doesn't exist yet and must be created.
-    Integrator* integrator = 0;
-    const ElementPairTopology& topology = desc.topology;
-    if (topology.type == ElementPairTopology::Disjoint) {
-        // Create a tensor rule
-        arma::Mat<CoordinateType> testPoints, trialPoints;
-        std::vector<CoordinateType> testWeights, trialWeights;
-
-        fillSingleQuadraturePointsAndWeights(topology.testVertexCount,
-                                             desc.testOrder,
-                                             testPoints, testWeights);
-        fillSingleQuadraturePointsAndWeights(topology.trialVertexCount,
-                                             desc.trialOrder,
-                                             trialPoints, trialWeights);
-        typedef SeparableNumericalTestKernelTrialIntegrator<BasisFunctionType,
-                KernelType, ResultType, GeometryFactory> ConcreteIntegrator;
-        integrator = new ConcreteIntegrator(
-                    testPoints, trialPoints, testWeights, trialWeights,
-                    *m_testGeometryFactory, *m_trialGeometryFactory,
-                    *m_testRawGeometry, *m_trialRawGeometry,
-                    *m_testTransformations, *m_kernels, *m_trialTransformations,
-                    *m_integral,
-                    *m_openClHandler);
-    } else {
-        arma::Mat<CoordinateType> testPoints, trialPoints;
-        std::vector<CoordinateType> weights;
-
-        fillDoubleSingularQuadraturePointsAndWeights(
-                    desc, testPoints, trialPoints, weights);
-        typedef NonseparableNumericalTestKernelTrialIntegrator<BasisFunctionType,
-                KernelType, ResultType, GeometryFactory> ConcreteIntegrator;
-        integrator = new ConcreteIntegrator(
-                    testPoints, trialPoints, weights,
-                    *m_testGeometryFactory, *m_trialGeometryFactory,
-                    *m_testRawGeometry, *m_trialRawGeometry,
-                    *m_testTransformations, *m_kernels, *m_trialTransformations,
-                    *m_integral,
-                    *m_openClHandler);
-    }
-
-    // Attempt to insert the newly created integrator into the map
-    std::pair<typename IntegratorMap::iterator, bool> result =
-            m_testKernelTrialIntegrators.insert(std::make_pair(desc, integrator));
-    if (result.second)
-        // Insertion succeeded. The newly created integrator will be deleted in
-        // our own destructor
-        ;
-    else
-        // Insertion failed -- another thread was faster. Delete the newly
-        // created integrator.
-        delete integrator;
-
-    //    if (result.second)
-    //        std::cout << "getIntegrator(: " << desc << "): insertion succeeded" << std::endl;
-    //    else
-    //        std::cout << "getIntegrator(: " << desc << "): insertion failed" << std::endl;
-
-    // Return pointer to the integrator that ended up in the map.
-    return *result.first->second;
+    return *it->second;
 }
 
 } // namespace Fiber
