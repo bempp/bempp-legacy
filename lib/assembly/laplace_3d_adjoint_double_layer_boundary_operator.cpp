@@ -100,19 +100,19 @@ laplace3dSyntheticAdjointDoubleLayerBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const shared_ptr<const Space<BasisFunctionType> >& internalDomain,
-        const shared_ptr<const Space<BasisFunctionType> >& internalDualToRange,
+        const shared_ptr<const Space<BasisFunctionType> >& internalTrialSpace,
+        const shared_ptr<const Space<BasisFunctionType> >& internalTestSpace,
         const std::string& label = "",
         int symmetry = NO_SYMMETRY)
 {
     BoundaryOperator<BasisFunctionType, ResultType> internalOp =
             laplace3dAdjointDoubleLayerBoundaryOperator(
-                context, internalDomain, range /* or whatever */,
-                internalDualToRange,
+                context, internalTrialSpace, range /* or whatever */,
+                internalTestSpace,
                 "(" + label + ")_internal", symmetry);
     return makeSyntheticScalarIntegralOperator(
                 internalOp, domain, range, dualToRange,
-                internalDomain, internalDualToRange,
+                internalTrialSpace, internalTestSpace,
                 label, NO_SYMMETRY);
 }
 

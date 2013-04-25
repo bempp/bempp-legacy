@@ -141,10 +141,10 @@ laplace3dSingleLayerBoundaryOperator(
  *
  *  where \f$A_{\textrm{d}}\f$ is the weak form of \f$\mathcal A\f$ discretised
  *  with the <em>discontinuous</em> test and trial function spaces passed in
- *  the parameters \p internalDualToRange and \p internalDomain, \f$Q\f$ is the
+ *  the parameters \p internalTestSpace and \p internalTrialSpace, \f$Q\f$ is the
  *  sparse matrix mapping the degrees of freedom of \p domain to those of \p
  *  internalTrialSpace, and \f$P\f$ the matrix mapping the degrees of freedom
- *  of \p internalDualToRange to \p dualToRange.
+ *  of \p internalTestSpace to \p dualToRange.
  *
  *  See the documentation of SyntheticIntegralOperator for a longer explanation
  *  of the concept of a synthetic operator.
@@ -188,8 +188,8 @@ laplace3dSyntheticSingleLayerBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const shared_ptr<const Space<BasisFunctionType> >& internalDomain,
-        const shared_ptr<const Space<BasisFunctionType> >& internalDualToRange,
+        const shared_ptr<const Space<BasisFunctionType> >& internalTrialSpace,
+        const shared_ptr<const Space<BasisFunctionType> >& internalTestSpace,
         const std::string& label = "",
         int symmetry = NO_SYMMETRY);
 

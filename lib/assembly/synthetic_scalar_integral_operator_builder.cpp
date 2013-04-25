@@ -41,8 +41,8 @@ makeSyntheticScalarIntegralOperator(
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const shared_ptr<const Space<BasisFunctionType> >& internalDomain,
-        const shared_ptr<const Space<BasisFunctionType> >& internalDualToRange,
+        const shared_ptr<const Space<BasisFunctionType> >& internalTrialSpace,
+        const shared_ptr<const Space<BasisFunctionType> >& internalTestSpace,
         const std::string& label, int symmetry)
 {
     // Note: we don't really need to care about ranges and duals to domains of
@@ -60,7 +60,7 @@ makeSyntheticScalarIntegralOperator(
     if (!internalOp.isInitialized())
         throw std::invalid_argument("makeSyntheticScalarBoundaryOperator(): "
                                     "interalOp must be initialized");
-    if (!internalDomain || !internalDualToRange)
+    if (!internalTrialSpace || !internalTestSpace)
         throw std::invalid_argument("makeSyntheticScalarBoundaryOperator(): "
                                     "pointers to spaces must not be null");
 
@@ -68,25 +68,25 @@ makeSyntheticScalarIntegralOperator(
             internalOp.context();
 
     if (symmetry & (SYMMETRIC | HERMITIAN) &&
-            (internalDomain != internalDualToRange || domain == dualToRange))
+            (internalTrialSpace != internalTestSpace || domain == dualToRange))
         throw std::invalid_argument("makeSyntheticScalarBoundaryOperator(): "
                                     "symmetry incompatible with spaces");
 
     std::vector<BoundaryOperator<BasisFunctionType, ResultType> > testLocalOps;
     std::vector<BoundaryOperator<BasisFunctionType, ResultType> > trialLocalOps;
-    if (dualToRange != internalDualToRange) {
+    if (dualToRange != internalTestSpace) {
         testLocalOps.resize(1);
         testLocalOps[0] = BoundaryOperator<BasisFunctionType, ResultType>(
                         context, boost::make_shared<LocalOp>(
-                            internalDualToRange, range, dualToRange,
+                            internalTestSpace, range, dualToRange,
                             "(" + label + ")_test_value", NO_SYMMETRY,
                             ValueFunctor(), ValueFunctor(), IntegrandFunctor()));
     }
-    if (domain != internalDomain && !(symmetry & (SYMMETRIC | HERMITIAN))) {
+    if (domain != internalTrialSpace && !(symmetry & (SYMMETRIC | HERMITIAN))) {
         trialLocalOps.resize(1);
         trialLocalOps[0] = BoundaryOperator<BasisFunctionType, ResultType>(
                     context, boost::make_shared<LocalOp>(
-                        domain, internalDomain /* or whatever */, internalDomain,
+                        domain, internalTrialSpace /* or whatever */, internalTrialSpace,
                         ("(" + label + ")_trial_value"), NO_SYMMETRY,
                         ValueFunctor(), ValueFunctor(), IntegrandFunctor()));
     }

@@ -67,7 +67,7 @@ shared_ptr<Epetra_CrsMatrix> sparseInverse(const Epetra_CrsMatrix& mat)
                             "sparseInverse(): matrix is not block-diagonal. "
                             "If this error occurs during the assembly of a "
                             "synthetic boundary operator, make sure that you "
-                            "set the internalDomain and internalDualToRange "
+                            "set the internalTrialSpace and internalTestSpace "
                             "parameters in its constructor to a "
                             "\"discontinuous\" function space, i.e. with each "
                             "of its basis functions living on a single "

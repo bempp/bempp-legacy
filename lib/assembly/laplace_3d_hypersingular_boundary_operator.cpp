@@ -111,8 +111,8 @@ laplace3dSyntheticHypersingularBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const shared_ptr<const Space<BasisFunctionType> >& internalDomain,
-        const shared_ptr<const Space<BasisFunctionType> >& internalDualToRange,
+        const shared_ptr<const Space<BasisFunctionType> >& internalTrialSpace,
+        const shared_ptr<const Space<BasisFunctionType> >& internalTestSpace,
         const std::string& label = "",
         int symmetry = NO_SYMMETRY)
 {
@@ -125,8 +125,8 @@ laplace3dSyntheticHypersingularBoundaryOperator(
 
     BoundaryOperator<BasisFunctionType, ResultType> slp =
             laplace3dSingleLayerBoundaryOperator(
-                context, internalDomain, internalDualToRange /* or whatever */,
-                internalDualToRange,
+                context, internalTrialSpace, internalTestSpace /* or whatever */,
+                internalTestSpace,
                 "(" + label + ")_internal", symmetry);
 
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
@@ -146,13 +146,13 @@ laplace3dSyntheticHypersingularBoundaryOperator(
         for (size_t i = 0; i < dimWorld; ++i)
             testCurlComponents[i] = BoundaryOperator<BasisFunctionType, ResultType>(
                         context, boost::make_shared<LocalOp>(
-                            internalDualToRange, range, dualToRange,
+                            internalTestSpace, range, dualToRange,
                             ("(" + label + ")_test_curl_") + xyz[i], NO_SYMMETRY,
                             CurlFunctor(),
                             ValueFunctor(),
                             IntegrandFunctor(i, 0)));
     size_t overallSymmetry = 0; // symmetry of the decomposition
-    if (domain == dualToRange && internalDomain == internalDualToRange)
+    if (domain == dualToRange && internalTrialSpace == internalTestSpace)
         overallSymmetry = HERMITIAN |
                 (boost::is_complex<BasisFunctionType>() ? 0 : SYMMETRIC);
     else {
@@ -160,7 +160,7 @@ laplace3dSyntheticHypersingularBoundaryOperator(
         for (size_t i = 0; i < dimWorld; ++i)
             trialCurlComponents[i] = BoundaryOperator<BasisFunctionType, ResultType>(
                         context, boost::make_shared<LocalOp>(
-                            domain, internalDomain /* or whatever */, internalDomain,
+                            domain, internalTrialSpace /* or whatever */, internalTrialSpace,
                             ("(" + label + ")_trial_curl_") + xyz[i], NO_SYMMETRY,
                             ValueFunctor(),
                             CurlFunctor(),

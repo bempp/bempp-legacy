@@ -21,8 +21,8 @@ makeSyntheticScalarIntegralOperator(
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const shared_ptr<const Space<BasisFunctionType> >& internalDomain,
-        const shared_ptr<const Space<BasisFunctionType> >& internalDualToRange,
+        const shared_ptr<const Space<BasisFunctionType> >& internalTrialSpace,
+        const shared_ptr<const Space<BasisFunctionType> >& internalTestSpace,
         const std::string& label = "",
         int symmetry = NO_SYMMETRY);
 
