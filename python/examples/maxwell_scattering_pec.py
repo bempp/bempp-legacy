@@ -4,7 +4,7 @@
 # plane wave incident on a perfectly conducting object.
 
 # Help Python find the bempp module
-import sys
+import sys,os
 sys.path.append("..")
 
 from bempp.lib import *
@@ -29,9 +29,8 @@ def evalIncField(point):
 
 # Load mesh
 
-grid = createGridFactory().importGmshGrid(
-    # "triangular", "../../examples/meshes/sphere-h-0.2.msh")
-    "triangular", "/home/wojtek/Downloads/sphere-ico-4.msh")
+from bempp.shapes import sphere
+grid = sphere(h=.2)
 
 # Create quadrature strategy
 
@@ -99,41 +98,32 @@ neumannData = solution.gridFunction()
 neumannData.exportToVtk("vertex_data", "neumann_data",
                         "calculated_neumann_data_vertex")
 
-# Prepare to evaluate the solution on an annulus outside the sphere
 
 # Create potential operators
 
 slPotOp = createMaxwell3dSingleLayerPotentialOperator(context, k)
 dlPotOp = createMaxwell3dDoubleLayerPotentialOperator(context, k)
 
-# Define points at which the solution should be evaluated
-
-rCount = 51
-thetaCount = 361
-r, theta, z = np.mgrid[1.1:5:rCount*1j, 0:2*np.pi:thetaCount*1j, 0:0:1j]
-x = r * np.cos(theta)
-y = r * np.sin(theta)
-# put the x, y and z coordinates in successive rows of a matrix
-evaluationPoints = np.vstack((x.ravel(), y.ravel(), z.ravel()))
+limits = [-2,2,-2,2,-2,2]
+dims = [50,50,50]
 
 # Use the Green's representation formula to evaluate the solution
 
-evaluationOptions = createEvaluationOptions()
-scatteredField = -(slPotOp.evaluateAtPoints(neumannData, evaluationPoints,
-                                            evaluationOptions) +
-                   dlPotOp.evaluateAtPoints(dirichletData, evaluationPoints,
-                                            evaluationOptions))
-incidentField = evalIncField(evaluationPoints)
-field = scatteredField + incidentField
+from bempp import tools
+
+evaluationPoints,scatteredField = tools.evaluatePotentialInBox([slPotOp,dlPotOp],[neumannData,dirichletData],
+                                                               [-1,1],limits,dims)
+incidentField = evalIncField(tools.mgridPoints2Array(evaluationPoints))
+
+field = scatteredField + tools.array2Mgrid(incidentField,dims)
 fieldMagnitude = np.sqrt(field[0].real ** 2 + field[0].imag ** 2 +
                          field[1].real ** 2 + field[1].imag ** 2 +
                          field[2].real ** 2 + field[2].imag ** 2)
 
 # Plot data
 
-from bempp import visualization as vis
-annulusActor = vis.scalarDataOnRegularGridActor(
-    evaluationPoints, fieldMagnitude, (rCount, thetaCount))
-sphereActor = vis.gridActor(grid)
-legendActor = vis.legendActor(annulusActor)
-vis.plotTvtkActors([annulusActor, sphereActor, legendActor])
+from mayavi import mlab
+from bempp.visualization import plotThreePlanes,plotGrid
+plotThreePlanes(evaluationPoints,fieldMagnitude)
+plotGrid(grid,representation='surface')
+mlab.show()

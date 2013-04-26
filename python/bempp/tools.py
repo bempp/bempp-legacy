@@ -24,7 +24,7 @@ from bempp import lib
 def evaluatePotentialOnPlane(potential, gridfun, limits, dimensions, plane="xy",
                              origin=[0,0,0], evalOps=None):
     """evaluatePotentialOnPlane(potential, gridfun, limits, dimensions, plane="xy",
-                                evalOps=None, quadStrategy=None)
+                                evalOps=None)
 
        Evaluate a given potential operator on a plane
 
@@ -71,6 +71,121 @@ def evaluatePotentialOnPlane(potential, gridfun, limits, dimensions, plane="xy",
     values = potential.evaluateAtPoints(gridfun, points, evalOps)
 
     return (points, values)
+
+def evaluatePotentialInBox(potentials, gridfuns, coefficients, limits, dimensions, evalOps=None):
+    """evaluatePotentialOnPlane(potential, gridfun, limits, dimensions, 
+                                evalOps=None)
+
+       Evaluate a linear combination of given potential operators in a box
+
+       Parameters:
+       -----------
+       potentials   : List of instances of a potential operators.
+       gridfuns     : List grid functions with which to evaluate the potentials
+       coefficients : Scalar coefficients of the potentials
+       limits       : tuple (xmin,xmax,ymin,ymax,zmin,zmax) specifying the
+                      extent of the plane.
+       dimensions   : tuple (xdim,ydim,zdim) specifying the number of points in
+                      the (x,y) dimensions of the plane.
+       evalOps      : Optional EvaluationOptions object. Use default options
+                      if none is given.
+
+       Returns:
+       --------
+       points     : A numpy.mgrid object defining the points in 3d space.
+       values     : Array [v_1,v_2,...], where each v_i has the same shape as the
+                    components of the mgrid object points. Each element v_i corresponds
+                    to one dimension of the return value of the potential, e.g. for Maxwell
+                    the values v_1,v_2, and v_3 correspond to the x, y and z component of the
+                    potential field.
+    """
+
+
+    pointsArray, pointsMgrid = pointsInBox(limits,dimensions,mgridObj=True)
+
+    if evalOps is None:
+        evalOps = lib.createEvaluationOptions()
+
+    values = coefficients[0]*potentials[0].evaluateAtPoints(gridfuns[0],pointsArray,evalOps)
+    for i in range(1,len(potentials)):
+        values +=coefficients[i]*potentials[i].evaluateAtPoints(gridfuns[i],pointsArray,evalOps)
+    valsMgrid = np.array([v.reshape(dimensions[::-1][:]) for v in values])
+
+    return (pointsMgrid, valsMgrid)
+
+
+def pointsInBox(limits, dimensions, mgridObj=False):
+    """pointsInBox(limits, dimensions, mgridObj=False) 
+
+       Define a set of points in a three dimensional box
+
+       Parameters:
+       -----------
+       limits       : tuple (xmin,xmax,ymin,ymax,zmin,zmax) specifying the
+                      extent of the plane.
+       dimensions   : tuple (xdim,ydim,zdim) specifying the number of points in
+                      the (x,y) dimensions of the plane.
+       mgridObj     : If True return the points also as np.mgrid object
+
+       Returns:
+       --------
+       pointsArray : An array [p0,p1,...] defining the points in 3d space 
+       pointsMgrid : A numpy.mgrid object defining the points in 3d space
+                    (only if mgridObj=True)
+    """
+
+    xmin, xmax, ymin, ymax, zmin, zmax = limits
+    pointsMgrid = np.mgrid[xmin:xmax:dimensions[0]*1j,
+                    ymin:ymax:dimensions[1]*1j,
+                    zmin:zmax:dimensions[2]*1j]
+    x, y, z = pointsMgrid
+
+    pointsArray = np.array([x.ravel(),y.ravel(), z.ravel()],dtype ='d')
+
+    if mgridObj == True:
+        return (pointsArray,pointsMgrid)
+    else:
+        return pointsArray
+
+
+def array2Mgrid(values,dimensions):
+    """array2Mgrid(values,dimensions)
+
+       Reshape an array of scalar values to a shape compatible with coordinates
+       given as mgrid object.
+
+       Parameters:
+       -----------
+       values      : Array [v_1,v_2,...] of scalar values
+       dimensions  : Dimension (xdim,ydim,zdim) for reshaping the input array
+
+       Returns:
+       --------
+       An [v_0,v_1,v_2], where each v_i corresponds to one component of the input
+       values array converted into a shape compatible with coordinates given as mgrid
+       object.
+     """
+        
+    return np.array([v.reshape(dimensions[::-1][:]) for v in values])
+
+def mgridPoints2Array(points):
+    """mgridPoints2Mgrid(values)
+
+       Reshape an mgrid array of points into an array of points that is
+       compatible with input needed by BEM++ routines
+
+       Parameters:
+       -----------
+       points     : Array of points coming from numpy.mgrid
+
+       Returns:
+       --------
+       An array of points [p_0,p_1,...].
+     """
+        
+    return np.array([p.ravel() for p in points])
+
+
 
 class RealOperator(object):
     """RealOperator(operator)
