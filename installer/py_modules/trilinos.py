@@ -23,10 +23,10 @@ from py_modules import tools
 from py_modules import python_patch as py_patch
 
 
-trilinos_fname='trilinos-11.0.3-Source.tar.gz'
-trilinos_extract_dir='trilinos-11.0.3-Source'
+trilinos_fname='trilinos-11.2.3-Source.tar.gz'
+trilinos_extract_dir='trilinos-11.2.3-Source'
 trilinos_dir='trilinos'
-trilinos_url='http://trilinos.sandia.gov/download/files/trilinos-11.0.3-Source.tar.gz'
+trilinos_url='http://trilinos.sandia.gov/download/files/trilinos-11.2.3-Source.tar.gz'
 
 def download(root,config,force=False):
     dep_download_dir=config.get('Main','dependency_download_dir')
@@ -65,12 +65,14 @@ def prepare(root,config):
     os.chdir(dep_build_dir+"/trilinos/cmake/tribits/modules")
     patch=py_patch.fromfile(root+"/installer/patches/trilinos_find_python_interp.patch")
     patch.apply()
-    os.chdir(dep_build_dir+"/trilinos/packages/teuchos/src")
+    os.chdir(dep_build_dir+"/trilinos/packages/teuchos/numerics/src")
     patch=py_patch.fromfile(root+"/installer/patches/Teuchos_LAPACK.hpp.patch")
     patch.apply()
     patch=py_patch.fromfile(root+"/installer/patches/Teuchos_LAPACK.cpp.patch")
     patch.apply()
-    
+    os.chdir(dep_build_dir+"/trilinos/packages/epetra/src")
+    patch=py_patch.fromfile(root+"/installer/patches/Epetra_ConfigDefs.h.patch")
+    patch.apply()
     os.chdir(cwd)
 
     tools.setDefaultConfigOption(config,'Trilinos','cmake_path',prefix+"/bempp/lib/cmake/Trilinos/",overwrite=True)

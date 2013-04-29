@@ -88,7 +88,11 @@ target_link_libraries (bempp amesos
                              belos
                              epetra
                              thyracore
-			     teuchos
+			     teuchoscomm
+                 teuchoscore
+                 teuchosnumerics
+                 teuchosparameterlist
+                 teuchosremainder
 			     rtop
 )
 
