@@ -65,9 +65,6 @@ public:
      */
     virtual int maxLevel() const = 0;
 
-    /** \brief Number of boundary segments within the macro (level-0) grid. */
-    virtual size_t boundarySegmentCount() const = 0;
-
     /** @}
     @name Views
     @{ */

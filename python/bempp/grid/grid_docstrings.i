@@ -18,14 +18,6 @@
 Levels are numbered 0 ... maxLevel() with 0 the coarsest level."
 %enddef
 
-%define Grid_boundarySegmentCount_autodoc_docstring
-"boundarySegmentCount(self) -> int"
-%enddef
-
-%define Grid_boundarySegmentCount_docstring
-"Number of boundary segments within the macro (level-0) grid."
-%enddef
-
 %define Grid_levelView_autodoc_docstring
 "levelView(self, level) -> GridView"
 %enddef
@@ -120,7 +112,6 @@ DECLARE_CLASS_DOCSTRING (Grid);
 DECLARE_METHOD_DOCSTRING(Grid, dim, 1);
 DECLARE_METHOD_DOCSTRING(Grid, dimWorld, 1);
 DECLARE_METHOD_DOCSTRING(Grid, maxLevel, 1);
-DECLARE_METHOD_DOCSTRING(Grid, boundarySegmentCount, 0);
 DECLARE_METHOD_DOCSTRING(Grid, levelView, 0);
 DECLARE_METHOD_DOCSTRING(Grid, leafView, 0);
 DECLARE_METHOD_DOCSTRING(Grid, globalIdSet, 1);
