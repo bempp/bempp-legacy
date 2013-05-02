@@ -337,7 +337,7 @@ asMatrix() const
             unit(col - 1) = 0.;
         unit(col) = 1.;
         if (m_symmetry & SYMMETRIC)
-            mltaSyHVec(static_cast<ValueType>(1.), nonconstBlockCluster, m_blocks.get(),
+            mltaSyHVec(1., nonconstBlockCluster, m_blocks.get(),
                        ahmedCast(unit.memptr()),
                        ahmedCast(permutedOutput.colptr(col)));
         else if (m_symmetry & HERMITIAN)
