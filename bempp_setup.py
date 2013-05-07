@@ -50,7 +50,7 @@ libraries = {'ahmed':ahmed,
              'swig':swig,
              'tbb':tbb,
              'trilinos':trilinos,
-            }
+             }
 library_names = sorted(libraries.keys())
 library_names = sorted(library_names, key=lambda n: -1 if n == 'mkl' or n == 'swig' else 1)
 
@@ -123,6 +123,10 @@ def installDependencies(root,config):
 def prepare(root,config):
     # Test whether the main options are present
     if not config.has_option('Main','prefix'): raise Exception('prefix not defined')
+
+    # Retrieve prefix
+    prefix = normalizePath(config, config.get('Main','prefix'))
+    
     setDefaultConfigOption(config,'Main','cc','gcc')
     setDefaultConfigOption(config,'Main','cxx','g++')
     setDefaultConfigOption(config,'Main','architecture','intel64')
@@ -137,6 +141,25 @@ def prepare(root,config):
     # Retrieve build directory
     setDefaultConfigOption(config,'Main','build_dir',root+'/build')
     build_dir = normalizePath(config, config.get('Main','build_dir'))
+
+    install_dir = prefix + "/bempp"
+    if (build_dir.startswith(install_dir) or
+        install_dir.startswith(build_dir)):
+        raise Exception(
+            "The directory in which BEM++ is built must not be identical to\n"
+            "the BEM++ installation directory and neither can lie within the\n"
+            "other.\n"
+            "Current settings:\n"
+            "Build directory: " + build_dir + "\n"
+            "Installation directory: " + install_dir)
+    if (root.startswith(install_dir)):
+        raise Exception(
+            "The installation directory of BEM++ must not be identical with\n"
+            "the BEM++ source directory or contain it.\n"
+            "Current settings:\n"
+            "Source directory: " + root + "\n"
+            "Installation directory: " + install_dir)
+    
     # Set build directories for BEM++ and its dependencies
     config.set('Main','build_dir',build_dir)
     config.set('Bempp','build_dir',build_dir+'/bempp')
@@ -191,7 +214,6 @@ def prepare(root,config):
 
     # Add the CMake configuration
 
-    prefix = config.get('Main','prefix')
     setDefaultConfigOption(config,"CMake","exe",prefix+"/bempp/bin/cmake",overwrite=True)
 
 
