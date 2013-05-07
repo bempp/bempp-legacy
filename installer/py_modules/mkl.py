@@ -87,7 +87,11 @@ def parse_otool_output(output):
 
     re_fname = re.compile(r"lib(mkl.*|iomp.*)\.(so|dylib)(\.[^ ]*)?")
     # we assume for now that @rpath == <sys.prefix>/lib
-    sys_lib_dir = os.path.join(sys.prefix, "lib")
+    if hasattr(sys,'base_prefix'):
+        prefix_dir = sys.base_prefix
+    else:
+        prefix_dir = sys.prefix
+    sys_lib_dir = os.path.join(prefix_dir, "lib") 
     mkl_dirs = []
     mkl_libs = []
     for l in output.splitlines():

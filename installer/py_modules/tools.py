@@ -128,6 +128,8 @@ def pythonInfo(config):
         extensions.append(".a")
         suffixes = [""] + ["."+str(i) for i in range(10)]
         dirs = [sys.prefix+"/lib/", sys.prefix+"/lib64/"]
+        if hasattr(sys,'base_prefix'):
+            dirs+=[sys.base_prefix+"/lib/",sys.base_prefix+"/lib/python2.7",sys.base_prefix+"/lib/python2.7/config/"]
 
         lib = None
         for ext in extensions:
@@ -154,7 +156,12 @@ def pythonInfo(config):
                             "file, does not contain the 'Python.h' file. "
                             "Please specify the correct include directory.")
     else:
-        include = (sys.prefix+"/include/python"+
+        if hasattr(sys,"base_prefix"):
+            include_prefix = sys.base_prefix
+        else:
+            include_prefix = sys.prefix
+
+        include = (include_prefix+"/include/python"+
                    str(sys.version_info[0])+"."+str(sys.version_info[1]))
         if not os.path.isfile(os.path.join(include, "Python.h")):
             raise Exception("File 'Python.h' does not exist in the expected Python "
