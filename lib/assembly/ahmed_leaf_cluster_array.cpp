@@ -52,7 +52,8 @@ bool isFirstClusterBigger(const blcluster* cluster1, const blcluster* cluster2)
 } // namespace
 
 AhmedLeafClusterArray::AhmedLeafClusterArray(blcluster* clusterTree) :
-    m_size(0) {
+    m_size(0)
+{
     blcluster** leafClusters = 0;
     try {
         gen_BlSequence(clusterTree, leafClusters);
