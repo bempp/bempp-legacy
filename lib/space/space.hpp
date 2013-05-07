@@ -52,7 +52,7 @@ namespace Bempp
 class Grid;
 template <int codim> class Entity;
 template <int codim> class EntityPointer;
-template <typename ValueType> class DiscreteBoundaryOperator;
+template <typename ValueType> class DiscreteSparseBoundaryOperator;
 /** \endcond */
 
 enum DofType
@@ -387,11 +387,11 @@ void getAllBases(const Space<BasisFunctionType>& space,
 
 #ifdef WITH_TRILINOS
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<DiscreteBoundaryOperator<ResultType> >
+shared_ptr<DiscreteSparseBoundaryOperator<ResultType> >
 constructOperatorMappingGlobalToFlatLocalDofs(const Space<BasisFunctionType>& space);
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<DiscreteBoundaryOperator<ResultType> >
+shared_ptr<DiscreteSparseBoundaryOperator<ResultType> >
 constructOperatorMappingFlatLocalToGlobalDofs(const Space<BasisFunctionType>& space);
 #endif // WITH_TRILINOS
 

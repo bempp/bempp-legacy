@@ -211,7 +211,7 @@ void getAllBases(const Space<BasisFunctionType>& space,
 
 #ifdef WITH_TRILINOS
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<DiscreteBoundaryOperator<ResultType> >
+shared_ptr<DiscreteSparseBoundaryOperator<ResultType> >
 constructOperatorMappingGlobalToFlatLocalDofs(const Space<BasisFunctionType>& space)
 {
     shared_ptr<Epetra_CrsMatrix> mat =
@@ -221,7 +221,7 @@ constructOperatorMappingGlobalToFlatLocalDofs(const Space<BasisFunctionType>& sp
 }
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<DiscreteBoundaryOperator<ResultType> >
+shared_ptr<DiscreteSparseBoundaryOperator<ResultType> >
 constructOperatorMappingFlatLocalToGlobalDofs(const Space<BasisFunctionType>& space)
 {
     shared_ptr<Epetra_CrsMatrix> mat =
@@ -258,10 +258,10 @@ BEMPP_GCC_DIAG_ON(deprecated-declarations);
 
 #define INSTANTIATE_constructOperators(BASIS, RESULT) \
     template \
-    shared_ptr<DiscreteBoundaryOperator<RESULT> > \
+    shared_ptr<DiscreteSparseBoundaryOperator<RESULT> > \
             constructOperatorMappingGlobalToFlatLocalDofs(const Space<BASIS>& space); \
     template \
-    shared_ptr<DiscreteBoundaryOperator<RESULT> > \
+    shared_ptr<DiscreteSparseBoundaryOperator<RESULT> > \
             constructOperatorMappingFlatLocalToGlobalDofs(const Space<BASIS>& space)
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Space);
