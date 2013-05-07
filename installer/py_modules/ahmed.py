@@ -61,7 +61,7 @@ def prepare(root,config):
         os.chdir(ahmed_full_dir)
         for s in ("ahmed_cmake.patch",
                   "ahmed_addGeHGeH_single_precision.patch",
-                  "ahmed_changelog_H.h.patch"                  
+                  "ahmed_changelog_H.h.patch",
                   "ahmed_pass_clusters_to_aca_matgen_apprx.h.patch",
                   "ahmed_generic_aca_apprx.h.patch",
                   "ahmed_check_error_apprx.h.patch",
@@ -72,10 +72,12 @@ def prepare(root,config):
                   "ahmed_retry_if_zero_and_orig_cross_ACA.h.patch",
                   "ahmed_changelog_ACA.h.patch",
                   "ahmed_permuted_indices_bemcluster.h.patch",
-                  "ahmed_changelog_bemcluster.h.patch",
-                  "ahmed_bbx_bbxbemcluster.h.patch",
-                  "ahmed_bbx_bbxbemblcluster.h.patch"):
+                  "ahmed_changelog_bemcluster.h.patch"):
             py_patch.fromfile(root+"/installer/patches/"+s).apply()
+        shutil.copy(root+"/installer/patches/ahmed_bbx_bbxbemcluster.h",
+                    "./Include/bbxbemcluster.h")
+        shutil.copy(root+"/installer/patches/ahmed_bbx_bbxbemblcluster.h",
+                    "./Include/bbxbemblcluster.h")
         os.chdir(cwd)
         tools.setCompilerOptions(config,'AHMED')
     else:
