@@ -24,6 +24,7 @@
 
 #include "context.hpp"
 #include "general_elementary_local_operator_imp.hpp"
+#include "general_hypersingular_integral_operator_imp.hpp"
 #include "identity_operator.hpp"
 #include "laplace_3d_single_layer_boundary_operator.hpp"
 #include "synthetic_integral_operator.hpp"
@@ -31,6 +32,7 @@
 #include "../fiber/explicit_instantiation.hpp"
 
 #include "../fiber/laplace_3d_single_layer_potential_kernel_functor.hpp"
+#include "../fiber/laplace_3d_hypersingular_off_diagonal_kernel_functor.hpp"
 #include "../fiber/surface_curl_3d_functor.hpp"
 #include "../fiber/scalar_function_value_functor.hpp"
 #include "../fiber/simple_test_scalar_kernel_trial_integrand_functor.hpp"
@@ -47,47 +49,6 @@
 namespace Bempp
 {
 
-/** \cond PRIVATE */
-template <typename BasisFunctionType, typename ResultType>
-struct Laplace3dHypersingularBoundaryOperatorImpl
-{
-    typedef typename Laplace3dBoundaryOperatorBase<BasisFunctionType, ResultType>::KernelType
-    KernelType;
-    typedef typename Laplace3dBoundaryOperatorBase<BasisFunctionType, ResultType>::CoordinateType
-    CoordinateType;
-
-    typedef Fiber::Laplace3dSingleLayerPotentialKernelFunctor<KernelType>
-    KernelFunctor;
-    typedef Fiber::SurfaceCurl3dFunctor<CoordinateType>
-    TransformationFunctor;
-    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
-    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
-
-    Laplace3dHypersingularBoundaryOperatorImpl() :
-        kernels(KernelFunctor()),
-        transformations(TransformationFunctor()),
-        integral(IntegrandFunctor())
-    {}
-
-    Fiber::DefaultCollectionOfKernels<KernelFunctor> kernels;
-    Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
-    transformations;
-    Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor> integral;
-};
-/** \endcond */
-
-template <typename BasisFunctionType, typename ResultType>
-Laplace3dHypersingularBoundaryOperator<BasisFunctionType, ResultType>::
-Laplace3dHypersingularBoundaryOperator(
-        const shared_ptr<const Space<BasisFunctionType> >& domain,
-        const shared_ptr<const Space<BasisFunctionType> >& range,
-        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const std::string& label,
-        int symmetry) :
-    Base(domain, range, dualToRange, label, symmetry)
-{
-}
-
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 laplace3dHypersingularBoundaryOperator(
@@ -98,10 +59,36 @@ laplace3dHypersingularBoundaryOperator(
         const std::string& label,
         int symmetry)
 {
-    typedef Laplace3dHypersingularBoundaryOperator<BasisFunctionType, ResultType> Op;
-    return BoundaryOperator<BasisFunctionType, ResultType>(
-                context, boost::make_shared<Op>(domain, range, dualToRange,
-                                                label, symmetry));
+    typedef typename ScalarTraits<BasisFunctionType>::RealType KernelType;
+    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+
+    typedef Fiber::Laplace3dSingleLayerPotentialKernelFunctor<KernelType>
+    KernelFunctor;
+    typedef Fiber::SurfaceCurl3dFunctor<CoordinateType>
+    TransformationFunctor;
+    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
+    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+
+    typedef Fiber::Laplace3dHypersingularOffDiagonalKernelFunctor<KernelType>
+    OffDiagonalKernelFunctor;
+    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
+    OffDiagonalTransformationFunctor;
+    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
+    BasisFunctionType, KernelType, ResultType> OffDiagonalIntegrandFunctor;
+
+    typedef GeneralHypersingularIntegralOperator<
+            BasisFunctionType, KernelType, ResultType> Op;
+    shared_ptr<Op> newOp(new Op(
+                             domain, range, dualToRange, label, symmetry,
+                             KernelFunctor(),
+                             TransformationFunctor(),
+                             TransformationFunctor(),
+                             IntegrandFunctor(),
+                             OffDiagonalKernelFunctor(),
+                             OffDiagonalTransformationFunctor(),
+                             OffDiagonalTransformationFunctor(),
+                             OffDiagonalIntegrandFunctor()));
+    return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -193,11 +180,5 @@ laplace3dSyntheticHypersingularBoundaryOperator(
     const shared_ptr<const Space<BASIS> >&, \
     const std::string&, int);
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
-
-#define INSTANTIATE_BASE(BASIS, RESULT) \
-    template class Laplace3dBoundaryOperatorBase< \
-    Laplace3dHypersingularBoundaryOperatorImpl<BASIS, RESULT>, BASIS, RESULT>
-FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_BASE);
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dHypersingularBoundaryOperator);
 
 } // namespace Bempp
