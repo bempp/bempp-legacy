@@ -75,7 +75,11 @@ assembleWeakFormInternalImpl(
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
 {
-    std::cout << "Warning: the variant of assembleWeakFormInternalImpl() with an AssemblyOptions object passed as the second argument is deprecated and will be removed in a future version of BEM++. Use the other variant, accepting a Context object as the second argument." << std::endl;
+    std::cout << "Warning: the variant of assembleWeakFormInternalImpl() with "
+                 "an AssemblyOptions object passed as the second argument is "
+                 "deprecated and will be removed in a future version of BEM++. "
+                 "Use the other variant, accepting a Context object as the "
+                 "second argument." << std::endl;
     // possibly use more conservative accuracy options
     NumericalQuadratureStrategy<BasisFunctionType, ResultType> quadStrategy; // fallback
     Context<BasisFunctionType, ResultType> context(

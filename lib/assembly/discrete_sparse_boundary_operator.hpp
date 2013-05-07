@@ -58,7 +58,7 @@ class DiscreteSparseBoundaryOperator :
 {
     typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
-    typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
+    typedef bbxbemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
     typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
 
 #ifdef WITH_TRILINOS

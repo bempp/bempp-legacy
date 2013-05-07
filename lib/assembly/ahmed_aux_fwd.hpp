@@ -27,7 +27,7 @@
 #include "bempp/common/config_ahmed.hpp"
 
 /** \cond FORWARD_DECL */
-template <class T1, class T2> class bemblcluster;
+template <class T1, class T2> class bbxbemblcluster;
 template <class T> class mblock;
 class blcluster;
 /** \endcond */

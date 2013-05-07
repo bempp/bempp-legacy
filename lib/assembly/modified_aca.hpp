@@ -204,7 +204,7 @@ bool ACAs(MATGEN_T& MatGen, unsigned b1, unsigned n1, unsigned b2, unsigned n2,
 
 template<class T,class T1,class T2, class MATGEN_T>
 void apprx_unsym_shooting(
-        MATGEN_T& MatGen, mblock<T>* &mbl, bemblcluster<T1,T2>* bl,
+        MATGEN_T& MatGen, mblock<T>* &mbl, bbxbemblcluster<T1,T2>* bl,
         double eps, unsigned rankmax)
 {
     apprx_unsym_generic(&ACAs<T, MATGEN_T>, MatGen, mbl, bl, eps, rankmax);

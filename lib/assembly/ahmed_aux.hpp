@@ -29,6 +29,7 @@
 #include "ahmed_leaf_cluster_array.hpp"
 #include "ahmed_mblock_array_deleter.hpp"
 #include "../common/types.hpp"
+#include "../common/bounding_box.hpp"
 
 #include "../common/boost_scoped_array_fwd.hpp"
 #include "../common/boost_shared_array_fwd.hpp"
@@ -44,8 +45,9 @@
 #endif
 
 #include "ahmed_complex.hpp"
+#include "extended_bem_cluster.hpp"
 
-#include <bemblcluster.h>
+#include <bbxbemblcluster.h>
 #include <bllist.h>
 // #include <matgen_sqntl.h>
 // #define _OPENMP
@@ -83,64 +85,28 @@ namespace Bempp
 
 /** \brief An Ahmed-compatible degree-of-freedom type. */
 template <typename CoordinateType>
-struct AhmedDofWrapper : public Point3D<CoordinateType>
+// struct AhmedDofWrapper : public Point3D<CoordinateType>
+struct AhmedDofWrapper : public BoundingBox<CoordinateType>
 {
-    CoordinateType getcenter(int dim) const
-    {
-        assert(dim >= 0 && dim <= 2);
-        if (dim == 0)
-            return this->x;
-        else if (dim == 1)
-            return this->y;
-        else
-            return this->z;
-    }
-};
+    // Methods required by the AHMED clustering code
 
-template <typename T>
-class ExtendedBemCluster : public bemcluster<T>
-{
-public:
-    ExtendedBemCluster(
-            T* dofs, unsigned int* op_perm,
-            unsigned int k, unsigned int l,
-            unsigned int maximumBlockSize =
-            std::numeric_limits<unsigned int>::max()) :
-        bemcluster<T>(dofs, op_perm, k, l),
-        m_maximumBlockSize(maximumBlockSize) {
+    CoordinateType getcenter(int i) const {
+        if (i == 0) return this->reference.x;
+        else if (i == 1) return this->reference.y;
+        else return this->reference.z;
     }
 
-    virtual ExtendedBemCluster* clone(unsigned int* op_perm,
-                                      unsigned int beg,
-                                      unsigned int end) const {
-        return new ExtendedBemCluster(cluster_pca<T>::dofs, op_perm, beg, end,
-                                      m_maximumBlockSize);
+    CoordinateType getlbound(int i) const {
+        if (i == 0) return this->lbound.x;
+        else if (i == 1) return this->lbound.y;
+        else return this->lbound.z;
     }
 
-    virtual bool isadm(double eta2, cluster* cl, bl_info& info) {
-        if (this->size() > m_maximumBlockSize ||
-                cl->size() > m_maximumBlockSize)
-            return (info.is_adm = false);
-        else
-            return bemcluster<T>::isadm(eta2, cl, info);
+    CoordinateType getubound(int i) const {
+        if (i == 0) return this->ubound.x;
+        else if (i == 1) return this->ubound.y;
+        else return this->ubound.z;
     }
-
-    unsigned int maximumBlockSize() const {
-        return m_maximumBlockSize;
-    }
-
-    void clearDofPointers() {
-        this->dofs = 0;
-        for (int i = 0; i < this->getns(); ++i) {
-            cluster* son = this->getson(i);
-            if (ExtendedBemCluster* exbemson =
-                    dynamic_cast<ExtendedBemCluster*>(son))
-                exbemson->clearDofPointers();
-            }
-    }
-
-private:
-    unsigned int m_maximumBlockSize;
 };
 
 template <typename ValueType>

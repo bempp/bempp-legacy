@@ -120,7 +120,10 @@ public:
      *
      *  This function is intended for internal use of the library. End users
      *  should not need to call it directly. They should use
-     *  AbstractBoundaryOperator::assembleWeakForm() instead. */
+     *  AbstractBoundaryOperator::assembleWeakForm() instead.
+     *
+     *  \deprecated This function is deprecated and will be removed in a future
+     *  release of the library. */
     shared_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInternal(
             LocalAssembler& assembler,

@@ -1,0 +1,17 @@
+--- Include/H.h	2013-05-01 15:02:28.000000000 +0100
++++ Include/H.h	2013-04-29 18:55:08.000000000 +0100
+@@ -8,6 +8,14 @@
+     this software; if not, see AHMED's internet site.
+ */
+ 
++/*
++    This file has been modified by the authors of BEM++.
++
++    Summary of changes:
++
++    - 29/08/2012: corrected a bug in the declarations of the addGeHGeH() routine
++      for real and complex single-precision numbers.
++*/
+ 
+ #ifndef H_H
+ #define H_H
