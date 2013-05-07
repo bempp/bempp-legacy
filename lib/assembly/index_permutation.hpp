@@ -53,7 +53,7 @@ public:
         return !operator==(other);
     }
 
-    std::vector<unsigned int> permutedIndices() const {
+    const std::vector<unsigned int>& permutedIndices() const {
         return m_permutedIndices;
     }
 
