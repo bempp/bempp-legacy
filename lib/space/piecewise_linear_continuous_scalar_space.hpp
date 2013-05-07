@@ -65,11 +65,20 @@ public:
             const std::vector<FlatLocalDofIndex>& flatLocalDofs,
             std::vector<LocalDof>& localDofs) const;
 
-    virtual void getGlobalDofPositions(std::vector<Point3D<CoordinateType> >& positions) const;
-    virtual void getFlatLocalDofPositions(std::vector<Point3D<CoordinateType> >& positions) const;
+    virtual void getGlobalDofPositions(
+            std::vector<Point3D<CoordinateType> >& positions) const;
+    virtual void getFlatLocalDofPositions(
+            std::vector<Point3D<CoordinateType> >& positions) const;
 
-    virtual void getGlobalDofNormals(std::vector<Point3D<CoordinateType> >& normals) const;
-    virtual void getFlatLocalDofNormals(std::vector<Point3D<CoordinateType> >& normals) const;
+    virtual void getGlobalDofBoundingBoxes(
+            std::vector<BoundingBox<CoordinateType> >& bboxes) const;
+    virtual void getFlatLocalDofBoundingBoxes(
+            std::vector<BoundingBox<CoordinateType> >& bboxes) const;
+
+    virtual void getGlobalDofNormals(
+            std::vector<Point3D<CoordinateType> >& normals) const;
+    virtual void getFlatLocalDofNormals(
+            std::vector<Point3D<CoordinateType> >& normals) const;
 
     virtual void dumpClusterIds(
             const char* fileName,

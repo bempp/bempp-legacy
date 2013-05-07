@@ -24,6 +24,7 @@
 #include "../common/common.hpp"
 #include "bempp/common/config_trilinos.hpp"
 
+#include "../common/bounding_box.hpp"
 #include "../common/deprecated.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../common/types.hpp"
@@ -254,6 +255,37 @@ public:
      *  approximation. */
     virtual void getGlobalDofPositions(
             std::vector<Point3D<CoordinateType> >& positions) const = 0;
+
+    /** \brief Retrieve bounding boxes of global degrees of freedom.
+     *
+     *  \param[out] boundingBoxes
+     *    Vector whose <em>i</em>th element contains the bounding box
+     *    of <em>i</em>th global degree of freedom.
+     *
+     *  \note This function is intended as a helper for clustering algorithms
+     *  used in matrix compression algorithms such as adaptive cross
+     *  approximation. */
+    virtual void getGlobalDofBoundingBoxes(
+            std::vector<BoundingBox<CoordinateType> >& boundingBoxes) const {
+        throw std::runtime_error("Space::getGlobalDofBoundingBoxes(): "
+                                 "implementation missing");
+    }
+
+    /** \brief Retrieve bounding boxes of local degrees of freedom ordered by 
+     *  their flat index.
+     *
+     *  \param[out] boundingBoxes
+     *    Vector whose <em>i</em>th element contains the bounding box
+     *    the local degree of freedom with flat index <em>i</em>.
+     *
+     *  \note This function is intended as a helper for clustering algorithms
+     *  used in matrix compression algorithms such as adaptive cross
+     *  approximation. */
+    virtual void getFlatLocalDofBoundingBoxes(
+            std::vector<BoundingBox<CoordinateType> >& boundingBoxes) const {
+        throw std::runtime_error("Space::getFlatLocalDofBoundingBoxes(): "
+                                 "implementation missing");
+    }
 
     /** \brief Retrieve positions of local degrees of freedom ordered by their
      *  flat index.

@@ -213,6 +213,77 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::getFlatLocalDofPositions(
 }
 
 template <typename BasisFunctionType>
+void PiecewiseConstantScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
+       std::vector<BoundingBox<CoordinateType> >& bboxes) const
+{
+   const int gridDim = domainDimension();
+   const int globalDofCount_ = globalDofCount();
+   bboxes.resize(globalDofCount_);
+
+   const Mapper& mapper = m_view->elementMapper();
+   arma::Mat<CoordinateType> corners;
+
+   if (gridDim == 1)
+       throw NotImplementedError(
+               "PiecewiseConstantScalarSpace::globalDofPositions(): "
+               "not implemented for 2D yet.");
+   else {
+       std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+       while (!it->finished())
+       {
+           const Entity<0>& e = it->entity();
+           int index = mapper.entityIndex(e);
+           arma::Col<CoordinateType> center;
+           const Geometry& geo = e.geometry();
+           geo.getCenter(center);
+           BoundingBox<CoordinateType>& bbox = bboxes[index];
+           bbox.reference.x = center(0);
+           bbox.reference.y = center(1);
+           bbox.reference.z = center(2);
+
+           geo.getCorners(corners);
+           assert(corners.n_cols > 0);
+           bbox.lbound.x = corners(0, 0);
+           bbox.lbound.y = corners(1, 0);
+           bbox.lbound.z = corners(2, 0);
+           bbox.ubound = bbox.lbound;
+           for (size_t i = 1; i < corners.n_cols; ++i) {
+               bbox.lbound.x = std::min(bbox.lbound.x, corners(0, i));
+               bbox.lbound.y = std::min(bbox.lbound.y, corners(1, i));
+               bbox.lbound.z = std::min(bbox.lbound.z, corners(2, i));
+               bbox.ubound.x = std::max(bbox.ubound.x, corners(0, i));
+               bbox.ubound.y = std::max(bbox.ubound.y, corners(1, i));
+               bbox.ubound.z = std::max(bbox.ubound.z, corners(2, i));
+           }
+           it->next();
+       }
+   }
+
+#ifndef NDEBUG
+   std::vector<Point3D<CoordinateType> > positions;
+   getGlobalDofPositions(positions);
+   for (size_t i = 0; i < globalDofCount_; ++i) {
+       assert(bboxes[i].reference.x == positions[i].x);
+       assert(bboxes[i].reference.y == positions[i].y);
+       assert(bboxes[i].reference.z == positions[i].z);
+       assert(bboxes[i].reference.x >= bboxes[i].lbound.x);
+       assert(bboxes[i].reference.y >= bboxes[i].lbound.y);
+       assert(bboxes[i].reference.z >= bboxes[i].lbound.z);
+       assert(bboxes[i].reference.x <= bboxes[i].ubound.x);
+       assert(bboxes[i].reference.y <= bboxes[i].ubound.y);
+       assert(bboxes[i].reference.z <= bboxes[i].ubound.z);
+   }
+#endif // NDEBUG
+}
+
+template <typename BasisFunctionType>
+void PiecewiseConstantScalarSpace<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
+       std::vector<BoundingBox<CoordinateType> >& bboxes) const
+{
+    getGlobalDofBoundingBoxes(bboxes);
+}
+
+template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::getGlobalDofNormals(
         std::vector<Point3D<CoordinateType> >& normals) const
 {
