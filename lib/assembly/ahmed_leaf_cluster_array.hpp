@@ -45,12 +45,13 @@ public:
     // The parameter should actually be const, but Ahmed's gen_BlSequence lacks
     // const-correctness
     explicit AhmedLeafClusterArray(blcluster* clusterTree);
+    // explicit AhmedLeafClusterArray(size_t size);
 
     size_t size() const {
         return m_size;
     }
 
-    blcluster* operator[] (size_t n) {
+    blcluster*& operator[] (size_t n) {
         return m_leafClusters[n];
     }
 
