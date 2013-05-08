@@ -25,7 +25,6 @@
 #include "context.hpp"
 #include "general_elementary_local_operator_imp.hpp"
 #include "general_hypersingular_integral_operator_imp.hpp"
-#include "identity_operator.hpp"
 #include "laplace_3d_single_layer_boundary_operator.hpp"
 #include "synthetic_integral_operator.hpp"
 
@@ -41,8 +40,6 @@
 #include "../fiber/default_collection_of_kernels.hpp"
 #include "../fiber/default_collection_of_basis_transformations.hpp"
 #include "../fiber/default_test_kernel_trial_integral.hpp"
-
-#include "../space/unit_scalar_space.hpp"
 
 #include <boost/type_traits/is_complex.hpp>
 
@@ -100,8 +97,8 @@ laplace3dSyntheticHypersingularBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         const shared_ptr<const Space<BasisFunctionType> >& internalTrialSpace,
         const shared_ptr<const Space<BasisFunctionType> >& internalTestSpace,
-        const std::string& label = "",
-        int symmetry = NO_SYMMETRY)
+        const std::string& label,
+        int symmetry)
 {
     // Note: we don't really need to care about ranges and duals to domains of
     // the internal operator. The only range space that matters is that of the
@@ -129,15 +126,15 @@ laplace3dSyntheticHypersingularBoundaryOperator(
 
     std::vector<BoundaryOperator<BasisFunctionType, ResultType> > trialCurlComponents;
     std::vector<BoundaryOperator<BasisFunctionType, ResultType> > testCurlComponents;
-        testCurlComponents.resize(3);
-        for (size_t i = 0; i < dimWorld; ++i)
-            testCurlComponents[i] = BoundaryOperator<BasisFunctionType, ResultType>(
-                        context, boost::make_shared<LocalOp>(
-                            internalTestSpace, range, dualToRange,
-                            ("(" + label + ")_test_curl_") + xyz[i], NO_SYMMETRY,
-                            CurlFunctor(),
-                            ValueFunctor(),
-                            IntegrandFunctor(i, 0)));
+    testCurlComponents.resize(3);
+    for (size_t i = 0; i < dimWorld; ++i)
+        testCurlComponents[i] = BoundaryOperator<BasisFunctionType, ResultType>(
+                    context, boost::make_shared<LocalOp>(
+                        internalTestSpace, range, dualToRange,
+                        ("(" + label + ")_test_curl_") + xyz[i], NO_SYMMETRY,
+                        CurlFunctor(),
+                        ValueFunctor(),
+                        IntegrandFunctor(i, 0)));
     size_t overallSymmetry = 0; // symmetry of the decomposition
     if (domain == dualToRange && internalTrialSpace == internalTestSpace)
         overallSymmetry = HERMITIAN |
