@@ -246,7 +246,8 @@ void UnitScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
        std::vector<BoundingBox<CoordinateType> >& bboxes) const
 {
    const int gridDim = domainDimension();
-   assert(globalDofCount() == 1);
+   const int globalDofCount_ = 1;
+   assert(globalDofCount() == globalDofCount_);
 
    bboxes.resize(1);
    BoundingBox<CoordinateType>& bbox = bboxes[0];
@@ -364,7 +365,7 @@ void UnitScalarSpace<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
     std::vector<Point3D<CoordinateType> > positions;
     getFlatLocalDofPositions(positions);
     assert(bboxes.size() == positions.size());
-    for (size_t i = 0; i < globalDofCount_; ++i) {
+    for (size_t i = 0; i < flatLocalDofCount_; ++i) {
         assert(bboxes[i].reference.x == positions[i].x);
         assert(bboxes[i].reference.y == positions[i].y);
         assert(bboxes[i].reference.z == positions[i].z);
