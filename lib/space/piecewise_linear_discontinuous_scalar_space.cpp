@@ -177,26 +177,21 @@ void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::getGlobalDofPos
 {
     // This implementation assumes that the EntityIterator returns entities
     // ordered according to their indices
-    const int gridDim = this->domainDimension();
     const int worldDim = this->grid()->dimWorld();
     positions.resize(globalDofCount());
 
     std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
-    arma::Col<CoordinateType> center;
+    arma::Mat<CoordinateType> corners;
     size_t globalDofIndex = 0;
     while (!it->finished())
     {
         const Entity<0>& e = it->entity();
-        e.geometry().getCenter(center);
-        int vertexCount;
-        if (gridDim == 1)
-            vertexCount = e.template subEntityCount<1>();
-        else // gridDim == 2
-            vertexCount = e.template subEntityCount<2>();
-        for (int vertex = 0; vertex < vertexCount; ++vertex) {
-            positions[globalDofIndex].x = center(0);
-            positions[globalDofIndex].y = center(1);
-            positions[globalDofIndex].z = (worldDim == 3) ? center(2) : 0.;
+        e.geometry().getCorners(corners);
+        const size_t cornerCount = corners.n_cols;
+        for (int corner = 0; corner < cornerCount; ++corner) {
+            positions[globalDofIndex].x = corners(0, corner);
+            positions[globalDofIndex].y = corners(1, corner);
+            positions[globalDofIndex].z = (worldDim == 3) ? corners(2, corner) : 0.;
             ++globalDofIndex;
         }
         it->next();
@@ -229,7 +224,6 @@ getGlobalDofBoundingBoxes(
    model.ubound.z = -std::numeric_limits<CoordinateType>::max();
    std::fill(bboxes.begin(), bboxes.end(), model);
 
-   std::vector<int> vertexIndices;
    arma::Mat<CoordinateType> corners;
 
    if (gridDim != 2)
@@ -246,7 +240,6 @@ getGlobalDofBoundingBoxes(
 
        geo.getCorners(corners);
        const size_t cornerCount = corners.n_cols;
-       vertexIndices.resize(cornerCount);
        for (size_t i = 0; i < cornerCount; ++i) {
            bboxes[globalDofIndex].reference.x = corners(0, i);
            bboxes[globalDofIndex].reference.y = corners(1, i);
