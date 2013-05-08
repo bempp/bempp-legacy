@@ -59,10 +59,11 @@ RaviartThomas0VectorSpace<BasisFunctionType>::
 RaviartThomas0VectorSpace(const shared_ptr<const Grid>& grid) :
     Base(grid), m_impl(new Impl), m_flatLocalDofCount(0)
 {
-    if (grid->dim() != 2)
+    if (grid->dim() != 2 || grid->dimWorld() != 3)
         throw std::invalid_argument("RaviartThomas0VectorSpace::"
                                     "RaviartThomas0VectorSpace(): "
-                                    "grid must be 2-dimensional");
+                                    "grid must be 2-dimensional and embedded "
+                                    "in 3-dimensional space");
     m_view = grid->leafView();
     assignDofsImpl();
 }
@@ -154,7 +155,7 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::setElementVariant(
 template <typename BasisFunctionType>
 void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
 {
-    const int gridDim = domainDimension();
+    const int gridDim = 2;
 
     const Mapper& elementMapper = m_view->elementMapper();
     const IndexSet& indexSet = m_view->indexSet();
@@ -291,7 +292,7 @@ template <typename BasisFunctionType>
 void RaviartThomas0VectorSpace<BasisFunctionType>::getGlobalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
-    const int gridDim = domainDimension();
+    const int gridDim = 2;
     const int globalDofCount_ = globalDofCount();
     positions.resize(globalDofCount_);
 
@@ -316,8 +317,8 @@ template <typename BasisFunctionType>
 void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
-    const int gridDim = domainDimension();
-    const int worldDim = this->grid()->dimWorld();
+    const int gridDim = 2;
+    const int worldDim = 3;
     positions.resize(m_flatLocalDofCount);
 
     const IndexSet& indexSet = m_view->indexSet();
@@ -352,8 +353,8 @@ template <typename BasisFunctionType>
 void RaviartThomas0VectorSpace<BasisFunctionType>::getGlobalDofNormals(
         std::vector<Point3D<CoordinateType> >& normals) const
 {
-    const int gridDim = domainDimension();
-    const int worldDim = this->grid()->dimWorld();
+    const int gridDim = 2;
+    const int worldDim = 3;
     const int globalDofCount_ = globalDofCount();
     normals.resize(globalDofCount_);
 
@@ -394,8 +395,8 @@ template <typename BasisFunctionType>
 void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofNormals(
         std::vector<Point3D<CoordinateType> >& normals) const
 {
-    const int gridDim = domainDimension();
-    const int worldDim = this->grid()->dimWorld();
+    const int gridDim = 2;
+    const int worldDim = 3;
     normals.resize(m_flatLocalDofCount);
 
     const IndexSet& indexSet = m_view->indexSet();
