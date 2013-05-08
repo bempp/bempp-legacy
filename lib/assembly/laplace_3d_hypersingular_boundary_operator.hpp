@@ -21,19 +21,14 @@
 #ifndef bempp_laplace_3d_hypersingular_boundary_operator_hpp
 #define bempp_laplace_3d_hypersingular_boundary_operator_hpp
 
-#include "laplace_3d_boundary_operator_base.hpp"
 #include "boundary_operator.hpp"
+#include "symmetry.hpp"
 
 namespace Bempp
 {
 
-/** \relates Laplace3dHypersingularBoundaryOperator
- *  \brief Construct a BoundaryOperator object wrapping a
- *  Laplace3dHypersingularBoundaryOperator.
- *
- *  This is a convenience function that creates a
- *  Laplace3dHypersingularBoundaryOperator, immediately wraps it in a
- *  BoundaryOperator and returns the latter object.
+/** \brief Construct a BoundaryOperator object representing the hypersingular
+ *  boundary operator associated with the Laplace equation in 3D.
  *
  *  \param[in] context
  *    A Context object that will be used to build the weak form of the
@@ -64,12 +59,11 @@ laplace3dHypersingularBoundaryOperator(
         const std::string& label = "",
         int symmetry = NO_SYMMETRY);
 
-/** \relates Laplace3dAdjointDoubleLayerBoundaryOperator
- *  \brief Construct a "synthetic" representation of the hypersingular
+/** \brief Construct a "synthetic" representation of the hypersingular
  *  boundary operator associated with the Laplace equation in 3D.
  *
- *  This function creates a hypersingular Laplace boundary operator \f$\mathcal A\f$
- *  whose weak form is stored as
+ *  This function creates a hypersingular Laplace boundary operator \f$\mathcal
+ *  A\f$ whose weak form is stored as
  *
  *  \[
  *     A = \sum_{\alpha=1}^3 P_\alpha A_{\textrm{d}} Q_\alpha,
