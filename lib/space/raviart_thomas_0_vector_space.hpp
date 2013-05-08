@@ -91,6 +91,12 @@ public:
             std::vector<Point3D<CoordinateType> >& positions) const;
     virtual void getFlatLocalDofPositions(
             std::vector<Point3D<CoordinateType> >& positions) const;
+
+    virtual void getGlobalDofBoundingBoxes(
+            std::vector<BoundingBox<CoordinateType> >& bboxes) const;
+    virtual void getFlatLocalDofBoundingBoxes(
+            std::vector<BoundingBox<CoordinateType> >& bboxes) const;
+
     virtual void getGlobalDofNormals(
             std::vector<Point3D<CoordinateType> >& normals) const;
     virtual void getFlatLocalDofNormals(

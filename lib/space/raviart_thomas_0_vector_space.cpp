@@ -22,6 +22,7 @@
 
 #include "../assembly/discrete_sparse_boundary_operator.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
+#include "../common/bounding_box.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/hdiv_function_value_functor.hpp"
 #include "../fiber/default_collection_of_basis_transformations.hpp"
@@ -344,6 +345,70 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofPositions(
             positions[flatLdofIndex].x = elementCenters(0, e);
             positions[flatLdofIndex].y = elementCenters(1, e);
             positions[flatLdofIndex].z = elementCenters(2, e);
+            ++flatLdofIndex;
+        }
+    assert(flatLdofIndex == m_flatLocalDofCount);
+}
+
+template <typename BasisFunctionType>
+void RaviartThomas0VectorSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
+       std::vector<BoundingBox<CoordinateType> >& bboxes) const
+{
+    // Preliminary implementation: bboxes are in fact points.
+
+    const int globalDofCount_ = globalDofCount();
+    bboxes.resize(globalDofCount_);
+
+    const IndexSet& indexSet = m_view->indexSet();
+
+    std::auto_ptr<EntityIterator<1> > it = m_view->entityIterator<1>();
+    while (!it->finished())
+    {
+        const Entity<1>& e = it->entity();
+        int index = indexSet.entityIndex(e);
+        arma::Col<CoordinateType> center;
+        e.geometry().getCenter(center);
+
+        BoundingBox<CoordinateType>& bbox = bboxes[index];
+
+        bbox.reference.x = bbox.lbound.x = bbox.ubound.x = center(0);
+        bbox.reference.y = bbox.lbound.y = bbox.ubound.y = center(1);
+        bbox.reference.z = bbox.lbound.z = bbox.ubound.z = center(2);
+        it->next();
+    }
+}
+
+template <typename BasisFunctionType>
+void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
+        std::vector<BoundingBox<CoordinateType> >& bboxes) const
+{
+    const int worldDim = 3;
+    bboxes.resize(m_flatLocalDofCount);
+
+    const IndexSet& indexSet = m_view->indexSet();
+    int elementCount = m_view->entityCount(0);
+
+    arma::Mat<CoordinateType> elementCenters(worldDim, elementCount);
+    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    arma::Col<CoordinateType> center;
+    while (!it->finished())
+    {
+        const Entity<0>& e = it->entity();
+        int index = indexSet.entityIndex(e);
+        e.geometry().getCenter(center);
+
+        for (int dim = 0; dim < worldDim; ++dim)
+            elementCenters(dim, index) = center(dim);
+        it->next();
+    }
+
+    size_t flatLdofIndex = 0;
+    for (size_t e = 0; e < m_local2globalDofs.size(); ++e)
+        for (size_t v = 0; v < m_local2globalDofs[e].size(); ++v) {
+            BoundingBox<CoordinateType>& bbox = bboxes[flatLdofIndex];
+            bbox.reference.x = bbox.lbound.x = bbox.ubound.x = elementCenters(0, e);
+            bbox.reference.y = bbox.lbound.y = bbox.ubound.y = elementCenters(1, e);
+            bbox.reference.z = bbox.lbound.z = bbox.ubound.z = elementCenters(2, e);
             ++flatLdofIndex;
         }
     assert(flatLdofIndex == m_flatLocalDofCount);
