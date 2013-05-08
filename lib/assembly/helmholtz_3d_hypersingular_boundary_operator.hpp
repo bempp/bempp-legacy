@@ -21,8 +21,10 @@
 #ifndef bempp_helmholtz_3d_hypersingular_boundaryoperator_hpp
 #define bempp_helmholtz_3d_hypersingular_boundaryoperator_hpp
 
-#include "helmholtz_3d_boundary_operator_base.hpp"
+#include "../common/scalar_traits.hpp"
 #include "boundary_operator.hpp"
+#include "helmholtz_3d_operators_common.hpp"
+#include "symmetry.hpp"
 
 namespace Bempp
 {
@@ -32,61 +34,8 @@ template <typename BasisFunctionType>
 struct Helmholtz3dHypersingularBoundaryOperatorImpl;
 /** \endcond */
 
-/** \ingroup helmholtz_3d
- *  \brief Hypersingular boundary operator for the Helmholtz equation in 3D.
- *
- *  \tparam BasisFunctionType
- *    Type of the values of the basis functions into which functions acted upon
- *    by the operator are expanded. It can take the following values: \c float,
- *    \c double, <tt>std::complex<float></tt> and
- *    <tt>std::complex<double></tt>.
- *
- *  \see helmholtz_3d */
-template <typename BasisFunctionType_>
-class Helmholtz3dHypersingularBoundaryOperator :
-        public Helmholtz3dBoundaryOperatorBase<
-                Helmholtz3dHypersingularBoundaryOperatorImpl<BasisFunctionType_>,
-                BasisFunctionType_>
-{
-    typedef Helmholtz3dBoundaryOperatorBase<
-    Helmholtz3dHypersingularBoundaryOperatorImpl<BasisFunctionType_>,
-    BasisFunctionType_> Base;
-public:
-    /** \copydoc ElementaryIntegralOperator::BasisFunctionType */
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc ElementaryIntegralOperator::KernelType */
-    typedef typename Base::KernelType KernelType;
-    /** \copydoc ElementaryIntegralOperator::ResultType */
-    typedef typename Base::ResultType ResultType;
-    /** \copydoc ElementaryIntegralOperator::CoordinateType */
-    typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
-    typedef typename Base::CollectionOfBasisTransformations
-    CollectionOfBasisTransformations;
-    /** \copydoc ElementaryIntegralOperator::CollectionOfKernels */
-    typedef typename Base::CollectionOfKernels CollectionOfKernels;
-    /** \copydoc ElementaryIntegralOperator::TestKernelTrialIntegral */
-    typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
-
-    /** \copydoc Helmholtz3dBoundaryOperatorBase::Helmholtz3dBoundaryOperatorBase */
-    Helmholtz3dHypersingularBoundaryOperator(
-            const shared_ptr<const Space<BasisFunctionType> >& domain,
-            const shared_ptr<const Space<BasisFunctionType> >& range,
-            const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-            KernelType waveNumber,
-            const std::string& label = "",
-            int symmetry = NO_SYMMETRY,
-            bool useInterpolation = false,
-            int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
-};
-
-/** \relates Helmholtz3dHypersingularBoundaryOperator
- *  \brief Construct a BoundaryOperator object wrapping a
- *  Helmholtz3dHypersingularBoundaryOperator.
- *
- *  This is a convenience function that creates a
- *  Helmholtz3dHypersingularBoundaryOperator, immediately wraps it in a
- *  BoundaryOperator and returns the latter object.
+/** \brief Construct a BoundaryOperator object representing the hypersingular
+ *  boundary operator associated with the Helmholtz equation in 3D.
  *
  *  \param[in] context
  *    A Context object that will be used to build the weak form of the
@@ -125,14 +74,14 @@ public:
  *  thrown. */
 template <typename BasisFunctionType>
 BoundaryOperator<BasisFunctionType,
-typename Helmholtz3dHypersingularBoundaryOperator<BasisFunctionType>::ResultType>
+typename ScalarTraits<BasisFunctionType>::ComplexType>
 helmholtz3dHypersingularBoundaryOperator(
         const shared_ptr<const Context<BasisFunctionType,
-        typename Helmholtz3dHypersingularBoundaryOperator<BasisFunctionType>::ResultType> >& context,
+        typename ScalarTraits<BasisFunctionType>::ComplexType> >& context,
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        typename Helmholtz3dHypersingularBoundaryOperator<BasisFunctionType>::KernelType waveNumber,
+        typename ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
         const std::string& label = "",
         int symmetry = NO_SYMMETRY,
         bool useInterpolation = false,
