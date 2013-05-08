@@ -96,7 +96,6 @@ HypersingularIntegralOperator<BasisFunctionType, KernelType, ResultType>::makeAs
     bool makeSeparateOffDiagonalAssembler =
             options.assemblyMode() == AssemblyOptions::ACA &&
             options.acaOptions().globalAssemblyBeforeCompression == false;
-    std::cout << "make? " << makeSeparateOffDiagonalAssembler << "\n";
 
     return reallyMakeAssemblers(quadStrategy,
                                 testGeometryFactory, trialGeometryFactory,
