@@ -49,7 +49,7 @@
 namespace Bempp
 {
 
-namespace 
+namespace
 {
 
 template <typename T>
@@ -225,7 +225,7 @@ SyntheticIntegralOperator(
          determineDualToRange(testLocalOps, integralOp),
          label, symmetry),
     m_integralOp(integralOp),
-    m_testLocalOps(testLocalOps), 
+    m_testLocalOps(testLocalOps),
     m_trialLocalOps(trialLocalOps)
 {
     checkIntegralOperator();
@@ -287,14 +287,6 @@ checkTestLocalOperators() const
                 "SyntheticIntegralOperator::checkTestLocalOperators(): "
                 "domain of all test operators must be identical with the dual "
                 "to range of the integral operator");
-    if (this->symmetry() == SYMMETRIC || this->symmetry() == HERMITIAN)
-        for (size_t i = 0; i < localOperatorCount; ++i)
-            if (m_testLocalOps[i].domain() != m_testLocalOps[i].dualToRange())
-                throw std::invalid_argument(
-                    "SyntheticIntegralOperator::checkTestLocalOperators(): "
-                    "for the operator to be symmetric, the domain of all test "
-                    "operators must be identical with the dual "
-                    "to their range");
     for (size_t i = 1; i < localOperatorCount; ++i)
         if (m_testLocalOps[i].domain() != m_testLocalOps[0].domain() ||
             m_testLocalOps[i].range() != m_testLocalOps[0].range() ||
@@ -356,7 +348,7 @@ assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) cons
     size_t localOperatorCount = m_testLocalOps.size();
     shared_ptr<const DiscreteLinOp> discreteIntegralOp =
         m_integralOp.weakForm();
-    std::vector<shared_ptr<const DiscreteLinOp> > 
+    std::vector<shared_ptr<const DiscreteLinOp> >
         discreteTestLocalOps(m_testLocalOps.size()),
         discreteTrialLocalOps(m_trialLocalOps.size());
     for (size_t i = 0; i < m_testLocalOps.size(); ++i)
