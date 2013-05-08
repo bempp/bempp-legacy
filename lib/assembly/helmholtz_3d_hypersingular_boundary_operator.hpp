@@ -87,6 +87,29 @@ helmholtz3dHypersingularBoundaryOperator(
         bool useInterpolation = false,
         int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
 
+/** \brief Construct a "synthetic" representation of the hypersingular boundary
+ *  operator associated with the Helmholtz equation in 3D.
+ *
+ *  \todo Write documentation. In the meantime, see the documentation of
+ *  laplace3dSyntheticSingleLayerBoundaryOperator and
+ *  SyntheticIntegralOperator. */
+template <typename BasisFunctionType>
+BoundaryOperator<BasisFunctionType,
+typename ScalarTraits<BasisFunctionType>::ComplexType>
+helmholtz3dSyntheticHypersingularBoundaryOperator(
+        const shared_ptr<const Context<BasisFunctionType,
+        typename ScalarTraits<BasisFunctionType>::ComplexType> >& context,
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+        const shared_ptr<const Space<BasisFunctionType> >& internalTrialSpace,
+        const shared_ptr<const Space<BasisFunctionType> >& internalTestSpace,
+        typename ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
+        const std::string& label = "",
+        int symmetry = NO_SYMMETRY,
+        bool useInterpolation = false,
+        int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
+
 } // namespace Bempp
 
 #endif

@@ -21,18 +21,33 @@
 #include "modified_helmholtz_3d_hypersingular_boundary_operator.hpp"
 #include "modified_helmholtz_3d_boundary_operator_base_imp.hpp"
 
+#include "context.hpp"
+#include "general_elementary_local_operator_imp.hpp"
+#include "general_hypersingular_integral_operator_imp.hpp"
+#include "modified_helmholtz_3d_single_layer_boundary_operator.hpp"
+#include "synthetic_integral_operator.hpp"
+
 #include "../fiber/explicit_instantiation.hpp"
 
 #include "../fiber/modified_helmholtz_3d_hypersingular_kernel_functor.hpp"
 #include "../fiber/modified_helmholtz_3d_hypersingular_kernel_interpolated_functor.hpp"
+#include "../fiber/modified_helmholtz_3d_hypersingular_off_diagonal_kernel_functor.hpp"
+#include "../fiber/modified_helmholtz_3d_hypersingular_off_diagonal_interpolated_kernel_functor.hpp"
 #include "../fiber/modified_helmholtz_3d_hypersingular_transformation_functor.hpp"
 #include "../fiber/modified_helmholtz_3d_hypersingular_integrand_functor_2.hpp"
+#include "../fiber/scalar_function_value_functor.hpp"
+#include "../fiber/scalar_function_value_times_normal_functor.hpp"
+#include "../fiber/simple_test_scalar_kernel_trial_integrand_functor.hpp"
+#include "../fiber/single_component_test_trial_integrand_functor.hpp"
+#include "../fiber/surface_curl_3d_functor.hpp"
 
 #include "../fiber/default_collection_of_kernels.hpp"
 #include "../fiber/default_collection_of_basis_transformations.hpp"
 #include "../fiber/default_test_kernel_trial_integral.hpp"
 
 #include "../common/boost_make_shared_fwd.hpp"
+
+#include <boost/type_traits/is_complex.hpp>
 
 namespace Bempp
 {
@@ -127,15 +142,137 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
                                                 waveNumber, label, symmetry));
 }
 
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+BoundaryOperator<BasisFunctionType,ResultType>
+modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
+        const shared_ptr<const Context<BasisFunctionType,ResultType> >& context,
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+        const shared_ptr<const Space<BasisFunctionType> >& internalTrialSpace,
+        const shared_ptr<const Space<BasisFunctionType> >& internalTestSpace,
+        KernelType waveNumber,
+        const std::string& label,
+        int symmetry,
+        bool useInterpolation,
+        int interpPtsPerWavelength)
+{
+    // Note: we don't really need to care about ranges and duals to domains of
+    // the internal operator. The only range space that matters is that of the
+    // leftmost operator in the product.
+
+    const char xyz[] = "xyz";
+    const size_t dimWorld = 3;
+
+    BoundaryOperator<BasisFunctionType, ResultType> slp =
+            modifiedHelmholtz3dSingleLayerBoundaryOperator(
+                context, internalTrialSpace, internalTestSpace /* or whatever */,
+                internalTestSpace,
+                waveNumber, "(" + label + ")_internal", symmetry,
+                useInterpolation, interpPtsPerWavelength);
+
+    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+
+    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
+            ValueFunctor;
+    typedef Fiber::ScalarFunctionValueTimesNormalFunctor<CoordinateType>
+            ValueTimesNormalFunctor;
+    typedef Fiber::SurfaceCurl3dFunctor<CoordinateType>
+            CurlFunctor;
+    typedef Fiber::SingleComponentTestTrialIntegrandFunctor<
+            BasisFunctionType, ResultType> IntegrandFunctor;
+
+    // symmetry of the decomposition
+    size_t overallSymmetry = 0;
+    if (domain == dualToRange && internalTrialSpace == internalTestSpace)
+        overallSymmetry =
+                (boost::is_complex<BasisFunctionType>() ? 0 : SYMMETRIC);
+
+    typedef GeneralElementaryLocalOperator<BasisFunctionType, ResultType> LocalOp;
+    typedef SyntheticIntegralOperator<BasisFunctionType, ResultType> SyntheticOp;
+
+    std::vector<BoundaryOperator<BasisFunctionType, ResultType> > testLocalOps;
+    std::vector<BoundaryOperator<BasisFunctionType, ResultType> > trialLocalOps;
+    testLocalOps.resize(dimWorld);
+    for (size_t i = 0; i < dimWorld; ++i)
+        testLocalOps[i] =
+                BoundaryOperator<BasisFunctionType, ResultType>(
+                    context, boost::make_shared<LocalOp>(
+                        internalTestSpace, range, dualToRange,
+                        ("(" + label + ")_test_curl_") + xyz[i], NO_SYMMETRY,
+                        CurlFunctor(),
+                        ValueFunctor(),
+                        IntegrandFunctor(i, 0)));
+
+    if (!overallSymmetry) {
+        trialLocalOps.resize(dimWorld);
+        for (size_t i = 0; i < dimWorld; ++i)
+            trialLocalOps[i] =
+                    BoundaryOperator<BasisFunctionType, ResultType>(
+                        context, boost::make_shared<LocalOp>(
+                            domain, internalTrialSpace /* or whatever */,
+                            internalTrialSpace,
+                            ("(" + label + ")_trial_curl_") + xyz[i], NO_SYMMETRY,
+                            ValueFunctor(),
+                            CurlFunctor(),
+                            IntegrandFunctor(0, i)));
+    }
+    // It might be more prudent to distinguish between the symmetry of the total
+    // operator and the symmetry of the decomposition
+    BoundaryOperator<BasisFunctionType, ResultType> term0(
+                context, boost::make_shared<SyntheticOp>(
+                    testLocalOps, slp, trialLocalOps, label,
+                    overallSymmetry));
+
+    for (size_t i = 0; i < dimWorld; ++i)
+        testLocalOps[i] =
+                BoundaryOperator<BasisFunctionType, ResultType>(
+                    context, boost::make_shared<LocalOp>(
+                        internalTestSpace, range, dualToRange,
+                        ("(" + label + ")_test_k_value_n_") + xyz[i], NO_SYMMETRY,
+                        ValueTimesNormalFunctor(),
+                        ValueFunctor(),
+                        IntegrandFunctor(i, 0)));
+    if (!overallSymmetry)
+        for (size_t i = 0; i < dimWorld; ++i)
+            trialLocalOps[i] =
+                    BoundaryOperator<BasisFunctionType, ResultType>(
+                        context, boost::make_shared<LocalOp>(
+                            domain, internalTrialSpace /* or whatever */,
+                            internalTrialSpace,
+                            ("(" + label + ")_trial_k_value_n_") + xyz[i], NO_SYMMETRY,
+                            ValueFunctor(),
+                            ValueTimesNormalFunctor(),
+                            IntegrandFunctor(0, i)));
+    BoundaryOperator<BasisFunctionType, ResultType> slp_waveNumberSq =
+            (waveNumber * waveNumber) * slp;
+    BoundaryOperator<BasisFunctionType, ResultType> term1(
+                context, boost::make_shared<SyntheticOp>(
+                    testLocalOps, slp_waveNumberSq, trialLocalOps, label,
+                    overallSymmetry));
+
+    return term0 + term1;
+}
+
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, KERNEL, RESULT) \
-   template BoundaryOperator<BASIS, RESULT> \
-   modifiedHelmholtz3dHypersingularBoundaryOperator( \
-       const shared_ptr<const Context<BASIS, RESULT> >&, \
-       const shared_ptr<const Space<BASIS> >&, \
-       const shared_ptr<const Space<BASIS> >&, \
-       const shared_ptr<const Space<BASIS> >&, \
-       KERNEL, \
-       const std::string&, int, bool, int)
+    template BoundaryOperator<BASIS, RESULT> \
+    modifiedHelmholtz3dHypersingularBoundaryOperator( \
+        const shared_ptr<const Context<BASIS, RESULT> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        KERNEL, \
+        const std::string&, int, bool, int); \
+    template BoundaryOperator<BASIS, RESULT> \
+    modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator( \
+        const shared_ptr<const Context<BASIS, RESULT> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        KERNEL, \
+        const std::string&, int, bool, int)
 FIBER_ITERATE_OVER_BASIS_KERNEL_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 #define INSTANTIATE_BASE(BASIS, KERNEL, RESULT) \

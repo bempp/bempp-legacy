@@ -154,6 +154,27 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
         bool useInterpolation = false,
         int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
 
+/** \brief Construct a "synthetic" representation of the hypersingular boundary
+ *  operator associated with the modified Helmholtz equation in 3D.
+ *
+ *  \todo Write documentation. In the meantime, see the documentation of
+ *  laplace3dSyntheticSingleLayerBoundaryOperator and
+ *  SyntheticIntegralOperator. */
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
+modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
+        const shared_ptr<const Context<BasisFunctionType,ResultType> >& context,
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+        const shared_ptr<const Space<BasisFunctionType> >& internalTrialSpace,
+        const shared_ptr<const Space<BasisFunctionType> >& internalTestSpace,
+        KernelType waveNumber,
+        const std::string& label = "",
+        int symmetry = NO_SYMMETRY,
+        bool useInterpolation = false,
+        int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
+
 } // namespace Bempp
 
 #endif
