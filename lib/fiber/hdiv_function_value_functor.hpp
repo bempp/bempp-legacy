@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_scalar_function_value_functor_hpp
-#define fiber_scalar_function_value_functor_hpp
+#ifndef fiber_hdiv_function_value_functor_hpp
+#define fiber_hdiv_function_value_functor_hpp
 
 #include "../common/common.hpp"
 
