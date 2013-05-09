@@ -118,7 +118,7 @@ public:
     /** \brief Constructor.
      *
      *  \param[in] testLocalOps Vector of the operators \f$U_\alpha\f$, as described above.
-     *  \param[in] testLocalOps The operator \f$K\f$, as described above.
+     *  \param[in] integralOp The operator \f$K\f$, as described above.
      *  \param[in] trialLocalOps Vector of the operators \f$V_\alpha\f$, as described above.
      *  \param[in] label (Optional) operator label.
      *  \param[in] symmetry Symmetry flag (see below).

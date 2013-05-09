@@ -51,18 +51,18 @@ namespace Bempp
  *  dualToRange must be defined on the same grid, otherwise an exception is
  *  thrown.
  *
- *  \tparam BasisFunctionType_
+ *  \tparam BasisFunctionType
  *    Type of the values of the basis functions into
  *    which functions acted upon by the operator are expanded.
- *  \tparam ResultType_
+ *  \tparam ResultType
  *    Type used to represent elements of the weak form of the operator.
  *
  *  Both template parameters can take the following values: \c float, \c
  *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
  *  Both types must have the same precision: for instance, mixing \c float with
- *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType_
- *  is by default set to \p BasisFunctionType_. You should override that only if
- *  you set \p BasisFunctionType_ to a real type, but you want the entries of
+ *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType
+ *  is by default set to \p BasisFunctionType. You should override that only if
+ *  you set \p BasisFunctionType to a real type, but you want the entries of
  *  the operator's weak form to be stored as complex numbers.
  */
 template <typename BasisFunctionType, typename ResultType>
@@ -82,9 +82,9 @@ laplace3dAdjointDoubleLayerBoundaryOperator(
  *  This function creates an adjoint double-layer Laplace boundary operator
  *  \f$\mathcal A\f$ whose weak form is stored as the product
  *
- *  \[
+ *  \f[
  *     A = P A_{\textrm{d}} Q,
- *  \]
+ *  \f]
  *
  *  where \f$A_{\textrm{d}}\f$ is the weak form of \f$\mathcal A\f$ discretised
  *  with the <em>discontinuous</em> test and trial function spaces passed in the
@@ -134,18 +134,18 @@ laplace3dAdjointDoubleLayerBoundaryOperator(
  *  internalTrialSpace must be defined on the same grid as \p domain; otherwise
  *  an exception is thrown.
  *
- *  \tparam BasisFunctionType_
+ *  \tparam BasisFunctionType
  *    Type of the values of the basis functions into
  *    which functions acted upon by the operator are expanded.
- *  \tparam ResultType_
+ *  \tparam ResultType
  *    Type used to represent elements of the weak form of the operator.
  *
  *  Both template parameters can take the following values: \c float, \c
  *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
  *  Both types must have the same precision: for instance, mixing \c float with
- *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType_
- *  is by default set to \p BasisFunctionType_. You should override that only if
- *  you set \p BasisFunctionType_ to a real type, but you want the entries of
+ *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType
+ *  is by default set to \p BasisFunctionType. You should override that only if
+ *  you set \p BasisFunctionType to a real type, but you want the entries of
  *  the operator's weak form to be stored as complex numbers.
  */
 template <typename BasisFunctionType, typename ResultType>

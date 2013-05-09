@@ -49,7 +49,22 @@ namespace Bempp
  *
  *  None of the shared pointers may be null and the spaces \p range and \p
  *  dualToRange must be defined on the same grid, otherwise an exception is
- *  thrown. */
+ *  thrown.
+ *
+ *  \tparam BasisFunctionType
+ *    Type of the values of the basis functions into
+ *    which functions acted upon by the operator are expanded.
+ *  \tparam ResultType
+ *    Type used to represent elements of the weak form of the operator.
+ *
+ *  Both template parameters can take the following values: \c float, \c
+ *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
+ *  Both types must have the same precision: for instance, mixing \c float with
+ *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType
+ *  is by default set to \p BasisFunctionType. You should override that only if
+ *  you set \p BasisFunctionType to a real type, but you want the entries of
+ *  the operator's weak form to be stored as complex numbers.
+ */
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 laplace3dHypersingularBoundaryOperator(
@@ -67,9 +82,9 @@ laplace3dHypersingularBoundaryOperator(
  *  This function creates a hypersingular Laplace boundary operator \f$\mathcal
  *  A\f$ whose weak form is stored as
  *
- *  \[
+ *  \f[
  *     A = \sum_{\alpha=1}^3 P_\alpha A_{\textrm{d}} Q_\alpha,
- *  \]
+ *  \f]
  *
  *  where \f$A_{\textrm{d}}\f$ is the weak form of the single-layer Laplace
  *  boundary operator discretised with the <em>discontinuous</em> test and
@@ -119,7 +134,22 @@ laplace3dHypersingularBoundaryOperator(
  *  None of the shared pointers may be null. \p internalTestSpace must be
  *  defined on the same grid as \p range and \p dualToRange, while \p
  *  internalTrialSpace must be defined on the same grid as \p domain; otherwise
- *  an exception is thrown. */
+ *  an exception is thrown.
+ *
+ *  \tparam BasisFunctionType
+ *    Type of the values of the basis functions into
+ *    which functions acted upon by the operator are expanded.
+ *  \tparam ResultType
+ *    Type used to represent elements of the weak form of the operator.
+ *
+ *  Both template parameters can take the following values: \c float, \c
+ *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
+ *  Both types must have the same precision: for instance, mixing \c float with
+ *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType
+ *  is by default set to \p BasisFunctionType. You should override that only if
+ *  you set \p BasisFunctionType to a real type, but you want the entries of
+ *  the operator's weak form to be stored as complex numbers.
+ */
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 laplace3dSyntheticHypersingularBoundaryOperator(

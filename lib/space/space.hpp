@@ -271,7 +271,7 @@ public:
                                  "implementation missing");
     }
 
-    /** \brief Retrieve bounding boxes of local degrees of freedom ordered by 
+    /** \brief Retrieve bounding boxes of local degrees of freedom ordered by
      *  their flat index.
      *
      *  \param[out] boundingBoxes
@@ -369,7 +369,8 @@ private:
     /** \endcond */
 };
 
-/** \brief Get pointers to Basis objects corresponding to all elements of the grid
+/** \relates Space
+ *  \brief Get pointers to Basis objects corresponding to all elements of the grid
  *  on which a function space is defined.
  *
  *  \param[in] space

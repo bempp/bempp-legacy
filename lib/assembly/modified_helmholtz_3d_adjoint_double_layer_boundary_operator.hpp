@@ -69,27 +69,27 @@ namespace Bempp
  *  dualToRange must be defined on the same grid, otherwise an exception is
  *  thrown.
  *
- *  \tparam BasisFunctionType_
+ *  \tparam BasisFunctionType
  *    Type of the values of the basis functions into
  *    which functions acted upon by the operator are expanded.
- *  \tparam KernelType_
+ *  \tparam KernelType
  *    Type of the values of the kernel functions occurring
  *    in the integrand of the operator.
- *  \tparam ResultType_
+ *  \tparam ResultType
  *    Type used to represent elements of the weak form form of the operator.
  *
  *  The latter three template parameters can take the following values: \c
  *  float, \c double, <tt>std::complex<float></tt> and
  *  <tt>std::complex<double></tt>. All types must have the same precision: for
  *  instance, mixing \c float with <tt>std::complex<double></tt> is not
- *  allowed. The parameter \p ResultType_ is by default set to "larger" of \p
- *  BasisFunctionType_ and \p KernelType_, e.g. for \p BasisFunctionType_ = \c
- *  double and \p KernelType_ = <tt>std::complex<double></tt> it is set to
+ *  allowed. The parameter \p ResultType is by default set to "larger" of \p
+ *  BasisFunctionType and \p KernelType, e.g. for \p BasisFunctionType = \c
+ *  double and \p KernelType = <tt>std::complex<double></tt> it is set to
  *  <tt>std::complex<double></tt>. You should override that only if you set
- *  both \p BasisFunctionType_ and \p KernelType_ to a real type, but you want
+ *  both \p BasisFunctionType and \p KernelType to a real type, but you want
  *  the entries of the operator's weak form to be stored as complex numbers.
  *
- *  Note that setting \p KernelType_ to a real type implies that the wave number
+ *  Note that setting \p KernelType to a real type implies that the wave number
  *  must also be chosen purely real.
  */
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
@@ -164,27 +164,27 @@ modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
  *  internalTrialSpace must be defined on the same grid as \p domain; otherwise
  *  an exception is thrown.
  *
- *  \tparam BasisFunctionType_
+ *  \tparam BasisFunctionType
  *    Type of the values of the basis functions into
  *    which functions acted upon by the operator are expanded.
- *  \tparam KernelType_
+ *  \tparam KernelType
  *    Type of the values of the kernel functions occurring
  *    in the integrand of the operator.
- *  \tparam ResultType_
+ *  \tparam ResultType
  *    Type used to represent elements of the weak form form of the operator.
  *
  *  The latter three template parameters can take the following values: \c
  *  float, \c double, <tt>std::complex<float></tt> and
  *  <tt>std::complex<double></tt>. All types must have the same precision: for
  *  instance, mixing \c float with <tt>std::complex<double></tt> is not
- *  allowed. The parameter \p ResultType_ is by default set to "larger" of \p
- *  BasisFunctionType_ and \p KernelType_, e.g. for \p BasisFunctionType_ = \c
- *  double and \p KernelType_ = <tt>std::complex<double></tt> it is set to
+ *  allowed. The parameter \p ResultType is by default set to "larger" of \p
+ *  BasisFunctionType and \p KernelType, e.g. for \p BasisFunctionType = \c
+ *  double and \p KernelType = <tt>std::complex<double></tt> it is set to
  *  <tt>std::complex<double></tt>. You should override that only if you set
- *  both \p BasisFunctionType_ and \p KernelType_ to a real type, but you want
+ *  both \p BasisFunctionType and \p KernelType to a real type, but you want
  *  the entries of the operator's weak form to be stored as complex numbers.
  *
- *  Note that setting \p KernelType_ to a real type implies that the wave number
+ *  Note that setting \p KernelType to a real type implies that the wave number
  *  must also be chosen purely real.
  */
 template <typename BasisFunctionType, typename KernelType, typename ResultType>

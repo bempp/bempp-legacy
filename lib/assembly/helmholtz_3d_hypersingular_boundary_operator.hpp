@@ -96,10 +96,10 @@ helmholtz3dHypersingularBoundaryOperator(
  *  This function creates a hypersingular Helmholtz boundary operator
  *  \f$\mathcal A\f$ whose weak form is stored as
  *
- *  \[
+ *  \f[
  *     A = \sum_{\alpha=1}^3 P_\alpha A_{\textrm{d}} Q_\alpha -
  *         k^2 \sum_{\alpha=1}^3 R_\alpha A_{\textrm{d}} S_\alpha,
- *  \]
+ *  \f]
  *
  *  where:
  *
@@ -156,12 +156,28 @@ helmholtz3dHypersingularBoundaryOperator(
  *    Test function space used in the discretisation of \f$\mathcal A\f$ to
  *    \f$A_{\textrm{d}}\f$. It must be a discontinuous space, with basis
  *    functions extending over single elements only.
+ *  \param[in] waveNumber
+ *    Wave number. See \ref helmholtz_3d for its definition.
  *  \param[in] label
  *    Textual label of the operator. If empty, a unique label is generated
  *    automatically.
  *  \param[in] symmetry
  *    Symmetry of the weak form of the operator. Can be any combination of the
  *    flags defined in the enumeration type Symmetry.
+ *  \param[in] useInterpolation
+ *    If set to \p false (default), the standard exp() function will be used to
+ *    evaluate the exponential factor occurring in the kernel. If set to \p
+ *    true, the exponential factor will be evaluated by piecewise-cubic
+ *    interpolation of values calculated in advance on a regular grid. This
+ *    normally speeds up calculations, but might result in a loss of accuracy.
+ *    This is an experimental feature: use it at your own risk.
+ *  \param[in] interpPtsPerWavelength
+ *    If \p useInterpolation is set to \p true, this parameter determines the
+ *    number of points per "effective wavelength" (defined as \f$2\pi/|k|\f$,
+ *    where \f$k\f$ = \p waveNumber) used to construct the interpolation grid.
+ *    The default value (5000) is normally enough to reduce the relative or
+ *    absolute error, *whichever is smaller*, below 100 * machine precision. If
+ *    \p useInterpolation is set to \p false, this parameter is ignored.
  *
  *  None of the shared pointers may be null. \p internalTestSpace must be
  *  defined on the same grid as \p range and \p dualToRange, while \p
