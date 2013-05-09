@@ -67,7 +67,14 @@ namespace Bempp
  *
  *  None of the shared pointers may be null and the spaces \p range and \p
  *  dualToRange must be defined on the same grid, otherwise an exception is
- *  thrown. */
+ *  thrown.
+ *
+ *  \tparam BasisFunctionType
+ *    Type of the values of the basis functions into which functions acted upon
+ *    by the operator are expanded. It can take the following values: \c float,
+ *    \c double, <tt>std::complex<float></tt> and
+ *    <tt>std::complex<double></tt>.
+ */
 template <typename BasisFunctionType>
 BoundaryOperator<BasisFunctionType,
 typename ScalarTraits<BasisFunctionType>::ComplexType>
@@ -159,7 +166,14 @@ helmholtz3dHypersingularBoundaryOperator(
  *  None of the shared pointers may be null. \p internalTestSpace must be
  *  defined on the same grid as \p range and \p dualToRange, while \p
  *  internalTrialSpace must be defined on the same grid as \p domain; otherwise
- *  an exception is thrown. */
+ *  an exception is thrown.
+ *
+ *  \tparam BasisFunctionType
+ *    Type of the values of the basis functions into which functions acted upon
+ *    by the operator are expanded. It can take the following values: \c float,
+ *    \c double, <tt>std::complex<float></tt> and
+ *    <tt>std::complex<double></tt>.
+ */
 template <typename BasisFunctionType>
 BoundaryOperator<BasisFunctionType,
 typename ScalarTraits<BasisFunctionType>::ComplexType>
