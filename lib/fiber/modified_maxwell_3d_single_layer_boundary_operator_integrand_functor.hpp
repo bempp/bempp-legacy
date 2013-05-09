@@ -75,7 +75,7 @@ public:
         assert(testSurfaceDivs.extent(0) == 1);
         assert(trialSurfaceDivs.extent(0) == 1);
 
-        // Let K_0(x, y) = K(x, y) and K_1(x, y) = K(x, y) / kappa^2.
+        // Let K_0(x, y) = kappa * K(x, y) and K_1(x, y) = K(x, y) / kappa.
         // Return
         // K_0(x, y) u*(x) . v(y) + K_1(x, y) div u*(x) div v(y)
 
