@@ -19,8 +19,8 @@
 // THE SOFTWARE.
 
 #include "laplace_3d_adjoint_double_layer_boundary_operator.hpp"
-#include "laplace_3d_boundary_operator_base_imp.hpp"
 
+#include "general_elementary_singular_integral_operator_imp.hpp"
 #include "synthetic_scalar_integral_operator_builder.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
@@ -29,53 +29,8 @@
 #include "../fiber/scalar_function_value_functor.hpp"
 #include "../fiber/simple_test_scalar_kernel_trial_integrand_functor.hpp"
 
-#include "../fiber/default_collection_of_kernels.hpp"
-#include "../fiber/default_collection_of_basis_transformations.hpp"
-#include "../fiber/default_test_kernel_trial_integral.hpp"
-
 namespace Bempp
 {
-
-/** \cond PRIVATE */
-template <typename BasisFunctionType, typename ResultType>
-struct Laplace3dAdjointDoubleLayerBoundaryOperatorImpl
-{
-    typedef typename Laplace3dBoundaryOperatorBase<BasisFunctionType, ResultType>::KernelType
-    KernelType;
-    typedef typename Laplace3dBoundaryOperatorBase<BasisFunctionType, ResultType>::CoordinateType
-    CoordinateType;
-
-    typedef Fiber::Laplace3dAdjointDoubleLayerPotentialKernelFunctor<KernelType>
-    KernelFunctor;
-    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
-    TransformationFunctor;
-    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
-    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
-
-    Laplace3dAdjointDoubleLayerBoundaryOperatorImpl() :
-        kernels(KernelFunctor()),
-        transformations(TransformationFunctor()),
-        integral(IntegrandFunctor())
-    {}
-
-    Fiber::DefaultCollectionOfKernels<KernelFunctor> kernels;
-    Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
-    transformations;
-    Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor> integral;
-};
-/** \endcond */
-
-template <typename BasisFunctionType, typename ResultType>
-Laplace3dAdjointDoubleLayerBoundaryOperator<BasisFunctionType, ResultType>::
-Laplace3dAdjointDoubleLayerBoundaryOperator(
-        const shared_ptr<const Space<BasisFunctionType> >& domain,
-        const shared_ptr<const Space<BasisFunctionType> >& range,
-        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const std::string& label,
-        int symmetry) :
-    Base(domain, range, dualToRange, label, symmetry)
-{
-}
 
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
@@ -87,10 +42,25 @@ laplace3dAdjointDoubleLayerBoundaryOperator(
        const std::string& label,
        int symmetry)
 {
-   typedef Laplace3dAdjointDoubleLayerBoundaryOperator<BasisFunctionType, ResultType> Op;
-   return BoundaryOperator<BasisFunctionType, ResultType>(
-               context, boost::make_shared<Op>(domain, range, dualToRange,
-                                               label, symmetry));
+    typedef typename ScalarTraits<BasisFunctionType>::RealType KernelType;
+    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+
+    typedef Fiber::Laplace3dAdjointDoubleLayerPotentialKernelFunctor<KernelType>
+    KernelFunctor;
+    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
+    TransformationFunctor;
+    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
+    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+
+    typedef GeneralElementarySingularIntegralOperator<
+            BasisFunctionType, KernelType, ResultType> Op;
+    shared_ptr<Op> newOp(new Op(
+                             domain, range, dualToRange, label, symmetry,
+                             KernelFunctor(),
+                             TransformationFunctor(),
+                             TransformationFunctor(),
+                             IntegrandFunctor()));
+    return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -102,8 +72,8 @@ laplace3dSyntheticAdjointDoubleLayerBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         const shared_ptr<const Space<BasisFunctionType> >& internalTrialSpace,
         const shared_ptr<const Space<BasisFunctionType> >& internalTestSpace,
-        const std::string& label = "",
-        int symmetry = NO_SYMMETRY)
+        const std::string& label,
+        int symmetry)
 {
     BoundaryOperator<BasisFunctionType, ResultType> internalOp =
             laplace3dAdjointDoubleLayerBoundaryOperator(
@@ -134,11 +104,5 @@ laplace3dSyntheticAdjointDoubleLayerBoundaryOperator(
         const shared_ptr<const Space<BASIS> >&, \
         const std::string&, int)
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
-
-#define INSTANTIATE_BASE(BASIS, RESULT) \
-    template class Laplace3dBoundaryOperatorBase< \
-        Laplace3dAdjointDoubleLayerBoundaryOperatorImpl<BASIS, RESULT>, BASIS, RESULT>
-FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_BASE);
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dAdjointDoubleLayerBoundaryOperator);
 
 } // namespace Bempp

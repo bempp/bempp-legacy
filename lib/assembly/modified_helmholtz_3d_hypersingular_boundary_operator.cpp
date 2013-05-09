@@ -19,10 +19,12 @@
 // THE SOFTWARE.
 
 #include "modified_helmholtz_3d_hypersingular_boundary_operator.hpp"
-#include "modified_helmholtz_3d_boundary_operator_base_imp.hpp"
+
+#include "../common/boost_make_shared_fwd.hpp"
 
 #include "context.hpp"
 #include "general_elementary_local_operator_imp.hpp"
+#include "general_elementary_singular_integral_operator_imp.hpp"
 #include "general_hypersingular_integral_operator_imp.hpp"
 #include "modified_helmholtz_3d_single_layer_boundary_operator.hpp"
 #include "synthetic_integral_operator.hpp"
@@ -41,86 +43,12 @@
 #include "../fiber/single_component_test_trial_integrand_functor.hpp"
 #include "../fiber/surface_curl_3d_functor.hpp"
 
-#include "../fiber/default_collection_of_kernels.hpp"
-#include "../fiber/default_collection_of_basis_transformations.hpp"
-#include "../fiber/default_test_kernel_trial_integral.hpp"
-
-#include "../common/boost_make_shared_fwd.hpp"
+#include "../grid/max_distance.hpp"
 
 #include <boost/type_traits/is_complex.hpp>
 
 namespace Bempp
 {
-
-/** \cond PRIVATE */
-template <typename BasisFunctionType, typename KernelType_, typename ResultType>
-struct ModifiedHelmholtz3dHypersingularBoundaryOperatorImpl
-{
-    typedef KernelType_ KernelType;
-    typedef ModifiedHelmholtz3dHypersingularBoundaryOperatorImpl<BasisFunctionType, KernelType, ResultType> This;
-    typedef ModifiedHelmholtz3dBoundaryOperatorBase<This, BasisFunctionType, KernelType, ResultType> BoundaryOperatorBase;
-    typedef typename BoundaryOperatorBase::CoordinateType CoordinateType;
-
-    typedef Fiber::ModifiedHelmholtz3dHypersingularKernelFunctor<KernelType>
-    NoninterpolatedKernelFunctor;
-    typedef Fiber::ModifiedHelmholtz3dHypersingularKernelInterpolatedFunctor<KernelType>
-    InterpolatedKernelFunctor;
-    typedef Fiber::ModifiedHelmholtz3dHypersingularTransformationFunctor<CoordinateType>
-    TransformationFunctor;
-    typedef Fiber::ModifiedHelmholtz3dHypersingularIntegrandFunctor2<
-    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
-
-    explicit ModifiedHelmholtz3dHypersingularBoundaryOperatorImpl(
-            KernelType waveNumber_) :
-        waveNumber(waveNumber_),
-        interpPtsPerWavelength(0),
-        maxDistance(0.),
-        kernels(new Fiber::DefaultCollectionOfKernels<NoninterpolatedKernelFunctor>(
-                    NoninterpolatedKernelFunctor(waveNumber_))),
-        transformations(TransformationFunctor()),
-        integral(IntegrandFunctor())
-    {}
-
-    ModifiedHelmholtz3dHypersingularBoundaryOperatorImpl(
-            KernelType waveNumber_,
-            CoordinateType maxDistance_,
-            int interpPtsPerWavelength_) :
-        waveNumber(waveNumber_),
-        interpPtsPerWavelength(interpPtsPerWavelength_),
-        maxDistance(maxDistance_),
-        kernels(new Fiber::DefaultCollectionOfKernels<InterpolatedKernelFunctor>(
-                              InterpolatedKernelFunctor(waveNumber_,
-                                                        maxDistance_,
-                                                        interpPtsPerWavelength_))),
-        transformations(TransformationFunctor()),
-        integral(IntegrandFunctor())
-    {}
-
-    KernelType waveNumber;
-    int interpPtsPerWavelength;
-    CoordinateType maxDistance;
-    boost::shared_ptr<Fiber::CollectionOfKernels<KernelType> > kernels;
-    Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
-    transformations;
-    Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor> integral;
-};
-/** \endcond */
-
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
-ModifiedHelmholtz3dHypersingularBoundaryOperator<BasisFunctionType, KernelType, ResultType>::
-ModifiedHelmholtz3dHypersingularBoundaryOperator(
-        const shared_ptr<const Space<BasisFunctionType> >& domain,
-        const shared_ptr<const Space<BasisFunctionType> >& range,
-        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        KernelType waveNumber,
-        const std::string& label,
-        int symmetry,
-        bool useInterpolation,
-        int interpPtsPerWavelength) :
-    Base(domain, range, dualToRange, waveNumber, label, symmetry,
-         useInterpolation, interpPtsPerWavelength)
-{
-}
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 BoundaryOperator<BasisFunctionType,ResultType>
@@ -135,11 +63,44 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
         bool useInterpolation,
         int interpPtsPerWavelength)
 {
-    typedef ModifiedHelmholtz3dHypersingularBoundaryOperator<
+    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+
+    typedef Fiber::ModifiedHelmholtz3dHypersingularKernelFunctor<KernelType>
+    NoninterpolatedKernelFunctor;
+    typedef Fiber::ModifiedHelmholtz3dHypersingularKernelInterpolatedFunctor<KernelType>
+    InterpolatedKernelFunctor;
+    typedef Fiber::ModifiedHelmholtz3dHypersingularTransformationFunctor<CoordinateType>
+    TransformationFunctor;
+    typedef Fiber::ModifiedHelmholtz3dHypersingularIntegrandFunctor2<
+    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+
+    if (!domain || !range || !dualToRange)
+        throw std::invalid_argument(
+                "modifiedHelmholtz3dHypersingularBoundaryOperator(): "
+                "domain, range and dualToRange must not be null");
+
+    typedef GeneralElementarySingularIntegralOperator<
             BasisFunctionType, KernelType, ResultType> Op;
-    return BoundaryOperator<BasisFunctionType, ResultType>(
-                context, boost::make_shared<Op>(domain, range, dualToRange,
-                                                waveNumber, label, symmetry));
+    shared_ptr<Op> newOp;
+    if (useInterpolation)
+        newOp.reset(new Op(
+                        domain, range, dualToRange, label, symmetry,
+                        InterpolatedKernelFunctor(
+                            waveNumber,
+                            1.1 * maxDistance(*domain->grid(), *dualToRange->grid()),
+                            interpPtsPerWavelength),
+                        TransformationFunctor(),
+                        TransformationFunctor(),
+                        IntegrandFunctor()));
+    else
+        newOp.reset(new Op(
+                        domain, range, dualToRange, label, symmetry,
+                        NoninterpolatedKernelFunctor(
+                            waveNumber),
+                        TransformationFunctor(),
+                        TransformationFunctor(),
+                        IntegrandFunctor()));
+    return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
@@ -274,13 +235,5 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
         KERNEL, \
         const std::string&, int, bool, int)
 FIBER_ITERATE_OVER_BASIS_KERNEL_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
-
-#define INSTANTIATE_BASE(BASIS, KERNEL, RESULT) \
-    template class ModifiedHelmholtz3dBoundaryOperatorBase< \
-    ModifiedHelmholtz3dHypersingularBoundaryOperatorImpl<BASIS, KERNEL, RESULT>, \
-    BASIS, KERNEL, RESULT>
-FIBER_ITERATE_OVER_BASIS_KERNEL_AND_RESULT_TYPES(INSTANTIATE_BASE);
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
-        ModifiedHelmholtz3dHypersingularBoundaryOperator);
 
 } // namespace Bempp

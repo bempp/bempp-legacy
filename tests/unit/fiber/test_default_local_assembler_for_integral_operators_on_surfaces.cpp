@@ -21,6 +21,8 @@
 #include "../type_template.hpp"
 #include "../check_arrays_are_close.hpp"
 
+#include "assembly/context.hpp"
+#include "assembly/general_elementary_singular_integral_operator_imp.hpp"
 #include "assembly/laplace_3d_single_layer_boundary_operator.hpp"
 #include "assembly/numerical_quadrature_strategy.hpp"
 #include "common/scalar_traits.hpp"
@@ -55,7 +57,7 @@ public:
     typedef typename ScalarTraits<RT>::RealType CT;
     typedef PiecewiseConstantScalarSpace<BFT> PiecewiseConstantSpace;
     typedef PiecewiseLinearContinuousScalarSpace<BFT> PiecewiseLinearSpace;
-    typedef Laplace3dSingleLayerBoundaryOperator<BFT, RT> Operator;
+    typedef ElementaryIntegralOperator<BFT, CT, RT> Operator;
     typedef NumericalQuadratureStrategy<BFT, RT> QuadratureStrategy;
     typedef Fiber::RawGridGeometry<CT> RawGridGeometry;
 
@@ -65,28 +67,32 @@ public:
         // Create a Bempp grid
         shared_ptr<Grid> grid = createGrid();
 
-        // These important thing is that the domain and dualToRange spaces are
-        // different
-        piecewiseConstantSpace = std::auto_ptr<PiecewiseConstantSpace>(
-                    new PiecewiseConstantSpace(grid));
-        piecewiseLinearSpace = std::auto_ptr<PiecewiseLinearSpace>(
-                    new PiecewiseLinearSpace(grid));
-
-        op = std::auto_ptr<Operator>(new Operator(
-                                         make_shared_from_ref(*piecewiseConstantSpace),
-                                         make_shared_from_ref(*piecewiseLinearSpace),
-                                         make_shared_from_ref(*piecewiseLinearSpace),
-                                         "SLP"));
-
-        // Construct local assembler
-
+        // Create context
         Fiber::AccuracyOptions options;
         options.doubleRegular.setRelativeQuadratureOrder(1);
-        quadStrategy = std::auto_ptr<QuadratureStrategy>(new QuadratureStrategy);
+        quadStrategy.reset(new QuadratureStrategy);
 
         AssemblyOptions assemblyOptions;
         assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
         assemblyOptions.enableSingularIntegralCaching(cacheSingularIntegrals);
+        Context<BFT, RT> context(quadStrategy, assemblyOptions);
+
+        // These important thing is that the domain and dualToRange spaces are
+        // different
+        piecewiseConstantSpace.reset(new PiecewiseConstantSpace(grid));
+        piecewiseLinearSpace.reset(new PiecewiseLinearSpace(grid));
+
+        BoundaryOperator<BFT, RT> bop =
+                laplace3dSingleLayerBoundaryOperator<BFT, RT>(
+                    make_shared_from_ref(context),
+                    piecewiseConstantSpace,
+                    piecewiseLinearSpace,
+                    piecewiseLinearSpace,
+                    "SLP");
+        op = boost::dynamic_pointer_cast<const Operator>(bop.abstractOperator());
+
+        // Construct local assembler
+
         assembler = op->makeAssembler(*quadStrategy, assemblyOptions);
     }
 
@@ -110,11 +116,11 @@ private:
     }
 
 public:
-    std::auto_ptr<PiecewiseConstantSpace> piecewiseConstantSpace;
-    std::auto_ptr<PiecewiseLinearSpace> piecewiseLinearSpace;
-    std::auto_ptr<Operator> op;
+    shared_ptr<PiecewiseConstantSpace> piecewiseConstantSpace;
+    shared_ptr<PiecewiseLinearSpace> piecewiseLinearSpace;
+    shared_ptr<const Operator> op;
 
-    std::auto_ptr<QuadratureStrategy> quadStrategy;
+    shared_ptr<QuadratureStrategy> quadStrategy;
     std::auto_ptr<typename Operator::LocalAssembler> assembler;
 };
 

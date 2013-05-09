@@ -1,5 +1,4 @@
 %{
-#include "assembly/laplace_3d_boundary_operator_base.hpp"
 #include "assembly/laplace_3d_single_layer_boundary_operator.hpp"
 #include "assembly/laplace_3d_double_layer_boundary_operator.hpp"
 #include "assembly/laplace_3d_adjoint_double_layer_boundary_operator.hpp"
@@ -31,7 +30,6 @@ namespace Bempp
 } // namespace Bempp
 
 #define shared_ptr boost::shared_ptr
-%include "assembly/laplace_3d_boundary_operator_base.hpp"
 %include "assembly/laplace_3d_single_layer_boundary_operator.hpp"
 %include "assembly/laplace_3d_double_layer_boundary_operator.hpp"
 %include "assembly/laplace_3d_adjoint_double_layer_boundary_operator.hpp"

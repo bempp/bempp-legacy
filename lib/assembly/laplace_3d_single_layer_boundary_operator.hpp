@@ -21,83 +21,15 @@
 #ifndef bempp_laplace_3d_single_layer_boundary_operator_hpp
 #define bempp_laplace_3d_single_layer_boundary_operator_hpp
 
-#include "laplace_3d_boundary_operator_base.hpp"
 #include "boundary_operator.hpp"
-
-#include "../common/boost_make_shared_fwd.hpp"
+#include "symmetry.hpp"
 
 namespace Bempp
 {
 
-/** \cond PRIVATE */
-template <typename BasisFunctionType, typename ResultType>
-struct Laplace3dSingleLayerBoundaryOperatorImpl;
-/** \endcond */
-
 /** \ingroup laplace_3d
- *  \brief Single-layer-potential boundary operator for the Laplace equation in 3D.
- *
- *  \tparam BasisFunctionType_
- *    Type of the values of the basis functions into
- *    which functions acted upon by the operator are expanded.
- *  \tparam ResultType_
- *    Type used to represent elements of the weak form of the operator.
- *
- *  Both template parameters can take the following values: \c float, \c
- *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
- *  Both types must have the same precision: for instance, mixing \c float with
- *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType_
- *  is by default set to \p BasisFunctionType_. You should override that only if
- *  you set \p BasisFunctionType_ to a real type, but you want the entries of
- *  the operator's weak form to be stored as complex numbers.
- *
- *  \see laplace_3d */
-template <typename BasisFunctionType_, typename ResultType_ = BasisFunctionType_>
-class Laplace3dSingleLayerBoundaryOperator :
-        public Laplace3dBoundaryOperatorBase<
-        Laplace3dSingleLayerBoundaryOperatorImpl<BasisFunctionType_, ResultType_>,
-        BasisFunctionType_,
-        ResultType_>
-{
-    typedef Laplace3dBoundaryOperatorBase<
-    Laplace3dSingleLayerBoundaryOperatorImpl<BasisFunctionType_, ResultType_>,
-    BasisFunctionType_,
-    ResultType_>
-    Base;
-public:
-    /** \copydoc ElementaryIntegralOperator::BasisFunctionType */
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc ElementaryIntegralOperator::KernelType */
-    typedef typename Base::KernelType KernelType;
-    /** \copydoc ElementaryIntegralOperator::ResultType */
-    typedef typename Base::ResultType ResultType;
-    /** \copydoc ElementaryIntegralOperator::CoordinateType */
-    typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
-    typedef typename Base::CollectionOfBasisTransformations
-    CollectionOfBasisTransformations;
-    /** \copydoc ElementaryIntegralOperator::CollectionOfKernels */
-    typedef typename Base::CollectionOfKernels CollectionOfKernels;
-    /** \copydoc ElementaryIntegralOperator::TestKernelTrialIntegral */
-    typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
-
-    /** \copydoc Laplace3dBoundaryOperatorBase::Laplace3dBoundaryOperatorBase */
-    Laplace3dSingleLayerBoundaryOperator(
-            const shared_ptr<const Space<BasisFunctionType> >& domain,
-            const shared_ptr<const Space<BasisFunctionType> >& range,
-            const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-            const std::string& label = "",
-            int symmetry = NO_SYMMETRY);
-};
-
-
-/** \relates Laplace3dSingleLayerBoundaryOperator
- *  \brief Construct a BoundaryOperator object wrapping a
- *  Laplace3dSingleLayerBoundaryOperator.
- *
- *  This is a convenience function that creates a
- *  Laplace3dSingleLayerBoundaryOperator, immediately wraps it in a
- *  BoundaryOperator and returns the latter object.
+ *  \brief Construct a BoundaryOperator object representing the
+ *  single-layer boundary operator associated with the Laplace equation in 3D.
  *
  *  \param[in] context
  *    A Context object that will be used to build the weak form of the
@@ -117,7 +49,22 @@ public:
  *
  *  None of the shared pointers may be null and the spaces \p range and \p
  *  dualToRange must be defined on the same grid, otherwise an exception is
- *  thrown. */
+ *  thrown.
+ *
+ *  \tparam BasisFunctionType_
+ *    Type of the values of the basis functions into
+ *    which functions acted upon by the operator are expanded.
+ *  \tparam ResultType_
+ *    Type used to represent elements of the weak form of the operator.
+ *
+ *  Both template parameters can take the following values: \c float, \c
+ *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
+ *  Both types must have the same precision: for instance, mixing \c float with
+ *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType_
+ *  is by default set to \p BasisFunctionType_. You should override that only if
+ *  you set \p BasisFunctionType_ to a real type, but you want the entries of
+ *  the operator's weak form to be stored as complex numbers.
+ */
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 laplace3dSingleLayerBoundaryOperator(
@@ -128,7 +75,7 @@ laplace3dSingleLayerBoundaryOperator(
         const std::string& label = "",
         int symmetry = NO_SYMMETRY);
 
-/** \relates Laplace3dSingleLayerBoundaryOperator
+/** \ingroup laplace_3d
  *  \brief Construct a "synthetic" representation of the single-layer boundary
  *  operator associated with the Laplace equation in 3D.
  *
@@ -146,8 +93,17 @@ laplace3dSingleLayerBoundaryOperator(
  *  internalTrialSpace, and \f$P\f$ the matrix mapping the degrees of freedom of
  *  \p internalTestSpace to \p dualToRange.
  *
- *  See the documentation of SyntheticIntegralOperator for a longer explanation
- *  of the concept of a synthetic operator.
+ *  If <tt>internalTrialSpace == domain</tt> or <tt>internalTestSpace ==
+ *  dualToRange</tt>, \f$P\f$ or \f$Q\f$ becomes an identity matrix and is
+ *  not physically created.
+ *
+ *  In ACA mode, synthetic operators are, as a rule, built more quickly than
+ *  "standard" operators (ACA is faster for operators discretised with
+ *  discontinuous spaces), but use up more memory and their matrix-vector
+ *  product may be more time-consuming.
+ *
+ *  See the documentation of SyntheticIntegralOperator for more information
+ *  about the concept of synthetic operators.
  *
  *  \param[in] context
  *    A Context object that will be used to build the weak form of the
@@ -178,9 +134,20 @@ laplace3dSingleLayerBoundaryOperator(
  *  internalTrialSpace must be defined on the same grid as \p domain; otherwise
  *  an exception is thrown.
  *
- *  If <tt>internalTrialSpace == domain</tt> or <tt>internalTestSpace ==
- *  dualToRange</tt>, \f$P\f$ or \f$Q\f$ becomes an identity matrix and is
- *  not physically created. */
+ *  \tparam BasisFunctionType_
+ *    Type of the values of the basis functions into
+ *    which functions acted upon by the operator are expanded.
+ *  \tparam ResultType_
+ *    Type used to represent elements of the weak form of the operator.
+ *
+ *  Both template parameters can take the following values: \c float, \c
+ *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
+ *  Both types must have the same precision: for instance, mixing \c float with
+ *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType_
+ *  is by default set to \p BasisFunctionType_. You should override that only if
+ *  you set \p BasisFunctionType_ to a real type, but you want the entries of
+ *  the operator's weak form to be stored as complex numbers.
+ */
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 laplace3dSyntheticSingleLayerBoundaryOperator(

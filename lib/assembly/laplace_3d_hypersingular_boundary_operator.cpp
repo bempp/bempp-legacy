@@ -19,14 +19,14 @@
 // THE SOFTWARE.
 
 #include "laplace_3d_hypersingular_boundary_operator.hpp"
-#include "laplace_3d_boundary_operator_base_imp.hpp"
-#include "discrete_boundary_operator.hpp"
 
 #include "context.hpp"
 #include "general_elementary_local_operator_imp.hpp"
 #include "general_hypersingular_integral_operator_imp.hpp"
 #include "laplace_3d_single_layer_boundary_operator.hpp"
 #include "synthetic_integral_operator.hpp"
+
+#include "../common/boost_make_shared_fwd.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 

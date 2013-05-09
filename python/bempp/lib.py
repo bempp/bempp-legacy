@@ -346,6 +346,84 @@ def _constructSyntheticOperator(
     result._internalTestSpace = internalTestSpace
     return result
 
+def _constructSyntheticHelmholtzOperator(
+        className, context, domain, range, dualToRange,
+        internalTrialSpace, internalTestSpace, waveNumber,
+        label, useInterpolation, interpPtsPerWavelength):
+    # determine basis function type
+    basisFunctionType = domain.basisFunctionType()
+    if (basisFunctionType != range.basisFunctionType() or
+            basisFunctionType != dualToRange.basisFunctionType() or
+            basisFunctionType != internalTrialSpace.basisFunctionType() or
+            basisFunctionType != internalTestSpace.basisFunctionType()):
+        raise TypeError("BasisFunctionType of all spaces must be the same")
+
+    # determine result type
+    if context.resultType() != promoteTypeToComplex(basisFunctionType):
+        raise TypeError("ResultType of 'context' must be the class of complex "
+                        "numbers of the same precision as its "
+                        "BasisFunctionType")
+    # ensure that label is a string
+    if not label:
+        label = ""
+
+    result = _constructObjectTemplatedOnBasis(
+        core, className, basisFunctionType,
+        context, domain, range, dualToRange,
+        internalTrialSpace, internalTestSpace, waveNumber,
+        label, useInterpolation, interpPtsPerWavelength)
+    result._context = context
+    result._domain = domain
+    result._range = range
+    result._dualToRange = dualToRange
+    result._internalTrialSpace = internalTrialSpace
+    result._internalTestSpace = internalTestSpace
+    return result
+
+def _constructSyntheticModifiedHelmholtzOperator(
+        className, context, domain, range, dualToRange,
+        internalTrialSpace, internalTestSpace, waveNumber,
+        label, useInterpolation, interpPtsPerWavelength):
+    # determine basis function type
+    basisFunctionType = domain.basisFunctionType()
+    if (basisFunctionType != range.basisFunctionType() or
+            basisFunctionType != dualToRange.basisFunctionType() or
+            basisFunctionType != internalTrialSpace.basisFunctionType() or
+            basisFunctionType != internalTestSpace.basisFunctionType()):
+        raise TypeError("BasisFunctionType of all spaces must be the same")
+
+    # determine result type
+    resultType = context.resultType()
+
+    # determine kernelType
+    waveNumberIsComplex = complex(waveNumber).imag != 0
+    if waveNumberIsComplex and resultType in ("float32", "float64"):
+        raise TypeError("Real result type given for a complex wave number")
+    if waveNumberIsComplex:
+        kernelType = resultType
+    else:
+        if resultType in ("float32", "complex64"):
+            kernelType = "float32"
+        else:
+            kernelType = "float64"
+
+    # ensure that label is a string
+    if not label:
+        label = ""
+
+    result = _constructObjectTemplatedOnBasisKernelAndResult(
+        core, className, basisFunctionType, kernelType, resultType,
+        context, domain, range, dualToRange,
+        internalTrialSpace, internalTestSpace, waveNumber,
+        label, useInterpolation, interpPtsPerWavelength)
+    result._context = context
+    result._domain = domain
+    result._range = range
+    result._dualToRange = dualToRange
+    result._internalTrialSpace = internalTrialSpace
+    result._internalTestSpace = internalTestSpace
+    return result
+
 # determine the type used to represent the values of the basis functions into
 # which functions acted upon by the operator will be expanded, and the type used
 # to represent the values of the functions produced by this operator.
@@ -480,10 +558,10 @@ def createLaplace3dSyntheticSingleLayerBoundaryOperator(
     matrix mapping the degrees of freedom of domain to those of
     internalTrialSpace, and P the matrix mapping the degrees of freedom of
     internalTestSpace to dualToRange.
-  
+
     See the C++ documentation of SyntheticIntegralOperator for a longer
     explanation of the concept of a synthetic operator.
-    
+
     *Parameters:*
        - context (Context)
             A Context object to control the assembly of the weak form of the
@@ -501,7 +579,7 @@ def createLaplace3dSyntheticSingleLayerBoundaryOperator(
        - internalTestSpace (Space)
             Test function space used in the discretisation of A to A_d. It must
             be a discontinuous space, with basis functions extending over single
-            elements only.     
+            elements only.
        - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
@@ -530,10 +608,10 @@ def createLaplace3dSyntheticDoubleLayerBoundaryOperator(
     matrix mapping the degrees of freedom of domain to those of
     internalTrialSpace, and P the matrix mapping the degrees of freedom of
     internalTestSpace to dualToRange.
-  
+
     See the C++ documentation of SyntheticIntegralOperator for a longer
     explanation of the concept of a synthetic operator.
-    
+
     *Parameters:*
        - context (Context)
             A Context object to control the assembly of the weak form of the
@@ -551,7 +629,7 @@ def createLaplace3dSyntheticDoubleLayerBoundaryOperator(
        - internalTestSpace (Space)
             Test function space used in the discretisation of A to A_d. It must
             be a discontinuous space, with basis functions extending over single
-            elements only.     
+            elements only.
        - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
@@ -580,10 +658,10 @@ def createLaplace3dSyntheticAdjointDoubleLayerBoundaryOperator(
     matrix mapping the degrees of freedom of domain to those of
     internalTrialSpace, and P the matrix mapping the degrees of freedom of
     internalTestSpace to dualToRange.
-  
+
     See the C++ documentation of SyntheticIntegralOperator for a longer
     explanation of the concept of a synthetic operator.
-    
+
     *Parameters:*
        - context (Context)
             A Context object to control the assembly of the weak form of the
@@ -601,7 +679,7 @@ def createLaplace3dSyntheticAdjointDoubleLayerBoundaryOperator(
        - internalTestSpace (Space)
             Test function space used in the discretisation of A to A_d. It must
             be a discontinuous space, with basis functions extending over single
-            elements only.     
+            elements only.
        - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
@@ -635,10 +713,10 @@ def createLaplace3dSyntheticHypersingularBoundaryOperator(
     domain in the basis of internalTrialSpace, and C_i' the matrices
     representing the construction of ith component of the surface curl of the
     basis function of dualToRange from the basis functions of internalTestSpace.
-  
+
     See the C++ documentation of SyntheticIntegralOperator for a longer
     explanation of the concept of a synthetic operator.
-    
+
     *Parameters:*
        - context (Context)
             A Context object to control the assembly of the weak form of the
@@ -656,7 +734,7 @@ def createLaplace3dSyntheticHypersingularBoundaryOperator(
        - internalTestSpace (Space)
             Test function space used in the discretisation of A to A_d. It must
             be a discontinuous space, with basis functions extending over single
-            elements only.     
+            elements only.
        - label (string)
             Textual label of the operator. If set to None (default), a unique
             label will be generated automatically.
@@ -734,9 +812,13 @@ def _constructHelmholtzOperator(
     if (basisFunctionType != domain.basisFunctionType() or
             basisFunctionType != range.basisFunctionType() or
             basisFunctionType != dualToRange.basisFunctionType()):
-        raise TypeError("BasisFunctionType of context and all spaces "
+        raise TypeError("BasisFunctionType of 'context' and all spaces "
                         "must be the same")
     resultType = context.resultType()
+    if resultType != promoteTypeToComplex(basisFunctionType):
+        raise TypeError("ResultType of 'context' must be the class of complex "
+                        "numbers of the same precision as its "
+                        "BasisFunctionType")
     if not label:
         label = ""
     symmetry = 0
@@ -948,6 +1030,318 @@ def createHelmholtz3dHypersingularBoundaryOperator(
         "helmholtz3dHypersingularBoundaryOperator", context,
         domain, range, dualToRange, waveNumber,
         label, useInterpolation, interpPtsPerWavelength)
+
+def createHelmholtz3dSyntheticSingleLayerBoundaryOperator(
+        context, domain, range, dualToRange,
+        internalTrialSpace, internalTestSpace,
+        waveNumber, label=None,
+        useInterpolation=False, interpPtsPerWavelength=5000):
+    """
+    Create and return a "synthetic" representation of the single-layer-potential
+    boundary operator for the Helmholtz equation in 3D.
+
+    This function creates a single-layer Helmholtz boundary operator A whose weak
+    form is stored as the product P A_d Q, where A_d is the weak form of A
+    discretised with the *discontinuous* test and trial function spaces passed
+    in the parameters internalTestSpace and internalTrialSpace, Q is the sparse
+    matrix mapping the degrees of freedom of domain to those of
+    internalTrialSpace, and P the matrix mapping the degrees of freedom of
+    internalTestSpace to dualToRange.
+
+    See the C++ documentation of SyntheticIntegralOperator for a longer
+    explanation of the concept of a synthetic operator.
+
+    *Parameters:*
+       - context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+       - domain (Space)
+            Function space to be taken as the domain of the operator.
+       - range (Space)
+            Function space to be taken as the range of the operator.
+       - dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+       - internalTrialSpace (Space)
+            Trial function space used in the discretisation of A to A_d. It must
+            be a discontinuous space, with basis functions extending over single
+            elements only.
+       - internalTestSpace (Space)
+            Test function space used in the discretisation of A to A_d. It must
+            be a discontinuous space, with basis functions extending over single
+            elements only.
+       - waveNumber (float or complex)
+            Wave number, i.e. the number k in the Helmholtz equation
+                nabla^2 u + k^2 u = 0.
+       - label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+       - useInterpolation (bool)
+            If set to False (default), the standard exp() function will be used
+            to evaluate the exponential factor occurring in the kernel. If set
+            to True, the exponential factor will be evaluated by piecewise-cubic
+            interpolation of values calculated in advance on a regular
+            grid. This normally speeds up calculations, but might result in a
+            loss of accuracy. This is an experimental feature: use it at your
+            own risk.
+       - interpPtsPerWavelength (int)
+            If useInterpolation is set to True, this parameter determines the
+            number of points per "effective wavelength" (defined as 2 pi /
+            abs(waveNumber)) used to construct the interpolation grid. The
+            default value (5000) is normally enough to reduce the relative or
+            absolute error, *whichever is smaller*, below 100 * machine
+            precision. If useInterpolation is set to False, this parameter is
+            ignored.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
+    return _constructSyntheticHelmholtzOperator(
+        "helmholtz3dSyntheticSingleLayerBoundaryOperator",
+        context, domain, range, dualToRange,
+        internalTrialSpace, internalTestSpace,
+        waveNumber, label, useInterpolation, interpPtsPerWavelength)
+
+def createHelmholtz3dSyntheticDoubleLayerBoundaryOperator(
+        context, domain, range, dualToRange,
+        internalTrialSpace, internalTestSpace,
+        waveNumber, label=None,
+        useInterpolation=False, interpPtsPerWavelength=5000):
+    """
+    Create and return a "synthetic" representation of the double-layer-potential
+    boundary operator for the Helmholtz equation in 3D.
+
+    This function creates a double-layer Helmholtz boundary operator A whose weak
+    form is stored as the product P A_d Q, where A_d is the weak form of A
+    discretised with the *discontinuous* test and trial function spaces passed
+    in the parameters internalTestSpace and internalTrialSpace, Q is the sparse
+    matrix mapping the degrees of freedom of domain to those of
+    internalTrialSpace, and P the matrix mapping the degrees of freedom of
+    internalTestSpace to dualToRange.
+
+    See the C++ documentation of SyntheticIntegralOperator for a longer
+    explanation of the concept of a synthetic operator.
+
+    *Parameters:*
+       - context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+       - domain (Space)
+            Function space to be taken as the domain of the operator.
+       - range (Space)
+            Function space to be taken as the range of the operator.
+       - dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+       - internalTrialSpace (Space)
+            Trial function space used in the discretisation of A to A_d. It must
+            be a discontinuous space, with basis functions extending over single
+            elements only.
+       - internalTestSpace (Space)
+            Test function space used in the discretisation of A to A_d. It must
+            be a discontinuous space, with basis functions extending over single
+            elements only.
+       - waveNumber (float or complex)
+            Wave number, i.e. the number k in the Helmholtz equation
+                nabla^2 u + k^2 u = 0.
+       - label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+       - useInterpolation (bool)
+            If set to False (default), the standard exp() function will be used
+            to evaluate the exponential factor occurring in the kernel. If set
+            to True, the exponential factor will be evaluated by piecewise-cubic
+            interpolation of values calculated in advance on a regular
+            grid. This normally speeds up calculations, but might result in a
+            loss of accuracy. This is an experimental feature: use it at your
+            own risk.
+       - interpPtsPerWavelength (int)
+            If useInterpolation is set to True, this parameter determines the
+            number of points per "effective wavelength" (defined as 2 pi /
+            abs(waveNumber)) used to construct the interpolation grid. The
+            default value (5000) is normally enough to reduce the relative or
+            absolute error, *whichever is smaller*, below 100 * machine
+            precision. If useInterpolation is set to False, this parameter is
+            ignored.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
+    return _constructSyntheticHelmholtzOperator(
+        "helmholtz3dSyntheticDoubleLayerBoundaryOperator",
+        context, domain, range, dualToRange,
+        internalTrialSpace, internalTestSpace,
+        waveNumber, label, useInterpolation, interpPtsPerWavelength)
+
+def createHelmholtz3dSyntheticAdjointDoubleLayerBoundaryOperator(
+        context, domain, range, dualToRange,
+        internalTrialSpace, internalTestSpace,
+        waveNumber, label=None,
+        useInterpolation=False, interpPtsPerWavelength=5000):
+    """
+    Create and return a "synthetic" representation of the adjoint
+    double-layer-potential boundary operator for the Helmholtz equation in 3D.
+
+    This function creates an adjoint double-layer Helmholtz boundary operator A
+    whose weak form is stored as the product P A_d Q, where A_d is the weak form
+    of A discretised with the *discontinuous* test and trial function spaces
+    passed in the parameters internalTestSpace and internalTrialSpace, Q is the
+    sparse matrix mapping the degrees of freedom of domain to those of
+    internalTrialSpace, and P the matrix mapping the degrees of freedom of
+    internalTestSpace to dualToRange.
+
+    See the C++ documentation of SyntheticIntegralOperator for a longer
+    explanation of the concept of a synthetic operator.
+
+    *Parameters:*
+       - context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+       - domain (Space)
+            Function space to be taken as the domain of the operator.
+       - range (Space)
+            Function space to be taken as the range of the operator.
+       - dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+       - internalTrialSpace (Space)
+            Trial function space used in the discretisation of A to A_d. It must
+            be a discontinuous space, with basis functions extending over single
+            elements only.
+       - internalTestSpace (Space)
+            Test function space used in the discretisation of A to A_d. It must
+            be a discontinuous space, with basis functions extending over single
+            elements only.
+       - waveNumber (float or complex)
+            Wave number, i.e. the number k in the Helmholtz equation
+                nabla^2 u + k^2 u = 0.
+       - label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+       - useInterpolation (bool)
+            If set to False (default), the standard exp() function will be used
+            to evaluate the exponential factor occurring in the kernel. If set
+            to True, the exponential factor will be evaluated by piecewise-cubic
+            interpolation of values calculated in advance on a regular
+            grid. This normally speeds up calculations, but might result in a
+            loss of accuracy. This is an experimental feature: use it at your
+            own risk.
+       - interpPtsPerWavelength (int)
+            If useInterpolation is set to True, this parameter determines the
+            number of points per "effective wavelength" (defined as 2 pi /
+            abs(waveNumber)) used to construct the interpolation grid. The
+            default value (5000) is normally enough to reduce the relative or
+            absolute error, *whichever is smaller*, below 100 * machine
+            precision. If useInterpolation is set to False, this parameter is
+            ignored.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
+    return _constructSyntheticHelmholtzOperator(
+        "helmholtz3dSyntheticAdjointDoubleLayerBoundaryOperator",
+        context, domain, range, dualToRange,
+        internalTrialSpace, internalTestSpace,
+        waveNumber, label, useInterpolation, interpPtsPerWavelength)
+
+def createHelmholtz3dSyntheticHypersingularBoundaryOperator(
+        context, domain, range, dualToRange,
+        internalTrialSpace, internalTestSpace,
+        waveNumber, label=None,
+        useInterpolation=False, interpPtsPerWavelength=5000):
+    """
+    Create and return a "synthetic" representation of the hypersingular
+    boundary operator for the Helmholtz equation in 3D.
+
+    This function creates a hypersingular Helmholtz boundary operator A whose
+    weak form is stored in the form
+
+    C_x' A_d C_x + C_y' A_d C_y + C_z' A_d C_z +
+    k**2 (N_x' A_d N_x + N_y' A_d N_y + N_z' A_d N_z),
+
+    where
+
+    - A_d is the weak form of the single-layer Helmholtz boundary operator
+      discretised with the <em>discontinuous</em> test and trial function spaces
+      passed in the parameters internalTestSpace and internalTrialSpace;
+
+    - C_i' (i = x, y, z) is the sparse matrix whose transpose represents the ith
+      component of the surface curl of the basis functions of dualToRange in the
+      basis of internalTestSpace;
+
+    - C_i (i = x, y, z) is the sparse matrix representing the ith component of
+      the surface curl of the basis functions of domain in the basis of
+      internalTrialSpace;
+
+    - k is the wave number;
+
+    - N_i' (i = x, y, z) is the sparse matrix whose transpose represents the
+      basis functions of dualToRange, multiplied by the ith component of the
+      local vector normal to the surface on which functions from dualToRange
+      live, in the basis of internalTestSpace;
+
+    - N_i (i = x, y, z) is the sparse matrix representing the basis functions of
+      domain, multiplied by the ith component of the local vector normal to the
+      surface on which functions from domain live, in the basis of
+      internalTrialSpace.
+
+    See the C++ documentation of SyntheticIntegralOperator for a longer
+    explanation of the concept of a synthetic operator.
+
+    *Parameters:*
+       - context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+       - domain (Space)
+            Function space to be taken as the domain of the operator.
+       - range (Space)
+            Function space to be taken as the range of the operator.
+       - dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+       - internalTrialSpace (Space)
+            Trial function space used in the discretisation of A to A_d. It must
+            be a discontinuous space, with basis functions extending over single
+            elements only.
+       - internalTestSpace (Space)
+            Test function space used in the discretisation of A to A_d. It must
+            be a discontinuous space, with basis functions extending over single
+            elements only.
+       - waveNumber (float or complex)
+            Wave number, i.e. the number k in the Helmholtz equation
+                nabla^2 u + k^2 u = 0.
+       - label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+       - useInterpolation (bool)
+            If set to False (default), the standard exp() function will be used
+            to evaluate the exponential factor occurring in the kernel. If set
+            to True, the exponential factor will be evaluated by piecewise-cubic
+            interpolation of values calculated in advance on a regular
+            grid. This normally speeds up calculations, but might result in a
+            loss of accuracy. This is an experimental feature: use it at your
+            own risk.
+       - interpPtsPerWavelength (int)
+            If useInterpolation is set to True, this parameter determines the
+            number of points per "effective wavelength" (defined as 2 pi /
+            abs(waveNumber)) used to construct the interpolation grid. The
+            default value (5000) is normally enough to reduce the relative or
+            absolute error, *whichever is smaller*, below 100 * machine
+            precision. If useInterpolation is set to False, this parameter is
+            ignored.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
+    return _constructSyntheticHelmholtzOperator(
+        "helmholtz3dSyntheticHypersingularBoundaryOperator",
+        context, domain, range, dualToRange,
+        internalTrialSpace, internalTestSpace,
+        waveNumber, label, useInterpolation, interpPtsPerWavelength)
 
 def _constructHelmholtzPotentialOperator(className, context, waveNumber):
     basisFunctionType = context.basisFunctionType()
@@ -1314,6 +1708,319 @@ def createModifiedHelmholtz3dHypersingularBoundaryOperator(
         "modifiedHelmholtz3dHypersingularBoundaryOperator", context,
         domain, range, dualToRange, waveNumber,
         label, useInterpolation, interpPtsPerWavelength)
+
+def createModifiedHelmholtz3dSyntheticSingleLayerBoundaryOperator(
+        context, domain, range, dualToRange,
+        internalTrialSpace, internalTestSpace,
+        waveNumber, label=None,
+        useInterpolation=False, interpPtsPerWavelength=5000):
+    """
+    Create and return a "synthetic" representation of the single-layer-potential
+    boundary operator for the modified Helmholtz equation in 3D.
+
+    This function creates a single-layer modified Helmholtz boundary operator A
+    whose weak form is stored as the product P A_d Q, where A_d is the weak form
+    of A discretised with the *discontinuous* test and trial function spaces
+    passed in the parameters internalTestSpace and internalTrialSpace, Q is the
+    sparse matrix mapping the degrees of freedom of domain to those of
+    internalTrialSpace, and P the matrix mapping the degrees of freedom of
+    internalTestSpace to dualToRange.
+
+    See the C++ documentation of SyntheticIntegralOperator for a longer
+    explanation of the concept of a synthetic operator.
+
+    *Parameters:*
+       - context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+       - domain (Space)
+            Function space to be taken as the domain of the operator.
+       - range (Space)
+            Function space to be taken as the range of the operator.
+       - dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+       - internalTrialSpace (Space)
+            Trial function space used in the discretisation of A to A_d. It must
+            be a discontinuous space, with basis functions extending over single
+            elements only.
+       - internalTestSpace (Space)
+            Test function space used in the discretisation of A to A_d. It must
+            be a discontinuous space, with basis functions extending over single
+            elements only.
+       - waveNumber (float or complex)
+            Wave number, i.e. the number k in the modified Helmholtz equation
+                nabla^2 u - k^2 u = 0.
+       - label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+       - useInterpolation (bool)
+            If set to False (default), the standard exp() function will be used
+            to evaluate the exponential factor occurring in the kernel. If set
+            to True, the exponential factor will be evaluated by piecewise-cubic
+            interpolation of values calculated in advance on a regular
+            grid. This normally speeds up calculations, but might result in a
+            loss of accuracy. This is an experimental feature: use it at your
+            own risk.
+       - interpPtsPerWavelength (int)
+            If useInterpolation is set to True, this parameter determines the
+            number of points per "effective wavelength" (defined as 2 pi /
+            abs(waveNumber)) used to construct the interpolation grid. The
+            default value (5000) is normally enough to reduce the relative or
+            absolute error, *whichever is smaller*, below 100 * machine
+            precision. If useInterpolation is set to False, this parameter is
+            ignored.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
+    return _constructSyntheticModifiedHelmholtzOperator(
+        "modifiedHelmholtz3dSyntheticSingleLayerBoundaryOperator",
+        context, domain, range, dualToRange,
+        internalTrialSpace, internalTestSpace,
+        waveNumber, label, useInterpolation, interpPtsPerWavelength)
+
+def createModifiedHelmholtz3dSyntheticDoubleLayerBoundaryOperator(
+        context, domain, range, dualToRange,
+        internalTrialSpace, internalTestSpace,
+        waveNumber, label=None,
+        useInterpolation=False, interpPtsPerWavelength=5000):
+    """
+    Create and return a "synthetic" representation of the double-layer-potential
+    boundary operator for the modified Helmholtz equation in 3D.
+
+    This function creates a double-layer modified Helmholtz boundary operator A
+    whose weak form is stored as the product P A_d Q, where A_d is the weak form
+    of A discretised with the *discontinuous* test and trial function spaces
+    passed in the parameters internalTestSpace and internalTrialSpace, Q is the
+    sparse matrix mapping the degrees of freedom of domain to those of
+    internalTrialSpace, and P the matrix mapping the degrees of freedom of
+    internalTestSpace to dualToRange.
+
+    See the C++ documentation of SyntheticIntegralOperator for a longer
+    explanation of the concept of a synthetic operator.
+
+    *Parameters:*
+       - context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+       - domain (Space)
+            Function space to be taken as the domain of the operator.
+       - range (Space)
+            Function space to be taken as the range of the operator.
+       - dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+       - internalTrialSpace (Space)
+            Trial function space used in the discretisation of A to A_d. It must
+            be a discontinuous space, with basis functions extending over single
+            elements only.
+       - internalTestSpace (Space)
+            Test function space used in the discretisation of A to A_d. It must
+            be a discontinuous space, with basis functions extending over single
+            elements only.
+       - waveNumber (float or complex)
+            Wave number, i.e. the number k in the modified Helmholtz equation
+                nabla^2 u - k^2 u = 0.
+       - label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+       - useInterpolation (bool)
+            If set to False (default), the standard exp() function will be used
+            to evaluate the exponential factor occurring in the kernel. If set
+            to True, the exponential factor will be evaluated by piecewise-cubic
+            interpolation of values calculated in advance on a regular
+            grid. This normally speeds up calculations, but might result in a
+            loss of accuracy. This is an experimental feature: use it at your
+            own risk.
+       - interpPtsPerWavelength (int)
+            If useInterpolation is set to True, this parameter determines the
+            number of points per "effective wavelength" (defined as 2 pi /
+            abs(waveNumber)) used to construct the interpolation grid. The
+            default value (5000) is normally enough to reduce the relative or
+            absolute error, *whichever is smaller*, below 100 * machine
+            precision. If useInterpolation is set to False, this parameter is
+            ignored.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
+    return _constructSyntheticModifiedHelmholtzOperator(
+        "modifiedHelmholtz3dSyntheticDoubleLayerBoundaryOperator",
+        context, domain, range, dualToRange,
+        internalTrialSpace, internalTestSpace,
+        waveNumber, label, useInterpolation, interpPtsPerWavelength)
+
+def createModifiedHelmholtz3dSyntheticAdjointDoubleLayerBoundaryOperator(
+        context, domain, range, dualToRange,
+        internalTrialSpace, internalTestSpace,
+        waveNumber, label=None,
+        useInterpolation=False, interpPtsPerWavelength=5000):
+    """
+    Create and return a "synthetic" representation of the adjoint
+    double-layer-potential boundary operator for the modified Helmholtz equation
+    in 3D.
+
+    This function creates an adjoint double-layer modified Helmholtz boundary
+    operator A whose weak form is stored as the product P A_d Q, where A_d is
+    the weak form of A discretised with the *discontinuous* test and trial
+    function spaces passed in the parameters internalTestSpace and
+    internalTrialSpace, Q is the sparse matrix mapping the degrees of freedom of
+    domain to those of internalTrialSpace, and P the matrix mapping the degrees
+    of freedom of internalTestSpace to dualToRange.
+
+    See the C++ documentation of SyntheticIntegralOperator for a longer
+    explanation of the concept of a synthetic operator.
+
+    *Parameters:*
+       - context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+       - domain (Space)
+            Function space to be taken as the domain of the operator.
+       - range (Space)
+            Function space to be taken as the range of the operator.
+       - dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+       - internalTrialSpace (Space)
+            Trial function space used in the discretisation of A to A_d. It must
+            be a discontinuous space, with basis functions extending over single
+            elements only.
+       - internalTestSpace (Space)
+            Test function space used in the discretisation of A to A_d. It must
+            be a discontinuous space, with basis functions extending over single
+            elements only.
+       - waveNumber (float or complex)
+            Wave number, i.e. the number k in the modified Helmholtz equation
+                nabla^2 u - k^2 u = 0.
+       - label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+       - useInterpolation (bool)
+            If set to False (default), the standard exp() function will be used
+            to evaluate the exponential factor occurring in the kernel. If set
+            to True, the exponential factor will be evaluated by piecewise-cubic
+            interpolation of values calculated in advance on a regular
+            grid. This normally speeds up calculations, but might result in a
+            loss of accuracy. This is an experimental feature: use it at your
+            own risk.
+       - interpPtsPerWavelength (int)
+            If useInterpolation is set to True, this parameter determines the
+            number of points per "effective wavelength" (defined as 2 pi /
+            abs(waveNumber)) used to construct the interpolation grid. The
+            default value (5000) is normally enough to reduce the relative or
+            absolute error, *whichever is smaller*, below 100 * machine
+            precision. If useInterpolation is set to False, this parameter is
+            ignored.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
+    return _constructSyntheticModifiedHelmholtzOperator(
+        "modifiedHelmholtz3dSyntheticAdjointDoubleLayerBoundaryOperator",
+        context, domain, range, dualToRange,
+        internalTrialSpace, internalTestSpace,
+        waveNumber, label, useInterpolation, interpPtsPerWavelength)
+
+def createModifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
+        context, domain, range, dualToRange,
+        internalTrialSpace, internalTestSpace,
+        waveNumber, label=None,
+        useInterpolation=False, interpPtsPerWavelength=5000):
+    """
+    Create and return a "synthetic" representation of the hypersingular
+    boundary operator for the modified Helmholtz equation in 3D.
+
+    This function creates a hypersingular modified Helmholtz boundary operator A
+    whose weak form is stored in the form
+
+    C_x' A_d C_x + C_y' A_d C_y + C_z' A_d C_z +
+    k**2 (N_x' A_d N_x + N_y' A_d N_y + N_z' A_d N_z),
+
+    where
+
+    - A_d is the weak form of the single-layer Helmholtz boundary operator
+      discretised with the <em>discontinuous</em> test and trial function spaces
+      passed in the parameters internalTestSpace and internalTrialSpace;
+
+    - C_i' (i = x, y, z) is the sparse matrix whose transpose represents the ith
+      component of the surface curl of the basis functions of dualToRange in the
+      basis of internalTestSpace;
+
+    - C_i (i = x, y, z) is the sparse matrix representing the ith component of
+      the surface curl of the basis functions of domain in the basis of
+      internalTrialSpace;
+
+    - k is the wave number;
+
+    - N_i' (i = x, y, z) is the sparse matrix whose transpose represents the
+      basis functions of dualToRange, multiplied by the ith component of the
+      local vector normal to the surface on which functions from dualToRange
+      live, in the basis of internalTestSpace;
+
+    - N_i (i = x, y, z) is the sparse matrix representing the basis functions of
+      domain, multiplied by the ith component of the local vector normal to the
+      surface on which functions from domain live, in the basis of
+      internalTrialSpace.
+
+    See the C++ documentation of SyntheticIntegralOperator for a longer
+    explanation of the concept of a synthetic operator.
+
+    *Parameters:*
+       - context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+       - domain (Space)
+            Function space to be taken as the domain of the operator.
+       - range (Space)
+            Function space to be taken as the range of the operator.
+       - dualToRange (Space)
+            Function space to be taken as the dual to the range of the operator.
+       - internalTrialSpace (Space)
+            Trial function space used in the discretisation of A to A_d. It must
+            be a discontinuous space, with basis functions extending over single
+            elements only.
+       - internalTestSpace (Space)
+            Test function space used in the discretisation of A to A_d. It must
+            be a discontinuous space, with basis functions extending over single
+            elements only.
+       - waveNumber (float or complex)
+            Wave number, i.e. the number k in the modified Helmholtz equation
+                nabla^2 u - k^2 u = 0.
+       - label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+       - useInterpolation (bool)
+            If set to False (default), the standard exp() function will be used
+            to evaluate the exponential factor occurring in the kernel. If set
+            to True, the exponential factor will be evaluated by piecewise-cubic
+            interpolation of values calculated in advance on a regular
+            grid. This normally speeds up calculations, but might result in a
+            loss of accuracy. This is an experimental feature: use it at your
+            own risk.
+       - interpPtsPerWavelength (int)
+            If useInterpolation is set to True, this parameter determines the
+            number of points per "effective wavelength" (defined as 2 pi /
+            abs(waveNumber)) used to construct the interpolation grid. The
+            default value (5000) is normally enough to reduce the relative or
+            absolute error, *whichever is smaller*, below 100 * machine
+            precision. If useInterpolation is set to False, this parameter is
+            ignored.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
+    return _constructSyntheticModifiedHelmholtzOperator(
+        "modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator",
+        context, domain, range, dualToRange,
+        internalTrialSpace, internalTestSpace,
+        waveNumber, label, useInterpolation, interpPtsPerWavelength)
 
 _constructMaxwellOperator = _constructHelmholtzOperator
 

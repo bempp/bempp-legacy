@@ -21,18 +21,14 @@
 #ifndef bempp_helmholtz_3d_hypersingular_boundaryoperator_hpp
 #define bempp_helmholtz_3d_hypersingular_boundaryoperator_hpp
 
-#include "../common/scalar_traits.hpp"
 #include "boundary_operator.hpp"
 #include "helmholtz_3d_operators_common.hpp"
 #include "symmetry.hpp"
 
+#include "../common/scalar_traits.hpp"
+
 namespace Bempp
 {
-
-/** \cond PRIVATE */
-template <typename BasisFunctionType>
-struct Helmholtz3dHypersingularBoundaryOperatorImpl;
-/** \endcond */
 
 /** \brief Construct a BoundaryOperator object representing the hypersingular
  *  boundary operator associated with the Helmholtz equation in 3D.
@@ -87,12 +83,83 @@ helmholtz3dHypersingularBoundaryOperator(
         bool useInterpolation = false,
         int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
 
-/** \brief Construct a "synthetic" representation of the hypersingular boundary
- *  operator associated with the Helmholtz equation in 3D.
+/** \brief Construct a "synthetic" representation of the the hypersingular
+ *  boundary operator associated with the Helmholtz equation in 3D.
  *
- *  \todo Write documentation. In the meantime, see the documentation of
- *  laplace3dSyntheticSingleLayerBoundaryOperator and
- *  SyntheticIntegralOperator. */
+ *  This function creates a hypersingular Helmholtz boundary operator
+ *  \f$\mathcal A\f$ whose weak form is stored as
+ *
+ *  \[
+ *     A = \sum_{\alpha=1}^3 P_\alpha A_{\textrm{d}} Q_\alpha -
+ *         k^2 \sum_{\alpha=1}^3 R_\alpha A_{\textrm{d}} S_\alpha,
+ *  \]
+ *
+ *  where:
+ *
+ *  - \f$A_{\textrm{d}}\f$ is the weak form of the single-layer Helmholtz
+ *    boundary operator discretised with the <em>discontinuous</em> test and
+ *    trial function spaces passed in the parameters \p internalTestSpace and \p
+ *    internalTrialSpace;
+ *
+ *  - \f$P_\alpha\f$ is the sparse matrix whose transpose represents the
+ *    \f$\alpha\f$th component of the surface curl of the basis functions of \p
+ *    dualToRange in the basis of \p internalTestSpace;
+ *
+ *  - \f$Q_alpha\f$ is the sparse matrix representing the
+ *    \f$\alpha\f$th component of the surface curl of the basis functions of \p
+ *    domain in the basis of \p internalTrialSpace;
+ *
+ *  - \f$k\f$ is the wave number
+ *
+ *  - \f$R_\alpha\f$ is the sparse matrix whose transpose represents the basis
+ *    functions of \p dualToRange, multiplied by the \f$\alpha\f$th component of
+ *    the local vector normal to the surface on which functions from \p
+ *    dualToRange live, in the basis of \p internalTestSpace;
+ *
+ *  - \f$S_alpha\f$ is the sparse matrix representing the basis functions of \p
+ *    domain, multiplied by the \f$\alpha\f$th component of the local vector
+ *    normal to the surface on which functions from \p domain live, in the basis
+ *    of \p internalTrialSpace.
+ *
+ *  The discrete weak form of this operator is usually assembled faster than
+ *  that of the "standard" operator created by
+ *  helmholtz3dHypersingularBoundaryOperator() (ACA is faster for operators
+ *  discretised with discontinuous spaces), but uses up more memory. In
+ *  addition, multiplication of the discrete weak form of this operator by a
+ *  vector is approximately three times slower than for the discrete weak form
+ *  of the "standard" operator.
+ *
+ *  See the documentation of SyntheticIntegralOperator for more information
+ *  about the concept of synthetic operators.
+ *
+ *  \param[in] context
+ *    A Context object that will be used to build the weak form of the
+ *    boundary operator when necessary.
+ *  \param[in] domain
+ *    Function space being the domain of the boundary operator.
+ *  \param[in] range
+ *    Function space being the range of the boundary operator.
+ *  \param[in] dualToRange
+ *    Function space dual to the the range of the boundary operator.
+ *  \param[in] internalTrialSpace
+ *    Trial function space used in the discretisation of \f$\mathcal A\f$ to
+ *    \f$A_{\textrm{d}}\f$. It must be a discontinuous space, with basis
+ *    functions extending over single elements only.
+ *  \param[in] internalTestSpace
+ *    Test function space used in the discretisation of \f$\mathcal A\f$ to
+ *    \f$A_{\textrm{d}}\f$. It must be a discontinuous space, with basis
+ *    functions extending over single elements only.
+ *  \param[in] label
+ *    Textual label of the operator. If empty, a unique label is generated
+ *    automatically.
+ *  \param[in] symmetry
+ *    Symmetry of the weak form of the operator. Can be any combination of the
+ *    flags defined in the enumeration type Symmetry.
+ *
+ *  None of the shared pointers may be null. \p internalTestSpace must be
+ *  defined on the same grid as \p range and \p dualToRange, while \p
+ *  internalTrialSpace must be defined on the same grid as \p domain; otherwise
+ *  an exception is thrown. */
 template <typename BasisFunctionType>
 BoundaryOperator<BasisFunctionType,
 typename ScalarTraits<BasisFunctionType>::ComplexType>
