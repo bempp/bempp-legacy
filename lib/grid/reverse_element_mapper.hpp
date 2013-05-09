@@ -32,7 +32,8 @@ namespace Bempp
 template <int codim> class EntityPointer;
 class GridView;
 
-/** \brief Mapping from codim-0 entity indices to entity pointers. */
+/** \ingroup grid
+    \brief Mapping from codim-0 entity indices to entity pointers. */
 class ReverseElementMapper
 {
     template <typename DuneGridView> friend class ConcreteGridView;

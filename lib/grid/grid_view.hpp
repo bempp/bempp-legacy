@@ -43,7 +43,8 @@ class ReverseElementMapper;
 class VtkWriter;
 /** \endcond */
 
-/** \brief Abstract wrapper of a grid view */
+/** \ingroup grid
+    \brief Abstract wrapper of a grid view */
 class GridView
 {
 public:

@@ -23,7 +23,8 @@
 
 namespace Bempp {
 
-/** \brief %Grid parameters.
+/** \ingroup grid
+    \brief %Grid parameters.
 
   This structure is used to specify parameters of grid constructed by GridFactory.
   */

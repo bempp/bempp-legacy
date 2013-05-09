@@ -40,7 +40,8 @@ template<int codim> class EntityPointer;
 template<int codim> class EntityIterator;
 /** \endcond */
 
-/** \brief Abstract wrapper of an entity of codimension \p codim. */
+/** \ingroup grid
+    \brief Abstract wrapper of an entity of codimension \p codim. */
 template<int codim>
 class Entity
 {
@@ -74,7 +75,8 @@ public:
     virtual GeometryType type() const = 0;
 };
 
-/** \brief Abstract wrapper of an entity of codimension 0. */
+/** \ingroup grid
+    \brief Abstract wrapper of an entity of codimension 0. */
 template<>
 class Entity<0>
 {

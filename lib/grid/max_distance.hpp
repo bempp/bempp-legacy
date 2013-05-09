@@ -23,12 +23,15 @@
 
 #include "../common/common.hpp"
 
+/** \file . */
+
 namespace Bempp
 {
 
 class Grid;
 
-/** \brief Return an upper bound on the maximum distance between elements
+/** \relates Grid
+ *  \brief Return an upper bound on the maximum distance between elements
  *  belonging to two grids.
  *
  *  \note The returned number is an *upper bound* rather than an exact value

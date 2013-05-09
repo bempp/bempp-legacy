@@ -41,7 +41,8 @@ template <typename CoordinateType> struct GeometricalData;
 namespace Bempp
 {
 
-/** \brief Abstract wrapper of a geometry. */
+/** \ingroup grid
+    \brief Abstract wrapper of a geometry. */
 class Geometry
 {
 public:
