@@ -869,21 +869,6 @@ std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
 AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
-        const std::vector<LocalAssemblerForBoundaryOperators*>& localAssemblers,
-        const std::vector<const DiscreteBndOp*>& sparseTermsToAdd,
-        const std::vector<ResultType>& denseTermMultipliers,
-        const std::vector<ResultType>& sparseTermMultipliers,
-        const Context<BasisFunctionType, ResultType>& context,
-        int symmetry)
-{
-    throw std::runtime_error("Old variant (1) of assembleDetachedWeakForm() used");
-}
-
-template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
-AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace,
         LocalAssemblerForBoundaryOperators& localAssembler,
         LocalAssemblerForBoundaryOperators& localAssemblerForAdmissibleBlocks,
         const Context<BasisFunctionType, ResultType>& context,
@@ -902,18 +887,6 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                 localAssemblersForAdmissibleBlocks,
                 sparseTermsToAdd, denseTermsMultipliers, sparseTermsMultipliers,
                 context, symmetry);
-}
-
-template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
-AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace,
-        LocalAssemblerForBoundaryOperators& localAssembler,
-        const Context<BasisFunctionType, ResultType>& context,
-        int symmetry)
-{
-    throw std::runtime_error("Old variant (2) of assembleDetachedWeakForm() used");
 }
 
 template <typename BasisFunctionType, typename ResultType>

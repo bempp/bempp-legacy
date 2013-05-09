@@ -430,6 +430,7 @@ assembleJointOperatorWeakFormInAcaMode(
                     assembleDetachedWeakForm(
                         *this->dualToRange(), *this->domain(),
                         stlAssemblersForNonlocalTerms,
+                        stlAssemblersForNonlocalTerms,
                         stlSparseDiscreteTerms,
                         nonlocalOpWeights,
                         sparseTermMultipliers,

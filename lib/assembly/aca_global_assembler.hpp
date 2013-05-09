@@ -85,26 +85,8 @@ public:
     static std::auto_ptr<DiscreteBndOp> assembleDetachedWeakForm(
             const Space<BasisFunctionType>& testSpace,
             const Space<BasisFunctionType>& trialSpace,
-            const std::vector<LocalAssemblerForBoundaryOperators*>& localAssemblers,
-            const std::vector<const DiscreteBndOp*>& sparseTermsToAdd,
-            const std::vector<ResultType>& denseTermMultipliers,
-            const std::vector<ResultType>& sparseTermMultipliers,
-            const Context<BasisFunctionType, ResultType>& context,
-            int symmetry);
-
-    static std::auto_ptr<DiscreteBndOp> assembleDetachedWeakForm(
-            const Space<BasisFunctionType>& testSpace,
-            const Space<BasisFunctionType>& trialSpace,
             LocalAssemblerForBoundaryOperators& localAssembler,
             LocalAssemblerForBoundaryOperators& localAssemblerForAdmissibleBlocks,
-            const Context<BasisFunctionType, ResultType>& context,
-            int symmetry); // used to be "bool symmetric"; fortunately "true"
-                           // is converted to 1 == SYMMETRIC
-
-    static std::auto_ptr<DiscreteBndOp> assembleDetachedWeakForm(
-            const Space<BasisFunctionType>& testSpace,
-            const Space<BasisFunctionType>& trialSpace,
-            LocalAssemblerForBoundaryOperators& localAssembler,
             const Context<BasisFunctionType, ResultType>& context,
             int symmetry); // used to be "bool symmetric"; fortunately "true"
                            // is converted to 1 == SYMMETRIC
