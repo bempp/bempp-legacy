@@ -31,21 +31,24 @@
 #include "assembly/laplace_3d_double_layer_boundary_operator.hpp"
 #include "assembly/laplace_3d_hypersingular_boundary_operator.hpp"
 #include "assembly/laplace_3d_single_layer_boundary_operator.hpp"
+#include "assembly/helmholtz_3d_hypersingular_boundary_operator.hpp"
+#include "assembly/maxwell_3d_single_layer_boundary_operator.hpp"
 #include "assembly/modified_helmholtz_3d_adjoint_double_layer_boundary_operator.hpp"
 #include "assembly/modified_helmholtz_3d_double_layer_boundary_operator.hpp"
 #include "assembly/modified_helmholtz_3d_single_layer_boundary_operator.hpp"
 #include "assembly/modified_helmholtz_3d_hypersingular_boundary_operator.hpp"
-#include "assembly/helmholtz_3d_hypersingular_boundary_operator.hpp"
 #include "assembly/numerical_quadrature_strategy.hpp"
+
 #include "grid/grid_factory.hpp"
+
 #include "space/piecewise_constant_scalar_space.hpp"
 #include "space/piecewise_linear_continuous_scalar_space.hpp"
 #include "space/piecewise_linear_discontinuous_scalar_space.hpp"
+#include "space/raviart_thomas_0_vector_space.hpp"
 
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/type_traits/is_complex.hpp>
-#include "grid/grid.hpp"
 
 using namespace Bempp;
 
@@ -883,6 +886,120 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_modified_helmholtz_hypersingular_
             modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator<BFT, RT, RT>(
                 contextAca, pwiseLinears, pwiseConstants, pwiseLinears,
                 pwiseDLinears, pwiseDLinears2, waveNumber);
+    arma::Mat<RT> weakFormAca = opAca.weakForm()->asMatrix();
+
+    BOOST_CHECK(check_arrays_are_close<ValueType>(
+                    weakFormDense, weakFormAca, 2. * acaOptions.eps));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_maxwell_single_layer_operator_agrees_with_dense_assembly_in_asymmetric_case,
+                              ValueType, complex_result_types)
+{
+    typedef ValueType RT;
+    typedef typename ScalarTraits<ValueType>::RealType RealType;
+    typedef RealType BFT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+
+    RT waveNumber = initWaveNumber<RT>();
+
+    shared_ptr<Space<BFT> > vectorPwiseLinears(
+        new RaviartThomas0VectorSpace<BFT>(grid));
+    shared_ptr<Space<BFT> > pwiseDLinears(
+        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
+    shared_ptr<Space<BFT> > pwiseDLinears2(
+        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
+
+    AccuracyOptions accuracyOptions;
+    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
+    accuracyOptions.singleRegular.setRelativeQuadratureOrder(2);
+    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
+                new NumericalQuadratureStrategy<BFT, RT>(accuracyOptions));
+
+    AssemblyOptions assemblyOptionsDense;
+    assemblyOptionsDense.setVerbosityLevel(VerbosityLevel::LOW);
+    shared_ptr<Context<BFT, RT> > contextDense(
+        new Context<BFT, RT>(quadStrategy, assemblyOptionsDense));
+
+    BoundaryOperator<BFT, RT> opDense =
+            maxwell3dSingleLayerBoundaryOperator<BFT>(
+                contextDense,
+                vectorPwiseLinears, vectorPwiseLinears, vectorPwiseLinears,
+                waveNumber);
+    arma::Mat<RT> weakFormDense = opDense.weakForm()->asMatrix();
+
+    AssemblyOptions assemblyOptionsAca;
+    assemblyOptionsAca.setVerbosityLevel(VerbosityLevel::LOW);
+    AcaOptions acaOptions;
+    assemblyOptionsAca.switchToAcaMode(acaOptions);
+    shared_ptr<Context<BFT, RT> > contextAca(
+        new Context<BFT, RT>(quadStrategy, assemblyOptionsAca));
+
+    // Internal domain different from dualToRange
+    BoundaryOperator<BFT, RT> opAca =
+            maxwell3dSyntheticSingleLayerBoundaryOperator<BFT>(
+                contextAca,
+                vectorPwiseLinears, vectorPwiseLinears, vectorPwiseLinears,
+                pwiseDLinears, pwiseDLinears2, waveNumber);
+    arma::Mat<RT> weakFormAca = opAca.weakForm()->asMatrix();
+
+    BOOST_CHECK(check_arrays_are_close<ValueType>(
+                    weakFormDense, weakFormAca, 2. * acaOptions.eps));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_maxwell_single_layer_operator_agrees_with_dense_assembly_in_symmetric_case,
+                              ValueType, complex_result_types)
+{
+    typedef ValueType RT;
+    typedef typename ScalarTraits<ValueType>::RealType RealType;
+    typedef RealType BFT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+
+    RT waveNumber = initWaveNumber<RT>();
+
+    shared_ptr<Space<BFT> > vectorPwiseLinears(
+        new RaviartThomas0VectorSpace<BFT>(grid));
+    shared_ptr<Space<BFT> > pwiseDLinears(
+        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
+
+    AccuracyOptions accuracyOptions;
+    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
+    accuracyOptions.singleRegular.setRelativeQuadratureOrder(2);
+    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
+                new NumericalQuadratureStrategy<BFT, RT>(accuracyOptions));
+
+    AssemblyOptions assemblyOptionsDense;
+    assemblyOptionsDense.setVerbosityLevel(VerbosityLevel::LOW);
+    shared_ptr<Context<BFT, RT> > contextDense(
+        new Context<BFT, RT>(quadStrategy, assemblyOptionsDense));
+
+    BoundaryOperator<BFT, RT> opDense =
+            maxwell3dSingleLayerBoundaryOperator<BFT>(
+                contextDense,
+                vectorPwiseLinears, vectorPwiseLinears, vectorPwiseLinears,
+                waveNumber);
+    arma::Mat<RT> weakFormDense = opDense.weakForm()->asMatrix();
+
+    AssemblyOptions assemblyOptionsAca;
+    assemblyOptionsAca.setVerbosityLevel(VerbosityLevel::LOW);
+    AcaOptions acaOptions;
+    assemblyOptionsAca.switchToAcaMode(acaOptions);
+    shared_ptr<Context<BFT, RT> > contextAca(
+        new Context<BFT, RT>(quadStrategy, assemblyOptionsAca));
+
+    // Internal domain different from dualToRange
+    BoundaryOperator<BFT, RT> opAca =
+            maxwell3dSyntheticSingleLayerBoundaryOperator<BFT>(
+                contextAca,
+                vectorPwiseLinears, vectorPwiseLinears, vectorPwiseLinears,
+                pwiseDLinears, pwiseDLinears, waveNumber);
     arma::Mat<RT> weakFormAca = opAca.weakForm()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
