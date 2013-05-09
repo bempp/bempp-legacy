@@ -104,7 +104,7 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-BoundaryOperator<BasisFunctionType,ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
 modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
         const shared_ptr<const Context<BasisFunctionType,ResultType> >& context,
         const shared_ptr<const Space<BasisFunctionType> >& domain,
