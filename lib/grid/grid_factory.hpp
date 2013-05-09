@@ -35,7 +35,8 @@ namespace Bempp
 class Grid;
 /** \endcond */
 
-/** \brief %Grid factory.
+/** \ingroup grid
+    \brief %Grid factory.
 
   This class provides static member functions to construct grids on the fly and to import grids from
   existing files.

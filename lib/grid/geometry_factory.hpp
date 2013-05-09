@@ -32,7 +32,8 @@
 namespace Bempp
 {
 
-/** \brief Abstract geometry factory. */
+/** \ingroup grid
+    \brief Abstract geometry factory. */
 class GeometryFactory
 {
 public:

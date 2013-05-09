@@ -30,6 +30,7 @@ template<int codim> class Entity;
 /** \endcond */
 
 /**
+ \ingroup grid
  \brief Abstract base class for an object providing read-only access to an
  entity of codimension \p codim.
 
