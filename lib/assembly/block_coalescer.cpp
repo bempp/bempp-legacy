@@ -27,7 +27,6 @@ void getLeafBlclusters(blcluster* bc, blcluster** leafClusters, unsigned leafCou
     if (!bc)
         throw std::runtime_error("bc null");
     if (bc->isleaf()) {
-        // std::cout << bc->getidx() << " " << leafCount << std::endl;
         if (bc->getidx() >= leafCount)
             throw std::runtime_error("idx too large");
         assert(bc->getidx() < leafCount);
@@ -50,8 +49,6 @@ BlockCoalescer<ValueType>::BlockCoalescer(
         const boost::shared_array<AhmedMblock*>& blocks,
         const boost::shared_array<AhmedMblock*>& decomposedBlocks,
         const AcaOptions& acaOptions) :
-//    m_blclusters(blclusters),
-//    m_decomposedBlclusters(decomposedBlclusters),
     m_permutedTestGlobalToFlatLocalMap(permutedTestGlobalToFlatLocalMap),
     m_permutedTrialGlobalToFlatLocalMap(permutedTrialGlobalToFlatLocalMap),
     m_blocks(blocks),
@@ -59,7 +56,6 @@ BlockCoalescer<ValueType>::BlockCoalescer(
     m_acaOptions(acaOptions)
 {
     unsigned blclusterCount = blclustersRoot->nleaves();
-//    std::cout << "bleaves: " << blclustersRoot->nleaves() << " " << ;
     if (decomposedBlclustersRoot->nleaves() != blclusterCount)
         throw std::runtime_error("BlockCoalescer::BlockCoalescer(): "
                                  "cluster trees do not match");
