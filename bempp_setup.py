@@ -328,13 +328,13 @@ if __name__ == "__main__":
             else:
                 raise Exception("Library name not recognized.")
     except Exception, e:
-        print "=" * 78, "\nBEM++ INSTALLATION FAILED WITH ERROR MESSAGE: \n"+ str(e)
+        print "=" * 78, "\nERROR: BEM++ INSTALLATION FAILED WITH ERROR MESSAGE: \n"+ str(e)
         try:
             error_log = open(root+"/bempp_setup.err", "w")
             error_log.write(traceback.format_exc())
             error_log.close()
             print ("-" * 78 + "\n"
-                   "Note: A stack trace of the BEM++ installer, providing detailed "
+                   "A stack trace of the BEM++ installer, providing detailed "
                    "information\non where the problem occured, has been written "
                    "to the file 'bempp_setup.err'.\nPlease include this "
                    "file if you report the problem to BEM++ developers.")
