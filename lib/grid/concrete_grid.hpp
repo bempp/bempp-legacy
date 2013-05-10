@@ -108,10 +108,6 @@ public:
         return m_dune_grid->maxLevel();
     }
 
-    virtual size_t boundarySegmentCount() const {
-        return m_dune_grid->numBoundarySegments();
-    }
-
     /** @}
     @name Views
     @{ */

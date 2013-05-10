@@ -1,15 +1,15 @@
---- ./Teuchos_LAPACK.hpp	2012-10-25 17:53:00.000000000 +0200
-+++ ./Teuchos_LAPACK.new.hpp	2013-04-12 18:57:39.000000000 +0200
-@@ -351,7 +351,7 @@
-         Optionally, it can compute a balancing transformation to improve the conditioning of the eigenvalues and eigenvectors.
-         \note (This is the function is only defined for \c ScalarType = \c float or \c double.)
+--- ./Teuchos_LAPACK.hpp	2013-04-25 18:15:35.000000000 +0100
++++ ./Teuchos_LAPACK.new.hpp	2013-04-29 10:41:10.000000000 +0100
+@@ -354,7 +354,7 @@
+ 	Optionally, it can compute a balancing transformation to improve the conditioning of the eigenvalues and eigenvectors.
+ 	\note (This is the function is only defined for \c ScalarType = \c float or \c double.)
      */
 -    void GGEVX(const char BALANC, const char JOBVL, const char JOBVR, const char SENSE, const OrdinalType n, ScalarType* A, const OrdinalType lda, ScalarType* B, const OrdinalType ldb, MagnitudeType* ALPHAR, MagnitudeType* ALPHAI, ScalarType* BETA, ScalarType* VL, const OrdinalType ldvl, ScalarType* VR, const OrdinalType ldvr, OrdinalType* ilo, OrdinalType* ihi, MagnitudeType* LSCALE, MagnitudeType* RSCALE, MagnitudeType* abnrm, MagnitudeType* bbnrm, MagnitudeType* RCONDE, MagnitudeType* RCONDV, ScalarType* WORK, const OrdinalType lwork, OrdinalType* IWORK, OrdinalType* BWORK, OrdinalType* info) const;
 +    void GGEVX(const char BALANC, const char JOBVL, const char JOBVR, const char SENSE, const OrdinalType n, ScalarType* A, const OrdinalType lda, ScalarType* B, const OrdinalType ldb, MagnitudeType* ALPHAR, MagnitudeType* ALPHAI, ScalarType* BETA, ScalarType* VL, const OrdinalType ldvl, ScalarType* VR, const OrdinalType ldvr, OrdinalType* ilo, OrdinalType* ihi, MagnitudeType* LSCALEVAR, MagnitudeType* RSCALE, MagnitudeType* abnrm, MagnitudeType* bbnrm, MagnitudeType* RCONDE, MagnitudeType* RCONDV, ScalarType* WORK, const OrdinalType lwork, OrdinalType* IWORK, OrdinalType* BWORK, OrdinalType* info) const;
  
      /*! Computes for a pair of \c n by \c n nonsymmetric matrices (\c A,\c B) the generalized eigenvalues, and optionally, the left and/or right generalized eigenvectors.
         \note (This is the function is only defined for \c ScalarType = \c float or \c double.)
-@@ -823,7 +823,7 @@
+@@ -1089,7 +1089,7 @@
    }
  
    template<typename OrdinalType, typename ScalarType>
@@ -18,7 +18,7 @@
    {
      UndefinedLAPACKRoutine<ScalarType>::notDefined();
    }
-@@ -1023,7 +1023,7 @@
+@@ -1290,7 +1290,7 @@
      void GEES(const char JOBVS, const int n, float* A, const int lda, int* sdim, float* WR, float* WI, float* VS, const int ldvs, float* WORK, const int lwork, float* RWORK, int* BWORK, int* info) const;
      void GEEV(const char JOBVL, const char JOBVR, const int n, float* A, const int lda, float* WR, float* WI, float* VL, const int ldvl, float* VR, const int ldvr, float* WORK, const int lwork, int* info) const;
      void GEEVX(const char BALANC, const char JOBVL, const char JOBVR, const char SENSE, const int n, float* A, const int lda, float* WR, float* WI, float* VL, const int ldvl, float* VR, const int ldvr, int* ilo, int* ihi, float* SCALE, float* abnrm, float* RCONDE, float* RCONDV, float* WORK, const int lwork, int* IWORK, int* info) const;
@@ -27,7 +27,7 @@
      void GGEV(const char JOBVL, const char JOBVR, const int n, float *A, const int lda, float *B, const int ldb, float *ALPHAR, float *ALPHAI, float *BETA, float *VL, const int ldvl, float *VR, const int ldvr, float *WORK, const int lwork, int *info) const;
  
      // SVD routine
-@@ -1139,7 +1139,7 @@
+@@ -1407,7 +1407,7 @@
      void GEES(const char JOBVS, const int n, double* A, const int lda, int* sdim, double* WR, double* WI, double* VS, const int ldvs, double* WORK, const int lwork, double* RWORK, int* BWORK, int* info) const;
      void GEEV(const char JOBVL, const char JOBVR, const int n, double* A, const int lda, double* WR, double* WI, double* VL, const int ldvl, double* VR, const int ldvr, double* WORK, const int lwork, int* info) const;
      void GEEVX(const char BALANC, const char JOBVL, const char JOBVR, const char SENSE, const int n, double* A, const int lda, double* WR, double* WI, double* VL, const int ldvl, double* VR, const int ldvr, int* ilo, int* ihi, double* SCALE, double* abnrm, double* RCONDE, double* RCONDV, double* WORK, const int lwork, int* IWORK, int* info) const;
@@ -36,7 +36,7 @@
      void GGEV(const char JOBVL, const char JOBVR, const int n, double *A, const int lda, double *B, const int ldb, double *ALPHAR, double *ALPHAI, double *BETA, double *VL, const int ldvl, double *VR, const int ldvr, double *WORK, const int lwork, int *info) const;
  
  
-@@ -1253,7 +1253,7 @@
+@@ -1522,7 +1522,7 @@
      void GEES(const char JOBVS, const int n, std::complex<float>* A, const int lda, int* sdim, float* WR, float* WI, std::complex<float>* VS, const int ldvs, std::complex<float>* WORK, const int lwork, float* RWORK, int* BWORK, int* info) const;
      void GEEV(const char JOBVL, const char JOBVR, const int n, std::complex<float>* A, const int lda, std::complex<float>* W, std::complex<float>* VL, const int ldvl, std::complex<float>* VR, const int ldvr, std::complex<float>* WORK, const int lwork, float* RWORK, int* info) const;
      void GEEVX(const char BALANC, const char JOBVL, const char JOBVR, const char SENSE, const int n, std::complex<float>* A, const int lda, std::complex<float>* W, std::complex<float>* VL, const int ldvl, std::complex<float>* VR, const int ldvr, int* ilo, int* ihi, float* SCALE, float* abnrm, float* RCONDE, float* RCONDV, std::complex<float>* WORK, const int lwork, float* RWORK, int* info) const;
@@ -45,7 +45,7 @@
      void GGEV(const char JOBVL, const char JOBVR, const int n, std::complex<float> *A, const int lda, std::complex<float> *B, const int ldb, std::complex<float>* ALPHA, std::complex<float>* BETA, std::complex<float>* VL, const int ldvl, std::complex<float>* VR, const int ldvr, std::complex<float> *WORK, const int lwork, float* RWORK, int* info) const;
  
      // SVD routine
-@@ -1352,7 +1352,7 @@
+@@ -1622,7 +1622,7 @@
      void GEES(const char JOBVS, const int n, std::complex<double>* A, const int lda, int* sdim, double* WR, double* WI, std::complex<double>* VS, const int ldvs, std::complex<double>* WORK, const int lwork, double* RWORK, int* BWORK, int* info) const;
      void GEEV(const char JOBVL, const char JOBVR, const int n, std::complex<double>* A, const int lda, std::complex<double>* W, std::complex<double>* VL, const int ldvl, std::complex<double>* VR, const int ldvr, std::complex<double>* WORK, const int lwork, double* RWORK, int* info) const;
      void GEEVX(const char BALANC, const char JOBVL, const char JOBVR, const char SENSE, const int n, std::complex<double>* A, const int lda, std::complex<double>* W, std::complex<double>* VL, const int ldvl, std::complex<double>* VR, const int ldvr, int* ilo, int* ihi, double* SCALE, double* abnrm, double* RCONDE, double* RCONDV, std::complex<double>* WORK, const int lwork, double* RWORK, int* info) const;
