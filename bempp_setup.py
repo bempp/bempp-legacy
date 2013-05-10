@@ -23,7 +23,7 @@
 import os, sys, traceback
 sys.path.append("installer")
 
-from py_modules.tools import writeOptions, setDefaultConfigOption, pythonInfo, checkCreateDir, testBlas, testLapack, cleanUp, checkDeleteFile, checkInstallUpdates, installUpdates, normalizePath
+from py_modules.tools import writeOptions, setDefaultConfigOption, pythonInfo, checkCreateDir, testBlas, testLapack, cleanUp, checkDeleteFile, checkInstallUpdates, installUpdates, normalizePath, commonPath
 from ConfigParser import ConfigParser
 from optparse import OptionParser
 
@@ -143,22 +143,24 @@ def prepare(root,config):
     build_dir = normalizePath(config, config.get('Main','build_dir'))
 
     install_dir = prefix + "/bempp"
-    if (build_dir.startswith(install_dir) or
-        install_dir.startswith(build_dir)):
+    if (commonPath(install_dir, build_dir) == install_dir or
+        commonPath(install_dir, build_dir) == build_dir):
         raise Exception(
             "The directory in which BEM++ is built must not be identical to\n"
             "the BEM++ installation directory and neither can lie within the\n"
             "other.\n"
             "Current settings:\n"
             "Build directory: " + build_dir + "\n"
-            "Installation directory: " + install_dir)
-    if (root.startswith(install_dir)):
+            "Installation directory: " + install_dir + "\n"
+            "Edit your configuration file and try again.")
+    if commonPath(install_dir, root) == install_dir:
         raise Exception(
             "The installation directory of BEM++ must not be identical with\n"
             "the BEM++ source directory or contain it.\n"
             "Current settings:\n"
             "Source directory: " + root + "\n"
-            "Installation directory: " + install_dir)
+            "Installation directory: " + install_dir + "\n"
+            "Edit your configuration file and try again.")
     
     # Set build directories for BEM++ and its dependencies
     config.set('Main','build_dir',build_dir)

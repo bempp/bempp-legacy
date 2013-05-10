@@ -422,14 +422,34 @@ def installUpdates(root,config):
         raise Exception("make failed\n")
 
 
+# Code by Doncho Gunchev,
+# http://code.activestate.com/recipes/302594-another-relative-filepath-script/
 
+def commonPath(a, b):
+    """Returns the longest path common to paths a and b.
 
+    Unlike the strange commonprefix:
+    - this returns valid path
+    - accepts only two arguments
+    """
+    from os.path import dirname, normcase, normpath
 
+    a = normpath(normcase(a))
+    b = normpath(normcase(b))
 
+    if a == b:
+        return a
 
+    while len(a) > 0:
+        if a == b:
+            return a
 
+        if len(a) > len(b):
+            a = dirname(a)
+        else:
+            b = dirname(b)
 
-
+    return None
 
 
 
