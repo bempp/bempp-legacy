@@ -51,7 +51,7 @@ namespace Bempp
 {
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-BoundaryOperator<BasisFunctionType,ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
 modifiedHelmholtz3dHypersingularBoundaryOperator(
         const shared_ptr<const Context<BasisFunctionType,ResultType> >& context,
         const shared_ptr<const Space<BasisFunctionType> >& domain,
@@ -66,40 +66,55 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
     typedef Fiber::ModifiedHelmholtz3dHypersingularKernelFunctor<KernelType>
-    NoninterpolatedKernelFunctor;
+            NoninterpolatedKernelFunctor;
     typedef Fiber::ModifiedHelmholtz3dHypersingularKernelInterpolatedFunctor<KernelType>
-    InterpolatedKernelFunctor;
+            InterpolatedKernelFunctor;
     typedef Fiber::ModifiedHelmholtz3dHypersingularTransformationFunctor<CoordinateType>
-    TransformationFunctor;
+            TransformationFunctor;
     typedef Fiber::ModifiedHelmholtz3dHypersingularIntegrandFunctor2<
-    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+            BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
 
-    if (!domain || !range || !dualToRange)
-        throw std::invalid_argument(
-                "modifiedHelmholtz3dHypersingularBoundaryOperator(): "
-                "domain, range and dualToRange must not be null");
+    typedef Fiber::ModifiedHelmholtz3dHypersingularOffDiagonalInterpolatedKernelFunctor<KernelType>
+            OffDiagonalInterpolatedKernelFunctor;
+    typedef Fiber::ModifiedHelmholtz3dHypersingularOffDiagonalKernelFunctor<KernelType>
+            OffDiagonalNoninterpolatedKernelFunctor;
+    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
+            OffDiagonalTransformationFunctor;
+    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
+            BasisFunctionType, KernelType, ResultType>
+            OffDiagonalIntegrandFunctor;
 
-    typedef GeneralElementarySingularIntegralOperator<
+    CoordinateType maxDistance_ =
+            static_cast<CoordinateType>(1.1) *
+            maxDistance(*domain->grid(), *dualToRange->grid());
+
+    typedef GeneralHypersingularIntegralOperator<
             BasisFunctionType, KernelType, ResultType> Op;
     shared_ptr<Op> newOp;
     if (useInterpolation)
         newOp.reset(new Op(
                         domain, range, dualToRange, label, symmetry,
                         InterpolatedKernelFunctor(
-                            waveNumber,
-                            1.1 * maxDistance(*domain->grid(), *dualToRange->grid()),
-                            interpPtsPerWavelength),
+                            waveNumber, maxDistance_, interpPtsPerWavelength),
                         TransformationFunctor(),
                         TransformationFunctor(),
-                        IntegrandFunctor()));
+                        IntegrandFunctor(),
+                        OffDiagonalInterpolatedKernelFunctor(
+                            waveNumber, maxDistance_, interpPtsPerWavelength),
+                        OffDiagonalTransformationFunctor(),
+                        OffDiagonalTransformationFunctor(),
+                        OffDiagonalIntegrandFunctor()));
     else
         newOp.reset(new Op(
                         domain, range, dualToRange, label, symmetry,
-                        NoninterpolatedKernelFunctor(
-                            waveNumber),
+                        NoninterpolatedKernelFunctor(waveNumber),
                         TransformationFunctor(),
                         TransformationFunctor(),
-                        IntegrandFunctor()));
+                        IntegrandFunctor(),
+                        OffDiagonalNoninterpolatedKernelFunctor(waveNumber),
+                        OffDiagonalTransformationFunctor(),
+                        OffDiagonalTransformationFunctor(),
+                        OffDiagonalIntegrandFunctor()));
     return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 
