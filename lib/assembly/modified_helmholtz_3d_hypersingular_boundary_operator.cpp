@@ -88,8 +88,9 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
     const size_t dimWorld = 3;
 
     BoundaryOperator<BasisFunctionType, ResultType> slp =
-            modifiedHelmholtz3dSingleLayerBoundaryOperator(
-                context, internalTrialSpace, internalTestSpace /* or whatever */,
+            modifiedHelmholtz3dSingleLayerBoundaryOperator<
+                    BasisFunctionType, KernelType, ResultType>(
+                internalContext, internalTrialSpace, internalTestSpace /* or whatever */,
                 internalTestSpace,
                 waveNumber, "(" + label + ")_internal", internalSymmetry,
                 useInterpolation, interpPtsPerWavelength);
@@ -120,7 +121,7 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
     for (size_t i = 0; i < dimWorld; ++i)
         testLocalOps[i] =
                 BoundaryOperator<BasisFunctionType, ResultType>(
-                    context, boost::make_shared<LocalOp>(
+                    internalContext, boost::make_shared<LocalOp>(
                         internalTestSpace, range, dualToRange,
                         ("(" + label + ")_test_curl_") + xyz[i], NO_SYMMETRY,
                         CurlFunctor(),
@@ -132,7 +133,7 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
         for (size_t i = 0; i < dimWorld; ++i)
             trialLocalOps[i] =
                     BoundaryOperator<BasisFunctionType, ResultType>(
-                        context, boost::make_shared<LocalOp>(
+                        internalContext, boost::make_shared<LocalOp>(
                             domain, internalTrialSpace /* or whatever */,
                             internalTrialSpace,
                             ("(" + label + ")_trial_curl_") + xyz[i], NO_SYMMETRY,
@@ -150,7 +151,7 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
     for (size_t i = 0; i < dimWorld; ++i)
         testLocalOps[i] =
                 BoundaryOperator<BasisFunctionType, ResultType>(
-                    context, boost::make_shared<LocalOp>(
+                    internalContext, boost::make_shared<LocalOp>(
                         internalTestSpace, range, dualToRange,
                         ("(" + label + ")_test_k_value_n_") + xyz[i], NO_SYMMETRY,
                         ValueTimesNormalFunctor(),
@@ -160,7 +161,7 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
         for (size_t i = 0; i < dimWorld; ++i)
             trialLocalOps[i] =
                     BoundaryOperator<BasisFunctionType, ResultType>(
-                        context, boost::make_shared<LocalOp>(
+                        internalContext, boost::make_shared<LocalOp>(
                             domain, internalTrialSpace /* or whatever */,
                             internalTrialSpace,
                             ("(" + label + ")_trial_k_value_n_") + xyz[i], NO_SYMMETRY,

@@ -103,7 +103,7 @@ maxwell3dSyntheticSingleLayerBoundaryOperator(
 
     BoundaryOperator<BasisFunctionType, ResultType> slp =
             helmholtz3dSingleLayerBoundaryOperator<BasisFunctionType>(
-                context, internalTrialSpace, internalTestSpace /* or whatever */,
+                internalContext, internalTrialSpace, internalTestSpace /* or whatever */,
                 internalTestSpace,
                 waveNumber, "(" + label + ")_internal", internalSymmetry,
                 useInterpolation, interpPtsPerWavelength);
@@ -131,7 +131,7 @@ maxwell3dSyntheticSingleLayerBoundaryOperator(
     for (size_t i = 0; i < dimWorld; ++i)
         testLocalOps[i] =
                 BoundaryOperator<BasisFunctionType, ResultType>(
-                    context, boost::make_shared<LocalOp>(
+                    internalContext, boost::make_shared<LocalOp>(
                         internalTestSpace, range, dualToRange,
                         ("(" + label + ")_test_") + xyz[i], NO_SYMMETRY,
                         VectorValueFunctor(),
@@ -143,7 +143,7 @@ maxwell3dSyntheticSingleLayerBoundaryOperator(
         for (size_t i = 0; i < dimWorld; ++i)
             trialLocalOps[i] =
                     BoundaryOperator<BasisFunctionType, ResultType>(
-                        context, boost::make_shared<LocalOp>(
+                        internalContext, boost::make_shared<LocalOp>(
                             domain, internalTrialSpace /* or whatever */,
                             internalTrialSpace,
                             ("(" + label + ")_trial_") + xyz[i], NO_SYMMETRY,
@@ -161,7 +161,7 @@ maxwell3dSyntheticSingleLayerBoundaryOperator(
     testLocalOps.resize(1);
     testLocalOps[0] =
             BoundaryOperator<BasisFunctionType, ResultType>(
-                context, boost::make_shared<LocalOp>(
+                internalContext, boost::make_shared<LocalOp>(
                     internalTestSpace, range, dualToRange,
                     ("(" + label + ")_test_div"), NO_SYMMETRY,
                     DivFunctor(),
@@ -171,7 +171,7 @@ maxwell3dSyntheticSingleLayerBoundaryOperator(
         trialLocalOps.resize(1);
         trialLocalOps[0] =
                 BoundaryOperator<BasisFunctionType, ResultType>(
-                    context, boost::make_shared<LocalOp>(
+                    internalContext, boost::make_shared<LocalOp>(
                         domain, internalTrialSpace /* or whatever */,
                         internalTrialSpace,
                         ("(" + label + ")_trial_div"), NO_SYMMETRY,
