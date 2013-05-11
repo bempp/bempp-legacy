@@ -21,6 +21,7 @@
 #include "maxwell_3d_double_layer_boundary_operator.hpp"
 
 #include "general_elementary_singular_integral_operator_imp.hpp"
+#include "sanitized_context.hpp"
 
 #include "../common/boost_make_shared_fwd.hpp"
 
@@ -59,6 +60,12 @@ maxwell3dDoubleLayerBoundaryOperator(
     typedef typename ScalarTraits<BasisFunctionType>::ComplexType ResultType;
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
+    shared_ptr<const Context<BasisFunctionType, ResultType> > usedContext = 
+        sanitizedContext(context,
+                         false, // LOCAL_ASSEMBLY is not supported
+                         false, // nor is HYBRID_ASSEMBLY
+                         "maxwell3dDoubleLayerBoundaryOperator()");
+
     typedef Fiber::ModifiedMaxwell3dDoubleLayerOperatorsKernelFunctor<KernelType>
         KernelFunctor;
     typedef Fiber::ModifiedMaxwell3dDoubleLayerOperatorsKernelInterpolatedFunctor<KernelType>
@@ -72,7 +79,7 @@ maxwell3dDoubleLayerBoundaryOperator(
             BasisFunctionType, KernelType, ResultType> Op;
     if (useInterpolation)
         return BoundaryOperator<BasisFunctionType, ResultType>(
-                context, boost::make_shared<Op>(
+                usedContext, boost::make_shared<Op>(
                     domain, range, dualToRange, label, symmetry,
                     KernelInterpolatedFunctor(waveNumber / KernelType(0., 1.),
                                               1.1 * maxDistance(
@@ -84,7 +91,7 @@ maxwell3dDoubleLayerBoundaryOperator(
                     IntegrandFunctor()));
     else
         return BoundaryOperator<BasisFunctionType, ResultType>(
-                context, boost::make_shared<Op>(
+                usedContext, boost::make_shared<Op>(
                     domain, range, dualToRange, label, symmetry,
                     KernelFunctor(waveNumber / KernelType(0., 1.)),
                     TransformationFunctor(),

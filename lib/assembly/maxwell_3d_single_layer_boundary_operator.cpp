@@ -25,6 +25,7 @@
 #include "general_elementary_singular_integral_operator_imp.hpp"
 #include "general_hypersingular_integral_operator_imp.hpp"
 #include "helmholtz_3d_single_layer_boundary_operator.hpp"
+#include "sanitized_context.hpp"
 #include "synthetic_integral_operator.hpp"
 
 #include "../common/boost_make_shared_fwd.hpp"
@@ -203,18 +204,23 @@ maxwell3dSingleLayerBoundaryOperator(
         bool useInterpolation,
         int interpPtsPerWavelength)
 {
-    const AssemblyOptions& assemblyOptions = context->assemblyOptions();
-    if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
-        (!assemblyOptions.acaOptions().globalAssemblyBeforeCompression ||
-         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY))
-        return maxwell3dSyntheticSingleLayerBoundaryOperator(
-            context, domain, range, dualToRange, waveNumber, label, 
-            symmetry, useInterpolation, interpPtsPerWavelength);
-
     typedef typename ScalarTraits<BasisFunctionType>::ComplexType KernelType;
     typedef typename ScalarTraits<BasisFunctionType>::ComplexType ResultType;
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
+    shared_ptr<const Context<BasisFunctionType, ResultType> > usedContext = 
+        sanitizedContext(context,
+                         true,  // LOCAL_ASSEMBLY is supported
+                         false, // but HYBRID_ASSEMBLY is not
+                         "maxwell3dSingleLayerBoundaryOperator()");
+    
+    const AssemblyOptions& assemblyOptions = usedContext->assemblyOptions();
+    if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
+        assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY)
+        return maxwell3dSyntheticSingleLayerBoundaryOperator(
+            context, domain, range, dualToRange, waveNumber, label, 
+            symmetry, useInterpolation, interpPtsPerWavelength);
+                
     typedef Fiber::ModifiedMaxwell3dSingleLayerBoundaryOperatorKernelFunctor<KernelType>
         KernelFunctor;
     typedef Fiber::ModifiedMaxwell3dSingleLayerBoundaryOperatorKernelInterpolatedFunctor<KernelType>
@@ -228,7 +234,7 @@ maxwell3dSingleLayerBoundaryOperator(
             BasisFunctionType, KernelType, ResultType> Op;
     if (useInterpolation)
         return BoundaryOperator<BasisFunctionType, ResultType>(
-                context, boost::make_shared<Op>(
+                usedContext, boost::make_shared<Op>(
                     domain, range, dualToRange, label, symmetry,
                     KernelInterpolatedFunctor(waveNumber / KernelType(0., 1.),
                                               1.1 * maxDistance(
@@ -240,7 +246,7 @@ maxwell3dSingleLayerBoundaryOperator(
                     IntegrandFunctor()));
     else
         return BoundaryOperator<BasisFunctionType, ResultType>(
-                context, boost::make_shared<Op>(
+                usedContext, boost::make_shared<Op>(
                     domain, range, dualToRange, label, symmetry,
                     KernelFunctor(waveNumber / KernelType(0., 1.)),
                     TransformationFunctor(),
