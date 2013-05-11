@@ -29,8 +29,8 @@ def evalIncField(point):
 
 # Load mesh
 
-from bempp.shapes import sphere
-grid = sphere(h=.2)
+grid = createGridFactory().importGmshGrid(
+    "triangular", "../../examples/meshes/sphere-h-0.2.msh")
 
 # Create quadrature strategy
 
