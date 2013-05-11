@@ -123,7 +123,7 @@ fieldMagnitude = np.sqrt(field[0].real ** 2 + field[0].imag ** 2 +
 # Plot data
 
 from mayavi import mlab
-from bempp.visualization import plotThreePlanes,plotGrid
+from bempp.visualization2 import plotThreePlanes,plotGrid
 plotThreePlanes(evaluationPoints,fieldMagnitude)
 plotGrid(grid,representation='surface')
 mlab.show()
