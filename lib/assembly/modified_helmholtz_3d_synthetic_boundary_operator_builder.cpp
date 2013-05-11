@@ -62,7 +62,6 @@ modifiedHelmholtz3dSyntheticBoundaryOperator(
             "domain, range and dualToRange must not be null");
     AssemblyOptions internalAssemblyOptions = context->assemblyOptions();
     AcaOptions internalAcaOptions = internalAssemblyOptions.acaOptions();
-    internalAcaOptions.globalAssemblyBeforeCompression = true;
     internalAcaOptions.mode = AcaOptions::GLOBAL_ASSEMBLY;
     internalAssemblyOptions.switchToAcaMode(internalAcaOptions);
     typedef Context<BasisFunctionType, ResultType> Ctx;

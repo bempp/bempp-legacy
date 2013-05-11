@@ -53,8 +53,7 @@ modifiedHelmholtz3dDoubleLayerBoundaryOperator(
 {
     const AssemblyOptions& assemblyOptions = context->assemblyOptions();
     if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
-        (!assemblyOptions.acaOptions().globalAssemblyBeforeCompression ||
-         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY))
+         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY)
         return modifiedHelmholtz3dSyntheticBoundaryOperator(
             &modifiedHelmholtz3dDoubleLayerBoundaryOperator<
                 BasisFunctionType, KernelType, ResultType>,

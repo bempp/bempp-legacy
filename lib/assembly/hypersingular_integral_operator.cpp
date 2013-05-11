@@ -94,8 +94,8 @@ HypersingularIntegralOperator<BasisFunctionType, KernelType, ResultType>::makeAs
         std::cout << "Data collection finished." << std::endl;
 
     bool makeSeparateOffDiagonalAssembler =
-            options.assemblyMode() == AssemblyOptions::ACA &&
-            options.acaOptions().globalAssemblyBeforeCompression == false;
+        options.assemblyMode() == AssemblyOptions::ACA &&
+        options.acaOptions().mode == AcaOptions::HYBRID_ASSEMBLY;
 
     return reallyMakeAssemblers(quadStrategy,
                                 testGeometryFactory, trialGeometryFactory,

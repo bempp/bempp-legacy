@@ -69,7 +69,6 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
             "domain, range and dualToRange must not be null");
     AssemblyOptions internalAssemblyOptions = context->assemblyOptions();
     AcaOptions internalAcaOptions = internalAssemblyOptions.acaOptions();
-    internalAcaOptions.globalAssemblyBeforeCompression = true;
     internalAcaOptions.mode = AcaOptions::GLOBAL_ASSEMBLY;
     internalAssemblyOptions.switchToAcaMode(internalAcaOptions);
     typedef Context<BasisFunctionType, ResultType> Ctx;
@@ -193,8 +192,7 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
 {
     const AssemblyOptions& assemblyOptions = context->assemblyOptions();
     if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
-        (!assemblyOptions.acaOptions().globalAssemblyBeforeCompression ||
-         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY))
+         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY)
         return modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
             context, domain, range, dualToRange, waveNumber, label, 
             symmetry, useInterpolation, interpPtsPerWavelength);

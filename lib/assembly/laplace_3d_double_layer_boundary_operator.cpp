@@ -47,8 +47,7 @@ laplace3dDoubleLayerBoundaryOperator(
 {
     const AssemblyOptions& assemblyOptions = context->assemblyOptions();
     if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
-        (!assemblyOptions.acaOptions().globalAssemblyBeforeCompression ||
-         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY))
+         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY)
         return laplace3dSyntheticBoundaryOperator(
             &laplace3dDoubleLayerBoundaryOperator<BasisFunctionType, ResultType>,
             context, domain, range, dualToRange, label, symmetry, 

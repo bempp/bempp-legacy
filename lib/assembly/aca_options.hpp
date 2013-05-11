@@ -174,9 +174,11 @@ struct AcaOptions
      *
      *  \see reactionToUnsupportedMode. */
     enum ReactionToUnsupportedMode {
-        IGNORE,
+        MIN_REACTION,
+        IGNORE = MIN_REACTION,
         WARNING,
-        ERROR
+        ERROR,
+        MAX_REACTION = ERROR
     };
 
     /** \brief Action to take when an unsupported assembly mode is detected.

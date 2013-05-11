@@ -422,7 +422,8 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparse
 #ifdef WITH_AHMED
     if (options.assemblyMode() == AssemblyOptions::ACA) {
         const AcaOptions& acaOptions = options.acaOptions();
-        bool indexWithGlobalDofs = acaOptions.globalAssemblyBeforeCompression;
+        bool indexWithGlobalDofs = 
+            acaOptions.mode != AcaOptions::HYBRID_ASSEMBLY;
 
         typedef ClusterConstructionHelper<BasisFunctionType> CCH;
         shared_ptr<AhmedBemCluster> testClusterTree;

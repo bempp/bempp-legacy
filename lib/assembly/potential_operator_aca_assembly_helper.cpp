@@ -65,7 +65,7 @@ PotentialOperatorAcaAssemblyHelper(
     m_assemblers(assemblers),
     m_termMultipliers(termMultipliers),
     m_options(options),
-    m_indexWithGlobalDofs(m_options.acaOptions().globalAssemblyBeforeCompression),
+    m_indexWithGlobalDofs(m_options.acaOptions().mode != AcaOptions::HYBRID_ASSEMBLY),
     m_trialDofListsCache(new LocalDofListsCache<BasisFunctionType>(
                             m_trialSpace, m_p2oTrialDofs, m_indexWithGlobalDofs))
 {

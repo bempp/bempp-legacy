@@ -66,7 +66,7 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::WeakFormAcaAssemblyHel
     m_denseTermsMultipliers(denseTermsMultipliers),
     m_sparseTermsMultipliers(sparseTermsMultipliers),
     m_options(options),
-    m_indexWithGlobalDofs(m_options.acaOptions().globalAssemblyBeforeCompression),
+    m_indexWithGlobalDofs(m_options.acaOptions().mode != AcaOptions::HYBRID_ASSEMBLY),
     m_testDofListsCache(new LocalDofListsCache<BasisFunctionType>(
                             m_testSpace, m_p2oTestDofs, m_indexWithGlobalDofs)),
     m_trialDofListsCache(new LocalDofListsCache<BasisFunctionType>(
@@ -82,8 +82,7 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::WeakFormAcaAssemblyHel
     if (!m_indexWithGlobalDofs && !m_sparseTermsToAdd.empty())
         throw std::invalid_argument(
                 "WeakFormAcaAssemblyHelper::WeakFormAcaAssemblyHelper(): "
-                "combining sparse and dense terms with "
-                "globalAssemblyBeforeCompression set to false "
+                "combining sparse and dense terms in hybrid ACA mode "
                 "is not supported at present");
     for (size_t i = 0; i < assemblers.size(); ++i)
         if (!assemblers[i])

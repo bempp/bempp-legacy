@@ -50,8 +50,7 @@ laplace3dSingleLayerBoundaryOperator(
     boost::is_complex<BasisFunctionType>();
     const AssemblyOptions& assemblyOptions = context->assemblyOptions();
     if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
-        (!assemblyOptions.acaOptions().globalAssemblyBeforeCompression ||
-         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY))
+         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY)
         return laplace3dSyntheticBoundaryOperator(
             &laplace3dSingleLayerBoundaryOperator<BasisFunctionType, ResultType>,
             context, domain, range, dualToRange, label, symmetry, 

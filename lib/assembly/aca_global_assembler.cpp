@@ -165,7 +165,7 @@ public:
             AhmedBemBlcluster* localCluster =
                     dynamic_cast<AhmedBemBlcluster*>(m_localLeafClusters[leafClusterIndex]);
             bool globalAssembly =
-                    m_options.globalAssemblyBeforeCompression ||
+                    m_options.mode != AcaOptions::HYBRID_ASSEMBLY ||
                     !localCluster->isadm();
             AcaAssemblyHelper* helper = globalAssembly ? m_helper :
                                                          m_admissibleHelper;
@@ -434,7 +434,8 @@ assembleAcaOperator(
 #endif // DUMP_DENSE_BLOCKS
         )
 {
-    const bool indexWithGlobalDofs = acaOptions.globalAssemblyBeforeCompression;
+    const bool indexWithGlobalDofs = 
+        acaOptions.mode != AcaOptions::HYBRID_ASSEMBLY;
 
     typedef mblock<typename AhmedTypeTraits<ResultType>::Type> AhmedMblock;
     boost::shared_array<AhmedMblock*> blocks =
@@ -641,7 +642,8 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
     const AssemblyOptions& options = context.assemblyOptions();
     const AcaOptions& acaOptions = options.acaOptions();
-    const bool indexWithGlobalDofs = acaOptions.globalAssemblyBeforeCompression;
+    const bool indexWithGlobalDofs = 
+            acaOptions.mode != AcaOptions::HYBRID_ASSEMBLY;
     const bool verbosityAtLeastDefault =
             (options.verbosityLevel() >= VerbosityLevel::DEFAULT);
     const bool verbosityAtLeastHigh =
@@ -664,9 +666,8 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 #ifndef WITH_TRILINOS
     if (!indexWithGlobalDofs)
         throw std::runtime_error("AcaGlobalAssembler::assembleDetachedWeakForm(): "
-                                 "ACA assembly with globalAssemblyBeforeCompression "
-                                 "set to false requires BEM++ to be linked with "
-                                 "Trilinos");
+                                 "local-mode ACA assembly requires BEM++ to be "
+                                 "linked with Trilinos");
 #endif // WITH_TRILINOS
 
     const size_t testDofCount = indexWithGlobalDofs ?
@@ -786,7 +787,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     // of flat local indices and just use a separate discontinuous space.
     AssemblyOptions assemblyOptionsWithGlobalIndices = options;
     AcaOptions acaOptionsWithGlobalIndices = acaOptions;
-    acaOptionsWithGlobalIndices.globalAssemblyBeforeCompression = true;
+    acaOptionsWithGlobalIndices.mode = AcaOptions::GLOBAL_ASSEMBLY;
     assemblyOptionsWithGlobalIndices.switchToAcaMode(
                 acaOptionsWithGlobalIndices);
 
@@ -907,7 +908,8 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
     typedef DiscreteAcaBoundaryOperator<ResultType> DiscreteAcaLinOp;
 
     const AcaOptions& acaOptions = options.acaOptions();
-    const bool indexWithGlobalDofs = acaOptions.globalAssemblyBeforeCompression;
+    const bool indexWithGlobalDofs = 
+            acaOptions.mode != AcaOptions::HYBRID_ASSEMBLY;
     const bool verbosityAtLeastDefault =
             (options.verbosityLevel() >= VerbosityLevel::DEFAULT);
     const bool verbosityAtLeastHigh =
@@ -916,9 +918,8 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
 #ifndef WITH_TRILINOS
     if (!indexWithGlobalDofs)
         throw std::runtime_error("AcaGlobalAssembler::assemblePotentialOperator(): "
-                                 "ACA assembly with globalAssemblyBeforeCompression "
-                                 "set to false requires BEM++ to be linked with "
-                                 "Trilinos");
+                                 "local-mode ACA assembly requires BEM++ to be "
+                                 "linked with Trilinos");
 #endif // WITH_TRILINOS
 
     if (localAssemblers.empty())
