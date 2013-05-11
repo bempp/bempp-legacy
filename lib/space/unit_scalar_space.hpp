@@ -51,7 +51,8 @@ public:
     virtual int domainDimension() const;
     virtual int codomainDimension() const;
 
-    virtual const Space<BasisFunctionType>& discontinuousSpace() const;
+    virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
+        const shared_ptr<const Space<BasisFunctionType> >& self) const;
     virtual bool isDiscontinuous() const;
 
     /** \brief Return the variant of element \p element.

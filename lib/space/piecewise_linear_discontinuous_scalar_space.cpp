@@ -58,10 +58,15 @@ PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-const Space<BasisFunctionType>&
-PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::discontinuousSpace() const
+shared_ptr<const Space<BasisFunctionType> >
+PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::discontinuousSpace(
+    const shared_ptr<const Space<BasisFunctionType> >& self) const
 {
-    return *this;
+    if (self.get() != this)
+        throw std::invalid_argument(
+            "PiecewiseLinearDiscontinuousScalarSpace::discontinuousSpace(): "
+            "argument should be a shared pointer to *this");
+    return self;
 }
 
 template <typename BasisFunctionType>

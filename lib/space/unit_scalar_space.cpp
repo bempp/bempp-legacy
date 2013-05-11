@@ -42,8 +42,9 @@ UnitScalarSpace(const shared_ptr<const Grid>& grid) :
 }
 
 template <typename BasisFunctionType>
-const Space<BasisFunctionType>&
-UnitScalarSpace<BasisFunctionType>::discontinuousSpace() const
+shared_ptr<const Space<BasisFunctionType> >
+UnitScalarSpace<BasisFunctionType>::discontinuousSpace(
+    const shared_ptr<const Space<BasisFunctionType> >& self) const
 {
     throw std::runtime_error("UnitScalarSpace::discontinuousSpace(): "
                              "not implemented yet");

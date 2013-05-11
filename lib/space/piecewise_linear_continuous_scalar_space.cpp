@@ -51,28 +51,27 @@ PiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid) :
                                     "only 1- and 2-dimensional grids are supported");
     m_view = grid->leafView();
     assignDofsImpl();
-    m_discontinuousSpace = 0;
 }
 
 template <typename BasisFunctionType>
 PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
 ~PiecewiseLinearContinuousScalarSpace()
 {
-    delete m_discontinuousSpace;
 }
 
 template <typename BasisFunctionType>
-const Space<BasisFunctionType>&
-PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::discontinuousSpace() const
+shared_ptr<const Space<BasisFunctionType> >
+PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::discontinuousSpace(
+    const shared_ptr<const Space<BasisFunctionType> >& self) const
 {
     if (!m_discontinuousSpace) {
         tbb::mutex::scoped_lock lock(m_discontinuousSpaceMutex);
         typedef PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>
                 DiscontinuousSpace;
         if (!m_discontinuousSpace)
-            m_discontinuousSpace = new DiscontinuousSpace(this->grid());
+            m_discontinuousSpace.reset(new DiscontinuousSpace(this->grid()));
     }
-    return *m_discontinuousSpace;
+    return m_discontinuousSpace;
 }
 
 template <typename BasisFunctionType>

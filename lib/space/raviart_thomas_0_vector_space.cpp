@@ -20,6 +20,8 @@
 
 #include "raviart_thomas_0_vector_space.hpp"
 
+#include "piecewise_linear_discontinuous_scalar_space.hpp"
+
 #include "../assembly/discrete_sparse_boundary_operator.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
 #include "../common/bounding_box.hpp"
@@ -76,11 +78,18 @@ RaviartThomas0VectorSpace<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-const Space<BasisFunctionType>&
-RaviartThomas0VectorSpace<BasisFunctionType>::discontinuousSpace() const
+shared_ptr<const Space<BasisFunctionType> >
+RaviartThomas0VectorSpace<BasisFunctionType>::discontinuousSpace(
+    const shared_ptr<const Space<BasisFunctionType> >& self) const
 {
-    throw std::runtime_error("RaviartThomas0VectorSpace::discontinuousSpace(): "
-                             "not implemented yet");
+    if (!m_discontinuousSpace) {
+        tbb::mutex::scoped_lock lock(m_discontinuousSpaceMutex);
+        typedef PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>
+                DiscontinuousSpace;
+        if (!m_discontinuousSpace)
+            m_discontinuousSpace.reset(new DiscontinuousSpace(this->grid()));
+    }
+    return m_discontinuousSpace;
 }
 
 template <typename BasisFunctionType>

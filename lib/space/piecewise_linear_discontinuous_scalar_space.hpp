@@ -52,7 +52,8 @@ public:
     explicit PiecewiseLinearDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid);
     virtual ~PiecewiseLinearDiscontinuousScalarSpace();
 
-    virtual const Space<BasisFunctionType>& discontinuousSpace() const;
+    virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
+        const shared_ptr<const Space<BasisFunctionType> >& self) const;
     virtual bool isDiscontinuous() const;
 
     virtual size_t globalDofCount() const;
