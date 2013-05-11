@@ -743,7 +743,11 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
     // Create block cluster trees
     unsigned int blockCount = 0;
-    bool useStrongAdmissibilityCondition = !indexWithGlobalDofs;
+    bool useStrongAdmissibilityCondition = !indexWithGlobalDofs ||
+        // experiments indicate that for spaces with discontinuous basis
+        // functions one gets faster assembly (although *slightly* higher memory
+        // consumption) with the strong admissibility condition
+        (testSpace.isDiscontinuous() && trialSpace.isDiscontinuous());
     shared_ptr<AhmedBemBlcluster> blclusterTree(
                 CCH::constructBemBlockCluster(acaOptions, symmetric,
                                               *testClusterTree, *trialClusterTree,
