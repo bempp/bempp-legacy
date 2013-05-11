@@ -48,6 +48,92 @@ namespace Bempp
 
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
+laplace3dSyntheticHypersingularBoundaryOperator(
+        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+        const shared_ptr<const Space<BasisFunctionType> >& domain,
+        const shared_ptr<const Space<BasisFunctionType> >& range,
+        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
+        const std::string& label,
+        int internalSymmetry)
+{
+    if (!domain || !range || !dualToRange)
+        throw std::invalid_argument(
+            "laplace3dSyntheticHypersingularBoundaryOperator(): "
+            "domain, range and dualToRange must not be null");
+    AssemblyOptions internalAssemblyOptions = context->assemblyOptions();
+    AcaOptions internalAcaOptions = internalAssemblyOptions.acaOptions();
+    internalAcaOptions.globalAssemblyBeforeCompression = true;
+    internalAcaOptions.mode = AcaOptions::GLOBAL_ASSEMBLY;
+    internalAssemblyOptions.switchToAcaMode(internalAcaOptions);
+    typedef Context<BasisFunctionType, ResultType> Ctx;
+    shared_ptr<Ctx> internalContext(new Ctx(
+            context->quadStrategy(), internalAssemblyOptions));
+    shared_ptr<const Space<BasisFunctionType> > internalTrialSpace = 
+        domain->discontinuousSpace(domain);
+    shared_ptr<const Space<BasisFunctionType> > internalTestSpace = 
+        dualToRange->discontinuousSpace(dualToRange);
+
+    // Note: we don't really need to care about ranges and duals to domains of
+    // the internal operator. The only range space that matters is that of the
+    // leftmost operator in the product.
+
+    const char xyz[] = "xyz";
+    const size_t dimWorld = 3;
+
+    BoundaryOperator<BasisFunctionType, ResultType> slp =
+            laplace3dSingleLayerBoundaryOperator<BasisFunctionType, ResultType>(
+                internalContext, internalTrialSpace, internalTestSpace /* or whatever */,
+                internalTestSpace,
+                "(" + label + ")_internal", internalSymmetry);
+
+    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+
+    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
+            ValueFunctor;
+    typedef Fiber::SurfaceCurl3dFunctor<CoordinateType>
+            CurlFunctor;
+    typedef Fiber::SingleComponentTestTrialIntegrandFunctor<
+            BasisFunctionType, ResultType> IntegrandFunctor;
+
+    typedef GeneralElementaryLocalOperator<BasisFunctionType, ResultType> LocalOp;
+
+    std::vector<BoundaryOperator<BasisFunctionType, ResultType> > trialCurlComponents;
+    std::vector<BoundaryOperator<BasisFunctionType, ResultType> > testCurlComponents;
+    testCurlComponents.resize(3);
+    for (size_t i = 0; i < dimWorld; ++i)
+        testCurlComponents[i] = BoundaryOperator<BasisFunctionType, ResultType>(
+                    internalContext, boost::make_shared<LocalOp>(
+                        internalTestSpace, range, dualToRange,
+                        ("(" + label + ")_test_curl_") + xyz[i], NO_SYMMETRY,
+                        CurlFunctor(),
+                        ValueFunctor(),
+                        IntegrandFunctor(i, 0)));
+    int syntheseSymmetry = 0; // symmetry of the decomposition
+    if (domain == dualToRange && internalTrialSpace == internalTestSpace)
+        syntheseSymmetry = HERMITIAN |
+                (boost::is_complex<BasisFunctionType>() ? 0 : SYMMETRIC);
+    else {
+        trialCurlComponents.resize(3);
+        for (size_t i = 0; i < dimWorld; ++i)
+            trialCurlComponents[i] = BoundaryOperator<BasisFunctionType, ResultType>(
+                        internalContext, boost::make_shared<LocalOp>(
+                            domain, internalTrialSpace /* or whatever */, internalTrialSpace,
+                            ("(" + label + ")_trial_curl_") + xyz[i], NO_SYMMETRY,
+                            ValueFunctor(),
+                            CurlFunctor(),
+                            IntegrandFunctor(0, i)));
+    }
+
+    typedef SyntheticIntegralOperator<BasisFunctionType, ResultType> SyntheticOp;
+
+    return BoundaryOperator<BasisFunctionType, ResultType>(
+                context, boost::make_shared<SyntheticOp>(
+                    testCurlComponents, slp, trialCurlComponents, label,
+                    syntheseSymmetry));
+}
+
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
 laplace3dHypersingularBoundaryOperator(
         const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
         const shared_ptr<const Space<BasisFunctionType> >& domain,
@@ -56,6 +142,13 @@ laplace3dHypersingularBoundaryOperator(
         const std::string& label,
         int symmetry)
 {
+    const AssemblyOptions& assemblyOptions = context->assemblyOptions();
+    if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
+        (!assemblyOptions.acaOptions().globalAssemblyBeforeCompression ||
+         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY))
+        return laplace3dSyntheticHypersingularBoundaryOperator(
+            context, domain, range, dualToRange, label, symmetry);
+
     typedef typename ScalarTraits<BasisFunctionType>::RealType KernelType;
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
@@ -88,77 +181,6 @@ laplace3dHypersingularBoundaryOperator(
     return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 
-template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType>
-laplace3dSyntheticHypersingularBoundaryOperator(
-        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const shared_ptr<const Space<BasisFunctionType> >& domain,
-        const shared_ptr<const Space<BasisFunctionType> >& range,
-        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const shared_ptr<const Space<BasisFunctionType> >& internalTrialSpace,
-        const shared_ptr<const Space<BasisFunctionType> >& internalTestSpace,
-        const std::string& label,
-        int symmetry)
-{
-    // Note: we don't really need to care about ranges and duals to domains of
-    // the internal operator. The only range space that matters is that of the
-    // leftmost operator in the product.
-
-    const char xyz[] = "xyz";
-    const size_t dimWorld = 3;
-
-    BoundaryOperator<BasisFunctionType, ResultType> slp =
-            laplace3dSingleLayerBoundaryOperator(
-                context, internalTrialSpace, internalTestSpace /* or whatever */,
-                internalTestSpace,
-                "(" + label + ")_internal", symmetry);
-
-    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
-
-    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
-            ValueFunctor;
-    typedef Fiber::SurfaceCurl3dFunctor<CoordinateType>
-            CurlFunctor;
-    typedef Fiber::SingleComponentTestTrialIntegrandFunctor<
-            BasisFunctionType, ResultType> IntegrandFunctor;
-
-    typedef GeneralElementaryLocalOperator<BasisFunctionType, ResultType> LocalOp;
-
-    std::vector<BoundaryOperator<BasisFunctionType, ResultType> > trialCurlComponents;
-    std::vector<BoundaryOperator<BasisFunctionType, ResultType> > testCurlComponents;
-    testCurlComponents.resize(3);
-    for (size_t i = 0; i < dimWorld; ++i)
-        testCurlComponents[i] = BoundaryOperator<BasisFunctionType, ResultType>(
-                    context, boost::make_shared<LocalOp>(
-                        internalTestSpace, range, dualToRange,
-                        ("(" + label + ")_test_curl_") + xyz[i], NO_SYMMETRY,
-                        CurlFunctor(),
-                        ValueFunctor(),
-                        IntegrandFunctor(i, 0)));
-    size_t overallSymmetry = 0; // symmetry of the decomposition
-    if (domain == dualToRange && internalTrialSpace == internalTestSpace)
-        overallSymmetry = HERMITIAN |
-                (boost::is_complex<BasisFunctionType>() ? 0 : SYMMETRIC);
-    else {
-        trialCurlComponents.resize(3);
-        for (size_t i = 0; i < dimWorld; ++i)
-            trialCurlComponents[i] = BoundaryOperator<BasisFunctionType, ResultType>(
-                        context, boost::make_shared<LocalOp>(
-                            domain, internalTrialSpace /* or whatever */, internalTrialSpace,
-                            ("(" + label + ")_trial_curl_") + xyz[i], NO_SYMMETRY,
-                            ValueFunctor(),
-                            CurlFunctor(),
-                            IntegrandFunctor(0, i)));
-    }
-
-    typedef SyntheticIntegralOperator<BasisFunctionType, ResultType> SyntheticOp;
-
-    return BoundaryOperator<BasisFunctionType, ResultType>(
-                context, boost::make_shared<SyntheticOp>(
-                    testCurlComponents, slp, trialCurlComponents, label,
-                    overallSymmetry));
-}
-
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT) \
     template BoundaryOperator<BASIS, RESULT> \
     laplace3dHypersingularBoundaryOperator( \
@@ -166,16 +188,7 @@ laplace3dSyntheticHypersingularBoundaryOperator(
     const shared_ptr<const Space<BASIS> >&, \
     const shared_ptr<const Space<BASIS> >&, \
     const shared_ptr<const Space<BASIS> >&, \
-    const std::string&, int); \
-    template BoundaryOperator<BASIS, RESULT> \
-    laplace3dSyntheticHypersingularBoundaryOperator( \
-    const shared_ptr<const Context<BASIS, RESULT> >&, \
-    const shared_ptr<const Space<BASIS> >&, \
-    const shared_ptr<const Space<BASIS> >&, \
-    const shared_ptr<const Space<BASIS> >&, \
-    const shared_ptr<const Space<BASIS> >&, \
-    const shared_ptr<const Space<BASIS> >&, \
-    const std::string&, int);
+    const std::string&, int)
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 } // namespace Bempp

@@ -68,7 +68,7 @@ makeSyntheticScalarIntegralOperator(
             internalOp.context();
 
     if (symmetry & (SYMMETRIC | HERMITIAN) &&
-            (internalTrialSpace != internalTestSpace || domain == dualToRange))
+            (internalTrialSpace != internalTestSpace || domain != dualToRange))
         throw std::invalid_argument("makeSyntheticScalarBoundaryOperator(): "
                                     "symmetry incompatible with spaces");
 

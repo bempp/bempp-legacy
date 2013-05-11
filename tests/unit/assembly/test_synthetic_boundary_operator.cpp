@@ -85,8 +85,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_single_layer_operator_agrees_with
         new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
         new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseDLinears(
-        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
 
     AccuracyOptions accuracyOptions;
     accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
@@ -107,14 +105,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_single_layer_operator_agrees_with
     AssemblyOptions assemblyOptionsAca;
     assemblyOptionsAca.setVerbosityLevel(VerbosityLevel::LOW);
     AcaOptions acaOptions;
+    acaOptions.mode = AcaOptions::LOCAL_ASSEMBLY;
     assemblyOptionsAca.switchToAcaMode(acaOptions);
     shared_ptr<Context<BFT, RT> > contextAca(
         new Context<BFT, RT>(quadStrategy, assemblyOptionsAca));
 
     BoundaryOperator<BFT, RT> opAca =
-            laplace3dSyntheticSingleLayerBoundaryOperator<BFT, RT>(
-                contextAca, pwiseConstants, pwiseLinears, pwiseConstants,
-                pwiseConstants, pwiseConstants);
+            laplace3dSingleLayerBoundaryOperator<BFT, RT>(
+                contextAca, pwiseConstants, pwiseLinears, pwiseConstants);
     arma::Mat<RT> weakFormAca = opAca.weakForm()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
@@ -137,8 +135,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_single_layer_operator_agrees_with
         new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
         new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseDLinears(
-        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
 
     AccuracyOptions accuracyOptions;
     accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
@@ -159,14 +155,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_single_layer_operator_agrees_with
     AssemblyOptions assemblyOptionsAca;
     assemblyOptionsAca.setVerbosityLevel(VerbosityLevel::LOW);
     AcaOptions acaOptions;
+    acaOptions.mode = AcaOptions::LOCAL_ASSEMBLY;
     assemblyOptionsAca.switchToAcaMode(acaOptions);
     shared_ptr<Context<BFT, RT> > contextAca(
         new Context<BFT, RT>(quadStrategy, assemblyOptionsAca));
 
     BoundaryOperator<BFT, RT> opAca =
-            laplace3dSyntheticSingleLayerBoundaryOperator<BFT, RT>(
-                contextAca, pwiseLinears, pwiseLinears, pwiseLinears,
-                pwiseDLinears, pwiseDLinears);
+            laplace3dSingleLayerBoundaryOperator<BFT, RT>(
+                contextAca, pwiseLinears, pwiseLinears, pwiseLinears);
     arma::Mat<RT> weakFormAca = opAca.weakForm()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
@@ -189,8 +185,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_double_layer_operator_agrees_with
         new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
         new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseDLinears(
-        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
 
     AccuracyOptions accuracyOptions;
     accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
@@ -211,14 +205,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_double_layer_operator_agrees_with
     AssemblyOptions assemblyOptionsAca;
     assemblyOptionsAca.setVerbosityLevel(VerbosityLevel::LOW);
     AcaOptions acaOptions;
+    acaOptions.mode = AcaOptions::LOCAL_ASSEMBLY;
     assemblyOptionsAca.switchToAcaMode(acaOptions);
     shared_ptr<Context<BFT, RT> > contextAca(
         new Context<BFT, RT>(quadStrategy, assemblyOptionsAca));
 
     BoundaryOperator<BFT, RT> opAca =
-            laplace3dSyntheticDoubleLayerBoundaryOperator<BFT, RT>(
-                contextAca, pwiseLinears, pwiseLinears, pwiseConstants,
-                pwiseDLinears, pwiseConstants);
+            laplace3dDoubleLayerBoundaryOperator<BFT, RT>(
+                contextAca, pwiseLinears, pwiseLinears, pwiseConstants);
     arma::Mat<RT> weakFormAca = opAca.weakForm()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
@@ -241,8 +235,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_adjoint_double_layer_operator_agr
         new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
         new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseDLinears(
-        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
 
     AccuracyOptions accuracyOptions;
     accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
@@ -263,14 +255,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_adjoint_double_layer_operator_agr
     AssemblyOptions assemblyOptionsAca;
     assemblyOptionsAca.setVerbosityLevel(VerbosityLevel::LOW);
     AcaOptions acaOptions;
+    acaOptions.mode = AcaOptions::LOCAL_ASSEMBLY;
     assemblyOptionsAca.switchToAcaMode(acaOptions);
     shared_ptr<Context<BFT, RT> > contextAca(
         new Context<BFT, RT>(quadStrategy, assemblyOptionsAca));
 
     BoundaryOperator<BFT, RT> opAca =
-            laplace3dSyntheticAdjointDoubleLayerBoundaryOperator<BFT, RT>(
-                contextAca, pwiseConstants, pwiseConstants, pwiseLinears,
-                pwiseConstants, pwiseDLinears);
+            laplace3dAdjointDoubleLayerBoundaryOperator<BFT, RT>(
+                contextAca, pwiseConstants, pwiseConstants, pwiseLinears);
     arma::Mat<RT> weakFormAca = opAca.weakForm()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
@@ -293,8 +285,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_hypersingular_operator_agrees_wit
         new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
         new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseDLinears(
-        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
 
     AccuracyOptions accuracyOptions;
     accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
@@ -315,14 +305,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_hypersingular_operator_agrees_wit
     AssemblyOptions assemblyOptionsAca;
     assemblyOptionsAca.setVerbosityLevel(VerbosityLevel::LOW);
     AcaOptions acaOptions;
+    acaOptions.mode = AcaOptions::LOCAL_ASSEMBLY;
     assemblyOptionsAca.switchToAcaMode(acaOptions);
     shared_ptr<Context<BFT, RT> > contextAca(
         new Context<BFT, RT>(quadStrategy, assemblyOptionsAca));
 
     BoundaryOperator<BFT, RT> opAca =
-            laplace3dSyntheticHypersingularBoundaryOperator<BFT, RT>(
-                contextAca, pwiseLinears, pwiseConstants, pwiseLinears,
-                pwiseDLinears, pwiseDLinears);
+            laplace3dHypersingularBoundaryOperator<BFT, RT>(
+                contextAca, pwiseLinears, pwiseConstants, pwiseLinears);
     arma::Mat<RT> weakFormAca = opAca.weakForm()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
@@ -345,10 +335,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_hypersingular_operator_agrees_wit
         new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
         new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseDLinears(
-        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseDLinears2(
-        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
+    shared_ptr<Space<BFT> > pwiseLinears2(
+        new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
 
     AccuracyOptions accuracyOptions;
     accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
@@ -369,136 +357,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_hypersingular_operator_agrees_wit
     AssemblyOptions assemblyOptionsAca;
     assemblyOptionsAca.setVerbosityLevel(VerbosityLevel::LOW);
     AcaOptions acaOptions;
+    acaOptions.mode = AcaOptions::LOCAL_ASSEMBLY;
     assemblyOptionsAca.switchToAcaMode(acaOptions);
     shared_ptr<Context<BFT, RT> > contextAca(
         new Context<BFT, RT>(quadStrategy, assemblyOptionsAca));
 
-    // Internal domain different from dualToRange
+    // domain != dualToRange
     BoundaryOperator<BFT, RT> opAca =
-            laplace3dSyntheticHypersingularBoundaryOperator<BFT, RT>(
-                contextAca, pwiseLinears, pwiseConstants, pwiseLinears,
-                pwiseDLinears, pwiseDLinears2);
+            laplace3dHypersingularBoundaryOperator<BFT, RT>(
+                contextAca, pwiseLinears, pwiseConstants, pwiseLinears2);
     arma::Mat<RT> weakFormAca = opAca.weakForm()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
                     weakFormDense, weakFormAca, 2. * acaOptions.eps));
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_hypersingular_operator_throws_for_continuous_internal_domain,
-                              ValueType, result_types)
-{
-    typedef ValueType RT;
-    typedef typename ScalarTraits<ValueType>::RealType RealType;
-    typedef RealType BFT;
-
-    GridParameters params;
-    params.topology = GridParameters::TRIANGULAR;
-    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
-
-    shared_ptr<Space<BFT> > pwiseConstants(
-        new PiecewiseConstantScalarSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseLinears(
-        new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseDLinears(
-        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
-
-    AccuracyOptions accuracyOptions;
-    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
-    accuracyOptions.singleRegular.setRelativeQuadratureOrder(2);
-    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
-                new NumericalQuadratureStrategy<BFT, RT>(accuracyOptions));
-
-    AssemblyOptions assemblyOptionsAca;
-    assemblyOptionsAca.setVerbosityLevel(VerbosityLevel::LOW);
-    AcaOptions acaOptions;
-    assemblyOptionsAca.switchToAcaMode(acaOptions);
-    shared_ptr<Context<BFT, RT> > contextAca(
-        new Context<BFT, RT>(quadStrategy, assemblyOptionsAca));
-
-    BoundaryOperator<BFT, RT> opAca =
-            laplace3dSyntheticHypersingularBoundaryOperator<BFT, RT>(
-                contextAca, pwiseLinears, pwiseConstants, pwiseLinears,
-                pwiseLinears, pwiseDLinears);
-    BOOST_CHECK_THROW(opAca.weakForm(), std::invalid_argument);
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_hypersingular_operator_throws_for_continuous_internal_dualToRange,
-                              ValueType, result_types)
-{
-    typedef ValueType RT;
-    typedef typename ScalarTraits<ValueType>::RealType RealType;
-    typedef RealType BFT;
-
-    GridParameters params;
-    params.topology = GridParameters::TRIANGULAR;
-    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
-
-    shared_ptr<Space<BFT> > pwiseConstants(
-        new PiecewiseConstantScalarSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseLinears(
-        new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseDLinears(
-        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
-
-    AccuracyOptions accuracyOptions;
-    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
-    accuracyOptions.singleRegular.setRelativeQuadratureOrder(2);
-    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
-                new NumericalQuadratureStrategy<BFT, RT>(accuracyOptions));
-
-    AssemblyOptions assemblyOptionsAca;
-    assemblyOptionsAca.setVerbosityLevel(VerbosityLevel::LOW);
-    AcaOptions acaOptions;
-    assemblyOptionsAca.switchToAcaMode(acaOptions);
-    shared_ptr<Context<BFT, RT> > contextAca(
-        new Context<BFT, RT>(quadStrategy, assemblyOptionsAca));
-
-    BoundaryOperator<BFT, RT> opAca =
-            laplace3dSyntheticHypersingularBoundaryOperator<BFT, RT>(
-                contextAca, pwiseLinears, pwiseConstants, pwiseLinears,
-                pwiseDLinears, pwiseLinears);
-    BOOST_CHECK_THROW(opAca.weakForm(), std::invalid_argument);
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_hypersingular_operator_throws_for_continuous_internal_domain_and_dualToRange,
-                              ValueType, result_types)
-{
-    typedef ValueType RT;
-    typedef typename ScalarTraits<ValueType>::RealType RealType;
-    typedef RealType BFT;
-
-    GridParameters params;
-    params.topology = GridParameters::TRIANGULAR;
-    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
-
-    shared_ptr<Space<BFT> > pwiseConstants(
-        new PiecewiseConstantScalarSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseLinears(
-        new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseDLinears(
-        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
-
-    AccuracyOptions accuracyOptions;
-    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
-    accuracyOptions.singleRegular.setRelativeQuadratureOrder(2);
-    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
-                new NumericalQuadratureStrategy<BFT, RT>(accuracyOptions));
-
-    AssemblyOptions assemblyOptionsAca;
-    assemblyOptionsAca.setVerbosityLevel(VerbosityLevel::LOW);
-    AcaOptions acaOptions;
-    assemblyOptionsAca.switchToAcaMode(acaOptions);
-    shared_ptr<Context<BFT, RT> > contextAca(
-        new Context<BFT, RT>(quadStrategy, assemblyOptionsAca));
-
-    BoundaryOperator<BFT, RT> opAca =
-            laplace3dSyntheticHypersingularBoundaryOperator<BFT, RT>(
-                contextAca, pwiseLinears, pwiseConstants, pwiseLinears,
-                pwiseLinears, pwiseLinears);
-    BOOST_CHECK_THROW(opAca.weakForm(), std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_modified_helmholtz_single_layer_operator_agrees_with_dense_assembly_for_pwise_linears,
@@ -519,8 +390,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_modified_helmholtz_single_layer_o
         new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
         new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseDLinears(
-        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
 
     AccuracyOptions accuracyOptions;
     accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
@@ -542,14 +411,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_modified_helmholtz_single_layer_o
     AssemblyOptions assemblyOptionsAca;
     assemblyOptionsAca.setVerbosityLevel(VerbosityLevel::LOW);
     AcaOptions acaOptions;
+    acaOptions.mode = AcaOptions::LOCAL_ASSEMBLY;
     assemblyOptionsAca.switchToAcaMode(acaOptions);
     shared_ptr<Context<BFT, RT> > contextAca(
         new Context<BFT, RT>(quadStrategy, assemblyOptionsAca));
 
     BoundaryOperator<BFT, RT> opAca =
-            modifiedHelmholtz3dSyntheticSingleLayerBoundaryOperator<BFT, RT, RT>(
-                contextAca, pwiseLinears, pwiseLinears, pwiseLinears,
-                pwiseDLinears, pwiseDLinears, waveNumber);
+            modifiedHelmholtz3dSingleLayerBoundaryOperator<BFT, RT, RT>(
+                contextAca, pwiseLinears, pwiseLinears, pwiseLinears, waveNumber);
     arma::Mat<RT> weakFormAca = opAca.weakForm()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
@@ -574,8 +443,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_modified_helmholtz_double_layer_o
         new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
         new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseDLinears(
-        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
 
     AccuracyOptions accuracyOptions;
     accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
@@ -597,14 +464,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_modified_helmholtz_double_layer_o
     AssemblyOptions assemblyOptionsAca;
     assemblyOptionsAca.setVerbosityLevel(VerbosityLevel::LOW);
     AcaOptions acaOptions;
+    acaOptions.mode = AcaOptions::LOCAL_ASSEMBLY;
     assemblyOptionsAca.switchToAcaMode(acaOptions);
     shared_ptr<Context<BFT, RT> > contextAca(
         new Context<BFT, RT>(quadStrategy, assemblyOptionsAca));
 
     BoundaryOperator<BFT, RT> opAca =
-            modifiedHelmholtz3dSyntheticDoubleLayerBoundaryOperator<BFT, RT, RT>(
+            modifiedHelmholtz3dDoubleLayerBoundaryOperator<BFT, RT, RT>(
                 contextAca, pwiseLinears, pwiseLinears, pwiseConstants,
-                pwiseDLinears, pwiseConstants, waveNumber);
+                waveNumber);
     arma::Mat<RT> weakFormAca = opAca.weakForm()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
@@ -629,8 +497,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_modified_helmholtz_adjoint_double
         new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
         new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseDLinears(
-        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
 
     AccuracyOptions accuracyOptions;
     accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
@@ -652,14 +518,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_modified_helmholtz_adjoint_double
     AssemblyOptions assemblyOptionsAca;
     assemblyOptionsAca.setVerbosityLevel(VerbosityLevel::LOW);
     AcaOptions acaOptions;
+    acaOptions.mode = AcaOptions::LOCAL_ASSEMBLY;
     assemblyOptionsAca.switchToAcaMode(acaOptions);
     shared_ptr<Context<BFT, RT> > contextAca(
         new Context<BFT, RT>(quadStrategy, assemblyOptionsAca));
 
     BoundaryOperator<BFT, RT> opAca =
-            modifiedHelmholtz3dSyntheticAdjointDoubleLayerBoundaryOperator<BFT, RT, RT>(
+            modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator<BFT, RT, RT>(
                 contextAca, pwiseConstants, pwiseConstants, pwiseLinears,
-                pwiseConstants, pwiseDLinears, waveNumber);
+                waveNumber);
     arma::Mat<RT> weakFormAca = opAca.weakForm()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
@@ -684,8 +551,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_helmholtz_hypersingular_operator_
         new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
         new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseDLinears(
-        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
 
     AccuracyOptions accuracyOptions;
     accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
@@ -707,14 +572,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_helmholtz_hypersingular_operator_
     AssemblyOptions assemblyOptionsAca;
     assemblyOptionsAca.setVerbosityLevel(VerbosityLevel::LOW);
     AcaOptions acaOptions;
+    acaOptions.mode = AcaOptions::LOCAL_ASSEMBLY;
     assemblyOptionsAca.switchToAcaMode(acaOptions);
     shared_ptr<Context<BFT, RT> > contextAca(
         new Context<BFT, RT>(quadStrategy, assemblyOptionsAca));
 
     BoundaryOperator<BFT, RT> opAca =
-            helmholtz3dSyntheticHypersingularBoundaryOperator<BFT>(
-                contextAca, pwiseLinears, pwiseConstants, pwiseLinears,
-                pwiseDLinears, pwiseDLinears, waveNumber);
+            helmholtz3dHypersingularBoundaryOperator<BFT>(
+                contextAca, pwiseLinears, pwiseConstants, pwiseLinears, waveNumber);
     arma::Mat<RT> weakFormAca = opAca.weakForm()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
@@ -739,10 +604,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_helmholtz_hypersingular_operator_
         new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
         new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseDLinears(
-        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseDLinears2(
-        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
+    shared_ptr<Space<BFT> > pwiseLinears2(
+        new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
 
     AccuracyOptions accuracyOptions;
     accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
@@ -764,15 +627,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_helmholtz_hypersingular_operator_
     AssemblyOptions assemblyOptionsAca;
     assemblyOptionsAca.setVerbosityLevel(VerbosityLevel::LOW);
     AcaOptions acaOptions;
+    acaOptions.mode = AcaOptions::LOCAL_ASSEMBLY;
     assemblyOptionsAca.switchToAcaMode(acaOptions);
     shared_ptr<Context<BFT, RT> > contextAca(
         new Context<BFT, RT>(quadStrategy, assemblyOptionsAca));
 
     // Internal domain different from dualToRange
     BoundaryOperator<BFT, RT> opAca =
-            helmholtz3dSyntheticHypersingularBoundaryOperator<BFT>(
-                contextAca, pwiseLinears, pwiseConstants, pwiseLinears,
-                pwiseDLinears, pwiseDLinears2, waveNumber);
+            helmholtz3dHypersingularBoundaryOperator<BFT>(
+                contextAca, pwiseLinears, pwiseConstants, pwiseLinears2,
+                waveNumber);
     arma::Mat<RT> weakFormAca = opAca.weakForm()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
@@ -797,8 +661,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_modified_helmholtz_hypersingular_
         new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
         new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseDLinears(
-        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
 
     AccuracyOptions accuracyOptions;
     accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
@@ -820,14 +682,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_modified_helmholtz_hypersingular_
     AssemblyOptions assemblyOptionsAca;
     assemblyOptionsAca.setVerbosityLevel(VerbosityLevel::LOW);
     AcaOptions acaOptions;
+    acaOptions.mode = AcaOptions::LOCAL_ASSEMBLY;
     assemblyOptionsAca.switchToAcaMode(acaOptions);
     shared_ptr<Context<BFT, RT> > contextAca(
         new Context<BFT, RT>(quadStrategy, assemblyOptionsAca));
 
     BoundaryOperator<BFT, RT> opAca =
-            modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator<BFT, RT, RT>(
+            modifiedHelmholtz3dHypersingularBoundaryOperator<BFT, RT, RT>(
                 contextAca, pwiseLinears, pwiseConstants, pwiseLinears,
-                pwiseDLinears, pwiseDLinears, waveNumber);
+                waveNumber);
     arma::Mat<RT> weakFormAca = opAca.weakForm()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
@@ -852,10 +715,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_modified_helmholtz_hypersingular_
         new PiecewiseConstantScalarSpace<BFT>(grid));
     shared_ptr<Space<BFT> > pwiseLinears(
         new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseDLinears(
-        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseDLinears2(
-        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
+    shared_ptr<Space<BFT> > pwiseLinears2(
+        new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
 
     AccuracyOptions accuracyOptions;
     accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
@@ -877,15 +738,72 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_modified_helmholtz_hypersingular_
     AssemblyOptions assemblyOptionsAca;
     assemblyOptionsAca.setVerbosityLevel(VerbosityLevel::LOW);
     AcaOptions acaOptions;
+    acaOptions.mode = AcaOptions::LOCAL_ASSEMBLY;
     assemblyOptionsAca.switchToAcaMode(acaOptions);
     shared_ptr<Context<BFT, RT> > contextAca(
         new Context<BFT, RT>(quadStrategy, assemblyOptionsAca));
 
     // Internal domain different from dualToRange
     BoundaryOperator<BFT, RT> opAca =
-            modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator<BFT, RT, RT>(
-                contextAca, pwiseLinears, pwiseConstants, pwiseLinears,
-                pwiseDLinears, pwiseDLinears2, waveNumber);
+            modifiedHelmholtz3dHypersingularBoundaryOperator<BFT, RT, RT>(
+                contextAca, pwiseLinears, pwiseConstants, pwiseLinears2,
+                waveNumber);
+    arma::Mat<RT> weakFormAca = opAca.weakForm()->asMatrix();
+
+    BOOST_CHECK(check_arrays_are_close<ValueType>(
+                    weakFormDense, weakFormAca, 2. * acaOptions.eps));
+}
+
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_maxwell_single_layer_operator_agrees_with_dense_assembly_in_symmetric_case,
+                              ValueType, complex_result_types)
+{
+    typedef ValueType RT;
+    typedef typename ScalarTraits<ValueType>::RealType RealType;
+    typedef RealType BFT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+
+    RT waveNumber = initWaveNumber<RT>();
+
+    shared_ptr<Space<BFT> > vectorPwiseLinears(
+        new RaviartThomas0VectorSpace<BFT>(grid));
+
+    AccuracyOptions accuracyOptions;
+    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
+    accuracyOptions.singleRegular.setRelativeQuadratureOrder(2);
+    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
+                new NumericalQuadratureStrategy<BFT, RT>(accuracyOptions));
+
+    AssemblyOptions assemblyOptionsDense;
+    assemblyOptionsDense.setVerbosityLevel(VerbosityLevel::LOW);
+    shared_ptr<Context<BFT, RT> > contextDense(
+        new Context<BFT, RT>(quadStrategy, assemblyOptionsDense));
+
+    BoundaryOperator<BFT, RT> opDense =
+            maxwell3dSingleLayerBoundaryOperator<BFT>(
+                contextDense,
+                vectorPwiseLinears, vectorPwiseLinears, vectorPwiseLinears,
+                waveNumber);
+    arma::Mat<RT> weakFormDense = opDense.weakForm()->asMatrix();
+
+    AssemblyOptions assemblyOptionsAca;
+    assemblyOptionsAca.setVerbosityLevel(VerbosityLevel::LOW);
+    AcaOptions acaOptions;
+    acaOptions.mode = AcaOptions::LOCAL_ASSEMBLY;
+    assemblyOptionsAca.switchToAcaMode(acaOptions);
+    shared_ptr<Context<BFT, RT> > contextAca(
+        new Context<BFT, RT>(quadStrategy, assemblyOptionsAca));
+
+    // Internal domain different from dualToRange
+    BoundaryOperator<BFT, RT> opAca =
+            maxwell3dSingleLayerBoundaryOperator<BFT>(
+                contextAca,
+                vectorPwiseLinears, vectorPwiseLinears, vectorPwiseLinears,
+                waveNumber);
     arma::Mat<RT> weakFormAca = opAca.weakForm()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(
@@ -908,66 +826,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_maxwell_single_layer_operator_agr
 
     shared_ptr<Space<BFT> > vectorPwiseLinears(
         new RaviartThomas0VectorSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseDLinears(
-        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseDLinears2(
-        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
-
-    AccuracyOptions accuracyOptions;
-    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
-    accuracyOptions.singleRegular.setRelativeQuadratureOrder(2);
-    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
-                new NumericalQuadratureStrategy<BFT, RT>(accuracyOptions));
-
-    AssemblyOptions assemblyOptionsDense;
-    assemblyOptionsDense.setVerbosityLevel(VerbosityLevel::LOW);
-    shared_ptr<Context<BFT, RT> > contextDense(
-        new Context<BFT, RT>(quadStrategy, assemblyOptionsDense));
-
-    BoundaryOperator<BFT, RT> opDense =
-            maxwell3dSingleLayerBoundaryOperator<BFT>(
-                contextDense,
-                vectorPwiseLinears, vectorPwiseLinears, vectorPwiseLinears,
-                waveNumber);
-    arma::Mat<RT> weakFormDense = opDense.weakForm()->asMatrix();
-
-    AssemblyOptions assemblyOptionsAca;
-    assemblyOptionsAca.setVerbosityLevel(VerbosityLevel::LOW);
-    AcaOptions acaOptions;
-    assemblyOptionsAca.switchToAcaMode(acaOptions);
-    shared_ptr<Context<BFT, RT> > contextAca(
-        new Context<BFT, RT>(quadStrategy, assemblyOptionsAca));
-
-    // Internal domain different from dualToRange
-    BoundaryOperator<BFT, RT> opAca =
-            maxwell3dSyntheticSingleLayerBoundaryOperator<BFT>(
-                contextAca,
-                vectorPwiseLinears, vectorPwiseLinears, vectorPwiseLinears,
-                pwiseDLinears, pwiseDLinears2, waveNumber);
-    arma::Mat<RT> weakFormAca = opAca.weakForm()->asMatrix();
-
-    BOOST_CHECK(check_arrays_are_close<ValueType>(
-                    weakFormDense, weakFormAca, 2. * acaOptions.eps));
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_maxwell_single_layer_operator_agrees_with_dense_assembly_in_symmetric_case,
-                              ValueType, complex_result_types)
-{
-    typedef ValueType RT;
-    typedef typename ScalarTraits<ValueType>::RealType RealType;
-    typedef RealType BFT;
-
-    GridParameters params;
-    params.topology = GridParameters::TRIANGULAR;
-    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
-
-    RT waveNumber = initWaveNumber<RT>();
-
-    shared_ptr<Space<BFT> > vectorPwiseLinears(
+    shared_ptr<Space<BFT> > vectorPwiseLinears2(
         new RaviartThomas0VectorSpace<BFT>(grid));
-    shared_ptr<Space<BFT> > pwiseDLinears(
-        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
 
     AccuracyOptions accuracyOptions;
     accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
@@ -990,16 +850,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_maxwell_single_layer_operator_agr
     AssemblyOptions assemblyOptionsAca;
     assemblyOptionsAca.setVerbosityLevel(VerbosityLevel::LOW);
     AcaOptions acaOptions;
+    acaOptions.mode = AcaOptions::LOCAL_ASSEMBLY;
     assemblyOptionsAca.switchToAcaMode(acaOptions);
     shared_ptr<Context<BFT, RT> > contextAca(
         new Context<BFT, RT>(quadStrategy, assemblyOptionsAca));
 
     // Internal domain different from dualToRange
     BoundaryOperator<BFT, RT> opAca =
-            maxwell3dSyntheticSingleLayerBoundaryOperator<BFT>(
+            maxwell3dSingleLayerBoundaryOperator<BFT>(
                 contextAca,
-                vectorPwiseLinears, vectorPwiseLinears, vectorPwiseLinears,
-                pwiseDLinears, pwiseDLinears, waveNumber);
+                vectorPwiseLinears, vectorPwiseLinears, vectorPwiseLinears2,
+                waveNumber);
     arma::Mat<RT> weakFormAca = opAca.weakForm()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(

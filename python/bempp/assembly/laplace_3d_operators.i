@@ -7,6 +7,7 @@
 
 namespace Bempp
 {
+
 %feature("compactdefaultargs")
     laplace3dSingleLayerBoundaryOperator;
 %feature("compactdefaultargs")
@@ -15,17 +16,6 @@ namespace Bempp
     laplace3dAdjointDoubleLayerBoundaryOperator;
 %feature("compactdefaultargs")
     laplace3dHypersingularBoundaryOperator;
-%feature("compactdefaultargs")
-    laplace3dSyntheticSingleLayerBoundaryOperator;
-%feature("compactdefaultargs")
-    laplace3dSyntheticDoubleLayerBoundaryOperator;
-%feature("compactdefaultargs")
-    laplace3dSyntheticAdjointDoubleLayerBoundaryOperator;
-%feature("compactdefaultargs")
-    laplace3dSyntheticHypersingularBoundaryOperator;
-
-// Do not emit warnings about ignored assignment operators.
-%warnfilter(362) Laplace3dBoundaryOperatorBase::operator=;
 
 } // namespace Bempp
 
@@ -47,15 +37,6 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
     laplace3dAdjointDoubleLayerBoundaryOperator);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
     laplace3dHypersingularBoundaryOperator);
-
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
-    laplace3dSyntheticSingleLayerBoundaryOperator);
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
-    laplace3dSyntheticDoubleLayerBoundaryOperator);
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
-    laplace3dSyntheticAdjointDoubleLayerBoundaryOperator);
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(
-    laplace3dSyntheticHypersingularBoundaryOperator);
 
 } // namespace Bempp
 

@@ -20,8 +20,9 @@
 
 #include "modified_helmholtz_3d_adjoint_double_layer_boundary_operator.hpp"
 
+#include "context.hpp"
 #include "general_elementary_singular_integral_operator_imp.hpp"
-#include "synthetic_scalar_integral_operator_builder.hpp"
+#include "modified_helmholtz_3d_synthetic_boundary_operator_builder.hpp"
 
 #include "../common/boost_make_shared_fwd.hpp"
 
@@ -50,6 +51,17 @@ modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
         bool useInterpolation,
         int interpPtsPerWavelength)
 {
+    const AssemblyOptions& assemblyOptions = context->assemblyOptions();
+    if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
+        (!assemblyOptions.acaOptions().globalAssemblyBeforeCompression ||
+         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY))
+        return modifiedHelmholtz3dSyntheticBoundaryOperator(
+            &modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator<
+                BasisFunctionType, KernelType, ResultType>,
+            context, domain, range, dualToRange, waveNumber, label, symmetry, 
+            useInterpolation, interpPtsPerWavelength,
+            NO_SYMMETRY);
+
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
     typedef Fiber::ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelFunctor<KernelType>
@@ -90,46 +102,10 @@ modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
     return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType>
-modifiedHelmholtz3dSyntheticAdjointDoubleLayerBoundaryOperator(
-        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const shared_ptr<const Space<BasisFunctionType> >& domain,
-        const shared_ptr<const Space<BasisFunctionType> >& range,
-        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const shared_ptr<const Space<BasisFunctionType> >& internalTrialSpace,
-        const shared_ptr<const Space<BasisFunctionType> >& internalTestSpace,
-        KernelType waveNumber,
-        const std::string& label,
-        int symmetry,
-        bool useInterpolation,
-        int interpPtsPerWavelength)
-{
-    BoundaryOperator<BasisFunctionType, ResultType> internalOp =
-            modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
-                context, internalTrialSpace, range /* or whatever */,
-                internalTestSpace, waveNumber,
-                "(" + label + ")_internal", symmetry,
-                useInterpolation, interpPtsPerWavelength);
-    return makeSyntheticScalarIntegralOperator(
-                internalOp, domain, range, dualToRange,
-                internalTrialSpace, internalTestSpace,
-                label, NO_SYMMETRY);
-}
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, KERNEL, RESULT) \
     template BoundaryOperator<BASIS, RESULT> \
     modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator( \
         const shared_ptr<const Context<BASIS, RESULT> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
-        KERNEL, \
-        const std::string&, int, bool, int); \
-    template BoundaryOperator<BASIS, RESULT> \
-    modifiedHelmholtz3dSyntheticAdjointDoubleLayerBoundaryOperator( \
-        const shared_ptr<const Context<BASIS, RESULT> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \

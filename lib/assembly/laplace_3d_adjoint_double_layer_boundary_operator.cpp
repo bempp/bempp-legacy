@@ -20,8 +20,9 @@
 
 #include "laplace_3d_adjoint_double_layer_boundary_operator.hpp"
 
+#include "context.hpp"
 #include "general_elementary_singular_integral_operator_imp.hpp"
-#include "synthetic_scalar_integral_operator_builder.hpp"
+#include "laplace_3d_synthetic_boundary_operator_builder.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -42,6 +43,15 @@ laplace3dAdjointDoubleLayerBoundaryOperator(
        const std::string& label,
        int symmetry)
 {
+    const AssemblyOptions& assemblyOptions = context->assemblyOptions();
+    if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
+        (!assemblyOptions.acaOptions().globalAssemblyBeforeCompression ||
+         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY))
+        return laplace3dSyntheticBoundaryOperator(
+            &laplace3dAdjointDoubleLayerBoundaryOperator<BasisFunctionType, ResultType>,
+            context, domain, range, dualToRange, label, symmetry, 
+            NO_SYMMETRY);
+
     typedef typename ScalarTraits<BasisFunctionType>::RealType KernelType;
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
@@ -63,29 +73,6 @@ laplace3dAdjointDoubleLayerBoundaryOperator(
     return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 
-template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType>
-laplace3dSyntheticAdjointDoubleLayerBoundaryOperator(
-        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const shared_ptr<const Space<BasisFunctionType> >& domain,
-        const shared_ptr<const Space<BasisFunctionType> >& range,
-        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const shared_ptr<const Space<BasisFunctionType> >& internalTrialSpace,
-        const shared_ptr<const Space<BasisFunctionType> >& internalTestSpace,
-        const std::string& label,
-        int symmetry)
-{
-    BoundaryOperator<BasisFunctionType, ResultType> internalOp =
-            laplace3dAdjointDoubleLayerBoundaryOperator(
-                context, internalTrialSpace, range /* or whatever */,
-                internalTestSpace,
-                "(" + label + ")_internal", symmetry);
-    return makeSyntheticScalarIntegralOperator(
-                internalOp, domain, range, dualToRange,
-                internalTrialSpace, internalTestSpace,
-                label, NO_SYMMETRY);
-}
-
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT) \
    template BoundaryOperator<BASIS, RESULT> \
    laplace3dAdjointDoubleLayerBoundaryOperator( \
@@ -93,16 +80,7 @@ laplace3dSyntheticAdjointDoubleLayerBoundaryOperator(
        const shared_ptr<const Space<BASIS> >&, \
        const shared_ptr<const Space<BASIS> >&, \
        const shared_ptr<const Space<BASIS> >&, \
-       const std::string&, int); \
-    template BoundaryOperator<BASIS, RESULT> \
-    laplace3dSyntheticAdjointDoubleLayerBoundaryOperator( \
-        const shared_ptr<const Context<BASIS, RESULT> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
-        const std::string&, int)
+       const std::string&, int)
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 } // namespace Bempp

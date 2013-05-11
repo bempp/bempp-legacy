@@ -15,14 +15,6 @@ namespace Bempp
     modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator;
 %feature("compactdefaultargs")
     modifiedHelmholtz3dHypersingularBoundaryOperator;
-%feature("compactdefaultargs")
-    modifiedHelmholtz3dSyntheticSingleLayerBoundaryOperator;
-%feature("compactdefaultargs")
-    modifiedHelmholtz3dSyntheticDoubleLayerBoundaryOperator;
-%feature("compactdefaultargs")
-    modifiedHelmholtz3dSyntheticAdjointDoubleLayerBoundaryOperator;
-%feature("compactdefaultargs")
-    modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator;
 } // namespace Bempp
 
 #define shared_ptr boost::shared_ptr
@@ -43,14 +35,5 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
     modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
     modifiedHelmholtz3dHypersingularBoundaryOperator);
-
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
-    modifiedHelmholtz3dSyntheticSingleLayerBoundaryOperator);
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
-    modifiedHelmholtz3dSyntheticDoubleLayerBoundaryOperator);
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
-    modifiedHelmholtz3dSyntheticAdjointDoubleLayerBoundaryOperator);
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
-    modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator);
 
 } // namespace Bempp

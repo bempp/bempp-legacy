@@ -50,46 +50,10 @@ helmholtz3dSingleLayerBoundaryOperator(
                 label, symmetry, useInterpolation, interpPtsPerWavelength);
 }
 
-template <typename BasisFunctionType>
-BoundaryOperator<BasisFunctionType,
-typename ScalarTraits<BasisFunctionType>::ComplexType>
-helmholtz3dSyntheticSingleLayerBoundaryOperator(
-        const shared_ptr<const Context<BasisFunctionType,
-        typename ScalarTraits<BasisFunctionType>::ComplexType> >& context,
-        const shared_ptr<const Space<BasisFunctionType> >& domain,
-        const shared_ptr<const Space<BasisFunctionType> >& range,
-        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const shared_ptr<const Space<BasisFunctionType> >& internalTrialSpace,
-        const shared_ptr<const Space<BasisFunctionType> >& internalTestSpace,
-        typename ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
-        const std::string& label,
-        int symmetry,
-        bool useInterpolation,
-        int interpPtsPerWavelength)
-{
-    typedef typename ScalarTraits<BasisFunctionType>::ComplexType ComplexType;
-    return modifiedHelmholtz3dSyntheticSingleLayerBoundaryOperator<
-            BasisFunctionType, ComplexType, ComplexType>(
-                context, domain, range, dualToRange,
-                internalTrialSpace, internalTestSpace,
-                waveNumber / ComplexType(0., 1.),
-                label, symmetry, useInterpolation, interpPtsPerWavelength);
-}
-
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS) \
     template BoundaryOperator<BASIS, ScalarTraits<BASIS>::ComplexType> \
     helmholtz3dSingleLayerBoundaryOperator( \
         const shared_ptr<const Context<BASIS, ScalarTraits<BASIS>::ComplexType> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
-        ScalarTraits<BASIS>::ComplexType, \
-        const std::string&, int, bool, int); \
-    template BoundaryOperator<BASIS, ScalarTraits<BASIS>::ComplexType> \
-    helmholtz3dSyntheticSingleLayerBoundaryOperator( \
-        const shared_ptr<const Context<BASIS, ScalarTraits<BASIS>::ComplexType> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \

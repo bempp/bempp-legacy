@@ -219,15 +219,21 @@ SyntheticIntegralOperator(
         const BoundaryOperator<BasisFunctionType, ResultType>& integralOp,
         const std::vector<BoundaryOperator<BasisFunctionType, ResultType> >& trialLocalOps,
         const std::string& label,
-        int symmetry) :
-    Base(determineDomain(testLocalOps, integralOp, trialLocalOps, symmetry),
+        int syntheseSymmetry) :
+    Base(determineDomain(testLocalOps, integralOp, trialLocalOps, syntheseSymmetry),
          determineRange(testLocalOps, integralOp),
          determineDualToRange(testLocalOps, integralOp),
-         label, symmetry),
+         label, syntheseSymmetry & integralOp.abstractOperator()->symmetry()),
     m_integralOp(integralOp),
     m_testLocalOps(testLocalOps),
-    m_trialLocalOps(trialLocalOps)
+    m_trialLocalOps(trialLocalOps),
+    m_syntheseSymmetry(syntheseSymmetry)
 {
+    // Note: the code does not at present distinguish properly between symmetric
+    // and/or hermitian operators (in fact symmetry handling is, frankly, a
+    // mess). We get away with this because sparse operators can only contain
+    // real entries anyway. To be fixed in future.
+
     checkIntegralOperator();
     if (m_testLocalOps.size() > 0 && m_trialLocalOps.size() > 0 &&
             m_testLocalOps.size() != m_trialLocalOps.size())
@@ -236,7 +242,7 @@ SyntheticIntegralOperator(
                 "if both testLocalOps and trialLocalOps are non-empty, "
                 "both must have the same number of elements");
     checkTestLocalOperators();
-    if ((symmetry & SYMMETRIC) || (symmetry & HERMITIAN)) {
+    if ((syntheseSymmetry & SYMMETRIC) || (syntheseSymmetry & HERMITIAN)) {
         if (m_testLocalOps.empty())
             throw std::invalid_argument(
                     "SyntheticIntegralOperator::SyntheticIntegralOperator(): "
@@ -343,7 +349,8 @@ assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) cons
     typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
 
     bool symmetricMode =
-            this->symmetry() & SYMMETRIC || this->symmetry() & HERMITIAN;
+            m_syntheseSymmetry & SYMMETRIC || m_syntheseSymmetry & HERMITIAN;
+    std::cout << "symmetricMode: " << symmetricMode << std::endl;
 
     size_t localOperatorCount = m_testLocalOps.size();
     shared_ptr<const DiscreteLinOp> discreteIntegralOp =
@@ -420,7 +427,7 @@ assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) cons
         if (symmetricMode)
             discreteTrialLocalOps =
                     transposeTestOperators(discreteTestLocalOps,
-                                           this->symmetry() & HERMITIAN);
+                                           m_syntheseSymmetry & HERMITIAN);
     } else
         discreteTrialLocalOps =
                 coalesceTrialOperators(discreteTrialLocalOps, trialInverse);
