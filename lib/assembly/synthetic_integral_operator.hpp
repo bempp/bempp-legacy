@@ -145,6 +145,13 @@ public:
 
     virtual bool isLocal() const;
 
+    /** \brief Get contexts appropriate for construction of internal integral
+        operators and auxiliary local operators. */
+    static void getContextsForInternalAndAuxiliaryOperators(
+            const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+            shared_ptr<const Context<BasisFunctionType, ResultType> >& internalContext,
+            shared_ptr<const Context<BasisFunctionType, ResultType> >& auxContext);
+
 protected:
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormImpl(

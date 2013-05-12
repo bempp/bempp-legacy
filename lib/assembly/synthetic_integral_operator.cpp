@@ -350,7 +350,13 @@ assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) cons
 
     bool symmetricMode =
             m_syntheseSymmetry & SYMMETRIC || m_syntheseSymmetry & HERMITIAN;
-    std::cout << "symmetricMode: " << symmetricMode << std::endl;
+    // std::cout << "symmetricMode: " << symmetricMode << std::endl;
+
+    // We don't need a persistent shared pointer
+    shared_ptr<const Context<BasisFunctionType, ResultType> >
+        internalContext, auxContext;
+    getContextsForInternalAndAuxiliaryOperators(
+        context, internalContext, auxContext);
 
     size_t localOperatorCount = m_testLocalOps.size();
     shared_ptr<const DiscreteLinOp> discreteIntegralOp =
@@ -374,7 +380,7 @@ assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) cons
                     // We don't need a persistent shared_ptr since identityOperator
                     // will go out of scope at the end of this function anyway.
                     // All we need is a weak form.
-                    make_shared_from_ref(context),
+                    auxContext,
                     m_integralOp.dualToRange(), m_integralOp.dualToRange(),
                     m_integralOp.dualToRange(),
                     "(" + this->label() + ")_test_id");
@@ -406,7 +412,7 @@ assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) cons
         }
         else {
             BoundaryOp trialId = identityOperator(
-                        make_shared_from_ref(context),
+                        auxContext,
                         m_integralOp.domain(), m_integralOp.domain(),
                         m_integralOp.domain(),
                         "(" + this->label() + ")_trial_id");
@@ -468,6 +474,30 @@ assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) cons
         std::cout << "Assembly of the weak form of operator '" << this->label()
                   << "' took " << (end - start).seconds() << " s" << std::endl;
     return result;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void
+SyntheticIntegralOperator<BasisFunctionType, ResultType>::
+getContextsForInternalAndAuxiliaryOperators(
+    const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+    shared_ptr<const Context<BasisFunctionType, ResultType> >& internalContext,
+    shared_ptr<const Context<BasisFunctionType, ResultType> >& auxContext)
+{
+    typedef Context<BasisFunctionType, ResultType> Ctx;
+    AssemblyOptions assemblyOptions = context->assemblyOptions();
+    AcaOptions acaOptions = assemblyOptions.acaOptions();
+    acaOptions.mode = AcaOptions::GLOBAL_ASSEMBLY;
+    assemblyOptions.switchToAcaMode(acaOptions);
+    internalContext.reset(new Ctx(
+            context->quadStrategy(), assemblyOptions));
+    auxContext = internalContext;
+    if (assemblyOptions.verbosityLevel() < VerbosityLevel::HIGH) {
+        // Suppress timing messages from auxiliary operators
+        assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
+        auxContext.reset(new Ctx(
+            context->quadStrategy(), assemblyOptions));
+    }
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(SyntheticIntegralOperator);
