@@ -763,9 +763,12 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                         *testLocalClusterTree, *trialLocalClusterTree,
                         useStrongAdmissibilityCondition,
                         localBlockCount).release());
-        std::cout << "Truncating: " << blclusterTree->nleaves() << " vs. " << localBlclusterTree->nleaves() << std::endl;
         CCH::truncateBemBlockCluster(localBlclusterTree.get(), blclusterTree.get());
-        std::cout << "Truncated: " << blclusterTree->nleaves() << " vs. " << localBlclusterTree->nleaves() << std::endl;
+        if (localBlclusterTree->nleaves() != blclusterTree->nleaves())
+            throw std::runtime_error(
+                "AcaGlobalAssembler::assembleDetachedWeakForm(): "
+                "internal error: truncated local-dof cluster tree is not "
+                "identical to global-dof cluster tree");
     }
 
     if (verbosityAtLeastHigh)
