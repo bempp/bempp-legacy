@@ -104,7 +104,7 @@ laplace3dSyntheticHypersingularBoundaryOperator(
     testCurlComponents.resize(3);
     for (size_t i = 0; i < dimWorld; ++i)
         testCurlComponents[i] = BoundaryOperator<BasisFunctionType, ResultType>(
-                    internalContext, boost::make_shared<LocalOp>(
+                    auxContext, boost::make_shared<LocalOp>(
                         internalTestSpace, range, dualToRange,
                         ("(" + label + ")_test_curl_") + xyz[i], NO_SYMMETRY,
                         CurlFunctor(),
@@ -118,7 +118,7 @@ laplace3dSyntheticHypersingularBoundaryOperator(
         trialCurlComponents.resize(3);
         for (size_t i = 0; i < dimWorld; ++i)
             trialCurlComponents[i] = BoundaryOperator<BasisFunctionType, ResultType>(
-                        internalContext, boost::make_shared<LocalOp>(
+                        auxContext, boost::make_shared<LocalOp>(
                             domain, internalTrialSpace /* or whatever */, internalTrialSpace,
                             ("(" + label + ")_trial_curl_") + xyz[i], NO_SYMMETRY,
                             ValueFunctor(),
