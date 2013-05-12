@@ -70,7 +70,7 @@ namespace Bempp
  *  thrown.
  *
  *  If local-mode ACA assembly is requested (see AcaOptions::mode), after
- *  discretization, the weak form of this operator is stored as the product
+ *  discretization, the weak form of this operator is stored as 
  *
  *  \f[
  *     A = \sum_{i=1}^3 P_i A_{\textrm{d}} Q_i -

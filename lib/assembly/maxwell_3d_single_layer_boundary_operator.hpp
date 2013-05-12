@@ -74,8 +74,41 @@ namespace Bempp
  *  dualToRange must be defined on the same grid, otherwise an exception is
  *  thrown.
  *
- *  This operator supports local-mode ACA assembly (to be documented). It does not 
- *  support hybrid-mode assembly, though.
+ *  This operator supports local-mode ACA assembly. It does not support
+ *  hybrid-mode assembly, though.
+ *
+ *  If local-mode ACA assembly is requested (see AcaOptions::mode), after
+ *  discretization, the weak form of this operator is stored as
+ *
+ *  \f[
+ *     A = -ik \sum_{i=1}^3 P_i A_{\textrm{d}} Q_i -
+ *         \frac{1}{ik} R_i A_{\textrm{d}} S_i,
+ *  \f]
+ *
+ *  where:
+ *
+ *  - \f$k\f$ is the wave number
+ *
+ *  - \f$A_{\textrm{d}}\f$ is the weak form of the single-layer modified
+ *    Helmholtz boundary operator discretised with test and trial functions
+ *    being the restrictions of the basis functions of \p domain and \p range to
+ *    individual elements;
+ *
+ *  - \f$P_i\f$ is the sparse matrix whose transpose represents the expansion of
+ *    the \f$i\f$th component of the basis functions of \p dualToRange in the
+ *    single-element test functions mentioned above;
+ *
+ *  - \f$Q_i\f$ is the sparse matrix representing the expansion of the \f$i\f$th
+ *    component of the basis functions of \p domain in the single-element trial
+ *    functions;
+ *
+ *  - \f$R_i\f$ is the sparse matrix whose transpose represents the expansion of
+ *    the surface divergence of the basis functions of \p dualToRange in the
+ *    single-element test functions;
+ *
+ *  - \f$S_i\f$ is the sparse matrix representing the expansion of the surface
+ *    divergence of the basis functions of \p domain in the single-element trial
+ *    functions.
  *
  *  \tparam BasisFunctionType
  *    Type of the values of the basis functions into which functions acted upon
