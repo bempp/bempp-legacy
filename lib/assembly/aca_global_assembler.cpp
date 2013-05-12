@@ -559,10 +559,14 @@ assembleAcaOperator(
                   << origMemory / 1024. / 1024. << " MB.\n"
                   << "Compressed to "
                   << (100. * ahmedMemory) / origMemory << "%.\n"
-                  << "Maximum rank: " << maximumRank << ".\n"
-                  << "Accessed "
-                  << 100. * accessedFraction << "% matrix entries.\n"
-                  << std::endl;
+                  << "Maximum rank: " << maximumRank << ".\n";
+        // We only display this information in global and local ACA modes;
+        // in hybrid modes the percentage is not really well defined,
+        // since some blocks are accessed using global indexing, and others
+        // using local indexing
+        if (indexWithGlobalDofs)
+            std::cout << "Accessed "
+                      << 100. * accessedFraction << "% matrix entries.\n";
 
         tbb::tick_count::interval_t localAdmTime, globalAdmTime, inadmTime;
         for (size_t i = 0; i < leafClusterCount; ++i)
@@ -584,6 +588,7 @@ assembleAcaOperator(
             std::cout << "CPU time spent on assembly of inadmissible blocks: "
                       << inadmTime.seconds() << "\n";
         }
+        std::cout << std::endl;
     }
 
     if (acaOptions.outputPostscript) {
