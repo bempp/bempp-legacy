@@ -68,10 +68,8 @@ AbstractBoundaryOperator(const shared_ptr<const Space<BasisFunctionType> >& doma
                 "AbstractBoundaryOperator::AbstractBoundaryOperator(): "
                 "range and dualToRange must be defined on the same grid");
 
-    if (m_label.empty()) {
-        int i = ++s_anonymousOperatorCounter;
-        m_label = "Op" + toString(i);
-    }
+    if (m_label.empty())
+        m_label = uniqueLabel();
 
     if (m_symmetry & AUTO_SYMMETRY)
         m_symmetry = NO_SYMMETRY;
@@ -91,6 +89,14 @@ shared_ptr<const AbstractBoundaryOperatorId>
 AbstractBoundaryOperator<BasisFunctionType, ResultType>::id() const
 {
     return shared_ptr<const AbstractBoundaryOperatorId>();
+}
+
+template <typename BasisFunctionType, typename ResultType>
+std::string
+AbstractBoundaryOperator<BasisFunctionType, ResultType>::uniqueLabel()
+{
+    int i = ++s_anonymousOperatorCounter;
+    return "Op" + toString(i);
 }
 
 template <typename BasisFunctionType, typename ResultType>
