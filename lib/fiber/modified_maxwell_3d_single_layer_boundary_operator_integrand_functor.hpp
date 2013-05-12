@@ -79,11 +79,11 @@ public:
         // Return
         // K_0(x, y) u*(x) . v(y) + K_1(x, y) div u*(x) div v(y)
 
-        ResultType term_0 = 0.;
+        BasisFunctionType sum = 0.;
         for (int dim = 0; dim < dimWorld; ++dim)
-            term_0 += conjugate(testValues(dim)) * trialValues(dim);
-        term_0 *= kernelValues[0](0, 0);
-        ResultType term_1 = conjugate(testSurfaceDivs(0)) * trialSurfaceDivs(0) *
+            sum += conjugate(testValues(dim)) * trialValues(dim);
+        ResultType term_0 = sum * kernelValues[0](0, 0);
+        ResultType term_1 = (conjugate(testSurfaceDivs(0)) * trialSurfaceDivs(0)) *
             kernelValues[1](0, 0);
         return term_0 + term_1;
     }
