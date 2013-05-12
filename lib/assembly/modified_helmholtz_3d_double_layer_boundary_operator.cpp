@@ -19,7 +19,12 @@
 // THE SOFTWARE.
 
 #include "modified_helmholtz_3d_double_layer_boundary_operator.hpp"
-#include "modified_helmholtz_3d_boundary_operator_base_imp.hpp"
+
+#include "context.hpp"
+#include "general_elementary_singular_integral_operator_imp.hpp"
+#include "modified_helmholtz_3d_synthetic_boundary_operator_builder.hpp"
+
+#include "../common/boost_make_shared_fwd.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -28,86 +33,10 @@
 #include "../fiber/scalar_function_value_functor.hpp"
 #include "../fiber/simple_test_scalar_kernel_trial_integrand_functor.hpp"
 
-#include "../fiber/default_collection_of_kernels.hpp"
-#include "../fiber/default_collection_of_basis_transformations.hpp"
-#include "../fiber/default_test_kernel_trial_integral.hpp"
-
-#include "../common/boost_make_shared_fwd.hpp"
+#include "../grid/max_distance.hpp"
 
 namespace Bempp
 {
-
-/** \cond PRIVATE */
-template <typename BasisFunctionType, typename KernelType_, typename ResultType>
-struct ModifiedHelmholtz3dDoubleLayerBoundaryOperatorImpl
-{
-    typedef KernelType_ KernelType;
-    typedef ModifiedHelmholtz3dDoubleLayerBoundaryOperatorImpl<
-    BasisFunctionType, KernelType, ResultType> This;
-    typedef ModifiedHelmholtz3dBoundaryOperatorBase<This,
-    BasisFunctionType, KernelType, ResultType> BoundaryOperatorBase;
-    typedef typename BoundaryOperatorBase::CoordinateType CoordinateType;
-
-    typedef Fiber::ModifiedHelmholtz3dDoubleLayerPotentialKernelFunctor<KernelType>
-    NoninterpolatedKernelFunctor;
-    typedef Fiber::ModifiedHelmholtz3dDoubleLayerPotentialKernelInterpolatedFunctor<KernelType>
-    InterpolatedKernelFunctor;
-    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
-    TransformationFunctor;
-    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
-    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
-
-    explicit ModifiedHelmholtz3dDoubleLayerBoundaryOperatorImpl(
-            KernelType waveNumber_) :
-        waveNumber(waveNumber_),
-        interpPtsPerWavelength(0),
-        maxDistance(0.),
-        kernels(new Fiber::DefaultCollectionOfKernels<NoninterpolatedKernelFunctor>(
-                    NoninterpolatedKernelFunctor(waveNumber))),
-        transformations(TransformationFunctor()),
-        integral(IntegrandFunctor())
-    {}
-
-    ModifiedHelmholtz3dDoubleLayerBoundaryOperatorImpl(
-            KernelType waveNumber_,
-            CoordinateType maxDistance_,
-            int interpPtsPerWavelength_) :
-        waveNumber(waveNumber_),
-        interpPtsPerWavelength(interpPtsPerWavelength_),
-        maxDistance(maxDistance_),
-        kernels(new Fiber::DefaultCollectionOfKernels<InterpolatedKernelFunctor>(
-                              InterpolatedKernelFunctor(waveNumber_,
-                                                        maxDistance_,
-                                                        interpPtsPerWavelength_))),
-        transformations(TransformationFunctor()),
-        integral(IntegrandFunctor())
-    {}
-
-    KernelType waveNumber;
-    int interpPtsPerWavelength;
-    CoordinateType maxDistance;
-    boost::shared_ptr<Fiber::CollectionOfKernels<KernelType> > kernels;
-    Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
-    transformations;
-    Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor> integral;
-};
-/** \endcond */
-
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
-ModifiedHelmholtz3dDoubleLayerBoundaryOperator<BasisFunctionType, KernelType, ResultType>::
-ModifiedHelmholtz3dDoubleLayerBoundaryOperator(
-        const shared_ptr<const Space<BasisFunctionType> >& domain,
-        const shared_ptr<const Space<BasisFunctionType> >& range,
-        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        KernelType waveNumber,
-        const std::string& label,
-        int symmetry,
-        bool useInterpolation,
-        int interpPtsPerWavelength) :
-    Base(domain, range, dualToRange, waveNumber, label, symmetry,
-         useInterpolation, interpPtsPerWavelength)
-{
-}
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
@@ -122,33 +51,65 @@ modifiedHelmholtz3dDoubleLayerBoundaryOperator(
         bool useInterpolation,
         int interpPtsPerWavelength)
 {
-   typedef ModifiedHelmholtz3dDoubleLayerBoundaryOperator<
+    const AssemblyOptions& assemblyOptions = context->assemblyOptions();
+    if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
+         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY)
+        return modifiedHelmholtz3dSyntheticBoundaryOperator(
+            &modifiedHelmholtz3dDoubleLayerBoundaryOperator<
+                BasisFunctionType, KernelType, ResultType>,
+            context, domain, range, dualToRange, waveNumber, label, symmetry, 
+            useInterpolation, interpPtsPerWavelength,
+            NO_SYMMETRY);
+
+    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+
+    typedef Fiber::ModifiedHelmholtz3dDoubleLayerPotentialKernelFunctor<KernelType>
+    NoninterpolatedKernelFunctor;
+    typedef Fiber::ModifiedHelmholtz3dDoubleLayerPotentialKernelInterpolatedFunctor<KernelType>
+    InterpolatedKernelFunctor;
+    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
+    TransformationFunctor;
+    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
+    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+
+    if (!domain || !range || !dualToRange)
+        throw std::invalid_argument(
+                "modifiedHelmholtz3dDoubleLayerBoundaryOperator(): "
+                "domain, range and dualToRange must not be null");
+
+    typedef GeneralElementarySingularIntegralOperator<
             BasisFunctionType, KernelType, ResultType> Op;
-   return BoundaryOperator<BasisFunctionType, ResultType>(
-               context,
-               boost::make_shared<Op>(domain, range, dualToRange, waveNumber,
-                                      label, symmetry,
-                                      useInterpolation,
-                                      interpPtsPerWavelength));
+    shared_ptr<Op> newOp;
+    if (useInterpolation)
+        newOp.reset(new Op(
+                        domain, range, dualToRange, label, symmetry,
+                        InterpolatedKernelFunctor(
+                            waveNumber,
+                            1.1 * maxDistance(*domain->grid(), *dualToRange->grid()),
+                            interpPtsPerWavelength),
+                        TransformationFunctor(),
+                        TransformationFunctor(),
+                        IntegrandFunctor()));
+    else
+        newOp.reset(new Op(
+                        domain, range, dualToRange, label, symmetry,
+                        NoninterpolatedKernelFunctor(
+                            waveNumber),
+                        TransformationFunctor(),
+                        TransformationFunctor(),
+                        IntegrandFunctor()));
+    return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, KERNEL, RESULT) \
-   template BoundaryOperator<BASIS, RESULT> \
-   modifiedHelmholtz3dDoubleLayerBoundaryOperator( \
-       const shared_ptr<const Context<BASIS, RESULT> >&, \
-       const shared_ptr<const Space<BASIS> >&, \
-       const shared_ptr<const Space<BASIS> >&, \
-       const shared_ptr<const Space<BASIS> >&, \
-       KERNEL, \
-       const std::string&, int, bool, int)
+    template BoundaryOperator<BASIS, RESULT> \
+    modifiedHelmholtz3dDoubleLayerBoundaryOperator( \
+        const shared_ptr<const Context<BASIS, RESULT> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        KERNEL, \
+        const std::string&, int, bool, int)
 FIBER_ITERATE_OVER_BASIS_KERNEL_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
-
-#define INSTANTIATE_BASE(BASIS, KERNEL, RESULT) \
-    template class ModifiedHelmholtz3dBoundaryOperatorBase< \
-    ModifiedHelmholtz3dDoubleLayerBoundaryOperatorImpl<BASIS, KERNEL, RESULT>, \
-    BASIS, KERNEL, RESULT>
-FIBER_ITERATE_OVER_BASIS_KERNEL_AND_RESULT_TYPES(INSTANTIATE_BASE);
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
-        ModifiedHelmholtz3dDoubleLayerBoundaryOperator);
 
 } // namespace Bempp

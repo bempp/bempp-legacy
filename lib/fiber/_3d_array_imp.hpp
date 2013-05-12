@@ -28,12 +28,7 @@ namespace Fiber
 template <typename T>
 inline _3dArray<T>::_3dArray()
 {
-    m_extents[0] = 0;
-    m_extents[1] = 0;
-    m_extents[2] = 0;
-    m_storage = 0;
-    m_owns = false;
-    m_strict = false;
+    init_empty();
 }
 
 template <typename T>
@@ -59,8 +54,11 @@ inline _3dArray<T>::_3dArray(size_t extent0, size_t extent1, size_t extent2, T* 
 template <typename T>
 inline _3dArray<T>::_3dArray(const _3dArray& other)
 {
-    init_memory(other.m_extents[0], other.m_extents[1], other.m_extents[2]);
-    std::copy(other.begin(), other.end(), m_storage);
+    if (!other.is_empty()) {
+        init_memory(other.m_extents[0], other.m_extents[1], other.m_extents[2]);
+        std::copy(other.begin(), other.end(), m_storage);
+    } else
+        init_empty();
 }
 
 template <typename T>
@@ -91,6 +89,17 @@ inline void _3dArray<T>::init_memory(size_t extent0, size_t extent1, size_t exte
     m_extents[0] = extent0;
     m_extents[1] = extent1;
     m_extents[2] = extent2;
+}
+
+template <typename T>
+inline void _3dArray<T>::init_empty()
+{
+    m_extents[0] = 0;
+    m_extents[1] = 0;
+    m_extents[2] = 0;
+    m_storage = 0;
+    m_owns = false;
+    m_strict = false;
 }
 
 template <typename T>
@@ -138,34 +147,32 @@ inline size_t _3dArray<T>::extent(size_t dimension) const
 template <typename T>
 inline void _3dArray<T>::set_size(size_t extent0, size_t extent1, size_t extent2)
 {
-#ifdef FIBER_CHECK_ARRAY_BOUNDS
-    check_extents(extent0, extent1, extent2);
-#endif
     if (extent0 * extent1 * extent2 ==
             m_extents[0] * m_extents[1] * m_extents[2]) {
         m_extents[0] = extent0;
         m_extents[1] = extent1;
         m_extents[2] = extent2;
-    }
+    }    
     else {
         if (m_strict)
             throw std::runtime_error("_3dArray::set_size(): Changing the total "
                                      "number of elements stored in an array "
                                      "created in the strict mode is not allowed");
-        if (m_owns)
+        if (m_owns) {
             delete[] m_storage;
-        m_extents[0] = extent0;
-        m_extents[1] = extent1;
-        m_extents[2] = extent2;
-        m_storage = new T[extent0 * extent1 * extent2];
-        m_owns = true;
+            m_storage = 0;
+        }
+        if (extent0 * extent1 * extent2 != 0)
+            init_memory(extent0, extent1, extent2);
+        else
+            init_empty();
     }
 }
 
 template <typename T>
 inline bool _3dArray<T>::is_empty() const
 {
-    return m_extents[0] * m_extents[1] * m_extents[2] != 0;
+    return m_extents[0] * m_extents[1] * m_extents[2] == 0;
 }
 
 template <typename T>

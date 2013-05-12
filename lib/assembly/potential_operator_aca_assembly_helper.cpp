@@ -65,7 +65,7 @@ PotentialOperatorAcaAssemblyHelper(
     m_assemblers(assemblers),
     m_termMultipliers(termMultipliers),
     m_options(options),
-    m_indexWithGlobalDofs(m_options.acaOptions().globalAssemblyBeforeCompression),
+    m_indexWithGlobalDofs(m_options.acaOptions().mode != AcaOptions::HYBRID_ASSEMBLY),
     m_trialDofListsCache(new LocalDofListsCache<BasisFunctionType>(
                             m_trialSpace, m_p2oTrialDofs, m_indexWithGlobalDofs))
 {
@@ -121,7 +121,7 @@ PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::estimateMinim
         // in AHMED
         const double diam1 = sqrt(cluster1->getdiam2());
         const double diam2 = sqrt(cluster2->getdiam2());
-        const double dist = sqrt(cluster1->dist2(cluster2));
+        const double dist = sqrt(cluster1->extDist2(cluster2));
         minDist = std::max(0., dist - (diam1 + diam2) / 2.);
     }
     // else
@@ -157,7 +157,7 @@ void PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
         // in AHMED
         const double diam1 = sqrt(cluster1->getdiam2());
         const double diam2 = sqrt(cluster2->getdiam2());
-        const double dist = sqrt(cluster1->dist2(cluster2));
+        const double dist = sqrt(cluster1->extDist2(cluster2));
         minDist = std::max(0., dist - (diam1 + diam2) / 2.);
     }
     // else
@@ -348,7 +348,7 @@ PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::scale(
     if (cluster1 && cluster2) {
         // both getdiam2() and dist2() are effectively const, but not declared so
         // in AHMED
-        const CoordinateType dist = sqrt(cluster1->dist2(cluster2));
+        const CoordinateType dist = sqrt(cluster1->extDist2(cluster2));
         MagnitudeType result = 0.;
         for (size_t nTerm = 0; nTerm < m_assemblers.size(); ++nTerm)
             result = std::max(result,

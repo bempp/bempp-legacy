@@ -74,18 +74,25 @@ evaluateWithTensorQuadratureRule(
         for (size_t testDof = 0; testDof < testDofCount; ++testDof)
         {
             ResultType sum = 0.;
-            for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
-                for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint)
-                    sum += m_functor.evaluate(
+            for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
+                const CoordinateType trialWeight =
+                        trialGeomData.integrationElements(trialPoint) *
+                        trialQuadWeights[trialPoint];
+                ResultType partialSum = 0.;
+                for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint) {
+                    const CoordinateType testWeight =
+                            testGeomData.integrationElements(testPoint) *
+                            testQuadWeights[testPoint];
+                    partialSum += m_functor.evaluate(
                                 testGeomData.const_slice(testPoint),
                                 trialGeomData.const_slice(trialPoint),
                                 testValues.const_slice(testDof, testPoint),
                                 trialValues.const_slice(trialDof, trialPoint),
                                 kernelValues.const_slice(testPoint, trialPoint)) *
-                            testGeomData.integrationElements(testPoint) *
-                            trialGeomData.integrationElements(trialPoint) *
-                            testQuadWeights[testPoint] *
-                            trialQuadWeights[trialPoint];
+                            testWeight;
+                }
+                sum += partialSum * trialWeight;
+            }
             result(testDof, trialDof) = sum;
         }
 }
@@ -130,9 +137,9 @@ evaluateWithNontensorQuadratureRule(
                             testValues.const_slice(testDof, point),
                             trialValues.const_slice(trialDof, point),
                             kernelValues.const_slice(point)) *
-                        testGeomData.integrationElements(point) *
-                        trialGeomData.integrationElements(point) *
-                        quadWeights[point] ;
+                        (testGeomData.integrationElements(point) *
+                         trialGeomData.integrationElements(point) *
+                         quadWeights[point]);
             result(testDof, trialDof) = sum;
         }
 }

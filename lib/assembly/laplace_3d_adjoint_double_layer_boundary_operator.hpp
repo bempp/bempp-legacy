@@ -21,80 +21,15 @@
 #ifndef bempp_laplace_3d_adjoint_double_layer_boundary_operator_hpp
 #define bempp_laplace_3d_adjoint_double_layer_boundary_operator_hpp
 
-#include "laplace_3d_boundary_operator_base.hpp"
 #include "boundary_operator.hpp"
+#include "symmetry.hpp"
 
 namespace Bempp
 {
 
-/** \cond PRIVATE */
-template <typename BasisFunctionType, typename ResultType>
-struct Laplace3dAdjointDoubleLayerBoundaryOperatorImpl;
-/** \endcond */
-
 /** \ingroup laplace_3d
- *  \brief Adjoint double-layer-potential boundary operator for the Laplace equation in 3D.
- *
- *  \tparam BasisFunctionType_
- *    Type of the values of the basis functions into
- *    which functions acted upon by the operator are expanded.
- *  \tparam ResultType_
- *    Type used to represent elements of the weak form of the operator.
- *
- *  Both template parameters can take the following values: \c float, \c
- *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
- *  Both types must have the same precision: for instance, mixing \c float with
- *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType_
- *  is by default set to \p BasisFunctionType_. You should override that only if
- *  you set \p BasisFunctionType_ to a real type, but you want the entries of
- *  the operator's weak form to be stored as complex numbers.
- *
- *  \see laplace_3d */
-template <typename BasisFunctionType_, typename ResultType_ = BasisFunctionType_>
-class Laplace3dAdjointDoubleLayerBoundaryOperator :
-        public Laplace3dBoundaryOperatorBase<
-        Laplace3dAdjointDoubleLayerBoundaryOperatorImpl<BasisFunctionType_, ResultType_>,
-        BasisFunctionType_,
-        ResultType_>
-{
-    typedef Laplace3dBoundaryOperatorBase<
-    Laplace3dAdjointDoubleLayerBoundaryOperatorImpl<BasisFunctionType_, ResultType_>,
-    BasisFunctionType_,
-    ResultType_>
-    Base;
-public:
-    /** \copydoc ElementaryIntegralOperator::BasisFunctionType */
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc ElementaryIntegralOperator::KernelType */
-    typedef typename Base::KernelType KernelType;
-    /** \copydoc ElementaryIntegralOperator::ResultType */
-    typedef typename Base::ResultType ResultType;
-    /** \copydoc ElementaryIntegralOperator::CoordinateType */
-    typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
-    typedef typename Base::CollectionOfBasisTransformations
-    CollectionOfBasisTransformations;
-    /** \copydoc ElementaryIntegralOperator::CollectionOfKernels */
-    typedef typename Base::CollectionOfKernels CollectionOfKernels;
-    /** \copydoc ElementaryIntegralOperator::TestKernelTrialIntegral */
-    typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
-
-    /** \copydoc Laplace3dBoundaryOperatorBase::Laplace3dBoundaryOperatorBase */
-    Laplace3dAdjointDoubleLayerBoundaryOperator(
-            const shared_ptr<const Space<BasisFunctionType> >& domain,
-            const shared_ptr<const Space<BasisFunctionType> >& range,
-            const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-            const std::string& label = "",
-            int symmetry = NO_SYMMETRY);
-};
-
-/** \relates Laplace3dAdjointDoubleLayerBoundaryOperator
- *  \brief Construct a BoundaryOperator object wrapping a
- *  Laplace3dAdjointDoubleLayerBoundaryOperator.
- *
- *  This is a convenience function that creates a
- *  Laplace3dAdjointDoubleLayerBoundaryOperator, immediately wraps it in a
- *  BoundaryOperator and returns the latter object.
+ *  \brief Construct a BoundaryOperator object representing the adjoint
+ *  double-layer boundary operator associated with the Laplace equation in 3D.
  *
  *  \param[in] context
  *    A Context object that will be used to build the weak form of the
@@ -114,7 +49,42 @@ public:
  *
  *  None of the shared pointers may be null and the spaces \p range and \p
  *  dualToRange must be defined on the same grid, otherwise an exception is
- *  thrown. */
+ *  thrown.
+ *
+ *  If local-mode ACA assembly is requested (see AcaOptions::mode), after
+ *  discretization, the weak form of this operator is stored as the product
+ *
+ *  \f[
+ *     P A_{\textrm{d}} Q,
+ *  \f]
+ *
+ *  where \f$A_{\textrm{d}}\f$ is the weak form of this operator discretized
+ *  with test and trial functions being the restrictions of the basis functions
+ *  of \p domain and \p range to individual elements; \f$Q\f$ is the sparse
+ *  matrix representing the expansion of the basis functions of \p domain in the
+ *  just mentioned single-element trial functions; and \f$P\f$ is the sparse
+ *  matrix whose transpose represents the expansion of the basis functions of \p
+ *  dualToRange in the single-element test functions.
+ *
+ *  If each basis function of \p domain extends over a single element only
+ *  (i.e. <tt>domain->isDiscontinuous()</tt> method returns \c true), the matrix
+ *  \f$Q\f$ is omitted from the discretized weak form. The same applies to \p
+ *  dualToDomain and the matrix \f$P\f$.
+ *
+ *  \tparam BasisFunctionType
+ *    Type of the values of the basis functions into
+ *    which functions acted upon by the operator are expanded.
+ *  \tparam ResultType
+ *    Type used to represent elements of the weak form of the operator.
+ *
+ *  Both template parameters can take the following values: \c float, \c
+ *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
+ *  Both types must have the same precision: for instance, mixing \c float with
+ *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType
+ *  is by default set to \p BasisFunctionType. You should override that only if
+ *  you set \p BasisFunctionType to a real type, but you want the entries of
+ *  the operator's weak form to be stored as complex numbers.
+ */
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 laplace3dAdjointDoubleLayerBoundaryOperator(
@@ -122,25 +92,6 @@ laplace3dAdjointDoubleLayerBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const std::string& label = "",
-        int symmetry = NO_SYMMETRY);
-
-/** \relates Laplace3dAdjointDoubleLayerBoundaryOperator
- *  \brief Construct a "synthetic" representation of the adjoint double-layer
- *  boundary operator associated with the Laplace equation in 3D.
- *
- *  \todo Write documentation. In the meantime, see the documentation of
- *  laplace3dSyntheticSingleLayerBoundaryOperator and
- *  SyntheticIntegralOperator. */
-template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType>
-laplace3dSyntheticAdjointDoubleLayerBoundaryOperator(
-        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const shared_ptr<const Space<BasisFunctionType> >& domain,
-        const shared_ptr<const Space<BasisFunctionType> >& range,
-        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const shared_ptr<const Space<BasisFunctionType> >& internalTrialSpace,
-        const shared_ptr<const Space<BasisFunctionType> >& internalTestSpace,
         const std::string& label = "",
         int symmetry = NO_SYMMETRY);
 

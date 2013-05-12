@@ -51,7 +51,8 @@ public:
     virtual int domainDimension() const;
     virtual int codomainDimension() const;
 
-    virtual const Space<BasisFunctionType>& discontinuousSpace() const;
+    virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
+        const shared_ptr<const Space<BasisFunctionType> >& self) const;
     virtual bool isDiscontinuous() const;
 
     /** \brief Return the variant of element \p element.
@@ -76,10 +77,16 @@ public:
     virtual void flatLocal2localDofs(
             const std::vector<FlatLocalDofIndex>& globalDofs,
             std::vector<LocalDof>& localDofs) const;
+
     virtual void getGlobalDofPositions(
             std::vector<Point3D<CoordinateType> >& positions) const;
     virtual void getFlatLocalDofPositions(
             std::vector<Point3D<CoordinateType> >& positions) const;
+
+    virtual void getGlobalDofBoundingBoxes(
+            std::vector<BoundingBox<CoordinateType> >& bboxes) const;
+    virtual void getFlatLocalDofBoundingBoxes(
+            std::vector<BoundingBox<CoordinateType> >& bboxes) const;
 
     virtual void dumpClusterIds(
             const char* fileName,

@@ -21,81 +21,15 @@
 #ifndef bempp_laplace_3d_hypersingular_boundary_operator_hpp
 #define bempp_laplace_3d_hypersingular_boundary_operator_hpp
 
-#include "laplace_3d_boundary_operator_base.hpp"
 #include "boundary_operator.hpp"
+#include "symmetry.hpp"
 
 namespace Bempp
 {
 
-/** \cond PRIVATE */
-template <typename BasisFunctionType, typename ResultType>
-struct Laplace3dHypersingularBoundaryOperatorImpl;
-/** \endcond */
-
 /** \ingroup laplace_3d
- *  \brief Hypersingular boundary operator for the Laplace equation in 3D.
- *
- *  \tparam BasisFunctionType_
- *    Type of the values of the basis functions into
- *    which functions acted upon by the operator are expanded.
- *  \tparam ResultType_
- *    Type used to represent elements of the weak form of the operator.
- *
- *  Both template parameters can take the following values: \c float, \c
- *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
- *  Both types must have the same precision: for instance, mixing \c float with
- *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType_
- *  is by default set to \p BasisFunctionType_. You should override that only if
- *  you set \p BasisFunctionType_ to a real type, but you want the entries of
- *  the operator's weak form to be stored as complex numbers.
- *
- *  \see laplace_3d */
-template <typename BasisFunctionType_, typename ResultType_ = BasisFunctionType_>
-class Laplace3dHypersingularBoundaryOperator :
-        public Laplace3dBoundaryOperatorBase<
-        Laplace3dHypersingularBoundaryOperatorImpl<BasisFunctionType_, ResultType_>,
-        BasisFunctionType_,
-        ResultType_>
-{
-    typedef Laplace3dBoundaryOperatorBase<
-    Laplace3dHypersingularBoundaryOperatorImpl<BasisFunctionType_, ResultType_>,
-    BasisFunctionType_,
-    ResultType_>
-    Base;
-public:
-    /** \copydoc ElementaryIntegralOperator::BasisFunctionType */
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc ElementaryIntegralOperator::KernelType */
-    typedef typename Base::KernelType KernelType;
-    /** \copydoc ElementaryIntegralOperator::ResultType */
-    typedef typename Base::ResultType ResultType;
-    /** \copydoc ElementaryIntegralOperator::CoordinateType */
-    typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
-    typedef typename Base::CollectionOfBasisTransformations
-    CollectionOfBasisTransformations;
-    /** \copydoc ElementaryIntegralOperator::CollectionOfKernels */
-    typedef typename Base::CollectionOfKernels CollectionOfKernels;
-    /** \copydoc ElementaryIntegralOperator::TestKernelTrialIntegral */
-    typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
-
-    /** \copydoc Laplace3dBoundaryOperatorBase::Laplace3dBoundaryOperatorBase */
-
-    Laplace3dHypersingularBoundaryOperator(
-            const shared_ptr<const Space<BasisFunctionType> >& domain,
-            const shared_ptr<const Space<BasisFunctionType> >& range,
-            const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-            const std::string& label = "",
-            int symmetry = NO_SYMMETRY);
-};
-
-/** \relates Laplace3dHypersingularBoundaryOperator
- *  \brief Construct a BoundaryOperator object wrapping a
- *  Laplace3dHypersingularBoundaryOperator.
- *
- *  This is a convenience function that creates a
- *  Laplace3dHypersingularBoundaryOperator, immediately wraps it in a
- *  BoundaryOperator and returns the latter object.
+ *  \brief Construct a BoundaryOperator object representing the hypersingular
+ *  boundary operator associated with the Laplace equation in 3D.
  *
  *  \param[in] context
  *    A Context object that will be used to build the weak form of the
@@ -115,7 +49,39 @@ public:
  *
  *  None of the shared pointers may be null and the spaces \p range and \p
  *  dualToRange must be defined on the same grid, otherwise an exception is
- *  thrown. */
+ *  thrown.
+ *
+ *  If local-mode ACA assembly is requested (see AcaOptions::mode), after
+ *  discretization, the weak form of this operator is stored as
+ *
+ *  \f[
+ *     A = \sum_{i=1}^3 P_i A_{\textrm{d}} Q_i,
+ *  \f]
+ *
+ *  where \f$A_{\textrm{d}}\f$ is the weak form of the single-layer Laplace
+ *  boundary operator discretized with test and trial functions being the
+ *  restrictions of the basis functions of \p domain and \p range to individual
+ *  elements; \f$Q_i\f$ is the sparse matrix representing the expansion of
+ *  <em>i</em>th component of the surface curl of the basis functions of \p
+ *  domain in the just mentioned single-element trial functions; and \f$P_i\f$ is
+ *  the sparse matrix whose transpose represents the expansion of the
+ *  <em>i</em>th component of the surface curl of the basis functions of \p
+ *  dualToRange in the single-element test functions.
+ *
+ *  \tparam BasisFunctionType
+ *    Type of the values of the basis functions into
+ *    which functions acted upon by the operator are expanded.
+ *  \tparam ResultType
+ *    Type used to represent elements of the weak form of the operator.
+ *
+ *  Both template parameters can take the following values: \c float, \c
+ *  double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
+ *  Both types must have the same precision: for instance, mixing \c float with
+ *  <tt>std::complex<double></tt> is not allowed. The parameter \p ResultType
+ *  is by default set to \p BasisFunctionType. You should override that only if
+ *  you set \p BasisFunctionType to a real type, but you want the entries of
+ *  the operator's weak form to be stored as complex numbers.
+ */
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 laplace3dHypersingularBoundaryOperator(
@@ -123,32 +89,6 @@ laplace3dHypersingularBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const std::string& label = "",
-        int symmetry = NO_SYMMETRY);
-
-/** \relates Laplace3dAdjointDoubleLayerBoundaryOperator
- *  \brief Construct a "synthetic" representation of the hypersingular
- *  boundary operator associated with the Laplace equation in 3D.
- *
- *  This function creates a hypersingular Laplace boundary operator \f$\mathcal A\f$
- *  whose weak form is stored as
- *
- *  \[
- *     A = \sum_{\alpha=1}^3 P_\alpha A_{\textrm{d}} Q_\alpha,
- *  \]
- *
- *  \todo Finish documentation. In the meantime, see the documentation of
- *  laplace3dSyntheticSingleLayerBoundaryOperator and
- *  SyntheticIntegralOperator. */
-template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType>
-laplace3dSyntheticHypersingularBoundaryOperator(
-        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const shared_ptr<const Space<BasisFunctionType> >& domain,
-        const shared_ptr<const Space<BasisFunctionType> >& range,
-        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const shared_ptr<const Space<BasisFunctionType> >& internalTrialSpace,
-        const shared_ptr<const Space<BasisFunctionType> >& internalTestSpace,
         const std::string& label = "",
         int symmetry = NO_SYMMETRY);
 

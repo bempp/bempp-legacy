@@ -24,6 +24,7 @@
 #include "aca_global_assembler.hpp"
 
 #include "assembly_options.hpp"
+#include "block_coalescer.hpp"
 #include "cluster_construction_helper.hpp"
 #include "context.hpp"
 #include "evaluation_options.hpp"
@@ -74,6 +75,24 @@
 #include "weak_form_aca_assembly_helper.hpp"
 #endif
 
+// This is a workaround of the problem of the abs() function being declared
+// both in Epetra and in AHMED. It relies of the implementation detail (!) that
+// in Epetra the declaration of abs is put between #ifndef __IBMCPP__ ...
+// #endif. So it may well break in future versions of Trilinos. The ideal
+// solution would be for AHMED to use namespaces.
+
+// Note: this particular instance of this kludge could be removed --
+// we could move permuteEpetraMatrix() to another file
+#ifndef __IBMCPP__
+#define __IBMCPP__
+#include <Epetra_CrsMatrix.h>
+#include <EpetraExt_MatrixMatrix.h>
+#undef __IBMCPP__
+#else
+#include <Epetra_CrsMatrix.h>
+#include <EpetraExt_MatrixMatrix.h>
+#endif
+
 // #define DUMP_DENSE_BLOCKS // if defined, contents and DOF lists of blocks
                              // stored as dense matrices will be printed to the
                              // screen
@@ -92,25 +111,34 @@ class AcaAssemblerLoopBody
 {
     typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
-    typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
+    typedef bbxbemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
     typedef mblock<typename AhmedTypeTraits<ResultType>::Type> AhmedMblock;
 public:
     typedef tbb::concurrent_queue<size_t> LeafClusterIndexQueue;
 
     AcaAssemblerLoopBody(
-            AcaAssemblyHelper& helper,
+            AcaAssemblyHelper* helper,
+            AcaAssemblyHelper* admissibleHelper,
             AhmedLeafClusterArray& leafClusters,
+            AhmedLeafClusterArray& localLeafClusters,
+            LeafClusterIndexQueue& leafClusterIndexQueue,
             boost::shared_array<AhmedMblock*> blocks,
+            boost::shared_array<AhmedMblock*> flatLocalBlocks,
+            BlockCoalescer<ResultType>* coalescer,
             const AcaOptions& options,
             tbb::atomic<size_t>& done,
             bool verbose,
-            LeafClusterIndexQueue& leafClusterIndexQueue,
             bool symmetric,
             std::vector<ChunkStatistics>& stats) :
         m_helper(helper),
-        m_leafClusters(leafClusters), m_blocks(blocks),
-        m_options(options), m_done(done), m_verbose(verbose),
+        m_admissibleHelper(admissibleHelper),
+        m_leafClusters(leafClusters),
+        m_localLeafClusters(localLeafClusters),
         m_leafClusterIndexQueue(leafClusterIndexQueue),
+        m_blocks(blocks),
+        m_flatLocalBlocks(flatLocalBlocks),
+        m_coalescer(coalescer),
+        m_options(options), m_done(done), m_verbose(verbose),
         m_symmetric(symmetric),
         m_stats(stats)
     {
@@ -134,19 +162,53 @@ public:
 
             AhmedBemBlcluster* cluster =
                     dynamic_cast<AhmedBemBlcluster*>(m_leafClusters[leafClusterIndex]);
+            AhmedBemBlcluster* localCluster =
+                    dynamic_cast<AhmedBemBlcluster*>(m_localLeafClusters[leafClusterIndex]);
+            bool globalAssembly =
+                    m_options.mode != AcaOptions::HYBRID_ASSEMBLY ||
+                    !localCluster->isadm();
+            AcaAssemblyHelper* helper = globalAssembly ? m_helper :
+                                                         m_admissibleHelper;
+            AhmedMblock** blocks = globalAssembly ? m_blocks.get() :
+                                                    m_flatLocalBlocks.get();
+            if (!globalAssembly)
+                cluster = localCluster;
             if (m_symmetric)
-                apprx_sym(m_helper, m_blocks[cluster->getidx()],
+                apprx_sym(*helper, blocks[cluster->getidx()],
                           cluster, m_options.eps, m_options.maximumRank,
                           true /* complex_sym */);
             else {
                 if (m_options.useAhmedAca)
-                    apprx_unsym(m_helper, m_blocks[cluster->getidx()],
+                    apprx_unsym(*helper, blocks[cluster->getidx()],
                                 cluster, m_options.eps, m_options.maximumRank);
                 else
                     apprx_unsym_shooting(
-                                m_helper, m_blocks[cluster->getidx()],
+                                *helper, blocks[cluster->getidx()],
                                 cluster, m_options.eps, m_options.maximumRank);
             }
+            if (m_leafClusters[leafClusterIndex]->isadm() &&
+                    !blocks[cluster->getidx()]->isLrM()) {
+// // Show clusters for which ACA failed
+//                std::cout << "global assembly: " << globalAssembly << "\n";
+//                typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
+//                if (globalAssembly) {
+//                    std::cout << "Global cluster 1:\n";
+//                    dynamic_cast<AhmedBemCluster&>(
+//                                *cluster->getcl1()).printBboxes();
+//                    std::cout << "Global cluster 2:\n";
+//                    dynamic_cast<AhmedBemCluster&>(
+//                                *cluster->getcl2()).printBboxes();
+//                } else {
+//                    std::cout << "Local cluster 1:\n";
+//                    dynamic_cast<AhmedBemCluster&>(
+//                                *localCluster->getcl1()).printBboxes();
+//                    std::cout << "Local cluster 2:\n";
+//                    dynamic_cast<AhmedBemCluster&>(
+//                                *localCluster->getcl2()).printBboxes();
+//                }
+            }
+            if (!globalAssembly)
+                m_coalescer->coalesceBlock(cluster->getidx());
             m_stats[leafClusterIndex].endTime = tbb::tick_count::now();
             // TODO: recompress
             const int HASH_COUNT = 20;
@@ -158,9 +220,13 @@ public:
     }
 
 private:
-    AcaAssemblyHelper& m_helper;
+    AcaAssemblyHelper* m_helper;
+    AcaAssemblyHelper* m_admissibleHelper;
     AhmedLeafClusterArray& m_leafClusters;
+    AhmedLeafClusterArray& m_localLeafClusters;
     boost::shared_array<AhmedMblock*> m_blocks;
+    boost::shared_array<AhmedMblock*> m_flatLocalBlocks;
+    BlockCoalescer<ResultType>* m_coalescer;
     const AcaOptions& m_options;
     tbb::atomic<size_t>& m_done;
     bool m_verbose;
@@ -231,7 +297,7 @@ void dumpDenseBlocks(
     typedef DiscreteAcaBoundaryOperator<ValueType> AcaOp;
     typedef typename AcaOp::AhmedDofType AhmedDofType;
     typedef typename AcaOp::AhmedMblock AhmedMblock;
-    typedef bemcluster<AhmedDofType> Cluster;
+    typedef bbxbemcluster<AhmedDofType> Cluster;
     if (clusterTree->isleaf()) {
         unsigned int idx = clusterTree->getidx();
         if ((singleClusterIndex < 0 &&
@@ -296,19 +362,68 @@ void dumpDenseBlocks(
                         singleClusterIndex);
 }
 
+shared_ptr<const Epetra_CrsMatrix> permuteEpetraCrsMatrix(
+        const Epetra_CrsMatrix& mat,
+        const IndexPermutation& p2oCols,
+        const IndexPermutation& o2pRows)
+{
+    shared_ptr<const Epetra_CrsMatrix> p2oColsMat = p2oCols.permutationMatrix();
+    shared_ptr<const Epetra_CrsMatrix> o2pRowsMat = o2pRows.permutationMatrix();
+
+    shared_ptr<Epetra_CrsMatrix> tmp(new Epetra_CrsMatrix(
+                Copy, mat.RowMap(), p2oColsMat->ColMap(),
+                3 /* three entries per row  -- just a guess */));
+    EpetraExt::MatrixMatrix::Multiply(mat, false, *p2oColsMat, false, *tmp);
+    shared_ptr<Epetra_CrsMatrix> result(new Epetra_CrsMatrix(
+                Copy, o2pRowsMat->RowMap(), tmp->ColMap(),
+                3 /* three entries per row  -- just a guess */));
+    EpetraExt::MatrixMatrix::Multiply(*o2pRowsMat, false, *tmp, false, *result);
+
+    return result;
+}
+
+// Reorder elements of array leafCluster so that for each i
+// leafClusters[i]->getidx() == refLeafClusters[i]->getidx()
+void reorderIdentically(AhmedLeafClusterArray& leafClusters,
+                        const AhmedLeafClusterArray& refLeafClusters)
+{
+    const size_t size = leafClusters.size();
+    if (refLeafClusters.size() != size)
+        throw std::invalid_argument("reorderIdentically(): "
+                                    "arrays must have the same size");
+    std::vector<blcluster*> idx2pblcluster(size);
+    for (size_t i = 0; i < size; ++i) {
+        unsigned idx = leafClusters[i]->getidx();
+        if (idx >= size)
+            throw std::invalid_argument("reorderIdentically(): "
+                                        "invalid cluster index encountered");
+        idx2pblcluster[leafClusters[i]->getidx()] = leafClusters[i];
+    }
+    for (size_t i = 0; i < size; ++i)
+        leafClusters[i] = idx2pblcluster[refLeafClusters[i]->getidx()];
+    for (size_t i = 0; i < size; ++i)
+        assert(leafClusters[i]->getidx() == refLeafClusters[i]->getidx());
+}
+
 template <typename AcaAssemblyHelper,
           typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteAcaBoundaryOperator<ResultType> >
 assembleAcaOperator(
-        AcaAssemblyHelper& helper,
+        AcaAssemblyHelper* helper,
+        AcaAssemblyHelper* admissibleHelper,
         const shared_ptr<typename DiscreteAcaBoundaryOperator<ResultType>::
-            AhmedBemBlcluster>& bemBlclusterTree,
+            AhmedBemBlcluster>& blclusterTree,
+        const shared_ptr<typename DiscreteAcaBoundaryOperator<ResultType>::
+            AhmedBemBlcluster>& localBlclusterTree,
         const ParallelizationOptions& parallelOptions,
         const AcaOptions& acaOptions,
         bool verbosityAtLeastDefault,
+        bool verbosityAtLeastHigh,
         bool symmetric,
         const shared_ptr<IndexPermutation>& test_o2pPermutation,
-        const shared_ptr<IndexPermutation>& trial_o2pPermutation
+        const shared_ptr<IndexPermutation>& trial_o2pPermutation,
+        const shared_ptr<const Epetra_CrsMatrix>& permutedTestGlobalToLocalMap,
+        const shared_ptr<const Epetra_CrsMatrix>& permutedTrialGlobalToLocalMap
 #ifdef DUMP_DENSE_BLOCKS
         ,
         const shared_ptr<IndexPermutation>& test_p2oPermutation,
@@ -320,18 +435,28 @@ assembleAcaOperator(
 #endif // DUMP_DENSE_BLOCKS
         )
 {
+    const bool indexWithGlobalDofs = 
+        acaOptions.mode != AcaOptions::HYBRID_ASSEMBLY;
+
     typedef mblock<typename AhmedTypeTraits<ResultType>::Type> AhmedMblock;
     boost::shared_array<AhmedMblock*> blocks =
-            allocateAhmedMblockArray<ResultType>(bemBlclusterTree.get());
+            allocateAhmedMblockArray<ResultType>(blclusterTree.get());
+    boost::shared_array<AhmedMblock*> decomposedBlocks;
+    if (!indexWithGlobalDofs)
+        decomposedBlocks = allocateAhmedMblockArray<ResultType>(
+                    localBlclusterTree.get());
 
     const size_t testDofCount = test_o2pPermutation->size();
     const size_t trialDofCount = trial_o2pPermutation->size();
 
-    AhmedLeafClusterArray leafClusters(bemBlclusterTree.get());
+    AhmedLeafClusterArray leafClusters(blclusterTree.get());
     leafClusters.sortAccordingToClusterSize();
     if (acaOptions.firstClusterIndex >= 0)
         leafClusters.startWithClusterOfIndex(acaOptions.firstClusterIndex);
     const size_t leafClusterCount = leafClusters.size();
+
+    AhmedLeafClusterArray localLeafClusters(localBlclusterTree.get());
+    reorderIdentically(localLeafClusters, leafClusters);
 
     int maxThreadCount = 1;
     if (!parallelOptions.isOpenClEnabled())
@@ -362,15 +487,28 @@ assembleAcaOperator(
     for (size_t i = 0; i < leafClusterCount; ++i)
         leafClusterIndexQueue.push(i);
 
+    std::auto_ptr<BlockCoalescer<ResultType> > coalescer;
+    if (!indexWithGlobalDofs)
+        coalescer.reset(new BlockCoalescer<ResultType>(
+                            blclusterTree.get(),
+                            localBlclusterTree.get(),
+                            permutedTestGlobalToLocalMap,
+                            permutedTrialGlobalToLocalMap,
+                            blocks, decomposedBlocks,
+                            acaOptions));
     if (verbosityAtLeastDefault)
         std::cout << "About to start the ACA assembly loop" << std::endl;
     tbb::tick_count loopStart = tbb::tick_count::now();
     {
         Fiber::SerialBlasRegion region; // if possible, ensure that BLAS is single-threaded
         tbb::parallel_for(tbb::blocked_range<size_t>(0, leafClusterCount),
-                          Body(helper, leafClusters, blocks, acaOptions, done,
-                               verbosityAtLeastDefault,
-                               leafClusterIndexQueue, symmetric, chunkStats));
+                          Body(helper, admissibleHelper,
+                               leafClusters, localLeafClusters,
+                               leafClusterIndexQueue,
+                               blocks, decomposedBlocks,
+                               coalescer.get(),
+                               acaOptions, done, verbosityAtLeastDefault,
+                               symmetric, chunkStats));
     }
     tbb::tick_count loopEnd = tbb::tick_count::now();
     if (verbosityAtLeastDefault) {
@@ -383,13 +521,11 @@ assembleAcaOperator(
     if (acaOptions.recompress) {
         if (verbosityAtLeastDefault)
             std::cout << "About to start ACA agglomeration" << std::endl;
-        agglH(bemBlclusterTree.get(), blocks.get(),
+        agglH(blclusterTree.get(), blocks.get(),
               acaOptions.eps, acaOptions.maximumRank);
         if (verbosityAtLeastDefault)
             std::cout << "Agglomeration finished" << std::endl;
     }
-
-    //    dumpAhmedMblockArray<ResultType>(blocks, blockCount);
 
     // // Dump timing data of individual chunks
     //    std::cout << "\nChunks:\n";
@@ -413,9 +549,9 @@ assembleAcaOperator(
 #endif
         size_t totalEntryCount = testDofCount * trialDofCount;
         size_t origMemory = sizeof(ResultType) * totalEntryCount;
-        size_t ahmedMemory = sizeH(bemBlclusterTree.get(), blocks.get());
-        int maximumRank = Hmax_rank(bemBlclusterTree.get(), blocks.get());
-        size_t accessedEntryCount = helper.accessedEntryCount();
+        size_t ahmedMemory = sizeH(blclusterTree.get(), blocks.get());
+        int maximumRank = Hmax_rank(blclusterTree.get(), blocks.get());
+        size_t accessedEntryCount = helper->accessedEntryCount();
         double accessedFraction = double(accessedEntryCount) / totalEntryCount;
         std::cout << "\nNeeded storage: "
                   << ahmedMemory / 1024. / 1024. << " MB.\n"
@@ -423,10 +559,36 @@ assembleAcaOperator(
                   << origMemory / 1024. / 1024. << " MB.\n"
                   << "Compressed to "
                   << (100. * ahmedMemory) / origMemory << "%.\n"
-                  << "Maximum rank: " << maximumRank << ".\n"
-                  << "Accessed "
-                  << 100. * accessedFraction << "% matrix entries.\n"
-                  << std::endl;
+                  << "Maximum rank: " << maximumRank << ".\n";
+        // We only display this information in global and local ACA modes;
+        // in hybrid modes the percentage is not really well defined,
+        // since some blocks are accessed using global indexing, and others
+        // using local indexing
+        if (indexWithGlobalDofs)
+            std::cout << "Accessed "
+                      << 100. * accessedFraction << "% matrix entries.\n";
+
+        tbb::tick_count::interval_t localAdmTime, globalAdmTime, inadmTime;
+        for (size_t i = 0; i < leafClusterCount; ++i)
+            if (localLeafClusters[i]->isadm())
+                localAdmTime += chunkStats[i].endTime -
+                        chunkStats[i].startTime;
+            else if (leafClusters[i]->isadm())
+                globalAdmTime += chunkStats[i].endTime -
+                        chunkStats[i].startTime;
+            else
+                inadmTime += chunkStats[i].endTime -
+                        chunkStats[i].startTime;
+
+        if (verbosityAtLeastHigh) {
+            std::cout << "CPU time spent on assembly of admissible local blocks: "
+                      << localAdmTime.seconds() << " s\n";
+            std::cout << "CPU time spent on assembly of admissible global blocks: "
+                      << globalAdmTime.seconds() << " s\n";
+            std::cout << "CPU time spent on assembly of inadmissible blocks: "
+                      << inadmTime.seconds() << "\n";
+        }
+        std::cout << std::endl;
     }
 
     if (acaOptions.outputPostscript) {
@@ -435,10 +597,10 @@ assembleAcaOperator(
         std::ofstream os(acaOptions.outputFname.c_str());
         if (symmetric)
             // psoutputHeH() seems to work also for symmetric matrices
-            psoutputHeH(os, bemBlclusterTree.get(),
+            psoutputHeH(os, blclusterTree.get(),
                         trialDofCount, blocks.get());
         else
-            psoutputGeH(os, bemBlclusterTree.get(),
+            psoutputGeH(os, blclusterTree.get(),
                         std::max(testDofCount, trialDofCount), blocks.get());
         os.close();
         if (verbosityAtLeastDefault)
@@ -457,12 +619,13 @@ assembleAcaOperator(
                                      acaOptions.eps,
                                      acaOptions.maximumRank,
                                      outSymmetry,
-                                     bemBlclusterTree, blocks,
+                                     blclusterTree, blocks,
                                      *trial_o2pPermutation, // domain
                                      *test_o2pPermutation, // range
                                      parallelOptions));
     return acaOp;
 }
+
 
 #endif
 
@@ -474,6 +637,8 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
         const std::vector<LocalAssemblerForBoundaryOperators*>& localAssemblers,
+        const std::vector<LocalAssemblerForBoundaryOperators*>&
+        localAssemblersForAdmissibleBlocks,
         const std::vector<const DiscreteBndOp*>& sparseTermsToAdd,
         const std::vector<ResultType>& denseTermMultipliers,
         const std::vector<ResultType>& sparseTermMultipliers,
@@ -483,12 +648,13 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 #ifdef WITH_AHMED
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
     typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
-    typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
+    typedef bbxbemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
     typedef DiscreteAcaBoundaryOperator<ResultType> DiscreteAcaLinOp;
 
     const AssemblyOptions& options = context.assemblyOptions();
     const AcaOptions& acaOptions = options.acaOptions();
-    const bool indexWithGlobalDofs = acaOptions.globalAssemblyBeforeCompression;
+    const bool indexWithGlobalDofs = 
+            acaOptions.mode != AcaOptions::HYBRID_ASSEMBLY;
     const bool verbosityAtLeastDefault =
             (options.verbosityLevel() >= VerbosityLevel::DEFAULT);
     const bool verbosityAtLeastHigh =
@@ -511,9 +677,8 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 #ifndef WITH_TRILINOS
     if (!indexWithGlobalDofs)
         throw std::runtime_error("AcaGlobalAssembler::assembleDetachedWeakForm(): "
-                                 "ACA assembly with globalAssemblyBeforeCompression "
-                                 "set to false requires BEM++ to be linked with "
-                                 "Trilinos");
+                                 "local-mode ACA assembly requires BEM++ to be "
+                                 "linked with Trilinos");
 #endif // WITH_TRILINOS
 
     const size_t testDofCount = indexWithGlobalDofs ?
@@ -527,14 +692,16 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                                     "using test and trial spaces with different "
                                     "numbers of DOFs");
 
+    // Construct cluster trees indexed with global indices
+
     // o2p: map of original indices to permuted indices
     // p2o: map of permuted indices to original indices
     typedef ClusterConstructionHelper<BasisFunctionType> CCH;
     shared_ptr<AhmedBemCluster> testClusterTree;
     shared_ptr<IndexPermutation> test_o2pPermutation, test_p2oPermutation;
-    CCH::constructBemCluster(testSpace, indexWithGlobalDofs, acaOptions,
-                             testClusterTree,
-                             test_o2pPermutation, test_p2oPermutation);
+    CCH::constructBemCluster(
+                testSpace, true /*indexWithGlobalDofs*/, acaOptions,
+                testClusterTree, test_o2pPermutation, test_p2oPermutation);
     shared_ptr<AhmedBemCluster> trialClusterTree;
     shared_ptr<IndexPermutation> trial_o2pPermutation, trial_p2oPermutation;
     if (symmetric || &testSpace == &trialSpace) {
@@ -542,9 +709,33 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         trial_o2pPermutation = test_o2pPermutation;
         trial_p2oPermutation = test_p2oPermutation;
     } else
-        CCH::constructBemCluster(trialSpace, indexWithGlobalDofs, acaOptions,
-                                 trialClusterTree,
-                                 trial_o2pPermutation, trial_p2oPermutation);
+        CCH::constructBemCluster(
+                    trialSpace, true /*indexWithGlobalDofs*/, acaOptions,
+                    trialClusterTree, trial_o2pPermutation, trial_p2oPermutation);
+
+    // If necessary, construct cluster trees indexed with flat local indices
+    shared_ptr<AhmedBemCluster> testLocalClusterTree = testClusterTree;
+    shared_ptr<IndexPermutation> testLocal_o2pPermutation = test_o2pPermutation;
+    shared_ptr<IndexPermutation> testLocal_p2oPermutation = test_p2oPermutation;
+    shared_ptr<AhmedBemCluster> trialLocalClusterTree = trialClusterTree;
+    shared_ptr<IndexPermutation> trialLocal_o2pPermutation = trial_o2pPermutation;
+    shared_ptr<IndexPermutation> trialLocal_p2oPermutation = trial_p2oPermutation;
+    if (!indexWithGlobalDofs) {
+        if (!testSpace.isDiscontinuous())
+            CCH::constructBemCluster(
+                        testSpace, false /*indexWithGlobalDofs*/, acaOptions,
+                        testLocalClusterTree,
+                        testLocal_o2pPermutation, testLocal_p2oPermutation);
+        if (symmetric || &testSpace == &trialSpace) {
+            trialLocalClusterTree = testLocalClusterTree;
+            trialLocal_o2pPermutation = testLocal_o2pPermutation;
+            trialLocal_p2oPermutation = testLocal_p2oPermutation;
+        } else if (!trialSpace.isDiscontinuous())
+            CCH::constructBemCluster(
+                        trialSpace, false /*indexWithGlobalDofs*/, acaOptions,
+                        trialLocalClusterTree,
+                        trialLocal_o2pPermutation, trialLocal_p2oPermutation);
+    }
 
 //    // Export VTK plots showing the disctribution of leaf cluster ids
 //    std::vector<unsigned int> testClusterIds;
@@ -561,21 +752,38 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                   << "\nTrial cluster count: " << trialClusterTree->getncl()
                   << std::endl;
 
+    // Create block cluster trees
     unsigned int blockCount = 0;
-    shared_ptr<AhmedBemBlcluster> bemBlclusterTree(
+    bool useStrongAdmissibilityCondition = !indexWithGlobalDofs ||
+        // experiments indicate that for spaces with discontinuous basis
+        // functions one gets faster assembly (although *slightly* higher memory
+        // consumption) with the strong admissibility condition
+        (testSpace.isDiscontinuous() && trialSpace.isDiscontinuous());
+    shared_ptr<AhmedBemBlcluster> blclusterTree(
                 CCH::constructBemBlockCluster(acaOptions, symmetric,
                                               *testClusterTree, *trialClusterTree,
+                                              useStrongAdmissibilityCondition,
                                               blockCount).release());
+    shared_ptr<AhmedBemBlcluster> localBlclusterTree = blclusterTree;
+    if (!indexWithGlobalDofs &&
+            (!testSpace.isDiscontinuous() || !trialSpace.isDiscontinuous())) {
+        unsigned int localBlockCount = 0;
+        localBlclusterTree.reset(
+                    CCH::constructBemBlockCluster(
+                        acaOptions, symmetric,
+                        *testLocalClusterTree, *trialLocalClusterTree,
+                        useStrongAdmissibilityCondition,
+                        localBlockCount).release());
+        CCH::truncateBemBlockCluster(localBlclusterTree.get(), blclusterTree.get());
+        if (localBlclusterTree->nleaves() != blclusterTree->nleaves())
+            throw std::runtime_error(
+                "AcaGlobalAssembler::assembleDetachedWeakForm(): "
+                "internal error: truncated local-dof cluster tree is not "
+                "identical to global-dof cluster tree");
+    }
 
     if (verbosityAtLeastHigh)
         std::cout << "Mblock count: " << blockCount << std::endl;
-
-    std::vector<unsigned int> p2oTestDofs =
-        test_p2oPermutation->permutedIndices();
-    std::vector<unsigned int> p2oTrialDofs =
-        trial_p2oPermutation->permutedIndices();
-    assert(p2oTestDofs.size() == testDofCount);
-    assert(p2oTrialDofs.size() == trialDofCount);
 
 #ifdef DUMP_DENSE_BLOCKS
     std::vector<Point3D<CoordinateType> > testDofCenters, trialDofCenters;
@@ -590,21 +798,73 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
     typedef WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>
             AcaAssemblyHelper;
+
+    // Construct assembly helpers
+
+    // It will be possible to remove this kludge if we get rid of the concept
+    // of flat local indices and just use a separate discontinuous space.
+    AssemblyOptions assemblyOptionsWithGlobalIndices = options;
+    AcaOptions acaOptionsWithGlobalIndices = acaOptions;
+    acaOptionsWithGlobalIndices.mode = AcaOptions::GLOBAL_ASSEMBLY;
+    assemblyOptionsWithGlobalIndices.switchToAcaMode(
+                acaOptionsWithGlobalIndices);
+
     // TODO: It might be better (more efficient and elegant)
     // to pass p2oPermutation than p2oDofs.
     // Also, it might be more logical to rename IndexPermutation to IndexMapping
     // and permute/unpermute to map/unmap.
-    AcaAssemblyHelper helper(
-                testSpace, trialSpace, p2oTestDofs, p2oTrialDofs,
-                localAssemblers, sparseTermsToAdd,
-                denseTermMultipliers, sparseTermMultipliers, options);
+    shared_ptr<AcaAssemblyHelper> helper(
+                new AcaAssemblyHelper(
+                    testSpace, trialSpace,
+                    test_p2oPermutation->permutedIndices(),
+                    trial_p2oPermutation->permutedIndices(),
+                    localAssemblers, sparseTermsToAdd,
+                    denseTermMultipliers, sparseTermMultipliers,
+                    assemblyOptionsWithGlobalIndices));
+    shared_ptr<AcaAssemblyHelper> admissibleHelper = helper;
+    if (!indexWithGlobalDofs)
+        admissibleHelper.reset(
+                    new AcaAssemblyHelper(
+                        testSpace, trialSpace,
+                        testLocal_p2oPermutation->permutedIndices(),
+                        trialLocal_p2oPermutation->permutedIndices(),
+                        localAssemblersForAdmissibleBlocks, sparseTermsToAdd,
+                        denseTermMultipliers, sparseTermMultipliers, options));
+
+    // If necessary, construct maps between (permuted) flat local and global indices
+    shared_ptr<const Epetra_CrsMatrix> testGlobalToLocal, trialGlobalToLocal;
+    if (!indexWithGlobalDofs) {
+        typedef DiscreteSparseBoundaryOperator<ResultType> SparseOp;
+        if (!testSpace.isDiscontinuous()) {
+            shared_ptr<SparseOp> op =
+                    constructOperatorMappingGlobalToFlatLocalDofs<
+                    BasisFunctionType, ResultType>(testSpace);
+            testGlobalToLocal = op->epetraMatrix();
+            testGlobalToLocal = permuteEpetraCrsMatrix(
+                        *testGlobalToLocal,
+                        *test_p2oPermutation,
+                        *testLocal_o2pPermutation);
+        }
+        if (!trialSpace.isDiscontinuous()) {
+            shared_ptr<SparseOp> op =
+                    constructOperatorMappingGlobalToFlatLocalDofs<
+                    BasisFunctionType, ResultType>(trialSpace);
+            trialGlobalToLocal = op->epetraMatrix();
+            trialGlobalToLocal = permuteEpetraCrsMatrix(
+                        *trialGlobalToLocal,
+                        *trial_p2oPermutation,
+                        *trialLocal_o2pPermutation);
+        }
+    }
 
     std::auto_ptr<DiscreteAcaBoundaryOperator<ResultType> > acaOp =
     assembleAcaOperator<AcaAssemblyHelper, BasisFunctionType, ResultType>(
-                helper, bemBlclusterTree,
-                options.parallelizationOptions(), options.acaOptions(),
-                verbosityAtLeastDefault, symmetric,
-                test_o2pPermutation, trial_o2pPermutation
+                helper.get(), admissibleHelper.get(),
+                blclusterTree, localBlclusterTree,
+                options.parallelizationOptions(), acaOptions,
+                verbosityAtLeastDefault, verbosityAtLeastHigh, symmetric,
+                test_o2pPermutation, trial_o2pPermutation,
+                testGlobalToLocal, trialGlobalToLocal
 #ifdef DUMP_DENSE_BLOCKS
                 ,
                 test_p2oPermutation, trial_p2oPermutation,
@@ -613,25 +873,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                 );
 
     std::auto_ptr<DiscreteBndOp> result;
-    if (indexWithGlobalDofs)
         result = acaOp;
-    else {
-#ifdef WITH_TRILINOS
-        // without Trilinos, this code will never be reached -- an exception
-        // will be thrown earlier in this function
-        typedef DiscreteBoundaryOperatorComposition<ResultType> DiscreteBndOpComp;
-        shared_ptr<DiscreteBndOp> acaOpShared(acaOp.release());
-        shared_ptr<DiscreteBndOp> trialGlobalToLocal =
-                constructOperatorMappingGlobalToFlatLocalDofs<
-                BasisFunctionType, ResultType>(trialSpace);
-        shared_ptr<DiscreteBndOp> testLocalToGlobal =
-                constructOperatorMappingFlatLocalToGlobalDofs<
-                BasisFunctionType, ResultType>(testSpace);
-        shared_ptr<DiscreteBndOp> tmp(
-                    new DiscreteBndOpComp(acaOpShared, trialGlobalToLocal));
-        result.reset(new DiscreteBndOpComp(testLocalToGlobal, tmp));
-#endif // WITH_TRILINOS
-    }
     return result;
 
 #else // without Ahmed
@@ -647,20 +889,23 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
         LocalAssemblerForBoundaryOperators& localAssembler,
+        LocalAssemblerForBoundaryOperators& localAssemblerForAdmissibleBlocks,
         const Context<BasisFunctionType, ResultType>& context,
         int symmetry)
 {
-    std::vector<LocalAssemblerForBoundaryOperators*> localAssemblers(
-                1, &localAssembler);
+    typedef LocalAssemblerForBoundaryOperators Assembler;
+    std::vector<Assembler*> localAssemblers(1, &localAssembler);
+    std::vector<Assembler*> localAssemblersForAdmissibleBlocks(
+                1, &localAssemblerForAdmissibleBlocks);
     std::vector<const DiscreteBndOp*> sparseTermsToAdd;
     std::vector<ResultType> denseTermsMultipliers(1, 1.0);
     std::vector<ResultType> sparseTermsMultipliers;
 
-    return assembleDetachedWeakForm(testSpace, trialSpace, localAssemblers,
-                            sparseTermsToAdd,
-                            denseTermsMultipliers,
-                            sparseTermsMultipliers,
-                                    context, symmetry);
+    return assembleDetachedWeakForm(
+                testSpace, trialSpace, localAssemblers,
+                localAssemblersForAdmissibleBlocks,
+                sparseTermsToAdd, denseTermsMultipliers, sparseTermsMultipliers,
+                context, symmetry);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -677,11 +922,12 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
 #ifdef WITH_AHMED
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
     typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
-    typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
+    typedef bbxbemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
     typedef DiscreteAcaBoundaryOperator<ResultType> DiscreteAcaLinOp;
 
     const AcaOptions& acaOptions = options.acaOptions();
-    const bool indexWithGlobalDofs = acaOptions.globalAssemblyBeforeCompression;
+    const bool indexWithGlobalDofs = 
+            acaOptions.mode != AcaOptions::HYBRID_ASSEMBLY;
     const bool verbosityAtLeastDefault =
             (options.verbosityLevel() >= VerbosityLevel::DEFAULT);
     const bool verbosityAtLeastHigh =
@@ -690,9 +936,8 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
 #ifndef WITH_TRILINOS
     if (!indexWithGlobalDofs)
         throw std::runtime_error("AcaGlobalAssembler::assemblePotentialOperator(): "
-                                 "ACA assembly with globalAssemblyBeforeCompression "
-                                 "set to false requires BEM++ to be linked with "
-                                 "Trilinos");
+                                 "local-mode ACA assembly requires BEM++ to be "
+                                 "linked with Trilinos");
 #endif // WITH_TRILINOS
 
     if (localAssemblers.empty())
@@ -735,9 +980,11 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
                   << std::endl;
 
     unsigned int blockCount = 0;
+    bool useStrongAdmissibilityCondition = !indexWithGlobalDofs;
     shared_ptr<AhmedBemBlcluster> bemBlclusterTree(
                 CCH::constructBemBlockCluster(acaOptions, false /* symmetric */,
                                               *testClusterTree, *trialClusterTree,
+                                              useStrongAdmissibilityCondition,
                                               blockCount).release());
 
     if (verbosityAtLeastHigh)
@@ -752,12 +999,16 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
     AcaAssemblyHelper helper(points, trialSpace, p2oPoints, p2oTrialDofs,
                              localAssemblers, termMultipliers, options);
 
+    // If necessary, construct maps between (permuted) flat local and global indices
+    shared_ptr<const Epetra_CrsMatrix> testGlobalToLocal, trialGlobalToLocal;
+
     std::auto_ptr<DiscreteAcaBoundaryOperator<ResultType> > acaOp =
     assembleAcaOperator<AcaAssemblyHelper, BasisFunctionType, ResultType>(
-                helper, bemBlclusterTree,
+                &helper, &helper, bemBlclusterTree, bemBlclusterTree,
                 options.parallelizationOptions(), options.acaOptions(),
-                verbosityAtLeastDefault, symmetric,
-                test_o2pPermutation, trial_o2pPermutation
+                verbosityAtLeastDefault, verbosityAtLeastHigh, symmetric,
+                test_o2pPermutation, trial_o2pPermutation,
+                testGlobalToLocal, trialGlobalToLocal
 #ifdef DUMP_DENSE_BLOCKS
                 ,
                 test_p2oPermutation, trial_p2oPermutation,

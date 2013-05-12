@@ -146,7 +146,7 @@ class DiscreteAcaBoundaryOperator :
 public:
     typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
-    typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
+    typedef bbxbemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
     typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
     typedef boost::shared_array<AhmedMblock*> AhmedMblockArray;
     // Unfortunately currently shared_array<T> cannot be converted to

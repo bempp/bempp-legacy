@@ -37,6 +37,7 @@ namespace Bempp
 template <typename BasisFunctionType> class Space;
 template <typename CoordinateType> struct AhmedDofWrapper;
 template <typename CoordinateType> struct Point3D;
+template <typename CoordinateType> struct BoundingBox;
 class AcaOptions;
 class IndexPermutation;
 /** \endcond */
@@ -47,7 +48,7 @@ struct ClusterConstructionHelper
     typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
     typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
-    typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
+    typedef bbxbemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
 
     static void constructBemCluster(
         const Space<BasisFunctionType>& space,
@@ -69,18 +70,25 @@ struct ClusterConstructionHelper
     constructBemBlockCluster(
         const AcaOptions& acaOptions,
         bool symmetric,
-        /* input parameter (effectively const */
         AhmedBemCluster& testCluster,
-        /* input parameter (effectively const */
         AhmedBemCluster& trialCluster,
-        /* output parameter */
+            bool useStrongAdmissibilityCondition,
         unsigned int& blockCount);
+
+    static void truncateBemBlockCluster(blcluster *cluster,
+                                        const blcluster *refCluster);
 
     static void
     getComponentDofPositions(
             const arma::Mat<CoordinateType>& points,
             int componentCount,
             std::vector<Point3D<CoordinateType> >& positions);
+
+    static void
+    getComponentBoundingBoxes(
+            const arma::Mat<CoordinateType>& points,
+            int componentCount,
+            std::vector<BoundingBox<CoordinateType> >& boundingBoxes);
 };
 
 } // namespace Bempp

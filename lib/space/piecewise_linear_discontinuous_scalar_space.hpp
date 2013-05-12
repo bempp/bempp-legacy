@@ -52,7 +52,8 @@ public:
     explicit PiecewiseLinearDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid);
     virtual ~PiecewiseLinearDiscontinuousScalarSpace();
 
-    virtual const Space<BasisFunctionType>& discontinuousSpace() const;
+    virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
+        const shared_ptr<const Space<BasisFunctionType> >& self) const;
     virtual bool isDiscontinuous() const;
 
     virtual size_t globalDofCount() const;
@@ -68,6 +69,11 @@ public:
 
     virtual void getGlobalDofPositions(std::vector<Point3D<CoordinateType> >& positions) const;
     virtual void getFlatLocalDofPositions(std::vector<Point3D<CoordinateType> >& positions) const;
+
+    virtual void getGlobalDofBoundingBoxes(
+            std::vector<BoundingBox<CoordinateType> >& bboxes) const;
+    virtual void getFlatLocalDofBoundingBoxes(
+            std::vector<BoundingBox<CoordinateType> >& bboxes) const;
 
     virtual void getGlobalDofNormals(std::vector<Point3D<CoordinateType> >& normals) const;
     virtual void getFlatLocalDofNormals(std::vector<Point3D<CoordinateType> >& normals) const;

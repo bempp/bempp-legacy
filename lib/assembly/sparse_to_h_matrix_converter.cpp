@@ -122,7 +122,7 @@ void SparseToHMatrixConverter<ValueType>::constructHMatrix(
         std::vector<unsigned int>& domain_o2p,
         std::vector<unsigned int>& range_p2o,
         double eps,
-        bemblcluster<AhmedDofType, AhmedDofType>* blockCluster,
+        bbxbemblcluster<AhmedDofType, AhmedDofType>* blockCluster,
         boost::shared_array<AhmedMblock*>& mblocks,
         int& maximumRank)
 {

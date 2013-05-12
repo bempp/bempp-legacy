@@ -21,72 +21,19 @@
 #ifndef bempp_helmholtz_3d_double_layer_boundary_operator_hpp
 #define bempp_helmholtz_3d_double_layer_boundary_operator_hpp
 
-#include "helmholtz_3d_boundary_operator_base.hpp"
 #include "boundary_operator.hpp"
+#include "helmholtz_3d_operators_common.hpp"
+#include "symmetry.hpp"
+
+#include "../common/scalar_traits.hpp"
 
 namespace Bempp
 {
 
-/** \cond PRIVATE */
-template <typename BasisFunctionType>
-struct Helmholtz3dDoubleLayerBoundaryOperatorImpl;
-/** \endcond */
-
 /** \ingroup helmholtz_3d
- *  \brief Double-layer-potential boundary operator for the Helmholtz equation in 3D.
- *
- *  \tparam BasisFunctionType
- *    Type of the values of the basis functions into which functions acted upon
- *    by the operator are expanded. It can take the following values: \c float,
- *    \c double, <tt>std::complex<float></tt> and
- *    <tt>std::complex<double></tt>.
- *
- *  \see helmholtz_3d */
-template <typename BasisFunctionType_>
-class Helmholtz3dDoubleLayerBoundaryOperator :
-        public Helmholtz3dBoundaryOperatorBase<
-                Helmholtz3dDoubleLayerBoundaryOperatorImpl<BasisFunctionType_>,
-                BasisFunctionType_>
-{
-    typedef Helmholtz3dBoundaryOperatorBase<
-    Helmholtz3dDoubleLayerBoundaryOperatorImpl<BasisFunctionType_>,
-    BasisFunctionType_> Base;
-public:
-    /** \copydoc ElementaryIntegralOperator::BasisFunctionType */
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc ElementaryIntegralOperator::KernelType */
-    typedef typename Base::KernelType KernelType;
-    /** \copydoc ElementaryIntegralOperator::ResultType */
-    typedef typename Base::ResultType ResultType;
-    /** \copydoc ElementaryIntegralOperator::CoordinateType */
-    typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
-    typedef typename Base::CollectionOfBasisTransformations
-    CollectionOfBasisTransformations;
-    /** \copydoc ElementaryIntegralOperator::CollectionOfKernels */
-    typedef typename Base::CollectionOfKernels CollectionOfKernels;
-    /** \copydoc ElementaryIntegralOperator::TestKernelTrialIntegral */
-    typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
-
-    /** \copydoc Helmholtz3dBoundaryOperatorBase::Helmholtz3dBoundaryOperatorBase */
-    Helmholtz3dDoubleLayerBoundaryOperator(
-            const shared_ptr<const Space<BasisFunctionType> >& domain,
-            const shared_ptr<const Space<BasisFunctionType> >& range,
-            const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-            KernelType waveNumber,
-            const std::string& label = "",
-            int symmetry = NO_SYMMETRY,
-            bool useInterpolation = false,
-            int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
-};
-
-/** \relates Helmholtz3dDoubleLayerBoundaryOperator
- *  \brief Construct a BoundaryOperator object wrapping a
- *  Helmholtz3dDoubleLayerBoundaryOperator.
- *
- *  This is a convenience function that creates a
- *  Helmholtz3dDoubleLayerBoundaryOperator, immediately wraps it in a
- *  BoundaryOperator and returns the latter object.
+ *  \brief Construct a BoundaryOperator object representing the
+ *  double-layer boundary operator associated with the Helmholtz
+ *  equation in 3D.
  *
  *  \param[in] context
  *    A Context object that will be used to build the weak form of the
@@ -122,17 +69,39 @@ public:
  *
  *  None of the shared pointers may be null and the spaces \p range and \p
  *  dualToRange must be defined on the same grid, otherwise an exception is
- *  thrown. */
+ *  thrown.
+ *
+ *  If local-mode ACA assembly is requested (see AcaOptions::mode), after
+ *  discretization, the weak form of this operator is stored as the product
+ *
+ *  \f[
+ *     P A_{\textrm{d}} Q,
+ *  \f]
+ *
+ *  where \f$A_{\textrm{d}}\f$ is the weak form of this operator discretized
+ *  with test and trial functions being the restrictions of the basis functions
+ *  of \p domain and \p range to individual elements; \f$Q\f$ is the sparse
+ *  matrix representing the expansion of the basis functions of \p domain in the
+ *  just mentioned single-element trial functions; and \f$P\f$ is the sparse
+ *  matrix whose transpose represents the expansion of the basis functions of \p
+ *  dualToRange in the single-element test functions.
+ *
+ *  \tparam BasisFunctionType
+ *    Type of the values of the basis functions into which functions acted upon
+ *    by the operator are expanded. It can take the following values: \c float,
+ *    \c double, <tt>std::complex<float></tt> and
+ *    <tt>std::complex<double></tt>.
+ */
 template <typename BasisFunctionType>
 BoundaryOperator<BasisFunctionType,
-typename Helmholtz3dDoubleLayerBoundaryOperator<BasisFunctionType>::ResultType>
+typename ScalarTraits<BasisFunctionType>::ComplexType>
 helmholtz3dDoubleLayerBoundaryOperator(
         const shared_ptr<const Context<BasisFunctionType,
-        typename Helmholtz3dDoubleLayerBoundaryOperator<BasisFunctionType>::ResultType> >& context,
+        typename ScalarTraits<BasisFunctionType>::ComplexType> >& context,
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        typename Helmholtz3dDoubleLayerBoundaryOperator<BasisFunctionType>::KernelType waveNumber,
+        typename ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
         const std::string& label = "",
         int symmetry = NO_SYMMETRY,
         bool useInterpolation = false,

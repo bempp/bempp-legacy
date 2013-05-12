@@ -58,10 +58,15 @@ PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-const Space<BasisFunctionType>&
-PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::discontinuousSpace() const
+shared_ptr<const Space<BasisFunctionType> >
+PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::discontinuousSpace(
+    const shared_ptr<const Space<BasisFunctionType> >& self) const
 {
-    return *this;
+    if (self.get() != this)
+        throw std::invalid_argument(
+            "PiecewiseLinearDiscontinuousScalarSpace::discontinuousSpace(): "
+            "argument should be a shared pointer to *this");
+    return self;
 }
 
 template <typename BasisFunctionType>
@@ -177,26 +182,21 @@ void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::getGlobalDofPos
 {
     // This implementation assumes that the EntityIterator returns entities
     // ordered according to their indices
-    const int gridDim = this->domainDimension();
     const int worldDim = this->grid()->dimWorld();
     positions.resize(globalDofCount());
 
     std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
-    arma::Col<CoordinateType> center;
+    arma::Mat<CoordinateType> corners;
     size_t globalDofIndex = 0;
     while (!it->finished())
     {
         const Entity<0>& e = it->entity();
-        e.geometry().getCenter(center);
-        int vertexCount;
-        if (gridDim == 1)
-            vertexCount = e.template subEntityCount<1>();
-        else // gridDim == 2
-            vertexCount = e.template subEntityCount<2>();
-        for (int vertex = 0; vertex < vertexCount; ++vertex) {
-            positions[globalDofIndex].x = center(0);
-            positions[globalDofIndex].y = center(1);
-            positions[globalDofIndex].z = (worldDim == 3) ? center(2) : 0.;
+        e.geometry().getCorners(corners);
+        const size_t cornerCount = corners.n_cols;
+        for (int corner = 0; corner < cornerCount; ++corner) {
+            positions[globalDofIndex].x = corners(0, corner);
+            positions[globalDofIndex].y = corners(1, corner);
+            positions[globalDofIndex].z = (worldDim == 3) ? corners(2, corner) : 0.;
             ++globalDofIndex;
         }
         it->next();
@@ -209,6 +209,89 @@ void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::getFlatLocalDof
         std::vector<Point3D<CoordinateType> >& positions) const
 {
     getGlobalDofPositions(positions);
+}
+
+template <typename BasisFunctionType>
+void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
+getGlobalDofBoundingBoxes(
+       std::vector<BoundingBox<CoordinateType> >& bboxes) const
+{
+   const int gridDim = this->domainDimension();
+   const size_t globalDofCount_ = globalDofCount();
+   bboxes.resize(globalDofCount_);
+
+   BoundingBox<CoordinateType> model;
+   model.lbound.x = std::numeric_limits<CoordinateType>::max();
+   model.lbound.y = std::numeric_limits<CoordinateType>::max();
+   model.lbound.z = std::numeric_limits<CoordinateType>::max();
+   model.ubound.x = -std::numeric_limits<CoordinateType>::max();
+   model.ubound.y = -std::numeric_limits<CoordinateType>::max();
+   model.ubound.z = -std::numeric_limits<CoordinateType>::max();
+   std::fill(bboxes.begin(), bboxes.end(), model);
+
+   arma::Mat<CoordinateType> corners;
+
+   if (gridDim != 2)
+       throw std::runtime_error("PiecewiseLinearDiscontinuousScalarSpace::"
+                                "getGlobalDofBoundingBoxes(): so far "
+                                "implemented only for two-dimensional grids");
+
+   std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+   size_t globalDofIndex = 0;
+   while (!it->finished())
+   {
+       const Entity<0>& e = it->entity();
+       const Geometry& geo = e.geometry();
+
+       geo.getCorners(corners);
+       const size_t cornerCount = corners.n_cols;
+       for (size_t i = 0; i < cornerCount; ++i) {
+           bboxes[globalDofIndex].reference.x = corners(0, i);
+           bboxes[globalDofIndex].reference.y = corners(1, i);
+           bboxes[globalDofIndex].reference.z = corners(2, i);
+           for (size_t j = 0; j < cornerCount; ++j) {
+               bboxes[globalDofIndex].lbound.x =
+                   std::min(bboxes[globalDofIndex].lbound.x, corners(0, j));
+               bboxes[globalDofIndex].lbound.y =
+                   std::min(bboxes[globalDofIndex].lbound.y, corners(1, j));
+               bboxes[globalDofIndex].lbound.z =
+                   std::min(bboxes[globalDofIndex].lbound.z, corners(2, j));
+               bboxes[globalDofIndex].ubound.x =
+                   std::max(bboxes[globalDofIndex].ubound.x, corners(0, j));
+               bboxes[globalDofIndex].ubound.y =
+                   std::max(bboxes[globalDofIndex].ubound.y, corners(1, j));
+               bboxes[globalDofIndex].ubound.z =
+                   std::max(bboxes[globalDofIndex].ubound.z, corners(2, j));
+           }
+           ++globalDofIndex;
+       }
+       it->next();
+   }
+   assert(globalDofIndex == globalDofCount_);
+
+#ifndef NDEBUG
+   std::vector<Point3D<CoordinateType> > positions;
+   getGlobalDofPositions(positions);
+   for (size_t i = 0; i < globalDofCount_; ++i) {
+       assert(bboxes[i].reference.x == positions[i].x);
+       assert(bboxes[i].reference.y == positions[i].y);
+       assert(bboxes[i].reference.z == positions[i].z);
+       assert(bboxes[i].reference.x >= bboxes[i].lbound.x);
+       assert(bboxes[i].reference.y >= bboxes[i].lbound.y);
+       assert(bboxes[i].reference.z >= bboxes[i].lbound.z);
+       assert(bboxes[i].reference.x <= bboxes[i].ubound.x);
+       assert(bboxes[i].reference.y <= bboxes[i].ubound.y);
+       assert(bboxes[i].reference.z <= bboxes[i].ubound.z);
+   }
+#endif // NDEBUG
+}
+
+template <typename BasisFunctionType>
+void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
+getFlatLocalDofBoundingBoxes(
+       std::vector<BoundingBox<CoordinateType> >& bboxes) const
+{
+    getGlobalDofBoundingBoxes(bboxes);
 }
 
 template <typename BasisFunctionType>

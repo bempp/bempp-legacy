@@ -314,38 +314,6 @@ def _constructOperator(className, context, domain, range, dualToRange, label=Non
     result._dualToRange = dualToRange
     return result
 
-def _constructSyntheticOperator(
-        className, context, domain, range, dualToRange,
-        internalTrialSpace, internalTestSpace, label=None):
-    # determine basis function type
-    basisFunctionType = domain.basisFunctionType()
-    if (basisFunctionType != range.basisFunctionType() or
-            basisFunctionType != dualToRange.basisFunctionType() or
-            basisFunctionType != internalTrialSpace.basisFunctionType() or
-            basisFunctionType != internalTestSpace.basisFunctionType()):
-        raise TypeError("BasisFunctionType of all spaces must be the same")
-
-    # determine result type
-    resultType = context.resultType()
-
-    if label:
-        result = _constructObjectTemplatedOnBasisAndResult(
-            core, className, basisFunctionType, resultType,
-            context, domain, range, dualToRange,
-            internalTrialSpace, internalTestSpace, label)
-    else:
-        result = _constructObjectTemplatedOnBasisAndResult(
-            core, className, basisFunctionType, resultType,
-            context, domain, range, dualToRange,
-            internalTrialSpace, internalTestSpace)
-    result._context = context
-    result._domain = domain
-    result._range = range
-    result._dualToRange = dualToRange
-    result._internalTrialSpace = internalTrialSpace
-    result._internalTestSpace = internalTestSpace
-    return result
-
 # determine the type used to represent the values of the basis functions into
 # which functions acted upon by the operator will be expanded, and the type used
 # to represent the values of the functions produced by this operator.
@@ -466,211 +434,6 @@ def createLaplace3dHypersingularBoundaryOperator(
         "laplace3dHypersingularBoundaryOperator",
         context, domain, range, dualToRange, label)
 
-def createLaplace3dSyntheticSingleLayerBoundaryOperator(
-        context, domain, range, dualToRange,
-        internalTrialSpace, internalTestSpace, label=None):
-    """
-    Create and return a "synthetic" representation of the single-layer-potential
-    boundary operator for the Laplace equation in 3D.
-
-    This function creates a single-layer Laplace boundary operator A whose weak
-    form is stored as the product P A_d Q, where A_d is the weak form of A
-    discretised with the *discontinuous* test and trial function spaces passed
-    in the parameters internalTestSpace and internalTrialSpace, Q is the sparse
-    matrix mapping the degrees of freedom of domain to those of
-    internalTrialSpace, and P the matrix mapping the degrees of freedom of
-    internalTestSpace to dualToRange.
-  
-    See the C++ documentation of SyntheticIntegralOperator for a longer
-    explanation of the concept of a synthetic operator.
-    
-    *Parameters:*
-       - context (Context)
-            A Context object to control the assembly of the weak form of the
-            newly constructed operator.
-       - domain (Space)
-            Function space to be taken as the domain of the operator.
-       - range (Space)
-            Function space to be taken as the range of the operator.
-       - dualToRange (Space)
-            Function space to be taken as the dual to the range of the operator.
-       - internalTrialSpace (Space)
-            Trial function space used in the discretisation of A to A_d. It must
-            be a discontinuous space, with basis functions extending over single
-            elements only.
-       - internalTestSpace (Space)
-            Test function space used in the discretisation of A to A_d. It must
-            be a discontinuous space, with basis functions extending over single
-            elements only.     
-       - label (string)
-            Textual label of the operator. If set to None (default), a unique
-            label will be generated automatically.
-
-    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
-    object, with BasisFunctionType and ResultType determined automatically from
-    the context argument and equal to either float32, float64, complex64 or
-    complex128.
-    """
-    return _constructSyntheticOperator(
-        "laplace3dSyntheticSingleLayerBoundaryOperator",
-        context, domain, range, dualToRange,
-        internalTrialSpace, internalTestSpace, label)
-
-def createLaplace3dSyntheticDoubleLayerBoundaryOperator(
-        context, domain, range, dualToRange,
-        internalTrialSpace, internalTestSpace, label=None):
-    """
-    Create and return a "synthetic" representation of the double-layer-potential
-    boundary operator for the Laplace equation in 3D.
-
-    This function creates a double-layer Laplace boundary operator A whose weak
-    form is stored as the product P A_d Q, where A_d is the weak form of A
-    discretised with the *discontinuous* test and trial function spaces passed
-    in the parameters internalTestSpace and internalTrialSpace, Q is the sparse
-    matrix mapping the degrees of freedom of domain to those of
-    internalTrialSpace, and P the matrix mapping the degrees of freedom of
-    internalTestSpace to dualToRange.
-  
-    See the C++ documentation of SyntheticIntegralOperator for a longer
-    explanation of the concept of a synthetic operator.
-    
-    *Parameters:*
-       - context (Context)
-            A Context object to control the assembly of the weak form of the
-            newly constructed operator.
-       - domain (Space)
-            Function space to be taken as the domain of the operator.
-       - range (Space)
-            Function space to be taken as the range of the operator.
-       - dualToRange (Space)
-            Function space to be taken as the dual to the range of the operator.
-       - internalTrialSpace (Space)
-            Trial function space used in the discretisation of A to A_d. It must
-            be a discontinuous space, with basis functions extending over single
-            elements only.
-       - internalTestSpace (Space)
-            Test function space used in the discretisation of A to A_d. It must
-            be a discontinuous space, with basis functions extending over single
-            elements only.     
-       - label (string)
-            Textual label of the operator. If set to None (default), a unique
-            label will be generated automatically.
-
-    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
-    object, with BasisFunctionType and ResultType determined automatically from
-    the context argument and equal to either float32, float64, complex64 or
-    complex128.
-    """
-    return _constructSyntheticOperator(
-        "laplace3dSyntheticDoubleLayerBoundaryOperator",
-        context, domain, range, dualToRange,
-        internalTrialSpace, internalTestSpace, label)
-
-def createLaplace3dSyntheticAdjointDoubleLayerBoundaryOperator(
-        context, domain, range, dualToRange,
-        internalTrialSpace, internalTestSpace, label=None):
-    """
-    Create and return a "synthetic" representation of the adjoint
-    double-layer-potential boundary operator for the Laplace equation in 3D.
-
-    This function creates a adjoint double-layer Laplace boundary operator A whose weak
-    form is stored as the product P A_d Q, where A_d is the weak form of A
-    discretised with the *discontinuous* test and trial function spaces passed
-    in the parameters internalTestSpace and internalTrialSpace, Q is the sparse
-    matrix mapping the degrees of freedom of domain to those of
-    internalTrialSpace, and P the matrix mapping the degrees of freedom of
-    internalTestSpace to dualToRange.
-  
-    See the C++ documentation of SyntheticIntegralOperator for a longer
-    explanation of the concept of a synthetic operator.
-    
-    *Parameters:*
-       - context (Context)
-            A Context object to control the assembly of the weak form of the
-            newly constructed operator.
-       - domain (Space)
-            Function space to be taken as the domain of the operator.
-       - range (Space)
-            Function space to be taken as the range of the operator.
-       - dualToRange (Space)
-            Function space to be taken as the dual to the range of the operator.
-       - internalTrialSpace (Space)
-            Trial function space used in the discretisation of A to A_d. It must
-            be a discontinuous space, with basis functions extending over single
-            elements only.
-       - internalTestSpace (Space)
-            Test function space used in the discretisation of A to A_d. It must
-            be a discontinuous space, with basis functions extending over single
-            elements only.     
-       - label (string)
-            Textual label of the operator. If set to None (default), a unique
-            label will be generated automatically.
-
-    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
-    object, with BasisFunctionType and ResultType determined automatically from
-    the context argument and equal to either float32, float64, complex64 or
-    complex128.
-    """
-    return _constructSyntheticOperator(
-        "laplace3dSyntheticAdjointDoubleLayerBoundaryOperator",
-        context, domain, range, dualToRange,
-        internalTrialSpace, internalTestSpace, label)
-
-def createLaplace3dSyntheticHypersingularBoundaryOperator(
-        context, domain, range, dualToRange,
-        internalTrialSpace, internalTestSpace, label=None):
-    """
-    Create and return a "synthetic" representation of the hypersingular
-    boundary operator for the Laplace equation in 3D.
-
-    This function creates a hypersingular Laplace boundary operator A whose weak
-    form is stored in the form
-
-    C_x' A_d C_x + C_y' A_d C_y + C_z' A_d C_z,
-
-    where A_d is the weak form of A discretised with the *discontinuous* test
-    and trial function spaces passed in the parameters internalTestSpace and
-    internalTrialSpace, C_i (i = x, y, z) are the sparse matrices representing
-    the expansion of ith component of the surface curl of the basis functions of
-    domain in the basis of internalTrialSpace, and C_i' the matrices
-    representing the construction of ith component of the surface curl of the
-    basis function of dualToRange from the basis functions of internalTestSpace.
-  
-    See the C++ documentation of SyntheticIntegralOperator for a longer
-    explanation of the concept of a synthetic operator.
-    
-    *Parameters:*
-       - context (Context)
-            A Context object to control the assembly of the weak form of the
-            newly constructed operator.
-       - domain (Space)
-            Function space to be taken as the domain of the operator.
-       - range (Space)
-            Function space to be taken as the range of the operator.
-       - dualToRange (Space)
-            Function space to be taken as the dual to the range of the operator.
-       - internalTrialSpace (Space)
-            Trial function space used in the discretisation of A to A_d. It must
-            be a discontinuous space, with basis functions extending over single
-            elements only.
-       - internalTestSpace (Space)
-            Test function space used in the discretisation of A to A_d. It must
-            be a discontinuous space, with basis functions extending over single
-            elements only.     
-       - label (string)
-            Textual label of the operator. If set to None (default), a unique
-            label will be generated automatically.
-
-    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
-    object, with BasisFunctionType and ResultType determined automatically from
-    the context argument and equal to either float32, float64, complex64 or
-    complex128.
-    """
-    return _constructSyntheticOperator(
-        "laplace3dSyntheticHypersingularBoundaryOperator",
-        context, domain, range, dualToRange,
-        internalTrialSpace, internalTestSpace, label)
-
 def _constructLaplacePotentialOperator(className, context):
     basisFunctionType = context.basisFunctionType()
     resultType = context.resultType()
@@ -734,9 +497,13 @@ def _constructHelmholtzOperator(
     if (basisFunctionType != domain.basisFunctionType() or
             basisFunctionType != range.basisFunctionType() or
             basisFunctionType != dualToRange.basisFunctionType()):
-        raise TypeError("BasisFunctionType of context and all spaces "
+        raise TypeError("BasisFunctionType of 'context' and all spaces "
                         "must be the same")
     resultType = context.resultType()
+    if resultType != promoteTypeToComplex(basisFunctionType):
+        raise TypeError("ResultType of 'context' must be the class of complex "
+                        "numbers of the same precision as its "
+                        "BasisFunctionType")
     if not label:
         label = ""
     symmetry = 0

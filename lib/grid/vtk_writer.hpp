@@ -30,7 +30,8 @@
 namespace Bempp
 {
 
-/** \brief Abstract exporter of data in the vtk format.
+/** \ingroup grid
+  * \brief Abstract exporter of data in the vtk format.
   *
   * Exports data (living on cells or vertices of a grid)
   * to a file suitable for easy visualization with

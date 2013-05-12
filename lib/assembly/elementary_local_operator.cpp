@@ -414,7 +414,7 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparse
     typedef ClusterConstructionHelper<BasisFunctionType> CCH;
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
     typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
-    typedef bemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
+    typedef bbxbemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
 
     shared_ptr<AhmedBemBlcluster> blockCluster;
     shared_ptr<IndexPermutation> test_o2pPermutation, test_p2oPermutation;
@@ -422,7 +422,8 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparse
 #ifdef WITH_AHMED
     if (options.assemblyMode() == AssemblyOptions::ACA) {
         const AcaOptions& acaOptions = options.acaOptions();
-        bool indexWithGlobalDofs = acaOptions.globalAssemblyBeforeCompression;
+        bool indexWithGlobalDofs = 
+            acaOptions.mode != AcaOptions::HYBRID_ASSEMBLY;
 
         typedef ClusterConstructionHelper<BasisFunctionType> CCH;
         shared_ptr<AhmedBemCluster> testClusterTree;
@@ -435,9 +436,12 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparse
                                  trialClusterTree,
                                  trial_o2pPermutation, trial_p2oPermutation);
         unsigned int blockCount = 0;
+        bool useStrongAdmissibilityCondition = !indexWithGlobalDofs;
         blockCluster.reset(CCH::constructBemBlockCluster(
                                acaOptions, false /* hermitian */,
-                               *testClusterTree, *trialClusterTree, blockCount)
+                               *testClusterTree, *trialClusterTree,
+                               useStrongAdmissibilityCondition,
+                               blockCount)
                            .release());
     }
 #endif

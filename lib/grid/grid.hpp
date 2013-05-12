@@ -21,6 +21,8 @@
 #ifndef bempp_grid_hpp
 #define bempp_grid_hpp
 
+/** \file . */
+
 #include "../common/common.hpp"
 #include "grid_parameters.hpp"
 
@@ -39,7 +41,8 @@ class GridView;
 class IdSet;
 /** \endcond */
 
-/** \brief Abstract wrapper of a grid.
+/** \ingroup grid
+    \brief Abstract wrapper of a grid.
 
     Functions related to parallelization are not wrapped yet.
  */
@@ -88,20 +91,28 @@ public:
     virtual std::auto_ptr<GeometryFactory> elementGeometryFactory() const = 0;
 
     /** @}
-    @name Id sets
+    @name Others
     @{ */
 
     /** \brief Reference to the grid's global id set. */
     virtual const IdSet& globalIdSet() const = 0;
 
+    /** \brief Get bounding box.
+     *
+     *  The grid lies in the box defined by the inequalities
+     *  <tt>lowerBound(i) <= x_i <= upperBound(i)</tt>, where x_i is the ith
+     *  coordinate. */
     void getBoundingBox(arma::Col<double>& lowerBound,
                         arma::Col<double>& upperBound) const;
 
 private:
+    /** \cond PRIVATE */
     mutable arma::Col<double> m_lowerBound, m_upperBound;
+    /** \endcond */
 };
 
-/** \brief Check whether points are inside or outside a closed grid.
+/** \relates Grid
+ *  \brief Check whether points are inside or outside a closed grid.
  *
  *  \param[in] grid A grid representing a closed 2D surface embedded in a 3D
  *    space.

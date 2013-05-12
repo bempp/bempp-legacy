@@ -24,6 +24,7 @@
 #include "../common/common.hpp"
 #include "bempp/common/config_trilinos.hpp"
 
+#include "../common/bounding_box.hpp"
 #include "../common/deprecated.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../common/types.hpp"
@@ -51,7 +52,7 @@ namespace Bempp
 class Grid;
 template <int codim> class Entity;
 template <int codim> class EntityPointer;
-template <typename ValueType> class DiscreteBoundaryOperator;
+template <typename ValueType> class DiscreteSparseBoundaryOperator;
 /** \endcond */
 
 enum DofType
@@ -103,10 +104,42 @@ public:
     /** @name Attributes
     @{ */
 
-    /** \todo DOCUMENT ME */
-    virtual const Space<BasisFunctionType>& discontinuousSpace() const = 0;
+    /** \brief Return a shared pointer to an appropriate counterpart to this
+     *  space, with basis functions extending only over single elements.
+     *
+     *  Let \f$S = span_{n=1}^N f_n\f$ denote the function space represented by
+     *  this object, with \f$f_n\f$ its basis functions.
+     *
+     *  If the functions \f$f_n\f$ are scalar-valued, discontinuousSpace()
+     *  should return a shared pointer to an object representing a space \f$T =
+     *  span_{m=1}^M g_m\f$ with basis functions \f$g_m\f$ such that:
+     *
+     *  1. \f$T = S\f$.
+     *
+     *  2. The support of each basis function \f$g_m\f$ is a single element.
+     *
+     *  3. Each function \f$f_n\f$ has a unique representation in the basis of
+     *     \f$\{g_m\}_{m=1}^M\f$ and each function \f$g_m\f$ contributes to exactly
+     *     one function \f$f_n\f$.
+     *
+     *  If the values of functions \f$f_n\f$ are vectors with \f$d\f$
+     *  components, discontinuousSpace() should return a shared pointer to an
+     *  object representing a space \f$T = span_{m=1}^M g_m\f$ of with
+     *  *scalar-valued* basis functions \f$g_m\f$ such that
+     *
+     *  1. For each \f$i = 1, 2, \cdots, d\f$ it holds that \f$T \superset
+     *     span_{n=1}^N (f_n)_i\f$, where \f$(f_n)_i\f$ denotes the \f$i\f$th
+     *     component of \f$f_n\f$.
+     *
+     *  2. The support of each basis function \f$g_m\f$ is a single element.
+     *
+     *  \param[in] self This must be a shared pointer to <tt>*this</tt>.
+     */
+    virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
+        const shared_ptr<const Space<BasisFunctionType> >& self) const = 0;
 
-    /** \todo DOCUMENT ME */
+    /** \brief Return true if each basis function of this space extends over
+     *  only a single element, false otherwise. */
     virtual bool isDiscontinuous() const = 0;
 
     /** \brief Dimension of the grid on which functions from this space are
@@ -255,6 +288,37 @@ public:
     virtual void getGlobalDofPositions(
             std::vector<Point3D<CoordinateType> >& positions) const = 0;
 
+    /** \brief Retrieve bounding boxes of global degrees of freedom.
+     *
+     *  \param[out] boundingBoxes
+     *    Vector whose <em>i</em>th element contains the bounding box
+     *    of <em>i</em>th global degree of freedom.
+     *
+     *  \note This function is intended as a helper for clustering algorithms
+     *  used in matrix compression algorithms such as adaptive cross
+     *  approximation. */
+    virtual void getGlobalDofBoundingBoxes(
+            std::vector<BoundingBox<CoordinateType> >& boundingBoxes) const {
+        throw std::runtime_error("Space::getGlobalDofBoundingBoxes(): "
+                                 "implementation missing");
+    }
+
+    /** \brief Retrieve bounding boxes of local degrees of freedom ordered by
+     *  their flat index.
+     *
+     *  \param[out] boundingBoxes
+     *    Vector whose <em>i</em>th element contains the bounding box
+     *    the local degree of freedom with flat index <em>i</em>.
+     *
+     *  \note This function is intended as a helper for clustering algorithms
+     *  used in matrix compression algorithms such as adaptive cross
+     *  approximation. */
+    virtual void getFlatLocalDofBoundingBoxes(
+            std::vector<BoundingBox<CoordinateType> >& boundingBoxes) const {
+        throw std::runtime_error("Space::getFlatLocalDofBoundingBoxes(): "
+                                 "implementation missing");
+    }
+
     /** \brief Retrieve positions of local degrees of freedom ordered by their
      *  flat index.
      *
@@ -337,7 +401,8 @@ private:
     /** \endcond */
 };
 
-/** \brief Get pointers to Basis objects corresponding to all elements of the grid
+/** \relates Space
+ *  \brief Get pointers to Basis objects corresponding to all elements of the grid
  *  on which a function space is defined.
  *
  *  \param[in] space
@@ -355,11 +420,11 @@ void getAllBases(const Space<BasisFunctionType>& space,
 
 #ifdef WITH_TRILINOS
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<DiscreteBoundaryOperator<ResultType> >
+shared_ptr<DiscreteSparseBoundaryOperator<ResultType> >
 constructOperatorMappingGlobalToFlatLocalDofs(const Space<BasisFunctionType>& space);
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<DiscreteBoundaryOperator<ResultType> >
+shared_ptr<DiscreteSparseBoundaryOperator<ResultType> >
 constructOperatorMappingFlatLocalToGlobalDofs(const Space<BasisFunctionType>& space);
 #endif // WITH_TRILINOS
 

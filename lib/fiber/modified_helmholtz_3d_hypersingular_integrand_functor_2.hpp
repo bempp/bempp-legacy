@@ -79,16 +79,16 @@ public:
         // Return
         // K_0(x, y) curl u*(x) . curl v(y) + K_1(x, y) u*(x) v(y) n(x) . n(y)
 
-        ResultType term_0 = 0.;
+        BasisFunctionType dotProduct0 = 0.;
         for (int dim = 0; dim < dimWorld; ++dim)
-            term_0 += conjugate(testSurfaceCurls(dim)) * trialSurfaceCurls(dim);
-        term_0 *= kernelValues[0](0, 0);
-        ResultType term_1 = 0.;
+            dotProduct0 += conjugate(testSurfaceCurls(dim)) * trialSurfaceCurls(dim);
+        ResultType term0 = kernelValues[0](0, 0) * dotProduct0;
+        CoordinateType dotProduct1 = 0.;
         for (int dim = 0; dim < dimWorld; ++dim)
-            term_1 += testGeomData.normal(dim) * trialGeomData.normal(dim);
-        term_1 *= kernelValues[1](0, 0) *
-                conjugate(testValues(0)) * trialValues(0);
-        return term_0 + term_1;
+            dotProduct1 += testGeomData.normal(dim) * trialGeomData.normal(dim);
+        ResultType term1 = kernelValues[1](0, 0) *
+                (dotProduct1 * conjugate(testValues(0)) * trialValues(0));
+        return term0 + term1;
     }
 };
 

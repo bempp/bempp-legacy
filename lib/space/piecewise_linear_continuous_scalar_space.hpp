@@ -51,7 +51,8 @@ public:
     explicit PiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid);
     virtual ~PiecewiseLinearContinuousScalarSpace();
 
-    virtual const Space<BasisFunctionType>& discontinuousSpace() const;
+    virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
+        const shared_ptr<const Space<BasisFunctionType> >& self) const;
     virtual bool isDiscontinuous() const;
 
     virtual size_t globalDofCount() const;
@@ -65,11 +66,20 @@ public:
             const std::vector<FlatLocalDofIndex>& flatLocalDofs,
             std::vector<LocalDof>& localDofs) const;
 
-    virtual void getGlobalDofPositions(std::vector<Point3D<CoordinateType> >& positions) const;
-    virtual void getFlatLocalDofPositions(std::vector<Point3D<CoordinateType> >& positions) const;
+    virtual void getGlobalDofPositions(
+            std::vector<Point3D<CoordinateType> >& positions) const;
+    virtual void getFlatLocalDofPositions(
+            std::vector<Point3D<CoordinateType> >& positions) const;
 
-    virtual void getGlobalDofNormals(std::vector<Point3D<CoordinateType> >& normals) const;
-    virtual void getFlatLocalDofNormals(std::vector<Point3D<CoordinateType> >& normals) const;
+    virtual void getGlobalDofBoundingBoxes(
+            std::vector<BoundingBox<CoordinateType> >& bboxes) const;
+    virtual void getFlatLocalDofBoundingBoxes(
+            std::vector<BoundingBox<CoordinateType> >& bboxes) const;
+
+    virtual void getGlobalDofNormals(
+            std::vector<Point3D<CoordinateType> >& normals) const;
+    virtual void getFlatLocalDofNormals(
+            std::vector<Point3D<CoordinateType> >& normals) const;
 
     virtual void dumpClusterIds(
             const char* fileName,
@@ -89,7 +99,7 @@ private:
     std::vector<std::vector<LocalDof> > m_global2localDofs;
     std::vector<LocalDof> m_flatLocal2localDofs;
     size_t m_flatLocalDofCount;
-    mutable tbb::atomic<Space<BasisFunctionType>*> m_discontinuousSpace;
+    mutable shared_ptr<Space<BasisFunctionType> > m_discontinuousSpace;
     mutable tbb::mutex m_discontinuousSpaceMutex;
     /** \endcond */
 };

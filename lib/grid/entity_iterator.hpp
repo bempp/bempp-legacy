@@ -33,7 +33,8 @@ namespace Bempp
 template<int codim> class Entity;
 /** \endcond */
 
-/** \brief Abstract base class for iterators over entities.
+/** \ingroup grid
+    \brief Abstract base class for iterators over entities.
 
     \param codim Codimension of the entities iterated over.
 

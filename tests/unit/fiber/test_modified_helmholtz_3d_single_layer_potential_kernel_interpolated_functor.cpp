@@ -18,11 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "assembly/helmholtz_3d_operators_common.hpp"
 #include "fiber/geometrical_data.hpp"
 #include "fiber/modified_helmholtz_3d_single_layer_potential_kernel_functor.hpp"
 #include "fiber/modified_helmholtz_3d_single_layer_potential_kernel_interpolated_functor.hpp"
 #include "fiber/default_collection_of_kernels.hpp"
-#include "assembly/helmholtz_3d_boundary_operator_base.hpp"
 
 #include "../type_template.hpp"
 #include "../check_arrays_are_close.hpp"

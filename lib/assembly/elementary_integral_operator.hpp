@@ -190,7 +190,7 @@ private:
     std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInDenseMode(
             LocalAssembler& assembler,
-            const AssemblyOptions &options) const;
+            const Context<BasisFunctionType, ResultType>& context) const;
     std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInAcaMode(
             LocalAssembler& assembler,

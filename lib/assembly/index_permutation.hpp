@@ -25,6 +25,9 @@
 #include "../common/common.hpp"
 
 #include "../common/armadillo_fwd.hpp"
+#include "../common/shared_ptr.hpp"
+
+class Epetra_CrsMatrix;
 
 namespace Bempp
 {
@@ -53,7 +56,7 @@ public:
         return !operator==(other);
     }
 
-    std::vector<unsigned int> permutedIndices() const {
+    const std::vector<unsigned int>& permutedIndices() const {
         return m_permutedIndices;
     }
 
@@ -95,6 +98,8 @@ public:
     size_t size() const {
         return m_permutedIndices.size();
     }
+
+    shared_ptr<const Epetra_CrsMatrix> permutationMatrix() const;
 
 private:
     const std::vector<unsigned int> m_permutedIndices;

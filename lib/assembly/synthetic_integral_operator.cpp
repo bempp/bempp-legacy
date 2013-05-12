@@ -49,7 +49,7 @@
 namespace Bempp
 {
 
-namespace 
+namespace
 {
 
 template <typename T>
@@ -219,15 +219,21 @@ SyntheticIntegralOperator(
         const BoundaryOperator<BasisFunctionType, ResultType>& integralOp,
         const std::vector<BoundaryOperator<BasisFunctionType, ResultType> >& trialLocalOps,
         const std::string& label,
-        int symmetry) :
-    Base(determineDomain(testLocalOps, integralOp, trialLocalOps, symmetry),
+        int syntheseSymmetry) :
+    Base(determineDomain(testLocalOps, integralOp, trialLocalOps, syntheseSymmetry),
          determineRange(testLocalOps, integralOp),
          determineDualToRange(testLocalOps, integralOp),
-         label, symmetry),
+         label, syntheseSymmetry & integralOp.abstractOperator()->symmetry()),
     m_integralOp(integralOp),
-    m_testLocalOps(testLocalOps), 
-    m_trialLocalOps(trialLocalOps)
+    m_testLocalOps(testLocalOps),
+    m_trialLocalOps(trialLocalOps),
+    m_syntheseSymmetry(syntheseSymmetry)
 {
+    // Note: the code does not at present distinguish properly between symmetric
+    // and/or hermitian operators (in fact symmetry handling is, frankly, a
+    // mess). We get away with this because sparse operators can only contain
+    // real entries anyway. To be fixed in future.
+
     checkIntegralOperator();
     if (m_testLocalOps.size() > 0 && m_trialLocalOps.size() > 0 &&
             m_testLocalOps.size() != m_trialLocalOps.size())
@@ -236,7 +242,7 @@ SyntheticIntegralOperator(
                 "if both testLocalOps and trialLocalOps are non-empty, "
                 "both must have the same number of elements");
     checkTestLocalOperators();
-    if ((symmetry & SYMMETRIC) || (symmetry & HERMITIAN)) {
+    if ((syntheseSymmetry & SYMMETRIC) || (syntheseSymmetry & HERMITIAN)) {
         if (m_testLocalOps.empty())
             throw std::invalid_argument(
                     "SyntheticIntegralOperator::SyntheticIntegralOperator(): "
@@ -287,14 +293,6 @@ checkTestLocalOperators() const
                 "SyntheticIntegralOperator::checkTestLocalOperators(): "
                 "domain of all test operators must be identical with the dual "
                 "to range of the integral operator");
-    if (this->symmetry() == SYMMETRIC || this->symmetry() == HERMITIAN)
-        for (size_t i = 0; i < localOperatorCount; ++i)
-            if (m_testLocalOps[i].domain() != m_testLocalOps[i].dualToRange())
-                throw std::invalid_argument(
-                    "SyntheticIntegralOperator::checkTestLocalOperators(): "
-                    "for the operator to be symmetric, the domain of all test "
-                    "operators must be identical with the dual "
-                    "to their range");
     for (size_t i = 1; i < localOperatorCount; ++i)
         if (m_testLocalOps[i].domain() != m_testLocalOps[0].domain() ||
             m_testLocalOps[i].range() != m_testLocalOps[0].range() ||
@@ -351,12 +349,19 @@ assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) cons
     typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
 
     bool symmetricMode =
-            this->symmetry() & SYMMETRIC || this->symmetry() & HERMITIAN;
+            m_syntheseSymmetry & SYMMETRIC || m_syntheseSymmetry & HERMITIAN;
+    // std::cout << "symmetricMode: " << symmetricMode << std::endl;
+
+    // We don't need a persistent shared pointer
+    shared_ptr<const Context<BasisFunctionType, ResultType> >
+        internalContext, auxContext;
+    getContextsForInternalAndAuxiliaryOperators(
+        make_shared_from_ref(context), internalContext, auxContext);
 
     size_t localOperatorCount = m_testLocalOps.size();
     shared_ptr<const DiscreteLinOp> discreteIntegralOp =
         m_integralOp.weakForm();
-    std::vector<shared_ptr<const DiscreteLinOp> > 
+    std::vector<shared_ptr<const DiscreteLinOp> >
         discreteTestLocalOps(m_testLocalOps.size()),
         discreteTrialLocalOps(m_trialLocalOps.size());
     for (size_t i = 0; i < m_testLocalOps.size(); ++i)
@@ -369,13 +374,12 @@ assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) cons
     typedef DiscreteSparseBoundaryOperator<ResultType> SparseOp;
     shared_ptr<const SparseOp> discreteTestId, discreteTrialId;
     shared_ptr<Epetra_CrsMatrix> testInverse, trialInverse;
-//    shared_ptr<const DiscreteLinOp> discreteTestInvId, discreteTrialInvId;
     if (!discreteTestLocalOps.empty()) {
         BoundaryOp testId = identityOperator(
                     // We don't need a persistent shared_ptr since identityOperator
                     // will go out of scope at the end of this function anyway.
                     // All we need is a weak form.
-                    make_shared_from_ref(context),
+                    auxContext,
                     m_integralOp.dualToRange(), m_integralOp.dualToRange(),
                     m_integralOp.dualToRange(),
                     "(" + this->label() + ")_test_id");
@@ -407,7 +411,7 @@ assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) cons
         }
         else {
             BoundaryOp trialId = identityOperator(
-                        make_shared_from_ref(context),
+                        auxContext,
                         m_integralOp.domain(), m_integralOp.domain(),
                         m_integralOp.domain(),
                         "(" + this->label() + ")_trial_id");
@@ -428,7 +432,7 @@ assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) cons
         if (symmetricMode)
             discreteTrialLocalOps =
                     transposeTestOperators(discreteTestLocalOps,
-                                           this->symmetry() & HERMITIAN);
+                                           m_syntheseSymmetry & HERMITIAN);
     } else
         discreteTrialLocalOps =
                 coalesceTrialOperators(discreteTrialLocalOps, trialInverse);
@@ -469,6 +473,30 @@ assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) cons
         std::cout << "Assembly of the weak form of operator '" << this->label()
                   << "' took " << (end - start).seconds() << " s" << std::endl;
     return result;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void
+SyntheticIntegralOperator<BasisFunctionType, ResultType>::
+getContextsForInternalAndAuxiliaryOperators(
+    const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+    shared_ptr<const Context<BasisFunctionType, ResultType> >& internalContext,
+    shared_ptr<const Context<BasisFunctionType, ResultType> >& auxContext)
+{
+    typedef Context<BasisFunctionType, ResultType> Ctx;
+    AssemblyOptions assemblyOptions = context->assemblyOptions();
+    AcaOptions acaOptions = assemblyOptions.acaOptions();
+    acaOptions.mode = AcaOptions::GLOBAL_ASSEMBLY;
+    assemblyOptions.switchToAcaMode(acaOptions);
+    internalContext.reset(new Ctx(
+            context->quadStrategy(), assemblyOptions));
+    auxContext = internalContext;
+    if (assemblyOptions.verbosityLevel() < VerbosityLevel::HIGH) {
+        // Suppress timing messages from auxiliary operators
+        assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
+        auxContext.reset(new Ctx(
+            context->quadStrategy(), assemblyOptions));
+    }
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(SyntheticIntegralOperator);

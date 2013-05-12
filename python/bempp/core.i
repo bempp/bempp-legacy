@@ -144,6 +144,7 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "space/unit_scalar_space.i"
 
 // Assembly
+%include "assembly/aca_options.i"
 %include "assembly/assembly_options.i"
 %include "assembly/numerical_quadrature_strategy.i"
 %include "assembly/transposition_mode.i"

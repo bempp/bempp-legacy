@@ -30,13 +30,15 @@ AcaOptions::AcaOptions() :
     minimumBlockSize(16),
     maximumBlockSize(std::numeric_limits<int>::max()),
     maximumRank(std::numeric_limits<int>::max()),
-    globalAssemblyBeforeCompression(true),
+    mode(GLOBAL_ASSEMBLY),
+    reactionToUnsupportedMode(WARNING),
     recompress(false),
     outputPostscript(false),
     outputFname("aca.ps"),
     scaling(1.0),
     useAhmedAca(false),
-    firstClusterIndex(-1)
+    firstClusterIndex(-1),
+    globalAssemblyBeforeCompression(true)
 {
 }
 

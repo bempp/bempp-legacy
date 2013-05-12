@@ -80,6 +80,7 @@ public:
 
 private:
     void init_memory(size_t extent0, size_t extent1, size_t extent2);
+    void init_empty();
     void free_memory();
 
 #ifdef FIBER_CHECK_ARRAY_BOUNDS

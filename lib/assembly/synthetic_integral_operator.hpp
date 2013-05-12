@@ -45,7 +45,7 @@ namespace Bempp
  *
  *  This class can be used to construct an integral operator assembled in the
  *  following way [1], which in ACA mode may be less time-consuming, though
- *  more memory-consuming. Suppose the formulat for the \f$(m, n)\f$th entry of
+ *  more memory-consuming. Suppose the formula for the \f$(m, n)\f$th entry of
  *  the weak form of the operator in question can be written as
  *
  *  \f[
@@ -118,21 +118,21 @@ public:
     /** \brief Constructor.
      *
      *  \param[in] testLocalOps Vector of the operators \f$U_\alpha\f$, as described above.
-     *  \param[in] testLocalOps The operator \f$K\f$, as described above.
+     *  \param[in] integralOp The operator \f$K\f$, as described above.
      *  \param[in] trialLocalOps Vector of the operators \f$V_\alpha\f$, as described above.
      *  \param[in] label (Optional) operator label.
-     *  \param[in] symmetry Symmetry flag (see below).
+     *  \param[in] syntheseSymmetry Symmetry flag (see below).
      *
      *  All operators passed as elements of \p testLocalOps and \p trialLocalOps
      *  must be local.
      *
-     *  If \p symmetry is equal to \p NO_SYMMETRY, either \p testLocalOps or \p
+     *  If \p syntheseSymmetry is equal to \p NO_SYMMETRY, either \p testLocalOps or \p
      *  trialLocalOps may be empty. In the former case, \f$A\f$ is assembled as
      *  \f$\sum_\alpha K I_{\mathcal V}^{-1} V_\alpha\f$; in the latter, as
      *  \f$\sum_\alpha U_\alpha I_{\mathcal V}^{-1} K\f$. \p testLocalOps and \p
      *  trialLocalOps must not be empty at the same time.
      *
-     *  If \p symmetry contains the flag \p SYMMETRIC and/or \p HERMITIAN, \p
+     *  If \p syntheseSymmetry contains the flag \p SYMMETRIC and/or \p HERMITIAN, \p
      *  trialLocalOps should be left empty and \f$V_\alpha\f$ are taken as the
      *  transposes or Hermitian transposes of \f$U_\alpha\f$.
      */
@@ -141,9 +141,16 @@ public:
             const BoundaryOperator<BasisFunctionType, ResultType>& integralOp,
             const std::vector<BoundaryOperator<BasisFunctionType, ResultType> >& trialLocalOps,
             const std::string& label = "",
-            int symmetry = NO_SYMMETRY);
+            int syntheseSymmetry = NO_SYMMETRY);
 
     virtual bool isLocal() const;
+
+    /** \brief Get contexts appropriate for construction of internal integral
+        operators and auxiliary local operators. */
+    static void getContextsForInternalAndAuxiliaryOperators(
+            const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+            shared_ptr<const Context<BasisFunctionType, ResultType> >& internalContext,
+            shared_ptr<const Context<BasisFunctionType, ResultType> >& auxContext);
 
 protected:
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
@@ -151,6 +158,7 @@ protected:
             const Context<BasisFunctionType, ResultType>& context) const;
 
 private:
+    /** \cond PRIVATE */
     void checkIntegralOperator() const;
     void checkTestLocalOperators() const;
     void checkTrialLocalOperators() const;
@@ -159,6 +167,8 @@ private:
     BoundaryOperator<BasisFunctionType, ResultType> m_integralOp;
     std::vector<BoundaryOperator<BasisFunctionType, ResultType> > m_testLocalOps;
     std::vector<BoundaryOperator<BasisFunctionType, ResultType> > m_trialLocalOps;
+    int m_syntheseSymmetry;
+    /** \endcond */
 };
 
 } //namespace Bempp

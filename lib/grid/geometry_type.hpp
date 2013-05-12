@@ -20,6 +20,8 @@
 #ifndef bempp_geometry_type_decl_hpp
 #define bempp_geometry_type_decl_hpp
 
+/** \file . */
+
 #include "../common/common.hpp"
 
 #include <dune/common/deprecated.hh>
@@ -27,6 +29,8 @@
 
 namespace Bempp
 {
+/** \ingroup grid
+    \brief Identifier of geometry type. */
 typedef Dune::GeometryType GeometryType;
 }
 

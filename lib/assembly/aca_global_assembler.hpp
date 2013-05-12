@@ -74,6 +74,8 @@ public:
             const Space<BasisFunctionType>& testSpace,
             const Space<BasisFunctionType>& trialSpace,
             const std::vector<LocalAssemblerForBoundaryOperators*>& localAssemblers,
+            const std::vector<LocalAssemblerForBoundaryOperators*>&
+            localAssemblersForAdmissibleBlocks,
             const std::vector<const DiscreteBndOp*>& sparseTermsToAdd,
             const std::vector<ResultType>& denseTermMultipliers,
             const std::vector<ResultType>& sparseTermMultipliers,
@@ -84,6 +86,7 @@ public:
             const Space<BasisFunctionType>& testSpace,
             const Space<BasisFunctionType>& trialSpace,
             LocalAssemblerForBoundaryOperators& localAssembler,
+            LocalAssemblerForBoundaryOperators& localAssemblerForAdmissibleBlocks,
             const Context<BasisFunctionType, ResultType>& context,
             int symmetry); // used to be "bool symmetric"; fortunately "true"
                            // is converted to 1 == SYMMETRIC

@@ -51,28 +51,27 @@ PiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid) :
                                     "only 1- and 2-dimensional grids are supported");
     m_view = grid->leafView();
     assignDofsImpl();
-    m_discontinuousSpace = 0;
 }
 
 template <typename BasisFunctionType>
 PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
 ~PiecewiseLinearContinuousScalarSpace()
 {
-    delete m_discontinuousSpace;
 }
 
 template <typename BasisFunctionType>
-const Space<BasisFunctionType>&
-PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::discontinuousSpace() const
+shared_ptr<const Space<BasisFunctionType> >
+PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::discontinuousSpace(
+    const shared_ptr<const Space<BasisFunctionType> >& self) const
 {
     if (!m_discontinuousSpace) {
         tbb::mutex::scoped_lock lock(m_discontinuousSpaceMutex);
         typedef PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>
                 DiscontinuousSpace;
         if (!m_discontinuousSpace)
-            m_discontinuousSpace = new DiscontinuousSpace(this->grid());
+            m_discontinuousSpace.reset(new DiscontinuousSpace(this->grid()));
     }
-    return *m_discontinuousSpace;
+    return m_discontinuousSpace;
 }
 
 template <typename BasisFunctionType>
@@ -262,40 +261,178 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getFlatLocalDofPos
     const IndexSet& indexSet = m_view->indexSet();
     int elementCount = m_view->entityCount(0);
 
-    arma::Mat<CoordinateType> elementCenters(worldDim, elementCount);
     std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
-    arma::Col<CoordinateType> center;
+    arma::Mat<CoordinateType> corners;
+    // Here we depend on the iterator returning elements in order of
+    // increasing index
+    size_t flatLdofIndex = 0;
     while (!it->finished())
     {
         const Entity<0>& e = it->entity();
-        int index = indexSet.entityIndex(e);
-        e.geometry().getCenter(center);
-
-        for (int dim = 0; dim < worldDim; ++dim)
-            elementCenters(dim, index) = center(dim);
+        e.geometry().getCorners(corners);
+        for (size_t v = 0; v < corners.n_cols; ++v) {
+            positions[flatLdofIndex].x = corners(0, v);
+            positions[flatLdofIndex].y = corners(1, v);
+            positions[flatLdofIndex].z = gridDim == 2 ? corners(2, v) : 0.;
+            ++flatLdofIndex;
+        }
         it->next();
     }
-
-    size_t flatLdofIndex = 0;
-    if (gridDim == 1)
-        for (size_t e = 0; e < m_local2globalDofs.size(); ++e) {
-            for (size_t v = 0; v < m_local2globalDofs[e].size(); ++v) {
-                positions[flatLdofIndex].x = elementCenters(0, e);
-                positions[flatLdofIndex].y = elementCenters(1, e);
-                positions[flatLdofIndex].z = 0.;
-                ++flatLdofIndex;
-            }
-        }
-    else // gridDim == 2
-        for (size_t e = 0; e < m_local2globalDofs.size(); ++e) {
-            for (size_t v = 0; v < m_local2globalDofs[e].size(); ++v) {
-                positions[flatLdofIndex].x = elementCenters(0, e);
-                positions[flatLdofIndex].y = elementCenters(1, e);
-                positions[flatLdofIndex].z = elementCenters(2, e);
-                ++flatLdofIndex;
-            }
-        }
     assert(flatLdofIndex == m_flatLocalDofCount);
+}
+
+template <typename BasisFunctionType>
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
+       std::vector<BoundingBox<CoordinateType> >& bboxes) const
+{
+   const int gridDim = this->domainDimension();
+   const int globalDofCount_ = globalDofCount();
+   bboxes.resize(globalDofCount_);
+
+   const IndexSet& indexSet = m_view->indexSet();
+   BoundingBox<CoordinateType> model;
+   model.lbound.x = std::numeric_limits<CoordinateType>::max();
+   model.lbound.y = std::numeric_limits<CoordinateType>::max();
+   model.lbound.z = std::numeric_limits<CoordinateType>::max();
+   model.ubound.x = -std::numeric_limits<CoordinateType>::max();
+   model.ubound.y = -std::numeric_limits<CoordinateType>::max();
+   model.ubound.z = -std::numeric_limits<CoordinateType>::max();
+   std::fill(bboxes.begin(), bboxes.end(), model);
+
+   std::vector<int> vertexIndices;
+   arma::Mat<CoordinateType> corners;
+
+   if (gridDim != 2)
+       throw std::runtime_error("PiecewiseLinearContinuousScalarSpace::"
+                                "getGlobalDofBoundingBoxes(): so far "
+                                "implemented only for two-dimensional grids");
+
+   std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+   while (!it->finished())
+   {
+       const Entity<0>& e = it->entity();
+       const Geometry& geo = e.geometry();
+
+       geo.getCorners(corners);
+       const size_t cornerCount = corners.n_cols;
+       vertexIndices.resize(cornerCount);
+       for (size_t i = 0; i < cornerCount; ++i) {
+           int index = indexSet.subEntityIndex(e, i, gridDim);
+           bboxes[index].reference.x = corners(0, i);
+           bboxes[index].reference.y = corners(1, i);
+           bboxes[index].reference.z = corners(2, i);
+           vertexIndices[i] = index;
+       }
+       for (size_t i = 0; i < cornerCount; ++i)
+           for (size_t j = 0; j < cornerCount; ++j) {
+               bboxes[vertexIndices[i]].lbound.x =
+                   std::min(bboxes[vertexIndices[i]].lbound.x, corners(0, j));
+               bboxes[vertexIndices[i]].lbound.y =
+                   std::min(bboxes[vertexIndices[i]].lbound.y, corners(1, j));
+               bboxes[vertexIndices[i]].lbound.z =
+                   std::min(bboxes[vertexIndices[i]].lbound.z, corners(2, j));
+               bboxes[vertexIndices[i]].ubound.x =
+                   std::max(bboxes[vertexIndices[i]].ubound.x, corners(0, j));
+               bboxes[vertexIndices[i]].ubound.y =
+                   std::max(bboxes[vertexIndices[i]].ubound.y, corners(1, j));
+               bboxes[vertexIndices[i]].ubound.z =
+                   std::max(bboxes[vertexIndices[i]].ubound.z, corners(2, j));
+           }
+       it->next();
+   }
+
+#ifndef NDEBUG
+   std::vector<Point3D<CoordinateType> > positions;
+   getGlobalDofPositions(positions);
+   for (size_t i = 0; i < globalDofCount_; ++i) {
+       assert(bboxes[i].reference.x == positions[i].x);
+       assert(bboxes[i].reference.y == positions[i].y);
+       assert(bboxes[i].reference.z == positions[i].z);
+       assert(bboxes[i].reference.x >= bboxes[i].lbound.x);
+       assert(bboxes[i].reference.y >= bboxes[i].lbound.y);
+       assert(bboxes[i].reference.z >= bboxes[i].lbound.z);
+       assert(bboxes[i].reference.x <= bboxes[i].ubound.x);
+       assert(bboxes[i].reference.y <= bboxes[i].ubound.y);
+       assert(bboxes[i].reference.z <= bboxes[i].ubound.z);
+   }
+#endif // NDEBUG
+}
+
+template <typename BasisFunctionType>
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
+getFlatLocalDofBoundingBoxes(
+       std::vector<BoundingBox<CoordinateType> >& bboxes) const
+{
+   const int gridDim = this->domainDimension();
+   bboxes.resize(m_flatLocalDofCount);
+
+   const IndexSet& indexSet = m_view->indexSet();
+   BoundingBox<CoordinateType> model;
+   model.lbound.x = std::numeric_limits<CoordinateType>::max();
+   model.lbound.y = std::numeric_limits<CoordinateType>::max();
+   model.lbound.z = std::numeric_limits<CoordinateType>::max();
+   model.ubound.x = -std::numeric_limits<CoordinateType>::max();
+   model.ubound.y = -std::numeric_limits<CoordinateType>::max();
+   model.ubound.z = -std::numeric_limits<CoordinateType>::max();
+   std::fill(bboxes.begin(), bboxes.end(), model);
+
+   std::vector<int> vertexIndices;
+   arma::Mat<CoordinateType> corners;
+
+   if (gridDim != 2)
+       throw std::runtime_error("PiecewiseLinearContinuousScalarSpace::"
+                                "getFlatLocalDofBoundingBoxes(): so far "
+                                "implemented only for two-dimensional grids");
+
+   std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+   int flatLocalDof = 0;
+   while (!it->finished())
+   {
+       const Entity<0>& e = it->entity();
+       const Geometry& geo = e.geometry();
+
+       geo.getCorners(corners);
+       const size_t cornerCount = corners.n_cols;
+       vertexIndices.resize(cornerCount);
+       for (size_t i = 0; i < cornerCount; ++i) {
+           bboxes[flatLocalDof].reference.x = corners(0, i);
+           bboxes[flatLocalDof].reference.y = corners(1, i);
+           bboxes[flatLocalDof].reference.z = corners(2, i);
+           for (size_t j = 0; j < cornerCount; ++j) {
+               bboxes[flatLocalDof].lbound.x =
+                   std::min(bboxes[flatLocalDof].lbound.x, corners(0, j));
+               bboxes[flatLocalDof].lbound.y =
+                   std::min(bboxes[flatLocalDof].lbound.y, corners(1, j));
+               bboxes[flatLocalDof].lbound.z =
+                   std::min(bboxes[flatLocalDof].lbound.z, corners(2, j));
+               bboxes[flatLocalDof].ubound.x =
+                   std::max(bboxes[flatLocalDof].ubound.x, corners(0, j));
+               bboxes[flatLocalDof].ubound.y =
+                   std::max(bboxes[flatLocalDof].ubound.y, corners(1, j));
+               bboxes[flatLocalDof].ubound.z =
+                   std::max(bboxes[flatLocalDof].ubound.z, corners(2, j));
+           }
+           ++flatLocalDof;
+       }
+       it->next();
+   }
+   assert(flatLocalDof == m_flatLocalDofCount);
+
+#ifndef NDEBUG
+   std::vector<Point3D<CoordinateType> > positions;
+   getFlatLocalDofPositions(positions);
+   for (size_t i = 0; i < m_flatLocalDofCount; ++i) {
+       assert(bboxes[i].reference.x == positions[i].x);
+       assert(bboxes[i].reference.y == positions[i].y);
+       assert(bboxes[i].reference.z == positions[i].z);
+       assert(bboxes[i].reference.x >= bboxes[i].lbound.x);
+       assert(bboxes[i].reference.y >= bboxes[i].lbound.y);
+       assert(bboxes[i].reference.z >= bboxes[i].lbound.z);
+       assert(bboxes[i].reference.x <= bboxes[i].ubound.x);
+       assert(bboxes[i].reference.y <= bboxes[i].ubound.y);
+       assert(bboxes[i].reference.z <= bboxes[i].ubound.z);
+   }
+#endif // NDEBUG
 }
 
 template <typename BasisFunctionType>

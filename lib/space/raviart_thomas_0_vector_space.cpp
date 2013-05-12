@@ -20,8 +20,11 @@
 
 #include "raviart_thomas_0_vector_space.hpp"
 
+#include "piecewise_linear_discontinuous_scalar_space.hpp"
+
 #include "../assembly/discrete_sparse_boundary_operator.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
+#include "../common/bounding_box.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/hdiv_function_value_functor.hpp"
 #include "../fiber/default_collection_of_basis_transformations.hpp"
@@ -59,10 +62,11 @@ RaviartThomas0VectorSpace<BasisFunctionType>::
 RaviartThomas0VectorSpace(const shared_ptr<const Grid>& grid) :
     Base(grid), m_impl(new Impl), m_flatLocalDofCount(0)
 {
-    if (grid->dim() != 2)
+    if (grid->dim() != 2 || grid->dimWorld() != 3)
         throw std::invalid_argument("RaviartThomas0VectorSpace::"
                                     "RaviartThomas0VectorSpace(): "
-                                    "grid must be 2-dimensional");
+                                    "grid must be 2-dimensional and embedded "
+                                    "in 3-dimensional space");
     m_view = grid->leafView();
     assignDofsImpl();
 }
@@ -74,11 +78,18 @@ RaviartThomas0VectorSpace<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-const Space<BasisFunctionType>&
-RaviartThomas0VectorSpace<BasisFunctionType>::discontinuousSpace() const
+shared_ptr<const Space<BasisFunctionType> >
+RaviartThomas0VectorSpace<BasisFunctionType>::discontinuousSpace(
+    const shared_ptr<const Space<BasisFunctionType> >& self) const
 {
-    throw std::runtime_error("RaviartThomas0VectorSpace::discontinuousSpace(): "
-                             "not implemented yet");
+    if (!m_discontinuousSpace) {
+        tbb::mutex::scoped_lock lock(m_discontinuousSpaceMutex);
+        typedef PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>
+                DiscontinuousSpace;
+        if (!m_discontinuousSpace)
+            m_discontinuousSpace.reset(new DiscontinuousSpace(this->grid()));
+    }
+    return m_discontinuousSpace;
 }
 
 template <typename BasisFunctionType>
@@ -154,7 +165,7 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::setElementVariant(
 template <typename BasisFunctionType>
 void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
 {
-    const int gridDim = domainDimension();
+    const int gridDim = 2;
 
     const Mapper& elementMapper = m_view->elementMapper();
     const IndexSet& indexSet = m_view->indexSet();
@@ -291,7 +302,7 @@ template <typename BasisFunctionType>
 void RaviartThomas0VectorSpace<BasisFunctionType>::getGlobalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
-    const int gridDim = domainDimension();
+    const int gridDim = 2;
     const int globalDofCount_ = globalDofCount();
     positions.resize(globalDofCount_);
 
@@ -316,8 +327,8 @@ template <typename BasisFunctionType>
 void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
-    const int gridDim = domainDimension();
-    const int worldDim = this->grid()->dimWorld();
+    const int gridDim = 2;
+    const int worldDim = 3;
     positions.resize(m_flatLocalDofCount);
 
     const IndexSet& indexSet = m_view->indexSet();
@@ -349,11 +360,75 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofPositions(
 }
 
 template <typename BasisFunctionType>
+void RaviartThomas0VectorSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
+       std::vector<BoundingBox<CoordinateType> >& bboxes) const
+{
+    // Preliminary implementation: bboxes are in fact points.
+
+    const int globalDofCount_ = globalDofCount();
+    bboxes.resize(globalDofCount_);
+
+    const IndexSet& indexSet = m_view->indexSet();
+
+    std::auto_ptr<EntityIterator<1> > it = m_view->entityIterator<1>();
+    while (!it->finished())
+    {
+        const Entity<1>& e = it->entity();
+        int index = indexSet.entityIndex(e);
+        arma::Col<CoordinateType> center;
+        e.geometry().getCenter(center);
+
+        BoundingBox<CoordinateType>& bbox = bboxes[index];
+
+        bbox.reference.x = bbox.lbound.x = bbox.ubound.x = center(0);
+        bbox.reference.y = bbox.lbound.y = bbox.ubound.y = center(1);
+        bbox.reference.z = bbox.lbound.z = bbox.ubound.z = center(2);
+        it->next();
+    }
+}
+
+template <typename BasisFunctionType>
+void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
+        std::vector<BoundingBox<CoordinateType> >& bboxes) const
+{
+    const int worldDim = 3;
+    bboxes.resize(m_flatLocalDofCount);
+
+    const IndexSet& indexSet = m_view->indexSet();
+    int elementCount = m_view->entityCount(0);
+
+    arma::Mat<CoordinateType> elementCenters(worldDim, elementCount);
+    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    arma::Col<CoordinateType> center;
+    while (!it->finished())
+    {
+        const Entity<0>& e = it->entity();
+        int index = indexSet.entityIndex(e);
+        e.geometry().getCenter(center);
+
+        for (int dim = 0; dim < worldDim; ++dim)
+            elementCenters(dim, index) = center(dim);
+        it->next();
+    }
+
+    size_t flatLdofIndex = 0;
+    for (size_t e = 0; e < m_local2globalDofs.size(); ++e)
+        for (size_t v = 0; v < m_local2globalDofs[e].size(); ++v) {
+            BoundingBox<CoordinateType>& bbox = bboxes[flatLdofIndex];
+            bbox.reference.x = bbox.lbound.x = bbox.ubound.x = elementCenters(0, e);
+            bbox.reference.y = bbox.lbound.y = bbox.ubound.y = elementCenters(1, e);
+            bbox.reference.z = bbox.lbound.z = bbox.ubound.z = elementCenters(2, e);
+            ++flatLdofIndex;
+        }
+    assert(flatLdofIndex == m_flatLocalDofCount);
+}
+
+template <typename BasisFunctionType>
 void RaviartThomas0VectorSpace<BasisFunctionType>::getGlobalDofNormals(
         std::vector<Point3D<CoordinateType> >& normals) const
 {
-    const int gridDim = domainDimension();
-    const int worldDim = this->grid()->dimWorld();
+    const int gridDim = 2;
+    const int worldDim = 3;
     const int globalDofCount_ = globalDofCount();
     normals.resize(globalDofCount_);
 
@@ -394,8 +469,8 @@ template <typename BasisFunctionType>
 void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofNormals(
         std::vector<Point3D<CoordinateType> >& normals) const
 {
-    const int gridDim = domainDimension();
-    const int worldDim = this->grid()->dimWorld();
+    const int gridDim = 2;
+    const int worldDim = 3;
     normals.resize(m_flatLocalDofCount);
 
     const IndexSet& indexSet = m_view->indexSet();

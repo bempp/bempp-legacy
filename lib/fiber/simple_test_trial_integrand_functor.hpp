@@ -63,7 +63,7 @@ public:
 
         const int transformationDim = testValues[0].extent(0);
 
-        ResultType result = 0.;
+        BasisFunctionType result = 0.;
         for (int dim = 0; dim < transformationDim; ++dim)
             result += conjugate(testValues[0](dim)) *
                     trialValues[0](dim);

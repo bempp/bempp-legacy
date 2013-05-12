@@ -31,7 +31,8 @@ namespace Bempp
 {
 
 /** \ingroup maxwell_3d
- *  \brief Construct a single-layer boundary operator for Maxwell equations in 3D.
+ *  \brief Construct a single-layer boundary operator associated with the
+ *  Maxwell equations in 3D.
  *
  *  This function constructs a BoundaryOperator object representing
  *  the single-layer boundary operator \f$\boldsymbol S\f$ for the
@@ -73,7 +74,16 @@ namespace Bempp
  *  dualToRange must be defined on the same grid, otherwise an exception is
  *  thrown.
  *
- *  \see Maxwell3dSingleLayerPotentialOperator()
+ *  This operator supports local-mode ACA assembly (to be documented). It does not 
+ *  support hybrid-mode assembly, though.
+ *
+ *  \tparam BasisFunctionType
+ *    Type of the values of the basis functions into which functions acted upon
+ *    by the operator are expanded. It can take the following values: \c float,
+ *    \c double, <tt>std::complex<float></tt> and
+ *    <tt>std::complex<double></tt>.
+ *
+ *  \see maxwell3dSingleLayerPotentialOperator()
  */
 template <typename BasisFunctionType>
 BoundaryOperator<BasisFunctionType,

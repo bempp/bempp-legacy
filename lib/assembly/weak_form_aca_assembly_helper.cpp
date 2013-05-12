@@ -66,7 +66,7 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::WeakFormAcaAssemblyHel
     m_denseTermsMultipliers(denseTermsMultipliers),
     m_sparseTermsMultipliers(sparseTermsMultipliers),
     m_options(options),
-    m_indexWithGlobalDofs(m_options.acaOptions().globalAssemblyBeforeCompression),
+    m_indexWithGlobalDofs(m_options.acaOptions().mode != AcaOptions::HYBRID_ASSEMBLY),
     m_testDofListsCache(new LocalDofListsCache<BasisFunctionType>(
                             m_testSpace, m_p2oTestDofs, m_indexWithGlobalDofs)),
     m_trialDofListsCache(new LocalDofListsCache<BasisFunctionType>(
@@ -82,8 +82,7 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::WeakFormAcaAssemblyHel
     if (!m_indexWithGlobalDofs && !m_sparseTermsToAdd.empty())
         throw std::invalid_argument(
                 "WeakFormAcaAssemblyHelper::WeakFormAcaAssemblyHelper(): "
-                "combining sparse and dense terms with "
-                "globalAssemblyBeforeCompression set to false "
+                "combining sparse and dense terms in hybrid ACA mode "
                 "is not supported at present");
     for (size_t i = 0; i < assemblers.size(); ++i)
         if (!assemblers[i])
@@ -120,7 +119,7 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::estimateMinimumDistanc
         // in AHMED
         const double diam1 = sqrt(cluster1->getdiam2());
         const double diam2 = sqrt(cluster2->getdiam2());
-        const double dist = sqrt(cluster1->dist2(cluster2));
+        const double dist = sqrt(cluster1->extDist2(cluster2));
         minDist = std::max(0., dist - (diam1 + diam2) / 2.);
     }
     // else
@@ -407,7 +406,7 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::scale(
     if (cluster1 && cluster2) {
         // both getdiam2() and dist2() are effectively const, but not declared so
         // in AHMED
-        const CoordinateType dist = sqrt(cluster1->dist2(cluster2));
+        const CoordinateType dist = sqrt(cluster1->extDist2(cluster2));
         MagnitudeType result = 0.;
         for (size_t nTerm = 0; nTerm < m_assemblers.size(); ++nTerm)
             result = std::max(result,

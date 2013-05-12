@@ -30,14 +30,15 @@ namespace Bempp
 template <int codim> class Entity;
 /** \endcond */
 
-/** \brief Abstract mapper class.
+/** \ingroup grid
+    \brief Abstract mapper class.
 
   A mapper provides a mapping from a set of entities to a range of integers from
   0 to (size() - 1), where size() is the number of entities contained in the set.
   */
 class Mapper
 {
-public:    
+public:
     virtual ~Mapper() {};
 
     /** \brief Total number of entities in the entity set managed by the mapper. */

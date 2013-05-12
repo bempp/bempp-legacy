@@ -177,6 +177,9 @@ public:
     /** \brief Return the label of the operator. */
     std::string label() const;
 
+    /** \brief Generate and return a new unique label "OpN", where N is a number. */
+    static std::string uniqueLabel();
+
     /** \brief Return the symmetry properties of the operator.
      *
      *  The returned value should be treated as a bitwise combination

@@ -32,7 +32,8 @@ namespace Bempp
 template<int codim> class Entity;
 /** \endcond */
 
-/** \brief Abstract wrapper of an id set. */
+/** \ingroup grid
+    \brief Abstract wrapper of an id set. */
 class IdSet
 {
 public:

@@ -124,6 +124,14 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/** \defgroup grid Grid
+ *
+ *  This module contains classes related to the management of boundary-element
+ *  grids.
+ */
+
+////////////////////////////////////////////////////////////////////////////////
+
 /** \defgroup linalg Linear algebra
  *
  *  This module contains classes related to the solution of linear algebraic

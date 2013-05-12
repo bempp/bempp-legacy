@@ -31,6 +31,7 @@
 #include <boost/scoped_ptr.hpp>
 #include <map>
 #include <memory>
+#include <tbb/mutex.h>
 
 namespace Bempp
 {
@@ -55,7 +56,8 @@ public:
         const shared_ptr<const Grid>& grid);
     virtual ~RaviartThomas0VectorSpace();
 
-    virtual const Space<BasisFunctionType>& discontinuousSpace() const;
+    virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
+        const shared_ptr<const Space<BasisFunctionType> >& self) const;
     virtual bool isDiscontinuous() const;
 
     virtual const CollectionOfBasisTransformations& shapeFunctionValue() const;
@@ -91,6 +93,12 @@ public:
             std::vector<Point3D<CoordinateType> >& positions) const;
     virtual void getFlatLocalDofPositions(
             std::vector<Point3D<CoordinateType> >& positions) const;
+
+    virtual void getGlobalDofBoundingBoxes(
+            std::vector<BoundingBox<CoordinateType> >& bboxes) const;
+    virtual void getFlatLocalDofBoundingBoxes(
+            std::vector<BoundingBox<CoordinateType> >& bboxes) const;
+
     virtual void getGlobalDofNormals(
             std::vector<Point3D<CoordinateType> >& normals) const;
     virtual void getFlatLocalDofNormals(
@@ -108,6 +116,7 @@ private:
     void assignDofsImpl();
 
 private:
+    /** \cond PRIVATE */
     struct Impl;
     boost::scoped_ptr<Impl> m_impl;
     std::auto_ptr<GridView> m_view;
@@ -118,6 +127,9 @@ private:
     std::vector<std::vector<BasisFunctionType> > m_global2localDofWeights;
     std::vector<LocalDof> m_flatLocal2localDofs;
     size_t m_flatLocalDofCount;
+    mutable shared_ptr<Space<BasisFunctionType> > m_discontinuousSpace;
+    mutable tbb::mutex m_discontinuousSpaceMutex;
+    /** \endcond */
 };
 
 } // namespace Bempp
