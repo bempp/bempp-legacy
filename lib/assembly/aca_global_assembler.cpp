@@ -418,6 +418,7 @@ assembleAcaOperator(
         const ParallelizationOptions& parallelOptions,
         const AcaOptions& acaOptions,
         bool verbosityAtLeastDefault,
+        bool verbosityAtLeastHigh,
         bool symmetric,
         const shared_ptr<IndexPermutation>& test_o2pPermutation,
         const shared_ptr<IndexPermutation>& trial_o2pPermutation,
@@ -575,9 +576,14 @@ assembleAcaOperator(
                 inadmTime += chunkStats[i].endTime -
                         chunkStats[i].startTime;
 
-        std::cout << "Local admissible time: " << localAdmTime.seconds() << "\n";
-        std::cout << "Global admissible time: " << globalAdmTime.seconds() << "\n";
-        std::cout << "Inadmissible time: " << inadmTime.seconds() << "\n";
+        if (verbosityAtLeastHigh) {
+            std::cout << "CPU time spent on assembly of admissible local blocks: "
+                      << localAdmTime.seconds() << " s\n";
+            std::cout << "CPU time spent on assembly of admissible global blocks: "
+                      << globalAdmTime.seconds() << " s\n";
+            std::cout << "CPU time spent on assembly of inadmissible blocks: "
+                      << inadmTime.seconds() << "\n";
+        }
     }
 
     if (acaOptions.outputPostscript) {
@@ -851,7 +857,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                 helper.get(), admissibleHelper.get(),
                 blclusterTree, localBlclusterTree,
                 options.parallelizationOptions(), acaOptions,
-                verbosityAtLeastDefault, symmetric,
+                verbosityAtLeastDefault, verbosityAtLeastHigh, symmetric,
                 test_o2pPermutation, trial_o2pPermutation,
                 testGlobalToLocal, trialGlobalToLocal
 #ifdef DUMP_DENSE_BLOCKS
@@ -995,7 +1001,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
     assembleAcaOperator<AcaAssemblyHelper, BasisFunctionType, ResultType>(
                 &helper, &helper, bemBlclusterTree, bemBlclusterTree,
                 options.parallelizationOptions(), options.acaOptions(),
-                verbosityAtLeastDefault, symmetric,
+                verbosityAtLeastDefault, verbosityAtLeastHigh, symmetric,
                 test_o2pPermutation, trial_o2pPermutation,
                 testGlobalToLocal, trialGlobalToLocal
 #ifdef DUMP_DENSE_BLOCKS
