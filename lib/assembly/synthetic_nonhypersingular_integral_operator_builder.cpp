@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "synthetic_scalar_integral_operator_builder.hpp"
+#include "synthetic_nonhypersingular_integral_operator_builder.hpp"
 
 #include "general_elementary_local_operator_imp.hpp"
 #include "synthetic_integral_operator.hpp"
@@ -36,14 +36,14 @@ namespace Bempp
 
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
-makeSyntheticScalarIntegralOperator(
+syntheticNonhypersingularIntegralOperator(
         const BoundaryOperator<BasisFunctionType, ResultType>& internalOp,
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         const shared_ptr<const Space<BasisFunctionType> >& internalTrialSpace,
         const shared_ptr<const Space<BasisFunctionType> >& internalTestSpace,
-        const std::string& label, int symmetry)
+        std::string label, int symmetry)
 {
     // Note: we don't really need to care about ranges and duals to domains of
     // the internal operator. The only range space that matters is that of the
@@ -56,16 +56,21 @@ makeSyntheticScalarIntegralOperator(
             BasisFunctionType, ResultType> IntegrandFunctor;
 
     typedef GeneralElementaryLocalOperator<BasisFunctionType, ResultType> LocalOp;
+    typedef SyntheticIntegralOperator<BasisFunctionType, ResultType> SyntheticOp;
 
     if (!internalOp.isInitialized())
         throw std::invalid_argument("makeSyntheticScalarBoundaryOperator(): "
-                                    "interalOp must be initialized");
+                                    "internalOp must be initialized");
     if (!internalTrialSpace || !internalTestSpace)
         throw std::invalid_argument("makeSyntheticScalarBoundaryOperator(): "
                                     "pointers to spaces must not be null");
 
     shared_ptr<const Context<BasisFunctionType, ResultType> > context =
             internalOp.context();
+    shared_ptr<const Context<BasisFunctionType, ResultType> >
+        internalContext, auxContext;
+    SyntheticOp::getContextsForInternalAndAuxiliaryOperators(
+        context, internalContext, auxContext);
 
     if (symmetry & (SYMMETRIC | HERMITIAN) &&
             (internalTrialSpace != internalTestSpace || domain != dualToRange))
@@ -77,7 +82,7 @@ makeSyntheticScalarIntegralOperator(
     if (dualToRange != internalTestSpace) {
         testLocalOps.resize(1);
         testLocalOps[0] = BoundaryOperator<BasisFunctionType, ResultType>(
-                        context, boost::make_shared<LocalOp>(
+                        auxContext, boost::make_shared<LocalOp>(
                             internalTestSpace, range, dualToRange,
                             "(" + label + ")_test_value", NO_SYMMETRY,
                             ValueFunctor(), ValueFunctor(), IntegrandFunctor()));
@@ -85,13 +90,11 @@ makeSyntheticScalarIntegralOperator(
     if (domain != internalTrialSpace && !(symmetry & (SYMMETRIC | HERMITIAN))) {
         trialLocalOps.resize(1);
         trialLocalOps[0] = BoundaryOperator<BasisFunctionType, ResultType>(
-                    context, boost::make_shared<LocalOp>(
+                    auxContext, boost::make_shared<LocalOp>(
                         domain, internalTrialSpace /* or whatever */, internalTrialSpace,
                         ("(" + label + ")_trial_value"), NO_SYMMETRY,
                         ValueFunctor(), ValueFunctor(), IntegrandFunctor()));
     }
-
-    typedef SyntheticIntegralOperator<BasisFunctionType, ResultType> SyntheticOp;
 
     if (testLocalOps.empty() && trialLocalOps.empty())
         return internalOp;
@@ -104,14 +107,14 @@ makeSyntheticScalarIntegralOperator(
 
 #define INSTANTIATE_FUNCTION(BASIS, RESULT) \
     template BoundaryOperator<BASIS, RESULT> \
-    makeSyntheticScalarIntegralOperator( \
+    syntheticNonhypersingularIntegralOperator( \
         const BoundaryOperator<BASIS, RESULT>&, \
         const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \
-        const std::string&, int)
+        std::string, int)
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_FUNCTION);
 
 } // namespace Bempp

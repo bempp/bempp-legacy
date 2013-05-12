@@ -22,6 +22,7 @@
 
 #include "../common/boost_make_shared_fwd.hpp"
 
+#include "abstract_boundary_operator.hpp"
 #include "context.hpp"
 #include "general_elementary_local_operator_imp.hpp"
 #include "general_elementary_singular_integral_operator_imp.hpp"
@@ -58,22 +59,34 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         KernelType waveNumber,
-        const std::string& label,
+        std::string label,
         int internalSymmetry,
         bool useInterpolation,
         int interpPtsPerWavelength)
 {
+    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+
+    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
+            ValueFunctor;
+    typedef Fiber::ScalarFunctionValueTimesNormalFunctor<CoordinateType>
+            ValueTimesNormalFunctor;
+    typedef Fiber::SurfaceCurl3dFunctor<CoordinateType>
+            CurlFunctor;
+    typedef Fiber::SingleComponentTestTrialIntegrandFunctor<
+            BasisFunctionType, ResultType> IntegrandFunctor;
+
+    typedef GeneralElementaryLocalOperator<BasisFunctionType, ResultType> LocalOp;
+    typedef SyntheticIntegralOperator<BasisFunctionType, ResultType> SyntheticOp;
+
     if (!domain || !range || !dualToRange)
         throw std::invalid_argument(
             "modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(): "
             "domain, range and dualToRange must not be null");
-    AssemblyOptions internalAssemblyOptions = context->assemblyOptions();
-    AcaOptions internalAcaOptions = internalAssemblyOptions.acaOptions();
-    internalAcaOptions.mode = AcaOptions::GLOBAL_ASSEMBLY;
-    internalAssemblyOptions.switchToAcaMode(internalAcaOptions);
-    typedef Context<BasisFunctionType, ResultType> Ctx;
-    shared_ptr<Ctx> internalContext(new Ctx(
-            context->quadStrategy(), internalAssemblyOptions));
+
+    shared_ptr<const Context<BasisFunctionType, ResultType> >
+        internalContext, auxContext;
+    SyntheticOp::getContextsForInternalAndAuxiliaryOperators(
+        context, internalContext, auxContext);
     shared_ptr<const Space<BasisFunctionType> > internalTrialSpace = 
         domain->discontinuousSpace(domain);
     shared_ptr<const Space<BasisFunctionType> > internalTestSpace = 
@@ -86,24 +99,17 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
     const char xyz[] = "xyz";
     const size_t dimWorld = 3;
 
+    if (label.empty())
+        label = AbstractBoundaryOperator<BasisFunctionType, ResultType>::
+            uniqueLabel();
+
     BoundaryOperator<BasisFunctionType, ResultType> slp =
             modifiedHelmholtz3dSingleLayerBoundaryOperator<
                     BasisFunctionType, KernelType, ResultType>(
                 internalContext, internalTrialSpace, internalTestSpace /* or whatever */,
                 internalTestSpace,
-                waveNumber, "(" + label + ")_internal", internalSymmetry,
+                waveNumber, "(" + label + ")_internal_SLP", internalSymmetry,
                 useInterpolation, interpPtsPerWavelength);
-
-    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
-
-    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
-            ValueFunctor;
-    typedef Fiber::ScalarFunctionValueTimesNormalFunctor<CoordinateType>
-            ValueTimesNormalFunctor;
-    typedef Fiber::SurfaceCurl3dFunctor<CoordinateType>
-            CurlFunctor;
-    typedef Fiber::SingleComponentTestTrialIntegrandFunctor<
-            BasisFunctionType, ResultType> IntegrandFunctor;
 
     // symmetry of the decomposition
     int syntheseSymmetry = 0; // symmetry of the decomposition
@@ -111,16 +117,13 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
         syntheseSymmetry = HERMITIAN |
                 (boost::is_complex<BasisFunctionType>() ? 0 : SYMMETRIC);
 
-    typedef GeneralElementaryLocalOperator<BasisFunctionType, ResultType> LocalOp;
-    typedef SyntheticIntegralOperator<BasisFunctionType, ResultType> SyntheticOp;
-
     std::vector<BoundaryOperator<BasisFunctionType, ResultType> > testLocalOps;
     std::vector<BoundaryOperator<BasisFunctionType, ResultType> > trialLocalOps;
     testLocalOps.resize(dimWorld);
     for (size_t i = 0; i < dimWorld; ++i)
         testLocalOps[i] =
                 BoundaryOperator<BasisFunctionType, ResultType>(
-                    internalContext, boost::make_shared<LocalOp>(
+                    auxContext, boost::make_shared<LocalOp>(
                         internalTestSpace, range, dualToRange,
                         ("(" + label + ")_test_curl_") + xyz[i], NO_SYMMETRY,
                         CurlFunctor(),
@@ -132,7 +135,7 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
         for (size_t i = 0; i < dimWorld; ++i)
             trialLocalOps[i] =
                     BoundaryOperator<BasisFunctionType, ResultType>(
-                        internalContext, boost::make_shared<LocalOp>(
+                        auxContext, boost::make_shared<LocalOp>(
                             domain, internalTrialSpace /* or whatever */,
                             internalTrialSpace,
                             ("(" + label + ")_trial_curl_") + xyz[i], NO_SYMMETRY,
@@ -150,7 +153,7 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
     for (size_t i = 0; i < dimWorld; ++i)
         testLocalOps[i] =
                 BoundaryOperator<BasisFunctionType, ResultType>(
-                    internalContext, boost::make_shared<LocalOp>(
+                    auxContext, boost::make_shared<LocalOp>(
                         internalTestSpace, range, dualToRange,
                         ("(" + label + ")_test_k_value_n_") + xyz[i], NO_SYMMETRY,
                         ValueTimesNormalFunctor(),
@@ -160,7 +163,7 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
         for (size_t i = 0; i < dimWorld; ++i)
             trialLocalOps[i] =
                     BoundaryOperator<BasisFunctionType, ResultType>(
-                        internalContext, boost::make_shared<LocalOp>(
+                        auxContext, boost::make_shared<LocalOp>(
                             domain, internalTrialSpace /* or whatever */,
                             internalTrialSpace,
                             ("(" + label + ")_trial_k_value_n_") + xyz[i], NO_SYMMETRY,

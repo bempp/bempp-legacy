@@ -20,9 +20,10 @@
 
 #include "modified_helmholtz_3d_synthetic_boundary_operator_builder.hpp"
 
+#include "abstract_boundary_operator.hpp"
 #include "boundary_operator.hpp"
 #include "context.hpp"
-#include "synthetic_scalar_integral_operator_builder.hpp"
+#include "synthetic_nonhypersingular_integral_operator_builder.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -50,7 +51,7 @@ modifiedHelmholtz3dSyntheticBoundaryOperator(
     const shared_ptr<const Space<BasisFunctionType> >& range,
     const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
     KernelType waveNumber,
-    const std::string& label,
+    std::string label,
     int internalSymmetry,
     bool useInterpolation,
     int interpPtsPerWavelength,
@@ -71,6 +72,9 @@ modifiedHelmholtz3dSyntheticBoundaryOperator(
         domain->discontinuousSpace(domain);
     shared_ptr<const Space<BasisFunctionType> > internalTestSpace = 
         dualToRange->discontinuousSpace(dualToRange);
+    if (label.empty())
+        label = AbstractBoundaryOperator<BasisFunctionType, ResultType>::
+            uniqueLabel();
     int syntheseSymmetry = 
         (domain == dualToRange && internalTrialSpace == internalTestSpace) ?
         maximumSyntheseSymmetry : 0;
@@ -80,7 +84,7 @@ modifiedHelmholtz3dSyntheticBoundaryOperator(
             internalTestSpace,
             waveNumber, "(" + label + ")_internal", internalSymmetry,
             useInterpolation, interpPtsPerWavelength);
-    return makeSyntheticScalarIntegralOperator(
+    return syntheticNonhypersingularIntegralOperator(
             internalOp, domain, range, dualToRange,
             internalTrialSpace, internalTestSpace,
             label, syntheseSymmetry);
@@ -104,7 +108,7 @@ modifiedHelmholtz3dSyntheticBoundaryOperator(
         const shared_ptr<const Space<BASIS> >&,                         \
         const shared_ptr<const Space<BASIS> >&,                         \
         const shared_ptr<const Space<BASIS> >&,                         \
-        KERNEL, const std::string&, int, bool, int, int)
+        KERNEL, std::string, int, bool, int, int)
 FIBER_ITERATE_OVER_BASIS_KERNEL_AND_RESULT_TYPES(INSTANTIATE_FUNCTION);
 
 } // namespace Bempp

@@ -20,9 +20,10 @@
 
 #include "laplace_3d_synthetic_boundary_operator_builder.hpp"
 
+#include "abstract_boundary_operator.hpp"
 #include "boundary_operator.hpp"
 #include "context.hpp"
-#include "synthetic_scalar_integral_operator_builder.hpp"
+#include "synthetic_nonhypersingular_integral_operator_builder.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -46,7 +47,7 @@ laplace3dSyntheticBoundaryOperator(
     const shared_ptr<const Space<BasisFunctionType> >& domain,
     const shared_ptr<const Space<BasisFunctionType> >& range,
     const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-    const std::string& label,
+    std::string label,
     int internalSymmetry,
     int maximumSyntheseSymmetry)
 {
@@ -65,16 +66,21 @@ laplace3dSyntheticBoundaryOperator(
         domain->discontinuousSpace(domain);
     shared_ptr<const Space<BasisFunctionType> > internalTestSpace = 
         dualToRange->discontinuousSpace(dualToRange);
+
+    if (label.empty())
+        label = AbstractBoundaryOperator<BasisFunctionType, ResultType>::
+            uniqueLabel();
+
     int syntheseSymmetry = 
         (domain == dualToRange && internalTrialSpace == internalTestSpace) ?
         maximumSyntheseSymmetry : 0;
-    std::cout << "syntheseSymmetry: " << syntheseSymmetry << std::endl;
+    // std::cout << "syntheseSymmetry: " << syntheseSymmetry << std::endl;
     BoundaryOperator<BasisFunctionType, ResultType> internalOp =
         constructor(
             internalContext, internalTrialSpace, range /* or whatever */,
             internalTestSpace,
             "(" + label + ")_internal", internalSymmetry);
-    return makeSyntheticScalarIntegralOperator(
+    return syntheticNonhypersingularIntegralOperator(
             internalOp, domain, range, dualToRange,
             internalTrialSpace, internalTestSpace,
             label, syntheseSymmetry); // TODO: use symmetry too
@@ -95,7 +101,7 @@ laplace3dSyntheticBoundaryOperator(
         const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \
-        const std::string&, int, int)
+        std::string, int, int)
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_FUNCTION);
 
 } // namespace Bempp

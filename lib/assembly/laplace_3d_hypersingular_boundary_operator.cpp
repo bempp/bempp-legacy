@@ -53,38 +53,9 @@ laplace3dSyntheticHypersingularBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const std::string& label,
+        std::string label,
         int internalSymmetry)
 {
-    if (!domain || !range || !dualToRange)
-        throw std::invalid_argument(
-            "laplace3dSyntheticHypersingularBoundaryOperator(): "
-            "domain, range and dualToRange must not be null");
-    AssemblyOptions internalAssemblyOptions = context->assemblyOptions();
-    AcaOptions internalAcaOptions = internalAssemblyOptions.acaOptions();
-    internalAcaOptions.mode = AcaOptions::GLOBAL_ASSEMBLY;
-    internalAssemblyOptions.switchToAcaMode(internalAcaOptions);
-    typedef Context<BasisFunctionType, ResultType> Ctx;
-    shared_ptr<Ctx> internalContext(new Ctx(
-            context->quadStrategy(), internalAssemblyOptions));
-    shared_ptr<const Space<BasisFunctionType> > internalTrialSpace = 
-        domain->discontinuousSpace(domain);
-    shared_ptr<const Space<BasisFunctionType> > internalTestSpace = 
-        dualToRange->discontinuousSpace(dualToRange);
-
-    // Note: we don't really need to care about ranges and duals to domains of
-    // the internal operator. The only range space that matters is that of the
-    // leftmost operator in the product.
-
-    const char xyz[] = "xyz";
-    const size_t dimWorld = 3;
-
-    BoundaryOperator<BasisFunctionType, ResultType> slp =
-            laplace3dSingleLayerBoundaryOperator<BasisFunctionType, ResultType>(
-                internalContext, internalTrialSpace, internalTestSpace /* or whatever */,
-                internalTestSpace,
-                "(" + label + ")_internal", internalSymmetry);
-
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
     typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
@@ -95,6 +66,38 @@ laplace3dSyntheticHypersingularBoundaryOperator(
             BasisFunctionType, ResultType> IntegrandFunctor;
 
     typedef GeneralElementaryLocalOperator<BasisFunctionType, ResultType> LocalOp;
+    typedef SyntheticIntegralOperator<BasisFunctionType, ResultType> SyntheticOp;
+
+    if (!domain || !range || !dualToRange)
+        throw std::invalid_argument(
+            "laplace3dSyntheticHypersingularBoundaryOperator(): "
+            "domain, range and dualToRange must not be null");
+
+    shared_ptr<const Context<BasisFunctionType, ResultType> >
+        internalContext, auxContext;
+    SyntheticOp::getContextsForInternalAndAuxiliaryOperators(
+        context, internalContext, auxContext);
+    shared_ptr<const Space<BasisFunctionType> > internalTrialSpace =
+        domain->discontinuousSpace(domain);
+    shared_ptr<const Space<BasisFunctionType> > internalTestSpace =
+        dualToRange->discontinuousSpace(dualToRange);
+
+    // Note: we don't really need to care about ranges and duals to domains of
+    // the internal operator. The only range space that matters is that of the
+    // leftmost operator in the product.
+
+    const char xyz[] = "xyz";
+    const size_t dimWorld = 3;
+
+    if (label.empty())
+        label = AbstractBoundaryOperator<BasisFunctionType, ResultType>::
+            uniqueLabel();
+
+    BoundaryOperator<BasisFunctionType, ResultType> slp =
+            laplace3dSingleLayerBoundaryOperator<BasisFunctionType, ResultType>(
+                internalContext, internalTrialSpace, internalTestSpace /* or whatever */,
+                internalTestSpace,
+                "(" + label + ")_internal_SLP", internalSymmetry);
 
     std::vector<BoundaryOperator<BasisFunctionType, ResultType> > trialCurlComponents;
     std::vector<BoundaryOperator<BasisFunctionType, ResultType> > testCurlComponents;
@@ -122,8 +125,6 @@ laplace3dSyntheticHypersingularBoundaryOperator(
                             CurlFunctor(),
                             IntegrandFunctor(0, i)));
     }
-
-    typedef SyntheticIntegralOperator<BasisFunctionType, ResultType> SyntheticOp;
 
     return BoundaryOperator<BasisFunctionType, ResultType>(
                 context, boost::make_shared<SyntheticOp>(

@@ -29,7 +29,7 @@ laplace3dSyntheticBoundaryOperator(
     const shared_ptr<const Space<BasisFunctionType> >& domain,
     const shared_ptr<const Space<BasisFunctionType> >& range,
     const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-    const std::string& label,
+    std::string label,
     int internalSymmetry,
     int maximumSyntheseSymmetry);
 

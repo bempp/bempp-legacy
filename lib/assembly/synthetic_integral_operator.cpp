@@ -356,7 +356,7 @@ assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) cons
     shared_ptr<const Context<BasisFunctionType, ResultType> >
         internalContext, auxContext;
     getContextsForInternalAndAuxiliaryOperators(
-        context, internalContext, auxContext);
+        make_shared_from_ref(context), internalContext, auxContext);
 
     size_t localOperatorCount = m_testLocalOps.size();
     shared_ptr<const DiscreteLinOp> discreteIntegralOp =
@@ -374,7 +374,6 @@ assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) cons
     typedef DiscreteSparseBoundaryOperator<ResultType> SparseOp;
     shared_ptr<const SparseOp> discreteTestId, discreteTrialId;
     shared_ptr<Epetra_CrsMatrix> testInverse, trialInverse;
-//    shared_ptr<const DiscreteLinOp> discreteTestInvId, discreteTrialInvId;
     if (!discreteTestLocalOps.empty()) {
         BoundaryOp testId = identityOperator(
                     // We don't need a persistent shared_ptr since identityOperator

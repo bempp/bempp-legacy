@@ -64,7 +64,7 @@ maxwell3dSyntheticSingleLayerBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         typename ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
-        const std::string& label,
+        std::string label,
         int internalSymmetry,
         bool useInterpolation,
         int interpPtsPerWavelength)
@@ -73,24 +73,22 @@ maxwell3dSyntheticSingleLayerBoundaryOperator(
     typedef typename ScalarTraits<BasisFunctionType>::ComplexType ResultType;
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
+    typedef GeneralElementaryLocalOperator<BasisFunctionType, ResultType> LocalOp;
+    typedef SyntheticIntegralOperator<BasisFunctionType, ResultType> SyntheticOp;
+
     if (!domain || !range || !dualToRange)
         throw std::invalid_argument(
             "maxwell3dSyntheticSingleLayerBoundaryOperator(): "
             "domain, range and dualToRange must not be null");
-    AssemblyOptions internalAssemblyOptions = context->assemblyOptions();
-    AcaOptions internalAcaOptions = internalAssemblyOptions.acaOptions();
-    internalAcaOptions.mode = AcaOptions::GLOBAL_ASSEMBLY;
-    internalAssemblyOptions.switchToAcaMode(internalAcaOptions);
-    typedef Context<BasisFunctionType, ResultType> Ctx;
-    shared_ptr<Ctx> internalContext(new Ctx(
-            context->quadStrategy(), internalAssemblyOptions));
-    shared_ptr<const Space<BasisFunctionType> > internalTrialSpace = 
-        domain->discontinuousSpace(domain);
-    shared_ptr<const Space<BasisFunctionType> > internalTestSpace = 
-        dualToRange->discontinuousSpace(dualToRange);
 
-    typedef GeneralElementaryLocalOperator<BasisFunctionType, ResultType> LocalOp;
-    typedef SyntheticIntegralOperator<BasisFunctionType, ResultType> SyntheticOp;
+    shared_ptr<const Context<BasisFunctionType, ResultType> >
+        internalContext, auxContext;
+    SyntheticOp::getContextsForInternalAndAuxiliaryOperators(
+        context, internalContext, auxContext);
+    shared_ptr<const Space<BasisFunctionType> > internalTrialSpace =
+        domain->discontinuousSpace(domain);
+    shared_ptr<const Space<BasisFunctionType> > internalTestSpace =
+        dualToRange->discontinuousSpace(dualToRange);
 
     // Note: we don't really need to care about ranges and duals to domains of
     // the internal operator. The only range space that matters is that of the
@@ -101,11 +99,15 @@ maxwell3dSyntheticSingleLayerBoundaryOperator(
     const ResultType kappa = waveNumber / ResultType(0, 1);
     const ResultType invKappa = static_cast<CoordinateType>(1.) / kappa;
 
+    if (label.empty())
+        label = AbstractBoundaryOperator<BasisFunctionType, ResultType>::
+            uniqueLabel();
+
     BoundaryOperator<BasisFunctionType, ResultType> slp =
             helmholtz3dSingleLayerBoundaryOperator<BasisFunctionType>(
                 internalContext, internalTrialSpace, internalTestSpace /* or whatever */,
                 internalTestSpace,
-                waveNumber, "(" + label + ")_internal", internalSymmetry,
+                waveNumber, "(" + label + ")_internal_helmholtz_SLP", internalSymmetry,
                 useInterpolation, interpPtsPerWavelength);
 
     typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
@@ -131,7 +133,7 @@ maxwell3dSyntheticSingleLayerBoundaryOperator(
     for (size_t i = 0; i < dimWorld; ++i)
         testLocalOps[i] =
                 BoundaryOperator<BasisFunctionType, ResultType>(
-                    internalContext, boost::make_shared<LocalOp>(
+                    auxContext, boost::make_shared<LocalOp>(
                         internalTestSpace, range, dualToRange,
                         ("(" + label + ")_test_") + xyz[i], NO_SYMMETRY,
                         VectorValueFunctor(),
@@ -143,7 +145,7 @@ maxwell3dSyntheticSingleLayerBoundaryOperator(
         for (size_t i = 0; i < dimWorld; ++i)
             trialLocalOps[i] =
                     BoundaryOperator<BasisFunctionType, ResultType>(
-                        internalContext, boost::make_shared<LocalOp>(
+                        auxContext, boost::make_shared<LocalOp>(
                             domain, internalTrialSpace /* or whatever */,
                             internalTrialSpace,
                             ("(" + label + ")_trial_") + xyz[i], NO_SYMMETRY,
@@ -161,7 +163,7 @@ maxwell3dSyntheticSingleLayerBoundaryOperator(
     testLocalOps.resize(1);
     testLocalOps[0] =
             BoundaryOperator<BasisFunctionType, ResultType>(
-                internalContext, boost::make_shared<LocalOp>(
+                auxContext, boost::make_shared<LocalOp>(
                     internalTestSpace, range, dualToRange,
                     ("(" + label + ")_test_div"), NO_SYMMETRY,
                     DivFunctor(),
@@ -171,7 +173,7 @@ maxwell3dSyntheticSingleLayerBoundaryOperator(
         trialLocalOps.resize(1);
         trialLocalOps[0] =
                 BoundaryOperator<BasisFunctionType, ResultType>(
-                    internalContext, boost::make_shared<LocalOp>(
+                    auxContext, boost::make_shared<LocalOp>(
                         domain, internalTrialSpace /* or whatever */,
                         internalTrialSpace,
                         ("(" + label + ")_trial_div"), NO_SYMMETRY,
@@ -207,19 +209,19 @@ maxwell3dSingleLayerBoundaryOperator(
     typedef typename ScalarTraits<BasisFunctionType>::ComplexType ResultType;
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
-    shared_ptr<const Context<BasisFunctionType, ResultType> > usedContext = 
+    shared_ptr<const Context<BasisFunctionType, ResultType> > usedContext =
         sanitizedContext(context,
                          true,  // LOCAL_ASSEMBLY is supported
                          false, // but HYBRID_ASSEMBLY is not
                          "maxwell3dSingleLayerBoundaryOperator()");
-    
+
     const AssemblyOptions& assemblyOptions = usedContext->assemblyOptions();
     if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY)
         return maxwell3dSyntheticSingleLayerBoundaryOperator(
-            context, domain, range, dualToRange, waveNumber, label, 
+            context, domain, range, dualToRange, waveNumber, label,
             symmetry, useInterpolation, interpPtsPerWavelength);
-                
+
     typedef Fiber::ModifiedMaxwell3dSingleLayerBoundaryOperatorKernelFunctor<KernelType>
         KernelFunctor;
     typedef Fiber::ModifiedMaxwell3dSingleLayerBoundaryOperatorKernelInterpolatedFunctor<KernelType>

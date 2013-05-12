@@ -33,7 +33,7 @@ modifiedHelmholtz3dSyntheticBoundaryOperator(
     const shared_ptr<const Space<BasisFunctionType> >& range,
     const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
     KernelType waveNumber,
-    const std::string& label,
+    std::string label,
     int internalSymmetry,
     bool useInterpolation,
     int interpPtsPerWavelength,
