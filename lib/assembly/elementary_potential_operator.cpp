@@ -33,7 +33,7 @@
 #include "../fiber/evaluator_for_integral_operators.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/kernel_trial_integral.hpp"
-#include "../fiber/local_assembler_for_operators.hpp"
+#include "../fiber/local_assembler_for_potential_operators.hpp"
 
 #include "../grid/entity.hpp"
 #include "../grid/entity_iterator.hpp"
