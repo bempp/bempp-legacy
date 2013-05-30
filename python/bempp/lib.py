@@ -1084,6 +1084,70 @@ def createModifiedHelmholtz3dHypersingularBoundaryOperator(
 
 _constructMaxwellOperator = _constructHelmholtzOperator
 
+def _constructModifiedHelmholtzPotentialOperator(className, context, waveNumber):
+    basisFunctionType = context.basisFunctionType()
+    resultType = context.resultType()
+    result = _constructObjectTemplatedOnBasis(
+        core, className, basisFunctionType, waveNumber)
+    result._context = context
+    return result
+
+def createModifiedHelmholtz3dSingleLayerPotentialOperator(context, waveNumber):
+    """
+    Create and return a single-layer potential operator for the modified Helmholtz
+    equation in 3D.
+
+    *Parameters:*
+       - context (Context)
+            A Context object used to control the evaluation of integrals
+            occurring in the definition of the potential operator.
+       - waveNumber (float or complex)
+            Wave number, i.e. the number k in the modified Helmholtz equation
+                -nabla^2 u + k^2 u = 0.
+
+    *Returns* a newly constructed PotentialOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+
+    Note about BEM++ terminology: a *potential operator* acts on functions
+    defined on a surface S and produces functions defined at any point of the
+    space surrounding S, but not necessarily on S itself. In contrast, a
+    *boundary operator* acts on on functions defined on a surface S and produces
+    functions defined on the same surface S.
+    """
+    return _constructModifiedHelmholtzPotentialOperator(
+        "modifiedHelmholtz3dSingleLayerPotentialOperator", context, waveNumber)
+
+def createModifiedHelmholtz3dDoubleLayerPotentialOperator(context, waveNumber):
+    """
+    Create and return a double-layer potential operator for the modified Helmholtz
+    equation in 3D.
+
+    *Parameters:*
+       - context (Context)
+            A Context object used to control the evaluation of integrals
+            occurring in the definition of the potential operator.
+       - waveNumber (float or complex)
+            Wave number, i.e. the number k in the modified Helmholtz equation
+                -nabla^2 u + k^2 u = 0.
+
+    *Returns* a newly constructed PotentialOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+
+    Note about BEM++ terminology: a *potential operator* acts on functions
+    defined on a surface S and produces functions defined at any point of the
+    space surrounding S, but not necessarily on S itself. In contrast, a
+    *boundary operator* acts on on functions defined on a surface S and produces
+    functions defined on the same surface S.
+    """
+    return _constructModifiedHelmholtzPotentialOperator(
+        "modifiedHelmholtz3dDoubleLayerPotentialOperator", context, waveNumber)
+
+
+
 def createMaxwell3dSingleLayerBoundaryOperator(
         context, domain, range, dualToRange, waveNumber, label=None,
         useInterpolation=False, interpPtsPerWavelength=5000):
