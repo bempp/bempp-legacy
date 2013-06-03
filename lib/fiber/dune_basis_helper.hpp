@@ -24,6 +24,7 @@
 #include "../common/common.hpp"
 
 #include "types.hpp"
+#include "_3d_array.hpp"
 #include "_4d_array.hpp"
 
 #include "../common/armadillo_fwd.hpp"
@@ -37,10 +38,9 @@ template <typename CoordinateType, typename ValueType, typename DuneBasis>
 void evaluateBasisFunctionsWithDune(
         const arma::Mat<CoordinateType>& local,
         LocalDofIndex localDofIndex,
-        _3dArray<ValueType>& result)
+        _3dArray<ValueType>& result,
+        const DuneBasis& basis = DuneBasis())
 {
-    DuneBasis basis;
-
     typedef typename DuneBasis::Traits Traits;
     assert(local.n_rows == Traits::dimDomain);
     assert(localDofIndex == ALL_DOFS ||
@@ -72,10 +72,9 @@ template <typename CoordinateType, typename ValueType, typename DuneBasis>
 void evaluateBasisFunctionDerivativesWithDune(
         const arma::Mat<CoordinateType>& local,
         LocalDofIndex localDofIndex,
-        _4dArray<ValueType>& result)
+        _4dArray<ValueType>& result,
+        const DuneBasis& basis = DuneBasis())
 {
-    DuneBasis basis;
-
     typedef typename DuneBasis::Traits Traits;
     assert(local.n_rows == Traits::dimDomain);
     assert(localDofIndex == ALL_DOFS ||
@@ -109,4 +108,4 @@ void evaluateBasisFunctionDerivativesWithDune(
 
 }
 
-#endif // DUNE_BASIS_HELPER_HPP
+#endif
