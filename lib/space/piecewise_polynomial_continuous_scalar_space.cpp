@@ -165,7 +165,10 @@ PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::isDiscontinuous() c
 template <typename BasisFunctionType>
 void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
 {
-    // We also precalculate the bounding boxes
+    // TODO: refactor this function, it's way too long!
+
+    // In addition to DOF assignment, this function also precalculates bounding 
+    // boxes of global DOFs
 
     const int elementCount = m_view->entityCount(0);
     if (elementCount == 0)
