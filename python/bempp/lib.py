@@ -249,6 +249,56 @@ def createPiecewiseLinearDiscontinuousScalarSpace(context, grid):
     return _constructObjectTemplatedOnBasis(
         core, name, context.basisFunctionType(), grid)
 
+def createPiecewisePolynomialContinuousScalarSpace(
+        context, grid, polynomialOrder):
+    """
+    Create and return a space of globally continuous scalar functions defined
+    on a grid and having a polynomial representation of a given order
+    on each element of this grid.
+
+    *Parameters:*
+       - context (Context)
+            A Context object that will determine the type used to represent the
+            values of the basis functions of the newly constructed space.
+       - grid (Grid)
+            Grid on which the functions from the newly constructed space will be
+            defined.
+       - polynomialOrder (int)
+            Order of the polynomial basis defined on each element.
+
+    *Returns* a newly constructed Space_BasisFunctionType object, with
+    BasisFunctionType determined automatically from the context argument and
+    equal to either float32, float64, complex64 or complex128.
+    """
+    name = 'piecewisePolynomialContinuousScalarSpace'
+    return _constructObjectTemplatedOnBasis(
+        core, name, context.basisFunctionType(), grid, polynomialOrder)
+
+def createPiecewisePolynomialDiscontinuousScalarSpace(
+        context, grid, polynomialOrder):
+    """
+    Create and return a space of scalar functions defined on a grid and having a
+    polynomial representation of a given order on each element of this grid (but
+    not forced to be continuous at element boundaries).
+
+    *Parameters:*
+       - context (Context)
+            A Context object that will determine the type used to represent the
+            values of the basis functions of the newly constructed space.
+       - grid (Grid)
+            Grid on which the functions from the newly constructed space will be
+            defined.
+       - polynomialOrder (int)
+            Order of the polynomial basis defined on each element.
+
+    *Returns* a newly constructed Space_BasisFunctionType object, with
+    BasisFunctionType determined automatically from the context argument and
+    equal to either float32, float64, complex64 or complex128.
+    """
+    name = 'piecewisePolynomialDiscontinuousScalarSpace'
+    return _constructObjectTemplatedOnBasis(
+        core, name, context.basisFunctionType(), grid, polynomialOrder)
+
 def createUnitScalarSpace(context, grid):
     """
     Create and return a space consisting of the single function equal to 1
