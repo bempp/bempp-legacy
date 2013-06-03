@@ -780,6 +780,51 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
 }
 
 template <typename BasisFunctionType, typename ResultType>
+void GridFunction<BasisFunctionType, ResultType>::evaluate(
+        const Entity<0>& element,
+        const arma::Mat<CoordinateType>& local,
+        arma::Mat<ResultType>& values) const
+{
+    if (local.n_rows != m_space->grid()->dim())
+        throw std::invalid_argument("evaluate(): points in 'local' have an "
+                                    "invalid number of coordinates");
+
+    const int nComponents = componentCount();
+    // Find out which basis data need to be calculated
+    size_t basisDeps = 0, geomDeps = 0;
+    // Find out which geometrical data need to be calculated,
+    const Fiber::CollectionOfBasisTransformations<CoordinateType>& transformations =
+        m_space->shapeFunctionValue();
+    assert(transformations.transformationCount() == 1);
+    assert(nComponents == transformations.resultDimension(0));
+    transformations.addDependencies(basisDeps, geomDeps);
+
+    // Get basis data
+    const Fiber::Basis<BasisFunctionType>& basis = m_space->basis(element);
+    Fiber::BasisData<BasisFunctionType> basisData;
+    basis.evaluate(basisDeps, local, ALL_DOFS, basisData);
+    // Get geometrical data
+    Fiber::GeometricalData<CoordinateType> geomData;
+    element.geometry().getData(geomDeps, local, geomData);
+    values.set_size(nComponents, local.n_cols);
+    // Get shape function values
+    Fiber::CollectionOf3dArrays<BasisFunctionType> functionValues;
+    transformations.evaluate(basisData, geomData, functionValues);
+    assert(functionValues.size() == 1);
+
+    // Get local coefficients
+    std::vector<ResultType> localCoefficients(basis.size());
+    getLocalCoefficients(element, localCoefficients);
+    assert(localCoefficients.size() == basis.size());
+
+    // Calculate grid function values
+    values.set_size(functionValues[0].extent(0), local.n_cols);
+    values.fill(static_cast<ResultType>(0.));
+    for (size_t p = 0; p < functionValues[0].extent(2); ++p)
+        for (size_t f = 0; f < functionValues[0].extent(1); ++f)
+            for (size_t dim = 0; dim < functionValues[0].extent(0); ++dim)
+                values(dim, p) += functionValues[0](dim, f, p) * localCoefficients[f];
+}
 GridFunction<BasisFunctionType, ResultType> operator+(
         const GridFunction<BasisFunctionType, ResultType>& g)
 {

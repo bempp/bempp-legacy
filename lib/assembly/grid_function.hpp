@@ -354,6 +354,22 @@ public:
             VtkWriter::DataType dataType,
             arma::Mat<CoordinateType>& points, arma::Mat<ResultType>& values) const;
 
+   /** \brief Evaluate function at specific points lying on a given element.
+    *
+    *  \param[in] element   An element belonging to the grid on which \p function
+    *                       is defined.
+    *  \param[in] local     A 2D array whose (i,j)th element is the ith coordinate of
+    *                       the jth point at which the grid function should be
+    *                       evaluated, in the local coordinate system of
+    *                       \p element.
+    *  \param[in] values    A 2D array whose (i,j)th element is the ith component
+    *                       of \p function evaluated at the jth point.
+    */
+    void evaluate(
+        const Entity<0>& element,
+        const arma::Mat<CoordinateType>& local,
+        arma::Mat<ResultType>& values) const;
+
 private:
     void initializeFromCoefficients(
             const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
