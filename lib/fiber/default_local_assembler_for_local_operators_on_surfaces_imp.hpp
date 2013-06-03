@@ -175,7 +175,7 @@ selectIntegrator(int elementIndex)
     const int expressionOrder =
         (*m_testBases)[elementIndex]->order() +
         (*m_trialBases)[elementIndex]->order();
-    desc.order = ((expressionOrder + 1) + 1 /* round up */) / 2;
+    desc.order = expressionOrder;
 
     return getIntegrator(desc);
 }
