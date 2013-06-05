@@ -60,21 +60,16 @@ public:
     /** \brief Underlying Dune grid's type*/
     typedef DuneGrid DuneGridType;
 
-//    /** \brief Wrap a new Dune grid object (deleted in the destructor). */
-//    ConcreteGrid() :
-//        m_dune_grid(new DuneGrid), m_owns_dune_grid(true), m_global_id_set(
-//            &m_dune_grid->globalIdSet()) {
-//    }
-
     /** \brief Wrap an existing Dune grid object.
 
      \param[in]  dune_grid  Pointer to the Dune grid to wrap.
      \param[in]  topology   The topology of the grid
      \param[in]  own  If true, *dune_grid is deleted in this object's destructor.
      */
-    explicit ConcreteGrid(DuneGrid* dune_grid, GridParameters::Topology topology, bool own = false) :
-        m_dune_grid(dune_grid), m_topology(topology), m_owns_dune_grid(own), m_global_id_set(
-            dune_grid ? &dune_grid->globalIdSet() : 0) { // safety net
+    explicit ConcreteGrid(DuneGrid* dune_grid,
+                          GridParameters::Topology topology, bool own = false) :
+        m_dune_grid(dune_grid), m_topology(topology), m_owns_dune_grid(own),
+        m_global_id_set(dune_grid ? &dune_grid->globalIdSet() : 0) { // safety net
     }
 
     /** \brief Destructor. */
@@ -113,12 +108,14 @@ public:
     @{ */
 
     virtual std::auto_ptr<GridView> levelView(size_t level) const {
-        return std::auto_ptr<GridView>(new ConcreteGridView<typename DuneGrid::LevelGridView>(
+        return std::auto_ptr<GridView>(
+                    new ConcreteGridView<typename DuneGrid::LevelGridView>(
                                            m_dune_grid->levelView(level)));
     }
 
     virtual std::auto_ptr<GridView> leafView() const {
-        return std::auto_ptr<GridView>(new ConcreteGridView<typename DuneGrid::LeafGridView>(
+        return std::auto_ptr<GridView>(
+                    new ConcreteGridView<typename DuneGrid::LeafGridView>(
                                            m_dune_grid->leafView()));
     }
 
@@ -128,7 +125,8 @@ public:
 
     virtual std::auto_ptr<GeometryFactory> elementGeometryFactory() const {
         return std::auto_ptr<GeometryFactory>(
-                    new ConcreteGeometryFactory<typename DuneGrid::template Codim<0>::Geometry>());
+                    new ConcreteGeometryFactory<
+                    typename DuneGrid::template Codim<0>::Geometry>());
     }
 
     /** @}
