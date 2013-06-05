@@ -1,14 +1,14 @@
---- pk2dlocalbasis.hh.orig	2013-06-01 22:18:15.000000000 +0100
-+++ pk2dlocalbasis.hh	2013-06-01 22:19:37.000000000 +0100
-@@ -75,6 +75,7 @@
+--- pk2dlocalbasis.hh.orig	2013-01-19 11:23:55.000000000 +0000
++++ pk2dlocalbasis.hh	2013-06-04 17:59:47.000000000 +0100
+@@ -80,6 +80,7 @@
+ 					std::vector<typename Traits::JacobianType>& out) const      // return value
    {  
  	out.resize(N);
- 	int n=0;
 +        const D one = 1.;
- 	for (unsigned int j=0; j<=k; j++)
- 	  for (unsigned int i=0; i<=k-j; i++)
- 		{
-@@ -88,7 +89,7 @@
+ 
+     // specialization for k==0, not clear whether that is needed
+     if (k==0) {
+@@ -101,7 +102,7 @@
  			  R product=factor;
  			  for (unsigned int alpha=0; alpha<i; alpha++)
  				if (alpha==a)
@@ -17,7 +17,7 @@
  				else
  				  product *= (x[0]-pos[alpha])/(pos[i]-pos[alpha]);
  			  for (unsigned int gamma=i+j+1; gamma<=k; gamma++) 
-@@ -102,7 +103,7 @@
+@@ -115,7 +116,7 @@
  				product *= (x[0]-pos[alpha])/(pos[i]-pos[alpha]);
  			  for (unsigned int gamma=i+j+1; gamma<=k; gamma++) 
  				if (gamma==c)
@@ -26,7 +26,7 @@
  				else
  				  product *= (pos[gamma]-x[0]-x[1])/(pos[gamma]-pos[i]-pos[j]);
  			  out[n][0][0] += product;
-@@ -118,7 +119,7 @@
+@@ -131,7 +132,7 @@
  			  R product=factor;
  			  for (unsigned int beta=0; beta<j; beta++)
  				if (beta==b)
@@ -35,7 +35,7 @@
  				else
  				  product *= (x[1]-pos[beta])/(pos[j]-pos[beta]);
  			  for (unsigned int gamma=i+j+1; gamma<=k; gamma++) 
-@@ -132,7 +133,7 @@
+@@ -145,7 +146,7 @@
  				product *= (x[1]-pos[beta])/(pos[j]-pos[beta]);
  			  for (unsigned int gamma=i+j+1; gamma<=k; gamma++)
  				if (gamma==c)

@@ -36,7 +36,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(level_agrees_with_Dune_for_second_entity_on_le
 {
     const int codim = T::value;
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
-    typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
+    typename DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp =
+            getDunePointerToSecondEntityOnLevel0<codim>();
 
     BOOST_CHECK_EQUAL((int)ep->entity().level(), (int)duneEp->level());
 }
@@ -57,7 +58,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(type_agrees_with_Dune_for_second_entity_on_lev
 {
     const int codim = T::value;
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
-    typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
+    typename DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp =
+            getDunePointerToSecondEntityOnLevel0<codim>();
 
     BOOST_CHECK_EQUAL(ep->entity().type(), duneEp->type());
 }
@@ -72,7 +74,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityCount_agrees_with_Dune_for_codimSub,
     std::auto_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
     int count = ep->entity().subEntityCount<codimSub>();
 
-    typename DuneGrid::Codim<0>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<0>();
+    typename DuneGrid::LevelGridView::Codim<0>::Iterator duneEp =
+            getDunePointerToSecondEntityOnLevel0<0>();
     int duneCount = duneEp->template count<codimSub>();
 
     BOOST_CHECK_EQUAL(count, duneCount);
@@ -131,7 +134,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIterator_number_of_iterations_agrees_
         ++numIterations;
     }
 
-    typename DuneGrid::Codim<0>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<0>();
+    typename DuneGrid::LevelGridView::Codim<0>::Iterator duneEp =
+            getDunePointerToSecondEntityOnLevel0<0>();
     int duneNumIterations = duneEp->template count<codimSub>();
 
     BOOST_CHECK_EQUAL(numIterations, duneNumIterations);
@@ -171,7 +175,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIterator_second_entity_agrees_with_Du
 
     Dune::FieldVector<DuneGrid::ctype, DuneGrid::dimensionworld> duneElementCenter;
     {
-        typename DuneGrid::Codim<0>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<0>();
+        typename DuneGrid::LevelGridView::Codim<0>::Iterator duneEp =
+                getDunePointerToSecondEntityOnLevel0<0>();
         typedef typename DuneGrid::Codim<codimSub> Codim;
         typename Codim::EntityPointer duneSubEp = duneEp->subEntity<codimSub>(1);
         const typename Codim::Entity& e = *duneSubEp;

@@ -1,3 +1,5 @@
+// -*- tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+// vi: set ts=8 sw=4 et sts=4:
 #ifndef DUNE_FOAMGRID_FACTORY_HH
 #define DUNE_FOAMGRID_FACTORY_HH
 
@@ -108,7 +110,7 @@ namespace Dune {
             Currently, the BoundarySegment object does not actually have any effect.
         */
         virtual void insertBoundarySegment(const std::vector<unsigned int>& vertices,
-                                           const shared_ptr<BoundarySegment<2, 3> > boundarySegment)
+                                           const shared_ptr<BoundarySegment<2, dimworld> > boundarySegment)
         {
             insertBoundarySegment(vertices);
         }
@@ -120,8 +122,8 @@ namespace Dune {
         virtual FoamGrid<dimworld>* createGrid() {
             // Prevent a crash when this method is called twice in a row
             // You never know who may do this...
-            if (grid_==NULL)
-                return NULL;
+            if (grid_==nullptr)
+                return nullptr;
 
             // ////////////////////////////////////////////////////
             //   Create the edges
@@ -150,7 +152,7 @@ namespace Dune {
                     const FoamGridVertex* v0 = element->vertex_[refElement.subEntity(i, 1, 0, 2)];
                     const FoamGridVertex* v1 = element->vertex_[refElement.subEntity(i, 1, 1, 2)];
 
-                    FoamGridEntityImp<1,dimworld>* existingEdge = NULL;
+                    FoamGridEntityImp<1,dimworld>* existingEdge = nullptr;
                     typename std::map<std::pair<const FoamGridEntityImp<0,dimworld>*, const FoamGridEntityImp<0,dimworld>*>, FoamGridEntityImp<1,dimworld>*>::const_iterator e = edgeMap.find(std::make_pair(v0,v1));
 
                     if (e != edgeMap.end()) {
@@ -161,7 +163,7 @@ namespace Dune {
                             existingEdge = e->second;
                     }
 
-                    if (existingEdge == NULL) {
+                    if (existingEdge == nullptr) {
 
                         // The current edge has not been inserted already.  We do that now
 
@@ -201,7 +203,8 @@ namespace Dune {
             for (typename std::list<FoamGridEntityImp<1,dimworld> >::iterator it = Dune::get<1>(grid_->entityImps_[0]).begin();
                  it != Dune::get<1>(grid_->entityImps_[0]).end();
                  ++it)
-                it->boundaryId_ = boundaryIdCounter++;
+                if(it->elements_.size()==1)
+                    it->boundaryId_ = boundaryIdCounter++;
 
 
             // ////////////////////////////////////////////////
@@ -209,7 +212,8 @@ namespace Dune {
             // ////////////////////////////////////////////////
 
             Dune::FoamGrid<dimworld>* tmp = grid_;
-            grid_ = NULL;
+            tmp->numBoundarySegments_ = boundaryIdCounter;
+            grid_ = nullptr;
             return tmp;
         }
 

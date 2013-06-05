@@ -5,6 +5,10 @@
 * \brief The FoamGridHierarchicIterator class
 */
 
+#include <stack>
+
+#include <dune/foamgrid/foamgrid/foamgridentitypointer.hh>
+
 namespace Dune {
 
 
@@ -31,7 +35,7 @@ class FoamGridHierarchicIterator :
 
     //! Constructor
     FoamGridHierarchicIterator(int maxlevel) 
-        : FoamGridEntityPointer<0,GridImp>(NULL),
+        : FoamGridEntityPointer<0,GridImp>(nullptr),
           maxlevel_(maxlevel)
     {}
         
@@ -50,7 +54,7 @@ class FoamGridHierarchicIterator :
                 // Load sons of old target onto the iterator stack
                 if (!old_target->isLeaf()) {
                     
-                    for (int i=0; i<old_target->nSons(); i++)
+                    for (size_t i=0; i<old_target->nSons(); i++)
                         elemStack.push(old_target->sons_[i]);
                     
                 }
@@ -58,7 +62,7 @@ class FoamGridHierarchicIterator :
             }
             
             this->virtualEntity_.setToTarget((elemStack.empty()) 
-                                             ? NULL : elemStack.top());
+                                             ? nullptr : elemStack.top());
         }
 
         

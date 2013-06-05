@@ -26,7 +26,8 @@
 #include "bempp/common/config_alugrid.hpp"
 
 #include <memory>
-#include <stack> // fix a bug in foamgrid -- this header is not included where it should be
+#include <dune/common/shared_ptr.hh> // fix a bug in foamgrid -- this header
+                                     // is not included where it should be
 #include <dune/foamgrid/foamgrid.hh>
 #ifdef WITH_ALUGRID
 #include <dune/grid/alugrid.hh>

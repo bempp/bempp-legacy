@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(type_agrees_with_Dune_for_codim,
 {
     const int codim = T::value;
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
-    typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
+    typename DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
     const typename DuneGrid::Codim<codim>::Entity::Geometry& duneGeo = duneEp->geometry();
@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(affine_agrees_with_Dune_for_codim,
 {
     const int codim = T::value;
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
-    typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
+    typename DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
     const typename DuneGrid::Codim<codim>::Entity::Geometry& duneGeo = duneEp->geometry();
@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(affine_is_true_for_codim,
 {
     const int codim = T::value;
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
-    typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
+    typename DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
 
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(cornerCount_agrees_with_Dune_for_codim,
 {
     const int codim = T::value;
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
-    typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
+    typename DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
     const typename DuneGrid::Codim<codim>::Entity::Geometry& duneGeo = duneEp->geometry();
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(corners_first_corner_agrees_with_Dune_for_codi
 {
     const int codim = T::value;
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
-    typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
+    typename DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
     const typename DuneGrid::Codim<codim>::Entity::Geometry& duneGeo = duneEp->geometry();
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(corners_last_corner_agrees_with_Dune_for_codim
 {
     const int codim = T::value;
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
-    typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
+    typename DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
     const typename DuneGrid::Codim<codim>::Entity::Geometry& duneGeo = duneEp->geometry();
@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(local2global_agrees_with_Dune_for_one_point_an
     const int dimLocal = DuneGrid::dimension - codim;
 
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
-    typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
+    typename DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
     const typename DuneGrid::Codim<codim>::Entity::Geometry& duneGeo = duneEp->geometry();
@@ -172,7 +172,7 @@ static void local2global_agrees_with_Dune_for_nth_of_several_points_and_uninitia
     const int nPoints = 5;
 
     std::auto_ptr<EntityPointer<codim> > ep = f.getPointerToSecondEntityOnLevel0<codim>();
-    typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::EntityPointer duneEp =
+    typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp =
         f.getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
@@ -224,7 +224,7 @@ static void local2global_agrees_with_Dune_for_nth_of_several_points_and_initiali
     const int nPoints = 5;
 
     std::auto_ptr<EntityPointer<codim> > ep = f.getPointerToSecondEntityOnLevel0<codim>();
-    typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::EntityPointer duneEp =
+    typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp =
         f.getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
@@ -284,7 +284,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(global2local_agrees_with_Dune_for_one_point_an
     const int dimLocal = DuneGrid::dimension - codim;
 
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
-    typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
+    typename DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
     const typename DuneGrid::Codim<codim>::Entity::Geometry& duneGeo = duneEp->geometry();
@@ -311,7 +311,7 @@ static void global2local_agrees_with_Dune_for_nth_of_several_points_and_uninitia
     const int nPoints = 5;
 
     std::auto_ptr<EntityPointer<codim> > ep = f.getPointerToSecondEntityOnLevel0<codim>();
-    typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::EntityPointer duneEp =
+    typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp =
         f.getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
@@ -361,7 +361,7 @@ static void global2local_agrees_with_Dune_for_nth_of_several_points_and_initiali
     const int nPoints = 5;
 
     std::auto_ptr<EntityPointer<codim> > ep = f.getPointerToSecondEntityOnLevel0<codim>();
-    typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::EntityPointer duneEp =
+    typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp =
         f.getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
@@ -413,7 +413,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(integrationElement_agrees_with_Dune_for_one_po
     const int dimLocal = DuneGrid::dimension - codim;
 
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
-    typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
+    typename DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
     const typename DuneGrid::Codim<codim>::Entity::Geometry& duneGeo = duneEp->geometry();
@@ -440,7 +440,7 @@ static void integrationElement_agrees_with_Dune_for_nth_of_several_points_and_un
     const int nPoints = 5;
 
     std::auto_ptr<EntityPointer<codim> > ep = f.getPointerToSecondEntityOnLevel0<codim>();
-    typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::EntityPointer duneEp =
+    typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp =
         f.getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
@@ -489,7 +489,7 @@ static void integrationElement_agrees_with_Dune_for_nth_of_several_points_and_in
     const int nPoints = 5;
 
     std::auto_ptr<EntityPointer<codim> > ep = f.getPointerToSecondEntityOnLevel0<codim>();
-    typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::EntityPointer duneEp =
+    typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp =
         f.getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
@@ -544,7 +544,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(volume_agrees_with_Dune_for_codim,
 {
     const int codim = T::value;
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
-    typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
+    typename DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
     const typename DuneGrid::Codim<codim>::Entity::Geometry& duneGeo = duneEp->geometry();
@@ -562,7 +562,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(center_agrees_with_Dune_for_codim,
     const int dimGlobal = DuneGrid::dimensionworld;
 
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
-    typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
+    typename DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
     const typename DuneGrid::Codim<codim>::Entity::Geometry& duneGeo = duneEp->geometry();
@@ -585,7 +585,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianTransposed_agrees_with_Dune_for_one_po
     const int dimLocal = DuneGrid::dimension - codim;
 
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
-    typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
+    typename DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
     const typename DuneGrid::Codim<codim>::Entity::Geometry& duneGeo = duneEp->geometry();
@@ -618,7 +618,7 @@ static void jacobianTransposed_agrees_with_Dune_for_nth_of_several_points_and_un
     const int nPoints = 5;
 
     std::auto_ptr<EntityPointer<codim> > ep = f.getPointerToSecondEntityOnLevel0<codim>();
-    typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::EntityPointer duneEp =
+    typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp =
         f.getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
@@ -671,7 +671,7 @@ static void jacobianTransposed_agrees_with_Dune_for_nth_of_several_points_and_in
     const int nPoints = 5;
 
     std::auto_ptr<EntityPointer<codim> > ep = f.getPointerToSecondEntityOnLevel0<codim>();
-    typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::EntityPointer duneEp =
+    typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp =
         f.getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
@@ -728,7 +728,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(jacobianInverseTransposed_agrees_with_Dune_for
     const int dimLocal = DuneGrid::dimension - codim;
 
     std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
-    typename DuneGrid::Codim<codim>::EntityPointer duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
+    typename DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp =
+            getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
     const typename DuneGrid::Codim<codim>::Entity::Geometry& duneGeo = duneEp->geometry();
@@ -760,7 +761,7 @@ static void jacobianInverseTransposed_agrees_with_Dune_for_nth_of_several_points
     const int nPoints = 5;
 
     std::auto_ptr<EntityPointer<codim> > ep = f.getPointerToSecondEntityOnLevel0<codim>();
-    typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::EntityPointer duneEp =
+    typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp =
         f.getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
@@ -813,7 +814,7 @@ static void jacobianInverseTransposed_agrees_with_Dune_for_nth_of_several_points
     const int nPoints = 5;
 
     std::auto_ptr<EntityPointer<codim> > ep = f.getPointerToSecondEntityOnLevel0<codim>();
-    typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::EntityPointer duneEp =
+    typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp =
         f.getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();

@@ -5,6 +5,10 @@
 * \brief The FoamGridEntityPointer class
 */
 
+#include <list>
+
+#include <dune/foamgrid/foamgrid/foamgridentity.hh>
+
 namespace Dune {
 
 

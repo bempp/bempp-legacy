@@ -23,20 +23,24 @@ from py_modules import tools
 from py_modules import python_patch as py_patch
 
 
-dune_fnames=['dune-common-2.1.1.tar.gz',
-             'dune-grid-2.1.1.tar.gz',
-             'dune-localfunctions-2.1.1.tar.gz']
-dune_extract_names=['dune-common-2.1.1',
-                    'dune-grid-2.1.1',
-                    'dune-localfunctions-2.1.1']
-dune_urls=['http://www.dune-project.org/download/2.1/dune-common-2.1.1.tar.gz',
-	   'http://www.dune-project.org/download/2.1/dune-grid-2.1.1.tar.gz',
-	   'http://www.dune-project.org/download/2.1/dune-localfunctions-2.1.1.tar.gz']
-dune_names=['dune-common','dune-grid','dune-localfunctions']
+dune_fnames=['dune-common-2.2.1.tar.gz',
+             'dune-geometry-2.2.1.tar.gz',
+             'dune-grid-2.2.1.tar.gz',
+             'dune-localfunctions-2.2.1.tar.gz']
+dune_extract_names=['dune-common-2.2.1',
+                    'dune-geometry-2.2.1',
+                    'dune-grid-2.2.1',
+                    'dune-localfunctions-2.2.1']
+dune_urls=[
+    'http://www.dune-project.org/download/2.2.1/dune-common-2.2.1.tar.gz',
+    'http://www.dune-project.org/download/2.2.1/dune-geometry-2.2.1.tar.gz',
+    'http://www.dune-project.org/download/2.2.1/dune-grid-2.2.1.tar.gz',
+    'http://www.dune-project.org/download/2.2.1/dune-localfunctions-2.2.1.tar.gz']
+dune_names=['dune-common','dune-geometry','dune-grid','dune-localfunctions']
 
 def download(root,config,force=False):
     dep_download_dir=config.get('Main','dependency_download_dir')
-    for i in range(3):
+    for i in range(4):
         tools.download(dune_fnames[i],dune_urls[i],dep_download_dir,force)
 
 def prepare(root,config):
@@ -45,7 +49,7 @@ def prepare(root,config):
 
     # Download files
     tools.checkCreateDir(dep_build_dir+"/dune")
-    for i in range(3):
+    for i in range(4):
         tools.checkDeleteDirectory(dep_build_dir+"/dune/"+dune_names[i])
         print "Extracting "+dune_names[i]
         try:
@@ -58,14 +62,7 @@ def prepare(root,config):
                                dep_build_dir+"/dune/")
         os.rename(dep_build_dir+"/dune/"+dune_extract_names[i],
                   dep_build_dir+"/dune/"+dune_names[i])
-        if i==1:
-            print "Patching "+dune_names[i]
-            patch=py_patch.fromfile(root+"/installer/patches/dune-grid.patch")
-            cwd=os.getcwd()
-            os.chdir(dep_build_dir+"/dune/dune-grid/dune/grid/utility")
-            patch.apply()
-            os.chdir(cwd)
-        elif i==2:
+        if i==3:
             print "Patching "+dune_names[i]
             cwd=os.getcwd()
 
@@ -103,14 +100,22 @@ def configure(root,config):
                             "' ./configure --disable-documentation "
                             "--enable-shared=yes --enable-static=no "
                             "--disable-gxx0xcheck "
+                            "--enable-fieldvector-size-is-method=yes "
                             "--prefix='"+dune_install_dir+"' "
                             "--libdir='"+dune_install_dir+"/lib'")
-    config_string_grid = (config_string_common+
-                          " --with-dune-common="+dune_dir+"/dune-common")
+    config_string_geometry = (config_string_common+
+                              " --with-dune-common="+dune_dir+"/dune-common")
+    config_string_grid = (config_string_geometry+
+                          " --with-dune-geometry="+dune_dir+"/dune-geometry")
     config_string_localfunctions = (config_string_grid+
                                     " --with-dune-grid="+dune_dir+"/dune-grid")
     os.chdir(dune_dir+"/dune-common")
     subprocess.check_call(config_string_common,shell=True)
+    subprocess.check_call("make -j"+str(njobs),shell=True)
+    os.chdir(cwd)
+
+    os.chdir(dune_dir+"/dune-geometry")
+    subprocess.check_call(config_string_geometry,shell=True)
     subprocess.check_call("make -j"+str(njobs),shell=True)
     os.chdir(cwd)
 
@@ -135,6 +140,10 @@ def install(root,config):
     cwd=os.getcwd()
 
     os.chdir(dune_dir+"/dune-common")
+    subprocess.check_call("make install",shell=True)
+    os.chdir(cwd)
+
+    os.chdir(dune_dir+"/dune-geometry")
     subprocess.check_call("make install",shell=True)
     os.chdir(cwd)
 

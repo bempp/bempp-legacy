@@ -1,5 +1,12 @@
+// -*- tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+// vi: set ts=8 sw=4 et sts=4:
 #ifndef DUNE_FOAMGRID_VERTEX_HH
 #define DUNE_FOAMGRID_VERTEX_HH
+
+#include <dune/common/fvector.hh>
+#include <dune/geometry/type.hh>
+#include <dune/grid/common/gridenums.hh>
+
 
 namespace Dune {
 
@@ -8,7 +15,7 @@ namespace Dune {
     {
     public:
         FoamGridEntityBase(int level, unsigned int id)
-            : level_(level), id_(id)
+            : level_(level), id_(id), willVanish_()
         {}
 
         unsigned int level() const {
@@ -24,9 +31,16 @@ namespace Dune {
         unsigned int leafIndex_;
         
         unsigned int id_;
-        
+        //! \brief Whether this entity will vanish due to coarsening.
+        bool willVanish_;
     };
 
+    /**
+     * \brief The actual entity implementation
+     *
+     * \tparam dim The dimension of this entity
+     * \tparam dimworld The world diemnsion
+     */
     template <int dim, int dimworld>
     class FoamGridEntityImp
     {};
@@ -39,12 +53,12 @@ namespace Dune {
         
         FoamGridEntityImp(int level, const FieldVector<double, dimworld>& pos, unsigned int id) 
             : FoamGridEntityBase(level, id),
-              pos_(pos), son_(NULL) 
+              pos_(pos), son_(nullptr) 
         {}
         
         //private: 
         bool isLeaf() const {
-            return son_==NULL;
+            return son_==nullptr;
         }
 
         GeometryType type() const {

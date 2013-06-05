@@ -4,6 +4,7 @@ foamgrid_HEADERS = foamgridedge.hh \
                    foamgridelements.hh \
                    foamgridentity.hh \
                    foamgridentitypointer.hh \
+                   foamgridentityseed.hh \
                    foamgridfactory.hh \
                    foamgridgeometry.hh \
                    foamgridhierarchiciterator.hh \

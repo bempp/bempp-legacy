@@ -40,7 +40,7 @@ struct TriangularEntityManager : public SimpleTriangularGridManager {
     }
 
     template <int codim>
-    typename DuneGrid::Codim<codim>::EntityPointer getDunePointerToSecondEntityOnLevel0() {
+    typename DuneGrid::LevelGridView::Codim<codim>::Iterator getDunePointerToSecondEntityOnLevel0() {
         DuneGrid::LevelGridView duneGridView = duneGrid->levelView(0);
         typename DuneGrid::LevelGridView::Codim<codim>::Iterator duneIt = duneGridView.begin<codim>();
         ++duneIt;

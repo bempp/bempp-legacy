@@ -21,7 +21,7 @@ class FoamGridLeafIterator :
 public:
 
     FoamGridLeafIterator(const GridImp& grid) 
-        : FoamGridEntityPointer <codim,GridImp>(NULL),
+        : FoamGridEntityPointer <codim,GridImp>(nullptr),
           grid_(&grid)
     {
 
@@ -39,8 +39,8 @@ public:
 
   //! Constructor
     FoamGridLeafIterator() 
-        : FoamGridEntityPointer <codim,GridImp>(NULL),
-          grid_(NULL)
+        : FoamGridEntityPointer <codim,GridImp>(nullptr),
+          grid_(nullptr)
     {}
 
     //! prefix increment
@@ -66,7 +66,7 @@ private:
         ++levelIterator_;
         this->virtualEntity_.setToTarget(&(*levelIterator_));
         if (levelIterator_==Dune::get<dim-codim>(grid_->entityImps_[oldLevel]).end())
-            this->virtualEntity_.setToTarget(NULL);
+            this->virtualEntity_.setToTarget(nullptr);
 
         // If beyond the end of this level set to first of next level
         if (levelIterator_==Dune::get<dim-codim>(grid_->entityImps_[oldLevel]).end() && oldLevel < grid_->maxLevel()) {

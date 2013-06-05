@@ -45,10 +45,10 @@ namespace Bempp
  */
 template<typename GV, typename V>
 class P0VectorVTKFunction
-        : public Dune::VTKFunction<typename GV::Grid>
+        : public Dune::VTKFunction<GV>
 {
     //! Base class
-    typedef Dune::VTKFunction<typename GV::Grid> Base;
+    typedef Dune::VTKFunction<GV> Base;
     //! Mapper for elements
     typedef Dune::MultipleCodimMultipleGeomTypeMapper<GV, Dune::MCMGElementLayout> Mapper;
 

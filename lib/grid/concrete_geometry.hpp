@@ -48,8 +48,7 @@ template <typename DuneGeometry> class ConcreteGeometryFactory;
 // from the grid).
 
 template <typename DuneGeometry>
-void setupDuneGeometry(
-        typename Dune::MakeableInterfaceObject<DuneGeometry>::ImplementationType& duneGeometry,
+DuneGeometry setupDuneGeometry(
         const GeometryType& type,
         const std::vector<Dune::FieldVector<double, DuneGeometry::dimensionworld> >& corners)
 {
@@ -58,12 +57,13 @@ void setupDuneGeometry(
 }
 
 template <>
-void setupDuneGeometry<Default2dIn3dDuneGrid::Codim<0>::Geometry>(
-        Dune::MakeableInterfaceObject<Default2dIn3dDuneGrid::Codim<0>::Geometry>::ImplementationType& duneGeometry,
+Default2dIn3dDuneGrid::Codim<0>::Geometry
+setupDuneGeometry<Default2dIn3dDuneGrid::Codim<0>::Geometry>(
         const GeometryType& type,
-        const std::vector<Dune::FieldVector<double, Default2dIn3dDuneGrid::dimensionworld> >& corners)
+        const std::vector<Dune::FieldVector<double, 3> >& corners)
 {
-    duneGeometry.setup(type, corners);
+    return Default2dIn3dDuneGrid::Codim<0>::Geometry(
+                Dune::FoamGridGeometry<2, 3, const Dune::FoamGrid<3> >(type, corners));
 }
 
 /** \brief Wrapper of a Dune geometry of type \p DuneGeometry */
@@ -76,41 +76,31 @@ class ConcreteGeometry : public Geometry
                        "number of coordinates");
 
 private:
-    const DuneGeometry* m_dune_geometry;
-    bool m_owns_dune_geometry;
+    std::auto_ptr<DuneGeometry> m_dune_geometry;
 
-    /** \brief Default constructor.
-
-    Should be followed by a call to setDuneGeometry(). */
-    ConcreteGeometry() : m_dune_geometry(0), m_owns_dune_geometry(false) {
+    void setDuneGeometry(const DuneGeometry& dune_geometry) {
+        m_dune_geometry.reset(new DuneGeometry(dune_geometry));
     }
 
-    void setDuneGeometry(const DuneGeometry* dune_geometry, bool owns) {
-        if (m_owns_dune_geometry)
-            delete m_dune_geometry;
-        m_dune_geometry = dune_geometry;
-        m_owns_dune_geometry = owns;
-    }
+    ConcreteGeometry() {}
 
     template<int codim, typename DuneEntity> friend class ConcreteEntity;
     friend class ConcreteGeometryFactory<DuneGeometry>;
 
 public:
-    /** \brief Constructor from a pointer to DuneGeometry.
-
-      This object does not assume ownership of \p *dune_geometry.
-    */
-    explicit ConcreteGeometry(const DuneGeometry* dune_geometry) :
-        m_dune_geometry(dune_geometry) {}
-
-    ~ConcreteGeometry() {
-        if (m_owns_dune_geometry)
-            delete m_dune_geometry;
-    }
+    /** \brief Constructor from a DuneGeometry object. */
+    explicit ConcreteGeometry(const DuneGeometry& dune_geometry) :
+        m_dune_geometry(new DuneGeometry(dune_geometry)) {}
 
     /** \brief Read-only access to the underlying Dune geometry object. */
     const DuneGeometry& duneGeometry() const {
-        return *m_dune_geometry;
+        return m_dune_geometry;
+    }
+
+    /** \brief Return true if the Dune geometry object has already been set,
+     *  false otherwise. */
+    bool isInitialized() const {
+        return m_dune_geometry.get();
     }
 
     virtual int dim() const {
@@ -155,13 +145,9 @@ public:
         typedef Dune::MakeableInterfaceObject<DuneGeometry> DuneMakeableGeometry;
         typedef typename DuneMakeableGeometry::ImplementationType DuneGeometryImp;
 
-        DuneGeometryImp newDuneGeometry;
-        setupDuneGeometry<DuneGeometry>(newDuneGeometry, type, duneCorners);
-        // newDuneGeometry.setup(type, duneCorners);
-        // I wish I could avoid this heap allocation...
-        // unfortunately I can't find a way to obtain access from
-        // Dune's Geometry<... GeometryImp> to the underlying GeometryImp object
-        setDuneGeometry(new DuneMakeableGeometry(newDuneGeometry), true /* owns */);
+        m_dune_geometry.reset(
+                    new DuneGeometry(
+                        setupDuneGeometry<DuneGeometry>(type, duneCorners)));
     }
 
     virtual GeometryType type() const {
@@ -198,7 +184,8 @@ public:
         const int cdim = DuneGeometry::coorddimension;
 #ifndef NDEBUG
         if ((int)local.n_rows != mdim)
-            throw std::invalid_argument("Geometry::local2global(): invalid dimensions of the 'local' array");
+            throw std::invalid_argument("Geometry::local2global(): invalid "
+                                        "dimensions of the 'local' array");
 #endif
         const size_t n = local.n_cols;
         global.set_size(cdim, n);
@@ -221,7 +208,8 @@ public:
         const int cdim = DuneGeometry::coorddimension;
 #ifndef NDEBUG
         if ((int)global.n_rows != cdim)
-            throw std::invalid_argument("Geometry::global2local(): invalid dimensions of the 'global' array");
+            throw std::invalid_argument("Geometry::global2local(): invalid "
+                                        "dimensions of the 'global' array");
 #endif
         const size_t n = global.n_cols;
         local.set_size(mdim, n);
@@ -243,7 +231,8 @@ public:
         const int mdim = DuneGeometry::mydimension;
 #ifndef NDEBUG
         if ((int)local.n_rows != mdim)
-            throw std::invalid_argument("Geometry::local2global(): invalid dimensions of the 'local' array");
+            throw std::invalid_argument("Geometry::local2global(): invalid "
+                                        "dimensions of the 'local' array");
 #endif
         const size_t n = local.n_cols;
         int_element.set_size(n);

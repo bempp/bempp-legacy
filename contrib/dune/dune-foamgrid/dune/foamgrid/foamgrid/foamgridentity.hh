@@ -1,3 +1,5 @@
+// -*- tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+// vi: set ts=8 sw=4 et sts=4:
 #ifndef DUNE_FOAMGRID_ENTITY_HH
 #define DUNE_FOAMGRID_ENTITY_HH
 
@@ -5,6 +7,13 @@
 * \brief The FoamGridEntity class
 */
 
+#include <memory>
+
+#include <dune/grid/common/gridenums.hh>
+#include <dune/grid/common/grid.hh>
+
+#include <dune/foamgrid/foamgrid/foamgridvertex.hh>
+#include <dune/foamgrid/foamgrid/foamgridgeometry.hh>
 
 namespace Dune {
 
@@ -96,6 +105,10 @@ class FoamGridEntity :
     public:
     
         typedef typename GridImp::template Codim<codim>::Geometry Geometry;
+
+        //! The type of the EntitySeed interface class
+        typedef typename GridImp::template Codim<codim>::EntitySeed EntitySeed;
+
     
         
         //! Constructor for an entity in a given grid level
@@ -114,7 +127,6 @@ class FoamGridEntity :
         {
             if (this != &original)
             {
-                geo_.reset();
                 target_ = original.target_;
             }
             return *this;
@@ -143,19 +155,21 @@ class FoamGridEntity :
         
         
         //! geometry of this entity
-        const Geometry& geometry () const
+        Geometry geometry () const
         {
-            if (geo_.get()==0)
-                geo_ = std::auto_ptr<MakeableInterfaceObject<Geometry> >(new MakeableInterfaceObject<Geometry>(FoamGridGeometry<dim-codim,dimworld,GridImp>()));
-
             std::vector<FieldVector<double,dimworld> > coordinates(target_->corners());
             for (size_t i=0; i<target_->corners(); i++)
                 coordinates[i] = target_->corner(i);
 
-            GridImp::getRealImplementation(*geo_).setup(target_->type(), coordinates);
-            return *geo_;
+            return Geometry(FoamGridGeometry<dim-codim,dimworld,GridImp>(target_->type(), coordinates));
         }
     
+        //! Create EntitySeed
+        EntitySeed seed () const
+        {
+            return EntitySeed(target_);
+        }
+
     const FoamGridEntityImp<dim-codim,GridImp::dimensionworld>* target_;
 
         
@@ -164,13 +178,9 @@ class FoamGridEntity :
         //! \todo Please doc me !
         void setToTarget(const FoamGridEntityImp<dim-codim,GridImp::dimensionworld>* target)
         {
-            geo_.reset();
             target_ = target;
         }
     
-        
-        //! the current geometry
-    mutable std::auto_ptr<MakeableInterfaceObject<Geometry> > geo_;
 };
 
 
@@ -205,17 +215,18 @@ class FoamGridEntity<0,dim,GridImp> :
         //! Iterator over descendants of the entity
         typedef FoamGridHierarchicIterator<GridImp> HierarchicIterator;
         
+        //! The type of the EntitySeed interface class
+        typedef typename GridImp::template Codim<0>::EntitySeed EntitySeed;
+        
         
         //! Constructor for an entity in a given grid level
         FoamGridEntity(const FoamGridEntityImp<2,dimworld>* hostEntity) :
-            geoInFather_(0),
             target_(hostEntity)
         {}
         
         
         /** \brief Copy constructor */
         FoamGridEntity(const FoamGridEntity& original) :
-            geoInFather_(0),
             target_(original.target_)
         {}
     
@@ -225,8 +236,6 @@ class FoamGridEntity<0,dim,GridImp> :
         {
             if (this != &original)
             {
-                geo_.reset();
-                geoInFather_.reset();
                 target_ = original.target_;
             }
             return *this;
@@ -247,19 +256,21 @@ class FoamGridEntity<0,dim,GridImp> :
     
         
         //! Geometry of this entity
-        const Geometry& geometry () const
+        Geometry geometry () const
         {
-            if (not geo_.get())  // allocate on first use only
-                geo_ = std::auto_ptr<MakeableInterfaceObject<Geometry> >(new MakeableInterfaceObject<Geometry>(FoamGridGeometry<dim,dimworld,GridImp>()));
-
             std::vector<FieldVector<double, dimworld> > coordinates(target_->corners());
             for (size_t i=0; i<target_->corners(); i++)
                 coordinates[i] = target_->vertex_[i]->pos_;
 
-            GridImp::getRealImplementation(*geo_).setup(target_->type(), coordinates);
-            return *geo_;
+            return Geometry(FoamGridGeometry<dim,dimworld,GridImp>(target_->type(), coordinates));
         }
     
+        //! Create EntitySeed
+        EntitySeed seed () const
+        {
+            return EntitySeed(target_);
+        }
+
         
         /** \brief Return the number of subEntities of codimension cc.
         */
@@ -349,7 +360,10 @@ class FoamGridEntity<0,dim,GridImp> :
         
         //! First leaf intersection
         FoamGridLeafIntersectionIterator<GridImp> ileafbegin () const{
-            return FoamGridLeafIntersectionIterator<GridImp>(target_, (isLeaf()) ? 0 : target_->edges_.size());
+            if(isLeaf())
+                return FoamGridLeafIntersectionIterator<GridImp>(target_,0);
+            else
+                return FoamGridLeafIntersectionIterator<GridImp>(target_);
         }
     
         
@@ -369,6 +383,15 @@ class FoamGridEntity<0,dim,GridImp> :
         return level()>0;
     }
         
+    bool isNew() const
+    {
+        return target_->isNew();
+    }
+    
+    bool mightVanish() const
+    {
+        return target_->mightVanish();
+    }
         //! Inter-level access to father element on coarser grid.
         //! Assumes that meshes are nested.
         FoamGridEntityPointer<0,GridImp> father () const {
@@ -385,11 +408,46 @@ class FoamGridEntity<0,dim,GridImp> :
         * implementation of numerical algorithms is only done for simple discretizations.
         * Assumes that meshes are nested.
         */
-        const LocalGeometry& geometryInFather () const {
-            DUNE_THROW(NotImplemented, "geometryInFather");
-//             if (geoInFather_==0)
-//                 geoInFather_ = new MakeableInterfaceObject<LocalGeometry>(hostEntity_->geometryInFather());
-            return *geoInFather_;
+        LocalGeometry geometryInFather () const {
+            FoamGridEntityImp<2,dimworld>* father = target_->father_;
+            // Check whether there really is a father
+            if(father==nullptr)
+                DUNE_THROW(GridError, "There is no father Element.");
+            
+            // Sanity check
+            if(target_->type().isTriangle()){
+                // Lookup the coordinates within the father
+                // As in the refinement routine the children
+                // are number as follows:
+                // First come the ones located in the corner
+                // ascending with the corner index.
+                // Their first corner (origin in the reference simplex) 
+                // is always the corner that is also a corner of the father. 
+                // For the element with all corners on the edge midpoints of
+                // the father, the corner are numbered according to the edge indices
+                // of the father.
+                double mapping[4][3][2] ={
+                    { {0.0,0.0}, {0.5,0.0}, {0.0,0.5} }, 
+                    { {1.0,0.0}, {0.5,0.5}, {0.5,0.0} }, 
+                    { {0.0,1.0}, {0.0,0.5}, {0.5,0.5} },
+                    { {0.5,0.0}, {0.5,0.5}, {0.0,0.5} }  
+                };
+                            
+                std::vector<FieldVector<typename GridImp::ctype,GridImp::dimension> >
+                    coordinates(3);
+                
+                for(int corner=0; corner <3; ++corner)
+                    for(int entry=0; entry <2; ++entry)
+                        coordinates[corner][entry]=
+                            mapping[target_->refinementIndex_][corner][entry];
+            
+                // return LocalGeomety by value
+                return LocalGeometry(FoamGridGeometry<2,2,GridImp>(target_->type(), 
+                                                                        coordinates));
+            }else{              
+                DUNE_THROW(NotImplemented, "geometryInFather only supported for triangles!");
+            }
+            
         }
     
         
@@ -407,7 +465,7 @@ class FoamGridEntity<0,dim,GridImp> :
                     it.elemStack.push(target_->sons_[i]);
             
             it.virtualEntity_.setToTarget((it.elemStack.empty()) 
-                                          ? NULL : it.elemStack.top());
+                                          ? nullptr : it.elemStack.top());
             
             return it;
         }
@@ -428,18 +486,10 @@ class FoamGridEntity<0,dim,GridImp> :
         /** \brief Make this class point to a new FoamGridEntityImp object */
         void setToTarget(const FoamGridEntityImp<2,dimworld>* target)
         {
-            geo_.reset();
-            geoInFather_.reset();
             target_ = target;
         }
         
-        //! the current geometry
-        mutable std::auto_ptr<MakeableInterfaceObject<Geometry> > geo_;
-        
-        /** \brief The geometry of this element as embedded in its father (if there is one) */
-        mutable std::auto_ptr<MakeableInterfaceObject<LocalGeometry> > geoInFather_;
-
-    const FoamGridEntityImp<2,dimworld>* target_;
+        const FoamGridEntityImp<2,dimworld>* target_;
         
     private:
     
