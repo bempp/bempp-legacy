@@ -1,0 +1,46 @@
+--- pk2dlocalbasis.hh.orig	2013-06-01 22:18:15.000000000 +0100
++++ pk2dlocalbasis.hh	2013-06-01 22:19:37.000000000 +0100
+@@ -75,6 +75,7 @@
+   {  
+ 	out.resize(N);
+ 	int n=0;
++        const D one = 1.;
+ 	for (unsigned int j=0; j<=k; j++)
+ 	  for (unsigned int i=0; i<=k-j; i++)
+ 		{
+@@ -88,7 +89,7 @@
+ 			  R product=factor;
+ 			  for (unsigned int alpha=0; alpha<i; alpha++)
+ 				if (alpha==a)
+-				  product *= 1.0/(pos[i]-pos[alpha]);
++				  product *= one/(pos[i]-pos[alpha]);
+ 				else
+ 				  product *= (x[0]-pos[alpha])/(pos[i]-pos[alpha]);
+ 			  for (unsigned int gamma=i+j+1; gamma<=k; gamma++) 
+@@ -102,7 +103,7 @@
+ 				product *= (x[0]-pos[alpha])/(pos[i]-pos[alpha]);
+ 			  for (unsigned int gamma=i+j+1; gamma<=k; gamma++) 
+ 				if (gamma==c)
+-				  product *= -1.0/(pos[gamma]-pos[i]-pos[j]);
++				  product *= -one/(pos[gamma]-pos[i]-pos[j]);
+ 				else
+ 				  product *= (pos[gamma]-x[0]-x[1])/(pos[gamma]-pos[i]-pos[j]);
+ 			  out[n][0][0] += product;
+@@ -118,7 +119,7 @@
+ 			  R product=factor;
+ 			  for (unsigned int beta=0; beta<j; beta++)
+ 				if (beta==b)
+-				  product *= 1.0/(pos[j]-pos[beta]);
++				  product *= one/(pos[j]-pos[beta]);
+ 				else
+ 				  product *= (x[1]-pos[beta])/(pos[j]-pos[beta]);
+ 			  for (unsigned int gamma=i+j+1; gamma<=k; gamma++) 
+@@ -132,7 +133,7 @@
+ 				product *= (x[1]-pos[beta])/(pos[j]-pos[beta]);
+ 			  for (unsigned int gamma=i+j+1; gamma<=k; gamma++)
+ 				if (gamma==c)
+-				  product *= -1.0/(pos[gamma]-pos[i]-pos[j]);
++				  product *= -one/(pos[gamma]-pos[i]-pos[j]);
+ 				else
+ 				  product *= (pos[gamma]-x[0]-x[1])/(pos[gamma]-pos[i]-pos[j]);
+ 			  out[n][0][1] += product;
