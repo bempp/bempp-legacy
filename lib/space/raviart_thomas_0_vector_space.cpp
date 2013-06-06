@@ -23,8 +23,10 @@
 #include "piecewise_linear_discontinuous_scalar_space.hpp"
 
 #include "../assembly/discrete_sparse_boundary_operator.hpp"
+#include "../common/acc.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
 #include "../common/bounding_box.hpp"
+#include "../common/bounding_box_helpers.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/hdiv_function_value_functor.hpp"
 #include "../fiber/default_collection_of_basis_transformations.hpp"
@@ -59,8 +61,9 @@ struct RaviartThomas0VectorSpace<BasisFunctionType>::Impl
 
 template <typename BasisFunctionType>
 RaviartThomas0VectorSpace<BasisFunctionType>::
-RaviartThomas0VectorSpace(const shared_ptr<const Grid>& grid) :
-    Base(grid), m_impl(new Impl), m_flatLocalDofCount(0)
+RaviartThomas0VectorSpace(const shared_ptr<const Grid>& grid,
+                          bool putDofsOnBoundaries) :
+    Base(grid), m_impl(new Impl), m_putDofsOnBoundaries(putDofsOnBoundaries)
 {
     if (grid->dim() != 2 || grid->dimWorld() != 3)
         throw std::invalid_argument("RaviartThomas0VectorSpace::"
@@ -170,10 +173,45 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
     const Mapper& elementMapper = m_view->elementMapper();
     const IndexSet& indexSet = m_view->indexSet();
 
-    // Global DOF numbers will be identical with edge indices.
-    // Thus, the will be as many global DOFs as there are edges.
-    int globalDofCount_ = m_view->entityCount(1);
+    int edgeCount = m_view->entityCount(1);
     int elementCount = m_view->entityCount(0);
+
+    const int vertexCodim = 2;
+    const int edgeCodim = 1;
+    const int elementCodim = 0;
+
+    std::vector<int> globalDofsOfEdges;
+    int globalDofCount_ = 0;
+    if (m_putDofsOnBoundaries) {
+        globalDofsOfEdges.resize(edgeCount);
+        for (int i = 0; i < edgeCount; ++i)
+            globalDofsOfEdges[i] = globalDofCount_++;
+    } else {
+        // number of element adjacent to each edge
+        std::vector<int> elementsAdjacentToEdges;
+        elementsAdjacentToEdges.resize(edgeCount, 0);
+        std::auto_ptr<EntityIterator<elementCodim> > it =
+            m_view->entityIterator<elementCodim>();
+        while (!it->finished()) {
+            const Entity<elementCodim>& element = it->entity();
+            const int localEdgeCount = element.subEntityCount<edgeCodim>();
+            for (int i = 0; i < localEdgeCount; ++i) {
+                int edgeIndex = indexSet.subEntityIndex(element, i, edgeCodim);
+                ++acc(elementsAdjacentToEdges, edgeIndex);
+            }
+            it->next();
+        }
+        globalDofsOfEdges.swap(elementsAdjacentToEdges);
+        for (int i = 0; i < edgeCount; ++i) {
+            assert(i < globalDofsOfEdges.size());
+            if (globalDofsOfEdges[i] == 2)
+                globalDofsOfEdges[i] = globalDofCount_++;
+            else {
+                std::cout << "bnd edge\n";
+                globalDofsOfEdges[i] = -1;
+            }
+        }
+    }
 
     // (Re)initialise DOF maps
     m_local2globalDofs.clear();
@@ -184,70 +222,158 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
     m_global2localDofs.resize(globalDofCount_);
     m_global2localDofWeights.clear();
     m_global2localDofWeights.resize(globalDofCount_);
+    m_flatLocal2localDofs.reserve(4 * globalDofCount_);
+
     // TODO: consider calling reserve(2) for each element of m_global2localDofs
 
-    const int vertexCodim = 2;
-    const int edgeCodim = 1;
-    const int elementCodim = 0;
+    // Initialise bounding-box caches
+    BoundingBox<CoordinateType> model;
+    model.lbound.x = std::numeric_limits<CoordinateType>::max();
+    model.lbound.y = std::numeric_limits<CoordinateType>::max();
+    model.lbound.z = std::numeric_limits<CoordinateType>::max();
+    model.ubound.x = -std::numeric_limits<CoordinateType>::max();
+    model.ubound.y = -std::numeric_limits<CoordinateType>::max();
+    model.ubound.z = -std::numeric_limits<CoordinateType>::max();
+    m_globalDofBoundingBoxes.resize(globalDofCount_, model);
 
     // Iterate over elements
     std::auto_ptr<EntityIterator<elementCodim> > it =
         m_view->entityIterator<elementCodim>();
-    m_flatLocalDofCount = 0;
-    while (!it->finished())
-    {
+    arma::Mat<CoordinateType> vertices;
+    arma::Col<CoordinateType> dofPosition;
+    while (!it->finished()) {
         const Entity<elementCodim>& element = it->entity();
+        const Geometry& geo = element.geometry();
         EntityIndex elementIndex = elementMapper.entityIndex(element);
 
-        const int vertexCount = element.template subEntityCount<vertexCodim>();
+        geo.getCorners(vertices);
+        const int vertexCount = vertices.n_cols;
         const int edgeCount = vertexCount;
-        m_flatLocalDofCount += edgeCount;
+        if (edgeCount != 3)
+            throw std::runtime_error(
+                    "RaviartThomas0VectorSpace::"
+                    "assignDofsImpl(): support for quadrilaterals not in place yet");
 
         // List of global DOF indices corresponding to the local DOFs of the
         // current element
-        std::vector<GlobalDofIndex>& globalDofs = m_local2globalDofs[elementIndex];
+        std::vector<GlobalDofIndex>& globalDofs =
+                acc(m_local2globalDofs, elementIndex);
         // List of weights of the local DOFs residing on the current element
         std::vector<BasisFunctionType>& globalDofWeights =
-            m_local2globalDofWeights[elementIndex];
-        globalDofs.resize(edgeCount);
-        globalDofWeights.resize(edgeCount);
-        for (int i = 0; i < edgeCount; ++i)
-        {
-            GlobalDofIndex globalDofIndex =
-                indexSet.subEntityIndex(element, i, edgeCodim);
+            acc(m_local2globalDofWeights, elementIndex);
+        globalDofs.reserve(edgeCount);
+        globalDofWeights.reserve(edgeCount);
+        for (int i = 0; i < edgeCount; ++i) {
+            int edgeIndex = indexSet.subEntityIndex(element, i, edgeCodim);
+            GlobalDofIndex globalDofIndex = acc(globalDofsOfEdges, edgeIndex);
             int vertex1Index, vertex2Index;
-            // Handle Dune's funny subentity indexing order
-            if (edgeCount == 3) {
-                if (i == 0) {
-                    vertex1Index = indexSet.subEntityIndex(element, 0, vertexCodim);
-                    vertex2Index = indexSet.subEntityIndex(element, 1, vertexCodim);
-                } else if (i == 1) {
-                    vertex1Index = indexSet.subEntityIndex(element, 2, vertexCodim);
-                    vertex2Index = indexSet.subEntityIndex(element, 0, vertexCodim);
-                } else { // i == 2
-                    vertex1Index = indexSet.subEntityIndex(element, 1, vertexCodim);
-                    vertex2Index = indexSet.subEntityIndex(element, 2, vertexCodim);
-                }
-            } else // edgeCount == 4
-                throw std::runtime_error(
-                    "RaviartThomas0VectorSpace::"
-                    "assignDofsImpl(): support for quadrilaterals not in place yet");
+            // Handle Dune's funny subentity indexing order. This code is
+            // only valid for triangular elements.
+            if (i == 0) {
+                vertex1Index = indexSet.subEntityIndex(element, 0, vertexCodim);
+                vertex2Index = indexSet.subEntityIndex(element, 1, vertexCodim);
+                dofPosition = 0.5 * (vertices.col(0) + vertices.col(1));
+            } else if (i == 1) {
+                vertex1Index = indexSet.subEntityIndex(element, 2, vertexCodim);
+                vertex2Index = indexSet.subEntityIndex(element, 0, vertexCodim);
+                dofPosition = 0.5 * (vertices.col(2) + vertices.col(0));
+            } else { // i == 2
+                vertex1Index = indexSet.subEntityIndex(element, 1, vertexCodim);
+                vertex2Index = indexSet.subEntityIndex(element, 2, vertexCodim);
+                dofPosition = 0.5 * (vertices.col(1) + vertices.col(2));
+            }
             BasisFunctionType weight = vertex1Index < vertex2Index ? 1. : -1.;
-            globalDofs[i] = globalDofIndex;
-            globalDofWeights[i] = weight;
-            m_global2localDofs[globalDofIndex].push_back(LocalDof(elementIndex, i));
-            m_global2localDofWeights[globalDofIndex].push_back(weight);
+            globalDofs.push_back(globalDofIndex);
+            globalDofWeights.push_back(weight);
+            if (globalDofIndex < 0)
+                continue; // constrained edge
+            acc(m_global2localDofs, globalDofIndex).push_back(
+                        LocalDof(elementIndex, i));
+            acc(m_global2localDofWeights, globalDofIndex).push_back(weight);
+
+            extendBoundingBox(acc(m_globalDofBoundingBoxes, globalDofIndex),
+                              vertices);
+            setBoundingBoxReference<CoordinateType>(
+                acc(m_globalDofBoundingBoxes, globalDofIndex), dofPosition);
+
+            // here we depend on elements being iterated in order of
+            // increasing element indices
+            m_flatLocal2localDofs.push_back(LocalDof(elementIndex, i));
         }
         it->next();
     }
 
-    // Initialize the container mapping the flat local dof indices to
-    // local dof indices
-    m_flatLocal2localDofs.clear();
-    m_flatLocal2localDofs.reserve(m_flatLocalDofCount);
-    for (size_t e = 0; e < m_local2globalDofs.size(); ++e)
-        for (size_t dof = 0; dof < m_local2globalDofs[e].size(); ++dof)
-            m_flatLocal2localDofs.push_back(LocalDof(e, dof));
+#ifndef NDEBUG
+    for (size_t i = 0; i < m_globalDofBoundingBoxes.size(); ++i) {
+       const BoundingBox<CoordinateType>& bbox = acc(m_globalDofBoundingBoxes, i);
+
+       assert(bbox.reference.x >= bbox.lbound.x);
+       assert(bbox.reference.y >= bbox.lbound.y);
+       assert(bbox.reference.z >= bbox.lbound.z);
+       assert(bbox.reference.x <= bbox.ubound.x);
+       assert(bbox.reference.y <= bbox.ubound.y);
+       assert(bbox.reference.z <= bbox.ubound.z);
+   }
+#endif // NDEBUG
+
+//    // Iterate over elements
+//    std::auto_ptr<EntityIterator<elementCodim> > it =
+//        m_view->entityIterator<elementCodim>();
+//    m_flatLocalDofCount = 0;
+//    while (!it->finished())
+//    {
+//        const Entity<elementCodim>& element = it->entity();
+//        EntityIndex elementIndex = elementMapper.entityIndex(element);
+
+//        const int vertexCount = element.template subEntityCount<vertexCodim>();
+//        const int edgeCount = vertexCount;
+//        m_flatLocalDofCount += edgeCount;
+
+//        // List of global DOF indices corresponding to the local DOFs of the
+//        // current element
+//        std::vector<GlobalDofIndex>& globalDofs = m_local2globalDofs[elementIndex];
+//        // List of weights of the local DOFs residing on the current element
+//        std::vector<BasisFunctionType>& globalDofWeights =
+//            m_local2globalDofWeights[elementIndex];
+//        globalDofs.resize(edgeCount);
+//        globalDofWeights.resize(edgeCount);
+//        for (int i = 0; i < edgeCount; ++i)
+//        {
+//            GlobalDofIndex globalDofIndex =
+//                indexSet.subEntityIndex(element, i, edgeCodim);
+//            int vertex1Index, vertex2Index;
+//            // Handle Dune's funny subentity indexing order
+//            if (edgeCount == 3) {
+//                if (i == 0) {
+//                    vertex1Index = indexSet.subEntityIndex(element, 0, vertexCodim);
+//                    vertex2Index = indexSet.subEntityIndex(element, 1, vertexCodim);
+//                } else if (i == 1) {
+//                    vertex1Index = indexSet.subEntityIndex(element, 2, vertexCodim);
+//                    vertex2Index = indexSet.subEntityIndex(element, 0, vertexCodim);
+//                } else { // i == 2
+//                    vertex1Index = indexSet.subEntityIndex(element, 1, vertexCodim);
+//                    vertex2Index = indexSet.subEntityIndex(element, 2, vertexCodim);
+//                }
+//            } else // edgeCount == 4
+//                throw std::runtime_error(
+//                    "RaviartThomas0VectorSpace::"
+//                    "assignDofsImpl(): support for quadrilaterals not in place yet");
+//            BasisFunctionType weight = vertex1Index < vertex2Index ? 1. : -1.;
+//            globalDofs[i] = globalDofIndex;
+//            globalDofWeights[i] = weight;
+//            m_global2localDofs[globalDofIndex].push_back(LocalDof(elementIndex, i));
+//            m_global2localDofWeights[globalDofIndex].push_back(weight);
+//        }
+//        it->next();
+//    }
+
+//    // Initialize the container mapping the flat local dof indices to
+//    // local dof indices
+//    m_flatLocal2localDofs.clear();
+//    m_flatLocal2localDofs.reserve(m_flatLocalDofCount);
+//    for (size_t e = 0; e < m_local2globalDofs.size(); ++e)
+//        for (size_t dof = 0; dof < m_local2globalDofs[e].size(); ++dof)
+//            m_flatLocal2localDofs.push_back(LocalDof(e, dof));
 }
 
 template <typename BasisFunctionType>
@@ -259,7 +385,7 @@ size_t RaviartThomas0VectorSpace<BasisFunctionType>::globalDofCount() const
 template <typename BasisFunctionType>
 size_t RaviartThomas0VectorSpace<BasisFunctionType>::flatLocalDofCount() const
 {
-    return m_flatLocalDofCount;
+    return m_flatLocal2localDofs.size();
 }
 
 template <typename BasisFunctionType>
@@ -270,8 +396,8 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getGlobalDofs(
 {
     const Mapper& mapper = m_view->elementMapper();
     EntityIndex index = mapper.entityIndex(element);
-    dofs = m_local2globalDofs[index];
-    dofWeights = m_local2globalDofWeights[index];
+    dofs = acc(m_local2globalDofs, index);
+    dofWeights = acc(m_local2globalDofWeights, index);
 }
 
 template <typename BasisFunctionType>
@@ -283,9 +409,9 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::global2localDofs(
     localDofs.resize(globalDofs.size());
     localDofWeights.resize(globalDofs.size());
     for (size_t i = 0; i < globalDofs.size(); ++i)
-        localDofs[i] = m_global2localDofs[globalDofs[i]];
+        acc(localDofs, i) = acc(m_global2localDofs, acc(globalDofs, i));
     for (size_t i = 0; i < globalDofs.size(); ++i)
-        localDofWeights[i] = m_global2localDofWeights[globalDofs[i]];
+        acc(localDofWeights, i) = acc(m_global2localDofWeights, acc(globalDofs, i));
 }
 
 template <typename BasisFunctionType>
@@ -295,132 +421,86 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::flatLocal2localDofs(
 {
     localDofs.resize(flatLocalDofs.size());
     for (size_t i = 0; i < flatLocalDofs.size(); ++i)
-        localDofs[i] = m_flatLocal2localDofs[flatLocalDofs[i]];
+        acc(localDofs, i) = acc(m_flatLocal2localDofs, acc(flatLocalDofs, i));
 }
 
 template <typename BasisFunctionType>
 void RaviartThomas0VectorSpace<BasisFunctionType>::getGlobalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
-    const int gridDim = 2;
-    const int globalDofCount_ = globalDofCount();
-    positions.resize(globalDofCount_);
-
-    const IndexSet& indexSet = m_view->indexSet();
-
-    std::auto_ptr<EntityIterator<1> > it = m_view->entityIterator<1>();
-    while (!it->finished())
-    {
-        const Entity<1>& e = it->entity();
-        int index = indexSet.entityIndex(e);
-        arma::Col<CoordinateType> center;
-        e.geometry().getCenter(center);
-
-        positions[index].x = center(0);
-        positions[index].y = center(1);
-        positions[index].z = center(2);
-        it->next();
-    }
+    positions.resize(m_globalDofBoundingBoxes.size());
+    for (size_t i = 0; i < m_globalDofBoundingBoxes.size(); ++i)
+        acc(positions, i) = acc(m_globalDofBoundingBoxes, i).reference;
 }
 
 template <typename BasisFunctionType>
 void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
-    const int gridDim = 2;
-    const int worldDim = 3;
-    positions.resize(m_flatLocalDofCount);
-
-    const IndexSet& indexSet = m_view->indexSet();
-    int elementCount = m_view->entityCount(0);
-
-    arma::Mat<CoordinateType> elementCenters(worldDim, elementCount);
-    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
-    arma::Col<CoordinateType> center;
-    while (!it->finished())
-    {
-        const Entity<0>& e = it->entity();
-        int index = indexSet.entityIndex(e);
-        e.geometry().getCenter(center);
-
-        for (int dim = 0; dim < worldDim; ++dim)
-            elementCenters(dim, index) = center(dim);
-        it->next();
-    }
-
-    size_t flatLdofIndex = 0;
-    for (size_t e = 0; e < m_local2globalDofs.size(); ++e)
-        for (size_t v = 0; v < m_local2globalDofs[e].size(); ++v) {
-            positions[flatLdofIndex].x = elementCenters(0, e);
-            positions[flatLdofIndex].y = elementCenters(1, e);
-            positions[flatLdofIndex].z = elementCenters(2, e);
-            ++flatLdofIndex;
-        }
-    assert(flatLdofIndex == m_flatLocalDofCount);
+    std::vector<BoundingBox<CoordinateType> > bboxes;
+    getFlatLocalDofBoundingBoxes(bboxes);
+    positions.resize(bboxes.size());
+    for (size_t i = 0; i < bboxes.size(); ++i)
+        acc(positions, i) = acc(bboxes, i).reference;
 }
 
 template <typename BasisFunctionType>
 void RaviartThomas0VectorSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
        std::vector<BoundingBox<CoordinateType> >& bboxes) const
 {
-    // Preliminary implementation: bboxes are in fact points.
-
-    const int globalDofCount_ = globalDofCount();
-    bboxes.resize(globalDofCount_);
-
-    const IndexSet& indexSet = m_view->indexSet();
-
-    std::auto_ptr<EntityIterator<1> > it = m_view->entityIterator<1>();
-    while (!it->finished())
-    {
-        const Entity<1>& e = it->entity();
-        int index = indexSet.entityIndex(e);
-        arma::Col<CoordinateType> center;
-        e.geometry().getCenter(center);
-
-        BoundingBox<CoordinateType>& bbox = bboxes[index];
-
-        bbox.reference.x = bbox.lbound.x = bbox.ubound.x = center(0);
-        bbox.reference.y = bbox.lbound.y = bbox.ubound.y = center(1);
-        bbox.reference.z = bbox.lbound.z = bbox.ubound.z = center(2);
-        it->next();
-    }
+    bboxes = m_globalDofBoundingBoxes;
 }
 
 template <typename BasisFunctionType>
 void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
         std::vector<BoundingBox<CoordinateType> >& bboxes) const
 {
-    const int worldDim = 3;
-    bboxes.resize(m_flatLocalDofCount);
+    BoundingBox<CoordinateType> model;
+    model.lbound.x = std::numeric_limits<CoordinateType>::max();
+    model.lbound.y = std::numeric_limits<CoordinateType>::max();
+    model.lbound.z = std::numeric_limits<CoordinateType>::max();
+    model.ubound.x = -std::numeric_limits<CoordinateType>::max();
+    model.ubound.y = -std::numeric_limits<CoordinateType>::max();
+    model.ubound.z = -std::numeric_limits<CoordinateType>::max();
+    const int flatLocalDofCount = m_flatLocal2localDofs.size();
+    bboxes.resize(flatLocalDofCount);
 
     const IndexSet& indexSet = m_view->indexSet();
     int elementCount = m_view->entityCount(0);
 
-    arma::Mat<CoordinateType> elementCenters(worldDim, elementCount);
+    std::vector<arma::Mat<CoordinateType> > elementCorners(elementCount);
     std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
-    arma::Col<CoordinateType> center;
     while (!it->finished())
     {
         const Entity<0>& e = it->entity();
         int index = indexSet.entityIndex(e);
-        e.geometry().getCenter(center);
-
-        for (int dim = 0; dim < worldDim; ++dim)
-            elementCenters(dim, index) = center(dim);
+        e.geometry().getCorners(acc(elementCorners, index));
+        if (acc(elementCorners, index).n_cols != 3)
+            throw std::runtime_error(
+                    "RaviartThomas0VectorSpace::getFlatLocalDofBoundingBoxes(): "
+                    "only triangular elements are supported at present");
         it->next();
     }
 
     size_t flatLdofIndex = 0;
+    arma::Col<CoordinateType> dofPosition;
     for (size_t e = 0; e < m_local2globalDofs.size(); ++e)
-        for (size_t v = 0; v < m_local2globalDofs[e].size(); ++v) {
-            BoundingBox<CoordinateType>& bbox = bboxes[flatLdofIndex];
-            bbox.reference.x = bbox.lbound.x = bbox.ubound.x = elementCenters(0, e);
-            bbox.reference.y = bbox.lbound.y = bbox.ubound.y = elementCenters(1, e);
-            bbox.reference.z = bbox.lbound.z = bbox.ubound.z = elementCenters(2, e);
-            ++flatLdofIndex;
-        }
-    assert(flatLdofIndex == m_flatLocalDofCount);
+        for (size_t v = 0; v < acc(m_local2globalDofs, e).size(); ++v)
+            if (acc(acc(m_local2globalDofs, e), v) >= 0) {
+                const arma::Mat<CoordinateType>& vertices =
+                        acc(elementCorners, e);
+                BoundingBox<CoordinateType>& bbox = acc(bboxes, flatLdofIndex);
+                if (v == 0)
+                    dofPosition = 0.5 * (vertices.col(0) + vertices.col(1));
+                else if (v == 1)
+                    dofPosition = 0.5 * (vertices.col(2) + vertices.col(0));
+                else // v == 2
+                    dofPosition = 0.5 * (vertices.col(1) + vertices.col(2));
+                extendBoundingBox(bbox, vertices);
+                setBoundingBoxReference<CoordinateType>(bbox, dofPosition);
+                ++flatLdofIndex;
+            }
+    assert(flatLdofIndex == flatLocalDofCount);
 }
 
 template <typename BasisFunctionType>
@@ -452,16 +532,17 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getGlobalDofNormals(
     }
 
     for (size_t g = 0; g < globalDofCount_; ++g) {
-        normals[g].x = 0.;
-        normals[g].y = 0.;
+        Point3D<CoordinateType>& normal = acc(normals, g);
+        normal.x = 0.;
+        normal.y = 0.;
         for (size_t l = 0; l < m_global2localDofs[g].size(); ++l) {
-            normals[g].x += elementNormals(0, m_global2localDofs[g][l].entityIndex);
-            normals[g].y += elementNormals(1, m_global2localDofs[g][l].entityIndex);
-            normals[g].z += elementNormals(2, m_global2localDofs[g][l].entityIndex);
+            normal.x += elementNormals(0, m_global2localDofs[g][l].entityIndex);
+            normal.y += elementNormals(1, m_global2localDofs[g][l].entityIndex);
+            normal.z += elementNormals(2, m_global2localDofs[g][l].entityIndex);
         }
-        normals[g].x /= m_global2localDofs[g].size();
-        normals[g].y /= m_global2localDofs[g].size();
-        normals[g].z /= m_global2localDofs[g].size();
+        normal.x /= m_global2localDofs[g].size();
+        normal.y /= m_global2localDofs[g].size();
+        normal.z /= m_global2localDofs[g].size();
     }
 }
 
@@ -471,7 +552,7 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofNormals(
 {
     const int gridDim = 2;
     const int worldDim = 3;
-    normals.resize(m_flatLocalDofCount);
+    normals.resize(flatLocalDofCount());
 
     const IndexSet& indexSet = m_view->indexSet();
     int elementCount = m_view->entityCount(0);
@@ -493,14 +574,16 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofNormals(
     }
 
     size_t flatLdofIndex = 0;
-    for (size_t e = 0; e < m_local2globalDofs.size(); ++e)
-        for (size_t v = 0; v < m_local2globalDofs[e].size(); ++v) {
-            normals[flatLdofIndex].x = elementNormals(0, e);
-            normals[flatLdofIndex].y = elementNormals(1, e);
-            normals[flatLdofIndex].z = elementNormals(2, e);
-            ++flatLdofIndex;
-        }
-    assert(flatLdofIndex == m_flatLocalDofCount);
+    assert(m_local2globalDofs.size() == elementCount);
+    for (size_t e = 0; e < elementCount; ++e)
+        for (size_t v = 0; v < m_local2globalDofs[e].size(); ++v)
+            if (m_local2globalDofs[e][v] >= 0) {
+                normals[flatLdofIndex].x = elementNormals(0, e);
+                normals[flatLdofIndex].y = elementNormals(1, e);
+                normals[flatLdofIndex].z = elementNormals(2, e);
+                ++flatLdofIndex;
+            }
+    assert(flatLdofIndex == flatLocalDofCount());
 }
 
 template <typename BasisFunctionType>
