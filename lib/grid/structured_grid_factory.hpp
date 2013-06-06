@@ -114,10 +114,10 @@ class BemppStructuredGridFactory
         // Pad lowerLeft and upperRight with zeros to dimworld dimensions
         FieldVector<ctype,dimworld> fullLowerLeft(0.);
         for (int i = 0; i < dim; ++i)
-            fullLowerLeft = lowerLeft[i];
+            fullLowerLeft[i] = lowerLeft[i];
         FieldVector<ctype,dimworld> fullUpperRight(0.);
         for (int i = 0; i < dim; ++i)
-            fullUpperRight = upperRight[i];
+            fullUpperRight[i] = upperRight[i];
 
         MultiIndex index(vertices);
 
