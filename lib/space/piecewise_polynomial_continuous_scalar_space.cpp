@@ -167,7 +167,7 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl
 {
     // TODO: refactor this function, it's way too long!
 
-    // In addition to DOF assignment, this function also precalculates bounding 
+    // In addition to DOF assignment, this function also precalculates bounding
     // boxes of global DOFs
 
     const int elementCount = m_view->entityCount(0);
@@ -271,7 +271,6 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl
         const Entity<0>& element = it->entity();
         const Geometry& geo = element.geometry();
         EntityIndex elementIndex = indexSet.entityIndex(element);
-        typedef arma::Col<CoordinateType> Col;
 
         geo.getCorners(vertices);
         int vertexCount = vertices.n_cols;
