@@ -897,7 +897,7 @@ def _constructModifiedHelmholtzOperator(
         raise TypeError("BasisFunctionType of context and all spaces must be the same")
     resultType = context.resultType()
 
-    waveNumberIsComplex = complex(waveNumber).imag != 0
+    waveNumberIsComplex = isinstance(waveNumber,complex)
     if waveNumberIsComplex and resultType in ("float32", "float64"):
         raise TypeError("Real result type given for a complex wave number")
 
