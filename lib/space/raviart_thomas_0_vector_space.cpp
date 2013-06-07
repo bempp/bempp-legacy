@@ -183,39 +183,33 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
     std::vector<int> lowestIndicesOfElementsAdjacentToEdges(
                 edgeCount, std::numeric_limits<int>::max());
     std::vector<int> globalDofsOfEdges;
-    int globalDofCount_ = 0;
-    if (m_putDofsOnBoundaries) {
-        globalDofsOfEdges.resize(edgeCount);
-        for (int i = 0; i < edgeCount; ++i)
-            acc(globalDofsOfEdges, i) = globalDofCount_++;
-    } else {
-        // number of element adjacent to each edge
-        std::vector<int> elementsAdjacentToEdges;
-        elementsAdjacentToEdges.resize(edgeCount, 0);
-        std::auto_ptr<EntityIterator<elementCodim> > it =
+    // number of element adjacent to each edge
+    std::vector<int> elementsAdjacentToEdges;
+    elementsAdjacentToEdges.resize(edgeCount, 0);
+    std::auto_ptr<EntityIterator<elementCodim> > it =
             m_view->entityIterator<elementCodim>();
-        while (!it->finished()) {
-            const Entity<elementCodim>& element = it->entity();
-            const int elementIndex = indexSet.entityIndex(element);
-            const int localEdgeCount = element.subEntityCount<edgeCodim>();
-            for (int i = 0; i < localEdgeCount; ++i) {
-                int edgeIndex = indexSet.subEntityIndex(element, i, edgeCodim);
-                ++acc(elementsAdjacentToEdges, edgeIndex);
-                int& lowestIndex = acc(lowestIndicesOfElementsAdjacentToEdges,
-                                       edgeIndex);
-                lowestIndex = std::min(lowestIndex, elementIndex);
-            }
-            it->next();
+    while (!it->finished()) {
+        const Entity<elementCodim>& element = it->entity();
+        const int elementIndex = indexSet.entityIndex(element);
+        const int localEdgeCount = element.subEntityCount<edgeCodim>();
+        for (int i = 0; i < localEdgeCount; ++i) {
+            int edgeIndex = indexSet.subEntityIndex(element, i, edgeCodim);
+            ++acc(elementsAdjacentToEdges, edgeIndex);
+            int& lowestIndex = acc(lowestIndicesOfElementsAdjacentToEdges,
+                                   edgeIndex);
+            lowestIndex = std::min(lowestIndex, elementIndex);
         }
-        globalDofsOfEdges.swap(elementsAdjacentToEdges);
-        for (int i = 0; i < edgeCount; ++i) {
-            assert(i < globalDofsOfEdges.size());
-            int& globalDofOfEdge = acc(globalDofsOfEdges, i);
-            if (globalDofOfEdge == 2)
-                globalDofOfEdge = globalDofCount_++;
-            else
-                globalDofOfEdge = -1;
-        }
+        it->next();
+    }
+    int globalDofCount_ = 0;
+    globalDofsOfEdges.swap(elementsAdjacentToEdges);
+    for (int i = 0; i < edgeCount; ++i) {
+        assert(i < globalDofsOfEdges.size());
+        int& globalDofOfEdge = acc(globalDofsOfEdges, i);
+        if (!m_putDofsOnBoundaries && globalDofOfEdge < 2)
+            globalDofOfEdge = -1;
+        else
+            globalDofOfEdge = globalDofCount_++;
     }
 
     // (Re)initialise DOF maps
@@ -242,8 +236,7 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
     m_globalDofBoundingBoxes.resize(globalDofCount_, model);
 
     // Iterate over elements
-    std::auto_ptr<EntityIterator<elementCodim> > it =
-        m_view->entityIterator<elementCodim>();
+    it = m_view->entityIterator<elementCodim>();
     arma::Mat<CoordinateType> vertices;
     arma::Col<CoordinateType> dofPosition;
     while (!it->finished()) {
