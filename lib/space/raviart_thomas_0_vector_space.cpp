@@ -180,12 +180,14 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
     const int edgeCodim = 1;
     const int elementCodim = 0;
 
+    std::vector<int> lowestIndicesOfElementsAdjacentToEdges(
+                edgeCount, std::numeric_limits<int>::max());
     std::vector<int> globalDofsOfEdges;
     int globalDofCount_ = 0;
     if (m_putDofsOnBoundaries) {
         globalDofsOfEdges.resize(edgeCount);
         for (int i = 0; i < edgeCount; ++i)
-            globalDofsOfEdges[i] = globalDofCount_++;
+            acc(globalDofsOfEdges, i) = globalDofCount_++;
     } else {
         // number of element adjacent to each edge
         std::vector<int> elementsAdjacentToEdges;
@@ -194,10 +196,14 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
             m_view->entityIterator<elementCodim>();
         while (!it->finished()) {
             const Entity<elementCodim>& element = it->entity();
+            const int elementIndex = indexSet.entityIndex(element);
             const int localEdgeCount = element.subEntityCount<edgeCodim>();
             for (int i = 0; i < localEdgeCount; ++i) {
                 int edgeIndex = indexSet.subEntityIndex(element, i, edgeCodim);
                 ++acc(elementsAdjacentToEdges, edgeIndex);
+                int& lowestIndex = acc(lowestIndicesOfElementsAdjacentToEdges,
+                                       edgeIndex);
+                lowestIndex = std::min(lowestIndex, elementIndex);
             }
             it->next();
         }
@@ -282,7 +288,9 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
                 vertex2Index = indexSet.subEntityIndex(element, 2, vertexCodim);
                 dofPosition = 0.5 * (vertices.col(1) + vertices.col(2));
             }
-            BasisFunctionType weight = vertex1Index < vertex2Index ? 1. : -1.;
+            BasisFunctionType weight =
+                    acc(lowestIndicesOfElementsAdjacentToEdges, edgeIndex)
+                    == elementIndex ?  1. : -1.;
             globalDofs.push_back(globalDofIndex);
             globalDofWeights.push_back(weight);
             if (globalDofIndex < 0)
