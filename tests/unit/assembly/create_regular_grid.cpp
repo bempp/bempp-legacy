@@ -20,21 +20,20 @@
 
 #include "create_regular_grid.hpp"
 #include "grid/grid_factory.hpp"
-#include "grid/structured_grid_factory.hpp"
 
 Bempp::shared_ptr<Bempp::Grid> createRegularTriangularGrid(
-    int nElementsX, int nElementsY)
+    int nElementsX, int nElementsY, double maxX, double maxY)
 {
     Bempp::GridParameters params;
     params.topology = Bempp::GridParameters::TRIANGULAR;
 
     const int dimGrid = 2;
-    typedef double ctype;
     arma::Col<double> lowerLeft(dimGrid);
     arma::Col<double> upperRight(dimGrid);
     arma::Col<unsigned int> nElements(dimGrid);
     lowerLeft.fill(0);
-    upperRight.fill(1);
+    upperRight(0) = maxX;
+    upperRight(1) = maxY;
     nElements(0) = nElementsX;
     nElements(1) = nElementsY;
 
