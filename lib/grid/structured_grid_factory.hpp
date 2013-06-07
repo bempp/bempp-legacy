@@ -264,6 +264,10 @@ public:
                 for (int j=0; j<dim; j++)
                     permutation[j] = j;
 
+                // A hack for triangular lattices: swap the two last
+                // vertices of every second triangle to uniformize orientation
+                // of their normals
+                int triangle = 0;
                 do {
 
                     // Make a simplex
@@ -273,6 +277,9 @@ public:
                     for (int j=0; j<dim; j++)
                         corners[j+1] =
                             corners[j] + unitOffsets[permutation[j]];
+                    if (dim == 2 && triangle == 1)
+                        std::swap(corners[1], corners[2]);
+                    ++triangle;
 
                     factory.insertElement
                     (GeometryType(GeometryType::simplex, dim),
