@@ -107,16 +107,22 @@ public:
                 for (int testIndex = 0; testIndex < elementCount; ++testIndex) {
                     const int testDofCount = m_testGlobalDofs[testIndex].size();
                     // Add the integrals to appropriate entries in the operator's matrix
-                    for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
+                    for (int trialDof = 0; trialDof < trialDofCount; ++trialDof) {
+                        int trialGlobalDof = m_trialGlobalDofs[trialIndex][trialDof];
+                        if (trialGlobalDof < 0)
+                            continue;
                         for (int testDof = 0; testDof < testDofCount; ++testDof) {
+                            int testGlobalDof = m_testGlobalDofs[testIndex][testDof];
+                            if (testGlobalDof < 0)
+                                continue;
                             assert(std::abs(m_testLocalDofWeights[testIndex][testDof]) > 0.);
                             assert(std::abs(m_trialLocalDofWeights[trialIndex][trialDof]) > 0.);
-                            m_result(m_testGlobalDofs[testIndex][testDof],
-                                     m_trialGlobalDofs[trialIndex][trialDof]) +=
+                            m_result(testGlobalDof, trialGlobalDof) +=
                                     conj(m_testLocalDofWeights[testIndex][testDof]) *
                                     m_trialLocalDofWeights[trialIndex][trialDof] *
                                     localResult[testIndex](testDof, trialDof);
                         }
+                    }
                 }
             }
         }
