@@ -210,12 +210,11 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
         globalDofsOfEdges.swap(elementsAdjacentToEdges);
         for (int i = 0; i < edgeCount; ++i) {
             assert(i < globalDofsOfEdges.size());
-            if (globalDofsOfEdges[i] == 2)
-                globalDofsOfEdges[i] = globalDofCount_++;
-            else {
-                std::cout << "bnd edge\n";
-                globalDofsOfEdges[i] = -1;
-            }
+            int& globalDofOfEdge = acc(globalDofsOfEdges, i);
+            if (globalDofOfEdge == 2)
+                globalDofOfEdge = globalDofCount_++;
+            else
+                globalDofOfEdge = -1;
         }
     }
 
