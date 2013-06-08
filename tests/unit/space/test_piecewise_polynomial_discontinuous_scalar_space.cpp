@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "common_tests_for_spaces.hpp"
 #include "../check_arrays_are_close.hpp"
 #include "../type_template.hpp"
 
@@ -241,6 +242,74 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(cubic_function_can_be_expanded_in_cubic_space, Res
         function, surfaceNormalIndependentFunction(CubicFunction<RT>()),
         *quadStrategy, absoluteError, relativeError);
     BOOST_CHECK_SMALL(relativeError, 1000 * std::numeric_limits<CT>::epsilon() /* percent */);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_quadratic_space, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+
+    shared_ptr<Space<BFT> > space(
+        (new PiecewisePolynomialDiscontinuousScalarSpace<BFT>(grid, 2)));
+
+    local2global_matches_global2local<BFT>(*space);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_quadratic_space, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+
+    shared_ptr<Space<BFT> > space(
+        (new PiecewisePolynomialDiscontinuousScalarSpace<BFT>(grid, 2)));
+
+    global2local_matches_local2global<BFT>(*space);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_cubic_space, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+
+    shared_ptr<Space<BFT> > space(
+        (new PiecewisePolynomialDiscontinuousScalarSpace<BFT>(grid, 3)));
+
+    local2global_matches_global2local<BFT>(*space);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_cubic_space, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+
+    shared_ptr<Space<BFT> > space(
+        (new PiecewisePolynomialDiscontinuousScalarSpace<BFT>(grid, 3)));
+
+    global2local_matches_local2global<BFT>(*space);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

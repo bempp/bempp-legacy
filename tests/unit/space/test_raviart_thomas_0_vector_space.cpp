@@ -18,10 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "../assembly/create_regular_grid.hpp"
-
+#include "common_tests_for_spaces.hpp"
 #include "../check_arrays_are_close.hpp"
 #include "../type_template.hpp"
+#include "../assembly/create_regular_grid.hpp"
 
 #include "assembly/assembly_options.hpp"
 #include "assembly/context.hpp"
@@ -87,6 +87,92 @@ public:
 // Tests
 
 BOOST_AUTO_TEST_SUITE(RaviartThomas0VectorSpace_)
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_closed_surface_without_dofs_on_boundary, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+
+    shared_ptr<Space<BFT> > space(
+        new RaviartThomas0VectorSpace<BFT>(grid));
+
+    local2global_matches_global2local(*space);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_open_surface_with_dofs_on_boundary, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    shared_ptr<Grid> grid = createRegularTriangularGrid(5, 10, 1., 2.);
+    shared_ptr<Space<BFT> > space(
+        new RaviartThomas0VectorSpace<BFT>(grid, true /* put dofs on boundary */));
+
+    local2global_matches_global2local(*space);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_open_surface_without_dofs_on_boundary, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    shared_ptr<Grid> grid = createRegularTriangularGrid(5, 10, 1., 2.);
+    shared_ptr<Space<BFT> > space(
+        new RaviartThomas0VectorSpace<BFT>(grid));
+
+    local2global_matches_global2local(*space);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_closed_surface_without_dofs_on_boundary, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+
+    shared_ptr<Space<BFT> > space(
+        new RaviartThomas0VectorSpace<BFT>(grid));
+
+    global2local_matches_local2global(*space);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_open_surface_with_dofs_on_boundary, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    shared_ptr<Grid> grid = createRegularTriangularGrid(5, 10, 1., 2.);
+    shared_ptr<Space<BFT> > space(
+        new RaviartThomas0VectorSpace<BFT>(grid, true /* put dofs on boundary */));
+
+    global2local_matches_local2global(*space);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_open_surface_without_dofs_on_boundary, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    shared_ptr<Grid> grid = createRegularTriangularGrid(5, 10, 1., 2.);
+    shared_ptr<Space<BFT> > space(
+        new RaviartThomas0VectorSpace<BFT>(grid));
+
+    global2local_matches_local2global(*space);
+}
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(my_function_can_be_expanded_in_rt_space_with_dofs_on_boundary, ResultType, result_types)
 {
