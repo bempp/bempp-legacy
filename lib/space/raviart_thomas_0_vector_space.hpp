@@ -126,7 +126,6 @@ private:
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<BasisFunctionType> > m_local2globalDofWeights;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
-    std::vector<std::vector<BasisFunctionType> > m_global2localDofWeights;
     std::vector<LocalDof> m_flatLocal2localDofs;
     std::vector<BoundingBox<CoordinateType> > m_globalDofBoundingBoxes;
     mutable shared_ptr<Space<BasisFunctionType> > m_discontinuousSpace;

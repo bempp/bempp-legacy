@@ -219,8 +219,6 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
     m_local2globalDofWeights.resize(elementCount);
     m_global2localDofs.clear();
     m_global2localDofs.resize(globalDofCount_);
-    m_global2localDofWeights.clear();
-    m_global2localDofWeights.resize(globalDofCount_);
     m_flatLocal2localDofs.reserve(4 * globalDofCount_);
 
     // TODO: consider calling reserve(2) for each element of m_global2localDofs
@@ -264,20 +262,13 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
         for (int i = 0; i < edgeCount; ++i) {
             int edgeIndex = indexSet.subEntityIndex(element, i, edgeCodim);
             GlobalDofIndex globalDofIndex = acc(globalDofsOfEdges, edgeIndex);
-            int vertex1Index, vertex2Index;
             // Handle Dune's funny subentity indexing order. This code is
             // only valid for triangular elements.
             if (i == 0) {
-                vertex1Index = indexSet.subEntityIndex(element, 0, vertexCodim);
-                vertex2Index = indexSet.subEntityIndex(element, 1, vertexCodim);
                 dofPosition = 0.5 * (vertices.col(0) + vertices.col(1));
             } else if (i == 1) {
-                vertex1Index = indexSet.subEntityIndex(element, 2, vertexCodim);
-                vertex2Index = indexSet.subEntityIndex(element, 0, vertexCodim);
                 dofPosition = 0.5 * (vertices.col(2) + vertices.col(0));
             } else { // i == 2
-                vertex1Index = indexSet.subEntityIndex(element, 1, vertexCodim);
-                vertex2Index = indexSet.subEntityIndex(element, 2, vertexCodim);
                 dofPosition = 0.5 * (vertices.col(1) + vertices.col(2));
             }
             BasisFunctionType weight =
@@ -289,7 +280,6 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
                 continue; // constrained edge
             acc(m_global2localDofs, globalDofIndex).push_back(
                         LocalDof(elementIndex, i));
-            acc(m_global2localDofWeights, globalDofIndex).push_back(weight);
 
             extendBoundingBox(acc(m_globalDofBoundingBoxes, globalDofIndex),
                               vertices);
@@ -408,10 +398,17 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::global2localDofs(
 {
     localDofs.resize(globalDofs.size());
     localDofWeights.resize(globalDofs.size());
-    for (size_t i = 0; i < globalDofs.size(); ++i)
+    for (size_t i = 0; i < globalDofs.size(); ++i) {
         acc(localDofs, i) = acc(m_global2localDofs, acc(globalDofs, i));
-    for (size_t i = 0; i < globalDofs.size(); ++i)
-        acc(localDofWeights, i) = acc(m_global2localDofWeights, acc(globalDofs, i));
+        std::vector<BasisFunctionType>& activeLdofWeights = acc(localDofWeights, i);
+        activeLdofWeights.resize(localDofs[i].size());
+        for (size_t j = 0; j < localDofs[i].size(); ++j) {
+            LocalDof ldof = acc(localDofs[i], j);
+            acc(activeLdofWeights, j) = acc(acc(m_local2globalDofWeights,
+                                                ldof.entityIndex),
+                                            ldof.dofIndex);
+        }
+    }
 }
 
 template <typename BasisFunctionType>
