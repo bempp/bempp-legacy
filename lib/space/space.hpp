@@ -313,7 +313,8 @@ private:
     /** \endcond */
 };
 
-/** \brief Get pointers to Basis objects corresponding to all elements of the grid
+/** \relates Space
+ *  \brief Get pointers to Basis objects corresponding to all elements of the grid
  *  on which a function space is defined.
  *
  *  \param[in] space

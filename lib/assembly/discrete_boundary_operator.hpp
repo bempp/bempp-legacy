@@ -152,10 +152,10 @@ public:
         applyBuiltInImpl(trans, x_in, y_inout, alpha, beta);
     }
 
-    /** \brief Return a representation that can be casted to a
+    /** \brief Return a representation that can be cast to a
      *  DiscreteAcaBoundaryOperator
      *
-     *  The conversion only succeeds if all members if the DiscreteOperator
+     *  The conversion only succeeds if all members of the DiscreteBoundaryOperator
      *  itself can be cast to a DiscreteAcaBoundaryOperator or if it is a
      *  linear combination of DiscreteOperators that can be cast to type
      *  DiscreteAcaBoundaryOperator. Operator compositions are not yet
@@ -241,12 +241,14 @@ private:
                                   const ValueType beta) const = 0;
 };
 
-/** \brief Unary plus: return a copy of the argument. */
+/** \relates DiscreteBoundaryOperator
+ *  \brief Unary plus: return a copy of the argument. */
 template <typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator+(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op);
 
-/** \brief Return a shared pointer to a DiscreteBoundaryOperator representing
+/** \relates DiscreteBoundaryOperator
+ *  \brief Return a shared pointer to a DiscreteBoundaryOperator representing
  *  the operand multiplied by -1.
  *
  *  An exception is thrown if \p op is null. */
@@ -254,7 +256,8 @@ template <typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator-(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op);
 
-/** \brief Return a shared pointer to a DiscreteBoundaryOperator representing
+/** \relates DiscreteBoundaryOperator
+ *  \brief Return a shared pointer to a DiscreteBoundaryOperator representing
  *  the sum of the operands.
  *
  *  An exception is thrown if either \p op1 or \p op2 is null. */
@@ -263,7 +266,8 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator+(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1,
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2);
 
-/** \brief Return a shared pointer to a DiscreteBoundaryOperator representing
+/** \relates DiscreteBoundaryOperator
+ *  \brief Return a shared pointer to a DiscreteBoundaryOperator representing
  *  the difference of the operands.
  *
  *  An exception is thrown if either \p op1 or \p op2 is null. */
@@ -272,7 +276,8 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator-(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1,
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2);
 
-/** \brief Return a shared pointer to a DiscreteBoundaryOperator representing
+/** \relates DiscreteBoundaryOperator
+ *  \brief Return a shared pointer to a DiscreteBoundaryOperator representing
  *  the operator <tt>*op</tt> multiplied by \p scalar.
  *
  *  An exception is thrown if \p op is null. */
@@ -281,7 +286,8 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator*(
         ScalarType scalar,
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op);
 
-/** \brief Return a shared pointer to a DiscreteBoundaryOperator representing
+/** \relates DiscreteBoundaryOperator
+ *  \brief Return a shared pointer to a DiscreteBoundaryOperator representing
  *  the operator <tt>*op</tt> multiplied by \p scalar.
  *
  *  An exception is thrown if \p op is null. */
@@ -290,7 +296,8 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator*(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
         ScalarType scalar);
 
-/** \brief Return a shared pointer to a DiscreteBoundaryOperator representing
+/** \relates DiscreteBoundaryOperator
+ *  \brief Return a shared pointer to a DiscreteBoundaryOperator representing
  *  the operator <tt>*op</tt> divided by \p scalar.
  *
  *  An exception is thrown if \p op is null. */
@@ -299,23 +306,52 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > operator/(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
         ScalarType scalar);
 
+/** \relates DiscreteBoundaryOperator
+ *  \brief Return a shared pointer to a DiscreteBoundaryOperator representing
+ *  the transposed operator <tt>*op</tt>.
+ *
+ *  An exception is thrown if \p op is null. */
 template <typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> > transpose(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op);
 
+/** \relates DiscreteBoundaryOperator
+ *  \brief Return a shared pointer to a DiscreteBoundaryOperator representing
+ *  the conjugated operator <tt>*op</tt>.
+ *
+ *  An exception is thrown if \p op is null. */
 template <typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> > conjugate(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op);
 
+/** \relates DiscreteBoundaryOperator
+ *  \brief Return a shared pointer to a DiscreteBoundaryOperator representing
+ *  the conjugate-transposed operator <tt>*op</tt>.
+ *
+ *  An exception is thrown if \p op is null. */
 template <typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> > conjugateTranspose(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op);
 
+/** \relates DiscreteBoundaryOperator
+ *  \brief Return a shared pointer to a DiscreteBoundaryOperator representing
+ *  the transposed and/or conjugated (depending on the value of the argument
+ *  \p trans) operator <tt>*op</tt>.
+ *
+ *  An exception is thrown if \p op is null. */
 template <typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> > transpose(
         TranspositionMode trans,
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op);
 
+/** \relates DiscreteBoundaryOperator
+ *  \brief Return a shared pointer to a DiscreteBoundaryOperator representing
+ *  the "complexified" operator <tt>*op</tt>.
+ *
+ *  The returned operator has the same matrix representation as the original
+ *  operator, but is able to act on vectors of complex numbers.
+ *
+ *  An exception is thrown if \p op is null. */
 template <typename RealType>
 shared_ptr<const DiscreteBoundaryOperator<std::complex<RealType> > > complexify(
         const shared_ptr<const DiscreteBoundaryOperator<RealType> >& op);

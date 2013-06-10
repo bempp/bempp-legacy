@@ -31,7 +31,8 @@ namespace Bempp
 {
 
 
-/** \brief Wrapper of the index set specific to a Dune grid view class \p DuneGridView
+/** \ingroup grid_internal
+ *  \brief Wrapper of the index set specific to a Dune grid view class \p DuneGridView
 
  \internal The grid view class, rather than an index set class, is used as a
  template parameter because the latter doesn't provide information about the

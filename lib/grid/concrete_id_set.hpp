@@ -31,7 +31,8 @@
 namespace Bempp
 {
 
-/** \brief Wrapper of a Dune id set of type \p DuneIdSet providing access to the
+/** \ingroup grid_internal
+ *  \brief Wrapper of a Dune id set of type \p DuneIdSet providing access to the
  entities of a Dune grid of type \p DuneGrid.
 
  \internal Both these typenames are needed because <tt>Dune::IdSet</tt> does not export

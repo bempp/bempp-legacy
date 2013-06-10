@@ -26,7 +26,8 @@
 namespace Bempp
 {
 
-/** \brief Storage of parallel-loop profiling data. */
+/** \ingroup weak_form_assembly_internal
+ *  \brief Storage of parallel-loop profiling data. */
 struct ChunkStatistics
 {
     ChunkStatistics() : valid(false) {}

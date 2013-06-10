@@ -372,12 +372,14 @@ private:
 
 // Overloaded operators
 
-/** \brief Return a copy of the passed function \p g. */
+/** \relates GridFunction
+ *  \brief Return a copy of the passed function \p g. */
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType> operator+(
         const GridFunction<BasisFunctionType, ResultType>& g);
 
-/** \brief Return the grid function representing the function \p g
+/** \relates GridFunction
+ *  \brief Return the grid function representing the function \p g
  *  multipled by -1.
  *
  *  \note An exception is thrown if \p g is uninitialized. */
@@ -385,7 +387,8 @@ template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType> operator-(
         const GridFunction<BasisFunctionType, ResultType>& g);
 
-/** \brief Return a grid function representing the sum of the operands.
+/** \relates GridFunction
+ *  \brief Return a grid function representing the sum of the operands.
  *
  *  \note Both operands must be initialized and their primal and dual
  *  spaces must be identical, otherwise an exception is thrown. */
@@ -394,7 +397,8 @@ GridFunction<BasisFunctionType, ResultType> operator+(
         const GridFunction<BasisFunctionType, ResultType>& g1,
         const GridFunction<BasisFunctionType, ResultType>& g2);
 
-/** \brief Return a grid function representing the difference of the operands.
+/** \relates GridFunction
+ *  \brief Return a grid function representing the difference of the operands.
  *
  *  \note Both operands must be initialized and their primal and dual
  *  spaces must be identical, otherwise an exception is thrown. */
@@ -403,7 +407,8 @@ GridFunction<BasisFunctionType, ResultType> operator-(
         const GridFunction<BasisFunctionType, ResultType>& g1,
         const GridFunction<BasisFunctionType, ResultType>& g2);
 
-/** \brief Return the grid function representing the function \p g
+/** \relates GridFunction
+ *  \brief Return the grid function representing the function \p g
  *  multiplied by \p scalar.
  *
  *  \note An exception is thrown if \p g is uninitialized. */
@@ -413,7 +418,8 @@ GridFunction<BasisFunctionType, ResultType> operator*(
 
 // This type machinery is needed to disambiguate between this operator and
 // the one taking a AbstractBoundaryOperator and a GridFunction
-/** \brief Return the grid function representing the function \p g
+/** \relates GridFunction
+ *  \brief Return the grid function representing the function \p g
  *  multiplied by \p scalar.
  *
  *  \note An exception is thrown if \p g is uninitialized. */
@@ -426,7 +432,8 @@ typename boost::enable_if<
 operator*(
         const ScalarType& scalar, const GridFunction<BasisFunctionType, ResultType>& g);
 
-/** \brief Return the grid function representing the function \p g
+/** \relates GridFunction
+ *  \brief Return the grid function representing the function \p g
  *  divided by \p scalar.
  *
  *  \note An exception is thrown if \p g is uninitialized. */

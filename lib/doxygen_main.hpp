@@ -27,6 +27,14 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/** \mainpage
+ *
+ *  This is the reference documentation for the C++ interface to BEM++. Look
+ *  at the Modules page for an overview of the library contents.
+ */
+
+////////////////////////////////////////////////////////////////////////////////
+
 /** \defgroup assembly Assembly
  *
  *  This is the most important module of BEM++. It contains classes

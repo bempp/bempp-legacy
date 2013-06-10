@@ -21,6 +21,7 @@
 #ifndef bempp_types_hpp
 #define bempp_types_hpp
 
+/** \file Types used in various parts of BEM++ */
 #include "../fiber/types.hpp"
 #include "../grid/geometry_type.hpp"
 #include "../grid/index_set.hpp"
@@ -40,6 +41,8 @@ typedef int GlobalDofIndex;
 typedef int FlatLocalDofIndex;
 typedef Fiber::LocalDofIndex LocalDofIndex;
 
+/** \ingroup weak_form_assembly_internal
+ *  \brief Local degree of freedom. */
 struct LocalDof
 {
     LocalDof() {}
@@ -51,6 +54,8 @@ struct LocalDof
     LocalDofIndex dofIndex;
 };
 
+/** \ingroup weak_form_assembly_internal
+ *  \brief Point in a three-dimensional space. */
 template <typename ValueType>
 struct Point3D
 {

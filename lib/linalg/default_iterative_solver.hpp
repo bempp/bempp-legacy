@@ -47,7 +47,7 @@ namespace Bempp
 
 
 /** \ingroup linalg
-  * \brief Default interface to the Belos Iterative solver package from Trilinos.
+  * \brief Default iterative solver for boundary integral equations.
   *
   * This class provides an interface to various iterative solvers available via
   * the Stratimikos interface to the Belos solver family from Trilinos (see <a
