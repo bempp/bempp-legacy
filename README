@@ -7,6 +7,19 @@ started in October 2011.
 History
 =======
 
+1.1.4 (10 June 2013)
+--------------------
+
+This version brings some improvements to the documentation of the C++
+interface. In particular, standalone functions are now visible in the
+documentation of the most closely related class; classes responsible
+for grid management have been separated into the new Grid module; and
+the Doxygen documentation is now searchable.
+
+In addition, a missing #include directive has been added to the Swig
+interface file bempp.swg. This is only important for users
+implementing their own boundary operator classes.
+
 1.1.3 (10 May 2013)
 -------------------
 
