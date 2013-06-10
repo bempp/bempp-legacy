@@ -25,6 +25,7 @@
 #include "bempp/common/config_trilinos.hpp"
 
 #include "../common/bounding_box.hpp"
+#include "../common/not_implemented_error.hpp"
 #include "../common/deprecated.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../common/types.hpp"
@@ -299,7 +300,7 @@ public:
      *  approximation. */
     virtual void getGlobalDofBoundingBoxes(
             std::vector<BoundingBox<CoordinateType> >& boundingBoxes) const {
-        throw std::runtime_error("Space::getGlobalDofBoundingBoxes(): "
+        throw NotImplementedError("Space::getGlobalDofBoundingBoxes(): "
                                  "implementation missing");
     }
 
@@ -315,7 +316,7 @@ public:
      *  approximation. */
     virtual void getFlatLocalDofBoundingBoxes(
             std::vector<BoundingBox<CoordinateType> >& boundingBoxes) const {
-        throw std::runtime_error("Space::getFlatLocalDofBoundingBoxes(): "
+        throw NotImplementedError("Space::getFlatLocalDofBoundingBoxes(): "
                                  "implementation missing");
     }
 
@@ -335,11 +336,11 @@ public:
 
     virtual void getGlobalDofNormals(
             std::vector<Point3D<CoordinateType> >& normals) const {
-        throw std::runtime_error("getGlobalDofNormals(): not implemented");
+        throw NotImplementedError("Space::getGlobalDofNormals(): not implemented");
     }
     virtual void getFlatLocalDofNormals(
             std::vector<Point3D<CoordinateType> >& normals) const {
-        throw std::runtime_error("getFlatLocalDofNormals(): not implemented");
+        throw NotImplementedError("Space::getFlatLocalDofNormals(): not implemented");
     }
 
     /** @}
