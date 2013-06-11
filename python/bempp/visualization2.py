@@ -47,7 +47,7 @@ class _VectorVisualization(HasTraits):
     vector_scale_size = CFloat(0.1)
 
     def __init__(self, tvtkGridSrcs=None, tvtkGridFunctionSrcs=None,
-                 tvtkStructuredGridDataSrcs=None):
+                 tvtkStructuredGridDataSrcs=None, dataRange=None):
         HasTraits.__init__(self)
         if tvtkGridSrcs is not None:
             try:
@@ -72,6 +72,7 @@ class _VectorVisualization(HasTraits):
                 self.tvtkStructuredGridDataSrcs = [VTKDataSource(data=tvtkStructuredGridDataSrcs)]
         else:
             self.tvtkStructuredGridDataSrcs = []
+        self.dataRange = dataRange
 
     @on_trait_change('scene.activated')
     def create_plot(self):
@@ -112,6 +113,11 @@ class _VectorVisualization(HasTraits):
             self.engine.add_source(src)
             self.engine.add_module(self.surface1[-1], obj=src)
         self.module_manager = self.engine.scenes[0].children[0].children[0]
+        if self.dataRange is not None:
+            self.module_manager.vector_lut_manager.data_range = self.dataRange
+            self.module_manager.scalar_lut_manager.data_range = self.dataRange
+            self.module_manager.vector_lut_manager.use_default_range = False
+            self.module_manager.scalar_lut_manager.use_default_range = False
         if self.legend == "Scalar Legend":
             self.module_manager.vector_lut_manager.show_legend = False
             self.module_manager.scalar_lut_manager.show_legend = True
@@ -208,7 +214,7 @@ class _ScalarVisualization(HasTraits):
     enable_grid    = Bool(False)
 
     def __init__(self, tvtkGridSrcs=None, tvtkGridFunctionSrcs=None,
-                 tvtkStructuredGridDataSrcs=None):
+                 tvtkStructuredGridDataSrcs=None, dataRange=None):
         HasTraits.__init__(self)
         if tvtkGridSrcs is not None:
             try:
@@ -233,6 +239,7 @@ class _ScalarVisualization(HasTraits):
                 self.tvtkStructuredGridDataSrcs = [VTKDataSource(data=tvtkStructuredGridDataSrcs)]
         else:
             self.tvtkStructuredGridDataSrcs = []
+        self.dataRange = dataRange
 
     @on_trait_change('scene.activated')
     def create_plot(self):
@@ -263,6 +270,9 @@ class _ScalarVisualization(HasTraits):
             self.engine.add_source(src)
             self.engine.add_module(self.surface1[-1], obj=src)
         self.module_manager = self.engine.scenes[0].children[0].children[0]
+        if self.dataRange is not None:
+            self.module_manager.scalar_lut_manager.data_range = self.dataRange
+            self.module_manager.scalar_lut_manager.use_default_range = False
         self.module_manager.scalar_lut_manager.show_legend = self.enable_legend
         if self.point_cell == "Point Data":
             self.module_manager.lut_data_mode = 'point data'
@@ -464,7 +474,7 @@ def plotGrid(grid, representation='wireframe'):
     gridTvtkData = tvtkGrid(grid)
     return mlab.pipeline.surface(gridTvtkData, representation=representation)
 
-def plotGridFunction(gf):
+def plotGridFunction(gf, dataRange=None):
     """Visualize a grid function.
 
     *Parameters:*
@@ -475,13 +485,13 @@ def plotGridFunction(gf):
 
     tvtkObj = tvtkGridFunction(gf)
     if gf.componentCount()==3:
-        v = _VectorVisualization(tvtkObj, tvtkObj, None)
+        v = _VectorVisualization(tvtkObj, tvtkObj, None, dataRange)
     else:
-        v = _ScalarVisualization(tvtkObj, tvtkObj, None)
+        v = _ScalarVisualization(tvtkObj, tvtkObj, None, dataRange)
     v.configure_traits()
     return v
 
-def plotStructuredGridData(points, data, dims):
+def plotStructuredGridData(points, data, dims, dataRange=None):
     """Visualize data sampled on a regular 2D grid of points.
 
     *Parameters:*
@@ -495,7 +505,10 @@ def plotStructuredGridData(points, data, dims):
          - dims
             A tuple of two numbers representing the first and second dimension
             of the grid of points. Their product must be equal to np.
-
+         - dataRange
+            Can be None or a tuple of two floats. In the first case, the data
+            range of the plot will be determined automatically, otherwise
+            it will be set to the specified tuple.
     Returns a Traits object that contains the visualization.
 
     Example usage::
@@ -515,13 +528,14 @@ def plotStructuredGridData(points, data, dims):
 
     tvtkObj = tvtkStructuredGridData(points, data, dims)
     if data.ndim == 2 and data.shape[0] == 3:
-        v = _VectorVisualization(None, None, tvtkObj)
+        v = _VectorVisualization(None, None, tvtkObj, dataRange)
     else:
-        v = _ScalarVisualization(None, None, tvtkObj)
+        v = _ScalarVisualization(None, None, tvtkObj, dataRange)
     v.configure_traits()
     return v
 
-def plotScalarData(tvtkGrids=None, tvtkGridFunctions=None, tvtkStructuredGridData=None):
+def plotScalarData(tvtkGrids=None, tvtkGridFunctions=None, tvtkStructuredGridData=None,
+                   dataRange=None):
     """Visualize multiple scalar data sets in the same plot.
 
     This function plots an arbitrary number of grids, scalar-valued grid functions and
@@ -537,13 +551,18 @@ def plotScalarData(tvtkGrids=None, tvtkGridFunctions=None, tvtkStructuredGridDat
         - tvtkStructuredGridData
             None, an object returned by tvtkStructuredGridData(), or a list
             of such objects.
+        - dataRange
+            Can be None or a tuple of two floats. In the first case, the data
+            range of the plot will be determined automatically, otherwise
+            it will be set to the specified tuple.
 
     Returns a Traits object that contains the visualization.
     """
     return plotData(tvtkGrids, tvtkGridFunctions, tvtkStructuredGridData,
-                    scalar=True)
+                    dataRange, scalar=True)
 
-def plotVectorData(tvtkGrids=None, tvtkGridFunctions=None, tvtkStructuredGridData=None):
+def plotVectorData(tvtkGrids=None, tvtkGridFunctions=None, tvtkStructuredGridData=None,
+                   dataRange=None):
     """Visualize multiple scalar data sets in the same plot.
 
     This function plots an arbitrary number of grids, vector-valued grid functions and
@@ -559,13 +578,18 @@ def plotVectorData(tvtkGrids=None, tvtkGridFunctions=None, tvtkStructuredGridDat
         - tvtkStructuredGridData
             None, an object returned by tvtkStructuredGridData(), or a list
             of such objects.
+        - dataRange
+            Can be None or a tuple of two floats. In the first case, the data
+            range of the plot will be determined automatically, otherwise
+            it will be set to the specified tuple.
 
     Returns a Traits object that contains the visualization.
     """
-    return plotData(tvtkGrids, tvtkGridFunctions, tvtkStructuredGridData, scalar=False)
+    return plotData(tvtkGrids, tvtkGridFunctions, tvtkStructuredGridData,
+                    dataRange, scalar=False)
 
 def plotData(tvtkGrids=None, tvtkGridFunctions=None, tvtkStructuredGridData=None,
-             scalar=True):
+             dataRange=None, scalar=True):
     """Visualize multiple scalar or vector data sets in the same plot.
 
     This function plots an arbitrary number of grids, grid functions and data
@@ -583,6 +607,10 @@ def plotData(tvtkGrids=None, tvtkGridFunctions=None, tvtkStructuredGridData=None
         - tvtkStructuredGridData
             None, an object returned by tvtkStructuredGridData(), or a list
             of such objects.
+        - dataRange
+            Can be None or a tuple of two floats. In the first case, the data
+            range of the plot will be determined automatically, otherwise
+            it will be set to the specified tuple.
         - scalar (bool)
             If True, the arguments tvtkGridFunctions and tvtkStructuredGridData
             should represent scalar-valued data sets, otherwise vector-valued
@@ -593,9 +621,11 @@ def plotData(tvtkGrids=None, tvtkGridFunctions=None, tvtkStructuredGridData=None
     if tvtkGrids is None:
         tvtkGrids = tvtkGridFunctions
     if scalar:
-        v = _ScalarVisualization(tvtkGrids, tvtkGridFunctions, tvtkStructuredGridData)
+        v = _ScalarVisualization(tvtkGrids, tvtkGridFunctions, tvtkStructuredGridData,
+                                 dataRange)
     else:
-        v = _VectorVisualization(tvtkGrids, tvtkGridFunctions, tvtkStructuredGridData)
+        v = _VectorVisualization(tvtkGrids, tvtkGridFunctions, tvtkStructuredGridData,
+                                 dataRange)
     v.configure_traits()
     return v
 
