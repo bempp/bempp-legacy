@@ -34,7 +34,8 @@
 namespace Bempp
 {
 
-/** \brief Wrapper of a Dune grid view of type \p DuneGridView. */
+/** \ingroup grid_internal
+ *  \brief Wrapper of a Dune grid view of type \p DuneGridView. */
 template<typename DuneGridView>
 class ConcreteGridView: public GridView
 {

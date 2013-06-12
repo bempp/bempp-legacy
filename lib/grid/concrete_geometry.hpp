@@ -66,7 +66,8 @@ void setupDuneGeometry<Default2dIn3dDuneGrid::Codim<0>::Geometry>(
     duneGeometry.setup(type, corners);
 }
 
-/** \brief Wrapper of a Dune geometry of type \p DuneGeometry */
+/** \ingroup grid_internal
+ *  \brief Wrapper of a Dune geometry of type \p DuneGeometry */
 template <typename DuneGeometry>
 class ConcreteGeometry : public Geometry
 {

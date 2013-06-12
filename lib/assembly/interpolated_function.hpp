@@ -126,6 +126,9 @@ private:
     InterpolationMethod m_method;
 };
 
+/** \relates InterpolatedFunction
+ *  \brief Return an InterpolatedFunction representing the function \p rhs
+ *  multiplied by the scalar \p lhs. */
 template <typename ValueType>
 const InterpolatedFunction<ValueType> operator*(
         ValueType lhs, const InterpolatedFunction<ValueType>& rhs)
@@ -133,6 +136,9 @@ const InterpolatedFunction<ValueType> operator*(
     return InterpolatedFunction<ValueType>(rhs) *= lhs;
 }
 
+/** \relates InterpolatedFunction
+ *  \brief Return an InterpolatedFunction representing the function \p lhs
+ *  multiplied by the scalar \p rhs. */
 template <typename ValueType>
 const InterpolatedFunction<ValueType> operator*(
         const InterpolatedFunction<ValueType>& lhs, ValueType rhs)

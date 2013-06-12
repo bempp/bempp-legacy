@@ -25,6 +25,11 @@
 #include <vector>
 #include <iostream>
 
+/** \ingroup common
+ *  \brief Print the contents of a std::vector to an output stream.
+ *
+ *  Each element is printed in a separate line.
+ */
 template <typename T>
 std::ostream& operator<< (std::ostream& dest, const std::vector<T>& v)
 {

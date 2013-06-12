@@ -40,7 +40,7 @@ template<int codim> class Entity;
 class GridView;
 /** \endcond */
 
-/**
+/** \ingroup grid_internal
  \brief Wrapper of a Dune surface grid of type \p DuneGrid.
 
  \internal The wrapper holds a pointer to a Dune Grid object. The

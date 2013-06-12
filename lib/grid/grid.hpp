@@ -43,8 +43,6 @@ class IdSet;
 
 /** \ingroup grid
     \brief Abstract wrapper of a grid.
-
-    Functions related to parallelization are not wrapped yet.
  */
 class Grid
 {
