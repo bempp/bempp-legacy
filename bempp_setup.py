@@ -150,12 +150,13 @@ def prepare(root,config):
     enable_mpi = to_bool(config.get('MPI','enable_mpi'))
 
     if enable_mpi:
-	mpi_include_dir = config.get('MPI','mpi_include_dir')
-	cflags = config.get('Main','cflags')
-	cxxflags = config.get('Main','cxxflags')
+        mpi_include_dir = config.get('MPI','mpi_include_dir')
+        cflags = config.get('Main','cflags')
+        cxxflags = config.get('Main','cxxflags')
         config.set('Main','with_mpi','ON')
-	config.set('Main','cflags',cflags+" -I"+mpi_include_dir)
-	config.set('Main','cxxflags',cxxflags+" -I"+mpi_include_dir)
+        if len(mpi_include_dir)>0:
+	        config.set('Main','cflags',cflags+" -I"+mpi_include_dir)
+	        config.set('Main','cxxflags',cxxflags+" -I"+mpi_include_dir)
     else:
         config.set('MPI','with_mpi','OFF')
 
