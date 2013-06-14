@@ -1,3 +1,8 @@
+
+#include "bempp/common/config_ahmed.hpp"
+
+#ifdef WITH_AHMED
+
 #include "block_coalescer.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -241,3 +246,5 @@ void BlockCoalescer<ValueType>::coalesceLowRankBlock(unsigned index)
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(BlockCoalescer);
 
 } // namespace Bempp
+
+#endif // WITH_AHMED

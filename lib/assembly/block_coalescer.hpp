@@ -2,6 +2,10 @@
 #define bempp_block_coalescer_hpp
 
 #include "../common/common.hpp"
+#include "bempp/common/config_ahmed.hpp"
+
+#ifdef WITH_AHMED
+
 #include "aca_options.hpp"
 #include "ahmed_aux_fwd.hpp"
 #include "../common/boost_scoped_array_fwd.hpp"
@@ -50,5 +54,7 @@ private:
 };
 
 } // namespace Bempp
+
+#endif // WITH_AHMED
 
 #endif
