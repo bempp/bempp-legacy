@@ -9,7 +9,8 @@ class Epetra_CrsMatrix;
 namespace Bempp
 {
 
-/** \brief Return the first factor of the Cholesky factorisation of matrix \p mat.
+/** \relates DiscreteSparseBoundaryOperator
+ *  \brief Return the first factor of the Cholesky factorisation of matrix \p mat.
  *
  *  The matrix \p mat is assumed to be symmetric, positive-definite and
  *  block-diagonal (effectively it should be the mass matrix of a space of

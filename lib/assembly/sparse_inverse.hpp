@@ -29,7 +29,8 @@ class Epetra_CrsMatrix;
 namespace Bempp
 {
 
-/** \brief Return the inverse of a *block-diagonal* sparse matrix \p mat.
+/** \relates DiscreteSparseBoundaryOperator
+ *  \brief Return the inverse of a *block-diagonal* sparse matrix \p mat.
  *
  *  In practice, \p mat might be the mass matrix of a space of discontinuous
  *  functions.

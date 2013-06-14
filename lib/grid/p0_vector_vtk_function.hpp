@@ -29,6 +29,7 @@ namespace Bempp
 {
 
 /**
+ * \ingroup grid_internal
  * \brief Take a vector and interpret it as cell data for the VTKWriter.
  *
  * This class turns a generic vector containing cell data into a

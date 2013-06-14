@@ -129,11 +129,11 @@ struct AcaOptions
      *  3. The \p HYBRID_ASSEMBLY mode is available for operators whose
      *     weak form can be written as
      *
-     *     \[
+     *     \f[
      *         \int_\Gamma \int_\Sigma
      *         f(x) \, K(x, y) \, g(y) \,
      *         \mathrm{d}\Gamma(x) \,\mathrm{d}\Sigma(y),
-     *     \]
+     *     \f]
      *
      *     where \f$f(x)\f$ and \f$g(y)\$ are scalar basis functions of \f$U\f$
      *     and \f$V\f$ (*not* any transformations of them, i.e. not their

@@ -138,6 +138,12 @@
  *  grids.
  */
 
+/** \defgroup grid_internal Grid (internal classes)
+ *
+ *  This module contains classes related to the management of boundary-element
+ *  grids, used internally by BEM++.
+ */
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /** \defgroup linalg Linear algebra
@@ -154,10 +160,11 @@
  *  potential operators.
  */
 
-/** \defgroup identity Identity operator
+/** \defgroup local_operators Local operators
  *  \ingroup operators
  *
- *  This submodule contains the class representing the identity operator.
+ *  This submodule contains classes representing local operators (e.g. the
+ *  identity operator) and functions used to create such operators.
  */
 
 /** \defgroup composite_boundary_operators Composite boundary operators

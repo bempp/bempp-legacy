@@ -96,7 +96,19 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > scaledAcaOperator(
         const ValueType& multiplier,
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op);
 
-/** \overload */
+/** \relates DiscreteAcaBoundaryOperator
+ *  \brief Multiply the H-matrix representation of a discrete boundary operator
+ *  by a scalar and wrap the result in a new discrete boundary operator.
+ *
+ *  A std::bad_cast exception is thrown if the input operator can not be cast
+ *  to DiscreteAcaBoundaryOperator
+ *
+ *  \param[in] op Discrete boundary operator to be multiplied.
+ *  \param[in] multiplier Scalar multiplier.
+ *
+ *  \return A shared pointer to a newly allocated discrete boundary operator
+ *  representing the operand \p op multiplied by \p multiplier and stored as
+ *  a H-matrix.  */
 template <typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> > scaledAcaOperator(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
