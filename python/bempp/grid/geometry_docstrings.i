@@ -114,7 +114,7 @@ Jacobian matrix.
    - local (ndarray)
         2D array whose ith column contains the local coordinates of a point x_i.
 
-Returns a 3D array whose ith slice (i.e. ...(:,:,i)) contains the
+Returns a 3D array whose ith slice (i.e. ...[:,:,i]) contains the
 transposed Jacobian matrix at x_i."
 %enddef
 
@@ -132,7 +132,7 @@ Jacobian matrix.
    - local (ndarray)
         2D array whose ith column contains the local coordinates of a point x_i.
 
-Returns a 3D array whose ith slice (i.e. ...(:,:,i)) contains the
+Returns a 3D array whose ith slice (i.e. ...[:,:,i]) contains the
 inverse of the transposed Jacobian matrix at x_i.
 
 *Note:* In the non-symmetric case dimGrid != dimWorld the

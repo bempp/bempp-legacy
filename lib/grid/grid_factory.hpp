@@ -46,10 +46,10 @@ class GridFactory
 public:
     /** \brief Construct a regular structured grid.
 
-      \param params     Parameters of the grid to be constructed.
-      \param lowerLeft  Coordinates of the lower left corner of the grid.
-      \param upperRight Coordinates of the upper right corner of the grid.
-      \param nElements  Number of grid subdivisions in each direction.
+      \param[in] params     Parameters of the grid to be constructed.
+      \param[in] lowerLeft  Coordinates of the lower left corner of the grid.
+      \param[in] upperRight Coordinates of the upper right corner of the grid.
+      \param[in] nElements  Number of grid subdivisions in each direction.
 
       This function constructs a regular structured grid. Its dimension, \p
       dimGrid, and the dimension of the surrounding space, \p dimWorld, are
@@ -75,10 +75,10 @@ public:
 
     /** \brief Import grid from a file in Gmsh format.
 
-      \param params Parameters of the grid to be constructed.
-      \param fileName Name of the Gmsh file.
-      \param verbose  Output diagnostic information.
-      \param insertBoundarySegments
+      \param[in] params Parameters of the grid to be constructed.
+      \param[in] fileName Name of the Gmsh file.
+      \param[in] verbose  Output diagnostic information.
+      \param[in] insertBoundarySegments
 
       \bug Ask Dune developers about the significance of insertBoundarySegments.
       \see <a href>http://geuz.org/gmsh/</a> for information about the Gmsh file format.
@@ -90,12 +90,12 @@ public:
 
     /** \brief Import grid from a file in Gmsh format.
 
-      \param params Parameters of the grid to be constructed.
-      \param fileName Name of the Gmsh file.
-      \param boundaryId2PhysicalEntity
-      \param elementIndex2PhysicalEntity
-      \param verbose  Output diagnostic information.
-      \param insertBoundarySegments
+      \param[in] params Parameters of the grid to be constructed.
+      \param[in] fileName Name of the Gmsh file.
+      \param[in] boundaryId2PhysicalEntity
+      \param[in] elementIndex2PhysicalEntity
+      \param[in] verbose  Output diagnostic information.
+      \param[in] insertBoundarySegments
 
       \bug Ask Dune developers about the significance of the undocumented parameters.
       \see <a href>http://geuz.org/gmsh/</a> for information about the Gmsh file format.
@@ -106,6 +106,24 @@ public:
             std::vector<int> &boundaryId2PhysicalEntity,
             std::vector<int> &elementIndex2PhysicalEntity,
             bool verbose=true, bool insertBoundarySegments=false);
+
+    /** \brief Create a grid from connectivity arrays.
+     *
+     *  \param[in] params
+     *    Parameters of the grid to be constructed.
+     *  \param[in] vertices
+     *    2D array whose (i, j)th element contains the ith
+     *    component of the jth vertex.
+     *  \param[in] elementCorners
+     *    2D array whose (i, j)th element contains the index of the ith vertex
+     *    of the jth element.
+     *
+     *  \note Currently only grids with triangular topology are supported.
+     */
+    static shared_ptr<Grid> createGridFromConnectivityArrays(
+                const GridParameters& params,
+                const arma::Mat<double>& vertices,
+                const arma::Mat<int>& elementCorners);
 };
 
 } // namespace Bempp

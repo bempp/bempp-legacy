@@ -192,6 +192,10 @@ public:
             const QuadratureStrategy& quadStrategy,
             const EvaluationOptions& options) const = 0;
 
+    /** \brief Number of components of the values of the potential.
+     *
+     *  E.g. 1 for a scalar-valued potential, 3 for a vector-valued potential.
+     */
     virtual int componentCount() const = 0;
 };
 

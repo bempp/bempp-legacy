@@ -50,10 +50,11 @@ struct SolutionStatus {
   * <a href="http://trilinos.sandia.gov/packages/docs/r10.10/packages/thyra/doc/html/structThyra_1_1SolveStatus.html">Thyra::SolveStatus</a>
   * if Trilinos is enabled.
   *
-  * <tt>MagnitudeType</tt> is identical to <tt>float</tt> if <tt>ResultType</tt> is <tt>float</tt> or <tt>complex<float></tt>. It is double
-  * if <tt>ResultType</tt> is <tt>double</tt> or <tt>complex<double></tt>
+  * <tt>MagnitudeType</tt> is identical to <tt>float</tt> if
+  * <tt>ResultType</tt> is <tt>float</tt> or <tt>complex<float></tt>. It is
+  * double if <tt>ResultType</tt> is <tt>double</tt> or
+  * <tt>complex<double></tt>
   */
-
 template <typename BasisFunctionType, typename ResultType>
 class SolutionBase
 {

@@ -55,7 +55,36 @@ template <typename ValueType> class InterpolatedFunction;
 /** \ingroup abstract_boundary_operators
  *  \brief Hypersingular integral boundary operator.
  *
- *  TODO: write documentation.
+ *  This abstract class represents an integral boundary operator \f$\mathcal
+ *  A\f$ providing two alternative ways to evaluate its weak form \f$\langle
+ *  \phi, \mathcal A \psi \rangle\f$. One of them must be valid for any pair of
+ *  test and trial functions, \f$\phi\f$ and \f$\psi\f$, and it can be
+ *  expressed by a formula of an arbitrary form; in particular, it can contain
+ *  differential operators, e.g. surface div and curl, acting on the test and
+ *  trial functions. The other one needs only be valid for test and trial
+ *  functions with nonoverlapping support, and it must be of the form
+ *
+ *  \f[
+ *      \int_\Gamma \int_\Sigma
+ *      \phi^*(x) \, K(x, y) \, \psi(y) \,
+ *      \mathrm{d}\Gamma(x) \,\mathrm{d}\Sigma(y),
+ *  \f]
+ *
+ *  where \f$K(x, y)\f$ is an arbitrary kernel; note that the formula contains
+ *  "bare" test and trial functions, without any operators acting on them.
+ *
+ *  When the discrete weak form of an integral operator represented by a
+ *  subclass of this class is assembled in the hybrid ACA mode (\see
+ *  AcaOptions::mode), the first representation of the weak form is used in the
+ *  assembly of nonadmissible blocks and the second in the assembly of
+ *  admissible ("off-diagonal") blocks.
+ *
+ *  The first representation of the weak form is determined by the
+ *  implementation of the virtual functions integral(), kernels(),
+ *  testTransformations() and trialTransformations(). The second representation
+ *  is determined by the implementation of the virtual functions
+ *  offDiagonalIntegral(), offDiagonalKernels(),
+ *  offDiagonalTestTransformations() and offDiagonalTrialTransformations().
  *
  *  \tparam BasisFunctionType_
  *    Type of the values of the (components of the) basis functions into
@@ -121,17 +150,20 @@ private:
     virtual const CollectionOfKernels& kernels() const = 0;
 
     /** \brief Return the collection of test-function transformations occurring
-     *  in the weak form of this operator. */
+     *  in the first representation of the weak form of this operator (valid for
+     *  all pairs of test and trial functions). */
     virtual const CollectionOfBasisTransformations&
     testTransformations() const = 0;
 
     /** \brief Return the collection of trial-function transformations occurring
-     *  in the weak form of this operator. */
+     *  in the first representation of the weak form of this operator (valid for
+     *  all pairs of test and trial functions). */
     virtual const CollectionOfBasisTransformations&
     trialTransformations() const = 0;
 
-    /** \brief Return an object representing the integral that is the weak form
-     *  of this operator.
+    /** \brief Return an object representing the integral that
+     *  is the first representation of the weak form of this operator (valid for
+     *  all pairs of test and trial functions).
      *
      *  Subclasses of #TestKernelTrialIntegral implement functions that evaluate
      *  the integral using the data provided by a #CollectionOfKernels
@@ -141,21 +173,37 @@ private:
     virtual const TestKernelTrialIntegral& integral() const = 0;
 
     /** \brief Return the collection of kernel functions occurring in the
-     *  weak form of this operator. */
+     *  in the second representation of the weak form of this operator (valid at
+     *  least for pairs of test and trial functions with nonoverlapping
+     *  supports). */
     virtual const CollectionOfKernels& offDiagonalKernels() const = 0;
 
     /** \brief Return the collection of test-function transformations occurring
-     *  in the weak form of this operator. */
+     *  in the second representation of the weak form of this operator (valid at
+     *  least for pairs of test and trial functions with nonoverlapping
+     *  supports).
+     *
+     *  It should normally be the mapping of basis functions (defined on the
+     *  reference element) to shape functions (defined on the physical
+     *  elements). */
     virtual const CollectionOfBasisTransformations&
     offDiagonalTestTransformations() const = 0;
 
     /** \brief Return the collection of trial-function transformations occurring
-     *  in the weak form of this operator. */
+     *  in the second representation of the weak form of this operator (valid at
+     *  least for pairs of test and trial functions with nonoverlapping
+     *  supports).
+     *
+     *  It should normally be the mapping of basis functions (defined on the
+     *  reference element) to shape functions (defined on the physical
+     *  elements). */
     virtual const CollectionOfBasisTransformations&
     offDiagonalTrialTransformations() const = 0;
 
-    /** \brief Return an object representing the integral that is the weak form
-     *  of this operator.
+    /** \brief Return an object representing the integral that
+     *  is the second representation of the weak form of this operator (valid at
+     *  least for pairs of test and trial functions with nonoverlapping
+     *  supports).
      *
      *  Subclasses of #TestKernelTrialIntegral implement functions that evaluate
      *  the integral using the data provided by a #CollectionOfKernels

@@ -289,6 +289,7 @@ int main(int argc, char* argv[])
     // Solve the equation
 
     Solution<BFT, RT> solution;
+#ifdef WITH_AHMED
     if (solverTol > 0.) {
         DefaultIterativeSolver<BFT, RT> solver(slpOp);
 
@@ -306,6 +307,10 @@ int main(int argc, char* argv[])
         DefaultDirectSolver<BFT, RT> solver(slpOp);
         solution = solver.solve(rhs);
     }
+#else // WITH_AHMED
+    DefaultDirectSolver<BFT, RT> solver(slpOp);
+    solution = solver.solve(rhs);
+#endif
     std::cout << solution.solverMessage() << std::endl;
 
     // Extract the solution

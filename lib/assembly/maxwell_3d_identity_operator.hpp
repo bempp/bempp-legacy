@@ -42,6 +42,7 @@ template <typename BasisFunctionType, typename ResultType> class BoundaryOperato
 /** \endcond */
 
 /** \ingroup maxwell_3d
+    \ingroup local_operators
     \brief "Identity operator" for Maxwell equations in 3D.
 
     This class represents an operator \f$I_{\mathrm{M}}\f$ whose weak form (under

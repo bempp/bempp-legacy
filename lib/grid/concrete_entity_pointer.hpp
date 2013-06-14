@@ -30,6 +30,7 @@ namespace Bempp
 {
 
 /**
+ \ingroup grid_internal
  \brief Wrapper of a Dune entity pointer of type \p DuneEntityPointer.
  */
 template<typename DuneEntityPointer>

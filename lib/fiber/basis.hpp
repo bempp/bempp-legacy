@@ -35,6 +35,8 @@ namespace Fiber
 template <typename ValueType> struct BasisData;
 /** \endcond */
 
+/** \ingroup fiber
+ *  \brief Collection of basis functions defined on a reference element. */
 template <typename ValueType>
 class Basis
 {
@@ -43,8 +45,9 @@ public:
 
     virtual ~Basis() {}
 
+    /** \brief Return the number of basis functions. */
     virtual int size() const = 0;
-    /** \brief Maximum polynomial order of basis elements. */
+    /** \brief Return the maximum polynomial order of basis functions. */
     virtual int order() const = 0;
     virtual void evaluate(size_t what,
                           const arma::Mat<CoordinateType>& points,

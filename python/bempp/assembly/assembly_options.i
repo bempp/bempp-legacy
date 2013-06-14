@@ -10,6 +10,7 @@ namespace Bempp
     %ignore switchToTbb;
     %feature("compactdefaultargs") enableSingularIntegralCaching;
     %feature("compactdefaultargs") enableSparseStorageOfMassMatrices;
+    %feature("compactdefaultargs") enableJointAssembly;
 }
 
 } // namespace Bempp

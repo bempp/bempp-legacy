@@ -57,7 +57,8 @@ template <typename ValueType> class DiscreteAcaBoundaryOperator;
 
 // Global functions
 
-/** \brief Add two discrete boundary operators stored as H-matrices.
+/** \relates DiscreteAcaBoundaryOperator
+ *  \brief Add two discrete boundary operators stored as H-matrices.
  *
  *  A std::bad_cast exception is thrown if the input operators can not be
  *  cast to DiscreteAcaBoundaryOperator.
@@ -77,7 +78,8 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > acaOperatorSum(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2,
         double eps, int maximumRank);
 
-/** \brief Multiply the H-matrix representation of a discrete boundary operator
+/** \relates DiscreteAcaBoundaryOperator
+ *  \brief Multiply the H-matrix representation of a discrete boundary operator
  *  by a scalar and wrap the result in a new discrete boundary operator.
  *
  *  A std::bad_cast exception is thrown if the input operator can not be cast
@@ -94,7 +96,19 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > scaledAcaOperator(
         const ValueType& multiplier,
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op);
 
-/** \overload */
+/** \relates DiscreteAcaBoundaryOperator
+ *  \brief Multiply the H-matrix representation of a discrete boundary operator
+ *  by a scalar and wrap the result in a new discrete boundary operator.
+ *
+ *  A std::bad_cast exception is thrown if the input operator can not be cast
+ *  to DiscreteAcaBoundaryOperator
+ *
+ *  \param[in] op Discrete boundary operator to be multiplied.
+ *  \param[in] multiplier Scalar multiplier.
+ *
+ *  \return A shared pointer to a newly allocated discrete boundary operator
+ *  representing the operand \p op multiplied by \p multiplier and stored as
+ *  a H-matrix.  */
 template <typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> > scaledAcaOperator(
         const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
@@ -107,7 +121,8 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType> > scaledAcaOperator(
 //        const shared_ptr<const DiscreteAcaBoundaryOperator<ValueType> >& op2,
 //        double eps, int maximumRank);
 
-/** \brief LU inverse of a discrete boundary operator stored as a H-matrix.
+/** \relates DiscreteAcaBoundaryOperator
+ *  \brief LU inverse of a discrete boundary operator stored as a H-matrix.
  *
  *  \param[in] op Discrete boundary operator for which to compute the LU inverse.
  *  \param[in] delta Approximation accuracy of the inverse.

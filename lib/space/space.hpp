@@ -128,7 +128,7 @@ public:
      *  object representing a space \f$T = span_{m=1}^M g_m\f$ of with
      *  *scalar-valued* basis functions \f$g_m\f$ such that
      *
-     *  1. For each \f$i = 1, 2, \cdots, d\f$ it holds that \f$T \superset
+     *  1. For each \f$i = 1, 2, \cdots, d\f$ it holds that \f$T \supset
      *     span_{n=1}^N (f_n)_i\f$, where \f$(f_n)_i\f$ denotes the \f$i\f$th
      *     component of \f$f_n\f$.
      *

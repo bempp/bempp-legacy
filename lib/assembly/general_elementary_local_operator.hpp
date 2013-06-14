@@ -27,20 +27,19 @@ namespace Bempp
 {
 
 /** \ingroup abstract_boundary_operators
+ *  \ingroup local_operators
  *  \brief Standard implementation of an elementary local operator.
- *
- *  TODO: WRITE DOCUMENTATION (WHAT FOLLOWS IS NOT CORRECT).
  *
  *  This class provides an implementation of the interface defined by
  *  ElementaryLocalOperator that is sufficient for most purposes. The
- *  constructor takes four functor objects representing the four elements of the
- *  operator's weak form (collection of kernels, collections of test and trial
- *  basis function transformations, and the weak form integrand). These functors
+ *  constructor takes three functor objects representing the three elements of the
+ *  operator's weak form: collections of test and trial
+ *  basis function transformations and the weak form integrand. These functors
  *  are used to construct instances of appropriate instantiations of
- *  DefaultCollectionOfKernels, DefaultCollectionOfBasisTransformations and
+ *  DefaultCollectionOfBasisTransformations and
  *  DefaultTestKernelTrialIntegral. These objects are stored as private member
  *  variables and are returned by the implementations of the virtual methods
- *  kernels(), testTransformations(), trialTransformations() and integral().
+ *  testTransformations(), trialTransformations() and integral().
  *
  *  \tparam BasisFunctionType_
  *    Type of the values of the (components of the) basis functions into

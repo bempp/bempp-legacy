@@ -30,8 +30,9 @@
 namespace Bempp
 {
 
-/** \brief An injective mapping from the full set of codimension-0 entities
-  ("elements") of a grid to the integers 0 ... (number of entities - 1). */
+/** \ingroup grid_internal
+ *  \brief An injective mapping from the full set of codimension-0 entities
+ *  ("elements") of a grid to the integers 0 ... (number of entities - 1). */
 template <typename DuneGridView>
 class ConcreteElementMapper : public Mapper
 {
