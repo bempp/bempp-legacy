@@ -106,6 +106,24 @@ public:
             std::vector<int> &boundaryId2PhysicalEntity,
             std::vector<int> &elementIndex2PhysicalEntity,
             bool verbose=true, bool insertBoundarySegments=false);
+
+    /** \brief Create a grid from connectivity arrays.
+     *
+     *  \param[in] params
+     *    Parameters of the grid to be constructed.
+     *  \param[in] vertices
+     *    2D array whose (i, j)th element contains the ith
+     *    component of the jth vertex.
+     *  \param[in] elementCorners
+     *    2D array whose (i, j)th element contains the index of the ith vertex
+     *    of the jth element.
+     *
+     *  \note Currently only grids with triangular topology are supported.
+     */
+    static shared_ptr<Grid> createGridFromConnectivityArrays(
+                const GridParameters& params,
+                const arma::Mat<double>& vertices,
+                const arma::Mat<int>& elementCorners);
 };
 
 } // namespace Bempp

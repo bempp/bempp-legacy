@@ -23,6 +23,8 @@
 #include "dune.hpp"
 #include "structured_grid_factory.hpp"
 
+#include "../common/to_string.hpp"
+
 #include <dune/grid/io/file/gmshreader.hh>
 #include <stdexcept>
 #include <string>
@@ -134,6 +136,51 @@ shared_ptr<Grid> GridFactory::importGmshGrid(
     else
         throw std::invalid_argument("GridFactory::importGmshGrid(): "
                                     "unsupported grid topology");
+}
+
+shared_ptr<Grid> GridFactory::createGridFromConnectivityArrays(
+            const GridParameters& params,
+            const arma::Mat<double>& vertices,
+            const arma::Mat<int>& elementCorners)
+{
+    const int dimGrid = 2, dimWorld = 3;
+    if (params.topology != GridParameters::TRIANGULAR)
+        throw std::invalid_argument("createGridFromRawData(): unsupported grid topology");
+    if (vertices.n_rows != dimWorld)
+    throw std::invalid_argument("createGridFromRawData(): the 'vertices' array "
+                                    "must have exactly 3 rows");
+    if (elementCorners.n_rows < 3)
+    throw std::invalid_argument("createGridFromRawData(): the 'elementCorners' array "
+                                    "must have at least 3 rows");
+
+    Dune::GridFactory<Default2dIn3dDuneGrid> factory;
+
+    for (size_t i = 0; i < vertices.n_cols; ++i) {
+    Dune::FieldVector<double, dimWorld> v;
+    v[0] = vertices(0, i);
+    v[1] = vertices(1, i);
+    v[2] = vertices(2, i);
+    factory.insertVertex(v);
+    }
+
+    const GeometryType type(GeometryType::simplex, dimGrid);
+    const size_t vertexCount = vertices.n_cols;
+    std::vector<unsigned int> corners(3);
+    for (size_t i = 0; i < elementCorners.n_cols; ++i) {
+    if (elementCorners(0, i) < 0 || elementCorners(0, i) >= vertexCount ||
+            elementCorners(1, i) < 0 || elementCorners(1, i) >= vertexCount ||
+            elementCorners(2, i) < 0 || elementCorners(2, i) >= vertexCount)
+            throw std::invalid_argument(
+        "createGridFromRawData(): invalid vertex index in element #" +
+        toString(i));
+    corners[0] = elementCorners(0, i);
+    corners[1] = elementCorners(1, i);
+    corners[2] = elementCorners(2, i);
+    factory.insertElement(type, corners);
+    }
+    return shared_ptr<Grid>(new Default2dIn3dGrid(factory.createGrid(),
+                                                  GridParameters::TRIANGULAR,
+                                                  true)); // true -> owns Dune grid
 }
 
 } // namespace Bempp
