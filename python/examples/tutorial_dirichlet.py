@@ -122,12 +122,9 @@ field = (-slPotOp.evaluateAtPoints(solFun, evaluationPoints,
 
 # Plot data
 
-from bempp import visualization as vis
-annulusActor = vis.scalarDataOnRegularGridActor(
+from bempp import visualization2 as vis
+annulus = vis.tvtkStructuredGridData(
     evaluationPoints, field, (rCount, thetaCount))
-sphereActor = vis.gridFunctionActor(dirichletData)
-# make colour scales on the sphere and the annulus equal
-sphereActor.mapper.scalar_range = [-1.3, 1.3]
-annulusActor.mapper.scalar_range = [-1.3, 1.3]
-legendActor = vis.legendActor(sphereActor)
-vis.plotTvtkActors([annulusActor, sphereActor, legendActor])
+sphere = vis.tvtkGridFunction(dirichletData)
+vis.plotScalarData(tvtkGridFunctions=sphere,
+                   tvtkStructuredGridData=annulus)
