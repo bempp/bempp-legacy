@@ -26,4 +26,7 @@
 #pragma warning(disable:279 186 858 262 1011 654 597)
 #endif
 
+// Yes, use the new syntax from Dune 2.2
+#define DUNE_COMMON_FIELDVECTOR_SIZE_IS_METHOD 1
+
 #endif

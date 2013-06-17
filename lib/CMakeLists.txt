@@ -79,7 +79,6 @@ target_link_libraries (bempp
 	${LIB_DUNE_COMMON}
 	${LIB_DUNE_GRID}
 	)
-add_definitions(-DDUNE_COMMON_FIELDVECTOR_SIZE_IS_METHOD)
 
 #Trilinos
 include_directories(${Trilinos_INCLUDE_DIRS} ${Trilinos_TPL_INCLUDE_DIRS})
