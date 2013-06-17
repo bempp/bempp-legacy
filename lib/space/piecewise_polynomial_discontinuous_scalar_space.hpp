@@ -49,6 +49,8 @@ public:
     typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
     typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
 
+    /** \brief Construct a space spanned by a basis of polynomials of order
+     *  \p polynomialOrder on elements of the grid \p grid. */
     PiecewisePolynomialDiscontinuousScalarSpace(
             const shared_ptr<const Grid>& grid,
             int polynomialOrder);

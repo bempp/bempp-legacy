@@ -34,7 +34,8 @@
 namespace Bempp
 {
 
-/** \brief Wrapper of a Dune entity of type \p DuneEntity and codimension \p codim.
+/** \ingroup grid_internal
+ \brief Wrapper of a Dune entity of type \p DuneEntity and codimension \p codim.
 
  \note The codimension must be given explicitly (even though it could be
  derived from the traits of \p DuneEntity) because this class needs to be

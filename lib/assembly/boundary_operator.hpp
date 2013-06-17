@@ -206,29 +206,33 @@ private:
     /** \endcond */
 };
 
-/** \brief Return a BoundaryOperator identical to the operand. */
+/** \relates BoundaryOperator
+ *  \brief Return a BoundaryOperator identical to the operand. */
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType> operator+(
         const BoundaryOperator<BasisFunctionType, ResultType>& op);
 
-/** \brief Return a BoundaryOperator equal to the operand multiplied by -1.
+/** \relates BoundaryOperator
+ *  \brief Return a BoundaryOperator equal to the operand multiplied by -1.
  *
- * \todo Throw an exception if either of the operands is uninitialized. */
+ * An exception is thrown if either of the operands is uninitialized. */
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType> operator-(
         const BoundaryOperator<BasisFunctionType, ResultType>& op);
 
-/** \brief Return a BoundaryOperator representing the sum of the operands.
+/** \relates BoundaryOperator
+ *  \brief Return a BoundaryOperator representing the sum of the operands.
  *
- * \todo Throw an exception if either of the operands is uninitialized. */
+ * An exception is thrown if either of the operands is uninitialized. */
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType> operator+(
         const BoundaryOperator<BasisFunctionType, ResultType>& op1,
         const BoundaryOperator<BasisFunctionType, ResultType>& op2);
 
-/** \brief Return a BoundaryOperator representing the difference of the operands.
+/** \relates BoundaryOperator
+ *  \brief Return a BoundaryOperator representing the difference of the operands.
  *
- * \todo Throw an exception if either of the operands is uninitialized. */
+ *  if either of the operands is uninitialized. */
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType> operator-(
         const BoundaryOperator<BasisFunctionType, ResultType>& op1,
@@ -236,10 +240,11 @@ BoundaryOperator<BasisFunctionType, ResultType> operator-(
 
 // This type machinery is needed to disambiguate between this operator and
 // the one taking a BoundaryOperator and a GridFunction
-/** \brief Return a BoundaryOperator representing the operator \p op multiplied
- * by \p scalar.
+/** \relates BoundaryOperator
+ *  \brief Return a BoundaryOperator representing the operator \p op multiplied
+ *  by \p scalar.
  *
- * \todo Throw an exception if \p op is uninitialized. */
+ * An exception is thrown if \p op is uninitialized. */
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
 typename boost::enable_if<
     typename boost::mpl::has_key<
@@ -250,17 +255,19 @@ operator*(
         const BoundaryOperator<BasisFunctionType, ResultType>& op,
         const ScalarType& scalar);
 
-/** \brief Return a BoundaryOperator representing the operator \p op multiplied
- * by \p scalar.
+/** \relates BoundaryOperator
+ *  \brief Return a BoundaryOperator representing the operator \p op multiplied
+ *  by \p scalar.
  *
- * \todo Throw an exception if \p op is uninitialized. */
+ * An exception is thrown if \p op is uninitialized. */
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
 BoundaryOperator<BasisFunctionType, ResultType> operator*(
         const ScalarType& scalar,
         const BoundaryOperator<BasisFunctionType, ResultType>& op);
 
-/** \brief Return a BoundaryOperator representing the operator \p op divided
- * by \p scalar.
+/** \relates BoundaryOperator
+ *  \brief Return a BoundaryOperator representing the operator \p op divided
+ *  by \p scalar.
  *
  * \note \p scalar must not be zero. */
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
@@ -268,7 +275,8 @@ BoundaryOperator<BasisFunctionType, ResultType> operator/(
         const BoundaryOperator<BasisFunctionType, ResultType>& op,
         const ScalarType& scalar);
 
-/** \brief Act on a GridFunction.
+/** \relates BoundaryOperator
+ *  \brief Act with a BoundaryOperator on a GridFunction.
  *
  *  This function returns the GridFunction obtained by acting with the operator
  *  \p op on the grid function \p fun. It is equivalent to calling
@@ -283,7 +291,8 @@ GridFunction<BasisFunctionType, ResultType> operator*(
         const BoundaryOperator<BasisFunctionType, ResultType>& op,
         const GridFunction<BasisFunctionType, ResultType>& fun);
 
-/** \brief Return a BoundaryOperator representing the product of the operands
+/** \relates BoundaryOperator
+ *  \brief Return a BoundaryOperator representing the product of the operands
  *  (<tt>op1 * op2</tt>).
  *
  *  An exception is thrown if any of the operands is uninitialized. */
@@ -292,7 +301,8 @@ BoundaryOperator<BasisFunctionType, ResultType> operator*(
         const BoundaryOperator<BasisFunctionType, ResultType>& op1,
         const BoundaryOperator<BasisFunctionType, ResultType>& op2);
 
-/** \brief Return the adjoint of a BoundaryOperator.
+/** \relates BoundaryOperator
+ *  \brief Return the adjoint of a BoundaryOperator.
  *
  *  An exception is thrown if the operand is uninitialized. This
  *  method tries to figure out the range space using a simple
@@ -306,7 +316,8 @@ template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType> adjoint(
         const BoundaryOperator<BasisFunctionType, ResultType>& op);
 
-/** \brief Return the adjoint of a BoundaryOperator.
+/** \relates BoundaryOperator
+ *  \brief Return the adjoint of a BoundaryOperator.
  *
  *  An exception is thrown if the operand is uninitialized. The
  *  range space needs to be given explicitly.
@@ -317,11 +328,11 @@ BoundaryOperator<BasisFunctionType, ResultType> adjoint(
  */
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType> adjoint(
-	const BoundaryOperator<BasisFunctionType, ResultType>& op,
+    const BoundaryOperator<BasisFunctionType, ResultType>& op,
         const shared_ptr<const Space<BasisFunctionType> >& range);
 
-
-/** \brief Check whether a BoundaryOperator object is initialized.
+/** \relates BoundaryOperator
+ *  \brief Check whether a BoundaryOperator object is initialized.
  *
  *  This function checks whether the BoundaryOperator \p op is initialized. If
  *  so, it returns a reference to \p op, otherwise it throws a
@@ -332,7 +343,7 @@ BoundaryOperator<BasisFunctionType, ResultType>& throwIfUninitialized(
         BoundaryOperator<BasisFunctionType, ResultType>& op,
         std::string message = "");
 
-/** \brief Check whether a BoundaryOperator object is initialized.
+/** \relates BoundaryOperator
  *
  *  \overload */
 template <typename BasisFunctionType, typename ResultType>

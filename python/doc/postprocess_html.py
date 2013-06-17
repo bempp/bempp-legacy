@@ -43,11 +43,13 @@ entities_templated_on_RT = [
     ]
 entities_templated_on_BFT_and_RT = [
     "AbstractBoundaryOperator",
+    "AssembledPotentialOperator",
     "BlockedBoundaryOperator",
     "BlockedOperatorStructure",
     "BlockedSolution",
     "BoundaryOperator",
     "Context",
+    "DefaultDirectSolver",
     "DefaultIterativeSolver",
     "GridFunction",
     "PotentialOperator",

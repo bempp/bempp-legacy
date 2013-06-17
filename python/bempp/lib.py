@@ -897,7 +897,7 @@ def _constructModifiedHelmholtzOperator(
         raise TypeError("BasisFunctionType of context and all spaces must be the same")
     resultType = context.resultType()
 
-    waveNumberIsComplex = complex(waveNumber).imag != 0
+    waveNumberIsComplex = isinstance(waveNumber,complex)
     if waveNumberIsComplex and resultType in ("float32", "float64"):
         raise TypeError("Real result type given for a complex wave number")
 
@@ -1800,6 +1800,36 @@ def createDefaultIterativeSolver(
     result = _constructObjectTemplatedOnBasisAndResult(
         core, "DefaultIterativeSolver", basisFunctionType, resultType,
         boundaryOperator, convergenceTestMode)
+    result._boundaryOperator = boundaryOperator
+    return result
+
+def createDefaultDirectSolver(
+        boundaryOperator,
+        convergenceTestMode="test_convergence_in_dual_to_range"):
+    """
+    Create and return a DefaultDirectSolver object.
+
+    The DefaultDirectSolver class acts as an interface to the
+    direct solver from LAPACK. It lets you solve the equation A f =
+    g for the function f, with A being a boundary operator and g a grid
+    function.
+
+    *Parameters:*
+       - boundaryOperator (BoundaryOperator or BlockedBoundaryOperator)
+            The boundary operator A standing on the left-hand-side of the
+            equation to be solved.
+
+    *Returns* a newly constructed
+    DefaultDirectSolver_BasisFunctionType_ResultType object, with
+    BasisFunctionType and ResultType determined automatically from the
+    boundaryOperator argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
+    basisFunctionType = boundaryOperator.basisFunctionType()
+    resultType = boundaryOperator.resultType()
+    result = _constructObjectTemplatedOnBasisAndResult(
+        core, "DefaultDirectSolver", basisFunctionType, resultType,
+        boundaryOperator)
     result._boundaryOperator = boundaryOperator
     return result
 

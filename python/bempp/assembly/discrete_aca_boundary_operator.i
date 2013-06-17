@@ -9,6 +9,7 @@
 namespace Bempp 
 {
     %ignore DiscreteAcaBoundaryOperator;
+    %ignore dumpblcluster;
 }
 
 #define shared_ptr boost::shared_ptr

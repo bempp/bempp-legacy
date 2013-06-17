@@ -45,13 +45,7 @@ struct ConvergenceTestMode {
 };
 
 /** \ingroup linalg
-  * \brief An abstract interface for various types of solvers
-  *
-  * This class is an interface to the solution of linear systems in BEM++.
-  * Concrete subclasses implement specific linear solvers.
-  *
-  */
-
+  * \brief The abstract interface of solvers of boundary integral equations. */
 template <typename BasisFunctionType, typename ResultType>
 class Solver
 {

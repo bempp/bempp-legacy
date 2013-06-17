@@ -168,17 +168,16 @@ np.place(vals, inside, valsInt.ravel())
 
 # Display the field plot
 
-from bempp import visualization as vis
-uActor = vis.scalarDataOnRegularGridActor(
-        points, vals, (nPointsX, nPointsY), transformation="abs")
-legendActor = vis.legendActor(uActor)
-gridActor = vis.gridActor(grid)
-vis.plotTvtkActors([uActor, gridActor, legendActor])
+from bempp import visualization2 as vis
+tvtkU = vis.tvtkStructuredGridData(
+        points, vals, (nPointsX, nPointsY))
+tvtkGrid = vis.tvtkGrid(grid)
+vis.plotScalarData(tvtkGrid, None, tvtkU)
 
 # Export the results into a VTK file
 
 from tvtk.api import write_data
-write_data(uActor.mapper.input_as_data_set, "u.vts")
+write_data(tvtkU, "u.vts")
 
 # PART 6: Evaluate the far-field pattern of the scattered field ################
 

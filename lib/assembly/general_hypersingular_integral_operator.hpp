@@ -31,7 +31,20 @@ namespace Bempp
  *
  *  This class provides an implementation of the interface defined by
  *  HypersingularIntegralOperator that is sufficient for most purposes. The
- *  constructor takes ... (TODO: finish docs).
+ *  constructor takes eight functor objects representing the four elements of
+ *  the operator's weak form (collection of kernels, collections of test and
+ *  trial basis function transformations, and the weak form integrand) for its
+ *  two representations: one valid for all pairs of test and trial functions,
+ *  the other necessarily valid only for test and trial functions with
+ *  nonoverlapping support, but with a more restricted form (see the
+ *  documentation of HypersingularIntegralOperator for more details). These
+ *  functors are used to construct instances of appropriate instantiations of
+ *  DefaultCollectionOfKernels, DefaultCollectionOfBasisTransformations and
+ *  DefaultTestKernelTrialIntegral. These objects are stored as private member
+ *  variables and are returned by the implementations of the virtual methods
+ *  kernels(), testTransformations(), trialTransformations(), integral(),
+ *  offDiagonalKernels(), offDiagonalTestTransformations(),
+ *  offDiagonalTrialTransformations() and offDiagonalIntegral().
  *
  *  \tparam BasisFunctionType_
  *    Type of the values of the (components of the) basis functions into

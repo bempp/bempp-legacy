@@ -66,6 +66,7 @@ public:
     /** \copydoc AbstractBoundaryOperator::QuadratureStrategy */
     typedef typename Base::QuadratureStrategy QuadratureStrategy;
 
+    /** \brief Construct a (pseudo)inverse of \p boundaryOp. */
     explicit AbstractBoundaryOperatorPseudoinverse(
             const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp);
 
@@ -95,6 +96,14 @@ private:
     shared_ptr<const AbstractBoundaryOperatorId> m_id;
 };
 
+/** \relates AbstractBoundaryOperatorPseudoinverse
+ *  \brief Construct a (pseudo)inverse of a boundary operator.
+ *
+ *  This is a convenience function that creates an
+ *  AbstractBoundaryOperatorPseudoinverse object representing the
+ *  (pseudo)inverse of \p boundaryOp, immediately wraps the newly created
+ *  abstract operator in a BoundaryOperator and returns the latter.
+ */
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 pseudoinverse(const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp);
