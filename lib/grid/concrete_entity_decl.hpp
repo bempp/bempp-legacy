@@ -58,6 +58,7 @@ private:
 
     void setDuneEntity(const DuneEntity* dune_entity) {
         m_dune_entity = dune_entity;
+        m_geometry.uninitialize();
     }
 
 public:
