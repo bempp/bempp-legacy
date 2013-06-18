@@ -103,6 +103,6 @@ class TestVtkWriter:
         data = np.zeros((4, self.view.entityCount(2)))
         self.vtkWriter.addVertexData(data, 'title')
         self.vtkWriter.pwrite("output", "subdir", "nested_subdir", type)
-        assert os.path.exists("subdir/s0001:output.pvtu")
-        assert os.path.exists("subdir/nested_subdir/s0001:p0000:output.vtu")
+        assert os.path.exists("subdir/s0001-output.pvtu")
+        assert os.path.exists("subdir/nested_subdir/s0001-p0000-output.vtu")
         shutil.rmtree("subdir")
