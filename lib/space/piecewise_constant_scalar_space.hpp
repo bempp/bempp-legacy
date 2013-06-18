@@ -46,7 +46,8 @@ class PiecewiseConstantScalarSpace : public ScalarSpace<BasisFunctionType>
 public:
     typedef typename ScalarSpace<BasisFunctionType>::CoordinateType CoordinateType;
 
-    explicit PiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid);
+    explicit PiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid,
+                                          const GridSegment& segment);
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
         const shared_ptr<const Space<BasisFunctionType> >& self) const;

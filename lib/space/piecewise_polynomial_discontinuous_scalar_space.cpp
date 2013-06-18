@@ -170,9 +170,9 @@ void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsI
 
     int elementCount = m_view->entityCount(0);
 
-    const int localDofCountPerTriangle = 
+    const int localDofCountPerTriangle =
         (m_polynomialOrder + 1) * (m_polynomialOrder + 2) / 2;
-    const int localDofCountPerQuad = 
+    const int localDofCountPerQuad =
         (m_polynomialOrder + 1) * (m_polynomialOrder + 1);
 
     BoundingBox<CoordinateType> model;
@@ -205,7 +205,7 @@ void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsI
         int vertexCount = vertices.n_cols;
         int localDofCount = vertexCount == 3 ?
             localDofCountPerTriangle : localDofCountPerQuad;
-        
+
         // List of global DOF indices corresponding to the local DOFs of the
         // current element
         std::vector<GlobalDofIndex>& globalDofs = m_local2globalDofs[elementIndex];
@@ -221,7 +221,7 @@ void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsI
 
         // Bounding boxes
         BoundingBox<CoordinateType> bbox = model;
-        extendBoundingBox(bbox, vertices);        
+        extendBoundingBox(bbox, vertices);
         m_globalDofBoundingBoxes.insert(m_globalDofBoundingBoxes.end(),
                                         localDofCount, bbox);
         if (vertexCount == 3) {
@@ -243,14 +243,14 @@ void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsI
                 }
                 dofPosition = 0.5 * (vertices.col(0) + vertices.col(2));
                 for (int ldofy = 1; ldofy < m_polynomialOrder; ++ldofy) {
-                    int ldof = ldofy * (m_polynomialOrder + 1) - 
+                    int ldof = ldofy * (m_polynomialOrder + 1) -
                         ldofy * (ldofy - 1) / 2;
                     setBoundingBoxReference<CoordinateType>(
                         acc(m_globalDofBoundingBoxes, gdofStart + ldof), dofPosition);
                 }
                 dofPosition = 0.5 * (vertices.col(1) + vertices.col(2));
                 for (int ldofy = 1; ldofy < m_polynomialOrder; ++ldofy) {
-                    int ldof = ldofy * (m_polynomialOrder + 1) - 
+                    int ldof = ldofy * (m_polynomialOrder + 1) -
                         ldofy * (ldofy - 1) / 2 + (m_polynomialOrder - ldofy);
                     setBoundingBoxReference<CoordinateType>(
                         acc(m_globalDofBoundingBoxes, gdofStart + ldof), dofPosition);
@@ -265,7 +265,7 @@ void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsI
                         int ldof = ldofy * (m_polynomialOrder + 1) -
                             ldofy * (ldofy - 1) / 2 + ldofx;
                         setBoundingBoxReference<CoordinateType>(
-                            acc(m_globalDofBoundingBoxes, gdofStart + ldof), 
+                            acc(m_globalDofBoundingBoxes, gdofStart + ldof),
                             dofPosition);
                     }
             }
@@ -282,10 +282,10 @@ void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsI
         for (size_t dof = 0; dof < m_local2globalDofs[e].size(); ++dof)
             m_flatLocal2localDofs.push_back(LocalDof(e, dof));
 
-#ifndef NDEBUG    
+#ifndef NDEBUG
     for (size_t i = 0; i < m_globalDofBoundingBoxes.size(); ++i) {
        const BoundingBox<CoordinateType>& bbox = acc(m_globalDofBoundingBoxes, i);
-       
+
        assert(bbox.reference.x >= bbox.lbound.x);
        assert(bbox.reference.y >= bbox.lbound.y);
        assert(bbox.reference.z >= bbox.lbound.z);
@@ -294,14 +294,6 @@ void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsI
        assert(bbox.reference.z <= bbox.ubound.z);
    }
 #endif // NDEBUG
-
-    // Initialize the container mapping the flat local dof indices to
-    // local dof indices
-    m_flatLocal2localDofs.clear();
-    m_flatLocal2localDofs.reserve(m_flatLocalDofCount);
-    for (size_t e = 0; e < m_local2globalDofs.size(); ++e)
-        for (size_t dof = 0; dof < acc(m_local2globalDofs, e).size(); ++dof)
-            m_flatLocal2localDofs.push_back(LocalDof(e, dof));
 }
 
 template <typename BasisFunctionType>
@@ -381,7 +373,7 @@ void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::getGlobalDo
         std::vector<Point3D<CoordinateType> >& normals) const
 {
     throw std::runtime_error("PiecewisePolynomialDiscontinuousScalarSpace::"
-                             "getGlobalDofNormals(): not implemented yet");    
+                             "getGlobalDofNormals(): not implemented yet");
 }
 
 template <typename BasisFunctionType>
@@ -406,7 +398,7 @@ void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::dumpCluster
         DofType dofType) const
 {
     throw std::runtime_error("PiecewisePolynomialDiscontinuousScalarSpace::"
-                             "dumpClusterIdsEx(): not implemented yet");    
+                             "dumpClusterIdsEx(): not implemented yet");
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(PiecewisePolynomialDiscontinuousScalarSpace);

@@ -48,7 +48,8 @@ public:
     typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
     typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
 
-    explicit PiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid);
+    explicit PiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid,
+                                                  const Segment& segment);
     virtual ~PiecewiseLinearContinuousScalarSpace();
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
@@ -98,7 +99,6 @@ private:
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
     std::vector<LocalDof> m_flatLocal2localDofs;
-    size_t m_flatLocalDofCount;
     mutable shared_ptr<Space<BasisFunctionType> > m_discontinuousSpace;
     mutable tbb::mutex m_discontinuousSpaceMutex;
     /** \endcond */

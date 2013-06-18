@@ -35,10 +35,11 @@ namespace Bempp
 
 template <typename BasisFunctionType>
 PiecewiseConstantScalarSpace<BasisFunctionType>::
-PiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid) :
+PiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid,
+                             const GridSegment& segment) :
      ScalarSpace<BasisFunctionType>(grid), m_view(grid->leafView())
 {
-    assignDofsImpl();
+    assignDofsImpl(segment);
 }
 
 template <typename BasisFunctionType>
@@ -128,13 +129,16 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::assignDofsImpl()
     while (!it->finished())
     {
         EntityIndex index = mapper.entityIndex(it->entity());
-        globalDofs[0] = globalDofCount_++;
-        localDofs[0] = LocalDof(index, 0 /* local DOF #0 */);
+        if (segment.contains<0>(index)) {
+            m_global2localDofs.push_back(localDofs);
+            localDofs[0] = LocalDof(index, 0 /* local DOF #0 */);
+            globalDofs[0] = globalDofCount_++;
+        } else
+            globalDofs[0] = -1;
         m_local2globalDofs[index] = globalDofs;
-        m_global2localDofs.push_back(localDofs);
         it->next();
     }
-    assert(globalDofCount_ == elementCount);
+    // TODO: bboxes
 }
 
 template <typename BasisFunctionType>
