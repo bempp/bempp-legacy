@@ -82,18 +82,23 @@ public:
         piecewiseConstantSpace.reset(new PiecewiseConstantSpace(grid));
         piecewiseLinearSpace.reset(new PiecewiseLinearSpace(grid));
 
-        BoundaryOperator<BFT, RT> bop =
-                laplace3dSingleLayerBoundaryOperator<BFT, RT>(
+        bop = laplace3dSingleLayerBoundaryOperator<BFT, RT>(
                     make_shared_from_ref(context),
                     piecewiseConstantSpace,
                     piecewiseLinearSpace,
                     piecewiseLinearSpace,
                     "SLP");
-        op = boost::dynamic_pointer_cast<const Operator>(bop.abstractOperator());
+        const Operator& op = static_cast<const Operator&>(*bop.abstractOperator());
+
+        // This would be more elegant than the above, but it doesn't
+        // work on Mac because of a problem with RTTI across
+        // shared-library boundaries.
+
+        // op = boost::dynamic_pointer_cast<const Operator>(bop.abstractOperator());
 
         // Construct local assembler
 
-        assembler = op->makeAssembler(*quadStrategy, assemblyOptions);
+        assembler = op.makeAssembler(*quadStrategy, assemblyOptions);
     }
 
 private:
@@ -118,7 +123,7 @@ private:
 public:
     shared_ptr<PiecewiseConstantSpace> piecewiseConstantSpace;
     shared_ptr<PiecewiseLinearSpace> piecewiseLinearSpace;
-    shared_ptr<const Operator> op;
+    BoundaryOperator<BFT, RT> bop;
 
     shared_ptr<QuadratureStrategy> quadStrategy;
     std::auto_ptr<typename Operator::LocalAssembler> assembler;

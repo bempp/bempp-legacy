@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(elements_are_in_the_z_plane)
     BOOST_CHECK_SMALL(max_abs_z, EPSILON);
 }
 
-BOOST_AUTO_TEST_CASE(elements_are_cover_the_unit_square)
+BOOST_AUTO_TEST_CASE(elements_cover_the_unit_square)
 {
     std::auto_ptr<Bempp::GridView> bemppGridView = bemppGrid->levelView(0);
     std::auto_ptr<Bempp::EntityIterator<2> > it = bemppGridView->entityIterator<2>();

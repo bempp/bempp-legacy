@@ -104,6 +104,11 @@ public:
         return m_dune_geometry.get();
     }
 
+    /** \brief Uninitialize the Dune geometry object. */
+    void uninitialize() {
+        m_dune_geometry.reset();
+    }
+
     virtual int dim() const {
         return DuneGeometry::mydimension;
     }

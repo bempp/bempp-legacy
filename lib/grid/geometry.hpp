@@ -25,8 +25,6 @@
 
 #include "geometry_type.hpp"
 
-#include <dune/common/fvector.hh>
-#include <dune/common/fmatrix.hh>
 #include "../common/armadillo_fwd.hpp"
 #include "../fiber/_3d_array.hpp"
 
