@@ -46,7 +46,8 @@ namespace Bempp
 {
 
 /** \ingroup discrete_boundary_operators
- *  \brief Discrete boundary operator stored as an inverse of a sparse matrix.
+ *  \brief Discrete boundary operator representing the inverse of another
+ *  operator and stored as a sparse LU decomposition.
  */
 template <typename ValueType>
 class DiscreteInverseSparseBoundaryOperator :
@@ -98,6 +99,15 @@ private:
     /** \endcond */
 };
 
+/** \relates DiscreteInverseSparseBoundaryOperator
+ *  \brief Construct a DiscreteInverseSparseBoundaryOperator representing the
+ *  inverse of a given operator.
+ *
+ *  This is a convenience function that returns a shared pointer to a new
+ *  DiscreteInverseSparseBoundaryOperator object representing the inverse of \p
+ *  discreteOp. The latter must be a DiscreteSparseBoundaryOperator, otherwise
+ *  a <tt>std::bad_cast</tt> exception is thrown.
+ */
 template <typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType> >
 discreteSparseInverse(const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& discreteOp);

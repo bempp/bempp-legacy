@@ -35,7 +35,7 @@
 namespace Bempp
 {
 
-// This structure is for intended for internal BEM++ use only.
+// This structure is intended for internal BEM++ use only.
 template <typename ValueType>
 struct SparseToHMatrixConverter
 {

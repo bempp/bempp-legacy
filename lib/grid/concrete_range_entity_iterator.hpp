@@ -29,7 +29,8 @@
 namespace Bempp
 {
 
-/** \brief Iterator over entities referenced by a range of Dune iterators of
+/** \ingroup grid_internal
+\brief Iterator over entities referenced by a range of Dune iterators of
 type \p DuneEntityIt.
 
 \p DuneEntityPointer is the base class of \p DuneEntityIt (it would be easily

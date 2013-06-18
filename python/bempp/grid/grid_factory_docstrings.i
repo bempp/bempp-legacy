@@ -65,6 +65,27 @@ See Dune::GmshReader documentation for information about the supported
 Gmsh features."
 %enddef
 
+%define GridFactory_createGridFromConnectivityArrays_autodoc_docstring
+"createGridFromConnectivityArrays(topology, vertices, elementCorners) -> Grid"
+%enddef
+
+%define GridFactory_createGridFromConnectivityArrays_docstring
+"Create a grid from connectivity arrays.
+
+*Parameters:*
+   - topology (string)
+        Topology of the grid to be constructed (one of 'linear',
+        'triangular', 'quadrilateral', 'hybrid').
+   - vertices (2D ndarray)
+        2D array whose (i, j)th element contains the ith component of the
+        jth vertex.
+   - elementCorners (2D ndarray)
+        2D array whose (i, j)th element contains the index of the ith vertex
+        of the jth element.
+
+*Note:* Currently only grids with triangular topology are supported."
+%enddef
+
 // Declarations ----------------------------------------------------------------
 
 namespace Bempp
@@ -73,5 +94,6 @@ namespace Bempp
 DECLARE_CLASS_DOCSTRING (GridFactory);
 DECLARE_METHOD_DOCSTRING(GridFactory, createStructuredGrid, 0);
 DECLARE_METHOD_DOCSTRING(GridFactory, importGmshGrid, 0);
+DECLARE_METHOD_DOCSTRING(GridFactory, createGridFromConnectivityArrays, 0);
 
 } // namespace Bempp

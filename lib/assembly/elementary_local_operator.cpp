@@ -306,12 +306,20 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormInDenseM
 
     // Distribute local matrices into the global matrix
     for (size_t e = 0; e < elementCount; ++e)
-        for (size_t trialIndex = 0; trialIndex < trialGdofs[e].size(); ++trialIndex)
-            for (size_t testIndex = 0; testIndex < testGdofs[e].size(); ++testIndex)
-                result(testGdofs[e][testIndex], trialGdofs[e][trialIndex]) +=
+        for (size_t trialIndex = 0; trialIndex < trialGdofs[e].size(); ++trialIndex) {
+            int trialGdof = trialGdofs[e][trialIndex];
+            if (trialGdof < 0)
+                continue;
+            for (size_t testIndex = 0; testIndex < testGdofs[e].size(); ++testIndex) {
+                int testGdof = testGdofs[e][testIndex];
+                if (testGdof < 0)
+                    continue;
+                result(testGdof, trialGdof) +=
                         conj(testLdofWeights[e][testIndex]) *
                         trialLdofWeights[e][trialIndex] *
                         localResult[e](testIndex, trialIndex);
+            }
+        }
 
     return std::auto_ptr<DiscreteBoundaryOperator<ResultType> >(
                 new DiscreteDenseBoundaryOperator<ResultType>(result));
@@ -378,9 +386,11 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparse
     // global test DOF: sum of the local trial DOF counts for each element that
     // contributes to the global test DOF in question
     for (size_t e = 0; e < elementCount; ++e)
-        for (size_t testLdof = 0; testLdof < testGdofs[e].size(); ++testLdof)
-            nonzeroEntryCountEstimates(testGdofs[e][testLdof]) +=
-                    trialGdofs[e].size();
+        for (size_t testLdof = 0; testLdof < testGdofs[e].size(); ++testLdof) {
+            int testGdof = testGdofs[e][testLdof];
+            if (testGdof >= 0)
+                nonzeroEntryCountEstimates(testGdof) += trialGdofs[e].size();
+        }
 
     Epetra_SerialComm comm; // To be replaced once we begin to use MPI
     Epetra_LocalMap rowMap(testGlobalDofCount, 0 /* index_base */, comm);
@@ -422,7 +432,7 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparse
 #ifdef WITH_AHMED
     if (options.assemblyMode() == AssemblyOptions::ACA) {
         const AcaOptions& acaOptions = options.acaOptions();
-        bool indexWithGlobalDofs = 
+        bool indexWithGlobalDofs =
             acaOptions.mode != AcaOptions::HYBRID_ASSEMBLY;
 
         typedef ClusterConstructionHelper<BasisFunctionType> CCH;

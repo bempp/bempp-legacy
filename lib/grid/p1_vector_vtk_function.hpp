@@ -28,8 +28,10 @@
 namespace Bempp
 {
 
-//! Take a vector and interpret it as point data for the VTKWriter
 /**
+ * \ingroup grid_internal
+ * \brief Take a vector and interpret it as point data for the VTKWriter
+ *
  * This class turns a generic vector containing point data into a
  * VTKFunction.  The vector must allow read access to the data via
  * operator[]() and store the data in the order given by

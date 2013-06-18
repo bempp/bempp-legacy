@@ -31,6 +31,12 @@
 namespace Bempp
 {
 
+/** \relates BoundingBox
+ *  \brief Extend the bounding box \p bbox to include all points contained in
+ *  the columns of \p points.
+ *
+ *  \note The array \p points needs to have three rows.
+ */
 template <typename CoordinateType>
 void extendBoundingBox(BoundingBox<CoordinateType>& bbox,
                        const arma::Mat<CoordinateType>& points)
@@ -52,6 +58,11 @@ void extendBoundingBox(BoundingBox<CoordinateType>& bbox,
     }
 }
 
+/** \relates BoundingBox
+ *  \brief Set the reference point of the bounding box \p bbox to \p point.
+ *
+ *  \note \p point must be a three-component column vector.
+ */
 template <typename CoordinateType>
 void setBoundingBoxReference(BoundingBox<CoordinateType>& bbox,
                              const arma::Col<CoordinateType>& point)

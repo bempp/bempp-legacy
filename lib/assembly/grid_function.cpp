@@ -115,10 +115,14 @@ shared_ptr<arma::Col<ResultType> > reallyCalculateProjections(
     // Loop over test indices
     for (size_t testIndex = 0; testIndex < elementCount; ++testIndex)
         // Add the integrals to appropriate entries in the global weak form
-        for (size_t testDof = 0; testDof < testGlobalDofs[testIndex].size(); ++testDof)
-            (*result)(testGlobalDofs[testIndex][testDof]) +=
+        for (size_t testDof = 0; testDof < testGlobalDofs[testIndex].size(); ++testDof) {
+            int testGlobalDof = testGlobalDofs[testIndex][testDof];
+            if (testGlobalDof >= 0) // if it's negative, it means that this
+                                    // local dof is constrained (not used)
+                (*result)(testGlobalDof) +=
                     conj(testLocalDofWeights[testIndex][testDof]) *
                     localResult[testIndex](testDof);
+        }
 
     // Return the vector of projections <phi_i, f>
     return result;
@@ -526,8 +530,13 @@ void GridFunction<BasisFunctionType, ResultType>::getLocalCoefficients(
     const int gdofCount = gdofIndices.size();
     coeffs.resize(gdofCount);
     const arma::Col<ResultType>& globalCoefficients = coefficients();
-    for (int i = 0; i < gdofCount; ++i)
-        coeffs[i] = globalCoefficients(gdofIndices[i]) * ldofWeights[i];
+    for (int i = 0; i < gdofCount; ++i) {
+        int gdof = gdofIndices[i];
+        if (gdof >= 0)
+            coeffs[i] = globalCoefficients(gdof) * ldofWeights[i];
+        else
+            coeffs[i] = 0.;
+    }
 }
 
 template <typename BasisFunctionType, typename ResultType>

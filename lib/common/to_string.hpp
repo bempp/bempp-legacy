@@ -27,6 +27,7 @@
 namespace Bempp
 {
 
+/** \brief Convert \p arg to <tt>std::string</tt>. */
 template <typename Source>
 inline std::string toString(const Source& arg)
 {

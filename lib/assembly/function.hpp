@@ -21,6 +21,8 @@
 #ifndef bempp_function_hpp
 #define bempp_function_hpp
 
+/** \brief . */
+
 #include "../fiber/function.hpp"
 
 namespace Bempp

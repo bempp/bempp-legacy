@@ -31,8 +31,9 @@
 namespace Bempp
 {
 
-/** \brief Iterator over the subentities of codimension \p codimSub
-    of a given Dune entity of type \p DuneEntity. */
+/** \ingroup grid_internal
+ *  \brief Iterator over the subentities of codimension \p codimSub
+ *  of a given Dune entity of type \p DuneEntity. */
 template<typename DuneEntity, int codimSub>
 class ConcreteSubentityIterator: public EntityIterator<codimSub>
 {

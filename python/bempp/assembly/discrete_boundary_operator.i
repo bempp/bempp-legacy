@@ -190,8 +190,8 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
                 if len(other.shape)==0:
                     return self.__scalarMultImpl(other,self)
                 else:
-                	raise ValueError("Discrete boundary operators do not support "
-                                 	"multiplication with this type.")
+                    raise ValueError("Discrete boundary operators do not support "
+                                    "multiplication with this type.")
             else:
                 raise ValueError("Discrete boundary operators do not support "
                                  "multiplication with this type.")
@@ -251,10 +251,10 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
             Return a representation as Trilinos Epetra Operator.
 
             *Parameters:*
-               - label (String)
-                    Specify a label for the operator
-               - pid (Int)
-                    Process Id, on which the operator lives (not yet supported)
+               - label (str)
+                    The operator's label.
+               - pid (int)
+                    Id of the process in which the operator lives (not yet supported).
             """
             import trilinos
 
@@ -265,16 +265,16 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
             Return a representation as Trilinos Epetra Inverse Operator.
 
             *Parameters:*
-               - label (String)
-                    Specify a label for the operator
-               - pid (Int)
-                    Process Id, on which the operator lives (not yet supported)
+               - label (str)
+                    The operator's label.
+               - pid (int)
+                    Id of the process in which the operator lives (not yet supported).
             """
             import trilinos
 
             return trilinos.PyTrilinosInverseOperator(self,label=label,pid=pid)
 
-           
+
         @property
         def shape(self):
             return (self.rowCount(),self.columnCount())

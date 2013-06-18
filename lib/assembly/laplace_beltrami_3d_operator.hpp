@@ -37,7 +37,7 @@ template <typename ResultType> class LocalAssemblerForOperators;
 namespace Bempp
 {
 
-/** \relates LaplaceBeltrami3dOperator
+/** \ingroup local_operators
  *  \brief Construct a BoundaryOperator object representing a Laplace-Beltrami
  *  operator in 3D.
  *

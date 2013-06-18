@@ -29,14 +29,11 @@ namespace Bempp
 {
 
 /** \ingroup linalg
-  * \brief Default Interface to the solution of boundary integral equations using a dense LU decomposition.
+  * \brief Default direct dense solver for boundary integral equations.
   *
-  * This class provides an interface to the direct solution of boundary integral equations using standard LU.
-  * It is implemented via a call to the <a href="http://arma.sourceforge.net">Armadillo</a> dense solver, which
-  * is an interface to the corresponding Lapack routines.
-  *
+  * This class can be used to solve boundary integral equations using standard
+  * dense LU decomposition.
   */
-
 template <typename BasisFunctionType, typename ResultType>
 class DefaultDirectSolver : public Solver<BasisFunctionType, ResultType>
 {

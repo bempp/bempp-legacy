@@ -29,6 +29,7 @@ namespace Bempp
 }
 
 Bempp::shared_ptr<Bempp::Grid> createRegularTriangularGrid(
-    int nElementsX = 3, int nElementsY = 4);
+    int nElementsX = 3, int nElementsY = 4,
+        double maxX = 1, double maxY = 1);
 
 #endif

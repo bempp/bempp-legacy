@@ -66,7 +66,8 @@ setupDuneGeometry<Default2dIn3dDuneGrid::Codim<0>::Geometry>(
                 Dune::FoamGridGeometry<2, 3, const Dune::FoamGrid<3> >(type, corners));
 }
 
-/** \brief Wrapper of a Dune geometry of type \p DuneGeometry */
+/** \ingroup grid_internal
+ *  \brief Wrapper of a Dune geometry of type \p DuneGeometry */
 template <typename DuneGeometry>
 class ConcreteGeometry : public Geometry
 {
@@ -167,7 +168,7 @@ public:
         const int n = m_dune_geometry->corners();
         c.set_size(cdim, n);
 
-        /** \fixme In future this copying should be optimised away by casting
+        /* TODO: In future this copying should be optimised away by casting
         appropriate columns of c to Dune field vectors. But this
         can't be done until unit tests are in place. */
         typename DuneGeometry::GlobalCoordinate g;
@@ -190,7 +191,7 @@ public:
         const size_t n = local.n_cols;
         global.set_size(cdim, n);
 
-        /** \fixme Optimise (get rid of data copying). */
+        /* TODO: Optimise (get rid of data copying). */
         typename DuneGeometry::GlobalCoordinate g;
         typename DuneGeometry::LocalCoordinate l;
         for (size_t j = 0; j < n; ++j) {
@@ -214,7 +215,7 @@ public:
         const size_t n = global.n_cols;
         local.set_size(mdim, n);
 
-        /** \fixme Optimise (get rid of data copying). */
+        /* TODO: Optimise (get rid of data copying). */
         typename DuneGeometry::GlobalCoordinate g;
         typename DuneGeometry::LocalCoordinate l;
         for (size_t j = 0; j < n; ++j) {
@@ -237,7 +238,7 @@ public:
         const size_t n = local.n_cols;
         int_element.set_size(n);
 
-        /** \fixme Optimise (get rid of data copying). */
+        /* TODO: Optimise (get rid of data copying). */
         typename DuneGeometry::LocalCoordinate l;
         for (size_t j = 0; j < n; ++j) {
             for (int i = 0; i < mdim; ++i)
@@ -255,7 +256,7 @@ public:
         const int cdim = DuneGeometry::coorddimension;
         c.set_size(cdim);
 
-        /** \fixme Optimise (get rid of data copying). */
+        /* TODO: Optimise (get rid of data copying). */
         typename DuneGeometry::GlobalCoordinate g = m_dune_geometry->center();
         for (int i = 0; i < cdim; ++i)
             c(i) = g[i];
@@ -273,14 +274,14 @@ public:
         const size_t n = local.n_cols;
         jacobian_t.set_size(mdim, cdim, n);
 
-        /** \bug Unfortunately Dune::FieldMatrix (the underlying type of
+        /* Unfortunately Dune::FieldMatrix (the underlying type of
         JacobianTransposed) stores elements rowwise, while Armadillo does it
         columnwise. Hence element-by-element filling of jacobian_t seems
         unavoidable). */
         typename DuneGeometry::JacobianTransposed j_t;
         typename DuneGeometry::LocalCoordinate l;
         for (size_t k = 0; k < n; ++k) {
-            /** \fixme However, this bit of data copying could be avoided. */
+            /* However, this bit of data copying could be avoided. */
             for (int i = 0; i < mdim; ++i)
                 l[i] = local(i,k);
             j_t = m_dune_geometry->jacobianTransposed(l);
@@ -303,7 +304,7 @@ public:
         const size_t n = local.n_cols;
         jacobian_inv_t.set_size(cdim, mdim, n);
 
-        /** \bug Unfortunately Dune::FieldMatrix (the underlying type of
+        /* Unfortunately Dune::FieldMatrix (the underlying type of
         Jacobian) stores elements rowwise, while Armadillo does it
         columnwise. Hence element-by-element filling of jacobian_t seems
         unavoidable). */

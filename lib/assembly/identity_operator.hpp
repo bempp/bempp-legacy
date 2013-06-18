@@ -59,7 +59,7 @@ private:
     const Space<BasisFunctionType>* m_dualToRange;
 };
 
-/** \ingroup identity
+/** \ingroup local_operators
  *  \brief Identity operator.
  *
  *  Let \f$X\f$ and \f$Y\f$ be two function spaces defined on the same grid. If

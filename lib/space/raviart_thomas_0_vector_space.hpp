@@ -53,7 +53,8 @@ public:
     CollectionOfBasisTransformations;
 
     explicit RaviartThomas0VectorSpace(
-        const shared_ptr<const Grid>& grid);
+        const shared_ptr<const Grid>& grid,
+            bool putDofsOnBoundaries = false);
     virtual ~RaviartThomas0VectorSpace();
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
@@ -119,14 +120,14 @@ private:
     /** \cond PRIVATE */
     struct Impl;
     boost::scoped_ptr<Impl> m_impl;
+    bool m_putDofsOnBoundaries;
     std::auto_ptr<GridView> m_view;
     Fiber::RaviartThomas0Basis<3, BasisFunctionType> m_triangleBasis;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<BasisFunctionType> > m_local2globalDofWeights;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
-    std::vector<std::vector<BasisFunctionType> > m_global2localDofWeights;
     std::vector<LocalDof> m_flatLocal2localDofs;
-    size_t m_flatLocalDofCount;
+    std::vector<BoundingBox<CoordinateType> > m_globalDofBoundingBoxes;
     mutable shared_ptr<Space<BasisFunctionType> > m_discontinuousSpace;
     mutable tbb::mutex m_discontinuousSpaceMutex;
     /** \endcond */
