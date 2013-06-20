@@ -25,7 +25,7 @@ set_source_files_properties(core.i PROPERTIES CPLUSPLUS ON)
 file(GLOB_RECURSE SWIG_SOURCES *.i)
 set(SWIG_MODULE_core_EXTRA_DEPS ${SWIG_SOURCES})
 swig_add_module(core python core.i)
-swig_link_libraries(core ${PYTHON_LIBRARY} bempp)
+swig_link_libraries(core ${PYTHON_LIBRARY} bempp teuchoscore teuchosparameterlist)
 
 # Postprocess docstrings
 add_custom_command(
