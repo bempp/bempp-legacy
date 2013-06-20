@@ -162,111 +162,29 @@ valsExt = (- slPotExt.evaluateAtPoints(scattNeumannTrace,
            - dlPotExt.evaluateAtPoints(scattDirichletTrace,
                                        points[:,outside], evalOptions)
            + evalIncField(points[:,outside]))
-# Calculate field magnitude
-valsExt = np.sqrt(valsExt[0].real ** 2 + valsExt[0].imag ** 2 +
-                  valsExt[1].real ** 2 + valsExt[1].imag ** 2 +
-                  valsExt[2].real ** 2 + valsExt[2].imag ** 2)
+
 # Evaluate field (all three components) at interior points
 valsInt = (  slPotInt.evaluateAtPoints(intNeumannTrace,
                                        points[:,inside], evalOptions)
            + dlPotInt.evaluateAtPoints(intDirichletTrace,
                                        points[:,inside], evalOptions))
-# Calculate field magnitude
-valsInt = np.sqrt(valsInt[0].real ** 2 + valsInt[0].imag ** 2 +
-                  valsInt[1].real ** 2 + valsInt[1].imag ** 2 +
-                  valsInt[2].real ** 2 + valsInt[2].imag ** 2)
 
 # Combine the results obtained for points inside and outside the scatterer
 # in a single array
 
-vals = np.empty(nPointsX * nPointsY, dtype=complex)
-np.place(vals, outside, valsExt.ravel())
-np.place(vals, inside, valsInt.ravel())
+vals = np.empty((3, nPointsX * nPointsY), dtype=complex)
+for dim in range(3): # iterate over coordinates
+    np.place(vals[dim], outside, valsExt[dim].ravel())
+    np.place(vals[dim], inside, valsInt[dim].ravel())
 
 # Display the field plot
 
-from bempp import visualization as vis
-uActor = vis.scalarDataOnRegularGridActor(
-        points, vals, (nPointsX, nPointsY))
-legendActor = vis.legendActor(uActor)
-gridActor = vis.gridActor(grid)
-vis.plotTvtkActors([uActor, gridActor, legendActor])
+from bempp import visualization2 as vis
+tvtkVals = vis.tvtkStructuredGridData(points, vals, (nPointsX, nPointsY))
+tvtkGrid = vis.tvtkGrid(grid)
+vis.plotVectorData(tvtkGrids=tvtkGrid, tvtkStructuredGridData=tvtkVals)
 
 # Export the results into a VTK file
 
 from tvtk.api import write_data
-write_data(uActor.mapper.input_as_data_set, "u.vts")
-
-
-
-
-
-
-
-# # Create potential operators
-
-# slPotOpExt = createMaxwell3dSingleLayerPotentialOperator(context, kExt)
-# dlPotOpExt = createMaxwell3dDoubleLayerPotentialOperator(context, kExt)
-# slPotOpInt = createMaxwell3dSingleLayerPotentialOperator(context, kInt)
-# dlPotOpInt = createMaxwell3dDoubleLayerPotentialOperator(context, kInt)
-
-# # Define points at which the solution should be evaluated in the exterior
-
-# extRCount = 51
-# thetaCount = 361
-# r, theta, z = np.mgrid[1.02:5:extRCount*1j, 0:2*np.pi:thetaCount*1j, 0:0:1j]
-# x = r * np.cos(theta)
-# y = r * np.sin(theta)
-# # put the x, y and z coordinates in successive rows of a matrix
-# extEvaluationPoints = np.vstack((x.ravel(), y.ravel(), z.ravel()))
-
-# # Use the Green's representation formula to evaluate the solution
-
-# evaluationOptions = createEvaluationOptions()
-# scatteredField = -(
-#     slPotOpExt.evaluateAtPoints(scattNeumannData, extEvaluationPoints,
-#                                 evaluationOptions) +
-#     dlPotOpExt.evaluateAtPoints(scattDirichletData, extEvaluationPoints,
-#                                 evaluationOptions))
-# incidentField = evalIncField(extEvaluationPoints)
-# field = scatteredField + incidentField
-# extFieldMagnitude = np.sqrt(field[0].real ** 2 + field[0].imag ** 2 +
-#                             field[1].real ** 2 + field[1].imag ** 2 +
-#                             field[2].real ** 2 + field[2].imag ** 2)
-
-# # Define points at which the solution should be evaluated in the interior
-
-# intRCount = 21
-# thetaCount = 361
-# r, theta, z = np.mgrid[0.01:0.98:intRCount*1j, 0:2*np.pi:thetaCount*1j, 0:0:1j]
-# x = r * np.cos(theta)
-# y = r * np.sin(theta)
-# # put the x, y and z coordinates in successive rows of a matrix
-# intEvaluationPoints = np.vstack((x.ravel(), y.ravel(), z.ravel()))
-
-# # Use the Green's representation formula to evaluate the solution
-
-# evaluationOptions = createEvaluationOptions()
-# field = (
-#     slPotOpInt.evaluateAtPoints(intNeumannData, intEvaluationPoints,
-#                                 evaluationOptions) +
-#     dlPotOpInt.evaluateAtPoints(intDirichletData, intEvaluationPoints,
-#                                 evaluationOptions))
-# intFieldMagnitude = np.sqrt(field[0].real ** 2 + field[0].imag ** 2 +
-#                             field[1].real ** 2 + field[1].imag ** 2 +
-#                             field[2].real ** 2 + field[2].imag ** 2)
-
-# # Plot data
-
-# from bempp import visualization as vis
-# extAnnulusActor = vis.scalarDataOnRegularGridActor(
-#     extEvaluationPoints, extFieldMagnitude, (extRCount, thetaCount))
-# intAnnulusActor = vis.scalarDataOnRegularGridActor(
-#     intEvaluationPoints, intFieldMagnitude, (intRCount, thetaCount))
-# sphereActor = vis.gridActor(grid)
-# maxMagnitude = max(extAnnulusActor.mapper.scalar_range[1],
-#                    intAnnulusActor.mapper.scalar_range[1])
-# extAnnulusActor.mapper.scalar_range = [0, maxMagnitude]
-# intAnnulusActor.mapper.scalar_range = [0, maxMagnitude]
-# legendActor = vis.legendActor(extAnnulusActor)
-# vis.plotTvtkActors([extAnnulusActor, intAnnulusActor, sphereActor, legendActor])
+write_data(tvtkVals, "u.vts")

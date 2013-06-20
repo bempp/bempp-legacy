@@ -103,6 +103,8 @@ solfun = solution.gridFunction()
 # We now do a simple 3d visualization. The visualization module provides some
 # helper routines using the TVTK package. A lot more is possible by directly
 # accessing the Mayavi visualization pipelines.
+# (This example still uses the "old" visualization module. It needs to be
+# updated to the "new" visualization module visualization2.)
 
 # In order to evaluate the field we need to create a single-layer potential
 # operator. Note: A single-layer potential operator is different from a

@@ -116,23 +116,23 @@ scatteredField = -(slPotOp.evaluateAtPoints(neumannData, points,
                                             evaluationOptions))
 incidentField = evalIncField(points)
 field = scatteredField + incidentField
-# Calculate field magnitude
-fieldMagnitude = np.sqrt(
-    field[0].real ** 2 + field[0].imag ** 2 +
-    field[1].real ** 2 + field[1].imag ** 2 +
-    field[2].real ** 2 + field[2].imag ** 2)
 
 # Display the field plot
 
-from bempp import visualization as vis
-uActor = vis.scalarDataOnRegularGridActor(
-        points, fieldMagnitude, (nPointsX, nPointsZ),
-        colorRange=(0, 2))
-legendActor = vis.legendActor(uActor)
-gridActor = vis.gridActor(grid)
-vis.plotTvtkActors([uActor, gridActor, legendActor])
+from bempp import visualization2 as vis
+tvtkField = vis.tvtkStructuredGridData(points, field, (nPointsX, nPointsZ))
+tvtkGrid = vis.tvtkGrid(grid)
+vis.plotVectorData(tvtkGrids=tvtkGrid, tvtkStructuredGridData=tvtkField)
+
+# from bempp import visualization as vis
+# uActor = vis.scalarDataOnRegularGridActor(
+#         points, fieldMagnitude, (nPointsX, nPointsZ),
+#         colorRange=(0, 2))
+# legendActor = vis.legendActor(uActor)
+# gridActor = vis.gridActor(grid)
+# vis.plotTvtkActors([uActor, gridActor, legendActor])
 
 # Export the results into a VTK file
 
 from tvtk.api import write_data
-write_data(uActor.mapper.input_as_data_set, "u.vts")
+write_data(tvtkField, "u.vts")
