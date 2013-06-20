@@ -395,11 +395,11 @@ def tvtkStructuredGridData(points, data, dims):
             Array of data values corresponding to each point. It can be either a
             1D array of length np (number of points) or a 2D array of dimensions
             (1, np) or (3, np).
-         - dims
+        - dims
             A tuple of two numbers representing the first and second dimension
             of the grid of points. Their product must be equal to np.
 
-    *Example usage:*
+    Example usage::
 
         import numpy as np
         from bempp import visualization2 as vis
@@ -500,15 +500,16 @@ def plotStructuredGridData(points, data, dims, dataRange=None):
             number of points. The points should be lying on a regular grid.
         - data (1D or 2D NumPy array)
             Array of data values corresponding to each point. It can be either a
-            1D array of length np (number of points) or a 2D array of dimensions
-            (1, np) or (3, np).
-         - dims
-            A tuple of two numbers representing the first and second dimension
-            of the grid of points. Their product must be equal to np.
-         - dataRange
-            Can be None or a tuple of two floats. In the first case, the data
-            range of the plot will be determined automatically, otherwise
-            it will be set to the specified tuple.
+            1D array of length np (number of points) or a 2D array of
+            dimensions (1, np) or (3, np).
+        - dims
+           A tuple of two numbers representing the first and second dimension
+           of the grid of points. Their product must be equal to np.
+        - dataRange
+           Can be None or a tuple of two floats. In the first case, the data
+           range of the plot will be determined automatically, otherwise
+           it will be set to the specified tuple.
+            
     Returns a Traits object that contains the visualization.
 
     Example usage::

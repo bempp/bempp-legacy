@@ -16,6 +16,7 @@ Contents:
    bempp_core
    bempp_lib
    bempp_visualization
+   bempp_visualization2
 
 
 Indices and tables
