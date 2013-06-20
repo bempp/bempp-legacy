@@ -10,8 +10,8 @@ include_directories(${BEMPP_PREFIX}/bempp/include)
 include_directories(${BEMPP_PREFIX}/bempp/include/bempp)
 
 find_library(BEMPP_LIBRARY bempp PATHS ${BEMPP_PREFIX}/bempp/lib)
-find_library(TEUCHOS_LIBRARY teuchos PATHS ${BEMPP_PREFIX}/bempp/lib)
+find_library(TEUCHOSCORE_LIBRARY teuchoscore PATHS ${BEMPP_PREFIX}/bempp/lib)
 
 # Adapt file names to your requirements.
 add_executable(my_program my_program.cpp)
-target_link_libraries(my_program ${BEMPP_LIBRARY} ${TEUCHOS_LIBRARY})
+target_link_libraries(my_program ${BEMPP_LIBRARY} ${TEUCHOSCORE_LIBRARY})
