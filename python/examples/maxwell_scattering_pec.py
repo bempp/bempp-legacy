@@ -47,7 +47,6 @@ quadStrategy = createNumericalQuadratureStrategy(
 # Create assembly context
 
 assemblyOptions = createAssemblyOptions()
-assemblyOptions.switchToAcaMode(createAcaOptions())
 context = createContext(quadStrategy, assemblyOptions)
 
 # Initialize spaces
