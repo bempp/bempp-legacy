@@ -78,40 +78,41 @@ class _VectorVisualization(HasTraits):
     def create_plot(self):
         from mayavi.modules.api import Surface, Vectors
         self.engine = self.scene.engine
-        self.surface = []
-        self.surface1 = []
+        self.gridFunctionSurfaces = []
+        self.gridSurfaces = []
         self.vectors = []
-        # self.surface = Surface()
-        # self.surface1 = Surface()
-        # self.surface1.actor.property.representation = 'wireframe'
-        # self.surface1.actor.actor.visibility = self.enable_grid
-        # self.surface.actor.actor.visibility=self.enable_surface
+        # self.gridFunctionSurfaces = Surface()
+        # self.gridSurfaces = Surface()
+        # self.gridSurfaces.actor.property.representation = 'wireframe'
+        # self.gridSurfaces.actor.actor.visibility = self.enable_grid
+        # self.gridFunctionSurfaces.actor.actor.visibility=self.enable_surface
         # self.vectors = Vectors()
         # self.engine = self.scene.engine
         # self.engine.add_source(self.src)
-        # self.engine.add_module(self.surface, obj=self.src)
-        # self.engine.add_module(self.surface1, obj=self.src)
+        # self.engine.add_module(self.gridFunctionSurfaces, obj=self.src)
+        # self.engine.add_module(self.gridSurfaces, obj=self.src)
         # self.engine.add_module(self.vectors, obj=self.src)
         # self.module_manager = self.engine.scenes[0].children[0].children[0]
         # self.module_manager.vector_lut_manager.show_legend = True
         # self.vectors.actor.actor.visibility=self.enable_vectors
-        # self.surface.actor.actor.visibility=self.enable_surface
+        # self.gridFunctionSurfaces.actor.actor.visibility=self.enable_surface
         for src in self.tvtkGridFunctionSrcs + self.tvtkStructuredGridDataSrcs:
-            self.surface.append(Surface())
+            print '\n'.join(dir(src))
+            self.gridFunctionSurfaces.append(Surface())
             self.vectors.append(Vectors())
-            self.surface[-1].actor.actor.visibility=self.enable_surface
+            self.gridFunctionSurfaces[-1].actor.actor.visibility=self.enable_surface
             self.vectors[-1].actor.actor.visibility=self.enable_vectors
             self.vectors[-1].glyph.glyph.scale_factor = self.vector_scale_size
             self.engine.add_source(src)
-            self.engine.add_module(self.surface[-1], obj=src)
+            self.engine.add_module(self.gridFunctionSurfaces[-1], obj=src)
             self.engine.add_module(self.vectors[-1], obj=src)
         for src in self.tvtkGridSrcs:
-            self.surface1.append(Surface())
-            self.surface1[-1].actor.property.representation = 'wireframe'
-            self.surface1[-1].actor.actor.visibility = self.enable_grid
-            self.surface1[-1].actor.mapper.scalar_visibility = False
+            self.gridSurfaces.append(Surface())
+            self.gridSurfaces[-1].actor.property.representation = 'wireframe'
+            self.gridSurfaces[-1].actor.actor.visibility = self.enable_grid
+            self.gridSurfaces[-1].actor.mapper.scalar_visibility = False
             self.engine.add_source(src)
-            self.engine.add_module(self.surface1[-1], obj=src)
+            self.engine.add_module(self.gridSurfaces[-1], obj=src)
         self.module_manager = self.engine.scenes[0].children[0].children[0]
         if self.dataRange is not None:
             self.module_manager.vector_lut_manager.data_range = self.dataRange
@@ -148,7 +149,7 @@ class _VectorVisualization(HasTraits):
 
     @on_trait_change('enable_grid')
     def update_grid(self):
-        for s in self.surface1:
+        for s in self.gridSurfaces:
             s.actor.actor.visibility = self.enable_grid
 
     @on_trait_change('point_cell')
@@ -160,7 +161,7 @@ class _VectorVisualization(HasTraits):
 
     @on_trait_change('enable_surface')
     def update_surface(self):
-        for s in self.surface:
+        for s in self.gridFunctionSurfaces:
             s.actor.actor.visibility = self.enable_surface
 
     @on_trait_change('enable_vectors')
