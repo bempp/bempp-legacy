@@ -282,16 +282,7 @@ class _ScalarVisualization(HasTraits):
         self.gridFunctionSurfaces = []
         self.structuredGridDataSurfaces = []
         self.gridSurfaces = []
-        # for src in self.tvtkGridFunctionSrcs:
-        #     self.gridFunctionSurfaces.append(Surface())
-        #     self.gridSurfaces.append(Surface())
-        #     self.gridSurfaces[-1].actor.property.representation = 'wireframe'
-        #     self.gridSurfaces[-1].actor.actor.visibility = self.enable_grid
-        #     self.gridFunctionSurfaces[-1].actor.actor.visibility=self.enable_surface
-        #     self.engine.add_source(src)
-        #     self.engine.add_module(self.gridFunctionSurfaces[-1], obj=src)
-        #     self.engine.add_module(self.gridSurfaces[-1], obj=src)
-        #     self.gridFunctionSurfaces[-1].actor.actor.visibility=self.enable_surface
+
         for src in self.tvtkGridFunctionSrcs:
             self.gridFunctionSurfaces.append(Surface())
             self.gridFunctionSurfaces[-1].actor.actor.visibility=self.enable_surface
@@ -307,6 +298,7 @@ class _ScalarVisualization(HasTraits):
             else:
                 mm.lut_data_mode = 'cell data'
                 self.gridFunctionSurfaces[-1].actor.mapper.scalar_mode = 'use_cell_data'
+
         for src in self.tvtkStructuredGridDataSrcs:
             self.structuredGridDataSurfaces.append(Surface())
             self.structuredGridDataSurfaces[-1].actor.actor.visibility=self.enable_surface
@@ -330,21 +322,6 @@ class _ScalarVisualization(HasTraits):
             self.engine.add_source(src)
             self.engine.add_module(self.gridSurfaces[-1], obj=src)
 
-        # self.module_manager = self.engine.scenes[0].children[0].children[0]
-        # if self.dataRange is not None:
-        # self.module_manager.scalar_lut_manager.data_range = self.realDataRange
-        # self.module_manager.scalar_lut_manager.use_default_range = False
-        # self.module_manager.scalar_lut_manager.show_legend = self.enable_legend
-        # print self.gridFunctionSurfaces[0].module_manager.scalar_lut_manager.use_default_range
-        # print self.gridFunctionSurfaces[1].module_manager.scalar_lut_manager.use_default_range
-        # print self.gridFunctionSurfaces[2].module_manager.scalar_lut_manager.use_default_range
-        # if self.point_cell == "Point Data":
-        #     self.module_manager.lut_data_mode = 'point data'
-        # else:
-        #     self.module_manager.lut_data_mode = 'cell data'
-        # for s in self.gridFunctionSurfaces:
-        #     # s.actor.set_lut(self.module_manager.scalar_lut_manager)
-        #     s.actor.actor.set_lut(self.module_manager.scalar_lut_manager)
         if self.gridSurfaces:
             self.enable_grid = True
 
