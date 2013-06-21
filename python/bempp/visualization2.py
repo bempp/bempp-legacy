@@ -239,45 +239,113 @@ class _ScalarVisualization(HasTraits):
                 self.tvtkStructuredGridDataSrcs = [VTKDataSource(data=tvtkStructuredGridDataSrcs)]
         else:
             self.tvtkStructuredGridDataSrcs = []
-        self.dataRange = dataRange
+
+        # Retrieve and store the overall range of the real and imaginary parts and squared norm
+        def extendRange(range, data_source):
+            if data_source is None:
+                return
+            r = data_source.range
+            range[0] = min(range[0], r[0])
+            range[1] = max(range[1], r[1])
+
+        if dataRange is not None:
+            if len(dataRange) != 2:
+                raise ValueError, "dataRange must be a two-element iterable"
+            if dataRange[0] > dataRange[1]:
+                raise ValueError, "lower bound of data range must not be larger than its upper bound"
+            self.realDataRange = dataRange
+            self.imagDataRange = dataRange
+            self.abs2DataRange = dataRange
+        else:
+            self.realDataRange = [1e100, -1e100]
+            self.imagDataRange = [1e100, -1e100]
+            self.abs2DataRange = [1e100, -1e100]
+            for src in (self.tvtkGridFunctionSrcs + self.tvtkStructuredGridDataSrcs):
+                extendRange(self.realDataRange, src.data.point_data.get_array("real"))
+                extendRange(self.imagDataRange, src.data.point_data.get_array("imag"))
+                extendRange(self.abs2DataRange, src.data.point_data.get_array("abs^2"))
+                extendRange(self.realDataRange, src.data.cell_data.get_array("real"))
+                extendRange(self.imagDataRange, src.data.cell_data.get_array("imag"))
+                extendRange(self.abs2DataRange, src.data.cell_data.get_array("abs^2"))
+            if self.realDataRange[0] > self.realDataRange[1]:
+                self.realDataRange = [0, 0]
+            if self.imagDataRange[0] > self.imagDataRange[1]:
+                self.imagDataRange = [0, 0]
+            if self.abs2DataRange[0] > self.abs2DataRange[1]:
+                self.abs2DataRange = [0, 0]
 
     @on_trait_change('scene.activated')
     def create_plot(self):
-        from mayavi.modules.api import Surface, Vectors
+        from mayavi.modules.api import Surface
         self.engine = self.scene.engine
-        self.surface = []
-        self.surface1 = []
+        self.gridFunctionSurfaces = []
+        self.structuredGridDataSurfaces = []
+        self.gridSurfaces = []
         # for src in self.tvtkGridFunctionSrcs:
-        #     self.surface.append(Surface())
-        #     self.surface1.append(Surface())
-        #     self.surface1[-1].actor.property.representation = 'wireframe'
-        #     self.surface1[-1].actor.actor.visibility = self.enable_grid
-        #     self.surface[-1].actor.actor.visibility=self.enable_surface
+        #     self.gridFunctionSurfaces.append(Surface())
+        #     self.gridSurfaces.append(Surface())
+        #     self.gridSurfaces[-1].actor.property.representation = 'wireframe'
+        #     self.gridSurfaces[-1].actor.actor.visibility = self.enable_grid
+        #     self.gridFunctionSurfaces[-1].actor.actor.visibility=self.enable_surface
         #     self.engine.add_source(src)
-        #     self.engine.add_module(self.surface[-1], obj=src)
-        #     self.engine.add_module(self.surface1[-1], obj=src)
-        #     self.surface[-1].actor.actor.visibility=self.enable_surface
-        for src in self.tvtkGridFunctionSrcs + self.tvtkStructuredGridDataSrcs:
-            self.surface.append(Surface())
-            self.surface[-1].actor.actor.visibility=self.enable_surface
+        #     self.engine.add_module(self.gridFunctionSurfaces[-1], obj=src)
+        #     self.engine.add_module(self.gridSurfaces[-1], obj=src)
+        #     self.gridFunctionSurfaces[-1].actor.actor.visibility=self.enable_surface
+        for src in self.tvtkGridFunctionSrcs:
+            self.gridFunctionSurfaces.append(Surface())
+            self.gridFunctionSurfaces[-1].actor.actor.visibility=self.enable_surface
             self.engine.add_source(src)
-            self.engine.add_module(self.surface[-1], obj=src)
+            self.engine.add_module(self.gridFunctionSurfaces[-1], obj=src)
+            mm = self.gridFunctionSurfaces[-1].module_manager
+            mm.scalar_lut_manager.data_range = self.realDataRange
+            mm.scalar_lut_manager.use_default_range = False
+            mm.scalar_lut_manager.show_legend = self.enable_legend
+            if self.point_cell == "Point Data":
+                mm.lut_data_mode = 'point data'
+                self.gridFunctionSurfaces[-1].actor.mapper.scalar_mode = 'use_point_data'
+            else:
+                mm.lut_data_mode = 'cell data'
+                self.gridFunctionSurfaces[-1].actor.mapper.scalar_mode = 'use_cell_data'
+        for src in self.tvtkStructuredGridDataSrcs:
+            self.structuredGridDataSurfaces.append(Surface())
+            self.structuredGridDataSurfaces[-1].actor.actor.visibility=self.enable_surface
+            self.engine.add_source(src)
+            self.engine.add_module(self.structuredGridDataSurfaces[-1], obj=src)
+            mm = self.structuredGridDataSurfaces[-1].module_manager
+            mm.scalar_lut_manager.data_range = self.realDataRange
+            mm.scalar_lut_manager.use_default_range = False
+            mm.scalar_lut_manager.show_legend = self.enable_legend
+
+        # Hide the legends of all data sets except the first
+        for surf in (self.gridFunctionSurfaces + self.structuredGridDataSurfaces)[1:]:
+            surf.module_manager.scalar_lut_manager.show_legend = False
+
         for src in self.tvtkGridSrcs:
-            self.surface1.append(Surface())
-            self.surface1[-1].actor.property.representation = 'wireframe'
-            self.surface1[-1].actor.actor.visibility = self.enable_grid
-            self.surface1[-1].actor.mapper.scalar_visibility = False
+            self.gridSurfaces.append(Surface())
+            self.gridSurfaces[-1].actor.property.representation = 'wireframe'
+            self.gridSurfaces[-1].actor.actor.visibility = self.enable_grid
+            self.gridSurfaces[-1].actor.mapper.scalar_visibility = False
+            self.gridSurfaces[-1].actor.property.representation = 'wireframe'
             self.engine.add_source(src)
-            self.engine.add_module(self.surface1[-1], obj=src)
-        self.module_manager = self.engine.scenes[0].children[0].children[0]
-        if self.dataRange is not None:
-            self.module_manager.scalar_lut_manager.data_range = self.dataRange
-            self.module_manager.scalar_lut_manager.use_default_range = False
-        self.module_manager.scalar_lut_manager.show_legend = self.enable_legend
-        if self.point_cell == "Point Data":
-            self.module_manager.lut_data_mode = 'point data'
-        else:
-            self.module_manager.lut_data_mode = 'cell data'
+            self.engine.add_module(self.gridSurfaces[-1], obj=src)
+
+        # self.module_manager = self.engine.scenes[0].children[0].children[0]
+        # if self.dataRange is not None:
+        # self.module_manager.scalar_lut_manager.data_range = self.realDataRange
+        # self.module_manager.scalar_lut_manager.use_default_range = False
+        # self.module_manager.scalar_lut_manager.show_legend = self.enable_legend
+        # print self.gridFunctionSurfaces[0].module_manager.scalar_lut_manager.use_default_range
+        # print self.gridFunctionSurfaces[1].module_manager.scalar_lut_manager.use_default_range
+        # print self.gridFunctionSurfaces[2].module_manager.scalar_lut_manager.use_default_range
+        # if self.point_cell == "Point Data":
+        #     self.module_manager.lut_data_mode = 'point data'
+        # else:
+        #     self.module_manager.lut_data_mode = 'cell data'
+        # for s in self.gridFunctionSurfaces:
+        #     # s.actor.set_lut(self.module_manager.scalar_lut_manager)
+        #     s.actor.actor.set_lut(self.module_manager.scalar_lut_manager)
+        if self.gridSurfaces:
+            self.enable_grid = True
 
     @on_trait_change('real_imag')
     def update_real_imag(self):
@@ -288,6 +356,8 @@ class _ScalarVisualization(HasTraits):
                     src.cell_scalars_name = 'real'
                 except TraitError:
                     pass # cell data not present
+            for surf in self.gridFunctionSurfaces + self.structuredGridDataSurfaces:
+                surf.module_manager.scalar_lut_manager.data_range = self.realDataRange
         elif self.real_imag=="Imaginary Part":
             for src in self.tvtkGridFunctionSrcs + self.tvtkStructuredGridDataSrcs:
                 src.point_scalars_name = 'imag'
@@ -295,6 +365,8 @@ class _ScalarVisualization(HasTraits):
                     src.cell_scalars_name = 'imag'
                 except TraitError:
                     pass # cell data not present
+            for surf in self.gridFunctionSurfaces + self.structuredGridDataSurfaces:
+                surf.module_manager.scalar_lut_manager.data_range = self.imagDataRange
         else:
             for src in self.tvtkGridFunctionSrcs + self.tvtkStructuredGridDataSrcs:
                 src.point_scalars_name = 'abs^2'
@@ -302,27 +374,37 @@ class _ScalarVisualization(HasTraits):
                     src.cell_scalars_name = 'abs^2'
                 except TraitError:
                     pass # cell data not present
+            for surf in self.gridFunctionSurfaces + self.structuredGridDataSurfaces:
+                surf.module_manager.scalar_lut_manager.data_range = self.abs2DataRange
 
     @on_trait_change('enable_grid')
     def update_grid(self):
-        for s in self.surface1:
+        for s in self.gridSurfaces:
             s.actor.actor.visibility = self.enable_grid
 
     @on_trait_change('point_cell')
     def update_point_cell(self):
-        if self.point_cell == "Point Data":
-            self.module_manager.lut_data_mode = 'point data'
+        if self.point_cell == 'Point Data':
+            data_mode = 'point data'
+            scalar_mode = 'use_point_data'
         else:
-            self.module_manager.lut_data_mode = 'cell data'
+            data_mode = 'cell data'
+            scalar_mode = 'use_cell_data'
+        for surf in self.gridFunctionSurfaces:
+            surf.module_manager.lut_data_mode = data_mode
+            surf.actor.mapper.scalar_mode = scalar_mode
+        # structuredGridDataSurfaces stay in point mode
 
     @on_trait_change('enable_surface')
     def update_surface(self):
-        for s in self.surface:
-            s.actor.actor.visibility = self.enable_surface
+        for surf in self.gridFunctionSurfaces + self.structuredGridDataSurfaces:
+            surf.actor.actor.visibility = self.enable_surface
 
     @on_trait_change('enable_legend')
     def update_legend(self):
-        self.module_manager.scalar_lut_manager.show_legend = self.enable_legend
+        relevantSurfaces = self.gridFunctionSurfaces + self.structuredGridDataSurfaces
+        if relevantSurfaces:
+            relevantSurfaces[0].module_manager.scalar_lut_manager.show_legend = self.enable_legend
 
     view = View(Item(name='scene', editor=SceneEditor(scene_class=MayaviScene),
                      height=500, width=500, show_label=False),
@@ -509,7 +591,7 @@ def plotStructuredGridData(points, data, dims, dataRange=None):
            Can be None or a tuple of two floats. In the first case, the data
            range of the plot will be determined automatically, otherwise
            it will be set to the specified tuple.
-            
+
     Returns a Traits object that contains the visualization.
 
     Example usage::
