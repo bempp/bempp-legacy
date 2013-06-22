@@ -21,7 +21,7 @@
 #ifndef bempp_l2_norm
 #define bempp_l2_norm
 
-/** \file Calculation of \f$L^2\f$-norms of grid functions. */
+/** \file l2_norm.hpp Calculation of \f$L^2\f$-norms of grid functions. */
 
 #include "../common/common.hpp"
 #include "../common/scalar_traits.hpp"

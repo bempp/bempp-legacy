@@ -21,7 +21,7 @@
 #ifndef bempp_acc_hpp
 #define bempp_acc_hpp
 
-/** \file Bounds checking for STL containers. */
+/** \file acc.hpp Bounds checking for STL containers. */
 
 #include "common.hpp"
 

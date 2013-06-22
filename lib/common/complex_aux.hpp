@@ -21,7 +21,7 @@
 #ifndef bempp_complex_aux_hpp
 #define bempp_complex_aux_hpp
 
-/** \file Utility functions for uniform operations on real and complex numbers. */
+/** \file complex_aux.hpp Utility functions for uniform operations on real and complex numbers. */
 
 #include "scalar_traits.hpp"
 
