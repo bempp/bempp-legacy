@@ -79,11 +79,7 @@ rhs = rhsOp * dirichletData
 
 # Initialize the solver
 
-invLhsOp = acaOperatorApproximateLuInverse(
-    lhsOp.weakForm().asDiscreteAcaBoundaryOperator(), 1e-2)
-prec = discreteOperatorToPreconditioner(invLhsOp)
-solver = createDefaultIterativeSolver(lhsOp)
-solver.initializeSolver(defaultGmresParameterList(1e-8), prec)
+solver = createDefaultDirectSolver(lhsOp)
 
 # Solve the equation
 
