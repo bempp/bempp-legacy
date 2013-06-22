@@ -21,7 +21,7 @@
 #ifndef bempp_types_hpp
 #define bempp_types_hpp
 
-/** \file Types used in various parts of BEM++ */
+/** \file common/types.hpp Types used in various parts of BEM++ */
 #include "../fiber/types.hpp"
 #include "../grid/geometry_type.hpp"
 #include "../grid/index_set.hpp"

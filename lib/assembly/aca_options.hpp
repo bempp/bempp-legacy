@@ -135,7 +135,7 @@ struct AcaOptions
      *         \mathrm{d}\Gamma(x) \,\mathrm{d}\Sigma(y),
      *     \f]
      *
-     *     where \f$f(x)\f$ and \f$g(y)\$ are scalar basis functions of \f$U\f$
+     *     where \f$f(x)\f$ and \f$g(y)\f$ are scalar basis functions of \f$U\f$
      *     and \f$V\f$ (*not* any transformations of them, i.e. not their
      *     surface curls, divs etc.), *at least as long as the supports of
      *     \f$f(x)\f$ and \f$g(y)\f$ do not overlap*. (Note that this is
