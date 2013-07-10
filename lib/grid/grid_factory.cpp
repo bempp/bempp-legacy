@@ -183,4 +183,5 @@ shared_ptr<Grid> GridFactory::createGridFromConnectivityArrays(
                                                   true)); // true -> owns Dune grid
 }
 
+
 } // namespace Bempp

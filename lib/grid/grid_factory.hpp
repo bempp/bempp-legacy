@@ -124,6 +124,7 @@ public:
                 const GridParameters& params,
                 const arma::Mat<double>& vertices,
                 const arma::Mat<int>& elementCorners);
+
 };
 
 } // namespace Bempp
