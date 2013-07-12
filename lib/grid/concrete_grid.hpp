@@ -144,7 +144,18 @@ public:
     }
 
 
+    /** @}
+    @name Refinement
+    @{ */
+
+    /** Barycentrically refine grid */
+    virtual void barycentricRefinement() {
+        m_dune_grid->globalRefine(1);
+    }
+
+
     /** @} */
+
 
 private:
     // Disable copy constructor and assignment operator

@@ -84,20 +84,14 @@ namespace Bempp
     %apply const arma::Mat<int>& IN_MAT {
         const arma::Mat<int>& elementCorners
     };
-    // Here we circumvent the problem that Python integers are 64-bit
-    // on 64-bit system, while C++ integers may in this case be 32-bit
     static boost::shared_ptr<Bempp::Grid> createGridFromConnectivityArrays(
             const std::string& topology,
             const arma::Mat<double>& vertices,
-            const arma::Mat<long>& elementCorners) {
+            const arma::Mat<int>& elementCorners) {
         Bempp::GridParameters params;
         makeGridParameters(params, topology);
-        arma::Mat<int> elementCornersInt(elementCorners.n_rows,
-                                         elementCorners.n_cols);
-        std::copy(elementCorners.begin(), elementCorners.end(),
-                  elementCornersInt.begin());
         return Bempp::GridFactory::createGridFromConnectivityArrays(
-            params, vertices, elementCornersInt);
+            params, vertices, elementCorners);
     }
     %clear const arma::Mat<double>& vertices;
     %clear const arma::Mat<int>& elementCorners;

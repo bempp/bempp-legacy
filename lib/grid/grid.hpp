@@ -92,6 +92,10 @@ public:
     @name Others
     @{ */
 
+
+    /** \brief Barycentrically refine grid */
+    virtual void barycentricRefinement() =0;
+
     /** \brief Reference to the grid's global id set. */
     virtual const IdSet& globalIdSet() const = 0;
 
