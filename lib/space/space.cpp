@@ -128,6 +128,9 @@ template <typename BasisFunctionType>
 Space<BasisFunctionType>::Space(const shared_ptr<const Grid>& grid) :
     m_grid(grid)
 {
+    if (!grid)
+        throw std::invalid_argument("Space::Space(): grid must not be a null "
+                                    "pointer");
 }
 
 template <typename BasisFunctionType>
