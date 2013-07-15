@@ -173,6 +173,9 @@ public:
      */
     virtual bool mightVanish() const = 0;
 
+    /** \brief %Entity level */
+    virtual int domain() const = 0;
+
     // Deferred for possible later implementation:
     // * Iteration over neighbours: Dune methods ileafbegin(), ileafend(), ilevelbegin(), ilevelend()
     // * Information about the way this element has been subdivided from

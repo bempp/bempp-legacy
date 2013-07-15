@@ -34,6 +34,8 @@
 namespace Bempp
 {
 
+class DomainIndex;
+
 /** \ingroup grid_internal
  *  \brief Wrapper of a Dune grid view of type \p DuneGridView. */
 template<typename DuneGridView>
@@ -43,15 +45,19 @@ private:
     DuneGridView m_dune_gv;
     ConcreteIndexSet<DuneGridView> m_index_set;
     ConcreteElementMapper<DuneGridView> m_element_mapper;
+    const DomainIndex& m_domain_index;
     mutable ReverseElementMapper m_reverse_element_mapper;
     mutable bool m_reverse_element_mapper_is_up_to_date;
 
 public:
     /** \brief Constructor */
-    explicit ConcreteGridView(const DuneGridView& dune_gv) :
+    explicit ConcreteGridView(const DuneGridView& dune_gv,
+                              const DomainIndex& domain_index) :
         m_dune_gv(dune_gv), m_index_set(&dune_gv.indexSet()),
         m_element_mapper(dune_gv), m_reverse_element_mapper(*this),
-        m_reverse_element_mapper_is_up_to_date(false) {
+        m_reverse_element_mapper_is_up_to_date(false),
+        m_domain_index(domain_index)
+    {
     }
 
     /** \brief Read-only access to the underlying Dune grid view object. */
@@ -154,9 +160,12 @@ private:
         typedef typename DuneGridView::template Codim<codim>::Iterator DuneIterator;
         typedef typename DuneGridView::template Codim<codim>::EntityPointer DuneEntityPointer;
         typedef ConcreteRangeEntityIterator<DuneIterator, DuneEntityPointer> ConcIterator;
+        typedef typename DuneGridView::Grid::LevelGridView DuneLevelGridView;
+
         return std::auto_ptr<EntityIterator<codim> >(
                    new ConcIterator(m_dune_gv.template begin<codim>(),
-                                    m_dune_gv.template end<codim>()));
+                                    m_dune_gv.template end<codim>(),
+                                    m_domain_index));
     }
 
     template <typename CoordinateType>

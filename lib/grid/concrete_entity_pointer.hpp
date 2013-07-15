@@ -47,8 +47,10 @@ private:
 
 public:
     /** \brief Constructor */
-    explicit ConcreteEntityPointer(const DuneEntityPointer& dune_entity_pointer) :
-        m_dune_entity_ptr(dune_entity_pointer) {
+    ConcreteEntityPointer(const DuneEntityPointer& dune_entity_pointer,
+                          const DomainIndex& domain_index) :
+        m_dune_entity_ptr(dune_entity_pointer),
+        m_entity(domain_index) {
         updateEntity();
     }
 
