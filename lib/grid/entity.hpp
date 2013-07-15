@@ -116,13 +116,7 @@ public:
     @name Extended interface of entities of codimension 0
     @{ */
 
-    /** \brief Number of subentities of codimension \p codimSub.
-
-     This method is in principle
-     redundant because this information can be obtained via the
-     reference element of the geometry. It is there for efficiency
-     reasons and to make the interface self-contained.
-     */
+    /** \brief Number of subentities of codimension \p codimSub. */
     // Default implementation, specialisations for potentially allowed
     // codimensions (1 to 3) follow after class declaration.
     template<int codimSub> size_t subEntityCount() const {
