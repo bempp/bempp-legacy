@@ -37,6 +37,7 @@ namespace Bempp
 {
 
 /** \cond FORWARD_DECL */
+class GridSegment;
 class GridView;
 /** \endcond */
 
@@ -49,7 +50,11 @@ public:
     typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
     typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
 
-    explicit PiecewiseLinearDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid);
+    explicit PiecewiseLinearDiscontinuousScalarSpace(
+            const shared_ptr<const Grid>& grid);
+    PiecewiseLinearDiscontinuousScalarSpace(
+            const shared_ptr<const Grid>& grid,
+            const GridSegment& segment);
     virtual ~PiecewiseLinearDiscontinuousScalarSpace();
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
@@ -87,7 +92,8 @@ public:
             DofType dofType) const;
 
 private:
-    void assignDofsImpl();
+    void initialize(const GridSegment& segment);
+    void assignDofsImpl(const GridSegment& segment);
 
 private:
     /** \cond PRIVATE */

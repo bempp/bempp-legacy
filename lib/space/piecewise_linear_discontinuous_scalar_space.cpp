@@ -27,6 +27,7 @@
 #include "../grid/entity_iterator.hpp"
 #include "../grid/geometry.hpp"
 #include "../grid/grid.hpp"
+#include "../grid/grid_segment.hpp"
 #include "../grid/grid_view.hpp"
 #include "../grid/mapper.hpp"
 #include "../grid/vtk_writer.hpp"
@@ -42,19 +43,36 @@ PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
 PiecewiseLinearDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid) :
     PiecewiseLinearScalarSpace<BasisFunctionType>(grid)
 {
-    const int gridDim = grid->dim();
-    if (gridDim != 1 && gridDim != 2)
-        throw std::invalid_argument("PiecewiseLinearDiscontinuousScalarSpace::"
-                                    "PiecewiseLinearDiscontinuousScalarSpace(): "
-                                    "only 1- and 2-dimensional grids are supported");
-    m_view = grid->leafView();
-    assignDofsImpl();
+    GridSegment segment = GridSegment::wholeGrid(*grid);
+    initialize(segment);
+}
+
+template <typename BasisFunctionType>
+PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
+PiecewiseLinearDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid,
+                                        const GridSegment& segment) :
+    PiecewiseLinearScalarSpace<BasisFunctionType>(grid)
+{
+    initialize(segment);
 }
 
 template <typename BasisFunctionType>
 PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
 ~PiecewiseLinearDiscontinuousScalarSpace()
 {
+}
+
+template <typename BasisFunctionType>
+void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::initialize(
+        const GridSegment& segment)
+{
+    const int gridDim = this->grid()->dim();
+    if (gridDim != 1 && gridDim != 2)
+        throw std::invalid_argument("PiecewiseLinearDiscontinuousScalarSpace::"
+                                    "PiecewiseLinearDiscontinuousScalarSpace(): "
+                                    "only 1- and 2-dimensional grids are supported");
+    m_view = this->grid()->leafView();
+    assignDofsImpl(segment);
 }
 
 template <typename BasisFunctionType>
@@ -77,11 +95,14 @@ PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::isDiscontinuous() co
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
+void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::assignDofsImpl(
+        const GridSegment& segment)
 {
+    // TODO: pay attention to the segment parameter
     const int gridDim = this->domainDimension();
 
     const Mapper& elementMapper = m_view->elementMapper();
+    const IndexSet& indexSet = m_view->indexSet();
 
 //    int globalDofCount_ = m_view->entityCount(this->grid()->dim());
     int elementCount = m_view->entityCount(0);
@@ -99,8 +120,7 @@ void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::assignDofsImpl(
     // Iterate over elements
     std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
     size_t globalDofCount = 0;
-    while (!it->finished())
-    {
+    while (!it->finished()) {
         const Entity<0>& element = it->entity();
         EntityIndex elementIndex = elementMapper.entityIndex(element);
 
@@ -114,12 +134,15 @@ void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::assignDofsImpl(
         // current element
         std::vector<GlobalDofIndex>& globalDofs = m_local2globalDofs[elementIndex];
         globalDofs.reserve(vertexCount);
-        for (int i = 0; i < vertexCount; ++i)
-        {
-            globalDofs.push_back(globalDofCount);
-            std::vector<LocalDof> localDofs(1, LocalDof(elementIndex, i));
-            m_global2localDofs.push_back(localDofs);
-            ++globalDofCount;
+        for (int i = 0; i < vertexCount; ++i) {
+            int vertexIndex = indexSet.subEntityIndex(element, i, gridDim);
+            if (segment.contains(gridDim, vertexIndex)) {
+                globalDofs.push_back(globalDofCount);
+                std::vector<LocalDof> localDofs(1, LocalDof(elementIndex, i));
+                m_global2localDofs.push_back(localDofs);
+                ++globalDofCount;
+            } else
+                globalDofs.push_back(-1);
         }
         it->next();
     }
@@ -130,7 +153,8 @@ void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::assignDofsImpl(
     m_flatLocal2localDofs.reserve(globalDofCount);
     for (size_t e = 0; e < m_local2globalDofs.size(); ++e)
         for (size_t dof = 0; dof < m_local2globalDofs[e].size(); ++dof)
-            m_flatLocal2localDofs.push_back(LocalDof(e, dof));
+            if (m_local2globalDofs[e][dof] >= 0)
+                m_flatLocal2localDofs.push_back(LocalDof(e, dof));
 }
 
 template <typename BasisFunctionType>

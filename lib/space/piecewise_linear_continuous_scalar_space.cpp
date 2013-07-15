@@ -23,7 +23,9 @@
 #include "piecewise_linear_discontinuous_scalar_space.hpp"
 
 #include "../assembly/discrete_sparse_boundary_operator.hpp"
+#include "../common/acc.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
+#include "../common/bounding_box_helpers.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../grid/entity.hpp"
 #include "../grid/entity_iterator.hpp"
@@ -41,24 +43,39 @@ namespace Bempp
 
 template <typename BasisFunctionType>
 PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
+PiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid) :
+    PiecewiseLinearScalarSpace<BasisFunctionType>(grid),
+    m_segment(GridSegment::wholeGrid(*grid))
+{
+    initialize();
+}
+
+template <typename BasisFunctionType>
+PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
 PiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid,
-                                     const Segment& segment) :
+                                     const GridSegment& segment) :
     PiecewiseLinearScalarSpace<BasisFunctionType>(grid),
     m_segment(segment)
 {
-    const int gridDim = grid->dim();
-    if (gridDim != 1 && gridDim != 2)
-        throw std::invalid_argument("PiecewiseLinearContinuousScalarSpace::"
-                                    "PiecewiseLinearContinuousScalarSpace(): "
-                                    "only 1- and 2-dimensional grids are supported");
-    m_view = grid->leafView();
-    assignDofsImpl(segment);
+    initialize();
 }
 
 template <typename BasisFunctionType>
 PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
 ~PiecewiseLinearContinuousScalarSpace()
 {
+}
+
+template <typename BasisFunctionType>
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::initialize()
+{
+    const int gridDim = this->grid()->dim();
+    if (gridDim != 1 && gridDim != 2)
+        throw std::invalid_argument(
+                "PiecewiseLinearContinuousScalarSpace::initialize(): "
+                "only 1- and 2-dimensional grids are supported");
+    m_view =  this->grid()->leafView();
+    assignDofsImpl();
 }
 
 template <typename BasisFunctionType>
@@ -112,27 +129,35 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
 //        }
 //    }
 
-    int globalDofCount_ = 0;
     std::vector<int> globalDofIndices(vertexCount);
-    {
-        Segment::const_iterator vertexIt =
-                gridDim == 1 ? m_segment.begin<1>() : m_segment.begin<2>();
-        const Segment::const_iterator vertexEndIt =
-                gridDim == 1 ? m_segment.end<1>() : m_segment.end<2>();
-        for (int vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
-            if (vertexIt == vertexEndIt || vertexIndex < *vertexIt)
-                acc(globalDofIndices, vertexIndex) = -1;
-            else {
-                acc(globalDofIndices, vertexIndex) = globalDofCount_++;
-                ++vertexIt;
-            }
-    }
+    m_segment.markExcludedEntities(gridDim, globalDofIndices);
+    int globalDofCount_ = 0;
+    for (int vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
+        if (acc(globalDofIndices, vertexIndex) == 0) // not excluded
+            acc(globalDofIndices, vertexIndex) = globalDofCount_++;
+
+//    {
+//        GridSegment::const_iterator vertexIt =
+//                gridDim == 1 ? m_segment.begin(1) : m_segment.begin(2);
+//        const GridSegment::const_iterator vertexEndIt =
+//                gridDim == 1 ? m_segment.end(1) : m_segment.end(2);
+//        for (int vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex) {
+//            std::cout << "vi " << (vertexIt == vertexEndIt) << " " << vertexIndex << " " << *vertexIt << std::endl;
+//            if (vertexIt == vertexEndIt || vertexIndex < *vertexIt)
+//                acc(globalDofIndices, vertexIndex) = -1;
+//            else {
+//                std::cout << "assigned!" << std::endl;
+//                acc(globalDofIndices, vertexIndex) = globalDofCount_++;
+//                ++vertexIt;
+//            }
+//        }
+//    }
 
     // (Re)initialise DOF maps
     m_local2globalDofs.clear();
     m_local2globalDofs.resize(elementCount);
     m_global2localDofs.clear();
-    m_global2localDofs.reserve(globalDofCount_);
+    m_global2localDofs.resize(globalDofCount_);
     // TODO: consider calling reserve(x) for each element of m_global2localDofs
     // with x being the typical number of elements adjacent to a vertex in a
     // grid of dimension gridDim
@@ -171,7 +196,7 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
     // Initialize the container mapping the flat local dof indices to
     // local dof indices
     m_flatLocal2localDofs.clear();
-    m_flatLocal2localDofs.reserve(m_flatLocalDofCount);
+    m_flatLocal2localDofs.reserve(flatLocalDofCount_);
     for (size_t e = 0; e < m_local2globalDofs.size(); ++e)
         for (size_t dof = 0; dof < m_local2globalDofs[e].size(); ++dof)
             if (m_local2globalDofs[e][dof] >= 0)
@@ -181,6 +206,7 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
 template <typename BasisFunctionType>
 size_t PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::globalDofCount() const
 {
+    std::cout << "gdofCount: " << m_global2localDofs.size() << std::endl;
     return m_global2localDofs.size();
 }
 
@@ -235,31 +261,12 @@ template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getFlatLocalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
-    const int gridDim = this->domainDimension();
-    const int worldDim = this->grid()->dimWorld();
-    positions.resize(flatLocalDofCount());
+    std::vector<BoundingBox<CoordinateType> > bboxes;
+    getFlatLocalDofBoundingBoxes(bboxes);
 
-    const IndexSet& indexSet = m_view->indexSet();
-    int elementCount = m_view->entityCount(0);
-
-    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
-    arma::Mat<CoordinateType> corners;
-    // Here we depend on the iterator returning elements in order of
-    // increasing index
-    size_t flatLdofIndex = 0;
-    while (!it->finished())
-    {
-        const Entity<0>& e = it->entity();
-        e.geometry().getCorners(corners);
-        for (size_t v = 0; v < corners.n_cols; ++v) {
-            positions[flatLdofIndex].x = corners(0, v);
-            positions[flatLdofIndex].y = corners(1, v);
-            positions[flatLdofIndex].z = gridDim == 2 ? corners(2, v) : 0.;
-            ++flatLdofIndex;
-        }
-        it->next();
-    }
-    assert(flatLdofIndex == flatLocalDofCount());
+    positions.resize(bboxes.size());
+    for (int i = 0; i < positions.size(); ++i)
+        positions[i] = bboxes[i].reference;
 }
 
 template <typename BasisFunctionType>
@@ -267,6 +274,9 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getGlobalDofBoundi
        std::vector<BoundingBox<CoordinateType> >& bboxes) const
 {
     // TODO: extract this loop into a private function
+    const IndexSet& indexSet = m_view->indexSet();
+    const int elementCount = m_view->entityCount(0);
+
     std::vector<arma::Mat<CoordinateType> > elementCorners(elementCount);
     std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
     while (!it->finished()) {
@@ -314,6 +324,10 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
 getFlatLocalDofBoundingBoxes(
        std::vector<BoundingBox<CoordinateType> >& bboxes) const
 {
+    // TODO: extract this loop into a private function
+    const IndexSet& indexSet = m_view->indexSet();
+    const int elementCount = m_view->entityCount(0);
+
     std::vector<arma::Mat<CoordinateType> > elementCorners(elementCount);
     std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
     while (!it->finished()) {
@@ -332,7 +346,7 @@ getFlatLocalDofBoundingBoxes(
     const int flatLocalDofCount_ = m_flatLocal2localDofs.size();
     bboxes.resize(flatLocalDofCount_, model);
     for (int i = 0; i < flatLocalDofCount_; ++i) {
-        LocalDof& localDof = acc(m_flatLocal2localDofs, i);
+        const LocalDof& localDof = acc(m_flatLocal2localDofs, i);
         BoundingBox<CoordinateType>& bbox = acc(bboxes, i);
         extendBoundingBox(bbox, acc(elementCorners, localDof.entityIndex));
         setBoundingBoxReference<CoordinateType>(
@@ -342,14 +356,15 @@ getFlatLocalDofBoundingBoxes(
     }
 
 #ifndef NDEBUG
-   for (size_t i = 0; i < globalDofCount_; ++i) {
-       assert(bboxes[i].reference.x >= bboxes[i].lbound.x);
-       assert(bboxes[i].reference.y >= bboxes[i].lbound.y);
-       assert(bboxes[i].reference.z >= bboxes[i].lbound.z);
-       assert(bboxes[i].reference.x <= bboxes[i].ubound.x);
-       assert(bboxes[i].reference.y <= bboxes[i].ubound.y);
-       assert(bboxes[i].reference.z <= bboxes[i].ubound.z);
-   }
+    const int globalDofCount_ = globalDofCount();
+    for (size_t i = 0; i < globalDofCount_; ++i) {
+        assert(bboxes[i].reference.x >= bboxes[i].lbound.x);
+        assert(bboxes[i].reference.y >= bboxes[i].lbound.y);
+        assert(bboxes[i].reference.z >= bboxes[i].lbound.z);
+        assert(bboxes[i].reference.x <= bboxes[i].ubound.x);
+        assert(bboxes[i].reference.y <= bboxes[i].ubound.y);
+        assert(bboxes[i].reference.z <= bboxes[i].ubound.z);
+    }
 #endif // NDEBUG
 }
 

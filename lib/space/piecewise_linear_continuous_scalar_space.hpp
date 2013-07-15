@@ -23,8 +23,10 @@
 
 #include "../common/common.hpp"
 
-#include "../grid/grid_view.hpp"
 #include "piecewise_linear_scalar_space.hpp"
+
+#include "../grid/grid_segment.hpp"
+#include "../grid/grid_view.hpp"
 #include "../common/types.hpp"
 #include "../fiber/piecewise_linear_continuous_scalar_basis.hpp"
 
@@ -48,8 +50,10 @@ public:
     typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
     typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
 
-    explicit PiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid,
-                                                  const Segment& segment);
+    explicit PiecewiseLinearContinuousScalarSpace(
+            const shared_ptr<const Grid>& grid);
+    PiecewiseLinearContinuousScalarSpace(
+            const shared_ptr<const Grid>& grid, const GridSegment& segment);
     virtual ~PiecewiseLinearContinuousScalarSpace();
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
@@ -91,10 +95,12 @@ public:
             DofType dofType) const;
 
 private:
+    void initialize();
     void assignDofsImpl();
 
 private:
     /** \cond PRIVATE */
+    GridSegment m_segment;
     std::auto_ptr<GridView> m_view;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
