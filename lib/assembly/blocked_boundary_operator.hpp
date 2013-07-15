@@ -130,6 +130,22 @@ private:
     /** \endcond */
 };
 
+/** \relates BlockedBoundaryOperator
+ *  \brief Act with a BoundaryOperator on a GridFunction.
+ *
+ *  This function returns the GridFunction obtained by acting with the operator
+ *  \p op on the grid function \p fun. It is equivalent to calling
+ *  \code
+ *  op.apply(NO_TRANSPOSE, fun, result, 1., 0.);
+ *  return result;
+ *  \endcode
+ *  on GridFunction \p result with space and dual space compatible with
+ *  the range and dual to range of \p op. */
+template <typename BasisFunctionType, typename ResultType>
+std::vector<GridFunction<BasisFunctionType, ResultType> > operator*(
+        const BlockedBoundaryOperator<BasisFunctionType, ResultType>& op,
+        const std::vector<GridFunction<BasisFunctionType, ResultType> >& funs);
+
 } // namespace Bempp
 
 #endif
