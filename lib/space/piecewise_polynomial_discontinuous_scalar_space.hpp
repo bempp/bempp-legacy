@@ -35,6 +35,7 @@ namespace Bempp
 {
 
 /** \cond FORWARD_DECL */
+class GridSegment;
 class GridView;
 template <typename CoordinateType> class BoundingBox;
 /** \endcond */
@@ -54,6 +55,10 @@ public:
     PiecewisePolynomialDiscontinuousScalarSpace(
             const shared_ptr<const Grid>& grid,
             int polynomialOrder);
+    PiecewisePolynomialDiscontinuousScalarSpace(
+            const shared_ptr<const Grid>& grid,
+            int polynomialOrder,
+            const GridSegment& segment);
     virtual ~PiecewisePolynomialDiscontinuousScalarSpace();
 
     virtual int domainDimension() const;
@@ -110,7 +115,8 @@ public:
             DofType dofType) const;
 
 private:
-    void assignDofsImpl();
+    void initialize(const GridSegment& segment);
+    void assignDofsImpl(const GridSegment& segment);
 
 private:
     /** \cond PRIVATE */

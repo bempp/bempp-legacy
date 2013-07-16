@@ -31,6 +31,7 @@
 #include "../grid/entity_iterator.hpp"
 #include "../grid/geometry.hpp"
 #include "../grid/grid.hpp"
+#include "../grid/grid_segment.hpp"
 #include "../grid/grid_view.hpp"
 #include "../grid/mapper.hpp"
 #include "../grid/vtk_writer.hpp"
@@ -48,33 +49,50 @@ PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
 PiecewisePolynomialContinuousScalarSpace(const shared_ptr<const Grid>& grid,
                                          int polynomialOrder) :
     ScalarSpace<BasisFunctionType>(grid), m_polynomialOrder(polynomialOrder),
-    m_flatLocalDofCount(0)
+    m_flatLocalDofCount(0), m_segment(GridSegment::wholeGrid(*grid))
 {
-    const int gridDim = grid->dim();
+    initialize();
+}
+
+template <typename BasisFunctionType>
+PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
+PiecewisePolynomialContinuousScalarSpace(const shared_ptr<const Grid>& grid,
+                                         int polynomialOrder,
+                                         const GridSegment& segment) :
+    ScalarSpace<BasisFunctionType>(grid), m_polynomialOrder(polynomialOrder),
+    m_flatLocalDofCount(0), m_segment(segment)
+{
+    initialize();
+}
+
+template <typename BasisFunctionType>
+void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::initialize()
+{
+    const int gridDim = this->grid()->dim();
     if (gridDim != 2)
         throw std::invalid_argument("PiecewisePolynomialContinuousScalarSpace::"
                                     "PiecewisePolynomialContinuousScalarSpace(): "
                                     "2-dimensional grids are supported");
-    m_view = grid->leafView();
-    if (polynomialOrder == 1)
+    m_view = this->grid()->leafView();
+    if (m_polynomialOrder == 1)
         m_triangleBasis.reset(new Fiber::LagrangeScalarBasis<3, BasisFunctionType, 1>());
-    else if (polynomialOrder == 2)
+    else if (m_polynomialOrder == 2)
         m_triangleBasis.reset(new Fiber::LagrangeScalarBasis<3, BasisFunctionType, 2>());
-    else if (polynomialOrder == 3)
+    else if (m_polynomialOrder == 3)
         m_triangleBasis.reset(new Fiber::LagrangeScalarBasis<3, BasisFunctionType, 3>());
-    else if (polynomialOrder == 4)
+    else if (m_polynomialOrder == 4)
         m_triangleBasis.reset(new Fiber::LagrangeScalarBasis<3, BasisFunctionType, 4>());
-    else if (polynomialOrder == 5)
+    else if (m_polynomialOrder == 5)
         m_triangleBasis.reset(new Fiber::LagrangeScalarBasis<3, BasisFunctionType, 5>());
-    else if (polynomialOrder == 6)
+    else if (m_polynomialOrder == 6)
         m_triangleBasis.reset(new Fiber::LagrangeScalarBasis<3, BasisFunctionType, 6>());
-    else if (polynomialOrder == 7)
+    else if (m_polynomialOrder == 7)
         m_triangleBasis.reset(new Fiber::LagrangeScalarBasis<3, BasisFunctionType, 7>());
-    else if (polynomialOrder == 8)
+    else if (m_polynomialOrder == 8)
         m_triangleBasis.reset(new Fiber::LagrangeScalarBasis<3, BasisFunctionType, 8>());
-    else if (polynomialOrder == 9)
+    else if (m_polynomialOrder == 9)
         m_triangleBasis.reset(new Fiber::LagrangeScalarBasis<3, BasisFunctionType, 9>());
-    else if (polynomialOrder == 10)
+    else if (m_polynomialOrder == 10)
         m_triangleBasis.reset(new Fiber::LagrangeScalarBasis<3, BasisFunctionType, 10>());
     else
         throw std::invalid_argument("PiecewisePolynomialContinuousScalarSpace::"
@@ -150,7 +168,8 @@ PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::discontinuousSpace(
                DiscontinuousSpace;
        if (!m_discontinuousSpace)
            m_discontinuousSpace.reset(new DiscontinuousSpace(
-                                          this->grid(), m_polynomialOrder));
+                                          this->grid(), m_polynomialOrder,
+                                          m_segment));
    }
    return m_discontinuousSpace;
 }
@@ -186,26 +205,26 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl
 
     // Map vertices to global dofs
     const int vertexCount = m_view->entityCount(2);
-    // For the time being all vertices are assumed unconstrained, so the array
-    // below is unnecessary (it's just an identity mapping). But it will become
-    // useful once we add support for mixed problems or triple junctions.
     std::vector<GlobalDofIndex> vertexGlobalDofs(vertexCount);
+    int globalDofCount_ = 0;
     for (int i = 0; i < vertexCount; ++i)
-        acc(vertexGlobalDofs, (size_t)i) = i;
-    m_vertexGlobalDofCount = vertexCount;
+        if (m_segment.contains(gridDim, i))
+            acc(vertexGlobalDofs, (size_t)i) = globalDofCount_++;
+        else
+            acc(vertexGlobalDofs, (size_t)i) = -1;
+    m_vertexGlobalDofCount = globalDofCount_;
 
     // Map edges to global dofs
     const int edgeCount = m_view->entityCount(1);
     const int internalDofCountPerEdge = m_polynomialOrder - 1;
-    // For the time being all edges are assumed unconstrained, so the array
-    // below is unnecessary (it's just a linear mapping). But it will become
-    // useful later.
     std::vector<GlobalDofIndex> edgeStartingGlobalDofs(edgeCount);
-    for (int i = 0, gdof = m_vertexGlobalDofCount;
-         i < edgeCount;
-         gdof += internalDofCountPerEdge, ++i)
-        acc(edgeStartingGlobalDofs, i) = gdof;
-    m_edgeGlobalDofCount = edgeCount * internalDofCountPerEdge;
+    for (int i = 0; i < edgeCount; ++i)
+        if (m_segment.contains(gridDim - 1, i)) {
+            acc(edgeStartingGlobalDofs, i) = globalDofCount_;
+            globalDofCount_ += internalDofCountPerEdge;
+        } else
+            acc(edgeStartingGlobalDofs, i) = -1;
+    m_edgeGlobalDofCount = globalDofCount_ - m_vertexGlobalDofCount;
 
     // Map element interiors to global dofs
     const int bubbleDofCountPerTriangle =
@@ -222,20 +241,21 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl
             throw std::runtime_error("PiecewisePolynomialContinuousScalarSpace::"
                                      "assignDofsImpl(): elements must be "
                                      "triangular or quadrilateral");
-        acc(bubbleDofCounts, elementIndex) =
-            vertexCount == 3 ? bubbleDofCountPerTriangle : bubbleDofCountPerQuad;
+        if (m_segment.contains(0, elementIndex))
+            acc(bubbleDofCounts, elementIndex) =
+                vertexCount == 3 ? bubbleDofCountPerTriangle : bubbleDofCountPerQuad;
+        else
+            acc(bubbleDofCounts, elementIndex) = 0;
         it->next();
     }
     std::vector<GlobalDofIndex> bubbleStartingGlobalDofs(elementCount);
-    for (int i = 0, gdof = m_vertexGlobalDofCount + m_edgeGlobalDofCount;
-         i < elementCount; gdof += acc(bubbleDofCounts, i), ++i)
-        acc(bubbleStartingGlobalDofs, i) = gdof;
-    m_bubbleGlobalDofCount =
-        bubbleStartingGlobalDofs.back() + bubbleDofCounts.back() -
+    for (int i = 0; i < elementCount; globalDofCount_ += acc(bubbleDofCounts, i), ++i)
+        if (acc(bubbleDofCounts, i) > 0)
+            acc(bubbleStartingGlobalDofs, i) = globalDofCount_;
+        else
+            acc(bubbleStartingGlobalDofs, i) = -1;
+    m_bubbleGlobalDofCount = globalDofCount_ -
         (m_vertexGlobalDofCount + m_edgeGlobalDofCount);
-
-    const int globalDofCount_ = m_vertexGlobalDofCount + m_edgeGlobalDofCount +
-        m_bubbleGlobalDofCount;
 
     // Initialise DOF maps
     const int localDofCountPerTriangle =
@@ -290,36 +310,45 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl
 
                 ldof = 0;
                 gdof = vertexGlobalDofs[acc(vertexIndices, 0)];
-                acc(globalDofs, ldof) = gdof;
-                acc(m_global2localDofs, gdof).push_back(LocalDof(elementIndex, ldof));
+                if (gdof >= 0) {
+                    acc(globalDofs, ldof) = gdof;
+                    acc(m_global2localDofs, gdof).push_back(LocalDof(elementIndex, ldof));
+                    ++acc(gdofAccessCounts, gdof);
+                    extendBoundingBox(acc(m_globalDofBoundingBoxes, gdof), vertices);
+                    setBoundingBoxReference<CoordinateType>(
+                        acc(m_globalDofBoundingBoxes, gdof), vertices.col(0));
+                    ++m_flatLocalDofCount;
+                } else
+                    acc(globalDofs, ldof) = -1;
                 ++acc(ldofAccessCounts, ldof);
-                ++acc(gdofAccessCounts, gdof);
-
-                extendBoundingBox(acc(m_globalDofBoundingBoxes, gdof), vertices);
-                setBoundingBoxReference<CoordinateType>(
-                    acc(m_globalDofBoundingBoxes, gdof), vertices.col(0));
 
                 ldof = m_polynomialOrder;
                 gdof = vertexGlobalDofs[acc(vertexIndices, 1)];
-                acc(globalDofs, ldof) = gdof;
-                acc(m_global2localDofs, gdof).push_back(LocalDof(elementIndex, ldof));
+                if (gdof >= 0) {
+                    acc(globalDofs, ldof) = gdof;
+                    acc(m_global2localDofs, gdof).push_back(LocalDof(elementIndex, ldof));
+                    ++acc(gdofAccessCounts, gdof);
+                    extendBoundingBox(acc(m_globalDofBoundingBoxes, gdof), vertices);
+                    setBoundingBoxReference<CoordinateType>(
+                        acc(m_globalDofBoundingBoxes, gdof), vertices.col(1));
+                    ++m_flatLocalDofCount;
+                } else
+                    acc(globalDofs, ldof) = -1;
                 ++acc(ldofAccessCounts, ldof);
-                ++acc(gdofAccessCounts, gdof);
-
-                extendBoundingBox(acc(m_globalDofBoundingBoxes, gdof), vertices);
-                setBoundingBoxReference<CoordinateType>(
-                    acc(m_globalDofBoundingBoxes, gdof), vertices.col(1));
 
                 ldof = localDofCountPerTriangle - 1;
                 gdof = vertexGlobalDofs[acc(vertexIndices, 2)];
-                acc(globalDofs, ldof) = gdof;
-                acc(m_global2localDofs, gdof).push_back(LocalDof(elementIndex, ldof));
+                if (gdof >= 0) {
+                    acc(globalDofs, ldof) = gdof;
+                    acc(m_global2localDofs, gdof).push_back(LocalDof(elementIndex, ldof));
+                    ++acc(gdofAccessCounts, gdof);
+                    extendBoundingBox(acc(m_globalDofBoundingBoxes, gdof), vertices);
+                    setBoundingBoxReference<CoordinateType>(
+                        acc(m_globalDofBoundingBoxes, gdof), vertices.col(2));
+                    ++m_flatLocalDofCount;
+                } else
+                    acc(globalDofs, ldof) = -1;
                 ++acc(ldofAccessCounts, ldof);
-                ++acc(gdofAccessCounts, gdof);
-
-                extendBoundingBox(acc(m_globalDofBoundingBoxes, gdof), vertices);
-                setBoundingBoxReference<CoordinateType>(
-                    acc(m_globalDofBoundingBoxes, gdof), vertices.col(2));
             }
 
             // edge dofs
@@ -329,73 +358,95 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl
 
                 edgeIndex = indexSet.subEntityIndex(element, 0, edgeCodim);
                 dofPosition = 0.5 * (vertices.col(0) + vertices.col(1));
-                if (acc(vertexIndices, 0) < acc(vertexIndices, 1)) {
-                    start = acc(edgeStartingGlobalDofs, edgeIndex);
-                    end = start + internalDofCountPerEdge;
-                    step = 1;
-                } else {
-                    end = acc(edgeStartingGlobalDofs, edgeIndex) - 1;
-                    start = end + internalDofCountPerEdge;
-                    step = -1;
-                }
-                for (int ldof = 1, gdof = start; gdof != end; ++ldof, gdof += step) {
-                    acc(globalDofs, ldof) = gdof;
-                    acc(m_global2localDofs, gdof).push_back(LocalDof(elementIndex, ldof));
-                    ++acc(ldofAccessCounts, ldof);
-                    ++acc(gdofAccessCounts, gdof);
-
-                    extendBoundingBox(acc(m_globalDofBoundingBoxes, gdof), vertices);
-                    setBoundingBoxReference<CoordinateType>(
-                        acc(m_globalDofBoundingBoxes, gdof), dofPosition);
-                }
+                if (acc(edgeStartingGlobalDofs, edgeIndex) >= 0) {
+                    if (acc(vertexIndices, 0) < acc(vertexIndices, 1)) {
+                        start = acc(edgeStartingGlobalDofs, edgeIndex);
+                        end = start + internalDofCountPerEdge;
+                        step = 1;
+                    } else {
+                        end = acc(edgeStartingGlobalDofs, edgeIndex) - 1;
+                        start = end + internalDofCountPerEdge;
+                        step = -1;
+                    }
+                    for (int ldof = 1, gdof = start; gdof != end; ++ldof, gdof += step) {
+                        acc(globalDofs, ldof) = gdof;
+                        acc(m_global2localDofs, gdof).push_back(LocalDof(elementIndex, ldof));
+                        ++acc(ldofAccessCounts, ldof);
+                        ++acc(gdofAccessCounts, gdof);
+                        extendBoundingBox(acc(m_globalDofBoundingBoxes, gdof), vertices);
+                        setBoundingBoxReference<CoordinateType>(
+                            acc(m_globalDofBoundingBoxes, gdof), dofPosition);
+                        ++m_flatLocalDofCount;
+                    }
+                } else
+                    for (int ldof = 1; ldof <= internalDofCountPerEdge; ++ldof) {
+                        acc(globalDofs, ldof) = -1;
+                        ++acc(ldofAccessCounts, ldof);
+                    }
 
                 edgeIndex = indexSet.subEntityIndex(element, 1, edgeCodim);
                 dofPosition = 0.5 * (vertices.col(0) + vertices.col(2));
-                if (acc(vertexIndices, 0) < acc(vertexIndices, 2)) {
-                    start = acc(edgeStartingGlobalDofs, edgeIndex);
-                    end = start + internalDofCountPerEdge;
-                    step = 1;
-                } else {
-                    end = acc(edgeStartingGlobalDofs, edgeIndex) - 1;
-                    start = end + internalDofCountPerEdge;
-                    step = -1;
-                }
-                for (int ldofy = 1, gdof = start; gdof != end; ++ldofy, gdof += step) {
-                    int ldof = ldofy * (m_polynomialOrder + 1) -
-                        ldofy * (ldofy - 1) / 2;
-                    acc(globalDofs, ldof) = gdof;
-                    acc(m_global2localDofs, gdof).push_back(LocalDof(elementIndex, ldof));
-                    ++acc(ldofAccessCounts, ldof);
-                    ++acc(gdofAccessCounts, gdof);
-
-                    extendBoundingBox(acc(m_globalDofBoundingBoxes, gdof), vertices);
-                    setBoundingBoxReference<CoordinateType>(
-                        acc(m_globalDofBoundingBoxes, gdof), dofPosition);
-                }
+                if (acc(edgeStartingGlobalDofs, edgeIndex) >= 0) {
+                    if (acc(vertexIndices, 0) < acc(vertexIndices, 2)) {
+                        start = acc(edgeStartingGlobalDofs, edgeIndex);
+                        end = start + internalDofCountPerEdge;
+                        step = 1;
+                    } else {
+                        end = acc(edgeStartingGlobalDofs, edgeIndex) - 1;
+                        start = end + internalDofCountPerEdge;
+                        step = -1;
+                    }
+                    for (int ldofy = 1, gdof = start; gdof != end; ++ldofy, gdof += step) {
+                        int ldof = ldofy * (m_polynomialOrder + 1) -
+                            ldofy * (ldofy - 1) / 2;
+                        acc(globalDofs, ldof) = gdof;
+                        acc(m_global2localDofs, gdof).push_back(LocalDof(elementIndex, ldof));
+                        ++acc(ldofAccessCounts, ldof);
+                        ++acc(gdofAccessCounts, gdof);
+                        extendBoundingBox(acc(m_globalDofBoundingBoxes, gdof), vertices);
+                        setBoundingBoxReference<CoordinateType>(
+                            acc(m_globalDofBoundingBoxes, gdof), dofPosition);
+                        ++m_flatLocalDofCount;
+                    }
+                } else
+                    for (int ldofy = 1; ldofy <= internalDofCountPerEdge; ++ldofy) {
+                        int ldof = ldofy * (m_polynomialOrder + 1) -
+                            ldofy * (ldofy - 1) / 2;
+                        acc(globalDofs, ldof) = -1;
+                        ++acc(ldofAccessCounts, ldof);
+                    }
 
                 edgeIndex = indexSet.subEntityIndex(element, 2, edgeCodim);
                 dofPosition = 0.5 * (vertices.col(1) + vertices.col(2));
-                if (acc(vertexIndices, 1) < acc(vertexIndices, 2)) {
-                    start = acc(edgeStartingGlobalDofs, edgeIndex);
-                    end = start + internalDofCountPerEdge;
-                    step = 1;
-                } else {
-                    end = acc(edgeStartingGlobalDofs, edgeIndex) - 1;
-                    start = end + internalDofCountPerEdge;
-                    step = -1;
-                }
-                for (int ldofy = 1, gdof = start; gdof != end; ++ldofy, gdof += step) {
-                    int ldof = ldofy * (m_polynomialOrder + 1) -
-                        ldofy * (ldofy - 1) / 2 + (m_polynomialOrder - ldofy);
-                    acc(globalDofs, ldof) = gdof;
-                    acc(m_global2localDofs, gdof).push_back(LocalDof(elementIndex, ldof));
-                    ++acc(ldofAccessCounts, ldof);
-                    ++acc(gdofAccessCounts, gdof);
-
-                    extendBoundingBox(acc(m_globalDofBoundingBoxes, gdof), vertices);
-                    setBoundingBoxReference<CoordinateType>(
-                        acc(m_globalDofBoundingBoxes, gdof), dofPosition);
-                }
+                if (acc(edgeStartingGlobalDofs, edgeIndex) >= 0) {
+                    if (acc(vertexIndices, 1) < acc(vertexIndices, 2)) {
+                        start = acc(edgeStartingGlobalDofs, edgeIndex);
+                        end = start + internalDofCountPerEdge;
+                        step = 1;
+                    } else {
+                        end = acc(edgeStartingGlobalDofs, edgeIndex) - 1;
+                        start = end + internalDofCountPerEdge;
+                        step = -1;
+                    }
+                    for (int ldofy = 1, gdof = start; gdof != end; ++ldofy, gdof += step) {
+                        int ldof = ldofy * (m_polynomialOrder + 1) -
+                            ldofy * (ldofy - 1) / 2 + (m_polynomialOrder - ldofy);
+                        acc(globalDofs, ldof) = gdof;
+                        acc(m_global2localDofs, gdof).push_back(LocalDof(elementIndex, ldof));
+                        ++acc(ldofAccessCounts, ldof);
+                        ++acc(gdofAccessCounts, gdof);
+                        extendBoundingBox(acc(m_globalDofBoundingBoxes, gdof), vertices);
+                        setBoundingBoxReference<CoordinateType>(
+                            acc(m_globalDofBoundingBoxes, gdof), dofPosition);
+                        ++m_flatLocalDofCount;
+                    }
+                } else
+                    for (int ldofy = 1; ldofy <= internalDofCountPerEdge; ++ldofy) {
+                        int ldof = ldofy * (m_polynomialOrder + 1) -
+                            ldofy * (ldofy - 1) / 2 + (m_polynomialOrder - ldofy);
+                        acc(globalDofs, ldof) = -1;
+                        ++acc(ldofAccessCounts, ldof);
+                    }
             }
 
             // bubble dofs
@@ -408,15 +459,19 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl
                          ++ldofx, ++gdof) {
                         int ldof = ldofy * (m_polynomialOrder + 1) -
                             ldofy * (ldofy - 1) / 2 + ldofx;
-                        acc(globalDofs, ldof) = gdof;
-                        acc(m_global2localDofs, gdof).push_back(
-                            LocalDof(elementIndex, ldof));
+                        if (acc(bubbleStartingGlobalDofs, elementIndex) >= 0) {
+                            acc(globalDofs, ldof) = gdof;
+                            acc(m_global2localDofs, gdof).push_back(
+                                LocalDof(elementIndex, ldof));
+                            ++acc(gdofAccessCounts, gdof);
+                            extendBoundingBox(acc(m_globalDofBoundingBoxes, gdof), vertices);
+                            setBoundingBoxReference<CoordinateType>(
+                                acc(m_globalDofBoundingBoxes, gdof), dofPosition);
+                            ++m_flatLocalDofCount;
+                        }
+                        else
+                            acc(globalDofs, ldof) = -1;
                         ++acc(ldofAccessCounts, ldof);
-                        ++acc(gdofAccessCounts, gdof);
-
-                        extendBoundingBox(acc(m_globalDofBoundingBoxes, gdof), vertices);
-                        setBoundingBoxReference<CoordinateType>(
-                            acc(m_globalDofBoundingBoxes, gdof), dofPosition);
                     }
             }
             for (size_t i = 0; i < ldofAccessCounts.size(); ++i)
@@ -426,24 +481,22 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl
                                      "assignDofsImpl(): quadrilateral elements "
                                      "are not supported yet");
 
-        m_flatLocalDofCount += localDofCountPerTriangle;
         it->next();
     }
     // for (size_t i = 0; i < gdofAccessCounts.size(); ++i)
     //     std::cout << i << " " << acc(gdofAccessCounts, i) << "\n";
 
 #ifndef NDEBUG
+    for (size_t i = 0; i < globalDofCount_; ++i) {
+        const BoundingBox<CoordinateType>& bbox = acc(m_globalDofBoundingBoxes, i);
 
-   for (size_t i = 0; i < globalDofCount_; ++i) {
-       const BoundingBox<CoordinateType>& bbox = acc(m_globalDofBoundingBoxes, i);
-
-       assert(bbox.reference.x >= bbox.lbound.x);
-       assert(bbox.reference.y >= bbox.lbound.y);
-       assert(bbox.reference.z >= bbox.lbound.z);
-       assert(bbox.reference.x <= bbox.ubound.x);
-       assert(bbox.reference.y <= bbox.ubound.y);
-       assert(bbox.reference.z <= bbox.ubound.z);
-   }
+        assert(bbox.reference.x >= bbox.lbound.x);
+        assert(bbox.reference.y >= bbox.lbound.y);
+        assert(bbox.reference.z >= bbox.lbound.z);
+        assert(bbox.reference.x <= bbox.ubound.x);
+        assert(bbox.reference.y <= bbox.ubound.y);
+        assert(bbox.reference.z <= bbox.ubound.z);
+    }
 #endif // NDEBUG
 
     // Initialize the container mapping the flat local dof indices to

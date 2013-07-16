@@ -24,6 +24,7 @@
 #include "../common/common.hpp"
 #include "../common/types.hpp"
 #include "../fiber/lagrange_scalar_basis.hpp"
+#include "../grid/grid_segment.hpp"
 
 #include "scalar_space.hpp"
 
@@ -54,6 +55,10 @@ public:
     PiecewisePolynomialContinuousScalarSpace(
             const shared_ptr<const Grid>& grid,
             int polynomialOrder);
+    PiecewisePolynomialContinuousScalarSpace(
+            const shared_ptr<const Grid>& grid,
+            int polynomialOrder,
+            const GridSegment& segment);
     virtual ~PiecewisePolynomialContinuousScalarSpace();
 
     virtual int domainDimension() const;
@@ -110,11 +115,13 @@ public:
             DofType dofType) const;
 
 private:
+    void initialize();
     void assignDofsImpl();
 
 private:
     /** \cond PRIVATE */
     int m_polynomialOrder;
+    GridSegment m_segment;
     boost::scoped_ptr<Fiber::Basis<BasisFunctionType> > m_triangleBasis;
     std::auto_ptr<GridView> m_view;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
