@@ -20,6 +20,8 @@
 
 #include "piecewise_constant_scalar_space.hpp"
 
+#include "space_helper.hpp"
+
 #include "../common/acc.hpp"
 #include "../common/bounding_box_helpers.hpp"
 #include "../common/not_implemented_error.hpp"
@@ -142,18 +144,17 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::assignDofsImpl(
     {
         EntityIndex index = mapper.entityIndex(it->entity());
         if (segment.contains(0, index)) {
-            std::cout << "contains " << index << "\n";
+            // std::cout << "contains " << index << "\n";
             localDofs[0] = LocalDof(index, 0 /* local DOF #0 */);
             m_global2localDofs.push_back(localDofs);
             globalDofs[0] = globalDofCount_++;
         } else {
-            std::cout << "does not contain " << index << "\n";
+            // std::cout << "does not contain " << index << "\n";
             globalDofs[0] = -1;
         }
         m_local2globalDofs[index] = globalDofs;
         it->next();
     }
-    // TODO: bboxes
 }
 
 template <typename BasisFunctionType>
@@ -221,51 +222,9 @@ template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
        std::vector<BoundingBox<CoordinateType> >& bboxes) const
 {
-    // NOTE: this has been copied from PiecewiseLinearContinuousScalarSpace.
-    // Consider putting this as a default implementation somewhere.
-    const IndexSet& indexSet = m_view->indexSet();
-    const int elementCount = m_view->entityCount(0);
-
-    std::vector<arma::Mat<CoordinateType> > elementCorners(elementCount);
-    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
-    while (!it->finished()) {
-        const Entity<0>& e = it->entity();
-        int index = indexSet.entityIndex(e);
-        const Geometry& geo = e.geometry();
-        geo.getCorners(acc(elementCorners, index));
-        it->next();
-    }
-
-    BoundingBox<CoordinateType> model;
-    const CoordinateType maxCoord = std::numeric_limits<CoordinateType>::max();
-    model.lbound.x = model.lbound.y = model.lbound.z = maxCoord;
-    model.ubound.x = model.ubound.y = model.ubound.z = -maxCoord;
-
-    const int globalDofCount_ = m_global2localDofs.size();
-    bboxes.resize(globalDofCount_, model);
-    for (int i = 0; i < globalDofCount_; ++i) {
-        const std::vector<LocalDof>& localDofs = acc(m_global2localDofs, i);
-        BoundingBox<CoordinateType>& bbox = acc(bboxes, i);
-        for (int j = 0; j < localDofs.size(); ++j)
-            extendBoundingBox(bbox, acc(elementCorners,
-                                        acc(localDofs, j).entityIndex));
-        assert(!localDofs.empty());
-        setBoundingBoxReference<CoordinateType>(
-                    bbox,
-                    acc(elementCorners, localDofs[0].entityIndex).col(
-                        localDofs[0].dofIndex));
-    }
-
-#ifndef NDEBUG
-   for (size_t i = 0; i < globalDofCount_; ++i) {
-       assert(bboxes[i].reference.x >= bboxes[i].lbound.x);
-       assert(bboxes[i].reference.y >= bboxes[i].lbound.y);
-       assert(bboxes[i].reference.z >= bboxes[i].lbound.z);
-       assert(bboxes[i].reference.x <= bboxes[i].ubound.x);
-       assert(bboxes[i].reference.y <= bboxes[i].ubound.y);
-       assert(bboxes[i].reference.z <= bboxes[i].ubound.z);
-   }
-#endif // NDEBUG
+    SpaceHelper<BasisFunctionType>::
+            getGlobalDofBoundingBoxes_defaultImplementation(
+                *m_view, m_global2localDofs, bboxes);
 }
 
 template <typename BasisFunctionType>
