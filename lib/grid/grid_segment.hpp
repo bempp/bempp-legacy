@@ -65,10 +65,6 @@ public:
     GridSegment difference(const GridSegment& other) const;
     GridSegment intersection(const GridSegment& other) const;
 
-//    Segment operator+(const Segment& other) const;
-//    Segment operator-(const Segment& other) const;
-//    Segment operator*(const Segment& other) const;
-
 private:
     boost::array<int, 4> m_entityCounts;
     boost::array<std::set<int>, 4> m_excludedEntities;
