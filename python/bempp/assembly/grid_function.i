@@ -135,6 +135,9 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
     %ignore basis;
     %ignore getLocalCoefficients;
 
+    %ignore evaluateAtSpecialPoints(
+            VtkWriter::DataType dataType, arma::Mat<ResultType>& result_) const;
+
     %apply arma::Col<float>& ARGOUT_COL {
         arma::Col<float>& col_out
     };
@@ -164,7 +167,30 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
         arma::Mat<std::complex<double> >& result_
     };
 
+    %apply arma::Mat< float >& ARGOUT_MAT {
+        arma::Mat< float >& points
+    };
 
+    %apply arma::Mat< double >& ARGOUT_MAT {
+        arma::Mat< double >& points
+    };
+  
+    %apply arma::Mat< float >& ARGOUT_MAT {
+        arma::Mat< float >& values
+    };
+
+    %apply arma::Mat< double >& ARGOUT_MAT {
+        arma::Mat< double >& values
+    };
+
+    %apply arma::Mat< std::complex<float> >& ARGOUT_MAT {
+        arma::Mat<std::complex<flaot> >& values
+    };
+
+    %apply arma::Mat< std::complex<double> >& ARGOUT_MAT {
+        arma::Mat<std::complex<double> >& values
+    };
+  
     void coefficients(arma::Col<ResultType>& col_out)
     {
         col_out = $self->coefficients();
@@ -233,7 +259,7 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
           from visualization import plotGridFunction
           plotGridFunction(self)
 	    %}
-
+   
 }
 
 %ignore gridFunctionFromFiberFunction;
@@ -261,17 +287,24 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromProjectio
 %clear arma::Col<float>& col_out;
 %clear arma::Col<double>& col_out;
 %clear arma::Col<std::complex<float> >& col_out;
-%clear arma::Col<std::complex<float> >& col_out;
+%clear arma::Col<std::complex<double> >& col_out;
 
 %clear arma::Mat<float>& result_;
 %clear arma::Mat<double>& result_;
 %clear arma::Mat<std::complex<float> >& result_;
-%clear arma::Mat<std::complex<float> >& result_;
+%clear arma::Mat<std::complex<double> >& result_;
 
+%clear arma::Mat<float>& points;
+%clear arma::Mat<double>& points;
+%clear arma::Mat<float>& values;
+%clear arma::Mat<double>& values;
+%clear arma::Mat<std::complex<float> >& values;
+%clear arma::Mat<std::complex<double> >& values;
+ 
 %clear arma::Mat<float>& data;
 %clear arma::Mat<double>& data;
 %clear arma::Mat<std::complex<float> >& data;
-%clear arma::Mat<std::complex<float> >& data;
+%clear arma::Mat<std::complex<double> >& data;
 
 
 } // Namespace Bempp
