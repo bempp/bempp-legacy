@@ -2,16 +2,25 @@
 #include "space/piecewise_linear_discontinuous_scalar_space.hpp"
 %}
 
+namespace Bempp
+{
+%feature("compactdefaultargs") piecewiseLinearDiscontinuousScalarSpace;
+}
+
 %inline %{
 namespace Bempp
 {
 
 template <typename BasisFunctionType>
 boost::shared_ptr<Space<BasisFunctionType> >
-piecewiseLinearDiscontinuousScalarSpace(const boost::shared_ptr<const Grid>& grid)
+piecewiseLinearDiscontinuousScalarSpace(const boost::shared_ptr<const Grid>& grid,
+    const GridSegment* segment = 0)
 {
     typedef PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType> Type;
-    return boost::shared_ptr<Type>(new Type(grid));
+    if (segment)
+        return boost::shared_ptr<Type>(new Type(grid, *segment));
+    else
+        return boost::shared_ptr<Type>(new Type(grid));
 }
 
 } // namespace Bempp
