@@ -33,6 +33,7 @@
 
 #include "grid/grid.hpp"
 #include "grid/grid_factory.hpp"
+#include "grid/grid_segment.hpp"
 
 #include "space/piecewise_polynomial_discontinuous_scalar_space.hpp"
 
@@ -310,6 +311,88 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_cubic_space,
         (new PiecewisePolynomialDiscontinuousScalarSpace<BFT>(grid, 3)));
 
     global2local_matches_local2global<BFT>(*space);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_quadratic_space_and_segment, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+
+    GridSegment segment = gridSegmentWithPositiveX(*grid);
+    shared_ptr<Space<BFT> > space(
+        (new PiecewisePolynomialDiscontinuousScalarSpace<BFT>(grid, 2, segment)));
+
+    local2global_matches_global2local<BFT>(*space);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_cubic_space_and_segment, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+
+    GridSegment segment = gridSegmentWithPositiveX(*grid);
+    shared_ptr<Space<BFT> > space(
+        (new PiecewisePolynomialDiscontinuousScalarSpace<BFT>(grid, 3, segment)));
+
+    global2local_matches_local2global<BFT>(*space);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(complement_is_really_a_complement_for_quadratic_space, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+
+    shared_ptr<Space<BFT> > space(
+        (new PiecewisePolynomialDiscontinuousScalarSpace<BFT>(grid, 2)));
+    GridSegment segment = gridSegmentWithPositiveX(*grid);
+    shared_ptr<Space<BFT> > space1(
+        (new PiecewisePolynomialDiscontinuousScalarSpace<BFT>(grid, 2, segment)));
+    GridSegment complement = segment.complement();
+    shared_ptr<Space<BFT> > space2(
+        (new PiecewisePolynomialDiscontinuousScalarSpace<BFT>(grid, 2, complement)));
+
+    complement_is_really_a_complement(space, space1, space2);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(complement_is_really_a_complement_for_cubic_space, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+
+    shared_ptr<Space<BFT> > space(
+        (new PiecewisePolynomialDiscontinuousScalarSpace<BFT>(grid, 3)));
+    GridSegment segment = gridSegmentWithPositiveX(*grid);
+    shared_ptr<Space<BFT> > space1(
+        (new PiecewisePolynomialDiscontinuousScalarSpace<BFT>(grid, 3, segment)));
+    GridSegment complement = segment.complement();
+    shared_ptr<Space<BFT> > space2(
+        (new PiecewisePolynomialDiscontinuousScalarSpace<BFT>(grid, 3, complement)));
+
+    complement_is_really_a_complement(space, space1, space2);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
