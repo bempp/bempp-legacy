@@ -356,10 +356,11 @@ def createUnitScalarSpace(context, grid):
     return _constructObjectTemplatedOnBasis(
         core, 'unitScalarSpace', context.basisFunctionType(), grid)
 
-def createRaviartThomas0VectorSpace(context, grid):
+def createRaviartThomas0VectorSpace(context, grid, segment=None,
+                                    putDofsOnBoundaries=False):
     """
-    Create and return a space of lowest order Raviart-Thomas vector functions with normal
-    components continuous on boundaries between elements.
+    Create and return a space of lowest order Raviart-Thomas vector functions
+    with normal components continuous on boundaries between elements.
 
     *Parameters:*
        - context (Context)
@@ -368,6 +369,15 @@ def createRaviartThomas0VectorSpace(context, grid):
        - grid (Grid)
             Grid on which the functions from the newly constructed space will be
             defined.
+       - segment (GridSegment)
+            (Optional) Segment of the grid on which the space should be defined.
+            If set to None (default), the whole grid will be used.
+       - putDofsOnBoundaries (bool)       
+            (Optional) If set to False (default), degrees of freedom will not be
+            placed on edges lying on boundaries of the grid. This is usually the
+            desired behaviour for simulations of open perfectly conducting
+            surfaces (sheets). If set to True, degrees of freedom will be placed
+            on all edges belonging to the chosen segment of the grid.
 
     *Returns* a newly constructed Space_BasisFunctionType object, with
     BasisFunctionType determined automatically from the context argument and
@@ -375,7 +385,8 @@ def createRaviartThomas0VectorSpace(context, grid):
     """
     name = 'raviartThomas0VectorSpace'
     return _constructObjectTemplatedOnBasis(
-        core, name, context.basisFunctionType(), grid)
+        core, name, context.basisFunctionType(), grid, segment,
+        putDofsOnBoundaries)
 
 def _constructOperator(className, context, domain, range, dualToRange, label=None):
     # determine basis function type

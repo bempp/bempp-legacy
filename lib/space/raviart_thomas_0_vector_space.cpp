@@ -63,14 +63,32 @@ template <typename BasisFunctionType>
 RaviartThomas0VectorSpace<BasisFunctionType>::
 RaviartThomas0VectorSpace(const shared_ptr<const Grid>& grid,
                           bool putDofsOnBoundaries) :
-    Base(grid), m_impl(new Impl), m_putDofsOnBoundaries(putDofsOnBoundaries)
+    Base(grid), m_impl(new Impl), m_segment(GridSegment::wholeGrid(*grid)),
+    m_putDofsOnBoundaries(putDofsOnBoundaries)
 {
-    if (grid->dim() != 2 || grid->dimWorld() != 3)
+    initialize();
+}
+
+template <typename BasisFunctionType>
+RaviartThomas0VectorSpace<BasisFunctionType>::
+RaviartThomas0VectorSpace(const shared_ptr<const Grid>& grid,
+                          const GridSegment& segment,
+                          bool putDofsOnBoundaries) :
+    Base(grid), m_impl(new Impl), m_segment(segment),
+    m_putDofsOnBoundaries(putDofsOnBoundaries)
+{
+    initialize();
+}
+
+template <typename BasisFunctionType>
+void RaviartThomas0VectorSpace<BasisFunctionType>::initialize()
+{
+    if (this->grid()->dim() != 2 || this->grid()->dimWorld() != 3)
         throw std::invalid_argument("RaviartThomas0VectorSpace::"
                                     "RaviartThomas0VectorSpace(): "
                                     "grid must be 2-dimensional and embedded "
                                     "in 3-dimensional space");
-    m_view = grid->leafView();
+    m_view = this->grid()->leafView();
     assignDofsImpl();
 }
 
@@ -194,6 +212,8 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
         const int localEdgeCount = element.subEntityCount<edgeCodim>();
         for (int i = 0; i < localEdgeCount; ++i) {
             int edgeIndex = indexSet.subEntityIndex(element, i, edgeCodim);
+            if (!m_segment.contains(edgeCodim, edgeIndex))
+                continue;
             ++acc(elementsAdjacentToEdges, edgeIndex);
             int& lowestIndex = acc(lowestIndicesOfElementsAdjacentToEdges,
                                    edgeIndex);
@@ -206,7 +226,8 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
     for (int i = 0; i < edgeCount; ++i) {
         assert(i < globalDofsOfEdges.size());
         int& globalDofOfEdge = acc(globalDofsOfEdges, i);
-        if (!m_putDofsOnBoundaries && globalDofOfEdge < 2)
+        if (globalDofOfEdge == 0 ||
+                (!m_putDofsOnBoundaries && globalDofOfEdge < 2))
             globalDofOfEdge = -1;
         else
             globalDofOfEdge = globalDofCount_++;
@@ -483,7 +504,7 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
     arma::Col<CoordinateType> dofPosition;
     for (size_t e = 0; e < m_local2globalDofs.size(); ++e)
         for (size_t v = 0; v < acc(m_local2globalDofs, e).size(); ++v)
-            if (acc(acc(m_local2globalDofs, e), v) >= 0) {
+            if (acc(acc(m_local2globalDofs, e), v) >= 0) { // is this LDOF used?
                 const arma::Mat<CoordinateType>& vertices =
                         acc(elementCorners, e);
                 BoundingBox<CoordinateType>& bbox = acc(bboxes, flatLdofIndex);
@@ -574,7 +595,7 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofNormals(
     assert(m_local2globalDofs.size() == elementCount);
     for (size_t e = 0; e < elementCount; ++e)
         for (size_t v = 0; v < m_local2globalDofs[e].size(); ++v)
-            if (m_local2globalDofs[e][v] >= 0) {
+            if (m_local2globalDofs[e][v] >= 0) { // is this LDOF used?
                 normals[flatLdofIndex].x = elementNormals(0, e);
                 normals[flatLdofIndex].y = elementNormals(1, e);
                 normals[flatLdofIndex].z = elementNormals(2, e);
