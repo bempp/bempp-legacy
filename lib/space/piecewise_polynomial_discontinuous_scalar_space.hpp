@@ -50,15 +50,34 @@ public:
     typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
     typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
 
-    /** \brief Construct a space spanned by a basis of polynomials of order
-     *  \p polynomialOrder on elements of the grid \p grid. */
+
+    /** \brief Constructor.
+     *
+     *  Construct a space of functions whose restrictions to
+     *  elements of the grid \p grid will be polynomials of order at most \p
+     *  polynomialOrder. */
     PiecewisePolynomialDiscontinuousScalarSpace(
             const shared_ptr<const Grid>& grid,
             int polynomialOrder);
+    /** \brief Constructor.
+     *
+     *  Construct a space of continuous functions whose restrictions to
+     *  elements of the grid \p grid will be polynomials of order at most \p
+     *  polynomialOrder. The space will contain only the basis functions deemed
+     *  to belong to the segment \p segment. If \p strictlyOnSegment is set to
+     *  \c false (default), the space will include those and only those basis
+     *  functions necessary to make the newly constructed space a superset (in
+     *  the mathematical sense) of a PiecewisePolynomialContinuousScalarSpace
+     *  defined on \p segment. Otherwise the space will include only the
+     *  functions defined on elements belonging to \p segment.
+     *
+     *  An exception is thrown if \p grid is a null pointer.
+     */
     PiecewisePolynomialDiscontinuousScalarSpace(
             const shared_ptr<const Grid>& grid,
             int polynomialOrder,
-            const GridSegment& segment);
+            const GridSegment& segment,
+            bool strictlyOnSegment = false);
     virtual ~PiecewisePolynomialDiscontinuousScalarSpace();
 
     virtual int domainDimension() const;
@@ -115,8 +134,9 @@ public:
             DofType dofType) const;
 
 private:
-    void initialize(const GridSegment& segment);
-    void assignDofsImpl(const GridSegment& segment);
+    void initialize(const GridSegment& segment, bool strictlyOnSegment = false);
+    void assignDofsImpl(const GridSegment& segment,
+                        bool strictlyOnSegment = false);
 
 private:
     /** \cond PRIVATE */

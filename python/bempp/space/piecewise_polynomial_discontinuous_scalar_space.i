@@ -16,11 +16,13 @@ boost::shared_ptr<Space<BasisFunctionType> >
 piecewisePolynomialDiscontinuousScalarSpace(
     const boost::shared_ptr<const Grid>& grid,
     int polynomialOrder,
-    const GridSegment* segment = 0)
+    const GridSegment* segment = 0,
+    bool strictlyOnSegment = false)
 {
     typedef PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType> Type;
     if (segment)
-        return boost::shared_ptr<Type>(new Type(grid, polynomialOrder, *segment));
+        return boost::shared_ptr<Type>(new Type(grid, polynomialOrder, *segment,
+                                                strictlyOnSegment));
     else
         return boost::shared_ptr<Type>(new Type(grid, polynomialOrder));
 }

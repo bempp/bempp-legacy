@@ -52,10 +52,11 @@ PiecewiseLinearDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid) :
 template <typename BasisFunctionType>
 PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
 PiecewiseLinearDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid,
-                                        const GridSegment& segment) :
+                                        const GridSegment& segment,
+                                        bool strictlyOnSegment) :
     PiecewiseLinearScalarSpace<BasisFunctionType>(grid)
 {
-    initialize(segment);
+    initialize(segment, strictlyOnSegment);
 }
 
 template <typename BasisFunctionType>
@@ -66,7 +67,7 @@ PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
 
 template <typename BasisFunctionType>
 void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::initialize(
-        const GridSegment& segment)
+        const GridSegment& segment, bool strictlyOnSegment)
 {
     const int gridDim = this->grid()->dim();
     if (gridDim != 1 && gridDim != 2)
@@ -74,7 +75,7 @@ void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::initialize(
                                     "PiecewiseLinearDiscontinuousScalarSpace(): "
                                     "only 1- and 2-dimensional grids are supported");
     m_view = this->grid()->leafView();
-    assignDofsImpl(segment);
+    assignDofsImpl(segment, strictlyOnSegment);
 }
 
 template <typename BasisFunctionType>
@@ -98,9 +99,8 @@ PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::isDiscontinuous() co
 
 template <typename BasisFunctionType>
 void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::assignDofsImpl(
-        const GridSegment& segment)
+        const GridSegment& segment, bool strictlyOnSegment)
 {
-    // TODO: pay attention to the segment parameter
     const int gridDim = this->domainDimension();
 
     const Mapper& elementMapper = m_view->elementMapper();
@@ -138,7 +138,8 @@ void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::assignDofsImpl(
         globalDofs.reserve(vertexCount);
         for (int i = 0; i < vertexCount; ++i) {
             int vertexIndex = indexSet.subEntityIndex(element, i, gridDim);
-            if (segment.contains(gridDim, vertexIndex)) {
+            if ((strictlyOnSegment && segment.contains(0, elementIndex)) ||
+                    (!strictlyOnSegment && segment.contains(gridDim, vertexIndex))) {
                 globalDofs.push_back(globalDofCount);
                 std::vector<LocalDof> localDofs(1, LocalDof(elementIndex, i));
                 m_global2localDofs.push_back(localDofs);

@@ -233,7 +233,8 @@ def createPiecewiseLinearContinuousScalarSpace(context, grid, segment=None):
     return _constructObjectTemplatedOnBasis(
         core, name, context.basisFunctionType(), grid, segment)
 
-def createPiecewiseLinearDiscontinuousScalarSpace(context, grid, segment=None):
+def createPiecewiseLinearDiscontinuousScalarSpace(
+    context, grid, segment=None, strictlyOnSegment=False):
     """
     Create and return a space of scalar functions defined on a grid (or its
     segment) and linear on each element of this grid (but not forced to be
@@ -249,6 +250,15 @@ def createPiecewiseLinearDiscontinuousScalarSpace(context, grid, segment=None):
        - segment (GridSegment)
             (Optional) Segment of the grid on which the space should be defined.
             If set to None (default), the whole grid will be used.
+       - strictlyOnSegment (bool)
+            (Optional) If set to False (default), the space will include all
+            basis functions associated with vertices belonging to the chosen
+            segment, regardless of whether the elements on which these functions
+            are defined belong themselves to the segment. As a result, the
+            resulting space will be (in the mathematical sense) a superset of a
+            PiecewiseLinearContinuousScalarSpace defined on the same segment. If
+            set to True, the space will only include basis functions defined on
+            elements belonging to the chosen segment.
 
     *Returns* a newly constructed Space_BasisFunctionType object, with
     BasisFunctionType determined automatically from the context argument and
@@ -257,7 +267,7 @@ def createPiecewiseLinearDiscontinuousScalarSpace(context, grid, segment=None):
     name = 'piecewiseLinearDiscontinuousScalarSpace'
     return _constructObjectTemplatedOnBasis(
         core, name, context.basisFunctionType(), grid,
-        segment)
+        segment, strictlyOnSegment)
 
 def createPiecewisePolynomialContinuousScalarSpace(
         context, grid, polynomialOrder, segment=None):
@@ -289,7 +299,8 @@ def createPiecewisePolynomialContinuousScalarSpace(
         segment)
 
 def createPiecewisePolynomialDiscontinuousScalarSpace(
-        context, grid, polynomialOrder, segment=None):
+        context, grid, polynomialOrder, segment=None,
+        strictlyOnSegment=False):
     """
     Create and return a space of scalar functions defined on a grid (or its
     segment) and having a polynomial representation of a given order on each
@@ -308,6 +319,13 @@ def createPiecewisePolynomialDiscontinuousScalarSpace(
        - segment (GridSegment)
             (Optional) Segment of the grid on which the space should be defined.
             If set to None (default), the whole grid will be used.
+       - strictlyOnSegment (bool)
+            (Optional) If set to False (default), the space will include those
+            and only those basis functions that are necessary to make the newly
+            constructed space a superset (in the mathematical sense) of a
+            PiecewisePolynomialContinuousScalarSpace defined on the chosen
+            segment. Otherwise the space will include only the functions defined
+            on elements belonging to the segment.
 
     *Returns* a newly constructed Space_BasisFunctionType object, with
     BasisFunctionType determined automatically from the context argument and
@@ -316,7 +334,7 @@ def createPiecewisePolynomialDiscontinuousScalarSpace(
     name = 'piecewisePolynomialDiscontinuousScalarSpace'
     return _constructObjectTemplatedOnBasis(
         core, name, context.basisFunctionType(), grid, polynomialOrder,
-        segment)
+        segment, strictlyOnSegment)
 
 def createUnitScalarSpace(context, grid):
     """
