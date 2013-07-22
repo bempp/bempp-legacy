@@ -50,8 +50,25 @@ public:
     typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
     typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
 
+    /** \brief Constructor.
+     *
+     *  Construct a space of piecewise linear, continuous scalar functions
+     *  defined on the grid \p grid.
+     *
+     *  An exception is thrown if \p grid is a null pointer.
+     */
     explicit PiecewiseLinearContinuousScalarSpace(
             const shared_ptr<const Grid>& grid);
+
+    /** \brief Constructor.
+     *
+     *  Construct a space of piecewise linear, continuous scalar functions
+     *  defined on the segment \p segment of the grid \p grid. More precisely,
+     *  the space will encompass those basis functions that are associated with
+     *  vertices belonging to \p segment.
+     *
+     *  An exception is thrown if \p grid is a null pointer.
+     */
     PiecewiseLinearContinuousScalarSpace(
             const shared_ptr<const Grid>& grid, const GridSegment& segment);
     virtual ~PiecewiseLinearContinuousScalarSpace();

@@ -50,11 +50,26 @@ public:
     typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
     typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
 
-    /** \brief Construct a space spanned by a basis of polynomials of order
-     *  \p polynomialOrder on elements of the grid \p grid. */
+    /** \brief Constructor.
+     *
+     *  Construct a space of continuous functions whose restrictions to
+     *  elements of the grid \p grid will be polynomials of order at most \p
+     *  polynomialOrder. */
     PiecewisePolynomialContinuousScalarSpace(
             const shared_ptr<const Grid>& grid,
             int polynomialOrder);
+    /** \brief Constructor.
+     *
+     *  Construct a space of continuous functions whose restrictions to
+     *  elements of the grid \p grid will be polynomials of order at most \p
+     *  polynomialOrder. The space will contain only the basis functions deemed
+     *  to belong to the segment \p segment; specifically, vertex functions
+     *  associated with vertices belonging to \p segment, edge functions
+     *  associated with edges belonging to \p segment and bubble function
+     *  associated with elements belonging to \p segment.
+     *
+     *  An exception is thrown if \p grid is a null pointer.
+     */
     PiecewisePolynomialContinuousScalarSpace(
             const shared_ptr<const Grid>& grid,
             int polynomialOrder,
