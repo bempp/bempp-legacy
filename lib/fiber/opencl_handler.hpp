@@ -37,6 +37,17 @@
 #include "CL/cl.hpp"
 #endif
 
+
+// TODO: rewrite the constructor of OpenClHandler.
+// It should take a bool useOpenCl and *in addition to that* openClOptions.
+// The role of the latter should be to e.g. select the device to use
+// and other configurable execution parameters.
+// If there are no such parameters, OpenClOptions should just be removed.
+
+// Justification: right now there can be a conflict: the user can invoke
+// AssemblyOptions::switchToOpenCl() and pass to it an instance of OpenClOptions
+// with useOpenCl set to false. This makes no sense.
+
 namespace Fiber
 {
 
