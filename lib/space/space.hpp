@@ -51,6 +51,7 @@ namespace Bempp
 
 /** \cond FORWARD_DECL */
 class Grid;
+class GridView;
 template <int codim> class Entity;
 template <int codim> class EntityPointer;
 template <typename ValueType> class DiscreteSparseBoundaryOperator;
@@ -96,8 +97,9 @@ public:
     /** \brief Constructor.
      *
      *  \param[in] grid Grid on which functions from this space should be
-     *  defined. */
-    explicit Space(const shared_ptr<const Grid>& grid);
+     *  defined.
+     *  \param[in] level Level of the grid to be used (default 0). */
+    explicit Space(const shared_ptr<const Grid>& grid,unsigned int level=0);
 
     /** \brief Destructor. */
     virtual ~Space();
@@ -156,6 +158,15 @@ public:
     /** \brief Shared pointer to the grid on which the functions from this space
      *  are defined. */
     shared_ptr<const Grid> grid() const { return m_grid; }
+
+    /** \brief Auto pointer to a specific grid level */
+    std::auto_ptr<GridView> gridLevelView(unsigned int level) const;
+
+    /** \brief Auto pointer to the grid level view, on which the space is based. */
+    std::auto_ptr<GridView> gridDefaultView() const;
+
+    /** \brief The default grid level that is used for this space. */
+    unsigned int level() const { return m_level; }
 
     /** \brief Reference to the basis attached to the specified element. */
     virtual const Fiber::Basis<BasisFunctionType>& basis(
@@ -399,6 +410,7 @@ public:
 private:
     /** \cond PRIVATE */
     shared_ptr<const Grid> m_grid;
+    unsigned int m_level;
     /** \endcond */
 };
 
