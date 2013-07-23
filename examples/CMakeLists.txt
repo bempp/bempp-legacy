@@ -9,6 +9,12 @@ set_target_properties(tutorial_dirichlet PROPERTIES
     INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/bempp/lib")
 install(TARGETS tutorial_dirichlet RUNTIME DESTINATION bempp/examples)
 
+
+add_executable(test_kernels_default_kernels test_kernels_default_kernels.cpp)
+target_link_libraries(test_kernels_default_kernels bempp ${TBB_LIBRARY})
+set_target_properties(test_kernels_default_kernels PROPERTIES
+    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/bempp/lib")
+install(TARGETS test_kernels_default_kernels RUNTIME DESTINATION bempp/examples)
 # Meshes
 file(GLOB_RECURSE EXAMPLE_MESHES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     *.msh sphere.txt)
