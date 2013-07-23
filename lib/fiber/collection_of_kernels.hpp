@@ -25,6 +25,7 @@
 
 #include "scalar_traits.hpp"
 
+#include <stdexcept>
 #include <utility>
 
 namespace Fiber
