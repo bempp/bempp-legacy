@@ -44,9 +44,24 @@ namespace Fiber
  *  \see modified_helmholtz_3d
  */
 
+
+template <typename ValueTypeX>
+inline ValueTypeX myexpm(const ValueTypeX& x)
+{
+    return std::exp(-x);
+}
+
+template <typename ValueTypeX>
+inline std::complex<ValueTypeX> myexpm(const std::complex<ValueTypeX>& x)
+{
+    return std::exp(-x.real()) * 
+        std::complex<ValueTypeX>(cos(x.imag()), -sin(x.imag()));
+}
+
 template <typename ValueType_>
 class ModifiedHelmholtz3dSingleLayerPotentialKernelFunctor
 {
+
 public:
     typedef ValueType_ ValueType;
     typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
@@ -82,8 +97,10 @@ public:
         }
         CoordinateType distance = sqrt(sum);
         result[0](0, 0) =
-                static_cast<CoordinateType>(1.0 / (4.0 * M_PI)) / distance *
-                exp(-m_waveNumber * distance);
+            static_cast<CoordinateType>(1.0 / (4.0 * M_PI)) / distance *
+            // m_waveNumber;
+            // exp(-m_waveNumber * distance);
+           myexpm(m_waveNumber * distance);
     }
 
     CoordinateType estimateRelativeScale(CoordinateType distance) const {
