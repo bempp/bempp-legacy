@@ -59,7 +59,8 @@ public:
     RaviartThomas0VectorSpace(
             const shared_ptr<const Grid>& grid,
             const GridSegment& segment,
-            bool putDofsOnBoundaries = false);
+            bool putDofsOnBoundaries = false,
+            bool strictlyOnSegment = false);
     virtual ~RaviartThomas0VectorSpace();
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
@@ -128,6 +129,7 @@ private:
     boost::scoped_ptr<Impl> m_impl;
     GridSegment m_segment;
     bool m_putDofsOnBoundaries;
+    bool m_strictlyOnSegment;
     std::auto_ptr<GridView> m_view;
     Fiber::RaviartThomas0Basis<3, BasisFunctionType> m_triangleBasis;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;

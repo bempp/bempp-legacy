@@ -10,12 +10,14 @@ template <typename BasisFunctionType>
 boost::shared_ptr<Space<BasisFunctionType> >
 raviartThomas0VectorSpace(const boost::shared_ptr<const Grid>& grid,
                           const GridSegment* segment = 0,
-                          bool putDofsOnBoundaries = false)
+                          bool putDofsOnBoundaries = false,
+                          bool strictlyOnSegment = false)
 {
     typedef RaviartThomas0VectorSpace<BasisFunctionType> Type;
     if (segment)
         return boost::shared_ptr<Type>(new Type(grid, *segment, 
-                                                putDofsOnBoundaries));
+                                                putDofsOnBoundaries,
+                                                strictlyOnSegment));
     else
         return boost::shared_ptr<Type>(new Type(grid, putDofsOnBoundaries));
 }

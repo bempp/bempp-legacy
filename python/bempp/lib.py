@@ -357,7 +357,8 @@ def createUnitScalarSpace(context, grid):
         core, 'unitScalarSpace', context.basisFunctionType(), grid)
 
 def createRaviartThomas0VectorSpace(context, grid, segment=None,
-                                    putDofsOnBoundaries=False):
+                                    putDofsOnBoundaries=False,
+                                    strictlyOnSegment=False):
     """
     Create and return a space of lowest order Raviart-Thomas vector functions
     with normal components continuous on boundaries between elements.
@@ -372,7 +373,7 @@ def createRaviartThomas0VectorSpace(context, grid, segment=None,
        - segment (GridSegment)
             (Optional) Segment of the grid on which the space should be defined.
             If set to None (default), the whole grid will be used.
-       - putDofsOnBoundaries (bool)       
+       - putDofsOnBoundaries (bool)
             (Optional) If set to False (default), degrees of freedom will not be
             placed on edges lying on boundaries of the grid. This is usually the
             desired behaviour for simulations of open perfectly conducting
@@ -386,7 +387,7 @@ def createRaviartThomas0VectorSpace(context, grid, segment=None,
     name = 'raviartThomas0VectorSpace'
     return _constructObjectTemplatedOnBasis(
         core, name, context.basisFunctionType(), grid, segment,
-        putDofsOnBoundaries)
+        putDofsOnBoundaries, strictlyOnSegment)
 
 def _constructOperator(className, context, domain, range, dualToRange, label=None):
     # determine basis function type

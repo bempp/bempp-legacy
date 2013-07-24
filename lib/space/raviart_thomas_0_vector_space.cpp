@@ -64,7 +64,8 @@ RaviartThomas0VectorSpace<BasisFunctionType>::
 RaviartThomas0VectorSpace(const shared_ptr<const Grid>& grid,
                           bool putDofsOnBoundaries) :
     Base(grid), m_impl(new Impl), m_segment(GridSegment::wholeGrid(*grid)),
-    m_putDofsOnBoundaries(putDofsOnBoundaries)
+    m_putDofsOnBoundaries(putDofsOnBoundaries),
+    m_strictlyOnSegment(false)
 {
     initialize();
 }
@@ -73,9 +74,11 @@ template <typename BasisFunctionType>
 RaviartThomas0VectorSpace<BasisFunctionType>::
 RaviartThomas0VectorSpace(const shared_ptr<const Grid>& grid,
                           const GridSegment& segment,
-                          bool putDofsOnBoundaries) :
+                          bool putDofsOnBoundaries,
+                          bool strictlyOnSegment) :
     Base(grid), m_impl(new Impl), m_segment(segment),
-    m_putDofsOnBoundaries(putDofsOnBoundaries)
+    m_putDofsOnBoundaries(putDofsOnBoundaries),
+    m_strictlyOnSegment(strictlyOnSegment)
 {
     initialize();
 }
@@ -200,10 +203,9 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
 
     std::vector<int> lowestIndicesOfElementsAdjacentToEdges(
                 edgeCount, std::numeric_limits<int>::max());
-    std::vector<int> globalDofsOfEdges;
     // number of element adjacent to each edge
-    std::vector<int> elementsAdjacentToEdges;
-    elementsAdjacentToEdges.resize(edgeCount, 0);
+    std::vector<int> elementsAdjacentToEdges(edgeCount, 0);
+    std::vector<bool> noAdjacentElementsAreInSegment(edgeCount, true);
     std::auto_ptr<EntityIterator<elementCodim> > it =
             m_view->entityIterator<elementCodim>();
     while (!it->finished()) {
@@ -215,6 +217,7 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
             if (!m_segment.contains(edgeCodim, edgeIndex))
                 continue;
             ++acc(elementsAdjacentToEdges, edgeIndex);
+            acc(noAdjacentElementsAreInSegment, edgeIndex) = false;
             int& lowestIndex = acc(lowestIndicesOfElementsAdjacentToEdges,
                                    edgeIndex);
             lowestIndex = std::min(lowestIndex, elementIndex);
@@ -222,12 +225,13 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
         it->next();
     }
     int globalDofCount_ = 0;
+    std::vector<int> globalDofsOfEdges;
     globalDofsOfEdges.swap(elementsAdjacentToEdges);
     for (int i = 0; i < edgeCount; ++i) {
-        assert(i < globalDofsOfEdges.size());
         int& globalDofOfEdge = acc(globalDofsOfEdges, i);
         if (globalDofOfEdge == 0 ||
-                (!m_putDofsOnBoundaries && globalDofOfEdge < 2))
+                (!m_putDofsOnBoundaries && globalDofOfEdge < 2) ||
+                (m_strictlyOnSegment && acc(noAdjacentElementsAreInSegment, i)))
             globalDofOfEdge = -1;
         else
             globalDofOfEdge = globalDofCount_++;
@@ -262,6 +266,8 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
         const Entity<elementCodim>& element = it->entity();
         const Geometry& geo = element.geometry();
         EntityIndex elementIndex = elementMapper.entityIndex(element);
+        bool elementContained = m_strictlyOnSegment ?
+                    m_segment.contains(elementCodim, elementIndex) : true;
 
         geo.getCorners(vertices);
         const int vertexCount = vertices.n_cols;
@@ -282,7 +288,9 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
         globalDofWeights.reserve(edgeCount);
         for (int i = 0; i < edgeCount; ++i) {
             int edgeIndex = indexSet.subEntityIndex(element, i, edgeCodim);
-            GlobalDofIndex globalDofIndex = acc(globalDofsOfEdges, edgeIndex);
+            GlobalDofIndex globalDofIndex =
+                    elementContained ? acc(globalDofsOfEdges, edgeIndex)
+                                     : -1;
             // Handle Dune's funny subentity indexing order. This code is
             // only valid for triangular elements.
             if (i == 0) {
@@ -312,6 +320,9 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
             m_flatLocal2localDofs.push_back(LocalDof(elementIndex, i));
         }
         it->next();
+        for (int i = 0; i < globalDofs.size(); ++i)
+            std::cout << globalDofs[i] << " ";
+        std::cout << std::endl;
     }
 
 #ifndef NDEBUG
