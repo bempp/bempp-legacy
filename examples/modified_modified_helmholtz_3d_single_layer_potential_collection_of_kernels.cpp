@@ -10,6 +10,9 @@
 #include "common/armadillo_fwd.hpp"
 #include <stdexcept>
 
+namespace Fiber
+{
+
 template <typename ValueType>
 inline ValueType myexpm(const ValueType& x)
 {
@@ -22,9 +25,6 @@ inline std::complex<ValueType> myexpm(const std::complex<ValueType>& x)
     return std::exp(-x.real()) * 
         std::complex<ValueType>(cos(x.imag()), -sin(x.imag()));
 }
-
-namespace Fiber
-{
 
 template <typename ValueType>
 void ModifiedModifiedHelmholtz3dSingleLayerPotentialCollectionOfKernels<ValueType>::evaluateOnGrid(
@@ -52,14 +52,14 @@ void ModifiedModifiedHelmholtz3dSingleLayerPotentialCollectionOfKernels<ValueTyp
 // #pragma vector aligned
 //#pragma ivdep
     for (size_t trialIndex = 0; trialIndex < trialPointCount; ++trialIndex)
-//#pragma ivdep
+#pragma ivdep
        for (size_t testIndex = 0; testIndex < testPointCount; ++testIndex) {
            CoordinateType sum = 0;
            for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex)
            {
                CoordinateType diff =
-                   // testGeomData.globals[coordIndex][testIndex] -
-                   // trialGeomData.globals[coordIndex][trialIndex];
+                   testGeomData.globals[coordIndex][testIndex] -
+                   trialGeomData.globals[coordIndex][trialIndex];
                    testGlobals[coordIndex][testIndex] -
                    trialGlobals[coordIndex][trialIndex];
                sum += diff * diff;
