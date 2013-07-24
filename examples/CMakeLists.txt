@@ -39,6 +39,12 @@ set_target_properties(test_kernels_modified_layout PROPERTIES
     INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/bempp/lib")
 install(TARGETS test_kernels_modified_layout RUNTIME DESTINATION bempp/examples)
 
+# add_executable(test_kernels_vc_layout test_kernels_vc_layout.cpp  vc_modified_helmholtz_3d_single_layer_potential_collection_of_kernels.cpp)
+# target_link_libraries(test_kernels_vc_layout bempp ${TBB_LIBRARY} /home/wojtek/src/Vc-0.7.1/build/libVc.a)
+# set_target_properties(test_kernels_vc_layout PROPERTIES
+#     INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/bempp/lib")
+# install(TARGETS test_kernels_vc_layout RUNTIME DESTINATION bempp/examples)
+
 # Meshes
 file(GLOB_RECURSE EXAMPLE_MESHES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     *.msh sphere.txt)

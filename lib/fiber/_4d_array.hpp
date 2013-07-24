@@ -39,6 +39,8 @@ template <typename T> class _1dSliceOf4dArray;
 template <typename T> class Const4dSliceOf4dArray;
 template <typename T> class Const2dSliceOf4dArray;
 template <typename T> class Const1dSliceOf4dArray;
+template <typename T> class _2dSectionOf4dArray;
+template <typename T> class Const2dSectionOf4dArray;
 /** \endcond */
 
 /** \brief Simple implementation of a 4D Fortran-ordered array.
@@ -231,6 +233,54 @@ private:
 private:
     const _4dArray<T>& m_array;
     size_t m_index1, m_index2, m_index3;
+};
+
+/** \brief Lightweight encapsulation of a 2D section of a 4d array. */
+template <typename T>
+class _2dSectionOf4dArray
+{
+public:
+    _2dSectionOf4dArray(_4dArray<T>& array, size_t index0, size_t index1);
+
+    /** \brief Returns a reference to self.
+
+      Useful to make a temporary _2dSectionOf4dArray<T> an rvalue and pass it to
+      a function accepting a reference to a non-const _2dSectionOf4dArray<T>.
+
+      Once we switch to C++11, this function can be removed because of the new
+      support for rvalue references. */
+    _2dSectionOf4dArray& self();
+
+    const T& operator()(size_t index0, size_t index1) const;
+    T& operator()(size_t index0, size_t index1);
+
+    size_t extent(size_t dimension) const;
+
+private:
+    void check_dimension(size_t dimension) const;
+
+private:
+    _4dArray<T>& m_array;
+    size_t m_index0, m_index1;
+};
+
+/** \brief Lightweight encapsulation of a 2D section of a constant 4d array. */
+template <typename T>
+class _2dSectionOfConst4dArray
+{
+public:
+    _2dSectionOfConst4dArray(const _4dArray<T>& array, size_t index0, size_t index1);
+
+    const T& operator()(size_t index0, size_t index1) const;
+
+    size_t extent(size_t dimension) const;
+
+private:
+    void check_dimension(size_t dimension) const;
+
+private:
+    const _4dArray<T>& m_array;
+    size_t m_index0, m_index1;
 };
 
 } // namespace Fiber

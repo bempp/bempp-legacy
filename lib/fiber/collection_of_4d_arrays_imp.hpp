@@ -112,6 +112,20 @@ inline CollectionOf1dSlicesOfConst4dArrays<T> CollectionOf4dArrays<T>::const_sli
 }
 
 template <typename T>
+inline CollectionOf2dSectionsOf4dArrays<T> CollectionOf4dArrays<T>::section(
+    size_t index0, size_t index1)
+{
+    return CollectionOf2dSectionsOf4dArrays<T>(*this, index0, index1);
+}
+
+template <typename T>
+inline CollectionOf2dSectionsOfConst4dArrays<T> CollectionOf4dArrays<T>::const_section(
+        size_t index0, size_t index1) const
+{
+    return CollectionOf2dSectionsOfConst4dArrays<T>(*this, index0, index1);
+}
+
+template <typename T>
 inline _4dArray<T>& CollectionOf4dArrays<T>::array(size_t i)
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
@@ -289,6 +303,57 @@ operator[](size_t index) const {
 
 template <typename T>
 inline size_t CollectionOf1dSlicesOfConst4dArrays<T>::size() const {
+    return m_collection.size();
+}
+
+// CollectionOf2dSectionsOf4dArrays
+
+template <typename T>
+inline CollectionOf2dSectionsOf4dArrays<T>::
+CollectionOf2dSectionsOf4dArrays(CollectionOf4dArrays<T>& collection, size_t index0, size_t index1) :
+    m_collection(collection), m_index0(index0), m_index1(index1)
+{}
+
+template <typename T>
+inline CollectionOf2dSectionsOf4dArrays<T>& CollectionOf2dSectionsOf4dArrays<T>::
+self() {
+    return *this;
+}
+
+template <typename T>
+inline _2dSectionOfConst4dArray<T> CollectionOf2dSectionsOf4dArrays<T>::
+operator[](size_t index) const {
+    return _2dSectionOfConst4dArray<T>(m_collection[index], m_index0, m_index1);
+}
+
+template <typename T>
+inline _2dSectionOf4dArray<T> CollectionOf2dSectionsOf4dArrays<T>::
+operator[](size_t index) {
+    return _2dSectionOf4dArray<T>(m_collection[index], m_index0, m_index1);
+}
+
+template <typename T>
+inline size_t CollectionOf2dSectionsOf4dArrays<T>::size() const {
+    return m_collection.size();
+}
+
+// CollectionOf2dSectionsOfConst4dArrays
+
+template <typename T>
+inline CollectionOf2dSectionsOfConst4dArrays<T>::
+CollectionOf2dSectionsOfConst4dArrays(const CollectionOf4dArrays<T>& collection,
+                                    size_t index0, size_t index1) :
+        m_collection(collection), m_index0(index0), m_index1(index1)
+{}
+
+template <typename T>
+inline _2dSectionOfConst4dArray<T> CollectionOf2dSectionsOfConst4dArrays<T>::
+operator[](size_t index) const {
+    return _2dSectionOfConst4dArray<T>(m_collection[index], m_index0, m_index1);
+}
+
+template <typename T>
+inline size_t CollectionOf2dSectionsOfConst4dArrays<T>::size() const {
     return m_collection.size();
 }
 

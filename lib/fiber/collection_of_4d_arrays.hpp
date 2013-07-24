@@ -35,6 +35,8 @@ template <typename T> class CollectionOf1dSlicesOf4dArrays;
 template <typename T> class CollectionOf3dSlicesOfConst4dArrays;
 template <typename T> class CollectionOf2dSlicesOfConst4dArrays;
 template <typename T> class CollectionOf1dSlicesOfConst4dArrays;
+template <typename T> class CollectionOf2dSectionsOf4dArrays;
+template <typename T> class CollectionOf2dSectionsOfConst4dArrays;
 /** \endcond */
 
 template <typename T>
@@ -58,6 +60,9 @@ public:
     CollectionOf2dSlicesOfConst4dArrays<T> const_slice(size_t index2, size_t index3) const;
     CollectionOf1dSlicesOf4dArrays<T> slice(size_t index1, size_t index2, size_t index3);
     CollectionOf1dSlicesOfConst4dArrays<T> const_slice(size_t index1, size_t index2, size_t index3) const;
+
+    CollectionOf2dSectionsOf4dArrays<T> section(size_t index0, size_t index1);
+    CollectionOf2dSectionsOfConst4dArrays<T> const_section(size_t index0, size_t index1) const;
 
 private:
     _4dArray<T>& array(size_t index);
@@ -199,6 +204,48 @@ public:
 private:
     const CollectionOf4dArrays<T>& m_collection;
     size_t m_index1, m_index2, m_index3;
+};
+
+template <typename T>
+class CollectionOf2dSectionsOf4dArrays
+{
+public:
+    CollectionOf2dSectionsOf4dArrays(CollectionOf4dArrays<T>& collection, size_t index0, size_t index1);
+
+    /** \brief Returns a reference to self.
+
+      Useful to make a temporary CollectionOf2dSlicesOf4dArrays<T> an rvalue
+      and pass it to a function accepting a reference to a non-const
+      CollectionOf2dSlicesOf4dArrays<T>.
+
+      Once we switch to C++11, this function can be removed because of the new
+      support for rvalue references. */
+    CollectionOf2dSectionsOf4dArrays& self();
+
+    _2dSectionOfConst4dArray<T> operator[](size_t index) const;
+    _2dSectionOf4dArray<T> operator[](size_t index);
+
+    size_t size() const;
+
+private:
+    CollectionOf4dArrays<T>& m_collection;
+    size_t m_index0, m_index1;
+};
+
+template <typename T>
+class CollectionOf2dSectionsOfConst4dArrays
+{
+public:
+    CollectionOf2dSectionsOfConst4dArrays(
+            const CollectionOf4dArrays<T>& collection, size_t index0, size_t index1);
+
+    _2dSectionOfConst4dArray<T> operator[](size_t index) const;
+
+    size_t size() const;
+
+private:
+    const CollectionOf4dArrays<T>& m_collection;
+    size_t m_index0, m_index1;
 };
 
 } // namespace Fiber

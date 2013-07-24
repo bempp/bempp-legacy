@@ -19,6 +19,7 @@
 // THE SOFTWARE.
 
 #include <stdexcept>
+#include <stdlib.h>
 
 namespace Fiber
 {
@@ -98,7 +99,9 @@ template <typename T>
 inline void _4dArray<T>::free_memory()
 {
     if (m_owns && m_storage)
-        delete[] m_storage;
+        // delete[] m_storage;
+        // _mm_free(m_storage);
+        free(m_storage);
     m_owns = false;
     m_storage = 0;
 }
@@ -153,14 +156,20 @@ inline void _4dArray<T>::set_size(size_t extent0, size_t extent1, size_t extent2
     }
     else {
         if (m_owns && m_storage) {
-            delete[] m_storage;
+            // delete[] m_storage;
+            // _mm_free(m_storage);
+            free(m_storage);
             m_storage = 0;
         }
         m_extents[0] = extent0;
         m_extents[1] = extent1;
         m_extents[2] = extent2;
         m_extents[3] = extent3;
-        m_storage = new T[extent0 * extent1 * extent2 * extent3];
+        // m_storage = new T[extent0 * extent1 * extent2 * extent3];
+        // m_storage = (T*)_mm_malloc(extent0 * extent1 * extent2 * extent3 * sizeof(T), 16);
+        void* tmp;
+        posix_memalign(&tmp, 16, extent0 * extent1 * extent2 * extent3 * sizeof(T));
+        m_storage = (T*) tmp;
         m_owns = true;
     }
 }
@@ -401,6 +410,70 @@ template <typename T>
 inline void _1dSliceOfConst4dArray<T>::check_dimension(size_t dimension) const {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
     if (0 < dimension)
+        throw std::invalid_argument("Invalid dimension");
+#endif
+}
+
+// _2dSectionOf4dArray
+
+template <typename T>
+inline _2dSectionOf4dArray<T>::_2dSectionOf4dArray(
+    _4dArray<T>& array, size_t index0, size_t index1) :
+    m_array(array), m_index0(index0), m_index1(index1)
+{}
+
+template <typename T>
+inline _2dSectionOf4dArray<T>& _2dSectionOf4dArray<T>::self() {
+    return *this;
+}
+
+template <typename T>
+inline const T& _2dSectionOf4dArray<T>::operator()(size_t index2, size_t index3) const {
+    return m_array(m_index0, m_index1, index2, index3);
+}
+
+template <typename T>
+inline T& _2dSectionOf4dArray<T>::operator()(size_t index2, size_t index3) {
+    return m_array(m_index0, m_index1, index2, index3);
+}
+
+template <typename T>
+inline size_t _2dSectionOf4dArray<T>::extent(size_t dimension) const {
+    check_dimension(dimension);
+    return m_array.extent(2 + dimension);
+}
+
+template <typename T>
+inline void _2dSectionOf4dArray<T>::check_dimension(size_t dimension) const {
+#ifdef FIBER_CHECK_ARRAY_BOUNDS
+    if (1 < dimension)
+        throw std::invalid_argument("Invalid dimension");
+#endif
+}
+
+// _2dSectionOfConst4dArray
+
+template <typename T>
+inline _2dSectionOfConst4dArray<T>::_2dSectionOfConst4dArray(
+        const _4dArray<T>& array, size_t index0, size_t index1) :
+    m_array(array), m_index0(index0), m_index1(index1)
+{}
+
+template <typename T>
+inline const T& _2dSectionOfConst4dArray<T>::operator()(size_t index2, size_t index3) const {
+    return m_array(m_index0, m_index1, index2, index3);
+}
+
+template <typename T>
+inline size_t _2dSectionOfConst4dArray<T>::extent(size_t dimension) const {
+    check_dimension(dimension);
+    return m_array.extent(2 + dimension);
+}
+
+template <typename T>
+inline void _2dSectionOfConst4dArray<T>::check_dimension(size_t dimension) const {
+#ifdef FIBER_CHECK_ARRAY_BOUNDS
+    if (1 < dimension)
         throw std::invalid_argument("Invalid dimension");
 #endif
 }
