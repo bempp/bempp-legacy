@@ -109,6 +109,44 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_segment, Res
     global2local_matches_local2global<BFT>(*space);
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_segment_with_strictlyOnSegment_enabled, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+
+    GridSegment segment = gridSegmentWithPositiveX(*grid);
+    shared_ptr<Space<BFT> > space(
+        (new PiecewiseLinearContinuousScalarSpace<BFT>(
+             grid, segment, true /* strictlyOnSegment */)));
+
+    local2global_matches_global2local<BFT>(*space);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_segment_with_strictlyOnSegment_enabled, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+
+    GridSegment segment = gridSegmentWithPositiveX(*grid);
+    shared_ptr<Space<BFT> > space(
+        (new PiecewiseLinearContinuousScalarSpace<BFT>(
+             grid, segment, true /* strictlyOnSegment */)));
+
+    global2local_matches_local2global<BFT>(*space);
+}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE(complement_is_really_a_complement_, ResultType, result_types)
 {
     typedef ResultType RT;

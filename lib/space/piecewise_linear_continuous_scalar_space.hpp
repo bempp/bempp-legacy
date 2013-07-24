@@ -70,7 +70,9 @@ public:
      *  An exception is thrown if \p grid is a null pointer.
      */
     PiecewiseLinearContinuousScalarSpace(
-            const shared_ptr<const Grid>& grid, const GridSegment& segment);
+            const shared_ptr<const Grid>& grid,
+            const GridSegment& segment,
+            bool strictlyOnSegment = false);
     virtual ~PiecewiseLinearContinuousScalarSpace();
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
@@ -118,6 +120,7 @@ private:
 private:
     /** \cond PRIVATE */
     GridSegment m_segment;
+    bool m_strictlyOnSegment;
     std::auto_ptr<GridView> m_view;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;

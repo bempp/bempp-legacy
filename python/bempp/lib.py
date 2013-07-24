@@ -209,7 +209,8 @@ def createPiecewiseConstantScalarSpace(context, grid, segment=None):
     return _constructObjectTemplatedOnBasis(
         core, name, context.basisFunctionType(), grid, segment)
 
-def createPiecewiseLinearContinuousScalarSpace(context, grid, segment=None):
+def createPiecewiseLinearContinuousScalarSpace(context, grid, segment=None,
+                                               strictlyOnSegment=False):
     """
     Create and return a space of globally continuous scalar functions defined
     on a grid (or its segment) and linear on each element of this grid.
@@ -231,7 +232,8 @@ def createPiecewiseLinearContinuousScalarSpace(context, grid, segment=None):
     """
     name = 'piecewiseLinearContinuousScalarSpace'
     return _constructObjectTemplatedOnBasis(
-        core, name, context.basisFunctionType(), grid, segment)
+        core, name, context.basisFunctionType(), grid, segment,
+        strictlyOnSegment)
 
 def createPiecewiseLinearDiscontinuousScalarSpace(
     context, grid, segment=None, strictlyOnSegment=False):

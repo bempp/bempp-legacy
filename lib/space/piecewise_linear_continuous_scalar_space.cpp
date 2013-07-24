@@ -46,7 +46,8 @@ template <typename BasisFunctionType>
 PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
 PiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid) :
     PiecewiseLinearScalarSpace<BasisFunctionType>(grid),
-    m_segment(GridSegment::wholeGrid(*grid))
+    m_segment(GridSegment::wholeGrid(*grid)),
+    m_strictlyOnSegment(false)
 {
     initialize();
 }
@@ -54,9 +55,11 @@ PiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid) :
 template <typename BasisFunctionType>
 PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
 PiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid,
-                                     const GridSegment& segment) :
+                                     const GridSegment& segment,
+                                     bool strictlyOnSegment) :
     PiecewiseLinearScalarSpace<BasisFunctionType>(grid),
-    m_segment(segment)
+    m_segment(segment),
+    m_strictlyOnSegment(strictlyOnSegment)
 {
     initialize();
 }
@@ -90,7 +93,8 @@ PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::discontinuousSpace(
                 DiscontinuousSpace;
         if (!m_discontinuousSpace)
             m_discontinuousSpace.reset(
-                        new DiscontinuousSpace(this->grid(), m_segment));
+                        new DiscontinuousSpace(this->grid(), m_segment,
+                                               m_strictlyOnSegment));
     }
     return m_discontinuousSpace;
 }
@@ -106,6 +110,7 @@ template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
 {
     const int gridDim = this->domainDimension();
+    const int elementCodim = 0;
 
     const Mapper& elementMapper = m_view->elementMapper();
     const IndexSet& indexSet = m_view->indexSet();
@@ -130,12 +135,53 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
 //        }
 //    }
 
-    std::vector<int> globalDofIndices(vertexCount);
+//    std::vector<bool> allAdjacentElementsInsideSegment(vertexCount, true);
+    std::vector<int> globalDofIndices(vertexCount, 0);
     m_segment.markExcludedEntities(gridDim, globalDofIndices);
+    std::vector<bool> segmentContainsElement;
+    if (m_strictlyOnSegment) {
+        std::vector<bool> noAdjacentElementsInsideSegment(vertexCount, true);
+        segmentContainsElement.resize(elementCount);
+        std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+        while (!it->finished()) {
+            const Entity<0>& element = it->entity();
+            EntityIndex elementIndex = elementMapper.entityIndex(element);
+            bool elementContained =
+                    m_segment.contains(elementCodim, elementIndex);
+            acc(segmentContainsElement, elementIndex) = elementContained;
+
+            int cornerCount;
+            if (gridDim == 1)
+                cornerCount = element.template subEntityCount<1>();
+            else // gridDim == 2
+                cornerCount = element.template subEntityCount<2>();
+            for (int i = 0; i < cornerCount; ++i) {
+                int vertexIndex = indexSet.subEntityIndex(element, i, gridDim);
+                if (elementContained)
+                    acc(noAdjacentElementsInsideSegment, vertexIndex) = false;
+//                else
+//                    acc(allAdjacentElementsInsideSegment, vertexIndex) = false;
+            }
+            it->next();
+        }
+        // Remove all DOFs associated with vertices lying next to no element
+        // belonging to the grid segment
+        for (size_t i = 0; i < vertexCount; ++i)
+            if (acc(noAdjacentElementsInsideSegment, i))
+                acc(globalDofIndices, i) = -1;
+    }
     int globalDofCount_ = 0;
     for (int vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
         if (acc(globalDofIndices, vertexIndex) == 0) // not excluded
             acc(globalDofIndices, vertexIndex) = globalDofCount_++;
+
+//    // vertices not belonging to segment will be marked with -1
+//    std::vector<int> globalDofIndices(vertexCount, 0);
+//    m_segment.markExcludedEntities(gridDim, globalDofIndices);
+//    int globalDofCount_ = 0;
+//    for (int vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
+//        if (acc(globalDofIndices, vertexIndex) == 0) // not excluded
+//            acc(globalDofIndices, vertexIndex) = globalDofCount_++;
 
 //    {
 //        GridSegment::const_iterator vertexIt =
@@ -169,6 +215,8 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
     while (!it->finished()) {
         const Entity<0>& element = it->entity();
         EntityIndex elementIndex = elementMapper.entityIndex(element);
+        bool elementContained = m_strictlyOnSegment ?
+                    acc(segmentContainsElement, elementIndex) : true;
 
         int cornerCount;
         if (gridDim == 1)
@@ -183,7 +231,9 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
         globalDofs.resize(cornerCount);
         for (int i = 0; i < cornerCount; ++i) {
             int vertexIndex = indexSet.subEntityIndex(element, i, gridDim);
-            int globalDofIndex = acc(globalDofIndices, vertexIndex);
+            int globalDofIndex =
+                    elementContained ? acc(globalDofIndices, vertexIndex)
+                                     : -1;
             acc(globalDofs, i) = globalDofIndex;
             if (globalDofIndex >= 0) {
                 acc(m_global2localDofs, globalDofIndex).push_back(
