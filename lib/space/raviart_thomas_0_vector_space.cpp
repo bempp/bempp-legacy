@@ -329,9 +329,6 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
             ++flatLocalDofCount;
         }
         it->next();
-        for (int i = 0; i < globalDofs.size(); ++i)
-            std::cout << globalDofs[i] << " ";
-        std::cout << std::endl;
     }
 
 #ifndef NDEBUG
