@@ -387,6 +387,46 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_cubic_space_
     global2local_matches_local2global<BFT>(*space);
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE(globalDofCount_is_0_for_quadratic_space_and_segment_with_no_elements_with_strictlyOnSegment_enabled, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-domains.msh", false /* verbose */);
+
+    GridSegment segment = GridSegment::closedDomain(*grid, 1)
+            .intersection(GridSegment::closedDomain(*grid, 2));
+    shared_ptr<Space<BFT> > space(
+        (new PiecewisePolynomialDiscontinuousScalarSpace<BFT>(
+             grid, 2, segment, true /* strictlyOnSegment */)));
+
+    BOOST_CHECK_EQUAL(space->globalDofCount(), 0);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(globalDofCount_is_not_0_for_quadratic_space_and_segment_with_no_elements_with_strictlyOnSegment_enabled, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-domains.msh", false /* verbose */);
+
+    GridSegment segment = GridSegment::closedDomain(*grid, 1)
+            .intersection(GridSegment::closedDomain(*grid, 2));
+    shared_ptr<Space<BFT> > space(
+        (new PiecewisePolynomialDiscontinuousScalarSpace<BFT>(
+             grid, 2, segment, false /* no strictlyOnSegment */)));
+
+    BOOST_CHECK_NE(space->globalDofCount(), 0);
+}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE(complement_is_really_a_complement_for_quadratic_space, ResultType, result_types)
 {
     typedef ResultType RT;
