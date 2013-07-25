@@ -272,7 +272,8 @@ def createPiecewiseLinearDiscontinuousScalarSpace(
         segment, strictlyOnSegment)
 
 def createPiecewisePolynomialContinuousScalarSpace(
-        context, grid, polynomialOrder, segment=None):
+        context, grid, polynomialOrder, segment=None,
+        strictlyOnSegment=False):
     """
     Create and return a space of globally continuous scalar functions defined on
     a grid (or its segment) and having a polynomial representation of a given
@@ -298,7 +299,7 @@ def createPiecewisePolynomialContinuousScalarSpace(
     name = 'piecewisePolynomialContinuousScalarSpace'
     return _constructObjectTemplatedOnBasis(
         core, name, context.basisFunctionType(), grid, polynomialOrder,
-        segment)
+        segment, strictlyOnSegment)
 
 def createPiecewisePolynomialDiscontinuousScalarSpace(
         context, grid, polynomialOrder, segment=None,

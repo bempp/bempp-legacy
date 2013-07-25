@@ -73,7 +73,8 @@ public:
     PiecewisePolynomialContinuousScalarSpace(
             const shared_ptr<const Grid>& grid,
             int polynomialOrder,
-            const GridSegment& segment);
+            const GridSegment& segment,
+            bool strictlyOnSegment = false);
     virtual ~PiecewisePolynomialContinuousScalarSpace();
 
     virtual int domainDimension() const;
@@ -137,13 +138,11 @@ private:
     /** \cond PRIVATE */
     int m_polynomialOrder;
     GridSegment m_segment;
+    bool m_strictlyOnSegment;
     boost::scoped_ptr<Fiber::Basis<BasisFunctionType> > m_triangleBasis;
     std::auto_ptr<GridView> m_view;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
-    size_t m_vertexGlobalDofCount;
-    size_t m_edgeGlobalDofCount;
-    size_t m_bubbleGlobalDofCount;
     std::vector<LocalDof> m_flatLocal2localDofs;
     size_t m_flatLocalDofCount;
     std::vector<BoundingBox<CoordinateType> > m_globalDofBoundingBoxes;

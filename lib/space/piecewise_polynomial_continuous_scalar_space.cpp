@@ -50,7 +50,8 @@ PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
 PiecewisePolynomialContinuousScalarSpace(const shared_ptr<const Grid>& grid,
                                          int polynomialOrder) :
     ScalarSpace<BasisFunctionType>(grid), m_polynomialOrder(polynomialOrder),
-    m_flatLocalDofCount(0), m_segment(GridSegment::wholeGrid(*grid))
+    m_flatLocalDofCount(0), m_segment(GridSegment::wholeGrid(*grid)),
+    m_strictlyOnSegment(false)
 {
     initialize();
 }
@@ -59,9 +60,11 @@ template <typename BasisFunctionType>
 PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
 PiecewisePolynomialContinuousScalarSpace(const shared_ptr<const Grid>& grid,
                                          int polynomialOrder,
-                                         const GridSegment& segment) :
+                                         const GridSegment& segment,
+                                         bool strictlyOnSegment) :
     ScalarSpace<BasisFunctionType>(grid), m_polynomialOrder(polynomialOrder),
-    m_flatLocalDofCount(0), m_segment(segment)
+    m_flatLocalDofCount(0), m_segment(segment),
+    m_strictlyOnSegment(strictlyOnSegment)
 {
     initialize();
 }
@@ -206,33 +209,42 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl
 
     // Map vertices to global dofs
     const int vertexCount = m_view->entityCount(2);
+    // At first, the elements of this vector will be set to the number of
+    // DOFs corresponding to a given vertex or to -1 if that vertex is to be
+    // ignored
     std::vector<GlobalDofIndex> vertexGlobalDofs(vertexCount);
-    int globalDofCount_ = 0;
     for (int i = 0; i < vertexCount; ++i)
         if (m_segment.contains(gridDim, i))
-            acc(vertexGlobalDofs, (size_t)i) = globalDofCount_++;
+            acc(vertexGlobalDofs, (size_t)i) = 1;
         else
             acc(vertexGlobalDofs, (size_t)i) = -1;
-    m_vertexGlobalDofCount = globalDofCount_;
 
     // Map edges to global dofs
     const int edgeCount = m_view->entityCount(1);
     const int internalDofCountPerEdge = m_polynomialOrder - 1;
+    // At first, the elements of this vector will be set to the number of
+    // DOFs corresponding to a given edge or to -1 if that edge is to be
+    // ignored
     std::vector<GlobalDofIndex> edgeStartingGlobalDofs(edgeCount);
     for (int i = 0; i < edgeCount; ++i)
-        if (m_segment.contains(gridDim - 1, i)) {
-            acc(edgeStartingGlobalDofs, i) = globalDofCount_;
-            globalDofCount_ += internalDofCountPerEdge;
-        } else
+        if (m_segment.contains(gridDim - 1, i))
+            acc(edgeStartingGlobalDofs, i) = internalDofCountPerEdge;
+        else
             acc(edgeStartingGlobalDofs, i) = -1;
-    m_edgeGlobalDofCount = globalDofCount_ - m_vertexGlobalDofCount;
 
     // Map element interiors to global dofs
+    // and, if striclyOnSegment is set, detect vertices and edges not belonging
+    // to any element on segment
     const int bubbleDofCountPerTriangle =
         std::max(0, (m_polynomialOrder - 1) * (m_polynomialOrder - 2) / 2);
     const int bubbleDofCountPerQuad =
         std::max(0, (m_polynomialOrder - 1) * (m_polynomialOrder - 1));
-    std::vector<int> bubbleDofCounts(elementCount);
+    // At first, the elements of this vector will be set to the number of
+    // DOFs corresponding to a given element or to -1 if that element is to be
+    // ignored
+    std::vector<GlobalDofIndex> bubbleStartingGlobalDofs(elementCount);
+    std::vector<bool> noElementAdjacentToVertexIsOnSegment(vertexCount, true);
+    std::vector<bool> noElementAdjacentToEdgeIsOnSegment(edgeCount, true);
     std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& element = it->entity();
@@ -242,21 +254,53 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl
             throw std::runtime_error("PiecewisePolynomialContinuousScalarSpace::"
                                      "assignDofsImpl(): elements must be "
                                      "triangular or quadrilateral");
-        if (m_segment.contains(0, elementIndex))
-            acc(bubbleDofCounts, elementIndex) =
+        if (m_segment.contains(0, elementIndex)) {
+            acc(bubbleStartingGlobalDofs, elementIndex) =
                 vertexCount == 3 ? bubbleDofCountPerTriangle : bubbleDofCountPerQuad;
+            if (m_strictlyOnSegment)
+                for (int i = 0; i < vertexCount; ++i) {
+                    int index = indexSet.subEntityIndex(element, i, gridDim);
+                    acc(noElementAdjacentToVertexIsOnSegment, index) = false;
+                    index = indexSet.subEntityIndex(element, i, gridDim - 1);
+                    acc(noElementAdjacentToEdgeIsOnSegment, index) = false;
+                }
+        }
         else
-            acc(bubbleDofCounts, elementIndex) = 0;
+            acc(bubbleStartingGlobalDofs, elementIndex) = -1;
         it->next();
     }
-    std::vector<GlobalDofIndex> bubbleStartingGlobalDofs(elementCount);
-    for (int i = 0; i < elementCount; globalDofCount_ += acc(bubbleDofCounts, i), ++i)
-        if (acc(bubbleDofCounts, i) > 0)
+
+    // If strictlyOnSegment is set, deactivate vertices and edges not adjacent
+    // to any element in segment
+    if (m_strictlyOnSegment) {
+        for (int i = 0; i < vertexCount; ++i)
+            if (acc(noElementAdjacentToVertexIsOnSegment, i))
+                acc(vertexGlobalDofs, i) = -1;
+
+        for (int i = 0; i < edgeCount; ++i)
+            if (acc(noElementAdjacentToEdgeIsOnSegment, i))
+                acc(edgeStartingGlobalDofs, i) = -1;
+    }
+
+    // Assign global dofs to entities
+    int globalDofCount_ = 0;
+    for (int i = 0; i < vertexCount; ++i)
+        if (acc(vertexGlobalDofs, i) == 1)
+            acc(vertexGlobalDofs, i) = globalDofCount_++;
+    for (int i = 0; i < edgeCount; ++i) {
+        int dofCount = acc(edgeStartingGlobalDofs, i);
+        if (dofCount > 0) {
+            acc(edgeStartingGlobalDofs, i) = globalDofCount_;
+            globalDofCount_ += dofCount;
+        }
+    }
+    for (int i = 0; i < elementCount; ++i) {
+        int dofCount = acc(bubbleStartingGlobalDofs, i);
+        if (dofCount > 0) {
             acc(bubbleStartingGlobalDofs, i) = globalDofCount_;
-        else
-            acc(bubbleStartingGlobalDofs, i) = -1;
-    m_bubbleGlobalDofCount = globalDofCount_ -
-        (m_vertexGlobalDofCount + m_edgeGlobalDofCount);
+            globalDofCount_ += dofCount;
+        }
+    }
 
     // Initialise DOF maps
     const int localDofCountPerTriangle =
@@ -292,6 +336,8 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl
         const Entity<0>& element = it->entity();
         const Geometry& geo = element.geometry();
         EntityIndex elementIndex = indexSet.entityIndex(element);
+        bool elementContained = !m_strictlyOnSegment ||
+                    m_segment.contains(0, elementIndex);
 
         geo.getCorners(vertices);
         int vertexCount = vertices.n_cols;
@@ -310,7 +356,10 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl
                 int ldof, gdof;
 
                 ldof = 0;
-                gdof = vertexGlobalDofs[acc(vertexIndices, 0)];
+                if (elementContained)
+                    gdof = vertexGlobalDofs[acc(vertexIndices, 0)];
+                else
+                    gdof = -1;
                 if (gdof >= 0) {
                     acc(globalDofs, ldof) = gdof;
                     acc(m_global2localDofs, gdof).push_back(LocalDof(elementIndex, ldof));
@@ -324,7 +373,10 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl
                 ++acc(ldofAccessCounts, ldof);
 
                 ldof = m_polynomialOrder;
-                gdof = vertexGlobalDofs[acc(vertexIndices, 1)];
+                if (elementContained)
+                    gdof = vertexGlobalDofs[acc(vertexIndices, 1)];
+                else
+                    gdof = -1;
                 if (gdof >= 0) {
                     acc(globalDofs, ldof) = gdof;
                     acc(m_global2localDofs, gdof).push_back(LocalDof(elementIndex, ldof));
@@ -338,7 +390,10 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl
                 ++acc(ldofAccessCounts, ldof);
 
                 ldof = localDofCountPerTriangle - 1;
-                gdof = vertexGlobalDofs[acc(vertexIndices, 2)];
+                if (elementContained)
+                    gdof = vertexGlobalDofs[acc(vertexIndices, 2)];
+                else
+                    gdof = -1;
                 if (gdof >= 0) {
                     acc(globalDofs, ldof) = gdof;
                     acc(m_global2localDofs, gdof).push_back(LocalDof(elementIndex, ldof));
@@ -359,7 +414,8 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl
 
                 edgeIndex = indexSet.subEntityIndex(element, 0, edgeCodim);
                 dofPosition = 0.5 * (vertices.col(0) + vertices.col(1));
-                if (acc(edgeStartingGlobalDofs, edgeIndex) >= 0) {
+                if (acc(edgeStartingGlobalDofs, edgeIndex) >= 0 &&
+                        elementContained) {
                     if (acc(vertexIndices, 0) < acc(vertexIndices, 1)) {
                         start = acc(edgeStartingGlobalDofs, edgeIndex);
                         end = start + internalDofCountPerEdge;
@@ -387,7 +443,8 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl
 
                 edgeIndex = indexSet.subEntityIndex(element, 1, edgeCodim);
                 dofPosition = 0.5 * (vertices.col(0) + vertices.col(2));
-                if (acc(edgeStartingGlobalDofs, edgeIndex) >= 0) {
+                if (acc(edgeStartingGlobalDofs, edgeIndex) >= 0 &&
+                        elementContained) {
                     if (acc(vertexIndices, 0) < acc(vertexIndices, 2)) {
                         start = acc(edgeStartingGlobalDofs, edgeIndex);
                         end = start + internalDofCountPerEdge;
@@ -419,7 +476,8 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl
 
                 edgeIndex = indexSet.subEntityIndex(element, 2, edgeCodim);
                 dofPosition = 0.5 * (vertices.col(1) + vertices.col(2));
-                if (acc(edgeStartingGlobalDofs, edgeIndex) >= 0) {
+                if (acc(edgeStartingGlobalDofs, edgeIndex) >= 0 &&
+                        elementContained) {
                     if (acc(vertexIndices, 1) < acc(vertexIndices, 2)) {
                         start = acc(edgeStartingGlobalDofs, edgeIndex);
                         end = start + internalDofCountPerEdge;
@@ -454,13 +512,14 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl
             if (m_polynomialOrder >= 3) {
                 dofPosition = (vertices.col(0) + vertices.col(1) +
                                vertices.col(2)) / 3.;
+                bool useDofs = acc(bubbleStartingGlobalDofs, elementIndex) >= 0;
                 for (int ldofy = 1, gdof = acc(bubbleStartingGlobalDofs, elementIndex);
                      ldofy < m_polynomialOrder; ++ldofy)
                     for (int ldofx = 1; ldofx + ldofy < m_polynomialOrder;
                          ++ldofx, ++gdof) {
                         int ldof = ldofy * (m_polynomialOrder + 1) -
                             ldofy * (ldofy - 1) / 2 + ldofx;
-                        if (acc(bubbleStartingGlobalDofs, elementIndex) >= 0) {
+                        if (useDofs) {
                             acc(globalDofs, ldof) = gdof;
                             acc(m_global2localDofs, gdof).push_back(
                                 LocalDof(elementIndex, ldof));
