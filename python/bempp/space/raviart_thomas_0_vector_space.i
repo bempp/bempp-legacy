@@ -11,13 +11,13 @@ boost::shared_ptr<Space<BasisFunctionType> >
 raviartThomas0VectorSpace(const boost::shared_ptr<const Grid>& grid,
                           const GridSegment* segment = 0,
                           bool putDofsOnBoundaries = false,
-                          bool strictlyOnSegment = false)
+                          int dofMode = Bempp::EDGE_ON_SEGMENT)
 {
     typedef RaviartThomas0VectorSpace<BasisFunctionType> Type;
     if (segment)
         return boost::shared_ptr<Type>(new Type(grid, *segment, 
                                                 putDofsOnBoundaries,
-                                                strictlyOnSegment));
+                                                dofMode));
     else
         return boost::shared_ptr<Type>(new Type(grid, putDofsOnBoundaries));
 }

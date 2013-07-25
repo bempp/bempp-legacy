@@ -66,7 +66,7 @@ RaviartThomas0VectorSpace(const shared_ptr<const Grid>& grid,
                           bool putDofsOnBoundaries) :
     Base(grid), m_impl(new Impl), m_segment(GridSegment::wholeGrid(*grid)),
     m_putDofsOnBoundaries(putDofsOnBoundaries),
-    m_strictlyOnSegment(false)
+    m_dofMode(EDGE_ON_SEGMENT)
 {
     initialize();
 }
@@ -76,11 +76,15 @@ RaviartThomas0VectorSpace<BasisFunctionType>::
 RaviartThomas0VectorSpace(const shared_ptr<const Grid>& grid,
                           const GridSegment& segment,
                           bool putDofsOnBoundaries,
-                          bool strictlyOnSegment) :
+                          int dofMode) :
     Base(grid), m_impl(new Impl), m_segment(segment),
     m_putDofsOnBoundaries(putDofsOnBoundaries),
-    m_strictlyOnSegment(strictlyOnSegment)
+    m_dofMode(dofMode)
 {
+    if (!(dofMode & (EDGE_ON_SEGMENT | ELEMENT_ON_SEGMENT)))
+        throw std::invalid_argument("RaviartThomas0VectorSpace::"
+                                    "RaviartThomas0VectorSpace(): "
+                                    "invalid dofMode");
     initialize();
 }
 
@@ -88,8 +92,7 @@ template <typename BasisFunctionType>
 void RaviartThomas0VectorSpace<BasisFunctionType>::initialize()
 {
     if (this->grid()->dim() != 2 || this->grid()->dimWorld() != 3)
-        throw std::invalid_argument("RaviartThomas0VectorSpace::"
-                                    "RaviartThomas0VectorSpace(): "
+        throw std::invalid_argument("RaviartThomas0VectorSpace::initialize(): "
                                     "grid must be 2-dimensional and embedded "
                                     "in 3-dimensional space");
     m_view = this->grid()->leafView();
@@ -198,6 +201,8 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
     int edgeCount = m_view->entityCount(1);
     int elementCount = m_view->entityCount(0);
 
+    // std::cout << "dofMode: " << m_dofMode << std::endl;
+
     const int vertexCodim = 2;
     const int edgeCodim = 1;
     const int elementCodim = 0;
@@ -212,13 +217,17 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
     while (!it->finished()) {
         const Entity<elementCodim>& element = it->entity();
         const int elementIndex = indexSet.entityIndex(element);
+        const bool elementContained =
+                m_segment.contains(elementCodim, elementIndex);
         const int localEdgeCount = element.subEntityCount<edgeCodim>();
         for (int i = 0; i < localEdgeCount; ++i) {
             int edgeIndex = indexSet.subEntityIndex(element, i, edgeCodim);
-            if (!m_segment.contains(edgeCodim, edgeIndex))
+            if (m_dofMode & EDGE_ON_SEGMENT &&
+                    !m_segment.contains(edgeCodim, edgeIndex))
                 continue;
             ++acc(elementsAdjacentToEdges, edgeIndex);
-            acc(noAdjacentElementsAreInSegment, edgeIndex) = false;
+            if (elementContained)
+                acc(noAdjacentElementsAreInSegment, edgeIndex) = false;
             int& lowestIndex = acc(lowestIndicesOfElementsAdjacentToEdges,
                                    edgeIndex);
             lowestIndex = std::min(lowestIndex, elementIndex);
@@ -232,7 +241,8 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
         int& globalDofOfEdge = acc(globalDofsOfEdges, i);
         if (globalDofOfEdge == 0 ||
                 (!m_putDofsOnBoundaries && globalDofOfEdge < 2) ||
-                (m_strictlyOnSegment && acc(noAdjacentElementsAreInSegment, i)))
+                (m_dofMode & ELEMENT_ON_SEGMENT &&
+                 acc(noAdjacentElementsAreInSegment, i)))
             globalDofOfEdge = -1;
         else
             globalDofOfEdge = globalDofCount_++;
@@ -245,7 +255,7 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
     m_local2globalDofWeights.resize(elementCount);
     m_global2localDofs.clear();
     m_global2localDofs.resize(globalDofCount_);
-    m_flatLocal2localDofs.reserve(4 * globalDofCount_);
+    size_t flatLocalDofCount = 0;
 
     // TODO: consider calling reserve(2) for each element of m_global2localDofs
 
@@ -267,7 +277,7 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
         const Entity<elementCodim>& element = it->entity();
         const Geometry& geo = element.geometry();
         EntityIndex elementIndex = elementMapper.entityIndex(element);
-        bool elementContained = m_strictlyOnSegment ?
+        bool elementContained = m_dofMode & ELEMENT_ON_SEGMENT ?
                     m_segment.contains(elementCodim, elementIndex) : true;
 
         geo.getCorners(vertices);

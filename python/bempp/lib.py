@@ -360,7 +360,8 @@ def createUnitScalarSpace(context, grid):
 
 def createRaviartThomas0VectorSpace(context, grid, segment=None,
                                     putDofsOnBoundaries=False,
-                                    strictlyOnSegment=False):
+                                    requireEdgeOnSegment=True,
+                                    requireElementOnSegment=False):
     """
     Create and return a space of lowest order Raviart-Thomas vector functions
     with normal components continuous on boundaries between elements.
@@ -387,9 +388,14 @@ def createRaviartThomas0VectorSpace(context, grid, segment=None,
     equal to either float32, float64, complex64 or complex128.
     """
     name = 'raviartThomas0VectorSpace'
+    dofMode = 0
+    if requireEdgeOnSegment:
+        dofMode |= 1
+    if requireElementOnSegment:
+        dofMode |= 2
     return _constructObjectTemplatedOnBasis(
         core, name, context.basisFunctionType(), grid, segment,
-        putDofsOnBoundaries, strictlyOnSegment)
+        putDofsOnBoundaries, dofMode)
 
 def _constructOperator(className, context, domain, range, dualToRange, label=None):
     # determine basis function type

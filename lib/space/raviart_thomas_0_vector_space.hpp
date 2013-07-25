@@ -41,6 +41,12 @@ namespace Bempp
 class GridView;
 /** \endcond */
 
+enum RaviartThomasDofAssignmentMode
+{
+    EDGE_ON_SEGMENT = 1,
+    ELEMENT_ON_SEGMENT = 2
+};
+
 /** \ingroup space
  *  \brief Space of continuous, piecewise linear scalar functions. */
 template <typename BasisFunctionType>
@@ -60,7 +66,7 @@ public:
             const shared_ptr<const Grid>& grid,
             const GridSegment& segment,
             bool putDofsOnBoundaries = false,
-            bool strictlyOnSegment = false);
+            int dofMode = EDGE_ON_SEGMENT);
     virtual ~RaviartThomas0VectorSpace();
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
@@ -129,7 +135,7 @@ private:
     boost::scoped_ptr<Impl> m_impl;
     GridSegment m_segment;
     bool m_putDofsOnBoundaries;
-    bool m_strictlyOnSegment;
+    int m_dofMode;
     std::auto_ptr<GridView> m_view;
     Fiber::RaviartThomas0Basis<3, BasisFunctionType> m_triangleBasis;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
