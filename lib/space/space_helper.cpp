@@ -41,7 +41,6 @@ getGlobalDofBoundingBoxes_defaultImplementation(
         const std::vector<std::vector<LocalDof> >& global2localDofs,
         std::vector<BoundingBox<CoordinateType> >& bboxes)
 {
-    // TODO: extract this loop into a private function
     const IndexSet& indexSet = view.indexSet();
     const int elementCount = view.entityCount(0);
 
@@ -85,6 +84,20 @@ getGlobalDofBoundingBoxes_defaultImplementation(
        assert(bboxes[i].reference.z <= bboxes[i].ubound.z);
    }
 #endif // NDEBUG
+}
+
+template <typename BasisFunctionType>
+void SpaceHelper<BasisFunctionType>::initializeLocal2FlatLocalDofMap(
+        size_t flatLocalDofCount,
+        const std::vector<std::vector<GlobalDofIndex> >& local2globalDofs,
+        std::vector<LocalDof>& flatLocal2localDofs)
+{
+    flatLocal2localDofs.clear();
+    flatLocal2localDofs.reserve(flatLocalDofCount);
+    for (size_t e = 0; e < local2globalDofs.size(); ++e)
+        for (size_t dof = 0; dof < acc(local2globalDofs, e).size(); ++dof)
+            if (acc(acc(local2globalDofs, e), dof) >= 0)
+                flatLocal2localDofs.push_back(LocalDof(e, dof));
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(SpaceHelper);

@@ -23,6 +23,7 @@
 
 #include "../common/common.hpp"
 #include "../common/scalar_traits.hpp"
+#include "../common/types.hpp"
 
 #include <vector>
 
@@ -43,6 +44,10 @@ struct SpaceHelper
             const std::vector<std::vector<LocalDof> >& global2localDofs,
             std::vector<BoundingBox<CoordinateType> >& bboxes);
 
+    static void initializeLocal2FlatLocalDofMap(
+            size_t flatLocalDofCount,
+            const std::vector<std::vector<GlobalDofIndex> >& local2globalDofs,
+            std::vector<LocalDof>& flatLocal2localDofs);
 };
 
 } // namespace Bempp

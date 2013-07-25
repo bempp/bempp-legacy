@@ -20,6 +20,8 @@
 
 #include "piecewise_polynomial_discontinuous_scalar_space.hpp"
 
+#include "space_helper.hpp"
+
 #include "../assembly/discrete_sparse_boundary_operator.hpp"
 #include "../common/acc.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
@@ -426,11 +428,8 @@ void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsI
 
     // Initialize the container mapping the flat local dof indices to
     // local dof indices
-    m_flatLocal2localDofs.clear();
-    m_flatLocal2localDofs.reserve(globalDofCount);
-    for (size_t e = 0; e < m_local2globalDofs.size(); ++e)
-        for (size_t dof = 0; dof < m_local2globalDofs[e].size(); ++dof)
-            m_flatLocal2localDofs.push_back(LocalDof(e, dof));
+    SpaceHelper<BasisFunctionType>::initializeLocal2FlatLocalDofMap(
+                m_flatLocalDofCount, m_local2globalDofs, m_flatLocal2localDofs);
 
 #ifndef NDEBUG
     for (size_t i = 0; i < m_globalDofBoundingBoxes.size(); ++i) {

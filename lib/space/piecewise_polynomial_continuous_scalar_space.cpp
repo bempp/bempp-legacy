@@ -21,6 +21,7 @@
 #include "piecewise_polynomial_continuous_scalar_space.hpp"
 
 #include "piecewise_polynomial_discontinuous_scalar_space.hpp"
+#include "space_helper.hpp"
 
 #include "../assembly/discrete_sparse_boundary_operator.hpp"
 #include "../common/acc.hpp"
@@ -501,11 +502,8 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl
 
     // Initialize the container mapping the flat local dof indices to
     // local dof indices
-    m_flatLocal2localDofs.clear();
-    m_flatLocal2localDofs.reserve(m_flatLocalDofCount);
-    for (size_t e = 0; e < m_local2globalDofs.size(); ++e)
-        for (size_t dof = 0; dof < acc(m_local2globalDofs, e).size(); ++dof)
-            m_flatLocal2localDofs.push_back(LocalDof(e, dof));
+    SpaceHelper<BasisFunctionType>::initializeLocal2FlatLocalDofMap(
+                m_flatLocalDofCount, m_local2globalDofs, m_flatLocal2localDofs);
 }
 
 template <typename BasisFunctionType>

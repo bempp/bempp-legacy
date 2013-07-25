@@ -203,12 +203,8 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
 
     // Initialize the container mapping the flat local dof indices to
     // local dof indices
-    m_flatLocal2localDofs.clear();
-    m_flatLocal2localDofs.reserve(flatLocalDofCount_);
-    for (size_t e = 0; e < m_local2globalDofs.size(); ++e)
-        for (size_t dof = 0; dof < m_local2globalDofs[e].size(); ++dof)
-            if (m_local2globalDofs[e][dof] >= 0)
-                m_flatLocal2localDofs.push_back(LocalDof(e, dof));
+    SpaceHelper<BasisFunctionType>::initializeLocal2FlatLocalDofMap(
+                flatLocalDofCount_, m_local2globalDofs, m_flatLocal2localDofs);
 }
 
 template <typename BasisFunctionType>

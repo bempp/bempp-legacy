@@ -21,6 +21,7 @@
 #include "raviart_thomas_0_vector_space.hpp"
 
 #include "piecewise_linear_discontinuous_scalar_space.hpp"
+#include "space_helper.hpp"
 
 #include "../assembly/discrete_sparse_boundary_operator.hpp"
 #include "../common/acc.hpp"
@@ -315,9 +316,7 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
             setBoundingBoxReference<CoordinateType>(
                 acc(m_globalDofBoundingBoxes, globalDofIndex), dofPosition);
 
-            // here we depend on elements being iterated in order of
-            // increasing element indices
-            m_flatLocal2localDofs.push_back(LocalDof(elementIndex, i));
+            ++flatLocalDofCount;
         }
         it->next();
         for (int i = 0; i < globalDofs.size(); ++i)
@@ -337,6 +336,9 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
        assert(bbox.reference.z <= bbox.ubound.z);
    }
 #endif // NDEBUG
+
+    SpaceHelper<BasisFunctionType>::initializeLocal2FlatLocalDofMap(
+                flatLocalDofCount, m_local2globalDofs, m_flatLocal2localDofs);
 
 //    // Iterate over elements
 //    std::auto_ptr<EntityIterator<elementCodim> > it =
