@@ -68,8 +68,8 @@ public:
      *  If \p strictlyOnSegment is set to \c false (default), the space will
      *  include all basis functions associated with vertices belonging to \p
      *  segment, regardless of whether the elements on which these functions
-     *  are defined belong themselves to \p segment. As a result, the resulting
-     *  space will be (in the mathematical sense) a superset of a
+     *  are defined belong themselves to \p segment. In consequence, the
+     *  resulting space will be (in the mathematical sense) a superset of a
      *  PiecewiseLinearContinuousScalarSpace defined on the same segment. If \p
      *  strictlyOnSegment is set to \c true, the space will only include basis
      *  functions defined on elements belonging to \p segment.
