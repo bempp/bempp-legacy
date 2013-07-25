@@ -139,11 +139,11 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
                 cornerCount = element.template subEntityCount<1>();
             else // gridDim == 2
                 cornerCount = element.template subEntityCount<2>();
-            for (int i = 0; i < cornerCount; ++i) {
-                int vertexIndex = indexSet.subEntityIndex(element, i, gridDim);
-                if (elementContained)
+            if (elementContained)
+                for (int i = 0; i < cornerCount; ++i) {
+                    int vertexIndex = indexSet.subEntityIndex(element, i, gridDim);
                     acc(noAdjacentElementsInsideSegment, vertexIndex) = false;
-            }
+                }
             it->next();
         }
         // Remove all DOFs associated with vertices lying next to no element
