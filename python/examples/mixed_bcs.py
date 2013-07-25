@@ -10,18 +10,6 @@ sys.path.append("..")
 from bempp.lib import *
 import numpy as np
 
-# Boundary conditions (derived from an exact solution)
-
-def evalDirichletData(point):
-    x, y, z = point
-    r = np.sqrt(x**2 + y**2 + z**2)
-    return 2 * x * z / r**5 - y / r**3
-
-def evalNeumannData(point):
-    x, y, z = point
-    r = np.sqrt(x**2 + y**2 + z**2)
-    return -6 * x * z / r**6 + 2 * y / r**4
-
 # Load mesh
 
 grid = createGridFactory().importGmshGrid(
@@ -63,8 +51,13 @@ pwiseLinearsD = createPiecewiseLinearContinuousScalarSpace(
     context, grid, segmentD)
 pwiseLinearsN = createPiecewiseLinearContinuousScalarSpace(
     context, grid, segmentN)
-# This space will be needed during the discretization of Dirichlet data
-pwiseDLinearsD = createPiecewiseLinearDiscontinuousScalarSpace(
+# This space will be needed during the discretization of Dirichlet data.
+# strictlyOnSegment=True means that the basis functions are truncated to the
+# elements that belong to the segment. So, for example, a function associated
+# with a vertex lying at the boundary of the segment (but not of the grid) will
+# be zero on all elements not belonging to the segment, hence in fact
+# discontinuous on the grid as a whole.
+pwiseDLinearsD = createPiecewiseLinearContinuousScalarSpace(
     context, grid, segmentD, strictlyOnSegment=True)
 
 # Construct elementary operators
@@ -91,21 +84,33 @@ idOpNN = createIdentityOperator(
 hypOpND = createLaplace3dHypersingularBoundaryOperator(
     context, pwiseLinearsD, pwiseConstantsN, pwiseLinearsN)
 
-# Form the left- and right-hand-side operators
+# Form the left-hand-side operator
 
 lhsOp = createBlockedBoundaryOperator(
     context,
     [[slpOpDD, -dlpOpDN],
      [adlpOpND, hypOpNN]])
 
-# Construct the grid function representing the input data
+# Construct the grid functions representing the known parts of the Dirichlet and
+# Neumann traces. They are derived from an exact solution of the Laplace
+# equation
+
+def evalDirichletData(point):
+    x, y, z = point
+    r = np.sqrt(x**2 + y**2 + z**2)
+    return 2 * x * z / r**5 - y / r**3
+
+def evalNeumannData(point):
+    x, y, z = point
+    r = np.sqrt(x**2 + y**2 + z**2)
+    return -6 * x * z / r**6 + 2 * y / r**4
 
 dirichletData = createGridFunction(
     context, pwiseLinearsD, pwiseDLinearsD, evalDirichletData)
 neumannData = createGridFunction(
     context, pwiseConstantsN, pwiseConstantsN, evalNeumannData)
 
-# Construct the right-hand-side grid function
+# Construct the right-hand-side grid functions
 
 rhs = [(-0.5 * idOpDD + dlpOpDD) * dirichletData - slpOpDN * neumannData,
        -hypOpND * dirichletData + (-0.5 * idOpNN - adlpOpNN) * neumannData]
@@ -125,7 +130,7 @@ print solution.solverMessage()
 neumannSolution = solution.gridFunction(0)
 dirichletSolution = solution.gridFunction(1)
 
-# Combine known and unknown data
+# Combine imposed and calculated parts of traces into single grid functions
 
 scatterPwiseConstantsD = createIdentityOperator(
     context, pwiseConstantsD, pwiseConstants, pwiseConstants)
@@ -157,3 +162,4 @@ evalOptions = createEvaluationOptions()
 absError, relError = estimateL2Error(neumann, evalNeumannData,
                                      quadStrategy, evalOptions)
 print "Relative L^2 error (Neumann):", relError
+
