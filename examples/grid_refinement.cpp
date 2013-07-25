@@ -73,7 +73,6 @@ int main()
     shared_ptr<Grid> grid = GridFactory::createStructuredGrid(params,lowerLeft,upperRight,elements);
 
 
-    grid->barycentricRefinement();
 
     return 0;
 }

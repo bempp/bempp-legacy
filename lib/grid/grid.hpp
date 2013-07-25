@@ -24,6 +24,7 @@
 /** \file . */
 
 #include "../common/common.hpp"
+#include "../common/shared_ptr.hpp"
 #include "grid_parameters.hpp"
 
 #include "../common/armadillo_fwd.hpp"
@@ -93,8 +94,8 @@ public:
     @{ */
 
 
-    /** \brief Barycentrically refine grid */
-    virtual void barycentricRefinement() =0;
+    /** \brief Return a new barycentrically refined grid */
+    virtual shared_ptr<Grid> barycentricGrid() const =0;
 
     /** \brief Reference to the grid's global id set. */
     virtual const IdSet& globalIdSet() const = 0;

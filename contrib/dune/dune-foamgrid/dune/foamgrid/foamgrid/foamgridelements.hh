@@ -22,7 +22,6 @@ namespace Dune {
               nSons_(0), refinementIndex_(-1),
               markState_(DO_NOTHING), isNew_(false)
         {
-          sons_[0]= sons_[1] = sons_[2] = sons_[3] = nullptr;
           father_ = nullptr;
         }
 
@@ -38,7 +37,7 @@ namespace Dune {
         
         bool isLeaf() const {
             // The sons are either all nullptr or all != nullptr
-            return sons_[0] == nullptr;
+            return sons_.size() == 0;
         }
 
         bool isNew() const 
@@ -121,7 +120,7 @@ namespace Dune {
          */
         int refinementIndex_;
 
-        array<FoamGridEntityImp<2,dimworld>*, 4> sons_;
+        std::vector<FoamGridEntityImp<2,dimworld>*  > sons_;
 
         FoamGridEntityImp<2,dimworld>* father_;
 

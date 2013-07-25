@@ -23,12 +23,15 @@
 
 #include "../common/common.hpp"
 #include "grid_parameters.hpp"
+#include "grid_factory.hpp"
+#include "../common/shared_ptr.hpp"
 
 #include "grid.hpp"
 #include "concrete_entity.hpp"
 #include "concrete_geometry_factory.hpp"
 #include "concrete_grid_view.hpp"
 #include "concrete_id_set.hpp"
+#include <armadillo>
 
 #include <memory>
 
@@ -148,9 +151,26 @@ public:
     @name Refinement
     @{ */
 
-    /** Barycentrically refine grid */
-    virtual void barycentricRefinement() {
-        m_dune_grid->globalRefine(1);
+    /** Return a new barycentrically refined grid */
+    virtual shared_ptr<Grid> barycentricGrid() const {
+
+        arma::Mat<double> vertices;
+        arma::Mat<int> elementCorners;
+        arma::Mat<char> auxData;
+
+        std::auto_ptr<GridView> view = this->leafView();
+
+        view->getRawElementData(vertices,
+                               elementCorners,
+                               auxData);
+
+        GridParameters params;
+        params.topology = GridParameters::TRIANGULAR;
+        shared_ptr<Grid> newGrid = GridFactory::createGridFromConnectivityArrays(params,vertices,elementCorners);
+        shared_ptr<ConcreteGrid<DuneGrid> > concreteGrid = dynamic_pointer_cast<ConcreteGrid<DuneGrid> >(newGrid);
+        (concreteGrid->duneGrid()).globalBarycentricRefine(1);
+
+        return newGrid;
     }
 
 
