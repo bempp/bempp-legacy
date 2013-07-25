@@ -17,12 +17,12 @@ piecewisePolynomialDiscontinuousScalarSpace(
     const boost::shared_ptr<const Grid>& grid,
     int polynomialOrder,
     const GridSegment* segment = 0,
-    bool strictlyOnSegment = false)
+    int dofMode = Bempp::REFERENCE_POINT_ON_SEGMENT)
 {
     typedef PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType> Type;
     if (segment)
         return boost::shared_ptr<Type>(new Type(grid, polynomialOrder, *segment,
-                                                strictlyOnSegment));
+                                                dofMode));
     else
         return boost::shared_ptr<Type>(new Type(grid, polynomialOrder));
 }

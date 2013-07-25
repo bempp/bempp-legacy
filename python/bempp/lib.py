@@ -303,7 +303,8 @@ def createPiecewisePolynomialContinuousScalarSpace(
 
 def createPiecewisePolynomialDiscontinuousScalarSpace(
         context, grid, polynomialOrder, segment=None,
-        strictlyOnSegment=False):
+        requireReferencePointOnSegment=True,
+        requireElementOnSegment=False):
     """
     Create and return a space of scalar functions defined on a grid (or its
     segment) and having a polynomial representation of a given order on each
@@ -335,9 +336,14 @@ def createPiecewisePolynomialDiscontinuousScalarSpace(
     equal to either float32, float64, complex64 or complex128.
     """
     name = 'piecewisePolynomialDiscontinuousScalarSpace'
+    dofMode = 0
+    if requireReferencePointOnSegment:
+        dofMode |= 4
+    if requireElementOnSegment:
+        dofMode |= 2
     return _constructObjectTemplatedOnBasis(
         core, name, context.basisFunctionType(), grid, polynomialOrder,
-        segment, strictlyOnSegment)
+        segment, dofMode)
 
 def createUnitScalarSpace(context, grid):
     """

@@ -26,6 +26,7 @@
 #include "../fiber/lagrange_scalar_basis.hpp"
 
 #include "scalar_space.hpp"
+#include "dof_assignment_mode.hpp"
 
 #include <map>
 #include <memory>
@@ -57,19 +58,26 @@ public:
      *  elements of the grid \p grid will be polynomials of order at most \p
      *  polynomialOrder. */
     PiecewisePolynomialDiscontinuousScalarSpace(
-            const shared_ptr<const Grid>& grid,
-            int polynomialOrder);
+            const shared_ptr<const Grid>& grid, int polynomialOrder);
     /** \brief Constructor.
      *
      *  Construct a space of continuous functions whose restrictions to
      *  elements of the grid \p grid will be polynomials of order at most \p
      *  polynomialOrder. The space will contain only the basis functions deemed
-     *  to belong to the segment \p segment. If \p strictlyOnSegment is set to
-     *  \c false (default), the space will include those and only those basis
-     *  functions necessary to make the newly constructed space a superset (in
-     *  the mathematical sense) of a PiecewisePolynomialContinuousScalarSpace
-     *  defined on \p segment. Otherwise the space will include only the
-     *  functions defined on elements belonging to \p segment.
+     *  to belong to the segment \p segment. The precise way in which this is
+     *  determined is controlled by the parameter \p dofMode.
+     *
+     *  \p dofMode can be set to REFERENCE_POINT_ON_SEGMENT,
+     *  ELEMENT_ON_SEGMENT, or their (OR-ed) combination. If \p dofMode
+     *  contains REFERENCE_POINT_ON_SEGMENT, the constructed space will include
+     *  only the vertex basis functions associated with vertices belonging to
+     *  \p segment, edge functions associated with edges belonging to \p
+     *  segment and bubble function associated with elements belonging to \p
+     *  segment. Note that, as a result, the space will be (in the mathematical
+     *  sense) a superset of a PiecewisePolynomialContinuousScalarSpace, of the
+     *  same order, defined on the same segment. If \p dofMode contains
+     *  ELEMENT_ON_SEGMENT, the space will contain only the basis function
+     *  whose supports are the elements belonging to \p segment.
      *
      *  An exception is thrown if \p grid is a null pointer.
      */
@@ -77,7 +85,7 @@ public:
             const shared_ptr<const Grid>& grid,
             int polynomialOrder,
             const GridSegment& segment,
-            bool strictlyOnSegment = false);
+            int dofMode = REFERENCE_POINT_ON_SEGMENT);
     virtual ~PiecewisePolynomialDiscontinuousScalarSpace();
 
     virtual int domainDimension() const;
@@ -134,9 +142,10 @@ public:
             DofType dofType) const;
 
 private:
-    void initialize(const GridSegment& segment, bool strictlyOnSegment = false);
+    void initialize(const GridSegment& segment,
+                    int dofMode = REFERENCE_POINT_ON_SEGMENT);
     void assignDofsImpl(const GridSegment& segment,
-                        bool strictlyOnSegment = false);
+                        int dofMode = REFERENCE_POINT_ON_SEGMENT);
 
 private:
     /** \cond PRIVATE */

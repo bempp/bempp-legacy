@@ -59,22 +59,25 @@ PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::
 PiecewisePolynomialDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid,
                                             int polynomialOrder,
                                             const GridSegment& segment,
-                                            bool strictlyOnSegment) :
+                                            int dofMode) :
     ScalarSpace<BasisFunctionType>(grid), m_polynomialOrder(polynomialOrder),
     m_flatLocalDofCount(0)
 {
-    initialize(segment, strictlyOnSegment);
+    initialize(segment, dofMode);
 }
 
 template <typename BasisFunctionType>
 void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::initialize(
-    const GridSegment& segment, bool strictlyOnSegment)
+    const GridSegment& segment, int dofMode)
 {
     const int gridDim = this->grid()->dim();
     if (gridDim != 2)
         throw std::invalid_argument("PiecewisePolynomialDiscontinuousScalarSpace::"
-                                    "PiecewisePolynomialDiscontinuousScalarSpace(): "
-                                    "2-dimensional grids are supported");
+                                    "initialize(): "
+                                    "only 2-dimensional grids are supported");
+    if (!(dofMode & (REFERENCE_POINT_ON_SEGMENT | ELEMENT_ON_SEGMENT)))
+        throw std::invalid_argument("PiecewisePolynomialDiscontinuousScalarSpace::"
+                                    "initialize(): invalid dofMode");
     m_view = this->grid()->leafView();
     if (m_polynomialOrder == 0)
         m_triangleBasis.reset(new Fiber::LagrangeScalarBasis<3, BasisFunctionType, 0>());
@@ -102,7 +105,7 @@ void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::initialize(
         throw std::invalid_argument("PiecewisePolynomialDiscontinuousScalarSpace::"
                                     "PiecewisePolynomialDiscontinuousScalarSpace(): "
                                     "polynomialOrder must be >= 0 and <= 10");
-    assignDofsImpl(segment, strictlyOnSegment);
+    assignDofsImpl(segment, dofMode);
 }
 
 template <typename BasisFunctionType>
@@ -182,13 +185,14 @@ PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::isDiscontinuous(
 
 template <typename BasisFunctionType>
 void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsImpl(
-    const GridSegment& segment, bool strictlyOnSegment)
+    const GridSegment& segment, int dofMode)
 {
     const int gridDim = this->domainDimension();
     if (gridDim != 2)
         throw std::runtime_error("PiecewisePolynomialDiscontinuousScalarSpace::"
                                  "assignDofsImpl(): only 2-dimensional grids "
                                  "are supported at present");
+    const int vertexCodim = 2, edgeCodim = 1, elementCodim = 0;
     const Mapper& elementMapper = m_view->elementMapper();
     const IndexSet& indexSet = m_view->indexSet();
 
@@ -223,6 +227,8 @@ void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsI
     while (!it->finished()) {
         const Entity<0>& element = it->entity();
         EntityIndex elementIndex = elementMapper.entityIndex(element);
+        bool elementContained = !(dofMode & ELEMENT_ON_SEGMENT) ||
+                segment.contains(elementCodim, elementIndex);
         typedef arma::Col<CoordinateType> Col;
         const Geometry& geo = element.geometry();
         geo.getCorners(vertices);
@@ -248,7 +254,6 @@ void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsI
         extendBoundingBox(bbox, vertices);
         // m_globalDofBoundingBoxes.insert(m_globalDofBoundingBoxes.end(),
         //                                 localDofCount, bbox);
-        const int vertexCodim = 2, edgeCodim = 1, elementCodim = 0;
         if (vertexCount == 3) {
             int subEntityIndex;
             int ldof;
@@ -267,12 +272,12 @@ void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsI
                 } else
                     acc(globalDofs, ldof) = -1;
             } else {
-
                 // vertex dofs
                 ldof = 0;
                 subEntityIndex = indexSet.subEntityIndex(element, 0, vertexCodim);
-                if ((strictlyOnSegment && segment.contains(0, elementIndex)) ||
-                        (!strictlyOnSegment && segment.contains(vertexCodim, subEntityIndex))) {
+                if (elementContained &&
+                        (!(dofMode & REFERENCE_POINT_ON_SEGMENT) ||
+                         segment.contains(vertexCodim, subEntityIndex))) {
                     acc(globalDofs, ldof) = globalDofCount;
                     std::vector<LocalDof> localDofs(1, LocalDof(elementIndex, ldof));
                     m_global2localDofs.push_back(localDofs);
@@ -285,8 +290,9 @@ void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsI
 
                 ldof = m_polynomialOrder;
                 subEntityIndex = indexSet.subEntityIndex(element, 1, vertexCodim);
-                if ((strictlyOnSegment && segment.contains(0, elementIndex)) ||
-                        (!strictlyOnSegment && segment.contains(vertexCodim, subEntityIndex))) {
+                if (elementContained &&
+                        (!(dofMode & REFERENCE_POINT_ON_SEGMENT) ||
+                         segment.contains(vertexCodim, subEntityIndex))) {
                     acc(globalDofs, ldof) = globalDofCount;
                     std::vector<LocalDof> localDofs(1, LocalDof(elementIndex, ldof));
                     m_global2localDofs.push_back(localDofs);
@@ -299,8 +305,9 @@ void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsI
 
                 ldof = localDofCount - 1;
                 subEntityIndex = indexSet.subEntityIndex(element, 2, vertexCodim);
-                if ((strictlyOnSegment && segment.contains(0, elementIndex)) ||
-                        (!strictlyOnSegment && segment.contains(vertexCodim, subEntityIndex))) {
+                if (elementContained &&
+                        (!(dofMode & REFERENCE_POINT_ON_SEGMENT) ||
+                         segment.contains(vertexCodim, subEntityIndex))) {
                     acc(globalDofs, ldof) = globalDofCount;
                     std::vector<LocalDof> localDofs(1, LocalDof(elementIndex, ldof));
                     m_global2localDofs.push_back(localDofs);
@@ -316,8 +323,9 @@ void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsI
                     int start, end, step;
 
                     subEntityIndex = indexSet.subEntityIndex(element, 0, edgeCodim);
-                    if ((strictlyOnSegment && segment.contains(0, elementIndex)) ||
-                            (!strictlyOnSegment && segment.contains(edgeCodim, subEntityIndex))) {
+                    if (elementContained &&
+                            (!(dofMode & REFERENCE_POINT_ON_SEGMENT) ||
+                             segment.contains(edgeCodim, subEntityIndex))) {
                         dofPosition = 0.5 * (vertices.col(0) + vertices.col(1));
                         for (int ldof = 1; ldof < m_polynomialOrder; ++ldof) {
                             acc(globalDofs, ldof) = globalDofCount;
@@ -334,8 +342,9 @@ void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsI
                         }
 
                     subEntityIndex = indexSet.subEntityIndex(element, 1, edgeCodim);
-                    if ((strictlyOnSegment && segment.contains(0, elementIndex)) ||
-                            (!strictlyOnSegment && segment.contains(edgeCodim, subEntityIndex))) {
+                    if (elementContained &&
+                            (!(dofMode & REFERENCE_POINT_ON_SEGMENT) ||
+                             segment.contains(edgeCodim, subEntityIndex))) {
                         dofPosition = 0.5 * (vertices.col(0) + vertices.col(2));
                         for (int ldofy = 1; ldofy < m_polynomialOrder; ++ldofy) {
                             int ldof = ldofy * (m_polynomialOrder + 1) -
@@ -356,8 +365,9 @@ void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsI
                         }
 
                     subEntityIndex = indexSet.subEntityIndex(element, 2, edgeCodim);
-                    if ((strictlyOnSegment && segment.contains(0, elementIndex)) ||
-                            (!strictlyOnSegment && segment.contains(edgeCodim, subEntityIndex))) {
+                    if (elementContained &&
+                            (!(dofMode & REFERENCE_POINT_ON_SEGMENT) ||
+                             segment.contains(edgeCodim, subEntityIndex))) {
                         dofPosition = 0.5 * (vertices.col(1) + vertices.col(2));
                         for (int ldofy = 1; ldofy < m_polynomialOrder; ++ldofy) {
                             int ldof = ldofy * (m_polynomialOrder + 1) -
