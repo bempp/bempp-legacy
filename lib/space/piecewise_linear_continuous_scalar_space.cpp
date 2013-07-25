@@ -118,24 +118,8 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
     int elementCount = m_view->entityCount(0);
     int vertexCount = m_view->entityCount(gridDim);
 
-//    // DEBUG
-//    {
-//        std::cout << "Vertices:\n" << std::endl;
-//        std::auto_ptr<EntityIterator<2> > vit = m_view->entityIterator<2>();
-//        const IndexSet& indexSet = m_view->indexSet();
-//        while (!vit->finished())
-//        {
-//            arma::Col<BasisFunctionType> vertex;
-//            vit->entity().geometry().center(vertex);
-//            std::cout << indexSet.entityIndex(vit->entity()) << ": "
-//                      << vertex(0) << " "
-//                      << vertex(1) << " "
-//                      << vertex(2) << std::endl;
-//            vit->next();
-//        }
-//    }
-
-//    std::vector<bool> allAdjacentElementsInsideSegment(vertexCount, true);
+    // Assign gdofs to grid vertices (choosing only those that belong to
+    // the selected grid segment)
     std::vector<int> globalDofIndices(vertexCount, 0);
     m_segment.markExcludedEntities(gridDim, globalDofIndices);
     std::vector<bool> segmentContainsElement;
@@ -159,8 +143,6 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
                 int vertexIndex = indexSet.subEntityIndex(element, i, gridDim);
                 if (elementContained)
                     acc(noAdjacentElementsInsideSegment, vertexIndex) = false;
-//                else
-//                    acc(allAdjacentElementsInsideSegment, vertexIndex) = false;
             }
             it->next();
         }
@@ -174,31 +156,6 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
     for (int vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
         if (acc(globalDofIndices, vertexIndex) == 0) // not excluded
             acc(globalDofIndices, vertexIndex) = globalDofCount_++;
-
-//    // vertices not belonging to segment will be marked with -1
-//    std::vector<int> globalDofIndices(vertexCount, 0);
-//    m_segment.markExcludedEntities(gridDim, globalDofIndices);
-//    int globalDofCount_ = 0;
-//    for (int vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
-//        if (acc(globalDofIndices, vertexIndex) == 0) // not excluded
-//            acc(globalDofIndices, vertexIndex) = globalDofCount_++;
-
-//    {
-//        GridSegment::const_iterator vertexIt =
-//                gridDim == 1 ? m_segment.begin(1) : m_segment.begin(2);
-//        const GridSegment::const_iterator vertexEndIt =
-//                gridDim == 1 ? m_segment.end(1) : m_segment.end(2);
-//        for (int vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex) {
-//            std::cout << "vi " << (vertexIt == vertexEndIt) << " " << vertexIndex << " " << *vertexIt << std::endl;
-//            if (vertexIt == vertexEndIt || vertexIndex < *vertexIt)
-//                acc(globalDofIndices, vertexIndex) = -1;
-//            else {
-//                std::cout << "assigned!" << std::endl;
-//                acc(globalDofIndices, vertexIndex) = globalDofCount_++;
-//                ++vertexIt;
-//            }
-//        }
-//    }
 
     // (Re)initialise DOF maps
     m_local2globalDofs.clear();
