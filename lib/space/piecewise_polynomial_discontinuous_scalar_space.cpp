@@ -253,173 +253,189 @@ void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsI
             int subEntityIndex;
             int ldof;
 
-            // vertex dofs
-            ldof = 0;
-            subEntityIndex = indexSet.subEntityIndex(element, 0, vertexCodim);
-            if ((strictlyOnSegment && segment.contains(0, elementIndex)) ||
-                    (!strictlyOnSegment && segment.contains(vertexCodim, subEntityIndex))) {
-                acc(globalDofs, ldof) = globalDofCount;
-                std::vector<LocalDof> localDofs(1, LocalDof(elementIndex, ldof));
-                m_global2localDofs.push_back(localDofs);
-                m_globalDofBoundingBoxes.push_back(bbox);
-                setBoundingBoxReference<CoordinateType>(
-                    acc(m_globalDofBoundingBoxes, globalDofCount), vertices.col(0));
-                ++globalDofCount;
-            } else
-                acc(globalDofs, ldof) = -1;
-
-            ldof = m_polynomialOrder;
-            subEntityIndex = indexSet.subEntityIndex(element, 1, vertexCodim);
-            if ((strictlyOnSegment && segment.contains(0, elementIndex)) ||
-                    (!strictlyOnSegment && segment.contains(vertexCodim, subEntityIndex))) {
-                acc(globalDofs, ldof) = globalDofCount;
-                std::vector<LocalDof> localDofs(1, LocalDof(elementIndex, ldof));
-                m_global2localDofs.push_back(localDofs);
-                m_globalDofBoundingBoxes.push_back(bbox);
-                setBoundingBoxReference<CoordinateType>(
-                    acc(m_globalDofBoundingBoxes, globalDofCount), vertices.col(1));
-                ++globalDofCount;
-            } else
-                acc(globalDofs, ldof) = -1;
-
-            ldof = localDofCount - 1;
-            subEntityIndex = indexSet.subEntityIndex(element, 2, vertexCodim);
-            if ((strictlyOnSegment && segment.contains(0, elementIndex)) ||
-                    (!strictlyOnSegment && segment.contains(vertexCodim, subEntityIndex))) {
-                acc(globalDofs, ldof) = globalDofCount;
-                std::vector<LocalDof> localDofs(1, LocalDof(elementIndex, ldof));
-                m_global2localDofs.push_back(localDofs);
-                m_globalDofBoundingBoxes.push_back(bbox);
-                setBoundingBoxReference<CoordinateType>(
-                    acc(m_globalDofBoundingBoxes, globalDofCount), vertices.col(2));
-                ++globalDofCount;
-            } else
-                acc(globalDofs, ldof) = -1;
-
-            // edge dofs
-            if (m_polynomialOrder >= 2) {
-                int start, end, step;
-
-                subEntityIndex = indexSet.subEntityIndex(element, 0, edgeCodim);
-                if ((strictlyOnSegment && segment.contains(0, elementIndex)) ||
-                        (!strictlyOnSegment && segment.contains(edgeCodim, subEntityIndex))) {
-                    dofPosition = 0.5 * (vertices.col(0) + vertices.col(1));
-                    for (int ldof = 1; ldof < m_polynomialOrder; ++ldof) {
-                        acc(globalDofs, ldof) = globalDofCount;
-                        std::vector<LocalDof> localDofs(1, LocalDof(elementIndex, ldof));
-                        m_global2localDofs.push_back(localDofs);
-                        m_globalDofBoundingBoxes.push_back(bbox);
-                        setBoundingBoxReference<CoordinateType>(
-                            acc(m_globalDofBoundingBoxes, globalDofCount), dofPosition);
-                        ++globalDofCount;
-                    }
+            if (m_polynomialOrder == 0) {
+                ldof = 0;
+                if (segment.contains(0, elementIndex)) {
+                    acc(globalDofs, ldof) = globalDofCount;
+                    std::vector<LocalDof> localDofs(1, LocalDof(elementIndex, ldof));
+                    m_global2localDofs.push_back(localDofs);
+                    m_globalDofBoundingBoxes.push_back(bbox);
+                    setBoundingBoxReference<CoordinateType>(
+                                acc(m_globalDofBoundingBoxes, globalDofCount),
+                                (vertices.col(0) + vertices(1) + vertices(2)) / 3);
+                    ++globalDofCount;
                 } else
-                    for (int ldof = 1; ldof < m_polynomialOrder; ++ldof) {
-                        acc(globalDofs, ldof) = -1;
-                    }
+                    acc(globalDofs, ldof) = -1;
+            } else {
 
-                subEntityIndex = indexSet.subEntityIndex(element, 1, edgeCodim);
+                // vertex dofs
+                ldof = 0;
+                subEntityIndex = indexSet.subEntityIndex(element, 0, vertexCodim);
                 if ((strictlyOnSegment && segment.contains(0, elementIndex)) ||
-                        (!strictlyOnSegment && segment.contains(edgeCodim, subEntityIndex))) {
-                    dofPosition = 0.5 * (vertices.col(0) + vertices.col(2));
-                    for (int ldofy = 1; ldofy < m_polynomialOrder; ++ldofy) {
-                        int ldof = ldofy * (m_polynomialOrder + 1) -
-                            ldofy * (ldofy - 1) / 2;
-                        acc(globalDofs, ldof) = globalDofCount;
-                        std::vector<LocalDof> localDofs(1, LocalDof(elementIndex, ldof));
-                        m_global2localDofs.push_back(localDofs);
-                        m_globalDofBoundingBoxes.push_back(bbox);
-                        setBoundingBoxReference<CoordinateType>(
-                            acc(m_globalDofBoundingBoxes, globalDofCount), dofPosition);
-                        ++globalDofCount;
-                    }
+                        (!strictlyOnSegment && segment.contains(vertexCodim, subEntityIndex))) {
+                    acc(globalDofs, ldof) = globalDofCount;
+                    std::vector<LocalDof> localDofs(1, LocalDof(elementIndex, ldof));
+                    m_global2localDofs.push_back(localDofs);
+                    m_globalDofBoundingBoxes.push_back(bbox);
+                    setBoundingBoxReference<CoordinateType>(
+                                acc(m_globalDofBoundingBoxes, globalDofCount), vertices.col(0));
+                    ++globalDofCount;
                 } else
-                    for (int ldofy = 1; ldofy < m_polynomialOrder; ++ldofy) {
-                        int ldof = ldofy * (m_polynomialOrder + 1) -
-                            ldofy * (ldofy - 1) / 2;
-                        acc(globalDofs, ldof) = -1;
-                    }
+                    acc(globalDofs, ldof) = -1;
 
-                subEntityIndex = indexSet.subEntityIndex(element, 2, edgeCodim);
+                ldof = m_polynomialOrder;
+                subEntityIndex = indexSet.subEntityIndex(element, 1, vertexCodim);
                 if ((strictlyOnSegment && segment.contains(0, elementIndex)) ||
-                        (!strictlyOnSegment && segment.contains(edgeCodim, subEntityIndex))) {
-                    dofPosition = 0.5 * (vertices.col(1) + vertices.col(2));
-                    for (int ldofy = 1; ldofy < m_polynomialOrder; ++ldofy) {
-                        int ldof = ldofy * (m_polynomialOrder + 1) -
-                            ldofy * (ldofy - 1) / 2 + (m_polynomialOrder - ldofy);
-                        acc(globalDofs, ldof) = globalDofCount;
-                        std::vector<LocalDof> localDofs(1, LocalDof(elementIndex, ldof));
-                        m_global2localDofs.push_back(localDofs);
-                        m_globalDofBoundingBoxes.push_back(bbox);
-                        setBoundingBoxReference<CoordinateType>(
-                            acc(m_globalDofBoundingBoxes, globalDofCount), dofPosition);
-                        ++globalDofCount;
-                    }
+                        (!strictlyOnSegment && segment.contains(vertexCodim, subEntityIndex))) {
+                    acc(globalDofs, ldof) = globalDofCount;
+                    std::vector<LocalDof> localDofs(1, LocalDof(elementIndex, ldof));
+                    m_global2localDofs.push_back(localDofs);
+                    m_globalDofBoundingBoxes.push_back(bbox);
+                    setBoundingBoxReference<CoordinateType>(
+                                acc(m_globalDofBoundingBoxes, globalDofCount), vertices.col(1));
+                    ++globalDofCount;
                 } else
-                    for (int ldofy = 1; ldofy < m_polynomialOrder; ++ldofy) {
-                        int ldof = ldofy * (m_polynomialOrder + 1) -
-                            ldofy * (ldofy - 1) / 2 + (m_polynomialOrder - ldofy);
-                        acc(globalDofs, ldof) = -1;
-                    }
+                    acc(globalDofs, ldof) = -1;
 
-                // dofPosition = 0.5 * (vertices.col(0) + vertices.col(1));
-                // for (int ldof = 1; ldof < m_polynomialOrder; ++ldof){
-                //     setBoundingBoxReference<CoordinateType>(
-                //         acc(m_globalDofBoundingBoxes, gdofStart + ldof), dofPosition);
-                // }
-                // dofPosition = 0.5 * (vertices.col(0) + vertices.col(2));
-                // for (int ldofy = 1; ldofy < m_polynomialOrder; ++ldofy) {
-                //     int ldof = ldofy * (m_polynomialOrder + 1) -
-                //         ldofy * (ldofy - 1) / 2;
-                //     setBoundingBoxReference<CoordinateType>(
-                //         acc(m_globalDofBoundingBoxes, gdofStart + ldof), dofPosition);
-                // }
-                // dofPosition = 0.5 * (vertices.col(1) + vertices.col(2));
-                // for (int ldofy = 1; ldofy < m_polynomialOrder; ++ldofy) {
-                //     int ldof = ldofy * (m_polynomialOrder + 1) -
-                //         ldofy * (ldofy - 1) / 2 + (m_polynomialOrder - ldofy);
-                //     setBoundingBoxReference<CoordinateType>(
-                //         acc(m_globalDofBoundingBoxes, gdofStart + ldof), dofPosition);
-                // }
-            }
-            // bubble dofs
-            if (m_polynomialOrder >= 3) {
-                if (segment.contains(elementCodim, elementIndex)) {
-                    dofPosition = (vertices.col(0) + vertices.col(1) +
-                                   vertices.col(2)) / 3.;
-                    for (int ldofy = 1; ldofy < m_polynomialOrder; ++ldofy)
-                        for (int ldofx = 1; ldofx + ldofy < m_polynomialOrder;
-                             ++ldofx) {
-                            int ldof = ldofy * (m_polynomialOrder + 1) -
-                                ldofy * (ldofy - 1) / 2 + ldofx;
+                ldof = localDofCount - 1;
+                subEntityIndex = indexSet.subEntityIndex(element, 2, vertexCodim);
+                if ((strictlyOnSegment && segment.contains(0, elementIndex)) ||
+                        (!strictlyOnSegment && segment.contains(vertexCodim, subEntityIndex))) {
+                    acc(globalDofs, ldof) = globalDofCount;
+                    std::vector<LocalDof> localDofs(1, LocalDof(elementIndex, ldof));
+                    m_global2localDofs.push_back(localDofs);
+                    m_globalDofBoundingBoxes.push_back(bbox);
+                    setBoundingBoxReference<CoordinateType>(
+                                acc(m_globalDofBoundingBoxes, globalDofCount), vertices.col(2));
+                    ++globalDofCount;
+                } else
+                    acc(globalDofs, ldof) = -1;
+
+                // edge dofs
+                if (m_polynomialOrder >= 2) {
+                    int start, end, step;
+
+                    subEntityIndex = indexSet.subEntityIndex(element, 0, edgeCodim);
+                    if ((strictlyOnSegment && segment.contains(0, elementIndex)) ||
+                            (!strictlyOnSegment && segment.contains(edgeCodim, subEntityIndex))) {
+                        dofPosition = 0.5 * (vertices.col(0) + vertices.col(1));
+                        for (int ldof = 1; ldof < m_polynomialOrder; ++ldof) {
                             acc(globalDofs, ldof) = globalDofCount;
                             std::vector<LocalDof> localDofs(1, LocalDof(elementIndex, ldof));
                             m_global2localDofs.push_back(localDofs);
                             m_globalDofBoundingBoxes.push_back(bbox);
                             setBoundingBoxReference<CoordinateType>(
-                                acc(m_globalDofBoundingBoxes, globalDofCount),
-                                dofPosition);
+                                        acc(m_globalDofBoundingBoxes, globalDofCount), dofPosition);
                             ++globalDofCount;
                         }
-                } else
-                    for (int ldofy = 1; ldofy < m_polynomialOrder; ++ldofy)
-                        for (int ldofx = 1; ldofx + ldofy < m_polynomialOrder;
-                             ++ldofx) {
-                            int ldof = ldofy * (m_polynomialOrder + 1) -
-                                ldofy * (ldofy - 1) / 2 + ldofx;
+                    } else
+                        for (int ldof = 1; ldof < m_polynomialOrder; ++ldof) {
                             acc(globalDofs, ldof) = -1;
                         }
 
-                // dofPosition = (vertices.col(0) + vertices.col(1) +
-                //                vertices.col(2)) / 3.;
-                // for (int ldofy = 1; ldofy < m_polynomialOrder; ++ldofy)
-                //     for (int ldofx = 1; ldofx + ldofy < m_polynomialOrder; ++ldofx) {
-                //         int ldof = ldofy * (m_polynomialOrder + 1) -
-                //             ldofy * (ldofy - 1) / 2 + ldofx;
-                //         setBoundingBoxReference<CoordinateType>(
-                //             acc(m_globalDofBoundingBoxes, gdofStart + ldof),
-                //             dofPosition);
-                //     }
+                    subEntityIndex = indexSet.subEntityIndex(element, 1, edgeCodim);
+                    if ((strictlyOnSegment && segment.contains(0, elementIndex)) ||
+                            (!strictlyOnSegment && segment.contains(edgeCodim, subEntityIndex))) {
+                        dofPosition = 0.5 * (vertices.col(0) + vertices.col(2));
+                        for (int ldofy = 1; ldofy < m_polynomialOrder; ++ldofy) {
+                            int ldof = ldofy * (m_polynomialOrder + 1) -
+                                    ldofy * (ldofy - 1) / 2;
+                            acc(globalDofs, ldof) = globalDofCount;
+                            std::vector<LocalDof> localDofs(1, LocalDof(elementIndex, ldof));
+                            m_global2localDofs.push_back(localDofs);
+                            m_globalDofBoundingBoxes.push_back(bbox);
+                            setBoundingBoxReference<CoordinateType>(
+                                        acc(m_globalDofBoundingBoxes, globalDofCount), dofPosition);
+                            ++globalDofCount;
+                        }
+                    } else
+                        for (int ldofy = 1; ldofy < m_polynomialOrder; ++ldofy) {
+                            int ldof = ldofy * (m_polynomialOrder + 1) -
+                                    ldofy * (ldofy - 1) / 2;
+                            acc(globalDofs, ldof) = -1;
+                        }
+
+                    subEntityIndex = indexSet.subEntityIndex(element, 2, edgeCodim);
+                    if ((strictlyOnSegment && segment.contains(0, elementIndex)) ||
+                            (!strictlyOnSegment && segment.contains(edgeCodim, subEntityIndex))) {
+                        dofPosition = 0.5 * (vertices.col(1) + vertices.col(2));
+                        for (int ldofy = 1; ldofy < m_polynomialOrder; ++ldofy) {
+                            int ldof = ldofy * (m_polynomialOrder + 1) -
+                                    ldofy * (ldofy - 1) / 2 + (m_polynomialOrder - ldofy);
+                            acc(globalDofs, ldof) = globalDofCount;
+                            std::vector<LocalDof> localDofs(1, LocalDof(elementIndex, ldof));
+                            m_global2localDofs.push_back(localDofs);
+                            m_globalDofBoundingBoxes.push_back(bbox);
+                            setBoundingBoxReference<CoordinateType>(
+                                        acc(m_globalDofBoundingBoxes, globalDofCount), dofPosition);
+                            ++globalDofCount;
+                        }
+                    } else
+                        for (int ldofy = 1; ldofy < m_polynomialOrder; ++ldofy) {
+                            int ldof = ldofy * (m_polynomialOrder + 1) -
+                                    ldofy * (ldofy - 1) / 2 + (m_polynomialOrder - ldofy);
+                            acc(globalDofs, ldof) = -1;
+                        }
+
+                    // dofPosition = 0.5 * (vertices.col(0) + vertices.col(1));
+                    // for (int ldof = 1; ldof < m_polynomialOrder; ++ldof){
+                    //     setBoundingBoxReference<CoordinateType>(
+                    //         acc(m_globalDofBoundingBoxes, gdofStart + ldof), dofPosition);
+                    // }
+                    // dofPosition = 0.5 * (vertices.col(0) + vertices.col(2));
+                    // for (int ldofy = 1; ldofy < m_polynomialOrder; ++ldofy) {
+                    //     int ldof = ldofy * (m_polynomialOrder + 1) -
+                    //         ldofy * (ldofy - 1) / 2;
+                    //     setBoundingBoxReference<CoordinateType>(
+                    //         acc(m_globalDofBoundingBoxes, gdofStart + ldof), dofPosition);
+                    // }
+                    // dofPosition = 0.5 * (vertices.col(1) + vertices.col(2));
+                    // for (int ldofy = 1; ldofy < m_polynomialOrder; ++ldofy) {
+                    //     int ldof = ldofy * (m_polynomialOrder + 1) -
+                    //         ldofy * (ldofy - 1) / 2 + (m_polynomialOrder - ldofy);
+                    //     setBoundingBoxReference<CoordinateType>(
+                    //         acc(m_globalDofBoundingBoxes, gdofStart + ldof), dofPosition);
+                    // }
+                }
+                // bubble dofs
+                if (m_polynomialOrder >= 3) {
+                    if (segment.contains(elementCodim, elementIndex)) {
+                        dofPosition = (vertices.col(0) + vertices.col(1) +
+                                       vertices.col(2)) / 3.;
+                        for (int ldofy = 1; ldofy < m_polynomialOrder; ++ldofy)
+                            for (int ldofx = 1; ldofx + ldofy < m_polynomialOrder;
+                                 ++ldofx) {
+                                int ldof = ldofy * (m_polynomialOrder + 1) -
+                                        ldofy * (ldofy - 1) / 2 + ldofx;
+                                acc(globalDofs, ldof) = globalDofCount;
+                                std::vector<LocalDof> localDofs(1, LocalDof(elementIndex, ldof));
+                                m_global2localDofs.push_back(localDofs);
+                                m_globalDofBoundingBoxes.push_back(bbox);
+                                setBoundingBoxReference<CoordinateType>(
+                                            acc(m_globalDofBoundingBoxes, globalDofCount),
+                                            dofPosition);
+                                ++globalDofCount;
+                            }
+                    } else
+                        for (int ldofy = 1; ldofy < m_polynomialOrder; ++ldofy)
+                            for (int ldofx = 1; ldofx + ldofy < m_polynomialOrder;
+                                 ++ldofx) {
+                                int ldof = ldofy * (m_polynomialOrder + 1) -
+                                        ldofy * (ldofy - 1) / 2 + ldofx;
+                                acc(globalDofs, ldof) = -1;
+                            }
+
+                    // dofPosition = (vertices.col(0) + vertices.col(1) +
+                    //                vertices.col(2)) / 3.;
+                    // for (int ldofy = 1; ldofy < m_polynomialOrder; ++ldofy)
+                    //     for (int ldofx = 1; ldofx + ldofy < m_polynomialOrder; ++ldofx) {
+                    //         int ldof = ldofy * (m_polynomialOrder + 1) -
+                    //             ldofy * (ldofy - 1) / 2 + ldofx;
+                    //         setBoundingBoxReference<CoordinateType>(
+                    //             acc(m_globalDofBoundingBoxes, gdofStart + ldof),
+                    //             dofPosition);
+                    //     }
+                }
             }
         }
 
