@@ -24,6 +24,9 @@
 #include "../common/common.hpp"
 
 #include "space.hpp"
+
+#include "dof_assignment_mode.hpp"
+
 #include "../grid/grid_segment.hpp"
 #include "../grid/grid_view.hpp"
 #include "../common/types.hpp"
@@ -40,12 +43,6 @@ namespace Bempp
 /** \cond FORWARD_DECL */
 class GridView;
 /** \endcond */
-
-enum RaviartThomasDofAssignmentMode
-{
-    EDGE_ON_SEGMENT = 1,
-    ELEMENT_ON_SEGMENT = 2
-};
 
 /** \ingroup space
  *  \brief Space of continuous, piecewise linear scalar functions. */
