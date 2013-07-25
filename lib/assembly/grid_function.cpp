@@ -941,7 +941,7 @@ void GridFunction<BasisFunctionType, ResultType>::exportToGmsh(
         for (size_t p = 0; p < pointCount; ++p) {
             data << nodeCount + 1 + p;
             for (size_t d = 0; d < values.n_rows; ++d)
-                data << ' ' << values(d, p);
+                data << ' ' << realPart(values(d, p)); // TODO: export imag. part too
             data << '\n';
         }
         nodeCount += pointCount;
