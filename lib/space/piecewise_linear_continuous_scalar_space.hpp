@@ -65,7 +65,12 @@ public:
      *  Construct a space of piecewise linear, continuous scalar functions
      *  defined on the segment \p segment of the grid \p grid. More precisely,
      *  the space will encompass those basis functions that are associated with
-     *  vertices belonging to \p segment.
+     *  vertices belonging to \p segment. If \p strictlyOnSegment is \c true,
+     *  the support of the basis functions is truncated to the elements that
+     *  belong to \p segment, too; in this case, the space may in fact contain
+     *  discontinuous basis functions when considered on the whole \p grid,
+     *  although the basis functions will be continuous when considered on the
+     *  chosen grid segment.
      *
      *  An exception is thrown if \p grid is a null pointer.
      */
