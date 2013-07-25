@@ -96,7 +96,10 @@ public:
     /** \brief Constructor.
      *
      *  \param[in] grid Grid on which functions from this space should be
-     *  defined. */
+     *  defined.
+     *
+     *  An exception is thrown if \p grid is a null pointer.
+     */
     explicit Space(const shared_ptr<const Grid>& grid);
 
     /** \brief Destructor. */

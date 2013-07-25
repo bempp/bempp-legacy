@@ -24,6 +24,7 @@
 #include "../common/common.hpp"
 #include "../common/types.hpp"
 #include "../fiber/lagrange_scalar_basis.hpp"
+#include "../grid/grid_segment.hpp"
 
 #include "scalar_space.hpp"
 
@@ -49,11 +50,37 @@ public:
     typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
     typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
 
-    /** \brief Construct a space spanned by a basis of polynomials of order
-     *  \p polynomialOrder on elements of the grid \p grid. */
+    /** \brief Constructor.
+     *
+     *  Construct a space of continuous functions whose restrictions to
+     *  elements of the grid \p grid will be polynomials of order at most \p
+     *  polynomialOrder. */
     PiecewisePolynomialContinuousScalarSpace(
             const shared_ptr<const Grid>& grid,
             int polynomialOrder);
+
+    /** \brief Constructor.
+     *
+     *  Construct a space of continuous functions whose restrictions to
+     *  elements of the grid \p grid will be polynomials of order at most \p
+     *  polynomialOrder. The space will contain only the basis functions deemed
+     *  to belong to the segment \p segment; specifically, vertex functions
+     *  associated with vertices belonging to \p segment, edge functions
+     *  associated with edges belonging to \p segment and bubble function
+     *  associated with elements belonging to \p segment. If \p
+     *  strictlyOnSegment is \c true, the support of the basis functions is
+     *  truncated to the elements that belong to \p segment, too; in this case,
+     *  the space may in fact contain discontinuous basis functions when
+     *  considered on the whole \p grid, although the basis functions will be
+     *  continuous when considered on the chosen grid segment.
+     *
+     *  An exception is thrown if \p grid is a null pointer.
+     */
+    PiecewisePolynomialContinuousScalarSpace(
+            const shared_ptr<const Grid>& grid,
+            int polynomialOrder,
+            const GridSegment& segment,
+            bool strictlyOnSegment = false);
     virtual ~PiecewisePolynomialContinuousScalarSpace();
 
     virtual int domainDimension() const;
@@ -110,18 +137,18 @@ public:
             DofType dofType) const;
 
 private:
+    void initialize();
     void assignDofsImpl();
 
 private:
     /** \cond PRIVATE */
     int m_polynomialOrder;
+    GridSegment m_segment;
+    bool m_strictlyOnSegment;
     boost::scoped_ptr<Fiber::Basis<BasisFunctionType> > m_triangleBasis;
     std::auto_ptr<GridView> m_view;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
-    size_t m_vertexGlobalDofCount;
-    size_t m_edgeGlobalDofCount;
-    size_t m_bubbleGlobalDofCount;
     std::vector<LocalDof> m_flatLocal2localDofs;
     size_t m_flatLocalDofCount;
     std::vector<BoundingBox<CoordinateType> > m_globalDofBoundingBoxes;

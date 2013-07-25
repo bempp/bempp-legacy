@@ -21,6 +21,7 @@
 #include "raviart_thomas_0_vector_space.hpp"
 
 #include "piecewise_linear_discontinuous_scalar_space.hpp"
+#include "space_helper.hpp"
 
 #include "../assembly/discrete_sparse_boundary_operator.hpp"
 #include "../common/acc.hpp"
@@ -63,14 +64,38 @@ template <typename BasisFunctionType>
 RaviartThomas0VectorSpace<BasisFunctionType>::
 RaviartThomas0VectorSpace(const shared_ptr<const Grid>& grid,
                           bool putDofsOnBoundaries) :
-    Base(grid), m_impl(new Impl), m_putDofsOnBoundaries(putDofsOnBoundaries)
+    Base(grid), m_impl(new Impl), m_segment(GridSegment::wholeGrid(*grid)),
+    m_putDofsOnBoundaries(putDofsOnBoundaries),
+    m_dofMode(EDGE_ON_SEGMENT)
 {
-    if (grid->dim() != 2 || grid->dimWorld() != 3)
+    initialize();
+}
+
+template <typename BasisFunctionType>
+RaviartThomas0VectorSpace<BasisFunctionType>::
+RaviartThomas0VectorSpace(const shared_ptr<const Grid>& grid,
+                          const GridSegment& segment,
+                          bool putDofsOnBoundaries,
+                          int dofMode) :
+    Base(grid), m_impl(new Impl), m_segment(segment),
+    m_putDofsOnBoundaries(putDofsOnBoundaries),
+    m_dofMode(dofMode)
+{
+    if (!(dofMode & (EDGE_ON_SEGMENT | ELEMENT_ON_SEGMENT)))
         throw std::invalid_argument("RaviartThomas0VectorSpace::"
                                     "RaviartThomas0VectorSpace(): "
+                                    "invalid dofMode");
+    initialize();
+}
+
+template <typename BasisFunctionType>
+void RaviartThomas0VectorSpace<BasisFunctionType>::initialize()
+{
+    if (this->grid()->dim() != 2 || this->grid()->dimWorld() != 3)
+        throw std::invalid_argument("RaviartThomas0VectorSpace::initialize(): "
                                     "grid must be 2-dimensional and embedded "
                                     "in 3-dimensional space");
-    m_view = grid->leafView();
+    m_view = this->grid()->leafView();
     assignDofsImpl();
 }
 
@@ -176,25 +201,33 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
     int edgeCount = m_view->entityCount(1);
     int elementCount = m_view->entityCount(0);
 
+    // std::cout << "dofMode: " << m_dofMode << std::endl;
+
     const int vertexCodim = 2;
     const int edgeCodim = 1;
     const int elementCodim = 0;
 
     std::vector<int> lowestIndicesOfElementsAdjacentToEdges(
                 edgeCount, std::numeric_limits<int>::max());
-    std::vector<int> globalDofsOfEdges;
     // number of element adjacent to each edge
-    std::vector<int> elementsAdjacentToEdges;
-    elementsAdjacentToEdges.resize(edgeCount, 0);
+    std::vector<int> elementsAdjacentToEdges(edgeCount, 0);
+    std::vector<bool> noAdjacentElementsAreInSegment(edgeCount, true);
     std::auto_ptr<EntityIterator<elementCodim> > it =
             m_view->entityIterator<elementCodim>();
     while (!it->finished()) {
         const Entity<elementCodim>& element = it->entity();
         const int elementIndex = indexSet.entityIndex(element);
+        const bool elementContained =
+                m_segment.contains(elementCodim, elementIndex);
         const int localEdgeCount = element.subEntityCount<edgeCodim>();
         for (int i = 0; i < localEdgeCount; ++i) {
             int edgeIndex = indexSet.subEntityIndex(element, i, edgeCodim);
+            if (m_dofMode & EDGE_ON_SEGMENT &&
+                    !m_segment.contains(edgeCodim, edgeIndex))
+                continue;
             ++acc(elementsAdjacentToEdges, edgeIndex);
+            if (elementContained)
+                acc(noAdjacentElementsAreInSegment, edgeIndex) = false;
             int& lowestIndex = acc(lowestIndicesOfElementsAdjacentToEdges,
                                    edgeIndex);
             lowestIndex = std::min(lowestIndex, elementIndex);
@@ -202,11 +235,14 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
         it->next();
     }
     int globalDofCount_ = 0;
+    std::vector<int> globalDofsOfEdges;
     globalDofsOfEdges.swap(elementsAdjacentToEdges);
     for (int i = 0; i < edgeCount; ++i) {
-        assert(i < globalDofsOfEdges.size());
         int& globalDofOfEdge = acc(globalDofsOfEdges, i);
-        if (!m_putDofsOnBoundaries && globalDofOfEdge < 2)
+        if (globalDofOfEdge == 0 ||
+                (!m_putDofsOnBoundaries && globalDofOfEdge < 2) ||
+                (m_dofMode & ELEMENT_ON_SEGMENT &&
+                 acc(noAdjacentElementsAreInSegment, i)))
             globalDofOfEdge = -1;
         else
             globalDofOfEdge = globalDofCount_++;
@@ -219,7 +255,7 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
     m_local2globalDofWeights.resize(elementCount);
     m_global2localDofs.clear();
     m_global2localDofs.resize(globalDofCount_);
-    m_flatLocal2localDofs.reserve(4 * globalDofCount_);
+    size_t flatLocalDofCount = 0;
 
     // TODO: consider calling reserve(2) for each element of m_global2localDofs
 
@@ -241,6 +277,8 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
         const Entity<elementCodim>& element = it->entity();
         const Geometry& geo = element.geometry();
         EntityIndex elementIndex = elementMapper.entityIndex(element);
+        bool elementContained = m_dofMode & ELEMENT_ON_SEGMENT ?
+                    m_segment.contains(elementCodim, elementIndex) : true;
 
         geo.getCorners(vertices);
         const int vertexCount = vertices.n_cols;
@@ -261,7 +299,9 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
         globalDofWeights.reserve(edgeCount);
         for (int i = 0; i < edgeCount; ++i) {
             int edgeIndex = indexSet.subEntityIndex(element, i, edgeCodim);
-            GlobalDofIndex globalDofIndex = acc(globalDofsOfEdges, edgeIndex);
+            GlobalDofIndex globalDofIndex =
+                    elementContained ? acc(globalDofsOfEdges, edgeIndex)
+                                     : -1;
             // Handle Dune's funny subentity indexing order. This code is
             // only valid for triangular elements.
             if (i == 0) {
@@ -286,11 +326,12 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
             setBoundingBoxReference<CoordinateType>(
                 acc(m_globalDofBoundingBoxes, globalDofIndex), dofPosition);
 
-            // here we depend on elements being iterated in order of
-            // increasing element indices
-            m_flatLocal2localDofs.push_back(LocalDof(elementIndex, i));
+            ++flatLocalDofCount;
         }
         it->next();
+        for (int i = 0; i < globalDofs.size(); ++i)
+            std::cout << globalDofs[i] << " ";
+        std::cout << std::endl;
     }
 
 #ifndef NDEBUG
@@ -305,6 +346,9 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
        assert(bbox.reference.z <= bbox.ubound.z);
    }
 #endif // NDEBUG
+
+    SpaceHelper<BasisFunctionType>::initializeLocal2FlatLocalDofMap(
+                flatLocalDofCount, m_local2globalDofs, m_flatLocal2localDofs);
 
 //    // Iterate over elements
 //    std::auto_ptr<EntityIterator<elementCodim> > it =
@@ -483,7 +527,7 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
     arma::Col<CoordinateType> dofPosition;
     for (size_t e = 0; e < m_local2globalDofs.size(); ++e)
         for (size_t v = 0; v < acc(m_local2globalDofs, e).size(); ++v)
-            if (acc(acc(m_local2globalDofs, e), v) >= 0) {
+            if (acc(acc(m_local2globalDofs, e), v) >= 0) { // is this LDOF used?
                 const arma::Mat<CoordinateType>& vertices =
                         acc(elementCorners, e);
                 BoundingBox<CoordinateType>& bbox = acc(bboxes, flatLdofIndex);
@@ -574,7 +618,7 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofNormals(
     assert(m_local2globalDofs.size() == elementCount);
     for (size_t e = 0; e < elementCount; ++e)
         for (size_t v = 0; v < m_local2globalDofs[e].size(); ++v)
-            if (m_local2globalDofs[e][v] >= 0) {
+            if (m_local2globalDofs[e][v] >= 0) { // is this LDOF used?
                 normals[flatLdofIndex].x = elementNormals(0, e);
                 normals[flatLdofIndex].y = elementNormals(1, e);
                 normals[flatLdofIndex].z = elementNormals(2, e);

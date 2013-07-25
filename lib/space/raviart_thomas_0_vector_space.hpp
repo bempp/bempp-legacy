@@ -24,6 +24,10 @@
 #include "../common/common.hpp"
 
 #include "space.hpp"
+
+#include "dof_assignment_mode.hpp"
+
+#include "../grid/grid_segment.hpp"
 #include "../grid/grid_view.hpp"
 #include "../common/types.hpp"
 #include "../fiber/raviart_thomas_0_basis.hpp"
@@ -53,8 +57,13 @@ public:
     CollectionOfBasisTransformations;
 
     explicit RaviartThomas0VectorSpace(
-        const shared_ptr<const Grid>& grid,
+            const shared_ptr<const Grid>& grid,
             bool putDofsOnBoundaries = false);
+    RaviartThomas0VectorSpace(
+            const shared_ptr<const Grid>& grid,
+            const GridSegment& segment,
+            bool putDofsOnBoundaries = false,
+            int dofMode = EDGE_ON_SEGMENT);
     virtual ~RaviartThomas0VectorSpace();
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
@@ -114,13 +123,16 @@ public:
             DofType dofType) const;
 
 private:
+    void initialize();
     void assignDofsImpl();
 
 private:
     /** \cond PRIVATE */
     struct Impl;
     boost::scoped_ptr<Impl> m_impl;
+    GridSegment m_segment;
     bool m_putDofsOnBoundaries;
+    int m_dofMode;
     std::auto_ptr<GridView> m_view;
     Fiber::RaviartThomas0Basis<3, BasisFunctionType> m_triangleBasis;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;

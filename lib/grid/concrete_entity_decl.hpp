@@ -25,6 +25,7 @@
 
 #include "entity.hpp"
 #include "concrete_geometry.hpp"
+#include "domain_index.hpp"
 #include "geometry_type.hpp"
 
 #include <boost/utility/enable_if.hpp>
@@ -64,14 +65,28 @@ private:
 
 public:
     /** \brief Default constructor */
-    ConcreteEntity() :
+    explicit ConcreteEntity() :
+        m_dune_entity(0) {
+    }
+
+    /** \brief Constructor taking a single unused parameter -- for compatibility
+     *  with the specialization for <tt>codim = 0</tt>.*/
+    explicit ConcreteEntity(const DomainIndex& /*domain_index*/) :
         m_dune_entity(0) {
     }
 
     /** \brief Constructor from a pointer to DuneEntity.
 
     \note This object does not acquire ownership of \p *dune_entity. */
-    ConcreteEntity(const DuneEntity* dune_entity) :
+    explicit ConcreteEntity(const DuneEntity* dune_entity) :
+        m_dune_entity(dune_entity) {
+    }
+
+    /** \brief Constructor from a pointer to DuneEntity.
+
+    \note This object does not acquire ownership of \p *dune_entity. */
+    ConcreteEntity(const DuneEntity* dune_entity,
+                   const DomainIndex& /*domain_index*/) :
         m_dune_entity(dune_entity) {
     }
 
@@ -106,6 +121,7 @@ class ConcreteEntity<0, DuneEntity> : public Entity<0>
 
 private:
     const DuneEntity* m_dune_entity;
+    const DomainIndex& m_domain_index;
     /** \internal Entity geometry. Updated on demand (on calling
      * geometry()), hence declared as mutable. */
     mutable ConcreteGeometry<typename DuneEntity::Geometry> m_geometry;
@@ -119,16 +135,18 @@ private:
     }
 
 public:
-    /** \brief Default constructor */
-    ConcreteEntity() :
-        m_dune_entity(0) {
+    /** \brief Constructor of an empty entity. */
+    explicit ConcreteEntity(const DomainIndex& domain_index) :
+        m_dune_entity(0), m_domain_index(domain_index) {
     }
 
     /** \brief Constructor from a pointer to DuneEntity.
 
     \note This object does not acquire ownership of \p *dune_entity. */
-    explicit ConcreteEntity(const DuneEntity* dune_entity) :
-        m_dune_entity(dune_entity) {
+    ConcreteEntity(const DuneEntity* dune_entity,
+                   const DomainIndex& domain_index) :
+        m_dune_entity(dune_entity),
+        m_domain_index(domain_index) {
     }
 
     /** \brief Read-only access to the underlying Dune entity object */
@@ -171,6 +189,10 @@ public:
 
     virtual bool mightVanish() const {
         return m_dune_entity->mightVanish();
+    }
+
+    virtual int domain() const {
+        return m_domain_index.domain(*this);
     }
 
 private:
