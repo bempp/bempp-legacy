@@ -22,6 +22,7 @@
 #define bempp_index_set_hpp
 
 #include "../common/common.hpp"
+#include "cstddef"
 
 namespace Bempp
 {

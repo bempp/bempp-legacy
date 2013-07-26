@@ -131,11 +131,17 @@ constructGlobalToFlatLocalDofsMappingEpetraMatrix(
 } // namespace
 
 template <typename BasisFunctionType>
-Space<BasisFunctionType>::Space(const shared_ptr<const Grid>& grid, unsigned int level) :
-    m_grid(grid), m_level(level)
+Space<BasisFunctionType>::Space(const shared_ptr<const Grid>& grid, int level) :
+    m_grid(grid)
 {
-    if (m_level>m_grid->maxLevel()) throw std::runtime_error("Space::Space(grid,level): "
-                                                             "level must not exceed grid->maxlevel().");
+    if (level<-1) throw std::runtime_error("Space::Space(grid,level):"
+                                           "level must not be smaller than -1.");
+    if (level>m_grid->maxLevel()) throw std::runtime_error("Space::Space(grid,level): "
+                                                           "level must not exceed grid->maxlevel().");
+    if (level==-1)
+        m_level = m_grid->maxLevel();
+    else
+        m_level = level;
     if (!grid)
         throw std::invalid_argument("Space::Space(): grid must not be a null "
                                     "pointer");
@@ -158,13 +164,16 @@ bool Space<BasisFunctionType>::dofsAssigned() const
 }
 
 template <typename BasisFunctionType>
-std::auto_ptr<GridView> Space<BasisFunctionType>::gridLevelView(unsigned int level) const
+std::auto_ptr<GridView> Space<BasisFunctionType>::gridView(int level) const
 {
-    return m_grid->levelView(level);
+    if (level==-1)
+        return m_grid->levelView(m_grid->maxLevel());
+    else
+        return m_grid->levelView(level);
 }
 
 template <typename BasisFunctionType>
-std::auto_ptr<GridView> Space<BasisFunctionType>::gridDefaultView() const
+std::auto_ptr<GridView> Space<BasisFunctionType>::gridView() const
 {
     return m_grid->levelView(m_level);
 }

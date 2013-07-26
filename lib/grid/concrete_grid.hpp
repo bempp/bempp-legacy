@@ -75,17 +75,38 @@ public:
      \param[in]  leafIsBarycentric If true the leaf level is a barycentric refinement of the previous level.
      */
     explicit ConcreteGrid(DuneGrid* dune_grid,
-                          GridParameters::Topology topology, 
-			  const std::vector<int>& domainIndices, 
-			  bool own = false,
-			  bool leafIsBarycentric=false) :
+                          GridParameters::Topology topology, bool own = false,
+                          bool leafIsBarycentric = false) :
         m_dune_grid(ensureNotNull(dune_grid)),
         m_topology(topology),
         m_owns_dune_grid(own),
-	m_leafIsBarycentric(leafIsBarycentric)
+        m_leafIsBarycentric(leafIsBarycentric),
         m_global_id_set(&dune_grid->globalIdSet()),
-        m_domain_index(*dune_grid,domainIndices)
-   {
+        m_domain_index(*dune_grid,
+                       std::vector<int>(
+                           dune_grid->size(0 /*level*/, 0 /*codim*/),
+                           0 /*index*/))
+    {
+
+    }
+
+    /** \brief Wrap an existing Dune grid object.
+        \param[in] dune_grid Pointer to the Dune grid to wrap.
+        \param[in] topology The topology of the grid
+        \param[in] own If true, *dune_grid is deleted in this object's destructor.
+    */
+    explicit ConcreteGrid(DuneGrid* dune_grid,
+                          GridParameters::Topology topology,
+                          const std::vector<int>& domainIndices,
+                          bool own = false,
+                          bool leafIsBarycentric = false) :
+        m_dune_grid(ensureNotNull(dune_grid)),
+        m_topology(topology),
+        m_owns_dune_grid(own),
+        m_global_id_set(&dune_grid->globalIdSet()),
+        m_leafIsBarycentric(leafIsBarycentric),
+        m_domain_index(*dune_grid, domainIndices)
+    {
     }
 
     /** \brief Destructor. */
