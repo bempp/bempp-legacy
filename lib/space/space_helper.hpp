@@ -18,45 +18,36 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_concrete_entity_pointer_hpp
-#define bempp_concrete_entity_pointer_hpp
+#ifndef bempp_space_utils_hpp
+#define bempp_space_utils_hpp
 
 #include "../common/common.hpp"
+#include "../common/scalar_traits.hpp"
+#include "../common/types.hpp"
 
-#include "entity_pointer.hpp"
-#include "concrete_entity_decl.hpp"
+#include <vector>
 
 namespace Bempp
 {
 
-/**
- \ingroup grid_internal
- \brief Wrapper of a Dune entity pointer of type \p DuneEntityPointer.
- */
-template<typename DuneEntityPointer>
-class ConcreteEntityPointer: public EntityPointer<DuneEntityPointer::codimension>
+class GridView;
+struct LocalDof;
+template <typename CoordinateType> class BoundingBox;
+
+template <typename BasisFunctionType>
+struct SpaceHelper
 {
-private:
-    typedef typename DuneEntityPointer::Entity DuneEntity;
-    DuneEntityPointer m_dune_entity_ptr;
-    ConcreteEntity<ConcreteEntityPointer::codimension, DuneEntity> m_entity;
+    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
-    void updateEntity() {
-        m_entity.setDuneEntity(&*m_dune_entity_ptr);
-    }
+    static void getGlobalDofBoundingBoxes_defaultImplementation(
+            const GridView& view,
+            const std::vector<std::vector<LocalDof> >& global2localDofs,
+            std::vector<BoundingBox<CoordinateType> >& bboxes);
 
-public:
-    /** \brief Constructor */
-    ConcreteEntityPointer(const DuneEntityPointer& dune_entity_pointer,
-                          const DomainIndex& domain_index) :
-        m_dune_entity_ptr(dune_entity_pointer),
-        m_entity(domain_index) {
-        updateEntity();
-    }
-
-    virtual const Entity<DuneEntityPointer::codimension>& entity() const {
-        return m_entity;
-    }
+    static void initializeLocal2FlatLocalDofMap(
+            size_t flatLocalDofCount,
+            const std::vector<std::vector<GlobalDofIndex> >& local2globalDofs,
+            std::vector<LocalDof>& flatLocal2localDofs);
 };
 
 } // namespace Bempp

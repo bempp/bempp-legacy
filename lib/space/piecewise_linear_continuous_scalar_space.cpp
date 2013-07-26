@@ -21,9 +21,12 @@
 #include "piecewise_linear_continuous_scalar_space.hpp"
 
 #include "piecewise_linear_discontinuous_scalar_space.hpp"
+#include "space_helper.hpp"
 
 #include "../assembly/discrete_sparse_boundary_operator.hpp"
+#include "../common/acc.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
+#include "../common/bounding_box_helpers.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../grid/entity.hpp"
 #include "../grid/entity_iterator.hpp"
@@ -42,21 +45,41 @@ namespace Bempp
 template <typename BasisFunctionType>
 PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
 PiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid) :
-    PiecewiseLinearScalarSpace<BasisFunctionType>(grid), m_flatLocalDofCount(0)
+    PiecewiseLinearScalarSpace<BasisFunctionType>(grid),
+    m_segment(GridSegment::wholeGrid(*grid)),
+    m_strictlyOnSegment(false)
 {
-    const int gridDim = grid->dim();
-    if (gridDim != 1 && gridDim != 2)
-        throw std::invalid_argument("PiecewiseLinearContinuousScalarSpace::"
-                                    "PiecewiseLinearContinuousScalarSpace(): "
-                                    "only 1- and 2-dimensional grids are supported");
-    m_view = grid->leafView();
-    assignDofsImpl();
+    initialize();
+}
+
+template <typename BasisFunctionType>
+PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
+PiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid,
+                                     const GridSegment& segment,
+                                     bool strictlyOnSegment) :
+    PiecewiseLinearScalarSpace<BasisFunctionType>(grid),
+    m_segment(segment),
+    m_strictlyOnSegment(strictlyOnSegment)
+{
+    initialize();
 }
 
 template <typename BasisFunctionType>
 PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
 ~PiecewiseLinearContinuousScalarSpace()
 {
+}
+
+template <typename BasisFunctionType>
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::initialize()
+{
+    const int gridDim = this->grid()->dim();
+    if (gridDim != 1 && gridDim != 2)
+        throw std::invalid_argument(
+                "PiecewiseLinearContinuousScalarSpace::initialize(): "
+                "only 1- and 2-dimensional grids are supported");
+    m_view =  this->grid()->leafView();
+    assignDofsImpl();
 }
 
 template <typename BasisFunctionType>
@@ -69,7 +92,9 @@ PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::discontinuousSpace(
         typedef PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>
                 DiscontinuousSpace;
         if (!m_discontinuousSpace)
-            m_discontinuousSpace.reset(new DiscontinuousSpace(this->grid()));
+            m_discontinuousSpace.reset(
+                        new DiscontinuousSpace(this->grid(), m_segment,
+                                               m_strictlyOnSegment));
     }
     return m_discontinuousSpace;
 }
@@ -85,31 +110,52 @@ template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
 {
     const int gridDim = this->domainDimension();
+    const int elementCodim = 0;
 
     const Mapper& elementMapper = m_view->elementMapper();
     const IndexSet& indexSet = m_view->indexSet();
 
-    // Global DOF numbers will be identical with vertex indices.
-    // Thus, the will be as many global DOFs as there are vertices.
-    int globalDofCount_ = m_view->entityCount(this->grid()->dim());
     int elementCount = m_view->entityCount(0);
+    int vertexCount = m_view->entityCount(gridDim);
 
-//    // DEBUG
-//    {
-//        std::cout << "Vertices:\n" << std::endl;
-//        std::auto_ptr<EntityIterator<2> > vit = m_view->entityIterator<2>();
-//        const IndexSet& indexSet = m_view->indexSet();
-//        while (!vit->finished())
-//        {
-//            arma::Col<BasisFunctionType> vertex;
-//            vit->entity().geometry().center(vertex);
-//            std::cout << indexSet.entityIndex(vit->entity()) << ": "
-//                      << vertex(0) << " "
-//                      << vertex(1) << " "
-//                      << vertex(2) << std::endl;
-//            vit->next();
-//        }
-//    }
+    // Assign gdofs to grid vertices (choosing only those that belong to
+    // the selected grid segment)
+    std::vector<int> globalDofIndices(vertexCount, 0);
+    m_segment.markExcludedEntities(gridDim, globalDofIndices);
+    std::vector<bool> segmentContainsElement;
+    if (m_strictlyOnSegment) {
+        std::vector<bool> noAdjacentElementsInsideSegment(vertexCount, true);
+        segmentContainsElement.resize(elementCount);
+        std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+        while (!it->finished()) {
+            const Entity<0>& element = it->entity();
+            EntityIndex elementIndex = elementMapper.entityIndex(element);
+            bool elementContained =
+                    m_segment.contains(elementCodim, elementIndex);
+            acc(segmentContainsElement, elementIndex) = elementContained;
+
+            int cornerCount;
+            if (gridDim == 1)
+                cornerCount = element.template subEntityCount<1>();
+            else // gridDim == 2
+                cornerCount = element.template subEntityCount<2>();
+            if (elementContained)
+                for (int i = 0; i < cornerCount; ++i) {
+                    int vertexIndex = indexSet.subEntityIndex(element, i, gridDim);
+                    acc(noAdjacentElementsInsideSegment, vertexIndex) = false;
+                }
+            it->next();
+        }
+        // Remove all DOFs associated with vertices lying next to no element
+        // belonging to the grid segment
+        for (size_t i = 0; i < vertexCount; ++i)
+            if (acc(noAdjacentElementsInsideSegment, i))
+                acc(globalDofIndices, i) = -1;
+    }
+    int globalDofCount_ = 0;
+    for (int vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
+        if (acc(globalDofIndices, vertexIndex) == 0) // not excluded
+            acc(globalDofIndices, vertexIndex) = globalDofCount_++;
 
     // (Re)initialise DOF maps
     m_local2globalDofs.clear();
@@ -122,39 +168,43 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
 
     // Iterate over elements
     std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
-    m_flatLocalDofCount = 0;
-    while (!it->finished())
-    {
+    int flatLocalDofCount_ = 0;
+    while (!it->finished()) {
         const Entity<0>& element = it->entity();
         EntityIndex elementIndex = elementMapper.entityIndex(element);
+        bool elementContained = m_strictlyOnSegment ?
+                    acc(segmentContainsElement, elementIndex) : true;
 
-        int vertexCount;
+        int cornerCount;
         if (gridDim == 1)
-            vertexCount = element.template subEntityCount<1>();
+            cornerCount = element.template subEntityCount<1>();
         else // gridDim == 2
-            vertexCount = element.template subEntityCount<2>();
-        m_flatLocalDofCount += vertexCount;
+            cornerCount = element.template subEntityCount<2>();
 
         // List of global DOF indices corresponding to the local DOFs of the
         // current element
-        std::vector<GlobalDofIndex>& globalDofs = m_local2globalDofs[elementIndex];
-        globalDofs.resize(vertexCount);
-        for (int i = 0; i < vertexCount; ++i)
-        {
-            GlobalDofIndex globalDofIndex = indexSet.subEntityIndex(element, i, gridDim);
-            globalDofs[i] = globalDofIndex;
-            m_global2localDofs[globalDofIndex].push_back(LocalDof(elementIndex, i));
+        std::vector<GlobalDofIndex>& globalDofs =
+                acc(m_local2globalDofs, elementIndex);
+        globalDofs.resize(cornerCount);
+        for (int i = 0; i < cornerCount; ++i) {
+            int vertexIndex = indexSet.subEntityIndex(element, i, gridDim);
+            int globalDofIndex =
+                    elementContained ? acc(globalDofIndices, vertexIndex)
+                                     : -1;
+            acc(globalDofs, i) = globalDofIndex;
+            if (globalDofIndex >= 0) {
+                acc(m_global2localDofs, globalDofIndex).push_back(
+                            LocalDof(elementIndex, i));
+                ++flatLocalDofCount_;
+            }
         }
         it->next();
     }
 
     // Initialize the container mapping the flat local dof indices to
     // local dof indices
-    m_flatLocal2localDofs.clear();
-    m_flatLocal2localDofs.reserve(m_flatLocalDofCount);
-    for (size_t e = 0; e < m_local2globalDofs.size(); ++e)
-        for (size_t dof = 0; dof < m_local2globalDofs[e].size(); ++dof)
-            m_flatLocal2localDofs.push_back(LocalDof(e, dof));
+    SpaceHelper<BasisFunctionType>::initializeLocal2FlatLocalDofMap(
+                flatLocalDofCount_, m_local2globalDofs, m_flatLocal2localDofs);
 }
 
 template <typename BasisFunctionType>
@@ -166,15 +216,7 @@ size_t PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::globalDofCount()
 template <typename BasisFunctionType>
 size_t PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::flatLocalDofCount() const
 {
-// This is the correct implementation. Include it once the
-// bug in FoamGrid is fixes.
-//    if (gridDim == 1)
-//        return m_view->entityCount(0) * 2;
-//    else // gridDim == 2
-//        return m_view->entityCount(GeometryType(GeometryType::cube, 2)) * 4 +
-//                m_view->entityCount(GeometryType(GeometryType::simplex, 2)) * 3;
-
-    return m_flatLocalDofCount;
+    return m_flatLocal2localDofs.size();
 }
 
 template <typename BasisFunctionType>
@@ -210,152 +252,33 @@ template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getGlobalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
-    const int gridDim = this->domainDimension();
-    const int globalDofCount_ = globalDofCount();
-    positions.resize(globalDofCount_);
+    std::vector<BoundingBox<CoordinateType> > bboxes;
+    getGlobalDofBoundingBoxes(bboxes);
 
-    const IndexSet& indexSet = m_view->indexSet();
-
-    if (gridDim == 1)
-    {
-        std::auto_ptr<EntityIterator<1> > it = m_view->entityIterator<1>();
-        while (!it->finished())
-        {
-            const Entity<1>& e = it->entity();
-            int index = indexSet.entityIndex(e);
-            arma::Col<CoordinateType> vertex;
-            e.geometry().getCenter(vertex);
-
-            positions[index].x = vertex(0);
-            positions[index].y = vertex(1);
-            positions[index].z = 0.;
-            it->next();
-        }
-    }
-    else // gridDim == 2
-    {
-        std::auto_ptr<EntityIterator<2> > it = m_view->entityIterator<2>();
-        while (!it->finished())
-        {
-            const Entity<2>& e = it->entity();
-            int index = indexSet.entityIndex(e);
-            arma::Col<CoordinateType> vertex;
-            e.geometry().getCenter(vertex);
-
-            positions[index].x = vertex(0);
-            positions[index].y = vertex(1);
-            positions[index].z = vertex(2);
-            it->next();
-        }
-    }
+    positions.resize(bboxes.size());
+    for (int i = 0; i < positions.size(); ++i)
+        positions[i] = bboxes[i].reference;
 }
 
 template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getFlatLocalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
-    const int gridDim = this->domainDimension();
-    const int worldDim = this->grid()->dimWorld();
-    positions.resize(m_flatLocalDofCount);
+    std::vector<BoundingBox<CoordinateType> > bboxes;
+    getFlatLocalDofBoundingBoxes(bboxes);
 
-    const IndexSet& indexSet = m_view->indexSet();
-    int elementCount = m_view->entityCount(0);
-
-    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
-    arma::Mat<CoordinateType> corners;
-    // Here we depend on the iterator returning elements in order of
-    // increasing index
-    size_t flatLdofIndex = 0;
-    while (!it->finished())
-    {
-        const Entity<0>& e = it->entity();
-        e.geometry().getCorners(corners);
-        for (size_t v = 0; v < corners.n_cols; ++v) {
-            positions[flatLdofIndex].x = corners(0, v);
-            positions[flatLdofIndex].y = corners(1, v);
-            positions[flatLdofIndex].z = gridDim == 2 ? corners(2, v) : 0.;
-            ++flatLdofIndex;
-        }
-        it->next();
-    }
-    assert(flatLdofIndex == m_flatLocalDofCount);
+    positions.resize(bboxes.size());
+    for (int i = 0; i < positions.size(); ++i)
+        positions[i] = bboxes[i].reference;
 }
 
 template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
        std::vector<BoundingBox<CoordinateType> >& bboxes) const
 {
-   const int gridDim = this->domainDimension();
-   const int globalDofCount_ = globalDofCount();
-   bboxes.resize(globalDofCount_);
-
-   const IndexSet& indexSet = m_view->indexSet();
-   BoundingBox<CoordinateType> model;
-   model.lbound.x = std::numeric_limits<CoordinateType>::max();
-   model.lbound.y = std::numeric_limits<CoordinateType>::max();
-   model.lbound.z = std::numeric_limits<CoordinateType>::max();
-   model.ubound.x = -std::numeric_limits<CoordinateType>::max();
-   model.ubound.y = -std::numeric_limits<CoordinateType>::max();
-   model.ubound.z = -std::numeric_limits<CoordinateType>::max();
-   std::fill(bboxes.begin(), bboxes.end(), model);
-
-   std::vector<int> vertexIndices;
-   arma::Mat<CoordinateType> corners;
-
-   if (gridDim != 2)
-       throw std::runtime_error("PiecewiseLinearContinuousScalarSpace::"
-                                "getGlobalDofBoundingBoxes(): so far "
-                                "implemented only for two-dimensional grids");
-
-   std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
-   while (!it->finished())
-   {
-       const Entity<0>& e = it->entity();
-       const Geometry& geo = e.geometry();
-
-       geo.getCorners(corners);
-       const size_t cornerCount = corners.n_cols;
-       vertexIndices.resize(cornerCount);
-       for (size_t i = 0; i < cornerCount; ++i) {
-           int index = indexSet.subEntityIndex(e, i, gridDim);
-           bboxes[index].reference.x = corners(0, i);
-           bboxes[index].reference.y = corners(1, i);
-           bboxes[index].reference.z = corners(2, i);
-           vertexIndices[i] = index;
-       }
-       for (size_t i = 0; i < cornerCount; ++i)
-           for (size_t j = 0; j < cornerCount; ++j) {
-               bboxes[vertexIndices[i]].lbound.x =
-                   std::min(bboxes[vertexIndices[i]].lbound.x, corners(0, j));
-               bboxes[vertexIndices[i]].lbound.y =
-                   std::min(bboxes[vertexIndices[i]].lbound.y, corners(1, j));
-               bboxes[vertexIndices[i]].lbound.z =
-                   std::min(bboxes[vertexIndices[i]].lbound.z, corners(2, j));
-               bboxes[vertexIndices[i]].ubound.x =
-                   std::max(bboxes[vertexIndices[i]].ubound.x, corners(0, j));
-               bboxes[vertexIndices[i]].ubound.y =
-                   std::max(bboxes[vertexIndices[i]].ubound.y, corners(1, j));
-               bboxes[vertexIndices[i]].ubound.z =
-                   std::max(bboxes[vertexIndices[i]].ubound.z, corners(2, j));
-           }
-       it->next();
-   }
-
-#ifndef NDEBUG
-   std::vector<Point3D<CoordinateType> > positions;
-   getGlobalDofPositions(positions);
-   for (size_t i = 0; i < globalDofCount_; ++i) {
-       assert(bboxes[i].reference.x == positions[i].x);
-       assert(bboxes[i].reference.y == positions[i].y);
-       assert(bboxes[i].reference.z == positions[i].z);
-       assert(bboxes[i].reference.x >= bboxes[i].lbound.x);
-       assert(bboxes[i].reference.y >= bboxes[i].lbound.y);
-       assert(bboxes[i].reference.z >= bboxes[i].lbound.z);
-       assert(bboxes[i].reference.x <= bboxes[i].ubound.x);
-       assert(bboxes[i].reference.y <= bboxes[i].ubound.y);
-       assert(bboxes[i].reference.z <= bboxes[i].ubound.z);
-   }
-#endif // NDEBUG
+    SpaceHelper<BasisFunctionType>::
+            getGlobalDofBoundingBoxes_defaultImplementation(
+                *m_view, m_global2localDofs, bboxes);
 }
 
 template <typename BasisFunctionType>
@@ -363,75 +286,47 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
 getFlatLocalDofBoundingBoxes(
        std::vector<BoundingBox<CoordinateType> >& bboxes) const
 {
-   const int gridDim = this->domainDimension();
-   bboxes.resize(m_flatLocalDofCount);
+    // TODO: extract this loop into a private function
+    const IndexSet& indexSet = m_view->indexSet();
+    const int elementCount = m_view->entityCount(0);
 
-   const IndexSet& indexSet = m_view->indexSet();
-   BoundingBox<CoordinateType> model;
-   model.lbound.x = std::numeric_limits<CoordinateType>::max();
-   model.lbound.y = std::numeric_limits<CoordinateType>::max();
-   model.lbound.z = std::numeric_limits<CoordinateType>::max();
-   model.ubound.x = -std::numeric_limits<CoordinateType>::max();
-   model.ubound.y = -std::numeric_limits<CoordinateType>::max();
-   model.ubound.z = -std::numeric_limits<CoordinateType>::max();
-   std::fill(bboxes.begin(), bboxes.end(), model);
+    std::vector<arma::Mat<CoordinateType> > elementCorners(elementCount);
+    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    while (!it->finished()) {
+        const Entity<0>& e = it->entity();
+        int index = indexSet.entityIndex(e);
+        const Geometry& geo = e.geometry();
+        geo.getCorners(acc(elementCorners, index));
+        it->next();
+    }
 
-   std::vector<int> vertexIndices;
-   arma::Mat<CoordinateType> corners;
+    BoundingBox<CoordinateType> model;
+    const CoordinateType maxCoord = std::numeric_limits<CoordinateType>::max();
+    model.lbound.x = model.lbound.y = model.lbound.z = maxCoord;
+    model.ubound.x = model.ubound.y = model.ubound.z = -maxCoord;
 
-   if (gridDim != 2)
-       throw std::runtime_error("PiecewiseLinearContinuousScalarSpace::"
-                                "getFlatLocalDofBoundingBoxes(): so far "
-                                "implemented only for two-dimensional grids");
-
-   std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
-   int flatLocalDof = 0;
-   while (!it->finished())
-   {
-       const Entity<0>& e = it->entity();
-       const Geometry& geo = e.geometry();
-
-       geo.getCorners(corners);
-       const size_t cornerCount = corners.n_cols;
-       vertexIndices.resize(cornerCount);
-       for (size_t i = 0; i < cornerCount; ++i) {
-           bboxes[flatLocalDof].reference.x = corners(0, i);
-           bboxes[flatLocalDof].reference.y = corners(1, i);
-           bboxes[flatLocalDof].reference.z = corners(2, i);
-           for (size_t j = 0; j < cornerCount; ++j) {
-               bboxes[flatLocalDof].lbound.x =
-                   std::min(bboxes[flatLocalDof].lbound.x, corners(0, j));
-               bboxes[flatLocalDof].lbound.y =
-                   std::min(bboxes[flatLocalDof].lbound.y, corners(1, j));
-               bboxes[flatLocalDof].lbound.z =
-                   std::min(bboxes[flatLocalDof].lbound.z, corners(2, j));
-               bboxes[flatLocalDof].ubound.x =
-                   std::max(bboxes[flatLocalDof].ubound.x, corners(0, j));
-               bboxes[flatLocalDof].ubound.y =
-                   std::max(bboxes[flatLocalDof].ubound.y, corners(1, j));
-               bboxes[flatLocalDof].ubound.z =
-                   std::max(bboxes[flatLocalDof].ubound.z, corners(2, j));
-           }
-           ++flatLocalDof;
-       }
-       it->next();
-   }
-   assert(flatLocalDof == m_flatLocalDofCount);
+    const int flatLocalDofCount_ = m_flatLocal2localDofs.size();
+    bboxes.resize(flatLocalDofCount_, model);
+    for (int i = 0; i < flatLocalDofCount_; ++i) {
+        const LocalDof& localDof = acc(m_flatLocal2localDofs, i);
+        BoundingBox<CoordinateType>& bbox = acc(bboxes, i);
+        extendBoundingBox(bbox, acc(elementCorners, localDof.entityIndex));
+        setBoundingBoxReference<CoordinateType>(
+                    bbox,
+                    acc(elementCorners, localDof.entityIndex).col(
+                        localDof.dofIndex));
+    }
 
 #ifndef NDEBUG
-   std::vector<Point3D<CoordinateType> > positions;
-   getFlatLocalDofPositions(positions);
-   for (size_t i = 0; i < m_flatLocalDofCount; ++i) {
-       assert(bboxes[i].reference.x == positions[i].x);
-       assert(bboxes[i].reference.y == positions[i].y);
-       assert(bboxes[i].reference.z == positions[i].z);
-       assert(bboxes[i].reference.x >= bboxes[i].lbound.x);
-       assert(bboxes[i].reference.y >= bboxes[i].lbound.y);
-       assert(bboxes[i].reference.z >= bboxes[i].lbound.z);
-       assert(bboxes[i].reference.x <= bboxes[i].ubound.x);
-       assert(bboxes[i].reference.y <= bboxes[i].ubound.y);
-       assert(bboxes[i].reference.z <= bboxes[i].ubound.z);
-   }
+    const int globalDofCount_ = globalDofCount();
+    for (size_t i = 0; i < globalDofCount_; ++i) {
+        assert(bboxes[i].reference.x >= bboxes[i].lbound.x);
+        assert(bboxes[i].reference.y >= bboxes[i].lbound.y);
+        assert(bboxes[i].reference.z >= bboxes[i].lbound.z);
+        assert(bboxes[i].reference.x <= bboxes[i].ubound.x);
+        assert(bboxes[i].reference.y <= bboxes[i].ubound.y);
+        assert(bboxes[i].reference.z <= bboxes[i].ubound.z);
+    }
 #endif // NDEBUG
 }
 
@@ -452,8 +347,7 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getGlobalDofNormal
     arma::Col<CoordinateType> center(gridDim);
     center.fill(0.5);
     arma::Col<CoordinateType> normal;
-    while (!it->finished())
-    {
+    while (!it->finished()) {
         const Entity<0>& e = it->entity();
         int index = indexSet.entityIndex(e);
         e.geometry().getNormals(center, normal);
@@ -495,7 +389,7 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getFlatLocalDofNor
 {
     const int gridDim = this->domainDimension();
     const int worldDim = this->grid()->dimWorld();
-    normals.resize(m_flatLocalDofCount);
+    normals.resize(m_flatLocal2localDofs.size());
 
     const IndexSet& indexSet = m_view->indexSet();
     int elementCount = m_view->entityCount(0);
@@ -505,8 +399,7 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getFlatLocalDofNor
     arma::Col<CoordinateType> center(gridDim);
     center.fill(0.5);
     arma::Col<CoordinateType> normal;
-    while (!it->finished())
-    {
+    while (!it->finished()) {
         const Entity<0>& e = it->entity();
         int index = indexSet.entityIndex(e);
         e.geometry().getNormals(center, normal);
@@ -516,26 +409,20 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getFlatLocalDofNor
         it->next();
     }
 
-    size_t flatLdofIndex = 0;
     if (gridDim == 1)
-        for (size_t e = 0; e < m_local2globalDofs.size(); ++e) {
-            for (size_t v = 0; v < m_local2globalDofs[e].size(); ++v) {
-                normals[flatLdofIndex].x = elementNormals(0, e);
-                normals[flatLdofIndex].y = elementNormals(1, e);
-                normals[flatLdofIndex].z = 0.;
-                ++flatLdofIndex;
-            }
+        for (size_t f = 0; f < m_flatLocal2localDofs.size(); ++f) {
+            int elementIndex = m_flatLocal2localDofs[f].entityIndex;
+            normals[f].x = elementNormals(0, elementIndex);
+            normals[f].y = elementNormals(1, elementIndex);
+            normals[f].z = 0.;
         }
     else // gridDim == 2
-        for (size_t e = 0; e < m_local2globalDofs.size(); ++e) {
-            for (size_t v = 0; v < m_local2globalDofs[e].size(); ++v) {
-                normals[flatLdofIndex].x = elementNormals(0, e);
-                normals[flatLdofIndex].y = elementNormals(1, e);
-                normals[flatLdofIndex].z = elementNormals(2, e);
-                ++flatLdofIndex;
-            }
+        for (size_t f = 0; f < m_flatLocal2localDofs.size(); ++f) {
+            int elementIndex = m_flatLocal2localDofs[f].entityIndex;
+            normals[f].x = elementNormals(0, elementIndex);
+            normals[f].y = elementNormals(1, elementIndex);
+            normals[f].z = elementNormals(2, elementIndex);
         }
-    assert(flatLdofIndex == m_flatLocalDofCount);
 }
 
 template <typename BasisFunctionType>
@@ -552,6 +439,9 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
         const std::vector<unsigned int>& clusterIdsOfDofs,
         DofType dofType) const
 {
+    // Note: this will probably only work for spaces on full grids
+    // (not on segments)
+
     if (dofType != GLOBAL_DOFS && dofType != FLAT_LOCAL_DOFS)
         throw std::invalid_argument("PiecewiseLinearContinuousScalarSpace::"
                                     "dumpClusterIds(): invalid DOF type");

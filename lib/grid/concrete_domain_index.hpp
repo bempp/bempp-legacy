@@ -18,47 +18,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_concrete_entity_pointer_hpp
-#define bempp_concrete_entity_pointer_hpp
+#ifndef bempp_concrete_domain_index_hpp
+#define bempp_concrete_domain_index_hpp
 
-#include "../common/common.hpp"
-
-#include "entity_pointer.hpp"
-#include "concrete_entity_decl.hpp"
+#include "domain_index.hpp"
+#include "concrete_index_set.hpp"
 
 namespace Bempp
 {
 
-/**
- \ingroup grid_internal
- \brief Wrapper of a Dune entity pointer of type \p DuneEntityPointer.
- */
-template<typename DuneEntityPointer>
-class ConcreteEntityPointer: public EntityPointer<DuneEntityPointer::codimension>
+template <typename DuneGrid>
+class ConcreteDomainIndex : public DomainIndex
 {
-private:
-    typedef typename DuneEntityPointer::Entity DuneEntity;
-    DuneEntityPointer m_dune_entity_ptr;
-    ConcreteEntity<ConcreteEntityPointer::codimension, DuneEntity> m_entity;
-
-    void updateEntity() {
-        m_entity.setDuneEntity(&*m_dune_entity_ptr);
-    }
-
 public:
-    /** \brief Constructor */
-    ConcreteEntityPointer(const DuneEntityPointer& dune_entity_pointer,
-                          const DomainIndex& domain_index) :
-        m_dune_entity_ptr(dune_entity_pointer),
-        m_entity(domain_index) {
-        updateEntity();
-    }
-
-    virtual const Entity<DuneEntityPointer::codimension>& entity() const {
-        return m_entity;
+    ConcreteDomainIndex(const DuneGrid& grid,
+                        const std::vector<int>& elementIndexToPhysicalEntity) :
+        DomainIndex(std::auto_ptr<IndexSet>(
+                        new ConcreteIndexSet<typename DuneGrid::LevelGridView>(
+                            &grid.levelIndexSet(0))),
+                    elementIndexToPhysicalEntity)
+    {
     }
 };
 
-} // namespace Bempp
+} // namespace
 
 #endif

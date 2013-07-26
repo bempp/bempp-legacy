@@ -37,11 +37,13 @@ namespace Bempp
 {
 
 /** \cond FORWARD_DECL */
+class GridSegment;
 class GridView;
 /** \endcond */
 
 /** \ingroup space
- *  \brief Space of continuous, piecewise linear scalar functions. */
+ *  \brief Space of piecewise linear, not necessarily continuous, scalar
+ *  functions. */
 template <typename BasisFunctionType>
 class PiecewiseLinearDiscontinuousScalarSpace : public PiecewiseLinearScalarSpace<BasisFunctionType>
 {
@@ -49,7 +51,35 @@ public:
     typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
     typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
 
-    explicit PiecewiseLinearDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid);
+    /** \brief Constructor.
+     *
+     *  Construct a space of piecewise linear, not necessarily continuous,
+     *  scalar functions defined on the grid \p grid.
+     *
+     *  An exception is thrown if \p grid is a null pointer.
+     */
+    explicit PiecewiseLinearDiscontinuousScalarSpace(
+            const shared_ptr<const Grid>& grid);
+
+    /** \brief Constructor.
+     *
+     *  Construct a space of piecewise linear, not necessarily continuous,
+     *  scalar functions defined on the segment \p segment of the grid \p grid.
+     *  If \p strictlyOnSegment is set to \c false (default), the space will
+     *  include all basis functions associated with vertices belonging to \p
+     *  segment, regardless of whether the elements on which these functions
+     *  are defined belong themselves to \p segment. In consequence, the
+     *  resulting space will be (in the mathematical sense) a superset of a
+     *  PiecewiseLinearContinuousScalarSpace defined on the same segment. If \p
+     *  strictlyOnSegment is set to \c true, the space will only include basis
+     *  functions defined on elements belonging to \p segment.
+     *
+     *  An exception is thrown if \p grid is a null pointer.
+     */
+    PiecewiseLinearDiscontinuousScalarSpace(
+            const shared_ptr<const Grid>& grid,
+            const GridSegment& segment,
+            bool strictlyOnSegment = false);
     virtual ~PiecewiseLinearDiscontinuousScalarSpace();
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
@@ -87,7 +117,9 @@ public:
             DofType dofType) const;
 
 private:
-    void assignDofsImpl();
+    void initialize(const GridSegment& segment, bool strictlyOnSegment = false);
+    void assignDofsImpl(const GridSegment& segment,
+                        bool strictlyOnSegment = false);
 
 private:
     /** \cond PRIVATE */

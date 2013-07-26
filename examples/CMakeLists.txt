@@ -10,11 +10,11 @@ target_link_libraries(grid_refinement bempp)
 set_target_properties(tutorial_dirichlet PROPERTIES
     INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/bempp/lib")
 install(TARGETS tutorial_dirichlet RUNTIME DESTINATION bempp/examples)
-
-set_target_properties(grid_refinement PROPERTIES
+add_executable(mixed_bcs mixed_bcs.cpp)
+target_link_libraries(mixed_bcs bempp)
+set_target_properties(mixed_bcs PROPERTIES
     INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/bempp/lib")
-install(TARGETS grid_refinement RUNTIME DESTINATION bempp/examples)
-
+install(TARGETS mixed_bcs RUNTIME DESTINATION bempp/examples)
 
 # Meshes
 file(GLOB_RECURSE EXAMPLE_MESHES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}

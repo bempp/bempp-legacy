@@ -84,21 +84,31 @@ shared_ptr<Grid> GridFactory::importGmshGrid(
     const GridParameters& params, const std::string& fileName,
     bool verbose, bool insertBoundarySegments)
 {
-    // Check arguments
+    std::vector<int> boundaryId2PhysicalEntity;
+    std::vector<int> elementIndex2PhysicalEntity;
+
     if (params.topology == GridParameters::TRIANGULAR)
     {
         Default2dIn3dDuneGrid* duneGrid = Dune::GmshReader<Default2dIn3dDuneGrid>
-                ::read(fileName, verbose, insertBoundarySegments);
-        return shared_ptr<Grid>(new Default2dIn3dGrid(duneGrid, params.topology,
-                                                      true)); // true -> owns Dune grid
+                ::read(fileName,
+                       boundaryId2PhysicalEntity, elementIndex2PhysicalEntity,
+                       verbose, insertBoundarySegments);
+        return shared_ptr<Grid>(new Default2dIn3dGrid(
+                                    duneGrid, params.topology,
+                                    elementIndex2PhysicalEntity,
+                                    true)); // true -> owns Dune grid
     }
 #ifdef WITH_ALUGRID
     else if (params.topology == GridParameters::TETRAHEDRAL)
     {
         Default3dIn3dDuneGrid* duneGrid = Dune::GmshReader<Default3dIn3dDuneGrid>
-                ::read(fileName, verbose, insertBoundarySegments);
-        return shared_ptr<Grid>(new Default3dIn3dGrid(duneGrid, params.topology,
-                                                      true));
+                ::read(fileName,
+                       boundaryId2PhysicalEntity, elementIndex2PhysicalEntity,
+                       verbose, insertBoundarySegments);
+        return shared_ptr<Grid>(new Default3dIn3dGrid(
+                                    duneGrid, params.topology,
+                                    elementIndex2PhysicalEntity,
+                                    true));
     }
 #endif
     else
@@ -112,15 +122,16 @@ shared_ptr<Grid> GridFactory::importGmshGrid(
     std::vector<int>& elementIndex2PhysicalEntity,
     bool verbose, bool insertBoundarySegments)
 {
-    // Check arguments
     if (params.topology == GridParameters::TRIANGULAR)
     {
         Default2dIn3dDuneGrid* duneGrid = Dune::GmshReader<Default2dIn3dDuneGrid>
                 ::read(fileName,
                        boundaryId2PhysicalEntity, elementIndex2PhysicalEntity,
                        verbose, insertBoundarySegments);
-        return shared_ptr<Grid>(new Default2dIn3dGrid(duneGrid, params.topology,
-                                                         true)); // true -> owns Dune grid
+        return shared_ptr<Grid>(new Default2dIn3dGrid(
+                                    duneGrid, params.topology,
+                                    elementIndex2PhysicalEntity,
+                                    true)); // true -> owns Dune grid
     }
 #ifdef WITH_ALUGRID
     else if (params.topology == GridParameters::TETRAHEDRAL)
@@ -129,8 +140,10 @@ shared_ptr<Grid> GridFactory::importGmshGrid(
                 ::read(fileName,
                        boundaryId2PhysicalEntity, elementIndex2PhysicalEntity,
                        verbose, insertBoundarySegments);
-        return shared_ptr<Grid>(new Default3dIn3dGrid(duneGrid, params.topology,
-                                                      true)); // true -> owns Dune grid
+        return shared_ptr<Grid>(new Default3dIn3dGrid(
+                                    duneGrid, params.topology,
+                                    elementIndex2PhysicalEntity,
+                                    true)); // true -> owns Dune grid
     }
 #endif
     else

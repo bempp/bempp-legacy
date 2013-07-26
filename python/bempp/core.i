@@ -118,6 +118,7 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "grid/entity_pointer.i"
 %include "grid/entity_iterator.i"
 %include "grid/grid.i"
+%include "grid/grid_segment.i"
 %include "grid/id_set.i"
 %include "grid/grid_view.i"
 %include "grid/index_set.i"

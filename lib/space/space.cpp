@@ -58,13 +58,13 @@ void constructGlobalToFlatLocalDofsMappingVectors(
     const IndexSet& indexSet = view->indexSet();
     const size_t elementCount = view->entityCount(0);
 
-    std::vector<std::vector<GlobalDofIndex> > gdofs;
-    gdofs.resize(elementCount);
+    std::vector<std::vector<GlobalDofIndex> > gdofs(elementCount);
+    std::vector<std::vector<BasisFunctionType> > ldofWeights(elementCount);
     std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
         int index = indexSet.entityIndex(e);
-        space.getGlobalDofs(e, gdofs[index]);
+        space.getGlobalDofs(e, gdofs[index], ldofWeights[index]);
         it->next();
     }
 
@@ -76,13 +76,19 @@ void constructGlobalToFlatLocalDofsMappingVectors(
     size_t flatLdofIndex = 0;
     for (size_t e = 0; e < gdofs.size(); ++e) {
         for (size_t v = 0; v < gdofs[e].size(); ++v) {
-            rows.push_back(flatLdofIndex);
-            cols.push_back(gdofs[e][v]);
-            ++flatLdofIndex;
+            int gdofIndex = gdofs[e][v];
+            if (gdofIndex >= 0) {
+                rows.push_back(flatLdofIndex);
+                cols.push_back(gdofIndex);
+                ++flatLdofIndex;
+            }
         }
     }
-    assert(rows.size() == ldofCount);
-    assert(cols.size() == ldofCount);
+    if (rows.size() != ldofCount || cols.size() != ldofCount)
+        throw std::runtime_error(
+                "constructGlobalToFlatLocalDofsMappingVectors(): "
+                "internal error: the number of local DOFs is different from "
+                "expected. Report this problem to BEM++ developers");
 
     std::vector<double> tmp(ldofCount, 1.);
     values.swap(tmp);
@@ -130,6 +136,9 @@ Space<BasisFunctionType>::Space(const shared_ptr<const Grid>& grid, unsigned int
 {
     if (m_level>m_grid->maxLevel()) throw std::runtime_error("Space::Space(grid,level): "
                                                              "level must not exceed grid->maxlevel().");
+    if (!grid)
+        throw std::invalid_argument("Space::Space(): grid must not be a null "
+                                    "pointer");
 }
 
 template <typename BasisFunctionType>

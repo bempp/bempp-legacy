@@ -18,47 +18,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_concrete_entity_pointer_hpp
-#define bempp_concrete_entity_pointer_hpp
-
-#include "../common/common.hpp"
-
-#include "entity_pointer.hpp"
-#include "concrete_entity_decl.hpp"
+#ifndef bempp_ensure_not_null_hpp
+#define bempp_ensure_not_null_hpp
 
 namespace Bempp
 {
 
-/**
- \ingroup grid_internal
- \brief Wrapper of a Dune entity pointer of type \p DuneEntityPointer.
- */
-template<typename DuneEntityPointer>
-class ConcreteEntityPointer: public EntityPointer<DuneEntityPointer::codimension>
+template <typename PointerType>
+PointerType ensureNotNull(PointerType p)
 {
-private:
-    typedef typename DuneEntityPointer::Entity DuneEntity;
-    DuneEntityPointer m_dune_entity_ptr;
-    ConcreteEntity<ConcreteEntityPointer::codimension, DuneEntity> m_entity;
+    if (!p)
+        throw std::runtime_error("ensureNotNull(): pointer must not be null");
+    return p;
+}
 
-    void updateEntity() {
-        m_entity.setDuneEntity(&*m_dune_entity_ptr);
-    }
-
-public:
-    /** \brief Constructor */
-    ConcreteEntityPointer(const DuneEntityPointer& dune_entity_pointer,
-                          const DomainIndex& domain_index) :
-        m_dune_entity_ptr(dune_entity_pointer),
-        m_entity(domain_index) {
-        updateEntity();
-    }
-
-    virtual const Entity<DuneEntityPointer::codimension>& entity() const {
-        return m_entity;
-    }
-};
-
-} // namespace Bempp
+} // namespace
 
 #endif

@@ -53,16 +53,6 @@
 #include <set>
 #include <sstream>
 
-// TODO: rewrite the constructor of OpenClHandler.
-// It should take a bool useOpenCl and *in addition to that* openClOptions.
-// The role of the latter should be to e.g. select the device to use
-// and other configurable execution parameters.
-// If there are no such parameters, OpenClOptions should just be removed.
-
-// Justification: right now there can be a conflict: the user can invoke
-// AssemblyOptions::switchToOpenCl() and pass to it an instance of OpenClOptions
-// with useOpenCl set to false. This makes no sense.
-
 namespace Bempp
 {
 
@@ -951,7 +941,7 @@ void GridFunction<BasisFunctionType, ResultType>::exportToGmsh(
         for (size_t p = 0; p < pointCount; ++p) {
             data << nodeCount + 1 + p;
             for (size_t d = 0; d < values.n_rows; ++d)
-                data << ' ' << values(d, p);
+                data << ' ' << realPart(values(d, p)); // TODO: export imag. part too
             data << '\n';
         }
         nodeCount += pointCount;

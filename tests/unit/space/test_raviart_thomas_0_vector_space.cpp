@@ -118,15 +118,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_open_surface
     local2global_matches_global2local(*space);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_open_surface_without_dofs_on_boundary, ResultType, result_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_closed_surface_with_dofs_on_boundary, ResultType, result_types)
 {
     typedef ResultType RT;
     typedef typename ScalarTraits<RT>::RealType BFT;
     typedef typename ScalarTraits<RT>::RealType CT;
 
-    shared_ptr<Grid> grid = createRegularTriangularGrid(5, 10, 1., 2.);
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+
     shared_ptr<Space<BFT> > space(
-        new RaviartThomas0VectorSpace<BFT>(grid));
+        new RaviartThomas0VectorSpace<BFT>(grid, true /* put dofs on boundary */));
 
     local2global_matches_global2local(*space);
 }
@@ -162,6 +166,188 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_open_surface
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_open_surface_without_dofs_on_boundary, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    shared_ptr<Grid> grid = createRegularTriangularGrid(5, 10, 1., 2.);
+    shared_ptr<Space<BFT> > space(
+        new RaviartThomas0VectorSpace<BFT>(grid));
+
+    global2local_matches_local2global(*space);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_closed_surface_with_segment_with_edge_on_segment_with_dofs_on_boundary, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+
+    GridSegment segment = gridSegmentWithPositiveX(*grid);
+    shared_ptr<Space<BFT> > space(
+        new RaviartThomas0VectorSpace<BFT>(
+                    grid, segment, true /* put dofs on boundary */,
+                    EDGE_ON_SEGMENT));
+
+    local2global_matches_global2local(*space);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_closed_surface_with_segment_with_edge_on_segment_without_dofs_on_boundary, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+
+    GridSegment segment = gridSegmentWithPositiveX(*grid);
+    shared_ptr<Space<BFT> > space(
+        new RaviartThomas0VectorSpace<BFT>(
+                    grid, segment, false /* don't put dofs on boundary */,
+                    EDGE_ON_SEGMENT));
+
+    global2local_matches_local2global(*space);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_closed_surface_with_segment_with_element_on_segment_with_dofs_on_boundary, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+
+    GridSegment segment = gridSegmentWithPositiveX(*grid);
+    shared_ptr<Space<BFT> > space(
+        new RaviartThomas0VectorSpace<BFT>(
+                    grid, segment, true /* put dofs on boundary */,
+                    ELEMENT_ON_SEGMENT));
+
+    local2global_matches_global2local(*space);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_closed_surface_with_segment_with_element_on_segment_without_dofs_on_boundary, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+
+    GridSegment segment = gridSegmentWithPositiveX(*grid);
+    shared_ptr<Space<BFT> > space(
+        new RaviartThomas0VectorSpace<BFT>(
+                    grid, segment, false /* don't put dofs on boundary */,
+                    ELEMENT_ON_SEGMENT));
+
+    global2local_matches_local2global(*space);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_closed_surface_with_segment_with_edge_and_element_on_segment_with_dofs_on_boundary, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+
+    GridSegment segment = gridSegmentWithPositiveX(*grid);
+    shared_ptr<Space<BFT> > space(
+        new RaviartThomas0VectorSpace<BFT>(
+                    grid, segment, true /* put dofs on boundary */,
+                    EDGE_ON_SEGMENT | ELEMENT_ON_SEGMENT));
+
+    local2global_matches_global2local(*space);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_closed_surface_with_segment_with_edge_and_element_on_segment_without_dofs_on_boundary, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+
+    GridSegment segment = gridSegmentWithPositiveX(*grid);
+    shared_ptr<Space<BFT> > space(
+        new RaviartThomas0VectorSpace<BFT>(
+                    grid, segment, false /* don't put dofs on boundary */,
+                    EDGE_ON_SEGMENT | ELEMENT_ON_SEGMENT));
+
+    global2local_matches_local2global(*space);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_closed_surface_with_segment_with_dofs_on_boundary, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+
+    GridSegment segment = gridSegmentWithPositiveX(*grid);
+    shared_ptr<Space<BFT> > space(
+        new RaviartThomas0VectorSpace<BFT>(grid, segment, true /* put dofs on boundary */));
+
+    local2global_matches_global2local(*space);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_closed_surface_with_segment_without_dofs_on_boundary, ResultType, result_types)
+{
+    typedef ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType BFT;
+    typedef typename ScalarTraits<RT>::RealType CT;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+
+    GridSegment segment = gridSegmentWithPositiveX(*grid);
+    shared_ptr<Space<BFT> > space(
+        new RaviartThomas0VectorSpace<BFT>(grid, segment));
+
+    global2local_matches_local2global(*space);
+}
+
+//BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_open_surface_with_segment_with_dofs_on_boundary, ResultType, result_types)
+//{
+//    typedef ResultType RT;
+//    typedef typename ScalarTraits<RT>::RealType BFT;
+//    typedef typename ScalarTraits<RT>::RealType CT;
+
+//    shared_ptr<Grid> grid = createRegularTriangularGrid(5, 10, 1., 2.);
+//    shared_ptr<Space<BFT> > space(
+//        new RaviartThomas0VectorSpace<BFT>(grid, true /* put dofs on boundary */));
+
+//    global2local_matches_local2global(*space);
+//}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_open_surface_with_segment_without_dofs_on_boundary, ResultType, result_types)
 {
     typedef ResultType RT;
     typedef typename ScalarTraits<RT>::RealType BFT;

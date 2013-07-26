@@ -314,6 +314,39 @@ BlockedBoundaryOperator<BasisFunctionType, ResultType>::constructWeakForm() cons
                 blocks, rowCounts, columnCounts);
 }
 
+template <typename BasisFunctionType, typename ResultType>
+std::vector<GridFunction<BasisFunctionType, ResultType> > operator*(
+        const BlockedBoundaryOperator<BasisFunctionType, ResultType>& op,
+        const std::vector<GridFunction<BasisFunctionType, ResultType> >& funs)
+{
+    if (funs.size() != op.columnCount())
+        throw std::invalid_argument(
+            "operator*(BlockedBoundaryOperator, GridFunction): "
+            "'funs' has incorrect length");        
+    for (size_t i = 0; i < funs.size(); ++i)
+        if (!funs[i].isInitialized())
+            throw std::invalid_argument(
+                "operator*(BlockedBoundaryOperator, GridFunction): "
+                "at least one function in 'funs' is uninitialized");
+
+    typedef GridFunction<BasisFunctionType, ResultType> GF;
+
+    std::vector<GF> result(op.rowCount());
+    for (size_t i = 0; i < op.rowCount(); ++i) {
+        shared_ptr<const Space<BasisFunctionType> > space = op.range(i);
+        arma::Col<ResultType> coefficients(space->globalDofCount());
+        coefficients.fill(0.);
+        result[i] = GF(funs[0].context(), space, coefficients);
+    }
+    op.apply(NO_TRANSPOSE, funs, result, 1., 0.);
+    return result;
+}
+
+#define INSTANTIATE_NONMEMBER_FUNCTIONS(BASIS, RESULT) \
+    template std::vector<GridFunction<BASIS, RESULT> > operator*( \
+        const BlockedBoundaryOperator<BASIS, RESULT>&, \
+        const std::vector<GridFunction<BASIS, RESULT> >&)
+FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_FUNCTIONS);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(BlockedBoundaryOperator);
 
 } // namespace Bempp

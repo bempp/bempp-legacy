@@ -185,10 +185,10 @@ def createContext(factory, assemblyOptions):
         core, name, factory.basisFunctionType(), factory.resultType(),
         factory, assemblyOptions)
 
-def createPiecewiseConstantScalarSpace(context, grid):
+def createPiecewiseConstantScalarSpace(context, grid, segment=None):
     """
-    Create and return a space of scalar functions defined on a grid and
-    constant on each element of this grid.
+    Create and return a space of scalar functions defined on a grid (or its
+    segment) and constant on each element of this grid.
 
     *Parameters:*
        - context (Context)
@@ -197,6 +197,9 @@ def createPiecewiseConstantScalarSpace(context, grid):
        - grid (Grid)
             Grid on which the functions from the newly constructed space will be
             defined.
+       - segment (GridSegment)
+            (Optional) Segment of the grid on which the space should be defined.
+            If set to None (default), the whole grid will be used.
 
     *Returns* a newly constructed Space_BasisFunctionType object, with
     BasisFunctionType determined automatically from the context argument and
@@ -204,12 +207,13 @@ def createPiecewiseConstantScalarSpace(context, grid):
     """
     name = 'piecewiseConstantScalarSpace'
     return _constructObjectTemplatedOnBasis(
-        core, name, context.basisFunctionType(), grid)
+        core, name, context.basisFunctionType(), grid, segment)
 
-def createPiecewiseLinearContinuousScalarSpace(context, grid):
+def createPiecewiseLinearContinuousScalarSpace(context, grid, segment=None,
+                                               strictlyOnSegment=False):
     """
     Create and return a space of globally continuous scalar functions defined
-    on a grid and linear on each element of this grid.
+    on a grid (or its segment) and linear on each element of this grid.
 
     *Parameters:*
        - context (Context)
@@ -218,6 +222,9 @@ def createPiecewiseLinearContinuousScalarSpace(context, grid):
        - grid (Grid)
             Grid on which the functions from the newly constructed space will be
             defined.
+       - segment (GridSegment)
+            (Optional) Segment of the grid on which the space should be defined.
+            If set to None (default), the whole grid will be used.
 
     *Returns* a newly constructed Space_BasisFunctionType object, with
     BasisFunctionType determined automatically from the context argument and
@@ -225,12 +232,83 @@ def createPiecewiseLinearContinuousScalarSpace(context, grid):
     """
     name = 'piecewiseLinearContinuousScalarSpace'
     return _constructObjectTemplatedOnBasis(
-        core, name, context.basisFunctionType(), grid)
+        core, name, context.basisFunctionType(), grid, segment,
+        strictlyOnSegment)
 
-def createPiecewiseLinearDiscontinuousScalarSpace(context, grid):
+def createPiecewiseLinearDiscontinuousScalarSpace(
+    context, grid, segment=None, strictlyOnSegment=False):
     """
-    Create and return a space of scalar functions defined on a grid and linear
-    on each element of this grid (but not forced to be continuous at element
+    Create and return a space of scalar functions defined on a grid (or its
+    segment) and linear on each element of this grid (but not forced to be
+    continuous at element boundaries).
+
+    *Parameters:*
+       - context (Context)
+            A Context object that will determine the type used to represent the
+            values of the basis functions of the newly constructed space.
+       - grid (Grid)
+            Grid on which the functions from the newly constructed space will be
+            defined.
+       - segment (GridSegment)
+            (Optional) Segment of the grid on which the space should be defined.
+            If set to None (default), the whole grid will be used.
+       - strictlyOnSegment (bool)
+            (Optional) If set to False (default), the space will include all
+            basis functions associated with vertices belonging to the chosen
+            segment, regardless of whether the elements on which these functions
+            are defined belong themselves to the segment. As a result, the
+            resulting space will be (in the mathematical sense) a superset of a
+            PiecewiseLinearContinuousScalarSpace defined on the same segment. If
+            set to True, the space will only include basis functions defined on
+            elements belonging to the chosen segment.
+
+    *Returns* a newly constructed Space_BasisFunctionType object, with
+    BasisFunctionType determined automatically from the context argument and
+    equal to either float32, float64, complex64 or complex128.
+    """
+    name = 'piecewiseLinearDiscontinuousScalarSpace'
+    return _constructObjectTemplatedOnBasis(
+        core, name, context.basisFunctionType(), grid,
+        segment, strictlyOnSegment)
+
+def createPiecewisePolynomialContinuousScalarSpace(
+        context, grid, polynomialOrder, segment=None,
+        strictlyOnSegment=False):
+    """
+    Create and return a space of globally continuous scalar functions defined on
+    a grid (or its segment) and having a polynomial representation of a given
+    order on each element of this grid.
+
+    *Parameters:*
+       - context (Context)
+            A Context object that will determine the type used to represent the
+            values of the basis functions of the newly constructed space.
+       - grid (Grid)
+            Grid on which the functions from the newly constructed space will be
+            defined.
+       - polynomialOrder (int)
+            Order of the polynomial basis defined on each element.
+       - segment (GridSegment)
+            (Optional) Segment of the grid on which the space should be defined.
+            If set to None (default), the whole grid will be used.
+
+    *Returns* a newly constructed Space_BasisFunctionType object, with
+    BasisFunctionType determined automatically from the context argument and
+    equal to either float32, float64, complex64 or complex128.
+    """
+    name = 'piecewisePolynomialContinuousScalarSpace'
+    return _constructObjectTemplatedOnBasis(
+        core, name, context.basisFunctionType(), grid, polynomialOrder,
+        segment, strictlyOnSegment)
+
+def createPiecewisePolynomialDiscontinuousScalarSpace(
+        context, grid, polynomialOrder, segment=None,
+        requireReferencePointOnSegment=True,
+        requireElementOnSegment=False):
+    """
+    Create and return a space of scalar functions defined on a grid (or its
+    segment) and having a polynomial representation of a given order on each
+    element of this grid (but not forced to be continuous at element
     boundaries).
 
     *Parameters:*
@@ -240,64 +318,32 @@ def createPiecewiseLinearDiscontinuousScalarSpace(context, grid):
        - grid (Grid)
             Grid on which the functions from the newly constructed space will be
             defined.
-
-    *Returns* a newly constructed Space_BasisFunctionType object, with
-    BasisFunctionType determined automatically from the context argument and
-    equal to either float32, float64, complex64 or complex128.
-    """
-    name = 'piecewiseLinearDiscontinuousScalarSpace'
-    return _constructObjectTemplatedOnBasis(
-        core, name, context.basisFunctionType(), grid)
-
-def createPiecewisePolynomialContinuousScalarSpace(
-        context, grid, polynomialOrder):
-    """
-    Create and return a space of globally continuous scalar functions defined
-    on a grid and having a polynomial representation of a given order
-    on each element of this grid.
-
-    *Parameters:*
-       - context (Context)
-            A Context object that will determine the type used to represent the
-            values of the basis functions of the newly constructed space.
-       - grid (Grid)
-            Grid on which the functions from the newly constructed space will be
-            defined.
        - polynomialOrder (int)
             Order of the polynomial basis defined on each element.
-
-    *Returns* a newly constructed Space_BasisFunctionType object, with
-    BasisFunctionType determined automatically from the context argument and
-    equal to either float32, float64, complex64 or complex128.
-    """
-    name = 'piecewisePolynomialContinuousScalarSpace'
-    return _constructObjectTemplatedOnBasis(
-        core, name, context.basisFunctionType(), grid, polynomialOrder)
-
-def createPiecewisePolynomialDiscontinuousScalarSpace(
-        context, grid, polynomialOrder):
-    """
-    Create and return a space of scalar functions defined on a grid and having a
-    polynomial representation of a given order on each element of this grid (but
-    not forced to be continuous at element boundaries).
-
-    *Parameters:*
-       - context (Context)
-            A Context object that will determine the type used to represent the
-            values of the basis functions of the newly constructed space.
-       - grid (Grid)
-            Grid on which the functions from the newly constructed space will be
-            defined.
-       - polynomialOrder (int)
-            Order of the polynomial basis defined on each element.
+       - segment (GridSegment)
+            (Optional) Segment of the grid on which the space should be defined.
+            If set to None (default), the whole grid will be used.
+       - strictlyOnSegment (bool)
+            (Optional) If set to False (default), the space will include those
+            and only those basis functions that are necessary to make the newly
+            constructed space a superset (in the mathematical sense) of a
+            PiecewisePolynomialContinuousScalarSpace defined on the chosen
+            segment. Otherwise the space will include only the functions defined
+            on elements belonging to the segment.
 
     *Returns* a newly constructed Space_BasisFunctionType object, with
     BasisFunctionType determined automatically from the context argument and
     equal to either float32, float64, complex64 or complex128.
     """
     name = 'piecewisePolynomialDiscontinuousScalarSpace'
+    dofMode = 0
+    if requireReferencePointOnSegment:
+        dofMode |= 4
+    if requireElementOnSegment:
+        dofMode |= 2
     return _constructObjectTemplatedOnBasis(
-        core, name, context.basisFunctionType(), grid, polynomialOrder)
+        core, name, context.basisFunctionType(), grid, polynomialOrder,
+        segment, dofMode)
 
 def createUnitScalarSpace(context, grid):
     """
@@ -319,10 +365,13 @@ def createUnitScalarSpace(context, grid):
     return _constructObjectTemplatedOnBasis(
         core, 'unitScalarSpace', context.basisFunctionType(), grid)
 
-def createRaviartThomas0VectorSpace(context, grid):
+def createRaviartThomas0VectorSpace(context, grid, segment=None,
+                                    putDofsOnBoundaries=False,
+                                    requireEdgeOnSegment=True,
+                                    requireElementOnSegment=False):
     """
-    Create and return a space of lowest order Raviart-Thomas vector functions with normal
-    components continuous on boundaries between elements.
+    Create and return a space of lowest order Raviart-Thomas vector functions
+    with normal components continuous on boundaries between elements.
 
     *Parameters:*
        - context (Context)
@@ -331,14 +380,29 @@ def createRaviartThomas0VectorSpace(context, grid):
        - grid (Grid)
             Grid on which the functions from the newly constructed space will be
             defined.
+       - segment (GridSegment)
+            (Optional) Segment of the grid on which the space should be defined.
+            If set to None (default), the whole grid will be used.
+       - putDofsOnBoundaries (bool)
+            (Optional) If set to False (default), degrees of freedom will not be
+            placed on edges lying on boundaries of the grid. This is usually the
+            desired behaviour for simulations of open perfectly conducting
+            surfaces (sheets). If set to True, degrees of freedom will be placed
+            on all edges belonging to the chosen segment of the grid.
 
     *Returns* a newly constructed Space_BasisFunctionType object, with
     BasisFunctionType determined automatically from the context argument and
     equal to either float32, float64, complex64 or complex128.
     """
     name = 'raviartThomas0VectorSpace'
+    dofMode = 0
+    if requireEdgeOnSegment:
+        dofMode |= 1
+    if requireElementOnSegment:
+        dofMode |= 2
     return _constructObjectTemplatedOnBasis(
-        core, name, context.basisFunctionType(), grid)
+        core, name, context.basisFunctionType(), grid, segment,
+        putDofsOnBoundaries, dofMode)
 
 def _constructOperator(className, context, domain, range, dualToRange, label=None):
     # determine basis function type
@@ -2113,3 +2177,5 @@ def areInside(grid, points):
                          "in the array 'points' must match the number of "
                          "dimensions of the world in which 'grid' is embedded")
     return numpy.array(core.areInside(grid, points))
+
+from bempp.core import GridSegment, gridSegmentWithPositiveX

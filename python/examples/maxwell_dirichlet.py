@@ -112,7 +112,11 @@ rhs = rhsOp * dirichletData
 # Initialize the solver
 
 solver = createDefaultIterativeSolver(lhsOp)
-solver.initializeSolver(defaultGmresParameterList(1e-8))
+precTol = 1e-2
+invLhsOp = acaOperatorApproximateLuInverse(
+    lhsOp.weakForm().asDiscreteAcaBoundaryOperator(), precTol)
+prec = discreteOperatorToPreconditioner(invLhsOp)
+solver.initializeSolver(defaultGmresParameterList(1e-8), prec)
 
 # Solve the equation
 

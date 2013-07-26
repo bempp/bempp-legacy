@@ -98,8 +98,11 @@ public:
      *
      *  \param[in] grid Grid on which functions from this space should be
      *  defined.
-     *  \param[in] level Level of the grid to be used (default 0). */
-    explicit Space(const shared_ptr<const Grid>& grid,unsigned int level=0);
+     *  \param[in] level Level of the grid to be used (default 0).
+     *
+     *  An exception is thrown if \p grid is a null pointer.
+     */
+    explicit Space(const shared_ptr<const Grid>& grid, unsigned int level=0);
 
     /** \brief Destructor. */
     virtual ~Space();
