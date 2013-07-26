@@ -10,7 +10,8 @@ sys.path.append("..")
 from bempp.lib import *
 import numpy as np
 
-# Load mesh
+# Load mesh. The chosen mesh is a sphere divided into 8 domains (with indices 1
+# to 8).
 
 grid = createGridFactory().importGmshGrid(
     "triangular", "../../examples/meshes/sphere-domains.msh")
@@ -35,10 +36,13 @@ context = createContext(quadStrategy, assemblyOptions)
 
 # Initialize grid segments on which the Dirichlet and Neumann data are defined
 
-segmentD = (GridSegment.closedDomain(grid, 1).
-            union_(GridSegment.closedDomain(grid, 2)).
-            union_(GridSegment.closedDomain(grid, 3)).
-            union_(GridSegment.closedDomain(grid, 4)))
+# Dirichlet boundary conditions will be imposed on domains 1 to 4, including
+# their boundary
+segmentD = (GridSegment.closedDomain(grid, 1)
+            .union_(GridSegment.closedDomain(grid, 2))
+            .union_(GridSegment.closedDomain(grid, 3))
+            .union_(GridSegment.closedDomain(grid, 4)))
+# Neumann boundary conditions will be imposed on the rest of the grid
 segmentN = segmentD.complement()
 
 # Initialize spaces
@@ -54,9 +58,9 @@ pwiseLinearsN = createPiecewiseLinearContinuousScalarSpace(
 # This space will be needed during the discretization of Dirichlet data.
 # strictlyOnSegment=True means that the basis functions are truncated to the
 # elements that belong to the segment. So, for example, a function associated
-# with a vertex lying at the boundary of the segment (but not of the grid) will
-# be zero on all elements not belonging to the segment, hence in fact
-# discontinuous on the grid as a whole.
+# with a vertex lying at the boundary of the segment will be set to zero on all
+# elements not belonging to the segment, hence in fact discontinuous on the grid
+# as a whole (but not on the segment itself).
 pwiseDLinearsD = createPiecewiseLinearContinuousScalarSpace(
     context, grid, segmentD, strictlyOnSegment=True)
 
@@ -105,6 +109,11 @@ def evalNeumannData(point):
     r = np.sqrt(x**2 + y**2 + z**2)
     return -6 * x * z / r**6 + 2 * y / r**4
 
+# Note that we pass pwiseDLinearsD as the dual space when discretizing the
+# Dirichlet data. You can see for yourself that if pwiseLinearsD is passed
+# there, the approximation quality of the Dirichlet data near the boundary of
+# the segment is degrated and as a consequence the solution has a much larger
+# L^2 error.
 dirichletData = createGridFunction(
     context, pwiseLinearsD, pwiseDLinearsD, evalDirichletData)
 neumannData = createGridFunction(
