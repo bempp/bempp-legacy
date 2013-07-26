@@ -39,8 +39,9 @@ class Grid;
  *  spaces of functions defined only on subsets of grids, for example to impose
  *  different boundary conditions on different parts of a single grid.
  *
- *  Technically, a grid segment is defined by specifying the sets of indices of
- *  vertices, edges and elements that it contains.
+ *  Technically, a grid segment is defined by means of the sets of indices of
+ *  entities of different codimensions (vertices, edges and elements, for 2D
+ *  grids) that it contains.
  */
 class GridSegment
 {
