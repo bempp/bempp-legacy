@@ -3,6 +3,7 @@
 #include "grid/grid_view.hpp"
 #include "grid/entity_iterator.hpp"
 #include "grid/grid_parameters.hpp"
+#include "common/shared_ptr.hpp"
 %}
 
 %include "grid_docstrings.i"
@@ -56,7 +57,10 @@ namespace Bempp
 
 } // namespace Bempp
 
+#define shared_ptr boost::shared_ptr
 %include "grid/grid.hpp"
+#undef shared_ptr
+
 
 %clear arma::Mat<float>& points;
 %clear arma::Mat<double>& points;
