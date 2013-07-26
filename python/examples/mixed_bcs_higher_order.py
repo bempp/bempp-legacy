@@ -60,13 +60,7 @@ dirichletSpaceD = createPiecewisePolynomialContinuousScalarSpace(
     context, grid, orderD, segmentD)
 dirichletSpaceN = createPiecewisePolynomialContinuousScalarSpace(
     context, grid, orderD, segmentN)
-# This space will be needed during the discretization of Dirichlet data.
-# strictlyOnSegment=True means that the basis functions are truncated to the
-# elements that belong to the segment. So, for example, a function associated
-# with a vertex lying at the boundary of the segment (but not of the grid) will
-# be zero on all elements not belonging to the segment, hence in fact
-# discontinuous on the grid as a whole.
-pwiseDLinearsD = createPiecewisePolynomialContinuousScalarSpace(
+dualDirichletSpaceD = createPiecewisePolynomialContinuousScalarSpace(
     context, grid, orderD, segmentD, strictlyOnSegment=True)
 
 # Construct elementary operators
@@ -115,10 +109,9 @@ def evalNeumannData(point):
     return -6 * x * z / r**6 + 2 * y / r**4
 
 dirichletData = createGridFunction(
-    context, dirichletSpaceD, pwiseDLinearsD, evalDirichletData)
+    context, dirichletSpaceD, dualDirichletSpaceD, evalDirichletData)
 neumannData = createGridFunction(
     context, neumannSpaceN, neumannSpaceN, evalNeumannData)
-neumannData.exportToGmsh("neumann_dataXX", "neumann_dataXX.msh")
 
 # Construct the right-hand-side grid functions
 
