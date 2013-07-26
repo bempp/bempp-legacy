@@ -97,6 +97,9 @@ public:
     /** \brief Return a new barycentrically refined grid */
     virtual shared_ptr<Grid> barycentricGrid() const =0;
 
+    /** \brief Return true of leaf-level is barycentric refinement of previous level */
+    virtual bool leafIsBarycentric() const = 0;
+
     /** \brief Reference to the grid's global id set. */
     virtual const IdSet& globalIdSet() const = 0;
 

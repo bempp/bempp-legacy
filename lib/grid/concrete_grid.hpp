@@ -66,13 +66,15 @@ public:
     /** \brief Wrap an existing Dune grid object.
 
      \param[in]  dune_grid  Pointer to the Dune grid to wrap.
-     \param[in]  topology   The topology of the grid
+     \param[in]  topology   The topology of the grid.
      \param[in]  own  If true, *dune_grid is deleted in this object's destructor.
+     \param[in]  leafIsBarycentric If true the leaf level is a barycentric refinement of the previous level.
      */
     explicit ConcreteGrid(DuneGrid* dune_grid,
-                          GridParameters::Topology topology, bool own = false) :
+                          GridParameters::Topology topology, bool own = false, bool leafIsBarycentric = false) :
         m_dune_grid(dune_grid), m_topology(topology), m_owns_dune_grid(own),
-        m_global_id_set(dune_grid ? &dune_grid->globalIdSet() : 0) { // safety net
+        m_global_id_set(dune_grid ? &dune_grid->globalIdSet() : 0), m_leafIsBarycentric(leafIsBarycentric)
+    { // safety net
     }
 
     /** \brief Destructor. */
@@ -169,8 +171,15 @@ public:
         shared_ptr<Grid> newGrid = GridFactory::createGridFromConnectivityArrays(params,vertices,elementCorners);
         shared_ptr<ConcreteGrid<DuneGrid> > concreteGrid = dynamic_pointer_cast<ConcreteGrid<DuneGrid> >(newGrid);
         (concreteGrid->duneGrid()).globalBarycentricRefine(1);
+        concreteGrid->m_leafIsBarycentric = true;
 
         return newGrid;
+    }
+
+    /** \brief Return true of leaf-level is barycentric refinement of previous level */
+    virtual bool leafIsBarycentric() const {
+
+        return m_leafIsBarycentric;
     }
 
 
@@ -182,6 +191,7 @@ private:
     // (unclear what to do with the pointer to the grid)
     ConcreteGrid(const ConcreteGrid&);
     ConcreteGrid& operator =(const ConcreteGrid&);
+    bool m_leafIsBarycentric;
 };
 
 } // namespace Bempp
