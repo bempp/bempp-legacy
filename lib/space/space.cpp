@@ -131,17 +131,9 @@ constructGlobalToFlatLocalDofsMappingEpetraMatrix(
 } // namespace
 
 template <typename BasisFunctionType>
-Space<BasisFunctionType>::Space(const shared_ptr<const Grid>& grid, int level) :
+Space<BasisFunctionType>::Space(const shared_ptr<const Grid>& grid) :
     m_grid(grid)
 {
-    if (level<-1) throw std::runtime_error("Space::Space(grid,level):"
-                                           "level must not be smaller than -1.");
-    if (level>m_grid->maxLevel()) throw std::runtime_error("Space::Space(grid,level): "
-                                                           "level must not exceed grid->maxlevel().");
-    if (level==-1)
-        m_level = m_grid->maxLevel();
-    else
-        m_level = level;
     if (!grid)
         throw std::invalid_argument("Space::Space(): grid must not be a null "
                                     "pointer");
@@ -162,22 +154,6 @@ bool Space<BasisFunctionType>::dofsAssigned() const
 {
     return true;
 }
-
-template <typename BasisFunctionType>
-std::auto_ptr<GridView> Space<BasisFunctionType>::gridView(int level) const
-{
-    if (level==-1)
-        return m_grid->levelView(m_grid->maxLevel());
-    else
-        return m_grid->levelView(level);
-}
-
-template <typename BasisFunctionType>
-std::auto_ptr<GridView> Space<BasisFunctionType>::gridView() const
-{
-    return m_grid->levelView(m_level);
-}
-
 
 template <typename BasisFunctionType>
 void Space<BasisFunctionType>::getGlobalDofs(

@@ -98,11 +98,10 @@ public:
      *
      *  \param[in] grid Grid on which functions from this space should be
      *  defined.
-     *  \param[in] level Level of the grid to be used, -1 for leafLevel.
      *
      *  An exception is thrown if \p grid is a null pointer.
      */
-    explicit Space(const shared_ptr<const Grid>& grid, int level=-1);
+    explicit Space(const shared_ptr<const Grid>& grid);
 
     /** \brief Destructor. */
     virtual ~Space();
@@ -161,15 +160,6 @@ public:
     /** \brief Shared pointer to the grid on which the functions from this space
      *  are defined. */
     shared_ptr<const Grid> grid() const { return m_grid; }
-
-    /** \brief Auto pointer to a specific grid level view (-1 for leaf view). */
-    std::auto_ptr<GridView> gridView(int level) const;
-
-    /** \brief Auto pointer to a view of the default level on which the grid is based. */
-    std::auto_ptr<GridView> gridView() const;
-
-    /** \brief The default grid level that is used for this space. */
-    unsigned int level() const { return m_level; }
 
     /** \brief Reference to the basis attached to the specified element. */
     virtual const Fiber::Basis<BasisFunctionType>& basis(
@@ -413,7 +403,6 @@ public:
 private:
     /** \cond PRIVATE */
     shared_ptr<const Grid> m_grid;
-    unsigned int m_level;
     /** \endcond */
 };
 
