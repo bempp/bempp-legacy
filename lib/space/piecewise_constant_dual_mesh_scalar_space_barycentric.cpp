@@ -71,6 +71,50 @@ PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
+int PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::domainDimension() const
+{
+    return this->grid()->dim();
+}
+
+template <typename BasisFunctionType>
+int PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::codomainDimension() const
+{
+    return 1;
+}
+
+template <typename BasisFunctionType>
+const Fiber::Basis<BasisFunctionType>&
+PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::basis(
+        const Entity<0>& element) const
+{
+    return m_basis;
+}
+
+template <typename BasisFunctionType>
+ElementVariant PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::elementVariant(
+        const Entity<0>& element) const
+{
+    GeometryType type = element.type();
+    if (type.dim() == 1)
+        return 2;
+    if (type.isTriangle())
+        return 3;
+    else
+        return 4;
+}
+
+template <typename BasisFunctionType>
+void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::setElementVariant(
+        const Entity<0>& element, ElementVariant variant)
+{
+    if (variant != elementVariant(element))
+        // for this space, the element variants are unmodifiable,
+        throw std::runtime_error("PiecewiseConstantScalarSpace::"
+                                 "setElementVariant(): invalid variant");
+}
+
+
+template <typename BasisFunctionType>
 void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::initialize()
 {
     if (!this->grid()->leafIsBarycentric())
@@ -165,9 +209,11 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::assignD
                 acc(globalDofIndices, i) = -1;
     }
     int globalDofCount_ = 0;
+
     for (int vertexIndex = 0; vertexIndex < vertexCountCoarseGrid; ++vertexIndex)
-        if (acc(globalDofIndices, vertexIndex) == 0) // not excluded
+        if (acc(globalDofIndices, vertexIndex) == 0){ // not excluded
             acc(globalDofIndices, vertexIndex) = globalDofCount_++;
+        }
 
     // (Re)initialise DOF maps
     m_local2globalDofs.clear();
@@ -178,40 +224,83 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::assignD
     // with x being the typical number of elements adjacent to a vertex in a
     // grid of dimension gridDim
 
-    // Iterate over elements
-    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+
+    // Iterate over elements of the coarse grid
+    std::auto_ptr<EntityIterator<0> > it = coarseView->entityIterator<0>();
     int flatLocalDofCount_ = 0;
     while (!it->finished()) {
         const Entity<0>& element = it->entity();
-        std::auto_ptr<EntityPointer<0> > father = element.father();
-        EntityIndex elementIndexCoarseGrid = elementMapperCoarseGrid.entityIndex(father->entity());
-        EntityIndex elementIndex = elementMapper.entityIndex(element);
+        EntityIndex elementIndexCoarseGrid = elementMapperCoarseGrid.entityIndex(element);
         bool elementContained = m_strictlyOnSegment ?
                     acc(segmentContainsElement, elementIndexCoarseGrid) : true;
 
-        int cornerCount;
-        if (gridDim == 1)
-            cornerCount = element.template subEntityCount<1>();
-        else // gridDim == 2
-            cornerCount = element.template subEntityCount<2>();
+        // Get the iterator over son entities
 
-        // List of global DOF indices corresponding to the local DOFs of the
-        // current element
-        std::auto_ptr<EntityIterator<2> > vertexIt = element.subEntityIterator<2>();
-        // we know that the first vertex comes from the father
-        IndexSet::IndexType vertexIndex = indexSet.subEntityIndex(element,0,gridDim);
-        std::vector<GlobalDofIndex>& globalDof = acc(m_local2globalDofs, elementIndex);
-        GlobalDofIndex globalDofIndex;
-        globalDofIndex = elementContained ?
-                    acc(globalDofIndices,vertexIndex) : -1;
-        globalDof.push_back(globalDofIndex);
-        if (globalDofIndex>=0) {
-            acc(m_global2localDofs, globalDofIndex).push_back(
-                        LocalDof(elementIndex, 0));
-            ++flatLocalDofCount_;
+        std::auto_ptr<EntityIterator<0> > sonIt = element.sonIterator(this->grid()->maxLevel());
+
+        size_t sonCount = 0;
+        while (!sonIt->finished()){
+            const Entity<0>& sonElement = sonIt->entity();
+            EntityIndex elementIndex = elementMapper.entityIndex(sonElement);
+            std::vector<GlobalDofIndex>& globalDof = acc(m_local2globalDofs, elementIndex);
+            EntityIndex vertexIndex = elementMapperCoarseGrid.subEntityIndex(element,sonCount/2,gridDim);
+            GlobalDofIndex globalDofIndex;
+            globalDofIndex = elementContained ?
+                        acc(globalDofIndices,vertexIndex) : -1;
+            globalDof.push_back(globalDofIndex);
+            if (globalDofIndex>=0) {
+                acc(m_global2localDofs, globalDofIndex).push_back(
+                            LocalDof(elementIndex, 0));
+                ++flatLocalDofCount_;
+            }
+            sonCount++;
+            sonIt->next();
         }
+        assert(sonCount==6);
         it->next();
     }
+
+//    // Iterate over elements
+//    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+//    int flatLocalDofCount_ = 0;
+//    while (!it->finished()) {
+//        const Entity<0>& element = it->entity();
+//        std::auto_ptr<EntityPointer<0> > father = element.father();
+//        EntityIndex elementIndexCoarseGrid = elementMapperCoarseGrid.entityIndex(father->entity());
+//        EntityIndex elementIndex = elementMapper.entityIndex(element);
+//        bool elementContained = m_strictlyOnSegment ?
+//                    acc(segmentContainsElement, elementIndexCoarseGrid) : true;
+
+//        int cornerCount;
+//        if (gridDim == 1)
+//            cornerCount = element.template subEntityCount<1>();
+//        else // gridDim == 2
+//            cornerCount = element.template subEntityCount<2>();
+
+//        // List of global DOF indices corresponding to the local DOFs of the
+//        // current element
+//        std::auto_ptr<EntityIterator<2> > vertexIt = element.subEntityIterator<2>();
+//        // we know that the first vertex comes from the father
+//        IndexSet::IndexType vertexIndex = indexSet.subEntityIndex(element,0,gridDim);
+//        // Debug vertex indices
+//        std::cout << "Element: "<< elementIndex << " ";
+//        for (int i=0;i<3;++i){
+//            std::cout << indexSet.subEntityIndex(element,i,gridDim)<<" ";
+//         }
+//        std::cout << std::endl;
+
+//        std::vector<GlobalDofIndex>& globalDof = acc(m_local2globalDofs, elementIndex);
+//        GlobalDofIndex globalDofIndex;
+//        globalDofIndex = elementContained ?
+//                    acc(globalDofIndices,vertexIndex) : -1;
+//        globalDof.push_back(globalDofIndex);
+//        if (globalDofIndex>=0) {
+//            acc(m_global2localDofs, globalDofIndex).push_back(
+//                        LocalDof(elementIndex, 0));
+//            ++flatLocalDofCount_;
+//        }
+//        it->next();
+//    }
 
     // Initialize the container mapping the flat local dof indices to
     // local dof indices

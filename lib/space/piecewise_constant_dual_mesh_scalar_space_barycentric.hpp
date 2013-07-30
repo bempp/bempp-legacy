@@ -29,7 +29,7 @@
 #include "../grid/grid_segment.hpp"
 #include "../grid/grid_view.hpp"
 #include "../common/types.hpp"
-#include "../fiber/piecewise_linear_continuous_scalar_basis.hpp"
+#include "../fiber/piecewise_constant_scalar_basis.hpp"
 
 #include <map>
 #include <memory>
@@ -86,6 +86,22 @@ public:
         const shared_ptr<const Space<BasisFunctionType> >& self) const;
     virtual bool isDiscontinuous() const;
 
+    virtual int domainDimension() const;
+    virtual int codomainDimension() const;
+
+    /** \brief Return the variant of element \p element.
+     *
+     *  Possible return values:
+     *    - 2: one-dimensional segment,
+     *    - 3: triangular element,
+     *    - 4: quadrilateral element. */
+    virtual ElementVariant elementVariant(const Entity<0>& element) const;
+    virtual void setElementVariant(const Entity<0>& element,
+                                   ElementVariant variant);
+
+    virtual const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
+
+
     virtual size_t globalDofCount() const;
     virtual size_t flatLocalDofCount() const;
     virtual void getGlobalDofs(const Entity<0>& element,
@@ -132,6 +148,7 @@ private:
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
     std::vector<LocalDof> m_flatLocal2localDofs;
+    Fiber::PiecewiseConstantScalarBasis<BasisFunctionType> m_basis;
     mutable shared_ptr<Space<BasisFunctionType> > m_discontinuousSpace;
     mutable tbb::mutex m_discontinuousSpaceMutex;
     /** \endcond */

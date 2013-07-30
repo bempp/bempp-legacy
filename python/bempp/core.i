@@ -139,6 +139,7 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 // Space
 %include "space/space.i"
 %include "space/piecewise_constant_scalar_space.i"
+%include "space/piecewise_constant_dual_mesh_scalar_space_barycentric.i"
 %include "space/piecewise_linear_continuous_scalar_space.i"
 %include "space/piecewise_linear_discontinuous_scalar_space.i"
 %include "space/piecewise_polynomial_continuous_scalar_space.i"
