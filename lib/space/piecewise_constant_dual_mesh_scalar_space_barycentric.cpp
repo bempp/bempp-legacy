@@ -127,7 +127,6 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::initial
         throw std::invalid_argument(
                 "PiecewiseConstantDualMeshScalarSpaceBarycentric::initialize(): "
                 "only 1- and 2-dimensional grids are supported");
-    m_view =  this->grid()->leafView();
     assignDofsImpl();
 }
 
@@ -158,21 +157,20 @@ template <typename BasisFunctionType>
 void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::assignDofsImpl()
 {
 
-    std::auto_ptr<GridView> coarseView = this->grid()->levelView(this->grid()->maxLevel()-1);
-
     const int gridDim = this->domainDimension();
     const int elementCodim = 0;
 
-    const Mapper& elementMapper = m_view->elementMapper();
+    const Mapper& elementMapper = this->gridView().elementMapper();
+    std::auto_ptr<GridView> coarseView = this->grid()->levelView(0);
     const Mapper& elementMapperCoarseGrid = coarseView->elementMapper();
 
-    const IndexSet& indexSet = m_view->indexSet();
+    const IndexSet& indexSet = this->gridView().indexSet();
     const IndexSet& indexSetCoarseGrid = coarseView->indexSet();
 
-    int elementCount = m_view->entityCount(0);
+    int elementCount = this->gridView().entityCount(0);
     int elementCountCoarseGrid = coarseView->entityCount(0);
 
-    int vertexCount = m_view->entityCount(gridDim);
+    int vertexCount = this->gridView().entityCount(gridDim);
     int vertexCountCoarseGrid = coarseView->entityCount(gridDim);
 
     // Assign gdofs to grid vertices (choosing only those that belong to
@@ -325,7 +323,7 @@ template <typename BasisFunctionType>
 void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::getGlobalDofs(
         const Entity<0>& element, std::vector<GlobalDofIndex>& dofs) const
 {
-    const Mapper& mapper = m_view->elementMapper();
+    const Mapper& mapper = this->gridView().elementMapper();
     EntityIndex index = mapper.entityIndex(element);
     dofs = m_local2globalDofs[index];
 }
@@ -380,7 +378,7 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::getGlob
 {
     SpaceHelper<BasisFunctionType>::
             getGlobalDofBoundingBoxes_defaultImplementation(
-                *m_view, m_global2localDofs, bboxes);
+                this->gridView(), m_global2localDofs, bboxes);
 }
 
 template <typename BasisFunctionType>
@@ -389,11 +387,11 @@ getFlatLocalDofBoundingBoxes(
        std::vector<BoundingBox<CoordinateType> >& bboxes) const
 {
     // TODO: extract this loop into a private function
-    const IndexSet& indexSet = m_view->indexSet();
-    const int elementCount = m_view->entityCount(0);
+    const IndexSet& indexSet = this->gridView().indexSet();
+    const int elementCount = this->gridView().entityCount(0);
 
     std::vector<arma::Mat<CoordinateType> > elementCorners(elementCount);
-    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    std::auto_ptr<EntityIterator<0> > it = this->gridView().template entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
         int index = indexSet.entityIndex(e);
@@ -441,11 +439,11 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::getGlob
     const int worldDim = this->grid()->dimWorld();
     normals.resize(globalDofCount_);
 
-    const IndexSet& indexSet = m_view->indexSet();
-    int elementCount = m_view->entityCount(0);
+    const IndexSet& indexSet = this->gridView().indexSet();
+    int elementCount = this->gridView().entityCount(0);
 
     arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
-    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    std::auto_ptr<EntityIterator<0> > it = this->gridView().template entityIterator<0>();
     arma::Col<CoordinateType> center(gridDim);
     center.fill(0.5);
     arma::Col<CoordinateType> normal;
@@ -493,11 +491,11 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::getFlat
     const int worldDim = this->grid()->dimWorld();
     normals.resize(m_flatLocal2localDofs.size());
 
-    const IndexSet& indexSet = m_view->indexSet();
-    int elementCount = m_view->entityCount(0);
+    const IndexSet& indexSet = this->gridView().indexSet();
+    int elementCount = this->gridView().entityCount(0);
 
     arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
-    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    std::auto_ptr<EntityIterator<0> > it = this->gridView().template entityIterator<0>();
     arma::Col<CoordinateType> center(gridDim);
     center.fill(0.5);
     arma::Col<CoordinateType> normal;
@@ -553,8 +551,7 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::dumpClu
         throw std::invalid_argument("PiecewiseConstantDualMeshScalarSpaceBarycentricScalarSpace::"
                                     "dumpClusterIds(): incorrect dimension");
 
-    std::auto_ptr<GridView> view = this->grid()->leafView();
-    std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
+    std::auto_ptr<VtkWriter> vtkWriter = this->gridView().vtkWriter();
     if (dofType == GLOBAL_DOFS) {
         arma::Row<double> data(idCount);
         for (size_t i = 0; i < idCount; ++i)
