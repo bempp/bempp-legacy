@@ -110,19 +110,8 @@ public:
         Auxiliary data, to be used in future to describe the geometry of
         curvilinear elements. Currently this argument is always set to an empty
         matrix.
+    */
 
-      \param[out] domainIndices
-        Domain Indices of the elements in the grid.
-      */
-    void getRawElementData(arma::Mat<double>& vertices,
-                           arma::Mat<int>& elementCorners,
-                           arma::Mat<char>& auxData,
-                           std::vector<int>& domainIndices) const;
-    /** \overload */
-    void getRawElementData(arma::Mat<float>& vertices,
-                           arma::Mat<int>& elementCorners,
-                           arma::Mat<char>& auxData,
-                           std::vector<int>& domainIndices) const;
 
     /** \overload */
     void getRawElementData(arma::Mat<float>& vertices,
@@ -191,22 +180,6 @@ private:
     /** \brief Iterator over entities of codimension 3 contained in this view. */
     virtual std::auto_ptr<EntityIterator<3> > entityCodim3Iterator() const = 0;
 };
-
-inline void GridView::getRawElementData(arma::Mat<double>& vertices,
-                                        arma::Mat<int>& elementCorners,
-                                        arma::Mat<char>& auxData,
-                                        std::vector<int>& domainIndices) const
-{
-    getRawElementDataDoubleImpl(vertices, elementCorners, auxData, domainIndices);
-}
-
-inline void GridView::getRawElementData(arma::Mat<float>& vertices,
-                                        arma::Mat<int>& elementCorners,
-                                        arma::Mat<char>& auxData,
-                                        std::vector<int>& domainIndices) const
-{
-    getRawElementDataFloatImpl(vertices, elementCorners, auxData, domainIndices);
-}
 
 inline void GridView::getRawElementData(arma::Mat<double>& vertices,
                                         arma::Mat<int>& elementCorners,
