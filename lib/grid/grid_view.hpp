@@ -97,8 +97,6 @@ public:
     /** \brief Get raw data describing the geometry of all codim-0 entities
       contained in this grid view.
 
-      This method is mainly intended for use in the OpenCL implementation.
-
       \param[out] vertices
         On output, a 2D array whose (i,j)th element is the ith
         coordinate of the vertex of index j.
@@ -136,6 +134,22 @@ public:
                            arma::Mat<char>& auxData ) const;
 
 
+    /** \brief Get raw data describing the geometry of all codim-0 entities
+      contained in this grid view.
+
+      This overload takes an additional argument, \p domainIndices, which on
+      output contains indices of the grid domains to which the corresponding
+      elements from \p elementCorners belong. */
+    void getRawElementData(arma::Mat<double>& vertices,
+                           arma::Mat<int>& elementCorners,
+                           arma::Mat<char>& auxData,
+                           std::vector<int>& domainIndices) const;
+    /** \overload */
+    void getRawElementData(arma::Mat<float>& vertices,
+                           arma::Mat<int>& elementCorners,
+                           arma::Mat<char>& auxData,
+                           std::vector<int>& domainIndices) const;
+
     /** \brief Mapping from codim-0 entity index to entity pointer.
 
       Note that this object is *not* updated when the grid is adapted. In that
@@ -161,14 +175,12 @@ private:
             arma::Mat<double>& vertices,
             arma::Mat<int>& elementCorners,
             arma::Mat<char>& auxData,
-            std::vector<int>& domainIndices) const = 0;
+            std::vector<int>* domainIndices) const = 0;
     virtual void getRawElementDataFloatImpl(
             arma::Mat<float>& vertices,
             arma::Mat<int>& elementCorners,
             arma::Mat<char>& auxData,
-            std::vector<int>& domainIndicies) const = 0;
-
-
+            std::vector<int>* domainIndices) const = 0;
 
     /** \brief Iterator over entities of codimension 0 contained in this view. */
     virtual std::auto_ptr<EntityIterator<0> > entityCodim0Iterator() const = 0;
@@ -200,16 +212,32 @@ inline void GridView::getRawElementData(arma::Mat<double>& vertices,
                                         arma::Mat<int>& elementCorners,
                                         arma::Mat<char>& auxData) const
 {
-    std::vector<int> domainIndices;
-    getRawElementDataDoubleImpl(vertices, elementCorners, auxData, domainIndices);
+    getRawElementDataDoubleImpl(vertices, elementCorners, auxData, 0);
 }
 
 inline void GridView::getRawElementData(arma::Mat<float>& vertices,
                                         arma::Mat<int>& elementCorners,
                                         arma::Mat<char>& auxData) const
 {
-    std::vector<int> domainIndices;
-    getRawElementDataFloatImpl(vertices, elementCorners, auxData, domainIndices);
+    getRawElementDataFloatImpl(vertices, elementCorners, auxData, 0);
+}
+
+inline void GridView::getRawElementData(arma::Mat<double>& vertices,
+                                        arma::Mat<int>& elementCorners,
+                                        arma::Mat<char>& auxData,
+                                        std::vector<int>& domainIndices) const
+{
+    getRawElementDataDoubleImpl(vertices, elementCorners, auxData,
+                                &domainIndices);
+}
+
+inline void GridView::getRawElementData(arma::Mat<float>& vertices,
+                                        arma::Mat<int>& elementCorners,
+                                        arma::Mat<char>& auxData,
+                                        std::vector<int>& domainIndices) const
+{
+    getRawElementDataFloatImpl(vertices, elementCorners, auxData,
+                               &domainIndices);
 }
 
 

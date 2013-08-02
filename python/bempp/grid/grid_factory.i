@@ -1,7 +1,13 @@
+%include "std_vector.i"
+namespace std {
+   %template(vectori) vector<int>;
+}
+
 %{
 #include "grid/grid_factory.hpp"
 #include "grid/grid.hpp"
 #include <algorithm>
+#include <climits>
 
 namespace Bempp
 {
@@ -34,6 +40,18 @@ namespace Bempp
 
 %ignore GridParameters;
 
+
+%pythonprepend GridFactory::createGridFromConnectivityArrays %{
+    import numpy as np
+    newargs = list(args)
+    try:
+        newargs[2] = np.asanyarray(args[2]).astype(np.int32)
+    except: # keep the list of arguments as it was and hope for the best...
+        pass
+    args = newargs
+%}
+
+
 %extend GridFactory
 {
 
@@ -64,10 +82,6 @@ namespace Bempp
     %clear const arma::Col<unsigned int>& nElements;
     %ignore createStructuredGrid;
 
-    //%pythonappend importGmshGrid %{
-    //  val.topology = args[0]
-    //	%}
-
     %feature("compactdefaultargs") importGmshGrid;
     static boost::shared_ptr<Bempp::Grid> importGmshGrid(
             const std::string& topology, const std::string& fileName,
@@ -84,15 +98,18 @@ namespace Bempp
     %apply const arma::Mat<int>& IN_MAT {
         const arma::Mat<int>& elementCorners
     };
+
     static boost::shared_ptr<Bempp::Grid> createGridFromConnectivityArrays(
             const std::string& topology,
             const arma::Mat<double>& vertices,
-            const arma::Mat<int>& elementCorners) {
+            const arma::Mat<int>& elementCorners,
+            const std::vector<int>& domainIndices = std::vector<int>()) {
         Bempp::GridParameters params;
         makeGridParameters(params, topology);
         return Bempp::GridFactory::createGridFromConnectivityArrays(
-            params, vertices, elementCorners);
+            params, vertices, elementCorners, domainIndices);
     }
+
     %clear const arma::Mat<double>& vertices;
     %clear const arma::Mat<int>& elementCorners;
     %ignore createGridFromConnectivityArrays;
