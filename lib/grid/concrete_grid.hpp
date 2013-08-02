@@ -24,6 +24,8 @@
 #include "../common/common.hpp"
 #include "../common/ensure_not_null.hpp"
 #include "grid_parameters.hpp"
+#include "grid_factory.hpp"
+#include "../common/shared_ptr.hpp"
 
 #include "grid.hpp"
 #include "concrete_domain_index.hpp"
@@ -31,6 +33,7 @@
 #include "concrete_geometry_factory.hpp"
 #include "concrete_grid_view.hpp"
 #include "concrete_id_set.hpp"
+#include <armadillo>
 
 #include <memory>
 
@@ -66,36 +69,42 @@ public:
     /** \brief Wrap an existing Dune grid object.
 
      \param[in]  dune_grid  Pointer to the Dune grid to wrap.
-     \param[in]  topology   The topology of the grid
+     \param[in]  topology   The topology of the grid.
+     \param[in]  domainIndices Vector of domain indices.
      \param[in]  own  If true, *dune_grid is deleted in this object's destructor.
+     \param[in]  leafIsBarycentric If true the leaf level is a barycentric refinement of the previous level.
      */
     explicit ConcreteGrid(DuneGrid* dune_grid,
-                          GridParameters::Topology topology, bool own = false) :
+                          GridParameters::Topology topology, bool own = false,
+                          bool leafIsBarycentric = false) :
         m_dune_grid(ensureNotNull(dune_grid)),
         m_topology(topology),
         m_owns_dune_grid(own),
+        m_leafIsBarycentric(leafIsBarycentric),
         m_global_id_set(&dune_grid->globalIdSet()),
         m_domain_index(*dune_grid,
                        std::vector<int>(
                            dune_grid->size(0 /*level*/, 0 /*codim*/),
                            0 /*default index*/))
     {
+
     }
 
     /** \brief Wrap an existing Dune grid object.
-
-     \param[in]  dune_grid  Pointer to the Dune grid to wrap.
-     \param[in]  topology   The topology of the grid
-     \param[in]  own  If true, *dune_grid is deleted in this object's destructor.
-     */
+        \param[in] dune_grid Pointer to the Dune grid to wrap.
+        \param[in] topology The topology of the grid
+        \param[in] own If true, *dune_grid is deleted in this object's destructor.
+    */
     explicit ConcreteGrid(DuneGrid* dune_grid,
                           GridParameters::Topology topology,
                           const std::vector<int>& domainIndices,
-                          bool own = false) :
+                          bool own = false,
+                          bool leafIsBarycentric = false) :
         m_dune_grid(ensureNotNull(dune_grid)),
         m_topology(topology),
         m_owns_dune_grid(own),
         m_global_id_set(&dune_grid->globalIdSet()),
+        m_leafIsBarycentric(leafIsBarycentric),
         m_domain_index(*dune_grid, domainIndices)
     {
     }
@@ -172,13 +181,49 @@ public:
     }
 
 
+    /** @}
+    @name Refinement
+    @{ */
+
+    /** Return a new barycentrically refined grid */
+    virtual shared_ptr<Grid> barycentricGrid() const {
+
+        arma::Mat<double> vertices;
+        arma::Mat<int> elementCorners;
+        arma::Mat<char> auxData;
+
+        std::auto_ptr<GridView> view = this->leafView();
+
+        view->getRawElementData(vertices,
+                               elementCorners,
+                               auxData);
+
+        GridParameters params;
+        params.topology = GridParameters::TRIANGULAR;
+        shared_ptr<Grid> newGrid = GridFactory::createGridFromConnectivityArrays(params,vertices,elementCorners);
+        shared_ptr<ConcreteGrid<DuneGrid> > concreteGrid = dynamic_pointer_cast<ConcreteGrid<DuneGrid> >(newGrid);
+        (concreteGrid->duneGrid()).globalBarycentricRefine(1);
+        concreteGrid->m_leafIsBarycentric = true;
+
+        return newGrid;
+    }
+
+    /** \brief Return true of leaf-level is barycentric refinement of previous level */
+    virtual bool leafIsBarycentric() const {
+
+        return m_leafIsBarycentric;
+    }
+
+
     /** @} */
+
 
 private:
     // Disable copy constructor and assignment operator
     // (unclear what to do with the pointer to the grid)
     ConcreteGrid(const ConcreteGrid&);
     ConcreteGrid& operator =(const ConcreteGrid&);
+    bool m_leafIsBarycentric;
 };
 
 } // namespace Bempp

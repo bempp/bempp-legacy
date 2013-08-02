@@ -213,4 +213,5 @@ shared_ptr<Grid> GridFactory::createGridFromConnectivityArrays(
     return result;
 }
 
+
 } // namespace Bempp

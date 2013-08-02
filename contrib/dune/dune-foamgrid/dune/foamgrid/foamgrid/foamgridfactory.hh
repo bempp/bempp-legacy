@@ -35,11 +35,12 @@ namespace Dune {
     public:
 
         /** \brief Default constructor */
-        GridFactory()
+        GridFactory(std::size_t maxNumLevels=10)
             : factoryOwnsGrid_(true),
               vertexIndex_(0)
         {
             grid_ = new FoamGrid<dimworld>;
+            grid_->entityImps_.reserve(maxNumLevels);
 
             grid_->entityImps_.resize(1);
         }
@@ -53,11 +54,12 @@ namespace Dune {
         the pointer handed over to you by the method createGrid() is
         the one you supplied here.
          */
-        GridFactory(FoamGrid<dimworld>* grid)
+        GridFactory(FoamGrid<dimworld>* grid, std::size_t maxNumLevels=10)
             : factoryOwnsGrid_(false),
               vertexIndex_(0)
         {
             grid_ = grid;
+            grid_->entityImps_.reserve(maxNumLevels);
 
             grid_->entityImps_.resize(1);
         }

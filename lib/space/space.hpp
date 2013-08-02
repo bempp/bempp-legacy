@@ -51,6 +51,7 @@ namespace Bempp
 
 /** \cond FORWARD_DECL */
 class Grid;
+class GridView;
 template <int codim> class Entity;
 template <int codim> class EntityPointer;
 template <typename ValueType> class DiscreteSparseBoundaryOperator;
