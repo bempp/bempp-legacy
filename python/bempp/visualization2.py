@@ -798,3 +798,6 @@ def plotThreePlanes(points, vals):
                             plane_orientation='z_axes')
     mlab.outline()
 
+def show():
+    """Display the graphical objects created so far"""
+    mlab.show()
