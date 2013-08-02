@@ -40,6 +40,7 @@ public:
     }
 
     int domain(const Entity<0>& entity) const;
+    std::vector<int> domainIndices() const;
 private:
     std::auto_ptr<IndexSet> m_level0IndexSet;
     std::vector<int> m_domainIndices;

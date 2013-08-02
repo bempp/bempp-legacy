@@ -154,7 +154,8 @@ shared_ptr<Grid> GridFactory::importGmshGrid(
 shared_ptr<Grid> GridFactory::createGridFromConnectivityArrays(
             const GridParameters& params,
             const arma::Mat<double>& vertices,
-            const arma::Mat<int>& elementCorners)
+            const arma::Mat<int>& elementCorners,
+            const std::vector<int>& domainIndices)
 {
     const int dimGrid = 2, dimWorld = 3;
     if (params.topology != GridParameters::TRIANGULAR)
@@ -193,7 +194,23 @@ shared_ptr<Grid> GridFactory::createGridFromConnectivityArrays(
     }
     return shared_ptr<Grid>(new Default2dIn3dGrid(factory.createGrid(),
                                                   GridParameters::TRIANGULAR,
-                                                  true)); // true -> owns Dune grid
+                                                  domainIndices,
+                                                  true, // true -> owns Dune grid
+                                                  false)); // does not contain a barycentrically refined leafView
+}
+
+shared_ptr<Grid> GridFactory::createGridFromConnectivityArrays(
+            const GridParameters& params,
+            const arma::Mat<double>& vertices,
+            const arma::Mat<int>& elementCorners){
+
+    return createGridFromConnectivityArrays(
+                params,
+                vertices,
+                elementCorners,
+                std::vector<int>(
+                    elementCorners.n_cols,0));
+
 }
 
 

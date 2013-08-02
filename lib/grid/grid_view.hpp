@@ -112,14 +112,29 @@ public:
         Auxiliary data, to be used in future to describe the geometry of
         curvilinear elements. Currently this argument is always set to an empty
         matrix.
+
+      \param[out] domainIndices
+        Domain Indices of the elements in the grid.
       */
     void getRawElementData(arma::Mat<double>& vertices,
                            arma::Mat<int>& elementCorners,
-                           arma::Mat<char>& auxData) const;
+                           arma::Mat<char>& auxData,
+                           std::vector<int>& domainIndices) const;
     /** \overload */
     void getRawElementData(arma::Mat<float>& vertices,
                            arma::Mat<int>& elementCorners,
-                           arma::Mat<char>& auxData) const;
+                           arma::Mat<char>& auxData,
+                           std::vector<int>& domainIndices) const;
+
+    /** \overload */
+    void getRawElementData(arma::Mat<float>& vertices,
+                           arma::Mat<int>& elementCorners,
+                           arma::Mat<char>& auxData ) const;
+    /** \overload */
+    void getRawElementData(arma::Mat<double>& vertices,
+                           arma::Mat<int>& elementCorners,
+                           arma::Mat<char>& auxData ) const;
+
 
     /** \brief Mapping from codim-0 entity index to entity pointer.
 
@@ -145,11 +160,15 @@ private:
     virtual void getRawElementDataDoubleImpl(
             arma::Mat<double>& vertices,
             arma::Mat<int>& elementCorners,
-            arma::Mat<char>& auxData) const = 0;
+            arma::Mat<char>& auxData,
+            std::vector<int>& domainIndices) const = 0;
     virtual void getRawElementDataFloatImpl(
             arma::Mat<float>& vertices,
             arma::Mat<int>& elementCorners,
-            arma::Mat<char>& auxData) const = 0;
+            arma::Mat<char>& auxData,
+            std::vector<int>& domainIndicies) const = 0;
+
+
 
     /** \brief Iterator over entities of codimension 0 contained in this view. */
     virtual std::auto_ptr<EntityIterator<0> > entityCodim0Iterator() const = 0;
@@ -163,17 +182,36 @@ private:
 
 inline void GridView::getRawElementData(arma::Mat<double>& vertices,
                                         arma::Mat<int>& elementCorners,
+                                        arma::Mat<char>& auxData,
+                                        std::vector<int>& domainIndices) const
+{
+    getRawElementDataDoubleImpl(vertices, elementCorners, auxData, domainIndices);
+}
+
+inline void GridView::getRawElementData(arma::Mat<float>& vertices,
+                                        arma::Mat<int>& elementCorners,
+                                        arma::Mat<char>& auxData,
+                                        std::vector<int>& domainIndices) const
+{
+    getRawElementDataFloatImpl(vertices, elementCorners, auxData, domainIndices);
+}
+
+inline void GridView::getRawElementData(arma::Mat<double>& vertices,
+                                        arma::Mat<int>& elementCorners,
                                         arma::Mat<char>& auxData) const
 {
-    getRawElementDataDoubleImpl(vertices, elementCorners, auxData);
+    std::vector<int> domainIndices;
+    getRawElementDataDoubleImpl(vertices, elementCorners, auxData, domainIndices);
 }
 
 inline void GridView::getRawElementData(arma::Mat<float>& vertices,
                                         arma::Mat<int>& elementCorners,
                                         arma::Mat<char>& auxData) const
 {
-    getRawElementDataFloatImpl(vertices, elementCorners, auxData);
+    std::vector<int> domainIndices;
+    getRawElementDataFloatImpl(vertices, elementCorners, auxData, domainIndices);
 }
+
 
 template<>
 inline std::auto_ptr<EntityIterator<0> > GridView::entityIterator<0>() const

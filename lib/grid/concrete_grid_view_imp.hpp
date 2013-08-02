@@ -29,18 +29,18 @@ template <typename DuneGridView>
 void ConcreteGridView<DuneGridView>::getRawElementDataDoubleImpl(
         arma::Mat<double>& vertices,
         arma::Mat<int>& elementCorners,
-        arma::Mat<char>& auxData) const
+        arma::Mat<char>& auxData,
+        std::vector<int>& domainIndices) const
 {
-    getRawElementDataImpl(vertices, elementCorners, auxData);
+    getRawElementDataImpl(vertices, elementCorners, auxData, domainIndices);
 }
 
 template <typename DuneGridView>
-void ConcreteGridView<DuneGridView>::getRawElementDataFloatImpl(
-        arma::Mat<float>& vertices,
+void ConcreteGridView<DuneGridView>::getRawElementDataFloatImpl(arma::Mat<float>& vertices,
         arma::Mat<int>& elementCorners,
-        arma::Mat<char>& auxData) const
+        arma::Mat<char>& auxData, std::vector<int>& domainIndices) const
 {
-    getRawElementDataImpl(vertices, elementCorners, auxData);
+    getRawElementDataImpl(vertices, elementCorners, auxData, domainIndices);
 }
 
 template <typename DuneGridView>
@@ -48,7 +48,8 @@ template <typename CoordinateType>
 void ConcreteGridView<DuneGridView>::getRawElementDataImpl(
         arma::Mat<CoordinateType>& vertices,
         arma::Mat<int>& elementCorners,
-        arma::Mat<char>& auxData) const
+        arma::Mat<char>& auxData,
+        std::vector<int>& domainIndices) const
 {
     typedef typename DuneGridView::Grid DuneGrid;
     typedef typename DuneGridView::IndexSet DuneIndexSet;
@@ -82,12 +83,11 @@ void ConcreteGridView<DuneGridView>::getRawElementDataImpl(
     }
 
     const int MAX_CORNER_COUNT = dimWorld == 2 ? 2 : 4;
-    DuneElementMapper elementMapper(m_dune_gv.grid());
-    elementCorners.set_size(MAX_CORNER_COUNT, elementMapper.size());
+    elementCorners.set_size(MAX_CORNER_COUNT, indexSet.size(codimElement));
     for (DuneElementIterator it = m_dune_gv.template begin<codimElement>();
          it != m_dune_gv.template end<codimElement>(); ++it)
     {
-        size_t index = elementMapper.map(*it);
+        size_t index = indexSet.index(*it);
         const Dune::GenericReferenceElement<ctype, dimGrid>& refElement =
                 Dune::GenericReferenceElements<ctype, dimGrid>::general(it->type());
         const int cornerCount = refElement.size(codimVertex);
@@ -99,6 +99,8 @@ void ConcreteGridView<DuneGridView>::getRawElementDataImpl(
     }
 
     auxData.set_size(0, elementCorners.n_cols);
+    auxData.set_size(0, elementCorners.n_cols);
+    domainIndices = m_domain_index.domainIndices();
 }
 
 } // namespace Bempp

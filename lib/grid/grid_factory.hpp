@@ -117,11 +117,17 @@ public:
      *  \param[in] elementCorners
      *    2D array whose (i, j)th element contains the index of the ith vertex
      *    of the jth element.
+     *  \param[in] domainIndices
+     *    Array of domain indices for the subdomains
      *
      *  \note Currently only grids with triangular topology are supported.
      */
-    static shared_ptr<Grid> createGridFromConnectivityArrays(
-                const GridParameters& params,
+    static shared_ptr<Grid> createGridFromConnectivityArrays(const GridParameters& params,
+                const arma::Mat<double>& vertices,
+                const arma::Mat<int>& elementCorners, const std::vector<int>& domainIndices);
+
+    /** \overload */
+    static shared_ptr<Grid> createGridFromConnectivityArrays(const GridParameters& params,
                 const arma::Mat<double>& vertices,
                 const arma::Mat<int>& elementCorners);
 

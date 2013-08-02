@@ -38,6 +38,10 @@
   arma::Mat<char>& auxData
     };
 
+%apply arma::Col<int>& ARGOUT_COL {
+  arma::Col<int>& domainIndices
+    };
+
 
 namespace Bempp 
 {
@@ -61,6 +65,41 @@ namespace Bempp
     }
 
     %ignore containsEntity;
+
+    void getRawElementData(arma::Mat<double>& vertices,
+                           arma::Mat<int>& elementCorners,
+                           arma::Mat<char>& auxData,
+                           arma::Col<int>& domainIndices) const {
+
+        std::vector<int> domainIndicesHelper;
+        $self->getRawElementData(vertices,elementCorners,auxData,domainIndicesHelper);
+        size_t nElements = domainIndicesHelper.size();
+        domainIndices.resize(nElements);
+        for (size_t i=0;i<nElements;++i)
+            domainIndices(i) = domainIndicesHelper[i];
+
+    }
+
+
+
+    %ignore getRawElementData(arma::Mat<double>& vertices,
+                           arma::Mat<int>& elementCorners,
+                           arma::Mat<char>& auxData,
+                           std::vector<int>& domainIndices) const;
+
+    %ignore getRawElementData(arma::Mat<double>& vertices,
+                           arma::Mat<int>& elementCorners,
+                           arma::Mat<char>& auxData) const;
+
+    %ignore getRawElementData(arma::Mat<float>& vertices,
+                           arma::Mat<int>& elementCorners,
+                           arma::Mat<char>& auxData) const;
+
+    %ignore getRawElementData(arma::Mat<float>& vertices,
+                           arma::Mat<int>& elementCorners,
+                           arma::Mat<char>& auxData,
+                           std::vector<int>& domainIndices) const;
+
 
     %pythonappend entities %{
         val._parentGrid = self._parentGrid
@@ -114,3 +153,4 @@ namespace Bempp
 %clear arma::Mat<double>& vertices;
 %clear arma::Mat<int>& elementCorners;
 %clear arma::Mat<char>& auxData;
+%clear arma::Col<int>& domainIndices;
