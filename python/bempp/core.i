@@ -27,6 +27,7 @@
 #include <complex>
 %}
 
+%include "numpy.i"
 
 %include "std_vector.i"
 
