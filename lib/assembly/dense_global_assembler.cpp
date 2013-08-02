@@ -153,8 +153,8 @@ void gatherGlobalDofs(
     std::vector<std::vector<BasisFunctionType> >& localDofWeights)
 {
     // Get the grid's leaf view so that we can iterate over elements
-    std::auto_ptr<GridView> view = space.grid()->leafView();
-    const int elementCount = view->entityCount(0);
+    const GridView& view = space.gridView();
+    const int elementCount = view.entityCount(0);
 
     // Global DOF indices corresponding to local DOFs on elements
     globalDofs.clear();
@@ -164,8 +164,8 @@ void gatherGlobalDofs(
     localDofWeights.resize(elementCount);
 
     // Gather global DOF lists
-    const Mapper& mapper = view->elementMapper();
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    const Mapper& mapper = view.elementMapper();
+    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& element = it->entity();
         const int elementIndex = mapper.entityIndex(element);
