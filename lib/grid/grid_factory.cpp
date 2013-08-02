@@ -152,48 +152,65 @@ shared_ptr<Grid> GridFactory::importGmshGrid(
 }
 
 shared_ptr<Grid> GridFactory::createGridFromConnectivityArrays(
-            const GridParameters& params,
-            const arma::Mat<double>& vertices,
-            const arma::Mat<int>& elementCorners)
+        const GridParameters& params,
+        const arma::Mat<double>& vertices,
+        const arma::Mat<int>& elementCorners,
+        const std::vector<int>& domainIndices)
 {
     const int dimGrid = 2, dimWorld = 3;
     if (params.topology != GridParameters::TRIANGULAR)
-        throw std::invalid_argument("createGridFromRawData(): unsupported grid topology");
+        throw std::invalid_argument("createGridFromConnectivityArrays(): "
+                                    "unsupported grid topology");
     if (vertices.n_rows != dimWorld)
-    throw std::invalid_argument("createGridFromRawData(): the 'vertices' array "
+        throw std::invalid_argument("createGridFromConnectivityArrays(): "
+                                    "the 'vertices' array "
                                     "must have exactly 3 rows");
     if (elementCorners.n_rows < 3)
-    throw std::invalid_argument("createGridFromRawData(): the 'elementCorners' array "
+        throw std::invalid_argument("createGridFromConnectivityArrays(): "
+                                    "the 'elementCorners' array "
                                     "must have at least 3 rows");
+    if (!domainIndices.empty() && domainIndices.size() != elementCorners.n_cols)
+        throw std::invalid_argument(
+                "createGridFromConnectivityArrays(): "
+                "'domainIndices' must either be empty or contain as many "
+                "elements as 'elementCorners' has columns");
 
     Dune::GridFactory<Default2dIn3dDuneGrid> factory;
 
     for (size_t i = 0; i < vertices.n_cols; ++i) {
-    Dune::FieldVector<double, dimWorld> v;
-    v[0] = vertices(0, i);
-    v[1] = vertices(1, i);
-    v[2] = vertices(2, i);
-    factory.insertVertex(v);
+        Dune::FieldVector<double, dimWorld> v;
+        v[0] = vertices(0, i);
+        v[1] = vertices(1, i);
+        v[2] = vertices(2, i);
+        factory.insertVertex(v);
     }
 
     const GeometryType type(GeometryType::simplex, dimGrid);
     const size_t vertexCount = vertices.n_cols;
     std::vector<unsigned int> corners(3);
     for (size_t i = 0; i < elementCorners.n_cols; ++i) {
-    if (elementCorners(0, i) < 0 || elementCorners(0, i) >= vertexCount ||
-            elementCorners(1, i) < 0 || elementCorners(1, i) >= vertexCount ||
-            elementCorners(2, i) < 0 || elementCorners(2, i) >= vertexCount)
+        if (elementCorners(0, i) < 0 || elementCorners(0, i) >= vertexCount ||
+                elementCorners(1, i) < 0 || elementCorners(1, i) >= vertexCount ||
+                elementCorners(2, i) < 0 || elementCorners(2, i) >= vertexCount)
             throw std::invalid_argument(
-        "createGridFromRawData(): invalid vertex index in element #" +
-        toString(i));
-    corners[0] = elementCorners(0, i);
-    corners[1] = elementCorners(1, i);
-    corners[2] = elementCorners(2, i);
-    factory.insertElement(type, corners);
+                    "createGridFromConnectivityArrays(): invalid vertex index in element #" +
+                    toString(i));
+        corners[0] = elementCorners(0, i);
+        corners[1] = elementCorners(1, i);
+        corners[2] = elementCorners(2, i);
+        factory.insertElement(type, corners);
     }
-    return shared_ptr<Grid>(new Default2dIn3dGrid(factory.createGrid(),
-                                                  GridParameters::TRIANGULAR,
-                                                  true)); // true -> owns Dune grid
+    shared_ptr<Grid> result;
+    if (domainIndices.empty())
+        result.reset(new Default2dIn3dGrid(factory.createGrid(),
+                                           GridParameters::TRIANGULAR,
+                                           true /* owns Dune grid */));
+    else
+        result.reset(new Default2dIn3dGrid(factory.createGrid(),
+                                           GridParameters::TRIANGULAR,
+                                           domainIndices,
+                                           true /* owns Dune grid */));
+    return result;
 }
 
 } // namespace Bempp

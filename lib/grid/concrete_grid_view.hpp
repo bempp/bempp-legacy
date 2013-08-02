@@ -99,13 +99,6 @@ public:
         return containsEntityCodimN(e);
     }
 
-    virtual void getRawElementDataDoubleImpl(arma::Mat<double>& vertices,
-                                             arma::Mat<int>& elementCorners,
-                                             arma::Mat<char>& auxData) const;
-    virtual void getRawElementDataFloatImpl(arma::Mat<float>& vertices,
-                                             arma::Mat<int>& elementCorners,
-                                             arma::Mat<char>& auxData) const;
-
     virtual const ReverseElementMapper& reverseElementMapper() const {
         if (!m_reverse_element_mapper_is_up_to_date)
         {
@@ -168,10 +161,20 @@ private:
                                     m_domain_index));
     }
 
+    virtual void getRawElementDataDoubleImpl(arma::Mat<double>& vertices,
+                                             arma::Mat<int>& elementCorners,
+                                             arma::Mat<char>& auxData,
+                                             std::vector<int>* domainIndices) const;
+    virtual void getRawElementDataFloatImpl(arma::Mat<float>& vertices,
+                                            arma::Mat<int>& elementCorners,
+                                            arma::Mat<char>& auxData,
+                                            std::vector<int>* domainIndices) const;
+
     template <typename CoordinateType>
     void getRawElementDataImpl(arma::Mat<CoordinateType>& vertices,
                                arma::Mat<int>& elementCorners,
-                               arma::Mat<char>& auxData) const;
+                               arma::Mat<char>& auxData,
+                               std::vector<int>* domainIndices) const;
 };
 
 } // namespace Bempp

@@ -135,9 +135,6 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
     %ignore basis;
     %ignore getLocalCoefficients;
 
-  // %ignore evaluateAtSpecialPoints(
-  //          VtkWriter::DataType dataType, arma::Mat<ResultType>& result_) const;
-
     %apply arma::Col<float>& ARGOUT_COL {
         arma::Col<float>& col_out
     };
@@ -199,11 +196,11 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
     }
 
     %pythoncode %{
-    def evaluateAtSpecialPoints(self, dataType, returnPoints = False):
+    def evaluateAtSpecialPoints(self, dataType, returnPoints=False):
        points, values = self._evaluateAtSpecialPoints(dataType)
-       if returnPoints :
+       if returnPoints:
           return points, values
-       else :
+       else:
           return values
     %}
     

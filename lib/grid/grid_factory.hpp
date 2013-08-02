@@ -117,13 +117,18 @@ public:
      *  \param[in] elementCorners
      *    2D array whose (i, j)th element contains the index of the ith vertex
      *    of the jth element.
+     *  \param[in] domainIndices
+     *    (Optional) Vector whose ith element contains the domain index of
+     *    the ith element. By default, this argument is set to an empty vector,
+     *    in which case all elements are taken to belong to domain 0.
      *
      *  \note Currently only grids with triangular topology are supported.
      */
     static shared_ptr<Grid> createGridFromConnectivityArrays(
-                const GridParameters& params,
-                const arma::Mat<double>& vertices,
-                const arma::Mat<int>& elementCorners);
+            const GridParameters& params,
+            const arma::Mat<double>& vertices,
+            const arma::Mat<int>& elementCorners,
+            const std::vector<int>& domainIndices = std::vector<int>());
 };
 
 } // namespace Bempp

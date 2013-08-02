@@ -78,7 +78,7 @@ public:
         m_domain_index(*dune_grid,
                        std::vector<int>(
                            dune_grid->size(0 /*level*/, 0 /*codim*/),
-                           0 /*index*/))
+                           0 /*default index*/))
     {
     }
 
