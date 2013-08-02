@@ -42,8 +42,8 @@ namespace Bempp
 
 template <typename BasisFunctionType>
 PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
-PiecewiseLinearDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid) :
-    PiecewiseLinearScalarSpace<BasisFunctionType>(grid)
+PiecewiseLinearDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid, unsigned int level) :
+    PiecewiseLinearScalarSpace<BasisFunctionType>(grid,level)
 {
     GridSegment segment = GridSegment::wholeGrid(*grid);
     initialize(segment);
@@ -53,8 +53,9 @@ template <typename BasisFunctionType>
 PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
 PiecewiseLinearDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid,
                                         const GridSegment& segment,
-                                        bool strictlyOnSegment) :
-    PiecewiseLinearScalarSpace<BasisFunctionType>(grid)
+                                        bool strictlyOnSegment,
+                                        unsigned int level) :
+    PiecewiseLinearScalarSpace<BasisFunctionType>(grid,level)
 {
     initialize(segment, strictlyOnSegment);
 }

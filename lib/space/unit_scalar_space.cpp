@@ -35,8 +35,8 @@ namespace Bempp
 
 template <typename BasisFunctionType>
 UnitScalarSpace<BasisFunctionType>::
-UnitScalarSpace(const shared_ptr<const Grid>& grid) :
-     ScalarSpace<BasisFunctionType>(grid), m_view(grid->leafView())
+UnitScalarSpace(const shared_ptr<const Grid>& grid,unsigned int level) :
+     ScalarSpace<BasisFunctionType>(grid,level), m_view(grid->levelView(level))
 {
     assignDofsImpl();
 }

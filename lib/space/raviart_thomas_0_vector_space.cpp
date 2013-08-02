@@ -63,8 +63,9 @@ struct RaviartThomas0VectorSpace<BasisFunctionType>::Impl
 template <typename BasisFunctionType>
 RaviartThomas0VectorSpace<BasisFunctionType>::
 RaviartThomas0VectorSpace(const shared_ptr<const Grid>& grid,
-                          bool putDofsOnBoundaries) :
-    Base(grid), m_impl(new Impl), m_segment(GridSegment::wholeGrid(*grid)),
+                          bool putDofsOnBoundaries,
+                          unsigned int level) :
+    Base(grid,level), m_impl(new Impl), m_segment(GridSegment::wholeGrid(*grid)),
     m_putDofsOnBoundaries(putDofsOnBoundaries),
     m_dofMode(EDGE_ON_SEGMENT)
 {
@@ -76,8 +77,9 @@ RaviartThomas0VectorSpace<BasisFunctionType>::
 RaviartThomas0VectorSpace(const shared_ptr<const Grid>& grid,
                           const GridSegment& segment,
                           bool putDofsOnBoundaries,
-                          int dofMode) :
-    Base(grid), m_impl(new Impl), m_segment(segment),
+                          int dofMode,
+                          unsigned int level) :
+    Base(grid,level), m_impl(new Impl), m_segment(segment),
     m_putDofsOnBoundaries(putDofsOnBoundaries),
     m_dofMode(dofMode)
 {

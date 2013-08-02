@@ -44,8 +44,8 @@ namespace Bempp
 
 template <typename BasisFunctionType>
 PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::
-PiecewiseConstantDualMeshScalarSpaceBarycentric(const shared_ptr<const Grid>& grid) :
-    ScalarSpace<BasisFunctionType>(grid),
+PiecewiseConstantDualMeshScalarSpaceBarycentric(const shared_ptr<const Grid>& grid, unsigned int level) :
+    ScalarSpace<BasisFunctionType>(grid,level),
     m_segment(GridSegment::wholeGrid(*grid)),
     m_strictlyOnSegment(false)
 {
@@ -56,8 +56,9 @@ template <typename BasisFunctionType>
 PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::
 PiecewiseConstantDualMeshScalarSpaceBarycentric(const shared_ptr<const Grid>& grid,
                                      const GridSegment& segment,
-                                     bool strictlyOnSegment) :
-    ScalarSpace<BasisFunctionType>(grid),
+                                     bool strictlyOnSegment,
+                                     unsigned int level) :
+    ScalarSpace<BasisFunctionType>(grid,level),
     m_segment(segment),
     m_strictlyOnSegment(strictlyOnSegment)
 {

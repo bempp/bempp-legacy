@@ -33,8 +33,8 @@ namespace Bempp
 
 template <typename BasisFunctionType>
 PiecewiseLinearScalarSpace<BasisFunctionType>::
-PiecewiseLinearScalarSpace(const shared_ptr<const Grid>& grid) :
-    ScalarSpace<BasisFunctionType>(grid)
+PiecewiseLinearScalarSpace(const shared_ptr<const Grid>& grid, unsigned int level) :
+    ScalarSpace<BasisFunctionType>(grid,level)
 {    
 }
 

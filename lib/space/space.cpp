@@ -131,8 +131,10 @@ constructGlobalToFlatLocalDofsMappingEpetraMatrix(
 } // namespace
 
 template <typename BasisFunctionType>
-Space<BasisFunctionType>::Space(const shared_ptr<const Grid>& grid) :
-    m_grid(grid)
+Space<BasisFunctionType>::Space(const shared_ptr<const Grid>& grid, unsigned int level) :
+    m_grid(grid),
+    m_level(level),
+    m_view(grid->levelView(level))
 {
     if (!grid)
         throw std::invalid_argument("Space::Space(): grid must not be a null "
@@ -140,8 +142,22 @@ Space<BasisFunctionType>::Space(const shared_ptr<const Grid>& grid) :
 }
 
 template <typename BasisFunctionType>
+Space<BasisFunctionType>::Space(const Space<BasisFunctionType> &other) :
+    m_grid(other.m_grid),
+    m_level(other.m_level),
+    m_view(other.m_grid->levelView(other.m_level))
+{
+}
+template <typename BasisFunctionType>
 Space<BasisFunctionType>::~Space()
 {
+}
+
+template <typename BasisFunctionType>
+Space<BasisFunctionType>& Space<BasisFunctionType>::operator=(const Space<BasisFunctionType>& other){
+    m_grid = other.m_grid;
+    m_level = other.m_level;
+    m_view = m_grid->levelView(m_level);
 }
 
 template <typename BasisFunctionType>

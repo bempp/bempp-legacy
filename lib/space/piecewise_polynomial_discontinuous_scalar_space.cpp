@@ -47,8 +47,9 @@ namespace Bempp
 template <typename BasisFunctionType>
 PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::
 PiecewisePolynomialDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid,
-                                            int polynomialOrder) :
-    ScalarSpace<BasisFunctionType>(grid), m_polynomialOrder(polynomialOrder),
+                                            int polynomialOrder,
+                                            unsigned int level) :
+    ScalarSpace<BasisFunctionType>(grid,level), m_polynomialOrder(polynomialOrder),
     m_flatLocalDofCount(0)
 {
     initialize(GridSegment::wholeGrid(*grid));
@@ -59,8 +60,9 @@ PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::
 PiecewisePolynomialDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid,
                                             int polynomialOrder,
                                             const GridSegment& segment,
-                                            int dofMode) :
-    ScalarSpace<BasisFunctionType>(grid), m_polynomialOrder(polynomialOrder),
+                                            int dofMode,
+                                            unsigned int level) :
+    ScalarSpace<BasisFunctionType>(grid,level), m_polynomialOrder(polynomialOrder),
     m_flatLocalDofCount(0)
 {
     initialize(segment, dofMode);
