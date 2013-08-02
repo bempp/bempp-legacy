@@ -99,6 +99,7 @@ namespace Bempp
         const arma::Mat<int>& elementCorners
     };
 
+    %feature("compactdefaultargs") createGridFromConnectivityArrays;
     static boost::shared_ptr<Bempp::Grid> createGridFromConnectivityArrays(
             const std::string& topology,
             const arma::Mat<double>& vertices,
