@@ -152,7 +152,7 @@ void gatherGlobalDofs(
     std::vector<std::vector<GlobalDofIndex> >& globalDofs,
     std::vector<std::vector<BasisFunctionType> >& localDofWeights)
 {
-    // Get the grid's leaf view so that we can iterate over elements
+    // Get the grid's view so that we can iterate over elements
     const GridView& view = space.gridView();
     const int elementCount = view.entityCount(0);
 

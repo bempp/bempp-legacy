@@ -156,6 +156,19 @@ public:
      *  only a single element, false otherwise. */
     virtual bool isDiscontinuous() const = 0;
 
+    /** \brief Return \p true if spaces are defined on identical grids */
+    bool gridIsIdentical(const Space& other) const {
+        return m_grid==other.m_grid; }
+
+    /** \brief Return \p true if spaces use the same level */
+    bool levelIsIdentical(const Space& other) const {
+        return m_level==other.m_level;
+    }
+
+    /** \brief Return \p true if space is based on a barycentric refinement */
+
+    virtual bool isBarycentric() const = 0;
+
     /** \brief Dimension of the grid on which functions from this space are
      *  defined. */
     virtual int domainDimension() const = 0;

@@ -70,6 +70,11 @@ public:
         const shared_ptr<const Space<BasisFunctionType> >& self) const;
     virtual bool isDiscontinuous() const;
 
+    virtual bool isBarycentric() const {
+        return false;
+    }
+
+
     virtual int domainDimension() const;
     virtual int codomainDimension() const;
 

@@ -65,6 +65,10 @@ public:
     virtual void setElementVariant(const Entity<0>& element,
                                    ElementVariant variant);
 
+    virtual bool isBarycentric() const {
+        return false;
+    }
+
     virtual const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
 
     virtual size_t globalDofCount() const;

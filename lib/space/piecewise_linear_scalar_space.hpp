@@ -54,6 +54,7 @@ public:
     virtual int domainDimension() const;
     virtual int codomainDimension() const;
 
+
     /** \brief Return the variant of element \p element.
      *
      *  Possible return values:

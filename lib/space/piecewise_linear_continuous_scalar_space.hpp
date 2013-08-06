@@ -83,6 +83,11 @@ public:
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
         const shared_ptr<const Space<BasisFunctionType> >& self) const;
+
+    virtual bool isBarycentric() const {
+        return false;
+    }
+
     virtual bool isDiscontinuous() const;
 
     virtual size_t globalDofCount() const;

@@ -177,8 +177,8 @@ void gatherGlobalDofs(
     // on the same grid
 
     // Get the grid's leaf view so that we can iterate over elements
-    std::auto_ptr<GridView> view = testSpace.grid()->leafView();
-    const int elementCount = view->entityCount(0);
+    const GridView& view = testSpace.gridView();
+    const int elementCount = view.entityCount(0);
 
     // Global DOF indices corresponding to local DOFs on elements
     testGlobalDofs.clear();
@@ -192,8 +192,8 @@ void gatherGlobalDofs(
     trialLocalDofWeights.resize(elementCount);
 
     // Gather global DOF lists
-    const Mapper& mapper = view->elementMapper();
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    const Mapper& mapper = view.elementMapper();
+    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& element = it->entity();
         const int elementIndex = mapper.entityIndex(element);
@@ -219,11 +219,13 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::ElementaryLocalOperator(
         int symmetry) :
     Base(domain, range, dualToRange, label, symmetry)
 {
-    if (domain->grid() != range->grid() ||
-            range->grid() != dualToRange->grid())
+    if ((!domain->gridIsIdentical(*range) ||
+            !range->gridIsIdentical(*dualToRange)) ||
+            (!domain->levelIsIdentical(*range) ||
+            !range->levelIsIdentical(*dualToRange)))
         throw std::invalid_argument(
                 "ElementaryLocalOperator::ElementaryLocalOperator(): "
-                "all three function spaces must be defined on the same grid.");
+                "all three function spaces must be defined on the same grid and level.");
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -283,8 +285,8 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormInDenseM
     const Space<BasisFunctionType>& trialSpace = *this->domain();
 
     // Fill local submatrices
-    std::auto_ptr<GridView> view = testSpace.grid()->leafView();
-    const size_t elementCount = view->entityCount(0);
+    const GridView& view = testSpace.gridView();
+    const size_t elementCount = view.entityCount(0);
     std::vector<int> elementIndices(elementCount);
     for (size_t i = 0; i < elementCount; ++i)
         elementIndices[i] = i;
@@ -342,8 +344,8 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparse
     const Space<BasisFunctionType>& trialSpace = *this->domain();
 
     // Fill local submatrices
-    std::auto_ptr<GridView> view = testSpace.grid()->leafView();
-    const size_t elementCount = view->entityCount(0);
+    const GridView& view = testSpace.gridView();
+    const size_t elementCount = view.entityCount(0);
     std::vector<int> elementIndices(elementCount);
     for (size_t i = 0; i < elementCount; ++i)
         elementIndices[i] = i;

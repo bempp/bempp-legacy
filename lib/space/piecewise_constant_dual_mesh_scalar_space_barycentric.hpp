@@ -90,6 +90,11 @@ public:
     virtual int domainDimension() const;
     virtual int codomainDimension() const;
 
+    virtual bool isBarycentric() const {
+        return true;
+    }
+
+
     /** \brief Return the variant of element \p element.
      *
      *  Possible return values:
