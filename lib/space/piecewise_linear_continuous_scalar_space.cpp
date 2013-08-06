@@ -23,6 +23,8 @@
 #include "piecewise_linear_discontinuous_scalar_space.hpp"
 #include "space_helper.hpp"
 
+#include "../assembly/discrete_boundary_operator.hpp"
+
 #include "../assembly/discrete_sparse_boundary_operator.hpp"
 #include "../common/acc.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
@@ -99,6 +101,7 @@ PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::discontinuousSpace(
     }
     return m_discontinuousSpace;
 }
+
 
 template <typename BasisFunctionType>
 bool

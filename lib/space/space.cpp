@@ -22,6 +22,7 @@
 #include "bempp/common/config_trilinos.hpp"
 
 #include "../assembly/discrete_sparse_boundary_operator.hpp"
+#include "../assembly/discrete_boundary_operator.hpp"
 
 #include "../common/boost_make_shared_fwd.hpp"
 
@@ -191,6 +192,27 @@ void Space<BasisFunctionType>::getGlobalDofs(
     getGlobalDofs(element, dofs);
     localDofWeights.resize(dofs.size(), 1.);
 }
+
+template <typename BasisFunctionType>
+void Space<BasisFunctionType>::grid2BarycentricMap(shared_ptr<DiscreteBoundaryOperator<float> >op) const {
+   grid2BarycentricMapDefaultImpl();
+}
+
+template <typename BasisFunctionType>
+void Space<BasisFunctionType>::grid2BarycentricMap(shared_ptr<DiscreteBoundaryOperator<double> >op) const {
+   grid2BarycentricMapDefaultImpl();
+}
+
+template <typename BasisFunctionType>
+void Space<BasisFunctionType>::grid2BarycentricMap(shared_ptr<DiscreteBoundaryOperator<std::complex<float> > >op) const {
+   grid2BarycentricMapDefaultImpl();
+}
+
+template <typename BasisFunctionType>
+void Space<BasisFunctionType>::grid2BarycentricMap(shared_ptr<DiscreteBoundaryOperator<std::complex<double> > >op) const {
+   grid2BarycentricMapDefaultImpl();
+}
+
 
 template <typename BasisFunctionType>
 void Space<BasisFunctionType>::global2localDofs(

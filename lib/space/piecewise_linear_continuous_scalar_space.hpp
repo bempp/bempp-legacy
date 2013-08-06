@@ -39,6 +39,7 @@ namespace Bempp
 
 /** \cond FORWARD_DECL */
 class GridView;
+template <typename ValueType> class DiscreteBoundaryOperator;
 /** \endcond */
 
 /** \ingroup space
