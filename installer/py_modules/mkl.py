@@ -53,7 +53,7 @@ def parse_ldd_output(output):
             m_fname = re_fname.match(fname)
             if m_fname:
                 # can't do better than this since the full path is unknown...
-                mkl_libs.append("-l"+re_fname.group(1))
+                mkl_libs.append("-l"+m_fname.group(1))
                 print "Warning: NumPy MKL dependency '"+fname+"' not found"
             continue
         m = re2.match(l)
@@ -131,7 +131,12 @@ def get_mkl_dirs_and_libs_like_numpy(config, lib_dir, extension):
         otool_output = tools.check_output(['otool','-L',lapack_lite_path])
         mkl_dirs,mkl_libs = parse_otool_output(otool_output)
     else: # 'linux' -- we've checked that its 'darwin' or 'linux' before
+        print lapack_lite_path
+        # for k, v in os.environ.iteritems():
+        #     print k, v
+        print os.system("env > env.new")
         ldd_output = tools.check_output(['ldd',lapack_lite_path])
+        print ldd_output
         mkl_dirs,mkl_libs = parse_ldd_output(ldd_output)
     return mkl_dirs,mkl_libs
 
