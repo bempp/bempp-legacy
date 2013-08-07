@@ -7,6 +7,15 @@ started in October 2011.
 History
 =======
 
+1.9.1 (7 August 2013)
+--------------------
+
+A maintenance release fixing two bugs in the installer:
+
+- Prevented Dune from using different BLAS and LAPACK libraries
+  than BEM++ itself.
+- Corrected the code detecting paths to MKL libraries.
+
 1.9.0 (22 June 2013)
 --------------------
 
