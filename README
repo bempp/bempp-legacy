@@ -7,6 +7,14 @@ started in October 2011.
 History
 =======
 
+1.9.2 (7 August 2013)
+--------------------
+
+A maintenance release fixing a compatibility problem with Canopy 1.0.3 on
+Linux. The MKL libraries installed by Canopy should now be automatically
+detected without the necessity of setting the ``LD_LIBRARY_PATH`` environmental
+variable manually.
+
 1.9.1 (7 August 2013)
 --------------------
 
