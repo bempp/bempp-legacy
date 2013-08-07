@@ -197,10 +197,7 @@ assembleWeakFormImpl(
     else if (context.assemblyOptions().assemblyMode() == AssemblyOptions::ACA)
         result = assembleJointOperatorWeakFormInAcaMode(
                     context, joinableOps, joinableOpWeights);
-    else
-        throw std::invalid_argument(
-            "AbstractBoundaryOperatorSuperpositionBase::"
-            "assembleWeakFormImpl(): unknown assembly mode");
+    
     // unprocessed operators will be treated as nonjoinable
     nonjoinableOps.insert(nonjoinableOps.end(),
                             joinableOps.begin(), joinableOps.end());

@@ -8,17 +8,18 @@ sys.path.append("..")
 
 import numpy as np
 from bempp import lib
-from bempp import visualization as vis
+# from bempp import visualization as vis
 
 # Define the wavenumber
 
-k = 6
-eta = k/2
-# The rhs of the combined formulation
+k = 5
+#print 'required value of L = ' + repr(k*2**-2 + 1.8*(6.0)^(2.0/3)*(k*2**-2)**(1.0/3)) + ' (level=2)'
+print 'required value of L = ' + repr(k*2**-2 + 6*(k*2**-2)**(1.0/3)) + ' (level=2)'
 
-def rhsData(point, normal):
-    return 1j * np.exp(1j * k * point[0]) * (k*normal[0] - eta)
-#    return 2j * k * np.exp(1j * k * point[0]) * (normal[0] - 1)
+def evalDirichletData(point):
+    x, y, z = point
+    r = np.sqrt(x**2 + y**2 + z**2)
+    return x# 2 * x * z / r**5 - y / r**3
 
 # Set accuracy options. For regular integrals on pairs on elements,
 # use quadrature of 2 orders higher than default, and for singular
@@ -34,16 +35,31 @@ accuracyOptions.doubleSingular.setRelativeQuadratureOrder(1)
 quadStrategy = lib.createNumericalQuadratureStrategy(
     "float64", "complex128", accuracyOptions)
 
+# Use ACA to accelerate the assembly
 
 options = lib.createAssemblyOptions()
+#print dir(options)
 
 if 0: # Use ACA to accelerate the assembly
 	options.switchToAca(lib.createAcaOptions())
 else: # Use FMM to accelerate the assembly
 	fmmOptions = lib.createFmmOptions()
 	fmmOptions.levels = 3
-	fmmOptions.L = 6
+	fmmOptions.L = 7
+#	fmmOptions.numQuadPoints = 266
 	options.switchToFmmMode(fmmOptions)
+
+	minL = k*2**-fmmOptions.levels + 6*(k*2**-fmmOptions.levels)**(1.0/3)
+	if fmmOptions.levels>2:
+		print 'required value of L = ' + repr(minL) + ' (level=' + repr(fmmOptions.levels) + ')'
+	if fmmOptions.L<minL:
+		print 'L is too small'
+		sys.exit()
+
+	print 'rough number of quadrature points needed = ' + repr(fmmOptions.L*(2*fmmOptions.L+1))
+	if fmmOptions.numQuadPoints<fmmOptions.L*(2*fmmOptions.L+1):
+		print 'too few quadrature points'
+		sys.exit()
 
 # The context object combines these settings
 
@@ -58,6 +74,11 @@ grid = grid_factory.importGmshGrid(
 # Create a space of piecewise constant basis functions over the grid.
 
 pwiseConstants = lib.createPiecewiseConstantScalarSpace(context, grid)
+pwiseLinears = lib.createPiecewiseLinearContinuousScalarSpace(context, grid)
+#pwiseConstants = pwiseLinears
+
+dirichletData = lib.createGridFunction(
+    context, pwiseConstants, pwiseConstants, evalDirichletData)
 
 # We now initialize the boundary operators.
 # A boundary operator always takes three space arguments: a domain space,
@@ -74,8 +95,39 @@ idOp = lib.createIdentityOperator(
 # Standard arithmetic operators can be used to create linear combinations of
 # boundary operators.
 
-lhsOp = 0.5*idOp + adlpOp - 1j * eta * slpOp
-#lhsOp = idOp + 2 * adlpOp - 2j * eta * slpOp
+lhsOp = idOp + 2 * adlpOp - 2j * k * slpOp
+lhsOp = slpOp
+res = lhsOp*dirichletData
+
+if 1:
+	options = lib.createAssemblyOptions()
+	options.switchToDenseMode()
+
+	# The context object combines these settings
+
+	context = lib.createContext(quadStrategy, options)
+
+	slpOp = lib.createHelmholtz3dSingleLayerBoundaryOperator(
+	    context, pwiseConstants, pwiseConstants, pwiseConstants, k)
+
+	resaca = slpOp*dirichletData
+	res -= resaca
+# Plot data
+
+from bempp import visualization2 as vis
+sphere = vis.tvtkGridFunction(res)
+vis.plotScalarData(tvtkGridFunctions=sphere)
+sys.exit()
+
+#print dir(res.coefficients)
+import matplotlib.pyplot as plt
+plt.plot(abs(res.coefficients()))
+plt.show()
+
+sys.exit()
+
+
+
 
 # Use the rhsData() Python function defined earlier to initialize the grid
 # function that represents the right-hand side. The spaces are the domain space
@@ -126,7 +178,7 @@ potential = lib.createHelmholtz3dSingleLayerPotentialOperator(context, k)
 # the planes and the number of grid points in each dimension.
 
 limits = (-5, 5)
-dims = 400
+dims = 200
 
 # The total field is evaluated as u = u_{inc} - S u_{n}, where u_{inc} is the
 # incident field and u_{n} the computed normal derivative stored in solfun.
@@ -140,6 +192,6 @@ def transformation(point, val):
 # We now plot the solution. The colorRange limits the color scale.
 
 vis.plotThreePlanes(potential, solfun, limits, dims,
-                    transformation=transformation)#, colorRange=(-1, 1))
-#vis.mlab.savefig('/home/rjames/screenshot.png',size=(2*400, 2*350))
+                    transformation=transformation, colorRange=(-1, 1))
+
 

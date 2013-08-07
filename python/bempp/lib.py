@@ -1848,6 +1848,10 @@ def createAcaOptions():
     """Create and return an AcaOptions object with default settings."""
     return core.AcaOptions()
 
+def createFmmOptions():
+    """Create and return an FmmOptions object with default settings."""
+    return core.FmmOptions()
+
 def createEvaluationOptions():
     """Create and return an EvaluationOptions object with default settings."""
     return core.EvaluationOptions()

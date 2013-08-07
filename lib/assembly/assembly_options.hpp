@@ -24,6 +24,7 @@
 #include "../common/common.hpp"
 
 #include "aca_options.hpp"
+#include "../fmm/fmm_options.hpp"
 
 #include "../common/deprecated.hpp"
 #include "../fiber/opencl_options.hpp"
@@ -55,7 +56,9 @@ public:
         /** \brief Assemble dense matrices. */
         DENSE,
         /** \brief Assemble hierarchical matrices using adaptive cross approximation (ACA). */
-        ACA
+        ACA,
+        /** \brief Carry out matrix-vector product by the Fast Multipole Method (FMM). */
+        FMM
     };
 
     /** \brief Use dense-matrix representations of weak forms of boundary integral operators.
@@ -68,6 +71,12 @@ public:
      *
      *  \param[in] acaOptions Parameters influencing the ACA algorithm. */
     void switchToAcaMode(const AcaOptions& acaOptions);
+
+    /** \brief Use fast multipole method (FMM) to evaulate
+     *  the weak forms of boundary integral operators.
+     *
+     *  \param[in] acaOptions Parameters influencing the FMM algorithm. */
+    void switchToFmmMode(const FmmOptions& fmmOptions);
 
     /** \brief Use dense-matrix representations of weak forms of boundary integral operators.
      *
@@ -91,6 +100,12 @@ public:
      *  \note These settings are only used in the ACA assembly mode, i.e. when
      *  assemblyMode() returns ACA. */
     const AcaOptions& acaOptions() const;
+
+    /** \brief Return the current fast multipole method (FMM) settings.
+     *
+     *  \note These settings are only used in the FMM assembly mode, i.e. when
+     *  assemblyMode() returns FMM. */
+    const FmmOptions& fmmOptions() const;
 
     /** @}
       @name Parallelization
@@ -181,6 +196,7 @@ private:
     /** \cond */
     Mode m_assemblyMode;
     AcaOptions m_acaOptions;
+    FmmOptions m_fmmOptions;
     ParallelizationOptions m_parallelizationOptions;
     VerbosityLevel::Level m_verbosityLevel;
     bool m_singularIntegralCaching;

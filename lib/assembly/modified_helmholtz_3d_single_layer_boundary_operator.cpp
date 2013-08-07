@@ -37,6 +37,8 @@
 
 #include <boost/type_traits/is_complex.hpp>
 
+#include "../fmm/transmit_receive.hpp"
+
 namespace Bempp
 {
 
@@ -80,6 +82,13 @@ modifiedHelmholtz3dSingleLayerBoundaryOperator(
                 "modifiedHelmholtz3dSingleLayerBoundaryOperator(): "
                 "domain, range and dualToRange must not be null");
 
+    shared_ptr<FmmTransform<ResultType> > fmmTransform;
+    if (assemblyOptions.assemblyMode() == AssemblyOptions::FMM) {
+        const FmmOptions& fmmOptions = assemblyOptions.fmmOptions();
+        fmmTransform = boost::make_shared<FmmSingleLayerHighFreq<ResultType> >
+            (waveNumber, fmmOptions.L);
+    }
+
     typedef GeneralElementarySingularIntegralOperator<
             BasisFunctionType, KernelType, ResultType> Op;
     shared_ptr<Op> newOp;
@@ -92,7 +101,8 @@ modifiedHelmholtz3dSingleLayerBoundaryOperator(
                             interpPtsPerWavelength),
                         TransformationFunctor(),
                         TransformationFunctor(),
-                        IntegrandFunctor()));
+                        IntegrandFunctor(),
+                        fmmTransform));
     else
         newOp.reset(new Op(
                         domain, range, dualToRange, label, symmetry,
@@ -100,7 +110,8 @@ modifiedHelmholtz3dSingleLayerBoundaryOperator(
                             waveNumber),
                         TransformationFunctor(),
                         TransformationFunctor(),
-                        IntegrandFunctor()));
+                        IntegrandFunctor(),
+                        fmmTransform));
     return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, KERNEL, RESULT) \

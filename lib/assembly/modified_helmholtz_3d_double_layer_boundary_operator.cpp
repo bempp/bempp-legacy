@@ -35,6 +35,8 @@
 
 #include "../grid/max_distance.hpp"
 
+#include "../fmm/transmit_receive.hpp"
+
 namespace Bempp
 {
 
@@ -77,6 +79,14 @@ modifiedHelmholtz3dDoubleLayerBoundaryOperator(
                 "modifiedHelmholtz3dDoubleLayerBoundaryOperator(): "
                 "domain, range and dualToRange must not be null");
 
+
+    shared_ptr<FmmTransform<ResultType> > fmmTransform;
+    if (assemblyOptions.assemblyMode() == AssemblyOptions::FMM) {
+        const FmmOptions& fmmOptions = assemblyOptions.fmmOptions();
+        fmmTransform = boost::make_shared<FmmDoubleLayerHighFreq<ResultType> >
+            (waveNumber, fmmOptions.L);
+    }
+
     typedef GeneralElementarySingularIntegralOperator<
             BasisFunctionType, KernelType, ResultType> Op;
     shared_ptr<Op> newOp;
@@ -89,7 +99,8 @@ modifiedHelmholtz3dDoubleLayerBoundaryOperator(
                             interpPtsPerWavelength),
                         TransformationFunctor(),
                         TransformationFunctor(),
-                        IntegrandFunctor()));
+                        IntegrandFunctor(),
+                        fmmTransform));
     else
         newOp.reset(new Op(
                         domain, range, dualToRange, label, symmetry,
@@ -97,7 +108,8 @@ modifiedHelmholtz3dDoubleLayerBoundaryOperator(
                             waveNumber),
                         TransformationFunctor(),
                         TransformationFunctor(),
-                        IntegrandFunctor()));
+                        IntegrandFunctor(),
+                        fmmTransform));
     return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 

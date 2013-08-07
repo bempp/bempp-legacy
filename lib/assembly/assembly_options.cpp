@@ -58,6 +58,12 @@ void AssemblyOptions::switchToAcaMode(const AcaOptions& acaOptions)
     m_acaOptions = canonicalAcaOptions;
 }
 
+void AssemblyOptions::switchToFmmMode(const FmmOptions& fmmOptions)
+{
+    m_assemblyMode = FMM;
+    m_fmmOptions = fmmOptions;
+}
+
 void AssemblyOptions::switchToDense()
 {
     switchToDenseMode();
@@ -74,6 +80,10 @@ AssemblyOptions::Mode AssemblyOptions::assemblyMode() const {
 
 const AcaOptions& AssemblyOptions::acaOptions() const {
     return m_acaOptions;
+}
+
+const FmmOptions& AssemblyOptions::fmmOptions() const {
+    return m_fmmOptions;
 }
 
 //void AssemblyOptions::switchToOpenCl(const OpenClOptions& openClOptions)

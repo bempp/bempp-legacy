@@ -147,6 +147,7 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 
 // Assembly
 %include "assembly/aca_options.i"
+%include "assembly/fmm_options.i"
 %include "assembly/assembly_options.i"
 %include "assembly/numerical_quadrature_strategy.i"
 %include "assembly/transposition_mode.i"

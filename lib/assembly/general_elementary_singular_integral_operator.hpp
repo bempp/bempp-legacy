@@ -25,6 +25,9 @@
 
 namespace Bempp
 {
+/** \cond FORWARD_DECL */
+template <typename ResultType> class FmmTransform;
+/** \endcond */
 
 /** \ingroup abstract_boundary_operators
  *  \brief Standard implementation of an elementary singular integral operator.
@@ -139,6 +142,22 @@ public:
             const TrialTransformationsFunctor& trialTransformationsFunctor,
             const IntegrandFunctor& integrandFunctor);
 
+    template <typename KernelFunctor,
+              typename TestTransformationsFunctor,
+              typename TrialTransformationsFunctor,
+              typename IntegrandFunctor>
+    GeneralElementarySingularIntegralOperator(
+            const shared_ptr<const Space<BasisFunctionType_> >& domain,
+            const shared_ptr<const Space<BasisFunctionType_> >& range,
+            const shared_ptr<const Space<BasisFunctionType_> >& dualToRange,
+            const std::string& label,
+            int symmetry,
+            const KernelFunctor& kernelFunctor,
+            const TestTransformationsFunctor& testTransformationsFunctor,
+            const TrialTransformationsFunctor& trialTransformationsFunctor,
+            const IntegrandFunctor& integrandFunctor,
+            shared_ptr<FmmTransform<ResultType> > fmmTransform);
+
     virtual const CollectionOfKernels& kernels() const
     { return *m_kernels; }
     virtual const CollectionOfBasisTransformations& testTransformations() const
@@ -147,6 +166,8 @@ public:
     { return *m_trialTransformations; }
     virtual const TestKernelTrialIntegral& integral() const
     { return *m_integral; }
+    virtual const FmmTransform<ResultType>& fmmTransform() const
+    { return *m_fmmTransform; }
 
 private:
     /** \cond PRIVATE */
@@ -154,6 +175,7 @@ private:
     shared_ptr<CollectionOfBasisTransformations> m_testTransformations;
     shared_ptr<CollectionOfBasisTransformations> m_trialTransformations;
     shared_ptr<TestKernelTrialIntegral> m_integral;
+    shared_ptr<FmmTransform<ResultType> > m_fmmTransform;
     /** \endcond */
 };
 

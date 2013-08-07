@@ -27,6 +27,8 @@
 #include "../fiber/default_collection_of_basis_transformations.hpp"
 #include "../fiber/default_test_kernel_trial_integral.hpp"
 
+#include "../fmm/fmm_transform.hpp"
+
 namespace Bempp
 {
 
@@ -59,6 +61,40 @@ GeneralElementarySingularIntegralOperator(
     m_integral(
         new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
             integrandFunctor))
+{
+}
+
+template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
+template <typename KernelFunctor,
+          typename TestTransformationsFunctor,
+          typename TrialTransformationsFunctor,
+          typename IntegrandFunctor>
+GeneralElementarySingularIntegralOperator<
+BasisFunctionType_, KernelType_, ResultType_>::
+GeneralElementarySingularIntegralOperator(
+        const shared_ptr<const Space<BasisFunctionType_> >& domain,
+        const shared_ptr<const Space<BasisFunctionType_> >& range,
+        const shared_ptr<const Space<BasisFunctionType_> >& dualToRange,
+        const std::string& label,
+        int symmetry,
+        const KernelFunctor& kernelFunctor,
+        const TestTransformationsFunctor& testTransformationsFunctor,
+        const TrialTransformationsFunctor& trialTransformationsFunctor,
+        const IntegrandFunctor& integrandFunctor,
+        shared_ptr<FmmTransform<ResultType> > fmmTransform) :
+    Base(domain, range, dualToRange, label, symmetry),
+    m_kernels(
+        new Fiber::DefaultCollectionOfKernels<KernelFunctor>(kernelFunctor)),
+    m_testTransformations(
+        new Fiber::DefaultCollectionOfBasisTransformations<TestTransformationsFunctor>(
+            testTransformationsFunctor)),
+    m_trialTransformations(
+        new Fiber::DefaultCollectionOfBasisTransformations<TrialTransformationsFunctor>(
+            trialTransformationsFunctor)),
+    m_integral(
+        new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
+            integrandFunctor)),
+    m_fmmTransform(fmmTransform)
 {
 }
 

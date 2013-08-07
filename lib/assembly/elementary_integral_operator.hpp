@@ -51,6 +51,7 @@ namespace Bempp
 class EvaluationOptions;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
 template <typename ValueType> class InterpolatedFunction;
+template <typename ResultType> class FmmTransform;
 /** \endcond */
 
 /** \ingroup abstract_boundary_operators
@@ -157,6 +158,8 @@ private:
     virtual const CollectionOfBasisTransformations&
     trialTransformations() const = 0;
 
+    virtual const FmmTransform<ResultType>& fmmTransform() const = 0;
+
     /** \brief Return an object representing the integral that is the weak form
      *  of this operator.
      *
@@ -191,8 +194,14 @@ private:
     assembleWeakFormInDenseMode(
             LocalAssembler& assembler,
             const Context<BasisFunctionType, ResultType>& context) const;
+
     std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInAcaMode(
+            LocalAssembler& assembler,
+            const Context<BasisFunctionType, ResultType>& context) const;
+
+    std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
+    assembleWeakFormInFmmMode(
             LocalAssembler& assembler,
             const Context<BasisFunctionType, ResultType>& context) const;
 
