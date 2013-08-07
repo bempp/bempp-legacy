@@ -131,12 +131,12 @@ def get_mkl_dirs_and_libs_like_numpy(config, lib_dir, extension):
         otool_output = tools.check_output(['otool','-L',lapack_lite_path])
         mkl_dirs,mkl_libs = parse_otool_output(otool_output)
     else: # 'linux' -- we've checked that its 'darwin' or 'linux' before
-        print lapack_lite_path
-        # for k, v in os.environ.iteritems():
-        #     print k, v
-        print os.system("env > env.new")
-        ldd_output = tools.check_output(['ldd',lapack_lite_path])
-        print ldd_output
+        env = os.environ.copy()
+        # Fix for Canopy 1.0.3: ensure that LD_LIBRARY_PATH contains the
+        # appdata/canopy-*/lib directory
+        if "VENV_LD_LIBRARY_PATH" in env:
+            env["LD_LIBRARY_PATH"] = env["VENV_LD_LIBRARY_PATH"]
+        ldd_output = tools.check_output(['ldd',lapack_lite_path],env=env)
         mkl_dirs,mkl_libs = parse_ldd_output(ldd_output)
     return mkl_dirs,mkl_libs
 
