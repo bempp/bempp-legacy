@@ -182,7 +182,7 @@ def create_symlinks(lib_dir, extension, mkl_dirs, mkl_libs):
             fname = "lib"+l[2:]+extension
             path = find_file_in_dirs(fname, mkl_dirs)
             if not path:
-                raise Exception("MKL library '"+fname+"' not found in any"
+                raise Exception("MKL library '"+fname+"' not found in any "
                                 "of these directories: '"+
                                 "', '".join(mkl_dirs)+"'")
         elif os.path.isfile(l):
