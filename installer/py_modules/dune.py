@@ -102,7 +102,8 @@ def configure(root,config):
                             "--disable-gxx0xcheck "
                             "--enable-fieldvector-size-is-method=yes "
                             "--prefix='"+dune_install_dir+"' "
-                            "--libdir='"+dune_install_dir+"/lib'")
+                            "--libdir='"+dune_install_dir+"/lib' "
+                            "--with-blas=no --with-lapack=no")
     config_string_geometry = (config_string_common+
                               " --with-dune-common="+dune_dir+"/dune-common")
     config_string_grid = (config_string_geometry+
