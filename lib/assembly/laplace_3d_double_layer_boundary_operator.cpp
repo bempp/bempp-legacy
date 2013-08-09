@@ -50,7 +50,7 @@ laplace3dDoubleLayerBoundaryOperator(
          assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY)
         return laplace3dSyntheticBoundaryOperator(
             &laplace3dDoubleLayerBoundaryOperator<BasisFunctionType, ResultType>,
-            context, domain, range, dualToRange, label, symmetry, 
+            context, domain, range, dualToRange, label, symmetry,
             NO_SYMMETRY);
 
     typedef typename ScalarTraits<BasisFunctionType>::RealType KernelType;
@@ -60,8 +60,8 @@ laplace3dDoubleLayerBoundaryOperator(
     KernelFunctor;
     typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
     TransformationFunctor;
-    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
-    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
+    BasisFunctionType, KernelType, ResultType, 1> IntegrandFunctor;
 
     typedef GeneralElementarySingularIntegralOperator<
             BasisFunctionType, KernelType, ResultType> Op;
@@ -80,7 +80,7 @@ laplace3dDoubleLayerBoundaryOperator(
         const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \
-        const std::string&, int); 
+        const std::string&, int);
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 } // namespace Bempp

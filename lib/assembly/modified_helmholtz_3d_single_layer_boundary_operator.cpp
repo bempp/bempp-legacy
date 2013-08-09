@@ -59,7 +59,7 @@ modifiedHelmholtz3dSingleLayerBoundaryOperator(
         return modifiedHelmholtz3dSyntheticBoundaryOperator(
             &modifiedHelmholtz3dSingleLayerBoundaryOperator<
                 BasisFunctionType, KernelType, ResultType>,
-            context, domain, range, dualToRange, waveNumber, label, symmetry, 
+            context, domain, range, dualToRange, waveNumber, label, symmetry,
             useInterpolation, interpPtsPerWavelength,
             // maximum synthese symmetry (if spaces match)
             (boost::is_complex<BasisFunctionType>() ? 0 : SYMMETRIC) | HERMITIAN);
@@ -72,8 +72,8 @@ modifiedHelmholtz3dSingleLayerBoundaryOperator(
             InterpolatedKernelFunctor;
     typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
             TransformationFunctor;
-    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
-            BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
+            BasisFunctionType, KernelType, ResultType, 1> IntegrandFunctor;
 
     if (!domain || !range || !dualToRange)
         throw std::invalid_argument(

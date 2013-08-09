@@ -87,9 +87,9 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
         internalContext, auxContext;
     SyntheticOp::getContextsForInternalAndAuxiliaryOperators(
         context, internalContext, auxContext);
-    shared_ptr<const Space<BasisFunctionType> > internalTrialSpace = 
+    shared_ptr<const Space<BasisFunctionType> > internalTrialSpace =
         domain->discontinuousSpace(domain);
-    shared_ptr<const Space<BasisFunctionType> > internalTestSpace = 
+    shared_ptr<const Space<BasisFunctionType> > internalTestSpace =
         dualToRange->discontinuousSpace(dualToRange);
 
     // Note: we don't really need to care about ranges and duals to domains of
@@ -197,7 +197,7 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
     if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
          assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY)
         return modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
-            context, domain, range, dualToRange, waveNumber, label, 
+            context, domain, range, dualToRange, waveNumber, label,
             symmetry, useInterpolation, interpPtsPerWavelength);
 
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
@@ -217,8 +217,8 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
             OffDiagonalNoninterpolatedKernelFunctor;
     typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
             OffDiagonalTransformationFunctor;
-    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
-            BasisFunctionType, KernelType, ResultType>
+    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
+            BasisFunctionType, KernelType, ResultType, 1>
             OffDiagonalIntegrandFunctor;
 
     CoordinateType maxDistance_ =

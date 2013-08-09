@@ -155,15 +155,15 @@ laplace3dHypersingularBoundaryOperator(
     KernelFunctor;
     typedef Fiber::SurfaceCurl3dFunctor<CoordinateType>
     TransformationFunctor;
-    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
-    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
+    BasisFunctionType, KernelType, ResultType, 3> IntegrandFunctor;
 
     typedef Fiber::Laplace3dHypersingularOffDiagonalKernelFunctor<KernelType>
     OffDiagonalKernelFunctor;
     typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
     OffDiagonalTransformationFunctor;
-    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
-    BasisFunctionType, KernelType, ResultType> OffDiagonalIntegrandFunctor;
+    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
+    BasisFunctionType, KernelType, ResultType, 1> OffDiagonalIntegrandFunctor;
 
     typedef GeneralHypersingularIntegralOperator<
             BasisFunctionType, KernelType, ResultType> Op;

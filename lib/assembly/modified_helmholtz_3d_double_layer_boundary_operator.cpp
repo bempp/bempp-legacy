@@ -57,7 +57,7 @@ modifiedHelmholtz3dDoubleLayerBoundaryOperator(
         return modifiedHelmholtz3dSyntheticBoundaryOperator(
             &modifiedHelmholtz3dDoubleLayerBoundaryOperator<
                 BasisFunctionType, KernelType, ResultType>,
-            context, domain, range, dualToRange, waveNumber, label, symmetry, 
+            context, domain, range, dualToRange, waveNumber, label, symmetry,
             useInterpolation, interpPtsPerWavelength,
             NO_SYMMETRY);
 
@@ -69,8 +69,8 @@ modifiedHelmholtz3dDoubleLayerBoundaryOperator(
     InterpolatedKernelFunctor;
     typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
     TransformationFunctor;
-    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
-    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
+    BasisFunctionType, KernelType, ResultType, 1> IntegrandFunctor;
 
     if (!domain || !range || !dualToRange)
         throw std::invalid_argument(

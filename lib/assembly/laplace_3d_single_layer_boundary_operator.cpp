@@ -47,13 +47,12 @@ laplace3dSingleLayerBoundaryOperator(
         const std::string& label,
         int symmetry)
 {
-    boost::is_complex<BasisFunctionType>();
     const AssemblyOptions& assemblyOptions = context->assemblyOptions();
     if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
          assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY)
         return laplace3dSyntheticBoundaryOperator(
             &laplace3dSingleLayerBoundaryOperator<BasisFunctionType, ResultType>,
-            context, domain, range, dualToRange, label, symmetry, 
+            context, domain, range, dualToRange, label, symmetry,
             // maximum synthese symmetry (if spaces match)
             (boost::is_complex<BasisFunctionType>() ? 0 : SYMMETRIC) | HERMITIAN);
 
@@ -64,8 +63,8 @@ laplace3dSingleLayerBoundaryOperator(
     KernelFunctor;
     typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
     TransformationFunctor;
-    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
-    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
+    BasisFunctionType, KernelType, ResultType, 1> IntegrandFunctor;
 
     typedef GeneralElementarySingularIntegralOperator<
             BasisFunctionType, KernelType, ResultType> Op;
