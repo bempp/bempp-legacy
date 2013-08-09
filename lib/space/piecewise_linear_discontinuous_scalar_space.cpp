@@ -240,36 +240,9 @@ template <typename BasisFunctionType>
 void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::getGlobalDofNormals(
         std::vector<Point3D<CoordinateType> >& normals) const
 {
-    // This implementation assumes that the EntityIterator returns entities
-    // ordered according to their indices
-    const int gridDim = this->domainDimension();
-    const int worldDim = this->grid()->dimWorld();
-    normals.resize(globalDofCount());
-
-    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
-    arma::Col<CoordinateType> center(gridDim);
-    center.fill(0.5);
-    arma::Col<CoordinateType> normal;
-
-    size_t globalDofIndex = 0;
-    while (!it->finished())
-    {
-        const Entity<0>& e = it->entity();
-        e.geometry().getNormals(center, normal);
-        int vertexCount;
-        if (gridDim == 1)
-            vertexCount = e.template subEntityCount<1>();
-        else // gridDim == 2
-            vertexCount = e.template subEntityCount<2>();
-        for (int vertex = 0; vertex < vertexCount; ++vertex) {
-            normals[globalDofIndex].x = normal(0);
-            normals[globalDofIndex].y = normal(1);
-            normals[globalDofIndex].z = (worldDim == 3) ? normal(2) : 0.;
-            ++globalDofIndex;
-        }
-        it->next();
-    }
-    assert(globalDofIndex == globalDofCount());
+    SpaceHelper<BasisFunctionType>::
+            getGlobalDofNormals_defaultImplementation(
+                *m_view, m_global2localDofs, normals);
 }
 
 template <typename BasisFunctionType>

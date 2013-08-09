@@ -44,6 +44,11 @@ struct SpaceHelper
             const std::vector<std::vector<LocalDof> >& global2localDofs,
             std::vector<BoundingBox<CoordinateType> >& bboxes);
 
+    static void getGlobalDofNormals_defaultImplementation(
+            const GridView& view,
+            const std::vector<std::vector<LocalDof> >& global2localDofs,
+            std::vector<Point3D<CoordinateType> >& normals);
+
     static void initializeLocal2FlatLocalDofMap(
             size_t flatLocalDofCount,
             const std::vector<std::vector<GlobalDofIndex> >& local2globalDofs,

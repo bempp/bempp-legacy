@@ -643,8 +643,9 @@ template <typename BasisFunctionType>
 void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::getGlobalDofNormals(
         std::vector<Point3D<CoordinateType> >& normals) const
 {
-    throw std::runtime_error("PiecewisePolynomialContinuousScalarSpace::"
-                             "getGlobalDofNormals(): not implemented yet");
+    SpaceHelper<BasisFunctionType>::
+            getGlobalDofNormals_defaultImplementation(
+                *m_view, m_global2localDofs, normals);
 }
 
 template <typename BasisFunctionType>

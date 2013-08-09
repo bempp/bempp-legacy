@@ -87,6 +87,65 @@ getGlobalDofBoundingBoxes_defaultImplementation(
 }
 
 template <typename BasisFunctionType>
+void SpaceHelper<BasisFunctionType>::
+getGlobalDofNormals_defaultImplementation(
+        const GridView& view,
+        const std::vector<std::vector<LocalDof> >& global2localDofs,
+        std::vector<Point3D<CoordinateType> >& normals)
+{
+    const int gridDim = view.dim();
+    const int globalDofCount_ = global2localDofs.size();
+    const int worldDim = view.dimWorld();
+    normals.resize(globalDofCount_);
+
+    const IndexSet& indexSet = view.indexSet();
+    int elementCount = view.entityCount(0);
+
+    arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
+    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
+    arma::Col<CoordinateType> center(gridDim);
+    center.fill(0.5);
+    arma::Col<CoordinateType> normal;
+    while (!it->finished()) {
+        const Entity<0>& e = it->entity();
+        int index = indexSet.entityIndex(e);
+        e.geometry().getNormals(center, normal);
+
+        for (int dim = 0; dim < worldDim; ++dim)
+            elementNormals(dim, index) = normal(dim);
+        it->next();
+    }
+
+    if (gridDim == 1)
+        for (size_t g = 0; g < globalDofCount_; ++g) {
+            const std::vector<LocalDof>& ldofs = acc(global2localDofs, g);
+            normals[g].x = 0.;
+            normals[g].y = 0.;
+            for (size_t l = 0; l < ldofs.size(); ++l) {
+                normals[g].x += elementNormals(0, acc(ldofs, l).entityIndex);
+                normals[g].y += elementNormals(1, acc(ldofs, l).entityIndex);
+            }
+            normals[g].x /= ldofs.size();
+            normals[g].y /= ldofs.size();
+        }
+    else // gridDim == 2
+        for (size_t g = 0; g < globalDofCount_; ++g) {
+            const std::vector<LocalDof>& ldofs = acc(global2localDofs, g);
+            normals[g].x = 0.;
+            normals[g].y = 0.;
+            normals[g].z = 0.;
+            for (size_t l = 0; l < ldofs.size(); ++l) {
+                normals[g].x += elementNormals(0, acc(ldofs, l).entityIndex);
+                normals[g].y += elementNormals(1, acc(ldofs, l).entityIndex);
+                normals[g].z += elementNormals(2, acc(ldofs, l).entityIndex);
+            }
+            normals[g].x /= ldofs.size();
+            normals[g].y /= ldofs.size();
+            normals[g].z /= ldofs.size();
+        }
+}
+
+template <typename BasisFunctionType>
 void SpaceHelper<BasisFunctionType>::initializeLocal2FlatLocalDofMap(
         size_t flatLocalDofCount,
         const std::vector<std::vector<GlobalDofIndex> >& local2globalDofs,
