@@ -39,6 +39,7 @@
 #include <Epetra_SerialComm.h>
 #include <EpetraExt_MatrixMatrix.h>
 #include <boost/make_shared.hpp>
+#include <tbb/tick_count.h>
 
 #endif
 
@@ -100,20 +101,37 @@ shared_ptr<DiscreteBoundaryOperator<ResultType> >
 AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>::
 assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) const
 {
+    bool verbose = (context.assemblyOptions().verbosityLevel() >=
+                    VerbosityLevel::DEFAULT);
     shared_ptr<const DiscreteBoundaryOperator<ResultType> > wrappedDiscreteOp =
             m_operator.weakForm();
+
+    if (verbose)
+        std::cout << "Calculating the (pseudo)inverse of operator '"
+                  << m_operator.label() << "'..." << std::endl;
+
+    tbb::tick_count start = tbb::tick_count::now();
+    shared_ptr<DiscreteBoundaryOperator<ResultType> > result;
     if (shared_ptr<const DiscreteSparseBoundaryOperator<ResultType> > wrappedSparseOp =
             boost::dynamic_pointer_cast<const DiscreteSparseBoundaryOperator<ResultType> >(
                 wrappedDiscreteOp))
-        return assembleWeakFormForSparseOperator(context, wrappedSparseOp);
-    if (shared_ptr<const DiscreteDenseBoundaryOperator<ResultType> > wrappedDenseOp =
+        result = assembleWeakFormForSparseOperator(context, wrappedSparseOp);
+    else if (shared_ptr<const DiscreteDenseBoundaryOperator<ResultType> > wrappedDenseOp =
             boost::dynamic_pointer_cast<const DiscreteDenseBoundaryOperator<ResultType> >(
                 wrappedDiscreteOp))
-        return assembleWeakFormForDenseOperator(context, wrappedDenseOp);
-    throw std::runtime_error(
-                "AbstractBoundaryOperatorPseudoinverse::assembleWeakFormImpl(): "
-                "Currently only elementary boundary operators stored as sparse "
-                "or dense matrices can be inverted");
+        result = assembleWeakFormForDenseOperator(context, wrappedDenseOp);
+    else
+        throw std::runtime_error(
+                    "AbstractBoundaryOperatorPseudoinverse::assembleWeakFormImpl(): "
+                    "Currently only elementary boundary operators stored as sparse "
+                    "or dense matrices can be inverted");
+    tbb::tick_count end = tbb::tick_count::now();
+
+    if (verbose)
+        std::cout << "Calculation of the (pseudo)inverse of operator '"
+                  << m_operator.label()
+                  << "' took " << (end - start).seconds() << " s" << std::endl;
+    return result;
 }
 
 template <typename BasisFunctionType, typename ResultType>
