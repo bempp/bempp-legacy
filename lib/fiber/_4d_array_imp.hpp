@@ -66,7 +66,7 @@ template <typename T>
 inline _4dArray<T>& _4dArray<T>::operator=(const _4dArray& rhs)
 {
     if (&rhs != this) {
-        set_size(rhs.m_extents[0], rhs.m_extents[1], 
+        set_size(rhs.m_extents[0], rhs.m_extents[1],
                  rhs.m_extents[2], rhs.m_extents[3]);
         std::copy(rhs.begin(), rhs.end(), m_storage);
     }
@@ -80,7 +80,7 @@ inline _4dArray<T>::~_4dArray()
 }
 
 template <typename T>
-inline void _4dArray<T>::init_memory(size_t extent0, size_t extent1, 
+inline void _4dArray<T>::init_memory(size_t extent0, size_t extent1,
                                      size_t extent2, size_t extent3)
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
@@ -200,8 +200,6 @@ inline void _4dArray<T>::check_dimension(size_t dimension) const
 template <typename T>
 inline void _4dArray<T>::check_extents(size_t extent0, size_t extent1, size_t extent2, size_t extent3) const
 {
-    if (extent0 <= 0 || extent1 <= 0 || extent2 <= 0 || extent3 <= 0)
-        throw std::length_error("Invalid extent");
 }
 
 template <typename T>

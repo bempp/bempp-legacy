@@ -172,8 +172,6 @@ inline void _2dArray<T>::check_dimension(size_t dimension) const
 template <typename T>
 inline void _2dArray<T>::check_extents(size_t extent0, size_t extent1) const
 {
-    if (extent0 <= 0 || extent1 <= 0)
-        throw std::length_error("Invalid extent");
 }
 
 template <typename T>

@@ -152,7 +152,7 @@ inline void _3dArray<T>::set_size(size_t extent0, size_t extent1, size_t extent2
         m_extents[0] = extent0;
         m_extents[1] = extent1;
         m_extents[2] = extent2;
-    }    
+    }
     else {
         if (m_strict)
             throw std::runtime_error("_3dArray::set_size(): Changing the total "
@@ -210,8 +210,6 @@ inline void _3dArray<T>::check_dimension(size_t dimension) const
 template <typename T>
 inline void _3dArray<T>::check_extents(size_t extent0, size_t extent1, size_t extent2) const
 {
-    if (extent0 <= 0 || extent1 <= 0 || extent2 <= 0)
-        throw std::length_error("Invalid extent");
 }
 
 template <typename T>
