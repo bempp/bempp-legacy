@@ -52,6 +52,12 @@ public:
     virtual ~GridView() {
     }
 
+    /** \brief Dimension of the grid. */
+    virtual int dim() const = 0;
+
+    /** \brief Dimension of the space containing the grid. */
+    virtual int dimWorld() const = 0;
+
     /** \brief The index set */
     virtual const IndexSet& indexSet() const = 0;
 

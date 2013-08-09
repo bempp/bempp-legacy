@@ -70,6 +70,14 @@ public:
         return m_dune_gv;
     }
 
+    virtual int dimWorld() const {
+        return DuneGridView::dimensionworld;
+    }
+
+    virtual int dim() const {
+        return DuneGridView::dimension;
+    }
+
     virtual const IndexSet& indexSet() const {
         return m_index_set;
     }
