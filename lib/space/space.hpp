@@ -293,21 +293,6 @@ public:
             std::vector<std::vector<LocalDof> >& localDofs,
             std::vector<std::vector<BasisFunctionType> >& localDofWeights) const;
 
-    /** \brief Return a \p DiscreteBoundaryOperator \f$A\f$ that interpolates a vector \f$f\f$ of function values in a given space
-     *  onto the underlying barycentric grid. Hence, \f$y=Af\f$ is a vector of values for the same function, but defined on
-     *  the barycentric grid refinement. */
-
-     virtual void grid2BarycentricMap(shared_ptr<DiscreteBoundaryOperator<float> >op) const;
-
-     /** \overload */
-     virtual void grid2BarycentricMap(shared_ptr<DiscreteBoundaryOperator<double> >op) const;
-
-     /** \overload */
-     virtual void grid2BarycentricMap(shared_ptr<DiscreteBoundaryOperator<std::complex<float> > >op) const;
-
-    /** \overload */
-     virtual void grid2BarycentricMap(shared_ptr<DiscreteBoundaryOperator<std::complex<double> > >op) const;
-
 
     /** \brief Map flat indices of local degrees of freedom to local degrees of freedom.
      *
@@ -447,11 +432,6 @@ public:
 
 private:
     /** \cond PRIVATE */
-    void grid2BarycentricMapDefaultImpl() const {
-        std::runtime_error("Space::grid2BarycentricMap(op): This method is not implemented for this class");
-    }
-
-
     shared_ptr<const Grid> m_grid;
     unsigned int m_level;
     std::auto_ptr<GridView> m_view;

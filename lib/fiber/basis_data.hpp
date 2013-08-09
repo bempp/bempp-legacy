@@ -64,6 +64,7 @@ struct BasisData
     ConstBasisDataSlice<ValueType> const_slice(int function, int point) const {
         return ConstBasisDataSlice<ValueType>(*this, function, point);
     }
+
 };
 
 template <typename ValueType>

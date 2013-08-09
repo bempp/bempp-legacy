@@ -194,27 +194,6 @@ void Space<BasisFunctionType>::getGlobalDofs(
 }
 
 template <typename BasisFunctionType>
-void Space<BasisFunctionType>::grid2BarycentricMap(shared_ptr<DiscreteBoundaryOperator<float> >op) const {
-   grid2BarycentricMapDefaultImpl();
-}
-
-template <typename BasisFunctionType>
-void Space<BasisFunctionType>::grid2BarycentricMap(shared_ptr<DiscreteBoundaryOperator<double> >op) const {
-   grid2BarycentricMapDefaultImpl();
-}
-
-template <typename BasisFunctionType>
-void Space<BasisFunctionType>::grid2BarycentricMap(shared_ptr<DiscreteBoundaryOperator<std::complex<float> > >op) const {
-   grid2BarycentricMapDefaultImpl();
-}
-
-template <typename BasisFunctionType>
-void Space<BasisFunctionType>::grid2BarycentricMap(shared_ptr<DiscreteBoundaryOperator<std::complex<double> > >op) const {
-   grid2BarycentricMapDefaultImpl();
-}
-
-
-template <typename BasisFunctionType>
 void Space<BasisFunctionType>::global2localDofs(
             const std::vector<GlobalDofIndex>& globalDofs,
             std::vector<std::vector<LocalDof> >& localDofs) const
