@@ -61,7 +61,6 @@ private:
     GridParameters::Topology m_topology;
     ConcreteIdSet<DuneGrid, typename DuneGrid::Traits::GlobalIdSet> m_global_id_set;
     ConcreteDomainIndex<DuneGrid> m_domain_index;
-    bool m_leafIsBarycentric;
 
 public:
     /** \brief Underlying Dune grid's type*/
@@ -73,7 +72,6 @@ public:
      \param[in]  topology   The topology of the grid.
      \param[in]  domainIndices Vector of domain indices.
      \param[in]  own  If true, *dune_grid is deleted in this object's destructor.
-     \param[in]  leafIsBarycentric If true the leaf level is a barycentric refinement of the previous level.
      */
     explicit ConcreteGrid(DuneGrid* dune_grid,
                           GridParameters::Topology topology, bool own = false,
@@ -81,7 +79,6 @@ public:
         m_dune_grid(ensureNotNull(dune_grid)),
         m_topology(topology),
         m_owns_dune_grid(own),
-        m_leafIsBarycentric(leafIsBarycentric),
         m_global_id_set(&dune_grid->globalIdSet()),
         m_domain_index(*dune_grid,
                        std::vector<int>(
@@ -99,13 +96,11 @@ public:
     explicit ConcreteGrid(DuneGrid* dune_grid,
                           GridParameters::Topology topology,
                           const std::vector<int>& domainIndices,
-                          bool own = false,
-                          bool leafIsBarycentric = false) :
+                          bool own = false) :
         m_dune_grid(ensureNotNull(dune_grid)),
         m_topology(topology),
         m_owns_dune_grid(own),
         m_global_id_set(&dune_grid->globalIdSet()),
-        m_leafIsBarycentric(leafIsBarycentric),
         m_domain_index(*dune_grid, domainIndices)
     {
     }
@@ -186,36 +181,38 @@ public:
     @name Refinement
     @{ */
 
-    /** Return a new barycentrically refined grid based on the grid */
+    /** \brief Return a barycentrically refined grid based on the LeafView */
     virtual shared_ptr<Grid> barycentricGrid() const {
 
-        arma::Mat<double> vertices;
-        arma::Mat<int> elementCorners;
-        arma::Mat<char> auxData;
-        std::vector<int> domainIndices;
 
-        std::auto_ptr<GridView> view = this->leafView();
+        if (!m_barycentricGrid.get()){
+            tbb::mutex::scoped_lock lock(m_barycentricSpaceMutex);
+            if (!m_barycentricGrid.get()){
 
-        view->getRawElementData(vertices,
-                               elementCorners,
-                               auxData,
-                               domainIndices);
+                arma::Mat<double> vertices;
+                arma::Mat<int> elementCorners;
+                arma::Mat<char> auxData;
+                std::vector<int> domainIndices;
 
-        GridParameters params;
-        params.topology = GridParameters::TRIANGULAR;
-        shared_ptr<Grid> newGrid = GridFactory::createGridFromConnectivityArrays(params,vertices,elementCorners,
-                                                                                 domainIndices);
-        shared_ptr<ConcreteGrid<DuneGrid> > concreteGrid = dynamic_pointer_cast<ConcreteGrid<DuneGrid> >(newGrid);
-        (concreteGrid->duneGrid()).globalBarycentricRefine(1);
-        concreteGrid->m_leafIsBarycentric = true;
+                std::auto_ptr<GridView> view = this->leafView();
 
-        return newGrid;
-    }
+                view->getRawElementData(vertices,
+                                       elementCorners,
+                                       auxData,
+                                       domainIndices);
 
-    /** \brief Return true of leaf-level is barycentric refinement of previous level */
-    virtual bool leafIsBarycentric() const {
+                GridParameters params;
+                params.topology = GridParameters::TRIANGULAR;
+                shared_ptr<Grid> newGrid = GridFactory::createGridFromConnectivityArrays(params,vertices,elementCorners,
+                                                                                         domainIndices);
+                shared_ptr<ConcreteGrid<DuneGrid> > concreteGrid = dynamic_pointer_cast<ConcreteGrid<DuneGrid> >(newGrid);
+                (concreteGrid->duneGrid()).globalBarycentricRefine(1);
 
-        return m_leafIsBarycentric;
+                m_barycentricGrid = newGrid;
+
+            }
+        }
+        return m_barycentricGrid;
     }
 
 
@@ -227,6 +224,9 @@ private:
     // (unclear what to do with the pointer to the grid)
     ConcreteGrid(const ConcreteGrid&);
     ConcreteGrid& operator =(const ConcreteGrid&);
+    mutable shared_ptr<Grid> m_barycentricGrid;
+    mutable tbb::mutex m_barycentricSpaceMutex;
+
 };
 
 } // namespace Bempp
