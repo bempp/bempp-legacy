@@ -44,9 +44,9 @@ namespace Bempp
 
 template <typename BasisFunctionType>
 PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
-PiecewiseLinearDiscontinuousScalarSpaceBarycentric(const shared_ptr<const Grid>& grid, unsigned int level) :
-    ScalarSpace<BasisFunctionType>(grid,level),
-    m_segment(GridSegment::wholeGrid(*grid)),
+PiecewiseLinearDiscontinuousScalarSpaceBarycentric(const shared_ptr<const Grid>& grid) :
+    ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
+    m_segment(GridSegment::wholeGrid(*(grid->barycentricGrid()))),
     m_strictlyOnSegment(false)
 {
     initialize();
@@ -56,9 +56,8 @@ template <typename BasisFunctionType>
 PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
 PiecewiseLinearDiscontinuousScalarSpaceBarycentric(const shared_ptr<const Grid>& grid,
                                      const GridSegment& segment,
-                                     bool strictlyOnSegment,
-                                     unsigned int level) :
-    ScalarSpace<BasisFunctionType>(grid,level),
+                                     bool strictlyOnSegment) :
+    ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
     m_segment(segment),
     m_strictlyOnSegment(strictlyOnSegment)
 {

@@ -52,6 +52,7 @@ namespace Bempp
 /** \cond FORWARD_DECL */
 class Grid;
 class GridView;
+class GeometryFactory;
 template <int codim> class Entity;
 template <int codim> class EntityPointer;
 template <typename ValueType> class DiscreteSparseBoundaryOperator;
@@ -104,7 +105,7 @@ public:
      *
      *  An exception is thrown if \p grid is a null pointer.
      */
-    explicit Space(const shared_ptr<const Grid>& grid, unsigned int level=0);
+    explicit Space(const shared_ptr<const Grid>& grid);
 
     /** \brief Copy Constructor */
     Space(const Space<BasisFunctionType>& other);
@@ -157,15 +158,6 @@ public:
      *  only a single element, false otherwise. */
     virtual bool isDiscontinuous() const = 0;
 
-    /** \brief Return \p true if spaces are defined on identical grids */
-    bool gridIsIdentical(const Space& other) const {
-        return m_grid==other.m_grid; }
-
-    /** \brief Return \p true if spaces use the same level */
-    bool levelIsIdentical(const Space& other) const {
-        return m_level==other.m_level;
-    }
-
     /** \brief Return \p true if space is based on a barycentric refinement */
 
     virtual bool isBarycentric() const = 0;
@@ -187,8 +179,14 @@ public:
     /** \brief Return the grid level of the current space */
     unsigned int level() const {return m_level; }
 
+    /** \brief Return the underlying grid dimension */
+    int gridDimension() const;
+
+    /** \brief Return the underlying world dimension */
+    int worldDimension() const;
+
     /** \brief Return the grid view of the current space */
-    const GridView& gridView() const { return *m_view; }
+    const GridView& gridView() const;
 
     /** \brief Reference to the basis attached to the specified element. */
     virtual const Fiber::Basis<BasisFunctionType>& basis(
@@ -229,6 +227,12 @@ public:
      *
      *  See the documentation of setElementVariant() for more information. */
     virtual ElementVariant elementVariant(const Entity<0>& element) const = 0;
+
+    /** \brief Return the GeometryFactory associated with the mesh. */
+
+    shared_ptr<GeometryFactory> elementGeometryFactory() const {
+        return m_elementGeometryFactory;
+    }
 
     // additional functions for e.g. increasing polynomial order of all elements
     // ...
@@ -271,6 +275,10 @@ public:
     virtual void getGlobalDofs(const Entity<0>& element,
                                std::vector<GlobalDofIndex>& dofs,
                                std::vector<BasisFunctionType>& localDofWeights) const;
+
+    /** \brief Return true of both spaces act on the same grid. */
+
+    virtual bool gridIsIdentical(const Space& other) const;
 
     /** \brief Map global degrees of freedom to local degrees of freedom.
      *
@@ -433,6 +441,7 @@ public:
 private:
     /** \cond PRIVATE */
     shared_ptr<const Grid> m_grid;
+    shared_ptr<GeometryFactory> m_elementGeometryFactory;
     unsigned int m_level;
     std::auto_ptr<GridView> m_view;
     /** \endcond */

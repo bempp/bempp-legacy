@@ -55,10 +55,10 @@ public:
     /** \brief Constructor.
      *
      *  Construct a space of functions whose restrictions to
-     *  elements of the grid \p grid with level \p level will be polynomials of order at most \p
+     *  elements of the grid \p grid will be polynomials of order at most \p
      *  polynomialOrder. */
     PiecewisePolynomialDiscontinuousScalarSpace(
-            const shared_ptr<const Grid>& grid, int polynomialOrder, unsigned int level=0);
+            const shared_ptr<const Grid>& grid, int polynomialOrder);
     /** \brief Constructor.
      *
      *  Construct a space of continuous functions whose restrictions to
@@ -85,8 +85,7 @@ public:
             const shared_ptr<const Grid>& grid,
             int polynomialOrder,
             const GridSegment& segment,
-            int dofMode = REFERENCE_POINT_ON_SEGMENT,
-            unsigned int level=0);
+            int dofMode = REFERENCE_POINT_ON_SEGMENT);
     virtual ~PiecewisePolynomialDiscontinuousScalarSpace();
 
     virtual int domainDimension() const;

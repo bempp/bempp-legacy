@@ -43,21 +43,20 @@ namespace Bempp
  */
 struct LocalAssemblerConstructionHelper
 {
-    template <typename CoordinateType>
+    template <typename CoordinateType, typename BasisFunctionType>
     static void collectGridData(
-            const Grid& grid,
+            const Space<BasisFunctionType>& space,
             shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& rawGeometry,
             shared_ptr<GeometryFactory>& geometryFactory) {
         typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
 
-        rawGeometry = boost::make_shared<RawGridGeometry>(grid.dim(),
-                                                          grid.dimWorld());
-        std::auto_ptr<GridView> view = grid.leafView();
-        view->getRawElementData(
+        rawGeometry = boost::make_shared<RawGridGeometry>(space.gridDimension(),
+                                                          space.worldDimension());
+        const GridView& view = space.gridView();
+        view.getRawElementData(
                     rawGeometry->vertices(), rawGeometry->elementCornerIndices(),
                     rawGeometry->auxData());
-        geometryFactory = shared_ptr<GeometryFactory>(
-                grid.elementGeometryFactory().release());
+        geometryFactory = space.elementGeometryFactory();
     }
 
     template <typename BasisFunctionType>

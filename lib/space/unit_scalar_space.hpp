@@ -46,7 +46,7 @@ class UnitScalarSpace : public ScalarSpace<BasisFunctionType>
 public:
     typedef typename ScalarSpace<BasisFunctionType>::CoordinateType CoordinateType;
 
-    explicit UnitScalarSpace(const shared_ptr<const Grid>& grid,unsigned int level=0);
+    explicit UnitScalarSpace(const shared_ptr<const Grid>& grid);
 
     virtual int domainDimension() const;
     virtual int codomainDimension() const;

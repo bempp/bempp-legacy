@@ -44,9 +44,9 @@ namespace Bempp
 
 template <typename BasisFunctionType>
 PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::
-PiecewiseConstantDualMeshScalarSpaceBarycentric(const shared_ptr<const Grid>& grid, unsigned int level) :
-    ScalarSpace<BasisFunctionType>(grid,level),
-    m_segment(GridSegment::wholeGrid(*grid)),
+PiecewiseConstantDualMeshScalarSpaceBarycentric(const shared_ptr<const Grid>& grid) :
+    ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
+    m_segment(GridSegment::wholeGrid(*(grid->barycentricGrid()))),
     m_strictlyOnSegment(false)
 {
     initialize();
@@ -56,9 +56,8 @@ template <typename BasisFunctionType>
 PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::
 PiecewiseConstantDualMeshScalarSpaceBarycentric(const shared_ptr<const Grid>& grid,
                                      const GridSegment& segment,
-                                     bool strictlyOnSegment,
-                                     unsigned int level) :
-    ScalarSpace<BasisFunctionType>(grid,level),
+                                     bool strictlyOnSegment) :
+    ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
     m_segment(segment),
     m_strictlyOnSegment(strictlyOnSegment)
 {
@@ -255,47 +254,6 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::assignD
         it->next();
     }
 
-//    // Iterate over elements
-//    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
-//    int flatLocalDofCount_ = 0;
-//    while (!it->finished()) {
-//        const Entity<0>& element = it->entity();
-//        std::auto_ptr<EntityPointer<0> > father = element.father();
-//        EntityIndex elementIndexCoarseGrid = elementMapperCoarseGrid.entityIndex(father->entity());
-//        EntityIndex elementIndex = elementMapper.entityIndex(element);
-//        bool elementContained = m_strictlyOnSegment ?
-//                    acc(segmentContainsElement, elementIndexCoarseGrid) : true;
-
-//        int cornerCount;
-//        if (gridDim == 1)
-//            cornerCount = element.template subEntityCount<1>();
-//        else // gridDim == 2
-//            cornerCount = element.template subEntityCount<2>();
-
-//        // List of global DOF indices corresponding to the local DOFs of the
-//        // current element
-//        std::auto_ptr<EntityIterator<2> > vertexIt = element.subEntityIterator<2>();
-//        // we know that the first vertex comes from the father
-//        IndexSet::IndexType vertexIndex = indexSet.subEntityIndex(element,0,gridDim);
-//        // Debug vertex indices
-//        std::cout << "Element: "<< elementIndex << " ";
-//        for (int i=0;i<3;++i){
-//            std::cout << indexSet.subEntityIndex(element,i,gridDim)<<" ";
-//         }
-//        std::cout << std::endl;
-
-//        std::vector<GlobalDofIndex>& globalDof = acc(m_local2globalDofs, elementIndex);
-//        GlobalDofIndex globalDofIndex;
-//        globalDofIndex = elementContained ?
-//                    acc(globalDofIndices,vertexIndex) : -1;
-//        globalDof.push_back(globalDofIndex);
-//        if (globalDofIndex>=0) {
-//            acc(m_global2localDofs, globalDofIndex).push_back(
-//                        LocalDof(elementIndex, 0));
-//            ++flatLocalDofCount_;
-//        }
-//        it->next();
-//    }
 
     // Initialize the container mapping the flat local dof indices to
     // local dof indices

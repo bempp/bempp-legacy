@@ -59,7 +59,7 @@ public:
      *  An exception is thrown if \p grid is a null pointer.
      */
     explicit PiecewiseConstantDualMeshScalarSpaceBarycentric(
-            const shared_ptr<const Grid>& grid, unsigned int level=1);
+            const shared_ptr<const Grid>& grid);
 
     /** \brief Constructor.
      *
@@ -78,8 +78,7 @@ public:
     PiecewiseConstantDualMeshScalarSpaceBarycentric(
             const shared_ptr<const Grid>& grid,
             const GridSegment& segment,
-            bool strictlyOnSegment = false,
-            unsigned int level=1);
+            bool strictlyOnSegment = false);
 
     virtual ~PiecewiseConstantDualMeshScalarSpaceBarycentric();
 

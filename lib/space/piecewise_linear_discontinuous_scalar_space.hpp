@@ -54,12 +54,12 @@ public:
     /** \brief Constructor.
      *
      *  Construct a space of piecewise linear, not necessarily continuous,
-     *  scalar functions defined on the grid \p grid with level \p level.
+     *  scalar functions defined on the grid \p grid.
      *
      *  An exception is thrown if \p grid is a null pointer.
      */
     explicit PiecewiseLinearDiscontinuousScalarSpace(
-            const shared_ptr<const Grid>& grid, unsigned int level=0);
+            const shared_ptr<const Grid>& grid);
 
     /** \brief Constructor.
      *
@@ -79,8 +79,7 @@ public:
     PiecewiseLinearDiscontinuousScalarSpace(
             const shared_ptr<const Grid>& grid,
             const GridSegment& segment,
-            bool strictlyOnSegment = false,
-            unsigned int level=0);
+            bool strictlyOnSegment = false);
     virtual ~PiecewiseLinearDiscontinuousScalarSpace();
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(

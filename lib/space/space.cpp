@@ -33,6 +33,7 @@
 #include "../grid/grid.hpp"
 #include "../grid/grid_view.hpp"
 #include "../grid/mapper.hpp"
+#include "../grid/geometry_factory.hpp"
 
 #ifdef WITH_TRILINOS
 #include <Epetra_CrsMatrix.h>
@@ -55,13 +56,13 @@ void constructGlobalToFlatLocalDofsMappingVectors(
 {
     const int ldofCount = space.flatLocalDofCount();
 
-    std::auto_ptr<GridView> view = space.grid()->leafView();
-    const IndexSet& indexSet = view->indexSet();
-    const size_t elementCount = view->entityCount(0);
+    const GridView& view = space.gridView();
+    const IndexSet& indexSet = view.indexSet();
+    const size_t elementCount = view.entityCount(0);
 
     std::vector<std::vector<GlobalDofIndex> > gdofs(elementCount);
     std::vector<std::vector<BasisFunctionType> > ldofWeights(elementCount);
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
         int index = indexSet.entityIndex(e);
@@ -132,10 +133,10 @@ constructGlobalToFlatLocalDofsMappingEpetraMatrix(
 } // namespace
 
 template <typename BasisFunctionType>
-Space<BasisFunctionType>::Space(const shared_ptr<const Grid>& grid, unsigned int level) :
+Space<BasisFunctionType>::Space(const shared_ptr<const Grid>& grid) :
     m_grid(grid),
-    m_level(level),
-    m_view(grid->levelView(level))
+    m_view(grid->leafView()),
+    m_elementGeometryFactory(grid->elementGeometryFactory().release())
 {
     if (!grid)
         throw std::invalid_argument("Space::Space(): grid must not be a null "
@@ -145,8 +146,8 @@ Space<BasisFunctionType>::Space(const shared_ptr<const Grid>& grid, unsigned int
 template <typename BasisFunctionType>
 Space<BasisFunctionType>::Space(const Space<BasisFunctionType> &other) :
     m_grid(other.m_grid),
-    m_level(other.m_level),
-    m_view(other.m_grid->levelView(other.m_level))
+    m_view(other.m_grid->levelView(other.m_level)),
+    m_elementGeometryFactory(other.m_elementGeometryFactory)
 {
 }
 template <typename BasisFunctionType>
@@ -157,8 +158,8 @@ Space<BasisFunctionType>::~Space()
 template <typename BasisFunctionType>
 Space<BasisFunctionType>& Space<BasisFunctionType>::operator=(const Space<BasisFunctionType>& other){
     m_grid = other.m_grid;
-    m_level = other.m_level;
     m_view = m_grid->levelView(m_level);
+    m_elementGeometryFactory = other.m_elementGeometryFactory;
 }
 
 template <typename BasisFunctionType>
@@ -170,6 +171,35 @@ template <typename BasisFunctionType>
 bool Space<BasisFunctionType>::dofsAssigned() const
 {
     return true;
+}
+
+
+template <typename BasisFunctionType>
+int Space<BasisFunctionType>::gridDimension() const{
+    return m_grid->dim();
+}
+
+
+template <typename BasisFunctionType>
+int Space<BasisFunctionType>::worldDimension() const{
+    return m_grid->dimWorld();
+}
+
+template <typename BasisFunctionType>
+const GridView& Space<BasisFunctionType>::gridView() const {
+    return *m_view;
+}
+
+
+template <typename BasisFunctionType>
+bool Space<BasisFunctionType>::gridIsIdentical(const Space<BasisFunctionType>& other) const {
+    if (this->isBarycentric()!=other.isBarycentric()){
+        return false;
+    }
+    else{
+        return m_grid==other.m_grid;
+    }
+
 }
 
 template <typename BasisFunctionType>
@@ -221,13 +251,13 @@ template <typename BasisFunctionType>
 void getAllBases(const Space<BasisFunctionType>& space,
         std::vector<const Fiber::Basis<BasisFunctionType>*>& bases)
 {
-    std::auto_ptr<GridView> view = space.grid()->leafView();
-    const Mapper& mapper = view->elementMapper();
-    const int elementCount = view->entityCount(0);
+    const GridView& view = space.gridView();
+    const Mapper& mapper = view.elementMapper();
+    const int elementCount = view.entityCount(0);
 
     bases.resize(elementCount);
 
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
         bases[mapper.entityIndex(e)] = &space.basis(e);

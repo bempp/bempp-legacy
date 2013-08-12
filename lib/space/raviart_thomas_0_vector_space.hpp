@@ -58,14 +58,12 @@ public:
 
     explicit RaviartThomas0VectorSpace(
             const shared_ptr<const Grid>& grid,
-            bool putDofsOnBoundaries = false,
-            unsigned int level=0);
+            bool putDofsOnBoundaries = false);
     RaviartThomas0VectorSpace(
             const shared_ptr<const Grid>& grid,
             const GridSegment& segment,
             bool putDofsOnBoundaries = false,
-            int dofMode = EDGE_ON_SEGMENT,
-            unsigned int level=0);
+            int dofMode = EDGE_ON_SEGMENT);
     virtual ~RaviartThomas0VectorSpace();
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(

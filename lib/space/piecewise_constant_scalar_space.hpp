@@ -50,11 +50,11 @@ public:
     /** \brief Constructor.
      *
      *  Construct a space of piecewise constant scalar functions
-     *  defined on the grid \p grid with level \level.
+     *  defined on the grid \p grid.
      *
      *  An exception is thrown if \p grid is a null pointer.
      */
-    explicit PiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid, unsigned int level=0);
+    explicit PiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid);
 
     /** \brief Constructor.
      *
@@ -64,7 +64,7 @@ public:
      *  An exception is thrown if \p grid is a null pointer.
      */
     PiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid,
-                                 const GridSegment& segment, unsigned int level=0);
+                                 const GridSegment& segment);
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
         const shared_ptr<const Space<BasisFunctionType> >& self) const;

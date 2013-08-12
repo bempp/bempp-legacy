@@ -219,13 +219,10 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::ElementaryLocalOperator(
         int symmetry) :
     Base(domain, range, dualToRange, label, symmetry)
 {
-    if ((!domain->gridIsIdentical(*range) ||
-            !range->gridIsIdentical(*dualToRange)) ||
-            (!domain->levelIsIdentical(*range) ||
-            !range->levelIsIdentical(*dualToRange)))
+    if ((!domain->gridIsIdentical(*range)))
         throw std::invalid_argument(
                 "ElementaryLocalOperator::ElementaryLocalOperator(): "
-                "all three function spaces must be defined on the same grid and level.");
+                "all three function spaces must be defined on the same grid.");
 }
 
 template <typename BasisFunctionType, typename ResultType>

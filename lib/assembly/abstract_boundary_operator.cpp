@@ -179,13 +179,13 @@ collectOptionsIndependentDataForAssemblerConstruction(
     typedef LocalAssemblerConstructionHelper Helper;
 
     // Collect grid data
-    Helper::collectGridData(*m_dualToRange->grid(),
+    Helper::collectGridData(*m_dualToRange,
                             testRawGeometry, testGeometryFactory);
     if (m_dualToRange->grid() == m_domain->grid()) {
         trialRawGeometry = testRawGeometry;
         trialGeometryFactory = testGeometryFactory;
     } else
-        Helper::collectGridData(*m_domain->grid(),
+        Helper::collectGridData(*m_domain,
                                 trialRawGeometry, trialGeometryFactory);
 
     // Get pointers to test and trial bases of each element
