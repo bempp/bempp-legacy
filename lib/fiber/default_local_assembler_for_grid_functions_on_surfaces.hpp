@@ -47,7 +47,7 @@ template <typename BasisFunctionType, typename UserFunctionType,
           typename ResultType, typename GeometryFactory>
 class DefaultLocalAssemblerForGridFunctionsOnSurfaces :
         public LocalAssemblerForGridFunctions<ResultType>
-{    
+{
 public:
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
@@ -70,8 +70,6 @@ private:
     typedef TestFunctionIntegrator<BasisFunctionType, ResultType> Integrator;
 
     const Integrator& selectIntegrator(int elementIndex);
-
-    int orderIncrement(int elementIndex) const;
 
     const Integrator& getIntegrator(const SingleQuadratureDescriptor& index);
 

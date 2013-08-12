@@ -174,8 +174,6 @@ selectIntegrator(int elementIndex)
     desc.vertexCount = m_rawGeometry->elementCornerCount(elementIndex);
 
     // Determine integrand's order and required quadrature order
-//    desc.order = (*m_testBases)[elementIndex]->order() +
-//            orderIncrement(elementIndex);
     const int defaultOrder = 2 * (*m_testBases)[elementIndex]->order() + 1;
     desc.order = m_quadratureOptions.quadratureOrder(defaultOrder);
 
@@ -225,17 +223,6 @@ getIntegrator(const SingleQuadratureDescriptor& desc)
 
     // Return pointer to the integrator that ended up in the map.
     return *result.first->second;
-}
-
-template <typename BasisFunctionType, typename UserFunctionType,
-          typename ResultType, typename GeometryFactory>
-inline int
-DefaultLocalAssemblerForGridFunctionsOnSurfaces<
-BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
-orderIncrement(int elementIndex) const
-{
-    // TODO: add to constructor an option for increased-order quadrature
-    return (*m_testBases)[elementIndex]->order() + 1;
 }
 
 } // namespace Fiber
