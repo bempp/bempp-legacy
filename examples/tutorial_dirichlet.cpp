@@ -69,8 +69,8 @@ public:
                          arma::Col<ValueType>& result) const {
         CoordinateType x = point(0), y = point(1), z = point(2);
         CoordinateType r = sqrt(point(0) * point(0) +
-				point(1) * point(1) +
-				point(2) * point(2));
+                point(1) * point(1) +
+                point(2) * point(2));
         result(0) = 2 * x * z / (r * r * r * r * r) - y / (r * r * r);
     }
 };
@@ -94,8 +94,8 @@ public:
                          arma::Col<ValueType>& result) const {
         CoordinateType x = point(0), y = point(1), z = point(2);
         CoordinateType r = sqrt(point(0) * point(0) +
-				point(1) * point(1) +
-				point(2) * point(2));
+                point(1) * point(1) +
+                point(2) * point(2));
         result(0) = -6 * x * z / (r * r * r * r * r * r) + 2 * y / (r * r * r * r);
     }
 };
@@ -190,7 +190,7 @@ int main()
     // and export it in VTK format
 
     const GridFunction<BFT, RT>& solFun = solution.gridFunction();
-    solFun.exportToVtk(VtkWriter::CELL_DATA, "Neumann_data", "solution");
+    exportToVtk(solFun, VtkWriter::CELL_DATA, "Neumann_data", "solution");
 
     // Compare the numerical and analytical solution on the grid
 

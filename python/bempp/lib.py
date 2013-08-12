@@ -2178,4 +2178,46 @@ def areInside(grid, points):
                          "dimensions of the world in which 'grid' is embedded")
     return numpy.array(core.areInside(grid, points))
 
+def exportToGmsh(gridFunction, dataLabel, fileName):
+    """
+    Export a grid function to a Gmsh file.
+
+    *Parameters:*
+       - gridFunction (GridFunction)
+           The grid function to be exported.
+       - dataLabel (string)
+           Label for the data series in the Gmsh file.
+       - fileName (string)
+           Name of the file to be created.
+    """
+    return _constructObjectTemplatedOnBasisAndResult(
+        core, "exportToGmsh",
+        gridFunction.basisFunctionType(), gridFunction.resultType(),
+        gridFunction, dataLabel, fileName)
+
+def exportToVtk(gridFunction, dataType, dataLabel, fileNamesBase, filesPath=None, type='ascii'):
+    """
+    Export a grid function to a VTK file.
+
+    *Parameters:*
+       - gridFunction (GridFunction)
+           The grid function to be exported.
+       - dataType ('cell_data' or 'vertex_data')
+           Determines whether data are attaches to vertices or cells.
+       - dataLabel (string)
+           Label used to identify the function in the VTK file.
+       - fileNamesBase (string)
+           Base name of the output files. It should not contain any directory
+           part or filename extensions.
+       - filesPath (string)
+           Output directory. Can be set to None (default), in which case the files are
+           output in the current directory.
+       - type ('ascii', 'base64', 'appendedraw' or 'appendedbase64')
+           Output type. See the Dune reference manual for more details.
+    """
+    return _constructObjectTemplatedOnBasisAndResult(
+        core, "exportToVtk",
+        gridFunction.basisFunctionType(), gridFunction.resultType(),
+        gridFunction, dataType, dataLabel, fileNamesBase, filesPath, type)
+
 from bempp.core import GridSegment, gridSegmentWithPositiveX

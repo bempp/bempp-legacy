@@ -149,8 +149,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(L2Norm_works_for_sinusoidal_function_and_piecewise
     Bempp::GridFunction<BFT, RT> fun(context, space, space,
                 surfaceNormalIndependentFunction(
                     SinusoidalFunction<RT>()));
-    fun.exportToVtk(VtkWriter::CELL_DATA, "fun",
-                    "fun");
+    exportToVtk(fun, VtkWriter::CELL_DATA, "fun", "fun");
 
     CT norm = fun.L2Norm();
     CT expectedNorm = sqrt(4. / 3. * M_PI);
