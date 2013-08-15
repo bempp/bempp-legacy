@@ -104,6 +104,10 @@ public:
 
     virtual CoordinateType estimateRelativeScale(CoordinateType minDist) const;
 
+    virtual CoordinateType estimateMinimumDistance(
+            const std::vector<int>& testElementIndices,
+            const std::vector<int>& trialElementIndices) const;
+
 private:
     /** \cond PRIVATE */
     typedef TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType> Integrator;

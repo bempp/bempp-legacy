@@ -705,6 +705,28 @@ getRegularOrders(int testElementIndex, int trialElementIndex,
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
+typename DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+KernelType, ResultType, GeometryFactory>::CoordinateType
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
+KernelType, ResultType, GeometryFactory>::
+estimateMinimumDistance(const std::vector<int>& testElementIndices,
+                        const std::vector<int>& trialElementIndices) const
+{
+    // Quadratic complexity! TODO: reduce it to n log(n)
+    CoordinateType result = 1e300;
+    for (size_t i = 0; i < testElementIndices.size(); ++i) {
+        for (size_t j = 0; j < trialElementIndices.size(); ++j) {
+            CoordinateType distanceSquared =
+                    elementDistanceSquared(testElementIndices[i],
+                                           trialElementIndices[j]);
+            result = std::min(result, distanceSquared);
+        }
+    }
+    return sqrt(result);
+}
+
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
 int
 DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::

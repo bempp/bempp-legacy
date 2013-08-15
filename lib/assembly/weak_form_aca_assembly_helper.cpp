@@ -114,10 +114,33 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::estimateMinimumDistanc
             dynamic_cast<const AhmedBemCluster*>(c2));
     // Lower bound on the minimum distance between elements from the two clusters
     CoordinateType minDist = -1.; // negative, read: unknown
-    if (cluster1 && cluster2)
-        minDist = sqrt(cluster1->extDist2(cluster2));
+
+//    if (cluster1 && cluster2)
+//        minDist = sqrt(cluster1->extDist2(cluster2));
+
     // else
         // std::cout << "Warning: clusters not available" << std::endl;
+
+
+
+
+    // Convert AHMED matrix indices into DOF indices
+    if (cluster1 && cluster2) {
+        std::pair<const cluster*, const cluster*> key(cluster1, cluster2);
+        typename DistanceMap::const_iterator it = m_distancesCache.find(key);
+        if (it != m_distancesCache.end())
+            minDist = it->second;
+        else {
+            shared_ptr<const LocalDofLists<BasisFunctionType> > testDofLists =
+                    m_testDofListsCache->get(c1->getnbeg(), c1->size());
+            shared_ptr<const LocalDofLists<BasisFunctionType> > trialDofLists =
+                    m_trialDofListsCache->get(c2->getnbeg(), c2->size());
+            minDist = m_assemblers[0]->estimateMinimumDistance(
+                        testDofLists->elementIndices, trialDofLists->elementIndices);
+            m_distancesCache.insert(std::make_pair(key, minDist));
+        }
+    }
+
     return minDist;
 }
 

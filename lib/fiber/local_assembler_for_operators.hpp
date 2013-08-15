@@ -116,6 +116,17 @@ public:
             std::vector<arma::Mat<ResultType> >& result) = 0;
 
     virtual CoordinateType estimateRelativeScale(CoordinateType minDist) const = 0;
+
+    /** \brief Return an estimate of the smallest distance between the centers
+     *  of test and trial elements with given indices.
+     *
+     *  If no meaningful estimate can be given, this function should return
+     *  a negative real number (like the default implementation). */
+    virtual CoordinateType estimateMinimumDistance(
+            const std::vector<int>& testElementIndices,
+            const std::vector<int>& trialElementIndices) const {
+        return -1.;
+    }
 };
 
 } // namespace Fiber

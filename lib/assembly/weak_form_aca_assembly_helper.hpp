@@ -30,6 +30,7 @@
 #include "../fiber/scalar_traits.hpp"
 
 #include <tbb/atomic.h>
+#include <tbb/concurrent_unordered_map.h>
 #include <vector>
 
 /** \cond FORWARD_DECL */
@@ -133,6 +134,11 @@ private:
     m_testDofListsCache, m_trialDofListsCache;
 
     mutable tbb::atomic<size_t> m_accessedEntryCount;
+
+    typedef tbb::concurrent_unordered_map<
+    std::pair<const cluster*, const cluster*>, CoordinateType> DistanceMap;
+    mutable DistanceMap m_distancesCache;
+
     /** \endcond */
 };
 
