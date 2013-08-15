@@ -41,6 +41,9 @@
 #include "../fiber/default_collection_of_basis_transformations.hpp"
 #include "../fiber/default_test_kernel_trial_integral.hpp"
 
+#include "general_elementary_singular_integral_operator_imp.hpp"
+#include "../fiber/default_test_single_scalar_kernel_trial_integral.hpp"
+
 #include <boost/type_traits/is_complex.hpp>
 
 namespace Bempp
@@ -165,18 +168,39 @@ laplace3dHypersingularBoundaryOperator(
     typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
     BasisFunctionType, KernelType, ResultType, 1> OffDiagonalIntegrandFunctor;
 
-    typedef GeneralHypersingularIntegralOperator<
+//    typedef GeneralHypersingularIntegralOperator<
+//            BasisFunctionType, KernelType, ResultType> Op;
+//    shared_ptr<Op> newOp(new Op(
+//                             domain, range, dualToRange, label, symmetry,
+//                             KernelFunctor(),
+//                             TransformationFunctor(),
+//                             TransformationFunctor(),
+//                             IntegrandFunctor(),
+//                             OffDiagonalKernelFunctor(),
+//                             OffDiagonalTransformationFunctor(),
+//                             OffDiagonalTransformationFunctor(),
+//                             OffDiagonalIntegrandFunctor()));
+
+    typedef GeneralElementarySingularIntegralOperator<
             BasisFunctionType, KernelType, ResultType> Op;
+    shared_ptr<Fiber::TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> > integral;
+    if (assemblyOptions.isBlasEnabledInQuadrature())
+        integral.reset(new Fiber::DefaultTestSingleScalarKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>());
+    else
+        integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(IntegrandFunctor()));
+
     shared_ptr<Op> newOp(new Op(
                              domain, range, dualToRange, label, symmetry,
-                             KernelFunctor(),
-                             TransformationFunctor(),
-                             TransformationFunctor(),
-                             IntegrandFunctor(),
-                             OffDiagonalKernelFunctor(),
-                             OffDiagonalTransformationFunctor(),
-                             OffDiagonalTransformationFunctor(),
-                             OffDiagonalIntegrandFunctor()));
+                             shared_ptr<Fiber::CollectionOfKernels<KernelType> >(
+                                 new Fiber::DefaultCollectionOfKernels<KernelFunctor>(KernelFunctor())),
+                             shared_ptr<Fiber::CollectionOfBasisTransformations<CoordinateType> >(
+                                 new Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>(
+                                     TransformationFunctor())),
+                             shared_ptr<Fiber::CollectionOfBasisTransformations<CoordinateType> >(
+                                 new Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>(
+                                     TransformationFunctor())),
+                             integral));
+
     return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 

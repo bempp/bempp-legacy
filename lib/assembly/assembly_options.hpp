@@ -175,6 +175,12 @@ public:
      * See enableJointAssembly() for more information. */
     bool isJointAssemblyEnabled() const;
 
+    /** \brief .... */
+    void enableBlasInQuadrature(bool value = true);
+
+    /** \brief .... */
+    bool isBlasEnabledInQuadrature() const;
+
     /** @} */
 
 private:
@@ -186,6 +192,7 @@ private:
     bool m_singularIntegralCaching;
     bool m_sparseStorageOfMassMatrices;
     bool m_jointAssembly;
+    bool m_blasInQuadrature;
     /** \endcond */
 };
 

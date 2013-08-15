@@ -30,7 +30,8 @@ AssemblyOptions::AssemblyOptions() :
     m_verbosityLevel(VerbosityLevel::DEFAULT),
     m_singularIntegralCaching(true),
     m_sparseStorageOfMassMatrices(true),
-    m_jointAssembly(false)
+    m_jointAssembly(false),
+    m_blasInQuadrature(false)
 {
 }
 
@@ -134,6 +135,16 @@ void AssemblyOptions::enableJointAssembly(bool value)
 bool AssemblyOptions::isJointAssemblyEnabled() const
 {
     return m_jointAssembly;
+}
+
+void AssemblyOptions::enableBlasInQuadrature(bool value)
+{
+    m_blasInQuadrature = value;
+}
+
+bool AssemblyOptions::isBlasEnabledInQuadrature() const
+{
+    return m_blasInQuadrature;
 }
 
 } // namespace Bempp

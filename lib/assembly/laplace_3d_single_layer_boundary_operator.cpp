@@ -32,6 +32,8 @@
 #include "../fiber/scalar_function_value_functor.hpp"
 #include "../fiber/simple_test_scalar_kernel_trial_integrand_functor.hpp"
 
+#include "../fiber/default_test_single_scalar_kernel_trial_integral.hpp"
+
 #include <boost/type_traits/is_complex.hpp>
 
 namespace Bempp
@@ -68,12 +70,29 @@ laplace3dSingleLayerBoundaryOperator(
 
     typedef GeneralElementarySingularIntegralOperator<
             BasisFunctionType, KernelType, ResultType> Op;
+    // shared_ptr<Op> newOp(new Op(
+    //                          domain, range, dualToRange, label, symmetry,
+    //                          KernelFunctor(),
+    //                          TransformationFunctor(),
+    //                          TransformationFunctor(),
+    //                          IntegrandFunctor()));
+    shared_ptr<Fiber::TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> > integral;
+    if (assemblyOptions.isBlasEnabledInQuadrature())
+        integral.reset(new Fiber::DefaultTestSingleScalarKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>());
+    else
+        integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(IntegrandFunctor()));
+
     shared_ptr<Op> newOp(new Op(
                              domain, range, dualToRange, label, symmetry,
-                             KernelFunctor(),
-                             TransformationFunctor(),
-                             TransformationFunctor(),
-                             IntegrandFunctor()));
+                             shared_ptr<Fiber::CollectionOfKernels<KernelType> >(
+                                 new Fiber::DefaultCollectionOfKernels<KernelFunctor>(KernelFunctor())),
+                             shared_ptr<Fiber::CollectionOfBasisTransformations<CoordinateType> >(
+                                 new Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>(
+                                     TransformationFunctor())),
+                             shared_ptr<Fiber::CollectionOfBasisTransformations<CoordinateType> >(
+                                 new Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>(
+                                     TransformationFunctor())),
+                             integral));
     return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 

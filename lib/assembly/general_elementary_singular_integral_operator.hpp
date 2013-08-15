@@ -139,6 +139,35 @@ public:
             const TrialTransformationsFunctor& trialTransformationsFunctor,
             const IntegrandFunctor& integrandFunctor);
 
+    template <typename KernelFunctor,
+              typename TestTransformationsFunctor,
+              typename TrialTransformationsFunctor>
+    GeneralElementarySingularIntegralOperator(
+            const shared_ptr<const Space<BasisFunctionType_> >& domain,
+            const shared_ptr<const Space<BasisFunctionType_> >& range,
+            const shared_ptr<const Space<BasisFunctionType_> >& dualToRange,
+            const std::string& label,
+            int symmetry,
+            const KernelFunctor& kernelFunctor,
+            const TestTransformationsFunctor& testTransformationsFunctor,
+            const TrialTransformationsFunctor& trialTransformationsFunctor,
+            const shared_ptr<Fiber::TestKernelTrialIntegral<
+            BasisFunctionType_, KernelType_, ResultType_> >& integral);
+
+    GeneralElementarySingularIntegralOperator(
+        const shared_ptr<const Space<BasisFunctionType_> >& domain,
+        const shared_ptr<const Space<BasisFunctionType_> >& range,
+        const shared_ptr<const Space<BasisFunctionType_> >& dualToRange,
+        const std::string& label,
+        int symmetry,
+        const shared_ptr<Fiber::CollectionOfKernels<KernelType_> >& kernels,
+        const shared_ptr<Fiber::CollectionOfBasisTransformations<CoordinateType> >&
+        testTransformations,
+        const shared_ptr<Fiber::CollectionOfBasisTransformations<CoordinateType> >&
+        trialTransformations,
+        const shared_ptr<Fiber::TestKernelTrialIntegral<
+        BasisFunctionType_, KernelType_, ResultType_> >& integral);
+
     virtual const CollectionOfKernels& kernels() const
     { return *m_kernels; }
     virtual const CollectionOfBasisTransformations& testTransformations() const

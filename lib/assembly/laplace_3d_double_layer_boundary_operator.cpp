@@ -32,6 +32,10 @@
 
 #include "../common/boost_make_shared_fwd.hpp"
 
+#include "../fiber/default_test_single_scalar_kernel_trial_integral.hpp"
+
+#include <iostream>
+
 namespace Bempp
 {
 
@@ -65,12 +69,31 @@ laplace3dDoubleLayerBoundaryOperator(
 
     typedef GeneralElementarySingularIntegralOperator<
             BasisFunctionType, KernelType, ResultType> Op;
+    // shared_ptr<Op> newOp(new Op(
+    //                          domain, range, dualToRange, label, symmetry,
+    //                          KernelFunctor(),
+    //                          TransformationFunctor(),
+    //                          TransformationFunctor(),
+    //                          IntegrandFunctor()));
+    shared_ptr<Fiber::TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> > integral;
+    if (assemblyOptions.isBlasEnabledInQuadrature()) {
+        std::cout << "Blas enabled" << std::endl;
+        integral.reset(new Fiber::DefaultTestSingleScalarKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>());
+    }
+    else
+        integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(IntegrandFunctor()));
+
     shared_ptr<Op> newOp(new Op(
                              domain, range, dualToRange, label, symmetry,
-                             KernelFunctor(),
-                             TransformationFunctor(),
-                             TransformationFunctor(),
-                             IntegrandFunctor()));
+                             shared_ptr<Fiber::CollectionOfKernels<KernelType> >(
+                                 new Fiber::DefaultCollectionOfKernels<KernelFunctor>(KernelFunctor())),
+                             shared_ptr<Fiber::CollectionOfBasisTransformations<CoordinateType> >(
+                                 new Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>(
+                                     TransformationFunctor())),
+                             shared_ptr<Fiber::CollectionOfBasisTransformations<CoordinateType> >(
+                                 new Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>(
+                                     TransformationFunctor())),
+                             integral));
     return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT) \
