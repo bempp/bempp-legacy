@@ -55,6 +55,9 @@ using namespace Bempp;
 namespace Bempp
 {
 
+namespace
+{
+
 template <typename T> T initWaveNumber();
 template <> float initWaveNumber() { return 1.2f; }
 template <> double initWaveNumber(){ return 1.2; }
@@ -62,6 +65,8 @@ template <> std::complex<float> initWaveNumber()
 { return std::complex<float>(1.2f, 0.7f); }
 template <> std::complex<double> initWaveNumber()
 { return std::complex<double>(1.2, 0.7); }
+
+}
 
 }
 
