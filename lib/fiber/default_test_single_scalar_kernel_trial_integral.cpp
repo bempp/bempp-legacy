@@ -81,13 +81,6 @@ void evaluateWithNontensorQuadratureRuleStandardImpl(
 
     std::vector<KernelType> products(pointCount);
     std::vector<BasisFunctionType> tmp;
-//    ProductDataReference products = m_products.local();
-//    products.resize(pointCount);
-//    for (size_t point = 0; point < pointCount; ++point)
-//        products[point] = kernelValues[0](0, 0, point) *
-//                testGeomData.integrationElements(point) *
-//                trialGeomData.integrationElements(point) *
-//                quadWeights[point];
 
     for (size_t transIndex = 0; transIndex < transCount; ++transIndex) {
         const size_t transDim = testValues[transIndex].extent(0);
@@ -100,8 +93,6 @@ void evaluateWithNontensorQuadratureRuleStandardImpl(
                         trialGeomData.integrationElements(point) *
                         quadWeights[point];
 
-//        BFTDataReference bftData = m_bftData.local();
-//        bftData.resize(testDofCount * transDim);
         tmp.resize(testDofCount * transDim);
         testValues[transIndex].set_size(testDofCount, transDim, pointCount);
         for (size_t point = 0; point < pointCount; ++point) {
@@ -116,7 +107,6 @@ void evaluateWithNontensorQuadratureRuleStandardImpl(
             transposedMat = origMat.t(); // we take the complex conjugate here
         }
 
-//        bftData.resize(trialDofCount * transDim);
         tmp.resize(trialDofCount * transDim);
         trialValues[transIndex].set_size(trialDofCount, transDim, pointCount);
         for (size_t point = 0; point < pointCount; ++point) {
@@ -128,9 +118,8 @@ void evaluateWithNontensorQuadratureRuleStandardImpl(
             arma::Mat<BasisFunctionType> transposedMat(
                         trialValues[transIndex].begin() + point * tmp.size(),
                         trialDofCount, transDim, false, true);
-//            transposedMat = origMat.t(); // we take the complex conj. here, afterwards we'll remove it
-//            transposedMat *= conj(products[point]);
-            transposedMat = conj(products[point]) * origMat.t(); // we take the complex conj. here, afterwards we'll remove it
+            // we take the complex conj. here, afterwards we'll remove it
+            transposedMat = conj(products[point]) * origMat.t();
         }
 
         arma::Mat<BasisFunctionType> matTest(testValues[transIndex].begin(),
@@ -140,10 +129,8 @@ void evaluateWithNontensorQuadratureRuleStandardImpl(
                                               trialDofCount, pointCount * transDim,
                                               false /* don't copy */, true);
 
-        // std::cout << result.n_rows << " " << result.n_cols << std::endl;
-        // std::cout << matTest.n_rows << " " << matTest.n_cols << std::endl;
-        // std::cout << matTrial.n_rows << " " << matTrial.n_cols << std::endl;
-        result = result + matTest * matTrial.t(); // this removes the complex conjugate from matTrial
+        // this removes the complex conjugate from matTrial
+        result = result + matTest * matTrial.t();
     }
 }
 
@@ -178,9 +165,6 @@ evaluateWithNontensorQuadratureRule(
         const std::vector<CoordinateType>& quadWeights,
         arma::Mat<ResultType>& result) const
 {
-    // std::cout << "kernel " << kernelValues[0](0, 0, 0) << " " << kernelValues[0](0, 0, 5) << std::endl;
-
-//    std::cout << "var 2" << std::endl;
     // We assume the integrand has the structure
     // (i -- transformations)
     // sum_i (\vec test_i \cdot \vec trial_i) kernel
@@ -209,29 +193,15 @@ evaluateWithNontensorQuadratureRule(
     assert(result.n_rows == testDofCount);
     assert(result.n_cols == trialDofCount);
 
-    //ProductDataReference products = m_products.local();
     std::vector<KernelType> products;
     products.resize(pointCount);
 
-    //RealDataReference resultReal = m_resultReal.local();
-    //RealDataReference resultImag = m_resultImag.local();
-    //std::vector<CoordinateType> resultReal;
-    //std::vector<CoordinateType> resultImag;
-
-//    resultReal.resize(testDofCount * trialDofCount, 0);
-//    resultImag.resize(testDofCount * trialDofCount, 0);
-//    arma::Mat<CoordinateType> matResultReal(
-//                &resultReal[0], testDofCount, trialDofCount, false, true);
-//    arma::Mat<CoordinateType> matResultImag(
-//                &resultImag[0], testDofCount, trialDofCount, false, true);
     arma::Mat<CoordinateType> matResultReal(testDofCount, trialDofCount);
     arma::Mat<CoordinateType> matResultImag(testDofCount, trialDofCount);
 
     for (size_t transIndex = 0; transIndex < transCount; ++transIndex) {
         const size_t transDim = testValues[transIndex].extent(0);
         assert(trialValues[transIndex].extent(0) == transDim);
-
-//        std::cout << "Params: " << transCount << " " << transDim << " " << pointCount << std::endl;
 
         if (transIndex == 0 || kernelValues.size() > 1)
             for (size_t point = 0; point < pointCount; ++point)
@@ -242,7 +212,6 @@ evaluateWithNontensorQuadratureRule(
 
         // this loop can be removed for transDim == 1, because the internal
         // transpose is not needed;
-        //RealDataReference tmp = m_tmp.local();
         std::vector<CoordinateType> tmp;
         tmp.resize(testDofCount * transDim);
         // transpose first two dimensions: first logically...
@@ -261,10 +230,8 @@ evaluateWithNontensorQuadratureRule(
         arma::Mat<BasisFunctionType> matTest(testValues[transIndex].begin(),
                                              testDofCount, pointCount  * transDim,
                                              false /* don't copy */, true);
-        //std::cout << "matTest " << matTest(0, 0) << " " << matTest(1, 7) << "\n" << std::endl;
 
-        // Real part of the kernel
-//        RealDataReference scaledTrialValues = m_scaledTrialValues.local();
+        // Process the real part of the kernel
         std::vector<CoordinateType> scaledTrialValues;
         scaledTrialValues.resize(trialDofCount * transDim * pointCount);
         {
@@ -288,13 +255,13 @@ evaluateWithNontensorQuadratureRule(
             arma::Mat<BasisFunctionType> matTrial(&scaledTrialValues[0],
                                                   trialDofCount, pointCount * transDim,
                                                   false /* don't copy */, true);
-            //std::cout << "matTrial (real)\n" << matTrial(0, 0) << matTrial(1, 7) << "\n" << std::endl;
             if (transIndex == 0)
                 matResultReal = matTest * matTrial.t();
             else
                 matResultReal += matTest * matTrial.t();
         }
 
+        // Now process the imaginary part of the kernel
         {
             BasisFunctionType* sourceSliceStart =
                     trialValues[transIndex].begin();
@@ -306,7 +273,6 @@ evaluateWithNontensorQuadratureRule(
                 arma::Mat<BasisFunctionType> dest(
                             destSliceStart,
                             trialDofCount, transDim, false, true);
-//                dest = imagPart(products[point]) * source.t();
                 dest = source.t();
                 dest *= imagPart(products[point]);
                 sourceSliceStart += trialDofCount * transDim;
@@ -316,7 +282,6 @@ evaluateWithNontensorQuadratureRule(
             arma::Mat<BasisFunctionType> matTrial(&scaledTrialValues[0],
                                                   trialDofCount, pointCount * transDim,
                                                   false /* don't copy */, true);
-            //std::cout << "matTrial (imag)\n" << matTrial(0, 0) << matTrial(1, 7) << "\n" << std::endl;
             if (transIndex == 0)
                 matResultImag = matTest * matTrial.t();
             else
@@ -324,9 +289,6 @@ evaluateWithNontensorQuadratureRule(
         }
     }
     result = arma::Mat<ResultType>(matResultReal, matResultImag);
-//    result.set_real(matResultReal);
-//    result.set_imag(matResultImag);
-    //exit(0);
 }
 
 template <typename CoordinateType>
@@ -344,8 +306,6 @@ evaluateWithNontensorQuadratureRule(
     evaluateWithNontensorQuadratureRuleStandardImpl(
                 testGeomData, trialGeomData,
                 testValues, trialValues, kernelValues, quadWeights, result);
-//    // no blas implementation yet
-//    throw std::runtime_error("not implemented yet");
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
@@ -370,7 +330,6 @@ evaluateWithTensorQuadratureRule(
         const std::vector<CoordinateType>& trialQuadWeights,
         arma::Mat<ResultType>& result) const
 {
-//    result.fill(0.);
     // Evaluate constants
 
     const size_t testDofCount = testValues[0].extent(1);
