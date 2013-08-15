@@ -18,6 +18,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#ifndef fiber_default_test_kernel_trial_integral_imp_hpp
+#define fiber_default_test_kernel_trial_integral_imp_hpp
+
 #include "default_test_kernel_trial_integral.hpp"
 
 #include "geometrical_data.hpp"
@@ -145,3 +148,5 @@ evaluateWithNontensorQuadratureRule(
 }
 
 } // namespace Fiber
+
+#endif
