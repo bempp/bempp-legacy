@@ -733,10 +733,14 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
 BasisFunctionType, KernelType, ResultType, GeometryFactory>::elementDistanceSquared(
         int testElementIndex, int trialElementIndex) const
 {
-    arma::Col<CoordinateType> diff =
-            m_trialElementCenters.col(trialElementIndex) -
-            m_testElementCenters.col(testElementIndex);
-    return arma::dot(diff, diff);
+    CoordinateType result = 0.;
+    const int dimWorld = 3;
+    for (int d = 0; d < dimWorld; ++d) {
+        CoordinateType diff = m_trialElementCenters(d, trialElementIndex) -
+                m_testElementCenters(d, testElementIndex);
+        result += diff * diff;
+    }
+    return result;
 }
 
 template <typename BasisFunctionType, typename KernelType,
