@@ -112,7 +112,7 @@ def evalNeumannData(point):
 # Note that we pass pwiseDLinearsD as the dual space when discretizing the
 # Dirichlet data. You can see for yourself that if pwiseLinearsD is passed
 # there, the approximation quality of the Dirichlet data near the boundary of
-# the segment is degrated and as a consequence the solution has a much larger
+# the segment is degraded and as a consequence the solution has a much larger
 # L^2 error.
 dirichletData = createGridFunction(
     context, pwiseLinearsD, pwiseDLinearsD, evalDirichletData)
