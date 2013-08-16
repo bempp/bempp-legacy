@@ -29,6 +29,7 @@ endif ()
 
 # Tests
 if (WITH_TESTS)
+  enable_testing(on)
   add_subdirectory(tests)
 endif (WITH_TESTS)
 
