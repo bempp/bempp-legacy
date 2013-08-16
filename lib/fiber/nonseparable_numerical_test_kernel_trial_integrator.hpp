@@ -25,6 +25,7 @@
 
 #include "test_kernel_trial_integrator.hpp"
 
+#include <tbb/concurrent_unordered_map.h>
 #include <tbb/enumerable_thread_specific.h>
 
 namespace Fiber
@@ -63,6 +64,7 @@ public:
             const CollectionOfBasisTransformations<CoordinateType>& trialTransformations,
             const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& integral,
             const OpenClHandler& openClHandler);
+    virtual ~NonseparableNumericalTestKernelTrialIntegrator();
 
     virtual void integrate(
             CallVariant callVariant,
@@ -80,6 +82,11 @@ public:
             const std::vector<arma::Mat<ResultType>*>& result) const;
 
 private:
+    enum ElementType {TEST, TRIAL};
+
+    const BasisData<BasisFunctionType>&
+    basisData(ElementType type, const Basis<BasisFunctionType>& basis) const;
+
     arma::Mat<CoordinateType> m_localTestQuadPoints;
     arma::Mat<CoordinateType> m_localTrialQuadPoints;
     std::vector<CoordinateType> m_quadWeights;
@@ -94,10 +101,15 @@ private:
     const CollectionOfBasisTransformations<CoordinateType>& m_trialTransformations;
     const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& m_integral;
 
+    typedef tbb::concurrent_unordered_map<const Basis<BasisFunctionType>*,
+    BasisData<BasisFunctionType>* > BasisDataCache;
+    mutable BasisDataCache m_cachedTestBasisData;
+    mutable BasisDataCache m_cachedTrialBasisData;
+
     const OpenClHandler& m_openClHandler;
     // thread-local static data for integrate() -- allocation and deallocation of GeometricalData
     // is very time-consuming due to the presence of arma::Cube objects.
-    mutable tbb::enumerable_thread_specific<GeometricalData<CoordinateType> > 
+    mutable tbb::enumerable_thread_specific<GeometricalData<CoordinateType> >
     m_testGeomData, m_trialGeomData;
 };
 

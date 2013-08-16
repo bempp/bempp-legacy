@@ -85,6 +85,60 @@ NonseparableNumericalTestKernelTrialIntegrator(
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
+NonseparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
+~NonseparableNumericalTestKernelTrialIntegrator()
+{
+    // Note: obviously the destructor is assumed to be called only after
+    // all threads have ceased using the integrator!
+
+    for (typename BasisDataCache::const_iterator it = m_cachedTestBasisData.begin();
+         it != m_cachedTestBasisData.end(); ++it)
+        delete it->second;
+    m_cachedTestBasisData.clear();
+    for (typename BasisDataCache::const_iterator it = m_cachedTrialBasisData.begin();
+         it != m_cachedTrialBasisData.end(); ++it)
+        delete it->second;
+    m_cachedTrialBasisData.clear();
+}
+
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
+const BasisData<BasisFunctionType>&
+NonseparableNumericalTestKernelTrialIntegrator<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::
+basisData(ElementType type, const Basis<BasisFunctionType>& basis) const
+{
+    BasisDataCache& cache =
+            type == TEST ? m_cachedTestBasisData : m_cachedTrialBasisData;
+    const CollectionOfBasisTransformations<CoordinateType>& transformations =
+            type == TEST ? m_testTransformations : m_trialTransformations;
+    const arma::Mat<CoordinateType>& localQuadPoints =
+            type == TEST ? m_localTestQuadPoints : m_localTrialQuadPoints;
+
+    typename BasisDataCache::iterator it = cache.find(&basis);
+    if (it == cache.end()) {
+        // FIXME: At the beginning of each loop, all threads want to calculate
+        // these basis data. It would be good to do singular integral
+        // calculation in such a way that all types would be merged in a single
+        // parallel loop; this should solve this problem.
+
+        // Need to calculate basis data from scratch
+        std::auto_ptr<BasisData<BasisFunctionType> > basisData(
+                    new BasisData<BasisFunctionType>);
+        size_t basisDeps = 0, geomDeps = 0;
+        transformations.addDependencies(basisDeps, geomDeps);
+        basis.evaluate(basisDeps, localQuadPoints, ALL_DOFS, *basisData);
+        // Attempt to insert the newly created integrator into the map
+        std::pair<typename BasisDataCache::iterator, bool> result =
+                cache.insert(std::make_pair(&basis, basisData.release()));
+        it = result.first; // this is the object inserted into the cache
+    }
+    return *it->second;
+}
+
+template <typename BasisFunctionType, typename KernelType,
+          typename ResultType, typename GeometryFactory>
 void
 NonseparableNumericalTestKernelTrialIntegrator<
 BasisFunctionType, KernelType, ResultType, GeometryFactory>::
@@ -102,9 +156,9 @@ integrate(
 
     if (result.size() != elementIndicesA.size())
         throw std::invalid_argument(
-  	    "NonseparableNumericalTestKernelTrialIntegrator::integrate(): "
-	    "arrays 'result' and 'elementIndicesA' must have the same number "
-	    "of elements");
+        "NonseparableNumericalTestKernelTrialIntegrator::integrate(): "
+        "arrays 'result' and 'elementIndicesA' must have the same number "
+        "of elements");
     if (pointCount == 0 || elementACount == 0)
         return;
     // TODO: in the (pathological) case that pointCount == 0 but
@@ -211,9 +265,9 @@ integrate(
 
     if (result.size() != elementIndexPairs.size())
         throw std::invalid_argument(
-  	    "NonseparableNumericalTestKernelTrialIntegrator::integrate(): "
-	    "arrays 'result' and 'elementIndicesA' must have the same number "
-	    "of elements");
+        "NonseparableNumericalTestKernelTrialIntegrator::integrate(): "
+        "arrays 'result' and 'elementIndicesA' must have the same number "
+        "of elements");
     if (pointCount == 0 || geometryPairCount == 0)
         return;
     // TODO: in the (pathological) case that pointCount == 0 but
@@ -222,7 +276,11 @@ integrate(
     const int testDofCount = testBasis.size();
     const int trialDofCount = trialBasis.size();
 
-    BasisData<BasisFunctionType> testBasisData, trialBasisData;
+    // BasisData<BasisFunctionType> testBasisData, trialBasisData;
+    const BasisData<BasisFunctionType>& testBasisData
+            = basisData(TEST, testBasis);
+    const BasisData<BasisFunctionType>& trialBasisData
+            = basisData(TRIAL, trialBasis);
     GeometricalData<CoordinateType>& testGeomData = m_testGeomData.local();
     GeometricalData<CoordinateType>& trialGeomData = m_trialGeomData.local();
 
@@ -246,8 +304,8 @@ integrate(
         result[i]->set_size(testDofCount, trialDofCount);
     }
 
-    testBasis.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS, testBasisData);
-    trialBasis.evaluate(trialBasisDeps, m_localTrialQuadPoints, ALL_DOFS, trialBasisData);
+//    testBasis.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS, testBasisData);
+//    trialBasis.evaluate(trialBasisDeps, m_localTrialQuadPoints, ALL_DOFS, trialBasisData);
 
     // Iterate over the elements
     for (int pairIndex = 0; pairIndex < geometryPairCount; ++pairIndex)
