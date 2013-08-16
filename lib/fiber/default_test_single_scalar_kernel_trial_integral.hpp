@@ -168,18 +168,18 @@ public:
             arma::Mat<ResultType>& result) const;
 
 private:
-    typedef tbb::enumerable_thread_specific<std::vector<KernelType> > ProductData;
-    typedef typename ProductData::reference ProductDataReference;
-    mutable ProductData m_products;
+//    typedef tbb::enumerable_thread_specific<std::vector<KernelType> > ProductData;
+//    typedef typename ProductData::reference ProductDataReference;
+//    mutable ProductData m_products;
 
-    typedef tbb::enumerable_thread_specific<std::vector<ResultType> > FactorData;
-    typedef typename FactorData::reference FactorDataReference;
-    mutable FactorData m_reorderedTestValues;
-    mutable FactorData m_scaledTrialValues;
+//    typedef tbb::enumerable_thread_specific<std::vector<ResultType> > FactorData;
+//    typedef typename FactorData::reference FactorDataReference;
+//    mutable FactorData m_reorderedTestValues;
+//    mutable FactorData m_scaledTrialValues;
 
-    typedef tbb::enumerable_thread_specific<std::vector<BasisFunctionType> > BFTData;
-    typedef typename BFTData::reference BFTDataReference;
-    mutable BFTData m_bftData;
+//    typedef tbb::enumerable_thread_specific<std::vector<BasisFunctionType> > BFTData;
+//    typedef typename BFTData::reference BFTDataReference;
+//    mutable BFTData m_bftData;
 };
 
 template <typename CoordinateType_>

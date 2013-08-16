@@ -53,12 +53,13 @@ void evaluateWithNontensorQuadratureRuleStandardImpl(
     // (i -- transformations)
     // sum_i (\vec test_i \cdot \vec trial_i) kernel
     // or sum_i (\vec test_i \cdot kernel_i \vec trial_i) kernel
-    const size_t transCount = testValues.size();
-    assert(trialValues.size() == transCount);
-    assert(kernelValues.size() == 1 ||
-           kernelValues.size() == transCount);
 
-    // Evaluate constants
+    // Evaluate constants and assert that array dimensions are correct
+    const size_t transCount = testValues.size();
+    assert(transCount >= 1);
+    assert(trialValues.size() == transCount);
+    assert(kernelValues.size() == 1 || kernelValues.size() == transCount);
+
     const size_t testDofCount = testValues[0].extent(1);
     for (size_t i = 1; i < transCount; ++i)
         assert(testValues[i].extent(1) == testDofCount);
@@ -67,7 +68,6 @@ void evaluateWithNontensorQuadratureRuleStandardImpl(
         assert(trialValues[i].extent(1) == trialDofCount);
     const size_t pointCount = quadWeights.size();
 
-    // Assert that array dimensions are correct
     for (size_t i = 0; i < kernelValues.size(); ++i)
         assert(kernelValues[i].extent(2) == pointCount);
     for (size_t i = 0; i < transCount; ++i)
@@ -169,12 +169,13 @@ evaluateWithNontensorQuadratureRule(
     // (i -- transformations)
     // sum_i (\vec test_i \cdot \vec trial_i) kernel
     // or sum_i (\vec test_i \cdot kernel_i \vec trial_i) kernel
-    const size_t transCount = testValues.size();
-    assert(trialValues.size() == transCount);
-    assert(kernelValues.size() == 1 ||
-           kernelValues.size() == transCount);
 
-    // Evaluate constants
+    // Evaluate constants and assert that array dimensions are correct
+    const size_t transCount = testValues.size();
+    assert(transCount >= 1);
+    assert(trialValues.size() == transCount);
+    assert(kernelValues.size() == 1 || kernelValues.size() == transCount);
+
     const size_t testDofCount = testValues[0].extent(1);
     for (size_t i = 1; i < transCount; ++i)
         assert(testValues[i].extent(1) == testDofCount);
@@ -183,7 +184,6 @@ evaluateWithNontensorQuadratureRule(
         assert(trialValues[i].extent(1) == trialDofCount);
     const size_t pointCount = quadWeights.size();
 
-    // Assert that array dimensions are correct
     for (size_t i = 0; i < kernelValues.size(); ++i)
         assert(kernelValues[i].extent(2) == pointCount);
     for (size_t i = 0; i < transCount; ++i)
@@ -193,12 +193,12 @@ evaluateWithNontensorQuadratureRule(
     assert(result.n_rows == testDofCount);
     assert(result.n_cols == trialDofCount);
 
-    std::vector<KernelType> products;
-    products.resize(pointCount);
-
+    // Allocate memory for temporary arrays
+    std::vector<KernelType> products(pointCount);
     arma::Mat<CoordinateType> matResultReal(testDofCount, trialDofCount);
     arma::Mat<CoordinateType> matResultImag(testDofCount, trialDofCount);
 
+    // Evaluate each term of the integral in term
     for (size_t transIndex = 0; transIndex < transCount; ++transIndex) {
         const size_t transDim = testValues[transIndex].extent(0);
         assert(trialValues[transIndex].extent(0) == transDim);
