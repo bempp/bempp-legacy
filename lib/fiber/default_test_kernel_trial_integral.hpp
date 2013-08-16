@@ -122,9 +122,9 @@ public:
     virtual void evaluateWithTensorQuadratureRule(
             const GeometricalData<CoordinateType>& testGeomData,
             const GeometricalData<CoordinateType>& trialGeomData,
-            const CollectionOf3dArrays<BasisFunctionType>& testValues,
-            const CollectionOf3dArrays<BasisFunctionType>& trialValues,
-            const CollectionOf4dArrays<KernelType>& kernelValues,
+            CollectionOf3dArrays<BasisFunctionType>& testValues,
+            CollectionOf3dArrays<BasisFunctionType>& trialValues,
+            CollectionOf4dArrays<KernelType>& kernelValues,
             const std::vector<CoordinateType>& testQuadWeights,
             const std::vector<CoordinateType>& trialQuadWeights,
             arma::Mat<ResultType>& result) const;
