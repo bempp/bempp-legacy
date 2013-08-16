@@ -71,6 +71,9 @@ evaluateWithTensorQuadratureRule(
     for (size_t i = 0; i < trialValues.size(); ++i)
         assert(trialValues[i].extent(2) == trialPointCount);
 
+    assert(result.n_rows == testDofCount);
+    assert(result.n_cols == trialDofCount);
+
     // Integrate
 
     for (size_t trialDof = 0; trialDof < trialDofCount; ++trialDof)
