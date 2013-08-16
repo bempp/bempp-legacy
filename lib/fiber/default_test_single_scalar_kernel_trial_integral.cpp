@@ -172,6 +172,59 @@ void inplaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
 }
 
 template <typename BasisFunctionType, typename ResultType>
+void setToProduct(const arma::Mat<BasisFunctionType>& source,
+                  typename ScalarTraits<BasisFunctionType>::RealType weight,
+                  arma::Mat<ResultType>& result)
+{
+    result = weight * source.t();
+}
+
+template <typename CoordinateType>
+void setToProduct(const arma::Mat<CoordinateType>& source,
+                  CoordinateType weight,
+                  arma::Mat<std::complex<CoordinateType> >& result)
+{
+    result.set_real(weight * source.t());
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
+        const _3dArray<BasisFunctionType>& values,
+        const GeometricalData<typename ScalarTraits<BasisFunctionType>::RealType>& geomData,
+        const std::vector<typename ScalarTraits<BasisFunctionType>::RealType>& quadWeights,
+        std::vector<ResultType>& tmp)
+{
+    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+
+    const size_t transDim = values.extent(0);
+    const size_t dofCount = values.extent(1);
+    const size_t pointCount = values.extent(2);
+    const size_t sliceSize = transDim * dofCount;
+
+    const BasisFunctionType* sourceSliceStart = values.begin();
+    tmp.resize(dofCount * transDim * pointCount);
+    ResultType* destSliceStart = &tmp[0];
+
+    for (size_t point = 0; point < pointCount; ++point) {
+        arma::Mat<BasisFunctionType> origMat(
+                    const_cast<BasisFunctionType*>(sourceSliceStart),
+                    transDim, dofCount, false);
+        arma::Mat<ResultType> transposedMat(
+                    destSliceStart,
+                    dofCount, transDim, false);
+        const CoordinateType weight =
+                geomData.integrationElements(point) * quadWeights[point];
+        // And now, transpose data physically (if needed, i.e. if slices
+        // are not logically one-dimensional)
+        // we take the complex conjugate here
+        setToProduct(origMat, weight, transposedMat);
+        // transposedMat = weight * origMat.t();
+        sourceSliceStart += sliceSize;
+        destSliceStart += sliceSize;
+    }
+}
+
+template <typename BasisFunctionType, typename ResultType>
 inline void addABt(
         const arma::Mat<BasisFunctionType>& A,
         const arma::Mat<BasisFunctionType>& B,
@@ -204,18 +257,98 @@ inline void multiplyTestKernelTrialAndAddToResult(
     addABt(matTest, matTmp, result);
 }
 
-template <typename BasisFunctionType, typename ResultType>
+//template <typename BasisFunctionType, typename ResultType>
+//void evaluateWithTensorQuadratureRuleImpl(
+//        const GeometricalData<typename ScalarTraits<ResultType>::RealType>& testGeomData,
+//        const GeometricalData<typename ScalarTraits<ResultType>::RealType>& trialGeomData,
+//        CollectionOf3dArrays<BasisFunctionType>& testValues,
+//        CollectionOf3dArrays<BasisFunctionType>& trialValues,
+//        CollectionOf4dArrays<BasisFunctionType>& kernelValues,
+//        const std::vector<typename ScalarTraits<ResultType>::RealType>& testQuadWeights,
+//        const std::vector<typename ScalarTraits<ResultType>::RealType>& trialQuadWeights,
+//        arma::Mat<ResultType>& result)
+//{
+//    typedef BasisFunctionType KernelType;
+//    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+
+//    // Evaluate constants and assert that array dimensions are correct
+//    const size_t transCount = testValues.size();
+//    assert(transCount >= 1);
+//    assert(trialValues.size() == transCount);
+//    assert(kernelValues.size() == 1 || kernelValues.size() == transCount);
+
+//    const size_t testDofCount = testValues[0].extent(1);
+//    for (size_t i = 1; i < transCount; ++i)
+//        assert(testValues[i].extent(1) == testDofCount);
+//    const size_t trialDofCount = trialValues[0].extent(1);
+//    for (size_t i = 1; i < transCount; ++i)
+//        assert(trialValues[i].extent(1) == trialDofCount);
+
+//    const size_t testPointCount = testQuadWeights.size();
+//    const size_t trialPointCount = trialQuadWeights.size();
+
+//    for (size_t i = 0; i < kernelValues.size(); ++i) {
+//        assert(kernelValues[i].extent(0) == 1); // kernel is assumed to be scalar
+//        assert(kernelValues[i].extent(1) == 1); // kernel is assumed to be scalar
+//        assert(kernelValues[i].extent(2) == testPointCount);
+//        assert(kernelValues[i].extent(3) == trialPointCount);
+//    }
+//    for (size_t i = 0; i < transCount; ++i)
+//        assert(testValues[i].extent(2) == testPointCount);
+//    for (size_t i = 0; i < transCount; ++i)
+//        assert(trialValues[i].extent(2) == trialPointCount);
+
+//    assert(result.n_rows == testDofCount);
+//    assert(result.n_cols == trialDofCount);
+
+//    // Initialize the result matrix
+//    result.fill(0);
+
+//    // Declare temporary memory area
+//    std::vector<BasisFunctionType> tmp;
+
+//    for (size_t transIndex = 0; transIndex < transCount; ++transIndex) {
+//        // Multiply elements of all test- and trialValues arrays and
+//        // transpose their dim and dof dimensions
+//        const size_t transDim = testValues[transIndex].extent(0);
+//        assert(transDim > 0);
+//        assert(trialValues[transIndex].extent(0) == transDim);
+//        inplaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
+//                    testGeomData, testQuadWeights, tmp, testValues[transIndex]);
+//        inplaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
+//                    trialGeomData, trialQuadWeights, tmp, trialValues[transIndex]);
+
+//        const size_t kernelIndex = kernelValues.size() == 1 ? 0 : transIndex;
+//        // Now do the matrix-matrix-matrix multiplications
+//        arma::Mat<BasisFunctionType> matTest(
+//                    testValues[transIndex].begin(),
+//                    testDofCount, testPointCount * transDim,
+//                    false /* don't copy */, true);
+//        arma::Mat<KernelType> matKernel(
+//                    kernelValues[kernelIndex].begin(),
+//                    testPointCount, trialPointCount,
+//                    false /* don't copy */, true);
+//        arma::Mat<BasisFunctionType> matTrial(
+//                    trialValues[transIndex].begin(),
+//                    trialDofCount, trialPointCount * transDim,
+//                    false /* don't copy */, true);
+//        multiplyTestKernelTrialAndAddToResult(
+//                    matTest, matKernel, matTrial, tmp, result);
+//    }
+//}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
 void evaluateWithTensorQuadratureRuleImpl(
         const GeometricalData<typename ScalarTraits<ResultType>::RealType>& testGeomData,
         const GeometricalData<typename ScalarTraits<ResultType>::RealType>& trialGeomData,
-        CollectionOf3dArrays<BasisFunctionType>& testValues,
-        CollectionOf3dArrays<BasisFunctionType>& trialValues,
-        CollectionOf4dArrays<BasisFunctionType>& kernelValues,
+        const CollectionOf3dArrays<BasisFunctionType>& testValues,
+        const CollectionOf3dArrays<BasisFunctionType>& trialValues,
+        const CollectionOf4dArrays<KernelType>& kernelValues,
         const std::vector<typename ScalarTraits<ResultType>::RealType>& testQuadWeights,
         const std::vector<typename ScalarTraits<ResultType>::RealType>& trialQuadWeights,
         arma::Mat<ResultType>& result)
 {
-    typedef BasisFunctionType KernelType;
+    // typedef ResultType KernelType;
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
     // Evaluate constants and assert that array dimensions are correct
@@ -251,8 +384,8 @@ void evaluateWithTensorQuadratureRuleImpl(
     // Initialize the result matrix
     result.fill(0);
 
-    // Declare temporary memory area
-    std::vector<BasisFunctionType> tmp;
+    // Declare temporary memory areas
+    std::vector<ResultType> tmpReordered, tmpIntermediate;
 
     for (size_t transIndex = 0; transIndex < transCount; ++transIndex) {
         // Multiply elements of all test- and trialValues arrays and
@@ -260,27 +393,36 @@ void evaluateWithTensorQuadratureRuleImpl(
         const size_t transDim = testValues[transIndex].extent(0);
         assert(transDim > 0);
         assert(trialValues[transIndex].extent(0) == transDim);
-        inplaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
-                    testGeomData, testQuadWeights, tmp, testValues[transIndex]);
-        inplaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
-                    trialGeomData, trialQuadWeights, tmp, trialValues[transIndex]);
 
+        // TmpIntermediate = Kernel * Trial
+        outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
+                    trialValues[transIndex], trialGeomData, trialQuadWeights,
+                    tmpReordered);
+        arma::Mat<ResultType> matTrial(
+                    &tmpReordered[0],
+                    trialDofCount * transDim, trialPointCount, false);
         const size_t kernelIndex = kernelValues.size() == 1 ? 0 : transIndex;
-        // Now do the matrix-matrix-matrix multiplications
-        arma::Mat<BasisFunctionType> matTest(
-                    testValues[transIndex].begin(),
-                    testDofCount, testPointCount * transDim,
-                    false /* don't copy */, true);
         arma::Mat<KernelType> matKernel(
-                    kernelValues[kernelIndex].begin(),
+                    const_cast<KernelType*>(kernelValues[kernelIndex].begin()),
                     testPointCount, trialPointCount,
                     false /* don't copy */, true);
-        arma::Mat<BasisFunctionType> matTrial(
-                    trialValues[transIndex].begin(),
-                    trialDofCount, trialPointCount * transDim,
-                    false /* don't copy */, true);
-        multiplyTestKernelTrialAndAddToResult(
-                    matTest, matKernel, matTrial, tmp, result);
+        tmpIntermediate.resize(matTrial.n_rows * matKernel.n_rows);
+
+        typedef typename Coercion<BasisFunctionType, ResultType>::Type IntermediateType;
+        arma::Mat<IntermediateType> matTmp(
+                    &tmpIntermediate[0],
+                    trialDofCount * transDim, testPointCount, false);
+        matTmp = matTrial * matKernel.t();
+        matTmp.set_size(trialDofCount, transDim * testPointCount);
+
+        // Result += Test * Trial
+        outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
+                    testValues[transIndex], testGeomData, testQuadWeights,
+                    tmpReordered);
+        arma::Mat<ResultType> matTest(
+                    &tmpReordered[0],
+                    testDofCount, transDim * testPointCount, false);
+        result += matTest * matTmp.t();
     }
 }
 
@@ -527,6 +669,26 @@ addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const
 //            result(testDof, trialDof) = sum;
 //        }
 //}
+
+template <typename CoordinateType_>
+void DefaultTestSingleScalarKernelTrialIntegral<CoordinateType_,
+std::complex<CoordinateType_>, std::complex<CoordinateType_> >::
+evaluateWithTensorQuadratureRule(
+        const GeometricalData<CoordinateType>& testGeomData,
+        const GeometricalData<CoordinateType>& trialGeomData,
+        CollectionOf3dArrays<BasisFunctionType>& testValues,
+        CollectionOf3dArrays<BasisFunctionType>& trialValues,
+        CollectionOf4dArrays<KernelType>& kernelValues,
+        const std::vector<CoordinateType>& testQuadWeights,
+        const std::vector<CoordinateType>& trialQuadWeights,
+        arma::Mat<ResultType>& result) const
+{
+    evaluateWithTensorQuadratureRuleImpl(
+                testGeomData, trialGeomData,
+                testValues, trialValues, kernelValues,
+                testQuadWeights, trialQuadWeights,
+                result);
+}
 
 template <typename BasisFunctionType_, typename ResultType_>
 void DefaultTestSingleScalarKernelTrialIntegral<BasisFunctionType_,
