@@ -140,8 +140,8 @@ template <typename BasisFunctionType_, typename ResultType_>
 void DefaultTestSingleScalarKernelTrialIntegral<BasisFunctionType_,
 BasisFunctionType_, ResultType_>::
 evaluateWithNontensorQuadratureRule(
-        GeometricalData<CoordinateType>& testGeomData,
-        GeometricalData<CoordinateType>& trialGeomData,
+        const GeometricalData<CoordinateType>& testGeomData,
+        const GeometricalData<CoordinateType>& trialGeomData,
         CollectionOf3dArrays<BasisFunctionType>& testValues,
         CollectionOf3dArrays<BasisFunctionType>& trialValues,
         CollectionOf3dArrays<KernelType>& kernelValues,
@@ -157,8 +157,8 @@ template <typename CoordinateType>
 void DefaultTestSingleScalarKernelTrialIntegral<CoordinateType,
 std::complex<CoordinateType>, std::complex<CoordinateType> >::
 evaluateWithNontensorQuadratureRule(
-        GeometricalData<CoordinateType>& testGeomData,
-        GeometricalData<CoordinateType>& trialGeomData,
+        const GeometricalData<CoordinateType>& testGeomData,
+        const GeometricalData<CoordinateType>& trialGeomData,
         CollectionOf3dArrays<BasisFunctionType>& testValues,
         CollectionOf3dArrays<BasisFunctionType>& trialValues,
         CollectionOf3dArrays<KernelType>& kernelValues,
@@ -295,8 +295,8 @@ template <typename CoordinateType>
 void DefaultTestSingleScalarKernelTrialIntegral<std::complex<CoordinateType>,
 CoordinateType, std::complex<CoordinateType> >::
 evaluateWithNontensorQuadratureRule(
-        GeometricalData<CoordinateType>& testGeomData,
-        GeometricalData<CoordinateType>& trialGeomData,
+        const GeometricalData<CoordinateType>& testGeomData,
+        const GeometricalData<CoordinateType>& trialGeomData,
         CollectionOf3dArrays<BasisFunctionType>& testValues,
         CollectionOf3dArrays<BasisFunctionType>& trialValues,
         CollectionOf3dArrays<KernelType>& kernelValues,

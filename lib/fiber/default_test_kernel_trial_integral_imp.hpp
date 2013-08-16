@@ -103,8 +103,8 @@ evaluateWithTensorQuadratureRule(
 template <typename IntegrandFunctor>
 void DefaultTestKernelTrialIntegral<IntegrandFunctor>::
 evaluateWithNontensorQuadratureRule(
-        GeometricalData<CoordinateType>& testGeomData,
-        GeometricalData<CoordinateType>& trialGeomData,
+        const GeometricalData<CoordinateType>& testGeomData,
+        const GeometricalData<CoordinateType>& trialGeomData,
         CollectionOf3dArrays<BasisFunctionType>& testValues,
         CollectionOf3dArrays<BasisFunctionType>& trialValues,
         CollectionOf3dArrays<KernelType>& kernelValues,

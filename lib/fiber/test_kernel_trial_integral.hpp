@@ -182,8 +182,8 @@ public:
             arma::Mat<ResultType>& result) const = 0;
 
     virtual void evaluateWithNontensorQuadratureRule(
-            GeometricalData<CoordinateType>& testGeomData,
-            GeometricalData<CoordinateType>& trialGeomData,
+            const GeometricalData<CoordinateType>& testGeomData,
+            const GeometricalData<CoordinateType>& trialGeomData,
             CollectionOf3dArrays<BasisFunctionType>& testTransformations,
             CollectionOf3dArrays<BasisFunctionType>& trialTransformations,
             CollectionOf3dArrays<KernelType>& kernels,
