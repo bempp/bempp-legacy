@@ -210,11 +210,11 @@ private:
     // ConcreteEntity) because they need to know the full declaration of
     // concrete iterator (which may not be available at this stage)
     template <int codimSub>
-    typename boost::disable_if_c<codimSub <= DuneEntity::dimension, std::auto_ptr<EntityIterator<codimSub> > >::type
+    typename boost::disable_if_c<(codimSub <= DuneEntity::dimension), std::auto_ptr<EntityIterator<codimSub> > >::type
     subEntityCodimNIterator() const;
 
     template <int codimSub>
-    typename boost::enable_if_c<codimSub <= DuneEntity::dimension, std::auto_ptr<EntityIterator<codimSub> > >::type
+    typename boost::enable_if_c<(codimSub <= DuneEntity::dimension), std::auto_ptr<EntityIterator<codimSub> > >::type
     subEntityCodimNIterator() const;
 
     virtual size_t subEntityCodim1Count() const {
