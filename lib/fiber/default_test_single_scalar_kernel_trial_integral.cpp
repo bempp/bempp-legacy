@@ -350,6 +350,7 @@ void evaluateWithTensorQuadratureRuleImpl(
 {
     // typedef ResultType KernelType;
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+    typedef typename Coercion<BasisFunctionType, ResultType>::Type IntermediateType;
 
     // Evaluate constants and assert that array dimensions are correct
     const size_t transCount = testValues.size();
@@ -394,35 +395,61 @@ void evaluateWithTensorQuadratureRuleImpl(
         assert(transDim > 0);
         assert(trialValues[transIndex].extent(0) == transDim);
 
-        // TmpIntermediate = Kernel * Trial
-        outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
-                    trialValues[transIndex], trialGeomData, trialQuadWeights,
-                    tmpReordered);
-        arma::Mat<ResultType> matTrial(
-                    &tmpReordered[0],
-                    trialDofCount * transDim, trialPointCount, false);
         const size_t kernelIndex = kernelValues.size() == 1 ? 0 : transIndex;
         arma::Mat<KernelType> matKernel(
                     const_cast<KernelType*>(kernelValues[kernelIndex].begin()),
                     testPointCount, trialPointCount,
                     false /* don't copy */, true);
-        tmpIntermediate.resize(matTrial.n_rows * matKernel.n_rows);
 
-        typedef typename Coercion<BasisFunctionType, ResultType>::Type IntermediateType;
-        arma::Mat<IntermediateType> matTmp(
-                    &tmpIntermediate[0],
-                    trialDofCount * transDim, testPointCount, false);
-        matTmp = matTrial * matKernel.t();
-        matTmp.set_size(trialDofCount, transDim * testPointCount);
+        if (testDofCount >= trialDofCount) {
+            // TmpIntermediate = Kernel * Trial
+            outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
+                        trialValues[transIndex], trialGeomData, trialQuadWeights,
+                        tmpReordered);
+            arma::Mat<ResultType> matTrial(
+                        &tmpReordered[0],
+                        trialDofCount * transDim, trialPointCount, false);
+            tmpIntermediate.resize(matTrial.n_rows * matKernel.n_rows);
 
-        // Result += Test * Trial
-        outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
-                    testValues[transIndex], testGeomData, testQuadWeights,
-                    tmpReordered);
-        arma::Mat<ResultType> matTest(
-                    &tmpReordered[0],
-                    testDofCount, transDim * testPointCount, false);
-        result += matTest * matTmp.t();
+            arma::Mat<IntermediateType> matTmp(
+                        &tmpIntermediate[0],
+                        trialDofCount * transDim, testPointCount, false);
+            matTmp = matTrial * matKernel.t();
+            matTmp.set_size(trialDofCount, transDim * testPointCount);
+
+            // Result += Test * Tmp
+            outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
+                        testValues[transIndex], testGeomData, testQuadWeights,
+                        tmpReordered);
+            arma::Mat<ResultType> matTest(
+                        &tmpReordered[0],
+                        testDofCount, transDim * testPointCount, false);
+            result += matTest * matTmp.t();
+        } else { // testDofCount < trialDofCount
+            // TmpIntermediate = Test * Kernel
+            outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
+                        testValues[transIndex], testGeomData, testQuadWeights,
+                        tmpReordered);
+            arma::Mat<ResultType> matTest(
+                        &tmpReordered[0],
+                        testDofCount * transDim, testPointCount, false);
+            tmpIntermediate.resize(matTest.n_rows * matKernel.n_cols);
+
+            arma::Mat<IntermediateType> matTmp(
+                        &tmpIntermediate[0],
+                        testDofCount * transDim, trialPointCount, false);
+            matTmp = matTest * matKernel;
+            matTmp.set_size(testDofCount, transDim * trialPointCount);
+
+            // Result += Tmp * Trial
+            outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
+                        trialValues[transIndex], trialGeomData, trialQuadWeights,
+                        tmpReordered);
+            arma::Mat<ResultType> matTrial(
+                        &tmpReordered[0],
+                        trialDofCount, transDim * trialPointCount, false);
+            result += matTmp * matTrial.t();
+        }
     }
 }
 

@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_SUITE(IntegralEvaluationWithBlas)
 //                    100 * std::numeric_limits<RealType>::epsilon()));
 //}
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(blas_works_for_modified_helmholtz_3d_double_layer_operator,
+BOOST_AUTO_TEST_CASE_TEMPLATE(blas_works_for_modified_helmholtz_3d_double_layer_operator_spaces_a,
                               Traits, basis_kernel_result_combinations)
 {
     typedef typename Traits::BasisFunctionType BFT;
@@ -229,7 +229,62 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blas_works_for_modified_helmholtz_3d_double_layer_
                     100 * std::numeric_limits<RealType>::epsilon()));
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(blas_works_for_laplace_3d_hypersingular_operator,
+BOOST_AUTO_TEST_CASE_TEMPLATE(blas_works_for_modified_helmholtz_3d_double_layer_operator_spaces_b,
+                              Traits, basis_kernel_result_combinations)
+{
+    typedef typename Traits::BasisFunctionType BFT;
+    typedef typename Traits::KernelType KT;
+    typedef typename Traits::ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType RealType;
+
+    KT waveNumber = initWaveNumber<KT>();
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+//        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+    params, "meshes/cube-12-reoriented.msh", false /* verbose */);
+
+    shared_ptr<Space<BFT> > pwiseLinears(
+        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
+    shared_ptr<Space<BFT> > pwiseQuads(
+        new PiecewisePolynomialContinuousScalarSpace<BFT>(grid, 2));
+
+    AccuracyOptions accuracyOptions;
+    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
+    accuracyOptions.singleRegular.setRelativeQuadratureOrder(2);
+    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
+                new NumericalQuadratureStrategy<BFT, RT>(accuracyOptions));
+
+    AssemblyOptions assemblyOptionsNoBlas;
+    //assemblyOptionsNoBlas.setMaxThreadCount(1);
+    assemblyOptionsNoBlas.setVerbosityLevel(VerbosityLevel::LOW);
+    shared_ptr<Context<BFT, RT> > contextNoBlas(
+        new Context<BFT, RT>(quadStrategy, assemblyOptionsNoBlas));
+
+    BoundaryOperator<BFT, RT> opNoBlas =
+            modifiedHelmholtz3dDoubleLayerBoundaryOperator<BFT, KT, RT>(
+                contextNoBlas, pwiseLinears, pwiseLinears, pwiseQuads, waveNumber);
+    arma::Mat<RT> weakFormNoBlas = opNoBlas.weakForm()->asMatrix();
+
+    AssemblyOptions assemblyOptionsBlas;
+    assemblyOptionsBlas.enableBlasInQuadrature();
+    //assemblyOptionsBlas.setMaxThreadCount(1);
+    assemblyOptionsBlas.setVerbosityLevel(VerbosityLevel::LOW);
+    shared_ptr<Context<BFT, RT> > contextBlas(
+        new Context<BFT, RT>(quadStrategy, assemblyOptionsBlas));
+
+    BoundaryOperator<BFT, RT> opBlas =
+            modifiedHelmholtz3dDoubleLayerBoundaryOperator<BFT, KT, RT>(
+                contextBlas, pwiseLinears, pwiseLinears, pwiseQuads, waveNumber);
+    arma::Mat<RT> weakFormBlas = opBlas.weakForm()->asMatrix();
+
+    BOOST_CHECK(check_arrays_are_close<RT>(
+                    weakFormNoBlas, weakFormBlas,
+                    100 * std::numeric_limits<RealType>::epsilon()));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(blas_works_for_laplace_3d_hypersingular_operator_spaces_a,
                               Traits, basis_result_combinations)
 {
     typedef typename Traits::BasisFunctionType BFT;
@@ -272,6 +327,56 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blas_works_for_laplace_3d_hypersingular_operator,
     BoundaryOperator<BFT, RT> opBlas =
             laplace3dHypersingularBoundaryOperator<BFT, RT>(
                 contextBlas, pwiseQuads, pwiseQuads, pwiseLinears);
+    arma::Mat<RT> weakFormBlas = opBlas.weakForm()->asMatrix();
+
+    BOOST_CHECK(check_arrays_are_close<RT>(
+                    weakFormNoBlas, weakFormBlas,
+                    100 * std::numeric_limits<RealType>::epsilon()));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(blas_works_for_laplace_3d_hypersingular_operator_spaces_b,
+                              Traits, basis_result_combinations)
+{
+    typedef typename Traits::BasisFunctionType BFT;
+    typedef typename Traits::ResultType RT;
+    typedef typename ScalarTraits<RT>::RealType RealType;
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+    //        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+                params, "meshes/cube-12-reoriented.msh", false /* verbose */);
+
+    shared_ptr<Space<BFT> > pwiseLinears(
+        new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid));
+    shared_ptr<Space<BFT> > pwiseQuads(
+        new PiecewisePolynomialContinuousScalarSpace<BFT>(grid, 2));
+
+    AccuracyOptions accuracyOptions;
+    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
+    accuracyOptions.singleRegular.setRelativeQuadratureOrder(2);
+    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
+                new NumericalQuadratureStrategy<BFT, RT>(accuracyOptions));
+
+    AssemblyOptions assemblyOptionsNoBlas;
+    assemblyOptionsNoBlas.setVerbosityLevel(VerbosityLevel::LOW);
+    shared_ptr<Context<BFT, RT> > contextNoBlas(
+        new Context<BFT, RT>(quadStrategy, assemblyOptionsNoBlas));
+
+    BoundaryOperator<BFT, RT> opNoBlas =
+            laplace3dHypersingularBoundaryOperator<BFT, RT>(
+                contextNoBlas, pwiseLinears, pwiseQuads, pwiseQuads);
+    arma::Mat<RT> weakFormNoBlas = opNoBlas.weakForm()->asMatrix();
+
+    AssemblyOptions assemblyOptionsBlas;
+    assemblyOptionsBlas.enableBlasInQuadrature();
+    assemblyOptionsBlas.setVerbosityLevel(VerbosityLevel::LOW);
+    shared_ptr<Context<BFT, RT> > contextBlas(
+        new Context<BFT, RT>(quadStrategy, assemblyOptionsBlas));
+
+    BoundaryOperator<BFT, RT> opBlas =
+            laplace3dHypersingularBoundaryOperator<BFT, RT>(
+                contextBlas, pwiseLinears, pwiseQuads, pwiseQuads);
     arma::Mat<RT> weakFormBlas = opBlas.weakForm()->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<RT>(
