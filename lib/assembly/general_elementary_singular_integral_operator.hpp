@@ -139,6 +139,12 @@ public:
             const TrialTransformationsFunctor& trialTransformationsFunctor,
             const IntegrandFunctor& integrandFunctor);
 
+    /** \overload
+     *
+     *  This constructor takes the same arguments as the preceding one
+     *  except for the \p integral argument, which should be a shared pointer
+     *  to an instance of (a subclass of) Fiber::TestKernelTrialIntegral.
+     */
     template <typename KernelFunctor,
               typename TestTransformationsFunctor,
               typename TrialTransformationsFunctor>
@@ -154,6 +160,14 @@ public:
             const shared_ptr<Fiber::TestKernelTrialIntegral<
             BasisFunctionType_, KernelType_, ResultType_> >& integral);
 
+    /** \overload
+     *
+     *  This constructor takes the same first five arguments as the preceding
+     *  ones, but the last four arguments should be shared pointers to
+     *  instances of Fiber::CollectionOfKernels,
+     *  Fiber::CollectionOfBasisTransformations and
+     *  Fiber::TestKernelTrialIntegral.
+     */
     GeneralElementarySingularIntegralOperator(
         const shared_ptr<const Space<BasisFunctionType_> >& domain,
         const shared_ptr<const Space<BasisFunctionType_> >& range,

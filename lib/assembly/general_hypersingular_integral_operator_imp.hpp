@@ -82,6 +82,54 @@ GeneralHypersingularIntegralOperator(
 {
 }
 
+template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
+template <typename KernelFunctor,
+          typename TestTransformationsFunctor,
+          typename TrialTransformationsFunctor,
+          typename OffDiagonalKernelFunctor,
+          typename OffDiagonalTestTransformationsFunctor,
+          typename OffDiagonalTrialTransformationsFunctor>
+GeneralHypersingularIntegralOperator<
+BasisFunctionType_, KernelType_, ResultType_>::
+GeneralHypersingularIntegralOperator(
+        const shared_ptr<const Space<BasisFunctionType_> >& domain,
+        const shared_ptr<const Space<BasisFunctionType_> >& range,
+        const shared_ptr<const Space<BasisFunctionType_> >& dualToRange,
+        const std::string& label,
+        int symmetry,
+        const KernelFunctor& kernelFunctor,
+        const TestTransformationsFunctor& testTransformationsFunctor,
+        const TrialTransformationsFunctor& trialTransformationsFunctor,
+        const shared_ptr<Fiber::TestKernelTrialIntegral<
+                BasisFunctionType_, KernelType_, ResultType_> >& integral,
+        const OffDiagonalKernelFunctor& offDiagonalKernelFunctor,
+        const OffDiagonalTestTransformationsFunctor& offDiagonalTestTransformationsFunctor,
+        const OffDiagonalTrialTransformationsFunctor& offDiagonalTrialTransformationsFunctor,
+        const shared_ptr<Fiber::TestKernelTrialIntegral<
+                BasisFunctionType_, KernelType_, ResultType_> >& offDiagonalIntegral) :
+    Base(domain, range, dualToRange, label, symmetry),
+    m_kernels(
+        new Fiber::DefaultCollectionOfKernels<KernelFunctor>(kernelFunctor)),
+    m_testTransformations(
+        new Fiber::DefaultCollectionOfBasisTransformations<TestTransformationsFunctor>(
+            testTransformationsFunctor)),
+    m_trialTransformations(
+        new Fiber::DefaultCollectionOfBasisTransformations<TrialTransformationsFunctor>(
+            trialTransformationsFunctor)),
+    m_integral(integral),
+    m_offDiagonalKernels(
+        new Fiber::DefaultCollectionOfKernels<OffDiagonalKernelFunctor>(
+            offDiagonalKernelFunctor)),
+    m_offDiagonalTestTransformations(
+        new Fiber::DefaultCollectionOfBasisTransformations<OffDiagonalTestTransformationsFunctor>(
+            offDiagonalTestTransformationsFunctor)),
+    m_offDiagonalTrialTransformations(
+        new Fiber::DefaultCollectionOfBasisTransformations<OffDiagonalTrialTransformationsFunctor>(
+            offDiagonalTrialTransformationsFunctor)),
+    m_offDiagonalIntegral(offDiagonalIntegral)
+{
+}
+
 } // namespace Bempp
 
 #endif

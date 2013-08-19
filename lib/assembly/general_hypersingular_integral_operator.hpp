@@ -173,6 +173,36 @@ public:
             const OffDiagonalTrialTransformationsFunctor& offDiagonalTrialTransformationsFunctor,
             const OffDiagonalIntegrandFunctor& offDiagonalIntegrandFunctor);
 
+    /** \overload
+     *
+     *  This constructor takes the same arguments as the preceding one except
+     *  for the \p integral and \p offDiagonalIntegral arguments, which should
+     *  be shared pointers to instances of (a subclass of)
+     *  Fiber::TestKernelTrialIntegral rather than functors.
+     */
+    template <typename KernelFunctor,
+              typename TestTransformationsFunctor,
+              typename TrialTransformationsFunctor,
+              typename OffDiagonalKernelFunctor,
+              typename OffDiagonalTestTransformationsFunctor,
+              typename OffDiagonalTrialTransformationsFunctor>
+    GeneralHypersingularIntegralOperator(
+            const shared_ptr<const Space<BasisFunctionType_> >& domain,
+            const shared_ptr<const Space<BasisFunctionType_> >& range,
+            const shared_ptr<const Space<BasisFunctionType_> >& dualToRange,
+            const std::string& label,
+            int symmetry,
+            const KernelFunctor& kernelFunctor,
+            const TestTransformationsFunctor& testTransformationsFunctor,
+            const TrialTransformationsFunctor& trialTransformationsFunctor,
+            const shared_ptr<Fiber::TestKernelTrialIntegral<
+            BasisFunctionType_, KernelType_, ResultType_> >& integral,
+            const OffDiagonalKernelFunctor& offDiagonalKernelFunctor,
+            const OffDiagonalTestTransformationsFunctor& offDiagonalTestTransformationsFunctor,
+            const OffDiagonalTrialTransformationsFunctor& offDiagonalTrialTransformationsFunctor,
+            const shared_ptr<Fiber::TestKernelTrialIntegral<
+            BasisFunctionType_, KernelType_, ResultType_> >& offDiagonalIntegral);
+
     virtual const CollectionOfKernels& kernels() const
     { return *m_kernels; }
     virtual const CollectionOfBasisTransformations& testTransformations() const
