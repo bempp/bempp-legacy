@@ -44,6 +44,7 @@
 #include "space/piecewise_linear_continuous_scalar_space.hpp"
 #include "space/piecewise_constant_scalar_space.hpp"
 #include "space/piecewise_constant_dual_mesh_scalar_space_barycentric.hpp"
+#include "space/piecewise_linear_continuous_scalar_space_barycentric.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -114,33 +115,61 @@ int main()
     arma::Col<double> upperRight(2);
     arma::Col<unsigned int> elemNumbers(2);
 
-    lowerLeft(0) = 0;
-    lowerLeft(1) = 0;
-    upperRight(0) = 1;
-    upperRight(1) = 1;
-    elemNumbers(0) = 1;
-    elemNumbers(1) = 1;
+    arma::Mat<double> corners(3,3);
+    arma::Mat<int> elements(3,1);
 
-    const char* meshFile = "/Users/betcke/local/bempp/development-debug/bempp/examples/meshes/sphere-h-0.4.msh";
+    corners(0,0) = 0;
+    corners(1,0) = 0;
+    corners(2,0) = 0;
+
+    corners(0,1) = 1;
+    corners(1,1) = 0;
+    corners(2,1) = 0;
+
+    corners(0,2) = 0;
+    corners(1,2) = 1;
+    corners(2,2) = 1;
+
+    elements(0,0) = 0;
+    elements(1,0) = 1;
+    elements(2,0) = 2;
+
+
+//    lowerLeft(0) = 0;
+//    lowerLeft(1) = 0;
+//    upperRight(0) = 1;
+//    upperRight(1) = 1;
+//    elemNumbers(0) = 1;
+//    elemNumbers(1) = 1;
+
+    //const char* meshFile = "/Users/betcke/local/bempp/development-debug/bempp/examples/meshes/sphere-h-0.4.msh";
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
-    shared_ptr<Grid> grid = GridFactory::importGmshGrid(params, meshFile);
+    //shared_ptr<Grid> grid = GridFactory::importGmshGrid(params, meshFile);
     //shared_ptr<Grid> grid = GridFactory::createStructuredGrid(params,lowerLeft,upperRight,elemNumbers);
-    shared_ptr<Grid> grid2 = grid->barycentricGrid();
+    shared_ptr<Grid> grid = GridFactory::createGridFromConnectivityArrays(params,corners,elements);
+    //shared_ptr<Grid> grid2 = grid->barycentricGrid();
 
     // Initialize the spaces
 
-    PiecewiseConstantDualMeshScalarSpaceBarycentric<BFT> pconsts(grid2);
+    //PiecewiseConstantDualMeshScalarSpaceBarycentric<BFT> pconsts(grid2);
+    //PiecewiseConstantDualMeshScalarSpaceBarycentric<BFT> pconsts(grid);
+    //std::cout << "Dual Space end" << std::endl;
+
+    PiecewiseLinearContinuousScalarSpaceBarycentric<BFT> plinsb(grid);
+    PiecewiseLinearContinuousScalarSpace<BFT>plins(grid);
+
 
     // Define the quadrature strategy
 
     AccuracyOptions accuracyOptions;
     // Increase by 2 the order of quadrature rule used to approximate
     // integrals of regular functions on pairs on elements
-    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
+    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(8);
+    accuracyOptions.doubleSingular.setRelativeQuadratureOrder(8);
     // Increase by 2 the order of quadrature rule used to approximate
     // integrals of regular functions on single elements
-    accuracyOptions.singleRegular.setRelativeQuadratureOrder(2);
+    accuracyOptions.singleRegular.setRelativeQuadratureOrder(6);
     NumericalQuadratureStrategy<BFT, RT> quadStrategy(accuracyOptions);
 
     // Specify the assembly method. We want to use ACA
@@ -155,16 +184,33 @@ int main()
 
     // Construct elementary operators
 
+    BoundaryOperator<BFT, RT> slpOpb =
+            laplace3dSingleLayerBoundaryOperator<BFT, RT>(
+                make_shared_from_ref(context),
+                make_shared_from_ref(plinsb),
+                make_shared_from_ref(plinsb),
+                make_shared_from_ref(plinsb));
+
     BoundaryOperator<BFT, RT> slpOp =
             laplace3dSingleLayerBoundaryOperator<BFT, RT>(
                 make_shared_from_ref(context),
-                make_shared_from_ref(pconsts),
-                make_shared_from_ref(pconsts),
-                make_shared_from_ref(pconsts));
+                make_shared_from_ref(plins),
+                make_shared_from_ref(plins),
+                make_shared_from_ref(plins));
 
+
+    shared_ptr<const DiscreteBoundaryOperator<RT> > slpWeakb = slpOpb.weakForm();
     shared_ptr<const DiscreteBoundaryOperator<RT> > slpWeak = slpOp.weakForm();
 
-    std::cout << "("<<slpWeak->rowCount()<<","<<slpWeak->columnCount()<<")"<<std::endl;
+    arma::Mat<double> mb = slpWeakb->asMatrix();
+    arma::Mat<double> m = slpWeak->asMatrix();
+
+    std::cout << mb << " " << std::endl;
+    std::cout << m << " " << std::endl;
+
+
+    std::cout << "("<<slpWeakb->rowCount()<<","<<slpWeakb->columnCount()<<")"<<std::endl;
+    std::cout << "("<<slpWeakb->rowCount()<<","<<slpWeakb->columnCount()<<")"<<std::endl;
     return 0;
 
 

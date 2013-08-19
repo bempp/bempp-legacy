@@ -260,6 +260,36 @@ def createPiecewiseLinearContinuousScalarSpace(context, grid, segment=None,
         core, name, context.basisFunctionType(), grid, segment,
         strictlyOnSegment)
 
+def createPiecewiseLinearContinuousScalarSpaceBarycentric(context, grid, segment=None,
+                                                          strictlyOnSegment=False):
+    """
+    Create and return a space of globally continuous scalar functions defined
+    on grid (or its segment) and linear on each element of this grid. It produces the
+    same global dofs as *createPiecewiseLinearContinuousScalarSpace*, but the local
+    dofs live on a barycentric refinement of the original grid. Hence, this space is
+    compatible with other spaces defined over barycentric refinements.
+
+    *Parameters:*
+       - context (Context)
+            A Context object that will determine the type used to represent the
+            values of the basis functions of the newly constructed space.
+       - grid (Grid)
+            Grid on which the functions from the newly constructed space will be
+            defined.
+       - segment (GridSegment)
+            (Optional) Segment of the grid on which the space should be defined.
+            If set to None (default), the whole grid will be used.
+
+    *Returns* a newly constructed Space_BasisFunctionType object, with
+    BasisFunctionType determined automatically from the context argument and
+    equal to either float32, float64, complex64 or complex128.
+    """
+    name = 'piecewiseLinearContinuousScalarSpaceBarycentric'
+    return _constructObjectTemplatedOnBasis(
+          core, name, context.basisFunctionType(), grid, segment,
+          strictlyOnSegment)
+
+
 def createPiecewiseLinearDiscontinuousScalarSpace(
     context, grid, segment=None, strictlyOnSegment=False):
     """

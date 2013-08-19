@@ -97,6 +97,7 @@ PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::isDiscontinuous() co
     return true;
 }
 
+
 template <typename BasisFunctionType>
 void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::assignDofsImpl(
         const GridSegment& segment, bool strictlyOnSegment)

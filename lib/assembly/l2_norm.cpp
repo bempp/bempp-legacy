@@ -162,7 +162,6 @@ makeEvaluator(
     shared_ptr<BasisPtrVector> bases;
 
     const Space<BasisFunctionType>& space = *gridFunction.space();
-    shared_ptr<const Grid> grid = space.grid();
     Helper::collectGridData(space,
                             rawGeometry, geometryFactory);
     Helper::makeOpenClHandler(options.parallelizationOptions().openClOptions(),

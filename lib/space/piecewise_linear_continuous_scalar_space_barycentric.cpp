@@ -18,10 +18,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "piecewise_constant_dual_mesh_scalar_space_barycentric.hpp"
+#include "piecewise_linear_continuous_scalar_space_barycentric.hpp"
 
+#include "piecewise_linear_continuous_scalar_space.hpp"
 #include "space_helper.hpp"
-#include "piecewise_constant_scalar_space.hpp"
+
+#include "../assembly/discrete_boundary_operator.hpp"
 
 #include "../assembly/discrete_sparse_boundary_operator.hpp"
 #include "../common/acc.hpp"
@@ -36,8 +38,6 @@
 #include "../grid/mapper.hpp"
 #include "../grid/vtk_writer.hpp"
 
-#include <armadillo>
-
 #include <stdexcept>
 #include <iostream>
 
@@ -45,130 +45,111 @@ namespace Bempp
 {
 
 template <typename BasisFunctionType>
-PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::
-PiecewiseConstantDualMeshScalarSpaceBarycentric(const shared_ptr<const Grid>& grid) :
-    ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
-    m_segment(GridSegment::wholeGrid(*(grid->barycentricGrid()))),
-    m_strictlyOnSegment(false)
+PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::
+PiecewiseLinearContinuousScalarSpaceBarycentric(const shared_ptr<const Grid>& grid) :
+    PiecewiseLinearScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
+    m_segment(GridSegment::wholeGrid(*grid)),
+    m_strictlyOnSegment(false),
+    m_linearBasisType1(Basis::TYPE1),
+    m_linearBasisType2(Basis::TYPE2)
 {
     initialize();
 }
 
 template <typename BasisFunctionType>
-PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::
-PiecewiseConstantDualMeshScalarSpaceBarycentric(const shared_ptr<const Grid>& grid,
+PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::
+PiecewiseLinearContinuousScalarSpaceBarycentric(const shared_ptr<const Grid>& grid,
                                      const GridSegment& segment,
                                      bool strictlyOnSegment) :
-    ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
+    PiecewiseLinearScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
     m_segment(segment),
-    m_strictlyOnSegment(strictlyOnSegment)
+    m_strictlyOnSegment(strictlyOnSegment),
+    m_linearBasisType1(Basis::TYPE1),
+    m_linearBasisType2(Basis::TYPE2)
 {
     initialize();
 }
 
+
 template <typename BasisFunctionType>
-PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::
-~PiecewiseConstantDualMeshScalarSpaceBarycentric()
+PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::
+~PiecewiseLinearContinuousScalarSpaceBarycentric()
 {
 }
 
 template <typename BasisFunctionType>
-int PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::domainDimension() const
-{
-    return this->grid()->dim();
-}
-
-template <typename BasisFunctionType>
-int PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::codomainDimension() const
-{
-    return 1;
-}
-
-template <typename BasisFunctionType>
-const Fiber::Basis<BasisFunctionType>&
-PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::basis(
-        const Entity<0>& element) const
-{
-    return m_basis;
-}
-
-template <typename BasisFunctionType>
-ElementVariant PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::elementVariant(
-        const Entity<0>& element) const
-{
-    GeometryType type = element.type();
-    if (type.dim() == 1)
-        return 2;
-    if (type.isTriangle())
-        return 3;
-    else
-        return 4;
-}
-
-template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::setElementVariant(
-        const Entity<0>& element, ElementVariant variant)
-{
-    if (variant != elementVariant(element))
-        // for this space, the element variants are unmodifiable,
-        throw std::runtime_error("PiecewiseConstantScalarSpace::"
-                                 "setElementVariant(): invalid variant");
-}
-
-
-template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::initialize()
+void PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::initialize()
 {
     const int gridDim = this->grid()->dim();
     if (gridDim != 1 && gridDim != 2)
         throw std::invalid_argument(
-                "PiecewiseConstantDualMeshScalarSpaceBarycentric::initialize(): "
+                "PiecewiseLinearContinuousScalarSpaceBarycentric::initialize(): "
                 "only 1- and 2-dimensional grids are supported");
+    m_view =  this->grid()->leafView();
     assignDofsImpl();
 }
 
 template <typename BasisFunctionType>
 shared_ptr<const Space<BasisFunctionType> >
-PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::discontinuousSpace(
+PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::discontinuousSpace(
     const shared_ptr<const Space<BasisFunctionType> >& self) const
 {
-    if (!m_discontinuousSpace) {
-        tbb::mutex::scoped_lock lock(m_discontinuousSpaceMutex);
-        if (!m_discontinuousSpace)
-            m_discontinuousSpace.reset(
-                        new PiecewiseConstantScalarSpace<BasisFunctionType>
-                        (this->grid(),m_segment));
-    }
-    return m_discontinuousSpace;
+//    if (!m_discontinuousSpace) {
+//        tbb::mutex::scoped_lock lock(m_discontinuousSpaceMutex);
+//        typedef PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>
+//                DiscontinuousSpace;
+//        if (!m_discontinuousSpace)
+//            m_discontinuousSpace.reset(
+//                        new DiscontinuousSpace(this->grid(), m_segment,
+//                                               m_strictlyOnSegment));
+//    }
+//    return m_discontinuousSpace;
+    std::runtime_error("PiecewiseLinearContinuousScalarSpaceBarycentric::discontinuousSpace():"
+                       "Not yet implemented.");
+}
 
+template <typename BasisFunctionType>
+int PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::domainDimension() const
+{
+    return this->grid()->dim();
+}
+
+template <typename BasisFunctionType>
+int PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::codomainDimension() const
+{
+    return 1;
 }
 
 template <typename BasisFunctionType>
 bool
-PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::isDiscontinuous() const
+PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::isDiscontinuous() const
 {
     return false;
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::assignDofsImpl()
+void PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::assignDofsImpl()
 {
 
     const int gridDim = this->domainDimension();
     const int elementCodim = 0;
 
-    const Mapper& elementMapper = this->gridView().elementMapper();
-    std::auto_ptr<GridView> coarseView = this->grid()->levelView(0);
-    const Mapper& elementMapperCoarseGrid = coarseView->elementMapper();
+    const GridView& view = this->gridView();
 
-    const IndexSet& indexSet = this->gridView().indexSet();
-    const IndexSet& indexSetCoarseGrid = coarseView->indexSet();
+    std::auto_ptr<GridView> viewCoarseGridPtr = this->grid()->levelView(0);
+    const GridView& viewCoarseGrid = *viewCoarseGridPtr;
 
-    int elementCount = this->gridView().entityCount(0);
-    int elementCountCoarseGrid = coarseView->entityCount(0);
+    const Mapper& elementMapper = view.elementMapper();
+    const Mapper& elementMapperCoarseGrid = viewCoarseGrid.elementMapper();
 
-    int vertexCount = this->gridView().entityCount(gridDim);
-    int vertexCountCoarseGrid = coarseView->entityCount(gridDim);
+    int elementCount = view.entityCount(0);
+    int vertexCount = view.entityCount(gridDim);
+
+    int vertexCountCoarseGrid = viewCoarseGrid.entityCount(gridDim);
+    int elementCountCoarseGrid = viewCoarseGrid.entityCount(0);
+
+    const IndexSet& indexSet = view.indexSet();
+
 
     // Assign gdofs to grid vertices (choosing only those that belong to
     // the selected grid segment)
@@ -178,92 +159,108 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::assignD
     if (m_strictlyOnSegment) {
         std::vector<bool> noAdjacentElementsInsideSegment(vertexCountCoarseGrid, true);
         segmentContainsElement.resize(elementCountCoarseGrid);
-        std::auto_ptr<EntityIterator<0> > it = coarseView->entityIterator<0>();
-        while (!it->finished()) {
-            const Entity<0>& element = it->entity();
-            EntityIndex elementIndex = elementMapperCoarseGrid.entityIndex(element);
+        std::auto_ptr<EntityIterator<0> > itCoarseGrid = viewCoarseGrid.entityIterator<0>();
+        while (!itCoarseGrid->finished()) {
+            const Entity<0>& elementCoarseGrid = itCoarseGrid->entity();
+            EntityIndex elementIndexCoarseGrid = elementMapperCoarseGrid.entityIndex(elementCoarseGrid);
             bool elementContained =
-                    m_segment.contains(elementCodim, elementIndex);
-            acc(segmentContainsElement, elementIndex) = elementContained;
+                    m_segment.contains(elementCodim, elementIndexCoarseGrid);
+            acc(segmentContainsElement, elementIndexCoarseGrid) = elementContained;
 
             int cornerCount;
             if (gridDim == 1)
-                cornerCount = element.template subEntityCount<1>();
+                cornerCount = elementCoarseGrid.template subEntityCount<1>();
             else // gridDim == 2
-                cornerCount = element.template subEntityCount<2>();
+                cornerCount = elementCoarseGrid.template subEntityCount<2>();
             if (elementContained)
                 for (int i = 0; i < cornerCount; ++i) {
-                    int vertexIndex = indexSetCoarseGrid.subEntityIndex(element, i, gridDim);
-                    acc(noAdjacentElementsInsideSegment, vertexIndex) = false;
+                    int vertexIndexCoarseGrid = elementMapperCoarseGrid.subEntityIndex(elementCoarseGrid,i,gridDim);
+                    acc(noAdjacentElementsInsideSegment, vertexIndexCoarseGrid) = false;
                 }
-            it->next();
+            itCoarseGrid->next();
         }
         // Remove all DOFs associated with vertices lying next to no element
         // belonging to the grid segment
-        for (size_t i = 0; i < vertexCountCoarseGrid; ++i)
+        for (size_t i = 0; i < vertexCount; ++i)
             if (acc(noAdjacentElementsInsideSegment, i))
                 acc(globalDofIndices, i) = -1;
     }
     int globalDofCount_ = 0;
-
     for (int vertexIndex = 0; vertexIndex < vertexCountCoarseGrid; ++vertexIndex)
-        if (acc(globalDofIndices, vertexIndex) == 0){ // not excluded
+        if (acc(globalDofIndices, vertexIndex) == 0) // not excluded
             acc(globalDofIndices, vertexIndex) = globalDofCount_++;
-        }
 
     // (Re)initialise DOF maps
     m_local2globalDofs.clear();
     m_local2globalDofs.resize(elementCount);
     m_global2localDofs.clear();
     m_global2localDofs.resize(globalDofCount_);
+    m_elementIndex2Type.resize(elementCount);
     // TODO: consider calling reserve(x) for each element of m_global2localDofs
     // with x being the typical number of elements adjacent to a vertex in a
     // grid of dimension gridDim
 
+    const int element2Basis[6][3] = {{0,1,2},
+                                     {0,1,2},
+                                     {2,0,1},
+                                     {2,0,1},
+                                     {1,2,0},
+                                     {1,2,0}}; // element2Basis[i][j] is the basis fct. associated with the jth vertex
+                                               // on element i.
 
-    // Iterate over elements of the coarse grid
-    std::auto_ptr<EntityIterator<0> > it = coarseView->entityIterator<0>();
+    // Iterate over elements
+    std::auto_ptr<EntityIterator<0> > itCoarseGrid = viewCoarseGrid.entityIterator<0>();
     int flatLocalDofCount_ = 0;
-    while (!it->finished()) {
-        const Entity<0>& element = it->entity();
-        EntityIndex elementIndexCoarseGrid = elementMapperCoarseGrid.entityIndex(element);
+    while (!itCoarseGrid->finished()) {
+        const Entity<0>& elementCoarseGrid = itCoarseGrid->entity();
+        EntityIndex elementIndexCoarseGrid = elementMapperCoarseGrid.entityIndex(elementCoarseGrid);
         bool elementContained = m_strictlyOnSegment ?
                     acc(segmentContainsElement, elementIndexCoarseGrid) : true;
 
-        // Get the iterator over son entities
-
-        std::auto_ptr<EntityIterator<0> > sonIt = element.sonIterator(this->grid()->maxLevel());
-
-        size_t sonCount = 0;
+        // Iterate through refined elements
+        std::auto_ptr<EntityIterator<0> > sonIt = elementCoarseGrid.sonIterator(this->grid()->maxLevel());
+        int sonCounter = 5;
         while (!sonIt->finished()){
-            const Entity<0>& sonElement = sonIt->entity();
-            EntityIndex elementIndex = elementMapper.entityIndex(sonElement);
+            const Entity<0>& element = sonIt->entity();
+            int elementIndex = elementMapper.entityIndex(element);
+            int cornerCount = 3;
 
-            const Geometry& geom = sonElement.geometry();
+            const Geometry& geom = element.geometry();
             arma::Mat<double> corners;
             geom.getCorners(corners);
             std::cout << "Corners of element " << elementIndex << std::endl;
             std::cout << corners << std::endl;
 
-
-            std::vector<GlobalDofIndex>& globalDof = acc(m_local2globalDofs, elementIndex);
-            EntityIndex vertexIndex = elementMapperCoarseGrid.subEntityIndex(element,sonCount/2,gridDim);
-            GlobalDofIndex globalDofIndex;
-            globalDofIndex = elementContained ?
-                        acc(globalDofIndices,vertexIndex) : -1;
-            globalDof.push_back(globalDofIndex);
-            if (globalDofIndex>=0) {
-                acc(m_global2localDofs, globalDofIndex).push_back(
-                            LocalDof(elementIndex, 0));
-                ++flatLocalDofCount_;
+            if (sonCounter%2==0){
+                acc(m_elementIndex2Type,elementIndex) = Basis::TYPE1;
             }
-            sonCount++;
-            sonIt->next();
-        }
-        assert(sonCount==6);
-        it->next();
-    }
+            else {
+                acc(m_elementIndex2Type,elementIndex) = Basis::TYPE2;
+            }
 
+            std::vector<GlobalDofIndex>& globalDofs =
+                    acc(m_local2globalDofs, elementIndex);
+            globalDofs.resize(cornerCount);
+
+            for (int i=0;i<cornerCount;++i){
+
+                int basisNumber = element2Basis[sonCounter][i];
+                EntityIndex vertexIndex = elementMapperCoarseGrid.subEntityIndex(elementCoarseGrid,i,gridDim);
+                int globalDofIndex = elementContained ? acc(globalDofIndices,vertexIndex)
+                                                  : -1;
+                std::cout << "(Element,LocalDof,GlobalDof) " << "(" << elementIndex <<","<< basisNumber << "," << globalDofIndex << ")" << std::endl;
+                acc(globalDofs,basisNumber)=globalDofIndex;
+                if (globalDofIndex >=0){
+                    acc(m_global2localDofs, globalDofIndex).push_back(
+                                LocalDof(elementIndex, basisNumber));
+                    ++flatLocalDofCount_;
+                }
+            }
+            sonIt->next();
+            sonCounter--; // The Foamgrid iterator gives son elements in reverse order
+        }
+        itCoarseGrid->next();
+    }
 
     // Initialize the container mapping the flat local dof indices to
     // local dof indices
@@ -271,29 +268,72 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::assignD
                 flatLocalDofCount_, m_local2globalDofs, m_flatLocal2localDofs);
 }
 
+
 template <typename BasisFunctionType>
-size_t PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::globalDofCount() const
+const Fiber::Basis<BasisFunctionType>&
+PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::basis(
+        const Entity<0>& element) const
+{
+    const GridView& view = this->gridView();
+    const Mapper& elementMapper = view.elementMapper();
+    int index = elementMapper.entityIndex(element);
+    if (m_elementIndex2Type[index]==Basis::TYPE1)
+        return m_linearBasisType1;
+    else
+        return m_linearBasisType2;
+}
+
+template <typename BasisFunctionType>
+ElementVariant PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::elementVariant(
+        const Entity<0>& element) const
+{
+    GeometryType type = element.type();
+    if (type.isLine())
+        return 2;
+    else if (type.isTriangle())
+        return 3;
+    else if (type.isQuadrilateral())
+        return 4;
+    else
+        throw std::runtime_error("PiecewiseLinearScalarSpace::"
+                                 "elementVariant(): invalid geometry type, "
+                                 "this shouldn't happen!");
+}
+
+template <typename BasisFunctionType>
+void PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::setElementVariant(
+        const Entity<0>& element, ElementVariant variant)
+{
+    if (variant != elementVariant(element))
+        // for this space, the element variants are unmodifiable,
+        throw std::runtime_error("PiecewiseLinearScalarSpace::"
+                                 "setElementVariant(): invalid variant");
+}
+
+
+template <typename BasisFunctionType>
+size_t PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::globalDofCount() const
 {
     return m_global2localDofs.size();
 }
 
 template <typename BasisFunctionType>
-size_t PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::flatLocalDofCount() const
+size_t PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::flatLocalDofCount() const
 {
     return m_flatLocal2localDofs.size();
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::getGlobalDofs(
+void PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::getGlobalDofs(
         const Entity<0>& element, std::vector<GlobalDofIndex>& dofs) const
 {
-    const Mapper& mapper = this->gridView().elementMapper();
+    const Mapper& mapper = m_view->elementMapper();
     EntityIndex index = mapper.entityIndex(element);
     dofs = m_local2globalDofs[index];
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::global2localDofs(
+void PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::global2localDofs(
         const std::vector<GlobalDofIndex>& globalDofs,
         std::vector<std::vector<LocalDof> >& localDofs) const
 {
@@ -303,7 +343,7 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::global2
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::flatLocal2localDofs(
+void PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::flatLocal2localDofs(
         const std::vector<FlatLocalDofIndex>& flatLocalDofs,
         std::vector<LocalDof>& localDofs) const
 {
@@ -313,7 +353,7 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::flatLoc
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::getGlobalDofPositions(
+void PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::getGlobalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
     std::vector<BoundingBox<CoordinateType> > bboxes;
@@ -325,7 +365,7 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::getGlob
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::getFlatLocalDofPositions(
+void PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::getFlatLocalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
     std::vector<BoundingBox<CoordinateType> > bboxes;
@@ -337,25 +377,25 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::getFlat
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::getGlobalDofBoundingBoxes(
+void PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::getGlobalDofBoundingBoxes(
        std::vector<BoundingBox<CoordinateType> >& bboxes) const
 {
     SpaceHelper<BasisFunctionType>::
             getGlobalDofBoundingBoxes_defaultImplementation(
-                this->gridView(), m_global2localDofs, bboxes);
+                *m_view, m_global2localDofs, bboxes);
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::
+void PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::
 getFlatLocalDofBoundingBoxes(
        std::vector<BoundingBox<CoordinateType> >& bboxes) const
 {
     // TODO: extract this loop into a private function
-    const IndexSet& indexSet = this->gridView().indexSet();
-    const int elementCount = this->gridView().entityCount(0);
+    const IndexSet& indexSet = m_view->indexSet();
+    const int elementCount = m_view->entityCount(0);
 
     std::vector<arma::Mat<CoordinateType> > elementCorners(elementCount);
-    std::auto_ptr<EntityIterator<0> > it = this->gridView().template entityIterator<0>();
+    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
         int index = indexSet.entityIndex(e);
@@ -395,7 +435,7 @@ getFlatLocalDofBoundingBoxes(
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::getGlobalDofNormals(
+void PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::getGlobalDofNormals(
         std::vector<Point3D<CoordinateType> >& normals) const
 {
     const int gridDim = this->domainDimension();
@@ -403,11 +443,11 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::getGlob
     const int worldDim = this->grid()->dimWorld();
     normals.resize(globalDofCount_);
 
-    const IndexSet& indexSet = this->gridView().indexSet();
-    int elementCount = this->gridView().entityCount(0);
+    const IndexSet& indexSet = m_view->indexSet();
+    int elementCount = m_view->entityCount(0);
 
     arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
-    std::auto_ptr<EntityIterator<0> > it = this->gridView().template entityIterator<0>();
+    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
     arma::Col<CoordinateType> center(gridDim);
     center.fill(0.5);
     arma::Col<CoordinateType> normal;
@@ -448,18 +488,18 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::getGlob
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::getFlatLocalDofNormals(
+void PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::getFlatLocalDofNormals(
         std::vector<Point3D<CoordinateType> >& normals) const
 {
     const int gridDim = this->domainDimension();
     const int worldDim = this->grid()->dimWorld();
     normals.resize(m_flatLocal2localDofs.size());
 
-    const IndexSet& indexSet = this->gridView().indexSet();
-    int elementCount = this->gridView().entityCount(0);
+    const IndexSet& indexSet = m_view->indexSet();
+    int elementCount = m_view->entityCount(0);
 
     arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
-    std::auto_ptr<EntityIterator<0> > it = this->gridView().template entityIterator<0>();
+    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
     arma::Col<CoordinateType> center(gridDim);
     center.fill(0.5);
     arma::Col<CoordinateType> normal;
@@ -490,7 +530,7 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::getFlat
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::dumpClusterIds(
+void PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::dumpClusterIds(
         const char* fileName,
         const std::vector<unsigned int>& clusterIdsOfDofs) const
 {
@@ -498,7 +538,7 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::dumpClu
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::dumpClusterIdsEx(
+void PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::dumpClusterIdsEx(
         const char* fileName,
         const std::vector<unsigned int>& clusterIdsOfDofs,
         DofType dofType) const
@@ -507,15 +547,16 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::dumpClu
     // (not on segments)
 
     if (dofType != GLOBAL_DOFS && dofType != FLAT_LOCAL_DOFS)
-        throw std::invalid_argument("PiecewiseConstantDualMeshScalarSpaceBarycentricScalarSpace::"
+        throw std::invalid_argument("PiecewiseLinearContinuousScalarSpaceBarycentric::"
                                     "dumpClusterIds(): invalid DOF type");
     const size_t idCount = clusterIdsOfDofs.size();
     if ((dofType == GLOBAL_DOFS && idCount != globalDofCount()) ||
             (dofType == FLAT_LOCAL_DOFS && idCount != flatLocalDofCount()))
-        throw std::invalid_argument("PiecewiseConstantDualMeshScalarSpaceBarycentricScalarSpace::"
+        throw std::invalid_argument("PiecewiseLinearContinuousScalarSpaceBarycentric::"
                                     "dumpClusterIds(): incorrect dimension");
 
-    std::auto_ptr<VtkWriter> vtkWriter = this->gridView().vtkWriter();
+    std::auto_ptr<GridView> view = this->grid()->leafView();
+    std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
     if (dofType == GLOBAL_DOFS) {
         arma::Row<double> data(idCount);
         for (size_t i = 0; i < idCount; ++i)
@@ -547,6 +588,7 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::dumpClu
     }
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(PiecewiseConstantDualMeshScalarSpaceBarycentric);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(PiecewiseLinearContinuousScalarSpaceBarycentric);
 
 } // namespace Bempp
+
