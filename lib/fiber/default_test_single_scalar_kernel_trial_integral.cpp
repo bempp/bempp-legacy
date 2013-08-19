@@ -31,12 +31,152 @@
 
 #include <cassert>
 #include <iostream>
+#include <tbb/scalable_allocator.h>
 
 namespace Fiber
 {
 
 namespace
 {
+
+template <typename BasisFunctionType, typename ResultType>
+void setToProduct(const arma::Mat<BasisFunctionType>& source,
+                  BasisFunctionType weight,
+                  arma::Mat<ResultType>& result)
+{
+    result = weight * source.t();
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void setToProduct(const arma::Mat<BasisFunctionType>& source,
+                  typename ScalarTraits<BasisFunctionType>::RealType weight,
+                  arma::Mat<ResultType>& result)
+{
+    result = weight * source.t();
+}
+
+template <typename CoordinateType>
+void setToProduct(const arma::Mat<CoordinateType>& source,
+                  CoordinateType weight,
+                  arma::Mat<std::complex<CoordinateType> >& result)
+{
+    result.set_real(weight * source.t());
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
+        const _3dArray<BasisFunctionType>& values,
+        const GeometricalData<typename ScalarTraits<BasisFunctionType>::RealType>& geomData,
+        const std::vector<typename ScalarTraits<BasisFunctionType>::RealType>&
+        quadWeights,
+        std::vector<ResultType, tbb::scalable_allocator<ResultType> >& tmp)
+{
+    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+
+    const size_t transDim = values.extent(0);
+    const size_t dofCount = values.extent(1);
+    const size_t pointCount = values.extent(2);
+    const size_t sliceSize = transDim * dofCount;
+
+    const BasisFunctionType* sourceSliceStart = values.begin();
+    tmp.resize(dofCount * transDim * pointCount);
+    ResultType* destSliceStart = &tmp[0];
+
+    for (size_t point = 0; point < pointCount; ++point) {
+        arma::Mat<BasisFunctionType> origMat(
+                    const_cast<BasisFunctionType*>(sourceSliceStart),
+                    transDim, dofCount, false);
+        arma::Mat<ResultType> transposedMat(
+                    destSliceStart,
+                    dofCount, transDim, false);
+        const CoordinateType weight =
+                geomData.integrationElements(point) * quadWeights[point];
+        // we take the complex conjugate here
+        setToProduct(origMat, weight, transposedMat);
+        sourceSliceStart += sliceSize;
+        destSliceStart += sliceSize;
+    }
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+void outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
+        const _3dArray<BasisFunctionType>& values,
+        const std::vector<KernelType, tbb::scalable_allocator<KernelType> >& weights,
+        std::vector<ResultType, tbb::scalable_allocator<ResultType> >& tmp)
+{
+    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+
+    const size_t transDim = values.extent(0);
+    const size_t dofCount = values.extent(1);
+    const size_t pointCount = values.extent(2);
+    const size_t sliceSize = transDim * dofCount;
+
+    const BasisFunctionType* sourceSliceStart = values.begin();
+    tmp.resize(dofCount * transDim * pointCount);
+    ResultType* destSliceStart = &tmp[0];
+
+    for (size_t point = 0; point < pointCount; ++point) {
+        arma::Mat<BasisFunctionType> origMat(
+                    const_cast<BasisFunctionType*>(sourceSliceStart),
+                    transDim, dofCount, false);
+        arma::Mat<ResultType> transposedMat(
+                    destSliceStart,
+                    dofCount, transDim, false);
+        const KernelType weight = weights[point];
+        // we take the complex conjugate here
+        setToProduct(origMat, weight, transposedMat);
+        sourceSliceStart += sliceSize;
+        destSliceStart += sliceSize;
+    }
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void outOfPlaceConjugateTransposeDimAndDofDimensions(
+        const _3dArray<BasisFunctionType>& values,
+        std::vector<ResultType, tbb::scalable_allocator<ResultType> >& tmp)
+{
+    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+
+    const size_t transDim = values.extent(0);
+    const size_t dofCount = values.extent(1);
+    const size_t pointCount = values.extent(2);
+    const size_t sliceSize = transDim * dofCount;
+
+    const BasisFunctionType* sourceSliceStart = values.begin();
+    tmp.resize(dofCount * transDim * pointCount);
+    ResultType* destSliceStart = &tmp[0];
+
+    for (size_t point = 0; point < pointCount; ++point) {
+        arma::Mat<BasisFunctionType> origMat(
+                    const_cast<BasisFunctionType*>(sourceSliceStart),
+                    transDim, dofCount, false);
+        arma::Mat<ResultType> transposedMat(
+                    destSliceStart,
+                    dofCount, transDim, false);
+        // we take the complex conjugate here
+        transposedMat = origMat.t();
+        sourceSliceStart += sliceSize;
+        destSliceStart += sliceSize;
+    }
+}
+
+template <typename BasisFunctionType, typename ResultType>
+inline void addABt(
+        const arma::Mat<BasisFunctionType>& A,
+        const arma::Mat<BasisFunctionType>& B,
+        arma::Mat<ResultType>& C)
+{
+    C = C + A * B.t();
+}
+
+template <typename ResultType>
+inline void addABt(
+        const arma::Mat<ResultType>& A,
+        const arma::Mat<ResultType>& B,
+        arma::Mat<ResultType>& C)
+{
+    C += A * B.t();
+}
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 void evaluateWithNontensorQuadratureRuleStandardImpl(
@@ -79,8 +219,9 @@ void evaluateWithNontensorQuadratureRuleStandardImpl(
 
     result.fill(0);
 
-    std::vector<KernelType> products(pointCount);
-    std::vector<BasisFunctionType> tmp;
+    std::vector<KernelType, tbb::scalable_allocator<KernelType> > products(pointCount);
+    std::vector<BasisFunctionType, tbb::scalable_allocator<BasisFunctionType> >
+        tmpTest, tmpTrial;
 
     for (size_t transIndex = 0; transIndex < transCount; ++transIndex) {
         const size_t transDim = testValues[transIndex].extent(0);
@@ -88,254 +229,28 @@ void evaluateWithNontensorQuadratureRuleStandardImpl(
 
         if (transIndex == 0 || kernelValues.size() > 1)
             for (size_t point = 0; point < pointCount; ++point)
-                products[point] = kernelValues[0](0, 0, point) *
+                // we take the complex conj. here, later we'll remove it
+                products[point] = conj(kernelValues[0](0, 0, point)) *
                         testGeomData.integrationElements(point) *
                         trialGeomData.integrationElements(point) *
                         quadWeights[point];
 
-        tmp.resize(testDofCount * transDim);
-        // testValues[transIndex].set_size(testDofCount, transDim, pointCount);
-        for (size_t point = 0; point < pointCount; ++point) {
-            memcpy(&tmp[0],
-                   testValues[transIndex].begin() + point * tmp.size(),
-                   tmp.size() * sizeof(BasisFunctionType));
-            arma::Mat<BasisFunctionType> origMat(
-                        &tmp[0], transDim, testDofCount, false, true);
-            arma::Mat<BasisFunctionType> transposedMat(
-                        testValues[transIndex].begin() + point * tmp.size(),
-                        testDofCount, transDim, false, true);
-            transposedMat = origMat.t(); // we take the complex conjugate here
-        }
+        outOfPlaceConjugateTransposeDimAndDofDimensions(
+            testValues[transIndex], tmpTest);
+        outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
+            trialValues[transIndex], products, tmpTrial);
 
-        tmp.resize(trialDofCount * transDim);
-        // trialValues[transIndex].set_size(trialDofCount, transDim, pointCount);
-        for (size_t point = 0; point < pointCount; ++point) {
-            memcpy(&tmp[0],
-                   trialValues[transIndex].begin() + point * tmp.size(),
-                   tmp.size() * sizeof(BasisFunctionType));
-            arma::Mat<BasisFunctionType> origMat(
-                        &tmp[0], transDim, trialDofCount, false, true);
-            arma::Mat<BasisFunctionType> transposedMat(
-                        trialValues[transIndex].begin() + point * tmp.size(),
-                        trialDofCount, transDim, false, true);
-            // we take the complex conj. here, afterwards we'll remove it
-            transposedMat = conj(products[point]) * origMat.t();
-        }
-
-        arma::Mat<BasisFunctionType> matTest(testValues[transIndex].begin(),
-                                             testDofCount, pointCount  * transDim,
+        arma::Mat<BasisFunctionType> matTest(&tmpTest[0],
+                                             testDofCount, pointCount * transDim,
                                              false /* don't copy */, true);
-        arma::Mat<BasisFunctionType> matTrial(trialValues[transIndex].begin(),
+        arma::Mat<BasisFunctionType> matTrial(&tmpTrial[0],
                                               trialDofCount, pointCount * transDim,
                                               false /* don't copy */, true);
 
         // this removes the complex conjugate from matTrial
-        result = result + matTest * matTrial.t();
+        addABt(matTest, matTrial, result);
     }
 }
-
-template <typename BasisFunctionType>
-void inplaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
-        const GeometricalData<typename ScalarTraits<BasisFunctionType>::RealType>& geomData,
-        const std::vector<typename ScalarTraits<BasisFunctionType>::RealType>& quadWeights,
-        std::vector<BasisFunctionType>& tmp,
-        _3dArray<BasisFunctionType>& values)
-{
-    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
-
-    const size_t transDim = values.extent(0);
-    const size_t dofCount = values.extent(1);
-    const size_t pointCount = values.extent(2);
-    const size_t sliceSize = transDim * dofCount;
-    if (transDim > 1)
-        tmp.resize(dofCount * transDim);
-    // First, transpose logical dimensions...
-    //values.set_size(dofCount, transDim, pointCount);
-    BasisFunctionType* sliceStart = values.begin();
-    for (size_t point = 0; point < pointCount; ++point) {
-        arma::Mat<BasisFunctionType> transposedMat(
-                    sliceStart, dofCount, transDim, false, true);
-        const CoordinateType weight =
-                geomData.integrationElements(point) * quadWeights[point];
-        // And now, transpose data physically (if needed, i.e. if slices
-        // are not logically one-dimensional)
-        if (transDim > 1) {
-            memcpy(&tmp[0], sliceStart, sliceSize * sizeof(BasisFunctionType));
-            arma::Mat<BasisFunctionType> origMat(
-                        &tmp[0], transDim, dofCount, false, true);
-            // we take the complex conjugate here
-            transposedMat = weight * origMat.t();
-        } else // no need to transpose data physically
-            transposedMat *= weight;
-        sliceStart += sliceSize;
-    }
-}
-
-template <typename BasisFunctionType, typename ResultType>
-void setToProduct(const arma::Mat<BasisFunctionType>& source,
-                  typename ScalarTraits<BasisFunctionType>::RealType weight,
-                  arma::Mat<ResultType>& result)
-{
-    result = weight * source.t();
-}
-
-template <typename CoordinateType>
-void setToProduct(const arma::Mat<CoordinateType>& source,
-                  CoordinateType weight,
-                  arma::Mat<std::complex<CoordinateType> >& result)
-{
-    result.set_real(weight * source.t());
-}
-
-template <typename BasisFunctionType, typename ResultType>
-void outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
-        const _3dArray<BasisFunctionType>& values,
-        const GeometricalData<typename ScalarTraits<BasisFunctionType>::RealType>& geomData,
-        const std::vector<typename ScalarTraits<BasisFunctionType>::RealType>& quadWeights,
-        std::vector<ResultType>& tmp)
-{
-    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
-
-    const size_t transDim = values.extent(0);
-    const size_t dofCount = values.extent(1);
-    const size_t pointCount = values.extent(2);
-    const size_t sliceSize = transDim * dofCount;
-
-    const BasisFunctionType* sourceSliceStart = values.begin();
-    tmp.resize(dofCount * transDim * pointCount);
-    ResultType* destSliceStart = &tmp[0];
-
-    for (size_t point = 0; point < pointCount; ++point) {
-        arma::Mat<BasisFunctionType> origMat(
-                    const_cast<BasisFunctionType*>(sourceSliceStart),
-                    transDim, dofCount, false);
-        arma::Mat<ResultType> transposedMat(
-                    destSliceStart,
-                    dofCount, transDim, false);
-        const CoordinateType weight =
-                geomData.integrationElements(point) * quadWeights[point];
-        // And now, transpose data physically (if needed, i.e. if slices
-        // are not logically one-dimensional)
-        // we take the complex conjugate here
-        setToProduct(origMat, weight, transposedMat);
-        // transposedMat = weight * origMat.t();
-        sourceSliceStart += sliceSize;
-        destSliceStart += sliceSize;
-    }
-}
-
-template <typename BasisFunctionType, typename ResultType>
-inline void addABt(
-        const arma::Mat<BasisFunctionType>& A,
-        const arma::Mat<BasisFunctionType>& B,
-        arma::Mat<ResultType>& C)
-{
-    C = C + A * B.t();
-}
-
-template <typename ResultType>
-inline void addABt(
-        const arma::Mat<ResultType>& A,
-        const arma::Mat<ResultType>& B,
-        arma::Mat<ResultType>& C)
-{
-    C += A * B.t();
-}
-
-template <typename BasisFunctionType, typename ResultType>
-inline void multiplyTestKernelTrialAndAddToResult(
-        const arma::Mat<BasisFunctionType>& matTest,
-        const arma::Mat<BasisFunctionType>& matKernel,
-        const arma::Mat<BasisFunctionType>& matTrial,
-        std::vector<BasisFunctionType>& tmp,
-        arma::Mat<ResultType>& result)
-{
-    tmp.resize(matTrial.n_rows * matKernel.n_rows);
-    arma::Mat<BasisFunctionType> matTmp(&tmp[0], matTrial.n_rows, matKernel.n_rows,
-                                 false, true);
-    matTmp = matTrial * matKernel.t();
-    addABt(matTest, matTmp, result);
-}
-
-//template <typename BasisFunctionType, typename ResultType>
-//void evaluateWithTensorQuadratureRuleImpl(
-//        const GeometricalData<typename ScalarTraits<ResultType>::RealType>& testGeomData,
-//        const GeometricalData<typename ScalarTraits<ResultType>::RealType>& trialGeomData,
-//        CollectionOf3dArrays<BasisFunctionType>& testValues,
-//        CollectionOf3dArrays<BasisFunctionType>& trialValues,
-//        CollectionOf4dArrays<BasisFunctionType>& kernelValues,
-//        const std::vector<typename ScalarTraits<ResultType>::RealType>& testQuadWeights,
-//        const std::vector<typename ScalarTraits<ResultType>::RealType>& trialQuadWeights,
-//        arma::Mat<ResultType>& result)
-//{
-//    typedef BasisFunctionType KernelType;
-//    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
-
-//    // Evaluate constants and assert that array dimensions are correct
-//    const size_t transCount = testValues.size();
-//    assert(transCount >= 1);
-//    assert(trialValues.size() == transCount);
-//    assert(kernelValues.size() == 1 || kernelValues.size() == transCount);
-
-//    const size_t testDofCount = testValues[0].extent(1);
-//    for (size_t i = 1; i < transCount; ++i)
-//        assert(testValues[i].extent(1) == testDofCount);
-//    const size_t trialDofCount = trialValues[0].extent(1);
-//    for (size_t i = 1; i < transCount; ++i)
-//        assert(trialValues[i].extent(1) == trialDofCount);
-
-//    const size_t testPointCount = testQuadWeights.size();
-//    const size_t trialPointCount = trialQuadWeights.size();
-
-//    for (size_t i = 0; i < kernelValues.size(); ++i) {
-//        assert(kernelValues[i].extent(0) == 1); // kernel is assumed to be scalar
-//        assert(kernelValues[i].extent(1) == 1); // kernel is assumed to be scalar
-//        assert(kernelValues[i].extent(2) == testPointCount);
-//        assert(kernelValues[i].extent(3) == trialPointCount);
-//    }
-//    for (size_t i = 0; i < transCount; ++i)
-//        assert(testValues[i].extent(2) == testPointCount);
-//    for (size_t i = 0; i < transCount; ++i)
-//        assert(trialValues[i].extent(2) == trialPointCount);
-
-//    assert(result.n_rows == testDofCount);
-//    assert(result.n_cols == trialDofCount);
-
-//    // Initialize the result matrix
-//    result.fill(0);
-
-//    // Declare temporary memory area
-//    std::vector<BasisFunctionType> tmp;
-
-//    for (size_t transIndex = 0; transIndex < transCount; ++transIndex) {
-//        // Multiply elements of all test- and trialValues arrays and
-//        // transpose their dim and dof dimensions
-//        const size_t transDim = testValues[transIndex].extent(0);
-//        assert(transDim > 0);
-//        assert(trialValues[transIndex].extent(0) == transDim);
-//        inplaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
-//                    testGeomData, testQuadWeights, tmp, testValues[transIndex]);
-//        inplaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
-//                    trialGeomData, trialQuadWeights, tmp, trialValues[transIndex]);
-
-//        const size_t kernelIndex = kernelValues.size() == 1 ? 0 : transIndex;
-//        // Now do the matrix-matrix-matrix multiplications
-//        arma::Mat<BasisFunctionType> matTest(
-//                    testValues[transIndex].begin(),
-//                    testDofCount, testPointCount * transDim,
-//                    false /* don't copy */, true);
-//        arma::Mat<KernelType> matKernel(
-//                    kernelValues[kernelIndex].begin(),
-//                    testPointCount, trialPointCount,
-//                    false /* don't copy */, true);
-//        arma::Mat<BasisFunctionType> matTrial(
-//                    trialValues[transIndex].begin(),
-//                    trialDofCount, trialPointCount * transDim,
-//                    false /* don't copy */, true);
-//        multiplyTestKernelTrialAndAddToResult(
-//                    matTest, matKernel, matTrial, tmp, result);
-//    }
-//}
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 void evaluateWithTensorQuadratureRuleImpl(
@@ -386,7 +301,8 @@ void evaluateWithTensorQuadratureRuleImpl(
     result.fill(0);
 
     // Declare temporary memory areas
-    std::vector<ResultType> tmpReordered, tmpIntermediate;
+    std::vector<ResultType, tbb::scalable_allocator<ResultType> >
+        tmpReordered, tmpIntermediate;
 
     for (size_t transIndex = 0; transIndex < transCount; ++transIndex) {
         // Multiply elements of all test- and trialValues arrays and
@@ -513,7 +429,12 @@ evaluateWithNontensorQuadratureRule(
     assert(result.n_cols == trialDofCount);
 
     // Allocate memory for temporary arrays
-    std::vector<KernelType> products(pointCount);
+    std::vector<CoordinateType, tbb::scalable_allocator<CoordinateType> >
+        productsReal(pointCount);
+    std::vector<CoordinateType, tbb::scalable_allocator<CoordinateType> >
+        productsImag(pointCount);
+    std::vector<CoordinateType, tbb::scalable_allocator<CoordinateType> > tmpTest;
+    std::vector<CoordinateType, tbb::scalable_allocator<CoordinateType> > tmpTrial;
     arma::Mat<CoordinateType> matResultReal(testDofCount, trialDofCount);
     arma::Mat<CoordinateType> matResultImag(testDofCount, trialDofCount);
 
@@ -523,55 +444,28 @@ evaluateWithNontensorQuadratureRule(
         assert(trialValues[transIndex].extent(0) == transDim);
 
         if (transIndex == 0 || kernelValues.size() > 1)
-            for (size_t point = 0; point < pointCount; ++point)
-                products[point] = kernelValues[0](0, 0, point) *
+            for (size_t point = 0; point < pointCount; ++point) {
+                CoordinateType partialProduct =
                         testGeomData.integrationElements(point) *
                         trialGeomData.integrationElements(point) *
                         quadWeights[point];
+                productsReal[point] = realPart(kernelValues[0](0, 0, point)) *
+                    partialProduct;
+                productsImag[point] = imagPart(kernelValues[0](0, 0, point)) *
+                    partialProduct;
+            }
 
-        // this loop can be removed for transDim == 1, because the internal
-        // transpose is not needed;
-        std::vector<CoordinateType> tmp;
-        tmp.resize(testDofCount * transDim);
-        // transpose first two dimensions: first logically...
-        //testValues[transIndex].set_size(testDofCount, transDim, pointCount);
-        BasisFunctionType* sliceStart = testValues[transIndex].begin();
-        for (size_t point = 0; point < pointCount; ++point) {
-            memcpy(&tmp[0], sliceStart, tmp.size() * sizeof(BasisFunctionType));
-            arma::Mat<BasisFunctionType> source(
-                        &tmp[0], transDim, testDofCount, false, true);
-            arma::Mat<BasisFunctionType> dest(
-                        sliceStart, testDofCount, transDim, false, true);
-            // and then physically:
-            dest = source.t();
-            sliceStart += testDofCount * transDim;
-        }
+        outOfPlaceConjugateTransposeDimAndDofDimensions(
+            testValues[transIndex], tmpTest);
         arma::Mat<BasisFunctionType> matTest(testValues[transIndex].begin(),
                                              testDofCount, pointCount  * transDim,
                                              false /* don't copy */, true);
 
         // Process the real part of the kernel
-        std::vector<CoordinateType> scaledTrialValues;
-        scaledTrialValues.resize(trialDofCount * transDim * pointCount);
+        outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
+            trialValues[transIndex], productsReal, tmpTrial);
         {
-            BasisFunctionType* sourceSliceStart =
-                    trialValues[transIndex].begin();
-            BasisFunctionType* destSliceStart = &scaledTrialValues[0];
-            for (size_t point = 0; point < pointCount; ++point) {
-                arma::Mat<BasisFunctionType> source(
-                            sourceSliceStart,
-                            transDim, trialDofCount, false, true);
-                arma::Mat<BasisFunctionType> dest(
-                            destSliceStart,
-                            trialDofCount, transDim, false, true);
-//                dest = realPart(products[point]) * source.t();
-                dest = source.t();
-                dest *= realPart(products[point]);
-                sourceSliceStart += trialDofCount * transDim;
-                destSliceStart += trialDofCount * transDim;
-            }
-
-            arma::Mat<BasisFunctionType> matTrial(&scaledTrialValues[0],
+            arma::Mat<BasisFunctionType> matTrial(&tmpTrial[0],
                                                   trialDofCount, pointCount * transDim,
                                                   false /* don't copy */, true);
             if (transIndex == 0)
@@ -580,25 +474,11 @@ evaluateWithNontensorQuadratureRule(
                 matResultReal += matTest * matTrial.t();
         }
 
-        // Now process the imaginary part of the kernel
+        // Process the imaginary part of the kernel
+        outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
+            trialValues[transIndex], productsImag, tmpTrial);
         {
-            BasisFunctionType* sourceSliceStart =
-                    trialValues[transIndex].begin();
-            BasisFunctionType* destSliceStart = &scaledTrialValues[0];
-            for (size_t point = 0; point < pointCount; ++point) {
-                arma::Mat<BasisFunctionType> source(
-                            sourceSliceStart,
-                            transDim, trialDofCount, false, true);
-                arma::Mat<BasisFunctionType> dest(
-                            destSliceStart,
-                            trialDofCount, transDim, false, true);
-                dest = source.t();
-                dest *= imagPart(products[point]);
-                sourceSliceStart += trialDofCount * transDim;
-                destSliceStart += trialDofCount * transDim;
-            }
-
-            arma::Mat<BasisFunctionType> matTrial(&scaledTrialValues[0],
+            arma::Mat<BasisFunctionType> matTrial(&tmpTrial[0],
                                                   trialDofCount, pointCount * transDim,
                                                   false /* don't copy */, true);
             if (transIndex == 0)
@@ -636,66 +516,6 @@ addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const
 
     m_functor.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 }
-
-//template <typename BasisFunctionType, typename KernelType, typename ResultType>
-//void DefaultTestSingleScalarKernelTrialIntegralBase<BasisFunctionType, KernelType, ResultType>::
-//evaluateWithTensorQuadratureRule(
-//        const GeometricalData<CoordinateType>& testGeomData,
-//        const GeometricalData<CoordinateType>& trialGeomData,
-//        const CollectionOf3dArrays<BasisFunctionType>& testValues,
-//        const CollectionOf3dArrays<BasisFunctionType>& trialValues,
-//        const CollectionOf4dArrays<KernelType>& kernelValues,
-//        const std::vector<CoordinateType>& testQuadWeights,
-//        const std::vector<CoordinateType>& trialQuadWeights,
-//        arma::Mat<ResultType>& result) const
-//{
-//    // Evaluate constants
-
-//    const size_t testDofCount = testValues[0].extent(1);
-//    const size_t trialDofCount = trialValues[0].extent(1);
-
-//    const size_t testPointCount = testQuadWeights.size();
-//    const size_t trialPointCount = trialQuadWeights.size();
-
-//    // Assert that array dimensions are correct
-
-//    for (size_t i = 0; i < kernelValues.size(); ++i) {
-//        assert(kernelValues[i].extent(2) == testPointCount);
-//        assert(kernelValues[i].extent(3) == trialPointCount);
-//    }
-//    for (size_t i = 0; i < testValues.size(); ++i)
-//        assert(testValues[i].extent(2) == testPointCount);
-//    for (size_t i = 0; i < trialValues.size(); ++i)
-//        assert(trialValues[i].extent(2) == trialPointCount);
-
-//    // Integrate
-
-//    for (size_t trialDof = 0; trialDof < trialDofCount; ++trialDof)
-//        for (size_t testDof = 0; testDof < testDofCount; ++testDof)
-//        {
-//            ResultType sum = 0.;
-//            for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
-//                const CoordinateType trialWeight =
-//                        trialGeomData.integrationElements(trialPoint) *
-//                        trialQuadWeights[trialPoint];
-//                ResultType partialSum = 0.;
-//                for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint) {
-//                    const CoordinateType testWeight =
-//                            testGeomData.integrationElements(testPoint) *
-//                            testQuadWeights[testPoint];
-//                    partialSum += m_functor.evaluate(
-//                                testGeomData.const_slice(testPoint),
-//                                trialGeomData.const_slice(trialPoint),
-//                                testValues.const_slice(testDof, testPoint),
-//                                trialValues.const_slice(trialDof, trialPoint),
-//                                kernelValues.const_slice(testPoint, trialPoint)) *
-//                            testWeight;
-//                }
-//                sum += partialSum * trialWeight;
-//            }
-//            result(testDof, trialDof) = sum;
-//        }
-//}
 
 template <typename CoordinateType_>
 void DefaultTestSingleScalarKernelTrialIntegral<CoordinateType_,
@@ -749,7 +569,7 @@ evaluateWithTensorQuadratureRule(
         const std::vector<CoordinateType>& trialQuadWeights,
         arma::Mat<ResultType>& result) const
 {
-    // throw std::runtime_error("Old implementation");
+    throw std::runtime_error("Old implementation");
     // Evaluate constants and assert that array dimensions are correct
     const size_t transCount = testValues.size();
     assert(trialValues.size() == transCount);
@@ -808,245 +628,6 @@ evaluateWithTensorQuadratureRule(
             result(testDof, trialDof) = sum;
         }
 }
-
-//template <typename IntegrandFunctor>
-//void DefaultTestSingleScalarKernelTrialIntegral<IntegrandFunctor>::
-//evaluateWithNontensorQuadratureRule(
-//        GeometricalData<CoordinateType>& testGeomData,
-//        GeometricalData<CoordinateType>& trialGeomData,
-//        CollectionOf3dArrays<BasisFunctionType>& testValues,
-//        CollectionOf3dArrays<BasisFunctionType>& trialValues,
-//        CollectionOf3dArrays<KernelType>& kernelValues,
-//        std::vector<CoordinateType>& quadWeights,
-//        arma::Mat<ResultType>& result) const
-//{
-//    // We assume the integrand has the structure
-//    // (\vec test \cdot \vec trial_i) kernel
-//    assert(testValues.size() == 1);
-//    assert(trialValues.size() == 1);
-
-//    // Evaluate constants
-//    const size_t testDofCount = testValues[0].extent(1);
-//    const size_t trialDofCount = trialValues[0].extent(1);
-//    const size_t transDim = testValues[0].extent(0);
-//    assert(trialValues[0].extent(0) == transDim);
-//    const size_t pointCount = quadWeights.size();
-
-////    if (transDim != 1)
-////        throw std::runtime_error("transDim != 1");
-
-//    // Assert that array dimensions are correct
-
-//    assert(kernelValues[0].extent(2) == pointCount);
-//    assert(testValues[0].extent(2) == pointCount);
-//    assert(trialValues[0].extent(2) == pointCount);
-//    assert(result.n_rows == testDofCount);
-//    assert(result.n_cols == trialDofCount);
-
-//    // Integrate
-
-////    ProductDataReference products = m_products.local();
-////    products.resize(pointCount);
-////    for (size_t point = 0; point < pointCount; ++point)
-////        products[point] = kernelValues[0](0, 0, point) *
-////                testGeomData.integrationElements(point) *
-////                trialGeomData.integrationElements(point) *
-////                quadWeights[point];
-
-////    FactorDataReference reorderedTestValues = m_reorderedTestValues.local();
-////    reorderedTestValues.resize(transDim * testDofCount * pointCount);
-////    for (size_t f = 0, r = 0; f < testDofCount; ++f)
-////        for (size_t d = 0; d < transDim; ++d)
-////            for (size_t p = 0; p < pointCount; ++p, ++r)
-////                // Bempp::acc(reorderedTestValues, r) = testValues[0](d, f, p);
-////                reorderedTestValues[r] = testValues[0](d, f, p);
-
-////    FactorDataReference scaledTrialValues = m_scaledTrialValues.local();
-////    scaledTrialValues.resize(transDim * trialDofCount * pointCount);
-////    for (size_t f = 0, r = 0; f < trialDofCount; ++f)
-////        for (size_t d = 0; d < transDim; ++d)
-////            for (size_t p = 0; p < pointCount; ++p, ++r)
-////                // Bempp::acc(scaledTrialValues, r) = trialValues[0](d, f, p) * products[p];
-////                scaledTrialValues[r] = trialValues[0](d, f, p) * products[p];
-
-////    arma::Mat<ResultType> matTest(&reorderedTestValues[0],
-////                                   pointCount * transDim, testDofCount,
-////                                   false /* don't copy */);
-////    arma::Mat<ResultType> matTrial(&scaledTrialValues[0],
-////                                   pointCount * transDim, trialDofCount,
-////                                   false /* don't copy */);
-////    // Teuchos::BLAS<int, ResultType> blas;
-////    // blas.GEMM(Teuchos::CONJ_TRANS, Teuchos::NO_TRANS,
-////    //           testDofCount, trialDofCount,
-////    //           pointCount * transDim,
-////    //           1., &reorderedTestValues[0], 1, &scaledTrialValues[0], 1,
-////    //           0., &result[0], 1.);
-
-////    // std::cout << result.n_rows << " " << result.n_cols << std::endl;
-////    // std::cout << matTest.n_rows << " " << matTest.n_cols << std::endl;
-////    // std::cout << matTrial.n_rows << " " << matTrial.n_cols << std::endl;
-////    result = matTest.t() * matTrial;
-////    // std::cout << result.n_rows << " " << result.n_cols << std::endl;
-
-
-
-
-////    ProductDataReference products = m_products.local();
-////    products.resize(pointCount);
-////    for (size_t point = 0; point < pointCount; ++point)
-////        products[point] = kernelValues[0](0, 0, point) *
-////                testGeomData.integrationElements(point) *
-////                trialGeomData.integrationElements(point) *
-////                quadWeights[point];
-
-////    FactorDataReference reorderedTestValues = m_reorderedTestValues.local();
-////    reorderedTestValues.resize(transDim * testDofCount * pointCount);
-////    for (size_t p = 0, r = 0; p < pointCount; ++p)
-////        for (size_t f = 0; f < testDofCount; ++f)
-////            for (size_t d = 0; d < transDim; ++d, ++r)
-////                // Bempp::acc(scaledTrialValues, r) = trialValues[0](d, f, p) * products[p];
-////                reorderedTestValues[r] = testValues[0](d, f, p);
-
-//////    FactorDataReference scaledTrialValues = m_scaledTrialValues.local();
-//////    scaledTrialValues.resize(transDim * trialDofCount * pointCount);
-//////    for (size_t p = 0, r = 0; p < pointCount; ++p)
-//////        for (size_t f = 0; f < trialDofCount; ++f)
-//////            for (size_t d = 0; d < transDim; ++d, ++r)
-//////                // Bempp::acc(scaledTrialValues, r) = trialValues[0](d, f, p) * products[p];
-//////                scaledTrialValues[r] = trialValues[0](d, f, p) * products[p];
-////    FactorDataReference scaledTrialValues = m_scaledTrialValues.local();
-////    scaledTrialValues.resize(transDim * trialDofCount * pointCount);
-//////    for (size_t p = 0, r = 0; p < pointCount; ++p)
-//////        for (size_t f = 0; f < trialDofCount; ++f)
-//////            for (size_t d = 0; d < transDim; ++d, ++r)
-//////                // Bempp::acc(scaledTrialValues, r) = trialValues[0](d, f, p) * products[p];
-//////                scaledTrialValues[r] = trialValues[0](d, f, p) * products[p];
-////    memcpy(&scaledTrialValues[0], trialValues[0].begin(), sizeof(CoordinateType) * scaledTrialValues.size());
-////    for (size_t p = 0, r = 0; p < pointCount; ++p)
-////        for (size_t f = 0; f < trialDofCount; ++f, ++r)
-////                scaledTrialValues[r] *= products[p];
-
-////    arma::Mat<ResultType> matTest(&reorderedTestValues[0],
-////                                   testDofCount, pointCount,
-////                                   false /* don't copy */);
-////    arma::Mat<ResultType> matTrial(&scaledTrialValues[0],
-////                                   trialDofCount, pointCount,
-////                                   false /* don't copy */);
-
-////    // std::cout << result.n_rows << " " << result.n_cols << std::endl;
-////    // std::cout << matTest.n_rows << " " << matTest.n_cols << std::endl;
-////    // std::cout << matTrial.n_rows << " " << matTrial.n_cols << std::endl;
-////    result = matTest * matTrial.t();// sctually conjugate would be needed...
-////    // std::cout << result.n_rows << " " << result.n_cols << std::endl;
-
-
-
-////    ProductDataReference products = m_products.local();
-////    products.resize(pointCount);
-////    for (size_t point = 0; point < pointCount; ++point)
-////        products[point] = kernelValues[0](0, 0, point) *
-////                testGeomData.integrationElements(point) *
-////                trialGeomData.integrationElements(point) *
-////                quadWeights[point];
-////    KernelType* pproducts = &products[0];
-
-////    for (size_t p = 0, r = 0; p < pointCount; ++p)
-////        for (size_t f = 0; f < trialDofCount; ++f)
-////            for (size_t d = 0; d < transDim; ++d, ++r)
-////                // Bempp::acc(scaledTrialValues, r) = trialValues[0](d, f, p) * products[p];
-////                trialValues[0](d, f, p) *= pproducts[p];
-
-//////    FactorDataReference scaledTrialValues = m_scaledTrialValues.local();
-////    arma::Mat<BasisFunctionType> matTest(testValues[0].begin(),
-////                                  testDofCount, pointCount,
-////                                  false /* don't copy */);
-////    arma::Mat<BasisFunctionType> matTrial(trialValues[0].begin(),
-////                                   trialDofCount, pointCount,
-////                                   false /* don't copy */);
-
-////    // std::cout << result.n_rows << " " << result.n_cols << std::endl;
-////    // std::cout << matTest.n_rows << " " << matTest.n_cols << std::endl;
-////    // std::cout << matTrial.n_rows << " " << matTrial.n_cols << std::endl;
-////    arma::Mat<BasisFunctionType> resultX = matTest * matTrial.t();// sctually conjugate would be needed...
-////    for (size_t i = 0; i < result.n_elem; ++i)
-////        result[i] = resultX[i];
-////    // std::cout << result.n_rows << " " << result.n_cols << std::endl;
-
-////    arma::Mat<ResultType> compareResult(testDofCount, trialDofCount);
-////    // std::cout << compareResult.n_rows << " " << compareResult.n_cols << std::endl;
-////    for (size_t trialDof = 0; trialDof < trialDofCount; ++trialDof)
-////        for (size_t testDof = 0; testDof < testDofCount; ++testDof)
-////        {
-////            ResultType sum = 0.;
-////            for (size_t point = 0; point < pointCount; ++point)
-////                sum += m_functor.evaluate(
-////                            testGeomData.const_slice(point),
-////                            trialGeomData.const_slice(point),
-////                            testValues.const_slice(testDof, point),
-////                            trialValues.const_slice(trialDof, point),
-////                            kernelValues.const_slice(point)) *
-////                        (testGeomData.integrationElements(point) *
-////                         trialGeomData.integrationElements(point) *
-////                         quadWeights[point]);
-//////            result(testDof, trialDof) = sum;
-////            compareResult(testDof, trialDof) = sum;
-////        }
-
-//    ProductDataReference products = m_products.local();
-//    products.resize(pointCount);
-//    for (size_t point = 0; point < pointCount; ++point)
-//        products[point] = kernelValues[0](0, 0, point) *
-//                testGeomData.integrationElements(point) *
-//                trialGeomData.integrationElements(point) *
-//                quadWeights[point];
-
-//    BFTDataReference bftData = m_bftData.local();
-//    bftData.resize(testDofCount * transDim);
-//    testValues[0].set_size(testDofCount, transDim, pointCount);
-//    for (size_t point = 0; point < pointCount; ++point) {
-//        memcpy(&bftData[0],
-//               testValues[0].begin() + point * bftData.size(),
-//               bftData.size() * sizeof(BasisFunctionType));
-//        arma::Mat<BasisFunctionType> origMat(
-//                    &bftData[0], transDim, testDofCount, false, true);
-//        arma::Mat<BasisFunctionType> transposedMat(
-//                    testValues[0].begin() + point * bftData.size(),
-//                    testDofCount, transDim, false, true);
-//        transposedMat = origMat.t();
-//    }
-
-//    bftData.resize(trialDofCount * transDim);
-//    trialValues[0].set_size(trialDofCount, transDim, pointCount);
-//    for (size_t point = 0; point < pointCount; ++point) {
-//        memcpy(&bftData[0],
-//               trialValues[0].begin() + point * bftData.size(),
-//               bftData.size() * sizeof(BasisFunctionType));
-//        arma::Mat<BasisFunctionType> origMat(
-//                    &bftData[0], transDim, trialDofCount, false, true);
-//        arma::Mat<BasisFunctionType> transposedMat(
-//                    trialValues[0].begin() + point * bftData.size(),
-//                    trialDofCount, transDim, false, true);
-//        transposedMat = origMat.t();
-//        transposedMat *= realPart(products[point]);
-//    }
-
-//    arma::Mat<BasisFunctionType> matTest(testValues[0].begin(),
-//                                         testDofCount, pointCount  * transDim,
-//                                  false /* don't copy */, true);
-//    arma::Mat<BasisFunctionType> matTrial(trialValues[0].begin(),
-//                                          trialDofCount, pointCount * transDim,
-//                                          false /* don't copy */, true);
-
-//    // std::cout << result.n_rows << " " << result.n_cols << std::endl;
-//    // std::cout << matTest.n_rows << " " << matTest.n_cols << std::endl;
-//    // std::cout << matTrial.n_rows << " " << matTrial.n_cols << std::endl;
-//    arma::Mat<BasisFunctionType> resultX = matTest * matTrial.t();// sctually conjugate would be needed...
-//    for (size_t i = 0; i < result.n_elem; ++i)
-//        result[i] = resultX[i];
-
-////    compareResult -= result;
-////    std::cout << arma::norm(compareResult, 2) << std::endl;
-//}
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
         DefaultTestSingleScalarKernelTrialIntegral);
