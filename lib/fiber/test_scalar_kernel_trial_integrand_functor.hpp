@@ -52,9 +52,6 @@ public:
         // do nothing
     }
 
-    // It is possible that this function could be generalised to
-    // multiple basis transformations or kernels and that the additional
-    // loops could be optimised away by the compiler.
     template <template <typename T> class CollectionOf2dSlicesOfConstNdArrays>
     ResultType evaluate(
             const ConstGeometricalDataSlice<CoordinateType>& /* testGeomData */,
@@ -87,7 +84,7 @@ public:
             if (transCount == 1)
                 result += dotProduct * kernelValues[0](0, 0);
             else
-                result += dotProduct * kernelValues[transDim](0, 0);
+                result += dotProduct * kernelValues[transIndex](0, 0);
         }
         return result;
     }
