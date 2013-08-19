@@ -61,6 +61,7 @@ void setToProduct(const arma::Mat<CoordinateType>& source,
                   CoordinateType weight,
                   arma::Mat<std::complex<CoordinateType> >& result)
 {
+    result.fill(0.);
     result.set_real(weight * source.t());
 }
 
@@ -230,7 +231,7 @@ void evaluateWithNontensorQuadratureRuleStandardImpl(
         if (transIndex == 0 || kernelValues.size() > 1)
             for (size_t point = 0; point < pointCount; ++point)
                 // we take the complex conj. here, later we'll remove it
-                products[point] = conj(kernelValues[0](0, 0, point)) *
+                products[point] = conj(kernelValues[transIndex](0, 0, point)) *
                         testGeomData.integrationElements(point) *
                         trialGeomData.integrationElements(point) *
                         quadWeights[point];
@@ -476,15 +477,15 @@ evaluateWithNontensorQuadratureRule(
                         testGeomData.integrationElements(point) *
                         trialGeomData.integrationElements(point) *
                         quadWeights[point];
-                productsReal[point] = realPart(kernelValues[0](0, 0, point)) *
+                productsReal[point] = realPart(kernelValues[transIndex](0, 0, point)) *
                     partialProduct;
-                productsImag[point] = imagPart(kernelValues[0](0, 0, point)) *
+                productsImag[point] = imagPart(kernelValues[transIndex](0, 0, point)) *
                     partialProduct;
             }
 
         outOfPlaceConjugateTransposeDimAndDofDimensions(
             testValues[transIndex], tmpTest);
-        arma::Mat<BasisFunctionType> matTest(testValues[transIndex].begin(),
+        arma::Mat<BasisFunctionType> matTest(&tmpTest[0],
                                              testDofCount, pointCount  * transDim,
                                              false /* don't copy */, true);
 
