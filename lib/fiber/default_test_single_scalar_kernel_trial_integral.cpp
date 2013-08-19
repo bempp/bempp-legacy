@@ -36,6 +36,7 @@
 namespace Fiber
 {
 
+// Internal functions
 namespace
 {
 
@@ -188,7 +189,6 @@ void evaluateWithNontensorQuadratureRuleStandardImpl(
         const std::vector<typename ScalarTraits<ResultType>::RealType>& quadWeights,
         arma::Mat<ResultType>& result)
 {
-    // std::cout << "var 1" << std::endl;
     // We assume the integrand has the structure
     // (i -- transformations)
     // sum_i (\vec test_i \cdot \vec trial_i) kernel
@@ -263,7 +263,6 @@ void evaluateWithTensorQuadratureRuleImpl(
         const std::vector<typename ScalarTraits<ResultType>::RealType>& trialQuadWeights,
         arma::Mat<ResultType>& result)
 {
-    // typedef ResultType KernelType;
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
     typedef typename Coercion<BasisFunctionType, ResultType>::Type IntermediateType;
 
@@ -371,6 +370,14 @@ void evaluateWithTensorQuadratureRuleImpl(
 
 } // namespace
 
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+void DefaultTestSingleScalarKernelTrialIntegralBase<BasisFunctionType, KernelType, ResultType>::
+addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const
+{
+    testGeomDeps |= INTEGRATION_ELEMENTS;
+    trialGeomDeps |= INTEGRATION_ELEMENTS;
+}
+
 template <typename BasisFunctionType_, typename ResultType_>
 void DefaultTestSingleScalarKernelTrialIntegral<BasisFunctionType_,
 BasisFunctionType_, ResultType_>::
@@ -386,6 +393,26 @@ evaluateWithNontensorQuadratureRule(
     evaluateWithNontensorQuadratureRuleStandardImpl(
                 testGeomData, trialGeomData,
                 testValues, trialValues, kernelValues, quadWeights, result);
+}
+
+template <typename CoordinateType_>
+void DefaultTestSingleScalarKernelTrialIntegral<CoordinateType_,
+std::complex<CoordinateType_>, std::complex<CoordinateType_> >::
+evaluateWithTensorQuadratureRule(
+        const GeometricalData<CoordinateType>& testGeomData,
+        const GeometricalData<CoordinateType>& trialGeomData,
+        CollectionOf3dArrays<BasisFunctionType>& testValues,
+        CollectionOf3dArrays<BasisFunctionType>& trialValues,
+        CollectionOf4dArrays<KernelType>& kernelValues,
+        const std::vector<CoordinateType>& testQuadWeights,
+        const std::vector<CoordinateType>& trialQuadWeights,
+        arma::Mat<ResultType>& result) const
+{
+    evaluateWithTensorQuadratureRuleImpl(
+                testGeomData, trialGeomData,
+                testValues, trialValues, kernelValues,
+                testQuadWeights, trialQuadWeights,
+                result);
 }
 
 template <typename CoordinateType>
@@ -490,53 +517,6 @@ evaluateWithNontensorQuadratureRule(
     result = arma::Mat<ResultType>(matResultReal, matResultImag);
 }
 
-template <typename CoordinateType>
-void DefaultTestSingleScalarKernelTrialIntegral<std::complex<CoordinateType>,
-CoordinateType, std::complex<CoordinateType> >::
-evaluateWithNontensorQuadratureRule(
-        const GeometricalData<CoordinateType>& testGeomData,
-        const GeometricalData<CoordinateType>& trialGeomData,
-        CollectionOf3dArrays<BasisFunctionType>& testValues,
-        CollectionOf3dArrays<BasisFunctionType>& trialValues,
-        CollectionOf3dArrays<KernelType>& kernelValues,
-        const std::vector<CoordinateType>& quadWeights,
-        arma::Mat<ResultType>& result) const
-{
-    evaluateWithNontensorQuadratureRuleStandardImpl(
-                testGeomData, trialGeomData,
-                testValues, trialValues, kernelValues, quadWeights, result);
-}
-
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
-void DefaultTestSingleScalarKernelTrialIntegralBase<BasisFunctionType, KernelType, ResultType>::
-addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const
-{
-    testGeomDeps |= INTEGRATION_ELEMENTS;
-    trialGeomDeps |= INTEGRATION_ELEMENTS;
-
-    m_functor.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
-}
-
-template <typename CoordinateType_>
-void DefaultTestSingleScalarKernelTrialIntegral<CoordinateType_,
-std::complex<CoordinateType_>, std::complex<CoordinateType_> >::
-evaluateWithTensorQuadratureRule(
-        const GeometricalData<CoordinateType>& testGeomData,
-        const GeometricalData<CoordinateType>& trialGeomData,
-        CollectionOf3dArrays<BasisFunctionType>& testValues,
-        CollectionOf3dArrays<BasisFunctionType>& trialValues,
-        CollectionOf4dArrays<KernelType>& kernelValues,
-        const std::vector<CoordinateType>& testQuadWeights,
-        const std::vector<CoordinateType>& trialQuadWeights,
-        arma::Mat<ResultType>& result) const
-{
-    evaluateWithTensorQuadratureRuleImpl(
-                testGeomData, trialGeomData,
-                testValues, trialValues, kernelValues,
-                testQuadWeights, trialQuadWeights,
-                result);
-}
-
 template <typename BasisFunctionType_, typename ResultType_>
 void DefaultTestSingleScalarKernelTrialIntegral<BasisFunctionType_,
 BasisFunctionType_, ResultType_>::
@@ -557,8 +537,35 @@ evaluateWithTensorQuadratureRule(
                 result);
 }
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
-void DefaultTestSingleScalarKernelTrialIntegralBase<BasisFunctionType, KernelType, ResultType>::
+template <typename CoordinateType>
+DefaultTestSingleScalarKernelTrialIntegral<std::complex<CoordinateType>,
+CoordinateType, std::complex<CoordinateType> >::
+DefaultTestSingleScalarKernelTrialIntegral() :
+    m_standardIntegral(TestScalarKernelTrialIntegrandFunctor<
+                       BasisFunctionType, KernelType, ResultType>())
+{
+}
+
+template <typename CoordinateType>
+void DefaultTestSingleScalarKernelTrialIntegral<std::complex<CoordinateType>,
+CoordinateType, std::complex<CoordinateType> >::
+evaluateWithNontensorQuadratureRule(
+        const GeometricalData<CoordinateType>& testGeomData,
+        const GeometricalData<CoordinateType>& trialGeomData,
+        CollectionOf3dArrays<BasisFunctionType>& testValues,
+        CollectionOf3dArrays<BasisFunctionType>& trialValues,
+        CollectionOf3dArrays<KernelType>& kernelValues,
+        const std::vector<CoordinateType>& quadWeights,
+        arma::Mat<ResultType>& result) const
+{
+    evaluateWithNontensorQuadratureRuleStandardImpl(
+                testGeomData, trialGeomData,
+                testValues, trialValues, kernelValues, quadWeights, result);
+}
+
+template <typename CoordinateType>
+void DefaultTestSingleScalarKernelTrialIntegral<std::complex<CoordinateType>,
+CoordinateType, std::complex<CoordinateType> >::
 evaluateWithTensorQuadratureRule(
         const GeometricalData<CoordinateType>& testGeomData,
         const GeometricalData<CoordinateType>& trialGeomData,
@@ -569,64 +576,11 @@ evaluateWithTensorQuadratureRule(
         const std::vector<CoordinateType>& trialQuadWeights,
         arma::Mat<ResultType>& result) const
 {
-    throw std::runtime_error("Old implementation");
-    // Evaluate constants and assert that array dimensions are correct
-    const size_t transCount = testValues.size();
-    assert(trialValues.size() == transCount);
-    assert(kernelValues.size() == 1 ||
-           kernelValues.size() == transCount);
-
-    const size_t testDofCount = testValues[0].extent(1);
-    for (size_t i = 1; i < transCount; ++i)
-        assert(testValues[i].extent(1) == testDofCount);
-    const size_t trialDofCount = trialValues[0].extent(1);
-    for (size_t i = 1; i < transCount; ++i)
-        assert(trialValues[i].extent(1) == trialDofCount);
-
-    const size_t testPointCount = testQuadWeights.size();
-    const size_t trialPointCount = trialQuadWeights.size();
-
-    for (size_t i = 0; i < kernelValues.size(); ++i) {
-        assert(kernelValues[i].extent(0) == 1); // kernel is assumed to be scalar
-        assert(kernelValues[i].extent(1) == 1); // kernel is assumed to be scalar
-        assert(kernelValues[i].extent(2) == testPointCount);
-        assert(kernelValues[i].extent(3) == trialPointCount);
-    }
-    for (size_t i = 0; i < transCount; ++i)
-        assert(testValues[i].extent(2) == testPointCount);
-    for (size_t i = 0; i < transCount; ++i)
-        assert(trialValues[i].extent(2) == trialPointCount);
-
-    assert(result.n_rows == testDofCount);
-    assert(result.n_cols == trialDofCount);
-
-    // Integrate
-
-    for (size_t trialDof = 0; trialDof < trialDofCount; ++trialDof)
-        for (size_t testDof = 0; testDof < testDofCount; ++testDof)
-        {
-            ResultType sum = 0.;
-            for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
-                const CoordinateType trialWeight =
-                        trialGeomData.integrationElements(trialPoint) *
-                        trialQuadWeights[trialPoint];
-                ResultType partialSum = 0.;
-                for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint) {
-                    const CoordinateType testWeight =
-                            testGeomData.integrationElements(testPoint) *
-                            testQuadWeights[testPoint];
-                    partialSum += m_functor.evaluate(
-                                testGeomData.const_slice(testPoint),
-                                trialGeomData.const_slice(trialPoint),
-                                testValues.const_slice(testDof, testPoint),
-                                trialValues.const_slice(trialDof, trialPoint),
-                                kernelValues.const_slice(testPoint, trialPoint)) *
-                            testWeight;
-                }
-                sum += partialSum * trialWeight;
-            }
-            result(testDof, trialDof) = sum;
-        }
+    m_standardIntegral.evaluateWithTensorQuadratureRule(
+                testGeomData, trialGeomData,
+                testValues, trialValues, kernelValues,
+                testQuadWeights, trialQuadWeights,
+                result);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
