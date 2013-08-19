@@ -17,6 +17,8 @@ set(ARMADILLO_INCLUDE_DIR "" CACHE PATH "Directory containing Armadillo header f
 set(TBB_INCLUDE_DIR "" CACHE PATH "Directory containing Intel TBB header files")
 set(TBB_LIBRARY "" CACHE PATH "Full path to the TBB library")
 set(TBB_LIBRARY_DEBUG "" CACHE PATH "Full path to the TBB debug library")
+set(TBB_MALLOC_LIBRARY "" CACHE PATH "Full path to the TBB malloc library")
+set(TBB_MALLOC_LIBRARY_DEBUG "" CACHE PATH "Full path to the TBB malloc debug library")
 
 # Ahmed (optional, used only if WITH_AHMED is set)
 if (WITH_AHMED)

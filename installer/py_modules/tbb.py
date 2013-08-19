@@ -69,9 +69,13 @@ def prepare(root,config):
         libdir_orig = dep_build_dir+"/tbb/lib"
         tbb_lib_name="libtbb.dylib"
         tbb_lib_name_debug="libtbb_debug.dylib"
+        tbb_libmalloc_name="libtbbmalloc.dylib"
+        tbb_libmalloc_name_debug="libtbbmalloc_debug.dylib"
     elif sys.platform.startswith('linux'):
         tbb_lib_name = "libtbb.so"
         tbb_lib_name_debug = "libtbb_debug.so"
+        tbb_libmalloc_name = "libtbbmalloc.so"
+        tbb_libmalloc_name_debug = "libtbbmalloc_debug.so"
         arch = config.get('Main','architecture')
         if arch in ('intel64','ia32','ia64'):
             libdir_orig = (dep_build_dir+"/tbb/lib/"+arch+
@@ -85,6 +89,8 @@ def prepare(root,config):
 
     tools.setDefaultConfigOption(config,"Tbb",'lib',prefix+"/bempp/lib/"+tbb_lib_name,overwrite=True)
     tools.setDefaultConfigOption(config,"Tbb","lib_debug",prefix+"/bempp/lib/"+tbb_lib_name_debug,overwrite=True)
+    tools.setDefaultConfigOption(config,"Tbb",'libmalloc',prefix+"/bempp/lib/"+tbb_libmalloc_name,overwrite=True)
+    tools.setDefaultConfigOption(config,"Tbb","libmalloc_debug",prefix+"/bempp/lib/"+tbb_libmalloc_name_debug,overwrite=True)
     tools.setDefaultConfigOption(config,"Tbb",'include_dir',prefix+"/bempp/include",overwrite=True)
 
 def configure(root,config):
