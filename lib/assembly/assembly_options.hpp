@@ -170,15 +170,24 @@ public:
     void enableJointAssembly(bool value = true);
 
     /** \brief Return whether joint assembly of integral-operator superpositions
-     *  is enabled
+     *  is enabled.
      *
      * See enableJointAssembly() for more information. */
     bool isJointAssemblyEnabled() const;
 
-    /** \brief .... */
+    /** \brief Specify whether BLAS matrix multiplication routines should be
+     *  used during evaluation of elementary integrals.
+     *
+     *  This usually makes sense with quadratic or higher-order elements, but
+     *  is counterproductive for constant or linear elements.
+     *
+     *  By default, BLAS use during evaluation of elementary integrals is
+     *  disabled.
+     */
     void enableBlasInQuadrature(bool value = true);
 
-    /** \brief .... */
+    /** \brief Return whether BLAS matrix multiplication routines are used
+     *  during evaluation of elementary integrals. */
     bool isBlasEnabledInQuadrature() const;
 
     /** @} */
