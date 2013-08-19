@@ -32,11 +32,13 @@
 
 #include "../fiber/explicit_instantiation.hpp"
 
+#include "../fiber/default_test_single_scalar_kernel_trial_integral.hpp"
 #include "../fiber/modified_helmholtz_3d_hypersingular_kernel_functor.hpp"
 #include "../fiber/modified_helmholtz_3d_hypersingular_kernel_interpolated_functor.hpp"
 #include "../fiber/modified_helmholtz_3d_hypersingular_off_diagonal_kernel_functor.hpp"
 #include "../fiber/modified_helmholtz_3d_hypersingular_off_diagonal_interpolated_kernel_functor.hpp"
 #include "../fiber/modified_helmholtz_3d_hypersingular_transformation_functor.hpp"
+#include "../fiber/modified_helmholtz_3d_hypersingular_transformation_functor_2.hpp"
 #include "../fiber/modified_helmholtz_3d_hypersingular_integrand_functor_2.hpp"
 #include "../fiber/scalar_function_value_functor.hpp"
 #include "../fiber/scalar_function_value_times_normal_functor.hpp"
@@ -211,6 +213,9 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
     typedef Fiber::ModifiedHelmholtz3dHypersingularIntegrandFunctor2<
             BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
 
+    typedef Fiber::ModifiedHelmholtz3dHypersingularTransformationFunctor2<CoordinateType>
+            TransformationFunctorWithBlas;
+
     typedef Fiber::ModifiedHelmholtz3dHypersingularOffDiagonalInterpolatedKernelFunctor<KernelType>
             OffDiagonalInterpolatedKernelFunctor;
     typedef Fiber::ModifiedHelmholtz3dHypersingularOffDiagonalKernelFunctor<KernelType>
@@ -225,33 +230,82 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
             static_cast<CoordinateType>(1.1) *
             maxDistance(*domain->grid(), *dualToRange->grid());
 
+    shared_ptr<Fiber::TestKernelTrialIntegral<
+            BasisFunctionType, KernelType, ResultType> >
+            integral, offDiagonalIntegral;
+    if (assemblyOptions.isBlasEnabledInQuadrature()) {
+        integral.reset(new Fiber::DefaultTestSingleScalarKernelTrialIntegral<
+                       BasisFunctionType, KernelType, ResultType>());
+        offDiagonalIntegral = integral;
+    }
+    else {
+        integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
+                           IntegrandFunctor()));
+        offDiagonalIntegral.reset(new Fiber::DefaultTestKernelTrialIntegral<
+                                  OffDiagonalIntegrandFunctor>(
+                           OffDiagonalIntegrandFunctor()));
+    }
+
     typedef GeneralHypersingularIntegralOperator<
             BasisFunctionType, KernelType, ResultType> Op;
     shared_ptr<Op> newOp;
-    if (useInterpolation)
-        newOp.reset(new Op(
-                        domain, range, dualToRange, label, symmetry,
-                        InterpolatedKernelFunctor(
-                            waveNumber, maxDistance_, interpPtsPerWavelength),
-                        TransformationFunctor(),
-                        TransformationFunctor(),
-                        IntegrandFunctor(),
-                        OffDiagonalInterpolatedKernelFunctor(
-                            waveNumber, maxDistance_, interpPtsPerWavelength),
-                        OffDiagonalTransformationFunctor(),
-                        OffDiagonalTransformationFunctor(),
-                        OffDiagonalIntegrandFunctor()));
-    else
-        newOp.reset(new Op(
-                        domain, range, dualToRange, label, symmetry,
-                        NoninterpolatedKernelFunctor(waveNumber),
-                        TransformationFunctor(),
-                        TransformationFunctor(),
-                        IntegrandFunctor(),
-                        OffDiagonalNoninterpolatedKernelFunctor(waveNumber),
-                        OffDiagonalTransformationFunctor(),
-                        OffDiagonalTransformationFunctor(),
-                        OffDiagonalIntegrandFunctor()));
+    if (assemblyOptions.isBlasEnabledInQuadrature()) {
+        shared_ptr<Fiber::TestKernelTrialIntegral<
+                BasisFunctionType, KernelType, ResultType> >
+                integral, offDiagonalIntegral;
+        integral.reset(new Fiber::DefaultTestSingleScalarKernelTrialIntegral<
+                       BasisFunctionType, KernelType, ResultType>());
+        offDiagonalIntegral = integral;
+        if (useInterpolation)
+            newOp.reset(new Op(
+                            domain, range, dualToRange, label, symmetry,
+                            InterpolatedKernelFunctor(
+                                waveNumber, maxDistance_, interpPtsPerWavelength),
+                            TransformationFunctorWithBlas(),
+                            TransformationFunctorWithBlas(),
+                            integral,
+                            OffDiagonalInterpolatedKernelFunctor(
+                                waveNumber, maxDistance_, interpPtsPerWavelength),
+                            OffDiagonalTransformationFunctor(),
+                            OffDiagonalTransformationFunctor(),
+                            offDiagonalIntegral));
+        else
+            newOp.reset(new Op(
+                            domain, range, dualToRange, label, symmetry,
+                            NoninterpolatedKernelFunctor(waveNumber),
+                            TransformationFunctorWithBlas(),
+                            TransformationFunctorWithBlas(),
+                            integral,
+                            OffDiagonalNoninterpolatedKernelFunctor(waveNumber),
+                            OffDiagonalTransformationFunctor(),
+                            OffDiagonalTransformationFunctor(),
+                            offDiagonalIntegral));
+    } else { // no blas
+        if (useInterpolation)
+            newOp.reset(new Op(
+                            domain, range, dualToRange, label, symmetry,
+                            InterpolatedKernelFunctor(
+                                waveNumber, maxDistance_, interpPtsPerWavelength),
+                            TransformationFunctor(),
+                            TransformationFunctor(),
+                            IntegrandFunctor(),
+                            OffDiagonalInterpolatedKernelFunctor(
+                                waveNumber, maxDistance_, interpPtsPerWavelength),
+                            OffDiagonalTransformationFunctor(),
+                            OffDiagonalTransformationFunctor(),
+                            OffDiagonalIntegrandFunctor()));
+        else
+            newOp.reset(new Op(
+                            domain, range, dualToRange, label, symmetry,
+                            NoninterpolatedKernelFunctor(waveNumber),
+                            TransformationFunctor(),
+                            TransformationFunctor(),
+                            IntegrandFunctor(),
+                            OffDiagonalNoninterpolatedKernelFunctor(waveNumber),
+                            OffDiagonalTransformationFunctor(),
+                            OffDiagonalTransformationFunctor(),
+                            OffDiagonalIntegrandFunctor()));
+    }
     return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 

@@ -28,6 +28,7 @@
 
 #include "../fiber/explicit_instantiation.hpp"
 
+#include "../fiber/default_test_single_scalar_kernel_trial_integral.hpp"
 #include "../fiber/modified_helmholtz_3d_adjoint_double_layer_potential_kernel_functor.hpp"
 #include "../fiber/modified_helmholtz_3d_adjoint_double_layer_potential_kernel_interpolated_functor.hpp"
 #include "../fiber/scalar_function_value_functor.hpp"
@@ -77,6 +78,15 @@ modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
                 "modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(): "
                 "domain, range and dualToRange must not be null");
 
+    shared_ptr<Fiber::TestKernelTrialIntegral<
+            BasisFunctionType, KernelType, ResultType> > integral;
+    if (assemblyOptions.isBlasEnabledInQuadrature())
+        integral.reset(new Fiber::DefaultTestSingleScalarKernelTrialIntegral<
+                       BasisFunctionType, KernelType, ResultType>());
+    else
+        integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
+                           IntegrandFunctor()));
+
     typedef GeneralElementarySingularIntegralOperator<
             BasisFunctionType, KernelType, ResultType> Op;
     shared_ptr<Op> newOp;
@@ -89,7 +99,7 @@ modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
                             interpPtsPerWavelength),
                         TransformationFunctor(),
                         TransformationFunctor(),
-                        IntegrandFunctor()));
+                        integral));
     else
         newOp.reset(new Op(
                         domain, range, dualToRange, label, symmetry,
@@ -97,7 +107,7 @@ modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
                             waveNumber),
                         TransformationFunctor(),
                         TransformationFunctor(),
-                        IntegrandFunctor()));
+                        integral));
     return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 
