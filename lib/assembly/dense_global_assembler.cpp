@@ -22,34 +22,24 @@
 
 #include "../fiber/explicit_instantiation.hpp"
 
-#include "aca_global_assembler.hpp"
 #include "assembly_options.hpp"
 #include "discrete_dense_boundary_operator.hpp"
 #include "context.hpp"
-#include "evaluation_options.hpp"
-#include "grid_function.hpp"
-#include "interpolated_function.hpp"
-#include "local_assembler_construction_helper.hpp"
 
 #include "../common/auto_timer.hpp"
 #include "../common/multidimensional_arrays.hpp"
 #include "../common/not_implemented_error.hpp"
-#include "../fiber/evaluator_for_integral_operators.hpp"
 #include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/collection_of_basis_transformations.hpp"
-#include "../fiber/quadrature_strategy.hpp"
 #include "../fiber/serial_blas_region.hpp"
 #include "../fiber/local_assembler_for_operators.hpp"
 #include "../grid/entity.hpp"
 #include "../grid/entity_iterator.hpp"
-#include "../grid/geometry_factory.hpp"
 #include "../grid/grid.hpp"
 #include "../grid/grid_view.hpp"
 #include "../grid/mapper.hpp"
 #include "../space/space.hpp"
 
 #include "../common/armadillo_fwd.hpp"
-#include "../common/boost_make_shared_fwd.hpp"
 #include "../common/complex_aux.hpp"
 #include <stdexcept>
 #include <iostream>
