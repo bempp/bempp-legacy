@@ -45,6 +45,11 @@ enum GeometricalDataType
 template <typename CoordinateType> class ConstGeometricalDataSlice;
 /** \endcond */
 
+/** \brief Storage of geometrical data.
+ *
+ *  \see Bempp::Geometry for a description of the data format (in particular,
+ *  array ordering).
+ */
 template <typename CoordinateType>
 struct GeometricalData
 {
@@ -74,6 +79,11 @@ struct GeometricalData
     }
 };
 
+/** \brief Access to slices of geometrical data.
+ *
+ *  This class gives access to a "slice" of geometrical data stored in a
+ *  GeometricalData object, corresponding to a single point.
+ */
 template <typename CoordinateType>
 class ConstGeometricalDataSlice
 {
