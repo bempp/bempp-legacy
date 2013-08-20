@@ -55,6 +55,7 @@ public:
 //     typedef Dune::Q1LocalBasis<CoordinateType, ValueType, 2> DuneBasis;
 // };
 
+/** \brief Shapeset composed of the lowest-order Raviart-Thomas functions. */
 template <int elementVertexCount, typename ValueType>
 class RaviartThomas0Shapeset : public Basis<ValueType>
 {

@@ -22,13 +22,17 @@
 #define fiber_piecewise_constant_scalar_basis_hpp
 
 #include "constant_scalar_shapeset.hpp"
+#include "../common/deprecated.hpp"
 
 namespace Fiber
 {
 
-/** \deprecated */
+/** \brief A shapeset containing only one function: the constant function.
+ *
+ *  \deprecated This class is deprecated, use ConstantScalarShapeset instead. */
 template <typename ValueType>
-class PiecewiseConstantScalarBasis : public ConstantScalarShapeset<ValueType>
+class BEMPP_DEPRECATED PiecewiseConstantScalarBasis :
+        public ConstantScalarShapeset<ValueType>
 {
 };
 

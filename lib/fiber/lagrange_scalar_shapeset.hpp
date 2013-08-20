@@ -52,6 +52,7 @@ public:
     typedef DuneShapeset DuneBasis;
 };
 
+/** \brief Shapeset composed of the Lagrange polynomials up to a specified order. */
 template <int elementVertexCount, typename ValueType, int polynomialOrder>
 class LagrangeScalarShapeset : public Basis<ValueType>
 {

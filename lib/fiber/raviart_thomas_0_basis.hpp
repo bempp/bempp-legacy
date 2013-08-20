@@ -22,13 +22,16 @@
 #define fiber_raviart_thomas_0_basis_hpp
 
 #include "raviart_thomas_0_shapeset.hpp"
+#include "../common/deprecated.hpp"
 
 namespace Fiber
 {
 
-/** \deprecated */
+/** \brief Shapeset composed of the lowest-order Raviart-Thomas functions.
+ *
+ *  \deprecated This class is deprecated, use RaviartThomas0Shapeset instead. */
 template <int elementVertexCount, typename ValueType>
-class RaviartThomas0Basis :
+class BEMPP_DEPRECATED RaviartThomas0Basis :
         public RaviartThomas0Shapeset<elementVertexCount, ValueType>
 {
 };
