@@ -43,7 +43,7 @@
 #include "../fiber/default_test_kernel_trial_integral.hpp"
 
 #include "general_elementary_singular_integral_operator_imp.hpp"
-#include "../fiber/default_test_single_scalar_kernel_trial_integral.hpp"
+#include "../fiber/typical_test_scalar_kernel_trial_integral.hpp"
 
 #include <boost/type_traits/is_complex.hpp>
 
@@ -176,7 +176,7 @@ laplace3dHypersingularBoundaryOperator(
             BasisFunctionType, KernelType, ResultType> >
             integral, offDiagonalIntegral;
     if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange)) {
-        integral.reset(new Fiber::DefaultTestSingleScalarKernelTrialIntegral<
+        integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
                        BasisFunctionType, KernelType, ResultType>());
         offDiagonalIntegral = integral;
     }

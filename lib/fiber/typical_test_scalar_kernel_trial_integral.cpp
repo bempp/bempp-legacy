@@ -21,7 +21,7 @@
 #ifndef fiber_default_test_single_scalar_kernel_trial_integral_imp_hpp
 #define fiber_default_test_single_scalar_kernel_trial_integral_imp_hpp
 
-#include "default_test_single_scalar_kernel_trial_integral.hpp"
+#include "typical_test_scalar_kernel_trial_integral.hpp"
 
 #include "collection_of_4d_arrays.hpp"
 #include "explicit_instantiation.hpp"
@@ -372,7 +372,7 @@ void evaluateWithTensorQuadratureRuleImpl(
 } // namespace
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-void DefaultTestSingleScalarKernelTrialIntegralBase<BasisFunctionType, KernelType, ResultType>::
+void TypicalTestScalarKernelTrialIntegralBase<BasisFunctionType, KernelType, ResultType>::
 addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const
 {
     testGeomDeps |= INTEGRATION_ELEMENTS;
@@ -380,7 +380,7 @@ addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const
 }
 
 template <typename BasisFunctionType_, typename ResultType_>
-void DefaultTestSingleScalarKernelTrialIntegral<BasisFunctionType_,
+void TypicalTestScalarKernelTrialIntegral<BasisFunctionType_,
 BasisFunctionType_, ResultType_>::
 evaluateWithNontensorQuadratureRule(
         const GeometricalData<CoordinateType>& testGeomData,
@@ -397,7 +397,7 @@ evaluateWithNontensorQuadratureRule(
 }
 
 template <typename CoordinateType_>
-void DefaultTestSingleScalarKernelTrialIntegral<CoordinateType_,
+void TypicalTestScalarKernelTrialIntegral<CoordinateType_,
 std::complex<CoordinateType_>, std::complex<CoordinateType_> >::
 evaluateWithTensorQuadratureRule(
         const GeometricalData<CoordinateType>& testGeomData,
@@ -417,7 +417,7 @@ evaluateWithTensorQuadratureRule(
 }
 
 template <typename CoordinateType>
-void DefaultTestSingleScalarKernelTrialIntegral<CoordinateType,
+void TypicalTestScalarKernelTrialIntegral<CoordinateType,
 std::complex<CoordinateType>, std::complex<CoordinateType> >::
 evaluateWithNontensorQuadratureRule(
         const GeometricalData<CoordinateType>& testGeomData,
@@ -519,7 +519,7 @@ evaluateWithNontensorQuadratureRule(
 }
 
 template <typename BasisFunctionType_, typename ResultType_>
-void DefaultTestSingleScalarKernelTrialIntegral<BasisFunctionType_,
+void TypicalTestScalarKernelTrialIntegral<BasisFunctionType_,
 BasisFunctionType_, ResultType_>::
 evaluateWithTensorQuadratureRule(
         const GeometricalData<CoordinateType>& testGeomData,
@@ -539,16 +539,16 @@ evaluateWithTensorQuadratureRule(
 }
 
 template <typename CoordinateType>
-DefaultTestSingleScalarKernelTrialIntegral<std::complex<CoordinateType>,
+TypicalTestScalarKernelTrialIntegral<std::complex<CoordinateType>,
 CoordinateType, std::complex<CoordinateType> >::
-DefaultTestSingleScalarKernelTrialIntegral() :
+TypicalTestScalarKernelTrialIntegral() :
     m_standardIntegral(TestScalarKernelTrialIntegrandFunctor<
                        BasisFunctionType, KernelType, ResultType>())
 {
 }
 
 template <typename CoordinateType>
-void DefaultTestSingleScalarKernelTrialIntegral<std::complex<CoordinateType>,
+void TypicalTestScalarKernelTrialIntegral<std::complex<CoordinateType>,
 CoordinateType, std::complex<CoordinateType> >::
 evaluateWithNontensorQuadratureRule(
         const GeometricalData<CoordinateType>& testGeomData,
@@ -565,7 +565,7 @@ evaluateWithNontensorQuadratureRule(
 }
 
 template <typename CoordinateType>
-void DefaultTestSingleScalarKernelTrialIntegral<std::complex<CoordinateType>,
+void TypicalTestScalarKernelTrialIntegral<std::complex<CoordinateType>,
 CoordinateType, std::complex<CoordinateType> >::
 evaluateWithTensorQuadratureRule(
         const GeometricalData<CoordinateType>& testGeomData,
@@ -585,7 +585,7 @@ evaluateWithTensorQuadratureRule(
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
-        DefaultTestSingleScalarKernelTrialIntegral);
+        TypicalTestScalarKernelTrialIntegral);
 
 } // namespace Fiber
 

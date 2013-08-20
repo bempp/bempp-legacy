@@ -33,7 +33,7 @@
 
 #include "../common/boost_make_shared_fwd.hpp"
 
-#include "../fiber/default_test_single_scalar_kernel_trial_integral.hpp"
+#include "../fiber/typical_test_scalar_kernel_trial_integral.hpp"
 
 #include <iostream>
 
@@ -73,7 +73,7 @@ laplace3dDoubleLayerBoundaryOperator(
     shared_ptr<Fiber::TestKernelTrialIntegral<
             BasisFunctionType, KernelType, ResultType> > integral;
     if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange))
-        integral.reset(new Fiber::DefaultTestSingleScalarKernelTrialIntegral<
+        integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
                        BasisFunctionType, KernelType, ResultType>());
     else
         integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(

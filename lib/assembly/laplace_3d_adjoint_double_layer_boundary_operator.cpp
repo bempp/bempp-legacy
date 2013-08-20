@@ -27,7 +27,7 @@
 
 #include "../fiber/explicit_instantiation.hpp"
 
-#include "../fiber/default_test_single_scalar_kernel_trial_integral.hpp"
+#include "../fiber/typical_test_scalar_kernel_trial_integral.hpp"
 #include "../fiber/laplace_3d_adjoint_double_layer_potential_kernel_functor.hpp"
 #include "../fiber/scalar_function_value_functor.hpp"
 #include "../fiber/simple_test_scalar_kernel_trial_integrand_functor.hpp"
@@ -66,7 +66,7 @@ laplace3dAdjointDoubleLayerBoundaryOperator(
     shared_ptr<Fiber::TestKernelTrialIntegral<
             BasisFunctionType, KernelType, ResultType> > integral;
     if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange))
-        integral.reset(new Fiber::DefaultTestSingleScalarKernelTrialIntegral<
+        integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
                        BasisFunctionType, KernelType, ResultType>());
     else
         integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(

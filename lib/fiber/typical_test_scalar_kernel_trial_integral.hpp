@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_default_test_single_scalar_kernel_trial_integral_hpp
-#define fiber_default_test_single_scalar_kernel_trial_integral_hpp
+#ifndef fiber_typical_test_scalar_kernel_trial_integral_hpp
+#define fiber_typical_test_scalar_kernel_trial_integral_hpp
 
 #include "test_kernel_trial_integral.hpp"
 
@@ -32,7 +32,7 @@ namespace Fiber
 {
 
 template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
-class DefaultTestSingleScalarKernelTrialIntegralBase :
+class TypicalTestScalarKernelTrialIntegralBase :
         public TestKernelTrialIntegral<BasisFunctionType_, KernelType_, ResultType_>
 {
     typedef TestKernelTrialIntegral<BasisFunctionType_, KernelType_, ResultType_> Base;
@@ -47,87 +47,43 @@ public:
 };
 
 /** \ingroup weak_form_elements
- *  \brief Default implementation of the TestKernelTrialIntegral interface.
+  \brief Implementation of the TestKernelTrialIntegral interface for "typical"
+  integrals, taking advantage of BLAS during quadrature.
 
-  This class implements the interface defined by TestKernelTrialIntegral
-  using a functor object to evaluate the integrand \f$I(x, y)\f$ of an integral
-  of the form
-  \f[ \int_\Gamma \int_\Sigma I(x, y)\, d\Gamma(x)\, d\Sigma(y),
+  This class implements the interface defined by TestKernelTrialIntegral,
+  assuming that the integral has the form
+  \f[ \int_\Gamma \int_\Sigma \sum_{i=1}^n
+      \vec \phi_i(x) \cdot K(x, y) \, \vec \psi_i(y)
+      \, d\Gamma(x)\, d\Sigma(y) \f]
+  or
+  \f[ \int_\Gamma \int_\Sigma \sum_{i=1}^n
+      \vec \phi_i(x) \cdot K_i(x, y) \, \vec \psi_i(y)
+      \, d\Gamma(x)\, d\Sigma(y) \f]
   where \f$\Gamma\f$ is a test element and \f$\Sigma\f$ a trial element,
-  at individual pairs \f$(x, y\f$\f$) of test and trial points.
+  \f$\vec \phi_i\f$ and \f$\vec \psi_i\f$ (\f$i = 1, 2, \cdots, n\f$ wih
+  \f$n\f$ an integer) are test and trial function transformations, and \f$K(x,
+  y)\f$ or \f$K_i(x, y)\f$ ((\f$i = 1, 2, \cdots, n\f$) are *scalar* kernels.
 
-  \tparam Functor
-    Type of the functor that will be passed to the constructor and used to
-    evaluate the integrand at individual point pairs.
-
-  The functor should provide the following interface:
-
-  \code{.cpp}
-class IntegrandFunctor
-{
-public:
-    typedef ... BasisFunctionType;
-    typedef ... KernelType;
-    typedef ... ResultType;
-    typedef ... CoordinateType;
-
-    void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const;
-
-    template <template <typename T> class CollectionOf2dSlicesOfConstNdArrays>
-    ResultType evaluate(
-            const ConstGeometricalDataSlice<CoordinateType>& testGeomData,
-            const ConstGeometricalDataSlice<CoordinateType>& trialGeomData,
-            const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>& testValues,
-            const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>& trialValues,
-            const CollectionOf2dSlicesOfConstNdArrays<KernelType>& kernelValues) const;
-};
-  \endcode
-
-  The addGeometricalDependencies() method should specify any geometrical data
-  on which the integrand depends explicitly (not through kernels or shape
-  function transformations). For example, if the integrand depends on the
-  vectors normal to the surface at test and trial points, the function should
-  have the form
-
-  \code{.cpp}
-void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const
-{
-    testGeomDeps |= NORMALS;
-    trialGeomDeps |= NORMALS;
-}
-  \endcode
-
-  The evaluate() method should compute the integrand -- excluding the quadrature
-  weights! -- at a single (test point, trial point) pair. It is supplied with the
-  following parameters:
-
-  \param[in] testGeomData
-    Geometric data of a point located on the test element.
-  \param[in] trialGeomData
-    Geometric data of a point located on the trial element.
-  \param[in] testValues
-    Values of a collection of transformations of a test shape function at the
-    test point. The number <tt>testValues[i](j)</tt> is the <em>j</em> component value of the <em>i</em>th
-    transformation of the TO BE CONTINUED
-  \param[in] trialValues
-    Values of a collection of transformations of a single trial function at the trial point.
-  \param[in] kernels
-    Values of a collection of kernels at the (test point, trial point) pair.
+  The integrals are evaluated numerically; BLAS matrix-matrix multiplication
+  routines are used to speed up the process.
  */
 template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
-class DefaultTestSingleScalarKernelTrialIntegral :
-        public TestKernelTrialIntegral<BasisFunctionType_, KernelType_, ResultType_>
+class TypicalTestScalarKernelTrialIntegral :
+        public TypicalTestScalarKernelTrialIntegralBase<
+        BasisFunctionType_, KernelType_, ResultType_>
 {
     // should never be instantiated -- only the specializations (below) should
 private:
-    DefaultTestSingleScalarKernelTrialIntegral();
+    TypicalTestScalarKernelTrialIntegral();
 };
 
 template <typename BasisFunctionType_, typename ResultType_>
-class DefaultTestSingleScalarKernelTrialIntegral<BasisFunctionType_, BasisFunctionType_, ResultType_> :
-        public DefaultTestSingleScalarKernelTrialIntegralBase<BasisFunctionType_, BasisFunctionType_, ResultType_>
+class TypicalTestScalarKernelTrialIntegral<
+        BasisFunctionType_, BasisFunctionType_, ResultType_> :
+        public TypicalTestScalarKernelTrialIntegralBase<
+        BasisFunctionType_, BasisFunctionType_, ResultType_>
 {
-    typedef DefaultTestSingleScalarKernelTrialIntegralBase<
+    typedef TypicalTestScalarKernelTrialIntegralBase<
     BasisFunctionType_, BasisFunctionType_, ResultType_> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
@@ -135,7 +91,7 @@ public:
     typedef typename Base::KernelType KernelType;
     typedef typename Base::ResultType ResultType;
 
-    DefaultTestSingleScalarKernelTrialIntegral() {}
+    TypicalTestScalarKernelTrialIntegral() {}
 
     virtual void evaluateWithTensorQuadratureRule(
             const GeometricalData<CoordinateType>& testGeomData,
@@ -158,12 +114,12 @@ public:
 };
 
 template <typename CoordinateType_>
-class DefaultTestSingleScalarKernelTrialIntegral<CoordinateType_,
+class TypicalTestScalarKernelTrialIntegral<CoordinateType_,
         std::complex<CoordinateType_>, std::complex<CoordinateType_> > :
-        public DefaultTestSingleScalarKernelTrialIntegralBase<CoordinateType_,
+        public TypicalTestScalarKernelTrialIntegralBase<CoordinateType_,
         std::complex<CoordinateType_>, std::complex<CoordinateType_> >
 {
-    typedef DefaultTestSingleScalarKernelTrialIntegralBase<CoordinateType_,
+    typedef TypicalTestScalarKernelTrialIntegralBase<CoordinateType_,
     std::complex<CoordinateType_>, std::complex<CoordinateType_> > Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
@@ -171,7 +127,7 @@ public:
     typedef typename Base::KernelType KernelType;
     typedef typename Base::ResultType ResultType;
 
-    DefaultTestSingleScalarKernelTrialIntegral() {}
+    TypicalTestScalarKernelTrialIntegral() {}
 
     virtual void evaluateWithTensorQuadratureRule(
             const GeometricalData<CoordinateType>& testGeomData,
@@ -194,12 +150,12 @@ public:
 };
 
 template <typename CoordinateType_>
-class DefaultTestSingleScalarKernelTrialIntegral<std::complex<CoordinateType_>,
+class TypicalTestScalarKernelTrialIntegral<std::complex<CoordinateType_>,
         CoordinateType_, std::complex<CoordinateType_> > :
-        public DefaultTestSingleScalarKernelTrialIntegralBase<
+        public TypicalTestScalarKernelTrialIntegralBase<
         std::complex<CoordinateType_>, CoordinateType_, std::complex<CoordinateType_> >
 {
-    typedef DefaultTestSingleScalarKernelTrialIntegralBase<
+    typedef TypicalTestScalarKernelTrialIntegralBase<
     std::complex<CoordinateType_>, CoordinateType_, std::complex<CoordinateType_> >
     Base;
 public:
@@ -208,7 +164,7 @@ public:
     typedef typename Base::KernelType KernelType;
     typedef typename Base::ResultType ResultType;
 
-    DefaultTestSingleScalarKernelTrialIntegral();
+    TypicalTestScalarKernelTrialIntegral();
 
     // This is the "standard" (non-BLAS-based) implementation
     virtual void evaluateWithTensorQuadratureRule(
