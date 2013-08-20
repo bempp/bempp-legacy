@@ -153,7 +153,6 @@ private:
     mutable tbb::enumerable_thread_specific<GeometricalData<CoordinateType> >
     m_testGeomData, m_trialGeomData;
 
-    mutable tbb::atomic<size_t> m_integralsCount;
 
 #ifdef WITH_OPENCL
     cl::Buffer *clTestQuadPoints;
