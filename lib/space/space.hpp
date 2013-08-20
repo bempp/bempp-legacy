@@ -423,6 +423,9 @@ template <typename BasisFunctionType>
 void getAllBases(const Space<BasisFunctionType>& space,
         std::vector<const Fiber::Basis<BasisFunctionType>*>& bases);
 
+template <typename BasisFunctionType>
+int maximumBasisOrder(const Space<BasisFunctionType>& space);
+
 #ifdef WITH_TRILINOS
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteSparseBoundaryOperator<ResultType> >

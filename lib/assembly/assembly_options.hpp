@@ -43,7 +43,7 @@ using Fiber::VerbosityLevel;
 class AssemblyOptions
 {
 public:
-    enum { AUTO = -1 };
+    enum Value { AUTO = -1, NO = 0, YES = 1 };
 
     AssemblyOptions();
 
@@ -178,17 +178,20 @@ public:
     /** \brief Specify whether BLAS matrix multiplication routines should be
      *  used during evaluation of elementary integrals.
      *
-     *  This usually makes sense with quadratic or higher-order elements, but
-     *  is counterproductive for constant or linear elements.
-     *
-     *  By default, BLAS use during evaluation of elementary integrals is
-     *  disabled.
+     *  If this option is set to AUTO (default), BLAS is used in the evaluation
+     *  of integrals occurring in the weak forms of operators whose test or
+     *  trial space is composed of quadratic or higher-order elements; for the
+     *  remaining operators, BLAS routines are not used. You can force
+     *  BLAS-based integration routines to be used always (or never) by setting
+     *  this option to \c YES (or \c NO).
      */
-    void enableBlasInQuadrature(bool value = true);
+    void enableBlasInQuadrature(Value value = AUTO);
 
-    /** \brief Return whether BLAS matrix multiplication routines are used
-     *  during evaluation of elementary integrals. */
-    bool isBlasEnabledInQuadrature() const;
+    /** \brief Indicate whether BLAS matrix multiplication routines are used
+     *  during evaluation of elementary integrals. 
+     *
+     *  See enableBlasInQuadrature() for more information. */
+    Value isBlasEnabledInQuadrature() const;
 
     /** @} */
 
@@ -201,7 +204,7 @@ private:
     bool m_singularIntegralCaching;
     bool m_sparseStorageOfMassMatrices;
     bool m_jointAssembly;
-    bool m_blasInQuadrature;
+    Value m_blasInQuadrature;
     /** \endcond */
 };
 

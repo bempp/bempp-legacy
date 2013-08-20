@@ -20,6 +20,7 @@
 
 #include "laplace_3d_double_layer_boundary_operator.hpp"
 
+#include "blas_quadrature_helper.hpp"
 #include "context.hpp"
 #include "general_elementary_singular_integral_operator_imp.hpp"
 #include "laplace_3d_synthetic_boundary_operator_builder.hpp"
@@ -71,7 +72,7 @@ laplace3dDoubleLayerBoundaryOperator(
             BasisFunctionType, KernelType, ResultType> Op;
     shared_ptr<Fiber::TestKernelTrialIntegral<
             BasisFunctionType, KernelType, ResultType> > integral;
-    if (assemblyOptions.isBlasEnabledInQuadrature())
+    if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange))
         integral.reset(new Fiber::DefaultTestSingleScalarKernelTrialIntegral<
                        BasisFunctionType, KernelType, ResultType>());
     else

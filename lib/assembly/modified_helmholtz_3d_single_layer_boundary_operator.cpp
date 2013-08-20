@@ -20,6 +20,7 @@
 
 #include "modified_helmholtz_3d_single_layer_boundary_operator.hpp"
 
+#include "blas_quadrature_helper.hpp"
 #include "context.hpp"
 #include "general_elementary_singular_integral_operator_imp.hpp"
 #include "modified_helmholtz_3d_synthetic_boundary_operator_builder.hpp"
@@ -84,11 +85,9 @@ modifiedHelmholtz3dSingleLayerBoundaryOperator(
     typedef GeneralElementarySingularIntegralOperator<
             BasisFunctionType, KernelType, ResultType> Op;
     shared_ptr<Fiber::TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> > integral;
-    if (assemblyOptions.isBlasEnabledInQuadrature()) {
-        std::cout << "Blas enabled" << std::endl;
+    if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange))
         integral.reset(new Fiber::DefaultTestSingleScalarKernelTrialIntegral<
                        BasisFunctionType, KernelType, ResultType>());
-    }
     else
         integral.reset(new Fiber::DefaultTestKernelTrialIntegral<
                        IntegrandFunctor>(IntegrandFunctor()));

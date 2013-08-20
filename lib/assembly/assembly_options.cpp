@@ -31,7 +31,7 @@ AssemblyOptions::AssemblyOptions() :
     m_singularIntegralCaching(true),
     m_sparseStorageOfMassMatrices(true),
     m_jointAssembly(false),
-    m_blasInQuadrature(false)
+    m_blasInQuadrature(AUTO)
 {
 }
 
@@ -137,12 +137,15 @@ bool AssemblyOptions::isJointAssemblyEnabled() const
     return m_jointAssembly;
 }
 
-void AssemblyOptions::enableBlasInQuadrature(bool value)
+void AssemblyOptions::enableBlasInQuadrature(Value value)
 {
+    if (value != AUTO && value != YES && value != NO)
+        throw std::invalid_argument("AssemblyOptions::enableBlasInQuadrature(): "
+                                    "allowed values: AUTO, YES and NO");
     m_blasInQuadrature = value;
 }
 
-bool AssemblyOptions::isBlasEnabledInQuadrature() const
+AssemblyOptions::Value AssemblyOptions::isBlasEnabledInQuadrature() const
 {
     return m_blasInQuadrature;
 }

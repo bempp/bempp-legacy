@@ -25,6 +25,7 @@
 
 #include "../common/boost_make_shared_fwd.hpp"
 
+#include "../fiber/basis.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 #include "../grid/entity.hpp"
@@ -218,6 +219,23 @@ void getAllBases(const Space<BasisFunctionType>& space,
     }
 }
 
+template <typename BasisFunctionType>
+int maximumBasisOrder(const Space<BasisFunctionType>& space)
+{
+    std::auto_ptr<GridView> view = space.grid()->leafView();
+    const Mapper& mapper = view->elementMapper();
+    const int elementCount = view->entityCount(0);
+
+    int maxOrder = 0;
+    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    while (!it->finished()) {
+        const Entity<0>& e = it->entity();
+        maxOrder = std::max(maxOrder, space.basis(e).order());
+        it->next();
+    }
+    return maxOrder;
+}
+
 #ifdef WITH_TRILINOS
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteSparseBoundaryOperator<ResultType> >
@@ -260,10 +278,12 @@ void Space<BasisFunctionType>::dumpClusterIdsEx(
 
 BEMPP_GCC_DIAG_ON(deprecated-declarations);
 
-#define INSTANTIATE_getAllBases(BASIS) \
+#define INSTANTIATE_FUNCTIONS_DEPENDENT_ON_BASIS(BASIS) \
     template \
     void getAllBases(const Space<BASIS>& space, \
-                std::vector<const Fiber::Basis<BASIS>*>& bases)
+                     std::vector<const Fiber::Basis<BASIS>*>& bases);   \
+    template \
+    int maximumBasisOrder(const Space<BASIS>& space)
 
 #define INSTANTIATE_constructOperators(BASIS, RESULT) \
     template \
@@ -275,7 +295,7 @@ BEMPP_GCC_DIAG_ON(deprecated-declarations);
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Space);
 
-FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_getAllBases);
+FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FUNCTIONS_DEPENDENT_ON_BASIS);
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_constructOperators);
 
 } // namespace Bempp

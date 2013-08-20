@@ -20,6 +20,7 @@
 
 #include "laplace_3d_hypersingular_boundary_operator.hpp"
 
+#include "blas_quadrature_helper.hpp"
 #include "context.hpp"
 #include "general_elementary_local_operator_imp.hpp"
 #include "general_hypersingular_integral_operator_imp.hpp"
@@ -174,7 +175,7 @@ laplace3dHypersingularBoundaryOperator(
     shared_ptr<Fiber::TestKernelTrialIntegral<
             BasisFunctionType, KernelType, ResultType> >
             integral, offDiagonalIntegral;
-    if (assemblyOptions.isBlasEnabledInQuadrature()) {
+    if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange)) {
         integral.reset(new Fiber::DefaultTestSingleScalarKernelTrialIntegral<
                        BasisFunctionType, KernelType, ResultType>());
         offDiagonalIntegral = integral;

@@ -23,6 +23,7 @@
 #include "../common/boost_make_shared_fwd.hpp"
 
 #include "abstract_boundary_operator.hpp"
+#include "blas_quadrature_helper.hpp"
 #include "context.hpp"
 #include "general_elementary_local_operator_imp.hpp"
 #include "general_elementary_singular_integral_operator_imp.hpp"
@@ -233,7 +234,7 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
     shared_ptr<Fiber::TestKernelTrialIntegral<
             BasisFunctionType, KernelType, ResultType> >
             integral, offDiagonalIntegral;
-    if (assemblyOptions.isBlasEnabledInQuadrature()) {
+    if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange)) {
         integral.reset(new Fiber::DefaultTestSingleScalarKernelTrialIntegral<
                        BasisFunctionType, KernelType, ResultType>());
         offDiagonalIntegral = integral;
@@ -249,7 +250,7 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
     typedef GeneralHypersingularIntegralOperator<
             BasisFunctionType, KernelType, ResultType> Op;
     shared_ptr<Op> newOp;
-    if (assemblyOptions.isBlasEnabledInQuadrature()) {
+    if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange)) {
         shared_ptr<Fiber::TestKernelTrialIntegral<
                 BasisFunctionType, KernelType, ResultType> >
                 integral, offDiagonalIntegral;
