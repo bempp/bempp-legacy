@@ -140,9 +140,9 @@ public:
     virtual void evaluateWithTensorQuadratureRule(
             const GeometricalData<CoordinateType>& testGeomData,
             const GeometricalData<CoordinateType>& trialGeomData,
-            CollectionOf3dArrays<BasisFunctionType>& testValues,
-            CollectionOf3dArrays<BasisFunctionType>& trialValues,
-            CollectionOf4dArrays<KernelType>& kernelValues,
+            const CollectionOf3dArrays<BasisFunctionType>& testValues,
+            const CollectionOf3dArrays<BasisFunctionType>& trialValues,
+            const CollectionOf4dArrays<KernelType>& kernelValues,
             const std::vector<CoordinateType>& testQuadWeights,
             const std::vector<CoordinateType>& trialQuadWeights,
             arma::Mat<ResultType>& result) const;
@@ -150,9 +150,9 @@ public:
     virtual void evaluateWithNontensorQuadratureRule(
             const GeometricalData<CoordinateType>& testGeomData,
             const GeometricalData<CoordinateType>& trialGeomData,
-            CollectionOf3dArrays<BasisFunctionType>& testValues,
-            CollectionOf3dArrays<BasisFunctionType>& trialValues,
-            CollectionOf3dArrays<KernelType>& kernelValues,
+            const CollectionOf3dArrays<BasisFunctionType>& testValues,
+            const CollectionOf3dArrays<BasisFunctionType>& trialValues,
+            const CollectionOf3dArrays<KernelType>& kernelValues,
             const std::vector<CoordinateType>& quadWeights,
             arma::Mat<ResultType>& result) const;
 };
@@ -176,9 +176,9 @@ public:
     virtual void evaluateWithTensorQuadratureRule(
             const GeometricalData<CoordinateType>& testGeomData,
             const GeometricalData<CoordinateType>& trialGeomData,
-            CollectionOf3dArrays<BasisFunctionType>& testValues,
-            CollectionOf3dArrays<BasisFunctionType>& trialValues,
-            CollectionOf4dArrays<KernelType>& kernelValues,
+            const CollectionOf3dArrays<BasisFunctionType>& testValues,
+            const CollectionOf3dArrays<BasisFunctionType>& trialValues,
+            const CollectionOf4dArrays<KernelType>& kernelValues,
             const std::vector<CoordinateType>& testQuadWeights,
             const std::vector<CoordinateType>& trialQuadWeights,
             arma::Mat<ResultType>& result) const;
@@ -186,9 +186,9 @@ public:
     virtual void evaluateWithNontensorQuadratureRule(
             const GeometricalData<CoordinateType>& testGeomData,
             const GeometricalData<CoordinateType>& trialGeomData,
-            CollectionOf3dArrays<BasisFunctionType>& testValues,
-            CollectionOf3dArrays<BasisFunctionType>& trialValues,
-            CollectionOf3dArrays<KernelType>& kernelValues,
+            const CollectionOf3dArrays<BasisFunctionType>& testValues,
+            const CollectionOf3dArrays<BasisFunctionType>& trialValues,
+            const CollectionOf3dArrays<KernelType>& kernelValues,
             const std::vector<CoordinateType>& quadWeights,
             arma::Mat<ResultType>& result) const;
 };
@@ -214,9 +214,9 @@ public:
     virtual void evaluateWithTensorQuadratureRule(
             const GeometricalData<CoordinateType>& testGeomData,
             const GeometricalData<CoordinateType>& trialGeomData,
-            CollectionOf3dArrays<BasisFunctionType>& testValues,
-            CollectionOf3dArrays<BasisFunctionType>& trialValues,
-            CollectionOf4dArrays<KernelType>& kernelValues,
+            const CollectionOf3dArrays<BasisFunctionType>& testValues,
+            const CollectionOf3dArrays<BasisFunctionType>& trialValues,
+            const CollectionOf4dArrays<KernelType>& kernelValues,
             const std::vector<CoordinateType>& testQuadWeights,
             const std::vector<CoordinateType>& trialQuadWeights,
             arma::Mat<ResultType>& result) const;
@@ -224,9 +224,9 @@ public:
     virtual void evaluateWithNontensorQuadratureRule(
             const GeometricalData<CoordinateType>& testGeomData,
             const GeometricalData<CoordinateType>& trialGeomData,
-            CollectionOf3dArrays<BasisFunctionType>& testValues,
-            CollectionOf3dArrays<BasisFunctionType>& trialValues,
-            CollectionOf3dArrays<KernelType>& kernelValues,
+            const CollectionOf3dArrays<BasisFunctionType>& testValues,
+            const CollectionOf3dArrays<BasisFunctionType>& trialValues,
+            const CollectionOf3dArrays<KernelType>& kernelValues,
             const std::vector<CoordinateType>& quadWeights,
             arma::Mat<ResultType>& result) const;
 

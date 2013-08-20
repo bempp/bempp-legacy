@@ -184,9 +184,9 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType>
 void evaluateWithNontensorQuadratureRuleStandardImpl(
         const GeometricalData<typename ScalarTraits<ResultType>::RealType>& testGeomData,
         const GeometricalData<typename ScalarTraits<ResultType>::RealType>& trialGeomData,
-        CollectionOf3dArrays<BasisFunctionType>& testValues,
-        CollectionOf3dArrays<BasisFunctionType>& trialValues,
-        CollectionOf3dArrays<KernelType>& kernelValues,
+        const CollectionOf3dArrays<BasisFunctionType>& testValues,
+        const CollectionOf3dArrays<BasisFunctionType>& trialValues,
+        const CollectionOf3dArrays<KernelType>& kernelValues,
         const std::vector<typename ScalarTraits<ResultType>::RealType>& quadWeights,
         arma::Mat<ResultType>& result)
 {
@@ -385,9 +385,9 @@ BasisFunctionType_, ResultType_>::
 evaluateWithNontensorQuadratureRule(
         const GeometricalData<CoordinateType>& testGeomData,
         const GeometricalData<CoordinateType>& trialGeomData,
-        CollectionOf3dArrays<BasisFunctionType>& testValues,
-        CollectionOf3dArrays<BasisFunctionType>& trialValues,
-        CollectionOf3dArrays<KernelType>& kernelValues,
+        const CollectionOf3dArrays<BasisFunctionType>& testValues,
+        const CollectionOf3dArrays<BasisFunctionType>& trialValues,
+        const CollectionOf3dArrays<KernelType>& kernelValues,
         const std::vector<CoordinateType>& quadWeights,
         arma::Mat<ResultType>& result) const
 {
@@ -402,9 +402,9 @@ std::complex<CoordinateType_>, std::complex<CoordinateType_> >::
 evaluateWithTensorQuadratureRule(
         const GeometricalData<CoordinateType>& testGeomData,
         const GeometricalData<CoordinateType>& trialGeomData,
-        CollectionOf3dArrays<BasisFunctionType>& testValues,
-        CollectionOf3dArrays<BasisFunctionType>& trialValues,
-        CollectionOf4dArrays<KernelType>& kernelValues,
+        const CollectionOf3dArrays<BasisFunctionType>& testValues,
+        const CollectionOf3dArrays<BasisFunctionType>& trialValues,
+        const CollectionOf4dArrays<KernelType>& kernelValues,
         const std::vector<CoordinateType>& testQuadWeights,
         const std::vector<CoordinateType>& trialQuadWeights,
         arma::Mat<ResultType>& result) const
@@ -422,9 +422,9 @@ std::complex<CoordinateType>, std::complex<CoordinateType> >::
 evaluateWithNontensorQuadratureRule(
         const GeometricalData<CoordinateType>& testGeomData,
         const GeometricalData<CoordinateType>& trialGeomData,
-        CollectionOf3dArrays<BasisFunctionType>& testValues,
-        CollectionOf3dArrays<BasisFunctionType>& trialValues,
-        CollectionOf3dArrays<KernelType>& kernelValues,
+        const CollectionOf3dArrays<BasisFunctionType>& testValues,
+        const CollectionOf3dArrays<BasisFunctionType>& trialValues,
+        const CollectionOf3dArrays<KernelType>& kernelValues,
         const std::vector<CoordinateType>& quadWeights,
         arma::Mat<ResultType>& result) const
 {
@@ -524,9 +524,9 @@ BasisFunctionType_, ResultType_>::
 evaluateWithTensorQuadratureRule(
         const GeometricalData<CoordinateType>& testGeomData,
         const GeometricalData<CoordinateType>& trialGeomData,
-        CollectionOf3dArrays<BasisFunctionType>& testValues,
-        CollectionOf3dArrays<BasisFunctionType>& trialValues,
-        CollectionOf4dArrays<KernelType>& kernelValues,
+        const CollectionOf3dArrays<BasisFunctionType>& testValues,
+        const CollectionOf3dArrays<BasisFunctionType>& trialValues,
+        const CollectionOf4dArrays<KernelType>& kernelValues,
         const std::vector<CoordinateType>& testQuadWeights,
         const std::vector<CoordinateType>& trialQuadWeights,
         arma::Mat<ResultType>& result) const
@@ -553,9 +553,9 @@ CoordinateType, std::complex<CoordinateType> >::
 evaluateWithNontensorQuadratureRule(
         const GeometricalData<CoordinateType>& testGeomData,
         const GeometricalData<CoordinateType>& trialGeomData,
-        CollectionOf3dArrays<BasisFunctionType>& testValues,
-        CollectionOf3dArrays<BasisFunctionType>& trialValues,
-        CollectionOf3dArrays<KernelType>& kernelValues,
+        const CollectionOf3dArrays<BasisFunctionType>& testValues,
+        const CollectionOf3dArrays<BasisFunctionType>& trialValues,
+        const CollectionOf3dArrays<KernelType>& kernelValues,
         const std::vector<CoordinateType>& quadWeights,
         arma::Mat<ResultType>& result) const
 {
@@ -570,9 +570,9 @@ CoordinateType, std::complex<CoordinateType> >::
 evaluateWithTensorQuadratureRule(
         const GeometricalData<CoordinateType>& testGeomData,
         const GeometricalData<CoordinateType>& trialGeomData,
-        CollectionOf3dArrays<BasisFunctionType>& testValues,
-        CollectionOf3dArrays<BasisFunctionType>& trialValues,
-        CollectionOf4dArrays<KernelType>& kernelValues,
+        const CollectionOf3dArrays<BasisFunctionType>& testValues,
+        const CollectionOf3dArrays<BasisFunctionType>& trialValues,
+        const CollectionOf4dArrays<KernelType>& kernelValues,
         const std::vector<CoordinateType>& testQuadWeights,
         const std::vector<CoordinateType>& trialQuadWeights,
         arma::Mat<ResultType>& result) const

@@ -173,9 +173,9 @@ public:
     virtual void evaluateWithTensorQuadratureRule(
             const GeometricalData<CoordinateType>& testGeomData,
             const GeometricalData<CoordinateType>& trialGeomData,
-            CollectionOf3dArrays<BasisFunctionType>& testTransformations,
-            CollectionOf3dArrays<BasisFunctionType>& trialTransformations,
-            CollectionOf4dArrays<KernelType>& kernels,
+            const CollectionOf3dArrays<BasisFunctionType>& testTransformations,
+            const CollectionOf3dArrays<BasisFunctionType>& trialTransformations,
+            const CollectionOf4dArrays<KernelType>& kernels,
             const std::vector<CoordinateType>& testQuadWeights,
             const std::vector<CoordinateType>& trialQuadWeights,
             arma::Mat<ResultType>& result) const = 0;
@@ -183,9 +183,9 @@ public:
     virtual void evaluateWithNontensorQuadratureRule(
             const GeometricalData<CoordinateType>& testGeomData,
             const GeometricalData<CoordinateType>& trialGeomData,
-            CollectionOf3dArrays<BasisFunctionType>& testTransformations,
-            CollectionOf3dArrays<BasisFunctionType>& trialTransformations,
-            CollectionOf3dArrays<KernelType>& kernels,
+            const CollectionOf3dArrays<BasisFunctionType>& testTransformations,
+            const CollectionOf3dArrays<BasisFunctionType>& trialTransformations,
+            const CollectionOf3dArrays<KernelType>& kernels,
             const std::vector<CoordinateType>& quadWeights,
             arma::Mat<ResultType>& result) const = 0;
 };
