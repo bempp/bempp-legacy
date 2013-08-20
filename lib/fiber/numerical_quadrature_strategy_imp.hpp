@@ -63,10 +63,10 @@ BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForIdentityOperators(
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const OpenClHandler>& openClHandler) const
 {
     typedef Fiber::SimpleTestTrialIntegrandFunctor<BasisFunctionType, ResultType>
@@ -76,7 +76,7 @@ makeAssemblerForIdentityOperators(
                     IntegrandFunctor()));
     return makeAssemblerForLocalOperators(
                 geometryFactory, rawGeometry,
-                testBases, trialBases,
+                testShapesets, trialShapesets,
                 testTransformations, trialTransformations, integral,
                 openClHandler);
 }
@@ -89,10 +89,10 @@ BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForLocalOperators(
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const TestTrialIntegral<BasisFunctionType, ResultType> >& integral,
         const shared_ptr<const OpenClHandler>& openClHandler) const
 {
@@ -102,7 +102,7 @@ makeAssemblerForLocalOperators(
     return std::auto_ptr<LocalAssemblerForOperators<ResultType> >(
                 new LocalAssemblerForLocalOperators_(
                     geometryFactory, rawGeometry,
-                    testBases, trialBases,
+                    testShapesets, trialShapesets,
                     testTransformations, trialTransformations, integral,
                     openClHandler));
 }
@@ -117,11 +117,11 @@ makeAssemblerForIntegralOperatorsImplRealKernel(
         const shared_ptr<const GeometryFactory>& trialGeometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
         const shared_ptr<const CollectionOfKernels<CoordinateType> >& kernels,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
         const shared_ptr<const OpenClHandler>& openClHandler,
         const ParallelizationOptions& parallelizationOptions,
@@ -136,7 +136,7 @@ makeAssemblerForIntegralOperatorsImplRealKernel(
                 new LocalAssemblerForIntegralOperators_(
                     testGeometryFactory, trialGeometryFactory,
                     testRawGeometry, trialRawGeometry,
-                    testBases, trialBases,
+                    testShapesets, trialShapesets,
                     testTransformations, kernels, trialTransformations, integral,
                     openClHandler, parallelizationOptions,
                     verbosityLevel,
@@ -152,8 +152,8 @@ BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForGridFunctionsImplRealUserFunction(
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
         const shared_ptr<const Function<CoordinateType> >& function,
         const shared_ptr<const OpenClHandler>& openClHandler) const
 {
@@ -164,7 +164,7 @@ makeAssemblerForGridFunctionsImplRealUserFunction(
     return std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >(
                 new LocalAssemblerForGridFunctions_(
                     geometryFactory, rawGeometry,
-                    testBases,
+                    testShapesets,
                     testTransformations, function,
                     openClHandler, this->accuracyOptions().singleRegular()));
 }
@@ -177,9 +177,9 @@ BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeEvaluatorForIntegralOperatorsImplRealKernel(
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
         const shared_ptr<const CollectionOfKernels<CoordinateType> >& kernels,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const KernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
         const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
         const shared_ptr<const OpenClHandler>& openClHandler,
@@ -192,7 +192,7 @@ makeEvaluatorForIntegralOperatorsImplRealKernel(
     return std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >(
                 new EvaluatorForIntegralOperators_(
                     geometryFactory, rawGeometry,
-                    trialBases,
+                    trialShapesets,
                     kernels, trialTransformations, integral,
                     argumentLocalCoefficients,
                     openClHandler,
@@ -209,9 +209,9 @@ makeAssemblerForPotentialOperatorsImplRealKernel(
         const arma::Mat<CoordinateType>& evaluationPoints,
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
         const shared_ptr<const CollectionOfKernels<CoordinateType> >& kernels,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const KernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
         const shared_ptr<const OpenClHandler>& openClHandler,
         const ParallelizationOptions& parallelizationOptions,
@@ -225,7 +225,7 @@ makeAssemblerForPotentialOperatorsImplRealKernel(
                 new LocalAssemblerForPotentialOperators_(
                     evaluationPoints,
                     geometryFactory, rawGeometry,
-                    trialBases,
+                    trialShapesets,
                     kernels, trialTransformations, integral,
                     parallelizationOptions,
                     verbosityLevel,
@@ -272,11 +272,11 @@ makeAssemblerForIntegralOperatorsImplComplexKernel(
         const shared_ptr<const GeometryFactory>& trialGeometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
         const shared_ptr<const CollectionOfKernels<ResultType> >& kernels,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
         const shared_ptr<const OpenClHandler>& openClHandler,
         const ParallelizationOptions& parallelizationOptions,
@@ -291,7 +291,7 @@ makeAssemblerForIntegralOperatorsImplComplexKernel(
                 new LocalAssemblerForIntegralOperators_(
                     testGeometryFactory, trialGeometryFactory,
                     testRawGeometry, trialRawGeometry,
-                    testBases, trialBases,
+                    testShapesets, trialShapesets,
                     testTransformations, kernels, trialTransformations, integral,
                     openClHandler, parallelizationOptions,
                     verbosityLevel,
@@ -307,8 +307,8 @@ BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForGridFunctionsImplComplexUserFunction(
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
         const shared_ptr<const Function<ResultType> >& function,
         const shared_ptr<const OpenClHandler>& openClHandler) const
 {
@@ -319,7 +319,7 @@ makeAssemblerForGridFunctionsImplComplexUserFunction(
     return std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >(
                 new LocalAssemblerForGridFunctions_(
                     geometryFactory, rawGeometry,
-                    testBases,
+                    testShapesets,
                     testTransformations, function,
                     openClHandler,
                     this->accuracyOptions().singleRegular()));
@@ -333,9 +333,9 @@ BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeEvaluatorForIntegralOperatorsImplComplexKernel(
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
         const shared_ptr<const CollectionOfKernels<ResultType> >& kernels,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const KernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
         const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
         const shared_ptr<const OpenClHandler>& openClHandler,
@@ -348,7 +348,7 @@ makeEvaluatorForIntegralOperatorsImplComplexKernel(
     return std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >(
                 new EvaluatorForIntegralOperators_(
                     geometryFactory, rawGeometry,
-                    trialBases,
+                    trialShapesets,
                     kernels, trialTransformations, integral,
                     argumentLocalCoefficients,
                     openClHandler,
@@ -365,9 +365,9 @@ makeAssemblerForPotentialOperatorsImplComplexKernel(
         const arma::Mat<CoordinateType>& evaluationPoints,
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
         const shared_ptr<const CollectionOfKernels<ResultType> >& kernels,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const KernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
         const shared_ptr<const OpenClHandler>& openClHandler,
         const ParallelizationOptions& parallelizationOptions,
@@ -381,7 +381,7 @@ makeAssemblerForPotentialOperatorsImplComplexKernel(
                 new LocalAssemblerForPotentialOperators_(
                     evaluationPoints,
                     geometryFactory, rawGeometry,
-                    trialBases,
+                    trialShapesets,
                     kernels, trialTransformations, integral,
                     parallelizationOptions,
                     verbosityLevel,

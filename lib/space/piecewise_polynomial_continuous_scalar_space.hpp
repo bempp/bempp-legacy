@@ -23,7 +23,6 @@
 
 #include "../common/common.hpp"
 #include "../common/types.hpp"
-#include "../fiber/lagrange_scalar_basis.hpp"
 #include "../grid/grid_segment.hpp"
 
 #include "scalar_space.hpp"
@@ -96,7 +95,8 @@ public:
     virtual void setElementVariant(const Entity<0>& element,
                                    ElementVariant variant);
 
-    virtual const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
+    virtual const Fiber::Shapeset<BasisFunctionType>& shapeset(
+            const Entity<0>& element) const;
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
         const shared_ptr<const Space<BasisFunctionType> >& self) const;
@@ -145,7 +145,7 @@ private:
     int m_polynomialOrder;
     GridSegment m_segment;
     bool m_strictlyOnSegment;
-    boost::scoped_ptr<Fiber::Basis<BasisFunctionType> > m_triangleBasis;
+    boost::scoped_ptr<Fiber::Shapeset<BasisFunctionType> > m_triangleShapeset;
     std::auto_ptr<GridView> m_view;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;

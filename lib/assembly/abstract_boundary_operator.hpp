@@ -230,10 +230,10 @@ protected:
             shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
             shared_ptr<GeometryFactory>& testGeometryFactory,
             shared_ptr<GeometryFactory>& trialGeometryFactory,
-            shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType_>*> >&
-                testBases,
-            shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType_>*> >&
-                trialBases,
+            shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType_>*> >&
+                testShapesets,
+            shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType_>*> >&
+                trialShapesets,
             shared_ptr<Fiber::OpenClHandler>& openClHandler,
             bool& cacheSingularIntegrals) const;
 
@@ -244,10 +244,10 @@ protected:
             shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
             shared_ptr<GeometryFactory>& testGeometryFactory,
             shared_ptr<GeometryFactory>& trialGeometryFactory,
-            shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType_>*> >&
-                testBases,
-            shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType_>*> >&
-                trialBases) const;
+            shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType_>*> >&
+                testShapesets,
+            shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType_>*> >&
+                trialShapesets) const;
 
     /** \brief Construct those objects necessary for
      *  subsequent local assembler construction that depend on assembly options. */

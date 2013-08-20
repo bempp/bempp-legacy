@@ -29,6 +29,8 @@
 #include "../common/deprecated.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../common/types.hpp"
+#include "../fiber/basis.hpp"
+#include "../fiber/collection_of_basis_transformations.hpp"
 #include "../fiber/scalar_traits.hpp"
 
 #include "../common/armadillo_fwd.hpp"
@@ -38,9 +40,7 @@ namespace Fiber
 {
 
 /** \cond FORWARD_DECL */
-template <typename ValueType> class Basis;
 template <typename ValueType> class BasisData;
-template <typename CoordinateType> class CollectionOfBasisTransformations;
 template <typename CoordinateType> class GeometricalData;
 /** \endcond */
 
@@ -86,6 +86,9 @@ public:
     typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
     /** \brief Equivalent to std::complex<CoordinateType>. */
     typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType ComplexType;
+    /** \brief Appropriate instantiation of Fiber::CollectionOfShapesetTransformations. */
+    typedef Fiber::CollectionOfShapesetTransformations<CoordinateType>
+    CollectionOfShapesetTransformations;
     /** \brief Appropriate instantiation of Fiber::CollectionOfBasisTransformations. */
     typedef Fiber::CollectionOfBasisTransformations<CoordinateType>
     CollectionOfBasisTransformations;
@@ -161,25 +164,65 @@ public:
      *  are defined. */
     shared_ptr<const Grid> grid() const { return m_grid; }
 
-    /** \brief Reference to the basis attached to the specified element. */
-    virtual const Fiber::Basis<BasisFunctionType>& basis(
-            const Entity<0>& element) const = 0;
-
-    /** \brief Transformation mapping basis functions to shape functions.
+    /** \brief Reference to the shapeset attached to the specified element.
      *
-     *  This function returns a CollectionOfBasisTransformations object
-     *  consisting of a single transformation that maps values of basis
-     *  functions defined on a reference element to those of *shape functions*
+     *  \deprecated This function is deprecated and will be removed in a future
+     *  release of BEM++. Use shapeset() instead.
+     */
+    virtual BEMPP_DEPRECATED const Fiber::Basis<BasisFunctionType>& basis(
+            const Entity<0>& element) const {
+        // It might be good to print a deprecation warning
+        return dynamic_cast<const Fiber::Basis<BasisFunctionType>& >(
+                    shapeset(element));
+    }
+
+    /** \brief Reference to the shapeset attached to the specified element.
+     *
+     *  \deprecated This function is deprecated and will be removed in a future
+     *  release of BEM++. Use shapeset() instead.
+     */
+    virtual const Fiber::Shapeset<BasisFunctionType>& shapeset(
+            const Entity<0>& element) const {
+        throw NotImplementedError(
+                    "Space::shapeset(): not implemented.\nNote that the "
+                    "Space::basis() function has been renamed to shapeset(). "
+                    "If you have implemented basis() in a subclass of Space, "
+                    "please implement shapeset() instead.");
+    }
+
+    /** \brief Transformation mapping shape functions to basis functions.
+     *
+     *  \deprecated This function is deprecated and will be removed in a future
+     *  release of BEM++. Use basisFunctionValue() instead.
+     */
+    virtual BEMPP_DEPRECATED const CollectionOfBasisTransformations&
+    shapeFunctionValue() const {
+        return dynamic_cast<const CollectionOfBasisTransformations&>(
+                    basisFunctionValue());
+    }
+
+    /** \brief Transformation mapping shape functions to basis functions.
+     *
+     *  This function returns a CollectionOfShapesetTransformations object
+     *  consisting of a single transformation that maps values of shape
+     *  functions defined on a reference element to those of *basis functions*
      *  defined on a particular element of the grid.
      *
      *  This transformation is the identity for spaces of scalar-valued
      *  functions, but may be more complicated for spaces of vector-valued
      *  functions, e.g. \f$H(\mathrm{curl})\f$.
      *
-     *  \todo Perhaps change the name of this method to something more
-     *  understandable, like basisToShapeFunctionTransformation. */
-    virtual const CollectionOfBasisTransformations&
-    shapeFunctionValue() const = 0;
+     *  \deprecated This function is deprecated and will be removed in a future
+     *  release of BEM++. Use basisFunctionValue() instead.
+     */
+    virtual const CollectionOfShapesetTransformations&
+    basisFunctionValue() const {
+        throw NotImplementedError(
+                    "Space::basisFunctionValue(): not implemented.\nNote that the "
+                    "Space::shapeFunctionValue() function has been renamed to basisFunctionValue(). "
+                    "If you have implemented shapeFunctionValue() in a subclass of Space, "
+                    "please implement basisFunctionValue() instead.");
+    }
 
     /** @}
         @name Element order management
@@ -419,6 +462,15 @@ private:
  *
  *  An exception is raised if <tt>space.assignDofs()</tt> has not been called
  *  prior to calling this function. */
+template <typename BasisFunctionType>
+void getAllShapesets(const Space<BasisFunctionType>& space,
+        std::vector<const Fiber::Shapeset<BasisFunctionType>*>& shapesets);
+
+/** \relates Space
+ *  \brief Get pointers to Basis objects corresponding to all elements of the grid
+ *  on which a function space is defined.
+ *
+ *  \deprecated This function is deprecated. Use getAllShapesets() instead. */
 template <typename BasisFunctionType>
 void getAllBases(const Space<BasisFunctionType>& space,
         std::vector<const Fiber::Basis<BasisFunctionType>*>& bases);

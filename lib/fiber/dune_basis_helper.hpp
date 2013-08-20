@@ -28,6 +28,7 @@
 #include "_4d_array.hpp"
 
 #include "../common/armadillo_fwd.hpp"
+#include "../common/deprecated.hpp"
 #include <cassert>
 #include <vector>
 
@@ -35,7 +36,7 @@ namespace Fiber
 {
 
 template <typename CoordinateType, typename ValueType, typename DuneBasis>
-void evaluateBasisFunctionsWithDune(
+void evaluateShapeFunctionsWithDune(
         const arma::Mat<CoordinateType>& local,
         LocalDofIndex localDofIndex,
         _3dArray<ValueType>& result,
@@ -69,7 +70,17 @@ void evaluateBasisFunctionsWithDune(
 }
 
 template <typename CoordinateType, typename ValueType, typename DuneBasis>
-void evaluateBasisFunctionDerivativesWithDune(
+BEMPP_DEPRECATED void evaluateBasisFunctionsWithDune(
+        const arma::Mat<CoordinateType>& local,
+        LocalDofIndex localDofIndex,
+        _3dArray<ValueType>& result,
+        const DuneBasis& basis = DuneBasis())
+{
+    evaluateShapeFunctionsWithDune(local, localDofIndex, result, basis);
+}
+
+template <typename CoordinateType, typename ValueType, typename DuneBasis>
+void evaluateShapeFunctionDerivativesWithDune(
         const arma::Mat<CoordinateType>& local,
         LocalDofIndex localDofIndex,
         _4dArray<ValueType>& result,
@@ -106,6 +117,17 @@ void evaluateBasisFunctionDerivativesWithDune(
     }
 }
 
+template <typename CoordinateType, typename ValueType, typename DuneBasis>
+BEMPP_DEPRECATED void evaluateBasisFunctionDerivativesWithDune(
+        const arma::Mat<CoordinateType>& local,
+        LocalDofIndex localDofIndex,
+        _4dArray<ValueType>& result,
+        const DuneBasis& basis = DuneBasis())
+{
+    evaluateShapeFunctionDerivativesWithDune(local, localDofIndex,
+                                             result, basis);
 }
+
+} // namespace Fiber
 
 #endif

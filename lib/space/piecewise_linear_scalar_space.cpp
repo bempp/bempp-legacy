@@ -35,7 +35,7 @@ template <typename BasisFunctionType>
 PiecewiseLinearScalarSpace<BasisFunctionType>::
 PiecewiseLinearScalarSpace(const shared_ptr<const Grid>& grid) :
     ScalarSpace<BasisFunctionType>(grid)
-{    
+{
 }
 
 template <typename BasisFunctionType>
@@ -57,20 +57,20 @@ int PiecewiseLinearScalarSpace<BasisFunctionType>::codomainDimension() const
 }
 
 template <typename BasisFunctionType>
-const Fiber::Basis<BasisFunctionType>&
-PiecewiseLinearScalarSpace<BasisFunctionType>::basis(
+const Fiber::Shapeset<BasisFunctionType>&
+PiecewiseLinearScalarSpace<BasisFunctionType>::shapeset(
         const Entity<0>& element) const
 {
     switch (elementVariant(element))
     {
     case 3:
-        return m_triangleBasis;
+        return m_triangleShapeset;
     case 4:
-        return m_quadrilateralBasis;
+        return m_quadrilateralShapeset;
     case 2:
-        return m_lineBasis;
+        return m_lineShapeset;
     default:
-        throw std::logic_error("PiecewiseLinearScalarSpace::basis(): "
+        throw std::logic_error("PiecewiseLinearScalarSpace::shapeset(): "
                                "invalid element variant, this shouldn't happen!");
     }
 }

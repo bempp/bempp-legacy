@@ -33,7 +33,7 @@ namespace Fiber
 
 /** \cond FORWARD_DECL */
 class OpenClHandler;
-template <typename CoordinateType> class CollectionOfBasisTransformations;
+template <typename CoordinateType> class CollectionOfShapesetTransformations;
 template <typename ValueType> class CollectionOfKernels;
 template <typename CoordinateType> class RawGridGeometry;
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
@@ -59,9 +59,9 @@ public:
             const GeometryFactory& trialGgeometryFactory,
             const RawGridGeometry<CoordinateType>& testRawGeometry,
             const RawGridGeometry<CoordinateType>& trialRawGeometry,
-            const CollectionOfBasisTransformations<CoordinateType>& testTransformations,
+            const CollectionOfShapesetTransformations<CoordinateType>& testTransformations,
             const CollectionOfKernels<KernelType>& kernel,
-            const CollectionOfBasisTransformations<CoordinateType>& trialTransformations,
+            const CollectionOfShapesetTransformations<CoordinateType>& trialTransformations,
             const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& integral,
             const OpenClHandler& openClHandler);
     virtual ~NonseparableNumericalTestKernelTrialIntegrator();
@@ -70,22 +70,22 @@ public:
             CallVariant callVariant,
             const std::vector<int>& elementIndicesA,
             int elementIndexB,
-            const Basis<BasisFunctionType>& basisA,
-            const Basis<BasisFunctionType>& basisB,
+            const Shapeset<BasisFunctionType>& basisA,
+            const Shapeset<BasisFunctionType>& basisB,
             LocalDofIndex localDofIndexB,
             const std::vector<arma::Mat<ResultType>*>& result) const;
 
     virtual void integrate(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<BasisFunctionType>& testBasis,
-            const Basis<BasisFunctionType>& trialBasis,
+            const Shapeset<BasisFunctionType>& testShapeset,
+            const Shapeset<BasisFunctionType>& trialShapeset,
             const std::vector<arma::Mat<ResultType>*>& result) const;
 
 private:
     enum ElementType {TEST, TRIAL};
 
     const BasisData<BasisFunctionType>&
-    basisData(ElementType type, const Basis<BasisFunctionType>& basis) const;
+    basisData(ElementType type, const Shapeset<BasisFunctionType>& shapeset) const;
 
     arma::Mat<CoordinateType> m_localTestQuadPoints;
     arma::Mat<CoordinateType> m_localTrialQuadPoints;
@@ -96,12 +96,12 @@ private:
     const RawGridGeometry<CoordinateType>& m_testRawGeometry;
     const RawGridGeometry<CoordinateType>& m_trialRawGeometry;
 
-    const CollectionOfBasisTransformations<CoordinateType>& m_testTransformations;
+    const CollectionOfShapesetTransformations<CoordinateType>& m_testTransformations;
     const CollectionOfKernels<KernelType>& m_kernels;
-    const CollectionOfBasisTransformations<CoordinateType>& m_trialTransformations;
+    const CollectionOfShapesetTransformations<CoordinateType>& m_trialTransformations;
     const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& m_integral;
 
-    typedef tbb::concurrent_unordered_map<const Basis<BasisFunctionType>*,
+    typedef tbb::concurrent_unordered_map<const Shapeset<BasisFunctionType>*,
     BasisData<BasisFunctionType>* > BasisDataCache;
     mutable BasisDataCache m_cachedTestBasisData;
     mutable BasisDataCache m_cachedTrialBasisData;

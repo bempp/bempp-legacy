@@ -34,7 +34,7 @@ namespace Fiber
 
 /** \cond FORWARD_DECL */
 class OpenClHandler;
-template <typename CoordinateType> class CollectionOfBasisTransformations;
+template <typename CoordinateType> class CollectionOfShapesetTransformations;
 template <typename ValueType> class CollectionOfKernels;
 template <typename CoordinateType> class RawGridGeometry;
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
@@ -61,9 +61,9 @@ public:
             const GeometryFactory& trialGeometryFactory,
             const RawGridGeometry<CoordinateType>& testRawGeometry,
             const RawGridGeometry<CoordinateType>& trialRawGeometry,
-            const CollectionOfBasisTransformations<CoordinateType>& testTransformations,
+            const CollectionOfShapesetTransformations<CoordinateType>& testTransformations,
             const CollectionOfKernels<KernelType>& kernels,
-            const CollectionOfBasisTransformations<CoordinateType>& trialTransformations,
+            const CollectionOfShapesetTransformations<CoordinateType>& trialTransformations,
             const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& integral,
             const OpenClHandler& openClHandler,
             bool cacheGeometricalData = true);
@@ -74,15 +74,15 @@ public:
             CallVariant callVariant,
             const std::vector<int>& elementIndicesA,
             int elementIndexB,
-            const Basis<BasisFunctionType>& basisA,
-            const Basis<BasisFunctionType>& basisB,
+            const Shapeset<BasisFunctionType>& basisA,
+            const Shapeset<BasisFunctionType>& basisB,
             LocalDofIndex localDofIndexB,
             const std::vector<arma::Mat<ResultType>*>& result) const;
 
     virtual void integrate(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<BasisFunctionType>& testBasis,
-            const Basis<BasisFunctionType>& trialBasis,
+            const Shapeset<BasisFunctionType>& testShapeset,
+            const Shapeset<BasisFunctionType>& trialShapeset,
             const std::vector<arma::Mat<ResultType>*>& result) const;
 
 private:
@@ -90,8 +90,8 @@ private:
             CallVariant callVariant,
             const std::vector<int>& elementIndicesA,
             int elementIndexB,
-            const Basis<BasisFunctionType>& basisA,
-            const Basis<BasisFunctionType>& basisB,
+            const Shapeset<BasisFunctionType>& basisA,
+            const Shapeset<BasisFunctionType>& basisB,
             LocalDofIndex localDofIndexB,
             const std::vector<arma::Mat<ResultType>*>& result) const;
 
@@ -99,21 +99,21 @@ private:
 	    CallVariant callVariant,
 	    const std::vector<int>& elementIndicesA,
 	    int elementIndexB,
-        const Basis<BasisFunctionType>& basisA,
-        const Basis<BasisFunctionType>& basisB,
+        const Shapeset<BasisFunctionType>& basisA,
+        const Shapeset<BasisFunctionType>& basisB,
 	    LocalDofIndex localDofIndexB,
         const std::vector<arma::Mat<ResultType>*>& result) const;
 
     void integrateCpu(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<BasisFunctionType>& testBasis,
-            const Basis<BasisFunctionType>& trialBasis,
+            const Shapeset<BasisFunctionType>& testShapeset,
+            const Shapeset<BasisFunctionType>& trialShapeset,
             const std::vector<arma::Mat<ResultType>*>& result) const;
 
     void integrateCl(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<BasisFunctionType>& testBasis,
-            const Basis<BasisFunctionType>& trialBasis,
+            const Shapeset<BasisFunctionType>& testShapeset,
+            const Shapeset<BasisFunctionType>& trialShapeset,
             const std::vector<arma::Mat<ResultType>*>& result) const;
 
     void precalculateGeometricalData();
@@ -140,9 +140,9 @@ private:
     const RawGridGeometry<CoordinateType>& m_testRawGeometry;
     const RawGridGeometry<CoordinateType>& m_trialRawGeometry;
 
-    const CollectionOfBasisTransformations<CoordinateType>& m_testTransformations;
+    const CollectionOfShapesetTransformations<CoordinateType>& m_testTransformations;
     const CollectionOfKernels<KernelType>& m_kernels;
-    const CollectionOfBasisTransformations<CoordinateType>& m_trialTransformations;
+    const CollectionOfShapesetTransformations<CoordinateType>& m_trialTransformations;
     const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& m_integral;
 
     const OpenClHandler& m_openClHandler;

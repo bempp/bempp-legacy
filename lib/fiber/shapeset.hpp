@@ -18,23 +18,49 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_basis_hpp
-#define fiber_basis_hpp
+#ifndef fiber_shapeset_hpp
+#define fiber_shapeset_hpp
 
-#include "shapeset.hpp"
+#include "../common/common.hpp"
+
+#include "scalar_traits.hpp"
+#include "types.hpp"
+
+#include "../common/armadillo_fwd.hpp"
 
 namespace Fiber
 {
 
+/** \cond FORWARD_DECL */
+template <typename ValueType> struct BasisData;
+/** \endcond */
+
 /** \ingroup fiber
- *  \brief Collection of shape functions defined on a reference element.
- *
- *  \deprecated This class is deprecated and provided only for compatibility
- *  reasons. Use Shapeset instead.
- */
+ *  \brief Collection of shape functions defined on a reference element. */
 template <typename ValueType>
-class Basis : public Shapeset<ValueType>
+class Shapeset
 {
+public:
+    typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+
+    virtual ~Shapeset() {}
+
+    /** \brief Return the number of shape functions. */
+    virtual int size() const = 0;
+    /** \brief Return the maximum polynomial order of shape functions. */
+    virtual int order() const = 0;
+    virtual void evaluate(size_t what,
+                          const arma::Mat<CoordinateType>& points,
+                          LocalDofIndex localDofIndex,
+                          BasisData<ValueType>& data) const = 0;
+
+    /**
+     * \brief Returns an OpenCL code snippet for shape function evaluation
+     * \note The code snippet must provide device function devBasisEval
+     */
+    virtual std::pair<const char*,int> clCodeString (bool isTestShapeset) const {
+        throw std::runtime_error("Basis: clCodeString not implemented yet");
+    }
 };
 
 } // namespace Fiber

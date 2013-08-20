@@ -33,7 +33,7 @@ namespace Fiber
 {
 
 /** \cond FORWARD_DECL */
-template <typename ValueType> class Basis;
+template <typename ValueType> class Shapeset;
 /** \endcond */
 
 /** \brief Integration of products of test functions and arbitrary functions over elements. */
@@ -47,7 +47,7 @@ public:
 
     virtual void integrate(
             const std::vector<int>& elementIndices,
-            const Basis<BasisFunctionType>& testBasis,
+            const Shapeset<BasisFunctionType>& testShapeset,
             arma::Mat<ResultType>& result) const = 0;
 };
 

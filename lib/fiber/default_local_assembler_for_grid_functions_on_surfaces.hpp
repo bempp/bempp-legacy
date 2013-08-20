@@ -38,7 +38,7 @@ namespace Fiber
 
 /** \cond FORWARD_DECL */
 class OpenClHandler;
-template <typename CoordinateType> class CollectionOfBasisTransformations;
+template <typename CoordinateType> class CollectionOfShapesetTransformations;
 template <typename ValueType> class Function;
 template <typename CoordinateType> class RawGridGeometry;
 /** \endcond */
@@ -54,8 +54,8 @@ public:
     DefaultLocalAssemblerForGridFunctionsOnSurfaces(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+            const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
+            const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
             const shared_ptr<const Function<UserFunctionType> >& function,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const QuadratureOptions& quadratureOptions = QuadratureOptions());
@@ -80,8 +80,8 @@ private:
 private:
     shared_ptr<const GeometryFactory> m_geometryFactory;
     shared_ptr<const RawGridGeometry<CoordinateType> > m_rawGeometry;
-    shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_testBases;
-    shared_ptr<const CollectionOfBasisTransformations<CoordinateType> > m_testTransformations;
+    shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> > m_testShapesets;
+    shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> > m_testTransformations;
     shared_ptr<const Function<UserFunctionType> > m_function;
     shared_ptr<const OpenClHandler> m_openClHandler;
     QuadratureOptions m_quadratureOptions;

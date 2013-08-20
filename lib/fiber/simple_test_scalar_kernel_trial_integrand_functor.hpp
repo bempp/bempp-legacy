@@ -36,8 +36,8 @@ namespace Fiber
  *  \brief Functor evaluating the integrand of the simplest boundary integral operator.
  *
  *  This functor evaluates the integrand having the form of the product of a
- *  single test basis function transformation, a single kernel and a single
- *  trial basis function transformation.
+ *  single test function transformation, a single kernel and a single
+ *  trial function transformation.
  */
 template <typename BasisFunctionType_, typename KernelType_,
           typename ResultType_>
@@ -54,7 +54,7 @@ public:
     }
 
     // It is possible that this function could be generalised to
-    // multiple basis transformations or kernels and that the additional
+    // multiple shapeset transformations or kernels and that the additional
     // loops could be optimised away by the compiler.
     template <template <typename T> class CollectionOf2dSlicesOfConstNdArrays>
     ResultType evaluate(
@@ -100,7 +100,7 @@ public:
     }
 
     // It is possible that this function could be generalised to
-    // multiple basis transformations or kernels and that the additional
+    // multiple shapeset transformations or kernels and that the additional
     // loops could be optimised away by the compiler.
     template <template <typename T> class CollectionOf2dSlicesOfConstNdArrays>
     ResultType evaluate(

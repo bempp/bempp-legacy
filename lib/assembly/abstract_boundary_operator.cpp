@@ -150,15 +150,15 @@ AbstractBoundaryOperator<BasisFunctionType, ResultType>::collectDataForAssembler
         shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
         shared_ptr<GeometryFactory>& testGeometryFactory,
         shared_ptr<GeometryFactory>& trialGeometryFactory,
-        shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
-        shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+        shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& testShapesets,
+        shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& trialShapesets,
         shared_ptr<Fiber::OpenClHandler>& openClHandler,
         bool& cacheSingularIntegrals) const
 {
     collectOptionsIndependentDataForAssemblerConstruction(
                 testRawGeometry, trialRawGeometry,
                 testGeometryFactory, trialGeometryFactory,
-                testBases, trialBases);
+                testShapesets, trialShapesets);
     collectOptionsDependentDataForAssemblerConstruction(
                 options,
                 testRawGeometry, trialRawGeometry,
@@ -173,8 +173,8 @@ collectOptionsIndependentDataForAssemblerConstruction(
         shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
         shared_ptr<GeometryFactory>& testGeometryFactory,
         shared_ptr<GeometryFactory>& trialGeometryFactory,
-        shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
-        shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases) const
+        shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& testShapesets,
+        shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& trialShapesets) const
 {
     typedef LocalAssemblerConstructionHelper Helper;
 
@@ -188,12 +188,12 @@ collectOptionsIndependentDataForAssemblerConstruction(
         Helper::collectGridData(*m_domain->grid(),
                                 trialRawGeometry, trialGeometryFactory);
 
-    // Get pointers to test and trial bases of each element
-    Helper::collectBases(*m_dualToRange, testBases);
+    // Get pointers to test and trial shapesets of each element
+    Helper::collectShapesets(*m_dualToRange, testShapesets);
     if (m_dualToRange == m_domain)
-        trialBases = testBases;
+        trialShapesets = testShapesets;
     else
-        Helper::collectBases(*m_domain, trialBases);
+        Helper::collectShapesets(*m_domain, trialShapesets);
 }
 
 template <typename BasisFunctionType, typename ResultType>

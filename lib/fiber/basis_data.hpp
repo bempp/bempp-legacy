@@ -43,10 +43,10 @@ template <typename ValueType>
 struct BasisData
 {
     // values(i,k,l) = (f_k)_i(x_l) ->
-    // ith component of kth basis function at lth point
+    // ith component of kth shape function at lth point
     _3dArray<ValueType> values;
     // derivatives(i,j,k,l) = (d_j (f_k)_i)(x_l) ->
-    // derivative in direction j of ith component of kth basis function at lth point
+    // derivative in direction j of ith component of kth shape function at lth point
     _4dArray<ValueType> derivatives;
 
     int componentCount() const {

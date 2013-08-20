@@ -24,10 +24,10 @@
 #include "_3d_array.hpp"
 #include "_4d_array.hpp"
 
-#include "basis.hpp"
+#include "shapeset.hpp"
 #include "basis_data.hpp"
 #include "conjugate.hpp"
-#include "collection_of_basis_transformations.hpp"
+#include "collection_of_shapeset_transformations.hpp"
 #include "geometrical_data.hpp"
 #include "collection_of_kernels.hpp"
 #include "opencl_handler.hpp"
@@ -52,7 +52,7 @@ NumericalKernelTrialIntegrator(
         const GeometryFactory& geometryFactory,
         const RawGridGeometry<CoordinateType>& rawGeometry,
         const CollectionOfKernels<KernelType>& kernels,
-        const CollectionOfBasisTransformations<CoordinateType>& trialTransformations,
+        const CollectionOfShapesetTransformations<CoordinateType>& trialTransformations,
         const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& integral) :
     m_localQuadPoints(localQuadPoints),
     m_quadWeights(quadWeights),
@@ -76,20 +76,20 @@ void NumericalKernelTrialIntegrator<
 BasisFunctionType, KernelType, ResultType, GeometryFactory>::
 integrate(const std::vector<int>& pointIndices,
           int trialElementIndex,
-          const Basis<BasisFunctionType>& trialBasis,
+          const Shapeset<BasisFunctionType>& trialShapeset,
           LocalDofIndex localTrialDofIndex,
           const std::vector<arma::Mat<ResultType>*>& result) const
 {
     const int quadPointCount = m_localQuadPoints.n_cols;
     const int pointCount = pointIndices.size();
     const int componentCount = m_integral.resultDimension();
-    const int trialDofCount = localTrialDofIndex == ALL_DOFS ? trialBasis.size() : 1;
+    const int trialDofCount = localTrialDofIndex == ALL_DOFS ? trialShapeset.size() : 1;
 
     if (result.size() != pointCount)
         throw std::invalid_argument(
         "NumericalKernelTrialIntegrator::integrate(): "
         "arrays 'result' and 'pointCount' must have the same number "
-	    "of elements");
+        "of elements");
     if (pointCount == 0 || quadPointCount == 0)
         return;
     // TODO: in the (pathological) case that quadPointCount == 0 but
@@ -117,7 +117,7 @@ integrate(const std::vector<int>& pointIndices,
     }
 
     m_rawGeometry.setupGeometry(trialElementIndex, *trialGeometry);
-    trialBasis.evaluate(trialBasisDeps, m_localQuadPoints,
+    trialShapeset.evaluate(trialBasisDeps, m_localQuadPoints,
                         localTrialDofIndex, trialBasisData);
     trialGeometry->getData(trialGeomDeps, m_localQuadPoints, trialGeomData);
     m_trialTransformations.evaluate(trialBasisData, trialGeomData, trialValues);
@@ -142,14 +142,14 @@ BasisFunctionType, KernelType, ResultType, GeometryFactory>::
 integrate(int pointIndex,
           int componentIndex,
           const std::vector<int>& trialElementIndices,
-          const Basis<BasisFunctionType>& trialBasis,
+          const Shapeset<BasisFunctionType>& trialShapeset,
           const std::vector<arma::Mat<ResultType>*>& result) const
 {
     const int quadPointCount = m_localQuadPoints.n_cols;
     const int trialElementCount = trialElementIndices.size();
     const int componentCount =
             componentIndex == ALL_COMPONENTS ? m_integral.resultDimension() : 1;
-    const int trialDofCount = trialBasis.size();
+    const int trialDofCount = trialShapeset.size();
 
     if (result.size() != trialElementCount)
         throw std::invalid_argument(
@@ -188,7 +188,7 @@ integrate(int pointIndex,
     // Iterate over the trial elements
     for (int i = 0; i < trialElementCount; ++i) {
         m_rawGeometry.setupGeometry(trialElementIndices[i], *trialGeometry);
-        trialBasis.evaluate(trialBasisDeps, m_localQuadPoints,
+        trialShapeset.evaluate(trialBasisDeps, m_localQuadPoints,
                             ALL_DOFS, trialBasisData);
         trialGeometry->getData(trialGeomDeps, m_localQuadPoints, trialGeomData);
         m_trialTransformations.evaluate(trialBasisData, trialGeomData,
@@ -216,13 +216,13 @@ template <typename BasisFunctionType, typename KernelType,
 void NumericalKernelTrialIntegrator<
 BasisFunctionType, KernelType, ResultType, GeometryFactory>::
 integrate(const std::vector<PointElementIndexPair>& pointElementIndexPairs,
-          const Basis<BasisFunctionType>& trialBasis,
+          const Shapeset<BasisFunctionType>& trialShapeset,
           const std::vector<arma::Mat<ResultType>*>& result) const
 {
     const int quadPointCount = m_localQuadPoints.n_cols;
     const int pairCount = pointElementIndexPairs.size();
     const int componentCount = m_integral.resultDimension();
-    const int trialDofCount = trialBasis.size();
+    const int trialDofCount = trialShapeset.size();
 
     if (result.size() != pairCount)
         throw std::invalid_argument(
@@ -262,7 +262,7 @@ integrate(const std::vector<PointElementIndexPair>& pointElementIndexPairs,
 
         pointGeomData.globals = m_points.col(activePointIndex);
         m_rawGeometry.setupGeometry(activeTrialElementIndex, *trialGeometry);
-        trialBasis.evaluate(trialBasisDeps, m_localQuadPoints,
+        trialShapeset.evaluate(trialBasisDeps, m_localQuadPoints,
                             ALL_DOFS, trialBasisData);
         trialGeometry->getData(trialGeomDeps, m_localQuadPoints, trialGeomData);
         m_trialTransformations.evaluate(trialBasisData, trialGeomData, trialValues);

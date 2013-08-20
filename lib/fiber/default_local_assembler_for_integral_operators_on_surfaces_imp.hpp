@@ -48,13 +48,13 @@ public:
     SingularIntegralCalculatorLoopBody(
             const Integrator& activeIntegrator,
             const std::vector<ElementIndexPair>& activeElementPairs,
-            const Basis<BasisFunctionType>& activeTestBasis,
-            const Basis<BasisFunctionType>& activeTrialBasis,
+            const Shapeset<BasisFunctionType>& activeTestShapeset,
+            const Shapeset<BasisFunctionType>& activeTrialShapeset,
             const std::vector<arma::Mat<ResultType>*>& localResult) :
         m_activeIntegrator(activeIntegrator),
         m_activeElementPairs(activeElementPairs),
-        m_activeTestBasis(activeTestBasis),
-        m_activeTrialBasis(activeTrialBasis),
+        m_activeTestBasis(activeTestShapeset),
+        m_activeTrialBasis(activeTrialShapeset),
         m_localResult(localResult) {
     }
 
@@ -74,8 +74,8 @@ public:
 private:
     const Integrator& m_activeIntegrator;
     const std::vector<ElementIndexPair>& m_activeElementPairs;
-    const Basis<BasisFunctionType>& m_activeTestBasis;
-    const Basis<BasisFunctionType>& m_activeTrialBasis;
+    const Shapeset<BasisFunctionType>& m_activeTestBasis;
+    const Shapeset<BasisFunctionType>& m_activeTrialBasis;
     const std::vector<arma::Mat<ResultType>*>& m_localResult;
 };
 
@@ -90,11 +90,11 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces(
         const shared_ptr<const GeometryFactory>& trialGeometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
         const shared_ptr<const CollectionOfKernels<KernelType> >& kernels,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> >& integral,
         const shared_ptr<const OpenClHandler>& openClHandler,
         const ParallelizationOptions& parallelizationOptions,
@@ -105,8 +105,8 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces(
     m_trialGeometryFactory(trialGeometryFactory),
     m_testRawGeometry(testRawGeometry),
     m_trialRawGeometry(trialRawGeometry),
-    m_testBases(testBases),
-    m_trialBases(trialBases),
+    m_testShapesets(testShapesets),
+    m_trialShapesets(trialShapesets),
     m_testTransformations(testTransformations),
     m_kernels(kernels),
     m_trialTransformations(trialTransformations),
@@ -116,8 +116,8 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces(
     m_verbosityLevel(verbosityLevel),
     m_accuracyOptions(accuracyOptions)
 {
-    Utilities::checkConsistencyOfGeometryAndBases(*testRawGeometry, *testBases);
-    Utilities::checkConsistencyOfGeometryAndBases(*trialRawGeometry, *trialBases);
+    Utilities::checkConsistencyOfGeometryAndShapesets(*testRawGeometry, *testShapesets);
+    Utilities::checkConsistencyOfGeometryAndShapesets(*trialRawGeometry, *trialShapesets);
 
     precalculateElementSizesAndCenters();
     if (cacheSingularIntegrals)
@@ -162,24 +162,24 @@ evaluateLocalWeakForms(
         std::vector<arma::Mat<ResultType> >& result,
         CoordinateType nominalDistance)
 {
-    typedef Basis<BasisFunctionType> Basis;
+    typedef Shapeset<BasisFunctionType> Shapeset;
 
     const int elementACount = elementIndicesA.size();
     result.resize(elementACount);
 
     // TODO: remove this unnecessary copy
-    // Get bases
-    const std::vector<const Basis*>& m_basesA =
-            callVariant == TEST_TRIAL ? *m_testBases : *m_trialBases;
-    const std::vector<const Basis*>& m_basesB =
-            callVariant == TEST_TRIAL ? *m_trialBases : *m_testBases;
-    std::vector<const Basis*> basesA(elementACount);
+    // Get shapesets
+    const std::vector<const Shapeset*>& m_basesA =
+            callVariant == TEST_TRIAL ? *m_testShapesets : *m_trialShapesets;
+    const std::vector<const Shapeset*>& m_basesB =
+            callVariant == TEST_TRIAL ? *m_trialShapesets : *m_testShapesets;
+    std::vector<const Shapeset*> basesA(elementACount);
     for (int i = 0; i < elementACount; ++i)
         basesA[i] = m_basesA[elementIndicesA[i]];
-    const Basis& basisB = *m_basesB[elementIndexB];
+    const Shapeset& basisB = *m_basesB[elementIndexB];
 
     // Find cached matrices; select integrators to calculate non-cached ones
-    typedef std::pair<const Integrator*, const Basis*> QuadVariant;
+    typedef std::pair<const Integrator*, const Shapeset*> QuadVariant;
     const QuadVariant CACHED(0, 0);
     std::vector<QuadVariant> quadVariants(elementACount);
     for (int i = 0; i < elementACount; ++i) {
@@ -226,7 +226,7 @@ evaluateLocalWeakForms(
     }
 
     // Integration will proceed in batches of test elements having the same
-    // "quadrature variant", i.e. integrator and basis
+    // "quadrature variant", i.e. integrator and shapeset
 
     // Find all the unique quadrature variants present
     typedef std::set<QuadVariant> QuadVariantSet;
@@ -245,17 +245,17 @@ evaluateLocalWeakForms(
         if (activeQuadVariant == CACHED)
             continue;
         const Integrator& activeIntegrator = *it->first;
-        const Basis& activeBasisA = *it->second;
+        const Shapeset& activeBasisA = *it->second;
 
         // Find all the test elements for which quadrature should proceed
         // according to the current quadrature variant
         activeElementIndicesA.clear();
         activeLocalResults.clear();
         for (int indexA = 0; indexA < elementACount; ++indexA)
-  	    if (quadVariants[indexA] == activeQuadVariant) {
+        if (quadVariants[indexA] == activeQuadVariant) {
                 activeElementIndicesA.push_back(elementIndicesA[indexA]);
-		activeLocalResults.push_back(&result[indexA]);
-	    }
+        activeLocalResults.push_back(&result[indexA]);
+        }
 
         // Integrate!
         activeIntegrator.integrate(callVariant,
@@ -283,14 +283,14 @@ evaluateLocalWeakForms(
         Fiber::_2dArray<arma::Mat<ResultType> >& result,
         CoordinateType nominalDistance)
 {
-    typedef Fiber::Basis<BasisFunctionType> Basis;
+    typedef Fiber::Shapeset<BasisFunctionType> Shapeset;
 
     const int testElementCount = testElementIndices.size();
     const int trialElementCount = trialElementIndices.size();
     result.set_size(testElementCount, trialElementCount);
 
     // Find cached matrices; select integrators to calculate non-cached ones
-    typedef boost::tuples::tuple<const Integrator*, const Basis*, const Basis*>
+    typedef boost::tuples::tuple<const Integrator*, const Shapeset*, const Shapeset*>
             QuadVariant;
     const QuadVariant CACHED(0, 0, 0);
     Fiber::_2dArray<QuadVariant> quadVariants(testElementCount, trialElementCount);
@@ -315,13 +315,13 @@ evaluateLocalWeakForms(
                         &selectIntegrator(activeTestElementIndex,
                                           activeTrialElementIndex, nominalDistance);
                 quadVariants(testIndex, trialIndex) = QuadVariant(
-                            integrator, (*m_testBases)[activeTestElementIndex],
-                            (*m_trialBases)[activeTrialElementIndex]);
+                            integrator, (*m_testShapesets)[activeTestElementIndex],
+                            (*m_trialShapesets)[activeTrialElementIndex]);
             }
         }
 
     // Integration will proceed in batches of element pairs having the same
-    // "quadrature variant", i.e. integrator, test basis and trial basis
+    // "quadrature variant", i.e. integrator, test shapeset and trial shapeset
 
     // Find all the unique quadrature variants present
     typedef std::set<QuadVariant> QuadVariantSet;
@@ -340,8 +340,8 @@ evaluateLocalWeakForms(
         if (activeQuadVariant == CACHED)
             continue;
         const Integrator& activeIntegrator = *it->template get<0>();
-        const Basis& activeTestBasis  = *it->template get<1>();
-        const Basis& activeTrialBasis = *it->template get<2>();
+        const Shapeset& activeTestShapeset  = *it->template get<1>();
+        const Shapeset& activeTrialShapeset = *it->template get<2>();
 
         // Find all the element pairs for which quadrature should proceed
         // according to the current quadrature variant
@@ -349,7 +349,7 @@ evaluateLocalWeakForms(
         activeLocalResults.clear();
         for (int trialIndex = 0; trialIndex < trialElementCount; ++trialIndex)
             for (int testIndex = 0; testIndex < testElementCount; ++testIndex)
-  	        if (quadVariants(testIndex, trialIndex) == activeQuadVariant) {
+            if (quadVariants(testIndex, trialIndex) == activeQuadVariant) {
                     activeElementPairs.push_back(
                                 ElementIndexPair(testElementIndices[testIndex],
                                                  trialElementIndices[trialIndex]));
@@ -357,8 +357,8 @@ evaluateLocalWeakForms(
                 }
 
         // Integrate!
-        activeIntegrator.integrate(activeElementPairs, activeTestBasis,
-                                   activeTrialBasis, activeLocalResults);
+        activeIntegrator.integrate(activeElementPairs, activeTestShapeset,
+                                   activeTrialShapeset, activeLocalResults);
 
         // // Distribute the just calculated integrals into the result array
         // // that will be returned to caller
@@ -495,8 +495,8 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
             m_cache(nborIndex, trialIndex).first = INVALID_INDEX;
 
     // Find cached matrices; select integrators to calculate non-cached ones
-    typedef Fiber::Basis<BasisFunctionType> Basis;
-    typedef boost::tuples::tuple<const Integrator*, const Basis*, const Basis*>
+    typedef Fiber::Shapeset<BasisFunctionType> Shapeset;
+    typedef boost::tuples::tuple<const Integrator*, const Shapeset*, const Shapeset*>
             QuadVariant;
     const int elementPairCount = elementIndexPairs.size();
     std::vector<QuadVariant> quadVariants(elementPairCount);
@@ -513,13 +513,13 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
             const Integrator* integrator =
                     &selectIntegrator(testElementIndex, trialElementIndex);
             *qvIt = QuadVariant(integrator,
-                                (*m_testBases)[testElementIndex],
-                                (*m_trialBases)[trialElementIndex]);
+                                (*m_testShapesets)[testElementIndex],
+                                (*m_trialShapesets)[trialElementIndex]);
         }
     }
 
     // Integration will proceed in batches of element pairs having the same
-    // "quadrature variant", i.e. integrator, test basis and trial basis
+    // "quadrature variant", i.e. integrator, test shapeset and trial shapeset
 
     // Find all the unique quadrature variants present
     typedef std::set<QuadVariant> QuadVariantSet;
@@ -547,8 +547,8 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
          it != uniqueQuadVariants.end(); ++it) {
         const QuadVariant activeQuadVariant = *it;
         const Integrator& activeIntegrator = *it->template get<0>();
-        const Basis& activeTestBasis  = *it->template get<1>();
-        const Basis& activeTrialBasis = *it->template get<2>();
+        const Shapeset& activeTestShapeset  = *it->template get<1>();
+        const Shapeset& activeTrialShapeset = *it->template get<2>();
 
         // Find all the element pairs for which quadrature should proceed
         // according to the current quadrature variant
@@ -578,8 +578,8 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
 
         // Integrate!
         // Old serial version
-        // activeIntegrator.integrate(activeElementPairs, activeTestBasis,
-        //                            activeTrialBasis, localResult);
+        // activeIntegrator.integrate(activeElementPairs, activeTestShapeset,
+        //                            activeTrialShapeset, localResult);
 
         typedef SingularIntegralCalculatorLoopBody<
                 BasisFunctionType, KernelType, ResultType> Body;
@@ -587,7 +587,7 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
             Fiber::SerialBlasRegion region;
             tbb::parallel_for(tbb::blocked_range<size_t>(0, activeElementPairs.size()),
                               Body(activeIntegrator,
-                                   activeElementPairs, activeTestBasis, activeTrialBasis,
+                                   activeElementPairs, activeTestShapeset, activeTrialShapeset,
                                    activeLocalResults));
         }
     }
@@ -677,8 +677,8 @@ getRegularOrders(int testElementIndex, int trialElementIndex,
     // 2. Take into account the fact that elements might be isoparametric.
 
     // Order required for exact quadrature on affine elements with a constant kernel
-    int testBasisOrder = (*m_testBases)[testElementIndex]->order();
-    int trialBasisOrder = (*m_trialBases)[trialElementIndex]->order();
+    int testBasisOrder = (*m_testShapesets)[testElementIndex]->order();
+    int trialBasisOrder = (*m_trialShapesets)[trialElementIndex]->order();
     testQuadOrder = testBasisOrder;
     trialQuadOrder = trialBasisOrder;
 
@@ -740,8 +740,8 @@ singularOrder(int elementIndex, ElementType elementType) const
     const QuadratureOptions& options = m_accuracyOptions.doubleSingular();
 
     int elementOrder = (elementType == TEST ?
-                            (*m_testBases)[elementIndex]->order() :
-                            (*m_trialBases)[elementIndex]->order());
+                            (*m_testShapesets)[elementIndex]->order() :
+                            (*m_trialShapesets)[elementIndex]->order());
     int defaultAccuracyOrder = elementOrder + 5;
     return options.quadratureOrder(defaultAccuracyOrder);
 }

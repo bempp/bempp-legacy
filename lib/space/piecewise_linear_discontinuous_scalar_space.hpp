@@ -124,9 +124,9 @@ private:
 private:
     /** \cond PRIVATE */
     std::auto_ptr<GridView> m_view;
-    Fiber::PiecewiseLinearContinuousScalarBasis<2, BasisFunctionType> m_lineBasis;
-    Fiber::PiecewiseLinearContinuousScalarBasis<3, BasisFunctionType> m_triangleBasis;
-    Fiber::PiecewiseLinearContinuousScalarBasis<4, BasisFunctionType> m_quadrilateralBasis;
+    Fiber::PiecewiseLinearContinuousScalarBasis<2, BasisFunctionType> m_lineShapeset;
+    Fiber::PiecewiseLinearContinuousScalarBasis<3, BasisFunctionType> m_triangleShapeset;
+    Fiber::PiecewiseLinearContinuousScalarBasis<4, BasisFunctionType> m_quadrilateralShapeset;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
     std::vector<LocalDof> m_flatLocal2localDofs;

@@ -33,13 +33,13 @@ namespace Bempp
  *  HypersingularIntegralOperator that is sufficient for most purposes. The
  *  constructor takes eight functor objects representing the four elements of
  *  the operator's weak form (collection of kernels, collections of test and
- *  trial basis function transformations, and the weak form integrand) for its
+ *  trial function transformations, and the weak form integrand) for its
  *  two representations: one valid for all pairs of test and trial functions,
  *  the other necessarily valid only for test and trial functions with
  *  nonoverlapping support, but with a more restricted form (see the
  *  documentation of HypersingularIntegralOperator for more details). These
  *  functors are used to construct instances of appropriate instantiations of
- *  DefaultCollectionOfKernels, DefaultCollectionOfBasisTransformations and
+ *  DefaultCollectionOfKernels, DefaultCollectionOfShapesetTransformations and
  *  DefaultTestKernelTrialIntegral. These objects are stored as private member
  *  variables and are returned by the implementations of the virtual methods
  *  kernels(), testTransformations(), trialTransformations(), integral(),
@@ -78,6 +78,9 @@ public:
     typedef typename Base::ResultType ResultType;
     /** \copydoc ElementaryIntegralOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
+    /** \copydoc ElementaryIntegralOperator::CollectionOfShapesetTransformations */
+    typedef typename Base::CollectionOfShapesetTransformations
+    CollectionOfShapesetTransformations;
     /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
     typedef typename Base::CollectionOfBasisTransformations
     CollectionOfBasisTransformations;
@@ -106,15 +109,15 @@ public:
      *    must provide the interface defined in the documentation of
      *    DefaultCollectionOfKernels.
      *  \param[in] testTransformationsFunctor
-     *    A functor object to be used to evaluate the collection of test basis
+     *    A functor object to be used to evaluate the collection of test
      *    function transformations at a single point. The
      *    TestTransformationsFunctor class must provide the interface defined in
-     *    the documentation of DefaultCollectionOfBasisTransformations.
+     *    the documentation of DefaultCollectionOfShapesetTransformations.
      *  \param[in] trialTransformationsFunctor
-     *    A functor object to be used to evaluate the collection of trial basis
+     *    A functor object to be used to evaluate the collection of trial
      *    function transformations at a single point. The
      *    TrialTransformationsFunctor class must provide the interface defined
-     *    in the documentation of DefaultCollectionOfBasisTransformations.
+     *    in the documentation of DefaultCollectionOfShapesetTransformations.
      *  \param[in] integrandFunctor
      *    A functor object to be used to evaluate the integrand of the weak form
      *    at a single pair of points. The IntegrandFunctor class must provide
@@ -126,15 +129,15 @@ public:
      *    The KernelFunctor class must provide the interface defined in the
      *    documentation of DefaultCollectionOfKernels.
      *  \param[in] offDiagonalTestTransformationsFunctor
-     *    A functor object to be used to evaluate the collection of test basis
+     *    A functor object to be used to evaluate the collection of test
      *    function transformations at a single point. The
      *    TestTransformationsFunctor class must provide the interface defined in
-     *    the documentation of DefaultCollectionOfBasisTransformations.
+     *    the documentation of DefaultCollectionOfShapesetTransformations.
      *  \param[in] offDiagonalTrialTransformationsFunctor
-     *    A functor object to be used to evaluate the collection of trial basis
+     *    A functor object to be used to evaluate the collection of trial
      *    function transformations at a single point. The
      *    TrialTransformationsFunctor class must provide the interface defined
-     *    in the documentation of DefaultCollectionOfBasisTransformations.
+     *    in the documentation of DefaultCollectionOfShapesetTransformations.
      *  \param[in] offDiagonalIntegrandFunctor
      *    A functor object to be used to evaluate the integrand of the weak form
      *    at a single pair of points. The IntegrandFunctor class must provide
@@ -205,18 +208,18 @@ public:
 
     virtual const CollectionOfKernels& kernels() const
     { return *m_kernels; }
-    virtual const CollectionOfBasisTransformations& testTransformations() const
+    virtual const CollectionOfShapesetTransformations& testTransformations() const
     { return *m_testTransformations; }
-    virtual const CollectionOfBasisTransformations& trialTransformations() const
+    virtual const CollectionOfShapesetTransformations& trialTransformations() const
     { return *m_trialTransformations; }
     virtual const TestKernelTrialIntegral& integral() const
     { return *m_integral; }
 
     virtual const CollectionOfKernels& offDiagonalKernels() const
     { return *m_offDiagonalKernels; }
-    virtual const CollectionOfBasisTransformations& offDiagonalTestTransformations() const
+    virtual const CollectionOfShapesetTransformations& offDiagonalTestTransformations() const
     { return *m_offDiagonalTestTransformations; }
-    virtual const CollectionOfBasisTransformations& offDiagonalTrialTransformations() const
+    virtual const CollectionOfShapesetTransformations& offDiagonalTrialTransformations() const
     { return *m_offDiagonalTrialTransformations; }
     virtual const TestKernelTrialIntegral& offDiagonalIntegral() const
     { return *m_offDiagonalIntegral; }
@@ -224,12 +227,12 @@ public:
 private:
     /** \cond PRIVATE */
     shared_ptr<CollectionOfKernels> m_kernels;
-    shared_ptr<CollectionOfBasisTransformations> m_testTransformations;
-    shared_ptr<CollectionOfBasisTransformations> m_trialTransformations;
+    shared_ptr<CollectionOfShapesetTransformations> m_testTransformations;
+    shared_ptr<CollectionOfShapesetTransformations> m_trialTransformations;
     shared_ptr<TestKernelTrialIntegral> m_integral;
     shared_ptr<CollectionOfKernels> m_offDiagonalKernels;
-    shared_ptr<CollectionOfBasisTransformations> m_offDiagonalTestTransformations;
-    shared_ptr<CollectionOfBasisTransformations> m_offDiagonalTrialTransformations;
+    shared_ptr<CollectionOfShapesetTransformations> m_offDiagonalTestTransformations;
+    shared_ptr<CollectionOfShapesetTransformations> m_offDiagonalTrialTransformations;
     shared_ptr<TestKernelTrialIntegral> m_offDiagonalIntegral;
     /** \endcond */
 };

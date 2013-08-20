@@ -26,7 +26,7 @@
 #include "basis_data.hpp"
 #include "geometrical_data.hpp"
 #include "collection_of_3d_arrays.hpp"
-#include "basis_transformation_functor_wrappers.hpp"
+#include "shape_transformation_functor_wrappers.hpp"
 
 namespace Fiber
 {
@@ -63,10 +63,10 @@ public:
 // Note: in C++11 we'll be able to make a "template typedef", or more precisely
 // a using declaration, instead of this spurious inheritance
 /** \ingroup functors
- *  \brief Functor calculating the value of a shape function from H(div). */
+ *  \brief Functor calculating the value of a basis function from H(div). */
 template <typename CoordinateType_>
 class HdivFunctionValueFunctor :
-        public ElementaryBasisTransformationFunctorWrapper<
+        public ElementaryShapeTransformationFunctorWrapper<
         HdivFunctionValueElementaryFunctor<CoordinateType_> >
 {
 public:

@@ -95,8 +95,8 @@ ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler
         const shared_ptr<const GeometryFactory>& trialGeometryFactory,
         const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
         const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
-        const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
-        const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+        const shared_ptr<const std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& testShapesets,
+        const shared_ptr<const std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& trialShapesets,
         const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
         const ParallelizationOptions& parallelizationOptions,
         VerbosityLevel::Level verbosityLevel,
@@ -105,7 +105,7 @@ ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler
     return makeAssemblerImpl(quadStrategy,
                              testGeometryFactory, trialGeometryFactory,
                              testRawGeometry, trialRawGeometry,
-                             testBases, trialBases, openClHandler,
+                             testShapesets, trialShapesets, openClHandler,
                              parallelizationOptions,
                              verbosityLevel,
                              cacheSingularIntegrals);
@@ -118,14 +118,14 @@ ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler
         const AssemblyOptions& options) const
 {
     typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
-    typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
+    typedef std::vector<const Fiber::Shapeset<BasisFunctionType>*> ShapesetPtrVector;
 
     const bool verbose = (options.verbosityLevel() >= VerbosityLevel::DEFAULT);
 
     shared_ptr<RawGridGeometry> testRawGeometry, trialRawGeometry;
     shared_ptr<GeometryFactory> testGeometryFactory, trialGeometryFactory;
     shared_ptr<Fiber::OpenClHandler> openClHandler;
-    shared_ptr<BasisPtrVector> testBases, trialBases;
+    shared_ptr<ShapesetPtrVector> testShapesets, trialShapesets;
     bool cacheSingularIntegrals;
 
 
@@ -134,7 +134,7 @@ ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler
        this->collectDataForAssemblerConstruction(options,
                                         testRawGeometry, trialRawGeometry,
                                         testGeometryFactory, trialGeometryFactory,
-                                        testBases, trialBases,
+                                        testShapesets, trialShapesets,
                                         openClHandler, cacheSingularIntegrals);
     if (verbose)
         std::cout << "Data collection finished." << std::endl;
@@ -142,7 +142,7 @@ ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler
     return makeAssemblerImpl(quadStrategy,
                              testGeometryFactory, trialGeometryFactory,
                              testRawGeometry, trialRawGeometry,
-                             testBases, trialBases, openClHandler,
+                             testShapesets, trialShapesets, openClHandler,
                              options.parallelizationOptions(),
                              options.verbosityLevel(),
                              cacheSingularIntegrals);

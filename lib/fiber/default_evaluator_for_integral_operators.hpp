@@ -37,8 +37,8 @@ namespace Fiber
 
 /** \cond FORWARD_DECL */
 struct QuadratureOptions;
-template <typename ValueType> class Basis;
-template <typename CoordinateType> class CollectionOfBasisTransformations;
+template <typename ValueType> class Shapeset;
+template <typename CoordinateType> class CollectionOfShapesetTransformations;
 template <typename ValueType> class CollectionOfKernels;
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class KernelTrialIntegral;
@@ -59,9 +59,9 @@ public:
     DefaultEvaluatorForIntegralOperators(
             const shared_ptr<const GeometryFactory >& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
             const shared_ptr<const CollectionOfKernels<KernelType> >& kernels,
-            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+            const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
             const shared_ptr<const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> >& integral,
             const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
             const shared_ptr<const OpenClHandler>& openClHandler,
@@ -81,16 +81,16 @@ private:
             CollectionOf2dArrays<ResultType>& trialExprValues,
             std::vector<CoordinateType>& weights) const;
 
-    int quadOrder(const Fiber::Basis<BasisFunctionType>& basis, Region region) const;
-    int farFieldQuadOrder(const Fiber::Basis<BasisFunctionType>& basis) const;
-    int nearFieldQuadOrder(const Fiber::Basis<BasisFunctionType>& basis) const;
+    int quadOrder(const Fiber::Shapeset<BasisFunctionType>& shapeset, Region region) const;
+    int farFieldQuadOrder(const Fiber::Shapeset<BasisFunctionType>& shapeset) const;
+    int nearFieldQuadOrder(const Fiber::Shapeset<BasisFunctionType>& shapeset) const;
 
 private:
     const shared_ptr<const GeometryFactory> m_geometryFactory;
     const shared_ptr<const RawGridGeometry<CoordinateType> > m_rawGeometry;
-    const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_trialBases;
+    const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> > m_trialShapesets;
     const shared_ptr<const CollectionOfKernels<KernelType> > m_kernels;
-    const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> > m_trialTransformations;
+    const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> > m_trialTransformations;
     const shared_ptr<const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> > m_integral;
     const shared_ptr<const std::vector<std::vector<ResultType> > > m_argumentLocalCoefficients;
     const shared_ptr<const OpenClHandler> m_openClHandler;

@@ -22,9 +22,9 @@
 
 #include "../common/common.hpp"
 
-#include "basis.hpp"
+#include "shapeset.hpp"
 #include "basis_data.hpp"
-#include "collection_of_basis_transformations.hpp"
+#include "collection_of_shapeset_transformations.hpp"
 #include "conjugate.hpp"
 #include "function.hpp"
 #include "geometrical_data.hpp"
@@ -47,7 +47,7 @@ NumericalTestFunctionIntegrator(
         const std::vector<CoordinateType> quadWeights,
         const GeometryFactory& geometryFactory,
         const RawGridGeometry<CoordinateType>& rawGeometry,
-        const CollectionOfBasisTransformations<CoordinateType>& testTransformations,
+        const CollectionOfShapesetTransformations<CoordinateType>& testTransformations,
         const Function<UserFunctionType>& function,
         const OpenClHandler& openClHandler) :
     m_localQuadPoints(localQuadPoints),
@@ -77,7 +77,7 @@ void NumericalTestFunctionIntegrator<
 BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
 integrate(
         const std::vector<int>& elementIndices,
-        const Basis<BasisFunctionType>& testBasis,
+        const Shapeset<BasisFunctionType>& testShapeset,
         arma::Mat<ResultType>& result) const
 {
     const size_t pointCount = m_localQuadPoints.n_cols;
@@ -90,7 +90,7 @@ integrate(
 
     // Evaluate constants
     const int componentCount = m_testTransformations.resultDimension(0);
-    const int testDofCount = testBasis.size();
+    const int testDofCount = testShapeset.size();
 
     if (m_function.codomainDimension() != componentCount)
         throw std::runtime_error("NumericalTestFunctionIntegrator::integrate(): "
@@ -114,7 +114,7 @@ integrate(
 
     result.set_size(testDofCount, elementCount);
 
-    testBasis.evaluate(testBasisDeps, m_localQuadPoints, ALL_DOFS, testBasisData);
+    testShapeset.evaluate(testBasisDeps, m_localQuadPoints, ALL_DOFS, testBasisData);
 
     // Iterate over the elements
     for (size_t e = 0; e < elementCount; ++e)

@@ -87,11 +87,11 @@ int PiecewiseConstantScalarSpace<BasisFunctionType>::codomainDimension() const
 }
 
 template <typename BasisFunctionType>
-const Fiber::Basis<BasisFunctionType>&
-PiecewiseConstantScalarSpace<BasisFunctionType>::basis(
+const Fiber::Shapeset<BasisFunctionType>&
+PiecewiseConstantScalarSpace<BasisFunctionType>::shapeset(
         const Entity<0>& element) const
 {
-    return m_basis;
+    return m_shapeset;
 }
 
 template <typename BasisFunctionType>

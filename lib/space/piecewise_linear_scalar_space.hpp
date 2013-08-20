@@ -26,7 +26,7 @@
 #include "../grid/grid_view.hpp"
 #include "scalar_space.hpp"
 #include "../common/types.hpp"
-#include "../fiber/piecewise_linear_continuous_scalar_basis.hpp"
+#include "../fiber/linear_scalar_shapeset.hpp"
 
 #include <map>
 #include <memory>
@@ -64,13 +64,14 @@ public:
     virtual void setElementVariant(const Entity<0>& element,
                                    ElementVariant variant);
 
-    virtual const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
+    virtual const Fiber::Shapeset<BasisFunctionType>& shapeset(
+            const Entity<0>& element) const;
 
 private:
     /** \cond PRIVATE */
-    Fiber::PiecewiseLinearContinuousScalarBasis<2, BasisFunctionType> m_lineBasis;
-    Fiber::PiecewiseLinearContinuousScalarBasis<3, BasisFunctionType> m_triangleBasis;
-    Fiber::PiecewiseLinearContinuousScalarBasis<4, BasisFunctionType> m_quadrilateralBasis;
+    Fiber::LinearScalarShapeset<2, BasisFunctionType> m_lineShapeset;
+    Fiber::LinearScalarShapeset<3, BasisFunctionType> m_triangleShapeset;
+    Fiber::LinearScalarShapeset<4, BasisFunctionType> m_quadrilateralShapeset;
     /** \endcond */
 };
 

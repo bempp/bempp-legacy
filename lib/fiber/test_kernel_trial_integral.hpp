@@ -46,7 +46,7 @@ template <typename CoordinateType> class GeometricalData;
  *
  *  defined on a pair of test and trial elements \f$(\Gamma, \Sigma)\f$,
  *  where the integrand \f$f(x, y)\f$ may depend on any number of kernels, test
- *  and trial basis function transformations, and on any geometrical data
+ *  and trial function transformations, and on any geometrical data
  *  related to the points \f$x\f$ and \f$y\f$ (e.g. their global coordinates or
  *  the unit vector normal to \f$\Gamma\f$ and \f$\Sigma\f$ at these points).
  *
@@ -98,7 +98,7 @@ public:
 
         \note It is only necessary to modify \p testGeomDeps and \p
         trialGeomDeps if the geometric quantities occur in the integral
-        <em>outside any kernels or basis function transformations</em>. For
+        <em>outside any kernels or shape function transformations</em>. For
         example, it is not necessary to add \c NORMALS to \p trialGeomDeps just
         because a weak form contains the double-layer-potential boundary
         operator, which requires the normal to the trial element. It is not
@@ -141,18 +141,18 @@ public:
      *    The set of available geometrical data always includes integration
      *    elements.
      *  \param[in] testTransformations
-     *    Collection of 3D arrays containing the values of test basis function
+     *    Collection of 3D arrays containing the values of test function
      *    transformations at quadrature points. The number
      *    <tt>testTransformations[i](j, k, p)</tt> is the <em>j</em>th
      *    component of the vector being the value of the <em>i</em>th
-     *    transformation of the <em>k</em>th test basis function at the
+     *    transformation of the <em>k</em>th test function at the
      *    <em>p</em>th test quadrature point.
      *  \param[in] trialTransformations
-     *    Collection of 3D arrays containing the values of trial basis function
+     *    Collection of 3D arrays containing the values of trial function
      *    transformations at quadrature points. The number
      *    <tt>trialTransformations[i](j, k, p)</tt> is the <em>j</em>th
      *    component of the vector being the value of the <em>i</em>th
-     *    transformation of the <em>k</em>th trial basis function at the
+     *    transformation of the <em>k</em>th trial function at the
      *    <em>p</em>th trial quadrature point.
      *  \param[in] kernels
      *    Collection of 4D arrays containing the values of kernels. The number
@@ -168,8 +168,7 @@ public:
      *  \param[out] result
      *    Two-dimensional array whose (<em>i</em>, <em>j</em>)th element should
      *    contain, on output, the value of the integral involving the
-     *    <em>i</em>th test basis function and <em>j</em>th trial basis
-     *    function.
+     *    <em>i</em>th test function and <em>j</em>th trial function.
      */
     virtual void evaluateWithTensorQuadratureRule(
             const GeometricalData<CoordinateType>& testGeomData,

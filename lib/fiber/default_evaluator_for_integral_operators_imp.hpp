@@ -22,7 +22,6 @@
 
 #include "../common/common.hpp"
 
-#include "basis.hpp"
 #include "basis_data.hpp"
 #include "collection_of_basis_transformations.hpp"
 #include "geometrical_data.hpp"
@@ -35,6 +34,7 @@
 #include "opencl_handler.hpp"
 #include "raw_grid_geometry.hpp"
 #include "serial_blas_region.hpp"
+#include "shapeset.hpp"
 
 #include <tbb/parallel_for.h>
 #include <tbb/task_scheduler_init.h>
@@ -109,16 +109,16 @@ DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
 ResultType, GeometryFactory>::DefaultEvaluatorForIntegralOperators(
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
         const shared_ptr<const CollectionOfKernels<KernelType> >& kernels,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> >& integral,
         const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
         const shared_ptr<const OpenClHandler >& openClHandler,
         const ParallelizationOptions& parallelizationOptions,
         const QuadratureOptions& quadratureOptions) :
     m_geometryFactory(geometryFactory), m_rawGeometry(rawGeometry),
-    m_trialBases(trialBases), m_kernels(kernels),
+    m_trialShapesets(trialShapesets), m_kernels(kernels),
     m_trialTransformations(trialTransformations), m_integral(integral),
     m_argumentLocalCoefficients(argumentLocalCoefficients),
     m_openClHandler(openClHandler),
@@ -133,11 +133,11 @@ ResultType, GeometryFactory>::DefaultEvaluatorForIntegralOperators(
                 "DefaultEvaluatorForIntegralOperators(): "
                 "number of columns of auxData must match that of "
                 "elementCornerIndices");
-    if (trialBases->size() != elementCount)
+    if (trialShapesets->size() != elementCount)
         throw std::invalid_argument(
                 "DefaultEvaluatorForIntegralOperators::"
                 "DefaultEvaluatorForIntegralOperators(): "
-                "size of testBases must match the number of columns of "
+                "size of testShapesetss must match the number of columns of "
                 "elementCornerIndices");
 
     // Cache "trial data" such as the values of the argument at quadrature
@@ -262,10 +262,10 @@ ResultType, GeometryFactory>::calcTrialData(
     typedef typename GeometryFactory::Geometry Geometry;
     std::auto_ptr<Geometry> geometry(m_geometryFactory->make());
 
-    // Find all unique trial bases
+    // Find all unique trial shapesets
     // Set of unique quadrature variants
-    typedef std::set<const Basis<BasisFunctionType>*> BasisSet;
-    BasisSet uniqueTrialBases(m_trialBases->begin(), m_trialBases->end());
+    typedef std::set<const Shapeset<BasisFunctionType>*> ShapesetSet;
+    ShapesetSet uniqueTrialShapesets(m_trialShapesets->begin(), m_trialShapesets->end());
 
     // Initialise temporary (per-element) data containers
     std::vector<GeometricalData<CoordinateType> > geomDataPerElement(elementCount);
@@ -275,16 +275,16 @@ ResultType, GeometryFactory>::calcTrialData(
 
     int quadPointCount = 0; // Quadrature point counter
 
-    for (typename BasisSet::const_iterator it = uniqueTrialBases.begin();
-         it != uniqueTrialBases.end(); ++it)
+    for (typename ShapesetSet::const_iterator it = uniqueTrialShapesets.begin();
+         it != uniqueTrialShapesets.end(); ++it)
     {
-        const Basis<BasisFunctionType>& activeBasis = *(*it);
-        int order = quadOrder(activeBasis, region);
+        const Shapeset<BasisFunctionType>& activeShapeset = *(*it);
+        int order = quadOrder(activeShapeset, region);
 
         // Find out the element type
         int elementCornerCount = 0;
         for (int e = 0; e < elementCount; ++e)
-            if ((*m_trialBases)[e] == &activeBasis)
+            if ((*m_trialShapesets)[e] == &activeShapeset)
             {
                 // elementCornerCount = m_rawGeometry->elementCornerCount(e);
                 // This implementation prevents a segmentation fault on Macs
@@ -308,7 +308,7 @@ ResultType, GeometryFactory>::calcTrialData(
 
         // Get basis data
         BasisData<BasisFunctionType> basisData;
-        activeBasis.evaluate(basisDeps, localQuadPoints, ALL_DOFS, basisData);
+        activeShapeset.evaluate(basisDeps, localQuadPoints, ALL_DOFS, basisData);
 
         BasisData<ResultType> argumentData;
         if (basisDeps & VALUES)
@@ -321,11 +321,11 @@ ResultType, GeometryFactory>::calcTrialData(
                                               1, // just one function
                                               basisData.derivatives.extent(3));
 
-        // Loop over elements and process those that use the active basis
+        // Loop over elements and process those that use the active shapeset
         CollectionOf3dArrays<ResultType> trialValues;
         for (int e = 0; e < elementCount; ++e)
         {
-            if ((*m_trialBases)[e] != &activeBasis)
+            if ((*m_trialShapesets)[e] != &activeShapeset)
                 continue;
 
             // Local coefficients of the argument in the current element
@@ -405,7 +405,7 @@ ResultType, GeometryFactory>::calcTrialData(
 
             quadPointCount += quadWeights.size();
         } // end of loop over elements
-    } // end of loop over unique bases
+    } // end of loop over unique shapesets
 
     // In the following, weightedTrialExprValuesPerElement[e][transf].extent(1) is used
     // repeatedly as the number of quadrature points in e'th element
@@ -486,23 +486,23 @@ template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
 int DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
 ResultType, GeometryFactory>::quadOrder(
-        const Basis<BasisFunctionType>& basis, Region region) const
+        const Shapeset<BasisFunctionType>& shapeset, Region region) const
 {
     if (region == EvaluatorForIntegralOperators<ResultType>::NEAR_FIELD)
-        return nearFieldQuadOrder(basis);
+        return nearFieldQuadOrder(shapeset);
     else
-        return farFieldQuadOrder(basis);
+        return farFieldQuadOrder(shapeset);
 }
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
 int DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
 ResultType, GeometryFactory>::farFieldQuadOrder(
-        const Basis<BasisFunctionType>& basis) const
+        const Shapeset<BasisFunctionType>& shapeset) const
 {
-    int elementOrder = (basis.order());
+    int elementOrder = (shapeset.order());
     // Order required for exact quadrature on affine elements with kernel
-    // approximated by a polynomial of order identical with that of the basis
+    // approximated by a polynomial of order identical with that of the shapeset
     int defaultQuadratureOrder = 2 * elementOrder;
     return m_quadratureOptions.quadratureOrder(defaultQuadratureOrder);
 }
@@ -511,10 +511,10 @@ template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
 int DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
 ResultType, GeometryFactory>::nearFieldQuadOrder(
-        const Basis<BasisFunctionType>& basis) const
+        const Shapeset<BasisFunctionType>& shapeset) const
 {
     // quick and dirty
-    return 2 * farFieldQuadOrder(basis);
+    return 2 * farFieldQuadOrder(shapeset);
 }
 
 } // namespace Fiber

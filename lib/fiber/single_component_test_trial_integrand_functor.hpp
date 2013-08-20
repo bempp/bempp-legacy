@@ -34,8 +34,8 @@ namespace Fiber
 
 /** \ingroup functors
  *  \brief This functor evaluates the integrand having the form of the product of a
- *  single component of a test basis function transformation and a single
- *  component of a trial basis function transformation.
+ *  single component of a test function transformation and a single
+ *  component of a trial function transformation.
  */
 template <typename BasisFunctionType_, typename ResultType_>
 class SingleComponentTestTrialIntegrandFunctor

@@ -28,6 +28,7 @@
 #include "../common/boost_make_shared_fwd.hpp"
 #include "../common/bounding_box_helpers.hpp"
 #include "../fiber/explicit_instantiation.hpp"
+#include "../fiber/lagrange_scalar_shapeset.hpp"
 #include "../grid/entity.hpp"
 #include "../grid/entity_iterator.hpp"
 #include "../grid/geometry.hpp"
@@ -79,25 +80,25 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::initialize()
                                     "2-dimensional grids are supported");
     m_view = this->grid()->leafView();
     if (m_polynomialOrder == 1)
-        m_triangleBasis.reset(new Fiber::LagrangeScalarBasis<3, BasisFunctionType, 1>());
+        m_triangleShapeset.reset(new Fiber::LagrangeScalarShapeset<3, BasisFunctionType, 1>());
     else if (m_polynomialOrder == 2)
-        m_triangleBasis.reset(new Fiber::LagrangeScalarBasis<3, BasisFunctionType, 2>());
+        m_triangleShapeset.reset(new Fiber::LagrangeScalarShapeset<3, BasisFunctionType, 2>());
     else if (m_polynomialOrder == 3)
-        m_triangleBasis.reset(new Fiber::LagrangeScalarBasis<3, BasisFunctionType, 3>());
+        m_triangleShapeset.reset(new Fiber::LagrangeScalarShapeset<3, BasisFunctionType, 3>());
     else if (m_polynomialOrder == 4)
-        m_triangleBasis.reset(new Fiber::LagrangeScalarBasis<3, BasisFunctionType, 4>());
+        m_triangleShapeset.reset(new Fiber::LagrangeScalarShapeset<3, BasisFunctionType, 4>());
     else if (m_polynomialOrder == 5)
-        m_triangleBasis.reset(new Fiber::LagrangeScalarBasis<3, BasisFunctionType, 5>());
+        m_triangleShapeset.reset(new Fiber::LagrangeScalarShapeset<3, BasisFunctionType, 5>());
     else if (m_polynomialOrder == 6)
-        m_triangleBasis.reset(new Fiber::LagrangeScalarBasis<3, BasisFunctionType, 6>());
+        m_triangleShapeset.reset(new Fiber::LagrangeScalarShapeset<3, BasisFunctionType, 6>());
     else if (m_polynomialOrder == 7)
-        m_triangleBasis.reset(new Fiber::LagrangeScalarBasis<3, BasisFunctionType, 7>());
+        m_triangleShapeset.reset(new Fiber::LagrangeScalarShapeset<3, BasisFunctionType, 7>());
     else if (m_polynomialOrder == 8)
-        m_triangleBasis.reset(new Fiber::LagrangeScalarBasis<3, BasisFunctionType, 8>());
+        m_triangleShapeset.reset(new Fiber::LagrangeScalarShapeset<3, BasisFunctionType, 8>());
     else if (m_polynomialOrder == 9)
-        m_triangleBasis.reset(new Fiber::LagrangeScalarBasis<3, BasisFunctionType, 9>());
+        m_triangleShapeset.reset(new Fiber::LagrangeScalarShapeset<3, BasisFunctionType, 9>());
     else if (m_polynomialOrder == 10)
-        m_triangleBasis.reset(new Fiber::LagrangeScalarBasis<3, BasisFunctionType, 10>());
+        m_triangleShapeset.reset(new Fiber::LagrangeScalarShapeset<3, BasisFunctionType, 10>());
     else
         throw std::invalid_argument("PiecewisePolynomialContinuousScalarSpace::"
                                     "PiecewisePolynomialContinuousScalarSpace(): "
@@ -124,13 +125,13 @@ int PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::codomainDimensi
 }
 
 template <typename BasisFunctionType>
-const Fiber::Basis<BasisFunctionType>&
-PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::basis(
+const Fiber::Shapeset<BasisFunctionType>&
+PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::shapeset(
         const Entity<0>& element) const
 {
     if (elementVariant(element) == 3)
-        return *m_triangleBasis;
-    throw std::logic_error("PiecewisePolynomialContinuousScalarSpace::basis(): "
+        return *m_triangleShapeset;
+    throw std::logic_error("PiecewisePolynomialContinuousScalarSpace::shapeset(): "
                            "invalid element variant, this shouldn't happen!");
 }
 

@@ -57,9 +57,9 @@ NonseparableNumericalTestKernelTrialIntegrator(
         const GeometryFactory& trialGeometryFactory,
         const RawGridGeometry<CoordinateType>& testRawGeometry,
         const RawGridGeometry<CoordinateType>& trialRawGeometry,
-        const CollectionOfBasisTransformations<CoordinateType>& testTransformations,
+        const CollectionOfShapesetTransformations<CoordinateType>& testTransformations,
         const CollectionOfKernels<KernelType>& kernels,
-        const CollectionOfBasisTransformations<CoordinateType>& trialTransformations,
+        const CollectionOfShapesetTransformations<CoordinateType>& trialTransformations,
         const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& integral,
         const OpenClHandler& openClHandler) :
     m_localTestQuadPoints(localTestQuadPoints),
@@ -107,16 +107,16 @@ template <typename BasisFunctionType, typename KernelType,
 const BasisData<BasisFunctionType>&
 NonseparableNumericalTestKernelTrialIntegrator<
 BasisFunctionType, KernelType, ResultType, GeometryFactory>::
-basisData(ElementType type, const Basis<BasisFunctionType>& basis) const
+basisData(ElementType type, const Shapeset<BasisFunctionType>& shapeset) const
 {
     BasisDataCache& cache =
             type == TEST ? m_cachedTestBasisData : m_cachedTrialBasisData;
-    const CollectionOfBasisTransformations<CoordinateType>& transformations =
+    const CollectionOfShapesetTransformations<CoordinateType>& transformations =
             type == TEST ? m_testTransformations : m_trialTransformations;
     const arma::Mat<CoordinateType>& localQuadPoints =
             type == TEST ? m_localTestQuadPoints : m_localTrialQuadPoints;
 
-    typename BasisDataCache::iterator it = cache.find(&basis);
+    typename BasisDataCache::iterator it = cache.find(&shapeset);
     if (it == cache.end()) {
         // FIXME: At the beginning of each loop, all threads want to calculate
         // these basis data. It would be good to do singular integral
@@ -128,10 +128,10 @@ basisData(ElementType type, const Basis<BasisFunctionType>& basis) const
                     new BasisData<BasisFunctionType>);
         size_t basisDeps = 0, geomDeps = 0;
         transformations.addDependencies(basisDeps, geomDeps);
-        basis.evaluate(basisDeps, localQuadPoints, ALL_DOFS, *basisData);
+        shapeset.evaluate(basisDeps, localQuadPoints, ALL_DOFS, *basisData);
         // Attempt to insert the newly created integrator into the map
         std::pair<typename BasisDataCache::iterator, bool> result =
-                cache.insert(std::make_pair(&basis, basisData.release()));
+                cache.insert(std::make_pair(&shapeset, basisData.release()));
         it = result.first; // this is the object inserted into the cache
     }
     return *it->second;
@@ -146,8 +146,8 @@ integrate(
         CallVariant callVariant,
         const std::vector<int>& elementIndicesA,
         int elementIndexB,
-        const Basis<BasisFunctionType>& basisA,
-        const Basis<BasisFunctionType>& basisB,
+        const Shapeset<BasisFunctionType>& basisA,
+        const Shapeset<BasisFunctionType>& basisB,
         LocalDofIndex localDofIndexB,
         const std::vector<arma::Mat<ResultType>*>& result) const
 {
@@ -256,8 +256,8 @@ NonseparableNumericalTestKernelTrialIntegrator<
 BasisFunctionType, KernelType, ResultType, GeometryFactory>::
 integrate(
         const std::vector<ElementIndexPair>& elementIndexPairs,
-        const Basis<BasisFunctionType>& testBasis,
-        const Basis<BasisFunctionType>& trialBasis,
+        const Shapeset<BasisFunctionType>& testShapeset,
+        const Shapeset<BasisFunctionType>& trialShapeset,
         const std::vector<arma::Mat<ResultType>*>& result) const
 {
     const int pointCount = m_quadWeights.size();
@@ -273,14 +273,14 @@ integrate(
     // TODO: in the (pathological) case that pointCount == 0 but
     // geometryPairCount != 0, set elements of result to 0.
 
-    const int testDofCount = testBasis.size();
-    const int trialDofCount = trialBasis.size();
+    const int testDofCount = testShapeset.size();
+    const int trialDofCount = trialShapeset.size();
 
     // BasisData<BasisFunctionType> testBasisData, trialBasisData;
     const BasisData<BasisFunctionType>& testBasisData
-            = basisData(TEST, testBasis);
+            = basisData(TEST, testShapeset);
     const BasisData<BasisFunctionType>& trialBasisData
-            = basisData(TRIAL, trialBasis);
+            = basisData(TRIAL, trialShapeset);
     GeometricalData<CoordinateType>& testGeomData = m_testGeomData.local();
     GeometricalData<CoordinateType>& trialGeomData = m_trialGeomData.local();
 
@@ -304,8 +304,8 @@ integrate(
         result[i]->set_size(testDofCount, trialDofCount);
     }
 
-//    testBasis.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS, testBasisData);
-//    trialBasis.evaluate(trialBasisDeps, m_localTrialQuadPoints, ALL_DOFS, trialBasisData);
+//    testShapeset.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS, testBasisData);
+//    trialShapeset.evaluate(trialBasisDeps, m_localTrialQuadPoints, ALL_DOFS, trialBasisData);
 
     // Iterate over the elements
     for (int pairIndex = 0; pairIndex < geometryPairCount; ++pairIndex)

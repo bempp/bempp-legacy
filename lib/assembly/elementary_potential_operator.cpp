@@ -197,14 +197,14 @@ makeEvaluator(
     // Collect the standard set of data necessary for construction of
     // evaluators and assemblers
     typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
-    typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
+    typedef std::vector<const Fiber::Shapeset<BasisFunctionType>*> ShapesetPtrVector;
     typedef std::vector<std::vector<ResultType> > CoefficientsVector;
     typedef LocalAssemblerConstructionHelper Helper;
 
     shared_ptr<RawGridGeometry> rawGeometry;
     shared_ptr<GeometryFactory> geometryFactory;
     shared_ptr<Fiber::OpenClHandler> openClHandler;
-    shared_ptr<BasisPtrVector> bases;
+    shared_ptr<ShapesetPtrVector> shapesets;
 
     const Space<BasisFunctionType>& space = *argument.space();
     shared_ptr<const Grid> grid = space.grid();
@@ -212,7 +212,7 @@ makeEvaluator(
                             rawGeometry, geometryFactory);
     Helper::makeOpenClHandler(options.parallelizationOptions().openClOptions(),
                               rawGeometry, openClHandler);
-    Helper::collectBases(space, bases);
+    Helper::collectShapesets(space, shapesets);
 
     // In addition, get coefficients of argument's expansion in each element
     std::auto_ptr<GridView> view = grid->leafView();
@@ -231,7 +231,7 @@ makeEvaluator(
     // Now create the evaluator
     return quadStrategy.makeEvaluatorForIntegralOperators(
                 geometryFactory, rawGeometry,
-                bases,
+                shapesets,
                 make_shared_from_ref(kernels()),
                 make_shared_from_ref(trialTransformations()),
                 make_shared_from_ref(integral()),
@@ -253,27 +253,27 @@ makeAssembler(
     // Collect the standard set of data necessary for construction of
     // assemblers
     typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
-    typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
+    typedef std::vector<const Fiber::Shapeset<BasisFunctionType>*> ShapesetPtrVector;
     typedef std::vector<std::vector<ResultType> > CoefficientsVector;
     typedef LocalAssemblerConstructionHelper Helper;
 
     shared_ptr<RawGridGeometry> rawGeometry;
     shared_ptr<GeometryFactory> geometryFactory;
     shared_ptr<Fiber::OpenClHandler> openClHandler;
-    shared_ptr<BasisPtrVector> bases;
+    shared_ptr<ShapesetPtrVector> shapesets;
 
     shared_ptr<const Grid> grid = space.grid();
     Helper::collectGridData(*grid,
                             rawGeometry, geometryFactory);
     Helper::makeOpenClHandler(options.parallelizationOptions().openClOptions(),
                               rawGeometry, openClHandler);
-    Helper::collectBases(space, bases);
+    Helper::collectShapesets(space, shapesets);
 
     // Now create the assembler
     return quadStrategy.makeAssemblerForPotentialOperators(
                 evaluationPoints,
                 geometryFactory, rawGeometry,
-                bases,
+                shapesets,
                 make_shared_from_ref(kernels()),
                 make_shared_from_ref(trialTransformations()),
                 make_shared_from_ref(integral()),

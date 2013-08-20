@@ -49,7 +49,7 @@ namespace Fiber
 
 /** \cond FORWARD_DECL */
 class OpenClHandler;
-template <typename CoordinateType> class CollectionOfBasisTransformations;
+template <typename CoordinateType> class CollectionOfShapesetTransformations;
 template <typename ValueType> class CollectionOfKernels;
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class KernelTrialIntegral;
@@ -68,9 +68,9 @@ public:
             const arma::Mat<CoordinateType>& points,
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
             const shared_ptr<const CollectionOfKernels<KernelType> >& kernels,
-            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+            const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
             const shared_ptr<const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> >& integral,
             const ParallelizationOptions& parallelizationOptions,
             VerbosityLevel::Level verbosityLevel,
@@ -126,9 +126,9 @@ private:
     arma::Mat<CoordinateType> m_points;
     shared_ptr<const GeometryFactory> m_geometryFactory;
     shared_ptr<const RawGridGeometry<CoordinateType> > m_rawGeometry;
-    shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_trialBases;
+    shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> > m_trialShapesets;
     shared_ptr<const CollectionOfKernels<KernelType> > m_kernels;
-    shared_ptr<const CollectionOfBasisTransformations<CoordinateType> > m_trialTransformations;
+    shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> > m_trialTransformations;
     shared_ptr<const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> > m_integral;
     ParallelizationOptions m_parallelizationOptions;
     VerbosityLevel::Level m_verbosityLevel;

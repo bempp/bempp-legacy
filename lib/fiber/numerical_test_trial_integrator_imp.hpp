@@ -22,10 +22,10 @@
 
 #include "numerical_test_trial_integrator.hpp" // To keep IDEs happy
 
-#include "basis.hpp"
+#include "shapeset.hpp"
 #include "basis_data.hpp"
 #include "conjugate.hpp"
-#include "collection_of_basis_transformations.hpp"
+#include "collection_of_shapeset_transformations.hpp"
 #include "geometrical_data.hpp"
 #include "opencl_handler.hpp"
 #include "raw_grid_geometry.hpp"
@@ -44,8 +44,8 @@ NumericalTestTrialIntegrator(
         const std::vector<CoordinateType> quadWeights,
         const GeometryFactory& geometryFactory,
         const RawGridGeometry<CoordinateType>& rawGeometry,
-        const CollectionOfBasisTransformations<CoordinateType>& testTransformations,
-        const CollectionOfBasisTransformations<CoordinateType>& trialTransformations,
+        const CollectionOfShapesetTransformations<CoordinateType>& testTransformations,
+        const CollectionOfShapesetTransformations<CoordinateType>& trialTransformations,
         const TestTrialIntegral<BasisFunctionType, ResultType>& integral,
         const OpenClHandler& openClHandler) :
     m_localQuadPoints(localQuadPoints),
@@ -66,8 +66,8 @@ NumericalTestTrialIntegrator(
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 void NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory>::integrate(
         const std::vector<int>& elementIndices,
-        const Basis<BasisFunctionType>& testBasis,
-        const Basis<BasisFunctionType>& trialBasis,
+        const Shapeset<BasisFunctionType>& testShapeset,
+        const Shapeset<BasisFunctionType>& trialShapeset,
         arma::Cube<ResultType>& result) const
 {
     const size_t pointCount = m_localQuadPoints.n_cols;
@@ -80,8 +80,8 @@ void NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory
 
     // Evaluate constants
     const int componentCount = m_testTransformations.resultDimension(0);
-    const int testDofCount = testBasis.size();
-    const int trialDofCount = trialBasis.size();
+    const int testDofCount = testShapeset.size();
+    const int trialDofCount = trialShapeset.size();
 
 //    if (m_trialTransformations.codomainDimension() != componentCount)
 //        throw std::runtime_error("NumericalTestTrialIntegrator::integrate(): "
@@ -105,8 +105,8 @@ void NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory
 
     result.set_size(testDofCount, trialDofCount, elementCount);
 
-    testBasis.evaluate(testBasisDeps, m_localQuadPoints, ALL_DOFS, testBasisData);
-    trialBasis.evaluate(trialBasisDeps, m_localQuadPoints, ALL_DOFS, trialBasisData);
+    testShapeset.evaluate(testBasisDeps, m_localQuadPoints, ALL_DOFS, testBasisData);
+    trialShapeset.evaluate(trialBasisDeps, m_localQuadPoints, ALL_DOFS, trialBasisData);
 
     // Iterate over the elements
     for (size_t e = 0; e < elementCount; ++e)

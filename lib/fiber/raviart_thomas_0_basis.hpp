@@ -21,76 +21,16 @@
 #ifndef fiber_raviart_thomas_0_basis_hpp
 #define fiber_raviart_thomas_0_basis_hpp
 
-#include "../common/common.hpp"
-
-#include "basis.hpp"
-
-#include "basis_data.hpp"
-#include "dune_basis_helper.hpp"
-
-//#include <dune/localfunctions/raviartthomas.hh> ///raviartthomas0q2d.hh>
-#include <dune/localfunctions/raviartthomas/raviartthomas02d/raviartthomas02dlocalbasis.hh>
+#include "raviart_thomas_0_shapeset.hpp"
 
 namespace Fiber
 {
 
-template <int elementVertexCount, typename CoordinateType, typename ValueType>
-struct RaviartThomas0BasisTraits
-{
-};
-
-// Triangle
-template <typename CoordinateType, typename ValueType>
-struct RaviartThomas0BasisTraits<3, CoordinateType, ValueType>
-{
-public:
-    typedef Dune::RT02DLocalBasis<CoordinateType, ValueType> DuneBasis;
-};
-
-// // Quadrilateral
-// template <typename CoordinateType, typename ValueType>
-// struct RaviartThomasOrder0BasisTraits<4, CoordinateType, ValueType>
-// {
-// public:
-//     typedef Dune::Q1LocalBasis<CoordinateType, ValueType, 2> DuneBasis;
-// };
-
+/** \deprecated */
 template <int elementVertexCount, typename ValueType>
-class RaviartThomas0Basis : public Basis<ValueType>
+class RaviartThomas0Basis :
+        public RaviartThomas0Shapeset<elementVertexCount, ValueType>
 {
-public:
-    typedef typename Basis<ValueType>::CoordinateType CoordinateType;
-
-private:
-    typedef typename RaviartThomas0BasisTraits
-    <elementVertexCount, CoordinateType, ValueType>::DuneBasis DuneBasis;
-
-public:
-    virtual int size() const {
-        DuneBasis basis;
-        return basis.size();
-    }
-
-    virtual int order() const {
-        return 1;
-    }
-
-    virtual void evaluate(size_t what,
-                          const arma::Mat<CoordinateType>& points,
-                          LocalDofIndex localDofIndex,
-                          BasisData<ValueType>& data) const {
-        if (localDofIndex != ALL_DOFS &&
-                (localDofIndex < 0 || size() <= localDofIndex))
-            throw std::invalid_argument("RaviartThomas0Basis::"
-                                        "evaluate(): Invalid localDofIndex");
-
-        if (what & VALUES)
-            evaluateBasisFunctionsWithDune<CoordinateType, ValueType, DuneBasis>(
-                        points, localDofIndex, data.values);
-        if (what & DERIVATIVES)
-            evaluateBasisFunctionDerivativesWithDune<CoordinateType, ValueType, DuneBasis>(
-                        points, localDofIndex, data.derivatives);
-    }
 };
 
 } // namespace Fiber

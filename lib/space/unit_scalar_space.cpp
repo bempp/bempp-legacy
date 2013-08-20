@@ -70,11 +70,11 @@ int UnitScalarSpace<BasisFunctionType>::codomainDimension() const
 }
 
 template <typename BasisFunctionType>
-const Fiber::Basis<BasisFunctionType>&
-UnitScalarSpace<BasisFunctionType>::basis(
+const Fiber::Shapeset<BasisFunctionType>&
+UnitScalarSpace<BasisFunctionType>::shapeset(
         const Entity<0>& element) const
 {
-    return m_basis;
+    return m_shapeset;
 }
 
 template <typename BasisFunctionType>

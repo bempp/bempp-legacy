@@ -303,6 +303,15 @@ public:
      */
     MagnitudeType L2Norm() const;
 
+    /** \brief Return the shapeset associated with the given element.
+     *
+     *  \note The results of calling this function on an uninitialized
+     *  GridFunction object are undefined. */
+    const Fiber::Shapeset<BasisFunctionType>& shapeset(const Entity<0>& element) const;
+
+    /** \brief Return the shapeset associated with the given element.
+     *
+     *  \deprecated This function is deprecated. Use shapeset() instead. */
     const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
 
     /** \brief Retrieve the expansion coefficients of this function on a single element.

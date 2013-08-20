@@ -38,14 +38,14 @@ BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
 DefaultLocalAssemblerForGridFunctionsOnSurfaces(
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
         const shared_ptr<const Function<UserFunctionType> >& function,
         const shared_ptr<const OpenClHandler>& openClHandler,
         const QuadratureOptions& quadratureOptions) :
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
-    m_testBases(testBases),
+    m_testShapesets(testShapesets),
     m_testTransformations(testTransformations),
     m_function(function),
     m_openClHandler(openClHandler),
@@ -70,11 +70,11 @@ DefaultLocalAssemblerForGridFunctionsOnSurfaces(
                 "DefaultLocalAssemblerForGridFunctionsOnSurfaces(): "
                 "number of columns of auxData must match that of "
                 "elementCornerIndices");
-    if (testBases->size() != elementCount)
+    if (testShapesets->size() != elementCount)
         throw std::invalid_argument(
                 "DefaultLocalAssemblerForGridFunctionsOnSurfaces::"
                 "DefaultLocalAssemblerForGridFunctionsOnSurfaces(): "
-                "size of testBases must match the number of columns of "
+                "size of testShapesets must match the number of columns of "
                 "elementCornerIndices");
 }
 
@@ -102,13 +102,13 @@ evaluateLocalWeakForms(
         const std::vector<int>& elementIndices,
         std::vector<arma::Col<ResultType> >& result)
 {
-    typedef Fiber::Basis<BasisFunctionType> Basis;
+    typedef Fiber::Shapeset<BasisFunctionType> Shapeset;
 
     const int elementCount = elementIndices.size();
     result.resize(elementCount);
 
     // Find cached matrices; select integrators to calculate non-cached ones
-    typedef std::pair<const Integrator*, const Basis*> QuadVariant;
+    typedef std::pair<const Integrator*, const Shapeset*> QuadVariant;
     std::vector<QuadVariant> quadVariants(elementCount);
 
     for (int testIndex = 0; testIndex < elementCount; ++testIndex)
@@ -117,11 +117,11 @@ evaluateLocalWeakForms(
         const Integrator* integrator =
                 &selectIntegrator(activeTestElementIndex);
         quadVariants[testIndex] =
-                QuadVariant(integrator, (*m_testBases)[activeTestElementIndex]);
+                QuadVariant(integrator, (*m_testShapesets)[activeTestElementIndex]);
     }
 
     // Integration will proceed in batches of element pairs having the same
-    // "quadrature variant", i.e. integrator and test basis
+    // "quadrature variant", i.e. integrator and test shapeset
 
     // Find all the unique quadrature variants present
     typedef std::set<QuadVariant> QuadVariantSet;
@@ -137,7 +137,7 @@ evaluateLocalWeakForms(
     {
         const QuadVariant activeQuadVariant = *it;
         const Integrator& activeIntegrator = *it->first;
-        const Basis& activeTestBasis = *it->second;
+        const Shapeset& activeTestShapeset = *it->second;
 
         // Find all the test elements for which quadrature should proceed
         // according to the current quadrature variant
@@ -149,7 +149,7 @@ evaluateLocalWeakForms(
         // Integrate!
         arma::Mat<ResultType> localResult;
         activeIntegrator.integrate(activeElementIndices,
-                                   activeTestBasis,
+                                   activeTestShapeset,
                                    localResult);
 
         // Distribute the just calculated integrals into the result array
@@ -174,7 +174,7 @@ selectIntegrator(int elementIndex)
     desc.vertexCount = m_rawGeometry->elementCornerCount(elementIndex);
 
     // Determine integrand's order and required quadrature order
-    const int defaultOrder = 2 * (*m_testBases)[elementIndex]->order() + 1;
+    const int defaultOrder = 2 * (*m_testShapesets)[elementIndex]->order() + 1;
     desc.order = m_quadratureOptions.quadratureOrder(defaultOrder);
 
     return getIntegrator(desc);

@@ -83,7 +83,8 @@ public:
     virtual void setElementVariant(const Entity<0>& element,
                                    ElementVariant variant);
 
-    virtual const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
+    virtual const Fiber::Shapeset<BasisFunctionType>& shapeset(
+            const Entity<0>& element) const;
 
     virtual size_t globalDofCount() const;
     virtual size_t flatLocalDofCount() const;

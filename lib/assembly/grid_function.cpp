@@ -131,29 +131,29 @@ shared_ptr<arma::Col<ResultType> > calculateProjections(
     // Prepare local assembler
     typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
     typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
-    typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
+    typedef std::vector<const Fiber::Shapeset<BasisFunctionType>*> ShapesetPtrVector;
     typedef LocalAssemblerConstructionHelper Helper;
 
     shared_ptr<RawGridGeometry> rawGeometry;
     shared_ptr<GeometryFactory> geometryFactory;
     shared_ptr<Fiber::OpenClHandler> openClHandler;
-    shared_ptr<BasisPtrVector> testBases;
+    shared_ptr<ShapesetPtrVector> testShapesets;
 
     Helper::collectGridData(*dualSpace.grid(),
                             rawGeometry, geometryFactory);
     Helper::makeOpenClHandler(options.parallelizationOptions().openClOptions(),
                               rawGeometry, openClHandler);
-    Helper::collectBases(dualSpace, testBases);
+    Helper::collectShapesets(dualSpace, testShapesets);
 
-    // Get reference to the test basis transformation
-    const Fiber::CollectionOfBasisTransformations<CoordinateType>&
-            testTransformations = dualSpace.shapeFunctionValue();
+    // Get reference to the test shapeset transformation
+    const Fiber::CollectionOfShapesetTransformations<CoordinateType>&
+            testTransformations = dualSpace.basisFunctionValue();
 
     typedef Fiber::LocalAssemblerForGridFunctions<ResultType> LocalAssembler;
     std::auto_ptr<LocalAssembler> assembler =
             context.quadStrategy()->makeAssemblerForGridFunctions(
                 geometryFactory, rawGeometry,
-                testBases,
+                testShapesets,
                 make_shared_from_ref(testTransformations),
                 make_shared_from_ref(globalFunction),
                 openClHandler);
@@ -498,6 +498,17 @@ GridFunction<BasisFunctionType, ResultType>::L2Norm() const
 
 // Redundant, in fact -- can be obtained directly from Space
 template <typename BasisFunctionType, typename ResultType>
+const Fiber::Shapeset<BasisFunctionType>&
+GridFunction<BasisFunctionType, ResultType>::shapeset(
+        const Entity<0>& element) const
+{
+    BOOST_ASSERT_MSG(m_space, "GridFunction::shapeset() must not be "
+                     "called on an uninitialized GridFunction object");
+    return m_space->shapeset(element);
+}
+
+// Redundant, in fact -- can be obtained directly from Space
+template <typename BasisFunctionType, typename ResultType>
 const Fiber::Basis<BasisFunctionType>&
 GridFunction<BasisFunctionType, ResultType>::basis(
         const Entity<0>& element) const
@@ -593,11 +604,12 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
                 geometryFactory->make());
     Fiber::GeometricalData<CoordinateType> geomData;
 
-    // For each element, get its basis and corner count (this is sufficient
+    // For each element, get its shapeset and corner count (this is sufficient
     // to identify its geometry) as well as its local coefficients
-    typedef std::pair<const Fiber::Basis<BasisFunctionType>*, int> BasisAndCornerCount;
-    typedef std::vector<BasisAndCornerCount> BasisAndCornerCountVector;
-    BasisAndCornerCountVector basesAndCornerCounts(elementCount);
+    typedef std::pair<const Fiber::Shapeset<BasisFunctionType>*, int>
+            ShapesetAndCornerCount;
+    typedef std::vector<ShapesetAndCornerCount> ShapesetAndCornerCountVector;
+    ShapesetAndCornerCountVector basesAndCornerCounts(elementCount);
     std::vector<std::vector<ResultType> > localCoefficients(elementCount);
     {
         const Mapper& mapper = view->elementMapper();
@@ -605,7 +617,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
         for (size_t e = 0; e < elementCount; ++e) {
             const Entity<0>& element = it->entity();
             const int elementIndex = mapper.entityIndex(element);
-            basesAndCornerCounts[elementIndex] = BasisAndCornerCount(
+            basesAndCornerCounts[elementIndex] = ShapesetAndCornerCount(
                         &m_space->basis(element),
                         rawGeometry.elementCornerCount(elementIndex));
             getLocalCoefficients(element, localCoefficients[elementIndex]);
@@ -613,26 +625,26 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
         }
     }
 
-    typedef std::set<BasisAndCornerCount> BasisAndCornerCountSet;
-    BasisAndCornerCountSet uniqueBasesAndCornerCounts(
+    typedef std::set<ShapesetAndCornerCount> ShapesetAndCornerCountSet;
+    ShapesetAndCornerCountSet uniqueShapesetsAndCornerCounts(
                 basesAndCornerCounts.begin(), basesAndCornerCounts.end());
 
     // Find out which basis data need to be calculated
     size_t basisDeps = 0, geomDeps = Fiber::GLOBALS;
     // Find out which geometrical data need to be calculated, in addition
     // to those needed by the kernel
-    const Fiber::CollectionOfBasisTransformations<CoordinateType>& transformations =
-            m_space->shapeFunctionValue();
+    const Fiber::CollectionOfShapesetTransformations<CoordinateType>& transformations =
+            m_space->basisFunctionValue();
     assert(nComponents == transformations.resultDimension(0));
     transformations.addDependencies(basisDeps, geomDeps);
 
     // Loop over unique combinations of basis and element corner count
-    typedef typename BasisAndCornerCountSet::const_iterator
+    typedef typename ShapesetAndCornerCountSet::const_iterator
             BasisAndCornerCountSetConstIt;
-    for (BasisAndCornerCountSetConstIt it = uniqueBasesAndCornerCounts.begin();
-         it != uniqueBasesAndCornerCounts.end(); ++it) {
-        const BasisAndCornerCount& activeBasisAndCornerCount = *it;
-        const Fiber::Basis<BasisFunctionType>& activeBasis =
+    for (BasisAndCornerCountSetConstIt it = uniqueShapesetsAndCornerCounts.begin();
+         it != uniqueShapesetsAndCornerCounts.end(); ++it) {
+        const ShapesetAndCornerCount& activeBasisAndCornerCount = *it;
+        const Fiber::Shapeset<BasisFunctionType>& activeShapeset =
                 *activeBasisAndCornerCount.first;
         int activeCornerCount = activeBasisAndCornerCount.second;
 
@@ -684,7 +696,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
 
         // Get basis data
         Fiber::BasisData<BasisFunctionType> basisData;
-        activeBasis.evaluate(basisDeps, local, ALL_DOFS, basisData);
+        activeShapeset.evaluate(basisDeps, local, ALL_DOFS, basisData);
 
         Fiber::BasisData<ResultType> functionData;
         if (basisDeps & Fiber::VALUES)
@@ -698,9 +710,9 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
                                               basisData.derivatives.extent(3));
         Fiber::CollectionOf3dArrays<ResultType> functionValues;
 
-        // Loop over elements and process those that use the active basis
+        // Loop over elements and process those that use the active shapeset
         for (size_t e = 0; e < elementCount; ++e) {
-            if (basesAndCornerCounts[e].first != &activeBasis)
+            if (basesAndCornerCounts[e].first != &activeShapeset)
                 continue;
 
             // Local coefficients of the argument in the current element
@@ -763,7 +775,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
                 }
             }
         } // end of loop over elements
-    } // end of loop over unique combinations of basis and corner count
+    } // end of loop over unique combinations of shapeset and corner count
 
     // Take average of the vertex values obtained in each of the adjacent elements
     if (dataType == VtkWriter::VERTEX_DATA)
@@ -785,16 +797,16 @@ void GridFunction<BasisFunctionType, ResultType>::evaluate(
     // Find out which basis data need to be calculated
     size_t basisDeps = 0, geomDeps = 0;
     // Find out which geometrical data need to be calculated,
-    const Fiber::CollectionOfBasisTransformations<CoordinateType>& transformations =
-        m_space->shapeFunctionValue();
+    const Fiber::CollectionOfShapesetTransformations<CoordinateType>& transformations =
+        m_space->basisFunctionValue();
     assert(transformations.transformationCount() == 1);
     assert(nComponents == transformations.resultDimension(0));
     transformations.addDependencies(basisDeps, geomDeps);
 
     // Get basis data
-    const Fiber::Basis<BasisFunctionType>& basis = m_space->basis(element);
+    const Fiber::Shapeset<BasisFunctionType>& shapeset = m_space->shapeset(element);
     Fiber::BasisData<BasisFunctionType> basisData;
-    basis.evaluate(basisDeps, local, ALL_DOFS, basisData);
+    shapeset.evaluate(basisDeps, local, ALL_DOFS, basisData);
     // Get geometrical data
     Fiber::GeometricalData<CoordinateType> geomData;
     element.geometry().getData(geomDeps, local, geomData);
@@ -805,9 +817,9 @@ void GridFunction<BasisFunctionType, ResultType>::evaluate(
     assert(functionValues.size() == 1);
 
     // Get local coefficients
-    std::vector<ResultType> localCoefficients(basis.size());
+    std::vector<ResultType> localCoefficients(shapeset.size());
     getLocalCoefficients(element, localCoefficients);
-    assert(localCoefficients.size() == basis.size());
+    assert(localCoefficients.size() == shapeset.size());
 
     // Calculate grid function values
     values.set_size(functionValues[0].extent(0), local.n_cols);
@@ -1028,7 +1040,7 @@ void exportToGmsh(
             throw std::runtime_error(
                 "GridFunction::exportToGmsh(): "
                 "at present only triangular elements are supported");
-        int order = space->basis(element).order();
+        int order = space->shapeset(element).order();
         if (order >= localCoordsOnTriangles.size())
             throw std::runtime_error(
                 "GridFunction::exportToGmsh(): "

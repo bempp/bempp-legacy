@@ -55,7 +55,7 @@ struct RaviartThomas0VectorSpace<BasisFunctionType>::Impl
     Impl() : transformations(TransformationFunctor())
     {}
 
-    Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
+    Fiber::DefaultCollectionOfShapesetTransformations<TransformationFunctor>
     transformations;
 };
 /** \endcond */
@@ -129,8 +129,8 @@ RaviartThomas0VectorSpace<BasisFunctionType>::isDiscontinuous() const
 
 template <typename BasisFunctionType>
 const typename RaviartThomas0VectorSpace<BasisFunctionType>::
-CollectionOfBasisTransformations&
-RaviartThomas0VectorSpace<BasisFunctionType>::shapeFunctionValue() const
+CollectionOfShapesetTransformations&
+RaviartThomas0VectorSpace<BasisFunctionType>::basisFunctionValue() const
 {
     return m_impl->transformations;
 }
@@ -148,19 +148,19 @@ int RaviartThomas0VectorSpace<BasisFunctionType>::codomainDimension() const
 }
 
 template <typename BasisFunctionType>
-const Fiber::Basis<BasisFunctionType>&
-RaviartThomas0VectorSpace<BasisFunctionType>::basis(
+const Fiber::Shapeset<BasisFunctionType>&
+RaviartThomas0VectorSpace<BasisFunctionType>::shapeset(
         const Entity<0>& element) const
 {
     switch (elementVariant(element))
     {
     case 3:
-        return m_triangleBasis;
+        return m_triangleShapeset;
     case 4:
-        throw std::logic_error("RaviartThomas0VectorSpace::basis(): "
+        throw std::logic_error("RaviartThomas0VectorSpace::shapeset(): "
                                "quadrilateral elements are not supported yet");
     default:
-        throw std::logic_error("RaviartThomas0VectorSpace::basis(): "
+        throw std::logic_error("RaviartThomas0VectorSpace::shapeset(): "
                                "invalid element variant, this shouldn't happen!");
     }
 }

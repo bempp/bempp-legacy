@@ -202,21 +202,33 @@ void Space<BasisFunctionType>::global2localDofs(
 }
 
 template <typename BasisFunctionType>
-void getAllBases(const Space<BasisFunctionType>& space,
-        std::vector<const Fiber::Basis<BasisFunctionType>*>& bases)
+void getAllShapesets(const Space<BasisFunctionType>& space,
+        std::vector<const Fiber::Shapeset<BasisFunctionType>*>& shapesets)
 {
     std::auto_ptr<GridView> view = space.grid()->leafView();
     const Mapper& mapper = view->elementMapper();
     const int elementCount = view->entityCount(0);
 
-    bases.resize(elementCount);
+    shapesets.resize(elementCount);
 
     std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
-        bases[mapper.entityIndex(e)] = &space.basis(e);
+        shapesets[mapper.entityIndex(e)] = &space.shapeset(e);
         it->next();
     }
+}
+
+template <typename BasisFunctionType>
+void getAllBases(const Space<BasisFunctionType>& space,
+        std::vector<const Fiber::Basis<BasisFunctionType>*>& bases)
+{
+    std::vector<const Fiber::Shapeset<BasisFunctionType>*> shapesets;
+    getAllShapesets(space, shapesets);
+    bases.resize(shapesets.size());
+    for (size_t i = 0; i < bases.size(); ++i)
+        bases[i] = dynamic_cast<const Fiber::Basis<BasisFunctionType>*>(
+                    shapesets[i]);
 }
 
 template <typename BasisFunctionType>
@@ -281,7 +293,10 @@ BEMPP_GCC_DIAG_ON(deprecated-declarations);
 #define INSTANTIATE_FUNCTIONS_DEPENDENT_ON_BASIS(BASIS) \
     template \
     void getAllBases(const Space<BASIS>& space, \
-                     std::vector<const Fiber::Basis<BASIS>*>& bases);   \
+                     std::vector<const Fiber::Basis<BASIS>*>& bases); \
+    template \
+    void getAllShapesets(const Space<BASIS>& space, \
+                         std::vector<const Fiber::Shapeset<BASIS>*>& bases); \
     template \
     int maximumBasisOrder(const Space<BASIS>& space)
 

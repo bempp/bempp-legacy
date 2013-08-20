@@ -26,7 +26,7 @@
 #include "basis_data.hpp"
 #include "geometrical_data.hpp"
 #include "collection_of_3d_arrays.hpp"
-#include "basis_transformation_functor_wrappers.hpp"
+#include "shape_transformation_functor_wrappers.hpp"
 
 #include <boost/array.hpp>
 
@@ -55,7 +55,7 @@ public:
         assert(basisData.componentCount() == 1);
         assert(geomData.dimWorld() == 3);
 
-        // result := gradient of the basis function extended outside
+        // result := gradient of the shape function extended outside
         // the surface so that its normal derivative on the surf. is zero
         result(0) = basisData.derivatives(0, 0) * geomData.jacobianInverseTransposed(0, 0) +
                 basisData.derivatives(0, 1) * geomData.jacobianInverseTransposed(0, 1);
@@ -72,7 +72,7 @@ public:
  *  \brief Functor calculating the surface gradient of a scalar field in 3D. */
 template <typename CoordinateType_>
 class SurfaceGrad3dFunctor :
-        public ElementaryBasisTransformationFunctorWrapper<
+        public ElementaryShapeTransformationFunctorWrapper<
         SurfaceGrad3dElementaryFunctor<CoordinateType_> >
 {
 public:

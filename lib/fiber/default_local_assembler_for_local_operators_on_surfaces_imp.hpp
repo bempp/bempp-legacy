@@ -34,23 +34,23 @@ DefaultLocalAssemblerForLocalOperatorsOnSurfaces<BasisFunctionType, ResultType, 
 DefaultLocalAssemblerForLocalOperatorsOnSurfaces(
     const shared_ptr<const GeometryFactory>& geometryFactory,
     const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-    const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-    const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-    const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
-    const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+    const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
+    const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
+    const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
+    const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
     const shared_ptr<const TestTrialIntegral<BasisFunctionType, ResultType> >& integral,
     const shared_ptr<const OpenClHandler>& openClHandler) :
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
-    m_testBases(testBases),
-    m_trialBases(trialBases),
+    m_testShapesets(testShapesets),
+    m_trialShapesets(trialShapesets),
     m_testTransformations(testTransformations),
     m_trialTransformations(trialTransformations),
     m_integral(integral),
     m_openClHandler(openClHandler)
 {
-    Utilities::checkConsistencyOfGeometryAndBases(*rawGeometry, *testBases);
-    Utilities::checkConsistencyOfGeometryAndBases(*rawGeometry, *trialBases);
+    Utilities::checkConsistencyOfGeometryAndShapesets(*rawGeometry, *testShapesets);
+    Utilities::checkConsistencyOfGeometryAndShapesets(*rawGeometry, *trialShapesets);
 }
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
@@ -94,23 +94,23 @@ evaluateLocalWeakForms(
 {
     // The only overload likely to be needed for identity operators
     typedef TestTrialIntegrator<BasisFunctionType, ResultType> Integrator;
-    typedef Basis<BasisFunctionType> Basis;
+    typedef Shapeset<BasisFunctionType> Shapeset;
 
     const int elementCount = elementIndices.size();
     result.resize(elementCount);
 
     // Select integrator for each element
-    typedef boost::tuples::tuple<const Integrator*, const Basis*, const Basis*>
+    typedef boost::tuples::tuple<const Integrator*, const Shapeset*, const Shapeset*>
     QuadVariant;
     std::vector<QuadVariant> quadVariants(elementCount);
     for (int i = 0; i < elementCount; ++i) {
         const Integrator* integrator = &selectIntegrator(elementIndices[i]);
-        quadVariants[i] = QuadVariant(integrator, (*m_testBases)[elementIndices[i]],
-                                      (*m_trialBases)[elementIndices[i]]);
+        quadVariants[i] = QuadVariant(integrator, (*m_testShapesets)[elementIndices[i]],
+                                      (*m_trialShapesets)[elementIndices[i]]);
     }
 
     // Integration will proceed in batches of test elements having the same
-    // "quadrature variant", i.e. integrator and bases
+    // "quadrature variant", i.e. integrator and shapesets
 
     // Find all the unique quadrature variants present
     typedef std::set<QuadVariant> QuadVariantSet;
@@ -125,8 +125,8 @@ evaluateLocalWeakForms(
             it != uniqueQuadVariants.end(); ++it) {
         const QuadVariant activeQuadVariant = *it;
         const Integrator& activeIntegrator = *it->template get<0>();
-        const Basis& activeTestBasis  = *it->template get<1>();
-        const Basis& activeTrialBasis = *it->template get<2>();
+        const Shapeset& activeTestShapeset  = *it->template get<1>();
+        const Shapeset& activeTrialShapeset = *it->template get<2>();
 
         // Find all the test elements for which quadrature should proceed
         // according to the current quadrature variant
@@ -138,7 +138,7 @@ evaluateLocalWeakForms(
         // Integrate!
         arma::Cube<ResultType> localResult;
         activeIntegrator.integrate(activeElementIndices,
-                                   activeTestBasis, activeTrialBasis,
+                                   activeTestShapeset, activeTrialShapeset,
                                    localResult);
 
         // Distribute the just calculated integrals into the result array
@@ -173,8 +173,8 @@ selectIntegrator(int elementIndex)
 
     // Determine integrand's order and required quadrature order
     const int expressionOrder =
-        (*m_testBases)[elementIndex]->order() +
-        (*m_trialBases)[elementIndex]->order();
+        (*m_testShapesets)[elementIndex]->order() +
+        (*m_trialShapesets)[elementIndex]->order();
     desc.order = expressionOrder;
 
     return getIntegrator(desc);

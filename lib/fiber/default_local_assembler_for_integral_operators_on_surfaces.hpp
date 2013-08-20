@@ -50,7 +50,7 @@ namespace Fiber
 
 /** \cond FORWARD_DECL */
 class OpenClHandler;
-template <typename CoordinateType> class CollectionOfBasisTransformations;
+template <typename CoordinateType> class CollectionOfShapesetTransformations;
 template <typename ValueType> class CollectionOfKernels;
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class TestKernelTrialIntegral;
@@ -70,11 +70,11 @@ public:
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
-            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+            const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
+            const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
+            const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
             const shared_ptr<const CollectionOfKernels<KernelType> >& kernel,
-            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+            const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
             const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> >& integral,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions,
@@ -177,11 +177,11 @@ private:
     shared_ptr<const GeometryFactory> m_trialGeometryFactory;
     shared_ptr<const RawGridGeometry<CoordinateType> > m_testRawGeometry;
     shared_ptr<const RawGridGeometry<CoordinateType> > m_trialRawGeometry;
-    shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_testBases;
-    shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_trialBases;
-    shared_ptr<const CollectionOfBasisTransformations<CoordinateType> > m_testTransformations;
+    shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> > m_testShapesets;
+    shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> > m_trialShapesets;
+    shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> > m_testTransformations;
     shared_ptr<const CollectionOfKernels<KernelType> > m_kernels;
-    shared_ptr<const CollectionOfBasisTransformations<CoordinateType> > m_trialTransformations;
+    shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> > m_trialTransformations;
     shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> > m_integral;
     shared_ptr<const OpenClHandler> m_openClHandler;
     ParallelizationOptions m_parallelizationOptions;

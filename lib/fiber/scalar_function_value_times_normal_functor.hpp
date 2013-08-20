@@ -26,7 +26,7 @@
 #include "basis_data.hpp"
 #include "geometrical_data.hpp"
 #include "collection_of_3d_arrays.hpp"
-#include "basis_transformation_functor_wrappers.hpp"
+#include "shape_transformation_functor_wrappers.hpp"
 
 namespace Fiber
 {
@@ -60,11 +60,11 @@ public:
 // Note: in C++11 we'll be able to make a "template typedef", or more precisely
 // a using declaration, instead of this spurious inheritance
 /** \ingroup functors
- *  \brief Functor calculating the value of a scalar shape function multiplied
+ *  \brief Functor calculating the value of a scalar basis function multiplied
  *  by the unit vector normal to the surface. */
 template <typename CoordinateType_>
 class ScalarFunctionValueTimesNormalFunctor :
-        public ElementaryBasisTransformationFunctorWrapper<
+        public ElementaryShapeTransformationFunctorWrapper<
         ScalarFunctionValueTimesNormalElementaryFunctor<CoordinateType_> >
 {
 public:

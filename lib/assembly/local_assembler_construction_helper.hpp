@@ -61,12 +61,12 @@ struct LocalAssemblerConstructionHelper
     }
 
     template <typename BasisFunctionType>
-    static void collectBases(
+    static void collectShapesets(
             const Space<BasisFunctionType>& space,
-            shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType>*> >& bases) {
-        typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
-        bases = boost::make_shared<BasisPtrVector>();
-        getAllBases(space, *bases);
+            shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& shapesets) {
+        typedef std::vector<const Fiber::Shapeset<BasisFunctionType>*> ShapesetPtrVector;
+        shapesets = boost::make_shared<ShapesetPtrVector>();
+        getAllShapesets(space, *shapesets);
     }
 
     // Probably in future will be generalised to arbitrary number of grids

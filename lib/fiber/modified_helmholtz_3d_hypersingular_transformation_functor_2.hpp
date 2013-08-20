@@ -23,23 +23,23 @@
 
 #include "../common/common.hpp"
 
-#include "basis_transformation_functor_wrappers.hpp"
+#include "shape_transformation_functor_wrappers.hpp"
 #include "scalar_function_value_times_normal_functor.hpp"
 #include "surface_curl_3d_functor.hpp"
 
 namespace Fiber
 {
 
-/** \brief Functor calculating basis-function transformations necessary for
+/** \brief Functor calculating shape-function transformations necessary for
  *  the implementation of the hypersingular operator for the modified Helmholtz
  *  equation in 3D.
  *
  *  Two following quantities are calculated:
- *  * shape-function surface curl.
- *  * shape-function value times surface normal */
+ *  * basis-function surface curl
+ *  * basis-function value times surface normal. */
 template <typename CoordinateType_>
 class ModifiedHelmholtz3dHypersingularTransformationFunctor2 :
-        public ElementaryBasisTransformationFunctorPairWrapper<
+        public ElementaryShapeTransformationFunctorPairWrapper<
         SurfaceCurl3dElementaryFunctor<CoordinateType_>,
         ScalarFunctionValueTimesNormalElementaryFunctor<CoordinateType_> >
 {

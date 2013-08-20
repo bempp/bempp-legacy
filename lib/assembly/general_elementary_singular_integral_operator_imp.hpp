@@ -51,10 +51,10 @@ GeneralElementarySingularIntegralOperator(
     m_kernels(
         new Fiber::DefaultCollectionOfKernels<KernelFunctor>(kernelFunctor)),
     m_testTransformations(
-        new Fiber::DefaultCollectionOfBasisTransformations<TestTransformationsFunctor>(
+        new Fiber::DefaultCollectionOfShapesetTransformations<TestTransformationsFunctor>(
             testTransformationsFunctor)),
     m_trialTransformations(
-        new Fiber::DefaultCollectionOfBasisTransformations<TrialTransformationsFunctor>(
+        new Fiber::DefaultCollectionOfShapesetTransformations<TrialTransformationsFunctor>(
             trialTransformationsFunctor)),
     m_integral(
         new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
@@ -83,10 +83,10 @@ GeneralElementarySingularIntegralOperator(
     m_kernels(
         new Fiber::DefaultCollectionOfKernels<KernelFunctor>(kernelFunctor)),
     m_testTransformations(
-        new Fiber::DefaultCollectionOfBasisTransformations<TestTransformationsFunctor>(
+        new Fiber::DefaultCollectionOfShapesetTransformations<TestTransformationsFunctor>(
             testTransformationsFunctor)),
     m_trialTransformations(
-        new Fiber::DefaultCollectionOfBasisTransformations<TrialTransformationsFunctor>(
+        new Fiber::DefaultCollectionOfShapesetTransformations<TrialTransformationsFunctor>(
             trialTransformationsFunctor)),
     m_integral(integral)
 {
@@ -102,9 +102,9 @@ GeneralElementarySingularIntegralOperator(
         const std::string& label,
         int symmetry,
         const shared_ptr<Fiber::CollectionOfKernels<KernelType_> >& kernels,
-        const shared_ptr<Fiber::CollectionOfBasisTransformations<CoordinateType> >&
+        const shared_ptr<Fiber::CollectionOfShapesetTransformations<CoordinateType> >&
         testTransformations,
-        const shared_ptr<Fiber::CollectionOfBasisTransformations<CoordinateType> >&
+        const shared_ptr<Fiber::CollectionOfShapesetTransformations<CoordinateType> >&
         trialTransformations,
         const shared_ptr<Fiber::TestKernelTrialIntegral<
         BasisFunctionType_, KernelType_, ResultType_> >& integral) :

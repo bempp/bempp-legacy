@@ -87,8 +87,8 @@ int PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::codomain
 }
 
 template <typename BasisFunctionType>
-const Fiber::Basis<BasisFunctionType>&
-PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::basis(
+const Fiber::Shapeset<BasisFunctionType>&
+PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::shapeset(
         const Entity<0>& element) const
 {
     return m_basis;

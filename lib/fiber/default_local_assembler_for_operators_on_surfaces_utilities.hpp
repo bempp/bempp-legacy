@@ -31,7 +31,7 @@
 namespace Fiber
 {
 
-template <typename BasisFunctionType> class Basis;
+template <typename BasisFunctionType> class Shapeset;
 template <typename CoordinateType> class RawGridGeometry;
 
 // These are internal routines used by the
@@ -43,9 +43,9 @@ struct DefaultLocalAssemblerForOperatorsOnSurfacesUtilities
 {
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
-    static void checkConsistencyOfGeometryAndBases(
+    static void checkConsistencyOfGeometryAndShapesets(
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Basis<BasisFunctionType>*>& bases);
+            const std::vector<const Shapeset<BasisFunctionType>*>& shapesets);
 
     static void precalculateElementSizesAndCentersForSingleGrid(
             const RawGridGeometry<CoordinateType>& rawGeometry,

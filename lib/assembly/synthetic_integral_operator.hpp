@@ -55,7 +55,7 @@ namespace Bempp
  *  \f]
  *
  *  where \f$f_{\alpha m}(x)\f$ and \f$g_{\alpha n}(y)\f$ are scalar-valued
- *  transformations of test and trial basis functions (e.g. shape functions,
+ *  transformations of test and trial shape functions (e.g. basis functions,
  *  individual components of their surface curls etc.) and \f$K_\alpha(x, y)\f$
  *  kernel functions. Let \f$\mathcal U\f$ and \f$\mathcal V\f$ be two
  *  boundary-element spaces spanned by basis functions \f$u_m : \Gamma \to

@@ -59,10 +59,10 @@ GeneralHypersingularIntegralOperator(
     m_kernels(
         new Fiber::DefaultCollectionOfKernels<KernelFunctor>(kernelFunctor)),
     m_testTransformations(
-        new Fiber::DefaultCollectionOfBasisTransformations<TestTransformationsFunctor>(
+        new Fiber::DefaultCollectionOfShapesetTransformations<TestTransformationsFunctor>(
             testTransformationsFunctor)),
     m_trialTransformations(
-        new Fiber::DefaultCollectionOfBasisTransformations<TrialTransformationsFunctor>(
+        new Fiber::DefaultCollectionOfShapesetTransformations<TrialTransformationsFunctor>(
             trialTransformationsFunctor)),
     m_integral(
         new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
@@ -71,10 +71,10 @@ GeneralHypersingularIntegralOperator(
         new Fiber::DefaultCollectionOfKernels<OffDiagonalKernelFunctor>(
             offDiagonalKernelFunctor)),
     m_offDiagonalTestTransformations(
-        new Fiber::DefaultCollectionOfBasisTransformations<OffDiagonalTestTransformationsFunctor>(
+        new Fiber::DefaultCollectionOfShapesetTransformations<OffDiagonalTestTransformationsFunctor>(
             offDiagonalTestTransformationsFunctor)),
     m_offDiagonalTrialTransformations(
-        new Fiber::DefaultCollectionOfBasisTransformations<OffDiagonalTrialTransformationsFunctor>(
+        new Fiber::DefaultCollectionOfShapesetTransformations<OffDiagonalTrialTransformationsFunctor>(
             offDiagonalTrialTransformationsFunctor)),
     m_offDiagonalIntegral(
         new Fiber::DefaultTestKernelTrialIntegral<OffDiagonalIntegrandFunctor>(
@@ -111,20 +111,20 @@ GeneralHypersingularIntegralOperator(
     m_kernels(
         new Fiber::DefaultCollectionOfKernels<KernelFunctor>(kernelFunctor)),
     m_testTransformations(
-        new Fiber::DefaultCollectionOfBasisTransformations<TestTransformationsFunctor>(
+        new Fiber::DefaultCollectionOfShapesetTransformations<TestTransformationsFunctor>(
             testTransformationsFunctor)),
     m_trialTransformations(
-        new Fiber::DefaultCollectionOfBasisTransformations<TrialTransformationsFunctor>(
+        new Fiber::DefaultCollectionOfShapesetTransformations<TrialTransformationsFunctor>(
             trialTransformationsFunctor)),
     m_integral(integral),
     m_offDiagonalKernels(
         new Fiber::DefaultCollectionOfKernels<OffDiagonalKernelFunctor>(
             offDiagonalKernelFunctor)),
     m_offDiagonalTestTransformations(
-        new Fiber::DefaultCollectionOfBasisTransformations<OffDiagonalTestTransformationsFunctor>(
+        new Fiber::DefaultCollectionOfShapesetTransformations<OffDiagonalTestTransformationsFunctor>(
             offDiagonalTestTransformationsFunctor)),
     m_offDiagonalTrialTransformations(
-        new Fiber::DefaultCollectionOfBasisTransformations<OffDiagonalTrialTransformationsFunctor>(
+        new Fiber::DefaultCollectionOfShapesetTransformations<OffDiagonalTrialTransformationsFunctor>(
             offDiagonalTrialTransformationsFunctor)),
     m_offDiagonalIntegral(offDiagonalIntegral)
 {

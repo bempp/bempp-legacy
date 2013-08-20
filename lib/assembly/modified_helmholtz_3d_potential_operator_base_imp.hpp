@@ -87,7 +87,7 @@ kernels() const
 
 template <typename Impl, typename BasisFunctionType>
 const typename ModifiedHelmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-CollectionOfBasisTransformations&
+CollectionOfShapesetTransformations&
 ModifiedHelmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
 trialTransformations() const
 {

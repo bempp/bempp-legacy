@@ -365,18 +365,18 @@ assembleJointOperatorWeakFormInAcaMode(
 
         // Collect data used in the construction of all assemblers
         typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
-        typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
+        typedef std::vector<const Fiber::Shapeset<BasisFunctionType>*> ShapesetPtrVector;
 
         shared_ptr<RawGridGeometry> testRawGeometry, trialRawGeometry;
         shared_ptr<GeometryFactory> testGeometryFactory, trialGeometryFactory;
-        shared_ptr<BasisPtrVector> testBases, trialBases;
+        shared_ptr<ShapesetPtrVector> testShapesets, trialShapesets;
 
         if (verbose)
             std::cout << "Collecting data for assembler construction..." << std::endl;
         this->collectOptionsIndependentDataForAssemblerConstruction(
                     testRawGeometry, trialRawGeometry,
                     testGeometryFactory, trialGeometryFactory,
-                    testBases, trialBases);
+                    testShapesets, trialShapesets);
         if (verbose)
             std::cout << "Data collection finished." << std::endl;
 
@@ -406,7 +406,7 @@ assembleJointOperatorWeakFormInAcaMode(
                         *nonlocalOps[i].context()->quadStrategy(),
                         testGeometryFactory, trialGeometryFactory,
                         testRawGeometry, trialRawGeometry,
-                        testBases, trialBases,
+                        testShapesets, trialShapesets,
                         openClHandler,
                         options.parallelizationOptions(),
                         options.verbosityLevel(),

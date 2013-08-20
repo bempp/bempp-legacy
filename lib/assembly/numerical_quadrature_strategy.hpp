@@ -79,13 +79,13 @@ public:
      *      and \f$w_i^m\f$ and \f$w_j^n\f$ are the corresponding quadrature
      *      weights. By default, these are chosen so that the order of accuracy
      *      of the quadrature of each element is equal to the maximum degree of
-     *      the polynomials belonging to the basis attached to that element. In
+     *      the polynomials belonging to the shapeset attached to that element. In
      *      other words, the quadrature rule is chosen so that a function
      *      \f$f(x, y)\f$ being a product of two polynomials, \f$u(x)\f$ and
-     *      \f$v(y)\f$, with degrees equal to the orders of the bases attached
+     *      \f$v(y)\f$, with degrees equal to the orders of the shapesets attached
      *      to elements \f$\Gamma\f$ and \f$\Sigma\f$ would be integrated
      *      exactly. For instance, for a pair of elements endowed with linear
-     *      bases, single-point quadrature is by default used on both elements.
+     *      shapesets, single-point quadrature is by default used on both elements.
      *
      *      This default integration order is often insufficient. It can be
      *      increased by calling one of the overloads of the
@@ -104,7 +104,7 @@ public:
      *      and Schwab cited before, and then approximating the new integral
      *      with a tensor-product Gaussian quadrature rule with order of
      *      accuracy in each dimension choosen by default as \f$\max(p, q) +
-     *      5\f$, where \f$p\f$ and \f$q\f$ are the orders of the bases
+     *      5\f$, where \f$p\f$ and \f$q\f$ are the orders of the shapesets
      *      attached to elements \f$\Gamma\f$ and \f$\Sigma\f$. The order of
      *      accuracy can be customized by calling the
      *      AccuracyOptionsEx::setDoubleSingular() function.
@@ -113,7 +113,7 @@ public:
      *          \f[ \int_{\Gamma} f(x) \, d\Gamma(x) \f]
      *      of regular functions \f$f(x)\f$.</b> They are evaluated using a
      *      Gaussian quadrature rule with order of accuracy taken by default as
-     *      twice the order of the basis attached to the element \f$\Gamma\f$.
+     *      twice the order of the shapeset attached to the element \f$\Gamma\f$.
      *      This order of accuracy can be customized by calling the
      *      AccuracyOptionsEx::setSingleRegular() function.
      *    </ol>

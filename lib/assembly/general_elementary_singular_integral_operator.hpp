@@ -33,9 +33,9 @@ namespace Bempp
  *  ElementarySingularIntegralOperator that is sufficient for most purposes. The
  *  constructor takes four functor objects representing the four elements of the
  *  operator's weak form (collection of kernels, collections of test and trial
- *  basis function transformations, and the weak form integrand). These functors
+ *  function transformations, and the weak form integrand). These functors
  *  are used to construct instances of appropriate instantiations of
- *  DefaultCollectionOfKernels, DefaultCollectionOfBasisTransformations and
+ *  DefaultCollectionOfKernels, DefaultCollectionOfShapesetTransformations and
  *  DefaultTestKernelTrialIntegral. These objects are stored as private member
  *  variables and are returned by the implementations of the virtual methods
  *  kernels(), testTransformations(), trialTransformations() and integral().
@@ -72,6 +72,9 @@ public:
     typedef typename Base::ResultType ResultType;
     /** \copydoc ElementaryIntegralOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
+    /** \copydoc ElementaryIntegralOperator::CollectionOfShapesetTransformations */
+    typedef typename Base::CollectionOfShapesetTransformations
+    CollectionOfShapesetTransformations;
     /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
     typedef typename Base::CollectionOfBasisTransformations
     CollectionOfBasisTransformations;
@@ -100,15 +103,15 @@ public:
      *    must provide the interface defined in the documentation of
      *    DefaultCollectionOfKernels.
      *  \param[in] testTransformationsFunctor
-     *    A functor object to be used to evaluate the collection of test basis
+     *    A functor object to be used to evaluate the collection of test
      *    function transformations at a single point. The
      *    TestTransformationsFunctor class must provide the interface defined in
-     *    the documentation of DefaultCollectionOfBasisTransformations.
+     *    the documentation of DefaultCollectionOfShapesetTransformations.
      *  \param[in] trialTransformationsFunctor
-     *    A functor object to be used to evaluate the collection of trial basis
+     *    A functor object to be used to evaluate the collection of trial
      *    function transformations at a single point. The
      *    TrialTransformationsFunctor class must provide the interface defined
-     *    in the documentation of DefaultCollectionOfBasisTransformations.
+     *    in the documentation of DefaultCollectionOfShapesetTransformations.
      *  \param[in] integrandFunctor
      *    A functor object to be used to evaluate the integrand of the weak form
      *    at a single pair of points. The IntegrandFunctor class must provide
@@ -165,7 +168,7 @@ public:
      *  This constructor takes the same first five arguments as the preceding
      *  ones, but the last four arguments should be shared pointers to
      *  instances of Fiber::CollectionOfKernels,
-     *  Fiber::CollectionOfBasisTransformations and
+     *  Fiber::CollectionOfShapesetTransformations and
      *  Fiber::TestKernelTrialIntegral.
      */
     GeneralElementarySingularIntegralOperator(
@@ -175,18 +178,18 @@ public:
         const std::string& label,
         int symmetry,
         const shared_ptr<Fiber::CollectionOfKernels<KernelType_> >& kernels,
-        const shared_ptr<Fiber::CollectionOfBasisTransformations<CoordinateType> >&
+        const shared_ptr<Fiber::CollectionOfShapesetTransformations<CoordinateType> >&
         testTransformations,
-        const shared_ptr<Fiber::CollectionOfBasisTransformations<CoordinateType> >&
+        const shared_ptr<Fiber::CollectionOfShapesetTransformations<CoordinateType> >&
         trialTransformations,
         const shared_ptr<Fiber::TestKernelTrialIntegral<
         BasisFunctionType_, KernelType_, ResultType_> >& integral);
 
     virtual const CollectionOfKernels& kernels() const
     { return *m_kernels; }
-    virtual const CollectionOfBasisTransformations& testTransformations() const
+    virtual const CollectionOfShapesetTransformations& testTransformations() const
     { return *m_testTransformations; }
-    virtual const CollectionOfBasisTransformations& trialTransformations() const
+    virtual const CollectionOfShapesetTransformations& trialTransformations() const
     { return *m_trialTransformations; }
     virtual const TestKernelTrialIntegral& integral() const
     { return *m_integral; }
@@ -194,8 +197,8 @@ public:
 private:
     /** \cond PRIVATE */
     shared_ptr<CollectionOfKernels> m_kernels;
-    shared_ptr<CollectionOfBasisTransformations> m_testTransformations;
-    shared_ptr<CollectionOfBasisTransformations> m_trialTransformations;
+    shared_ptr<CollectionOfShapesetTransformations> m_testTransformations;
+    shared_ptr<CollectionOfShapesetTransformations> m_trialTransformations;
     shared_ptr<TestKernelTrialIntegral> m_integral;
     /** \endcond */
 };

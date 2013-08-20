@@ -30,7 +30,7 @@
 #include "../grid/grid_segment.hpp"
 #include "../grid/grid_view.hpp"
 #include "../common/types.hpp"
-#include "../fiber/raviart_thomas_0_basis.hpp"
+#include "../fiber/raviart_thomas_0_shapeset.hpp"
 
 #include <boost/scoped_ptr.hpp>
 #include <map>
@@ -53,6 +53,8 @@ class RaviartThomas0VectorSpace : public Space<BasisFunctionType>
 public:
     typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
     typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
+    typedef typename Base::CollectionOfShapesetTransformations
+    CollectionOfShapesetTransformations;
     typedef typename Base::CollectionOfBasisTransformations
     CollectionOfBasisTransformations;
 
@@ -70,7 +72,7 @@ public:
         const shared_ptr<const Space<BasisFunctionType> >& self) const;
     virtual bool isDiscontinuous() const;
 
-    virtual const CollectionOfBasisTransformations& shapeFunctionValue() const;
+    virtual const CollectionOfShapesetTransformations& basisFunctionValue() const;
 
     virtual int domainDimension() const;
     virtual int codomainDimension() const;
@@ -84,7 +86,8 @@ public:
     virtual void setElementVariant(const Entity<0>& element,
                                    ElementVariant variant);
 
-    virtual const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
+    virtual const Fiber::Shapeset<BasisFunctionType>& shapeset(
+            const Entity<0>& element) const;
 
     virtual size_t globalDofCount() const;
     virtual size_t flatLocalDofCount() const;
@@ -134,7 +137,7 @@ private:
     bool m_putDofsOnBoundaries;
     int m_dofMode;
     std::auto_ptr<GridView> m_view;
-    Fiber::RaviartThomas0Basis<3, BasisFunctionType> m_triangleBasis;
+    Fiber::RaviartThomas0Shapeset<3, BasisFunctionType> m_triangleShapeset;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<BasisFunctionType> > m_local2globalDofWeights;
     std::vector<std::vector<LocalDof> > m_global2localDofs;

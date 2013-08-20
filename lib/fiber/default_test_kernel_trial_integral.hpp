@@ -64,7 +64,7 @@ public:
   \endcode
 
   The addGeometricalDependencies() method should specify any geometrical data
-  on which the integrand depends explicitly (not through kernels or basis
+  on which the integrand depends explicitly (not through kernels or shape
   function transformations). For example, if the integrand depends on the
   vectors normal to the surface at test and trial points, the function should
   have the form
@@ -86,7 +86,7 @@ void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) con
   \param[in] trialGeomData
     Geometric data of a point located on the trial element.
   \param[in] testValues
-    Values of a collection of transformations of a test basis function at the
+    Values of a collection of transformations of a test shape function at the
     test point. The number <tt>testValues[i](j)</tt> is the <em>j</em> component value of the <em>i</em>th
     transformation of the TO BE CONTINUED
   \param[in] trialValues
