@@ -129,7 +129,7 @@ template <typename T>
 inline void CollectionOf2dArrays<T>::check_array_index(size_t array_index) const
 {
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
-    if (array_index < 0 || m_size <= array_index)
+    if (m_size <= array_index)
         throw std::invalid_argument("Invalid array index");
 #endif
 }
