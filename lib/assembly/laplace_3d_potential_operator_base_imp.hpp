@@ -54,6 +54,7 @@ operator=(const Laplace3dPotentialOperatorBase& rhs)
 {
     if (this != &rhs)
         m_impl.reset(new Impl(*rhs.m_impl));
+    return *this;
 }
 
 template <typename Impl, typename BasisFunctionType, typename ResultType>
