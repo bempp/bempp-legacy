@@ -84,7 +84,7 @@ assembleWeakFormInternalImpl(
     NumericalQuadratureStrategy<BasisFunctionType, ResultType> quadStrategy; // fallback
     Context<BasisFunctionType, ResultType> context(
         make_shared_from_ref(quadStrategy), options);
-    assembleWeakFormInternalImpl2(assembler, context);
+    return assembleWeakFormInternalImpl2(assembler, context);
 }
 
 template <typename BasisFunctionType, typename ResultType>
