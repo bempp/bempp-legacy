@@ -89,10 +89,9 @@ void FmmDoubleLayerHighFreq<ValueType>::evaluateTrial(
 			const arma::Col<CoordinateType>& centre,
 			arma::Col<ValueType>& result) const
 {
-	ValueType i = getI<ValueType>();
-	ValueType k0 = FmmHighFreq<ValueType>::k0();
+	ValueType kappa = FmmHighFreq<ValueType>::kappa();
 	arma::Col<CoordinateType> r = centre - point;
-	result(0) =  -i*k0*exp( i*k0*dot(khat, r) )*dot(khat, normal);
+	result(0) =  kappa*exp( -kappa*dot(khat, r) )*dot(khat, normal);
 }
 
 template <typename ValueType>
@@ -103,10 +102,9 @@ void FmmDoubleLayerHighFreq<ValueType>::evaluateTest(
 			const arma::Col<CoordinateType>& centre,
 			arma::Col<ValueType>& result) const
 {
-	ValueType i = getI<ValueType>();
-	ValueType k0 = FmmHighFreq<ValueType>::k0();
+	ValueType kappa = FmmHighFreq<ValueType>::kappa();
 	arma::Col<CoordinateType> r = point - centre;
-	result(0) =  exp( i*k0*dot(khat, r) );
+	result(0) =  exp( -kappa*dot(khat, r) );
 }
 
 // FmmAdjointDoubleLayerHighFreq
@@ -119,10 +117,9 @@ void FmmAdjointDoubleLayerHighFreq<ValueType>::evaluateTrial(
 			const arma::Col<CoordinateType>& centre,
 			arma::Col<ValueType>& result) const
 {
-	ValueType i = getI<ValueType>();
-	ValueType k0 = FmmHighFreq<ValueType>::k0();
+	ValueType kappa = FmmHighFreq<ValueType>::kappa();
 	arma::Col<CoordinateType> r = centre - point;
-	result(0) =  exp( i*k0*dot(khat, r) );
+	result(0) =  exp( -kappa*dot(khat, r) );
 }
 
 template <typename ValueType>
@@ -133,10 +130,9 @@ void FmmAdjointDoubleLayerHighFreq<ValueType>::evaluateTest(
 			const arma::Col<CoordinateType>& centre,
 			arma::Col<ValueType>& result) const
 {
-	ValueType i = getI<ValueType>();
-	ValueType k0 = FmmHighFreq<ValueType>::k0();
+	ValueType kappa = FmmHighFreq<ValueType>::kappa();
 	arma::Col<CoordinateType> r = point - centre;
-	result(0) =  i*k0*exp( i*k0*dot(khat, r) )*dot(khat, normal);
+	result(0) =  -kappa*exp( -kappa*dot(khat, r) )*dot(khat, normal);
 }
 
 // FmmSingleLayerHighFreqFMM
@@ -149,10 +145,9 @@ void FmmSingleLayerHighFreq<ValueType>::evaluateTrial(
 			const arma::Col<CoordinateType>& centre,
 			arma::Col<ValueType>& result) const
 {
-	ValueType i = getI<ValueType>();
-	ValueType k0 = FmmHighFreq<ValueType>::k0();
+	ValueType kappa = FmmHighFreq<ValueType>::kappa();
 	arma::Col<CoordinateType> r = centre - point;
-	result(0) =  exp( i*k0*dot(khat, r) );
+	result(0) =  exp( -kappa*dot(khat, r) );
 }
 
 template <typename ValueType>
@@ -163,10 +158,9 @@ void FmmSingleLayerHighFreq<ValueType>::evaluateTest(
 			const arma::Col<CoordinateType>& centre,
 			arma::Col<ValueType>& result) const
 {
-	ValueType i = getI<ValueType>();
-	ValueType k0 = FmmHighFreq<ValueType>::k0();
+	ValueType kappa = FmmHighFreq<ValueType>::kappa();
 	arma::Col<CoordinateType> r = point - centre;
-	result(0) =  exp( i*k0*dot(khat, r) );
+	result(0) =  exp( -kappa*dot(khat, r) );
 }
 
 // FmmHypersingularHighFreq
@@ -179,10 +173,11 @@ void FmmHypersingularHighFreq<ValueType>::evaluateTrial(
 			const arma::Col<CoordinateType>& centre,
 			arma::Col<ValueType>& result) const
 {
-	ValueType i = getI<ValueType>();
-	ValueType k0 = FmmHighFreq<ValueType>::k0();
+	ValueType kappa = FmmHighFreq<ValueType>::kappa();
 	arma::Col<CoordinateType> r = centre - point;
-	result(0) =  -i*k0*exp( i*k0*dot(khat, r) )*dot(khat, normal);
+	throw std::invalid_argument("FmmHypersingularHighFreq::evaluateTrial(): "
+			"FMM not currently implemented for the hypersingular operator");
+//	result(0) =  kappa*exp( -kappa*dot(khat, r) )*dot(khat, normal);
 }
 
 template <typename ValueType>
@@ -193,10 +188,11 @@ void FmmHypersingularHighFreq<ValueType>::evaluateTest(
 			const arma::Col<CoordinateType>& centre,
 			arma::Col<ValueType>& result) const
 {
-	ValueType i = getI<ValueType>();
-	ValueType k0 = FmmHighFreq<ValueType>::k0();
+	ValueType kappa = FmmHighFreq<ValueType>::kappa();
 	arma::Col<CoordinateType> r = point - centre;
-	result(0) =  i*k0*exp( i*k0*dot(khat, r) )*dot(khat, normal);
+	throw std::invalid_argument("FmmHypersingularHighFreq::evaluateTest(): "
+			"FMM not currently implemented for the hypersingular operator");
+//	result(0) =  -kappa*exp( -kappa*dot(khat, r) )*dot(khat, normal);
 }
 
 

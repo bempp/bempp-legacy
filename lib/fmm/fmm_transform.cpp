@@ -27,6 +27,12 @@
 #include <boost/math/special_functions/bessel.hpp>
 #include <boost/math/special_functions/legendre.hpp>
 
+//#define USE_AMOS_SPECIAL_FUNCTIONS
+
+#if defined USE_AMOS_SPECIAL_FUNCTIONS
+#include "amos.hpp"
+#endif
+
 namespace Bempp
 {
 
@@ -112,11 +118,10 @@ arma::Col<ValueType> FmmHighFreq<ValueType>::M2M(
 	arma::Col<ValueType> T(this->m_P);//, std::complex<double>(0.0, 0.0));
 
 	CoordinateType R[3] = {xnew[0]-xold[0], xnew[1]-xold[1], xnew[2]-xold[2]};
-	ValueType i = getI<ValueType>();
 	for (unsigned int p=0; p<this->m_P; p++) { // each quadrature point
 		CoordinateType rcostheta = R[0]*this->m_s[3*p+0]
 			 + R[1]*this->m_s[3*p+1] + R[2]*this->m_s[3*p+2];
-		T[p] = exp(i*m_k0*rcostheta);
+		T[p] = exp(-m_kappa*rcostheta);
 	} // for each quadrature point
 	return T;
 }
@@ -150,23 +155,62 @@ FmmHighFreq<ValueType>::M2L(
 	CoordinateType Rhat[3] = {xvec[0]/r, xvec[1]/r, xvec[2]/r};
 //	std::cout << "r = " << r << std::endl;
 	ValueType i = getI<ValueType>();
+//	typename ScalarTraits<ValueType>::ComplexType ComplexType;
+//	ComplexType i(0., 1.);
 
 	for (unsigned int l=0; l<=m_L; l++) {
 		ValueType hl;
-		if (imag(m_k0)==0) { // purely real
-			CoordinateType z = real(m_k0)*r;
+
+#if defined USE_AMOS_SPECIAL_FUNCTIONS
+		ValueType z = i*m_kappa*r;
+		double zr = real(z);
+		double zi = imag(z);
+		double nu = l+0.5;
+		int kode = 1;
+		int N = 1;
+		int kind = 1;
+
+		double cyr,cyi; 	// Output values
+		int nz,ierr;
+
+		amos::zbesh(&zr,&zi,&nu,&kode,&kind,&N,&cyr,&cyi,&nz,&ierr);
+		hl = sqrt(pi<CoordinateType>()/(CoordinateType(2)*z))
+			*(CoordinateType(cyr)+i*CoordinateType(cyi));
+
+		std::string amosErrorMessages[6] = {
+			"IERR=0, NORMAL RETURN - COMPUTATION COMPLETED",
+			"IERR=1, INPUT ERROR   - NO COMPUTATION",
+			"IERR=2, OVERFLOW      - NO COMPUTATION, FNU IS"
+			"        TOO LARGE OR CABS(Z) IS TOO SMALL OR BOTH",
+			"IERR=3, CABS(Z) OR FNU+N-1 LARGE - COMPUTATION DONE"
+			"        BUT LOSSES OF SIGNIFCANCE BY ARGUMENT"
+			"        REDUCTION PRODUCE LESS THAN HALF OF MACHINE"
+			"        ACCURACY",
+			"IERR=4, CABS(Z) OR FNU+N-1 TOO LARGE - NO COMPUTA-"
+			"        TION BECAUSE OF COMPLETE LOSSES OF SIGNIFI-"
+			"        CANCE BY ARGUMENT REDUCTION",
+			"IERR=5, ERROR              - NO COMPUTATION,"
+			"        ALGORITHM TERMINATION CONDITION NOT MET"
+		};
+		if (ierr != 0) {
+			throw std::invalid_argument(std::string("FmmHighFreq::M2L(x1, x2): "
+				"AMOS: ")+amosErrorMessages[ierr] );
+		}
+#else // use boost special function, only works for purely real or imag kappa
+		if (real(m_kappa)==0) { // purely real
+			CoordinateType z = -imag(m_kappa)*r;
 			hl = sph_bessel(l, z) + i*sph_neumann(l, z);
-		} else if (real(m_k0)==0 && imag(m_k0)>0) { // purely imaginary and decaying
-			CoordinateType zi = imag(m_k0)*r;
+		} else if (imag(m_kappa)==0 && real(m_kappa)>0) { // purely imaginary and decaying
+			CoordinateType zi = real(m_kappa)*r;
 			hl = -sqrt(ValueType(2)/(zi*pi<CoordinateType>()))*pow(i,-l)
 				*cyl_bessel_k(CoordinateType(l+0.5), zi);
 		} else {
-//std::cout<<m_k0<<std::endl;
 			throw std::invalid_argument("FmmHighFreq::M2L(x1, x2): "
-     				"boost special functions only support purely real or imaginary args");
+     			"boost special functions only support purely real or imaginary args");
 		}
-		ValueType scaledhl = m_k0/(16*pi<CoordinateType>()*pi<CoordinateType>())*pow(i,l+1)*
-				ValueType(2*l+1)*hl;
+#endif
+		ValueType scaledhl = -m_kappa/(16*pi<CoordinateType>()
+				*pi<CoordinateType>())*pow(i,l)*ValueType(2*l+1)*hl;
 
 		for (unsigned int p=0; p<this->m_P; p++) { // each quadrature point
 			CoordinateType costheta = Rhat[0]*this->m_s[3*p+0] 
@@ -203,9 +247,7 @@ void legendre_roots(unsigned int N, ValueType *roots, ValueType *weights)
 		do { // apply Newton-Raphson method to find roots
 			x1 = x;
 			x -= legendre_p(N, x) / diff_legendre_p(N, x);
-//	std::cout << "iter i " << i << " x1 = " <<x1<<" x= "<<x<<" x-x1 ="<<x-x1 <<std::endl;
 		} while (x != x1 && --iter); // well-behaved function, convergence guaranteed
-//	std::cout << "iter i " << 100-i << " = " << iter <<std::endl;
 		roots[i-1] =  x;
 		roots[N-i] = -x;
  	}

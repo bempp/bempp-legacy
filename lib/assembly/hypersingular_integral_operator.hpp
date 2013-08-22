@@ -50,6 +50,7 @@ namespace Bempp
 class EvaluationOptions;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
 template <typename ValueType> class InterpolatedFunction;
+template <typename ResultType> class FmmTransform;
 /** \endcond */
 
 /** \ingroup abstract_boundary_operators
@@ -212,6 +213,8 @@ private:
      *  trial basis function transformations occurring in the integrand. */
     virtual const TestKernelTrialIntegral& offDiagonalIntegral() const = 0;
 
+    virtual const FmmTransform<ResultType>& fmmTransform() const = 0;
+
 private:
     /** \cond PRIVATE */
 
@@ -247,6 +250,10 @@ private:
     std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInAcaMode(
             LocalAssembler& standardAssembler, LocalAssembler& offDiagonalAssembler,
+            const Context<BasisFunctionType, ResultType>& context) const;
+    std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
+    assembleWeakFormInFmmMode(
+            LocalAssembler& assembler,
             const Context<BasisFunctionType, ResultType>& context) const;
 
     /** \endcond */

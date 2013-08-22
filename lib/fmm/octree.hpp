@@ -60,18 +60,20 @@ public:
 	typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
 
 	Octree(unsigned int levels, 
-		const FmmTransform<ResultType>& fmmTransform,
+		const FmmTransform<ResultType> &fmmTransform,
 		const arma::Col<CoordinateType> &lowerBound,
 		const arma::Col<CoordinateType> &upperBound);
 
 	const OctreeNode<ResultType> &getNodeConst(
 		unsigned long number, unsigned int level) const;
 
-	std::vector<unsigned int> assignPoints(bool hermitian, 
-		const std::vector<Point3D<CoordinateType> > &dofCenters);
+	void assignPoints(
+		bool hermitian, const std::vector<Point3D<CoordinateType> > &testDofCenters,
+		const std::vector<Point3D<CoordinateType> > &trialDofCenters,
+		std::vector<unsigned int> &test_p2o, std::vector<unsigned int> &trial_p2o);
 
 	void upwardsStep(const FmmTransform<ResultType> &fmmTransform);
-	void translationStep(const FmmTransform<ResultType> &fmmTransform);//, arma::Col<ResultType>& y_inout);
+	void translationStep(const FmmTransform<ResultType> &fmmTransform);
 	void downwardsStep(const FmmTransform<ResultType> &fmmTransform);
 
 	// affects the local and multipole coefficients in the the leaves
@@ -91,7 +93,7 @@ private:
 	const unsigned int m_topLevel;
 	// for now use a flat structure
 	std::vector<std::vector<OctreeNode<ResultType> > > m_OctreeNodes;
-	shared_ptr<IndexPermutation> m_p2o;
+	shared_ptr<IndexPermutation> m_test_p2o, m_trial_p2o;
 	const FmmTransform<ResultType>& m_fmmTransform;
 	arma::Col<CoordinateType> m_lowerBound, m_upperBound;
 };

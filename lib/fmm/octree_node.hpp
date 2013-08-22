@@ -47,7 +47,7 @@ public:
 
 	OctreeNode(unsigned long number=0, unsigned int level=0);
 
-	bool isEmpty() const;
+//	bool isEmpty() const;
 
 	// must be a bit careful, since our neighbour lists are stored explicity
 	// without empty boxes
@@ -61,8 +61,7 @@ public:
 
 	void makeInteractionList(const Octree<ResultType> &octree);
 
-	// return the centre of the node in (0,1)^3
-	//void centre(CoordinateType centre[3]) const;
+//	void centre(CoordinateType centre[3]) const;
 //	void centre(arma::Col<CoordinateType> &centre) const;
 
 	void setIndex(unsigned long number, unsigned int level);
@@ -71,31 +70,36 @@ public:
 	unsigned int level() const;
 
 	ResultType mcoef(unsigned int n) const;
-	void setMultipoleCoefficients(const arma::Col<ResultType> &cvec);
+	void setMultipoleCoefficients(const arma::Col<ResultType> &multipoleCoefficients);
 
 	ResultType lcoef(unsigned int n) const;
-	void setLocalCoefficients(const arma::Col<ResultType> &cvec);
-	void addLocalCoefficients(const arma::Col<ResultType> &cvec);
+	void setLocalCoefficients(const arma::Col<ResultType> &localCoefficients);
+	void addLocalCoefficients(const arma::Col<ResultType> &localCoefficients);
 
 	unsigned int interactionListSize() const;
 	unsigned int interactionItem(unsigned int n) const;
-	unsigned int getDofStart() const;
-	unsigned int getDofCount() const;
-	void setDofStart(unsigned int start);
-	unsigned int postIncrementDofCount();
+
+	void setTestDofStart(unsigned int start);
+	void setTrialDofStart(unsigned int start);
+
+	unsigned int postIncTestDofCount();
+	unsigned int postIncTrialDofCount();
 
 	void evaluateNearFieldMatrixVectorProduct(
 		const Octree<ResultType> &octree,
 		const arma::Col<ResultType>& x_in,
 		arma::Col<ResultType>& y_in_out);
 
-
 	void evaluateMultipoleCoefficients(const arma::Col<ResultType>& x_in);
 	void evaluateFarFieldMatrixVectorProduct(
 		const arma::Col<CoordinateType>& weights, arma::Col<ResultType>& y_out);
 
-	unsigned int dofStart() const {return m_dofStart;}
-	unsigned int dofCount() const {return m_dofCount;}
+	unsigned int testDofStart() const {return m_testDofStart;}
+	unsigned int testDofCount() const {return m_testDofCount;}
+
+	unsigned int trialDofStart() const {return m_trialDofStart;}
+	unsigned int trialDofCount() const {return m_trialDofCount;}
+
 	const std::vector<unsigned long>& neigbourList() const {return m_neigbourList;}
 
 	void setNearFieldMats(const std::vector<arma::Mat<ResultType> > &nearFieldMats)
@@ -108,8 +112,10 @@ public:
 private:
 	unsigned long m_number;				// const? Morton index of the node
 	unsigned int m_level;				// level in the octree, where 0 is root
-	unsigned int m_dofStart;				// dofs permuted, so continuous in leaf, from
-	unsigned int m_dofCount;				// dofStart to dofStart + dofCount
+	unsigned int m_trialDofStart;				// dofs permuted, so continuous in leaf, from
+	unsigned int m_trialDofCount;				// dofStart to dofStart + dofCount
+	unsigned int m_testDofStart;				// dofs permuted, so continuous in leaf, from
+	unsigned int m_testDofCount;				// dofStart to dofStart + dofCount
 	std::vector<unsigned long> m_neigbourList;	// list of neighbours on the same level
 	std::vector<unsigned long> m_InteractionList;
 	arma::Col<ResultType> m_mcoef;	// multipole coefficients

@@ -95,8 +95,8 @@ class FmmDoubleLayerHighFreq : public FmmHighFreq<ValueType>
 public:
 	typedef typename FmmHighFreq<ValueType>::CoordinateType CoordinateType;
 
-	FmmDoubleLayerHighFreq(ValueType k0, unsigned int L)
-		: FmmHighFreq<ValueType>(k0, L) {}
+	FmmDoubleLayerHighFreq(ValueType kappa, unsigned int L)
+		: FmmHighFreq<ValueType>(kappa, L) {}
 
 	virtual void evaluateTrial(
 			const arma::Col<CoordinateType>& point,
@@ -119,8 +119,8 @@ class FmmAdjointDoubleLayerHighFreq : public FmmHighFreq<ValueType>
 public:
 	typedef typename FmmHighFreq<ValueType>::CoordinateType CoordinateType;
 
-	FmmAdjointDoubleLayerHighFreq(ValueType k0, unsigned int L)
-		: FmmHighFreq<ValueType>(k0, L) {}
+	FmmAdjointDoubleLayerHighFreq(ValueType kappa, unsigned int L)
+		: FmmHighFreq<ValueType>(kappa, L) {}
 
 	virtual void evaluateTrial(
 			const arma::Col<CoordinateType>& point,
@@ -143,8 +143,8 @@ class FmmSingleLayerHighFreq : public FmmHighFreq<ValueType>
 public:
 	typedef typename FmmHighFreq<ValueType>::CoordinateType CoordinateType;
 
-	FmmSingleLayerHighFreq(ValueType k0, unsigned int L)
-		: FmmHighFreq<ValueType>(k0, L) {}
+	FmmSingleLayerHighFreq(ValueType kappa, unsigned int L)
+		: FmmHighFreq<ValueType>(kappa, L) {}
 
 	virtual void evaluateTrial(
 			const arma::Col<CoordinateType>& point,
@@ -167,8 +167,8 @@ class FmmHypersingularHighFreq : public FmmHighFreq<ValueType>
 public:
 	typedef typename FmmHighFreq<ValueType>::CoordinateType CoordinateType;
 
-	FmmHypersingularHighFreq(ValueType k0, unsigned int L)
-		: FmmHighFreq<ValueType>(k0, L) {}
+	FmmHypersingularHighFreq(ValueType kappa, unsigned int L)
+		: FmmHighFreq<ValueType>(kappa, L) {}
 
 	virtual void evaluateTrial(
 			const arma::Col<CoordinateType>& point,

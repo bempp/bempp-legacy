@@ -25,6 +25,9 @@
 
 namespace Bempp
 {
+/** \cond FORWARD_DECL */
+template <typename ResultType> class FmmTransform;
+/** \endcond */
 
 /** \ingroup abstract_boundary_operators
  *  \brief Standard implementation of a hypersingular singular integral operator.
@@ -173,6 +176,30 @@ public:
             const OffDiagonalTrialTransformationsFunctor& offDiagonalTrialTransformationsFunctor,
             const OffDiagonalIntegrandFunctor& offDiagonalIntegrandFunctor);
 
+    template <typename KernelFunctor,
+              typename TestTransformationsFunctor,
+              typename TrialTransformationsFunctor,
+              typename IntegrandFunctor,
+              typename OffDiagonalKernelFunctor,
+              typename OffDiagonalTestTransformationsFunctor,
+              typename OffDiagonalTrialTransformationsFunctor,
+              typename OffDiagonalIntegrandFunctor>
+    GeneralHypersingularIntegralOperator(
+            const shared_ptr<const Space<BasisFunctionType_> >& domain,
+            const shared_ptr<const Space<BasisFunctionType_> >& range,
+            const shared_ptr<const Space<BasisFunctionType_> >& dualToRange,
+            const std::string& label,
+            int symmetry,
+            const KernelFunctor& kernelFunctor,
+            const TestTransformationsFunctor& testTransformationsFunctor,
+            const TrialTransformationsFunctor& trialTransformationsFunctor,
+            const IntegrandFunctor& integrandFunctor,
+            const OffDiagonalKernelFunctor& offDiagonalKernelFunctor,
+            const OffDiagonalTestTransformationsFunctor& offDiagonalTestTransformationsFunctor,
+            const OffDiagonalTrialTransformationsFunctor& offDiagonalTrialTransformationsFunctor,
+            const OffDiagonalIntegrandFunctor& offDiagonalIntegrandFunctor,
+            shared_ptr<FmmTransform<ResultType> > fmmTransform);
+
     virtual const CollectionOfKernels& kernels() const
     { return *m_kernels; }
     virtual const CollectionOfBasisTransformations& testTransformations() const
@@ -190,6 +217,8 @@ public:
     { return *m_offDiagonalTrialTransformations; }
     virtual const TestKernelTrialIntegral& offDiagonalIntegral() const
     { return *m_offDiagonalIntegral; }
+    virtual const FmmTransform<ResultType>& fmmTransform() const
+    { return *m_fmmTransform; }
 
 private:
     /** \cond PRIVATE */
@@ -201,6 +230,7 @@ private:
     shared_ptr<CollectionOfBasisTransformations> m_offDiagonalTestTransformations;
     shared_ptr<CollectionOfBasisTransformations> m_offDiagonalTrialTransformations;
     shared_ptr<TestKernelTrialIntegral> m_offDiagonalIntegral;
+    shared_ptr<FmmTransform<ResultType> > m_fmmTransform;
     /** \endcond */
 };
 

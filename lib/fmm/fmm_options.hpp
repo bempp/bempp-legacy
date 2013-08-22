@@ -42,8 +42,6 @@ struct FmmOptions
     /*  Number of terms in transfer function expansion: Default value: 8. */
     unsigned int L;
 
-    double k0;
-
     unsigned int numQuadPoints;
 };
 

@@ -41,10 +41,11 @@
 #include <math.h>		// floor
 #include <complex>
 
-#define MULTILEVEL_FMM
 
 namespace Bempp
 {
+
+#define MULTILEVEL_FMM
 
 unsigned long dilate3(unsigned long x);
 unsigned long contract3(unsigned long x);
@@ -140,55 +141,100 @@ Octree<ResultType>::Octree(
 // apply test and trial spaces, use flag to test if the same or shared pointers?
 // will do this from the constructor in future
 template <typename ResultType>
-std::vector<unsigned int> Octree<ResultType>::assignPoints(
-        bool hermitian, const std::vector<Point3D<CoordinateType> > &dofCenters)
+void Octree<ResultType>::assignPoints(
+     bool hermitian, const std::vector<Point3D<CoordinateType> > &testDofCenters,
+	const std::vector<Point3D<CoordinateType> > &trialDofCenters,
+	std::vector<unsigned int> &test_p2o, std::vector<unsigned int> &trial_p2o)
 {
 	std::cout << "Adding points to octree" << std::endl;
-
-	const unsigned int nDofs = dofCenters.size();
 	const unsigned int nLeaves = getNodesPerLevel(m_levels);
+
+	// get permutation for test space
+	const unsigned int nTestDofs = testDofCenters.size();
 
 	// count the number of Dofs in each leaf, store temporarily
 	// currently getLeafContainingPoint is called twice per dof, optimise for single call?
 	//std::vector<int> dofsPerLeaf(nLeaves, 0);
-	for (unsigned int dof=0; dof<nDofs; dof++) {
-		unsigned long number = getLeafContainingPoint(dofCenters[dof]);
-		getNode(number,m_levels).setDofStart(getNode(number,m_levels).getDofStart()+1);
+	for (unsigned int dof=0; dof<nTestDofs; dof++) {
+		unsigned long number = getLeafContainingPoint(testDofCenters[dof]);
+		getNode(number,m_levels).setTestDofStart(
+			getNode(number,m_levels).testDofStart()+1);
 	}
 
 	// make the count cumulative (prepending a zero and throwing away final value)
 	// modify to work with empty leaves later
-	unsigned int valcurrent = getNode(0, m_levels).getDofStart();
-	getNode(0, m_levels).setDofStart(0);
+	unsigned int valcurrent = getNode(0, m_levels).testDofStart();
+	getNode(0, m_levels).setTestDofStart(0);
 	for (unsigned int n=1; n<nLeaves; n++) {
 		unsigned int valold = valcurrent;
-		valcurrent = getNode(n, m_levels).getDofStart();
-		getNode(n, m_levels).setDofStart( getNode(n-1, m_levels).getDofStart() + valold );
+		valcurrent = getNode(n, m_levels).testDofStart();
+		getNode(n, m_levels).setTestDofStart(
+			getNode(n-1, m_levels).testDofStart() + valold );
 	}
 
 	// for the permutation vector and intialise the leaves
-	std::vector<unsigned int> p2o(nDofs, 0); // store this in the octree itself
+	test_p2o = std::vector<unsigned int>(nTestDofs, 0);
 
-	for (unsigned int dof=0; dof<nDofs; dof++) {
-		unsigned long number = getLeafContainingPoint(dofCenters[dof]);
-		OctreeNode<ResultType> &node = getNode(number,m_levels);
-		p2o[node.postIncrementDofCount() + node.getDofStart()] = dof;
-//		o2p[dof] = node.postIncrementDofCount() + node.getDofStart();
+	for (unsigned int dof=0; dof<nTestDofs; dof++) {
+		unsigned long number = getLeafContainingPoint(testDofCenters[dof]);
+		OctreeNode<ResultType> &node = getNode(number, m_levels);
+		test_p2o[node.postIncTestDofCount() + node.testDofStart()] = dof;
+//		test_o2p[dof] = node.postIncTestDofCount() + node.testDofStart();
 
 		// if (node.dofCount==1) {
 		unsigned long parent = getParent(number);
 		// propagate filled flag up tree, might assume dofCount==1 is full for non-leaves
 		for (unsigned int level = m_levels-1; level!=1; level--) {
-			getNode(parent,level).postIncrementDofCount();
+			getNode(parent,level).postIncTestDofCount();
 			parent = getParent(parent);
 		}
 
 	}
-	m_p2o = boost::make_shared<IndexPermutation>(p2o);
+	m_test_p2o = boost::make_shared<IndexPermutation>(test_p2o); // check p2o persists
 
-	//for (unsigned int dof=0; dof<nDofs; dof++)
-	//	std::cout << p2o[dof] << " ";
-	//std::cout << std::endl;
+
+	// get permutation for trial space (COPY PASTE - FACTOR OUT LATER)
+	const unsigned int nTrialDofs = trialDofCenters.size();
+
+	// count the number of Dofs in each leaf, store temporarily
+	// currently getLeafContainingPoint is called twice per dof, optimise for single call?
+	//std::vector<int> dofsPerLeaf(nLeaves, 0);
+	for (unsigned int dof=0; dof<nTrialDofs; dof++) {
+		unsigned long number = getLeafContainingPoint(trialDofCenters[dof]);
+		getNode(number,m_levels).setTrialDofStart(
+			getNode(number,m_levels).trialDofStart()+1);
+	}
+
+	// make the count cumulative (prepending a zero and throwing away final value)
+	// modify to work with empty leaves later
+	valcurrent = getNode(0, m_levels).trialDofStart();
+	getNode(0, m_levels).setTrialDofStart(0);
+	for (unsigned int n=1; n<nLeaves; n++) {
+		unsigned int valold = valcurrent;
+		valcurrent = getNode(n, m_levels).trialDofStart();
+		getNode(n, m_levels).setTrialDofStart(
+			getNode(n-1, m_levels).trialDofStart() + valold );
+	}
+
+	// for the permutation vector and intialise the leaves
+	trial_p2o = std::vector<unsigned int>(nTrialDofs, 0);
+
+	for (unsigned int dof=0; dof<nTrialDofs; dof++) {
+		unsigned long number = getLeafContainingPoint(trialDofCenters[dof]);
+		OctreeNode<ResultType> &node = getNode(number, m_levels);
+		trial_p2o[node.postIncTrialDofCount() + node.trialDofStart()] = dof;
+//		trial_o2p[dof] = node.postIncTrialDofCount() + node.trialDofStart();
+
+		// if (node.dofCount==1) {
+		unsigned long parent = getParent(number);
+		// propagate filled flag up tree, might assume dofCount==1 is full for non-leaves
+		for (unsigned int level = m_levels-1; level!=1; level--) {
+			getNode(parent,level).postIncTrialDofCount();
+			parent = getParent(parent);
+		}
+
+	}
+	m_trial_p2o = boost::make_shared<IndexPermutation>(trial_p2o); // check p2o persists
 
 	std::cout << "Building neighbour and interaction lists" << std::endl;
 	// generate neighbour information and interaction lists, taking into account empty leaves
@@ -200,7 +246,7 @@ std::vector<unsigned int> Octree<ResultType>::assignPoints(
 		}
 	}
 	//std::cout << std::endl;
-	return p2o;
+//	return p2o;
 }
 
 
@@ -262,13 +308,12 @@ void Octree<ResultType>::matrixVectorProduct(
 	//arma::Col<ResultType> x_in(x_in2.n_rows);
 	//x_in.fill(0.);
 	//x_in(0) = 1;
-
 	const unsigned int nLeaves = getNodesPerLevel(m_levels);
 
 	arma::Col<ResultType> x_in_permuted(x_in.n_rows);
-	m_p2o->unpermuteVector(x_in, x_in_permuted); // o to p
+	m_trial_p2o->unpermuteVector(x_in, x_in_permuted); // o to p
 
-	arma::Col<ResultType> y_out_permuted(x_in.n_rows);
+	arma::Col<ResultType> y_out_permuted(y_out.n_rows);
 	y_out_permuted.fill(0.0);
 
 	std::cout << "Evaluating near field matrix vector product" << std::endl;
@@ -288,8 +333,8 @@ void Octree<ResultType>::matrixVectorProduct(
 	upwardsStep(m_fmmTransform);
 #endif
 
-	std::cout << "Performing translation step (M2L): level ";// << std::endl;
-	translationStep(m_fmmTransform);//, y_out_permuted);
+	std::cout << "Performing translation step (M2L): level ";
+	translationStep(m_fmmTransform);
 
 #if defined MULTILEVEL_FMM
 	std::cout << "Performing downwards step (L2L)" << std::endl;
@@ -302,8 +347,7 @@ void Octree<ResultType>::matrixVectorProduct(
 			m_fmmTransform.getWeights(), y_out_permuted);
 	}
 
-	m_p2o->permuteVector(y_out_permuted, y_out); // p to o
-	//std::cout<<y_out.rows(0,10)<< std::endl;
+	m_test_p2o->permuteVector(y_out_permuted, y_out); // p to o
 }
 
 
@@ -320,7 +364,7 @@ void Octree<ResultType>::upwardsStep(
 		unsigned int nNodes = getNodesPerLevel(level);
 		for (unsigned int node=0; node<nNodes; node++) {
 
-			if (getNode(node,level).isEmpty()) {
+			if (getNode(node,level).trialDofCount()==0) {
 				continue;
 			}
 
@@ -332,7 +376,7 @@ void Octree<ResultType>::upwardsStep(
 			for (unsigned long child = getFirstChild(node); 
 				child <= getLastChild(node); child++) {
 
-				if (getNode(child,level+1).isEmpty()) {
+				if (getNode(child,level+1).trialDofCount()==0) {
 					continue;
 				}
 
@@ -371,7 +415,7 @@ public:
 	{
 		typedef arma::Col<ResultType> cvec;
 
-		if (m_octree.getNode(node,m_level).isEmpty()) {
+		if (m_octree.getNode(node,m_level).testDofCount()==0) {
 			return; //continue;
 		}
 
@@ -395,7 +439,7 @@ public:
 			// skip if inter and current node are neighbouring or identical
 			if( std::find(neigbourList.begin(), neigbourList.end(), inter)
 				!= neigbourList.end() || inter==node
-				|| m_octree.getNode(inter,m_level).isEmpty())
+				|| m_octree.getNode(inter,m_level).trialDofCount()==0)
 				continue;
 #endif
 //for (unsigned int l=0; l<=6; l++) {
@@ -440,6 +484,7 @@ void Octree<ResultType>::translationStep(
 		TranslationStepHelper<ResultType> translationStepHelper(
 			*this, fmmTransform, level);
 		tbb::parallel_for<size_t>(0, nNodes, translationStepHelper);
+		//for (unsigned int k=0; k<nNodes; k++) translationStepHelper(k);
 
 	} // for each level
 	std::cout << std::endl;
@@ -456,7 +501,7 @@ void Octree<ResultType>::downwardsStep(
 		unsigned int nNodes = getNodesPerLevel(level);
 		for (unsigned int node=0; node<nNodes; node++) {
 
-			if (getNode(node,level).isEmpty()) {
+			if (getNode(node,level).testDofCount()==0) {
 				continue;
 			}
 

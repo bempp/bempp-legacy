@@ -129,20 +129,23 @@ FmmGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 			arma::conv_to<arma::Col<CoordinateType> >::from(lowerBound),
 			arma::conv_to<arma::Col<CoordinateType> >::from(upperBound));
 
-	std::vector<Point3D<CoordinateType> > dofCenters;
-	if (indexWithGlobalDofs)
-		testSpace.getGlobalDofPositions(dofCenters);
-	else
-		testSpace.getFlatLocalDofPositions(dofCenters);
-
-	std::vector<unsigned int> p2o;
-	p2o = octree->assignPoints(hermitian, dofCenters);
+	std::vector<Point3D<CoordinateType> > testDofCenters, trialDofCenters;
+	if (indexWithGlobalDofs) {
+		testSpace.getGlobalDofPositions(testDofCenters);
+		trialSpace.getGlobalDofPositions(trialDofCenters);
+	} else {
+		testSpace.getFlatLocalDofPositions(testDofCenters);
+		trialSpace.getFlatLocalDofPositions(trialDofCenters);
+	}
+	std::vector<unsigned int> trial_p2o, test_p2o;
+	octree->assignPoints(hermitian, testDofCenters, trialDofCenters,
+		test_p2o, trial_p2o);
 
 	std::cout << "Caching near field interactions" << std::endl;
 
 	OctreeNearHelper<BasisFunctionType, ResultType> octreeNearHelper(
 		octree, testSpace, trialSpace, localAssemblers, denseTermsMultipliers, 
-		options, p2o, indexWithGlobalDofs);
+		options, test_p2o, trial_p2o, indexWithGlobalDofs);
 
 	unsigned int nLeaves = getNodesPerLevel(octree->levels());
 	tbb::parallel_for<unsigned int>(0, nLeaves, octreeNearHelper);
@@ -157,10 +160,11 @@ FmmGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 	std::cout << "Caching test and trial far-field interactions" << std::endl;
 
 	OctreeFarHelper<BasisFunctionType, ResultType> octreeFarHelper(
-		octree, testSpace, trialSpace, options, p2o, indexWithGlobalDofs, 
-		fmmTransform);
+		octree, testSpace, trialSpace, options, test_p2o, trial_p2o, 
+		indexWithGlobalDofs, fmmTransform);
 
-	tbb::parallel_for(tbb::blocked_range<unsigned int>(0, nLeaves, 100), octreeFarHelper);
+	tbb::parallel_for(tbb::blocked_range<unsigned int>(0, nLeaves, 100), 
+		octreeFarHelper);
 
 	unsigned int symmetry = NO_SYMMETRY;
 	if (hermitian) {

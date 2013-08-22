@@ -48,6 +48,8 @@
 
 #include <boost/type_traits/is_complex.hpp>
 
+#include "../fmm/transmit_receive.hpp"
+
 namespace Bempp
 {
 
@@ -225,6 +227,13 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
             static_cast<CoordinateType>(1.1) *
             maxDistance(*domain->grid(), *dualToRange->grid());
 
+    shared_ptr<FmmTransform<ResultType> > fmmTransform;
+    if (assemblyOptions.assemblyMode() == AssemblyOptions::FMM) {
+        const FmmOptions& fmmOptions = assemblyOptions.fmmOptions();
+        fmmTransform = boost::make_shared<FmmHypersingularHighFreq<ResultType> >
+            (waveNumber, fmmOptions.L);
+    }
+
     typedef GeneralHypersingularIntegralOperator<
             BasisFunctionType, KernelType, ResultType> Op;
     shared_ptr<Op> newOp;
@@ -240,7 +249,8 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
                             waveNumber, maxDistance_, interpPtsPerWavelength),
                         OffDiagonalTransformationFunctor(),
                         OffDiagonalTransformationFunctor(),
-                        OffDiagonalIntegrandFunctor()));
+                        OffDiagonalIntegrandFunctor(),
+                        fmmTransform));
     else
         newOp.reset(new Op(
                         domain, range, dualToRange, label, symmetry,
@@ -251,7 +261,8 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
                         OffDiagonalNoninterpolatedKernelFunctor(waveNumber),
                         OffDiagonalTransformationFunctor(),
                         OffDiagonalTransformationFunctor(),
-                        OffDiagonalIntegrandFunctor()));
+                        OffDiagonalIntegrandFunctor(),
+                        fmmTransform));
     return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 

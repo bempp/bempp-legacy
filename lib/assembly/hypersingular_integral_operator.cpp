@@ -22,6 +22,9 @@
 #include "hypersingular_integral_operator.hpp"
 
 #include "aca_global_assembler.hpp"
+#include "../fmm/fmm_global_assembler.hpp"
+#include "../fmm/fmm_transform.hpp"
+
 #include "assembly_options.hpp"
 #include "dense_global_assembler.hpp"
 #include "discrete_boundary_operator.hpp"
@@ -199,6 +202,9 @@ assembleWeakFormInternal(
         return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
                     assembleWeakFormInAcaMode(
                         standardAssembler, offDiagonalAssembler, context).release());
+    case AssemblyOptions::FMM:
+        return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
+                    assembleWeakFormInFmmMode(standardAssembler, context).release());
     default:
         throw std::runtime_error(
                     "HypersingularIntegralOperator::assembleWeakFormInternalImpl(): "
@@ -237,6 +243,21 @@ assembleWeakFormInAcaMode(
     return AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                 testSpace, trialSpace, standardAssembler, offDiagonalAssembler,
                 context, this->symmetry() & SYMMETRIC);
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
+HypersingularIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+assembleWeakFormInFmmMode(
+        LocalAssembler& assembler,
+        const Context<BasisFunctionType, ResultType>& context) const
+{
+    const Space<BasisFunctionType>& testSpace = *this->dualToRange();
+    const Space<BasisFunctionType>& trialSpace = *this->domain();
+
+    return FmmGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
+                testSpace, trialSpace, assembler, context,
+                this->symmetry() & SYMMETRIC, this->fmmTransform());
 }
 /** \endcond */
 

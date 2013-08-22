@@ -72,7 +72,8 @@ public:
 			const std::vector<LocalAssembler*>& assemblers,
                const std::vector<ResultType>& denseTermsMultipliers,
 			const AssemblyOptions& options,
-			const std::vector<unsigned int> &p2o,
+			const std::vector<unsigned int> &test_p2o,
+			const std::vector<unsigned int> &trial_p2o,
 			bool indexWithGlobalDofs);
 
 
@@ -110,7 +111,8 @@ public:
 			const Space<BasisFunctionType>& testSpace,
 			const Space<BasisFunctionType>& trialSpace,
 			const AssemblyOptions& options,
-			const std::vector<unsigned int> &p2o,
+			const std::vector<unsigned int> &test_p2o,
+			const std::vector<unsigned int> &trial_p2o,
 			bool indexWithGlobalDofs,
 			const FmmTransform<ResultType> &fmmTransform);
 

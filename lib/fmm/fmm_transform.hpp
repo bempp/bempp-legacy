@@ -97,8 +97,8 @@ class FmmHighFreq : public FmmTransform<ValueType>
 public:
 	typedef typename FmmTransform<ValueType>::CoordinateType CoordinateType;
 
-	FmmHighFreq(ValueType k0, unsigned int L)//, unsigned int numQuadPoints)
-	 : m_k0(getI<ValueType>()*k0), m_L(L), FmmTransform<ValueType>(L*(2*L+1))//numQuadPoints)//(770)//86)//
+	FmmHighFreq(ValueType kappa, unsigned int L)//, unsigned int numQuadPoints)
+	 : m_kappa(kappa), m_L(L), FmmTransform<ValueType>(L*(2*L+1))//numQuadPoints)//(770)//86)//
 	{
 		generateGaussPoints();
 		// finally all levels in the octree will have their own set of Gauss points
@@ -115,11 +115,11 @@ public:
 
 	virtual void generateGaussPoints();
 	
-	ValueType k0() const {return m_k0;}
+	ValueType kappa() const {return m_kappa;}
 private:
 	// must be purely real/imag for now, since boost special functions
 	// do not support complex arguments
-	ValueType m_k0;
+	ValueType m_kappa;
 	unsigned int m_L;
 };
 

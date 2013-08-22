@@ -42,17 +42,12 @@ namespace Bempp
 
 template <typename ResultType>
 OctreeNode<ResultType>::OctreeNode(unsigned long number, unsigned int level) 
-		: m_number(number), m_level(level), m_dofStart(0), m_dofCount(0)
+		:	m_number(number), m_level(level), m_testDofStart(0), m_testDofCount(0),
+			m_trialDofStart(0), m_trialDofCount(0)
 {
 }
 //, m_neigbourList(26), m_InteractionList(189) {} this messes up push_back
 // note that our neighbour lists neglect the current node
-
-template <typename ResultType>
-bool OctreeNode<ResultType>::isEmpty() const
-{
-	return m_dofCount==0;
-}
 
 // must be a bit careful, since our neighbour lists are stored explicity
 // without empty boxes
@@ -61,7 +56,7 @@ void OctreeNode<ResultType>::makeNeigbourList(const Octree<ResultType> &octree) 
 
 	// can of course still be empty and have neighbours, but it turns
 	// out we don't need neighbour lists for empty boxes
-	if (isEmpty()) {
+	if (testDofCount()==0) {
 		return;	// get same interaction lists with or without this line
 	}
 	// Will probably need the full list of neighbours for reduced scheme
@@ -82,7 +77,7 @@ void OctreeNode<ResultType>::makeNeigbourList(const Octree<ResultType> &octree) 
 				if (indNeigh[0]!=ind[0] || indNeigh[1]!=ind[1] || indNeigh[2]!=ind[2]) {
 					unsigned long numberNeigh;
 					numberNeigh = morton(indNeigh[0], indNeigh[1], indNeigh[2]);
-					if (octree.getNodeConst(numberNeigh, level()).isEmpty()==false) {
+					if (octree.getNodeConst(numberNeigh, level()).trialDofCount()) {
 						m_neigbourList.push_back(numberNeigh);
 					} // if the neighbour is not empty
 				} // if neighbour is not the current node
@@ -99,7 +94,7 @@ void OctreeNode<ResultType>::makeNeigbourList(const Octree<ResultType> &octree) 
 template <typename ResultType>
 void OctreeNode<ResultType>::makeInteractionList(const Octree<ResultType> &octree) {
 
-	if (isEmpty()) {
+	if (testDofCount()==0) {
 		return;
 	}
 
@@ -130,7 +125,7 @@ void OctreeNode<ResultType>::makeInteractionList(const Octree<ResultType> &octre
 		for (unsigned long child = getFirstChild(*parentNeighbour); 
 			child <= getLastChild(*parentNeighbour); child++) {
 
-			if (octree.getNodeConst(child, level()).isEmpty()==false) {
+			if (octree.getNodeConst(child, level()).trialDofCount()) {
 				childrenOfParentNeighList.push_back(child);
 			}
 		}
@@ -214,8 +209,6 @@ void OctreeNode<ResultType>::addLocalCoefficients(
 		const arma::Col<ResultType> &cvec)
 {
 	m_lcoef += cvec;
-//	std::transform(m_lcoef.begin(), m_lcoef.end(), cvec.begin(), 
-//		m_lcoef.begin(), std::plus<ResultType>());
 }
 
 template <typename ResultType>
@@ -230,29 +223,28 @@ unsigned int OctreeNode<ResultType>::interactionItem(unsigned int n) const {
 }
 
 template <typename ResultType>
-unsigned int OctreeNode<ResultType>::getDofStart() const
+void OctreeNode<ResultType>::setTestDofStart(unsigned int start)
 {
-	return m_dofStart;
+	m_testDofStart = start;
 }
 
 template <typename ResultType>
-unsigned int OctreeNode<ResultType>::getDofCount() const
+void OctreeNode<ResultType>::setTrialDofStart(unsigned int start)
 {
-	return m_dofCount;
+	m_trialDofStart = start;
 }
 
 template <typename ResultType>
-void OctreeNode<ResultType>::setDofStart(unsigned int start)
+unsigned int OctreeNode<ResultType>::postIncTestDofCount()
 {
-	m_dofStart = start;
+	return m_testDofCount++;
 }
 
 template <typename ResultType>
-unsigned int OctreeNode<ResultType>::postIncrementDofCount()
+unsigned int OctreeNode<ResultType>::postIncTrialDofCount()
 {
-	return m_dofCount++;
+	return m_trialDofCount++;
 }
-
 
 
 
@@ -264,30 +256,37 @@ void OctreeNode<ResultType>::evaluateNearFieldMatrixVectorProduct(
 		const arma::Col<ResultType>& x_in,
 		arma::Col<ResultType>& y_in_out)
 {
-	if (isEmpty()) {
+	if (testDofCount()==0) {
 		return;
 	}
 
 	// same trial functions for this leaf's interactions
-	const unsigned int dofStartTest = m_dofStart;
-	const unsigned int dofEndTest = dofStartTest + m_dofCount - 1;
+	const unsigned int testStart = testDofStart();
+	const unsigned int testEnd = testStart + testDofCount() - 1;
 
 	// first entry is the self-interaction
-	unsigned int dofStartTrial = dofStartTest;
-	unsigned int dofEndTrial = dofEndTest;
+	if (trialDofCount()) {
+		unsigned int trialStart = trialDofStart();
+		unsigned int trialEnd = trialStart + trialDofCount() - 1;
 
-	const arma::Col<ResultType>& xLocal = x_in.rows(dofStartTrial, dofEndTrial);
-	y_in_out.rows(dofStartTest, dofEndTest) += m_nearFieldMats[0]*xLocal;
+		const arma::Col<ResultType>& xLocal = x_in.rows(trialStart, trialEnd);
+		y_in_out.rows(testStart, testEnd) += m_nearFieldMats[0]*xLocal;
+	}
 
 	// repeat for the neighbours: trial functions are fixed in the current node
 	// test functions are in the neigbourhood
 	for (unsigned long neigh = 0; neigh < m_neigbourList.size(); neigh++) {
 		const OctreeNode &node = octree.getNodeConst(m_neigbourList[neigh], m_level);
-		dofStartTrial = node.m_dofStart;
-		dofEndTrial = dofStartTrial + node.m_dofCount - 1;
 
-		const arma::Col<ResultType>& xLocal = x_in.rows(dofStartTrial, dofEndTrial);
-		y_in_out.rows(dofStartTest, dofEndTest) += m_nearFieldMats[neigh+1]*xLocal;
+		//if (node.trialDofCount()==0) {
+		//	continue;
+		//}
+
+		unsigned int trialStart = node.trialDofStart();
+		unsigned int trialEnd = trialStart + node.trialDofCount() - 1;
+
+		const arma::Col<ResultType>& xLocal = x_in.rows(trialStart, trialEnd);
+		y_in_out.rows(testStart, testEnd) += m_nearFieldMats[neigh+1]*xLocal;
 	}
 }
 
@@ -298,19 +297,17 @@ template <typename ResultType>
 void OctreeNode<ResultType>::evaluateMultipoleCoefficients(
 	const arma::Col<ResultType>& x_in)
 {
-	if (isEmpty()) {
+	if (trialDofCount()==0) {
 		return;
 	}
 
-	const unsigned int dofStartTrial = m_dofStart;
-	const unsigned int dofEndTrial = dofStartTrial + m_dofCount - 1;
-	const arma::Col<ResultType>& xLocal = x_in.rows(dofStartTrial, dofEndTrial);
+	const unsigned int trialStart = trialDofStart();
+	const unsigned int trialCount = trialStart + trialDofCount() - 1;
+
+	const arma::Col<ResultType>& xLocal = x_in.rows(trialStart, trialCount);
 
 	// m_trialFarFieldMat(multipole coefficients, dofTrial)
 	m_mcoef = m_trialFarFieldMat*xLocal;
-	//if (norm(m_mcoef, 2)>1e-8)
-	//	std::cout << m_mcoef << std::endl;
-	//exit(1);
 }
 
 // local coefficients in each leaf, to far field contributation at each test dof
@@ -318,19 +315,19 @@ template <typename ResultType>
 void OctreeNode<ResultType>::evaluateFarFieldMatrixVectorProduct(
 	const arma::Col<CoordinateType>& weights, arma::Col<ResultType>& y_inout)
 {
-	if (isEmpty()) {
+	if (testDofCount()==0) {
 		return;
 	}
 
-	const unsigned int dofStartTest = m_dofStart;
-	const unsigned int dofEndTest = dofStartTest + m_dofCount - 1;
+	const unsigned int testStart = testDofStart();
+	const unsigned int testCount = testStart + testDofCount() - 1;
 
 	// m_testFarFieldMat(dofTest, local coefficients)
 	// ylocal += [ (diag(lcoef)*m_testFarFieldMat^T)^T ]*weight
 	// equilvalent to ylocal += [ m_testFarFieldMat*(weight.*lcoef)
 	// part between [] is the local coefficient at each test dof, calc weighted sum
 	// special case, simplification possible since L2L operation is diagonal
-	y_inout.rows(dofStartTest, dofEndTest) += m_testFarFieldMat*(m_lcoef%weights);
+	y_inout.rows(testStart, testCount) += m_testFarFieldMat*(m_lcoef%weights);
 }
 
 

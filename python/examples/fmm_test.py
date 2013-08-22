@@ -41,11 +41,12 @@ options = lib.createAssemblyOptions()
 #print dir(options)
 
 if 0: # Use ACA to accelerate the assembly
-	options.switchToAca(lib.createAcaOptions())
+	#options.switchToAca(lib.createAcaOptions())
+	options.switchToDense()
 else: # Use FMM to accelerate the assembly
 	fmmOptions = lib.createFmmOptions()
-	fmmOptions.levels = 3
-	fmmOptions.L = 7
+	fmmOptions.levels = 4
+	fmmOptions.L = 8
 #	fmmOptions.numQuadPoints = 266
 	options.switchToFmmMode(fmmOptions)
 
@@ -75,10 +76,11 @@ grid = grid_factory.importGmshGrid(
 
 pwiseConstants = lib.createPiecewiseConstantScalarSpace(context, grid)
 pwiseLinears = lib.createPiecewiseLinearContinuousScalarSpace(context, grid)
+pwiseLinears = pwiseConstants
 #pwiseConstants = pwiseLinears
 
 dirichletData = lib.createGridFunction(
-    context, pwiseConstants, pwiseConstants, evalDirichletData)
+    context, pwiseLinears, pwiseLinears, evalDirichletData)
 
 # We now initialize the boundary operators.
 # A boundary operator always takes three space arguments: a domain space,
@@ -86,20 +88,25 @@ dirichletData = lib.createGridFunction(
 # Here, we just use L^2 projections. Hence, all spaces are identical.
 
 slpOp = lib.createHelmholtz3dSingleLayerBoundaryOperator(
-    context, pwiseConstants, pwiseConstants, pwiseConstants, k)
+   context, pwiseConstants, pwiseLinears, pwiseConstants, k)
+dlpOp = lib.createHelmholtz3dDoubleLayerBoundaryOperator(
+    context, pwiseLinears, pwiseLinears, pwiseConstants, k)
 adlpOp = lib.createHelmholtz3dAdjointDoubleLayerBoundaryOperator(
-    context, pwiseConstants, pwiseConstants, pwiseConstants, k)
+    context, pwiseLinears, pwiseLinears, pwiseConstants, k)
+hypOp = lib.createHelmholtz3dHypersingularBoundaryOperator(
+    context, pwiseLinears, pwiseLinears, pwiseConstants, k)
 idOp = lib.createIdentityOperator(
-    context, pwiseConstants, pwiseConstants, pwiseConstants)
+    context, pwiseLinears, pwiseLinears, pwiseConstants)
 
 # Standard arithmetic operators can be used to create linear combinations of
 # boundary operators.
 
-lhsOp = idOp + 2 * adlpOp - 2j * k * slpOp
-lhsOp = slpOp
+#lhsOp = idOp + 2 * adlpOp - 2j * k * slpOp
+lhsOp = hypOp
+
 res = lhsOp*dirichletData
 
-if 1:
+if 0:
 	options = lib.createAssemblyOptions()
 	options.switchToDenseMode()
 
@@ -108,9 +115,16 @@ if 1:
 	context = lib.createContext(quadStrategy, options)
 
 	slpOp = lib.createHelmholtz3dSingleLayerBoundaryOperator(
-	    context, pwiseConstants, pwiseConstants, pwiseConstants, k)
+	   context, pwiseConstants, pwiseLinears, pwiseConstants, k)
+	dlpOp = lib.createHelmholtz3dDoubleLayerBoundaryOperator(
+	    context, pwiseLinears, pwiseLinears, pwiseConstants, k)
+	adlpOp = lib.createHelmholtz3dAdjointDoubleLayerBoundaryOperator(
+	    context, pwiseLinears, pwiseLinears, pwiseConstants, k)
+	idOp = lib.createIdentityOperator(
+	    context, pwiseLinears, pwiseLinears, pwiseConstants)
+	lhsOp = dlpOp
 
-	resaca = slpOp*dirichletData
+	resaca = lhsOp*dirichletData
 	res -= resaca
 # Plot data
 

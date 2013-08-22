@@ -60,7 +60,8 @@ OctreeNearHelper<BasisFunctionType, ResultType>::OctreeNearHelper(
 			const std::vector<LocalAssembler*>& assemblers,
                const std::vector<ResultType>& denseTermsMultipliers,
 			const AssemblyOptions& options,
-			const std::vector<unsigned int> &p2o,
+			const std::vector<unsigned int> &test_p2o,
+			const std::vector<unsigned int> &trial_p2o,
 			bool indexWithGlobalDofs)
 	:	m_octree(octree), m_testSpace(testSpace), m_trialSpace(trialSpace),
 		m_assemblers(assemblers), m_denseTermsMultipliers(denseTermsMultipliers),
@@ -68,8 +69,9 @@ OctreeNearHelper<BasisFunctionType, ResultType>::OctreeNearHelper(
 {
 	// requires p2o the vector, not an IndexPermutation object. Provide access functions to cache for nodes
 	m_testDofListsCache = boost::make_shared<LocalDofListsCache<BasisFunctionType> >
-		(m_testSpace, p2o, indexWithGlobalDofs);
-	m_trialDofListsCache = m_testDofListsCache; // assume Hessian for now
+		(m_testSpace, test_p2o, indexWithGlobalDofs);
+	m_trialDofListsCache = boost::make_shared<LocalDofListsCache<BasisFunctionType> >
+		(m_trialSpace, trial_p2o, indexWithGlobalDofs);
 }
 
 
@@ -169,7 +171,7 @@ void OctreeNearHelper<BasisFunctionType, ResultType>::evaluateNearField(
 		OctreeNode<ResultType> &node = 
 			octree->getNode(n, octree->levels());
 
-		if (node.isEmpty()) {
+		if (node.testDofCount()==0) {
 			return; //continue;
 		}
 		const std::vector<unsigned long>& neigbourList = node.neigbourList();
@@ -185,26 +187,29 @@ void OctreeNearHelper<BasisFunctionType, ResultType>::evaluateNearField(
 		std::vector<arma::Mat<ResultType> > nearFieldMats;
 		nearFieldMats.resize(neigbourList.size()+1);
 
-		const unsigned int dofStartTest = node.dofStart();
-		const unsigned int dofCountTest = node.dofCount();
+		const unsigned int testDofStart = node.testDofStart();
+		const unsigned int testDofCount = node.testDofCount();
 
 		// first entry is the self-interaction
-		unsigned int dofStartTrial = dofStartTest;
-		unsigned int dofCountTrial = dofCountTest;
+		if (node.trialDofCount()) {
+			unsigned int trialDofStart = node.trialDofStart();
+			unsigned int trialDofCount = node.trialDofCount();
 
-		nearFieldMats[0] = evaluateNearFieldIntegrals(dofStartTest, dofCountTest,
-			dofStartTrial, dofCountTrial);
+			nearFieldMats[0] = evaluateNearFieldIntegrals(
+				testDofStart, testDofCount,
+				trialDofStart, trialDofCount);
+		}
 
 		// repeat for the neighbours: trial functions are fixed in the current node
 		// test functions are in the neigbourhood
 		for (unsigned long neigh = 0; neigh < neigbourList.size(); neigh++) {
 			const OctreeNode<ResultType> &nodeneigh = octree->getNodeConst(
 				neigbourList[neigh], octree->levels());
-			dofStartTrial = nodeneigh.dofStart();
-			dofCountTrial = nodeneigh.dofCount();
+			unsigned int trialDofStart = nodeneigh.trialDofStart();
+			unsigned int trialDofCount = nodeneigh.trialDofCount();
 	
 			nearFieldMats[neigh+1] = evaluateNearFieldIntegrals(
-				dofStartTest, dofCountTest, dofStartTrial, dofCountTrial);
+				testDofStart, testDofCount, trialDofStart, trialDofCount);
 		}
 
 		node.setNearFieldMats(nearFieldMats);
@@ -226,7 +231,8 @@ OctreeFarHelper<BasisFunctionType, ResultType>::OctreeFarHelper(
 			const Space<BasisFunctionType>& testSpace,
 			const Space<BasisFunctionType>& trialSpace,
 			const AssemblyOptions& options,
-			const std::vector<unsigned int> &p2o,
+			const std::vector<unsigned int> &test_p2o,
+			const std::vector<unsigned int> &trial_p2o,
 			bool indexWithGlobalDofs,
 			const FmmTransform<ResultType> &fmmTransform)
 	:	m_octree(octree), m_testSpace(testSpace), m_trialSpace(trialSpace),
@@ -234,8 +240,9 @@ OctreeFarHelper<BasisFunctionType, ResultType>::OctreeFarHelper(
 {
 	// requires p2o the vector, not an IndexPermutation object. Provide access functions to cache for nodes
 	m_testDofListsCache = boost::make_shared<LocalDofListsCache<BasisFunctionType> >
-		(m_testSpace, p2o, indexWithGlobalDofs);
-	m_trialDofListsCache = m_testDofListsCache; // assume Hessian for now
+		(m_testSpace, test_p2o, indexWithGlobalDofs);
+	m_trialDofListsCache = boost::make_shared<LocalDofListsCache<BasisFunctionType> >
+		(m_trialSpace, trial_p2o, indexWithGlobalDofs);
 }
 
 
@@ -344,44 +351,43 @@ void OctreeFarHelper<BasisFunctionType, ResultType>::operator()(
 	// will need one FmmLocalAssembler per process, since each leaf modifies
 	// function, which is a member function
 	FmmLocalAssembler<BasisFunctionType, ResultType> 
-		fmmTrialLocalAssembler(m_trialSpace, m_options, false);
-
-	FmmLocalAssembler<BasisFunctionType, ResultType> 
 		fmmTestLocalAssembler(m_testSpace, m_options, true);
 
-	//std::cout << " thread " << range.begin()<<" size " << range.end() - range.begin() <<std::endl;
+	FmmLocalAssembler<BasisFunctionType, ResultType> 
+		fmmTrialLocalAssembler(m_trialSpace, m_options, false);
+
 	for( unsigned int n=range.begin(); n!=range.end(); ++n ) {
 
 		OctreeNode<ResultType> &node = 
 			m_octree->getNode(n, m_octree->levels());
 	
-		if (node.isEmpty()) {
-			continue;
-		}
-
 		CoordinateType cen[3];
 		m_octree->nodeCentre(n, m_octree->levels(), cen);
 
-		// evaulate and store trial far-field
-		const unsigned int dofStartTrial = node.dofStart();
-		const unsigned int dofCountTrial = node.dofCount();
-		arma::Mat<ResultType> trialFarFieldMat;
-		trialFarFieldMat = evaluateFarFieldIntegrals(
-			fmmTrialLocalAssembler, m_fmmTransform, cen, 
-			dofStartTrial, dofCountTrial, false);
-
-		node.setTrialFarFieldMat(trialFarFieldMat);
-
 		// evaulate and store test far-field
-		const unsigned int dofStartTest = node.dofStart();
-		const unsigned int dofCountTest = node.dofCount();
-		arma::Mat<ResultType> testFarFieldMat;
-		testFarFieldMat = evaluateFarFieldIntegrals(
-			fmmTestLocalAssembler, m_fmmTransform, cen, 
-			dofStartTest, dofCountTest, true);
-		testFarFieldMat = testFarFieldMat.st(); // transpose
+		if (node.testDofCount()) {
+			const unsigned int testDofStart = node.testDofStart();
+			const unsigned int testDofCount = node.testDofCount();
+			arma::Mat<ResultType> testFarFieldMat;
+			testFarFieldMat = evaluateFarFieldIntegrals(
+				fmmTestLocalAssembler, m_fmmTransform, cen, 
+				testDofStart, testDofCount, true);
+			testFarFieldMat = testFarFieldMat.st(); // transpose
 
-		node.setTestFarFieldMat(testFarFieldMat);
+			node.setTestFarFieldMat(testFarFieldMat);
+		}
+
+		// evaluate and store trial far-field
+		if (node.trialDofCount()) {
+			const unsigned int trialDofStart = node.trialDofStart();
+			const unsigned int trialDofCount = node.trialDofCount();
+			arma::Mat<ResultType> trialFarFieldMat;
+			trialFarFieldMat = evaluateFarFieldIntegrals(
+				fmmTrialLocalAssembler, m_fmmTransform, cen, 
+				trialDofStart, trialDofCount, false);
+
+			node.setTrialFarFieldMat(trialFarFieldMat);
+		}
 
 	} // for each node
 }
