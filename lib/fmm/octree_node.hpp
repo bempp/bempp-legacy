@@ -77,7 +77,8 @@ public:
 	void addLocalCoefficients(const arma::Col<ResultType> &localCoefficients);
 
 	unsigned int interactionListSize() const;
-	unsigned int interactionItem(unsigned int n) const;
+	unsigned int interactionList(unsigned int n) const;
+	unsigned int interactionItemList(unsigned int n) const;
 
 	void setTestDofStart(unsigned int start);
 	void setTrialDofStart(unsigned int start);
@@ -118,6 +119,7 @@ private:
 	unsigned int m_testDofCount;				// dofStart to dofStart + dofCount
 	std::vector<unsigned long> m_neigbourList;	// list of neighbours on the same level
 	std::vector<unsigned long> m_InteractionList;
+	std::vector<unsigned long> m_InteractionItemList;
 	arma::Col<ResultType> m_mcoef;	// multipole coefficients
 	arma::Col<ResultType> m_lcoef;	// local coefficients
 	// collection of near field matrices associated with the nearfield from current 

@@ -87,13 +87,37 @@ void OctreeNode<ResultType>::makeNeigbourList(const Octree<ResultType> &octree) 
 	std::sort (m_neigbourList.begin(), m_neigbourList.end());
 } // OctreeNode::makeNeigbourList
 
+
+class RelativePositionToInteractionItem
+{
+public:
+	RelativePositionToInteractionItem()
+	{
+		unsigned int item = 0;
+		memset(m_map, -1, 7*7*7*sizeof(unsigned int));
+		for (int indx=-3; indx<=3; indx++)
+			for (int indy=-3; indy<=3; indy++)
+				for (int indz=-3; indz<=3; indz++)
+					if (abs(indx) > 1 || abs(indy) > 1 || abs(indz) > 1)
+						m_map[indx+3][indy+3][indz+3] = item++;
+	}
+
+	unsigned int operator() (int indx, int indy, int indz) const
+	{
+		return m_map[indx+3][indy+3][indz+3];
+	}
+
+private:
+	unsigned int m_map[7][7][7];
+};
+
 // genererate the interation list. Need access to the Octree, to get references
 // to other nodes. We want to check if these nodes are empty.
 // call this function after assigning points to the tree
 // only pass in octree where we need it, incase it moves
 template <typename ResultType>
-void OctreeNode<ResultType>::makeInteractionList(const Octree<ResultType> &octree) {
-
+void OctreeNode<ResultType>::makeInteractionList(const Octree<ResultType> &octree)
+{
 	if (testDofCount()==0) {
 		return;
 	}
@@ -136,12 +160,32 @@ void OctreeNode<ResultType>::makeInteractionList(const Octree<ResultType> &octre
 
 	m_InteractionList.resize(childrenOfParentNeighList.size());
 	std::vector<unsigned long>::iterator it;
-	it = std::set_difference (childrenOfParentNeighList.begin(), childrenOfParentNeighList.end(),
+	it = std::set_difference (childrenOfParentNeighList.begin(), 
+		childrenOfParentNeighList.end(),
 		m_neigbourList.begin(), m_neigbourList.end(), m_InteractionList.begin());
 	m_InteractionList.resize(it-m_InteractionList.begin());
 	//std::cout << m_InteractionList.size() << ' '; 
 	// the parents with children that do not intersect the neigbour list
 	// could be detected here
+
+
+	m_InteractionItemList.resize(m_InteractionList.size());
+	static RelativePositionToInteractionItem relativePositionToInteractionItem;
+	unsigned long pos[3];
+	deMorton(&pos[0], &pos[1], &pos[2], number());
+	for (unsigned int inter=0; inter<m_InteractionList.size(); inter++) {
+		unsigned long interpos[3];
+		deMorton(&interpos[0], &interpos[1], &interpos[2], 
+			m_InteractionList[inter]);
+		int relpos[3];
+		relpos[0] = int(interpos[0]) - int(pos[0]);
+		relpos[1] = int(interpos[1]) - int(pos[1]);
+		relpos[2] = int(interpos[2]) - int(pos[2]);
+		m_InteractionItemList[inter] = 
+			relativePositionToInteractionItem(relpos[0], relpos[1], relpos[2]);
+		
+	}
+
 } // OctreeNode::makeInteractionList
 
 // return the centre of the node in (0,1)^3
@@ -218,8 +262,13 @@ unsigned int OctreeNode<ResultType>::interactionListSize() const
 }
 
 template <typename ResultType>
-unsigned int OctreeNode<ResultType>::interactionItem(unsigned int n) const {
+unsigned int OctreeNode<ResultType>::interactionList(unsigned int n) const {
 	return m_InteractionList[n];
+}
+
+template <typename ResultType>
+unsigned int OctreeNode<ResultType>::interactionItemList(unsigned int n) const {
+	return m_InteractionItemList[n];
 }
 
 template <typename ResultType>

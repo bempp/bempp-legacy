@@ -48,6 +48,7 @@ unsigned long getNodesPerLevel(unsigned long level);
 
 /** \cond FORWARD_DECL */
 template <typename ResultType> class OctreeNode;
+template <typename ResultType> class FmmCacheM2L;
 template <typename ValueType> class FmmTransform;
 class IndexPermutation;
 /** \endcond */
@@ -61,6 +62,7 @@ public:
 
 	Octree(unsigned int levels, 
 		const FmmTransform<ResultType> &fmmTransform,
+		const shared_ptr<FmmCacheM2L<ResultType> > &fmmCacheM2L,
 		const arma::Col<CoordinateType> &lowerBound,
 		const arma::Col<CoordinateType> &upperBound);
 
@@ -87,6 +89,7 @@ public:
 		CoordinateType centre[3]) const;
 	void nodeCentre(unsigned long number, unsigned int level,
 		arma::Col<CoordinateType> &centre) const;
+	const FmmCacheM2L<ResultType>& fmmCacheM2L() {return *m_fmmCacheM2L;}
 private:
 	unsigned long getLeafContainingPoint(const Point3D<CoordinateType> &point) const;
 	const unsigned int m_levels;
@@ -96,6 +99,7 @@ private:
 	shared_ptr<IndexPermutation> m_test_p2o, m_trial_p2o;
 	const FmmTransform<ResultType>& m_fmmTransform;
 	arma::Col<CoordinateType> m_lowerBound, m_upperBound;
+	shared_ptr<FmmCacheM2L<ResultType> > m_fmmCacheM2L;
 };
 
 } // namespace Bempp

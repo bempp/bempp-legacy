@@ -121,11 +121,17 @@ FmmGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 	//	boost::make_shared<FmmTransformPlaneWave<ResultType> >
 	//		(fmmOptions.L, fmmOptions.numQuadPoints);
 
+	std::cout << "Caching M2L operators" << std::endl;
+	shared_ptr<FmmCacheM2L<ResultType> > fmmCacheM2L = 
+		boost::make_shared<FmmCacheM2L<ResultType> > (fmmTransform, fmmOptions.levels,
+			arma::conv_to<arma::Col<CoordinateType> >::from(lowerBound),
+			arma::conv_to<arma::Col<CoordinateType> >::from(upperBound));
+
 	// Note that in future the octree will need to store dof's for test
 	// and trial spaces individually, if the two differ in order
 	unsigned int nLevels = fmmOptions.levels;
 	shared_ptr<Octree<ResultType> > octree = 
-		boost::make_shared<Octree<ResultType> >(nLevels, fmmTransform,
+		boost::make_shared<Octree<ResultType> >(nLevels, fmmTransform, fmmCacheM2L, 
 			arma::conv_to<arma::Col<CoordinateType> >::from(lowerBound),
 			arma::conv_to<arma::Col<CoordinateType> >::from(upperBound));
 

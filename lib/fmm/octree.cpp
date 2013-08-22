@@ -119,11 +119,12 @@ template <typename ResultType>
 Octree<ResultType>::Octree(
 		unsigned int levels,
 		const FmmTransform<ResultType>& fmmTransform,
+		const shared_ptr<FmmCacheM2L<ResultType> > &fmmCacheM2L,
 		const arma::Col<CoordinateType> &lowerBound,
 		const arma::Col<CoordinateType> &upperBound)
 	:	m_topLevel(2), m_levels(levels), 
-		m_fmmTransform(fmmTransform), m_lowerBound(lowerBound), 
-		m_upperBound(upperBound)
+		m_fmmTransform(fmmTransform), m_fmmCacheM2L(fmmCacheM2L),
+		m_lowerBound(lowerBound), m_upperBound(upperBound)
 {
 	m_OctreeNodes.resize(levels-m_topLevel+1);
 	std::cout << "Octree constructor " << std::endl;
@@ -431,7 +432,7 @@ public:
 		for (unsigned int ind=0; 
 			ind<m_octree.getNode(node,m_level).interactionListSize();
 			ind++) {
-			unsigned int inter = m_octree.getNode(node,m_level).interactionItem(ind);
+			unsigned int inter = m_octree.getNode(node,m_level).interactionList(ind);
 #else
 		// single level FMM (test), must disable M2M and L2L
 		unsigned int nNodes = getNodesPerLevel(m_level);
@@ -449,7 +450,10 @@ public:
 
 			// calculate multipole to local (M2L) translation matrix
 //			ResultType scaledhl;
-			cvec m2l = m_fmmTransform.M2L(Rinter, R);
+//			cvec m2l = m_fmmTransform.M2L(Rinter, R);
+			cvec m2l = m_octree.fmmCacheM2L().M2L(m_level, 
+				m_octree.getNode(node,m_level).interactionItemList(ind));
+
 			// add contribution of interation list node to current node
 			for (unsigned int p=0; p<m_fmmTransform.P(); p++) { // each quadrature point
 				lcoef[p] += m2l[p]*m_octree.getNode(inter,m_level).mcoef(p);

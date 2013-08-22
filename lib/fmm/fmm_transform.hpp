@@ -21,6 +21,7 @@
 #ifndef bempp_fmm_transform_hpp
 #define bempp_fmm_transform_hpp
 
+#include <vector>
 
 #include "../common/armadillo_fwd.hpp"
 #include "../fiber/scalar_traits.hpp"
@@ -114,13 +115,33 @@ public:
 	virtual arma::Col<ValueType> L2L(CoordinateType x1[3], CoordinateType x2[3]) const;
 
 	virtual void generateGaussPoints();
-	
+
 	ValueType kappa() const {return m_kappa;}
 private:
 	// must be purely real/imag for now, since boost special functions
 	// do not support complex arguments
 	ValueType m_kappa;
 	unsigned int m_L;
+};
+
+
+template <typename ValueType>
+class FmmCacheM2L
+{
+public:
+	typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
+
+	FmmCacheM2L(
+		const FmmTransform<ValueType>& fmmTransform,
+		unsigned int levels,
+		const arma::Col<CoordinateType> &lowerBound,
+		const arma::Col<CoordinateType> &upperBound);
+
+	arma::Col<ValueType> M2L(unsigned int level, unsigned int item) const;
+
+private:
+	const unsigned int m_topLevel; // top level in the octee
+	std::vector<std::vector<arma::Col<ValueType> > > m_cacheM2L;
 };
 
 } // namespace Bempp

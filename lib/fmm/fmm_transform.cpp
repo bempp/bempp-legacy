@@ -224,6 +224,57 @@ FmmHighFreq<ValueType>::M2L(
 }
 
 
+template <typename ValueType>
+FmmCacheM2L<ValueType>::FmmCacheM2L(
+		const FmmTransform<ValueType>& fmmTransform,
+		unsigned int levels,
+		const arma::Col<CoordinateType> &lowerBound,
+		const arma::Col<CoordinateType> &upperBound)
+	: m_topLevel(2)
+{
+	m_cacheM2L.resize(levels-m_topLevel+1);
+
+	for (unsigned int level = m_topLevel; level<=levels; level++) {
+
+		// there are 7^3-3^3=316 unique translation matrices for translation
+		// invariant operators
+		m_cacheM2L[level-m_topLevel].resize(316);
+
+		unsigned int boxesPerSide = 1 << level;
+		arma::Col<CoordinateType> boxSize;
+		boxSize = (upperBound - lowerBound)/boxesPerSide;
+
+		CoordinateType origin[3] = {0.0, 0.0, 0.0};
+		CoordinateType centre[3];
+
+		unsigned int index = 0;
+		for (int indx=-3; indx<=3; indx++) {
+			centre[0] = indx*boxSize[0];
+			for (int indy=-3; indy<=3; indy++) {
+				centre[1] = indy*boxSize[1];
+				for (int indz=-3; indz<=3; indz++) {
+					centre[2] = indz*boxSize[2];
+
+					if (abs(indx) > 1 || abs(indy) > 1 || abs(indz) > 1) {
+
+						arma::Col<ValueType> m2l = fmmTransform.M2L(centre, origin);
+
+						m_cacheM2L[level-m_topLevel][index++] = m2l;
+
+					} // if not a nearest neighbour
+				} // for each x offset
+			} // for each x offset
+		} // for each x offset
+	} // for each level
+} // createCacheM
+
+template <typename ValueType>
+arma::Col<ValueType> 
+FmmCacheM2L<ValueType>::M2L(unsigned int level, unsigned int item) const
+{
+	return m_cacheM2L[level-m_topLevel][item];
+}
+
 // P'_n(x): Derivative of the n_{th} order Legendre polynomial w.r.t. x
 template <typename ValueType> // must be a real type
 ValueType diff_legendre_p(int n, ValueType x)
@@ -271,5 +322,6 @@ void legendre_roots(unsigned int N, ValueType *roots, ValueType *weights)
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(FmmTransform);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(FmmHighFreq);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(FmmCacheM2L);
 
 } // namespace Bempp
