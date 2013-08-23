@@ -19,6 +19,7 @@
 // THE SOFTWARE.
 
 #include "piecewise_linear_continuous_scalar_space_barycentric.hpp"
+#include "piecewise_linear_discontinuous_scalar_space_barycentric.hpp"
 
 #include "piecewise_linear_continuous_scalar_space.hpp"
 #include "space_helper.hpp"
@@ -94,18 +95,16 @@ shared_ptr<const Space<BasisFunctionType> >
 PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::discontinuousSpace(
     const shared_ptr<const Space<BasisFunctionType> >& self) const
 {
-//    if (!m_discontinuousSpace) {
-//        tbb::mutex::scoped_lock lock(m_discontinuousSpaceMutex);
-//        typedef PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>
-//                DiscontinuousSpace;
-//        if (!m_discontinuousSpace)
-//            m_discontinuousSpace.reset(
-//                        new DiscontinuousSpace(this->grid(), m_segment,
-//                                               m_strictlyOnSegment));
-//    }
-//    return m_discontinuousSpace;
-    std::runtime_error("PiecewiseLinearContinuousScalarSpaceBarycentric::discontinuousSpace():"
-                       "Not yet implemented.");
+    if (!m_discontinuousSpace) {
+        tbb::mutex::scoped_lock lock(m_discontinuousSpaceMutex);
+        typedef PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>
+                DiscontinuousSpace;
+        if (!m_discontinuousSpace)
+            m_discontinuousSpace.reset(
+                        new DiscontinuousSpace(this->grid(), m_segment,
+                                               m_strictlyOnSegment));
+    }
+    return m_discontinuousSpace;
 }
 
 template <typename BasisFunctionType>
@@ -228,8 +227,6 @@ void PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::assignD
             const Geometry& geom = element.geometry();
             arma::Mat<double> corners;
             geom.getCorners(corners);
-            std::cout << "Corners of element " << elementIndex << std::endl;
-            std::cout << corners << std::endl;
 
             if (sonCounter%2==0){
                 acc(m_elementIndex2Type,elementIndex) = Basis::TYPE1;
@@ -248,7 +245,6 @@ void PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::assignD
                 EntityIndex vertexIndex = elementMapperCoarseGrid.subEntityIndex(elementCoarseGrid,i,gridDim);
                 int globalDofIndex = elementContained ? acc(globalDofIndices,vertexIndex)
                                                   : -1;
-                std::cout << "(Element,LocalDof,GlobalDof) " << "(" << elementIndex <<","<< basisNumber << "," << globalDofIndex << ")" << std::endl;
                 acc(globalDofs,basisNumber)=globalDofIndex;
                 if (globalDofIndex >=0){
                     acc(m_global2localDofs, globalDofIndex).push_back(

@@ -64,9 +64,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs_type1,
     Fiber::BasisData<ValueType> data;
     basis.evaluate(Fiber::VALUES, points, Fiber::ALL_DOFS, data);
 
-    std::cout << "Extent: " << data.values.extent(0) << " " << data.values.extent(1) << " "
-              << data.values.extent(2) << std::endl;
-
     Fiber::_3dArray<ValueType> expected(1, // component count
                                         vertexCount,
                                         pointCount);
@@ -110,15 +107,61 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs_type2,
     expected(0, 0, 2) = 1./3;
 
     expected(0, 1, 0) = 0;
-    expected(0, 1, 1) = 0;
+    expected(0, 1, 1) = 1./2;
     expected(0, 1, 2) = 1./3;
 
     expected(0, 2, 0) = 0;
-    expected(0, 2, 1) = 1./2;
+    expected(0, 2, 1) = 0;
     expected(0, 2, 2) = 1./3;
 
     BOOST_CHECK(check_arrays_are_close<ValueType>(data.values, expected, 1e-10));
 }
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_all_dofs_type1,
+                              ValueType, basis_function_types)
+{
+    const int vertexCount = 3;
+    const int elementDim = 2;
+    const int pointCount = vertexCount;
+    typedef Fiber::PiecewiseLinearContinuousScalarBasisBarycentric<ValueType> Basis;
+    Basis basis(Basis::TYPE1);
+    arma::Mat<typename Basis::CoordinateType> points(elementDim, pointCount);
+    points.fill(0.);
+    points(0, 1) = 1.;
+    points(1, 2) = 1.;
+    Fiber::BasisData<ValueType> data;
+    basis.evaluate(Fiber::DERIVATIVES, points, Fiber::ALL_DOFS, data);
+
+    Fiber::_4dArray<ValueType> expected(1, // component count
+                                        2, //
+                                        vertexCount,
+                                        pointCount);
+    std::fill(expected.begin(), expected.end(), 0.);
+
+    expected(0, 0, 0, 0) = -2./3.;
+    expected(0, 1, 0, 0) = -1./2.;
+    expected(0, 0, 0, 1) = -2./3.;
+    expected(0, 1, 0, 1) = -1./2.;
+    expected(0, 0, 0, 2) = -2./3.;
+    expected(0, 1, 0, 2) = -1./2.;
+
+    expected(0, 0, 1, 0) = 1./3.;
+    expected(0, 1, 1, 0) = 0.;
+    expected(0, 0, 1, 1) = 1./3.;
+    expected(0, 1, 1, 1) = 0.;
+    expected(0, 0, 1, 2) = 1./3.;
+    expected(0, 1, 1, 2) = 0.;
+
+    expected(0, 0, 2, 0) = 1./3.;
+    expected(0, 1, 2, 0) = 1./2;
+    expected(0, 0, 2, 1) = 1./3.;
+    expected(0, 1, 2, 1) = 1./2;
+    expected(0, 0, 2, 2) = 1./3.;
+    expected(0, 1, 2, 2) = 1./2;
+
+    BOOST_CHECK(check_arrays_are_close<ValueType>(data.derivatives, expected, 1e-10));
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()
 

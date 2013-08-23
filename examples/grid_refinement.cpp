@@ -33,6 +33,7 @@
 #include "assembly/laplace_3d_double_layer_boundary_operator.hpp"
 #include "assembly/laplace_3d_single_layer_potential_operator.hpp"
 #include "assembly/laplace_3d_double_layer_potential_operator.hpp"
+#include "assembly/laplace_3d_hypersingular_boundary_operator.hpp"
 
 #include "common/boost_make_shared_fwd.hpp"
 
@@ -45,6 +46,7 @@
 #include "space/piecewise_constant_scalar_space.hpp"
 #include "space/piecewise_constant_dual_mesh_scalar_space_barycentric.hpp"
 #include "space/piecewise_linear_continuous_scalar_space_barycentric.hpp"
+#include "space/piecewise_linear_discontinuous_scalar_space_barycentric.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -105,113 +107,160 @@ public:
 
 int main()
 {
-    // Import symbols from namespace Bempp to the global namespace
+//    // Import symbols from namespace Bempp to the global namespace
 
-    using namespace Bempp;
+//    using namespace Bempp;
 
-    // Load mesh
+//    // Load mesh
 
-    arma::Col<double> lowerLeft(2);
-    arma::Col<double> upperRight(2);
-    arma::Col<unsigned int> elemNumbers(2);
+//    arma::Col<double> lowerLeft(2);
+//    arma::Col<double> upperRight(2);
+//    arma::Col<unsigned int> elemNumbers(2);
 
-    arma::Mat<double> corners(3,3);
-    arma::Mat<int> elements(3,1);
+//    arma::Mat<double> corners(3,3);
+//    arma::Mat<int> elements(3,1);
 
-    corners(0,0) = 0;
-    corners(1,0) = 0;
-    corners(2,0) = 0;
+//    corners(0,0) = 0;
+//    corners(1,0) = 0;
+//    corners(2,0) = 0;
 
-    corners(0,1) = 1;
-    corners(1,1) = 0;
-    corners(2,1) = 0;
+//    corners(0,1) = 1;
+//    corners(1,1) = 0;
+//    corners(2,1) = 0;
 
-    corners(0,2) = 0;
-    corners(1,2) = 1;
-    corners(2,2) = 1;
+//    corners(0,2) = 0;
+//    corners(1,2) = 1;
+//    corners(2,2) = 1;
 
-    elements(0,0) = 0;
-    elements(1,0) = 1;
-    elements(2,0) = 2;
-
-
-//    lowerLeft(0) = 0;
-//    lowerLeft(1) = 0;
-//    upperRight(0) = 1;
-//    upperRight(1) = 1;
-//    elemNumbers(0) = 1;
-//    elemNumbers(1) = 1;
-
-    //const char* meshFile = "/Users/betcke/local/bempp/development-debug/bempp/examples/meshes/sphere-h-0.4.msh";
-    GridParameters params;
-    params.topology = GridParameters::TRIANGULAR;
-    //shared_ptr<Grid> grid = GridFactory::importGmshGrid(params, meshFile);
-    //shared_ptr<Grid> grid = GridFactory::createStructuredGrid(params,lowerLeft,upperRight,elemNumbers);
-    shared_ptr<Grid> grid = GridFactory::createGridFromConnectivityArrays(params,corners,elements);
-    //shared_ptr<Grid> grid2 = grid->barycentricGrid();
-
-    // Initialize the spaces
-
-    //PiecewiseConstantDualMeshScalarSpaceBarycentric<BFT> pconsts(grid2);
-    //PiecewiseConstantDualMeshScalarSpaceBarycentric<BFT> pconsts(grid);
-    //std::cout << "Dual Space end" << std::endl;
-
-    PiecewiseLinearContinuousScalarSpaceBarycentric<BFT> plinsb(grid);
-    PiecewiseLinearContinuousScalarSpace<BFT>plins(grid);
+//    elements(0,0) = 0;
+//    elements(1,0) = 1;
+//    elements(2,0) = 2;
 
 
-    // Define the quadrature strategy
+////    lowerLeft(0) = 0;
+////    lowerLeft(1) = 0;
+////    upperRight(0) = 1;
+////    upperRight(1) = 1;
+////    elemNumbers(0) = 1;
+////    elemNumbers(1) = 1;
 
-    AccuracyOptions accuracyOptions;
-    // Increase by 2 the order of quadrature rule used to approximate
-    // integrals of regular functions on pairs on elements
-    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(8);
-    accuracyOptions.doubleSingular.setRelativeQuadratureOrder(8);
-    // Increase by 2 the order of quadrature rule used to approximate
-    // integrals of regular functions on single elements
-    accuracyOptions.singleRegular.setRelativeQuadratureOrder(6);
-    NumericalQuadratureStrategy<BFT, RT> quadStrategy(accuracyOptions);
+//    //const char* meshFile = "/Users/betcke/local/bempp/development-debug/bempp/examples/meshes/sphere-h-0.4.msh";
+//    GridParameters params;
+//    params.topology = GridParameters::TRIANGULAR;
+//    //shared_ptr<Grid> grid = GridFactory::importGmshGrid(params, meshFile);
+//    //shared_ptr<Grid> grid = GridFactory::createStructuredGrid(params,lowerLeft,upperRight,elemNumbers);
+//    shared_ptr<Grid> grid = GridFactory::createGridFromConnectivityArrays(params,corners,elements);
+//    //shared_ptr<Grid> grid2 = grid->barycentricGrid();
 
-    // Specify the assembly method. We want to use ACA
+//    // Initialize the spaces
 
-    AssemblyOptions assemblyOptions;
-    AcaOptions acaOptions; // Default parameters for ACA
-    assemblyOptions.switchToAcaMode(acaOptions);
+//    //PiecewiseConstantDualMeshScalarSpaceBarycentric<BFT> pconsts(grid2);
+//    //PiecewiseConstantDualMeshScalarSpaceBarycentric<BFT> pconsts(grid);
+//    //std::cout << "Dual Space end" << std::endl;
 
-    // Create the assembly context
-
-    Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);
-
-    // Construct elementary operators
-
-    BoundaryOperator<BFT, RT> slpOpb =
-            laplace3dSingleLayerBoundaryOperator<BFT, RT>(
-                make_shared_from_ref(context),
-                make_shared_from_ref(plinsb),
-                make_shared_from_ref(plinsb),
-                make_shared_from_ref(plinsb));
-
-    BoundaryOperator<BFT, RT> slpOp =
-            laplace3dSingleLayerBoundaryOperator<BFT, RT>(
-                make_shared_from_ref(context),
-                make_shared_from_ref(plins),
-                make_shared_from_ref(plins),
-                make_shared_from_ref(plins));
+//    PiecewiseLinearContinuousScalarSpaceBarycentric<BFT> plins(grid);
+//    PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BFT>plinsd(grid);
 
 
-    shared_ptr<const DiscreteBoundaryOperator<RT> > slpWeakb = slpOpb.weakForm();
-    shared_ptr<const DiscreteBoundaryOperator<RT> > slpWeak = slpOp.weakForm();
-
-    arma::Mat<double> mb = slpWeakb->asMatrix();
-    arma::Mat<double> m = slpWeak->asMatrix();
-
-    std::cout << mb << " " << std::endl;
-    std::cout << m << " " << std::endl;
 
 
-    std::cout << "("<<slpWeakb->rowCount()<<","<<slpWeakb->columnCount()<<")"<<std::endl;
-    std::cout << "("<<slpWeakb->rowCount()<<","<<slpWeakb->columnCount()<<")"<<std::endl;
-    return 0;
+//    // Define the quadrature strategy
+
+//    AccuracyOptions accuracyOptions;
+//    // Increase by 2 the order of quadrature rule used to approximate
+//    // integrals of regular functions on pairs on elements
+//    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(8);
+//    accuracyOptions.doubleSingular.setRelativeQuadratureOrder(8);
+//    // Increase by 2 the order of quadrature rule used to approximate
+//    // integrals of regular functions on single elements
+//    accuracyOptions.singleRegular.setRelativeQuadratureOrder(6);
+//    NumericalQuadratureStrategy<BFT, RT> quadStrategy(accuracyOptions);
+
+//    // Specify the assembly method. We want to use ACA
+
+//    AssemblyOptions assemblyOptions;
+//    AcaOptions acaOptions; // Default parameters for ACA
+//    assemblyOptions.switchToAcaMode(acaOptions);
+
+//    // Create the assembly context
+
+//    Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);
+
+//    // Construct elementary operators
+
+//    BoundaryOperator<BFT, RT> hypersing =
+//            laplace3dHypersingularBoundaryOperator<BFT, RT>(
+//                make_shared_from_ref(context),
+//                make_shared_from_ref(plins),
+//                make_shared_from_ref(plins),
+//                make_shared_from_ref(plins));
+
+////    BoundaryOperator<BFT, RT> slpOpd =
+////            laplace3dSingleLayerBoundaryOperator<BFT, RT>(
+////                make_shared_from_ref(context),
+////                make_shared_from_ref(plinsd),
+////                make_shared_from_ref(plinsd),
+////                make_shared_from_ref(plinsd));
 
 
+//    shared_ptr<const DiscreteBoundaryOperator<RT> > weak = hypersing.weakForm();
+//    std::cout << "("<<weak->rowCount()<<","<<weak->columnCount()<<")"<<std::endl;
+////    shared_ptr<const DiscreteBoundaryOperator<RT> > slpWeakd = slpOpd.weakForm();
+
+////    arma::Mat<double> m = slpWeak->asMatrix();
+////    arma::Mat<double> md = slpWeakd->asMatrix();
+
+////    std::cout << m << " " << std::endl;
+////    std::cout << md << " " << std::endl;
+
+
+////    std::cout << "("<<slpWeak->rowCount()<<","<<slpWeak->columnCount()<<")"<<std::endl;
+////    std::cout << "("<<slpWeakd->rowCount()<<","<<slpWeakd->columnCount()<<")"<<std::endl;
+////    return 0;
+
+    const int vertexCount = 3;
+    const int elementDim = 2;
+    const int pointCount = vertexCount;
+    typedef Fiber::PiecewiseLinearContinuousScalarBasisBarycentric<BFT> Basis;
+    Basis basis(Basis::TYPE1);
+    arma::Mat<Basis::CoordinateType> points(elementDim, pointCount);
+    points.fill(0.);
+    points(0, 1) = 1.;
+    points(1, 2) = 1.;
+    Fiber::BasisData<BFT> data;
+    basis.evaluate(Fiber::DERIVATIVES, points, Fiber::ALL_DOFS, data);
+
+    Fiber::_4dArray<BFT> expected(1, // component count
+                                        2, //
+                                        vertexCount,
+                                        pointCount);
+    std::fill(expected.begin(), expected.end(), 0.);
+
+    expected(0, 0, 0, 0) = -2./3.;
+    expected(0, 1, 0, 0) = -1./2.;
+    expected(0, 0, 0, 1) = -2./3.;
+    expected(0, 1, 0, 1) = -1./2.;
+    expected(0, 0, 0, 2) = -2./3.;
+    expected(0, 1, 0, 2) = -1./2.;
+
+    expected(0, 0, 1, 0) = 1./3.;
+    expected(0, 1, 1, 0) = 0.;
+    expected(0, 0, 1, 1) = 1./3.;
+    expected(0, 1, 1, 1) = 0.;
+    expected(0, 0, 1, 2) = 1./3.;
+    expected(0, 1, 1, 2) = 0.;
+
+    expected(0, 0, 2, 0) = 1./3.;
+    expected(0, 1, 2, 0) = 1./2;
+    expected(0, 0, 2, 1) = 1./3.;
+    expected(0, 1, 2, 1) = 1./2;
+    expected(0, 0, 2, 2) = 1./3.;
+    expected(0, 1, 2, 2) = 1./2;
+
+    for (int i=0;i<expected.extent(0);++i)
+        for (int j=0;j<expected.extent(1);++j)
+            for (int k=0;k<expected.extent(2);++k)
+                for (int l=0;l<expected.extent(3);++l){
+                    std::cout << "("<<i<<","<<j<<","<<k<<","<<l<<"): "<< expected(i,j,k,l) << ", "<< data.derivatives(i,j,k,l)<< std::endl;
+                }
 }

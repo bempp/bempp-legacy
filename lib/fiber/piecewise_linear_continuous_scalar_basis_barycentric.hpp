@@ -84,7 +84,7 @@ public:
                 }
             }
             if (what & DERIVATIVES){
-                data.derivatives.set_size(1,temp.derivatives.extent(1),1,temp.values.extent(3));
+                data.derivatives.set_size(1,temp.derivatives.extent(1),1,temp.derivatives.extent(3));
                 for (int i=0;i<data.derivatives.extent(1);++i)
                     for (int j=0;j<data.derivatives.extent(3);++j){
                         data.derivatives(0,i,0,j) = 0;
@@ -111,7 +111,7 @@ public:
             }
 
             if (what & DERIVATIVES){
-                data.derivatives.set_size(1,temp.derivatives.extent(1),3,temp.values.extent(3));
+                data.derivatives.set_size(1,temp.derivatives.extent(1),3,temp.derivatives.extent(3));
                 for (int dofIndex=0;dofIndex<3;++dofIndex)
                     for (int i=0;i<data.derivatives.extent(1);++i)
                         for (int j=0;j<data.derivatives.extent(3);++j){

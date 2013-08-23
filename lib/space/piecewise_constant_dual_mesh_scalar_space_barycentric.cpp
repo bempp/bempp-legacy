@@ -234,7 +234,7 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::assignD
 
         std::auto_ptr<EntityIterator<0> > sonIt = element.sonIterator(this->grid()->maxLevel());
 
-        size_t sonCount = 0;
+        size_t sonCount = 5;
         while (!sonIt->finished()){
             const Entity<0>& sonElement = sonIt->entity();
             EntityIndex elementIndex = elementMapper.entityIndex(sonElement);
@@ -242,8 +242,6 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::assignD
             const Geometry& geom = sonElement.geometry();
             arma::Mat<double> corners;
             geom.getCorners(corners);
-            std::cout << "Corners of element " << elementIndex << std::endl;
-            std::cout << corners << std::endl;
 
 
             std::vector<GlobalDofIndex>& globalDof = acc(m_local2globalDofs, elementIndex);
@@ -257,7 +255,7 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::assignD
                             LocalDof(elementIndex, 0));
                 ++flatLocalDofCount_;
             }
-            sonCount++;
+            sonCount--;
             sonIt->next();
         }
         assert(sonCount==6);
