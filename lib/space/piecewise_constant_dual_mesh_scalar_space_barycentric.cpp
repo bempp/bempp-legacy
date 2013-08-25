@@ -144,6 +144,18 @@ PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::discontinuou
 }
 
 template <typename BasisFunctionType>
+shared_ptr<const Space<BasisFunctionType> >
+PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::barycentricSpace(
+            const shared_ptr<const Space<BasisFunctionType> >& self) const {
+
+    if (self.get()!=this)
+        throw std::invalid_argument(
+            "PiecewiseConstantDualMeshScalarSpaceBarycentric::barycentricSpace(): "
+            "argument should be a shared pointer to *this");
+     return self;
+}
+
+template <typename BasisFunctionType>
 bool
 PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::isDiscontinuous() const
 {
@@ -258,7 +270,6 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::assignD
             sonCount--;
             sonIt->next();
         }
-        assert(sonCount==6);
         it->next();
     }
 

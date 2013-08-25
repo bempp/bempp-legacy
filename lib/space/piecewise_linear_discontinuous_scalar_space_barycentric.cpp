@@ -126,6 +126,19 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::setE
 
 
 template <typename BasisFunctionType>
+shared_ptr<const Space<BasisFunctionType> >
+PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::barycentricSpace(
+            const shared_ptr<const Space<BasisFunctionType> >& self) const {
+
+    if (self.get()!=this)
+        throw std::invalid_argument(
+            "PiecewiseLinearDiscontinuousScalarSpaceBarycentric::barycentricSpace(): "
+            "argument should be a shared pointer to *this");
+     return self;
+}
+
+
+template <typename BasisFunctionType>
 void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::initialize()
 {
     const int gridDim = this->grid()->dim();

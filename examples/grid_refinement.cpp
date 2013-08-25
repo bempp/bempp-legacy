@@ -39,6 +39,14 @@
 
 #include "grid/grid.hpp"
 #include "grid/grid_factory.hpp"
+#include "grid/reverse_element_mapper.hpp"
+#include "grid/grid_view.hpp"
+#include "grid/geometry.hpp"
+#include "grid/entity.hpp"
+#include "grid/entity_pointer.hpp"
+#include "grid/mapper.hpp"
+
+
 
 #include "linalg/default_iterative_solver.hpp"
 
@@ -109,7 +117,7 @@ int main()
 {
 //    // Import symbols from namespace Bempp to the global namespace
 
-//    using namespace Bempp;
+     using namespace Bempp;
 
 //    // Load mesh
 
@@ -144,123 +152,50 @@ int main()
 ////    elemNumbers(0) = 1;
 ////    elemNumbers(1) = 1;
 
-//    //const char* meshFile = "/Users/betcke/local/bempp/development-debug/bempp/examples/meshes/sphere-h-0.4.msh";
-//    GridParameters params;
-//    params.topology = GridParameters::TRIANGULAR;
-//    //shared_ptr<Grid> grid = GridFactory::importGmshGrid(params, meshFile);
-//    //shared_ptr<Grid> grid = GridFactory::createStructuredGrid(params,lowerLeft,upperRight,elemNumbers);
-//    shared_ptr<Grid> grid = GridFactory::createGridFromConnectivityArrays(params,corners,elements);
-//    //shared_ptr<Grid> grid2 = grid->barycentricGrid();
+      const char* meshFile = "/Users/betcke/local/bempp/development-debug/bempp/examples/meshes/sphere-h-0.4.msh";
+      GridParameters params;
+      params.topology = GridParameters::TRIANGULAR;
+      shared_ptr<Grid> grid = GridFactory::importGmshGrid(params, meshFile);
+      shared_ptr<Grid> baryGrid = grid->barycentricGrid();
 
-//    // Initialize the spaces
+      PiecewiseLinearContinuousScalarSpace<BFT> plins(grid);
+      PiecewiseConstantDualMeshScalarSpaceBarycentric<BFT> plinsd(grid);
 
-//    //PiecewiseConstantDualMeshScalarSpaceBarycentric<BFT> pconsts(grid2);
-//    //PiecewiseConstantDualMeshScalarSpaceBarycentric<BFT> pconsts(grid);
-//    //std::cout << "Dual Space end" << std::endl;
+      std::vector<GlobalDofIndex> globalDofIndex;
+      globalDofIndex.push_back(0);
 
-//    PiecewiseLinearContinuousScalarSpaceBarycentric<BFT> plins(grid);
-//    PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BFT>plinsd(grid);
+      std::vector<std::vector<LocalDof> > localDofs;
 
+      plinsd.global2localDofs(globalDofIndex,localDofs);
 
-
-
-//    // Define the quadrature strategy
-
-//    AccuracyOptions accuracyOptions;
-//    // Increase by 2 the order of quadrature rule used to approximate
-//    // integrals of regular functions on pairs on elements
-//    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(8);
-//    accuracyOptions.doubleSingular.setRelativeQuadratureOrder(8);
-//    // Increase by 2 the order of quadrature rule used to approximate
-//    // integrals of regular functions on single elements
-//    accuracyOptions.singleRegular.setRelativeQuadratureOrder(6);
-//    NumericalQuadratureStrategy<BFT, RT> quadStrategy(accuracyOptions);
-
-//    // Specify the assembly method. We want to use ACA
-
-//    AssemblyOptions assemblyOptions;
-//    AcaOptions acaOptions; // Default parameters for ACA
-//    assemblyOptions.switchToAcaMode(acaOptions);
-
-//    // Create the assembly context
-
-//    Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);
-
-//    // Construct elementary operators
-
-//    BoundaryOperator<BFT, RT> hypersing =
-//            laplace3dHypersingularBoundaryOperator<BFT, RT>(
-//                make_shared_from_ref(context),
-//                make_shared_from_ref(plins),
-//                make_shared_from_ref(plins),
-//                make_shared_from_ref(plins));
-
-////    BoundaryOperator<BFT, RT> slpOpd =
-////            laplace3dSingleLayerBoundaryOperator<BFT, RT>(
-////                make_shared_from_ref(context),
-////                make_shared_from_ref(plinsd),
-////                make_shared_from_ref(plinsd),
-////                make_shared_from_ref(plinsd));
+      const std::vector<LocalDof>& zeroDof = localDofs[0];
+      std::auto_ptr<GridView> view = baryGrid->leafView();
+      std::auto_ptr<GridView> viewCoarse = baryGrid->levelView(0);
+      const ReverseElementMapper& reverseMapper = view->reverseElementMapper();
+      const Mapper& mapper = viewCoarse->elementMapper();
 
 
-//    shared_ptr<const DiscreteBoundaryOperator<RT> > weak = hypersing.weakForm();
-//    std::cout << "("<<weak->rowCount()<<","<<weak->columnCount()<<")"<<std::endl;
-////    shared_ptr<const DiscreteBoundaryOperator<RT> > slpWeakd = slpOpd.weakForm();
-
-////    arma::Mat<double> m = slpWeak->asMatrix();
-////    arma::Mat<double> md = slpWeakd->asMatrix();
-
-////    std::cout << m << " " << std::endl;
-////    std::cout << md << " " << std::endl;
 
 
-////    std::cout << "("<<slpWeak->rowCount()<<","<<slpWeak->columnCount()<<")"<<std::endl;
-////    std::cout << "("<<slpWeakd->rowCount()<<","<<slpWeakd->columnCount()<<")"<<std::endl;
-////    return 0;
+      for (int i=0;i<zeroDof.size();++i){
+          std::cout << "("<< zeroDof[i].entityIndex<<","<<zeroDof[i].dofIndex<<")"<< std::endl;
+          const EntityPointer<0>& elementPointer = reverseMapper.entityPointer(zeroDof[i].entityIndex);
+          const Entity<0>& element = elementPointer.entity();
+          const Geometry& geom = element.geometry();
+          arma::Mat<double> corners;
+          geom.getCorners(corners);
+          std::cout << corners;
+          std::auto_ptr<EntityPointer<0> > father = element.father();
+          const Entity<0>& fatherElement = father->entity();
+          std::cout << "Father element: " << mapper.entityIndex(fatherElement) << std::endl;
+      }
 
-    const int vertexCount = 3;
-    const int elementDim = 2;
-    const int pointCount = vertexCount;
-    typedef Fiber::PiecewiseLinearContinuousScalarBasisBarycentric<BFT> Basis;
-    Basis basis(Basis::TYPE1);
-    arma::Mat<Basis::CoordinateType> points(elementDim, pointCount);
-    points.fill(0.);
-    points(0, 1) = 1.;
-    points(1, 2) = 1.;
-    Fiber::BasisData<BFT> data;
-    basis.evaluate(Fiber::DERIVATIVES, points, Fiber::ALL_DOFS, data);
+      std::cout << "Linear space" << std::endl;
 
-    Fiber::_4dArray<BFT> expected(1, // component count
-                                        2, //
-                                        vertexCount,
-                                        pointCount);
-    std::fill(expected.begin(), expected.end(), 0.);
+      plins.global2localDofs(globalDofIndex,localDofs);
+      const std::vector<LocalDof>& zeroDof2 = localDofs[0];
+      for (int i=0;i<zeroDof2.size();++i){
+          std::cout << "("<< zeroDof2[i].entityIndex<<","<<zeroDof2[i].dofIndex<<")"<<std::endl;
+      }
 
-    expected(0, 0, 0, 0) = -2./3.;
-    expected(0, 1, 0, 0) = -1./2.;
-    expected(0, 0, 0, 1) = -2./3.;
-    expected(0, 1, 0, 1) = -1./2.;
-    expected(0, 0, 0, 2) = -2./3.;
-    expected(0, 1, 0, 2) = -1./2.;
-
-    expected(0, 0, 1, 0) = 1./3.;
-    expected(0, 1, 1, 0) = 0.;
-    expected(0, 0, 1, 1) = 1./3.;
-    expected(0, 1, 1, 1) = 0.;
-    expected(0, 0, 1, 2) = 1./3.;
-    expected(0, 1, 1, 2) = 0.;
-
-    expected(0, 0, 2, 0) = 1./3.;
-    expected(0, 1, 2, 0) = 1./2;
-    expected(0, 0, 2, 1) = 1./3.;
-    expected(0, 1, 2, 1) = 1./2;
-    expected(0, 0, 2, 2) = 1./3.;
-    expected(0, 1, 2, 2) = 1./2;
-
-    for (int i=0;i<expected.extent(0);++i)
-        for (int j=0;j<expected.extent(1);++j)
-            for (int k=0;k<expected.extent(2);++k)
-                for (int l=0;l<expected.extent(3);++l){
-                    std::cout << "("<<i<<","<<j<<","<<k<<","<<l<<"): "<< expected(i,j,k,l) << ", "<< data.derivatives(i,j,k,l)<< std::endl;
-                }
 }

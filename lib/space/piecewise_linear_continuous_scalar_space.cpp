@@ -21,6 +21,8 @@
 #include "piecewise_linear_continuous_scalar_space.hpp"
 
 #include "piecewise_linear_discontinuous_scalar_space.hpp"
+#include "piecewise_linear_continuous_scalar_space_barycentric.hpp"
+
 #include "space_helper.hpp"
 
 #include "../assembly/discrete_boundary_operator.hpp"
@@ -101,6 +103,24 @@ PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::discontinuousSpace(
     return m_discontinuousSpace;
 }
 
+template <typename BasisFunctionType>
+shared_ptr<const Space<BasisFunctionType> >
+PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::barycentricSpace(
+            const shared_ptr<const Space<BasisFunctionType> >& self) const {
+
+    if (!m_barycentricSpace) {
+        tbb::mutex::scoped_lock lock(m_barycentricSpaceMutex);
+        typedef PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>
+                BarycentricSpace;
+        if (!m_barycentricSpace)
+            m_barycentricSpace.reset(
+                        new BarycentricSpace(this->grid(), m_segment,
+                                               m_strictlyOnSegment));
+    }
+    return m_barycentricSpace;
+
+
+}
 
 template <typename BasisFunctionType>
 bool

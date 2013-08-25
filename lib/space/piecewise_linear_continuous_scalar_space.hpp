@@ -88,6 +88,9 @@ public:
         return false;
     }
 
+    virtual shared_ptr<const Space<BasisFunctionType> > barycentricSpace(
+            const shared_ptr<const Space<BasisFunctionType> >& self) const;
+
     virtual bool isDiscontinuous() const;
 
     virtual size_t globalDofCount() const;
@@ -137,7 +140,9 @@ private:
     std::vector<std::vector<LocalDof> > m_global2localDofs;
     std::vector<LocalDof> m_flatLocal2localDofs;
     mutable shared_ptr<Space<BasisFunctionType> > m_discontinuousSpace;
+    mutable shared_ptr<Space<BasisFunctionType> > m_barycentricSpace;
     mutable tbb::mutex m_discontinuousSpaceMutex;
+    mutable tbb::mutex m_barycentricSpaceMutex;
     /** \endcond */
 };
 

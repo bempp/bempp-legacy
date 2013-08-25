@@ -176,6 +176,11 @@ public:
      *  are defined. */
     shared_ptr<const Grid> grid() const { return m_grid; }
 
+    /** \brief Return an equivalent space (in terms of global Dofs), but defined using
+     *  local dofs on the barycentrically refined grid. */
+    virtual shared_ptr<const Space<BasisFunctionType> > barycentricSpace(
+            const shared_ptr<const Space<BasisFunctionType> >& self) const;
+
     /** \brief Return the grid level of the current space */
     unsigned int level() const {return m_level; }
 

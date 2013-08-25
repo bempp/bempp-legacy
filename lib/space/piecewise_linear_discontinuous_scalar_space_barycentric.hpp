@@ -93,6 +93,8 @@ public:
         return true;
     }
 
+    virtual shared_ptr<const Space<BasisFunctionType> > barycentricSpace(
+                const shared_ptr<const Space<BasisFunctionType> >& self) const;
 
     /** \brief Return the variant of element \p element.
      *
