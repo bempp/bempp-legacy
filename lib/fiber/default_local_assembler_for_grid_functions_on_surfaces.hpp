@@ -41,6 +41,9 @@ class OpenClHandler;
 template <typename CoordinateType> class CollectionOfShapesetTransformations;
 template <typename ValueType> class Function;
 template <typename CoordinateType> class RawGridGeometry;
+
+template <typename CoordinateType> class QuadratureDescriptorSelectorForGridFunctions;
+template <typename CoordinateType> class SingleQuadratureRuleFamily;
 /** \endcond */
 
 template <typename BasisFunctionType, typename UserFunctionType,
@@ -54,11 +57,16 @@ public:
     DefaultLocalAssemblerForGridFunctionsOnSurfaces(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-            const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
-            const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
+            const shared_ptr<const std::vector<
+                const Shapeset<BasisFunctionType>*> >& testShapesets,
+            const shared_ptr<const CollectionOfShapesetTransformations<
+                CoordinateType> >& testTransformations,
             const shared_ptr<const Function<UserFunctionType> >& function,
             const shared_ptr<const OpenClHandler>& openClHandler,
-            const QuadratureOptions& quadratureOptions = QuadratureOptions());
+            const shared_ptr<const QuadratureDescriptorSelectorForGridFunctions<
+                CoordinateType> >& quadDescSelector,
+            const shared_ptr<const SingleQuadratureRuleFamily<
+                CoordinateType> >& quadRuleFamily);
     virtual ~DefaultLocalAssemblerForGridFunctionsOnSurfaces();
 
 public:
@@ -84,7 +92,8 @@ private:
     shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> > m_testTransformations;
     shared_ptr<const Function<UserFunctionType> > m_function;
     shared_ptr<const OpenClHandler> m_openClHandler;
-    QuadratureOptions m_quadratureOptions;
+    shared_ptr<const QuadratureDescriptorSelectorForGridFunctions<CoordinateType> > m_quadDescSelector;
+    shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> > m_quadRuleFamily;
 
     IntegratorMap m_testFunctionIntegrators;
 };

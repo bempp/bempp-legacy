@@ -24,6 +24,10 @@
 // Keep IDEs happy
 #include "default_local_assembler_for_local_operators_on_surfaces.hpp"
 
+#include "numerical_test_trial_integrator.hpp"
+#include "quadrature_descriptor_selector_for_local_operators.hpp"
+#include "single_quadrature_rule_family.hpp"
+
 #include <boost/tuple/tuple_comparison.hpp>
 
 namespace Fiber
@@ -32,14 +36,16 @@ namespace Fiber
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 DefaultLocalAssemblerForLocalOperatorsOnSurfaces<BasisFunctionType, ResultType, GeometryFactory>::
 DefaultLocalAssemblerForLocalOperatorsOnSurfaces(
-    const shared_ptr<const GeometryFactory>& geometryFactory,
-    const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-    const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
-    const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
-    const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
-    const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
-    const shared_ptr<const TestTrialIntegral<BasisFunctionType, ResultType> >& integral,
-    const shared_ptr<const OpenClHandler>& openClHandler) :
+        const shared_ptr<const GeometryFactory>& geometryFactory,
+        const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const TestTrialIntegral<BasisFunctionType, ResultType> >& integral,
+        const shared_ptr<const OpenClHandler>& openClHandler,
+        const shared_ptr<const QuadratureDescriptorSelectorForLocalOperators<CoordinateType> >& quadDescSelector,
+        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >& quadRuleFamily) :
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
     m_testShapesets(testShapesets),
@@ -47,10 +53,10 @@ DefaultLocalAssemblerForLocalOperatorsOnSurfaces(
     m_testTransformations(testTransformations),
     m_trialTransformations(trialTransformations),
     m_integral(integral),
-    m_openClHandler(openClHandler)
+    m_openClHandler(openClHandler),
+    m_quadDescSelector(quadDescSelector),
+    m_quadRuleFamily(quadRuleFamily)
 {
-    Utilities::checkConsistencyOfGeometryAndShapesets(*rawGeometry, *testShapesets);
-    Utilities::checkConsistencyOfGeometryAndShapesets(*rawGeometry, *trialShapesets);
 }
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
@@ -166,17 +172,8 @@ const TestTrialIntegrator<BasisFunctionType, ResultType>&
 DefaultLocalAssemblerForLocalOperatorsOnSurfaces<BasisFunctionType, ResultType, GeometryFactory>::
 selectIntegrator(int elementIndex)
 {
-    SingleQuadratureDescriptor desc;
-
-    // Get number of corners of the specified element
-    desc.vertexCount = m_rawGeometry->elementCornerCount(elementIndex);
-
-    // Determine integrand's order and required quadrature order
-    const int expressionOrder =
-        (*m_testShapesets)[elementIndex]->order() +
-        (*m_trialShapesets)[elementIndex]->order();
-    desc.order = expressionOrder;
-
+    SingleQuadratureDescriptor desc =
+        m_quadDescSelector->quadratureDescriptor(elementIndex);
     return getIntegrator(desc);
 }
 
@@ -195,8 +192,7 @@ getIntegrator(const SingleQuadratureDescriptor& desc)
     // Integrator doesn't exist yet and must be created.
     arma::Mat<CoordinateType> points;
     std::vector<CoordinateType> weights;
-    fillSingleQuadraturePointsAndWeights(desc.vertexCount, desc.order,
-                                         points, weights);
+    m_quadRuleFamily->fillQuadraturePointsAndWeights(desc, points, weights);
 
     typedef NumericalTestTrialIntegrator<BasisFunctionType, ResultType,
             GeometryFactory> Integrator;

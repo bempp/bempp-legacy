@@ -54,7 +54,12 @@ template <typename CoordinateType> class CollectionOfShapesetTransformations;
 template <typename ValueType> class CollectionOfKernels;
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class TestKernelTrialIntegral;
+
 template <typename CoordinateType> class RawGridGeometry;
+
+template <typename CoordinateType>
+class QuadratureDescriptorSelectorForIntegralOperators;
+template <typename CoordinateType> class DoubleQuadratureRuleFamily;
 /** \endcond */
 
 template <typename BasisFunctionType, typename KernelType,
@@ -80,7 +85,8 @@ public:
             const ParallelizationOptions& parallelizationOptions,
             VerbosityLevel::Level verbosityLevel,
             bool cacheSingularIntegrals,
-            const AccuracyOptionsEx& accuracyOptions);
+            const shared_ptr<const QuadratureDescriptorSelectorForIntegralOperators<CoordinateType> >& quadDescSelector,
+            const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >& quadRuleFamily);
     virtual ~DefaultLocalAssemblerForIntegralOperatorsOnSurfaces();
 
 public:
@@ -103,10 +109,6 @@ public:
             std::vector<arma::Mat<ResultType> >& result);
 
     virtual CoordinateType estimateRelativeScale(CoordinateType minDist) const;
-
-    virtual CoordinateType estimateMinimumDistance(
-            const std::vector<int>& testElementIndices,
-            const std::vector<int>& trialElementIndices) const;
 
 private:
     /** \cond PRIVATE */
@@ -156,21 +158,7 @@ private:
             int testElementIndex, int trialElementIndex,
             CoordinateType nominalDistance = -1.);
 
-    enum ElementType {
-        TEST, TRIAL
-    };
-
     const Integrator& getIntegrator(const DoubleQuadratureDescriptor& index);
-
-    void getRegularOrders(int testElementIndex, int trialElementIndex,
-                          int& testQuadOrder, int& trialQuadOrder,
-                          CoordinateType nominalDistance) const;
-    int singularOrder(int elementIndex, ElementType elementType) const;
-
-    CoordinateType elementDistanceSquared(
-            int testElementIndex, int trialElementIndex) const;
-
-    void precalculateElementSizesAndCenters();
 
 private:
     shared_ptr<const GeometryFactory> m_testGeometryFactory;
@@ -186,7 +174,8 @@ private:
     shared_ptr<const OpenClHandler> m_openClHandler;
     ParallelizationOptions m_parallelizationOptions;
     VerbosityLevel::Level m_verbosityLevel;
-    AccuracyOptionsEx m_accuracyOptions;
+    shared_ptr<const QuadratureDescriptorSelectorForIntegralOperators<CoordinateType> > m_quadDescSelector;
+    shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> > m_quadRuleFamily;
 
     typedef tbb::concurrent_unordered_map<DoubleQuadratureDescriptor,
     Integrator*> IntegratorMap;
@@ -206,13 +195,6 @@ private:
      *  element index set to INVALID_INDEX (= INT_MAX, so that the sorting is
      *  preserved). */
     Cache m_cache;
-    std::vector<CoordinateType> m_testElementSizesSquared;
-    std::vector<CoordinateType> m_trialElementSizesSquared;
-    arma::Mat<CoordinateType> m_testElementCenters;
-    arma::Mat<CoordinateType> m_trialElementCenters;
-    CoordinateType m_averageElementSize;
-
-    // tbb::atomic<size_t> m_foundInCache;
     /** \endcond */
 };
 

@@ -116,14 +116,18 @@ ResultType, GeometryFactory>::DefaultEvaluatorForIntegralOperators(
         const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
         const shared_ptr<const OpenClHandler >& openClHandler,
         const ParallelizationOptions& parallelizationOptions,
-        const QuadratureOptions& quadratureOptions) :
+        const shared_ptr<const QuadratureDescriptorSelectorForPotentialOperators<
+            BasisFunctionType> >& quadDescSelector,
+        const shared_ptr<const SingleQuadratureRuleFamily<
+            CoordinateType> >& quadRuleFamily) :
     m_geometryFactory(geometryFactory), m_rawGeometry(rawGeometry),
     m_trialShapesets(trialShapesets), m_kernels(kernels),
     m_trialTransformations(trialTransformations), m_integral(integral),
     m_argumentLocalCoefficients(argumentLocalCoefficients),
     m_openClHandler(openClHandler),
     m_parallelizationOptions(parallelizationOptions),
-    m_quadratureOptions(quadratureOptions)
+    m_quadDescSelector(quadDescSelector),
+    m_quadRuleFamily(quadRuleFamily)
 {
     const size_t elementCount = rawGeometry->elementCount();
     if (!rawGeometry->auxData().is_empty() &&
@@ -229,8 +233,8 @@ ResultType, GeometryFactory>::cacheTrialData()
     calcTrialData(EvaluatorForIntegralOperators<ResultType>::FAR_FIELD,
                   trialGeomDeps, m_farFieldTrialGeomData,
                   m_farFieldTrialTransfValues, m_farFieldWeights);
-    // near field currently not used
-    calcTrialData(EvaluatorForIntegralOperators<ResultType>::NEAR_FIELD,
+    // near field is currently not treated in any special way
+    calcTrialData(EvaluatorForIntegralOperators<ResultType>::FAR_FIELD,
                   trialGeomDeps, m_nearFieldTrialGeomData,
                   m_nearFieldTrialTransfValues, m_nearFieldWeights);
 }
@@ -245,6 +249,11 @@ ResultType, GeometryFactory>::calcTrialData(
         CollectionOf2dArrays<ResultType>& trialTransfValues,
         std::vector<CoordinateType>& weights) const
 {
+    if (region != EvaluatorForIntegralOperators<ResultType>::FAR_FIELD)
+        throw std::invalid_argument(
+            "DefaultEvaluatorForIntegralOperators::calcTrialData(): "
+            "currently region must be set to FAR_FIELD");
+
     const int elementCount = m_rawGeometry->elementCount();
     const int worldDim = m_rawGeometry->worldDimension();
     const int gridDim = m_rawGeometry->gridDimension();
@@ -279,7 +288,6 @@ ResultType, GeometryFactory>::calcTrialData(
          it != uniqueTrialShapesets.end(); ++it)
     {
         const Shapeset<BasisFunctionType>& activeShapeset = *(*it);
-        int order = quadOrder(activeShapeset, region);
 
         // Find out the element type
         int elementCornerCount = 0;
@@ -301,10 +309,13 @@ ResultType, GeometryFactory>::calcTrialData(
             }
 
         // Get quadrature points and weights
+        SingleQuadratureDescriptor desc =
+            m_quadDescSelector->farFieldQuadratureDescriptor(
+                activeShapeset, elementCornerCount);
         arma::Mat<CoordinateType> localQuadPoints;
         std::vector<CoordinateType> quadWeights;
-        fillSingleQuadraturePointsAndWeights(
-                    elementCornerCount, order, localQuadPoints, quadWeights);
+        m_quadRuleFamily->fillQuadraturePointsAndWeights(
+                    desc, localQuadPoints, quadWeights);
 
         // Get basis data
         BasisData<BasisFunctionType> basisData;
@@ -480,41 +491,6 @@ ResultType, GeometryFactory>::calcTrialData(
         for (size_t point = 0; point < trialTransfValuesPerElement[e][0].extent(1); ++point)
                 weights[startCol + point] = weightsPerElement[e][point];
     }
-}
-
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType, typename GeometryFactory>
-int DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
-ResultType, GeometryFactory>::quadOrder(
-        const Shapeset<BasisFunctionType>& shapeset, Region region) const
-{
-    if (region == EvaluatorForIntegralOperators<ResultType>::NEAR_FIELD)
-        return nearFieldQuadOrder(shapeset);
-    else
-        return farFieldQuadOrder(shapeset);
-}
-
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType, typename GeometryFactory>
-int DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
-ResultType, GeometryFactory>::farFieldQuadOrder(
-        const Shapeset<BasisFunctionType>& shapeset) const
-{
-    int elementOrder = (shapeset.order());
-    // Order required for exact quadrature on affine elements with kernel
-    // approximated by a polynomial of order identical with that of the shapeset
-    int defaultQuadratureOrder = 2 * elementOrder;
-    return m_quadratureOptions.quadratureOrder(defaultQuadratureOrder);
-}
-
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType, typename GeometryFactory>
-int DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
-ResultType, GeometryFactory>::nearFieldQuadOrder(
-        const Shapeset<BasisFunctionType>& shapeset) const
-{
-    // quick and dirty
-    return 2 * farFieldQuadOrder(shapeset);
 }
 
 } // namespace Fiber

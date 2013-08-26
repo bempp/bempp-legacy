@@ -25,7 +25,6 @@
 
 #include "local_assembler_for_operators.hpp"
 
-#include "default_local_assembler_for_operators_on_surfaces_utilities.hpp"
 #include "numerical_quadrature.hpp"
 #include "numerical_test_trial_integrator.hpp"
 #include "shared_ptr.hpp"
@@ -44,6 +43,10 @@ namespace Fiber
 
 /** \cond FORWARD_DECL */
 class OpenClHandler;
+
+template <typename CoordinateType>
+class QuadratureDescriptorSelectorForLocalOperators;
+template <typename CoordinateType> class SingleQuadratureRuleFamily;
 /** \endcond */
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
@@ -61,7 +64,9 @@ public:
         const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
         const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const TestTrialIntegral<BasisFunctionType, ResultType> >& integral,
-        const shared_ptr<const OpenClHandler>& openClHandler);
+        const shared_ptr<const OpenClHandler>& openClHandler,
+        const shared_ptr<const QuadratureDescriptorSelectorForLocalOperators<CoordinateType> >& quadDescSelector,
+        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >& quadRuleFamily);
 
     virtual void evaluateLocalWeakForms(
         CallVariant callVariant,
@@ -106,6 +111,8 @@ private:
     shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> > m_trialTransformations;
     shared_ptr<const TestTrialIntegral<BasisFunctionType, ResultType> > m_integral;
     shared_ptr<const OpenClHandler> m_openClHandler;
+    shared_ptr<const QuadratureDescriptorSelectorForLocalOperators<CoordinateType> > m_quadDescSelector;
+    shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> > m_quadRuleFamily;
 
     IntegratorMap m_testTrialIntegrators;
     /** \endcond */

@@ -18,45 +18,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_numerical_quadrature_hpp
-#define fiber_numerical_quadrature_hpp
+#ifndef fiber_quadrature_descriptor_selector_for_grid_functions_hpp
+#define fiber_quadrature_descriptor_selector_for_grid_functions_hpp
 
 #include "../common/common.hpp"
 
-/** \file
- *
- *  Low-level functions filling arrays of quadrature points and weights. */
-
-#include "double_quadrature_descriptor.hpp"
 #include "single_quadrature_descriptor.hpp"
-
-#include "../common/armadillo_fwd.hpp"
 
 namespace Fiber
 {
 
-/** \brief Retrieve points and weights for a quadrature over a single element.
- *
- *  \param[in] elementCornerCount
- *    Number of corners of the element to be integrated on.
- *  \param[in] accuracyOrder
- *    Accuracy order of the quadrature, i.e. its degree of exactness.
- *  \param[out] points
- *    Quadrature points.
- *  \param[out] weights
- *    Quadrature weights. */
-template <typename ValueType>
-void fillSingleQuadraturePointsAndWeights(int elementCornerCount,
-                                          int accuracyOrder,
-                                          arma::Mat<ValueType>& points,
-                                          std::vector<ValueType>& weights);
+/** \brief Quadrature descriptor selector used during the
+ *  discretization of functions. */
+template <typename CoordinateType>
+class QuadratureDescriptorSelectorForGridFunctions
+{
+public:
+    /** \brief Destructor. */
+    virtual ~QuadratureDescriptorSelectorForGridFunctions() {}
 
-template <typename ValueType>
-void fillDoubleSingularQuadraturePointsAndWeights(
-        const DoubleQuadratureDescriptor& desc,
-        arma::Mat<ValueType>& testPoints,
-        arma::Mat<ValueType>& trialPoints,
-        std::vector<ValueType>& weights);
+    /** \brief Return the descriptor of the quadrature rule to be used
+     *  on a particular element. */
+    virtual SingleQuadratureDescriptor quadratureDescriptor(
+        int elementIndex) const = 0;
+};
 
 } // namespace Fiber
 
