@@ -86,6 +86,12 @@ public:
         const shared_ptr<const Space<BasisFunctionType> >& self) const;
     virtual bool isDiscontinuous() const;
 
+    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
+
+    virtual SPACE_IDENTIFIER spaceIdentifier() const {
+        return PIECEWISE_CONSTANT_DUAL_MESH_SCALAR;
+    }
+
     virtual int domainDimension() const;
     virtual int codomainDimension() const;
 

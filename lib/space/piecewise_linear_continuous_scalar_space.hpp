@@ -88,6 +88,12 @@ public:
         return false;
     }
 
+    virtual SPACE_IDENTIFIER spaceIdentifier() const {
+        return PIECEWISE_LINEAR_CONTINUOUS_SCALAR;
+    }
+
+    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
+
     virtual shared_ptr<const Space<BasisFunctionType> > barycentricSpace(
             const shared_ptr<const Space<BasisFunctionType> >& self) const;
 

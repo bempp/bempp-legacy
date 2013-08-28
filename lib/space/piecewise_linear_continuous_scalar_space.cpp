@@ -130,6 +130,25 @@ PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::isDiscontinuous() const
 }
 
 template <typename BasisFunctionType>
+bool PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
+spaceIsCompatible(const Space<BasisFunctionType> &other) const
+{
+
+       if (other.grid().get()==this->grid().get()){
+           return (other.spaceIdentifier()==this->spaceIdentifier());
+       }
+       else {
+           if (other.spaceIdentifier()==PIECEWISE_LINEAR_CONTINUOUS_SCALAR_BARYCENTRIC){
+               // Check if the other grid is the barycentric version of this grid
+               return other.grid()->isBarycentricRepresentationOf(*(this->grid()));
+           }
+           else {
+               return false;
+           }
+       }
+}
+
+template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
 {
     const int gridDim = this->domainDimension();

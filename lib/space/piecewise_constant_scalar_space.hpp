@@ -88,6 +88,12 @@ public:
     virtual void setElementVariant(const Entity<0>& element,
                                    ElementVariant variant);
 
+    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
+
+    virtual SPACE_IDENTIFIER spaceIdentifier() const {
+        return PIECEWISE_CONSTANT_SCALAR;
+    }
+
     virtual const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
 
     virtual size_t globalDofCount() const;

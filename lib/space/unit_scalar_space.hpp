@@ -55,6 +55,10 @@ public:
         const shared_ptr<const Space<BasisFunctionType> >& self) const;
     virtual bool isDiscontinuous() const;
 
+    virtual SPACE_IDENTIFIER spaceIdentifier() const {
+        return UNIT_SCALAR;
+    }
+
     /** \brief Return the variant of element \p element.
      *
      *  Possible return values:
@@ -68,6 +72,9 @@ public:
     virtual bool isBarycentric() const {
         return false;
     }
+
+    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
+
 
     virtual const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
 

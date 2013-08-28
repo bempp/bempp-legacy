@@ -57,6 +57,14 @@ bool isNew(const arma::Col<double>& intersection,
 
 } // namespace
 
+bool Grid::isBarycentricRepresentationOf(const Grid& other) const {
+    if (!other.hasBarycentricGrid())
+        return false;
+    else
+        return (this==other.barycentricGrid().get());
+}
+
+
 void Grid::getBoundingBox(arma::Col<double>& lowerBound,
                           arma::Col<double>& upperBound) const
 {

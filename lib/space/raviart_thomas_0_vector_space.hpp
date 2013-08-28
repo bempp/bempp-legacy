@@ -79,6 +79,11 @@ public:
         return false;
     }
 
+    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
+
+    virtual SPACE_IDENTIFIER spaceIdentifier() const {
+        return RAVIART_THOMAS_0_VECTOR;
+    }
 
     /** \brief Return the variant of element \p element.
      *

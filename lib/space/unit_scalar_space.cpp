@@ -91,6 +91,19 @@ ElementVariant UnitScalarSpace<BasisFunctionType>::elementVariant(
 }
 
 template <typename BasisFunctionType>
+bool UnitScalarSpace<BasisFunctionType>::
+spaceIsCompatible(const Space<BasisFunctionType> &other) const
+{
+
+       if (other.grid().get()==this->grid().get()){
+           return (other.spaceIdentifier()==this->spaceIdentifier());
+       }
+       else
+           return false;
+
+}
+
+template <typename BasisFunctionType>
 void UnitScalarSpace<BasisFunctionType>::setElementVariant(
         const Entity<0>& element, ElementVariant variant)
 {

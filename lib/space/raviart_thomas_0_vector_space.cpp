@@ -89,6 +89,19 @@ RaviartThomas0VectorSpace(const shared_ptr<const Grid>& grid,
 }
 
 template <typename BasisFunctionType>
+bool RaviartThomas0VectorSpace<BasisFunctionType>::
+spaceIsCompatible(const Space<BasisFunctionType> &other) const
+{
+
+       if (other.grid().get()==this->grid().get()){
+           return (other.spaceIdentifier()==this->spaceIdentifier());
+       }
+       else
+           return false;
+
+}
+
+template <typename BasisFunctionType>
 void RaviartThomas0VectorSpace<BasisFunctionType>::initialize()
 {
     if (this->grid()->dim() != 2 || this->grid()->dimWorld() != 3)

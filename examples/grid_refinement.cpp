@@ -156,46 +156,58 @@ int main()
       GridParameters params;
       params.topology = GridParameters::TRIANGULAR;
       shared_ptr<Grid> grid = GridFactory::importGmshGrid(params, meshFile);
-      shared_ptr<Grid> baryGrid = grid->barycentricGrid();
+//      std::auto_ptr<GridView> viewp = grid->levelView(0);
+//      const GridView& view = *viewp;
+//      std::cout << view.entityCount(0) << std::endl;
+//      shared_ptr<Grid> gridb = grid->barycentricGrid();
+//      std::auto_ptr<GridView> viewbp = gridb->levelView(0);
+//      const GridView& viewb = *viewbp;
+//      std::cout << viewb.entityCount(0) << std::endl;
+
+
+      //shared_ptr<Grid> baryGrid = grid->barycentricGrid();
 
       PiecewiseLinearContinuousScalarSpace<BFT> plins(grid);
       PiecewiseConstantDualMeshScalarSpaceBarycentric<BFT> plinsd(grid);
+      //PiecewiseLinearContinuousScalarSpaceBarycentric<BFT> plinsb(grid);
 
-      std::vector<GlobalDofIndex> globalDofIndex;
-      globalDofIndex.push_back(0);
+//      std::cout << plinsb.globalDofCount();
 
-      std::vector<std::vector<LocalDof> > localDofs;
+//      std::vector<GlobalDofIndex> globalDofIndex;
+//      globalDofIndex.push_back(0);
 
-      plinsd.global2localDofs(globalDofIndex,localDofs);
+//      std::vector<std::vector<LocalDof> > localDofs;
 
-      const std::vector<LocalDof>& zeroDof = localDofs[0];
-      std::auto_ptr<GridView> view = baryGrid->leafView();
-      std::auto_ptr<GridView> viewCoarse = baryGrid->levelView(0);
-      const ReverseElementMapper& reverseMapper = view->reverseElementMapper();
-      const Mapper& mapper = viewCoarse->elementMapper();
+//      plinsd.global2localDofs(globalDofIndex,localDofs);
+
+//      const std::vector<LocalDof>& zeroDof = localDofs[0];
+//      std::auto_ptr<GridView> view = baryGrid->leafView();
+//      std::auto_ptr<GridView> viewCoarse = baryGrid->levelView(0);
+//      const ReverseElementMapper& reverseMapper = view->reverseElementMapper();
+//      const Mapper& mapper = viewCoarse->elementMapper();
 
 
 
 
-      for (int i=0;i<zeroDof.size();++i){
-          std::cout << "("<< zeroDof[i].entityIndex<<","<<zeroDof[i].dofIndex<<")"<< std::endl;
-          const EntityPointer<0>& elementPointer = reverseMapper.entityPointer(zeroDof[i].entityIndex);
-          const Entity<0>& element = elementPointer.entity();
-          const Geometry& geom = element.geometry();
-          arma::Mat<double> corners;
-          geom.getCorners(corners);
-          std::cout << corners;
-          std::auto_ptr<EntityPointer<0> > father = element.father();
-          const Entity<0>& fatherElement = father->entity();
-          std::cout << "Father element: " << mapper.entityIndex(fatherElement) << std::endl;
-      }
+//      for (int i=0;i<zeroDof.size();++i){
+//          std::cout << "("<< zeroDof[i].entityIndex<<","<<zeroDof[i].dofIndex<<")"<< std::endl;
+//          const EntityPointer<0>& elementPointer = reverseMapper.entityPointer(zeroDof[i].entityIndex);
+//          const Entity<0>& element = elementPointer.entity();
+//          const Geometry& geom = element.geometry();
+//          arma::Mat<double> corners;
+//          geom.getCorners(corners);
+//          std::cout << corners;
+//          std::auto_ptr<EntityPointer<0> > father = element.father();
+//          const Entity<0>& fatherElement = father->entity();
+//          std::cout << "Father element: " << mapper.entityIndex(fatherElement) << std::endl;
+//      }
 
-      std::cout << "Linear space" << std::endl;
+//      std::cout << "Linear space" << std::endl;
 
-      plins.global2localDofs(globalDofIndex,localDofs);
-      const std::vector<LocalDof>& zeroDof2 = localDofs[0];
-      for (int i=0;i<zeroDof2.size();++i){
-          std::cout << "("<< zeroDof2[i].entityIndex<<","<<zeroDof2[i].dofIndex<<")"<<std::endl;
-      }
+//      plins.global2localDofs(globalDofIndex,localDofs);
+//      const std::vector<LocalDof>& zeroDof2 = localDofs[0];
+//      for (int i=0;i<zeroDof2.size();++i){
+//          std::cout << "("<< zeroDof2[i].entityIndex<<","<<zeroDof2[i].dofIndex<<")"<<std::endl;
+//      }
 
 }

@@ -127,6 +127,27 @@ int PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::codomainDime
 }
 
 template <typename BasisFunctionType>
+bool PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::
+spaceIsCompatible(const Space<BasisFunctionType>& other) const
+{
+
+       typedef PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType> thisSpaceType;
+
+       if (other.grid().get()!=this->grid().get()) return false;
+
+       if (other.spaceIdentifier()==this->spaceIdentifier()){
+           // Try to typecast the other space down.
+           const thisSpaceType& temp = dynamic_cast<const thisSpaceType&>(other);
+           if (this->m_polynomialOrder==temp.m_polynomialOrder)
+               return true;
+           else
+               return false;
+       }
+       else
+           return false;
+}
+
+template <typename BasisFunctionType>
 const Fiber::Basis<BasisFunctionType>&
 PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::basis(
         const Entity<0>& element) const

@@ -215,6 +215,15 @@ public:
         return m_barycentricGrid;
     }
 
+    /** \brief Return \p true if a barycentric refinement of this grid has
+     *  been created. */
+    virtual bool hasBarycentricGrid() const {
+        if (!m_barycentricGrid.get())
+            return true;
+        else
+            return false;
+    }
+
 
     /** @} */
 

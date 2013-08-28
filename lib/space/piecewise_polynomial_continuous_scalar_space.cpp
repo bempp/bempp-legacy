@@ -57,6 +57,28 @@ PiecewisePolynomialContinuousScalarSpace(const shared_ptr<const Grid>& grid,
 }
 
 template <typename BasisFunctionType>
+bool PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
+spaceIsCompatible(const Space<BasisFunctionType> &other) const
+{
+
+       typedef PiecewisePolynomialContinuousScalarSpace<BasisFunctionType> thisSpaceType;
+
+       if (other.grid().get()!=this->grid().get()) return false;
+
+       if (other.spaceIdentifier()==this->spaceIdentifier()){
+           // Try to typecast the other space down.
+           const thisSpaceType& temp = dynamic_cast<const thisSpaceType&>(other);
+           if (this->m_polynomialOrder==temp.m_polynomialOrder)
+               return true;
+           else
+               return false;
+       }
+       else
+           return false;
+}
+
+
+template <typename BasisFunctionType>
 PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
 PiecewisePolynomialContinuousScalarSpace(const shared_ptr<const Grid>& grid,
                                          int polynomialOrder,

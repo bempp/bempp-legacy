@@ -95,9 +95,16 @@ public:
     @name Others
     @{ */
 
-
     /** \brief Return a barycentrically refined grid based on the LeafView */
-    virtual shared_ptr<Grid> barycentricGrid() const =0;
+    virtual shared_ptr<Grid> barycentricGrid() const = 0;
+
+    /** \brief Return \p true if a barycentric refinement of this grid has
+     *  been created. */
+    virtual bool hasBarycentricGrid() const = 0;
+
+    /** \brief Return \p true if this grid is a barycentric representation of
+     *  \p other, i.e. if this grid was created by \p other.barycentricGrid(). */
+    virtual bool isBarycentricRepresentationOf(const Grid& other) const;
 
     /** \brief Reference to the grid's global id set. */
     virtual const IdSet& globalIdSet() const = 0;

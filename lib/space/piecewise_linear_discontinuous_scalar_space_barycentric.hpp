@@ -108,6 +108,11 @@ public:
 
     virtual const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
 
+    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
+
+    virtual SPACE_IDENTIFIER spaceIdentifier() const {
+        return PIECEWISE_LINEAR_DISCONTINUOUS_SCALAR_BARYCENTRIC;
+    }
 
     virtual size_t globalDofCount() const;
     virtual size_t flatLocalDofCount() const;

@@ -96,6 +96,13 @@ public:
     }
 
 
+    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
+
+    virtual SPACE_IDENTIFIER spaceIdentifier() const {
+        return PIECEWISE_POLYNOMIAL_DISCONTINUOUS_SCALAR;
+    }
+
+
     /** \brief Return the variant of element \p element.
      *
      *  Possible return values:

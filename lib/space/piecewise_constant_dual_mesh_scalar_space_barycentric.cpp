@@ -144,6 +144,19 @@ PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::discontinuou
 }
 
 template <typename BasisFunctionType>
+bool PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::
+spaceIsCompatible(const Space<BasisFunctionType> &other) const
+{
+
+       if (other.grid().get()==this->grid().get()){
+           return (other.spaceIdentifier()==this->spaceIdentifier());
+       }
+       else
+           return false;
+
+}
+
+template <typename BasisFunctionType>
 shared_ptr<const Space<BasisFunctionType> >
 PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::barycentricSpace(
             const shared_ptr<const Space<BasisFunctionType> >& self) const {
@@ -258,6 +271,8 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::assignD
 
             std::vector<GlobalDofIndex>& globalDof = acc(m_local2globalDofs, elementIndex);
             EntityIndex vertexIndex = elementMapperCoarseGrid.subEntityIndex(element,sonCount/2,gridDim);
+            if (vertexIndex >=vertexCountCoarseGrid || vertexIndex <0)
+                std::cout << "("<<vertexIndex << ","<<vertexCountCoarseGrid<<")"<< std::endl;
             GlobalDofIndex globalDofIndex;
             globalDofIndex = elementContained ?
                         acc(globalDofIndices,vertexIndex) : -1;

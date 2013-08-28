@@ -21,8 +21,11 @@
 #ifndef bempp_space_hpp
 #define bempp_space_hpp
 
+#include "space_identifier.hpp"
+
 #include "../common/common.hpp"
 #include "bempp/common/config_trilinos.hpp"
+
 
 #include "../common/bounding_box.hpp"
 #include "../common/not_implemented_error.hpp"
@@ -281,9 +284,15 @@ public:
                                std::vector<GlobalDofIndex>& dofs,
                                std::vector<BasisFunctionType>& localDofWeights) const;
 
-    /** \brief Return true of both spaces act on the same grid. */
+    /** \brief Return true if both spaces act on the same grid. */
+    virtual bool gridIsIdentical(const Space<BasisFunctionType>& other) const;
 
-    virtual bool gridIsIdentical(const Space& other) const;
+    /** \brief Return the identifier of the space. */
+    virtual SPACE_IDENTIFIER spaceIdentifier() const = 0;
+
+    /** \brief Return true if \p other is compatible to this space, i.e. the global
+     * dofs of the two spaces agree with each other. */
+    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const = 0;
 
     /** \brief Map global degrees of freedom to local degrees of freedom.
      *
