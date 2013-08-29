@@ -219,9 +219,9 @@ public:
      *  been created. */
     virtual bool hasBarycentricGrid() const {
         if (!m_barycentricGrid.get())
-            return true;
-        else
             return false;
+        else
+            return true;
     }
 
 

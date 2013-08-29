@@ -47,11 +47,19 @@ class Symmetry;
         return *$self * other;
     }
 
+    BoundaryOperator<BasisFunctionType, ResultType> __mul__(
+        const BoundaryOperator<BasisFunctionType, ResultType>& other)
+    {
+        return *$self * other;
+    }
+
+
     GridFunction<BasisFunctionType, ResultType> __mul__(
         const GridFunction<BasisFunctionType, ResultType>& other)
     {
         return *$self * other;
     }
+
 
     BoundaryOperator<BasisFunctionType, ResultType> __rmul__(
         ResultType other)

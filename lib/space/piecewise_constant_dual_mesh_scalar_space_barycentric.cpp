@@ -270,9 +270,7 @@ void PiecewiseConstantDualMeshScalarSpaceBarycentric<BasisFunctionType>::assignD
 
 
             std::vector<GlobalDofIndex>& globalDof = acc(m_local2globalDofs, elementIndex);
-            EntityIndex vertexIndex = elementMapperCoarseGrid.subEntityIndex(element,sonCount/2,gridDim);
-            if (vertexIndex >=vertexCountCoarseGrid || vertexIndex <0)
-                std::cout << "("<<vertexIndex << ","<<vertexCountCoarseGrid<<")"<< std::endl;
+            EntityIndex vertexIndex = indexSetCoarseGrid.subEntityIndex(element,sonCount/2,gridDim);
             GlobalDofIndex globalDofIndex;
             globalDofIndex = elementContained ?
                         acc(globalDofIndices,vertexIndex) : -1;

@@ -187,6 +187,7 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
         const arma::Col<ResultType>& projections)
 {
     // We ignore the vector of projections.
+
     initializeFromProjections(context, space, dualSpace, projections);
     m_dualSpace = dualSpace;
 }
@@ -208,10 +209,18 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
     if (!dualSpace)
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): dualSpace must not be null");
-    if (space->grid() != dualSpace->grid())
-        throw std::invalid_argument(
-                "GridFunction::GridFunction(): "
-                "space and dualSpace must be defined on the same grid");
+
+    bool isBarycentricSpace = (space->isBarycentric() || dualSpace->isBarycentric());
+    if (isBarycentricSpace) {
+        m_space = space->barycentricSpace(space);
+        m_dualSpace = dualSpace->barycentricSpace(dualSpace);
+
+    }
+    if (m_space->grid() != m_dualSpace->grid())
+            throw std::invalid_argument(
+                    "GridFunction::GridFunction(): "
+                    "space and dualSpace must be defined on the same grid");
+
     setProjections(*m_dualSpace,
                    *calculateProjections(*context, function, *m_dualSpace));
 }
@@ -226,16 +235,31 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
         const arma::Col<ResultType>& data,
         DataType dataType)
 {
+    bool isBarycentricSpace=false;
+    if (space && space->isBarycentric())
+        isBarycentricSpace = true;
+
+    if (dualSpace && dualSpace->isBarycentric())
+        isBarycentricSpace = true;
+
+    shared_ptr<const Space<BasisFunctionType> > newSpace(space);
+    shared_ptr<const Space<BasisFunctionType> > newDualSpace(dualSpace);
+    if (isBarycentricSpace){
+        newSpace = space->barycentricSpace(space);
+        if (dualSpace)
+            newDualSpace = dualSpace->barycentricSpace(dualSpace);
+    }
+
     if (dataType == COEFFICIENTS) {
-        if (dualSpace && space->grid() != dualSpace->grid())
+        if (newDualSpace && newSpace->grid() != newDualSpace->grid())
             throw std::invalid_argument(
                     "GridFunction::GridFunction(): "
                     "space and dualSpace must be defined on the same grid");
-        initializeFromCoefficients(context, space, data);
-        m_dualSpace = dualSpace;
+        initializeFromCoefficients(context, newSpace, data);
+        m_dualSpace = newDualSpace;
     } else if (dataType == PROJECTIONS) {
-        initializeFromProjections(context, space, dualSpace, data);
-        m_dualSpace = dualSpace;
+        initializeFromProjections(context, newSpace, newDualSpace, data);
+        m_dualSpace = newDualSpace;
     } else
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): invalid dataType");
@@ -249,13 +273,29 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
         const arma::Col<ResultType>& coefficients,
         const arma::Col<ResultType>& projections)
 {
+    bool isBarycentricSpace=false;
+    if (space && space->isBarycentric())
+        isBarycentricSpace = true;
+
+    if (dualSpace && dualSpace->isBarycentric())
+        isBarycentricSpace = true;
+
+    shared_ptr<const Space<BasisFunctionType> > newSpace(space);
+    shared_ptr<const Space<BasisFunctionType> > newDualSpace(dualSpace);
+    if (isBarycentricSpace){
+        newSpace = space->barycentricSpace(space);
+        if (dualSpace)
+            newDualSpace = dualSpace->barycentricSpace(dualSpace);
+    }
+
+
     // We ignore the vector of projections.
-    initializeFromCoefficients(context, space, coefficients);
-    if (dualSpace && space->grid() != dualSpace->grid())
+    initializeFromCoefficients(context, newSpace, coefficients);
+    if (newDualSpace && newSpace->grid() != newDualSpace->grid())
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): "
                 "space and dualSpace must be defined on the same grid");
-    m_dualSpace = dualSpace;
+    m_dualSpace = newDualSpace;
 }
 
 // Member functions
@@ -297,17 +337,27 @@ void GridFunction<BasisFunctionType, ResultType>::initializeFromProjections(
     if (!dualSpace)
         throw std::invalid_argument(
                 "GridFunction::initializeFromProjections(): dualSpace must not be null");
-    if (space->grid() != dualSpace->grid())
-        throw std::invalid_argument(
-                "GridFunction::initializeFromProjections(): "
-                "space and dualSpace must be defined on the same grid");
+    bool isBarycentricSpace = (space->isBarycentric() || dualSpace->isBarycentric());
+    if (isBarycentricSpace) {
+        m_space = space->barycentricSpace(space);
+        m_dualSpace = dualSpace->barycentricSpace(dualSpace);
+
+    }
+    else {
+        m_space = space;
+        m_dualSpace = dualSpace;
+    }
+    if (m_space->grid() != m_dualSpace->grid())
+            throw std::invalid_argument(
+                    "GridFunction::initializeFromProjections(): "
+                    "space and dualSpace must be defined on the same grid");
+
     if (projections.n_rows != dualSpace->globalDofCount())
         throw std::invalid_argument(
                 "GridFunction::initializeFromProjections(): "
                 "the projections vector has incorrect length");
     m_context = context;
-    m_space = space;
-    setProjections(*dualSpace, projections);
+    setProjections(*m_dualSpace, projections);
 }
 
 template <typename BasisFunctionType, typename ResultType>

@@ -180,6 +180,7 @@ void PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::assignD
     int elementCountCoarseGrid = viewCoarseGrid.entityCount(0);
 
     const IndexSet& indexSet = view.indexSet();
+    const IndexSet& indexSetCoarseGrid = viewCoarseGrid.indexSet();
 
 
     // Assign gdofs to grid vertices (choosing only those that belong to
@@ -205,7 +206,7 @@ void PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::assignD
                 cornerCount = elementCoarseGrid.template subEntityCount<2>();
             if (elementContained)
                 for (int i = 0; i < cornerCount; ++i) {
-                    int vertexIndexCoarseGrid = elementMapperCoarseGrid.subEntityIndex(elementCoarseGrid,i,gridDim);
+                    int vertexIndexCoarseGrid = indexSetCoarseGrid.subEntityIndex(elementCoarseGrid,i,gridDim);
                     acc(noAdjacentElementsInsideSegment, vertexIndexCoarseGrid) = false;
                 }
             itCoarseGrid->next();
@@ -274,7 +275,7 @@ void PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::assignD
             for (int i=0;i<cornerCount;++i){
 
                 int basisNumber = element2Basis[sonCounter][i];
-                EntityIndex vertexIndex = elementMapperCoarseGrid.subEntityIndex(elementCoarseGrid,i,gridDim);
+                EntityIndex vertexIndex = indexSetCoarseGrid.subEntityIndex(elementCoarseGrid,i,gridDim);
                 int globalDofIndex = elementContained ? acc(globalDofIndices,vertexIndex)
                                                   : -1;
                 acc(globalDofs,basisNumber)=globalDofIndex;

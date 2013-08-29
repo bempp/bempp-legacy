@@ -73,17 +73,17 @@ AbstractBoundaryOperator(const shared_ptr<const Space<BasisFunctionType> >& doma
                           m_dualToRange->isBarycentric());
 
     if (isBarycentricSpace) {
-        std::cout << "Barycentric space detected in operator " << this->label() << "."
-                  << "Trying to switch all spaces to barycentric representations." << std::endl;
         m_domain = m_domain->barycentricSpace(m_domain);
-        m_range = m_range->barycentricSpace(m_range);
+        //m_range = m_range->barycentricSpace(m_range);
         m_dualToRange = m_dualToRange->barycentricSpace(m_dualToRange);
 
     }
     if (m_range->grid() != m_dualToRange->grid())
-        throw std::invalid_argument(
-                "AbstractBoundaryOperator::AbstractBoundaryOperator(): "
-                "range and dualToRange must be defined on the same grid");
+        if (!m_range->grid()->isBarycentricRepresentationOf(*m_dualToRange->grid())&&
+                !m_dualToRange->grid()->isBarycentricRepresentationOf(*m_range->grid()))
+            throw std::invalid_argument(
+                    "AbstractBoundaryOperator::AbstractBoundaryOperator(): "
+                    "range and dualToRange must be defined on the same grid");
 
 
     if (m_label.empty())

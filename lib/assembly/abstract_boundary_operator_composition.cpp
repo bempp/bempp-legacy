@@ -54,13 +54,13 @@ AbstractBoundaryOperatorComposition(
     assert(m_outer.abstractOperator());
     assert(m_inner.abstractOperator());
 
-    if (m_outer.domain() != m_inner.range())
+    if (!(m_outer.domain()->spaceIsCompatible(*m_inner.range())))
         throw std::invalid_argument(
                 "AbstractBoundaryOperatorComposition::AbstractBoundaryOperatorComposition(" +
                 m_outer.label() +
                 ", " +
                 m_inner.label() +
-                "): Domain of the outer term must be equal to the range of "
+                "): Domain of the outer term must be compatible to the range of "
                 "the inner term");
 }
 
