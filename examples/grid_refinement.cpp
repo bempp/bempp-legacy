@@ -52,7 +52,7 @@
 
 #include "space/piecewise_linear_continuous_scalar_space.hpp"
 #include "space/piecewise_constant_scalar_space.hpp"
-#include "space/piecewise_constant_dual_mesh_scalar_space_barycentric.hpp"
+#include "space/piecewise_constant_dual_mesh_scalar_space.hpp"
 #include "space/piecewise_linear_continuous_scalar_space_barycentric.hpp"
 #include "space/piecewise_linear_discontinuous_scalar_space_barycentric.hpp"
 
@@ -168,7 +168,7 @@ int main()
       //shared_ptr<Grid> baryGrid = grid->barycentricGrid();
 
       PiecewiseLinearContinuousScalarSpace<BFT> plins(grid);
-      PiecewiseConstantDualMeshScalarSpaceBarycentric<BFT> plinsd(grid);
+      PiecewiseConstantDualMeshScalarSpace<BFT> plinsd(grid);
       //PiecewiseLinearContinuousScalarSpaceBarycentric<BFT> plinsb(grid);
 
 //      std::cout << plinsb.globalDofCount();

@@ -89,7 +89,8 @@ assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) cons
                 // All we need is a weak form.
                 make_shared_from_ref(context),
                 m_inner.range(), m_inner.range(), m_inner.dualToRange());
-    BoundaryOp pinvId = pseudoinverse(id);
+    BoundaryOp pinvId = pseudoinverse(id,m_inner.dualToRange());
+    // Dual space not important here. Could be anything.
 
     shared_ptr<const DiscreteLinOp> temp =
             boost::make_shared<DiscreteBoundaryOperatorComposition<ResultType> >(

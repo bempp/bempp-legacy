@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_piecewise_constant_dual_mesh_scalar_space_barycentric_hpp
-#define bempp_piecewise_constant_dual_mesh_scalar_space_barycentric_hpp
+#ifndef bempp_piecewise_constant_dual_mesh_scalar_space_hpp
+#define bempp_piecewise_constant_dual_mesh_scalar_space_hpp
 
 
 
@@ -45,7 +45,7 @@ class GridView;
 /** \ingroup space
  *  \brief Space of piecewise constant functions define on the dual grid. */
 template <typename BasisFunctionType>
-class PiecewiseConstantDualMeshScalarSpaceBarycentric : public ScalarSpace<BasisFunctionType>
+class PiecewiseConstantDualMeshScalarSpace : public ScalarSpace<BasisFunctionType>
 {
 public:
     typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
@@ -58,7 +58,7 @@ public:
      *
      *  An exception is thrown if \p grid is a null pointer.
      */
-    explicit PiecewiseConstantDualMeshScalarSpaceBarycentric(
+    explicit PiecewiseConstantDualMeshScalarSpace(
             const shared_ptr<const Grid>& grid);
 
     /** \brief Constructor.
@@ -75,12 +75,12 @@ public:
      *
      *  An exception is thrown if \p grid is a null pointer.
      */
-    PiecewiseConstantDualMeshScalarSpaceBarycentric(
+    PiecewiseConstantDualMeshScalarSpace(
             const shared_ptr<const Grid>& grid,
             const GridSegment& segment,
             bool strictlyOnSegment = false);
 
-    virtual ~PiecewiseConstantDualMeshScalarSpaceBarycentric();
+    virtual ~PiecewiseConstantDualMeshScalarSpace();
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
         const shared_ptr<const Space<BasisFunctionType> >& self) const;
