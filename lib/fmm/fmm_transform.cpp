@@ -112,23 +112,26 @@ void FmmHighFreq<ValueType>::generateGaussPoints()
 }
 
 template <typename ValueType>
-arma::Col<ValueType> FmmHighFreq<ValueType>::M2M(
-		CoordinateType xold[3], CoordinateType xnew[3]) const
+arma::Mat<ValueType> FmmHighFreq<ValueType>::M2M(
+		const arma::Col<CoordinateType>& xold, 
+		const arma::Col<CoordinateType>& xnew) const
 {
 	arma::Col<ValueType> T(this->m_P);//, std::complex<double>(0.0, 0.0));
 
-	CoordinateType R[3] = {xnew[0]-xold[0], xnew[1]-xold[1], xnew[2]-xold[2]};
+	arma::Col<CoordinateType> R = xnew - xold;
+	arma::Col<CoordinateType> khat(3);
 	for (unsigned int p=0; p<this->m_P; p++) { // each quadrature point
-		CoordinateType rcostheta = R[0]*this->m_s[3*p+0]
-			 + R[1]*this->m_s[3*p+1] + R[2]*this->m_s[3*p+2];
+		khat(0) = this->m_s[3*p+0]; khat(1) = this->m_s[3*p+1]; khat(2) = this->m_s[3*p+2];
+		CoordinateType rcostheta = dot(R, khat);
 		T[p] = exp(-m_kappa*rcostheta);
 	} // for each quadrature point
 	return T;
 }
 
 template <typename ValueType>
-arma::Col<ValueType> FmmHighFreq<ValueType>::L2L(
-		CoordinateType xold[3], CoordinateType xnew[3]) const
+arma::Mat<ValueType> FmmHighFreq<ValueType>::L2L(
+		const arma::Col<CoordinateType>& xold, 
+		const arma::Col<CoordinateType>& xnew) const
 {
 	return M2M(xold, xnew);
 }
@@ -142,21 +145,20 @@ double imag(double x)
 	return 0.0;
 }
 template <typename ValueType>
-arma::Col<ValueType> 
+arma::Mat<ValueType> 
 FmmHighFreq<ValueType>::M2L(
-		CoordinateType x1[3], CoordinateType x2[3]) const
+		const arma::Col<CoordinateType>& x1, 
+		const arma::Col<CoordinateType>& x2) const
 {
 	using namespace boost::math;
 	arma::Col<ValueType> T(this->m_P);
 	T.fill(0.0);
 
-	CoordinateType xvec[3] = {x2[0]-x1[0], x2[1]-x1[1], x2[2]-x1[2]};
-	CoordinateType r = sqrt(xvec[0]*xvec[0] + xvec[1]*xvec[1] + xvec[2]*xvec[2]);
-	CoordinateType Rhat[3] = {xvec[0]/r, xvec[1]/r, xvec[2]/r};
-//	std::cout << "r = " << r << std::endl;
+	arma::Col<CoordinateType> xvec = x2 - x1;
+	CoordinateType r = norm(xvec, 2);
+	const arma::Col<CoordinateType>& Rhat = xvec/r;
+
 	ValueType i = getI<ValueType>();
-//	typename ScalarTraits<ValueType>::ComplexType ComplexType;
-//	ComplexType i(0., 1.);
 
 	for (unsigned int l=0; l<=m_L; l++) {
 		ValueType hl;
@@ -212,67 +214,16 @@ FmmHighFreq<ValueType>::M2L(
 		ValueType scaledhl = -m_kappa/(16*pi<CoordinateType>()
 				*pi<CoordinateType>())*pow(i,l)*ValueType(2*l+1)*hl;
 
+		arma::Col<CoordinateType> khat(3); // slow! do not perform in loop!
 		for (unsigned int p=0; p<this->m_P; p++) { // each quadrature point
-			CoordinateType costheta = Rhat[0]*this->m_s[3*p+0] 
-				+ Rhat[1]*this->m_s[3*p+1] + Rhat[2]*this->m_s[3*p+2];
+			khat(0) = this->m_s[3*p+0]; khat(1) = this->m_s[3*p+1]; khat(2) = this->m_s[3*p+2];
+			CoordinateType costheta = dot(Rhat, khat);
 			if(costheta> 1.0) costheta =  1.0;
 			if(costheta<-1.0) costheta = -1.0;
-			T[p] += scaledhl*legendre_p(l, costheta);
+			T(p) += scaledhl*legendre_p(l, costheta);
 		}
 	}
 	return T;
-}
-
-
-template <typename ValueType>
-FmmCacheM2L<ValueType>::FmmCacheM2L(
-		const FmmTransform<ValueType>& fmmTransform,
-		unsigned int levels,
-		const arma::Col<CoordinateType> &lowerBound,
-		const arma::Col<CoordinateType> &upperBound)
-	: m_topLevel(2)
-{
-	m_cacheM2L.resize(levels-m_topLevel+1);
-
-	for (unsigned int level = m_topLevel; level<=levels; level++) {
-
-		// there are 7^3-3^3=316 unique translation matrices for translation
-		// invariant operators
-		m_cacheM2L[level-m_topLevel].resize(316);
-
-		unsigned int boxesPerSide = 1 << level;
-		arma::Col<CoordinateType> boxSize;
-		boxSize = (upperBound - lowerBound)/boxesPerSide;
-
-		CoordinateType origin[3] = {0.0, 0.0, 0.0};
-		CoordinateType centre[3];
-
-		unsigned int index = 0;
-		for (int indx=-3; indx<=3; indx++) {
-			centre[0] = indx*boxSize[0];
-			for (int indy=-3; indy<=3; indy++) {
-				centre[1] = indy*boxSize[1];
-				for (int indz=-3; indz<=3; indz++) {
-					centre[2] = indz*boxSize[2];
-
-					if (abs(indx) > 1 || abs(indy) > 1 || abs(indz) > 1) {
-
-						arma::Col<ValueType> m2l = fmmTransform.M2L(centre, origin);
-
-						m_cacheM2L[level-m_topLevel][index++] = m2l;
-
-					} // if not a nearest neighbour
-				} // for each x offset
-			} // for each x offset
-		} // for each x offset
-	} // for each level
-} // createCacheM
-
-template <typename ValueType>
-arma::Col<ValueType> 
-FmmCacheM2L<ValueType>::M2L(unsigned int level, unsigned int item) const
-{
-	return m_cacheM2L[level-m_topLevel][item];
 }
 
 // P'_n(x): Derivative of the n_{th} order Legendre polynomial w.r.t. x
@@ -322,6 +273,5 @@ void legendre_roots(unsigned int N, ValueType *roots, ValueType *weights)
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(FmmTransform);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(FmmHighFreq);
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(FmmCacheM2L);
 
 } // namespace Bempp

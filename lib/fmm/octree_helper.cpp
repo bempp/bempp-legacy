@@ -251,7 +251,8 @@ arma::Mat<ResultType> //Col
 OctreeFarHelper<BasisFunctionType, ResultType>::evaluateFarFieldIntegrals(
 		FmmLocalAssembler<BasisFunctionType, ResultType>& fmmLocalAssembler,
 		const FmmTransform<ResultType>& fmmTransform,
-		const CoordinateType ptcentre[3], 
+		const arma::Col<CoordinateType> &nodeCentre, 
+		const arma::Col<CoordinateType> &nodeSize, 
 		unsigned int dofStart, unsigned int dofCount, bool isTest) const
 {
 	unsigned int multipoleCount = fmmTransform.P();
@@ -284,10 +285,6 @@ OctreeFarHelper<BasisFunctionType, ResultType>::evaluateFarFieldIntegrals(
 	// Evaluate the full local weak form for each pair of test and trial
 	// elements and then select the entries that we need.
 
-	typedef typename ScalarTraits<ResultType>::RealType CoordinateType; //overide for now
-	arma::Col<CoordinateType> centre(3);
-	centre(0) = ptcentre[0]; centre(1) = ptcentre[1]; centre(2) = ptcentre[2];
-
 	for (size_t multipole = 0; multipole < multipoleCount; ++multipole) {
 
 		arma::Col<CoordinateType> khat = fmmTransform.s(multipole);
@@ -297,7 +294,7 @@ OctreeFarHelper<BasisFunctionType, ResultType>::evaluateFarFieldIntegrals(
 		if (isTest) {
 			// functor reference used in function, so must keep in memory
 			typedef FmmFunctionMultiplyingTest<UserFunctionType> FunctorType;
-			FunctorType functor(khat, centre, fmmTransform);
+			FunctorType functor(khat, nodeCentre, nodeSize, fmmTransform);
 			SurfaceNormalDependentFunction<FunctorType> function(functor);
 
 			// duplicated code due to scoping
@@ -317,7 +314,7 @@ OctreeFarHelper<BasisFunctionType, ResultType>::evaluateFarFieldIntegrals(
 						(localDofs[nElem][nDof]);
 		} else {
 			typedef FmmFunctionMultiplyingTrial<UserFunctionType> FunctorType;
-			FunctorType functor(khat, centre, fmmTransform);
+			FunctorType functor(khat, nodeCentre, nodeSize, fmmTransform);
 			SurfaceNormalDependentFunction<FunctorType> function(functor);
 
 			// duplicated code due to scoping
@@ -361,8 +358,9 @@ void OctreeFarHelper<BasisFunctionType, ResultType>::operator()(
 		OctreeNode<ResultType> &node = 
 			m_octree->getNode(n, m_octree->levels());
 	
-		CoordinateType cen[3];
-		m_octree->nodeCentre(n, m_octree->levels(), cen);
+		arma::Col<CoordinateType> nodeCentre, nodeSize;
+		m_octree->nodeCentre(n, m_octree->levels(), nodeCentre);
+		m_octree->nodeSize(m_octree->levels(), nodeSize);
 
 		// evaulate and store test far-field
 		if (node.testDofCount()) {
@@ -370,8 +368,8 @@ void OctreeFarHelper<BasisFunctionType, ResultType>::operator()(
 			const unsigned int testDofCount = node.testDofCount();
 			arma::Mat<ResultType> testFarFieldMat;
 			testFarFieldMat = evaluateFarFieldIntegrals(
-				fmmTestLocalAssembler, m_fmmTransform, cen, 
-				testDofStart, testDofCount, true);
+				fmmTestLocalAssembler, m_fmmTransform, nodeCentre, 
+				nodeSize, testDofStart, testDofCount, true);
 			testFarFieldMat = testFarFieldMat.st(); // transpose
 
 			node.setTestFarFieldMat(testFarFieldMat);
@@ -383,8 +381,8 @@ void OctreeFarHelper<BasisFunctionType, ResultType>::operator()(
 			const unsigned int trialDofCount = node.trialDofCount();
 			arma::Mat<ResultType> trialFarFieldMat;
 			trialFarFieldMat = evaluateFarFieldIntegrals(
-				fmmTrialLocalAssembler, m_fmmTransform, cen, 
-				trialDofStart, trialDofCount, false);
+				fmmTrialLocalAssembler, m_fmmTransform, nodeCentre, 
+				nodeSize, trialDofStart, trialDofCount, false);
 
 			node.setTrialFarFieldMat(trialFarFieldMat);
 		}

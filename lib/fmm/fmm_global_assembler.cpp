@@ -23,6 +23,7 @@
 
 #include "fmm_global_assembler.hpp"
 #include "fmm_transform.hpp"
+#include "fmm_cache.hpp"
 #include "octree_helper.hpp"
 #include "octree.hpp"
 #include "octree_node.hpp"
@@ -117,13 +118,9 @@ FmmGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 	std::cout << "upper bound = (" << upperBound[0] << ", ";
 	std::cout << upperBound[1] << ", " << upperBound[2] << ')' << std::endl;
 
-	//shared_ptr<FmmTransform<ResultType> > fmmTransform = 
-	//	boost::make_shared<FmmTransformPlaneWave<ResultType> >
-	//		(fmmOptions.L, fmmOptions.numQuadPoints);
-
-	std::cout << "Caching M2L operators" << std::endl;
-	shared_ptr<FmmCacheM2L<ResultType> > fmmCacheM2L = 
-		boost::make_shared<FmmCacheM2L<ResultType> > (fmmTransform, fmmOptions.levels,
+	std::cout << "Caching M2M, M2L and L2L operators" << std::endl;
+	shared_ptr<FmmCache<ResultType> > fmmCache = 
+		boost::make_shared<FmmCache<ResultType> > (fmmTransform, fmmOptions.levels,
 			arma::conv_to<arma::Col<CoordinateType> >::from(lowerBound),
 			arma::conv_to<arma::Col<CoordinateType> >::from(upperBound));
 
@@ -131,7 +128,7 @@ FmmGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 	// and trial spaces individually, if the two differ in order
 	unsigned int nLevels = fmmOptions.levels;
 	shared_ptr<Octree<ResultType> > octree = 
-		boost::make_shared<Octree<ResultType> >(nLevels, fmmTransform, fmmCacheM2L, 
+		boost::make_shared<Octree<ResultType> >(nLevels, fmmTransform, fmmCache, 
 			arma::conv_to<arma::Col<CoordinateType> >::from(lowerBound),
 			arma::conv_to<arma::Col<CoordinateType> >::from(upperBound));
 

@@ -18,9 +18,11 @@ namespace Bempp
 template <typename ResultType>
 FmmFunctionMultiplyingTrial<ResultType>::FmmFunctionMultiplyingTrial(
 		const arma::Col<CoordinateType>& khat, 
-		const arma::Col<CoordinateType>& centre,
+		const arma::Col<CoordinateType>& nodeCentre,
+		const arma::Col<CoordinateType>& nodeSize,
 		const FmmTransform<ResultType>& fmmTransform)
-	 : m_khat(khat), m_centre(centre), m_fmmTransform(fmmTransform)
+	 :	m_khat(khat), m_nodeCentre(nodeCentre), m_nodeSize(nodeSize), 
+		m_fmmTransform(fmmTransform)
 {
 }
 
@@ -43,7 +45,7 @@ inline void FmmFunctionMultiplyingTrial<ResultType>::evaluate(
 			arma::Col<ValueType>& result) const
 {
 	m_fmmTransform.evaluateTrial(point, normal, 
-		m_khat, m_centre, result);
+		m_khat, m_nodeCentre, m_nodeSize, result);
 }
 
 // Test function
@@ -51,9 +53,11 @@ inline void FmmFunctionMultiplyingTrial<ResultType>::evaluate(
 template <typename ResultType>
 FmmFunctionMultiplyingTest<ResultType>::FmmFunctionMultiplyingTest(
 		const arma::Col<CoordinateType>& khat, 
-		const arma::Col<CoordinateType>& centre,
+		const arma::Col<CoordinateType>& nodeCentre,
+		const arma::Col<CoordinateType>& nodeSize,
 		const FmmTransform<ResultType>& fmmTransform)
-	 : m_khat(khat), m_centre(centre), m_fmmTransform(fmmTransform)
+	 :	m_khat(khat), m_nodeCentre(nodeCentre), m_nodeSize(nodeSize), 
+		m_fmmTransform(fmmTransform)
 {
 }
 
@@ -76,7 +80,7 @@ inline void FmmFunctionMultiplyingTest<ResultType>::evaluate(
 			arma::Col<ValueType>& result) const
 {
 	m_fmmTransform.evaluateTest(point, normal, 
-		m_khat, m_centre, result);
+		m_khat, m_nodeCentre, m_nodeSize, result);
 }
 
 // FmmDoubleLayerHighFreq
@@ -86,11 +90,12 @@ void FmmDoubleLayerHighFreq<ValueType>::evaluateTrial(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& centre,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const
 {
 	ValueType kappa = FmmHighFreq<ValueType>::kappa();
-	arma::Col<CoordinateType> r = centre - point;
+	arma::Col<CoordinateType> r = nodeCentre - point;
 	result(0) =  kappa*exp( -kappa*dot(khat, r) )*dot(khat, normal);
 }
 
@@ -99,11 +104,12 @@ void FmmDoubleLayerHighFreq<ValueType>::evaluateTest(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& centre,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const
 {
 	ValueType kappa = FmmHighFreq<ValueType>::kappa();
-	arma::Col<CoordinateType> r = point - centre;
+	arma::Col<CoordinateType> r = point - nodeCentre;
 	result(0) =  exp( -kappa*dot(khat, r) );
 }
 
@@ -114,11 +120,12 @@ void FmmAdjointDoubleLayerHighFreq<ValueType>::evaluateTrial(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& centre,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const
 {
 	ValueType kappa = FmmHighFreq<ValueType>::kappa();
-	arma::Col<CoordinateType> r = centre - point;
+	arma::Col<CoordinateType> r = nodeCentre - point;
 	result(0) =  exp( -kappa*dot(khat, r) );
 }
 
@@ -127,11 +134,12 @@ void FmmAdjointDoubleLayerHighFreq<ValueType>::evaluateTest(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& centre,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const
 {
 	ValueType kappa = FmmHighFreq<ValueType>::kappa();
-	arma::Col<CoordinateType> r = point - centre;
+	arma::Col<CoordinateType> r = point - nodeCentre;
 	result(0) =  -kappa*exp( -kappa*dot(khat, r) )*dot(khat, normal);
 }
 
@@ -142,11 +150,12 @@ void FmmSingleLayerHighFreq<ValueType>::evaluateTrial(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& centre,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const
 {
 	ValueType kappa = FmmHighFreq<ValueType>::kappa();
-	arma::Col<CoordinateType> r = centre - point;
+	arma::Col<CoordinateType> r = nodeCentre - point;
 	result(0) =  exp( -kappa*dot(khat, r) );
 }
 
@@ -155,11 +164,12 @@ void FmmSingleLayerHighFreq<ValueType>::evaluateTest(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& centre,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const
 {
 	ValueType kappa = FmmHighFreq<ValueType>::kappa();
-	arma::Col<CoordinateType> r = point - centre;
+	arma::Col<CoordinateType> r = point - nodeCentre;
 	result(0) =  exp( -kappa*dot(khat, r) );
 }
 
@@ -170,11 +180,12 @@ void FmmHypersingularHighFreq<ValueType>::evaluateTrial(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& centre,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const
 {
 	ValueType kappa = FmmHighFreq<ValueType>::kappa();
-	arma::Col<CoordinateType> r = centre - point;
+	arma::Col<CoordinateType> r = nodeCentre - point;
 	throw std::invalid_argument("FmmHypersingularHighFreq::evaluateTrial(): "
 			"FMM not currently implemented for the hypersingular operator");
 //	result(0) =  kappa*exp( -kappa*dot(khat, r) )*dot(khat, normal);
@@ -185,11 +196,12 @@ void FmmHypersingularHighFreq<ValueType>::evaluateTest(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& centre,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const
 {
 	ValueType kappa = FmmHighFreq<ValueType>::kappa();
-	arma::Col<CoordinateType> r = point - centre;
+	arma::Col<CoordinateType> r = point - nodeCentre;
 	throw std::invalid_argument("FmmHypersingularHighFreq::evaluateTest(): "
 			"FMM not currently implemented for the hypersingular operator");
 //	result(0) =  -kappa*exp( -kappa*dot(khat, r) )*dot(khat, normal);

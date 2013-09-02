@@ -21,6 +21,7 @@
 #include "octree.hpp"
 #include "octree_node.hpp"
 #include "fmm_transform.hpp"
+#include "fmm_cache.hpp"
 
 #include "../common/common.hpp"
 #include "../common/types.hpp"
@@ -45,7 +46,9 @@
 namespace Bempp
 {
 
+// N.B. that USE_FMM_CACHE should NOT be used for single level FMM
 #define MULTILEVEL_FMM
+#define USE_FMM_CACHE
 
 unsigned long dilate3(unsigned long x);
 unsigned long contract3(unsigned long x);
@@ -119,11 +122,11 @@ template <typename ResultType>
 Octree<ResultType>::Octree(
 		unsigned int levels,
 		const FmmTransform<ResultType>& fmmTransform,
-		const shared_ptr<FmmCacheM2L<ResultType> > &fmmCacheM2L,
+		const shared_ptr<FmmCache<ResultType> > &fmmCache,
 		const arma::Col<CoordinateType> &lowerBound,
 		const arma::Col<CoordinateType> &upperBound)
 	:	m_topLevel(2), m_levels(levels), 
-		m_fmmTransform(fmmTransform), m_fmmCacheM2L(fmmCacheM2L),
+		m_fmmTransform(fmmTransform), m_fmmCache(fmmCache),
 		m_lowerBound(lowerBound), m_upperBound(upperBound)
 {
 	m_OctreeNodes.resize(levels-m_topLevel+1);
@@ -276,19 +279,6 @@ unsigned long Octree<ResultType>::getLeafContainingPoint(
 
 template <typename ResultType>
 void Octree<ResultType>::nodeCentre(unsigned long number, unsigned int level,
-	CoordinateType centre[3]) const
-{
-	unsigned long ind[3];
-	arma::Col<CoordinateType> boxSize = m_upperBound - m_lowerBound;
-	deMorton(&ind[0], &ind[1], &ind[2], number);
-	for (unsigned int d=0; d<3; d++) {
-		centre[d] = (ind[d] + 0.5)/getNodesPerSide(level)*boxSize[d]+m_lowerBound[d];
-	}
-
-} // namespace Bempp
-
-template <typename ResultType>
-void Octree<ResultType>::nodeCentre(unsigned long number, unsigned int level,
 	arma::Col<CoordinateType> &centre) const
 {
 	unsigned long ind[3];
@@ -299,7 +289,18 @@ void Octree<ResultType>::nodeCentre(unsigned long number, unsigned int level,
 		centre[d] = (ind[d] + 0.5)/getNodesPerSide(level)*boxSize[d]+m_lowerBound[d];
 	}
 
-} // namespace Bempp
+}
+
+template <typename ResultType>
+void Octree<ResultType>::nodeSize(unsigned int level,
+	arma::Col<CoordinateType> &size) const
+{
+	size = arma::Col<CoordinateType>(3);
+	arma::Col<CoordinateType> boxSize = m_upperBound - m_lowerBound;
+	for (unsigned int d=0; d<3; d++) {
+		size[d] = boxSize[d]/getNodesPerSide(level);
+	}
+}
 
 template <typename ResultType>
 void Octree<ResultType>::matrixVectorProduct(
@@ -358,8 +359,6 @@ template <typename ResultType>
 void Octree<ResultType>::upwardsStep(
 		const FmmTransform<ResultType> &fmmTransform)
 {
-	typedef arma::Col<ResultType> cvec;
-
 	// make more efficient, by ignoring empty boxes 
 	for (unsigned int level = m_levels-1; level>=m_topLevel; level--) { //L-1 -> 2
 		unsigned int nNodes = getNodesPerLevel(level);
@@ -369,10 +368,11 @@ void Octree<ResultType>::upwardsStep(
 				continue;
 			}
 
-			CoordinateType R[3]; // center of the node
+			arma::Col<CoordinateType> R; // center of the node
 			nodeCentre(node,level,R);
-			cvec mcoef(fmmTransform.P());
-			mcoef.fill(0.0);
+
+			arma::Col<ResultType> mcoefs(fmmTransform.P());
+			mcoefs.fill(0.0);
 
 			for (unsigned long child = getFirstChild(node); 
 				child <= getLastChild(node); child++) {
@@ -381,17 +381,28 @@ void Octree<ResultType>::upwardsStep(
 					continue;
 				}
 
-				CoordinateType Rchild[3]; // center of the node
+				arma::Col<CoordinateType> Rchild; // center of the node
 				nodeCentre(child,level+1,Rchild);
 
 				// calculate multipole to multipole (M2M) translation matrix
-				cvec m2m = fmmTransform.M2M(Rchild, R);
+				arma::Col<ResultType> m2m;
+#if defined USE_FMM_CACHE
+				m2m = fmmCache().M2M(level, child - getFirstChild(node));
+#else
+				m2m = fmmTransform.M2M(Rchild, R);
+#endif
 				// add contribution of child to the parent
-				for (unsigned int p=0; p<fmmTransform.P(); p++) { // each quadrature point
-					mcoef[p] += m2m[p]*getNode(child,level+1).mcoef(p);
+				const arma::Col<ResultType>& mcoefsChild = 
+					getNode(child,level+1).getMultipoleCoefficients();
+
+				if (m2m.n_cols==1) { // diagonal m2m operator
+					mcoefs += m2m % mcoefsChild;
+				} else {	// m2m is a full matrix
+					mcoefs += m2m * mcoefsChild;
 				}
+
 			} // for each child
-			getNode(node,level).setMultipoleCoefficients(mcoef);
+			getNode(node,level).setMultipoleCoefficients(mcoefs);
 		} // for each node
 	} // for each level
 } // void Octree::upwardsStep(const FmmTransform &fmmTransform)
@@ -414,15 +425,13 @@ public:
 
 	void operator()(int node) const
 	{
-		typedef arma::Col<ResultType> cvec;
-
 		if (m_octree.getNode(node,m_level).testDofCount()==0) {
 			return; //continue;
 		}
 
-		CoordinateType R[3]; // center of the node
+		arma::Col<CoordinateType> R; // center of the node
 		m_octree.nodeCentre(node,m_level,R);
-		cvec lcoef(m_fmmTransform.P());
+		arma::Col<ResultType> lcoef(m_fmmTransform.P());
 		lcoef.fill(0.0);
 
 		const std::vector<unsigned long>& neigbourList 
@@ -443,24 +452,27 @@ public:
 				|| m_octree.getNode(inter,m_level).trialDofCount()==0)
 				continue;
 #endif
-//for (unsigned int l=0; l<=6; l++) {
-//lcoef.fill(0.0);
-			CoordinateType Rinter[3]; // center of the node
+			arma::Col<CoordinateType> Rinter; // center of the node
 			m_octree.nodeCentre(inter,m_level,Rinter);
 
 			// calculate multipole to local (M2L) translation matrix
-//			ResultType scaledhl;
-//			cvec m2l = m_fmmTransform.M2L(Rinter, R);
-			cvec m2l = m_octree.fmmCacheM2L().M2L(m_level, 
+			arma::Mat<ResultType> m2l;
+#if defined USE_FMM_CACHE
+			m2l = m_octree.fmmCache().M2L(m_level, 
 				m_octree.getNode(node,m_level).interactionItemList(ind));
-
+#else
+			m2l = m_fmmTransform.M2L(Rinter, R);
+#endif
 			// add contribution of interation list node to current node
-			for (unsigned int p=0; p<m_fmmTransform.P(); p++) { // each quadrature point
-				lcoef[p] += m2l[p]*m_octree.getNode(inter,m_level).mcoef(p);
+			const arma::Col<ResultType>& mcoefs = 
+				m_octree.getNode(inter,m_level).getMultipoleCoefficients();
+
+			if (m2l.n_cols==1) { // diagonal m2l operator
+				lcoef += m2l % mcoefs;
+			} else {	// m2l is a full matrix
+				lcoef += m2l * mcoefs;
 			}
-//getNode(node,level).setLocalCoefficients(scaledhl*lcoef);
-//getNode(node,level).evaluateFarFieldMatrixVectorProduct(m_fmmTransform->getWeights(),y_inout);
-//}
+
 		} // for each node on the interaction list
 		m_octree.getNode(node,m_level).setLocalCoefficients(lcoef);
 	} // operator()
@@ -494,14 +506,12 @@ void Octree<ResultType>::translationStep(
 	std::cout << std::endl;
 } // void Octree::translationStep(const FmmTransform &fmmTransform)
 
-// translate local expansions from lowest to highest level
 template <typename ResultType>
 void Octree<ResultType>::downwardsStep(
 		const FmmTransform<ResultType> &fmmTransform)
 {
-	typedef arma::Col<ResultType> cvec;
-
-	for (unsigned int level = m_topLevel+1; level<=m_levels; level++) {
+	// translate local expansions from lowest to highest level
+	for (unsigned int level = m_topLevel; level<m_levels; level++) {
 		unsigned int nNodes = getNodesPerLevel(level);
 		for (unsigned int node=0; node<nNodes; node++) {
 
@@ -509,24 +519,39 @@ void Octree<ResultType>::downwardsStep(
 				continue;
 			}
 
-			CoordinateType R[3]; // center of the node
+			arma::Col<CoordinateType> R; // center of the node
 			nodeCentre(node,level,R);
 
-			unsigned long parent = getParent(node);
+			const arma::Col<ResultType>& lcoefs = 
+				getNode(node,level).getLocalCoefficients();
 
-			CoordinateType Rparent[3]; // center of the node
-			nodeCentre(parent,level-1,Rparent);
+			for (unsigned long child = getFirstChild(node); 
+				child <= getLastChild(node); child++) {
 
-			// calculate local to local (L2L) translation matrix
-			cvec l2l = fmmTransform.L2L(Rparent, R);
-			// add the parent's contribution to the current node
-			cvec lcoef(fmmTransform.P());
-			lcoef.fill(0.);
+				if (getNode(child,level+1).trialDofCount()==0) {
+					continue;
+				}
 
-			for (unsigned int p=0; p<fmmTransform.P(); p++) { // each quadrature point
-				lcoef[p] += l2l[p]*getNode(parent,level-1).lcoef(p);
-			}
-			getNode(node,level).addLocalCoefficients(lcoef);
+				arma::Col<CoordinateType> Rchild; // center of the node
+				nodeCentre(child,level+1,Rchild);
+
+				// calculate local to local (L2L) translation matrix
+				arma::Col<ResultType> l2l;
+#if defined USE_FMM_CACHE
+				l2l = fmmCache().L2L(level, child - getFirstChild(node));
+#else
+				l2l = fmmTransform.L2L(R, Rchild);
+#endif
+				// add the local coefficients to the current child
+				arma::Col<ResultType> lcoefsChildContrib;
+				if (l2l.n_cols==1) { // diagonal l2l operator
+					lcoefsChildContrib = l2l % lcoefs;
+				} else {	// l2l is a full matrix
+					lcoefsChildContrib = l2l * lcoefs;
+				}
+
+				getNode(child,level+1).addLocalCoefficients(lcoefsChildContrib);
+			} // for each child
 		} // for each node
 	} // for each level
 } // void Octree::downwardsStep(const FmmTransform &fmmTransform)

@@ -42,7 +42,8 @@ public:
 	typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
 	FmmFunctionMultiplyingTrial(const arma::Col<CoordinateType>& khat, 
-		const arma::Col<CoordinateType>& centre,
+		const arma::Col<CoordinateType>& nodeCentre,
+		const arma::Col<CoordinateType>& nodeSize,
 		const FmmTransform<ResultType>& fmmTransform);
 
 	// Number of components of the function's argument
@@ -57,7 +58,8 @@ public:
 				arma::Col<ValueType>& result) const;
 private: 
 	const arma::Col<CoordinateType> &m_khat;
-	const arma::Col<CoordinateType> &m_centre;
+	const arma::Col<CoordinateType> &m_nodeCentre;
+	const arma::Col<CoordinateType> &m_nodeSize;
 	const FmmTransform<ResultType>& m_fmmTransform;
 };
 
@@ -69,7 +71,8 @@ public:
 	typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
 	FmmFunctionMultiplyingTest(const arma::Col<CoordinateType>& khat, 
-		const arma::Col<CoordinateType>& centre,
+		const arma::Col<CoordinateType>& nodeCentre,
+		const arma::Col<CoordinateType>& nodeSize,
 		const FmmTransform<ResultType>& fmmTransform);
 
 	// Number of components of the function's argument
@@ -84,7 +87,8 @@ public:
 				arma::Col<ValueType>& result) const;
 private: 
 	const arma::Col<CoordinateType> &m_khat;
-	const arma::Col<CoordinateType> &m_centre;
+	const arma::Col<CoordinateType> &m_nodeCentre;
+	const arma::Col<CoordinateType> &m_nodeSize;
 	const FmmTransform<ResultType>& m_fmmTransform;
 };
 
@@ -102,14 +106,16 @@ public:
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& centre,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const;
 
 	virtual void evaluateTest(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& centre,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const;
 };
 
@@ -126,14 +132,16 @@ public:
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& centre,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const;
 
 	virtual void evaluateTest(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& centre,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const;
 };
 
@@ -150,14 +158,16 @@ public:
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& centre,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const;
 
 	virtual void evaluateTest(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& centre,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const;
 };
 
@@ -174,14 +184,16 @@ public:
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& centre,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const;
 
 	virtual void evaluateTest(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& centre,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const;
 };
 

@@ -69,10 +69,10 @@ public:
 	unsigned long number() const;
 	unsigned int level() const;
 
-	ResultType mcoef(unsigned int n) const;
+	const arma::Col<ResultType>& getMultipoleCoefficients() const;
 	void setMultipoleCoefficients(const arma::Col<ResultType> &multipoleCoefficients);
 
-	ResultType lcoef(unsigned int n) const;
+	const arma::Col<ResultType>& getLocalCoefficients() const;
 	void setLocalCoefficients(const arma::Col<ResultType> &localCoefficients);
 	void addLocalCoefficients(const arma::Col<ResultType> &localCoefficients);
 

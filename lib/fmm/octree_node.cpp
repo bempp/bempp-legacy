@@ -221,11 +221,10 @@ unsigned int OctreeNode<ResultType>::level() const
 }
 
 template <typename ResultType>
-ResultType OctreeNode<ResultType>::mcoef(unsigned int n) const
+const arma::Col<ResultType>& OctreeNode<ResultType>::getMultipoleCoefficients() const
 {
-	return m_mcoef[n];
+	return m_mcoef;
 }
-
 
 template <typename ResultType>
 void OctreeNode<ResultType>::setMultipoleCoefficients(
@@ -235,9 +234,9 @@ void OctreeNode<ResultType>::setMultipoleCoefficients(
 }
 
 template <typename ResultType>
-ResultType OctreeNode<ResultType>::lcoef(unsigned int n) const
+const arma::Col<ResultType>& OctreeNode<ResultType>::getLocalCoefficients() const
 {
-	return m_lcoef[n];
+	return m_lcoef;
 }
 
 template <typename ResultType>

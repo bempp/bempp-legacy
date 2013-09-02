@@ -122,7 +122,8 @@ private:
 	arma::Mat<ResultType> evaluateFarFieldIntegrals(
 		FmmLocalAssembler<BasisFunctionType, ResultType> &fmmLocalAssembler,
 		const FmmTransform<ResultType> &fmmTransform,
-		const CoordinateType ptcentre[3], 
+		const arma::Col<CoordinateType> &nodeCentre, 
+		const arma::Col<CoordinateType> &nodeSize, 
 		unsigned int dofStartTrial, unsigned int dofCountTrial, bool isTest) const;
 
 	shared_ptr<LocalDofListsCache<BasisFunctionType> > m_testDofListsCache;

@@ -64,24 +64,34 @@ public:
 	}
 
 	// multipole to multipole (M2M) translation matrix
-	virtual arma::Col<ValueType> M2M(CoordinateType x1[3], CoordinateType x2[3]) const = 0;
+	virtual arma::Mat<ValueType> M2M(
+		const arma::Col<CoordinateType>& x1, 
+		const arma::Col<CoordinateType>& x2) const = 0;
+
 	// multipole to local (M2L) translation matrix
-	virtual arma::Col<ValueType> M2L(CoordinateType x1[3], CoordinateType x2[3]) const = 0;
+	virtual arma::Mat<ValueType> M2L(
+		const arma::Col<CoordinateType>& x1, 
+		const arma::Col<CoordinateType>& x2) const = 0;
+
 	// local to local (L2L) translation matrix
-	virtual arma::Col<ValueType> L2L(CoordinateType x1[3], CoordinateType x2[3]) const = 0;
+	virtual arma::Mat<ValueType> L2L(
+		const arma::Col<CoordinateType>& x1, 
+		const arma::Col<CoordinateType>& x2) const = 0;
 
 	virtual void evaluateTrial( // multipole expansion coefficients (MEC)
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& centre,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const = 0;
 
 	virtual void evaluateTest(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& centre,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const = 0;
 
 protected:
@@ -108,11 +118,19 @@ public:
 	}
 
 	// multipole to multipole (M2M) translation matrix
-	virtual arma::Col<ValueType> M2M(CoordinateType x1[3], CoordinateType x2[3]) const;
+	virtual arma::Mat<ValueType> M2M(
+		const arma::Col<CoordinateType>& x1, 
+		const arma::Col<CoordinateType>& x2) const;
+
 	// multipole to local (M2L) translation matrix
-	virtual arma::Col<ValueType> M2L(CoordinateType x1[3], CoordinateType x2[3]) const;
+	virtual arma::Mat<ValueType> M2L(
+		const arma::Col<CoordinateType>& x1, 
+		const arma::Col<CoordinateType>& x2) const;
+
 	// local to local (L2L) translation matrix
-	virtual arma::Col<ValueType> L2L(CoordinateType x1[3], CoordinateType x2[3]) const;
+	virtual arma::Mat<ValueType> L2L(
+		const arma::Col<CoordinateType>& x1, 
+		const arma::Col<CoordinateType>& x2) const;
 
 	virtual void generateGaussPoints();
 
@@ -122,26 +140,6 @@ private:
 	// do not support complex arguments
 	ValueType m_kappa;
 	unsigned int m_L;
-};
-
-
-template <typename ValueType>
-class FmmCacheM2L
-{
-public:
-	typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
-
-	FmmCacheM2L(
-		const FmmTransform<ValueType>& fmmTransform,
-		unsigned int levels,
-		const arma::Col<CoordinateType> &lowerBound,
-		const arma::Col<CoordinateType> &upperBound);
-
-	arma::Col<ValueType> M2L(unsigned int level, unsigned int item) const;
-
-private:
-	const unsigned int m_topLevel; // top level in the octee
-	std::vector<std::vector<arma::Col<ValueType> > > m_cacheM2L;
 };
 
 } // namespace Bempp
