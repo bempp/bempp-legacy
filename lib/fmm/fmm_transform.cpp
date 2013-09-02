@@ -27,7 +27,7 @@
 #include <boost/math/special_functions/bessel.hpp>
 #include <boost/math/special_functions/legendre.hpp>
 
-//#define USE_AMOS_SPECIAL_FUNCTIONS
+#define USE_AMOS_SPECIAL_FUNCTIONS
 
 #if defined USE_AMOS_SPECIAL_FUNCTIONS
 #include "amos.hpp"
