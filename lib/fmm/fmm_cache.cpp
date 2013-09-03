@@ -92,7 +92,7 @@ FmmCache<ValueType>::FmmCache(
 			deMorton(&ind[0], &ind[1], &ind[2], child);
 
 			Rchild(0) = ind[0]; Rchild(1) = ind[1]; Rchild(2) = ind[2];
-			Rchild = Rchild % boxSize/4;
+			Rchild = (Rchild-0.5) % boxSize/2;
 
 			arma::Mat<ValueType> m2m = fmmTransform.M2M(Rchild, origin);
 
