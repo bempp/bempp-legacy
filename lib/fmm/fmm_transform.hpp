@@ -29,38 +29,30 @@
 namespace Bempp
 {
 
-template <typename ValueType>
-ValueType getI();
-
 // abstract for now, will use Chebyshev as default in future versions
-// might want to cache translation matrices in future -> store in octree somehow
 template <typename ValueType>
 class FmmTransform
 {
 public:
 	typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
 
-	FmmTransform(unsigned int P) : m_P(P), m_w(P)
+	FmmTransform(unsigned int quadraturePointCount)
+	 : 	m_quadraturePoints(3, quadraturePointCount),
+		m_quadratureWeights(quadraturePointCount)
 	{
-		m_s = new CoordinateType[3*m_P]; // {x,y,z}
-//		m_w = new CoordinateType[m_P];
 	}
-	virtual ~FmmTransform()
-	{
-		delete[] m_s;
-//		delete[] m_w;
-	}
-	CoordinateType w(unsigned int n) const { return m_w[n]; }
-	const arma::Col<CoordinateType>& getWeights() const { return m_w; }
 
-	unsigned int P() const { return m_P; }
-	arma::Col<CoordinateType> s(unsigned int ind) const
+	const arma::Col<CoordinateType>& getWeights() const
 	{
-		arma::Col<CoordinateType> tmp(3);
-		tmp(0) = m_s[3*ind+0];
-		tmp(1) = m_s[3*ind+1];
-		tmp(2) = m_s[3*ind+2];
-		return tmp;
+		return m_quadratureWeights;
+	}
+	unsigned int quadraturePointCount() const
+	{
+		return m_quadraturePoints.n_cols;
+	}
+	arma::Col<CoordinateType> getQuadraturePoint(unsigned int index) const
+	{
+		return m_quadraturePoints.col(index);
 	}
 
 	// multipole to multipole (M2M) translation matrix
@@ -78,7 +70,8 @@ public:
 		const arma::Col<CoordinateType>& x1, 
 		const arma::Col<CoordinateType>& x2) const = 0;
 
-	virtual void evaluateTrial( // multipole expansion coefficients (MEC)
+	// multipole expansion coefficients (MEC)
+	virtual void evaluateTrial(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& khat,
@@ -86,6 +79,7 @@ public:
 			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const = 0;
 
+	// locl expansion coefficients (LEC)
 	virtual void evaluateTest(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
@@ -95,13 +89,11 @@ public:
 			arma::Col<ValueType>& result) const = 0;
 
 protected:
-	unsigned int m_P; // number of Gauss points
-	CoordinateType *m_s; // Gauss point position
-	arma::Col<CoordinateType> m_w; // Gause point weight
+	arma::Mat<CoordinateType> m_quadraturePoints;
+	arma::Col<CoordinateType> m_quadratureWeights;
 };
 
 // all operations are diagonal in the case of plane wave expansion
-// TODO: cache some T matrix in particular
 template <typename ValueType>
 class FmmHighFreq : public FmmTransform<ValueType>
 {
@@ -136,8 +128,6 @@ public:
 
 	ValueType kappa() const {return m_kappa;}
 private:
-	// must be purely real/imag for now, since boost special functions
-	// do not support complex arguments
 	ValueType m_kappa;
 	unsigned int m_L;
 };

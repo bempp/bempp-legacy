@@ -255,7 +255,7 @@ OctreeFarHelper<BasisFunctionType, ResultType>::evaluateFarFieldIntegrals(
 		const arma::Col<CoordinateType> &nodeSize, 
 		unsigned int dofStart, unsigned int dofCount, bool isTest) const
 {
-	unsigned int multipoleCount = fmmTransform.P();
+	unsigned int multipoleCount = fmmTransform.quadraturePointCount();
 
 	arma::Mat<ResultType> result(multipoleCount, dofCount);
 	result.fill(0.);
@@ -287,7 +287,7 @@ OctreeFarHelper<BasisFunctionType, ResultType>::evaluateFarFieldIntegrals(
 
 	for (size_t multipole = 0; multipole < multipoleCount; ++multipole) {
 
-		arma::Col<CoordinateType> khat = fmmTransform.s(multipole);
+		arma::Col<CoordinateType> khat = fmmTransform.getQuadraturePoint(multipole);
 
 		typedef ResultType UserFunctionType;
 

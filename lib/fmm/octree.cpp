@@ -392,9 +392,9 @@ public:
 		}
 
 		arma::Col<CoordinateType> R; // center of the node
-		m_octree.nodeCentre(node,m_level,R);
+		m_octree.nodeCentre(node, m_level, R);
 
-		arma::Col<ResultType> mcoefs(m_fmmTransform.P());
+		arma::Col<ResultType> mcoefs(m_fmmTransform.quadraturePointCount());
 		mcoefs.fill(0.0);
 
 		for (unsigned long child = getFirstChild(node); 
@@ -472,8 +472,8 @@ public:
 		}
 
 		arma::Col<CoordinateType> R; // center of the node
-		m_octree.nodeCentre(node,m_level,R);
-		arma::Col<ResultType> lcoef(m_fmmTransform.P());
+		m_octree.nodeCentre(node,m_level, R);
+		arma::Col<ResultType> lcoef(m_fmmTransform.quadraturePointCount());
 		lcoef.fill(0.0);
 
 		const std::vector<unsigned long>& neigbourList 

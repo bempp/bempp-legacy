@@ -36,31 +36,6 @@
 namespace Bempp
 {
 
-template <typename ValueType>
-ValueType getI()
-{
-	throw std::invalid_argument("getI(): "
-		"can only be called for complex result types");
-}
-
-template <>
-std::complex<float> getI()
-{
-	return std::complex<float>(0.0, 1.0);
-}
-
-template <>
-std::complex<double> getI()
-{
-	return std::complex<double>(0.0, 1.0);
-}
-
-template <typename ValueType>
-ValueType pi()
-{
-	return boost::math::constants::pi<ValueType>();
-}
-
 template <typename ValueType> // must be a real type
 ValueType diff_legendre_p(int n, ValueType x);
 
@@ -70,10 +45,11 @@ void legendre_roots(unsigned int N, ValueType *roots, ValueType *weights);
 template <typename ValueType>
 void FmmHighFreq<ValueType>::generateGaussPoints()
 {
-	//m_k0 = ValueType(5.0)*getI<ValueType>();
-/*	std::vector<lebedev_point_t> lebedev = getLebedevSphere(this->m_P);
+	CoordinateType pi = boost::math::constants::pi<CoordinateType>();
 
-	for (unsigned int p=0; p<this->m_P; p++) {
+/*	std::vector<lebedev_point_t> lebedev = getLebedevSphere(this->quadraturePointCount());
+
+	for (unsigned int p=0; p < this->quadraturePointCount(); p++) {
 		this->m_s[3*p+0] = lebedev[p].x;
 		this->m_s[3*p+1] = lebedev[p].y;
 		this->m_s[3*p+2] = lebedev[p].z;
@@ -93,19 +69,19 @@ void FmmHighFreq<ValueType>::generateGaussPoints()
 	// form regular grid along phi (periodic function)
 	CoordinateType cosphi[2*m_L+1];
 	CoordinateType sinphi[2*m_L+1];
-	CoordinateType wphi = 2*pi<CoordinateType>()/(2*m_L+1);
+	CoordinateType wphi = 2*pi/(2*m_L+1);
 	for (unsigned int l=0; l<=2*m_L; l++) {
-		cosphi[l] = cos(2*pi<CoordinateType>()*l/(2*m_L+1));
-		sinphi[l] = sin(2*pi<CoordinateType>()*l/(2*m_L+1));
+		cosphi[l] = cos(2*pi*l/(2*m_L+1));
+		sinphi[l] = sin(2*pi*l/(2*m_L+1));
 	}
 	// form pairs of Gauss points along (theta, phi)
 	unsigned int ind = 0;
 	for (unsigned int l=0; l<m_L; l++) {
 		for (unsigned int m=0; m<=2*m_L; m++) {
-			this->m_s[3*ind+0] = sintheta[l]*cosphi[m];	// x
-			this->m_s[3*ind+1] = sintheta[l]*sinphi[m];	// y
-			this->m_s[3*ind+2] = costheta[l];			// z
-			this->m_w[ind] = wtheta[l]*wphi;
+			this->m_quadraturePoints(0, ind) = sintheta[l]*cosphi[m];	// x
+			this->m_quadraturePoints(1, ind) = sintheta[l]*sinphi[m];	// y
+			this->m_quadraturePoints(2, ind) = costheta[l];			// z
+			this->m_quadratureWeights(ind)   = wtheta[l]*wphi;
 			ind++;
 		}
 	}
@@ -116,12 +92,12 @@ arma::Mat<ValueType> FmmHighFreq<ValueType>::M2M(
 		const arma::Col<CoordinateType>& xold, 
 		const arma::Col<CoordinateType>& xnew) const
 {
-	arma::Col<ValueType> T(this->m_P);//, std::complex<double>(0.0, 0.0));
+	arma::Col<ValueType> T(this->quadraturePointCount());
 
 	arma::Col<CoordinateType> R = xnew - xold;
 	arma::Col<CoordinateType> khat(3);
-	for (unsigned int p=0; p<this->m_P; p++) { // each quadrature point
-		khat(0) = this->m_s[3*p+0]; khat(1) = this->m_s[3*p+1]; khat(2) = this->m_s[3*p+2];
+	for (unsigned int p=0; p < this->quadraturePointCount(); p++) {
+		khat = this->getQuadraturePoint(p);
 		CoordinateType rcostheta = dot(R, khat);
 		T[p] = exp(-m_kappa*rcostheta);
 	} // for each quadrature point
@@ -136,6 +112,22 @@ arma::Mat<ValueType> FmmHighFreq<ValueType>::L2L(
 	return M2M(xold, xnew);
 }
 
+template <typename ValueType>
+ValueType getI()
+{
+	throw std::invalid_argument("getI(): "
+		"can only be called for complex result types");
+}
+template <>
+std::complex<float> getI()
+{
+	return std::complex<float>(0.0, 1.0);
+}
+template <>
+std::complex<double> getI()
+{
+	return std::complex<double>(0.0, 1.0);
+}
 double real(double x)
 {
 	return x;
@@ -144,6 +136,7 @@ double imag(double x)
 {
 	return 0.0;
 }
+
 template <typename ValueType>
 arma::Mat<ValueType> 
 FmmHighFreq<ValueType>::M2L(
@@ -151,7 +144,9 @@ FmmHighFreq<ValueType>::M2L(
 		const arma::Col<CoordinateType>& x2) const
 {
 	using namespace boost::math;
-	arma::Col<ValueType> T(this->m_P);
+	CoordinateType pi = boost::math::constants::pi<CoordinateType>();
+
+	arma::Col<ValueType> T(this->quadraturePointCount());
 	T.fill(0.0);
 
 	arma::Col<CoordinateType> xvec = x2 - x1;
@@ -176,7 +171,7 @@ FmmHighFreq<ValueType>::M2L(
 		int nz,ierr;
 
 		amos::zbesh(&zr,&zi,&nu,&kode,&kind,&N,&cyr,&cyi,&nz,&ierr);
-		hl = sqrt(pi<CoordinateType>()/(CoordinateType(2)*z))
+		hl = sqrt(pi/(CoordinateType(2)*z))
 			*(CoordinateType(cyr)+i*CoordinateType(cyi));
 
 		std::string amosErrorMessages[6] = {
@@ -198,25 +193,24 @@ FmmHighFreq<ValueType>::M2L(
 			throw std::invalid_argument(std::string("FmmHighFreq::M2L(x1, x2): "
 				"AMOS: ")+amosErrorMessages[ierr] );
 		}
-#else // use boost special function, only works for purely real or imag kappa
-		if (real(m_kappa)==0) { // purely real
+#else // use boost special functions, only works for purely real or imag kappa
+		if (real(m_kappa)==0) { // purely imaginary
 			CoordinateType z = -imag(m_kappa)*r;
 			hl = sph_bessel(l, z) + i*sph_neumann(l, z);
-		} else if (imag(m_kappa)==0 && real(m_kappa)>0) { // purely imaginary and decaying
+		} else if (imag(m_kappa)==0 && real(m_kappa)>0) { // purely real and decaying
 			CoordinateType zi = real(m_kappa)*r;
-			hl = -sqrt(ValueType(2)/(zi*pi<CoordinateType>()))*pow(i,-l)
+			hl = -sqrt(ValueType(2)/(zi*pi))*pow(i,-l)
 				*cyl_bessel_k(CoordinateType(l+0.5), zi);
 		} else {
 			throw std::invalid_argument("FmmHighFreq::M2L(x1, x2): "
      			"boost special functions only support purely real or imaginary args");
 		}
 #endif
-		ValueType scaledhl = -m_kappa/(16*pi<CoordinateType>()
-				*pi<CoordinateType>())*pow(i,l)*ValueType(2*l+1)*hl;
+		ValueType scaledhl = -m_kappa/(16*pi*pi)*pow(i,l)*CoordinateType(2*l+1)*hl;
 
 		arma::Col<CoordinateType> khat(3); // slow! do not perform in loop!
-		for (unsigned int p=0; p<this->m_P; p++) { // each quadrature point
-			khat(0) = this->m_s[3*p+0]; khat(1) = this->m_s[3*p+1]; khat(2) = this->m_s[3*p+2];
+		for (unsigned int p = 0; p < this->quadraturePointCount(); p++) {
+			khat = this->getQuadraturePoint(p);
 			CoordinateType costheta = dot(Rhat, khat);
 			if(costheta> 1.0) costheta =  1.0;
 			if(costheta<-1.0) costheta = -1.0;
@@ -240,11 +234,12 @@ template <typename ValueType>  // must be a real type
 void legendre_roots(unsigned int N, ValueType *roots, ValueType *weights)
 {
 	using namespace boost::math;
+	ValueType pi = boost::math::constants::pi<ValueType>();
 
 	roots[int(N/2)] = 0; // take advantage of symmetry
 	for (unsigned int i = 1; i <= int(N/2); i++) {
 		ValueType x, x1;
-		x = cos(pi<ValueType>() * (i - .25) / (N + .5)); // guess root position
+		x = cos(pi * (i - .25) / (N + .5)); // guess root position
 		int iter=100;
 		do { // apply Newton-Raphson method to find roots
 			x1 = x;
