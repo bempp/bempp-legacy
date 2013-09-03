@@ -318,36 +318,52 @@ void Octree<ResultType>::matrixVectorProduct(
 	arma::Col<ResultType> y_out_permuted(y_out.n_rows);
 	y_out_permuted.fill(0.0);
 
-	std::cout << "Evaluating near field matrix vector product" << std::endl;
-	for (unsigned int n=0; n<nLeaves; n++) {
-		getNode(n, m_levels).evaluateNearFieldMatrixVectorProduct(
-			*this, x_in_permuted, y_out_permuted);
-	}
+//	std::cout << "Evaluating near field matrix vector product" << std::endl;
+	std::cout << "Near-field, ";
+//	for (unsigned int n=0; n<nLeaves; n++) {
+//		getNode(n, m_levels).evaluateNearFieldMatrixVectorProduct(
+//			*this, x_in_permuted, y_out_permuted);
+//	}
+	EvaluateNearFieldHelper<ResultType> evaluateNearFieldHelper(
+		*this, x_in_permuted, y_out_permuted);
+	tbb::parallel_for<size_t>(0, nLeaves, evaluateNearFieldHelper);
 
-	std::cout << "Evaluating multipole coefficients for leaves" << std::endl;
-	for (unsigned int n=0; n<nLeaves; n++) {
-		getNode(n, m_levels).evaluateMultipoleCoefficients(
-			x_in_permuted);
-	}
+//	std::cout << "Evaluating multipole coefficients for leaves" << std::endl;
+	std::cout << "M, ";
+//	for (unsigned int n=0; n<nLeaves; n++) {
+//		getNode(n, m_levels).evaluateMultipoleCoefficients(
+//			x_in_permuted);
+//	}
+	EvaluateMultipoleCoefficientsHelper<ResultType> 
+		evaluateMultipoleCoefficientsHelper(*this, x_in_permuted);
+	tbb::parallel_for<size_t>(0, nLeaves, evaluateMultipoleCoefficientsHelper);
 
 #if defined MULTILEVEL_FMM
-	std::cout << "Performing upwards step (M2M)" << std::endl;
+//	std::cout << "Performing upwards step (M2M)" << std::endl;
+	std::cout << "M2M, ";
 	upwardsStep(m_fmmTransform);
 #endif
 
-	std::cout << "Performing translation step (M2L): level ";
+	//std::cout << "Performing translation step (M2L): level ";
+	std::cout << "M2L: level";
 	translationStep(m_fmmTransform);
 
 #if defined MULTILEVEL_FMM
-	std::cout << "Performing downwards step (L2L)" << std::endl;
+//	std::cout << "Performing downwards step (L2L)" << std::endl;
+	std::cout << ", L2L, ";
 	downwardsStep(m_fmmTransform);
 #endif
 
-	std::cout << "Evaluating local coefficients for leaves" << std::endl;
-	for (unsigned int n=0; n<nLeaves; n++) {
-		getNode(n, m_levels).evaluateFarFieldMatrixVectorProduct(
-			m_fmmTransform.getWeights(), y_out_permuted);
-	}
+//	std::cout << "Evaluating local coefficients for leaves" << std::endl;
+	std::cout << "L." << std::endl;
+//	for (unsigned int n=0; n<nLeaves; n++) {
+//		getNode(n, m_levels).evaluateFarFieldMatrixVectorProduct(
+//			m_fmmTransform.getWeights(), y_out_permuted);
+//	}
+	EvaluateFarFieldMatrixVectorProductHelper<ResultType> 
+		evaluateFarFieldMatrixVectorProductHelper(
+			*this, m_fmmTransform.getWeights(), y_out_permuted);
+	tbb::parallel_for<size_t>(0, nLeaves, evaluateFarFieldMatrixVectorProductHelper);
 
 	m_test_p2o->permuteVector(y_out_permuted, y_out); // p to o
 }
@@ -356,54 +372,80 @@ void Octree<ResultType>::matrixVectorProduct(
 // step up tree from level L-1 to 2, generating multipole coefficients 
 // from those of the children
 template <typename ResultType>
+class UpwardsStepHelper
+{
+public:
+	typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
+
+	UpwardsStepHelper(
+		Octree<ResultType> &octree,
+		const FmmTransform<ResultType> &fmmTransform,
+		unsigned int level)
+		: m_octree(octree), m_fmmTransform(fmmTransform), m_level(level)
+	{
+	}
+
+	void operator()(int node) const
+	{
+		if (m_octree.getNode(node,m_level).trialDofCount()==0) {
+			return;
+		}
+
+		arma::Col<CoordinateType> R; // center of the node
+		m_octree.nodeCentre(node,m_level,R);
+
+		arma::Col<ResultType> mcoefs(m_fmmTransform.P());
+		mcoefs.fill(0.0);
+
+		for (unsigned long child = getFirstChild(node); 
+			child <= getLastChild(node); child++) {
+
+			if (m_octree.getNode(child,m_level+1).trialDofCount()==0) {
+				continue;
+			}
+
+			arma::Col<CoordinateType> Rchild; // center of the node
+			m_octree.nodeCentre(child,m_level+1,Rchild);
+
+			// calculate multipole to multipole (M2M) translation matrix
+			arma::Col<ResultType> m2m;
+#if defined USE_FMM_CACHE
+			m2m = m_octree.fmmCache().M2M(m_level, child - getFirstChild(node));
+#else
+			m2m = m_fmmTransform.M2M(Rchild, R);
+#endif
+			// add contribution of child to the parent
+			const arma::Col<ResultType>& mcoefsChild = 
+				m_octree.getNode(child,m_level+1).getMultipoleCoefficients();
+
+			if (m2m.n_cols==1) { // diagonal m2m operator
+				mcoefs += m2m % mcoefsChild;
+			} else {	// m2m is a full matrix
+				mcoefs += m2m * mcoefsChild;
+			}
+
+		} // for each child
+		m_octree.getNode(node,m_level).setMultipoleCoefficients(mcoefs);
+	} // operator()
+private:
+	Octree<ResultType> &m_octree;
+	const FmmTransform<ResultType> &m_fmmTransform;
+	unsigned int m_level;
+};
+
+
+template <typename ResultType>
 void Octree<ResultType>::upwardsStep(
 		const FmmTransform<ResultType> &fmmTransform)
 {
 	// make more efficient, by ignoring empty boxes 
 	for (unsigned int level = m_levels-1; level>=m_topLevel; level--) { //L-1 -> 2
 		unsigned int nNodes = getNodesPerLevel(level);
-		for (unsigned int node=0; node<nNodes; node++) {
 
-			if (getNode(node,level).trialDofCount()==0) {
-				continue;
-			}
+		UpwardsStepHelper<ResultType> upwardsStepHelper(
+			*this, fmmTransform, level);
+		tbb::parallel_for<size_t>(0, nNodes, upwardsStepHelper);
 
-			arma::Col<CoordinateType> R; // center of the node
-			nodeCentre(node,level,R);
-
-			arma::Col<ResultType> mcoefs(fmmTransform.P());
-			mcoefs.fill(0.0);
-
-			for (unsigned long child = getFirstChild(node); 
-				child <= getLastChild(node); child++) {
-
-				if (getNode(child,level+1).trialDofCount()==0) {
-					continue;
-				}
-
-				arma::Col<CoordinateType> Rchild; // center of the node
-				nodeCentre(child,level+1,Rchild);
-
-				// calculate multipole to multipole (M2M) translation matrix
-				arma::Col<ResultType> m2m;
-#if defined USE_FMM_CACHE
-				m2m = fmmCache().M2M(level, child - getFirstChild(node));
-#else
-				m2m = fmmTransform.M2M(Rchild, R);
-#endif
-				// add contribution of child to the parent
-				const arma::Col<ResultType>& mcoefsChild = 
-					getNode(child,level+1).getMultipoleCoefficients();
-
-				if (m2m.n_cols==1) { // diagonal m2m operator
-					mcoefs += m2m % mcoefsChild;
-				} else {	// m2m is a full matrix
-					mcoefs += m2m * mcoefsChild;
-				}
-
-			} // for each child
-			getNode(node,level).setMultipoleCoefficients(mcoefs);
-		} // for each node
 	} // for each level
 } // void Octree::upwardsStep(const FmmTransform &fmmTransform)
 
@@ -494,7 +536,7 @@ void Octree<ResultType>::translationStep(
 		unsigned int level = m_levels;
 #endif
 		//std::cout << " - level " << level << " / " << m_levels << std::endl;
-		std::cout << level << " ";
+		std::cout << " " << level;
 		unsigned int nNodes = getNodesPerLevel(level);
 
 		TranslationStepHelper<ResultType> translationStepHelper(
@@ -503,8 +545,70 @@ void Octree<ResultType>::translationStep(
 		//for (unsigned int k=0; k<nNodes; k++) translationStepHelper(k);
 
 	} // for each level
-	std::cout << std::endl;
+//	std::cout << std::endl;
 } // void Octree::translationStep(const FmmTransform &fmmTransform)
+
+
+template <typename ResultType>
+class DownwardsStepHelper
+{
+public:
+	typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
+
+	DownwardsStepHelper(
+		Octree<ResultType> &octree,
+		const FmmTransform<ResultType> &fmmTransform,
+		unsigned int level)
+		: m_octree(octree), m_fmmTransform(fmmTransform), m_level(level)
+	{
+	}
+
+	void operator()(int node) const
+	{
+		if (m_octree.getNode(node,m_level).testDofCount()==0) {
+			return;
+		}
+
+		arma::Col<CoordinateType> R; // center of the node
+		m_octree.nodeCentre(node,m_level,R);
+
+		const arma::Col<ResultType>& lcoefs = 
+			m_octree.getNode(node,m_level).getLocalCoefficients();
+
+		for (unsigned long child = getFirstChild(node); 
+			child <= getLastChild(node); child++) {
+
+			if (m_octree.getNode(child,m_level+1).trialDofCount()==0) {
+				continue;
+			}
+
+			arma::Col<CoordinateType> Rchild; // center of the node
+			m_octree.nodeCentre(child,m_level+1,Rchild);
+
+			// calculate local to local (L2L) translation matrix
+			arma::Col<ResultType> l2l;
+#if defined USE_FMM_CACHE
+			l2l = m_octree.fmmCache().L2L(m_level, child - getFirstChild(node));
+#else
+			l2l = m_fmmTransform.L2L(R, Rchild);
+#endif
+			// add the local coefficients to the current child
+			arma::Col<ResultType> lcoefsChildContrib;
+			if (l2l.n_cols==1) { // diagonal l2l operator
+				lcoefsChildContrib = l2l % lcoefs;
+			} else {	// l2l is a full matrix
+				lcoefsChildContrib = l2l * lcoefs;
+			}
+
+			m_octree.getNode(child,m_level+1).addLocalCoefficients(lcoefsChildContrib);
+		} // for each child
+	} // operator()
+private:
+	Octree<ResultType> &m_octree;
+	const FmmTransform<ResultType> &m_fmmTransform;
+	unsigned int m_level;
+};
+
 
 template <typename ResultType>
 void Octree<ResultType>::downwardsStep(
@@ -513,46 +617,11 @@ void Octree<ResultType>::downwardsStep(
 	// translate local expansions from lowest to highest level
 	for (unsigned int level = m_topLevel; level<m_levels; level++) {
 		unsigned int nNodes = getNodesPerLevel(level);
-		for (unsigned int node=0; node<nNodes; node++) {
 
-			if (getNode(node,level).testDofCount()==0) {
-				continue;
-			}
+		DownwardsStepHelper<ResultType> downwardsStepHelper(
+			*this, fmmTransform, level);
+		tbb::parallel_for<size_t>(0, nNodes, downwardsStepHelper);
 
-			arma::Col<CoordinateType> R; // center of the node
-			nodeCentre(node,level,R);
-
-			const arma::Col<ResultType>& lcoefs = 
-				getNode(node,level).getLocalCoefficients();
-
-			for (unsigned long child = getFirstChild(node); 
-				child <= getLastChild(node); child++) {
-
-				if (getNode(child,level+1).trialDofCount()==0) {
-					continue;
-				}
-
-				arma::Col<CoordinateType> Rchild; // center of the node
-				nodeCentre(child,level+1,Rchild);
-
-				// calculate local to local (L2L) translation matrix
-				arma::Col<ResultType> l2l;
-#if defined USE_FMM_CACHE
-				l2l = fmmCache().L2L(level, child - getFirstChild(node));
-#else
-				l2l = fmmTransform.L2L(R, Rchild);
-#endif
-				// add the local coefficients to the current child
-				arma::Col<ResultType> lcoefsChildContrib;
-				if (l2l.n_cols==1) { // diagonal l2l operator
-					lcoefsChildContrib = l2l % lcoefs;
-				} else {	// l2l is a full matrix
-					lcoefsChildContrib = l2l * lcoefs;
-				}
-
-				getNode(child,level+1).addLocalCoefficients(lcoefsChildContrib);
-			} // for each child
-		} // for each node
 	} // for each level
 } // void Octree::downwardsStep(const FmmTransform &fmmTransform)
 

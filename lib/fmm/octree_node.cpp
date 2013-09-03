@@ -295,90 +295,143 @@ unsigned int OctreeNode<ResultType>::postIncTrialDofCount()
 }
 
 
-
-
-
 template <typename ResultType>
-void OctreeNode<ResultType>::evaluateNearFieldMatrixVectorProduct(
-		const Octree<ResultType> &octree,
+EvaluateNearFieldHelper<ResultType>::EvaluateNearFieldHelper(
+		Octree<ResultType> &octree,
 		const arma::Col<ResultType>& x_in,
 		arma::Col<ResultType>& y_in_out)
+		: m_octree(octree), m_x_in(x_in), m_y_in_out(y_in_out)
 {
-	if (testDofCount()==0) {
+}
+
+template <typename ResultType>
+void 
+EvaluateNearFieldHelper<ResultType>::operator()(int nodenumber) const
+{
+	OctreeNode<ResultType> &node = m_octree.getNode(nodenumber, m_octree.levels());
+	if (node.testDofCount()==0) {
 		return;
 	}
 
-	// same trial functions for this leaf's interactions
-	const unsigned int testStart = testDofStart();
-	const unsigned int testEnd = testStart + testDofCount() - 1;
+	const unsigned int testStart = node.testDofStart();
+	const unsigned int testEnd = testStart + node.testDofCount() - 1;
 
 	// first entry is the self-interaction
-	if (trialDofCount()) {
-		unsigned int trialStart = trialDofStart();
-		unsigned int trialEnd = trialStart + trialDofCount() - 1;
+	if (node.trialDofCount()) {
+		unsigned int trialStart = node.trialDofStart();
+		unsigned int trialEnd = trialStart + node.trialDofCount() - 1;
 
-		const arma::Col<ResultType>& xLocal = x_in.rows(trialStart, trialEnd);
-		y_in_out.rows(testStart, testEnd) += m_nearFieldMats[0]*xLocal;
+		const arma::Col<ResultType>& xLocal = m_x_in.rows(trialStart, trialEnd);
+		m_y_in_out.rows(testStart, testEnd) += node.getNearFieldMat(0)*xLocal;
 	}
 
 	// repeat for the neighbours: trial functions are fixed in the current node
 	// test functions are in the neigbourhood
-	for (unsigned long neigh = 0; neigh < m_neigbourList.size(); neigh++) {
-		const OctreeNode &node = octree.getNodeConst(m_neigbourList[neigh], m_level);
+	const std::vector<unsigned long>& neigbourList = node.getNeigbourList();
 
-		//if (node.trialDofCount()==0) {
-		//	continue;
-		//}
+	for (unsigned long neigh = 0; neigh < neigbourList.size(); neigh++) {
+		const OctreeNode<ResultType> &nodeneigh 
+			= m_octree.getNodeConst(neigbourList[neigh], m_octree.levels());
 
-		unsigned int trialStart = node.trialDofStart();
-		unsigned int trialEnd = trialStart + node.trialDofCount() - 1;
+		unsigned int trialStart = nodeneigh.trialDofStart();
+		unsigned int trialEnd = trialStart + nodeneigh.trialDofCount() - 1;
 
-		const arma::Col<ResultType>& xLocal = x_in.rows(trialStart, trialEnd);
-		y_in_out.rows(testStart, testEnd) += m_nearFieldMats[neigh+1]*xLocal;
+		const arma::Col<ResultType>& xLocal = m_x_in.rows(trialStart, trialEnd);
+		m_y_in_out.rows(testStart, testEnd) += node.getNearFieldMat(neigh+1)*xLocal;
 	}
 }
 
 
-
+template <typename ResultType>
+EvaluateMultipoleCoefficientsHelper<ResultType>::EvaluateMultipoleCoefficientsHelper(
+		Octree<ResultType> &octree,
+		const arma::Col<ResultType>& x_in)
+		: m_octree(octree), m_x_in(x_in)
+{
+}
 
 template <typename ResultType>
-void OctreeNode<ResultType>::evaluateMultipoleCoefficients(
-	const arma::Col<ResultType>& x_in)
+void 
+EvaluateMultipoleCoefficientsHelper<ResultType>::operator()(int nodenumber) const
 {
-	if (trialDofCount()==0) {
+	OctreeNode<ResultType> &node = m_octree.getNode(nodenumber, m_octree.levels());
+
+	if (node.trialDofCount()==0) {
 		return;
 	}
 
-	const unsigned int trialStart = trialDofStart();
-	const unsigned int trialCount = trialStart + trialDofCount() - 1;
+	const unsigned int trialStart = node.trialDofStart();
+	const unsigned int trialCount = trialStart + node.trialDofCount() - 1;
 
-	const arma::Col<ResultType>& xLocal = x_in.rows(trialStart, trialCount);
+	const arma::Col<ResultType>& xLocal = m_x_in.rows(trialStart, trialCount);
 
 	// m_trialFarFieldMat(multipole coefficients, dofTrial)
-	m_mcoef = m_trialFarFieldMat*xLocal;
+	node.setMultipoleCoefficients(node.getTrialFarFieldMat()*xLocal);
 }
 
 // local coefficients in each leaf, to far field contributation at each test dof
 template <typename ResultType>
-void OctreeNode<ResultType>::evaluateFarFieldMatrixVectorProduct(
-	const arma::Col<CoordinateType>& weights, arma::Col<ResultType>& y_inout)
+EvaluateFarFieldMatrixVectorProductHelper<ResultType>::EvaluateFarFieldMatrixVectorProductHelper(
+		Octree<ResultType> &octree,
+		const arma::Col<CoordinateType>& weights, 
+		arma::Col<ResultType>& y_in_out)
+		: m_octree(octree), m_weights(weights), m_y_in_out(y_in_out)
 {
-	if (testDofCount()==0) {
+}
+
+template <typename ResultType>
+void 
+EvaluateFarFieldMatrixVectorProductHelper<ResultType>::operator()(int nodenumber) const
+{
+	OctreeNode<ResultType> &node = m_octree.getNode(nodenumber, m_octree.levels());
+
+	if (node.testDofCount()==0) {
 		return;
 	}
 
-	const unsigned int testStart = testDofStart();
-	const unsigned int testCount = testStart + testDofCount() - 1;
+	const unsigned int testStart = node.testDofStart();
+	const unsigned int testCount = testStart + node.testDofCount() - 1;
 
 	// m_testFarFieldMat(dofTest, local coefficients)
 	// ylocal += [ (diag(lcoef)*m_testFarFieldMat^T)^T ]*weight
 	// equilvalent to ylocal += [ m_testFarFieldMat*(weight.*lcoef)
 	// part between [] is the local coefficient at each test dof, calc weighted sum
 	// special case, simplification possible since L2L operation is diagonal
-	y_inout.rows(testStart, testCount) += m_testFarFieldMat*(m_lcoef%weights);
+	m_y_in_out.rows(testStart, testCount) += node.getTestFarFieldMat()
+		*(node.getLocalCoefficients() % m_weights);
 }
 
+template <typename ResultType>
+const arma::Mat<ResultType>& 
+OctreeNode<ResultType>::getNearFieldMat(unsigned int index) const
+{
+	return m_nearFieldMats[index];
+}
+
+template <typename ResultType>
+const std::vector<unsigned long>& 
+OctreeNode<ResultType>::getNeigbourList() const
+{
+	return m_neigbourList;
+}
+
+template <typename ResultType>
+const arma::Mat<ResultType>& 
+OctreeNode<ResultType>::getTrialFarFieldMat() const
+{
+	return m_trialFarFieldMat;
+}
+
+template <typename ResultType>
+const arma::Mat<ResultType>& 
+OctreeNode<ResultType>::getTestFarFieldMat() const
+{
+	return m_testFarFieldMat;
+}
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(OctreeNode);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(EvaluateNearFieldHelper);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(EvaluateMultipoleCoefficientsHelper);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(EvaluateFarFieldMatrixVectorProductHelper);
 
 } // namespace Bempp

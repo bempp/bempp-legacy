@@ -86,7 +86,8 @@ public:
 	unsigned int postIncTestDofCount();
 	unsigned int postIncTrialDofCount();
 
-	void evaluateNearFieldMatrixVectorProduct(
+	// moved externally to allow parallelisation
+/*	void evaluateNearFieldMatrixVectorProduct(
 		const Octree<ResultType> &octree,
 		const arma::Col<ResultType>& x_in,
 		arma::Col<ResultType>& y_in_out);
@@ -94,7 +95,7 @@ public:
 	void evaluateMultipoleCoefficients(const arma::Col<ResultType>& x_in);
 	void evaluateFarFieldMatrixVectorProduct(
 		const arma::Col<CoordinateType>& weights, arma::Col<ResultType>& y_out);
-
+*/
 	unsigned int testDofStart() const {return m_testDofStart;}
 	unsigned int testDofCount() const {return m_testDofCount;}
 
@@ -109,7 +110,10 @@ public:
 		{m_trialFarFieldMat=trialFarFieldMat;}
 	void setTestFarFieldMat(const arma::Mat<ResultType> &testFarFieldMat)
 		{m_testFarFieldMat=testFarFieldMat;}
-
+	const arma::Mat<ResultType>& getNearFieldMat(unsigned int index) const;
+	const std::vector<unsigned long>& getNeigbourList() const;
+	const arma::Mat<ResultType>& getTrialFarFieldMat() const;
+	const arma::Mat<ResultType>& getTestFarFieldMat() const;
 private:
 	unsigned long m_number;				// const? Morton index of the node
 	unsigned int m_level;				// level in the octree, where 0 is root
@@ -127,6 +131,63 @@ private:
 	std::vector<arma::Mat<ResultType> > m_nearFieldMats;
 	arma::Mat<ResultType> m_trialFarFieldMat;
 	arma::Mat<ResultType> m_testFarFieldMat;
+};
+
+template <typename ResultType>
+class EvaluateNearFieldHelper
+{
+public:
+	typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
+
+	EvaluateNearFieldHelper(
+		Octree<ResultType> &octree,
+		const arma::Col<ResultType>& x_in,
+		arma::Col<ResultType>& y_in_out);
+
+	void operator()(int nodenumber) const;
+
+private:
+	Octree<ResultType> &m_octree;
+	const arma::Col<ResultType>& m_x_in;
+	arma::Col<ResultType>& m_y_in_out;
+};
+
+template <typename ResultType>
+class EvaluateMultipoleCoefficientsHelper
+{
+public:
+	typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
+
+	EvaluateMultipoleCoefficientsHelper(
+		Octree<ResultType> &octree,
+		const arma::Col<ResultType>& x_in);
+
+	void operator()(int nodenumber) const;
+
+private:
+	Octree<ResultType> &m_octree;
+	const arma::Col<ResultType>& m_x_in;
+};
+
+
+// local coefficients in each leaf, to far field contributation at each test dof
+template <typename ResultType>
+class EvaluateFarFieldMatrixVectorProductHelper
+{
+public:
+	typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
+
+	EvaluateFarFieldMatrixVectorProductHelper(
+		Octree<ResultType> &octree,
+		const arma::Col<CoordinateType>& weights, 
+		arma::Col<ResultType>& y_in_out);
+
+	void operator()(int nodenumber) const;
+
+private:
+	Octree<ResultType> &m_octree;
+	const arma::Col<CoordinateType>& m_weights;
+	arma::Col<ResultType>& m_y_in_out;
 };
 
 } // namespace Bempp
