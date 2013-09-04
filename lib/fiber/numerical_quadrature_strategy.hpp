@@ -90,7 +90,7 @@ public:
     typedef typename Base::CoordinateType CoordinateType;
 
     NumericalQuadratureStrategyBase(
-        const shared_ptr<QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
+        const shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
         quadratureDescriptorSelectorFactory,
         const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
         singleQuadratureRuleFamily,
@@ -180,7 +180,7 @@ protected:
     doubleQuadratureRuleFamily() const;
 
 private:
-    shared_ptr<QuadratureDescriptorSelectorFactory<BasisFunctionType> >
+    shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >
     m_quadratureDescriptorSelectorFactory;
     shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >
     m_singleQuadratureRuleFamily;
@@ -278,7 +278,7 @@ public:
      * quadrature descriptor selector factory and quadrature rule families.
      */
     NumericalQuadratureStrategy(
-        const shared_ptr<QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
+        const shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
         quadratureDescriptorSelectorFactory,
         const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
         singleQuadratureRuleFamily,
@@ -375,7 +375,7 @@ public:
      * quadrature descriptor selector factory and quadrature rule families.
      */
     explicit NumericalQuadratureStrategy(
-        const shared_ptr<QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
+        const shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
         quadratureDescriptorSelectorFactory,
         const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
         singleQuadratureRuleFamily,
