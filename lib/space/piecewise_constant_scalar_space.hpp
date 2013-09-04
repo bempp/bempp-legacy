@@ -70,6 +70,11 @@ public:
         const shared_ptr<const Space<BasisFunctionType> >& self) const;
     virtual bool isDiscontinuous() const;
 
+    virtual bool isBarycentric() const {
+        return false;
+    }
+
+
     virtual int domainDimension() const;
     virtual int codomainDimension() const;
 
@@ -85,6 +90,12 @@ public:
 
     virtual const Fiber::Shapeset<BasisFunctionType>& shapeset(
             const Entity<0>& element) const;
+
+    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
+
+    virtual SPACE_IDENTIFIER spaceIdentifier() const {
+        return PIECEWISE_CONSTANT_SCALAR;
+    }
 
     virtual size_t globalDofCount() const;
     virtual size_t flatLocalDofCount() const;

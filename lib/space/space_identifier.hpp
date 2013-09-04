@@ -18,34 +18,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_domain_index_hpp
-#define bempp_domain_index_hpp
+#ifndef space_identifier_hpp
+#define space_identifier_hpp
 
-#include <memory>
-#include <vector>
-
-#include "index_set.hpp"
-
-namespace Bempp
-{
-
-class DomainIndex
-{
-public:
-    DomainIndex(std::auto_ptr<IndexSet> level0IndexSet,
-                const std::vector<int>& elementIndexToPhysicalEntity) :
-        m_level0IndexSet(level0IndexSet),
-        m_domainIndices(elementIndexToPhysicalEntity)
-    {
-    }
-
-    int domain(const Entity<0>& entity) const;
-    std::vector<int> domainIndices() const;
-private:
-    std::auto_ptr<IndexSet> m_level0IndexSet;
-    std::vector<int> m_domainIndices;
+enum SPACE_IDENTIFIER  {
+    PIECEWISE_CONSTANT_SCALAR,
+    PIECEWISE_CONSTANT_DUAL_MESH_SCALAR,
+    PIECEWISE_LINEAR_CONTINUOUS_SCALAR,
+    PIECEWISE_LINEAR_CONTINUOUS_SCALAR_BARYCENTRIC,
+    PIECEWISE_LINEAR_DISCONTINUOUS_SCALAR,
+    PIECEWISE_LINEAR_DISCONTINUOUS_SCALAR_BARYCENTRIC,
+    PIECEWISE_POLYNOMIAL_CONTINUOUS_SCALAR,
+    PIECEWISE_POLYNOMIAL_DISCONTINUOUS_SCALAR,
+    RAVIART_THOMAS_0_VECTOR,
+    UNIT_SCALAR
 };
-
-} // namespace
 
 #endif

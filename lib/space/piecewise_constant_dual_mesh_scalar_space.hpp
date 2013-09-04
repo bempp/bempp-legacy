@@ -18,18 +18,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_unit_scalar_space_hpp
-#define bempp_unit_scalar_space_hpp
+#ifndef bempp_piecewise_constant_dual_mesh_scalar_space_hpp
+#define bempp_piecewise_constant_dual_mesh_scalar_space_hpp
+
+
 
 #include "../common/common.hpp"
-
-#include "../grid/grid_view.hpp"
 #include "scalar_space.hpp"
+
+#include "../grid/grid_segment.hpp"
+#include "../grid/grid_view.hpp"
 #include "../common/types.hpp"
 #include "../fiber/constant_scalar_shapeset.hpp"
 
 #include <map>
 #include <memory>
+#include <tbb/mutex.h>
 
 namespace Bempp
 {
@@ -39,25 +43,64 @@ class GridView;
 /** \endcond */
 
 /** \ingroup space
- *  \brief Space consisting of a single scalar function equal to 1 everywhere. */
+ *  \brief Space of piecewise constant functions define on the dual grid. */
 template <typename BasisFunctionType>
-class UnitScalarSpace : public ScalarSpace<BasisFunctionType>
+class PiecewiseConstantDualMeshScalarSpace : public ScalarSpace<BasisFunctionType>
 {
 public:
-    typedef typename ScalarSpace<BasisFunctionType>::CoordinateType CoordinateType;
+    typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
+    typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
 
-    explicit UnitScalarSpace(const shared_ptr<const Grid>& grid);
+    /** \brief Constructor.
+     *
+     *  Construct a space of piecewise constant functions defined on the
+     *  dual grid
+     *
+     *  An exception is thrown if \p grid is a null pointer.
+     */
+    explicit PiecewiseConstantDualMeshScalarSpace(
+            const shared_ptr<const Grid>& grid);
 
-    virtual int domainDimension() const;
-    virtual int codomainDimension() const;
+    /** \brief Constructor.
+     *
+     *  Construct a space of dual grid piecewise constant scalar functions
+     *  defined on the segment \p segment of the grid \p grid. More precisely,
+     *  the space will encompass those basis functions that are associated with
+     *  vertices belonging to \p segment. If \p strictlyOnSegment is \c true,
+     *  the support of the basis functions is truncated to the elements that
+     *  belong to \p segment, too; in this case, the space may in fact contain
+     *  discontinuous basis functions when considered on the whole \p grid,
+     *  although the basis functions will be continuous when considered on the
+     *  chosen grid segment.
+     *
+     *  An exception is thrown if \p grid is a null pointer.
+     */
+    PiecewiseConstantDualMeshScalarSpace(
+            const shared_ptr<const Grid>& grid,
+            const GridSegment& segment,
+            bool strictlyOnSegment = false);
+
+    virtual ~PiecewiseConstantDualMeshScalarSpace();
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
         const shared_ptr<const Space<BasisFunctionType> >& self) const;
     virtual bool isDiscontinuous() const;
 
+    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
+
     virtual SPACE_IDENTIFIER spaceIdentifier() const {
-        return UNIT_SCALAR;
+        return PIECEWISE_CONSTANT_DUAL_MESH_SCALAR;
     }
+
+    virtual int domainDimension() const;
+    virtual int codomainDimension() const;
+
+    virtual bool isBarycentric() const {
+        return true;
+    }
+
+    shared_ptr<const Space<BasisFunctionType> > barycentricSpace(
+                const shared_ptr<const Space<BasisFunctionType> >& self) const;
 
     /** \brief Return the variant of element \p element.
      *
@@ -69,15 +112,9 @@ public:
     virtual void setElementVariant(const Entity<0>& element,
                                    ElementVariant variant);
 
-
     virtual const Fiber::Shapeset<BasisFunctionType>& shapeset(
             const Entity<0>& element) const;
 
-    virtual bool isBarycentric() const {
-        return false;
-    }
-
-    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
 
     virtual size_t globalDofCount() const;
     virtual size_t flatLocalDofCount() const;
@@ -87,7 +124,7 @@ public:
             const std::vector<GlobalDofIndex>& globalDofs,
             std::vector<std::vector<LocalDof> >& localDofs) const;
     virtual void flatLocal2localDofs(
-            const std::vector<FlatLocalDofIndex>& globalDofs,
+            const std::vector<FlatLocalDofIndex>& flatLocalDofs,
             std::vector<LocalDof>& localDofs) const;
 
     virtual void getGlobalDofPositions(
@@ -100,6 +137,11 @@ public:
     virtual void getFlatLocalDofBoundingBoxes(
             std::vector<BoundingBox<CoordinateType> >& bboxes) const;
 
+    virtual void getGlobalDofNormals(
+            std::vector<Point3D<CoordinateType> >& normals) const;
+    virtual void getFlatLocalDofNormals(
+            std::vector<Point3D<CoordinateType> >& normals) const;
+
     virtual void dumpClusterIds(
             const char* fileName,
             const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const;
@@ -109,13 +151,20 @@ public:
             DofType dofType) const;
 
 private:
+    void initialize();
     void assignDofsImpl();
 
 private:
-    std::auto_ptr<GridView> m_view;
-    Fiber::ConstantScalarShapeset<BasisFunctionType> m_shapeset;
+    /** \cond PRIVATE */
+    GridSegment m_segment;
+    bool m_strictlyOnSegment;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
+    std::vector<LocalDof> m_flatLocal2localDofs;
+    Fiber::ConstantScalarShapeset<BasisFunctionType> m_basis;
+    mutable shared_ptr<Space<BasisFunctionType> > m_discontinuousSpace;
+    mutable tbb::mutex m_discontinuousSpaceMutex;
+    /** \endcond */
 };
 
 } // namespace Bempp

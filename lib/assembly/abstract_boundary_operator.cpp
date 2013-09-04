@@ -63,10 +63,28 @@ AbstractBoundaryOperator(const shared_ptr<const Space<BasisFunctionType> >& doma
         throw std::invalid_argument(
                 "AbstractBoundaryOperator::AbstractBoundaryOperator(): "
                 "dualToRange must not be null");
+
+    // Check if one of the spaces is barycentric. If yes move all spaces to
+    // barycentric representations.
+
+    bool isBarycentricSpace;
+
+    isBarycentricSpace = (m_domain->isBarycentric() || m_range->isBarycentric() ||
+                          m_dualToRange->isBarycentric());
+
+    if (isBarycentricSpace) {
+        m_domain = m_domain->barycentricSpace(m_domain);
+        //m_range = m_range->barycentricSpace(m_range);
+        m_dualToRange = m_dualToRange->barycentricSpace(m_dualToRange);
+
+    }
     if (m_range->grid() != m_dualToRange->grid())
-        throw std::invalid_argument(
-                "AbstractBoundaryOperator::AbstractBoundaryOperator(): "
-                "range and dualToRange must be defined on the same grid");
+        if (!m_range->grid()->isBarycentricRepresentationOf(*m_dualToRange->grid())&&
+                !m_dualToRange->grid()->isBarycentricRepresentationOf(*m_range->grid()))
+            throw std::invalid_argument(
+                    "AbstractBoundaryOperator::AbstractBoundaryOperator(): "
+                    "range and dualToRange must be defined on the same grid");
+
 
     if (m_label.empty())
         m_label = uniqueLabel();
@@ -179,13 +197,13 @@ collectOptionsIndependentDataForAssemblerConstruction(
     typedef LocalAssemblerConstructionHelper Helper;
 
     // Collect grid data
-    Helper::collectGridData(*m_dualToRange->grid(),
+    Helper::collectGridData(*m_dualToRange,
                             testRawGeometry, testGeometryFactory);
     if (m_dualToRange->grid() == m_domain->grid()) {
         trialRawGeometry = testRawGeometry;
         trialGeometryFactory = testGeometryFactory;
     } else
-        Helper::collectGridData(*m_domain->grid(),
+        Helper::collectGridData(*m_domain,
                                 trialRawGeometry, trialGeometryFactory);
 
     // Get pointers to test and trial shapesets of each element

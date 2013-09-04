@@ -37,8 +37,7 @@ void ConcreteGridView<DuneGridView>::getRawElementDataDoubleImpl(
 }
 
 template <typename DuneGridView>
-void ConcreteGridView<DuneGridView>::getRawElementDataFloatImpl(
-        arma::Mat<float>& vertices,
+void ConcreteGridView<DuneGridView>::getRawElementDataFloatImpl(arma::Mat<float>& vertices,
         arma::Mat<int>& elementCorners,
         arma::Mat<char>& auxData,
         std::vector<int>* domainIndices) const
@@ -92,7 +91,7 @@ void ConcreteGridView<DuneGridView>::getRawElementDataImpl(
     for (DuneElementIterator it = m_dune_gv.template begin<codimElement>();
          it != m_dune_gv.template end<codimElement>(); ++it)
     {
-        size_t index = elementMapper.map(*it);
+        size_t index = indexSet.index(*it);
         const Dune::GenericReferenceElement<ctype, dimGrid>& refElement =
                 Dune::GenericReferenceElements<ctype, dimGrid>::general(it->type());
         const int cornerCount = refElement.size(codimVertex);

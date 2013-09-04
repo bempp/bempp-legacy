@@ -190,8 +190,8 @@ void BoundaryOperator<BasisFunctionType, ResultType>::apply(
                 "an uninitialized operator");
 
     // Sanity test
-    if (m_abstractOp->domain() != x_in.space() ||
-            m_abstractOp->range() != y_inout.space())
+    if (!m_abstractOp->domain()->spaceIsCompatible(*x_in.space()) ||
+            !m_abstractOp->range()->spaceIsCompatible(*y_inout.space()))
         throw std::invalid_argument("BoundaryOperator::apply(): "
                                     "spaces don't match");
 

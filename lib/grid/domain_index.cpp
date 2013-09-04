@@ -19,4 +19,8 @@ int DomainIndex::domain(const Entity<0>& entity) const {
     return acc(m_domainIndices, index);
 }
 
+std::vector<int> DomainIndex::domainIndices() const {
+    return m_domainIndices;
+}
+
 } // namespace

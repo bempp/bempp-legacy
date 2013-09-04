@@ -70,16 +70,16 @@ shared_ptr<arma::Col<ResultType> > reallyCalculateProjections(
     // TODO: parallelise using TBB (the parameter options will then start be used)
 
     // Get the grid's leaf view so that we can iterate over elements
-    std::auto_ptr<GridView> view = dualSpace.grid()->leafView();
-    const size_t elementCount = view->entityCount(0);
+    const GridView& view = dualSpace.gridView();
+    const size_t elementCount = view.entityCount(0);
 
     // Global DOF indices corresponding to local DOFs on elements
     std::vector<std::vector<GlobalDofIndex> > testGlobalDofs(elementCount);
     std::vector<std::vector<BasisFunctionType> > testLocalDofWeights(elementCount);
 
     // Gather global DOF lists
-    const Mapper& mapper = view->elementMapper();
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    const Mapper& mapper = view.elementMapper();
+    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& element = it->entity();
         const int elementIndex = mapper.entityIndex(element);
@@ -139,7 +139,7 @@ shared_ptr<arma::Col<ResultType> > calculateProjections(
     shared_ptr<Fiber::OpenClHandler> openClHandler;
     shared_ptr<ShapesetPtrVector> testShapesets;
 
-    Helper::collectGridData(*dualSpace.grid(),
+    Helper::collectGridData(dualSpace,
                             rawGeometry, geometryFactory);
     Helper::makeOpenClHandler(options.parallelizationOptions().openClOptions(),
                               rawGeometry, openClHandler);
@@ -186,6 +186,7 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
         const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
         const arma::Col<ResultType>& projections)
 {
+
     initializeFromProjections(context, space, dualSpace, projections);
     m_dualSpace = dualSpace;
 }
@@ -207,10 +208,18 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
     if (!dualSpace)
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): dualSpace must not be null");
-    if (space->grid() != dualSpace->grid())
-        throw std::invalid_argument(
-                "GridFunction::GridFunction(): "
-                "space and dualSpace must be defined on the same grid");
+
+    bool isBarycentricSpace = (space->isBarycentric() || dualSpace->isBarycentric());
+    if (isBarycentricSpace) {
+        m_space = space->barycentricSpace(space);
+        m_dualSpace = dualSpace->barycentricSpace(dualSpace);
+
+    }
+    if (m_space->grid() != m_dualSpace->grid())
+            throw std::invalid_argument(
+                    "GridFunction::GridFunction(): "
+                    "space and dualSpace must be defined on the same grid");
+
     setProjections(*m_dualSpace,
                    *calculateProjections(*context, function, *m_dualSpace));
 }
@@ -225,16 +234,31 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
         const arma::Col<ResultType>& data,
         DataType dataType)
 {
+    bool isBarycentricSpace=false;
+    if (space && space->isBarycentric())
+        isBarycentricSpace = true;
+
+    if (dualSpace && dualSpace->isBarycentric())
+        isBarycentricSpace = true;
+
+    shared_ptr<const Space<BasisFunctionType> > newSpace(space);
+    shared_ptr<const Space<BasisFunctionType> > newDualSpace(dualSpace);
+    if (isBarycentricSpace){
+        newSpace = space->barycentricSpace(space);
+        if (dualSpace)
+            newDualSpace = dualSpace->barycentricSpace(dualSpace);
+    }
+
     if (dataType == COEFFICIENTS) {
-        if (dualSpace && space->grid() != dualSpace->grid())
+        if (newDualSpace && newSpace->grid() != newDualSpace->grid())
             throw std::invalid_argument(
                     "GridFunction::GridFunction(): "
                     "space and dualSpace must be defined on the same grid");
-        initializeFromCoefficients(context, space, data);
-        m_dualSpace = dualSpace;
+        initializeFromCoefficients(context, newSpace, data);
+        m_dualSpace = newDualSpace;
     } else if (dataType == PROJECTIONS) {
-        initializeFromProjections(context, space, dualSpace, data);
-        m_dualSpace = dualSpace;
+        initializeFromProjections(context, newSpace, newDualSpace, data);
+        m_dualSpace = newDualSpace;
     } else
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): invalid dataType");
@@ -248,13 +272,29 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
         const arma::Col<ResultType>& coefficients,
         const arma::Col<ResultType>& projections)
 {
+    bool isBarycentricSpace=false;
+    if (space && space->isBarycentric())
+        isBarycentricSpace = true;
+
+    if (dualSpace && dualSpace->isBarycentric())
+        isBarycentricSpace = true;
+
+    shared_ptr<const Space<BasisFunctionType> > newSpace(space);
+    shared_ptr<const Space<BasisFunctionType> > newDualSpace(dualSpace);
+    if (isBarycentricSpace){
+        newSpace = space->barycentricSpace(space);
+        if (dualSpace)
+            newDualSpace = dualSpace->barycentricSpace(dualSpace);
+    }
+
+
     // We ignore the vector of projections.
-    initializeFromCoefficients(context, space, coefficients);
-    if (dualSpace && space->grid() != dualSpace->grid())
+    initializeFromCoefficients(context, newSpace, coefficients);
+    if (newDualSpace && newSpace->grid() != newDualSpace->grid())
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): "
                 "space and dualSpace must be defined on the same grid");
-    m_dualSpace = dualSpace;
+    m_dualSpace = newDualSpace;
 }
 
 // Member functions
@@ -296,17 +336,27 @@ void GridFunction<BasisFunctionType, ResultType>::initializeFromProjections(
     if (!dualSpace)
         throw std::invalid_argument(
                 "GridFunction::initializeFromProjections(): dualSpace must not be null");
-    if (space->grid() != dualSpace->grid())
-        throw std::invalid_argument(
-                "GridFunction::initializeFromProjections(): "
-                "space and dualSpace must be defined on the same grid");
+    bool isBarycentricSpace = (space->isBarycentric() || dualSpace->isBarycentric());
+    if (isBarycentricSpace) {
+        m_space = space->barycentricSpace(space);
+        m_dualSpace = dualSpace->barycentricSpace(dualSpace);
+
+    }
+    else {
+        m_space = space;
+        m_dualSpace = dualSpace;
+    }
+    if (m_space->grid() != m_dualSpace->grid())
+            throw std::invalid_argument(
+                    "GridFunction::initializeFromProjections(): "
+                    "space and dualSpace must be defined on the same grid");
+
     if (projections.n_rows != dualSpace->globalDofCount())
         throw std::invalid_argument(
                 "GridFunction::initializeFromProjections(): "
                 "the projections vector has incorrect length");
     m_context = context;
-    m_space = space;
-    setProjections(*dualSpace, projections);
+    setProjections(*m_dualSpace, projections);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -570,16 +620,16 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
         throw std::invalid_argument("GridFunction::evaluateAtSpecialPoints(): "
                                     "invalid data type");
 
-    shared_ptr<const Grid> grid = m_space->grid();
-    const int gridDim = grid->dim();
-    const int worldDim = grid->dimWorld();
+    const GridView& view = m_space->gridView();
+    const int gridDim = m_space->gridDimension();
+    const int worldDim = m_space->worldDimension();
     const int elementCodim = 0;
     const int vertexCodim = gridDim;
     const int nComponents = componentCount();
 
-    std::auto_ptr<GridView> view = grid->leafView();
-    const size_t elementCount = view->entityCount(elementCodim);
-    const size_t vertexCount = view->entityCount(vertexCodim);
+
+    const size_t elementCount = view.entityCount(elementCodim);
+    const size_t vertexCount = view.entityCount(vertexCodim);
 
     values.set_size(nComponents,
                      dataType == VtkWriter::CELL_DATA ? elementCount : vertexCount);
@@ -592,12 +642,13 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
     std::fill(multiplicities.begin(), multiplicities.end(), 0);
 
     // Gather geometric data
-    Fiber::RawGridGeometry<CoordinateType> rawGeometry(gridDim, grid->dimWorld());
-    view->getRawElementData(
+    Fiber::RawGridGeometry<CoordinateType> rawGeometry(gridDim, m_space->worldDimension());
+    view.getRawElementData(
                 rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
                 rawGeometry.auxData());
 
     // Make geometry factory
+    shared_ptr<const Grid> grid = m_space->grid();
     std::auto_ptr<GeometryFactory> geometryFactory =
             grid->elementGeometryFactory();
     std::auto_ptr<typename GeometryFactory::Geometry> geometry(
@@ -612,8 +663,8 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
     ShapesetAndCornerCountVector basesAndCornerCounts(elementCount);
     std::vector<std::vector<ResultType> > localCoefficients(elementCount);
     {
-        const Mapper& mapper = view->elementMapper();
-        std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+        const Mapper& mapper = view.elementMapper();
+        std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
         for (size_t e = 0; e < elementCount; ++e) {
             const Entity<0>& element = it->entity();
             const int elementIndex = mapper.entityIndex(element);
@@ -1028,8 +1079,9 @@ void exportToGmsh(
 
     arma::Mat<ResultType> values;
     arma::Mat<CoordinateType> globalCoords;
-    std::auto_ptr<GridView> view = space->grid()->leafView();
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    const GridView& view = space->gridView();
+    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
+
     size_t nodeCount = 0;
     size_t elementCount = 0;
     std::stringstream nodes, elements, data;

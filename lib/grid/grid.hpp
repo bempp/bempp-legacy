@@ -31,6 +31,8 @@
 #include <cstddef> // size_t
 #include <memory>
 #include <vector>
+#include <tbb/mutex.h>
+
 
 namespace Bempp
 {
@@ -93,12 +95,16 @@ public:
     @name Others
     @{ */
 
+    /** \brief Return a barycentrically refined grid based on the LeafView */
+    virtual shared_ptr<Grid> barycentricGrid() const = 0;
 
-    /** \brief Return a new barycentrically refined grid */
-    virtual shared_ptr<Grid> barycentricGrid() const =0;
+    /** \brief Return \p true if a barycentric refinement of this grid has
+     *  been created. */
+    virtual bool hasBarycentricGrid() const = 0;
 
-    /** \brief Return true of leaf-level is barycentric refinement of previous level */
-    virtual bool leafIsBarycentric() const = 0;
+    /** \brief Return \p true if this grid is a barycentric representation of
+     *  \p other, i.e. if this grid was created by \p other.barycentricGrid(). */
+    virtual bool isBarycentricRepresentationOf(const Grid& other) const;
 
     /** \brief Reference to the grid's global id set. */
     virtual const IdSet& globalIdSet() const = 0;

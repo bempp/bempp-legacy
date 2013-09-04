@@ -22,6 +22,7 @@
 #define fiber_4d_array_hpp
 
 #include "../common/common.hpp"
+#include "boost/operators.hpp"
 
 #include <stdexcept>
 
@@ -46,7 +47,8 @@ template <typename T> class Const1dSliceOf4dArray;
 Bound checking can optionally be activated by defining the symbol
 FIBER_CHECK_ARRAY_BOUNDS. */
 template <typename T>
-class _4dArray
+class _4dArray : boost::additive<_4dArray<T>
+        , boost::multiplicative<_4dArray<T>,T > >
 {
 public:
     _4dArray();
@@ -62,6 +64,10 @@ public:
 
     size_t extent(size_t dimension) const;
     void set_size(size_t extent0, size_t extent1, size_t extent2, size_t extent3);
+
+    _4dArray<T>& operator+=(const _4dArray<T>& other);
+    _4dArray<T>& operator*=(const T& other);
+
 
     typedef T* iterator;
     typedef const T* const_iterator;

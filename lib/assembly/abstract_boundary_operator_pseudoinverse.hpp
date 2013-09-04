@@ -31,6 +31,7 @@ namespace Bempp
 /** \cond FORWARD_DECL */
 template <typename ResultType> class DiscreteDenseBoundaryOperator;
 template <typename ResultType> class DiscreteSparseBoundaryOperator;
+template <typename BasisFunctionType> class Space;
 /** \endcond */
 
 template <typename BasisFunctionType, typename ResultType>
@@ -69,6 +70,9 @@ public:
     /** \brief Construct a (pseudo)inverse of \p boundaryOp. */
     explicit AbstractBoundaryOperatorPseudoinverse(
             const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp);
+    explicit AbstractBoundaryOperatorPseudoinverse(
+            const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
+            const shared_ptr<const Space<BasisFunctionType> >& dualToRange);
 
     virtual bool isLocal() const;
 
@@ -107,6 +111,16 @@ private:
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 pseudoinverse(const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp);
+
+/** \relates AbstractBoundaryOperatorPseudoinverse
+ *  \brief Construct a (pseudo)inverse of a boundary operator. This overload
+ *  additionally specifies the \p dualToRange space if it cannot be detected
+ *  automatically. */
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
+pseudoinverse(const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
+              const shared_ptr<const Space<BasisFunctionType> >& dualToRange);
+
 
 } // namespace Bempp
 

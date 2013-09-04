@@ -108,6 +108,20 @@ ElementVariant PiecewiseConstantScalarSpace<BasisFunctionType>::elementVariant(
 }
 
 template <typename BasisFunctionType>
+bool PiecewiseConstantScalarSpace<BasisFunctionType>::
+spaceIsCompatible(const Space<BasisFunctionType>& other) const
+{
+
+       if (other.grid().get()==this->grid().get()){
+           return (other.spaceIdentifier()==this->spaceIdentifier());
+       }
+       else
+           return false;
+
+}
+
+
+template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::setElementVariant(
         const Entity<0>& element, ElementVariant variant)
 {

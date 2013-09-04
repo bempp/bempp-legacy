@@ -79,6 +79,19 @@ void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::initialize(
 }
 
 template <typename BasisFunctionType>
+bool PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
+spaceIsCompatible(const Space<BasisFunctionType> &other) const
+{
+
+       if (other.grid().get()==this->grid().get()){
+           return (other.spaceIdentifier()==this->spaceIdentifier());
+       }
+       else
+           return false;
+
+}
+
+template <typename BasisFunctionType>
 shared_ptr<const Space<BasisFunctionType> >
 PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::discontinuousSpace(
     const shared_ptr<const Space<BasisFunctionType> >& self) const
@@ -96,6 +109,7 @@ PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::isDiscontinuous() co
 {
     return true;
 }
+
 
 template <typename BasisFunctionType>
 void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::assignDofsImpl(

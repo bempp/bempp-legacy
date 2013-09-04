@@ -21,8 +21,11 @@
 #ifndef bempp_space_hpp
 #define bempp_space_hpp
 
+#include "space_identifier.hpp"
+
 #include "../common/common.hpp"
 #include "bempp/common/config_trilinos.hpp"
+
 
 #include "../common/bounding_box.hpp"
 #include "../common/not_implemented_error.hpp"
@@ -52,9 +55,11 @@ namespace Bempp
 /** \cond FORWARD_DECL */
 class Grid;
 class GridView;
+class GeometryFactory;
 template <int codim> class Entity;
 template <int codim> class EntityPointer;
 template <typename ValueType> class DiscreteSparseBoundaryOperator;
+template <typename ValueType> class DiscreteBoundaryOperator;
 /** \endcond */
 
 enum DofType
@@ -102,12 +107,21 @@ public:
      *  \param[in] grid Grid on which functions from this space should be
      *  defined.
      *
+     *  \param[in] level Level of the grid on which the space should be defined.
+     *
      *  An exception is thrown if \p grid is a null pointer.
      */
     explicit Space(const shared_ptr<const Grid>& grid);
 
+    /** \brief Copy Constructor */
+    Space(const Space<BasisFunctionType>& other);
+
     /** \brief Destructor. */
     virtual ~Space();
+
+    /** \brief Assignment operator */
+    Space<BasisFunctionType>& operator=(const Space<BasisFunctionType>& other);
+
 
     /** @name Attributes
     @{ */
@@ -150,6 +164,10 @@ public:
      *  only a single element, false otherwise. */
     virtual bool isDiscontinuous() const = 0;
 
+    /** \brief Return \p true if space is based on a barycentric refinement */
+
+    virtual bool isBarycentric() const = 0;
+
     /** \brief Dimension of the grid on which functions from this space are
      *  defined. */
     virtual int domainDimension() const = 0;
@@ -177,9 +195,6 @@ public:
     }
 
     /** \brief Reference to the shapeset attached to the specified element.
-     *
-     *  \deprecated This function is deprecated and will be removed in a future
-     *  release of BEM++. Use shapeset() instead.
      */
     virtual const Fiber::Shapeset<BasisFunctionType>& shapeset(
             const Entity<0>& element) const {
@@ -201,6 +216,23 @@ public:
                     basisFunctionValue());
     }
 
+    /** \brief Return an equivalent space (in terms of global Dofs), but defined using
+     *  local dofs on the barycentrically refined grid. */
+    virtual shared_ptr<const Space<BasisFunctionType> > barycentricSpace(
+            const shared_ptr<const Space<BasisFunctionType> >& self) const;
+
+    /** \brief Return the grid level of the current space */
+    unsigned int level() const {return m_level; }
+
+    /** \brief Return the underlying grid dimension */
+    int gridDimension() const;
+
+    /** \brief Return the underlying world dimension */
+    int worldDimension() const;
+
+    /** \brief Return the grid view of the current space */
+    const GridView& gridView() const;
+
     /** \brief Transformation mapping shape functions to basis functions.
      *
      *  This function returns a CollectionOfShapesetTransformations object
@@ -212,8 +244,6 @@ public:
      *  functions, but may be more complicated for spaces of vector-valued
      *  functions, e.g. \f$H(\mathrm{curl})\f$.
      *
-     *  \deprecated This function is deprecated and will be removed in a future
-     *  release of BEM++. Use basisFunctionValue() instead.
      */
     virtual const CollectionOfShapesetTransformations&
     basisFunctionValue() const {
@@ -243,6 +273,12 @@ public:
      *
      *  See the documentation of setElementVariant() for more information. */
     virtual ElementVariant elementVariant(const Entity<0>& element) const = 0;
+
+    /** \brief Return the GeometryFactory associated with the mesh. */
+
+    shared_ptr<GeometryFactory> elementGeometryFactory() const {
+        return m_elementGeometryFactory;
+    }
 
     // additional functions for e.g. increasing polynomial order of all elements
     // ...
@@ -286,6 +322,16 @@ public:
                                std::vector<GlobalDofIndex>& dofs,
                                std::vector<BasisFunctionType>& localDofWeights) const;
 
+    /** \brief Return true if both spaces act on the same grid. */
+    virtual bool gridIsIdentical(const Space<BasisFunctionType>& other) const;
+
+    /** \brief Return the identifier of the space. */
+    virtual SPACE_IDENTIFIER spaceIdentifier() const = 0;
+
+    /** \brief Return true if \p other is compatible to this space, i.e. the global
+     * dofs of the two spaces agree with each other. */
+    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const = 0;
+
     /** \brief Map global degrees of freedom to local degrees of freedom.
      *
      *  \param[in] globalDofs
@@ -306,6 +352,7 @@ public:
             const std::vector<GlobalDofIndex>& globalDofs,
             std::vector<std::vector<LocalDof> >& localDofs,
             std::vector<std::vector<BasisFunctionType> >& localDofWeights) const;
+
 
     /** \brief Map flat indices of local degrees of freedom to local degrees of freedom.
      *
@@ -446,6 +493,9 @@ public:
 private:
     /** \cond PRIVATE */
     shared_ptr<const Grid> m_grid;
+    shared_ptr<GeometryFactory> m_elementGeometryFactory;
+    unsigned int m_level;
+    std::auto_ptr<GridView> m_view;
     /** \endcond */
 };
 

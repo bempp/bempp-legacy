@@ -116,14 +116,18 @@ public:
         Auxiliary data, to be used in future to describe the geometry of
         curvilinear elements. Currently this argument is always set to an empty
         matrix.
-      */
-    void getRawElementData(arma::Mat<double>& vertices,
-                           arma::Mat<int>& elementCorners,
-                           arma::Mat<char>& auxData) const;
+    */
+
+
     /** \overload */
     void getRawElementData(arma::Mat<float>& vertices,
                            arma::Mat<int>& elementCorners,
-                           arma::Mat<char>& auxData) const;
+                           arma::Mat<char>& auxData ) const;
+    /** \overload */
+    void getRawElementData(arma::Mat<double>& vertices,
+                           arma::Mat<int>& elementCorners,
+                           arma::Mat<char>& auxData ) const;
+
 
     /** \brief Get raw data describing the geometry of all codim-0 entities
       contained in this grid view.
@@ -214,6 +218,7 @@ inline void GridView::getRawElementData(arma::Mat<float>& vertices,
     getRawElementDataFloatImpl(vertices, elementCorners, auxData,
                                &domainIndices);
 }
+
 
 template<>
 inline std::auto_ptr<EntityIterator<0> > GridView::entityIterator<0>() const
