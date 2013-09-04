@@ -32,7 +32,8 @@ SolutionBase<BasisFunctionType, ResultType>::SolutionBase(
         const Thyra::SolveStatus<MagnitudeType> status) :
     m_achievedTolerance(status.achievedTol),
     m_message(status.message),
-    m_extraParameters(status.extraParameters)
+    m_extraParameters(status.extraParameters),
+    m_iterationCount(-1)
 {
     switch (status.solveStatus) {
     case Thyra::SOLVE_STATUS_CONVERGED:
@@ -41,7 +42,11 @@ SolutionBase<BasisFunctionType, ResultType>::SolutionBase(
         m_status = SolutionStatus::UNCONVERGED; break;
     default:
         m_status = SolutionStatus::UNKNOWN;
+
     }
+    Teuchos::ParameterList params = *status.extraParameters;
+    m_iterationCount = params.get<int>(std::string("Iteration Count"));
+
 }
 #endif // WITH_TRILINOS
 
@@ -50,7 +55,8 @@ SolutionBase<BasisFunctionType, ResultType>::SolutionBase(
         SolutionStatus::Status status, MagnitudeType achievedTolerance, std::string message) :
     m_status(status), 
     m_achievedTolerance(achievedTolerance),
-    m_message(message)
+    m_message(message),
+    m_iterationCount(-1)
 {
 }
 
@@ -59,6 +65,12 @@ SolutionStatus::Status
 SolutionBase<BasisFunctionType, ResultType>::status() const
 {
     return m_status;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+int SolutionBase<BasisFunctionType, ResultType>::iterationCount() const
+{
+    return m_iterationCount;
 }
 
 template <typename BasisFunctionType, typename ResultType>
