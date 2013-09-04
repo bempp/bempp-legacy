@@ -41,6 +41,33 @@ NumericalQuadratureStrategy(
 {
 }
 
+template <typename BasisFunctionType, typename ResultType>
+NumericalQuadratureStrategy<BasisFunctionType, ResultType>::
+NumericalQuadratureStrategy(
+        const AccuracyOptionsEx& accuracyOptions,
+        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
+        singleQuadratureRuleFamily,
+        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >&
+        doubleQuadratureRuleFamily) :
+    Base(accuracyOptions,
+         singleQuadratureRuleFamily, doubleQuadratureRuleFamily)
+{
+}
+
+template <typename BasisFunctionType, typename ResultType>
+NumericalQuadratureStrategy<BasisFunctionType, ResultType>::
+NumericalQuadratureStrategy(
+        const shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
+        quadratureDescriptorSelectorFactory,
+        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
+        singleQuadratureRuleFamily,
+        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >&
+        doubleQuadratureRuleFamily) :
+    Base(quadratureDescriptorSelectorFactory,
+         singleQuadratureRuleFamily, doubleQuadratureRuleFamily)
+{
+}
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(
         NumericalQuadratureStrategy);
 
