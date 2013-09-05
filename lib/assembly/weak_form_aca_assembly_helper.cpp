@@ -155,7 +155,8 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
         m_accessedEntryCount += n1 * n2;
 
     // if negative, it means: unknown
-    const CoordinateType minDist = estimateMinimumDistance(c1, c2);
+    const CoordinateType minDist = -1;
+    // estimateMinimumDistance(c1, c2);
 
     // This is a non-op for real types. For complex types, it converts a pointer
     // to Ahmed's scomp (resp. dcomp) to a pointer to std::complex<float>
