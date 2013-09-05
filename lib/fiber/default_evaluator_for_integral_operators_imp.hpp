@@ -175,9 +175,16 @@ ResultType, GeometryFactory>::evaluate(
                 m_nearFieldWeights :
                 m_farFieldWeights;
 
-    // Do things in chunks of 96 points -- in order to avoid creating
+    // Do things in chunks -- in order to avoid creating
     // too large arrays of kernel values
-    const size_t chunkSize = 96;
+
+    // For the time being, we don't take into account the possibly tensorial
+    // nature of kernels nor the fact that there may be more than one kernel
+    const size_t kernelValuesSizePerEvalPoint =
+        trialGeomData.globals.n_cols * sizeof(KernelType);
+    const size_t chunkSize =
+        std::max(1ul, 10 * 1024 * 1024 / kernelValuesSizePerEvalPoint);
+    std::cout << "chunkSize: " << chunkSize << std::endl;
     const size_t chunkCount = (pointCount + chunkSize - 1) / chunkSize;
 
     int maxThreadCount = 1;
