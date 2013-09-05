@@ -54,6 +54,9 @@ template <typename ValueType> class CollectionOfKernels;
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class KernelTrialIntegral;
 template <typename CoordinateType> class RawGridGeometry;
+template <typename BasisFunctionType>
+class QuadratureDescriptorSelectorForPotentialOperators;
+template <typename CoordinateType> class SingleQuadratureRuleFamily;
 /** \endcond */
 
 template <typename BasisFunctionType, typename KernelType,
@@ -74,7 +77,9 @@ public:
             const shared_ptr<const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> >& integral,
             const ParallelizationOptions& parallelizationOptions,
             VerbosityLevel::Level verbosityLevel,
-            const AccuracyOptionsEx& accuracyOptions);
+            const shared_ptr<const QuadratureDescriptorSelectorForPotentialOperators<
+                BasisFunctionType> >& quadDescSelector,
+            const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >& quadRuleFamily);
     virtual ~DefaultLocalAssemblerForPotentialOperatorsOnSurfaces();
 
     virtual void evaluateLocalContributions(
@@ -132,16 +137,16 @@ private:
     shared_ptr<const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> > m_integral;
     ParallelizationOptions m_parallelizationOptions;
     VerbosityLevel::Level m_verbosityLevel;
-    AccuracyOptionsEx m_accuracyOptions;
+    shared_ptr<const QuadratureDescriptorSelectorForPotentialOperators<BasisFunctionType> >
+    m_quadDescSelector;
+    shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> > m_quadRuleFamily;
+
 
     typedef tbb::concurrent_unordered_map<SingleQuadratureDescriptor,
     Integrator*> IntegratorMap;
     IntegratorMap m_kernelTrialIntegrators;
 
     enum { INVALID_INDEX = INT_MAX };
-    std::vector<CoordinateType> m_elementSizesSquared;
-    arma::Mat<CoordinateType> m_elementCenters;
-    CoordinateType m_averageElementSize;
     /** \endcond */
 };
 

@@ -18,45 +18,34 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_numerical_quadrature_hpp
-#define fiber_numerical_quadrature_hpp
+#ifndef fiber_default_double_quadrature_rule_family_hpp
+#define fiber_default_double_quadrature_rule_family_hpp
 
-#include "../common/common.hpp"
-
-/** \file
- *
- *  Low-level functions filling arrays of quadrature points and weights. */
-
-#include "double_quadrature_descriptor.hpp"
-#include "single_quadrature_descriptor.hpp"
-
-#include "../common/armadillo_fwd.hpp"
+#include "double_quadrature_rule_family.hpp"
 
 namespace Fiber
 {
 
-/** \brief Retrieve points and weights for a quadrature over a single element.
+/** \brief Default family of quadrature rules over pairs of elements.
  *
- *  \param[in] elementCornerCount
- *    Number of corners of the element to be integrated on.
- *  \param[in] accuracyOrder
- *    Accuracy order of the quadrature, i.e. its degree of exactness.
- *  \param[out] points
- *    Quadrature points.
- *  \param[out] weights
- *    Quadrature weights. */
-template <typename ValueType>
-void fillSingleQuadraturePointsAndWeights(int elementCornerCount,
-                                          int accuracyOrder,
-                                          arma::Mat<ValueType>& points,
-                                          std::vector<ValueType>& weights);
+ *  Regular integrals are treated with tensor-product quadrature
+ *  rules, singular integrals with non-tensor-product rules taken from
+ *  Sauter and Schwab, "Boundary Element Methods", Springer 2011. */
+template <typename CoordinateType>
+class DefaultDoubleQuadratureRuleFamily :
+        public DoubleQuadratureRuleFamily<CoordinateType>
+{
+public:
+    virtual ~DefaultDoubleQuadratureRuleFamily() {}
 
-template <typename ValueType>
-void fillDoubleSingularQuadraturePointsAndWeights(
+    virtual void fillQuadraturePointsAndWeights(
         const DoubleQuadratureDescriptor& desc,
-        arma::Mat<ValueType>& testPoints,
-        arma::Mat<ValueType>& trialPoints,
-        std::vector<ValueType>& weights);
+        arma::Mat<CoordinateType>& testPoints,
+        arma::Mat<CoordinateType>& trialPoints,
+        std::vector<CoordinateType>& testWeights,
+        std::vector<CoordinateType>& trialWeights,
+        bool& isTensor) const;
+};
 
 } // namespace Fiber
 

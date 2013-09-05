@@ -18,45 +18,37 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_numerical_quadrature_hpp
-#define fiber_numerical_quadrature_hpp
+#ifndef fiber_single_quadrature_rule_family_hpp
+#define fiber_single_quadrature_rule_family_hpp
 
 #include "../common/common.hpp"
-
-/** \file
- *
- *  Low-level functions filling arrays of quadrature points and weights. */
-
-#include "double_quadrature_descriptor.hpp"
+#include "../common/armadillo_fwd.hpp"
 #include "single_quadrature_descriptor.hpp"
 
-#include "../common/armadillo_fwd.hpp"
+#include <vector>
 
 namespace Fiber
 {
 
-/** \brief Retrieve points and weights for a quadrature over a single element.
- *
- *  \param[in] elementCornerCount
- *    Number of corners of the element to be integrated on.
- *  \param[in] accuracyOrder
- *    Accuracy order of the quadrature, i.e. its degree of exactness.
- *  \param[out] points
- *    Quadrature points.
- *  \param[out] weights
- *    Quadrature weights. */
-template <typename ValueType>
-void fillSingleQuadraturePointsAndWeights(int elementCornerCount,
-                                          int accuracyOrder,
-                                          arma::Mat<ValueType>& points,
-                                          std::vector<ValueType>& weights);
+/** \brief Family of quadrature rules over single elements. */
+template <typename CoordinateType>
+class SingleQuadratureRuleFamily
+{
+public:
+    /** \brief Destructor. */
+    virtual ~SingleQuadratureRuleFamily() {}
 
-template <typename ValueType>
-void fillDoubleSingularQuadraturePointsAndWeights(
-        const DoubleQuadratureDescriptor& desc,
-        arma::Mat<ValueType>& testPoints,
-        arma::Mat<ValueType>& trialPoints,
-        std::vector<ValueType>& weights);
+    /** \brief Fill arrays of quadrature points and weights.
+     *
+     *  \param[in]  desc    Quadrature descriptor.
+     *  \param[out] points  2D array whose (i, j)th element will
+     *    contain the ith (local) coordinate of the jth quadrature point.
+     *  \param[out] weights Vector of quadrature point weights. */
+    virtual void fillQuadraturePointsAndWeights(
+        const SingleQuadratureDescriptor& desc,
+        arma::Mat<CoordinateType>& points,
+        std::vector<CoordinateType>& weights) const = 0;
+};
 
 } // namespace Fiber
 

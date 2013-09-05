@@ -24,6 +24,8 @@
 #include "../common/common.hpp"
 
 #include "numerical_test_function_integrator.hpp"
+#include "quadrature_descriptor_selector_for_grid_functions.hpp"
+#include "single_quadrature_rule_family.hpp"
 
 #include <set>
 #include <utility>
@@ -42,40 +44,17 @@ DefaultLocalAssemblerForGridFunctionsOnSurfaces(
         const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
         const shared_ptr<const Function<UserFunctionType> >& function,
         const shared_ptr<const OpenClHandler>& openClHandler,
-        const QuadratureOptions& quadratureOptions) :
+        const shared_ptr<const QuadratureDescriptorSelectorForGridFunctions<CoordinateType> >& quadDescSelector,
+        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >& quadRuleFamily) :
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
     m_testShapesets(testShapesets),
     m_testTransformations(testTransformations),
     m_function(function),
     m_openClHandler(openClHandler),
-    m_quadratureOptions(quadratureOptions)
+    m_quadDescSelector(quadDescSelector),
+    m_quadRuleFamily(quadRuleFamily)
 {
-    if (rawGeometry->vertices().n_rows != 3)
-        throw std::invalid_argument(
-                "DefaultLocalAssemblerForGridFunctionsOnSurfaces::"
-                "DefaultLocalAssemblerForGridFunctionsOnSurfaces(): "
-                "vertex coordinates must be three-dimensional");
-    if (rawGeometry->elementCornerIndices().n_rows < 3 ||
-            4 < rawGeometry->elementCornerIndices().n_rows)
-        throw std::invalid_argument(
-                "DefaultLocalAssemblerForGridFunctionsOnSurfaces::"
-                "DefaultLocalAssemblerForGridFunctionsOnSurfaces(): "
-                "all elements must be triangular or quadrilateral");
-    const size_t elementCount = rawGeometry->elementCornerIndices().n_cols;
-    if (!rawGeometry->auxData().is_empty() &&
-            rawGeometry->auxData().n_cols != elementCount)
-        throw std::invalid_argument(
-                "DefaultLocalAssemblerForGridFunctionsOnSurfaces::"
-                "DefaultLocalAssemblerForGridFunctionsOnSurfaces(): "
-                "number of columns of auxData must match that of "
-                "elementCornerIndices");
-    if (testShapesets->size() != elementCount)
-        throw std::invalid_argument(
-                "DefaultLocalAssemblerForGridFunctionsOnSurfaces::"
-                "DefaultLocalAssemblerForGridFunctionsOnSurfaces(): "
-                "size of testShapesets must match the number of columns of "
-                "elementCornerIndices");
 }
 
 template <typename BasisFunctionType, typename UserFunctionType,
@@ -168,15 +147,8 @@ DefaultLocalAssemblerForGridFunctionsOnSurfaces<
 BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
 selectIntegrator(int elementIndex)
 {
-    SingleQuadratureDescriptor desc;
-
-    // Get number of corners of the specified element
-    desc.vertexCount = m_rawGeometry->elementCornerCount(elementIndex);
-
-    // Determine integrand's order and required quadrature order
-    const int defaultOrder = 2 * (*m_testShapesets)[elementIndex]->order() + 1;
-    desc.order = m_quadratureOptions.quadratureOrder(defaultOrder);
-
+    SingleQuadratureDescriptor desc =
+        m_quadDescSelector->quadratureDescriptor(elementIndex);
     return getIntegrator(desc);
 }
 
@@ -198,8 +170,7 @@ getIntegrator(const SingleQuadratureDescriptor& desc)
     // Integrator doesn't exist yet and must be created.
     arma::Mat<CoordinateType> points;
     std::vector<CoordinateType> weights;
-    fillSingleQuadraturePointsAndWeights(desc.vertexCount, desc.order,
-                                         points, weights);
+    m_quadRuleFamily->fillQuadraturePointsAndWeights(desc, points, weights);
 
     typedef NumericalTestFunctionIntegrator<BasisFunctionType, UserFunctionType,
             ResultType, GeometryFactory> ConcreteIntegrator;

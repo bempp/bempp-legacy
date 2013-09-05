@@ -103,6 +103,7 @@ SeparableNumericalTestKernelTrialIntegrator(
 
     if (cacheGeometricalData)
         precalculateGeometricalData();
+    m_integralsCount = 0;
 }
 
 template <typename BasisFunctionType, typename KernelType,
@@ -119,6 +120,9 @@ BasisFunctionType, KernelType, ResultType, GeometryFactory>::
     delete clTrialQuadWeights;
     }
 #endif
+    std::cout << "Integrator with "
+              << m_testQuadWeights.size() * m_trialQuadWeights.size()
+              << " points: " << m_integralsCount << " integrals" << std::endl;
 }
 
 template <typename BasisFunctionType, typename KernelType,
@@ -202,6 +206,7 @@ integrateCpu(
         LocalDofIndex localDofIndexB,
         const std::vector<arma::Mat<ResultType>*>& result) const
 {
+    m_integralsCount += elementIndicesA.size();
     const int testPointCount = m_localTestQuadPoints.n_cols;
     const int trialPointCount = m_localTrialQuadPoints.n_cols;
     const int elementACount = elementIndicesA.size();
@@ -680,6 +685,8 @@ integrateCpu(
             const Shapeset<BasisFunctionType>& trialShapeset,
             const std::vector<arma::Mat<ResultType>*>& result) const
 {
+    m_integralsCount += elementIndexPairs.size();
+
     const int testPointCount = m_localTestQuadPoints.n_cols;
     const int trialPointCount = m_localTrialQuadPoints.n_cols;
     const int geometryPairCount = elementIndexPairs.size();

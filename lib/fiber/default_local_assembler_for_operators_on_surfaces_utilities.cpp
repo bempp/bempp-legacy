@@ -16,26 +16,26 @@ checkConsistencyOfGeometryAndShapesets(
 {
     if (rawGeometry.vertices().n_rows != 3)
         throw std::invalid_argument(
-            "DefaultLocalAssemblerForIntegralOperatorsOnSurfaces::"
+            "DefaultLocalAssemblerForOperatorsOnSurfacesUtilities::"
             "checkConsistencyOfGeometryAndShapesets(): "
             "vertex coordinates must be three-dimensional");
     const size_t elementCount = rawGeometry.elementCornerIndices().n_cols;
     if (rawGeometry.elementCornerIndices().n_rows < 3 ||
             4 < rawGeometry.elementCornerIndices().n_rows)
         throw std::invalid_argument(
-            "DefaultLocalAssemblerForIntegralOperatorsOnSurfaces::"
+            "DefaultLocalAssemblerForOperatorsOnSurfacesUtilities::"
             "checkConsistencyOfGeometryAndShapesets(): "
             "Elements must have either 3 or 4 corners");
     if (!rawGeometry.auxData().is_empty() &&
             rawGeometry.auxData().n_cols != elementCount)
         throw std::invalid_argument(
-            "DefaultLocalAssemblerForIntegralOperatorsOnSurfaces::"
+            "DefaultLocalAssemblerForOperatorsOnSurfacesUtilities::"
             "checkConsistencyOfGeometryAndShapesets(): "
             "number of columns of auxData must match that of "
             "elementCornerIndices");
     if (shapesets.size() != elementCount)
         throw std::invalid_argument(
-            "DefaultLocalAssemblerForIntegralOperatorsOnSurfaces::"
+            "DefaultLocalAssemblerForOperatorsOnSurfacesUtilities::"
             "checkConsistencyOfGeometryAndShapesets(): "
             "size of shapesets must match the number of columns of "
             "elementCornerIndices");

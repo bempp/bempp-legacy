@@ -30,23 +30,72 @@
 namespace Fiber
 {
 
+template <typename BasisFunctionType> class QuadratureDescriptorSelectorFactory;
+template <typename CoordinateType> class DoubleQuadratureRuleFamily;
+template <typename CoordinateType> class SingleQuadratureRuleFamily;
+
+/** \brief Base class for NumericalQuadratureStrategy.
+ *
+ * This is the base class of the default quadrature strategy available
+ * in BEM++. This quadrature strategy evaluates integrals by numerical
+ * quadrature.
+ *
+ * The process of selecting a quadrature rule for the evaluation of a
+ * particular integral can be customized at different levels of
+ * generality. The choice of quadrature rule is done in two steps:
+ *
+ * 1. A *quadrature descriptor selector* is given the index of the
+ *    element, or the pair of elements, over which integration should
+ *    be done. It determines the desired order of accuracy of the
+ *    quadrature rule and, for integrals over pairs of elements, the
+ *    configuration of the two elements, i.e. whether they are
+ *    coincident, adjacent or disjoint. These pieces of information
+ *    are stored in a *quadrature descriptor*.
+ *
+ * 2. A *quadrature rule family* is given a quadrature descriptor and
+ *    determines the points and weights of the quadrature rule to be
+ *    applied.
+ *
+ * By default, NumericalQuadratureStrategy uses quadrature descriptor
+ * selectors being instances of the classes
+ * DefaultQuadratureDescriptorSelectorForIntegralOperators,
+ * DefaultQuadratureDescriptorSelectorForLocalOperators and
+ * DefaultQuadratureDescriptorSelectorForGridFunctions. You can make
+ * it use different selectors by passing a custom
+ * QuadratureDescriptorSelectorFactory object to the constructor of
+ * NumericalQuadratureStrategy.
+ *
+ * The default quadrature descriptor selectors are customizable: you
+ * can control the choice of quadrature orders using an
+ * AccuracyOptionsEx options passed to another constructor of
+ * NumericalQuadratureStrategy.
+ *
+ * By default, NumericalQuadratureStrategy uses the quadrature rule
+ * families being instances of DefaultDoubleQuadratureRuleFamily and
+ * DefaultSingleQuadratureRuleFamily. These use Gaussian quadrature
+ * for regular integrals and the Sauter-Schwab quadrature rules for
+ * singular integrals. If you wish, you can subclass
+ * DoubleQuadratureRuleFamily and/or SingleQuadratureRuleFamily and
+ * pass their instances to a NumericalQuadratureStrategy contructor.
+ */
 template <typename BasisFunctionType, typename ResultType,
 typename GeometryFactory, typename Enable>
 class NumericalQuadratureStrategyBase :
         public QuadratureStrategy<BasisFunctionType, ResultType,
         GeometryFactory, Enable>
-{   
+{
 public:
     typedef QuadratureStrategy<BasisFunctionType, ResultType,
     GeometryFactory, Enable> Base;
     typedef typename Base::CoordinateType CoordinateType;
 
-    /** \brief Construct a local assembler factory with default accuracy settings. */
-    NumericalQuadratureStrategyBase();
-
-    /** \brief Construct a local assembler factory with specified accuracy settings. */
-    explicit NumericalQuadratureStrategyBase(
-            const AccuracyOptionsEx& accuracyOptions);
+    NumericalQuadratureStrategyBase(
+        const shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
+        quadratureDescriptorSelectorFactory,
+        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
+        singleQuadratureRuleFamily,
+        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >&
+        doubleQuadratureRuleFamily);
 
 public:
     virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
@@ -122,14 +171,76 @@ private:
             const ParallelizationOptions& parallelizationOptions,
             VerbosityLevel::Level verbosityLevel) const;
 
-public:
-    const AccuracyOptionsEx& accuracyOptions() const;
+protected:
+    shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >
+    quadratureDescriptorSelectorFactory() const;
+    shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >
+    singleQuadratureRuleFamily() const;
+    shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >
+    doubleQuadratureRuleFamily() const;
 
 private:
-    AccuracyOptionsEx m_accuracyOptions;
+    shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >
+    m_quadratureDescriptorSelectorFactory;
+    shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >
+    m_singleQuadratureRuleFamily;
+    shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >
+    m_doubleQuadratureRuleFamily;
 };
 
 // Complex ResultType
+/** \brief Quadrature strategy according to which integrals are
+ * evaluated by numerical quadrature.
+ *
+ * A quadrature strategy provides functions constructing local assemblers used
+ * to discretize boundary operators and user-defined functions. A particular
+ * quadrature strategy determines how the integrals involved in this
+ * discretization are evaluated.
+ *
+ * This is the default quadrature strategy available in BEM++. In this
+ * quadrature strategy integrals are evaluated by numerical
+ * quadrature.
+ *
+ * The process of selecting a quadrature rule for the evaluation of a
+ * particular integral can be customized at different levels of
+ * generality. The choice of quadrature rule is done in two steps:
+ *
+ * 1. A *quadrature descriptor selector* is given the index of the
+ *    element, or the pair of elements, over which integration should
+ *    be done. It determines the desired order of accuracy of the
+ *    quadrature rule and, for integrals over pairs of elements, the
+ *    configuration of the two elements, i.e. whether they are
+ *    coincident, adjacent or disjoint. These pieces of information
+ *    are stored in a *quadrature descriptor*.
+ *
+ * 2. A *quadrature rule family* is given a quadrature descriptor and
+ *    determines the points and weights of the quadrature rule to be
+ *    applied.
+ *
+ * By default, NumericalQuadratureStrategy uses quadrature descriptor
+ * selectors being instances of the classes
+ * DefaultQuadratureDescriptorSelectorForIntegralOperators,
+ * DefaultQuadratureDescriptorSelectorForLocalOperators and
+ * DefaultQuadratureDescriptorSelectorForGridFunctions. You can make
+ * it use different selectors by passing a custom
+ * QuadratureDescriptorSelectorFactory object to the constructor of
+ * NumericalQuadratureStrategy.
+ *
+ * The default quadrature descriptor selectors are customizable: you
+ * can control the choice of quadrature orders using an
+ * AccuracyOptionsEx options passed to another constructor of
+ * NumericalQuadratureStrategy.
+ *
+ * By default, NumericalQuadratureStrategy uses the quadrature rule
+ * families being instances of DefaultDoubleQuadratureRuleFamily and
+ * DefaultSingleQuadratureRuleFamily. These use Gaussian quadrature
+ * for regular integrals and the Sauter-Schwab quadrature rules (*) for
+ * singular integrals. If you wish, you can subclass
+ * DoubleQuadratureRuleFamily and/or SingleQuadratureRuleFamily and
+ * pass their instances to a NumericalQuadratureStrategy contructor.
+ *
+ * (*) S. Sauter, Ch. Schwab, "Boundary Element Methods" (2010).
+ */
 template <typename BasisFunctionType, typename ResultType,
 typename GeometryFactory, typename Enable = void>
 class NumericalQuadratureStrategy :
@@ -141,12 +252,45 @@ class NumericalQuadratureStrategy :
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
-    /** \brief Construct a local assembler factory with default accuracy settings. */
+    /** \brief Construct a numerical quadrature strategy.
+     *
+     * This constructor makes the newly created object use the default
+     * quadrature descriptor selector factory and the default accuracy
+     * options. */
     NumericalQuadratureStrategy();
 
-    /** \brief Construct a local assembler factory with specified accuracy settings. */
+    /** \brief Construct a numerical quadrature strategy.
+     *
+     * This constructor makes the newly created object use the default
+     * quadrature descriptor selector factory with custom accuracy
+     * options and the default quadrature rule families. */
     explicit NumericalQuadratureStrategy(
             const AccuracyOptionsEx& accuracyOptions);
+
+    /** \brief Construct a numerical quadrature strategy.
+     *
+     * This constructor makes the newly created object use the default
+     * quadrature descriptor selector factory with custom accuracy
+     * options and custom quadrature rule families. */
+    NumericalQuadratureStrategy(
+        const AccuracyOptionsEx& accuracyOptions,
+        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
+        singleQuadratureRuleFamily,
+        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >&
+        doubleQuadratureRuleFamily);
+
+    /** \brief Construct a numerical quadrature strategy.
+     *
+     * This constructor makes the newly created object use a custom
+     * quadrature descriptor selector factory and quadrature rule families.
+     */
+    NumericalQuadratureStrategy(
+        const shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
+        quadratureDescriptorSelectorFactory,
+        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
+        singleQuadratureRuleFamily,
+        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >&
+        doubleQuadratureRuleFamily);
 
 private:
     virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
@@ -217,12 +361,45 @@ class NumericalQuadratureStrategy<
 public:
     typedef typename Base::CoordinateType CoordinateType;
 
-    /** \brief Construct a local assembler factory with default accuracy settings. */
+    /** \brief Construct a numerical quadrature strategy.
+     *
+     * This constructor makes the newly created object use the default
+     * quadrature descriptor selector factory and the default accuracy
+     * options. */
     NumericalQuadratureStrategy();
 
-    /** \brief Construct a local assembler factory with specified accuracy settings. */
+    /** \brief Construct a numerical quadrature strategy.
+     *
+     * This constructor makes the newly created object use the default
+     * quadrature descriptor selector factory with custom accuracy
+     * options and the default quadrature rule families. */
     explicit NumericalQuadratureStrategy(
             const AccuracyOptionsEx& accuracyOptions);
+
+    /** \brief Construct a numerical quadrature strategy.
+     *
+     * This constructor makes the newly created object use a custom
+     * quadrature descriptor selector factory and quadrature rule families.
+     */
+    explicit NumericalQuadratureStrategy(
+        const shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
+        quadratureDescriptorSelectorFactory,
+        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
+        singleQuadratureRuleFamily,
+        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >&
+        doubleQuadratureRuleFamily);
+
+    /** \brief Construct a numerical quadrature strategy.
+     *
+     * This constructor makes the newly created object use the default
+     * quadrature descriptor selector factory with custom accuracy
+     * options and custom quadrature rule families. */
+    explicit NumericalQuadratureStrategy(
+        const AccuracyOptionsEx& accuracyOptions,
+        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
+        singleQuadratureRuleFamily,
+        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >&
+        doubleQuadratureRuleFamily);
 };
 /** \endcond */
 

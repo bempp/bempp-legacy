@@ -21,11 +21,13 @@
 // Keep IDEs happy
 #include "default_local_assembler_for_potential_operators_on_surfaces.hpp"
 
-#include "shapeset.hpp"
 #include "kernel_trial_integral.hpp"
 #include "numerical_kernel_trial_integrator.hpp"
+#include "quadrature_descriptor_selector_for_potential_operators.hpp"
 #include "raw_grid_geometry.hpp"
 #include "serial_blas_region.hpp"
+#include "shapeset.hpp"
+#include "single_quadrature_rule_family.hpp"
 
 #include <cassert>
 #include <tbb/parallel_for.h>
@@ -50,7 +52,10 @@ DefaultLocalAssemblerForPotentialOperatorsOnSurfaces(
         const shared_ptr<const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> >& integral,
         const ParallelizationOptions& parallelizationOptions,
         VerbosityLevel::Level verbosityLevel,
-        const AccuracyOptionsEx& accuracyOptions) :
+        const shared_ptr<const QuadratureDescriptorSelectorForPotentialOperators<
+            BasisFunctionType> >& quadDescSelector,
+        const shared_ptr<const SingleQuadratureRuleFamily<
+            CoordinateType> >& quadRuleFamily) :
     m_points(points),
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
@@ -60,10 +65,10 @@ DefaultLocalAssemblerForPotentialOperatorsOnSurfaces(
     m_integral(integral),
     m_parallelizationOptions(parallelizationOptions),
     m_verbosityLevel(verbosityLevel),
-    m_accuracyOptions(accuracyOptions)
+    m_quadDescSelector(quadDescSelector),
+    m_quadRuleFamily(quadRuleFamily)
 {
     Utilities::checkConsistencyOfGeometryAndShapesets(*rawGeometry, *trialShapesets);
-    precalculateElementSizesAndCenters();
 }
 
 template <typename BasisFunctionType, typename KernelType,
@@ -316,73 +321,18 @@ estimateRelativeScale(CoordinateType minDist) const
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
-void
-DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<BasisFunctionType,
-KernelType, ResultType, GeometryFactory>::
-precalculateElementSizesAndCenters()
-{
-    Utilities::precalculateElementSizesAndCentersForSingleGrid(
-                *m_rawGeometry,
-                m_elementSizesSquared, m_elementCenters,
-                m_averageElementSize);
-}
-
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType, typename GeometryFactory>
 const KernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>&
 DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 selectIntegrator(int pointIndex, int trialElementIndex,
                  CoordinateType nominalDistance)
 {
-    SingleQuadratureDescriptor desc;
-    desc.vertexCount = m_rawGeometry->elementCornerCount(trialElementIndex);
-    desc.order = order(pointIndex, trialElementIndex, nominalDistance);
+    const arma::Col<CoordinateType>& pointCoords =
+        m_points.unsafe_col(pointIndex);
+    SingleQuadratureDescriptor desc =
+        m_quadDescSelector->quadratureDescriptor(
+            pointCoords, trialElementIndex, nominalDistance);
     return getIntegrator(desc);
-}
-
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType, typename GeometryFactory>
-int
-DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<BasisFunctionType,
-KernelType, ResultType, GeometryFactory>::order(
-        int pointIndex, int trialElementIndex,
-        CoordinateType nominalDistance) const
-{
-    // Order required for exact quadrature on affine elements with a constant kernel
-    int trialBasisOrder = (*m_trialShapesets)[trialElementIndex]->order();
-    int defaultQuadOrder = 2 * trialBasisOrder;
-
-    CoordinateType normalisedDistance;
-    if (nominalDistance < 0.) {
-        CoordinateType elementSizeSquared =
-                m_elementSizesSquared[trialElementIndex];
-        CoordinateType distanceSquared =
-                pointElementDistanceSquared(pointIndex, trialElementIndex);
-        CoordinateType normalisedDistanceSquared =
-                distanceSquared / elementSizeSquared;
-        normalisedDistance = sqrt(normalisedDistanceSquared);
-    } else
-        normalisedDistance = nominalDistance / m_averageElementSize;
-
-    const QuadratureOptions& options =
-            m_accuracyOptions.singleRegular(normalisedDistance);
-    return options.quadratureOrder(defaultQuadOrder);
-}
-
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType, typename GeometryFactory>
-inline
-typename DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<
-BasisFunctionType, KernelType, ResultType, GeometryFactory>::CoordinateType
-DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<
-BasisFunctionType, KernelType, ResultType, GeometryFactory>::pointElementDistanceSquared(
-        int pointIndex, int trialElementIndex) const
-{
-    arma::Col<CoordinateType> diff =
-            m_points.col(pointIndex) -
-            m_elementCenters.col(trialElementIndex);
-    return arma::dot(diff, diff);
 }
 
 template <typename BasisFunctionType, typename KernelType,
@@ -407,9 +357,8 @@ getIntegrator(const SingleQuadratureDescriptor& desc)
     arma::Mat<CoordinateType> trialPoints;
     std::vector<CoordinateType> trialWeights;
 
-    fillSingleQuadraturePointsAndWeights(desc.vertexCount,
-                                         desc.order,
-                                         trialPoints, trialWeights);
+    m_quadRuleFamily->fillQuadraturePointsAndWeights(
+        desc, trialPoints, trialWeights);
     typedef NumericalKernelTrialIntegrator<BasisFunctionType,
             KernelType, ResultType, GeometryFactory> ConcreteIntegrator;
     integrator = new ConcreteIntegrator(

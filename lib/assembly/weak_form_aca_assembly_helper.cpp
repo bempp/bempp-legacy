@@ -115,8 +115,8 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::estimateMinimumDistanc
     // Lower bound on the minimum distance between elements from the two clusters
     CoordinateType minDist = -1.; // negative, read: unknown
 
-//    if (cluster1 && cluster2)
-//        minDist = sqrt(cluster1->extDist2(cluster2));
+   if (cluster1 && cluster2)
+       minDist = sqrt(cluster1->extDist2(cluster2));
 
     // else
         // std::cout << "Warning: clusters not available" << std::endl;
@@ -124,22 +124,21 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::estimateMinimumDistanc
 
 
 
-    // Convert AHMED matrix indices into DOF indices
-    if (cluster1 && cluster2) {
-        std::pair<const cluster*, const cluster*> key(cluster1, cluster2);
-        typename DistanceMap::const_iterator it = m_distancesCache.find(key);
-        if (it != m_distancesCache.end())
-            minDist = it->second;
-        else {
-            shared_ptr<const LocalDofLists<BasisFunctionType> > testDofLists =
-                    m_testDofListsCache->get(c1->getnbeg(), c1->size());
-            shared_ptr<const LocalDofLists<BasisFunctionType> > trialDofLists =
-                    m_trialDofListsCache->get(c2->getnbeg(), c2->size());
-            minDist = m_assemblers[0]->estimateMinimumDistance(
-                        testDofLists->elementIndices, trialDofLists->elementIndices);
-            m_distancesCache.insert(std::make_pair(key, minDist));
-        }
-    }
+    // if (cluster1 && cluster2) {
+    //     std::pair<const cluster*, const cluster*> key(cluster1, cluster2);
+    //     typename DistanceMap::const_iterator it = m_distancesCache.find(key);
+    //     if (it != m_distancesCache.end())
+    //         minDist = it->second;
+    //     else {
+    //         shared_ptr<const LocalDofLists<BasisFunctionType> > testDofLists =
+    //                 m_testDofListsCache->get(c1->getnbeg(), c1->size());
+    //         shared_ptr<const LocalDofLists<BasisFunctionType> > trialDofLists =
+    //                 m_trialDofListsCache->get(c2->getnbeg(), c2->size());
+    //         minDist = m_assemblers[0]->estimateMinimumDistance(
+    //                     testDofLists->elementIndices, trialDofLists->elementIndices);
+    //         m_distancesCache.insert(std::make_pair(key, minDist));
+    //     }
+    // }
 
     return minDist;
 }
@@ -156,7 +155,8 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
         m_accessedEntryCount += n1 * n2;
 
     // if negative, it means: unknown
-    const CoordinateType minDist = estimateMinimumDistance(c1, c2);
+    const CoordinateType minDist = -1;
+    // estimateMinimumDistance(c1, c2);
 
     // This is a non-op for real types. For complex types, it converts a pointer
     // to Ahmed's scomp (resp. dcomp) to a pointer to std::complex<float>

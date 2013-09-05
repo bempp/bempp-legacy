@@ -23,7 +23,9 @@
 // Keep IDEs happy
 #include "default_local_assembler_for_integral_operators_on_surfaces.hpp"
 
+#include "double_quadrature_rule_family.hpp"
 #include "nonseparable_numerical_test_kernel_trial_integrator.hpp"
+#include "quadrature_descriptor_selector_for_integral_operators.hpp"
 #include "separable_numerical_test_kernel_trial_integrator.hpp"
 #include "serial_blas_region.hpp"
 
@@ -100,7 +102,8 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces(
         const ParallelizationOptions& parallelizationOptions,
         VerbosityLevel::Level verbosityLevel,
         bool cacheSingularIntegrals,
-        const AccuracyOptionsEx& accuracyOptions) :
+        const shared_ptr<const QuadratureDescriptorSelectorForIntegralOperators<CoordinateType> >& quadDescSelector,
+        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >& quadRuleFamily) :
     m_testGeometryFactory(testGeometryFactory),
     m_trialGeometryFactory(trialGeometryFactory),
     m_testRawGeometry(testRawGeometry),
@@ -114,12 +117,12 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces(
     m_openClHandler(openClHandler),
     m_parallelizationOptions(parallelizationOptions),
     m_verbosityLevel(verbosityLevel),
-    m_accuracyOptions(accuracyOptions)
+    m_quadDescSelector(quadDescSelector),
+    m_quadRuleFamily(quadRuleFamily)
 {
     Utilities::checkConsistencyOfGeometryAndShapesets(*testRawGeometry, *testShapesets);
     Utilities::checkConsistencyOfGeometryAndShapesets(*trialRawGeometry, *trialShapesets);
 
-    precalculateElementSizesAndCenters();
     if (cacheSingularIntegrals)
         cacheSingularLocalWeakForms();
 }
@@ -599,170 +602,15 @@ cacheLocalWeakForms(const ElementIndexPairSet& elementIndexPairs)
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
-void
-DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
-KernelType, ResultType, GeometryFactory>::
-precalculateElementSizesAndCenters()
-{
-    CoordinateType averageTestElementSize;
-    Utilities::precalculateElementSizesAndCentersForSingleGrid(
-                *m_testRawGeometry,
-                m_testElementSizesSquared, m_testElementCenters,
-                averageTestElementSize);
-    if (testAndTrialGridsAreIdentical()) {
-        m_trialElementSizesSquared = m_testElementSizesSquared;
-        m_trialElementCenters = m_testElementCenters;
-        m_averageElementSize = averageTestElementSize;
-    }
-    else {
-        CoordinateType averageTrialElementSize;
-        Utilities::precalculateElementSizesAndCentersForSingleGrid(
-                    *m_trialRawGeometry,
-                    m_trialElementSizesSquared, m_trialElementCenters,
-                    averageTrialElementSize);
-        m_averageElementSize =
-                (averageTestElementSize + averageTrialElementSize) / 2.;
-    }
-}
-
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType, typename GeometryFactory>
 const TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>&
 DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 selectIntegrator(int testElementIndex, int trialElementIndex,
                  CoordinateType nominalDistance)
 {
-    DoubleQuadratureDescriptor desc;
-
-    // Get corner indices of the specified elements
-    arma::Col<int> testElementCornerIndices =
-            m_testRawGeometry->elementCornerIndices(testElementIndex);
-    arma::Col<int> trialElementCornerIndices =
-            m_trialRawGeometry->elementCornerIndices(trialElementIndex);
-    if (testAndTrialGridsAreIdentical()) {
-        desc.topology = determineElementPairTopologyIn3D(
-                    testElementCornerIndices, trialElementCornerIndices);
-    }
-    else {
-        desc.topology.testVertexCount = testElementCornerIndices.n_rows;
-        desc.topology.trialVertexCount = trialElementCornerIndices.n_rows;
-        desc.topology.type = ElementPairTopology::Disjoint;
-    }
-
-    if (desc.topology.type == ElementPairTopology::Disjoint) {
-        getRegularOrders(testElementIndex, trialElementIndex,
-                         desc.testOrder, desc.trialOrder,
-                         nominalDistance);
-    } else { // singular integral
-        desc.testOrder = singularOrder(testElementIndex, TEST);
-        desc.trialOrder = singularOrder(trialElementIndex, TRIAL);
-    }
-
+    DoubleQuadratureDescriptor desc = m_quadDescSelector->quadratureDescriptor(
+        testElementIndex, trialElementIndex, nominalDistance);
     return getIntegrator(desc);
-}
-
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType, typename GeometryFactory>
-void
-DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
-KernelType, ResultType, GeometryFactory>::
-getRegularOrders(int testElementIndex, int trialElementIndex,
-                 int& testQuadOrder, int& trialQuadOrder,
-                 CoordinateType nominalDistance) const
-{
-    // TODO:
-    // 1. Check the size of elements and the distance between them
-    //    and estimate the variability of the kernel
-    // 2. Take into account the fact that elements might be isoparametric.
-
-    // Order required for exact quadrature on affine elements with a constant kernel
-    int testBasisOrder = (*m_testShapesets)[testElementIndex]->order();
-    int trialBasisOrder = (*m_trialShapesets)[trialElementIndex]->order();
-    testQuadOrder = testBasisOrder;
-    trialQuadOrder = trialBasisOrder;
-
-    CoordinateType normalisedDistance;
-    if (nominalDistance < 0.) {
-        CoordinateType testElementSizeSquared =
-                m_testElementSizesSquared[testElementIndex];
-        CoordinateType trialElementSizeSquared =
-                m_trialElementSizesSquared[trialElementIndex];
-        CoordinateType distanceSquared =
-                elementDistanceSquared(testElementIndex, trialElementIndex);
-        CoordinateType normalisedDistanceSquared =
-                distanceSquared / std::max(testElementSizeSquared,
-                                           trialElementSizeSquared);
-        normalisedDistance = sqrt(normalisedDistanceSquared);
-    } else
-        normalisedDistance = nominalDistance / m_averageElementSize;
-
-    const QuadratureOptions& options =
-            m_accuracyOptions.doubleRegular(normalisedDistance);
-    testQuadOrder = options.quadratureOrder(testQuadOrder);
-    trialQuadOrder = options.quadratureOrder(trialQuadOrder);
-}
-
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType, typename GeometryFactory>
-typename DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
-KernelType, ResultType, GeometryFactory>::CoordinateType
-DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
-KernelType, ResultType, GeometryFactory>::
-estimateMinimumDistance(const std::vector<int>& testElementIndices,
-                        const std::vector<int>& trialElementIndices) const
-{
-    // Quadratic complexity! TODO: reduce it to n log(n)
-    CoordinateType result = 1e300;
-    for (size_t i = 0; i < testElementIndices.size(); ++i) {
-        for (size_t j = 0; j < trialElementIndices.size(); ++j) {
-            CoordinateType distanceSquared =
-                    elementDistanceSquared(testElementIndices[i],
-                                           trialElementIndices[j]);
-            result = std::min(result, distanceSquared);
-        }
-    }
-    return sqrt(result);
-}
-
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType, typename GeometryFactory>
-int
-DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
-KernelType, ResultType, GeometryFactory>::
-singularOrder(int elementIndex, ElementType elementType) const
-{
-    // TODO:
-    // 1. Check the size of elements and estimate the variability of the
-    //    (Sauter-Schwab-transformed) kernel
-    // 2. Take into account the fact that elements might be isoparametric.
-
-    const QuadratureOptions& options = m_accuracyOptions.doubleSingular();
-
-    int elementOrder = (elementType == TEST ?
-                            (*m_testShapesets)[elementIndex]->order() :
-                            (*m_trialShapesets)[elementIndex]->order());
-    int defaultAccuracyOrder = elementOrder + 5;
-    return options.quadratureOrder(defaultAccuracyOrder);
-}
-
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType, typename GeometryFactory>
-inline
-typename DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
-BasisFunctionType, KernelType, ResultType, GeometryFactory>::CoordinateType
-DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
-BasisFunctionType, KernelType, ResultType, GeometryFactory>::elementDistanceSquared(
-        int testElementIndex, int trialElementIndex) const
-{
-    CoordinateType result = 0.;
-    const int dimWorld = 3;
-    for (int d = 0; d < dimWorld; ++d) {
-        CoordinateType diff = m_trialElementCenters(d, trialElementIndex) -
-                m_testElementCenters(d, testElementIndex);
-        result += diff * diff;
-    }
-    return result;
 }
 
 template <typename BasisFunctionType, typename KernelType,
@@ -782,19 +630,15 @@ getIntegrator(const DoubleQuadratureDescriptor& desc)
             // std::cout << "getIntegrator(" << desc
             //           << "): creating an integrator" << std::endl;
             // Integrator doesn't exist yet and must be created.
+            arma::Mat<CoordinateType> testPoints, trialPoints;
+            std::vector<CoordinateType> testWeights, trialWeights;
+            bool isTensor;
+            m_quadRuleFamily->fillQuadraturePointsAndWeights(
+                desc, testPoints, trialPoints,
+                testWeights, trialWeights, isTensor);
             Integrator* integrator = 0;
             const ElementPairTopology& topology = desc.topology;
-            if (topology.type == ElementPairTopology::Disjoint) {
-                // Create a tensor rule
-                arma::Mat<CoordinateType> testPoints, trialPoints;
-                std::vector<CoordinateType> testWeights, trialWeights;
-
-                fillSingleQuadraturePointsAndWeights(topology.testVertexCount,
-                                                     desc.testOrder,
-                                                     testPoints, testWeights);
-                fillSingleQuadraturePointsAndWeights(topology.trialVertexCount,
-                                                     desc.trialOrder,
-                                                     trialPoints, trialWeights);
+            if (isTensor) {
                 typedef SeparableNumericalTestKernelTrialIntegrator<BasisFunctionType,
                         KernelType, ResultType, GeometryFactory> ConcreteIntegrator;
                 integrator = new ConcreteIntegrator(
@@ -805,15 +649,10 @@ getIntegrator(const DoubleQuadratureDescriptor& desc)
                             *m_integral,
                             *m_openClHandler);
             } else {
-                arma::Mat<CoordinateType> testPoints, trialPoints;
-                std::vector<CoordinateType> weights;
-
-                fillDoubleSingularQuadraturePointsAndWeights(
-                            desc, testPoints, trialPoints, weights);
                 typedef NonseparableNumericalTestKernelTrialIntegrator<BasisFunctionType,
                         KernelType, ResultType, GeometryFactory> ConcreteIntegrator;
                 integrator = new ConcreteIntegrator(
-                            testPoints, trialPoints, weights,
+                            testPoints, trialPoints, testWeights,
                             *m_testGeometryFactory, *m_trialGeometryFactory,
                             *m_testRawGeometry, *m_trialRawGeometry,
                             *m_testTransformations, *m_kernels, *m_trialTransformations,

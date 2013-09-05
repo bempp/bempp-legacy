@@ -44,6 +44,9 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class KernelTrialIntegral;
 template <typename CoordinateType> class RawGridGeometry;
 class OpenClHandler;
+template <typename BasisFunctionType>
+class QuadratureDescriptorSelectorForPotentialOperators;
+template <typename CoordinateType> class SingleQuadratureRuleFamily;
 /** \endcond */
 
 template <typename BasisFunctionType, typename KernelType,
@@ -66,7 +69,10 @@ public:
             const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions,
-            const QuadratureOptions& quadratureOptions);
+            const shared_ptr<const QuadratureDescriptorSelectorForPotentialOperators<
+                BasisFunctionType> >& quadDescSelector,
+            const shared_ptr<const SingleQuadratureRuleFamily<
+                CoordinateType> >& quadRuleFamily);
 
     virtual void evaluate(Region region,
                           const arma::Mat<CoordinateType>& points,
@@ -81,10 +87,6 @@ private:
             CollectionOf2dArrays<ResultType>& trialExprValues,
             std::vector<CoordinateType>& weights) const;
 
-    int quadOrder(const Fiber::Shapeset<BasisFunctionType>& shapeset, Region region) const;
-    int farFieldQuadOrder(const Fiber::Shapeset<BasisFunctionType>& shapeset) const;
-    int nearFieldQuadOrder(const Fiber::Shapeset<BasisFunctionType>& shapeset) const;
-
 private:
     const shared_ptr<const GeometryFactory> m_geometryFactory;
     const shared_ptr<const RawGridGeometry<CoordinateType> > m_rawGeometry;
@@ -95,7 +97,9 @@ private:
     const shared_ptr<const std::vector<std::vector<ResultType> > > m_argumentLocalCoefficients;
     const shared_ptr<const OpenClHandler> m_openClHandler;
     const ParallelizationOptions m_parallelizationOptions;
-    const QuadratureOptions m_quadratureOptions;
+    const shared_ptr<const QuadratureDescriptorSelectorForPotentialOperators<
+                         BasisFunctionType> > m_quadDescSelector;
+    const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> > m_quadRuleFamily;
 
     Fiber::GeometricalData<CoordinateType> m_nearFieldTrialGeomData;
     Fiber::GeometricalData<CoordinateType> m_farFieldTrialGeomData;
