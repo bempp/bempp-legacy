@@ -54,13 +54,13 @@ AbstractBoundaryOperatorComposition(
     assert(m_outer.abstractOperator());
     assert(m_inner.abstractOperator());
 
-    if (m_outer.domain() != m_inner.range())
+    if (!(m_outer.domain()->spaceIsCompatible(*m_inner.range())))
         throw std::invalid_argument(
                 "AbstractBoundaryOperatorComposition::AbstractBoundaryOperatorComposition(" +
                 m_outer.label() +
                 ", " +
                 m_inner.label() +
-                "): Domain of the outer term must be equal to the range of "
+                "): Domain of the outer term must be compatible to the range of "
                 "the inner term");
 }
 
@@ -89,7 +89,8 @@ assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) cons
                 // All we need is a weak form.
                 make_shared_from_ref(context),
                 m_inner.range(), m_inner.range(), m_inner.dualToRange());
-    BoundaryOp pinvId = pseudoinverse(id);
+    BoundaryOp pinvId = pseudoinverse(id,m_inner.dualToRange());
+    // Dual space not important here. Could be anything.
 
     shared_ptr<const DiscreteLinOp> temp =
             boost::make_shared<DiscreteBoundaryOperatorComposition<ResultType> >(

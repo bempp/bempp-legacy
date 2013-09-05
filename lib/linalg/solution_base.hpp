@@ -82,6 +82,11 @@ public:
      *  typical value returned by direct solvers. */
     MagnitudeType achievedTolerance() const;
 
+    /** \brief Iteration count if iterative solver is used.
+     *  If a direct solver is used, this defaults to -1.
+     */
+    int iterationCount() const;
+
     /** \brief Message returned by the solver. */
     std::string solverMessage() const;
 
@@ -96,6 +101,7 @@ private:
     SolutionStatus::Status m_status;
     MagnitudeType m_achievedTolerance;
     std::string m_message;
+    int m_iterationCount;
 #ifdef WITH_TRILINOS
     Teuchos::RCP<Teuchos::ParameterList> m_extraParameters;
 #endif // WITH_TRILINOS

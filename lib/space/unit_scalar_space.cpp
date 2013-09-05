@@ -36,7 +36,7 @@ namespace Bempp
 template <typename BasisFunctionType>
 UnitScalarSpace<BasisFunctionType>::
 UnitScalarSpace(const shared_ptr<const Grid>& grid) :
-     ScalarSpace<BasisFunctionType>(grid), m_view(grid->leafView())
+    ScalarSpace<BasisFunctionType>(grid), m_view(grid->leafView())
 {
     assignDofsImpl();
 }
@@ -88,6 +88,19 @@ ElementVariant UnitScalarSpace<BasisFunctionType>::elementVariant(
         return 3;
     else
         return 4;
+}
+
+template <typename BasisFunctionType>
+bool UnitScalarSpace<BasisFunctionType>::
+spaceIsCompatible(const Space<BasisFunctionType> &other) const
+{
+
+       if (other.grid().get()==this->grid().get()){
+           return (other.spaceIdentifier()==this->spaceIdentifier());
+       }
+       else
+           return false;
+
 }
 
 template <typename BasisFunctionType>

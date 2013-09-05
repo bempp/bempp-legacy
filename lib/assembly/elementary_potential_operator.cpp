@@ -208,20 +208,20 @@ makeEvaluator(
 
     const Space<BasisFunctionType>& space = *argument.space();
     shared_ptr<const Grid> grid = space.grid();
-    Helper::collectGridData(*grid,
+    Helper::collectGridData(space,
                             rawGeometry, geometryFactory);
     Helper::makeOpenClHandler(options.parallelizationOptions().openClOptions(),
                               rawGeometry, openClHandler);
     Helper::collectShapesets(space, shapesets);
 
     // In addition, get coefficients of argument's expansion in each element
-    std::auto_ptr<GridView> view = grid->leafView();
-    const int elementCount = view->entityCount(0);
+    const GridView& view = space.gridView();
+    const int elementCount = view.entityCount(0);
 
     shared_ptr<CoefficientsVector> localCoefficients =
             boost::make_shared<CoefficientsVector>(elementCount);
 
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
     for (int i = 0; i < elementCount; ++i) {
         const Entity<0>& element = it->entity();
         argument.getLocalCoefficients(element, (*localCoefficients)[i]);
@@ -263,7 +263,7 @@ makeAssembler(
     shared_ptr<ShapesetPtrVector> shapesets;
 
     shared_ptr<const Grid> grid = space.grid();
-    Helper::collectGridData(*grid,
+    Helper::collectGridData(space,
                             rawGeometry, geometryFactory);
     Helper::makeOpenClHandler(options.parallelizationOptions().openClOptions(),
                               rawGeometry, openClHandler);

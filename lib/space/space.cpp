@@ -22,6 +22,7 @@
 #include "bempp/common/config_trilinos.hpp"
 
 #include "../assembly/discrete_sparse_boundary_operator.hpp"
+#include "../assembly/discrete_boundary_operator.hpp"
 
 #include "../common/boost_make_shared_fwd.hpp"
 
@@ -33,6 +34,7 @@
 #include "../grid/grid.hpp"
 #include "../grid/grid_view.hpp"
 #include "../grid/mapper.hpp"
+#include "../grid/geometry_factory.hpp"
 
 #ifdef WITH_TRILINOS
 #include <Epetra_CrsMatrix.h>
@@ -55,13 +57,13 @@ void constructGlobalToFlatLocalDofsMappingVectors(
 {
     const int ldofCount = space.flatLocalDofCount();
 
-    std::auto_ptr<GridView> view = space.grid()->leafView();
-    const IndexSet& indexSet = view->indexSet();
-    const size_t elementCount = view->entityCount(0);
+    const GridView& view = space.gridView();
+    const IndexSet& indexSet = view.indexSet();
+    const size_t elementCount = view.entityCount(0);
 
     std::vector<std::vector<GlobalDofIndex> > gdofs(elementCount);
     std::vector<std::vector<BasisFunctionType> > ldofWeights(elementCount);
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
         int index = indexSet.entityIndex(e);
@@ -133,7 +135,9 @@ constructGlobalToFlatLocalDofsMappingEpetraMatrix(
 
 template <typename BasisFunctionType>
 Space<BasisFunctionType>::Space(const shared_ptr<const Grid>& grid) :
-    m_grid(grid)
+    m_grid(grid),
+    m_view(grid->leafView()),
+    m_elementGeometryFactory(grid->elementGeometryFactory().release())
 {
     if (!grid)
         throw std::invalid_argument("Space::Space(): grid must not be a null "
@@ -141,8 +145,22 @@ Space<BasisFunctionType>::Space(const shared_ptr<const Grid>& grid) :
 }
 
 template <typename BasisFunctionType>
+Space<BasisFunctionType>::Space(const Space<BasisFunctionType> &other) :
+    m_grid(other.m_grid),
+    m_view(other.m_grid->levelView(other.m_level)),
+    m_elementGeometryFactory(other.m_elementGeometryFactory)
+{
+}
+template <typename BasisFunctionType>
 Space<BasisFunctionType>::~Space()
 {
+}
+
+template <typename BasisFunctionType>
+Space<BasisFunctionType>& Space<BasisFunctionType>::operator=(const Space<BasisFunctionType>& other){
+    m_grid = other.m_grid;
+    m_view = m_grid->levelView(m_level);
+    m_elementGeometryFactory = other.m_elementGeometryFactory;
 }
 
 template <typename BasisFunctionType>
@@ -154,6 +172,43 @@ template <typename BasisFunctionType>
 bool Space<BasisFunctionType>::dofsAssigned() const
 {
     return true;
+}
+
+
+template <typename BasisFunctionType>
+int Space<BasisFunctionType>::gridDimension() const{
+    return m_grid->dim();
+}
+
+
+template <typename BasisFunctionType>
+int Space<BasisFunctionType>::worldDimension() const{
+    return m_grid->dimWorld();
+}
+
+template <typename BasisFunctionType>
+const GridView& Space<BasisFunctionType>::gridView() const {
+    return *m_view;
+}
+
+
+template <typename BasisFunctionType>
+bool Space<BasisFunctionType>::gridIsIdentical(const Space<BasisFunctionType>& other) const {
+    if (this->isBarycentric()!=other.isBarycentric()){
+        return false;
+    }
+    else{
+        return m_grid==other.m_grid;
+    }
+
+}
+
+template <typename BasisFunctionType>
+shared_ptr<const Space<BasisFunctionType> > Space<BasisFunctionType>::barycentricSpace(
+            const shared_ptr<const Space<BasisFunctionType> >& self) const {
+
+    std::runtime_error("Space::barycentricSpace():"
+                       "This method is not implemented for this Space type.");
 }
 
 template <typename BasisFunctionType>
@@ -229,17 +284,19 @@ void getAllBases(const Space<BasisFunctionType>& space,
     for (size_t i = 0; i < bases.size(); ++i)
         bases[i] = dynamic_cast<const Fiber::Basis<BasisFunctionType>*>(
                     shapesets[i]);
+        assert(basis[i]!=0); // Make sure dynamic_cast did not fail
 }
 
 template <typename BasisFunctionType>
 int maximumBasisOrder(const Space<BasisFunctionType>& space)
 {
-    std::auto_ptr<GridView> view = space.grid()->leafView();
-    const Mapper& mapper = view->elementMapper();
-    const int elementCount = view->entityCount(0);
+    const GridView& view = space.gridView();
+    const Mapper& mapper = view.elementMapper();
+    const int elementCount = view.entityCount(0);
 
     int maxOrder = 0;
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
+
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
         maxOrder = std::max(maxOrder, space.basis(e).order());

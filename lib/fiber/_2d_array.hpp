@@ -22,6 +22,7 @@
 #define fiber_2d_array_hpp
 
 #include "../common/common.hpp"
+#include "boost/operators.hpp"
 
 #include <stdexcept>
 
@@ -37,7 +38,8 @@ namespace Fiber
 Bound checking can optionally be activated by defining the symbol
 FIBER_CHECK_ARRAY_BOUNDS. */
 template <typename T>
-class _2dArray
+class _2dArray : boost::additive<_2dArray<T>
+               , boost::multiplicative<_2dArray<T>,T > >
 {
 public:
     _2dArray();
@@ -50,6 +52,10 @@ public:
 
     T& operator()(size_t index0, size_t index1);
     const T& operator()(size_t index0, size_t index1) const;
+
+    _2dArray<T>& operator+=(const _2dArray<T>& other);
+    _2dArray<T>& operator*=(const T& other);
+
 
     size_t extent(size_t dimension) const;
     void set_size(size_t extent0, size_t extent1);

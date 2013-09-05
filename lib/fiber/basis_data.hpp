@@ -79,6 +79,7 @@ struct BasisData
     ConstBasisDataSlice<ValueType> const_slice(int function, int point) const {
         return ConstBasisDataSlice<ValueType>(*this, function, point);
     }
+
 };
 
 /** \brief Access to values and/or derivatives of shape functions.

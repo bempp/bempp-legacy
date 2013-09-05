@@ -55,6 +55,10 @@ public:
         const shared_ptr<const Space<BasisFunctionType> >& self) const;
     virtual bool isDiscontinuous() const;
 
+    virtual SpaceIdentifier spaceIdentifier() const {
+        return UNIT_SCALAR;
+    }
+
     /** \brief Return the variant of element \p element.
      *
      *  Possible return values:
@@ -65,8 +69,15 @@ public:
     virtual void setElementVariant(const Entity<0>& element,
                                    ElementVariant variant);
 
+
     virtual const Fiber::Shapeset<BasisFunctionType>& shapeset(
             const Entity<0>& element) const;
+
+    virtual bool isBarycentric() const {
+        return false;
+    }
+
+    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
 
     virtual size_t globalDofCount() const;
     virtual size_t flatLocalDofCount() const;

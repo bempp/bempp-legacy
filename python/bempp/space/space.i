@@ -33,6 +33,8 @@ template<typename BasisFunctionType> class Space;
 // to be wrapped later...
 %ignore elementVariant;
 
+%ignore operator=;
+
 %ignore getGlobalDofs;
 
 %ignore global2localDofs;

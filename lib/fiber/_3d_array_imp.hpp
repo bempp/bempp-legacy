@@ -145,6 +145,31 @@ inline size_t _3dArray<T>::extent(size_t dimension) const
 }
 
 template <typename T>
+inline _3dArray<T>& _3dArray<T>::operator+=(const _3dArray<T>& other){
+    if ((this->extent(0)!= other.extent(0))||
+            (this->extent(1)!= other.extent(1))||
+            (this->extent(2)!= other.extent(2)))
+        std::runtime_error("_3dArray<T> operator+=: Array sizes don't agree.");
+    for (size_t i=0;i<this->extent(2);++i)
+        for (size_t j=0;j<this->extent(1);++j)
+            for (size_t k=0;k<this->extent(0);++k)
+                (*this)(k,j,i)+=other(k,j,i);
+    return *this;
+
+}
+
+template <typename T>
+inline _3dArray<T>& _3dArray<T>::operator*=(const T& other) {
+    for (size_t i=0;i<this->extent(2);++i)
+        for (size_t j=0;j<this->extent(1);++j)
+            for (size_t k=0;k<this->extent(0);++k)
+                (*this)(k,j,i)*=other;
+    return *this;
+}
+
+
+
+template <typename T>
 inline void _3dArray<T>::set_size(size_t extent0, size_t extent1, size_t extent2)
 {
     if (extent0 * extent1 * extent2 ==

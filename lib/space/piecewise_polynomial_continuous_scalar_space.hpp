@@ -85,6 +85,17 @@ public:
     virtual int domainDimension() const;
     virtual int codomainDimension() const;
 
+    virtual bool isBarycentric() const {
+        return false;
+    }
+
+    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
+
+    virtual SpaceIdentifier spaceIdentifier() const {
+        return PIECEWISE_POLYNOMIAL_CONTINUOUS_SCALAR;
+    }
+
+
     /** \brief Return the variant of element \p element.
      *
      *  Possible return values:

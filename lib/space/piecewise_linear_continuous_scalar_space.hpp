@@ -39,6 +39,7 @@ namespace Bempp
 
 /** \cond FORWARD_DECL */
 class GridView;
+template <typename ValueType> class DiscreteBoundaryOperator;
 /** \endcond */
 
 /** \ingroup space
@@ -82,6 +83,20 @@ public:
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
         const shared_ptr<const Space<BasisFunctionType> >& self) const;
+
+    virtual bool isBarycentric() const {
+        return false;
+    }
+
+    virtual SpaceIdentifier spaceIdentifier() const {
+        return PIECEWISE_LINEAR_CONTINUOUS_SCALAR;
+    }
+
+    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
+
+    virtual shared_ptr<const Space<BasisFunctionType> > barycentricSpace(
+            const shared_ptr<const Space<BasisFunctionType> >& self) const;
+
     virtual bool isDiscontinuous() const;
 
     virtual size_t globalDofCount() const;
@@ -131,7 +146,9 @@ private:
     std::vector<std::vector<LocalDof> > m_global2localDofs;
     std::vector<LocalDof> m_flatLocal2localDofs;
     mutable shared_ptr<Space<BasisFunctionType> > m_discontinuousSpace;
+    mutable shared_ptr<Space<BasisFunctionType> > m_barycentricSpace;
     mutable tbb::mutex m_discontinuousSpaceMutex;
+    mutable tbb::mutex m_barycentricSpaceMutex;
     /** \endcond */
 };
 

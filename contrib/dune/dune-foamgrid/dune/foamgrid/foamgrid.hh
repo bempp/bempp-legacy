@@ -1445,7 +1445,6 @@ class FoamGrid :
                 }
             }
         }
-        assert(edgeIndex==6);
 
 
         //for (int i=0;i<vertexIndex;i++)
@@ -1651,28 +1650,7 @@ class FoamGrid :
 
 
 
-#ifndef NDEBUG
-        for(std::size_t vidx=0; vidx<4; ++vidx){
-            dvverb<<std::endl<<" Element "<<nextLevelElements[vidx]<<": ";
-            for(EdgeIterator edge=nextLevelElements[vidx]->edges_.begin();
-                edge != nextLevelElements[vidx]->edges_.end(); ++edge){
-                dvverb<<std::endl<<"   edge "<<*edge<<": ";
-                typedef typename std::vector<const FoamGridEntityImp<2,dimworld>*>::iterator
-                    ElementIterator;
-                bool selfFound=false;
-                for(ElementIterator elem=(*edge)->elements_.begin();
-                    elem != (*edge)->elements_.end();
-                    ++elem){
-                    dvverb << *elem<<" ";
-                    if(*elem == nextLevelElements[vidx])
-                        selfFound=true;
-                }
-                assert(selfFound);
-            }
-        }
-
-#endif
-        element.nSons_=6;
+       element.nSons_=6;
 
         if((refCount--)>1){
             int i=0;

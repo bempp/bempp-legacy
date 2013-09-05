@@ -86,6 +86,16 @@ public:
         const shared_ptr<const Space<BasisFunctionType> >& self) const;
     virtual bool isDiscontinuous() const;
 
+    virtual bool isBarycentric() const {
+        return false;
+    }
+
+    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
+
+    virtual SpaceIdentifier spaceIdentifier() const {
+        return PIECEWISE_LINEAR_DISCONTINUOUS_SCALAR;
+    }
+
     virtual size_t globalDofCount() const;
     virtual size_t flatLocalDofCount() const;
     virtual void getGlobalDofs(const Entity<0>& element,

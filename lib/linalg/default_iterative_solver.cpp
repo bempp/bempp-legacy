@@ -103,7 +103,8 @@ struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl
             BoundaryOp id = identityOperator(
                         boundaryOp.context(), boundaryOp.range(), boundaryOp.range(),
                         boundaryOp.dualToRange());
-            pinvId = pseudoinverse(id);
+            pinvId = pseudoinverse(id,boundaryOp.dualToRange());
+            // dualToRange could be anything here.
             shared_ptr<DiscreteBoundaryOperator<ResultType> > totalBoundaryOp =
                     boost::make_shared<DiscreteBoundaryOperatorComposition<ResultType> >(
                         boost::get<BoundaryOp>(pinvId).weakForm(),

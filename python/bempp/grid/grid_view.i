@@ -30,7 +30,7 @@
        arma::Mat<double>& vertices
 };
 
-%apply arma::Mat<int>&  ARGOUT_MAT {
+%apply arma::Mat<int>& ARGOUT_MAT {
   arma::Mat<int>& elementCorners
 };
 
