@@ -55,7 +55,7 @@ public:
         const shared_ptr<const Space<BasisFunctionType> >& self) const;
     virtual bool isDiscontinuous() const;
 
-    virtual SPACE_IDENTIFIER spaceIdentifier() const {
+    virtual SpaceIdentifier spaceIdentifier() const {
         return UNIT_SCALAR;
     }
 

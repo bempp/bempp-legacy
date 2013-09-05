@@ -18,10 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef space_identifier_hpp
-#define space_identifier_hpp
+#ifndef SpaceIdentifier_hpp
+#define SpaceIdentifier_hpp
 
-enum SPACE_IDENTIFIER  {
+enum SpaceIdentifier  {
     PIECEWISE_CONSTANT_SCALAR,
     PIECEWISE_CONSTANT_DUAL_MESH_SCALAR,
     PIECEWISE_LINEAR_CONTINUOUS_SCALAR,

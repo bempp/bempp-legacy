@@ -110,7 +110,7 @@ public:
 
     virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
 
-    virtual SPACE_IDENTIFIER spaceIdentifier() const {
+    virtual SpaceIdentifier spaceIdentifier() const {
         return PIECEWISE_LINEAR_DISCONTINUOUS_SCALAR_BARYCENTRIC;
     }
 

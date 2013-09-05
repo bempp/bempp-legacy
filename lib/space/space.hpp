@@ -326,7 +326,7 @@ public:
     virtual bool gridIsIdentical(const Space<BasisFunctionType>& other) const;
 
     /** \brief Return the identifier of the space. */
-    virtual SPACE_IDENTIFIER spaceIdentifier() const = 0;
+    virtual SpaceIdentifier spaceIdentifier() const = 0;
 
     /** \brief Return true if \p other is compatible to this space, i.e. the global
      * dofs of the two spaces agree with each other. */

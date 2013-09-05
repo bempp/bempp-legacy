@@ -69,12 +69,10 @@ AbstractBoundaryOperator(const shared_ptr<const Space<BasisFunctionType> >& doma
 
     bool isBarycentricSpace;
 
-    isBarycentricSpace = (m_domain->isBarycentric() || m_range->isBarycentric() ||
-                          m_dualToRange->isBarycentric());
+    isBarycentricSpace = (m_domain->isBarycentric() || m_dualToRange->isBarycentric());
 
     if (isBarycentricSpace) {
         m_domain = m_domain->barycentricSpace(m_domain);
-        //m_range = m_range->barycentricSpace(m_range);
         m_dualToRange = m_dualToRange->barycentricSpace(m_dualToRange);
 
     }

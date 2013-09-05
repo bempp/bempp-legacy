@@ -88,7 +88,7 @@ public:
         return false;
     }
 
-    virtual SPACE_IDENTIFIER spaceIdentifier() const {
+    virtual SpaceIdentifier spaceIdentifier() const {
         return PIECEWISE_LINEAR_CONTINUOUS_SCALAR;
     }
 

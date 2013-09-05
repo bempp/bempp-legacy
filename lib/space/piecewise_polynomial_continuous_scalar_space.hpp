@@ -91,7 +91,7 @@ public:
 
     virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
 
-    virtual SPACE_IDENTIFIER spaceIdentifier() const {
+    virtual SpaceIdentifier spaceIdentifier() const {
         return PIECEWISE_POLYNOMIAL_CONTINUOUS_SCALAR;
     }
 
