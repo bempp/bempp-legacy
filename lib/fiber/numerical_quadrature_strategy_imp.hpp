@@ -48,7 +48,7 @@ template <typename BasisFunctionType, typename ResultType,
 NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 NumericalQuadratureStrategyBase(
-    const shared_ptr<QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
+    const shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
     quadratureDescriptorSelectorFactory,
     const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
     singleQuadratureRuleFamily,
@@ -346,7 +346,7 @@ template <typename BasisFunctionType, typename ResultType,
 NumericalQuadratureStrategy<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 NumericalQuadratureStrategy(
-    const shared_ptr<QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
+    const shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
     quadratureDescriptorSelectorFactory,
     const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
     singleQuadratureRuleFamily,
@@ -584,7 +584,7 @@ NumericalQuadratureStrategy<
         boost::is_same<ResultType,
         typename ScalarTraits<ResultType>::RealType> >::type>::
 NumericalQuadratureStrategy(
-    const shared_ptr<QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
+    const shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
     quadratureDescriptorSelectorFactory,
     const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
     singleQuadratureRuleFamily,

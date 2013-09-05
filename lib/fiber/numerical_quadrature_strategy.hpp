@@ -90,7 +90,7 @@ public:
     typedef typename Base::CoordinateType CoordinateType;
 
     NumericalQuadratureStrategyBase(
-        const shared_ptr<QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
+        const shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
         quadratureDescriptorSelectorFactory,
         const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
         singleQuadratureRuleFamily,
@@ -180,7 +180,7 @@ protected:
     doubleQuadratureRuleFamily() const;
 
 private:
-    shared_ptr<QuadratureDescriptorSelectorFactory<BasisFunctionType> >
+    shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >
     m_quadratureDescriptorSelectorFactory;
     shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >
     m_singleQuadratureRuleFamily;
@@ -191,6 +191,11 @@ private:
 // Complex ResultType
 /** \brief Quadrature strategy according to which integrals are
  * evaluated by numerical quadrature.
+ *
+ * A quadrature strategy provides functions constructing local assemblers used
+ * to discretize boundary operators and user-defined functions. A particular
+ * quadrature strategy determines how the integrals involved in this
+ * discretization are evaluated.
  *
  * This is the default quadrature strategy available in BEM++. In this
  * quadrature strategy integrals are evaluated by numerical
@@ -229,10 +234,12 @@ private:
  * By default, NumericalQuadratureStrategy uses the quadrature rule
  * families being instances of DefaultDoubleQuadratureRuleFamily and
  * DefaultSingleQuadratureRuleFamily. These use Gaussian quadrature
- * for regular integrals and the Sauter-Schwab quadrature rules for
+ * for regular integrals and the Sauter-Schwab quadrature rules (*) for
  * singular integrals. If you wish, you can subclass
  * DoubleQuadratureRuleFamily and/or SingleQuadratureRuleFamily and
  * pass their instances to a NumericalQuadratureStrategy contructor.
+ *
+ * (*) S. Sauter, Ch. Schwab, "Boundary Element Methods" (2010).
  */
 template <typename BasisFunctionType, typename ResultType,
 typename GeometryFactory, typename Enable = void>
@@ -278,7 +285,7 @@ public:
      * quadrature descriptor selector factory and quadrature rule families.
      */
     NumericalQuadratureStrategy(
-        const shared_ptr<QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
+        const shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
         quadratureDescriptorSelectorFactory,
         const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
         singleQuadratureRuleFamily,
@@ -375,7 +382,7 @@ public:
      * quadrature descriptor selector factory and quadrature rule families.
      */
     explicit NumericalQuadratureStrategy(
-        const shared_ptr<QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
+        const shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
         quadratureDescriptorSelectorFactory,
         const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
         singleQuadratureRuleFamily,
