@@ -143,7 +143,8 @@ def __generate_grid_from_string(geo_string,grid=True,msh_file=False,parallel=Tru
     if grid:
         from bempp.lib import createGridFactory
         grid_obj = createGridFactory().importGmshGrid("triangular",msh_name)
-        comm.Barrier()
+        if parallel:
+            comm.Barrier()
     if not msh_file:
         if parallel:
             if my_rank==0:
