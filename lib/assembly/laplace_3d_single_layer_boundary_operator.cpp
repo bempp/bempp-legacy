@@ -34,6 +34,8 @@
 
 #include <boost/type_traits/is_complex.hpp>
 
+#include "../fmm/fmm_black_box.hpp"
+
 namespace Bempp
 {
 
@@ -67,6 +69,13 @@ laplace3dSingleLayerBoundaryOperator(
     typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
     BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
 
+    shared_ptr<FmmTransform<ResultType> > fmmTransform;
+    if (assemblyOptions.assemblyMode() == AssemblyOptions::FMM) {
+        const FmmOptions& fmmOptions = assemblyOptions.fmmOptions();
+        fmmTransform = boost::make_shared<FmmSingleLayerBlackBox<ResultType> >
+            (fmmOptions.L);
+    }
+
     typedef GeneralElementarySingularIntegralOperator<
             BasisFunctionType, KernelType, ResultType> Op;
     shared_ptr<Op> newOp(new Op(
@@ -74,7 +83,8 @@ laplace3dSingleLayerBoundaryOperator(
                              KernelFunctor(),
                              TransformationFunctor(),
                              TransformationFunctor(),
-                             IntegrandFunctor()));
+                             IntegrandFunctor(),
+                             fmmTransform));
     return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 

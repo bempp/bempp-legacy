@@ -63,7 +63,7 @@ FmmCache<ValueType>::FmmCache(
 
 					if (abs(indx) > 1 || abs(indy) > 1 || abs(indz) > 1) {
 
-						arma::Mat<ValueType> m2l = fmmTransform.M2L(centre, origin);
+						arma::Mat<ValueType> m2l = fmmTransform.M2L(centre, origin, boxSize);
 
 						m_cacheM2L[level-m_topLevel][index++] = m2l;
 

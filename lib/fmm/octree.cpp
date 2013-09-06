@@ -281,26 +281,26 @@ template <typename ResultType>
 void Octree<ResultType>::nodeCentre(unsigned long number, unsigned int level,
 	arma::Col<CoordinateType> &centre) const
 {
-	unsigned long ind[3];
 	centre = arma::Col<CoordinateType>(3);
-	arma::Col<CoordinateType> boxSize = m_upperBound - m_lowerBound;
+	arma::Col<CoordinateType> boxSize;
+	nodeSize(level, boxSize);
+
+	unsigned long ind[3];
 	deMorton(&ind[0], &ind[1], &ind[2], number);
 	for (unsigned int d=0; d<3; d++) {
-		centre[d] = (ind[d] + 0.5)/getNodesPerSide(level)*boxSize[d]+m_lowerBound[d];
+		centre[d] = (ind[d] + 0.5)*boxSize[d]+m_lowerBound[d];
 	}
 
 }
 
 template <typename ResultType>
 void Octree<ResultType>::nodeSize(unsigned int level,
-	arma::Col<CoordinateType> &size) const
+	arma::Col<CoordinateType> &boxSize) const
 {
-	size = arma::Col<CoordinateType>(3);
-	arma::Col<CoordinateType> boxSize = m_upperBound - m_lowerBound;
-	for (unsigned int d=0; d<3; d++) {
-		size[d] = boxSize[d]/getNodesPerSide(level);
-	}
+	unsigned int boxesPerSide = getNodesPerSide(level);
+	boxSize = (m_upperBound - m_lowerBound)/boxesPerSide;
 }
+
 
 template <typename ResultType>
 void Octree<ResultType>::matrixVectorProduct(
@@ -476,6 +476,11 @@ public:
 		arma::Col<ResultType> lcoef(m_fmmTransform.quadraturePointCount());
 		lcoef.fill(0.0);
 
+#if !defined USE_FMM_CACHE
+		arma::Col<CoordinateType> boxSize;
+		m_octree.nodeSize(m_level, boxSize);
+#endif
+
 		const std::vector<unsigned long>& neigbourList 
 			= m_octree.getNode(node,m_level).neigbourList();
 
@@ -503,7 +508,7 @@ public:
 			m2l = m_octree.fmmCache().M2L(m_level, 
 				m_octree.getNode(node,m_level).interactionItemList(ind));
 #else
-			m2l = m_fmmTransform.M2L(Rinter, R);
+			m2l = m_fmmTransform.M2L(Rinter, R, boxSize);
 #endif
 			// add contribution of interation list node to current node
 			const arma::Col<ResultType>& mcoefs = 

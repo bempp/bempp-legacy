@@ -89,12 +89,12 @@ void FmmHighFreq<ValueType>::generateGaussPoints()
 
 template <typename ValueType>
 arma::Mat<ValueType> FmmHighFreq<ValueType>::M2M(
-		const arma::Col<CoordinateType>& xold, 
-		const arma::Col<CoordinateType>& xnew) const
+		const arma::Col<CoordinateType>& childPosition, 
+		const arma::Col<CoordinateType>& parentPosition) const
 {
 	arma::Col<ValueType> T(this->quadraturePointCount());
 
-	arma::Col<CoordinateType> R = xnew - xold;
+	arma::Col<CoordinateType> R = parentPosition - childPosition;
 	arma::Col<CoordinateType> khat(3);
 	for (unsigned int p=0; p < this->quadraturePointCount(); p++) {
 		khat = this->getQuadraturePoint(p);
@@ -106,10 +106,10 @@ arma::Mat<ValueType> FmmHighFreq<ValueType>::M2M(
 
 template <typename ValueType>
 arma::Mat<ValueType> FmmHighFreq<ValueType>::L2L(
-		const arma::Col<CoordinateType>& xold, 
-		const arma::Col<CoordinateType>& xnew) const
+		const arma::Col<CoordinateType>& parentPosition, 
+		const arma::Col<CoordinateType>& childPosition) const
 {
-	return M2M(xold, xnew);
+	return M2M(parentPosition, childPosition);
 }
 
 template <typename ValueType>
@@ -140,8 +140,9 @@ double imag(double x)
 template <typename ValueType>
 arma::Mat<ValueType> 
 FmmHighFreq<ValueType>::M2L(
-		const arma::Col<CoordinateType>& x1, 
-		const arma::Col<CoordinateType>& x2) const
+		const arma::Col<CoordinateType>& sourceCentre, 
+		const arma::Col<CoordinateType>& fieldCentre,
+		const arma::Col<CoordinateType>& boxSize) const
 {
 	using namespace boost::math;
 	CoordinateType pi = boost::math::constants::pi<CoordinateType>();
@@ -149,7 +150,7 @@ FmmHighFreq<ValueType>::M2L(
 	arma::Col<ValueType> T(this->quadraturePointCount());
 	T.fill(0.0);
 
-	arma::Col<CoordinateType> xvec = x2 - x1;
+	arma::Col<CoordinateType> xvec = fieldCentre - sourceCentre;
 	CoordinateType r = norm(xvec, 2);
 	const arma::Col<CoordinateType>& Rhat = xvec/r;
 

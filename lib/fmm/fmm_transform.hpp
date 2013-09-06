@@ -63,7 +63,8 @@ public:
 	// multipole to local (M2L) translation matrix
 	virtual arma::Mat<ValueType> M2L(
 		const arma::Col<CoordinateType>& x1, 
-		const arma::Col<CoordinateType>& x2) const = 0;
+		const arma::Col<CoordinateType>& x2,
+		const arma::Col<CoordinateType>& boxSize) const = 0;
 
 	// local to local (L2L) translation matrix
 	virtual arma::Mat<ValueType> L2L(
@@ -111,18 +112,19 @@ public:
 
 	// multipole to multipole (M2M) translation matrix
 	virtual arma::Mat<ValueType> M2M(
-		const arma::Col<CoordinateType>& x1, 
-		const arma::Col<CoordinateType>& x2) const;
+		const arma::Col<CoordinateType>& childPosition, 
+		const arma::Col<CoordinateType>& parentPosition) const;
 
 	// multipole to local (M2L) translation matrix
 	virtual arma::Mat<ValueType> M2L(
-		const arma::Col<CoordinateType>& x1, 
-		const arma::Col<CoordinateType>& x2) const;
+		const arma::Col<CoordinateType>& sourceCentre, 
+		const arma::Col<CoordinateType>& fieldCentre,
+		const arma::Col<CoordinateType>& boxSize) const;
 
 	// local to local (L2L) translation matrix
 	virtual arma::Mat<ValueType> L2L(
-		const arma::Col<CoordinateType>& x1, 
-		const arma::Col<CoordinateType>& x2) const;
+		const arma::Col<CoordinateType>& parentPosition, 
+		const arma::Col<CoordinateType>& childPosition) const;
 
 	virtual void generateGaussPoints();
 
