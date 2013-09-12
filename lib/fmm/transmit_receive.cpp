@@ -83,6 +83,37 @@ inline void FmmFunctionMultiplyingTest<ResultType>::evaluate(
 		m_khat, m_nodeCentre, m_nodeSize, result);
 }
 
+
+// FmmSingleLayerHighFreqFMM
+
+template <typename ValueType>
+void FmmSingleLayerHighFreq<ValueType>::evaluateTrial(
+			const arma::Col<CoordinateType>& point,
+			const arma::Col<CoordinateType>& normal,
+			const arma::Col<CoordinateType>& khat,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
+			arma::Col<ValueType>& result) const
+{
+	ValueType kappa = FmmHighFreq<ValueType>::kappa();
+	arma::Col<CoordinateType> r = nodeCentre - point;
+	result(0) =  exp( -kappa*dot(khat, r) );
+}
+
+template <typename ValueType>
+void FmmSingleLayerHighFreq<ValueType>::evaluateTest(
+			const arma::Col<CoordinateType>& point,
+			const arma::Col<CoordinateType>& normal,
+			const arma::Col<CoordinateType>& khat,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
+			arma::Col<ValueType>& result) const
+{
+	ValueType kappa = FmmHighFreq<ValueType>::kappa();
+	arma::Col<CoordinateType> r = point - nodeCentre;
+	result(0) =  exp( -kappa*dot(khat, r) );
+}
+
 // FmmDoubleLayerHighFreq
 
 template <typename ValueType>
@@ -143,37 +174,19 @@ void FmmAdjointDoubleLayerHighFreq<ValueType>::evaluateTest(
 	result(0) =  -kappa*exp( -kappa*dot(khat, r) )*dot(khat, normal);
 }
 
-// FmmSingleLayerHighFreqFMM
-
-template <typename ValueType>
-void FmmSingleLayerHighFreq<ValueType>::evaluateTrial(
-			const arma::Col<CoordinateType>& point,
-			const arma::Col<CoordinateType>& normal,
-			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& nodeCentre,
-			const arma::Col<CoordinateType>& nodeSize,
-			arma::Col<ValueType>& result) const
-{
-	ValueType kappa = FmmHighFreq<ValueType>::kappa();
-	arma::Col<CoordinateType> r = nodeCentre - point;
-	result(0) =  exp( -kappa*dot(khat, r) );
-}
-
-template <typename ValueType>
-void FmmSingleLayerHighFreq<ValueType>::evaluateTest(
-			const arma::Col<CoordinateType>& point,
-			const arma::Col<CoordinateType>& normal,
-			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& nodeCentre,
-			const arma::Col<CoordinateType>& nodeSize,
-			arma::Col<ValueType>& result) const
-{
-	ValueType kappa = FmmHighFreq<ValueType>::kappa();
-	arma::Col<CoordinateType> r = point - nodeCentre;
-	result(0) =  exp( -kappa*dot(khat, r) );
-}
-
 // FmmHypersingularHighFreq
+
+// The translational error in moving between levels in the octree increases from 
+// the single layer potential to the double layer potential to the hypersingular
+// operators. This means effectively, only a few octree levels can be used for the 
+// hypersingular operator. The situtation is improved a little by using a finer mesh.
+
+// Note that the results are only valid for P1 trial functions. If, for the sake of 
+// consistency, we want the ACA and FMM to give the same results for P0 trial functions
+// some work must be done. For P0 trial functions, the far field is very similar
+// to the P1 solution. The near field where the major difference lies. This same 
+// difference is seen with the ACA for P0 trial functions. The hybrid assembly mode
+// gives different results to the global and local modes (which are identical).
 
 template <typename ValueType>
 void FmmHypersingularHighFreq<ValueType>::evaluateTrial(
@@ -186,9 +199,7 @@ void FmmHypersingularHighFreq<ValueType>::evaluateTrial(
 {
 	ValueType kappa = FmmHighFreq<ValueType>::kappa();
 	arma::Col<CoordinateType> r = nodeCentre - point;
-	throw std::invalid_argument("FmmHypersingularHighFreq::evaluateTrial(): "
-			"FMM not currently implemented for the hypersingular operator");
-//	result(0) =  kappa*exp( -kappa*dot(khat, r) )*dot(khat, normal);
+	result(0) =  kappa*exp( -kappa*dot(khat, r) )*dot(khat, normal);
 }
 
 template <typename ValueType>
@@ -202,9 +213,7 @@ void FmmHypersingularHighFreq<ValueType>::evaluateTest(
 {
 	ValueType kappa = FmmHighFreq<ValueType>::kappa();
 	arma::Col<CoordinateType> r = point - nodeCentre;
-	throw std::invalid_argument("FmmHypersingularHighFreq::evaluateTest(): "
-			"FMM not currently implemented for the hypersingular operator");
-//	result(0) =  -kappa*exp( -kappa*dot(khat, r) )*dot(khat, normal);
+	result(0) =  kappa*exp( -kappa*dot(khat, r) )*dot(khat, normal);
 }
 
 
