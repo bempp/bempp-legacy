@@ -67,9 +67,9 @@
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename ResultType>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
-FmmGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
+FmmGlobalAssembler<BasisFunctionType, KernelType, ResultType>::assembleDetachedWeakForm(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
         const std::vector<LocalAssembler*>& localAssemblers,
@@ -78,7 +78,8 @@ FmmGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         const std::vector<ResultType>& sparseTermsMultipliers,
         const Context<BasisFunctionType, ResultType>& context,
         bool hermitian,
-        const FmmTransform<ResultType>& fmmTransform)
+        const FmmTransform<ResultType>& fmmTransform,
+        const CollectionOfKernels& kernels)
 {
 	//std::cout << "There are " << localAssemblers.size() << " assembler(s)"<< std::endl;
 	const AssemblyOptions& options = context.assemblyOptions();
@@ -120,9 +121,11 @@ FmmGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
 	std::cout << "Caching M2M, M2L and L2L operators" << std::endl;
 	shared_ptr<FmmCache<ResultType> > fmmCache = 
-		boost::make_shared<FmmCache<ResultType> > (fmmTransform, fmmOptions.levels,
+		boost::make_shared<FmmCache<ResultType> > (fmmTransform, fmmOptions.levels);
+	fmmCache->initCache(
 			arma::conv_to<arma::Col<CoordinateType> >::from(lowerBound),
-			arma::conv_to<arma::Col<CoordinateType> >::from(upperBound));
+			arma::conv_to<arma::Col<CoordinateType> >::from(upperBound));//,
+//			kernels);
 
 	// Note that in future the octree will need to store dof's for test
 	// and trial spaces individually, if the two differ in order
@@ -189,15 +192,16 @@ FmmGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 	return result;
 }
 
-template <typename BasisFunctionType, typename ResultType>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
-FmmGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
+FmmGlobalAssembler<BasisFunctionType, KernelType, ResultType>::assembleDetachedWeakForm(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
         LocalAssembler& localAssembler,
         const Context<BasisFunctionType, ResultType>& context,
         bool hermitian,
-        const FmmTransform<ResultType>& fmmTransform)
+        const FmmTransform<ResultType>& fmmTransform,
+        const CollectionOfKernels& kernels)
 {
     std::vector<LocalAssembler*> localAssemblers(1, &localAssembler);
     std::vector<const DiscreteBndOp*> sparseTermsToAdd;
@@ -208,9 +212,10 @@ FmmGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                             sparseTermsToAdd,
                             denseTermsMultipliers,
                             sparseTermsMultipliers,
-                            context, hermitian, fmmTransform);
+                            context, hermitian, fmmTransform, kernels);
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(FmmGlobalAssembler);
+//FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(FmmGlobalAssembler);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(FmmGlobalAssembler);
 
 } // namespace Bempp

@@ -31,6 +31,7 @@
 #include "../fiber/simple_test_scalar_kernel_trial_integrand_functor.hpp"
 
 #include "../common/boost_make_shared_fwd.hpp"
+#include "../fmm/fmm_black_box.hpp"
 
 namespace Bempp
 {
@@ -63,6 +64,13 @@ laplace3dDoubleLayerBoundaryOperator(
     typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
     BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
 
+    shared_ptr<FmmTransform<ResultType> > fmmTransform;
+    if (assemblyOptions.assemblyMode() == AssemblyOptions::FMM) {
+        const FmmOptions& fmmOptions = assemblyOptions.fmmOptions();
+        fmmTransform = boost::make_shared<FmmDoubleLayerBlackBox<ResultType> >
+            (fmmOptions.L);
+    }
+
     typedef GeneralElementarySingularIntegralOperator<
             BasisFunctionType, KernelType, ResultType> Op;
     shared_ptr<Op> newOp(new Op(
@@ -70,7 +78,8 @@ laplace3dDoubleLayerBoundaryOperator(
                              KernelFunctor(),
                              TransformationFunctor(),
                              TransformationFunctor(),
-                             IntegrandFunctor()));
+                             IntegrandFunctor(),
+                             fmmTransform));
     return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT) \

@@ -43,6 +43,8 @@
 
 #include <boost/type_traits/is_complex.hpp>
 
+#include "../fmm/fmm_black_box.hpp"
+
 namespace Bempp
 {
 
@@ -165,6 +167,13 @@ laplace3dHypersingularBoundaryOperator(
     typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
     BasisFunctionType, KernelType, ResultType> OffDiagonalIntegrandFunctor;
 
+    shared_ptr<FmmTransform<ResultType> > fmmTransform;
+    if (assemblyOptions.assemblyMode() == AssemblyOptions::FMM) {
+        const FmmOptions& fmmOptions = assemblyOptions.fmmOptions();
+        fmmTransform = boost::make_shared<FmmHypersingularBlackBox<ResultType> >
+            (fmmOptions.L);
+    }
+
     typedef GeneralHypersingularIntegralOperator<
             BasisFunctionType, KernelType, ResultType> Op;
     shared_ptr<Op> newOp(new Op(
@@ -176,7 +185,8 @@ laplace3dHypersingularBoundaryOperator(
                              OffDiagonalKernelFunctor(),
                              OffDiagonalTransformationFunctor(),
                              OffDiagonalTransformationFunctor(),
-                             OffDiagonalIntegrandFunctor()));
+                             OffDiagonalIntegrandFunctor(), 
+                             fmmTransform));
     return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 

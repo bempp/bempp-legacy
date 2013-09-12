@@ -29,6 +29,9 @@
 namespace Bempp
 {
 
+template <typename ValueType>
+ValueType getI();
+
 // abstract for now, will use Chebyshev as default in future versions
 template <typename ValueType>
 class FmmTransform
@@ -36,12 +39,12 @@ class FmmTransform
 public:
 	typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
 
-	FmmTransform(unsigned int quadraturePointCount)
+	FmmTransform(unsigned int quadraturePointCount, bool isCompressedM2L)
 	 : 	m_quadraturePoints(3, quadraturePointCount),
-		m_quadratureWeights(quadraturePointCount)
+		m_quadratureWeights(quadraturePointCount),
+		m_isCompressedM2L(isCompressedM2L)
 	{
 	}
-
 	const arma::Col<CoordinateType>& getWeights() const
 	{
 		return m_quadratureWeights;
@@ -54,7 +57,10 @@ public:
 	{
 		return m_quadraturePoints.col(index);
 	}
-
+	bool isCompressedM2L() const
+	{
+		return m_isCompressedM2L;
+	}
 	// multipole to multipole (M2M) translation matrix
 	virtual arma::Mat<ValueType> M2M(
 		const arma::Col<CoordinateType>& x1, 
@@ -89,9 +95,14 @@ public:
 			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const = 0;
 
+	virtual void getKernelWeight(
+		arma::Mat<ValueType>& kernelWeightMat,
+		arma::Col<ValueType>& kernelWeightVec) const {return;}
+
 protected:
 	arma::Mat<CoordinateType> m_quadraturePoints;
 	arma::Col<CoordinateType> m_quadratureWeights;
+	bool m_isCompressedM2L;
 };
 
 // all operations are diagonal in the case of plane wave expansion
@@ -102,7 +113,7 @@ public:
 	typedef typename FmmTransform<ValueType>::CoordinateType CoordinateType;
 
 	FmmHighFreq(ValueType kappa, unsigned int L)//, unsigned int numQuadPoints)
-	 : m_kappa(kappa), m_L(L), FmmTransform<ValueType>(L*(2*L+1))//numQuadPoints)//(770)//86)//
+	 : m_kappa(kappa), m_L(L), FmmTransform<ValueType>(L*(2*L+1), false)//numQuadPoints)//(770)//86)//
 	{
 		generateGaussPoints();
 		// finally all levels in the octree will have their own set of Gauss points
@@ -127,6 +138,8 @@ public:
 		const arma::Col<CoordinateType>& childPosition) const;
 
 	virtual void generateGaussPoints();
+
+	//virtual void getKernelWeight(arma::Mat<ValueType>& kernelWeight) const;
 
 	ValueType kappa() const {return m_kappa;}
 private:

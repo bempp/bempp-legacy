@@ -26,6 +26,15 @@
 #include "../common/armadillo_fwd.hpp"
 #include "../fiber/scalar_traits.hpp"
 
+namespace Fiber
+{
+
+/** \cond FORWARD_DECL */
+template <typename KernelType> class CollectionOfKernels;
+/** \endcond */
+
+} // namespace Fiber
+
 namespace Bempp
 {
 
@@ -41,9 +50,21 @@ public:
 
 	FmmCache(
 		const FmmTransform<ValueType>& fmmTransform,
-		unsigned int levels,
+		unsigned int levels);
+
+	//template <typename KernelType>
+	void initCache(
 		const arma::Col<CoordinateType> &lowerBound,
-		const arma::Col<CoordinateType> &upperBound);
+		const arma::Col<CoordinateType> &upperBound);//,
+//		const Fiber::CollectionOfKernels<KernelType>& kernels);
+
+	void compressM2L(bool isSymmetric);
+
+	void compressMultipoleCoefficients(
+		arma::Col<ValueType>& mcoefs, int level) const;
+
+	void explodeLocalCoefficients(
+		arma::Col<ValueType>& lcoefs, int level) const;
 
 	arma::Mat<ValueType> M2M(unsigned int level, unsigned int item) const;
 	arma::Mat<ValueType> M2L(unsigned int level, unsigned int item) const;
@@ -51,6 +72,11 @@ public:
 
 private:
 	const unsigned int m_topLevel; // top level in the octee
+	const FmmTransform<ValueType>& m_fmmTransform;
+	unsigned int m_levels;
+	arma::Col<ValueType> m_kernelWeightVec;
+	std::vector<arma::Mat<ValueType> > m_Ured;
+	std::vector<arma::Mat<ValueType> > m_Sred;
 
 	std::vector<std::vector<arma::Mat<ValueType> > > m_cacheM2M;
 	std::vector<std::vector<arma::Mat<ValueType> > > m_cacheM2L;

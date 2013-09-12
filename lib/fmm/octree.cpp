@@ -473,8 +473,8 @@ public:
 
 		arma::Col<CoordinateType> R; // center of the node
 		m_octree.nodeCentre(node,m_level, R);
-		arma::Col<ResultType> lcoef(m_fmmTransform.quadraturePointCount());
-		lcoef.fill(0.0);
+		arma::Col<ResultType> lcoef;//(m_fmmTransform.quadraturePointCount());
+		//lcoef.fill(0.0);
 
 #if !defined USE_FMM_CACHE
 		arma::Col<CoordinateType> boxSize;
@@ -514,6 +514,11 @@ public:
 			const arma::Col<ResultType>& mcoefs = 
 				m_octree.getNode(inter,m_level).getMultipoleCoefficients();
 
+			if (lcoef.n_rows==0) {
+				lcoef.set_size(mcoefs.n_rows);
+				lcoef.fill(0.0);
+			}
+
 			if (m2l.n_cols==1) { // diagonal m2l operator
 				lcoef += m2l % mcoefs;
 			} else {	// m2l is a full matrix
@@ -534,6 +539,21 @@ template <typename ResultType>
 void Octree<ResultType>::translationStep(
 		const FmmTransform<ResultType> &fmmTransform)//, arma::Col<ResultType>& y_inout)
 {
+	if ( fmmTransform.isCompressedM2L() ) {
+		// Compress Multipole Coefficients 
+		for (unsigned int level = m_topLevel; level<=m_levels; level++) {
+			unsigned int nNodes = getNodesPerLevel(level);
+			for (unsigned int nodeind = 0; nodeind<nNodes; nodeind++) {
+				OctreeNode<ResultType> &node = getNode(nodeind, level);
+				if (node.trialDofCount()==0) {
+					continue;
+				}
+				arma::Col<ResultType> mcoefs = node.getMultipoleCoefficients();
+				fmmCache().compressMultipoleCoefficients(mcoefs, level);
+				node.setMultipoleCoefficients(mcoefs);
+			}
+		}
+	}
 #if defined MULTILEVEL_FMM
 	for (unsigned int level = m_topLevel; level<=m_levels; level++) {
 #else
@@ -550,7 +570,22 @@ void Octree<ResultType>::translationStep(
 		//for (unsigned int k=0; k<nNodes; k++) translationStepHelper(k);
 
 	} // for each level
-//	std::cout << std::endl;
+
+	if ( fmmTransform.isCompressedM2L() ) {
+		// Explode Local Coefficients
+		for (unsigned int level = m_topLevel; level<=m_levels; level++) {
+			unsigned int nNodes = getNodesPerLevel(level);
+			for (unsigned int nodeind = 0; nodeind<nNodes; nodeind++) {
+				OctreeNode<ResultType> &node = getNode(nodeind, level);
+				if (node.testDofCount()==0) {
+					continue;
+				}
+				arma::Col<ResultType> lcoefs = node.getLocalCoefficients();
+				fmmCache().explodeLocalCoefficients(lcoefs, level);
+				node.setLocalCoefficients(lcoefs);
+			}
+		}
+	}
 } // void Octree::translationStep(const FmmTransform &fmmTransform)
 
 

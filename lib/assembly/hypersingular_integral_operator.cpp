@@ -255,9 +255,9 @@ assembleWeakFormInFmmMode(
     const Space<BasisFunctionType>& testSpace = *this->dualToRange();
     const Space<BasisFunctionType>& trialSpace = *this->domain();
 
-    return FmmGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
+    return FmmGlobalAssembler<BasisFunctionType, KernelType, ResultType>::assembleDetachedWeakForm(
                 testSpace, trialSpace, assembler, context,
-                this->symmetry() & SYMMETRIC, this->fmmTransform());
+                this->symmetry() & SYMMETRIC, this->fmmTransform(), this->kernels());
 }
 /** \endcond */
 

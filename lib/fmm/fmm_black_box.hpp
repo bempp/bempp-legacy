@@ -40,7 +40,7 @@ public:
 	typedef typename FmmTransform<ValueType>::CoordinateType CoordinateType;
 
 	FmmBlackBox(unsigned int n)
-	 : m_n(n), m_Tk(n, n), FmmTransform<ValueType>(n*n*n)
+	 : m_n(n), m_Tk(n, n), FmmTransform<ValueType>(n*n*n, true)
 	{
 		generateGaussPoints();
 	}
@@ -62,6 +62,10 @@ public:
 		const arma::Col<CoordinateType>& childPosition) const;
 
 	virtual void generateGaussPoints();
+
+	virtual void getKernelWeight(
+		arma::Mat<ValueType>& kernelWeightMat,
+		arma::Col<ValueType>& kernelWeightVec) const;
 
 	unsigned int getN() const {return m_n;}
 
@@ -95,6 +99,85 @@ public:
 			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const;
 };
+
+template <typename ValueType>
+class FmmDoubleLayerBlackBox : public FmmBlackBox<ValueType>
+{
+public:
+	typedef typename FmmBlackBox<ValueType>::CoordinateType CoordinateType;
+
+	FmmDoubleLayerBlackBox(unsigned int n)
+		: FmmBlackBox<ValueType>(n) {}
+
+	virtual void evaluateTrial(
+			const arma::Col<CoordinateType>& point,
+			const arma::Col<CoordinateType>& normal,
+			const arma::Col<CoordinateType>& khat,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
+			arma::Col<ValueType>& result) const;
+
+	virtual void evaluateTest(
+			const arma::Col<CoordinateType>& point,
+			const arma::Col<CoordinateType>& normal,
+			const arma::Col<CoordinateType>& khat,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
+			arma::Col<ValueType>& result) const;
+};
+
+template <typename ValueType>
+class FmmAdjointDoubleLayerBlackBox : public FmmBlackBox<ValueType>
+{
+public:
+	typedef typename FmmBlackBox<ValueType>::CoordinateType CoordinateType;
+
+	FmmAdjointDoubleLayerBlackBox(unsigned int n)
+		: FmmBlackBox<ValueType>(n) {}
+
+	virtual void evaluateTrial(
+			const arma::Col<CoordinateType>& point,
+			const arma::Col<CoordinateType>& normal,
+			const arma::Col<CoordinateType>& khat,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
+			arma::Col<ValueType>& result) const;
+
+	virtual void evaluateTest(
+			const arma::Col<CoordinateType>& point,
+			const arma::Col<CoordinateType>& normal,
+			const arma::Col<CoordinateType>& khat,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
+			arma::Col<ValueType>& result) const;
+};
+
+template <typename ValueType>
+class FmmHypersingularBlackBox : public FmmBlackBox<ValueType>
+{
+public:
+	typedef typename FmmBlackBox<ValueType>::CoordinateType CoordinateType;
+
+	FmmHypersingularBlackBox(unsigned int n)
+		: FmmBlackBox<ValueType>(n) {}
+
+	virtual void evaluateTrial(
+			const arma::Col<CoordinateType>& point,
+			const arma::Col<CoordinateType>& normal,
+			const arma::Col<CoordinateType>& khat,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
+			arma::Col<ValueType>& result) const;
+
+	virtual void evaluateTest(
+			const arma::Col<CoordinateType>& point,
+			const arma::Col<CoordinateType>& normal,
+			const arma::Col<CoordinateType>& khat,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
+			arma::Col<ValueType>& result) const;
+};
+
 
 } // namespace Bempp
 

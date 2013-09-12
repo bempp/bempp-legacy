@@ -36,6 +36,7 @@ namespace Fiber
 {
 
 /** \cond FORWARD_DECL */
+template <typename KernelType> class CollectionOfKernels;
 template <typename ResultType> class LocalAssemblerForOperators;
 /** \endcond */
 
@@ -54,13 +55,15 @@ template <typename ResultType> class FmmTransform;
 /** \ingroup weak_form_assembly_internal
  *  \brief FMM-mode assembler.
  */
-template <typename BasisFunctionType, typename ResultType>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class FmmGlobalAssembler
 {
 public:
     typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
     typedef DiscreteBoundaryOperator<ResultType> DiscreteBndOp;
     typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
+    /** \brief Type of the appropriate instantiation of Fiber::CollectionOfKernels. */
+    typedef Fiber::CollectionOfKernels<KernelType> CollectionOfKernels;
 
     static std::auto_ptr<DiscreteBndOp> assembleDetachedWeakForm(
             const Space<BasisFunctionType>& testSpace,
@@ -71,7 +74,8 @@ public:
             const std::vector<ResultType>& sparseTermsMultipliers,
             const Context<BasisFunctionType, ResultType>& context,
             bool symmetric,
-            const FmmTransform<ResultType>& fmmTransform);
+            const FmmTransform<ResultType>& fmmTransform,
+            const CollectionOfKernels& kernels);
 
     static std::auto_ptr<DiscreteBndOp> assembleDetachedWeakForm(
             const Space<BasisFunctionType>& testSpace,
@@ -79,7 +83,8 @@ public:
             LocalAssembler& localAssembler,
             const Context<BasisFunctionType, ResultType>& context,
             bool symmetric,
-            const FmmTransform<ResultType>& fmmTransform);
+            const FmmTransform<ResultType>& fmmTransform,
+            const CollectionOfKernels& kernels);
 };
 
 } // namespace Bempp
