@@ -75,6 +75,7 @@ public:
     typedef typename Fiber::ScalarTraits<ResultType>::RealType MagnitudeType;
 
     enum DataType { COEFFICIENTS, PROJECTIONS };
+    enum ConstructionMode { APPROXIMATE, INTERPOLATE };
 
     // Recommended constructors
 
@@ -143,7 +144,8 @@ public:
     GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
                  const shared_ptr<const Space<BasisFunctionType> >& space,
                  const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
-                 const Function<ResultType>& function);
+                 const Function<ResultType>& function,
+                 ConstructionMode mode = APPROXIMATE);
 
     // Deprecated constructors
 

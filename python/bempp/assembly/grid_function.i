@@ -42,11 +42,13 @@ gridFunctionFromPythonSurfaceNormalIndependentFunctor(
     const boost::shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
     const boost::shared_ptr<const Space<BasisFunctionType> >& space,
     const boost::shared_ptr<const Space<BasisFunctionType> >& dualSpace,
-    const PythonSurfaceNormalIndependentFunctor<ResultType>& functor)
+    const PythonSurfaceNormalIndependentFunctor<ResultType>& functor,
+    typename GridFunction<BasisFunctionType, ResultType>::ConstructionMode mode)
 {
     return new GridFunction<BasisFunctionType, ResultType>(
         context, space, dualSpace,
-        surfaceNormalIndependentFunction(functor));
+        surfaceNormalIndependentFunction(functor),
+        mode);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -55,11 +57,13 @@ gridFunctionFromPythonSurfaceNormalDependentFunctor(
     const boost::shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
     const boost::shared_ptr<const Space<BasisFunctionType> >& space,
     const boost::shared_ptr<const Space<BasisFunctionType> >& dualSpace,
-    const PythonSurfaceNormalDependentFunctor<ResultType>& functor)
+    const PythonSurfaceNormalDependentFunctor<ResultType>& functor,
+    typename GridFunction<BasisFunctionType, ResultType>::ConstructionMode mode)
 {
     return new GridFunction<BasisFunctionType, ResultType>(
         context, space, dualSpace,
-        surfaceNormalDependentFunction(functor));
+        surfaceNormalDependentFunction(functor),
+        mode);
 }
 
 template <typename BasisFunctionType, typename ResultType>

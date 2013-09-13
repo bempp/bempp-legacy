@@ -1692,7 +1692,7 @@ def createNullOperator(context, domain, range, dualToRange, label=None):
 
 def __gridFunctionFromFunctor(
         functorType,
-        context, space, dualSpace, function,
+        context, space, dualSpace, function, mode,
         argumentDimension, resultDimension):
     basisFunctionType = checkType(context.basisFunctionType())
     resultType = checkType(context.resultType())
@@ -1700,13 +1700,18 @@ def __gridFunctionFromFunctor(
             basisFunctionType != dualSpace.basisFunctionType()):
         raise TypeError("BasisFunctionType of context, space and dualSpace must be the same")
 
+    if mode == 'approximate':
+        mode = 0
+    else: # 'interpolate'
+        mode = 1
+
     functor = _constructObjectTemplatedOnValue(
         core, "Python" + functorType,
         resultType, function, argumentDimension, resultDimension)
     result = _constructObjectTemplatedOnBasisAndResult(
         core, "gridFunctionFromPython" + functorType,
         basisFunctionType, resultType,
-        context, space, dualSpace, functor)
+        context, space, dualSpace, functor, mode)
     result._context = context
     result._space = space
     result._dualSpace = dualSpace
@@ -1714,7 +1719,9 @@ def __gridFunctionFromFunctor(
 
 def createGridFunction(
         context, space, dualSpace=None,
-        function=None, surfaceNormalDependent=False, coefficients=None, projections=None):
+        function=None, surfaceNormalDependent=False,
+        coefficients=None, projections=None,
+        mode='approximate'):
     """
     Create and return a GridFunction object with values determined by a Python
     function or by an input vector of coefficients or projections.
@@ -1726,12 +1733,9 @@ def createGridFunction(
             Function space to expand the grid function in.
        - dualSpace (Space)
             Function space dual to 'space'.
-       - coefficients (Vector)
-            A vector of the coefficients of the function in the basis of space
-            'space'.
-       - projections (Vector)
-            A vector of projections of the function on the basis of space
-            'dualSpace'.
+       - surfaceNormalDependent (bool)
+            Indicates whether the grid function depends on the unit vector
+            normal to the grid or not.
        - function (a Python callable object)
             Function object whose values on 'space.grid()' will be used to
             construct the new grid function. If 'surfaceNormalDependent' is set
@@ -1743,9 +1747,13 @@ def createGridFunction(
             given in the first argument. In both cases 'function' should return
             its value at the given point, in the form of a scalar or a 1D array
             with dimension equal to 'space.codomainDimension()'.
-       - surfaceNormalDependent (bool)
-            Indicates whether the grid function depends on the unit vector
-            normal to the grid or not.
+       - coefficients (Vector)
+            A vector of the coefficients of the function in the basis of space
+            'space'.
+       - projections (Vector)
+            A vector of projections of the function on the basis of space
+            'dualSpace'.
+       - mode ('approximate' or 'interpolate')
 
     If both the 'space' and 'dualSpace' are given, they must be defined on the
     same grid and have the same codomain dimension.
@@ -1755,7 +1763,7 @@ def createGridFunction(
     Variant 1: construction of a grid function from a Python function::
 
         createGridFunction(context, space, dualSpace, function,
-                           surfaceNormalDependent)
+                           surfaceNormalDependent, mode)
 
     Variant 2: construction of a grid function from the vector of its
     coefficients in the basis of the space 'space'::
@@ -1799,6 +1807,12 @@ def createGridFunction(
         raise ValueError("createGridFunction(): You must set the dualSpace "
                          "parameter to a valid Space object when constructing "
                          "a grid function from a vector of projections")
+    if mode not in ('approximate', 'interpolate'):
+        raise ValueError("createGridFunction(): argument 'mode' must be set "
+                         "to either 'approximate' or 'interpolate'")
+    if mode == 'interpolate' and surfaceNormalDependent:
+        raise ValueError("createGridFunction(): interpolated functions "
+                         "currently cannot depend on surface normals")
 
     if coefficients is not None:
         return _constructObjectTemplatedOnBasisAndResult(
@@ -1816,11 +1830,13 @@ def createGridFunction(
     return __gridFunctionFromFunctor(
         className, context, space, dualSpace, function,
         argumentDimension=space.grid().dimWorld(),
-        resultDimension=space.codomainDimension())
+        resultDimension=space.codomainDimension(),
+        mode=mode)
 
 def gridFunctionFromSurfaceNormalDependentFunction(
         context, space, dualSpace, function,
-        argumentDimension=3, resultDimension=1):
+        argumentDimension=3, resultDimension=1,
+        mode='approximate'):
     """
     Deprecated. Superseded by createGridFunction().
     """
@@ -1828,12 +1844,13 @@ def gridFunctionFromSurfaceNormalDependentFunction(
            "Please use the createGridFunction() function instead.")
     return __gridFunctionFromFunctor(
         "SurfaceNormalDependentFunctor",
-        context, space, dualSpace, function,
+        context, space, dualSpace, function, mode,
         argumentDimension, resultDimension)
 
 def gridFunctionFromSurfaceNormalIndependentFunction(
         context, space, dualSpace, function,
-        argumentDimension=3, resultDimension=1):
+        argumentDimension=3, resultDimension=1,
+        mode='approximate'):
     """
     Deprecated. Superseded by createGridFunction().
     """
@@ -1841,7 +1858,7 @@ def gridFunctionFromSurfaceNormalIndependentFunction(
            "Please use the createGridFunction() function instead.")
     return __gridFunctionFromFunctor(
         "SurfaceNormalIndependentFunctor",
-        context, space, dualSpace, function,
+        context, space, dualSpace, function, mode,
         argumentDimension, resultDimension)
 
 def estimateL2Error(

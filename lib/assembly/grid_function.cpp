@@ -35,9 +35,10 @@
 #include "../fiber/basis_data.hpp"
 #include "../fiber/collection_of_basis_transformations.hpp"
 #include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/quadrature_strategy.hpp"
+#include "../fiber/function.hpp"
 #include "../fiber/local_assembler_for_grid_functions.hpp"
 #include "../fiber/opencl_handler.hpp"
+#include "../fiber/quadrature_strategy.hpp"
 #include "../fiber/raw_grid_geometry.hpp"
 #include "../grid/geometry_factory.hpp"
 #include "../grid/grid.hpp"
@@ -161,6 +162,42 @@ shared_ptr<arma::Col<ResultType> > calculateProjections(
     return reallyCalculateProjections(dualSpace, *assembler, options);
 }
 
+/** \brief Evaluate the function at DOF positions of the chosen space. */
+template <typename BasisFunctionType, typename ResultType>
+arma::Col<ResultType> interpolate(
+        const Context<BasisFunctionType, ResultType>& context,
+        const Function<ResultType>& globalFunction,
+        const Space<BasisFunctionType>& space)
+{
+    if (space.codomainDimension() != 1)
+        throw std::invalid_argument("interpolate(): only scalar-valued "
+                                    "functions can be interpolated");
+    size_t deps = 0;
+    globalFunction.addGeometricalDependencies(deps);
+    if (deps != Fiber::GLOBALS)
+        throw std::invalid_argument("interpolate(): only functions dependent "
+                                    "purely on global coordinates can be "
+                                    "interpolated");
+
+    typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
+    std::vector<Point3D<CoordinateType> > points;
+    space.getGlobalDofPositions(points);
+    const int dimWorld = space.grid()->dimWorld();
+    Fiber::GeometricalData<CoordinateType> geomData;
+    geomData.globals.set_size(dimWorld, points.size());
+    for (int p = 0; p < points.size(); ++p) {
+        geomData.globals(0, p) = points[p].x;
+        if (dimWorld > 1)
+            geomData.globals(1, p) = points[p].y;
+        if (dimWorld > 2)
+            geomData.globals(2, p) = points[p].z;
+    }
+    arma::Mat<ResultType> values;
+    globalFunction.evaluate(geomData, values);
+    values.reshape(values.n_cols, 1);
+    return values;
+}
+
 } // namespace
 
 // Recommended constructors
@@ -196,7 +233,8 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
         const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
         const shared_ptr<const Space<BasisFunctionType> >& space,
         const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
-        const Function<ResultType>& function) :
+        const Function<ResultType>& function,
+        ConstructionMode mode) :
     m_context(context), m_space(space), m_dualSpace(dualSpace)
 {
     if (!context)
@@ -209,19 +247,37 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): dualSpace must not be null");
 
+    if (space->grid() != dualSpace->grid())
+        throw std::invalid_argument(
+                "GridFunction::GridFunction(): "
+                "space and dualSpace must be defined on the same grid");
+    if (space->codomainDimension() != dualSpace->codomainDimension())
+        throw std::invalid_argument(
+                "GridFunction::GridFunction(): "
+                "functions from 'space' and 'dualSpace' have a different "
+                "number of components");
+    if (function.codomainDimension() != space->codomainDimension())
+        throw std::invalid_argument(
+                "GridFunction::GridFunction(): "
+                "functions from 'space' have a different number of "
+                "components than 'function'");
+
     bool isBarycentricSpace = (space->isBarycentric() || dualSpace->isBarycentric());
     if (isBarycentricSpace) {
         m_space = space->barycentricSpace(space);
         m_dualSpace = dualSpace->barycentricSpace(dualSpace);
-
     }
     if (m_space->grid() != m_dualSpace->grid())
             throw std::invalid_argument(
                     "GridFunction::GridFunction(): "
                     "space and dualSpace must be defined on the same grid");
 
-    setProjections(*m_dualSpace,
-                   *calculateProjections(*context, function, *m_dualSpace));
+    if (mode == APPROXIMATE)
+        setProjections(*m_dualSpace,
+                       *calculateProjections(*context, function, *m_dualSpace));
+    else if (mode == INTERPOLATE)
+        setCoefficients(interpolate(*context, function, *m_space));
+
 }
 
 // Deprecated constructors
