@@ -236,9 +236,50 @@ template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
        std::vector<BoundingBox<CoordinateType> >& bboxes) const
 {
-    SpaceHelper<BasisFunctionType>::
-            getGlobalDofBoundingBoxes_defaultImplementation(
-                *m_view, m_global2localDofs, bboxes);
+    const IndexSet& indexSet = m_view->indexSet();
+    const int elementCount = m_view->entityCount(0);
+
+    std::vector<arma::Mat<CoordinateType> > elementCorners(elementCount);
+    std::vector<arma::Col<CoordinateType> > elementCenters(elementCount);
+    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    while (!it->finished()) {
+        const Entity<0>& e = it->entity();
+        int index = indexSet.entityIndex(e);
+        const Geometry& geo = e.geometry();
+        geo.getCorners(acc(elementCorners, index));
+        geo.getCenter(acc(elementCenters, index));
+        it->next();
+    }
+
+    BoundingBox<CoordinateType> model;
+    const CoordinateType maxCoord = std::numeric_limits<CoordinateType>::max();
+    model.lbound.x = model.lbound.y = model.lbound.z = maxCoord;
+    model.ubound.x = model.ubound.y = model.ubound.z = -maxCoord;
+
+    const int globalDofCount_ = m_global2localDofs.size();
+    bboxes.resize(globalDofCount_, model);
+    for (int i = 0; i < globalDofCount_; ++i) {
+        const std::vector<LocalDof>& localDofs = acc(m_global2localDofs, i);
+        BoundingBox<CoordinateType>& bbox = acc(bboxes, i);
+        for (int j = 0; j < localDofs.size(); ++j)
+            extendBoundingBox(bbox, acc(elementCorners,
+                                        acc(localDofs, j).entityIndex));
+        assert(!localDofs.empty());
+        setBoundingBoxReference<CoordinateType>(
+                    bbox,
+                    acc(elementCenters, localDofs[0].entityIndex));
+    }
+
+#ifndef NDEBUG
+   for (size_t i = 0; i < globalDofCount_; ++i) {
+       assert(bboxes[i].reference.x >= bboxes[i].lbound.x);
+       assert(bboxes[i].reference.y >= bboxes[i].lbound.y);
+       assert(bboxes[i].reference.z >= bboxes[i].lbound.z);
+       assert(bboxes[i].reference.x <= bboxes[i].ubound.x);
+       assert(bboxes[i].reference.y <= bboxes[i].ubound.y);
+       assert(bboxes[i].reference.z <= bboxes[i].ubound.z);
+   }
+#endif // NDEBUG
 }
 
 template <typename BasisFunctionType>
