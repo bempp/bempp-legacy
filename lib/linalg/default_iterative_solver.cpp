@@ -260,7 +260,7 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::solveImplNonblocked(
 
     // Construct rhs vector
     Vector<ResultType> projectionsVector(
-                rhs.projections(*boundaryOp->dualToRange()));
+                rhs.projections(boundaryOp->dualToRange()));
     Teuchos::RCP<TrilinosVector> rhsVector;
     if (m_impl->mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE)
         rhsVector = Teuchos::rcpFromRef(projectionsVector);
@@ -334,7 +334,7 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::solveImplBlocked(
         boundaryOp->totalGlobalDofCountInDualsToRanges());
     for (size_t i = 0, start = 0; i < canonicalRhs.size(); ++i) {
         const arma::Col<ResultType>& chunkProjections =
-                canonicalRhs[i].projections(*boundaryOp->dualToRange(i));
+                canonicalRhs[i].projections(boundaryOp->dualToRange(i));
         size_t chunkSize = chunkProjections.n_rows;
         armaProjections.rows(start, start + chunkSize - 1) = chunkProjections;
         start += chunkSize;

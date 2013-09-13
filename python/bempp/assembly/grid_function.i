@@ -218,7 +218,7 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
         col_out = $self->projections();
     }
 
-    void projections(const Space<BasisFunctionType>& dualSpace,
+    void projections(const boost::shared_ptr<const Space<BasisFunctionType> >& dualSpace,
                      arma::Col<ResultType>& col_out)
     {
         col_out = $self->projections(dualSpace);

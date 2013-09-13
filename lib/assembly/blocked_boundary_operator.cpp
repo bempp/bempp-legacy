@@ -269,7 +269,7 @@ void BlockedBoundaryOperator<BasisFunctionType, ResultType>::apply(
     arma::Col<ResultType> yVals(ySize);
     for (size_t row = 0, start = 0; row < rowCount; ++row) {
         arma::Col<ResultType> chunk =
-                y_inout[row].projections(*m_dualsToRanges[row]);
+                y_inout[row].projections(m_dualsToRanges[row]);
         size_t chunkSize = chunk.n_rows;
         yVals.rows(start, start + chunkSize - 1) = chunk;
         start += chunkSize;
@@ -281,7 +281,7 @@ void BlockedBoundaryOperator<BasisFunctionType, ResultType>::apply(
     // Assign the result to the grid functions from y_inout
     for (size_t row = 0, start = 0; row < rowCount; ++row) {
         size_t chunkSize = m_dualsToRanges[row]->globalDofCount();
-        y_inout[row].setProjections(*m_dualsToRanges[row],
+        y_inout[row].setProjections(m_dualsToRanges[row],
                                     yVals.rows(start, start + chunkSize - 1));
         start += chunkSize;
     }
@@ -322,7 +322,7 @@ std::vector<GridFunction<BasisFunctionType, ResultType> > operator*(
     if (funs.size() != op.columnCount())
         throw std::invalid_argument(
             "operator*(BlockedBoundaryOperator, GridFunction): "
-            "'funs' has incorrect length");        
+            "'funs' has incorrect length");
     for (size_t i = 0; i < funs.size(); ++i)
         if (!funs[i].isInitialized())
             throw std::invalid_argument(

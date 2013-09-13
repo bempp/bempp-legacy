@@ -200,14 +200,14 @@ void BoundaryOperator<BasisFunctionType, ResultType>::apply(
 
     // Extract coefficient vectors
     arma::Col<ResultType> xVals = x_in.coefficients();
-    arma::Col<ResultType> yVals = y_inout.projections(*dualToRange);
+    arma::Col<ResultType> yVals = y_inout.projections(dualToRange);
 
     // Apply operator and assign the result to y_inout's projections
     weakForm()->apply(trans, xVals, yVals, alpha, beta);
     // TODO: make interfaces to the Trilinos and fallback
     // DiscreteBoundaryOperator::apply() compatible.
     // Perhaps by declaring an asPtrToBaseVector method in Vector...
-    y_inout.setProjections(*dualToRange, yVals);
+    y_inout.setProjections(dualToRange, yVals);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -312,9 +312,7 @@ GridFunction<BasisFunctionType, ResultType> operator*(
     shared_ptr<const Space<BasisFunctionType> > dualSpace = op.dualToRange();
     arma::Col<ResultType> coefficients(space->globalDofCount());
     coefficients.fill(0.);
-    arma::Col<ResultType> projections(dualSpace->globalDofCount());
-    projections.fill(0.);
-    GF result(op.context(), space, dualSpace, projections);
+    GF result(op.context(), space, coefficients);
     op.apply(NO_TRANSPOSE, fun, result, 1., 0.);
     return result;
 }
@@ -347,13 +345,13 @@ BoundaryOperator<BasisFunctionType, ResultType> adjoint(
 
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType> adjoint(
-	const BoundaryOperator<BasisFunctionType, ResultType>& op,
+    const BoundaryOperator<BasisFunctionType, ResultType>& op,
         const shared_ptr<const Space<BasisFunctionType> >& range)
 {
     typedef AdjointAbstractBoundaryOperator<BasisFunctionType, ResultType>
         Adjoint;
     return BoundaryOperator<BasisFunctionType, ResultType>(
-	         op.context(), boost::make_shared<Adjoint>(op,range));
+             op.context(), boost::make_shared<Adjoint>(op,range));
 }
 
 
