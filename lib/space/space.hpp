@@ -248,9 +248,10 @@ public:
     virtual const CollectionOfShapesetTransformations&
     basisFunctionValue() const {
         throw NotImplementedError(
-                    "Space::basisFunctionValue(): not implemented.\nNote that the "
-                    "Space::shapeFunctionValue() function has been renamed to basisFunctionValue(). "
-                    "If you have implemented shapeFunctionValue() in a subclass of Space, "
+                    "Space::basisFunctionValue(): not implemented.\n"
+                    "Note that the Space::shapeFunctionValue() function has "
+                    "been renamed to basisFunctionValue(). If you have "
+                    "implemented shapeFunctionValue() in a subclass of Space, "
                     "please implement basisFunctionValue() instead.");
     }
 
@@ -311,13 +312,34 @@ public:
     /** \brief Map local degrees of freedom residing on an element to global
      *  degrees of freedom.
      *
-     *  \param[in] element An element of the grid grid().
-     *  \param[out] dofs   Indices of the global degrees of freedom
-     *                     corresponding to the local degrees of freedom
-     *                     residing on \p element. */
+     *  \param[in] element
+     *    An element of the grid grid().
+     *  \param[out] dofs
+     *    Vector whose <em>i</em>th element is the index of the global degrees
+     *    of freedom to which the <em>i</em>th local degree of freedom residing
+     *    on \p element contributes. A negative number means that a given local
+     *    degree of freedom does not contribute to any global one.
+     *
+     *  \note This function is deprecated. Use the other overload taking the
+     *  additional output parameter \p localDofWeights.
+     */
     virtual void getGlobalDofs(const Entity<0>& element,
                                std::vector<GlobalDofIndex>& dofs) const;
 
+    /** \brief Map local degrees of freedom residing on an element to global
+     *  degrees of freedom.
+     *
+     *  \param[in] element
+     *    An element of the grid grid().
+     *  \param[out] dofs
+     *    Vector whose <em>i</em>th element is the index of the global degrees
+     *    of freedom to which the <em>i</em>th local degree of freedom residing
+     *    on \p element contributes. A negative number means that a given local
+     *    degree of freedom does not contribute to any global one.
+     *  \param[out] localDofWeights
+     *    Vector whose <em>i</em>th element is the weight with which the
+     *    <em>i</em>th local degree of freedom residing on \p element
+     *    contributes to "its" global degree of freedom. */
     virtual void getGlobalDofs(const Entity<0>& element,
                                std::vector<GlobalDofIndex>& dofs,
                                std::vector<BasisFunctionType>& localDofWeights) const;
