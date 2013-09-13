@@ -77,6 +77,13 @@ ScalarSpace<BasisFunctionType>::basisFunctionValue() const
     return m_impl->transformations;
 }
 
+template <typename BasisFunctionType>
+void ScalarSpace<BasisFunctionType>::getGlobalDofInterpolationDirections(
+        arma::Mat<CoordinateType>& directions) const {
+    directions.set_size(1 /* scalar space */, this->globalDofCount());
+    directions.fill(1);
+}
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(ScalarSpace);
 
 } // namespace Bempp

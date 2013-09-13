@@ -162,40 +162,45 @@ shared_ptr<arma::Col<ResultType> > calculateProjections(
     return reallyCalculateProjections(dualSpace, *assembler, options);
 }
 
-/** \brief Evaluate the function at DOF positions of the chosen space. */
+/** \brief Evaluate the function at the interpolation points of the chosen space. */
 template <typename BasisFunctionType, typename ResultType>
 arma::Col<ResultType> interpolate(
-        const Context<BasisFunctionType, ResultType>& context,
         const Function<ResultType>& globalFunction,
         const Space<BasisFunctionType>& space)
 {
-    if (space.codomainDimension() != 1)
-        throw std::invalid_argument("interpolate(): only scalar-valued "
-                                    "functions can be interpolated");
     size_t deps = 0;
     globalFunction.addGeometricalDependencies(deps);
-    if (deps != Fiber::GLOBALS)
-        throw std::invalid_argument("interpolate(): only functions dependent "
-                                    "purely on global coordinates can be "
-                                    "interpolated");
+    if (deps & ~(Fiber::GLOBALS | Fiber::NORMALS))
+        throw std::invalid_argument(
+                "interpolate(): functions to be interpolated "
+                "must not depend on any geometrical data besides global "
+                "coordinates and normal vectors");
 
     typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
-    std::vector<Point3D<CoordinateType> > points;
-    space.getGlobalDofPositions(points);
-    const int dimWorld = space.grid()->dimWorld();
     Fiber::GeometricalData<CoordinateType> geomData;
-    geomData.globals.set_size(dimWorld, points.size());
-    for (int p = 0; p < points.size(); ++p) {
-        geomData.globals(0, p) = points[p].x;
-        if (dimWorld > 1)
-            geomData.globals(1, p) = points[p].y;
-        if (dimWorld > 2)
-            geomData.globals(2, p) = points[p].z;
+    if (deps & Fiber::GLOBALS) {
+        space.getGlobalDofInterpolationPoints(geomData.globals);
+    }
+    if (deps & Fiber::NORMALS) {
+        space.getNormalsAtGlobalDofInterpolationPoints(geomData.normals);
     }
     arma::Mat<ResultType> values;
     globalFunction.evaluate(geomData, values);
-    values.reshape(values.n_cols, 1);
-    return values;
+
+    const size_t componentCount = values.n_rows;
+    const size_t pointCount = values.n_cols;
+
+    arma::Mat<CoordinateType> directions;
+    space.getGlobalDofInterpolationDirections(directions);
+    assert(directions.n_rows == values.n_rows);
+    assert(directions.n_cols == pointCount);
+
+    arma::Col<ResultType> result(pointCount);
+    result.fill(0);
+    for (size_t p = 0; p < pointCount; ++p)
+        for (size_t d = 0; d < componentCount; ++d)
+            result(p) += values(d, p) * directions(d, p);
+    return result;
 }
 
 } // namespace
@@ -261,6 +266,10 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
                 "GridFunction::GridFunction(): "
                 "functions from 'space' have a different number of "
                 "components than 'function'");
+    if (mode != APPROXIMATE && mode != INTERPOLATE)
+        throw std::invalid_argument(
+                "GridFunction::GridFunction(): "
+                "'mode' must be either APPROXIMATE or INTERPOLATE");
 
     bool isBarycentricSpace = (space->isBarycentric() || dualSpace->isBarycentric());
     if (isBarycentricSpace) {
@@ -275,9 +284,8 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
     if (mode == APPROXIMATE)
         setProjections(*m_dualSpace,
                        *calculateProjections(*context, function, *m_dualSpace));
-    else if (mode == INTERPOLATE)
-        setCoefficients(interpolate(*context, function, *m_space));
-
+    else // mode == INTERPOLATE
+        setCoefficients(interpolate(function, *m_space));
 }
 
 // Deprecated constructors
@@ -396,7 +404,6 @@ void GridFunction<BasisFunctionType, ResultType>::initializeFromProjections(
     if (isBarycentricSpace) {
         m_space = space->barycentricSpace(space);
         m_dualSpace = dualSpace->barycentricSpace(dualSpace);
-
     }
     else {
         m_space = space;

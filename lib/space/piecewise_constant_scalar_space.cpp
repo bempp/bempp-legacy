@@ -214,6 +214,24 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::flatLocal2localDofs(
 }
 
 template <typename BasisFunctionType>
+void PiecewiseConstantScalarSpace<BasisFunctionType>::
+getGlobalDofInterpolationPoints(arma::Mat<CoordinateType>& points) const
+{
+    SpaceHelper<BasisFunctionType>::
+            getGlobalDofInterpolationPoints_defaultImplementation(
+                *this, points);
+}
+
+template <typename BasisFunctionType>
+void PiecewiseConstantScalarSpace<BasisFunctionType>::
+getNormalsAtGlobalDofInterpolationPoints(arma::Mat<CoordinateType>& normals) const
+{
+    SpaceHelper<BasisFunctionType>::
+            getNormalsAtGlobalDofInterpolationPoints_defaultImplementation(
+                *this, normals);
+}
+
+template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::getGlobalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {

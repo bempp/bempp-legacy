@@ -22,6 +22,7 @@
 #define bempp_space_utils_hpp
 
 #include "../common/common.hpp"
+#include "../common/armadillo_fwd.hpp"
 #include "../common/scalar_traits.hpp"
 #include "../common/types.hpp"
 
@@ -33,11 +34,20 @@ namespace Bempp
 class GridView;
 struct LocalDof;
 template <typename CoordinateType> class BoundingBox;
+template <typename BasisFunctionType> class Space;
 
 template <typename BasisFunctionType>
 struct SpaceHelper
 {
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+
+    static void getGlobalDofInterpolationPoints_defaultImplementation(
+            const Space<BasisFunctionType>& space,
+            arma::Mat<CoordinateType>& points);
+
+    static void getNormalsAtGlobalDofInterpolationPoints_defaultImplementation(
+            const Space<BasisFunctionType>& space,
+            arma::Mat<CoordinateType>& normals);
 
     static void getGlobalDofBoundingBoxes_defaultImplementation(
             const GridView& view,

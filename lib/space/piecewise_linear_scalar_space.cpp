@@ -20,6 +20,8 @@
 
 #include "piecewise_linear_scalar_space.hpp"
 
+#include "space_helper.hpp"
+
 #include "../fiber/explicit_instantiation.hpp"
 #include "../grid/entity.hpp"
 #include "../grid/geometry.hpp"
@@ -100,6 +102,24 @@ void PiecewiseLinearScalarSpace<BasisFunctionType>::setElementVariant(
         // for this space, the element variants are unmodifiable,
         throw std::runtime_error("PiecewiseLinearScalarSpace::"
                                  "setElementVariant(): invalid variant");
+}
+
+template <typename BasisFunctionType>
+void PiecewiseLinearScalarSpace<BasisFunctionType>::
+getGlobalDofInterpolationPoints(arma::Mat<CoordinateType>& points) const
+{
+    SpaceHelper<BasisFunctionType>::
+            getGlobalDofInterpolationPoints_defaultImplementation(
+                *this, points);
+}
+
+template <typename BasisFunctionType>
+void PiecewiseLinearScalarSpace<BasisFunctionType>::
+getNormalsAtGlobalDofInterpolationPoints(arma::Mat<CoordinateType>& normals) const
+{
+    SpaceHelper<BasisFunctionType>::
+            getNormalsAtGlobalDofInterpolationPoints_defaultImplementation(
+                *this, normals);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(PiecewiseLinearScalarSpace);
