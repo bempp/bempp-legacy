@@ -98,7 +98,7 @@ public:
         doubleQuadratureRuleFamily);
 
 public:
-    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+    virtual std::auto_ptr<LocalAssemblerForLocalOperators<ResultType> >
     makeAssemblerForIdentityOperators(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
@@ -108,7 +108,7 @@ public:
             const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
             const shared_ptr<const OpenClHandler>& openClHandler) const;
 
-    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+    virtual std::auto_ptr<LocalAssemblerForLocalOperators<ResultType> >
     makeAssemblerForLocalOperators(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
@@ -120,7 +120,7 @@ public:
             const shared_ptr<const OpenClHandler>& openClHandler) const;
 
 private:
-    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+    virtual std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >
     makeAssemblerForIntegralOperatorsImplRealKernel(
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
@@ -293,7 +293,7 @@ public:
         doubleQuadratureRuleFamily);
 
 private:
-    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+    virtual std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >
     makeAssemblerForIntegralOperatorsImplComplexKernel(
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,

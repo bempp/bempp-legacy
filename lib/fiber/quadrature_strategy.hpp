@@ -51,7 +51,8 @@ template <typename BasisFunctionType, typename ResultType>
 class TestTrialIntegral;
 template <typename CoordinateType> class RawGridGeometry;
 
-template <typename ResultType> class LocalAssemblerForOperators;
+template <typename ResultType> class LocalAssemblerForIntegralOperators;
+template <typename ResultType> class LocalAssemblerForLocalOperators;
 template <typename ResultType> class LocalAssemblerForPotentialOperators;
 template <typename ResultType> class LocalAssemblerForGridFunctions;
 template <typename ResultType> class EvaluatorForIntegralOperators;
@@ -68,7 +69,7 @@ public:
 
     /** \brief Allocate a Galerkin-mode local assembler for an integral operator
         with real kernel. */
-    std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+    std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >
     makeAssemblerForIntegralOperators(
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
@@ -99,7 +100,7 @@ public:
      *  \deprecated This method is deprecated. Use the more general
      *  makeAssemblerForLocalOperators() method, passing an appropriate
      *  TestTrialIntegral object. */
-    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+    virtual std::auto_ptr<LocalAssemblerForLocalOperators<ResultType> >
     makeAssemblerForIdentityOperators(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
@@ -110,7 +111,7 @@ public:
             const shared_ptr<const OpenClHandler>& openClHandler) const = 0;
 
     /** \brief Allocate a Galerkin-mode local assembler for a local operator. */
-    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+    virtual std::auto_ptr<LocalAssemblerForLocalOperators<ResultType> >
     makeAssemblerForLocalOperators(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
@@ -177,7 +178,7 @@ public:
     }
 
 private:
-    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+    virtual std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >
     makeAssemblerForIntegralOperatorsImplRealKernel(
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
@@ -252,7 +253,7 @@ public:
 
     /** \brief Allocate a Galerkin-mode local assembler for an integral operator
         with complex kernel. */
-    std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+    std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >
     makeAssemblerForIntegralOperators(
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
@@ -335,7 +336,7 @@ public:
     }
 
 private:
-    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+    virtual std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >
     makeAssemblerForIntegralOperatorsImplComplexKernel(
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,

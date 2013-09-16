@@ -27,7 +27,7 @@
 #include "assembly/numerical_quadrature_strategy.hpp"
 #include "common/scalar_traits.hpp"
 #include "fiber/geometrical_data.hpp"
-#include "fiber/local_assembler_for_operators.hpp"
+#include "fiber/local_assembler_for_integral_operators.hpp"
 #include "grid/grid.hpp"
 #include "grid/grid_factory.hpp"
 #include "grid/grid_view.hpp"
