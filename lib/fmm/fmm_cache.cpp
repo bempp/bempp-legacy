@@ -119,7 +119,20 @@ FmmCache<ValueType>::initCache(
 	compressM2L(true);
 } // initCache
 
-// check ValueType, must be non-complex for now
+
+// For the bbFFM the M2L operator will be block Toeplitz (fully Toeplitz in 1D)
+// when the kernel is symmetric. N.B that the order in which the interaction blocks
+// are stored does not matter. However, if symmetry is to be exploited (so that one
+// SVD suffices), the source interaction blocks must be arranged symmetrically about
+// the field centre, e.g. -4 -3 x x f x x 3 4 not -4 -3 x x f x x 3 4 5.
+// If symmetry is to be exploited note that Ufat_k'*Vthin_k = \pm 1. However, since
+// we calculate multipoleCoefficients = Ufat*(Ufat'*K*Vthin)*Vthin'*multipoleCoefficients
+// the \pm 1 does not matter. For symmetric kernels it is thus safe to assume
+// Vthin = Ufat.
+// If checking Ufat_k'*Vthin_k = \pm 1, note that if kernel is isotropic in x, y 
+// and z, then triplet vectors result with the same sigma. Due to this degeneracy, the 
+// vectors do not satisfy Ufat_k'*Vthin_k = \pm 1. If one scales x, y, and z slightly 
+// differently, then the degeneracy is broken, and the equality is perfectly satisfied.
 template <typename ValueType>
 void 
 FmmCache<ValueType>::compressM2L(bool isSymmetric)
@@ -134,11 +147,11 @@ FmmCache<ValueType>::compressM2L(bool isSymmetric)
 	
 	int npt = m_fmmTransform.quadraturePointCount();
 
-	m_Ured.resize(m_levels-m_topLevel+1);
-	m_Sred.resize(m_levels-m_topLevel+1);
-	arma::Mat<ValueType> U(npt, npt);
+	m_Ufat.resize(m_levels-m_topLevel+1);
+	m_Vthin.resize(m_levels-m_topLevel+1);
+	arma::Mat<ValueType> Ufat(npt, npt);
 	arma::Col<CoordinateType> sigma(npt);
-	arma::Mat<ValueType> V;
+	arma::Mat<ValueType> Vfat;
 	arma::Mat<ValueType> kernelsFat(npt, 316*npt);
 
 	for (unsigned int level = m_topLevel; level<=m_levels; level++) {
@@ -149,7 +162,7 @@ FmmCache<ValueType>::compressM2L(bool isSymmetric)
 			  = m_cacheM2L[level-m_topLevel][item];
 		}
 		// Compute the SVD of the scaled fat collection of Kernels
-		if ( !arma::svd_econ(U, sigma, V, kernelsFat, 'l') ) {
+		if ( !arma::svd_econ(Ufat, sigma, Vfat, kernelsFat, 'l') ) {
 			throw std::invalid_argument("FmmCache<ValueType>::compressM2L(): "
 				"singular value decomposition failed");
 		}
@@ -157,30 +170,31 @@ FmmCache<ValueType>::compressM2L(bool isSymmetric)
 		// store the first few columns of U used for the reduced rank approximation
 		// into m_Ured
 		int cutoff = npt/2 - 1;
-		m_Ured[level-m_topLevel] = U.cols(0, cutoff-1);
+		m_Ufat[level-m_topLevel] = Ufat.cols(0, cutoff-1);
 
 		if ( !isSymmetric ) { // if M2L or Kernel is asymmetric
 			arma::Mat<ValueType> kernelsThin(316*npt, npt);
-			arma::Mat<ValueType> S(npt, npt);
+			arma::Mat<ValueType> Uthin;
+			arma::Mat<ValueType> Vthin(npt, npt);
 			for (unsigned int item = 0; item<316; item++) {
 				kernelsThin.rows(item*npt, (item+1)*npt-1)
 				  = m_cacheM2L[level-m_topLevel][item];
 			}
 
-			if ( !arma::svd_econ(V, sigma, S, kernelsThin, 'r') ) {
+			if ( !arma::svd_econ(Uthin, sigma, Vthin, kernelsThin, 'r') ) {
 				throw std::invalid_argument("FmmCache<ValueType>::compressM2L(): "
 					"singular value decomposition failed");			
 			}
-			m_Sred[level-m_topLevel] = S.cols(0, cutoff-1);
+			m_Vthin[level-m_topLevel] = Vthin.cols(0, cutoff-1);
 		} else {
-			m_Sred[level-m_topLevel] = m_Ured[level-m_topLevel];
+			m_Vthin[level-m_topLevel] = m_Ufat[level-m_topLevel];
 		}
 
 		// Reduce down the M2L matrices from npt x npt to cutoff x cutoff
 		for (unsigned int item = 0; item<316; item++) {
 			m_cacheM2L[level-m_topLevel][item] = 
-				 m_Ured[level-m_topLevel].st()*m_cacheM2L[level-m_topLevel][item]
-				*m_Sred[level-m_topLevel];
+				 m_Ufat [level-m_topLevel].st()*m_cacheM2L[level-m_topLevel][item]
+				*m_Vthin[level-m_topLevel];
 		}
 
 	} // for each level in octree
@@ -194,7 +208,7 @@ FmmCache<ValueType>::compressMultipoleCoefficients(
 	int level) const
 {
 	if ( m_fmmTransform.isCompressedM2L() ) {
-		mcoefs = m_Sred[level-m_topLevel].st()*(m_kernelWeightVec % mcoefs);
+		mcoefs = m_Vthin[level-m_topLevel].st()*(m_kernelWeightVec % mcoefs);
 	}
 }
 
@@ -206,7 +220,7 @@ FmmCache<ValueType>::explodeLocalCoefficients(
 	int level) const
 {
 	if ( m_fmmTransform.isCompressedM2L() ) {
-		lcoefs = m_kernelWeightVec % (m_Ured[level-m_topLevel]*lcoefs);
+		lcoefs = m_kernelWeightVec % (m_Ufat[level-m_topLevel]*lcoefs);
 	}
 }
 

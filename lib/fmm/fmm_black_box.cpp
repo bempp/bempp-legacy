@@ -204,7 +204,7 @@ FmmBlackBox<ValueType>::M2L(
 			} // for m3
 		} // for m2
 	} // for m1
-
+	
 	return T3;
 }
 
@@ -217,7 +217,6 @@ FmmBlackBox<ValueType>::getKernelWeight(
 	arma::Col<ValueType>& kernelWeightVec) const
 {
 	CoordinateType n3 = getN()*getN()*getN();
-	kernelWeightMat.set_size(n3, n3);
 	kernelWeightVec.set_size(n3);
 
 	// Here, we use Omega directly, following the bbFMM code directly, as opposed 
@@ -231,30 +230,18 @@ FmmBlackBox<ValueType>::getKernelWeight(
 		for (unsigned int m2 = 0; m2 < getN(); m2++) {
 			for (unsigned int m3 = 0; m3 < getN(); m3++) {
 				CoordinateType weightm = weights[m1]*weights[m2]*weights[m3];
-				kernelWeightVec(m) = 1./weightm;
-				unsigned int n = 0;
-				for (unsigned int n1 = 0; n1 < getN(); n1++) {
-					for (unsigned int n2 = 0; n2 < getN(); n2++) {
-						for (unsigned int n3 = 0; n3 < getN(); n3++) {
-							ValueType weightn = weights[n1]*weights[n2]*weights[n3];
-							kernelWeightMat(m, n) = weightm*weightn;
-							n++;
-						} // for n3
-					} // for n2
-				} // for n1
+				kernelWeightVec(m) = weightm;
 				m++;
 			} // for m3
 		} // for m2
 	} // for m1
+	kernelWeightMat = kernelWeightVec*kernelWeightVec.st();
+	kernelWeightVec = 1. / kernelWeightVec;
 }
 
 
-
-
-// FmmSingleLayerHighFreqFMM
-
 template <typename ValueType>
-void FmmSingleLayerBlackBox<ValueType>::evaluateTrial(
+void FmmBlackBox<ValueType>::evaluateAtGaussPointS(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& multipole, // [-1,1]
@@ -289,24 +276,8 @@ void FmmSingleLayerBlackBox<ValueType>::evaluateTrial(
 	result(0) =  S;
 }
 
-// should really create a third function that both evaluateTest and evaluateTrial call
 template <typename ValueType>
-void FmmSingleLayerBlackBox<ValueType>::evaluateTest(
-			const arma::Col<CoordinateType>& point,
-			const arma::Col<CoordinateType>& normal,
-			const arma::Col<CoordinateType>& multipole,
-			const arma::Col<CoordinateType>& nodeCentre,
-			const arma::Col<CoordinateType>& nodeSize,
-			arma::Col<ValueType>& result) const
-{
-	evaluateTrial(point, normal, multipole, nodeCentre, nodeSize, result);
-}
-
-
-// FmmDoubleLayerBlackBox
-
-template <typename ValueType>
-void FmmDoubleLayerBlackBox<ValueType>::evaluateTrial(
+void FmmBlackBox<ValueType>::evaluateAtGaussPointDiffS(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& multipole, // [-1,1]
@@ -342,6 +313,50 @@ void FmmDoubleLayerBlackBox<ValueType>::evaluateTrial(
 			  + normal(2)*S[0]*S[1]*diffS[2]*(2./nodeSize(2));
 }
 
+// FmmSingleLayerHighFreqFMM
+
+template <typename ValueType>
+void FmmSingleLayerBlackBox<ValueType>::evaluateTrial(
+			const arma::Col<CoordinateType>& point,
+			const arma::Col<CoordinateType>& normal,
+			const arma::Col<CoordinateType>& multipole, // [-1,1]
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
+			arma::Col<ValueType>& result) const
+{
+	this->evaluateAtGaussPointS(point, normal, multipole, 
+		nodeCentre, nodeSize, result);
+}
+
+template <typename ValueType>
+void FmmSingleLayerBlackBox<ValueType>::evaluateTest(
+			const arma::Col<CoordinateType>& point,
+			const arma::Col<CoordinateType>& normal,
+			const arma::Col<CoordinateType>& multipole,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
+			arma::Col<ValueType>& result) const
+{
+	this->evaluateAtGaussPointS(point, normal, multipole, 
+		nodeCentre, nodeSize, result);
+}
+
+
+// FmmDoubleLayerBlackBox
+
+template <typename ValueType>
+void FmmDoubleLayerBlackBox<ValueType>::evaluateTrial(
+			const arma::Col<CoordinateType>& point,
+			const arma::Col<CoordinateType>& normal,
+			const arma::Col<CoordinateType>& multipole, // [-1,1]
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
+			arma::Col<ValueType>& result) const
+{
+	this->evaluateAtGaussPointDiffS(point, normal, multipole, 
+		nodeCentre, nodeSize, result);
+}
+
 template <typename ValueType>
 void FmmDoubleLayerBlackBox<ValueType>::evaluateTest(
 			const arma::Col<CoordinateType>& point,
@@ -351,23 +366,8 @@ void FmmDoubleLayerBlackBox<ValueType>::evaluateTest(
 			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const
 {
-	arma::Col<CoordinateType> pointScaled = 2.*(point - nodeCentre) / nodeSize;
-
-	CoordinateType S = 1.0;
-	CoordinateType TkMultipole[this->getN()];
-	CoordinateType TkPoint[this->getN()];
-	for (unsigned int dim=0; dim<point.n_rows; dim++) {
-		chebyshev(TkMultipole, this->getN(), multipole[dim], 1);
-		chebyshev(TkPoint, this->getN(), pointScaled[dim], 1);
-
-		CoordinateType localS = TkMultipole[0]*TkPoint[0];
-		for (unsigned int j = 1; j < this->getN(); j++) {
-			localS += 2*TkMultipole[j]*TkPoint[j];
-		}
-		S *= localS/(this->getN());
-	}
-
-	result(0) =  S;
+	this->evaluateAtGaussPointS(point, normal, multipole, 
+		nodeCentre, nodeSize, result);
 }
 
 // FmmAdjointDoubleLayerBlackBox
@@ -381,25 +381,9 @@ void FmmAdjointDoubleLayerBlackBox<ValueType>::evaluateTrial(
 			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const
 {
-	arma::Col<CoordinateType> pointScaled = 2.*(point - nodeCentre) / nodeSize;
-
-	CoordinateType S = 1.0;
-	CoordinateType TkMultipole[this->getN()];
-	CoordinateType TkPoint[this->getN()];
-	for (unsigned int dim=0; dim<point.n_rows; dim++) {
-		chebyshev(TkMultipole, this->getN(), multipole[dim], 1);
-		chebyshev(TkPoint, this->getN(), pointScaled[dim], 1);
-
-		CoordinateType localS = TkMultipole[0]*TkPoint[0];
-		for (unsigned int j = 1; j < this->getN(); j++) {
-			localS += 2*TkMultipole[j]*TkPoint[j];
-		}
-		S *= localS/(this->getN());
-	}
-
-	result(0) =  S;
+	this->evaluateAtGaussPointS(point, normal, multipole, 
+		nodeCentre, nodeSize, result);
 }
-
 
 template <typename ValueType>
 void FmmAdjointDoubleLayerBlackBox<ValueType>::evaluateTest(
@@ -410,31 +394,8 @@ void FmmAdjointDoubleLayerBlackBox<ValueType>::evaluateTest(
 			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const
 {
-
-	arma::Col<CoordinateType> pointScaled = 2.*(point - nodeCentre) / nodeSize;
-
-	CoordinateType S[3], diffS[3];
-	CoordinateType TkMultipole[this->getN()];
-	CoordinateType TkPoint[this->getN()];
-	CoordinateType UkPoint[this->getN()]; // Chebyshev polynomials of the second kind
-	for (unsigned int dim=0; dim<point.n_rows; dim++) {
-		chebyshev(TkMultipole, this->getN(), multipole[dim], 1);
-		chebyshev(TkPoint, this->getN(), pointScaled[dim], 1);
-		chebyshev(UkPoint, this->getN(), pointScaled[dim], 2);
-
-		S[dim] = TkMultipole[0]*TkPoint[0];
-		diffS[dim] = 0; //TkMultipole[0]*diff(TkPoint[0]=1);
-		for (unsigned int j = 1; j < this->getN(); j++) {
-			S[dim] += 2*TkMultipole[j]*TkPoint[j];
-			CoordinateType diffTkPoint = j*UkPoint[j-1];
-			diffS[dim] += 2*TkMultipole[j]*diffTkPoint;
-		}
-		S[dim] /= this->getN();
-		diffS[dim] /= this->getN();
-	}
-	result(0) =   normal(0)*diffS[0]*S[1]*S[2]*(2./nodeSize(0))
-			  + normal(1)*S[0]*diffS[1]*S[2]*(2./nodeSize(1))
-			  + normal(2)*S[0]*S[1]*diffS[2]*(2./nodeSize(2));
+	this->evaluateAtGaussPointDiffS(point, normal, multipole, 
+		nodeCentre, nodeSize, result);
 }
 
 // FmmHypersingularBlackBox
@@ -448,30 +409,8 @@ void FmmHypersingularBlackBox<ValueType>::evaluateTrial(
 			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const
 {
-	arma::Col<CoordinateType> pointScaled = 2.*(point - nodeCentre) / nodeSize;
-
-	CoordinateType S[3], diffS[3];
-	CoordinateType TkMultipole[this->getN()];
-	CoordinateType TkPoint[this->getN()];
-	CoordinateType UkPoint[this->getN()]; // Chebyshev polynomials of the second kind
-	for (unsigned int dim=0; dim<point.n_rows; dim++) {
-		chebyshev(TkMultipole, this->getN(), multipole[dim], 1);
-		chebyshev(TkPoint, this->getN(), pointScaled[dim], 1);
-		chebyshev(UkPoint, this->getN(), pointScaled[dim], 2);
-
-		S[dim] = TkMultipole[0]*TkPoint[0];
-		diffS[dim] = 0; //TkMultipole[0]*diff(TkPoint[0]=1);
-		for (unsigned int j = 1; j < this->getN(); j++) {
-			S[dim] += 2*TkMultipole[j]*TkPoint[j];
-			CoordinateType diffTkPoint = j*UkPoint[j-1];
-			diffS[dim] += 2*TkMultipole[j]*diffTkPoint;
-		}
-		S[dim] /= this->getN();
-		diffS[dim] /= this->getN();
-	}
-	result(0) =   normal(0)*diffS[0]*S[1]*S[2]*(2./nodeSize(0))
-			  + normal(1)*S[0]*diffS[1]*S[2]*(2./nodeSize(1))
-			  + normal(2)*S[0]*S[1]*diffS[2]*(2./nodeSize(2));
+	this->evaluateAtGaussPointDiffS(point, normal, multipole, 
+		nodeCentre, nodeSize, result);
 }
 
 template <typename ValueType>
@@ -483,7 +422,8 @@ void FmmHypersingularBlackBox<ValueType>::evaluateTest(
 			const arma::Col<CoordinateType>& nodeSize,
 			arma::Col<ValueType>& result) const
 {
-	evaluateTrial(point, normal, multipole, nodeCentre, nodeSize, result);
+	this->evaluateAtGaussPointDiffS(point, normal, multipole, 
+		nodeCentre, nodeSize, result);
 	// D = -\int \phi(x) \int \ d^2/(dxdy) K(x,y) \psi(y) dydx
 	result = -result;
 }

@@ -69,6 +69,24 @@ public:
 
 	unsigned int getN() const {return m_n;}
 
+protected:
+
+	virtual void evaluateAtGaussPointS(
+			const arma::Col<CoordinateType>& point,
+			const arma::Col<CoordinateType>& normal,
+			const arma::Col<CoordinateType>& khat,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
+			arma::Col<ValueType>& result) const;
+
+	virtual void evaluateAtGaussPointDiffS(
+			const arma::Col<CoordinateType>& point,
+			const arma::Col<CoordinateType>& normal,
+			const arma::Col<CoordinateType>& khat,
+			const arma::Col<CoordinateType>& nodeCentre,
+			const arma::Col<CoordinateType>& nodeSize,
+			arma::Col<ValueType>& result) const;
+
 private:
 	unsigned int m_n;
 	arma::Mat<CoordinateType> m_Tk;

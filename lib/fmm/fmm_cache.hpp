@@ -75,8 +75,8 @@ private:
 	const FmmTransform<ValueType>& m_fmmTransform;
 	unsigned int m_levels;
 	arma::Col<ValueType> m_kernelWeightVec;
-	std::vector<arma::Mat<ValueType> > m_Ured;
-	std::vector<arma::Mat<ValueType> > m_Sred;
+	std::vector<arma::Mat<ValueType> > m_Ufat;
+	std::vector<arma::Mat<ValueType> > m_Vthin;
 
 	std::vector<std::vector<arma::Mat<ValueType> > > m_cacheM2M;
 	std::vector<std::vector<arma::Mat<ValueType> > > m_cacheM2L;
