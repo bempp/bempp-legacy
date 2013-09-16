@@ -68,6 +68,7 @@ operator=(const ScalarSpace& rhs)
         Base::operator=(rhs);
         m_impl.reset(new Impl(*rhs.m_impl));
     }
+    return *this;
 }
 
 template <typename BasisFunctionType>
