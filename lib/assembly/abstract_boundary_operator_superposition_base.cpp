@@ -179,12 +179,12 @@ assembleWeakFormImpl(
     assert(joinableOps.size() == joinableOpWeights.size());
     assert(nonjoinableOps.size() == nonjoinableOpWeights.size());
 
-     std::cout << "joinable ops:\n";
-     for (size_t i = 0; i < joinableOps.size(); ++i)
-         std::cout << joinableOps[i].label() << std::endl;
-     std::cout << "Nonjoinable ops:\n";
-     for (size_t i = 0; i < nonjoinableOps.size(); ++i)
-         std::cout << nonjoinableOps[i].label() << std::endl;
+    // std::cout << "joinable ops:\n";
+    // for (size_t i = 0; i < joinableOps.size(); ++i)
+    //     std::cout << joinableOps[i].label() << std::endl;
+    // std::cout << "Nonjoinable ops:\n";
+    // for (size_t i = 0; i < nonjoinableOps.size(); ++i)
+    //     std::cout << nonjoinableOps[i].label() << std::endl;
 
     // Pass the list of the joinable operators to the appropriate
     // assemblejointOperatorWeakForm*() function. This function will
