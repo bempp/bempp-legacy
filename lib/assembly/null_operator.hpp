@@ -24,7 +24,7 @@
 
 #include "../common/common.hpp"
 
-#include "elementary_abstract_boundary_operator.hpp"
+#include "abstract_boundary_operator.hpp"
 
 #include "abstract_boundary_operator_id.hpp"
 
@@ -72,20 +72,18 @@ private:
  */
 template <typename BasisFunctionType_, typename ResultType_>
 class NullOperator :
-        public ElementaryAbstractBoundaryOperator<BasisFunctionType_, ResultType_>
+        public AbstractBoundaryOperator<BasisFunctionType_, ResultType_>
 {
-    typedef ElementaryAbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
+    typedef AbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
 public:
-    /** \copydoc ElementaryAbstractBoundaryOperator::BasisFunctionType */
+    /** \copydoc AbstractBoundaryOperator::BasisFunctionType */
     typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc ElementaryAbstractBoundaryOperator::ResultType */
+    /** \copydoc AbstractBoundaryOperator::ResultType */
     typedef typename Base::ResultType ResultType;
-    /** \copydoc ElementaryAbstractBoundaryOperator::CoordinateType */
+    /** \copydoc AbstractBoundaryOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc ElementaryAbstractBoundaryOperator::QuadratureStrategy */
+    /** \copydoc AbstractBoundaryOperator::QuadratureStrategy */
     typedef typename Base::QuadratureStrategy QuadratureStrategy;
-    /** \copydoc ElementaryAbstractBoundaryOperator::LocalAssembler */
-    typedef typename Base::LocalAssembler LocalAssembler;
 
     /** \brief Constructor.
      *
@@ -129,25 +127,6 @@ protected:
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormImpl(
             const Context<BasisFunctionType, ResultType>& context) const;
-
-private:
-    virtual std::auto_ptr<LocalAssembler> makeAssemblerImpl(
-            const QuadratureStrategy& quadStrategy,
-            const shared_ptr<const GeometryFactory>& testGeometryFactory,
-            const shared_ptr<const GeometryFactory>& trialGeometryFactory,
-            const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
-            const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
-            const shared_ptr<const std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& testShapesets,
-            const shared_ptr<const std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& trialShapesets,
-            const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
-            const ParallelizationOptions& parallelizationOptions,
-            VerbosityLevel::Level verbosityLevel,
-            bool cacheSingularIntegrals) const;
-
-    virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
-    assembleWeakFormInternalImpl2(
-            LocalAssembler& assembler,
-            const Context<BasisFunctionType, ResultType>& options) const;
 
     shared_ptr<DiscreteBoundaryOperator<ResultType_> >
     reallyAssembleWeakForm() const;

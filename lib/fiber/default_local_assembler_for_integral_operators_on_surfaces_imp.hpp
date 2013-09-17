@@ -375,21 +375,6 @@ evaluateLocalWeakForms(
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
-void
-DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
-KernelType, ResultType, GeometryFactory>::
-evaluateLocalWeakForms(
-        const std::vector<int>& elementIndices,
-        std::vector<arma::Mat<ResultType> >& result)
-{
-    // This overload is mostly useful only for the identity operator
-    throw std::runtime_error("DefaultLocalAssemblerForIntegralOperatorsOnSurfaces::"
-                             "evaluateLocalWeakForms(): "
-                             "this overload not implemented yet");
-}
-
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType, typename GeometryFactory>
 typename DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,
     KernelType, ResultType, GeometryFactory>::CoordinateType
 DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<BasisFunctionType,

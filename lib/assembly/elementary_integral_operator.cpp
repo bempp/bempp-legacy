@@ -29,7 +29,7 @@
 #include "local_assembler_construction_helper.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/local_assembler_for_operators.hpp"
+#include "../fiber/local_assembler_for_integral_operators.hpp"
 #include "../fiber/quadrature_strategy.hpp"
 
 #include "../common/boost_make_shared_fwd.hpp"
@@ -130,7 +130,7 @@ assembleWeakFormInternalImpl2(
                     assembleWeakFormInAcaMode(assembler, context).release());
     default:
         throw std::runtime_error(
-                    "ElementaryIntegralOperator::assembleWeakFormInternalImpl(): "
+                    "ElementaryIntegralOperator::assembleWeakFormInternalImpl2(): "
                     "invalid assembly mode");
     }
 }

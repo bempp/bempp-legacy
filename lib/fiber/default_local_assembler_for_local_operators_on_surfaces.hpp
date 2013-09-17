@@ -23,7 +23,7 @@
 
 #include "../common/common.hpp"
 
-#include "local_assembler_for_operators.hpp"
+#include "local_assembler_for_local_operators.hpp"
 
 #include "numerical_quadrature.hpp"
 #include "numerical_test_trial_integrator.hpp"
@@ -51,7 +51,7 @@ template <typename CoordinateType> class SingleQuadratureRuleFamily;
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 class DefaultLocalAssemblerForLocalOperatorsOnSurfaces :
-    public LocalAssemblerForOperators<ResultType>
+    public LocalAssemblerForLocalOperators<ResultType>
 {
 public:
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
@@ -69,24 +69,8 @@ public:
         const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >& quadRuleFamily);
 
     virtual void evaluateLocalWeakForms(
-        CallVariant callVariant,
-        const std::vector<int>& elementIndicesA,
-        int elementIndexB,
-        LocalDofIndex localDofIndexB,
-        std::vector<arma::Mat<ResultType> >& result,
-        CoordinateType nominalDistance = -1.);
-
-    virtual void evaluateLocalWeakForms(
-        const std::vector<int>& testElementIndices,
-        const std::vector<int>& trialElementIndices,
-        Fiber::_2dArray<arma::Mat<ResultType> >& result,
-        CoordinateType nominalDistance = -1.);
-
-    virtual void evaluateLocalWeakForms(
         const std::vector<int>& elementIndices,
         std::vector<arma::Mat<ResultType> >& result);
-
-    virtual CoordinateType estimateRelativeScale(CoordinateType minDist) const;
 
 private:
     /** \cond PRIVATE */

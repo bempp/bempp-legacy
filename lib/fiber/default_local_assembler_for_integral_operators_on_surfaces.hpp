@@ -23,7 +23,7 @@
 
 #include "../common/common.hpp"
 
-#include "local_assembler_for_operators.hpp"
+#include "local_assembler_for_integral_operators.hpp"
 
 #include "_2d_array.hpp"
 #include "accuracy_options.hpp"
@@ -65,7 +65,7 @@ template <typename CoordinateType> class DoubleQuadratureRuleFamily;
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
 class DefaultLocalAssemblerForIntegralOperatorsOnSurfaces :
-        public LocalAssemblerForOperators<ResultType>
+        public LocalAssemblerForIntegralOperators<ResultType>
 {
 public:
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
@@ -103,10 +103,6 @@ public:
             const std::vector<int>& trialElementIndices,
             Fiber::_2dArray<arma::Mat<ResultType> >& result,
             CoordinateType nominalDistance = -1.);
-
-    virtual void evaluateLocalWeakForms(
-            const std::vector<int>& elementIndices,
-            std::vector<arma::Mat<ResultType> >& result);
 
     virtual CoordinateType estimateRelativeScale(CoordinateType minDist) const;
 

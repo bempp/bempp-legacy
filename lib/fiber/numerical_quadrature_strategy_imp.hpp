@@ -63,7 +63,7 @@ NumericalQuadratureStrategyBase(
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+std::auto_ptr<LocalAssemblerForLocalOperators<ResultType> >
 NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForIdentityOperators(
@@ -89,7 +89,7 @@ makeAssemblerForIdentityOperators(
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+std::auto_ptr<LocalAssemblerForLocalOperators<ResultType> >
 NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForLocalOperators(
@@ -105,7 +105,7 @@ makeAssemblerForLocalOperators(
     typedef DefaultLocalAssemblerForLocalOperatorsOnSurfaces<
             BasisFunctionType, ResultType, GeometryFactory>
             LocalAssemblerForLocalOperators_;
-    return std::auto_ptr<LocalAssemblerForOperators<ResultType> >(
+    return std::auto_ptr<LocalAssemblerForLocalOperators<ResultType> >(
                 new LocalAssemblerForLocalOperators_(
                     geometryFactory, rawGeometry,
                     testShapesets, trialShapesets,
@@ -119,7 +119,7 @@ makeAssemblerForLocalOperators(
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >
 NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForIntegralOperatorsImplRealKernel(
@@ -142,7 +142,7 @@ makeAssemblerForIntegralOperatorsImplRealKernel(
     typedef DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
             BasisFunctionType, KernelType, ResultType, GeometryFactory>
             LocalAssemblerForIntegralOperators_;
-    return std::auto_ptr<LocalAssemblerForOperators<ResultType> >(
+    return std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >(
                 new LocalAssemblerForIntegralOperators_(
                     testGeometryFactory, trialGeometryFactory,
                     testRawGeometry, trialRawGeometry,
@@ -361,7 +361,7 @@ NumericalQuadratureStrategy(
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >
 NumericalQuadratureStrategy<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForIntegralOperatorsImplComplexKernel(
@@ -384,7 +384,7 @@ makeAssemblerForIntegralOperatorsImplComplexKernel(
     typedef DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
             BasisFunctionType, KernelType, ResultType, GeometryFactory>
             LocalAssemblerForIntegralOperators_;
-    return std::auto_ptr<LocalAssemblerForOperators<ResultType> >(
+    return std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >(
                 new LocalAssemblerForIntegralOperators_(
                     testGeometryFactory, trialGeometryFactory,
                     testRawGeometry, trialRawGeometry,
@@ -497,29 +497,6 @@ makeAssemblerForPotentialOperatorsImplComplexKernel(
                         rawGeometry, trialShapesets),
                     this->singleQuadratureRuleFamily()));
 }
-
-// template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
-// NumericalQuadratureStrategy<
-//         BasisFunctionType, ResultType, GeometryFactory,
-//         typename boost::enable_if<
-//         boost::is_same<ResultType,
-//         typename ScalarTraits<ResultType>::RealType> >::type>::
-// NumericalQuadratureStrategy() :
-//     Base()
-// {
-// }
-
-// template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
-// NumericalQuadratureStrategy<
-//         BasisFunctionType, ResultType, GeometryFactory,
-//         typename boost::enable_if<
-//         boost::is_same<ResultType,
-//         typename ScalarTraits<ResultType>::RealType> >::type>::
-// NumericalQuadratureStrategy(
-//         const AccuracyOptionsEx& accuracyOptions) :
-//     Base(accuracyOptions)
-// {
-// }
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
 NumericalQuadratureStrategy<

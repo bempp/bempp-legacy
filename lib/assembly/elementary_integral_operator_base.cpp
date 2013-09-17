@@ -18,21 +18,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "elementary_abstract_boundary_operator.hpp"
+#include "elementary_integral_operator_base.hpp"
 
 #include "context.hpp"
 #include "discrete_sparse_boundary_operator.hpp"
 #include "numerical_quadrature_strategy.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/local_assembler_for_operators.hpp"
+#include "../fiber/local_assembler_for_integral_operators.hpp"
 
 namespace Bempp
 {
 
 template <typename BasisFunctionType, typename ResultType>
-ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::
-ElementaryAbstractBoundaryOperator(
+ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>::
+ElementaryIntegralOperatorBase(
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
@@ -43,24 +43,14 @@ ElementaryAbstractBoundaryOperator(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::
-~ElementaryAbstractBoundaryOperator()
+ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>::
+~ElementaryIntegralOperatorBase()
 {
 }
 
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteBoundaryOperator<ResultType> >
-ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::
-assembleWeakFormInternal(
-        LocalAssembler& assembler,
-        const AssemblyOptions& options) const
-{
-    return assembleWeakFormInternalImpl(assembler, options);
-}
-
-template <typename BasisFunctionType, typename ResultType>
-shared_ptr<DiscreteBoundaryOperator<ResultType> >
-ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::
+ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>::
 assembleWeakFormInternal(
         LocalAssembler& assembler,
         const Context<BasisFunctionType, ResultType>& context) const
@@ -69,27 +59,8 @@ assembleWeakFormInternal(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<DiscreteBoundaryOperator<ResultType> >
-ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::
-assembleWeakFormInternalImpl(
-        LocalAssembler& assembler,
-        const AssemblyOptions& options) const
-{
-    std::cout << "Warning: the variant of assembleWeakFormInternalImpl() with "
-                 "an AssemblyOptions object passed as the second argument is "
-                 "deprecated and will be removed in a future version of BEM++. "
-                 "Use the other variant, accepting a Context object as the "
-                 "second argument." << std::endl;
-    // possibly use more conservative accuracy options
-    NumericalQuadratureStrategy<BasisFunctionType, ResultType> quadStrategy; // fallback
-    Context<BasisFunctionType, ResultType> context(
-        make_shared_from_ref(quadStrategy), options);
-    return assembleWeakFormInternalImpl2(assembler, context);
-}
-
-template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<typename ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::LocalAssembler>
-ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler(
+std::auto_ptr<typename ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>::LocalAssembler>
+ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>::makeAssembler(
         const QuadratureStrategy& quadStrategy,
         const shared_ptr<const GeometryFactory>& testGeometryFactory,
         const shared_ptr<const GeometryFactory>& trialGeometryFactory,
@@ -112,8 +83,8 @@ ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<typename ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::LocalAssembler>
-ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler(
+std::auto_ptr<typename ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>::LocalAssembler>
+ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>::makeAssembler(
         const QuadratureStrategy& quadStrategy,
         const AssemblyOptions& options) const
 {
@@ -127,7 +98,6 @@ ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler
     shared_ptr<Fiber::OpenClHandler> openClHandler;
     shared_ptr<ShapesetPtrVector> testShapesets, trialShapesets;
     bool cacheSingularIntegrals;
-
 
     if (verbose)
         std::cout << "Collecting data for assembler construction..." << std::endl;
@@ -148,6 +118,6 @@ ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>::makeAssembler
                              cacheSingularIntegrals);
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(ElementaryAbstractBoundaryOperator);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(ElementaryIntegralOperatorBase);
 
 } // namespace Bempp
