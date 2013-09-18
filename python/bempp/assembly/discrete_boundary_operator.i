@@ -169,10 +169,17 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
             if isinstance(other,(Number,np.number)):
                 return self.__scalarMultImpl(other,self)
             elif isinstance(other,np.ndarray):
-                if len(other.shape)==0:
+                ndim = other.ndim
+                if ndim==0:
                     return self.__scalarMultImpl(other,self)
-                else:
+                elif ndim==1:
+                    return self.__matrixMultImpl(self,other[:,np.newaxis])[:,0]
+                elif ndim==2:
                     return self.__matrixMultImpl(self,other)
+                else:
+                    raise ValueError("Discrete boundary operators do not support "
+                                     "multiplication by arrays with more than 2 "
+                                     "dimensions.")
             else:
                 raise ValueError("Discrete boundary operators do not support "
                                  "multiplication with this type.")
