@@ -88,7 +88,7 @@ gridFunctionFromProjections(
     const arma::Col<ResultType>& data)
 {
     return new GridFunction<BasisFunctionType, ResultType>(
-        context, space, dualSpace, data, 
+        context, space, dualSpace, data,
         GridFunction<BasisFunctionType, ResultType>::PROJECTIONS);
 }
 
@@ -139,6 +139,13 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
     %ignore basis;
     %ignore getLocalCoefficients;
 
+    %apply const arma::Mat<float>& IN_MAT {
+        arma::Mat<float>& local
+    };
+    %apply const arma::Mat<double>& IN_MAT {
+        arma::Mat<double>& local
+    };
+
     %apply arma::Col<float>& ARGOUT_COL {
         arma::Col<float>& col_out
     };
@@ -175,7 +182,7 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
     %apply arma::Mat< double >& ARGOUT_MAT {
         arma::Mat< double >& points
     };
-  
+
     %apply arma::Mat< float >& ARGOUT_MAT {
         arma::Mat< float >& values
     };
@@ -196,7 +203,7 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
     void _evaluateAtSpecialPoints(
             VtkWriter::DataType dataType,
             arma::Mat<CoordinateType>& points, arma::Mat<ResultType>& values) const {
-        $self->evaluateAtSpecialPoints(dataType, points, values); 
+        $self->evaluateAtSpecialPoints(dataType, points, values);
     }
 
     %pythoncode %{
@@ -207,7 +214,7 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
        else:
           return values
     %}
-    
+
     void coefficients(arma::Col<ResultType>& col_out)
     {
         col_out = $self->coefficients();
@@ -275,8 +282,15 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
 
           from visualization import plotGridFunction
           plotGridFunction(self)
-	    %}
-   
+    %}
+
+    void evaluate(const EntityPointer<0>& ep,
+                  const arma::Mat<CoordinateType>& local,
+                  arma::Mat<ResultType>& values) const {
+        $self->evaluate(ep.entity(), local, values);
+    }
+
+    %ignore evaluate;
 }
 
 %ignore gridFunctionFromFiberFunction;
@@ -303,6 +317,8 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(exportToVtk);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(exportToGmsh);
 
 
+%clear const arma::Mat<float>& local;
+%clear const arma::Mat<double>& local;
 
 %clear arma::Col<float>& col_out;
 %clear arma::Col<double>& col_out;
@@ -320,7 +336,7 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(exportToGmsh);
 %clear arma::Mat<double>& values;
 %clear arma::Mat<std::complex<float> >& values;
 %clear arma::Mat<std::complex<double> >& values;
- 
+
 %clear arma::Mat<float>& data;
 %clear arma::Mat<double>& data;
 %clear arma::Mat<std::complex<float> >& data;
