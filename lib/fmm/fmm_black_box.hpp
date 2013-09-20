@@ -25,6 +25,18 @@
 
 #include "../common/armadillo_fwd.hpp"
 #include "../fiber/scalar_traits.hpp"
+#include "../common/shared_ptr.hpp"
+
+
+namespace Fiber
+{
+
+/** \cond FORWARD_DECL */
+template <typename KernelType> class CollectionOfKernels;
+template <typename KernelFunctor> class DefaultCollectionOfKernels;
+/** \endcond */
+
+} // namespace Fiber
 
 namespace Bempp
 {
@@ -33,17 +45,15 @@ namespace Bempp
 template <typename ValueType> class FmmTransform;
 /** \endcond */
 
-template <typename ValueType>
+template <typename KernelType, typename ValueType>
 class FmmBlackBox : public FmmTransform<ValueType>
 {
 public:
 	typedef typename FmmTransform<ValueType>::CoordinateType CoordinateType;
+	typedef Fiber::CollectionOfKernels<KernelType> CollectionOfKernels;
 
-	FmmBlackBox(unsigned int n)
-	 : m_n(n), m_Tk(n, n), FmmTransform<ValueType>(n*n*n, true)
-	{
-		generateGaussPoints();
-	}
+	template <typename KernelFunctor>
+	FmmBlackBox(const KernelFunctor& kernelFunctor, unsigned int n);
 
 	// multipole to multipole (M2M) translation matrix
 	virtual arma::Mat<ValueType> M2M(
@@ -90,16 +100,33 @@ protected:
 private:
 	unsigned int m_n;
 	arma::Mat<CoordinateType> m_Tk;
+	shared_ptr<CollectionOfKernels> m_kernels;
 };
 
-template <typename ValueType>
-class FmmSingleLayerBlackBox : public FmmBlackBox<ValueType>
+// Constructor cannot be placed in fmm_black_box.hpp, otherwise a linker error 
+// results based on general_elementary_singular_integral_operator_imp.hpp. Note 
+// that the very reason for the presence of the imp files is to avoid linker 
+// errors. They are (and must be) directly included, yet they contain code.
+template <typename KernelType, typename ValueType>
+template <typename KernelFunctor>
+FmmBlackBox<KernelType, ValueType>::FmmBlackBox(
+	const KernelFunctor& kernelFunctor, unsigned int n)
+ :	m_kernels(
+        new Fiber::DefaultCollectionOfKernels<KernelFunctor>(kernelFunctor)),
+	m_n(n), m_Tk(n, n), FmmTransform<ValueType>(n*n*n, true)
+{
+	generateGaussPoints();
+}
+
+template <typename KernelType, typename ValueType>
+class FmmSingleLayerBlackBox : public FmmBlackBox<KernelType, ValueType>
 {
 public:
-	typedef typename FmmBlackBox<ValueType>::CoordinateType CoordinateType;
+	typedef typename FmmBlackBox<KernelType, ValueType>::CoordinateType CoordinateType;
 
-	FmmSingleLayerBlackBox(unsigned int n)
-		: FmmBlackBox<ValueType>(n) {}
+	template <typename KernelFunctor>
+	FmmSingleLayerBlackBox(const KernelFunctor& kernelFunctor, unsigned int n)
+		: FmmBlackBox<KernelType, ValueType>(kernelFunctor, n) {}
 
 	virtual void evaluateTrial(
 			const arma::Col<CoordinateType>& point,
@@ -118,14 +145,15 @@ public:
 			arma::Col<ValueType>& result) const;
 };
 
-template <typename ValueType>
-class FmmDoubleLayerBlackBox : public FmmBlackBox<ValueType>
+template <typename KernelType, typename ValueType>
+class FmmDoubleLayerBlackBox : public FmmBlackBox<KernelType, ValueType>
 {
 public:
-	typedef typename FmmBlackBox<ValueType>::CoordinateType CoordinateType;
+	typedef typename FmmBlackBox<KernelType, ValueType>::CoordinateType CoordinateType;
 
-	FmmDoubleLayerBlackBox(unsigned int n)
-		: FmmBlackBox<ValueType>(n) {}
+	template <typename KernelFunctor>
+	FmmDoubleLayerBlackBox(const KernelFunctor& kernelFunctor, unsigned int n)
+		: FmmBlackBox<KernelType, ValueType>(kernelFunctor, n) {}
 
 	virtual void evaluateTrial(
 			const arma::Col<CoordinateType>& point,
@@ -144,14 +172,15 @@ public:
 			arma::Col<ValueType>& result) const;
 };
 
-template <typename ValueType>
-class FmmAdjointDoubleLayerBlackBox : public FmmBlackBox<ValueType>
+template <typename KernelType, typename ValueType>
+class FmmAdjointDoubleLayerBlackBox : public FmmBlackBox<KernelType, ValueType>
 {
 public:
-	typedef typename FmmBlackBox<ValueType>::CoordinateType CoordinateType;
+	typedef typename FmmBlackBox<KernelType, ValueType>::CoordinateType CoordinateType;
 
-	FmmAdjointDoubleLayerBlackBox(unsigned int n)
-		: FmmBlackBox<ValueType>(n) {}
+	template <typename KernelFunctor>
+	FmmAdjointDoubleLayerBlackBox(const KernelFunctor& kernelFunctor, unsigned int n)
+		: FmmBlackBox<KernelType, ValueType>(kernelFunctor, n) {}
 
 	virtual void evaluateTrial(
 			const arma::Col<CoordinateType>& point,
@@ -170,14 +199,15 @@ public:
 			arma::Col<ValueType>& result) const;
 };
 
-template <typename ValueType>
-class FmmHypersingularBlackBox : public FmmBlackBox<ValueType>
+template <typename KernelType, typename ValueType>
+class FmmHypersingularBlackBox : public FmmBlackBox<KernelType, ValueType>
 {
 public:
-	typedef typename FmmBlackBox<ValueType>::CoordinateType CoordinateType;
+	typedef typename FmmBlackBox<KernelType, ValueType>::CoordinateType CoordinateType;
 
-	FmmHypersingularBlackBox(unsigned int n)
-		: FmmBlackBox<ValueType>(n) {}
+	template <typename KernelFunctor>
+	FmmHypersingularBlackBox(const KernelFunctor& kernelFunctor, unsigned int n)
+		: FmmBlackBox<KernelType, ValueType>(kernelFunctor, n) {}
 
 	virtual void evaluateTrial(
 			const arma::Col<CoordinateType>& point,

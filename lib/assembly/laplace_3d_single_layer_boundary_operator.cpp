@@ -72,8 +72,8 @@ laplace3dSingleLayerBoundaryOperator(
     shared_ptr<FmmTransform<ResultType> > fmmTransform;
     if (assemblyOptions.assemblyMode() == AssemblyOptions::FMM) {
         const FmmOptions& fmmOptions = assemblyOptions.fmmOptions();
-        fmmTransform = boost::make_shared<FmmSingleLayerBlackBox<ResultType> >
-            (fmmOptions.L);
+        fmmTransform = boost::make_shared<FmmSingleLayerBlackBox<KernelType, ResultType> >
+            (KernelFunctor(), fmmOptions.L);
     }
 
     typedef GeneralElementarySingularIntegralOperator<

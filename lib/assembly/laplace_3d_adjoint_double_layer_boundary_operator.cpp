@@ -27,6 +27,7 @@
 #include "../fiber/explicit_instantiation.hpp"
 
 #include "../fiber/laplace_3d_adjoint_double_layer_potential_kernel_functor.hpp"
+#include "../fiber/laplace_3d_single_layer_potential_kernel_functor.hpp"
 #include "../fiber/scalar_function_value_functor.hpp"
 #include "../fiber/simple_test_scalar_kernel_trial_integrand_functor.hpp"
 
@@ -59,6 +60,8 @@ laplace3dAdjointDoubleLayerBoundaryOperator(
 
     typedef Fiber::Laplace3dAdjointDoubleLayerPotentialKernelFunctor<KernelType>
     KernelFunctor;
+    typedef Fiber::Laplace3dSingleLayerPotentialKernelFunctor<KernelType>
+    FmmKernelFunctor;
     typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
     TransformationFunctor;
     typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
@@ -67,8 +70,8 @@ laplace3dAdjointDoubleLayerBoundaryOperator(
     shared_ptr<FmmTransform<ResultType> > fmmTransform;
     if (assemblyOptions.assemblyMode() == AssemblyOptions::FMM) {
         const FmmOptions& fmmOptions = assemblyOptions.fmmOptions();
-        fmmTransform = boost::make_shared<FmmAdjointDoubleLayerBlackBox<ResultType> >
-            (fmmOptions.L);
+        fmmTransform = boost::make_shared<FmmAdjointDoubleLayerBlackBox<KernelType, ResultType> >
+            (FmmKernelFunctor(), fmmOptions.L);
     }
 
     typedef GeneralElementarySingularIntegralOperator<

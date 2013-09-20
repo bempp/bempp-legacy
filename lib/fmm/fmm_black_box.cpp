@@ -22,6 +22,10 @@
 #include "fmm_transform.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
+#include "../fiber/collection_of_kernels.hpp"
+#include "../fiber/geometrical_data.hpp"
+#include "../fiber/collection_of_4d_arrays.hpp"
+
 #include <iostream>		// std::cout
 #include <limits>
 
@@ -39,8 +43,8 @@ void chebyshev(ValueType *Tk, unsigned int N, ValueType x, int kind=1)
 	}
 }
 
-template <typename ValueType>
-void FmmBlackBox<ValueType>::generateGaussPoints()
+template <typename KernelType, typename ValueType>
+void FmmBlackBox<KernelType, ValueType>::generateGaussPoints()
 {
 	// calculate the Chebyshev nodes, the N zeros of T_N(x)
 	CoordinateType nodes[m_n];
@@ -73,8 +77,8 @@ void FmmBlackBox<ValueType>::generateGaussPoints()
 
 } // FmmBlackBox<ValueType>::generateGaussPoints()
 
-template <typename ValueType>
-arma::Mat<ValueType> FmmBlackBox<ValueType>::M2M(
+template <typename KernelType, typename ValueType>
+arma::Mat<ValueType> FmmBlackBox<KernelType, ValueType>::M2M(
 		const arma::Col<CoordinateType>& childPosition,
 		const arma::Col<CoordinateType>& parentPosition) const
 {
@@ -141,8 +145,8 @@ arma::Mat<ValueType> FmmBlackBox<ValueType>::M2M(
 	return S3;
 }
 
-template <typename ValueType>
-arma::Mat<ValueType> FmmBlackBox<ValueType>::L2L(
+template <typename KernelType, typename ValueType>
+arma::Mat<ValueType> FmmBlackBox<KernelType, ValueType>::L2L(
 		const arma::Col<CoordinateType>& parentPosition,
 		const arma::Col<CoordinateType>& childPosition) const
 {
@@ -150,69 +154,64 @@ arma::Mat<ValueType> FmmBlackBox<ValueType>::L2L(
 	return M2M(childPosition, parentPosition).st();
 }
 
-
-template <typename ValueType>
-ValueType 
-evalKernel(
-	const arma::Col<ValueType>& fieldPos, 
-	const arma::Col<ValueType>& sourcePos)
-{
-	arma::Col<ValueType> R = fieldPos - sourcePos;
-	return 1./(4*M_PI*norm(R, 2));
-}
-
-template <typename ValueType>
+template <typename KernelType, typename ValueType>
 arma::Mat<ValueType> 
-FmmBlackBox<ValueType>::M2L(
+FmmBlackBox<KernelType, ValueType>::M2L(
 		const arma::Col<CoordinateType>& sourceCentre, // loops over interaction list
 		const arma::Col<CoordinateType>& fieldCentre,  // origin
 		const arma::Col<CoordinateType>& boxSize) const
 {
+	Fiber::GeometricalData<CoordinateType> fieldData;
+	Fiber::GeometricalData<CoordinateType> sourceData;
+
+	CoordinateType n3 = getN()*getN()*getN();
+	fieldData.globals.set_size(3, n3);
+	sourceData.globals.set_size(3, n3);
+
 	arma::Mat<CoordinateType> fieldNodes (getN(), 3);
 	arma::Mat<CoordinateType> sourceNodes(getN(), 3);
-
 	for (unsigned int dim = 0; dim < boxSize.n_rows; dim++) {
 		fieldNodes.col (dim) = (m_Tk.col(1)*boxSize(dim)/2 + fieldCentre (dim));
 		sourceNodes.col(dim) = (m_Tk.col(1)*boxSize(dim)/2 + sourceCentre(dim));
 	}
 
-	CoordinateType n3 = getN()*getN()*getN();
-	arma::Mat<ValueType> T3(n3, n3);
-
-	arma::Col<CoordinateType> fieldPos (fieldCentre.n_rows);
-	arma::Col<CoordinateType> sourcePos(sourceCentre.n_rows);
+	arma::Row<CoordinateType> fieldPos (fieldCentre.n_rows);
+	arma::Row<CoordinateType> sourcePos(sourceCentre.n_rows);
 	unsigned int m = 0;
 	for (unsigned int m1 = 0; m1 < getN(); m1++) {
 		fieldPos(0) = fieldNodes(m1, 0);
+		sourcePos(0) = sourceNodes(m1, 0);
 		for (unsigned int m2 = 0; m2 < getN(); m2++) {
 			fieldPos(1) = fieldNodes(m2, 1);
+			sourcePos(1) = sourceNodes(m2, 1);
 			for (unsigned int m3 = 0; m3 < getN(); m3++) {
 				fieldPos(2) = fieldNodes(m3, 2);
-				unsigned int n = 0;
-				for (unsigned int n1 = 0; n1 < getN(); n1++) {
-					sourcePos(0) = sourceNodes(n1, 0);
-					for (unsigned int n2 = 0; n2 < getN(); n2++) {
-						sourcePos(1) = sourceNodes(n2, 1);
-						for (unsigned int n3 = 0; n3 < getN(); n3++) {
-							sourcePos(2) = sourceNodes(n3, 2);
-							T3(m, n) = evalKernel(fieldPos, sourcePos);
-							n++;
-						} // for n3
-					} // for n2
-				} // for n1
+				sourcePos(2) = sourceNodes(m3, 2);
+				fieldData.globals.col(m) = fieldPos;
+				sourceData.globals.col(m) = sourcePos;
 				m++;
 			} // for m3
 		} // for m2
 	} // for m1
-	
+
+	Fiber::CollectionOf4dArrays<KernelType> result;
+	m_kernels->evaluateOnGrid(fieldData, sourceData, result);
+
+	arma::Mat<ValueType> T3(n3, n3);
+	for (unsigned int m = 0; m < n3; m++) {
+		for (unsigned int n = 0; n < n3; n++) {
+			T3(m, n) = result.slice(m, n)[0](0,0);
+		}
+	}
 	return T3;
 }
 
+
 // return the weight used to premultiply the Kernel prior to performing the 
 // low rank approximation via SVD.
-template <typename ValueType>
+template <typename KernelType, typename ValueType>
 void 
-FmmBlackBox<ValueType>::getKernelWeight(
+FmmBlackBox<KernelType, ValueType>::getKernelWeight(
 	arma::Mat<ValueType>& kernelWeightMat,
 	arma::Col<ValueType>& kernelWeightVec) const
 {
@@ -240,8 +239,8 @@ FmmBlackBox<ValueType>::getKernelWeight(
 }
 
 
-template <typename ValueType>
-void FmmBlackBox<ValueType>::evaluateAtGaussPointS(
+template <typename KernelType, typename ValueType>
+void FmmBlackBox<KernelType, ValueType>::evaluateAtGaussPointS(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& multipole, // [-1,1]
@@ -276,8 +275,8 @@ void FmmBlackBox<ValueType>::evaluateAtGaussPointS(
 	result(0) =  S;
 }
 
-template <typename ValueType>
-void FmmBlackBox<ValueType>::evaluateAtGaussPointDiffS(
+template <typename KernelType, typename ValueType>
+void FmmBlackBox<KernelType, ValueType>::evaluateAtGaussPointDiffS(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& multipole, // [-1,1]
@@ -315,8 +314,8 @@ void FmmBlackBox<ValueType>::evaluateAtGaussPointDiffS(
 
 // FmmSingleLayerHighFreqFMM
 
-template <typename ValueType>
-void FmmSingleLayerBlackBox<ValueType>::evaluateTrial(
+template <typename KernelType, typename ValueType>
+void FmmSingleLayerBlackBox<KernelType, ValueType>::evaluateTrial(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& multipole, // [-1,1]
@@ -328,8 +327,8 @@ void FmmSingleLayerBlackBox<ValueType>::evaluateTrial(
 		nodeCentre, nodeSize, result);
 }
 
-template <typename ValueType>
-void FmmSingleLayerBlackBox<ValueType>::evaluateTest(
+template <typename KernelType, typename ValueType>
+void FmmSingleLayerBlackBox<KernelType, ValueType>::evaluateTest(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& multipole,
@@ -344,8 +343,8 @@ void FmmSingleLayerBlackBox<ValueType>::evaluateTest(
 
 // FmmDoubleLayerBlackBox
 
-template <typename ValueType>
-void FmmDoubleLayerBlackBox<ValueType>::evaluateTrial(
+template <typename KernelType, typename ValueType>
+void FmmDoubleLayerBlackBox<KernelType, ValueType>::evaluateTrial(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& multipole, // [-1,1]
@@ -357,8 +356,8 @@ void FmmDoubleLayerBlackBox<ValueType>::evaluateTrial(
 		nodeCentre, nodeSize, result);
 }
 
-template <typename ValueType>
-void FmmDoubleLayerBlackBox<ValueType>::evaluateTest(
+template <typename KernelType, typename ValueType>
+void FmmDoubleLayerBlackBox<KernelType, ValueType>::evaluateTest(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& multipole,
@@ -372,8 +371,8 @@ void FmmDoubleLayerBlackBox<ValueType>::evaluateTest(
 
 // FmmAdjointDoubleLayerBlackBox
 
-template <typename ValueType>
-void FmmAdjointDoubleLayerBlackBox<ValueType>::evaluateTrial(
+template <typename KernelType, typename ValueType>
+void FmmAdjointDoubleLayerBlackBox<KernelType, ValueType>::evaluateTrial(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& multipole, // [-1,1]
@@ -385,8 +384,9 @@ void FmmAdjointDoubleLayerBlackBox<ValueType>::evaluateTrial(
 		nodeCentre, nodeSize, result);
 }
 
-template <typename ValueType>
-void FmmAdjointDoubleLayerBlackBox<ValueType>::evaluateTest(
+
+template <typename KernelType, typename ValueType>
+void FmmAdjointDoubleLayerBlackBox<KernelType, ValueType>::evaluateTest(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& multipole,
@@ -400,8 +400,8 @@ void FmmAdjointDoubleLayerBlackBox<ValueType>::evaluateTest(
 
 // FmmHypersingularBlackBox
 
-template <typename ValueType>
-void FmmHypersingularBlackBox<ValueType>::evaluateTrial(
+template <typename KernelType, typename ValueType>
+void FmmHypersingularBlackBox<KernelType, ValueType>::evaluateTrial(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& multipole, // [-1,1]
@@ -413,8 +413,8 @@ void FmmHypersingularBlackBox<ValueType>::evaluateTrial(
 		nodeCentre, nodeSize, result);
 }
 
-template <typename ValueType>
-void FmmHypersingularBlackBox<ValueType>::evaluateTest(
+template <typename KernelType, typename ValueType>
+void FmmHypersingularBlackBox<KernelType, ValueType>::evaluateTest(
 			const arma::Col<CoordinateType>& point,
 			const arma::Col<CoordinateType>& normal,
 			const arma::Col<CoordinateType>& multipole,
@@ -428,10 +428,13 @@ void FmmHypersingularBlackBox<ValueType>::evaluateTest(
 	result = -result;
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(FmmBlackBox);
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(FmmSingleLayerBlackBox);
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(FmmDoubleLayerBlackBox);
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(FmmAdjointDoubleLayerBlackBox);
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(FmmHypersingularBlackBox);
+// should be templated on KernelType and ResultType, but not added to explicit 
+// instantiation yet. The following is equivalent.
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(FmmBlackBox);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(FmmSingleLayerBlackBox);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(FmmDoubleLayerBlackBox);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(FmmAdjointDoubleLayerBlackBox);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(FmmHypersingularBlackBox);
+//FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT;
 
 } // namespace Bempp
