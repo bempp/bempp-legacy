@@ -521,7 +521,12 @@ DiscreteBlockedBoundaryOperator(
                             "DiscreteBlockedBoundaryOperator::"
                             "DiscreteBlockedBoundaryOperator(): "
                             "block (" + toString(row) + ", " + toString(col) + ") "
-                            "has incorrect dimensions");
+                            "has incorrect dimensions (" +
+                            toString(blocks(row, col)->rowCount()) + ", " +
+                            toString(blocks(row, col)->columnCount()) +
+                            "); expected (" +
+                            toString(rowCounts[row]) + ", " +
+                            toString(columnCounts[col]) + ")");
             }
 #ifdef WITH_TRILINOS
     m_domainSpace = Thyra::defaultSpmdVectorSpace<ValueType>(
