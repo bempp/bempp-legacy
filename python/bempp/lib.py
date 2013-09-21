@@ -98,6 +98,27 @@ def _constructObjectTemplatedOnBasisKernelAndResult(
         raise TypeError("Class " + fullName + " does not exist.")
     return class_(*args, **kwargs)
 
+def _processBoundaryOperatorLike(boundaryOperator):
+    # Check whether boundaryOperator is in fact a nested list; if so,
+    # convert it to a BlockedBoundaryOperator
+    try:
+        element00 = boundaryOperator[0][0]
+        def findValidContext(blocks):
+            for i in range(len(blocks)):
+                for j in range(len(blocks[i])):
+                    block = blocks[i][j]
+                    if block and block.context():
+                        return block.context()
+        context = findValidContext(boundaryOperator)
+        boundaryOperator = createBlockedBoundaryOperator(
+            context, boundaryOperator)
+    except TypeError:
+        pass
+    except:
+        raise ValueError, ("Expected a BoundaryOperator or a nested list "
+                           "of BoundaryOperators")
+    return boundaryOperator
+
 def createGridFactory():
     """Return a GridFactory object"""
     return core.GridFactory
@@ -1947,7 +1968,8 @@ def createDefaultIterativeSolver(
     function.
 
     *Parameters:*
-       - boundaryOperator (BoundaryOperator or BlockedBoundaryOperator)
+       - boundaryOperator (BoundaryOperator, BlockedBoundaryOperator or a nested
+                           list convertible to a BlockedBoundaryOperator)
             The boundary operator A standing on the left-hand-side of the
             equation to be solved.
        - convergenceTestMode (string)
@@ -1968,6 +1990,8 @@ def createDefaultIterativeSolver(
     boundaryOperator argument and equal to either float32, float64, complex64 or
     complex128.
     """
+
+    boundaryOperator = _processBoundaryOperatorLike(boundaryOperator)
     basisFunctionType = boundaryOperator.basisFunctionType()
     resultType = boundaryOperator.resultType()
     result = _constructObjectTemplatedOnBasisAndResult(
@@ -1988,7 +2012,8 @@ def createDefaultDirectSolver(
     function.
 
     *Parameters:*
-       - boundaryOperator (BoundaryOperator or BlockedBoundaryOperator)
+       - boundaryOperator (BoundaryOperator, BlockedBoundaryOperator or a nested
+                           list convertible to a BlockedBoundaryOperator)
             The boundary operator A standing on the left-hand-side of the
             equation to be solved.
 
@@ -1998,6 +2023,8 @@ def createDefaultDirectSolver(
     boundaryOperator argument and equal to either float32, float64, complex64 or
     complex128.
     """
+
+    boundaryOperator = _processBoundaryOperatorLike(boundaryOperator)
     basisFunctionType = boundaryOperator.basisFunctionType()
     resultType = boundaryOperator.resultType()
     result = _constructObjectTemplatedOnBasisAndResult(

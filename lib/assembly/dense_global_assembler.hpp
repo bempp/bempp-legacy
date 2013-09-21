@@ -9,7 +9,7 @@ namespace Fiber
 {
 
 /** \cond FORWARD_DECL */
-template <typename ResultType> class LocalAssemblerForOperators;
+template <typename ResultType> class LocalAssemblerForIntegralOperators;
 /** \endcond */
 
 } // namespace Fiber
@@ -31,14 +31,14 @@ template <typename BasisFunctionType, typename ResultType>
 class DenseGlobalAssembler
 {
 public:
-    typedef Fiber::LocalAssemblerForOperators<ResultType>
-    LocalAssemblerForBoundaryOperators;
+    typedef Fiber::LocalAssemblerForIntegralOperators<ResultType>
+    LocalAssemblerForIntegralOperators;
 
     static std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
     assembleDetachedWeakForm(
             const Space<BasisFunctionType>& testSpace,
             const Space<BasisFunctionType>& trialSpace,
-            LocalAssemblerForBoundaryOperators& assembler,
+            LocalAssemblerForIntegralOperators& assembler,
             const Context<BasisFunctionType, ResultType>& context);
 };
 

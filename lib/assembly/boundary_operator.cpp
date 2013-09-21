@@ -310,9 +310,9 @@ GridFunction<BasisFunctionType, ResultType> operator*(
 
     shared_ptr<const Space<BasisFunctionType> > space = op.range();
     shared_ptr<const Space<BasisFunctionType> > dualSpace = op.dualToRange();
-    arma::Col<ResultType> coefficients(space->globalDofCount());
-    coefficients.fill(0.);
-    GF result(op.context(), space, coefficients);
+    arma::Col<ResultType> projections(dualSpace->globalDofCount());
+    projections.fill(0.);
+    GF result(op.context(), space, dualSpace, projections);
     op.apply(NO_TRANSPOSE, fun, result, 1., 0.);
     return result;
 }

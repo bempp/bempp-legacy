@@ -38,7 +38,7 @@
 #include "../common/chunk_statistics.hpp"
 #include "../common/to_string.hpp"
 #include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/local_assembler_for_operators.hpp"
+#include "../fiber/local_assembler_for_integral_operators.hpp"
 #include "../fiber/local_assembler_for_potential_operators.hpp"
 #include "../fiber/serial_blas_region.hpp"
 #include "../fiber/scalar_traits.hpp"
@@ -636,8 +636,8 @@ std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
 AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
-        const std::vector<LocalAssemblerForBoundaryOperators*>& localAssemblers,
-        const std::vector<LocalAssemblerForBoundaryOperators*>&
+        const std::vector<LocalAssemblerForIntegralOperators*>& localAssemblers,
+        const std::vector<LocalAssemblerForIntegralOperators*>&
         localAssemblersForAdmissibleBlocks,
         const std::vector<const DiscreteBndOp*>& sparseTermsToAdd,
         const std::vector<ResultType>& denseTermMultipliers,
@@ -888,12 +888,12 @@ std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
 AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
-        LocalAssemblerForBoundaryOperators& localAssembler,
-        LocalAssemblerForBoundaryOperators& localAssemblerForAdmissibleBlocks,
+        LocalAssemblerForIntegralOperators& localAssembler,
+        LocalAssemblerForIntegralOperators& localAssemblerForAdmissibleBlocks,
         const Context<BasisFunctionType, ResultType>& context,
         int symmetry)
 {
-    typedef LocalAssemblerForBoundaryOperators Assembler;
+    typedef LocalAssemblerForIntegralOperators Assembler;
     std::vector<Assembler*> localAssemblers(1, &localAssembler);
     std::vector<Assembler*> localAssemblersForAdmissibleBlocks(
                 1, &localAssemblerForAdmissibleBlocks);

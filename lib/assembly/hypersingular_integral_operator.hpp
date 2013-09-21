@@ -116,7 +116,7 @@ public:
     /** \copydoc AbstractBoundaryOperator::QuadratureStrategy */
     typedef typename Base::QuadratureStrategy QuadratureStrategy;
     /** \brief Type of the appropriate instantiation of Fiber::LocalAssemblerForOperators. */
-    typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
+    typedef Fiber::LocalAssemblerForIntegralOperators<ResultType> LocalAssembler;
     /** \brief Type of the values of the (components of the) kernel functions. */
     typedef KernelType_ KernelType;
     /** \brief Type of the appropriate instantiation of Fiber::CollectionOfShapesetTransformations. */

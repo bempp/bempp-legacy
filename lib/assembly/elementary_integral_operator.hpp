@@ -23,7 +23,7 @@
 
 #include "../common/common.hpp"
 
-#include "elementary_abstract_boundary_operator.hpp"
+#include "elementary_integral_operator_base.hpp"
 #include "../common/multidimensional_arrays.hpp"
 #include "../common/types.hpp"
 #include "../fiber/types.hpp"
@@ -97,19 +97,19 @@ template <typename ValueType> class InterpolatedFunction;
  *  must be set to the same type. */
 template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
 class ElementaryIntegralOperator :
-        public ElementaryAbstractBoundaryOperator<BasisFunctionType_, ResultType_>
+        public ElementaryIntegralOperatorBase<BasisFunctionType_, ResultType_>
 {
-    typedef ElementaryAbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
+    typedef ElementaryIntegralOperatorBase<BasisFunctionType_, ResultType_> Base;
 public:
-    /** \copydoc ElementaryAbstractBoundaryOperator::BasisFunctionType */
+    /** \copydoc ElementaryIntegralOperatorBase::BasisFunctionType */
     typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc ElementaryAbstractBoundaryOperator::ResultType */
+    /** \copydoc ElementaryIntegralOperatorBase::ResultType */
     typedef typename Base::ResultType ResultType;
-    /** \copydoc ElementaryAbstractBoundaryOperator::CoordinateType */
+    /** \copydoc ElementaryIntegralOperatorBase::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc ElementaryAbstractBoundaryOperator::QuadratureStrategy */
+    /** \copydoc ElementaryIntegralOperatorBase::QuadratureStrategy */
     typedef typename Base::QuadratureStrategy QuadratureStrategy;
-    /** \copydoc ElementaryAbstractBoundaryOperator::LocalAssembler */
+    /** \copydoc ElementaryIntegralOperatorBase::LocalAssembler */
     typedef typename Base::LocalAssembler LocalAssembler;
     /** \brief Type of the values of the (components of the) kernel functions. */
     typedef KernelType_ KernelType;

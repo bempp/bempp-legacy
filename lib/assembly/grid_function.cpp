@@ -282,7 +282,7 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
                     "space and dualSpace must be defined on the same grid");
 
     if (mode == APPROXIMATE)
-        setProjections(*m_dualSpace,
+        setProjections(m_dualSpace,
                        *calculateProjections(*context, function, *m_dualSpace));
     else // mode == INTERPOLATE
         setCoefficients(interpolate(function, *m_space));
@@ -419,7 +419,7 @@ void GridFunction<BasisFunctionType, ResultType>::initializeFromProjections(
                 "GridFunction::initializeFromProjections(): "
                 "the projections vector has incorrect length");
     m_context = context;
-    setProjections(*m_dualSpace, projections);
+    setProjections(m_dualSpace, projections);
 }
 
 template <typename BasisFunctionType, typename ResultType>
