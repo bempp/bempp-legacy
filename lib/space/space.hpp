@@ -248,9 +248,10 @@ public:
     virtual const CollectionOfShapesetTransformations&
     basisFunctionValue() const {
         throw NotImplementedError(
-                    "Space::basisFunctionValue(): not implemented.\nNote that the "
-                    "Space::shapeFunctionValue() function has been renamed to basisFunctionValue(). "
-                    "If you have implemented shapeFunctionValue() in a subclass of Space, "
+                    "Space::basisFunctionValue(): not implemented.\n"
+                    "Note that the Space::shapeFunctionValue() function has "
+                    "been renamed to basisFunctionValue(). If you have "
+                    "implemented shapeFunctionValue() in a subclass of Space, "
                     "please implement basisFunctionValue() instead.");
     }
 
@@ -311,13 +312,34 @@ public:
     /** \brief Map local degrees of freedom residing on an element to global
      *  degrees of freedom.
      *
-     *  \param[in] element An element of the grid grid().
-     *  \param[out] dofs   Indices of the global degrees of freedom
-     *                     corresponding to the local degrees of freedom
-     *                     residing on \p element. */
+     *  \param[in] element
+     *    An element of the grid grid().
+     *  \param[out] dofs
+     *    Vector whose <em>i</em>th element is the index of the global degrees
+     *    of freedom to which the <em>i</em>th local degree of freedom residing
+     *    on \p element contributes. A negative number means that a given local
+     *    degree of freedom does not contribute to any global one.
+     *
+     *  \note This function is deprecated. Use the other overload taking the
+     *  additional output parameter \p localDofWeights.
+     */
     virtual void getGlobalDofs(const Entity<0>& element,
                                std::vector<GlobalDofIndex>& dofs) const;
 
+    /** \brief Map local degrees of freedom residing on an element to global
+     *  degrees of freedom.
+     *
+     *  \param[in] element
+     *    An element of the grid grid().
+     *  \param[out] dofs
+     *    Vector whose <em>i</em>th element is the index of the global degrees
+     *    of freedom to which the <em>i</em>th local degree of freedom residing
+     *    on \p element contributes. A negative number means that a given local
+     *    degree of freedom does not contribute to any global one.
+     *  \param[out] localDofWeights
+     *    Vector whose <em>i</em>th element is the weight with which the
+     *    <em>i</em>th local degree of freedom residing on \p element
+     *    contributes to "its" global degree of freedom. */
     virtual void getGlobalDofs(const Entity<0>& element,
                                std::vector<GlobalDofIndex>& dofs,
                                std::vector<BasisFunctionType>& localDofWeights) const;
@@ -353,7 +375,6 @@ public:
             std::vector<std::vector<LocalDof> >& localDofs,
             std::vector<std::vector<BasisFunctionType> >& localDofWeights) const;
 
-
     /** \brief Map flat indices of local degrees of freedom to local degrees of freedom.
      *
      *  \param[in] flatLocalDofs
@@ -366,23 +387,79 @@ public:
             const std::vector<FlatLocalDofIndex>& flatLocalDofs,
             std::vector<LocalDof>& localDofs) const = 0;
 
+    /** @}
+        @name Function interpolation
+        @} */
+
+    /** \brief Retrieve the interpolation points of the global degrees of freedom.
+     *
+     *  This function, along with getNormalsAtGlobalDofInterpolationPoints()
+     *  and getGlobalDofInterpolationDirections(), can be used in the
+     *  interpolation of functions in finite-dimensional function spaces
+     *  represented with classes derived from Space. Let \f$V\f$ be a function
+     *  space defined on grid \f$\Gamma\f$ with a basis \f$(f_i)_{i=1}^N\f$ of
+     *  functions \f$f_i : \Gamma \to \mathbb{R}^n\f$ (or \f$\mathbb{C}^n\f$.
+     *  We say that this basis is *interpolatory* if there exist points \f$x_j
+     *  \in \Gamma\f$ and \f$n\f$-dimensional vectors \f$d_j$ (\f$j = 1, 2,
+     *  \cdots, N\f$ such that
+     *
+     *  \f[
+     *      f_i(x_j) \cdot d_j =
+     *      \begin{cases}
+     *         1 &\text{for} i = j,\\
+     *         0 &\text{otherwise}.
+     *      \end{cases}
+     *  \f]
+     *
+     *  For any appropriate function \f$u\f$ defined on \f$Gamma\f$ the numbers
+     *  \f$u(x_i) \cdot d_i\f$ can then be taken as the expansion coefficients
+     *  in the basis \f$(f_i)_{i=1}^N\f$ of its interpolation. ("Appropriate"
+     *  means that if, for example, the space \f$V\f$ is a space of functions
+     *  tangential to the grid, then \f$u\f$ should also be tangential to the
+     *  grid.)
+     *
+     *  This function fills the 2D array \p points whose <em>(i, j)</em>th
+     *  element contains the <em>i</em>th coordinate of the interpolation point
+     *  \f$x_j\f$. */
+    virtual void getGlobalDofInterpolationPoints(
+            arma::Mat<CoordinateType>& points) const {
+        throw NotImplementedError(
+                    "Space::getGlobalDofInterpolationPoints(): not implemented");
+    }
+
+    /** \brief Retrieve the unit vectors normal to the grid at the
+     *  interpolation points of the global degrees of freedom.
+     *
+     *  This function fills the 2D array \p normals whose <em>(i, j)</em>th
+     *  element contains the <em>i</em>th component of the unit vector normal
+     *  to the grid at the interpolation point \f$x_j\f$ defined in the
+     *  documentation of getGlobalDofInterpolationPoints(). */
+    virtual void getNormalsAtGlobalDofInterpolationPoints(
+            arma::Mat<CoordinateType>& normals) const {
+        throw NotImplementedError(
+                    "Space::getNormalsAtGlobalDofInterpolationPoints(): not implemented");
+    }
+
+    /** \brief Retrieve the interpolation directions of the global degrees of
+     *  freedom.
+     *
+     *  This function fills the 2D array \p points whose <em>(i, j)</em>th
+     *  element contains the <em>i</em>th component of the vector \f$d_j\f$
+     *  defined in the documentation of getGlobalDofInterpolationPoints(). */
+    virtual void getGlobalDofInterpolationDirections(
+            arma::Mat<CoordinateType>& directions) const {
+        throw NotImplementedError(
+                    "Space::getGlobalDofInterpolationDirections(): not implemented");
+    }
+
+    /** @}
+        @name DOF reference positions (functions used in ACA assembly)
+        @} */
+
     // These functions are used only by the ACA assembler.
     // For the moment, Point will always be 3D, independently from the
     // actual dimension of the space. Once Ahmed's bemcluster is made dimension-
     // independent, we may come up with a more elegant solution.
-    /** \brief Retrieve positions of global degrees of freedom.
-     *
-     *  \param[out] positions
-     *    Vector whose <em>i</em>th element contains the coordinates
-     *    of the point taken to be the "position" (in some sense) of
-     *    <em>i</em>th global degree of freedom.
-     *
-     *  \note This function is intended as a helper for clustering algorithms
-     *  used in matrix compression algorithms such as adaptive cross
-     *  approximation. */
-    virtual void getGlobalDofPositions(
-            std::vector<Point3D<CoordinateType> >& positions) const = 0;
-
     /** \brief Retrieve bounding boxes of global degrees of freedom.
      *
      *  \param[out] boundingBoxes
@@ -414,12 +491,25 @@ public:
                                  "implementation missing");
     }
 
-    /** \brief Retrieve positions of local degrees of freedom ordered by their
-     *  flat index.
+    /** \brief Retrieve the reference positions of global degrees of freedom.
      *
      *  \param[out] positions
      *    Vector whose <em>i</em>th element contains the coordinates
-     *    of the point taken to be the ``position'' (in some sense) of
+     *    of the point taken to be the "reference position" (in some sense) of
+     *    <em>i</em>th global degree of freedom.
+     *
+     *  \note This function is intended as a helper for clustering algorithms
+     *  used in matrix compression algorithms such as adaptive cross
+     *  approximation. */
+    virtual void getGlobalDofPositions(
+            std::vector<Point3D<CoordinateType> >& positions) const = 0;
+
+    /** \brief Retrieve the reference positions of local degrees of freedom
+     *  ordered by their flat index.
+     *
+     *  \param[out] positions
+     *    Vector whose <em>i</em>th element contains the coordinates
+     *    of the point taken to be the ``reference position'' (in some sense) of
      *    the local degree of freedom with flat index <em>i</em>.
      *
      *  \note This function is intended as a helper for clustering algorithms
@@ -428,10 +518,25 @@ public:
     virtual void getFlatLocalDofPositions(
             std::vector<Point3D<CoordinateType> >& positions) const = 0;
 
+    /** \brief Retrieve the unit vectors normal to the grid at the positions of
+     *  global degrees of freedom.
+     *
+     *  \param[out] normals
+     *    Vector whose <em>i</em>th element contains the unit vector normal to
+     *    the grid at the reference position of <em>i</em>th global degree of
+     *    freedom. */
     virtual void getGlobalDofNormals(
             std::vector<Point3D<CoordinateType> >& normals) const {
         throw NotImplementedError("Space::getGlobalDofNormals(): not implemented");
     }
+
+    /** \brief Retrieve the unit vectors normal to the grid at the positions of
+     *  global degrees of freedom.
+     *
+     *  \param[out] normals
+     *    Vector whose <em>i</em>th element contains the unit vector normal to
+     *    the grid at the reference position of the local degree of freedom with
+     *    flat index <em>i</em>. */
     virtual void getFlatLocalDofNormals(
             std::vector<Point3D<CoordinateType> >& normals) const {
         throw NotImplementedError("Space::getFlatLocalDofNormals(): not implemented");

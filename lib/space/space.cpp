@@ -281,10 +281,14 @@ void getAllBases(const Space<BasisFunctionType>& space,
     std::vector<const Fiber::Shapeset<BasisFunctionType>*> shapesets;
     getAllShapesets(space, shapesets);
     bases.resize(shapesets.size());
-    for (size_t i = 0; i < bases.size(); ++i)
+    for (size_t i = 0; i < bases.size(); ++i) {
         bases[i] = dynamic_cast<const Fiber::Basis<BasisFunctionType>*>(
                     shapesets[i]);
-        assert(basis[i]!=0); // Make sure dynamic_cast did not fail
+        if (!bases[i])
+            throw std::runtime_error(
+                "getAllBases(): not all Shapeset objects "
+                "could be cast to Basis objects");
+    }
 }
 
 template <typename BasisFunctionType>

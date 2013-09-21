@@ -54,7 +54,6 @@ public:
     virtual int domainDimension() const;
     virtual int codomainDimension() const;
 
-
     /** \brief Return the variant of element \p element.
      *
      *  Possible return values:
@@ -67,6 +66,11 @@ public:
 
     virtual const Fiber::Shapeset<BasisFunctionType>& shapeset(
             const Entity<0>& element) const;
+
+    virtual void getGlobalDofInterpolationPoints(
+            arma::Mat<CoordinateType>& points) const;
+    virtual void getNormalsAtGlobalDofInterpolationPoints(
+            arma::Mat<CoordinateType>& normals) const;
 
 private:
     /** \cond PRIVATE */
