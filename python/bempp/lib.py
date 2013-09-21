@@ -1704,6 +1704,8 @@ def __gridFunctionFromFunctor(
         mode = 0
     else: # 'interpolate'
         mode = 1
+        if dualSpace is None:
+            dualSpace = space # it is ignored anyway
 
     functor = _constructObjectTemplatedOnValue(
         core, "Python" + functorType,
@@ -1763,7 +1765,17 @@ def createGridFunction(
     Variant 1: construction of a grid function from a Python function::
 
         createGridFunction(context, space, dualSpace, function,
-                           surfaceNormalDependent, mode)
+                           surfaceNormalDependent)
+
+    if the best approximation of the function in the chosen space should be
+    found by projecting it on the chosen dual space, or
+
+        createGridFunction(context, space, function=function,
+                           surfaceNormalDependent=surfaceNormalDependent,
+                           mode='interpolate')
+
+    if the function's expansion in the chosen space should be found by
+    interpolating it on an appropriate set of points.
 
     Variant 2: construction of a grid function from the vector of its
     coefficients in the basis of the space 'space'::
@@ -1799,10 +1811,11 @@ def createGridFunction(
     if params_active != 1 :
         raise ValueError("createGridFunction(): Exactly one of 'function', "
                          "'coefficients' or 'projections' must be supplied")
-    if function is not None and dualSpace is None:
+    if function is not None and mode=='approximate' and dualSpace is None:
         raise ValueError("createGridFunction(): You must set the dualSpace "
                          "parameter to a valid Space object when constructing "
-                         "a grid function from a Python function")
+                         "a grid function from a Python function in the"
+                         "'approximate' mode")
     if projections is not None and dualSpace is None:
         raise ValueError("createGridFunction(): You must set the dualSpace "
                          "parameter to a valid Space object when constructing "
@@ -1810,9 +1823,6 @@ def createGridFunction(
     if mode not in ('approximate', 'interpolate'):
         raise ValueError("createGridFunction(): argument 'mode' must be set "
                          "to either 'approximate' or 'interpolate'")
-    if mode == 'interpolate' and surfaceNormalDependent:
-        raise ValueError("createGridFunction(): interpolated functions "
-                         "currently cannot depend on surface normals")
 
     if coefficients is not None:
         return _constructObjectTemplatedOnBasisAndResult(
