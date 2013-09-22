@@ -252,10 +252,6 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): dualSpace must not be null");
 
-    if (space->grid() != dualSpace->grid())
-        throw std::invalid_argument(
-                "GridFunction::GridFunction(): "
-                "space and dualSpace must be defined on the same grid");
     if (space->codomainDimension() != dualSpace->codomainDimension())
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): "
