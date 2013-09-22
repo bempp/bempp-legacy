@@ -230,7 +230,7 @@ def createPiecewiseConstantScalarSpace(context, grid, segment=None):
     return _constructObjectTemplatedOnBasis(
         core, name, context.basisFunctionType(), grid, segment)
 
-def createPiecewiseConstantDualMeshScalarSpace(context, grid, segment=None):
+def createPiecewiseConstantDualGridScalarSpace(context, grid, segment=None):
     """
     Create and return a space of scalar functions defined on the dual of a grid (or its
     segment) and constant on each element of the dual grid.
@@ -250,7 +250,7 @@ def createPiecewiseConstantDualMeshScalarSpace(context, grid, segment=None):
        BasisFunctionType determined automatically from the context argument and
        equal to either float32, float64, complex64 or complex128.
     """
-    name = 'piecewiseConstantDualMeshScalarSpace'
+    name = 'piecewiseConstantDualGridScalarSpace'
     return _constructObjectTemplatedOnBasis(
           core, name, context.basisFunctionType(), grid, segment)
 

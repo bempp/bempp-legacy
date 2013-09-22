@@ -48,7 +48,7 @@ context = createContext(quadStrategy, assemblyOptions)
 
 # The space of constant functions is defined on the dual mesh. This gives
 # a stable pairing between the piecewise linear and the constant functions.
-pwiseConstants = createPiecewiseConstantDualMeshScalarSpace(context, grid)
+pwiseConstants = createPiecewiseConstantDualGridScalarSpace(context, grid)
 pwiseLinears = createPiecewiseLinearContinuousScalarSpace(context, grid)
 
 # Construct elementary operators

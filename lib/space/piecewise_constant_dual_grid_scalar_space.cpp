@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "piecewise_constant_dual_mesh_scalar_space.hpp"
+#include "piecewise_constant_dual_grid_scalar_space.hpp"
 
 #include "space_helper.hpp"
 #include "piecewise_constant_scalar_space.hpp"
@@ -45,8 +45,8 @@ namespace Bempp
 {
 
 template <typename BasisFunctionType>
-PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::
-PiecewiseConstantDualMeshScalarSpace(const shared_ptr<const Grid>& grid) :
+PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::
+PiecewiseConstantDualGridScalarSpace(const shared_ptr<const Grid>& grid) :
     ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
     m_segment(GridSegment::wholeGrid(*(grid->barycentricGrid()))),
     m_strictlyOnSegment(false)
@@ -55,8 +55,8 @@ PiecewiseConstantDualMeshScalarSpace(const shared_ptr<const Grid>& grid) :
 }
 
 template <typename BasisFunctionType>
-PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::
-PiecewiseConstantDualMeshScalarSpace(const shared_ptr<const Grid>& grid,
+PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::
+PiecewiseConstantDualGridScalarSpace(const shared_ptr<const Grid>& grid,
                                      const GridSegment& segment,
                                      bool strictlyOnSegment) :
     ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
@@ -67,33 +67,33 @@ PiecewiseConstantDualMeshScalarSpace(const shared_ptr<const Grid>& grid,
 }
 
 template <typename BasisFunctionType>
-PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::
-~PiecewiseConstantDualMeshScalarSpace()
+PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::
+~PiecewiseConstantDualGridScalarSpace()
 {
 }
 
 template <typename BasisFunctionType>
-int PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::domainDimension() const
+int PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::domainDimension() const
 {
     return this->grid()->dim();
 }
 
 template <typename BasisFunctionType>
-int PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::codomainDimension() const
+int PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::codomainDimension() const
 {
     return 1;
 }
 
 template <typename BasisFunctionType>
 const Fiber::Shapeset<BasisFunctionType>&
-PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::shapeset(
+PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::shapeset(
         const Entity<0>& element) const
 {
     return m_basis;
 }
 
 template <typename BasisFunctionType>
-ElementVariant PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::elementVariant(
+ElementVariant PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::elementVariant(
         const Entity<0>& element) const
 {
     GeometryType type = element.type();
@@ -106,7 +106,7 @@ ElementVariant PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::elementV
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::setElementVariant(
+void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::setElementVariant(
         const Entity<0>& element, ElementVariant variant)
 {
     if (variant != elementVariant(element))
@@ -117,19 +117,19 @@ void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::setElementVariant(
 
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::initialize()
+void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::initialize()
 {
     const int gridDim = this->grid()->dim();
     if (gridDim != 1 && gridDim != 2)
         throw std::invalid_argument(
-                "PiecewiseConstantDualMeshScalarSpace::initialize(): "
+                "PiecewiseConstantDualGridScalarSpace::initialize(): "
                 "only 1- and 2-dimensional grids are supported");
     assignDofsImpl();
 }
 
 template <typename BasisFunctionType>
 shared_ptr<const Space<BasisFunctionType> >
-PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::discontinuousSpace(
+PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::discontinuousSpace(
     const shared_ptr<const Space<BasisFunctionType> >& self) const
 {
     if (!m_discontinuousSpace) {
@@ -144,7 +144,7 @@ PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::discontinuousSpace(
 }
 
 template <typename BasisFunctionType>
-bool PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::
+bool PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::
 spaceIsCompatible(const Space<BasisFunctionType> &other) const
 {
 
@@ -158,25 +158,25 @@ spaceIsCompatible(const Space<BasisFunctionType> &other) const
 
 template <typename BasisFunctionType>
 shared_ptr<const Space<BasisFunctionType> >
-PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::barycentricSpace(
+PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::barycentricSpace(
             const shared_ptr<const Space<BasisFunctionType> >& self) const {
 
     if (self.get()!=this)
         throw std::invalid_argument(
-            "PiecewiseConstantDualMeshScalarSpace::barycentricSpace(): "
+            "PiecewiseConstantDualGridScalarSpace::barycentricSpace(): "
             "argument should be a shared pointer to *this");
      return self;
 }
 
 template <typename BasisFunctionType>
 bool
-PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::isDiscontinuous() const
+PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::isDiscontinuous() const
 {
     return false;
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::assignDofsImpl()
+void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::assignDofsImpl()
 {
 
     const int gridDim = this->domainDimension();
@@ -294,19 +294,19 @@ void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::assignDofsImpl()
 }
 
 template <typename BasisFunctionType>
-size_t PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::globalDofCount() const
+size_t PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::globalDofCount() const
 {
     return m_global2localDofs.size();
 }
 
 template <typename BasisFunctionType>
-size_t PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::flatLocalDofCount() const
+size_t PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::flatLocalDofCount() const
 {
     return m_flatLocal2localDofs.size();
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::getGlobalDofs(
+void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::getGlobalDofs(
         const Entity<0>& element, std::vector<GlobalDofIndex>& dofs) const
 {
     const Mapper& mapper = this->gridView().elementMapper();
@@ -315,7 +315,7 @@ void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::getGlobalDofs(
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::global2localDofs(
+void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::global2localDofs(
         const std::vector<GlobalDofIndex>& globalDofs,
         std::vector<std::vector<LocalDof> >& localDofs) const
 {
@@ -325,7 +325,7 @@ void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::global2localDofs(
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::flatLocal2localDofs(
+void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::flatLocal2localDofs(
         const std::vector<FlatLocalDofIndex>& flatLocalDofs,
         std::vector<LocalDof>& localDofs) const
 {
@@ -335,7 +335,7 @@ void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::flatLocal2localDof
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::getGlobalDofPositions(
+void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::getGlobalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
     std::vector<BoundingBox<CoordinateType> > bboxes;
@@ -347,7 +347,7 @@ void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::getGlobalDofPositi
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::getFlatLocalDofPositions(
+void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::getFlatLocalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
     std::vector<BoundingBox<CoordinateType> > bboxes;
@@ -359,7 +359,7 @@ void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::getFlatLocalDofPos
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
+void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
        std::vector<BoundingBox<CoordinateType> >& bboxes) const
 {
     SpaceHelper<BasisFunctionType>::
@@ -368,7 +368,7 @@ void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::getGlobalDofBoundi
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::
+void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::
 getFlatLocalDofBoundingBoxes(
        std::vector<BoundingBox<CoordinateType> >& bboxes) const
 {
@@ -417,7 +417,7 @@ getFlatLocalDofBoundingBoxes(
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::getGlobalDofNormals(
+void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::getGlobalDofNormals(
         std::vector<Point3D<CoordinateType> >& normals) const
 {
     const int gridDim = this->domainDimension();
@@ -470,7 +470,7 @@ void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::getGlobalDofNormal
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::getFlatLocalDofNormals(
+void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::getFlatLocalDofNormals(
         std::vector<Point3D<CoordinateType> >& normals) const
 {
     const int gridDim = this->domainDimension();
@@ -512,7 +512,7 @@ void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::getFlatLocalDofNor
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::dumpClusterIds(
+void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::dumpClusterIds(
         const char* fileName,
         const std::vector<unsigned int>& clusterIdsOfDofs) const
 {
@@ -520,7 +520,7 @@ void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::dumpClusterIds(
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
+void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
         const char* fileName,
         const std::vector<unsigned int>& clusterIdsOfDofs,
         DofType dofType) const
@@ -529,12 +529,12 @@ void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
     // (not on segments)
 
     if (dofType != GLOBAL_DOFS && dofType != FLAT_LOCAL_DOFS)
-        throw std::invalid_argument("PiecewiseConstantDualMeshScalarSpaceScalarSpace::"
+        throw std::invalid_argument("PiecewiseConstantDualGridScalarSpaceScalarSpace::"
                                     "dumpClusterIds(): invalid DOF type");
     const size_t idCount = clusterIdsOfDofs.size();
     if ((dofType == GLOBAL_DOFS && idCount != globalDofCount()) ||
             (dofType == FLAT_LOCAL_DOFS && idCount != flatLocalDofCount()))
-        throw std::invalid_argument("PiecewiseConstantDualMeshScalarSpaceScalarSpace::"
+        throw std::invalid_argument("PiecewiseConstantDualGridScalarSpaceScalarSpace::"
                                     "dumpClusterIds(): incorrect dimension");
 
     std::auto_ptr<VtkWriter> vtkWriter = this->gridView().vtkWriter();
@@ -569,6 +569,6 @@ void PiecewiseConstantDualMeshScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
     }
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(PiecewiseConstantDualMeshScalarSpace);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(PiecewiseConstantDualGridScalarSpace);
 
 } // namespace Bempp
