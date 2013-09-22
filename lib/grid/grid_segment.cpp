@@ -60,9 +60,15 @@ GridSegment::GridSegment(const Grid& grid,
                          const std::set<int>& excludedEntitiesCodim0,
                          const std::set<int>& excludedEntitiesCodim1,
                          const std::set<int>& excludedEntitiesCodim2,
-                         const std::set<int>& excludedEntitiesCodim3)
+                         const std::set<int>& excludedEntitiesCodim3,
+                         int level)
 {
-    std::auto_ptr<GridView> view = grid.levelView(0);
+
+    std::auto_ptr<GridView> view;
+    if (level==-1)
+        view = grid.leafView();
+    else
+        view = grid.levelView(level);
     for (int i = 0; i < 4; ++i)
         m_entityCounts[i] = view->entityCount(i);
     m_excludedEntities[0] = excludedEntitiesCodim0;
@@ -90,16 +96,20 @@ GridSegment::GridSegment(int entityCountCodim0,
     m_excludedEntities[3] = excludedEntitiesCodim3;
 }
 
-GridSegment GridSegment::wholeGrid(const Grid& grid)
+GridSegment GridSegment::wholeGrid(const Grid& grid, int level)
 {
     std::set<int> emptySet;
-    return GridSegment(grid, emptySet, emptySet, emptySet, emptySet);
+    return GridSegment(grid, emptySet, emptySet, emptySet, emptySet, level);
 }
 
-GridSegment GridSegment::openDomain(const Grid& grid, int domain)
+GridSegment GridSegment::openDomain(const Grid& grid, int domain, int level)
 {
     const int gridDim = grid.dim();
-    std::auto_ptr<GridView> view = grid.levelView(0);
+    std::auto_ptr<GridView> view;
+    if (level==-1)
+        view = grid.leafView();
+    else
+        view = grid.levelView(level);
     const IndexSet& indexSet = view->indexSet();
 
     boost::array<std::vector<bool>, 4> entirelyInDomain;
@@ -135,10 +145,14 @@ GridSegment GridSegment::openDomain(const Grid& grid, int domain)
                        excludedEntities[2], excludedEntities[3]);
 }
 
-GridSegment GridSegment::closedDomain(const Grid& grid, int domain)
+GridSegment GridSegment::closedDomain(const Grid& grid, int domain, int level)
 {
     const int gridDim = grid.dim();
-    std::auto_ptr<GridView> view = grid.levelView(0);
+    std::auto_ptr<GridView> view;
+    if (level==-1)
+        view = grid.leafView();
+    else
+        view = grid.levelView(level);
     const IndexSet& indexSet = view->indexSet();
 
     boost::array<std::vector<bool>, 4> adjacentToDomain;
@@ -254,10 +268,14 @@ GridSegment GridSegment::intersection(const GridSegment& other) const
                        excludedEntities[2], excludedEntities[3]);
 }
 
-GridSegment gridSegmentWithPositiveX(const Grid& grid)
+GridSegment gridSegmentWithPositiveX(const Grid& grid, int level)
 {
     boost::array<std::set<int>, 4> excludedEntities;
-    std::auto_ptr<GridView> view = grid.levelView(0);
+    std::auto_ptr<GridView> view;
+    if (level==-1)
+        view = grid.leafView();
+    else
+        view = grid.levelView(level);
     excludedEntities[0] = entitiesWithNonpositiveX<0>(*view);
     excludedEntities[1] = entitiesWithNonpositiveX<1>(*view);
     excludedEntities[2] = entitiesWithNonpositiveX<2>(*view);

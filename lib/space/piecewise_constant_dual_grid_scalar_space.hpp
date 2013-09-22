@@ -61,25 +61,6 @@ public:
     explicit PiecewiseConstantDualGridScalarSpace(
             const shared_ptr<const Grid>& grid);
 
-    /** \brief Constructor.
-     *
-     *  Construct a space of dual grid piecewise constant scalar functions
-     *  defined on the segment \p segment of the grid \p grid. More precisely,
-     *  the space will encompass those basis functions that are associated with
-     *  vertices belonging to \p segment. If \p strictlyOnSegment is \c true,
-     *  the support of the basis functions is truncated to the elements that
-     *  belong to \p segment, too; in this case, the space may in fact contain
-     *  discontinuous basis functions when considered on the whole \p grid,
-     *  although the basis functions will be continuous when considered on the
-     *  chosen grid segment.
-     *
-     *  An exception is thrown if \p grid is a null pointer.
-     */
-    PiecewiseConstantDualGridScalarSpace(
-            const shared_ptr<const Grid>& grid,
-            const GridSegment& segment,
-            bool strictlyOnSegment = false);
-
     virtual ~PiecewiseConstantDualGridScalarSpace();
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
@@ -156,8 +137,6 @@ private:
 
 private:
     /** \cond PRIVATE */
-    GridSegment m_segment;
-    bool m_strictlyOnSegment;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
     std::vector<LocalDof> m_flatLocal2localDofs;

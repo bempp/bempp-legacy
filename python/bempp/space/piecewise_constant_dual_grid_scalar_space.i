@@ -13,14 +13,10 @@ namespace Bempp
 
 template <typename BasisFunctionType>
 boost::shared_ptr<Space<BasisFunctionType> >
-piecewiseConstantDualGridScalarSpace(const boost::shared_ptr<const Grid>& grid,
-        const GridSegment* segment = 0)
+piecewiseConstantDualGridScalarSpace(const boost::shared_ptr<const Grid>& grid)
 {
     typedef PiecewiseConstantDualGridScalarSpace<BasisFunctionType> Type;
-    if (segment)
-        return boost::shared_ptr<Type>(new Type(grid, *segment));
-    else
-        return boost::shared_ptr<Type>(new Type(grid));
+    return boost::shared_ptr<Type>(new Type(grid));
 }
 
 } // namespace Bempp

@@ -47,21 +47,7 @@ namespace Bempp
 template <typename BasisFunctionType>
 PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::
 PiecewiseConstantDualGridScalarSpace(const shared_ptr<const Grid>& grid) :
-    ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
-    m_segment(GridSegment::wholeGrid(*(grid->barycentricGrid()))),
-    m_strictlyOnSegment(false)
-{
-    initialize();
-}
-
-template <typename BasisFunctionType>
-PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::
-PiecewiseConstantDualGridScalarSpace(const shared_ptr<const Grid>& grid,
-                                     const GridSegment& segment,
-                                     bool strictlyOnSegment) :
-    ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
-    m_segment(segment),
-    m_strictlyOnSegment(strictlyOnSegment)
+    ScalarSpace<BasisFunctionType>(grid->barycentricGrid())
 {
     initialize();
 }
@@ -137,7 +123,7 @@ PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::discontinuousSpace(
         if (!m_discontinuousSpace)
             m_discontinuousSpace.reset(
                         new PiecewiseConstantScalarSpace<BasisFunctionType>
-                        (this->grid(),m_segment));
+                        (this->grid(),GridSegment::wholeGrid(*this->grid(),-1)));
     }
     return m_discontinuousSpace;
 
@@ -180,61 +166,23 @@ void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::assignDofsImpl()
 {
 
     const int gridDim = this->domainDimension();
-    const int elementCodim = 0;
 
     const Mapper& elementMapper = this->gridView().elementMapper();
     std::auto_ptr<GridView> coarseView = this->grid()->levelView(0);
-    const Mapper& elementMapperCoarseGrid = coarseView->elementMapper();
 
-    const IndexSet& indexSet = this->gridView().indexSet();
     const IndexSet& indexSetCoarseGrid = coarseView->indexSet();
 
     int elementCount = this->gridView().entityCount(0);
-    int elementCountCoarseGrid = coarseView->entityCount(0);
 
-    int vertexCount = this->gridView().entityCount(gridDim);
     int vertexCountCoarseGrid = coarseView->entityCount(gridDim);
 
     // Assign gdofs to grid vertices (choosing only those that belong to
     // the selected grid segment)
     std::vector<int> globalDofIndices(vertexCountCoarseGrid, 0);
-    m_segment.markExcludedEntities(gridDim, globalDofIndices);
-    std::vector<bool> segmentContainsElement;
-    if (m_strictlyOnSegment) {
-        std::vector<bool> noAdjacentElementsInsideSegment(vertexCountCoarseGrid, true);
-        segmentContainsElement.resize(elementCountCoarseGrid);
-        std::auto_ptr<EntityIterator<0> > it = coarseView->entityIterator<0>();
-        while (!it->finished()) {
-            const Entity<0>& element = it->entity();
-            EntityIndex elementIndex = elementMapperCoarseGrid.entityIndex(element);
-            bool elementContained =
-                    m_segment.contains(elementCodim, elementIndex);
-            acc(segmentContainsElement, elementIndex) = elementContained;
-
-            int cornerCount;
-            if (gridDim == 1)
-                cornerCount = element.template subEntityCount<1>();
-            else // gridDim == 2
-                cornerCount = element.template subEntityCount<2>();
-            if (elementContained)
-                for (int i = 0; i < cornerCount; ++i) {
-                    int vertexIndex = indexSetCoarseGrid.subEntityIndex(element, i, gridDim);
-                    acc(noAdjacentElementsInsideSegment, vertexIndex) = false;
-                }
-            it->next();
-        }
-        // Remove all DOFs associated with vertices lying next to no element
-        // belonging to the grid segment
-        for (size_t i = 0; i < vertexCountCoarseGrid; ++i)
-            if (acc(noAdjacentElementsInsideSegment, i))
-                acc(globalDofIndices, i) = -1;
-    }
     int globalDofCount_ = 0;
 
     for (int vertexIndex = 0; vertexIndex < vertexCountCoarseGrid; ++vertexIndex)
-        if (acc(globalDofIndices, vertexIndex) == 0){ // not excluded
             acc(globalDofIndices, vertexIndex) = globalDofCount_++;
-        }
 
     // (Re)initialise DOF maps
     m_local2globalDofs.clear();
@@ -251,10 +199,6 @@ void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::assignDofsImpl()
     int flatLocalDofCount_ = 0;
     while (!it->finished()) {
         const Entity<0>& element = it->entity();
-        EntityIndex elementIndexCoarseGrid = elementMapperCoarseGrid.entityIndex(element);
-        bool elementContained = m_strictlyOnSegment ?
-                    acc(segmentContainsElement, elementIndexCoarseGrid) : true;
-
         // Get the iterator over son entities
 
         std::auto_ptr<EntityIterator<0> > sonIt = element.sonIterator(this->grid()->maxLevel());
@@ -272,8 +216,7 @@ void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::assignDofsImpl()
             std::vector<GlobalDofIndex>& globalDof = acc(m_local2globalDofs, elementIndex);
             EntityIndex vertexIndex = indexSetCoarseGrid.subEntityIndex(element,sonCount/2,gridDim);
             GlobalDofIndex globalDofIndex;
-            globalDofIndex = elementContained ?
-                        acc(globalDofIndices,vertexIndex) : -1;
+            globalDofIndex = acc(globalDofIndices,vertexIndex);
             globalDof.push_back(globalDofIndex);
             if (globalDofIndex>=0) {
                 acc(m_global2localDofs, globalDofIndex).push_back(
