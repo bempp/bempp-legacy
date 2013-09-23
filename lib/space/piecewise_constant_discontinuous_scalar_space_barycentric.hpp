@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef piecewise_constant_scalar_space_barycentric_hpp
-#define piecewise_constant_scalar_space_barycentric_hpp
+#ifndef piecewise_constant_discontinuous_scalar_space_barycentric_hpp
+#define piecewise_constant_discontinuous_scalar_space_barycentric_hpp
 
 #include "../common/common.hpp"
 
@@ -28,9 +28,6 @@
 #include "../common/types.hpp"
 #include "../fiber/constant_scalar_shapeset.hpp"
 #include "../grid/grid_segment.hpp"
-
-#include <tbb/mutex.h>
-
 
 #include <map>
 #include <memory>
@@ -45,7 +42,7 @@ class GridView;
 /** \ingroup space
  *  \brief Space of piecewise constant scalar functions. */
 template <typename BasisFunctionType>
-class PiecewiseConstantScalarSpaceBarycentric : public ScalarSpace<BasisFunctionType>
+class PiecewiseConstantDiscontinuousScalarSpaceBarycentric : public ScalarSpace<BasisFunctionType>
 {
 public:
     typedef typename ScalarSpace<BasisFunctionType>::CoordinateType CoordinateType;
@@ -54,10 +51,14 @@ public:
      *
      *  Construct a space of piecewise constant scalar functions
      *  defined on the barycentric refinement of the grid \p grid.
+     *  This is the discontinuous version of
+     *  \p PiecewiseConstantScalarSpaceBarycentric. Please note that
+     *  discontinuous here refers to global and local degrees of freedom
+     *  being identical.
      *
      *  An exception is thrown if \p grid is a null pointer.
      */
-    explicit PiecewiseConstantScalarSpaceBarycentric(const shared_ptr<const Grid>& grid);
+    explicit PiecewiseConstantDiscontinuousScalarSpaceBarycentric(const shared_ptr<const Grid>& grid);
 
     /** \brief Constructor.
      *
@@ -66,7 +67,7 @@ public:
      *
      *  An exception is thrown if \p grid is a null pointer.
      */
-    PiecewiseConstantScalarSpaceBarycentric(const shared_ptr<const Grid>& grid,
+    PiecewiseConstantDiscontinuousScalarSpaceBarycentric(const shared_ptr<const Grid>& grid,
                                  const GridSegment& segment);
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
@@ -101,7 +102,7 @@ public:
     virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
 
     virtual SpaceIdentifier spaceIdentifier() const {
-        return PIECEWISE_CONSTANT_SCALAR_BARYCENTRIC;
+        return PIECEWISE_CONSTANT_DISCONTINUOUS_SCALAR_BARYCENTRIC;
     }
 
     virtual size_t globalDofCount() const;
@@ -152,8 +153,6 @@ private:
     std::vector<std::vector<LocalDof> > m_global2localDofs;
     std::vector<LocalDof> m_flatLocal2localDofs;
     GridSegment m_segment;
-    mutable shared_ptr<Space<BasisFunctionType> > m_discontinuousSpace;
-    mutable tbb::mutex m_discontinuousSpaceMutex;
 
 
 };
