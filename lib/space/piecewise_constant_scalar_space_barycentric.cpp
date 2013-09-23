@@ -131,6 +131,19 @@ spaceIsCompatible(const Space<BasisFunctionType>& other) const
 
 
 template <typename BasisFunctionType>
+shared_ptr<const Space<BasisFunctionType> >
+PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::barycentricSpace(
+            const shared_ptr<const Space<BasisFunctionType> >& self) const {
+
+    if (self.get()!=this)
+        throw std::invalid_argument(
+            "PiecewiseConstantScalarSpaceBarycentric::barycentricSpace(): "
+            "argument should be a shared pointer to *this");
+     return self;
+}
+
+
+template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::setElementVariant(
         const Entity<0>& element, ElementVariant variant)
 {

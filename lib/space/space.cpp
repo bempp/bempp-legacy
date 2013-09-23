@@ -207,7 +207,7 @@ template <typename BasisFunctionType>
 shared_ptr<const Space<BasisFunctionType> > Space<BasisFunctionType>::barycentricSpace(
             const shared_ptr<const Space<BasisFunctionType> >& self) const
 {
-    std::runtime_error("Space::barycentricSpace():"
+    throw std::runtime_error("Space::barycentricSpace():"
                        "This method is not implemented for this Space type.");
 }
 

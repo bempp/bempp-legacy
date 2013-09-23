@@ -74,6 +74,10 @@ public:
         return true;
     }
 
+    shared_ptr<const Space<BasisFunctionType> > barycentricSpace(
+                const shared_ptr<const Space<BasisFunctionType> >& self) const;
+
+
 
     virtual int domainDimension() const;
     virtual int codomainDimension() const;
