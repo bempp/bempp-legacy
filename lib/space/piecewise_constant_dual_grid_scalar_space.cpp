@@ -363,53 +363,9 @@ template <typename BasisFunctionType>
 void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::getGlobalDofNormals(
         std::vector<Point3D<CoordinateType> >& normals) const
 {
-    const int gridDim = this->domainDimension();
-    const int globalDofCount_ = globalDofCount();
-    const int worldDim = this->grid()->dimWorld();
-    normals.resize(globalDofCount_);
-
-    const IndexSet& indexSet = this->gridView().indexSet();
-    int elementCount = this->gridView().entityCount(0);
-
-    arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
-    std::auto_ptr<EntityIterator<0> > it = this->gridView().template entityIterator<0>();
-    arma::Col<CoordinateType> center(gridDim);
-    center.fill(0.5);
-    arma::Col<CoordinateType> normal;
-    while (!it->finished()) {
-        const Entity<0>& e = it->entity();
-        int index = indexSet.entityIndex(e);
-        e.geometry().getNormals(center, normal);
-
-        for (int dim = 0; dim < worldDim; ++dim)
-            elementNormals(dim, index) = normal(dim);
-        it->next();
-    }
-
-    if (gridDim == 1)
-        for (size_t g = 0; g < globalDofCount_; ++g) {
-            normals[g].x = 0.;
-            normals[g].y = 0.;
-            for (size_t l = 0; l < m_global2localDofs[g].size(); ++l) {
-                normals[g].x += elementNormals(0, m_global2localDofs[g][l].entityIndex);
-                normals[g].y += elementNormals(1, m_global2localDofs[g][l].entityIndex);
-            }
-            normals[g].x /= m_global2localDofs[g].size();
-            normals[g].y /= m_global2localDofs[g].size();
-        }
-    else // gridDim == 2
-        for (size_t g = 0; g < globalDofCount_; ++g) {
-            normals[g].x = 0.;
-            normals[g].y = 0.;
-            for (size_t l = 0; l < m_global2localDofs[g].size(); ++l) {
-                normals[g].x += elementNormals(0, m_global2localDofs[g][l].entityIndex);
-                normals[g].y += elementNormals(1, m_global2localDofs[g][l].entityIndex);
-                normals[g].z += elementNormals(2, m_global2localDofs[g][l].entityIndex);
-            }
-            normals[g].x /= m_global2localDofs[g].size();
-            normals[g].y /= m_global2localDofs[g].size();
-            normals[g].z /= m_global2localDofs[g].size();
-        }
+    SpaceHelper<BasisFunctionType>::
+            getGlobalDofNormals_defaultImplementation(
+                this->gridView(), m_global2localDofs, normals);
 }
 
 template <typename BasisFunctionType>

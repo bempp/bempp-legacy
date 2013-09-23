@@ -320,7 +320,7 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getGlobalDofBoundi
 {
     SpaceHelper<BasisFunctionType>::
             getGlobalDofBoundingBoxes_defaultImplementation(
-                *m_view, m_global2localDofs, bboxes);
+                this->gridView(), m_global2localDofs, bboxes);
 }
 
 template <typename BasisFunctionType>

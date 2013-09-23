@@ -112,12 +112,18 @@ bool PiecewiseConstantScalarSpace<BasisFunctionType>::
 spaceIsCompatible(const Space<BasisFunctionType>& other) const
 {
 
-       if (other.grid().get()==this->grid().get()){
-           return (other.spaceIdentifier()==this->spaceIdentifier());
-       }
-       else
-           return false;
-
+    if (other.grid().get()==this->grid().get()){
+        return (other.spaceIdentifier()==this->spaceIdentifier());
+    }
+    else {
+        if (other.spaceIdentifier()==PIECEWISE_CONSTANT_SCALAR_BARYCENTRIC){
+            // Check if the other grid is the barycentric version of this grid
+            return other.grid()->isBarycentricRepresentationOf(*(this->grid()));
+        }
+        else {
+            return false;
+        }
+    }
 }
 
 

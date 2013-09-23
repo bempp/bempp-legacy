@@ -257,10 +257,6 @@ void PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::assignD
             int elementIndex = elementMapper.entityIndex(element);
             int cornerCount = 3;
 
-            const Geometry& geom = element.geometry();
-            arma::Mat<double> corners;
-            geom.getCorners(corners);
-
             if (sonCounter%2==0){
                 acc(m_elementIndex2Type,elementIndex) = Shapeset::TYPE1;
             }
