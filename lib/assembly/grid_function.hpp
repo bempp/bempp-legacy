@@ -322,7 +322,7 @@ public:
     /** \brief Return the shapeset associated with the given element.
      *
      *  \deprecated This function is deprecated. Use shapeset() instead. */
-    const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
+    const BEMPP_DEPRECATED Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
 
     /** \brief Retrieve the expansion coefficients of this function on a single element.
      *
