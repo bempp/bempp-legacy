@@ -259,7 +259,7 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormInternal
         const Context<BasisFunctionType, ResultType>& context) const
 {
 #ifdef WITH_TRILINOS
-    if (context.assemblyOptions().isSparseStorageOfMassMatricesEnabled())
+    if (context.assemblyOptions().isSparseStorageOfLocalOperatorsEnabled())
         return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
             assembleWeakFormInSparseMode(assembler, context.assemblyOptions())
             .release());

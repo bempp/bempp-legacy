@@ -25,7 +25,7 @@
 #include "assembly/discrete_boundary_operator.hpp"
 #include "assembly/boundary_operator.hpp"
 #include "assembly/context.hpp"
-#include "assembly/modified_helmholtz_3d_single_layer_boundary_operator.hpp"
+#include "assembly/laplace_3d_single_layer_boundary_operator.hpp"
 #include "assembly/numerical_quadrature_strategy.hpp"
 
 #include "common/boost_make_shared_fwd.hpp"
@@ -41,93 +41,19 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/version.hpp>
-#include <complex>
-
-namespace Bempp
-{
-
-namespace
-{
-
-template <typename T> T initWaveNumber();
-template <> float initWaveNumber() { return 1.2f; }
-template <> double initWaveNumber(){ return 1.2; }
-template <> std::complex<float> initWaveNumber()
-{ return std::complex<float>(1.2f, 0.7f); }
-template <> std::complex<double> initWaveNumber()
-{ return std::complex<double>(1.2, 0.7); }
-
-}
-
-}
 
 // Tests
 
 using namespace Bempp;
 
-BOOST_AUTO_TEST_SUITE(ModifiedHelmholtz3dSingleLayerBoundaryOperator)
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(interpolated_matches_noniterpolated,
-                              BasisFunctionType, basis_function_types)
-{
-    typedef BasisFunctionType BFT;
-    typedef typename Fiber::ScalarTraits<BFT>::ComplexType RT;
-    typedef typename Fiber::ScalarTraits<BFT>::ComplexType KT;
-    typedef typename Fiber::ScalarTraits<BFT>::RealType CT;
-
-    GridParameters params;
-    params.topology = GridParameters::TRIANGULAR;
-    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-                params, "meshes/two_disjoint_triangles.msh",
-                false /* verbose */);
-
-    PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(grid);
-    PiecewiseConstantScalarSpace<BFT> pwiseConstants(grid);
-
-    AssemblyOptions assemblyOptions;
-    assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
-    AccuracyOptions accuracyOptions;
-    accuracyOptions.doubleRegular.setAbsoluteQuadratureOrder(5);
-    accuracyOptions.doubleSingular.setAbsoluteQuadratureOrder(5);
-    NumericalQuadratureStrategy<BFT, RT> quadStrategy(accuracyOptions);
-
-    Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);
-
-    const KT waveNumber(3.23, 0.31);
-
-    BoundaryOperator<BFT, RT> opNoninterpolated =
-            modifiedHelmholtz3dSingleLayerBoundaryOperator<BFT, KT, RT>(
-                make_shared_from_ref(context),
-                make_shared_from_ref(pwiseLinears),
-                make_shared_from_ref(pwiseLinears),
-                make_shared_from_ref(pwiseLinears),
-                waveNumber,
-                "", NO_SYMMETRY,
-                false);
-    BoundaryOperator<BFT, RT> opInterpolated =
-            modifiedHelmholtz3dSingleLayerBoundaryOperator<BFT, KT, RT>(
-                make_shared_from_ref(context),
-                make_shared_from_ref(pwiseLinears),
-                make_shared_from_ref(pwiseLinears),
-                make_shared_from_ref(pwiseLinears),
-                waveNumber,
-                "", NO_SYMMETRY,
-                true);
-
-    arma::Mat<RT> matNoninterpolated = opNoninterpolated.weakForm()->asMatrix();
-    arma::Mat<RT> matInterpolated = opInterpolated.weakForm()->asMatrix();
-
-    const CT eps = std::numeric_limits<CT>::epsilon();
-    BOOST_CHECK(check_arrays_are_close<RT>(
-                    matNoninterpolated, matInterpolated, 100 * eps));
-}
+BOOST_AUTO_TEST_SUITE(Laplace3dSingleLayerBoundaryOperator)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(symmetric_matches_nonsymmetric_in_aca_mode,
                               ValueType, result_types)
 {
     typedef ValueType RT;
-    typedef typename Fiber::ScalarTraits<ValueType>::RealType RealType;
-    typedef RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     if (boost::is_same<RT, std::complex<float> >::value) {
         // The AHMED support for single-precision complex symmetric matrices
@@ -157,23 +83,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(symmetric_matches_nonsymmetric_in_aca_mode,
 
     Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);
 
-    const RT waveNumber = initWaveNumber<RT>();
-
     BoundaryOperator<BFT, RT> opNonsymmetric =
-            modifiedHelmholtz3dSingleLayerBoundaryOperator<BFT, RT, RT>(
+            laplace3dSingleLayerBoundaryOperator<BFT, RT>(
                 make_shared_from_ref(context),
                 make_shared_from_ref(pwiseLinears),
                 make_shared_from_ref(pwiseConstants),
                 make_shared_from_ref(pwiseLinears),
-                waveNumber,
                 "", NO_SYMMETRY);
     BoundaryOperator<BFT, RT> opSymmetric =
-            modifiedHelmholtz3dSingleLayerBoundaryOperator<BFT, RT, RT>(
+            laplace3dSingleLayerBoundaryOperator<BFT, RT>(
                 make_shared_from_ref(context),
                 make_shared_from_ref(pwiseLinears),
                 make_shared_from_ref(pwiseConstants),
                 make_shared_from_ref(pwiseLinears),
-                waveNumber,
                 "", SYMMETRIC);
 
     arma::Mat<RT> matNonsymmetric = opNonsymmetric.weakForm()->asMatrix();

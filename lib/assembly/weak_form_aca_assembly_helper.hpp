@@ -129,6 +129,7 @@ private:
     const std::vector<ResultType>& m_sparseTermsMultipliers;
     const AssemblyOptions& m_options;
     bool m_indexWithGlobalDofs;
+    bool m_uniformQuadratureOrder;
 
     shared_ptr<LocalDofListsCache<BasisFunctionType> >
     m_testDofListsCache, m_trialDofListsCache;
