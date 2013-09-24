@@ -206,6 +206,35 @@ public:
      *  See enableBlasInQuadrature() for more information. */
     Value isBlasEnabledInQuadrature() const;
 
+    /** \brief Instruct the ACA assembler to use the same quadrature order for
+     *  the evaluation of all regular integrals over pairs of test and trial
+     *  elements belonging to a single block cluster.
+     *
+     *  Use of different quadrature rules to evaluate regular integrals making
+     *  up the entries of a single block of an H-matrix may lead to an increase
+     *  in the block rank, and hence memory consumption, if these quadrature
+     *  rules are not accurate enough (if their error is greater than the ACA
+     *  tolerance \f$\epsilon\f$). However, evaluation of the entries of large
+     *  blocks using a uniform quadrature rule may be unnecessarily
+     *  time-consuming.
+     *
+     *  If this option is set to \c false and one uses a quadrature strategy
+     *  that takes the interlement distance into account when selecting
+     *  quadrature order, the true interelement distance is calculated and used
+     *  for each pair of elements. Otherwise, instead of the distance between
+     *  elements the quadrature-rule selector is passed the distance between
+     *  the clusters to which these elements belong.
+     *
+     *  By default, this option is set to \c true. */
+    void makeQuadratureOrderUniformInEachCluster(bool value = true);
+
+    /** \brief Return whether the same quadrature order is used for all regular
+     *  integrals over pairs of test and trial elements belonging to a single
+     *  block cluster.
+     *
+     *  See makeQuadratureOrderUniformInEachCluster() for more information. */
+    bool isQuadratureOrderUniformInEachCluster() const;
+
     /** @} */
 
 private:
@@ -217,6 +246,7 @@ private:
     bool m_singularIntegralCaching;
     bool m_sparseStorageOfLocalOperators;
     bool m_jointAssembly;
+    bool m_uniformQuadrature;
     Value m_blasInQuadrature;
     /** \endcond */
 };

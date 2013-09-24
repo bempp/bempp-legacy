@@ -31,6 +31,7 @@ AssemblyOptions::AssemblyOptions() :
     m_singularIntegralCaching(true),
     m_sparseStorageOfLocalOperators(true),
     m_jointAssembly(false),
+    m_uniformQuadrature(true),
     m_blasInQuadrature(AUTO)
 {
 }
@@ -158,6 +159,16 @@ void AssemblyOptions::enableBlasInQuadrature(Value value)
 AssemblyOptions::Value AssemblyOptions::isBlasEnabledInQuadrature() const
 {
     return m_blasInQuadrature;
+}
+
+void AssemblyOptions::makeQuadratureOrderUniformInEachCluster(bool value)
+{
+    m_uniformQuadrature = value;
+}
+
+bool AssemblyOptions::isQuadratureOrderUniformInEachCluster() const
+{
+    return m_uniformQuadrature;
 }
 
 } // namespace Bempp
