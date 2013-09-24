@@ -37,7 +37,8 @@ inline bool shouldUseBlasInQuadrature(const AssemblyOptions& assemblyOptions,
 {
     return assemblyOptions.isBlasEnabledInQuadrature() == AssemblyOptions::YES ||
         (assemblyOptions.isBlasEnabledInQuadrature() == AssemblyOptions::AUTO &&
-         (maximumBasisOrder(domain) >= 2 || maximumBasisOrder(dualToRange) >= 2));
+         (maximumShapesetOrder(domain) >= 2 || 
+	  maximumShapesetOrder(dualToRange) >= 2));
 }
 
 } // namespace

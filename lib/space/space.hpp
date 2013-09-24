@@ -627,11 +627,13 @@ void getAllShapesets(const Space<BasisFunctionType>& space,
  *
  *  \deprecated This function is deprecated. Use getAllShapesets() instead. */
 template <typename BasisFunctionType>
-void getAllBases(const Space<BasisFunctionType>& space,
+void BEMPP_DEPRECATED getAllBases(const Space<BasisFunctionType>& space,
         std::vector<const Fiber::Basis<BasisFunctionType>*>& bases);
 
+/** \brief Return the maximum polynomial order of the shapesets
+ *  defined by \p space on the elements of the space's underlying grid. */
 template <typename BasisFunctionType>
-int maximumBasisOrder(const Space<BasisFunctionType>& space);
+int maximumShapesetOrder(const Space<BasisFunctionType>& space);
 
 #ifdef WITH_TRILINOS
 template <typename BasisFunctionType, typename ResultType>
