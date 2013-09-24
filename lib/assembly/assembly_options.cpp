@@ -29,7 +29,7 @@ AssemblyOptions::AssemblyOptions() :
     m_assemblyMode(DENSE),
     m_verbosityLevel(VerbosityLevel::DEFAULT),
     m_singularIntegralCaching(true),
-    m_sparseStorageOfMassMatrices(true),
+    m_sparseStorageOfLocalOperators(true),
     m_jointAssembly(false),
     m_blasInQuadrature(AUTO)
 {
@@ -117,14 +117,24 @@ bool AssemblyOptions::isSingularIntegralCachingEnabled() const
     return m_singularIntegralCaching;
 }
 
+void AssemblyOptions::enableSparseStorageOfLocalOperators(bool value)
+{
+    m_sparseStorageOfLocalOperators = value;
+}
+
+bool AssemblyOptions::isSparseStorageOfLocalOperatorsEnabled() const
+{
+    return m_sparseStorageOfLocalOperators;
+}
+
 void AssemblyOptions::enableSparseStorageOfMassMatrices(bool value)
 {
-    m_sparseStorageOfMassMatrices = value;
+    enableSparseStorageOfLocalOperators(value);
 }
 
 bool AssemblyOptions::isSparseStorageOfMassMatricesEnabled() const
 {
-    return m_sparseStorageOfMassMatrices;
+    return isSparseStorageOfLocalOperatorsEnabled();
 }
 
 void AssemblyOptions::enableJointAssembly(bool value)

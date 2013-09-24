@@ -146,18 +146,31 @@ public:
      *  See enableSingularIntegralCaching() for more information. */
     bool isSingularIntegralCachingEnabled() const;
 
-    /** \brief Specify whether mass matrices should be stored in sparse format.
+    /** \brief Specify whether discrete weak forms of local operators should be
+     *  stored in sparse format.
      *
-     *  If <tt>value == true</tt>, assembled mass matrices are stored as sparse
-     *  matrices. Otherwise they are stored as dense matrices.
+     *  If <tt>value == true</tt> (default), discretized local operators are
+     *  stored as sparse matrices, otherwise as dense matrices. */
+    void enableSparseStorageOfLocalOperators(bool value = true);
+
+    /** \brief Return whether discrete weak forms of local operators should be
+     *  stored in sparse format.
      *
-     *  By default, sparse storage of mass matrices is enabled. */
-    void enableSparseStorageOfMassMatrices(bool value = true);
+     *  See enableSparseStorageOfLocalOperators() for more information. */
+    bool isSparseStorageOfLocalOperatorsEnabled() const;
+
+    /** \brief Specify whether discrete weak forms of local operators should be
+     *  stored in sparse format.
+     *
+     *  \deprecated This function is deprecated and will be removed in a future
+     *  version of BEM++. Use enableSparseStorageOfLocalOperators() instead.
+     */
+    void BEMPP_DEPRECATED enableSparseStorageOfMassMatrices(bool value = true);
 
     /** \brief Return whether mass matrices should be stored in sparse format.
      *
      *  See enableSparseStorageOfMassMatrices() for more information. */
-    bool isSparseStorageOfMassMatricesEnabled() const;
+    bool BEMPP_DEPRECATED isSparseStorageOfMassMatricesEnabled() const;
 
     /** \brief Enable or disable joint assembly of integral-operator superpositions.
      *
@@ -188,7 +201,7 @@ public:
     void enableBlasInQuadrature(Value value = AUTO);
 
     /** \brief Indicate whether BLAS matrix multiplication routines are used
-     *  during evaluation of elementary integrals. 
+     *  during evaluation of elementary integrals.
      *
      *  See enableBlasInQuadrature() for more information. */
     Value isBlasEnabledInQuadrature() const;
@@ -202,7 +215,7 @@ private:
     ParallelizationOptions m_parallelizationOptions;
     VerbosityLevel::Level m_verbosityLevel;
     bool m_singularIntegralCaching;
-    bool m_sparseStorageOfMassMatrices;
+    bool m_sparseStorageOfLocalOperators;
     bool m_jointAssembly;
     Value m_blasInQuadrature;
     /** \endcond */
