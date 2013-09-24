@@ -24,18 +24,20 @@
 #include "../common/common.hpp"
 
 #include "../grid/grid_view.hpp"
+#include "../grid/grid_segment.hpp"
 #include "scalar_space.hpp"
 #include "../common/types.hpp"
 #include "../fiber/constant_scalar_shapeset.hpp"
 
 #include <map>
 #include <memory>
+#include <tbb/mutex.h>
+
 
 namespace Bempp
 {
 
 /** \cond FORWARD_DECL */
-class GridSegment;
 class GridView;
 /** \endcond */
 
@@ -73,6 +75,9 @@ public:
     virtual bool isBarycentric() const {
         return false;
     }
+
+    virtual shared_ptr<const Space<BasisFunctionType> > barycentricSpace(
+            const shared_ptr<const Space<BasisFunctionType> >& self) const;
 
 
     virtual int domainDimension() const;
@@ -141,9 +146,13 @@ private:
 
 private:
     std::auto_ptr<GridView> m_view;
+    GridSegment m_segment;
     Fiber::ConstantScalarShapeset<BasisFunctionType> m_shapeset;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
+    mutable shared_ptr<Space<BasisFunctionType> > m_barycentricSpace;
+    mutable tbb::mutex m_barycentricSpaceMutex;
+
 };
 
 } // namespace Bempp

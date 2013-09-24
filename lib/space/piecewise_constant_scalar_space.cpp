@@ -19,6 +19,7 @@
 // THE SOFTWARE.
 
 #include "piecewise_constant_scalar_space.hpp"
+#include "piecewise_constant_scalar_space_barycentric.hpp"
 
 #include "space_helper.hpp"
 
@@ -41,18 +42,20 @@ namespace Bempp
 template <typename BasisFunctionType>
 PiecewiseConstantScalarSpace<BasisFunctionType>::
 PiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid) :
-     ScalarSpace<BasisFunctionType>(grid), m_view(grid->leafView())
+     ScalarSpace<BasisFunctionType>(grid), m_view(grid->leafView()),
+     m_segment(GridSegment::wholeGrid(*grid))
 {
-    assignDofsImpl(GridSegment::wholeGrid(*grid));
+    assignDofsImpl(m_segment);
 }
 
 template <typename BasisFunctionType>
 PiecewiseConstantScalarSpace<BasisFunctionType>::
 PiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid,
                              const GridSegment& segment) :
-     ScalarSpace<BasisFunctionType>(grid), m_view(grid->leafView())
+     ScalarSpace<BasisFunctionType>(grid), m_view(grid->leafView()),
+     m_segment(segment)
 {
-    assignDofsImpl(segment);
+    assignDofsImpl(m_segment);
 }
 
 template <typename BasisFunctionType>
@@ -124,6 +127,24 @@ spaceIsCompatible(const Space<BasisFunctionType>& other) const
             return false;
         }
     }
+}
+
+template <typename BasisFunctionType>
+shared_ptr<const Space<BasisFunctionType> >
+PiecewiseConstantScalarSpace<BasisFunctionType>::barycentricSpace(
+            const shared_ptr<const Space<BasisFunctionType> >& self) const {
+
+    if (!m_barycentricSpace) {
+        tbb::mutex::scoped_lock lock(m_barycentricSpaceMutex);
+        typedef PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>
+                BarycentricSpace;
+        if (!m_barycentricSpace)
+            m_barycentricSpace.reset(
+                        new BarycentricSpace(this->grid(), m_segment));
+    }
+    return m_barycentricSpace;
+
+
 }
 
 
