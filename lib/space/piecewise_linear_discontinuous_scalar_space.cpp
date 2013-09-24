@@ -19,6 +19,7 @@
 // THE SOFTWARE.
 
 #include "piecewise_linear_discontinuous_scalar_space.hpp"
+#include "piecewise_linear_discontinuous_scalar_space_barycentric.hpp"
 
 #include "space_helper.hpp"
 
@@ -43,10 +44,11 @@ namespace Bempp
 template <typename BasisFunctionType>
 PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
 PiecewiseLinearDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid) :
-    PiecewiseLinearScalarSpace<BasisFunctionType>(grid)
+    PiecewiseLinearScalarSpace<BasisFunctionType>(grid),
+    m_segment(GridSegment::wholeGrid(*grid)),
+    m_strictlyOnSegment(false)
 {
-    GridSegment segment = GridSegment::wholeGrid(*grid);
-    initialize(segment);
+    initialize(m_segment, m_strictlyOnSegment);
 }
 
 template <typename BasisFunctionType>
@@ -54,7 +56,10 @@ PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
 PiecewiseLinearDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid,
                                         const GridSegment& segment,
                                         bool strictlyOnSegment) :
-    PiecewiseLinearScalarSpace<BasisFunctionType>(grid)
+    PiecewiseLinearScalarSpace<BasisFunctionType>(grid),
+    m_segment(segment),
+    m_strictlyOnSegment(strictlyOnSegment)
+
 {
     initialize(segment, strictlyOnSegment);
 }
@@ -102,6 +107,29 @@ PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::discontinuousSpace(
             "argument should be a shared pointer to *this");
     return self;
 }
+
+
+
+template <typename BasisFunctionType>
+shared_ptr<const Space<BasisFunctionType> >
+PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::barycentricSpace(
+            const shared_ptr<const Space<BasisFunctionType> >& self) const {
+
+    if (!m_barycentricSpace) {
+        tbb::mutex::scoped_lock lock(m_barycentricSpaceMutex);
+        typedef PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>
+                BarycentricSpace;
+        if (!m_barycentricSpace)
+            m_barycentricSpace.reset(
+                        new BarycentricSpace(this->grid(), m_segment,
+                                               m_strictlyOnSegment));
+    }
+    return m_barycentricSpace;
+
+
+}
+
+
 
 template <typename BasisFunctionType>
 bool

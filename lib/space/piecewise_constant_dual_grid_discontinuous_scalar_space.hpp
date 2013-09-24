@@ -70,7 +70,7 @@ public:
     virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
 
     virtual SpaceIdentifier spaceIdentifier() const {
-        return PIECEWISE_CONSTANT_DUAL_GRID_SCALAR;
+        return PIECEWISE_CONSTANT_DUAL_GRID_DISCONTINUOUS_SCALAR;
     }
 
     virtual int domainDimension() const;

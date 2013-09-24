@@ -24,6 +24,7 @@
 #include "../common/common.hpp"
 
 #include "../grid/grid_view.hpp"
+#include "../grid/grid_segment.hpp"
 #include "piecewise_linear_scalar_space.hpp"
 #include "../common/types.hpp"
 // The name is absurd. Change to linear_scalar_basis.hpp
@@ -37,7 +38,6 @@ namespace Bempp
 {
 
 /** \cond FORWARD_DECL */
-class GridSegment;
 class GridView;
 /** \endcond */
 
@@ -90,6 +90,12 @@ public:
         return false;
     }
 
+
+    virtual shared_ptr<const Space<BasisFunctionType> > barycentricSpace(
+            const shared_ptr<const Space<BasisFunctionType> >& self) const;
+
+
+
     virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
 
     virtual SpaceIdentifier spaceIdentifier() const {
@@ -133,6 +139,8 @@ private:
 
 private:
     /** \cond PRIVATE */
+    GridSegment m_segment;
+    bool m_strictlyOnSegment;
     std::auto_ptr<GridView> m_view;
     Fiber::PiecewiseLinearContinuousScalarBasis<2, BasisFunctionType> m_lineShapeset;
     Fiber::PiecewiseLinearContinuousScalarBasis<3, BasisFunctionType> m_triangleShapeset;
@@ -140,6 +148,8 @@ private:
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
     std::vector<LocalDof> m_flatLocal2localDofs;
+    mutable shared_ptr<Space<BasisFunctionType> > m_barycentricSpace;
+    mutable tbb::mutex m_barycentricSpaceMutex;
     /** \endcond */
 };
 
