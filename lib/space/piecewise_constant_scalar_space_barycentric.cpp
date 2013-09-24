@@ -43,6 +43,7 @@ template <typename BasisFunctionType>
 PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::
 PiecewiseConstantScalarSpaceBarycentric(const shared_ptr<const Grid>& grid) :
     ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
+    m_originalGrid(grid),
     m_segment(GridSegment::wholeGrid(*grid))
 {
     assignDofsImpl(m_segment);
@@ -53,6 +54,7 @@ PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::
 PiecewiseConstantScalarSpaceBarycentric(const shared_ptr<const Grid>& grid,
                              const GridSegment& segment) :
     ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
+    m_originalGrid(grid),
     m_segment(segment)
 {
     assignDofsImpl(m_segment);
@@ -69,7 +71,7 @@ PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::discontinuousSpace(
                 DiscontinuousSpace;
         if (!m_discontinuousSpace)
             m_discontinuousSpace.reset(
-                        new DiscontinuousSpace(this->grid(), m_segment));
+                        new DiscontinuousSpace(m_originalGrid, m_segment));
     }
     return m_discontinuousSpace;
 }

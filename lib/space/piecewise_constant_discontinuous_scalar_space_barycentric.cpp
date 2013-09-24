@@ -194,6 +194,7 @@ void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::as
             int continuousDofIndex = acc(continuousDofIndices,elementIndexCoarseGrid);
             if (continuousDofIndex!= -1){
                 globalDofs.push_back(flatLocalDofCount_);
+		m_global2localDofs.push_back(std::vector<LocalDof>());
                 acc(m_global2localDofs,flatLocalDofCount_).push_back(
                             LocalDof(elementIndex, 0));
                 ++flatLocalDofCount_;

@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_piecewise_constant_dual_grid_scalar_space_hpp
-#define bempp_piecewise_constant_dual_grid_scalar_space_hpp
+#ifndef bempp_piecewise_constant_dual_grid_discontinuous_scalar_space_hpp
+#define bempp_piecewise_constant_dual_grid_discontinuous_scalar_space_hpp
 
 
 
@@ -30,7 +30,6 @@
 #include "../grid/grid_view.hpp"
 #include "../common/types.hpp"
 #include "../fiber/constant_scalar_shapeset.hpp"
-#include "../common/shared_ptr.hpp"
 
 #include <map>
 #include <memory>
@@ -41,13 +40,12 @@ namespace Bempp
 
 /** \cond FORWARD_DECL */
 class GridView;
-class Grid;
 /** \endcond */
 
 /** \ingroup space
  *  \brief Space of piecewise constant functions define on the dual grid. */
 template <typename BasisFunctionType>
-class PiecewiseConstantDualGridScalarSpace : public ScalarSpace<BasisFunctionType>
+class PiecewiseConstantDualGridDiscontinuousScalarSpace : public ScalarSpace<BasisFunctionType>
 {
 public:
     typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
@@ -60,10 +58,10 @@ public:
      *
      *  An exception is thrown if \p grid is a null pointer.
      */
-    explicit PiecewiseConstantDualGridScalarSpace(
+    explicit PiecewiseConstantDualGridDiscontinuousScalarSpace(
             const shared_ptr<const Grid>& grid);
 
-    virtual ~PiecewiseConstantDualGridScalarSpace();
+    virtual ~PiecewiseConstantDualGridDiscontinuousScalarSpace();
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
         const shared_ptr<const Space<BasisFunctionType> >& self) const;
@@ -143,9 +141,6 @@ private:
     std::vector<std::vector<LocalDof> > m_global2localDofs;
     std::vector<LocalDof> m_flatLocal2localDofs;
     Fiber::ConstantScalarShapeset<BasisFunctionType> m_basis;
-    shared_ptr<const Grid> m_originalGrid;
-    mutable shared_ptr<Space<BasisFunctionType> > m_discontinuousSpace;
-    mutable tbb::mutex m_discontinuousSpaceMutex;
     /** \endcond */
 };
 

@@ -166,6 +166,8 @@ private:
     std::vector<std::vector<LocalDof> > m_global2localDofs;
     std::vector<LocalDof> m_flatLocal2localDofs;
 
+    shared_ptr<const Grid> m_originalGrid;
+
     Shapeset m_linearBasisType1;
     Shapeset m_linearBasisType2;
 

@@ -49,6 +49,7 @@ template <typename BasisFunctionType>
 PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::
 PiecewiseLinearContinuousScalarSpaceBarycentric(const shared_ptr<const Grid>& grid) :
     PiecewiseLinearScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
+    m_originalGrid(grid),
     m_segment(GridSegment::wholeGrid(*grid)),
     m_strictlyOnSegment(false),
     m_linearBasisType1(Shapeset::TYPE1),
@@ -64,6 +65,7 @@ PiecewiseLinearContinuousScalarSpaceBarycentric(const shared_ptr<const Grid>& gr
                                      bool strictlyOnSegment) :
     PiecewiseLinearScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
     m_segment(segment),
+    m_originalGrid(grid),
     m_strictlyOnSegment(strictlyOnSegment),
     m_linearBasisType1(Shapeset::TYPE1),
     m_linearBasisType2(Shapeset::TYPE2)
@@ -101,7 +103,7 @@ PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::discontinuou
                 DiscontinuousSpace;
         if (!m_discontinuousSpace)
             m_discontinuousSpace.reset(
-                        new DiscontinuousSpace(this->grid(), m_segment,
+                        new DiscontinuousSpace(m_originalGrid, m_segment,
                                                m_strictlyOnSegment));
     }
     return m_discontinuousSpace;
