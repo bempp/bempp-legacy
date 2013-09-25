@@ -28,7 +28,8 @@
 namespace Fiber
 {
 
-/** \brief Quadrature descriptor selector used during the
+/** \ingroup quadrature
+ *  \brief Quadrature descriptor selector used during the
  *  discretization of boundary integral operators. */
 template <typename CoordinateType>
 class QuadratureDescriptorSelectorForIntegralOperators

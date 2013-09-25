@@ -26,7 +26,8 @@
 namespace Fiber
 {
 
-/** \brief Options controlling the order of numerical quadrature.
+/** \ingroup quadrature
+ *  \brief Options controlling the order of numerical quadrature.
  *
  *  This class can be used to specify the required order of accuracy of a
  *  numerical quadrature rule used to approximate a certain class of integrals.

@@ -34,7 +34,8 @@ template <typename BasisFunctionType> class QuadratureDescriptorSelectorFactory;
 template <typename CoordinateType> class DoubleQuadratureRuleFamily;
 template <typename CoordinateType> class SingleQuadratureRuleFamily;
 
-/** \brief Base class for NumericalQuadratureStrategy.
+/** \ingroup quadrature
+ *  \brief Base class for NumericalQuadratureStrategy.
  *
  * This is the base class of the default quadrature strategy available
  * in BEM++. This quadrature strategy evaluates integrals by numerical
@@ -189,7 +190,8 @@ private:
 };
 
 // Complex ResultType
-/** \brief Quadrature strategy according to which integrals are
+/** \ingroup quadrature
+ * \brief Quadrature strategy according to which integrals are
  * evaluated by numerical quadrature.
  *
  * A quadrature strategy provides functions constructing local assemblers used

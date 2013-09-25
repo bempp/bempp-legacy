@@ -400,8 +400,8 @@ public:
      *  space defined on grid \f$\Gamma\f$ with a basis \f$(f_i)_{i=1}^N\f$ of
      *  functions \f$f_i : \Gamma \to \mathbb{R}^n\f$ (or \f$\mathbb{C}^n\f$.
      *  We say that this basis is *interpolatory* if there exist points \f$x_j
-     *  \in \Gamma\f$ and \f$n\f$-dimensional vectors \f$d_j$ (\f$j = 1, 2,
-     *  \cdots, N\f$ such that
+     *  \in \Gamma\f$ and \f$n\f$-dimensional vectors \f$d_j\f$ (\f$j = 1, 2,
+     *  \dots, N\f$ such that
      *
      *  \f[
      *      f_i(x_j) \cdot d_j =
@@ -630,7 +630,8 @@ template <typename BasisFunctionType>
 void BEMPP_DEPRECATED getAllBases(const Space<BasisFunctionType>& space,
         std::vector<const Fiber::Basis<BasisFunctionType>*>& bases);
 
-/** \brief Return the maximum polynomial order of the shapesets
+/** \relates Space
+ *  \brief Return the maximum polynomial order of the shapesets
  *  defined by \p space on the elements of the space's underlying grid. */
 template <typename BasisFunctionType>
 int maximumShapesetOrder(const Space<BasisFunctionType>& space);

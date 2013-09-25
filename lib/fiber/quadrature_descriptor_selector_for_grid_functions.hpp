@@ -28,7 +28,8 @@
 namespace Fiber
 {
 
-/** \brief Quadrature descriptor selector used during the
+/** \ingroup quadrature
+ *  \brief Quadrature descriptor selector used during the
  *  discretization of functions. */
 template <typename CoordinateType>
 class QuadratureDescriptorSelectorForGridFunctions

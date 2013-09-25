@@ -570,7 +570,8 @@ GridFunction<BasisFunctionType, ResultType> operator/(
 
 // Export
 
-/** \brief Export this function to a VTK file.
+/** \relates GridFunction
+  \brief Export this function to a VTK file.
 
   \param[in] dataType
     Determines whether data are attaches to vertices or cells.
@@ -599,7 +600,8 @@ void exportToVtk(const GridFunction<BasisFunctionType, ResultType>& gridFunction
                  const char* fileNamesBase, const char* filesPath = 0,
                  VtkWriter::OutputType type = VtkWriter::ASCII);
 
-/** \brief Export this function to a Gmsh (.msh) file.
+/** \relates GridFunction
+  \brief Export this function to a Gmsh (.msh) file.
 
   \param[in] dataLabel
     Label used to identify the function in the Gmsh file.
