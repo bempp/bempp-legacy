@@ -59,10 +59,6 @@ build_jobs=2
 # optflags = -O3 -march=native (Default on Linux)
 # optflags = -O3 -march=core2 (Default on Mac)
 
-# Uncomment to enable MPI in supported packages.
-# You need to change the standard compilers to their corresponding MPI versions as well.
-# enable_mpi = true
-
 [Bempp]
 
 # Specify whether the installer should compile BEM++ straight after
@@ -164,7 +160,8 @@ build_jobs=2
 # you just have to uncomment enable_mpi = true to enable MPI support. If
 # compiler wrappers are not used then additionally the mpi include directory
 # and mpi libraries need to be specified. The given example configuration is
-# for OpenMPI.
+# for OpenMPI. Please note that this is experimental and currently only used
+# to compile the PyTrilinos solvers with MPI support.
 
 # enable_mpi = true
 # mpi_cxx_libs = -L/usr/local/openmpi/lib -lmpi_cxx -lmpi
