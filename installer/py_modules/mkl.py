@@ -73,6 +73,16 @@ def parse_ldd_output(output):
             if m_fname:
                 mkl_libs.append(path)
                 mkl_dirs.append(os.path.dirname(path))
+    mkl_intel_thread_found = False
+    mkl_gf_found = False
+    for l in mkl_libs:
+        if "mkl_intel_thread" in l:
+            mkl_intel_thread_found = True
+        if "mkl_gf" in l:
+            mkl_gf_found = True
+    if mkl_intel_thread_found and mkl_gf_found:
+        for i in range(len(mkl_libs)):
+            mkl_libs[i] = mkl_libs[i].replace("mkl_gf","mkl_intel")
     return mkl_dirs,mkl_libs
 
 def parse_otool_output(output):
