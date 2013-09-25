@@ -86,14 +86,24 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
             "modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(): "
             "domain, range and dualToRange must not be null");
 
+    shared_ptr<const Space<BasisFunctionType> > newDomain = domain;
+    shared_ptr<const Space<BasisFunctionType> > newDualToRange = dualToRange;
+
+    bool isBarycentric = (domain->isBarycentric() || dualToRange->isBarycentric());
+
+    if (isBarycentric) {
+        newDomain = domain->barycentricSpace(domain);
+        newDualToRange = dualToRange->barycentricSpace(dualToRange);
+    }
+
     shared_ptr<const Context<BasisFunctionType, ResultType> >
         internalContext, auxContext;
     SyntheticOp::getContextsForInternalAndAuxiliaryOperators(
         context, internalContext, auxContext);
     shared_ptr<const Space<BasisFunctionType> > internalTrialSpace =
-        domain->discontinuousSpace(domain);
+        newDomain->discontinuousSpace(newDomain);
     shared_ptr<const Space<BasisFunctionType> > internalTestSpace =
-        dualToRange->discontinuousSpace(dualToRange);
+        newDualToRange->discontinuousSpace(newDualToRange);
 
     // Note: we don't really need to care about ranges and duals to domains of
     // the internal operator. The only range space that matters is that of the
@@ -116,7 +126,7 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
 
     // symmetry of the decomposition
     int syntheseSymmetry = 0; // symmetry of the decomposition
-    if (domain == dualToRange && internalTrialSpace == internalTestSpace)
+    if (newDomain == newDualToRange && internalTrialSpace == internalTestSpace)
         syntheseSymmetry = HERMITIAN |
                 (boost::is_complex<BasisFunctionType>() ? 0 : SYMMETRIC);
 
@@ -127,7 +137,7 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
         testLocalOps[i] =
                 BoundaryOperator<BasisFunctionType, ResultType>(
                     auxContext, boost::make_shared<LocalOp>(
-                        internalTestSpace, range, dualToRange,
+                        internalTestSpace, range, newDualToRange,
                         ("(" + label + ")_test_curl_") + xyz[i], NO_SYMMETRY,
                         CurlFunctor(),
                         ValueFunctor(),
@@ -139,7 +149,7 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
             trialLocalOps[i] =
                     BoundaryOperator<BasisFunctionType, ResultType>(
                         auxContext, boost::make_shared<LocalOp>(
-                            domain, internalTrialSpace /* or whatever */,
+                            newDomain, internalTrialSpace /* or whatever */,
                             internalTrialSpace,
                             ("(" + label + ")_trial_curl_") + xyz[i], NO_SYMMETRY,
                             ValueFunctor(),
@@ -157,7 +167,7 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
         testLocalOps[i] =
                 BoundaryOperator<BasisFunctionType, ResultType>(
                     auxContext, boost::make_shared<LocalOp>(
-                        internalTestSpace, range, dualToRange,
+                        internalTestSpace, range, newDualToRange,
                         ("(" + label + ")_test_k_value_n_") + xyz[i], NO_SYMMETRY,
                         ValueTimesNormalFunctor(),
                         ValueFunctor(),
@@ -167,7 +177,7 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
             trialLocalOps[i] =
                     BoundaryOperator<BasisFunctionType, ResultType>(
                         auxContext, boost::make_shared<LocalOp>(
-                            domain, internalTrialSpace /* or whatever */,
+                            newDomain, internalTrialSpace /* or whatever */,
                             internalTrialSpace,
                             ("(" + label + ")_trial_k_value_n_") + xyz[i], NO_SYMMETRY,
                             ValueFunctor(),

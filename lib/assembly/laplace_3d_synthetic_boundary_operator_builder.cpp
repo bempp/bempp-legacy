@@ -56,16 +56,15 @@ laplace3dSyntheticBoundaryOperator(
             "makeLaplace3dSyntheticBoundaryOperator(): "
             "domain, range and dualToRange must not be null");
 
-    shared_ptr<const Space<BasisFunctionType> > newDomain;
-    shared_ptr<const Space<BasisFunctionType> > newDualToRange;
+    shared_ptr<const Space<BasisFunctionType> > newDomain = domain;
+    shared_ptr<const Space<BasisFunctionType> > newDualToRange = dualToRange;
 
     bool isBarycentric = (domain->isBarycentric() || dualToRange->isBarycentric());
 
-    if (isBarycentric){
-	newDomain = domain->barycentricSpace(domain);
-	newDualToRange = dualToRange->barycentricSpace(dualToRange);
+    if (isBarycentric) {
+        newDomain = domain->barycentricSpace(domain);
+        newDualToRange = dualToRange->barycentricSpace(dualToRange);
     }
-
 
     AssemblyOptions internalAssemblyOptions = context->assemblyOptions();
     AcaOptions internalAcaOptions = internalAssemblyOptions.acaOptions();
@@ -74,16 +73,16 @@ laplace3dSyntheticBoundaryOperator(
     typedef Context<BasisFunctionType, ResultType> Ctx;
     shared_ptr<Ctx> internalContext(new Ctx(
             context->quadStrategy(), internalAssemblyOptions));
-    shared_ptr<const Space<BasisFunctionType> > internalTrialSpace = 
+    shared_ptr<const Space<BasisFunctionType> > internalTrialSpace =
         newDomain->discontinuousSpace(domain);
-    shared_ptr<const Space<BasisFunctionType> > internalTestSpace = 
+    shared_ptr<const Space<BasisFunctionType> > internalTestSpace =
         newDualToRange->discontinuousSpace(dualToRange);
 
     if (label.empty())
         label = AbstractBoundaryOperator<BasisFunctionType, ResultType>::
             uniqueLabel();
 
-    int syntheseSymmetry = 
+    int syntheseSymmetry =
         (newDomain == newDualToRange && internalTrialSpace == internalTestSpace) ?
         maximumSyntheseSymmetry : 0;
     // std::cout << "syntheseSymmetry: " << syntheseSymmetry << std::endl;

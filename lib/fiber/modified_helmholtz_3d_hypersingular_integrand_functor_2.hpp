@@ -31,6 +31,8 @@
 namespace Fiber
 {
 
+/** \brief Functor evaluating the integrand of the hypersingular operator for
+ *  the modified Helmholtz equation in 3D. */
 template <typename BasisFunctionType_, typename KernelType_,
           typename ResultType_>
 class ModifiedHelmholtz3dHypersingularIntegrandFunctor2
